@@ -1,54 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754537AbZERPbn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755577AbZERPfh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754537AbZERPbn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 11:31:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752655AbZERPbi
+	id S1755577AbZERPfh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 11:35:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752540AbZERPf1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 11:31:38 -0400
-Received: from mail-ew0-f224.google.com ([209.85.219.224]:43257 "EHLO
-	mail-ew0-f224.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751961AbZERPbh (ORCPT
+	Mon, 18 May 2009 11:35:27 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39814 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752399AbZERPfZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 11:31:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=ebg/0fM5r4sw5lM83KEfMfgeJ0Fzpwla0SRUWiJPPCXSdjnD/tneZccIHlN2yFxEdS
-         tGsS6I/35kGFggsjO9UIYlndMV7gIAgSbyssPWJhIOUV3m4oWBVyyTTb0Q/jLjLNZtFS
-         yZbL/LX7Qn+9GF4Yq0nUiCDvjtyCaeN3WrfiY=
-Message-ID: <4A117F58.10407@gmail.com>
-Date: Mon, 18 May 2009 17:31:36 +0200
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090302)
+	Mon, 18 May 2009 11:35:25 -0400
+Date: Mon, 18 May 2009 08:32:18 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Ingo Molnar <mingo@elte.hu>
+cc: Oleg Nesterov <oleg@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Jonathan Corbet <corbet@lwn.net>, Martin Bammer <mrb74@gmx.at>,
+       Jeff Garzik <jgarzik@pobox.com>, Kumar Gala <galak@kernel.crashing.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>, Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Network Development <netdev@vger.kernel.org>,
+       Linux ACPI <linux-acpi@vger.kernel.org>,
+       Linux PM List <linux-pm@lists.linux-foundation.org>,
+       Linux SCSI List <linux-scsi@vger.kernel.org>,
+       Linux Wireless List <linux-wireless@vger.kernel.org>,
+       DRI <dri-devel@lists.sourceforge.net>
+Subject: Re: 2.6.30-rc6: Reported regressions from 2.6.29
+In-Reply-To: <20090518151102.GA6241@elte.hu>
+Message-ID: <alpine.LFD.2.01.0905180819130.3301@localhost.localdomain>
+References: <_AjETDMbIoL.A.DcH.RYzDKB@chimera> <20090517073327.GC1583@elte.hu> <20090518145725.GB18607@redhat.com> <20090518151102.GA6241@elte.hu>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-CC: lkml <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] [STAGING] wmm_param[1].ac_aci_acm_aifsn tested twice
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-wmm_param[1].ac_aci_acm_aifsn was tested twice, the second should have been
-wmm_param[3].ac_aci_acm_aifsn.
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-Correct?
 
-diff --git a/drivers/staging/rtl8187se/ieee80211/ieee80211_rx.c b/drivers/staging/rtl8187se/ieee80211/ieee80211_rx.c
-index 23519b3..4d4ee56 100644
---- a/drivers/staging/rtl8187se/ieee80211/ieee80211_rx.c
-+++ b/drivers/staging/rtl8187se/ieee80211/ieee80211_rx.c
-@@ -1680,7 +1680,7 @@ inline void update_network(struct ieee80211_network *dst,
- 	if(src->wmm_param[0].ac_aci_acm_aifsn|| \
- 	   src->wmm_param[1].ac_aci_acm_aifsn|| \
- 	   src->wmm_param[2].ac_aci_acm_aifsn|| \
--	   src->wmm_param[1].ac_aci_acm_aifsn) {
-+	   src->wmm_param[3].ac_aci_acm_aifsn) {
- 	  memcpy(dst->wmm_param, src->wmm_param, WME_AC_PRAM_LEN);
- 	}
- 	dst->QoS_Enable = src->QoS_Enable;
+On Mon, 18 May 2009, Ingo Molnar wrote:
+> 
+> Btw., why did the patch (and the revert) make any difference to the 
+> test? Timing differences look improbable.
+
+It's the change from
+
+	!signal_group_exit(signal)
+
+to
+
+	!sig_kernel_only(signr)
+
+and quite frankly, I still don't see the point.
+
+The comment seems to be wrong too:
+
+    If SIGSTOP/SIGKILL originate from a descendant of container-init they are
+    never queued (i.e dropped in sig_ignored() in an earler patch).
+    
+    If SIGSTOP/SIGKILL originate from parent namespace, the signal is queued
+    and container-init processes the signal.
+
+since the bug was that the SIGSTOP (from within the same container) was 
+_not_ ignored like the comment says.
+
+			Linus
