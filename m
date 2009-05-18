@@ -1,63 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753305AbZERRK3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754975AbZERRKk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753305AbZERRK3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 13:10:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751204AbZERRKV
+	id S1754975AbZERRKk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 13:10:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752964AbZERRK0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 13:10:21 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:34935 "EHLO mx3.mail.elte.hu"
+	Mon, 18 May 2009 13:10:26 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:56335 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750930AbZERRKU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 13:10:20 -0400
-Date: Mon, 18 May 2009 19:09:09 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jeff Garzik <jgarzik@pobox.com>, Alexander Viro <viro@ftp.linux.org.uk>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [GIT PULL] scheduler fixes
-Message-ID: <20090518170909.GA1623@elte.hu>
-References: <20090518142707.GA24142@elte.hu> <alpine.LFD.2.01.0905180850110.3301@localhost.localdomain> <20090518164921.GA6903@elte.hu> <alpine.LFD.2.01.0905180955550.3301@localhost.localdomain>
+	id S1753496AbZERRKZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 13:10:25 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Sitsofe Wheeler <sitsofe@yahoo.com>
+Subject: Re: [Bug #12765] i915 VT switch with AIGLX causes X lock up
+Date: Mon, 18 May 2009 19:10:37 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc6-rjw; KDE/4.2.3; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Dave Airlie <airlied@redhat.com>, DRI <dri-devel@lists.sourceforge.net>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Michel =?iso-8859-1?q?D=E4nzer?= <michel@daenzer.net>
+References: <yO1BmxN79sN.A.xAG.8_zDKB@chimera> <pQ9WADCjgyE.A.iyH.9B0DKB@chimera> <20090518071315.GA26870@sucs.org>
+In-Reply-To: <20090518071315.GA26870@sucs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.01.0905180955550.3301@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200905181910.39254.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
-> On Mon, 18 May 2009, Ingo Molnar wrote:
+On Monday 18 May 2009, Sitsofe Wheeler wrote:
+> On Sat, May 16, 2009 at 10:05:57PM +0200, Rafael J. Wysocki wrote:
+> > The following bug entry is on the current list of known regressions
+> > introduced between 2.6.28 and 2.6.29.  Please verify if it still should
+> > be listed and let me know (either way).
 > > 
-> > hm - i've Cc:-ed Jeff & Viro. The background is that Sparse and LLVM 
-> > barfed on the current construct and Al strongly advocated this 
-> > solution, see:
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12765
+> > Subject		: i915 VT switch with AIGLX causes X lock up
+> > Submitter	: Sitsofe Wheeler <sitsofe@yahoo.com>
+> > Date		: 2009-02-21 15:38 (85 days old)
+> > First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=14d200c5e5bd19219d930bbb9a5a22758c8f5bec
+> > References	: http://marc.info/?l=linux-kernel&m=123523074304955&w=4
+> > 		  http://lkml.org/lkml/2009/4/27/317
+> > Handled-By	: Jesse Barnes <jbarnes@virtuousgeek.org>
+> > Patch		: http://patchwork.kernel.org/patch/20197/
 > 
-> I know the background.
-> 
-> Did you read my email?
-> 
-> Did you see my one-line patch that fixes the same problem WITHOUT 
-> THE INSANITY?
+> Yes, this problem is still here in 2.6.30-rc6-00026-g0f6f49a .
 
-Yes, i even proposed that very patch in the original discussion, in 
-my first reply:
+Thanks for the update.
 
-    http://lkml.org/lkml/2009/5/8/378
-
-but then got sidetracked by the 'this is C-correct' claim. Should 
-have noticed the bogosity, sorry about that.
-
-	Ingo
+Rafael
