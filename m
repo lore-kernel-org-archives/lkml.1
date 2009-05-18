@@ -1,45 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753788AbZEROAy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754388AbZEROCW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753788AbZEROAy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 10:00:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752540AbZEROAk
+	id S1754388AbZEROCW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 10:02:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751961AbZEROCA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 10:00:40 -0400
-Received: from mtagate2.de.ibm.com ([195.212.17.162]:49542 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752680AbZEROAj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 10:00:39 -0400
-Date: Mon, 18 May 2009 16:00:35 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Michael Abbott <michael@araneidae.co.uk>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jan Engelhardt <jengelh@medozas.de>
-Subject: Re: [PATCH] Re: /proc/uptime idle counter remains at 0
-Message-ID: <20090518160035.6ea22eb7@skybase>
-In-Reply-To: <Pine.LNX.4.64.0905181421300.1088@venus.araneidae.co.uk>
-References: <Pine.LNX.4.64.0905181421300.1088@venus.araneidae.co.uk>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 18 May 2009 10:02:00 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:44455 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750950AbZEROB5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 10:01:57 -0400
+Date: Mon, 18 May 2009 10:01:14 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Andrea Righi <righi.andrea@gmail.com>
+Cc: Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
+       Nauman Rafique <nauman@google.com>, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, jens.axboe@oracle.com, ryov@valinux.co.jp,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       agk@redhat.com, dm-devel@redhat.com, snitzer@redhat.com,
+       m-ikeda@ds.jp.nec.com, akpm@linux-foundation.org
+Subject: Re: [PATCH] io-controller: Add io group reference handling for
+	request
+Message-ID: <20090518140114.GB27080@redhat.com>
+References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com> <4A03FF3C.4020506@cn.fujitsu.com> <20090508135724.GE7293@redhat.com> <e98e18940905081041r386e52a5q5a2b1f13f1e8c634@mail.gmail.com> <4A078051.5060702@cn.fujitsu.com> <20090511154127.GD6036@redhat.com> <4A0CFA6C.3080609@cn.fujitsu.com> <20090515074839.GA3340@linux> <20090515140643.GB19350@redhat.com> <20090517102604.GA4255@linux>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090517102604.GA4255@linux>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 18 May 2009 14:23:03 +0100 (BST)
-Michael Abbott <michael@araneidae.co.uk> wrote:
+On Sun, May 17, 2009 at 12:26:06PM +0200, Andrea Righi wrote:
+> On Fri, May 15, 2009 at 10:06:43AM -0400, Vivek Goyal wrote:
+> > On Fri, May 15, 2009 at 09:48:40AM +0200, Andrea Righi wrote:
+> > > On Fri, May 15, 2009 at 01:15:24PM +0800, Gui Jianfeng wrote:
+> > > > Vivek Goyal wrote:
+> > > > ...
+> > > > >  }
+> > > > > @@ -1462,20 +1462,27 @@ struct io_cgroup *get_iocg_from_bio(stru
+> > > > >  /*
+> > > > >   * Find the io group bio belongs to.
+> > > > >   * If "create" is set, io group is created if it is not already present.
+> > > > > + * If "curr" is set, io group is information is searched for current
+> > > > > + * task and not with the help of bio.
+> > > > > + *
+> > > > > + * FIXME: Can we assume that if bio is NULL then lookup group for current
+> > > > > + * task and not create extra function parameter ?
+> > > > >   *
+> > > > > - * Note: There is a narrow window of race where a group is being freed
+> > > > > - * by cgroup deletion path and some rq has slipped through in this group.
+> > > > > - * Fix it.
+> > > > >   */
+> > > > > -struct io_group *io_get_io_group_bio(struct request_queue *q, struct bio *bio,
+> > > > > -					int create)
+> > > > > +struct io_group *io_get_io_group(struct request_queue *q, struct bio *bio,
+> > > > > +					int create, int curr)
+> > > > 
+> > > >   Hi Vivek,
+> > > > 
+> > > >   IIUC we can get rid of curr, and just determine iog from bio. If bio is not NULL,
+> > > >   get iog from bio, otherwise get it from current task.
+> > > 
+> > > Consider also that get_cgroup_from_bio() is much more slow than
+> > > task_cgroup() and need to lock/unlock_page_cgroup() in
+> > > get_blkio_cgroup_id(), while task_cgroup() is rcu protected.
+> > > 
+> > 
+> > True.
+> > 
+> > > BTW another optimization could be to use the blkio-cgroup functionality
+> > > only for dirty pages and cut out some blkio_set_owner(). For all the
+> > > other cases IO always occurs in the same context of the current task,
+> > > and you can use task_cgroup().
+> > > 
+> > 
+> > Yes, may be in some cases we can avoid setting page owner. I will get
+> > to it once I have got functionality going well. In the mean time if
+> > you have a patch for it, it will be great.
+> > 
+> > > However, this is true only for page cache pages, for IO generated by
+> > > anonymous pages (swap) you still need the page tracking functionality
+> > > both for reads and writes.
+> > > 
+> > 
+> > Right now I am assuming that all the sync IO will belong to task
+> > submitting the bio hence use task_cgroup() for that. Only for async
+> > IO, I am trying to use page tracking functionality to determine the owner.
+> > Look at elv_bio_sync(bio).
+> > 
+> > You seem to be saying that there are cases where even for sync IO, we
+> > can't use submitting task's context and need to rely on page tracking
+> > functionlity? In case of getting page (read) from swap, will it not happen
+> > in the context of process who will take a page fault and initiate the
+> > swap read?
+> 
+> No, for example in read_swap_cache_async():
+> 
+> @@ -308,6 +309,7 @@ struct page *read_swap_cache_async(swp_entry_t entry, gfp_t gfp_mask,
+>  		 */
+>  		__set_page_locked(new_page);
+>  		SetPageSwapBacked(new_page);
+> +		blkio_cgroup_set_owner(new_page, current->mm);
+>  		err = add_to_swap_cache(new_page, entry, gfp_mask & GFP_KERNEL);
+>  		if (likely(!err)) {
+>  			/*
+> 
+> This is a read, but the current task is not always the owner of this
+> swap cache page, because it's a readahead operation.
+> 
 
-> Resending this patch, as it doesn't seem to have made it into the kernel 
-> (and this feature really doesn't need to be left broken).
+But will this readahead be not initiated in the context of the task taking
+the page fault?
 
-I'll queue it to the cputime branch on git390 and send Linus a please
-pull. Perhaps that will get the patch upstream.
+handle_pte_fault()
+	do_swap_page()
+		swapin_readahead()
+			read_swap_cache_async()
 
--- 
-blue skies,
-   Martin.
+If yes, then swap reads issued will still be in the context of process and
+we should be fine?
 
-"Reality continues to ruin my life." - Calvin.
+> Anyway, this is a minor corner case I think. And probably it is safe to
+> consider this like any other read IO and get rid of the
+> blkio_cgroup_set_owner().
 
+Agreed.
+
+> 
+> I wonder if it would be better to attach the blkio_cgroup to the
+> anonymous page only when swap-out occurs.
+
+Swap seems to be an interesting case in general. Somebody raised this
+question on lwn io controller article also. A user process never asked
+for swap activity. It is something enforced by kernel. So while doing
+some swap outs, it does not seem too fair to charge the write out to
+the process page belongs to and the fact of the matter may be that there
+is some other memory hungry application which is forcing these swap outs.
+
+Keeping this in mind, should swap activity be considered as system
+activity and be charged to root group instead of to user tasks in other
+cgroups?
+  
+> I mean, just put the
+> blkio_cgroup_set_owner() hook in try_to_umap() in order to keep track of
+> the IO generated by direct reclaim of anon memory. For all the other
+> cases we can simply use the submitting task's context.
+> 
+> BTW, O_DIRECT is another case that is possible to optimize, because all
+> the bios generated by direct IO occur in the same context of the current
+> task.
+
+Agreed about the direct IO optimization.
+
+Ryo, what do you think? would you like to do include these optimizations
+by the Andrea in next version of IO tracking patches?
+ 
+Thanks
+Vivek
