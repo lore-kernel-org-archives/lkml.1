@@ -1,164 +1,227 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757503AbZERJej@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758042AbZERJfB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757503AbZERJej (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 05:34:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756543AbZERJX7
+	id S1758042AbZERJfB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 05:35:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756337AbZERJYA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 05:23:59 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:38418 "EHLO mx2.redhat.com"
+	Mon, 18 May 2009 05:24:00 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38422 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753935AbZERJXL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754152AbZERJXL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 18 May 2009 05:23:11 -0400
 From: Avi Kivity <avi@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: kvm@vger.kernel.org
-Subject: [PATCH 25/43] KVM: ia64: Map in SN2 RTC registers to the VMM module
-Date: Mon, 18 May 2009 12:22:47 +0300
-Message-Id: <1242638585-18470-26-git-send-email-avi@redhat.com>
+Subject: [PATCH 23/43] KVM: change the way how lowest priority vcpu is calculated
+Date: Mon, 18 May 2009 12:22:45 +0300
+Message-Id: <1242638585-18470-24-git-send-email-avi@redhat.com>
 In-Reply-To: <1242638585-18470-1-git-send-email-avi@redhat.com>
 References: <1242638585-18470-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jes Sorensen <jes@sgi.com>
+From: Gleb Natapov <gleb@redhat.com>
 
-On SN2, map in the SN2 RTC registers to the VMM module, needed for ITC
-emulation.
+The new way does not require additional loop over vcpus to calculate
+the one with lowest priority as one is chosen during delivery bitmap
+construction.
 
-Signed-off-by: Jes Sorensen <jes@sgi.com>
-Acked-by: Xiantao Zhang <xiantao.zhang@intel.com>
-Signed-off-by: Avi Kivity <avi@redhat.com>
+Signed-off-by: Gleb Natapov <gleb@redhat.com>
+Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
 ---
- arch/ia64/include/asm/kvm_host.h |    2 +
- arch/ia64/include/asm/pgtable.h  |    2 +
- arch/ia64/kvm/kvm-ia64.c         |   43 +++++++++++++++++++++++++++++++++----
- 3 files changed, 42 insertions(+), 5 deletions(-)
+ arch/ia64/kvm/kvm-ia64.c        |   15 +-----------
+ arch/ia64/kvm/lapic.h           |    1 +
+ arch/x86/include/asm/kvm_host.h |    2 +-
+ arch/x86/kvm/lapic.c            |   43 +++++---------------------------------
+ virt/kvm/ioapic.h               |    3 +-
+ virt/kvm/irq_comm.c             |   19 ++++++++++-------
+ 6 files changed, 22 insertions(+), 61 deletions(-)
 
-diff --git a/arch/ia64/include/asm/kvm_host.h b/arch/ia64/include/asm/kvm_host.h
-index 5608488..1243995 100644
---- a/arch/ia64/include/asm/kvm_host.h
-+++ b/arch/ia64/include/asm/kvm_host.h
-@@ -371,6 +371,7 @@ struct kvm_vcpu_arch {
- 	int last_run_cpu;
- 	int vmm_tr_slot;
- 	int vm_tr_slot;
-+	int sn_rtc_tr_slot;
- 
- #define KVM_MP_STATE_RUNNABLE          0
- #define KVM_MP_STATE_UNINITIALIZED     1
-@@ -465,6 +466,7 @@ struct kvm_arch {
- 	unsigned long	vmm_init_rr;
- 
- 	int		online_vcpus;
-+	int		is_sn2;
- 
- 	struct kvm_ioapic *vioapic;
- 	struct kvm_vm_stat stat;
-diff --git a/arch/ia64/include/asm/pgtable.h b/arch/ia64/include/asm/pgtable.h
-index 7a9bff4..0a9cc73 100644
---- a/arch/ia64/include/asm/pgtable.h
-+++ b/arch/ia64/include/asm/pgtable.h
-@@ -146,6 +146,8 @@
- #define PAGE_GATE	__pgprot(__ACCESS_BITS | _PAGE_PL_0 | _PAGE_AR_X_RX)
- #define PAGE_KERNEL	__pgprot(__DIRTY_BITS  | _PAGE_PL_0 | _PAGE_AR_RWX)
- #define PAGE_KERNELRX	__pgprot(__ACCESS_BITS | _PAGE_PL_0 | _PAGE_AR_RX)
-+#define PAGE_KERNEL_UC	__pgprot(__DIRTY_BITS  | _PAGE_PL_0 | _PAGE_AR_RWX | \
-+				 _PAGE_MA_UC)
- 
- # ifndef __ASSEMBLY__
- 
 diff --git a/arch/ia64/kvm/kvm-ia64.c b/arch/ia64/kvm/kvm-ia64.c
-index acf43ec..14a3fab 100644
+index 8eea9cb..1887a93 100644
 --- a/arch/ia64/kvm/kvm-ia64.c
 +++ b/arch/ia64/kvm/kvm-ia64.c
-@@ -41,6 +41,9 @@
- #include <asm/div64.h>
- #include <asm/tlb.h>
- #include <asm/elf.h>
-+#include <asm/sn/addrs.h>
-+#include <asm/sn/clksupport.h>
-+#include <asm/sn/shub_mmr.h>
- 
- #include "misc.h"
- #include "vti.h"
-@@ -119,8 +122,7 @@ void kvm_arch_hardware_enable(void *garbage)
- 	unsigned long saved_psr;
- 	int slot;
- 
--	pte = pte_val(mk_pte_phys(__pa(kvm_vmm_base),
--				PAGE_KERNEL));
-+	pte = pte_val(mk_pte_phys(__pa(kvm_vmm_base), PAGE_KERNEL));
- 	local_irq_save(saved_psr);
- 	slot = ia64_itr_entry(0x3, KVM_VMM_BASE, pte, KVM_VMM_SHIFT);
- 	local_irq_restore(saved_psr);
-@@ -425,6 +427,23 @@ static int handle_switch_rr6(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
- 	return 1;
+@@ -1836,20 +1836,9 @@ int kvm_apic_match_logical_addr(struct kvm_lapic *apic, u8 mda)
+ 	return 0;
  }
  
-+static int kvm_sn2_setup_mappings(struct kvm_vcpu *vcpu)
-+{
-+	unsigned long pte, rtc_phys_addr, map_addr;
-+	int slot;
-+
-+	map_addr = KVM_VMM_BASE + (1UL << KVM_VMM_SHIFT);
-+	rtc_phys_addr = LOCAL_MMR_OFFSET | SH_RTC;
-+	pte = pte_val(mk_pte_phys(rtc_phys_addr, PAGE_KERNEL_UC));
-+	slot = ia64_itr_entry(0x3, map_addr, pte, PAGE_SHIFT);
-+	vcpu->arch.sn_rtc_tr_slot = slot;
-+	if (slot < 0) {
-+		printk(KERN_ERR "Mayday mayday! RTC mapping failed!\n");
-+		slot = 0;
-+	}
-+	return slot;
-+}
-+
- int kvm_emulate_halt(struct kvm_vcpu *vcpu)
+-struct kvm_vcpu *kvm_get_lowest_prio_vcpu(struct kvm *kvm, u8 vector,
+-				       unsigned long *bitmap)
++int kvm_apic_compare_prio(struct kvm_vcpu *vcpu1, struct kvm_vcpu *vcpu2)
  {
- 
-@@ -563,18 +582,29 @@ static int kvm_insert_vmm_mapping(struct kvm_vcpu *vcpu)
- 	if (r < 0)
- 		goto out;
- 	vcpu->arch.vm_tr_slot = r;
-+
-+#if defined(CONFIG_IA64_SGI_SN2) || defined(CONFIG_IA64_GENERIC)
-+	if (kvm->arch.is_sn2) {
-+		r = kvm_sn2_setup_mappings(vcpu);
-+		if (r < 0)
-+			goto out;
-+	}
-+#endif
-+
- 	r = 0;
- out:
- 	return r;
+-	struct kvm_vcpu *lvcpu = kvm->vcpus[0];
+-	int i;
 -
+-	for (i = 1; i < kvm->arch.online_vcpus; i++) {
+-		if (!kvm->vcpus[i])
+-			continue;
+-		if (lvcpu->arch.xtp > kvm->vcpus[i]->arch.xtp)
+-			lvcpu = kvm->vcpus[i];
+-	}
+-
+-	return lvcpu;
++	return vcpu1->arch.xtp - vcpu2->arch.xtp;
  }
  
- static void kvm_purge_vmm_mapping(struct kvm_vcpu *vcpu)
+ int kvm_apic_match_dest(struct kvm_vcpu *vcpu, struct kvm_lapic *source,
+diff --git a/arch/ia64/kvm/lapic.h b/arch/ia64/kvm/lapic.h
+index 31602e7..e42109e 100644
+--- a/arch/ia64/kvm/lapic.h
++++ b/arch/ia64/kvm/lapic.h
+@@ -22,6 +22,7 @@ int kvm_apic_match_physical_addr(struct kvm_lapic *apic, u16 dest);
+ int kvm_apic_match_logical_addr(struct kvm_lapic *apic, u8 mda);
+ int kvm_apic_match_dest(struct kvm_vcpu *vcpu, struct kvm_lapic *source,
+ 		int short_hand, int dest, int dest_mode);
++int kvm_apic_compare_prio(struct kvm_vcpu *vcpu1, struct kvm_vcpu *vcpu2);
+ bool kvm_apic_present(struct kvm_vcpu *vcpu);
+ int kvm_apic_set_irq(struct kvm_vcpu *vcpu, u8 vec, u8 dmode, u8 trig);
+ 
+diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
+index f0faf58..4627627 100644
+--- a/arch/x86/include/asm/kvm_host.h
++++ b/arch/x86/include/asm/kvm_host.h
+@@ -286,6 +286,7 @@ struct kvm_vcpu_arch {
+ 	u64 shadow_efer;
+ 	u64 apic_base;
+ 	struct kvm_lapic *apic;    /* kernel irqchip context */
++	int32_t apic_arb_prio;
+ 	int mp_state;
+ 	int sipi_vector;
+ 	u64 ia32_misc_enable_msr;
+@@ -400,7 +401,6 @@ struct kvm_arch{
+ 	struct hlist_head irq_ack_notifier_list;
+ 	int vapics_in_nmi_mode;
+ 
+-	int round_robin_prev_vcpu;
+ 	unsigned int tss_addr;
+ 	struct page *apic_access_page;
+ 
+diff --git a/arch/x86/kvm/lapic.c b/arch/x86/kvm/lapic.c
+index 998862a..814466f 100644
+--- a/arch/x86/kvm/lapic.c
++++ b/arch/x86/kvm/lapic.c
+@@ -338,8 +338,9 @@ static int __apic_accept_irq(struct kvm_lapic *apic, int delivery_mode,
+ 	struct kvm_vcpu *vcpu = apic->vcpu;
+ 
+ 	switch (delivery_mode) {
+-	case APIC_DM_FIXED:
+ 	case APIC_DM_LOWEST:
++		vcpu->arch.apic_arb_prio++;
++	case APIC_DM_FIXED:
+ 		/* FIXME add logic for vcpu on reset */
+ 		if (unlikely(!apic_enabled(apic)))
+ 			break;
+@@ -416,43 +417,9 @@ static int __apic_accept_irq(struct kvm_lapic *apic, int delivery_mode,
+ 	return result;
+ }
+ 
+-static struct kvm_lapic *kvm_apic_round_robin(struct kvm *kvm, u8 vector,
+-				       unsigned long *bitmap)
++int kvm_apic_compare_prio(struct kvm_vcpu *vcpu1, struct kvm_vcpu *vcpu2)
  {
+-	int last;
+-	int next;
+-	struct kvm_lapic *apic = NULL;
 -
-+	struct kvm *kvm = vcpu->kvm;
- 	ia64_ptr_entry(0x3, vcpu->arch.vmm_tr_slot);
- 	ia64_ptr_entry(0x3, vcpu->arch.vm_tr_slot);
+-	last = kvm->arch.round_robin_prev_vcpu;
+-	next = last;
 -
-+#if defined(CONFIG_IA64_SGI_SN2) || defined(CONFIG_IA64_GENERIC)
-+	if (kvm->arch.is_sn2)
-+		ia64_ptr_entry(0x3, vcpu->arch.sn_rtc_tr_slot);
-+#endif
+-	do {
+-		if (++next == KVM_MAX_VCPUS)
+-			next = 0;
+-		if (kvm->vcpus[next] == NULL || !test_bit(next, bitmap))
+-			continue;
+-		apic = kvm->vcpus[next]->arch.apic;
+-		if (apic && apic_enabled(apic))
+-			break;
+-		apic = NULL;
+-	} while (next != last);
+-	kvm->arch.round_robin_prev_vcpu = next;
+-
+-	if (!apic)
+-		printk(KERN_DEBUG "vcpu not ready for apic_round_robin\n");
+-
+-	return apic;
+-}
+-
+-struct kvm_vcpu *kvm_get_lowest_prio_vcpu(struct kvm *kvm, u8 vector,
+-		unsigned long *bitmap)
+-{
+-	struct kvm_lapic *apic;
+-
+-	apic = kvm_apic_round_robin(kvm, vector, bitmap);
+-	if (apic)
+-		return apic->vcpu;
+-	return NULL;
++	return vcpu1->arch.apic_arb_prio - vcpu2->arch.apic_arb_prio;
  }
  
- static int kvm_vcpu_pre_transition(struct kvm_vcpu *vcpu)
-@@ -800,6 +830,9 @@ struct  kvm *kvm_arch_create_vm(void)
+ static void apic_set_eoi(struct kvm_lapic *apic)
+@@ -908,6 +875,8 @@ void kvm_lapic_reset(struct kvm_vcpu *vcpu)
+ 		vcpu->arch.apic_base |= MSR_IA32_APICBASE_BSP;
+ 	apic_update_ppr(apic);
  
- 	if (IS_ERR(kvm))
- 		return ERR_PTR(-ENOMEM);
++	vcpu->arch.apic_arb_prio = 0;
 +
-+	kvm->arch.is_sn2 = ia64_platform_is("sn2");
-+
- 	kvm_init_vm(kvm);
+ 	apic_debug(KERN_INFO "%s: vcpu=%p, id=%d, base_msr="
+ 		   "0x%016" PRIx64 ", base_address=0x%0lx.\n", __func__,
+ 		   vcpu, kvm_apic_id(apic),
+diff --git a/virt/kvm/ioapic.h b/virt/kvm/ioapic.h
+index d996c7a..e7bc92d 100644
+--- a/virt/kvm/ioapic.h
++++ b/virt/kvm/ioapic.h
+@@ -64,10 +64,9 @@ static inline struct kvm_ioapic *ioapic_irqchip(struct kvm *kvm)
+ 	return kvm->arch.vioapic;
+ }
  
- 	kvm->arch.online_vcpus = 0;
+-struct kvm_vcpu *kvm_get_lowest_prio_vcpu(struct kvm *kvm, u8 vector,
+-		unsigned long *bitmap);
+ int kvm_apic_match_dest(struct kvm_vcpu *vcpu, struct kvm_lapic *source,
+ 		int short_hand, int dest, int dest_mode);
++int kvm_apic_compare_prio(struct kvm_vcpu *vcpu1, struct kvm_vcpu *vcpu2);
+ void kvm_ioapic_update_eoi(struct kvm *kvm, int vector, int trigger_mode);
+ int kvm_ioapic_init(struct kvm *kvm);
+ int kvm_ioapic_set_irq(struct kvm_ioapic *ioapic, int irq, int level);
+diff --git a/virt/kvm/irq_comm.c b/virt/kvm/irq_comm.c
+index e43701c..f5e059b 100644
+--- a/virt/kvm/irq_comm.c
++++ b/virt/kvm/irq_comm.c
+@@ -47,7 +47,7 @@ void kvm_get_intr_delivery_bitmask(struct kvm *kvm, struct kvm_lapic *src,
+ 		int dest_id, int dest_mode, bool low_prio, int short_hand,
+ 		unsigned long *deliver_bitmask)
+ {
+-	int i;
++	int i, lowest = -1;
+ 	struct kvm_vcpu *vcpu;
+ 
+ 	if (dest_mode == 0 && dest_id == 0xff && low_prio)
+@@ -64,15 +64,18 @@ void kvm_get_intr_delivery_bitmask(struct kvm *kvm, struct kvm_lapic *src,
+ 					dest_mode))
+ 			continue;
+ 
+-		__set_bit(i, deliver_bitmask);
++		if (!low_prio) {
++			__set_bit(i, deliver_bitmask);
++		} else {
++			if (lowest < 0)
++				lowest = i;
++			if (kvm_apic_compare_prio(vcpu, kvm->vcpus[lowest]) < 0)
++				lowest = i;
++		}
+ 	}
+ 
+-	if (low_prio) {
+-		vcpu = kvm_get_lowest_prio_vcpu(kvm, 0, deliver_bitmask);
+-		bitmap_zero(deliver_bitmask, KVM_MAX_VCPUS);
+-		if (vcpu)
+-			__set_bit(vcpu->vcpu_id, deliver_bitmask);
+-	}
++	if (lowest != -1)
++		__set_bit(lowest, deliver_bitmask);
+ }
+ 
+ static int kvm_set_msi(struct kvm_kernel_irq_routing_entry *e,
 -- 
 1.6.0.6
 
