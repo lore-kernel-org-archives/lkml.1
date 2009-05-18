@@ -1,25 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756017AbZERCYr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755796AbZERCZN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756017AbZERCYr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 May 2009 22:24:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755643AbZERCYW
+	id S1755796AbZERCZN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 May 2009 22:25:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755917AbZERCY2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 May 2009 22:24:22 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:4757 "EHLO
+	Sun, 17 May 2009 22:24:28 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:4761 "EHLO
 	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755880AbZERCYS (ORCPT
+	with ESMTP id S1755467AbZERCYY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 May 2009 22:24:18 -0400
+	Sun, 17 May 2009 22:24:24 -0400
 From: Joe Perches <joe@perches.com>
 To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
        Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
        Borislav Petkov <petkovbb@gmail.com>,
-       Elias Oltmanns <eo@nebensachen.de>, Joe Perches <joe@perches.com>
-Subject: [PATCH 4/6] drivers/ide: Convert printk(KERN_WARNING to pr_warning(
-Date: Sun, 17 May 2009 19:21:13 -0700
-Message-Id: <fe562158a3833dcb2789863fab2746f3cd4d8304.1242609804.git.joe@perches.com>
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Joe Perches <joe@perches.com>
+Subject: [PATCH 5/6] drivers/ide: Convert printk(KERN_CONT to pr_cont(
+Date: Sun, 17 May 2009 19:21:14 -0700
+Message-Id: <522167ee2abb43d5f60cc88c6b2a7aae317852ed.1242609804.git.joe@perches.com>
 X-Mailer: git-send-email 1.6.3.1.10.g659a0.dirty
 In-Reply-To: <cover.1242609803.git.joe@perches.com>
 References: <cover.1242609803.git.joe@perches.com>
@@ -31,785 +33,382 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Joe Perches <joe@perches.com>
 ---
- drivers/ide/amd74xx.c      |   10 ++++------
- drivers/ide/au1xxx-ide.c   |    8 ++++----
- drivers/ide/cs5520.c       |    5 ++---
- drivers/ide/hpt366.c       |    4 ++--
- drivers/ide/ide-disk.c     |    7 +++----
- drivers/ide/ide-dma-sff.c  |    4 ++--
- drivers/ide/ide-dma.c      |    8 ++++----
- drivers/ide/ide-io.c       |    3 +--
- drivers/ide/ide-ioctls.c   |    4 ++--
- drivers/ide/ide-iops.c     |    8 ++++----
- drivers/ide/ide-pm.c       |    4 ++--
- drivers/ide/ide-probe.c    |   13 +++++++------
- drivers/ide/ide-proc.c     |   15 ++++++---------
- drivers/ide/ide-tape.c     |    4 ++--
- drivers/ide/ide.c          |    2 +-
- drivers/ide/it821x.c       |    4 ++--
- drivers/ide/palm_bk3710.c  |    2 +-
- drivers/ide/pdc202xx_new.c |    4 ++--
- drivers/ide/pdc202xx_old.c |    4 ++--
- drivers/ide/piix.c         |    4 ++--
- drivers/ide/pmac.c         |   30 +++++++++++++++---------------
- drivers/ide/qd65xx.c       |   13 +++++++------
- drivers/ide/scc_pata.c     |   15 ++++++++-------
- drivers/ide/setup-pci.c    |   12 ++++++------
- drivers/ide/sgiioc4.c      |   16 ++++++----------
- drivers/ide/siimage.c      |   13 ++++++-------
- drivers/ide/tc86c001.c     |    4 ++--
- drivers/ide/via82cxxx.c    |    8 ++++----
- 28 files changed, 109 insertions(+), 119 deletions(-)
+ drivers/ide/ide-cd.c         |   24 ++++++++--------
+ drivers/ide/ide-cd_verbose.c |   38 +++++++++++++++++----------
+ drivers/ide/ide-disk.c       |    4 +-
+ drivers/ide/ide-eh.c         |    8 +++---
+ drivers/ide/ide-lib.c        |   58 +++++++++++++++++++++---------------------
+ drivers/ide/ide-probe.c      |   20 +++++++-------
+ drivers/ide/it821x.c         |    4 +-
+ drivers/ide/trm290.c         |    2 +-
+ 8 files changed, 84 insertions(+), 74 deletions(-)
 
-diff --git a/drivers/ide/amd74xx.c b/drivers/ide/amd74xx.c
-index f664550..48dd25d 100644
---- a/drivers/ide/amd74xx.c
-+++ b/drivers/ide/amd74xx.c
-@@ -129,9 +129,8 @@ static void amd7411_cable_detect(struct pci_dev *dev)
- 	amd_80w = ((t & 0x3) ? 1 : 0) | ((t & 0xc) ? 2 : 0);
- 	for (i = 24; i >= 0; i -= 8)
- 		if (((u >> i) & 4) && !(amd_80w & (1 << (1 - (i >> 4))))) {
--			printk(KERN_WARNING DRV_NAME " %s: BIOS didn't set "
--				"cable bits correctly. Enabling workaround.\n",
--				pci_name(dev));
-+			pr_warning(DRV_NAME " %s: BIOS didn't set cable bits correctly. Enabling workaround.\n",
-+				   pci_name(dev));
- 			amd_80w |= (1 << (1 - (i >> 4)));
- 		}
+diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
+index f2836c0..3578fa0 100644
+--- a/drivers/ide/ide-cd.c
++++ b/drivers/ide/ide-cd.c
+@@ -1359,27 +1359,27 @@ static int ide_cdrom_probe_capabilities(ide_drive_t *drive)
+ 
+ 	/* don't print speed if the drive reported 0 */
+ 	if (cd->max_speed)
+-		printk(KERN_CONT " %dX", cd->max_speed);
++		pr_cont(" %dX", cd->max_speed);
+ 
+-	printk(KERN_CONT " %s", (cdi->mask & CDC_DVD) ? "CD-ROM" : "DVD-ROM");
++	pr_cont(" %s", (cdi->mask & CDC_DVD) ? "CD-ROM" : "DVD-ROM");
+ 
+ 	if ((cdi->mask & CDC_DVD_R) == 0 || (cdi->mask & CDC_DVD_RAM) == 0)
+-		printk(KERN_CONT " DVD%s%s",
+-				 (cdi->mask & CDC_DVD_R) ? "" : "-R",
+-				 (cdi->mask & CDC_DVD_RAM) ? "" : "/RAM");
++		pr_cont(" DVD%s%s",
++			(cdi->mask & CDC_DVD_R) ? "" : "-R",
++			(cdi->mask & CDC_DVD_RAM) ? "" : "/RAM");
+ 
+ 	if ((cdi->mask & CDC_CD_R) == 0 || (cdi->mask & CDC_CD_RW) == 0)
+-		printk(KERN_CONT " CD%s%s",
+-				 (cdi->mask & CDC_CD_R) ? "" : "-R",
+-				 (cdi->mask & CDC_CD_RW) ? "" : "/RW");
++		pr_cont(" CD%s%s",
++			(cdi->mask & CDC_CD_R) ? "" : "-R",
++			(cdi->mask & CDC_CD_RW) ? "" : "/RW");
+ 
+ 	if ((cdi->mask & CDC_SELECT_DISC) == 0)
+-		printk(KERN_CONT " changer w/%d slots", nslots);
++		pr_cont(" changer w/%d slots", nslots);
+ 	else
+-		printk(KERN_CONT " drive");
++		pr_cont(" drive");
+ 
+-	printk(KERN_CONT ", %dkB Cache\n",
+-			 be16_to_cpup((__be16 *)&buf[8 + 12]));
++	pr_cont(", %dkB Cache\n",
++		be16_to_cpup((__be16 *)&buf[8 + 12]));
+ 
+ 	return nslots;
  }
-@@ -277,9 +276,8 @@ static int __devinit amd74xx_probe(struct pci_dev *dev, const struct pci_device_
+diff --git a/drivers/ide/ide-cd_verbose.c b/drivers/ide/ide-cd_verbose.c
+index d05ad08..8a93e92 100644
+--- a/drivers/ide/ide-cd_verbose.c
++++ b/drivers/ide/ide-cd_verbose.c
+@@ -252,23 +252,33 @@ void ide_cd_log_error(const char *name, struct request *failed_command,
+ 		      struct request_sense *sense)
+ {
+ 	int i;
+-	const char *s = "bad sense key!";
++	const char *s;
++	const char *prefix;
+ 	char buf[80];
+ 
+ 	pr_err("ATAPI device %s:\n", name);
+-	if (sense->error_code == 0x70)
+-		printk(KERN_CONT "  Error: ");
+-	else if (sense->error_code == 0x71)
+-		printk("  Deferred Error: ");
+-	else if (sense->error_code == 0x7f)
+-		printk(KERN_CONT "  Vendor-specific Error: ");
+-	else
+-		printk(KERN_CONT "  Unknown Error Type: ");
++
++	switch (sense->error_code) {
++	case 0x70:
++		prefix = "Error";
++		break;
++	case 0x71:
++		prefix = "Deferred Error";
++		break;
++	case 0x7f:
++		prefix = "Vendor-specific Error";
++		break;
++	default:
++		prefix = "Unknown Error Type";
++		break;
++	}
+ 
+ 	if (sense->sense_key < ARRAY_SIZE(sense_key_texts))
+ 		s = sense_key_texts[sense->sense_key];
++	else
++		s = "bad sense key!";
+ 
+-	printk(KERN_CONT "%s -- (Sense key=0x%02x)\n", s, sense->sense_key);
++	pr_err("  %s: %s -- (Sense key=0x%02x)\n", prefix, s, sense->sense_key);
+ 
+ 	if (sense->asc == 0x40) {
+ 		sprintf(buf, "Diagnostic failure on component 0x%02x",
+@@ -326,8 +336,8 @@ void ide_cd_log_error(const char *name, struct request *failed_command,
+ 
+ 		pr_err("  The failed \"%s\" packet command was: \n  \"", s);
+ 		for (i = 0; i < BLK_MAX_CDB; i++)
+-			printk(KERN_CONT "%02x ", failed_command->cmd[i]);
+-		printk(KERN_CONT "\"\n");
++			pr_cont("%02x ", failed_command->cmd[i]);
++		pr_cont("\"\n");
  	}
  
- 	if (amd_clock < 20000 || amd_clock > 50000) {
--		printk(KERN_WARNING "%s: User given PCI clock speed impossible"
--				    " (%d), using 33 MHz instead.\n",
--				    d.name, amd_clock);
-+		pr_warning("%s: User given PCI clock speed impossible (%d), using 33 MHz instead.\n",
-+			   d.name, amd_clock);
- 		amd_clock = 33333;
+ 	/* The SKSV bit specifies validity of the sense_key_specific
+@@ -349,9 +359,9 @@ void ide_cd_log_error(const char *name, struct request *failed_command,
+ 		       (sense->sks[1] << 8) + sense->sks[2]);
+ 
+ 		if ((sense->sks[0] & 0x40) != 0)
+-			printk(KERN_CONT " bit %d", sense->sks[0] & 0x07);
++			pr_cont(" bit %d", sense->sks[0] & 0x07);
+ 
+-		printk(KERN_CONT "\n");
++		pr_cont("\n");
  	}
- 
-diff --git a/drivers/ide/au1xxx-ide.c b/drivers/ide/au1xxx-ide.c
-index 0a67651..d234b66 100644
---- a/drivers/ide/au1xxx-ide.c
-+++ b/drivers/ide/au1xxx-ide.c
-@@ -234,8 +234,8 @@ static int auide_build_dmatable(ide_drive_t *drive, struct ide_cmd *cmd)
- 			unsigned int tc = (cur_len < 0xfe00)? cur_len: 0xfe00;
- 
- 			if (++count >= PRD_ENTRIES) {
--				printk(KERN_WARNING "%s: DMA table too small\n",
--				       drive->name);
-+				pr_warning("%s: DMA table too small\n",
-+					   drive->name);
- 				return 0;
- 			}
- 
-@@ -300,8 +300,8 @@ static int auide_dma_test_irq(ide_drive_t *drive)
- 	 */
- 	drive->waiting_for_dma++;
- 	if (drive->waiting_for_dma >= DMA_WAIT_TIMEOUT) {
--		printk(KERN_WARNING "%s: timeout waiting for ddma to \
--                                     complete\n", drive->name);
-+		pr_warning("%s: timeout waiting for ddma to complete\n",
-+			   drive->name);
- 		return 1;
- 	}
- 	udelay(10);
-diff --git a/drivers/ide/cs5520.c b/drivers/ide/cs5520.c
-index 2a055af..d59a1f7 100644
---- a/drivers/ide/cs5520.c
-+++ b/drivers/ide/cs5520.c
-@@ -118,13 +118,12 @@ static int __devinit cs5520_init_one(struct pci_dev *dev, const struct pci_devic
- 	 * BARS too and we will freak out other bits of the kernel
- 	 */
- 	if (pci_enable_device_io(dev)) {
--		printk(KERN_WARNING "%s: Unable to enable 55x0.\n", d->name);
-+		pr_warning("%s: Unable to enable 55x0.\n", d->name);
- 		return -ENODEV;
- 	}
- 	pci_set_master(dev);
- 	if (pci_set_dma_mask(dev, DMA_BIT_MASK(32))) {
--		printk(KERN_WARNING "%s: No suitable DMA available.\n",
--			d->name);
-+		pr_warning("%s: No suitable DMA available.\n", d->name);
- 		return -ENODEV;
- 	}
- 
-diff --git a/drivers/ide/hpt366.c b/drivers/ide/hpt366.c
-index f83af80..7a94e89 100644
---- a/drivers/ide/hpt366.c
-+++ b/drivers/ide/hpt366.c
-@@ -1067,8 +1067,8 @@ static int init_chipset_hpt366(struct pci_dev *dev)
- 		if ((temp & 0xFFFFF000) != 0xABCDE000) {
- 			int i;
- 
--			printk(KERN_WARNING "%s %s: no clock data saved by "
--				"BIOS\n", name, pci_name(dev));
-+			pr_warning("%s %s: no clock data saved by BIOS\n",
-+				   name, pci_name(dev));
- 
- 			/* Calculate the average value of f_CNT. */
- 			for (temp = i = 0; i < 128; i++) {
+ }
+ #endif
 diff --git a/drivers/ide/ide-disk.c b/drivers/ide/ide-disk.c
-index 7bffc7e..1d9489d 100644
+index 1d9489d..19f59e0 100644
 --- a/drivers/ide/ide-disk.c
 +++ b/drivers/ide/ide-disk.c
-@@ -371,10 +371,9 @@ static int ide_disk_get_capacity(ide_drive_t *drive)
- 	/* limit drive capacity to 137GB if LBA48 cannot be used */
- 	if ((drive->dev_flags & IDE_DFLAG_LBA48) == 0 &&
- 	    drive->capacity64 > 1ULL << 28) {
--		printk(KERN_WARNING "%s: cannot use LBA48 - full capacity "
--		       "%llu sectors (%llu MB)\n",
--		       drive->name, (unsigned long long)drive->capacity64,
--		       sectors_to_MB(drive->capacity64));
-+		pr_warning("%s: cannot use LBA48 - full capacity %llu sectors (%llu MB)\n",
-+			   drive->name, (unsigned long long)drive->capacity64,
-+			   sectors_to_MB(drive->capacity64));
- 		drive->capacity64 = 1ULL << 28;
- 	}
+@@ -680,9 +680,9 @@ static void ide_disk_setup(ide_drive_t *drive)
  
-diff --git a/drivers/ide/ide-dma-sff.c b/drivers/ide/ide-dma-sff.c
-index ef8fb81..b3d9fb6 100644
---- a/drivers/ide/ide-dma-sff.c
-+++ b/drivers/ide/ide-dma-sff.c
-@@ -238,8 +238,8 @@ int ide_dma_sff_timer_expiry(ide_drive_t *drive)
- 	ide_hwif_t *hwif = drive->hwif;
- 	u8 dma_stat = hwif->dma_ops->dma_sff_read_status(hwif);
+ 	/* Only print cache size when it was specified */
+ 	if (id[ATA_ID_BUF_SIZE])
+-		printk(KERN_CONT " w/%dKiB Cache", id[ATA_ID_BUF_SIZE] / 2);
++		pr_cont(" w/%dKiB Cache", id[ATA_ID_BUF_SIZE] / 2);
  
--	printk(KERN_WARNING "%s: %s: DMA status (0x%02x)\n",
--		drive->name, __func__, dma_stat);
-+	pr_warning("%s: %s: DMA status (0x%02x)\n",
-+		   drive->name, __func__, dma_stat);
+-	printk(KERN_CONT ", CHS=%d/%d/%d\n",
++	pr_cont(", CHS=%d/%d/%d\n",
+ 			 drive->bios_cyl, drive->bios_head, drive->bios_sect);
  
- 	if ((dma_stat & 0x18) == 0x18)	/* BUSY Stupid Early Timer !! */
- 		return WAIT_CMD;
-diff --git a/drivers/ide/ide-dma.c b/drivers/ide/ide-dma.c
-index bf2f7a4..bd33ed4 100644
---- a/drivers/ide/ide-dma.c
-+++ b/drivers/ide/ide-dma.c
-@@ -220,8 +220,8 @@ int __ide_dma_bad_drive(ide_drive_t *drive)
+ 	/* write cache enabled? */
+diff --git a/drivers/ide/ide-eh.c b/drivers/ide/ide-eh.c
+index 92062f0..a7f0142 100644
+--- a/drivers/ide/ide-eh.c
++++ b/drivers/ide/ide-eh.c
+@@ -204,12 +204,12 @@ static void ide_reset_report_error(ide_hwif_t *hwif, u8 err)
  
- 	int blacklist = ide_in_drive_list(id, drive_blacklist);
- 	if (blacklist) {
--		printk(KERN_WARNING "%s: Disabling (U)DMA for %s (blacklisted)\n",
--				    drive->name, (char *)&id[ATA_ID_PROD]);
-+		pr_warning("%s: Disabling (U)DMA for %s (blacklisted)\n",
-+			   drive->name, (char *)&id[ATA_ID_PROD]);
- 		return blacklist;
- 	}
- 	return 0;
-@@ -478,14 +478,14 @@ ide_startstop_t ide_dma_timeout_retry(ide_drive_t *drive, int error)
- 	 */
- 
- 	if (error < 0) {
--		printk(KERN_WARNING "%s: DMA timeout error\n", drive->name);
-+		pr_warning("%s: DMA timeout error\n", drive->name);
- 		drive->waiting_for_dma = 0;
- 		(void)dma_ops->dma_end(drive);
- 		ide_dma_unmap_sg(drive, cmd);
- 		ret = ide_error(drive, "dma timeout error",
- 				hwif->tp_ops->read_status(hwif));
- 	} else {
--		printk(KERN_WARNING "%s: DMA timeout retry\n", drive->name);
-+		pr_warning("%s: DMA timeout retry\n", drive->name);
- 		if (dma_ops->dma_clear)
- 			dma_ops->dma_clear(drive);
- 		pr_err("%s: timeout waiting for DMA\n", drive->name);
-diff --git a/drivers/ide/ide-io.c b/drivers/ide/ide-io.c
-index 1722959..75812db 100644
---- a/drivers/ide/ide-io.c
-+++ b/drivers/ide/ide-io.c
-@@ -683,8 +683,7 @@ void ide_timer_expiry (unsigned long data)
- 				hwif->dma_ops->dma_lost_irq(drive);
- 			if (hwif->ack_intr)
- 				hwif->ack_intr(hwif);
--			printk(KERN_WARNING "%s: lost interrupt\n",
--				drive->name);
-+			pr_warning("%s: lost interrupt\n", drive->name);
- 			startstop = handler(drive);
- 		} else {
- 			if (drive->waiting_for_dma)
-diff --git a/drivers/ide/ide-ioctls.c b/drivers/ide/ide-ioctls.c
-index c1c25eb..aea6cc3 100644
---- a/drivers/ide/ide-ioctls.c
-+++ b/drivers/ide/ide-ioctls.c
-@@ -167,8 +167,8 @@ static int ide_cmd_ioctl(ide_drive_t *drive, unsigned long arg)
- 	     id[ATA_ID_SWDMA_MODES])) {
- 		xfer_rate = args[1];
- 		if (tf->nsect > XFER_UDMA_2 && !eighty_ninty_three(drive)) {
--			printk(KERN_WARNING "%s: UDMA speeds >UDMA33 cannot "
--					    "be set\n", drive->name);
-+			pr_warning("%s: UDMA speeds >UDMA33 cannot be set\n",
-+				   drive->name);
- 			goto abort;
- 		}
- 	}
-diff --git a/drivers/ide/ide-iops.c b/drivers/ide/ide-iops.c
-index b92e39c..594ade1 100644
---- a/drivers/ide/ide-iops.c
-+++ b/drivers/ide/ide-iops.c
-@@ -258,10 +258,10 @@ no_80w:
- 	if (drive->dev_flags & IDE_DFLAG_UDMA33_WARNED)
- 		return 0;
- 
--	printk(KERN_WARNING "%s: %s side 80-wire cable detection failed, "
--			    "limiting max speed to UDMA33\n",
--			    drive->name,
--			    hwif->cbl == ATA_CBL_PATA80 ? "drive" : "host");
-+	pr_warning("%s: %s side 80-wire cable detection failed, "
-+		   "limiting max speed to UDMA33\n",
-+		   drive->name,
-+		   hwif->cbl == ATA_CBL_PATA80 ? "drive" : "host");
- 
- 	drive->dev_flags |= IDE_DFLAG_UDMA33_WARNED;
- 
-diff --git a/drivers/ide/ide-pm.c b/drivers/ide/ide-pm.c
-index f72a948..7402bb5 100644
---- a/drivers/ide/ide-pm.c
-+++ b/drivers/ide/ide-pm.c
-@@ -233,12 +233,12 @@ void ide_check_pm_state(ide_drive_t *drive, struct request *rq)
- #endif
- 		rc = ide_wait_not_busy(hwif, 35000);
- 		if (rc)
--			printk(KERN_WARNING "%s: bus not ready on wakeup\n", drive->name);
-+			pr_warning("%s: bus not ready on wakeup\n", drive->name);
- 		tp_ops->dev_select(drive);
- 		tp_ops->write_devctl(hwif, ATA_DEVCTL_OBS);
- 		rc = ide_wait_not_busy(hwif, 100000);
- 		if (rc)
--			printk(KERN_WARNING "%s: drive not ready on wakeup\n", drive->name);
-+			pr_warning("%s: drive not ready on wakeup\n", drive->name);
- 
- 		spin_lock_irqsave(q->queue_lock, flags);
- 		blk_start_queue(q);
-diff --git a/drivers/ide/ide-probe.c b/drivers/ide/ide-probe.c
-index 9411f22..3b32d25 100644
---- a/drivers/ide/ide-probe.c
-+++ b/drivers/ide/ide-probe.c
-@@ -506,7 +506,8 @@ static u8 probe_for_drive(ide_drive_t *drive)
- 				pr_info("%s: ATAPI cdrom (?)\n", drive->name);
- 			} else {
- 				/* nuke it */
--				printk(KERN_WARNING "%s: Unknown device on bus refused identification. Ignoring.\n", drive->name);
-+				pr_warning("%s: Unknown device on bus refused identification. Ignoring.\n",
-+					   drive->name);
- 				drive->dev_flags &= ~IDE_DFLAG_PRESENT;
- 			}
- 		} else {
-@@ -557,8 +558,8 @@ static int ide_register_port(ide_hwif_t *hwif)
- 
- 	ret = device_register(&hwif->gendev);
- 	if (ret < 0) {
--		printk(KERN_WARNING "IDE: %s: device_register error: %d\n",
--			__func__, ret);
-+		pr_warning("IDE: %s: device_register error: %d\n",
-+			   __func__, ret);
- 		goto out;
- 	}
- 
-@@ -672,7 +673,7 @@ void ide_undecoded_slave(ide_drive_t *dev1)
- 		return;
- 
- 	/* Appears to be an IDE flash adapter with decode bugs */
--	printk(KERN_WARNING "ide-probe: ignoring undecoded slave\n");
-+	pr_warning("ide-probe: ignoring undecoded slave\n");
- 
- 	dev1->dev_flags &= ~IDE_DFLAG_PRESENT;
- }
-@@ -1006,8 +1007,8 @@ static void hwif_register_devices(ide_hwif_t *hwif)
- 
- 		ret = device_register(dev);
- 		if (ret < 0)
--			printk(KERN_WARNING "IDE: %s: device_register error: "
--					    "%d\n", __func__, ret);
-+			pr_warning("IDE: %s: device_register error: %d\n",
-+				   __func__, ret);
- 	}
+ 	pr_err("%s: reset: master: ", hwif->name);
+ 	if (err_master && err_master < 6)
+-		printk(KERN_CONT "%s", err_master_vals[err_master]);
++		pr_cont("%s", err_master_vals[err_master]);
+ 	else
+-		printk(KERN_CONT "error (0x%02x?)", err);
++		pr_cont("error (0x%02x?)", err);
+ 	if (err & 0x80)
+-		printk(KERN_CONT "; slave: failed");
+-	printk(KERN_CONT "\n");
++		pr_cont("; slave: failed");
++	pr_cont("\n");
  }
  
-diff --git a/drivers/ide/ide-proc.c b/drivers/ide/ide-proc.c
-index 3242698..0fa097e 100644
---- a/drivers/ide/ide-proc.c
-+++ b/drivers/ide/ide-proc.c
-@@ -241,8 +241,7 @@ static void proc_ide_settings_warn(void)
- 	if (warned)
- 		return;
+ /*
+diff --git a/drivers/ide/ide-lib.c b/drivers/ide/ide-lib.c
+index 7872af6..b7b7474 100644
+--- a/drivers/ide/ide-lib.c
++++ b/drivers/ide/ide-lib.c
+@@ -44,9 +44,9 @@ static void ide_dump_opcode(ide_drive_t *drive)
  
--	printk(KERN_WARNING "Warning: /proc/ide/hd?/settings interface is "
--			    "obsolete, and will be removed soon!\n");
-+	pr_warning("Warning: /proc/ide/hd?/settings interface is obsolete, and will be removed soon!\n");
- 	warned = 1;
+ 	pr_err("ide: failed opcode was: ");
+ 	if (cmd == NULL)
+-		printk(KERN_CONT "unknown\n");
++		pr_cont("unknown\n");
+ 	else
+-		printk(KERN_CONT "0x%02x\n", cmd->tf.command);
++		pr_cont("0x%02x\n", cmd->tf.command);
  }
  
-@@ -464,15 +463,13 @@ static int ide_replace_subdriver(ide_drive_t *drive, const char *driver)
- 	strlcpy(drive->driver_req, driver, sizeof(drive->driver_req));
- 	err = device_attach(dev);
- 	if (err < 0)
--		printk(KERN_WARNING "IDE: %s: device_attach error: %d\n",
--			__func__, err);
-+		pr_warning("IDE: %s: device_attach error: %d\n", __func__, err);
- 	drive->driver_req[0] = 0;
- 	if (dev->driver == NULL) {
- 		err = device_attach(dev);
- 		if (err < 0)
--			printk(KERN_WARNING
--				"IDE: %s: device_attach(2) error: %d\n",
--				__func__, err);
-+			pr_warning("IDE: %s: device_attach(2) error: %d\n",
-+				   __func__, err);
- 	}
- 	if (dev->driver && !strcmp(dev->driver->name, driver))
- 		ret = 0;
-@@ -666,8 +663,8 @@ static int ide_drivers_show(struct seq_file *s, void *p)
+ u64 ide_get_lba_addr(struct ide_cmd *cmd, int lba48)
+@@ -82,10 +82,10 @@ static void ide_dump_sector(ide_drive_t *drive)
+ 	ide_tf_readback(drive, &cmd);
  
- 	err = bus_for_each_drv(&ide_bus_type, NULL, s, proc_print_driver);
- 	if (err < 0)
--		printk(KERN_WARNING "IDE: %s: bus_for_each_drv error: %d\n",
--			__func__, err);
-+		pr_warning("IDE: %s: bus_for_each_drv error: %d\n",
-+			   __func__, err);
- 	return 0;
+ 	if (lba48 || (tf->device & ATA_LBA))
+-		printk(KERN_CONT ", LBAsect=%llu",
++		pr_cont(", LBAsect=%llu",
+ 			(unsigned long long)ide_get_lba_addr(&cmd, lba48));
+ 	else
+-		printk(KERN_CONT ", CHS=%d/%d/%d", (tf->lbah << 8) + tf->lbam,
++		pr_cont(", CHS=%d/%d/%d", (tf->lbah << 8) + tf->lbam,
+ 			tf->device & 0xf, tf->lbal);
  }
  
-diff --git a/drivers/ide/ide-tape.c b/drivers/ide/ide-tape.c
-index 3148ea7..138c42d 100644
---- a/drivers/ide/ide-tape.c
-+++ b/drivers/ide/ide-tape.c
-@@ -1855,8 +1855,8 @@ static void ide_tape_get_bsize_from_bdesc(ide_drive_t *drive)
- 	if (ide_queue_pc_tail(drive, tape->disk, &pc)) {
- 		pr_err("ide-tape: Can't get block descriptor\n");
- 		if (tape->blk_size == 0) {
--			printk(KERN_WARNING "ide-tape: Cannot deal with zero "
--					    "block size, assuming 32k\n");
-+			pr_warning("ide-tape: Cannot deal with zero "
-+				   "block size, assuming 32k\n");
- 			tape->blk_size = 32768;
- 		}
- 		return;
-diff --git a/drivers/ide/ide.c b/drivers/ide/ide.c
-index 0df5655..966c2da 100644
---- a/drivers/ide/ide.c
-+++ b/drivers/ide/ide.c
-@@ -359,7 +359,7 @@ static int __init ide_init(void)
+@@ -93,19 +93,19 @@ static void ide_dump_ata_error(ide_drive_t *drive, u8 err)
+ {
+ 	pr_err("{ ");
+ 	if (err & ATA_ABORTED)
+-		printk(KERN_CONT "DriveStatusError ");
++		pr_cont("DriveStatusError ");
+ 	if (err & ATA_ICRC)
+-		printk(KERN_CONT "%s",
++		pr_cont("%s",
+ 			(err & ATA_ABORTED) ? "BadCRC " : "BadSector ");
+ 	if (err & ATA_UNC)
+-		printk(KERN_CONT "UncorrectableError ");
++		pr_cont("UncorrectableError ");
+ 	if (err & ATA_IDNF)
+-		printk(KERN_CONT "SectorIdNotFound ");
++		pr_cont("SectorIdNotFound ");
+ 	if (err & ATA_TRK0NF)
+-		printk(KERN_CONT "TrackZeroNotFound ");
++		pr_cont("TrackZeroNotFound ");
+ 	if (err & ATA_AMNF)
+-		printk(KERN_CONT "AddrMarkNotFound ");
+-	printk(KERN_CONT "}");
++		pr_cont("AddrMarkNotFound ");
++	pr_cont("}");
+ 	if ((err & (ATA_BBK | ATA_ABORTED)) == ATA_BBK ||
+ 	    (err & (ATA_UNC | ATA_IDNF | ATA_AMNF))) {
+ 		struct request *rq = drive->hwif->rq;
+@@ -113,27 +113,27 @@ static void ide_dump_ata_error(ide_drive_t *drive, u8 err)
+ 		ide_dump_sector(drive);
  
- 	ret = bus_register(&ide_bus_type);
- 	if (ret < 0) {
--		printk(KERN_WARNING "IDE: bus_register error: %d\n", ret);
-+		pr_warning("IDE: bus_register error: %d\n", ret);
- 		return ret;
+ 		if (rq)
+-			printk(KERN_CONT ", sector=%llu",
+-			       (unsigned long long)rq->sector);
++			pr_cont(", sector=%llu",
++				(unsigned long long)rq->sector);
  	}
- 
-diff --git a/drivers/ide/it821x.c b/drivers/ide/it821x.c
-index fc40689..1bac7cd 100644
---- a/drivers/ide/it821x.c
-+++ b/drivers/ide/it821x.c
-@@ -562,8 +562,8 @@ static void __devinit init_hwif_it821x(ide_hwif_t *hwif)
- 		idev->timing10 = 1;
- 		hwif->host_flags |= IDE_HFLAG_NO_ATAPI_DMA;
- 		if (idev->smart == 0)
--			printk(KERN_WARNING DRV_NAME " %s: revision 0x10, "
--				"workarounds activated\n", pci_name(dev));
-+			pr_warning(DRV_NAME " %s: revision 0x10, workarounds activated\n",
-+				   pci_name(dev));
- 	}
- 
- 	if (idev->smart == 0) {
-diff --git a/drivers/ide/palm_bk3710.c b/drivers/ide/palm_bk3710.c
-index eee5195..2bd1cf6 100644
---- a/drivers/ide/palm_bk3710.c
-+++ b/drivers/ide/palm_bk3710.c
-@@ -375,7 +375,7 @@ static int __init palm_bk3710_probe(struct platform_device *pdev)
- 
- 	return 0;
- out:
--	printk(KERN_WARNING "Palm Chip BK3710 IDE Register Fail\n");
-+	pr_warning("Palm Chip BK3710 IDE Register Fail\n");
- 	return rc;
+-	printk(KERN_CONT "\n");
++	pr_cont("\n");
  }
  
-diff --git a/drivers/ide/pdc202xx_new.c b/drivers/ide/pdc202xx_new.c
-index 08afe7c..3f02ae3 100644
---- a/drivers/ide/pdc202xx_new.c
-+++ b/drivers/ide/pdc202xx_new.c
-@@ -218,8 +218,8 @@ static void pdcnew_reset(ide_drive_t *drive)
- 	/*
- 	 * Deleted this because it is redundant from the caller.
- 	 */
--	printk(KERN_WARNING "pdc202xx_new: %s channel reset.\n",
--		drive->hwif->channel ? "Secondary" : "Primary");
-+	pr_warning("pdc202xx_new: %s channel reset.\n",
-+		   drive->hwif->channel ? "Secondary" : "Primary");
+ static void ide_dump_atapi_error(ide_drive_t *drive, u8 err)
+ {
+ 	pr_err("{ ");
+ 	if (err & ATAPI_ILI)
+-		printk(KERN_CONT "IllegalLengthIndication ");
++		pr_cont("IllegalLengthIndication ");
+ 	if (err & ATAPI_EOM)
+-		printk(KERN_CONT "EndOfMedia ");
++		pr_cont("EndOfMedia ");
+ 	if (err & ATA_ABORTED)
+-		printk(KERN_CONT "AbortedCommand ");
++		pr_cont("AbortedCommand ");
+ 	if (err & ATA_MCR)
+-		printk(KERN_CONT "MediaChangeRequested ");
++		pr_cont("MediaChangeRequested ");
+ 	if (err & ATAPI_LFS)
+-		printk(KERN_CONT "LastFailedSense=0x%02x ",
++		pr_cont("LastFailedSense=0x%02x ",
+ 			(err & ATAPI_LFS) >> 4);
+-	printk(KERN_CONT "}\n");
++	pr_cont("}\n");
  }
  
  /**
-diff --git a/drivers/ide/pdc202xx_old.c b/drivers/ide/pdc202xx_old.c
-index 2655a1f..ee3eb5f 100644
---- a/drivers/ide/pdc202xx_old.c
-+++ b/drivers/ide/pdc202xx_old.c
-@@ -237,8 +237,8 @@ static void pdc202xx_reset_host (ide_hwif_t *hwif)
- 	outb(udma_speed_flag & ~0x10, high_16 | 0x001f);
- 	mdelay(2000);	/* 2 seconds ?! */
+@@ -153,24 +153,24 @@ u8 ide_dump_status(ide_drive_t *drive, const char *msg, u8 stat)
  
--	printk(KERN_WARNING "PDC202XX: %s channel reset.\n",
--		hwif->channel ? "Secondary" : "Primary");
-+	pr_warning("PDC202XX: %s channel reset.\n",
-+		   hwif->channel ? "Secondary" : "Primary");
- }
- 
- static void pdc202xx_reset (ide_drive_t *drive)
-diff --git a/drivers/ide/piix.c b/drivers/ide/piix.c
-index 2aa6999..aa49e73 100644
---- a/drivers/ide/piix.c
-+++ b/drivers/ide/piix.c
-@@ -408,9 +408,9 @@ static void __devinit piix_check_450nx(void)
- 			no_piix_dma = 2;
+ 	pr_err("%s: %s: status=0x%02x { ", drive->name, msg, stat);
+ 	if (stat & ATA_BUSY)
+-		printk(KERN_CONT "Busy ");
++		pr_cont("Busy ");
+ 	else {
+ 		if (stat & ATA_DRDY)
+-			printk(KERN_CONT "DriveReady ");
++			pr_cont("DriveReady ");
+ 		if (stat & ATA_DF)
+-			printk(KERN_CONT "DeviceFault ");
++			pr_cont("DeviceFault ");
+ 		if (stat & ATA_DSC)
+-			printk(KERN_CONT "SeekComplete ");
++			pr_cont("SeekComplete ");
+ 		if (stat & ATA_DRQ)
+-			printk(KERN_CONT "DataRequest ");
++			pr_cont("DataRequest ");
+ 		if (stat & ATA_CORR)
+-			printk(KERN_CONT "CorrectedError ");
++			pr_cont("CorrectedError ");
+ 		if (stat & ATA_IDX)
+-			printk(KERN_CONT "Index ");
++			pr_cont("Index ");
+ 		if (stat & ATA_ERR)
+-			printk(KERN_CONT "Error ");
++			pr_cont("Error ");
  	}
- 	if(no_piix_dma)
--		printk(KERN_WARNING DRV_NAME ": 450NX errata present, disabling IDE DMA.\n");
-+		pr_warning(DRV_NAME ": 450NX errata present, disabling IDE DMA.\n");
- 	if(no_piix_dma == 2)
--		printk(KERN_WARNING DRV_NAME ": A BIOS update may resolve this.\n");
-+		pr_warning(DRV_NAME ": A BIOS update may resolve this.\n");
- }		
- 
- static const struct pci_device_id piix_pci_tbl[] = {
-diff --git a/drivers/ide/pmac.c b/drivers/ide/pmac.c
-index 245fb5e..11e8589 100644
---- a/drivers/ide/pmac.c
-+++ b/drivers/ide/pmac.c
-@@ -1151,8 +1151,8 @@ pmac_ide_macio_attach(struct macio_dev *mdev, const struct of_device_id *match)
- 		return -ENOMEM;
- 
- 	if (macio_resource_count(mdev) == 0) {
--		printk(KERN_WARNING "ide-pmac: no address for %s\n",
--				    mdev->ofdev.node->full_name);
-+		pr_warning("ide-pmac: no address for %s\n",
-+			   mdev->ofdev.node->full_name);
- 		rc = -ENXIO;
- 		goto out_free_pmif;
- 	}
-@@ -1171,8 +1171,8 @@ pmac_ide_macio_attach(struct macio_dev *mdev, const struct of_device_id *match)
- 	 * where that happens though...
- 	 */
- 	if (macio_irq_count(mdev) == 0) {
--		printk(KERN_WARNING "ide-pmac: no intrs for device %s, using "
--				    "13\n", mdev->ofdev.node->full_name);
-+		pr_warning("ide-pmac: no intrs for device %s, using 13\n",
-+			   mdev->ofdev.node->full_name);
- 		irq = irq_create_mapping(NULL, 13);
- 	} else
- 		irq = macio_irq(mdev, 0);
-@@ -1188,9 +1188,8 @@ pmac_ide_macio_attach(struct macio_dev *mdev, const struct of_device_id *match)
- 
- 	if (macio_resource_count(mdev) >= 2) {
- 		if (macio_request_resource(mdev, 1, "ide-pmac (dma)"))
--			printk(KERN_WARNING "ide-pmac: can't request DMA "
--					    "resource for %s!\n",
--					    mdev->ofdev.node->full_name);
-+			pr_warning("ide-pmac: can't request DMA resource for %s!\n",
-+				   mdev->ofdev.node->full_name);
- 		else
- 			pmif->dma_regs = ioremap(macio_resource_start(mdev, 1), 0x1000);
- 	} else
-@@ -1281,8 +1280,8 @@ pmac_ide_pci_attach(struct pci_dev *pdev, const struct pci_device_id *id)
- 		return -ENOMEM;
- 
- 	if (pci_enable_device(pdev)) {
--		printk(KERN_WARNING "ide-pmac: Can't enable PCI device for "
--				    "%s\n", np->full_name);
-+		pr_warning("ide-pmac: Can't enable PCI device for %s\n",
-+			   np->full_name);
- 		rc = -ENXIO;
- 		goto out_free_pmif;
- 	}
-@@ -1469,8 +1468,9 @@ static int pmac_ide_build_dmatable(ide_drive_t *drive, struct ide_cmd *cmd)
- 
- 		if (pmif->broken_dma && cur_addr & (L1_CACHE_BYTES - 1)) {
- 			if (pmif->broken_dma_warn == 0) {
--				printk(KERN_WARNING "%s: DMA on non aligned address, "
--				       "switching to PIO on Ohare chipset\n", drive->name);
-+				pr_warning("%s: DMA on non aligned address, "
-+					   "switching to PIO on Ohare chipset\n",
-+					   drive->name);
- 				pmif->broken_dma_warn = 1;
+-	printk(KERN_CONT "}\n");
++	pr_cont("}\n");
+ 	if ((stat & (ATA_BUSY | ATA_ERR)) == ATA_ERR) {
+ 		err = ide_read_error(drive);
+ 		pr_err("%s: %s: error=0x%02x ", drive->name, msg, err);
+diff --git a/drivers/ide/ide-probe.c b/drivers/ide/ide-probe.c
+index 3b32d25..ceaeeb6 100644
+--- a/drivers/ide/ide-probe.c
++++ b/drivers/ide/ide-probe.c
+@@ -133,9 +133,9 @@ static void ide_classify_atapi_dev(ide_drive_t *drive)
+ 			if (!strstr(m, "oppy") &&
+ 			    !strstr(m, "poyp") &&
+ 			    !strstr(m, "ZIP"))
+-				printk(KERN_CONT "cdrom or floppy?, assuming ");
++				pr_cont("cdrom or floppy?, assuming ");
+ 			if (drive->media != ide_cdrom) {
+-				printk(KERN_CONT "FLOPPY");
++				pr_cont("FLOPPY");
+ 				drive->dev_flags |= IDE_DFLAG_REMOVABLE;
+ 				break;
  			}
- 			return 0;
-@@ -1479,8 +1479,8 @@ static int pmac_ide_build_dmatable(ide_drive_t *drive, struct ide_cmd *cmd)
- 			unsigned int tc = (cur_len < 0xfe00)? cur_len: 0xfe00;
- 
- 			if (count++ >= MAX_DCMDS) {
--				printk(KERN_WARNING "%s: DMA table too small\n",
--				       drive->name);
-+				pr_warning("%s: DMA table too small\n",
-+					   drive->name);
- 				return 0;
- 			}
- 			st_le16(&table->command, wr? OUTPUT_MORE: INPUT_MORE);
-@@ -1628,8 +1628,8 @@ pmac_ide_dma_test_irq (ide_drive_t *drive)
- 		if ((status & FLUSH) == 0)
- 			break;
- 		if (++timeout > 100) {
--			printk(KERN_WARNING "ide%d, ide_dma_test_irq \
--			timeout flushing channel\n", hwif->index);
-+			pr_warning("ide%d, ide_dma_test_irq timeout flushing channel\n",
-+				   hwif->index);
+@@ -147,26 +147,26 @@ static void ide_classify_atapi_dev(ide_drive_t *drive)
+ #ifdef CONFIG_PPC
+ 		/* kludge for Apple PowerBook internal zip */
+ 		if (!strstr(m, "CD-ROM") && strstr(m, "ZIP")) {
+-			printk(KERN_CONT "FLOPPY");
++			pr_cont("FLOPPY");
+ 			type = ide_floppy;
  			break;
  		}
- 	}	
-diff --git a/drivers/ide/qd65xx.c b/drivers/ide/qd65xx.c
-index 498794b..5d02171 100644
---- a/drivers/ide/qd65xx.c
-+++ b/drivers/ide/qd65xx.c
-@@ -227,14 +227,16 @@ static void qd6580_set_pio_mode(ide_drive_t *drive, const u8 pio)
- 					active_time = 86;
- 					recovery_time = cycle_time - 102;
- 				} else
--					printk(KERN_WARNING "%s: Strange recovery time !\n",drive->name);
-+					pr_warning("%s: Strange recovery time !\n",
-+						   drive->name);
- 				break;
- 			case 4:
- 				if (cycle_time >= 69) {
- 					active_time = 70;
- 					recovery_time = cycle_time - 61;
- 				} else
--					printk(KERN_WARNING "%s: Strange recovery time !\n",drive->name);
-+					pr_warning("%s: Strange recovery time !\n",
-+						   drive->name);
- 				break;
- 			default:
- 				if (cycle_time >= 180) {
-@@ -250,9 +252,8 @@ static void qd6580_set_pio_mode(ide_drive_t *drive, const u8 pio)
- 
- 	if (!hwif->channel && drive->media != ide_disk) {
- 		outb(0x5f, QD_CONTROL_PORT);
--		printk(KERN_WARNING "%s: ATAPI: disabled read-ahead FIFO "
--			"and post-write buffer on %s.\n",
--			drive->name, hwif->name);
-+		pr_warning("%s: ATAPI: disabled read-ahead FIFO and post-write buffer on %s.\n",
-+			   drive->name, hwif->name);
+ #endif
+-		printk(KERN_CONT "CD/DVD-ROM");
++		pr_cont("CD/DVD-ROM");
+ 		break;
+ 	case ide_tape:
+-		printk(KERN_CONT "TAPE");
++		pr_cont("TAPE");
+ 		break;
+ 	case ide_optical:
+-		printk(KERN_CONT "OPTICAL");
++		pr_cont("OPTICAL");
+ 		drive->dev_flags |= IDE_DFLAG_REMOVABLE;
+ 		break;
+ 	default:
+-		printk(KERN_CONT "UNKNOWN (type %d)", type);
++		pr_cont("UNKNOWN (type %d)", type);
+ 		break;
  	}
  
- 	qd_set_timing(drive, qd6580_compute_timing(active_time, recovery_time));
-@@ -373,7 +374,7 @@ static int __init qd_probe(int base)
- 			 return -ENODEV;	/* bad register */
+-	printk(KERN_CONT " drive\n");
++	pr_cont(" drive\n");
+ 	drive->media = type;
+ 	/* an ATAPI device ignores DRDY */
+ 	drive->ready_stat = 0;
+@@ -856,8 +856,8 @@ static int init_irq (ide_hwif_t *hwif)
+ 		io_ports->data_addr, hwif->irq);
+ #endif /* __mc68000__ */
+ 	if (hwif->host->host_flags & IDE_HFLAG_SERIALIZE)
+-		printk(KERN_CONT " (serialized)");
+-	printk(KERN_CONT "\n");
++		pr_cont(" (serialized)");
++	pr_cont("\n");
  
- 		if (config & QD_CONFIG_DISABLED) {
--			printk(KERN_WARNING "qd6500 is disabled !\n");
-+			pr_warning("qd6500 is disabled !\n");
- 			return -ENODEV;
- 		}
- 
-diff --git a/drivers/ide/scc_pata.c b/drivers/ide/scc_pata.c
-index 86861b4..094ac1d 100644
---- a/drivers/ide/scc_pata.c
-+++ b/drivers/ide/scc_pata.c
-@@ -380,8 +380,8 @@ static int scc_dma_end(ide_drive_t *drive)
- 	    drive->media == ide_disk && drive->current_speed > XFER_UDMA_4) {
- 		reg = in_be32((void __iomem *)intsts_port);
- 		if (!(reg & INTSTS_ACTEINT)) {
--			printk(KERN_WARNING "%s: operation failed (transfer data loss)\n",
--			       drive->name);
-+			pr_warning("%s: operation failed (transfer data loss)\n",
-+				   drive->name);
- 			data_loss = 1;
- 			if (retry++) {
- 				struct request *rq = hwif->rq;
-@@ -404,7 +404,7 @@ static int scc_dma_end(ide_drive_t *drive)
- 		reg = in_be32((void __iomem *)intsts_port);
- 
- 		if (reg & INTSTS_SERROR) {
--			printk(KERN_WARNING "%s: SERROR\n", SCC_PATA_NAME);
-+			pr_warning("%s: SERROR\n", SCC_PATA_NAME);
- 			out_be32((void __iomem *)intsts_port, INTSTS_SERROR|INTSTS_BMSINT);
- 
- 			out_be32(dma_base, in_be32(dma_base) & ~QCHCD_IOS_SS);
-@@ -418,7 +418,8 @@ static int scc_dma_end(ide_drive_t *drive)
- 			maea0 = in_be32((void __iomem *)(ctl_base + 0xF50));
- 			maec0 = in_be32((void __iomem *)(ctl_base + 0xF54));
- 
--			printk(KERN_WARNING "%s: PRERR [addr:%x cmd:%x]\n", SCC_PATA_NAME, maea0, maec0);
-+			pr_warning("%s: PRERR [addr:%x cmd:%x]\n",
-+				   SCC_PATA_NAME, maea0, maec0);
- 
- 			out_be32((void __iomem *)intsts_port, INTSTS_PRERR|INTSTS_BMSINT);
- 
-@@ -427,7 +428,7 @@ static int scc_dma_end(ide_drive_t *drive)
- 		}
- 
- 		if (reg & INTSTS_RERR) {
--			printk(KERN_WARNING "%s: Response Error\n", SCC_PATA_NAME);
-+			pr_warning("%s: Response Error\n", SCC_PATA_NAME);
- 			out_be32((void __iomem *)intsts_port, INTSTS_RERR|INTSTS_BMSINT);
- 
- 			out_be32(dma_base, in_be32(dma_base) & ~QCHCD_IOS_SS);
-@@ -437,13 +438,13 @@ static int scc_dma_end(ide_drive_t *drive)
- 		if (reg & INTSTS_ICERR) {
- 			out_be32(dma_base, in_be32(dma_base) & ~QCHCD_IOS_SS);
- 
--			printk(KERN_WARNING "%s: Illegal Configuration\n", SCC_PATA_NAME);
-+			pr_warning("%s: Illegal Configuration\n", SCC_PATA_NAME);
- 			out_be32((void __iomem *)intsts_port, INTSTS_ICERR|INTSTS_BMSINT);
- 			continue;
- 		}
- 
- 		if (reg & INTSTS_BMSINT) {
--			printk(KERN_WARNING "%s: Internal Bus Error\n", SCC_PATA_NAME);
-+			pr_warning("%s: Internal Bus Error\n", SCC_PATA_NAME);
- 			out_be32((void __iomem *)intsts_port, INTSTS_BMSINT);
- 
- 			ide_do_reset(drive);
-diff --git a/drivers/ide/setup-pci.c b/drivers/ide/setup-pci.c
-index 52642d5..42887b2 100644
---- a/drivers/ide/setup-pci.c
-+++ b/drivers/ide/setup-pci.c
-@@ -195,12 +195,12 @@ static int ide_pci_enable(struct pci_dev *dev, const struct ide_port_info *d)
- 	if (pci_enable_device(dev)) {
- 		ret = pci_enable_device_io(dev);
- 		if (ret < 0) {
--			printk(KERN_WARNING "%s %s: couldn't enable device\n",
--				d->name, pci_name(dev));
-+			pr_warning("%s %s: couldn't enable device\n",
-+				   d->name, pci_name(dev));
- 			goto out;
- 		}
--		printk(KERN_WARNING "%s %s: BIOS configuration fixed\n",
--			d->name, pci_name(dev));
-+		pr_warning("%s %s: BIOS configuration fixed\n",
-+			   d->name, pci_name(dev));
- 	}
- 
- 	/*
-@@ -521,8 +521,8 @@ static int do_ide_setup_pci_device(struct pci_dev *dev,
- 				d->name, pci_name(dev));
- 		pciirq = 0;
- 	} else if (!pciirq && noisy) {
--		printk(KERN_WARNING "%s %s: bad irq (%d): will probe later\n",
--			d->name, pci_name(dev), pciirq);
-+		pr_warning("%s %s: bad irq (%d): will probe later\n",
-+			   d->name, pci_name(dev), pciirq);
- 	} else if (noisy) {
- 		pr_info("%s %s: 100%% native mode on irq %d\n",
- 			d->name, pci_name(dev), pciirq);
-diff --git a/drivers/ide/sgiioc4.c b/drivers/ide/sgiioc4.c
-index c819051..b673fde 100644
---- a/drivers/ide/sgiioc4.c
-+++ b/drivers/ide/sgiioc4.c
-@@ -367,9 +367,8 @@ sgiioc4_configure_for_dma(int dma_direction, ide_drive_t * drive)
- 	ioc4_dma = readl((void __iomem *)ioc4_dma_addr);
- 
- 	if (ioc4_dma & IOC4_S_DMA_ACTIVE) {
--		printk(KERN_WARNING
--			"%s(%s):Warning!! DMA from previous transfer was still active\n",
--		       __func__, drive->name);
-+		pr_warning("%s(%s):Warning!! DMA from previous transfer was still active\n",
-+			   __func__, drive->name);
- 		writel(IOC4_S_DMA_STOP, (void __iomem *)ioc4_dma_addr);
- 		ioc4_dma = sgiioc4_ide_dma_stop(hwif, dma_base);
- 
-@@ -380,10 +379,8 @@ sgiioc4_configure_for_dma(int dma_direction, ide_drive_t * drive)
- 
- 	ioc4_dma = readl((void __iomem *)ioc4_dma_addr);
- 	if (ioc4_dma & IOC4_S_DMA_ERROR) {
--		printk(KERN_WARNING
--		       "%s(%s) : Warning!! - DMA Error during Previous"
--		       " transfer | status 0x%x\n",
--		       __func__, drive->name, ioc4_dma);
-+		pr_warning("%s(%s) : Warning!! - DMA Error during Previous transfer | status 0x%x\n",
-+			__func__, drive->name, ioc4_dma);
- 		writel(IOC4_S_DMA_STOP, (void __iomem *)ioc4_dma_addr);
- 		ioc4_dma = sgiioc4_ide_dma_stop(hwif, dma_base);
- 
-@@ -428,9 +425,8 @@ static int sgiioc4_build_dmatable(ide_drive_t *drive, struct ide_cmd *cmd)
- 
- 		while (cur_len) {
- 			if (count++ >= IOC4_PRD_ENTRIES) {
--				printk(KERN_WARNING
--				       "%s: DMA table too small\n",
--				       drive->name);
-+				pr_warning("%s: DMA table too small\n",
-+					   drive->name);
- 				return 0;
- 			} else {
- 				u32 bcount =
-diff --git a/drivers/ide/siimage.c b/drivers/ide/siimage.c
-index 0de1b10..c805017 100644
---- a/drivers/ide/siimage.c
-+++ b/drivers/ide/siimage.c
-@@ -382,9 +382,8 @@ static int siimage_mmio_dma_test_irq(ide_drive_t *drive)
- 
- 			writel(sata_error, sata_error_addr);
- 			watchdog = (sata_error & 0x00680000) ? 1 : 0;
--			printk(KERN_WARNING "%s: sata_error = 0x%08x, "
--				"watchdog = %d, %s\n",
--				drive->name, sata_error, watchdog, __func__);
-+			pr_warning("%s: sata_error = 0x%08x, watchdog = %d, %s\n",
-+				   drive->name, sata_error, watchdog, __func__);
- 		} else
- 			watchdog = (ext_stat & 0x8000) ? 1 : 0;
- 
-@@ -431,8 +430,8 @@ static int sil_sata_reset_poll(ide_drive_t *drive)
- 		u32 sata_stat = readl(sata_status_addr);
- 
- 		if ((sata_stat & 0x03) != 0x03) {
--			printk(KERN_WARNING "%s: reset phy dead, status=0x%08x\n",
--					    hwif->name, sata_stat);
-+			pr_warning("%s: reset phy dead, status=0x%08x\n",
-+				   hwif->name, sata_stat);
- 			return -ENXIO;
- 		}
- 	}
-@@ -781,8 +780,8 @@ static int __devinit siimage_init_one(struct pci_dev *dev,
- 		* seem to get terminally confused in the PCI spaces.
- 		*/
- 		if (!request_mem_region(bar5, barsize, d.name)) {
--			printk(KERN_WARNING DRV_NAME " %s: MMIO ports not "
--				"available\n", pci_name(dev));
-+			pr_warning(DRV_NAME " %s: MMIO ports not available\n",
-+				   pci_name(dev));
+ 	return 0;
+ out_up:
+diff --git a/drivers/ide/it821x.c b/drivers/ide/it821x.c
+index 1bac7cd..d2b9deb 100644
+--- a/drivers/ide/it821x.c
++++ b/drivers/ide/it821x.c
+@@ -471,8 +471,8 @@ static void it821x_quirkproc(ide_drive_t *drive)
+ 				drive->name, id[147] ? "Bootable " : "",
+ 				id[ATA_ID_CSFO]);
+ 			if (id[ATA_ID_CSFO] != 1)
+-				printk(KERN_CONT "(%dK stripe)", id[146]);
+-			printk(KERN_CONT ".\n");
++				pr_cont("(%dK stripe)", id[146]);
++			pr_cont(".\n");
  		} else {
- 			ioaddr = pci_ioremap_bar(dev, 5);
- 			if (ioaddr == NULL)
-diff --git a/drivers/ide/tc86c001.c b/drivers/ide/tc86c001.c
-index dfd1b93..9d5264b 100644
---- a/drivers/ide/tc86c001.c
-+++ b/drivers/ide/tc86c001.c
-@@ -74,8 +74,8 @@ static int tc86c001_timer_expiry(ide_drive_t *drive)
- 		unsigned long twcr_port	= sc_base + (drive->dn ? 0x06 : 0x04);
- 		u8 dma_cmd		= inb(hwif->dma_base + ATA_DMA_CMD);
- 
--		printk(KERN_WARNING "%s: DMA interrupt possibly stuck, "
--		       "attempting recovery...\n", drive->name);
-+		pr_warning("%s: DMA interrupt possibly stuck, attempting recovery...\n",
-+			   drive->name);
- 
- 		/* Stop DMA */
- 		outb(dma_cmd & ~0x01, hwif->dma_base + ATA_DMA_CMD);
-diff --git a/drivers/ide/via82cxxx.c b/drivers/ide/via82cxxx.c
-index 26e7dcb..b79ae8f 100644
---- a/drivers/ide/via82cxxx.c
-+++ b/drivers/ide/via82cxxx.c
-@@ -402,8 +402,8 @@ static int __devinit via_init_one(struct pci_dev *dev, const struct pci_device_i
- 	 */
- 	via_config = via_config_find(&isa);
- 	if (!via_config->id) {
--		printk(KERN_WARNING DRV_NAME " %s: unknown chipset, skipping\n",
--			pci_name(dev));
-+		pr_warning(DRV_NAME " %s: unknown chipset, skipping\n",
-+			   pci_name(dev));
- 		return -ENODEV;
+ 			/* Non RAID volume. Fixups to stop the core code
+ 			   doing unsupported things */
+diff --git a/drivers/ide/trm290.c b/drivers/ide/trm290.c
+index 8f710e8..f79d39f 100644
+--- a/drivers/ide/trm290.c
++++ b/drivers/ide/trm290.c
+@@ -244,7 +244,7 @@ static void __devinit init_hwif_trm290(ide_hwif_t *hwif)
+ 		cfg_base = 0x3df0;
+ 		pr_info(DRV_NAME " %s: using default", pci_name(dev));
  	}
- 
-@@ -430,8 +430,8 @@ static int __devinit via_init_one(struct pci_dev *dev, const struct pci_device_i
- 	}
- 
- 	if (via_clock < 20000 || via_clock > 50000) {
--		printk(KERN_WARNING DRV_NAME ": User given PCI clock speed "
--			"impossible (%d), using 33 MHz instead.\n", via_clock);
-+		pr_warning(DRV_NAME ": User given PCI clock speed impossible (%d), using 33 MHz instead.\n",
-+			   via_clock);
- 		via_clock = 33333;
- 	}
+-	printk(KERN_CONT " config base at 0x%04x\n", cfg_base);
++	pr_cont(" config base at 0x%04x\n", cfg_base);
+ 	hwif->config_data = cfg_base;
+ 	hwif->dma_base = (cfg_base + 4) ^ (hwif->channel ? 0x80 : 0);
  
 -- 
 1.6.3.1.10.g659a0.dirty
