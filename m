@@ -1,173 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752934AbZERJht@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758271AbZERJiS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752934AbZERJht (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 05:37:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756679AbZERJYe
+	id S1758271AbZERJiS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 05:38:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756002AbZERJXq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 05:24:34 -0400
-Received: from smtp.nokia.com ([192.100.122.233]:42167 "EHLO
-	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756641AbZERJY3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 05:24:29 -0400
-Date: Mon, 18 May 2009 12:12:36 +0300
-From: Felipe Balbi <felipe.balbi@nokia.com>
-To: ext Kim Kyuwon <chammoru@gmail.com>
-Cc: "Balbi Felipe (Nokia-D/Helsinki)" <felipe.balbi@nokia.com>,
-       ext Mohamed Ikbel Boulabiar <boulabiar@gmail.com>,
-       Trilok Soni <soni.trilok@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>,
-       Jonathan Cameron <jic23@cam.ac.uk>, Kim Kyuwon <q1.kim@samsung.com>,
-       Kyungmin Park <kyungmin.park@samsung.com>,
-       Jean Delvare <khali@linux-fr.org>
-Subject: Re: [RFC] Add Input IOCTL for accelerometer devices
-Message-ID: <20090518091236.GH4443@nokia.com>
-Reply-To: felipe.balbi@nokia.com
-References: <20090515131636.GE4443@nokia.com> <5d5443650905151106v2fe7ad1ci6c966463a991e732@mail.gmail.com> <45cc95260905151230j5485995dpbbd882dc91b25339@mail.gmail.com> <20090515200235.GA11829@nokia.com> <4d34a0a70905180045u6619773dt1563fe38b13d46fb@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4d34a0a70905180045u6619773dt1563fe38b13d46fb@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-OriginalArrivalTime: 18 May 2009 09:24:01.0131 (UTC) FILETIME=[6121CBB0:01C9D79A]
-X-Nokia-AV: Clean
+	Mon, 18 May 2009 05:23:46 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38409 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753585AbZERJXJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 05:23:09 -0400
+From: Avi Kivity <avi@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: kvm@vger.kernel.org
+Subject: [PATCH 15/43] KVM: PIT: remove usage of count_load_time for channel 0
+Date: Mon, 18 May 2009 12:22:37 +0300
+Message-Id: <1242638585-18470-16-git-send-email-avi@redhat.com>
+In-Reply-To: <1242638585-18470-1-git-send-email-avi@redhat.com>
+References: <1242638585-18470-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 18, 2009 at 09:45:55AM +0200, ext Kim Kyuwon wrote:
-> Hi All,
-> 
-> It's very nice of Felipe to make an issue of accelerometers in Linux
-> kernel again.
-> Before further discussions, we'd better see previous threads about
-> accelerometer.
-> 
-> http://lkml.org/lkml/2008/5/20/135
-> http://lkml.org/lkml/2008/12/1/156
-> --
-> 
-> I have considered how I can add my accelerometer driver into the Linux
-> kernel nicely for a few months.
-> 
-> As Trilok said, there are many accelerometer drivers under
-> drivers/hwmon. So I first tried to add my driver as hwmon, but Jean
-> Delvare didn't agree this idea. Please refer to the following URL:
-> http://lists.lm-sensors.org/pipermail/lm-sensors/2009-April/025686.html
-> 
-> And from the next URL, Dmitry don't think it is great idea to add
-> accelerometer as Input system.
-> http://lkml.org/lkml/2008/5/27/283
+From: Marcelo Tosatti <mtosatti@redhat.com>
 
-Good links, I'll read them all :-)
+We can infer elapsed time from hrtimer_expires_remaining.
 
-Thanks
+Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
+Signed-off-by: Avi Kivity <avi@redhat.com>
+---
+ arch/x86/kvm/i8254.c |   37 +++++++++++++++++++++++++++++++------
+ 1 files changed, 31 insertions(+), 6 deletions(-)
 
-> On Sat, May 16, 2009 at 5:02 AM, Felipe Balbi <felipe.balbi@nokia.com> wrote:
-> > Hi all,
-> >
-> >
-> > On Fri, May 15, 2009 at 09:30:41PM +0200, ext Mohamed Ikbel Boulabiar wrote:
-> >> I am really interested about that.
-> >>
-> >> But I want to know more about the device, its type, name, ...
-> >> The device isn't HID (Human Interface Device) ? If so, we should
-> >> rethink adding such thing but modify/use hid-input instead.
-> >>
-> >> Because, I have an accelerometer phidget device and it is HID.
-> >> Handling should be the same.
-> >
-> > Yeah, let's try to define the best way to expose accelerometers with
-> > linux kernel and avoid a sysfs hell. Better sooner than later.
-> 
-> Felipe,
-> Can I ask why did you say "avoid a sysfs hell"?. I have thought Kernel
-> developers prefer sysfs to IOCTL lately.
-
-For sure sysfs is prefered, but I meant that without a proper
-abstraction or definition of how to export the device, each device
-driver write will export sysfs nodes as they want and that's really bad
-since we create the 'userland interface'. If it's messed up from the
-beginning, it's gonna be like that for ages.
-
-> >> On Fri, May 15, 2009 at 7:06 PM, Trilok Soni <soni.trilok@gmail.com> wrote:
-> >> > Hi Felipe,
-> >> >
-> >> > Adding linux-input and Jonathan, so not deleting any lines from this e-mail.
-> >> >
-> >> > On Fri, May 15, 2009 at 6:46 PM, Felipe Balbi <felipe.balbi@nokia.com> wrote:
-> >> >> Hi all,
-> >> >>
-> >> >> the following patch is just an idea to see how the community feels about
-> >> >> it. Considering accelerometer devices, you might have different use
-> >> >> cases for it while running different applications. You could be using it
-> >> >> for screen rotation in one case but when opening a game, you could use
-> >> >> it as a game controller by turning the device side-by-side.
-> >> >
-> >> > There was one proposal from Jonathan called Industrial IO patchset
-> >> > which tried to address these sensor devices. Please grep in your
-> >> > linux-kernel archieve. I believe there are accelerometer drivers under
-> >> > drivers/hwmon.
-> >
-> > The problem is that it doesn't really seem to me that all accelerometers
-> > will be doing hw monitoring. The ones used in laptops, for sure, trying
-> > to prevent the hd from drying during a fall. But imagine the
-> > accelerometers used in, say, wii-mote, or cellphones, or such stuff ?
-> >
-> > Say we wanna use the accelerometer for both screen rotation and gaming,
-> > that device isn't doing hw monitoring and still we _do_ want to set
-> > different thresholds and irq requests/types for different use cases,
-> > right ?
-> 
-> Yes, I agree that accelerometer needs new interface. However setting
-> parameters of accelerometer is very different from devices and device
-> specific. Until now, I met two accelerometer, SMB380 from
-> bosch-sensortec and KXSD9 from Kionix. As far as I know, these two
-> accelerometers are quite different from each other and existing
-> accelerometer drivers located /driver/hwmon/ in current Linux kernel.
-> Thus I think sysfs interface (including hwmon-sysfs) is the best
-> solution for setting various parameters of accelerometer..
-
-what if you wanna use the accelerometer as joystick for gaming ? Imagine
-a portable device...
-
-> On the other hand, accelerometers are mostly used as Input device in
-> these days. Most APIs(input_allocate_device,
-> input_allocate_polled_device, ...) and macros(ABS_X,  ABS_Y, ...)of
-> Input subsystem are useful to accelerometer too. If we create another
-> APIs and Macros for accelerometers, I think It's another duplicate
-> work and result.
-
-for sure
-
-> It seems like Dmitry concerns input_dev becomes too big with hundreds
-> of sensors.(right?) However, Market trend makes us consider
-> accelerometer as an input device now. I'm sure there is a good way to
-> add accelerometer input system without enlarging input_dev much.
-> 
-> In conclusion,
-> We need the inheritance concept in the object-oriented programming.
-> Accelerometer device sometimes can be hwmon device, sometimes input
-> device. So let accelerometer drivers use both APIs of hwmon and input
-> subsystems(hwmon_device_register, input_register_device,
-> input_register_polled_device). Acutally this is what many
-> accelerometer drivers in current Linux kernel are doing, so we don't
-> have to do much.
-> 
-> Let's
-> 1) Introduce a new maintainer of accelerometer (Felipe?).
-> 2) Move accelerometer drivers in current Linux kernel to /driver/accelerometer.
-> 3) If we find the common functions of accelerometer or have idea about
-> new API or Macro, let's make at driver/accelerometer/acccelerometer.c,
-> input/linux/acccelerometer.h file or modify input.h little.
-> 4) Add every new accelerometer into /driver/accelerometer.
-
-How about extending these to several kinds of sensors ?? Why not having
-a sensor framework that abstracts the creating of the input_dev for
-accelerometer ? But then comes another question: what to do with
-magnetometers, gyroscopes, etc etc ??
-
+diff --git a/arch/x86/kvm/i8254.c b/arch/x86/kvm/i8254.c
+index 3eddae6..09ae841 100644
+--- a/arch/x86/kvm/i8254.c
++++ b/arch/x86/kvm/i8254.c
+@@ -98,6 +98,32 @@ static int pit_get_gate(struct kvm *kvm, int channel)
+ 	return kvm->arch.vpit->pit_state.channels[channel].gate;
+ }
+ 
++static s64 __kpit_elapsed(struct kvm *kvm)
++{
++	s64 elapsed;
++	ktime_t remaining;
++	struct kvm_kpit_state *ps = &kvm->arch.vpit->pit_state;
++
++	remaining = hrtimer_expires_remaining(&ps->pit_timer.timer);
++	if (ktime_to_ns(remaining) < 0)
++		remaining = ktime_set(0, 0);
++
++	elapsed = ps->pit_timer.period;
++	if (ktime_to_ns(remaining) <= ps->pit_timer.period)
++		elapsed = ps->pit_timer.period - ktime_to_ns(remaining);
++
++	return elapsed;
++}
++
++static s64 kpit_elapsed(struct kvm *kvm, struct kvm_kpit_channel_state *c,
++			int channel)
++{
++	if (channel == 0)
++		return __kpit_elapsed(kvm);
++
++	return ktime_to_ns(ktime_sub(ktime_get(), c->count_load_time));
++}
++
+ static int pit_get_count(struct kvm *kvm, int channel)
+ {
+ 	struct kvm_kpit_channel_state *c =
+@@ -107,7 +133,7 @@ static int pit_get_count(struct kvm *kvm, int channel)
+ 
+ 	WARN_ON(!mutex_is_locked(&kvm->arch.vpit->pit_state.lock));
+ 
+-	t = ktime_to_ns(ktime_sub(ktime_get(), c->count_load_time));
++	t = kpit_elapsed(kvm, c, channel);
+ 	d = muldiv64(t, KVM_PIT_FREQ, NSEC_PER_SEC);
+ 
+ 	switch (c->mode) {
+@@ -137,7 +163,7 @@ static int pit_get_out(struct kvm *kvm, int channel)
+ 
+ 	WARN_ON(!mutex_is_locked(&kvm->arch.vpit->pit_state.lock));
+ 
+-	t = ktime_to_ns(ktime_sub(ktime_get(), c->count_load_time));
++	t = kpit_elapsed(kvm, c, channel);
+ 	d = muldiv64(t, KVM_PIT_FREQ, NSEC_PER_SEC);
+ 
+ 	switch (c->mode) {
+@@ -208,8 +234,6 @@ static int __pit_timer_fn(struct kvm_kpit_state *ps)
+ 		wake_up_interruptible(&vcpu0->wq);
+ 
+ 	hrtimer_add_expires_ns(&pt->timer, pt->period);
+-	if (pt->period)
+-		ps->channels[0].count_load_time = ktime_get();
+ 
+ 	return (pt->period == 0 ? 0 : 1);
+ }
+@@ -305,11 +329,12 @@ static void pit_load_count(struct kvm *kvm, int channel, u32 val)
+ 	if (val == 0)
+ 		val = 0x10000;
+ 
+-	ps->channels[channel].count_load_time = ktime_get();
+ 	ps->channels[channel].count = val;
+ 
+-	if (channel != 0)
++	if (channel != 0) {
++		ps->channels[channel].count_load_time = ktime_get();
+ 		return;
++	}
+ 
+ 	/* Two types of timer
+ 	 * mode 1 is one shot, mode 2 is period, otherwise del timer */
 -- 
-balbi
+1.6.0.6
+
