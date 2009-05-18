@@ -1,88 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755740AbZEREYT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755011AbZERE5w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755740AbZEREYT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 00:24:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755121AbZEREYH
+	id S1755011AbZERE5w (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 00:57:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750779AbZERE5l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 00:24:07 -0400
-Received: from gate.crashing.org ([63.228.1.57]:33034 "EHLO gate.crashing.org"
+	Mon, 18 May 2009 00:57:41 -0400
+Received: from claw.goop.org ([74.207.240.146]:58967 "EHLO claw.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751432AbZEREYE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 00:24:04 -0400
-Subject: Re: [PATCH 5/8] powerpc: use new macro for .data.cacheline_aligned
- section.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Tim Abbott <tabbott@MIT.EDU>
-Cc: Sam Ravnborg <sam@ravnborg.org>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
-       Denys Vlasenko <vda.linux@googlemail.com>,
-       Jeff Arnold <jbarnold@MIT.EDU>, Paul Mackerras <paulus@samba.org>,
-       linuxppc-dev@ozlabs.org
-In-Reply-To: <1241135777-9462-6-git-send-email-tabbott@mit.edu>
-References: <1241135777-9462-1-git-send-email-tabbott@mit.edu>
-	 <1241135777-9462-2-git-send-email-tabbott@mit.edu>
-	 <1241135777-9462-3-git-send-email-tabbott@mit.edu>
-	 <1241135777-9462-4-git-send-email-tabbott@mit.edu>
-	 <1241135777-9462-5-git-send-email-tabbott@mit.edu>
-	 <1241135777-9462-6-git-send-email-tabbott@mit.edu>
-Content-Type: text/plain
-Date: Mon, 18 May 2009 14:23:38 +1000
-Message-Id: <1242620618.18075.32.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	id S1750739AbZERE5k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 00:57:40 -0400
+Message-ID: <4A10EAC4.9070701@goop.org>
+Date: Sun, 17 May 2009 21:57:40 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>
+Subject: Re: [GIT PULL] xen /proc/mtrr implementation
+References: <1242170864-13560-1-git-send-email-jeremy@goop.org>	<20090513133021.GA7277@elte.hu> <4A0ADBA2.2020300@goop.org>	<20090515182757.GA19256@elte.hu> <4A0DCC11.10307@goop.org>	<m1my9ex818.fsf@fess.ebiederm.org> <4A0DFF78.6000501@goop.org>	<20090515202250.0f1218ef@jbarnes-g45> <m1iqk1k708.fsf@fess.ebiederm.org>
+In-Reply-To: <m1iqk1k708.fsf@fess.ebiederm.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-04-30 at 19:56 -0400, Tim Abbott wrote:
-> .data.cacheline_aligned should not need a separate output section;
-> this change moves it into the .data section.
-> 
-> Since there isn't an ALIGN() directive before the
-> .data.cacheline_aligned scetion in the current linker script, I'd like
-> an ack from one of the powerpc maintainers that L1_CACHE_BYTES is the
-> correct alignment here.
+Eric W. Biederman wrote:
+> There are only 3 states that are interesting.  WB UC and WC.  Since
+> Xen controls the page tables anyway.  I expect it can even remap
+> it feels like it.
+>   
 
-Yes, that's the right size.
+It would be awkward.  A paravirtualized guest has direct access to the 
+real pagetables, and so would notice if Xen swizzled around the PAT bits 
+when it reads back a pagetable entry.  We don't currently have any 
+paravirtualized hooks for adjusting the PTE flags, because there hasn't 
+been any need, and it would probably be pretty costly (lots of 
+read+bit-tests would turn into a function call).  On the other hand, 
+there's probably only a few places (if any) in the kernel which actually 
+inspect the PAT status of an established PTE, so we could put in some 
+special case mapping there.  It becomes a maintenance burden to 1) track 
+down all the right places, and then 2) make sure any new instances get 
+handled properly.  So, not a preferred solution, I think.
 
-Also. that looks like a bug to me in the current stuff. I'm queuing your
-patch set for .31 but I'll stick a "fix" in .30 for that just in case
-which unfortunately means your patches will probably need to be rebased.
+But our planned approach is to simply make Xen use the same PAT layout 
+as Linux, and go from there.  We still need to sort out the details of 
+how to handle other Xen guests which use the existing Xen PAT setup, how 
+to verify that Xen and the guest kernel are really using the same setup, 
+etc.
 
-Cheers,
-Ben.
+But since we support the last few year's worth of released versions of 
+Xen, we still need to handle the PAT-not-supported case with reasonable 
+grace.
 
-> Signed-off-by: Tim Abbott <tabbott@mit.edu>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: linuxppc-dev@ozlabs.org
-> ---
->  arch/powerpc/kernel/vmlinux.lds.S |    5 +----
->  1 files changed, 1 insertions(+), 4 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-> index 4223892..e769717 100644
-> --- a/arch/powerpc/kernel/vmlinux.lds.S
-> +++ b/arch/powerpc/kernel/vmlinux.lds.S
-> @@ -223,6 +223,7 @@ SECTIONS
->  	.data : AT(ADDR(.data) - LOAD_OFFSET) {
->  		PAGE_ALIGNED_DATA
->  		NOSAVE_DATA
-> +		CACHELINE_ALIGNED_DATA(L1_CACHE_BYTES)
->  		DATA_DATA
->  #ifdef CONFIG_PPC32
->  		*(.sdata)
-> @@ -260,10 +261,6 @@ SECTIONS
->  		*(.data.init_task)
->  	}
->  
-> -	.data.cacheline_aligned : AT(ADDR(.data.cacheline_aligned) - LOAD_OFFSET) {
-> -		*(.data.cacheline_aligned)
-> -	}
-> -
->  	. = ALIGN(L1_CACHE_BYTES);
->  	.data.read_mostly : AT(ADDR(.data.read_mostly) - LOAD_OFFSET) {
->  		*(.data.read_mostly)
+> I won't argue that having MTRRs when you can makes sense.  It is a bit
+> weird in a vitalized system.
 
+It's not really virtualized.  We're talking about dom0, which is the 
+guest domain which has access to the real machine's real hardware; the 
+MTRR is part of that.
+
+>   At a practical level there are an
+> increasing number of systems for which MTRRs are unusable because the
+> BIOS sets up overlapping mtrrs.  With cheap entry level systems
+> shipping with 4G I expect it is becoming a majority of systems.
+>   
+
+Yes, but that is true irrespective of Xen.
+
+    J
