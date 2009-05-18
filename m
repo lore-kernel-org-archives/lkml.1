@@ -1,59 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755581AbZERPAt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754833AbZERPFH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755581AbZERPAt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 11:00:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752641AbZERPAk
+	id S1754833AbZERPFH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 11:05:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752260AbZERPE6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 11:00:40 -0400
-Received: from mail.gmx.net ([213.165.64.20]:39749 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752400AbZERPAj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 11:00:39 -0400
-X-Authenticated: #10801262
-X-Provags-ID: V01U2FsdGVkX19MvLQwbTdMfNNFGu/84zlr38S/yKq4CvVbOepxg3
-	INGOeVq0I6TVz8
-Date: Mon, 18 May 2009 17:00:37 +0200
-From: Richard Atterer <richard@2009.atterer.net>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Elias Oltmanns <eo@nebensachen.de>, linux-ide@vger.kernel.org
-Subject: Re: s2disk hangs with kernel >=2.6.29, SATA, Gigabyte EG45M-DS2H
-	(bisected)
-Message-ID: <20090518150037.GA7891@arbonne.lan>
-Mail-Followup-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Elias Oltmanns <eo@nebensachen.de>, linux-ide@vger.kernel.org
-References: <20090516225153.GA7883@arbonne.lan> <200905180117.28413.bzolnier@gmail.com> <20090518141646.GA6460@arbonne.lan> <200905181629.33234.bzolnier@gmail.com>
+	Mon, 18 May 2009 11:04:58 -0400
+Received: from hera.kernel.org ([140.211.167.34]:34996 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751771AbZERPE5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 11:04:57 -0400
+Message-ID: <4A1178D5.5050900@kernel.org>
+Date: Mon, 18 May 2009 08:03:49 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200905181629.33234.bzolnier@gmail.com>
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.57
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Ingo Molnar <mingo@elte.hu>, Jack Steiner <steiner@sgi.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: tip: patches in git for irq and numa
+References: <4A05269D.8000701@kernel.org> <20090511095022.GA23121@elte.hu>	 <20090511163158.c4e4d334.akpm@linux-foundation.org>	 <20090512090704.GC18004@elte.hu> <4A0A6700.3070100@kernel.org>	 <20090513133635.GB7384@elte.hu> <4A0AFA6E.5050200@kernel.org>	 <20090515173521.GA29647@elte.hu> <4A0DE0ED.6090402@kernel.org>	 <20090518072952.GA12460@elte.hu> <1242654650.26820.429.camel@twins>
+In-Reply-To: <1242654650.26820.429.camel@twins>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 18, 2009 at 04:29:33PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> Does the one commit before 295f00042aaf6b553b5f37348f89bab463d4a469
-> (namely ebdab07dad3d3a008e519b0a028e1e1ad5ecaef0) work fine?
+Peter Zijlstra wrote:
+> On Mon, 2009-05-18 at 09:29 +0200, Ingo Molnar wrote:
+>> * Yinghai Lu <yinghai@kernel.org> wrote:
+>>
+>>> irq related:
+>>> git://git.kernel.org/pub/scm/linux/kernel/git/yinghai/linux-2.6-yinghai.git irq
+>>> need to on top of tip/irq/numa
+>> ok, these were nicely structured. the pci_routeirq patch had a build 
+>> bug for !CONFIG_PCI.
+>>
+>> ( I added an #ifdef for now, it might make sense to send a clean-up 
+>>   patch in the next merge window (not now) to factor out a 
+>>   pci_routeirq_enable() method that does all this cleanly. )
+>>
+>> Also, please add appropriate Cc: lines to the commit logs in the 
+>> future, beyond the LKML-Reference tgs.
+>>
+>>> for memoryless node support: 
+>>> git://git.kernel.org/pub/scm/linux/kernel/git/yinghai/linux-2.6-yinghai.git numa
+>>> and it is on top of tip/master
+>> small note: you could have based these on x86/mm btw. - that's where 
+>> these patches go, typically.
+>>
+>> regarding subject lines:
+>>
+>>  d03a6a4: mm: clear N_HIGH_MEMORY map before se set it again -v2
+>>  02ce039: x86: fix system without memory on node0 -v2
+>>  8c1aec8: x86: fix node_possible_map logic -v2
+>>  44a633c: x86: remove MEMORY_HOTPLUG_RESERVE related code -v2
+>>
+>> please never put '-v2' type of tags into the title of commits. In 
+>> the title of patches they can be put here:
+>>
+>>   [PATCH, v2] x86: fix system without memory on node0
+>>
+>> that saves maintainers a bit of typing work.
+>>
+>> Also, you included:
+>>
+>>  d03a6a4: mm: clear N_HIGH_MEMORY map before se set it again -v2
+>>
+>> with no Acks from MM folks yet. So i skipped that one and will 
+>> follow up about it.
+> 
+> The below seems to wreck my opteron, ata1 interrupts fail to get
+> through.
+> 
+> 
+> [    6.951257] ata1.00: qc timeout (cmd 0x27)
+> [    6.955354] ata1.00: failed to read native max address (err_mask=0x4)
+> [    6.961781] ata1.00: HPA support seems broken, skipping HPA handling
+> [    7.273044] ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+> [    7.285159] ata1.00: configured for UDMA/133
+> [    7.290052] scsi 0:0:0:0: Direct-Access     ATA      WDC WD1200JS-00N 10.0 PQ: 0 ANSI: 5
+> [    7.299294] sd 0:0:0:0: [sda] 234441648 512-byte hardware sectors: (120 GB/111 GiB)
+> [    7.306968] sd 0:0:0:0: [sda] Write Protect is off
+> [    7.311754] sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+> [    7.316839] sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+> [    7.326312]  sda:<6>ata2: SATA link down (SStatus 4 SControl 300)
+> [    7.938372] ata3: SATA link down (SStatus 4 SControl 300)
+> [    8.258372] ata4: SATA link down (SStatus 4 SControl 300)
+> [    8.264357] scsi 4:0:0:0: CD-ROM            TEAC     DV-516G          F4S7 PQ: 0 ANSI: 5
+> [   37.704234] ata1: lost interrupt (Status 0x50)
+> [   37.708695] sd 0:0:0:0: [sda] Unhandled error code
+> [   37.713479] sd 0:0:0:0: [sda] Result: hostbyte=DID_OK driverbyte=DRIVER_TIMEOUT
+> [   37.720791] end_request: I/O error, dev sda, sector 0
+> [   37.725848] Buffer I/O error on device sda, logical block 0
+> 
+> ---
+> 
+> 
+> commit b9c61b70075c87a8612624736faf4a2de5b1ed30
+> Author: Yinghai Lu <yinghai@kernel.org>
+> Date:   Wed May 6 10:10:06 2009 -0700
+> 
+>     x86/pci: update pirq_enable_irq() to setup io apic routing
+>     
+>     So we can set io apic routing only when enabling the device irq.
+>     
+>     This is advantageous for IRQ descriptor allocation affinity: if we set up
+>     the IO-APIC entry later, we have a chance to allocate the IRQ descriptor
+>     later and know which device it is on and can set affinity accordingly.
+>     
+>     [ Impact: standardize/enhance irq-enabling sequence for mptable irqs ]
 
-Yes, it does; I tried that one during bisecting, and then re-tried before 
-writing my first mail, just to ensure I hadn't messed something up.
+can you post whole bootlog?
+need to figure out 32bit/64bit? ACPI is disabled? MPtable is used?
 
-IIRC I also tried to modify my 2.6.30-rc6 checkout to reinstate the calls 
-to spin_unlock() and local_irq_enable_in_hardirq() that were replaced with 
-spin_unlock_irq() by patch 295f000.  This also didn't cause the problem to 
-go away. Anyway, I have no clue what all this code does, so that was just a 
-shot in the dark! :-)
+also please check if pci=routeirq help to fix the problem.
 
-Cheers,
-
-  Richard
-
--- 
-  __   _
-  |_) /|  Richard Atterer
-  | \/¯|  http://atterer.net
-  ¯ '` ¯
+YH
