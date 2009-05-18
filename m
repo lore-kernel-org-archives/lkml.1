@@ -1,93 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755634AbZERDt5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756236AbZERDvy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755634AbZERDt5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 May 2009 23:49:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753621AbZERDtr
+	id S1756236AbZERDvy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 May 2009 23:51:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755467AbZERDvl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 May 2009 23:49:47 -0400
-Received: from mga14.intel.com ([143.182.124.37]:51529 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753168AbZERDtr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 May 2009 23:49:47 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,208,1241420400"; 
-   d="scan'208";a="143893359"
-Date: Mon, 18 May 2009 11:49:07 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       "Zhang, Yanmin" <yanmin.zhang@intel.com>
-Subject: Re: [PATCH 4/4] zone_reclaim_mode is always 0 by default
-Message-ID: <20090518034907.GF5869@localhost>
-References: <20090513120155.5879.A69D9226@jp.fujitsu.com> <20090513120729.5885.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090513120729.5885.A69D9226@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 17 May 2009 23:51:41 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35451
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754132AbZERDvl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 May 2009 23:51:41 -0400
+Date: Sun, 17 May 2009 20:51:39 -0700 (PDT)
+Message-Id: <20090517.205139.173502245.davem@davemloft.net>
+To: tilman@imap.cc
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, hjlipp@web.de
+Subject: Re: [PATCH 0/8] Gigaset driver bugfixes and cleanups
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090514-patch-00.tilman@imap.cc>
+References: <20090514-patch-00.tilman@imap.cc>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 13, 2009 at 12:08:12PM +0900, KOSAKI Motohiro wrote:
-> Subject: [PATCH] zone_reclaim_mode is always 0 by default
-> 
-> Current linux policy is, if the machine has large remote node distance,
->  zone_reclaim_mode is enabled by default because we've be able to assume to 
-> large distance mean large server until recently.
-> 
-> Unfrotunately, recent modern x86 CPU (e.g. Core i7, Opeteron) have P2P transport
-> memory controller. IOW it's NUMA from software view.
-> 
-> Some Core i7 machine has large remote node distance and zone_reclaim don't
-> fit desktop and small file server. it cause performance degression.
+From: Tilman Schmidt <tilman@imap.cc>
+Date: Thu, 14 May 2009 00:44:17 +0200 (CEST)
 
-I can confirm this, Yanmin recently ran into exactly such a
-regression, which was fixed by manually disabling the zone reclaim
-mode. So I guess you can safely add an
+> following are 8 small patches for the Gigaset driver I'd like to get
+> out from under my feet. Nothing urgent, so if you feel they are
+> inappropriate for merging that late in the 2.6.30 cycle they can as
+> well wait for 2.6.31.
 
-Tested-by: "Zhang, Yanmin" <yanmin.zhang@intel.com>
-
-> Thus, zone_reclaim == 0 is better by default. sorry, HPC gusy. 
-> you need to turn zone_reclaim_mode on manually now.
- 
-I guess the borderline will continue to blur up. It will be more
-dependent on workloads instead of physical NUMA capabilities. So
-
-Acked-by: Wu Fengguang <fengguang.wu@intel.com> 
-
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> Cc: Christoph Lameter <cl@linux-foundation.org>
-> Cc: Rik van Riel <riel@redhat.com>
-> ---
->  mm/page_alloc.c |    7 -------
->  1 file changed, 7 deletions(-)
-> 
-> Index: b/mm/page_alloc.c
-> ===================================================================
-> --- a/mm/page_alloc.c
-> +++ b/mm/page_alloc.c
-> @@ -2494,13 +2494,6 @@ static void build_zonelists(pg_data_t *p
->  		int distance = node_distance(local_node, node);
->  
->  		/*
-> -		 * If another node is sufficiently far away then it is better
-> -		 * to reclaim pages in a zone before going off node.
-> -		 */
-> -		if (distance > RECLAIM_DISTANCE)
-> -			zone_reclaim_mode = 1;
-> -
-> -		/*
->  		 * We don't want to pressure a particular node.
->  		 * So adding penalty to the first node in same
->  		 * distance group to make it round-robin.
-> 
-> 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+All applied to net-next-2.6, thanks!
