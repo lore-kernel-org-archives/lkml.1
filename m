@@ -1,124 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755393AbZERDQA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755541AbZERDWU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755393AbZERDQA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 May 2009 23:16:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752327AbZERDPt
+	id S1755541AbZERDWU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 May 2009 23:22:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753276AbZERDWF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 May 2009 23:15:49 -0400
-Received: from mga14.intel.com ([143.182.124.37]:56601 "EHLO mga14.intel.com"
+	Sun, 17 May 2009 23:22:05 -0400
+Received: from thunk.org ([69.25.196.29]:33326 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751580AbZERDPt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 May 2009 23:15:49 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,208,1241420400"; 
-   d="scan'208";a="143886554"
-Date: Mon, 18 May 2009 11:15:36 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: [PATCH 1/4] vmscan: change the number of the unmapped files in
-	zone reclaim
-Message-ID: <20090518031536.GC5869@localhost>
-References: <20090513120155.5879.A69D9226@jp.fujitsu.com> <20090513120606.587C.A69D9226@jp.fujitsu.com>
+	id S1752766AbZERDWE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 May 2009 23:22:04 -0400
+Date: Sun, 17 May 2009 23:21:50 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: david@lang.hm
+Cc: Timo Sirainen <tss@iki.fi>, Josef Bacik <josef@toxicpanda.com>,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+Subject: Re: ext3/ext4 directories don't shrink after deleting lots of files
+Message-ID: <20090518032150.GE32019@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>, david@lang.hm,
+	Timo Sirainen <tss@iki.fi>, Josef Bacik <josef@toxicpanda.com>,
+	linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+References: <1242338523.6933.664.camel@timo-desktop> <1b7401870905141732v43bd7321g1f0d9721b5e3f761@mail.gmail.com> <605A8D56-81CD-4775-8FCD-58CDB12CBA36@iki.fi> <20090517213335.GB32019@mit.edu> <alpine.DEB.1.10.0905171935310.32210@asgard>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090513120606.587C.A69D9226@jp.fujitsu.com>
+In-Reply-To: <alpine.DEB.1.10.0905171935310.32210@asgard>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 13, 2009 at 12:06:28PM +0900, KOSAKI Motohiro wrote:
-> Subject: [PATCH] vmscan: change the number of the unmapped files in zone reclaim
-> 
-> Documentation/sysctl/vm.txt says
-> 
-> 	A percentage of the total pages in each zone.  Zone reclaim will only
-> 	occur if more than this percentage of pages are file backed and unmapped.
-> 	This is to insure that a minimal amount of local pages is still available for
-> 	file I/O even if the node is overallocated.
-> 
-> However, zone_page_state(zone, NR_FILE_PAGES) contain some non file backed pages
-> (e.g. swapcache, buffer-head)
-> 
-> The right calculation is to use NR_{IN}ACTIVE_FILE.
-> 
-> 
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> Cc: Christoph Lameter <cl@linux-foundation.org>
-> Cc: Rik van Riel <riel@redhat.com>
-> ---
->  mm/vmscan.c |   21 ++++++++++++++-------
->  1 file changed, 14 insertions(+), 7 deletions(-)
-> 
-> Index: b/mm/vmscan.c
-> ===================================================================
-> --- a/mm/vmscan.c
-> +++ b/mm/vmscan.c
-> @@ -2397,6 +2397,7 @@ static int __zone_reclaim(struct zone *z
->  		.isolate_pages = isolate_pages_global,
->  	};
->  	unsigned long slab_reclaimable;
-> +	long nr_unmapped_file_pages;
->  
->  	disable_swap_token();
->  	cond_resched();
-> @@ -2409,9 +2410,11 @@ static int __zone_reclaim(struct zone *z
->  	reclaim_state.reclaimed_slab = 0;
->  	p->reclaim_state = &reclaim_state;
->  
-> -	if (zone_page_state(zone, NR_FILE_PAGES) -
-> -		zone_page_state(zone, NR_FILE_MAPPED) >
-> -		zone->min_unmapped_pages) {
-> +	nr_unmapped_file_pages = zone_page_state(zone, NR_INACTIVE_FILE) +
-> +				 zone_page_state(zone, NR_ACTIVE_FILE) -
-> +				 zone_page_state(zone, NR_FILE_MAPPED);
+On Sun, May 17, 2009 at 07:49:09PM -0700, david@lang.hm wrote:
+>> The constraints that we have is that for backwards compatibility's
+>> sake, we can't support spares directories.  So if a block in the of
+>
+> s/spares/sparse/ ?
 
-This can possibly go negative.
+Yes, sorry "sparse"
 
-> +	if (nr_unmapped_file_pages > zone->min_unmapped_pages) {
->  		/*
->  		 * Free memory by calling shrink zone with increasing
->  		 * priorities until we have enough memory freed.
-> @@ -2458,6 +2461,8 @@ int zone_reclaim(struct zone *zone, gfp_
->  {
->  	int node_id;
->  	int ret;
-> +	long nr_unmapped_file_pages;
-> +	long nr_slab_reclaimable;
->  
->  	/*
->  	 * Zone reclaim reclaims unmapped file backed pages and
-> @@ -2469,10 +2474,12 @@ int zone_reclaim(struct zone *zone, gfp_
->  	 * if less than a specified percentage of the zone is used by
->  	 * unmapped file backed pages.
->  	 */
-> -	if (zone_page_state(zone, NR_FILE_PAGES) -
-> -	    zone_page_state(zone, NR_FILE_MAPPED) <= zone->min_unmapped_pages
-> -	    && zone_page_state(zone, NR_SLAB_RECLAIMABLE)
-> -			<= zone->min_slab_pages)
-> +	nr_unmapped_file_pages = zone_page_state(zone, NR_INACTIVE_FILE) +
-> +				 zone_page_state(zone, NR_ACTIVE_FILE) -
-> +				 zone_page_state(zone, NR_FILE_MAPPED);
+>> Next, to handle the case where the empty directory block is *not* the
+>> last block in the directory, what ext4_shrink_directory() can do is to
+>> take the contents of the last directory block, and copy it to the
+>> empty directory block, and then do the truncate operation.  In the
+>> case of htree directories, the htree index blocks would also have to
+>> be updated (both removing the index entry pointing to the empty
+>> directory block, as well as updating the index entry which had been
+>> pointing to the last directory block).
+>
+> I think this is more complex. I think you can't just move the last  
+> directory block to one earlier because that would change the order of  
+> things in the directory, messing up things that do a partial readdir of  
+> the directory and then come back to pick up where they left off. you 
+> would need to move all blocks after the empty up one.
 
-Ditto.
+For htree directories we can do this, because the iterate over the
+directory in hash sort order, and moving the directory blocks around
+doesn't change this.  For non-htree directories, you're right;
+ext4_shrink_direcotry() would have to bail and not do anything if
+there was a readdir() in progress for the directory in question.
 
-Reviewed-by: Wu Fengguang <fengguang.wu@intel.com>
+> this sounds like something that's best implemented as a nighly cron job  
+> (run similar to updatedb) to defrag the directory blocks. given changes  
+> over the years to disk technology (both how much slower seeks have become 
+> relative to sequential reads on rotating media, and how SSDs really have  
+> much larger block sizes internally than what's exposed to users), it may  
+> make sense to consider having a defrag tool for the data blocks as well.
 
-> +	nr_slab_reclaimable = zone_page_state(zone, NR_SLAB_RECLAIMABLE);
-> +	if (nr_unmapped_file_pages <= zone->min_unmapped_pages &&
-> +	    nr_slab_reclaimable <= zone->min_slab_pages)
->  		return 0;
->  
->  	if (zone_is_all_unreclaimable(zone))
-> 
-> 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+Yes, that's the other way to do this; we could have an ioctl which
+defrags a directory, and which will return an error if there is
+another fd open on the directory (which would imply that there was a
+readdir() in progress) and then do a complete defrag operation on the
+directory.  It would have to be done in kernel space so the filesystem
+wouldn't have to be unmounted.  Doing this all at once is more
+efficient from an I/O perspective, but it's tricker to do in the
+kernel because for very large directories, the method used in
+e2fsck/rehash.c assumes you can allocate enough memory for all of the
+directory entries all at once, which might not be true in the kernel,
+since kernel memory can't be swapped or paged out.
+
+Doing a little bit at a time means that we're O(1) in time/space for
+each unlink operation.  Doing it all at once is O(n) in space, and for
+very, *very* large directories that could be problematic.  It's not
+impossible, but try sketching out the algorithm first.  You may find
+it's more complicated than you first thought.
+
+Regards,
+
+					- Ted
