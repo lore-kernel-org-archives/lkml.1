@@ -1,65 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755131AbZERXbc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754159AbZERXgs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755131AbZERXbc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 19:31:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751529AbZERXbY
+	id S1754159AbZERXgs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 19:36:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751772AbZERXgl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 19:31:24 -0400
-Received: from rv-out-0506.google.com ([209.85.198.229]:34366 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751050AbZERXbX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 19:31:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:mime-version
-         :content-type:content-disposition:user-agent;
-        b=iyrALib62UwA1lSJswBhHMYghoypK70H3QiSxSaucmREhzS+P1ikujEFgcLqr08PTn
-         q4VKuYkh+wNRHfD1smoWoOTPQCEcPaaSdBSEFzfldRApqWK66WxSAWLn51a1shKAjH+t
-         Lj4o//b8nyZAcVTS4qndjw9JdBag8+FQm804o=
-Date: Mon, 18 May 2009 16:31:21 -0700
-From: Chris Sanford <crsanford@gmail.com>
-To: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Cc: mingo@elte.hu, peterz@infradead.org
-Subject: [PATCH] include KERN_* constant in printk calls
-Message-ID: <20090518233121.GC3109@chrisubuntu-laptop>
-Mail-Followup-To: linux-kernel@vger.kernel.org,
-	kernel-janitors@vger.kernel.org, mingo@elte.hu,
-	peterz@infradead.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 18 May 2009 19:36:41 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:50495 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751696AbZERXgl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 19:36:41 -0400
+Date: Tue, 19 May 2009 09:36:36 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Borislav Petkov <borislav.petkov@amd.com>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Doug Thompson <dougthompson@xmission.com>
+Subject: Re: linux-next: Tree for May 15
+Message-Id: <20090519093636.329c4708.sfr@canb.auug.org.au>
+In-Reply-To: <20090518094822.GB4905@aftab>
+References: <20090515153733.4384db9f.sfr@canb.auug.org.au>
+	<20090515130729.GA13026@aftab>
+	<20090518000734.6fd3d652.sfr@canb.auug.org.au>
+	<20090518094822.GB4905@aftab>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__19_May_2009_09_36_36_+1000_+eSWqH0akSo08nj."
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add the KERN_CONT constant to two printk calls.
+--Signature=_Tue__19_May_2009_09_36_36_+1000_+eSWqH0akSo08nj.
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Chris Sanford <crsanford@gmail.com>
+Hi Boris,
 
----
+On Mon, 18 May 2009 11:48:22 +0200 Borislav Petkov <borislav.petkov@amd.com=
+> wrote:
+>
+> It is an EDAC module for AMD k8, Fam10h and Fam11h processors.
 
+OK, so I will call it edac-amd (in case we ever get a generic edac tree).
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 26efa47..6a2ed16 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -7319,7 +7319,7 @@ static int sched_domain_debug_one(struct sched_domain *sd, int cpu, int level,
- 	printk(KERN_DEBUG "%*s domain %d: ", level, "", level);
- 
- 	if (!(sd->flags & SD_LOAD_BALANCE)) {
--		printk("does not load-balance\n");
-+		printk(KERN_CONT "does not load-balance\n");
- 		if (sd->parent)
- 			printk(KERN_ERR "ERROR: !SD_LOAD_BALANCE domain"
- 					" has parent");
-@@ -7340,7 +7340,7 @@ static int sched_domain_debug_one(struct sched_domain *sd, int cpu, int level,
- 	printk(KERN_DEBUG "%*s groups:", level + 1, "");
- 	do {
- 		if (!group) {
--			printk("\n");
-+			printk(KERN_CONT "\n");
- 			printk(KERN_ERR "ERROR: group is NULL\n");
- 			break;
- 		}
+> > If so, you are not listed as a maintainer of that code (Doug cc'd).
+>=20
+> I'll send a patch to update that later.
+
+Thanks for all the info - I just had no idea where this was coming from.
+
+I will add the tree from today.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__19_May_2009_09_36_36_+1000_+eSWqH0akSo08nj.
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkoR8QQACgkQjjKRsyhoI8y0WwCgiE+dbDfvztYEqNbJSbVism6Q
+GpMAnRNmSWzUCGiIsjcOUJ59asojy9gr
+=d2hV
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__19_May_2009_09_36_36_+1000_+eSWqH0akSo08nj.--
