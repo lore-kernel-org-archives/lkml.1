@@ -1,44 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754351AbZERIb0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754161AbZERIdP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754351AbZERIb0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 04:31:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752293AbZERIay
+	id S1754161AbZERIdP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 04:33:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751918AbZERIcy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 04:30:54 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:55165 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751962AbZERIax (ORCPT
+	Mon, 18 May 2009 04:32:54 -0400
+Received: from mailout2.samsung.com ([203.254.224.25]:35492 "EHLO
+	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750768AbZERIcw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 04:30:53 -0400
-Date: Mon, 18 May 2009 09:31:36 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Jamie Lokier <jamie@shareable.org>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Vitaly Mayatskikh <v.mayatskih@gmail.com>,
-       Josef Bacik <josef@redhat.com>, sandeen@redhat.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] Perform check in iov_iter_fault_in_readable() by
- check_readable_bytes()
-Message-ID: <20090518093136.152a1bb7@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090515134315.GB8235@shareable.org>
-References: <1242317939-15392-1-git-send-email-v.mayatskih@gmail.com>
-	<1242317939-15392-3-git-send-email-v.mayatskih@gmail.com>
-	<87k54iq2gv.fsf@basil.nowhere.org>
-	<871vqqkdf0.wl%vmayatsk@redhat.com>
-	<20090515093838.GB16682@one.firstfloor.org>
-	<20090515134315.GB8235@shareable.org>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 18 May 2009 04:32:52 -0400
+Date: Mon, 18 May 2009 10:30:55 +0200
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: RE: [PATCH] [drivers] [SPI] SPI_GPIO: add support for controllers with
+ missing MISO pin
+In-reply-to: <20090507123157.GU32548@trinity.fluff.org>
+To: "'Ben Dooks'" <ben-linux@fluff.org>
+Cc: "'LKML'" <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel@lists.arm.linux.org.uk, kyungmin.park@samsung.com,
+       Marek Szyprowski <m.szyprowski@samsung.com>
+Message-id: <000501c9d792$f8feb950$eafc2bf0$%szyprowski@samsung.com>
+MIME-version: 1.0
+X-Mailer: Microsoft Office Outlook 12.0
+Content-type: text/plain; charset=us-ascii
+Content-language: pl
+Content-transfer-encoding: 7BIT
+Thread-index: AcnPD93VQbYYKZc9TqiFiCFVFw3hIwIghKOA
+References: <E4D3F24EA6C9E54F817833EAE0D912AC02243DBF8C@bssrvexch01.BS.local>
+ <20090507123157.GU32548@trinity.fluff.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> System calls don't trigger SIGSEGVs so they can't rely on that when
-> calling read().  I'm not sure how they handle that.
+Hello,
 
-Usually by touching the pages before the syscall. (You can't rely on
--EFAULT either in POSIX, its optional that it bothers to tell you and for
-example on MMUless it may well not)
+On Thursday, May 07, 2009 2:32 PM Ben Dooks wrote:
+
+> On Thu, May 07, 2009 at 02:24:11PM +0200, Marek Szyprowski wrote:
+> > There are some boards that do not strictly follow SPI standard and
+> use only 3 wires (SCLK, MOSI, SS) for connecting some simple auxiliary
+> chips and controls them with GPIO based 'spi controller'. In this
+> configuration the MISO line is missing (it is not required if the chip
+> does not transfer any data back to host). The example of such board is
+> a NCP ARM S3C64XX based machine. This patch adds support for such non-
+> standard configuration in GPIO-based SPI controller.
+> [...]
+> > diff --git a/drivers/spi/spi_gpio.c b/drivers/spi/spi_gpio.c
+> > index 26bd03e..5b75601 100644
+> > --- a/drivers/spi/spi_gpio.c
+> > +++ b/drivers/spi/spi_gpio.c
+> > @@ -114,7 +114,10 @@ static inline void setmosi(const struct
+> spi_device *spi, int is_on)
+> >
+> >  static inline int getmiso(const struct spi_device *spi)
+> >  {
+> > -	return !!gpio_get_value(SPI_MISO_GPIO);
+> > +	if (SPI_MISO_GPIO)
+> > +		return !!gpio_get_value(SPI_MISO_GPIO);
+> > +	else
+> > +		return 0;
+> >  }
+> 
+> Is zero a good approximation for 'no gpio' ?
+
+Now I found that zero might be a valid gpio pin number on some architectures
+(it just means GPIO0 pin). This is imho a bit strange behavior of gpiolib as
+there should be also a special values for INVALID or NOGPIO cases. Does 
+anyone have any ideas how such cases should be handled properly? 
+
+Best regards
+--
+Marek Szyprowski
+Samsung Poland R&D Center
+
+
 
