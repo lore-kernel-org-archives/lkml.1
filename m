@@ -1,50 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755556AbZERVAB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756041AbZERVCv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755556AbZERVAB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 17:00:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753346AbZERU7x
+	id S1756041AbZERVCv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 17:02:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753484AbZERVCo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 16:59:53 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:2020 "EHLO
-	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753060AbZERU7w (ORCPT
+	Mon, 18 May 2009 17:02:44 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:34760 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753176AbZERVCn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 16:59:52 -0400
-Subject: Re: [PATCH 0/6] drivers/ide Convert printk(KERN_<foo> to pr_<foo>(
-From: Joe Perches <joe@perches.com>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>
-In-Reply-To: <1242662198.6347.14.camel@mulgrave.int.hansenpartnership.com>
-References: <cover.1242609803.git.joe@perches.com>
-	 <200905181612.43632.bzolnier@gmail.com>
-	 <1242661288.1572.82.camel@Joe-Laptop.home>
-	 <1242662198.6347.14.camel@mulgrave.int.hansenpartnership.com>
-Content-Type: text/plain
-Date: Mon, 18 May 2009 13:59:49 -0700
-Message-Id: <1242680389.1572.127.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 18 May 2009 17:02:43 -0400
+Date: Mon, 18 May 2009 22:02:41 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Mario Limonciello <mario_limonciello@dell.com>
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Explicitly disable BT radio using rfkill interface on
+	suspend
+Message-ID: <20090518210241.GA17755@srcf.ucam.org>
+References: <4A11C126.1000704@dell.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A11C126.1000704@dell.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-05-18 at 15:56 +0000, James Bottomley wrote:
-> What exactly is the point of a mechanical conversion from
-> printk(KERN_ ...) to pr_...?
-> 
-> I can see the value of the pr_ macros from new code in that the
-> temptation to put a comma after KERN_.. for some people is irresistible
-> so it's an interface that's very easy to misuse, but given that we have
-> correct uses, why convert them?
+On Mon, May 18, 2009 at 03:12:22PM -0500, Mario Limonciello wrote:
+>  Dell BT devices need to be removed from the bus and reinserted
+>  so that userspace udev rules can transition the devices into the
+>  proper mode after S3 or S4.
 
-Enables easier conversion to dev_<foo> macros
-Allows easier prefixing via pr_fmt
-Puts back together unnecessarily chopped up format strings
-Standardization is good
-Just for the hell of it
+This sounds wrong. What kind of reinitialisation are you talking about?
 
-cheers, Joe
-
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
