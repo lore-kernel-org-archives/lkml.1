@@ -1,69 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755190AbZERTWw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754903AbZERT3w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755190AbZERTWw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 15:22:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753345AbZERTWp
+	id S1754903AbZERT3w (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 15:29:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752092AbZERT3p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 15:22:45 -0400
-Received: from mga14.intel.com ([143.182.124.37]:4545 "EHLO mga14.intel.com"
+	Mon, 18 May 2009 15:29:45 -0400
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:43853 "EHLO e9.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752894AbZERTWp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 15:22:45 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,211,1241420400"; 
-   d="scan'208";a="144180879"
-Subject: Re: [GIT PATCH] x86,percpu: fix pageattr handling with remap
- allocator
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: suresh.b.siddha@intel.com
-To: Tejun Heo <tj@kernel.org>
-Cc: "JBeulich@novell.com" <JBeulich@novell.com>,
-       "andi@firstfloor.org" <andi@firstfloor.org>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "linux-kernel-owner@vger.kernel.org" 
-	<linux-kernel-owner@vger.kernel.org>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <4A0F672A.3000309@kernel.org>
-References: <1242305390-21958-1-git-send-email-tj@kernel.org>
-	 <1242436626.27006.8623.camel@localhost.localdomain>
-	 <4A0ED8D8.2010303@kernel.org>
-	 <1242500964.27006.8636.camel@localhost.localdomain>
-	 <4A0F672A.3000309@kernel.org>
+	id S1751396AbZERT3o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 15:29:44 -0400
+Subject: [PATCH] nfs: Fix NFS v4 client handling of MAY_EXEC in 
+	nfs_permission.
+From: Frank Filz <ffilzlnx@us.ibm.com>
+To: NFS List <linux-nfs@vger.kernel.org>,
+       NFS V4 Mailing List <nfsv4@linux-nfs.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Eugene Teo <eugene@redhat.com>, security@kernel.org,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Bruce Fields <bfields@fieldses.org>
 Content-Type: text/plain
-Organization: Intel Corp
-Date: Mon, 18 May 2009 12:20:44 -0700
-Message-Id: <1242674444.27006.8691.camel@localhost.localdomain>
+Organization: IBM Linux Technology Center
+Date: Mon, 18 May 2009 12:29:43 -0700
+Message-Id: <1242674983.4273.8.camel@dyn9047022153>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-05-16 at 18:23 -0700, Tejun Heo wrote:
-> Units in
-> a single chunk should be contiguous and of the same size such that
-> unit_addr_for_cpu_N == chunk_addr + N * unit_size whereas chunks don't
-> need to have any special address relation to other chunks. 
+Sorry for the resend, got lkml address wrong...
 
-And the size of the unit is same across chunks.
+The problem is that permission checking is skipped if atomic open is
+possible, but when exec opens a file, it just opens it O_READONLY which
+means EXEC permission will not be checked at that time.
 
-This is what I was missing :)
+This problem is observed by the following sequence (executed as root):
 
-Can we don't use PERCPU_DYNAMIC_RESERVE in the first chunk and for
-dynamic per_cpu_ptr's we can use some other offset such as
-per_cpu_ptr_offset() or some such thing?
+mount -t nfs4 server:/ /mnt4
+echo "ls" >/mnt4/foo
+chmod 744 /mnt4/foo
+su guest -c "mnt4/foo"
 
-Then we can separate the static and dynamic chunks. And use large page
-kernel-direct mappings for fast access for critical common things and
-use small page accesses for dynamic and not so common accesses.
+Signed-off-by: Frank Filz <ffilzlnx@us.ibm.com>
+---
+ fs/nfs/dir.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-Just checking to see if we can reduce the complexity of setting up the
-percpu areas (different versions for embed, non-embed etc) and handling
-all these aliases with simple code, rather than making it complex.
-
-thanks,
-suresh
+diff --git a/fs/nfs/dir.c b/fs/nfs/dir.c
+index 370b190..89f98e9 100644
+--- a/fs/nfs/dir.c
++++ b/fs/nfs/dir.c
+@@ -1943,7 +1943,8 @@ int nfs_permission(struct inode *inode, int mask)
+ 		case S_IFREG:
+ 			/* NFSv4 has atomic_open... */
+ 			if (nfs_server_capable(inode, NFS_CAP_ATOMIC_OPEN)
+-					&& (mask & MAY_OPEN))
++					&& (mask & MAY_OPEN)
++					&& !(mask & MAY_EXEC))
+ 				goto out;
+ 			break;
+ 		case S_IFDIR:
 
