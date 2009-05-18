@@ -1,79 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756217AbZERHwG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756733AbZERHws@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756217AbZERHwG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 03:52:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755871AbZERHvu
+	id S1756733AbZERHws (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 03:52:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750876AbZERHwh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 03:51:50 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:41245 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755402AbZERHvu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 03:51:50 -0400
-From: Mike Frysinger <vapier@gentoo.org>
-To: linux-kernel@vger.kernel.org
-Cc: Evgeniy Polyakov <zbr@ioremap.net>, Patrick McHardy <kaber@trash.net>
-Subject: [PATCH] crypto: hifn_795x - fix __dev{init,exit} markings
-Date: Mon, 18 May 2009 03:51:50 -0400
-Message-Id: <1242633110-16344-1-git-send-email-vapier@gentoo.org>
-X-Mailer: git-send-email 1.6.3
+	Mon, 18 May 2009 03:52:37 -0400
+Received: from lon1-post-2.mail.demon.net ([195.173.77.149]:34115 "EHLO
+	lon1-post-2.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750832AbZERHwh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 03:52:37 -0400
+Subject: Re: regression in 2.6.30-rc6 -- via82xx sound very quiet
+From: Richard Kennedy <richard@rsk.demon.co.uk>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: perex@perex.cz, lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <s5h4ovjeykr.wl%tiwai@suse.de>
+References: <1242578874.2748.11.camel@localhost.localdomain>
+	 <s5h7i0f7iqo.wl%tiwai@suse.de>
+	 <1242592683.2748.24.camel@localhost.localdomain>
+	 <s5h4ovjeykr.wl%tiwai@suse.de>
+Content-Type: text/plain
+Date: Mon, 18 May 2009 08:52:34 +0100
+Message-Id: <1242633154.2709.25.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The remove member of the pci_driver hifn_pci_driver uses __devexit_p(),
-so the remove function itself should be marked with __devexit.  And where
-there be __devexit on the remove, so is there __devinit on the probe.
+On Mon, 2009-05-18 at 08:04 +0200, Takashi Iwai wrote:
+> At Sun, 17 May 2009 21:38:03 +0100,
+> Richard Kennedy wrote:
+> > 
+> > On Sun, 2009-05-17 at 19:16 +0200, Takashi Iwai wrote:
+> > > At Sun, 17 May 2009 17:47:54 +0100,
+> > > Richard Kennedy wrote:
+> > > > 
+> > > > In the current git 2.6.30-rc6 the sound from my motherboard has become
+> > > > extremely quiet, I have to turn my speakers up all the way to hear
+> > > > anything at all.
+> > > > I'm not too sure when the problem first started but I've just tested
+> > > > 2.6.30-rc4 and it works correctly.  
+> > > 
+> > > Try to correct "DXS Playback Volume" mixer elements.
+> > > The dB range of these volumes were fixed recently to the correct
+> > > values.  If the old mixer value is restored using the dB value,
+> > > it would be restored to a much lower value, which explains your
+> > > symptom.
+> > > 
+> > > Simply set these volumes to the max (i.e. 0dB) and never change unless
+> > > you really need them.
+> > > 
+> > > 
+> > > thanks,
+> > > 
+> > > Takashi
+> > 
+> > Hi Takashi,
+> > 
+> > thanks for that. Yes that works.
+> 
+> Thanks for checking.
+> 
+> > I didn't even know I had that control, so I guess this could be a common
+> > problem.
+> 
+> Yes, unfortunately, it would hit to many via82xx ac97 chips.
+> As the original value was wrong, it can't be corrected so easily from
+> the driver side.  Manual corrections seem needed, but just only once.
+> 
+> 
+> Takashi
 
-Similarly, the module_init/module_exit functions should be declared with
-plain __init/__exit markings, not the hotplug __dev{init,exit} ones.
+Yes it's easy to do.
+But it would be nice if we could give the users a hint as to what's gone
+wrong. Would it be ok to add a log message at startup ? 
 
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-CC: Evgeniy Polyakov <zbr@ioremap.net>
-CC: Patrick McHardy <kaber@trash.net>
----
- drivers/crypto/hifn_795x.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+something like "your DXS volume control may need reseting".
 
-diff --git a/drivers/crypto/hifn_795x.c b/drivers/crypto/hifn_795x.c
-index 2bef086..5f753fc 100644
---- a/drivers/crypto/hifn_795x.c
-+++ b/drivers/crypto/hifn_795x.c
-@@ -2564,7 +2564,7 @@ static void hifn_tasklet_callback(unsigned long data)
- 		hifn_process_queue(dev);
- }
+I'm not sure how much of this hardware is out there, but it may help
+reduce the number of bug reports.
  
--static int hifn_probe(struct pci_dev *pdev, const struct pci_device_id *id)
-+static int __devinit hifn_probe(struct pci_dev *pdev, const struct pci_device_id *id)
- {
- 	int err, i;
- 	struct hifn_device *dev;
-@@ -2696,7 +2696,7 @@ err_out_disable_pci_device:
- 	return err;
- }
- 
--static void hifn_remove(struct pci_dev *pdev)
-+static void __devexit hifn_remove(struct pci_dev *pdev)
- {
- 	int i;
- 	struct hifn_device *dev;
-@@ -2744,7 +2744,7 @@ static struct pci_driver hifn_pci_driver = {
- 	.remove   = __devexit_p(hifn_remove),
- };
- 
--static int __devinit hifn_init(void)
-+static int __init hifn_init(void)
- {
- 	unsigned int freq;
- 	int err;
-@@ -2789,7 +2789,7 @@ static int __devinit hifn_init(void)
- 	return 0;
- }
- 
--static void __devexit hifn_fini(void)
-+static void __exit hifn_fini(void)
- {
- 	pci_unregister_driver(&hifn_pci_driver);
- 
--- 
-1.6.3
+regards
+Richard
+
 
