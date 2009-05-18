@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757648AbZERJbi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757744AbZERJcI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757648AbZERJbi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 05:31:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756079AbZERJXk
+	id S1757744AbZERJcI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 05:32:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756220AbZERJXn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 05:23:40 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:38407 "EHLO mx2.redhat.com"
+	Mon, 18 May 2009 05:23:43 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38413 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753276AbZERJXJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 05:23:09 -0400
+	id S1753278AbZERJXK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 05:23:10 -0400
 From: Avi Kivity <avi@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: kvm@vger.kernel.org
-Subject: [PATCH 12/43] KVM: x86: paravirt skip pit-through-ioapic boot check
-Date: Mon, 18 May 2009 12:22:34 +0300
-Message-Id: <1242638585-18470-13-git-send-email-avi@redhat.com>
+Subject: [PATCH 16/43] KVM: unify part of generic timer handling
+Date: Mon, 18 May 2009 12:22:38 +0300
+Message-Id: <1242638585-18470-17-git-send-email-avi@redhat.com>
 In-Reply-To: <1242638585-18470-1-git-send-email-avi@redhat.com>
 References: <1242638585-18470-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -23,37 +23,483 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Marcelo Tosatti <mtosatti@redhat.com>
 
-Skip the test which checks if the PIT is properly routed when
-using the IOAPIC, aimed at buggy hardware.
+Hide the internals of vcpu awakening / injection from the in-kernel
+emulated timers. This makes future changes in this logic easier and
+decreases the distance to more generic timer handling.
 
 Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 ---
- arch/x86/kernel/kvm.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+ arch/x86/kvm/Makefile    |    2 +-
+ arch/x86/kvm/i8254.c     |   57 ++++++++++------------------
+ arch/x86/kvm/i8254.h     |   11 +----
+ arch/x86/kvm/kvm_timer.h |   18 +++++++++
+ arch/x86/kvm/lapic.c     |   94 +++++++++++++++++++---------------------------
+ arch/x86/kvm/lapic.h     |    9 +---
+ arch/x86/kvm/timer.c     |   46 ++++++++++++++++++++++
+ 7 files changed, 129 insertions(+), 108 deletions(-)
+ create mode 100644 arch/x86/kvm/kvm_timer.h
+ create mode 100644 arch/x86/kvm/timer.c
 
-diff --git a/arch/x86/kernel/kvm.c b/arch/x86/kernel/kvm.c
-index 33019dd..057173d 100644
---- a/arch/x86/kernel/kvm.c
-+++ b/arch/x86/kernel/kvm.c
-@@ -27,6 +27,7 @@
- #include <linux/mm.h>
- #include <linux/highmem.h>
- #include <linux/hardirq.h>
-+#include <asm/timer.h>
+diff --git a/arch/x86/kvm/Makefile b/arch/x86/kvm/Makefile
+index d3ec292..b43c4ef 100644
+--- a/arch/x86/kvm/Makefile
++++ b/arch/x86/kvm/Makefile
+@@ -14,7 +14,7 @@ endif
+ EXTRA_CFLAGS += -Ivirt/kvm -Iarch/x86/kvm
  
- #define MMU_QUEUE_SIZE 1024
- 
-@@ -230,6 +231,9 @@ static void paravirt_ops_setup(void)
- 		pv_mmu_ops.lazy_mode.enter = kvm_enter_lazy_mmu;
- 		pv_mmu_ops.lazy_mode.leave = kvm_leave_lazy_mmu;
+ kvm-objs := $(common-objs) x86.o mmu.o x86_emulate.o i8259.o irq.o lapic.o \
+-	i8254.o
++	i8254.o timer.o
+ obj-$(CONFIG_KVM) += kvm.o
+ kvm-intel-objs = vmx.o
+ obj-$(CONFIG_KVM_INTEL) += kvm-intel.o
+diff --git a/arch/x86/kvm/i8254.c b/arch/x86/kvm/i8254.c
+index 09ae841..4e2e3f2 100644
+--- a/arch/x86/kvm/i8254.c
++++ b/arch/x86/kvm/i8254.c
+@@ -219,25 +219,6 @@ static void pit_latch_status(struct kvm *kvm, int channel)
  	}
-+#ifdef CONFIG_X86_IO_APIC
-+	no_timer_check = 1;
-+#endif
  }
  
- void __init kvm_guest_init(void)
+-static int __pit_timer_fn(struct kvm_kpit_state *ps)
+-{
+-	struct kvm_vcpu *vcpu0 = ps->pit->kvm->vcpus[0];
+-	struct kvm_kpit_timer *pt = &ps->pit_timer;
+-
+-	if (!atomic_inc_and_test(&pt->pending))
+-		set_bit(KVM_REQ_PENDING_TIMER, &vcpu0->requests);
+-
+-	if (!pt->reinject)
+-		atomic_set(&pt->pending, 1);
+-
+-	if (vcpu0 && waitqueue_active(&vcpu0->wq))
+-		wake_up_interruptible(&vcpu0->wq);
+-
+-	hrtimer_add_expires_ns(&pt->timer, pt->period);
+-
+-	return (pt->period == 0 ? 0 : 1);
+-}
+-
+ int pit_has_pending_timer(struct kvm_vcpu *vcpu)
+ {
+ 	struct kvm_pit *pit = vcpu->kvm->arch.vpit;
+@@ -258,21 +239,6 @@ static void kvm_pit_ack_irq(struct kvm_irq_ack_notifier *kian)
+ 	spin_unlock(&ps->inject_lock);
+ }
+ 
+-static enum hrtimer_restart pit_timer_fn(struct hrtimer *data)
+-{
+-	struct kvm_kpit_state *ps;
+-	int restart_timer = 0;
+-
+-	ps = container_of(data, struct kvm_kpit_state, pit_timer.timer);
+-
+-	restart_timer = __pit_timer_fn(ps);
+-
+-	if (restart_timer)
+-		return HRTIMER_RESTART;
+-	else
+-		return HRTIMER_NORESTART;
+-}
+-
+ void __kvm_migrate_pit_timer(struct kvm_vcpu *vcpu)
+ {
+ 	struct kvm_pit *pit = vcpu->kvm->arch.vpit;
+@@ -286,15 +252,26 @@ void __kvm_migrate_pit_timer(struct kvm_vcpu *vcpu)
+ 		hrtimer_start_expires(timer, HRTIMER_MODE_ABS);
+ }
+ 
+-static void destroy_pit_timer(struct kvm_kpit_timer *pt)
++static void destroy_pit_timer(struct kvm_timer *pt)
+ {
+ 	pr_debug("pit: execute del timer!\n");
+ 	hrtimer_cancel(&pt->timer);
+ }
+ 
++static bool kpit_is_periodic(struct kvm_timer *ktimer)
++{
++	struct kvm_kpit_state *ps = container_of(ktimer, struct kvm_kpit_state,
++						 pit_timer);
++	return ps->is_periodic;
++}
++
++struct kvm_timer_ops kpit_ops = {
++	.is_periodic = kpit_is_periodic,
++};
++
+ static void create_pit_timer(struct kvm_kpit_state *ps, u32 val, int is_period)
+ {
+-	struct kvm_kpit_timer *pt = &ps->pit_timer;
++	struct kvm_timer *pt = &ps->pit_timer;
+ 	s64 interval;
+ 
+ 	interval = muldiv64(val, NSEC_PER_SEC, KVM_PIT_FREQ);
+@@ -304,7 +281,13 @@ static void create_pit_timer(struct kvm_kpit_state *ps, u32 val, int is_period)
+ 	/* TODO The new value only affected after the retriggered */
+ 	hrtimer_cancel(&pt->timer);
+ 	pt->period = (is_period == 0) ? 0 : interval;
+-	pt->timer.function = pit_timer_fn;
++	ps->is_periodic = is_period;
++
++	pt->timer.function = kvm_timer_fn;
++	pt->t_ops = &kpit_ops;
++	pt->kvm = ps->pit->kvm;
++	pt->vcpu_id = 0;
++
+ 	atomic_set(&pt->pending, 0);
+ 	ps->irq_ack = 1;
+ 
+diff --git a/arch/x86/kvm/i8254.h b/arch/x86/kvm/i8254.h
+index 521accf..bbd863f 100644
+--- a/arch/x86/kvm/i8254.h
++++ b/arch/x86/kvm/i8254.h
+@@ -3,14 +3,6 @@
+ 
+ #include "iodev.h"
+ 
+-struct kvm_kpit_timer {
+-	struct hrtimer timer;
+-	int irq;
+-	s64 period; /* unit: ns */
+-	atomic_t pending;
+-	bool reinject;
+-};
+-
+ struct kvm_kpit_channel_state {
+ 	u32 count; /* can be 65536 */
+ 	u16 latched_count;
+@@ -29,7 +21,8 @@ struct kvm_kpit_channel_state {
+ 
+ struct kvm_kpit_state {
+ 	struct kvm_kpit_channel_state channels[3];
+-	struct kvm_kpit_timer pit_timer;
++	struct kvm_timer pit_timer;
++	bool is_periodic;
+ 	u32    speaker_data_on;
+ 	struct mutex lock;
+ 	struct kvm_pit *pit;
+diff --git a/arch/x86/kvm/kvm_timer.h b/arch/x86/kvm/kvm_timer.h
+new file mode 100644
+index 0000000..26bd6ba
+--- /dev/null
++++ b/arch/x86/kvm/kvm_timer.h
+@@ -0,0 +1,18 @@
++
++struct kvm_timer {
++	struct hrtimer timer;
++	s64 period; 				/* unit: ns */
++	atomic_t pending;			/* accumulated triggered timers */
++	bool reinject;
++	struct kvm_timer_ops *t_ops;
++	struct kvm *kvm;
++	int vcpu_id;
++};
++
++struct kvm_timer_ops {
++        bool (*is_periodic)(struct kvm_timer *);
++};
++
++
++enum hrtimer_restart kvm_timer_fn(struct hrtimer *data);
++
+diff --git a/arch/x86/kvm/lapic.c b/arch/x86/kvm/lapic.c
+index afc59b2..27ca43e 100644
+--- a/arch/x86/kvm/lapic.c
++++ b/arch/x86/kvm/lapic.c
+@@ -528,12 +528,13 @@ static u32 apic_get_tmcct(struct kvm_lapic *apic)
+ 	if (apic_get_reg(apic, APIC_TMICT) == 0)
+ 		return 0;
+ 
+-	remaining = hrtimer_expires_remaining(&apic->timer.dev);
++	remaining = hrtimer_expires_remaining(&apic->lapic_timer.timer);
+ 	if (ktime_to_ns(remaining) < 0)
+ 		remaining = ktime_set(0, 0);
+ 
+-	ns = mod_64(ktime_to_ns(remaining), apic->timer.period);
+-	tmcct = div64_u64(ns, (APIC_BUS_CYCLE_NS * apic->timer.divide_count));
++	ns = mod_64(ktime_to_ns(remaining), apic->lapic_timer.period);
++	tmcct = div64_u64(ns,
++			 (APIC_BUS_CYCLE_NS * apic->divide_count));
+ 
+ 	return tmcct;
+ }
+@@ -620,25 +621,25 @@ static void update_divide_count(struct kvm_lapic *apic)
+ 	tdcr = apic_get_reg(apic, APIC_TDCR);
+ 	tmp1 = tdcr & 0xf;
+ 	tmp2 = ((tmp1 & 0x3) | ((tmp1 & 0x8) >> 1)) + 1;
+-	apic->timer.divide_count = 0x1 << (tmp2 & 0x7);
++	apic->divide_count = 0x1 << (tmp2 & 0x7);
+ 
+ 	apic_debug("timer divide count is 0x%x\n",
+-				   apic->timer.divide_count);
++				   apic->lapic_timer.divide_count);
+ }
+ 
+ static void start_apic_timer(struct kvm_lapic *apic)
+ {
+-	ktime_t now = apic->timer.dev.base->get_time();
++	ktime_t now = apic->lapic_timer.timer.base->get_time();
+ 
+-	apic->timer.period = apic_get_reg(apic, APIC_TMICT) *
+-		    APIC_BUS_CYCLE_NS * apic->timer.divide_count;
+-	atomic_set(&apic->timer.pending, 0);
++	apic->lapic_timer.period = apic_get_reg(apic, APIC_TMICT) *
++		    APIC_BUS_CYCLE_NS * apic->divide_count;
++	atomic_set(&apic->lapic_timer.pending, 0);
+ 
+-	if (!apic->timer.period)
++	if (!apic->lapic_timer.period)
+ 		return;
+ 
+-	hrtimer_start(&apic->timer.dev,
+-		      ktime_add_ns(now, apic->timer.period),
++	hrtimer_start(&apic->lapic_timer.timer,
++		      ktime_add_ns(now, apic->lapic_timer.period),
+ 		      HRTIMER_MODE_ABS);
+ 
+ 	apic_debug("%s: bus cycle is %" PRId64 "ns, now 0x%016"
+@@ -647,9 +648,9 @@ static void start_apic_timer(struct kvm_lapic *apic)
+ 			   "expire @ 0x%016" PRIx64 ".\n", __func__,
+ 			   APIC_BUS_CYCLE_NS, ktime_to_ns(now),
+ 			   apic_get_reg(apic, APIC_TMICT),
+-			   apic->timer.period,
++			   apic->lapic_timer.period,
+ 			   ktime_to_ns(ktime_add_ns(now,
+-					apic->timer.period)));
++					apic->lapic_timer.period)));
+ }
+ 
+ static void apic_manage_nmi_watchdog(struct kvm_lapic *apic, u32 lvt0_val)
+@@ -731,7 +732,7 @@ static void apic_mmio_write(struct kvm_io_device *this,
+ 				apic_set_reg(apic, APIC_LVTT + 0x10 * i,
+ 					     lvt_val | APIC_LVT_MASKED);
+ 			}
+-			atomic_set(&apic->timer.pending, 0);
++			atomic_set(&apic->lapic_timer.pending, 0);
+ 
+ 		}
+ 		break;
+@@ -763,7 +764,7 @@ static void apic_mmio_write(struct kvm_io_device *this,
+ 		break;
+ 
+ 	case APIC_TMICT:
+-		hrtimer_cancel(&apic->timer.dev);
++		hrtimer_cancel(&apic->lapic_timer.timer);
+ 		apic_set_reg(apic, APIC_TMICT, val);
+ 		start_apic_timer(apic);
+ 		return;
+@@ -803,7 +804,7 @@ void kvm_free_lapic(struct kvm_vcpu *vcpu)
+ 	if (!vcpu->arch.apic)
+ 		return;
+ 
+-	hrtimer_cancel(&vcpu->arch.apic->timer.dev);
++	hrtimer_cancel(&vcpu->arch.apic->lapic_timer.timer);
+ 
+ 	if (vcpu->arch.apic->regs_page)
+ 		__free_page(vcpu->arch.apic->regs_page);
+@@ -881,7 +882,7 @@ void kvm_lapic_reset(struct kvm_vcpu *vcpu)
+ 	ASSERT(apic != NULL);
+ 
+ 	/* Stop the timer in case it's a reset to an active apic */
+-	hrtimer_cancel(&apic->timer.dev);
++	hrtimer_cancel(&apic->lapic_timer.timer);
+ 
+ 	apic_set_reg(apic, APIC_ID, vcpu->vcpu_id << 24);
+ 	apic_set_reg(apic, APIC_LVR, APIC_VERSION);
+@@ -906,7 +907,7 @@ void kvm_lapic_reset(struct kvm_vcpu *vcpu)
+ 		apic_set_reg(apic, APIC_TMR + 0x10 * i, 0);
+ 	}
+ 	update_divide_count(apic);
+-	atomic_set(&apic->timer.pending, 0);
++	atomic_set(&apic->lapic_timer.pending, 0);
+ 	if (vcpu->vcpu_id == 0)
+ 		vcpu->arch.apic_base |= MSR_IA32_APICBASE_BSP;
+ 	apic_update_ppr(apic);
+@@ -937,22 +938,11 @@ EXPORT_SYMBOL_GPL(kvm_lapic_enabled);
+  *----------------------------------------------------------------------
+  */
+ 
+-/* TODO: make sure __apic_timer_fn runs in current pCPU */
+-static int __apic_timer_fn(struct kvm_lapic *apic)
++static bool lapic_is_periodic(struct kvm_timer *ktimer)
+ {
+-	int result = 0;
+-	wait_queue_head_t *q = &apic->vcpu->wq;
+-
+-	if(!atomic_inc_and_test(&apic->timer.pending))
+-		set_bit(KVM_REQ_PENDING_TIMER, &apic->vcpu->requests);
+-	if (waitqueue_active(q))
+-		wake_up_interruptible(q);
+-
+-	if (apic_lvtt_period(apic)) {
+-		result = 1;
+-		hrtimer_add_expires_ns(&apic->timer.dev, apic->timer.period);
+-	}
+-	return result;
++	struct kvm_lapic *apic = container_of(ktimer, struct kvm_lapic,
++					      lapic_timer);
++	return apic_lvtt_period(apic);
+ }
+ 
+ int apic_has_pending_timer(struct kvm_vcpu *vcpu)
+@@ -960,7 +950,7 @@ int apic_has_pending_timer(struct kvm_vcpu *vcpu)
+ 	struct kvm_lapic *lapic = vcpu->arch.apic;
+ 
+ 	if (lapic && apic_enabled(lapic) && apic_lvt_enabled(lapic, APIC_LVTT))
+-		return atomic_read(&lapic->timer.pending);
++		return atomic_read(&lapic->lapic_timer.pending);
+ 
+ 	return 0;
+ }
+@@ -987,20 +977,9 @@ void kvm_apic_nmi_wd_deliver(struct kvm_vcpu *vcpu)
+ 		kvm_apic_local_deliver(apic, APIC_LVT0);
+ }
+ 
+-static enum hrtimer_restart apic_timer_fn(struct hrtimer *data)
+-{
+-	struct kvm_lapic *apic;
+-	int restart_timer = 0;
+-
+-	apic = container_of(data, struct kvm_lapic, timer.dev);
+-
+-	restart_timer = __apic_timer_fn(apic);
+-
+-	if (restart_timer)
+-		return HRTIMER_RESTART;
+-	else
+-		return HRTIMER_NORESTART;
+-}
++struct kvm_timer_ops lapic_timer_ops = {
++	.is_periodic = lapic_is_periodic,
++};
+ 
+ int kvm_create_lapic(struct kvm_vcpu *vcpu)
+ {
+@@ -1025,8 +1004,13 @@ int kvm_create_lapic(struct kvm_vcpu *vcpu)
+ 	memset(apic->regs, 0, PAGE_SIZE);
+ 	apic->vcpu = vcpu;
+ 
+-	hrtimer_init(&apic->timer.dev, CLOCK_MONOTONIC, HRTIMER_MODE_ABS);
+-	apic->timer.dev.function = apic_timer_fn;
++	hrtimer_init(&apic->lapic_timer.timer, CLOCK_MONOTONIC,
++		     HRTIMER_MODE_ABS);
++	apic->lapic_timer.timer.function = kvm_timer_fn;
++	apic->lapic_timer.t_ops = &lapic_timer_ops;
++	apic->lapic_timer.kvm = vcpu->kvm;
++	apic->lapic_timer.vcpu_id = vcpu->vcpu_id;
++
+ 	apic->base_address = APIC_DEFAULT_PHYS_BASE;
+ 	vcpu->arch.apic_base = APIC_DEFAULT_PHYS_BASE;
+ 
+@@ -1079,9 +1063,9 @@ void kvm_inject_apic_timer_irqs(struct kvm_vcpu *vcpu)
+ {
+ 	struct kvm_lapic *apic = vcpu->arch.apic;
+ 
+-	if (apic && atomic_read(&apic->timer.pending) > 0) {
++	if (apic && atomic_read(&apic->lapic_timer.pending) > 0) {
+ 		if (kvm_apic_local_deliver(apic, APIC_LVTT))
+-			atomic_dec(&apic->timer.pending);
++			atomic_dec(&apic->lapic_timer.pending);
+ 	}
+ }
+ 
+@@ -1107,7 +1091,7 @@ void kvm_apic_post_state_restore(struct kvm_vcpu *vcpu)
+ 			     MSR_IA32_APICBASE_BASE;
+ 	apic_set_reg(apic, APIC_LVR, APIC_VERSION);
+ 	apic_update_ppr(apic);
+-	hrtimer_cancel(&apic->timer.dev);
++	hrtimer_cancel(&apic->lapic_timer.timer);
+ 	update_divide_count(apic);
+ 	start_apic_timer(apic);
+ }
+@@ -1120,7 +1104,7 @@ void __kvm_migrate_apic_timer(struct kvm_vcpu *vcpu)
+ 	if (!apic)
+ 		return;
+ 
+-	timer = &apic->timer.dev;
++	timer = &apic->lapic_timer.timer;
+ 	if (hrtimer_cancel(timer))
+ 		hrtimer_start_expires(timer, HRTIMER_MODE_ABS);
+ }
+diff --git a/arch/x86/kvm/lapic.h b/arch/x86/kvm/lapic.h
+index 45ab6ee..2fc0d3c 100644
+--- a/arch/x86/kvm/lapic.h
++++ b/arch/x86/kvm/lapic.h
+@@ -2,18 +2,15 @@
+ #define __KVM_X86_LAPIC_H
+ 
+ #include "iodev.h"
++#include "kvm_timer.h"
+ 
+ #include <linux/kvm_host.h>
+ 
+ struct kvm_lapic {
+ 	unsigned long base_address;
+ 	struct kvm_io_device dev;
+-	struct {
+-		atomic_t pending;
+-		s64 period;	/* unit: ns */
+-		u32 divide_count;
+-		struct hrtimer dev;
+-	} timer;
++	struct kvm_timer lapic_timer;
++	u32 divide_count;
+ 	struct kvm_vcpu *vcpu;
+ 	struct page *regs_page;
+ 	void *regs;
+diff --git a/arch/x86/kvm/timer.c b/arch/x86/kvm/timer.c
+new file mode 100644
+index 0000000..86dbac0
+--- /dev/null
++++ b/arch/x86/kvm/timer.c
+@@ -0,0 +1,46 @@
++#include <linux/kvm_host.h>
++#include <linux/kvm.h>
++#include <linux/hrtimer.h>
++#include <asm/atomic.h>
++#include "kvm_timer.h"
++
++static int __kvm_timer_fn(struct kvm_vcpu *vcpu, struct kvm_timer *ktimer)
++{
++	int restart_timer = 0;
++	wait_queue_head_t *q = &vcpu->wq;
++
++	/* FIXME: this code should not know anything about vcpus */
++	if (!atomic_inc_and_test(&ktimer->pending))
++		set_bit(KVM_REQ_PENDING_TIMER, &vcpu->requests);
++
++	if (!ktimer->reinject)
++		atomic_set(&ktimer->pending, 1);
++
++	if (waitqueue_active(q))
++		wake_up_interruptible(q);
++
++	if (ktimer->t_ops->is_periodic(ktimer)) {
++		hrtimer_add_expires_ns(&ktimer->timer, ktimer->period);
++		restart_timer = 1;
++	}
++
++	return restart_timer;
++}
++
++enum hrtimer_restart kvm_timer_fn(struct hrtimer *data)
++{
++	int restart_timer;
++	struct kvm_vcpu *vcpu;
++	struct kvm_timer *ktimer = container_of(data, struct kvm_timer, timer);
++
++	vcpu = ktimer->kvm->vcpus[ktimer->vcpu_id];
++	if (!vcpu)
++		return HRTIMER_NORESTART;
++
++	restart_timer = __kvm_timer_fn(vcpu, ktimer);
++	if (restart_timer)
++		return HRTIMER_RESTART;
++	else
++		return HRTIMER_NORESTART;
++}
++
 -- 
 1.6.0.6
 
