@@ -1,70 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753518AbZERR6g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753967AbZERSAe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753518AbZERR6g (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 13:58:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751111AbZERR63
+	id S1753967AbZERSAe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 14:00:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751772AbZERSA1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 13:58:29 -0400
-Received: from sous-sol.org ([216.99.217.87]:41274 "EHLO sequoia.sous-sol.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751218AbZERR63 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 13:58:29 -0400
-Date: Mon, 18 May 2009 10:51:18 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [GIT PULL] xen /proc/mtrr implementation
-Message-ID: <20090518175118.GL20823@sequoia.sous-sol.org>
-References: <20090513133021.GA7277@elte.hu> <4A0ADBA2.2020300@goop.org> <20090515182757.GA19256@elte.hu> <4A0DCC11.10307@goop.org> <m1my9ex818.fsf@fess.ebiederm.org> <4A0DFF78.6000501@goop.org> <20090515202250.0f1218ef@jbarnes-g45> <m1iqk1k708.fsf@fess.ebiederm.org> <4A10EAC4.9070701@goop.org> <20090518085902.GE10687@elte.hu>
+	Mon, 18 May 2009 14:00:27 -0400
+Received: from hera.kernel.org ([140.211.167.34]:57269 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751326AbZERSA0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 14:00:26 -0400
+Message-ID: <4A11A21D.1080301@kernel.org>
+Date: Mon, 18 May 2009 10:59:57 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090518085902.GE10687@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org, Len Brown <lenb@kernel.org>
+Subject: [PATCH, v2] x86: add X86_UPDATE_MPTABLE option
+References: <4A0DC7DC.7000204@kernel.org> <4A0EED8B.6040704@kernel.org> <200905180941.06988.bjorn.helgaas@hp.com>
+In-Reply-To: <200905180941.06988.bjorn.helgaas@hp.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ingo Molnar (mingo@elte.hu) wrote:
-> Here Xen invades an already fragile piece of upstream code 
-> (/proc/mtrr) that is obsolete and on the way out. If you want a 
-> solution you should add PAT support to Xen and you should use recent 
-> upstream kernels. Or you should emulate /proc/mtrr in _Xen the 
-> hypervisor_, if you really care that much - without increasing the 
-> amount of crap in Linux.
 
-Could you be specific re: technical issues?  I see in the general mtrr
-impact has one oddity:
+so could enable it for special purpose.
+1. for acpi enabled kernel kexec kernel without acpi
+2. for crossing check mptable or have correct mptable
 
-+int __init common_num_var_ranges
-+static int __init xen_num_var_ranges(void);
-+.num_var_ranges    =
+even with this option enabled, user still need to use
+update_mpatble or alloc_mptable in command line
 
-A bit unusual to have an __init function in an ops table.  Albeit safe in
-this case.  Could slightly minimize impact by keeping setup_num_var_ranges
-and have it do:
+v2: update to make it depends on KEXEC according to Bjorn
 
-	if (mtrr_if->num_var_ranges)
-		num_var_ranges = mtrr_if->num_var_ranges();
-	else
-		num_var_ranges = common_num_var_ranges;
+[ Impact: new config option to disable update_mptable ]
 
-Similarly, could do a simple inline stub to remove the extra ifdef.
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Len Brown <lenb@kernel.org>
 
-+#ifdef CONFIG_XEN_DOM0
-+		xen_init_mtrr();
-+#endif
+---
+ arch/x86/Kconfig              |   10 ++++++++++
+ arch/x86/include/asm/mpspec.h |    6 +++---
+ arch/x86/kernel/acpi/boot.c   |    3 ++-
+ arch/x86/kernel/mpparse.c     |    4 ++++
+ 4 files changed, 19 insertions(+), 4 deletions(-)
 
-But those are pretty minor.  I think the changes proposed are pretty
-small and reasonable to make existing /proc/mtrr usable in Xen dom0
-(different discussion of when to formally deprecate /proc/mtrr).
-
-thanks,
--chris
+Index: linux-2.6/arch/x86/Kconfig
+===================================================================
+--- linux-2.6.orig/arch/x86/Kconfig
++++ linux-2.6/arch/x86/Kconfig
+@@ -292,6 +292,16 @@ config X86_MPPARSE
+ 	  For old smp systems that do not have proper acpi support. Newer systems
+ 	  (esp with 64bit cpus) with acpi support, MADT and DSDT will override it
+ 
++config X86_UPDATE_MPTABLE
++	bool "Enable update mptable according to ACPI"
++	default n
++	depends on X86_MPPARSE && ACPI && KEXEC
++	---help---
++	  Some systems do not have correct mptable. With "update_mptable" or
++	  "alloc_mptable" kernel could try to update mptable according to DSDT.
++	  Then could use kexec to start second kernel (even old) without ACPI
++	  support compiled in or "acpi=off"
++
+ config X86_BIGSMP
+ 	bool "Support for big SMP systems with more than 8 CPUs"
+ 	depends on X86_32 && SMP
+Index: linux-2.6/arch/x86/kernel/acpi/boot.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/acpi/boot.c
++++ linux-2.6/arch/x86/kernel/acpi/boot.c
+@@ -1159,7 +1159,7 @@ void __init mp_config_acpi_legacy_irqs(v
+ static int mp_config_acpi_gsi(struct device *dev, u32 gsi, int trigger,
+ 			int polarity)
+ {
+-#ifdef CONFIG_X86_MPPARSE
++#ifdef CONFIG_X86_UPDATE_MPTABLE
+ 	struct mpc_intsrc mp_irq;
+ 	struct pci_dev *pdev;
+ 	unsigned char number;
+@@ -1191,6 +1191,7 @@ static int mp_config_acpi_gsi(struct dev
+ 
+ 	save_mp_irq(&mp_irq);
+ #endif
++
+ 	return 0;
+ }
+ 
+Index: linux-2.6/arch/x86/kernel/mpparse.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/mpparse.c
++++ linux-2.6/arch/x86/kernel/mpparse.c
+@@ -797,6 +797,8 @@ void __init find_smp_config(void)
+ 	__find_smp_config(1);
+ }
+ 
++#ifdef CONFIG_X86_UPDATE_MPTABLE
++
+ #ifdef CONFIG_X86_IO_APIC
+ static u8 __initdata irq_used[MAX_IRQ_SOURCES];
+ 
+@@ -1080,3 +1082,5 @@ static int __init update_mp_table(void)
+ }
+ 
+ late_initcall(update_mp_table);
++
++#endif /* CONFIG_X86_UPDATE_MPTABLE */
+Index: linux-2.6/arch/x86/include/asm/mpspec.h
+===================================================================
+--- linux-2.6.orig/arch/x86/include/asm/mpspec.h
++++ linux-2.6/arch/x86/include/asm/mpspec.h
+@@ -60,10 +60,8 @@ extern void get_smp_config(void);
+ 
+ #ifdef CONFIG_X86_MPPARSE
+ extern void find_smp_config(void);
+-extern void early_reserve_e820_mpc_new(void);
+ #else
+ static inline void find_smp_config(void) { }
+-static inline void early_reserve_e820_mpc_new(void) { }
+ #endif
+ 
+ void __cpuinit generic_processor_info(int apicid, int version);
+@@ -87,13 +85,15 @@ static inline int acpi_probe_gsi(void)
+ }
+ #endif /* CONFIG_ACPI */
+ 
+-#ifdef CONFIG_X86_MPPARSE
++#ifdef CONFIG_X86_UPDATE_MPTABLE
+ extern int enable_update_mptable;
++extern void early_reserve_e820_mpc_new(void);
+ #else
+ static inline int enable_update_mptable(void)
+ {
+ 	return 0;
+ }
++static inline void early_reserve_e820_mpc_new(void) { }
+ #endif
+ 
+ #define PHYSID_ARRAY_SIZE	BITS_TO_LONGS(MAX_APICS)
