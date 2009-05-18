@@ -1,72 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756630AbZERIWV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756552AbZERI0Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756630AbZERIWV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 04:22:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751989AbZERIWB
+	id S1756552AbZERI0Q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 04:26:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753735AbZERIZz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 04:22:01 -0400
-Received: from yx-out-2324.google.com ([74.125.44.30]:48688 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751022AbZERIWA (ORCPT
+	Mon, 18 May 2009 04:25:55 -0400
+Received: from mail-gx0-f214.google.com ([209.85.217.214]:38685 "EHLO
+	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753137AbZERIZv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 04:22:00 -0400
+	Mon, 18 May 2009 04:25:51 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
+        h=mime-version:date:message-id:subject:from:to:content-type
          :content-transfer-encoding;
-        b=umeo5vwxFrhjBaiRl6c4MLapggspZXBUiempqTtuGHVJC7bsiH7qQNZlgmOj2s2FKP
-         2pBdmsLQsvmHqGQPW2lG7rYNMFgEgMYWpiAhpFueBb9J1tw1gWXVEv2njQnOMWhUv0zB
-         z6LcoOIzCOzWtSIUlhiD2mELIlhFKfbjwmsik=
-Message-ID: <4A111A85.6030508@gmail.com>
-Date: Mon, 18 May 2009 10:21:25 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1b5pre) Gecko/20090511 SUSE/3.0b2-9.1 Thunderbird/3.0b3pre
+        b=lxvvgEmT77Z6s83LEbgZZ6KF3ic6a4d56G6CkyQPKsjuqd7OQN5LjfxD7XdESjHNqj
+         x7aV7FgOPgZjZNEcSlMUV2r9nJ+G3CprXQPj4Q6PrB/Ey3Yd15ZAqrj0tACQ40vpXpdS
+         6qmAGLqNb3za3VARzL3qtoT/yE2GO9GaekA7s=
 MIME-Version: 1.0
-To: Krzysztof Helt <krzysztof.h1@wp.pl>
-CC: linux-kbuild@vger.kernel.org, LKLM <linux-kernel@vger.kernel.org>,
-       Jiri Kosina <jkosina@suse.cz>
-Subject: Re: Kconfig: fix problem in HID menu
-References: <20090517175617.81323cc1.krzysztof.h1@wp.pl>
-In-Reply-To: <20090517175617.81323cc1.krzysztof.h1@wp.pl>
-X-Enigmail-Version: 0.96a
-Content-Type: text/plain; charset=ISO-8859-1
+Date: Mon, 18 May 2009 04:25:51 -0400
+Message-ID: <3d2f29dc0905180125x5e7ef51dqf10955a3d44336e2@mail.gmail.com>
+Subject: Boot problems with 2.6.29.1 - cannot smoothly boot on battery
+From: Chris Howie <cdhowie@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/17/2009 05:56 PM, Krzysztof Helt wrote:
-> Following syntax does not work properly if there is an options FOO2 depending on the FOO:
-> 
-> config FOO
-> 	tristate "Foo" if EMBEDDED
-> 	depends on FUD
-> 	default !EMBEDDED
-> 
-> config FOO2
-> 	bool "Foo2"
-> 	depends on FOO
-> 
-> If the EMBEDDED is not selected the FOO option is selected
-> and it cannot be unselected.
+Folks:
 
-Uhuh, but that's correct behaviour. We don't want to bother user with
-tons of drivers unless he is compiling for embedded. Or am I missing
-something?
+I've been running 2.6.29.1 for some time and reported an issue to this
+mailing list a while ago about the boot process.  I believe I have now
+nailed down the one factor that determines whether I see this issue.
 
-> The change of the FOO definition:
-> 
-> config FOO
-> 	tristate "Foo" 
-> 	depends on EMBEDDED && FUD
-> 	default !EMBEDDED
-> 
-> fixes the issue.
+The problem arises only when booting or halting my laptop when there
+is no power plugged in, e.g. the system is running on battery.
+Sometime after init begins starting services I must hold down a key on
+the keyboard to convince it to continue booting, otherwise it just
+hangs.  If the system is running on AC then it boots fine.  This same
+problem repeats itself during the halt process if running on battery.
 
-This does something different. You offer regular user to turn it off and
-defaults to n for embedded. This is not what we want, I suppose.
+This also happens when resuming a suspend-to-disk image, after loading
+the data from the hard drive, but before control is returned to
+userspace.  The keyboard has no effect on this hang, presumably
+because the kernel is not listening to the keyboard at this point.
+When this happens the only solution is to hold the power button and
+boot normally instead.
 
-> This is likely a bug in Kconfig tool.
+An issue like this is a serious usability problem for me.  I am
+neither a kernel developer nor hacker, my coding skills applying
+mostly to userspace applications.  If there is anything you need from
+me to help diagnose this problem please let me know.
 
-In that case, you want to fix the tool, not the configs.
+I am not subscribed so please CC me on replies.
+
+Thanks all for your time,
+
+-- 
+Chris Howie
+http://www.chrishowie.com
+http://en.wikipedia.org/wiki/User:Crazycomputers
