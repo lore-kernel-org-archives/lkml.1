@@ -1,87 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756214AbZERQbE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757425AbZERQdB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756214AbZERQbE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 12:31:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753677AbZERQa5
+	id S1757425AbZERQdB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 12:33:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754958AbZERQcz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 12:30:57 -0400
-Received: from mu-out-0910.google.com ([209.85.134.188]:50987 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751062AbZERQaz (ORCPT
+	Mon, 18 May 2009 12:32:55 -0400
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:61992 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754333AbZERQcy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 12:30:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=WEyB3bRC6HcvQd//Y7JCqD17WrxAjGyBqQ/nCHBqI6sbQYrpU00SPyj0+y3/d7DEMA
-         fzT5jUa58lc2MAhXJKTjvbla3eEXaSh+P9H4S/p/1Y0cKX6d7ClqZrQ+5rwN52ws9Ta3
-         xVwf1ADK4g5P9fAnDZFq89G4k2iGYmIIazXPQ=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Borislav Petkov <petkovbb@googlemail.com>
-Subject: Re: 2.6.30-rc6: Reported regressions from 2.6.29
-Date: Mon, 18 May 2009 18:35:28 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc3-00442-ga3668b0; KDE/4.2.2; i686; ; )
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Helge Deller <deller@gmx.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Kyle McMartin <kyle@mcmartin.ca>
-References: <_AjETDMbIoL.A.DcH.RYzDKB@chimera> <20090517133210.GB4640@nowhere> <20090517161916.GA2976@liondog.tnic>
-In-Reply-To: <20090517161916.GA2976@liondog.tnic>
-MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200905181835.28803.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Mon, 18 May 2009 12:32:54 -0400
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+Content-type: text/plain; CHARSET=US-ASCII
+Date: Mon, 18 May 2009 10:32:21 -0600
+From: Andreas Dilger <adilger@sun.com>
+Subject: Re: [PATCH 30/32] union mount: ext2 fallthru support
+In-reply-to: <1242662968-11684-31-git-send-email-jblunck@suse.de>
+To: Jan Blunck <jblunck@suse.de>
+Cc: viro@zeniv.linux.org.uk, bharata@in.ibm.com, dwmw2@infradead.org,
+       mszeredi@suse.cz, vaurora@redhat.com, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Message-id: <20090518163221.GE3144@webber.adilger.int>
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
+References: <1242662968-11684-1-git-send-email-jblunck@suse.de>
+ <1242662968-11684-31-git-send-email-jblunck@suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 17 May 2009 18:19:16 Borislav Petkov wrote:
-> Hi,
-> 
-> On Sun, May 17, 2009 at 03:32:11PM +0200, Frederic Weisbecker wrote:
-> > On Sun, May 17, 2009 at 09:33:27AM +0200, Ingo Molnar wrote:
-> > > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13297
-> > > > Subject		: kernel panic -  not syncing : fatel exception in interupt
-> > > > Submitter	: rob <rob1@housetosell.net>
-> > > > Date		: 2009-05-12 19:34 (5 days old)
-> > > > References	: http://marc.info/?l=linux-kernel&m=124216126903309&w=4
-> > > 
-> > > tainted crash, but probably legit. It does show some badness in an 
-> > > old-IDE legacy codepath:
-> > > 
-> > > [<c0371865>] error_code+0x65/0x6c
-> > > [<c0110155>] do_page_fault+0x0/0x1e0
-> > > [<c027dafc>] ide_complete_rq+0xf/0x3b
-> > > [<c02870a0>] cdrom_newpc_intr+0x64d/0x6cd
-> > > [<c0286a53>] cdrom_newpc_intr+0x0/0x6cd
-> > > [<c027dcc2>] ide_intr+0x109/0x161
-> > > [<c0132298>] handle_IRQ_event+0x54/0xc7
-> > > [<c013354a>] handle_level_irq+0x4f/0x85
-> > > [<c0103df7>] handle_irq+0x17/0x20
-> > > [<c0103da5>] do_IRQ+0x2b/0x66
-> > > [<c0102be9>] common_interupt+0x29/0x30
-> > > [<c0480000>] cmd40x_init+0x2ac/0x38d
-> > > [<c0106db3>] default_idle+0x25/0x38
-> > > [<c01019be>] cpu_idle+0x19/0x2d
-> > > [<c0468907>] start_kernel+0x23f/0x242
-> > > 
-> > > report subject line is too unspecific, it should be changed to 
-> > > something like:
-> > > 
-> > >   legacy IDE cmd40x related bootup crash
-> > 
-> > 
-> > It seems the crash has been rewritten by hand. I don't see
-> > any cmd40x_init(), I guess it's about cmd640 chipset, then
-> > cmd640x_init()
+On May 18, 2009  18:09 +0200, Jan Blunck wrote:
+> diff --git a/include/linux/ext2_fs.h b/include/linux/ext2_fs.h
+> index bd10826..f6b68ec 100644
+> --- a/include/linux/ext2_fs.h
+> +++ b/include/linux/ext2_fs.h
+> @@ -577,6 +577,7 @@ enum {
+>  	EXT2_FT_SOCK,
+>  	EXT2_FT_SYMLINK,
+>  	EXT2_FT_WHT,
+> +	EXT2_FT_FALLTHRU,
+>  	EXT2_FT_MAX
 
-Frederic, is the oops reproducible?  Is 2.6.30-rc6 any better?
+The EXT2_FT_WHT is not declared in e2fsprogs::lib/ext2fs/ext2_fs.h
+so you risk hitting a conflict here if someone isn't looking at
+the "should be left alone" ext2 code.  Secondly, it is somewhat
+dangerous to use a straight enum here, because this will reassign
+values of later variables if one of the earlier ones is removed.
 
-Does it help if you disable CONFIG_BLK_DEV_CMD640?
-(this system doesn't have CMD640 chipset)
+For enums like this that require specific constant on-disk values
+I prefer being safe:
+
+enum {
+	EXT2_FT_UNKNOWN  = 0,
+	EXT2_FT_REG_FILE = 1,
+	EXT2_FT_DIR	 = 2,
+	EXT2_FT_CHRDEV   = 3,
+	EXT2_FT_BLKDEV   = 4,
+	EXT2_FT_FIFO     = 5,
+	EXT2_FT_SOCK     = 6,
+	EXT2_FT_SYMLINK  = 7,
+	EXT2_FT_WHT      = 8,
+	EXT2_FT_FALLTHRU = 9,
+ 	EXT2_FT_MAX
+
+
+It probably also makes sense to include a patch for ext3/ext4 to ensure
+these values are not used by some unrelated feature.
+
+Cheers, Andreas
+--
+Andreas Dilger
+Sr. Staff Engineer, Lustre Group
+Sun Microsystems of Canada, Inc.
+
