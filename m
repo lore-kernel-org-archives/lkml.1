@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758551AbZERQQX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758766AbZERQQ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758551AbZERQQX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 12:16:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755879AbZERQNo
+	id S1758766AbZERQQ7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 12:16:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754281AbZERQNz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 12:13:44 -0400
-Received: from cantor.suse.de ([195.135.220.2]:41517 "EHLO mx1.suse.de"
+	Mon, 18 May 2009 12:13:55 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:56885 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754330AbZERQJb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 12:09:31 -0400
+	id S1754014AbZERQJa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 12:09:30 -0400
 From: Jan Blunck <jblunck@suse.de>
 To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
 Cc: viro@zeniv.linux.org.uk, bharata@in.ibm.com, dwmw2@infradead.org,
        mszeredi@suse.cz, vaurora@redhat.com
-Subject: [PATCH 05/32] VFS: Remove unnecessary micro-optimization in cached_lookup()
-Date: Mon, 18 May 2009 18:09:01 +0200
-Message-Id: <1242662968-11684-6-git-send-email-jblunck@suse.de>
+Subject: [PATCH 28/32] union-mount: Basic fallthru definitions
+Date: Mon, 18 May 2009 18:09:24 +0200
+Message-Id: <1242662968-11684-29-git-send-email-jblunck@suse.de>
 X-Mailer: git-send-email 1.6.1.3
 In-Reply-To: <1242662968-11684-1-git-send-email-jblunck@suse.de>
 References: <1242662968-11684-1-git-send-email-jblunck@suse.de>
@@ -23,49 +23,52 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-d_lookup() takes rename_lock which is a seq_lock.  This is so cheap
-it's not worth calling lockless __d_lookup() first from
-cache_lookup().  Rename cached_lookup() to cache_lookup() while we're
-there.
+From: Valerie Aurora (Henson) <vaurora@redhat.com>
 
-Signed-off-by: Jan Blunck <jblunck@suse.de>
+Define the fallthru dcache flag and file system op.
+
 Signed-off-by: Valerie Aurora (Henson) <vaurora@redhat.com>
 ---
- fs/namei.c |   13 ++++---------
- 1 files changed, 4 insertions(+), 9 deletions(-)
+ include/linux/dcache.h |    6 ++++++
+ include/linux/fs.h     |    1 +
+ 2 files changed, 7 insertions(+), 0 deletions(-)
 
-diff --git a/fs/namei.c b/fs/namei.c
-index 081aef1..a9dd19b 100644
---- a/fs/namei.c
-+++ b/fs/namei.c
-@@ -402,15 +402,10 @@ do_revalidate(struct dentry *dentry, struct nameidata *nd)
-  * Internal lookup() using the new generic dcache.
-  * SMP-safe
-  */
--static struct dentry * cached_lookup(struct dentry * parent, struct qstr * name, struct nameidata *nd)
-+static struct dentry *cache_lookup(struct dentry *parent, struct qstr *name,
-+				   struct nameidata *nd)
+diff --git a/include/linux/dcache.h b/include/linux/dcache.h
+index 7930b07..9534813 100644
+--- a/include/linux/dcache.h
++++ b/include/linux/dcache.h
+@@ -192,6 +192,7 @@ d_iput:		no		no		no       yes
+ #define DCACHE_INOTIFY_PARENT_WATCHED	0x0020 /* Parent inode is watched */
+ #define DCACHE_COOKIE		0x0040	/* For use by dcookie subsystem */
+ #define DCACHE_WHITEOUT		0x0080	/* This negative dentry is a whiteout */
++#define DCACHE_FALLTHRU		0x0100	/* Keep looking in the file system below */
+ 
+ extern spinlock_t dcache_lock;
+ extern seqlock_t rename_lock;
+@@ -373,6 +374,11 @@ static inline int d_is_whiteout(struct dentry *dentry)
+ 	return (dentry->d_flags & DCACHE_WHITEOUT);
+ }
+ 
++static inline int d_is_fallthru(struct dentry *dentry)
++{
++	return (dentry->d_flags & DCACHE_FALLTHRU);
++}
++
+ static inline struct dentry *dget_parent(struct dentry *dentry)
  {
--	struct dentry * dentry = __d_lookup(parent, name);
--
--	/* lockess __d_lookup may fail due to concurrent d_move() 
--	 * in some unrelated directory, so try with d_lookup
--	 */
--	if (!dentry)
--		dentry = d_lookup(parent, name);
-+	struct dentry *dentry = d_lookup(parent, name);
- 
- 	if (dentry && dentry->d_op && dentry->d_op->d_revalidate)
- 		dentry = do_revalidate(dentry, nd);
-@@ -1168,7 +1163,7 @@ static struct dentry *__lookup_hash(struct qstr *name,
- 			goto out;
- 	}
- 
--	dentry = cached_lookup(base, name, nd);
-+	dentry = cache_lookup(base, name, nd);
- 	if (!dentry) {
- 		struct dentry *new;
- 
+ 	struct dentry *ret;
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index 7f07768..dd9c859 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -1351,6 +1351,7 @@ struct inode_operations {
+ 	int (*rmdir) (struct inode *,struct dentry *);
+ 	int (*mknod) (struct inode *,struct dentry *,int,dev_t);
+ 	int (*whiteout) (struct inode *, struct dentry *, struct dentry *);
++	int (*fallthru) (struct inode *, struct dentry *);
+ 	int (*rename) (struct inode *, struct dentry *,
+ 			struct inode *, struct dentry *);
+ 	int (*readlink) (struct dentry *, char __user *,int);
 -- 
 1.6.1.3
 
