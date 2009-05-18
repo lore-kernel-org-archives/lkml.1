@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756550AbZERJgM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758168AbZERJgf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756550AbZERJgM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 05:36:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756373AbZERJYG
+	id S1758168AbZERJgf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 05:36:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754193AbZERJYJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 05:24:06 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:38424 "EHLO mx2.redhat.com"
+	Mon, 18 May 2009 05:24:09 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38421 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754193AbZERJXL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754020AbZERJXL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 18 May 2009 05:23:11 -0400
 From: Avi Kivity <avi@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: kvm@vger.kernel.org
-Subject: [PATCH 22/43] KVM: consolidate ioapic/ipi interrupt delivery logic
-Date: Mon, 18 May 2009 12:22:44 +0300
-Message-Id: <1242638585-18470-23-git-send-email-avi@redhat.com>
+Subject: [PATCH 20/43] KVM: APIC: kvm_apic_set_irq deliver all kinds of interrupts
+Date: Mon, 18 May 2009 12:22:42 +0300
+Message-Id: <1242638585-18470-21-git-send-email-avi@redhat.com>
 In-Reply-To: <1242638585-18470-1-git-send-email-avi@redhat.com>
 References: <1242638585-18470-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -23,351 +23,261 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Gleb Natapov <gleb@redhat.com>
 
-Use kvm_apic_match_dest() in kvm_get_intr_delivery_bitmask() instead
-of duplicating the same code. Use kvm_get_intr_delivery_bitmask() in
-apic_send_ipi() to figure out ipi destination instead of reimplementing
-the logic.
+Get rid of ioapic_inj_irq() and ioapic_inj_nmi() functions.
 
 Signed-off-by: Gleb Natapov <gleb@redhat.com>
 Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
 ---
- arch/ia64/kvm/kvm-ia64.c |    8 +++++
- arch/ia64/kvm/lapic.h    |    3 ++
- arch/x86/kvm/lapic.c     |   69 ++++++++++++++++--------------------------
- arch/x86/kvm/lapic.h     |    2 +
- include/linux/kvm_host.h |    5 ---
- virt/kvm/ioapic.c        |    5 ++-
- virt/kvm/ioapic.h        |   10 ++++--
- virt/kvm/irq_comm.c      |   76 +++++++++++++--------------------------------
- 8 files changed, 71 insertions(+), 107 deletions(-)
+ arch/ia64/include/asm/kvm_host.h |    1 -
+ arch/ia64/kvm/kvm-ia64.c         |    8 +++---
+ arch/ia64/kvm/lapic.h            |    2 +-
+ arch/x86/kvm/lapic.c             |   47 +++++++++++++++++++++++--------------
+ arch/x86/kvm/lapic.h             |    2 +-
+ virt/kvm/ioapic.c                |   40 +++++---------------------------
+ virt/kvm/irq_comm.c              |    1 +
+ 7 files changed, 42 insertions(+), 59 deletions(-)
 
+diff --git a/arch/ia64/include/asm/kvm_host.h b/arch/ia64/include/asm/kvm_host.h
+index 4542651..5608488 100644
+--- a/arch/ia64/include/asm/kvm_host.h
++++ b/arch/ia64/include/asm/kvm_host.h
+@@ -585,7 +585,6 @@ int kvm_emulate_halt(struct kvm_vcpu *vcpu);
+ int kvm_pal_emul(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run);
+ void kvm_sal_emul(struct kvm_vcpu *vcpu);
+ 
+-static inline void kvm_inject_nmi(struct kvm_vcpu *vcpu) {}
+ #endif /* __ASSEMBLY__*/
+ 
+ #endif
 diff --git a/arch/ia64/kvm/kvm-ia64.c b/arch/ia64/kvm/kvm-ia64.c
-index 99d6d17..8eea9cb 100644
+index 774f0d7..99d6d17 100644
 --- a/arch/ia64/kvm/kvm-ia64.c
 +++ b/arch/ia64/kvm/kvm-ia64.c
-@@ -1852,6 +1852,14 @@ struct kvm_vcpu *kvm_get_lowest_prio_vcpu(struct kvm *kvm, u8 vector,
- 	return lvcpu;
+@@ -292,13 +292,13 @@ static void vcpu_deliver_ipi(struct kvm_vcpu *vcpu, uint64_t dm,
+ {
+ 	switch (dm) {
+ 	case SAPIC_FIXED:
+-		kvm_apic_set_irq(vcpu, vector, 0);
++		kvm_apic_set_irq(vcpu, vector, dm, 0);
+ 		break;
+ 	case SAPIC_NMI:
+-		kvm_apic_set_irq(vcpu, 2, 0);
++		kvm_apic_set_irq(vcpu, 2, dm, 0);
+ 		break;
+ 	case SAPIC_EXTINT:
+-		kvm_apic_set_irq(vcpu, 0, 0);
++		kvm_apic_set_irq(vcpu, 0, dm, 0);
+ 		break;
+ 	case SAPIC_INIT:
+ 	case SAPIC_PMI:
+@@ -1813,7 +1813,7 @@ void kvm_vcpu_kick(struct kvm_vcpu *vcpu)
+ 	put_cpu();
  }
  
-+int kvm_apic_match_dest(struct kvm_vcpu *vcpu, struct kvm_lapic *source,
-+		int short_hand, int dest, int dest_mode)
-+{
-+	return (dest_mode == 0) ?
-+		kvm_apic_match_physical_addr(target, dest) :
-+		kvm_apic_match_logical_addr(target, dest);
-+}
-+
- static int find_highest_bits(int *dat)
+-int kvm_apic_set_irq(struct kvm_vcpu *vcpu, u8 vec, u8 trig)
++int kvm_apic_set_irq(struct kvm_vcpu *vcpu, u8 vec, u8 dmode, u8 trig)
  {
- 	u32  bits, bitnum;
+ 
+ 	struct vpd *vpd = to_host(vcpu->kvm, vcpu->arch.vpd);
 diff --git a/arch/ia64/kvm/lapic.h b/arch/ia64/kvm/lapic.h
-index cbcfaa6..31602e7 100644
+index 6d6cbcb..cbcfaa6 100644
 --- a/arch/ia64/kvm/lapic.h
 +++ b/arch/ia64/kvm/lapic.h
-@@ -20,6 +20,9 @@ void kvm_free_lapic(struct kvm_vcpu *vcpu);
+@@ -20,6 +20,6 @@ void kvm_free_lapic(struct kvm_vcpu *vcpu);
  
  int kvm_apic_match_physical_addr(struct kvm_lapic *apic, u16 dest);
  int kvm_apic_match_logical_addr(struct kvm_lapic *apic, u8 mda);
-+int kvm_apic_match_dest(struct kvm_vcpu *vcpu, struct kvm_lapic *source,
-+		int short_hand, int dest, int dest_mode);
-+bool kvm_apic_present(struct kvm_vcpu *vcpu);
- int kvm_apic_set_irq(struct kvm_vcpu *vcpu, u8 vec, u8 dmode, u8 trig);
+-int kvm_apic_set_irq(struct kvm_vcpu *vcpu, u8 vec, u8 trig);
++int kvm_apic_set_irq(struct kvm_vcpu *vcpu, u8 vec, u8 dmode, u8 trig);
  
  #endif
 diff --git a/arch/x86/kvm/lapic.c b/arch/x86/kvm/lapic.c
-index a42f968..998862a 100644
+index 27ca43e..a42f968 100644
 --- a/arch/x86/kvm/lapic.c
 +++ b/arch/x86/kvm/lapic.c
-@@ -260,7 +260,7 @@ static void apic_set_tpr(struct kvm_lapic *apic, u32 tpr)
- 
- int kvm_apic_match_physical_addr(struct kvm_lapic *apic, u16 dest)
- {
--	return kvm_apic_id(apic) == dest;
-+	return dest == 0xff || kvm_apic_id(apic) == dest;
+@@ -196,20 +196,30 @@ int kvm_lapic_find_highest_irr(struct kvm_vcpu *vcpu)
  }
+ EXPORT_SYMBOL_GPL(kvm_lapic_find_highest_irr);
  
- int kvm_apic_match_logical_addr(struct kvm_lapic *apic, u8 mda)
-@@ -289,37 +289,34 @@ int kvm_apic_match_logical_addr(struct kvm_lapic *apic, u8 mda)
- 	return result;
- }
- 
--static int apic_match_dest(struct kvm_vcpu *vcpu, struct kvm_lapic *source,
-+int kvm_apic_match_dest(struct kvm_vcpu *vcpu, struct kvm_lapic *source,
- 			   int short_hand, int dest, int dest_mode)
- {
- 	int result = 0;
- 	struct kvm_lapic *target = vcpu->arch.apic;
- 
- 	apic_debug("target %p, source %p, dest 0x%x, "
--		   "dest_mode 0x%x, short_hand 0x%x",
-+		   "dest_mode 0x%x, short_hand 0x%x\n",
- 		   target, source, dest, dest_mode, short_hand);
- 
- 	ASSERT(!target);
- 	switch (short_hand) {
- 	case APIC_DEST_NOSHORT:
--		if (dest_mode == 0) {
-+		if (dest_mode == 0)
- 			/* Physical mode. */
--			if ((dest == 0xFF) || (dest == kvm_apic_id(target)))
--				result = 1;
--		} else
-+			result = kvm_apic_match_physical_addr(target, dest);
-+		else
- 			/* Logical mode. */
- 			result = kvm_apic_match_logical_addr(target, dest);
- 		break;
- 	case APIC_DEST_SELF:
--		if (target == source)
--			result = 1;
-+		result = (target == source);
- 		break;
- 	case APIC_DEST_ALLINC:
- 		result = 1;
- 		break;
- 	case APIC_DEST_ALLBUT:
--		if (target != source)
--			result = 1;
-+		result = (target != source);
- 		break;
- 	default:
- 		printk(KERN_WARNING "Bad dest shorthand value %x\n",
-@@ -492,38 +489,26 @@ static void apic_send_ipi(struct kvm_lapic *apic)
- 	unsigned int delivery_mode = icr_low & APIC_MODE_MASK;
- 	unsigned int vector = icr_low & APIC_VECTOR_MASK;
- 
--	struct kvm_vcpu *target;
--	struct kvm_vcpu *vcpu;
--	DECLARE_BITMAP(lpr_map, KVM_MAX_VCPUS);
-+	DECLARE_BITMAP(deliver_bitmask, KVM_MAX_VCPUS);
- 	int i;
- 
--	bitmap_zero(lpr_map, KVM_MAX_VCPUS);
- 	apic_debug("icr_high 0x%x, icr_low 0x%x, "
- 		   "short_hand 0x%x, dest 0x%x, trig_mode 0x%x, level 0x%x, "
- 		   "dest_mode 0x%x, delivery_mode 0x%x, vector 0x%x\n",
- 		   icr_high, icr_low, short_hand, dest,
- 		   trig_mode, level, dest_mode, delivery_mode, vector);
- 
--	for (i = 0; i < KVM_MAX_VCPUS; i++) {
--		vcpu = apic->vcpu->kvm->vcpus[i];
--		if (!vcpu)
--			continue;
--
--		if (vcpu->arch.apic &&
--		    apic_match_dest(vcpu, apic, short_hand, dest, dest_mode)) {
--			if (delivery_mode == APIC_DM_LOWEST)
--				__set_bit(vcpu->vcpu_id, lpr_map);
--			else
--				__apic_accept_irq(vcpu->arch.apic, delivery_mode,
--						  vector, level, trig_mode);
--		}
--	}
--
--	if (delivery_mode == APIC_DM_LOWEST) {
--		target = kvm_get_lowest_prio_vcpu(vcpu->kvm, vector, lpr_map);
--		if (target != NULL)
--			__apic_accept_irq(target->arch.apic, delivery_mode,
--					  vector, level, trig_mode);
-+	kvm_get_intr_delivery_bitmask(apic->vcpu->kvm, apic, dest, dest_mode,
-+			delivery_mode == APIC_DM_LOWEST, short_hand,
-+			deliver_bitmask);
+-int kvm_apic_set_irq(struct kvm_vcpu *vcpu, u8 vec, u8 trig)
++static int __apic_accept_irq(struct kvm_lapic *apic, int delivery_mode,
++			     int vector, int level, int trig_mode);
 +
-+	while ((i = find_first_bit(deliver_bitmask, KVM_MAX_VCPUS))
-+			< KVM_MAX_VCPUS) {
-+		struct kvm_vcpu *vcpu = apic->vcpu->kvm->vcpus[i];
-+		__clear_bit(i, deliver_bitmask);
-+		if (vcpu)
-+			__apic_accept_irq(vcpu->arch.apic, delivery_mode,
-+					vector, level, trig_mode);
- 	}
- }
- 
-@@ -930,16 +915,14 @@ void kvm_lapic_reset(struct kvm_vcpu *vcpu)
- }
- EXPORT_SYMBOL_GPL(kvm_lapic_reset);
- 
--int kvm_lapic_enabled(struct kvm_vcpu *vcpu)
-+bool kvm_apic_present(struct kvm_vcpu *vcpu)
++int kvm_apic_set_irq(struct kvm_vcpu *vcpu, u8 vec, u8 dmode, u8 trig)
  {
--	struct kvm_lapic *apic = vcpu->arch.apic;
--	int ret = 0;
--
--	if (!apic)
--		return 0;
--	ret = apic_enabled(apic);
-+	return vcpu->arch.apic && apic_hw_enabled(vcpu->arch.apic);
-+}
+ 	struct kvm_lapic *apic = vcpu->arch.apic;
++	int lapic_dmode;
  
--	return ret;
-+int kvm_lapic_enabled(struct kvm_vcpu *vcpu)
-+{
-+	return kvm_apic_present(vcpu) && apic_sw_enabled(vcpu->arch.apic);
+-	if (!apic_test_and_set_irr(vec, apic)) {
+-		/* a new pending irq is set in IRR */
+-		if (trig)
+-			apic_set_vector(vec, apic->regs + APIC_TMR);
+-		else
+-			apic_clear_vector(vec, apic->regs + APIC_TMR);
+-		kvm_vcpu_kick(apic->vcpu);
+-		return 1;
++	switch (dmode) {
++	case IOAPIC_LOWEST_PRIORITY:
++		lapic_dmode = APIC_DM_LOWEST;
++		break;
++	case IOAPIC_FIXED:
++		lapic_dmode = APIC_DM_FIXED;
++		break;
++	case IOAPIC_NMI:
++		lapic_dmode = APIC_DM_NMI;
++		break;
++	default:
++		printk(KERN_DEBUG"Ignoring delivery mode %d\n", dmode);
++		return 0;
++		break;
+ 	}
+-	return 0;
++	return __apic_accept_irq(apic, lapic_dmode, vec, 1, trig);
  }
- EXPORT_SYMBOL_GPL(kvm_lapic_enabled);
  
+ static inline int apic_find_highest_isr(struct kvm_lapic *apic)
+@@ -327,7 +337,7 @@ static int apic_match_dest(struct kvm_vcpu *vcpu, struct kvm_lapic *source,
+ static int __apic_accept_irq(struct kvm_lapic *apic, int delivery_mode,
+ 			     int vector, int level, int trig_mode)
+ {
+-	int orig_irr, result = 0;
++	int result = 0;
+ 	struct kvm_vcpu *vcpu = apic->vcpu;
+ 
+ 	switch (delivery_mode) {
+@@ -337,10 +347,11 @@ static int __apic_accept_irq(struct kvm_lapic *apic, int delivery_mode,
+ 		if (unlikely(!apic_enabled(apic)))
+ 			break;
+ 
+-		orig_irr = apic_test_and_set_irr(vector, apic);
+-		if (orig_irr && trig_mode) {
+-			apic_debug("level trig mode repeatedly for vector %d",
+-				   vector);
++		result = !apic_test_and_set_irr(vector, apic);
++		if (!result) {
++			if (trig_mode)
++				apic_debug("level trig mode repeatedly for "
++						"vector %d", vector);
+ 			break;
+ 		}
+ 
+@@ -349,10 +360,7 @@ static int __apic_accept_irq(struct kvm_lapic *apic, int delivery_mode,
+ 			apic_set_vector(vector, apic->regs + APIC_TMR);
+ 		} else
+ 			apic_clear_vector(vector, apic->regs + APIC_TMR);
+-
+ 		kvm_vcpu_kick(vcpu);
+-
+-		result = (orig_irr == 0);
+ 		break;
+ 
+ 	case APIC_DM_REMRD:
+@@ -364,12 +372,14 @@ static int __apic_accept_irq(struct kvm_lapic *apic, int delivery_mode,
+ 		break;
+ 
+ 	case APIC_DM_NMI:
++		result = 1;
+ 		kvm_inject_nmi(vcpu);
+ 		kvm_vcpu_kick(vcpu);
+ 		break;
+ 
+ 	case APIC_DM_INIT:
+ 		if (level) {
++			result = 1;
+ 			if (vcpu->arch.mp_state == KVM_MP_STATE_RUNNABLE)
+ 				printk(KERN_DEBUG
+ 				       "INIT on a runnable vcpu %d\n",
+@@ -386,6 +396,7 @@ static int __apic_accept_irq(struct kvm_lapic *apic, int delivery_mode,
+ 		apic_debug("SIPI to vcpu %d vector 0x%02x\n",
+ 			   vcpu->vcpu_id, vector);
+ 		if (vcpu->arch.mp_state == KVM_MP_STATE_INIT_RECEIVED) {
++			result = 1;
+ 			vcpu->arch.sipi_vector = vector;
+ 			vcpu->arch.mp_state = KVM_MP_STATE_SIPI_RECEIVED;
+ 			kvm_vcpu_kick(vcpu);
 diff --git a/arch/x86/kvm/lapic.h b/arch/x86/kvm/lapic.h
-index 1b0e3c0..b66dc14 100644
+index 2fc0d3c..1b0e3c0 100644
 --- a/arch/x86/kvm/lapic.h
 +++ b/arch/x86/kvm/lapic.h
-@@ -37,6 +37,8 @@ u64 kvm_get_apic_base(struct kvm_vcpu *vcpu);
+@@ -31,7 +31,7 @@ u64 kvm_lapic_get_base(struct kvm_vcpu *vcpu);
+ 
+ int kvm_apic_match_physical_addr(struct kvm_lapic *apic, u16 dest);
+ int kvm_apic_match_logical_addr(struct kvm_lapic *apic, u8 mda);
+-int kvm_apic_set_irq(struct kvm_vcpu *vcpu, u8 vec, u8 trig);
++int kvm_apic_set_irq(struct kvm_vcpu *vcpu, u8 vec, u8 dmode, u8 trig);
+ 
+ u64 kvm_get_apic_base(struct kvm_vcpu *vcpu);
  void kvm_set_apic_base(struct kvm_vcpu *vcpu, u64 data);
- void kvm_apic_post_state_restore(struct kvm_vcpu *vcpu);
- int kvm_lapic_enabled(struct kvm_vcpu *vcpu);
-+bool kvm_apic_present(struct kvm_vcpu *vcpu);
-+bool kvm_lapic_present(struct kvm_vcpu *vcpu);
- int kvm_lapic_find_highest_irr(struct kvm_vcpu *vcpu);
- 
- void kvm_lapic_set_vapic_addr(struct kvm_vcpu *vcpu, gpa_t vapic_addr);
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index ec9d078..fb60f31 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -363,11 +363,6 @@ void kvm_unregister_irq_mask_notifier(struct kvm *kvm, int irq,
- 				      struct kvm_irq_mask_notifier *kimn);
- void kvm_fire_mask_notifiers(struct kvm *kvm, int irq, bool mask);
- 
--#ifdef __KVM_HAVE_IOAPIC
--void kvm_get_intr_delivery_bitmask(struct kvm *kvm,
--				   union kvm_ioapic_redirect_entry *entry,
--				   unsigned long *deliver_bitmask);
--#endif
- int kvm_set_irq(struct kvm *kvm, int irq_source_id, int irq, int level);
- void kvm_notify_acked_irq(struct kvm *kvm, unsigned irqchip, unsigned pin);
- void kvm_register_irq_ack_notifier(struct kvm *kvm,
 diff --git a/virt/kvm/ioapic.c b/virt/kvm/ioapic.c
-index b71c044..43969bb 100644
+index ea268a8..d4a7948 100644
 --- a/virt/kvm/ioapic.c
 +++ b/virt/kvm/ioapic.c
-@@ -147,7 +147,10 @@ int ioapic_deliver_entry(struct kvm *kvm, union kvm_ioapic_redirect_entry *e)
- 	DECLARE_BITMAP(deliver_bitmask, KVM_MAX_VCPUS);
- 	int i, r = -1;
- 
--	kvm_get_intr_delivery_bitmask(kvm, e, deliver_bitmask);
-+	kvm_get_intr_delivery_bitmask(kvm, NULL, e->fields.dest_id,
-+			e->fields.dest_mode,
-+			e->fields.delivery_mode == IOAPIC_LOWEST_PRIORITY,
-+			0, deliver_bitmask);
- 
- 	if (find_first_bit(deliver_bitmask, KVM_MAX_VCPUS) >= KVM_MAX_VCPUS) {
- 		ioapic_debug("no target on destination\n");
-diff --git a/virt/kvm/ioapic.h b/virt/kvm/ioapic.h
-index bedeea5..d996c7a 100644
---- a/virt/kvm/ioapic.h
-+++ b/virt/kvm/ioapic.h
-@@ -65,13 +65,15 @@ static inline struct kvm_ioapic *ioapic_irqchip(struct kvm *kvm)
- }
- 
- struct kvm_vcpu *kvm_get_lowest_prio_vcpu(struct kvm *kvm, u8 vector,
--				       unsigned long *bitmap);
-+		unsigned long *bitmap);
-+int kvm_apic_match_dest(struct kvm_vcpu *vcpu, struct kvm_lapic *source,
-+		int short_hand, int dest, int dest_mode);
- void kvm_ioapic_update_eoi(struct kvm *kvm, int vector, int trigger_mode);
- int kvm_ioapic_init(struct kvm *kvm);
- int kvm_ioapic_set_irq(struct kvm_ioapic *ioapic, int irq, int level);
- void kvm_ioapic_reset(struct kvm_ioapic *ioapic);
--void kvm_get_intr_delivery_bitmask(struct kvm *kvm,
--				   union kvm_ioapic_redirect_entry *entry,
--				   unsigned long *deliver_bitmask);
-+void kvm_get_intr_delivery_bitmask(struct kvm *kvm, struct kvm_lapic *src,
-+		int dest_id, int dest_mode, bool low_prio, int short_hand,
-+		unsigned long *deliver_bitmask);
- int ioapic_deliver_entry(struct kvm *kvm, union kvm_ioapic_redirect_entry *e);
- #endif
-diff --git a/virt/kvm/irq_comm.c b/virt/kvm/irq_comm.c
-index 35397a5..e43701c 100644
---- a/virt/kvm/irq_comm.c
-+++ b/virt/kvm/irq_comm.c
-@@ -43,67 +43,35 @@ static int kvm_set_ioapic_irq(struct kvm_kernel_irq_routing_entry *e,
- 	return kvm_ioapic_set_irq(kvm->arch.vioapic, e->irqchip.pin, level);
- }
- 
--void kvm_get_intr_delivery_bitmask(struct kvm *kvm,
--				   union kvm_ioapic_redirect_entry *entry,
--				   unsigned long *deliver_bitmask)
-+void kvm_get_intr_delivery_bitmask(struct kvm *kvm, struct kvm_lapic *src,
-+		int dest_id, int dest_mode, bool low_prio, int short_hand,
-+		unsigned long *deliver_bitmask)
- {
- 	int i;
- 	struct kvm_vcpu *vcpu;
- 
-+	if (dest_mode == 0 && dest_id == 0xff && low_prio)
-+		printk(KERN_INFO "kvm: apic: phys broadcast and lowest prio\n");
-+
- 	bitmap_zero(deliver_bitmask, KVM_MAX_VCPUS);
-+	for (i = 0; i < KVM_MAX_VCPUS; i++) {
-+		vcpu = kvm->vcpus[i];
- 
--	if (entry->fields.dest_mode == 0) {	/* Physical mode. */
--		if (entry->fields.dest_id == 0xFF) {	/* Broadcast. */
--			for (i = 0; i < KVM_MAX_VCPUS; ++i)
--				if (kvm->vcpus[i] && kvm->vcpus[i]->arch.apic)
--					__set_bit(i, deliver_bitmask);
--			/* Lowest priority shouldn't combine with broadcast */
--			if (entry->fields.delivery_mode ==
--			    IOAPIC_LOWEST_PRIORITY && printk_ratelimit())
--				printk(KERN_INFO "kvm: apic: phys broadcast "
--						  "and lowest prio\n");
--			return;
--		}
--		for (i = 0; i < KVM_MAX_VCPUS; ++i) {
--			vcpu = kvm->vcpus[i];
--			if (!vcpu)
--				continue;
--			if (kvm_apic_match_physical_addr(vcpu->arch.apic,
--					entry->fields.dest_id)) {
--				if (vcpu->arch.apic)
--					__set_bit(i, deliver_bitmask);
--				break;
--			}
--		}
--	} else if (entry->fields.dest_id != 0) /* Logical mode, MDA non-zero. */
--		for (i = 0; i < KVM_MAX_VCPUS; ++i) {
--			vcpu = kvm->vcpus[i];
--			if (!vcpu)
--				continue;
--			if (vcpu->arch.apic &&
--			    kvm_apic_match_logical_addr(vcpu->arch.apic,
--					entry->fields.dest_id))
--				__set_bit(i, deliver_bitmask);
--		}
-+		if (!vcpu || !kvm_apic_present(vcpu))
-+			continue;
- 
--	switch (entry->fields.delivery_mode) {
--	case IOAPIC_LOWEST_PRIORITY:
--		/* Select one in deliver_bitmask */
--		vcpu = kvm_get_lowest_prio_vcpu(kvm,
--				entry->fields.vector, deliver_bitmask);
--		bitmap_zero(deliver_bitmask, KVM_MAX_VCPUS);
--		if (!vcpu)
--			return;
--		__set_bit(vcpu->vcpu_id, deliver_bitmask);
--		break;
--	case IOAPIC_FIXED:
--	case IOAPIC_NMI:
--		break;
--	default:
--		if (printk_ratelimit())
--			printk(KERN_INFO "kvm: unsupported delivery mode %d\n",
--				entry->fields.delivery_mode);
-+		if (!kvm_apic_match_dest(vcpu, src, short_hand, dest_id,
-+					dest_mode))
-+			continue;
-+
-+		__set_bit(i, deliver_bitmask);
-+	}
-+
-+	if (low_prio) {
-+		vcpu = kvm_get_lowest_prio_vcpu(kvm, 0, deliver_bitmask);
- 		bitmap_zero(deliver_bitmask, KVM_MAX_VCPUS);
-+		if (vcpu)
-+			__set_bit(vcpu->vcpu_id, deliver_bitmask);
+@@ -142,25 +142,6 @@ static void ioapic_write_indirect(struct kvm_ioapic *ioapic, u32 val)
  	}
  }
  
+-static int ioapic_inj_irq(struct kvm_ioapic *ioapic,
+-			   struct kvm_vcpu *vcpu,
+-			   u8 vector, u8 trig_mode, u8 delivery_mode)
+-{
+-	ioapic_debug("irq %d trig %d deliv %d\n", vector, trig_mode,
+-		     delivery_mode);
+-
+-	ASSERT((delivery_mode == IOAPIC_FIXED) ||
+-	       (delivery_mode == IOAPIC_LOWEST_PRIORITY));
+-
+-	return kvm_apic_set_irq(vcpu, vector, trig_mode);
+-}
+-
+-static void ioapic_inj_nmi(struct kvm_vcpu *vcpu)
+-{
+-	kvm_inject_nmi(vcpu);
+-	kvm_vcpu_kick(vcpu);
+-}
+-
+ static int ioapic_deliver(struct kvm_ioapic *ioapic, int irq)
+ {
+ 	union kvm_ioapic_redirect_entry entry = ioapic->redirtbl[irq];
+@@ -193,21 +174,12 @@ static int ioapic_deliver(struct kvm_ioapic *ioapic, int irq)
+ 		__clear_bit(vcpu_id, deliver_bitmask);
+ 		vcpu = ioapic->kvm->vcpus[vcpu_id];
+ 		if (vcpu) {
+-			if (entry.fields.delivery_mode ==
+-					IOAPIC_LOWEST_PRIORITY ||
+-			    entry.fields.delivery_mode == IOAPIC_FIXED) {
+-				if (r < 0)
+-					r = 0;
+-				r += ioapic_inj_irq(ioapic, vcpu,
+-						    entry.fields.vector,
+-						    entry.fields.trig_mode,
+-						    entry.fields.delivery_mode);
+-			} else if (entry.fields.delivery_mode == IOAPIC_NMI) {
+-				r = 1;
+-				ioapic_inj_nmi(vcpu);
+-			} else
+-				ioapic_debug("unsupported delivery mode %x!\n",
+-					     entry.fields.delivery_mode);
++			if (r < 0)
++				r = 0;
++			r += kvm_apic_set_irq(vcpu,
++					entry.fields.vector,
++					entry.fields.trig_mode,
++					entry.fields.delivery_mode);
+ 		} else
+ 			ioapic_debug("null destination vcpu: "
+ 				     "mask=%x vector=%x delivery_mode=%x\n",
+diff --git a/virt/kvm/irq_comm.c b/virt/kvm/irq_comm.c
+index 1c6ff6d..325c668 100644
+--- a/virt/kvm/irq_comm.c
++++ b/virt/kvm/irq_comm.c
+@@ -148,6 +148,7 @@ static int kvm_set_msi(struct kvm_kernel_irq_routing_entry *e,
+ 			if (r < 0)
+ 				r = 0;
+ 			r += kvm_apic_set_irq(vcpu, entry.fields.vector,
++					      entry.fields.dest_mode,
+ 					      entry.fields.trig_mode);
+ 		}
+ 	}
 -- 
 1.6.0.6
 
