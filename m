@@ -1,58 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754607AbZERRkf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754364AbZERRnd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754607AbZERRkf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 13:40:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751621AbZERRk2
+	id S1754364AbZERRnd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 13:43:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751284AbZERRn0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 13:40:28 -0400
-Received: from hera.kernel.org ([140.211.167.34]:35130 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750955AbZERRk1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 13:40:27 -0400
-Message-ID: <4A119D55.4040703@kernel.org>
-Date: Mon, 18 May 2009 10:39:33 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Mon, 18 May 2009 13:43:26 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53741 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751507AbZERRnZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 13:43:25 -0400
+Date: Mon, 18 May 2009 10:42:13 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Jeff Mahoney <jeffm@suse.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       ReiserFS Development List <reiserfs-devel@vger.kernel.org>
+Subject: Re: [patch 4/4] reiserfs: allow exposing privroot w/ xattrs
+ enabled
+In-Reply-To: <4A119C75.3030400@suse.com>
+Message-ID: <alpine.LFD.2.01.0905181041570.3301@localhost.localdomain>
+References: <20090517050200.786752018@suse.com> <20090517050332.566856122@suse.com> <alpine.LFD.2.01.0905171009200.3301@localhost.localdomain> <alpine.LFD.2.01.0905181026560.3301@localhost.localdomain> <4A119C75.3030400@suse.com>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org
-Subject: Re: [PATCH] x86: add X86_UPDATE_MPTABLE option
-References: <4A0DC7DC.7000204@kernel.org> <4A0EED8B.6040704@kernel.org> <200905180941.06988.bjorn.helgaas@hp.com>
-In-Reply-To: <200905180941.06988.bjorn.helgaas@hp.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bjorn Helgaas wrote:
-> On Saturday 16 May 2009 10:44:59 am Yinghai Lu wrote:
-> 
->> +config X86_UPDATE_MPTABLE
->> +	bool "Enable update mptable according to acpi" if ACPI
->> +	default n
->> +	depends on X86_MPPARSE && ACPI
-> 
-> Is this any use without CONFIG_KEXEC?  Maybe it should depend on
-> KEXEC as well?  Or maybe we don't need a new option at all, and
-> could just put this code under CONFIG_KEXEC directly.
 
-If ACPI is not compiled in, we don't need it that too.
 
+On Mon, 18 May 2009, Jeff Mahoney wrote:
 > 
->> +	---help---
->> +	  some systems do not have correct mptable. with "update_mptable" or
->> +	  "alloc_mptable" kernel could try to update mptable according to DSDT.
->> +	  Then could use kexec to start second kernel (even old) without acpi
->> +	  support or "acpi=off"
-> 
-> Please use English conventions such as starting sentences with capital
-> letters and capitalizing thing like "ACPI."
+> Sorry, I was in and out all weekend. Don't bother merging it for this
+> window. I wanted to make it easy to clean up xattrs that would have been
+> left around if a file system that contained xattrs was migrated to a
+> kernel without support compiled in, but I'll add that to fsck instead.
 
-ok.
+Ok, thanks, patch happily forgotten,
 
-YH
+		Linus
