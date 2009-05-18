@@ -1,80 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757018AbZERHoc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756412AbZERHqX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757018AbZERHoc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 03:44:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755453AbZERHoV
+	id S1756412AbZERHqX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 03:46:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756051AbZERHqH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 03:44:21 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:42181 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756051AbZERHoU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 03:44:20 -0400
-From: Mike Frysinger <vapier@gentoo.org>
-To: linux-kernel@vger.kernel.org
-Cc: linuxppc-dev@ozlabs.org
-Subject: [PATCH v2] drivers/hvc: add missing __devexit_p()
-Date: Mon, 18 May 2009 03:44:21 -0400
-Message-Id: <1242632661-16198-1-git-send-email-vapier@gentoo.org>
-X-Mailer: git-send-email 1.6.3
-In-Reply-To: <1242632521-15954-1-git-send-email-vapier@gentoo.org>
-References: <1242632521-15954-1-git-send-email-vapier@gentoo.org>
+	Mon, 18 May 2009 03:46:07 -0400
+Received: from mail-qy0-f112.google.com ([209.85.221.112]:52811 "EHLO
+	mail-qy0-f112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755064AbZERHqF convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 03:46:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=ZGzGFefHPIE18KfsdrSoXaCdO2FZvJOZ0oNkqnm+61FcTT70GCL0flmo9GhTDuUFkw
+         OmTY7NwwcWOpdDKjZnKgOsXvwlCDwaAAplCJRNEnBh/rhC3UBToYthTFU5WuGeSYZUwH
+         M6O3UbDSRY3qywPtcVaEMGdg4Ob94dTVY5Jc0=
+MIME-Version: 1.0
+In-Reply-To: <20090515200235.GA11829@nokia.com>
+References: <20090515131636.GE4443@nokia.com>
+	 <5d5443650905151106v2fe7ad1ci6c966463a991e732@mail.gmail.com>
+	 <45cc95260905151230j5485995dpbbd882dc91b25339@mail.gmail.com>
+	 <20090515200235.GA11829@nokia.com>
+Date: Mon, 18 May 2009 16:45:55 +0900
+Message-ID: <4d34a0a70905180045u6619773dt1563fe38b13d46fb@mail.gmail.com>
+Subject: Re: [RFC] Add Input IOCTL for accelerometer devices
+From: Kim Kyuwon <chammoru@gmail.com>
+To: felipe.balbi@nokia.com
+Cc: ext Mohamed Ikbel Boulabiar <boulabiar@gmail.com>,
+       Trilok Soni <soni.trilok@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>,
+       Jonathan Cameron <jic23@cam.ac.uk>, Kim Kyuwon <q1.kim@samsung.com>,
+       Kyungmin Park <kyungmin.park@samsung.com>,
+       Jean Delvare <khali@linux-fr.org>
+Content-Type: text/plain; charset=EUC-KR
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The remove function uses __devexit, so the .remove assignment needs
-__devexit_p() to fix a build error with hotplug disabled.
+Hi All,
 
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-CC: linuxppc-dev@ozlabs.org
----
-v2
-	- include all hvc files
+It's very nice of Felipe to make an issue of accelerometers in Linux
+kernel again.
+Before further discussions, we'd better see previous threads about
+accelerometer.
 
- drivers/char/hvc_iseries.c |    2 +-
- drivers/char/hvc_vio.c     |    2 +-
- drivers/char/hvcs.c        |    2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
+http://lkml.org/lkml/2008/5/20/135
+http://lkml.org/lkml/2008/12/1/156
+--
 
-diff --git a/drivers/char/hvc_iseries.c b/drivers/char/hvc_iseries.c
-index 449727b..936d05b 100644
---- a/drivers/char/hvc_iseries.c
-+++ b/drivers/char/hvc_iseries.c
-@@ -241,7 +241,7 @@ static int __devexit hvc_vio_remove(struct vio_dev *vdev)
- static struct vio_driver hvc_vio_driver = {
- 	.id_table	= hvc_driver_table,
- 	.probe		= hvc_vio_probe,
--	.remove		= hvc_vio_remove,
-+	.remove		= __devexit_p(hvc_vio_remove),
- 	.driver		= {
- 		.name	= hvc_driver_name,
- 		.owner	= THIS_MODULE,
-diff --git a/drivers/char/hvc_vio.c b/drivers/char/hvc_vio.c
-index bd62dc8..c72b994 100644
---- a/drivers/char/hvc_vio.c
-+++ b/drivers/char/hvc_vio.c
-@@ -113,7 +113,7 @@ static int __devexit hvc_vio_remove(struct vio_dev *vdev)
- static struct vio_driver hvc_vio_driver = {
- 	.id_table	= hvc_driver_table,
- 	.probe		= hvc_vio_probe,
--	.remove		= hvc_vio_remove,
-+	.remove		= __devexit_p(hvc_vio_remove),
- 	.driver		= {
- 		.name	= hvc_driver_name,
- 		.owner	= THIS_MODULE,
-diff --git a/drivers/char/hvcs.c b/drivers/char/hvcs.c
-index c76bccf..2724d62 100644
---- a/drivers/char/hvcs.c
-+++ b/drivers/char/hvcs.c
-@@ -868,7 +868,7 @@ static int __devexit hvcs_remove(struct vio_dev *dev)
- static struct vio_driver hvcs_vio_driver = {
- 	.id_table	= hvcs_driver_table,
- 	.probe		= hvcs_probe,
--	.remove		= hvcs_remove,
-+	.remove		= __devexit_p(hvcs_remove),
- 	.driver		= {
- 		.name	= hvcs_driver_name,
- 		.owner	= THIS_MODULE,
--- 
-1.6.3
+I have considered how I can add my accelerometer driver into the Linux
+kernel nicely for a few months.
 
+As Trilok said, there are many accelerometer drivers under
+drivers/hwmon. So I first tried to add my driver as hwmon, but Jean
+Delvare didn't agree this idea. Please refer to the following URL:
+http://lists.lm-sensors.org/pipermail/lm-sensors/2009-April/025686.html
+
+And from the next URL, Dmitry don't think it is great idea to add
+accelerometer as Input system.
+http://lkml.org/lkml/2008/5/27/283
+
+On Sat, May 16, 2009 at 5:02 AM, Felipe Balbi <felipe.balbi@nokia.com> wrote:
+> Hi all,
+>
+>
+> On Fri, May 15, 2009 at 09:30:41PM +0200, ext Mohamed Ikbel Boulabiar wrote:
+>> I am really interested about that.
+>>
+>> But I want to know more about the device, its type, name, ...
+>> The device isn't HID (Human Interface Device) ? If so, we should
+>> rethink adding such thing but modify/use hid-input instead.
+>>
+>> Because, I have an accelerometer phidget device and it is HID.
+>> Handling should be the same.
+>
+> Yeah, let's try to define the best way to expose accelerometers with
+> linux kernel and avoid a sysfs hell. Better sooner than later.
+
+Felipe,
+Can I ask why did you say "avoid a sysfs hell"?. I have thought Kernel
+developers prefer sysfs to IOCTL lately.
+
+>> On Fri, May 15, 2009 at 7:06 PM, Trilok Soni <soni.trilok@gmail.com> wrote:
+>> > Hi Felipe,
+>> >
+>> > Adding linux-input and Jonathan, so not deleting any lines from this e-mail.
+>> >
+>> > On Fri, May 15, 2009 at 6:46 PM, Felipe Balbi <felipe.balbi@nokia.com> wrote:
+>> >> Hi all,
+>> >>
+>> >> the following patch is just an idea to see how the community feels about
+>> >> it. Considering accelerometer devices, you might have different use
+>> >> cases for it while running different applications. You could be using it
+>> >> for screen rotation in one case but when opening a game, you could use
+>> >> it as a game controller by turning the device side-by-side.
+>> >
+>> > There was one proposal from Jonathan called Industrial IO patchset
+>> > which tried to address these sensor devices. Please grep in your
+>> > linux-kernel archieve. I believe there are accelerometer drivers under
+>> > drivers/hwmon.
+>
+> The problem is that it doesn't really seem to me that all accelerometers
+> will be doing hw monitoring. The ones used in laptops, for sure, trying
+> to prevent the hd from drying during a fall. But imagine the
+> accelerometers used in, say, wii-mote, or cellphones, or such stuff ?
+>
+> Say we wanna use the accelerometer for both screen rotation and gaming,
+> that device isn't doing hw monitoring and still we _do_ want to set
+> different thresholds and irq requests/types for different use cases,
+> right ?
+
+Yes, I agree that accelerometer needs new interface. However setting
+parameters of accelerometer is very different from devices and device
+specific. Until now, I met two accelerometer, SMB380 from
+bosch-sensortec and KXSD9 from Kionix. As far as I know, these two
+accelerometers are quite different from each other and existing
+accelerometer drivers located /driver/hwmon/ in current Linux kernel.
+Thus I think sysfs interface (including hwmon-sysfs) is the best
+solution for setting various parameters of accelerometer..
+
+On the other hand, accelerometers are mostly used as Input device in
+these days. Most APIs(input_allocate_device,
+input_allocate_polled_device, ...) and macros(ABS_X,  ABS_Y, ...)of
+Input subsystem are useful to accelerometer too. If we create another
+APIs and Macros for accelerometers, I think It's another duplicate
+work and result.
+
+It seems like Dmitry concerns input_dev becomes too big with hundreds
+of sensors.(right?) However, Market trend makes us consider
+accelerometer as an input device now. I'm sure there is a good way to
+add accelerometer input system without enlarging input_dev much.
+
+In conclusion,
+We need the inheritance concept in the object-oriented programming.
+Accelerometer device sometimes can be hwmon device, sometimes input
+device. So let accelerometer drivers use both APIs of hwmon and input
+subsystems(hwmon_device_register, input_register_device,
+input_register_polled_device). Acutally this is what many
+accelerometer drivers in current Linux kernel are doing, so we don't
+have to do much.
+
+Let's
+1) Introduce a new maintainer of accelerometer (Felipe?).
+2) Move accelerometer drivers in current Linux kernel to /driver/accelerometer.
+3) If we find the common functions of accelerometer or have idea about
+new API or Macro, let's make at driver/accelerometer/acccelerometer.c,
+input/linux/acccelerometer.h file or modify input.h little.
+4) Add every new accelerometer into /driver/accelerometer.
+
+
+Kyuwon (±Ô¿ø)
