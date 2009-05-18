@@ -1,62 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751918AbZERSFV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754619AbZERSIQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751918AbZERSFV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 14:05:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753093AbZERSFJ
+	id S1754619AbZERSIQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 14:08:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751665AbZERSIC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 14:05:09 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:56639 "EHLO ogre.sisk.pl"
+	Mon, 18 May 2009 14:08:02 -0400
+Received: from claw.goop.org ([74.207.240.146]:33456 "EHLO claw.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751998AbZERSFI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 14:05:08 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Justin Madru <jdm64@gawab.com>
-Subject: Re: [Bug #13188] horizontal strips of the screen frozen
-Date: Mon, 18 May 2009 20:04:46 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc6-rjw; KDE/4.2.3; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Eric Anholt <eric@anholt.net>
-References: <_AjETDMbIoL.A.DcH.RYzDKB@chimera> <385Pu-agh7M.A.hMB._YzDKB@chimera> <4A118E36.40204@gawab.com>
-In-Reply-To: <4A118E36.40204@gawab.com>
+	id S1751398AbZERSIB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 14:08:01 -0400
+Message-ID: <4A11A3F8.1010202@goop.org>
+Date: Mon, 18 May 2009 11:07:52 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
+To: Ingo Molnar <mingo@elte.hu>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [GIT PULL] xen /proc/mtrr implementation
+References: <1242170864-13560-1-git-send-email-jeremy@goop.org> <20090513133021.GA7277@elte.hu> <4A0ADBA2.2020300@goop.org> <20090515182757.GA19256@elte.hu> <4A0DCC11.10307@goop.org> <m1my9ex818.fsf@fess.ebiederm.org> <4A0DFF78.6000501@goop.org> <20090515202250.0f1218ef@jbarnes-g45> <m1iqk1k708.fsf@fess.ebiederm.org> <4A10EAC4.9070701@goop.org> <20090518085902.GE10687@elte.hu>
+In-Reply-To: <20090518085902.GE10687@elte.hu>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905182004.46627.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 18 May 2009, Justin Madru wrote:
-> Rafael J. Wysocki wrote:
-> > This message has been generated automatically as a part of a report
-> > of recent regressions.
-> >
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.29.  Please verify if it still should be listed and let me know
-> > (either way).
-> >
-> >
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13188
-> > Subject		: horizontal strips of the screen frozen
-> > Submitter	: Justin Madru <jdm64@gawab.com>
-> > Date		: 2009-04-24 20:59 (23 days old)
-> > First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=280b713b5b0fd84cf2469098aee88acbb5de859c
-> > References	: http://marc.info/?l=linux-kernel&m=124060685315937&w=4
-> >
-> >
-> >
-> >   
-> As far as I can tell, this seams to be fixed by the intel-2.7.1 driver, 
-> and the bug only happened with UXA.
-> I did some minor testing and I couldn't trigger the bug. (earlier 
-> discussion in http://lkml.org/lkml/2009/4/23/587)
-> So this seams to be a user space bug, fixed in the intel-2.7.1 bug fix 
-> release (intel-2.7.0 still has the issue).
+Ingo Molnar wrote:
+> Here Xen invades an already fragile piece of upstream code 
+> (/proc/mtrr) that is obsolete and on the way out. If you want a 
+> solution you should add PAT support to Xen and you should use recent 
+> upstream kernels. Or you should emulate /proc/mtrr in _Xen the 
+> hypervisor_, if you really care that much - without increasing the 
+> amount of crap in Linux.
+>   
 
-I have closed the bug.
+That's a gross mis-characterisation of what we're talking about here.
 
-Thanks,
-Rafael
+arch/x86 already defines an mtrr_ops, which defines how to manipulate 
+the MTRR registers.  There are currently several implementations of that 
+interface.  In Xen the MTRR registers belong to the hypervisor, but it 
+allows a privileged kernel to modify them via hypercalls.  I simply 
+added a new, straightforward mtrr_ops implementation to do that.  It 
+adds about 120 lines of new code, in a single mtrr/xen.c file.
+
+That's it.  I could add any number of bizarre convolutions to achieve 
+the same effect, but given that there's an existing interface that is 
+exactly designed for what we want to achieve, I have to admit it didn't 
+occur to me to do anything else.
+
+MTRR may well be on its way out, and PAT is the proper way to achieve 
+the same effect from now on.  But MTRR is still a widely used 
+kernel-internal API as well as usermode ABI, and it seems just 
+gratuitous to not support it when doing so is such a low-impact change.  
+And if/when it comes to be time to completely deprecate/remove mtrr 
+support, we can delete it along with everything else.
+
+I'm honestly at a loss to explain the vehemence of your objection to 
+these changes given their nature.
+
+We're also working on making PAT support work where possible.  But that 
+doesn't mean we want to do without anything in the meantime.
+
+But more generally, we need to work out how to move things forward.
+
+That said, we can live without.  If these MTRR patches are your biggest 
+concern, drop them, pull the rest so we can get them seen, tested, in 
+linux-next, etc, ready for the next merge window.  You know, like you 
+said you wanted to do the last time you blocked the Xen patches.
+
+I would prefer to move them through tip.git: I appreciate your 
+(constructive) comments and reviews, the testing infrastructure has 
+proved very valuable in the past, and they'll generally get wider 
+exposure than my pool of testers.  And its just the right way to do it.
+
+But if you're so concerned that they'll simply give Linus more 
+ammunition to beat you up with, to the extent that you're 
+second-guessing yourself, then I'm perfectly happy to submit them 
+myself.  I don't think it would be an overall better outcome, but it 
+keeps the heat off you, and we'd be making some progress.
+
+    J
