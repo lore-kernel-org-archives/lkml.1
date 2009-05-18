@@ -1,74 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752502AbZERRAB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752424AbZERRAU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752502AbZERRAB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 13:00:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751208AbZERQ7y
+	id S1752424AbZERRAU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 13:00:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752918AbZERRAG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 12:59:54 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:33566 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751101AbZERQ7y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 12:59:54 -0400
-Date: Mon, 18 May 2009 18:59:17 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
+	Mon, 18 May 2009 13:00:06 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53309 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752956AbZERRAF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 13:00:05 -0400
+Date: Mon, 18 May 2009 09:58:37 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Ingo Molnar <mingo@elte.hu>
+cc: Jeff Garzik <jgarzik@pobox.com>, Alexander Viro <viro@ftp.linux.org.uk>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [GIT PULL, v2] core kernel fixes
-Message-ID: <20090518165917.GA30916@elte.hu>
-References: <20090518142301.GA22765@elte.hu>
+Subject: Re: [GIT PULL] scheduler fixes
+In-Reply-To: <20090518164921.GA6903@elte.hu>
+Message-ID: <alpine.LFD.2.01.0905180955550.3301@localhost.localdomain>
+References: <20090518142707.GA24142@elte.hu> <alpine.LFD.2.01.0905180850110.3301@localhost.localdomain> <20090518164921.GA6903@elte.hu>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090518142301.GA22765@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
-
-Please pull the latest core-fixes-for-linus-2 git tree from:
-
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git core-fixes-for-linus-2
-
-This excludes the "futex: futex mapping needs to be writable" commit 
-you objected to. Test-built and test-booted.
-
- Thanks,
-
-	Ingo
-
------------------->
-Ingo Molnar (1):
-      lockdep: increase MAX_LOCKDEP_ENTRIES and MAX_LOCKDEP_CHAINS
 
 
- kernel/lockdep_internals.h |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+On Mon, 18 May 2009, Ingo Molnar wrote:
+> 
+> hm - i've Cc:-ed Jeff & Viro. The background is that Sparse and LLVM 
+> barfed on the current construct and Al strongly advocated this 
+> solution, see:
 
-diff --git a/kernel/lockdep_internals.h b/kernel/lockdep_internals.h
-index a2cc7e9..699a2ac 100644
---- a/kernel/lockdep_internals.h
-+++ b/kernel/lockdep_internals.h
-@@ -54,9 +54,9 @@ enum {
-  * table (if it's not there yet), and we check it for lock order
-  * conflicts and deadlocks.
-  */
--#define MAX_LOCKDEP_ENTRIES	8192UL
-+#define MAX_LOCKDEP_ENTRIES	16384UL
- 
--#define MAX_LOCKDEP_CHAINS_BITS	14
-+#define MAX_LOCKDEP_CHAINS_BITS	15
- #define MAX_LOCKDEP_CHAINS	(1UL << MAX_LOCKDEP_CHAINS_BITS)
- 
- #define MAX_LOCKDEP_CHAIN_HLOCKS (MAX_LOCKDEP_CHAINS*5)
+I know the background.
 
+Did you read my email?
+
+Did you see my one-line patch that fixes the same problem WITHOUT THE 
+INSANITY?
+
+Yes, Al is mostly right. In this case he is wrong. (Ab-)Using unions for 
+something like this is crazy, since the code doesn't want a union of 
+overlapping data, it wants two consecutive data structures.
+
+And I'm not saying that my one-liner is necessarily the only way to fix 
+it. But it's a _better_ way than the crazy way you merged.
+
+		Linus
