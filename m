@@ -1,66 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755255AbZEROkx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755068AbZEROo4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755255AbZEROkx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 10:40:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751961AbZEROkm
+	id S1755068AbZEROo4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 10:44:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751422AbZEROot
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 10:40:42 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:58824 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751090AbZEROkl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 10:40:41 -0400
-Date: Mon, 18 May 2009 07:40:39 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, mingo@elte.hu,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       davem@davemloft.net, dada1@cosmosbay.com, zbr@ioremap.net,
-       jeff.chua.linux@gmail.com, paulus@samba.org, jengelh@medozas.de,
-       r000n@r000n.net, benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
-Subject: Re: [PATCH RFC] v5 expedited "big hammer" RCU grace periods
-Message-ID: <20090518144039.GA6768@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090517191141.GA25915@linux.vnet.ibm.com> <4A110768.2040707@cn.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A110768.2040707@cn.fujitsu.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Mon, 18 May 2009 10:44:49 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:30446 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751382AbZEROos (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 10:44:48 -0400
+Date: Mon, 18 May 2009 16:44:40 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Linus Walleij <linus.ml.walleij@gmail.com>
+Cc: Mike Rapoport <mike@compulab.co.il>, linux-kernel@vger.kernel.org,
+       sameo@linux.intel.com, linux-i2c@vger.kernel.org,
+       Linus Walleij <linus.walleij@stericsson.com>
+Subject: Re: [PATCH] MFD: Add U300 AB3100 core support v1
+Message-ID: <20090518164440.2124a4fa@hyperion.delvare>
+In-Reply-To: <63386a3d0905180722u282f0dd3ua62b119a1a6a97e8@mail.gmail.com>
+References: <63386a3d0905140129s5fd0f32cxde1114489678f012@mail.gmail.com>
+	<4A0BF776.9030301@compulab.co.il>
+	<63386a3d0905180722u282f0dd3ua62b119a1a6a97e8@mail.gmail.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 18, 2009 at 02:59:52PM +0800, Lai Jiangshan wrote:
-> Paul E. McKenney wrote:
-> > +void sched_expedited_wake(void *unused)
-> > +{
-> > +	mutex_lock(&__get_cpu_var(sched_expedited_done_mutex));
-> > +	if (__get_cpu_var(sched_expedited_done_qs) ==
-> > +	    SCHED_EXPEDITED_QS_DONE_QS) {
-> > +		__get_cpu_var(sched_expedited_done_qs) =
-> > +			SCHED_EXPEDITED_QS_NEED_QS;
-> > +		wake_up(&__get_cpu_var(sched_expedited_qs_wq));
-> > +	}
-> > +	mutex_unlock(&__get_cpu_var(sched_expedited_done_mutex));
-> > +}
+Hi Linus,
+
+On Mon, 18 May 2009 16:22:36 +0200, Linus Walleij wrote:
+> Here we have a problem. See above:
+> msgs[0].addr = ab3100_i2c_client->addr + 1;
 > 
-> [...]
+> So this chip actually has two addresses. A "special" address
+> to deal with test registers, one address up. The I2C framework
+> assume all devices have one and one address only (which is
+> of course mostly true).
+
+No, the I2C framework doesn't assume this. All the I2C framework
+assumes is that only one device can use a given address on any one I2C
+segment (which seems reasonable.)
+
+> Here is a special case. When the first device has registered,
+> you know that the other address is available as well.
 > 
-> > +		get_online_cpus();
-> > +		preempt_disable();
-> > +		mycpu = smp_processor_id();
-> > +		smp_call_function(sched_expedited_wake, NULL, 1);
+> You could think of several ugly solutions:
 > 
-> sched_expedited_wake() calls mutex_lock() which may sleep?
+> * Keep using i2c_transfer() directly as we do now.
+> 
+> * Make a raw copy of the i2c_device with something like
+>   memcpy(mock_client, i2c_client, sizeof(i2c_client);
+>   mock_client->addr++;
+>   then use i2c_master_send()
+> 
+> * Register a new i2c_device in board_info for the other
+>   address while strictly speaking it is the same device, and
+>   this will yield a lot of probing and synchronization code,
+>   because writing the test registers is used when probing the
+>   first device, so we have to wait for that device to be probed
+>   before we can probe the other one etc.
+> 
+> Right now I lean toward the first alternative.
 
-Good eyes!  Fixing this and the failure to release this lock in
-krcu_sched_expedited_percpu() allows it to survive 10 hours of
-rcutorture running in parallel with onlining/offlining random CPUs.
+Neither is correct. Simply use i2c_new_dummy() on the second I2C
+address, and keep a pointer to the instantiated i2c_client for future
+use. Don't forget to call i2c_unregister_device() in your .remove()
+method.
 
-> And I think you have re-implement workqueue.
-
-Hmmm...  I suppose I could use schedule_work(), though I am concerned
-about interference from other work.  But I will give this some thought.
-
-							Thanx, Paul
+-- 
+Jean Delvare
