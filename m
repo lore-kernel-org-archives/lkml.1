@@ -1,55 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756406AbZERPlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756547AbZERPlj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756406AbZERPlT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 11:41:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754630AbZERPlL
+	id S1756547AbZERPlj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 11:41:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755519AbZERPlb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 11:41:11 -0400
-Received: from g4t0017.houston.hp.com ([15.201.24.20]:22028 "EHLO
-	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754537AbZERPlK (ORCPT
+	Mon, 18 May 2009 11:41:31 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:1579 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755355AbZERPla (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 11:41:10 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Yinghai Lu <yinghai@kernel.org>
-Subject: Re: [PATCH] x86: add X86_UPDATE_MPTABLE option
-Date: Mon, 18 May 2009 09:41:05 -0600
-User-Agent: KMail/1.9.10
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org
-References: <4A0DC7DC.7000204@kernel.org> <4A0EED8B.6040704@kernel.org>
-In-Reply-To: <4A0EED8B.6040704@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 18 May 2009 11:41:30 -0400
+Subject: Re: [PATCH 0/6] drivers/ide Convert printk(KERN_<foo> to pr_<foo>(
+From: Joe Perches <joe@perches.com>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>
+In-Reply-To: <200905181612.43632.bzolnier@gmail.com>
+References: <cover.1242609803.git.joe@perches.com>
+	 <200905181612.43632.bzolnier@gmail.com>
+Content-Type: text/plain
+Date: Mon, 18 May 2009 08:41:28 -0700
+Message-Id: <1242661288.1572.82.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905180941.06988.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 16 May 2009 10:44:59 am Yinghai Lu wrote:
+On Mon, 2009-05-18 at 16:12 +0200, Bartlomiej Zolnierkiewicz wrote:
+> On Monday 18 May 2009 04:21:08 Joe Perches wrote:
+> > Mostly mechanical conversion of printk's
+> Hmm.. less mechanical conversion using also dev_*() macros where suitable
+> would be much better...
+> How's about fixing pr_devel() which currently doesn't seem to be used
+> by anything inside kernel to not depend on DEBUG in separate pre-patch
+> and then using it instead of pr_debug()?
 
-> +config X86_UPDATE_MPTABLE
-> +	bool "Enable update mptable according to acpi" if ACPI
-> +	default n
-> +	depends on X86_MPPARSE && ACPI
+How about deferring the "printk(KERN_DEBUG" to something else
+and doing the mechanical conversion to core as a first pass,
+followed by core pr_<foo> to dev_<foo> where appropriate
+as a second pass?
 
-Is this any use without CONFIG_KEXEC?  Maybe it should depend on
-KEXEC as well?  Or maybe we don't need a new option at all, and
-could just put this code under CONFIG_KEXEC directly.
+What do you think is appropriate for pr_<foo> to dev_<foo>
+conversions?
 
-> +	---help---
-> +	  some systems do not have correct mptable. with "update_mptable" or
-> +	  "alloc_mptable" kernel could try to update mptable according to DSDT.
-> +	  Then could use kexec to start second kernel (even old) without acpi
-> +	  support or "acpi=off"
 
-Please use English conventions such as starting sentences with capital
-letters and capitalizing thing like "ACPI."
-
-Bjorn
