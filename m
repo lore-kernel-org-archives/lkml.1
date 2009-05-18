@@ -1,82 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753259AbZERRwk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752714AbZERRxR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753259AbZERRwk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 13:52:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752506AbZERRw1
+	id S1752714AbZERRxR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 13:53:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752369AbZERRxA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 13:52:27 -0400
-Received: from mail.lang.hm ([64.81.33.126]:50501 "EHLO bifrost.lang.hm"
+	Mon, 18 May 2009 13:53:00 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:46976 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753169AbZERRw0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 13:52:26 -0400
-Date: Mon, 18 May 2009 10:51:21 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard
-To: linux-kernel <linux-kernel@vger.kernel.org>
-cc: tj@kernel.org
-Subject: Intel X25E doesn't work with nv sata in current kernels
-Message-ID: <alpine.DEB.1.10.0905181041310.15782@asgard>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	id S1751865AbZERRw7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 13:52:59 -0400
+Date: Mon, 18 May 2009 19:53:00 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] readahead:add blk_run_backing_dev
+Message-ID: <20090518175259.GL4140@kernel.dk>
+References: <6.0.0.20.2.20090518183752.0581fdc0@172.19.0.2>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <6.0.0.20.2.20090518183752.0581fdc0@172.19.0.2>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-according to but 12703 ( http://bugzilla.kernel.org/show_bug.cgi?id=12703 )
-this worked with older kernels, but with 2.6.29.[13] and 2.6.30-rc6
+On Mon, May 18 2009, Hisashi Hifumi wrote:
+> Hi.
+> 
+> I wrote a patch that adds blk_run_backing_dev on page_cache_async_readahead
+> so readahead I/O is unpluged to improve throughput.
+> 
+> Following is the test result with dd.
+> 
+> #dd if=testdir/testfile of=/dev/null bs=16384
+> 
+> -2.6.30-rc6
+> 1048576+0 records in
+> 1048576+0 records out
+> 17179869184 bytes (17 GB) copied, 224.182 seconds, 76.6 MB/s
+> 
+> -2.6.30-rc6-patched
+> 1048576+0 records in
+> 1048576+0 records out
+> 17179869184 bytes (17 GB) copied, 206.465 seconds, 83.2 MB/s
+> 
+> Sequential read performance on a big file was improved.
+> Please merge my patch.
+> 
+> Thanks.
+> 
+> Signed-off-by: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
+> 
+> diff -Nrup linux-2.6.30-rc6.org/mm/readahead.c linux-2.6.30-rc6.unplug/mm/readahead.c
+> --- linux-2.6.30-rc6.org/mm/readahead.c	2009-05-18 10:46:15.000000000 +0900
+> +++ linux-2.6.30-rc6.unplug/mm/readahead.c	2009-05-18 13:00:42.000000000 +0900
+> @@ -490,5 +490,7 @@ page_cache_async_readahead(struct addres
+>  
+>  	/* do read-ahead */
+>  	ondemand_readahead(mapping, ra, filp, true, offset, req_size);
+> +
+> +	blk_run_backing_dev(mapping->backing_dev_info, NULL);
+>  }
+>  EXPORT_SYMBOL_GPL(page_cache_async_readahead);
 
-according to this ticket it did work with older vendor kernels, but it's 
-not clear which ones (and no older vanilla kernels)
+I'm surprised this makes much of a difference. It seems correct to me to
+NOT unplug the device, since it will get unplugged when someone ends up
+actually waiting for a page. And that will then kick off the remaining
+IO as well. For this dd case, you'll be hitting lock_page() for the
+readahead page really soon, definitely not long enough to warrant such a
+big difference in speed.
 
-I have verified that this drive does work on a PCI controller card in the 
-same machine (with the same cables), so this is definantly a 
-controller/kernel issue
+So, are these numbers 100% reproducible? Could you capture blktrace data
+for both with and without the patch, so we can take a closer look at the
+generated IO for each case?
 
-booting with libata.force=#:nohrst (with # being the SATA controller that 
-the SSD is on) does allow it to be detected, but the patch listed in the 
-ticket
-
-diff --git a/drivers/ata/sata_nv.c b/drivers/ata/sata_nv.c
-index 6cda12b..6673b1d 100644
---- a/drivers/ata/sata_nv.c
-+++ b/drivers/ata/sata_nv.c
-@@ -1565,7 +1565,7 @@ static int nv_noclassify_hardreset(struct ata_link 
-*link, unsigned int *class,
-         bool online;
-         int rc;
-
--       rc = sata_link_hardreset(link, sata_deb_timing_hotplug, deadline,
-+       rc = sata_link_hardreset(link, sata_deb_timing_long, deadline,
-                                  &online, NULL);
-         return online ? -EAGAIN : rc;
-  }
-
-does not work.
-
-Tejun Heo was working on this back in April, but it looks like the 
-troubleshooting petered out.
-
-one issue that I did notice, in the dmesg I see
-
-$ grep SATA dmesg
-ata1: SATA max UDMA/133 cmd 0xd480 ctl 0xd400 bmdma 0xcc00 irq 11
-ata2: SATA max UDMA/133 cmd 0xd080 ctl 0xd000 bmdma 0xcc08 irq 11
-ata1: SATA link down (SStatus 100 SControl 300)
-ata2: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-ata3: SATA max UDMA/133 cmd 0xc880 ctl 0xc800 bmdma 0xc080 irq 5
-ata4: SATA max UDMA/133 cmd 0xc480 ctl 0xc400 bmdma 0xc088 irq 5
-ata3: SATA link down (SStatus 0 SControl 300)
-ata4: SATA link down (SStatus 0 SControl 300)
-ata5: SATA max UDMA/133 cmd 0xc000 ctl 0xbc00 bmdma 0xb480 irq 10
-ata6: SATA max UDMA/133 cmd 0xb880 ctl 0xb800 bmdma 0xb488 irq 10
-ata5: SATA link down (SStatus 0 SControl 300)
-ata6: SATA link down (SStatus 0 SControl 300)
-
-note the ata1 line. it detects something different than the links where 
-there really is nothing plugged in, but it doesn't come up
-
-booting with nohrst results in SStatus 123
-
-David Lang
+-- 
+Jens Axboe
 
