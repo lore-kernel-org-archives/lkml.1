@@ -1,141 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758335AbZERJxw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757275AbZERJy1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758335AbZERJxw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 05:53:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756972AbZERJsp
+	id S1757275AbZERJy1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 05:54:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755542AbZERJsq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 05:48:45 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:42410 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758221AbZERJsm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 05:48:46 -0400
+Received: from tx2ehsobe003.messaging.microsoft.com ([65.55.88.13]:15955 "EHLO
+	TX2EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756002AbZERJsm convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 18 May 2009 05:48:42 -0400
-Date: Mon, 18 May 2009 11:49:00 +0200
-From: Kurt Garloff <garloff@suse.de>
-To: Linux kernel list <linux-kernel@vger.kernel.org>,
-       Norbert Eicker <N.Eicker@fz-juelich.de>,
-       Greg Kroah-Hartman <GregKH@suse.de>,
-       Alexey Starikovskiy <AStarikovskiy@suse.cz>,
-       Len Brown <LenB@kernel.org>, xb <xavier.bru@bull.net>
-Subject: [PATCH 3/3]: Consider SRAT rev on ia64
-Message-ID: <20090518094900.GG15531@tpkurt2.garloff.de>
-Mail-Followup-To: Kurt Garloff <garloff@suse.de>,
-	Linux kernel list <linux-kernel@vger.kernel.org>,
-	Norbert Eicker <N.Eicker@fz-juelich.de>,
-	Greg Kroah-Hartman <GregKH@suse.de>,
-	Alexey Starikovskiy <AStarikovskiy@suse.cz>,
-	Len Brown <LenB@kernel.org>, xb <xavier.bru@bull.net>
-References: <20090518093352.GC15531@tpkurt2.garloff.de>
+X-BigFish: VPS-20(zz1432R98dR1805M873fnzz1202hzz2ba5Mz32i6bh6di43j)
+X-FB-SS: 5,13,
+X-WSS-ID: 0KJU38X-01-M8D-01
+Date: Mon, 18 May 2009 11:48:22 +0200
+From: Borislav Petkov <borislav.petkov@amd.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Doug Thompson <dougthompson@xmission.com>
+Subject: Re: linux-next: Tree for May 15
+Message-ID: <20090518094822.GB4905@aftab>
+References: <20090515153733.4384db9f.sfr@canb.auug.org.au> <20090515130729.GA13026@aftab> <20090518000734.6fd3d652.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="5mZBmBd1ZkdwT1ny"
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Disposition: inline
-In-Reply-To: <20090518093352.GC15531@tpkurt2.garloff.de>
-X-Operating-System: Linux 2.6.27.21-5.1-default x86_64
-X-PGP-Info: on http://www.garloff.de/kurt/mykeys.pgp
-X-PGP-Key: 1024D/1C98774E
-Organization: SUSE Linux Products GmbH (a Novell company), Nuernberg, GF:
-	Markus Rex, HRB 16746 (AG Nuernberg)
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20090518000734.6fd3d652.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-OriginalArrivalTime: 18 May 2009 09:48:23.0161 (UTC) FILETIME=[C891DE90:01C9D79D]
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Stephen,
 
---5mZBmBd1ZkdwT1ny
-Content-Type: multipart/mixed; boundary="JsihDCElWRmQcbOr"
-Content-Disposition: inline
+On Mon, May 18, 2009 at 12:07:34AM +1000, Stephen Rothwell wrote:
+> Hi Boris,
+> 
+> On Fri, 15 May 2009 15:07:29 +0200 Borislav Petkov <borislav.petkov@amd.com> wrote:
+> >
+> > can you please add the tree at
+> > 
+> > git://git.kernel.org/pub/scm/linux/kernel/git/bp/bp.git for-next
+> > 
+> > to linux-test for a wider testing. It is rebased ontop of
+> > 45d447406a19cbfd42720f066f156f4eb9d68801 (Linus's tree from yesterday).
+> 
+> A hint as to what the tree is about would be nice.  It looks like EDAC
+> stuff (mostly AMD64).
 
+It is an EDAC module for AMD k8, Fam10h and Fam11h processors.
 
---JsihDCElWRmQcbOr
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> If so, you are not listed as a maintainer of that code (Doug cc'd).
 
-Hi,
+I'll send a patch to update that later.
 
-ia64 did handle the PXM fields almost consistently, but depending on=20
-sgi's sn2 platform. This patch leaves the sn2 logic in, but does also
-use 16/32 bits for PXM if the SRAT has rev 2 or higher.
+> The boilerplate:
+> 
+> What I tell everyone: all patches/commits in the tree/series must
+> have been:
+> 
+> 	posted to a relevant mailing list
 
-This is patch 3/3.
---=20
-Kurt Garloff, VP OPS Partner Engineering -- Novell Inc.
+done, lkml.
 
---JsihDCElWRmQcbOr
-Content-Type: text/x-patch; charset=us-ascii
-Content-Disposition: attachment; filename="srat-pxm-rev-ia64.diff"
-Content-Transfer-Encoding: quoted-printable
+> 	reviewed
 
-=46rom: Kurt Garloff <garloff@suse.de>
-Subject: Use SRAT table rev to use 8bit or 16/32bit PXM fields (ia64)
-References: bnc#503038
+The review process had 3 iterations, see:
 
-In SRAT v1, we had 8bit proximity domain (PXM) fields; SRAT v2 provides
-32bits for these. The new fields were reserved before.
-According to the ACPI spec, the OS must disregrard reserved fields.
+http://lkml.indiana.edu/hypermail/linux/kernel/0904.3/02606.html
+http://lwn.net/Articles/332324/
+http://lkml.indiana.edu/hypermail/linux/kernel/0905.1/03571.html
 
-ia64 did handle the PXM fields almost consistently, but depending on=20
-sgi's sn2 platform. This patch leaves the sn2 logic in, but does also
-use 16/32 bits for PXM if the SRAT has rev 2 or higher.
+Reviewers: x86 maintainers, Andrew Morton, Greg KH, Mauro Carvalho Chehab
 
-The patch also adds __init to the two pxm accessor functions, as they
-access __initdata now and are called from an __init function only anyway.
+> 	unit tested
 
-Note that the code only uses 16 bits for the PXM field in the processor
-proximity field; the patch does not address this as 16 bits are more than
-enough.
+done.
 
-This is patch 3/3.
+> 	destined for the next merge window (or the current release)
 
-Signed-off-by: Kurt Garloff <garloff@suse.de>
+It is destined for the .31 merge window, as Andrew suggested.
 
-diff -r a4ed8abcc815 arch/ia64/kernel/acpi.c
---- a/arch/ia64/kernel/acpi.c	Sat May 16 13:41:28 2009 -0700
-+++ b/arch/ia64/kernel/acpi.c	Mon May 18 10:45:40 2009 +0200
-@@ -456,22 +456,24 @@
- static struct acpi_table_slit __initdata *slit_table;
- cpumask_t early_cpu_possible_map =3D CPU_MASK_NONE;
-=20
--static int get_processor_proximity_domain(struct acpi_srat_cpu_affinity *p=
-a)
-+static int __init
-+get_processor_proximity_domain(struct acpi_srat_cpu_affinity *pa)
- {
- 	int pxm;
-=20
- 	pxm =3D pa->proximity_domain_lo;
--	if (ia64_platform_is("sn2"))
-+	if (ia64_platform_is("sn2") || acpi_srat_revision >=3D 2)
- 		pxm +=3D pa->proximity_domain_hi[0] << 8;
- 	return pxm;
- }
-=20
--static int get_memory_proximity_domain(struct acpi_srat_mem_affinity *ma)
-+static int __init
-+get_memory_proximity_domain(struct acpi_srat_mem_affinity *ma)
- {
- 	int pxm;
-=20
- 	pxm =3D ma->proximity_domain;
--	if (!ia64_platform_is("sn2"))
-+	if (!ia64_platform_is("sn2") && acpi_srat_revision <=3D 1)
- 		pxm &=3D 0xff;
-=20
- 	return pxm;
+Let me know if there's anything more needed.
 
+Thanks.
 
---JsihDCElWRmQcbOr--
+-- 
+Regards/Gruss,
+Boris.
 
---5mZBmBd1ZkdwT1ny
-Content-Type: application/pgp-signature
-Content-Disposition: inline
+Operating | Advanced Micro Devices GmbH
+  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
+ Research | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
+  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+  (OSRC)  | Registergericht München, HRB Nr. 43632
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iD8DBQFKES8MxmLh6hyYd04RApvvAKCLti70g4gCL6ECSFIvgPKXPCtQmgCfWPmc
-0e+xu2B+HKUWU8S+IcF6Ex4=
-=Sb+s
------END PGP SIGNATURE-----
-
---5mZBmBd1ZkdwT1ny--
