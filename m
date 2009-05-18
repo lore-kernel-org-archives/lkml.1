@@ -1,60 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751989AbZERJrW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759016AbZERJrr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751989AbZERJrW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 05:47:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756805AbZERJZ7
+	id S1759016AbZERJrr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 05:47:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757529AbZERJag
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 05:25:59 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:38405 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753060AbZERJXJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 05:23:09 -0400
-From: Avi Kivity <avi@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: kvm@vger.kernel.org
-Subject: [PATCH 13/43] KVM: declare ioapic functions only on affected hardware
-Date: Mon, 18 May 2009 12:22:35 +0300
-Message-Id: <1242638585-18470-14-git-send-email-avi@redhat.com>
-In-Reply-To: <1242638585-18470-1-git-send-email-avi@redhat.com>
-References: <1242638585-18470-1-git-send-email-avi@redhat.com>
+	Mon, 18 May 2009 05:30:36 -0400
+Received: from mailout1.samsung.com ([203.254.224.24]:41052 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757503AbZERJae (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 05:30:34 -0400
+Date: Mon, 18 May 2009 11:27:59 +0200
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: RE: [PATCH] [drivers] [SPI] SPI_GPIO: add support for controllers with
+ missing MISO pin
+In-reply-to: <20090518085710.GE14595@buzzloop.caiaq.de>
+To: "'Daniel Mack'" <daniel@caiaq.de>, "'Ben Dooks'" <ben-linux@fluff.org>
+Cc: "'LKML'" <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel@lists.arm.linux.org.uk, kyungmin.park@samsung.com
+Message-id: <000901c9d79a$f36a86b0$da3f9410$%szyprowski@samsung.com>
+MIME-version: 1.0
+X-Mailer: Microsoft Office Outlook 12.0
+Content-type: text/plain; charset=us-ascii
+Content-language: pl
+Content-transfer-encoding: 7BIT
+Thread-index: AcnXlqWXANGyQY9ETqm3OPViz2FqrAAAinLw
+References: <E4D3F24EA6C9E54F817833EAE0D912AC02243DBF8C@bssrvexch01.BS.local>
+ <20090507123157.GU32548@trinity.fluff.org>
+ <000501c9d792$f8feb950$eafc2bf0$%szyprowski@samsung.com>
+ <20090518083412.GA28648@trinity.fluff.org>
+ <20090518085710.GE14595@buzzloop.caiaq.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Christian Borntraeger <borntraeger@de.ibm.com>
+Hello,
 
-Since "KVM: Unify the delivery of IOAPIC and MSI interrupts"
-I get the following warnings:
+On Monday, May 18, 2009 10:57 AM Daniel Mack wrote:
 
-  CC [M]  arch/s390/kvm/kvm-s390.o
-In file included from arch/s390/kvm/kvm-s390.c:22:
-include/linux/kvm_host.h:357: warning: 'struct kvm_ioapic' declared inside parameter list
-include/linux/kvm_host.h:357: warning: its scope is only this definition or declaration, which is probably not what you want
+> On Mon, May 18, 2009 at 09:34:12AM +0100, Ben Dooks wrote:
+> > > > >  static inline int getmiso(const struct spi_device *spi)
+> > > > >  {
+> > > > > -	return !!gpio_get_value(SPI_MISO_GPIO);
+> > > > > +	if (SPI_MISO_GPIO)
+> > > > > +		return !!gpio_get_value(SPI_MISO_GPIO);
+> > > > > +	else
+> > > > > +		return 0;
+> > > > >  }
+> > > >
+> > > > Is zero a good approximation for 'no gpio' ?
+> > >
+> > > Now I found that zero might be a valid gpio pin number on some
+> architectures
+> > > (it just means GPIO0 pin). This is imho a bit strange behavior of
+> gpiolib as
+> > > there should be also a special values for INVALID or NOGPIO cases.
+> Does
+> > > anyone have any ideas how such cases should be handled properly?
+> >
+> > I belive there is a gpio_is_valid() function to tell you precisely if
+> > the given GPIO is valid.
+> 
+> And then -1 can be passed in from the platform data which will fail the
+> gpio_is_valid() test.
 
-This patch limits IOAPIC functions for architectures that have one.
+Ok. I will update my patch. Thank you for the idea.
 
-Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
-Signed-off-by: Avi Kivity <avi@redhat.com>
----
- include/linux/kvm_host.h |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+Best regards
+--
+Marek Szyprowski
+Samsung Poland R&D Center
 
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index 3832243..3b91ec9 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -363,9 +363,11 @@ void kvm_unregister_irq_mask_notifier(struct kvm *kvm, int irq,
- 				      struct kvm_irq_mask_notifier *kimn);
- void kvm_fire_mask_notifiers(struct kvm *kvm, int irq, bool mask);
- 
-+#ifdef __KVM_HAVE_IOAPIC
- void kvm_get_intr_delivery_bitmask(struct kvm_ioapic *ioapic,
- 				   union kvm_ioapic_redirect_entry *entry,
- 				   unsigned long *deliver_bitmask);
-+#endif
- int kvm_set_irq(struct kvm *kvm, int irq_source_id, int irq, int level);
- void kvm_notify_acked_irq(struct kvm *kvm, unsigned irqchip, unsigned pin);
- void kvm_register_irq_ack_notifier(struct kvm *kvm,
--- 
-1.6.0.6
 
