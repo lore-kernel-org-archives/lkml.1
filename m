@@ -1,51 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753361AbZERRTI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754346AbZERRYl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753361AbZERRTI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 13:19:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751854AbZERRSy
+	id S1754346AbZERRYl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 13:24:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751832AbZERRYe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 13:18:54 -0400
-Received: from khc.piap.pl ([195.187.100.11]:40879 "EHLO khc.piap.pl"
+	Mon, 18 May 2009 13:24:34 -0400
+Received: from hera.kernel.org ([140.211.167.34]:38111 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751382AbZERRSx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 13:18:53 -0400
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>, Joe Perches <joe@perches.com>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       Borislav Petkov <petkovbb@gmail.com>
-Subject: Re: [PATCH 6/6] drivers/ide: Convert printk(KERN_NOTICE to pr_notice(
-References: <cover.1242609803.git.joe@perches.com>
-	<4A11343C.5070809@ru.mvista.com> <m3skj2im12.fsf@intrepid.localdomain>
-	<200905181550.07723.bzolnier@gmail.com>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Mon, 18 May 2009 19:18:52 +0200
-In-Reply-To: <200905181550.07723.bzolnier@gmail.com> (Bartlomiej Zolnierkiewicz's message of "Mon\, 18 May 2009 15\:50\:07 +0200")
-Message-ID: <m3octqib2b.fsf@intrepid.localdomain>
+	id S1751485AbZERRYd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 13:24:33 -0400
+Message-ID: <4A119990.9020606@kernel.org>
+Date: Mon, 18 May 2009 10:23:28 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Ingo Molnar <mingo@elte.hu>, Jack Steiner <steiner@sgi.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: tip: patches in git for irq and numa
+References: <4A05269D.8000701@kernel.org> <20090511095022.GA23121@elte.hu>	 <20090511163158.c4e4d334.akpm@linux-foundation.org>	 <20090512090704.GC18004@elte.hu> <4A0A6700.3070100@kernel.org>	 <20090513133635.GB7384@elte.hu> <4A0AFA6E.5050200@kernel.org>	 <20090515173521.GA29647@elte.hu> <4A0DE0ED.6090402@kernel.org>	 <20090518072952.GA12460@elte.hu> <1242654650.26820.429.camel@twins>	 <4A1178D5.5050900@kernel.org> <1242659477.26820.433.camel@twins>
+In-Reply-To: <1242659477.26820.433.camel@twins>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> writes:
+please check following patch
 
->> Though I think most people would agree that the latter is much better,
->> no?
->
-> No, it just hides the real issue:
+Thanks
 
-I didn't say it's best. Just better :-)
+YH
 
->> I think removal (rewording) of this rule has already been agreed upon,
->> though not exactly yet codified.
->
-> This is not a strict rule but in 99% cases it shows that the code could
-> be improved further without >80 chars lines.
+Subject: [PATCH] x86: don't mark pin_programmed early
 
-I don't have the stat numbers handy but the established idea is that
-since the texts could be up to 80-chars long (and it's a good thing),
-the printk line needed to output them has to be longer.
-IOW, breaking the text into pieces is worse. Obviously, that doesn't
-mean one can't do better.
--- 
-Krzysztof Halasa
+Peter bisected that
+| commit b9c61b70075c87a8612624736faf4a2de5b1ed30
+| Date:   Wed May 6 10:10:06 2009 -0700
+|
+|     x86/pci: update pirq_enable_irq() to setup io apic routing
+|
+|     So we can set io apic routing only when enabling the device irq.
+wrecked his opteron box, ata1 interrupts fail to get through
+
+and that ata1 is using irq 11
+[    1.451839] sata_svw 0000:01:0e.0: version 2.3
+[    1.456333] sata_svw 0000:01:0e.0: PCI INT A -> GSI 11 (level, low) -> IRQ 11
+[    1.463639] scsi0 : sata_svw
+[    1.466949] scsi1 : sata_svw
+[    1.470022] scsi2 : sata_svw
+[    1.473090] scsi3 : sata_svw
+[    1.476112] ata1: SATA max UDMA/133 mmio m8192@0xff3fe000 port 0xff3fe000 irq 11
+[    1.483490] ata2: SATA max UDMA/133 mmio m8192@0xff3fe000 port 0xff3fe100 irq 11
+[    1.490870] ata3: SATA max UDMA/133 mmio m8192@0xff3fe000 port 0xff3fe200 irq 11
+[    1.498247] ata4: SATA max UDMA/133 mmio m8192@0xff3fe000 port 0xff3fe300 irq 11
+
+that pin is overlapped with pin with legacy ones.
+We should not set bits in pin_programmed here, so that those bit could be set later
+via io_apic_set_pci_routing()
+
+Reported-by: Peter Zijlstra <peterz@infradead.org>
+Signed-off-by: Yinghai Lu <yinghai.lu@kernel.org>
+
+diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
+index 6b7913b..ed6a91c 100644
+--- a/arch/x86/kernel/apic/io_apic.c
++++ b/arch/x86/kernel/apic/io_apic.c
+@@ -1538,7 +1538,10 @@ static void __init setup_IO_APIC_irqs(void)
+ 		}
+ 		cfg = desc->chip_data;
+ 		add_pin_to_irq_node(cfg, node, apic_id, pin);
+-		set_bit(pin, mp_ioapic_routing[apic_id].pin_programmed);
++		/*
++		 * don't mark it in pin_programmed, so later acpi could
++		 * set it correctly when irq < 16
++		 */
+ 		setup_IO_APIC_irq(apic_id, pin, irq, desc,
+ 				irq_trigger(idx), irq_polarity(idx));
+ 	}
