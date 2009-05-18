@@ -1,53 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755862AbZERWfY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755914AbZERWhr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755862AbZERWfY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 18:35:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753583AbZERWfO
+	id S1755914AbZERWhr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 18:37:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754705AbZERWhj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 18:35:14 -0400
-Received: from mail-in-01.arcor-online.net ([151.189.21.41]:42918 "EHLO
-	mail-in-01.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752894AbZERWfN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 18:35:13 -0400
-X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-07.arcor-online.net 822B53CA1FE
-From: Bodo Eggert <7eggert@web.de>
-Subject: Re: [PATCH] sysrq: Don't panic_on_oom if the user requested an OOM  kill.
-To: David Rientjes <rientjes@google.com>, Geoffrey Thomas <geofft@mit.edu>,
-       linux-kernel@vger.kernel.org
-Reply-To: 7eggert@gmx.de
-Date: Tue, 19 May 2009 00:35:11 +0200
-References: <cD8Tq-1IB-7@gated-at.bofh.it> <cDi6w-7CM-27@gated-at.bofh.it>
-User-Agent: KNode/0.10.4
+	Mon, 18 May 2009 18:37:39 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:35461 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754367AbZERWhi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 18:37:38 -0400
+Message-ID: <4A11E244.2000305@ds.jp.nec.com>
+Date: Mon, 18 May 2009 18:33:40 -0400
+From: "IKEDA, Munehiro" <m-ikeda@ds.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Message-Id: <E1M6BQO-0001j9-7h@be1.7eggert.dyndns.org>
+To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+CC: Vivek Goyal <vgoyal@redhat.com>, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, jens.axboe@oracle.com, ryov@valinux.co.jp,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       righi.andrea@gmail.com, agk@redhat.com, dm-devel@redhat.com,
+       snitzer@redhat.com, akpm@linux-foundation.org
+Subject: Re: [PATCH] IO Controller: Add per-device weight and ioprio_class
+ handling
+References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com> <4A0A29B5.7030109@cn.fujitsu.com> <20090513190929.GB18371@redhat.com> <4A0BC7AB.8030703@cn.fujitsu.com>
+In-Reply-To: <4A0BC7AB.8030703@cn.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Rientjes <rientjes@google.com> wrote:
-> On Mon, 18 May 2009, Geoffrey Thomas wrote:
+Hi Gui,
 
->> If I specifically request an OOM kill via magic sysrq, I don't want
->> panic_on_oom to apply and crash the machine. I ran into this on a server
->> with panic_on_oom and automatic reboot after panic configured on the
->> assumption that nobody is likely physically present. If I'm able to use
->> magic sysrq, though, I can use that to reboot the machine slightly more
->> safely, if that's what I wanted.
->> 
->> This patch adds an extra parameter to out_of_memory to ignore the value
->> of sysctl_panic_on_oom, and just proceed with the OOM kill.
->> 
->> Signed-off-by: Geoffrey Thomas <geofft@mit.edu>
+Gui Jianfeng wrote:
+> Hi Vivek,
 > 
-> Nack, it's your own fault for asking for panic_on_oom and then not wanting
-> it to panic on oom.
+> This patch enables per-cgroup per-device weight and ioprio_class handling.
+> A new cgroup interface "policy" is introduced. You can make use of this 
+> file to configure weight and ioprio_class for each device in a given cgroup.
+> The original "weight" and "ioprio_class" files are still available. If you
+> don't do special configuration for a particular device, "weight" and 
+> "ioprio_class" are used as default values in this device.
 > 
-> Disable /proc/sys/vm/panic_on_oom before invoking the oom killer and then
-> reenable it afterwards.
+> You can use the following format to play with the new interface.
+> #echo DEV:weight:ioprio_class > /patch/to/cgroup/policy
+> weight=0 means removing the policy for DEV.
+> 
+> Examples:
+> Configure weight=300 ioprio_class=2 on /dev/hdb in this cgroup
+> # echo /dev/hdb:300:2 > io.policy
+> # cat io.policy
+> dev weight class
+> /dev/hdb 300 2
 
-Did you even think about the reasons for pressing sysrq-foo?
-Like - e.g. - NOT BEING ABLE TO LOG IN?
+Users can specify a device file of a partition for io.policy.
+In this case, io_policy_node::dev_name is set as a name of the
+partition device like /dev/sda2.
+
+ex)
+  # cd /mnt/cgroup
+  # cat /dev/sda2:500:2 > io.policy
+  # echo io.policy
+    dev weight class
+    /dev/sda2 500 2
+
+I believe io_policy_node::dev_name should be set a generic
+device name like /dev/sda.
+What do you think about it?
+
+Signed-off-by: Munehiro "Muuhh" Ikeda <m-ikeda@ds.jp.nec.com>
+---
+ block/elevator-fq.c |    7 ++++++-
+ 1 files changed, 6 insertions(+), 1 deletions(-)
+
+diff --git a/block/elevator-fq.c b/block/elevator-fq.c
+index 39fa2a1..5d3d55c 100644
+--- a/block/elevator-fq.c
++++ b/block/elevator-fq.c
+@@ -1631,11 +1631,12 @@ static struct io_policy_node *policy_search_node(const struct io_cgroup *iocg,
+ 	return NULL;
+ }
+ 
+-static int devname_to_devnum(const char *buf, dev_t *dev)
++static int devname_to_devnum(char *buf, dev_t *dev)
+ {
+ 	struct block_device *bdev;
+ 	struct gendisk *disk;
+ 	int part;
++	char *c;
+ 
+ 	bdev = lookup_bdev(buf);
+ 	if (IS_ERR(bdev))
+@@ -1645,6 +1646,10 @@ static int devname_to_devnum(const char *buf, dev_t *dev)
+ 	*dev = MKDEV(disk->major, disk->first_minor);
+ 	bdput(bdev);
+ 
++	c = strrchr(buf, '/');
++	if (c)
++		strcpy(c+1, disk->disk_name);
++
+ 	return 0;
+ }
+ 
+-- 
+1.5.4.3
+
+
+-- 
+IKEDA, Munehiro
+  NEC Corporation of America
+    m-ikeda@ds.jp.nec.com
 
