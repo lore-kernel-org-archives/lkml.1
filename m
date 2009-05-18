@@ -1,78 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756211AbZERIVb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756630AbZERIWV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756211AbZERIVb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 04:21:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751989AbZERIVJ
+	id S1756630AbZERIWV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 04:22:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751989AbZERIWB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 04:21:09 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56720 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751022AbZERIVF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 04:21:05 -0400
-Date: Mon, 18 May 2009 10:20:51 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>, Li Zefan <lizf@cn.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH 0/2] tracing/stat: cleanups, latency
-Message-ID: <20090518082051.GB10687@elte.hu>
-References: <1242451124-5466-1-git-send-email-fweisbec@gmail.com>
+	Mon, 18 May 2009 04:22:01 -0400
+Received: from yx-out-2324.google.com ([74.125.44.30]:48688 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751022AbZERIWA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 04:22:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=umeo5vwxFrhjBaiRl6c4MLapggspZXBUiempqTtuGHVJC7bsiH7qQNZlgmOj2s2FKP
+         2pBdmsLQsvmHqGQPW2lG7rYNMFgEgMYWpiAhpFueBb9J1tw1gWXVEv2njQnOMWhUv0zB
+         z6LcoOIzCOzWtSIUlhiD2mELIlhFKfbjwmsik=
+Message-ID: <4A111A85.6030508@gmail.com>
+Date: Mon, 18 May 2009 10:21:25 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1b5pre) Gecko/20090511 SUSE/3.0b2-9.1 Thunderbird/3.0b3pre
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1242451124-5466-1-git-send-email-fweisbec@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Krzysztof Helt <krzysztof.h1@wp.pl>
+CC: linux-kbuild@vger.kernel.org, LKLM <linux-kernel@vger.kernel.org>,
+       Jiri Kosina <jkosina@suse.cz>
+Subject: Re: Kconfig: fix problem in HID menu
+References: <20090517175617.81323cc1.krzysztof.h1@wp.pl>
+In-Reply-To: <20090517175617.81323cc1.krzysztof.h1@wp.pl>
+X-Enigmail-Version: 0.96a
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Frederic Weisbecker <fweisbec@gmail.com> wrote:
-
-> Hi,
+On 05/17/2009 05:56 PM, Krzysztof Helt wrote:
+> Following syntax does not work properly if there is an options FOO2 depending on the FOO:
 > 
-> Here are two patches for the stat tracing. I would also like to do 
-> more work on the stat tracing to make it able to manage by itself 
-> the entries for the tracers, ie: the memory allocation, accesses, 
-> locking, releases, etc...
+> config FOO
+> 	tristate "Foo" if EMBEDDED
+> 	depends on FUD
+> 	default !EMBEDDED
 > 
-> And the workqueue tracer would be a good base to work on it. Then 
-> Ingo, if you pull this, could you please also merge tracing/core 
-> into tracing/workqueue, so that I can continue the work with these 
-> patches and prepare pull requests against tracing/workqueue. It 
-> should be mergeable without conflicts, I just applied the raw 
-> patches from this pull-request into tracing/workqueue and it was 
-> fine.
-
-sure, i've done that!
-
-> The following changes since commit 5872144f64b34a5942f6b4acedc90b02de72c58b:
->   Li Zefan (1):
->         tracing/filters: fix off-by-one bug
+> config FOO2
+> 	bool "Foo2"
+> 	depends on FOO
 > 
-> are available in the git repository at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git
-> 	tracing/core
-> 
-> Frederic Weisbecker (2):
->       tracing/stat: replace trace_stat_session by stat_session
->       tracing/stat: replace linked list by an rbtree for sorting
-> 
->  kernel/trace/trace_stat.c |  166 ++++++++++++++++++++++++++++++--------------
->  1 files changed, 113 insertions(+), 53 deletions(-)
+> If the EMBEDDED is not selected the FOO option is selected
+> and it cannot be unselected.
 
-Pulled, thanks Frederic.
+Uhuh, but that's correct behaviour. We don't want to bother user with
+tons of drivers unless he is compiling for embedded. Or am I missing
+something?
 
-Note, i've rebased this on top of the tracing/workqueues topic and 
-have merged both into tip:master. You can use tracing/stat as a Git 
-basis. (assuming it survives today's testing in -tip without 
-requiring a rebase)
+> The change of the FOO definition:
+> 
+> config FOO
+> 	tristate "Foo" 
+> 	depends on EMBEDDED && FUD
+> 	default !EMBEDDED
+> 
+> fixes the issue.
 
-	Ingo
+This does something different. You offer regular user to turn it off and
+defaults to n for embedded. This is not what we want, I suppose.
+
+> This is likely a bug in Kconfig tool.
+
+In that case, you want to fix the tool, not the configs.
