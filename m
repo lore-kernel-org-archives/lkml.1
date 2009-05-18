@@ -1,125 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753416AbZEROWq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754817AbZEROXo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753416AbZEROWq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 10:22:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751140AbZEROWi
+	id S1754817AbZEROXo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 10:23:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751951AbZEROXh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 10:22:38 -0400
-Received: from mu-out-0910.google.com ([209.85.134.191]:42436 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750978AbZEROWh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 10:22:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=lVPmnmr7y3aYf2Rn2QYlBpmRLoHf05rt5ZNnjcCa9GyyhEe07a2XVp4zLbzA6QAIzr
-         RnnmJFh6rQgWwcweuqUCpuIvfUgdpEkJM6rxK37C5cNQJ1ZWQjUZhkmMTo1/6mkrtpVL
-         spNlQDjQQs2hFiMsM0DSkHUD9KSHnrRkMWRpY=
+	Mon, 18 May 2009 10:23:37 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:37837 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751720AbZEROXg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 10:23:36 -0400
+Date: Mon, 18 May 2009 16:23:01 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [GIT PULL] core kernel fixes
+Message-ID: <20090518142301.GA22765@elte.hu>
 MIME-Version: 1.0
-In-Reply-To: <4A0BF776.9030301@compulab.co.il>
-References: <63386a3d0905140129s5fd0f32cxde1114489678f012@mail.gmail.com>
-	 <4A0BF776.9030301@compulab.co.il>
-Date: Mon, 18 May 2009 16:22:36 +0200
-Message-ID: <63386a3d0905180722u282f0dd3ua62b119a1a6a97e8@mail.gmail.com>
-Subject: Re: [PATCH] MFD: Add U300 AB3100 core support v1
-From: Linus Walleij <linus.ml.walleij@gmail.com>
-To: Mike Rapoport <mike@compulab.co.il>
-Cc: linux-kernel@vger.kernel.org, sameo@linux.intel.com,
-       linux-i2c@vger.kernel.org, Linus Walleij <linus.walleij@stericsson.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/5/14 Mike Rapoport <mike@compulab.co.il>:
+Linus,
 
-> A few comments.
+Please pull the latest core-fixes-for-linus git tree from:
 
-First a BIG THANKS. I worked the last few days according to your and
-Samuel's comments, great input!
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git core-fixes-for-linus
 
-I'll send a v2 soonish with all issues fixed as far as possible. Below
-I just discuss things I haven't yet figured out how to fix properly.
-(Most stuff is simply just fixed.)
+ Thanks,
 
->> +     /*
->> +      * A two-byte write message with the first byte containing the register
->> +      * number and the second byte containing the value to be written
->> +      * effectively sets a register in the AB3100.
->> +      */
->> +     if ((i2c_transfer(ab3100_i2c_client->adapter,
->> +                                     &msgs[0], 1)) != 1) {
->
-> Is it necessary to use i2c_transfer here? Maybe i2c_master_send or even
-> i2c_smbus_write_word_data would do the job?
+	Ingo
 
-Yep it works nicely here but...
+------------------>
+Ingo Molnar (1):
+      lockdep: increase MAX_LOCKDEP_ENTRIES and MAX_LOCKDEP_CHAINS
 
->> +/*
->> + * The test registers exist at an I2C bus address up one
->> + * from the ordinary base. They are not supposed to be used
->> + * in production code, but sometimes you have to do that
->> + * anyway. It's currently only used from this file so declare
->> + * it static and do not export.
->> + */
->> +static int ab3100_set_test_register(u8 reg, u8 regval)
->> +{
->> +     u8 regandval[2] = {reg, regval};
->> +     struct i2c_msg msgs[1];
->> +     int err = 0;
->> +
->> +     if (!ab3100_initialized)
->> +             return -ENODEV;
->> +
->> +     msgs[0].addr = ab3100_i2c_client->addr + 1;
->> +     msgs[0].flags = 0;
->> +     msgs[0].len = 2;
->> +     msgs[0].buf = regandval;
->> +     err = mutex_lock_interruptible(&ab3100_access_mutex);
->> +     if (err)
->> +             return err;
->> +
->> +     /*
->> +      * A two-byte write message with the first byte containing the register
->> +      * number and the second byte containing the value to be written
->> +      * effectively sets a register in the AB3100.
->> +      */
->> +     if ((i2c_transfer(ab3100_i2c_client->adapter,
->> +                       &msgs[0], 1)) != 1) {
->
-> i2c_master_send?
+Thomas Gleixner (1):
+      futex: futex mapping needs to be writable
 
-Here we have a problem. See above:
-msgs[0].addr = ab3100_i2c_client->addr + 1;
 
-So this chip actually has two addresses. A "special" address
-to deal with test registers, one address up. The I2C framework
-assume all devices have one and one address only (which is
-of course mostly true).
+ kernel/futex.c             |    2 +-
+ kernel/lockdep_internals.h |    4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-Here is a special case. When the first device has registered,
-you know that the other address is available as well.
-
-You could think of several ugly solutions:
-
-* Keep using i2c_transfer() directly as we do now.
-
-* Make a raw copy of the i2c_device with something like
-  memcpy(mock_client, i2c_client, sizeof(i2c_client);
-  mock_client->addr++;
-  then use i2c_master_send()
-
-* Register a new i2c_device in board_info for the other
-  address while strictly speaking it is the same device, and
-  this will yield a lot of probing and synchronization code,
-  because writing the test registers is used when probing the
-  first device, so we have to wait for that device to be probed
-  before we can probe the other one etc.
-
-Right now I lean toward the first alternative.
-
-Yours,
-Linus Walleij
+diff --git a/kernel/futex.c b/kernel/futex.c
+index eef8cd2..09db3ae 100644
+--- a/kernel/futex.c
++++ b/kernel/futex.c
+@@ -235,7 +235,7 @@ static int get_futex_key(u32 __user *uaddr, int fshared, union futex_key *key)
+ 	}
+ 
+ again:
+-	err = get_user_pages_fast(address, 1, 0, &page);
++	err = get_user_pages_fast(address, 1, 1, &page);
+ 	if (err < 0)
+ 		return err;
+ 
+diff --git a/kernel/lockdep_internals.h b/kernel/lockdep_internals.h
+index a2cc7e9..699a2ac 100644
+--- a/kernel/lockdep_internals.h
++++ b/kernel/lockdep_internals.h
+@@ -54,9 +54,9 @@ enum {
+  * table (if it's not there yet), and we check it for lock order
+  * conflicts and deadlocks.
+  */
+-#define MAX_LOCKDEP_ENTRIES	8192UL
++#define MAX_LOCKDEP_ENTRIES	16384UL
+ 
+-#define MAX_LOCKDEP_CHAINS_BITS	14
++#define MAX_LOCKDEP_CHAINS_BITS	15
+ #define MAX_LOCKDEP_CHAINS	(1UL << MAX_LOCKDEP_CHAINS_BITS)
+ 
+ #define MAX_LOCKDEP_CHAIN_HLOCKS (MAX_LOCKDEP_CHAINS*5)
