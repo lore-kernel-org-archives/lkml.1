@@ -1,46 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759386AbZERJxT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758335AbZERJxw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759386AbZERJxT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 05:53:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759026AbZERJsO
+	id S1758335AbZERJxw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 05:53:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756972AbZERJsp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 05:48:14 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:58616 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759055AbZERJsN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 05:48:13 -0400
-Date: Mon, 18 May 2009 10:48:08 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Vitaly Mayatskikh <v.mayatskih@gmail.com>,
-       Josef Bacik <josef@redhat.com>, sandeen@redhat.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] Perform check in iov_iter_fault_in_readable() by check_readable_bytes()
-Message-ID: <20090518094808.GA12041@shareable.org>
-References: <1242317939-15392-1-git-send-email-v.mayatskih@gmail.com> <1242317939-15392-3-git-send-email-v.mayatskih@gmail.com> <87k54iq2gv.fsf@basil.nowhere.org> <871vqqkdf0.wl%vmayatsk@redhat.com> <20090515093838.GB16682@one.firstfloor.org> <20090515134315.GB8235@shareable.org> <20090518093136.152a1bb7@lxorguk.ukuu.org.uk>
+	Mon, 18 May 2009 05:48:45 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:42410 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758221AbZERJsm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 05:48:42 -0400
+Date: Mon, 18 May 2009 11:49:00 +0200
+From: Kurt Garloff <garloff@suse.de>
+To: Linux kernel list <linux-kernel@vger.kernel.org>,
+       Norbert Eicker <N.Eicker@fz-juelich.de>,
+       Greg Kroah-Hartman <GregKH@suse.de>,
+       Alexey Starikovskiy <AStarikovskiy@suse.cz>,
+       Len Brown <LenB@kernel.org>, xb <xavier.bru@bull.net>
+Subject: [PATCH 3/3]: Consider SRAT rev on ia64
+Message-ID: <20090518094900.GG15531@tpkurt2.garloff.de>
+Mail-Followup-To: Kurt Garloff <garloff@suse.de>,
+	Linux kernel list <linux-kernel@vger.kernel.org>,
+	Norbert Eicker <N.Eicker@fz-juelich.de>,
+	Greg Kroah-Hartman <GregKH@suse.de>,
+	Alexey Starikovskiy <AStarikovskiy@suse.cz>,
+	Len Brown <LenB@kernel.org>, xb <xavier.bru@bull.net>
+References: <20090518093352.GC15531@tpkurt2.garloff.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="5mZBmBd1ZkdwT1ny"
 Content-Disposition: inline
-In-Reply-To: <20090518093136.152a1bb7@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20090518093352.GC15531@tpkurt2.garloff.de>
+X-Operating-System: Linux 2.6.27.21-5.1-default x86_64
+X-PGP-Info: on http://www.garloff.de/kurt/mykeys.pgp
+X-PGP-Key: 1024D/1C98774E
+Organization: SUSE Linux Products GmbH (a Novell company), Nuernberg, GF:
+	Markus Rex, HRB 16746 (AG Nuernberg)
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
-> > System calls don't trigger SIGSEGVs so they can't rely on that when
-> > calling read().  I'm not sure how they handle that.
-> 
-> Usually by touching the pages before the syscall.
 
-Makes sense.
+--5mZBmBd1ZkdwT1ny
+Content-Type: multipart/mixed; boundary="JsihDCElWRmQcbOr"
+Content-Disposition: inline
 
-> (You can't rely on -EFAULT either in POSIX, its optional that it
-> bothers to tell you and for example on MMUless it may well not)
 
-On MMUless you wouldn't use page protection as a GC technique :-)
-Is EFAULT really optional on systems with page protection?
+--JsihDCElWRmQcbOr
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
--- Jamie
+Hi,
+
+ia64 did handle the PXM fields almost consistently, but depending on=20
+sgi's sn2 platform. This patch leaves the sn2 logic in, but does also
+use 16/32 bits for PXM if the SRAT has rev 2 or higher.
+
+This is patch 3/3.
+--=20
+Kurt Garloff, VP OPS Partner Engineering -- Novell Inc.
+
+--JsihDCElWRmQcbOr
+Content-Type: text/x-patch; charset=us-ascii
+Content-Disposition: attachment; filename="srat-pxm-rev-ia64.diff"
+Content-Transfer-Encoding: quoted-printable
+
+=46rom: Kurt Garloff <garloff@suse.de>
+Subject: Use SRAT table rev to use 8bit or 16/32bit PXM fields (ia64)
+References: bnc#503038
+
+In SRAT v1, we had 8bit proximity domain (PXM) fields; SRAT v2 provides
+32bits for these. The new fields were reserved before.
+According to the ACPI spec, the OS must disregrard reserved fields.
+
+ia64 did handle the PXM fields almost consistently, but depending on=20
+sgi's sn2 platform. This patch leaves the sn2 logic in, but does also
+use 16/32 bits for PXM if the SRAT has rev 2 or higher.
+
+The patch also adds __init to the two pxm accessor functions, as they
+access __initdata now and are called from an __init function only anyway.
+
+Note that the code only uses 16 bits for the PXM field in the processor
+proximity field; the patch does not address this as 16 bits are more than
+enough.
+
+This is patch 3/3.
+
+Signed-off-by: Kurt Garloff <garloff@suse.de>
+
+diff -r a4ed8abcc815 arch/ia64/kernel/acpi.c
+--- a/arch/ia64/kernel/acpi.c	Sat May 16 13:41:28 2009 -0700
++++ b/arch/ia64/kernel/acpi.c	Mon May 18 10:45:40 2009 +0200
+@@ -456,22 +456,24 @@
+ static struct acpi_table_slit __initdata *slit_table;
+ cpumask_t early_cpu_possible_map =3D CPU_MASK_NONE;
+=20
+-static int get_processor_proximity_domain(struct acpi_srat_cpu_affinity *p=
+a)
++static int __init
++get_processor_proximity_domain(struct acpi_srat_cpu_affinity *pa)
+ {
+ 	int pxm;
+=20
+ 	pxm =3D pa->proximity_domain_lo;
+-	if (ia64_platform_is("sn2"))
++	if (ia64_platform_is("sn2") || acpi_srat_revision >=3D 2)
+ 		pxm +=3D pa->proximity_domain_hi[0] << 8;
+ 	return pxm;
+ }
+=20
+-static int get_memory_proximity_domain(struct acpi_srat_mem_affinity *ma)
++static int __init
++get_memory_proximity_domain(struct acpi_srat_mem_affinity *ma)
+ {
+ 	int pxm;
+=20
+ 	pxm =3D ma->proximity_domain;
+-	if (!ia64_platform_is("sn2"))
++	if (!ia64_platform_is("sn2") && acpi_srat_revision <=3D 1)
+ 		pxm &=3D 0xff;
+=20
+ 	return pxm;
+
+
+--JsihDCElWRmQcbOr--
+
+--5mZBmBd1ZkdwT1ny
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iD8DBQFKES8MxmLh6hyYd04RApvvAKCLti70g4gCL6ECSFIvgPKXPCtQmgCfWPmc
+0e+xu2B+HKUWU8S+IcF6Ex4=
+=Sb+s
+-----END PGP SIGNATURE-----
+
+--5mZBmBd1ZkdwT1ny--
