@@ -1,116 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755914AbZERWhr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756082AbZERWmb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755914AbZERWhr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 18:37:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754705AbZERWhj
+	id S1756082AbZERWmb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 18:42:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754828AbZERWmW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 18:37:39 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:35461 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754367AbZERWhi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 18:37:38 -0400
-Message-ID: <4A11E244.2000305@ds.jp.nec.com>
-Date: Mon, 18 May 2009 18:33:40 -0400
-From: "IKEDA, Munehiro" <m-ikeda@ds.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-CC: Vivek Goyal <vgoyal@redhat.com>, nauman@google.com, dpshah@google.com,
-       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
-       paolo.valente@unimore.it, jens.axboe@oracle.com, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       righi.andrea@gmail.com, agk@redhat.com, dm-devel@redhat.com,
-       snitzer@redhat.com, akpm@linux-foundation.org
-Subject: Re: [PATCH] IO Controller: Add per-device weight and ioprio_class
- handling
-References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com> <4A0A29B5.7030109@cn.fujitsu.com> <20090513190929.GB18371@redhat.com> <4A0BC7AB.8030703@cn.fujitsu.com>
-In-Reply-To: <4A0BC7AB.8030703@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Mon, 18 May 2009 18:42:22 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40617
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754367AbZERWmV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 18:42:21 -0400
+Date: Mon, 18 May 2009 15:42:19 -0700 (PDT)
+Message-Id: <20090518.154219.39697283.davem@davemloft.net>
+To: wg@grandegger.com
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3 0/7] can: CAN network device driver interface and
+ drivers
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090516093926.429574900@denx.de>
+References: <20090516093926.429574900@denx.de>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Gui,
+From: Wolfgang Grandegger <wg@grandegger.com>
+Date: Sat, 16 May 2009 11:39:26 +0200
 
-Gui Jianfeng wrote:
-> Hi Vivek,
-> 
-> This patch enables per-cgroup per-device weight and ioprio_class handling.
-> A new cgroup interface "policy" is introduced. You can make use of this 
-> file to configure weight and ioprio_class for each device in a given cgroup.
-> The original "weight" and "ioprio_class" files are still available. If you
-> don't do special configuration for a particular device, "weight" and 
-> "ioprio_class" are used as default values in this device.
-> 
-> You can use the following format to play with the new interface.
-> #echo DEV:weight:ioprio_class > /patch/to/cgroup/policy
-> weight=0 means removing the policy for DEV.
-> 
-> Examples:
-> Configure weight=300 ioprio_class=2 on /dev/hdb in this cgroup
-> # echo /dev/hdb:300:2 > io.policy
-> # cat io.policy
-> dev weight class
-> /dev/hdb 300 2
+> here comes v3 of this patch series.
 
-Users can specify a device file of a partition for io.policy.
-In this case, io_policy_node::dev_name is set as a name of the
-partition device like /dev/sda2.
-
-ex)
-  # cd /mnt/cgroup
-  # cat /dev/sda2:500:2 > io.policy
-  # echo io.policy
-    dev weight class
-    /dev/sda2 500 2
-
-I believe io_policy_node::dev_name should be set a generic
-device name like /dev/sda.
-What do you think about it?
-
-Signed-off-by: Munehiro "Muuhh" Ikeda <m-ikeda@ds.jp.nec.com>
----
- block/elevator-fq.c |    7 ++++++-
- 1 files changed, 6 insertions(+), 1 deletions(-)
-
-diff --git a/block/elevator-fq.c b/block/elevator-fq.c
-index 39fa2a1..5d3d55c 100644
---- a/block/elevator-fq.c
-+++ b/block/elevator-fq.c
-@@ -1631,11 +1631,12 @@ static struct io_policy_node *policy_search_node(const struct io_cgroup *iocg,
- 	return NULL;
- }
- 
--static int devname_to_devnum(const char *buf, dev_t *dev)
-+static int devname_to_devnum(char *buf, dev_t *dev)
- {
- 	struct block_device *bdev;
- 	struct gendisk *disk;
- 	int part;
-+	char *c;
- 
- 	bdev = lookup_bdev(buf);
- 	if (IS_ERR(bdev))
-@@ -1645,6 +1646,10 @@ static int devname_to_devnum(const char *buf, dev_t *dev)
- 	*dev = MKDEV(disk->major, disk->first_minor);
- 	bdput(bdev);
- 
-+	c = strrchr(buf, '/');
-+	if (c)
-+		strcpy(c+1, disk->disk_name);
-+
- 	return 0;
- }
- 
--- 
-1.5.4.3
-
-
--- 
-IKEDA, Munehiro
-  NEC Corporation of America
-    m-ikeda@ds.jp.nec.com
-
+I've applied these to net-next-2.6, thanks.
