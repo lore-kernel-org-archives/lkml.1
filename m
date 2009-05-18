@@ -1,77 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752782AbZEROF5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754360AbZEROIv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752782AbZEROF5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 10:05:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752036AbZEROFu
+	id S1754360AbZEROIv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 10:08:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752221AbZEROIm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 10:05:50 -0400
-Received: from web32606.mail.mud.yahoo.com ([68.142.207.233]:28491 "HELO
-	web32606.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751968AbZEROFt (ORCPT
+	Mon, 18 May 2009 10:08:42 -0400
+Received: from rv-out-0506.google.com ([209.85.198.237]:3740 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751101AbZEROIl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 10:05:49 -0400
-Message-ID: <759339.47729.qm@web32606.mail.mud.yahoo.com>
-X-YMail-OSG: hOXCcYsVM1nnxbJfxIXlk5f43u4CRSzpKwgRnavzACPwPi5pa6inHyVW
-X-RocketYMMF: knobi.rm
-X-Mailer: YahooMailRC/1277.43 YahooMailWebService/0.7.289.10
-References: <_AjETDMbIoL.A.DcH.RYzDKB@chimera> <385Pu-agh7M.A.ffB.HZzDKB@chimera>
-Date: Mon, 18 May 2009 07:05:47 -0700 (PDT)
-From: Martin Knoblauch <spamtrap@knobisoft.de>
-Subject: Re: [Bug #13177] 2.6.30-rc2-git7 build problem
-To: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Kernel Testers List <kernel-testers@vger.kernel.org>, oliver@neukum.name
-In-Reply-To: <385Pu-agh7M.A.ffB.HZzDKB@chimera>
+	Mon, 18 May 2009 10:08:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=hkGSGOUGLWf/kS/7YoCEJdsteEw6t9V0MvxgJkAX8kcf3/sixkK2uTRGKe9kuxydxl
+         DqmvlNr6dD0BO0nZOsokjdhd1IzYqZ3vgSn22Rdk8lGrpR91GUIWX2CUlteETRl1P0PR
+         gAuG3mJOxYx6I5F+bcBJxOY9/7VsIIoOWibTE=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Joe Perches <joe@perches.com>
+Subject: Re: [PATCH 0/6] drivers/ide Convert printk(KERN_<foo> to pr_<foo>(
+Date: Mon, 18 May 2009 16:12:43 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc3-00442-ga3668b0; KDE/4.2.2; i686; ; )
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+References: <cover.1242609803.git.joe@perches.com>
+In-Reply-To: <cover.1242609803.git.joe@perches.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Message-Id: <200905181612.43632.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Monday 18 May 2009 04:21:08 Joe Perches wrote:
+> Mostly mechanical conversion of printk's
 
+[...]
 
+Hmm.. less mechanical conversion using also dev_*() macros where suitable
+would be much better...
 
------ Original Message ----
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-> Cc: Kernel Testers List <kernel-testers@vger.kernel.org>; Martin Knoblauch <spamtrap@knobisoft.de>
-> Sent: Saturday, May 16, 2009 9:20:40 PM
-> Subject: [Bug #13177] 2.6.30-rc2-git7 build problem
-> 
-> This message has been generated automatically as a part of a report
-> of recent regressions.
-> 
-> The following bug entry is on the current list of known regressions
-> from 2.6.29.  Please verify if it still should be listed and let me know
-> (either way).
-> 
-> 
-> Bug-Entry    : http://bugzilla.kernel.org/show_bug.cgi?id=13177
-> Subject        : 2.6.30-rc2-git7 build problem
-> Submitter    : Martin Knoblauch 
-> Date        : 2009-04-21 13:39 (26 days old)
-> References    : http://marc.info/?l=linux-kernel&m=124032163602132&w=4
->           http://lkml.org/lkml/2009/4/27/56
+> Joe Perches (6):
+>   drivers/ide: Convert printk(KERN_DEBUG to pr_debug(
 
- Still a problem in 2.6.30-rc6-git3. Adding maintainer
+How's about fixing pr_devel() which currently doesn't seem to be used
+by anything inside kernel to not depend on DEBUG in separate pre-patch
+and then using it instead of pr_debug()?
 
-BUILD   arch/x86/boot/bzImage
-Root device is (104, 3)
-Setup is 12664 bytes (padded to 12800 bytes).
-System is 2648 kB
-CRC 91a1a400
-Kernel: arch/x86/boot/bzImage is ready  (#2)
-  Building modules, stage 2.
-  MODPOST 471 modules
-WARNING: drivers/gpu/drm/i915/i915.o(.text+0x1313e): Section mismatch in reference from the function intel_lvds_init() to the variable .init.data:intel_no_lvds
-The function intel_lvds_init() references
-the variable __initdata intel_no_lvds.
-This is often because intel_lvds_init lacks a __initdata
-annotation or the annotation of intel_no_lvds is wrong.
+>   drivers/ide: Convert printk(KERN_INFO to pr_info(
+>   drivers/ide: Convert printk(KERN_ERR to pr_err(
+>   drivers/ide: Convert printk(KERN_WARNING to pr_warning(
+>   drivers/ide: Convert printk(KERN_CONT to pr_cont(
+>   drivers/ide: Convert printk(KERN_NOTICE to pr_notice(
 
-ERROR: ".L192" [drivers/usb/serial/kl5kusb105.ko] undefined!
-make[1]: *** [__modpost] Error 1
-make: *** [modules] Error 2
+Please re-do it so we have per-file patches instead of per-pr_.
 
-Cheers
-Martin
+Preferably with some files grouped together so we have only three patches:
+
+* core code: ide-acpi.c, ide-atapi.c, ide.c, ide-devsets.c, ide-dma*.c,
+  ide-eh.c, ide-io*.c, ide-legacy.c, ide-lib.c, ide-park.c, ide-pio*.c,
+  ide-pm.c, ide-probe.c, ide-proc.c, ide-scan-pci.c, ide-sysfs.c,
+  ide-taskfile.c, ide-timings.c, ide-xfer-mode.c and setup-pci.c
+
+* device drivers: ide-cd*, ide-disk*, ide-gd*, ide-floppy* and ide-tape.c
+
+* host drivers: all the rest
+
+It would make patches easier to review and would greatly help when it
+comes to merging them (i.e. I could apply changes to host drivers right
+know but I don't want to interfere too much with the on-going work on
+device drivers).
+
+Thanks.
+Bart
