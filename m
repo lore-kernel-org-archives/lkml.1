@@ -1,220 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753850AbZERTUo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753307AbZERTVY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753850AbZERTUo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 15:20:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752136AbZERTUg
+	id S1753307AbZERTVY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 15:21:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752540AbZERTVQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 15:20:36 -0400
-Received: from www.tglx.de ([62.245.132.106]:43551 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751396AbZERTUf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 15:20:35 -0400
-Date: Mon, 18 May 2009 21:20:10 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [GIT PULL] core kernel fixes
-In-Reply-To: <alpine.LFD.2.01.0905180840420.3301@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0905181801250.3516@localhost.localdomain>
-References: <20090518142301.GA22765@elte.hu> <alpine.LFD.2.01.0905180840420.3301@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Mon, 18 May 2009 15:21:16 -0400
+Received: from ey-out-2122.google.com ([74.125.78.24]:61356 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751396AbZERTVO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 15:21:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=jy7U6F7AopwZ72cQdlidLDJq28I2nCGLp5is17QipBReLeV/5y+9R+kFy4CyHh+AXM
+         k5o8wumgOcuaZgRvyqCROkQTud8qrbSMHzGPv3/ScIz4PiWx0X0BdBiLQCViFCaMZlh+
+         FjToxdn1YhBMm1JdH/1Mk8mH/hVOZdtusk6dQ=
+Message-ID: <4A11B52E.7080808@gmail.com>
+Date: Mon, 18 May 2009 21:21:18 +0200
+From: Niel Lambrechts <niel.lambrechts@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b5pre) Gecko/20090517 Shredder/3.0b3pre
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "linux.kernel" <linux-kernel@vger.kernel.org>
+CC: Eric Anholt <eric@anholt.net>, Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: 2.6.30-rc6: i915: Xserver crash - oops after rmmod
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+Hi,
 
-On Mon, 18 May 2009, Linus Torvalds wrote:
-> On Mon, 18 May 2009, Ingo Molnar wrote:
-> > 
-> > Thomas Gleixner (1):
-> >       futex: futex mapping needs to be writable
-> 
-> I do not believe this is right.
+I use s2disk on a daily basis, and I recently tried to switch to UXA in 
+xorg.conf in anticipation of KMS, for my Lenovo W500 with the integrated 
+Intel card active:
+00:02.0 VGA compatible controller: Intel Corporation Mobile 4 Series 
+Chipset Integrated Graphics Controller (rev 07)
 
-You are right to believe that :)
+Resuming worked just fine the last couple of days using UXA but I 
+admittedly frequently update Mesa/Xorg/git kernel.
 
-> Just a few lines later, we have:
-> 
->          * NOTE: When userspace waits on a MAP_SHARED mapping, even if
->          * it's a read-only handle, it's expected that futexes attach to   
->          * the object not the particular process.
-> 
-> note how we are _supposed_ to be able to wait for something that is 
-> read-only. As such, asking for a writable page is bogus.
+Tonight the X server crashed on resume and I was placed back at the KDM 
+prompt. I thought "$%^&$ the one time I actually had real applications 
+open! I am switching back to EXA!", so I changed AccelMethod back to 
+"exa" and decided to unload all i915 modules - i915, drm, and video.
 
-We write access the user space address in various places in the futex
-functions, so we really need a writeable mapping for a bunch of the
-futex ops. 
+The latter unexpectedly returned "Killed", although none of these 
+modules showed any 'used by' count.
 
-We have an explicit check for the private futexes a few lines up.
+I then did 'init 5' upon which I had a black screen, and decided to 
+reboot. I then noticed that the following OOPS occurred prior to the 
+reboot, likely the result of my "rmmod drm" or "rmmod output".
 
-      if (unlikely(!access_ok(VERIFY_WRITE, uaddr, sizeof(u32))))
+May 18 19:35:56 linux-7vph kernel: Restarting tasks ... done.
+May 18 19:36:07 linux-7vph kdm[2882]: X server for display :0 terminated 
+unexpectedly
+May 18 19:36:18 linux-7vph bonobo-activation-server (niella-10440): 
+could not associate with desktop session: Failed to connect to socket 
+/tmp/dbus-snlESQlAbp: Connection refused
+May 18 19:36:32 linux-7vph kernel: [drm:gm45_get_vblank_counter] *ERROR* 
+trying to get vblank count for disabled pipe 0
+May 18 19:37:01 linux-7vph kernel: [drm:gm45_get_vblank_counter] *ERROR* 
+trying to get vblank count for disabled pipe 0
+May 18 19:37:03 linux-7vph init: Switching to runlevel: 3
+May 18 19:37:34 linux-7vph kernel: mtrr: MTRR 4 not used
+May 18 19:37:34 linux-7vph kernel: [drm] Module unloaded
+May 18 19:37:47 linux-7vph kernel: BUG: unable to handle kernel NULL 
+pointer dereference at 00000010
+May 18 19:37:47 linux-7vph kernel: IP: [<c02fbbef>] klist_put+0x12/0x6f
+May 18 19:37:47 linux-7vph kernel: *pde = 00000000
+May 18 19:37:47 linux-7vph kernel: Oops: 0000 [#1] SMP
+May 18 19:37:47 linux-7vph kernel: last sysfs file: 
+/sys/devices/pci0000:00/0000:00:1c.1/0000:03:00.0/rfkill/rfkill1/state
+May 18 19:37:47 linux-7vph kernel: Modules linked in: usbhid hid tun 
+i2c_algo_bit af_packet ip6t_LOG xt_tcpudp xt_pkttype ipt_LOG xt_limit 
+snd_pcm_oss snd_mixer_oss snd_seq binfmt_misc ip6t_REJECT 
+nf_conntrack_ipv6 ip6table_raw xt_NOTRACK ipt_REJECT xt_state 
+cpufreq_conservative cpufreq_userspace iptable_raw cpufreq_powersave 
+iptable_filter acpi_cpufreq speedstep_lib ip6table_mangle 
+nf_conntrack_netbios_ns nf_conntrack_ipv4 nf_conntrack nf_defrag_ipv4 
+ip_tables ip6table_filter ip6_tables x_tables ipv6 microcode fuse loop 
+dm_mod snd_usb_audio snd_usb_lib snd_rawmidi snd_seq_device arc4 ecb 
+iwlagn iwlcore thinkpad_acpi rfkill led_class snd_hda_codec_conexant 
+video(-) mac80211 ohci1394 battery ac output nvram ieee1394 rtc_cmos 
+snd_hda_intel wmi snd_hda_codec rtc_core button snd_hwdep snd_pcm 
+snd_timer snd i2c_i801 soundcore iTCO_wdt snd_page_alloc 
+iTCO_vendor_support intel_agp cfg80211 rtc_lib e1000e i2c_core agpgart 
+sr_mod cdrom joydev sg ehci_hcd uhci_hcd sd_mod usbcore ext4 jbd2 crc16 
+edd ext3 mbcache jbd fan ahci l
+May 18 19:37:47 linux-7vph kernel: ibata scsi_mod thermal processor 
+[last unloaded: drm]
+May 18 19:37:47 linux-7vph kernel:
+May 18 19:37:47 linux-7vph kernel: Pid: 10594, comm: rmmod Not tainted 
+(2.6.30-rc6-pae #47) 40622XG
+May 18 19:37:47 linux-7vph kernel: EIP: 0060:[<c02fbbef>] EFLAGS: 
+00010246 CPU: 1
+May 18 19:37:47 linux-7vph kernel: EIP is at klist_put+0x12/0x6f
+May 18 19:37:47 linux-7vph kernel: EAX: f5c281f8 EBX: 00000001 ECX: 
+00000004 EDX: 00000001
+May 18 19:37:47 linux-7vph kernel: ESI: 00000000 EDI: f5c281f8 EBP: 
+f44adef0 ESP: f44adedc
+May 18 19:37:47 linux-7vph kernel:  DS: 007b ES: 007b FS: 00d8 GS: 0033 
+SS: 0068
+May 18 19:37:47 linux-7vph kernel: Process rmmod (pid: 10594, 
+ti=f44ac000 task=f5c7f0b0 task.ti=f44ac000)
+May 18 19:37:47 linux-7vph kernel: Stack:
+May 18 19:37:47 linux-7vph kernel:  c0134d30 00000000 00000002 00000000 
+c04297b4 f44adef8 c02fbc77 f44adf18
+May 18 19:37:47 linux-7vph kernel:  c02fbd7b c04376d0 c04376d0 f5c281f8 
+f5c7f0b0 00000000 f85e08c0 f44adf2c
+May 18 19:37:47 linux-7vph kernel:  c026d83e 00000000 f85e08c0 00000000 
+f44adf3c c026e6e1 f85e0980 bf994ca0
+May 18 19:37:47 linux-7vph kernel: Call Trace:
+May 18 19:37:47 linux-7vph kernel:  [<c0134d30>] ? insert_work+0x78/0x81
+May 18 19:37:47 linux-7vph kernel:  [<c02fbc77>] ? klist_del+0xd/0xf
+May 18 19:37:47 linux-7vph kernel:  [<c02fbd7b>] ? klist_remove+0x58/0x81
+May 18 19:37:47 linux-7vph kernel:  [<c026d83e>] ? 
+bus_remove_driver+0x5c/0x89
+May 18 19:37:47 linux-7vph kernel:  [<c026e6e1>] ? 
+driver_unregister+0x2a/0x2e
+May 18 19:37:47 linux-7vph kernel:  [<c0226253>] ? 
+acpi_bus_unregister_driver+0xd/0xf
+May 18 19:37:47 linux-7vph kernel:  [<f85de371>] ? 
+cleanup_module+0xd/0x25 [video]
+May 18 19:37:47 linux-7vph kernel:  [<c01477d5>] ? 
+sys_delete_module+0x18a/0x1e3
+May 18 19:37:47 linux-7vph kernel:  [<c017b9be>] ? remove_vma+0x46/0x4c
+May 18 19:37:47 linux-7vph kernel:  [<c017c5d2>] ? do_munmap+0x20a/0x225
+May 18 19:37:47 linux-7vph kernel:  [<c01029d4>] ? 
+sysenter_do_call+0x12/0x28
+May 18 19:37:47 linux-7vph kernel: Code: 90 83 7d f0 00 74 09 85 ff 74 
+05 89 f8 ff 55 f0 8b 46 04 5a 5b 5e 5f 5d c3 55 89 e5 57 89 c7 56 53 89 
+d3 83 ec 08 8b 30 83 e6 fe <8b> 46 10 89 45 f0 89 f0 e8 0b f4 00 00 84 
+db 74 17 f6 07 01 74
+May 18 19:37:47 linux-7vph kernel: EIP: [<c02fbbef>] klist_put+0x12/0x6f 
+SS:ESP 0068:f44adedc
+May 18 19:37:47 linux-7vph kernel: CR2: 0000000000000010
+May 18 19:37:47 linux-7vph kernel: ---[ end trace c76e3f0980caa485 ]---
+May 18 19:38:41 linux-7vph sudo:   niella : TTY=tty2 ; PWD=/home/niella 
+; USER=root ; COMMAND=/sbin/reboot
 
-There are some of the futex ops which can be done with a RO mapping
-though. I'm not sure if it makes much sense as user space (at least
-glibc) always writes the variable and/or the surrounding members in
-the user space data structures, but for now we should leave it RO for
-the ones which do not modify the user value.
+Xorg.0.log contained the following at more or less the same time of the 
+X crash:
+X Protocol Version 11, Revision 0
+Build Operating System: openSUSE SUSE LINUX
+Current Operating System: Linux linux-7vph 2.6.30-rc6-pae #47 SMP Mon 
+May 18 00:42:36 SAST 2009 i686
+Build Date: 16 May 2009  11:20:59AM
 
-> I'm not going to pull this. I can well imagine that there was a real bug, 
-> but this is _not_ the real fix.
-> 
-> The commentary is also TOTAL CRAP as far as I can tell. It starts out 
-> with:
-> 
->     commit 734b05b10e51d4ba38c8fc3ee02e846aab09eedf (futex: use
->     fast_gup()) calls get_user_pages_fast() with the write argument set to
->     0. This went unnoticed [...]
-> 
-> and that is pure and utter SHIT. The fact is, the write argument was 
-> ALWAYS zero, and commit 734b05b10e51d4ba38c8fc3ee02e846aab09eedf has 
-> nothing to do with anything what-so-ever, and nothing went unnoticed 
-> anywhere.
+    Before reporting problems, check http://wiki.x.org
+    to make sure that you have the latest version.
+Markers: (--) probed, (**) from config file, (==) default setting,
+    (++) from command line, (!!) notice, (II) informational,
+    (WW) warning, (EE) error, (NI) not implemented, (??) unknown.
+(==) Log file: "/var/log/Xorg.0.log", Time: Mon May 18 19:36:14 2009
+(==) Using config file: "/etc/X11/xorg.conf"
+Setting master
+/org/freedesktop/Hal/devices/computer
+xrandr for VGA: new mode 1600x1024 136.36 1600 1704 1872 2144 1024 1025 
+1028 1060
+X Error of failed request:  BadName (named color or font does not exist)
+   Major opcode of failed request:  149 (RANDR)
+   Minor opcode of failed request:  16 (RRCreateMode)
+   Serial number of failed request:  23
+   Current serial number in output stream:  23
+Dropping master
+Setting master
+Dropping master
 
-Sorry, I misread the GUP commit.
-
-> The real bug was apparently just commit e4dc5b7a3 ("clean up").
-
-So we always had that write=0 mapping. And we did not notice that we
-always faulted in the futex functions which modify the user space
-variable simply because the fault was fixed up in the private futex
-fault handling code. The removal of that code led to the problem which
-we have right now.
-
-Correct fix below.
-
-Thanks,
-
-	tglx
------->
-futex: setup writeable mapping for futex ops which modify user space data
-
-The futex code installs a read only mapping via get_user_pages_fast()
-even if the futex op function has to modify user space data. The
-eventual fault was fixed up by futex_handle_fault() which walked the
-VMA with mmap_sem held.
-
-After the cleanup patches which removed the mmap_sem dependency of the
-futex code commit 4dc5b7a36a49eff97050894cf1b3a9a02523717 (futex:
-clean up fault logic) removed the private VMA walk logic from the
-futex code. This change results in a stale RO mapping which is not
-fixed up.
-
-Instead of reintroducing the previous fault logic we set up the
-mapping in get_user_pages_fast() read/write for all operations which
-modify user space data. Also handle private futexes in the same way
-and make the current unconditional access_ok(VERIFY_WRITE) depend on
-the futex op.
-
-Reported-by: Andreas Schwab <schwab@linux-m68k.org>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-CC: stable@kernel.org
-
-diff --git a/kernel/futex.c b/kernel/futex.c
-index eef8cd2..3d7519d 100644
---- a/kernel/futex.c
-+++ b/kernel/futex.c
-@@ -193,6 +193,7 @@ static void drop_futex_key_refs(union futex_key *key)
-  * @uaddr: virtual address of the futex
-  * @fshared: 0 for a PROCESS_PRIVATE futex, 1 for PROCESS_SHARED
-  * @key: address where result is stored.
-+ * @rw: mapping needs to be read/write (values: VERIFY_READ, VERIFY_WRITE)
-  *
-  * Returns a negative error code or 0
-  * The key words are stored in *key on success.
-@@ -203,7 +204,8 @@ static void drop_futex_key_refs(union futex_key *key)
-  *
-  * lock_page() might sleep, the caller should not hold a spinlock.
-  */
--static int get_futex_key(u32 __user *uaddr, int fshared, union futex_key *key)
-+static int
-+get_futex_key(u32 __user *uaddr, int fshared, union futex_key *key, int rw)
- {
- 	unsigned long address = (unsigned long)uaddr;
- 	struct mm_struct *mm = current->mm;
-@@ -226,7 +228,7 @@ static int get_futex_key(u32 __user *uaddr, int fshared, union futex_key *key)
- 	 *        but access_ok() should be faster than find_vma()
- 	 */
- 	if (!fshared) {
--		if (unlikely(!access_ok(VERIFY_WRITE, uaddr, sizeof(u32))))
-+		if (unlikely(!access_ok(rw, uaddr, sizeof(u32))))
- 			return -EFAULT;
- 		key->private.mm = mm;
- 		key->private.address = address;
-@@ -235,7 +237,7 @@ static int get_futex_key(u32 __user *uaddr, int fshared, union futex_key *key)
- 	}
- 
- again:
--	err = get_user_pages_fast(address, 1, 0, &page);
-+	err = get_user_pages_fast(address, 1, rw == VERIFY_WRITE, &page);
- 	if (err < 0)
- 		return err;
- 
-@@ -677,7 +679,7 @@ static int futex_wake(u32 __user *uaddr, int fshared, int nr_wake, u32 bitset)
- 	if (!bitset)
- 		return -EINVAL;
- 
--	ret = get_futex_key(uaddr, fshared, &key);
-+	ret = get_futex_key(uaddr, fshared, &key, VERIFY_READ);
- 	if (unlikely(ret != 0))
- 		goto out;
- 
-@@ -723,10 +725,10 @@ futex_wake_op(u32 __user *uaddr1, int fshared, u32 __user *uaddr2,
- 	int ret, op_ret;
- 
- retry:
--	ret = get_futex_key(uaddr1, fshared, &key1);
-+	ret = get_futex_key(uaddr1, fshared, &key1, VERIFY_READ);
- 	if (unlikely(ret != 0))
- 		goto out;
--	ret = get_futex_key(uaddr2, fshared, &key2);
-+	ret = get_futex_key(uaddr2, fshared, &key2, VERIFY_WRITE);
- 	if (unlikely(ret != 0))
- 		goto out_put_key1;
- 
-@@ -814,10 +816,10 @@ static int futex_requeue(u32 __user *uaddr1, int fshared, u32 __user *uaddr2,
- 	int ret, drop_count = 0;
- 
- retry:
--	ret = get_futex_key(uaddr1, fshared, &key1);
-+	ret = get_futex_key(uaddr1, fshared, &key1, VERIFY_READ);
- 	if (unlikely(ret != 0))
- 		goto out;
--	ret = get_futex_key(uaddr2, fshared, &key2);
-+	ret = get_futex_key(uaddr2, fshared, &key2, VERIFY_READ);
- 	if (unlikely(ret != 0))
- 		goto out_put_key1;
- 
-@@ -1140,7 +1142,7 @@ static int futex_wait(u32 __user *uaddr, int fshared,
- 	q.bitset = bitset;
- retry:
- 	q.key = FUTEX_KEY_INIT;
--	ret = get_futex_key(uaddr, fshared, &q.key);
-+	ret = get_futex_key(uaddr, fshared, &q.key, VERIFY_READ);
- 	if (unlikely(ret != 0))
- 		goto out;
- 
-@@ -1330,7 +1332,7 @@ static int futex_lock_pi(u32 __user *uaddr, int fshared,
- 	q.pi_state = NULL;
- retry:
- 	q.key = FUTEX_KEY_INIT;
--	ret = get_futex_key(uaddr, fshared, &q.key);
-+	ret = get_futex_key(uaddr, fshared, &q.key, VERIFY_WRITE);
- 	if (unlikely(ret != 0))
- 		goto out;
- 
-@@ -1594,7 +1596,7 @@ retry:
- 	if ((uval & FUTEX_TID_MASK) != task_pid_vnr(current))
- 		return -EPERM;
- 
--	ret = get_futex_key(uaddr, fshared, &key);
-+	ret = get_futex_key(uaddr, fshared, &key, VERIFY_WRITE);
- 	if (unlikely(ret != 0))
- 		goto out;
- 
+Regards,
+Niel
 
