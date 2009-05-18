@@ -1,129 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756167AbZERKqa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756263AbZERKrB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756167AbZERKqa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 06:46:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753700AbZERKqO
+	id S1756263AbZERKrB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 06:47:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755671AbZERKql
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 06:46:14 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:56717 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752494AbZERKqM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 06:46:12 -0400
-Date: Mon, 18 May 2009 18:45:52 +0800
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "menage@google.com" <menage@google.com>,
-       KOSAKI Motohiro <m-kosaki@ceres.dti.ne.jp>
-Subject: Re: [RFC] Low overhead patches for the memory cgroup controller
-	(v2)
-Message-ID: <20090518104552.GB5156@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <b7dd123f0a15fff62150bc560747d7f0.squirrel@webmail-b.css.fujitsu.com> <20090515181639.GH4451@balbir.in.ibm.com> <20090518191107.8a7cc990.kamezawa.hiroyu@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20090518191107.8a7cc990.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 18 May 2009 06:46:41 -0400
+Received: from sh.osrg.net ([192.16.179.4]:39849 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753700AbZERKqk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 06:46:40 -0400
+Date: Mon, 18 May 2009 19:45:09 +0900
+To: arnd@arndb.de
+Cc: htejun@gmail.com, fujita.tomonori@lab.ntt.co.jp, hancockrwd@gmail.com,
+       alan@lxorguk.ukuu.org.uk, flar@allandria.com,
+       schmitz@biophys.uni-duesseldorf.de, linux-kernel@vger.kernel.org,
+       jgarzik@pobox.com, linux-ide@vger.kernel.org, takata@linux-m32r.org,
+       geert@linux-m68k.org, linux-m68k@vger.kernel.org,
+       ysato@users.sourceforge.jp
+Subject: Re: [PATCH] ata: libata depends on HAS_DMA
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <200905151316.31521.arnd@arndb.de>
+References: <20090514091928R.fujita.tomonori@lab.ntt.co.jp>
+	<4A0CFE1F.5080409@gmail.com>
+	<200905151316.31521.arnd@arndb.de>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20090518194448U.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Mon, 18 May 2009 19:45:09 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-05-18 19:11:07]:
+On Fri, 15 May 2009 13:16:30 +0200
+Arnd Bergmann <arnd@arndb.de> wrote:
 
-> On Fri, 15 May 2009 23:46:39 +0530
-> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> On Friday 15 May 2009, Tejun Heo wrote:
+> > FUJITA Tomonori wrote:
+> > > Can libata call dma_supported() per device to decide DMA or PIO mode?
+> > > Then, we can solve this problem by add dummy DMA API (just calls BUG)
+> > > on such architectures, without Kconfig magic or adding ifdef (like the
+> > > old ide stack does), I think.
 > 
-> > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-05-16 02:45:03]:
-> > 
-> > > Balbir Singh wrote:
-> > > > Feature: Remove the overhead associated with the root cgroup
-> > > >
-> > > > From: Balbir Singh <balbir@linux.vnet.ibm.com>
-> > > >
-> > > > This patch changes the memory cgroup and removes the overhead associated
-> > > > with LRU maintenance of all pages in the root cgroup. As a side-effect, we
-> > > > can
-> > > > no longer set a memory hard limit in the root cgroup.
-> > > >
-> > > > A new flag is used to track page_cgroup associated with the root cgroup
-> > > > pages. A new flag to track whether the page has been accounted or not
-> > > > has been added as well.
-> > > >
-> > > > Review comments higly appreciated
-> > > >
-> > > > Tests
-> > > >
-> > > > 1. Tested with allocate, touch and limit test case for a non-root cgroup
-> > > > 2. For the root cgroup tested performance impact with reaim
-> > > >
-> > > >
-> > > > 		+patch		mmtom-08-may-2009
-> > > > AIM9		1362.93		1338.17
-> > > > Dbase		17457.75	16021.58
-> > > > New Dbase	18070.18	16518.54
-> > > > Shared		9681.85		8882.11
-> > > > Compute		16197.79	15226.13
-> > > >
-> > > Hmm, at first impression, I can't convice the numbers...
-> > > Just avoiding list_add/del makes programs _10%_ faster ?
-> > > Could you show changes in cpu cache-miss late if you can ?
-> > > (And why Aim9 goes bad ?)
-> > 
-> > OK... I'll try but I am away on travel for 3 weeks :( you can try and run
-> > this as well
-> > 
-> tested aim7 with some config.
-> 
-> CPU: Xeon 3.1GHz/4Core x2 (8cpu)
-> Memory: 32G
-> HDD: Usual? Scsi disk (just 1 disk)
-> (try_to_free_pages() etc...will never be called.)
-> 
-> Multiuser config. #of tasks 1100 (near to peak on my host)
-> 
-> 10runs.
-> rc6mm1 score(Jobs/min)
-> 44009.1 44844.5 44691.1 43981.9 44992.6
-> 44544.9 44179.1 44283.0 44442.9 45033.8  average=44500
-> 
-> +patch
-> 44656.8 44270.8 44706.7 44106.1 44467.6
-> 44585.3 44167.0 44756.7 44853.9 44249.4  average=44482
-> 
-> Dbase config. #of tasks 25
-> rc6mm1 score (jobs/min)
-> 11022.7 11018.9 11037.9 11003.8 11087.5 
-> 11145.2 11133.6 11068.3 11091.3 11106.6 average=11071
-> 
-> +patch
-> 10888.0 10973.7 10913.9 11000.0 10984.9
-> 10996.2 10969.9 10921.3 10921.3 11053.1 average=10962
-> 
-> Hmm, 1% improvement ?
-> (I think this is reasonable score of the effect of this patch)
->
+> That would be the !CONFIG_PCI half of the old
+> include/asm-generic/dma-mapping.h file that you just removed,
+> right?
 
-Thanks for the test, I have a 4 CPU system and I create 80 users,
-larger config shows larger difference at my end. I think even 1% is
-quite reasonable as you mentioned. If the patch looks fine, should we
-ask for larger testing by Andrew?
- 
-> Anyway, I'm afraid of difference between mine and your kernel config.
-> plz enjoy your travel for now :)
+No.
 
-Sorry, I did not send you my .config, why do you think .config makes a
-difference? I think loading AIM makes the difference and I also made
-one other change to the aim tests. I run with "sync" linked to
-/bin/true and use tmpfs for temporary partition and 20*numnber of cpus
-for number of users.
-
-If required, I can still send out my .config to you.
-
--- 
-	Balbir
+The old include/asm-generic/dma-mapping.h is a workaround for lazy
+architecture maintainers who have not converted pci_* API to dma_*
+API.
