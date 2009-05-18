@@ -1,163 +1,222 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756242AbZERQEP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756894AbZERQJw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756242AbZERQEP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 12:04:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753842AbZERQEI
+	id S1756894AbZERQJw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 12:09:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754209AbZERQJb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 12:04:08 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:47941 "EHLO mx2.redhat.com"
+	Mon, 18 May 2009 12:09:31 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:56856 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751062AbZERQEG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 12:04:06 -0400
-From: Eric Paris <eparis@redhat.com>
-Subject: [PATCH] IMA: Minimal IMA policy and boot param for TCB IMA policy
-To: linux-kernel@vger.kernel.org
-Cc: jmorris@namei.org, zohar@linux.vnet.ibm.com, safford@watson.ibm.com,
-       eparis@redhat.com
-Date: Mon, 18 May 2009 12:01:44 -0400
-Message-ID: <20090518160144.31953.95567.stgit@dhcp231-142.rdu.redhat.com>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	id S1752648AbZERQJ3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 12:09:29 -0400
+From: Jan Blunck <jblunck@suse.de>
+To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Cc: viro@zeniv.linux.org.uk, bharata@in.ibm.com, dwmw2@infradead.org,
+       mszeredi@suse.cz, vaurora@redhat.com
+Subject: [PATCH 07/32] VFS: Introduce dput() variant that maintains a kill-list
+Date: Mon, 18 May 2009 18:09:03 +0200
+Message-Id: <1242662968-11684-8-git-send-email-jblunck@suse.de>
+X-Mailer: git-send-email 1.6.1.3
+In-Reply-To: <1242662968-11684-1-git-send-email-jblunck@suse.de>
+References: <1242662968-11684-1-git-send-email-jblunck@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The IMA TCB policy is dangerous.  A normal use can use all of a system's
-memory (which cannot be freed) simply by building and running lots of
-executables.  The TCB policy is also nearly useless because logging in as root
-often causes a policy violation when dealing with utmp, thus rendering the
-measurements meaningless.
+This patch introduces a new variant of dput(). This becomes necessary to
+prevent a recursive call to dput() from the union mount code.
 
-There is no good fix for this in the kernel.  A full TCB policy would need to
-be loaded in userspace using LSM rule matching to get both a protected and
-useful system.  But, if too little is measured before userspace can load a real
-policy one again ends up with a meaningless set of measurements.  One option
-would be to put the policy load inside the initrd in order to get it early
-enough in the boot sequence to be useful, but this runs into trouble with the
-LSM.  For IMA to measure the LSM policy and the LSM policy loading mechanism
-it needs rules to do so, but we already talked about problems with defaulting
-to such broad rules....
+  void __dput(struct dentry *dentry, struct list_head *list, int greedy);
+  struct dentry *__d_kill(struct dentry *dentry, struct list_head *list,
+  	 		  int greedy);
 
-The solution propsed here is to default IMA to use a very minimal set of
-rules.  That set of rules is to only measure programs exec'ed (or files mmap'd
-for exec) by root.  This should allow for future interesting uses of IMA such
-as verfication of the binaries and libraries in question before asking for
-encrypted disk passwords and such, while not opening the system up to easy DoS
-attacks by normal users.
+__dput() works mostly like the original dput() did. The main difference is
+that if it the greedy argument is zero it will put the parent on a special
+list instead of trying to get rid of it directly.
 
-To allow for a more thorough set of measurements by IMA before a customized
-policy is loaded by userspace I add the kernel command line option "ima_tcb".
-This option will load the originally propsed IMA policy during kernel init.
-Thus one gets the broad measurement coverage required before userspace can
-load the customized policy if a user is so inclined.
+Therefore the union mount code can safely call __dput() when it wants to get
+rid of underlying dentry references during a dput(). After calling __dput()
+or __d_kill() the caller must make sure that __d_kill_final() is called on all
+dentries on the kill list. __d_kill_final() is actually doing the
+dentry_iput() and is also dereferencing the parent.
 
-Signed-off-by: Eric Paris <eparis@redhat.com>
+Signed-off-by: Jan Blunck <jblunck@suse.de>
+Signed-off-by: Valerie Aurora (Henson) <vaurora@redhat.com>
 ---
+ fs/dcache.c |  115 +++++++++++++++++++++++++++++++++++++++++++++++++++++-----
+ 1 files changed, 105 insertions(+), 10 deletions(-)
 
- Documentation/kernel-parameters.txt |    6 ++++
- security/integrity/ima/ima_policy.c |   47 ++++++++++++++++++++++++++++++++---
- 2 files changed, 49 insertions(+), 4 deletions(-)
-
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 95c523a..6a90c27 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -914,6 +914,12 @@ and is between 256 and 4096 characters. It is defined in the file
- 			Formt: { "sha1" | "md5" }
- 			default: "sha1"
- 
-+	ima_tcb		[IMA]
-+			Load a policy which meets the needs of the Trusted
-+			Computing Base.  This means IMA will measure all
-+			programs exec'd, files mmap'd for exec, and all files
-+			opened for read by uid=0.
-+
- 	in2000=		[HW,SCSI]
- 			See header of drivers/scsi/in2000.c.
- 
-diff --git a/security/integrity/ima/ima_policy.c b/security/integrity/ima/ima_policy.c
-index fd72d77..de0910a 100644
---- a/security/integrity/ima/ima_policy.c
-+++ b/security/integrity/ima/ima_policy.c
-@@ -45,10 +45,30 @@ struct ima_measure_rule_entry {
- 	} lsm[MAX_LSM_RULES];
- };
- 
--/* Without LSM specific knowledge, the default policy can only be
-+/*
-+ * Without LSM specific knowledge, the default policy can only be
-  * written in terms of .action, .func, .mask, .fsmagic, and .uid
-  */
-+
-+/*
-+ * Default for a 'normal' kernel with IMA enabled.  This measures only those
-+ * files which are exec'd (or mmap for exec) by uid=0.  This attempts to be
-+ * a minimal performance impact configuration while still being useful to some
-+ * people.
-+ */
- static struct ima_measure_rule_entry default_rules[] = {
-+	{.action = MEASURE,.func = FILE_MMAP,.mask = MAY_EXEC,.uid = 0,
-+	 .flags = IMA_FUNC | IMA_MASK | IMA_UID},
-+	{.action = MEASURE,.func = BPRM_CHECK,.mask = MAY_EXEC,.uid = 0,
-+	 .flags = IMA_FUNC | IMA_MASK | IMA_UID},
-+};
-+
-+/*
-+ * The minimum rule set to allow for full TCB coverage.  Different than above
-+ * because it measures all things exec'd by all users and everything read by
-+ * root.
-+ */
-+static struct ima_measure_rule_entry tcb_default_rules[] = {
- 	{.action = DONT_MEASURE,.fsmagic = PROC_SUPER_MAGIC,.flags = IMA_FSMAGIC},
- 	{.action = DONT_MEASURE,.fsmagic = SYSFS_MAGIC,.flags = IMA_FSMAGIC},
- 	{.action = DONT_MEASURE,.fsmagic = DEBUGFS_MAGIC,.flags = IMA_FSMAGIC},
-@@ -59,6 +79,8 @@ static struct ima_measure_rule_entry default_rules[] = {
- 	 .flags = IMA_FUNC | IMA_MASK},
- 	{.action = MEASURE,.func = BPRM_CHECK,.mask = MAY_EXEC,
- 	 .flags = IMA_FUNC | IMA_MASK},
-+	{.action = MEASURE,.func = PATH_CHECK,.mask = MAY_READ,.uid = 0,
-+	 .flags = IMA_FUNC | IMA_MASK | IMA_UID},
- };
- 
- static LIST_HEAD(measure_default_rules);
-@@ -67,6 +89,14 @@ static struct list_head *ima_measure;
- 
- static DEFINE_MUTEX(ima_measure_mutex);
- 
-+static bool ima_use_tcb __initdata;
-+static int __init default_policy_setup(char *str)
-+{
-+	ima_use_tcb = 1;
-+	return 1;
-+}
-+__setup("ima_tcb", default_policy_setup);
-+
- /**
-  * ima_match_rules - determine whether an inode matches the measure rule.
-  * @rule: a pointer to a rule
-@@ -162,10 +192,19 @@ int ima_match_policy(struct inode *inode, enum ima_hooks func, int mask)
-  */
- void __init ima_init_policy(void)
- {
--	int i;
-+	int i, entries;
-+	struct ima_measure_rule_entry *rules;
-+
-+	if (ima_use_tcb) {
-+		rules = tcb_default_rules;
-+		entries = ARRAY_SIZE(tcb_default_rules);
-+	} else {
-+		rules = default_rules;
-+		entries = ARRAY_SIZE(default_rules);
-+	}
- 
--	for (i = 0; i < ARRAY_SIZE(default_rules); i++)
--		list_add_tail(&default_rules[i].list, &measure_default_rules);
-+	for (i = 0; i < entries; i++)
-+		list_add_tail(&rules[i].list, &measure_default_rules);
- 	ima_measure = &measure_default_rules;
+diff --git a/fs/dcache.c b/fs/dcache.c
+index 085f527..8bfbcd7 100644
+--- a/fs/dcache.c
++++ b/fs/dcache.c
+@@ -157,14 +157,19 @@ static void dentry_lru_del_init(struct dentry *dentry)
  }
  
+ /**
+- * d_kill - kill dentry and return parent
++ * __d_kill - kill dentry and return parent
+  * @dentry: dentry to kill
++ * @list: kill list
++ * @greedy: return parent instead of putting it on the kill list
+  *
+  * The dentry must already be unhashed and removed from the LRU.
+  *
+- * If this is the root of the dentry tree, return NULL.
++ * If this is the root of the dentry tree, return NULL. If greedy is zero, we
++ * put the parent of this dentry on the kill list instead. The callers must
++ * make sure that __d_kill_final() is called on all dentries on the kill list.
+  */
+-static struct dentry *d_kill(struct dentry *dentry)
++static struct dentry *__d_kill(struct dentry *dentry, struct list_head *list,
++			       int greedy)
+ 	__releases(dentry->d_lock)
+ 	__releases(dcache_lock)
+ {
+@@ -172,6 +177,20 @@ static struct dentry *d_kill(struct dentry *dentry)
+ 
+ 	list_del(&dentry->d_u.d_child);
+ 	dentry_stat.nr_dentry--;	/* For d_free, below */
++
++	/*
++	 * If we are not greedy we just put this on a list for later processing
++	 * (follow up to parent, releasing of inode and freeing dentry memory).
++	 */
++	if (!greedy) {
++		list_del_init(&dentry->d_alias);
++		/* at this point nobody can reach this dentry */
++		list_add(&dentry->d_lru, list);
++		spin_unlock(&dentry->d_lock);
++		spin_unlock(&dcache_lock);
++		return NULL;
++	}
++
+ 	/*drops the locks, at that point nobody can reach this dentry */
+ 	dentry_iput(dentry);
+ 	if (IS_ROOT(dentry))
+@@ -182,6 +201,54 @@ static struct dentry *d_kill(struct dentry *dentry)
+ 	return parent;
+ }
+ 
++void __dput(struct dentry *, struct list_head *, int);
++
++static void __d_kill_final(struct dentry *dentry, struct list_head *list)
++{
++	struct dentry *parent;
++	struct inode *inode = dentry->d_inode;
++
++	if (inode) {
++		dentry->d_inode = NULL;
++		if (!inode->i_nlink)
++			fsnotify_inoderemove(inode);
++		if (dentry->d_op && dentry->d_op->d_iput)
++			dentry->d_op->d_iput(dentry, inode);
++		else
++			iput(inode);
++	}
++
++	if (IS_ROOT(dentry))
++		parent = NULL;
++	else
++		parent = dentry->d_parent;
++	d_free(dentry);
++	__dput(parent, list, 1);
++}
++
++/**
++ * d_kill - kill dentry and return parent
++ * @dentry: dentry to kill
++ *
++ * The dentry must already be unhashed and removed from the LRU.
++ *
++ * If this is the root of the dentry tree, return NULL.
++ */
++static struct dentry *d_kill(struct dentry *dentry)
++{
++	LIST_HEAD(mortuary);
++	struct dentry *parent;
++
++	parent = __d_kill(dentry, &mortuary, 1);
++	while (!list_empty(&mortuary)) {
++		dentry = list_entry(mortuary.next, struct dentry, d_lru);
++		list_del(&dentry->d_lru);
++		__d_kill_final(dentry, &mortuary);
++	}
++
++	return parent;
++}
++
+ /* 
+  * This is dput
+  *
+@@ -199,19 +266,24 @@ static struct dentry *d_kill(struct dentry *dentry)
+  * Real recursion would eat up our stack space.
+  */
+ 
+-/*
+- * dput - release a dentry
+- * @dentry: dentry to release 
++/**
++ * __dput - release a dentry
++ * @dentry: dentry to release
++ * @list: kill list argument for __d_kill()
++ * @greedy: greedy argument for __d_kill()
+  *
+  * Release a dentry. This will drop the usage count and if appropriate
+  * call the dentry unlink method as well as removing it from the queues and
+  * releasing its resources. If the parent dentries were scheduled for release
+- * they too may now get deleted.
++ * they too may now get deleted if @greedy is not zero. Otherwise parent is
++ * added to the kill list. The callers must make sure that __d_kill_final() is
++ * called on all dentries on the kill list.
++ *
++ * You probably want to use dput() instead.
+  *
+  * no dcache lock, please.
+  */
+-
+-void dput(struct dentry *dentry)
++void __dput(struct dentry *dentry, struct list_head *list, int greedy)
+ {
+ 	if (!dentry)
+ 		return;
+@@ -252,12 +324,35 @@ unhash_it:
+ kill_it:
+ 	/* if dentry was on the d_lru list delete it from there */
+ 	dentry_lru_del(dentry);
+-	dentry = d_kill(dentry);
++	dentry = __d_kill(dentry, list, greedy);
+ 	if (dentry)
+ 		goto repeat;
+ }
+ 
+ /**
++ * dput - release a dentry
++ * @dentry: dentry to release
++ *
++ * Release a dentry. This will drop the usage count and if appropriate
++ * call the dentry unlink method as well as removing it from the queues and
++ * releasing its resources. If the parent dentries were scheduled for release
++ * they too may now get deleted.
++ *
++ * no dcache lock, please.
++ */
++void dput(struct dentry *dentry)
++{
++	LIST_HEAD(mortuary);
++
++	__dput(dentry, &mortuary, 1);
++	while (!list_empty(&mortuary)) {
++		dentry = list_entry(mortuary.next, struct dentry, d_lru);
++		list_del(&dentry->d_lru);
++		__d_kill_final(dentry, &mortuary);
++	}
++}
++
++/**
+  * d_invalidate - invalidate a dentry
+  * @dentry: dentry to invalidate
+  *
+-- 
+1.6.1.3
 
