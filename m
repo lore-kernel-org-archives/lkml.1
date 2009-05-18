@@ -1,90 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755416AbZERPG5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755317AbZERPJ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755416AbZERPG5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 11:06:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752655AbZERPGt
+	id S1755317AbZERPJ6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 11:09:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752494AbZERPJw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 11:06:49 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:53870 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751090AbZERPGs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 11:06:48 -0400
-Date: Mon, 18 May 2009 11:06:49 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       <linux-usb@vger.kernel.org>
-Subject: Re: Oops in usb-serial with keyspan adapter on current upstream
-In-Reply-To: <1242605255.18075.13.camel@pasglop>
-Message-ID: <Pine.LNX.4.44L0.0905181104070.2981-100000@iolanthe.rowland.org>
+	Mon, 18 May 2009 11:09:52 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:45285 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752352AbZERPJv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 11:09:51 -0400
+Date: Mon, 18 May 2009 17:09:03 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Jack Steiner <steiner@sgi.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: tip: patches in git for irq and numa
+Message-ID: <20090518150903.GA5678@elte.hu>
+References: <20090511163158.c4e4d334.akpm@linux-foundation.org> <20090512090704.GC18004@elte.hu> <4A0A6700.3070100@kernel.org> <20090513133635.GB7384@elte.hu> <4A0AFA6E.5050200@kernel.org> <20090515173521.GA29647@elte.hu> <4A0DE0ED.6090402@kernel.org> <20090518072952.GA12460@elte.hu> <1242654650.26820.429.camel@twins> <4A1178D5.5050900@kernel.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A1178D5.5050900@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 18 May 2009, Benjamin Herrenschmidt wrote:
 
-> Hi folks !
+* Yinghai Lu <yinghai@kernel.org> wrote:
+
+> Peter Zijlstra wrote:
+> > On Mon, 2009-05-18 at 09:29 +0200, Ingo Molnar wrote:
+> >> * Yinghai Lu <yinghai@kernel.org> wrote:
+> >>
+> >>> irq related:
+> >>> git://git.kernel.org/pub/scm/linux/kernel/git/yinghai/linux-2.6-yinghai.git irq
+> >>> need to on top of tip/irq/numa
+> >> ok, these were nicely structured. the pci_routeirq patch had a build 
+> >> bug for !CONFIG_PCI.
+> >>
+> >> ( I added an #ifdef for now, it might make sense to send a clean-up 
+> >>   patch in the next merge window (not now) to factor out a 
+> >>   pci_routeirq_enable() method that does all this cleanly. )
+> >>
+> >> Also, please add appropriate Cc: lines to the commit logs in the 
+> >> future, beyond the LKML-Reference tgs.
+> >>
+> >>> for memoryless node support: 
+> >>> git://git.kernel.org/pub/scm/linux/kernel/git/yinghai/linux-2.6-yinghai.git numa
+> >>> and it is on top of tip/master
+> >> small note: you could have based these on x86/mm btw. - that's where 
+> >> these patches go, typically.
+> >>
+> >> regarding subject lines:
+> >>
+> >>  d03a6a4: mm: clear N_HIGH_MEMORY map before se set it again -v2
+> >>  02ce039: x86: fix system without memory on node0 -v2
+> >>  8c1aec8: x86: fix node_possible_map logic -v2
+> >>  44a633c: x86: remove MEMORY_HOTPLUG_RESERVE related code -v2
+> >>
+> >> please never put '-v2' type of tags into the title of commits. In 
+> >> the title of patches they can be put here:
+> >>
+> >>   [PATCH, v2] x86: fix system without memory on node0
+> >>
+> >> that saves maintainers a bit of typing work.
+> >>
+> >> Also, you included:
+> >>
+> >>  d03a6a4: mm: clear N_HIGH_MEMORY map before se set it again -v2
+> >>
+> >> with no Acks from MM folks yet. So i skipped that one and will 
+> >> follow up about it.
+> > 
+> > The below seems to wreck my opteron, ata1 interrupts fail to get
+> > through.
+> > 
+> > 
+> > [    6.951257] ata1.00: qc timeout (cmd 0x27)
+> > [    6.955354] ata1.00: failed to read native max address (err_mask=0x4)
+> > [    6.961781] ata1.00: HPA support seems broken, skipping HPA handling
+> > [    7.273044] ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+> > [    7.285159] ata1.00: configured for UDMA/133
+> > [    7.290052] scsi 0:0:0:0: Direct-Access     ATA      WDC WD1200JS-00N 10.0 PQ: 0 ANSI: 5
+> > [    7.299294] sd 0:0:0:0: [sda] 234441648 512-byte hardware sectors: (120 GB/111 GiB)
+> > [    7.306968] sd 0:0:0:0: [sda] Write Protect is off
+> > [    7.311754] sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+> > [    7.316839] sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+> > [    7.326312]  sda:<6>ata2: SATA link down (SStatus 4 SControl 300)
+> > [    7.938372] ata3: SATA link down (SStatus 4 SControl 300)
+> > [    8.258372] ata4: SATA link down (SStatus 4 SControl 300)
+> > [    8.264357] scsi 4:0:0:0: CD-ROM            TEAC     DV-516G          F4S7 PQ: 0 ANSI: 5
+> > [   37.704234] ata1: lost interrupt (Status 0x50)
+> > [   37.708695] sd 0:0:0:0: [sda] Unhandled error code
+> > [   37.713479] sd 0:0:0:0: [sda] Result: hostbyte=DID_OK driverbyte=DRIVER_TIMEOUT
+> > [   37.720791] end_request: I/O error, dev sda, sector 0
+> > [   37.725848] Buffer I/O error on device sda, logical block 0
+> > 
+> > ---
+> > 
+> > 
+> > commit b9c61b70075c87a8612624736faf4a2de5b1ed30
+> > Author: Yinghai Lu <yinghai@kernel.org>
+> > Date:   Wed May 6 10:10:06 2009 -0700
+> > 
+> >     x86/pci: update pirq_enable_irq() to setup io apic routing
+> >     
+> >     So we can set io apic routing only when enabling the device irq.
+> >     
+> >     This is advantageous for IRQ descriptor allocation affinity: if we set up
+> >     the IO-APIC entry later, we have a chance to allocate the IRQ descriptor
+> >     later and know which device it is on and can set affinity accordingly.
+> >     
+> >     [ Impact: standardize/enhance irq-enabling sequence for mptable irqs ]
 > 
-> Current kernels give the oops below at boot with my Keyspan plugged,
-> used to work fine on 2.6.28 at least.
-
-Does your test kernel include commit 
-2d93148ab6988cad872e65d694c95e8944e1b626?
-
-> It looks to me like some kind of race between the disconnection after
-> the FW load and the re-connect but I'm not sure.
-
-I don't think that's quite right.  Your trace shows the oops occurred 
-during the disconnect processing, which means the re-connect had not 
-yet started.
-
-> Cheers,
-> Ben.
+> can you post whole bootlog?
+> need to figure out 32bit/64bit? ACPI is disabled? MPtable is used?
 > 
-> usbcore: registered new interface driver usbserial
-> USB Serial support registered for generic
-> usbcore: registered new interface driver usbserial_generic
-> usbserial: USB Serial Driver core
-> USB Serial support registered for Keyspan - (without firmware)
-> USB Serial support registered for Keyspan 1 port adapter
-> USB Serial support registered for Keyspan 2 port adapter
-> USB Serial support registered for Keyspan 4 port adapter
-> keyspan 2-1:1.0: Keyspan - (without firmware) converter detected
-> usb 2-1: firmware: using built-in firmware keyspan/usa49w.fw
-> usb 2-1: USB disconnect, address 2
-> usbcore: registered new interface driver keyspan
-> keyspan: v1.1.5:Keyspan USB to Serial Converter Driver
-> Unable to handle kernel paging request for data at address 0x00000010
-> Faulting instruction address: 0xc0000000002da15c
-> Oops: Kernel access of bad area, sig: 11 [#1]
-> SMP NR_CPUS=4 PowerMac
-> Modules linked in: snd_seq_midi snd_rawmidi snd_seq_midi_event snd_seq snd_timer snd_seq_device snd keyspan uninorth_agp usbserial agpgart soundcore
-> NIP: c0000000002da15c LR: c0000000002d3760 CTR: c0000000002d35ec
-> REGS: c00000017a4cb4c0 TRAP: 0300   Not tainted  (2.6.30-rc6-00037-g8646010-dirty)
-> MSR: 9000000000009032 <EE,ME,IR,DR>  CR: 24000024  XER: 200fffff
-> DAR: 0000000000000010, DSISR: 0000000040000000
-> TASK = c00000017a4890e0[191] 'khubd' THREAD: c00000017a4c8000 CPU: 2
-> GPR00: c000000000755f30 c00000017a4cb740 c000000000783d48 0000000000000001 
-> GPR04: 0000000000000000 c0000001783fba90 0000000000000001 0000000000000000 
-> GPR08: 0000000000000000 0000000000000000 0000000000000000 c0000000002d35ec 
-> GPR12: 0000000024000082 c0000000007b5680 0000000000000002 c0000001781c0a30 
-> GPR16: 00000000000003e8 0000000000000000 c0000001781fd000 c0000001781c0a30 
-> GPR20: 0000000000000000 0000000000000000 c0000001781fd800 0000000000000001 
-> GPR24: c00000017a41a600 c0000001789ab480 c0000001783fb998 0000000000000000 
-> GPR28: 0000000000000000 c00000017a4cb7b0 c00000000070f8d0 0000000000000000 
-> NIP [c0000000002da15c] .release_nodes+0x54/0x254
-> LR [c0000000002d3760] .device_del+0x174/0x1e8
-> Call Trace:
-> [c00000017a4cb740] [c00000017a4cb880] 0xc00000017a4cb880 (unreliable)
-> [c00000017a4cb7f0] [c0000000002d3760] .device_del+0x174/0x1e8
+> also please check if pci=routeirq help to fix the problem.
 
-Is it possible to pin this down to a single bad data access or 
-instruction?
+The thing is ... this again is a _WAY TOO LARGE_ patch from you - 
+250 lines of flux. Peter already did a bisection and if that's not 
+enough to tell what the bug is, then frankly the splitup was way 
+wrong.
 
-Alan Stern
+You really need to learn how to create small gradual patches that 
+are obviously correct - and if they are buggy it's obvious _why_ 
+they are incorrect.
 
+	Ingo
