@@ -1,55 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758327AbZERJnh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758787AbZERJoA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758327AbZERJnh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 05:43:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756753AbZERJZZ
+	id S1758787AbZERJoA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 05:44:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756795AbZERJZa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 05:25:25 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:38433 "EHLO mx2.redhat.com"
+	Mon, 18 May 2009 05:25:30 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38427 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754460AbZERJXL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754411AbZERJXL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 18 May 2009 05:23:11 -0400
 From: Avi Kivity <avi@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: kvm@vger.kernel.org
-Subject: [PATCH 36/43] KVM: VMX: Rename kvm_handle_exit() to vmx_handle_exit()
-Date: Mon, 18 May 2009 12:22:58 +0300
-Message-Id: <1242638585-18470-37-git-send-email-avi@redhat.com>
+Subject: [PATCH 33/43] KVM: SVM: Remove duplicate code in svm_do_inject_vector()
+Date: Mon, 18 May 2009 12:22:55 +0300
+Message-Id: <1242638585-18470-34-git-send-email-avi@redhat.com>
 In-Reply-To: <1242638585-18470-1-git-send-email-avi@redhat.com>
 References: <1242638585-18470-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It is a static vmx-specific function.
+From: Gleb Natapov <gleb@redhat.com>
 
+svm_do_inject_vector() reimplements pop_irq().
+
+Signed-off-by: Gleb Natapov <gleb@redhat.com>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 ---
- arch/x86/kvm/vmx.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ arch/x86/kvm/svm.c |   10 +---------
+ 1 files changed, 1 insertions(+), 9 deletions(-)
 
-diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
-index 469787c..85f4fd5 100644
---- a/arch/x86/kvm/vmx.c
-+++ b/arch/x86/kvm/vmx.c
-@@ -3162,7 +3162,7 @@ static const int kvm_vmx_max_exit_handlers =
-  * The guest has exited.  See if we can fix it or if we need userspace
-  * assistance.
-  */
--static int kvm_handle_exit(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
-+static int vmx_handle_exit(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
- {
- 	u32 exit_reason = vmcs_read32(VM_EXIT_REASON);
- 	struct vcpu_vmx *vmx = to_vmx(vcpu);
-@@ -3681,7 +3681,7 @@ static struct kvm_x86_ops vmx_x86_ops = {
- 	.tlb_flush = vmx_flush_tlb,
+diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
+index 1f8510c..5b35ebd 100644
+--- a/arch/x86/kvm/svm.c
++++ b/arch/x86/kvm/svm.c
+@@ -2346,15 +2346,7 @@ static void kvm_reput_irq(struct vcpu_svm *svm)
  
- 	.run = vmx_vcpu_run,
--	.handle_exit = kvm_handle_exit,
-+	.handle_exit = vmx_handle_exit,
- 	.skip_emulated_instruction = skip_emulated_instruction,
- 	.patch_hypercall = vmx_patch_hypercall,
- 	.get_irq = vmx_get_irq,
+ static void svm_do_inject_vector(struct vcpu_svm *svm)
+ {
+-	struct kvm_vcpu *vcpu = &svm->vcpu;
+-	int word_index = __ffs(vcpu->arch.irq_summary);
+-	int bit_index = __ffs(vcpu->arch.irq_pending[word_index]);
+-	int irq = word_index * BITS_PER_LONG + bit_index;
+-
+-	clear_bit(bit_index, &vcpu->arch.irq_pending[word_index]);
+-	if (!vcpu->arch.irq_pending[word_index])
+-		clear_bit(word_index, &vcpu->arch.irq_summary);
+-	svm_inject_irq(svm, irq);
++	svm_inject_irq(svm, pop_irq(&svm->vcpu));
+ }
+ 
+ static void do_interrupt_requests(struct kvm_vcpu *vcpu,
 -- 
 1.6.0.6
 
