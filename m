@@ -1,182 +1,232 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755637AbZERJde@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757127AbZERJd6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755637AbZERJde (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 05:33:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756372AbZERJXw
+	id S1757127AbZERJd6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 05:33:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756511AbZERJX5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 05:23:52 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:38419 "EHLO mx2.redhat.com"
+	Mon, 18 May 2009 05:23:57 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38406 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753917AbZERJXL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 05:23:11 -0400
+	id S1753097AbZERJXJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 05:23:09 -0400
 From: Avi Kivity <avi@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: kvm@vger.kernel.org
-Subject: [PATCH 28/43] KVM: ia64: Drop in SN2 replacement of fast path ITC emulation fault handler
-Date: Mon, 18 May 2009 12:22:50 +0300
-Message-Id: <1242638585-18470-29-git-send-email-avi@redhat.com>
+Subject: [PATCH 10/43] KVM: Enable MSI-X for KVM assigned device
+Date: Mon, 18 May 2009 12:22:32 +0300
+Message-Id: <1242638585-18470-11-git-send-email-avi@redhat.com>
 In-Reply-To: <1242638585-18470-1-git-send-email-avi@redhat.com>
 References: <1242638585-18470-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jes Sorensen <jes@sgi.com>
+From: Sheng Yang <sheng@linux.intel.com>
 
-Copy in SN2 RTC based ITC emulation for fast exit. The two versions
-have the same size, so a dropin is simpler than patching the branch
-instruction to hit the SN2 version.
+This patch finally enable MSI-X.
 
-Signed-off-by: Jes Sorensen <jes@sgi.com>
-Acked-by: Xiantao Zhang <xiantao.zhang@intel.com>
+What we need for MSI-X:
+1. Intercept one page in MMIO region of device. So that we can get guest desired
+MSI-X table and set up the real one. Now this have been done by guest, and
+transfer to kernel using ioctl KVM_SET_MSIX_NR and KVM_SET_MSIX_ENTRY.
+
+2. Information for incoming interrupt. Now one device can have more than one
+interrupt, and they are all handled by one workqueue structure. So we need to
+identify them. The previous patch enable gsi_msg_pending_bitmap get this done.
+
+3. Mapping from host IRQ to guest gsi as well as guest gsi to real MSI/MSI-X
+message address/data. We used same entry number for the host and guest here, so
+that it's easy to find the correlated guest gsi.
+
+What we lack for now:
+1. The PCI spec said nothing can existed with MSI-X table in the same page of
+MMIO region, except pending bits. The patch ignore pending bits as the first
+step (so they are always 0 - no pending).
+
+2. The PCI spec allowed to change MSI-X table dynamically. That means, the OS
+can enable MSI-X, then mask one MSI-X entry, modify it, and unmask it. The patch
+didn't support this, and Linux also don't work in this way.
+
+3. The patch didn't implement MSI-X mask all and mask single entry. I would
+implement the former in driver/pci/msi.c later. And for single entry, userspace
+should have reposibility to handle it.
+
+Signed-off-by: Sheng Yang <sheng@linux.intel.com>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 ---
- arch/ia64/include/asm/kvm_host.h |    2 ++
- arch/ia64/kvm/kvm-ia64.c         |   32 +++++++++++++++++++++++++++++++-
- arch/ia64/kvm/optvfault.S        |   30 ++++++++++++++++++++++++++++++
- arch/ia64/kvm/vmm.c              |   12 ++++++++----
- 4 files changed, 71 insertions(+), 5 deletions(-)
+ arch/x86/include/asm/kvm.h |    1 +
+ include/linux/kvm.h        |    8 ++++
+ virt/kvm/kvm_main.c        |   98 +++++++++++++++++++++++++++++++++++++++++---
+ 3 files changed, 101 insertions(+), 6 deletions(-)
 
-diff --git a/arch/ia64/include/asm/kvm_host.h b/arch/ia64/include/asm/kvm_host.h
-index 1243995..589536f 100644
---- a/arch/ia64/include/asm/kvm_host.h
-+++ b/arch/ia64/include/asm/kvm_host.h
-@@ -580,6 +580,8 @@ struct kvm_vmm_info{
- 	kvm_vmm_entry 	*vmm_entry;
- 	kvm_tramp_entry *tramp_entry;
- 	unsigned long 	vmm_ivt;
-+	unsigned long	patch_mov_ar;
-+	unsigned long	patch_mov_ar_sn2;
- };
+diff --git a/arch/x86/include/asm/kvm.h b/arch/x86/include/asm/kvm.h
+index dc3f6cf..125be8b 100644
+--- a/arch/x86/include/asm/kvm.h
++++ b/arch/x86/include/asm/kvm.h
+@@ -16,6 +16,7 @@
+ #define __KVM_HAVE_MSI
+ #define __KVM_HAVE_USER_NMI
+ #define __KVM_HAVE_GUEST_DEBUG
++#define __KVM_HAVE_MSIX
  
- int kvm_highest_pending_irq(struct kvm_vcpu *vcpu);
-diff --git a/arch/ia64/kvm/kvm-ia64.c b/arch/ia64/kvm/kvm-ia64.c
-index ebbd995..4623a90 100644
---- a/arch/ia64/kvm/kvm-ia64.c
-+++ b/arch/ia64/kvm/kvm-ia64.c
-@@ -1671,8 +1671,37 @@ out:
- 	return 0;
+ /* Architectural interrupt line count. */
+ #define KVM_NR_INTERRUPTS 256
+diff --git a/include/linux/kvm.h b/include/linux/kvm.h
+index 78cdee8..640835e 100644
+--- a/include/linux/kvm.h
++++ b/include/linux/kvm.h
+@@ -409,6 +409,9 @@ struct kvm_trace_rec {
+ #ifdef __KVM_HAVE_DEVICE_ASSIGNMENT
+ #define KVM_CAP_DEVICE_DEASSIGNMENT 27
+ #endif
++#ifdef __KVM_HAVE_MSIX
++#define KVM_CAP_DEVICE_MSIX 28
++#endif
+ /* Another bug in KVM_SET_USER_MEMORY_REGION fixed: */
+ #define KVM_CAP_JOIN_MEMORY_REGIONS_WORKS 30
+ 
+@@ -611,6 +614,11 @@ struct kvm_assigned_irq {
+ #define KVM_DEV_IRQ_ASSIGN_MSI_ACTION	KVM_DEV_IRQ_ASSIGN_ENABLE_MSI
+ #define KVM_DEV_IRQ_ASSIGN_ENABLE_MSI	(1 << 0)
+ 
++#define KVM_DEV_IRQ_ASSIGN_MSIX_ACTION  (KVM_DEV_IRQ_ASSIGN_ENABLE_MSIX |\
++					KVM_DEV_IRQ_ASSIGN_MASK_MSIX)
++#define KVM_DEV_IRQ_ASSIGN_ENABLE_MSIX  (1 << 1)
++#define KVM_DEV_IRQ_ASSIGN_MASK_MSIX    (1 << 2)
++
+ struct kvm_assigned_msix_nr {
+ 	__u32 assigned_dev_id;
+ 	__u16 entry_nr;
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index 7c20e06..034ed43 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -236,13 +236,33 @@ static void kvm_free_assigned_irq(struct kvm *kvm,
+ 	 * now, the kvm state is still legal for probably we also have to wait
+ 	 * interrupt_work done.
+ 	 */
+-	disable_irq_nosync(assigned_dev->host_irq);
+-	cancel_work_sync(&assigned_dev->interrupt_work);
++	if (assigned_dev->irq_requested_type & KVM_ASSIGNED_DEV_MSIX) {
++		int i;
++		for (i = 0; i < assigned_dev->entries_nr; i++)
++			disable_irq_nosync(assigned_dev->
++					   host_msix_entries[i].vector);
++
++		cancel_work_sync(&assigned_dev->interrupt_work);
+ 
+-	free_irq(assigned_dev->host_irq, (void *)assigned_dev);
++		for (i = 0; i < assigned_dev->entries_nr; i++)
++			free_irq(assigned_dev->host_msix_entries[i].vector,
++				 (void *)assigned_dev);
+ 
+-	if (assigned_dev->irq_requested_type & KVM_ASSIGNED_DEV_HOST_MSI)
+-		pci_disable_msi(assigned_dev->dev);
++		assigned_dev->entries_nr = 0;
++		kfree(assigned_dev->host_msix_entries);
++		kfree(assigned_dev->guest_msix_entries);
++		pci_disable_msix(assigned_dev->dev);
++	} else {
++		/* Deal with MSI and INTx */
++		disable_irq_nosync(assigned_dev->host_irq);
++		cancel_work_sync(&assigned_dev->interrupt_work);
++
++		free_irq(assigned_dev->host_irq, (void *)assigned_dev);
++
++		if (assigned_dev->irq_requested_type &
++				KVM_ASSIGNED_DEV_HOST_MSI)
++			pci_disable_msi(assigned_dev->dev);
++	}
+ 
+ 	assigned_dev->irq_requested_type = 0;
  }
+@@ -373,6 +393,60 @@ static int assigned_device_update_msi(struct kvm *kvm,
+ }
+ #endif
  
-+
-+/*
-+ * On SN2, the ITC isn't stable, so copy in fast path code to use the
-+ * SN2 RTC, replacing the ITC based default verion.
-+ */
-+static void kvm_patch_vmm(struct kvm_vmm_info *vmm_info,
-+			  struct module *module)
++#ifdef __KVM_HAVE_MSIX
++static int assigned_device_update_msix(struct kvm *kvm,
++			struct kvm_assigned_dev_kernel *adev,
++			struct kvm_assigned_irq *airq)
 +{
-+	unsigned long new_ar, new_ar_sn2;
-+	unsigned long module_base;
++	/* TODO Deal with KVM_DEV_IRQ_ASSIGNED_MASK_MSIX */
++	int i, r;
 +
-+	if (!ia64_platform_is("sn2"))
-+		return;
++	adev->ack_notifier.gsi = -1;
 +
-+	module_base = (unsigned long)module->module_core;
++	if (irqchip_in_kernel(kvm)) {
++		if (airq->flags & KVM_DEV_IRQ_ASSIGN_MASK_MSIX)
++			return -ENOTTY;
 +
-+	new_ar = kvm_vmm_base + vmm_info->patch_mov_ar - module_base;
-+	new_ar_sn2 = kvm_vmm_base + vmm_info->patch_mov_ar_sn2 - module_base;
++		if (!(airq->flags & KVM_DEV_IRQ_ASSIGN_ENABLE_MSIX)) {
++			/* Guest disable MSI-X */
++			kvm_free_assigned_irq(kvm, adev);
++			if (msi2intx) {
++				pci_enable_msi(adev->dev);
++				if (adev->dev->msi_enabled)
++					return assigned_device_update_msi(kvm,
++							adev, airq);
++			}
++			return assigned_device_update_intx(kvm, adev, airq);
++		}
 +
-+	printk(KERN_INFO "kvm: Patching ITC emulation to use SGI SN2 RTC "
-+	       "as source\n");
++		/* host_msix_entries and guest_msix_entries should have been
++		 * initialized */
++		if (adev->entries_nr == 0)
++			return -EINVAL;
 +
-+	/*
-+	 * Copy the SN2 version of mov_ar into place. They are both
-+	 * the same size, so 6 bundles is sufficient (6 * 0x10).
-+	 */
-+	memcpy((void *)new_ar, (void *)new_ar_sn2, 0x60);
++		kvm_free_assigned_irq(kvm, adev);
++
++		r = pci_enable_msix(adev->dev, adev->host_msix_entries,
++				    adev->entries_nr);
++		if (r)
++			return r;
++
++		for (i = 0; i < adev->entries_nr; i++) {
++			r = request_irq((adev->host_msix_entries + i)->vector,
++					kvm_assigned_dev_intr, 0,
++					"kvm_assigned_msix_device",
++					(void *)adev);
++			if (r)
++				return r;
++		}
++	}
++
++	adev->irq_requested_type |= KVM_ASSIGNED_DEV_MSIX;
++
++	return 0;
 +}
++#endif
 +
- static int kvm_relocate_vmm(struct kvm_vmm_info *vmm_info,
--						struct module *module)
-+			    struct module *module)
- {
- 	unsigned long module_base;
- 	unsigned long vmm_size;
-@@ -1694,6 +1723,7 @@ static int kvm_relocate_vmm(struct kvm_vmm_info *vmm_info,
- 		return -EFAULT;
+ static int kvm_vm_ioctl_assign_irq(struct kvm *kvm,
+ 				   struct kvm_assigned_irq
+ 				   *assigned_irq)
+@@ -417,12 +491,24 @@ static int kvm_vm_ioctl_assign_irq(struct kvm *kvm,
+ 		}
+ 	}
  
- 	memcpy((void *)kvm_vmm_base, (void *)module_base, vmm_size);
-+	kvm_patch_vmm(vmm_info, module);
- 	kvm_flush_icache(kvm_vmm_base, vmm_size);
+-	if ((match->irq_requested_type & KVM_ASSIGNED_DEV_HOST_MSI) &&
++	if (match->irq_requested_type & KVM_ASSIGNED_DEV_MSIX)
++		current_flags |= KVM_DEV_IRQ_ASSIGN_ENABLE_MSIX;
++	else if ((match->irq_requested_type & KVM_ASSIGNED_DEV_HOST_MSI) &&
+ 		 (match->irq_requested_type & KVM_ASSIGNED_DEV_GUEST_MSI))
+ 		current_flags |= KVM_DEV_IRQ_ASSIGN_ENABLE_MSI;
  
- 	/*Recalculate kvm_vmm_info based on new VMM*/
-diff --git a/arch/ia64/kvm/optvfault.S b/arch/ia64/kvm/optvfault.S
-index 32254ce..f793be3 100644
---- a/arch/ia64/kvm/optvfault.S
-+++ b/arch/ia64/kvm/optvfault.S
-@@ -11,6 +11,7 @@
+ 	changed_flags = assigned_irq->flags ^ current_flags;
  
- #include <asm/asmmacro.h>
- #include <asm/processor.h>
-+#include <asm/kvm_host.h>
- 
- #include "vti.h"
- #include "asm-offsets.h"
-@@ -140,6 +141,35 @@ GLOBAL_ENTRY(kvm_asm_mov_from_ar)
- 	;;
- END(kvm_asm_mov_from_ar)
- 
-+/*
-+ * Special SGI SN2 optimized version of mov_from_ar using the SN2 RTC
-+ * clock as it's source for emulating the ITC. This version will be
-+ * copied on top of the original version if the host is determined to
-+ * be an SN2.
-+ */
-+GLOBAL_ENTRY(kvm_asm_mov_from_ar_sn2)
-+	add r18=VMM_VCPU_ITC_OFS_OFFSET, r21
-+	movl r19 = (KVM_VMM_BASE+(1<<KVM_VMM_SHIFT))
-+
-+	add r16=VMM_VCPU_LAST_ITC_OFFSET,r21
-+	extr.u r17=r25,6,7
-+	mov r24=b0
-+	;;
-+	ld8 r18=[r18]
-+	ld8 r19=[r19]
-+	addl r20=@gprel(asm_mov_to_reg),gp
-+	;;
-+	add r19=r19,r18
-+	shladd r17=r17,4,r20
-+	;;
-+	adds r30=kvm_resume_to_guest-asm_mov_to_reg,r20
-+	st8 [r16] = r19
-+	mov b0=r17
-+	br.sptk.few b0
-+	;;
-+END(kvm_asm_mov_from_ar_sn2)
-+
-+
- 
- // mov r1=rr[r3]
- GLOBAL_ENTRY(kvm_asm_mov_from_rr)
-diff --git a/arch/ia64/kvm/vmm.c b/arch/ia64/kvm/vmm.c
-index 9eee5c0..f4b4c89 100644
---- a/arch/ia64/kvm/vmm.c
-+++ b/arch/ia64/kvm/vmm.c
-@@ -30,15 +30,19 @@ MODULE_AUTHOR("Intel");
- MODULE_LICENSE("GPL");
- 
- extern char kvm_ia64_ivt;
-+extern char kvm_asm_mov_from_ar;
-+extern char kvm_asm_mov_from_ar_sn2;
- extern fpswa_interface_t *vmm_fpswa_interface;
- 
- long vmm_sanity = 1;
- 
- struct kvm_vmm_info vmm_info = {
--	.module	     = THIS_MODULE,
--	.vmm_entry   = vmm_entry,
--	.tramp_entry = vmm_trampoline,
--	.vmm_ivt     = (unsigned long)&kvm_ia64_ivt,
-+	.module			= THIS_MODULE,
-+	.vmm_entry		= vmm_entry,
-+	.tramp_entry		= vmm_trampoline,
-+	.vmm_ivt		= (unsigned long)&kvm_ia64_ivt,
-+	.patch_mov_ar		= (unsigned long)&kvm_asm_mov_from_ar,
-+	.patch_mov_ar_sn2	= (unsigned long)&kvm_asm_mov_from_ar_sn2,
- };
- 
- static int __init  kvm_vmm_init(void)
++#ifdef __KVM_HAVE_MSIX
++	if (changed_flags & KVM_DEV_IRQ_ASSIGN_MSIX_ACTION) {
++		r = assigned_device_update_msix(kvm, match, assigned_irq);
++		if (r) {
++			printk(KERN_WARNING "kvm: failed to execute "
++					"MSI-X action!\n");
++			goto out_release;
++		}
++	} else
++#endif
+ 	if ((changed_flags & KVM_DEV_IRQ_ASSIGN_MSI_ACTION) ||
+ 	    (msi2intx && match->dev->msi_enabled)) {
+ #ifdef CONFIG_X86
 -- 
 1.6.0.6
 
