@@ -1,67 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754107AbZERRjG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754607AbZERRkf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754107AbZERRjG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 13:39:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751208AbZERRi4
+	id S1754607AbZERRkf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 13:40:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751621AbZERRk2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 13:38:56 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:40163 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751051AbZERRiz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 13:38:55 -0400
-Date: Mon, 18 May 2009 13:38:54 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Christoph Hellwig <hch@infradead.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [PATCH 1/3] tracing: add __print_flags for events
-Message-ID: <20090518173854.GA30425@infradead.org>
-References: <20090515210342.488025506@goodmis.org> <20090515210717.745370400@goodmis.org>
+	Mon, 18 May 2009 13:40:28 -0400
+Received: from hera.kernel.org ([140.211.167.34]:35130 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750955AbZERRk1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 13:40:27 -0400
+Message-ID: <4A119D55.4040703@kernel.org>
+Date: Mon, 18 May 2009 10:39:33 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090515210717.745370400@goodmis.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org
+Subject: Re: [PATCH] x86: add X86_UPDATE_MPTABLE option
+References: <4A0DC7DC.7000204@kernel.org> <4A0EED8B.6040704@kernel.org> <200905180941.06988.bjorn.helgaas@hp.com>
+In-Reply-To: <200905180941.06988.bjorn.helgaas@hp.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 15, 2009 at 05:03:43PM -0400, Steven Rostedt wrote:
-> From: Steven Rostedt <srostedt@redhat.com>
+Bjorn Helgaas wrote:
+> On Saturday 16 May 2009 10:44:59 am Yinghai Lu wrote:
 > 
-> Developers have been asking for the ability in the ftrace event tracer
-> to display names of bits in a flags variable.
+>> +config X86_UPDATE_MPTABLE
+>> +	bool "Enable update mptable according to acpi" if ACPI
+>> +	default n
+>> +	depends on X86_MPPARSE && ACPI
 > 
-> Instead of printing out c2, it would be easier to read FOO|BAR|GOO,
-> assuming that FOO is bit 1, BAR is bit 6 and GOO is bit 7.
-> 
-> Some examples where this would be useful are the state flags in a context
-> switch, kmalloc flags, and even permision flags in accessing files.
-> 
-> I included Frederic Weisbecker's idea of using a mask instead of bits,
-> thus we can output GFP_KERNEL instead of GPF_WAIT|GFP_IO|GFP_FS.
-> 
-> I also included Li Zefan's idea of allowing the caller of __print_flags
-> to add their own delimiter (or no delimiter) where we can get for
-> file permissions rwx instead of r|w|x.
+> Is this any use without CONFIG_KEXEC?  Maybe it should depend on
+> KEXEC as well?  Or maybe we don't need a new option at all, and
+> could just put this code under CONFIG_KEXEC directly.
 
-Looks good to me.
+If ACPI is not compiled in, we don't need it that too.
 
-Some small comments:
+> 
+>> +	---help---
+>> +	  some systems do not have correct mptable. with "update_mptable" or
+>> +	  "alloc_mptable" kernel could try to update mptable according to DSDT.
+>> +	  Then could use kexec to start second kernel (even old) without acpi
+>> +	  support or "acpi=off"
+> 
+> Please use English conventions such as starting sentences with capital
+> letters and capitalizing thing like "ACPI."
 
- - __print_flags might be a little to generic.  What about trace_print_flags?
- - some documentation would help.  I can submit a patch to the
-   trave_events sample module to make use of it once this patch is
-   merged.
- - Maybe passing an array instead of a list of flag/value pairs would be
-   a tad cleaner?  That would get rid of all the varargs mess and allow
-   to declare that array next to the flags so get less easily out of
-   sync.
+ok.
 
+YH
