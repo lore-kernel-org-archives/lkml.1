@@ -1,210 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757854AbZERJhO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752934AbZERJht@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757854AbZERJhO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 05:37:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753917AbZERJXy
+	id S1752934AbZERJht (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 05:37:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756679AbZERJYe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 05:23:54 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:38417 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753901AbZERJXK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 05:23:10 -0400
-From: Avi Kivity <avi@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: kvm@vger.kernel.org
-Subject: [PATCH 18/43] KVM: Merge kvm_ioapic_get_delivery_bitmask into kvm_get_intr_delivery_bitmask
-Date: Mon, 18 May 2009 12:22:40 +0300
-Message-Id: <1242638585-18470-19-git-send-email-avi@redhat.com>
-In-Reply-To: <1242638585-18470-1-git-send-email-avi@redhat.com>
-References: <1242638585-18470-1-git-send-email-avi@redhat.com>
+	Mon, 18 May 2009 05:24:34 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:42167 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756641AbZERJY3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 05:24:29 -0400
+Date: Mon, 18 May 2009 12:12:36 +0300
+From: Felipe Balbi <felipe.balbi@nokia.com>
+To: ext Kim Kyuwon <chammoru@gmail.com>
+Cc: "Balbi Felipe (Nokia-D/Helsinki)" <felipe.balbi@nokia.com>,
+       ext Mohamed Ikbel Boulabiar <boulabiar@gmail.com>,
+       Trilok Soni <soni.trilok@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>,
+       Jonathan Cameron <jic23@cam.ac.uk>, Kim Kyuwon <q1.kim@samsung.com>,
+       Kyungmin Park <kyungmin.park@samsung.com>,
+       Jean Delvare <khali@linux-fr.org>
+Subject: Re: [RFC] Add Input IOCTL for accelerometer devices
+Message-ID: <20090518091236.GH4443@nokia.com>
+Reply-To: felipe.balbi@nokia.com
+References: <20090515131636.GE4443@nokia.com> <5d5443650905151106v2fe7ad1ci6c966463a991e732@mail.gmail.com> <45cc95260905151230j5485995dpbbd882dc91b25339@mail.gmail.com> <20090515200235.GA11829@nokia.com> <4d34a0a70905180045u6619773dt1563fe38b13d46fb@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4d34a0a70905180045u6619773dt1563fe38b13d46fb@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-OriginalArrivalTime: 18 May 2009 09:24:01.0131 (UTC) FILETIME=[6121CBB0:01C9D79A]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Sheng Yang <sheng@linux.intel.com>
+On Mon, May 18, 2009 at 09:45:55AM +0200, ext Kim Kyuwon wrote:
+> Hi All,
+> 
+> It's very nice of Felipe to make an issue of accelerometers in Linux
+> kernel again.
+> Before further discussions, we'd better see previous threads about
+> accelerometer.
+> 
+> http://lkml.org/lkml/2008/5/20/135
+> http://lkml.org/lkml/2008/12/1/156
+> --
+> 
+> I have considered how I can add my accelerometer driver into the Linux
+> kernel nicely for a few months.
+> 
+> As Trilok said, there are many accelerometer drivers under
+> drivers/hwmon. So I first tried to add my driver as hwmon, but Jean
+> Delvare didn't agree this idea. Please refer to the following URL:
+> http://lists.lm-sensors.org/pipermail/lm-sensors/2009-April/025686.html
+> 
+> And from the next URL, Dmitry don't think it is great idea to add
+> accelerometer as Input system.
+> http://lkml.org/lkml/2008/5/27/283
 
-Gleb fixed bitmap ops usage in kvm_ioapic_get_delivery_bitmask.
+Good links, I'll read them all :-)
 
-Sheng merged two functions, as well as fixed several issues in
-kvm_get_intr_delivery_bitmask
-1. deliver_bitmask is a bitmap rather than a unsigned long intereger.
-2. Lowest priority target bitmap wrong calculated by mistake.
-3. Prevent potential NULL reference.
-4. Declaration in include/kvm_host.h caused powerpc compilation warning.
-5. Add warning for guest broadcast interrupt with lowest priority delivery mode.
-6. Removed duplicate bitmap clean up in caller of kvm_get_intr_delivery_bitmask.
+Thanks
 
-Signed-off-by: Gleb Natapov <gleb@redhat.com>
-Signed-off-by: Sheng Yang <sheng@linux.intel.com>
-Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
----
- virt/kvm/ioapic.c   |   46 +++-------------------------------------------
- virt/kvm/ioapic.h   |    5 +++--
- virt/kvm/irq_comm.c |   49 +++++++++++++++++++++++++++++++++++++++++++------
- 3 files changed, 49 insertions(+), 51 deletions(-)
+> On Sat, May 16, 2009 at 5:02 AM, Felipe Balbi <felipe.balbi@nokia.com> wrote:
+> > Hi all,
+> >
+> >
+> > On Fri, May 15, 2009 at 09:30:41PM +0200, ext Mohamed Ikbel Boulabiar wrote:
+> >> I am really interested about that.
+> >>
+> >> But I want to know more about the device, its type, name, ...
+> >> The device isn't HID (Human Interface Device) ? If so, we should
+> >> rethink adding such thing but modify/use hid-input instead.
+> >>
+> >> Because, I have an accelerometer phidget device and it is HID.
+> >> Handling should be the same.
+> >
+> > Yeah, let's try to define the best way to expose accelerometers with
+> > linux kernel and avoid a sysfs hell. Better sooner than later.
+> 
+> Felipe,
+> Can I ask why did you say "avoid a sysfs hell"?. I have thought Kernel
+> developers prefer sysfs to IOCTL lately.
 
-diff --git a/virt/kvm/ioapic.c b/virt/kvm/ioapic.c
-index 7c2cb2b..ea268a8 100644
---- a/virt/kvm/ioapic.c
-+++ b/virt/kvm/ioapic.c
-@@ -161,45 +161,6 @@ static void ioapic_inj_nmi(struct kvm_vcpu *vcpu)
- 	kvm_vcpu_kick(vcpu);
- }
- 
--void kvm_ioapic_get_delivery_bitmask(struct kvm_ioapic *ioapic, u8 dest,
--				     u8 dest_mode, unsigned long *mask)
--{
--	int i;
--	struct kvm *kvm = ioapic->kvm;
--	struct kvm_vcpu *vcpu;
--
--	ioapic_debug("dest %d dest_mode %d\n", dest, dest_mode);
--
--	*mask = 0;
--	if (dest_mode == 0) {	/* Physical mode. */
--		if (dest == 0xFF) {	/* Broadcast. */
--			for (i = 0; i < KVM_MAX_VCPUS; ++i)
--				if (kvm->vcpus[i] && kvm->vcpus[i]->arch.apic)
--					*mask |= 1 << i;
--			return;
--		}
--		for (i = 0; i < KVM_MAX_VCPUS; ++i) {
--			vcpu = kvm->vcpus[i];
--			if (!vcpu)
--				continue;
--			if (kvm_apic_match_physical_addr(vcpu->arch.apic, dest)) {
--				if (vcpu->arch.apic)
--					*mask = 1 << i;
--				break;
--			}
--		}
--	} else if (dest != 0)	/* Logical mode, MDA non-zero. */
--		for (i = 0; i < KVM_MAX_VCPUS; ++i) {
--			vcpu = kvm->vcpus[i];
--			if (!vcpu)
--				continue;
--			if (vcpu->arch.apic &&
--			    kvm_apic_match_logical_addr(vcpu->arch.apic, dest))
--				*mask |= 1 << vcpu->vcpu_id;
--		}
--	ioapic_debug("mask %x\n", *mask);
--}
--
- static int ioapic_deliver(struct kvm_ioapic *ioapic, int irq)
- {
- 	union kvm_ioapic_redirect_entry entry = ioapic->redirtbl[irq];
-@@ -213,13 +174,12 @@ static int ioapic_deliver(struct kvm_ioapic *ioapic, int irq)
- 		     entry.fields.delivery_mode, entry.fields.vector,
- 		     entry.fields.trig_mode);
- 
--	bitmap_zero(deliver_bitmask, KVM_MAX_VCPUS);
--
- 	/* Always delivery PIT interrupt to vcpu 0 */
- #ifdef CONFIG_X86
--	if (irq == 0)
-+	if (irq == 0) {
-+                bitmap_zero(deliver_bitmask, KVM_MAX_VCPUS);
- 		__set_bit(0, deliver_bitmask);
--	else
-+        } else
- #endif
- 		kvm_get_intr_delivery_bitmask(ioapic, &entry, deliver_bitmask);
- 
-diff --git a/virt/kvm/ioapic.h b/virt/kvm/ioapic.h
-index 7275f87..c8032ab 100644
---- a/virt/kvm/ioapic.h
-+++ b/virt/kvm/ioapic.h
-@@ -70,7 +70,8 @@ void kvm_ioapic_update_eoi(struct kvm *kvm, int vector, int trigger_mode);
- int kvm_ioapic_init(struct kvm *kvm);
- int kvm_ioapic_set_irq(struct kvm_ioapic *ioapic, int irq, int level);
- void kvm_ioapic_reset(struct kvm_ioapic *ioapic);
--void kvm_ioapic_get_delivery_bitmask(struct kvm_ioapic *ioapic, u8 dest,
--				     u8 dest_mode, unsigned long *mask);
-+void kvm_get_intr_delivery_bitmask(struct kvm_ioapic *ioapic,
-+				   union kvm_ioapic_redirect_entry *entry,
-+				   unsigned long *deliver_bitmask);
- 
- #endif
-diff --git a/virt/kvm/irq_comm.c b/virt/kvm/irq_comm.c
-index d165e05..1c6ff6d 100644
---- a/virt/kvm/irq_comm.c
-+++ b/virt/kvm/irq_comm.c
-@@ -47,15 +47,54 @@ void kvm_get_intr_delivery_bitmask(struct kvm_ioapic *ioapic,
- 				   union kvm_ioapic_redirect_entry *entry,
- 				   unsigned long *deliver_bitmask)
- {
-+	int i;
-+	struct kvm *kvm = ioapic->kvm;
- 	struct kvm_vcpu *vcpu;
- 
--	kvm_ioapic_get_delivery_bitmask(ioapic, entry->fields.dest_id,
--					entry->fields.dest_mode,
--					deliver_bitmask);
-+	bitmap_zero(deliver_bitmask, KVM_MAX_VCPUS);
-+
-+	if (entry->fields.dest_mode == 0) {	/* Physical mode. */
-+		if (entry->fields.dest_id == 0xFF) {	/* Broadcast. */
-+			for (i = 0; i < KVM_MAX_VCPUS; ++i)
-+				if (kvm->vcpus[i] && kvm->vcpus[i]->arch.apic)
-+					__set_bit(i, deliver_bitmask);
-+			/* Lowest priority shouldn't combine with broadcast */
-+			if (entry->fields.delivery_mode ==
-+			    IOAPIC_LOWEST_PRIORITY && printk_ratelimit())
-+				printk(KERN_INFO "kvm: apic: phys broadcast "
-+						  "and lowest prio\n");
-+			return;
-+		}
-+		for (i = 0; i < KVM_MAX_VCPUS; ++i) {
-+			vcpu = kvm->vcpus[i];
-+			if (!vcpu)
-+				continue;
-+			if (kvm_apic_match_physical_addr(vcpu->arch.apic,
-+					entry->fields.dest_id)) {
-+				if (vcpu->arch.apic)
-+					__set_bit(i, deliver_bitmask);
-+				break;
-+			}
-+		}
-+	} else if (entry->fields.dest_id != 0) /* Logical mode, MDA non-zero. */
-+		for (i = 0; i < KVM_MAX_VCPUS; ++i) {
-+			vcpu = kvm->vcpus[i];
-+			if (!vcpu)
-+				continue;
-+			if (vcpu->arch.apic &&
-+			    kvm_apic_match_logical_addr(vcpu->arch.apic,
-+					entry->fields.dest_id))
-+				__set_bit(i, deliver_bitmask);
-+		}
-+
- 	switch (entry->fields.delivery_mode) {
- 	case IOAPIC_LOWEST_PRIORITY:
-+		/* Select one in deliver_bitmask */
- 		vcpu = kvm_get_lowest_prio_vcpu(ioapic->kvm,
- 				entry->fields.vector, deliver_bitmask);
-+		bitmap_zero(deliver_bitmask, KVM_MAX_VCPUS);
-+		if (!vcpu)
-+			return;
- 		__set_bit(vcpu->vcpu_id, deliver_bitmask);
- 		break;
- 	case IOAPIC_FIXED:
-@@ -65,7 +104,7 @@ void kvm_get_intr_delivery_bitmask(struct kvm_ioapic *ioapic,
- 		if (printk_ratelimit())
- 			printk(KERN_INFO "kvm: unsupported delivery mode %d\n",
- 				entry->fields.delivery_mode);
--		*deliver_bitmask = 0;
-+		bitmap_zero(deliver_bitmask, KVM_MAX_VCPUS);
- 	}
- }
- 
-@@ -80,8 +119,6 @@ static int kvm_set_msi(struct kvm_kernel_irq_routing_entry *e,
- 
- 	BUG_ON(!ioapic);
- 
--	bitmap_zero(deliver_bitmask, KVM_MAX_VCPUS);
--
- 	entry.bits = 0;
- 	entry.fields.dest_id = (e->msi.address_lo &
- 			MSI_ADDR_DEST_ID_MASK) >> MSI_ADDR_DEST_ID_SHIFT;
+For sure sysfs is prefered, but I meant that without a proper
+abstraction or definition of how to export the device, each device
+driver write will export sysfs nodes as they want and that's really bad
+since we create the 'userland interface'. If it's messed up from the
+beginning, it's gonna be like that for ages.
+
+> >> On Fri, May 15, 2009 at 7:06 PM, Trilok Soni <soni.trilok@gmail.com> wrote:
+> >> > Hi Felipe,
+> >> >
+> >> > Adding linux-input and Jonathan, so not deleting any lines from this e-mail.
+> >> >
+> >> > On Fri, May 15, 2009 at 6:46 PM, Felipe Balbi <felipe.balbi@nokia.com> wrote:
+> >> >> Hi all,
+> >> >>
+> >> >> the following patch is just an idea to see how the community feels about
+> >> >> it. Considering accelerometer devices, you might have different use
+> >> >> cases for it while running different applications. You could be using it
+> >> >> for screen rotation in one case but when opening a game, you could use
+> >> >> it as a game controller by turning the device side-by-side.
+> >> >
+> >> > There was one proposal from Jonathan called Industrial IO patchset
+> >> > which tried to address these sensor devices. Please grep in your
+> >> > linux-kernel archieve. I believe there are accelerometer drivers under
+> >> > drivers/hwmon.
+> >
+> > The problem is that it doesn't really seem to me that all accelerometers
+> > will be doing hw monitoring. The ones used in laptops, for sure, trying
+> > to prevent the hd from drying during a fall. But imagine the
+> > accelerometers used in, say, wii-mote, or cellphones, or such stuff ?
+> >
+> > Say we wanna use the accelerometer for both screen rotation and gaming,
+> > that device isn't doing hw monitoring and still we _do_ want to set
+> > different thresholds and irq requests/types for different use cases,
+> > right ?
+> 
+> Yes, I agree that accelerometer needs new interface. However setting
+> parameters of accelerometer is very different from devices and device
+> specific. Until now, I met two accelerometer, SMB380 from
+> bosch-sensortec and KXSD9 from Kionix. As far as I know, these two
+> accelerometers are quite different from each other and existing
+> accelerometer drivers located /driver/hwmon/ in current Linux kernel.
+> Thus I think sysfs interface (including hwmon-sysfs) is the best
+> solution for setting various parameters of accelerometer..
+
+what if you wanna use the accelerometer as joystick for gaming ? Imagine
+a portable device...
+
+> On the other hand, accelerometers are mostly used as Input device in
+> these days. Most APIs(input_allocate_device,
+> input_allocate_polled_device, ...) and macros(ABS_X,  ABS_Y, ...)of
+> Input subsystem are useful to accelerometer too. If we create another
+> APIs and Macros for accelerometers, I think It's another duplicate
+> work and result.
+
+for sure
+
+> It seems like Dmitry concerns input_dev becomes too big with hundreds
+> of sensors.(right?) However, Market trend makes us consider
+> accelerometer as an input device now. I'm sure there is a good way to
+> add accelerometer input system without enlarging input_dev much.
+> 
+> In conclusion,
+> We need the inheritance concept in the object-oriented programming.
+> Accelerometer device sometimes can be hwmon device, sometimes input
+> device. So let accelerometer drivers use both APIs of hwmon and input
+> subsystems(hwmon_device_register, input_register_device,
+> input_register_polled_device). Acutally this is what many
+> accelerometer drivers in current Linux kernel are doing, so we don't
+> have to do much.
+> 
+> Let's
+> 1) Introduce a new maintainer of accelerometer (Felipe?).
+> 2) Move accelerometer drivers in current Linux kernel to /driver/accelerometer.
+> 3) If we find the common functions of accelerometer or have idea about
+> new API or Macro, let's make at driver/accelerometer/acccelerometer.c,
+> input/linux/acccelerometer.h file or modify input.h little.
+> 4) Add every new accelerometer into /driver/accelerometer.
+
+How about extending these to several kinds of sensors ?? Why not having
+a sensor framework that abstracts the creating of the input_dev for
+accelerometer ? But then comes another question: what to do with
+magnetometers, gyroscopes, etc etc ??
+
 -- 
-1.6.0.6
-
+balbi
