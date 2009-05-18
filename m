@@ -1,129 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754676AbZERJYV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756702AbZERJZQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754676AbZERJYV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 05:24:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754204AbZERJXL
+	id S1756702AbZERJZQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 05:25:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755213AbZERJXN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 05:23:11 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:38395 "EHLO mx2.redhat.com"
+	Mon, 18 May 2009 05:23:13 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38396 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751580AbZERJXH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751822AbZERJXH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 18 May 2009 05:23:07 -0400
 From: Avi Kivity <avi@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: kvm@vger.kernel.org
-Subject: [PATCH 00/43] KVM updates for the 2.6.31 merge window (batch 1/4)
-Date: Mon, 18 May 2009 12:22:22 +0300
-Message-Id: <1242638585-18470-1-git-send-email-avi@redhat.com>
+Subject: [PATCH 01/43] KVM: VMX: Don't use highmem pages for the msr and pio bitmaps
+Date: Mon, 18 May 2009 12:22:23 +0300
+Message-Id: <1242638585-18470-2-git-send-email-avi@redhat.com>
+In-Reply-To: <1242638585-18470-1-git-send-email-avi@redhat.com>
+References: <1242638585-18470-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Following is my queue for the 2.6.31 merge window that is now approaching.
-Please review.
+Highmem pages are a pain, and saving three lowmem pages on i386 isn't worth
+the extra code.
 
-Amit Shah (1):
-  KVM: x86: Ignore reads to EVNTSEL MSRs
+Signed-off-by: Avi Kivity <avi@redhat.com>
+---
+ arch/x86/kvm/vmx.c |   59 ++++++++++++++++++++++------------------------------
+ 1 files changed, 25 insertions(+), 34 deletions(-)
 
-Avi Kivity (9):
-  KVM: VMX: Don't use highmem pages for the msr and pio bitmaps
-  KVM: VMX: Don't intercept MSR_KERNEL_GS_BASE
-  KVM: VMX: Make module parameters readable
-  KVM: VMX: Rename kvm_handle_exit() to vmx_handle_exit()
-  KVM: VMX: Simplify module parameter names
-  KVM: VMX: Annotate module parameters as __read_mostly
-  KVM: VMX: Zero the vpid module parameter if vpid is not supported
-  KVM: VMX: Zero ept module parameter if ept is not present
-  KVM: VMX: Fold vm_need_ept() into callers
-
-Christian Borntraeger (1):
-  KVM: declare ioapic functions only on affected hardware
-
-Gleb Natapov (10):
-  KVM: APIC: kvm_apic_set_irq deliver all kinds of interrupts
-  KVM: ioapic/msi interrupt delivery consolidation
-  KVM: consolidate ioapic/ipi interrupt delivery logic
-  KVM: change the way how lowest priority vcpu is calculated
-  KVM: APIC: get rid of deliver_bitmask
-  KVM: MMU: do not free active mmu pages in free_mmu_pages()
-  KVM: SVM: Remove duplicate code in svm_do_inject_vector()
-  KVM: reuse (pop|push)_irq from svm.c in vmx.c
-  KVM: Timer event should not unconditionally unhalt vcpu.
-  KVM: Fix interrupt unhalting a vcpu when it shouldn't
-
-Hannes Eder (1):
-  KVM: make 'lapic_timer_ops' and 'kpit_ops' static
-
-Jes Sorensen (4):
-  KVM: ia64: Map in SN2 RTC registers to the VMM module
-  KVM: ia64: Create inline function kvm_get_itc() to centralize ITC
-    reading.
-  KVM: ia64: SN2 adjust emulated ITC frequency to match RTC frequency
-  KVM: ia64: Drop in SN2 replacement of fast path ITC emulation fault
-    handler
-
-Joerg Roedel (1):
-  KVM: MMU: remove call to kvm_mmu_pte_write from walk_addr
-
-Marcelo Tosatti (4):
-  KVM: x86: paravirt skip pit-through-ioapic boot check
-  KVM: PIT: remove unused scheduled variable
-  KVM: PIT: remove usage of count_load_time for channel 0
-  KVM: unify part of generic timer handling
-
-Matt T. Yourst (1):
-  KVM: x86: silence preempt warning on kvm_write_guest_time
-
-Sheng Yang (10):
-  KVM: Split IOAPIC structure
-  KVM: Unify the delivery of IOAPIC and MSI interrupts
-  KVM: Change API of kvm_ioapic_get_delivery_bitmask
-  KVM: Update intr delivery func to accept unsigned long* bitmap
-  KVM: bit ops for deliver_bitmap
-  KVM: Ioctls for init MSI-X entry
-  KVM: Add MSI-X interrupt injection logic
-  KVM: Enable MSI-X for KVM assigned device
-  KVM: Merge kvm_ioapic_get_delivery_bitmask into
-    kvm_get_intr_delivery_bitmask
-  KVM: Device assignment framework rework
-
-Yang Zhang (1):
-  KVM: ia64: fix compilation error in kvm_get_lowest_prio_vcpu
-
- arch/ia64/include/asm/kvm_host.h |    5 +-
- arch/ia64/include/asm/pgtable.h  |    2 +
- arch/ia64/kvm/kvm-ia64.c         |  159 +++++++---
- arch/ia64/kvm/kvm_fw.c           |   28 ++-
- arch/ia64/kvm/lapic.h            |    6 +-
- arch/ia64/kvm/optvfault.S        |   30 ++
- arch/ia64/kvm/vcpu.c             |   20 +-
- arch/ia64/kvm/vmm.c              |   12 +-
- arch/powerpc/kvm/powerpc.c       |    6 +
- arch/s390/kvm/interrupt.c        |    6 +
- arch/x86/include/asm/kvm.h       |    1 +
- arch/x86/include/asm/kvm_host.h  |    4 +-
- arch/x86/kernel/kvm.c            |    4 +
- arch/x86/kvm/Makefile            |    2 +-
- arch/x86/kvm/i8254.c             |   95 +++---
- arch/x86/kvm/i8254.h             |   12 +-
- arch/x86/kvm/kvm_timer.h         |   18 +
- arch/x86/kvm/lapic.c             |  251 +++++----------
- arch/x86/kvm/lapic.h             |   12 +-
- arch/x86/kvm/mmu.c               |    8 -
- arch/x86/kvm/paging_tmpl.h       |    1 -
- arch/x86/kvm/svm.c               |   43 +--
- arch/x86/kvm/timer.c             |   46 +++
- arch/x86/kvm/vmx.c               |  186 ++++++-----
- arch/x86/kvm/x86.c               |   67 +++--
- arch/x86/kvm/x86.h               |   18 +
- include/linux/kvm.h              |   40 +++-
- include/linux/kvm_host.h         |   15 +-
- include/linux/kvm_types.h        |   27 ++
- virt/kvm/ioapic.c                |  153 ++--------
- virt/kvm/ioapic.h                |   27 +--
- virt/kvm/irq_comm.c              |  109 ++++---
- virt/kvm/kvm_main.c              |  634 +++++++++++++++++++++++++++-----------
- 33 files changed, 1240 insertions(+), 807 deletions(-)
- create mode 100644 arch/x86/kvm/kvm_timer.h
- create mode 100644 arch/x86/kvm/timer.c
+diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
+index bb48133..b20c9e4 100644
+--- a/arch/x86/kvm/vmx.c
++++ b/arch/x86/kvm/vmx.c
+@@ -111,9 +111,9 @@ static DEFINE_PER_CPU(struct vmcs *, vmxarea);
+ static DEFINE_PER_CPU(struct vmcs *, current_vmcs);
+ static DEFINE_PER_CPU(struct list_head, vcpus_on_cpu);
+ 
+-static struct page *vmx_io_bitmap_a;
+-static struct page *vmx_io_bitmap_b;
+-static struct page *vmx_msr_bitmap;
++static unsigned long *vmx_io_bitmap_a;
++static unsigned long *vmx_io_bitmap_b;
++static unsigned long *vmx_msr_bitmap;
+ 
+ static DECLARE_BITMAP(vmx_vpid_bitmap, VMX_NR_VPIDS);
+ static DEFINE_SPINLOCK(vmx_vpid_lock);
+@@ -2082,9 +2082,9 @@ static void allocate_vpid(struct vcpu_vmx *vmx)
+ 	spin_unlock(&vmx_vpid_lock);
+ }
+ 
+-static void vmx_disable_intercept_for_msr(struct page *msr_bitmap, u32 msr)
++static void vmx_disable_intercept_for_msr(unsigned long *msr_bitmap, u32 msr)
+ {
+-	void *va;
++	int f = sizeof(unsigned long);
+ 
+ 	if (!cpu_has_vmx_msr_bitmap())
+ 		return;
+@@ -2094,16 +2094,14 @@ static void vmx_disable_intercept_for_msr(struct page *msr_bitmap, u32 msr)
+ 	 * have the write-low and read-high bitmap offsets the wrong way round.
+ 	 * We can control MSRs 0x00000000-0x00001fff and 0xc0000000-0xc0001fff.
+ 	 */
+-	va = kmap(msr_bitmap);
+ 	if (msr <= 0x1fff) {
+-		__clear_bit(msr, va + 0x000); /* read-low */
+-		__clear_bit(msr, va + 0x800); /* write-low */
++		__clear_bit(msr, msr_bitmap + 0x000 / f); /* read-low */
++		__clear_bit(msr, msr_bitmap + 0x800 / f); /* write-low */
+ 	} else if ((msr >= 0xc0000000) && (msr <= 0xc0001fff)) {
+ 		msr &= 0x1fff;
+-		__clear_bit(msr, va + 0x400); /* read-high */
+-		__clear_bit(msr, va + 0xc00); /* write-high */
++		__clear_bit(msr, msr_bitmap + 0x400 / f); /* read-high */
++		__clear_bit(msr, msr_bitmap + 0xc00 / f); /* write-high */
+ 	}
+-	kunmap(msr_bitmap);
+ }
+ 
+ /*
+@@ -2121,11 +2119,11 @@ static int vmx_vcpu_setup(struct vcpu_vmx *vmx)
+ 	u32 exec_control;
+ 
+ 	/* I/O */
+-	vmcs_write64(IO_BITMAP_A, page_to_phys(vmx_io_bitmap_a));
+-	vmcs_write64(IO_BITMAP_B, page_to_phys(vmx_io_bitmap_b));
++	vmcs_write64(IO_BITMAP_A, __pa(vmx_io_bitmap_a));
++	vmcs_write64(IO_BITMAP_B, __pa(vmx_io_bitmap_b));
+ 
+ 	if (cpu_has_vmx_msr_bitmap())
+-		vmcs_write64(MSR_BITMAP, page_to_phys(vmx_msr_bitmap));
++		vmcs_write64(MSR_BITMAP, __pa(vmx_msr_bitmap));
+ 
+ 	vmcs_write64(VMCS_LINK_POINTER, -1ull); /* 22.3.1.5 */
+ 
+@@ -3695,20 +3693,19 @@ static struct kvm_x86_ops vmx_x86_ops = {
+ 
+ static int __init vmx_init(void)
+ {
+-	void *va;
+ 	int r;
+ 
+-	vmx_io_bitmap_a = alloc_page(GFP_KERNEL | __GFP_HIGHMEM);
++	vmx_io_bitmap_a = (unsigned long *)__get_free_page(GFP_KERNEL);
+ 	if (!vmx_io_bitmap_a)
+ 		return -ENOMEM;
+ 
+-	vmx_io_bitmap_b = alloc_page(GFP_KERNEL | __GFP_HIGHMEM);
++	vmx_io_bitmap_b = (unsigned long *)__get_free_page(GFP_KERNEL);
+ 	if (!vmx_io_bitmap_b) {
+ 		r = -ENOMEM;
+ 		goto out;
+ 	}
+ 
+-	vmx_msr_bitmap = alloc_page(GFP_KERNEL | __GFP_HIGHMEM);
++	vmx_msr_bitmap = (unsigned long *)__get_free_page(GFP_KERNEL);
+ 	if (!vmx_msr_bitmap) {
+ 		r = -ENOMEM;
+ 		goto out1;
+@@ -3718,18 +3715,12 @@ static int __init vmx_init(void)
+ 	 * Allow direct access to the PC debug port (it is often used for I/O
+ 	 * delays, but the vmexits simply slow things down).
+ 	 */
+-	va = kmap(vmx_io_bitmap_a);
+-	memset(va, 0xff, PAGE_SIZE);
+-	clear_bit(0x80, va);
+-	kunmap(vmx_io_bitmap_a);
++	memset(vmx_io_bitmap_a, 0xff, PAGE_SIZE);
++	clear_bit(0x80, vmx_io_bitmap_a);
+ 
+-	va = kmap(vmx_io_bitmap_b);
+-	memset(va, 0xff, PAGE_SIZE);
+-	kunmap(vmx_io_bitmap_b);
++	memset(vmx_io_bitmap_b, 0xff, PAGE_SIZE);
+ 
+-	va = kmap(vmx_msr_bitmap);
+-	memset(va, 0xff, PAGE_SIZE);
+-	kunmap(vmx_msr_bitmap);
++	memset(vmx_msr_bitmap, 0xff, PAGE_SIZE);
+ 
+ 	set_bit(0, vmx_vpid_bitmap); /* 0 is reserved for host */
+ 
+@@ -3762,19 +3753,19 @@ static int __init vmx_init(void)
+ 	return 0;
+ 
+ out2:
+-	__free_page(vmx_msr_bitmap);
++	free_page((unsigned long)vmx_msr_bitmap);
+ out1:
+-	__free_page(vmx_io_bitmap_b);
++	free_page((unsigned long)vmx_io_bitmap_b);
+ out:
+-	__free_page(vmx_io_bitmap_a);
++	free_page((unsigned long)vmx_io_bitmap_a);
+ 	return r;
+ }
+ 
+ static void __exit vmx_exit(void)
+ {
+-	__free_page(vmx_msr_bitmap);
+-	__free_page(vmx_io_bitmap_b);
+-	__free_page(vmx_io_bitmap_a);
++	free_page((unsigned long)vmx_msr_bitmap);
++	free_page((unsigned long)vmx_io_bitmap_b);
++	free_page((unsigned long)vmx_io_bitmap_a);
+ 
+ 	kvm_exit();
+ }
+-- 
+1.6.0.6
 
