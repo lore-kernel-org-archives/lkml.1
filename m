@@ -1,55 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754031AbZERNL5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754018AbZERNPd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754031AbZERNL5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 09:11:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751771AbZERNLk
+	id S1754018AbZERNPd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 09:15:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751665AbZERNPR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 09:11:40 -0400
-Received: from rv-out-0506.google.com ([209.85.198.225]:7086 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751665AbZERNLi (ORCPT
+	Mon, 18 May 2009 09:15:17 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:39578 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750978AbZERNPP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 09:11:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=YogbXAqSRznQ85SD9EKCulONjSNyVNVih74dwJ/eLSHovg6neWGtth9/HRHMM6XiXK
-         2mIKRPTaRFSSxiaL+ND3rtpDGqeu6YziPbWzdRnzucUH/MmknrtHuGMKZ8MQpaFLO09N
-         aWVEke+SwdG4WfNEKRerJ/SKSAfBbHKfh7P4Q=
-From: Alexander Beregalov <a.beregalov@gmail.com>
-To: linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org,
-       alan@lxorguk.ukuu.org.uk
-Cc: Alexander Beregalov <a.beregalov@gmail.com>
-Subject: [PATCH 2/2] serial: 8250_gsc: fix printk format warning
-Date: Mon, 18 May 2009 17:11:31 +0400
-Message-Id: <1242652291-1868-1-git-send-email-a.beregalov@gmail.com>
-X-Mailer: git-send-email 1.6.3
+	Mon, 18 May 2009 09:15:15 -0400
+Date: Mon, 18 May 2009 09:11:45 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Ken Lewis <kennylewis@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-net@vger.kernel.org,
+       linux-wireless@vger.kernel.org, davem@davemloft.net,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Regression: 2.6.30-rc5 and rt2x00 / rt2500pci
+Message-ID: <20090518131145.GB2814@tuxdriver.com>
+References: <5a44caba0905150740n3bf90e05i17a74e82f35edcf4@mail.gmail.com> <20090515144628.GE2773@tuxdriver.com> <5a44caba0905170838l2876df90q200f9a8b6411f7ce@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <5a44caba0905170838l2876df90q200f9a8b6411f7ce@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix this build warning:
-drivers/serial/8250_gsc.c:44: warning: format '%lx' expects type
-'long unsigned int', but argument 2 has type 'resource_size_t'
+On Sun, May 17, 2009 at 04:38:58PM +0100, Ken Lewis wrote:
+> 2009/5/15 John W. Linville <linville@tuxdriver.com>:
+> > On Fri, May 15, 2009 at 03:40:44PM +0100, Ken Lewis wrote:
+> >> I've been looking for a bug in Linux-Next that makes my rt2500pci
+> >> wireless card unusable. ...
+> >
+> > Please apply this patch:
+> >
+> >        http://www.kernel.org/pub/linux/kernel/people/linville/wireless-2.6/0002-mac80211-avoid-NULL-ptr-deref-when-finding-max_rate.patch
+> >
+> > A pull request was sent to Dave M. a couple of days ago.  I imagine
+> > that it will make its way to Linus shortly.
+> 
+> Thank you, John. The patch makes 2.6.30-rc5 work for me -- no more bug
+> dump and the wireless card works fine.
+> 
+> I'm about to try and see if it *also* makes rt2x00 work when applied
+> against the linux-next tree (and next-20090515 in particular).
 
-Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
----
- drivers/serial/8250_gsc.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+I'm guessing it didn't help with this part, since -next should have
+already had the patch...?
 
-diff --git a/drivers/serial/8250_gsc.c b/drivers/serial/8250_gsc.c
-index 418b4fe..a7b02a5 100644
---- a/drivers/serial/8250_gsc.c
-+++ b/drivers/serial/8250_gsc.c
-@@ -41,7 +41,7 @@ static int __init serial_init_chip(struct parisc_device *dev)
- 			printk(KERN_INFO
- 				"Serial: device 0x%lx not configured.\n"
- 				"Enable support for Wax, Lasi, Asp or Dino.\n",
--				dev->hpa.start);
-+				(unsigned long)dev->hpa.start);
- 		return -ENODEV;
- 	}
- 
+John
 -- 
-1.6.2.5
-
+John W. Linville		Someday the world will need a hero, and you
+linville@tuxdriver.com			might be all we have.  Be ready.
