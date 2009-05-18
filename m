@@ -1,105 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756680AbZERPOh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755209AbZERPYS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756680AbZERPOh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 11:14:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756518AbZERPOZ
+	id S1755209AbZERPYS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 11:24:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752921AbZERPYJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 11:14:25 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:38065 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756105AbZERPOX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 11:14:23 -0400
-Date: Mon, 18 May 2009 08:14:21 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, davem@davemloft.net, dada1@cosmosbay.com,
-       zbr@ioremap.net, jeff.chua.linux@gmail.com, paulus@samba.org,
-       laijs@cn.fujitsu.com, jengelh@medozas.de, r000n@r000n.net,
-       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
-Subject: Re: [PATCH RFC] v5 expedited "big hammer" RCU grace periods
-Message-ID: <20090518151421.GB6768@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090517191141.GA25915@linux.vnet.ibm.com> <20090518075630.GA10687@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090518075630.GA10687@elte.hu>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Mon, 18 May 2009 11:24:09 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:50997 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752399AbZERPYI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 11:24:08 -0400
+Subject: Re: [GIT PULL] cputime patch for 2.6.30-rc6
+From: Peter Zijlstra <peterz@infradead.org>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Michael Abbott <michael@araneidae.co.uk>,
+       Jan Engelhardt <jengelh@medozas.de>
+In-Reply-To: <20090518160904.7df88425@skybase>
+References: <20090518160904.7df88425@skybase>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Mon, 18 May 2009 17:24:03 +0200
+Message-Id: <1242660243.26820.439.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 18, 2009 at 09:56:30AM +0200, Ingo Molnar wrote:
+On Mon, 2009-05-18 at 16:09 +0200, Martin Schwidefsky wrote:
+> Hi Linus,
 > 
-> * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+> please pull from 'cputime' branch of
 > 
-> > +void sched_expedited_wake(void *unused)
-> > +{
-> > +	mutex_lock(&__get_cpu_var(sched_expedited_done_mutex));
-> > +	if (__get_cpu_var(sched_expedited_done_qs) ==
-> > +	    SCHED_EXPEDITED_QS_DONE_QS) {
-> > +		__get_cpu_var(sched_expedited_done_qs) =
-> > +			SCHED_EXPEDITED_QS_NEED_QS;
-> > +		wake_up(&__get_cpu_var(sched_expedited_qs_wq));
-> > +	}
-> > +	mutex_unlock(&__get_cpu_var(sched_expedited_done_mutex));
-> > +}
+> 	git://git390.marist.edu/pub/scm/linux-2.6.git cputime
 > 
-> ( hm, IPI handlers are supposed to be atomic. )
-
-<red face>
-
-> > +/*
-> > + * Kernel thread that processes synchronize_sched_expedited() requests.
-> > + * This is implemented as a separate kernel thread to avoid the need
-> > + * to mess with other tasks' cpumasks.
-> > + */
-> > +static int krcu_sched_expedited(void *arg)
-> > +{
-> > +	int cpu;
-> > +	int mycpu;
-> > +	int nwait;
-> > +
-> > +	do {
-> > +		wait_event_interruptible(need_sched_expedited_wq,
-> > +					 need_sched_expedited);
-> > +		smp_mb(); /* In case we didn't sleep. */
-> > +		if (!need_sched_expedited)
-> > +			continue;
-> > +		need_sched_expedited = 0;
-> > +		get_online_cpus();
-> > +		preempt_disable();
-> > +		mycpu = smp_processor_id();
-> > +		smp_call_function(sched_expedited_wake, NULL, 1);
-> > +		preempt_enable();
+> to receive the following updates:
 > 
-> i might be missing something fundamental here, but why not just have 
-> per CPU helper threads, all on the same waitqueue, and wake them up 
-> via a single wake_up() call? That would remove the SMP cross call 
-> (wakeups do immediate cross-calls already).
-
-My concern with this is that the cache misses accessing all the processes
-on this single waitqueue would be serialized, slowing things down.
-In contrast, the bitmask that smp_call_function() traverses delivers on
-the order of a thousand CPUs' worth of bits per cache miss.  I will give
-it a try, though.
-
-> Even more - we already have a per-CPU, high RT priority helper 
-> thread that could be reused: the per CPU migration threads. Couldnt 
-> we queue these requests to them? RCU is arguably closely related to 
-> scheduling so there's no layering violation IMO.
+> Michael Abbott (1):
+>       Fix idle time field in /proc/uptime
 > 
-> There's already a struct migration_req machinery that performs 
-> something quite similar. (do work on behalf of another task, on a 
-> specific CPU, and then signal completion)
+>  fs/proc/uptime.c |    8 +++++++-
+>  1 files changed, 7 insertions(+), 1 deletions(-)
 > 
-> Also, per CPU workqueues have similar features as well.
+> diff --git a/fs/proc/uptime.c b/fs/proc/uptime.c
+> index 0c10a0b..c0ac0d7 100644
+> --- a/fs/proc/uptime.c
+> +++ b/fs/proc/uptime.c
+> @@ -4,13 +4,19 @@
+>  #include <linux/sched.h>
+>  #include <linux/seq_file.h>
+>  #include <linux/time.h>
+> +#include <linux/kernel_stat.h>
+>  #include <asm/cputime.h>
+>  
+>  static int uptime_proc_show(struct seq_file *m, void *v)
+>  {
+>  	struct timespec uptime;
+>  	struct timespec idle;
+> -	cputime_t idletime = cputime_add(init_task.utime, init_task.stime);
+> +	int len, i;
+> +	cputime_t idletime = 0;
 
-Good points!!!
+cputime_zero, I guess..
 
-I will post a working patch using my current approach, then try out some
-of these approaches.
+> +	for_each_possible_cpu(i)
+> +		idletime = cputime64_add(idletime, kstat_cpu(i).cpustat.idle);
+> +	idletime = cputime64_to_clock_t(idletime);
+>  
+>  	do_posix_clock_monotonic_gettime(&uptime);
+>  	monotonic_to_bootbased(&uptime);
 
-							Thanx, Paul
+This is a world readable proc file, adding a for_each_possible_cpu() in
+there scares me a little (this wouldn't be the first and only such case
+though).
+
+Suppose you have lots of cpus, and all those cpus are dirtying those
+cachelines (who's updating idle time when they're idle?), then this loop
+can cause a massive cacheline bounce fest.
+
+Then think about userspace doing: 
+  while :; do cat /proc/uptime > /dev/null; done
+
+
