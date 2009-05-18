@@ -1,54 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756277AbZERLnp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756552AbZERLoR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756277AbZERLnp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 07:43:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754184AbZERLnf
+	id S1756552AbZERLoR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 07:44:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753842AbZERLnz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 07:43:35 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:35346 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753842AbZERLne (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 07:43:34 -0400
-Date: Mon, 18 May 2009 07:43:05 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Ferenc Wagner <wferi@niif.hu>
-Cc: Ray Lee <ray-lk@madrabbit.org>, Andrew Morton <akpm@linux-foundation.org>,
-       Peter Staubach <staubach@redhat.com>, Miklos Szeredi <mszeredi@suse.cz>,
-       xfs@oss.sgi.com, linux-kernel@vger.kernel.org
-Subject: Re: mmap vs mtime in 2.6.26 and up
-Message-ID: <20090518114305.GA6303@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090515165054.GA11439@infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 18 May 2009 07:43:55 -0400
+Received: from slimlogic.co.uk ([89.16.172.20]:45963 "EHLO slimlogic.co.uk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754863AbZERLny (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 07:43:54 -0400
+Subject: RE: [PATCH] LP3971 PMIC regulator driver update
+From: Liam Girdwood <lrg@slimlogic.co.uk>
+To: Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       kyungmin.park@samsung.com, "'Mark Brown'" <mark.brown@wolfsonmicro.com>
+In-Reply-To: <000601c9d7ac$58af73d0$0a0e5b70$%szyprowski@samsung.com>
+References: <E4D3F24EA6C9E54F817833EAE0D912AC02245E9A11@bssrvexch01.BS.local>
+	 <20090515092030.GA2202@rakim.wolfsonmicro.main>
+	 <1242641718.5473.2156.camel@vega.slimlogic.co.uk>
+	 <000601c9d7ac$58af73d0$0a0e5b70$%szyprowski@samsung.com>
+Content-Type: text/plain
+Date: Mon, 18 May 2009 12:43:52 +0100
+Message-Id: <1242647032.5473.2162.camel@vega.slimlogic.co.uk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 15, 2009 at 12:50:54PM -0400, Christoph Hellwig wrote:
-> On Fri, May 15, 2009 at 06:40:29PM +0200, Ferenc Wagner wrote:
-> > Thanks for the analysis.  Unfortunately I don't nearly know enough to
-> > work on this issue, but would like to track it as it affects our
-> > backup system.  So, shouldn't #2645 be reopened again?
+On Mon, 2009-05-18 at 13:32 +0200, Marek Szyprowski wrote:
+> Hello, 
 > 
-> Yes, definitively as the current "fix" is incorrected.  I'll try to cook
-> up a correct version once I get some time.
+> On Monday, May 18, 2009 12:15 PM Liam Girdwood wrote:
+> 
+> > On Fri, 2009-05-15 at 10:20 +0100, Mark Brown wrote:
+> > > On Fri, May 15, 2009 at 11:16:19AM +0200, Marek Szyprowski wrote:
+> > > > This patch fixes issues reported by Mark Brown in his review of
+> > National Semiconductors LP3971
+> > > > PMIC regulator driver. It contains:
+> > > > - a little code cleanup
+> > > > - list_voltage() callback added
+> > >
+> > > > Reviewed-by: Kyungmin Park <kyungmin.park@samsung.com>
+> > > > Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+> > >
+> > > Looks good.
+> > >
+> > > Acked-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+> > 
+> > Doesn't apply :-
+> > 
+> > Applying: LP3971 PMIC regulator driver update
+> > error: patch failed: drivers/regulator/lp3971.c:91
+> > error: drivers/regulator/lp3971.c: patch does not apply
+> > Patch failed at 0001 LP3971 PMIC regulator driver update
+> > 
+> > Could you regenerate against the voltage for-next branch.
+> 
+> I've checked the
+> git://git.kernel.org/pub/scm/linux/kernel/git/lrg/voltage-2.6.git, the
+> for-next branch. I looks that all tabs are converted to spaces in my
+> previous patch. I've checked again it imho I've posted it properly. Maybe it
+> was broken by merge conflicts in Makefile/Kconfig. What should I do in such
+> case? Would you revert the broken version or do I need to post a patch for
+> it?
+> 
 
-Doing this correctly in the framework of the current codee is
-unfortunately not so easy, as calling ->setattr requires taking i_mutex
-which we can't in the pagefaul path.
+I think it broke during merge (my fault). :-/ I'll revert it for now. 
 
-To fix this properly we need to actually update the timestamps during
-msync and co as done by the patches from Miklos:
+Could you resend and combine the original and update patches into the
+one patch.
 
-	http://lkml.org/lkml/2007/2/28/166
+Thanks
 
-and Peter:
+Liam  
 
-	http://lkml.org/lkml/2006/5/31/176
-
------ End forwarded message -----
