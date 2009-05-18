@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751914AbZERMXo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756109AbZERMYP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751914AbZERMXo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 08:23:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753006AbZERMUZ
+	id S1756109AbZERMYP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 08:24:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752863AbZERMU1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 08:20:25 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:38059 "EHLO kernel.dk"
+	Mon, 18 May 2009 08:20:27 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:38053 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751722AbZERMT5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 08:19:57 -0400
+	id S1751911AbZERMT4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 08:19:56 -0400
 From: Jens Axboe <jens.axboe@oracle.com>
 To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
 Cc: chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
        akpm@linux-foundation.org, jack@suse.cz, yanmin_zhang@linux.intel.com,
        Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH 09/11] writeback: add some debug inode list counters to bdi stats
-Date: Mon, 18 May 2009 14:19:50 +0200
-Message-Id: <1242649192-16263-10-git-send-email-jens.axboe@oracle.com>
+Subject: [PATCH 06/11] writeback: include default_backing_dev_info in writeback
+Date: Mon, 18 May 2009 14:19:47 +0200
+Message-Id: <1242649192-16263-7-git-send-email-jens.axboe@oracle.com>
 X-Mailer: git-send-email 1.6.3.rc0.1.gf800
 In-Reply-To: <1242649192-16263-1-git-send-email-jens.axboe@oracle.com>
 References: <1242649192-16263-1-git-send-email-jens.axboe@oracle.com>
@@ -24,80 +24,97 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Not meant for inclusion, just to monitor what is going on while testing
-this stuff.
+We see dirty inodes there occasionally, so better be safe and write them
+out.
 
 Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 ---
- mm/backing-dev.c |   43 +++++++++++++++++++++++++++++++++++++++----
- 1 files changed, 39 insertions(+), 4 deletions(-)
+ fs/fs-writeback.c         |    2 +-
+ include/linux/writeback.h |    1 +
+ mm/backing-dev.c          |   30 ++++++++++++++++++------------
+ 3 files changed, 20 insertions(+), 13 deletions(-)
 
+diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
+index efdce88..d9cd3b7 100644
+--- a/fs/fs-writeback.c
++++ b/fs/fs-writeback.c
+@@ -335,7 +335,7 @@ static void wb_writeback(struct bdi_writeback *wb)
+  * This will be inlined in bdi_writeback_task() once we get rid of any
+  * dirty inodes on the default_backing_dev_info
+  */
+-static void wb_do_writeback(struct bdi_writeback *wb)
++void wb_do_writeback(struct bdi_writeback *wb)
+ {
+ 	/*
+ 	 * We get here in two cases:
+diff --git a/include/linux/writeback.h b/include/linux/writeback.h
+index baf04a9..e414702 100644
+--- a/include/linux/writeback.h
++++ b/include/linux/writeback.h
+@@ -69,6 +69,7 @@ void writeback_inodes(struct writeback_control *wbc);
+ int inode_wait(void *);
+ void sync_inodes_sb(struct super_block *, int wait);
+ void sync_inodes(int wait);
++void wb_do_writeback(struct bdi_writeback *wb);
+ 
+ /* writeback.h requires fs.h; it, too, is not included from here. */
+ static inline void wait_on_inode(struct inode *inode)
 diff --git a/mm/backing-dev.c b/mm/backing-dev.c
-index 89d6eea..314b739 100644
+index b4bcb14..89d6eea 100644
 --- a/mm/backing-dev.c
 +++ b/mm/backing-dev.c
-@@ -43,9 +43,33 @@ static void bdi_debug_init(void)
- static int bdi_debug_stats_show(struct seq_file *m, void *v)
- {
- 	struct backing_dev_info *bdi = m->private;
-+	struct bdi_writeback *wb;
- 	unsigned long background_thresh;
- 	unsigned long dirty_thresh;
- 	unsigned long bdi_thresh;
-+	unsigned long nr_dirty, nr_io, nr_more_io, nr_wb;
-+	struct inode *inode;
+@@ -386,20 +386,26 @@ static int bdi_forker_task(void *ptr)
+ 		struct backing_dev_info *bdi;
+ 		struct bdi_writeback *wb;
+ 
+-		/*
+-		 * Should never trigger on the default bdi
+-		 */
+-		if (wb_has_dirty_io(me)) {
+-			bdi_flush_io(me->bdi);
+-			WARN_ON(1);
+-		}
+-
+ 		prepare_to_wait(&me->wait, &wait, TASK_INTERRUPTIBLE);
+ 
+ 		smp_mb();
+ 		if (list_empty(&bdi_pending_list))
+ 			schedule();
+ 
++		/*
++		 * Ideally we'd like not to see any dirty inodes on the
++		 * default_backing_dev_info. Until these are tracked down,
++		 * perform the same writeback here that bdi_writeback_task
++		 * does. For logic, see comment in
++		 * fs/fs-writeback.c:bdi_writeback_task()
++		 */
++		if (wb_has_dirty_io(me) || !list_empty(&me->bdi->work_list))
++			wb_do_writeback(me);
 +
-+	/*
-+	 * inode lock is enough here, the bdi->wb_list is protected by
-+	 * RCU on the reader side
-+	 */
-+	nr_wb = nr_dirty = nr_io = nr_more_io = 0;
-+	spin_lock(&inode_lock);
-+	list_for_each_entry(wb, &bdi->wb_list, list) {
-+		nr_wb++;
-+		list_for_each_entry(inode, &wb->b_dirty, i_list)
-+			nr_dirty++;
-+		list_for_each_entry(inode, &wb->b_io, i_list)
-+			nr_io++;
-+		list_for_each_entry(inode, &wb->b_more_io, i_list)
-+			nr_more_io++;
-+	}
-+	spin_unlock(&inode_lock);
++		/*
++		 * This is our real job - check for pending entries in
++		 * bdi_pending_list, and create the tasks that got added
++		 */
+ repeat:
+ 		bdi = NULL;
+ 		spin_lock_bh(&bdi_lock);
+@@ -567,12 +573,12 @@ int bdi_register(struct backing_dev_info *bdi, struct device *parent,
+ 			ret = -ENOMEM;
+ 			goto exit;
+ 		}
+-	} else {
+-		spin_lock_bh(&bdi_lock);
+-		list_add_tail_rcu(&bdi->bdi_list, &bdi_list);
+-		spin_unlock_bh(&bdi_lock);
+ 	}
+ 
++	spin_lock_bh(&bdi_lock);
++	list_add_tail_rcu(&bdi->bdi_list, &bdi_list);
++	spin_unlock_bh(&bdi_lock);
 +
-+	nr_dirty <<= (PAGE_CACHE_SHIFT - 10);
-+	nr_io <<= (PAGE_CACHE_SHIFT - 10);
-+	nr_more_io <<= (PAGE_CACHE_SHIFT - 10);
+ 	bdi->dev = dev;
+ 	bdi_debug_register(bdi, dev_name(dev));
  
- 	get_dirty_limits(&background_thresh, &dirty_thresh, &bdi_thresh, bdi);
- 
-@@ -55,12 +79,23 @@ static int bdi_debug_stats_show(struct seq_file *m, void *v)
- 		   "BdiReclaimable:   %8lu kB\n"
- 		   "BdiDirtyThresh:   %8lu kB\n"
- 		   "DirtyThresh:      %8lu kB\n"
--		   "BackgroundThresh: %8lu kB\n",
-+		   "BackgroundThresh: %8lu kB\n"
-+		   "WriteBack threads:%8lu\n"
-+		   "b_dirty:          %8lu\n"
-+		   "b_io:             %8lu\n"
-+		   "b_more_io:        %8lu\n"
-+		   "bdi:              %8p\n"
-+		   "bdi_list:         %8u\n"
-+		   "state:            %8lx\n"
-+		   "wb_mask:          %8lx\n"
-+		   "wb_list:          %8u\n"
-+		   "wb_cnt:           %8u\n",
- 		   (unsigned long) K(bdi_stat(bdi, BDI_WRITEBACK)),
- 		   (unsigned long) K(bdi_stat(bdi, BDI_RECLAIMABLE)),
--		   K(bdi_thresh),
--		   K(dirty_thresh),
--		   K(background_thresh));
-+		   K(bdi_thresh), K(dirty_thresh),
-+		   K(background_thresh), nr_wb, nr_dirty, nr_io, nr_more_io,
-+		   bdi, !list_empty(&bdi->bdi_list), bdi->state, bdi->wb_mask,
-+		   !list_empty(&bdi->wb_list), bdi->wb_cnt);
- #undef K
- 
- 	return 0;
 -- 
 1.6.3.rc0.1.gf800
 
