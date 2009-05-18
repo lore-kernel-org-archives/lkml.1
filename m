@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758863AbZERQRN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758907AbZERQRc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758863AbZERQRN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 12:17:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756928AbZERQNy
+	id S1758907AbZERQRc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 12:17:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757658AbZERQOT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 12:13:54 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:56884 "EHLO mx2.suse.de"
+	Mon, 18 May 2009 12:14:19 -0400
+Received: from cantor.suse.de ([195.135.220.2]:41505 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754022AbZERQJa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 12:09:30 -0400
+	id S1753456AbZERQJ3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 12:09:29 -0400
 From: Jan Blunck <jblunck@suse.de>
 To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
 Cc: viro@zeniv.linux.org.uk, bharata@in.ibm.com, dwmw2@infradead.org,
        mszeredi@suse.cz, vaurora@redhat.com
-Subject: [PATCH 19/32] union-mount: Some checks during namespace changes
-Date: Mon, 18 May 2009 18:09:15 +0200
-Message-Id: <1242662968-11684-20-git-send-email-jblunck@suse.de>
+Subject: [PATCH 12/32] whiteout: Split of ext2_append_link() from ext2_add_link()
+Date: Mon, 18 May 2009 18:09:08 +0200
+Message-Id: <1242662968-11684-13-git-send-email-jblunck@suse.de>
 X-Mailer: git-send-email 1.6.1.3
 In-Reply-To: <1242662968-11684-1-git-send-email-jblunck@suse.de>
 References: <1242662968-11684-1-git-send-email-jblunck@suse.de>
@@ -23,95 +23,149 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add some additional checks when mounting something into an union.
+The ext2_append_link() is later used to find or append a directory
+entry to whiteout.
 
 Signed-off-by: Jan Blunck <jblunck@suse.de>
-Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 Signed-off-by: Valerie Aurora (Henson) <vaurora@redhat.com>
 ---
- fs/namespace.c |   34 ++++++++++++++++++++++++++++++++++
- 1 files changed, 34 insertions(+), 0 deletions(-)
+ fs/ext2/dir.c |   70 ++++++++++++++++++++++++++++++++++++++++----------------
+ 1 files changed, 50 insertions(+), 20 deletions(-)
 
-diff --git a/fs/namespace.c b/fs/namespace.c
-index 53998f2..4128d99 100644
---- a/fs/namespace.c
-+++ b/fs/namespace.c
-@@ -27,6 +27,7 @@
- #include <linux/ramfs.h>
- #include <linux/log2.h>
- #include <linux/idr.h>
-+#include <linux/union.h>
- #include <asm/uaccess.h>
- #include <asm/unistd.h>
- #include "pnode.h"
-@@ -1442,6 +1443,10 @@ static int do_change_type(struct path *path, int flag)
- 	if (path->dentry != path->mnt->mnt_root)
- 		return -EINVAL;
- 
-+	/* Don't change the type of union mounts */
-+	if (IS_MNT_UNION(path->mnt))
-+		return -EINVAL;
-+
- 	down_write(&namespace_sem);
- 	if (type == MS_SHARED) {
- 		err = invent_group_ids(mnt, recurse);
-@@ -1493,6 +1498,18 @@ static int do_loopback(struct path *path, char *old_name, int recurse,
- 	if (!mnt)
- 		goto out;
- 
-+	/*
-+	 * Unions couldn't be writable if the filesystem doesn't know about
-+	 * whiteouts
-+	 */
-+	err = -ENOTSUPP;
-+	if ((mnt_flags & MNT_UNION) &&
-+	    !(mnt->mnt_sb->s_flags & (MS_WHITEOUT|MS_RDONLY)))
-+		goto out;
-+
-+	if (mnt_flags & MNT_UNION)
-+		mnt->mnt_flags |= MNT_UNION;
-+
- 	err = graft_tree(mnt, path);
- 	if (err) {
- 		LIST_HEAD(umount_list);
-@@ -1586,6 +1603,13 @@ static int do_move_mount(struct path *path, char *old_name)
- 	if (err)
- 		return err;
- 
-+	/* moving to or from a union mount is not supported */
-+	err = -EINVAL;
-+	if (IS_MNT_UNION(path->mnt))
-+		goto exit;
-+	if (IS_MNT_UNION(old_path.mnt))
-+		goto exit;
-+
- 	down_write(&namespace_sem);
- 	while (d_mountpoint(path->dentry) &&
- 	       follow_down(&path->mnt, &path->dentry))
-@@ -1643,6 +1667,7 @@ out:
- 	up_write(&namespace_sem);
- 	if (!err)
- 		path_put(&parent_path);
-+exit:
- 	path_put(&old_path);
- 	return err;
+diff --git a/fs/ext2/dir.c b/fs/ext2/dir.c
+index 2999d72..e4689e3 100644
+--- a/fs/ext2/dir.c
++++ b/fs/ext2/dir.c
+@@ -471,9 +471,10 @@ void ext2_set_link(struct inode *dir, struct ext2_dir_entry_2 *de,
  }
-@@ -1698,6 +1723,15 @@ int do_add_mount(struct vfsmount *newmnt, struct path *path,
- 	if (S_ISLNK(newmnt->mnt_root->d_inode->i_mode))
- 		goto unlock;
  
-+	/*
-+	 * Unions couldn't be writable if the filesystem doesn't know about
-+	 * whiteouts
-+	 */
-+	err = -ENOTSUPP;
-+	if ((mnt_flags & MNT_UNION) &&
-+	    !(newmnt->mnt_sb->s_flags & (MS_WHITEOUT|MS_RDONLY)))
-+		goto unlock;
+ /*
+- *	Parent is locked.
++ * Find or append a given dentry to the parent directory
+  */
+-int ext2_add_link (struct dentry *dentry, struct inode *inode)
++static ext2_dirent * ext2_append_entry(struct dentry * dentry,
++				       struct page ** page)
+ {
+ 	struct inode *dir = dentry->d_parent->d_inode;
+ 	const char *name = dentry->d_name.name;
+@@ -481,13 +482,10 @@ int ext2_add_link (struct dentry *dentry, struct inode *inode)
+ 	unsigned chunk_size = ext2_chunk_size(dir);
+ 	unsigned reclen = EXT2_DIR_REC_LEN(namelen);
+ 	unsigned short rec_len, name_len;
+-	struct page *page = NULL;
+-	ext2_dirent * de;
++	ext2_dirent * de = NULL;
+ 	unsigned long npages = dir_pages(dir);
+ 	unsigned long n;
+ 	char *kaddr;
+-	loff_t pos;
+-	int err;
+ 
+ 	/*
+ 	 * We take care of directory expansion in the same loop.
+@@ -497,20 +495,19 @@ int ext2_add_link (struct dentry *dentry, struct inode *inode)
+ 	for (n = 0; n <= npages; n++) {
+ 		char *dir_end;
+ 
+-		page = ext2_get_page(dir, n, 0);
+-		err = PTR_ERR(page);
+-		if (IS_ERR(page))
++		*page = ext2_get_page(dir, n, 0);
++		de = ERR_PTR(PTR_ERR(*page));
++		if (IS_ERR(*page))
+ 			goto out;
+-		lock_page(page);
+-		kaddr = page_address(page);
++		lock_page(*page);
++		kaddr = page_address(*page);
+ 		dir_end = kaddr + ext2_last_byte(dir, n);
+ 		de = (ext2_dirent *)kaddr;
+ 		kaddr += PAGE_CACHE_SIZE - reclen;
+ 		while ((char *)de <= kaddr) {
+ 			if ((char *)de == dir_end) {
+ 				/* We hit i_size */
+-				name_len = 0;
+-				rec_len = chunk_size;
++				de->name_len = 0;
+ 				de->rec_len = ext2_rec_len_to_disk(chunk_size);
+ 				de->inode = 0;
+ 				goto got_it;
+@@ -518,12 +515,11 @@ int ext2_add_link (struct dentry *dentry, struct inode *inode)
+ 			if (de->rec_len == 0) {
+ 				ext2_error(dir->i_sb, __func__,
+ 					"zero-length directory entry");
+-				err = -EIO;
++				de = ERR_PTR(-EIO);
+ 				goto out_unlock;
+ 			}
+-			err = -EEXIST;
+ 			if (ext2_match (namelen, name, de))
+-				goto out_unlock;
++				goto got_it;
+ 			name_len = EXT2_DIR_REC_LEN(de->name_len);
+ 			rec_len = ext2_rec_len_from_disk(de->rec_len);
+ 			if (!de->inode && rec_len >= reclen)
+@@ -532,13 +528,48 @@ int ext2_add_link (struct dentry *dentry, struct inode *inode)
+ 				goto got_it;
+ 			de = (ext2_dirent *) ((char *) de + rec_len);
+ 		}
+-		unlock_page(page);
+-		ext2_put_page(page);
++		unlock_page(*page);
++		ext2_put_page(*page);
+ 	}
 +
- 	newmnt->mnt_flags = mnt_flags;
- 	if ((err = graft_tree(newmnt, path)))
- 		goto unlock;
+ 	BUG();
+-	return -EINVAL;
+ 
+ got_it:
++	return de;
++	/* OFFSET_CACHE */
++out_unlock:
++	unlock_page(*page);
++	ext2_put_page(*page);
++out:
++	return de;
++}
++
++/*
++ *	Parent is locked.
++ */
++int ext2_add_link (struct dentry *dentry, struct inode *inode)
++{
++	struct inode *dir = dentry->d_parent->d_inode;
++	const char *name = dentry->d_name.name;
++	int namelen = dentry->d_name.len;
++	unsigned short rec_len, name_len;
++	ext2_dirent * de;
++	struct page *page;
++	loff_t pos;
++	int err;
++
++	de = ext2_append_entry(dentry, &page);
++	if (IS_ERR(de))
++		return PTR_ERR(de);
++
++	err = -EEXIST;
++	if (ext2_match (namelen, name, de))
++		goto out_unlock;
++
++got_it:
++	name_len = EXT2_DIR_REC_LEN(de->name_len);
++	rec_len = ext2_rec_len_from_disk(de->rec_len);
++
+ 	pos = page_offset(page) +
+ 		(char*)de - (char*)page_address(page);
+ 	err = __ext2_write_begin(NULL, page->mapping, pos, rec_len, 0,
+@@ -562,7 +593,6 @@ got_it:
+ 	/* OFFSET_CACHE */
+ out_put:
+ 	ext2_put_page(page);
+-out:
+ 	return err;
+ out_unlock:
+ 	unlock_page(page);
 -- 
 1.6.1.3
 
