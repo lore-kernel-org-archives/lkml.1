@@ -1,35 +1,42 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756847AbZERXLd (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Mon, 18 May 2009 19:11:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756288AbZERXLW
+	id S1752026AbZESEJh (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Tue, 19 May 2009 00:09:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753496AbZESEJ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 19:11:22 -0400
-Received: from tomts35.bellnexxia.net ([209.226.175.109]:58153 "EHLO
-	tomts35-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755954AbZERXLV convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 19:11:21 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Aj9HACiEEUrR4q+G/2dsb2JhbAASgR2MT5ISik+jV4NuBQ
-X-Mailer: Openwave WebEngine, version 2.8.11 (webedge20-101-194-20030622)
-X-Originating-IP: [41.219.137.98]
-From: Amanda <alpinemotorinn@nb.aibn.com>
-Reply-To: brownwilliams09@btinternet.com
-To: <info@lotto.org>
-Subject: File For Your Claim
-Date: Mon, 18 May 2009 19:11:10 -0400
+	Tue, 19 May 2009 00:09:27 -0400
+Received: from arnica.ibict.br ([200.130.0.210]:44902 "EHLO arnica.ibict.br"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751723AbZESEJZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 00:09:25 -0400
+X-Greylist: delayed 1722 seconds by postgrey-1.27 at vger.kernel.org; Tue, 19 May 2009 00:09:25 EDT
+Date: Tue, 19 May 2009 00:26:52 -0300 (BRT)
+From: =?UTF-8?Q?Nucleo_de_Comercializa=C3=A7=C3=A3o?= <nucom@ibict.br>
+Reply-To: mrwong09_hk@yahoo.com.hk
+Message-ID: <1667775.27291242703612887.OPEN-XCHANGE.WebMail.www-data@peroba>
+Subject: Read!!!
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Message-Id: <20090518231122.GPCE13270.tomts35-srv.bellnexxia.net@toip53-bus.srvr.bell.ca>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+X-Priority: 3 (normal)
+X-Mailer: OPEN-XCHANGE 0.8.2 - WebMail
+X-Operating-System: Linux 2.6.18-3-686 i386 (JVM 1.4.2_13)
+Organization: IBICT
+To: undisclosed-recipients:;
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-You have just been awarded,the sum of  £950.000.00 in the  ELECTRONICS Award 2009, Anniversary Bonanza. held in May.
+ I am Mr.Andrew Wong,I have a obscured business suggestion for you of 
 
-Names:............. Address:..............
-Country:................. Age:..........
+$24,500,000USD.SEND REPLY TO MY PRIVATE E-MAIL:mrwong09_hk@yahoo.com.hk
+I will
 
-Regard.
+update you with further information as soon as I hear positive from
+you.Regards,Mr.
+
+Andrew Wong
+
+
+
+Powered by Open-Xchange.com
 
