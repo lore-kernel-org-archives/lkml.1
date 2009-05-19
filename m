@@ -1,166 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754026AbZESU5r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754839AbZESVE2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754026AbZESU5r (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 16:57:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752811AbZESU5k
+	id S1754839AbZESVE2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 17:04:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753460AbZESVEU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 16:57:40 -0400
-Received: from gate.crashing.org ([63.228.1.57]:59754 "EHLO gate.crashing.org"
+	Tue, 19 May 2009 17:04:20 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:44851 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752701AbZESU5k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 16:57:40 -0400
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Message-Id: <19E48A70-3332-423C-ACAD-390F940EE81C@kernel.crashing.org>
-From: Becky Bruce <beckyb@kernel.crashing.org>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20090519142656T.fujita.tomonori@lab.ntt.co.jp>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: [PATCH V2 2/3] powerpc: Add support for swiotlb on 32-bit
-Date: Tue, 19 May 2009 15:57:31 -0500
-References: <1242340949-16369-1-git-send-email-beckyb@kernel.crashing.org> <1242340949-16369-2-git-send-email-beckyb@kernel.crashing.org> <20090519142656T.fujita.tomonori@lab.ntt.co.jp>
-X-Mailer: Apple Mail (2.930.3)
+	id S1751266AbZESVEU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 17:04:20 -0400
+Date: Tue, 19 May 2009 17:03:46 -0400
+Message-Id: <cover.1242763826.git.jbaron@redhat.com>
+From: Jason Baron <jbaron@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: fweisbec@gmail.com, mingo@elte.hu, laijs@cn.fujitsu.com,
+       rostedt@goodmis.org, peterz@infradead.org, mathieu.desnoyers@polymtl.ca,
+       jiayingz@google.com, mbligh@google.com, roland@redhat.com,
+       fche@redhat.com
+Subject: [PATCH 0/3] tracepoints: delay argument evaluation
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+hi,
 
-On May 19, 2009, at 12:27 AM, FUJITA Tomonori wrote:
+After disassembling some of the tracepoints, I've noticed that arguments that
+are passed as macros or that perform  dereferences, evaluate prior to the
+tracepoint on/off check. This means that we are needlessly impacting the 
+off case.
 
-> CC'ed linux-kernel
->
-> On Thu, 14 May 2009 17:42:28 -0500
-> Becky Bruce <beckyb@kernel.crashing.org> wrote:
+I am proposing to fix this by adding a macro that first checks for on/off and
+then calls 'trace_##name', preserving type checking. Thus, callsites have to 
+move from:
 
->
->
->> This patch includes the basic infrastructure to use swiotlb
->> bounce buffering on 32-bit powerpc.  It is not yet enabled on
->> any platforms.  Probably the most interesting bit is the
->> addition of addr_needs_map to dma_ops - we need this as
->> a dma_op because the decision of whether or not an addr
->> can be mapped by a device is device-specific.
->>
->> Signed-off-by: Becky Bruce <beckyb@kernel.crashing.org>
+trace_block_bio_complete(md->queue, bio);
 
-<snip>
+to:
 
->> +/*
->> + * Determine if an address needs bounce buffering via swiotlb.
->> + * Going forward I expect the swiotlb code to generalize on using
->> + * a dma_ops->addr_needs_map, and this function will move from  
->> here to the
->> + * generic swiotlb code.
->> + */
->> +int
->> +swiotlb_arch_address_needs_mapping(struct device *hwdev,  
->> dma_addr_t addr,
->> +				   size_t size)
->> +{
->> +	struct dma_mapping_ops *dma_ops = get_dma_ops(hwdev);
->> +
->> +	BUG_ON(!dma_ops);
->> +	return dma_ops->addr_needs_map(hwdev, addr, size);
->> +}
->> +
->> +/*
->> + * Determine if an address is reachable by a pci device, or if we  
->> must bounce.
->> + */
->> +static int
->> +swiotlb_pci_addr_needs_map(struct device *hwdev, dma_addr_t addr,  
->> size_t size)
->> +{
->> +	u64 mask = dma_get_mask(hwdev);
->> +	dma_addr_t max;
->> +	struct pci_controller *hose;
->> +	struct pci_dev *pdev = to_pci_dev(hwdev);
->> +
->> +	hose = pci_bus_to_host(pdev->bus);
->> +	max = hose->dma_window_base_cur + hose->dma_window_size;
->> +
->> +	/* check that we're within mapped pci window space */
->> +	if ((addr + size > max) | (addr < hose->dma_window_base_cur))
->> +		return 1;
->> +
->> +	return !is_buffer_dma_capable(mask, addr, size);
->> +}
->> +
->> +static int
->> +swiotlb_addr_needs_map(struct device *hwdev, dma_addr_t addr,  
->> size_t size)
->> +{
->> +	return !is_buffer_dma_capable(dma_get_mask(hwdev), addr, size);
->> +}
->
-> I think that swiotlb_pci_addr_needs_map and swiotlb_addr_needs_map
-> don't need swiotlb_arch_range_needs_mapping() since
->
-> - swiotlb_arch_range_needs_mapping() is always used with
-> swiotlb_arch_address_needs_mapping().
+tracepoint_call(block_bio_complete,  md->queue, bio);
 
-Yes.  I don't need range_needs_mapping() on ppc, so I let it default  
-to the lib/swiotlb.c implementation, which just returns 0.  All the  
-determination of whether an address needs mapping comes from  
-swiotlb_arch_address_needs_mapping().
+I've tried '__always_inline', but that did not fix this issue. Obviously this
+change will require changes to all the callsites. But, that shouldn't be
+very hard, I've already included the scheduler and block changes with this
+patch. I think its important to minimize code execution in the off case, and
+thus going through all the callsites is well worth it. If we agree on this
+change, I can change the rest in very short order.
 
->
->
-> - swiotlb_arch_address_needs_mapping() uses is_buffer_dma_capable()
-> and powerpc doesn't overwrite swiotlb_arch_address_needs_mapping()
+Below I'm also showing the assembly in the 'dec_pending()' function before and
+after this change to show the difference it makes. The arguments to the
+tracepoint are as above, 'md->queue' and 'bio'. Notice the 2 extra instructions,
+before the initial 'je', that could be moved after the 'je'.
 
-I *do* overwrite it.  But I still use is_buffer_dma_capable().  I just  
-add some other checks to it in the pci case, because I need to know  
-what the controller has mapped as it changes the point at which I must  
-begin to bounce buffer.
+before:
 
->
->
->
-> Do I miss something?
+ffffffff8137b2a3:       83 3d de 90 4b 00 00    cmpl   $0x0,0x4b90de(%rip)        # ffffffff81834388 <__tracepoint_block_bio_complete+0x8>
+ffffffff8137b2aa:       49 8b 45 50             mov    0x50(%r13),%rax
+ffffffff8137b2ae:       48 89 45 d0             mov    %rax,-0x30(%rbp)
+ffffffff8137b2b2:       74 1f                   je     ffffffff8137b2d3 <dec_pending+0x101>
+ffffffff8137b2b4:       48 8b 1d d5 90 4b 00    mov    0x4b90d5(%rip),%rbx        # ffffffff81834390 <__tracepoint_block_bio_complete+0x10>
+ffffffff8137b2bb:       48 85 db                test   %rbx,%rbx
+ffffffff8137b2be:       74 13                   je     ffffffff8137b2d3 <dec_pending+0x101>
+ffffffff8137b2c0:       4c 89 f6                mov    %r14,%rsi
+ffffffff8137b2c3:       48 8b 7d d0             mov    -0x30(%rbp),%rdi
+ffffffff8137b2c7:       ff 13                   callq  *(%rbx)
+ffffffff8137b2c9:       48 83 c3 08             add    $0x8,%rbx
+ffffffff8137b2cd:       48 83 3b 00             cmpq   $0x0,(%rbx)
+ffffffff8137b2d1:       eb eb                   jmp    ffffffff8137b2be <dec_pending+0xec>
+ffffffff8137b2d3:       44 89 fe                mov    %r15d,%esi
 
-I don't think so.  But let me know if I've misunderstood you.
+after:
 
->
->
-> Anyway, we need to fix swiotlb checking code to if an area is
-> DMA-capable or not.
->
-> swiotlb_arch_address_needs_mapping() calls is_buffer_dma_capable() in
-> dma-mapping.h but it should not. It should live in an arch-specific
-> place such as arch's dma-mapping.h or something since
-> is_buffer_dma_capable() is arch-specific. I didn't know that
-> is_buffer_dma_capable() is arch-specific when I added it to the
-> generic place.
+ffffffff8137b2a3:       83 3d de 90 4b 00 00    cmpl   $0x0,0x4b90de(%rip)        # ffffffff81834388 <__tracepoint_block_bio_complete+0x8>
+ffffffff8137b2aa:       74 27                   je     ffffffff8137b2d3 <dec_pending+0x101>
+ffffffff8137b2ac:       49 8b 45 50             mov    0x50(%r13),%rax
+ffffffff8137b2b0:       48 8b 1d d9 90 4b 00    mov    0x4b90d9(%rip),%rbx        # ffffffff81834390 <__tracepoint_block_bio_complete+0x10>
+ffffffff8137b2b7:       48 89 45 d0             mov    %rax,-0x30(%rbp)
+ffffffff8137b2bb:       48 85 db                test   %rbx,%rbx
+ffffffff8137b2be:       74 13                   je     ffffffff8137b2d3 <dec_pending+0x101>
+ffffffff8137b2c0:       4c 89 f6                mov    %r14,%rsi
+ffffffff8137b2c3:       48 8b 7d d0             mov    -0x30(%rbp),%rdi
+ffffffff8137b2c7:       ff 13                   callq  *(%rbx)
+ffffffff8137b2c9:       48 83 c3 08             add    $0x8,%rbx
+ffffffff8137b2cd:       48 83 3b 00             cmpq   $0x0,(%rbx)
+ffffffff8137b2d1:       eb eb                   jmp    ffffffff8137b2be <dec_pending+0xec>
+ffffffff8137b2d3:       44 89 fe                mov    %r15d,%esi
 
-Errrr, is_buffer_dma_capable is generic right now, unless I'm missing  
-something.  It's in include/linux/dma-mapping.h, unless I'm getting  
-bitten by a slightly stale tree.
 
->
->
-> If we have something like in arch/{x86|ia64|powerpc}/dma-mapping.h:
->
-> static inline int is_buffer_dma_capable(struct device *dev,  
-> dma_addr_t addr, size_t size)
->
-> then we don't need two checking functions, address_needs_mapping and
-> range_needs_mapping.
+thanks,
 
-It's never been clear to me *why* we had both in the first place - if  
-you can explain this, I'd be grateful :)
+-Jason
 
-It actually looks like we want to remove the dma_op that I created for  
-addr_needs_map because of the perf hit.... it gets called a ton of  
-times, many times on addresses that don't actually require bounce  
-buffering (and thus, are more sensitive to the minor performance  
-hit).  We are looking instead at adding a per-device variable that is  
-used to determine if we need to bounce (in addition to  
-is_buffer_dma_capable) that would live inside archdata - see the other  
-posts on this thread for details (we're still hashing out exactly how  
-we want to do this).
 
-Cheers,
-Becky
+
+Jason Baron (3):
+  -add wrapper so we don't have argument resolution overhead
+  -add scheduler wrapper calls
+  -add block layer trace wrappers
+
+ block/blk-core.c           |   27 ++++++++++++++-------------
+ block/elevator.c           |    6 +++---
+ drivers/md/dm.c            |    7 ++++---
+ fs/bio.c                   |    2 +-
+ include/linux/tracepoint.h |   20 +++++++++++++++++++-
+ kernel/exit.c              |    6 +++---
+ kernel/fork.c              |    2 +-
+ kernel/kthread.c           |    4 ++--
+ kernel/sched.c             |   10 +++++-----
+ kernel/signal.c            |    2 +-
+ mm/bounce.c                |    2 +-
+ 11 files changed, 54 insertions(+), 34 deletions(-)
 
