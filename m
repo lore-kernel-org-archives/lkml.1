@@ -1,46 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751633AbZESJiP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756385AbZESJjl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751633AbZESJiP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 05:38:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751713AbZESJiG
+	id S1756385AbZESJjl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 05:39:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752265AbZESJjf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 05:38:06 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:42916 "EHLO kernel.dk"
+	Tue, 19 May 2009 05:39:35 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:42930 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750849AbZESJiF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 05:38:05 -0400
-Date: Tue, 19 May 2009 11:38:06 +0200
+	id S1751320AbZESJje (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 05:39:34 -0400
+Date: Tue, 19 May 2009 11:39:35 +0200
 From: Jens Axboe <jens.axboe@oracle.com>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: akpm@linux-foundation.org, max@duempel.org, torvalds@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 2/3] splice: implement default splice_read method
-Message-ID: <20090519093806.GU4140@kernel.dk>
-References: <20090507133734.450612199@szeredi.hu> <20090507133748.161689790@szeredi.hu> <20090512223500.d7ef4648.akpm@linux-foundation.org> <20090513063707.GC4140@kernel.dk> <E1M4ALP-0005za-1i@pomaz-ex.szeredi.hu> <20090514172935.GR4140@kernel.dk> <E1M4f8b-0000Tb-GI@pomaz-ex.szeredi.hu> <20090514180003.GU4140@kernel.dk> <E1M6254-00070d-0p@pomaz-ex.szeredi.hu>
+To: Tejun Heo <tj@kernel.org>
+Cc: linux-ide@vger.kernel.org, bharrosh@panasas.com,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       bzolnier@gmail.com, petkovbb@googlemail.com, zaitcev@redhat.com,
+       sshtylyov@ru.mvista.com, Eric.Moore@lsi.com, djwong@us.ibm.com
+Subject: Re: [PATCHSET block#for-2.6.31] block: fix fallouts from recent
+	cleanups, take#2
+Message-ID: <20090519093935.GV4140@kernel.dk>
+References: <1242725586-13142-1-git-send-email-tj@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <E1M6254-00070d-0p@pomaz-ex.szeredi.hu>
+In-Reply-To: <1242725586-13142-1-git-send-email-tj@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 18 2009, Miklos Szeredi wrote:
-> Hi Jens,
+On Tue, May 19 2009, Tejun Heo wrote:
+> Hello,
 > 
-> On Thu, 14 May 2009, Jens Axboe wrote:
-> > On Thu, May 14 2009, Miklos Szeredi wrote:
-> > > > > Hmm.  Simple solution would be to do a write() for each buffer.  But
-> > > > > this only affects HIGHMEM kernels, so it's a bit pointless to do that
-> > > > > on all archs.  Sigh...
-> > > > 
-> > > > It is unfortunate, we are going to be stuck with that for some time
-> > > > still...
+> This is the second take of fix-fallouts patchset.  The first one[L]
+> was posted without header message.  Changes from the last take are
 > 
-> Here's a patch that fixes the multiple kmap() issue.  It goes on top
-> of the previous splice patches.
+> * ub change updated per Pete Zitcev's comment
+> 
+> * resid_len init bug spotted by Boaz Harrosh fixed
+> 
+> This patchset contains the following three patches.
+> 
+>   0001-ub-use-__blk_end_request_all.patch
+>   0002-block-set-rq-resid_len-to-blk_rq_bytes-on-issue.patch
+>   0003-bio-always-copy-back-data-for-copied-kernel-request.patch
+> 
+> 0001 updates ub to use __blk_end_request_all() and 0002 restores the
+> original residue count behavior.  0003 makes sure kernel pc buffer is
+> bounced back even on request failure as user pc ones do.  This
+> inconsistency was discovered during discussion over residue count
+> semantics.
+> 
+> This patchset contains the following changes.
 
-Thanks Miklos, applied.
+Applied!
+
+> 
+>  block/blk-core.c                         |    5 +++--
+>  drivers/block/ub.c                       |   30 +++++++++++-------------------
+>  drivers/ide/ide-cd.c                     |    4 ++--
+>  drivers/ide/ide-tape.c                   |    2 +-
+>  drivers/message/fusion/mptsas.c          |    3 ++-
+>  drivers/scsi/libsas/sas_expander.c       |    4 ++++
+>  drivers/scsi/libsas/sas_host_smp.c       |    3 ---
+>  drivers/scsi/mpt2sas/mpt2sas_transport.c |    4 ++--
+>  fs/bio.c                                 |    2 +-
+>  9 files changed, 26 insertions(+), 31 deletions(-)
+> 
+> Thanks.
+> 
+> --
+> tejun
+> 
+> [L] http://thread.gmane.org/gmane.linux.ide/40728
 
 -- 
 Jens Axboe
