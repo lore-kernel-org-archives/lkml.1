@@ -1,161 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755453AbZESSJV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755688AbZESSKD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755453AbZESSJV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 14:09:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754154AbZESSJN
+	id S1755688AbZESSKD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 14:10:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754085AbZESSJz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 14:09:13 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:56456 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754030AbZESSJM (ORCPT
+	Tue, 19 May 2009 14:09:55 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34797 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753470AbZESSJz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 14:09:12 -0400
-Date: Tue, 19 May 2009 14:09:12 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "K.Prasad" <prasad@linux.vnet.ibm.com>
-cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [Patch 1/2] Improvements and minor fixes to HW Breakpoint
- interface
-In-Reply-To: <20090519162459.GB26009@in.ibm.com>
-Message-ID: <Pine.LNX.4.44L0.0905191351380.10557-100000@iolanthe.rowland.org>
+	Tue, 19 May 2009 14:09:55 -0400
+Date: Tue, 19 May 2009 11:08:38 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Martin Knoblauch <spamtrap@knobisoft.de>
+cc: Matt Mackall <mpm@selenic.com>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Rgeression: 2.6.30-rc6-git3 build error - ICE from
+ drivers/char/random.c
+In-Reply-To: <950448.6018.qm@web32607.mail.mud.yahoo.com>
+Message-ID: <alpine.LFD.2.01.0905191055410.3301@localhost.localdomain>
+References: <688406.16641.qm@web32603.mail.mud.yahoo.com> <20090518203420.GF2658@calx> <alpine.LFD.2.01.0905181506550.3301@localhost.localdomain> <231530.33013.qm@web32601.mail.mud.yahoo.com> <alpine.LFD.2.01.0905190745230.3301@localhost.localdomain>
+ <950448.6018.qm@web32607.mail.mud.yahoo.com>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 19 May 2009, K.Prasad wrote:
 
-> This patch brings a couple of changes to the HW Breakpoint infrastructure:
+
+On Tue, 19 May 2009, Martin Knoblauch wrote:
+> > 
+> > Ok, so can you do two other simple tests:
+> > 
+> > - just remove the  "+ (long)&ret" entirely.
+> > 
+> >    Now, usually gcc doesn't have issues with non-asm things, but that's an 
+> >    odd way of getting the current stack address by lookin gat the address 
+> >    of a variable that hasn't even been used, so maybe it triggers some 
+> >    untested codepath in gcc (and thus the bug).
+> > 
 > 
-> - Set/clear TIF_DEBUG task flag in <un>register_user_hw_breakpoint()
->   instead of being done by users of this interface (such as ptrace).
+>  Removing above fixes the ICE. It does so in both the original and the patched version. 
 > 
-> - Modify return code of hw_breakpoint_handler() to NOTIFY_STOP if
->   triggered due to lazy debug register switching.
-> 
-> Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
-> ---
->  arch/x86/kernel/hw_breakpoint.c |    4 +++-
->  arch/x86/kernel/ptrace.c        |    4 +---
->  kernel/hw_breakpoint.c          |   16 +++++++++++++---
->  3 files changed, 17 insertions(+), 7 deletions(-)
-> 
-> Index: linux-2.6-tip.hbkpt/arch/x86/kernel/hw_breakpoint.c
-> ===================================================================
-> --- linux-2.6-tip.hbkpt.orig/arch/x86/kernel/hw_breakpoint.c
-> +++ linux-2.6-tip.hbkpt/arch/x86/kernel/hw_breakpoint.c
-> @@ -346,8 +346,10 @@ int __kprobes hw_breakpoint_handler(stru
->  		 * or due to the delay between updates of hbp_kernel_pos
->  		 * and this_hbp_kernel.
->  		 */
-> -		if (!bp)
-> +		if (!bp) {
-> +			rc = NOTIFY_STOP;
->  			continue;
-> +		}
->  
->  		(bp->triggered)(bp, args->regs);
->  		/*
+>  Removing get_cycles() has no effect wrt. the ICE.
 
-This doesn't look right.  You want to return NOTIFY_DONE if any
-breakpoints were triggered or any non-breakpoint bits were set in DR6,
-right?  Otherwise return NOTIFY_STOP.  So this code should be:
+Oh wow. Ok, I suggested it, but I have to admit that I didn't really think 
+that it would be the &ret thing.
 
-		if (!bp)
-			continue;
+Very interesting fragility in your gcc version.
 
-		rc = NOTIFY_DONE;
-		(bp->triggered)(bp, args->regs);
+Anyway, that part of the garbage is much less interesting than the cycle 
+counter (the stack pointer will be the same for the same process and 
+callchain anyway - and 'current->pid' is already gives difference answers 
+for different processes), so I'll just remove it.
 
-and take out the "rc = NOTIFY_DONE" line in the i < hbp_kernel_pos 
-case earlier.
+We could replace it with something like __builtin_frame_address(0) or 
+whatever, but I don't know which gcc version _that_ was introduced in, so 
+I suspect I should just get rid of it as not being worth it.
 
-It also would be a good idea to add a comment near the start of the
-function explaining the return value (just paraphrase what I wrote
-above).
+I guess getting rid of 'jiffies' is also worth it. Even at its very worst, 
+'get_cycles()' should return jiffy-level information, so adding in jiffies 
+doesn't add anything to it.
 
+So I'll just commit this. But I'd like to have a final "tested-by" from 
+you, since I don't have access to your version of gcc on any of my 
+machines.
 
-> Index: linux-2.6-tip.hbkpt/arch/x86/kernel/ptrace.c
-> ===================================================================
-> --- linux-2.6-tip.hbkpt.orig/arch/x86/kernel/ptrace.c
-> +++ linux-2.6-tip.hbkpt/arch/x86/kernel/ptrace.c
-> @@ -530,9 +530,7 @@ restore:
->  				bp->info.len = len;
->  				bp->info.type = type;
->  				rc = register_user_hw_breakpoint(tsk, bp);
-> -				if (!rc)
-> -					set_tsk_thread_flag(tsk, TIF_DEBUG);
-> -				else
-> +				if (rc)
->  					kfree(bp);
->  			}
->  		} else
-> Index: linux-2.6-tip.hbkpt/kernel/hw_breakpoint.c
-> ===================================================================
-> --- linux-2.6-tip.hbkpt.orig/kernel/hw_breakpoint.c
-> +++ linux-2.6-tip.hbkpt/kernel/hw_breakpoint.c
-> @@ -233,6 +233,8 @@ int register_user_hw_breakpoint(struct t
->  			break;
->  		}
->  	}
-> +	if (!rc)
-> +		set_tsk_thread_flag(tsk, TIF_DEBUG);
->  
->  	spin_unlock_bh(&hw_breakpoint_lock);
->  	return rc;
-> @@ -272,15 +274,23 @@ void unregister_user_hw_breakpoint(struc
->  						struct hw_breakpoint *bp)
->  {
->  	struct thread_struct *thread = &(tsk->thread);
-> -	int i;
-> +	int i, pos = -1, clear_tsk_debug_counter = 0;
+		Linus
+---
+ drivers/char/random.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-I think "hbp_counter" would be a better name.  It's up to you.
-
->  
->  	spin_lock_bh(&hw_breakpoint_lock);
->  	for (i = 0; i < hbp_kernel_pos; i++) {
-> +		if (thread->hbp[i])
-> +			clear_tsk_debug_counter++;
->  		if (bp == thread->hbp[i]) {
-> -			__unregister_user_hw_breakpoint(i, tsk);
-> -			break;
-> +			clear_tsk_debug_counter--;
-> +			pos = i;
->  		}
->  	}
-> +	if (pos >= 0)
-> +		__unregister_user_hw_breakpoint(pos, tsk);
-> +
-> +	if (!clear_tsk_debug_counter)
-> +		clear_tsk_thread_flag(tsk, TIF_DEBUG);
-
-This logic could be rearranged a little:
-
-	for (i = 0; i < hbp_kernel_pos; i++) {
-		if (thread->hbp[i])
-			clear_tsk_debug_counter++;
-		if (bp == thread->hbp[i])
-			pos = i;
-	}
-	if (pos >= 0) {
-		__unregister_user_hw_breakpoint(pos, tsk);
-		clear_tsk_debug_counter--;
-	}
-	if (!clear_tsk_debug_counter)
-		clear_tsk_thread_flag(tsk, TIF_DEBUG);
-
-Not a big deal; this way is a little more robust in case two 
-thread->hbp[] entries somehow contain the same pointer.
-
-> +
->  	spin_unlock_bh(&hw_breakpoint_lock);
->  }
->  EXPORT_SYMBOL_GPL(unregister_user_hw_breakpoint);
-
-Alan Stern
-
+diff --git a/drivers/char/random.c b/drivers/char/random.c
+index b2ced39..b361f45 100644
+--- a/drivers/char/random.c
++++ b/drivers/char/random.c
+@@ -1673,7 +1673,7 @@ unsigned int get_random_int(void)
+ 	int ret;
+ 
+ 	keyptr = get_keyptr();
+-	hash[0] += current->pid + jiffies + get_cycles() + (int)(long)&ret;
++	hash[0] += current->pid + get_cycles();
+ 
+ 	ret = half_md4_transform(hash, keyptr->secret);
+ 	put_cpu_var(get_random_int_hash);
