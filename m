@@ -1,59 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753797AbZESHdK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754330AbZESHgp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753797AbZESHdK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 03:33:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753681AbZESHc5
+	id S1754330AbZESHgp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 03:36:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752892AbZESHgg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 03:32:57 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:32974 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753647AbZESHc4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 03:32:56 -0400
-Date: Tue, 19 May 2009 17:32:51 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Michael Abbott <michael.abbott@diamond.ac.uk>
-Subject: linux-next: cputime tree build warning
-Message-Id: <20090519173251.86d755c8.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__19_May_2009_17_32_51_+1000_aJd4GEceD9IOzlcX"
+	Tue, 19 May 2009 03:36:36 -0400
+Received: from smtp-out003.kontent.com ([81.88.40.217]:55953 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752269AbZESHgg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 03:36:36 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: Marcel Holtmann <marcel@holtmann.org>
+Subject: Re: [PATCH] Explicitly disable BT radio using rfkill interface on suspend
+Date: Tue, 19 May 2009 09:36:55 +0200
+User-Agent: KMail/1.10.3 (Linux/2.6.27.21-0.1-default; KDE/4.1.3; x86_64; ; )
+Cc: linux-usb@vger.kernel.org, Matthew Garrett <mjg59@srcf.ucam.org>,
+       Mario Limonciello <mario_limonciello@dell.com>,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <4A11C126.1000704@dell.com> <200905190827.52541.oliver@neukum.org> <1242715512.3147.6.camel@localhost.localdomain>
+In-Reply-To: <1242715512.3147.6.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200905190936.55968.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__19_May_2009_17_32_51_+1000_aJd4GEceD9IOzlcX
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Am Dienstag, 19. Mai 2009 08:45:12 schrieb Marcel Holtmann:
+> Hi Oliver,
 
-Hi Martin,
+> > > what do you expect the generic USB driver to do? I don't see anything
+> > > we can do about it, if the device gets removed from underneath us.
+> >
+> > In order to do this we'd have to put hid2hci into usbcore and maintain
+> > a list of devices it should operate on.
+>
+> you know that hid2hci is a user space utility.
 
-Today's linux-next build (x86_64 allmodconfig) produced this warning:
+Yes. I wanted to say that we'd have to port it into kernel space.
+I don't think it would be worth the effort. Sorry for being unclear.
 
-fs/proc/uptime.c: In function 'uptime_proc_show':
-fs/proc/uptime.c:14: warning: unused variable 'len'
+	Regards
+		Oliver
 
-Introduced by commit ed7e789abfc433e46524419b7cc51d949552505e ("[PATCH]
-Fix idle time field in /proc/uptime") from the cputime tree.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__19_May_2009_17_32_51_+1000_aJd4GEceD9IOzlcX
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkoSYKMACgkQjjKRsyhoI8z1TACfUmNv1zN1Q73F/RlPOnPwfFBM
-3lcAnRcMXAnnIx1B43DUtQCTXjtGFCvt
-=CUUK
------END PGP SIGNATURE-----
-
---Signature=_Tue__19_May_2009_17_32_51_+1000_aJd4GEceD9IOzlcX--
