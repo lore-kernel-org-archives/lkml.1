@@ -1,46 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755018AbZESV0c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754075AbZESVbS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755018AbZESV0c (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 17:26:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751639AbZESV01
+	id S1754075AbZESVbS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 17:31:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751910AbZESVbK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 17:26:27 -0400
-Received: from smtp-out003.kontent.com ([81.88.40.217]:57202 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751248AbZESV00 convert rfc822-to-8bit (ORCPT
+	Tue, 19 May 2009 17:31:10 -0400
+Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:45270 "EHLO
+	electric-eye.fr.zoreil.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751289AbZESVbJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 17:26:26 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: Mario Limonciello <mario_limonciello@dell.com>
-Subject: Re: [PATCH] Explicitly disable BT radio using rfkill interface on suspend
-Date: Tue, 19 May 2009 23:26:46 +0200
-User-Agent: KMail/1.10.3 (Linux/2.6.27.21-0.1-default; KDE/4.1.3; x86_64; ; )
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>,
-       Marcel Holtmann <marcel@holtmann.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <4A11C126.1000704@dell.com> <200905192158.12784.oliver@neukum.org> <4A131858.3080805@dell.com>
-In-Reply-To: <4A131858.3080805@dell.com>
+	Tue, 19 May 2009 17:31:09 -0400
+Date: Tue, 19 May 2009 23:32:13 +0200
+From: Francois Romieu <romieu@fr.zoreil.com>
+To: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
+Cc: David Dillow <dave@thedillows.org>, linux-kernel@vger.kernel.org,
+       Edward Hsu <edward_hsu@realtek.com.tw>
+Subject: Re: Realtek 8168D: no active link (2.6.29.2)
+Message-ID: <20090519213213.GA6377@electric-eye.fr.zoreil.com>
+References: <20090518221730.GA8793@electric-eye.fr.zoreil.com> <200905182343.n4INhUdU004395@turbo.physics.adelaide.edu.au>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200905192326.46274.oliver@neukum.org>
+In-Reply-To: <200905182343.n4INhUdU004395@turbo.physics.adelaide.edu.au>
+X-Organisation: Land of Sunshine Inc.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Dienstag, 19. Mai 2009 22:36:40 schrieb Mario Limonciello:
-> [  112.471157] pm_op(): usb_dev_resume+0x0/0x10 returns -19
-> [  112.471160] PM: Device 3-4.3 failed to resume: error -19
-> [  112.471373] PM: resume devices took 3.256 seconds
-> [  112.471980] PM: Finishing wakeup.
-> [  112.471982] Restarting tasks ... <6>usb 3-4.3: USB disconnect, address 5
+Jonathan Woithe <jwoithe@physics.adelaide.edu.au> :
+[...]
+> As I mentioned, if there are other tests you want me to do just drop me a
+> line.
 
-This error shouldn't happen. But you do get a disconnection. Please
-recheck you see no udev event and please post "lsusb -v" before and
-after suspension.
+You may see if you can force the link settings with the patches #2 and #3 at
+http://userweb.kernel.org/~romieu/r8169/2.6.30-rc6/20090519/
 
-	Regards
-		Oliver
+Thanks.
 
+-- 
+Ueimor
