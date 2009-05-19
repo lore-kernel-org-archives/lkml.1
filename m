@@ -1,124 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755220AbZESNDV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754934AbZESNCc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755220AbZESNDV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 09:03:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753440AbZESNDO
+	id S1754934AbZESNCc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 09:02:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753055AbZESNC0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 09:03:14 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:54641 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752108AbZESNDO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 09:03:14 -0400
-Date: Tue, 19 May 2009 15:03:00 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: jeremy@goop.org, x86@kernel.org, linux-kernel@vger.kernel.org,
-       xen-devel@lists.xensource.com, gregkh@suse.de, okir@suse.de
-Subject: Re: Where do we stand with the Xen patches?
-Message-ID: <20090519130300.GB6238@elte.hu>
-References: <4A0C770E.2030305@goop.org> <20090518103520J.fujita.tomonori@lab.ntt.co.jp> <20090518084052.GD10687@elte.hu> <20090519142626X.fujita.tomonori@lab.ntt.co.jp>
+	Tue, 19 May 2009 09:02:26 -0400
+Received: from mail-ew0-f224.google.com ([209.85.219.224]:53053 "EHLO
+	mail-ew0-f224.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752202AbZESNC0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 09:02:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=MZ/NKZFlyX3g+n3swjTPUj8/MQrLvgJgnRTTRHkWvorohCtuufJZezZZyksTvt7lg3
+         lE1N20B5qDMiAoARjPDqYI9pPuGvO+L96iOURX1Ksy8wQWhs0f1hHZRWX9mbpsnzP9Bc
+         wJRe95iyBXi1E1AHQKhFsVaLD09w5Q+pgf88M=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090519142626X.fujita.tomonori@lab.ntt.co.jp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <128c57bf092e08fe6372f6e8c3d02fc88b62e094.1242557192.git.richard.genoud@gmail.com>
+References: <128c57bf092e08fe6372f6e8c3d02fc88b62e094.1242557192.git.richard.genoud@gmail.com>
+Date: Tue, 19 May 2009 15:02:26 +0200
+Message-ID: <80b317760905190602n2e4c8f6r73447b0d331d6ce8@mail.gmail.com>
+Subject: Re: [PATCH 1/3] clean rspiusb code
+From: Richard Genoud <richard.genoud@gmail.com>
+To: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: Judd Montgomery <judd@jpilot.org>, Jeff Frontz <jeff.frontz@gmail.com>,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
+       Richard Genoud <richard.genoud@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+2009/5/17 Richard Genoud <richard.genoud@gmail.com>:
+> This first patch makes checkpatch happier
+>
+I forgot to say that this patch serie applies to Greg KH's staging
+tree (<http://kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/gregkh-05-staging>)
 
-* FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
-
-> On Mon, 18 May 2009 10:40:52 +0200
-> Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > 
-> > * FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
-> > 
-> > > On Thu, 14 May 2009 12:54:54 -0700
-> > > Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-> > > 
-> > > > Hi Ingo,
-> > > > 
-> > > > Over the last week or so, I've set out pull requests for the following 
-> > > > branches in git://git.kernel.org/pub/scm/linux/kernel/git/jeremy/xen.git :
-> > > > 
-> > > > for-ingo/xen/dom0/core
-> > > > 
-> > > >     You made two comments about the first post of this set:
-> > > > 
-> > > >        1. The // comments in the mtrr code.  Now fixed.
-> > > >        2. A query about when Xen can support PAT.  In progress; when its
-> > > >           done, we can remove the unconditional PAT disable.
-> > > > 
-> > > > for-ingo/xen/dom0/pci
-> > > > for-ingo/xen/dom0/swiotlb
-> > > > 
-> > > >     Updated with Joerg Roedel, FUJITA Tomonori and Matthew Wilcox's
-> > > >     comments,  Acked-by and Reviewed-bys as appropriate.
-> > > 
-> > > The original code added dom0-specific dma mapping stuff in the 
-> > > generic place, which is completely wrong. I asked you to move the 
-> > > hacky stuff to Xen-specific code and ack'ed the patchset.
-> > > 
-> > > But as I said again and again, the dom0 changes to the generic dma 
-> > > mapipng code is really ugly and I don't like them at all. I didn't 
-> > > ack'ed such changes.
-> > 
-> > How should it be solved instead? Can you see a clean way to achieve 
-> > it? (maybe you already explained it in past threads - if yes then 
-> > have you got subject lines or URIs to that?)
-> 
-> If we really need to merge dom0 support, then dom0 should have the 
-> own IOMMU implementation instead of adding any hacks to swiotlb 
-> (as I said long time ago). Yeah, there might be some duplication 
-> between swiotlb and the Xen IOMMU but IMO it's better to have 
-> clean code with some duplication rather than ugly unified code; 
-> unification makes sense only if we do cleanly.
-
-Well, but since we merged PowerPC highmem support ... the precedent 
-is there already that the swiotlb code can be librarized and 
-generalized some more, right?
-
-What is the fundamental difference between a DMA32 device on native 
-hardware using lib/swiotlb.c to bounce IO directed to/from a high 
-address over buffers in a low, DMA-capable address, and between a 
-Xen Dom0 instance using the same functionality to DMA buffers?
-
-The payback is significant: Linux drivers can be used basically 
-as-is (as far as their DMA functionality goes) in a Xen dom0 guest.
-
-There's really just two non-standard Xen features compared to the 
-PowerPC-highmem use:
-
- - special allocation
-
- - non-standard virtual/physical/bus memory translations
-
-The latter is understandable - Xen cannot do the (mostly-) linear 
-transformations that (most) platforms can do in their address 
-transformation primitives. But other than the non-linearity, it's a 
-"mapping" just as much.
-
-The special allocator is arguably a bit of a hack - Xen should 
-_probably_ recognize GFP_DMA32 allocations at the page allocator 
-level and rearrange buffers there.
-
-So realizing that dom0 _has_ to have guest OS help here, the best 
-possible design seems to be to minimalize the Xen cross section to 
-Linux, while still keeping it fast enough. And that seems to be 
-these two straightforward hooks: 'ready buffers for DMA' and 'map 
-addresses'. As long as we'll want to have swiotlb code in the 
-kernel, we'll deal with such primitives anyway - so there doesnt 
-seem to be a significant mainteinance drag here.
-
-Hm?
-
-	Ingo
+richard.
