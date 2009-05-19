@@ -1,83 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752884AbZESLJS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753010AbZESL0t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752884AbZESLJS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 07:09:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752063AbZESLJE
+	id S1753010AbZESL0t (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 07:26:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752721AbZESL0m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 07:09:04 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:51631 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751462AbZESLJD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 07:09:03 -0400
-Date: Tue, 19 May 2009 13:08:37 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jan Beulich <JBeulich@novell.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [Xen-devel] Re: [GIT PULL] xen /proc/mtrr implementation
-Message-ID: <20090519110837.GA10548@elte.hu>
-References: <4A0DCC11.10307@goop.org> <m1my9ex818.fsf@fess.ebiederm.org> <4A0DFF78.6000501@goop.org> <20090515202250.0f1218ef@jbarnes-g45> <m1iqk1k708.fsf@fess.ebiederm.org> <4A10EAC4.9070701@goop.org> <20090518085902.GE10687@elte.hu> <4A11A3F8.1010202@goop.org> <20090519095918.GA11790@elte.hu> <4A12A46A02000078000017E1@vpn.id2.novell.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A12A46A02000078000017E1@vpn.id2.novell.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 19 May 2009 07:26:42 -0400
+Received: from mailout2.samsung.com ([203.254.224.25]:58318 "EHLO
+	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752713AbZESL0l (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 07:26:41 -0400
+Date: Tue, 19 May 2009 13:25:03 +0200
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: RE: [PATCH] LP3971 PMIC regulator driver (updated and combined version)
+In-reply-to: <1242730021.5473.2550.camel@vega.slimlogic.co.uk>
+To: "'Liam Girdwood'" <lrg@slimlogic.co.uk>
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       kyungmin.park@samsung.com,
+       "'Mark Brown'" <broonie@opensource.wolfsonmicro.com>,
+       Marek Szyprowski <m.szyprowski@samsung.com>
+Message-id: <003901c9d874$77e2ad80$67a80880$%szyprowski@samsung.com>
+MIME-version: 1.0
+X-Mailer: Microsoft Office Outlook 12.0
+Content-type: text/plain; charset=us-ascii
+Content-language: pl
+Content-transfer-encoding: 7BIT
+Thread-index: AcnYbzKt9By0v1H4SDarnh98lgKR7gABLnew
+References: <E4D3F24EA6C9E54F817833EAE0D912AC02245E9A11@bssrvexch01.BS.local>
+ <20090515092030.GA2202@rakim.wolfsonmicro.main>
+ <1242641718.5473.2156.camel@vega.slimlogic.co.uk>
+ <000601c9d7ac$58af73d0$0a0e5b70$%szyprowski@samsung.com>
+ <1242647032.5473.2162.camel@vega.slimlogic.co.uk>
+ <002c01c9d843$69b09b40$3d11d1c0$%szyprowski@samsung.com>
+ <20090519095847.GE27195@sirena.org.uk>
+ <1242730021.5473.2550.camel@vega.slimlogic.co.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
-* Jan Beulich <JBeulich@novell.com> wrote:
+On Tuesday, May 19, 2009 12:47 PM Liam Girdwood wrote:
 
-> >>> Ingo Molnar <mingo@elte.hu> 19.05.09 11:59 >>>
->
-> > Exactly what is 'bizarre' about using the API defined by the 
-> > _CPU_ already, without adding any ad-hoc hypecall? Catch the 
-> > dom0 WRMSRs, filter out the MTRR indices - that's it.
+> On Tue, 2009-05-19 at 10:58 +0100, Mark Brown wrote:
+> > On Tue, May 19, 2009 at 07:33:55AM +0200, Marek Szyprowski wrote:
+> > > This patch adds regulator drivers for National Semiconductors
+> LP3971 PMIC.
+> > > This LP3971 PMIC controller has 3 DC/DC voltage converters and 5
+> low
+> > > drop-out
+> > > (LDO) regulators. LP3971 PMIC controller uses I2C interface.
+> >
+> > > Reviewed-by: Kyungmin Park <kyungmin.park@samsung.com>
+> > > Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+> >
+> > > +static int lp3971_dcdc_list_voltage(struct regulator_dev *dev,
+> unsigned
+> > > index)
+> >
+> > I'm OK with this but it looks like your MUA has mangled the patch by
+> > word wrapping so Liam may not be able to apply it.  There's some
+> hints
+> > on configuring various mail clients in Documentation/email-
+> clients.txt
+> > which might be helpful.
+> >
 > 
-> But that is *not* the same as using the hypercalls: The hypercall 
-> tells Xen "Change all CPUs' MTRRs with the indicated index to the 
-> indicated value", while the MSR write says "Change the MTRR with 
-> the given index on the physical CPU the current virtual CPU 
-> happens to run on to the given value". [...]
+> I've now applied the patch after it was mangled by outlook.
 
-The change of MTRR's on _any_ of the guest CPUs in a dom0 context 
-should immediately be refected on all CPUs. Assymetric MTRR settings 
-are madness.
+Thanks for your patience.
 
-( And the thing is, changing MTRRs is fragile and racy on native 
-  Linux no matter what - even without any hypervisors - due to SMM 
-  contexts possibly relying on them etc. )
+> I have also fixed the following build error :-
+> `lp3971_i2c_remove' referenced in section `.data' of drivers/built-
+> in.o: defined in discarded section `.devexit.text' of drivers/built-
+> in.o
+> [...]
+> Best to pull for-next to get this fix.
 
-> [...] A write-base/write-mask pair may happen to get interrupted 
-> (preempted) by the hypervisor, and hence the two writes may happen 
-> on different pCPU-s. Teaching the hypervisor to (correctly!) guess 
-> what the guest meant in that situation isn't trivial, as then it 
-> needs to handle all possible situations (and it can never know 
-> whether Dom0 really intended to do something that may look 
-> bogus/inconsistent at the first glance). [...]
+Thanks for your fix!
 
-None of this is a problem really if a sane approach is used: a 
-change to the MTRR state on dom0 is applied symmetrically on all 
-CPUs.
+Best regards
+--
+Marek Szyprowski
+Samsung Poland R&D Center
 
-Or, alternatively, the hypervisor can expose its own administrative 
-interface to manage MTRRs.
 
-There's no need to fuglify the Linux kernel for that.
-
-	Ingo
