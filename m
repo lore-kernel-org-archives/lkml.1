@@ -1,76 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755296AbZESQix@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754684AbZESQnm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755296AbZESQix (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 12:38:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753174AbZESQio
+	id S1754684AbZESQnm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 12:43:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753060AbZESQnf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 12:38:44 -0400
-Received: from mail.atheros.com ([12.36.123.2]:37446 "EHLO mail.atheros.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753484AbZESQim (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 12:38:42 -0400
-Date: Tue, 19 May 2009 09:38:47 -0700
-From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: "Luis R. Rodriguez" <mcgrof@gmail.com>,
-       "jirislaby@gmail.com" <jirislaby@gmail.com>,
-       "ath5k-devel@lists.ath5k.org" <ath5k-devel@venema.h4ckr.net>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [ath5k-devel] [PATCH] ath5k: prevent infinite loop
-Message-ID: <20090519163847.GA7428@tesla>
-References: <alpine.DEB.2.00.0905182011270.7956@gandalf.stny.rr.com> <40f31dec0905181734t6a3db7f4peb2d57c3aebe075b@mail.gmail.com> <alpine.DEB.2.00.0905182041470.7956@gandalf.stny.rr.com> <40f31dec0905182332v49aff368oe485efaa56fbc11a@mail.gmail.com> <43e72e890905182339u68c4d4f5v3a2f25e9e3547e60@mail.gmail.com> <alpine.DEB.2.00.0905190743070.1767@gandalf.stny.rr.com>
+	Tue, 19 May 2009 12:43:35 -0400
+Received: from mail3.caviumnetworks.com ([12.108.191.235]:43809 "EHLO
+	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752856AbZESQne (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 12:43:34 -0400
+Message-ID: <4A12E1AD.6000302@caviumnetworks.com>
+Date: Tue, 19 May 2009 09:43:25 -0700
+From: David Daney <ddaney@caviumnetworks.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0905190743070.1767@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: linux kernel <linuxk3rnel@gmail.com>
+CC: linux-kernel@vger.kernel.org, linux-mips <linux-mips@linux-mips.org>
+Subject: Re: Feasibility study: Linux on core 0, using other cores as worker
+ 	cores. Octeon II
+References: <29f1ba300905190458y44c8aadeuc8ff914e09105a09@mail.gmail.com>
+In-Reply-To: <29f1ba300905190458y44c8aadeuc8ff914e09105a09@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 19 May 2009 16:43:26.0308 (UTC) FILETIME=[EE6A4A40:01C9D8A0]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 19, 2009 at 04:45:14AM -0700, Steven Rostedt wrote:
+linux kernel wrote:
+> Hi,
 > 
-> On Mon, 18 May 2009, Luis R. Rodriguez wrote:
+> This might seem as an unusal feasibility question, but I would like to
+> discuss this here at LKML to hear you views on this matter.
+> The idea would be to build a IBM cell blade lookalike architecture,
+> using full blown linux on core 0, using the other cores as worker
+> threads.
+> Possible target CPUs are Octeon II with 32 cores or more.
 > 
-> > On Mon, May 18, 2009 at 11:32 PM, Nick Kossifidis <mickflemm@gmail.com> wrote:
-> > > 2009/5/19 Steven Rostedt <rostedt@goodmis.org>:
-> > >>
-> > >> On Tue, 19 May 2009, Nick Kossifidis wrote:
-> > >>>
-> > >>> This is already fixed on wireless-testing ;-)
-> > >>> http://git.kernel.org/?p=linux/kernel/git/linville/wireless-testing.git;a=blob;f=drivers/net/wireless/ath/ath5k/phy.c;h=d0d1c350025aebba1fe4e17a44550536a59951ba;hb=HEAD
-> > >>
-> > >> Thanks, but this does only half. Although I did not hit this in my laptop,
-> > >> it can be an issue. If step[0] == step[1] you have the same problem.
-> > >>
-> > >
-> > > Having the same power value for 2 different steps is something we can
-> > > expect (although docs say that we expect the line to be monotonically
-> > > increasing but anyway), having the same step twice is way out of spec,
-> > > there is no way we can have the same step twice on EEPROM, only if we
-> > > have a corrupted EEPROM (we need to add some sanity checks indeed here
-> > > -> http://git.kernel.org/?p=linux/kernel/git/linville/wireless-testing.git;a=blob;f=drivers/net/wireless/ath/ath5k/eeprom.c;h=c56b494d417acd40d445d922f2861b53cc2315df;hb=HEAD#l910
-> > > to handle such a case but first we need to have a "default" eeprom
-> > > dataset to fallback when we get such errors).
-> >
-> > Don't bother with busted EEPROMs, if its busted its busted. Chances
-> > are the complexity we'd need to add to deal with such devices is
-> > simply not worth it.
+> The main goal for this would be to reduce interrupt latency for worker
+> cores, having them run possibly bare-bone with an IPC method between
+> core 0 and worker cores. probably DMA and HW IRQs.
 > 
-> My concern is that a busted EEPROM should not lock up the kernel, when we
-> can avoid it.
 
-Sure, which is why there is a checksum which can be checked first.
-IIRC we don't bail out if that fails in ath5k.
+As you may be aware, this is a common use case for current users of 
+Octeon SOCs.
 
-> Put in a nasty WARN_ON if the steps are equal, and exit the
-> routine. But don't let it go into an infinite loop and have the user
-> wondering why their system just locked up.
+> Is there an existing system design in the kernel already that I can
+> expand/use ? Perhaps expanding/porting the cell blade IPC method.
+> What would you guys think would be the most efficient approach(and
+> perhaps would be acceptable to the LK maintainers for merging at a
+> later stage :) )  ?
 
-Sure, my point was more for not implemention a default EEPROM
-as that would bring more complexity to the driver.
+Current Octeon applications, architected as you indicate, typically use 
+the SOC's work queue hardware for IPC, but this is via custom drivers, 
+not any existing kernel framework.
 
-  Luis
+Since one of my main job functions is kernel development for the Octeon 
+family, I would certainly be interested in any work done in this area.
 
+
+David Daney
