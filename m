@@ -1,66 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753762AbZESMGo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753278AbZESMND@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753762AbZESMGo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 08:06:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752020AbZESMGh
+	id S1753278AbZESMND (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 08:13:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752798AbZESMMw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 08:06:37 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:58149 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751782AbZESMGg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 08:06:36 -0400
-Date: Tue, 19 May 2009 14:00:10 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Ingo Molnar <mingo@elte.hu>, Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: INFO: possible circular locking dependency at
-	cleanup_workqueue_thread
-Message-ID: <20090519120010.GA14782@redhat.com>
-References: <c4e36d110905120059i4c155508oa00672da0b33a07a@mail.gmail.com> <20090517071834.GA8507@elte.hu> <1242559101.28127.63.camel@johannes.local> <20090518194749.GA3501@redhat.com> <1242723104.17164.5.camel@johannes.local>
+	Tue, 19 May 2009 08:12:52 -0400
+Received: from mail-ew0-f224.google.com ([209.85.219.224]:62940 "EHLO
+	mail-ew0-f224.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752713AbZESMMv convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 08:12:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=eAvbvbjFSe7VER07m4CaaSahsLNDw8wX/wsxSpbrpxC2MZtg8+SiOHCqWkaLU90Qsf
+         pZwr68hYmS04f0bTyOPDY83svtqnXJLaT5kLptMwmZ32N/ecHGMfBWeW1MfvcSWsKHGm
+         meBcI8PekWNCVNMySiQPoxO0xYls1+4LRTU9E=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1242723104.17164.5.camel@johannes.local>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <a4423d670905121315g503f4f0ep6a60e9051a2aeb9d@mail.gmail.com>
+References: <1242127393-4298-1-git-send-email-a.beregalov@gmail.com>
+	 <20090512164448.GJ16247@kroah.com>
+	 <a4423d670905121037i3ea96b01s68367c082802684d@mail.gmail.com>
+	 <20090512190254.GB1957@kroah.com>
+	 <a4423d670905121315g503f4f0ep6a60e9051a2aeb9d@mail.gmail.com>
+Date: Tue, 19 May 2009 16:12:50 +0400
+Message-ID: <a4423d670905190512x296f6b1cgaa7815fb4f17cac7@mail.gmail.com>
+Subject: Re: [PATCH] Staging: agnx: switch config_interface to 
+	bss_info_changed
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: Greg KH <greg@kroah.com>, "John W. Linville" <linville@tuxdriver.com>,
+       linux-wireless@vger.kernel.org
+Cc: gregkh@suse.de, johannes@sipsolutions.net, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/19, Johannes Berg wrote:
+2009/5/13 Alexander Beregalov <a.beregalov@gmail.com>:
+> 2009/5/12 Greg KH <greg@kroah.com>:
+>> On Tue, May 12, 2009 at 09:37:56PM +0400, Alexander Beregalov wrote:
+>>> 2009/5/12 Greg KH <greg@kroah.com>:
+>>> > On Tue, May 12, 2009 at 03:23:13PM +0400, Alexander Beregalov wrote:
+>>> >> Fix this build error:
+>>> >> drivers/staging/agnx/pci.c: In function 'agnx_config_interface':
+>>> >> drivers/staging/agnx/pci.c:315: error: dereferencing pointer to incomplete type
+>>> >> ..
+>>> >> drivers/staging/agnx/pci.c:424: error: unknown field 'config_interface' specified in initializer
+>>> >>
+>>> >> config_interface was removed in 2d0ddec5b2b
+>>> >> ("mac80211: unify config_interface and bss_info_changed")
+>>> >
+>>> > I do not see that patch in Linus's tree.  Is it in some other tree
+>>> > (wireless?) and not yet in mainline?
+>>> Yes, it is in wireless from linux-next.
+>>> You asked to send patches based on linux-next, right?
+>>> Should I always mark patches for staging-next tree as [PATCH -next] ?
+>>
+>> Hm, yes, -staging patches need to be against -next, but I have to be
+>> able to build these somehow on my own without the wireless tree...
+>>
+>> I think something like this might better go through the wireless tree as
+>> it depends on changes that happen there.  Sound good to you?
+> Ok, thanks Greg.
 >
-> On Mon, 2009-05-18 at 21:47 +0200, Oleg Nesterov wrote:
->
-> > > Maybe it shouldn't do that from the CPU_POST_DEAD
-> > > notifier?
-> >
-> > Well, in any case we should understand why we have the problem, before
-> > changing the code. And CPU_POST_DEAD is not special, why should we treat
-> > it specially and skip lock_map_acquire(wq->lockdep_map) ?
->
-> I'm not familiar enough with the code -- but what are we really trying
-> to do in CPU_POST_DEAD? It seems to me that at that time things must
-> already be off the CPU, so ...?
+>> If so, please send them to the wireless maintainer.
+> John, will you apply it?
 
-Yes, this cpu is dead, we should do cleanup_workqueue_thread() to kill
-cwq->thread.
-
-> On the other hand that calls
-> flush_cpu_workqueue() so it seems it would actually wait for the work to
-> be executed on some other CPU, within the CPU_POST_DEAD notification?
-
-Yes. Because we can't just kill cwq->thread, we can have the pending
-work_structs so we have to flush.
-
-Why can't we move these works to another CPU? We can, but this doesn't
-really help. Because in any case we should at least wait for
-cwq->current_work to complete.
-
-Why do we use CPU_POST_DEAD, and not (say) CPU_DEAD to flush/kill ?
-Because work->func() can sleep in get_online_cpus(), we can't flush
-until we drop cpu_hotplug.lock.
-
-Oleg.
-
+John?
