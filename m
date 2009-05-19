@@ -1,88 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754583AbZESNxw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754167AbZESOFs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754583AbZESNxw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 09:53:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753381AbZESNxo
+	id S1754167AbZESOFs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 10:05:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753467AbZESOFj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 09:53:44 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:56216 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752823AbZESNxn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 09:53:43 -0400
-Message-ID: <4A12B97C.9040706@redhat.com>
-Date: Tue, 19 May 2009 15:51:56 +0200
-From: Gerd Hoffmann <kraxel@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Jan Beulich <JBeulich@novell.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [Xen-devel] Re: [GIT PULL] xen /proc/mtrr implementation
-References: <m1iqk1k708.fsf@fess.ebiederm.org> <4A10EAC4.9070701@goop.org> <20090518085902.GE10687@elte.hu> <4A11A3F8.1010202@goop.org> <20090519095918.GA11790@elte.hu> <4A12A46A02000078000017E1@vpn.id2.novell.com> <20090519110837.GA10548@elte.hu> <4A12A05C.6050004@redhat.com> <20090519122623.GD14305@elte.hu> <4A12B244.8070301@redhat.com> <20090519133138.GA8410@elte.hu>
-In-Reply-To: <20090519133138.GA8410@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 19 May 2009 10:05:39 -0400
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:54708 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752545AbZESOFi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 10:05:38 -0400
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+Content-type: text/plain; CHARSET=US-ASCII
+Date: Tue, 19 May 2009 10:05:32 -0400
+From: Andreas Dilger <adilger@sun.com>
+Subject: Re: [PATCH 30/32] union mount: ext2 fallthru support
+In-reply-to: <20090519094220.GI16526@bolzano.suse.de>
+To: Jan Blunck <jblunck@suse.de>
+Cc: viro@zeniv.linux.org.uk, bharata@in.ibm.com, dwmw2@infradead.org,
+       mszeredi@suse.cz, vaurora@redhat.com, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Message-id: <20090519140532.GB8138@webber.adilger.int>
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
+References: <1242662968-11684-1-git-send-email-jblunck@suse.de>
+ <1242662968-11684-31-git-send-email-jblunck@suse.de>
+ <20090518163221.GE3144@webber.adilger.int>
+ <20090519094220.GI16526@bolzano.suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/19/09 15:31, Ingo Molnar wrote:
-> * Gerd Hoffmann<kraxel@redhat.com>  wrote:
->
->> On 05/19/09 14:26, Ingo Molnar wrote:
->>> * Gerd Hoffmann<kraxel@redhat.com>   wrote:
->>>
->>>> On 05/19/09 13:08, Ingo Molnar wrote:
->>>>> Or, alternatively, the hypervisor can expose its own administrative
->>>>> interface to manage MTRRs.
->>>> Guess what?  Xen does exactly that.  And the xen mtrr_ops
->>>> implementation uses that interface ...
->>> No, that is not an 'administrative interface' - that is a guest
->>> kernel level hack that complicates Linux, extends its effective ABI
->>> dependencies and which has to be maintained there from that point
->>> on.
->>>
->>> There's really just three proper technical solutions here:
->>>
->>> - either catch the lowlevel CPU hw ops (the MSR modifications, which
->>>     isnt really all that different from the mtrr_ops approach so it
->>>     shouldnt pose undue difficulties to the Xen hypervisor).
->> Devil is in the details.
->>
->> The dom0 kernel might not see all physical cpus on the system.  So
->> Xen can't leave the job of looping over all cpus to the dom0
->> kernel, Xen has to apply the changes made by the (priviledged)
->> guest kernel on any (virtual) cpu to all (physical) cpus in the
->> machine.
->
-> Applying MTRR changes to only part of the CPUs is utter madness.
+On May 19, 2009  11:42 +0200, Jan Blunck wrote:
+> On Mon, May 18, Andreas Dilger wrote:
+> > For enums like this that require specific constant on-disk values
+> > I prefer being safe:
+> > 
+> > enum {
+> > 	EXT2_FT_UNKNOWN  = 0,
+> > 	EXT2_FT_REG_FILE = 1,
+> > 	EXT2_FT_DIR	 = 2,
+> > 	EXT2_FT_CHRDEV   = 3,
+> > 	EXT2_FT_BLKDEV   = 4,
+> > 	EXT2_FT_FIFO     = 5,
+> > 	EXT2_FT_SOCK     = 6,
+> > 	EXT2_FT_SYMLINK  = 7,
+> > 	EXT2_FT_WHT      = 8,
+> > 	EXT2_FT_FALLTHRU = 9,
+> >  	EXT2_FT_MAX
+> > 
+> > 
+> > It probably also makes sense to include a patch for ext3/ext4 to ensure
+> > these values are not used by some unrelated feature.
+> 
+> In ext3 these are preprocessor defines. IIRC defines and enums are identical
+> for C (both an int) so I leave this untouched and just add the new filetypes,
+> right?
 
-Sure.  Do you read what I'm writing?
+The problem is - what happens if, for whatever reason, EXT2_FT_WHT is
+removed?  In a regular enum EXT2_ET_FALLTHRU would get the old value for
+EXT2_FT_WHT (=8).  Alternately, if someone accidentally adds a value
+before EXT2_FT_WHT because this isn't in the upstream e2fsprogs[*] and
+this would push the values of EXT2_FT_WHT and EXT2_FT_FALLTHROUGH up.
 
->> Which in turn means the "lowlevel cpu hw op" would work in a
->> slightly different way on Xen and native.  Nasty.
->>
->>>     That will
->>>     be maximally transparent and compatible, with zero changes needed
->>>     to the Linux kernel.
->> No, the linux kernel probably should do the wrmsr on one cpu only then.
->
-> Why?
+That is why, when using enums for on-disk or "external" interfaces, I
+prefer that the values are explicitly specified.  It also makes it more
+clear when reading the code that these values are static and should not
+be changed, instead of just a grouping of related constants.
 
-See above.  Xen has to apply the changes to all cpus anyway.
 
->> Oops, the third "proper technical solutions" is missing.
->
-> Yeah, the third one is to not touch MTRRs after bootup and use PAT.
+[*] should be the canonical resource for new on-disk assignments, IMHO
 
-Works only in case the CPU has PAT support.
-
-cheers,
-   Gerd
+Cheers, Andreas
+--
+Andreas Dilger
+Sr. Staff Engineer, Lustre Group
+Sun Microsystems of Canada, Inc.
 
