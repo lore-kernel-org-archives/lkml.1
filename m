@@ -1,130 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754110AbZESJcu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754952AbZESJdy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754110AbZESJcu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 05:32:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752446AbZESJco
+	id S1754952AbZESJdy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 05:33:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752695AbZESJdo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 05:32:44 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35326 "EHLO mx2.mail.elte.hu"
+	Tue, 19 May 2009 05:33:44 -0400
+Received: from hera.kernel.org ([140.211.167.34]:33460 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752020AbZESJcn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 05:32:43 -0400
-Date: Tue, 19 May 2009 11:32:27 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Han, Weidong" <weidong.han@intel.com>
-Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "'dwmw2@infradead.org'" <dwmw2@infradead.org>,
-       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
-       "'iommu@lists.linux-foundation.org'" 
-	<iommu@lists.linux-foundation.org>,
-       "'kvm@vger.kernel.org'" <kvm@vger.kernel.org>
-Subject: Re: [PATCH 2/2] Intel-IOMMU, intr-remap: source-id checking
-Message-ID: <20090519093227.GF31404@elte.hu>
-References: <1241676996-27406-1-git-send-email-weidong.han@intel.com> <1241676996-27406-2-git-send-email-weidong.han@intel.com> <1241720381.27006.8582.camel@localhost.localdomain> <715D42877B251141A38726ABF5CABF2C01A6DD4900@pdsmsx503.ccr.corp.intel.com> <20090511132027.GC32693@elte.hu> <715D42877B251141A38726ABF5CABF2C054568FA16@pdsmsx503.ccr.corp.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <715D42877B251141A38726ABF5CABF2C054568FA16@pdsmsx503.ccr.corp.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1751234AbZESJdn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 05:33:43 -0400
+From: Tejun Heo <tj@kernel.org>
+To: linux-ide@vger.kernel.org, jens.axboe@oracle.com, bharrosh@panasas.com,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       bzolnier@gmail.com, petkovbb@googlemail.com, zaitcev@redhat.com,
+       sshtylyov@ru.mvista.com, Eric.Moore@lsi.com, djwong@us.ibm.com
+Cc: Tejun Heo <tj@kernel.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: [PATCH 3/3] bio: always copy back data for copied kernel requests
+Date: Tue, 19 May 2009 18:33:06 +0900
+Message-Id: <1242725586-13142-4-git-send-email-tj@kernel.org>
+X-Mailer: git-send-email 1.6.0.2
+In-Reply-To: <1242725586-13142-1-git-send-email-tj@kernel.org>
+References: <1242725586-13142-1-git-send-email-tj@kernel.org>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 19 May 2009 09:33:11 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+When a read bio_copy_kern() request fails, the content of the bounce
+buffer is not copied back.  However, as request failure doesn't
+necessarily mean complete failure, the buffer state can be useful.
+This behavior is also inconsistent with the user map counterpart and
+causes the subtle difference between bounced and unbounced IO causes
+confusion.
 
-* Han, Weidong <weidong.han@intel.com> wrote:
+This patch makes bio_copy_kern_endio() ignore @err and always copy
+back data on request completion.
 
-> Ingo Molnar wrote:
-> > * Han, Weidong <weidong.han@intel.com> wrote:
-> > 
-> >> Siddha, Suresh B wrote:
-> >>> On Wed, 2009-05-06 at 23:16 -0700, Han, Weidong wrote:
-> >>>> @@ -634,6 +694,44 @@ static int ir_parse_ioapic_scope(struct
-> >>>>  			       acpi_dmar_header *header, " 0x%Lx\n",
-> >>>>  			       scope->enumeration_id, drhd->address);
-> >>>> 
-> >>>> +			bus = pci_find_bus(drhd->segment, scope->bus);
-> >>>> +			path = (struct acpi_dmar_pci_path *)(scope + 1); +			count =
-> >>>> (scope->length - +				 sizeof(struct acpi_dmar_device_scope))
-> >>>> +				/ sizeof(struct acpi_dmar_pci_path);
-> >>>> +
-> >>>> +			while (count) {
-> >>>> +				if (pdev)
-> >>>> +					pci_dev_put(pdev);
-> >>>> +
-> >>>> +				if (!bus)
-> >>>> +					break;
-> >>>> +
-> >>>> +				pdev = pci_get_slot(bus,
-> >>>> +					PCI_DEVFN(path->dev, path->fn));
-> >>>> +				if (!pdev)
-> >>>> +					break;
-> >>> 
-> >>> ir_parse_ioapic_scope() happens very early in the boot. So, I
-> >>> don't think we can do the pci related discovery here.
-> >>> 
-> >> 
-> >> Thanks for your pointing it out. It should enable the source-id
-> >> checking for io-apic's after the pci subsystem is up. I will
-> >> change it.
-> > 
-> > Note, there's ways to do early PCI quirks too, check
-> > arch/x86/kernel/early-quirks.c. It's done by reading the PCI
-> > configuration space directly via a careful early-capable subset of
-> > the PCI config space APIs.
-> > 
-> > But it's a method of last resort.
-> > 
-> 
-> Thanks for your reminder. It can use direct PCI access here as follows. It's easy and clean. I think it's better than adding the source-id checking for io-apic's after the pci subsystem is up. I will send out updated patches after some tests.
->  
-> @@ -634,6 +695,24 @@ static int ir_parse_ioapic_scope(struct acpi_dmar_header *header,
->                                " 0x%Lx\n", scope->enumeration_id,
->                                drhd->address);
-> 
-> +                       bus = scope->bus;
-> +                       path = (struct acpi_dmar_pci_path *)(scope + 1);
-> +                       count = (scope->length -
-> +                                sizeof(struct acpi_dmar_device_scope))
-> +                               / sizeof(struct acpi_dmar_pci_path);
-> +
-> +                       while (--count > 0) {
-> +                               /* Access PCI directly due to the PCI
-> +                                * subsystem isn't initialized yet.
-> +                                */
-> +                               bus = read_pci_config_byte(bus, path->dev,
-> +                                       path->fn, PCI_SECONDARY_BUS);
-> +                               path++;
-> +                       }
-> +
-> +                       ir_ioapic[ir_ioapic_num].bus = bus;
-> +                       ir_ioapic[ir_ioapic_num].devfn =
-> +                                       PCI_DEVFN(path->dev, path->fn);
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Cc: Jens Axboe <jens.axboe@oracle.com>
+Cc: Boaz Harrosh <bharrosh@panasas.com>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
+---
+ fs/bio.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-looks good IMO, beyond the obligatory comment-style nitpick [*] :-) 
-Also, the function above seems to be way too large - please split it 
-into a couple of natural helper functions.
-
-Thanks,
-
-	Ingo
-
-[*]
-
-Please use the customary comment style:
-
-  /*
-   * Comment .....
-   * ...... goes here:
-   */
-
-specified in Documentation/CodingStyle.
-
-
+diff --git a/fs/bio.c b/fs/bio.c
+index 7bbc98f..ee3bc67 100644
+--- a/fs/bio.c
++++ b/fs/bio.c
+@@ -1198,7 +1198,7 @@ static void bio_copy_kern_endio(struct bio *bio, int err)
+ 		char *addr = page_address(bvec->bv_page);
+ 		int len = bmd->iovecs[i].bv_len;
+ 
+-		if (read && !err)
++		if (read)
+ 			memcpy(p, addr, len);
+ 
+ 		__free_page(bvec->bv_page);
+-- 
+1.6.0.2
 
