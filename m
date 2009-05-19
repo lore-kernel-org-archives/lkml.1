@@ -1,71 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755550AbZESR0i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756070AbZESR0s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755550AbZESR0i (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 13:26:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755645AbZESR0V
+	id S1756070AbZESR0s (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 13:26:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754660AbZESR0H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 13:26:21 -0400
-Received: from qw-out-2122.google.com ([74.125.92.27]:32830 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755458AbZESR0T convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 13:26:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=e2p0/iyxqZmAgcogy8cithWeBW1FLoTyK/5k4s1Jmvpl2mTZ2SE8G356MEcqr6aaNL
-         J3CrE+bcxDxxXf7E6TYKK70TXitVJuY7HLeFz8FowFC2+c9U3CusA/kqSlaNF7OAhtZ6
-         X6PXiKjcAMFnXse8fssvPYtjiIHrowp+bo58k=
-MIME-Version: 1.0
-In-Reply-To: <63386a3d0905190923t36d301c5hf245c06db00b6127@mail.gmail.com>
-References: <63386a3d0905181340y42ad1868k6b2978e586abc18d@mail.gmail.com>
-	 <4A12C3B5.2050100@compulab.co.il>
-	 <63386a3d0905190923t36d301c5hf245c06db00b6127@mail.gmail.com>
-Date: Tue, 19 May 2009 22:56:16 +0530
-Message-ID: <5d5443650905191026w22b0ff95j992e09923f55dd0a@mail.gmail.com>
-Subject: Re: [PATCH 1/1] MFD: Add U300 AB3100 core support v2
-From: Trilok Soni <soni.trilok@gmail.com>
-To: Linus Walleij <linus.ml.walleij@gmail.com>
-Cc: Mike Rapoport <mike@compulab.co.il>, linux-kernel@vger.kernel.org,
-       sameo@linux.intel.com, linux-i2c@vger.kernel.org,
-       Linus Walleij <linus.walleij@stericsson.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Tue, 19 May 2009 13:26:07 -0400
+Received: from e7.ny.us.ibm.com ([32.97.182.137]:33251 "EHLO e7.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752827AbZESR0C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 13:26:02 -0400
+From: Mimi Zohar <zohar@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>, hooanon05@yahoo.co.jp,
+       "J. Bruce Fields" <bfields@fieldses.org>,
+       Eric Paris <eparis@redhat.com>, Hugh Dickins <hugh@veritas.com>,
+       James Morris <jmorris@namei.org>,
+       David Safford <safford@watson.ibm.com>, linux-nfs@vger.kernel.org,
+       Mimi Zohar <zohar@linux.vnet.ibm.com>, Mimi Zohar <zohar@us.ibm.com>
+Subject: [PATCH 3/3] integrity: nfsd imbalance bug fix
+Date: Tue, 19 May 2009 13:25:59 -0400
+Message-Id: <ac3acdbcb8a63d70635e9c7b8fb5192b01756548.1242753149.git.zohar@linux.vnet.ibm.com>
+X-Mailer: git-send-email 1.6.0.6
+In-Reply-To: <8971a1efcc5153f1c9b167997e5ca0c3c40a69d5.1242753145.git.zohar@linux.vnet.ibm.com>
+References: <8971a1efcc5153f1c9b167997e5ca0c3c40a69d5.1242753145.git.zohar@linux.vnet.ibm.com>
+In-Reply-To: <8971a1efcc5153f1c9b167997e5ca0c3c40a69d5.1242753145.git.zohar@linux.vnet.ibm.com>
+References: <8971a1efcc5153f1c9b167997e5ca0c3c40a69d5.1242753145.git.zohar@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+An nfsd exported file is opened/closed by the kernel causing the
+integrity imbalance message.
 
-On Tue, May 19, 2009 at 9:53 PM, Linus Walleij
-<linus.ml.walleij@gmail.com> wrote:
-> Hm I shouldn't been so trigger-happy as to send v3 out so soon... :-/
->
-> Thanks for you quick review Mike!
->
-> 2009/5/19 Mike Rapoport <mike@compulab.co.il>:
->
->>> +     /* Set a pointer back to the container in device data */
->>> +     for (i = 0; i < ARRAY_SIZE(ab3100_platform_devs); i++)
->>> +             platform_set_drvdata(ab3100_platform_devs[i], ab3100_local);
->>> +
->>> +     /* Register the platform devices */
->>> +     platform_add_devices(ab3100_platform_devs,
->>> +                          ARRAY_SIZE(ab3100_platform_devs));
->>
->> If you register sub-devices this way, they won't appear as ab3100 children.
->
-> I'll set the parent in the first loop then (will test that this works) because I
-> really like that device table. (Similar to how the board setup does things.)
->
+Before a file is opened, there normally is permission checking, which
+is done in inode_permission().  However, as integrity checking requires
+a dentry and mount point, which is not available in inode_permission(),
+the integrity (permission) checking must be called separately.
 
-I don't know but why people are not encouraging to use mfd_xxx apis
-here? Lot's of drivers are available under drivers/mfd, but only
-couple of them are using real mfd_xxx apis? Is there anything missing
-in those apis?
+In order to detect any missing integrity checking calls, we keep track
+of file open/closes.  ima_path_check() increments these counts and
+does the integrity (permission) checking. As a result, the number of
+calls to ima_path_check()/ima_file_free() should be balanced.  An extra
+call to fput(), indicates the file could have been accessed without first
+calling ima_path_check().
 
+In nfsv3 permission checking is done once, followed by multiple reads,
+which do an open/close for each read.  The integrity (permission) checking
+call should be in nfsd_permission() after the inode_permission() call, but
+as there is no correlation between the number of permission checking and
+open calls, the integrity checking call should not increment the counters,
+but defer it to when the file is actually opened.
+
+This patch adds:
+- integrity (permission) checking for nfsd exported files in nfsd_permission().
+- a call to increment counts for files opened by nfsd.
+
+Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
+---
+diff --git a/fs/nfsd/vfs.c b/fs/nfsd/vfs.c
+index 6c68ffd..54a8660 100644
+--- a/fs/nfsd/vfs.c
++++ b/fs/nfsd/vfs.c
+@@ -55,6 +55,7 @@
+ #include <linux/security.h>
+ #endif /* CONFIG_NFSD_V4 */
+ #include <linux/jhash.h>
++#include <linux/ima.h>
+ 
+ #include <asm/uaccess.h>
+ 
+@@ -735,6 +736,8 @@ nfsd_open(struct svc_rqst *rqstp, struct svc_fh *fhp, int type,
+ 			    flags, cred);
+ 	if (IS_ERR(*filp))
+ 		host_err = PTR_ERR(*filp);
++	else
++		ima_counts_get(*filp);
+ out_nfserr:
+ 	err = nfserrno(host_err);
+ out:
+@@ -2024,6 +2027,7 @@ nfsd_permission(struct svc_rqst *rqstp, struct svc_export *exp,
+ 					struct dentry *dentry, int acc)
+ {
+ 	struct inode	*inode = dentry->d_inode;
++	struct path	path;
+ 	int		err;
+ 
+ 	if (acc == NFSD_MAY_NOP)
+@@ -2096,7 +2100,18 @@ nfsd_permission(struct svc_rqst *rqstp, struct svc_export *exp,
+ 	if (err == -EACCES && S_ISREG(inode->i_mode) &&
+ 	    acc == (NFSD_MAY_READ | NFSD_MAY_OWNER_OVERRIDE))
+ 		err = inode_permission(inode, MAY_EXEC);
++	if (err)
++		goto nfsd_out;
+ 
++	/* Do integrity (permission) checking now, but defer incrementing
++	 * IMA counts to the actual file open.
++	 */
++	path.mnt = exp->ex_path.mnt;
++	path.dentry = dentry;
++	err = ima_path_check(&path, acc & (MAY_READ | MAY_WRITE | MAY_EXEC),
++			     IMA_COUNT_LEAVE);
++	return err;
++nfsd_out:
+ 	return err? nfserrno(err) : 0;
+ }
+ 
 -- 
----Trilok Soni
-http://triloksoni.wordpress.com
-http://www.linkedin.com/in/triloksoni
+1.6.0.6
+
