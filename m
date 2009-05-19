@@ -1,52 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753456AbZESMrV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754184AbZESMzZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753456AbZESMrV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 08:47:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752890AbZESMrO
+	id S1754184AbZESMzZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 08:55:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752614AbZESMzT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 08:47:14 -0400
-Received: from smtp-out002.kontent.com ([81.88.40.216]:59727 "EHLO
-	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752713AbZESMrO (ORCPT
+	Tue, 19 May 2009 08:55:19 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:40966 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752372AbZESMzS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 08:47:14 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: [PATCH] Explicitly disable BT radio using rfkill interface on suspend
-Date: Tue, 19 May 2009 14:47:33 +0200
-User-Agent: KMail/1.10.3 (Linux/2.6.27.21-0.1-default; KDE/4.1.3; x86_64; ; )
-Cc: Marcel Holtmann <marcel@holtmann.org>,
-       Mario Limonciello <mario_limonciello@dell.com>,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <4A11C126.1000704@dell.com> <1242710064.3147.4.camel@localhost.localdomain> <20090519090610.GA29967@srcf.ucam.org>
-In-Reply-To: <20090519090610.GA29967@srcf.ucam.org>
+	Tue, 19 May 2009 08:55:18 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4A12AC0D.7000701@s5r6.in-berlin.de>
+Date: Tue, 19 May 2009 14:54:37 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.21) Gecko/20090411 SeaMonkey/1.1.16
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+CC: Ingo Molnar <mingo@elte.hu>, Jiri Slaby <jirislaby@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Li Zefan <lizf@cn.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] tracing: use strlcpy instead of strncpy
+References: <4A11480F.3030000@cn.fujitsu.com> <4A11CB5C.8070800@gmail.com> <4A1210B6.80605@cn.fujitsu.com>
+In-Reply-To: <4A1210B6.80605@cn.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905191447.34000.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Dienstag, 19. Mai 2009 11:06:12 schrieb Matthew Garrett:
-> On Mon, May 18, 2009 at 10:14:24PM -0700, Marcel Holtmann wrote:
-> > Hi Matthew,
-> >
-> > > Ok. I don't think the right way to implement this is forcing
-> > > dell-laptop to simulate an unplug. The HCI driver should be responsible
-> > > for saving and restoring state of the device in its suspend/resume
-> > > method.
-> >
-> > what do you expect the generic USB driver to do? I don't see anything we
-> > can do about it, if the device gets removed from underneath us.
->
-> If the device is getting removed from underneath you, why isn't hid2hci
-> being run again when it reappears as the hid device?
+Lai Jiangshan wrote:
+> [Impact] cleanup
 
-udev triggers exactly that.
+Well, not entirely.
 
-	Regards
-		Oliver
+> --- a/kernel/trace/trace.h
+> +++ b/kernel/trace/trace.h
+> @@ -155,8 +155,8 @@ struct trace_boot_ret {
+>  struct trace_branch {
+>  	struct trace_entry	ent;
+>  	unsigned	        line;
+> -	char			func[TRACE_FUNC_SIZE+1];
+> -	char			file[TRACE_FILE_SIZE+1];
+> +	char			func[TRACE_FUNC_SIZE];
+> +	char			file[TRACE_FILE_SIZE];
+>  	char			correct;
+>  };
 
+(without change of the TRACE_????_SIZE definition)
+
+Better avoid a categorization of a patch if the change's scope exceeds 
+that of the categorization.
+-- 
+Stefan Richter
+-=====-=-=== -=-= -==-=
+http://arcgraph.de/sr/
