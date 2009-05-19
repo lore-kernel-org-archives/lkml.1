@@ -1,416 +1,265 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755127AbZESRZT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753870AbZESR0K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755127AbZESRZT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 13:25:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752484AbZESRZI
+	id S1753870AbZESR0K (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 13:26:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752949AbZESR0E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 13:25:08 -0400
-Received: from sg2ehsobe001.messaging.microsoft.com ([207.46.51.75]:38040 "EHLO
-	SG2EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751177AbZESRZH convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 13:25:07 -0400
-X-BigFish: VPS-23(zz1432R98dR1805Mzz1202hzzz32i6bh6di61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KJWJ16-02-1DE-01
-Date: Tue, 19 May 2009 19:24:49 +0200
-From: Borislav Petkov <borislav.petkov@amd.com>
-To: akpm@linux-foundation.org, greg@kroah.com, mingo@elte.hu, hpa@zytor.com
-CC: norsk5@yahoo.com, tglx@linutronix.de, mchehab@redhat.com, aris@redhat.com,
-       edt@aei.ca, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 01/22] x86: add methods for writing of an MSR on
-	several CPUs
-Message-ID: <20090519172449.GB18874@aftab>
-References: <1242390153-24493-1-git-send-email-borislav.petkov@amd.com> <1242390153-24493-2-git-send-email-borislav.petkov@amd.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-In-Reply-To: <1242390153-24493-2-git-send-email-borislav.petkov@amd.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-OriginalArrivalTime: 19 May 2009 17:24:48.0887 (UTC) FILETIME=[B625C870:01C9D8A6]
-Content-Transfer-Encoding: 8BIT
+	Tue, 19 May 2009 13:26:04 -0400
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:50627 "EHLO e9.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752484AbZESR0B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 13:26:01 -0400
+From: Mimi Zohar <zohar@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>, hooanon05@yahoo.co.jp,
+       "J. Bruce Fields" <bfields@fieldses.org>,
+       Eric Paris <eparis@redhat.com>, Hugh Dickins <hugh@veritas.com>,
+       James Morris <jmorris@namei.org>,
+       David Safford <safford@watson.ibm.com>, linux-nfs@vger.kernel.org,
+       Mimi Zohar <zohar@linux.vnet.ibm.com>, Mimi Zohar <zohar@us.ibm.com>
+Subject: [PATCH 1/3] integrity: path_check update
+Date: Tue, 19 May 2009 13:25:57 -0400
+Message-Id: <8971a1efcc5153f1c9b167997e5ca0c3c40a69d5.1242753145.git.zohar@linux.vnet.ibm.com>
+X-Mailer: git-send-email 1.6.0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+- Add support in ima_path_check() for integrity checking without
+incrementing the counts. (Required for nfsd.)
+- rename and export opencount_get to ima_counts_get
+- replace ima_shm_check calls with ima_counts_get
+- export ima_path_check
 
-On Fri, May 15, 2009 at 02:22:12PM +0200, Borislav Petkov wrote:
-> Add a struct representing a 64bit MSR pair consisting of a low and high
-> register part.
-> 
-> Also, rename msr-on-cpu.c to msr.c accordingly.
-> 
-> Reviewed-by: Mauro Carvalho Chehab <mchehab@redhat.com>
-> CC: H. Peter Anvin <hpa@zytor.com>
-> Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
-
-here's an updated version of the patch fixing a linux-next allmodconfig build
-issue.
-
-Peter, let me know in case there are any objections.
-
-Thanks.
-
---
-
-From: Borislav Petkov <borislav.petkov@amd.com>
-Date: Wed, 29 Apr 2009 15:20:11 +0200
-Subject: [PATCH UPDATED 01/22] x86: add methods for writing of an MSR on several CPUs
-
-Add a struct representing a 64bit MSR pair consisting of a low and high
-register part.
-
-Also, rename msr-on-cpu.c to msr.c accordingly.
-
-Finally, put the cpumask.h include in __KERNEL__ space and thus fix a
-allmodconfig build failure in the headers_check target. Fix a bunch of
-checkpatch issues, while at it.
-
-Reviewed-by: Mauro Carvalho Chehab <mchehab@redhat.com>
-CC: H. Peter Anvin <hpa@zytor.com>
-Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
+Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
 ---
- arch/x86/include/asm/msr.h |   23 +++++++
- arch/x86/lib/Makefile      |    2 +-
- arch/x86/lib/msr-on-cpu.c  |   97 ----------------------------
- arch/x86/lib/msr.c         |  151 ++++++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 175 insertions(+), 98 deletions(-)
- delete mode 100644 arch/x86/lib/msr-on-cpu.c
- create mode 100644 arch/x86/lib/msr.c
-
-diff --git a/arch/x86/include/asm/msr.h b/arch/x86/include/asm/msr.h
-index 638bf62..e49c14e 100644
---- a/arch/x86/include/asm/msr.h
-+++ b/arch/x86/include/asm/msr.h
-@@ -12,6 +12,17 @@
+diff --git a/fs/exec.c b/fs/exec.c
+index 998e856..618d6d1 100644
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -130,7 +130,8 @@ SYSCALL_DEFINE1(uselib, const char __user *, library)
+ 				 MAY_READ | MAY_EXEC | MAY_OPEN);
+ 	if (error)
+ 		goto exit;
+-	error = ima_path_check(&nd.path, MAY_READ | MAY_EXEC | MAY_OPEN);
++	error = ima_path_check(&nd.path, MAY_READ | MAY_EXEC | MAY_OPEN,
++			       IMA_COUNT_UPDATE);
+ 	if (error)
+ 		goto exit;
  
- #include <asm/asm.h>
- #include <asm/errno.h>
-+#include <asm/cpumask.h>
+@@ -680,7 +681,7 @@ struct file *open_exec(const char *name)
+ 	err = inode_permission(nd.path.dentry->d_inode, MAY_EXEC | MAY_OPEN);
+ 	if (err)
+ 		goto out_path_put;
+-	err = ima_path_check(&nd.path, MAY_EXEC | MAY_OPEN);
++	err = ima_path_check(&nd.path, MAY_EXEC | MAY_OPEN, IMA_COUNT_UPDATE);
+ 	if (err)
+ 		goto out_path_put;
+ 
+diff --git a/fs/namei.c b/fs/namei.c
+index 78f253c..b05a2b1 100644
+--- a/fs/namei.c
++++ b/fs/namei.c
+@@ -853,7 +853,8 @@ static int __link_path_walk(const char *name, struct nameidata *nd)
+ 			err = inode_permission(nd->path.dentry->d_inode,
+ 					       MAY_EXEC);
+ 		if (!err)
+-			err = ima_path_check(&nd->path, MAY_EXEC);
++			err = ima_path_check(&nd->path, MAY_EXEC,
++				             IMA_COUNT_UPDATE);
+  		if (err)
+ 			break;
+ 
+@@ -1515,7 +1516,8 @@ int may_open(struct path *path, int acc_mode, int flag)
+ 		return error;
+ 
+ 	error = ima_path_check(path,
+-			       acc_mode & (MAY_READ | MAY_WRITE | MAY_EXEC));
++			       acc_mode & (MAY_READ | MAY_WRITE | MAY_EXEC),
++			       IMA_COUNT_UPDATE);
+ 	if (error)
+ 		return error;
+ 	/*
+diff --git a/include/linux/ima.h b/include/linux/ima.h
+index 0e2aa45..b1b827d 100644
+--- a/include/linux/ima.h
++++ b/include/linux/ima.h
+@@ -13,14 +13,17 @@
+ #include <linux/fs.h>
+ struct linux_binprm;
+ 
++#define IMA_COUNT_UPDATE 1
++#define IMA_COUNT_LEAVE 0
 +
-+struct msr {
-+	union {
-+		struct {
-+			u32 l;
-+			u32 h;
-+		};
-+		u64 q;
-+	};
-+};
+ #ifdef CONFIG_IMA
+ extern int ima_bprm_check(struct linux_binprm *bprm);
+ extern int ima_inode_alloc(struct inode *inode);
+ extern void ima_inode_free(struct inode *inode);
+-extern int ima_path_check(struct path *path, int mask);
++extern int ima_path_check(struct path *path, int mask, int update_counts);
+ extern void ima_file_free(struct file *file);
+ extern int ima_file_mmap(struct file *file, unsigned long prot);
+-extern void ima_shm_check(struct file *file);
++extern void ima_counts_get(struct file *file);
  
- static inline unsigned long long native_read_tscp(unsigned int *aux)
+ #else
+ static inline int ima_bprm_check(struct linux_binprm *bprm)
+@@ -38,7 +41,7 @@ static inline void ima_inode_free(struct inode *inode)
+ 	return;
+ }
+ 
+-static inline int ima_path_check(struct path *path, int mask)
++static inline int ima_path_check(struct path *path, int mask, int update_counts)
  {
-@@ -216,6 +227,8 @@ do {                                                            \
- #ifdef CONFIG_SMP
- int rdmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h);
- int wrmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h);
-+int rdmsr_on_cpus(const cpumask_t *mask, u32 msr_no, struct msr *msrs);
-+int wrmsr_on_cpus(const cpumask_t *mask, u32 msr_no, struct msr *msrs);
- int rdmsr_safe_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h);
- int wrmsr_safe_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h);
- #else  /*  CONFIG_SMP  */
-@@ -229,6 +242,16 @@ static inline int wrmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h)
- 	wrmsr(msr_no, l, h);
  	return 0;
  }
-+static inline int rdmsr_on_cpus(const cpumask_t *m, u32 msr_no,
-+				struct msr **msrs)
-+{
-+	return rdmsr_on_cpu(msr_no, &(msrs[0].l), &(msrs[0].h));
-+}
-+static inline int wrmsr_on_cpus(const cpumask_t *m, u32 msr_no,
-+				struct msr **msrs)
-+{
-+	return wrmsr_on_cpu(msr_no, msrs[0].l, msrs[0].h);
-+}
- static inline int rdmsr_safe_on_cpu(unsigned int cpu, u32 msr_no,
- 				    u32 *l, u32 *h)
+@@ -53,7 +56,7 @@ static inline int ima_file_mmap(struct file *file, unsigned long prot)
+ 	return 0;
+ }
+ 
+-static inline void ima_shm_check(struct file *file)
++static inline void ima_counts_get(struct file *file)
  {
-diff --git a/arch/x86/lib/Makefile b/arch/x86/lib/Makefile
-index 55e11aa..f9d3563 100644
---- a/arch/x86/lib/Makefile
-+++ b/arch/x86/lib/Makefile
-@@ -2,7 +2,7 @@
- # Makefile for x86 specific library files.
- #
+ 	return;
+ }
+diff --git a/ipc/shm.c b/ipc/shm.c
+index faa46da..47b4642 100644
+--- a/ipc/shm.c
++++ b/ipc/shm.c
+@@ -384,7 +384,7 @@ static int newseg(struct ipc_namespace *ns, struct ipc_params *params)
+ 	error = PTR_ERR(file);
+ 	if (IS_ERR(file))
+ 		goto no_file;
+-	ima_shm_check(file);
++	ima_counts_get(file);
  
--obj-$(CONFIG_SMP) := msr-on-cpu.o
-+obj-$(CONFIG_SMP) := msr.o
+ 	id = ipc_addid(&shm_ids(ns), &shp->shm_perm, ns->shm_ctlmni);
+ 	if (id < 0) {
+@@ -891,7 +891,7 @@ long do_shmat(int shmid, char __user *shmaddr, int shmflg, ulong *raddr)
+ 	file = alloc_file(path.mnt, path.dentry, f_mode, &shm_file_operations);
+ 	if (!file)
+ 		goto out_free;
+-	ima_shm_check(file);
++	ima_counts_get(file);
  
- lib-y := delay.o
- lib-y += thunk_$(BITS).o
-diff --git a/arch/x86/lib/msr-on-cpu.c b/arch/x86/lib/msr-on-cpu.c
-deleted file mode 100644
-index 321cf72..0000000
---- a/arch/x86/lib/msr-on-cpu.c
-+++ /dev/null
-@@ -1,97 +0,0 @@
--#include <linux/module.h>
--#include <linux/preempt.h>
--#include <linux/smp.h>
--#include <asm/msr.h>
--
--struct msr_info {
--	u32 msr_no;
--	u32 l, h;
--	int err;
--};
--
--static void __rdmsr_on_cpu(void *info)
--{
--	struct msr_info *rv = info;
--
--	rdmsr(rv->msr_no, rv->l, rv->h);
--}
--
--static void __wrmsr_on_cpu(void *info)
--{
--	struct msr_info *rv = info;
--
--	wrmsr(rv->msr_no, rv->l, rv->h);
--}
--
--int rdmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h)
--{
--	int err;
--	struct msr_info rv;
--
--	rv.msr_no = msr_no;
--	err = smp_call_function_single(cpu, __rdmsr_on_cpu, &rv, 1);
--	*l = rv.l;
--	*h = rv.h;
--
--	return err;
--}
--
--int wrmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h)
--{
--	int err;
--	struct msr_info rv;
--
--	rv.msr_no = msr_no;
--	rv.l = l;
--	rv.h = h;
--	err = smp_call_function_single(cpu, __wrmsr_on_cpu, &rv, 1);
--
--	return err;
--}
--
--/* These "safe" variants are slower and should be used when the target MSR
--   may not actually exist. */
--static void __rdmsr_safe_on_cpu(void *info)
--{
--	struct msr_info *rv = info;
--
--	rv->err = rdmsr_safe(rv->msr_no, &rv->l, &rv->h);
--}
--
--static void __wrmsr_safe_on_cpu(void *info)
--{
--	struct msr_info *rv = info;
--
--	rv->err = wrmsr_safe(rv->msr_no, rv->l, rv->h);
--}
--
--int rdmsr_safe_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h)
--{
--	int err;
--	struct msr_info rv;
--
--	rv.msr_no = msr_no;
--	err = smp_call_function_single(cpu, __rdmsr_safe_on_cpu, &rv, 1);
--	*l = rv.l;
--	*h = rv.h;
--
--	return err ? err : rv.err;
--}
--
--int wrmsr_safe_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h)
--{
--	int err;
--	struct msr_info rv;
--
--	rv.msr_no = msr_no;
--	rv.l = l;
--	rv.h = h;
--	err = smp_call_function_single(cpu, __wrmsr_safe_on_cpu, &rv, 1);
--
--	return err ? err : rv.err;
--}
--
--EXPORT_SYMBOL(rdmsr_on_cpu);
--EXPORT_SYMBOL(wrmsr_on_cpu);
--EXPORT_SYMBOL(rdmsr_safe_on_cpu);
--EXPORT_SYMBOL(wrmsr_safe_on_cpu);
-diff --git a/arch/x86/lib/msr.c b/arch/x86/lib/msr.c
-new file mode 100644
-index 0000000..774dc29
---- /dev/null
-+++ b/arch/x86/lib/msr.c
-@@ -0,0 +1,151 @@
-+#include <linux/module.h>
-+#include <linux/preempt.h>
-+#include <linux/smp.h>
-+#include <asm/msr.h>
-+
-+struct msr_info {
-+	u32 msr_no;
-+	u32 l, h;
-+	int err;
-+};
-+
-+static void __rdmsr_on_cpu(void *info)
+ 	file->private_data = sfd;
+ 	file->f_mapping = shp->shm_file->f_mapping;
+diff --git a/mm/shmem.c b/mm/shmem.c
+index b25f95c..a817f75 100644
+--- a/mm/shmem.c
++++ b/mm/shmem.c
+@@ -2684,7 +2684,7 @@ int shmem_zero_setup(struct vm_area_struct *vma)
+ 	if (IS_ERR(file))
+ 		return PTR_ERR(file);
+ 
+-	ima_shm_check(file);
++	ima_counts_get(file);
+ 	if (vma->vm_file)
+ 		fput(vma->vm_file);
+ 	vma->vm_file = file;
+diff --git a/security/integrity/ima/ima_main.c b/security/integrity/ima/ima_main.c
+index c4228c0..a2eb233 100644
+--- a/security/integrity/ima/ima_main.c
++++ b/security/integrity/ima/ima_main.c
+@@ -125,6 +125,15 @@ static int get_path_measurement(struct ima_iint_cache *iint, struct file *file,
+ 	return rc;
+ }
+ 
++static void ima_update_counts(struct ima_iint_cache *iint, int mask)
 +{
-+	struct msr_info *rv = info;
-+
-+	rdmsr(rv->msr_no, rv->l, rv->h);
++	iint->opencount++;
++	if ((mask & MAY_WRITE) || (mask == 0))
++		iint->writecount++;
++	else if (mask & (MAY_READ | MAY_EXEC))
++		iint->readcount++;
 +}
 +
-+static void __wrmsr_on_cpu(void *info)
-+{
-+	struct msr_info *rv = info;
-+
-+	wrmsr(rv->msr_no, rv->l, rv->h);
-+}
-+
-+int rdmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h)
-+{
-+	int err;
-+	struct msr_info rv;
-+
-+	rv.msr_no = msr_no;
-+	err = smp_call_function_single(cpu, __rdmsr_on_cpu, &rv, 1);
-+	*l = rv.l;
-+	*h = rv.h;
-+
-+	return err;
-+}
-+EXPORT_SYMBOL(rdmsr_on_cpu);
-+
-+int wrmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h)
-+{
-+	int err;
-+	struct msr_info rv;
-+
-+	rv.msr_no = msr_no;
-+	rv.l = l;
-+	rv.h = h;
-+	err = smp_call_function_single(cpu, __wrmsr_on_cpu, &rv, 1);
-+
-+	return err;
-+}
-+EXPORT_SYMBOL(wrmsr_on_cpu);
-+
-+/* rdmsr on a bunch of CPUs
-+ *
-+ * @mask:	which CPUs
-+ * @msr_no:	which MSR
-+ * @msrs:	array of MSR values
-+ *
-+ * Returns:
-+ * 0 - success
-+ * <0 - read failed on at least one CPU (latter in the mask)
-+ */
-+int rdmsr_on_cpus(const cpumask_t *mask, u32 msr_no, struct msr *msrs)
-+{
-+	struct msr *reg;
-+	int cpu, tmp, err = 0;
-+	int off = cpumask_first(mask);
-+
-+	for_each_cpu(cpu, mask) {
-+		reg = &msrs[cpu - off];
-+
-+		tmp = rdmsr_on_cpu(cpu, msr_no, &reg->l, &reg->h);
-+		if (tmp)
-+			err = tmp;
-+	}
-+	return err;
-+}
-+EXPORT_SYMBOL(rdmsr_on_cpus);
-+
+ /**
+  * ima_path_check - based on policy, collect/store measurement.
+  * @path: contains a pointer to the path to be measured
+@@ -143,7 +152,7 @@ static int get_path_measurement(struct ima_iint_cache *iint, struct file *file,
+  * Return 0 on success, an error code on failure.
+  * (Based on the results of appraise_measurement().)
+  */
+-int ima_path_check(struct path *path, int mask)
++int ima_path_check(struct path *path, int mask, int update_counts)
+ {
+ 	struct inode *inode = path->dentry->d_inode;
+ 	struct ima_iint_cache *iint;
+@@ -157,11 +166,8 @@ int ima_path_check(struct path *path, int mask)
+ 		return 0;
+ 
+ 	mutex_lock(&iint->mutex);
+-	iint->opencount++;
+-	if ((mask & MAY_WRITE) || (mask == 0))
+-		iint->writecount++;
+-	else if (mask & (MAY_READ | MAY_EXEC))
+-		iint->readcount++;
++	if (update_counts)
++		ima_update_counts(iint, mask);
+ 
+ 	rc = ima_must_measure(iint, inode, MAY_READ, PATH_CHECK);
+ 	if (rc < 0)
+@@ -197,6 +203,7 @@ out:
+ 	kref_put(&iint->refcount, iint_free);
+ 	return 0;
+ }
++EXPORT_SYMBOL_GPL(ima_path_check);
+ 
+ static int process_measurement(struct file *file, const unsigned char *filename,
+ 			       int mask, int function)
+@@ -225,7 +232,16 @@ out:
+ 	return rc;
+ }
+ 
+-static void opencount_get(struct file *file)
 +/*
-+ * wrmsr of a bunch of CPUs
++ * ima_opens_get - increment file counts
 + *
-+ * @mask:	which CPUs
-+ * @msr_no:	which MSR
-+ * @msrs:	array of MSR values
-+  *
-+ * Returns:
-+ * 0 - success
-+ * <0 - write failed on at least one CPU (latter in the mask)
++ * - for IPC shm and shmat file.
++ * - for nfsd exported files.
++ *
++ * Increment the counts for these files to prevent unnecessary
++ * imbalance messages.
 + */
-+int wrmsr_on_cpus(const cpumask_t *mask, u32 msr_no, struct msr *msrs)
-+{
-+	struct msr reg;
-+	int cpu, tmp, err = 0;
-+	int off = cpumask_first(mask);
++void ima_counts_get(struct file *file)
+ {
+ 	struct inode *inode = file->f_dentry->d_inode;
+ 	struct ima_iint_cache *iint;
+@@ -237,8 +253,14 @@ static void opencount_get(struct file *file)
+ 		return;
+ 	mutex_lock(&iint->mutex);
+ 	iint->opencount++;
++	if ((file->f_mode & (FMODE_READ | FMODE_WRITE)) == FMODE_READ)
++		iint->readcount++;
 +
-+	for_each_cpu(cpu, mask) {
-+		reg = msrs[cpu - off];
-+
-+		tmp = wrmsr_on_cpu(cpu, msr_no, reg.l, reg.h);
-+		if (tmp)
-+			err = tmp;
-+	}
-+	return err;
-+}
-+EXPORT_SYMBOL(wrmsr_on_cpus);
-+
-+/* These "safe" variants are slower and should be used when the target MSR
-+   may not actually exist. */
-+static void __rdmsr_safe_on_cpu(void *info)
-+{
-+	struct msr_info *rv = info;
-+
-+	rv->err = rdmsr_safe(rv->msr_no, &rv->l, &rv->h);
-+}
-+
-+static void __wrmsr_safe_on_cpu(void *info)
-+{
-+	struct msr_info *rv = info;
-+
-+	rv->err = wrmsr_safe(rv->msr_no, rv->l, rv->h);
-+}
-+
-+int rdmsr_safe_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h)
-+{
-+	int err;
-+	struct msr_info rv;
-+
-+	rv.msr_no = msr_no;
-+	err = smp_call_function_single(cpu, __rdmsr_safe_on_cpu, &rv, 1);
-+	*l = rv.l;
-+	*h = rv.h;
-+
-+	return err ? err : rv.err;
-+}
-+EXPORT_SYMBOL(rdmsr_safe_on_cpu);
-+
-+int wrmsr_safe_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h)
-+{
-+	int err;
-+	struct msr_info rv;
-+
-+	rv.msr_no = msr_no;
-+	rv.l = l;
-+	rv.h = h;
-+	err = smp_call_function_single(cpu, __wrmsr_safe_on_cpu, &rv, 1);
-+
-+	return err ? err : rv.err;
-+}
-+EXPORT_SYMBOL(wrmsr_safe_on_cpu);
++	if (file->f_mode & FMODE_WRITE)
++		iint->writecount++;
+ 	mutex_unlock(&iint->mutex);
+ }
++EXPORT_SYMBOL_GPL(ima_counts_get);
+ 
+ /**
+  * ima_file_mmap - based on policy, collect/store measurement.
+@@ -263,18 +285,6 @@ int ima_file_mmap(struct file *file, unsigned long prot)
+ 	return 0;
+ }
+ 
+-/*
+- * ima_shm_check - IPC shm and shmat create/fput a file
+- *
+- * Maintain the opencount for these files to prevent unnecessary
+- * imbalance messages.
+- */
+-void ima_shm_check(struct file *file)
+-{
+-	opencount_get(file);
+-	return;
+-}
+-
+ /**
+  * ima_bprm_check - based on policy, collect/store measurement.
+  * @bprm: contains the linux_binprm structure
 -- 
-1.6.2.4
-
-
--- 
-Regards/Gruss,
-Boris.
-
-Operating | Advanced Micro Devices GmbH
-  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
- Research | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
-  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-  (OSRC)  | Registergericht München, HRB Nr. 43632
+1.6.0.6
 
