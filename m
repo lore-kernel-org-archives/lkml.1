@@ -1,76 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755303AbZESNIf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755220AbZESNDV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755303AbZESNIf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 09:08:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753926AbZESNI3
+	id S1755220AbZESNDV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 09:03:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753440AbZESNDO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 09:08:29 -0400
-Received: from www.tglx.de ([62.245.132.106]:50863 "EHLO www.tglx.de"
+	Tue, 19 May 2009 09:03:14 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:54641 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753776AbZESNI3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 09:08:29 -0400
-Date: Tue, 19 May 2009 15:07:08 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Shaohua Li <shaohua.li@intel.com>
-cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, mingo@redhat.com,
-       thisistempbox@yahoo.com, lenb@kernel.org
-Subject: Re: [PATCH 2/2]cpuidle: makes AMD C1E works in suspend/resume path
-In-Reply-To: <20090519080954.GB12117@sli10-desk.sh.intel.com>
-Message-ID: <alpine.LFD.2.00.0905191456050.5983@localhost.localdomain>
-References: <20090519080954.GB12117@sli10-desk.sh.intel.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1752108AbZESNDO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 09:03:14 -0400
+Date: Tue, 19 May 2009 15:03:00 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: jeremy@goop.org, x86@kernel.org, linux-kernel@vger.kernel.org,
+       xen-devel@lists.xensource.com, gregkh@suse.de, okir@suse.de
+Subject: Re: Where do we stand with the Xen patches?
+Message-ID: <20090519130300.GB6238@elte.hu>
+References: <4A0C770E.2030305@goop.org> <20090518103520J.fujita.tomonori@lab.ntt.co.jp> <20090518084052.GD10687@elte.hu> <20090519142626X.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090519142626X.fujita.tomonori@lab.ntt.co.jp>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 19 May 2009, Shaohua Li wrote:
 
-> When AMD C1E is enabled, local APIC timer will stop even in C1. To avoid
-> suspend/resume hang, this patch removes C1 and replace it with a cpu_relax() in
-> suspend/resume path. This hasn't any impact in runtime path.
+* FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+
+> On Mon, 18 May 2009 10:40:52 +0200
+> Ingo Molnar <mingo@elte.hu> wrote:
 > 
-> http://bugzilla.kernel.org/show_bug.cgi?id=13233
+> > 
+> > * FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+> > 
+> > > On Thu, 14 May 2009 12:54:54 -0700
+> > > Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+> > > 
+> > > > Hi Ingo,
+> > > > 
+> > > > Over the last week or so, I've set out pull requests for the following 
+> > > > branches in git://git.kernel.org/pub/scm/linux/kernel/git/jeremy/xen.git :
+> > > > 
+> > > > for-ingo/xen/dom0/core
+> > > > 
+> > > >     You made two comments about the first post of this set:
+> > > > 
+> > > >        1. The // comments in the mtrr code.  Now fixed.
+> > > >        2. A query about when Xen can support PAT.  In progress; when its
+> > > >           done, we can remove the unconditional PAT disable.
+> > > > 
+> > > > for-ingo/xen/dom0/pci
+> > > > for-ingo/xen/dom0/swiotlb
+> > > > 
+> > > >     Updated with Joerg Roedel, FUJITA Tomonori and Matthew Wilcox's
+> > > >     comments,  Acked-by and Reviewed-bys as appropriate.
+> > > 
+> > > The original code added dom0-specific dma mapping stuff in the 
+> > > generic place, which is completely wrong. I asked you to move the 
+> > > hacky stuff to Xen-specific code and ack'ed the patchset.
+> > > 
+> > > But as I said again and again, the dom0 changes to the generic dma 
+> > > mapipng code is really ugly and I don't like them at all. I didn't 
+> > > ack'ed such changes.
+> > 
+> > How should it be solved instead? Can you see a clean way to achieve 
+> > it? (maybe you already explained it in past threads - if yes then 
+> > have you got subject lines or URIs to that?)
 > 
-> [ impact: avoid suspend/resume hang in AMD CPU with C1E enabled ]
-> 
-> Tested-by: Dmitry Lyzhyn <thisistempbox@yahoo.com>
-> Signed-off-by: Shaohua Li <shaohua.li@intel.com>
-> ---
->  drivers/acpi/processor_idle.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> Index: linux/drivers/acpi/processor_idle.c
-> ===================================================================
-> --- linux.orig/drivers/acpi/processor_idle.c	2009-05-19 09:56:59.000000000 +0800
-> +++ linux/drivers/acpi/processor_idle.c	2009-05-19 10:01:23.000000000 +0800
-> @@ -834,8 +834,8 @@ static int acpi_idle_enter_c1(struct cpu
->  
->  	/* Do not access any ACPI IO ports in suspend path */
->  	if (acpi_idle_suspend) {
-> -		acpi_safe_halt();
->  		local_irq_enable();
-> +		cpu_relax();
->  		return 0;
->  	}
+> If we really need to merge dom0 support, then dom0 should have the 
+> own IOMMU implementation instead of adding any hacks to swiotlb 
+> (as I said long time ago). Yeah, there might be some duplication 
+> between swiotlb and the Xen IOMMU but IMO it's better to have 
+> clean code with some duplication rather than ugly unified code; 
+> unification makes sense only if we do cleanly.
 
-Hmm, we removed the pm_idle_safe logic which took care of that in
-older kernel versions :(
+Well, but since we merged PowerPC highmem support ... the precedent 
+is there already that the swiotlb code can be librarized and 
+generalized some more, right?
 
-        if (!cx || acpi_idle_suspend) {
-                if (pm_idle_save)
-                        pm_idle_save();
-                else
-                        acpi_safe_halt();
-                return;
-        }
+What is the fundamental difference between a DMA32 device on native 
+hardware using lib/swiotlb.c to bounce IO directed to/from a high 
+address over buffers in a low, DMA-capable address, and between a 
+Xen Dom0 instance using the same functionality to DMA buffers?
 
-That's what took care of the broadcast on those AMD C1E machines as
-well.
+The payback is significant: Linux drivers can be used basically 
+as-is (as far as their DMA functionality goes) in a Xen dom0 guest.
 
-But yeah, that cpu_relax() loop is probably fine for the suspend path.
+There's really just two non-standard Xen features compared to the 
+PowerPC-highmem use:
 
-Thanks,
+ - special allocation
 
-	tglx
+ - non-standard virtual/physical/bus memory translations
+
+The latter is understandable - Xen cannot do the (mostly-) linear 
+transformations that (most) platforms can do in their address 
+transformation primitives. But other than the non-linearity, it's a 
+"mapping" just as much.
+
+The special allocator is arguably a bit of a hack - Xen should 
+_probably_ recognize GFP_DMA32 allocations at the page allocator 
+level and rearrange buffers there.
+
+So realizing that dom0 _has_ to have guest OS help here, the best 
+possible design seems to be to minimalize the Xen cross section to 
+Linux, while still keeping it fast enough. And that seems to be 
+these two straightforward hooks: 'ready buffers for DMA' and 'map 
+addresses'. As long as we'll want to have swiotlb code in the 
+kernel, we'll deal with such primitives anyway - so there doesnt 
+seem to be a significant mainteinance drag here.
+
+Hm?
+
+	Ingo
