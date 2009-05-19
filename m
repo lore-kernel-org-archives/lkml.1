@@ -1,98 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756189AbZESOzG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755707AbZESO5F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756189AbZESOzG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 10:55:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755025AbZESOy4
+	id S1755707AbZESO5F (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 10:57:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753224AbZESO46
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 10:54:56 -0400
-Received: from www.tglx.de ([62.245.132.106]:50531 "EHLO www.tglx.de"
+	Tue, 19 May 2009 10:56:58 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:39659 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753972AbZESOyy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 10:54:54 -0400
-Date: Tue, 19 May 2009 16:53:53 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Stanislaw Gruszka <sgruszka@redhat.com>
-cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Oleg Nesterov <oleg@redhat.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH resend3 2/2] itimers: fix periodic tics precision
-In-Reply-To: <20090518135028.3ce0f44e@dhcp-lab-109.englab.brq.redhat.com>
-Message-ID: <alpine.LFD.2.00.0905191552170.5983@localhost.localdomain>
-References: <20090518135028.3ce0f44e@dhcp-lab-109.englab.brq.redhat.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1753289AbZESO46 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 10:56:58 -0400
+Message-ID: <4A12C84A.5070100@redhat.com>
+Date: Tue, 19 May 2009 16:55:06 +0200
+From: Gerd Hoffmann <kraxel@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Ingo Molnar <mingo@elte.hu>
+CC: Jan Beulich <JBeulich@novell.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [Xen-devel] Re: [GIT PULL] xen /proc/mtrr implementation
+References: <20090518085902.GE10687@elte.hu> <4A11A3F8.1010202@goop.org> <20090519095918.GA11790@elte.hu> <4A12A46A02000078000017E1@vpn.id2.novell.com> <20090519110837.GA10548@elte.hu> <4A12A05C.6050004@redhat.com> <20090519122623.GD14305@elte.hu> <4A12B244.8070301@redhat.com> <20090519133138.GA8410@elte.hu> <4A12B97C.9040706@redhat.com> <20090519141708.GA6008@elte.hu>
+In-Reply-To: <20090519141708.GA6008@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 18 May 2009, Stanislaw Gruszka wrote:
->  int do_getitimer(int which, struct itimerval *value)
-> @@ -133,18 +134,20 @@ enum hrtimer_restart it_real_fn(struct hrtimer *timer)
->  }
->  
->  static void set_cpu_itimer(struct task_struct *tsk, unsigned int clock_id,
-> -			   struct itimerval *value, struct itimerval *ovalue)
-> +			   const struct itimerval *const value,
-> +			   struct itimerval *const ovalue)
->  {
-> -	cputime_t cval, cinterval, nval, ninterval;
-> +	cputime_t cval, nval;
-> +	ktime_t kt_cinterval, kt_ninterval;
+>>>> No, the linux kernel probably should do the wrmsr on one cpu only then.
+>>> Why?
 
-  Just nitpicking. That kt_ prefix is not really helpful, but that's
-  my personal taste :)
+> | The change of MTRR's on _any_ of the guest CPUs in a dom0 context
+> | should immediately be refected on all CPUs. Assymetric MTRR
+> | settings are madness.
 
-> diff --git a/kernel/posix-cpu-timers.c b/kernel/posix-cpu-timers.c
-> index b6accca..905734b 100644
-> --- a/kernel/posix-cpu-timers.c
-> +++ b/kernel/posix-cpu-timers.c
-> @@ -1080,9 +1080,27 @@ static void check_cpu_itimer(struct task_struct *tsk, struct cpu_itimer *it,
->  		return;
->  
->  	if (cputime_ge(cur_time, it->expires)) {
-> -		it->expires = it->incr;
-> -		if (!cputime_eq(it->expires, cputime_zero)) {
-> -			it->expires = cputime_add(it->expires, cur_time);
-> +		if (it->incr.tv64 != 0) {
-> +			ktime_t incr, real_incr, diff;
-> +			cputime_t cpu_incr;
-> +			struct timespec ts_incr, ts_real_incr;
-> +
-> +			incr = ktime_sub_ns(it->incr, it->err_ns);
-> +			if (unlikely(incr.tv64 <= 0))
-> +				incr = ktime_set(0, 1);
-> +
-> +			ts_incr = ktime_to_timespec(incr);
-> +			cpu_incr = timespec_to_cputime(&ts_incr);
-> +
-> +			cputime_to_timespec(cpu_incr, &ts_real_incr);
-> +			real_incr = timespec_to_ktime(ts_real_incr);
+Exactly.  And thats why it is pointless to let the dom0 kernel write the 
+mtrr msrs on more than one cpu.
 
-  Yuck, we convert back and forth here. That's lots of really
-  expensive math operations.
+>>>> Oops, the third "proper technical solutions" is missing.
+>>> Yeah, the third one is to not touch MTRRs after bootup and use PAT.
+>> Works only in case the CPU has PAT support.
+>
+> Which specific CPU without PAT support do you worry about?
 
-  ktime -> timespec -> cputime -> timespec -> ktime
+For example:  I have a Notebook here, with MTRR and without PAT 
+according to the boot log.  "Pentium III (Coppermine)" says /proc/cpuinfo.
 
-  Isn't there a more intelligent way to get the delta ?
-
-  We can precompute the real (cputime) increment of the given
-  increment value, which should be always >= the precise increment
-  value. We also can precompute the ktime_t value of one cputime
-  increment.
-
-  So now we can do:
-
-  it->expires = cputime_add(it->expires, it->cpu_incr);
-  it->error = ktime_add(it->error, it->incr_error);
-  if (it->error.tv64 >= onecputimetick.tv64) {
-  	it->expires--;
-	it->error = ktime_sub(it->error, onecputimetick);
-  }
-
-  And the whole function boils down to simple add/sub/compare math.
-
-Thanks,
-
-	tglx
+cheers,
+   Gerd
