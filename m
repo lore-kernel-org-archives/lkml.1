@@ -1,49 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754885AbZESI6w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755560AbZESI7H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754885AbZESI6w (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 04:58:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751179AbZESI6p
+	id S1755560AbZESI7H (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 04:59:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752850AbZESI65
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 04:58:45 -0400
-Received: from mail-bw0-f174.google.com ([209.85.218.174]:62960 "EHLO
-	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750720AbZESI6o convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 04:58:44 -0400
+	Tue, 19 May 2009 04:58:57 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:50171 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750721AbZESI64 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 04:58:56 -0400
+Date: Tue, 19 May 2009 10:58:25 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, davem@davemloft.net, dada1@cosmosbay.com,
+       zbr@ioremap.net, jeff.chua.linux@gmail.com, paulus@samba.org,
+       laijs@cn.fujitsu.com, jengelh@medozas.de, r000n@r000n.net,
+       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
+Subject: Re: [PATCH RFC] v5 expedited "big hammer" RCU grace periods
+Message-ID: <20090519085825.GA9388@elte.hu>
+References: <20090517191141.GA25915@linux.vnet.ibm.com> <20090518075630.GA10687@elte.hu> <20090518151421.GB6768@linux.vnet.ibm.com> <20090518154241.GA27047@elte.hu> <20090518160254.GD6768@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <783496.86803.qm@web32608.mail.mud.yahoo.com>
-References: <yO1BmxN79sN.A.xAG.8_zDKB@chimera> <pQ9WADCjgyE.A.scG.LA0DKB@chimera> 
-	<424718.52835.qm@web32607.mail.mud.yahoo.com> <ac3eb2510905181726q3b996b8ei9c6a74fe1d3bb17d@mail.gmail.com> 
-	<783496.86803.qm@web32608.mail.mud.yahoo.com>
-From: Kay Sievers <kay.sievers@vrfy.org>
-Date: Tue, 19 May 2009 10:58:24 +0200
-Message-ID: <ac3eb2510905190158o6682f7aat62ff66ac9aaa2a74@mail.gmail.com>
-Subject: Re: [Bug #13178] Booting very slow
-To: Martin Knoblauch <spamtrap@knobisoft.de>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090518160254.GD6768@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 19, 2009 at 09:22, Martin Knoblauch <spamtrap@knobisoft.de> wrote:
->> >  The issue is still open. It turns out that starting with 2.6.29-rc1
->> /proc/mounts already has a "sysfs" line when entering the startup scripts from
->> initrd. This breaks the RHEL4 firmware hotplug script.
->>
->> Is that possibly a missing/failing "umount /sys" _in_ initramfs, which
->> leaves the sysfs entry in /proc/mounts behind, which then shows up as
->> a duplicate when running in the real rootfs?
->
->  could be. Remains the question, why it never showed up before 2.6.29. I compared my initrd images for 2.6.28 and 2.6.29-rc1, and they only differ in the module-binaries.
 
-I wouldn't be surprised if we are just "too fast" again now with the
-async stuff, for another piece of rather fragile userspace bootup
-logic, making some wrong assumptions. Are you compiling-in the modules
-for the root disk and the root filesystem?
+* Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
 
-Cheers,
-Kay
+> On Mon, May 18, 2009 at 05:42:41PM +0200, Ingo Molnar wrote:
+> > 
+> > * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+> > 
+> > > > i might be missing something fundamental here, but why not just 
+> > > > have per CPU helper threads, all on the same waitqueue, and wake 
+> > > > them up via a single wake_up() call? That would remove the SMP 
+> > > > cross call (wakeups do immediate cross-calls already).
+> > > 
+> > > My concern with this is that the cache misses accessing all the 
+> > > processes on this single waitqueue would be serialized, slowing 
+> > > things down. In contrast, the bitmask that smp_call_function() 
+> > > traverses delivers on the order of a thousand CPUs' worth of bits 
+> > > per cache miss.  I will give it a try, though.
+> > 
+> > At least if you go via the migration threads, you can queue up 
+> > requests to them locally. But there's going to be cachemisses 
+> > _anyway_, since you have to access them all from a single CPU, 
+> > and then they have to fetch details about what to do, and then 
+> > have to notify the originator about completion.
+> 
+> Ah, so you are suggesting that I use smp_call_function() to run 
+> code on each CPU that wakes up that CPU's migration thread?  I 
+> will take a look at this.
+
+My suggestion was to queue up a dummy 'struct migration_req' up with 
+it (change migration_req::task == NULL to mean 'nothing') and simply 
+wake it up using wake_up_process().
+
+That will force a quiescent state, without the need for any extra 
+information, right?
+
+This is what the scheduler code does, roughly:
+
+                wake_up_process(rq->migration_thread);
+                wait_for_completion(&req.done);
+
+and this will always have to perform well. The 'req' could be put 
+into PER_CPU, and a loop could be done like this:
+
+	for_each_online_cpu(cpu)
+                wake_up_process(cpu_rq(cpu)->migration_thread);
+
+	for_each_online_cpu(cpu)
+                wait_for_completion(&per_cpu(req, cpu).done);
+
+hm?
+
+	Ingo
