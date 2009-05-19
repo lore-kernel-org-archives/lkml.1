@@ -1,53 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754650AbZESPvS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754444AbZESPyR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754650AbZESPvS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 11:51:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752949AbZESPvJ
+	id S1754444AbZESPyR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 11:54:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751979AbZESPyG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 11:51:09 -0400
-Received: from sh.osrg.net ([192.16.179.4]:56421 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752701AbZESPvI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 11:51:08 -0400
-Date: Wed, 20 May 2009 00:49:58 +0900
-To: hch@infradead.org
-Cc: jmoyer@redhat.com, lizf@cn.fujitsu.com, mingo@elte.hu,
-       jens.axboe@oracle.com, rostedt@goodmis.org, fweisbec@gmail.com,
-       tzanussi@gmail.com, tytso@mit.edu, swhiteho@redhat.com,
-       kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH] convert block trace points to TRACE_EVENT()
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20090519130841.GA3801@infradead.org>
-References: <4A0BB813.9080807@cn.fujitsu.com>
-	<x49ws8d45am.fsf@segfault.boston.devel.redhat.com>
-	<20090519130841.GA3801@infradead.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20090520004943Q.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Wed, 20 May 2009 00:50:01 +0900 (JST)
+	Tue, 19 May 2009 11:54:06 -0400
+Received: from d112a2.x-mailer.de ([212.162.53.4]:51527 "EHLO
+	d112a2.x-mailer.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751782AbZESPyF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 11:54:05 -0400
+Message-Id: <1632b1a819cda8ef1bd56bbe89b46dc5cf280698.1242739648.git.kkeil@pingi.linux-pingi.de>
+In-Reply-To: <cover.1242739648.git.kkeil@pingi.linux-pingi.de>
+References: <cover.1242739648.git.kkeil@pingi.linux-pingi.de>
+Subject: [PATCH 05/19] DSP now uses ring buffer for echo canceler
+From: Karsten Keil <keil@b1-systems.de>
+To: linux-kernel@vger.kernel.org
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       i4ldeveloper@listserv.isdn4linux.de
+Date: Tue, 19 May 2009 15:58:26 +0200
+X-Info: valid message
+X-Info: original Date
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 19 May 2009 09:08:41 -0400
-Christoph Hellwig <hch@infradead.org> wrote:
+From: Andreas Eversberg <andreas@eversberg.eu>
 
-> On Tue, May 19, 2009 at 08:59:29AM -0400, Jeff Moyer wrote:
-> > I'm not sure I'm comfortable with this.  Having had to diagnose
-> > performance problems using blktrace, I find the dev_t information for
-> > plugs and unplugs especially interesting.  Maybe we can still figure
-> > this out given the context in the trace, though.  Can you comment on
-> > that?
-> 
-> The problem is that right now we still allow request queues shared by
-> multiple gendisks, so we can't get at the gendisk.  The blktrace ioctl
-> interface gets around that by doing the setup with an ioctl on the
-> block device node and storing the dev_t at that point.
-> 
-> But I don't think we actually have any drivers left sharing a queue
-> that way, and I'd love to get rid of that for various reasons.
+DSP now uses ring buffer for echo canceler.
+Added missing include in l1oip_codec.c
 
-There are still some (e.g. drivers/block/floppy.c)? I though that we
-hit this when we tried to add the command filter feature though I
-might be wrong (I can't recall).
+Signed-off-by: Andreas Eversberg <andreas@eversberg.eu>
+Signed-off-by: Karsten Keil <keil@b1-systems.de>
+---
+ drivers/isdn/mISDN/dsp.h         |    3 ++-
+ drivers/isdn/mISDN/l1oip_codec.c |    1 +
+ 2 files changed, 3 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/isdn/mISDN/dsp.h b/drivers/isdn/mISDN/dsp.h
+index 98a33c5..0a4a362 100644
+--- a/drivers/isdn/mISDN/dsp.h
++++ b/drivers/isdn/mISDN/dsp.h
+@@ -112,7 +112,8 @@ struct dsp_conf {
+ 
+ #define DSP_DTMF_NPOINTS 102
+ 
+-#define ECHOCAN_BUFLEN (4*128)
++#define ECHOCAN_BUFF_SIZE 0x400 /* must be 2**n */
++#define ECHOCAN_BUFF_MASK 0x3ff /* -1 */
+ 
+ struct dsp_dtmf {
+ 	int		treshold; /* above this is dtmf (square of) */
+diff --git a/drivers/isdn/mISDN/l1oip_codec.c b/drivers/isdn/mISDN/l1oip_codec.c
+index e4ecba3..bbfd1b8 100644
+--- a/drivers/isdn/mISDN/l1oip_codec.c
++++ b/drivers/isdn/mISDN/l1oip_codec.c
+@@ -48,6 +48,7 @@ NOTE: The bytes are handled as they are law-encoded.
+ 
+ #include <linux/vmalloc.h>
+ #include <linux/mISDNif.h>
++#include <linux/in.h>
+ #include "core.h"
+ #include "l1oip.h"
+ 
+-- 
+1.6.0.2
+
