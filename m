@@ -1,65 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755602AbZESKAr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754852AbZESKFE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755602AbZESKAr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 06:00:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753476AbZESKAk
+	id S1754852AbZESKFE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 06:05:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751780AbZESKEy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 06:00:40 -0400
-Received: from cantor.suse.de ([195.135.220.2]:38670 "EHLO mx1.suse.de"
+	Tue, 19 May 2009 06:04:54 -0400
+Received: from hera.kernel.org ([140.211.167.34]:34665 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752392AbZESKAj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 06:00:39 -0400
-Date: Tue, 19 May 2009 12:00:38 +0200
-From: Jan Blunck <jblunck@suse.de>
-To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Cc: Andreas Dilger <adilger@sun.com>
-Subject: [PATCH] ext2: Explicitly assign values to on-disk enum of filetypes
-Message-ID: <20090519100038.GJ16526@bolzano.suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Organization: SUSE LINUX Products GmbH, GF Markus Rex, HRB 16746 (AG Nuernberg)
-User-Agent: Mutt/1.5.9i
+	id S1750778AbZESKEx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 06:04:53 -0400
+Message-ID: <4A128484.4000708@kernel.org>
+Date: Tue, 19 May 2009 19:05:56 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Boaz Harrosh <bharrosh@panasas.com>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>,
+       James Smart <James.Smart@Emulex.Com>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       FUJITA Tomonori <tomof@acm.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Jens Axboe <Jens.Axboe@oracle.com>
+Subject: Re: [PATCH] [SQUASHME] "FC Pass Thru support" fixed for block/for-2.6.31
+ tree
+References: <4A12797B.2060901@panasas.com>
+In-Reply-To: <4A12797B.2060901@panasas.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 19 May 2009 10:04:40 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It is somewhat dangerous to use a straight enum here, because this will
-reassign values of later variables if one of the earlier ones is removed.
+Hello, Boaz.
 
-Signed-off-by: Andreas Dilger <adilger@sun.com>
-Signed-off-by: Jan Blunck <jblunck@suse.de>
----
- include/linux/ext2_fs.h |   16 ++++++++--------
- 1 files changed, 8 insertions(+), 8 deletions(-)
+Just two minor things.
 
-diff --git a/include/linux/ext2_fs.h b/include/linux/ext2_fs.h
-index 121720d..2dfa707 100644
---- a/include/linux/ext2_fs.h
-+++ b/include/linux/ext2_fs.h
-@@ -565,14 +565,14 @@ struct ext2_dir_entry_2 {
-  * other bits are reserved for now.
-  */
- enum {
--	EXT2_FT_UNKNOWN,
--	EXT2_FT_REG_FILE,
--	EXT2_FT_DIR,
--	EXT2_FT_CHRDEV,
--	EXT2_FT_BLKDEV,
--	EXT2_FT_FIFO,
--	EXT2_FT_SOCK,
--	EXT2_FT_SYMLINK,
-+	EXT2_FT_UNKNOWN		= 0,
-+	EXT2_FT_REG_FILE	= 1,
-+	EXT2_FT_DIR		= 2,
-+	EXT2_FT_CHRDEV		= 3,
-+	EXT2_FT_BLKDEV		= 4,
-+	EXT2_FT_FIFO		= 5,
-+	EXT2_FT_SOCK		= 6,
-+	EXT2_FT_SYMLINK		= 7,
- 	EXT2_FT_MAX
- };
- 
+Boaz Harrosh wrote:
+>  	/* we assume all request payload was transferred, residual == 0 */
+> -	req->data_len = 0;
+> +	req->resid_len = 0;
+>  
+>  	if (rsp) {
+> -		rsp_len = blk_rq_bytes(rsp);
+> -		BUG_ON(job->reply->reply_payload_rcv_len > rsp_len);
+
+Maybe convert it to WARN_ON() instead of removing?
+
+>  		/* set reply (bidi) residual */
+> -		rsp->data_len = (rsp_len - job->reply->reply_payload_rcv_len);
+> +		rsp->resid_len = blk_rq_bytes(rsp) -
+> +					job->reply->reply_payload_rcv_len;
+
+With the fix-fallouts patchset it, this can be
+
+	rsp->resid_len -= job->reply->reply_payload_rcv_len;
+
+Other than above misc points,
+
+Acked-by: Tejun Heo <tj@kernel.org>
+
 -- 
-1.6.1.3
-
+tejun
