@@ -1,93 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755807AbZESJRy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755561AbZESJTO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755807AbZESJRy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 05:17:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752354AbZESJRt
+	id S1755561AbZESJTO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 05:19:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751070AbZESJS6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 05:17:49 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42764 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751738AbZESJRs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 05:17:48 -0400
-Date: Tue, 19 May 2009 11:16:31 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Kumar Gala <galak@kernel.crashing.org>,
-       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       Roland McGrath <roland@redhat.com>
-Subject: Re: [Bug #13107] LTP 20080131 causes defunct processes w/2.6.30-rc1
-Message-ID: <20090519091631.GB31404@elte.hu>
-References: <_AjETDMbIoL.A.DcH.RYzDKB@chimera> <385Pu-agh7M.A.K7C._ZzDKB@chimera> <alpine.LFD.2.01.0905171206330.3301@localhost.localdomain> <20090518144132.GA18607@redhat.com>
+	Tue, 19 May 2009 05:18:58 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:51177 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751961AbZESJS5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 05:18:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=TGJtKf+1g7XSSphAMP6YjleRw13V/ZXH2Dsm1pkH0e9LVd/n8ykKLnSVv7Yl/YKIwM
+         fYfCjcQDx/Vr+GFutEsTXFgAVlqox0XOApBGZUysxTCIkJBWsWzx4ptFrtTSg9D7SXkg
+         Kyx+A/pXICv7Rf0YNqDlxNqSGIbvO6mdkbcic=
+Message-ID: <4A12797B.2060901@panasas.com>
+Date: Tue, 19 May 2009 12:18:51 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090518144132.GA18607@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Stephen Rothwell <sfr@canb.auug.org.au>, Tejun Heo <tj@kernel.org>,
+       James Smart <James.Smart@Emulex.Com>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+CC: FUJITA Tomonori <tomof@acm.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Jens Axboe <Jens.Axboe@oracle.com>
+Subject: [PATCH] [SQUASHME] "FC Pass Thru support" fixed for block/for-2.6.31
+ tree
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Oleg Nesterov <oleg@redhat.com> wrote:
+Hi Stephen below is the correct patch for the scsi-misc build
+failure when merged after block/for-next branch.
+(Note that current linux-next fix will not work)
 
-> Sorry for delay, I had a vacation.
-> 
-> On 05/17, Linus Torvalds wrote:
-> >
-> > On Sat, 16 May 2009, Rafael J. Wysocki wrote:
-> > >
-> > > This message has been generated automatically as a part of a report
-> > > of recent regressions.
-> > >
-> > > The following bug entry is on the current list of known regressions
-> > > from 2.6.29.  Please verify if it still should be listed and let me know
-> > > (either way).
-> > >
-> > >
-> > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13107
-> > > Subject		: LTP 20080131 causes defunct processes w/2.6.30-rc1
-> > > Submitter	: Kumar Gala <galak@kernel.crashing.org>
-> > > Date		: 2009-04-09 15:43 (38 days old)
-> > > First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=b3bfa0cba867f23365b81658b47efd906830879b
-> > > References	: http://marc.info/?l=linux-kernel&m=123929187208953&w=4
-> > > 		  http://lkml.org/lkml/2009/4/10/193
-> > > Handled-By	: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-> >
-> > I think we have to revert that thing. I haven't heard of any fixes to that
-> > commit.
-> 
-> I thought this was already resolved.
-> 
-> And I don't think the kernel is buggy, this is expected behaviour. 
-> With this commit (actually, there were several patches) /sbin/init 
-> respects SIGSTOP if the caller has rights to send it, this change 
-> is intentional. I'd even say this is fix.
-> 
-> Note that even root can't stop init, SIGSTOP should be sent from 
-> the parent namespace, or from ptracer. And ptracer could obviously 
-> ptrace_stop() init even before this patch.
+Tejun please review?
 
-There's one important aspect here: _if_ a change results in 
-user-space visible behavioral change, it does not matter how correct 
-it is in the grand scheme of things. (beyond plain bugfixes solving 
-crashes, etc.) What matters is whether there's any app out there 
-that might possibly rely on the old behavior.
+James, I still think the easiest is to squash this into
+The FC Pass Thru support patch and put it in a post-merge
+tree.
+---
+From: Boaz Harrosh <bharrosh@panasas.com>
+Subject: [PATCH] [SQUASHME] "FC Pass Thru support" fixed for block/for-2.6.31 tree
 
-The LTP testcase might be synthetic, and it could be fixed and the 
-commit might even end up being correct - but some thought should be 
-expended on compatibility and real-life impact (and scope) here - 
-not just on strict 'correctness'.
+This patch should be squashed into:
+    [SCSI] FC Pass Thru support
 
-	Ingo
+If it needs to compile after Tejun's block-layer revamps
+
+Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
+---
+ drivers/scsi/scsi_transport_fc.c |   20 ++++++++------------
+ 1 files changed, 8 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/scsi/scsi_transport_fc.c b/drivers/scsi/scsi_transport_fc.c
+index 4df8c3c..41c90fe 100644
+--- a/drivers/scsi/scsi_transport_fc.c
++++ b/drivers/scsi/scsi_transport_fc.c
+@@ -3409,7 +3409,6 @@ fc_bsg_jobdone(struct fc_bsg_job *job)
+ 	struct request *req = job->req;
+ 	struct request *rsp = req->next_rq;
+ 	unsigned long flags;
+-	unsigned rsp_len = 0, req_len = blk_rq_bytes(req);
+ 	int err;
+ 
+ 	spin_lock_irqsave(&job->job_lock, flags);
+@@ -3425,16 +3424,15 @@ fc_bsg_jobdone(struct fc_bsg_job *job)
+ 		job->req->sense_len = job->reply_len;
+ 
+ 	/* we assume all request payload was transferred, residual == 0 */
+-	req->data_len = 0;
++	req->resid_len = 0;
+ 
+ 	if (rsp) {
+-		rsp_len = blk_rq_bytes(rsp);
+-		BUG_ON(job->reply->reply_payload_rcv_len > rsp_len);
+ 		/* set reply (bidi) residual */
+-		rsp->data_len = (rsp_len - job->reply->reply_payload_rcv_len);
++		rsp->resid_len = blk_rq_bytes(rsp) -
++					job->reply->reply_payload_rcv_len;
+ 	}
+ 
+-	blk_end_bidi_request(req, err, req_len, rsp_len);
++	blk_end_request_all(req, err);
+ 
+ 	fc_destroy_bsgjob(job);
+ }
+@@ -3496,7 +3494,7 @@ fc_bsg_map_buffer(struct fc_bsg_buffer *buf, struct request *req)
+ 		return -ENOMEM;
+ 	sg_init_table(buf->sg_list, req->nr_phys_segments);
+ 	buf->sg_cnt = blk_rq_map_sg(req->q, req, buf->sg_list);
+-	buf->payload_len = req->data_len;
++	buf->payload_len = blk_rq_bytes(req);
+ 	return 0;
+ }
+ 
+@@ -3762,14 +3760,12 @@ fc_bsg_request_handler(struct request_queue *q, struct Scsi_Host *shost,
+ 		return;
+ 
+ 	while (!blk_queue_plugged(q)) {
+-		req = elv_next_request(q);
+-		if (!req)
+-			break;
+-
+ 		if (rport && (rport->port_state == FC_PORTSTATE_BLOCKED))
+ 				break;
+ 
+-		blkdev_dequeue_request(req);
++		req = blk_fetch_request(q);
++		if (!req)
++			break;
+ 
+ 		if (rport && (rport->port_state != FC_PORTSTATE_ONLINE)) {
+ 			req->errors = -ENXIO;
+-- 
+1.6.2.1
+
+
