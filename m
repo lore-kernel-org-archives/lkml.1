@@ -1,432 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755811AbZESHmh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754528AbZESHpA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755811AbZESHmh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 03:42:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753970AbZESHma
+	id S1754528AbZESHpA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 03:45:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750888AbZESHox
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 03:42:30 -0400
-Received: from tango.tkos.co.il ([62.219.50.35]:43408 "EHLO tango.tkos.co.il"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753760AbZESHm3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 03:42:29 -0400
-X-Greylist: delayed 396 seconds by postgrey-1.27 at vger.kernel.org; Tue, 19 May 2009 03:42:28 EDT
-From: Baruch Siach <baruch@tkos.co.il>
-To: linux-kernel@vger.kernel.org
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-       Baruch Siach <baruch@tkos.co.il>
-Subject: [PATCH] gpio: driver for PrimeCell PL061 GPIO controller
-Date: Tue, 19 May 2009 10:35:29 +0300
-Message-Id: <1242718529-12637-1-git-send-email-baruch@tkos.co.il>
-X-Mailer: git-send-email 1.6.2.4
+	Tue, 19 May 2009 03:44:53 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:39010 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750759AbZESHow (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 03:44:52 -0400
+Subject: Re: [PATCH 2/3] vmscan: make mapped executable pages the first
+ class  citizen
+From: Peter Zijlstra <peterz@infradead.org>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Wu Fengguang <fengguang.wu@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Elladan <elladan@eskimo.com>,
+       Nick Piggin <npiggin@suse.de>, Johannes Weiner <hannes@cmpxchg.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>, "tytso@mit.edu" <tytso@mit.edu>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "minchan.kim@gmail.com" <minchan.kim@gmail.com>
+In-Reply-To: <84144f020905182339o5fb1e78eved95c4c20fd9ffa7@mail.gmail.com>
+References: <20090516090005.916779788@intel.com>
+	 <20090516090448.410032840@intel.com>
+	 <84144f020905182339o5fb1e78eved95c4c20fd9ffa7@mail.gmail.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Tue, 19 May 2009 09:44:23 +0200
+Message-Id: <1242719063.26820.457.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2009-05-19 at 09:39 +0300, Pekka Enberg wrote:
+> Hi!
+> 
+> On Sat, May 16, 2009 at 12:00 PM, Wu Fengguang <fengguang.wu@intel.com> wrote:
+> > @@ -1272,28 +1273,40 @@ static void shrink_active_list(unsigned
+> >
+> >                /* page_referenced clears PageReferenced */
+> >                if (page_mapping_inuse(page) &&
+> > -                   page_referenced(page, 0, sc->mem_cgroup, &vm_flags))
+> > +                   page_referenced(page, 0, sc->mem_cgroup, &vm_flags)) {
+> >                        pgmoved++;
+> > +                       /*
+> > +                        * Identify referenced, file-backed active pages and
+> > +                        * give them one more trip around the active list. So
+> > +                        * that executable code get better chances to stay in
+> > +                        * memory under moderate memory pressure.  Anon pages
+> > +                        * are ignored, since JVM can create lots of anon
+> > +                        * VM_EXEC pages.
+> > +                        */
+> > +                       if ((vm_flags & VM_EXEC) && !PageAnon(page)) {
+> > +                               list_add(&page->lru, &l_active);
+> > +                               continue;
+> > +                       }
+> 
+> Why do we need to skip JIT'd code? There are plenty of desktop
+> applications that use Mono, for example, and it would be nice if we
+> gave them the same treatment as native applications. Likewise, I am
+> sure all browsers that use JIT for JavaScript need to be considered.
 
-Signed-off-by: Baruch Siach <baruch@tkos.co.il>
----
- drivers/gpio/Kconfig       |    5 +
- drivers/gpio/Makefile      |    1 +
- drivers/gpio/pl061.c       |  336 ++++++++++++++++++++++++++++++++++++++++++++
- include/linux/gpio/pl061.h |   18 +++
- 4 files changed, 360 insertions(+), 0 deletions(-)
- create mode 100644 drivers/gpio/pl061.c
- create mode 100644 include/linux/gpio/pl061.h
+Its a sekrit conspiracy against bloat by making JIT'd crap run
+slower :-)
 
-diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
-index edb0253..30d7948 100644
---- a/drivers/gpio/Kconfig
-+++ b/drivers/gpio/Kconfig
-@@ -67,6 +67,11 @@ config GPIO_SYSFS
- 
- comment "Memory mapped GPIO expanders:"
- 
-+config GPIO_PL061
-+	bool "PrimeCell PL061 GPIO support"
-+	help
-+	  Say yes here to support the PrimeCell PL061 GPIO device
-+
- config GPIO_XILINX
- 	bool "Xilinx GPIO support"
- 	depends on PPC_OF
-diff --git a/drivers/gpio/Makefile b/drivers/gpio/Makefile
-index 49ac64e..ef90203 100644
---- a/drivers/gpio/Makefile
-+++ b/drivers/gpio/Makefile
-@@ -9,6 +9,7 @@ obj-$(CONFIG_GPIO_MAX732X)	+= max732x.o
- obj-$(CONFIG_GPIO_MCP23S08)	+= mcp23s08.o
- obj-$(CONFIG_GPIO_PCA953X)	+= pca953x.o
- obj-$(CONFIG_GPIO_PCF857X)	+= pcf857x.o
-+obj-$(CONFIG_GPIO_PL061)	+= pl061.o
- obj-$(CONFIG_GPIO_TWL4030)	+= twl4030-gpio.o
- obj-$(CONFIG_GPIO_XILINX)	+= xilinx_gpio.o
- obj-$(CONFIG_GPIO_BT8XX)	+= bt8xxgpio.o
-diff --git a/drivers/gpio/pl061.c b/drivers/gpio/pl061.c
-new file mode 100644
-index 0000000..87bfd7a
---- /dev/null
-+++ b/drivers/gpio/pl061.c
-@@ -0,0 +1,336 @@
-+/*
-+ *  linux/drivers/gpio/pl061.c
-+ *
-+ *  Copyright (C) 2008, 2009 Provigent Ltd.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * Driver for the ARM PrimeCell(tm) General Purpose Input/Output (PL061)
-+ *
-+ * Data sheet: ARM DDI 0190B, September 2000
-+ */
-+#include <linux/spinlock.h>
-+#include <linux/errno.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/io.h>
-+#include <linux/irq.h>
-+#include <linux/bitops.h>
-+#include <linux/workqueue.h>
-+#include <linux/gpio.h>
-+#include <linux/gpio/pl061.h>
-+
-+#define PL061_GPIO_NR	8
-+
-+struct pl061_gpio {
-+	spinlock_t		lock;
-+	spinlock_t		irq_lock;
-+	void __iomem		*base;
-+	struct gpio_chip	gc;
-+	struct work_struct	gpio_free_work;
-+	DECLARE_BITMAP(gpios_to_free, PL061_GPIO_NR);
-+};
-+
-+static u32 (*pl061_pending_irq)(int irq);
-+
-+static int pl061_direction_input(struct gpio_chip *gc, unsigned offset)
-+{
-+	struct pl061_gpio *chip = container_of(gc, struct pl061_gpio, gc);
-+	unsigned long flags;
-+	unsigned char gpiodir;
-+
-+	if (offset >= gc->ngpio)
-+		return -EINVAL;
-+
-+	spin_lock_irqsave(&chip->lock, flags);
-+	gpiodir = readb (chip->base + GPIODIR);
-+	gpiodir &= ~(1 << offset);
-+	writeb(gpiodir, chip->base + GPIODIR);
-+	spin_unlock_irqrestore(&chip->lock, flags);
-+
-+	return 0;
-+}
-+
-+static int pl061_direction_output(struct gpio_chip *gc, unsigned offset,
-+		int value)
-+{
-+	struct pl061_gpio *chip = container_of(gc, struct pl061_gpio, gc);
-+	unsigned long flags;
-+	unsigned char gpiodir;
-+
-+	if (offset >= gc->ngpio)
-+		return -EINVAL;
-+
-+	spin_lock_irqsave(&chip->lock, flags);
-+	writeb(!!value << offset, chip->base + (1 << (offset + 2)));
-+	gpiodir = readb(chip->base + GPIODIR);
-+	gpiodir |= 1 << offset;
-+	writeb(gpiodir, chip->base + GPIODIR);
-+	spin_unlock_irqrestore(&chip->lock, flags);
-+
-+	return 0;
-+}
-+
-+static int pl061_get_value (struct gpio_chip *gc, unsigned offset)
-+{
-+	struct pl061_gpio *chip = container_of(gc, struct pl061_gpio, gc);
-+
-+	return !!readb (chip->base + (1 << (offset + 2)));
-+}
-+
-+static void pl061_set_value (struct gpio_chip *gc, unsigned offset,
-+		int value)
-+{
-+	struct pl061_gpio *chip = container_of(gc, struct pl061_gpio, gc);
-+
-+	writeb (!!value << offset, chip->base + (1 << (offset + 2)));
-+}
-+
-+/*
-+ * PL061 GPIO IRQ
-+ */
-+static void pl061_irq_disable(unsigned irq)
-+{
-+	struct pl061_gpio *chip = get_irq_chip_data(irq);
-+	int offset = irq_to_gpio(irq) - chip->gc.base;
-+	unsigned long flags;
-+	u8 gpioie;
-+
-+	spin_lock_irqsave(&chip->irq_lock, flags);
-+	gpioie = readb(chip->base + GPIOIE);
-+	gpioie &= ~(1 << offset);
-+	writeb(gpioie, chip->base + GPIOIE);
-+	spin_unlock_irqrestore(&chip->irq_lock, flags);
-+}
-+
-+static void pl061_irq_shutdown(unsigned irq)
-+{
-+	struct pl061_gpio *chip = get_irq_chip_data(irq);
-+	int offset = irq_to_gpio(irq) - chip->gc.base;
-+
-+	pl061_irq_disable(irq);
-+	set_bit(offset, chip->gpios_to_free);
-+	schedule_work(&chip->gpio_free_work);
-+}
-+
-+static void pl061_irq_enable(unsigned irq)
-+{
-+	struct pl061_gpio *chip = get_irq_chip_data(irq);
-+	int offset = irq_to_gpio(irq) - chip->gc.base;
-+	unsigned long flags;
-+	u8 gpioie;
-+
-+	spin_lock_irqsave(&chip->irq_lock, flags);
-+	gpioie = readb (chip->base + GPIOIE);
-+	gpioie |= 1 << offset;
-+	writeb(gpioie, chip->base + GPIOIE);
-+	spin_unlock_irqrestore(&chip->irq_lock, flags);
-+}
-+
-+static unsigned int pl061_irq_startup(unsigned irq)
-+{
-+	int ret;
-+
-+	ret = gpio_request(irq_to_gpio(irq), "IRQ");
-+	if (ret < 0) {
-+		pr_warning("%s: warning: gpio_request(%d) returned %d\n",
-+				__func__, irq_to_gpio(irq), ret);
-+		return 0;
-+	}
-+
-+	gpio_direction_input(irq_to_gpio(irq));
-+	pl061_irq_enable(irq);
-+
-+	return 0;
-+}
-+
-+static int pl061_irq_type(unsigned irq, unsigned trigger)
-+{
-+	struct pl061_gpio *chip = get_irq_chip_data(irq);
-+	int offset = irq_to_gpio(irq) - chip->gc.base;
-+	unsigned long flags;
-+	u8 gpiois, gpioibe, gpioiev;
-+
-+	if (irq_to_gpio(irq) < 0)
-+		return -EINVAL;
-+
-+	spin_lock_irqsave(&chip->irq_lock, flags);
-+
-+	gpioiev = readb(chip->base + GPIOIEV);
-+
-+	gpiois = readb(chip->base + GPIOIS);
-+	if (trigger & (IRQ_TYPE_LEVEL_HIGH | IRQ_TYPE_LEVEL_LOW)) {
-+		gpiois |= 1 << offset;
-+		if (trigger & IRQ_TYPE_LEVEL_HIGH)
-+			gpioiev |= 1 << offset;
-+		else
-+			gpioiev &= ~(1 << offset);
-+	}
-+	else
-+		gpiois &= ~(1 << offset);
-+	writeb(gpiois, chip->base + GPIOIS);
-+
-+	gpioibe = readb(chip->base + GPIOIBE);
-+	if ((trigger & IRQ_TYPE_EDGE_BOTH) == IRQ_TYPE_EDGE_BOTH)
-+		gpioibe |= 1 << offset;
-+	else {
-+		gpioibe &= ~(1 << offset);
-+		if (trigger & IRQ_TYPE_EDGE_RISING)
-+			gpioiev |= 1 << offset;
-+		else
-+			gpioiev &= ~(1 << offset);
-+	}
-+	writeb(gpioibe, chip->base + GPIOIBE);
-+
-+	writeb(gpioiev, chip->base + GPIOIEV);
-+
-+	spin_unlock_irqrestore (&chip->irq_lock, flags);
-+
-+	return 0;
-+}
-+
-+static struct irq_chip pl061_irqchip = {
-+	.name		="GPIO",
-+	.startup	= pl061_irq_startup,
-+	.enable		= pl061_irq_enable,
-+	.disable	= pl061_irq_disable,
-+	.shutdown	= pl061_irq_shutdown,
-+	.set_type	= pl061_irq_type,
-+};
-+
-+static void pl061_irq_handler(unsigned irq, struct irq_desc *desc)
-+{
-+	desc->chip->ack(irq);
-+	while (1) {
-+		unsigned long pending;
-+		int gpio;
-+
-+		pending = pl061_pending_irq(irq);
-+		if (pending == 0)
-+			break;
-+
-+		for_each_bit(gpio, &pending, BITS_PER_LONG) {
-+			generic_handle_irq(gpio_to_irq(gpio));
-+		}
-+	}
-+	desc->chip->unmask(irq);
-+}
-+
-+static void pl061_gpio_free(struct work_struct *work)
-+{
-+	struct pl061_gpio *chip = container_of(work, struct pl061_gpio,
-+			gpio_free_work);
-+	int offset;
-+
-+	while (!bitmap_empty(chip->gpios_to_free, PL061_GPIO_NR)) {
-+		for_each_bit(offset, chip->gpios_to_free, PL061_GPIO_NR) {
-+			int gpio = offset + chip->gc.base;
-+
-+			if (test_and_clear_bit(offset, chip->gpios_to_free))
-+				gpio_free(gpio);
-+		}
-+	}
-+}
-+
-+static int __init pl061_probe(struct platform_device *dev)
-+{
-+	struct pl061_platform_data *pdata;
-+	struct pl061_gpio *chip;
-+	struct resource *r;
-+	int ret, irq, i;
-+
-+	pdata = dev->dev.platform_data;
-+	if (pdata == NULL)
-+		return -ENODEV;
-+
-+	chip = kzalloc(sizeof(*chip), GFP_KERNEL);
-+	if (chip == NULL)
-+		return -ENOMEM;
-+
-+	r = platform_get_resource(dev, IORESOURCE_MEM, 0);
-+	if (r == NULL) {
-+		ret = -ENODEV;
-+		goto free_mem;
-+	}
-+
-+	chip->base = ioremap(r->start, r->end - r->start + 1);
-+	if (chip->base == NULL) {
-+		ret = -ENOMEM;
-+		goto free_mem;
-+	}
-+
-+	spin_lock_init(&chip->lock);
-+	spin_lock_init(&chip->irq_lock);
-+
-+	bitmap_zero(chip->gpios_to_free, PL061_GPIO_NR);
-+	INIT_WORK(&chip->gpio_free_work, pl061_gpio_free);
-+
-+	chip->gc.direction_input = pl061_direction_input;
-+	chip->gc.direction_output = pl061_direction_output;
-+	chip->gc.get = pl061_get_value;
-+	chip->gc.set = pl061_set_value;
-+	chip->gc.base = pdata->gpio_base;
-+	chip->gc.ngpio = PL061_GPIO_NR;
-+	chip->gc.label = dev->name;
-+	chip->gc.dev = &dev->dev;
-+	chip->gc.owner = THIS_MODULE;
-+
-+	ret = gpiochip_add(&chip->gc);
-+	if (ret)
-+		goto iounmap;
-+
-+	/*
-+	 * irq_chip support
-+	 */
-+	writeb(0, chip->base + GPIOIE); /* disable irqs */
-+	irq = platform_get_irq(dev, 0);
-+	if (irq < 0) {
-+		ret = -ENODEV;
-+		goto iounmap;
-+	}
-+	set_irq_chained_handler(irq, pl061_irq_handler);
-+	pl061_pending_irq = pdata->pending_irqs;
-+
-+	for (i = 0; i < PL061_GPIO_NR; i++) {
-+		if (pdata->directions & (1 << i))
-+			pl061_direction_output(&chip->gc, i,
-+					pdata->values & (1 << i));
-+		else
-+			pl061_direction_input(&chip->gc, i);
-+
-+		set_irq_chip(gpio_to_irq(i+pdata->gpio_base), &pl061_irqchip);
-+		set_irq_handler(gpio_to_irq(i+pdata->gpio_base),
-+				handle_simple_irq);
-+		set_irq_flags(gpio_to_irq(i+pdata->gpio_base), IRQF_VALID);
-+		set_irq_chip_data(gpio_to_irq(i+pdata->gpio_base), chip);
-+	}
-+
-+	return 0;
-+
-+iounmap:
-+	iounmap(chip->base);
-+free_mem:
-+	kfree(chip);
-+
-+	return ret;
-+}
-+
-+static struct platform_driver pl061_gpio_driver = {
-+	.probe = pl061_probe,
-+	.driver = {
-+		.name = "pl061_gpio",
-+		.owner = THIS_MODULE,
-+	},
-+};
-+
-+static int __init pl061_gpio_init(void)
-+{
-+	return platform_driver_register(&pl061_gpio_driver);
-+}
-+subsys_initcall(pl061_gpio_init);
-+
-+MODULE_AUTHOR("Baruch Siach <baruch@tkos.co.il>");
-+MODULE_DESCRIPTION("PL061 GPIO driver");
-+MODULE_LICENSE("GPL");
-diff --git a/include/linux/gpio/pl061.h b/include/linux/gpio/pl061.h
-new file mode 100644
-index 0000000..9e18fa3
---- /dev/null
-+++ b/include/linux/gpio/pl061.h
-@@ -0,0 +1,18 @@
-+/* platform data for the PL061 GPIO driver */
-+
-+#define GPIODIR 0x400
-+#define GPIOIS  0x404
-+#define GPIOIBE 0x408
-+#define GPIOIEV 0x40C
-+#define GPIOIE  0x410
-+#define GPIORIS 0x414
-+#define GPIOMIS 0x418
-+#define GPIOIC  0x41C
-+
-+struct pl061_platform_data {
-+	/* number of the first GPIO */
-+	unsigned	gpio_base;
-+	u32		(*pending_irqs)(int irq);
-+	u8		directions;	/* startup directions, 1: out, 0: in */
-+	u8		values;		/* startup values */
-+};
--- 
-1.6.2.4
+<rant>
+Anyway, I just checked, we install tons of mono junk for _2_
+applications, f-spot and tomboy, both are shite and both have
+alternatives not requiring this disease.
+</rant>
 
+But seriously, like Kosaka-san already said, anonymous pages are treated
+differently from file pages and should not suffer the same problems.
