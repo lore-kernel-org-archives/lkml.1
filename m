@@ -1,69 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754665AbZESHtX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754320AbZESHxl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754665AbZESHtX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 03:49:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751848AbZESHtP
+	id S1754320AbZESHxl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 03:53:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752339AbZESHxe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 03:49:15 -0400
-Received: from mail.atmel.fr ([81.80.104.162]:36146 "EHLO atmel-es2.atmel.fr"
+	Tue, 19 May 2009 03:53:34 -0400
+Received: from mga03.intel.com ([143.182.124.21]:51264 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751339AbZESHtP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 03:49:15 -0400
-X-Mozilla-Keys: 
-Message-ID: <4A0D452A.4000805@atmel.com>
-Date: Fri, 15 May 2009 12:34:18 +0200
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-Organization: atmel
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	id S1751790AbZESHxe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 03:53:34 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,214,1241420400"; 
+   d="scan'208";a="144378190"
+Date: Tue, 19 May 2009 15:49:25 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Christoph Lameter <cl@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Elladan <elladan@eskimo.com>,
+       Nick Piggin <npiggin@suse.de>, Johannes Weiner <hannes@cmpxchg.org>,
+       Peter Zijlstra <peterz@infradead.org>, Rik van Riel <riel@redhat.com>,
+       "tytso@mit.edu" <tytso@mit.edu>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "minchan.kim@gmail.com" <minchan.kim@gmail.com>
+Subject: Re: [PATCH 2/3] vmscan: make mapped executable pages the first
+	class citizen
+Message-ID: <20090519074925.GA690@localhost>
+References: <20090519133422.4ECC.A69D9226@jp.fujitsu.com> <20090519071554.GA26646@localhost> <20090519161756.4EE4.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Andrew Victor <avictor.za@gmail.com>
-CC: linux-fbdev-devel@lists.sourceforge.net,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>
-Subject: [PATCH] atmel_lcdfb: Correct fifo size for some products
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090519161756.4EE4.A69D9226@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove wrong fifo size definition for some AT91 products.
+On Tue, May 19, 2009 at 03:20:19PM +0800, KOSAKI Motohiro wrote:
+> > On Tue, May 19, 2009 at 12:41:38PM +0800, KOSAKI Motohiro wrote:
+> > > Hi
+> > > 
+> > > Thanks for great works.
+> > > 
+> > > 
+> > > > SUMMARY
+> > > > =======
+> > > > The patch decreases the number of major faults from 50 to 3 during 10% cache hot reads.
+> > > > 
+> > > > 
+> > > > SCENARIO
+> > > > ========
+> > > > The test scenario is to do 100000 pread(size=110 pages, offset=(i*100) pages),
+> > > > where 10% of the pages will be activated:
+> > > > 
+> > > >         for i in `seq 0 100 10000000`; do echo $i 110;  done > pattern-hot-10
+> > > >         iotrace.rb --load pattern-hot-10 --play /b/sparse
+> > > 
+> > > 
+> > > Which can I download iotrace.rb?
+> > > 
+> > > 
+> > > > and monitor /proc/vmstat during the time. The test box has 2G memory.
+> > > > 
+> > > > 
+> > > > ANALYZES
+> > > > ========
+> > > > 
+> > > > I carried out two runs on fresh booted console mode 2.6.29 with the VM_EXEC
+> > > > patch, and fetched the vmstat numbers on
+> > > > 
+> > > > (1) begin:   shortly after the big read IO starts;
+> > > > (2) end:     just before the big read IO stops;
+> > > > (3) restore: the big read IO stops and the zsh working set restored
+> > > > 
+> > > >         nr_mapped   nr_active_file nr_inactive_file       pgmajfault     pgdeactivate           pgfree
+> > > > begin:       2481             2237             8694              630                0           574299
+> > > > end:          275           231976           233914              633           776271         20933042
+> > > > restore:      370           232154           234524              691           777183         20958453
+> > > > 
+> > > > begin:       2434             2237             8493              629                0           574195
+> > > > end:          284           231970           233536              632           771918         20896129
+> > > > restore:      399           232218           234789              690           774526         20957909
+> > > > 
+> > > > and another run on 2.6.30-rc4-mm with the VM_EXEC logic disabled:
+> > > 
+> > > I don't think it is proper comparision.
+> > > you need either following comparision. otherwise we insert many guess into the analysis.
+> > > 
+> > >  - 2.6.29 with and without VM_EXEC patch
+> > >  - 2.6.30-rc4-mm with and without VM_EXEC patch
+> > > 
+> > > 
+> > > > 
+> > > > begin:       2479             2344             9659              210                0           579643
+> > > > end:          284           232010           234142              260           772776         20917184
+> > > > restore:      379           232159           234371              301           774888         20967849
+> > > > 
+> > > > The numbers show that
+> > > > 
+> > > > - The startup pgmajfault of 2.6.30-rc4-mm is merely 1/3 that of 2.6.29.
+> > > >   I'd attribute that improvement to the mmap readahead improvements :-)
+> > > > 
+> > > > - The pgmajfault increment during the file copy is 633-630=3 vs 260-210=50.
+> > > >   That's a huge improvement - which means with the VM_EXEC protection logic,
+> > > >   active mmap pages is pretty safe even under partially cache hot streaming IO.
+> > > > 
+> > > > - when active:inactive file lru size reaches 1:1, their scan rates is 1:20.8
+> > > >   under 10% cache hot IO. (computed with formula Dpgdeactivate:Dpgfree)
+> > > >   That roughly means the active mmap pages get 20.8 more chances to get
+> > > >   re-referenced to stay in memory.
+> > > > 
+> > > > - The absolute nr_mapped drops considerably to 1/9 during the big IO, and the
+> > > >   dropped pages are mostly inactive ones. The patch has almost no impact in
+> > > >   this aspect, that means it won't unnecessarily increase memory pressure.
+> > > >   (In contrast, your 20% mmap protection ratio will keep them all, and
+> > > >   therefore eliminate the extra 41 major faults to restore working set
+> > > >   of zsh etc.)
+> > 
+> > More results on X desktop, kernel 2.6.30-rc4-mm:
+> > 
+> >         nr_mapped   nr_active_file nr_inactive_file       pgmajfault     pgdeactivate           pgfree
+> > 
+> > VM_EXEC protection ON:
+> > begin:       9740             8920            64075              561                0           678360
+> > end:          768           218254           220029              565           798953         21057006
+> > restore:      857           218543           220987              606           799462         21075710
+> > restore X:   2414           218560           225344              797           799462         21080795
+> > 
+> > VM_EXEC protection OFF:
+> > begin:       9368             5035            26389              554                0           633391
+> > end:          770           218449           221230              661           646472         17832500
+> > restore:     1113           218466           220978              710           649881         17905235
+> > restore X:   2687           218650           225484              947           802700         21083584
+> > 
+> > The added "restore X" means after IO, switch back and forth between the urxvt
+> > and firefox windows to restore their working set. I cannot explain why the
+> > absolute nr_mapped grows larger at the end of VM_EXEC OFF case. Maybe it's
+> > because urxvt is the foreground window during the first run, and firefox is the
+> > foreground window during the second run?
+> > 
+> > Like the console mode, the absolute nr_mapped drops considerably - to 1/13 of
+> > the original size - during the streaming IO.
+> > 
+> > The delta of pgmajfault is 3 vs 107 during IO, or 236 vs 393 during the whole
+> > process.
+> 
+> hmmm.
+> 
+> about 100 page fault don't match Elladan's problem, I think.
+> perhaps We missed any addional reproduce condition?
 
-Due to a misunderstanding of some AT91 datasheets, a fifo size of 2048 (words)
-has been introduced by mistake. In fact, all products (AT91/AT32) are sharing
-the same fifo size of 512 words.
+Elladan's case is not the point of this test.
+Elladan's IO is use-once, so probably not a caching problem at all.
 
-Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
----
-Can we consider this fix for .30-final ?
+This test case is specifically devised to confirm whether this patch
+works as expected. Conclusion: it is.
 
- drivers/video/atmel_lcdfb.c |   10 ++--------
- 1 files changed, 2 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
-index 9a577a8..2fb63f6 100644
---- a/drivers/video/atmel_lcdfb.c
-+++ b/drivers/video/atmel_lcdfb.c
-@@ -29,14 +29,8 @@
- 
- /* configurable parameters */
- #define ATMEL_LCDC_CVAL_DEFAULT		0xc8
--#define ATMEL_LCDC_DMA_BURST_LEN	8
--
--#if defined(CONFIG_ARCH_AT91SAM9263) || defined(CONFIG_ARCH_AT91CAP9) || \
--	defined(CONFIG_ARCH_AT91SAM9RL)
--#define ATMEL_LCDC_FIFO_SIZE		2048
--#else
--#define ATMEL_LCDC_FIFO_SIZE		512
--#endif
-+#define ATMEL_LCDC_DMA_BURST_LEN	8	/* words */
-+#define ATMEL_LCDC_FIFO_SIZE		512	/* words */
- 
- #if defined(CONFIG_ARCH_AT91)
- #define	ATMEL_LCDFB_FBINFO_DEFAULT	(FBINFO_DEFAULT \
--- 
-1.5.3.7
-
-
-
-
+Thanks,
+Fengguang
