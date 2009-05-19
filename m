@@ -1,81 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755577AbZESXOb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755424AbZESXRR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755577AbZESXOb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 19:14:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754362AbZESXOY
+	id S1755424AbZESXRR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 19:17:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754513AbZESXRF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 19:14:24 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:39808 "EHLO
+	Tue, 19 May 2009 19:17:05 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:37401 "EHLO
 	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754063AbZESXOX (ORCPT
+	with ESMTP id S1754063AbZESXRD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 19:14:23 -0400
+	Tue, 19 May 2009 19:17:03 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=BuInZnsFT7CTZnjm4DCLdBQ5t7uJpQ8rzM617KMyEpxmIOcx2Bvu4qo4DQbFhuvi8B
-         tlNXEzvkbZsq4agQCqCneercloTDGPSC0/UES15oE9+VRre0Z3t8mcNcyblOVQ/czhd0
-         r+cKBJjAedGMd8OYZrOaNyXeRrrLO7Zn5Er6E=
-Date: Wed, 20 May 2009 01:14:21 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: "K.Prasad" <prasad@linux.vnet.ibm.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [Patch 2/2] Fix the style issue seen in ksym tracer ftrace
-	plugin
-Message-ID: <20090519231418.GA6066@nowhere>
-References: <20090519161720.374172804@prasadkr_t60p.in.ibm.com> <20090519162558.GC26009@in.ibm.com>
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=ELvrfv4XFE5Ck43ZotdIFiBlc+bFNrZrbAwSs84mY+63WD1oVaBa2AVfHZ4C7QfNzZ
+         uVaD58lvPkSsDqqoYHN+xW6+Z9+JwBIKN8Fq0FhY21tRGUGoYraT506GH3htHi4u4WCD
+         MS+o7d+JqhJLI0kWhmKWjIUtgzb/yKtpp9Yxk=
+Message-ID: <4A133DEF.6080604@gmail.com>
+Date: Wed, 20 May 2009 01:17:03 +0200
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090519162558.GC26009@in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: leoli@freescale.com
+CC: linuxppc-embedded@ozlabs.org, lkml <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] freescale: beyond ARRAY_SIZE of fdev->chan
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 19, 2009 at 09:55:58PM +0530, K.Prasad wrote:
-> Fix the style issue seen in ksym tracer ftrace plugin
-> 
-> Move the extern 'process_new_ksym_entry' declaration from
-> trace_selftest.c to trace.h file due to a reported style issue.
-> 
-> Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
+Do not go beyond ARRAY_SIZE of fdev->chan
 
-
-Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
-
-
-> ---
->  kernel/trace/trace.h          |    1 +
->  kernel/trace/trace_selftest.c |    1 -
->  2 files changed, 1 insertion(+), 1 deletion(-)
-> 
-> Index: linux-2.6-tip.hbkpt/kernel/trace/trace.h
-> ===================================================================
-> --- linux-2.6-tip.hbkpt.orig/kernel/trace/trace.h
-> +++ linux-2.6-tip.hbkpt/kernel/trace/trace.h
-> @@ -213,6 +213,7 @@ struct syscall_trace_exit {
->  };
->  
->  #define KSYM_SELFTEST_ENTRY "ksym_selftest_dummy"
-> +extern int process_new_ksym_entry(char *ksymname, int op, unsigned long addr);
->  
->  struct trace_ksym {
->  	struct trace_entry	ent;
-> Index: linux-2.6-tip.hbkpt/kernel/trace/trace_selftest.c
-> ===================================================================
-> --- linux-2.6-tip.hbkpt.orig/kernel/trace/trace_selftest.c
-> +++ linux-2.6-tip.hbkpt/kernel/trace/trace_selftest.c
-> @@ -810,7 +810,6 @@ trace_selftest_startup_hw_branches(struc
->  #endif /* CONFIG_HW_BRANCH_TRACER */
->  
->  #ifdef CONFIG_KSYM_TRACER
-> -extern int process_new_ksym_entry(char *ksymname, int op, unsigned long addr);
->  static int ksym_selftest_dummy;
->  
->  int
-> 
-
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
+index da8a8ed..391b1bd 100644
+--- a/drivers/dma/fsldma.c
++++ b/drivers/dma/fsldma.c
+@@ -830,7 +830,7 @@ static int __devinit fsl_dma_chan_probe(struct fsl_dma_device *fdev,
+ 			new_fsl_chan->reg.end - new_fsl_chan->reg.start + 1);
+ 
+ 	new_fsl_chan->id = ((new_fsl_chan->reg.start - 0x100) & 0xfff) >> 7;
+-	if (new_fsl_chan->id > FSL_DMA_MAX_CHANS_PER_DEVICE) {
++	if (new_fsl_chan->id >= FSL_DMA_MAX_CHANS_PER_DEVICE) {
+ 		dev_err(fdev->dev, "There is no %d channel!\n",
+ 				new_fsl_chan->id);
+ 		err = -EINVAL;
