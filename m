@@ -1,67 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752922AbZESEAv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753449AbZESEJY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752922AbZESEAv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 00:00:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750721AbZESEAn
+	id S1753449AbZESEJY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 00:09:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750748AbZESEJQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 00:00:43 -0400
-Received: from sh.osrg.net ([192.16.179.4]:32837 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750720AbZESEAm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 00:00:42 -0400
-Date: Tue, 19 May 2009 13:00:37 +0900
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] mark dma_sync_single and dma_sync_sg as deprecated
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+	Tue, 19 May 2009 00:09:16 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46700
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750734AbZESEJP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 00:09:15 -0400
+Date: Mon, 18 May 2009 21:09:13 -0700 (PDT)
+Message-Id: <20090518.210913.206585156.davem@davemloft.net>
+To: sfr@canb.auug.org.au
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       vasu.dev@intel.com, jeykholt@cisco.com, robert.w.love@intel.com,
+       James.Bottomley@HansenPartnership.com, christopher.leech@intel.com
+Subject: Re: linux-next: manual merge of the net tree with Linus' tree
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090519133958.31ec120b.sfr@canb.auug.org.au>
+References: <20090519133958.31ec120b.sfr@canb.auug.org.au>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-Id: <20090519125630Y.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Tue, 19 May 2009 13:00:37 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-dma_sync_single() and dma_sync_sg() have been described as "Backwards
-compat, remove in 2.7.x" for a long time (since 2.6.5).
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Tue, 19 May 2009 13:39:58 +1000
 
-This marks dma_sync_single() and dma_sync_sg() as deprecated so the
-users get notified before removing them.
+> Today's linux-next merge of the net tree got a conflict in
+> drivers/scsi/fcoe/fcoe.c between commit
+> 6401bdcad536cc00589c38e7e1c140d3acc00087 ("[SCSI] fcoe: fip: add
+> multicast filter to receive FIP advertisements") from Linus' tree and
+> commit 184dd3459bb334d9061b58faed3610d08d6c7ff8 ("fcoe: adds spma mode
+> support") from the net tree.
+> 
+> There is another trivial conflict between commit
+> dd3fd72e692c8af007f70df4433c0cffe8582d8b ("[SCSI] fcoe: fix spelling
+> typos and bad comments") from Linus' tree and commit
+> ab6b85c1d7a1bf6c2b27fb542a7b2404e45b7e24 ("fcoe: consolidates netdev
+> related config and cleanup for spma mode") from the net tree.
+> 
+> Just context changes.  I fixed them up (see below) and can carry them for
+> a while.
 
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
----
- include/linux/dma-mapping.h |   17 ++++++++++++++---
- 1 files changed, 14 insertions(+), 3 deletions(-)
+I'll pull net-2.6 into net-next-2.6 and push the result to kernel.org
+to resolve this.
 
-diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
-index 8083b6a..197ddc4 100644
---- a/include/linux/dma-mapping.h
-+++ b/include/linux/dma-mapping.h
-@@ -107,9 +107,20 @@ static inline int is_buffer_dma_capable(u64 mask, dma_addr_t addr, size_t size)
- #include <asm-generic/dma-mapping-broken.h>
- #endif
- 
--/* Backwards compat, remove in 2.7.x */
--#define dma_sync_single		dma_sync_single_for_cpu
--#define dma_sync_sg		dma_sync_sg_for_cpu
-+/* for backwards compatibility, removed soon */
-+static inline void __deprecated dma_sync_single(struct device *dev,
-+						dma_addr_t addr, size_t size,
-+						enum dma_data_direction dir)
-+{
-+	dma_sync_single_for_cpu(dev, addr, size, dir);
-+}
-+
-+static inline void __deprecated dma_sync_sg(struct device *dev,
-+					    struct scatterlist *sg, int nelems,
-+					    enum dma_data_direction dir)
-+{
-+	dma_sync_sg_for_cpu(dev, sg, nelems, dir);
-+}
- 
- static inline u64 dma_get_mask(struct device *dev)
- {
--- 
-1.6.0.6
-
+Thanks!
