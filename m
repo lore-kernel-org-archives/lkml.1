@@ -1,51 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755424AbZESXRR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755310AbZESXUs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755424AbZESXRR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 19:17:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754513AbZESXRF
+	id S1755310AbZESXUs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 19:20:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754183AbZESXUi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 19:17:05 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:37401 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754063AbZESXRD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 19:17:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=ELvrfv4XFE5Ck43ZotdIFiBlc+bFNrZrbAwSs84mY+63WD1oVaBa2AVfHZ4C7QfNzZ
-         uVaD58lvPkSsDqqoYHN+xW6+Z9+JwBIKN8Fq0FhY21tRGUGoYraT506GH3htHi4u4WCD
-         MS+o7d+JqhJLI0kWhmKWjIUtgzb/yKtpp9Yxk=
-Message-ID: <4A133DEF.6080604@gmail.com>
-Date: Wed, 20 May 2009 01:17:03 +0200
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090302)
-MIME-Version: 1.0
-To: leoli@freescale.com
-CC: linuxppc-embedded@ozlabs.org, lkml <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] freescale: beyond ARRAY_SIZE of fdev->chan
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 19 May 2009 19:20:38 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57715
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751361AbZESXUi convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 19:20:38 -0400
+Date: Tue, 19 May 2009 16:20:36 -0700 (PDT)
+Message-Id: <20090519.162036.76263878.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [GIT]: Networking
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Do not go beyond ARRAY_SIZE of fdev->chan
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-index da8a8ed..391b1bd 100644
---- a/drivers/dma/fsldma.c
-+++ b/drivers/dma/fsldma.c
-@@ -830,7 +830,7 @@ static int __devinit fsl_dma_chan_probe(struct fsl_dma_device *fdev,
- 			new_fsl_chan->reg.end - new_fsl_chan->reg.start + 1);
- 
- 	new_fsl_chan->id = ((new_fsl_chan->reg.start - 0x100) & 0xfff) >> 7;
--	if (new_fsl_chan->id > FSL_DMA_MAX_CHANS_PER_DEVICE) {
-+	if (new_fsl_chan->id >= FSL_DMA_MAX_CHANS_PER_DEVICE) {
- 		dev_err(fdev->dev, "There is no %d channel!\n",
- 				new_fsl_chan->id);
- 		err = -EINVAL;
+Back from the cruise, and somehow no better at shuffleboard than
+before, here are the networking bug fixes that have accumulated.
+
+Note that I did a merge because I pushed out the pulling in of
+the bluetooth and wireless trees and only afterwards did I notice
+that you had already pulled them in.  So it comes out as a wash.
+
+As for the rest:
+
+1) mlx4_en driver forgets to delete NAPI contexts, resulting in
+   crashes.  Fix from Yevgeny Patrilin.
+
+2) wimax/i2400m crash fixes from Inaky Perez-Gonzalez
+
+3) Meth driver does not use IRQ disabling locks consistently, causing
+   potential deadlocks.  Fix from Ralf Baechle.
+
+4) Two non-STP bridge regression fixes from Stephen Hemminger.
+
+5) Potential netpoll NULL deref got added by netdev_ops infrastructure
+   changes, fix from Pavel Emelyanov.
+
+6) Neterion driver programs FIFO registers improperly, fix from Roel Kluin.
+
+7) Two new device IDs fro be2net driver.
+
+8) skb_seq_read doesn't handle all offset/length situations properly
+   wrt. page frags, and this is most noticably seen as causing iSCSI
+   login data corruption with certain devices.  Fix from Thomas Chenault.
+
+9) TCP regression got added when we removed a MSG_PEEK test from tcp_recvmsg()
+   in order to adhere to rcvlowat like BSD does.  An assertion warning log
+   message triggers when it shouldn't.  Fixed by Ilpo Järvinen.
+
+10) Fix mv643xx_eth on 32-bit PPC.  That platform no longer handles
+    transparently NULL device args to the DMA interfaces.  Fix from
+    Gabriel Paubert.
+
+11) If a DHCP response is delayed, we process it using the wrong
+    state if we send a request again meanwhile.  Fix from Chris Friesen.
+
+12) Make INET_LRO behavior match it's help text.  From Frans Pop.
+
+Please pull, thanks a lot!
+
+The following changes since commit 279e677faa775ad16e75c32e1bf4a37f8158bc61:
+  Linus Torvalds (1):
+        Merge branch 'fixes-for-linus' of git://git.monstr.eu/linux-2.6-microblaze
+
+are available in the git repository at:
+
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
+
+Ajit Khaparde (1):
+      be2net: add two new pci device ids to pci device table
+
+Chris Friesen (1):
+      ipconfig: handle case of delayed DHCP server
+
+David S. Miller (3):
+      Merge branch 'master' of git://git.kernel.org/.../holtmann/bluetooth-2.6
+      Merge branch 'master' of /home/davem/src/GIT/linux-2.6/
+      Merge branch 'linux-2.6.30.y' of git://git.kernel.org/.../inaky/wimax
+
+Eric Dumazet (2):
+      sch_teql: should not dereference skb after ndo_start_xmit()
+      pkt_sched: gen_estimator: use 64 bit intermediate counters for bps
+
+Frans Pop (1):
+      ipv4: make default for INET_LRO consistent with help text
+
+Gabriel Paubert (1):
+      mv643xx_eth: fix PPC DMA breakage
+
+Ilpo Järvinen (1):
+      tcp: fix MSG_PEEK race check
+
+Inaky Perez-Gonzalez (1):
+      wimax/i2400m: fix device crash: fix optimization in _roq_queue_update_ws
+
+Pavel Emelyanov (1):
+      netpoll: don't dereference NULL dev from np
+
+Ralf Baechle (1):
+      NET: Meth: Fix unsafe mix of irq and non-irq spinlocks.
+
+Stephen Hemminger (3):
+      bridge: relay bridge multicast pkgs if !STP
+      bridge: fix initial packet flood if !STP
+      bonding: fix link down handling in 802.3ad mode
+
+Thomas Chenault (1):
+      net: fix skb_seq_read returning wrong offset/length for page frag data
+
+Wang Tinggong (1):
+      Doc: fixed descriptions on /proc/sys/net/core/* and /proc/sys/net/unix/*
+
+Yevgeny Petrilin (1):
+      mlx4_en: Fix not deleted napi structures
+
+roel kluin (1):
+      Neterion: *FIFO1_DMA_ERR set twice, should 2nd be *FIFO2_DMA_ERR?
+
+ Documentation/networking/ip-sysctl.txt |   15 +++++++++--
+ drivers/net/benet/be.h                 |   14 +++++++++++
+ drivers/net/benet/be_main.c            |   10 ++++----
+ drivers/net/bonding/bond_3ad.c         |   11 ++++++--
+ drivers/net/meth.c                     |   27 +++++++++++----------
+ drivers/net/mlx4/en_cq.c               |    4 ++-
+ drivers/net/mv643xx_eth.c              |   41 +++++++++++++++++--------------
+ drivers/net/vxge/vxge-traffic.c        |    2 +-
+ drivers/net/wimax/i2400m/rx.c          |    5 +--
+ net/bridge/br_input.c                  |    5 ++++
+ net/bridge/br_stp.c                    |    3 ++
+ net/core/gen_estimator.c               |   13 +++++----
+ net/core/netpoll.c                     |    8 ++++-
+ net/core/skbuff.c                      |    2 +-
+ net/ipv4/Kconfig                       |    2 +-
+ net/ipv4/ipconfig.c                    |   12 +++++++++
+ net/ipv4/tcp.c                         |    5 +++-
+ net/sched/sch_teql.c                   |    5 ++-
+ 18 files changed, 123 insertions(+), 61 deletions(-)
