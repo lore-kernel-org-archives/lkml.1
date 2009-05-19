@@ -1,67 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754145AbZESLpY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753667AbZESLVq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754145AbZESLpY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 07:45:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751656AbZESLpQ
+	id S1753667AbZESLVq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 07:21:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752276AbZESLVj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 07:45:16 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:42965 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750971AbZESLpP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 07:45:15 -0400
-Date: Tue, 19 May 2009 07:45:14 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: "Luis R. Rodriguez" <mcgrof@gmail.com>
-cc: Nick Kossifidis <mickflemm@gmail.com>, jirislaby@gmail.com,
-       ath5k-devel@venema.h4ckr.net, linux-wireless@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [ath5k-devel] [PATCH] ath5k: prevent infinite loop
-In-Reply-To: <43e72e890905182339u68c4d4f5v3a2f25e9e3547e60@mail.gmail.com>
-Message-ID: <alpine.DEB.2.00.0905190743070.1767@gandalf.stny.rr.com>
-References: <alpine.DEB.2.00.0905182011270.7956@gandalf.stny.rr.com>  <40f31dec0905181734t6a3db7f4peb2d57c3aebe075b@mail.gmail.com>  <alpine.DEB.2.00.0905182041470.7956@gandalf.stny.rr.com> <40f31dec0905182332v49aff368oe485efaa56fbc11a@mail.gmail.com>
- <43e72e890905182339u68c4d4f5v3a2f25e9e3547e60@mail.gmail.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 19 May 2009 07:21:39 -0400
+Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:46034 "EHLO
+	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752092AbZESLVi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 07:21:38 -0400
+Date: Tue, 19 May 2009 13:21:30 +0200
+From: Pierre Ossman <pierre@ossman.eu>
+To: yingchao li <rjn637@gmail.com>
+Cc: linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Removed SD card causes kernel panic when a transfer is
+ on-going.
+Message-ID: <20090519132130.4c74ef39@mjolnir.ossman.eu>
+In-Reply-To: <437bd5150905150145k6d750c7er89fa9b02749f738d@mail.gmail.com>
+References: <437bd5150905150145k6d750c7er89fa9b02749f738d@mail.gmail.com>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.ossman.eu-18778-1242732096-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-On Mon, 18 May 2009, Luis R. Rodriguez wrote:
+--=_freyr.ossman.eu-18778-1242732096-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-> On Mon, May 18, 2009 at 11:32 PM, Nick Kossifidis <mickflemm@gmail.com> wrote:
-> > 2009/5/19 Steven Rostedt <rostedt@goodmis.org>:
-> >>
-> >> On Tue, 19 May 2009, Nick Kossifidis wrote:
-> >>>
-> >>> This is already fixed on wireless-testing ;-)
-> >>> http://git.kernel.org/?p=linux/kernel/git/linville/wireless-testing.git;a=blob;f=drivers/net/wireless/ath/ath5k/phy.c;h=d0d1c350025aebba1fe4e17a44550536a59951ba;hb=HEAD
-> >>
-> >> Thanks, but this does only half. Although I did not hit this in my laptop,
-> >> it can be an issue. If step[0] == step[1] you have the same problem.
-> >>
-> >
-> > Having the same power value for 2 different steps is something we can
-> > expect (although docs say that we expect the line to be monotonically
-> > increasing but anyway), having the same step twice is way out of spec,
-> > there is no way we can have the same step twice on EEPROM, only if we
-> > have a corrupted EEPROM (we need to add some sanity checks indeed here
-> > -> http://git.kernel.org/?p=linux/kernel/git/linville/wireless-testing.git;a=blob;f=drivers/net/wireless/ath/ath5k/eeprom.c;h=c56b494d417acd40d445d922f2861b53cc2315df;hb=HEAD#l910
-> > to handle such a case but first we need to have a "default" eeprom
-> > dataset to fallback when we get such errors).
-> 
-> Don't bother with busted EEPROMs, if its busted its busted. Chances
-> are the complexity we'd need to add to deal with such devices is
-> simply not worth it.
+On Fri, 15 May 2009 16:45:06 +0800
+yingchao li <rjn637@gmail.com> wrote:
 
-My concern is that a busted EEPROM should not lock up the kernel, when we 
-can avoid it. Put in a nasty WARN_ON if the steps are equal, and exit the 
-routine. But don't let it go into an infinite loop and have the user 
-wondering why their system just locked up.
+> In my omap3430 board, when a transfer is on-going(i.e. reading from sd
+> card), I unpluged directly sd card, then kernel panic.
+>=20
 
--- Steve
+Known issue unfortunately. Something is not properly reference counting
+the block queue, but the handling in mmc_block is correct as far as I
+can gather.
 
+Your patch works around the problem by basically keeping a reference to
+the queue longer than the driver needs (hiding any missing references
+in other layers).
+
+I've been trying to find this bug without much success. The block layer
+isn't that easy to understand. :/
+
+Rgds
+--=20
+     -- Pierre Ossman
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
+
+--=_freyr.ossman.eu-18778-1242732096-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.11 (GNU/Linux)
+
+iEYEARECAAYFAkoSlj4ACgkQ7b8eESbyJLiymwCfQ88IAq7oRNasA1R/leR5SWn+
+8iIAoLvWaQ5v3tZXpx4oH23nv/JYGl1W
+=aDhY
+-----END PGP SIGNATURE-----
+
+--=_freyr.ossman.eu-18778-1242732096-0001-2--
