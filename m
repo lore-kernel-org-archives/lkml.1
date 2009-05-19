@@ -1,71 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754630AbZESJcL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754110AbZESJcu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754630AbZESJcL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 05:32:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752060AbZESJcE
+	id S1754110AbZESJcu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 05:32:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752446AbZESJco
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 05:32:04 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:59008 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751309AbZESJcC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 05:32:02 -0400
-Subject: Re: [PATCH]cpuset: add new API to change cpuset top group's cpus
-From: Peter Zijlstra <peterz@infradead.org>
-To: Shaohua Li <shaohua.li@intel.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       "lenb@kernel.org" <lenb@kernel.org>,
-       "menage@google.com" <menage@google.com>
-In-Reply-To: <20090519090633.GA14597@sli10-desk.sh.intel.com>
-References: <20090519073942.GA10864@sli10-desk.sh.intel.com>
-	 <1242722454.26820.461.camel@twins>
-	 <20090519084852.GA13682@sli10-desk.sh.intel.com>
-	 <1242723364.26820.466.camel@twins>
-	 <20090519090633.GA14597@sli10-desk.sh.intel.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Tue, 19 May 2009 11:31:58 +0200
-Message-Id: <1242725518.26820.486.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Tue, 19 May 2009 05:32:44 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35326 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752020AbZESJcn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 05:32:43 -0400
+Date: Tue, 19 May 2009 11:32:27 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Han, Weidong" <weidong.han@intel.com>
+Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       "'dwmw2@infradead.org'" <dwmw2@infradead.org>,
+       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
+       "'iommu@lists.linux-foundation.org'" 
+	<iommu@lists.linux-foundation.org>,
+       "'kvm@vger.kernel.org'" <kvm@vger.kernel.org>
+Subject: Re: [PATCH 2/2] Intel-IOMMU, intr-remap: source-id checking
+Message-ID: <20090519093227.GF31404@elte.hu>
+References: <1241676996-27406-1-git-send-email-weidong.han@intel.com> <1241676996-27406-2-git-send-email-weidong.han@intel.com> <1241720381.27006.8582.camel@localhost.localdomain> <715D42877B251141A38726ABF5CABF2C01A6DD4900@pdsmsx503.ccr.corp.intel.com> <20090511132027.GC32693@elte.hu> <715D42877B251141A38726ABF5CABF2C054568FA16@pdsmsx503.ccr.corp.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <715D42877B251141A38726ABF5CABF2C054568FA16@pdsmsx503.ccr.corp.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-05-19 at 17:06 +0800, Shaohua Li wrote:
-> On Tue, May 19, 2009 at 04:56:04PM +0800, Peter Zijlstra wrote:
-> > On Tue, 2009-05-19 at 16:48 +0800, Shaohua Li wrote:
-> > > On Tue, May 19, 2009 at 04:40:54PM +0800, Peter Zijlstra wrote:
-> > > > On Tue, 2009-05-19 at 15:39 +0800, Shaohua Li wrote:
-> > > > > ACPI 4.0 defines processor aggregator device. The device can notify OS to idle
-> > > > > some CPUs to save power. This isn't to hot remove cpus, but just makes cpus
-> > > > > idle.
-> > > > > 
-> > > > > This patch adds one API to change cpuset top group's cpus. If we want to
-> > > > > make one cpu idle, simply remove the cpu from cpuset top group's cpu list,
-> > > > > then all tasks will be migrate to other cpus, and other tasks will not be
-> > > > > migrated to this cpu again. No functional changes.
-> > > > > 
-> > > > > We will use this API in new ACPI processor aggregator device driver later.
-> > > > 
-> > > > I don't think so. There really is a lot more to do than move processes
-> > > > about.
-> > > no processor running is good enough for us, we don't care about interrupts/softirq/
-> > > timers so far.
-> > 
-> > Well, I don't care for this interface.
-> > 
-> > > > Furthermore, I object to being able to remove online cpus from the top
-> > > > cpuset, that just doesn't make sense.
-> > > > 
-> > > > I'd suggest using hotplug for this.
-> > 
-> > > cpu hotplug involves too much things, and we are afraid it's not reliable.
-> > 
-> > Then make it more reliable instead of providing ugly ass shit like this.
 
-> I wonder why this is that ugly. We have a cpu_isolated_map, which is just like
-> this.
+* Han, Weidong <weidong.han@intel.com> wrote:
 
-And just as ugly -- it should die too.
+> Ingo Molnar wrote:
+> > * Han, Weidong <weidong.han@intel.com> wrote:
+> > 
+> >> Siddha, Suresh B wrote:
+> >>> On Wed, 2009-05-06 at 23:16 -0700, Han, Weidong wrote:
+> >>>> @@ -634,6 +694,44 @@ static int ir_parse_ioapic_scope(struct
+> >>>>  			       acpi_dmar_header *header, " 0x%Lx\n",
+> >>>>  			       scope->enumeration_id, drhd->address);
+> >>>> 
+> >>>> +			bus = pci_find_bus(drhd->segment, scope->bus);
+> >>>> +			path = (struct acpi_dmar_pci_path *)(scope + 1); +			count =
+> >>>> (scope->length - +				 sizeof(struct acpi_dmar_device_scope))
+> >>>> +				/ sizeof(struct acpi_dmar_pci_path);
+> >>>> +
+> >>>> +			while (count) {
+> >>>> +				if (pdev)
+> >>>> +					pci_dev_put(pdev);
+> >>>> +
+> >>>> +				if (!bus)
+> >>>> +					break;
+> >>>> +
+> >>>> +				pdev = pci_get_slot(bus,
+> >>>> +					PCI_DEVFN(path->dev, path->fn));
+> >>>> +				if (!pdev)
+> >>>> +					break;
+> >>> 
+> >>> ir_parse_ioapic_scope() happens very early in the boot. So, I
+> >>> don't think we can do the pci related discovery here.
+> >>> 
+> >> 
+> >> Thanks for your pointing it out. It should enable the source-id
+> >> checking for io-apic's after the pci subsystem is up. I will
+> >> change it.
+> > 
+> > Note, there's ways to do early PCI quirks too, check
+> > arch/x86/kernel/early-quirks.c. It's done by reading the PCI
+> > configuration space directly via a careful early-capable subset of
+> > the PCI config space APIs.
+> > 
+> > But it's a method of last resort.
+> > 
+> 
+> Thanks for your reminder. It can use direct PCI access here as follows. It's easy and clean. I think it's better than adding the source-id checking for io-apic's after the pci subsystem is up. I will send out updated patches after some tests.
+>  
+> @@ -634,6 +695,24 @@ static int ir_parse_ioapic_scope(struct acpi_dmar_header *header,
+>                                " 0x%Lx\n", scope->enumeration_id,
+>                                drhd->address);
+> 
+> +                       bus = scope->bus;
+> +                       path = (struct acpi_dmar_pci_path *)(scope + 1);
+> +                       count = (scope->length -
+> +                                sizeof(struct acpi_dmar_device_scope))
+> +                               / sizeof(struct acpi_dmar_pci_path);
+> +
+> +                       while (--count > 0) {
+> +                               /* Access PCI directly due to the PCI
+> +                                * subsystem isn't initialized yet.
+> +                                */
+> +                               bus = read_pci_config_byte(bus, path->dev,
+> +                                       path->fn, PCI_SECONDARY_BUS);
+> +                               path++;
+> +                       }
+> +
+> +                       ir_ioapic[ir_ioapic_num].bus = bus;
+> +                       ir_ioapic[ir_ioapic_num].devfn =
+> +                                       PCI_DEVFN(path->dev, path->fn);
+
+looks good IMO, beyond the obligatory comment-style nitpick [*] :-) 
+Also, the function above seems to be way too large - please split it 
+into a couple of natural helper functions.
+
+Thanks,
+
+	Ingo
+
+[*]
+
+Please use the customary comment style:
+
+  /*
+   * Comment .....
+   * ...... goes here:
+   */
+
+specified in Documentation/CodingStyle.
+
+
+
