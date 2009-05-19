@@ -1,56 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755428AbZESNL3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755302AbZESNPl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755428AbZESNL3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 09:11:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754743AbZESNLV
+	id S1755302AbZESNPl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 09:15:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753171AbZESNPe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 09:11:21 -0400
-Received: from rcsinet12.oracle.com ([148.87.113.124]:58650 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754810AbZESNLV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 09:11:21 -0400
-Date: Tue, 19 May 2009 09:10:51 -0400
-From: Chris Mason <chris.mason@oracle.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: devzero@web.de, david@lang.hm, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: Where do we stand with the Xen patches?
-Message-ID: <20090519131051.GA11318@think>
-Mail-Followup-To: Chris Mason <chris.mason@oracle.com>,
-	Jeremy Fitzhardinge <jeremy@goop.org>, devzero@web.de,
-	david@lang.hm, linux-kernel@vger.kernel.org,
-	Ingo Molnar <mingo@elte.hu>
-References: <720427516@web.de> <4A10BFE8.9020703@goop.org>
+	Tue, 19 May 2009 09:15:34 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38095 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752501AbZESNPd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 09:15:33 -0400
+Message-ID: <4A12B0D1.1070803@redhat.com>
+Date: Tue, 19 May 2009 09:14:57 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A10BFE8.9020703@goop.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Source-IP: abhmt001.oracle.com [141.146.116.10]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090208.4A12AFDE.01C4:SCFSTAT5015188,ss=1,fgs=0
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+CC: Wu Fengguang <fengguang.wu@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Elladan <elladan@eskimo.com>,
+       Nick Piggin <npiggin@suse.de>, Johannes Weiner <hannes@cmpxchg.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Peter Zijlstra <peterz@infradead.org>, "tytso@mit.edu" <tytso@mit.edu>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "minchan.kim@gmail.com" <minchan.kim@gmail.com>
+Subject: Re: [PATCH 2/3] vmscan: make mapped executable pages the first class
+ 	citizen
+References: <20090516090005.916779788@intel.com>	 <20090516090448.410032840@intel.com> <84144f020905182339o5fb1e78eved95c4c20fd9ffa7@mail.gmail.com>
+In-Reply-To: <84144f020905182339o5fb1e78eved95c4c20fd9ffa7@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 17, 2009 at 06:54:48PM -0700, Jeremy Fitzhardinge wrote:
-> devzero@web.de wrote:
->> or is maintaining two different kernel packages a problem?
->>   
->
-> Yes, distros hate the proliferation of kernel packages with different  
-> config options, partly because of the combinatorial explosion (32 vs 64,  
-> UP vs SMP, PAE vs non-PAE...).  An explicit design intent of all the Xen  
-> work is that it can be compile-time enabled without any (significant)  
-> effect on native performance, so that the decision to enable Xen doesn't  
-> have any downsides (either in terms of raw performance or maintenance of  
-> the kernel package).
+Pekka Enberg wrote:
 
-There is a long list of CONFIG_* that had performance impacts when
-enabled later had that impact tuned away.  Especially now that
-the source of the performance problem is understood, it makes sense to
-me to merge and then focus energy on fixing it in tree instead of
-spending time maintaining the out of tree patches.
+> Why do we need to skip JIT'd code? There are plenty of desktop
+> applications that use Mono, for example, and it would be nice if we
+> gave them the same treatment as native applications. Likewise, I am
+> sure all browsers that use JIT for JavaScript need to be considered.
 
--chris
+JIT'd code lives in anonymous pages, which are already
+protected from streaming file IO because they live on
+the anonymous LRUs.
+
+-- 
+All rights reversed.
