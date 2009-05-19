@@ -1,66 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753632AbZESTAO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754307AbZESTCj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753632AbZESTAO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 15:00:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753366AbZESTAD
+	id S1754307AbZESTCj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 15:02:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753324AbZESTCb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 15:00:03 -0400
-Received: from web32602.mail.mud.yahoo.com ([68.142.207.229]:36836 "HELO
-	web32602.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753337AbZESTAC (ORCPT
+	Tue, 19 May 2009 15:02:31 -0400
+Received: from vms173001pub.verizon.net ([206.46.173.1]:41648 "EHLO
+	vms173001pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751713AbZESTCa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 15:00:02 -0400
-Message-ID: <431112.45036.qm@web32602.mail.mud.yahoo.com>
-X-YMail-OSG: KJgXO5kVM1mqGUaS9SUE32n5KnIJe.EopDI2HZQprzpTiJDOgAVm4jIMrImKLVCzdzCcjVMBPI78XAc4uhU7qLxm7gWvT7868.1umFmm18DAGxuAvylTAiwgSFz3LE7IeY7tnOQtqjygb_HuPVTta0mrVFU9WC_8H7M.e5RbBugPcwwJ.Vaa3nchg6YK9hG7csN2_9t.9Ft9ST.FtDIIBNIw3w0l6CL.oaFb.4GfBEYHtqDqZZ_vfM1M
-X-RocketYMMF: knobi.rm
-X-Mailer: YahooMailRC/1277.43 YahooMailWebService/0.7.289.10
-References: <688406.16641.qm@web32603.mail.mud.yahoo.com> <20090518203420.GF2658@calx> <alpine.LFD.2.01.0905181506550.3301@localhost.localdomain> <231530.33013.qm@web32601.mail.mud.yahoo.com> <alpine.LFD.2.01.0905190745230.3301@localhost.localdomain> <950448.6018.qm@web32607.mail.mud.yahoo.com> <alpine.LFD.2.01.0905191055410.3301@localhost.localdomain> <alpine.LFD.2.01.0905191122320.3301@localhost.localdomain>
-Date: Tue, 19 May 2009 12:00:00 -0700 (PDT)
-From: Martin Knoblauch <spamtrap@knobisoft.de>
-Subject: Re: Rgeression: 2.6.30-rc6-git3 build error - ICE from drivers/char/random.c
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Matt Mackall <mpm@selenic.com>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.LFD.2.01.0905191122320.3301@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 19 May 2009 15:02:30 -0400
+Date: Tue, 19 May 2009 15:01:46 -0400 (EDT)
+From: Len Brown <lenb@kernel.org>
+X-X-Sender: lenb@localhost.localdomain
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Shaohua Li <shaohua.li@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       "menage@google.com" <menage@google.com>
+Subject: Re: [PATCH]cpuset: add new API to change cpuset top group's cpus
+In-reply-to: <1242729538.26820.497.camel@twins>
+Message-id: <alpine.LFD.2.00.0905191429440.29241@localhost.localdomain>
+References: <20090519073942.GA10864@sli10-desk.sh.intel.com>
+ <1242722454.26820.461.camel@twins>
+ <20090519084852.GA13682@sli10-desk.sh.intel.com>
+ <1242723364.26820.466.camel@twins> <1242729538.26820.497.camel@twins>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> ... the point is, we
+> don't need a new interface to force a cpu idle. Hotplug does that.
+>
+> Furthermore, we should not want anything outside of that, either the cpu
+> is there available for work, or its not -- halfway measures don't make
+> sense.
+> 
+> Furthermore, we already have power aware scheduling which tries to
+> aggregate idle time on cpu/core/packages so as to maximize the idle time
+> power savings. Use it there.
 
------ Original Message ----
+Some context...
 
-> From: Linus Torvalds <torvalds@linux-foundation.org>
-> To: Martin Knoblauch <spamtrap@knobisoft.de>
-> Cc: Matt Mackall <mpm@selenic.com>; Ingo Molnar <mingo@elte.hu>; Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-> Sent: Tuesday, May 19, 2009 8:24:48 PM
-> Subject: Re: Rgeression: 2.6.30-rc6-git3 build error - ICE from drivers/char/random.c
-> 
-> 
-> 
-> On Tue, 19 May 2009, Linus Torvalds wrote:
+In the past, server room power and thermal issues were handled
+either by spending too much money to provision power and
+thermals for theoretical worst case, or by abruptly shutting off
+servers when hard limits were reached.
+
+Going forward, platforms are getting smarter, measuring how
+much power is drawn from the power supply, measuring the room
+thermals etc. so that real dollars can be saved by deploying
+systems that exceed the theoretical worst case if the power
+and thermal limits are enforced.
+
+So if server approaches a budget, the platform
+will notify the OS to limit its P-states, and limit its T-states
+in order to draw less power.
+
+If that is not sufficient, the platform will ask us to take
+processors off-line.  These are not processors that are otherwise idle
+-- those are already saving as much power as they can --
+these are processors that are fully utilized.
+
+So power-aware scheduling is moot here, this isn't the
+partially idle case, this is the fully utilized case.
+
+If power draw continues to be too high, the platform
+will simply ask us to take more processors off line.
+
+If this dance doesn't reduce power below that required,
+the platform will be shut off.
+
+So it is sufficient to simply not schedule cpu burners
+on the 'idled' processor.  Interrupts should generally
+not matter -- and if they do, we'll end up simply idling
+an additional processor.
+
+> > > Besides, a hot removed cpu will do a dead loop halt, which isn't power saving
+> > > efficient. To make hot removed cpu enters deep C-state is in whish list for a
+> > > long time, but still not available. The acpi_processor_idle is a module, and
+> > > cpuidle governor potentially can't handle offline cpu.
 > > 
-> > I guess getting rid of 'jiffies' is also worth it. Even at its very worst, 
-> > 'get_cycles()' should return jiffy-level information, so adding in jiffies 
-> > doesn't add anything to it.
-> 
-> I take that back. If there isno TSC at all, "get_cycles()" might just be 
-> returning zero. So the jiffies fallback is probably better than nothing.
-> 
-> So I'll just remove the (long)&ret part. And you already said that that 
-> fixed it both with my previous patch and without, so I guess it's already 
-> tested.
-> 
->         Linus
+> > Then fix that hot-unplug idle loop. I agree that the hlt thing is silly,
+> > and I've no idea why its still there, seems like a much better candidate
+> > for your efforts than this.
 
- correct. The original code with  (long)&ret removed yields:
+CONFIG_HOTPLUG_CPU has been problematic in the past.
+It does more than what we need here, so we thought
+a lighter-weight and lower-latency method that simply
+didn't schedule to the idled cpu would suffice.
 
-        hash[0] += current->pid + jiffies + get_cycles();
+Personally, I don't think that CONFIG_HOTPLUG_CPU should exist,
+taking processors on and off-line should be part of CONFIG_SMP.
 
-and compiles OK.
+A while back when I selected CONFIG_HOTPLUG_CPU from ACPI && SMP,
+there was a torrent of outrage that it infringed on user's right's
+to save that additional 18KB of memory that CONFIG_HOTPLUG_CPU
+includes that SMP does not...
 
-Tested-by: Martin Knoblauch <spamtrap@knobisoft.de>
+We are fixing the hotplug-unplug idle loop, but there
+turns out to be some issues with it related to idle
+processors with interrupts disabled that don't actually
+get down into the deep C-states we request:-(
 
-Cheers
-Martin
+So this is why you see a patch for a "halfway measure",
+it does what is necessary, and does nothing more.
+
+-Len
+
