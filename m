@@ -1,62 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753424AbZESLzU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754167AbZESL6S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753424AbZESLzU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 07:55:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752339AbZESLzN
+	id S1754167AbZESL6S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 07:58:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752305AbZESL6E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 07:55:13 -0400
-Received: from moutng.kundenserver.de ([212.227.126.188]:57162 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751629AbZESLzM convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 07:55:12 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Jan Blunck <jblunck@suse.de>
-Subject: Re: [PATCH 00/32] VFS based Union Mount (V3)
-Date: Tue, 19 May 2009 13:54:08 +0200
-User-Agent: KMail/1.9.9
-Cc: Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk,
-       bharata@in.ibm.com, dwmw2@infradead.org, mszeredi@suse.cz,
-       vaurora@redhat.com
-References: <1242662968-11684-1-git-send-email-jblunck@suse.de> <E1M6Mez-0000tG-3q@pomaz-ex.szeredi.hu> <20090519103924.GL16526@bolzano.suse.de>
-In-Reply-To: <20090519103924.GL16526@bolzano.suse.de>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200905191354.08701.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18zPBSVhAaxDbgtcUOTMxcPKzlVFKhkUrM0PzL
- cXkz0vPE6DJxkmGZmH1sTudzlRvIGYqmpRsL2hFn7scITAkXI/
- 6yrhP53tWLNbzPE5fvFFQ==
+	Tue, 19 May 2009 07:58:04 -0400
+Received: from hera.kernel.org ([140.211.167.34]:57136 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752020AbZESL6C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 07:58:02 -0400
+Subject: Re: [git-pull -tip] x86: cpu_debug patches
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090503090908.GA23183@elte.hu>
+References: <1240190145.3106.90.camel@ht.satnam>
+	 <1240191359.3106.93.camel@ht.satnam> <1240217428.3083.2.camel@ht.satnam>
+	 <20090420111619.GE6670@elte.hu> <1240933437.3074.4.camel@ht.satnam>
+	 <20090428172828.GA15392@elte.hu> <1240977176.3028.0.camel@ht.satnam>
+	 <20090429105021.GG2373@elte.hu> <1241007294.3061.12.camel@ht.satnam>
+	 <20090503090908.GA23183@elte.hu>
+Content-Type: text/plain
+Date: Tue, 19 May 2009 17:27:35 +0530
+Message-Id: <1242734255.3377.20.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 19 May 2009, Jan Blunck wrote:
-> > So this means that the topmost branch always needs to be writable,
-> > right?  It isn't possible to make a union of two iso9660 filesystems,
-> > for example?
+Hello Ingo,
+
+On Sun, 2009-05-03 at 11:09 +0200, Ingo Molnar wrote:
+> * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
 > 
-> Exactly. Although, you can do that with the help of tmpfs on top of the two
-> iso9660 filesystems.
+> > We can use cpu_has tests for unknown processors but 'cpu model' is 
+> > accurate and cover all range.
+> > 
+> > cpu_has does not cover following registers:
+> > 1. platform
+> > 2. poweron
+> > 3. control
+> > 4. bios
+> > 5. freq
+> > 6. cache
+> > 7. misc
+> > 8. base
+> > 9. ver
+> > 10. conf
+> 
+> Firstly these should be added to cpufeatures.h.
+> 
+> Then add cpu_has_xxx() accessors need to be added for them and 
+> during CPU init they have to be properly set, via two methods:
+> 
+>  - via CPUID (where this is possible+specified in docs)
+>  - or via "later than CPU version X" checks
+> 
+> Your cpu-model table is equivalent to an explicitly enumerated CPU 
+> version check, but this breaks every time a new CPU comes out. 
+> 
+> "Later than" or CPUID based feature bits are a lot more future-proof 
+> - we only have to add support for new _features_ (and quirks, 
+> occasionally), and dont have to maintain that full table of specific 
+> models to specific features mapping tables.
+> 
 
-But how do you get there? You can mount the tmpfs on top of two iso9660
-file systems, but it seems that you wouldn't be able to get the two
-stacked on top of each other in the first place.
+It seems that other developers have some objections for adding new cpuid
+features.
 
-Also, by mounting a tmpfs on top, wouldn't you you violate the requirement
-for persistent inode numbers again?
+May be we can try accessing MSRs without any checking, it will work on
+new processors but we need to check it on old processors, so I will need
+your help to run this modules on old processors.
 
-> Or by adding fake write support to iso9660 ... 
+Now what should be the next step.
 
-This would work, but you'd have to do this for each file system if you want
-to be able to use it as the top of the union while backed by a read-only
-block device or when you don't want it to be written.
+Thanks,
+--
+JSR
 
-	Arnd <><
