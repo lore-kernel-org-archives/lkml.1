@@ -1,239 +1,293 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755046AbZESKcm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754979AbZESKdT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755046AbZESKcm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 06:32:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753224AbZESKcc
+	id S1754979AbZESKdT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 06:33:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752497AbZESKdL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 06:32:32 -0400
-Received: from mga03.intel.com ([143.182.124.21]:40240 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752701AbZESKcD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 06:32:03 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,214,1241420400"; 
-   d="scan'208";a="144423504"
-From: Weidong Han <weidong.han@intel.com>
-To: mingo@elte.hu, dwmw2@infradead.org, suresh.b.siddha@intel.com
-Cc: linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
-       kvm@vger.kernel.org, Weidong Han <weidong.han@intel.com>
-Subject: [PATCH v2 2/2] Intel-IOMMU, intr-remap: source-id checking
-Date: Wed, 20 May 2009 02:31:52 +0800
-Message-Id: <1242757912-6041-3-git-send-email-weidong.han@intel.com>
-X-Mailer: git-send-email 1.6.0.4
-In-Reply-To: <1242757912-6041-1-git-send-email-weidong.han@intel.com>
-References: <1242757912-6041-1-git-send-email-weidong.han@intel.com>
+	Tue, 19 May 2009 06:33:11 -0400
+Received: from mail-bw0-f174.google.com ([209.85.218.174]:56923 "EHLO
+	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751216AbZESKdK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 06:33:10 -0400
+Message-ID: <4A128AE3.3080907@monstr.eu>
+Date: Tue, 19 May 2009 12:33:07 +0200
+From: Michal Simek <monstr@monstr.eu>
+Reply-To: monstr@monstr.eu
+User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       John Williams <john.williams@petalogix.com>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [GIT PULL] arch/microblaze fixes for 2.6.30-rc7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-To support domain-isolation usages, the platform hardware must be
-capable of uniquely identifying the requestor (source-id) for each
-interrupt message. Without source-id checking for interrupt remapping
-, a rouge guest/VM with assigned devices can launch interrupt attacks
-to bring down anothe guest/VM or the VMM itself.
+Hi Linus,
 
-This patch adds source-id checking for interrupt remapping, and then
-really isolates interrupts for guests/VMs with assigned devices.
+please pull the following changes (defconfig update + intc fixup)
 
-Because PCI subsystem is not initialized yet when set up IOAPIC
-entries, use read_pci_config_byte to access PCI config space directly.
+Thanks,
+Michal
 
-Signed-off-by: Weidong Han <weidong.han@intel.com>
----
- arch/x86/kernel/apic/io_apic.c |    6 +++
- drivers/pci/intr_remapping.c   |   90 ++++++++++++++++++++++++++++++++++++++-
- drivers/pci/intr_remapping.h   |    2 +
- include/linux/dmar.h           |   11 +++++
- 4 files changed, 106 insertions(+), 3 deletions(-)
 
-diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
-index 30da617..3d10c68 100644
---- a/arch/x86/kernel/apic/io_apic.c
-+++ b/arch/x86/kernel/apic/io_apic.c
-@@ -1559,6 +1559,9 @@ int setup_ioapic_entry(int apic_id, int irq,
- 		irte.vector = vector;
- 		irte.dest_id = IRTE_DEST(destination);
- 
-+		/* Set source-id of interrupt request */
-+		set_ioapic_sid(&irte, apic_id);
+
+The following changes since commit 22ef37eed673587ac984965dc88ba94c68873291:
+  Toshiyuki Okajima (1):
+        page-writeback: fix the calculation of the oldest_jif in wb_kupdate()
+
+are available in the git repository at:
+
+  git://git.monstr.eu/linux-2.6-microblaze.git fixes-for-linus
+
+Michal Simek (2):
+      microblaze: Update Microblaze defconfig
+      microblaze: Fix kind-of-intr checking against number of interrupts
+
+ arch/microblaze/configs/nommu_defconfig |   50 +++++++++++++++++++-----------
+ arch/microblaze/kernel/intc.c           |    4 +-
+ 2 files changed, 34 insertions(+), 20 deletions(-)
+
+
+diff --git a/arch/microblaze/configs/nommu_defconfig b/arch/microblaze/configs/nommu_defconfig
+index beb7ecd..4ef6af0 100644
+--- a/arch/microblaze/configs/nommu_defconfig
++++ b/arch/microblaze/configs/nommu_defconfig
+@@ -1,7 +1,7 @@
+ #
+ # Automatically generated make config: don't edit
+-# Linux kernel version: 2.6.29
+-# Tue Mar 24 10:23:20 2009
++# Linux kernel version: 2.6.30-rc5
++# Mon May 11 09:01:02 2009
+ #
+ CONFIG_MICROBLAZE=y
+ # CONFIG_SWAP is not set
+@@ -32,6 +32,7 @@ CONFIG_LOCALVERSION_AUTO=y
+ CONFIG_SYSVIPC=y
+ CONFIG_SYSVIPC_SYSCTL=y
+ CONFIG_POSIX_MQUEUE=y
++CONFIG_POSIX_MQUEUE_SYSCTL=y
+ CONFIG_BSD_PROCESS_ACCT=y
+ CONFIG_BSD_PROCESS_ACCT_V3=y
+ # CONFIG_TASKSTATS is not set
+@@ -63,6 +64,7 @@ CONFIG_SYSCTL_SYSCALL=y
+ CONFIG_KALLSYMS=y
+ CONFIG_KALLSYMS_ALL=y
+ CONFIG_KALLSYMS_EXTRA_PASS=y
++# CONFIG_STRIP_ASM_SYMS is not set
+ # CONFIG_HOTPLUG is not set
+ CONFIG_PRINTK=y
+ CONFIG_BUG=y
+@@ -80,6 +82,8 @@ CONFIG_SLAB=y
+ # CONFIG_SLUB is not set
+ # CONFIG_SLOB is not set
+ # CONFIG_PROFILING is not set
++# CONFIG_MARKERS is not set
++# CONFIG_SLOW_WORK is not set
+ # CONFIG_HAVE_GENERIC_DMA_COHERENT is not set
+ CONFIG_SLABINFO=y
+ CONFIG_RT_MUTEXES=y
+@@ -92,7 +96,6 @@ CONFIG_MODULE_UNLOAD=y
+ # CONFIG_MODULE_SRCVERSION_ALL is not set
+ CONFIG_BLOCK=y
+ # CONFIG_LBD is not set
+-# CONFIG_BLK_DEV_IO_TRACE is not set
+ # CONFIG_BLK_DEV_BSG is not set
+ # CONFIG_BLK_DEV_INTEGRITY is not set
+
+@@ -166,6 +169,8 @@ CONFIG_SPLIT_PTLOCK_CPUS=4
+ # CONFIG_PHYS_ADDR_T_64BIT is not set
+ CONFIG_ZONE_DMA_FLAG=0
+ CONFIG_VIRT_TO_BUS=y
++CONFIG_UNEVICTABLE_LRU=y
++CONFIG_NOMMU_INITIAL_TRIM_EXCESS=1
+
+ #
+ # Exectuable file formats
+@@ -180,7 +185,6 @@ CONFIG_NET=y
+ #
+ # Networking options
+ #
+-CONFIG_COMPAT_NET_DEV_OPS=y
+ CONFIG_PACKET=y
+ # CONFIG_PACKET_MMAP is not set
+ CONFIG_UNIX=y
+@@ -232,6 +236,7 @@ CONFIG_DEFAULT_TCP_CONG="cubic"
+ # CONFIG_LAPB is not set
+ # CONFIG_ECONET is not set
+ # CONFIG_WAN_ROUTER is not set
++# CONFIG_PHONET is not set
+ # CONFIG_NET_SCHED is not set
+ # CONFIG_DCB is not set
+
+@@ -244,7 +249,6 @@ CONFIG_DEFAULT_TCP_CONG="cubic"
+ # CONFIG_IRDA is not set
+ # CONFIG_BT is not set
+ # CONFIG_AF_RXRPC is not set
+-# CONFIG_PHONET is not set
+ CONFIG_WIRELESS=y
+ # CONFIG_CFG80211 is not set
+ CONFIG_WIRELESS_OLD_REGULATORY=y
+@@ -379,6 +383,7 @@ CONFIG_MISC_DEVICES=y
+ # CONFIG_ATA is not set
+ # CONFIG_MD is not set
+ CONFIG_NETDEVICES=y
++CONFIG_COMPAT_NET_DEV_OPS=y
+ # CONFIG_DUMMY is not set
+ # CONFIG_BONDING is not set
+ # CONFIG_MACVLAN is not set
+@@ -388,6 +393,7 @@ CONFIG_NETDEVICES=y
+ # CONFIG_PHYLIB is not set
+ CONFIG_NET_ETHERNET=y
+ # CONFIG_MII is not set
++# CONFIG_ETHOC is not set
+ # CONFIG_DNET is not set
+ # CONFIG_IBM_NEW_EMAC_ZMII is not set
+ # CONFIG_IBM_NEW_EMAC_RGMII is not set
+@@ -405,7 +411,6 @@ CONFIG_NETDEV_10000=y
+ #
+ # CONFIG_WLAN_PRE80211 is not set
+ # CONFIG_WLAN_80211 is not set
+-# CONFIG_IWLWIFI_LEDS is not set
+
+ #
+ # Enable WiMAX (Networking options) to see the WiMAX drivers
+@@ -455,6 +460,7 @@ CONFIG_LEGACY_PTYS=y
+ CONFIG_LEGACY_PTY_COUNT=256
+ # CONFIG_IPMI_HANDLER is not set
+ CONFIG_HW_RANDOM=y
++# CONFIG_HW_RANDOM_TIMERIOMEM is not set
+ # CONFIG_RTC is not set
+ # CONFIG_GEN_RTC is not set
+ # CONFIG_R3964 is not set
+@@ -525,7 +531,7 @@ CONFIG_USB_SUPPORT=y
+ #
+
+ #
+-# NOTE: USB_STORAGE depends on SCSI but BLK_DEV_SD may also be needed;
++# NOTE: USB_STORAGE depends on SCSI but BLK_DEV_SD may
+ #
+ # CONFIG_USB_GADGET is not set
+
+@@ -538,6 +544,7 @@ CONFIG_USB_SUPPORT=y
+ # CONFIG_ACCESSIBILITY is not set
+ # CONFIG_RTC_CLASS is not set
+ # CONFIG_DMADEVICES is not set
++# CONFIG_AUXDISPLAY is not set
+ # CONFIG_UIO is not set
+ # CONFIG_STAGING is not set
+
+@@ -563,6 +570,11 @@ CONFIG_FILE_LOCKING=y
+ # CONFIG_FUSE_FS is not set
+
+ #
++# Caches
++#
++# CONFIG_FSCACHE is not set
 +
- 		modify_irte(irq, &irte);
- 
- 		ir_entry->index2 = (index >> 15) & 0x1;
-@@ -3329,6 +3332,9 @@ static int msi_compose_msg(struct pci_dev *pdev, unsigned int irq, struct msi_ms
- 		irte.vector = cfg->vector;
- 		irte.dest_id = IRTE_DEST(dest);
- 
-+		/* Set source-id of interrupt request */
-+		set_msi_sid(&irte, pdev);
-+
- 		modify_irte(irq, &irte);
- 
- 		msg->address_hi = MSI_ADDR_BASE_HI;
-diff --git a/drivers/pci/intr_remapping.c b/drivers/pci/intr_remapping.c
-index 946e170..9ef7b0d 100644
---- a/drivers/pci/intr_remapping.c
-+++ b/drivers/pci/intr_remapping.c
-@@ -10,6 +10,8 @@
- #include <linux/intel-iommu.h>
- #include "intr_remapping.h"
- #include <acpi/acpi.h>
-+#include <asm/pci-direct.h>
-+#include "pci.h"
- 
- static struct ioapic_scope ir_ioapic[MAX_IO_APICS];
- static int ir_ioapic_num;
-@@ -405,6 +407,61 @@ int free_irte(int irq)
- 	return rc;
- }
- 
-+int set_ioapic_sid(struct irte *irte, int apic)
-+{
-+	int i;
-+	u16 sid = 0;
-+
-+	if (!irte)
-+		return -1;
-+
-+	for (i = 0; i < MAX_IO_APICS; i++)
-+		if (ir_ioapic[i].id == apic) {
-+			sid = (ir_ioapic[i].bus << 8) | ir_ioapic[i].devfn;
-+			break;
-+		}
-+
-+	if (sid == 0) {
-+		printk(KERN_WARNING "Failed to set source-id of "
-+		       "I/O APIC (%d), because it is not under "
-+		       "any DRHD\n", apic);
-+		return -1;
-+	}
-+
-+	irte->svt = 1; /* requestor ID verification SID/SQ */
-+	irte->sq = 0;  /* comparing all 16-bit of SID */
-+	irte->sid = sid;
-+
-+	return 0;
-+}
-+
-+int set_msi_sid(struct irte *irte, struct pci_dev *dev)
-+{
-+	struct pci_dev *tmp;
-+
-+	if (!irte || !dev)
-+		return -1;
-+
-+	tmp = pci_find_upstream_pcie_bridge(dev);
-+	if (!tmp) { /* PCIE device or integrated PCI device */
-+		irte->svt = 1; /* verify requestor ID verification SID/SQ */
-+		irte->sq = 0;  /* comparing all 16-bit of SID */
-+		irte->sid = (dev->bus->number << 8) | dev->devfn;
-+		return 0;
-+	}
-+
-+	if (tmp->is_pcie) { /* this is a PCIE-to-PCI/PCIX bridge */
-+		irte->svt = 2; /* verify request ID verification SID */
-+		irte->sid = (tmp->bus->number << 8) | dev->bus->number;
-+	} else { /* this is a legacy PCI bridge */
-+		irte->svt = 1; /* verify requestor ID verification SID/SQ */
-+		irte->sq = 0;  /* comparing all 16-bit of SID */
-+		irte->sid = (tmp->bus->number << 8) | tmp->devfn;
-+	}
-+
-+	return 0;
-+}
-+
- static void iommu_set_intr_remapping(struct intel_iommu *iommu, int mode)
- {
- 	u64 addr;
-@@ -610,6 +667,35 @@ error:
- 	return -1;
- }
- 
-+static void ir_parse_one_ioapic_scope(struct acpi_dmar_device_scope *scope,
-+				      struct intel_iommu *iommu)
-+{
-+	struct acpi_dmar_pci_path *path;
-+	u8 bus;
-+	int count;
-+
-+	bus = scope->bus;
-+	path = (struct acpi_dmar_pci_path *)(scope + 1);
-+	count = (scope->length - sizeof(struct acpi_dmar_device_scope))
-+		/ sizeof(struct acpi_dmar_pci_path);
-+
-+	while (--count > 0) {
-+		/*
-+		 * Access PCI directly due to the PCI
-+		 * subsystem isn't initialized yet.
-+		 */
-+		bus = read_pci_config_byte(bus, path->dev, path->fn,
-+					   PCI_SECONDARY_BUS);
-+		path++;
-+	}
-+
-+	ir_ioapic[ir_ioapic_num].bus = bus;
-+	ir_ioapic[ir_ioapic_num].devfn = PCI_DEVFN(path->dev, path->fn);
-+	ir_ioapic[ir_ioapic_num].iommu = iommu;
-+	ir_ioapic[ir_ioapic_num].id = scope->enumeration_id;
-+	ir_ioapic_num++;
-+}
-+
- static int ir_parse_ioapic_scope(struct acpi_dmar_header *header,
- 				 struct intel_iommu *iommu)
- {
-@@ -634,9 +720,7 @@ static int ir_parse_ioapic_scope(struct acpi_dmar_header *header,
- 			       " 0x%Lx\n", scope->enumeration_id,
- 			       drhd->address);
- 
--			ir_ioapic[ir_ioapic_num].iommu = iommu;
--			ir_ioapic[ir_ioapic_num].id = scope->enumeration_id;
--			ir_ioapic_num++;
-+			ir_parse_one_ioapic_scope(scope, iommu);
- 		}
- 		start += scope->length;
- 	}
-diff --git a/drivers/pci/intr_remapping.h b/drivers/pci/intr_remapping.h
-index ca48f0d..dd35780 100644
---- a/drivers/pci/intr_remapping.h
-+++ b/drivers/pci/intr_remapping.h
-@@ -3,6 +3,8 @@
- struct ioapic_scope {
- 	struct intel_iommu *iommu;
- 	unsigned int id;
-+	u8 bus;			/* PCI bus number */
-+	u8 devfn;		/* PCI devfn number */
- };
- 
- #define IR_X2APIC_MODE(mode) (mode ? (1 << 11) : 0)
-diff --git a/include/linux/dmar.h b/include/linux/dmar.h
-index e397dc3..7d27284 100644
---- a/include/linux/dmar.h
-+++ b/include/linux/dmar.h
-@@ -125,6 +125,8 @@ extern int free_irte(int irq);
- extern int irq_remapped(int irq);
- extern struct intel_iommu *map_dev_to_ir(struct pci_dev *dev);
- extern struct intel_iommu *map_ioapic_to_ir(int apic);
-+extern int set_ioapic_sid(struct irte *irte, int apic);
-+extern int set_msi_sid(struct irte *irte, struct pci_dev *dev);
- #else
- static inline int alloc_irte(struct intel_iommu *iommu, int irq, u16 count)
- {
-@@ -155,6 +157,15 @@ static inline struct intel_iommu *map_ioapic_to_ir(int apic)
- {
- 	return NULL;
- }
-+static inline int set_ioapic_sid(struct irte *irte, int apic)
-+{
-+	return 0;
-+}
-+static inline int set_msi_sid(struct irte *irte, struct pci_dev *dev)
-+{
-+	return 0;
-+}
-+
- #define irq_remapped(irq)		(0)
- #define enable_intr_remapping(mode)	(-1)
- #define intr_remapping_enabled		(0)
++#
+ # CD-ROM/DVD Filesystems
+ #
+ # CONFIG_ISO9660_FS is not set
+@@ -601,8 +613,13 @@ CONFIG_CRAMFS=y
+ # CONFIG_HPFS_FS is not set
+ # CONFIG_QNX4FS_FS is not set
+ CONFIG_ROMFS_FS=y
++CONFIG_ROMFS_BACKED_BY_BLOCK=y
++# CONFIG_ROMFS_BACKED_BY_MTD is not set
++# CONFIG_ROMFS_BACKED_BY_BOTH is not set
++CONFIG_ROMFS_ON_BLOCK=y
+ # CONFIG_SYSV_FS is not set
+ # CONFIG_UFS_FS is not set
++# CONFIG_NILFS2_FS is not set
+ CONFIG_NETWORK_FILESYSTEMS=y
+ CONFIG_NFS_FS=y
+ CONFIG_NFS_V3=y
+@@ -614,7 +631,6 @@ CONFIG_LOCKD_V4=y
+ CONFIG_NFS_ACL_SUPPORT=y
+ CONFIG_NFS_COMMON=y
+ CONFIG_SUNRPC=y
+-# CONFIG_SUNRPC_REGISTER_V4 is not set
+ # CONFIG_RPCSEC_GSS_KRB5 is not set
+ # CONFIG_RPCSEC_GSS_SPKM3 is not set
+ # CONFIG_SMB_FS is not set
+@@ -647,6 +663,9 @@ CONFIG_DEBUG_SHIRQ=y
+ CONFIG_DETECT_SOFTLOCKUP=y
+ CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC=y
+ CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC_VALUE=1
++CONFIG_DETECT_HUNG_TASK=y
++# CONFIG_BOOTPARAM_HUNG_TASK_PANIC is not set
++CONFIG_BOOTPARAM_HUNG_TASK_PANIC_VALUE=0
+ CONFIG_SCHED_DEBUG=y
+ CONFIG_SCHEDSTATS=y
+ CONFIG_TIMER_STATS=y
+@@ -678,15 +697,8 @@ CONFIG_DEBUG_SG=y
+ # CONFIG_DEBUG_BLOCK_EXT_DEVT is not set
+ # CONFIG_FAULT_INJECTION is not set
+ CONFIG_SYSCTL_SYSCALL_CHECK=y
+-
+-#
+-# Tracers
+-#
+-# CONFIG_SCHED_TRACER is not set
+-# CONFIG_CONTEXT_SWITCH_TRACER is not set
+-# CONFIG_BOOT_TRACER is not set
+-# CONFIG_TRACE_BRANCH_PROFILING is not set
+-# CONFIG_DYNAMIC_PRINTK_DEBUG is not set
++# CONFIG_PAGE_POISONING is not set
++# CONFIG_DYNAMIC_DEBUG is not set
+ # CONFIG_SAMPLES is not set
+ CONFIG_EARLY_PRINTK=y
+ CONFIG_HEART_BEAT=y
+@@ -777,6 +789,7 @@ CONFIG_CRYPTO=y
+ # Compression
+ #
+ # CONFIG_CRYPTO_DEFLATE is not set
++# CONFIG_CRYPTO_ZLIB is not set
+ # CONFIG_CRYPTO_LZO is not set
+
+ #
+@@ -784,6 +797,7 @@ CONFIG_CRYPTO=y
+ #
+ # CONFIG_CRYPTO_ANSI_CPRNG is not set
+ CONFIG_CRYPTO_HW=y
++# CONFIG_BINARY_PRINTF is not set
+
+ #
+ # Library routines
+@@ -797,8 +811,8 @@ CONFIG_GENERIC_FIND_LAST_BIT=y
+ # CONFIG_CRC7 is not set
+ # CONFIG_LIBCRC32C is not set
+ CONFIG_ZLIB_INFLATE=y
+-CONFIG_PLIST=y
+ CONFIG_HAS_IOMEM=y
+ CONFIG_HAS_IOPORT=y
+ CONFIG_HAS_DMA=y
+ CONFIG_HAVE_LMB=y
++CONFIG_NLATTR=y
+diff --git a/arch/microblaze/kernel/intc.c b/arch/microblaze/kernel/intc.c
+index a69d3e3..b156052 100644
+--- a/arch/microblaze/kernel/intc.c
++++ b/arch/microblaze/kernel/intc.c
+@@ -137,8 +137,8 @@ void __init init_IRQ(void)
+
+ 	intr_type =
+ 		*(int *) of_get_property(intc, "xlnx,kind-of-intr", NULL);
+-	if (intr_type >= (1 << nr_irq))
+-		printk(KERN_INFO " ERROR: Mishmash in king-of-intr param\n");
++	if (intr_type >= (1 << (nr_irq + 1)))
++		printk(KERN_INFO " ERROR: Mismatch in kind-of-intr param\n");
+
+ #ifdef CONFIG_SELFMOD_INTC
+ 	selfmod_function((int *) arr_func, intc_baseaddr);
+
+
+
 -- 
-1.6.0.4
-
+Michal Simek, Ing. (M.Eng)
+w: www.monstr.eu p: +42-0-721842854
