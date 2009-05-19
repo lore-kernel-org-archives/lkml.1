@@ -1,73 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754246AbZESQOE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754672AbZESQO7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754246AbZESQOE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 12:14:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753226AbZESQN5
+	id S1754672AbZESQO7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 12:14:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753496AbZESQOw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 12:13:57 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:33213 "EHLO mx2.suse.de"
+	Tue, 19 May 2009 12:14:52 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:56361 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753143AbZESQN4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 12:13:56 -0400
-Date: Tue, 19 May 2009 18:13:54 +0200
-From: Jan Blunck <jblunck@suse.de>
-To: Andreas Dilger <adilger@sun.com>
-Cc: viro@zeniv.linux.org.uk, bharata@in.ibm.com, dwmw2@infradead.org,
-       mszeredi@suse.cz, vaurora@redhat.com, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 30/32] union mount: ext2 fallthru support
-Message-ID: <20090519161354.GS16526@bolzano.suse.de>
-References: <1242662968-11684-1-git-send-email-jblunck@suse.de> <1242662968-11684-31-git-send-email-jblunck@suse.de> <20090518163221.GE3144@webber.adilger.int> <20090519094220.GI16526@bolzano.suse.de> <20090519140532.GB8138@webber.adilger.int>
-Mime-Version: 1.0
+	id S1753443AbZESQOw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 12:14:52 -0400
+Date: Tue, 19 May 2009 18:09:36 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: Ingo Molnar <mingo@elte.hu>, Zdenek Kabelac <zdenek.kabelac@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: INFO: possible circular locking dependency at
+	cleanup_workqueue_thread
+Message-ID: <20090519160936.GA25720@redhat.com>
+References: <c4e36d110905120059i4c155508oa00672da0b33a07a@mail.gmail.com> <20090517071834.GA8507@elte.hu> <1242559101.28127.63.camel@johannes.local> <20090518194749.GA3501@redhat.com> <1242723104.17164.5.camel@johannes.local> <20090519120010.GA14782@redhat.com> <1242747203.4797.39.camel@johannes.local>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090519140532.GB8138@webber.adilger.int>
-Organization: SUSE LINUX Products GmbH, GF Markus Rex, HRB 16746 (AG Nuernberg)
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <1242747203.4797.39.camel@johannes.local>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 19, Andreas Dilger wrote:
+On 05/19, Johannes Berg wrote:
+>
+> On Tue, 2009-05-19 at 14:00 +0200, Oleg Nesterov wrote:
+>
+> > > I'm not familiar enough with the code -- but what are we really trying
+> > > to do in CPU_POST_DEAD? It seems to me that at that time things must
+> > > already be off the CPU, so ...?
+> >
+> > Yes, this cpu is dead, we should do cleanup_workqueue_thread() to kill
+> > cwq->thread.
+> >
+> > > On the other hand that calls
+> > > flush_cpu_workqueue() so it seems it would actually wait for the work to
+> > > be executed on some other CPU, within the CPU_POST_DEAD notification?
+> >
+> > Yes. Because we can't just kill cwq->thread, we can have the pending
+> > work_structs so we have to flush.
+> >
+> > Why can't we move these works to another CPU? We can, but this doesn't
+> > really help. Because in any case we should at least wait for
+> > cwq->current_work to complete.
+> >
+> > Why do we use CPU_POST_DEAD, and not (say) CPU_DEAD to flush/kill ?
+> > Because work->func() can sleep in get_online_cpus(), we can't flush
+> > until we drop cpu_hotplug.lock.
+>
+> Right. But exactly this happens in the hibernate case --
 
-> On May 19, 2009  11:42 +0200, Jan Blunck wrote:
-> > On Mon, May 18, Andreas Dilger wrote:
-> > > For enums like this that require specific constant on-disk values
-> > > I prefer being safe:
-> > > 
-> > > enum {
-> > > 	EXT2_FT_UNKNOWN  = 0,
-> > > 	EXT2_FT_REG_FILE = 1,
-> > > 	EXT2_FT_DIR	 = 2,
-> > > 	EXT2_FT_CHRDEV   = 3,
-> > > 	EXT2_FT_BLKDEV   = 4,
-> > > 	EXT2_FT_FIFO     = 5,
-> > > 	EXT2_FT_SOCK     = 6,
-> > > 	EXT2_FT_SYMLINK  = 7,
-> > > 	EXT2_FT_WHT      = 8,
-> > > 	EXT2_FT_FALLTHRU = 9,
-> > >  	EXT2_FT_MAX
-> > > 
-> > > 
-> > > It probably also makes sense to include a patch for ext3/ext4 to ensure
-> > > these values are not used by some unrelated feature.
-> > 
-> > In ext3 these are preprocessor defines. IIRC defines and enums are identical
-> > for C (both an int) so I leave this untouched and just add the new filetypes,
-> > right?
-> 
-> The problem is - what happens if, for whatever reason, EXT2_FT_WHT is
-> removed?  In a regular enum EXT2_ET_FALLTHRU would get the old value for
-> EXT2_FT_WHT (=8).  Alternately, if someone accidentally adds a value
-> before EXT2_FT_WHT because this isn't in the upstream e2fsprogs[*] and
-> this would push the values of EXT2_FT_WHT and EXT2_FT_FALLTHROUGH up.
-> 
-> That is why, when using enums for on-disk or "external" interfaces, I
-> prefer that the values are explicitly specified.  It also makes it more
-> clear when reading the code that these values are static and should not
-> be changed, instead of just a grouping of related constants.
+not sure I understand your "exactly this" ;)
 
-Yes. I totally understand your concerns. I submitted a patch already. I just
-wanted to make clear that the way ext3 and ext4 define the filetypes by
-preprocessor defines. The defines do not have the problem since they are
-explicitly assigning numbers as well.
+But your explanation of the deadlock below looks great!
+
+> the hibernate
+> code calls kernel/cpu.c:disable_nonboot_cpus() which calls _cpu_down()
+> which calls raw_notifier_call_chain(&cpu_chain, CPU_POST_DEAD... Sadly,
+> it does so while holding the cpu_add_remove_lock, which is happens to
+> have the dependencies outlined in the original email...
+>
+> The same happens in cpu_down() (without leading _) which you can trigger
+> from sysfs by manually removing the CPU, so it's not hibernate specific.
+
+except I don't understand how cpu_add_remove_lock makes the difference...
+And thus I can't understand why cpu_down() (called lockless) have the
+same problems. Please see below.
+
+> Anyway, you can have a deadlock like this:
+>
+> CPU 3			CPU 2				CPU 1
+> 							suspend/hibernate
+> 			something:
+> 			rtnl_lock()			device_pm_lock()
+> 							-> mutex_lock(&dpm_list_mtx)
+>
+> 			mutex_lock(&dpm_list_mtx)
+>
+> linkwatch_work
+>  -> rtnl_lock()
+> 							disable_nonboot_cpus()
+
+let's suppose disable_nonboot_cpus() does not take cpu_add_remove_lock,
+
+> 							-> flush CPU 3 workqueue
+
+in this case the deadlock is still here?
+
+We can't flush because we hold the lock (dpm_list_mtx) which depends
+on another lock taken by work->func(), the "classical" bug with flush.
+
+No?
+
+Oleg.
+
