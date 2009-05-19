@@ -1,83 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755569AbZESJCD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754612AbZESJGX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755569AbZESJCD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 05:02:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753755AbZESJB4
+	id S1754612AbZESJGX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 05:06:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752701AbZESJGP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 05:01:56 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:52372 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753633AbZESJBz (ORCPT
+	Tue, 19 May 2009 05:06:15 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:49176 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752108AbZESJGO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 05:01:55 -0400
-Message-ID: <4A12757E.3040300@bull.net>
-Date: Tue, 19 May 2009 11:01:50 +0200
-From: xb <xavier.bru@bull.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Tue, 19 May 2009 05:06:14 -0400
+Date: Tue, 19 May 2009 10:06:12 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Marcel Holtmann <marcel@holtmann.org>
+Cc: Mario Limonciello <mario_limonciello@dell.com>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Explicitly disable BT radio using rfkill interface on
+	suspend
+Message-ID: <20090519090610.GA29967@srcf.ucam.org>
+References: <4A11C126.1000704@dell.com> <20090518210241.GA17755@srcf.ucam.org> <4A11D4E8.1020807@dell.com> <20090519050327.GA22637@srcf.ucam.org> <1242710064.3147.4.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: Kurt Garloff <garloff@suse.de>,
-       Linux kernel list <linux-kernel@vger.kernel.org>,
-       Norbert Eicker <N.Eicker@fz-juelich.de>,
-       Greg Kroah-Hartman <GregKH@suse.de>,
-       Alexey Starikovskiy <AStarikovskiy@suse.cz>,
-       Len Brown <LenB@kernel.org>
-Subject: Re: [PATCH 0/3]: Discard reserved PXM bits for SRAT v1
-References: <20090518093352.GC15531@tpkurt2.garloff.de>
-In-Reply-To: <20090518093352.GC15531@tpkurt2.garloff.de>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1242710064.3147.4.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Kurt,
+On Mon, May 18, 2009 at 10:14:24PM -0700, Marcel Holtmann wrote:
+> Hi Matthew,
+> > Ok. I don't think the right way to implement this is forcing dell-laptop 
+> > to simulate an unplug. The HCI driver should be responsible for saving 
+> > and restoring state of the device in its suspend/resume method.
+> 
+> what do you expect the generic USB driver to do? I don't see anything we
+> can do about it, if the device gets removed from underneath us.
 
-We are hitting this problem on some Nehalem based platforms, that 
-prevents a correct Numa initialization.
-We propsed a patch on linux_acpi to fix it.
-We are OK to have your patch go into the mainstream to have this fixed 
-quickly.
-Thanks.
-Xavier
+If the device is getting removed from underneath you, why isn't hid2hci 
+being run again when it reappears as the hid device?
 
-Kurt Garloff wrote:
-> Hi,
->
-> ACPI specification says that the OS must disregard reserved bits.
-> The x86_64 SRAT parser does not discard the upper 24 bits of the
-> proximity_domain (pxm) in the acpi_srat_mem_affinity entries for
-> SRAT v1 tables. (v2 has 32 bits wide fields.)
-> This can lead to problems with poor BIOS implementations that failed
-> to set resreved bytes to zero. (The ACPI spec is a bit vague here
-> unfortunately.)
->
-> This was also inconsistent: On x86-64 (srat_64.c), the 
-> _cpu_affinity does only use the low 8 bits of pxm, while the
-> full 32 bits of _mem_affinity are consumed.
-> In srat_32.c (x86), only 8bits are used (which is OK, a 32bit system
-> with >256 PXMs does not seem reasonable at all).
-> On ia64, the support of more than 8 bits was consistent between
-> mem and cpu affinity entries, however it dependent on "sn2" platform.
->
-> The patch series has the following goals:
-> * Make the kernel support consistently 8bits or 32bits for the
->   proximity domain
-> * Make this dependent on the SRAT version; v1 => 8bits, v2 => 32bits.
->
-> Overview over the patches:
-> - [1/3] Store the SRAT table version value in acpi_srat_revision 
-> - [2/3] x86-64: Discard the upper 24 bits in mem_affinity if rev <= 1
->         and use upper 24bits in cpu_affinity if rev >= 2
-> - [3/3] ia64: Also use upper 8/24bits if rev >= 2 (but leave logic to
->         enable on sn2 as well -- I don't know if sn2 reports v1 or v2
->         SRAT) Also add two __init decls in ia64 pxm accessors.
->
-> Patch has been tested on x86-64 against an 2.6.27.x kernel.
-> (Patch is against current git.)
->
-> Thanks for James, Greg, Alexey, Norbert for comments, review and testing.
->
-> Please review and apply!
->
-> Greg, I believe this is a candidate for -stable.
->   
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
