@@ -1,62 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755274AbZESWQg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754943AbZESWUC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755274AbZESWQg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 18:16:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754023AbZESWQa
+	id S1754943AbZESWUC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 18:20:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754023AbZESWTz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 18:16:30 -0400
-Received: from smtp-out003.kontent.com ([81.88.40.217]:50327 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752164AbZESWQ3 (ORCPT
+	Tue, 19 May 2009 18:19:55 -0400
+Received: from ausxippc101.us.dell.com ([143.166.85.207]:23443 "EHLO
+	ausxippc101.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751639AbZESWTy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 18:16:29 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: Mario Limonciello <mario_limonciello@dell.com>, linux-usb@vger.kernel.org
-Subject: Re: [PATCH] Explicitly disable BT radio using rfkill interface on suspend
-Date: Wed, 20 May 2009 00:16:48 +0200
-User-Agent: KMail/1.10.3 (Linux/2.6.27.21-0.1-default; KDE/4.1.3; x86_64; ; )
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>,
+	Tue, 19 May 2009 18:19:54 -0400
+X-Loopcount0: from 10.9.160.254
+Message-ID: <4A13308E.4040703@dell.com>
+Date: Tue, 19 May 2009 17:19:58 -0500
+From: Mario Limonciello <mario_limonciello@dell.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090409)
+MIME-Version: 1.0
+To: Oliver Neukum <oliver@neukum.org>
+CC: linux-usb@vger.kernel.org, Matthew Garrett <mjg59@srcf.ucam.org>,
        Marcel Holtmann <marcel@holtmann.org>, linux-acpi@vger.kernel.org,
        linux-kernel@vger.kernel.org
-References: <4A11C126.1000704@dell.com> <200905192326.46274.oliver@neukum.org> <4A1328D6.5090404@dell.com>
-In-Reply-To: <4A1328D6.5090404@dell.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905200016.49110.oliver@neukum.org>
+Subject: Re: [PATCH] Explicitly disable BT radio using rfkill interface on
+ suspend
+References: <4A11C126.1000704@dell.com> <200905192326.46274.oliver@neukum.org> <4A1328D6.5090404@dell.com> <200905200016.49110.oliver@neukum.org>
+In-Reply-To: <200905200016.49110.oliver@neukum.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig948EC0435FDE58DFE4091A13"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Dienstag, 19. Mai 2009 23:47:02 schrieb Mario Limonciello:
-> Hi Oliver:
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig948EC0435FDE58DFE4091A13
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: quoted-printable
 
-> Attached are both the lsusb listings.  As you can see, the missing
-> device post-suspend is that Bluetooth radio device (which is why I
-> proposed this patch in the first place).
+Hi Oliver:
 
-This explains the error in your log.
+Oliver Neukum wrote:
+> Am Dienstag, 19. Mai 2009 23:47:02 schrieb Mario Limonciello:
+>  =20
+>
+> That is correct the devices have been successfully resumed and thus are=
 
-> There is a udev removal event for this device, but as I said, there are
-> no add/remove/change events for the keyboard or mouse devices.  I'm
-> attaching udevadm monitor ran from right before the suspend to right after.
+> present. Generally the idea of suspened/resume is to have the same syst=
+em
+> after resumption. It is correct to not generate events. Usbcore cannot =
+know
+> that you use udev to switch the device from pure HID to HID + bluetooth=
+=2E
+>
+>  =20
+Right, which makes sense.
+>
+> Yes, the question is whether it is the clean thing to do.
+>
+> Marcel, are the HID devices usable after hid2hci has run? Should we
+> choose to not resume from power loss any hid device which hid2hci
+> operated on?
+>
+> 	Regards
+> 		Oliver
+>
+>  =20
+I can actually field this answer.  Currently those HID devices have no
+purpose after hid2hci has operated on them.  If transitioned back into
+full HID mode, then the mouse and keyboard HID devices can be functional.=
 
-That is correct the devices have been successfully resumed and thus are
-present. Generally the idea of suspened/resume is to have the same system
-after resumption. It is correct to not generate events. Usbcore cannot know
-that you use udev to switch the device from pure HID to HID + bluetooth.
 
-> Sending the appropriate hid report to the mouse device will re-attach
-> this Bluetooth radio device to the bus.
+Regards
 
-Yes, the question is whether it is the clean thing to do.
+--=20
+Mario Limonciello
+*Dell | Linux Engineering*
+mario_limonciello@dell.com
 
-Marcel, are the HID devices usable after hid2hci has run? Should we
-choose to not resume from power loss any hid device which hid2hci
-operated on?
 
-	Regards
-		Oliver
+--------------enig948EC0435FDE58DFE4091A13
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iEYEARECAAYFAkoTMI4ACgkQ2CrZjkA73YuWnQCcDCG2bbVA1oZ9OrcOMPcmKQyd
+gb4AoIiFinZdgpdW5+cw9jevG9Bf0ASQ
+=wB0I
+-----END PGP SIGNATURE-----
+
+--------------enig948EC0435FDE58DFE4091A13--
