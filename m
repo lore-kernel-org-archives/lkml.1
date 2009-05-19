@@ -1,81 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753537AbZESNXP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754303AbZESNZb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753537AbZESNXP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 09:23:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753250AbZESNXB
+	id S1754303AbZESNZb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 09:25:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752952AbZESNZY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 09:23:01 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:50762 "EHLO mx2.redhat.com"
+	Tue, 19 May 2009 09:25:24 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:50870 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752465AbZESNXA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 09:23:00 -0400
-Message-ID: <4A12B244.8070301@redhat.com>
-Date: Tue, 19 May 2009 15:21:08 +0200
-From: Gerd Hoffmann <kraxel@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
+	id S1752890AbZESNZY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 09:25:24 -0400
+Message-ID: <4A12B30D.9040002@redhat.com>
+Date: Tue, 19 May 2009 09:24:29 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Jan Beulich <JBeulich@novell.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [Xen-devel] Re: [GIT PULL] xen /proc/mtrr implementation
-References: <4A0DFF78.6000501@goop.org> <20090515202250.0f1218ef@jbarnes-g45> <m1iqk1k708.fsf@fess.ebiederm.org> <4A10EAC4.9070701@goop.org> <20090518085902.GE10687@elte.hu> <4A11A3F8.1010202@goop.org> <20090519095918.GA11790@elte.hu> <4A12A46A02000078000017E1@vpn.id2.novell.com> <20090519110837.GA10548@elte.hu> <4A12A05C.6050004@redhat.com> <20090519122623.GD14305@elte.hu>
-In-Reply-To: <20090519122623.GD14305@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Wu Fengguang <fengguang.wu@intel.com>
+CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Elladan <elladan@eskimo.com>,
+       Nick Piggin <npiggin@suse.de>, Johannes Weiner <hannes@cmpxchg.org>,
+       Peter Zijlstra <peterz@infradead.org>, "tytso@mit.edu" <tytso@mit.edu>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "minchan.kim@gmail.com" <minchan.kim@gmail.com>
+Subject: Re: [PATCH 2/3] vmscan: make mapped executable pages the first	class
+ citizen
+References: <20090519161756.4EE4.A69D9226@jp.fujitsu.com> <20090519074925.GA690@localhost> <20090519170208.742C.A69D9226@jp.fujitsu.com> <20090519085354.GB2121@localhost>
+In-Reply-To: <20090519085354.GB2121@localhost>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/19/09 14:26, Ingo Molnar wrote:
-> * Gerd Hoffmann<kraxel@redhat.com>  wrote:
->
->> On 05/19/09 13:08, Ingo Molnar wrote:
->>> Or, alternatively, the hypervisor can expose its own administrative
->>> interface to manage MTRRs.
->> Guess what?  Xen does exactly that.  And the xen mtrr_ops
->> implementation uses that interface ...
->
-> No, that is not an 'administrative interface' - that is a guest
-> kernel level hack that complicates Linux, extends its effective ABI
-> dependencies and which has to be maintained there from that point
-> on.
->
-> There's really just three proper technical solutions here:
->
-> - either catch the lowlevel CPU hw ops (the MSR modifications, which
->    isnt really all that different from the mtrr_ops approach so it
->    shouldnt pose undue difficulties to the Xen hypervisor).
+Wu Fengguang wrote:
 
-Devil is in the details.
+> Another (amazing) finding of the test is, only around 1/10 mapped pages
+> are actively referenced in the absence of user activities.
+> 
+> Shall we protect the remaining 9/10 inactive ones? This is a question ;-)
 
-The dom0 kernel might not see all physical cpus on the system.  So Xen 
-can't leave the job of looping over all cpus to the dom0 kernel, Xen has 
-to apply the changes made by the (priviledged) guest kernel on any 
-(virtual) cpu to all (physical) cpus in the machine.
+I believe we already do, due to the active list not being
+scanned if none of the streaming IO pages get promoted to
+the active list.
 
-Which in turn means the "lowlevel cpu hw op" would work in a slightly 
-different way on Xen and native.  Nasty.
-
->    That will
->    be maximally transparent and compatible, with zero changes needed
->    to the Linux kernel.
-
-No, the linux kernel probably should do the wrmsr on one cpu only then.
-
-> - or introduce its own hypercall API based administration API,
->    without bothering the guest kernel with crap. Trivially patch Xorg
->    to make use of it and that's it.
-
-I have serious doubts that this is going to fly with KMS.
-
-Oops, the third "proper technical solutions" is missing.
-
-cheers,
-   Gerd
-
+-- 
+All rights reversed.
