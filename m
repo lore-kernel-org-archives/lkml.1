@@ -1,144 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754063AbZESKgT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754856AbZESKjb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754063AbZESKgT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 06:36:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752821AbZESKgJ
+	id S1754856AbZESKjb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 06:39:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753137AbZESKjZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 06:36:09 -0400
-Received: from mga01.intel.com ([192.55.52.88]:44820 "EHLO mga01.intel.com"
+	Tue, 19 May 2009 06:39:25 -0400
+Received: from cantor.suse.de ([195.135.220.2]:39664 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751782AbZESKgI convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 06:36:08 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,214,1241420400"; 
-   d="scan'208";a="458473645"
-From: "Han, Weidong" <weidong.han@intel.com>
-To: "'Ingo Molnar'" <mingo@elte.hu>
-CC: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "'dwmw2@infradead.org'" <dwmw2@infradead.org>,
-       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
-       "'iommu@lists.linux-foundation.org'" 
-	<iommu@lists.linux-foundation.org>,
-       "'kvm@vger.kernel.org'" <kvm@vger.kernel.org>
-Date: Tue, 19 May 2009 18:34:29 +0800
-Subject: RE: [PATCH 2/2] Intel-IOMMU, intr-remap: source-id checking
-Thread-Topic: [PATCH 2/2] Intel-IOMMU, intr-remap: source-id checking
-Thread-Index: AcnYZMH+J2wR3jc2Rp2KMmFBSIwhBgACIoyA
-Message-ID: <715D42877B251141A38726ABF5CABF2C054568FD1E@pdsmsx503.ccr.corp.intel.com>
-References: <1241676996-27406-1-git-send-email-weidong.han@intel.com>
- <1241676996-27406-2-git-send-email-weidong.han@intel.com>
- <1241720381.27006.8582.camel@localhost.localdomain>
- <715D42877B251141A38726ABF5CABF2C01A6DD4900@pdsmsx503.ccr.corp.intel.com>
- <20090511132027.GC32693@elte.hu>
- <715D42877B251141A38726ABF5CABF2C054568FA16@pdsmsx503.ccr.corp.intel.com>
- <20090519093227.GF31404@elte.hu>
-In-Reply-To: <20090519093227.GF31404@elte.hu>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	id S1752925AbZESKjY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 06:39:24 -0400
+Date: Tue, 19 May 2009 12:39:24 +0200
+From: Jan Blunck <jblunck@suse.de>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       viro@zeniv.linux.org.uk, bharata@in.ibm.com, dwmw2@infradead.org,
+       mszeredi@suse.cz, vaurora@redhat.com
+Subject: Re: [PATCH 00/32] VFS based Union Mount (V3)
+Message-ID: <20090519103924.GL16526@bolzano.suse.de>
+References: <1242662968-11684-1-git-send-email-jblunck@suse.de> <E1M6LvU-0000mN-HN@pomaz-ex.szeredi.hu> <20090519102939.GK16526@bolzano.suse.de> <E1M6Mez-0000tG-3q@pomaz-ex.szeredi.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1M6Mez-0000tG-3q@pomaz-ex.szeredi.hu>
+Organization: SUSE LINUX Products GmbH, GF Markus Rex, HRB 16746 (AG Nuernberg)
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Han, Weidong <weidong.han@intel.com> wrote:
-> 
->> Ingo Molnar wrote:
->>> * Han, Weidong <weidong.han@intel.com> wrote:
->>> 
->>>> Siddha, Suresh B wrote:
->>>>> On Wed, 2009-05-06 at 23:16 -0700, Han, Weidong wrote:
->>>>>> @@ -634,6 +694,44 @@ static int ir_parse_ioapic_scope(struct
->>>>>>  			       acpi_dmar_header *header, " 0x%Lx\n",
->>>>>>  			       scope->enumeration_id, drhd->address);
->>>>>> 
->>>>>> +			bus = pci_find_bus(drhd->segment, scope->bus);
->>>>>> +			path = (struct acpi_dmar_pci_path *)(scope + 1); +			count =
->>>>>> (scope->length - +				 sizeof(struct acpi_dmar_device_scope))
->>>>>> +				/ sizeof(struct acpi_dmar_pci_path);
->>>>>> +
->>>>>> +			while (count) {
->>>>>> +				if (pdev)
->>>>>> +					pci_dev_put(pdev);
->>>>>> +
->>>>>> +				if (!bus)
->>>>>> +					break;
->>>>>> +
->>>>>> +				pdev = pci_get_slot(bus,
->>>>>> +					PCI_DEVFN(path->dev, path->fn));
->>>>>> +				if (!pdev)
->>>>>> +					break;
->>>>> 
->>>>> ir_parse_ioapic_scope() happens very early in the boot. So, I
->>>>> don't think we can do the pci related discovery here.
->>>>> 
->>>> 
->>>> Thanks for your pointing it out. It should enable the source-id
->>>> checking for io-apic's after the pci subsystem is up. I will
->>>> change it.
->>> 
->>> Note, there's ways to do early PCI quirks too, check
->>> arch/x86/kernel/early-quirks.c. It's done by reading the PCI
->>> configuration space directly via a careful early-capable subset of
->>> the PCI config space APIs. 
->>> 
->>> But it's a method of last resort.
->>> 
->> 
->> Thanks for your reminder. It can use direct PCI access here as
->> follows. It's easy and clean. I think it's better than adding the
->> source-id checking for io-apic's after the pci subsystem is up. I
->> will send out updated patches after some tests.   
->> 
->> @@ -634,6 +695,24 @@ static int ir_parse_ioapic_scope(struct
->>                                acpi_dmar_header *header, " 0x%Lx\n",
->>                                scope->enumeration_id, drhd->address);
->> 
->> +                       bus = scope->bus;
->> +                       path = (struct acpi_dmar_pci_path *)(scope +
->> 1); +                       count = (scope->length -
->> +                                sizeof(struct
->> acpi_dmar_device_scope)) +                               /
->> sizeof(struct acpi_dmar_pci_path); + +                       while
->> (--count > 0) { +                               /* Access PCI
->> directly due to the PCI +                                * subsystem
->> isn't initialized yet. +                                */
->> +                               bus = read_pci_config_byte(bus,
->> path->dev, +                                       path->fn,
->> PCI_SECONDARY_BUS); +                               path++;
->> +                       }
->> +
->> +                       ir_ioapic[ir_ioapic_num].bus = bus;
->> +                       ir_ioapic[ir_ioapic_num].devfn =
->> +                                       PCI_DEVFN(path->dev,
->> path->fn); 
-> 
-> looks good IMO, beyond the obligatory comment-style nitpick [*] :-)
-> Also, the function above seems to be way too large - please split it
-> into a couple of natural helper functions.
-> 
-> Thanks,
-> 
-> 	Ingo
-> 
-> [*]
-> 
-> Please use the customary comment style:
-> 
->   /*
->    * Comment .....
->    * ...... goes here:
->    */
-> 
-> specified in Documentation/CodingStyle.
+On Tue, May 19, Miklos Szeredi wrote:
 
-I have sent out the updated patches. Thanks!
+> On Tue, 19 May 2009, Jan Blunck wrote:
+> > The directory in the topmost filesystem is created during
+> > lookup. The contents of the directory isn't copied up presistently
+> > at that point in time. Therefore you have an empty directory in the
+> > topmost filesystem after the lookup. This was necessary to get rid
+> > of the union_relookup_topmost() calls during create, mknod, mkdir
+> > etc.
+> > 
+> > When readdir is called, the topmost directory is filed up with
+> > fallthru entries which are persistently stored. This is only
+> > necessary to get readdir right wrt POSIX. During lookup the fallthru
+> > dentry, which is in fact a special negative dentry, is ignored and
+> > therefore the lookup continues on the lower filesystem.
+> 
+> So this means that the topmost branch always needs to be writable,
+> right?  It isn't possible to make a union of two iso9660 filesystems,
+> for example?
 
-Regards,
-Weidong
+Exactly. Although, you can do that with the help of tmpfs on top of the two
+iso9660 filesystems. Or by adding fake write support to iso9660 ...
+
+I know that this seems to be suboptimal but it is the cost that the POSIX
+correct readdir comes with.
