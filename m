@@ -1,56 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754494AbZESQRD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755190AbZESQSu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754494AbZESQRD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 12:17:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753393AbZESQQz
+	id S1755190AbZESQSu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 12:18:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753393AbZESQSo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 12:16:55 -0400
-Received: from ftp.linux-mips.org ([213.58.128.207]:33220 "EHLO
-	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753377AbZESQQy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 12:16:54 -0400
-Date: Tue, 19 May 2009 17:16:54 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: linux kernel <linuxk3rnel@gmail.com>
-cc: linux-kernel@vger.kernel.org, linux-mips@linux-mips.org
-Subject: Re: Feasibility study: Linux on core 0, using other cores as worker
-  cores. Octeon II
-In-Reply-To: <29f1ba300905190458y44c8aadeuc8ff914e09105a09@mail.gmail.com>
-Message-ID: <alpine.LFD.1.10.0905191710460.7037@ftp.linux-mips.org>
-References: <29f1ba300905190458y44c8aadeuc8ff914e09105a09@mail.gmail.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Tue, 19 May 2009 12:18:44 -0400
+Received: from e7.ny.us.ibm.com ([32.97.182.137]:45510 "EHLO e7.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753176AbZESQSl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 12:18:41 -0400
+Date: Tue, 19 May 2009 09:18:39 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, davem@davemloft.net, dada1@cosmosbay.com,
+       zbr@ioremap.net, jeff.chua.linux@gmail.com, paulus@samba.org,
+       laijs@cn.fujitsu.com, jengelh@medozas.de, r000n@r000n.net,
+       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
+Subject: Re: [PATCH RFC] v5 expedited "big hammer" RCU grace periods
+Message-ID: <20090519161839.GA6750@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090517191141.GA25915@linux.vnet.ibm.com> <20090518075630.GA10687@elte.hu> <20090518151421.GB6768@linux.vnet.ibm.com> <20090518154241.GA27047@elte.hu> <20090518160254.GD6768@linux.vnet.ibm.com> <20090519085825.GA9388@elte.hu> <20090519123316.GA7159@linux.vnet.ibm.com> <20090519124436.GA6238@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090519124436.GA6238@elte.hu>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 19 May 2009, linux kernel wrote:
-
-> This might seem as an unusal feasibility question, but I would like to
-> discuss this here at LKML to hear you views on this matter.
-> The idea would be to build a IBM cell blade lookalike architecture,
-> using full blown linux on core 0, using the other cores as worker
-> threads.
-> Possible target CPUs are Octeon II with 32 cores or more.
+On Tue, May 19, 2009 at 02:44:36PM +0200, Ingo Molnar wrote:
 > 
-> The main goal for this would be to reduce interrupt latency for worker
-> cores, having them run possibly bare-bone with an IPC method between
-> core 0 and worker cores. probably DMA and HW IRQs.
+> * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
 > 
-> Is there an existing system design in the kernel already that I can
-> expand/use ? Perhaps expanding/porting the cell blade IPC method.
-> What would you guys think would be the most efficient approach(and
-> perhaps would be acceptable to the LK maintainers for merging at a
-> later stage :) )  ?
+> > On Tue, May 19, 2009 at 10:58:25AM +0200, Ingo Molnar wrote:
+> > > 
+> > > * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+> > > 
+> > > > On Mon, May 18, 2009 at 05:42:41PM +0200, Ingo Molnar wrote:
+> > > > > 
+> > > > > * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+> > > > > 
+> > > > > > > i might be missing something fundamental here, but why not just 
+> > > > > > > have per CPU helper threads, all on the same waitqueue, and wake 
+> > > > > > > them up via a single wake_up() call? That would remove the SMP 
+> > > > > > > cross call (wakeups do immediate cross-calls already).
+> > > > > > 
+> > > > > > My concern with this is that the cache misses accessing all the 
+> > > > > > processes on this single waitqueue would be serialized, slowing 
+> > > > > > things down. In contrast, the bitmask that smp_call_function() 
+> > > > > > traverses delivers on the order of a thousand CPUs' worth of bits 
+> > > > > > per cache miss.  I will give it a try, though.
+> > > > > 
+> > > > > At least if you go via the migration threads, you can queue up 
+> > > > > requests to them locally. But there's going to be cachemisses 
+> > > > > _anyway_, since you have to access them all from a single CPU, 
+> > > > > and then they have to fetch details about what to do, and then 
+> > > > > have to notify the originator about completion.
+> > > > 
+> > > > Ah, so you are suggesting that I use smp_call_function() to run 
+> > > > code on each CPU that wakes up that CPU's migration thread?  I 
+> > > > will take a look at this.
+> > > 
+> > > My suggestion was to queue up a dummy 'struct migration_req' up with 
+> > > it (change migration_req::task == NULL to mean 'nothing') and simply 
+> > > wake it up using wake_up_process().
+> > 
+> > OK.  I was thinking of just using wake_up_process() without the
+> > migration_req structure, and unconditionally setting a per-CPU
+> > variable from within migration_thread() just before the list_empty()
+> > check.  In your approach we would need a NULL-pointer check just
+> > before the call to __migrate_task().
+> > 
+> > > That will force a quiescent state, without the need for any extra 
+> > > information, right?
+> > 
+> > Yep!
+> > 
+> > > This is what the scheduler code does, roughly:
+> > > 
+> > >                 wake_up_process(rq->migration_thread);
+> > >                 wait_for_completion(&req.done);
+> > > 
+> > > and this will always have to perform well. The 'req' could be put 
+> > > into PER_CPU, and a loop could be done like this:
+> > > 
+> > > 	for_each_online_cpu(cpu)
+> > >                 wake_up_process(cpu_rq(cpu)->migration_thread);
+> > > 
+> > > 	for_each_online_cpu(cpu)
+> > >                 wait_for_completion(&per_cpu(req, cpu).done);
+> > > 
+> > > hm?
+> > 
+> > My concern is the linear slowdown for large systems, but this 
+> > should be OK for modest systems (a few 10s of CPUs).  However, I 
+> > will try it out -- it does not need to be a long-term solution, 
+> > after all.
+> 
+> I think there is going to be a linear slowdown no matter what - 
+> because sending that many IPIs is going to be linear. (there are no 
+> 'broadcast to all' IPIs anymore - on x86 we only have them if all 
+> physical APIC IDs are 7 or smaller.)
 
- I'm not sure if there is a ready to use implementation available 
-anywhere, but what you've described is one of the proposed use models for 
-the MIPS 34K core.  Of course the method of communication would differ.  
-You may want to search the Internet to see if you can find anything 
-relevant.  Since the Octeon is a MIPS architecture implementation too I've 
-cc-ed the linux-mips list, where you might be able to get additional 
-responses; also about the 34K.
+With the current code, agreed.  One could imagine making an IPI tree,
+so that a given CPU IPIs (say) eight subordinates.  Making this work
+nice with CPU hotplug would be entertaining, to say the least.
 
-  Maciej
+> Also, no matter what scheme we use, the target CPU does have to be 
+> processed somehow and it does have to signal completion back somehow 
+> - which generates cachemisses.
+
+One could in theory use a combining tree, so that results filter up,
+sort of like they do in rcutree.  But given that rcutree already has a
+combining tree, I would like to do this part in rcutree.
+
+> I think what probaby matters most is to go simple, and to use 
+> established kernel primitives - and the above is really typical 
+> pattern for things like TLB flushes to a process having a presence 
+> on every physical CPU. Those aspects will be kept reasonably fast 
+> and balanced on all hardware that matters. (and if not, people will 
+> notice any TLB flush/shootdown linear slowdowns and will address it)
+> 
+> I could be wrong though ... maybe someone can get some numbers from 
+> a really large system?
+
+In theory, I have access to a 64-way system.  In practice, it is
+extremely heavily booked.
+
+I will try your straightforward approach.
+
+							Thanx, Paul
