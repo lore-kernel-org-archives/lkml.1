@@ -1,84 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754107AbZESIOe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752821AbZESIY5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754107AbZESIOe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 04:14:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750820AbZESIOX
+	id S1752821AbZESIY5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 04:24:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750772AbZESIYu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 04:14:23 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:47019 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750727AbZESIOW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 04:14:22 -0400
-Subject: Re: [PATCH 2/3] vmscan: make mapped executable pages the first
- class  citizen
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Elladan <elladan@eskimo.com>,
-       Nick Piggin <npiggin@suse.de>, Johannes Weiner <hannes@cmpxchg.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>, "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "minchan.kim@gmail.com" <minchan.kim@gmail.com>
-In-Reply-To: <20090519081238.GA2121@localhost>
-References: <20090516090005.916779788@intel.com>
-	 <20090516090448.410032840@intel.com>
-	 <84144f020905182339o5fb1e78eved95c4c20fd9ffa7@mail.gmail.com>
-	 <1242719063.26820.457.camel@twins>
-	 <1242720351.20986.0.camel@penberg-laptop> <20090519081238.GA2121@localhost>
-Date: Tue, 19 May 2009 11:14:22 +0300
-Message-Id: <1242720862.20986.7.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.24.3 
+	Tue, 19 May 2009 04:24:50 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:55308 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750721AbZESIYt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 04:24:49 -0400
+Date: Tue, 19 May 2009 10:24:35 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Zhaolei <zhaolei@cn.fujitsu.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       fweisbec@gmail.com, laijs@cn.fujitsu.com,
+       Li Zefan <lizf@cn.fujitsu.com>,
+       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+Subject: Re: [PATCH v4] ftrace: add a tracepoint for
+	__raise_softirq_irqoff()
+Message-ID: <20090519082435.GB15286@elte.hu>
+References: <alpine.DEB.2.00.0905111003280.14976@gandalf.stny.rr.com> <20090511142734.GA12722@Krystal> <alpine.DEB.2.00.0905111039470.2492@gandalf.stny.rr.com> <20090511151353.GA14391@Krystal> <4A094677.5090900@cn.fujitsu.com> <4A0BF82A.2070208@cn.fujitsu.com> <20090514124013.GC21241@Krystal> <alpine.DEB.2.00.0905140926010.30591@gandalf.stny.rr.com> <4A0CCB2E.10202@cn.fujitsu.com> <6A70E08D65F749FA92475F8BA1F9510D@zhaoleiwin>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <6A70E08D65F749FA92475F8BA1F9510D@zhaoleiwin>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-05-19 at 16:12 +0800, Wu Fengguang wrote:
-> On Tue, May 19, 2009 at 04:05:51PM +0800, Pekka Enberg wrote:
-> > Hi Peter,
+
+* Zhaolei <zhaolei@cn.fujitsu.com> wrote:
+
+> * From: "Xiao Guangrong" <xiaoguangrong@cn.fujitsu.com>
+> > Steven Rostedt wrote:
+> >> On Thu, 14 May 2009, Mathieu Desnoyers wrote:
+> >>>> From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> >>>>
+> >>>> This patch is modified from Mathieu Desnoyers' patch. The original patch
+> >>>> can be found here: 
+> >>>> http://marc.info/?l=linux-kernel&m=123791201816245&w=2
+> >>>> This tracepoint can trace the time stamp when softirq action is raised. 
+> >>>>
+> >>>> Changelog for v1 -> v2: 
+> >>>> 1: Use TRACE_EVENT instead of DEFINE_TRACE
+> >>>> 2: Move the tracepoint from raise_softirq_irqoff() to
+> >>>>    __raise_softirq_irqoff()
+> >>>>
+> >>>> Changelog for v2 -> v3: 
+> >>>> Move the definition of __raise_softifq_irqoff() to .c file when
+> >>>> CONFIG_TRACEPOINTS is enabled, to avoid recursive includes
+> >>>>
+> >>>> Changelog for v3 -> v4: 
+> >>>> 1: Come back to v2, and use forward declarations to avoid
+> >>>>    recursive includes as Mathieu's suggestion
+> >>>> 2: Modifiy the tracepoint name
+> >>>> 3: Add comments for this tracepoint
+> >>>>
+> >>> This is a step in the right direction, but please see my email to Lai
+> >>> about the fact that this assumes correct and undocumented include
+> >>> dependencies in kernel/trace/events.c. Not explicitely stating the
+> >>> include dependencies is a build error waiting to happen.
+> >>>
+> >>> Including interrupt.h under a ifdef would allow keeping track of
+> >>> TRACE_EVENT specific build dependencies neatly on a per header basis.
+> >> 
+> >> This is all moot, the events.c file no longer exists and as not an issue.
+> >> 
 > > 
-> > On Tue, 2009-05-19 at 09:44 +0200, Peter Zijlstra wrote:
-> > > Its a sekrit conspiracy against bloat by making JIT'd crap run
-> > > slower :-)
-> > > 
-> > > <rant>
-> > > Anyway, I just checked, we install tons of mono junk for _2_
-> > > applications, f-spot and tomboy, both are shite and both have
-> > > alternatives not requiring this disease.
-> > > </rant>
+> > As Steve's says, use ftrace in ftrace.h not in events.c now. 
+> > So, this mistake does not exist.
+> > Dose this patch has other error? I expect for your views.
 > > 
-> > :-)
-> > 
-> > On Tue, 2009-05-19 at 09:44 +0200, Peter Zijlstra wrote:
-> > > But seriously, like Kosaka-san already said, anonymous pages are treated
-> > > differently from file pages and should not suffer the same problems.
-> > 
-> > OK, thanks for the explanation. The comment is a little bit misleading
-> > because I got the impression that we don't care about anon exec pages.
+> > Thanks for your review, is great help to me. ;-) 
 > 
-> Ah yes!  Will this one dismiss the possible mis-interception?
+> Hello,
 > 
->                         /*
->                          * Identify referenced, file-backed active pages and
->                          * give them one more trip around the active list. So
->                          * that executable code get better chances to stay in
->                          * memory under moderate memory pressure.  Anon pages
-> modified ==>             * are not likely to be evicted by use-once streaming
-> modified ==>             * IO, plus JVM can create lots of anon VM_EXEC pages,
-> modified ==>             * so we ignore them here.
->                          */
->                         if ((vm_flags & VM_EXEC) && !PageAnon(page)) {
->                                 list_add(&page->lru, &l_active);
->                                 continue;
->                         }
+> It seems Mathieu has no other comments on this patch now.
+> Ingo, what is your opinion on this patch?
 
-Yes, it's better. Even I can understand it now :-).
+There's a complication: this area of the softirq code needs fixes 
+(unrelated to tracing).
+ 
+This API:
 
-			Pekka
+inline void raise_softirq_irqoff(unsigned int nr)
+{
+        __raise_softirq_irqoff(nr);
 
+        /*
+         * If we're in an interrupt or softirq, we're done
+         * (this also catches softirq-disabled code). We will
+         * actually run the softirq once we return from
+         * the irq or softirq.
+         *
+         * Otherwise we wake up ksoftirqd to make sure we
+         * schedule the softirq soon.
+         */
+        if (!in_interrupt())
+                wakeup_softirqd();
+}
+
+is broken with RT tasks (as recently reported to lkml), as when a 
+real-time task wakes up ksoftirqd (which has lower priority) it wont 
+execute and we starve softirq execution.
+
+The proper solution would be to have a new API:
+
+	raise_softirq_check()
+
+and to remove the wakeup_softirqd() hack from raise_softirq_irqoff() 
+- and put raise_softirq_check() to all places that use 
+raise_softirq*() from process context.
+ 
+raise_softirq_check() would execute softirq handlers from process 
+context, if there's any pending ones. It has to be called outside of 
+bh critical sections - i.e. often a bit after the raise_softirq() 
+has been done.
+
+__raise_softirq_irqoff() would be made private to kernel/softirq.c, 
+and we'd only have two public APIs to trigger softirqs: 
+raise_softirq() and raise_softirq_irqoff(). Both just set the 
+pending flag and dont do any wakeup.
+
+As a side-effect of these fixes, the tracepoints will be sorted out 
+as well - there wont be any need to hack into 
+__raise_softirq_irqoff().
+
+	Ingo
