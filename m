@@ -1,143 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755277AbZESVRV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754596AbZESVZK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755277AbZESVRV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 17:17:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753484AbZESVRN
+	id S1754596AbZESVZK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 17:25:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751350AbZESVZE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 17:17:13 -0400
-Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:47828 "EHLO
-	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752811AbZESVRM (ORCPT
+	Tue, 19 May 2009 17:25:04 -0400
+Received: from 41-052.adsl.zetnet.co.uk ([194.247.41.52]:47106 "EHLO
+	mail.esperi.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751258AbZESVZC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 17:17:12 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AhIFADm6EkpMQW1W/2dsb2JhbACBT85NhAIF
-Date: Tue, 19 May 2009 17:17:04 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Jason Baron <jbaron@redhat.com>
-Cc: linux-kernel@vger.kernel.org, fweisbec@gmail.com, mingo@elte.hu,
-       laijs@cn.fujitsu.com, rostedt@goodmis.org, peterz@infradead.org,
-       jiayingz@google.com, mbligh@google.com, roland@redhat.com,
-       fche@redhat.com
-Subject: Re: [PATCH 0/3] tracepoints: delay argument evaluation
-Message-ID: <20090519211704.GA3325@Krystal>
-References: <cover.1242763826.git.jbaron@redhat.com>
-Mime-Version: 1.0
+	Tue, 19 May 2009 17:25:02 -0400
+X-Greylist: delayed 2973 seconds by postgrey-1.27 at vger.kernel.org; Tue, 19 May 2009 17:25:01 EDT
+To: linux-kernel@vger.kernel.org
+Cc: linux-net@vger.kernel.org
+Subject: nfsroot on multiple-NIC serial-over-LAN system -> deadlock?
+From: Nix <nix@esperi.org.uk>
+Emacs: because idle RAM is the Devil's playground.
+Date: Tue, 19 May 2009 21:35:26 +0100
+Message-ID: <87k54cu8z5.fsf@hades.wkstn.nix>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.5-b28 (linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <cover.1242763826.git.jbaron@redhat.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 17:14:54 up 80 days, 17:41,  5 users,  load average: 0.20, 0.34,
-	0.41
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-DCC-INFN-TO-Metrics: hades 1233; Body=2 Fuz1=2 Fuz2=2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Jason Baron (jbaron@redhat.com) wrote:
-> hi,
-> 
-> After disassembling some of the tracepoints, I've noticed that arguments that
-> are passed as macros or that perform  dereferences, evaluate prior to the
-> tracepoint on/off check. This means that we are needlessly impacting the 
-> off case.
-> 
-> I am proposing to fix this by adding a macro that first checks for on/off and
-> then calls 'trace_##name', preserving type checking. Thus, callsites have to 
-> move from:
-> 
-> trace_block_bio_complete(md->queue, bio);
-> 
-> to:
-> 
-> tracepoint_call(block_bio_complete,  md->queue, bio);
-> 
+I'm using 2.6.30rc (git head as of yesterday) and getting a bunch of
+machines bootstrapped from the bare metal via PXE/pxelinux/nfsroot.
+nfsroot plainly *works*, as I've got several machines booting happily.
 
-I knew this limitation in the first place, but decided it was not worth
-uglifying the tracepoint call site for it.
+But then I come to a machine with multiple NICs and IPMI, and things
+fall over. I have to manually specify the NIC to use or it goes into a
+DHCP-probing deadlock (cause undiagnosed but it looks identical to this
+one so may be identical): but if I give the NIC info by hand, I *still*
+see a deadlock:
 
-The expected use is to pass a pointer or a value as tracepoint argument
-and dereference it in the callback attached to it.
+[   89.613880] IP-Config: Complete:
+[   89.616943]      device=eth0, addr=192.168.14.15, mask=255.255.255.0, gw=192.168.14.1,
+[   89.624921]      host=spindle, domain=, nis-domain=(none),
+[   89.630430]      bootserver=192.168.14.18, rootserver=192.168.14.18, rootpath=
+[   90.333195] e1000e: eth0 NIC Link is Up 100 Mbps Full Duplex, Flow Control: RX/TX
+[   90.340668] 0000:03:00.0: eth0: 10/100 speed: disabling TSO
+[  325.182384] INFO: task swapper:1 blocked for more than 120 seconds.
+[  325.188653] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+[  325.196473] swapper       D 00000014     0     1      0
+[  325.201766]  f7061eec 00000046 dd66aa4a 00000014 00000000 00000000 00000000 c05d1480
+[  325.209749]  c05d1480 00000000 00000000 f705ec40 f705eed4 c2805480 00000000 ded7f8e3
+[  325.217743]  00000014 00000000 c0548160 00000000 00000000 00000000 00000000 f705eed4
+[  325.225742] Call Trace:
+[  325.228202]  [<c0408ebc>] schedule+0x8/0x17
+[  325.232391]  [<c0408fa6>] schedule_timeout+0x17/0x164
+[  325.237454]  [<c01346d1>] ? __wake_up+0x31/0x3b
+[  325.241987]  [<c040844e>] wait_for_common+0xaa/0xfc
+[  325.246872]  [<c013ae99>] ? default_wake_function+0x0/0xd
+[  325.252271]  [<c0408512>] wait_for_completion+0x12/0x14
+[  325.257498]  [<c014d003>] flush_cpu_workqueue+0x59/0x62
+[  325.262720]  [<c014ced7>] ? wq_barrier_func+0x0/0xd
+[  325.267605]  [<c014d177>] flush_workqueue+0x2b/0x49
+[  325.272485]  [<c014d1a2>] flush_scheduled_work+0xd/0xf
+[  325.277626]  [<c0585578>] kernel_init+0x10e/0x152
+[  325.282340]  [<c058546a>] ? kernel_init+0x0/0x152
+[  325.287045]  [<c011d8cf>] kernel_thread_helper+0x7/0x10
 
-Is there any _real_ added value for going through this API change pain ?
+Its cause is unclear. I'd expect to see something like
 
-Mathieu
+ Looking up port of RPC 100003/2 on 192.168.14.18
+ Looking up port of RPC 100005/1 on 192.168.14.18
+ VFS: Mounted root (nfs filesystem) readonly on device 0:15.
 
-> I've tried '__always_inline', but that did not fix this issue. Obviously this
-> change will require changes to all the callsites. But, that shouldn't be
-> very hard, I've already included the scheduler and block changes with this
-> patch. I think its important to minimize code execution in the off case, and
-> thus going through all the callsites is well worth it. If we agree on this
-> change, I can change the rest in very short order.
-> 
-> Below I'm also showing the assembly in the 'dec_pending()' function before and
-> after this change to show the difference it makes. The arguments to the
-> tracepoint are as above, 'md->queue' and 'bio'. Notice the 2 extra instructions,
-> before the initial 'je', that could be moved after the 'je'.
-> 
-> before:
-> 
-> ffffffff8137b2a3:       83 3d de 90 4b 00 00    cmpl   $0x0,0x4b90de(%rip)        # ffffffff81834388 <__tracepoint_block_bio_complete+0x8>
-> ffffffff8137b2aa:       49 8b 45 50             mov    0x50(%r13),%rax
-> ffffffff8137b2ae:       48 89 45 d0             mov    %rax,-0x30(%rbp)
-> ffffffff8137b2b2:       74 1f                   je     ffffffff8137b2d3 <dec_pending+0x101>
-> ffffffff8137b2b4:       48 8b 1d d5 90 4b 00    mov    0x4b90d5(%rip),%rbx        # ffffffff81834390 <__tracepoint_block_bio_complete+0x10>
-> ffffffff8137b2bb:       48 85 db                test   %rbx,%rbx
-> ffffffff8137b2be:       74 13                   je     ffffffff8137b2d3 <dec_pending+0x101>
-> ffffffff8137b2c0:       4c 89 f6                mov    %r14,%rsi
-> ffffffff8137b2c3:       48 8b 7d d0             mov    -0x30(%rbp),%rdi
-> ffffffff8137b2c7:       ff 13                   callq  *(%rbx)
-> ffffffff8137b2c9:       48 83 c3 08             add    $0x8,%rbx
-> ffffffff8137b2cd:       48 83 3b 00             cmpq   $0x0,(%rbx)
-> ffffffff8137b2d1:       eb eb                   jmp    ffffffff8137b2be <dec_pending+0xec>
-> ffffffff8137b2d3:       44 89 fe                mov    %r15d,%esi
-> 
-> after:
-> 
-> ffffffff8137b2a3:       83 3d de 90 4b 00 00    cmpl   $0x0,0x4b90de(%rip)        # ffffffff81834388 <__tracepoint_block_bio_complete+0x8>
-> ffffffff8137b2aa:       74 27                   je     ffffffff8137b2d3 <dec_pending+0x101>
-> ffffffff8137b2ac:       49 8b 45 50             mov    0x50(%r13),%rax
-> ffffffff8137b2b0:       48 8b 1d d9 90 4b 00    mov    0x4b90d9(%rip),%rbx        # ffffffff81834390 <__tracepoint_block_bio_complete+0x10>
-> ffffffff8137b2b7:       48 89 45 d0             mov    %rax,-0x30(%rbp)
-> ffffffff8137b2bb:       48 85 db                test   %rbx,%rbx
-> ffffffff8137b2be:       74 13                   je     ffffffff8137b2d3 <dec_pending+0x101>
-> ffffffff8137b2c0:       4c 89 f6                mov    %r14,%rsi
-> ffffffff8137b2c3:       48 8b 7d d0             mov    -0x30(%rbp),%rdi
-> ffffffff8137b2c7:       ff 13                   callq  *(%rbx)
-> ffffffff8137b2c9:       48 83 c3 08             add    $0x8,%rbx
-> ffffffff8137b2cd:       48 83 3b 00             cmpq   $0x0,(%rbx)
-> ffffffff8137b2d1:       eb eb                   jmp    ffffffff8137b2be <dec_pending+0xec>
-> ffffffff8137b2d3:       44 89 fe                mov    %r15d,%esi
-> 
-> 
-> thanks,
-> 
-> -Jason
-> 
-> 
-> 
-> Jason Baron (3):
->   -add wrapper so we don't have argument resolution overhead
->   -add scheduler wrapper calls
->   -add block layer trace wrappers
-> 
->  block/blk-core.c           |   27 ++++++++++++++-------------
->  block/elevator.c           |    6 +++---
->  drivers/md/dm.c            |    7 ++++---
->  fs/bio.c                   |    2 +-
->  include/linux/tracepoint.h |   20 +++++++++++++++++++-
->  kernel/exit.c              |    6 +++---
->  kernel/fork.c              |    2 +-
->  kernel/kthread.c           |    4 ++--
->  kernel/sched.c             |   10 +++++-----
->  kernel/signal.c            |    2 +-
->  mm/bounce.c                |    2 +-
->  11 files changed, 54 insertions(+), 34 deletions(-)
-> 
+at this point, but I don't. Just dead silence.
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+The boot parameters were:
+
+ root=/dev/nfs ip=192.168.14.15:192.168.14.18:192.168.14.1:255.255.255.0:spindle:eth0:off nfsroot=/mnt/spindle-root console=ttyS0,115200
+
+(IP addresses are definitely correct, and the interface name is
+apparently correct because we can see it bring the link up in the kernel
+messages: if I use the other interface name, there's no such chatter in
+the log.)
+
+
+(I'm using IPMI and a serial console, with the console redirected by
+IPMI over the same NIC: but as this uses a distinct MAC --- hell, a
+distinct processor --- it surely can't interfere. Can it?)
+
+
+Any ideas? Am I missing something obvious? (Probably.)
