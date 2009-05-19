@@ -1,103 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754672AbZESQO7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754801AbZESQQM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754672AbZESQO7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 12:14:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753496AbZESQOw
+	id S1754801AbZESQQM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 12:16:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752850AbZESQQF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 12:14:52 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:56361 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753443AbZESQOw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 12:14:52 -0400
-Date: Tue, 19 May 2009 18:09:36 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Ingo Molnar <mingo@elte.hu>, Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: INFO: possible circular locking dependency at
-	cleanup_workqueue_thread
-Message-ID: <20090519160936.GA25720@redhat.com>
-References: <c4e36d110905120059i4c155508oa00672da0b33a07a@mail.gmail.com> <20090517071834.GA8507@elte.hu> <1242559101.28127.63.camel@johannes.local> <20090518194749.GA3501@redhat.com> <1242723104.17164.5.camel@johannes.local> <20090519120010.GA14782@redhat.com> <1242747203.4797.39.camel@johannes.local>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1242747203.4797.39.camel@johannes.local>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 19 May 2009 12:16:05 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:34423 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752636AbZESQQE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 12:16:04 -0400
+To: jblunck@suse.de
+CC: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       viro@zeniv.linux.org.uk, bharata@in.ibm.com, dwmw2@infradead.org,
+       mszeredi@suse.cz, vaurora@redhat.com
+In-reply-to: <1242662968-11684-22-git-send-email-jblunck@suse.de> (message
+	from Jan Blunck on Mon, 18 May 2009 18:09:17 +0200)
+Subject: Re: [PATCH 21/32] union-mount: Make lookup work for union-mounted file systems
+References: <1242662968-11684-1-git-send-email-jblunck@suse.de> <1242662968-11684-22-git-send-email-jblunck@suse.de>
+Message-Id: <E1M6Ryq-0001RP-Oe@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Tue, 19 May 2009 18:15:52 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/19, Johannes Berg wrote:
->
-> On Tue, 2009-05-19 at 14:00 +0200, Oleg Nesterov wrote:
->
-> > > I'm not familiar enough with the code -- but what are we really trying
-> > > to do in CPU_POST_DEAD? It seems to me that at that time things must
-> > > already be off the CPU, so ...?
-> >
-> > Yes, this cpu is dead, we should do cleanup_workqueue_thread() to kill
-> > cwq->thread.
-> >
-> > > On the other hand that calls
-> > > flush_cpu_workqueue() so it seems it would actually wait for the work to
-> > > be executed on some other CPU, within the CPU_POST_DEAD notification?
-> >
-> > Yes. Because we can't just kill cwq->thread, we can have the pending
-> > work_structs so we have to flush.
-> >
-> > Why can't we move these works to another CPU? We can, but this doesn't
-> > really help. Because in any case we should at least wait for
-> > cwq->current_work to complete.
-> >
-> > Why do we use CPU_POST_DEAD, and not (say) CPU_DEAD to flush/kill ?
-> > Because work->func() can sleep in get_online_cpus(), we can't flush
-> > until we drop cpu_hotplug.lock.
->
-> Right. But exactly this happens in the hibernate case --
+On Mon, 18 May 2009, Jan Blunck wrote:
+> On union-mounted file systems the lookup function must also visit lower layers
+> of the union-stack when doing a lookup. This patches add support for
+> union-mounts to cached lookups and real lookups.
+> 
+> We have 3 different styles of lookup functions now:
+> - multiple pathname components, follow mounts, follow union, follow symlinks
+> - single pathname component, doesn't follow mounts, follow union, doesn't
+>   follow symlinks
+> - single pathname component doesn't follow mounts, doesn't follow unions,
+>   doesn't follow symlinks
 
-not sure I understand your "exactly this" ;)
+Ugh...  I do wonder if this could be done in a less complicated way,
+there does seem to be a fair amount of duplication between these
+functions.
 
-But your explanation of the deadlock below looks great!
+Worse, it looks like there are still i_mutex lock ordering issues
+(__hash_lookup_topmost()/__hash_lookup_build_union()).  What happens
+if two separate unions of two filesystems are built where the order of
+branches is reversed?
 
-> the hibernate
-> code calls kernel/cpu.c:disable_nonboot_cpus() which calls _cpu_down()
-> which calls raw_notifier_call_chain(&cpu_chain, CPU_POST_DEAD... Sadly,
-> it does so while holding the cpu_add_remove_lock, which is happens to
-> have the dependencies outlined in the original email...
->
-> The same happens in cpu_down() (without leading _) which you can trigger
-> from sysfs by manually removing the CPU, so it's not hibernate specific.
-
-except I don't understand how cpu_add_remove_lock makes the difference...
-And thus I can't understand why cpu_down() (called lockless) have the
-same problems. Please see below.
-
-> Anyway, you can have a deadlock like this:
->
-> CPU 3			CPU 2				CPU 1
-> 							suspend/hibernate
-> 			something:
-> 			rtnl_lock()			device_pm_lock()
-> 							-> mutex_lock(&dpm_list_mtx)
->
-> 			mutex_lock(&dpm_list_mtx)
->
-> linkwatch_work
->  -> rtnl_lock()
-> 							disable_nonboot_cpus()
-
-let's suppose disable_nonboot_cpus() does not take cpu_add_remove_lock,
-
-> 							-> flush CPU 3 workqueue
-
-in this case the deadlock is still here?
-
-We can't flush because we hold the lock (dpm_list_mtx) which depends
-on another lock taken by work->func(), the "classical" bug with flush.
-
-No?
-
-Oleg.
-
+Thanks,
+Miklos
