@@ -1,75 +1,243 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754904AbZESGjp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754825AbZESGmS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754904AbZESGjp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 02:39:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752781AbZESGj3
+	id S1754825AbZESGmS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 02:42:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752265AbZESGmJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 02:39:29 -0400
-Received: from mu-out-0910.google.com ([209.85.134.185]:38376 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752890AbZESGj1 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 02:39:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=aJXrHILiIwJpxrN1a0BKCuzu8lNeLJ67VTXuaPdWcQ6RV+5k2uM3yXm4Zjy1/Ytw13
-         mQczlTbVF9EDVVmf6FP56KwU1WRm7HHiVT8s5gCkv5d0cRWIpcf1FEYaLk2YiX/pFyLo
-         2VTY3dkZBrWbYns891oQT+zaj+OWbigdqrO3M=
+	Tue, 19 May 2009 02:42:09 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:62662 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750721AbZESGmI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 02:42:08 -0400
+Message-ID: <4A125503.5060406@cn.fujitsu.com>
+Date: Tue, 19 May 2009 14:43:15 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-In-Reply-To: <20090516090448.410032840@intel.com>
-References: <20090516090005.916779788@intel.com>
-	 <20090516090448.410032840@intel.com>
-Date: Tue, 19 May 2009 09:39:27 +0300
-X-Google-Sender-Auth: 1164d3de21dc9cca
-Message-ID: <84144f020905182339o5fb1e78eved95c4c20fd9ffa7@mail.gmail.com>
-Subject: Re: [PATCH 2/3] vmscan: make mapped executable pages the first class 
-	citizen
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Elladan <elladan@eskimo.com>,
-       Nick Piggin <npiggin@suse.de>, Johannes Weiner <hannes@cmpxchg.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Peter Zijlstra <peterz@infradead.org>, Rik van Riel <riel@redhat.com>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "minchan.kim@gmail.com" <minchan.kim@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Ingo Molnar <mingo@elte.hu>
+CC: Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       "Theodore Ts'o" <tytso@mit.edu>, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH v2] tracing/events: Documentation updates
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+- fix some typos
+- document the difference between '>' and '>>'
+- document the 'enable' toggle
+- remove section "Defining an event-enabled tracepoint", since it's
+  out-dated and sample/trace_events/ already serves this purpose.
 
-On Sat, May 16, 2009 at 12:00 PM, Wu Fengguang <fengguang.wu@intel.com> wrote:
-> @@ -1272,28 +1273,40 @@ static void shrink_active_list(unsigned
->
->                /* page_referenced clears PageReferenced */
->                if (page_mapping_inuse(page) &&
-> -                   page_referenced(page, 0, sc->mem_cgroup, &vm_flags))
-> +                   page_referenced(page, 0, sc->mem_cgroup, &vm_flags)) {
->                        pgmoved++;
-> +                       /*
-> +                        * Identify referenced, file-backed active pages and
-> +                        * give them one more trip around the active list. So
-> +                        * that executable code get better chances to stay in
-> +                        * memory under moderate memory pressure.  Anon pages
-> +                        * are ignored, since JVM can create lots of anon
-> +                        * VM_EXEC pages.
-> +                        */
-> +                       if ((vm_flags & VM_EXEC) && !PageAnon(page)) {
-> +                               list_add(&page->lru, &l_active);
-> +                               continue;
-> +                       }
+v2: add "Updated by Li Zefan"
 
-Why do we need to skip JIT'd code? There are plenty of desktop
-applications that use Mono, for example, and it would be nice if we
-gave them the same treatment as native applications. Likewise, I am
-sure all browsers that use JIT for JavaScript need to be considered.
+[ Impact: make the document up-to-date ]
 
-                                   Pekka
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+---
+
+and forgot to CC LKML..
+
+---
+diff --git a/Documentation/trace/events.txt b/Documentation/trace/events.txt
+index abdee66..f157d75 100644
+--- a/Documentation/trace/events.txt
++++ b/Documentation/trace/events.txt
+@@ -1,9 +1,10 @@
+ 			     Event Tracing
+ 
+ 		Documentation written by Theodore Ts'o
++			Updated by Li Zefan
+ 
+-Introduction
+-============
++1. Introduction
++===============
+ 
+ Tracepoints (see Documentation/trace/tracepoints.txt) can be used
+ without creating custom kernel modules to register probe functions
+@@ -12,30 +13,37 @@ using the event tracing infrastructure.
+ Not all tracepoints can be traced using the event tracing system;
+ the kernel developer must provide code snippets which define how the
+ tracing information is saved into the tracing buffer, and how the
+-the tracing information should be printed.
++tracing information should be printed.
+ 
+-Using Event Tracing
+-===================
++2. Using Event Tracing
++======================
++
++2.1 Via the 'set_event' interface
++---------------------------------
+ 
+ The events which are available for tracing can be found in the file
+-/sys/kernel/debug/tracing/available_events.
++/debug/tracing/available_events.
+ 
+ To enable a particular event, such as 'sched_wakeup', simply echo it
+-to /sys/debug/tracing/set_event. For example:
++to /debug/tracing/set_event. For example:
+ 
+-	# echo sched_wakeup > /sys/kernel/debug/tracing/set_event
++	# echo sched_wakeup >> /debug/tracing/set_event
+ 
+-[ Note: events can also be enabled/disabled via the 'enabled' toggle
+-  found in the /sys/kernel/tracing/events/ hierarchy of directories. ]
++[ Note: '>>' is necessary, otherwise it will firstly disable
++  all the events. ]
+ 
+ To disable an event, echo the event name to the set_event file prefixed
+ with an exclamation point:
+ 
+-	# echo '!sched_wakeup' >> /sys/kernel/debug/tracing/set_event
++	# echo '!sched_wakeup' >> /debug/tracing/set_event
++
++To disable all events, echo an empty line to the set_event file:
++
++	# echo > /debug/tracing/set_event
+ 
+-To disable events, echo an empty line to the set_event file:
++To enable all events, echo '*:*' or '*:' to the set_event file:
+ 
+-	# echo > /sys/kernel/debug/tracing/set_event
++	# echo *:* > /debug/tracing/set_event
+ 
+ The events are organized into subsystems, such as ext4, irq, sched,
+ etc., and a full event name looks like this: <subsystem>:<event>.  The
+@@ -44,92 +52,39 @@ file.  All of the events in a subsystem can be specified via the syntax
+ "<subsystem>:*"; for example, to enable all irq events, you can use the
+ command:
+ 
+-	# echo 'irq:*' > /sys/kernel/debug/tracing/set_event
+-
+-Defining an event-enabled tracepoint
+-------------------------------------
+-
+-A kernel developer which wishes to define an event-enabled tracepoint
+-must declare the tracepoint using TRACE_EVENT instead of DECLARE_TRACE.
+-This is done via two header files in include/trace.  For example, to
+-event-enable the jbd2 subsystem, we must create two files,
+-include/trace/jbd2.h and include/trace/jbd2_event_types.h.  The
+-include/trace/jbd2.h file should be included by kernel source files that
+-will have a tracepoint inserted, and might look like this:
+-
+-#ifndef _TRACE_JBD2_H
+-#define _TRACE_JBD2_H
+-
+-#include <linux/jbd2.h>
+-#include <linux/tracepoint.h>
+-
+-#include <trace/jbd2_event_types.h>
+-
+-#endif
+-
+-In a file that utilizes a jbd2 tracepoint, this header file would be
+-included.  Note that you still have to use DEFINE_TRACE().  So for
+-example, if fs/jbd2/commit.c planned to use the jbd2_start_commit
+-tracepoint, it would have the following near the beginning of the file:
+-
+-#include <trace/jbd2.h>
+-
+-DEFINE_TRACE(jbd2_start_commit);
+-
+-Then in the function that would call the tracepoint, it would call the
+-tracepoint function.  (For more information, please see the tracepoint
+-documentation in Documentation/trace/tracepoints.txt):
+-
+-	trace_jbd2_start_commit(journal, commit_transaction);
+-
+-The code snippets which allow jbd2_start_commit to be an event-enabled
+-tracepoint are placed in the file include/trace/jbd2_event_types.h:
+-
+-/* use <trace/jbd2.h> instead */
+-#ifndef TRACE_EVENT
+-# error Do not include this file directly.
+-# error Unless you know what you are doing.
+-#endif
+-
+-#undef TRACE_SYSTEM
+-#define TRACE_SYSTEM jbd2
+-
+-#include <linux/jbd2.h>
+-
+-TRACE_EVENT(jbd2_start_commit,
+-	TP_PROTO(journal_t *journal, transaction_t *commit_transaction),
+-	TP_ARGS(journal, commit_transaction),
+-	TP_STRUCT__entry(
+-		__array(	char,	devname, BDEVNAME_SIZE+24 )
+-		__field(	int,	transaction		  )
+-	),
+-	TP_fast_assign(
+-		memcpy(__entry->devname, journal->j_devname, BDEVNAME_SIZE+24);
+-		__entry->transaction	= commit_transaction->t_tid;
+-	),
+-	TP_printk("dev %s transaction %d",
+-		  __entry->devname, __entry->transaction)
+-);
+-
+-The TP_PROTO and TP_ARGS are unchanged from DECLARE_TRACE.  The new
+-arguments to TRACE_EVENT are TP_STRUCT__entry, TP_fast_assign, and
+-TP_printk.
+-
+-TP_STRUCT__entry defines the data structure which will be stored in the
+-trace buffer.  Normally, fields in __entry will be arrays or simple
+-types.  It is possible to place data structures in __entry --- however,
+-pointers in the data structure can not be trusted, since they will be
+-accessed sometime later by TP_printk, and if the data structure contains
+-fields that will not or cannot be used by TP_printk, this will waste
+-space in the trace buffer.  In general, data structures should be
+-avoided, unless they do only contain non-pointer types and all of the
+-fields will be used by TP_printk.
+-
+-TP_fast_assign defines the code snippet which saves information into the
+-__entry data structure, using the passed-in arguments defined in
+-TP_PROTO and TP_ARGS.
+-
+-Finally, TP_printk will print the __entry data structure.  At the time
+-when the code snippet defined by TP_printk is executed, it will not have
+-access to the TP_ARGS arguments; it can only use the information saved
+-in the __entry data structure.
++	# echo 'irq:*' > /debug/tracing/set_event
++
++2.2 Via the 'enable' toggle
++---------------------------
++
++The events available are also listed in /debug/tracing/events/ hierarchy
++of directories.
++
++To enable event 'sched_wakeup':
++
++	# echo 1 > /debug/tracing/events/sched/sched_wakeup/enable
++
++To disable it:
++
++	# echo 0 > /debug/tracing/events/sched/sched_wakeup/enable
++
++To enable all events in sched subsystem:
++
++	# echo 1 > /debug/tracing/events/sched/enable
++
++To eanble all events:
++
++	# echo 1 > /debug/tracing/events/enable
++
++When reading one of these enable files, there are four results:
++
++ 0 - all events this file affects are disabled
++ 1 - all events this file affects are enabled
++ X - there is a mixture of events enabled and disabled
++ ? - this file does not affect any event
++
++3. Defining an event-enabled tracepoint
++=======================================
++
++See The example provided in samples/trace_events
++
+-- 
+1.5.4.rc3
+
+
+
