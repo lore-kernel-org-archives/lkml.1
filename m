@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756014AbZESBBd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756531AbZESBCb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756014AbZESBBd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 21:01:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755332AbZESBAD
+	id S1756531AbZESBCb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 21:02:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755507AbZESBAX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 21:00:03 -0400
-Received: from mga09.intel.com ([134.134.136.24]:21592 "EHLO mga09.intel.com"
+	Mon, 18 May 2009 21:00:23 -0400
+Received: from mga03.intel.com ([143.182.124.21]:28508 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754904AbZESA77 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 20:59:59 -0400
+	id S1751066AbZESBAP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 21:00:15 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.41,212,1241420400"; 
-   d="scan'208";a="413590728"
-Subject: [PATCH v2 06/11] async_tx: add sum check flags
+   d="scan'208";a="144285936"
+Subject: [PATCH v2 10/11] dmatest: add pq support
 To: neilb@suse.de, linux-raid@vger.kernel.org
 From: Dan Williams <dan.j.williams@intel.com>
 Cc: maan@systemlinux.org, linux-kernel@vger.kernel.org, yur@emcraft.com,
        hpa@zytor.com
-Date: Mon, 18 May 2009 17:59:56 -0700
-Message-ID: <20090519005956.4104.27783.stgit@dwillia2-linux.ch.intel.com>
+Date: Mon, 18 May 2009 18:00:17 -0700
+Message-ID: <20090519010017.4104.85634.stgit@dwillia2-linux.ch.intel.com>
 In-Reply-To: <20090519005647.4104.81119.stgit@dwillia2-linux.ch.intel.com>
 References: <20090519005647.4104.81119.stgit@dwillia2-linux.ch.intel.com>
 User-Agent: StGit/0.14.3.289.g7daff
@@ -29,182 +29,85 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Replace the flat zero_sum_result with a collection of flags to contain
-the P (xor) zero-sum result, and the soon to be utilized Q (raid6 reed
-solomon syndrome) zero-sum result.  Use the SUM_CHECK_ namespace instead
-of DMA_ since these flags will be used on non-dma-zero-sum enabled
-platforms.
+Test raid6 p+q operations with a simple "always multiply by 1" q
+calculation to fit into dmatest's current destination verification
+scheme.
 
 Signed-off-by: Dan Williams <dan.j.williams@intel.com>
 ---
- arch/arm/include/asm/hardware/iop3xx-adma.h |    5 +++--
- arch/arm/mach-iop13xx/include/mach/adma.h   |   12 +++++++-----
- crypto/async_tx/async_xor.c                 |    4 ++--
- drivers/md/raid5.c                          |    2 +-
- drivers/md/raid5.h                          |    5 +++--
- include/linux/async_tx.h                    |    2 +-
- include/linux/dmaengine.h                   |   21 ++++++++++++++++++++-
- 7 files changed, 37 insertions(+), 14 deletions(-)
+ drivers/dma/dmatest.c |   26 ++++++++++++++++++++++++++
+ 1 files changed, 26 insertions(+), 0 deletions(-)
 
-diff --git a/arch/arm/include/asm/hardware/iop3xx-adma.h b/arch/arm/include/asm/hardware/iop3xx-adma.h
-index 83e6ba3..26eefea 100644
---- a/arch/arm/include/asm/hardware/iop3xx-adma.h
-+++ b/arch/arm/include/asm/hardware/iop3xx-adma.h
-@@ -756,13 +756,14 @@ static inline void iop_desc_set_block_fill_val(struct iop_adma_desc_slot *desc,
- 	hw_desc->src[0] = val;
- }
+diff --git a/drivers/dma/dmatest.c b/drivers/dma/dmatest.c
+index a27c0fb..a5ee541 100644
+--- a/drivers/dma/dmatest.c
++++ b/drivers/dma/dmatest.c
+@@ -43,6 +43,11 @@ module_param(xor_sources, uint, S_IRUGO);
+ MODULE_PARM_DESC(xor_sources,
+ 		"Number of xor source buffers (default: 3)");
  
--static inline int iop_desc_get_zero_result(struct iop_adma_desc_slot *desc)
-+static inline enum sum_check_flags
-+iop_desc_get_zero_result(struct iop_adma_desc_slot *desc)
- {
- 	struct iop3xx_desc_aau *hw_desc = desc->hw_desc;
- 	struct iop3xx_aau_desc_ctrl desc_ctrl = hw_desc->desc_ctrl_field;
- 
- 	iop_paranoia(!(desc_ctrl.tx_complete && desc_ctrl.zero_result_en));
--	return desc_ctrl.zero_result_err;
-+	return desc_ctrl.zero_result_err << SUM_CHECK_P;
- }
- 
- static inline void iop_chan_append(struct iop_adma_chan *chan)
-diff --git a/arch/arm/mach-iop13xx/include/mach/adma.h b/arch/arm/mach-iop13xx/include/mach/adma.h
-index 5722e86..1cd31df 100644
---- a/arch/arm/mach-iop13xx/include/mach/adma.h
-+++ b/arch/arm/mach-iop13xx/include/mach/adma.h
-@@ -428,18 +428,20 @@ static inline void iop_desc_set_block_fill_val(struct iop_adma_desc_slot *desc,
- 	hw_desc->block_fill_data = val;
- }
- 
--static inline int iop_desc_get_zero_result(struct iop_adma_desc_slot *desc)
-+static inline enum sum_check_flags
-+iop_desc_get_zero_result(struct iop_adma_desc_slot *desc)
- {
- 	struct iop13xx_adma_desc_hw *hw_desc = desc->hw_desc;
- 	struct iop13xx_adma_desc_ctrl desc_ctrl = hw_desc->desc_ctrl_field;
- 	struct iop13xx_adma_byte_count byte_count = hw_desc->byte_count_field;
-+	enum sum_check_flags flags;
- 
- 	BUG_ON(!(byte_count.tx_complete && desc_ctrl.zero_result));
- 
--	if (desc_ctrl.pq_xfer_en)
--		return byte_count.zero_result_err_q;
--	else
--		return byte_count.zero_result_err;
-+	flags = byte_count.zero_result_err_q << SUM_CHECK_Q;
-+	flags |= byte_count.zero_result_err << SUM_CHECK_P;
++static unsigned int pq_sources = 3;
++module_param(pq_sources, uint, S_IRUGO);
++MODULE_PARM_DESC(pq_sources,
++		"Number of p+q source buffers (default: 3)");
 +
-+	return flags;
- }
- 
- static inline void iop_chan_append(struct iop_adma_chan *chan)
-diff --git a/crypto/async_tx/async_xor.c b/crypto/async_tx/async_xor.c
-index 3caecdd..3bfbbc0 100644
---- a/crypto/async_tx/async_xor.c
-+++ b/crypto/async_tx/async_xor.c
-@@ -234,7 +234,7 @@ static int page_is_zero(struct page *p, unsigned int offset, size_t len)
-  */
- struct dma_async_tx_descriptor *
- async_xor_val(struct page *dest, struct page **src_list, unsigned int offset,
--	      int src_cnt, size_t len, u32 *result,
-+	      int src_cnt, size_t len, enum sum_check_flags *result,
- 	      struct async_submit_ctl *submit)
- {
- 	struct dma_chan *chan = async_tx_find_channel(submit, DMA_XOR_VAL,
-@@ -291,7 +291,7 @@ async_xor_val(struct page *dest, struct page **src_list, unsigned int offset,
- 
- 		async_tx_quiesce(&tx);
- 
--		*result = page_is_zero(dest, offset, len) ? 0 : 1;
-+		*result = !page_is_zero(dest, offset, len) << SUM_CHECK_P;
- 
- 		async_tx_sync_epilog(submit);
- 		submit->flags = flags_orig;
-diff --git a/drivers/md/raid5.c b/drivers/md/raid5.c
-index 0e456a6..a39b14a 100644
---- a/drivers/md/raid5.c
-+++ b/drivers/md/raid5.c
-@@ -2569,7 +2569,7 @@ static void handle_parity_checks5(raid5_conf_t *conf, struct stripe_head *sh,
- 		 * we are done.  Otherwise update the mismatch count and repair
- 		 * parity if !MD_RECOVERY_CHECK
- 		 */
--		if (sh->ops.zero_sum_result == 0)
-+		if ((sh->ops.zero_sum_result & SUM_CHECK_P_RESULT) == 0)
- 			/* parity is correct (on disc,
- 			 * not in buffer any more)
- 			 */
-diff --git a/drivers/md/raid5.h b/drivers/md/raid5.h
-index 6ab0ccd..f580cb9 100644
---- a/drivers/md/raid5.h
-+++ b/drivers/md/raid5.h
-@@ -2,6 +2,7 @@
- #define _RAID5_H
- 
- #include <linux/raid/xor.h>
-+#include <linux/dmaengine.h>
- 
  /*
-  *
-@@ -220,8 +221,8 @@ struct stripe_head {
- 	 * @target - STRIPE_OP_COMPUTE_BLK target
- 	 */
- 	struct stripe_operations {
--		int		   target;
--		u32		   zero_sum_result;
-+		int		     target;
-+		enum sum_check_flags zero_sum_result;
- 	} ops;
- 	struct r5dev {
- 		struct bio	req;
-diff --git a/include/linux/async_tx.h b/include/linux/async_tx.h
-index 00cfb63..3d21a25 100644
---- a/include/linux/async_tx.h
-+++ b/include/linux/async_tx.h
-@@ -148,7 +148,7 @@ async_xor(struct page *dest, struct page **src_list, unsigned int offset,
+  * Initialization patterns. All bytes in the source buffer has bit 7
+  * set, all bytes in the destination buffer has bit 7 cleared.
+@@ -227,6 +232,7 @@ static int dmatest_func(void *data)
+ 	dma_cookie_t		cookie;
+ 	enum dma_status		status;
+ 	enum dma_ctrl_flags 	flags;
++	u8			pq_coefs[pq_sources];
+ 	int			ret;
+ 	int			src_cnt;
+ 	int			dst_cnt;
+@@ -243,6 +249,11 @@ static int dmatest_func(void *data)
+ 	else if (thread->type == DMA_XOR) {
+ 		src_cnt = xor_sources | 1; /* force odd to ensure dst = src */
+ 		dst_cnt = 1;
++	} else if (thread->type == DMA_PQ) {
++		src_cnt = pq_sources | 1; /* force odd to ensure dst = src */
++		dst_cnt = 2;
++		for (i = 0; i < pq_sources; i++)
++			pq_coefs[i] = 1;
+ 	} else
+ 		goto err_srcs;
  
- struct dma_async_tx_descriptor *
- async_xor_val(struct page *dest, struct page **src_list, unsigned int offset,
--	      int src_cnt, size_t len, u32 *result,
-+	      int src_cnt, size_t len, enum sum_check_flags *result,
- 	      struct async_submit_ctl *submit);
+@@ -310,6 +321,15 @@ static int dmatest_func(void *data)
+ 						      dma_dsts[0] + dst_off,
+ 						      dma_srcs, xor_sources,
+ 						      len, flags);
++		else if (thread->type == DMA_PQ) {
++			dma_addr_t dma_pq[dst_cnt];
++
++			for (i = 0; i < dst_cnt; i++)
++				dma_pq[i] = dma_dsts[i] + dst_off;
++			tx = dev->device_prep_dma_pq(chan, dma_pq, dma_srcs,
++						     pq_sources, pq_coefs,
++						     len, flags);
++		}
  
- struct dma_async_tx_descriptor *
-diff --git a/include/linux/dmaengine.h b/include/linux/dmaengine.h
-index 6768727..02447af 100644
---- a/include/linux/dmaengine.h
-+++ b/include/linux/dmaengine.h
-@@ -87,6 +87,25 @@ enum dma_ctrl_flags {
- };
+ 		if (!tx) {
+ 			for (i = 0; i < src_cnt; i++)
+@@ -446,6 +466,8 @@ static int dmatest_add_threads(struct dmatest_chan *dtc, enum dma_transaction_ty
+ 		op = "copy";
+ 	else if (type == DMA_XOR)
+ 		op = "xor";
++	else if (type == DMA_PQ)
++		op = "pq";
+ 	else
+ 		return -EINVAL;
  
- /**
-+ * enum sum_check_bits - bit position of pq_check_flags
-+ */
-+enum sum_check_bits {
-+	SUM_CHECK_P = 0,
-+	SUM_CHECK_Q = 1,
-+};
-+
-+/**
-+ * enum pq_check_flags - result of async_{xor,pq}_zero_sum operations
-+ * @SUM_CHECK_P_RESULT - 1 if xor zero sum error, 0 otherwise
-+ * @SUM_CHECK_Q_RESULT - 1 if reed-solomon zero sum error, 0 otherwise
-+ */
-+enum sum_check_flags {
-+	SUM_CHECK_P_RESULT = (1 << SUM_CHECK_P),
-+	SUM_CHECK_Q_RESULT = (1 << SUM_CHECK_Q),
-+};
-+
-+
-+/**
-  * dma_cap_mask_t - capabilities bitmap modeled after cpumask_t.
-  * See linux/cpumask.h
-  */
-@@ -245,7 +264,7 @@ struct dma_device {
- 		unsigned int src_cnt, size_t len, unsigned long flags);
- 	struct dma_async_tx_descriptor *(*device_prep_dma_xor_val)(
- 		struct dma_chan *chan, dma_addr_t *src,	unsigned int src_cnt,
--		size_t len, u32 *result, unsigned long flags);
-+		size_t len, enum sum_check_flags *result, unsigned long flags);
- 	struct dma_async_tx_descriptor *(*device_prep_dma_memset)(
- 		struct dma_chan *chan, dma_addr_t dest, int value, size_t len,
- 		unsigned long flags);
+@@ -501,6 +523,10 @@ static int dmatest_add_channel(struct dma_chan *chan)
+ 		cnt = dmatest_add_threads(dtc, DMA_XOR);
+ 		thread_count += cnt > 0 ?: 0;
+ 	}
++	if (dma_has_cap(DMA_PQ, dma_dev->cap_mask)) {
++		cnt = dmatest_add_threads(dtc, DMA_PQ);
++		thread_count += cnt > 0 ?: 0;
++	}
+ 
+ 	pr_info("dmatest: Started %u threads using %s\n",
+ 		thread_count, dma_chan_name(chan));
 
