@@ -1,70 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755439AbZESJQq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755638AbZESJRa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755439AbZESJQq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 05:16:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750900AbZESJQj
+	id S1755638AbZESJRa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 05:17:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752465AbZESJRY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 05:16:39 -0400
-Received: from mx1.auerswald.de ([212.185.163.234]:10644 "EHLO
-	mail.auerswald.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750831AbZESJQj convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 05:16:39 -0400
-From: Wolfgang =?iso-8859-1?q?M=FCes?= <wolfgang.mues@auerswald.de>
-Organization: Auerswald GmbH & Co. KG
-To: "Matt Fleming" <matt@console-pimps.org>
-Subject: Re: [PATCH] mmc_spi: do propper retry managment in the block layer - rewritten
-Date: Tue, 19 May 2009 11:16:27 +0200
-User-Agent: KMail/1.9.10
-Cc: "Pierre Ossman" <drzeus@drzeus.cx>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "David Brownell" <dbrownell@users.sourceforge.net>,
-       "Mike Frysinger" <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org,
-       "Nicolas Ferre" <nicolas.ferre@atmel.com>
-References: <20090519084102.GA28564@console-pimps.org>
-In-Reply-To: <20090519084102.GA28564@console-pimps.org>
+	Tue, 19 May 2009 05:17:24 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:35577 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751104AbZESJRX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 05:17:23 -0400
+Date: Tue, 19 May 2009 11:17:24 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Boaz Harrosh <bharrosh@panasas.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Borislav Petkov <petkovbb@googlemail.com>,
+       Pete Zaitcev <zaitcev@redhat.com>,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       Eric Moore <Eric.Moore@lsi.com>, "Darrick J. Wong" <djwong@us.ibm.com>
+Subject: Re: [PATCH UPDATED2 block#for-2.6.31 2/3] block: set rq->resid_len
+	to  blk_rq_bytes() on issue
+Message-ID: <20090519091724.GT4140@kernel.dk>
+References: <4A0D86DB.9000203@kernel.org> <4A0D87D2.7090806@gmail.com> <4A0E0650.1020500@gmail.com> <4A0FFD7E.8050607@gmail.com> <20090518124919.GK4140@kernel.dk> <4A127864.8090701@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200905191116.27361.wolfgang.mues@auerswald.de>
+In-Reply-To: <4A127864.8090701@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt,
+On Tue, May 19 2009, Tejun Heo wrote:
+> Hello, Jens.
+> 
+> Jens Axboe wrote:
+> > Tejun, you have to stop replying with updated patches in an existing
+> > thread. It's virtually impossible to sort the resulting mess into
+> > patches worth applying.
+> 
+> Heh.. yeah, I usually post minor updates as UPDATED patches for review
+> then repost the whole series after accumulating some of them.  This
+> patchset's size was on the borderline for proper patchset and I was
+> feeling lazy.  Sorry about that.  Will repost.
 
-Am Dienstag, 19. Mai 2009 schrieb Matt Fleming:
-> Oh, wow. I didn't pick up on the fact that you were artificially
-> generating errors on the bus.
+Thanks, appreciated :-)
 
-I have started with observing random errors in a batch of 20 pre-production 
-devices. There were about 1 error in 10 seconds of transfer due to an non-
-optimal GND area design. Remember that for 25 MHz SPI clock, you only have
-20ns from the start of the clock pulse into the SD card, and out of the
-data line of the SD card and into the controller. This is fast - and induced 
-EMP pulses of say 5 ns will be able to produce random transmission errors. 
-And you can not apply any filtering to the data lines at 25 MHz - so you need 
-some sort of fault tolerance in the software.
-
-After that observation, I started to test these devices with an ESD pulse 
-tester to test the software retry logic.
-
-best regards
- 
-i. A. Wolfgang Mües
 -- 
-Auerswald GmbH & Co. KG
-Hardware Development
-Telefon: +49 (0)5306 9219 0
-Telefax: +49 (0)5306 9219 94 
-E-Mail: Wolfgang.Mues@Auerswald.de
-Web: http://www.auerswald.de
- 
---------------------------------------------------------------
-Auerswald GmbH & Co. KG, Vor den Grashöfen 1, 38162 Cremlingen
-Registriert beim AG Braunschweig HRA 13289
-p.h.G Auerswald Geschäftsführungsges. mbH
-Registriert beim AG Braunschweig HRB 7463
-Geschäftsführer: Dipl-Ing. Gerhard Auerswald
+Jens Axboe
+
