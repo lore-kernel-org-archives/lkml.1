@@ -1,43 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754934AbZESNCc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753703AbZESM4d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754934AbZESNCc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 09:02:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753055AbZESNC0
+	id S1753703AbZESM4d (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 08:56:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751782AbZESM40
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 09:02:26 -0400
-Received: from mail-ew0-f224.google.com ([209.85.219.224]:53053 "EHLO
-	mail-ew0-f224.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752202AbZESNC0 (ORCPT
+	Tue, 19 May 2009 08:56:26 -0400
+Received: from gw-ca.panasas.com ([209.116.51.66]:9546 "EHLO
+	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750849AbZESM4Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 09:02:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=MZ/NKZFlyX3g+n3swjTPUj8/MQrLvgJgnRTTRHkWvorohCtuufJZezZZyksTvt7lg3
-         lE1N20B5qDMiAoARjPDqYI9pPuGvO+L96iOURX1Ksy8wQWhs0f1hHZRWX9mbpsnzP9Bc
-         wJRe95iyBXi1E1AHQKhFsVaLD09w5Q+pgf88M=
+	Tue, 19 May 2009 08:56:25 -0400
+Message-ID: <4A12AC23.30808@panasas.com>
+Date: Tue, 19 May 2009 15:54:59 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
 MIME-Version: 1.0
-In-Reply-To: <128c57bf092e08fe6372f6e8c3d02fc88b62e094.1242557192.git.richard.genoud@gmail.com>
-References: <128c57bf092e08fe6372f6e8c3d02fc88b62e094.1242557192.git.richard.genoud@gmail.com>
-Date: Tue, 19 May 2009 15:02:26 +0200
-Message-ID: <80b317760905190602n2e4c8f6r73447b0d331d6ce8@mail.gmail.com>
-Subject: Re: [PATCH 1/3] clean rspiusb code
-From: Richard Genoud <richard.genoud@gmail.com>
-To: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: Judd Montgomery <judd@jpilot.org>, Jeff Frontz <jeff.frontz@gmail.com>,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
-       Richard Genoud <richard.genoud@gmail.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>, Tejun Heo <tj@kernel.org>,
+       James Smart <James.Smart@Emulex.Com>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+CC: FUJITA Tomonori <tomof@acm.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Jens Axboe <Jens.Axboe@oracle.com>
+Subject: [PATCH version 2] [SQUASHME] "FC Pass Thru support" fixed for block/for-2.6.31
+ tree
+References: <4A12797B.2060901@panasas.com>
+In-Reply-To: <4A12797B.2060901@panasas.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 19 May 2009 12:55:02.0996 (UTC) FILETIME=[069AD140:01C9D881]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/5/17 Richard Genoud <richard.genoud@gmail.com>:
-> This first patch makes checkpatch happier
->
-I forgot to say that this patch serie applies to Greg KH's staging
-tree (<http://kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/gregkh-05-staging>)
 
-richard.
+This patch should be squashed into
+    [SCSI] FC Pass Thru support
+
+If it needs to compile after Tejun's block-layer revamps
+(all of them)
+
+Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
+Acked-by: Tejun Heo <tj@kernel.org>
+---
+ drivers/scsi/scsi_transport_fc.c |   22 ++++++++++------------
+ 1 files changed, 10 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/scsi/scsi_transport_fc.c b/drivers/scsi/scsi_transport_fc.c
+index 4df8c3c..809b75c 100644
+--- a/drivers/scsi/scsi_transport_fc.c
++++ b/drivers/scsi/scsi_transport_fc.c
+@@ -3409,7 +3409,6 @@ fc_bsg_jobdone(struct fc_bsg_job *job)
+ 	struct request *req = job->req;
+ 	struct request *rsp = req->next_rq;
+ 	unsigned long flags;
+-	unsigned rsp_len = 0, req_len = blk_rq_bytes(req);
+ 	int err;
+ 
+ 	spin_lock_irqsave(&job->job_lock, flags);
+@@ -3425,16 +3424,17 @@ fc_bsg_jobdone(struct fc_bsg_job *job)
+ 		job->req->sense_len = job->reply_len;
+ 
+ 	/* we assume all request payload was transferred, residual == 0 */
+-	req->data_len = 0;
++	req->resid_len = 0;
+ 
+ 	if (rsp) {
+-		rsp_len = blk_rq_bytes(rsp);
+-		BUG_ON(job->reply->reply_payload_rcv_len > rsp_len);
++		WARN_ON(job->reply->reply_payload_rcv_len > rsp->resid_len);
++
+ 		/* set reply (bidi) residual */
+-		rsp->data_len = (rsp_len - job->reply->reply_payload_rcv_len);
++		rsp->resid_len -= min(job->reply->reply_payload_rcv_len, 
++				      rsp->resid_len);
+ 	}
+ 
+-	blk_end_bidi_request(req, err, req_len, rsp_len);
++	blk_end_request_all(req, err);
+ 
+ 	fc_destroy_bsgjob(job);
+ }
+@@ -3496,7 +3496,7 @@ fc_bsg_map_buffer(struct fc_bsg_buffer *buf, struct request *req)
+ 		return -ENOMEM;
+ 	sg_init_table(buf->sg_list, req->nr_phys_segments);
+ 	buf->sg_cnt = blk_rq_map_sg(req->q, req, buf->sg_list);
+-	buf->payload_len = req->data_len;
++	buf->payload_len = blk_rq_bytes(req);
+ 	return 0;
+ }
+ 
+@@ -3762,14 +3762,12 @@ fc_bsg_request_handler(struct request_queue *q, struct Scsi_Host *shost,
+ 		return;
+ 
+ 	while (!blk_queue_plugged(q)) {
+-		req = elv_next_request(q);
+-		if (!req)
+-			break;
+-
+ 		if (rport && (rport->port_state == FC_PORTSTATE_BLOCKED))
+ 				break;
+ 
+-		blkdev_dequeue_request(req);
++		req = blk_fetch_request(q);
++		if (!req)
++			break;
+ 
+ 		if (rport && (rport->port_state != FC_PORTSTATE_ONLINE)) {
+ 			req->errors = -ENXIO;
+-- 
+1.6.2.1
+
+
