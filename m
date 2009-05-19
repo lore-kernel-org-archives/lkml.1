@@ -1,68 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754579AbZEVGNK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756620AbZEVGNe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754579AbZEVGNK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 02:13:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751215AbZEVGNB
+	id S1756620AbZEVGNe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 02:13:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751588AbZEVGN2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 02:13:01 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:57561 "EHLO
+	Fri, 22 May 2009 02:13:28 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:57607 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750880AbZEVGNA (ORCPT
+	with ESMTP id S1751215AbZEVGN1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 02:13:00 -0400
-Date: Tue, 19 May 2009 22:39:45 +0200
+	Fri, 22 May 2009 02:13:27 -0400
+Date: Tue, 19 May 2009 22:40:15 +0200
 From: Pavel Machek <pavel@ucw.cz>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Dave Hansen <dave@linux.vnet.ibm.com>,
-       David Rientjes <rientjes@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, Nick Piggin <npiggin@suse.de>,
-       Mel Gorman <mel@csn.ul.ie>, Peter Ziljstra <a.p.ziljstra@chello.nl>,
-       San Mehat <san@android.com>, Arve Hj?nnev?g <arve@android.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Misleading OOM messages
-Message-ID: <20090519203944.GD1362@ucw.cz>
-References: <1242333519.15391.210.camel@nimitz> <alpine.DEB.2.00.0905141346030.28074@chino.kir.corp.google.com> <1242335120.15391.242.camel@nimitz> <alpine.DEB.1.10.0905141729180.30187@qirst.com> <20090514213403.GB14741@elf.ucw.cz> <1242337299.28440.47.camel@nimitz> <20090515130547.GA1976@elf.ucw.cz> <alpine.DEB.1.10.0905151358430.26559@qirst.com> <20090515200213.GA1406@ucw.cz> <alpine.DEB.1.10.0905151713230.26489@qirst.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Suresh B Siddha <suresh.b.siddha@intel.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
+       Gregory Haskins <gregory.haskins@gmail.com>,
+       Mike Galbraith <efault@gmx.de>, Thomas Gleixner <tglx@linutronix.de>,
+       Arun Bharadwaj <arun@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH v2 0/2] Saving power by cpu evacuation
+	sched_max_capacity_pct=n
+Message-ID: <20090519204015.GE1362@ucw.cz>
+References: <20090513130541.21440.33364.stgit@drishya.in.ibm.com> <20090513143550.GU19296@one.firstfloor.org> <1242225402.26820.23.camel@twins> <20090513144659.GV19296@one.firstfloor.org> <1242226219.26820.26.camel@twins> <20090513150100.GW19296@one.firstfloor.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0905151713230.26489@qirst.com>
+In-Reply-To: <20090513150100.GW19296@one.firstfloor.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 2009-05-15 17:15:54, Christoph Lameter wrote:
-> On Fri, 15 May 2009, Pavel Machek wrote:
+On Wed 2009-05-13 17:01:00, Andi Kleen wrote:
+> > >From what I've been told its popular to over-commit the cooling capacity
+> > in a rack, so that a number of servers can run at full thermal capacity
+> > but not all.
 > 
-> > > Nope. If you have too little memory for your app then the kernel pages
-> > > portions of the app out to disk. Thats is why you have a VM (VIRTUAL
-> > > machine). The app is not running with physical memory.
-> >
-> > Try running your machine with mem=8M, then tell me how virtual memory
-> > works.
+> Yes. But in this case you don't want to use throttling, you want
+> to use p-states which actually safe power unlike throttling.
 > 
-> Well that is of course not enough memory.
+> > I've also been told that hardware sucks at throttling, 
+> 
+> Throttling is not really something you should use in normal 
+> operation, it's just a emergency measure. For that it works
+> quite well, but you really don't want it in normal operation.
+> 
+> > therefore people
+> > want to fix the OS so as to limit the thermal capacity and avoid the
+> > hardware throttle from kicking in, whilst still not exceeding the rack
+> > capacity or similar nonsense.
+> 
+> Yes that's fine and common, but you actually need to save power for this,
+> which throttling doesn't do.
 
-Ok, so in the end, there are two reasons for OOM:
+Actually throttling will lower power consumption at any given moment
+(not power consumption for any given task!) and will keep your rack
+from melting.
 
-1) Out of virtual memory.
+But I don't see why it is neccessary to evacuate cores for this. Why
+not just schedule special task that enters C3 instead of computing?
 
-   there's simply not enough ram+swap to fit the data. You go OOM.
-   This seems to be common on small machines. 8M is pushing it, but
-   64M ram + 64M swap + todays gnome would probably do that.
+That was what I planned to do on athlon 900 (1 core) with broken
+fan...
 
-   And maybe the way to hint people would be printing 'out of
-   _virtual_ memory'.
+For what you are doing, cpu hotplug seems more suitable. Can you
+ enhance it so that it is fast enough for you?
 
-2) Something goes very wrong with reclaim
-
-   this seems to be common on very  big machines you have experience
-   with.
-
-Perhaps 1 and 2 can be told appart by zero swap free in the 1) case?
-And perhaps you can invent some better message for 2) case?
-								Pavel
+							Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
