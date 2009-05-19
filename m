@@ -1,58 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754223AbZESMWQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754504AbZESMXa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754223AbZESMWQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 08:22:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751790AbZESMWI
+	id S1754504AbZESMXa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 08:23:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752614AbZESMXZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 08:22:08 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:54681 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751190AbZESMWH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 08:22:07 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Jan Blunck <jblunck@suse.de>
-Subject: Re: [PATCH 00/32] VFS based Union Mount (V3)
-Date: Tue, 19 May 2009 14:21:20 +0200
-User-Agent: KMail/1.9.9
-Cc: Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk,
-       bharata@in.ibm.com, dwmw2@infradead.org, mszeredi@suse.cz,
-       vaurora@redhat.com
-References: <1242662968-11684-1-git-send-email-jblunck@suse.de> <200905191354.08701.arnd@arndb.de> <20090519121504.GO16526@bolzano.suse.de>
-In-Reply-To: <20090519121504.GO16526@bolzano.suse.de>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Tue, 19 May 2009 08:23:25 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:54125 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751190AbZESMXY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 08:23:24 -0400
+Date: Tue, 19 May 2009 14:23:25 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Richard Kennedy <richard@rsk.demon.co.uk>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
+       akpm@linux-foundation.org, jack@suse.cz, yanmin_zhang@linux.intel.com
+Subject: Re: [PATCH 02/11] writeback: switch to per-bdi threads for
+	flushing  data
+Message-ID: <20090519122324.GY4140@kernel.dk>
+References: <1242649192-16263-1-git-send-email-jens.axboe@oracle.com> <1242649192-16263-3-git-send-email-jens.axboe@oracle.com> <4A1287FC.9020401@rsk.demon.co.uk>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200905191421.21026.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19LUlAw4b3riuFD0VfTfQOjeM90AshTOe0MW0r
- L79F1+7IavQ4yLCcGFyNC1y6h3JALg5WItuCxyCyWxPZhM0NVt
- +g31V8En7cqXc1ftXcSMg==
+In-Reply-To: <4A1287FC.9020401@rsk.demon.co.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 19 May 2009, Jan Blunck wrote:
-> On Tue, May 19, Arnd Bergmann wrote:
-> > This would work, but you'd have to do this for each file system if you want
-> > to be able to use it as the top of the union while backed by a read-only
-> > block device or when you don't want it to be written.
+On Tue, May 19 2009, Richard Kennedy wrote:
+> Jens Axboe wrote:
+> > This gets rid of pdflush for bdi writeout and kupdated style cleaning.
+> > <snip>
+> > index 2296ff4..76269f8 100644
+> > --- a/mm/page-writeback.c
+> > +++ b/mm/page-writeback.c
+> > @@ -541,7 +530,7 @@ static void balance_dirty_pages(struct address_space *mapping)
+> >  		 * been flushed to permanent storage.
+> >  		 */
+> >  		if (bdi_nr_reclaimable) {
+> > -			writeback_inodes(&wbc);
+> > +			generic_sync_bdi_inodes(NULL, &wbc);
+> >  			pages_written += write_chunk - wbc.nr_to_write;
+> >  			get_dirty_limits(&background_thresh, &dirty_thresh,
+> >  				       &bdi_thresh, bdi);
+> > @@ -592,7 +581,7 @@ static void balance_dirty_pages(struct address_space *mapping)
+> >  			(!laptop_mode && (global_page_state(NR_FILE_DIRTY)
+> >  					  + global_page_state(NR_UNSTABLE_NFS)
+> >  					  > background_thresh)))
+> > -		pdflush_operation(background_writeout, 0);
+> > +		bdi_start_writeback(bdi, NULL, 0);
+> >  }
+> >  
+> Hi Jens,
 > 
-> I know that the requirement for the topmost filesystem to be able to create
-> directories and fill them with fallthrus is an unattractive one. On the other
-> hand this is the cost that you have to pay at the moment to get this kind of
-> functionality. This implementation will not help with all use-cases. Its focus
-> is to get certain use-cases right.
+> I'm interested in this slight change of behaviour, when over the
+> background dirty limit background_writeout will write any dirty pages
+> while bdi_start_writeout writes only pages for the current bdi. Are
+> there any benefits in making this change?
+> 
+> Thinking about the case of 2 apps writing to different bdis. When app A
+> stops writing, then next time app B goes over the background dirty
+> threshold it will only be able to write its own pages, leaving any from
+> app A dirty until they reach their age limit.
 
-So what would go wrong if you only made them persistent for writable file
-systems, but allowed fallthrough dentries to be discarded for read-only
-file systems? As long as the lower layers don't change, you should still
-be able to reconstruct the same dentries every time you do a readdir, right?
+The function in question balances dirty pages against a specific address
+space, which has a specific mapping. The async part of the background
+writeout could be global as you mention. The whole thing is a bit weird
+in balance_dirty_pages(), for instance it checks for writeout against a
+given queue then proceeds to do a global writeout if not busy. At least
+it's consistent now.
 
-	Arnd <><
+> So we may be keeping dirty pages for the app that's finished longer than
+> necessary. Keeping pages for a finished app while flushing pages from a
+> running app seems a bit strange. I guess this is an odd corner case and
+> may not be worth worrying about, but I'd be interested to hear what you
+> think.
+
+The kupdated() initiated background writeout will take care of that, if
+nobody does a sync on that data first. If nobody is dirtying new data on
+the given bdi, then it seems perfectly fine to let normal background
+writeout handle it.
+
+> Do you think your new code will require any changes to the per bdi dirty
+> limits? It may be informative & interesting to run some tests writing to
+> fast & slow devices at the same time.
+
+Generally the code should behave fairly closely to the existing pdflush
+based code, so I don't think bdi dirty limit tweaking will be necessary.
+I'd definitely welcome some testing though, particularly slow vs fast as
+you mention. I've mainly been doing benchmarking to make sure we don't
+regress on performance, and that has been for fairly similar hardware.
+Since testing does take a lot of time, it would be nice if someone else
+would gather their own experiences, especially in areas that have been
+problematic in the past (slow vs fast devices, for instance!).
+
+-- 
+Jens Axboe
+
