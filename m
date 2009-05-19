@@ -1,116 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756171AbZESOyl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756189AbZESOzG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756171AbZESOyl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 10:54:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754581AbZESOxw
+	id S1756189AbZESOzG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 10:55:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755025AbZESOy4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 10:53:52 -0400
-Received: from d112a2.x-mailer.de ([212.162.53.4]:59090 "EHLO
-	d112a2.x-mailer.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755624AbZESOxv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 10:53:51 -0400
-Message-Id: <e12a2192b193c0b4069258d9d5c753298317cfb2.1242739648.git.kkeil@pingi.linux-pingi.de>
-In-Reply-To: <cover.1242739648.git.kkeil@pingi.linux-pingi.de>
-References: <cover.1242739648.git.kkeil@pingi.linux-pingi.de>
-Subject: [PATCH 04/19] Add watchdog functionality to hfcmulti driver
-From: Karsten Keil <keil@b1-systems.de>
-To: linux-kernel@vger.kernel.org
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       i4ldeveloper@listserv.isdn4linux.de
-Date: Tue, 19 May 2009 15:58:25 +0200
-X-Info: valid message
-X-Info: original Date
+	Tue, 19 May 2009 10:54:56 -0400
+Received: from www.tglx.de ([62.245.132.106]:50531 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753972AbZESOyy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 10:54:54 -0400
+Date: Tue, 19 May 2009 16:53:53 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Stanislaw Gruszka <sgruszka@redhat.com>
+cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Oleg Nesterov <oleg@redhat.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH resend3 2/2] itimers: fix periodic tics precision
+In-Reply-To: <20090518135028.3ce0f44e@dhcp-lab-109.englab.brq.redhat.com>
+Message-ID: <alpine.LFD.2.00.0905191552170.5983@localhost.localdomain>
+References: <20090518135028.3ce0f44e@dhcp-lab-109.englab.brq.redhat.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andreas Eversberg <andreas@eversberg.eu>
+On Mon, 18 May 2009, Stanislaw Gruszka wrote:
+>  int do_getitimer(int which, struct itimerval *value)
+> @@ -133,18 +134,20 @@ enum hrtimer_restart it_real_fn(struct hrtimer *timer)
+>  }
+>  
+>  static void set_cpu_itimer(struct task_struct *tsk, unsigned int clock_id,
+> -			   struct itimerval *value, struct itimerval *ovalue)
+> +			   const struct itimerval *const value,
+> +			   struct itimerval *const ovalue)
+>  {
+> -	cputime_t cval, cinterval, nval, ninterval;
+> +	cputime_t cval, nval;
+> +	ktime_t kt_cinterval, kt_ninterval;
 
-This patch was made by Titus Moldovan and provides IOCTL functions for enabling
-and disabling the controller's built in watchdog. The use is optional.
+  Just nitpicking. That kt_ prefix is not really helpful, but that's
+  my personal taste :)
 
-Signed-off-by: Andreas Eversberg <andreas@eversberg.eu>
-Signed-off-by: Karsten Keil <keil@b1-systems.de>
----
- drivers/isdn/hardware/mISDN/hfc_multi.h |    1 +
- drivers/isdn/hardware/mISDN/hfcmulti.c  |   32 ++++++++++++++++++++++++++++++-
- include/linux/mISDNif.h                 |    3 +-
- 3 files changed, 34 insertions(+), 2 deletions(-)
+> diff --git a/kernel/posix-cpu-timers.c b/kernel/posix-cpu-timers.c
+> index b6accca..905734b 100644
+> --- a/kernel/posix-cpu-timers.c
+> +++ b/kernel/posix-cpu-timers.c
+> @@ -1080,9 +1080,27 @@ static void check_cpu_itimer(struct task_struct *tsk, struct cpu_itimer *it,
+>  		return;
+>  
+>  	if (cputime_ge(cur_time, it->expires)) {
+> -		it->expires = it->incr;
+> -		if (!cputime_eq(it->expires, cputime_zero)) {
+> -			it->expires = cputime_add(it->expires, cur_time);
+> +		if (it->incr.tv64 != 0) {
+> +			ktime_t incr, real_incr, diff;
+> +			cputime_t cpu_incr;
+> +			struct timespec ts_incr, ts_real_incr;
+> +
+> +			incr = ktime_sub_ns(it->incr, it->err_ns);
+> +			if (unlikely(incr.tv64 <= 0))
+> +				incr = ktime_set(0, 1);
+> +
+> +			ts_incr = ktime_to_timespec(incr);
+> +			cpu_incr = timespec_to_cputime(&ts_incr);
+> +
+> +			cputime_to_timespec(cpu_incr, &ts_real_incr);
+> +			real_incr = timespec_to_ktime(ts_real_incr);
 
-diff --git a/drivers/isdn/hardware/mISDN/hfc_multi.h b/drivers/isdn/hardware/mISDN/hfc_multi.h
-index 545b3f9..b1517dd 100644
---- a/drivers/isdn/hardware/mISDN/hfc_multi.h
-+++ b/drivers/isdn/hardware/mISDN/hfc_multi.h
-@@ -102,6 +102,7 @@ struct hfcm_hw {
- 	u_char	r_sci_msk;
- 	u_char	r_tx0, r_tx1;
- 	u_char	a_st_ctrl0[8];
-+	u_char	r_bert_wd_md;
- 	timer_t	timer;
- };
- 
-diff --git a/drivers/isdn/hardware/mISDN/hfcmulti.c b/drivers/isdn/hardware/mISDN/hfcmulti.c
-index 30831d7..9bd85ae 100644
---- a/drivers/isdn/hardware/mISDN/hfcmulti.c
-+++ b/drivers/isdn/hardware/mISDN/hfcmulti.c
-@@ -4191,11 +4191,41 @@ open_bchannel(struct hfc_multi *hc, struct dchannel *dch,
- static int
- channel_dctrl(struct dchannel *dch, struct mISDN_ctrl_req *cq)
- {
-+	struct hfc_multi	*hc = dch->hw;
- 	int	ret = 0;
-+	int	wd_mode, wd_cnt;
- 
- 	switch (cq->op) {
- 	case MISDN_CTRL_GETOP:
--		cq->op = 0;
-+		cq->op = MISDN_CTRL_HFC_OP;
-+		break;
-+	case MISDN_CTRL_HFC_WD_INIT: /* init the watchdog */
-+		wd_cnt = cq->p1 & 0xf;
-+		wd_mode = !!(cq->p1 >> 4);
-+		if (debug & DEBUG_HFCMULTI_MSG)
-+			printk(KERN_DEBUG
-+			    "%s: MISDN_CTRL_HFC_WD_INIT mode %s counter 0x%x\n",
-+			    __func__, wd_mode ? "AUTO" : "MANUAL", wd_cnt);
-+		/* set the watchdog timer */
-+		HFC_outb(hc, R_TI_WD, poll_timer | (wd_cnt << 4));
-+		hc->hw.r_bert_wd_md = (wd_mode ? V_AUTO_WD_RES : 0);
-+		if (hc->ctype == HFC_TYPE_XHFC)
-+			hc->hw.r_bert_wd_md |= 0x40 /* V_WD_EN */;
-+		/* init the watchdog register and reset the counter */
-+		HFC_outb(hc, R_BERT_WD_MD, hc->hw.r_bert_wd_md | V_WD_RES);
-+		if (test_bit(HFC_CHIP_PLXSD, &hc->chip)) {
-+			/* enable the watchdog output for Speech-Design */
-+			HFC_outb(hc, R_GPIO_SEL, V_GPIO_SEL7);
-+			HFC_outb(hc, R_GPIO_EN1, V_GPIO_EN15);
-+			HFC_outb(hc, R_GPIO_OUT1, 0);
-+			HFC_outb(hc, R_GPIO_OUT1, V_GPIO_OUT15);
-+		}
-+		break;
-+	case MISDN_CTRL_HFC_WD_RESET: /* reset the watchdog counter */
-+		if (debug & DEBUG_HFCMULTI_MSG)
-+			printk(KERN_DEBUG "%s: MISDN_CTRL_HFC_WD_RESET\n",
-+			    __func__);
-+		HFC_outb(hc, R_BERT_WD_MD, hc->hw.r_bert_wd_md | V_WD_RES);
- 		break;
- 	default:
- 		printk(KERN_WARNING "%s: unknown Op %x\n",
-diff --git a/include/linux/mISDNif.h b/include/linux/mISDNif.h
-index 5da3d95..cf97459 100644
---- a/include/linux/mISDNif.h
-+++ b/include/linux/mISDNif.h
-@@ -362,7 +362,8 @@ clear_channelmap(u_int nr, u_char *map)
- #define MISDN_CTRL_HFC_RECEIVE_ON	0x4006
- #define MISDN_CTRL_HFC_ECHOCAN_ON 	0x4007
- #define MISDN_CTRL_HFC_ECHOCAN_OFF 	0x4008
--
-+#define MISDN_CTRL_HFC_WD_INIT		0x4009
-+#define MISDN_CTRL_HFC_WD_RESET		0x400A
- 
- /* socket options */
- #define MISDN_TIME_STAMP		0x0001
--- 
-1.6.0.2
+  Yuck, we convert back and forth here. That's lots of really
+  expensive math operations.
 
+  ktime -> timespec -> cputime -> timespec -> ktime
+
+  Isn't there a more intelligent way to get the delta ?
+
+  We can precompute the real (cputime) increment of the given
+  increment value, which should be always >= the precise increment
+  value. We also can precompute the ktime_t value of one cputime
+  increment.
+
+  So now we can do:
+
+  it->expires = cputime_add(it->expires, it->cpu_incr);
+  it->error = ktime_add(it->error, it->incr_error);
+  if (it->error.tv64 >= onecputimetick.tv64) {
+  	it->expires--;
+	it->error = ktime_sub(it->error, onecputimetick);
+  }
+
+  And the whole function boils down to simple add/sub/compare math.
+
+Thanks,
+
+	tglx
