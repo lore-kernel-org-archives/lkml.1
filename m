@@ -1,65 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754426AbZESJGn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751982AbZESJLk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754426AbZESJGn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 05:06:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750820AbZESJGg
+	id S1751982AbZESJLk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 05:11:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751422AbZESJLc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 05:06:36 -0400
-Received: from mga03.intel.com ([143.182.124.21]:60444 "EHLO mga03.intel.com"
+	Tue, 19 May 2009 05:11:32 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:54925 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752701AbZESJGf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 05:06:35 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,214,1241420400"; 
-   d="scan'208";a="144399142"
-Date: Tue, 19 May 2009 17:06:33 +0800
-From: Shaohua Li <shaohua.li@intel.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       "lenb@kernel.org" <lenb@kernel.org>,
-       "menage@google.com" <menage@google.com>
-Subject: Re: [PATCH]cpuset: add new API to change cpuset top group's cpus
-Message-ID: <20090519090633.GA14597@sli10-desk.sh.intel.com>
-References: <20090519073942.GA10864@sli10-desk.sh.intel.com> <1242722454.26820.461.camel@twins> <20090519084852.GA13682@sli10-desk.sh.intel.com> <1242723364.26820.466.camel@twins>
+	id S1750849AbZESJLc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 05:11:32 -0400
+Date: Tue, 19 May 2009 11:11:11 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Cc: Thomas Meyer <thomas@m3y3r.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+Subject: Re: 2.6.30-rc4: microcode: failed to init CPU1
+Message-ID: <20090519091111.GA31404@elte.hu>
+References: <1242588528.4814.6.camel@earth>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1242723364.26820.466.camel@twins>
+In-Reply-To: <1242588528.4814.6.camel@earth>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 19, 2009 at 04:56:04PM +0800, Peter Zijlstra wrote:
-> On Tue, 2009-05-19 at 16:48 +0800, Shaohua Li wrote:
-> > On Tue, May 19, 2009 at 04:40:54PM +0800, Peter Zijlstra wrote:
-> > > On Tue, 2009-05-19 at 15:39 +0800, Shaohua Li wrote:
-> > > > ACPI 4.0 defines processor aggregator device. The device can notify OS to idle
-> > > > some CPUs to save power. This isn't to hot remove cpus, but just makes cpus
-> > > > idle.
-> > > > 
-> > > > This patch adds one API to change cpuset top group's cpus. If we want to
-> > > > make one cpu idle, simply remove the cpu from cpuset top group's cpu list,
-> > > > then all tasks will be migrate to other cpus, and other tasks will not be
-> > > > migrated to this cpu again. No functional changes.
-> > > > 
-> > > > We will use this API in new ACPI processor aggregator device driver later.
-> > > 
-> > > I don't think so. There really is a lot more to do than move processes
-> > > about.
-> > no processor running is good enough for us, we don't care about interrupts/softirq/
-> > timers so far.
+
+* Dmitry Adamushko <dmitry.adamushko@gmail.com> wrote:
+
 > 
-> Well, I don't care for this interface.
+> >> [ ... ]
+> >> [ 6643.982900] microcode: failed to init CPU1
+> >> [ 6643.983528] CPU1 is up
+> >> [ 6643.984529] ACPI: Waking up from system sleep state S4
+> >> [ 6644.290917] pci 0000:00:1e.0: power state changed by ACPI to D0
+> >> [ 6644.291103] ata_piix 0000:00:1f.1: power state changed by ACPI to D0
+> >> [ 6644.291139] ata_piix 0000:00:1f.1: restoring config space at offset 0x1 (was 0x2800001, writing 0x2800005)
+> >> [ 6644.291187] ata_piix 0000:00:1f.2: restoring config space at offset 0x1 (was 0x2b00003, writing 0x2b00007)
+> >> [ 6644.297593] pci 0000:00:07.0: PME# disabled
+> >>
+> >> Is this an error/problem?
+> >
+> > Not sure.
+> >
+> > CCing the people who have worked with the Intel microcode code recently.
 > 
-> > > Furthermore, I object to being able to remove online cpus from the top
-> > > cpuset, that just doesn't make sense.
-> > > 
-> > > I'd suggest using hotplug for this.
 > 
-> > cpu hotplug involves too much things, and we are afraid it's not reliable.
+> does the error message disappear with the following patch applied?
 > 
-> Then make it more reliable instead of providing ugly ass shit like this.
-I wonder why this is that ugly. We have a cpu_isolated_map, which is just like
-this.
+> Thanks in advance.
+> 
+> 
+> ---
+> 
+> 
+> Subject: error handling inconsistency
+> 
+> Don't report an error in case there is simply no cached microcode 
+> update available when resuming.
+> 
+> p.s. the current version in -tip provides better error handling 
+> and doesn't have this problem.
+> 
+> Signed-off-by: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+
+We can do your fixlet for .30 as well (if it's tested by Thomas to 
+solve the problem) - the reworked code in -tip is invasive changes 
+aimed at .31.
+
+	Ingo
