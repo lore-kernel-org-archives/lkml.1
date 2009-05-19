@@ -1,91 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755560AbZESI7H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755579AbZESI71@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755560AbZESI7H (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 04:59:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752850AbZESI65
+	id S1755579AbZESI71 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 04:59:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754505AbZESI7Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 04:58:57 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50171 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750721AbZESI64 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 04:58:56 -0400
-Date: Tue, 19 May 2009 10:58:25 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, davem@davemloft.net, dada1@cosmosbay.com,
-       zbr@ioremap.net, jeff.chua.linux@gmail.com, paulus@samba.org,
-       laijs@cn.fujitsu.com, jengelh@medozas.de, r000n@r000n.net,
-       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
-Subject: Re: [PATCH RFC] v5 expedited "big hammer" RCU grace periods
-Message-ID: <20090519085825.GA9388@elte.hu>
-References: <20090517191141.GA25915@linux.vnet.ibm.com> <20090518075630.GA10687@elte.hu> <20090518151421.GB6768@linux.vnet.ibm.com> <20090518154241.GA27047@elte.hu> <20090518160254.GD6768@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090518160254.GD6768@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 19 May 2009 04:59:16 -0400
+Received: from casper.infradead.org ([85.118.1.10]:41159 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753449AbZESI7O (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 04:59:14 -0400
+Subject: Re: [PATCH]cpuset: add new API to change cpuset top group's cpus
+From: Peter Zijlstra <peterz@infradead.org>
+To: Shaohua Li <shaohua.li@intel.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       "lenb@kernel.org" <lenb@kernel.org>,
+       "menage@google.com" <menage@google.com>
+In-Reply-To: <20090519084852.GA13682@sli10-desk.sh.intel.com>
+References: <20090519073942.GA10864@sli10-desk.sh.intel.com>
+	 <1242722454.26820.461.camel@twins>
+	 <20090519084852.GA13682@sli10-desk.sh.intel.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Tue, 19 May 2009 10:56:04 +0200
+Message-Id: <1242723364.26820.466.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
-
-> On Mon, May 18, 2009 at 05:42:41PM +0200, Ingo Molnar wrote:
-> > 
-> > * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
-> > 
-> > > > i might be missing something fundamental here, but why not just 
-> > > > have per CPU helper threads, all on the same waitqueue, and wake 
-> > > > them up via a single wake_up() call? That would remove the SMP 
-> > > > cross call (wakeups do immediate cross-calls already).
+On Tue, 2009-05-19 at 16:48 +0800, Shaohua Li wrote:
+> On Tue, May 19, 2009 at 04:40:54PM +0800, Peter Zijlstra wrote:
+> > On Tue, 2009-05-19 at 15:39 +0800, Shaohua Li wrote:
+> > > ACPI 4.0 defines processor aggregator device. The device can notify OS to idle
+> > > some CPUs to save power. This isn't to hot remove cpus, but just makes cpus
+> > > idle.
 > > > 
-> > > My concern with this is that the cache misses accessing all the 
-> > > processes on this single waitqueue would be serialized, slowing 
-> > > things down. In contrast, the bitmask that smp_call_function() 
-> > > traverses delivers on the order of a thousand CPUs' worth of bits 
-> > > per cache miss.  I will give it a try, though.
+> > > This patch adds one API to change cpuset top group's cpus. If we want to
+> > > make one cpu idle, simply remove the cpu from cpuset top group's cpu list,
+> > > then all tasks will be migrate to other cpus, and other tasks will not be
+> > > migrated to this cpu again. No functional changes.
+> > > 
+> > > We will use this API in new ACPI processor aggregator device driver later.
 > > 
-> > At least if you go via the migration threads, you can queue up 
-> > requests to them locally. But there's going to be cachemisses 
-> > _anyway_, since you have to access them all from a single CPU, 
-> > and then they have to fetch details about what to do, and then 
-> > have to notify the originator about completion.
-> 
-> Ah, so you are suggesting that I use smp_call_function() to run 
-> code on each CPU that wakes up that CPU's migration thread?  I 
-> will take a look at this.
+> > I don't think so. There really is a lot more to do than move processes
+> > about.
+> no processor running is good enough for us, we don't care about interrupts/softirq/
+> timers so far.
 
-My suggestion was to queue up a dummy 'struct migration_req' up with 
-it (change migration_req::task == NULL to mean 'nothing') and simply 
-wake it up using wake_up_process().
+Well, I don't care for this interface.
 
-That will force a quiescent state, without the need for any extra 
-information, right?
+> > Furthermore, I object to being able to remove online cpus from the top
+> > cpuset, that just doesn't make sense.
+> > 
+> > I'd suggest using hotplug for this.
 
-This is what the scheduler code does, roughly:
+> cpu hotplug involves too much things, and we are afraid it's not reliable.
 
-                wake_up_process(rq->migration_thread);
-                wait_for_completion(&req.done);
+Then make it more reliable instead of providing ugly ass shit like this.
 
-and this will always have to perform well. The 'req' could be put 
-into PER_CPU, and a loop could be done like this:
+> Besides, a hot removed cpu will do a dead loop halt, which isn't power saving
+> efficient. To make hot removed cpu enters deep C-state is in whish list for a
+> long time, but still not available. The acpi_processor_idle is a module, and
+> cpuidle governor potentially can't handle offline cpu.
 
-	for_each_online_cpu(cpu)
-                wake_up_process(cpu_rq(cpu)->migration_thread);
-
-	for_each_online_cpu(cpu)
-                wait_for_completion(&per_cpu(req, cpu).done);
-
-hm?
-
-	Ingo
+Then fix that hot-unplug idle loop. I agree that the hlt thing is silly,
+and I've no idea why its still there, seems like a much better candidate
+for your efforts than this.
