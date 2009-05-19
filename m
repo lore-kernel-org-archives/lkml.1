@@ -1,75 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753667AbZESLVq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754079AbZESLsU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753667AbZESLVq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 07:21:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752276AbZESLVj
+	id S1754079AbZESLsU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 07:48:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752167AbZESLsJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 07:21:39 -0400
-Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:46034 "EHLO
-	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752092AbZESLVi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 07:21:38 -0400
-Date: Tue, 19 May 2009 13:21:30 +0200
-From: Pierre Ossman <pierre@ossman.eu>
-To: yingchao li <rjn637@gmail.com>
-Cc: linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Removed SD card causes kernel panic when a transfer is
- on-going.
-Message-ID: <20090519132130.4c74ef39@mjolnir.ossman.eu>
-In-Reply-To: <437bd5150905150145k6d750c7er89fa9b02749f738d@mail.gmail.com>
-References: <437bd5150905150145k6d750c7er89fa9b02749f738d@mail.gmail.com>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.ossman.eu-18778-1242732096-0001-2"
+	Tue, 19 May 2009 07:48:09 -0400
+Received: from mx1.auerswald.de ([212.185.163.234]:11785 "EHLO
+	mail.auerswald.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752060AbZESLsI convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 07:48:08 -0400
+From: Wolfgang =?iso-8859-1?q?M=FCes?= <wolfgang.mues@auerswald.de>
+Organization: Auerswald GmbH & Co. KG
+To: "Matt Fleming" <matt@console-pimps.org>
+Subject: Re: [PATCH] mmc_spi: use EILSEQ for possible transmission errors
+Date: Tue, 19 May 2009 13:47:45 +0200
+User-Agent: KMail/1.9.10
+Cc: "Pierre Ossman" <drzeus@drzeus.cx>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "David Brownell" <dbrownell@users.sourceforge.net>,
+       "Mike Frysinger" <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org
+References: <20090519112948.GB28564@console-pimps.org>
+In-Reply-To: <20090519112948.GB28564@console-pimps.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200905191347.46026.wolfgang.mues@auerswald.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+Matt,
 
---=_freyr.ossman.eu-18778-1242732096-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Am Dienstag, 19. Mai 2009 schrieb Matt Fleming:
+> On Thu, May 14, 2009 at 12:24:27PM +0100, Wolfgang Mües wrote:
+> > o This patch changes the reported error code for the responses
+> >   to a command from EINVAL/EIO to EILSEQ
 
-On Fri, 15 May 2009 16:45:06 +0800
-yingchao li <rjn637@gmail.com> wrote:
+> Hmm, always returning -EILSEQ is devious. What happens if we sent an
+> illegal command?
+Isn't this a theoretical question?
+Sending an illegal command will never work. Even the programmer of this piece 
+of software will notice, and such a software will not find it's way into the 
+kernel.
 
-> In my omap3430 board, when a transfer is on-going(i.e. reading from sd
-> card), I unpluged directly sd card, then kernel panic.
->=20
+And IF it would, and really it's an illegal command, then it does no harm if 
+it is retried several times. It will never work.
 
-Known issue unfortunately. Something is not properly reference counting
-the block queue, but the handling in mmc_block is correct as far as I
-can gather.
+Matt, I do not like this patch either.
 
-Your patch works around the problem by basically keeping a reference to
-the queue longer than the driver needs (hiding any missing references
-in other layers).
+But given the fact that a response is NOT checksum-protected, there is NO WAY 
+we can tell if the received response is a transmission error or a real error 
+code from the SD/MMC card.
 
-I've been trying to find this bug without much success. The block layer
-isn't that easy to understand. :/
+My first patch has not changed the error codes in mmc_spi, but only changed 
+the actions in block.c.
 
-Rgds
---=20
-     -- Pierre Ossman
+But Pierre has objected against this: he stated that EINVAL is used by all 
+(non-SPI) drivers only for true non-recoverable errors, and requested that 
+another error code should be used by the mmc_spi driver. The apropriate code 
+for transmission errors is EILSEQ.
 
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
+Maybe a solution-in-the-middle is to use different error codes in the mmc_spi 
+framework, which allows to differentiate between individual response codes, 
+and treat them all as transmission errors in block.c. What error codes can we 
+choose?
 
---=_freyr.ossman.eu-18778-1242732096-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
+> IMHO always assuming that command errors are caused by transmission
+> problems is not the right solution.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.11 (GNU/Linux)
+It's not your or my fault, it's the fault of the spi SD/MMC card protocol 
+designer. You may send him to me, already prepared: naked and in chains ;-)
 
-iEYEARECAAYFAkoSlj4ACgkQ7b8eESbyJLiymwCfQ88IAq7oRNasA1R/leR5SWn+
-8iIAoLvWaQ5v3tZXpx4oH23nv/JYGl1W
-=aDhY
------END PGP SIGNATURE-----
-
---=_freyr.ossman.eu-18778-1242732096-0001-2--
+regards
+ 
+i. A. Wolfgang Mües
+-- 
+Auerswald GmbH & Co. KG
+Hardware Development
+Telefon: +49 (0)5306 9219 0
+Telefax: +49 (0)5306 9219 94 
+E-Mail: Wolfgang.Mues@Auerswald.de
+Web: http://www.auerswald.de
+ 
+--------------------------------------------------------------
+Auerswald GmbH & Co. KG, Vor den Grashöfen 1, 38162 Cremlingen
+Registriert beim AG Braunschweig HRA 13289
+p.h.G Auerswald Geschäftsführungsges. mbH
+Registriert beim AG Braunschweig HRB 7463
+Geschäftsführer: Dipl-Ing. Gerhard Auerswald
