@@ -1,110 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756070AbZESR0s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755570AbZESR32@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756070AbZESR0s (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 13:26:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754660AbZESR0H
+	id S1755570AbZESR32 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 13:29:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752880AbZESR3X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 13:26:07 -0400
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:33251 "EHLO e7.ny.us.ibm.com"
+	Tue, 19 May 2009 13:29:23 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:35765 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752827AbZESR0C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 13:26:02 -0400
-From: Mimi Zohar <zohar@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>, hooanon05@yahoo.co.jp,
-       "J. Bruce Fields" <bfields@fieldses.org>,
-       Eric Paris <eparis@redhat.com>, Hugh Dickins <hugh@veritas.com>,
-       James Morris <jmorris@namei.org>,
-       David Safford <safford@watson.ibm.com>, linux-nfs@vger.kernel.org,
-       Mimi Zohar <zohar@linux.vnet.ibm.com>, Mimi Zohar <zohar@us.ibm.com>
-Subject: [PATCH 3/3] integrity: nfsd imbalance bug fix
-Date: Tue, 19 May 2009 13:25:59 -0400
-Message-Id: <ac3acdbcb8a63d70635e9c7b8fb5192b01756548.1242753149.git.zohar@linux.vnet.ibm.com>
-X-Mailer: git-send-email 1.6.0.6
-In-Reply-To: <8971a1efcc5153f1c9b167997e5ca0c3c40a69d5.1242753145.git.zohar@linux.vnet.ibm.com>
-References: <8971a1efcc5153f1c9b167997e5ca0c3c40a69d5.1242753145.git.zohar@linux.vnet.ibm.com>
-In-Reply-To: <8971a1efcc5153f1c9b167997e5ca0c3c40a69d5.1242753145.git.zohar@linux.vnet.ibm.com>
-References: <8971a1efcc5153f1c9b167997e5ca0c3c40a69d5.1242753145.git.zohar@linux.vnet.ibm.com>
+	id S1752005AbZESR3W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 13:29:22 -0400
+Date: Tue, 19 May 2009 10:24:27 -0700
+From: Greg KH <gregkh@suse.de>
+To: Alexander Beregalov <a.beregalov@gmail.com>
+Cc: linux-next <linux-next@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: staging: cpc-usb: wrong Makefile path
+Message-ID: <20090519172427.GB30522@suse.de>
+References: <a4423d670905191009i450545f6le9c49e84c5ce94fd@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a4423d670905191009i450545f6le9c49e84c5ce94fd@mail.gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-An nfsd exported file is opened/closed by the kernel causing the
-integrity imbalance message.
+On Tue, May 19, 2009 at 09:09:53PM +0400, Alexander Beregalov wrote:
+> diff --git a/drivers/staging/Makefile b/drivers/staging/Makefile
+> index 9492a6f..cc1aac2 100644
+> --- a/drivers/staging/Makefile
+> +++ b/drivers/staging/Makefile
+> @@ -40,4 +40,4 @@ obj-$(CONFIG_PLAN9AUTH)               += p9auth/
+>  obj-$(CONFIG_HECI)             += heci/
+>  obj-$(CONFIG_LINE6_USB)                += line6/
+>  obj-$(CONFIG_USB_SERIAL_QUATECH_ESU100)        += serqt_usb/
+> -obj-$(CONFIG_USB_CPC)          += cpc_usb/
+> +obj-$(CONFIG_USB_CPC)          += cpc-usb/
 
-Before a file is opened, there normally is permission checking, which
-is done in inode_permission().  However, as integrity checking requires
-a dentry and mount point, which is not available in inode_permission(),
-the integrity (permission) checking must be called separately.
+Heh, wierd, I wonder how it was working for me when I tested this...
 
-In order to detect any missing integrity checking calls, we keep track
-of file open/closes.  ima_path_check() increments these counts and
-does the integrity (permission) checking. As a result, the number of
-calls to ima_path_check()/ima_file_free() should be balanced.  An extra
-call to fput(), indicates the file could have been accessed without first
-calling ima_path_check().
+thanks,
 
-In nfsv3 permission checking is done once, followed by multiple reads,
-which do an open/close for each read.  The integrity (permission) checking
-call should be in nfsd_permission() after the inode_permission() call, but
-as there is no correlation between the number of permission checking and
-open calls, the integrity checking call should not increment the counters,
-but defer it to when the file is actually opened.
-
-This patch adds:
-- integrity (permission) checking for nfsd exported files in nfsd_permission().
-- a call to increment counts for files opened by nfsd.
-
-Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
----
-diff --git a/fs/nfsd/vfs.c b/fs/nfsd/vfs.c
-index 6c68ffd..54a8660 100644
---- a/fs/nfsd/vfs.c
-+++ b/fs/nfsd/vfs.c
-@@ -55,6 +55,7 @@
- #include <linux/security.h>
- #endif /* CONFIG_NFSD_V4 */
- #include <linux/jhash.h>
-+#include <linux/ima.h>
- 
- #include <asm/uaccess.h>
- 
-@@ -735,6 +736,8 @@ nfsd_open(struct svc_rqst *rqstp, struct svc_fh *fhp, int type,
- 			    flags, cred);
- 	if (IS_ERR(*filp))
- 		host_err = PTR_ERR(*filp);
-+	else
-+		ima_counts_get(*filp);
- out_nfserr:
- 	err = nfserrno(host_err);
- out:
-@@ -2024,6 +2027,7 @@ nfsd_permission(struct svc_rqst *rqstp, struct svc_export *exp,
- 					struct dentry *dentry, int acc)
- {
- 	struct inode	*inode = dentry->d_inode;
-+	struct path	path;
- 	int		err;
- 
- 	if (acc == NFSD_MAY_NOP)
-@@ -2096,7 +2100,18 @@ nfsd_permission(struct svc_rqst *rqstp, struct svc_export *exp,
- 	if (err == -EACCES && S_ISREG(inode->i_mode) &&
- 	    acc == (NFSD_MAY_READ | NFSD_MAY_OWNER_OVERRIDE))
- 		err = inode_permission(inode, MAY_EXEC);
-+	if (err)
-+		goto nfsd_out;
- 
-+	/* Do integrity (permission) checking now, but defer incrementing
-+	 * IMA counts to the actual file open.
-+	 */
-+	path.mnt = exp->ex_path.mnt;
-+	path.dentry = dentry;
-+	err = ima_path_check(&path, acc & (MAY_READ | MAY_WRITE | MAY_EXEC),
-+			     IMA_COUNT_LEAVE);
-+	return err;
-+nfsd_out:
- 	return err? nfserrno(err) : 0;
- }
- 
--- 
-1.6.0.6
-
+greg k-h
