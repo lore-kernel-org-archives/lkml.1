@@ -1,57 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754184AbZESMzZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754866AbZESM4n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754184AbZESMzZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 08:55:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752614AbZESMzT
+	id S1754866AbZESM4n (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 08:56:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753926AbZESM4g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 08:55:19 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:40966 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752372AbZESMzS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 08:55:18 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4A12AC0D.7000701@s5r6.in-berlin.de>
-Date: Tue, 19 May 2009 14:54:37 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.21) Gecko/20090411 SeaMonkey/1.1.16
+	Tue, 19 May 2009 08:56:36 -0400
+Received: from www.tglx.de ([62.245.132.106]:60840 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754054AbZESM4c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 08:56:32 -0400
+Date: Tue, 19 May 2009 14:55:10 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Shaohua Li <shaohua.li@intel.com>
+cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, lenb@kernel.org,
+       thisistempbox@yahoo.com, mingo@redhat.com
+Subject: Re: [PATCH 1/2]cpuidle: makes AMD C1E works in acpi_idle
+In-Reply-To: <20090519080942.GA12117@sli10-desk.sh.intel.com>
+Message-ID: <alpine.LFD.2.00.0905191447490.5983@localhost.localdomain>
+References: <20090519080942.GA12117@sli10-desk.sh.intel.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-CC: Ingo Molnar <mingo@elte.hu>, Jiri Slaby <jirislaby@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] tracing: use strlcpy instead of strncpy
-References: <4A11480F.3030000@cn.fujitsu.com> <4A11CB5C.8070800@gmail.com> <4A1210B6.80605@cn.fujitsu.com>
-In-Reply-To: <4A1210B6.80605@cn.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lai Jiangshan wrote:
-> [Impact] cleanup
+On Tue, 19 May 2009, Shaohua Li wrote:
 
-Well, not entirely.
+> When AMD C1E is enabled, local APIC timer will stop even in C1. This patch uses
+> broadcast ipi to replace local APIC timer in C1.
+> 
+> http://bugzilla.kernel.org/show_bug.cgi?id=13233
 
-> --- a/kernel/trace/trace.h
-> +++ b/kernel/trace/trace.h
-> @@ -155,8 +155,8 @@ struct trace_boot_ret {
->  struct trace_branch {
->  	struct trace_entry	ent;
->  	unsigned	        line;
-> -	char			func[TRACE_FUNC_SIZE+1];
-> -	char			file[TRACE_FILE_SIZE+1];
-> +	char			func[TRACE_FUNC_SIZE];
-> +	char			file[TRACE_FILE_SIZE];
->  	char			correct;
->  };
+Hmm. This was addressed before in 
 
-(without change of the TRACE_????_SIZE definition)
+commit a8d6829044901a67732904be5f1eacdf8539604f (x86: prevent C-states
+hang on AMD C1E enabled machines)
 
-Better avoid a categorization of a patch if the change's scope exceeds 
-that of the categorization.
--- 
-Stefan Richter
--=====-=-=== -=-= -==-=
-http://arcgraph.de/sr/
+We limit C-States to 1 via acpi_processor_cstate_check().
+
+And we have the broadcast logic in c1e_idle() already. We also select
+c1e_idle as the idle routine, so why is the ACPI code not using this. ?
+
+Thanks,
+
+	tglx
