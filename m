@@ -1,55 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754856AbZESKjb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754447AbZESKkQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754856AbZESKjb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 06:39:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753137AbZESKjZ
+	id S1754447AbZESKkQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 06:40:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753722AbZESKkD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 06:39:25 -0400
-Received: from cantor.suse.de ([195.135.220.2]:39664 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752925AbZESKjY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 06:39:24 -0400
-Date: Tue, 19 May 2009 12:39:24 +0200
-From: Jan Blunck <jblunck@suse.de>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       viro@zeniv.linux.org.uk, bharata@in.ibm.com, dwmw2@infradead.org,
-       mszeredi@suse.cz, vaurora@redhat.com
-Subject: Re: [PATCH 00/32] VFS based Union Mount (V3)
-Message-ID: <20090519103924.GL16526@bolzano.suse.de>
-References: <1242662968-11684-1-git-send-email-jblunck@suse.de> <E1M6LvU-0000mN-HN@pomaz-ex.szeredi.hu> <20090519102939.GK16526@bolzano.suse.de> <E1M6Mez-0000tG-3q@pomaz-ex.szeredi.hu>
+	Tue, 19 May 2009 06:40:03 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:54172 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753715AbZESKkB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 06:40:01 -0400
+Subject: Re: [PATCH]cpuset: add new API to change cpuset top group's cpus
+From: Peter Zijlstra <peterz@infradead.org>
+To: Shaohua Li <shaohua.li@intel.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       "lenb@kernel.org" <lenb@kernel.org>,
+       "menage@google.com" <menage@google.com>
+In-Reply-To: <1242723364.26820.466.camel@twins>
+References: <20090519073942.GA10864@sli10-desk.sh.intel.com>
+	 <1242722454.26820.461.camel@twins>
+	 <20090519084852.GA13682@sli10-desk.sh.intel.com>
+	 <1242723364.26820.466.camel@twins>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Tue, 19 May 2009 12:38:58 +0200
+Message-Id: <1242729538.26820.497.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1M6Mez-0000tG-3q@pomaz-ex.szeredi.hu>
-Organization: SUSE LINUX Products GmbH, GF Markus Rex, HRB 16746 (AG Nuernberg)
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 19, Miklos Szeredi wrote:
-
-> On Tue, 19 May 2009, Jan Blunck wrote:
-> > The directory in the topmost filesystem is created during
-> > lookup. The contents of the directory isn't copied up presistently
-> > at that point in time. Therefore you have an empty directory in the
-> > topmost filesystem after the lookup. This was necessary to get rid
-> > of the union_relookup_topmost() calls during create, mknod, mkdir
-> > etc.
-> > 
-> > When readdir is called, the topmost directory is filed up with
-> > fallthru entries which are persistently stored. This is only
-> > necessary to get readdir right wrt POSIX. During lookup the fallthru
-> > dentry, which is in fact a special negative dentry, is ignored and
-> > therefore the lookup continues on the lower filesystem.
+On Tue, 2009-05-19 at 10:56 +0200, Peter Zijlstra wrote:
+> On Tue, 2009-05-19 at 16:48 +0800, Shaohua Li wrote:
+> > On Tue, May 19, 2009 at 04:40:54PM +0800, Peter Zijlstra wrote:
+> > > On Tue, 2009-05-19 at 15:39 +0800, Shaohua Li wrote:
+> > > > ACPI 4.0 defines processor aggregator device. The device can notify OS to idle
+> > > > some CPUs to save power. This isn't to hot remove cpus, but just makes cpus
+> > > > idle.
+> > > > 
+> > > > This patch adds one API to change cpuset top group's cpus. If we want to
+> > > > make one cpu idle, simply remove the cpu from cpuset top group's cpu list,
+> > > > then all tasks will be migrate to other cpus, and other tasks will not be
+> > > > migrated to this cpu again. No functional changes.
+> > > > 
+> > > > We will use this API in new ACPI processor aggregator device driver later.
+> > > 
+> > > I don't think so. There really is a lot more to do than move processes
+> > > about.
+> > no processor running is good enough for us, we don't care about interrupts/softirq/
+> > timers so far.
 > 
-> So this means that the topmost branch always needs to be writable,
-> right?  It isn't possible to make a union of two iso9660 filesystems,
-> for example?
+> Well, I don't care for this interface.
+> 
+> > > Furthermore, I object to being able to remove online cpus from the top
+> > > cpuset, that just doesn't make sense.
+> > > 
+> > > I'd suggest using hotplug for this.
+> 
+> > cpu hotplug involves too much things, and we are afraid it's not reliable.
+> 
+> Then make it more reliable instead of providing ugly ass shit like this.
 
-Exactly. Although, you can do that with the help of tmpfs on top of the two
-iso9660 filesystems. Or by adding fake write support to iso9660 ...
+OK, so perhaps I should have use different words. But the point is, we
+don't need a new interface to force a cpu idle. Hotplug does that.
 
-I know that this seems to be suboptimal but it is the cost that the POSIX
-correct readdir comes with.
+Furthermore, we should not want anything outside of that, either the cpu
+is there available for work, or its not -- halfway measures don't make
+sense.
+
+Furthermore, we already have power aware scheduling which tries to
+aggregate idle time on cpu/core/packages so as to maximize the idle time
+power savings. Use it there.
+
+> > Besides, a hot removed cpu will do a dead loop halt, which isn't power saving
+> > efficient. To make hot removed cpu enters deep C-state is in whish list for a
+> > long time, but still not available. The acpi_processor_idle is a module, and
+> > cpuidle governor potentially can't handle offline cpu.
+> 
+> Then fix that hot-unplug idle loop. I agree that the hlt thing is silly,
+> and I've no idea why its still there, seems like a much better candidate
+> for your efforts than this.
