@@ -1,126 +1,432 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755131AbZESHjv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755811AbZESHmh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755131AbZESHjv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 03:39:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753681AbZESHjn
+	id S1755811AbZESHmh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 03:42:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753970AbZESHma
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 03:39:43 -0400
-Received: from mga11.intel.com ([192.55.52.93]:4159 "EHLO mga11.intel.com"
+	Tue, 19 May 2009 03:42:30 -0400
+Received: from tango.tkos.co.il ([62.219.50.35]:43408 "EHLO tango.tkos.co.il"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752968AbZESHjm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 03:39:42 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,214,1241420400"; 
-   d="scan'208";a="691632186"
-Date: Tue, 19 May 2009 15:39:42 +0800
-From: Shaohua Li <shaohua.li@intel.com>
-To: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-Cc: lenb@kernel.org, menage@google.com
-Subject: [PATCH]cpuset: add new API to change cpuset top group's cpus
-Message-ID: <20090519073942.GA10864@sli10-desk.sh.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1753760AbZESHm3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 03:42:29 -0400
+X-Greylist: delayed 396 seconds by postgrey-1.27 at vger.kernel.org; Tue, 19 May 2009 03:42:28 EDT
+From: Baruch Siach <baruch@tkos.co.il>
+To: linux-kernel@vger.kernel.org
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+       Baruch Siach <baruch@tkos.co.il>
+Subject: [PATCH] gpio: driver for PrimeCell PL061 GPIO controller
+Date: Tue, 19 May 2009 10:35:29 +0300
+Message-Id: <1242718529-12637-1-git-send-email-baruch@tkos.co.il>
+X-Mailer: git-send-email 1.6.2.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ACPI 4.0 defines processor aggregator device. The device can notify OS to idle
-some CPUs to save power. This isn't to hot remove cpus, but just makes cpus
-idle.
 
-This patch adds one API to change cpuset top group's cpus. If we want to
-make one cpu idle, simply remove the cpu from cpuset top group's cpu list,
-then all tasks will be migrate to other cpus, and other tasks will not be
-migrated to this cpu again. No functional changes.
-
-We will use this API in new ACPI processor aggregator device driver later.
-
-Signed-off-by: Shaohua Li<shaohua.li@intel.com>
+Signed-off-by: Baruch Siach <baruch@tkos.co.il>
 ---
- include/linux/cpuset.h |    5 +++++
- kernel/cpuset.c        |   27 ++++++++++++++++++++++++---
- 2 files changed, 29 insertions(+), 3 deletions(-)
+ drivers/gpio/Kconfig       |    5 +
+ drivers/gpio/Makefile      |    1 +
+ drivers/gpio/pl061.c       |  336 ++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/gpio/pl061.h |   18 +++
+ 4 files changed, 360 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/gpio/pl061.c
+ create mode 100644 include/linux/gpio/pl061.h
 
-Index: linux/kernel/cpuset.c
-===================================================================
---- linux.orig/kernel/cpuset.c	2009-05-12 16:27:16.000000000 +0800
-+++ linux/kernel/cpuset.c	2009-05-19 10:05:36.000000000 +0800
-@@ -929,14 +929,14 @@ static void update_tasks_cpumask(struct 
-  * @buf: buffer of cpu numbers written to this cpuset
-  */
- static int update_cpumask(struct cpuset *cs, struct cpuset *trialcs,
--			  const char *buf)
-+			  const char *buf, bool top_ok)
- {
- 	struct ptr_heap heap;
- 	int retval;
- 	int is_load_balanced;
+diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
+index edb0253..30d7948 100644
+--- a/drivers/gpio/Kconfig
++++ b/drivers/gpio/Kconfig
+@@ -67,6 +67,11 @@ config GPIO_SYSFS
  
- 	/* top_cpuset.cpus_allowed tracks cpu_online_map; it's read-only */
--	if (cs == &top_cpuset)
-+	if (cs == &top_cpuset && !top_ok)
- 		return -EACCES;
+ comment "Memory mapped GPIO expanders:"
  
- 	/*
-@@ -1496,7 +1496,7 @@ static int cpuset_write_resmask(struct c
- 
- 	switch (cft->private) {
- 	case FILE_CPULIST:
--		retval = update_cpumask(cs, trialcs, buf);
-+		retval = update_cpumask(cs, trialcs, buf, false);
- 		break;
- 	case FILE_MEMLIST:
- 		retval = update_nodemask(cs, trialcs, buf);
-@@ -1511,6 +1511,27 @@ static int cpuset_write_resmask(struct c
- 	return retval;
- }
- 
-+int cpuset_change_top_cpumask(const char *buf)
-+{
-+	int retval = 0;
-+	struct cpuset *cs = &top_cpuset;
-+	struct cpuset *trialcs;
++config GPIO_PL061
++	bool "PrimeCell PL061 GPIO support"
++	help
++	  Say yes here to support the PrimeCell PL061 GPIO device
 +
-+	if (!cgroup_lock_live_group(cs->css.cgroup))
+ config GPIO_XILINX
+ 	bool "Xilinx GPIO support"
+ 	depends on PPC_OF
+diff --git a/drivers/gpio/Makefile b/drivers/gpio/Makefile
+index 49ac64e..ef90203 100644
+--- a/drivers/gpio/Makefile
++++ b/drivers/gpio/Makefile
+@@ -9,6 +9,7 @@ obj-$(CONFIG_GPIO_MAX732X)	+= max732x.o
+ obj-$(CONFIG_GPIO_MCP23S08)	+= mcp23s08.o
+ obj-$(CONFIG_GPIO_PCA953X)	+= pca953x.o
+ obj-$(CONFIG_GPIO_PCF857X)	+= pcf857x.o
++obj-$(CONFIG_GPIO_PL061)	+= pl061.o
+ obj-$(CONFIG_GPIO_TWL4030)	+= twl4030-gpio.o
+ obj-$(CONFIG_GPIO_XILINX)	+= xilinx_gpio.o
+ obj-$(CONFIG_GPIO_BT8XX)	+= bt8xxgpio.o
+diff --git a/drivers/gpio/pl061.c b/drivers/gpio/pl061.c
+new file mode 100644
+index 0000000..87bfd7a
+--- /dev/null
++++ b/drivers/gpio/pl061.c
+@@ -0,0 +1,336 @@
++/*
++ *  linux/drivers/gpio/pl061.c
++ *
++ *  Copyright (C) 2008, 2009 Provigent Ltd.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * Driver for the ARM PrimeCell(tm) General Purpose Input/Output (PL061)
++ *
++ * Data sheet: ARM DDI 0190B, September 2000
++ */
++#include <linux/spinlock.h>
++#include <linux/errno.h>
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/io.h>
++#include <linux/irq.h>
++#include <linux/bitops.h>
++#include <linux/workqueue.h>
++#include <linux/gpio.h>
++#include <linux/gpio/pl061.h>
++
++#define PL061_GPIO_NR	8
++
++struct pl061_gpio {
++	spinlock_t		lock;
++	spinlock_t		irq_lock;
++	void __iomem		*base;
++	struct gpio_chip	gc;
++	struct work_struct	gpio_free_work;
++	DECLARE_BITMAP(gpios_to_free, PL061_GPIO_NR);
++};
++
++static u32 (*pl061_pending_irq)(int irq);
++
++static int pl061_direction_input(struct gpio_chip *gc, unsigned offset)
++{
++	struct pl061_gpio *chip = container_of(gc, struct pl061_gpio, gc);
++	unsigned long flags;
++	unsigned char gpiodir;
++
++	if (offset >= gc->ngpio)
++		return -EINVAL;
++
++	spin_lock_irqsave(&chip->lock, flags);
++	gpiodir = readb (chip->base + GPIODIR);
++	gpiodir &= ~(1 << offset);
++	writeb(gpiodir, chip->base + GPIODIR);
++	spin_unlock_irqrestore(&chip->lock, flags);
++
++	return 0;
++}
++
++static int pl061_direction_output(struct gpio_chip *gc, unsigned offset,
++		int value)
++{
++	struct pl061_gpio *chip = container_of(gc, struct pl061_gpio, gc);
++	unsigned long flags;
++	unsigned char gpiodir;
++
++	if (offset >= gc->ngpio)
++		return -EINVAL;
++
++	spin_lock_irqsave(&chip->lock, flags);
++	writeb(!!value << offset, chip->base + (1 << (offset + 2)));
++	gpiodir = readb(chip->base + GPIODIR);
++	gpiodir |= 1 << offset;
++	writeb(gpiodir, chip->base + GPIODIR);
++	spin_unlock_irqrestore(&chip->lock, flags);
++
++	return 0;
++}
++
++static int pl061_get_value (struct gpio_chip *gc, unsigned offset)
++{
++	struct pl061_gpio *chip = container_of(gc, struct pl061_gpio, gc);
++
++	return !!readb (chip->base + (1 << (offset + 2)));
++}
++
++static void pl061_set_value (struct gpio_chip *gc, unsigned offset,
++		int value)
++{
++	struct pl061_gpio *chip = container_of(gc, struct pl061_gpio, gc);
++
++	writeb (!!value << offset, chip->base + (1 << (offset + 2)));
++}
++
++/*
++ * PL061 GPIO IRQ
++ */
++static void pl061_irq_disable(unsigned irq)
++{
++	struct pl061_gpio *chip = get_irq_chip_data(irq);
++	int offset = irq_to_gpio(irq) - chip->gc.base;
++	unsigned long flags;
++	u8 gpioie;
++
++	spin_lock_irqsave(&chip->irq_lock, flags);
++	gpioie = readb(chip->base + GPIOIE);
++	gpioie &= ~(1 << offset);
++	writeb(gpioie, chip->base + GPIOIE);
++	spin_unlock_irqrestore(&chip->irq_lock, flags);
++}
++
++static void pl061_irq_shutdown(unsigned irq)
++{
++	struct pl061_gpio *chip = get_irq_chip_data(irq);
++	int offset = irq_to_gpio(irq) - chip->gc.base;
++
++	pl061_irq_disable(irq);
++	set_bit(offset, chip->gpios_to_free);
++	schedule_work(&chip->gpio_free_work);
++}
++
++static void pl061_irq_enable(unsigned irq)
++{
++	struct pl061_gpio *chip = get_irq_chip_data(irq);
++	int offset = irq_to_gpio(irq) - chip->gc.base;
++	unsigned long flags;
++	u8 gpioie;
++
++	spin_lock_irqsave(&chip->irq_lock, flags);
++	gpioie = readb (chip->base + GPIOIE);
++	gpioie |= 1 << offset;
++	writeb(gpioie, chip->base + GPIOIE);
++	spin_unlock_irqrestore(&chip->irq_lock, flags);
++}
++
++static unsigned int pl061_irq_startup(unsigned irq)
++{
++	int ret;
++
++	ret = gpio_request(irq_to_gpio(irq), "IRQ");
++	if (ret < 0) {
++		pr_warning("%s: warning: gpio_request(%d) returned %d\n",
++				__func__, irq_to_gpio(irq), ret);
++		return 0;
++	}
++
++	gpio_direction_input(irq_to_gpio(irq));
++	pl061_irq_enable(irq);
++
++	return 0;
++}
++
++static int pl061_irq_type(unsigned irq, unsigned trigger)
++{
++	struct pl061_gpio *chip = get_irq_chip_data(irq);
++	int offset = irq_to_gpio(irq) - chip->gc.base;
++	unsigned long flags;
++	u8 gpiois, gpioibe, gpioiev;
++
++	if (irq_to_gpio(irq) < 0)
++		return -EINVAL;
++
++	spin_lock_irqsave(&chip->irq_lock, flags);
++
++	gpioiev = readb(chip->base + GPIOIEV);
++
++	gpiois = readb(chip->base + GPIOIS);
++	if (trigger & (IRQ_TYPE_LEVEL_HIGH | IRQ_TYPE_LEVEL_LOW)) {
++		gpiois |= 1 << offset;
++		if (trigger & IRQ_TYPE_LEVEL_HIGH)
++			gpioiev |= 1 << offset;
++		else
++			gpioiev &= ~(1 << offset);
++	}
++	else
++		gpiois &= ~(1 << offset);
++	writeb(gpiois, chip->base + GPIOIS);
++
++	gpioibe = readb(chip->base + GPIOIBE);
++	if ((trigger & IRQ_TYPE_EDGE_BOTH) == IRQ_TYPE_EDGE_BOTH)
++		gpioibe |= 1 << offset;
++	else {
++		gpioibe &= ~(1 << offset);
++		if (trigger & IRQ_TYPE_EDGE_RISING)
++			gpioiev |= 1 << offset;
++		else
++			gpioiev &= ~(1 << offset);
++	}
++	writeb(gpioibe, chip->base + GPIOIBE);
++
++	writeb(gpioiev, chip->base + GPIOIEV);
++
++	spin_unlock_irqrestore (&chip->irq_lock, flags);
++
++	return 0;
++}
++
++static struct irq_chip pl061_irqchip = {
++	.name		="GPIO",
++	.startup	= pl061_irq_startup,
++	.enable		= pl061_irq_enable,
++	.disable	= pl061_irq_disable,
++	.shutdown	= pl061_irq_shutdown,
++	.set_type	= pl061_irq_type,
++};
++
++static void pl061_irq_handler(unsigned irq, struct irq_desc *desc)
++{
++	desc->chip->ack(irq);
++	while (1) {
++		unsigned long pending;
++		int gpio;
++
++		pending = pl061_pending_irq(irq);
++		if (pending == 0)
++			break;
++
++		for_each_bit(gpio, &pending, BITS_PER_LONG) {
++			generic_handle_irq(gpio_to_irq(gpio));
++		}
++	}
++	desc->chip->unmask(irq);
++}
++
++static void pl061_gpio_free(struct work_struct *work)
++{
++	struct pl061_gpio *chip = container_of(work, struct pl061_gpio,
++			gpio_free_work);
++	int offset;
++
++	while (!bitmap_empty(chip->gpios_to_free, PL061_GPIO_NR)) {
++		for_each_bit(offset, chip->gpios_to_free, PL061_GPIO_NR) {
++			int gpio = offset + chip->gc.base;
++
++			if (test_and_clear_bit(offset, chip->gpios_to_free))
++				gpio_free(gpio);
++		}
++	}
++}
++
++static int __init pl061_probe(struct platform_device *dev)
++{
++	struct pl061_platform_data *pdata;
++	struct pl061_gpio *chip;
++	struct resource *r;
++	int ret, irq, i;
++
++	pdata = dev->dev.platform_data;
++	if (pdata == NULL)
 +		return -ENODEV;
 +
-+	trialcs = alloc_trial_cpuset(cs);
-+	if (!trialcs)
++	chip = kzalloc(sizeof(*chip), GFP_KERNEL);
++	if (chip == NULL)
 +		return -ENOMEM;
 +
-+	retval = update_cpumask(cs, trialcs, buf, true);
++	r = platform_get_resource(dev, IORESOURCE_MEM, 0);
++	if (r == NULL) {
++		ret = -ENODEV;
++		goto free_mem;
++	}
 +
-+	free_trial_cpuset(trialcs);
-+	cgroup_unlock();
-+	return retval;
++	chip->base = ioremap(r->start, r->end - r->start + 1);
++	if (chip->base == NULL) {
++		ret = -ENOMEM;
++		goto free_mem;
++	}
++
++	spin_lock_init(&chip->lock);
++	spin_lock_init(&chip->irq_lock);
++
++	bitmap_zero(chip->gpios_to_free, PL061_GPIO_NR);
++	INIT_WORK(&chip->gpio_free_work, pl061_gpio_free);
++
++	chip->gc.direction_input = pl061_direction_input;
++	chip->gc.direction_output = pl061_direction_output;
++	chip->gc.get = pl061_get_value;
++	chip->gc.set = pl061_set_value;
++	chip->gc.base = pdata->gpio_base;
++	chip->gc.ngpio = PL061_GPIO_NR;
++	chip->gc.label = dev->name;
++	chip->gc.dev = &dev->dev;
++	chip->gc.owner = THIS_MODULE;
++
++	ret = gpiochip_add(&chip->gc);
++	if (ret)
++		goto iounmap;
++
++	/*
++	 * irq_chip support
++	 */
++	writeb(0, chip->base + GPIOIE); /* disable irqs */
++	irq = platform_get_irq(dev, 0);
++	if (irq < 0) {
++		ret = -ENODEV;
++		goto iounmap;
++	}
++	set_irq_chained_handler(irq, pl061_irq_handler);
++	pl061_pending_irq = pdata->pending_irqs;
++
++	for (i = 0; i < PL061_GPIO_NR; i++) {
++		if (pdata->directions & (1 << i))
++			pl061_direction_output(&chip->gc, i,
++					pdata->values & (1 << i));
++		else
++			pl061_direction_input(&chip->gc, i);
++
++		set_irq_chip(gpio_to_irq(i+pdata->gpio_base), &pl061_irqchip);
++		set_irq_handler(gpio_to_irq(i+pdata->gpio_base),
++				handle_simple_irq);
++		set_irq_flags(gpio_to_irq(i+pdata->gpio_base), IRQF_VALID);
++		set_irq_chip_data(gpio_to_irq(i+pdata->gpio_base), chip);
++	}
++
++	return 0;
++
++iounmap:
++	iounmap(chip->base);
++free_mem:
++	kfree(chip);
++
++	return ret;
 +}
-+EXPORT_SYMBOL(cpuset_change_top_cpumask);
 +
- /*
-  * These ascii lists should be read in a single call, by using a user
-  * buffer large enough to hold the entire map.  If read in smaller
-Index: linux/include/linux/cpuset.h
-===================================================================
---- linux.orig/include/linux/cpuset.h	2009-05-12 16:27:15.000000000 +0800
-+++ linux/include/linux/cpuset.h	2009-05-19 10:05:36.000000000 +0800
-@@ -92,6 +92,7 @@ extern void rebuild_sched_domains(void);
- 
- extern void cpuset_print_task_mems_allowed(struct task_struct *p);
- 
-+extern int cpuset_change_top_cpumask(const char *buf);
- #else /* !CONFIG_CPUSETS */
- 
- static inline int cpuset_init_early(void) { return 0; }
-@@ -188,6 +189,10 @@ static inline void cpuset_print_task_mem
- {
- }
- 
-+static inline int cpuset_change_top_cpumask(const char *buf)
++static struct platform_driver pl061_gpio_driver = {
++	.probe = pl061_probe,
++	.driver = {
++		.name = "pl061_gpio",
++		.owner = THIS_MODULE,
++	},
++};
++
++static int __init pl061_gpio_init(void)
 +{
-+	return -ENODEV;
++	return platform_driver_register(&pl061_gpio_driver);
 +}
- #endif /* !CONFIG_CPUSETS */
- 
- #endif /* _LINUX_CPUSET_H */
++subsys_initcall(pl061_gpio_init);
++
++MODULE_AUTHOR("Baruch Siach <baruch@tkos.co.il>");
++MODULE_DESCRIPTION("PL061 GPIO driver");
++MODULE_LICENSE("GPL");
+diff --git a/include/linux/gpio/pl061.h b/include/linux/gpio/pl061.h
+new file mode 100644
+index 0000000..9e18fa3
+--- /dev/null
++++ b/include/linux/gpio/pl061.h
+@@ -0,0 +1,18 @@
++/* platform data for the PL061 GPIO driver */
++
++#define GPIODIR 0x400
++#define GPIOIS  0x404
++#define GPIOIBE 0x408
++#define GPIOIEV 0x40C
++#define GPIOIE  0x410
++#define GPIORIS 0x414
++#define GPIOMIS 0x418
++#define GPIOIC  0x41C
++
++struct pl061_platform_data {
++	/* number of the first GPIO */
++	unsigned	gpio_base;
++	u32		(*pending_irqs)(int irq);
++	u8		directions;	/* startup directions, 1: out, 0: in */
++	u8		values;		/* startup values */
++};
+-- 
+1.6.2.4
+
