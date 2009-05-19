@@ -1,243 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754825AbZESGmS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754825AbZESGnL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754825AbZESGmS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 02:42:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752265AbZESGmJ
+	id S1754825AbZESGnL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 02:43:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752265AbZESGm5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 02:42:09 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:62662 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750721AbZESGmI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 02:42:08 -0400
-Message-ID: <4A125503.5060406@cn.fujitsu.com>
-Date: Tue, 19 May 2009 14:43:15 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       "Theodore Ts'o" <tytso@mit.edu>, LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH v2] tracing/events: Documentation updates
-Content-Type: text/plain; charset=UTF-8
+	Tue, 19 May 2009 02:42:57 -0400
+Received: from mga06.intel.com ([134.134.136.21]:59753 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750721AbZESGm5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 02:42:57 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,213,1241420400"; 
+   d="scan'208";a="413662533"
+Subject: Re: [PATCH 0/11] Per-bdi writeback flusher threads #4
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
+       akpm@linux-foundation.org, jack@suse.cz
+In-Reply-To: <20090519062049.GP4140@kernel.dk>
+References: <1242649192-16263-1-git-send-email-jens.axboe@oracle.com>
+	 <1242713463.2560.5.camel@ymzhang>  <20090519062049.GP4140@kernel.dk>
+Content-Type: text/plain
+Date: Tue, 19 May 2009 14:43:14 +0800
+Message-Id: <1242715394.2560.8.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-- fix some typos
-- document the difference between '>' and '>>'
-- document the 'enable' toggle
-- remove section "Defining an event-enabled tracepoint", since it's
-  out-dated and sample/trace_events/ already serves this purpose.
+On Tue, 2009-05-19 at 08:20 +0200, Jens Axboe wrote:
+> On Tue, May 19 2009, Zhang, Yanmin wrote:
+> > On Mon, 2009-05-18 at 14:19 +0200, Jens Axboe wrote:
+> > > Hi,
+> > > 
+> > > This is the fourth version of this patchset. Chances since v3:
+> > > 
+> > > - Dropped a prep patch, it has been included in mainline since.
+> > > 
+> > > - Add a work-to-do list to the bdi. This is struct bdi_work. Each
+> > >   wb thread will notice and execute work on bdi->work_list. The arguments
+> > >   are which sb (or NULL for all) to flush and how many pages to flush.
+> > > 
+> > > - Fix a bug where not all bdi's would end up on the bdi_list, so potentially
+> > >   some data would not be flushed.
+> > > 
+> > > - Make wb_kupdated() pass on wbc->older_than_this so we maintain the same
+> > >   behaviour for kupdated flushes.
+> > > 
+> > > - Have the wb thread flush first before sleeping, to avoid losing the
+> > >   first flush on lazy register.
+> > > 
+> > > - Rebase to newer kernels.
+> > Jens,
+> > 
+> > Applied V4 to 2.6.30-rc6 and got some confliction reports.
+> > ----------patch-2----------
+> > patching file fs/buffer.c
+> > patching file fs/fs-writeback.c
+> > patching file fs/ntfs/super.c
+> > patching file fs/sync.c
+> > patching file include/linux/backing-dev.h
+> > patching file include/linux/fs.h
+> > patching file include/linux/writeback.h
+> > patching file mm/backing-dev.c
+> > patching file mm/page-writeback.c
+> > Hunk #5 FAILED at 666.
+> > 1 out of 6 hunks FAILED -- saving rejects to file mm/page-writeback.c.rej
+> > patching file mm/vmscan.c
+> > ----------patch-3----------
+> > patching file fs/fs-writeback.c
+> > patching file include/linux/writeback.h
+> > patching file mm/Makefile
+> > patching file mm/pdflush.c
+> > ----------patch-4----------
+> > patching file fs/fs-writeback.c
+> > patching file include/linux/backing-dev.h
+> > patching file mm/backing-dev.c
+> > ----------patch-5----------
+> > patching file fs/fs-writeback.c
+> > patching file include/linux/backing-dev.h
+> > patching file include/linux/fs.h
+> > patching file mm/backing-dev.c
+> > patching file mm/page-writeback.c
+> > Hunk #1 succeeded at 708 with fuzz 2 (offset 41 lines).
+> > Hunk #2 FAILED at 716.
+> > 1 out of 2 hunks FAILED -- saving rejects to file mm/page-writeback.c.rej
+> 
+> It's not against -rc6, it's against current -git. And current -git had a
+> one-liner fixup to the centisec calculation, so it'll fail. If you apply
+> the below patch to -rc6, then the series should apply cleanly on top of
+> that.
+> 
+> > Then, I manually fixed the conflictions, but compilation reports errors.
+> > Your patches seem not clean.
+> > 
+> >   CC      fs/exec.o
+> > mm/page-writeback.c: In function 'background_writeout':
+> > mm/page-writeback.c:695: error: 'MAX_WRITEBACK_PAGES' undeclared (first use in this function)
+> > mm/page-writeback.c:695: error: (Each undeclared identifier is reported only once
+> > mm/page-writeback.c:695: error: for each function it appears in.)
+> > mm/page-writeback.c: In function 'wb_kupdate':
+> > mm/page-writeback.c:769: error: 'MAX_WRITEBACK_PAGES' undeclared (first use in this function)
+> > mm/page-writeback.c: In function 'wb_timer_fn':
+> > mm/page-writeback.c:802: error: implicit declaration of function 'pdflush_operation'
+> > make[1]: *** [mm/page-writeback.o] Error 1
+> > make[1]: *** Waiting for unfinished jobs....
+> >   CC      fs/pipe.o
+> 
+> You still have remnants of pdflush, so there's definite something wrong
+> with your manual patching :-)
+> 
+> I'm attaching two patches - apply #1 to -rc6, and then #2 is a roll-up
+> of the patch series that you can apply next.
+The new patches do work.
 
-v2: add "Updated by Li Zefan"
-
-[ Impact: make the document up-to-date ]
-
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
----
-
-and forgot to CC LKML..
-
----
-diff --git a/Documentation/trace/events.txt b/Documentation/trace/events.txt
-index abdee66..f157d75 100644
---- a/Documentation/trace/events.txt
-+++ b/Documentation/trace/events.txt
-@@ -1,9 +1,10 @@
- 			     Event Tracing
- 
- 		Documentation written by Theodore Ts'o
-+			Updated by Li Zefan
- 
--Introduction
--============
-+1. Introduction
-+===============
- 
- Tracepoints (see Documentation/trace/tracepoints.txt) can be used
- without creating custom kernel modules to register probe functions
-@@ -12,30 +13,37 @@ using the event tracing infrastructure.
- Not all tracepoints can be traced using the event tracing system;
- the kernel developer must provide code snippets which define how the
- tracing information is saved into the tracing buffer, and how the
--the tracing information should be printed.
-+tracing information should be printed.
- 
--Using Event Tracing
--===================
-+2. Using Event Tracing
-+======================
-+
-+2.1 Via the 'set_event' interface
-+---------------------------------
- 
- The events which are available for tracing can be found in the file
--/sys/kernel/debug/tracing/available_events.
-+/debug/tracing/available_events.
- 
- To enable a particular event, such as 'sched_wakeup', simply echo it
--to /sys/debug/tracing/set_event. For example:
-+to /debug/tracing/set_event. For example:
- 
--	# echo sched_wakeup > /sys/kernel/debug/tracing/set_event
-+	# echo sched_wakeup >> /debug/tracing/set_event
- 
--[ Note: events can also be enabled/disabled via the 'enabled' toggle
--  found in the /sys/kernel/tracing/events/ hierarchy of directories. ]
-+[ Note: '>>' is necessary, otherwise it will firstly disable
-+  all the events. ]
- 
- To disable an event, echo the event name to the set_event file prefixed
- with an exclamation point:
- 
--	# echo '!sched_wakeup' >> /sys/kernel/debug/tracing/set_event
-+	# echo '!sched_wakeup' >> /debug/tracing/set_event
-+
-+To disable all events, echo an empty line to the set_event file:
-+
-+	# echo > /debug/tracing/set_event
- 
--To disable events, echo an empty line to the set_event file:
-+To enable all events, echo '*:*' or '*:' to the set_event file:
- 
--	# echo > /sys/kernel/debug/tracing/set_event
-+	# echo *:* > /debug/tracing/set_event
- 
- The events are organized into subsystems, such as ext4, irq, sched,
- etc., and a full event name looks like this: <subsystem>:<event>.  The
-@@ -44,92 +52,39 @@ file.  All of the events in a subsystem can be specified via the syntax
- "<subsystem>:*"; for example, to enable all irq events, you can use the
- command:
- 
--	# echo 'irq:*' > /sys/kernel/debug/tracing/set_event
--
--Defining an event-enabled tracepoint
--------------------------------------
--
--A kernel developer which wishes to define an event-enabled tracepoint
--must declare the tracepoint using TRACE_EVENT instead of DECLARE_TRACE.
--This is done via two header files in include/trace.  For example, to
--event-enable the jbd2 subsystem, we must create two files,
--include/trace/jbd2.h and include/trace/jbd2_event_types.h.  The
--include/trace/jbd2.h file should be included by kernel source files that
--will have a tracepoint inserted, and might look like this:
--
--#ifndef _TRACE_JBD2_H
--#define _TRACE_JBD2_H
--
--#include <linux/jbd2.h>
--#include <linux/tracepoint.h>
--
--#include <trace/jbd2_event_types.h>
--
--#endif
--
--In a file that utilizes a jbd2 tracepoint, this header file would be
--included.  Note that you still have to use DEFINE_TRACE().  So for
--example, if fs/jbd2/commit.c planned to use the jbd2_start_commit
--tracepoint, it would have the following near the beginning of the file:
--
--#include <trace/jbd2.h>
--
--DEFINE_TRACE(jbd2_start_commit);
--
--Then in the function that would call the tracepoint, it would call the
--tracepoint function.  (For more information, please see the tracepoint
--documentation in Documentation/trace/tracepoints.txt):
--
--	trace_jbd2_start_commit(journal, commit_transaction);
--
--The code snippets which allow jbd2_start_commit to be an event-enabled
--tracepoint are placed in the file include/trace/jbd2_event_types.h:
--
--/* use <trace/jbd2.h> instead */
--#ifndef TRACE_EVENT
--# error Do not include this file directly.
--# error Unless you know what you are doing.
--#endif
--
--#undef TRACE_SYSTEM
--#define TRACE_SYSTEM jbd2
--
--#include <linux/jbd2.h>
--
--TRACE_EVENT(jbd2_start_commit,
--	TP_PROTO(journal_t *journal, transaction_t *commit_transaction),
--	TP_ARGS(journal, commit_transaction),
--	TP_STRUCT__entry(
--		__array(	char,	devname, BDEVNAME_SIZE+24 )
--		__field(	int,	transaction		  )
--	),
--	TP_fast_assign(
--		memcpy(__entry->devname, journal->j_devname, BDEVNAME_SIZE+24);
--		__entry->transaction	= commit_transaction->t_tid;
--	),
--	TP_printk("dev %s transaction %d",
--		  __entry->devname, __entry->transaction)
--);
--
--The TP_PROTO and TP_ARGS are unchanged from DECLARE_TRACE.  The new
--arguments to TRACE_EVENT are TP_STRUCT__entry, TP_fast_assign, and
--TP_printk.
--
--TP_STRUCT__entry defines the data structure which will be stored in the
--trace buffer.  Normally, fields in __entry will be arrays or simple
--types.  It is possible to place data structures in __entry --- however,
--pointers in the data structure can not be trusted, since they will be
--accessed sometime later by TP_printk, and if the data structure contains
--fields that will not or cannot be used by TP_printk, this will waste
--space in the trace buffer.  In general, data structures should be
--avoided, unless they do only contain non-pointer types and all of the
--fields will be used by TP_printk.
--
--TP_fast_assign defines the code snippet which saves information into the
--__entry data structure, using the passed-in arguments defined in
--TP_PROTO and TP_ARGS.
--
--Finally, TP_printk will print the __entry data structure.  At the time
--when the code snippet defined by TP_printk is executed, it will not have
--access to the TP_ARGS arguments; it can only use the information saved
--in the __entry data structure.
-+	# echo 'irq:*' > /debug/tracing/set_event
-+
-+2.2 Via the 'enable' toggle
-+---------------------------
-+
-+The events available are also listed in /debug/tracing/events/ hierarchy
-+of directories.
-+
-+To enable event 'sched_wakeup':
-+
-+	# echo 1 > /debug/tracing/events/sched/sched_wakeup/enable
-+
-+To disable it:
-+
-+	# echo 0 > /debug/tracing/events/sched/sched_wakeup/enable
-+
-+To enable all events in sched subsystem:
-+
-+	# echo 1 > /debug/tracing/events/sched/enable
-+
-+To eanble all events:
-+
-+	# echo 1 > /debug/tracing/events/enable
-+
-+When reading one of these enable files, there are four results:
-+
-+ 0 - all events this file affects are disabled
-+ 1 - all events this file affects are enabled
-+ X - there is a mixture of events enabled and disabled
-+ ? - this file does not affect any event
-+
-+3. Defining an event-enabled tracepoint
-+=======================================
-+
-+See The example provided in samples/trace_events
-+
--- 
-1.5.4.rc3
-
+Thanks,
+Yanmin
 
 
