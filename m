@@ -1,59 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755392AbZESA4r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754699AbZESA7i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755392AbZESA4r (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 20:56:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752701AbZESA4j
+	id S1754699AbZESA7i (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 20:59:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752659AbZESA70
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 20:56:39 -0400
-Received: from rcsinet12.oracle.com ([148.87.113.124]:22068 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752324AbZESA4i (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 20:56:38 -0400
-Date: Mon, 18 May 2009 17:57:45 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>, corentincj@iksaif.net
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       lenb@kernel.org
-Subject: [PATCH -next] eeepc: fix kconfig selects
-Message-Id: <20090518175745.da1f943f.randy.dunlap@oracle.com>
-In-Reply-To: <20090518184225.d5721ac8.sfr@canb.auug.org.au>
-References: <20090518184225.d5721ac8.sfr@canb.auug.org.au>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 18 May 2009 20:59:26 -0400
+Received: from mga03.intel.com ([143.182.124.21]:2689 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751066AbZESA7Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 20:59:25 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,212,1241420400"; 
+   d="scan'208";a="144285671"
+Subject: [PATCH v2 00/11] Asynchronous raid6 acceleration (part 1 of 3)
+To: neilb@suse.de, linux-raid@vger.kernel.org
+From: Dan Williams <dan.j.williams@intel.com>
+Cc: maan@systemlinux.org, linux-kernel@vger.kernel.org, yur@emcraft.com,
+       hpa@zytor.com
+Date: Mon, 18 May 2009 17:59:26 -0700
+Message-ID: <20090519005647.4104.81119.stgit@dwillia2-linux.ch.intel.com>
+User-Agent: StGit/0.14.3.289.g7daff
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt005.oracle.com [141.146.116.14]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010207.4A12037C.0165:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+This series extends the async_tx api to include support for offloading raid6
+operations to hardware.  Part 2 covers updates to the iop-adma driver to
+enable raid6.  Part 3 covers the changes to md/raid6 to use the async_tx api
+for its raid6 computations.
 
-EEEPC_LAPTOP selects HOTPLUG_PCI.  This causes failures (build error below)
-when CONFIG_HOTPLUG is not enabled, so additionally select HOTPLUG since
-kconfig 'select' doesn't follow its dependency chain.
-Also, only select HOTPLUG_PCI if PCI is already enabled.
+A merge of these 3 topic series is available via the raid6 branch of
+async_tx.git:
 
-drivers/pci/hotplug/fakephp.c:55: error: implicit declaration of function 'pci_rescan_bus'
+	git://git.kernel.org/pub/scm/linux/kernel/git/djbw/async_tx.git raid6
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+There are several changes since v1 of the patch set[1].  The primary updates
+are:
+1/ Address H. Peter Anvin's comments around the asynchronous raid6 recovery
+   implementation.  It has been rewritten to more closely model the existing
+   recovery implementation [2].
+
+2/ Address Andre Noll's comment concerning the excessive number of arguments
+   passed to the async_* routines.  Common parameters are now passed in a
+   structure.
+
+3/ Address Neil Brown's comment that we should solve the "kernel stack space
+   limits the size of an array" problem with pre-allocated buffers.
+   stripe_head objects now carry a kmalloc'd 'scribble' buffer relieving the
+   stack pressure of raid computations.
+
+4/ Various updates to get the code to pass the new raid6 recovery self test
+
+Please review.
+
+Thanks,
+Dan
+
+[1] http://marc.info/?l=linux-raid&m=123740421725422&w=2
+[2] http://marc.info/?l=linux-raid&m=124096283425451&w=2
+
 ---
- drivers/platform/x86/Kconfig |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
 
---- linux-next-20090518.orig/drivers/platform/x86/Kconfig
-+++ linux-next-20090518/drivers/platform/x86/Kconfig
-@@ -354,7 +354,8 @@ config EEEPC_LAPTOP
- 	select BACKLIGHT_CLASS_DEVICE
- 	select HWMON
- 	select RFKILL
--	select HOTPLUG_PCI
-+	select HOTPLUG
-+	select HOTPLUG_PCI if PCI
- 	---help---
- 	  This driver supports the Fn-Fx keys on Eee PC laptops.
- 	  It also adds the ability to switch camera/wlan on/off.
+Dan Williams (11):
+      async_tx: rename zero_sum to val
+      async_tx: kill ASYNC_TX_DEP_ACK flag
+      async_tx: structify submission arguments, add scribble
+      async_xor: permit callers to pass in a 'dma/page scribble' region
+      md/raid5: add scribble region for buffer lists
+      async_tx: add sum check flags
+      async_tx: kill needless module_{init|exit}
+      async_tx: add support for asynchronous GF multiplication
+      async_tx: add support for asynchronous RAID6 recovery operations
+      dmatest: add pq support
+      async_tx: raid6 recovery self test
+
+ arch/arm/include/asm/hardware/iop3xx-adma.h |    5 
+ arch/arm/mach-iop13xx/include/mach/adma.h   |   12 -
+ arch/arm/mach-iop13xx/setup.c               |   10 -
+ arch/arm/plat-iop/adma.c                    |    2 
+ crypto/async_tx/Kconfig                     |    9 +
+ crypto/async_tx/Makefile                    |    3 
+ crypto/async_tx/async_memcpy.c              |   34 +-
+ crypto/async_tx/async_memset.c              |   36 +-
+ crypto/async_tx/async_pq.c                  |  399 +++++++++++++++++++++++++++
+ crypto/async_tx/async_raid6_recov.c         |  292 ++++++++++++++++++++
+ crypto/async_tx/async_tx.c                  |   53 +---
+ crypto/async_tx/async_xor.c                 |  168 +++++------
+ crypto/async_tx/raid6test.c                 |  212 ++++++++++++++
+ drivers/dma/Kconfig                         |    2 
+ drivers/dma/dmaengine.c                     |    8 -
+ drivers/dma/dmatest.c                       |   26 ++
+ drivers/dma/iop-adma.c                      |   40 +--
+ drivers/md/Kconfig                          |   13 +
+ drivers/md/raid5.c                          |  123 ++++++--
+ drivers/md/raid5.h                          |   10 +
+ include/linux/async_tx.h                    |  103 +++++--
+ include/linux/dmaengine.h                   |   87 +++++-
+ 22 files changed, 1347 insertions(+), 300 deletions(-)
+ create mode 100644 crypto/async_tx/async_pq.c
+ create mode 100644 crypto/async_tx/async_raid6_recov.c
+ create mode 100644 crypto/async_tx/raid6test.c
