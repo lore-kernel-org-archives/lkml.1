@@ -1,105 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755011AbZESNh6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755214AbZESNiM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755011AbZESNh6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 09:37:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753776AbZESNhu
+	id S1755214AbZESNiM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 09:38:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754109AbZESNiC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 09:37:50 -0400
-Received: from e23smtp01.au.ibm.com ([202.81.31.143]:42228 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753537AbZESNht (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 09:37:49 -0400
-Date: Tue, 19 May 2009 19:07:25 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Shaohua Li <shaohua.li@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       "lenb@kernel.org" <lenb@kernel.org>,
-       "menage@google.com" <menage@google.com>
-Subject: Re: [PATCH]cpuset: add new API to change cpuset top group's cpus
-Message-ID: <20090519133725.GA16709@dirshya.in.ibm.com>
-Reply-To: svaidy@linux.vnet.ibm.com
-References: <20090519073942.GA10864@sli10-desk.sh.intel.com> <1242722454.26820.461.camel@twins> <20090519084852.GA13682@sli10-desk.sh.intel.com> <1242723364.26820.466.camel@twins> <1242729538.26820.497.camel@twins>
+	Tue, 19 May 2009 09:38:02 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:36049 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754770AbZESNiB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 09:38:01 -0400
+Date: Tue, 19 May 2009 09:37:53 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Ryo Tsuruta <ryov@valinux.co.jp>
+Cc: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org,
+       xen-devel@lists.xensource.com
+Subject: Re: [PATCH 1/1] dm-ioband: I/O bandwidth controller
+Message-ID: <20090519133753.GA28679@redhat.com>
+References: <20090519.173928.226784958.ryov@valinux.co.jp> <20090519.174352.71107893.ryov@valinux.co.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1242729538.26820.497.camel@twins>
+In-Reply-To: <20090519.174352.71107893.ryov@valinux.co.jp>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Peter Zijlstra <peterz@infradead.org> [2009-05-19 12:38:58]:
-
-> On Tue, 2009-05-19 at 10:56 +0200, Peter Zijlstra wrote:
-> > On Tue, 2009-05-19 at 16:48 +0800, Shaohua Li wrote:
-> > > On Tue, May 19, 2009 at 04:40:54PM +0800, Peter Zijlstra wrote:
-> > > > On Tue, 2009-05-19 at 15:39 +0800, Shaohua Li wrote:
-> > > > > ACPI 4.0 defines processor aggregator device. The device can notify OS to idle
-> > > > > some CPUs to save power. This isn't to hot remove cpus, but just makes cpus
-> > > > > idle.
-> > > > > 
-> > > > > This patch adds one API to change cpuset top group's cpus. If we want to
-> > > > > make one cpu idle, simply remove the cpu from cpuset top group's cpu list,
-> > > > > then all tasks will be migrate to other cpus, and other tasks will not be
-> > > > > migrated to this cpu again. No functional changes.
-> > > > > 
-> > > > > We will use this API in new ACPI processor aggregator device driver later.
-> > > > 
-> > > > I don't think so. There really is a lot more to do than move processes
-> > > > about.
-> > > no processor running is good enough for us, we don't care about interrupts/softirq/
-> > > timers so far.
-> > 
-> > Well, I don't care for this interface.
-> > 
-> > > > Furthermore, I object to being able to remove online cpus from the top
-> > > > cpuset, that just doesn't make sense.
-> > > > 
-> > > > I'd suggest using hotplug for this.
-> > 
-> > > cpu hotplug involves too much things, and we are afraid it's not reliable.
-> > 
-> > Then make it more reliable instead of providing ugly ass shit like this.
+On Tue, May 19, 2009 at 05:43:52PM +0900, Ryo Tsuruta wrote:
+> Hi Vivek,
 > 
-> OK, so perhaps I should have use different words. But the point is, we
-> don't need a new interface to force a cpu idle. Hotplug does that.
-
-We tried similar approaches to create idle time for power savings, but
-cpu hotplug interface seem to be a clean choice.  There could be
-issues with the interface, we should fix it.  Is there any other
-reason why cpuhotplug is 'ugly' other than its performance (speed)?
-
-I have tried few load balancer hacks to evacuate cores but not a solid
-design yet.  It has its advantages but still needs more work.
-
-http://lkml.org/lkml/2009/5/13/173
-
-> Furthermore, we should not want anything outside of that, either the cpu
-> is there available for work, or its not -- halfway measures don't make
-> sense.
+> From: Ryo Tsuruta <ryov@valinux.co.jp>
+> Subject: [PATCH 1/1] dm-ioband: I/O bandwidth controller
+> Date: Tue, 19 May 2009 17:39:28 +0900 (JST)
 > 
-> Furthermore, we already have power aware scheduling which tries to
-> aggregate idle time on cpu/core/packages so as to maximize the idle time
-> power savings. Use it there.
-
-Power aware scheduling can optimally accumulate idle times.  Framework
-to create idle time to force idle cores is good and useful for power
-savings.  Other than the speed of online/offline I do not know of any
-other major issue for using cpu hotplug for this purpose.
- 
-> > > Besides, a hot removed cpu will do a dead loop halt, which isn't power saving
-> > > efficient. To make hot removed cpu enters deep C-state is in whish list for a
-> > > long time, but still not available. The acpi_processor_idle is a module, and
-> > > cpuidle governor potentially can't handle offline cpu.
+> > Hi Alasdair and all,
 > > 
-> > Then fix that hot-unplug idle loop. I agree that the hlt thing is silly,
-> > and I've no idea why its still there, seems like a much better candidate
-> > for your efforts than this.
+> > This is the dm-ioband version 1.11.0 release. This patch can be
+> > applied cleanly to current agk's tree. Alasdair, please give some
+> > comments and suggestions.
+> > 
+> > Changes from the previous release:
+> > - Classify IOs in sync/async instead of read/write since the IO
+> >   request allocation/congestion logic were changed to be sync/async
+> >   based.
+> > - IOs belong to the real-time class are dispatched in preference to
+> >   other IOs, regardless of the assigned bandwidth.
+> 
+> I ran your script from the following URL to see IOs belong to the
+> real-time class take precedence.
+> http://linux.derkeiler.com/Mailing-Lists/Kernel/2009-04/msg08355.html
+> 
+>     Script
+>     ======
+>     # /dev/mapper/ioband1 is mounted on /mnt1
+>     rm /mnt1/aggressivewriter
+>     sync
+>     echo 3 > /proc/sys/vm/drop_caches
+>     # launch an hostile writer
+>     ionice -c2 -n7 dd if=/dev/zero of=/mnt1/aggressivewriter \
+>        bs=4K count=524288 conv=fdatasync &
+>     # Reader
+>     ionice -c1 -n0 dd if=/mnt1/testzerofile1 of=/dev/null &
+>     wait $!
+>     echo "reader finished"
+> 
+>     old dm-ioband
+>     =============
+>     First run
+>     2147483648 bytes (2.1 GB) copied, 100.343 seconds, 21.4 MB/s (Reader)
+>     reader finished
+>     2147483648 bytes (2.1 GB) copied, 101.107 seconds, 21.2 MB/s (Writer)
+> 
+>     new dm-ioband v1.11.0
+>     =====================
+>     First run
+>     2147483648 bytes (2.1 GB) copied, 35.0623 seconds, 61.2 MB/s (Reader)
+>     reader finished
+>     2147483648 bytes (2.1 GB) copied, 87.6979 seconds, 24.5 MB/s (Writer)
+> 
+> The RT reader took precedence over the aggressive writer, regardless
+> of assigned bandwidth. However, I think that some sort of limitation
+> for RT IOs is needed. What do you think?
 
-I agree with Peter.  We need to make cpu hotplug save power first and
-later improve upon its performance.
+I think we don't need any limitation for RT tasks. If somebody needs to
+limit RT task, then it should be put into a separate group.
 
---Vaidy
+Looks like you have started duplicating CFQ infrastrucutre in dm-ioband to
+make sure CFQ is not broken. That will lead to interesting interaction
+with noop and other IO schedulers at the same time whenever CFQ changes 
+behavior you will find it hard to keep up with it. 
+
+Anyway, how are you taking care of priorities with-in same class. How will
+you make sure that a BE prio 0 request is not hidden behind BE prio 7
+request? Same is true for prio with-in RT class.
+
+Thanks
+Vivek
