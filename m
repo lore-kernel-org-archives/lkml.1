@@ -1,56 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750971AbZESPLl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753869AbZESPNp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750971AbZESPLl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 11:11:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753196AbZESPLe
+	id S1753869AbZESPNp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 11:13:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751641AbZESPNi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 11:11:34 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60384 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752063AbZESPLe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 11:11:34 -0400
-Date: Tue, 19 May 2009 08:09:40 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Martin Knoblauch <spamtrap@knobisoft.de>
-cc: Matt Mackall <mpm@selenic.com>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Rgeression: 2.6.30-rc6-git3 build error - ICE from
- drivers/char/random.c
-In-Reply-To: <231530.33013.qm@web32601.mail.mud.yahoo.com>
-Message-ID: <alpine.LFD.2.01.0905190745230.3301@localhost.localdomain>
-References: <688406.16641.qm@web32603.mail.mud.yahoo.com> <20090518203420.GF2658@calx> <alpine.LFD.2.01.0905181506550.3301@localhost.localdomain> <231530.33013.qm@web32601.mail.mud.yahoo.com>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Tue, 19 May 2009 11:13:38 -0400
+Received: from hera.kernel.org ([140.211.167.34]:38633 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751462AbZESPNi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 11:13:38 -0400
+Message-ID: <4A12CC81.30108@kernel.org>
+Date: Tue, 19 May 2009 08:13:05 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jack Steiner <steiner@sgi.com>
+CC: mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86_64 - UV fix for memory-only blades
+References: <20090515194508.GA8305@sgi.com>
+In-Reply-To: <20090515194508.GA8305@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 19 May 2009, Martin Knoblauch wrote:
+Jack Steiner wrote:
+> Fix an endcase in handling UV blades that have memory
+> but no cpus. The calculation of the highest blade number
+> failed to handle these blades if they appear last in the
+> configuration.
 > 
->  With your patch, the problem still remains. Line 1685 is the end of the patched routine now.
+> Signed-off-by: Jack Steiner <steiner@sgi.com>
+> 
+> ---
+>  arch/x86/kernel/apic/x2apic_uv_x.c |    1 +
+>  1 file changed, 1 insertion(+)
+> 
+> Index: linux/arch/x86/kernel/apic/x2apic_uv_x.c
+> ===================================================================
+> --- linux.orig/arch/x86/kernel/apic/x2apic_uv_x.c	2009-05-15 12:00:59.000000000 -0500
+> +++ linux/arch/x86/kernel/apic/x2apic_uv_x.c	2009-05-15 14:38:16.000000000 -0500
+> @@ -632,6 +632,7 @@ void __init uv_system_init(void)
+>  		pnode = (paddr >> m_val) & pnode_mask;
+>  		blade = boot_pnode_to_blade(pnode);
+>  		uv_node_to_blade[nid] = blade;
+> +		max_pnode = max(pnode, max_pnode);
+>  	}
+>  
+>  	map_gru_high(max_pnode);
 
-Ok, so can you do two other simple tests:
+node_possible_map should already include nodes with memory and without memory already.
 
- - just remove the  "+ (long)&ret" entirely.
+maybe you could skip max_pnode calculating in the loop.
 
-   Now, usually gcc doesn't have issues with non-asm things, but that's an 
-   odd way of getting the current stack address by lookin gat the address 
-   of a variable that hasn't even been used, so maybe it triggers some 
-   untested codepath in gcc (and thus the bug).
-
- - if that doesn't make a difference, then remove the "get_cycles() +" 
-   part instead.
-
-   The fact that "arch/x86/include/asm/tsc.h:23" is mentioned in the insn 
-   dump does make it look like get_cycles(), but on the other hand I'd 
-   have actually expected it to be "arch/x86/include/asm/msr.h:112", 
-   because that is the location of the actual asm statement. 
-
-Just to see which part of it gcc has issues with.
-
-		Linus
+YH
