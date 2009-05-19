@@ -1,74 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755513AbZEVGAY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752472AbZEVGDd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755513AbZEVGAY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 02:00:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751215AbZEVGAN
+	id S1752472AbZEVGDd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 02:03:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751122AbZEVGD0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 02:00:13 -0400
-Received: from mga11.intel.com ([192.55.52.93]:38438 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750880AbZEVGAM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 02:00:12 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,231,1241420400"; 
-   d="scan'208";a="459534866"
-From: "Xin, Xiaohui" <xiaohui.xin@intel.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Chuck Ebbert <cebbert@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       "Li, Xin" <xin.li@intel.com>, "Nakajima, Jun" <jun.nakajima@intel.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>
-Date: Fri, 22 May 2009 13:59:42 +0800
-Subject: RE: Performance overhead of paravirt_ops on native identified
-Thread-Topic: Performance overhead of paravirt_ops on native identified
-Thread-Index: AcnalaaE5TVoYk48Qv+MGvUsKaOYBwADHAwQ
-Message-ID: <C85CEDA13AB1CF4D9D597824A86D2B9005760A9940@PDSMSX501.ccr.corp.intel.com>
-References: <4A0B62F7.5030802@goop.org>
- <20090521184233.3c3e97ad@dhcp-100-2-144.bos.redhat.com>
- <4A15DA4E.2090505@goop.org>
- <C85CEDA13AB1CF4D9D597824A86D2B9005760A96DA@PDSMSX501.ccr.corp.intel.com>
- <4A1629BA.9070309@goop.org>
-In-Reply-To: <4A1629BA.9070309@goop.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="gb2312"
+	Fri, 22 May 2009 02:03:26 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:45725 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750880AbZEVGDZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 May 2009 02:03:25 -0400
+Date: Tue, 19 May 2009 22:30:15 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Peter Feuerer <peter@piie.net>
+Cc: petkovbb@gmail.com, LKML <linux-kernel@vger.kernel.org>, lenb@kernel.org,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [PATCH] Acer Aspire One Fan Control
+Message-ID: <20090519203015.GA1362@ucw.cz>
+References: <cone.1240858632.795110.5316.1000@onepiie> <20090428072519.GA12170@liondog.tnic> <1240913055.29860.14.camel@maxim-laptop> <cone.1240949852.549814.7466.1000@mentalhome> <1240950704.3781.12.camel@maxim-laptop> <cone.1241299309.265715.3948.1000@mentalhome> <20090503184617.GA3555@liondog.tnic> <cone.1241648222.299676.7476.1000@mentalhome> <20090509171432.GA31126@liondog.tnic> <cone.1242065107.695268.13534.1000@onepiie>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <cone.1242065107.695268.13534.1000@onepiie>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha id n4M60llL030695
 
-What I mean is that if the binary of _spin_lock is like this:
-(gdb) disassemble _spin_lock
-Dump of assembler code for function _spin_lock:
-0xffffffff80497c0f <_spin_lock+0>:      mov    1252634(%rip),%r11        # #0xffffffff805c9930 <test_lock_ops+16>
-0xffffffff80497c16 <_spin_lock+7>:      jmpq   *%r11
-End of assembler dump.
-(gdb) disassemble
+Hi!
 
-In this situation the binary contains a jump, the overhead is more than the call.
+>> the more I'm looking at the driver, the more I get annoyed by that
+>> user/kernel mode operation split. Remind me again why the driver should
+>> be loaded and not started automatically but the user should be required
+>> to activate it explicitly?
+>
+> The idea of not starting the module in kernel mode was from Matthew. And 
+> he stated that it could harm the hardware when software controls the fan  
+> instead of the BIOS. It may also be possible, that the warranty gets 
 
-Thanks
-Xiaohui
+Well... hw is usually designed to protect itself.
 
------Original Message-----
-From: Jeremy Fitzhardinge [mailto:jeremy@goop.org] 
-Sent: 2009Äê5ÔÂ22ÈÕ 12:28
-To: Xin, Xiaohui
-Cc: Chuck Ebbert; Ingo Molnar; Li, Xin; Nakajima, Jun; H. Peter Anvin; Nick Piggin; Linux Kernel Mailing List; Xen-devel
-Subject: Re: Performance overhead of paravirt_ops on native identified
+>> That's not so optimal, I'd say. The kernel module should _replace_
+>> the userspace program, not work alongside it, since the last is flaky
+>> and unreliable, and this was the main reason the kernel module was
+>> introduced in the first place - to control the fan from kernel space,
+>> which is the more sane choice.
+>
+> The main reason to do this in kernel was the availabilty of atomic ec- 
+> read and write functions. But I agree with you that either kernel or BIOS 
+> should control the fan and not a userspace tool. I added the user mode 
+> just because it wasn't really much more code than just an implementation 
+> of the enable/disable functionality.
 
-Xin, Xiaohui wrote:
-> Remember we have done one experiment with "jump", the result shows seems the overhead is even more than the call.
->   
-
-I don't think you had mentioned that. You're saying that a
-call->jmp->ret is slower than call->call->ret->ret?
-
-J
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+Kernels crash, too, just like userspace does. It would still make
+sense to allow userspace to increase fan speed.
+							Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
