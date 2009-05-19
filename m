@@ -1,78 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755000AbZESEtS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755171AbZESEtb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755000AbZESEtS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 00:49:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752124AbZESEtE
+	id S1755171AbZESEtb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 00:49:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755131AbZESEtN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 00:49:04 -0400
-Received: from mga03.intel.com ([143.182.124.21]:13560 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751265AbZESEtD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 00:49:03 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,213,1241420400"; 
-   d="scan'208";a="144335444"
-Date: Tue, 19 May 2009 12:48:32 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Christoph Lameter <cl@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Elladan <elladan@eskimo.com>,
-       Nick Piggin <npiggin@suse.de>, Johannes Weiner <hannes@cmpxchg.org>,
-       Peter Zijlstra <peterz@infradead.org>, Rik van Riel <riel@redhat.com>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "minchan.kim@gmail.com" <minchan.kim@gmail.com>
-Subject: Re: [PATCH 2/3] vmscan: make mapped executable pages the first
-	class citizen
-Message-ID: <20090519044832.GA8769@localhost>
-References: <20090519032759.GA7608@localhost> <20090519133422.4ECC.A69D9226@jp.fujitsu.com> <20090519134253.4ECF.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090519134253.4ECF.A69D9226@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 19 May 2009 00:49:13 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52012
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753646AbZESEtM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 00:49:12 -0400
+Date: Mon, 18 May 2009 21:49:10 -0700 (PDT)
+Message-Id: <20090518.214910.41457086.davem@davemloft.net>
+To: elendil@planet.nl
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ipv4: make default for INET_LRO consistent with help
+ text
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200905150851.08286.elendil@planet.nl>
+References: <200905150851.08286.elendil@planet.nl>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 19, 2009 at 12:44:19PM +0800, KOSAKI Motohiro wrote:
-> > > begin:       2479             2344             9659              210                0           579643
-> > > end:          284           232010           234142              260           772776         20917184
-> > > restore:      379           232159           234371              301           774888         20967849
-> > > 
-> > > The numbers show that
-> > > 
-> > > - The startup pgmajfault of 2.6.30-rc4-mm is merely 1/3 that of 2.6.29.
-> > >   I'd attribute that improvement to the mmap readahead improvements :-)
-> > > 
-> > > - The pgmajfault increment during the file copy is 633-630=3 vs 260-210=50.
-> > >   That's a huge improvement - which means with the VM_EXEC protection logic,
-> > >   active mmap pages is pretty safe even under partially cache hot streaming IO.
-> > > 
-> > > - when active:inactive file lru size reaches 1:1, their scan rates is 1:20.8
-> > >   under 10% cache hot IO. (computed with formula Dpgdeactivate:Dpgfree)
-> > >   That roughly means the active mmap pages get 20.8 more chances to get
-> > >   re-referenced to stay in memory.
-> > > 
-> > > - The absolute nr_mapped drops considerably to 1/9 during the big IO, and the
-> > >   dropped pages are mostly inactive ones. The patch has almost no impact in
-> > >   this aspect, that means it won't unnecessarily increase memory pressure.
-> > >   (In contrast, your 20% mmap protection ratio will keep them all, and
-> > >   therefore eliminate the extra 41 major faults to restore working set
-> > >   of zsh etc.)
-> > 
-> > I'm surprised this.
-> > Why your patch don't protect mapped page from streaming io?
-> 
-> I guess you use initlevel=5 and use only terminal, right?
-> if so, dropping some graphics component makes sense.
+From: Frans Pop <elendil@planet.nl>
+Date: Fri, 15 May 2009 08:51:06 +0200
 
-No, it's in pure console mode, no X running at all.
+> Commit e81963b1 changed this config from tristate to bool.
+> Add default so that it is consistent with the help text.
+> 
+> Signed-off-by: Frans Pop <elendil@planet.nl>
 
-> 
-> > 
-> > I strongly hope reproduce myself, please teach me reproduce way.
-> 
-> 
-> 
+Applied, but please also reference commits by header text,
+like this:
+
+    ipv4: make default for INET_LRO consistent with help text
+    
+    Commit e81963b1 ("ipv4: Make INET_LRO a bool instead of tristate.")
+    changed this config from tristate to bool.  Add default so that it is
+    consistent with the help text.
+
+Thanks.
