@@ -1,98 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755253AbZESMd1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754562AbZESMen@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755253AbZESMd1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 08:33:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751051AbZESMdU
+	id S1754562AbZESMen (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 08:34:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752925AbZESMeg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 08:33:20 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:38135 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751104AbZESMdT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 08:33:19 -0400
-Date: Tue, 19 May 2009 05:33:16 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, davem@davemloft.net, dada1@cosmosbay.com,
-       zbr@ioremap.net, jeff.chua.linux@gmail.com, paulus@samba.org,
-       laijs@cn.fujitsu.com, jengelh@medozas.de, r000n@r000n.net,
-       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
-Subject: Re: [PATCH RFC] v5 expedited "big hammer" RCU grace periods
-Message-ID: <20090519123316.GA7159@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090517191141.GA25915@linux.vnet.ibm.com> <20090518075630.GA10687@elte.hu> <20090518151421.GB6768@linux.vnet.ibm.com> <20090518154241.GA27047@elte.hu> <20090518160254.GD6768@linux.vnet.ibm.com> <20090519085825.GA9388@elte.hu>
+	Tue, 19 May 2009 08:34:36 -0400
+Received: from mail-ew0-f224.google.com ([209.85.219.224]:52971 "EHLO
+	mail-ew0-f224.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751051AbZESMef convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 08:34:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=tLPEEeqQmd2mf5MLWVmq2zuIblx6biXJn51BIeT9frbLyR7BTfeDK8FG1pHQ9RGdDi
+         DGdzFZI0Vc9ZqFXTR/oZVAttcqMfkb3dGg8IGAf/MS0dWqLR5VvPyZxNqEpZiqtfYZgX
+         f8bZAl/CIBtV4wIPkEofJ5Z6QrT5/nhKtPfa8=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090519085825.GA9388@elte.hu>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <20090519104202.GB30597@nokia.com>
+References: <20090515131636.GE4443@nokia.com> <5d5443650905151106v2fe7ad1ci6c966463a991e732@mail.gmail.com> 
+	<45cc95260905151230j5485995dpbbd882dc91b25339@mail.gmail.com> 
+	<20090515200235.GA11829@nokia.com> <4d34a0a70905180045u6619773dt1563fe38b13d46fb@mail.gmail.com> 
+	<20090518091236.GH4443@nokia.com> <4A121C54.2040205@samsung.com> 
+	<20090519104202.GB30597@nokia.com>
+From: Mohamed Ikbel Boulabiar <boulabiar@gmail.com>
+Date: Tue, 19 May 2009 14:34:15 +0200
+Message-ID: <45cc95260905190534m561d666ds1fd5d38b4a08ba5b@mail.gmail.com>
+Subject: Re: [RFC] Add Input IOCTL for accelerometer devices
+To: felipe.balbi@nokia.com
+Cc: ext Kim Kyuwon <q1.kim@samsung.com>, ext Kim Kyuwon <chammoru@gmail.com>,
+       Trilok Soni <soni.trilok@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>,
+       Jonathan Cameron <jic23@cam.ac.uk>,
+       Kyungmin Park <kyungmin.park@samsung.com>,
+       Jean Delvare <khali@linux-fr.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 19, 2009 at 10:58:25AM +0200, Ingo Molnar wrote:
-> 
-> * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
-> 
-> > On Mon, May 18, 2009 at 05:42:41PM +0200, Ingo Molnar wrote:
-> > > 
-> > > * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
-> > > 
-> > > > > i might be missing something fundamental here, but why not just 
-> > > > > have per CPU helper threads, all on the same waitqueue, and wake 
-> > > > > them up via a single wake_up() call? That would remove the SMP 
-> > > > > cross call (wakeups do immediate cross-calls already).
-> > > > 
-> > > > My concern with this is that the cache misses accessing all the 
-> > > > processes on this single waitqueue would be serialized, slowing 
-> > > > things down. In contrast, the bitmask that smp_call_function() 
-> > > > traverses delivers on the order of a thousand CPUs' worth of bits 
-> > > > per cache miss.  I will give it a try, though.
-> > > 
-> > > At least if you go via the migration threads, you can queue up 
-> > > requests to them locally. But there's going to be cachemisses 
-> > > _anyway_, since you have to access them all from a single CPU, 
-> > > and then they have to fetch details about what to do, and then 
-> > > have to notify the originator about completion.
-> > 
-> > Ah, so you are suggesting that I use smp_call_function() to run 
-> > code on each CPU that wakes up that CPU's migration thread?  I 
-> > will take a look at this.
-> 
-> My suggestion was to queue up a dummy 'struct migration_req' up with 
-> it (change migration_req::task == NULL to mean 'nothing') and simply 
-> wake it up using wake_up_process().
+Hi,
 
-OK.  I was thinking of just using wake_up_process() without the
-migration_req structure, and unconditionally setting a per-CPU
-variable from within migration_thread() just before the list_empty()
-check.  In your approach we would need a NULL-pointer check just
-before the call to __migrate_task().
+>>  > But then comes another question: what to do with
+>> > magnetometers, gyroscopes, etc etc ??
+>>
+>> If we make a extensible sensor driver, I think we can add these new etc
+>> sensors in the future. step by step.
+>
+> agreed here. But we have to think that this might get extended, so we
+> should start thinking of an abstraction layer that could evolve for
+> magnetometers, gyroscopes and other sensors
 
-> That will force a quiescent state, without the need for any extra 
-> information, right?
+Agree with you, there should be an abstraction layer.
 
-Yep!
+According to this, we should collect similar functionalities in one
+module and make sub-module describing exceptions devices or ones that
+needs special handling.
+But in the end for the user space apps, they should "see" an
+accelerometer in a standard way. All exceptions and pre-handling
+should be done in the abstraction layer as described.
+We can't bring as many full drivers as devices found, but one driver
+serving for a group and that can load submodules when necessary.
+The way HID is coded in Linux is an example for that, dealing with
+many types of devices.
+It isn't perfect, but its architecture can be used for other devices.
 
-> This is what the scheduler code does, roughly:
-> 
->                 wake_up_process(rq->migration_thread);
->                 wait_for_completion(&req.done);
-> 
-> and this will always have to perform well. The 'req' could be put 
-> into PER_CPU, and a loop could be done like this:
-> 
-> 	for_each_online_cpu(cpu)
->                 wake_up_process(cpu_rq(cpu)->migration_thread);
-> 
-> 	for_each_online_cpu(cpu)
->                 wait_for_completion(&per_cpu(req, cpu).done);
-> 
-> hm?
+To stay with accelerometers, they are sensors, and sensors sense
+physical properties.
+Every device use its own methods but in the end they sense the same
+thing and user wait for a similar feedback.
 
-My concern is the linear slowdown for large systems, but this should be
-OK for modest systems (a few 10s of CPUs).  However, I will try it out --
-it does not need to be a long-term solution, after all.
+I post a link describing the HID standard, you can see in page 37 to
+39 how they define units, and exponents for sensors.
+http://www.usb.org/developers/devclass_docs/HID1_11.pdf
 
-							Thanx, Paul
+Also, we can't imagine all use cases and scenarios, we should bring
+useful information to userspace apps and they do what they want with
+these informations.
+KDE developers may use sensors to automatically rotate the screen
+90°/180° if the laptop is rotated. Others will use it to play games,
+Some others will use light sensors to lighten the keyboard or to
+change the brightness of the screen,...
+
+
+What do you think ?
+
+_
+ikbel
