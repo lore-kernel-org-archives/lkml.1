@@ -1,97 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754547AbZESOjY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754810AbZESOl0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754547AbZESOjY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 10:39:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753443AbZESOjS
+	id S1754810AbZESOl0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 10:41:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751905AbZESOlT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 10:39:18 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:40819 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753097AbZESOjR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 10:39:17 -0400
-Date: Tue, 19 May 2009 10:39:18 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       <linux-usb@vger.kernel.org>
-Subject: Re: Oops in usb-serial with keyspan adapter on current upstream
-In-Reply-To: <1242697759.16901.42.camel@pasglop>
-Message-ID: <Pine.LNX.4.44L0.0905191031240.4611-100000@iolanthe.rowland.org>
+	Tue, 19 May 2009 10:41:19 -0400
+Received: from ozlabs.org ([203.10.76.45]:53635 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751104AbZESOlS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 10:41:18 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [GIT PULL] scheduler fixes
+Date: Tue, 19 May 2009 21:57:00 +0930
+User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Yinghai Lu <yinghai@kernel.org>,
+       Jeff Garzik <jgarzik@pobox.com>, Alexander Viro <viro@ftp.linux.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+References: <20090518142707.GA24142@elte.hu> <20090518202031.GA26549@elte.hu> <alpine.LFD.2.01.0905181457320.3301@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.01.0905181457320.3301@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200905192157.02079.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 19 May 2009, Benjamin Herrenschmidt wrote:
+On Tue, 19 May 2009 07:36:26 am Linus Torvalds wrote:
+> > One of the biggest user of bootmem is the mem_map[] hierarchies and
+> > the page allocator bitmaps. Not sure we can get rid of bootmem there
+> > - those areas are really large, physical memory is often fragmented
+> > and we need a good NUMA sense for them as well.
+>
+> I think that's the _valid_ kind of use of a bootmem allocator.
+>
+> But for something like the scheduler data structures? Not so much.
 
-> So I can still reproduce it with today checkout
-> (363383277081ce831642b72df40932ee05ce40a2).
-> 
-> Unable to handle kernel paging request for data at address 0x00000010
-> Faulting instruction address: 0xc000000000301e0c
-> Oops: Kernel access of bad area, sig: 11 [#1]
-> SMP NR_CPUS=4 PowerMac
-> Modules linked in: keyspan usbserial
-> NIP: c000000000301e0c LR: c0000000002fb410 CTR: c0000000002fb29c
-> REGS: c00000015a4e34c0 TRAP: 0300   Not tainted  (2.6.30-rc6-00065-g3633832)
-> MSR: 9000000000009032 <EE,ME,IR,DR>  CR: 24000024  XER: 20000000
-> DAR: 0000000000000010, DSISR: 0000000040000000
-> TASK = c00000015a494950[170] 'khubd' THREAD: c00000015a4e0000 CPU: 1
-> GPR00: c0000000008475e8 c00000015a4e3740 c000000000875430 0000000000000001 
-> GPR04: 0000000000000000 c0000001581e2290 0000000000000001 0000000000000000 
-> GPR08: 0000000000000000 0000000000000000 0000000000000000 c0000000002fb29c 
-> GPR12: 0000000024000082 c0000000008a9480 0000000000000002 c0000001581dd230 
-> GPR16: 00000000000003e8 0000000000000001 c0000001580b0800 c0000001581dd230 
-> GPR20: 0000000000000000 0000000000000001 c0000001580b1800 0000000000000002 
-> GPR24: c000000158226c00 c00000015811a780 c0000001581e2198 0000000000000000 
-> GPR28: 0000000000000000 c00000015a4e37b0 c0000000007fede8 0000000000000000 
-> NIP [c000000000301e0c] .release_nodes+0x54/0x254
-> LR [c0000000002fb410] .device_del+0x174/0x1e8
-> Call Trace:
-> [c00000015a4e3740] [c00000015a4e3880] 0xc00000015a4e3880 (unreliable)
-> [c00000015a4e37f0] [c0000000002fb410] .device_del+0x174/0x1e8
-> [c00000015a4e3880] [d0000000005454dc] .usb_serial_disconnect+0xf8/0x1d0 [usbserial]
-> [c00000015a4e3930] [c0000000003d1ed0] .usb_unbind_interface+0x7c/0x138
-> [c00000015a4e39d0] [c0000000002fe77c] .__device_release_driver+0xb8/0x100
-> [c00000015a4e3a60] [c0000000002fe930] .device_release_driver+0x30/0x54
-> [c00000015a4e3af0] [c0000000002fd9c8] .bus_remove_device+0xe4/0x124
-> [c00000015a4e3b80] [c0000000002fb404] .device_del+0x168/0x1e8
-> [c00000015a4e3c10] [c0000000003cf08c] .usb_disable_device+0xa4/0x15c
-> [c00000015a4e3cb0] [c0000000003c96ac] .usb_disconnect+0xc4/0x180
-> [c00000015a4e3d60] [c0000000003ca794] .hub_thread+0x594/0x101c
-> [c00000015a4e3f00] [c0000000000672b0] .kthread+0x80/0xcc
-> [c00000015a4e3f90] [c00000000001fef0] .kernel_thread+0x54/0x70
-> Instruction dump:
-> ebc2a398 7c7a1b78 7c872378 39000000 3b800000 3be00000 38010070 f8010070 
-> f8010078 7c1d0378 48000070 e81e8000 <e96a0010> e8840000 7fab0000 419e0014 
-> ---[ end trace f9d8f1b68a9ea04d ]---
-> 
-> Pretty clearly a NULL dereference inside release_nodes() called by
-> device_del(). After a bit of disassembly, it looks like the offending
-> dereference is node->release (ie, node_to_group) called with a NULL node,
-> so basically we got to a situation where cur == NULL in the first loop
-> inside of remove_nodes() and it thus blows on
-> 
-> 	grp = node_to_group(node);
-> 
-> It also looks like first is NULL but it's unclear whether it is such
-> as the result of first = first->next or the function was called that
-> way, though I could try to figure it out with added debugging. It -does-
-> seem that "cnt" might be 1 at the time of the crash.
+Yeah, and it feels dirty to use slab_is_available() to figure if the code 
+should kmalloc or alloc_bootmem.  
 
-It looks like dev->devres has been corrupted somehow.  As far as I can
-tell, the keyspan driver doesn't touch it at all.  In fact, nothing in
-drivers/usb/serial does.
+Ideally kmalloc/kfree would "always work".  But at least we could get closer.
 
-> Do you need more data ?
-
-The inner device_del() call comes from usb_serial_disconnect().  You 
-could try adding some debugging there, to find out if dev->devres has 
-been tampered with.
-
-Alan Stern
-
+Thanks,
+Rusty.
