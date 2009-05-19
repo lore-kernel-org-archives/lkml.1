@@ -1,171 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753646AbZESMSW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754223AbZESMWQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753646AbZESMSW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 08:18:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751792AbZESMSP
+	id S1754223AbZESMWQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 08:22:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751790AbZESMWI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 08:18:15 -0400
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:35435 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751234AbZESMSO (ORCPT
+	Tue, 19 May 2009 08:22:08 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:54681 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751190AbZESMWH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 08:18:14 -0400
-Date: Tue, 19 May 2009 21:18:15 +0900 (JST)
-Message-Id: <20090519.211815.193708825.ryov@valinux.co.jp>
-To: vgoyal@redhat.com
-Cc: righi.andrea@gmail.com, guijianfeng@cn.fujitsu.com, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, jens.axboe@oracle.com,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       agk@redhat.com, dm-devel@redhat.com, snitzer@redhat.com,
-       m-ikeda@ds.jp.nec.com, akpm@linux-foundation.org
-Subject: Re: [PATCH] io-controller: Add io group reference handling for
- request
-From: Ryo Tsuruta <ryov@valinux.co.jp>
-In-Reply-To: <20090518140114.GB27080@redhat.com>
-References: <20090515140643.GB19350@redhat.com>
-	<20090517102604.GA4255@linux>
-	<20090518140114.GB27080@redhat.com>
-X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 19 May 2009 08:22:07 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Jan Blunck <jblunck@suse.de>
+Subject: Re: [PATCH 00/32] VFS based Union Mount (V3)
+Date: Tue, 19 May 2009 14:21:20 +0200
+User-Agent: KMail/1.9.9
+Cc: Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk,
+       bharata@in.ibm.com, dwmw2@infradead.org, mszeredi@suse.cz,
+       vaurora@redhat.com
+References: <1242662968-11684-1-git-send-email-jblunck@suse.de> <200905191354.08701.arnd@arndb.de> <20090519121504.GO16526@bolzano.suse.de>
+In-Reply-To: <20090519121504.GO16526@bolzano.suse.de>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200905191421.21026.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19LUlAw4b3riuFD0VfTfQOjeM90AshTOe0MW0r
+ L79F1+7IavQ4yLCcGFyNC1y6h3JALg5WItuCxyCyWxPZhM0NVt
+ +g31V8En7cqXc1ftXcSMg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Vivek Goyal <vgoyal@redhat.com>
-Subject: Re: [PATCH] io-controller: Add io group reference handling for request
-Date: Mon, 18 May 2009 10:01:14 -0400
+On Tuesday 19 May 2009, Jan Blunck wrote:
+> On Tue, May 19, Arnd Bergmann wrote:
+> > This would work, but you'd have to do this for each file system if you want
+> > to be able to use it as the top of the union while backed by a read-only
+> > block device or when you don't want it to be written.
+> 
+> I know that the requirement for the topmost filesystem to be able to create
+> directories and fill them with fallthrus is an unattractive one. On the other
+> hand this is the cost that you have to pay at the moment to get this kind of
+> functionality. This implementation will not help with all use-cases. Its focus
+> is to get certain use-cases right.
 
-> On Sun, May 17, 2009 at 12:26:06PM +0200, Andrea Righi wrote:
-> > On Fri, May 15, 2009 at 10:06:43AM -0400, Vivek Goyal wrote:
-> > > On Fri, May 15, 2009 at 09:48:40AM +0200, Andrea Righi wrote:
-> > > > On Fri, May 15, 2009 at 01:15:24PM +0800, Gui Jianfeng wrote:
-> > > > > Vivek Goyal wrote:
-> > > > > ...
-> > > > > >  }
-> > > > > > @@ -1462,20 +1462,27 @@ struct io_cgroup *get_iocg_from_bio(stru
-> > > > > >  /*
-> > > > > >   * Find the io group bio belongs to.
-> > > > > >   * If "create" is set, io group is created if it is not already present.
-> > > > > > + * If "curr" is set, io group is information is searched for current
-> > > > > > + * task and not with the help of bio.
-> > > > > > + *
-> > > > > > + * FIXME: Can we assume that if bio is NULL then lookup group for current
-> > > > > > + * task and not create extra function parameter ?
-> > > > > >   *
-> > > > > > - * Note: There is a narrow window of race where a group is being freed
-> > > > > > - * by cgroup deletion path and some rq has slipped through in this group.
-> > > > > > - * Fix it.
-> > > > > >   */
-> > > > > > -struct io_group *io_get_io_group_bio(struct request_queue *q, struct bio *bio,
-> > > > > > -					int create)
-> > > > > > +struct io_group *io_get_io_group(struct request_queue *q, struct bio *bio,
-> > > > > > +					int create, int curr)
-> > > > > 
-> > > > >   Hi Vivek,
-> > > > > 
-> > > > >   IIUC we can get rid of curr, and just determine iog from bio. If bio is not NULL,
-> > > > >   get iog from bio, otherwise get it from current task.
-> > > > 
-> > > > Consider also that get_cgroup_from_bio() is much more slow than
-> > > > task_cgroup() and need to lock/unlock_page_cgroup() in
-> > > > get_blkio_cgroup_id(), while task_cgroup() is rcu protected.
-> > > > 
-> > > 
-> > > True.
-> > > 
-> > > > BTW another optimization could be to use the blkio-cgroup functionality
-> > > > only for dirty pages and cut out some blkio_set_owner(). For all the
-> > > > other cases IO always occurs in the same context of the current task,
-> > > > and you can use task_cgroup().
-> > > > 
-> > > 
-> > > Yes, may be in some cases we can avoid setting page owner. I will get
-> > > to it once I have got functionality going well. In the mean time if
-> > > you have a patch for it, it will be great.
-> > > 
-> > > > However, this is true only for page cache pages, for IO generated by
-> > > > anonymous pages (swap) you still need the page tracking functionality
-> > > > both for reads and writes.
-> > > > 
-> > > 
-> > > Right now I am assuming that all the sync IO will belong to task
-> > > submitting the bio hence use task_cgroup() for that. Only for async
-> > > IO, I am trying to use page tracking functionality to determine the owner.
-> > > Look at elv_bio_sync(bio).
-> > > 
-> > > You seem to be saying that there are cases where even for sync IO, we
-> > > can't use submitting task's context and need to rely on page tracking
-> > > functionlity? In case of getting page (read) from swap, will it not happen
-> > > in the context of process who will take a page fault and initiate the
-> > > swap read?
-> > 
-> > No, for example in read_swap_cache_async():
-> > 
-> > @@ -308,6 +309,7 @@ struct page *read_swap_cache_async(swp_entry_t entry, gfp_t gfp_mask,
-> >  		 */
-> >  		__set_page_locked(new_page);
-> >  		SetPageSwapBacked(new_page);
-> > +		blkio_cgroup_set_owner(new_page, current->mm);
-> >  		err = add_to_swap_cache(new_page, entry, gfp_mask & GFP_KERNEL);
-> >  		if (likely(!err)) {
-> >  			/*
-> > 
-> > This is a read, but the current task is not always the owner of this
-> > swap cache page, because it's a readahead operation.
-> > 
-> 
-> But will this readahead be not initiated in the context of the task taking
-> the page fault?
-> 
-> handle_pte_fault()
-> 	do_swap_page()
-> 		swapin_readahead()
-> 			read_swap_cache_async()
-> 
-> If yes, then swap reads issued will still be in the context of process and
-> we should be fine?
-> 
-> > Anyway, this is a minor corner case I think. And probably it is safe to
-> > consider this like any other read IO and get rid of the
-> > blkio_cgroup_set_owner().
-> 
-> Agreed.
-> 
-> > 
-> > I wonder if it would be better to attach the blkio_cgroup to the
-> > anonymous page only when swap-out occurs.
-> 
-> Swap seems to be an interesting case in general. Somebody raised this
-> question on lwn io controller article also. A user process never asked
-> for swap activity. It is something enforced by kernel. So while doing
-> some swap outs, it does not seem too fair to charge the write out to
-> the process page belongs to and the fact of the matter may be that there
-> is some other memory hungry application which is forcing these swap outs.
-> 
-> Keeping this in mind, should swap activity be considered as system
-> activity and be charged to root group instead of to user tasks in other
-> cgroups?
->   
-> > I mean, just put the
-> > blkio_cgroup_set_owner() hook in try_to_umap() in order to keep track of
-> > the IO generated by direct reclaim of anon memory. For all the other
-> > cases we can simply use the submitting task's context.
-> > 
-> > BTW, O_DIRECT is another case that is possible to optimize, because all
-> > the bios generated by direct IO occur in the same context of the current
-> > task.
-> 
-> Agreed about the direct IO optimization.
-> 
-> Ryo, what do you think? would you like to do include these optimizations
-> by the Andrea in next version of IO tracking patches?
+So what would go wrong if you only made them persistent for writable file
+systems, but allowed fallthrough dentries to be discarded for read-only
+file systems? As long as the lower layers don't change, you should still
+be able to reconstruct the same dentries every time you do a readdir, right?
 
-I'll consider whether these optimizations are reasonable.
-
-Thanks,
-Ryo Tsuruta
+	Arnd <><
