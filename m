@@ -1,135 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755190AbZESQSu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754705AbZESQYP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755190AbZESQSu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 12:18:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753393AbZESQSo
+	id S1754705AbZESQYP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 12:24:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754505AbZESQXx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 12:18:44 -0400
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:45510 "EHLO e7.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753176AbZESQSl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 12:18:41 -0400
-Date: Tue, 19 May 2009 09:18:39 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, davem@davemloft.net, dada1@cosmosbay.com,
-       zbr@ioremap.net, jeff.chua.linux@gmail.com, paulus@samba.org,
-       laijs@cn.fujitsu.com, jengelh@medozas.de, r000n@r000n.net,
-       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
-Subject: Re: [PATCH RFC] v5 expedited "big hammer" RCU grace periods
-Message-ID: <20090519161839.GA6750@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090517191141.GA25915@linux.vnet.ibm.com> <20090518075630.GA10687@elte.hu> <20090518151421.GB6768@linux.vnet.ibm.com> <20090518154241.GA27047@elte.hu> <20090518160254.GD6768@linux.vnet.ibm.com> <20090519085825.GA9388@elte.hu> <20090519123316.GA7159@linux.vnet.ibm.com> <20090519124436.GA6238@elte.hu>
+	Tue, 19 May 2009 12:23:53 -0400
+Received: from mail-bw0-f174.google.com ([209.85.218.174]:64113 "EHLO
+	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753950AbZESQXu convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 12:23:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=U0/UWCG4J2yX8JL1McUiKFPO+7EamHp13cDQhceqkOhKXAVZO9CmiUynzdko3IbiNF
+         Hun3UOixWUHBFMwb8ND96vWOY6xY5q3TcuLSwrn8lhH835AB1mhwGUfwZxEL4nfyLBCq
+         02yrZ+qG3iYu4PzEnJXOEIVaPHGNIyxQputg8=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090519124436.GA6238@elte.hu>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <4A12C3B5.2050100@compulab.co.il>
+References: <63386a3d0905181340y42ad1868k6b2978e586abc18d@mail.gmail.com>
+	 <4A12C3B5.2050100@compulab.co.il>
+Date: Tue, 19 May 2009 18:23:49 +0200
+Message-ID: <63386a3d0905190923t36d301c5hf245c06db00b6127@mail.gmail.com>
+Subject: Re: [PATCH 1/1] MFD: Add U300 AB3100 core support v2
+From: Linus Walleij <linus.ml.walleij@gmail.com>
+To: Mike Rapoport <mike@compulab.co.il>
+Cc: linux-kernel@vger.kernel.org, sameo@linux.intel.com,
+       linux-i2c@vger.kernel.org, Linus Walleij <linus.walleij@stericsson.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 19, 2009 at 02:44:36PM +0200, Ingo Molnar wrote:
-> 
-> * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
-> 
-> > On Tue, May 19, 2009 at 10:58:25AM +0200, Ingo Molnar wrote:
-> > > 
-> > > * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
-> > > 
-> > > > On Mon, May 18, 2009 at 05:42:41PM +0200, Ingo Molnar wrote:
-> > > > > 
-> > > > > * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
-> > > > > 
-> > > > > > > i might be missing something fundamental here, but why not just 
-> > > > > > > have per CPU helper threads, all on the same waitqueue, and wake 
-> > > > > > > them up via a single wake_up() call? That would remove the SMP 
-> > > > > > > cross call (wakeups do immediate cross-calls already).
-> > > > > > 
-> > > > > > My concern with this is that the cache misses accessing all the 
-> > > > > > processes on this single waitqueue would be serialized, slowing 
-> > > > > > things down. In contrast, the bitmask that smp_call_function() 
-> > > > > > traverses delivers on the order of a thousand CPUs' worth of bits 
-> > > > > > per cache miss.  I will give it a try, though.
-> > > > > 
-> > > > > At least if you go via the migration threads, you can queue up 
-> > > > > requests to them locally. But there's going to be cachemisses 
-> > > > > _anyway_, since you have to access them all from a single CPU, 
-> > > > > and then they have to fetch details about what to do, and then 
-> > > > > have to notify the originator about completion.
-> > > > 
-> > > > Ah, so you are suggesting that I use smp_call_function() to run 
-> > > > code on each CPU that wakes up that CPU's migration thread?  I 
-> > > > will take a look at this.
-> > > 
-> > > My suggestion was to queue up a dummy 'struct migration_req' up with 
-> > > it (change migration_req::task == NULL to mean 'nothing') and simply 
-> > > wake it up using wake_up_process().
-> > 
-> > OK.  I was thinking of just using wake_up_process() without the
-> > migration_req structure, and unconditionally setting a per-CPU
-> > variable from within migration_thread() just before the list_empty()
-> > check.  In your approach we would need a NULL-pointer check just
-> > before the call to __migrate_task().
-> > 
-> > > That will force a quiescent state, without the need for any extra 
-> > > information, right?
-> > 
-> > Yep!
-> > 
-> > > This is what the scheduler code does, roughly:
-> > > 
-> > >                 wake_up_process(rq->migration_thread);
-> > >                 wait_for_completion(&req.done);
-> > > 
-> > > and this will always have to perform well. The 'req' could be put 
-> > > into PER_CPU, and a loop could be done like this:
-> > > 
-> > > 	for_each_online_cpu(cpu)
-> > >                 wake_up_process(cpu_rq(cpu)->migration_thread);
-> > > 
-> > > 	for_each_online_cpu(cpu)
-> > >                 wait_for_completion(&per_cpu(req, cpu).done);
-> > > 
-> > > hm?
-> > 
-> > My concern is the linear slowdown for large systems, but this 
-> > should be OK for modest systems (a few 10s of CPUs).  However, I 
-> > will try it out -- it does not need to be a long-term solution, 
-> > after all.
-> 
-> I think there is going to be a linear slowdown no matter what - 
-> because sending that many IPIs is going to be linear. (there are no 
-> 'broadcast to all' IPIs anymore - on x86 we only have them if all 
-> physical APIC IDs are 7 or smaller.)
+Hm I shouldn't been so trigger-happy as to send v3 out so soon... :-/
 
-With the current code, agreed.  One could imagine making an IPI tree,
-so that a given CPU IPIs (say) eight subordinates.  Making this work
-nice with CPU hotplug would be entertaining, to say the least.
+Thanks for you quick review Mike!
 
-> Also, no matter what scheme we use, the target CPU does have to be 
-> processed somehow and it does have to signal completion back somehow 
-> - which generates cachemisses.
+2009/5/19 Mike Rapoport <mike@compulab.co.il>:
 
-One could in theory use a combining tree, so that results filter up,
-sort of like they do in rcutree.  But given that rcutree already has a
-combining tree, I would like to do this part in rcutree.
+>> +     /* Set a pointer back to the container in device data */
+>> +     for (i = 0; i < ARRAY_SIZE(ab3100_platform_devs); i++)
+>> +             platform_set_drvdata(ab3100_platform_devs[i], ab3100_local);
+>> +
+>> +     /* Register the platform devices */
+>> +     platform_add_devices(ab3100_platform_devs,
+>> +                          ARRAY_SIZE(ab3100_platform_devs));
+>
+> If you register sub-devices this way, they won't appear as ab3100 children.
 
-> I think what probaby matters most is to go simple, and to use 
-> established kernel primitives - and the above is really typical 
-> pattern for things like TLB flushes to a process having a presence 
-> on every physical CPU. Those aspects will be kept reasonably fast 
-> and balanced on all hardware that matters. (and if not, people will 
-> notice any TLB flush/shootdown linear slowdowns and will address it)
-> 
-> I could be wrong though ... maybe someone can get some numbers from 
-> a really large system?
+I'll set the parent in the first loop then (will test that this works) because I
+really like that device table. (Similar to how the board setup does things.)
 
-In theory, I have access to a 64-way system.  In practice, it is
-extremely heavily booked.
+> Besides, setting the sub-devices drvdata to point to the master device makes it
+> impossible for sub-device drivers to use this field for their needs.
 
-I will try your straightforward approach.
+Not really... It's just a pointer back to the AB3100 parent that can
+be discarded
+after copying it to a local driver struct. So the driver can actually:
 
-							Thanx, Paul
+foo_probe(platform_device *pdev) {
+  foo = kmalloc(...);
+  foo->ab_pointer = platform_get_drvdata(pdev);
+  ...
+  platform_set_drvdata(pdev, foo);
+}
+
+I could use platform_device_add_data() instead but that will start
+kmalloc():ing and such...
+
+>> +/*
+>> + * This struct is PRIVATE and devices using it should NOT
+>> + * access ANY fields. It is used as a token for calling the
+>> + * AB3100 functions.
+>> + */
+>
+> If the struct is private, probably it should be placed rather in the ".c" file?
+
+>From one point of view, yes, but from another point of view it feels bad to
+pass around a (void *) as token for ab3100 operations. This is loosely
+modeled on how wm8350 does it, so shouldn't be too controversial I think.
+
+Yours,
+Linus Walleij
