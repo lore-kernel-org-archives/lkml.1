@@ -1,52 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754904AbZESGrN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755131AbZESGxD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754904AbZESGrN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 02:47:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752324AbZESGq7
+	id S1755131AbZESGxD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 02:53:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752636AbZESGwz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 02:46:59 -0400
-Received: from mtagate3.uk.ibm.com ([195.212.29.136]:59366 "EHLO
-	mtagate3.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751385AbZESGq6 (ORCPT
+	Tue, 19 May 2009 02:52:55 -0400
+Received: from smtprelay07.ispgateway.de ([80.67.29.7]:36881 "EHLO
+	smtprelay07.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751882AbZESGwy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 02:46:58 -0400
-Message-ID: <4A1255E1.1060301@linux.vnet.ibm.com>
-Date: Tue, 19 May 2009 08:46:57 +0200
-From: Stefan Raspl <raspl@linux.vnet.ibm.com>
-Reply-To: raspl@linux.vnet.ibm.com
-User-Agent: Thunderbird 2.0.0.12 (X11/20080303)
-MIME-Version: 1.0
-To: Li Zefan <lizf@cn.fujitsu.com>
-CC: linux-btrace@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
-       linux-kernel@vger.kernel.org, schwidefsky@de.ibm.com,
-       heiko.carstens@de.ibm.com
-Subject: Re: [Patch] blktrace: remove debugfs entries on bad path
-References: <4A115BA5.6090905@linux.vnet.ibm.com> <4A1207DE.4000409@cn.fujitsu.com>
-In-Reply-To: <4A1207DE.4000409@cn.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 19 May 2009 02:52:54 -0400
+References: <cone.1240858632.795110.5316.1000@onepiie> <20090428072519.GA12170@liondog.tnic> <1240913055.29860.14.camel@maxim-laptop> <cone.1240949852.549814.7466.1000@mentalhome> <1240950704.3781.12.camel@maxim-laptop> <cone.1241299309.265715.3948.1000@mentalhome> <20090503184617.GA3555@liondog.tnic> <cone.1241648222.299676.7476.1000@mentalhome> <20090509171432.GA31126@liondog.tnic> <cone.1242065107.695268.13534.1000@onepiie> <20090512060231.GB26286@liondog.tnic> <cone.1242669880.118150.4276.1000@deskpiie> <1242678032.1572.122.camel@Joe-Laptop.home>
+Message-ID: <cone.1242715674.319169.6240.1000@arca>
+X-Mailer: http://www.courier-mta.org/cone/
+From: Peter Feuerer <peter@piie.net>
+To: Joe Perches <joe@perches.com>
+Cc: Borislav Petkov <petkovbb@googlemail.com>,
+       LKML <linux-kernel@vger.kernel.org>, lenb@kernel.org,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [PATCH] Acer Aspire One Fan Control
+Date: Tue, 19 May 2009 08:47:54 +0200
+Mime-Version: 1.0
+Content-Type: text/plain; format=flowed; charset="US-ASCII"
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
+X-Df-Sender: 404094
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Li Zefan wrote:
-> A better title:
-> 	[Patch] blktrace: remove debugfs entries on bad path
+Hi Joe,
+
+Joe Perches writes:
+
+>> +#define acerhdf_printk(loglevel, fmt, args...) \
+>> +	printk(loglevel "acerhdf: " fmt, ## args);
+>> +
+>> +#define acerhdf_notice(fmt, args...) \
+>> +	acerhdf_printk(KERN_NOTICE, fmt, ## args);
+>> +
+>> +#define acerhdf_error(fmt, args...) \
+>> +	acerhdf_printk(KERN_ERR, fmt, ## args);
 > 
-> Stefan Raspl wrote:
->> debugfs directory entries for devices are not removed on bad path.
+> Could you please not create new prefixes for printk?
 > 
-> Can you be more elaborate on how to reproduce this issue?
+> I think:
+> 
+> #define pr_fmt(fmt) "acerhdf:" fmt
+> and use of pr_err and pr_notice would be better.
 
-It can happen for most bad pathes within do_blk_trace_setup(). One
-way to trigger is to set the Vmalloc space via the respective kernel
-parameter to a value that is so small that it will not suffice for
-the 2MB per device and cpu that is required. For instance, set
-vmalloc=10M and start blktrace on a system with 2 cpus on 7 devices.
-Depending on how much Vmalloc space is still free, the final 2 or 3
-devices will fail with a message like this:
+I could do that. Just curious, is there any deeper reason? Or does it just feel wrong in some matter?
 
-	BLKTRACESETUP(2) /dev/sdu failed: 5/Input/output error
-
-Best regards,
-Stefan Raspl
+best regards,
+--peter
