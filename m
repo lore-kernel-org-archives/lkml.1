@@ -1,96 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754789AbZESPdR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754207AbZESPe0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754789AbZESPdR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 11:33:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753176AbZESPdJ
+	id S1754207AbZESPe0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 11:34:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753521AbZESPeT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 11:33:09 -0400
-Received: from sh.osrg.net ([192.16.179.4]:36842 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753059AbZESPdI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 11:33:08 -0400
-Date: Wed, 20 May 2009 00:30:17 +0900
-To: mingo@elte.hu
-Cc: fujita.tomonori@lab.ntt.co.jp, jeremy@goop.org, x86@kernel.org,
-       linux-kernel@vger.kernel.org, xen-devel@lists.xensource.com,
-       gregkh@suse.de, okir@suse.de
-Subject: Re: Where do we stand with the Xen patches?
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20090519130300.GB6238@elte.hu>
-References: <20090518084052.GD10687@elte.hu>
-	<20090519142626X.fujita.tomonori@lab.ntt.co.jp>
-	<20090519130300.GB6238@elte.hu>
+	Tue, 19 May 2009 11:34:19 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:56331 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752880AbZESPeT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 11:34:19 -0400
+Subject: Re: INFO: possible circular locking dependency at
+ cleanup_workqueue_thread
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Zdenek Kabelac <zdenek.kabelac@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090519120010.GA14782@redhat.com>
+References: <c4e36d110905120059i4c155508oa00672da0b33a07a@mail.gmail.com>
+	 <20090517071834.GA8507@elte.hu> <1242559101.28127.63.camel@johannes.local>
+	 <20090518194749.GA3501@redhat.com>
+	 <1242723104.17164.5.camel@johannes.local>
+	 <20090519120010.GA14782@redhat.com>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-SEnDeE0gzPiCaRVOLoF8"
+Date: Tue, 19 May 2009 17:33:23 +0200
+Message-Id: <1242747203.4797.39.camel@johannes.local>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20090520002955R.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Wed, 20 May 2009 00:30:17 +0900 (JST)
+X-Mailer: Evolution 2.26.1.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 19 May 2009 15:03:00 +0200
-Ingo Molnar <mingo@elte.hu> wrote:
 
-> > If we really need to merge dom0 support, then dom0 should have the 
-> > own IOMMU implementation instead of adding any hacks to swiotlb 
-> > (as I said long time ago). Yeah, there might be some duplication 
-> > between swiotlb and the Xen IOMMU but IMO it's better to have 
-> > clean code with some duplication rather than ugly unified code; 
-> > unification makes sense only if we do cleanly.
-> 
-> Well, but since we merged PowerPC highmem support ... the precedent 
-> is there already that the swiotlb code can be librarized and 
-> generalized some more, right?
+--=-SEnDeE0gzPiCaRVOLoF8
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-No,
+On Tue, 2009-05-19 at 14:00 +0200, Oleg Nesterov wrote:
 
-The highmem support is ok for me (I was against the initial highmem
-patchset but Becky's highmem patchset was much cleaner and we merged
-it).
+> > I'm not familiar enough with the code -- but what are we really trying
+> > to do in CPU_POST_DEAD? It seems to me that at that time things must
+> > already be off the CPU, so ...?
+>=20
+> Yes, this cpu is dead, we should do cleanup_workqueue_thread() to kill
+> cwq->thread.
+>=20
+> > On the other hand that calls
+> > flush_cpu_workqueue() so it seems it would actually wait for the work t=
+o
+> > be executed on some other CPU, within the CPU_POST_DEAD notification?
+>=20
+> Yes. Because we can't just kill cwq->thread, we can have the pending
+> work_structs so we have to flush.
+>=20
+> Why can't we move these works to another CPU? We can, but this doesn't
+> really help. Because in any case we should at least wait for
+> cwq->current_work to complete.
+>=20
+> Why do we use CPU_POST_DEAD, and not (say) CPU_DEAD to flush/kill ?
+> Because work->func() can sleep in get_online_cpus(), we can't flush
+> until we drop cpu_hotplug.lock.
 
-Due to dom0 support, we can't use architecture abstraction (such as
-arch/include/asm/):
+Right. But exactly this happens in the hibernate case -- the hibernate
+code calls kernel/cpu.c:disable_nonboot_cpus() which calls _cpu_down()
+which calls raw_notifier_call_chain(&cpu_chain, CPU_POST_DEAD... Sadly,
+it does so while holding the cpu_add_remove_lock, which is happens to
+have the dependencies outlined in the original email...
 
-http://marc.info/?l=linux-kernel&m=124271086910299&w=2
+The same happens in cpu_down() (without leading _) which you can trigger
+from sysfs by manually removing the CPU, so it's not hibernate specific.
+
+Anyway, you can have a deadlock like this:
+
+CPU 3			CPU 2				CPU 1
+							suspend/hibernate
+			something:
+			rtnl_lock()			device_pm_lock()
+							-> mutex_lock(&dpm_list_mtx)
+
+			mutex_lock(&dpm_list_mtx)
+
+linkwatch_work
+ -> rtnl_lock()
+							disable_nonboot_cpus()
+							-> flush CPU 3 workqueue
+
+johannes
 
 
-We also need hacks for memory allocation due to dom0 support.
+--=-SEnDeE0gzPiCaRVOLoF8
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
+-----BEGIN PGP SIGNATURE-----
 
-> What is the fundamental difference between a DMA32 device on native 
-> hardware using lib/swiotlb.c to bounce IO directed to/from a high 
-> address over buffers in a low, DMA-capable address, and between a 
-> Xen Dom0 instance using the same functionality to DMA buffers?
-> 
-> The payback is significant: Linux drivers can be used basically 
-> as-is (as far as their DMA functionality goes) in a Xen dom0 guest.
-> 
-> There's really just two non-standard Xen features compared to the 
-> PowerPC-highmem use:
-> 
->  - special allocation
-> 
->  - non-standard virtual/physical/bus memory translations
-> 
-> The latter is understandable - Xen cannot do the (mostly-) linear 
-> transformations that (most) platforms can do in their address 
-> transformation primitives. But other than the non-linearity, it's a 
-> "mapping" just as much.
-> 
-> The special allocator is arguably a bit of a hack - Xen should 
-> _probably_ recognize GFP_DMA32 allocations at the page allocator 
-> level and rearrange buffers there.
-> 
-> So realizing that dom0 _has_ to have guest OS help here, the best 
-> possible design seems to be to minimalize the Xen cross section to 
-> Linux, while still keeping it fast enough. And that seems to be 
-> these two straightforward hooks: 'ready buffers for DMA' and 'map 
-> addresses'. As long as we'll want to have swiotlb code in the 
-> kernel, we'll deal with such primitives anyway - so there doesnt 
-> seem to be a significant mainteinance drag here.
+iQIcBAABAgAGBQJKEtE/AAoJEODzc/N7+Qma3+EP/2Rc5E4elKkY5fyaR9w9iR4A
+YYnbnWls3pqe8+j1xQXu9+mhnM++sb4XCuacShOe3AEYFG/ZFpGBu2Mi/eKh4rZV
+HQ/mgeF+gz59QWb/mKwGDUVZM8lNDLosZOJQAzH0kM4Ir2H0BoSzXJcSk2/V58Ux
+wkjTqQ+FPfZUkEg9FDh8hC9oJCIix2L5xcx8QMfzTN0Ur+LIJiPuWt17SZty/aEy
+2LRPj/wF4qANZjtcGYRrF05qqM7YNa6ueh6+7TtYrGy6qF8s3Be3MGEfc8V22g6n
+Zac4KaqeqV8UoN5jlkNSzNnq6FdhvgOx5/X1m/Ta7hrw+OgChDXfdSFwVttaruk1
+QHO6cqU4jEYXN8wyUivDp3BjmxVdvasO1oQnYI0x4VqNsHVx6hwcLpw3eisefbHx
+M9Rg8OYigvTOH1C/NQwWPrYVhRNJaJHLYZQTFbGkqibDLGnFmR5ps5qaSE0RQ+J1
+saCkIp/jkSJa8mJzHt2En4y14lYycans3LX6/XI+UzBy2acbuavSUw9F6JjarInf
+06WrVZP59mQ3VOJofiLI8aLWWxt5Vvtc46yEA+SoYEeYOT/aAffQcTu1kwdcplcI
+sbIhn2AHixJLEx/R8nlVW9TsMr7u78vvJId/aTtOdZ2doiT/QGiTzdAVfyeStiRv
+Zjxfci4RiqOjhyL4O02i
+=ADHR
+-----END PGP SIGNATURE-----
 
-We need these hooks but as I wrote above, they are
-architecture-specific and we should handle them with the architecture
-abstraction (as we handle similar problems) however we can't due to
-dom0 support.
+--=-SEnDeE0gzPiCaRVOLoF8--
+
