@@ -1,150 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755310AbZESXUs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755257AbZESXYt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755310AbZESXUs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 19:20:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754183AbZESXUi
+	id S1755257AbZESXYt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 19:24:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754613AbZESXYm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 19:20:38 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57715
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751361AbZESXUi convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 19:20:38 -0400
-Date: Tue, 19 May 2009 16:20:36 -0700 (PDT)
-Message-Id: <20090519.162036.76263878.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: Networking
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+	Tue, 19 May 2009 19:24:42 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:57424 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753707AbZESXYl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 19:24:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=RnKpPJkd5sJwDJyR+xnsfJXCURqogF4DWkyG8u6wUVcRpMyRW7y937s0EbbAKitkA0
+         xKVKaNNTeXL3rVbGw8XMGJ68z43mcNQ6RzV2hvNTfJO7e20LW8O7uTOR0gB+wdBJ1Quy
+         nEvGnglZndiyqN8la8ltZx53hD0ShrO4HRpvU=
+Date: Wed, 20 May 2009 01:24:39 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: "K.Prasad" <prasad@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [Patch 0/2] Improvements and fixes to HW Breakpoint interface
+Message-ID: <20090519232437.GB6066@nowhere>
+References: <20090519162353.GA26009@in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090519162353.GA26009@in.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, May 19, 2009 at 09:53:53PM +0530, K.Prasad wrote:
+> Hi Alan,
+> 	Please find a couple of patches that contain improvements to the HW Breakpoint
+> interface code (discovered while porting the infrastructure on another architecture)
+> and a minor fix - the details of which are described in the patch header.
+> 
+> These patches can be applied over the patchset submitted over -tip here:
+> http://lkml.org/lkml/2009/5/15/139.
+> 
+> As they carry some of your suggestions, I will be glad to have it reviewed by you.
+> 
+> Hi Frederic,
+> 	There's a minor style issue in the ksym tracer plugin (declaration of a
+> function in .c file) which has now been corrected. Kindly review the same.
 
-Back from the cruise, and somehow no better at shuffleboard than
-before, here are the networking bug fixes that have accumulated.
 
-Note that I did a merge because I pushed out the pulling in of
-the bluetooth and wireless trees and only afterwards did I notice
-that you had already pulled them in.  So it comes out as a wash.
 
-As for the rest:
+The ftrace part looks good, indeed such style issue is usually warned by checkpatch.pl
+Thanks.
 
-1) mlx4_en driver forgets to delete NAPI contexts, resulting in
-   crashes.  Fix from Yevgeny Patrilin.
+Ingo,
 
-2) wimax/i2400m crash fixes from Inaky Perez-Gonzalez
+What do you think of the current state of the hardware breakpoint patchset?
+If I'm not wrong, it has not yet been applied in -tip. Do you have mixed
+feelings about it?
+IIRC it has been mostly (fully?) acked by Alan Stern, I've also reviewed
+the ftrace patch.
 
-3) Meth driver does not use IRQ disabling locks consistently, causing
-   potential deadlocks.  Fix from Ralf Baechle.
+Frederic.
 
-4) Two non-STP bridge regression fixes from Stephen Hemminger.
-
-5) Potential netpoll NULL deref got added by netdev_ops infrastructure
-   changes, fix from Pavel Emelyanov.
-
-6) Neterion driver programs FIFO registers improperly, fix from Roel Kluin.
-
-7) Two new device IDs fro be2net driver.
-
-8) skb_seq_read doesn't handle all offset/length situations properly
-   wrt. page frags, and this is most noticably seen as causing iSCSI
-   login data corruption with certain devices.  Fix from Thomas Chenault.
-
-9) TCP regression got added when we removed a MSG_PEEK test from tcp_recvmsg()
-   in order to adhere to rcvlowat like BSD does.  An assertion warning log
-   message triggers when it shouldn't.  Fixed by Ilpo Järvinen.
-
-10) Fix mv643xx_eth on 32-bit PPC.  That platform no longer handles
-    transparently NULL device args to the DMA interfaces.  Fix from
-    Gabriel Paubert.
-
-11) If a DHCP response is delayed, we process it using the wrong
-    state if we send a request again meanwhile.  Fix from Chris Friesen.
-
-12) Make INET_LRO behavior match it's help text.  From Frans Pop.
-
-Please pull, thanks a lot!
-
-The following changes since commit 279e677faa775ad16e75c32e1bf4a37f8158bc61:
-  Linus Torvalds (1):
-        Merge branch 'fixes-for-linus' of git://git.monstr.eu/linux-2.6-microblaze
-
-are available in the git repository at:
-
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
-
-Ajit Khaparde (1):
-      be2net: add two new pci device ids to pci device table
-
-Chris Friesen (1):
-      ipconfig: handle case of delayed DHCP server
-
-David S. Miller (3):
-      Merge branch 'master' of git://git.kernel.org/.../holtmann/bluetooth-2.6
-      Merge branch 'master' of /home/davem/src/GIT/linux-2.6/
-      Merge branch 'linux-2.6.30.y' of git://git.kernel.org/.../inaky/wimax
-
-Eric Dumazet (2):
-      sch_teql: should not dereference skb after ndo_start_xmit()
-      pkt_sched: gen_estimator: use 64 bit intermediate counters for bps
-
-Frans Pop (1):
-      ipv4: make default for INET_LRO consistent with help text
-
-Gabriel Paubert (1):
-      mv643xx_eth: fix PPC DMA breakage
-
-Ilpo Järvinen (1):
-      tcp: fix MSG_PEEK race check
-
-Inaky Perez-Gonzalez (1):
-      wimax/i2400m: fix device crash: fix optimization in _roq_queue_update_ws
-
-Pavel Emelyanov (1):
-      netpoll: don't dereference NULL dev from np
-
-Ralf Baechle (1):
-      NET: Meth: Fix unsafe mix of irq and non-irq spinlocks.
-
-Stephen Hemminger (3):
-      bridge: relay bridge multicast pkgs if !STP
-      bridge: fix initial packet flood if !STP
-      bonding: fix link down handling in 802.3ad mode
-
-Thomas Chenault (1):
-      net: fix skb_seq_read returning wrong offset/length for page frag data
-
-Wang Tinggong (1):
-      Doc: fixed descriptions on /proc/sys/net/core/* and /proc/sys/net/unix/*
-
-Yevgeny Petrilin (1):
-      mlx4_en: Fix not deleted napi structures
-
-roel kluin (1):
-      Neterion: *FIFO1_DMA_ERR set twice, should 2nd be *FIFO2_DMA_ERR?
-
- Documentation/networking/ip-sysctl.txt |   15 +++++++++--
- drivers/net/benet/be.h                 |   14 +++++++++++
- drivers/net/benet/be_main.c            |   10 ++++----
- drivers/net/bonding/bond_3ad.c         |   11 ++++++--
- drivers/net/meth.c                     |   27 +++++++++++----------
- drivers/net/mlx4/en_cq.c               |    4 ++-
- drivers/net/mv643xx_eth.c              |   41 +++++++++++++++++--------------
- drivers/net/vxge/vxge-traffic.c        |    2 +-
- drivers/net/wimax/i2400m/rx.c          |    5 +--
- net/bridge/br_input.c                  |    5 ++++
- net/bridge/br_stp.c                    |    3 ++
- net/core/gen_estimator.c               |   13 +++++----
- net/core/netpoll.c                     |    8 ++++-
- net/core/skbuff.c                      |    2 +-
- net/ipv4/Kconfig                       |    2 +-
- net/ipv4/ipconfig.c                    |   12 +++++++++
- net/ipv4/tcp.c                         |    5 +++-
- net/sched/sch_teql.c                   |    5 ++-
- 18 files changed, 123 insertions(+), 61 deletions(-)
