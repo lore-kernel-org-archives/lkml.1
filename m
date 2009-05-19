@@ -1,95 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754622AbZEST0c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754884AbZEST2u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754622AbZEST0c (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 15:26:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753573AbZEST0Y
+	id S1754884AbZEST2u (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 15:28:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753595AbZEST2l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 15:26:24 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:59854 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753226AbZEST0X (ORCPT
+	Tue, 19 May 2009 15:28:41 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:34175 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753496AbZEST2k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 15:26:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=BgzUVpg2z+0nHk0MniK6BwoeAQVgmwjXwtGMlDhf4Knq3Jge/4kVaA9xDLhMnfjvks
-         XT2QLeV8SWHm+yIdQ+oG2YteR3fwVFmg2WBYXIfYWDWhi3lu6UkH0RxliBptcfgbjeoX
-         m8ACR/7sjM+Spjdsek2Hj2t1v8hKi4Mx/o+0c=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Martin Lottermoser <Martin.Lottermoser@t-online.de>
-Subject: Re: PATA DMA problem leading to kernel panic on reading movie DVDs
-Date: Tue, 19 May 2009 21:30:59 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc6-next-20090518-05332-g0707b5a; KDE/4.2.2; i686; ; )
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-References: <20090517091224.GA8280@wanza.invalid> <200905191719.35543.bzolnier@gmail.com> <20090519182928.GA8172@wanza.invalid>
-In-Reply-To: <20090519182928.GA8172@wanza.invalid>
+	Tue, 19 May 2009 15:28:40 -0400
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Weidong Han <weidong.han@intel.com>, dwmw2@infradead.org,
+       suresh.b.siddha@intel.com, linux-kernel@vger.kernel.org,
+       iommu@lists.linux-foundation.org, kvm@vger.kernel.org
+Subject: Re: [PATCH v2 2/2] Intel-IOMMU, intr-remap: source-id checking
+References: <1242757912-6041-1-git-send-email-weidong.han@intel.com>
+	<1242757912-6041-3-git-send-email-weidong.han@intel.com>
+	<20090519115055.GB14305@elte.hu>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Tue, 19 May 2009 12:28:36 -0700
+In-Reply-To: <20090519115055.GB14305@elte.hu> (Ingo Molnar's message of "Tue\, 19 May 2009 13\:50\:55 +0200")
+Message-ID: <m1k54cj3iz.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200905192131.00168.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Rcpt-To: mingo@elte.hu, kvm@vger.kernel.org, iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org, suresh.b.siddha@intel.com, dwmw2@infradead.org, weidong.han@intel.com
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 19 May 2009 20:29:28 Martin Lottermoser wrote:
-> Hello,
-> 
-> On Tue, May 19, 2009 at 05:19:35PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> > Subject: [PATCH] ide: fix 40-wire cable detection for TSST SH-S202* ATAPI devices
-> 
-> I'm sorry, but that also generated a panic, looking identical to the
-> behaviour as for the unpatched 2.6.30-rc6.
-> 
-> After booting the patched kernel, the syslog file showed:
-> 
->   hdc: UDMA/66 mode selected
-> 
-> "hdparm -I" reported that the drive was set to "udma4". On accessing the DVD,
-> the kernel panicked. Here's the main output from netconsole:
-> 
->   hdc: cdrom_decode_status: error=0x40 <3>{ LastFailedSense=0x04 }
->   ide: failed opcode was: unknown
->   hdc: DMA disabled
->   ------------[ cut here ]------------
->   kernel BUG at drivers/ide/ide-io.c:872!
->   invalid opcode: 0000 [#1]
->   last sysfs file: /sys/devices/pci0000:00/0000:00:1f.1/ide1/1.0/block/hdc/size
-> 
-> After booting the kernel and before doing the test I had checked with
-> "uname -a" that this really was the newly compiled kernel. After reboot I
-> checked that ide-iops.o existed and had a modification time later than the
-> moment I applied your patch. Also, the new vmlinuz is 64 bytes shorter than
-> the unpatched one. Therefore I don't think I made some silly mistake which
-> led to the patch being ignored.
+Ingo Molnar <mingo@elte.hu> writes:
 
-You didn't.  I did.
+> * Weidong Han <weidong.han@intel.com> wrote:
+>
+>> To support domain-isolation usages, the platform hardware must be 
+>> capable of uniquely identifying the requestor (source-id) for each 
+>> interrupt message. Without source-id checking for interrupt 
+>> remapping , a rouge guest/VM with assigned devices can launch 
+>> interrupt attacks to bring down anothe guest/VM or the VMM itself.
+>> 
+>> This patch adds source-id checking for interrupt remapping, and 
+>> then really isolates interrupts for guests/VMs with assigned 
+>> devices.
+>> 
+>> Because PCI subsystem is not initialized yet when set up IOAPIC 
+>> entries, use read_pci_config_byte to access PCI config space 
+>> directly.
+>> 
+>> Signed-off-by: Weidong Han <weidong.han@intel.com>
+>> ---
+>>  arch/x86/kernel/apic/io_apic.c |    6 +++
+>>  drivers/pci/intr_remapping.c   |   90 ++++++++++++++++++++++++++++++++++++++-
+>>  drivers/pci/intr_remapping.h   |    2 +
+>>  include/linux/dmar.h           |   11 +++++
+>>  4 files changed, 106 insertions(+), 3 deletions(-)
+>
+> Code structure looks nice now. (and i susect you have tested this on 
+> real and relevant hardware?) I've Cc:-ed Eric too ... does this 
+> direction look good to you too Eric?
 
-Incremental patch fixing it:
+Being a major nitpick, I have to point out that the code is not
+structured to support other iommus, and I think AMD has one that can
+do this as well. 
 
-diff -u b/drivers/ide/ide-iops.c b/drivers/ide/ide-iops.c
---- b/drivers/ide/ide-iops.c
-+++ b/drivers/ide/ide-iops.c
-@@ -255,7 +255,7 @@
- 	if (ivb) {
- 		const char *model = (char *)&id[ATA_ID_PROD];
- 
--		if (strcmp("TSSTcorp CDDVDW SH-S202", model) == 0) {
-+		if (strstr("TSSTcorp CDDVDW SH-S202", model)) {
- 			/*
- 			 * These ATAPI devices always report 80c cable
- 			 * so we have to depend on the host in this case.
+The early pci reading of the bus is just wrong.  What happens if the
+pci layer decided to renumber things?  It looks like we have a real
+dependency on pci there and are avoiding sorting it out with this.
 
+Hmm.  But that is what we use in setup_ioapic_sid....
+I expect the right solution is to delay enabling ioapic entries
+until driver enable them.   That could also reduce screaming
+irqs during bootup in the kdump case.
 
-> The offer for testing patches remains open :-).
+set_msi_sid looks wrong.  The comment are unhelpful. irte->svt should
+get an enum value or a deine (removing the repeated explanations of
+the magic value) and then we could have room to explain why we
+are doing what we are doing.
 
-We will get there. ;-)
+Not finding an upstream pcie_bridge and then concluding we are a pcie
+device seems bogus.
 
-I've reproduced the problem and I'm testing the fix currently...
+Why if we do have an upstream pcie bridge do we only want to do a bus
+range verification instead of checking just for the bus :devfn?
 
-Thanks,
-Bart
+The legacy PCI case seems even stranger.
+
+....
+
+The table of apic information by apic_id also seems wrong.   Don't
+we have chip_data or something that should point it  that we can
+get from the irq?
+
+Eric
