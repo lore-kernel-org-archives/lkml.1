@@ -1,112 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755515AbZESQ2t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755610AbZESQag@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755515AbZESQ2t (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 12:28:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753778AbZESQ2m
+	id S1755610AbZESQag (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 12:30:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753768AbZESQaa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 12:28:42 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:43736 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753366AbZESQ2l (ORCPT
+	Tue, 19 May 2009 12:30:30 -0400
+Received: from ausxippc101.us.dell.com ([143.166.85.207]:33513 "EHLO
+	ausxippc101.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753240AbZESQa3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 12:28:41 -0400
-Subject: Re: INFO: possible circular locking dependency at
- cleanup_workqueue_thread
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090519160936.GA25720@redhat.com>
-References: <c4e36d110905120059i4c155508oa00672da0b33a07a@mail.gmail.com>
-	 <20090517071834.GA8507@elte.hu> <1242559101.28127.63.camel@johannes.local>
-	 <20090518194749.GA3501@redhat.com>
-	 <1242723104.17164.5.camel@johannes.local>
-	 <20090519120010.GA14782@redhat.com>
-	 <1242747203.4797.39.camel@johannes.local>
-	 <20090519160936.GA25720@redhat.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-vMG/6bDi5Rwk8KiaIcW5"
-Date: Tue, 19 May 2009 18:27:50 +0200
-Message-Id: <1242750470.4797.42.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1.1 
+	Tue, 19 May 2009 12:30:29 -0400
+X-Loopcount0: from 10.9.160.254
+Message-ID: <4A12DEA8.4060305@dell.com>
+Date: Tue, 19 May 2009 11:30:32 -0500
+From: Mario Limonciello <mario_limonciello@dell.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090409)
+MIME-Version: 1.0
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+CC: Oliver Neukum <oliver@neukum.org>, Marcel Holtmann <marcel@holtmann.org>,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Explicitly disable BT radio using rfkill interface on
+ suspend
+References: <4A11C126.1000704@dell.com> <1242710064.3147.4.camel@localhost.localdomain> <20090519090610.GA29967@srcf.ucam.org> <200905191447.34000.oliver@neukum.org> <20090519125853.GA12483@srcf.ucam.org>
+In-Reply-To: <20090519125853.GA12483@srcf.ucam.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig4B0AC60646A4CF9AA26AE72B"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---=-vMG/6bDi5Rwk8KiaIcW5
-Content-Type: text/plain
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig4B0AC60646A4CF9AA26AE72B
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, 2009-05-19 at 18:09 +0200, Oleg Nesterov wrote:
+Hi Guys:
 
-> > Right. But exactly this happens in the hibernate case --
->=20
-> not sure I understand your "exactly this" ;)
->=20
-> But your explanation of the deadlock below looks great!
+Matthew Garrett wrote:
+> On Tue, May 19, 2009 at 02:47:33PM +0200, Oliver Neukum wrote:
+>  =20
+>
+> It doesn't seem to for Mario, otherwise this patch wouldn't change=20
+> anything.
+>
+>  =20
+During S3, when power gets cut, the device is reset and the radio
+logical device no longer shows up.  At no point do either of the USB
+keyboard/mouse devices stop showing up on the bus.  Henceforth, there is
+no event for udev to trigger from when a mouse or keyboard gets
+added/removed.
 
-Yeah... I got side-tracked, I had a scenario in mind that actually
-needed cpu_add_remove_lock().
+--=20
+Mario Limonciello
+*Dell | Linux Engineering*
+mario_limonciello@dell.com
 
-> except I don't understand how cpu_add_remove_lock makes the difference...
-> And thus I can't understand why cpu_down() (called lockless) have the
-> same problems. Please see below.
->=20
-> > Anyway, you can have a deadlock like this:
-> >
-> > CPU 3			CPU 2				CPU 1
-> > 							suspend/hibernate
-> > 			something:
-> > 			rtnl_lock()			device_pm_lock()
-> > 							-> mutex_lock(&dpm_list_mtx)
-> >
-> > 			mutex_lock(&dpm_list_mtx)
-> >
-> > linkwatch_work
-> >  -> rtnl_lock()
-> > 							disable_nonboot_cpus()
->=20
-> let's suppose disable_nonboot_cpus() does not take cpu_add_remove_lock,
->=20
-> > 							-> flush CPU 3 workqueue
->=20
-> in this case the deadlock is still here?
->=20
-> We can't flush because we hold the lock (dpm_list_mtx) which depends
-> on another lock taken by work->func(), the "classical" bug with flush.
->=20
-> No?
 
-Yeah, it looks like cpu_add_remove_lock doesn't make a difference...
-It's just lockdep reporting a longer chain that also leads to a
-deadlock. OTOH just replace dpm_list_mtx with cpu_add_remove_lock and
-you have the same scenario... happens too, I guess, somehow.
-
-johannes
-
---=-vMG/6bDi5Rwk8KiaIcW5
+--------------enig4B0AC60646A4CF9AA26AE72B
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
-iQIcBAABAgAGBQJKEt4CAAoJEODzc/N7+Qmau+MQALhHXgzYweGx/C3acd/Y7b3Z
-eh5jXD8trqZtzOvserRAYF+xKCvx3gZH7DoTZn75zF7LMyH2gtFd5MNGdGg6f+eO
-5354jsWha6Fhl6KmWWmKLU1RyBsYSNB6sGyhi/8xm8tBuzGj7D/GcLgqsSRKK88B
-R+FO3DMgBU13iRunyiuhOLHFxjwB6dtfqdML9zyHltJOGodLVRkXZunwwsuaQJKn
-Ix4QFfjsEZnYt8JTPwiA+r4nB8LPsfO9OEQsO9Ir8Ledemv8qPiyj6WOkfn1I6v0
-1hiSaYx/kOk/XT9Im8xGtz5uZ///FsgdC6+vqBHLiOBhsnEzmiE6XXM2epNzSde9
-5i1eXUNAFjaaneLXBMV6j+IZo53EN4bI7ioVgvX9yU/j01Sx1ei/kv5VbI6Qh1Xw
-wJQKCsc/Zp6KGbVer6sccOdH0mWqY+mOllqjGbf94eyrBedTi1UQO4l7R/CKQedp
-RxZkOaVlGhGg3+PtNnqIHwUQirq5zuiegf6kbaDbX56EmVsX7hPdYk/bC0X+5uxj
-XtVo+78po/NHUzrcSadQ373w9gJALgZ05f73vkh6GrBMLO30xoREKwk4c70dEiDs
-Qw1fn+C7gdwl1d/0T1bLbA3w374ZKko1/FOIg45MjTIZea7aJGJmCU6zthZXGqDj
-DnU92aaopZt0bpa9NxtG
-=qSai
+iEYEARECAAYFAkoS3qgACgkQ2CrZjkA73YsMnwCgixuWcPu6p8fuhHu7L1ftxEWt
+SB4An3TY/hsjnrZM6UzfKyXvk8IzKsEJ
+=oOrP
 -----END PGP SIGNATURE-----
 
---=-vMG/6bDi5Rwk8KiaIcW5--
-
+--------------enig4B0AC60646A4CF9AA26AE72B--
