@@ -1,87 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753649AbZESPcb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754789AbZESPdR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753649AbZESPcb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 11:32:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750971AbZESPc0
+	id S1754789AbZESPdR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 11:33:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753176AbZESPdJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 11:32:26 -0400
-Received: from d112a2.x-mailer.de ([212.162.53.4]:35964 "EHLO
-	d112a2.x-mailer.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750721AbZESPcZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 11:32:25 -0400
-Message-Id: <cover.1242739648.git.kkeil@pingi.linux-pingi.de>
-Date: Tue, 19 May 2009 15:27:28 +0200
-Subject: [PATCH 00/19] mISDN update for linux-next
-From: Karsten Keil <keil@b1-systems.de>
-To: linux-kernel@vger.kernel.org
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       i4ldeveloper@listserv.isdn4linux.de
-X-Info: valid message
-X-Info: original Date
+	Tue, 19 May 2009 11:33:09 -0400
+Received: from sh.osrg.net ([192.16.179.4]:36842 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753059AbZESPdI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 11:33:08 -0400
+Date: Wed, 20 May 2009 00:30:17 +0900
+To: mingo@elte.hu
+Cc: fujita.tomonori@lab.ntt.co.jp, jeremy@goop.org, x86@kernel.org,
+       linux-kernel@vger.kernel.org, xen-devel@lists.xensource.com,
+       gregkh@suse.de, okir@suse.de
+Subject: Re: Where do we stand with the Xen patches?
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20090519130300.GB6238@elte.hu>
+References: <20090518084052.GD10687@elte.hu>
+	<20090519142626X.fujita.tomonori@lab.ntt.co.jp>
+	<20090519130300.GB6238@elte.hu>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20090520002955R.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Wed, 20 May 2009 00:30:17 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a update of the mISDN driver for linux-next.
-It syncs the mISDN driver with the development on git.misdn.org.
-More updates (new hardware support) will follow.
+On Tue, 19 May 2009 15:03:00 +0200
+Ingo Molnar <mingo@elte.hu> wrote:
 
-You can pull it from 
-git://master.kernel.org/pub/scm/linux/kernel/git/kkeil/ISDN-2.6-next.git master
+> > If we really need to merge dom0 support, then dom0 should have the 
+> > own IOMMU implementation instead of adding any hacks to swiotlb 
+> > (as I said long time ago). Yeah, there might be some duplication 
+> > between swiotlb and the Xen IOMMU but IMO it's better to have 
+> > clean code with some duplication rather than ugly unified code; 
+> > unification makes sense only if we do cleanly.
+> 
+> Well, but since we merged PowerPC highmem support ... the precedent 
+> is there already that the swiotlb code can be librarized and 
+> generalized some more, right?
+
+No,
+
+The highmem support is ok for me (I was against the initial highmem
+patchset but Becky's highmem patchset was much cleaner and we merged
+it).
+
+Due to dom0 support, we can't use architecture abstraction (such as
+arch/include/asm/):
+
+http://marc.info/?l=linux-kernel&m=124271086910299&w=2
 
 
-Andreas Eversberg (14):
-  Add XHFC support for embedded Speech-Design board to hfcmulti
-  Fix bug in XHFC registering
-  Add PCI ID for Junghanns 8S card
-  Add watchdog functionality to hfcmulti driver
-  DSP now uses ring buffer for echo canceler
-  Fix hfcmulti's PCI IRQ bug during init
-  Echo canceler now gets delay information from hardware
-  Fixed missing spin lock on pipeline process
-  Added layer-1-hold feature
-  Fix DTMF locking bug issue
-  Hardware acceleration is now possible in conjunction with audio
-    recording
-  Fix TEI and SAPI handling
-  Add "sapi" information to debug messages
-  Added PCI ID for new Junghanns.net Single E1 cards.
+We also need hacks for memory allocation due to dom0 support.
 
-Frank Seidel (2):
-  Reduce stack size in dsp_cmx_send()
-  Add allocation of recvbuf[1500] at run time to reduce stack size
 
-Karsten Keil (2):
-  Fix skb leak in error cases
-  Cleanup debug messages
+> What is the fundamental difference between a DMA32 device on native 
+> hardware using lib/swiotlb.c to bounce IO directed to/from a high 
+> address over buffers in a low, DMA-capable address, and between a 
+> Xen Dom0 instance using the same functionality to DMA buffers?
+> 
+> The payback is significant: Linux drivers can be used basically 
+> as-is (as far as their DMA functionality goes) in a Xen dom0 guest.
+> 
+> There's really just two non-standard Xen features compared to the 
+> PowerPC-highmem use:
+> 
+>  - special allocation
+> 
+>  - non-standard virtual/physical/bus memory translations
+> 
+> The latter is understandable - Xen cannot do the (mostly-) linear 
+> transformations that (most) platforms can do in their address 
+> transformation primitives. But other than the non-linearity, it's a 
+> "mapping" just as much.
+> 
+> The special allocator is arguably a bit of a hack - Xen should 
+> _probably_ recognize GFP_DMA32 allocations at the page allocator 
+> level and rearrange buffers there.
+> 
+> So realizing that dom0 _has_ to have guest OS help here, the best 
+> possible design seems to be to minimalize the Xen cross section to 
+> Linux, while still keeping it fast enough. And that seems to be 
+> these two straightforward hooks: 'ready buffers for DMA' and 'map 
+> addresses'. As long as we'll want to have swiotlb code in the 
+> kernel, we'll deal with such primitives anyway - so there doesnt 
+> seem to be a significant mainteinance drag here.
 
-Roel Kluin (1):
-  isdn: get_free_devid() failure ignored
-
- drivers/isdn/hardware/mISDN/hfc_multi.h |   75 +++-
- drivers/isdn/hardware/mISDN/hfcmulti.c  |  711 +++++++++++++++++++++++--------
- drivers/isdn/hardware/mISDN/hfcpci.c    |   98 +++--
- drivers/isdn/hardware/mISDN/hfcsusb.c   |    4 +-
- drivers/isdn/mISDN/core.c               |    8 +-
- drivers/isdn/mISDN/dsp.h                |   18 +-
- drivers/isdn/mISDN/dsp_audio.c          |    5 +-
- drivers/isdn/mISDN/dsp_cmx.c            |  115 ++++--
- drivers/isdn/mISDN/dsp_core.c           |   70 ++--
- drivers/isdn/mISDN/dsp_ecdis.h          |    2 +-
- drivers/isdn/mISDN/dsp_pipeline.c       |    5 +-
- drivers/isdn/mISDN/dsp_tones.c          |   23 +-
- drivers/isdn/mISDN/hwchannel.c          |    4 +-
- drivers/isdn/mISDN/l1oip_codec.c        |    1 +
- drivers/isdn/mISDN/l1oip_core.c         |   51 ++-
- drivers/isdn/mISDN/layer2.c             |   37 +-
- drivers/isdn/mISDN/layer2.h             |    2 +-
- drivers/isdn/mISDN/socket.c             |   45 ++-
- drivers/isdn/mISDN/tei.c                |   80 +++--
- drivers/isdn/mISDN/timerdev.c           |    2 +-
- include/linux/mISDNdsp.h                |    4 +-
- include/linux/mISDNhw.h                 |    2 +-
- include/linux/mISDNif.h                 |   19 +-
- include/linux/pci_ids.h                 |    2 +
- 24 files changed, 965 insertions(+), 418 deletions(-)
-
+We need these hooks but as I wrote above, they are
+architecture-specific and we should handle them with the architecture
+abstraction (as we handle similar problems) however we can't due to
+dom0 support.
