@@ -1,57 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754232AbZESMcw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755253AbZESMd1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754232AbZESMcw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 08:32:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751656AbZESMcp
+	id S1755253AbZESMd1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 08:33:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751051AbZESMdU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 08:32:45 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:58614 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750778AbZESMcp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 08:32:45 -0400
-Date: Tue, 19 May 2009 13:32:06 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+	Tue, 19 May 2009 08:33:20 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:38135 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751104AbZESMdT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 08:33:19 -0400
+Date: Tue, 19 May 2009 05:33:16 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Gerd Hoffmann <kraxel@redhat.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Jan Beulich <JBeulich@novell.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [Xen-devel] Re: [GIT PULL] xen /proc/mtrr implementation
-Message-ID: <20090519133206.173a2ddf@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090519122623.GD14305@elte.hu>
-References: <4A0DFF78.6000501@goop.org>
-	<20090515202250.0f1218ef@jbarnes-g45>
-	<m1iqk1k708.fsf@fess.ebiederm.org>
-	<4A10EAC4.9070701@goop.org>
-	<20090518085902.GE10687@elte.hu>
-	<4A11A3F8.1010202@goop.org>
-	<20090519095918.GA11790@elte.hu>
-	<4A12A46A02000078000017E1@vpn.id2.novell.com>
-	<20090519110837.GA10548@elte.hu>
-	<4A12A05C.6050004@redhat.com>
-	<20090519122623.GD14305@elte.hu>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, davem@davemloft.net, dada1@cosmosbay.com,
+       zbr@ioremap.net, jeff.chua.linux@gmail.com, paulus@samba.org,
+       laijs@cn.fujitsu.com, jengelh@medozas.de, r000n@r000n.net,
+       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
+Subject: Re: [PATCH RFC] v5 expedited "big hammer" RCU grace periods
+Message-ID: <20090519123316.GA7159@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090517191141.GA25915@linux.vnet.ibm.com> <20090518075630.GA10687@elte.hu> <20090518151421.GB6768@linux.vnet.ibm.com> <20090518154241.GA27047@elte.hu> <20090518160254.GD6768@linux.vnet.ibm.com> <20090519085825.GA9388@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090519085825.GA9388@elte.hu>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> - or introduce its own hypercall API based administration API,
->   without bothering the guest kernel with crap. Trivially patch Xorg
->   to make use of it and that's it.
+On Tue, May 19, 2009 at 10:58:25AM +0200, Ingo Molnar wrote:
+> 
+> * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+> 
+> > On Mon, May 18, 2009 at 05:42:41PM +0200, Ingo Molnar wrote:
+> > > 
+> > > * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+> > > 
+> > > > > i might be missing something fundamental here, but why not just 
+> > > > > have per CPU helper threads, all on the same waitqueue, and wake 
+> > > > > them up via a single wake_up() call? That would remove the SMP 
+> > > > > cross call (wakeups do immediate cross-calls already).
+> > > > 
+> > > > My concern with this is that the cache misses accessing all the 
+> > > > processes on this single waitqueue would be serialized, slowing 
+> > > > things down. In contrast, the bitmask that smp_call_function() 
+> > > > traverses delivers on the order of a thousand CPUs' worth of bits 
+> > > > per cache miss.  I will give it a try, though.
+> > > 
+> > > At least if you go via the migration threads, you can queue up 
+> > > requests to them locally. But there's going to be cachemisses 
+> > > _anyway_, since you have to access them all from a single CPU, 
+> > > and then they have to fetch details about what to do, and then 
+> > > have to notify the originator about completion.
+> > 
+> > Ah, so you are suggesting that I use smp_call_function() to run 
+> > code on each CPU that wakes up that CPU's migration thread?  I 
+> > will take a look at this.
+> 
+> My suggestion was to queue up a dummy 'struct migration_req' up with 
+> it (change migration_req::task == NULL to mean 'nothing') and simply 
+> wake it up using wake_up_process().
 
-PCI pass through mixed with that isn't going to be fun and PCI pass
-through is one area where a lot of the MTRR manipulation is meaningful
-and valid (and can be handled for the guest).
+OK.  I was thinking of just using wake_up_process() without the
+migration_req structure, and unconditionally setting a per-CPU
+variable from within migration_thread() just before the list_empty()
+check.  In your approach we would need a NULL-pointer check just
+before the call to __migrate_task().
 
-I really don't see why rd/wrmsr processing isn't sufficient for this
+> That will force a quiescent state, without the need for any extra 
+> information, right?
 
-Alan
+Yep!
+
+> This is what the scheduler code does, roughly:
+> 
+>                 wake_up_process(rq->migration_thread);
+>                 wait_for_completion(&req.done);
+> 
+> and this will always have to perform well. The 'req' could be put 
+> into PER_CPU, and a loop could be done like this:
+> 
+> 	for_each_online_cpu(cpu)
+>                 wake_up_process(cpu_rq(cpu)->migration_thread);
+> 
+> 	for_each_online_cpu(cpu)
+>                 wait_for_completion(&per_cpu(req, cpu).done);
+> 
+> hm?
+
+My concern is the linear slowdown for large systems, but this should be
+OK for modest systems (a few 10s of CPUs).  However, I will try it out --
+it does not need to be a long-term solution, after all.
+
+							Thanx, Paul
