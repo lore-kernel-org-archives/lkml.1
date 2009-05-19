@@ -1,123 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754858AbZESVif@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754019AbZESVon@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754858AbZESVif (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 17:38:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751822AbZESVi1
+	id S1754019AbZESVon (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 17:44:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752164AbZESVog
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 17:38:27 -0400
-Received: from vms173017pub.verizon.net ([206.46.173.17]:45923 "EHLO
-	vms173017pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751266AbZESVi1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 17:38:27 -0400
-Message-id: <4A1326C5.4010308@acm.org>
-Date: Tue, 19 May 2009 16:38:13 -0500
-From: Corey Minyard <minyard@acm.org>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
-MIME-version: 1.0
-To: Ferenc Wagner <wferi@niif.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       openipmi-developer@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       dann frazier <dannf@hp.com>
-Subject: Re: [Openipmi-developer] modprobe ipmi_si hangs under 2.6.30-rc5
-References: <87tz3qnh7o.fsf@tac.ki.iif.hu>
- <20090516170959.8057c9e4.akpm@linux-foundation.org>
- <877i0eqpss.fsf@tac.ki.iif.hu> <20090518184053.GA24134@minyard.local>
- <87iqjxzjz4.fsf@tac.ki.iif.hu>
-In-reply-to: <87iqjxzjz4.fsf@tac.ki.iif.hu>
-Content-type: multipart/mixed; boundary=------------010902080204050602090304
+	Tue, 19 May 2009 17:44:36 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:41587 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752060AbZESVof (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 17:44:35 -0400
+Subject: [PATCH] SELinux: BUG in SELinux compat_net code
+From: Eric Paris <eparis@redhat.com>
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org,
+       selinux@vger.kernel.org
+Cc: jmorris@namei.org, sds@tycho.nsa.gov, paul.moore@hp.com,
+       manoj.iyer@canonical.com
+Content-Type: text/plain
+Date: Tue, 19 May 2009 17:41:58 -0400
+Message-Id: <1242769318.2763.22.camel@dhcp231-142.rdu.redhat.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------010902080204050602090304
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+This patch is not applicable to Linus's tree as the code in question has
+been removed for 2.6.30.  I'm sending in case any of the stable
+maintainers would like to push to their branches (which I think anything
+pre 2.6.30 would like to do).
 
-Ferenc Wagner wrote:
-> Corey Minyard <minyard@acm.org> writes:
->
->   
-Sorry, I've been slow, but I just got back from a week out of the 
-country and I'm trying to catch up.
+Ubuntu users were experiencing a kernel panic when they enabled SELinux
+due to an old bug in our handling of the compatibility mode network
+controls, introduced Jan 1 2008 effad8df44261031a882e1a895415f7186a5098e
+Most distros have not used the compat_net code since the new code was
+introduced and so noone has hit this problem before.  Ubuntu is the only
+distro I know that enabled that legacy cruft by default.  But, I was ask
+to look at it and found that the above patch changed a call to
+avc_has_perm from if(send_perm) to if(!send_perm) in
+selinux_ip_postroute_iptables_compat().  The result is that users who
+turn on SELinux and have compat_net set can (and oftern will) BUG() in
+avc_has_perm_noaudit since they are requesting 0 permissions.
 
->
->
-> I tried your patch on top of 2.6.30-rc6.  Unfortunately it did not
-> help (nor made /proc/ipmi/ipmi0 appear at least).
->   
-I know what is happening now.  Can you try the attached patch?  I'm 
-disabling the requeue and discarding the message when an IPMB message is 
-received before everything is initialized.  If you don't, the code will 
-not deliver any messages because something is already in the queue.
+This patch corrects that accidental bug introduction.
 
->   
->>> When loading with debug options, it still produces insane amount of
->>> debug messages continuously (first 671 lines of it attached).
->>>       
->> Yes, full debugging generates a ton of output, it logs everything it does
->> in that case.
->>     
->
-> My concern is that it does something too often, not letting the CPU
-> enter deep sleep states, perhaps.  Or is that also an artifact of
-> debugging?
->   
-No, it's an artifact of a lousy hardware interface.  Very few IPMI 
-interfaces support interrupts, so they have to be polled :(.
+Signed-off-by: Eric Paris <eparis@redhat.com>
 
--corey
+---
 
+ security/selinux/hooks.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---------------010902080204050602090304
-Content-Type: text/x-diff;
- name="ipmi-fix-channel_init_with_ipmi_v1_0.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="ipmi-fix-channel_init_with_ipmi_v1_0.patch"
-
-Instead of queuing IPMB messages before channel initialization, just
-throw them away.  Nobody will be listening for them at this point,
-anyway, and they will clog up the queue and nothing will be delivered
-if we queue them.
-
-Also set the current channel to the number of channels, as this value
-is used to tell if the channel information has been initialized.
-
-Signed-off-by: Corey Minyard <cminyard@mvista.com>
-
-diff --git a/drivers/char/ipmi/ipmi_msghandler.c b/drivers/char/ipmi/ipmi_msghandler.c
-index aa83a08..0905079 100644
---- a/drivers/char/ipmi/ipmi_msghandler.c
-+++ b/drivers/char/ipmi/ipmi_msghandler.c
-@@ -2856,6 +2856,7 @@ int ipmi_register_smi(struct ipmi_smi_handlers *handlers,
- 		/* Assume a single IPMB channel at zero. */
- 		intf->channels[0].medium = IPMI_CHANNEL_MEDIUM_IPMB;
- 		intf->channels[0].protocol = IPMI_CHANNEL_PROTOCOL_IPMB;
-+		intf->curr_channel = IPMI_MAX_CHANNELS;
- 	}
+diff -up linux-source-2.6.28/security/selinux/hooks.c.pre.send linux-source-2.6.28/security/selinux/hooks.c
+--- linux-source-2.6.28/security/selinux/hooks.c.pre.send	2009-05-18 13:23:16.043632602 -0400
++++ linux-source-2.6.28/security/selinux/hooks.c	2009-05-18 13:23:27.899632772 -0400
+@@ -4561,7 +4561,7 @@ static int selinux_ip_postroute_iptables
+ 	if (err)
+ 		return err;
  
- 	if (rv == 0)
-@@ -3648,13 +3649,13 @@ static int handle_new_recv_msg(ipmi_smi_t          intf,
- 		}
+-	if (send_perm != 0)
++	if (!send_perm)
+ 		return 0;
  
- 		/*
--		** We need to make sure the channels have been initialized.
--		** The channel_handler routine will set the "curr_channel"
--		** equal to or greater than IPMI_MAX_CHANNELS when all the
--		** channels for this interface have been initialized.
--		*/
-+		 * We need to make sure the channels have been initialized.
-+		 * The channel_handler routine will set the "curr_channel"
-+		 * equal to or greater than IPMI_MAX_CHANNELS when all the
-+		 * channels for this interface have been initialized.
-+		 */
- 		if (intf->curr_channel < IPMI_MAX_CHANNELS) {
--			requeue = 1;     /* Just put the message back for now */
-+			requeue = 0; /* Throw the message away */
- 			goto out;
- 		}
- 
+ 	err = sel_netport_sid(sk->sk_protocol,
 
---------------010902080204050602090304--
+
