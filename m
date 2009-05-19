@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755696AbZESBAn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755499AbZESBAV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755696AbZESBAn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 21:00:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754893AbZESA7r
+	id S1755499AbZESBAV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 21:00:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753688AbZESA7i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 20:59:47 -0400
-Received: from mga02.intel.com ([134.134.136.20]:52302 "EHLO mga02.intel.com"
+	Mon, 18 May 2009 20:59:38 -0400
+Received: from mga02.intel.com ([134.134.136.20]:25693 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755257AbZESA7q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 20:59:46 -0400
+	id S1754528AbZESA7f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 20:59:35 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.41,212,1241420400"; 
-   d="scan'208";a="516745842"
-Subject: [PATCH v2 04/11] async_xor: permit callers to pass in a 'dma/page
-	scribble' region
+   d="scan'208";a="516745812"
+Subject: [PATCH v2 02/11] async_tx: kill ASYNC_TX_DEP_ACK flag
 To: neilb@suse.de, linux-raid@vger.kernel.org
 From: Dan Williams <dan.j.williams@intel.com>
 Cc: maan@systemlinux.org, linux-kernel@vger.kernel.org, yur@emcraft.com,
        hpa@zytor.com
-Date: Mon, 18 May 2009 17:59:46 -0700
-Message-ID: <20090519005946.4104.28803.stgit@dwillia2-linux.ch.intel.com>
+Date: Mon, 18 May 2009 17:59:36 -0700
+Message-ID: <20090519005936.4104.58597.stgit@dwillia2-linux.ch.intel.com>
 In-Reply-To: <20090519005647.4104.81119.stgit@dwillia2-linux.ch.intel.com>
 References: <20090519005647.4104.81119.stgit@dwillia2-linux.ch.intel.com>
 User-Agent: StGit/0.14.3.289.g7daff
@@ -30,157 +29,197 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-async_xor() needs space to perform dma and page address conversions.  In
-most cases the code can simply reuse the struct page * array because the
-size of the native pointer matches the size of a dma/page address.  In
-order to support archs where sizeof(dma_addr_t) is larger than
-sizeof(struct page *), or to preserve the input parameters, we utilize a
-memory region passed in by the caller.
+In support of inter-channel chaining async_tx utilizes an ack flag to
+gate whether a dependent operation can be chained to another.  While the
+flag is not set the chain can be considered open for appending.  Setting
+the ack flag closes the chain and flags the descriptor for garbage
+collection.  The ASYNC_TX_DEP_ACK flag essentially means "close the
+chain after adding this dependency".  Since each operation can only have
+one child the api now implicitly sets the ack flag at dependency
+submission time.  This removes an unnecessary management burden from
+clients of the api.
 
-Since the code is now prepared to handle the case where it cannot
-perform address conversions on the stack, we no longer need the
-!HIGHMEM64G dependency in drivers/dma/Kconfig.
-
-[ Impact: don't clobber input buffers for address conversions ]
+[ Impact: clean up and enforce one dependency per operation ]
 
 Signed-off-by: Dan Williams <dan.j.williams@intel.com>
 ---
- crypto/async_tx/async_xor.c |   59 ++++++++++++++++++++-----------------------
- drivers/dma/Kconfig         |    2 +
- 2 files changed, 29 insertions(+), 32 deletions(-)
+ crypto/async_tx/async_memcpy.c |    2 +-
+ crypto/async_tx/async_memset.c |    2 +-
+ crypto/async_tx/async_tx.c     |    4 ++--
+ crypto/async_tx/async_xor.c    |    6 ++----
+ drivers/md/raid5.c             |   25 +++++++++++--------------
+ include/linux/async_tx.h       |    4 +---
+ 6 files changed, 18 insertions(+), 25 deletions(-)
 
+diff --git a/crypto/async_tx/async_memcpy.c b/crypto/async_tx/async_memcpy.c
+index ddccfb0..7117ec6 100644
+--- a/crypto/async_tx/async_memcpy.c
++++ b/crypto/async_tx/async_memcpy.c
+@@ -35,7 +35,7 @@
+  * @src: src page
+  * @offset: offset in pages to start transaction
+  * @len: length in bytes
+- * @flags: ASYNC_TX_ACK, ASYNC_TX_DEP_ACK,
++ * @flags: ASYNC_TX_ACK
+  * @depend_tx: memcpy depends on the result of this transaction
+  * @cb_fn: function to call when the memcpy completes
+  * @cb_param: parameter to pass to the callback routine
+diff --git a/crypto/async_tx/async_memset.c b/crypto/async_tx/async_memset.c
+index 5b5eb99..b2f1338 100644
+--- a/crypto/async_tx/async_memset.c
++++ b/crypto/async_tx/async_memset.c
+@@ -35,7 +35,7 @@
+  * @val: fill value
+  * @offset: offset in pages to start transaction
+  * @len: length in bytes
+- * @flags: ASYNC_TX_ACK, ASYNC_TX_DEP_ACK
++ * @flags: ASYNC_TX_ACK
+  * @depend_tx: memset depends on the result of this transaction
+  * @cb_fn: function to call when the memcpy completes
+  * @cb_param: parameter to pass to the callback routine
+diff --git a/crypto/async_tx/async_tx.c b/crypto/async_tx/async_tx.c
+index 06eb6cc..3766bc3 100644
+--- a/crypto/async_tx/async_tx.c
++++ b/crypto/async_tx/async_tx.c
+@@ -223,7 +223,7 @@ async_tx_submit(struct dma_chan *chan, struct dma_async_tx_descriptor *tx,
+ 	if (flags & ASYNC_TX_ACK)
+ 		async_tx_ack(tx);
+ 
+-	if (depend_tx && (flags & ASYNC_TX_DEP_ACK))
++	if (depend_tx)
+ 		async_tx_ack(depend_tx);
+ }
+ EXPORT_SYMBOL_GPL(async_tx_submit);
+@@ -231,7 +231,7 @@ EXPORT_SYMBOL_GPL(async_tx_submit);
+ /**
+  * async_trigger_callback - schedules the callback function to be run after
+  * any dependent operations have been completed.
+- * @flags: ASYNC_TX_ACK, ASYNC_TX_DEP_ACK
++ * @flags: ASYNC_TX_ACK
+  * @depend_tx: 'callback' requires the completion of this transaction
+  * @cb_fn: function to call after depend_tx completes
+  * @cb_param: parameter to pass to the callback routine
 diff --git a/crypto/async_tx/async_xor.c b/crypto/async_tx/async_xor.c
-index 6290d05..3caecdd 100644
+index e0580b0..3cc5dc7 100644
 --- a/crypto/async_tx/async_xor.c
 +++ b/crypto/async_tx/async_xor.c
-@@ -33,11 +33,10 @@
- /* do_async_xor - dma map the pages and perform the xor with an engine */
- static __async_inline struct dma_async_tx_descriptor *
- do_async_xor(struct dma_chan *chan, struct page *dest, struct page **src_list,
--	     unsigned int offset, int src_cnt, size_t len,
-+	     unsigned int offset, int src_cnt, size_t len, dma_addr_t *dma_src,
- 	     struct async_submit_ctl *submit)
- {
- 	struct dma_device *dma = chan->device;
--	dma_addr_t *dma_src = (dma_addr_t *) src_list;
- 	struct dma_async_tx_descriptor *tx = NULL;
- 	int src_off = 0;
- 	int i;
-@@ -125,9 +124,14 @@ do_sync_xor(struct page *dest, struct page **src_list, unsigned int offset,
- 	int xor_src_cnt;
- 	int src_off = 0;
- 	void *dest_buf;
--	void **srcs = (void **) src_list;
-+	void **srcs;
+@@ -105,7 +105,6 @@ do_async_xor(struct dma_chan *chan, struct page *dest, struct page **src_list,
+ 				_cb_param);
  
--	/* reuse the 'src_list' array to convert to buffer pointers */
-+	if (submit->scribble)
-+		srcs = (void **) submit->scribble;
-+	else
-+		srcs = (void **) src_list;
-+
-+	/* convert to buffer pointers */
- 	for (i = 0; i < src_cnt; i++)
- 		srcs[i] = page_address(src_list[i]) + offset;
+ 		depend_tx = tx;
+-		flags |= ASYNC_TX_DEP_ACK;
  
-@@ -171,17 +175,26 @@ async_xor(struct page *dest, struct page **src_list, unsigned int offset,
- 	struct dma_chan *chan = async_tx_find_channel(submit, DMA_XOR,
- 						      &dest, 1, src_list,
- 						      src_cnt, len);
-+	dma_addr_t *dma_src = NULL;
-+
- 	BUG_ON(src_cnt <= 1);
+ 		if (src_cnt > xor_src_cnt) {
+ 			/* drop completed sources */
+@@ -168,8 +167,7 @@ do_sync_xor(struct page *dest, struct page **src_list, unsigned int offset,
+  * @offset: offset in pages to start transaction
+  * @src_cnt: number of source pages
+  * @len: length in bytes
+- * @flags: ASYNC_TX_XOR_ZERO_DST, ASYNC_TX_XOR_DROP_DEST,
+- *	ASYNC_TX_ACK, ASYNC_TX_DEP_ACK
++ * @flags: ASYNC_TX_XOR_ZERO_DST, ASYNC_TX_XOR_DROP_DEST, ASYNC_TX_ACK
+  * @depend_tx: xor depends on the result of this transaction.
+  * @cb_fn: function to call when the xor completes
+  * @cb_param: parameter to pass to the callback routine
+@@ -230,7 +228,7 @@ static int page_is_zero(struct page *p, unsigned int offset, size_t len)
+  * @src_cnt: number of source pages
+  * @len: length in bytes
+  * @result: 0 if sum == 0 else non-zero
+- * @flags: ASYNC_TX_ACK, ASYNC_TX_DEP_ACK
++ * @flags: ASYNC_TX_ACK
+  * @depend_tx: xor depends on the result of this transaction.
+  * @cb_fn: function to call when the xor completes
+  * @cb_param: parameter to pass to the callback routine
+diff --git a/drivers/md/raid5.c b/drivers/md/raid5.c
+index f8d2d35..0ef5362 100644
+--- a/drivers/md/raid5.c
++++ b/drivers/md/raid5.c
+@@ -525,14 +525,12 @@ async_copy_data(int frombio, struct bio *bio, struct page *page,
+ 			bio_page = bio_iovec_idx(bio, i)->bv_page;
+ 			if (frombio)
+ 				tx = async_memcpy(page, bio_page, page_offset,
+-					b_offset, clen,
+-					ASYNC_TX_DEP_ACK,
+-					tx, NULL, NULL);
++						  b_offset, clen, 0,
++						  tx, NULL, NULL);
+ 			else
+ 				tx = async_memcpy(bio_page, page, b_offset,
+-					page_offset, clen,
+-					ASYNC_TX_DEP_ACK,
+-					tx, NULL, NULL);
++						  page_offset, clen, 0,
++						  tx, NULL, NULL);
+ 		}
+ 		if (clen < len) /* hit end of page */
+ 			break;
+@@ -615,8 +613,7 @@ static void ops_run_biofill(struct stripe_head *sh)
+ 	}
  
--	if (chan) {
-+	if (submit->scribble)
-+		dma_src = submit->scribble;
-+	else if (sizeof(dma_addr_t) <= sizeof(struct page *))
-+		dma_src = (dma_addr_t *) src_list;
-+
-+	if (dma_src && chan) {
- 		/* run the xor asynchronously */
- 		pr_debug("%s (async): len: %zu\n", __func__, len);
- 
- 		return do_async_xor(chan, dest, src_list, offset, src_cnt, len,
--				    submit);
-+				    dma_src, submit);
- 	} else {
- 		/* run the xor synchronously */
- 		pr_debug("%s (sync): len: %zu\n", __func__, len);
-+		WARN_ONCE(chan, "%s: no space for dma address conversion\n",
-+			  __func__);
- 
- 		/* in the sync case the dest is an implied source
- 		 * (assumes the dest is the first source)
-@@ -229,11 +242,16 @@ async_xor_val(struct page *dest, struct page **src_list, unsigned int offset,
- 						      src_cnt, len);
- 	struct dma_device *device = chan ? chan->device : NULL;
- 	struct dma_async_tx_descriptor *tx = NULL;
-+	dma_addr_t *dma_src = NULL;
- 
- 	BUG_ON(src_cnt <= 1);
- 
--	if (device && src_cnt <= device->max_xor) {
--		dma_addr_t *dma_src = (dma_addr_t *) src_list;
-+	if (submit->scribble)
-+		dma_src = submit->scribble;
-+	else if (sizeof(dma_addr_t) <= sizeof(struct page *))
-+		dma_src = (dma_addr_t *) src_list;
-+
-+	if (dma_src && device && src_cnt <= device->max_xor) {
- 		unsigned long dma_prep_flags;
- 		int i;
- 
-@@ -263,6 +281,8 @@ async_xor_val(struct page *dest, struct page **src_list, unsigned int offset,
- 		enum async_tx_flags flags_orig = submit->flags;
- 
- 		pr_debug("%s: (sync) len: %zu\n", __func__, len);
-+		WARN_ONCE(device && src_cnt <= device->max_xor,
-+			  "%s: no space for dma address conversion\n", __func__);
- 
- 		submit->flags |= ASYNC_TX_XOR_DROP_DST;
- 		submit->flags &= ~ASYNC_TX_ACK;
-@@ -281,29 +301,6 @@ async_xor_val(struct page *dest, struct page **src_list, unsigned int offset,
+ 	atomic_inc(&sh->count);
+-	async_trigger_callback(ASYNC_TX_DEP_ACK | ASYNC_TX_ACK, tx,
+-		ops_complete_biofill, sh);
++	async_trigger_callback(ASYNC_TX_ACK, tx, ops_complete_biofill, sh);
  }
- EXPORT_SYMBOL_GPL(async_xor_val);
  
--static int __init async_xor_init(void)
--{
--	#ifdef CONFIG_DMA_ENGINE
--	/* To conserve stack space the input src_list (array of page pointers)
--	 * is reused to hold the array of dma addresses passed to the driver.
--	 * This conversion is only possible when dma_addr_t is less than the
--	 * the size of a pointer.  HIGHMEM64G is known to violate this
--	 * assumption.
--	 */
--	BUILD_BUG_ON(sizeof(dma_addr_t) > sizeof(struct page *));
--	#endif
--
--	return 0;
--}
--
--static void __exit async_xor_exit(void)
--{
--	do { } while (0);
--}
--
--module_init(async_xor_init);
--module_exit(async_xor_exit);
--
- MODULE_AUTHOR("Intel Corporation");
- MODULE_DESCRIPTION("asynchronous xor/xor-zero-sum api");
- MODULE_LICENSE("GPL");
-diff --git a/drivers/dma/Kconfig b/drivers/dma/Kconfig
-index 3b3c01b..912a51b 100644
---- a/drivers/dma/Kconfig
-+++ b/drivers/dma/Kconfig
-@@ -4,7 +4,7 @@
+ static void ops_complete_compute5(void *stripe_head_ref)
+@@ -701,8 +698,8 @@ ops_run_prexor(struct stripe_head *sh, struct dma_async_tx_descriptor *tx)
+ 	}
  
- menuconfig DMADEVICES
- 	bool "DMA Engine support"
--	depends on !HIGHMEM64G && HAS_DMA
-+	depends on HAS_DMA
- 	help
- 	  DMA engines can do asynchronous data transfers without
- 	  involving the host CPU.  Currently, this framework can be
+ 	tx = async_xor(xor_dest, xor_srcs, 0, count, STRIPE_SIZE,
+-		ASYNC_TX_DEP_ACK | ASYNC_TX_XOR_DROP_DST, tx,
+-		ops_complete_prexor, sh);
++		       ASYNC_TX_XOR_DROP_DST, tx,
++		       ops_complete_prexor, sh);
+ 
+ 	return tx;
+ }
+@@ -809,7 +806,7 @@ ops_run_postxor(struct stripe_head *sh, struct dma_async_tx_descriptor *tx)
+ 	 * set ASYNC_TX_XOR_DROP_DST and ASYNC_TX_XOR_ZERO_DST
+ 	 * for the synchronous xor case
+ 	 */
+-	flags = ASYNC_TX_DEP_ACK | ASYNC_TX_ACK |
++	flags = ASYNC_TX_ACK |
+ 		(prexor ? ASYNC_TX_XOR_DROP_DST : ASYNC_TX_XOR_ZERO_DST);
+ 
+ 	atomic_inc(&sh->count);
+@@ -858,7 +855,7 @@ static void ops_run_check(struct stripe_head *sh)
+ 		&sh->ops.zero_sum_result, 0, NULL, NULL, NULL);
+ 
+ 	atomic_inc(&sh->count);
+-	tx = async_trigger_callback(ASYNC_TX_DEP_ACK | ASYNC_TX_ACK, tx,
++	tx = async_trigger_callback(ASYNC_TX_ACK, tx,
+ 		ops_complete_check, sh);
+ }
+ 
+@@ -2687,8 +2684,8 @@ static void handle_stripe_expansion(raid5_conf_t *conf, struct stripe_head *sh,
+ 
+ 			/* place all the copies on one channel */
+ 			tx = async_memcpy(sh2->dev[dd_idx].page,
+-				sh->dev[i].page, 0, 0, STRIPE_SIZE,
+-				ASYNC_TX_DEP_ACK, tx, NULL, NULL);
++					  sh->dev[i].page, 0, 0, STRIPE_SIZE,
++					  0, tx, NULL, NULL);
+ 
+ 			set_bit(R5_Expanded, &sh2->dev[dd_idx].flags);
+ 			set_bit(R5_UPTODATE, &sh2->dev[dd_idx].flags);
+diff --git a/include/linux/async_tx.h b/include/linux/async_tx.h
+index 513150d..9f14cd5 100644
+--- a/include/linux/async_tx.h
++++ b/include/linux/async_tx.h
+@@ -58,13 +58,11 @@ struct dma_chan_ref {
+  * array.
+  * @ASYNC_TX_ACK: immediately ack the descriptor, precludes setting up a
+  * dependency chain
+- * @ASYNC_TX_DEP_ACK: ack the dependency descriptor.  Useful for chaining.
+  */
+ enum async_tx_flags {
+ 	ASYNC_TX_XOR_ZERO_DST	 = (1 << 0),
+ 	ASYNC_TX_XOR_DROP_DST	 = (1 << 1),
+-	ASYNC_TX_ACK		 = (1 << 3),
+-	ASYNC_TX_DEP_ACK	 = (1 << 4),
++	ASYNC_TX_ACK		 = (1 << 2),
+ };
+ 
+ #ifdef CONFIG_DMA_ENGINE
 
