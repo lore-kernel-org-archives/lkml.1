@@ -1,63 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754434AbZESItB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755196AbZESItU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754434AbZESItB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 04:49:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750778AbZESIsx
+	id S1755196AbZESItU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 04:49:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754951AbZESItE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 04:48:53 -0400
-Received: from mga02.intel.com ([134.134.136.20]:39649 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751234AbZESIsw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 04:48:52 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,214,1241420400"; 
-   d="scan'208";a="413692768"
-Date: Tue, 19 May 2009 16:48:52 +0800
-From: Shaohua Li <shaohua.li@intel.com>
+	Tue, 19 May 2009 04:49:04 -0400
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:42389 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753526AbZESItD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 04:49:03 -0400
+Date: Tue, 19 May 2009 10:49:00 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 To: Peter Zijlstra <peterz@infradead.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       "lenb@kernel.org" <lenb@kernel.org>,
-       "menage@google.com" <menage@google.com>
-Subject: Re: [PATCH]cpuset: add new API to change cpuset top group's cpus
-Message-ID: <20090519084852.GA13682@sli10-desk.sh.intel.com>
-References: <20090519073942.GA10864@sli10-desk.sh.intel.com> <1242722454.26820.461.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1242722454.26820.461.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Michael Abbott <michael@araneidae.co.uk>,
+       Jan Engelhardt <jengelh@medozas.de>
+Subject: Re: [GIT PULL] cputime patch for 2.6.30-rc6
+Message-ID: <20090519104900.12e1f80c@skybase>
+In-Reply-To: <1242660243.26820.439.camel@twins>
+References: <20090518160904.7df88425@skybase>
+	<1242660243.26820.439.camel@twins>
+Organization: IBM Corporation
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 19, 2009 at 04:40:54PM +0800, Peter Zijlstra wrote:
-> On Tue, 2009-05-19 at 15:39 +0800, Shaohua Li wrote:
-> > ACPI 4.0 defines processor aggregator device. The device can notify OS to idle
-> > some CPUs to save power. This isn't to hot remove cpus, but just makes cpus
-> > idle.
-> > 
-> > This patch adds one API to change cpuset top group's cpus. If we want to
-> > make one cpu idle, simply remove the cpu from cpuset top group's cpu list,
-> > then all tasks will be migrate to other cpus, and other tasks will not be
-> > migrated to this cpu again. No functional changes.
-> > 
-> > We will use this API in new ACPI processor aggregator device driver later.
-> 
-> I don't think so. There really is a lot more to do than move processes
-> about.
-no processor running is good enough for us, we don't care about interrupts/softirq/
-timers so far.
+On Mon, 18 May 2009 17:24:03 +0200
+Peter Zijlstra <peterz@infradead.org> wrote:
 
-> Furthermore, I object to being able to remove online cpus from the top
-> cpuset, that just doesn't make sense.
+> On Mon, 2009-05-18 at 16:09 +0200, Martin Schwidefsky wrote:
+> > Hi Linus,
+> > 
+> > please pull from 'cputime' branch of
+> > 
+> > 	git://git390.marist.edu/pub/scm/linux-2.6.git cputime
+> > 
+> > to receive the following updates:
+> > 
+> > Michael Abbott (1):
+> >       Fix idle time field in /proc/uptime
+> > 
+> >  fs/proc/uptime.c |    8 +++++++-
+> >  1 files changed, 7 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/fs/proc/uptime.c b/fs/proc/uptime.c
+> > index 0c10a0b..c0ac0d7 100644
+> > --- a/fs/proc/uptime.c
+> > +++ b/fs/proc/uptime.c
+> > @@ -4,13 +4,19 @@
+> >  #include <linux/sched.h>
+> >  #include <linux/seq_file.h>
+> >  #include <linux/time.h>
+> > +#include <linux/kernel_stat.h>
+> >  #include <asm/cputime.h>
+> >  
+> >  static int uptime_proc_show(struct seq_file *m, void *v)
+> >  {
+> >  	struct timespec uptime;
+> >  	struct timespec idle;
+> > -	cputime_t idletime = cputime_add(init_task.utime, init_task.stime);
+> > +	int len, i;
+> > +	cputime_t idletime = 0;
 > 
-> I'd suggest using hotplug for this.
-cpu hotplug involves too much things, and we are afraid it's not reliable.
-Besides, a hot removed cpu will do a dead loop halt, which isn't power saving
-efficient. To make hot removed cpu enters deep C-state is in whish list for a
-long time, but still not available. The acpi_processor_idle is a module, and
-cpuidle governor potentially can't handle offline cpu.
+> cputime_zero, I guess..
 
-Thanks,
-Shaohua
+Yes, this needs to be cputime_zero.
+ 
+> > +	for_each_possible_cpu(i)
+> > +		idletime = cputime64_add(idletime, kstat_cpu(i).cpustat.idle);
+> > +	idletime = cputime64_to_clock_t(idletime);
+> >  
+> >  	do_posix_clock_monotonic_gettime(&uptime);
+> >  	monotonic_to_bootbased(&uptime);
+> 
+> This is a world readable proc file, adding a for_each_possible_cpu() in
+> there scares me a little (this wouldn't be the first and only such case
+> though).
+> 
+> Suppose you have lots of cpus, and all those cpus are dirtying those
+> cachelines (who's updating idle time when they're idle?), then this loop
+> can cause a massive cacheline bounce fest.
+> 
+> Then think about userspace doing: 
+>   while :; do cat /proc/uptime > /dev/null; done
+
+Well, don't do stupid things like that. That falls into the same
+category as programs calling gettimeofday all the time.
+
+-- 
+blue skies,
+   Martin.
+
+"Reality continues to ruin my life." - Calvin.
+
