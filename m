@@ -1,121 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754812AbZESIcr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752506AbZESIga@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754812AbZESIcr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 04:32:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753785AbZESIcj
+	id S1752506AbZESIga (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 04:36:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751320AbZESIgX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 04:32:39 -0400
-Received: from hera.kernel.org ([140.211.167.34]:60757 "EHLO hera.kernel.org"
+	Tue, 19 May 2009 04:36:23 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:37306 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751979AbZESIch (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 04:32:37 -0400
-Date: Tue, 19 May 2009 08:31:00 GMT
-From: tip-bot for Ingo Molnar <mingo@elte.hu>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       torvalds@linux-foundation.org, jeff@garzik.org, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, jeff@garzik.org, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <alpine.LFD.2.01.0905180850110.3301@localhost.localdomain>
-References: <alpine.LFD.2.01.0905180850110.3301@localhost.localdomain>
-Subject: [tip:sched/core] sched: properly define the sched_group::cpumask and sched_domain::span fields
-Message-ID: <tip-4200efd9acda4accf24640f1e77d24fdcdb524df@git.kernel.org>
-Git-Commit-ID: 4200efd9acda4accf24640f1e77d24fdcdb524df
-X-Mailer: tip-git-log-daemon
+	id S1750900AbZESIgW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 04:36:22 -0400
+Date: Tue, 19 May 2009 09:36:19 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: linux-mm@kvack.org, npiggin@suse.de, apw@shadowen.org, ebmunson@us.ibm.com,
+       andi@firstfloor.org, hugh@veritas.com, avid@gibson.dropbear.id.au,
+       kenneth.w.chen@intel.com, wli@holomorphy.com
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       starlight@binnacle.cx
+Subject: [PATCH] Determine if mapping is MAP_SHARED using VM_MAYSHARE and
+	not VM_SHARED in hugetlbfs
+Message-ID: <20090519083619.GD19146@csn.ul.ie>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 19 May 2009 08:31:03 +0000 (UTC)
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  4200efd9acda4accf24640f1e77d24fdcdb524df
-Gitweb:     http://git.kernel.org/tip/4200efd9acda4accf24640f1e77d24fdcdb524df
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Tue, 19 May 2009 09:22:19 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 19 May 2009 09:22:19 +0200
+hugetlbfs reserves huge pages and accounts for them differently depending
+on whether the mapping was mapped MAP_SHARED or MAP_PRIVATE. However, the
+check made against VMA->vm_flags is sometimes VM_SHARED and not VM_MAYSHARE.
+For file-backed mappings, such as hugetlbfs, VM_SHARED is set only if the
+mapping is MAP_SHARED *and* it is read-write. For example, if a shared
+memory mapping was created read-write with shmget() for populating of data
+and mapped SHM_RDONLY by other processes, then hugetlbfs gets the accounting
+wrong and reservations leak.
 
-sched: properly define the sched_group::cpumask and sched_domain::span fields
+This patch alters mm/hugetlb.c and replaces VM_SHARED with VM_MAYSHARE when
+the intent of the code was to check whether the VMA was mapped MAP_SHARED
+or MAP_PRIVATE.
 
-Properly document the variable-size structure tricks we are doing
-wrt. struct sched_group and sched_domain, and use the field[0] GCC
-extension instead of defining a vla array.
+The patch needs wider review as there are places where we really mean
+VM_SHARED and not VM_MAYSHARE. I believe I got all the right places, but a
+second opinion is needed. When/if this patch passes review, it'll be needed
+for 2.6.30 and -stable as it partially addresses the problem reported in
+http://bugzilla.kernel.org/show_bug.cgi?id=13302 and
+http://bugzilla.kernel.org/show_bug.cgi?id=12134.
 
-Dont use unions for this, as pointed out by Linus.
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+--- 
+ mm/hugetlb.c |   26 +++++++++++++-------------
+ 1 file changed, 13 insertions(+), 13 deletions(-)
 
-[ Impact: cleanup, un-confuse Sparse and LLVM ]
-
-Reported-by: Jeff Garzik <jeff@garzik.org>
-Acked-by: Linus Torvalds <torvalds@linux-foundation.org>
-LKML-Reference: <alpine.LFD.2.01.0905180850110.3301@localhost.localdomain>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- include/linux/sched.h |   25 ++++++++++++++++++++++---
- kernel/sched.c        |    5 +++--
- 2 files changed, 25 insertions(+), 5 deletions(-)
-
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index de7b3b2..dbb1043 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -839,7 +839,17 @@ struct sched_group {
+diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+index 28c655b..e83ad2c 100644
+--- a/mm/hugetlb.c
++++ b/mm/hugetlb.c
+@@ -316,7 +316,7 @@ static void resv_map_release(struct kref *ref)
+ static struct resv_map *vma_resv_map(struct vm_area_struct *vma)
+ {
+ 	VM_BUG_ON(!is_vm_hugetlb_page(vma));
+-	if (!(vma->vm_flags & VM_SHARED))
++	if (!(vma->vm_flags & VM_MAYSHARE))
+ 		return (struct resv_map *)(get_vma_private_data(vma) &
+ 							~HPAGE_RESV_MASK);
+ 	return NULL;
+@@ -325,7 +325,7 @@ static struct resv_map *vma_resv_map(struct vm_area_struct *vma)
+ static void set_vma_resv_map(struct vm_area_struct *vma, struct resv_map *map)
+ {
+ 	VM_BUG_ON(!is_vm_hugetlb_page(vma));
+-	VM_BUG_ON(vma->vm_flags & VM_SHARED);
++	VM_BUG_ON(vma->vm_flags & VM_MAYSHARE);
+ 
+ 	set_vma_private_data(vma, (get_vma_private_data(vma) &
+ 				HPAGE_RESV_MASK) | (unsigned long)map);
+@@ -334,7 +334,7 @@ static void set_vma_resv_map(struct vm_area_struct *vma, struct resv_map *map)
+ static void set_vma_resv_flags(struct vm_area_struct *vma, unsigned long flags)
+ {
+ 	VM_BUG_ON(!is_vm_hugetlb_page(vma));
+-	VM_BUG_ON(vma->vm_flags & VM_SHARED);
++	VM_BUG_ON(vma->vm_flags & VM_MAYSHARE);
+ 
+ 	set_vma_private_data(vma, get_vma_private_data(vma) | flags);
+ }
+@@ -353,7 +353,7 @@ static void decrement_hugepage_resv_vma(struct hstate *h,
+ 	if (vma->vm_flags & VM_NORESERVE)
+ 		return;
+ 
+-	if (vma->vm_flags & VM_SHARED) {
++	if (vma->vm_flags & VM_MAYSHARE) {
+ 		/* Shared mappings always use reserves */
+ 		h->resv_huge_pages--;
+ 	} else if (is_vma_resv_set(vma, HPAGE_RESV_OWNER)) {
+@@ -369,14 +369,14 @@ static void decrement_hugepage_resv_vma(struct hstate *h,
+ void reset_vma_resv_huge_pages(struct vm_area_struct *vma)
+ {
+ 	VM_BUG_ON(!is_vm_hugetlb_page(vma));
+-	if (!(vma->vm_flags & VM_SHARED))
++	if (!(vma->vm_flags & VM_MAYSHARE))
+ 		vma->vm_private_data = (void *)0;
+ }
+ 
+ /* Returns true if the VMA has associated reserve pages */
+ static int vma_has_reserves(struct vm_area_struct *vma)
+ {
+-	if (vma->vm_flags & VM_SHARED)
++	if (vma->vm_flags & VM_MAYSHARE)
+ 		return 1;
+ 	if (is_vma_resv_set(vma, HPAGE_RESV_OWNER))
+ 		return 1;
+@@ -924,7 +924,7 @@ static long vma_needs_reservation(struct hstate *h,
+ 	struct address_space *mapping = vma->vm_file->f_mapping;
+ 	struct inode *inode = mapping->host;
+ 
+-	if (vma->vm_flags & VM_SHARED) {
++	if (vma->vm_flags & VM_MAYSHARE) {
+ 		pgoff_t idx = vma_hugecache_offset(h, vma, addr);
+ 		return region_chg(&inode->i_mapping->private_list,
+ 							idx, idx + 1);
+@@ -949,7 +949,7 @@ static void vma_commit_reservation(struct hstate *h,
+ 	struct address_space *mapping = vma->vm_file->f_mapping;
+ 	struct inode *inode = mapping->host;
+ 
+-	if (vma->vm_flags & VM_SHARED) {
++	if (vma->vm_flags & VM_MAYSHARE) {
+ 		pgoff_t idx = vma_hugecache_offset(h, vma, addr);
+ 		region_add(&inode->i_mapping->private_list, idx, idx + 1);
+ 
+@@ -1893,7 +1893,7 @@ retry_avoidcopy:
+ 	 * at the time of fork() could consume its reserves on COW instead
+ 	 * of the full address range.
  	 */
- 	u32 reciprocal_cpu_power;
+-	if (!(vma->vm_flags & VM_SHARED) &&
++	if (!(vma->vm_flags & VM_MAYSHARE) &&
+ 			is_vma_resv_set(vma, HPAGE_RESV_OWNER) &&
+ 			old_page != pagecache_page)
+ 		outside_reserve = 1;
+@@ -2000,7 +2000,7 @@ retry:
+ 		clear_huge_page(page, address, huge_page_size(h));
+ 		__SetPageUptodate(page);
  
--	unsigned long cpumask[];
-+	/*
-+	 * The CPUs this group covers.
-+	 *
-+	 * NOTE: this field is variable length. (Allocated dynamically
-+	 * by attaching extra space to the end of the structure,
-+	 * depending on how many CPUs the kernel has booted up with)
-+	 *
-+	 * It is also be embedded into static data structures at build
-+	 * time. (See 'struct static_sched_group' in kernel/sched.c)
-+	 */
-+	unsigned long cpumask[0];
- };
+-		if (vma->vm_flags & VM_SHARED) {
++		if (vma->vm_flags & VM_MAYSHARE) {
+ 			int err;
+ 			struct inode *inode = mapping->host;
  
- static inline struct cpumask *sched_group_cpus(struct sched_group *sg)
-@@ -925,8 +935,17 @@ struct sched_domain {
- 	char *name;
- #endif
+@@ -2104,7 +2104,7 @@ int hugetlb_fault(struct mm_struct *mm, struct vm_area_struct *vma,
+ 			goto out_mutex;
+ 		}
  
--	/* span of all CPUs in this domain */
--	unsigned long span[];
-+	/*
-+	 * Span of all CPUs in this domain.
-+	 *
-+	 * NOTE: this field is variable length. (Allocated dynamically
-+	 * by attaching extra space to the end of the structure,
-+	 * depending on how many CPUs the kernel has booted up with)
-+	 *
-+	 * It is also be embedded into static data structures at build
-+	 * time. (See 'struct static_sched_domain' in kernel/sched.c)
-+	 */
-+	unsigned long span[0];
- };
- 
- static inline struct cpumask *sched_domain_span(struct sched_domain *sd)
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 497c09b..228acae 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -7948,8 +7948,9 @@ int sched_smt_power_savings = 0, sched_mc_power_savings = 0;
- 
- /*
-  * The cpus mask in sched_group and sched_domain hangs off the end.
-- * FIXME: use cpumask_var_t or dynamic percpu alloc to avoid wasting space
-- * for nr_cpu_ids < CONFIG_NR_CPUS.
-+ *
-+ * ( See the the comments in include/linux/sched.h:struct sched_group
-+ *   and struct sched_domain. )
-  */
- struct static_sched_group {
- 	struct sched_group sg;
+-		if (!(vma->vm_flags & VM_SHARED))
++		if (!(vma->vm_flags & VM_MAYSHARE))
+ 			pagecache_page = hugetlbfs_pagecache_page(h,
+ 								vma, address);
+ 	}
+@@ -2289,7 +2289,7 @@ int hugetlb_reserve_pages(struct inode *inode,
+ 	 * to reserve the full area even if read-only as mprotect() may be
+ 	 * called to make the mapping read-write. Assume !vma is a shm mapping
+ 	 */
+-	if (!vma || vma->vm_flags & VM_SHARED)
++	if (!vma || vma->vm_flags & VM_MAYSHARE)
+ 		chg = region_chg(&inode->i_mapping->private_list, from, to);
+ 	else {
+ 		struct resv_map *resv_map = resv_map_alloc();
+@@ -2330,7 +2330,7 @@ int hugetlb_reserve_pages(struct inode *inode,
+ 	 * consumed reservations are stored in the map. Hence, nothing
+ 	 * else has to be done for private mappings here
+ 	 */
+-	if (!vma || vma->vm_flags & VM_SHARED)
++	if (!vma || vma->vm_flags & VM_MAYSHARE)
+ 		region_add(&inode->i_mapping->private_list, from, to);
+ 	return 0;
+ }
