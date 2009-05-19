@@ -1,80 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755287AbZESWva@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755369AbZESXDO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755287AbZESWva (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 18:51:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752893AbZESWvX
+	id S1755369AbZESXDO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 19:03:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754075AbZESXDF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 18:51:23 -0400
-Received: from relay1.sgi.com ([192.48.179.29]:59283 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751910AbZESWvW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 18:51:22 -0400
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] x86: UV BAU activation descriptor init
-Cc: mingo@elte.hu, hpa@zytor.com
-Message-Id: <E1M6YCG-0002eM-1Z@eag09.americas.sgi.com>
-From: Cliff Wickman <cpw@sgi.com>
-Date: Tue, 19 May 2009 17:54:08 -0500
+	Tue, 19 May 2009 19:03:05 -0400
+Received: from ey-out-2122.google.com ([74.125.78.27]:22458 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751882AbZESXDD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 19:03:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=Fo4wxeyxknNZXWIJpo5Ttk21GOeNS21P/6nSOEtiyK8a+YJUx6juHa48+GrIgN1/Xf
+         v5LFXzMqAvQVqYUyTgQrO8K4k45U0GMMxwrtsZushz0GsMIQbtP7Ax8a+SHdxImglVCB
+         o+csNoX8rXGBcC/yabZNhpN+TTwHKHgXt5KUE=
+Message-ID: <4A133AA7.6020508@gmail.com>
+Date: Wed, 20 May 2009 01:03:03 +0200
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090302)
+MIME-Version: 1.0
+To: axboe@kernel.dk
+CC: lkml <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] cdrom: beyond ARRAY_SIZE of viocd_diskinfo
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Cliff Wickman <cpw@sgi.com>
+Do not go beyond ARRAY_SIZE of viocd_diskinfo
 
-The UV tlb shootdown code has a serious initialization error.
-
-An array of structures [32*8] is initialized as if it were [32].
-The array is indexed by (cpu number on the blade)*8, so the short
-initialization works for up to 4 cpus on a blade.
-But above that, we provide an invalid opcode to the hub's
-broadcast assist unit.
-
-This patch changes the allocation of the array to use its symbolic
-dimensions for better clarity. And initializes all 32*8 entries.
-
-Tested on the UV simulator.
-
-Diffed against 2.6.30-rc6
-
-Signed-off-by: Cliff Wickman <cpw@sgi.com>
-
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
 ---
- arch/x86/kernel/tlb_uv.c |   18 ++++++++++++++++--
- 1 file changed, 16 insertions(+), 2 deletions(-)
+diff --git a/drivers/cdrom/viocd.c b/drivers/cdrom/viocd.c
+index 1392935..9b1624e 100644
+--- a/drivers/cdrom/viocd.c
++++ b/drivers/cdrom/viocd.c
+@@ -587,7 +587,7 @@ static int viocd_probe(struct vio_dev *vdev, const struct vio_device_id *id)
+ 	struct device_node *node = vdev->dev.archdata.of_node;
+ 
+ 	deviceno = vdev->unit_address;
+-	if (deviceno > VIOCD_MAX_CD)
++	if (deviceno >= VIOCD_MAX_CD)
+ 		return -ENODEV;
+ 	if (!node)
+ 		return -ENODEV;
 
-Index: linux/arch/x86/kernel/tlb_uv.c
-===================================================================
---- linux.orig/arch/x86/kernel/tlb_uv.c
-+++ linux/arch/x86/kernel/tlb_uv.c
-@@ -715,7 +715,14 @@ uv_activation_descriptor_init(int node, 
- 	struct bau_desc *adp;
- 	struct bau_desc *ad2;
- 
--	adp = (struct bau_desc *)kmalloc_node(16384, GFP_KERNEL, node);
-+	/*
-+	 * each bau_desc is 64 bytes; there are 8 (UV_ITEMS_PER_DESCRIPTOR)
-+	 * per cpu; and up to 32 (UV_ACTIVATION_DESCRIPTOR_SIZE) cpu's
-+	 * per blade
-+	 */
-+	adp = (struct bau_desc *)kmalloc_node(sizeof(struct bau_desc)*
-+		UV_ACTIVATION_DESCRIPTOR_SIZE*UV_ITEMS_PER_DESCRIPTOR,
-+		GFP_KERNEL, node);
- 	BUG_ON(!adp);
- 
- 	pa = uv_gpa(adp); /* need the real nasid*/
-@@ -729,7 +736,14 @@ uv_activation_descriptor_init(int node, 
- 				      (n << UV_DESC_BASE_PNODE_SHIFT | m));
- 	}
- 
--	for (i = 0, ad2 = adp; i < UV_ACTIVATION_DESCRIPTOR_SIZE; i++, ad2++) {
-+	/*
-+	 * initializing all 8 (UV_ITEMS_PER_DESCRIPTOR) descriptors for each
-+	 * cpu even though we only use the first one; one descriptor can
-+	 * describe a broadcast to 256 nodes.
-+	 */
-+	for (i = 0, ad2 = adp;
-+		i < (UV_ACTIVATION_DESCRIPTOR_SIZE*UV_ITEMS_PER_DESCRIPTOR);
-+		i++, ad2++) {
- 		memset(ad2, 0, sizeof(struct bau_desc));
- 		ad2->header.sw_ack_flag = 1;
- 		/*
