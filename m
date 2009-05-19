@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754501AbZESA7w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755696AbZESBAn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754501AbZESA7w (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 20:59:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753738AbZESA7d
+	id S1755696AbZESBAn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 21:00:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754893AbZESA7r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 20:59:33 -0400
-Received: from mga02.intel.com ([134.134.136.20]:25693 "EHLO mga02.intel.com"
+	Mon, 18 May 2009 20:59:47 -0400
+Received: from mga02.intel.com ([134.134.136.20]:52302 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754444AbZESA7b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 20:59:31 -0400
+	id S1755257AbZESA7q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 20:59:46 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.41,212,1241420400"; 
-   d="scan'208";a="413590674"
-Subject: [PATCH v2 01/11] async_tx: rename zero_sum to val
+   d="scan'208";a="516745842"
+Subject: [PATCH v2 04/11] async_xor: permit callers to pass in a 'dma/page
+	scribble' region
 To: neilb@suse.de, linux-raid@vger.kernel.org
 From: Dan Williams <dan.j.williams@intel.com>
 Cc: maan@systemlinux.org, linux-kernel@vger.kernel.org, yur@emcraft.com,
        hpa@zytor.com
-Date: Mon, 18 May 2009 17:59:31 -0700
-Message-ID: <20090519005931.4104.81475.stgit@dwillia2-linux.ch.intel.com>
+Date: Mon, 18 May 2009 17:59:46 -0700
+Message-ID: <20090519005946.4104.28803.stgit@dwillia2-linux.ch.intel.com>
 In-Reply-To: <20090519005647.4104.81119.stgit@dwillia2-linux.ch.intel.com>
 References: <20090519005647.4104.81119.stgit@dwillia2-linux.ch.intel.com>
 User-Agent: StGit/0.14.3.289.g7daff
@@ -29,306 +30,157 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-'zero_sum' does not properly describe the operation of generating parity
-and checking that it validates against an existing buffer.  Change the
-name of the operation to 'val' (for 'validate').  This is in
-anticipation of the p+q case where it is a requirement to identify the
-target parity buffers separately from the source buffers, because the
-target parity buffers will not have corresponding pq coefficients.
+async_xor() needs space to perform dma and page address conversions.  In
+most cases the code can simply reuse the struct page * array because the
+size of the native pointer matches the size of a dma/page address.  In
+order to support archs where sizeof(dma_addr_t) is larger than
+sizeof(struct page *), or to preserve the input parameters, we utilize a
+memory region passed in by the caller.
+
+Since the code is now prepared to handle the case where it cannot
+perform address conversions on the stack, we no longer need the
+!HIGHMEM64G dependency in drivers/dma/Kconfig.
+
+[ Impact: don't clobber input buffers for address conversions ]
 
 Signed-off-by: Dan Williams <dan.j.williams@intel.com>
 ---
- arch/arm/mach-iop13xx/setup.c |    8 ++++----
- arch/arm/plat-iop/adma.c      |    2 +-
- crypto/async_tx/async_xor.c   |   16 ++++++++--------
- drivers/dma/dmaengine.c       |    4 ++--
- drivers/dma/iop-adma.c        |   38 +++++++++++++++++++-------------------
- drivers/md/raid5.c            |    2 +-
- include/linux/async_tx.h      |    2 +-
- include/linux/dmaengine.h     |    8 ++++----
- 8 files changed, 40 insertions(+), 40 deletions(-)
+ crypto/async_tx/async_xor.c |   59 ++++++++++++++++++++-----------------------
+ drivers/dma/Kconfig         |    2 +
+ 2 files changed, 29 insertions(+), 32 deletions(-)
 
-diff --git a/arch/arm/mach-iop13xx/setup.c b/arch/arm/mach-iop13xx/setup.c
-index cfd4d2e..9800228 100644
---- a/arch/arm/mach-iop13xx/setup.c
-+++ b/arch/arm/mach-iop13xx/setup.c
-@@ -478,7 +478,7 @@ void __init iop13xx_platform_init(void)
- 			dma_cap_set(DMA_MEMCPY, plat_data->cap_mask);
- 			dma_cap_set(DMA_XOR, plat_data->cap_mask);
- 			dma_cap_set(DMA_DUAL_XOR, plat_data->cap_mask);
--			dma_cap_set(DMA_ZERO_SUM, plat_data->cap_mask);
-+			dma_cap_set(DMA_XOR_VAL, plat_data->cap_mask);
- 			dma_cap_set(DMA_MEMSET, plat_data->cap_mask);
- 			dma_cap_set(DMA_MEMCPY_CRC32C, plat_data->cap_mask);
- 			dma_cap_set(DMA_INTERRUPT, plat_data->cap_mask);
-@@ -490,7 +490,7 @@ void __init iop13xx_platform_init(void)
- 			dma_cap_set(DMA_MEMCPY, plat_data->cap_mask);
- 			dma_cap_set(DMA_XOR, plat_data->cap_mask);
- 			dma_cap_set(DMA_DUAL_XOR, plat_data->cap_mask);
--			dma_cap_set(DMA_ZERO_SUM, plat_data->cap_mask);
-+			dma_cap_set(DMA_XOR_VAL, plat_data->cap_mask);
- 			dma_cap_set(DMA_MEMSET, plat_data->cap_mask);
- 			dma_cap_set(DMA_MEMCPY_CRC32C, plat_data->cap_mask);
- 			dma_cap_set(DMA_INTERRUPT, plat_data->cap_mask);
-@@ -502,13 +502,13 @@ void __init iop13xx_platform_init(void)
- 			dma_cap_set(DMA_MEMCPY, plat_data->cap_mask);
- 			dma_cap_set(DMA_XOR, plat_data->cap_mask);
- 			dma_cap_set(DMA_DUAL_XOR, plat_data->cap_mask);
--			dma_cap_set(DMA_ZERO_SUM, plat_data->cap_mask);
-+			dma_cap_set(DMA_XOR_VAL, plat_data->cap_mask);
- 			dma_cap_set(DMA_MEMSET, plat_data->cap_mask);
- 			dma_cap_set(DMA_MEMCPY_CRC32C, plat_data->cap_mask);
- 			dma_cap_set(DMA_INTERRUPT, plat_data->cap_mask);
- 			dma_cap_set(DMA_PQ_XOR, plat_data->cap_mask);
- 			dma_cap_set(DMA_PQ_UPDATE, plat_data->cap_mask);
--			dma_cap_set(DMA_PQ_ZERO_SUM, plat_data->cap_mask);
-+			dma_cap_set(DMA_PQ_VAL, plat_data->cap_mask);
- 			break;
- 		}
- 	}
-diff --git a/arch/arm/plat-iop/adma.c b/arch/arm/plat-iop/adma.c
-index f724208..c040044 100644
---- a/arch/arm/plat-iop/adma.c
-+++ b/arch/arm/plat-iop/adma.c
-@@ -198,7 +198,7 @@ static int __init iop3xx_adma_cap_init(void)
- 	dma_cap_set(DMA_INTERRUPT, iop3xx_aau_data.cap_mask);
- 	#else
- 	dma_cap_set(DMA_XOR, iop3xx_aau_data.cap_mask);
--	dma_cap_set(DMA_ZERO_SUM, iop3xx_aau_data.cap_mask);
-+	dma_cap_set(DMA_XOR_VAL, iop3xx_aau_data.cap_mask);
- 	dma_cap_set(DMA_MEMSET, iop3xx_aau_data.cap_mask);
- 	dma_cap_set(DMA_INTERRUPT, iop3xx_aau_data.cap_mask);
- 	#endif
 diff --git a/crypto/async_tx/async_xor.c b/crypto/async_tx/async_xor.c
-index 95fe2c8..e0580b0 100644
+index 6290d05..3caecdd 100644
 --- a/crypto/async_tx/async_xor.c
 +++ b/crypto/async_tx/async_xor.c
-@@ -222,7 +222,7 @@ static int page_is_zero(struct page *p, unsigned int offset, size_t len)
- }
- 
- /**
-- * async_xor_zero_sum - attempt a xor parity check with a dma engine.
-+ * async_xor_val - attempt a xor parity check with a dma engine.
-  * @dest: destination page used if the xor is performed synchronously
-  * @src_list: array of source pages.  The dest page must be listed as a source
-  * 	at index zero.  The contents of this array may be overwritten.
-@@ -236,13 +236,13 @@ static int page_is_zero(struct page *p, unsigned int offset, size_t len)
-  * @cb_param: parameter to pass to the callback routine
-  */
- struct dma_async_tx_descriptor *
--async_xor_zero_sum(struct page *dest, struct page **src_list,
-+async_xor_val(struct page *dest, struct page **src_list,
- 	unsigned int offset, int src_cnt, size_t len,
- 	u32 *result, enum async_tx_flags flags,
- 	struct dma_async_tx_descriptor *depend_tx,
- 	dma_async_tx_callback cb_fn, void *cb_param)
+@@ -33,11 +33,10 @@
+ /* do_async_xor - dma map the pages and perform the xor with an engine */
+ static __async_inline struct dma_async_tx_descriptor *
+ do_async_xor(struct dma_chan *chan, struct page *dest, struct page **src_list,
+-	     unsigned int offset, int src_cnt, size_t len,
++	     unsigned int offset, int src_cnt, size_t len, dma_addr_t *dma_src,
+ 	     struct async_submit_ctl *submit)
  {
--	struct dma_chan *chan = async_tx_find_channel(depend_tx, DMA_ZERO_SUM,
-+	struct dma_chan *chan = async_tx_find_channel(depend_tx, DMA_XOR_VAL,
+ 	struct dma_device *dma = chan->device;
+-	dma_addr_t *dma_src = (dma_addr_t *) src_list;
+ 	struct dma_async_tx_descriptor *tx = NULL;
+ 	int src_off = 0;
+ 	int i;
+@@ -125,9 +124,14 @@ do_sync_xor(struct page *dest, struct page **src_list, unsigned int offset,
+ 	int xor_src_cnt;
+ 	int src_off = 0;
+ 	void *dest_buf;
+-	void **srcs = (void **) src_list;
++	void **srcs;
+ 
+-	/* reuse the 'src_list' array to convert to buffer pointers */
++	if (submit->scribble)
++		srcs = (void **) submit->scribble;
++	else
++		srcs = (void **) src_list;
++
++	/* convert to buffer pointers */
+ 	for (i = 0; i < src_cnt; i++)
+ 		srcs[i] = page_address(src_list[i]) + offset;
+ 
+@@ -171,17 +175,26 @@ async_xor(struct page *dest, struct page **src_list, unsigned int offset,
+ 	struct dma_chan *chan = async_tx_find_channel(submit, DMA_XOR,
  						      &dest, 1, src_list,
  						      src_cnt, len);
++	dma_addr_t *dma_src = NULL;
++
+ 	BUG_ON(src_cnt <= 1);
+ 
+-	if (chan) {
++	if (submit->scribble)
++		dma_src = submit->scribble;
++	else if (sizeof(dma_addr_t) <= sizeof(struct page *))
++		dma_src = (dma_addr_t *) src_list;
++
++	if (dma_src && chan) {
+ 		/* run the xor asynchronously */
+ 		pr_debug("%s (async): len: %zu\n", __func__, len);
+ 
+ 		return do_async_xor(chan, dest, src_list, offset, src_cnt, len,
+-				    submit);
++				    dma_src, submit);
+ 	} else {
+ 		/* run the xor synchronously */
+ 		pr_debug("%s (sync): len: %zu\n", __func__, len);
++		WARN_ONCE(chan, "%s: no space for dma address conversion\n",
++			  __func__);
+ 
+ 		/* in the sync case the dest is an implied source
+ 		 * (assumes the dest is the first source)
+@@ -229,11 +242,16 @@ async_xor_val(struct page *dest, struct page **src_list, unsigned int offset,
+ 						      src_cnt, len);
  	struct dma_device *device = chan ? chan->device : NULL;
-@@ -261,15 +261,15 @@ async_xor_zero_sum(struct page *dest, struct page **src_list,
- 			dma_src[i] = dma_map_page(device->dev, src_list[i],
- 						  offset, len, DMA_TO_DEVICE);
+ 	struct dma_async_tx_descriptor *tx = NULL;
++	dma_addr_t *dma_src = NULL;
  
--		tx = device->device_prep_dma_zero_sum(chan, dma_src, src_cnt,
--						      len, result,
--						      dma_prep_flags);
-+		tx = device->device_prep_dma_xor_val(chan, dma_src, src_cnt,
-+						     len, result,
-+						     dma_prep_flags);
- 		if (unlikely(!tx)) {
- 			async_tx_quiesce(&depend_tx);
+ 	BUG_ON(src_cnt <= 1);
  
- 			while (!tx) {
- 				dma_async_issue_pending(chan);
--				tx = device->device_prep_dma_zero_sum(chan,
-+				tx = device->device_prep_dma_xor_val(chan,
- 					dma_src, src_cnt, len, result,
- 					dma_prep_flags);
- 			}
-@@ -296,7 +296,7 @@ async_xor_zero_sum(struct page *dest, struct page **src_list,
+-	if (device && src_cnt <= device->max_xor) {
+-		dma_addr_t *dma_src = (dma_addr_t *) src_list;
++	if (submit->scribble)
++		dma_src = submit->scribble;
++	else if (sizeof(dma_addr_t) <= sizeof(struct page *))
++		dma_src = (dma_addr_t *) src_list;
++
++	if (dma_src && device && src_cnt <= device->max_xor) {
+ 		unsigned long dma_prep_flags;
+ 		int i;
  
- 	return tx;
+@@ -263,6 +281,8 @@ async_xor_val(struct page *dest, struct page **src_list, unsigned int offset,
+ 		enum async_tx_flags flags_orig = submit->flags;
+ 
+ 		pr_debug("%s: (sync) len: %zu\n", __func__, len);
++		WARN_ONCE(device && src_cnt <= device->max_xor,
++			  "%s: no space for dma address conversion\n", __func__);
+ 
+ 		submit->flags |= ASYNC_TX_XOR_DROP_DST;
+ 		submit->flags &= ~ASYNC_TX_ACK;
+@@ -281,29 +301,6 @@ async_xor_val(struct page *dest, struct page **src_list, unsigned int offset,
  }
--EXPORT_SYMBOL_GPL(async_xor_zero_sum);
-+EXPORT_SYMBOL_GPL(async_xor_val);
+ EXPORT_SYMBOL_GPL(async_xor_val);
  
- static int __init async_xor_init(void)
- {
-diff --git a/drivers/dma/dmaengine.c b/drivers/dma/dmaengine.c
-index 92438e9..6781e8f 100644
---- a/drivers/dma/dmaengine.c
-+++ b/drivers/dma/dmaengine.c
-@@ -644,8 +644,8 @@ int dma_async_device_register(struct dma_device *device)
- 		!device->device_prep_dma_memcpy);
- 	BUG_ON(dma_has_cap(DMA_XOR, device->cap_mask) &&
- 		!device->device_prep_dma_xor);
--	BUG_ON(dma_has_cap(DMA_ZERO_SUM, device->cap_mask) &&
--		!device->device_prep_dma_zero_sum);
-+	BUG_ON(dma_has_cap(DMA_XOR_VAL, device->cap_mask) &&
-+		!device->device_prep_dma_xor_val);
- 	BUG_ON(dma_has_cap(DMA_MEMSET, device->cap_mask) &&
- 		!device->device_prep_dma_memset);
- 	BUG_ON(dma_has_cap(DMA_INTERRUPT, device->cap_mask) &&
-diff --git a/drivers/dma/iop-adma.c b/drivers/dma/iop-adma.c
-index 2f05226..6ff79a6 100644
---- a/drivers/dma/iop-adma.c
-+++ b/drivers/dma/iop-adma.c
-@@ -660,9 +660,9 @@ iop_adma_prep_dma_xor(struct dma_chan *chan, dma_addr_t dma_dest,
- }
+-static int __init async_xor_init(void)
+-{
+-	#ifdef CONFIG_DMA_ENGINE
+-	/* To conserve stack space the input src_list (array of page pointers)
+-	 * is reused to hold the array of dma addresses passed to the driver.
+-	 * This conversion is only possible when dma_addr_t is less than the
+-	 * the size of a pointer.  HIGHMEM64G is known to violate this
+-	 * assumption.
+-	 */
+-	BUILD_BUG_ON(sizeof(dma_addr_t) > sizeof(struct page *));
+-	#endif
+-
+-	return 0;
+-}
+-
+-static void __exit async_xor_exit(void)
+-{
+-	do { } while (0);
+-}
+-
+-module_init(async_xor_init);
+-module_exit(async_xor_exit);
+-
+ MODULE_AUTHOR("Intel Corporation");
+ MODULE_DESCRIPTION("asynchronous xor/xor-zero-sum api");
+ MODULE_LICENSE("GPL");
+diff --git a/drivers/dma/Kconfig b/drivers/dma/Kconfig
+index 3b3c01b..912a51b 100644
+--- a/drivers/dma/Kconfig
++++ b/drivers/dma/Kconfig
+@@ -4,7 +4,7 @@
  
- static struct dma_async_tx_descriptor *
--iop_adma_prep_dma_zero_sum(struct dma_chan *chan, dma_addr_t *dma_src,
--			   unsigned int src_cnt, size_t len, u32 *result,
--			   unsigned long flags)
-+iop_adma_prep_dma_xor_val(struct dma_chan *chan, dma_addr_t *dma_src,
-+			  unsigned int src_cnt, size_t len, u32 *result,
-+			  unsigned long flags)
- {
- 	struct iop_adma_chan *iop_chan = to_iop_adma_chan(chan);
- 	struct iop_adma_desc_slot *sw_desc, *grp_start;
-@@ -906,7 +906,7 @@ out:
- 
- #define IOP_ADMA_NUM_SRC_TEST 4 /* must be <= 15 */
- static int __devinit
--iop_adma_xor_zero_sum_self_test(struct iop_adma_device *device)
-+iop_adma_xor_val_self_test(struct iop_adma_device *device)
- {
- 	int i, src_idx;
- 	struct page *dest;
-@@ -1002,7 +1002,7 @@ iop_adma_xor_zero_sum_self_test(struct iop_adma_device *device)
- 		PAGE_SIZE, DMA_TO_DEVICE);
- 
- 	/* skip zero sum if the capability is not present */
--	if (!dma_has_cap(DMA_ZERO_SUM, dma_chan->device->cap_mask))
-+	if (!dma_has_cap(DMA_XOR_VAL, dma_chan->device->cap_mask))
- 		goto free_resources;
- 
- 	/* zero sum the sources with the destintation page */
-@@ -1016,10 +1016,10 @@ iop_adma_xor_zero_sum_self_test(struct iop_adma_device *device)
- 		dma_srcs[i] = dma_map_page(dma_chan->device->dev,
- 					   zero_sum_srcs[i], 0, PAGE_SIZE,
- 					   DMA_TO_DEVICE);
--	tx = iop_adma_prep_dma_zero_sum(dma_chan, dma_srcs,
--					IOP_ADMA_NUM_SRC_TEST + 1, PAGE_SIZE,
--					&zero_sum_result,
--					DMA_PREP_INTERRUPT | DMA_CTRL_ACK);
-+	tx = iop_adma_prep_dma_xor_val(dma_chan, dma_srcs,
-+				       IOP_ADMA_NUM_SRC_TEST + 1, PAGE_SIZE,
-+				       &zero_sum_result,
-+				       DMA_PREP_INTERRUPT | DMA_CTRL_ACK);
- 
- 	cookie = iop_adma_tx_submit(tx);
- 	iop_adma_issue_pending(dma_chan);
-@@ -1072,10 +1072,10 @@ iop_adma_xor_zero_sum_self_test(struct iop_adma_device *device)
- 		dma_srcs[i] = dma_map_page(dma_chan->device->dev,
- 					   zero_sum_srcs[i], 0, PAGE_SIZE,
- 					   DMA_TO_DEVICE);
--	tx = iop_adma_prep_dma_zero_sum(dma_chan, dma_srcs,
--					IOP_ADMA_NUM_SRC_TEST + 1, PAGE_SIZE,
--					&zero_sum_result,
--					DMA_PREP_INTERRUPT | DMA_CTRL_ACK);
-+	tx = iop_adma_prep_dma_xor_val(dma_chan, dma_srcs,
-+				       IOP_ADMA_NUM_SRC_TEST + 1, PAGE_SIZE,
-+				       &zero_sum_result,
-+				       DMA_PREP_INTERRUPT | DMA_CTRL_ACK);
- 
- 	cookie = iop_adma_tx_submit(tx);
- 	iop_adma_issue_pending(dma_chan);
-@@ -1192,9 +1192,9 @@ static int __devinit iop_adma_probe(struct platform_device *pdev)
- 		dma_dev->max_xor = iop_adma_get_max_xor();
- 		dma_dev->device_prep_dma_xor = iop_adma_prep_dma_xor;
- 	}
--	if (dma_has_cap(DMA_ZERO_SUM, dma_dev->cap_mask))
--		dma_dev->device_prep_dma_zero_sum =
--			iop_adma_prep_dma_zero_sum;
-+	if (dma_has_cap(DMA_XOR_VAL, dma_dev->cap_mask))
-+		dma_dev->device_prep_dma_xor_val =
-+			iop_adma_prep_dma_xor_val;
- 	if (dma_has_cap(DMA_INTERRUPT, dma_dev->cap_mask))
- 		dma_dev->device_prep_dma_interrupt =
- 			iop_adma_prep_dma_interrupt;
-@@ -1249,7 +1249,7 @@ static int __devinit iop_adma_probe(struct platform_device *pdev)
- 
- 	if (dma_has_cap(DMA_XOR, dma_dev->cap_mask) ||
- 		dma_has_cap(DMA_MEMSET, dma_dev->cap_mask)) {
--		ret = iop_adma_xor_zero_sum_self_test(adev);
-+		ret = iop_adma_xor_val_self_test(adev);
- 		dev_dbg(&pdev->dev, "xor self test returned %d\n", ret);
- 		if (ret)
- 			goto err_free_iop_chan;
-@@ -1259,10 +1259,10 @@ static int __devinit iop_adma_probe(struct platform_device *pdev)
- 	  "( %s%s%s%s%s%s%s%s%s%s)\n",
- 	  dma_has_cap(DMA_PQ_XOR, dma_dev->cap_mask) ? "pq_xor " : "",
- 	  dma_has_cap(DMA_PQ_UPDATE, dma_dev->cap_mask) ? "pq_update " : "",
--	  dma_has_cap(DMA_PQ_ZERO_SUM, dma_dev->cap_mask) ? "pq_zero_sum " : "",
-+	  dma_has_cap(DMA_PQ_VAL, dma_dev->cap_mask) ? "pq_val " : "",
- 	  dma_has_cap(DMA_XOR, dma_dev->cap_mask) ? "xor " : "",
- 	  dma_has_cap(DMA_DUAL_XOR, dma_dev->cap_mask) ? "dual_xor " : "",
--	  dma_has_cap(DMA_ZERO_SUM, dma_dev->cap_mask) ? "xor_zero_sum " : "",
-+	  dma_has_cap(DMA_XOR_VAL, dma_dev->cap_mask) ? "xor_val " : "",
- 	  dma_has_cap(DMA_MEMSET, dma_dev->cap_mask)  ? "fill " : "",
- 	  dma_has_cap(DMA_MEMCPY_CRC32C, dma_dev->cap_mask) ? "cpy+crc " : "",
- 	  dma_has_cap(DMA_MEMCPY, dma_dev->cap_mask) ? "cpy " : "",
-diff --git a/drivers/md/raid5.c b/drivers/md/raid5.c
-index 3bbc6d6..f8d2d35 100644
---- a/drivers/md/raid5.c
-+++ b/drivers/md/raid5.c
-@@ -854,7 +854,7 @@ static void ops_run_check(struct stripe_head *sh)
- 			xor_srcs[count++] = dev->page;
- 	}
- 
--	tx = async_xor_zero_sum(xor_dest, xor_srcs, 0, count, STRIPE_SIZE,
-+	tx = async_xor_val(xor_dest, xor_srcs, 0, count, STRIPE_SIZE,
- 		&sh->ops.zero_sum_result, 0, NULL, NULL, NULL);
- 
- 	atomic_inc(&sh->count);
-diff --git a/include/linux/async_tx.h b/include/linux/async_tx.h
-index 5fc2ef8..513150d 100644
---- a/include/linux/async_tx.h
-+++ b/include/linux/async_tx.h
-@@ -117,7 +117,7 @@ async_xor(struct page *dest, struct page **src_list, unsigned int offset,
- 	dma_async_tx_callback cb_fn, void *cb_fn_param);
- 
- struct dma_async_tx_descriptor *
--async_xor_zero_sum(struct page *dest, struct page **src_list,
-+async_xor_val(struct page *dest, struct page **src_list,
- 	unsigned int offset, int src_cnt, size_t len,
- 	u32 *result, enum async_tx_flags flags,
- 	struct dma_async_tx_descriptor *depend_tx,
-diff --git a/include/linux/dmaengine.h b/include/linux/dmaengine.h
-index 2e2aa3d..6768727 100644
---- a/include/linux/dmaengine.h
-+++ b/include/linux/dmaengine.h
-@@ -55,8 +55,8 @@ enum dma_transaction_type {
- 	DMA_PQ_XOR,
- 	DMA_DUAL_XOR,
- 	DMA_PQ_UPDATE,
--	DMA_ZERO_SUM,
--	DMA_PQ_ZERO_SUM,
-+	DMA_XOR_VAL,
-+	DMA_PQ_VAL,
- 	DMA_MEMSET,
- 	DMA_MEMCPY_CRC32C,
- 	DMA_INTERRUPT,
-@@ -214,7 +214,7 @@ struct dma_async_tx_descriptor {
-  * @device_free_chan_resources: release DMA channel's resources
-  * @device_prep_dma_memcpy: prepares a memcpy operation
-  * @device_prep_dma_xor: prepares a xor operation
-- * @device_prep_dma_zero_sum: prepares a zero_sum operation
-+ * @device_prep_dma_xor_val: prepares a xor validation operation
-  * @device_prep_dma_memset: prepares a memset operation
-  * @device_prep_dma_interrupt: prepares an end of chain interrupt operation
-  * @device_prep_slave_sg: prepares a slave dma operation
-@@ -243,7 +243,7 @@ struct dma_device {
- 	struct dma_async_tx_descriptor *(*device_prep_dma_xor)(
- 		struct dma_chan *chan, dma_addr_t dest, dma_addr_t *src,
- 		unsigned int src_cnt, size_t len, unsigned long flags);
--	struct dma_async_tx_descriptor *(*device_prep_dma_zero_sum)(
-+	struct dma_async_tx_descriptor *(*device_prep_dma_xor_val)(
- 		struct dma_chan *chan, dma_addr_t *src,	unsigned int src_cnt,
- 		size_t len, u32 *result, unsigned long flags);
- 	struct dma_async_tx_descriptor *(*device_prep_dma_memset)(
+ menuconfig DMADEVICES
+ 	bool "DMA Engine support"
+-	depends on !HIGHMEM64G && HAS_DMA
++	depends on HAS_DMA
+ 	help
+ 	  DMA engines can do asynchronous data transfers without
+ 	  involving the host CPU.  Currently, this framework can be
 
