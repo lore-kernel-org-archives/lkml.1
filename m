@@ -1,61 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754579AbZESP04@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753649AbZESPcb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754579AbZESP04 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 11:26:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751051AbZESP0t
+	id S1753649AbZESPcb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 11:32:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750971AbZESPc0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 11:26:49 -0400
-Received: from www.tglx.de ([62.245.132.106]:48644 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750721AbZESP0s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 11:26:48 -0400
-Date: Tue, 19 May 2009 17:24:44 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Shaohua Li <shaohua.li@intel.com>
-cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       "lenb@kernel.org" <lenb@kernel.org>,
-       "thisistempbox@yahoo.com" <thisistempbox@yahoo.com>,
-       "mingo@redhat.com" <mingo@redhat.com>
-Subject: Re: [PATCH 1/2]cpuidle: makes AMD C1E works in acpi_idle
-In-Reply-To: <20090519150908.GA27513@sli10-desk.sh.intel.com>
-Message-ID: <alpine.LFD.2.00.0905191722110.5983@localhost.localdomain>
-References: <20090519080942.GA12117@sli10-desk.sh.intel.com> <alpine.LFD.2.00.0905191447490.5983@localhost.localdomain> <20090519150908.GA27513@sli10-desk.sh.intel.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 19 May 2009 11:32:26 -0400
+Received: from d112a2.x-mailer.de ([212.162.53.4]:35964 "EHLO
+	d112a2.x-mailer.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750721AbZESPcZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 11:32:25 -0400
+Message-Id: <cover.1242739648.git.kkeil@pingi.linux-pingi.de>
+Date: Tue, 19 May 2009 15:27:28 +0200
+Subject: [PATCH 00/19] mISDN update for linux-next
+From: Karsten Keil <keil@b1-systems.de>
+To: linux-kernel@vger.kernel.org
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       i4ldeveloper@listserv.isdn4linux.de
+X-Info: valid message
+X-Info: original Date
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 19 May 2009, Shaohua Li wrote:
+This is a update of the mISDN driver for linux-next.
+It syncs the mISDN driver with the development on git.misdn.org.
+More updates (new hardware support) will follow.
 
-> On Tue, May 19, 2009 at 08:55:10PM +0800, Thomas Gleixner wrote:
-> > On Tue, 19 May 2009, Shaohua Li wrote:
-> > 
-> > > When AMD C1E is enabled, local APIC timer will stop even in C1. This patch uses
-> > > broadcast ipi to replace local APIC timer in C1.
-> > > 
-> > > http://bugzilla.kernel.org/show_bug.cgi?id=13233
-> > 
-> > Hmm. This was addressed before in 
-> > 
-> > commit a8d6829044901a67732904be5f1eacdf8539604f (x86: prevent C-states
-> > hang on AMD C1E enabled machines)
-> > 
-> > We limit C-States to 1 via acpi_processor_cstate_check().
-> > 
-> > And we have the broadcast logic in c1e_idle() already. We also select
-> > c1e_idle as the idle routine, so why is the ACPI code not using this. ?
->
-> We used to call pm_idle_save() for C1, which will call c1e_idle. But this is
-> removed, guess the reason is we want to do C1 enter per the information gotten
-> from BIOS. So this bug is a regression actually. The patch follows the logic
-> of c1e_idle().
+You can pull it from 
+git://master.kernel.org/pub/scm/linux/kernel/git/kkeil/ISDN-2.6-next.git master
 
-Hmm, ok. As long as the code does not undo something which was already
-set up in c1e_idle() I have no objections.
 
-Thanks,
+Andreas Eversberg (14):
+  Add XHFC support for embedded Speech-Design board to hfcmulti
+  Fix bug in XHFC registering
+  Add PCI ID for Junghanns 8S card
+  Add watchdog functionality to hfcmulti driver
+  DSP now uses ring buffer for echo canceler
+  Fix hfcmulti's PCI IRQ bug during init
+  Echo canceler now gets delay information from hardware
+  Fixed missing spin lock on pipeline process
+  Added layer-1-hold feature
+  Fix DTMF locking bug issue
+  Hardware acceleration is now possible in conjunction with audio
+    recording
+  Fix TEI and SAPI handling
+  Add "sapi" information to debug messages
+  Added PCI ID for new Junghanns.net Single E1 cards.
 
-	tglx
+Frank Seidel (2):
+  Reduce stack size in dsp_cmx_send()
+  Add allocation of recvbuf[1500] at run time to reduce stack size
+
+Karsten Keil (2):
+  Fix skb leak in error cases
+  Cleanup debug messages
+
+Roel Kluin (1):
+  isdn: get_free_devid() failure ignored
+
+ drivers/isdn/hardware/mISDN/hfc_multi.h |   75 +++-
+ drivers/isdn/hardware/mISDN/hfcmulti.c  |  711 +++++++++++++++++++++++--------
+ drivers/isdn/hardware/mISDN/hfcpci.c    |   98 +++--
+ drivers/isdn/hardware/mISDN/hfcsusb.c   |    4 +-
+ drivers/isdn/mISDN/core.c               |    8 +-
+ drivers/isdn/mISDN/dsp.h                |   18 +-
+ drivers/isdn/mISDN/dsp_audio.c          |    5 +-
+ drivers/isdn/mISDN/dsp_cmx.c            |  115 ++++--
+ drivers/isdn/mISDN/dsp_core.c           |   70 ++--
+ drivers/isdn/mISDN/dsp_ecdis.h          |    2 +-
+ drivers/isdn/mISDN/dsp_pipeline.c       |    5 +-
+ drivers/isdn/mISDN/dsp_tones.c          |   23 +-
+ drivers/isdn/mISDN/hwchannel.c          |    4 +-
+ drivers/isdn/mISDN/l1oip_codec.c        |    1 +
+ drivers/isdn/mISDN/l1oip_core.c         |   51 ++-
+ drivers/isdn/mISDN/layer2.c             |   37 +-
+ drivers/isdn/mISDN/layer2.h             |    2 +-
+ drivers/isdn/mISDN/socket.c             |   45 ++-
+ drivers/isdn/mISDN/tei.c                |   80 +++--
+ drivers/isdn/mISDN/timerdev.c           |    2 +-
+ include/linux/mISDNdsp.h                |    4 +-
+ include/linux/mISDNhw.h                 |    2 +-
+ include/linux/mISDNif.h                 |   19 +-
+ include/linux/pci_ids.h                 |    2 +
+ 24 files changed, 965 insertions(+), 418 deletions(-)
+
