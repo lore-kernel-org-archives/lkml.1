@@ -1,269 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754986AbZESArs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753307AbZESAtP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754986AbZESArs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 20:47:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752476AbZESArl
+	id S1753307AbZESAtP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 20:49:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752476AbZESAtB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 20:47:41 -0400
-Received: from mga14.intel.com ([143.182.124.37]:52152 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752324AbZESArk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 20:47:40 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,212,1241420400"; 
-   d="scan'208";a="144282765"
-Date: Tue, 19 May 2009 08:47:19 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       Nigel Cunningham <nigel@tuxonice.net>,
-       David Rientjes <rientjes@google.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [RFC][PATCH 6/6] PM/Hibernate: Do not try to allocate too much
-	memory too hard
-Message-ID: <20090519004719.GA7676@localhost>
-References: <200905070040.08561.rjw@sisk.pl> <200905172314.29850.rjw@sisk.pl> <20090518085648.GB10033@localhost> <200905181907.42079.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200905181907.42079.rjw@sisk.pl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 18 May 2009 20:49:01 -0400
+Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:36639 "EHLO
+	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752324AbZESAtA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 20:49:00 -0400
+Message-Id: <6.0.0.20.2.20090519093444.070be0b0@172.19.0.2>
+X-Mailer: QUALCOMM Windows Eudora Version 6J-Jr3
+Date: Tue, 19 May 2009 09:44:34 +0900
+To: Jens Axboe <jens.axboe@oracle.com>
+From: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
+Subject: Re: [PATCH] readahead:add blk_run_backing_dev
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+In-Reply-To: <20090518175259.GL4140@kernel.dk>
+References: <6.0.0.20.2.20090518183752.0581fdc0@172.19.0.2>
+ <20090518175259.GL4140@kernel.dk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 19, 2009 at 01:07:41AM +0800, Rafael J. Wysocki wrote:
-> On Monday 18 May 2009, Wu Fengguang wrote:
-> > On Mon, May 18, 2009 at 05:14:29AM +0800, Rafael J. Wysocki wrote:
-> > > On Sunday 17 May 2009, Wu Fengguang wrote:
-> > > > On Sun, May 17, 2009 at 08:55:05PM +0800, Rafael J. Wysocki wrote:
-> > > > > On Sunday 17 May 2009, Wu Fengguang wrote:
-> > > > 
-> > > > > > > +static unsigned long minimum_image_size(unsigned long saveable)
-> > > > > > > +{
-> > > > > > > +	unsigned long size;
-> > > > > > > +
-> > > > > > > +	/* Compute the number of saveable pages we can free. */
-> > > > > > > +	size = global_page_state(NR_SLAB_RECLAIMABLE)
-> > > > > > > +		+ global_page_state(NR_ACTIVE_ANON)
-> > > > > > > +		+ global_page_state(NR_INACTIVE_ANON)
-> > > > > > > +		+ global_page_state(NR_ACTIVE_FILE)
-> > > > > > > +		+ global_page_state(NR_INACTIVE_FILE);
-> > > > > > 
-> > > > > > For example, we could drop the 1.25 ratio and calculate the above
-> > > > > > reclaimable size with more meaningful constraints:
-> > > > > > 
-> > > > > >         /* slabs are not easy to reclaim */
-> > > > > > 	size = global_page_state(NR_SLAB_RECLAIMABLE) / 2;
-> > > > > 
-> > > > > Why 1/2?
-> > > > 
-> > > > Also a very coarse value:
-> > > > - we don't want to stress icache/dcache too much
-> > > >   (unless they grow too large)
-> > > > - my experience was that the icache/dcache are scanned in a slower
-> > > >   pace than lru pages.
-> > > > - most importantly, inside the NR_SLAB_RECLAIMABLE pages, maybe half
-> > > >   of the pages are actually *in use* and cannot be freed:
-> > > >         % cat /proc/sys/fs/inode-nr     
-> > > >         30450   16605
-> > > >         % cat /proc/sys/fs/dentry-state 
-> > > >         41598   35731   45      0       0       0
-> > > >   See? More than half entries are in-use. Sure many of them will actually
-> > > >   become unused when dentries are freed, but in the mean time the internal
-> > > >   fragmentations in the slabs can go up.
-> > > > 
-> > > > > >         /* keep NR_ACTIVE_ANON */
-> > > > > > 	size += global_page_state(NR_INACTIVE_ANON);
-> > > > > 
-> > > > > Why exactly did you omit ACTIVE_ANON?
-> > > > 
-> > > > To keep the "core working set" :)
-> > > >   	
-> > > > > >         /* keep mapped files */
-> > > > > > 	size += global_page_state(NR_ACTIVE_FILE);
-> > > > > > 	size += global_page_state(NR_INACTIVE_FILE);
-> > > > > >         size -= global_page_state(NR_FILE_MAPPED);
-> > > > > > 
-> > > > > > That restores the hard core working set logic in the reverse way ;)
-> > > > > 
-> > > > > I think the 1/2 factor for NR_SLAB_RECLAIMABLE may be too high in some cases,
-> > > > > but I'm going to check that.
-> > > > 
-> > > > Yes, after updatedb. In that case simple magics numbers may not help.
-> > > > In that case we should really first call shrink_slab() in a loop to
-> > > > cut down the slab pages to a sane number.
-> > > 
-> > > I have verified that the appended patch works reasonably well.
-> > 
-> > This is illogical: in previous email you complained the formula
-> > 
-> >         TOTAL - MAPPED - ACTIVE_ANON - SLAB/2
-> > 
-> > gives too high number, while 
-> > 
-> >         TOTAL - MAPPED
-> > 
-> > in this patch is OK.  (I'm not claiming the first formula to be fine.)
-> 
-> I wasn't precise enough. :-)
-> 
-> The problem with the first formula is that it's not really useful when used
-> _before_ running shrink_all_memory(), becuase it may give arbitraty result
-> in that case (everything depends on the preceding memory usage pattern).
-> However, if it is used _after_ running shrink_all_memory(<all saveable pages>),
-> the resulting minimum image size is usually (most often) below the real minimum
-> number of saveable pages that can stay in memory.
-> 
-> The second formula, OTOH, doesn't depend so much on the preceding memory usage
-> pattern and therefore it seems to be suitable for computing the estimate of the
-> minimum image size _before_ running shrink_all_memory().  Still, when used
-> _after_ running shrink_all_memory(<all saveable pages>), it will give a number
-> below the actual minimum number of saveable pages (ie. not a really suitable
-> one).
-> 
-> Now, since we're going to get rid of shrink_all_memory() at one point, I think
-> we should be looking for a formula suitable for using before it's called.
-> This, IMO, the second one is just about right. :-)
 
-Ah OK, thanks for the explanation!
+At 02:53 09/05/19, Jens Axboe wrote:
+>On Mon, May 18 2009, Hisashi Hifumi wrote:
+>> Hi.
+>> 
+>> I wrote a patch that adds blk_run_backing_dev on page_cache_async_readahead
+>> so readahead I/O is unpluged to improve throughput.
+>> 
+>> Following is the test result with dd.
+>> 
+>> #dd if=testdir/testfile of=/dev/null bs=16384
+>> 
+>> -2.6.30-rc6
+>> 1048576+0 records in
+>> 1048576+0 records out
+>> 17179869184 bytes (17 GB) copied, 224.182 seconds, 76.6 MB/s
+>> 
+>> -2.6.30-rc6-patched
+>> 1048576+0 records in
+>> 1048576+0 records out
+>> 17179869184 bytes (17 GB) copied, 206.465 seconds, 83.2 MB/s
+>> 
+>> Sequential read performance on a big file was improved.
+>> Please merge my patch.
+>> 
+>> Thanks.
+>> 
+>> Signed-off-by: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
+>> 
+>> diff -Nrup linux-2.6.30-rc6.org/mm/readahead.c 
+>linux-2.6.30-rc6.unplug/mm/readahead.c
+>> --- linux-2.6.30-rc6.org/mm/readahead.c	2009-05-18 10:46:15.000000000 +0900
+>> +++ linux-2.6.30-rc6.unplug/mm/readahead.c	2009-05-18 13:00:42.000000000 +0900
+>> @@ -490,5 +490,7 @@ page_cache_async_readahead(struct addres
+>>  
+>>  	/* do read-ahead */
+>>  	ondemand_readahead(mapping, ra, filp, true, offset, req_size);
+>> +
+>> +	blk_run_backing_dev(mapping->backing_dev_info, NULL);
+>>  }
+>>  EXPORT_SYMBOL_GPL(page_cache_async_readahead);
+>
+>I'm surprised this makes much of a difference. It seems correct to me to
+>NOT unplug the device, since it will get unplugged when someone ends up
+>actually waiting for a page. And that will then kick off the remaining
+>IO as well. For this dd case, you'll be hitting lock_page() for the
+>readahead page really soon, definitely not long enough to warrant such a
+>big difference in speed.
+>
+>So, are these numbers 100% reproducible? Could you capture blktrace data
+>for both with and without the patch, so we can take a closer look at the
+>generated IO for each case?
 
-> > > The value returned as the minimum image size is usually too high, but not very
-> > > much (on x86_64 usually about 20%) and there are no "magic" coefficients
-> > 
-> > It is _OK_ for the minimum image size to be higher, that margin serves
-> > as a safety margin as well as the working set size we want to preserve.
-> 
-> I didn't say it wasn't OK. :-)  It's totally fine by me.
+Thank you for your comment. This number is 100% reproducible but the number 
+depends on hardware environment.
+I will try to get blktrace data and post this.
 
-Great!
-
-> > > involved any more and the computation of the minimum image size is carried out
-> > > before calling shrink_all_memory() (so it's still going to be useful after
-> > > we've dropped shrink_all_memory() at one point).
-> > 
-> > That's OK. Because shrink_all_memory() shrinks memory in a prioritized
-> > list-after-list order.
-> > 
-> > > ---
-> > > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > > Subject: PM/Hibernate: Do not try to allocate too much memory too hard (rev. 2)
-> > > 
-> > > We want to avoid attempting to free too much memory too hard during
-> > > hibernation, so estimate the minimum size of the image to use as the
-> > > lower limit for preallocating memory.
-> > 
-> > I'd like to advocate to add "working set preservation" as another goal
-> > of this function, and I can even do with the formula in this patch :-)
-> >
-> > That means, when one day more accurate working set estimation is
-> > possible, we can extend this function to support that goal.
-> 
-> OK, so do you think it's fine to go with the patch below for now?
-
-Sure, I'm fine with it.
-
-Acked-by: Wu Fengguang <fengguang.wu@intel.com> 
-
-Thanks,
-Fengguang
-
-> > > The approach here is based on the (experimental) observation that we
-> > > can't free more page frames than the sum of:
-> > > 
-> > > * global_page_state(NR_SLAB_RECLAIMABLE)
-> > > * global_page_state(NR_ACTIVE_ANON)
-> > > * global_page_state(NR_INACTIVE_ANON)
-> > > * global_page_state(NR_ACTIVE_FILE)
-> > > * global_page_state(NR_INACTIVE_FILE)
-> > > 
-> > > minus
-> > > 
-> > > * global_page_state(NR_FILE_MAPPED)
-> > > 
-> > > Namely, if this number is subtracted from the number of saveable
-> > > pages in the system, we get a good estimate of the minimum reasonable
-> > > size of a hibernation image.
-> > > 
-> > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > > ---
-> > >  kernel/power/snapshot.c |   43 +++++++++++++++++++++++++++++++++++++++----
-> > >  1 file changed, 39 insertions(+), 4 deletions(-)
-> > > 
-> > > Index: linux-2.6/kernel/power/snapshot.c
-> > > ===================================================================
-> > > --- linux-2.6.orig/kernel/power/snapshot.c
-> > > +++ linux-2.6/kernel/power/snapshot.c
-> > > @@ -1204,6 +1204,36 @@ static void free_unnecessary_pages(void)
-> > >  }
-> > >  
-> > >  /**
-> > > + * minimum_image_size - Estimate the minimum acceptable size of an image
-> > > + * @saveable: Number of saveable pages in the system.
-> > > + *
-> > > + * We want to avoid attempting to free too much memory too hard, so estimate the
-> > > + * minimum acceptable size of a hibernation image to use as the lower limit for
-> > > + * preallocating memory.
-> > > + *
-> > > + * We assume that the minimum image size should be proportional to
-> > > + *
-> > > + * [number of saveable pages] - [number of pages that can be freed in theory]
-> > > + *
-> > > + * where the second term is the sum of (1) reclaimable slab pages, (2) active
-> > > + * and (3) inactive anonymouns pages, (4) active and (5) inactive file pages,
-> > > + * minus mapped file pages.
-> > > + */
-> > > +static unsigned long minimum_image_size(unsigned long saveable)
-> > > +{
-> > > +	unsigned long size;
-> > > +
-> > > +	size = global_page_state(NR_SLAB_RECLAIMABLE)
-> > > +		+ global_page_state(NR_ACTIVE_ANON)
-> > > +		+ global_page_state(NR_INACTIVE_ANON)
-> > > +		+ global_page_state(NR_ACTIVE_FILE)
-> > > +		+ global_page_state(NR_INACTIVE_FILE)
-> > > +		- global_page_state(NR_FILE_MAPPED);
-> > > +
-> > > +	return saveable <= size ? 0 : saveable - size;
-> > > +}
-> > > +
-> > > +/**
-> > >   * hibernate_preallocate_memory - Preallocate memory for hibernation image
-> > >   *
-> > >   * To create a hibernation image it is necessary to make a copy of every page
-> > > @@ -1220,8 +1250,8 @@ static void free_unnecessary_pages(void)
-> > >   *
-> > >   * If image_size is set below the number following from the above formula,
-> > >   * the preallocation of memory is continued until the total number of saveable
-> > > - * pages in the system is below the requested image size or it is impossible to
-> > > - * allocate more memory, whichever happens first.
-> > > + * pages in the system is below the requested image size or the minimum
-> > > + * acceptable image size returned by minimum_image_size(), whichever is greater.
-> > >   */
-> > >  int hibernate_preallocate_memory(void)
-> > >  {
-> > > @@ -1282,6 +1312,11 @@ int hibernate_preallocate_memory(void)
-> > >  		goto out;
-> > >  	}
-> > >  
-> > > +	/* Estimate the minimum size of the image. */
-> > > +	pages = minimum_image_size(saveable);
-> > > +	if (size < pages)
-> > > +		size = min_t(unsigned long, pages, max_size);
-> > > +
-> > >  	/*
-> > >  	 * Let the memory management subsystem know that we're going to need a
-> > >  	 * large number of page frames to allocate and make it free some memory.
-> > > @@ -1294,8 +1329,8 @@ int hibernate_preallocate_memory(void)
-> > >  	 * The number of saveable pages in memory was too high, so apply some
-> > >  	 * pressure to decrease it.  First, make room for the largest possible
-> > >  	 * image and fail if that doesn't work.  Next, try to decrease the size
-> > > -	 * of the image as much as indicated by image_size using allocations
-> > > -	 * from highmem and non-highmem zones separately.
-> > > +	 * of the image as much as indicated by 'size' using allocations from
-> > > +	 * highmem and non-highmem zones separately.
-> > >  	 */
-> > >  	pages_highmem = preallocate_image_highmem(highmem / 2);
-> > >  	max_size += pages_highmem;
