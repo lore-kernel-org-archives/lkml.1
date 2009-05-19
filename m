@@ -1,63 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754314AbZESJNM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755365AbZESJN0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754314AbZESJNM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 05:13:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751633AbZESJM6
+	id S1755365AbZESJN0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 05:13:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754426AbZESJNF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 05:12:58 -0400
-Received: from rv-out-0506.google.com ([209.85.198.239]:54571 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750849AbZESJM4 (ORCPT
+	Tue, 19 May 2009 05:13:05 -0400
+Received: from viefep19-int.chello.at ([62.179.121.39]:55855 "EHLO
+	viefep19-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752772AbZESJND (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 05:12:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=x26upb9m0AEttSyFDmhQbmxxi5OuSz2RpZ4D9tWlWeKpad+5A9fmX6D5n4p9Gsg51r
-         ijxPg785j6+JDqB3fNGQlYhdpm1Lcu4Zk6f7HXk6VqL/jresZpjS224KdtpFEVNWkBBI
-         uxgqP2ZHEVdKRCz/mvqjWkMAxHul5ASYwF0vw=
-Message-ID: <4A127864.8090701@gmail.com>
-Date: Tue, 19 May 2009 18:14:12 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Boaz Harrosh <bharrosh@panasas.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Borislav Petkov <petkovbb@googlemail.com>,
-       Pete Zaitcev <zaitcev@redhat.com>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Eric Moore <Eric.Moore@lsi.com>, "Darrick J. Wong" <djwong@us.ibm.com>
-Subject: Re: [PATCH UPDATED2 block#for-2.6.31 2/3] block: set rq->resid_len
- to  blk_rq_bytes() on issue
-References: <4A0D86DB.9000203@kernel.org> <4A0D87D2.7090806@gmail.com> <4A0E0650.1020500@gmail.com> <4A0FFD7E.8050607@gmail.com> <20090518124919.GK4140@kernel.dk>
-In-Reply-To: <20090518124919.GK4140@kernel.dk>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 19 May 2009 05:13:03 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: INFO: possible circular locking dependency at
+ cleanup_workqueue_thread
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Johannes Berg <johannes@sipsolutions.net>, Ingo Molnar <mingo@elte.hu>,
+       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Gautham R Shenoy <ego@in.ibm.com>
+In-Reply-To: <20090518221403.GA7393@redhat.com>
+References: <c4e36d110905120059i4c155508oa00672da0b33a07a@mail.gmail.com>
+	 <20090517071834.GA8507@elte.hu> <1242559101.28127.63.camel@johannes.local>
+	 <20090518194749.GA3501@redhat.com> <1242676857.32543.1343.camel@laptop>
+	 <20090518201650.GA4384@redhat.com> <1242679221.32543.1396.camel@laptop>
+	 <20090518221403.GA7393@redhat.com>
+Content-Type: text/plain
+Date: Tue, 19 May 2009 11:13:00 +0200
+Message-Id: <1242724380.26820.482.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Jens.
+On Tue, 2009-05-19 at 00:14 +0200, Oleg Nesterov wrote:
+> On 05/18, Peter Zijlstra wrote:
+> >
+> > On Mon, 2009-05-18 at 22:16 +0200, Oleg Nesterov wrote:
+> > > On 05/18, Peter Zijlstra wrote:
+> > > >
+> > > > On Mon, 2009-05-18 at 21:47 +0200, Oleg Nesterov wrote:
+> > > > >
+> > > > > This output looks obviously wrong, Z does not depend on L1 or any
+> > > > > other lock.
+> > > >
+> > > > It does, L1 -> L2 -> Z as per 1 and 2
+> > > > which 3 obviously reverses.
+> > >
+> > > Yes, yes, I see. And, as I said, I can't explain what I mean.
+> > >
+> > > I mean... The output above looks as if we take L1 and Z in wrong order.
+> > > But Z has nothing to do with this deadlock, it can't depend on any lock
+> > > from the correctness pov. Except yes, we have it in L1->L2->Z->L1 cycle.
+> >
+> > AB-BC-CA deadlock
+> >
+> > Thread 1		Thread 2		Thread 3
+> >
+> > L(L1)
+> > 			L(L2)
+> > 						L(Z)
+> > L(L2)
+> > 			L(Z)
+> > 						L(L1)
+> 
+> Sure. Now Z really depends on L1. But if you change Thread 3 to take yet
+> another unique lock X under Z, then lockdep will complain that X depends
+> on L1, not Z.
+> 
+> To clarify, I do not say the output is bugggy. I only meant it could be
+> better. But I don't understand how to improve it.
+> 
+> If we return to the original bug report, perhaps cpu_add_remove_lock
+> has nothing to do with this problem... we could have the similar output
+> if device_pm_lock() is called from work_struct.
+> 
+> > And you're saying, we can't have that deadlock because we don't have the
+> > 3 separate functions?
+> 
+> No,
+> 
+> > That is, there is no concurrency on Z because its always taken under L2?
+> 
+> Yes, nobody else can hold Z when we take L2.
+> 
+> But this wasn't my point.
+> 
+> > For those situations we have the spin_lock_nest_lock(X, y) annotation,
+> > where we say, there cannot be any concurrency on x element of X, because
+> > all such locks are always taken under y.
+> 
+> We can just kill L(Z) instead of annotating, this changes nothing from
+> the correctness pov, we have the same deadlock. But the output becomes
+> very clear: L1 depends on L2.
+> 
+> 
+> OK, please forget. Not sure why I started this thread. Just because I
+> was surprised a bit when I figured out that lockdep's output does not
+> match my naive expectations.
 
-Jens Axboe wrote:
-> Tejun, you have to stop replying with updated patches in an existing
-> thread. It's virtually impossible to sort the resulting mess into
-> patches worth applying.
+Well, since you're quite versed in the field, I'm guessing other people
+might find it even more confusing -- so it might well do to explore this
+situation a bit further, if only to see if we can make lockdep output
+'easier'.
 
-Heh.. yeah, I usually post minor updates as UPDATED patches for review
-then repost the whole series after accumulating some of them.  This
-patchset's size was on the borderline for proper patchset and I was
-feeling lazy.  Sorry about that.  Will repost.
+There is a solution to this, Gautham suggested it a while back, we could
+make lockdep scan a lock (Z) his dependencies and if in every chain a
+particular other lock (L2) was taken, ignore this lock (Z) his
+dependency for the circular analysis at hand.
 
-Thanks.
+That would mean we would not find the Z->L1 dep to violate the existing
+one, because we would ignore L2->Z (because in every Z we hold L2), and
+we would indeed fail on the next: L2->L1 on the next line in your
+initial program.
 
--- 
-tejun
+Implementing this however might be slightly less trivial than this
+explanation -- it would however rid us of the spin_lock_nest_lock()
+annotation's need.
+
