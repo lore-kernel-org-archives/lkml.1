@@ -1,62 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755649AbZESHWl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753797AbZESHdK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755649AbZESHWl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 03:22:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753249AbZESHWe
+	id S1753797AbZESHdK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 03:33:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753681AbZESHc5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 03:22:34 -0400
-Received: from web32608.mail.mud.yahoo.com ([68.142.207.235]:42400 "HELO
-	web32608.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752265AbZESHWd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 03:22:33 -0400
-Message-ID: <783496.86803.qm@web32608.mail.mud.yahoo.com>
-X-YMail-OSG: uHnyYesVM1lk3QClaSMy9ZOXH4OTatAPo6zN8pMdYt3Z5U1JWmVwHaXZtzck.mbt9fjdk_OmLpeHRx24eyblzyrZicApZF1334Ar8I5dVRAaI9QWrOngFnM2DRHteDA4SKzmckDL881Cixp7q2znB1pKszypNKW4M1i2aqT5_UM6_.lqVm9FWinrSvrKSNin5US_ksUmyc5nleHLveJ4G5hG9xgnNGsxpCbuvwJojZ2uWrqirHvbClARpRlUqobX4hRDcmEV.5kjCPDBFwuHPVZTJ2r1cON9h9_5H69gcXF8Y2bWcg--
-X-RocketYMMF: knobi.rm
-X-Mailer: YahooMailRC/1277.43 YahooMailWebService/0.7.289.10
-References: <yO1BmxN79sN.A.xAG.8_zDKB@chimera> <pQ9WADCjgyE.A.scG.LA0DKB@chimera>  <424718.52835.qm@web32607.mail.mud.yahoo.com> <ac3eb2510905181726q3b996b8ei9c6a74fe1d3bb17d@mail.gmail.com>
-Date: Tue, 19 May 2009 00:22:33 -0700 (PDT)
-From: Martin Knoblauch <spamtrap@knobisoft.de>
-Subject: Re: [Bug #13178] Booting very slow
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-In-Reply-To: <ac3eb2510905181726q3b996b8ei9c6a74fe1d3bb17d@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 19 May 2009 03:32:57 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:32974 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753647AbZESHc4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 03:32:56 -0400
+Date: Tue, 19 May 2009 17:32:51 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Michael Abbott <michael.abbott@diamond.ac.uk>
+Subject: linux-next: cputime tree build warning
+Message-Id: <20090519173251.86d755c8.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__19_May_2009_17_32_51_+1000_aJd4GEceD9IOzlcX"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Signature=_Tue__19_May_2009_17_32_51_+1000_aJd4GEceD9IOzlcX
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
------ Original Message ----
+Hi Martin,
 
-> From: Kay Sievers <kay.sievers@vrfy.org>
-> To: Martin Knoblauch <spamtrap@knobisoft.de>
-> Cc: Rafael J. Wysocki <rjw@sisk.pl>; Linux Kernel Mailing List <linux-kernel@vger.kernel.org>; Kernel Testers List <kernel-testers@vger.kernel.org>
-> Sent: Tuesday, May 19, 2009 2:26:04 AM
-> Subject: Re: [Bug #13178] Booting very slow
-> 
-> On Mon, May 18, 2009 at 10:15, Martin Knoblauch wrote:
-> 
-> >> Bug-Entry    : http://bugzilla.kernel.org/show_bug.cgi?id=13178
-> >> Subject        : Booting very slow
-> >> Submitter    : Martin Knoblauch
-> >> Date        : 2009-04-24 12:45 (23 days old)
-> >> References    : http://marc.info/?l=linux-kernel&m=124057716231773&w=4
-> >
-> >  The issue is still open. It turns out that starting with 2.6.29-rc1 
-> /proc/mounts already has a "sysfs" line when entering the startup scripts from 
-> initrd. This breaks the RHEL4 firmware hotplug script.
-> 
-> Is that possibly a missing/failing "umount /sys" _in_ initramfs, which
-> leaves the sysfs entry in /proc/mounts behind, which then shows up as
-> a duplicate when running in the real rootfs?
-> 
+Today's linux-next build (x86_64 allmodconfig) produced this warning:
 
- could be. Remains the question, why it never showed up before 2.6.29. I compared my initrd images for 2.6.28 and 2.6.29-rc1, and they only differ in the module-binaries.
+fs/proc/uptime.c: In function 'uptime_proc_show':
+fs/proc/uptime.c:14: warning: unused variable 'len'
 
-Cheers
-Martin
+Introduced by commit ed7e789abfc433e46524419b7cc51d949552505e ("[PATCH]
+Fix idle time field in /proc/uptime") from the cputime tree.
 
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__19_May_2009_17_32_51_+1000_aJd4GEceD9IOzlcX
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkoSYKMACgkQjjKRsyhoI8z1TACfUmNv1zN1Q73F/RlPOnPwfFBM
+3lcAnRcMXAnnIx1B43DUtQCTXjtGFCvt
+=CUUK
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__19_May_2009_17_32_51_+1000_aJd4GEceD9IOzlcX--
