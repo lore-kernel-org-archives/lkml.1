@@ -1,84 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754447AbZESKkQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753762AbZESKms@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754447AbZESKkQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 06:40:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753722AbZESKkD
+	id S1753762AbZESKms (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 06:42:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752339AbZESKml
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 06:40:03 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:54172 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753715AbZESKkB (ORCPT
+	Tue, 19 May 2009 06:42:41 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:64451 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750849AbZESKml (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 06:40:01 -0400
-Subject: Re: [PATCH]cpuset: add new API to change cpuset top group's cpus
-From: Peter Zijlstra <peterz@infradead.org>
-To: Shaohua Li <shaohua.li@intel.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       "lenb@kernel.org" <lenb@kernel.org>,
-       "menage@google.com" <menage@google.com>
-In-Reply-To: <1242723364.26820.466.camel@twins>
-References: <20090519073942.GA10864@sli10-desk.sh.intel.com>
-	 <1242722454.26820.461.camel@twins>
-	 <20090519084852.GA13682@sli10-desk.sh.intel.com>
-	 <1242723364.26820.466.camel@twins>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Tue, 19 May 2009 12:38:58 +0200
-Message-Id: <1242729538.26820.497.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Tue, 19 May 2009 06:42:41 -0400
+Date: Tue, 19 May 2009 13:42:02 +0300
+From: Felipe Balbi <felipe.balbi@nokia.com>
+To: ext Kim Kyuwon <q1.kim@samsung.com>
+Cc: "Balbi Felipe (Nokia-D/Helsinki)" <felipe.balbi@nokia.com>,
+       ext Kim Kyuwon <chammoru@gmail.com>,
+       ext Mohamed Ikbel Boulabiar <boulabiar@gmail.com>,
+       Trilok Soni <soni.trilok@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>,
+       Jonathan Cameron <jic23@cam.ac.uk>,
+       Kyungmin Park <kyungmin.park@samsung.com>,
+       Jean Delvare <khali@linux-fr.org>
+Subject: Re: [RFC] Add Input IOCTL for accelerometer devices
+Message-ID: <20090519104202.GB30597@nokia.com>
+Reply-To: felipe.balbi@nokia.com
+References: <20090515131636.GE4443@nokia.com> <5d5443650905151106v2fe7ad1ci6c966463a991e732@mail.gmail.com> <45cc95260905151230j5485995dpbbd882dc91b25339@mail.gmail.com> <20090515200235.GA11829@nokia.com> <4d34a0a70905180045u6619773dt1563fe38b13d46fb@mail.gmail.com> <20090518091236.GH4443@nokia.com> <4A121C54.2040205@samsung.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A121C54.2040205@samsung.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-OriginalArrivalTime: 19 May 2009 10:42:21.0422 (UTC) FILETIME=[7D2308E0:01C9D86E]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-05-19 at 10:56 +0200, Peter Zijlstra wrote:
-> On Tue, 2009-05-19 at 16:48 +0800, Shaohua Li wrote:
-> > On Tue, May 19, 2009 at 04:40:54PM +0800, Peter Zijlstra wrote:
-> > > On Tue, 2009-05-19 at 15:39 +0800, Shaohua Li wrote:
-> > > > ACPI 4.0 defines processor aggregator device. The device can notify OS to idle
-> > > > some CPUs to save power. This isn't to hot remove cpus, but just makes cpus
-> > > > idle.
-> > > > 
-> > > > This patch adds one API to change cpuset top group's cpus. If we want to
-> > > > make one cpu idle, simply remove the cpu from cpuset top group's cpu list,
-> > > > then all tasks will be migrate to other cpus, and other tasks will not be
-> > > > migrated to this cpu again. No functional changes.
-> > > > 
-> > > > We will use this API in new ACPI processor aggregator device driver later.
-> > > 
-> > > I don't think so. There really is a lot more to do than move processes
-> > > about.
-> > no processor running is good enough for us, we don't care about interrupts/softirq/
-> > timers so far.
-> 
-> Well, I don't care for this interface.
-> 
-> > > Furthermore, I object to being able to remove online cpus from the top
-> > > cpuset, that just doesn't make sense.
-> > > 
-> > > I'd suggest using hotplug for this.
-> 
-> > cpu hotplug involves too much things, and we are afraid it's not reliable.
-> 
-> Then make it more reliable instead of providing ugly ass shit like this.
+Hi,
 
-OK, so perhaps I should have use different words. But the point is, we
-don't need a new interface to force a cpu idle. Hotplug does that.
-
-Furthermore, we should not want anything outside of that, either the cpu
-is there available for work, or its not -- halfway measures don't make
-sense.
-
-Furthermore, we already have power aware scheduling which tries to
-aggregate idle time on cpu/core/packages so as to maximize the idle time
-power savings. Use it there.
-
-> > Besides, a hot removed cpu will do a dead loop halt, which isn't power saving
-> > efficient. To make hot removed cpu enters deep C-state is in whish list for a
-> > long time, but still not available. The acpi_processor_idle is a module, and
-> > cpuidle governor potentially can't handle offline cpu.
+On Tue, May 19, 2009 at 04:41:24AM +0200, ext Kim Kyuwon wrote:
+> > what if you wanna use the accelerometer as joystick for gaming ? Imagine
+> > a portable device...
 > 
-> Then fix that hot-unplug idle loop. I agree that the hlt thing is silly,
-> and I've no idea why its still there, seems like a much better candidate
-> for your efforts than this.
+> So I said that accelerometer driver can use input_register_device, 
+> input_register_polled_device functions.
+
+exactly...
+
+> Good point. We should consider the extensibility. I agree a sensor 
+> framework that abstracts input_dev. However we should discuss with Jean 
+> Delvare about the boundary between lm-sensors and input(?)-sensors
+> 
+> * However we should first confirm and review that Jonathan's iio can be 
+> the solution for input(?)-sensors *
+
+sure, makes sense to me
+
+>  > But then comes another question: what to do with
+> > magnetometers, gyroscopes, etc etc ??
+> 
+> If we make a extensible sensor driver, I think we can add these new etc 
+> sensors in the future. step by step.
+
+agreed here. But we have to think that this might get extended, so we
+should start thinking of an abstraction layer that could evolve for
+magnetometers, gyroscopes and other sensors
+
+-- 
+balbi
