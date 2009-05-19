@@ -1,61 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755408AbZESRbv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754413AbZESRdm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755408AbZESRbv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 13:31:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753224AbZESRbp
+	id S1754413AbZESRdm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 13:33:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751383AbZESRde
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 13:31:45 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:48242 "EHLO mx1.redhat.com"
+	Tue, 19 May 2009 13:33:34 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:34383 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752005AbZESRbo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 13:31:44 -0400
-Date: Tue, 19 May 2009 13:30:38 -0400
-From: Valerie Aurora <vaurora@redhat.com>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: jblunck@suse.de, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk,
-       bharata@in.ibm.com, dwmw2@infradead.org, mszeredi@suse.cz
-Subject: Re: [PATCH 21/32] union-mount: Make lookup work for union-mounted file systems
-Message-ID: <20090519173038.GC722@shell>
-References: <1242662968-11684-1-git-send-email-jblunck@suse.de> <1242662968-11684-22-git-send-email-jblunck@suse.de> <E1M6Ryq-0001RP-Oe@pomaz-ex.szeredi.hu>
-Mime-Version: 1.0
+	id S1751177AbZESRde (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 13:33:34 -0400
+Date: Tue, 19 May 2009 19:33:35 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: hch@infradead.org, jmoyer@redhat.com, lizf@cn.fujitsu.com, mingo@elte.hu,
+       rostedt@goodmis.org, fweisbec@gmail.com, tzanussi@gmail.com,
+       tytso@mit.edu, swhiteho@redhat.com, kosaki.motohiro@jp.fujitsu.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH] convert block trace points to TRACE_EVENT()
+Message-ID: <20090519173334.GB4140@kernel.dk>
+References: <4A0BB813.9080807@cn.fujitsu.com> <x49ws8d45am.fsf@segfault.boston.devel.redhat.com> <20090519130841.GA3801@infradead.org> <20090520004943Q.fujita.tomonori@lab.ntt.co.jp>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <E1M6Ryq-0001RP-Oe@pomaz-ex.szeredi.hu>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <20090520004943Q.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 19, 2009 at 06:15:52PM +0200, Miklos Szeredi wrote:
-> On Mon, 18 May 2009, Jan Blunck wrote:
-> > On union-mounted file systems the lookup function must also visit lower layers
-> > of the union-stack when doing a lookup. This patches add support for
-> > union-mounts to cached lookups and real lookups.
-> > 
-> > We have 3 different styles of lookup functions now:
-> > - multiple pathname components, follow mounts, follow union, follow symlinks
-> > - single pathname component, doesn't follow mounts, follow union, doesn't
-> >   follow symlinks
-> > - single pathname component doesn't follow mounts, doesn't follow unions,
-> >   doesn't follow symlinks
+On Wed, May 20 2009, FUJITA Tomonori wrote:
+> On Tue, 19 May 2009 09:08:41 -0400
+> Christoph Hellwig <hch@infradead.org> wrote:
 > 
-> Ugh...  I do wonder if this could be done in a less complicated way,
-> there does seem to be a fair amount of duplication between these
-> functions.
+> > On Tue, May 19, 2009 at 08:59:29AM -0400, Jeff Moyer wrote:
+> > > I'm not sure I'm comfortable with this.  Having had to diagnose
+> > > performance problems using blktrace, I find the dev_t information for
+> > > plugs and unplugs especially interesting.  Maybe we can still figure
+> > > this out given the context in the trace, though.  Can you comment on
+> > > that?
+> > 
+> > The problem is that right now we still allow request queues shared by
+> > multiple gendisks, so we can't get at the gendisk.  The blktrace ioctl
+> > interface gets around that by doing the setup with an ioctl on the
+> > block device node and storing the dev_t at that point.
+> > 
+> > But I don't think we actually have any drivers left sharing a queue
+> > that way, and I'd love to get rid of that for various reasons.
+> 
+> There are still some (e.g. drivers/block/floppy.c)? I though that we
+> hit this when we tried to add the command filter feature though I
+> might be wrong (I can't recall).
 
-Yeah, I agree.  My best idea so far is not very good - have one
-skeleton function and pass in function pointers for the
-lookup_topmost() and build_union() functions.  Do you have any ideas?
+And mtd, iirc. But only a few. I'll fiddle up a patch to finally get rid
+of this, it has been pending for... years.
 
-> Worse, it looks like there are still i_mutex lock ordering issues
-> (__hash_lookup_topmost()/__hash_lookup_build_union()).  What happens
-> if two separate unions of two filesystems are built where the order of
-> branches is reversed?
+-- 
+Jens Axboe
 
-We have a similar problem in union_copyup_dir().  Hm, thinking about
-this, only one of the file systems can actually change while we are
-doing work.  That might help us get out of the lock ordering problems.
-Thoughts?
-
--VAL
