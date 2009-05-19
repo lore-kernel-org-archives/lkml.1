@@ -1,90 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754031AbZESEXS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753153AbZESEaw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754031AbZESEXS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 00:23:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750840AbZESEXJ
+	id S1753153AbZESEaw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 00:30:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750802AbZESEao
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 00:23:09 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:56718 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750838AbZESEXI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 00:23:08 -0400
-Date: Tue, 19 May 2009 14:23:06 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Al Viro <viro@ZenIV.linux.org.uk>, "Theodore Ts'o" <tytso@mit.edu>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@lst.de>
-Subject: linux-next: manual merge of the vfs tree with the ext4 tree
-Message-Id: <20090519142306.8476809a.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 19 May 2009 00:30:44 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:54624 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750778AbZESEan (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 00:30:43 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: "Zhang, Yanmin" <yanmin.zhang@intel.com>
+Subject: Re: [PATCH 4/4] zone_reclaim_mode is always 0 by default
+Cc: kosaki.motohiro@jp.fujitsu.com, "Wu, Fengguang" <fengguang.wu@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>
+In-Reply-To: <4D05DB80B95B23498C72C700BD6C2E0B2EF6E29A@pdsmsx502.ccr.corp.intel.com>
+References: <20090519102634.4EB4.A69D9226@jp.fujitsu.com> <4D05DB80B95B23498C72C700BD6C2E0B2EF6E29A@pdsmsx502.ccr.corp.intel.com>
+Message-Id: <20090519125744.4EC3.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="ISO-2022-JP"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Tue, 19 May 2009 13:30:40 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Al, Ted,
+> >>-----Original Message-----
+> >>From: KOSAKI Motohiro [mailto:kosaki.motohiro@jp.fujitsu.com]
+> >>Sent: 2009$B%Hs%d%D(B19$B%M%f(B 10:54
+> >>To: Wu, Fengguang
+> >>Cc: kosaki.motohiro@jp.fujitsu.com; LKML; linux-mm; Andrew Morton; Rik van
+> >>Riel; Christoph Lameter; Zhang, Yanmin
+> >>Subject: Re: [PATCH 4/4] zone_reclaim_mode is always 0 by default
+> >>
+> >>> On Wed, May 13, 2009 at 12:08:12PM +0900, KOSAKI Motohiro wrote:
+> >>> > Subject: [PATCH] zone_reclaim_mode is always 0 by default
+> >>> >
+> >>> > Current linux policy is, if the machine has large remote node distance,
+> >>> >  zone_reclaim_mode is enabled by default because we've be able to assume
+> 
+> >>
+> >>ok, I would explain zone reclaim design and performance tendency.
+> >>
+> >>Firstly, we can make classification of linux eco system, roughly.
+> >> - HPC
+> >> - high-end server
+> >> - volume server
+> >> - desktop
+> >> - embedded
+> >>
+> >>it is separated by typical workload mainly.
+> >>
+> >>Secondly, zone_reclaim mean "I strongly dislike remote node access than
+> >>disk access".
+> >>it is very fitting on HPC workload. it because
+> >>  - HPC workload typically make the number of the same as cpus of processess
+> >>(or thread).
+> >>    IOW, the workload typically use memory equally each node.
+> >>  - HPC workload is typically CPU bounded job. CPU migration is rare.
+> >>  - HPC workload is typically long lived. (possible >1 year)
+> >>    IOW, remote node allocation makes _very_ _very_ much remote node access.
+> >>
+> >>but zone_reclaim don't fit typical server workload.
+> >>  - server workload often make thread pool and some thread is sleeping until
+> >>    a request receved.
+> >>    IOW, when thread waking-up, the thread might move another cpu.
+> >>    node distance tendency don't make sense on weak cpu locality workload.
+> >>
+> >>Plus, disk-cache is the file-server's identity. we shouldn't think it's not
+> >>important.
+> >>Plus, DB software can consume almost system memory and (In general) RDB data
+> >>makes
+> >>harder to split equally as hpc.
+> >>
+> >>desktop workload is special. desktop peopole can run various workload beyond
+> >>our assumption. So, we shouldn't have any workload assumption to desktop
+> >>people.
+> >>However, AFAIK almost desktop software use memory as UMA.
+> >>
+> >>we don't need to care embedded. it is typically UMA.
+> >>
+> >>
+> >>IOW, the benefit of zone reclaim depend on "strong cpu locality" and
+> >>"workload is cpu bounded" and "thead is long lived".
+> >>but many workload don't fill above requirement. IOW, zone reclaim is
+> >>workload depended feature (as Wu said).
+> >>
+> >>
+> >>In general, the feature of workload depended don't fit default option.
+> >>we can't know end-user run what workload anyway.
+> >>
+> >>Fortunately (or Unfortunately), typical workload and machine size had
+> >>significant mutuality.
+> >>Thus, the current default setting calculation had worked well in past days.
+> [YM] Your analysis is clear and deep.
 
-Today's linux-next merge of the vfs tree got a conflict in
-fs/ext4/super.c between commit cb0765fe4c3db8c9c22f1ed1017cbced2dd68150
-("ext4: Add a comprehensive block validity check to ext4_get_blocks()")
-from the ext4 tree and various commits from the vfs tree.
+Thanks!
 
-Just context changes.  I fixed it up (see below - please check as I am
-not sure of the ordering constraints in the first hunk) and can carry the
-fixup as necessary.
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
 
-diff --cc fs/ext4/super.c
-index eca6c05,d789833..0000000
---- a/fs/ext4/super.c
-+++ b/fs/ext4/super.c
-@@@ -568,7 -564,11 +569,12 @@@ static void ext4_put_super(struct super
-  	struct ext4_super_block *es = sbi->s_es;
-  	int i, err;
-  
-+ 	lock_super(sb);
-+ 	lock_kernel();
-+ 	if (sb->s_dirt)
-+ 		ext4_write_super_locked(sb);
-+ 
- +	ext4_release_system_zone(sb);
-  	ext4_mb_release(sb);
-  	ext4_ext_release(sb);
-  	ext4_xattr_put_super(sb);
-@@@ -3322,11 -3268,30 +3325,18 @@@ int ext4_force_commit(struct super_bloc
-  	return ret;
-  }
-  
-- static void ext4_write_super(struct super_block *sb)
- -/*
- - * Ext4 always journals updates to the superblock itself, so we don't
- - * have to propagate any other updates to the superblock on disk at this
- - * point.  (We can probably nuke this function altogether, and remove
- - * any mention to sb->s_dirt in all of fs/ext4; eventual cleanup...)
- - */
-+ static void ext4_write_super_locked(struct super_block *sb)
-  {
- -	if (EXT4_SB(sb)->s_journal) {
- -		if (mutex_trylock(&sb->s_lock) != 0)
- -			BUG();
- -		sb->s_dirt = 0;
- -	} else {
- -		ext4_commit_super(sb, EXT4_SB(sb)->s_es, 1);
- -	}
- +	ext4_commit_super(sb, 1);
-  }
-  
-+ static void ext4_write_super(struct super_block *sb)
-+ {
-+ 	lock_super(sb);
-+ 	ext4_write_super_locked(sb);
-+ 	unlock_super(sb);
-+ }
-+ 
-  static int ext4_sync_fs(struct super_block *sb, int wait)
-  {
-  	int ret = 0;
+> >>Now, it was breaked. What should we do?
+> >>Yanmin, We know 99% linux people use intel cpu and you are one of
+> >>most hard repeated testing
+> [YM] It's very easy to reproduce them on my machines. :) Sometimes, because the 
+> issues only exist on machines with lots of cpu while other community developers
+> have no such environments. 
+>
+> 
+>  guy in lkml and you have much test.
+> >>May I ask your tested machine and benchmark?
+> [YM] Usually I started lots of benchmark testing against the latest kernel, but 
+> as for this issue, it's reported by a customer firstly. The customer runs apache
+> on Nehalem machines to access lots of files. So the issue is an example of file 
+> server.
+
+hmmm. 
+I'm surprised this report. I didn't know this problem. oh..
+
+Actually, I don't think apache is only file server.
+apache is one of killer application in linux. it run on very widely organization.
+you think large machine don't run apache? I don't think so.
+
+
+
+> BTW, I found many test cases of fio have big drop after I upgraded BIOS of one 
+> Nehalem machine. By checking vmstat data, I found almost a half memory is always free. It's also related to zone_reclaim_mode because new BIOS changes the node
+> distance to a large value. I use numactl --interleave=all to walkaround the problem temporarily.
+> 
+> I have no HPC environment.
+
+Yeah, that's ok. I and cristoph have. My worries is my unknown workload become regression.
+so, May I assume you run your benchmark both zonre reclaim 0 and 1 and you 
+haven't seen regression by non-zone reclaim mode?
+if so, it encourage very much to me.
+
+if zone reclaim mode disabling don't have regression, I'll pushing to 
+remove default zone reclaim mode completely again.
+
+
+> >>if zone_reclaim=0 tendency workload is much than zone_reclaim=1 tendency
+> >>workload,
+> >> we can drop our afraid and we would prioritize your opinion, of cource.
+> So it seems only file servers have the issue currently.
+
+
+
+
+
