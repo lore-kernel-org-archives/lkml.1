@@ -1,92 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755556AbZESR0Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755550AbZESR0i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755556AbZESR0Z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 13:26:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754184AbZESR0G
+	id S1755550AbZESR0i (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 13:26:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755645AbZESR0V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 13:26:06 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:34619 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751701AbZESR0C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 13:26:02 -0400
-From: Mimi Zohar <zohar@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>, hooanon05@yahoo.co.jp,
-       "J. Bruce Fields" <bfields@fieldses.org>,
-       Eric Paris <eparis@redhat.com>, Hugh Dickins <hugh@veritas.com>,
-       James Morris <jmorris@namei.org>,
-       David Safford <safford@watson.ibm.com>, linux-nfs@vger.kernel.org,
-       Mimi Zohar <zohar@linux.vnet.ibm.com>, Mimi Zohar <zohar@us.ibm.com>
-Subject: [PATCH 2/3] integrity: move ima_counts_get
-Date: Tue, 19 May 2009 13:25:58 -0400
-Message-Id: <4b26da825c7cff6c22e924012011bedb76f7079b.1242753148.git.zohar@linux.vnet.ibm.com>
-X-Mailer: git-send-email 1.6.0.6
-In-Reply-To: <8971a1efcc5153f1c9b167997e5ca0c3c40a69d5.1242753145.git.zohar@linux.vnet.ibm.com>
-References: <8971a1efcc5153f1c9b167997e5ca0c3c40a69d5.1242753145.git.zohar@linux.vnet.ibm.com>
-In-Reply-To: <8971a1efcc5153f1c9b167997e5ca0c3c40a69d5.1242753145.git.zohar@linux.vnet.ibm.com>
-References: <8971a1efcc5153f1c9b167997e5ca0c3c40a69d5.1242753145.git.zohar@linux.vnet.ibm.com>
+	Tue, 19 May 2009 13:26:21 -0400
+Received: from qw-out-2122.google.com ([74.125.92.27]:32830 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755458AbZESR0T convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 13:26:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=e2p0/iyxqZmAgcogy8cithWeBW1FLoTyK/5k4s1Jmvpl2mTZ2SE8G356MEcqr6aaNL
+         J3CrE+bcxDxxXf7E6TYKK70TXitVJuY7HLeFz8FowFC2+c9U3CusA/kqSlaNF7OAhtZ6
+         X6PXiKjcAMFnXse8fssvPYtjiIHrowp+bo58k=
+MIME-Version: 1.0
+In-Reply-To: <63386a3d0905190923t36d301c5hf245c06db00b6127@mail.gmail.com>
+References: <63386a3d0905181340y42ad1868k6b2978e586abc18d@mail.gmail.com>
+	 <4A12C3B5.2050100@compulab.co.il>
+	 <63386a3d0905190923t36d301c5hf245c06db00b6127@mail.gmail.com>
+Date: Tue, 19 May 2009 22:56:16 +0530
+Message-ID: <5d5443650905191026w22b0ff95j992e09923f55dd0a@mail.gmail.com>
+Subject: Re: [PATCH 1/1] MFD: Add U300 AB3100 core support v2
+From: Trilok Soni <soni.trilok@gmail.com>
+To: Linus Walleij <linus.ml.walleij@gmail.com>
+Cc: Mike Rapoport <mike@compulab.co.il>, linux-kernel@vger.kernel.org,
+       sameo@linux.intel.com, linux-i2c@vger.kernel.org,
+       Linus Walleij <linus.walleij@stericsson.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Based on discussion on lkml (Andrew Morton and Eric Paris),
-move ima_counts_get down a layer into shmem/hugetlb__file_setup().
-Resolves drm shmem_file_setup() usage case as well.
+Hi Linus,
 
-Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
----
-diff --git a/fs/hugetlbfs/inode.c b/fs/hugetlbfs/inode.c
-index 153d968..ccc62de 100644
---- a/fs/hugetlbfs/inode.c
-+++ b/fs/hugetlbfs/inode.c
-@@ -30,6 +30,7 @@
- #include <linux/dnotify.h>
- #include <linux/statfs.h>
- #include <linux/security.h>
-+#include <linux/ima.h>
- 
- #include <asm/uaccess.h>
- 
-@@ -997,6 +998,7 @@ struct file *hugetlb_file_setup(const char *name, size_t size, int acctflag)
- 			&hugetlbfs_file_operations);
- 	if (!file)
- 		goto out_dentry; /* inode is already attached */
-+	ima_counts_get(file);
- 
- 	return file;
- 
-diff --git a/ipc/shm.c b/ipc/shm.c
-index 47b4642..5608183 100644
---- a/ipc/shm.c
-+++ b/ipc/shm.c
-@@ -384,7 +384,6 @@ static int newseg(struct ipc_namespace *ns, struct ipc_params *params)
- 	error = PTR_ERR(file);
- 	if (IS_ERR(file))
- 		goto no_file;
--	ima_counts_get(file);
- 
- 	id = ipc_addid(&shm_ids(ns), &shp->shm_perm, ns->shm_ctlmni);
- 	if (id < 0) {
-diff --git a/mm/shmem.c b/mm/shmem.c
-index a817f75..0132fbd 100644
---- a/mm/shmem.c
-+++ b/mm/shmem.c
-@@ -2659,6 +2659,7 @@ struct file *shmem_file_setup(char *name, loff_t size, unsigned long flags)
- 	if (error)
- 		goto close_file;
- #endif
-+	ima_counts_get(file);
- 	return file;
- 
- close_file:
-@@ -2684,7 +2685,6 @@ int shmem_zero_setup(struct vm_area_struct *vma)
- 	if (IS_ERR(file))
- 		return PTR_ERR(file);
- 
--	ima_counts_get(file);
- 	if (vma->vm_file)
- 		fput(vma->vm_file);
- 	vma->vm_file = file;
+On Tue, May 19, 2009 at 9:53 PM, Linus Walleij
+<linus.ml.walleij@gmail.com> wrote:
+> Hm I shouldn't been so trigger-happy as to send v3 out so soon... :-/
+>
+> Thanks for you quick review Mike!
+>
+> 2009/5/19 Mike Rapoport <mike@compulab.co.il>:
+>
+>>> +     /* Set a pointer back to the container in device data */
+>>> +     for (i = 0; i < ARRAY_SIZE(ab3100_platform_devs); i++)
+>>> +             platform_set_drvdata(ab3100_platform_devs[i], ab3100_local);
+>>> +
+>>> +     /* Register the platform devices */
+>>> +     platform_add_devices(ab3100_platform_devs,
+>>> +                          ARRAY_SIZE(ab3100_platform_devs));
+>>
+>> If you register sub-devices this way, they won't appear as ab3100 children.
+>
+> I'll set the parent in the first loop then (will test that this works) because I
+> really like that device table. (Similar to how the board setup does things.)
+>
+
+I don't know but why people are not encouraging to use mfd_xxx apis
+here? Lot's of drivers are available under drivers/mfd, but only
+couple of them are using real mfd_xxx apis? Is there anything missing
+in those apis?
+
 -- 
-1.6.0.6
-
+---Trilok Soni
+http://triloksoni.wordpress.com
+http://www.linkedin.com/in/triloksoni
