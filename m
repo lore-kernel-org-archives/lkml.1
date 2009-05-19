@@ -1,283 +1,260 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751696AbZESIbG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753449AbZESIcT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751696AbZESIbG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 04:31:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750840AbZESIa4
+	id S1753449AbZESIcT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 04:32:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751051AbZESIcI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 04:30:56 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:38314 "EHLO smtps.tip.net.au"
+	Tue, 19 May 2009 04:32:08 -0400
+Received: from hera.kernel.org ([140.211.167.34]:60745 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750820AbZESIaz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 04:30:55 -0400
-Date: Tue, 19 May 2009 18:30:44 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for May 19
-Message-Id: <20090519183044.a910aa7a.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__19_May_2009_18_30_44_+1000_G=CxVZxGE21lui3J"
+	id S1750840AbZESIcH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 04:32:07 -0400
+Date: Tue, 19 May 2009 08:31:12 GMT
+From: tip-bot for Li Zefan <lizf@cn.fujitsu.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       lizf@cn.fujitsu.com, tytso@mit.edu, fweisbec@gmail.com,
+       rostedt@goodmis.org, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       fweisbec@gmail.com, rostedt@goodmis.org, lizf@cn.fujitsu.com,
+       tglx@linutronix.de, tytso@mit.edu, mingo@elte.hu
+In-Reply-To: <4A125503.5060406@cn.fujitsu.com>
+References: <4A125503.5060406@cn.fujitsu.com>
+Subject: [tip:tracing/core] tracing/events: Documentation updates
+Message-ID: <tip-143c145e3a475065a4be661468d0df1bd0b25f74@git.kernel.org>
+Git-Commit-ID: 143c145e3a475065a4be661468d0df1bd0b25f74
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 19 May 2009 08:31:14 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__19_May_2009_18_30_44_+1000_G=CxVZxGE21lui3J
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Commit-ID:  143c145e3a475065a4be661468d0df1bd0b25f74
+Gitweb:     http://git.kernel.org/tip/143c145e3a475065a4be661468d0df1bd0b25f74
+Author:     Li Zefan <lizf@cn.fujitsu.com>
+AuthorDate: Tue, 19 May 2009 14:43:15 +0800
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 19 May 2009 10:29:21 +0200
 
-Hi all,
+tracing/events: Documentation updates
 
-Changes since 20090518:
+- fix some typos
+- document the difference between '>' and '>>'
+- document the 'enable' toggle
+- remove section "Defining an event-enabled tracepoint", since it's
+  out-dated and sample/trace_events/ already serves this purpose.
 
-New tree:
-	edac-amd
+v2: add "Updated by Li Zefan"
 
-Dropped tree:
-	edac-amd (build problem)
+[ Impact: make documentation up-to-date ]
 
-The net tree gained a conflict against Linus' tree.
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: "Theodore Ts'o" <tytso@mit.edu>
+LKML-Reference: <4A125503.5060406@cn.fujitsu.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-The vfs tree gained a conflict against the ext4 tree.
 
-The block tree lost a conflict.
+---
+ Documentation/trace/events.txt |  159 ++++++++++++++-------------------------
+ 1 files changed, 57 insertions(+), 102 deletions(-)
 
-The edac-amd tree gained a build failure and was dropped for today.
-
-----------------------------------------------------------------------------
-
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-(patches at
-http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
-
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups (if any), it is also built with powerpc allnoconfig (32 and
-64 bit), ppc44x_defconfig and allyesconfig (minus
-CONFIG_PROFILE_ALL_BRANCHES) and i386, sparc and sparc64 defconfig.
-These builds also have CONFIG_ENABLE_WARN_DEPRECATED,
-CONFIG_ENABLE_MUST_CHECK and CONFIG_DEBUG_INFO disabled when necessary.
-
-Below is a summary of the state of the merge.
-
-We are up to 138 trees (counting Linus' and 18 trees of patches pending for
-Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging fixes/fixes
-Merging arm-current/master
-Merging m68k-current/for-linus
-Merging powerpc-merge/merge
-Merging sparc-current/master
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sound-current/for-linus
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/master
-Merging quilt/driver-core.current
-Merging quilt/usb.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-linus
-Merging audit-current/for-linus
-Merging crypto-current/master
-Merging dwmw2/master
-Merging arm/devel
-Merging avr32/avr32-arch
-Merging blackfin/for-linus
-Merging cris/for-next
-Merging ia64/test
-Merging m68k/for-next
-Merging m68knommu/for-next
-Merging mips/mips-for-linux-next
-Merging parisc/master
-Merging powerpc/next
-Merging 4xx/next
-Merging galak/next
-Merging pxa/for-next
-CONFLICT (content): Merge conflict in arch/arm/mach-pxa/viper.c
-Merging s390/features
-Merging sh/master
-Merging sparc/master
-Merging x86/auto-x86-next
-Merging xtensa/master
-Merging configfs/linux-next
-Merging ext4/next
-Merging fatfs/master
-Merging fuse/for-next
-Merging gfs2/master
-Merging jfs/next
-Merging nfs/linux-next
-Merging nfsd/nfsd-next
-Merging nilfs2/for-next
-Merging ocfs2/linux-next
-Merging squashfs/master
-Merging v9fs/for-next
-CONFLICT (content): Merge conflict in net/9p/protocol.c
-Merging ubifs/linux-next
-Merging xfs/master
-Merging tip-core/auto-core-next
-Merging cpus4096/auto-cpus4096-next
-Merging tracing/auto-tracing-next
-Merging genirq/auto-genirq-next
-CONFLICT (content): Merge conflict in arch/mips/sibyte/bcm1480/irq.c
-CONFLICT (content): Merge conflict in arch/mips/sibyte/sb1250/irq.c
-Merging safe-poison-pointers/auto-safe-poison-pointers-next
-Merging sched/auto-sched-next
-Merging stackprotector/auto-stackprotector-next
-Merging timers/auto-timers-next
-Merging pci/linux-next
-Merging quilt/device-mapper
-Merging hid/for-next
-Merging quilt/i2c
-Merging quilt/jdelvare-hwmon
-Merging quilt/kernel-doc
-Merging v4l-dvb/master
-Merging quota/for_next
-Merging kbuild/master
-[master 96f680a] Revert "initconst adjustments"
-Merging ide/for-next
-Merging libata/NEXT
-Merging infiniband/for-next
-Merging acpi/test
-Merging ieee1394/for-next
-Merging ubi/linux-next
-Merging kvm/master
-Merging dlm/next
-Merging scsi/master
-CONFLICT (content): Merge conflict in include/Kbuild
-Merging async_tx/next
-Merging udf/for_next
-Merging net/master
-CONFLICT (content): Merge conflict in drivers/scsi/fcoe/fcoe.c
-CONFLICT (content): Merge conflict in include/linux/mmc/sdio_ids.h
-Merging wireless/master
-[master 07f38b9] Revert "rfkill: remove user_claim stuff"
-Merging mtd/master
-Merging crypto/master
-Merging vfs/for-next
-CONFLICT (content): Merge conflict in fs/ext4/super.c
-CONFLICT (content): Merge conflict in fs/fuse/inode.c
-Merging sound/for-next
-Merging cpufreq/next
-Merging quilt/rr
-Merging cifs/master
-Merging mmc/next
-Merging input/next
-Merging bkl-removal/bkl-removal
-Merging lsm/for-next
-Merging block/for-next
-CONFLICT (content): Merge conflict in drivers/block/hd.c
-CONFLICT (content): Merge conflict in drivers/block/mg_disk.c
-CONFLICT (content): Merge conflict in drivers/ide/ide-atapi.c
-CONFLICT (content): Merge conflict in drivers/ide/ide-cd.c
-CONFLICT (content): Merge conflict in drivers/ide/ide-floppy.c
-CONFLICT (content): Merge conflict in drivers/ide/ide-tape.c
-[master 6a0581c] Revert "block: move completion related functions back to b=
-lk-core.c"
-Applying: scsi/block: fixup scsi_transport_fc for block changes
-Merging embedded/master
-Merging firmware/master
-Merging pcmcia/master
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-Merging kgdb/kgdb-next
-Merging slab/for-next
-Merging uclinux/for-next
-Merging md/for-next
-Merging mfd/for-next
-Merging hdlc/hdlc-next
-Merging drm/drm-next
-Merging voltage/for-next
-Merging security-testing/next
-Merging lblnet/master
-Merging quilt/ttydev
-Merging agp/agp-next
-Merging generic-ipi/auto-generic-ipi-next
-Merging oprofile/auto-oprofile-next
-Merging fastboot/auto-fastboot-next
-Merging sparseirq/auto-sparseirq-next
-Merging iommu/auto-iommu-next
-Merging uwb/for-upstream
-Merging watchdog/master
-Merging bdev/master
-Merging dwmw2-iommu/master
-CONFLICT (content): Merge conflict in drivers/pci/intel-iommu.c
-CONFLICT (content): Merge conflict in drivers/pci/intr_remapping.c
-Merging cputime/cputime
-Merging osd/linux-next
-Merging jc_docs/docs-next
-Merging nommu/master
-Merging trivial/for-next
-Merging audit/for-next
-Merging omap/for-next
-Merging quilt/aoe
-Merging kmemleak/kmemleak
-CONFLICT (delete/modify): arch/x86/kernel/vmlinux_32.lds.S deleted in HEAD =
-and modified in kmemleak/kmemleak. Version kmemleak/kmemleak of arch/x86/ke=
-rnel/vmlinux_32.lds.S left in tree.
-CONFLICT (delete/modify): arch/x86/kernel/vmlinux_64.lds.S deleted in HEAD =
-and modified in kmemleak/kmemleak. Version kmemleak/kmemleak of arch/x86/ke=
-rnel/vmlinux_64.lds.S left in tree.
-CONFLICT (content): Merge conflict in lib/Kconfig.debug
-CONFLICT (content): Merge conflict in mm/slob.c
-$ git rm -f arch/x86/kernel/vmlinux_32.lds.S arch/x86/kernel/vmlinux_64.lds=
-.S
-Merging suspend/linux-next
-Merging bluetooth/master
-Merging edac-amd/for-next
-$ git reset --hard HEAD^
-Merging asm-generic/next
-Merging quilt/driver-core
-CONFLICT (content): Merge conflict in init/main.c
-Merging quilt/usb
-CONFLICT (content): Merge conflict in drivers/usb/serial/sierra.c
-Merging quilt/staging
-CONFLICT (content): Merge conflict in drivers/staging/rt2860/common/mlme.c
-CONFLICT (content): Merge conflict in drivers/staging/rt2870/common/mlme.c
-CONFLICT (content): Merge conflict in drivers/staging/rt3070/common/mlme.c
-Merging scsi-post-merge/master
-
---Signature=_Tue__19_May_2009_18_30_44_+1000_G=CxVZxGE21lui3J
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkoSbjQACgkQjjKRsyhoI8wJ4ACgg2kqW/uVudd5E6CflueXAPaj
-K5IAoJTvL1d3fmPr2E1Y01B6EOl5+VZ/
-=xEyM
------END PGP SIGNATURE-----
-
---Signature=_Tue__19_May_2009_18_30_44_+1000_G=CxVZxGE21lui3J--
+diff --git a/Documentation/trace/events.txt b/Documentation/trace/events.txt
+index abdee66..f157d75 100644
+--- a/Documentation/trace/events.txt
++++ b/Documentation/trace/events.txt
+@@ -1,9 +1,10 @@
+ 			     Event Tracing
+ 
+ 		Documentation written by Theodore Ts'o
++			Updated by Li Zefan
+ 
+-Introduction
+-============
++1. Introduction
++===============
+ 
+ Tracepoints (see Documentation/trace/tracepoints.txt) can be used
+ without creating custom kernel modules to register probe functions
+@@ -12,30 +13,37 @@ using the event tracing infrastructure.
+ Not all tracepoints can be traced using the event tracing system;
+ the kernel developer must provide code snippets which define how the
+ tracing information is saved into the tracing buffer, and how the
+-the tracing information should be printed.
++tracing information should be printed.
+ 
+-Using Event Tracing
+-===================
++2. Using Event Tracing
++======================
++
++2.1 Via the 'set_event' interface
++---------------------------------
+ 
+ The events which are available for tracing can be found in the file
+-/sys/kernel/debug/tracing/available_events.
++/debug/tracing/available_events.
+ 
+ To enable a particular event, such as 'sched_wakeup', simply echo it
+-to /sys/debug/tracing/set_event. For example:
++to /debug/tracing/set_event. For example:
+ 
+-	# echo sched_wakeup > /sys/kernel/debug/tracing/set_event
++	# echo sched_wakeup >> /debug/tracing/set_event
+ 
+-[ Note: events can also be enabled/disabled via the 'enabled' toggle
+-  found in the /sys/kernel/tracing/events/ hierarchy of directories. ]
++[ Note: '>>' is necessary, otherwise it will firstly disable
++  all the events. ]
+ 
+ To disable an event, echo the event name to the set_event file prefixed
+ with an exclamation point:
+ 
+-	# echo '!sched_wakeup' >> /sys/kernel/debug/tracing/set_event
++	# echo '!sched_wakeup' >> /debug/tracing/set_event
++
++To disable all events, echo an empty line to the set_event file:
++
++	# echo > /debug/tracing/set_event
+ 
+-To disable events, echo an empty line to the set_event file:
++To enable all events, echo '*:*' or '*:' to the set_event file:
+ 
+-	# echo > /sys/kernel/debug/tracing/set_event
++	# echo *:* > /debug/tracing/set_event
+ 
+ The events are organized into subsystems, such as ext4, irq, sched,
+ etc., and a full event name looks like this: <subsystem>:<event>.  The
+@@ -44,92 +52,39 @@ file.  All of the events in a subsystem can be specified via the syntax
+ "<subsystem>:*"; for example, to enable all irq events, you can use the
+ command:
+ 
+-	# echo 'irq:*' > /sys/kernel/debug/tracing/set_event
+-
+-Defining an event-enabled tracepoint
+-------------------------------------
+-
+-A kernel developer which wishes to define an event-enabled tracepoint
+-must declare the tracepoint using TRACE_EVENT instead of DECLARE_TRACE.
+-This is done via two header files in include/trace.  For example, to
+-event-enable the jbd2 subsystem, we must create two files,
+-include/trace/jbd2.h and include/trace/jbd2_event_types.h.  The
+-include/trace/jbd2.h file should be included by kernel source files that
+-will have a tracepoint inserted, and might look like this:
+-
+-#ifndef _TRACE_JBD2_H
+-#define _TRACE_JBD2_H
+-
+-#include <linux/jbd2.h>
+-#include <linux/tracepoint.h>
+-
+-#include <trace/jbd2_event_types.h>
+-
+-#endif
+-
+-In a file that utilizes a jbd2 tracepoint, this header file would be
+-included.  Note that you still have to use DEFINE_TRACE().  So for
+-example, if fs/jbd2/commit.c planned to use the jbd2_start_commit
+-tracepoint, it would have the following near the beginning of the file:
+-
+-#include <trace/jbd2.h>
+-
+-DEFINE_TRACE(jbd2_start_commit);
+-
+-Then in the function that would call the tracepoint, it would call the
+-tracepoint function.  (For more information, please see the tracepoint
+-documentation in Documentation/trace/tracepoints.txt):
+-
+-	trace_jbd2_start_commit(journal, commit_transaction);
+-
+-The code snippets which allow jbd2_start_commit to be an event-enabled
+-tracepoint are placed in the file include/trace/jbd2_event_types.h:
+-
+-/* use <trace/jbd2.h> instead */
+-#ifndef TRACE_EVENT
+-# error Do not include this file directly.
+-# error Unless you know what you are doing.
+-#endif
+-
+-#undef TRACE_SYSTEM
+-#define TRACE_SYSTEM jbd2
+-
+-#include <linux/jbd2.h>
+-
+-TRACE_EVENT(jbd2_start_commit,
+-	TP_PROTO(journal_t *journal, transaction_t *commit_transaction),
+-	TP_ARGS(journal, commit_transaction),
+-	TP_STRUCT__entry(
+-		__array(	char,	devname, BDEVNAME_SIZE+24 )
+-		__field(	int,	transaction		  )
+-	),
+-	TP_fast_assign(
+-		memcpy(__entry->devname, journal->j_devname, BDEVNAME_SIZE+24);
+-		__entry->transaction	= commit_transaction->t_tid;
+-	),
+-	TP_printk("dev %s transaction %d",
+-		  __entry->devname, __entry->transaction)
+-);
+-
+-The TP_PROTO and TP_ARGS are unchanged from DECLARE_TRACE.  The new
+-arguments to TRACE_EVENT are TP_STRUCT__entry, TP_fast_assign, and
+-TP_printk.
+-
+-TP_STRUCT__entry defines the data structure which will be stored in the
+-trace buffer.  Normally, fields in __entry will be arrays or simple
+-types.  It is possible to place data structures in __entry --- however,
+-pointers in the data structure can not be trusted, since they will be
+-accessed sometime later by TP_printk, and if the data structure contains
+-fields that will not or cannot be used by TP_printk, this will waste
+-space in the trace buffer.  In general, data structures should be
+-avoided, unless they do only contain non-pointer types and all of the
+-fields will be used by TP_printk.
+-
+-TP_fast_assign defines the code snippet which saves information into the
+-__entry data structure, using the passed-in arguments defined in
+-TP_PROTO and TP_ARGS.
+-
+-Finally, TP_printk will print the __entry data structure.  At the time
+-when the code snippet defined by TP_printk is executed, it will not have
+-access to the TP_ARGS arguments; it can only use the information saved
+-in the __entry data structure.
++	# echo 'irq:*' > /debug/tracing/set_event
++
++2.2 Via the 'enable' toggle
++---------------------------
++
++The events available are also listed in /debug/tracing/events/ hierarchy
++of directories.
++
++To enable event 'sched_wakeup':
++
++	# echo 1 > /debug/tracing/events/sched/sched_wakeup/enable
++
++To disable it:
++
++	# echo 0 > /debug/tracing/events/sched/sched_wakeup/enable
++
++To enable all events in sched subsystem:
++
++	# echo 1 > /debug/tracing/events/sched/enable
++
++To eanble all events:
++
++	# echo 1 > /debug/tracing/events/enable
++
++When reading one of these enable files, there are four results:
++
++ 0 - all events this file affects are disabled
++ 1 - all events this file affects are enabled
++ X - there is a mixture of events enabled and disabled
++ ? - this file does not affect any event
++
++3. Defining an event-enabled tracepoint
++=======================================
++
++See The example provided in samples/trace_events
++
