@@ -1,61 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753826AbZESH7S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752994AbZESIGG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753826AbZESH7S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 03:59:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751172AbZESH7J
+	id S1752994AbZESIGG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 04:06:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752289AbZESIFw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 03:59:09 -0400
-Received: from mtagate1.de.ibm.com ([195.212.17.161]:39316 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750759AbZESH7I (ORCPT
+	Tue, 19 May 2009 04:05:52 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:40954 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752165AbZESIFv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 03:59:08 -0400
-Message-ID: <4A1266CC.5040801@linux.vnet.ibm.com>
-Date: Tue, 19 May 2009 09:59:08 +0200
-From: Stefan Raspl <raspl@linux.vnet.ibm.com>
-Reply-To: raspl@linux.vnet.ibm.com
-User-Agent: Thunderbird 2.0.0.12 (X11/20080303)
-MIME-Version: 1.0
-To: mingo@redhat.com, Li Zefan <lizf@cn.fujitsu.com>, schwidefsky@de.ibm.com,
-       heiko.carstens@de.ibm.com, linux-btrace@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [Patch updated] blktrace: remove debugfs entries on bad path
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 19 May 2009 04:05:51 -0400
+Subject: Re: [PATCH 2/3] vmscan: make mapped executable pages the first
+ class  citizen
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Wu Fengguang <fengguang.wu@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Elladan <elladan@eskimo.com>,
+       Nick Piggin <npiggin@suse.de>, Johannes Weiner <hannes@cmpxchg.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>, "tytso@mit.edu" <tytso@mit.edu>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "minchan.kim@gmail.com" <minchan.kim@gmail.com>
+In-Reply-To: <1242719063.26820.457.camel@twins>
+References: <20090516090005.916779788@intel.com>
+	 <20090516090448.410032840@intel.com>
+	 <84144f020905182339o5fb1e78eved95c4c20fd9ffa7@mail.gmail.com>
+	 <1242719063.26820.457.camel@twins>
+Date: Tue, 19 May 2009 11:05:51 +0300
+Message-Id: <1242720351.20986.0.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-debugfs directory entries for devices are not removed on some
-of the failure pathes in do_blk_trace_setup().
-One way to reproduce is to start blktrace on multiple devices
-with insufficient Vmalloc space: Devices will fail with
-a message like this:
+Hi Peter,
 
-	BLKTRACESETUP(2) /dev/sdu failed: 5/Input/output error
+On Tue, 2009-05-19 at 09:44 +0200, Peter Zijlstra wrote:
+> Its a sekrit conspiracy against bloat by making JIT'd crap run
+> slower :-)
+> 
+> <rant>
+> Anyway, I just checked, we install tons of mono junk for _2_
+> applications, f-spot and tomboy, both are shite and both have
+> alternatives not requiring this disease.
+> </rant>
 
-If so, the respective entries in debugfs
-(e.g. /sys/kernel/debug/block/sdu) will remain and subsequent
-attempts to start blktrace on the respective devices will not
-succeed due to existing directories.
+:-)
 
+On Tue, 2009-05-19 at 09:44 +0200, Peter Zijlstra wrote:
+> But seriously, like Kosaka-san already said, anonymous pages are treated
+> differently from file pages and should not suffer the same problems.
 
+OK, thanks for the explanation. The comment is a little bit misleading
+because I got the impression that we don't care about anon exec pages.
 
-Acked-by: Li Zefan <lizf@cn.fujitsu.com>
-Signed-off-by: Stefan Raspl <stefan.raspl@linux.vnet.ibm.com>
+			Pekka
 
-
----
- kernel/trace/blktrace.c |    1 +
- 1 file changed, 1 insertion(+)
-
---- a/kernel/trace/blktrace.c
-+++ b/kernel/trace/blktrace.c
-@@ -262,6 +262,7 @@ static void blk_trace_free(struct blk_tr
- {
- 	debugfs_remove(bt->msg_file);
- 	debugfs_remove(bt->dropped_file);
-+	debugfs_remove(bt->dir);
- 	relay_close(bt->rchan);
- 	free_percpu(bt->sequence);
- 	free_percpu(bt->msg_data);
