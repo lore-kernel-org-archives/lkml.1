@@ -1,117 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753578AbZESM2g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754794AbZESMbe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753578AbZESM2g (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 08:28:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751656AbZESM22
+	id S1754794AbZESMbe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 08:31:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751656AbZESMb3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 08:28:28 -0400
-Received: from yw-out-2324.google.com ([74.125.46.29]:60383 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752614AbZESM21 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 08:28:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=RuRkAC7tRj24OSiuP0tFxOj02b5a/stkWgn3PE1FHQD0V05sI0sqH+z86roJRpHPbs
-         Xb7OvMnGD+nHbvl8oVD0kM3e7lKos1IMGaM99ux6seboG8+xSo53Vmw1dkQpjAPki8F4
-         bHapMKa2FqX7DPyU/FL+qRrUBZwal1burAh5Y=
+	Tue, 19 May 2009 08:31:29 -0400
+Received: from hera.kernel.org ([140.211.167.34]:45294 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750778AbZESMb2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 08:31:28 -0400
+Date: Tue, 19 May 2009 12:30:34 GMT
+From: tip-bot for Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       jaswinder@kernel.org, tglx@linutronix.de, mingo@elte.hu,
+       jaswinderrajput@gmail.com
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       jaswinder@kernel.org, tglx@linutronix.de, jaswinderrajput@gmail.com,
+       mingo@elte.hu
+In-Reply-To: <1242733021.3377.1.camel@localhost.localdomain>
+References: <1242733021.3377.1.camel@localhost.localdomain>
+Subject: [tip:x86/cleanups] x86: asm/processor.h: remove double declaration
+Message-ID: <tip-4aee2ad461889132bfb5a1518a9580d00e17008c@git.kernel.org>
+Git-Commit-ID: 4aee2ad461889132bfb5a1518a9580d00e17008c
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-In-Reply-To: <20090519085354.GB2121@localhost>
-References: <20090519161756.4EE4.A69D9226@jp.fujitsu.com>
-	 <20090519074925.GA690@localhost>
-	 <20090519170208.742C.A69D9226@jp.fujitsu.com>
-	 <20090519085354.GB2121@localhost>
-Date: Tue, 19 May 2009 21:28:28 +0900
-X-Google-Sender-Auth: 304681dabc0a15f1
-Message-ID: <2f11576a0905190528n5eb29e3fme42785a76eed3551@mail.gmail.com>
-Subject: Re: [PATCH 2/3] vmscan: make mapped executable pages the first class 
-	citizen
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Christoph Lameter <cl@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Elladan <elladan@eskimo.com>,
-       Nick Piggin <npiggin@suse.de>, Johannes Weiner <hannes@cmpxchg.org>,
-       Peter Zijlstra <peterz@infradead.org>, Rik van Riel <riel@redhat.com>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "minchan.kim@gmail.com" <minchan.kim@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 19 May 2009 12:30:36 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+Commit-ID:  4aee2ad461889132bfb5a1518a9580d00e17008c
+Gitweb:     http://git.kernel.org/tip/4aee2ad461889132bfb5a1518a9580d00e17008c
+Author:     Jaswinder Singh Rajput <jaswinder@kernel.org>
+AuthorDate: Tue, 19 May 2009 17:07:01 +0530
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 19 May 2009 14:16:24 +0200
 
-2009/5/19 Wu Fengguang <fengguang.wu@intel.com>:
-> On Tue, May 19, 2009 at 04:06:35PM +0800, KOSAKI Motohiro wrote:
->> > > > Like the console mode, the absolute nr_mapped drops considerably - to 1/13 of
->> > > > the original size - during the streaming IO.
->> > > >
->> > > > The delta of pgmajfault is 3 vs 107 during IO, or 236 vs 393 during the whole
->> > > > process.
->> > >
->> > > hmmm.
->> > >
->> > > about 100 page fault don't match Elladan's problem, I think.
->> > > perhaps We missed any addional reproduce condition?
->> >
->> > Elladan's case is not the point of this test.
->> > Elladan's IO is use-once, so probably not a caching problem at all.
->> >
->> > This test case is specifically devised to confirm whether this patch
->> > works as expected. Conclusion: it is.
->>
->> Dejection ;-)
->>
->> The number should address the patch is useful or not. confirming as expected
->> is not so great.
->
-> OK, let's make the conclusion in this way:
->
-> The changelog analyzed the possible beneficial situation, and this
-> test backs that theory with real numbers, ie: it successfully stops
-> major faults when the active file list is slowly scanned when there
-> are partially cache hot streaming IO.
->
-> Another (amazing) finding of the test is, only around 1/10 mapped pages
-> are actively referenced in the absence of user activities.
->
-> Shall we protect the remaining 9/10 inactive ones? This is a question ;-)
+x86: asm/processor.h: remove double declaration
 
-Unfortunately, I don't reproduce again.
-I don't apply your patch yet. but mapped ratio is reduced only very little.
+Remove double declaration of:
 
-I think smem can show which library evicted.  Can you try it?
+ extern void init_scattered_cpuid_features(struct cpuinfo_x86 *c);
+ extern unsigned int init_intel_cacheinfo(struct cpuinfo_x86 *c);
+ extern unsigned short num_cache_leaves;
 
-download:  http://www.selenic.com/smem/
-usage:   ./smem -m -r --abbreviate
+they are already defined in the same file.
+
+[ Impact: cleanup ]
+
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+LKML-Reference: <1242733021.3377.1.camel@localhost.localdomain>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
-We can't decide 9/10 is important or not. we need know actual evicted file list.
+---
+ arch/x86/include/asm/processor.h |    3 ---
+ 1 files changed, 0 insertions(+), 3 deletions(-)
 
-Thanks.
-
-
-> Or, shall we take the "protect active VM_EXEC mapped pages" approach,
-> or Christoph's "protect all mapped pages all time, unless they grow
-> too large" attitude?  I still prefer the best effort VM_EXEC heuristics.
->
-> 1) the partially cache hot streaming IO is far more likely to happen
->   on (file) servers. For them, evicting the 9/10 inactive mapped
->   pages over night should be acceptable for sysadms.
->
-> 2) for use-once IO on desktop, we have Rik's active file list
->   protection heuristics, so nothing to worry at all.
->
-> 3) for big working set small memory desktop, the active list will
->   still be scanned, in this situation, why not evict some of the
->   inactive mapped pages? If they have not been accessed for 1 minute,
->   they are not likely be the user focus, and the tight memory
->   constraint can only afford to cache the user focused working set.
->
-> Does that make sense?
+diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
+index 34c5237..85628ea 100644
+--- a/arch/x86/include/asm/processor.h
++++ b/arch/x86/include/asm/processor.h
+@@ -403,9 +403,6 @@ DECLARE_PER_CPU(unsigned long, stack_canary);
+ extern unsigned int xstate_size;
+ extern void free_thread_xstate(struct task_struct *);
+ extern struct kmem_cache *task_xstate_cachep;
+-extern void init_scattered_cpuid_features(struct cpuinfo_x86 *c);
+-extern unsigned int init_intel_cacheinfo(struct cpuinfo_x86 *c);
+-extern unsigned short num_cache_leaves;
+ 
+ struct thread_struct {
+ 	/* Cached TLS descriptors: */
