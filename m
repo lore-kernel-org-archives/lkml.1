@@ -1,50 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755302AbZESNPl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755415AbZESNLC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755302AbZESNPl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 09:15:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753171AbZESNPe
+	id S1755415AbZESNLC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 09:11:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754800AbZESNKz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 09:15:34 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:38095 "EHLO mx2.redhat.com"
+	Tue, 19 May 2009 09:10:55 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:56176 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752501AbZESNPd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 09:15:33 -0400
-Message-ID: <4A12B0D1.1070803@redhat.com>
-Date: Tue, 19 May 2009 09:14:57 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
-MIME-Version: 1.0
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-CC: Wu Fengguang <fengguang.wu@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Elladan <elladan@eskimo.com>,
-       Nick Piggin <npiggin@suse.de>, Johannes Weiner <hannes@cmpxchg.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Peter Zijlstra <peterz@infradead.org>, "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "minchan.kim@gmail.com" <minchan.kim@gmail.com>
-Subject: Re: [PATCH 2/3] vmscan: make mapped executable pages the first class
- 	citizen
-References: <20090516090005.916779788@intel.com>	 <20090516090448.410032840@intel.com> <84144f020905182339o5fb1e78eved95c4c20fd9ffa7@mail.gmail.com>
-In-Reply-To: <84144f020905182339o5fb1e78eved95c4c20fd9ffa7@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1754825AbZESNKz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 09:10:55 -0400
+Date: Tue, 19 May 2009 15:10:55 +0200
+From: Jan Blunck <jblunck@suse.de>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk,
+       bharata@in.ibm.com, dwmw2@infradead.org, mszeredi@suse.cz,
+       vaurora@redhat.com
+Subject: Re: [PATCH 00/32] VFS based Union Mount (V3)
+Message-ID: <20090519131055.GQ16526@bolzano.suse.de>
+References: <1242662968-11684-1-git-send-email-jblunck@suse.de> <200905191354.08701.arnd@arndb.de> <20090519121504.GO16526@bolzano.suse.de> <200905191421.21026.arnd@arndb.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200905191421.21026.arnd@arndb.de>
+Organization: SUSE LINUX Products GmbH, GF Markus Rex, HRB 16746 (AG Nuernberg)
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pekka Enberg wrote:
+On Tue, May 19, Arnd Bergmann wrote:
 
-> Why do we need to skip JIT'd code? There are plenty of desktop
-> applications that use Mono, for example, and it would be nice if we
-> gave them the same treatment as native applications. Likewise, I am
-> sure all browsers that use JIT for JavaScript need to be considered.
+> 
+> So what would go wrong if you only made them persistent for writable file
+> systems, but allowed fallthrough dentries to be discarded for read-only
+> file systems? As long as the lower layers don't change, you should still
+> be able to reconstruct the same dentries every time you do a readdir, right?
+> 
 
-JIT'd code lives in anonymous pages, which are already
-protected from streaming file IO because they live on
-the anonymous LRUs.
+This can work if you do this when the last file descriptor on the directory is
+closed. I have a similar patch around for tmpfs readdir (the SLES8 glibc is
+seeking on readdir, so it broke some of our build servers that use tmpfs).
 
--- 
-All rights reversed.
+One idea would be to separate the "fallthru in tmpfs" handling into its own
+library so that it can be shared by filesystems. This would become something
+similar to the On-Disk-Format (ODF) approach that Erez Zadok followed with
+UnionFS.
