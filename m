@@ -1,100 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754884AbZEST2u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754736AbZESTz1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754884AbZEST2u (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 15:28:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753595AbZEST2l
+	id S1754736AbZESTz1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 15:55:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752943AbZESTzW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 15:28:41 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:34175 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753496AbZEST2k (ORCPT
+	Tue, 19 May 2009 15:55:22 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:15579 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751113AbZESTzV convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 15:28:40 -0400
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Weidong Han <weidong.han@intel.com>, dwmw2@infradead.org,
-       suresh.b.siddha@intel.com, linux-kernel@vger.kernel.org,
-       iommu@lists.linux-foundation.org, kvm@vger.kernel.org
-Subject: Re: [PATCH v2 2/2] Intel-IOMMU, intr-remap: source-id checking
-References: <1242757912-6041-1-git-send-email-weidong.han@intel.com>
-	<1242757912-6041-3-git-send-email-weidong.han@intel.com>
-	<20090519115055.GB14305@elte.hu>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Tue, 19 May 2009 12:28:36 -0700
-In-Reply-To: <20090519115055.GB14305@elte.hu> (Ingo Molnar's message of "Tue\, 19 May 2009 13\:50\:55 +0200")
-Message-ID: <m1k54cj3iz.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Tue, 19 May 2009 15:55:21 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=uz36ku5xQtcMlBV6bLIFDhnsAeLBOI/06v1zELFkArGyVr4rjFM3JLjs12xFw392b
+	nJbBWfpg/X/P2KdhJlvrg==
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Rcpt-To: mingo@elte.hu, kvm@vger.kernel.org, iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org, suresh.b.siddha@intel.com, dwmw2@infradead.org, weidong.han@intel.com
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
+In-Reply-To: <20090519073942.GA10864@sli10-desk.sh.intel.com>
+References: <20090519073942.GA10864@sli10-desk.sh.intel.com>
+Date: Tue, 19 May 2009 12:55:18 -0700
+Message-ID: <6599ad830905191255r13b6166fs105213faf30f229f@mail.gmail.com>
+Subject: Re: [PATCH]cpuset: add new API to change cpuset top group's cpus
+From: Paul Menage <menage@google.com>
+To: Shaohua Li <shaohua.li@intel.com>
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, lenb@kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar <mingo@elte.hu> writes:
-
-> * Weidong Han <weidong.han@intel.com> wrote:
+On Tue, May 19, 2009 at 12:39 AM, Shaohua Li <shaohua.li@intel.com> wrote:
 >
->> To support domain-isolation usages, the platform hardware must be 
->> capable of uniquely identifying the requestor (source-id) for each 
->> interrupt message. Without source-id checking for interrupt 
->> remapping , a rouge guest/VM with assigned devices can launch 
->> interrupt attacks to bring down anothe guest/VM or the VMM itself.
->> 
->> This patch adds source-id checking for interrupt remapping, and 
->> then really isolates interrupts for guests/VMs with assigned 
->> devices.
->> 
->> Because PCI subsystem is not initialized yet when set up IOAPIC 
->> entries, use read_pci_config_byte to access PCI config space 
->> directly.
->> 
->> Signed-off-by: Weidong Han <weidong.han@intel.com>
->> ---
->>  arch/x86/kernel/apic/io_apic.c |    6 +++
->>  drivers/pci/intr_remapping.c   |   90 ++++++++++++++++++++++++++++++++++++++-
->>  drivers/pci/intr_remapping.h   |    2 +
->>  include/linux/dmar.h           |   11 +++++
->>  4 files changed, 106 insertions(+), 3 deletions(-)
+> This patch adds one API to change cpuset top group's cpus. If we want to
+> make one cpu idle, simply remove the cpu from cpuset top group's cpu list,
+> then all tasks will be migrate to other cpus, and other tasks will not be
+> migrated to this cpu again. No functional changes.
+
 >
-> Code structure looks nice now. (and i susect you have tested this on 
-> real and relevant hardware?) I've Cc:-ed Eric too ... does this 
-> direction look good to you too Eric?
+> +int cpuset_change_top_cpumask(const char *buf)
+> +{
+> +       int retval = 0;
+> +       struct cpuset *cs = &top_cpuset;
+> +       struct cpuset *trialcs;
+> +
+> +       if (!cgroup_lock_live_group(cs->css.cgroup))
+> +               return -ENODEV;
 
-Being a major nitpick, I have to point out that the code is not
-structured to support other iommus, and I think AMD has one that can
-do this as well. 
+top_cpuset can't possibly be dead, so a plain cgroup_lock() would be fine here.
 
-The early pci reading of the bus is just wrong.  What happens if the
-pci layer decided to renumber things?  It looks like we have a real
-dependency on pci there and are avoiding sorting it out with this.
+> +
+> +       trialcs = alloc_trial_cpuset(cs);
+> +       if (!trialcs)
+> +               return -ENOMEM;
 
-Hmm.  But that is what we use in setup_ioapic_sid....
-I expect the right solution is to delay enabling ioapic entries
-until driver enable them.   That could also reduce screaming
-irqs during bootup in the kdump case.
+You returned without doing a cgroup_unlock()
 
-set_msi_sid looks wrong.  The comment are unhelpful. irte->svt should
-get an enum value or a deine (removing the repeated explanations of
-the magic value) and then we could have room to explain why we
-are doing what we are doing.
+> +
+> +       retval = update_cpumask(cs, trialcs, buf, true);
 
-Not finding an upstream pcie_bridge and then concluding we are a pcie
-device seems bogus.
+This will fail if any child cpuset is using any cpu not in the new
+cpumask, since a child's cpumask must be a subset of its parent's.
 
-Why if we do have an upstream pcie bridge do we only want to do a bus
-range verification instead of checking just for the bus :devfn?
+So this can't work without co-ordination with userspace regarding
+child cpusets. Given that, it seems simpler to do the whole thing in
+userspace, or just use the existing hotplug infrastructure.
 
-The legacy PCI case seems even stranger.
-
-....
-
-The table of apic information by apic_id also seems wrong.   Don't
-we have chip_data or something that should point it  that we can
-get from the irq?
-
-Eric
+Paul
