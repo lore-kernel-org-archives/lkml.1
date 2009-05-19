@@ -1,86 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754650AbZESWhr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755287AbZESWva@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754650AbZESWhr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 18:37:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751361AbZESWhj
+	id S1755287AbZESWva (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 18:51:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752893AbZESWvX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 18:37:39 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:34586 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751127AbZESWhi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 18:37:38 -0400
-Subject: Re: [PATCH]cpuset: add new API to change cpuset top group's cpus
-From: Peter Zijlstra <peterz@infradead.org>
-To: Len Brown <lenb@kernel.org>
-Cc: Shaohua Li <shaohua.li@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       "menage@google.com" <menage@google.com>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-In-Reply-To: <alpine.LFD.2.00.0905191429440.29241@localhost.localdomain>
-References: <20090519073942.GA10864@sli10-desk.sh.intel.com>
-	 <1242722454.26820.461.camel@twins>
-	 <20090519084852.GA13682@sli10-desk.sh.intel.com>
-	 <1242723364.26820.466.camel@twins> <1242729538.26820.497.camel@twins>
-	 <alpine.LFD.2.00.0905191429440.29241@localhost.localdomain>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Wed, 20 May 2009 00:36:41 +0200
-Message-Id: <1242772601.26820.527.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Tue, 19 May 2009 18:51:23 -0400
+Received: from relay1.sgi.com ([192.48.179.29]:59283 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751910AbZESWvW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 18:51:22 -0400
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] x86: UV BAU activation descriptor init
+Cc: mingo@elte.hu, hpa@zytor.com
+Message-Id: <E1M6YCG-0002eM-1Z@eag09.americas.sgi.com>
+From: Cliff Wickman <cpw@sgi.com>
+Date: Tue, 19 May 2009 17:54:08 -0500
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-05-19 at 15:01 -0400, Len Brown wrote:
-> > ... the point is, we
-> > don't need a new interface to force a cpu idle. Hotplug does that.
-> >
-> > Furthermore, we should not want anything outside of that, either the cpu
-> > is there available for work, or its not -- halfway measures don't make
-> > sense.
-> > 
-> > Furthermore, we already have power aware scheduling which tries to
-> > aggregate idle time on cpu/core/packages so as to maximize the idle time
-> > power savings. Use it there.
-> 
-> Some context...
+From: Cliff Wickman <cpw@sgi.com>
 
-<snip default story of thermal overcommit>
+The UV tlb shootdown code has a serious initialization error.
 
-> > > > Besides, a hot removed cpu will do a dead loop halt, which isn't power saving
-> > > > efficient. To make hot removed cpu enters deep C-state is in whish list for a
-> > > > long time, but still not available. The acpi_processor_idle is a module, and
-> > > > cpuidle governor potentially can't handle offline cpu.
-> > > 
-> > > Then fix that hot-unplug idle loop. I agree that the hlt thing is silly,
-> > > and I've no idea why its still there, seems like a much better candidate
-> > > for your efforts than this.
-> 
-> CONFIG_HOTPLUG_CPU has been problematic in the past.
-> It does more than what we need here, so we thought
-> a lighter-weight and lower-latency method that simply
-> didn't schedule to the idled cpu would suffice.
+An array of structures [32*8] is initialized as if it were [32].
+The array is indexed by (cpu number on the blade)*8, so the short
+initialization works for up to 4 cpus on a blade.
+But above that, we provide an invalid opcode to the hub's
+broadcast assist unit.
 
-> We are fixing the hotplug-unplug idle loop, but there
-> turns out to be some issues with it related to idle
-> processors with interrupts disabled that don't actually
-> get down into the deep C-states we request:-(
-> 
-> So this is why you see a patch for a "halfway measure",
-> it does what is necessary, and does nothing more.
+This patch changes the allocation of the array to use its symbolic
+dimensions for better clarity. And initializes all 32*8 entries.
 
-Its broken, its ill-defined and its not going to happen.
+Tested on the UV simulator.
 
-Ripping cpus out of the top cpuset might upset the cpuset configuration
-and has no regards for any realtime processes. And I must take back my
-earlier suggestion, hotplug is a bad solution too.
+Diffed against 2.6.30-rc6
 
-There's just too much user policy (cpuset configuration) to upset.
+Signed-off-by: Cliff Wickman <cpw@sgi.com>
 
-The IBM folks are working on a scheduler based solution, please talk to
-them.
+---
+ arch/x86/kernel/tlb_uv.c |   18 ++++++++++++++++--
+ 1 file changed, 16 insertions(+), 2 deletions(-)
 
-
+Index: linux/arch/x86/kernel/tlb_uv.c
+===================================================================
+--- linux.orig/arch/x86/kernel/tlb_uv.c
++++ linux/arch/x86/kernel/tlb_uv.c
+@@ -715,7 +715,14 @@ uv_activation_descriptor_init(int node, 
+ 	struct bau_desc *adp;
+ 	struct bau_desc *ad2;
+ 
+-	adp = (struct bau_desc *)kmalloc_node(16384, GFP_KERNEL, node);
++	/*
++	 * each bau_desc is 64 bytes; there are 8 (UV_ITEMS_PER_DESCRIPTOR)
++	 * per cpu; and up to 32 (UV_ACTIVATION_DESCRIPTOR_SIZE) cpu's
++	 * per blade
++	 */
++	adp = (struct bau_desc *)kmalloc_node(sizeof(struct bau_desc)*
++		UV_ACTIVATION_DESCRIPTOR_SIZE*UV_ITEMS_PER_DESCRIPTOR,
++		GFP_KERNEL, node);
+ 	BUG_ON(!adp);
+ 
+ 	pa = uv_gpa(adp); /* need the real nasid*/
+@@ -729,7 +736,14 @@ uv_activation_descriptor_init(int node, 
+ 				      (n << UV_DESC_BASE_PNODE_SHIFT | m));
+ 	}
+ 
+-	for (i = 0, ad2 = adp; i < UV_ACTIVATION_DESCRIPTOR_SIZE; i++, ad2++) {
++	/*
++	 * initializing all 8 (UV_ITEMS_PER_DESCRIPTOR) descriptors for each
++	 * cpu even though we only use the first one; one descriptor can
++	 * describe a broadcast to 256 nodes.
++	 */
++	for (i = 0, ad2 = adp;
++		i < (UV_ACTIVATION_DESCRIPTOR_SIZE*UV_ITEMS_PER_DESCRIPTOR);
++		i++, ad2++) {
+ 		memset(ad2, 0, sizeof(struct bau_desc));
+ 		ad2->header.sw_ack_flag = 1;
+ 		/*
