@@ -1,36 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753424AbZESONV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754615AbZESORN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753424AbZESONV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 10:13:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752223AbZESONN
+	id S1754615AbZESORN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 10:17:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753424AbZESORH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 10:13:13 -0400
-Received: from mga09.intel.com ([134.134.136.24]:10059 "EHLO mga09.intel.com"
+	Tue, 19 May 2009 10:17:07 -0400
+Received: from mga02.intel.com ([134.134.136.20]:44516 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750849AbZESONL convert rfc822-to-8bit (ORCPT
+	id S1753226AbZESORG convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 10:13:11 -0400
+	Tue, 19 May 2009 10:17:06 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.41,215,1241420400"; 
-   d="scan'208";a="413786441"
+   d="scan'208";a="413788054"
 From: "Han, Weidong" <weidong.han@intel.com>
-To: "'Ingo Molnar'" <mingo@elte.hu>,
-       "'Eric W. Biederman'" <ebiederm@xmission.com>
+To: "'Ingo Molnar'" <mingo@elte.hu>
 CC: "'dwmw2@infradead.org'" <dwmw2@infradead.org>,
        "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
        "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
        "'iommu@lists.linux-foundation.org'" 
 	<iommu@lists.linux-foundation.org>,
        "'kvm@vger.kernel.org'" <kvm@vger.kernel.org>
-Date: Tue, 19 May 2009 22:12:55 +0800
-Subject: RE: [PATCH v2 2/2] Intel-IOMMU, intr-remap: source-id checking
-Thread-Topic: [PATCH v2 2/2] Intel-IOMMU, intr-remap: source-id checking
-Thread-Index: AcnYeB0zngtJRWmjQ+WkbbLlZab5cQAEo6cA
-Message-ID: <715D42877B251141A38726ABF5CABF2C054568FD32@pdsmsx503.ccr.corp.intel.com>
+Date: Tue, 19 May 2009 22:15:56 +0800
+Subject: RE: [PATCH v2 1/2] Intel-IOMMU, intr-remap: set the whole 128bits
+	of irte when modify/free it
+Thread-Topic: [PATCH v2 1/2] Intel-IOMMU, intr-remap: set the whole 128bits
+	of irte when modify/free it
+Thread-Index: AcnYe1yXlJJPaTKXTDOEX8+FcCyhKQAENARQ
+Message-ID: <715D42877B251141A38726ABF5CABF2C054568FD33@pdsmsx503.ccr.corp.intel.com>
 References: <1242757912-6041-1-git-send-email-weidong.han@intel.com>
- <1242757912-6041-3-git-send-email-weidong.han@intel.com>
- <20090519115055.GB14305@elte.hu>
-In-Reply-To: <20090519115055.GB14305@elte.hu>
+ <1242757912-6041-2-git-send-email-weidong.han@intel.com>
+ <20090519121413.GC14305@elte.hu>
+In-Reply-To: <20090519121413.GC14305@elte.hu>
 Accept-Language: en-US
 Content-Language: en-US
 X-MS-Has-Attach: 
@@ -46,271 +47,90 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 Ingo Molnar wrote:
 > * Weidong Han <weidong.han@intel.com> wrote:
 > 
->> To support domain-isolation usages, the platform hardware must be
->> capable of uniquely identifying the requestor (source-id) for each
->> interrupt message. Without source-id checking for interrupt
->> remapping , a rouge guest/VM with assigned devices can launch
->> interrupt attacks to bring down anothe guest/VM or the VMM itself.
->> 
->> This patch adds source-id checking for interrupt remapping, and
->> then really isolates interrupts for guests/VMs with assigned
->> devices.
->> 
->> Because PCI subsystem is not initialized yet when set up IOAPIC
->> entries, use read_pci_config_byte to access PCI config space
->> directly.
+>> Interrupt remapping table entry is 128bits. Currently, it only sets
+>> low 64bits of irte in modify_irte and free_irte. This ignores high
+>> 64bits setting of irte, that means source-id setting will be
+>> ignored. This patch sets the whole 128bits of irte when modify/free
+>> it. Following source-id checking patch depends on this.
 >> 
 >> Signed-off-by: Weidong Han <weidong.han@intel.com>
 >> ---
->>  arch/x86/kernel/apic/io_apic.c |    6 +++
->>  drivers/pci/intr_remapping.c   |   90
->>  ++++++++++++++++++++++++++++++++++++++-
->>  drivers/pci/intr_remapping.h   |    2 + include/linux/dmar.h       
->>  |   11 +++++ 4 files changed, 106 insertions(+), 3 deletions(-)
-> 
-> Code structure looks nice now. (and i susect you have tested this on
-> real and relevant hardware?) I've Cc:-ed Eric too ... does this
-> direction look good to you too Eric?
-> 
-> Have a few minor nits only:
-> 
->> diff --git a/arch/x86/kernel/apic/io_apic.c
->> b/arch/x86/kernel/apic/io_apic.c 
->> index 30da617..3d10c68 100644
->> --- a/arch/x86/kernel/apic/io_apic.c
->> +++ b/arch/x86/kernel/apic/io_apic.c
->> @@ -1559,6 +1559,9 @@ int setup_ioapic_entry(int apic_id, int irq, 
->>  		irte.vector = vector; irte.dest_id = IRTE_DEST(destination);
+>>  drivers/pci/intr_remapping.c |   10 +++++++---
+>>  1 files changed, 7 insertions(+), 3 deletions(-)
 >> 
->> +		/* Set source-id of interrupt request */
->> +		set_ioapic_sid(&irte, apic_id);
->> +
->>  		modify_irte(irq, &irte);
->> 
->>  		ir_entry->index2 = (index >> 15) & 0x1;
->> @@ -3329,6 +3332,9 @@ static int msi_compose_msg(struct pci_dev
->>  		*pdev, unsigned int irq, struct msi_ms  		irte.vector =
->> cfg->vector; irte.dest_id = IRTE_DEST(dest); 
->> 
->> +		/* Set source-id of interrupt request */
->> +		set_msi_sid(&irte, pdev);
->> +
->>  		modify_irte(irq, &irte);
->> 
->>  		msg->address_hi = MSI_ADDR_BASE_HI;
 >> diff --git a/drivers/pci/intr_remapping.c
->> b/drivers/pci/intr_remapping.c 
->> index 946e170..9ef7b0d 100644
->> --- a/drivers/pci/intr_remapping.c
->> +++ b/drivers/pci/intr_remapping.c
->> @@ -10,6 +10,8 @@
->>  #include <linux/intel-iommu.h>
->>  #include "intr_remapping.h"
->>  #include <acpi/acpi.h>
->> +#include <asm/pci-direct.h>
->> +#include "pci.h"
+>> b/drivers/pci/intr_remapping.c index f5e0ea7..946e170 100644 ---
+>> a/drivers/pci/intr_remapping.c +++ b/drivers/pci/intr_remapping.c
+>> @@ -309,7 +309,8 @@ int modify_irte(int irq, struct irte
+>>  	*irte_modified) index = irq_iommu->irte_index +
+>>  	irq_iommu->sub_handle; irte = &iommu->ir_table->base[index];
 >> 
->>  static struct ioapic_scope ir_ioapic[MAX_IO_APICS];  static int
->> ir_ioapic_num; @@ -405,6 +407,61 @@ int free_irte(int irq)
->>  	return rc;
->>  }
+>> -	set_64bit((unsigned long *)irte, irte_modified->low);
+>> +	set_64bit((unsigned long *)&irte->low, irte_modified->low);
+>> +	set_64bit((unsigned long *)&irte->high, irte_modified->high);
 >> 
->> +int set_ioapic_sid(struct irte *irte, int apic)
->> +{
->> +	int i;
->> +	u16 sid = 0;
->> +
->> +	if (!irte)
->> +		return -1;
->> +
->> +	for (i = 0; i < MAX_IO_APICS; i++)
->> +		if (ir_ioapic[i].id == apic) {
->> +			sid = (ir_ioapic[i].bus << 8) | ir_ioapic[i].devfn; +			break;
+>>  	__iommu_flush_cache(iommu, irte, sizeof(*irte));
+>> 
+>>  	rc = qi_flush_iec(iommu, index, 0);
+>> @@ -386,8 +387,11 @@ int free_irte(int irq)
+>>  	irte = &iommu->ir_table->base[index];
+>> 
+>>  	if (!irq_iommu->sub_handle) {
+>> -		for (i = 0; i < (1 << irq_iommu->irte_mask); i++)
+>> -			set_64bit((unsigned long *)(irte + i), 0);
+>> +		for (i = 0; i < (1 << irq_iommu->irte_mask); i++) {
+>> +			set_64bit((unsigned long *)&irte->low, 0);
+>> +			set_64bit((unsigned long *)&irte->high, 0);
+>> +			irte++;
 >> +		}
 > 
-> Please generally put extra curly braces around each multi-line loop
-> body. One reason beyond readability is robustness: the above
-> structure can be easily extended in a buggy way via [mockup patch
-> hunk]:
+> The loop is a bit unclean. It has a side-effect on 'irte' - and
+> other patterns in the driver usually treat 'irte' as a generally
+> available variable.
 > 
->> 			sid = (ir_ioapic[i].bus << 8) | ir_ioapic[i].devfn; 			break;
->> 		}
->> +		if (!sid)
->> +			break;
+> So the above code, while correct, opens up the possibility of later
+> code added to this function relying on 'irte', thinking that it's
+> set to "&iommu->ir_table->base[index]", and then breaking because
+> 'irte' has been iterated to the end of it in certain circumstances.
 > 
-> And note that if this slips in by accident how unobvious this bug is
-> during patch review - the loop head context is not present in the
-> 3-line default context and the code "looks" correct at a glance.
+> It's better to factor out the whole loop into a helper function,
+> which does something like:
 > 
-> With extra braces, such typos or mismerges:
+> int flush_entries(struct irq_2_iommu *irq_iommu)
+> {
+> 	struct irte *start, *entry, *end;
+> 	struct intel_iommu *iommu;
+> 	int index;
 > 
->> 		}
->> 	}
->> +		if (!sid)
->> +			break;
+>  	if (irq_iommu->sub_handle)
+> 		return 0;
 > 
-> stick out during review like a sore thumb :-)
+> 	iommu = irq_iommu->iommu;
+> 	index = irq_iommu->irte_index + irq_iommu->sub_handle;
 > 
->> +	if (sid == 0) {
->> +		printk(KERN_WARNING "Failed to set source-id of "
->> +		       "I/O APIC (%d), because it is not under "
->> +		       "any DRHD\n", apic);
->> +		return -1;
->> +	}
+> 	start = iommu->ir_table->base + index;
+> 	end = start + (1 << irq_iommu->irte_mask);
 > 
-> please try to keep kernel messages on a single line - even if
-> checkpatch complains. Also, it's a good idea to use pr_warning(),
-> it's shorter by 8 characters.
+> 	for (entry = start; entry < end; entry++) {
+> 		set_64bit((unsigned long *)&entry->low,  0);
+> 		set_64bit((unsigned long *)&entry->high, 0);
+> 	}
 > 
->> +
->> +	irte->svt = 1; /* requestor ID verification SID/SQ */
->> +	irte->sq = 0;  /* comparing all 16-bit of SID */
->> +	irte->sid = sid;
+> 	return qi_flush_iec(iommu, index, irq_iommu->irte_mask);
+> }
 > 
-> this is a borderline suggestion:
+> Note how clearer this is - the new method has one purpose and
+> 'entry' is a clear iterator.
 > 
-> Note how you already lined up the _comments_ vertically, so you did
-> notice that it makes sense to align vertically. The same visual
-> arguments can be made for the initialization itself too:
+> ( And note how much clearer the flow of 'rc' has become as well as a
+>   side-effect: it is clear now that it's set to 0 when
+>   irq_iommu->sub_handle is still present. )
 > 
->> +
->> +	irte->svt	= 1;	/* requestor ID verification SID/SQ */
->> +	irte->sq	= 0;	/* comparing all 16-bit of SID */
->> +	irte->sid	= sid;
->> +
->> +	return 0;
-> 
-> But ... it might make even more sense to introduce a set_irte()
-> helper method, so it can all be written in a single line as:
-> 
-> 	set_irte(irte, 1, 0, sid);
-> 
-> and explain common values in the set_irte() function's description -
-> that way those comments above (and below) dont have to be made at
-> the usage sites.
-> 
->> +}
->> +
->> +int set_msi_sid(struct irte *irte, struct pci_dev *dev) +{
->> +	struct pci_dev *tmp;
->> +
->> +	if (!irte || !dev)
->> +		return -1;
->> +
->> +	tmp = pci_find_upstream_pcie_bridge(dev);
-> 
-> variable names like 'tmp' are only used if they are _really_ short
-> in scope. Here a much better name would be 'bridge'.
-> 
->> +	if (!tmp) { /* PCIE device or integrated PCI device */
->> +		irte->svt = 1; /* verify requestor ID verification SID/SQ */
->> +		irte->sq = 0;  /* comparing all 16-bit of SID */
->> +		irte->sid = (dev->bus->number << 8) | dev->devfn; +		return 0;
->> +	}
->> +
->> +	if (tmp->is_pcie) { /* this is a PCIE-to-PCI/PCIX bridge */
->> +		irte->svt = 2; /* verify request ID verification SID */
->> +		irte->sid = (tmp->bus->number << 8) | dev->bus->number;
-> 
-> is irte->sq left alone intentionally?
-
-Yes, sq will be ignored when svt=2. 
-
-And thanks for your other comments. Will include them in next version.
-
-Regards,
-Weidong
-
-
-> 
->> +	} else { /* this is a legacy PCI bridge */
->> +		irte->svt = 1; /* verify requestor ID verification SID/SQ */
->> +		irte->sq = 0;  /* comparing all 16-bit of SID */
->> +		irte->sid = (tmp->bus->number << 8) | tmp->devfn; +	}
->> +	if (tmp->is_pcie) { /* this is a PCIE-to-PCI/PCIX bridge */
->> +		irte->svt = 2; /* verify request ID verification SID */
->> +		irte->sid = (tmp->bus->number << 8) | dev->bus->number;
-> 
-> here too?
-> 
->> +	} else { /* this is a legacy PCI bridge */
->> +		irte->svt = 1; /* verify requestor ID verification SID/SQ */
->> +		irte->sq = 0;  /* comparing all 16-bit of SID */
->> +		irte->sid = (tmp->bus->number << 8) | tmp->devfn; +	}
->> +
->> +	return 0;
->> +}
->> +
->>  static void iommu_set_intr_remapping(struct intel_iommu *iommu, int
->>  	mode)  { u64 addr;
->> @@ -610,6 +667,35 @@ error:
->>  	return -1;
->>  }
->> 
->> +static void ir_parse_one_ioapic_scope(struct acpi_dmar_device_scope
->> *scope, +				      struct intel_iommu *iommu)
->> +{
->> +	struct acpi_dmar_pci_path *path;
->> +	u8 bus;
->> +	int count;
->> +
->> +	bus = scope->bus;
->> +	path = (struct acpi_dmar_pci_path *)(scope + 1);
->> +	count = (scope->length - sizeof(struct acpi_dmar_device_scope))
->> +		/ sizeof(struct acpi_dmar_pci_path);
->> +
->> +	while (--count > 0) {
->> +		/*
->> +		 * Access PCI directly due to the PCI
->> +		 * subsystem isn't initialized yet.
->> +		 */
->> +		bus = read_pci_config_byte(bus, path->dev, path->fn, +					  
->> PCI_SECONDARY_BUS); +		path++;
->> +	}
->> +
->> +	ir_ioapic[ir_ioapic_num].bus = bus;
->> +	ir_ioapic[ir_ioapic_num].devfn = PCI_DEVFN(path->dev, path->fn);
->> +	ir_ioapic[ir_ioapic_num].iommu = iommu;
->> +	ir_ioapic[ir_ioapic_num].id = scope->enumeration_id;
-> 
-> this too can be aligned vertically.
-> 
->> +	ir_ioapic_num++;
->> +}
->> +
->>  static int ir_parse_ioapic_scope(struct acpi_dmar_header *header,
->>  				 struct intel_iommu *iommu)
->>  {
->> @@ -634,9 +720,7 @@ static int ir_parse_ioapic_scope(struct
->>  			       acpi_dmar_header *header, " 0x%Lx\n",
->>  			       scope->enumeration_id, drhd->address);
->> 
->> -			ir_ioapic[ir_ioapic_num].iommu = iommu;
->> -			ir_ioapic[ir_ioapic_num].id = scope->enumeration_id;
->> -			ir_ioapic_num++;
->> +			ir_parse_one_ioapic_scope(scope, iommu);
-> 
-> how much nicer this helper looks like now!
-> 
->>  		}
->>  		start += scope->length;
->>  	}
->> diff --git a/drivers/pci/intr_remapping.h
->> b/drivers/pci/intr_remapping.h 
->> index ca48f0d..dd35780 100644
->> --- a/drivers/pci/intr_remapping.h
->> +++ b/drivers/pci/intr_remapping.h
->> @@ -3,6 +3,8 @@
->>  struct ioapic_scope {
->>  	struct intel_iommu *iommu;
->>  	unsigned int id;
->> +	u8 bus;			/* PCI bus number */
->> +	u8 devfn;		/* PCI devfn number */
-> 
-> hm, in kernel data structures we usually encode devfn as unsigned
-> int - and sometimes even bus. Only 8 bits will be used of both so
-> it's the same end result, but it results in more efficient
-> instructions without byte shuffling.
+> Thanks,
 > 
 > 	Ingo
 
+Yes, more clearer. will update it in next version. Thanks.
+
+Regards,
+Weidong
