@@ -1,80 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754487AbZESCyA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753748AbZESC5t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754487AbZESCyA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 22:54:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755071AbZESCxv
+	id S1753748AbZESC5t (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 22:57:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752557AbZESC5m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 22:53:51 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:50888 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754863AbZESCxt (ORCPT
+	Mon, 18 May 2009 22:57:42 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:35540 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752508AbZESC5m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 22:53:49 -0400
+	Mon, 18 May 2009 22:57:42 -0400
 From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Robin Holt <holt@sgi.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 Subject: Re: [PATCH 4/4] zone_reclaim_mode is always 0 by default
-Cc: kosaki.motohiro@jp.fujitsu.com,
-       Christoph Lameter <cl@linux-foundation.org>,
+Cc: kosaki.motohiro@jp.fujitsu.com, Wu Fengguang <fengguang.wu@intel.com>,
        LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>
-In-Reply-To: <20090515105137.GO7601@sgi.com>
-References: <20090515082836.F5B9.A69D9226@jp.fujitsu.com> <20090515105137.GO7601@sgi.com>
-Message-Id: <20090519102003.4EAB.A69D9226@jp.fujitsu.com>
+       Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       "Zhang, Yanmin" <yanmin.zhang@intel.com>
+In-Reply-To: <20090519102634.4EB4.A69D9226@jp.fujitsu.com>
+References: <20090518034907.GF5869@localhost> <20090519102634.4EB4.A69D9226@jp.fujitsu.com>
+Message-Id: <20090519115645.4EB7.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
 X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Tue, 19 May 2009 11:53:44 +0900 (JST)
+Date: Tue, 19 May 2009 11:57:38 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+nit fix.
 
-> > Current linux policy is, zone_reclaim_mode is enabled by default if the machine
-> > has large remote node distance. it's because we could assume that large distance 
-> > mean large server until recently.
-> > 
-> > Unfortunately, recent modern x86 CPU (e.g. Core i7, Opeteron) have P2P transport
-> > memory controller. IOW it's seen as NUMA from software view.
-> > 
-> > Some Core i7 machine has large remote node distance, but zone_reclaim don't
-> > fit desktop and small file server. it cause performance degression.
-> > 
-> > Thus, zone_reclaim == 0 is better by default if the machine is small.
+> In general, the feature of workload depended don't fit default option.
+> we can't know end-user run what workload anyway.
 > 
-> What if I had a node 0 with 32GB or 128GB of memory.  In that case,
-> we would have 3GB for DMA32, 125GB for Normal and then a node 1 with
-> 128GB.  I would suggest that zone reclaim would perform normally and
-> be beneficial.
+> Fortunately (or Unfortunately), typical workload and machine size had
+
+typical workload and machine size and remote node distance
+
+> significant mutuality.
+> Thus, the current default setting calculation had worked well in past days.
 > 
-> You are unfairly classifying this as a size of machine problem when it is
-> really a problem with the underlying zone reclaim code being triggered
-> due to imbalanced node/zones, part of which is due to a single node
-> having multiple zones and those multiple zones setting up the conditions
-> for extremely agressive reclaim.  In other words, you are putting a
-> bandage in place to hide a problem on your particular hardware.
+> Now, it was breaked. What should we do?
 > 
-> Can RECLAIM_DISTANCE be adjusted so your Ci7 boxes are no longer caught?
-> Aren't 4 node Ci7 boxes soon to be readily available?  How are your apps
-> different from my apps in that you are not impacted by node locality?
-> Are you being too insensitive to node locality?  Conversely am I being
-> too sensitive?
 > 
-> All that said, I would not stop this from going in.  I just think the
-> selection criteria is rather random.  I think we know the condition we
-> are trying to avoid which is a small Normal zone on one node and a larger
-> Normal zone on another causing zone reclaim to be overly agressive.
-> I don't know how to quantify "small" versus "large".  I would suggest
-> that a node 0 with 16 or more GB should have zone reclaim on by default
-> as well.  Can that be expressed in the selection criteria.
-
-I post my opinion as another mail. please see it.
-
-
-
-
+> 
+> Yanmin, We know 99% linux people use intel cpu and you are one of
+> most hard repeated testing guy in lkml and you have much test.
+> May I ask your tested machine and benchmark? 
+> 
+> if zone_reclaim=0 tendency workload is much than zone_reclaim=1 tendency workload,
+>  we can drop our afraid and we would prioritize your opinion, of cource.
+> 
+> thanks.
+> 
+> 
 
 
 
