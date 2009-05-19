@@ -1,33 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754839AbZESMgF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753707AbZESMim@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754839AbZESMgF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 08:36:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753776AbZESMf5
+	id S1753707AbZESMim (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 08:38:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752063AbZESMif
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 08:35:57 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48276 "EHLO mx3.mail.elte.hu"
+	Tue, 19 May 2009 08:38:35 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:50372 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753372AbZESMf4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 08:35:56 -0400
-Date: Tue, 19 May 2009 14:35:48 +0200
+	id S1751190AbZESMif (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 08:38:35 -0400
+Date: Tue, 19 May 2009 14:37:28 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: the arch/x86 maintainers <x86@kernel.org>,
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Gerd Hoffmann <kraxel@redhat.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>
-Subject: Re: [GIT PULL] Xen APIC hooks (with io_apic_ops)
-Message-ID: <20090519123548.GA26439@elte.hu>
-References: <1242170724-13349-1-git-send-email-jeremy@goop.org>
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Jan Beulich <JBeulich@novell.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [Xen-devel] Re: [GIT PULL] xen /proc/mtrr implementation
+Message-ID: <20090519123728.GA2377@elte.hu>
+References: <m1iqk1k708.fsf@fess.ebiederm.org> <4A10EAC4.9070701@goop.org> <20090518085902.GE10687@elte.hu> <4A11A3F8.1010202@goop.org> <20090519095918.GA11790@elte.hu> <4A12A46A02000078000017E1@vpn.id2.novell.com> <20090519110837.GA10548@elte.hu> <4A12A05C.6050004@redhat.com> <20090519122623.GD14305@elte.hu> <20090519133206.173a2ddf@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1242170724-13349-1-git-send-email-jeremy@goop.org>
+In-Reply-To: <20090519133206.173a2ddf@lxorguk.ukuu.org.uk>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
 X-ELTE-SpamCheck: no
 X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
 	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
 	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
@@ -35,24 +41,22 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+* Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-> Hi Ingo,
+> > - or introduce its own hypercall API based administration API,
+> >   without bothering the guest kernel with crap. Trivially patch Xorg
+> >   to make use of it and that's it.
 > 
-> Here's a revised set of the Xen APIC changes which adds 
-> io_apic_ops to allow Xen to intercept IO APIC access operations.
+> PCI pass through mixed with that isn't going to be fun and PCI 
+> pass through is one area where a lot of the MTRR manipulation is 
+> meaningful and valid (and can be handled for the guest).
 
-In a previous discussion you said:
+virtualizing that aspect of the CPU properly is certainly the 
+highest grade approach.
 
-> IO APIC operations are not even slightly performance critical? Are 
-> they ever used on the interrupt delivery path?
+> I really don't see why rd/wrmsr processing isn't sufficient for 
+> this
 
-Since they are not performance critical, then why doesnt Xen catch 
-the IO-APIC accesses, and virtualizes the device?
-
-If you want to hook into the IO-APIC code at such a low level, why 
-dont you hook into the _hardware_ API - i.e. catch those 
-setup/routing modifications to the IO-APIC space. No Linux changes 
-are needed in that case.
+/me neither.
 
 	Ingo
