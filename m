@@ -1,54 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754942AbZESHHJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754039AbZESHKT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754942AbZESHHJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 03:07:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754039AbZESHGy
+	id S1754039AbZESHKT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 03:10:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753556AbZESHKI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 03:06:54 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:2500 "EHLO
-	mail.perches.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1754631AbZESHGx (ORCPT
+	Tue, 19 May 2009 03:10:08 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:46162 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753432AbZESHKH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 03:06:53 -0400
-Subject: Re: [PATCH] Acer Aspire One Fan Control
-From: Joe Perches <joe@perches.com>
-To: Peter Feuerer <peter@piie.net>
-Cc: Borislav Petkov <petkovbb@googlemail.com>,
-       LKML <linux-kernel@vger.kernel.org>, lenb@kernel.org,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-In-Reply-To: <cone.1242715674.319169.6240.1000@arca>
-References: <cone.1240858632.795110.5316.1000@onepiie>
-	 <20090428072519.GA12170@liondog.tnic>
-	 <1240913055.29860.14.camel@maxim-laptop>
-	 <cone.1240949852.549814.7466.1000@mentalhome>
-	 <1240950704.3781.12.camel@maxim-laptop>
-	 <cone.1241299309.265715.3948.1000@mentalhome>
-	 <20090503184617.GA3555@liondog.tnic>
-	 <cone.1241648222.299676.7476.1000@mentalhome>
-	 <20090509171432.GA31126@liondog.tnic>
-	 <cone.1242065107.695268.13534.1000@onepiie>
-	 <20090512060231.GB26286@liondog.tnic>
-	 <cone.1242669880.118150.4276.1000@deskpiie>
-	 <1242678032.1572.122.camel@Joe-Laptop.home>
-	 <cone.1242715674.319169.6240.1000@arca>
-Content-Type: text/plain
-Date: Tue, 19 May 2009 00:06:22 -0700
-Message-Id: <1242716782.28224.6.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Tue, 19 May 2009 03:10:07 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: "Zhang, Yanmin" <yanmin.zhang@intel.com>
+Subject: Re: [PATCH 4/4] zone_reclaim_mode is always 0 by default
+Cc: kosaki.motohiro@jp.fujitsu.com, "Wu, Fengguang" <fengguang.wu@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>
+In-Reply-To: <4D05DB80B95B23498C72C700BD6C2E0B2EF6E313@pdsmsx502.ccr.corp.intel.com>
+References: <20090519125744.4EC3.A69D9226@jp.fujitsu.com> <4D05DB80B95B23498C72C700BD6C2E0B2EF6E313@pdsmsx502.ccr.corp.intel.com>
+Message-Id: <20090519141050.4ED5.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Tue, 19 May 2009 16:09:58 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-05-19 at 08:47 +0200, Peter Feuerer wrote:
-> I could do that. Just curious, is there any deeper reason? Or does it just feel wrong in some matter?
+Hi
 
-No deeper reason than there's an existing source
-convention that does what you need.
+> >>> >>Now, it was breaked. What should we do?
+> >>> >>Yanmin, We know 99% linux people use intel cpu and you are one of
+> >>> >>most hard repeated testing
+> >>> [YM] It's very easy to reproduce them on my machines. :) Sometimes, because
+> >>the
+> >>> issues only exist on machines with lots of cpu while other community
+> >>developers
+> >>> have no such environments.
+> >>>
+> >>>
+> >>>  guy in lkml and you have much test.
+> >>> >>May I ask your tested machine and benchmark?
+> >>> [YM] Usually I started lots of benchmark testing against the latest kernel,
+> >>but
+> >>> as for this issue, it's reported by a customer firstly. The customer runs
+> >>apache
+> >>> on Nehalem machines to access lots of files. So the issue is an example of
+> >>file
+> >>> server.
+> >>
+> >>hmmm.
+> >>I'm surprised this report. I didn't know this problem. oh..
+> [YM] Did you run file server workload on such NUMA machine with
+>  zone_reclaim_mode=1? If all nodes have the same memory, the behavior is
+> obvious.
 
-Might as well use it.
+I missed your point. I agree file server case is obvious. but I don't
+think anybody oppose this.
 
-cheers, Joe
+
+
+> >>Actually, I don't think apache is only file server.
+> >>apache is one of killer application in linux. it run on very widely
+> >>organization.
+> [YM] I know that. Apache could support document, ecommerce, and lots of other
+> usage models. What I mean is one of customers hit it with their
+> workload.
+
+hmhm, ok.
+
+
+> >>you think large machine don't run apache? I don't think so.
+> >>
+> >>
+> >>
+> >>> BTW, I found many test cases of fio have big drop after I upgraded BIOS of
+> >>one
+> >>> Nehalem machine. By checking vmstat data, I found almost a half memory is
+> >>always free. It's also related to zone_reclaim_mode because new BIOS changes
+> >>the node
+> >>> distance to a large value. I use numactl --interleave=all to walkaround the
+> >>problem temporarily.
+> >>>
+> >>> I have no HPC environment.
+> >>
+> >>Yeah, that's ok. I and cristoph have. My worries is my unknown workload become
+> >>regression.
+> >>so, May I assume you run your benchmark both zonre reclaim 0 and 1 and you
+> >>haven't seen regression by non-zone reclaim mode?
+> [YM] what is non-zone reclaim mode? When zone_reclaim_mode=0?
+> I didn't do that intentionally. Currently I just make sure FIO has a big drop
+>  when zone_reclaim_mode=1. I might test it with other benchmarks on 2 Nehalem machines.
+
+May I ask what is FIO?
+File IO?
+
+
+> >>if so, it encourage very much to me.
+> >>
+> >>if zone reclaim mode disabling don't have regression, I'll pushing to
+> >>remove default zone reclaim mode completely again.
+> [YM] I run lots of benchmarks, but it doesn't mean I run all benchmarks, especially
+> no HPC. 
+
+Of cource. nobody can run all benchmark in the world :)
+
+
+
+> >>> >>if zone_reclaim=0 tendency workload is much than zone_reclaim=1 tendency
+> >>> >>workload,
+> >>> >> we can drop our afraid and we would prioritize your opinion, of cource.
+> >>> So it seems only file servers have the issue currently.
+> 
+
+
 
