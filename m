@@ -1,241 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754952AbZESJAA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750720AbZESJAp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754952AbZESJAA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 05:00:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750778AbZESI7x
+	id S1750720AbZESJAp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 05:00:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750778AbZESJAj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 04:59:53 -0400
-Received: from mga14.intel.com ([143.182.124.37]:8919 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750720AbZESI7w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 04:59:52 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,214,1241420400"; 
-   d="scan'208";a="144397301"
-Date: Tue, 19 May 2009 16:59:27 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Elladan <elladan@eskimo.com>,
-       Nick Piggin <npiggin@suse.de>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
-       "hannes@cmpxchg.org" <hannes@cmpxchg.org>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "minchan.kim@gmail.com" <minchan.kim@gmail.com>
-Subject: Re: [PATCH 2/3] vmscan: make mapped executable pages the first
-	class citizen
-Message-ID: <20090519085927.GA2804@localhost>
-References: <20090517022327.280096109@intel.com> <20090517022742.168529621@intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090517022742.168529621@intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 19 May 2009 05:00:39 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:39404 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751940AbZESJAi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 05:00:38 -0400
+Subject: Re: [GIT PULL] cputime patch for 2.6.30-rc6
+From: Peter Zijlstra <peterz@infradead.org>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Michael Abbott <michael@araneidae.co.uk>,
+       Jan Engelhardt <jengelh@medozas.de>
+In-Reply-To: <20090519104900.12e1f80c@skybase>
+References: <20090518160904.7df88425@skybase>
+	 <1242660243.26820.439.camel@twins>  <20090519104900.12e1f80c@skybase>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Tue, 19 May 2009 11:00:35 +0200
+Message-Id: <1242723635.26820.471.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[update the comment that confused Pekka]
+On Tue, 2009-05-19 at 10:49 +0200, Martin Schwidefsky wrote:
 
----
-vmscan: make mapped executable pages the first class citizen
+> Well, don't do stupid things like that. That falls into the same
+> category as programs calling gettimeofday all the time.
 
-Protect referenced PROT_EXEC mapped pages from being deactivated.
+Is gtod a global DoS? The worry I have about these cputime
+for_each_cpu() loops in the proc code is that any odd unpriv user can
+take the whole machine down (provided the machine is large enough).
 
-PROT_EXEC(or its internal presentation VM_EXEC) pages normally belong to some
-currently running executables and their linked libraries, they shall really be
-cached aggressively to provide good user experiences.
+Granted, this would only be a real problem for SGI and their insane
+boxes atm, but it might very well be a problem for us in the near
+future, given the rate Intel seems to increase cores.
 
-Thanks to Johannes Weiner for the advice to reuse the VMA walk in
-page_referenced() to get the PROT_EXEC bit.
+So, I'm really not objecting too much to the patch at hand, but I'd love
+to find a solution to this problem.
 
-
-[more details]
-
-( The consequences of this patch will have to be discussed together with
-  Rik van Riel's recent patch "vmscan: evict use-once pages first". )
-
-( Some of the good points and insights are taken into this changelog.
-  Thanks to all the involved people for the great LKML discussions. )
-
-the problem
------------
-
-For a typical desktop, the most precious working set is composed of
-*actively accessed*
-	(1) memory mapped executables
-	(2) and their anonymous pages
-	(3) and other files
-	(4) and the dcache/icache/.. slabs
-while the least important data are
-	(5) infrequently used or use-once files
-
-For a typical desktop, one major problem is busty and large amount of (5)
-use-once files flushing out the working set.
-
-Inside the working set, (4) dcache/icache have already been too sticky ;-)
-So we only have to care (2) anonymous and (1)(3) file pages.
-
-anonymous pages
----------------
-Anonymous pages are effectively immune to the streaming IO attack, because we
-now have separate file/anon LRU lists. When the use-once files crowd into the
-file LRU, the list's "quality" is significantly lowered. Therefore the scan
-balance policy in get_scan_ratio() will choose to scan the (low quality) file
-LRU much more frequently than the anon LRU.
-
-file pages
-----------
-Rik proposed to *not* scan the active file LRU when the inactive list grows
-larger than active list. This guarantees that when there are use-once streaming
-IO, and the working set is not too large(so that active_size < inactive_size),
-the active file LRU will *not* be scanned at all. So the not-too-large working
-set can be well protected.
-
-But there are also situations where the file working set is a bit large so that
-(active_size >= inactive_size), or the streaming IOs are not purely use-once.
-In these cases, the active list will be scanned slowly. Because the current
-shrink_active_list() policy is to deactivate active pages regardless of their
-referenced bits. The deactivated pages become susceptible to the streaming IO
-attack: the inactive list could be scanned fast (500MB / 50MBps = 10s) so that
-the deactivated pages don't have enough time to get re-referenced. Because a
-user tend to switch between windows in intervals from seconds to minutes.
-
-This patch holds mapped executable pages in the active list as long as they
-are referenced during each full scan of the active list.  Because the active
-list is normally scanned much slower, they get longer grace time (eg. 100s)
-for further references, which better matches the pace of user operations.
-
-Therefore this patch greatly prolongs the in-cache time of executable code,
-when there are moderate memory pressures.
-
-	before patch: guaranteed to be cached if reference intervals < I
-	after  patch: guaranteed to be cached if reference intervals < I+A
-		      (except when randomly reclaimed by the lumpy reclaim)
-where
-	A = time to fully scan the   active file LRU
-	I = time to fully scan the inactive file LRU
-
-Note that normally A >> I.
-
-side effects
-------------
-
-This patch is safe in general, it restores the pre-2.6.28 mmap() behavior
-but in a much smaller and well targeted scope.
-
-One may worry about some one to abuse the PROT_EXEC heuristic.  But as
-Andrew Morton stated, there are other tricks to getting that sort of boost.
-
-Another concern is the PROT_EXEC mapped pages growing large in rare cases,
-and therefore hurting reclaim efficiency. But a sane application targeted for
-large audience will never use PROT_EXEC for data mappings. If some home made
-application tries to abuse that bit, it shall be aware of the consequences.
-If it is abused to scale of 2/3 total memory, it gains nothing but overheads.
-
-CC: Elladan <elladan@eskimo.com>
-CC: Nick Piggin <npiggin@suse.de>
-CC: Pekka Enberg <penberg@cs.helsinki.fi>
-CC: Christoph Lameter <cl@linux-foundation.org>
-CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Acked-by: Rik van Riel <riel@redhat.com>
-Acked-by: Peter Zijlstra <peterz@infradead.org>
-Reviewed-by: Minchan Kim <minchan.kim@gmail.com>
-Reviewed-by: Johannes Weiner <hannes@cmpxchg.org>
-Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
----
- mm/vmscan.c |   52 +++++++++++++++++++++++++++++++++++++++++++-------
- 1 file changed, 45 insertions(+), 7 deletions(-)
-
---- linux.orig/mm/vmscan.c
-+++ linux/mm/vmscan.c
-@@ -1233,6 +1233,7 @@ static void shrink_active_list(unsigned 
- 	unsigned long pgscanned;
- 	unsigned long vm_flags;
- 	LIST_HEAD(l_hold);	/* The pages which were snipped off */
-+	LIST_HEAD(l_active);
- 	LIST_HEAD(l_inactive);
- 	struct page *page;
- 	struct pagevec pvec;
-@@ -1272,28 +1273,42 @@ static void shrink_active_list(unsigned 
- 
- 		/* page_referenced clears PageReferenced */
- 		if (page_mapping_inuse(page) &&
--		    page_referenced(page, 0, sc->mem_cgroup, &vm_flags))
-+		    page_referenced(page, 0, sc->mem_cgroup, &vm_flags)) {
- 			pgmoved++;
-+			/*
-+			 * Identify referenced, file-backed active pages and
-+			 * give them one more trip around the active list. So
-+			 * that executable code get better chances to stay in
-+			 * memory under moderate memory pressure.  Anon pages
-+			 * are not likely to be evicted by use-once streaming
-+			 * IO, plus JVM can create lots of anon VM_EXEC pages,
-+			 * so we ignore them here.
-+			 */
-+			if ((vm_flags & VM_EXEC) && !PageAnon(page)) {
-+				list_add(&page->lru, &l_active);
-+				continue;
-+			}
-+		}
- 
- 		list_add(&page->lru, &l_inactive);
- 	}
- 
- 	/*
--	 * Move the pages to the [file or anon] inactive list.
-+	 * Move pages back to the lru list.
- 	 */
- 	pagevec_init(&pvec, 1);
--	lru = LRU_BASE + file * LRU_FILE;
- 
- 	spin_lock_irq(&zone->lru_lock);
- 	/*
--	 * Count referenced pages from currently used mappings as
--	 * rotated, even though they are moved to the inactive list.
--	 * This helps balance scan pressure between file and anonymous
--	 * pages in get_scan_ratio.
-+	 * Count referenced pages from currently used mappings as rotated,
-+	 * even though only some of them are actually re-activated.  This
-+	 * helps balance scan pressure between file and anonymous pages in
-+	 * get_scan_ratio.
- 	 */
- 	reclaim_stat->recent_rotated[!!file] += pgmoved;
- 
- 	pgmoved = 0;  /* count pages moved to inactive list */
-+	lru = LRU_BASE + file * LRU_FILE;
- 	while (!list_empty(&l_inactive)) {
- 		page = lru_to_page(&l_inactive);
- 		prefetchw_prev_lru_page(page, &l_inactive, flags);
-@@ -1316,6 +1331,29 @@ static void shrink_active_list(unsigned 
- 	__mod_zone_page_state(zone, NR_LRU_BASE + lru, pgmoved);
- 	__count_zone_vm_events(PGREFILL, zone, pgscanned);
- 	__count_vm_events(PGDEACTIVATE, pgmoved);
-+
-+	pgmoved = 0;  /* count pages moved back to active list */
-+	lru = LRU_ACTIVE + file * LRU_FILE;
-+	while (!list_empty(&l_active)) {
-+		page = lru_to_page(&l_active);
-+		prefetchw_prev_lru_page(page, &l_active, flags);
-+		VM_BUG_ON(PageLRU(page));
-+		SetPageLRU(page);
-+		VM_BUG_ON(!PageActive(page));
-+
-+		list_move(&page->lru, &zone->lru[lru].list);
-+		mem_cgroup_add_lru_list(page, lru);
-+		pgmoved++;
-+		if (!pagevec_add(&pvec, page)) {
-+			spin_unlock_irq(&zone->lru_lock);
-+			if (buffer_heads_over_limit)
-+				pagevec_strip(&pvec);
-+			__pagevec_release(&pvec);
-+			spin_lock_irq(&zone->lru_lock);
-+		}
-+	}
-+	__mod_zone_page_state(zone, NR_LRU_BASE + lru, pgmoved);
-+
- 	spin_unlock_irq(&zone->lru_lock);
- 	if (buffer_heads_over_limit)
- 		pagevec_strip(&pvec);
+My personal favourite is to lower the resolution/accuracy of the answer
+the bigger the box gets.
