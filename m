@@ -1,84 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754167AbZESL6S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754009AbZESL6s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754167AbZESL6S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 07:58:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752305AbZESL6E
+	id S1754009AbZESL6s (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 07:58:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752949AbZESL6m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 07:58:04 -0400
-Received: from hera.kernel.org ([140.211.167.34]:57136 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752020AbZESL6C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 07:58:02 -0400
-Subject: Re: [git-pull -tip] x86: cpu_debug patches
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090503090908.GA23183@elte.hu>
-References: <1240190145.3106.90.camel@ht.satnam>
-	 <1240191359.3106.93.camel@ht.satnam> <1240217428.3083.2.camel@ht.satnam>
-	 <20090420111619.GE6670@elte.hu> <1240933437.3074.4.camel@ht.satnam>
-	 <20090428172828.GA15392@elte.hu> <1240977176.3028.0.camel@ht.satnam>
-	 <20090429105021.GG2373@elte.hu> <1241007294.3061.12.camel@ht.satnam>
-	 <20090503090908.GA23183@elte.hu>
-Content-Type: text/plain
-Date: Tue, 19 May 2009 17:27:35 +0530
-Message-Id: <1242734255.3377.20.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+	Tue, 19 May 2009 07:58:42 -0400
+Received: from mail-bw0-f174.google.com ([209.85.218.174]:33736 "EHLO
+	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752305AbZESL6l (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 07:58:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=rNJNAE/7XifVpHr+cepj1q81PBTS4YrfJT8GAs9rrZxVqsai8h9XZPnt0R8evhdukc
+         aFdL8dVgMwxlMEi3edk0j/ffdNs84Rb+HF5QRyq+PPAXaqk7g8ZCL4akWryh6NSZJgk2
+         CrrPjHyOFOikZWr0uGqS94PYXtoaX4gDu6vvo=
+MIME-Version: 1.0
+Date: Tue, 19 May 2009 13:58:41 +0200
+Message-ID: <29f1ba300905190458y44c8aadeuc8ff914e09105a09@mail.gmail.com>
+Subject: Feasibility study: Linux on core 0, using other cores as worker 
+	cores. Octeon II
+From: linux kernel <linuxk3rnel@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Ingo,
+Hi,
 
-On Sun, 2009-05-03 at 11:09 +0200, Ingo Molnar wrote:
-> * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
-> 
-> > We can use cpu_has tests for unknown processors but 'cpu model' is 
-> > accurate and cover all range.
-> > 
-> > cpu_has does not cover following registers:
-> > 1. platform
-> > 2. poweron
-> > 3. control
-> > 4. bios
-> > 5. freq
-> > 6. cache
-> > 7. misc
-> > 8. base
-> > 9. ver
-> > 10. conf
-> 
-> Firstly these should be added to cpufeatures.h.
-> 
-> Then add cpu_has_xxx() accessors need to be added for them and 
-> during CPU init they have to be properly set, via two methods:
-> 
->  - via CPUID (where this is possible+specified in docs)
->  - or via "later than CPU version X" checks
-> 
-> Your cpu-model table is equivalent to an explicitly enumerated CPU 
-> version check, but this breaks every time a new CPU comes out. 
-> 
-> "Later than" or CPUID based feature bits are a lot more future-proof 
-> - we only have to add support for new _features_ (and quirks, 
-> occasionally), and dont have to maintain that full table of specific 
-> models to specific features mapping tables.
-> 
+This might seem as an unusal feasibility question, but I would like to
+discuss this here at LKML to hear you views on this matter.
+The idea would be to build a IBM cell blade lookalike architecture,
+using full blown linux on core 0, using the other cores as worker
+threads.
+Possible target CPUs are Octeon II with 32 cores or more.
 
-It seems that other developers have some objections for adding new cpuid
-features.
+The main goal for this would be to reduce interrupt latency for worker
+cores, having them run possibly bare-bone with an IPC method between
+core 0 and worker cores. probably DMA and HW IRQs.
 
-May be we can try accessing MSRs without any checking, it will work on
-new processors but we need to check it on old processors, so I will need
-your help to run this modules on old processors.
+Is there an existing system design in the kernel already that I can
+expand/use ? Perhaps expanding/porting the cell blade IPC method.
+What would you guys think would be the most efficient approach(and
+perhaps would be acceptable to the LK maintainers for merging at a
+later stage :) )  ?
 
-Now what should be the next step.
-
-Thanks,
---
-JSR
-
+Best Regards,
+David
