@@ -1,107 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754810AbZESOSL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754830AbZESOZS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754810AbZESOSL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 10:18:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752879AbZESOSA
+	id S1754830AbZESOZS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 10:25:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753324AbZESOZL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 10:18:00 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50043 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752339AbZESOSA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 10:18:00 -0400
-Date: Tue, 19 May 2009 16:17:08 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Gerd Hoffmann <kraxel@redhat.com>
-Cc: Jan Beulich <JBeulich@novell.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [Xen-devel] Re: [GIT PULL] xen /proc/mtrr implementation
-Message-ID: <20090519141708.GA6008@elte.hu>
-References: <20090518085902.GE10687@elte.hu> <4A11A3F8.1010202@goop.org> <20090519095918.GA11790@elte.hu> <4A12A46A02000078000017E1@vpn.id2.novell.com> <20090519110837.GA10548@elte.hu> <4A12A05C.6050004@redhat.com> <20090519122623.GD14305@elte.hu> <4A12B244.8070301@redhat.com> <20090519133138.GA8410@elte.hu> <4A12B97C.9040706@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A12B97C.9040706@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 19 May 2009 10:25:11 -0400
+Received: from mtagate3.uk.ibm.com ([195.212.29.136]:46723 "EHLO
+	mtagate3.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753259AbZESOZK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 10:25:10 -0400
+Message-Id: <20090519142417.897270698@linux.vnet.ibm.com>
+User-Agent: quilt/0.48-1
+Date: Tue, 19 May 2009 16:24:18 +0200
+From: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
+       Huang Ying <ying.huang@intel.com>, Li Wei <W.Li@Sun.COM>,
+       Michael Ellerman <michaele@au1.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Heiko Carstens <heicars2@linux.vnet.ibm.com>,
+       Martin Schwidefsky <mschwid2@linux.vnet.ibm.com>,
+       Al Viro <viro@zeniv.linux.org.uk>
+Subject: [PATCH 2/4] seq_file: add function to write binary data
+References: <20090519142416.356254359@linux.vnet.ibm.com>
+Content-Disposition: inline; filename=seq_file-add-function-to-write-binary-data.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
 
-* Gerd Hoffmann <kraxel@redhat.com> wrote:
+seq_write() can be used to construct seq_files containing arbitrary
+data. Required by the gcov-profiling interface to synthesize binary
+profiling data files.
 
-> On 05/19/09 15:31, Ingo Molnar wrote:
->> * Gerd Hoffmann<kraxel@redhat.com>  wrote:
->>
->>> On 05/19/09 14:26, Ingo Molnar wrote:
->>>> * Gerd Hoffmann<kraxel@redhat.com>   wrote:
->>>>
->>>>> On 05/19/09 13:08, Ingo Molnar wrote:
->>>>>> Or, alternatively, the hypervisor can expose its own administrative
->>>>>> interface to manage MTRRs.
->>>>> Guess what?  Xen does exactly that.  And the xen mtrr_ops
->>>>> implementation uses that interface ...
->>>> No, that is not an 'administrative interface' - that is a guest
->>>> kernel level hack that complicates Linux, extends its effective ABI
->>>> dependencies and which has to be maintained there from that point
->>>> on.
->>>>
->>>> There's really just three proper technical solutions here:
->>>>
->>>> - either catch the lowlevel CPU hw ops (the MSR modifications, which
->>>>     isnt really all that different from the mtrr_ops approach so it
->>>>     shouldnt pose undue difficulties to the Xen hypervisor).
->>> Devil is in the details.
->>>
->>> The dom0 kernel might not see all physical cpus on the system.  So
->>> Xen can't leave the job of looping over all cpus to the dom0
->>> kernel, Xen has to apply the changes made by the (priviledged)
->>> guest kernel on any (virtual) cpu to all (physical) cpus in the
->>> machine.
->>
->> Applying MTRR changes to only part of the CPUs is utter madness.
->
-> Sure.  Do you read what I'm writing?
->
->>> Which in turn means the "lowlevel cpu hw op" would work in a
->>> slightly different way on Xen and native.  Nasty.
->>>
->>>>     That will
->>>>     be maximally transparent and compatible, with zero changes needed
->>>>     to the Linux kernel.
->>> No, the linux kernel probably should do the wrmsr on one cpu only then.
->>
->> Why?
->
-> See above.  Xen has to apply the changes to all cpus anyway.
+Signed-off-by: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
+Cc: Al Viro <viro@zeniv.linux.org.uk>
+---
 
-do _you_ read what i wrote, in the thread you are replying to:
+ fs/seq_file.c            |   20 ++++++++++++++++++++
+ include/linux/seq_file.h |    1 +
+ 2 files changed, 21 insertions(+)
 
-|
-| The change of MTRR's on _any_ of the guest CPUs in a dom0 context 
-| should immediately be refected on all CPUs. Assymetric MTRR 
-| settings are madness.
-|
+Index: linux-2.6.30-rc6/fs/seq_file.c
+===================================================================
+--- linux-2.6.30-rc6.orig/fs/seq_file.c	2009-05-19 12:27:37.000000000 +0200
++++ linux-2.6.30-rc6/fs/seq_file.c	2009-05-19 12:41:26.000000000 +0200
+@@ -640,6 +640,26 @@
+ }
+ EXPORT_SYMBOL(seq_puts);
+ 
++/**
++ * seq_write - write arbitrary data to buffer
++ * @seq: seq_file identifying the buffer to which data should be written
++ * @data: data address
++ * @len: number of bytes
++ *
++ * Return 0 on success, non-zero otherwise.
++ */
++int seq_write(struct seq_file *seq, const void *data, size_t len)
++{
++	if (seq->count + len < seq->size) {
++		memcpy(seq->buf + seq->count, data, len);
++		seq->count += len;
++		return 0;
++	}
++	seq->count = seq->size;
++	return -1;
++}
++EXPORT_SYMBOL(seq_write);
++
+ struct list_head *seq_list_start(struct list_head *head, loff_t pos)
+ {
+ 	struct list_head *lh;
+Index: linux-2.6.30-rc6/include/linux/seq_file.h
+===================================================================
+--- linux-2.6.30-rc6.orig/include/linux/seq_file.h	2009-05-19 12:27:37.000000000 +0200
++++ linux-2.6.30-rc6/include/linux/seq_file.h	2009-05-19 12:41:26.000000000 +0200
+@@ -43,6 +43,7 @@
+ int seq_escape(struct seq_file *, const char *, const char *);
+ int seq_putc(struct seq_file *m, char c);
+ int seq_puts(struct seq_file *m, const char *s);
++int seq_write(struct seq_file *seq, const void *data, size_t len);
+ 
+ int seq_printf(struct seq_file *, const char *, ...)
+ 	__attribute__ ((format (printf,2,3)));
 
 
->>> Oops, the third "proper technical solutions" is missing.
->>
->> Yeah, the third one is to not touch MTRRs after bootup and use PAT.
->
-> Works only in case the CPU has PAT support.
-
-Which specific CPU without PAT support do you worry about?
-
-	Ingo
