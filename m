@@ -1,234 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754974AbZESNx0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754583AbZESNxw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754974AbZESNx0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 09:53:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753381AbZESNxM
+	id S1754583AbZESNxw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 09:53:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753381AbZESNxo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 09:53:12 -0400
-Received: from www.tglx.de ([62.245.132.106]:45310 "EHLO www.tglx.de"
+	Tue, 19 May 2009 09:53:44 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:56216 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753042AbZESNxK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 09:53:10 -0400
-Date: Tue, 19 May 2009 15:52:06 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Stanislaw Gruszka <sgruszka@redhat.com>
-cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Oleg Nesterov <oleg@redhat.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH resend3 1/2] itimers: merge ITIMER_VIRT and ITIMER_PROF
- common code
-In-Reply-To: <20090518135011.5de06307@dhcp-lab-109.englab.brq.redhat.com>
-Message-ID: <alpine.LFD.2.00.0905191517080.5983@localhost.localdomain>
-References: <20090518135011.5de06307@dhcp-lab-109.englab.brq.redhat.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1752823AbZESNxn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 09:53:43 -0400
+Message-ID: <4A12B97C.9040706@redhat.com>
+Date: Tue, 19 May 2009 15:51:56 +0200
+From: Gerd Hoffmann <kraxel@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Ingo Molnar <mingo@elte.hu>
+CC: Jan Beulich <JBeulich@novell.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [Xen-devel] Re: [GIT PULL] xen /proc/mtrr implementation
+References: <m1iqk1k708.fsf@fess.ebiederm.org> <4A10EAC4.9070701@goop.org> <20090518085902.GE10687@elte.hu> <4A11A3F8.1010202@goop.org> <20090519095918.GA11790@elte.hu> <4A12A46A02000078000017E1@vpn.id2.novell.com> <20090519110837.GA10548@elte.hu> <4A12A05C.6050004@redhat.com> <20090519122623.GD14305@elte.hu> <4A12B244.8070301@redhat.com> <20090519133138.GA8410@elte.hu>
+In-Reply-To: <20090519133138.GA8410@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stanislaw,
-
-On Mon, 18 May 2009, Stanislaw Gruszka wrote:
-> Both cpu itimers have same data flow in the few places, this patch make
-> unification of code related with VIRT and PROF itimers.
-
-Sorry for late response.
- 
-> Signed-off-by: Stanislaw Gruszka <sgruszka@redhat.com>
-> ---
-> Compared to previous patch bug (using utime instead of sum stime + utime when
-> setup PROF itimer) is fixed. I also no longer introduce new IT_PROF and IT_VIRT
-> definitions, only CPUCLOCK_PROF and CPUCLOCK_VIRT are used.
+On 05/19/09 15:31, Ingo Molnar wrote:
+> * Gerd Hoffmann<kraxel@redhat.com>  wrote:
 >
->  include/linux/sched.h     |    8 ++-
->  kernel/fork.c             |    8 +-
->  kernel/itimer.c           |  151 ++++++++++++++++++++++-----------------------
->  kernel/posix-cpu-timers.c |   86 +++++++++++++-------------
->  4 files changed, 125 insertions(+), 128 deletions(-)
-> 
-> diff --git a/include/linux/sched.h b/include/linux/sched.h
-> index b4c38bc..0d8367b 100644
-> --- a/include/linux/sched.h
-> +++ b/include/linux/sched.h
-> @@ -454,6 +454,11 @@ struct pacct_struct {
->  	unsigned long		ac_minflt, ac_majflt;
->  };
->  
-> +struct cpu_itimer {
-> +	cputime_t expires;
-> +	cputime_t incr;
-> +};
-> +
->  /**
->   * struct task_cputime - collected CPU time counts
->   * @utime:		time spent in user mode, in &cputime_t units
-> @@ -540,8 +545,7 @@ struct signal_struct {
->  	ktime_t it_real_incr;
->  
->  	/* ITIMER_PROF and ITIMER_VIRTUAL timers for the process */
-> -	cputime_t it_prof_expires, it_virt_expires;
-> -	cputime_t it_prof_incr, it_virt_incr;
-> +	struct cpu_itimer it[2];
+>> On 05/19/09 14:26, Ingo Molnar wrote:
+>>> * Gerd Hoffmann<kraxel@redhat.com>   wrote:
+>>>
+>>>> On 05/19/09 13:08, Ingo Molnar wrote:
+>>>>> Or, alternatively, the hypervisor can expose its own administrative
+>>>>> interface to manage MTRRs.
+>>>> Guess what?  Xen does exactly that.  And the xen mtrr_ops
+>>>> implementation uses that interface ...
+>>> No, that is not an 'administrative interface' - that is a guest
+>>> kernel level hack that complicates Linux, extends its effective ABI
+>>> dependencies and which has to be maintained there from that point
+>>> on.
+>>>
+>>> There's really just three proper technical solutions here:
+>>>
+>>> - either catch the lowlevel CPU hw ops (the MSR modifications, which
+>>>     isnt really all that different from the mtrr_ops approach so it
+>>>     shouldnt pose undue difficulties to the Xen hypervisor).
+>> Devil is in the details.
+>>
+>> The dom0 kernel might not see all physical cpus on the system.  So
+>> Xen can't leave the job of looping over all cpus to the dom0
+>> kernel, Xen has to apply the changes made by the (priviledged)
+>> guest kernel on any (virtual) cpu to all (physical) cpus in the
+>> machine.
+>
+> Applying MTRR changes to only part of the CPUs is utter madness.
 
-I like the general idea of the patch, but it's not obvious that
-CPUCLOCK_PROF and CPUCLOCK_VIRT happen to be defined as 0 resp 1.
+Sure.  Do you read what I'm writing?
 
-This needs at least a comment.
+>> Which in turn means the "lowlevel cpu hw op" would work in a
+>> slightly different way on Xen and native.  Nasty.
+>>
+>>>     That will
+>>>     be maximally transparent and compatible, with zero changes needed
+>>>     to the Linux kernel.
+>> No, the linux kernel probably should do the wrmsr on one cpu only then.
+>
+> Why?
 
-> +static void get_cpu_itimer(struct task_struct *tsk, unsigned int clock_id,
-> +			   struct itimerval *value)
-> +{
-> +	cputime_t cval, cinterval;
-> +	struct cpu_itimer *it = &tsk->signal->it[clock_id];
-> +
-> +	spin_lock_irq(&tsk->sighand->siglock);
-> +
-> +	cval = it->expires;
-> +	cinterval = it->incr;
+See above.  Xen has to apply the changes to all cpus anyway.
 
-  We dereference it-> w/o checking clock_id first ?
+>> Oops, the third "proper technical solutions" is missing.
+>
+> Yeah, the third one is to not touch MTRRs after bootup and use PAT.
 
-> +	if (!cputime_eq(cval, cputime_zero)) {
-> +		struct task_cputime cputime;
-> +		cputime_t t;
-> +
-> +		thread_group_cputimer(tsk, &cputime);
-> +		switch (clock_id) {
-> +		default:
-> +			BUG();
+Works only in case the CPU has PAT support.
 
-  So the BUG here is correct, but a little late. OTOH we only have local
-  callers, so that will only catch stupidity of people changing the
-  calling code. Not sure if it's worth bothering with it at all.
+cheers,
+   Gerd
 
-> +		case CPUCLOCK_PROF:
-> +			t = cputime_add(cputime.utime, cputime.stime);
-> +			break;
-> +		case CPUCLOCK_VIRT:
-> +			t = cputime.utime;
-> +			break;
-> +		}
-> +
-> +		if (cputime_le(cval, t)) { /* about to fire */
-
-  Please avoid end of line comments. The if/else here can do without
-  braces.
-
-> diff --git a/kernel/posix-cpu-timers.c b/kernel/posix-cpu-timers.c
-> index bece7c0..b6accca 100644
-> --- a/kernel/posix-cpu-timers.c
-> +++ b/kernel/posix-cpu-timers.c
-> @@ -14,11 +14,11 @@
->   */
->  void update_rlimit_cpu(unsigned long rlim_new)
->  {
-> -	cputime_t cputime;
-> +	cputime_t cputime = secs_to_cputime(rlim_new);
-> +	struct signal_struct *const sig = current->signal;
->  
-> -	cputime = secs_to_cputime(rlim_new);
-> -	if (cputime_eq(current->signal->it_prof_expires, cputime_zero) ||
-> -	    cputime_gt(current->signal->it_prof_expires, cputime)) {
-> +	if (cputime_eq(sig->it[CPUCLOCK_PROF].expires, cputime_zero) ||
-> +	    cputime_gt(sig->it[CPUCLOCK_PROF].expires, cputime)) {
->  		spin_lock_irq(&current->sighand->siglock);
->  		set_process_cpu_timer(current, CPUCLOCK_PROF, &cputime, NULL);
->  		spin_unlock_irq(&current->sighand->siglock);
-> @@ -613,36 +613,39 @@ static void arm_timer(struct k_itimer *timer, union cpu_time_count now)
->  				break;
->  			}
->  		} else {
-> +			struct signal_struct *const sig = p->signal;
-> +
->  			/*
->  			 * For a process timer, set the cached expiration time.
->  			 */
-> +
-
-  Stray newline
-
->  			switch (CPUCLOCK_WHICH(timer->it_clock)) {
->  			default:
->  				BUG();
->  			case CPUCLOCK_VIRT:
-> -				if (!cputime_eq(p->signal->it_virt_expires,
-> +				if (!cputime_eq(sig->it[CPUCLOCK_VIRT].expires,
->  						cputime_zero) &&
-> -				    cputime_lt(p->signal->it_virt_expires,
-> +				    cputime_lt(sig->it[CPUCLOCK_VIRT].expires,
->  					       timer->it.cpu.expires.cpu))
->  					break;
->  				p->signal->cputime_expires.virt_exp =
->  					timer->it.cpu.expires.cpu;
-
-  Should change to sig->cputime... as well
-
->  				break;
->  			case CPUCLOCK_PROF:
-> -				if (!cputime_eq(p->signal->it_prof_expires,
-> +				if (!cputime_eq(sig->it[CPUCLOCK_PROF].expires,
->  						cputime_zero) &&
-> -				    cputime_lt(p->signal->it_prof_expires,
-> +				    cputime_lt(sig->it[CPUCLOCK_PROF].expires,
->  					       timer->it.cpu.expires.cpu))
->  					break;
-
-  That code could be simplified further by splitting out the
-  comparisons into a separate function and doing
-
-  	      	      	     	if (fred(&sig->it[CPUCLOCK_PROF], timer))
-					break;
-
->  				i = p->signal->rlim[RLIMIT_CPU].rlim_cur;
->  				if (i != RLIM_INFINITY &&
->  				    i <= cputime_to_secs(timer->it.cpu.expires.cpu))
->  					break;
-> -				p->signal->cputime_expires.prof_exp =
-> +				sig->cputime_expires.prof_exp =
->  					timer->it.cpu.expires.cpu;
-
-  Also we reference timer->it.cpu.expires.cpu in all 3 cases several
-  times, so having an extra pointer to it would make the code more
-  readable as well.
-
->  				break;
->  			case CPUCLOCK_SCHED:
-> -				p->signal->cputime_expires.sched_exp =
-> +				sig->cputime_expires.sched_exp =
->  					timer->it.cpu.expires.sched;
->  				break;
->  			}
-> @@ -1070,6 +1073,28 @@ static void stop_process_timers(struct task_struct *tsk)
->  	spin_unlock_irqrestore(&cputimer->lock, flags);
->  }
->  
-> +static void check_cpu_itimer(struct task_struct *tsk, struct cpu_itimer *it,
-> +			     cputime_t *expires, cputime_t cur_time, int signo)
-> +{
-> +	if (cputime_eq(it->expires, cputime_zero))
-> +		return;
-> +
-> +	if (cputime_ge(cur_time, it->expires)) {
-> +		it->expires = it->incr;
-> +		if (!cputime_eq(it->expires, cputime_zero)) {
-> +			it->expires = cputime_add(it->expires, cur_time);
-> +		}
-
-  	No braces please
-> +
-> +		__group_send_sig_info(signo, SEND_SIG_PRIV, tsk);
-> +	}
-> +
-> +	if (!cputime_eq(it->expires, cputime_zero) &&
-> +	    (cputime_eq(*expires, cputime_zero) ||
-> +	     cputime_lt(it->expires, *expires))) {
-> +		*expires = it->expires;
-> +	}
-> +}
-> +
-
-Looks fine otherwise. Thanks,
-
-      tglx
