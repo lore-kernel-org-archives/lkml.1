@@ -1,72 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754109AbZESOhQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754547AbZESOjY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754109AbZESOhQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 10:37:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754469AbZESOgz
+	id S1754547AbZESOjY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 10:39:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753443AbZESOjS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 10:36:55 -0400
-Received: from web23608.mail.ird.yahoo.com ([87.248.115.51]:37028 "HELO
-	web23608.mail.ird.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753415AbZESOgy convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 10:36:54 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.it;
-  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding;
-  b=03WwTE+uVUi4N0FH4l7qFCX8UV3zh0CtPr1c2L0nNInbeRAlo1jWCX+saP7a6rbQophUQ7LMxM5x32O0huYVpa9fpykvWeeGWkjYHS7SUKmWjBaeeZt75OtKbXhfGw784JKCCcs04WgPeVpxTZju3SpJZx5lvWtccNWA0ytyhUY=;
-Message-ID: <607293.42795.qm@web23608.mail.ird.yahoo.com>
-X-YMail-OSG: dgWbJucVM1lJR65Z.ZqdSVsleygWCVkaUm8kqhqbYoATi.59CG1_eaHj.XCT0TVotwUyVROdWqn_LPItDv.Rx1NIQO6daRlfX53BvEK5YCKDbQsMgIUITl_61lCYmdrn3j4DLOmouPxbwVsJHB2LwX1WtalE0VBeO6bU2M2NMulqhuyeVdS7xSqLj.wMSs99mMSeO1m.Tybq7H2HQfOH4sSORI_mB2GM7FtvtOeIEnaywH.RWuH_yDoKyrTmRLMYnU_FCeJT.WdPGhBdH1s10VZQlnvXwFMWPsz5tg6rjGPALOyZCg--
-X-Mailer: YahooMailClassic/5.2.20 YahooMailWebService/0.7.289.10
-Date: Tue, 19 May 2009 14:36:54 +0000 (GMT)
-From: Andrea <andrea256it@yahoo.it>
-Subject: Re: super root shell/mode/api
-To: 7eggert@gmx.de
-Cc: linux-kernel@vger.kernel.org
+	Tue, 19 May 2009 10:39:18 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:40819 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753097AbZESOjR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 10:39:17 -0400
+Date: Tue, 19 May 2009 10:39:18 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       <linux-usb@vger.kernel.org>
+Subject: Re: Oops in usb-serial with keyspan adapter on current upstream
+In-Reply-To: <1242697759.16901.42.camel@pasglop>
+Message-ID: <Pine.LNX.4.44L0.0905191031240.4611-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 19 May 2009, Benjamin Herrenschmidt wrote:
 
-> If there is a malware with root privileges, this would be of no use. You are
-> 0wned.
+> So I can still reproduce it with today checkout
+> (363383277081ce831642b72df40932ee05ce40a2).
 > 
-> If there is a malware with user privileges, stopping these processes will
-> be enough.
+> Unable to handle kernel paging request for data at address 0x00000010
+> Faulting instruction address: 0xc000000000301e0c
+> Oops: Kernel access of bad area, sig: 11 [#1]
+> SMP NR_CPUS=4 PowerMac
+> Modules linked in: keyspan usbserial
+> NIP: c000000000301e0c LR: c0000000002fb410 CTR: c0000000002fb29c
+> REGS: c00000015a4e34c0 TRAP: 0300   Not tainted  (2.6.30-rc6-00065-g3633832)
+> MSR: 9000000000009032 <EE,ME,IR,DR>  CR: 24000024  XER: 20000000
+> DAR: 0000000000000010, DSISR: 0000000040000000
+> TASK = c00000015a494950[170] 'khubd' THREAD: c00000015a4e0000 CPU: 1
+> GPR00: c0000000008475e8 c00000015a4e3740 c000000000875430 0000000000000001 
+> GPR04: 0000000000000000 c0000001581e2290 0000000000000001 0000000000000000 
+> GPR08: 0000000000000000 0000000000000000 0000000000000000 c0000000002fb29c 
+> GPR12: 0000000024000082 c0000000008a9480 0000000000000002 c0000001581dd230 
+> GPR16: 00000000000003e8 0000000000000001 c0000001580b0800 c0000001581dd230 
+> GPR20: 0000000000000000 0000000000000001 c0000001580b1800 0000000000000002 
+> GPR24: c000000158226c00 c00000015811a780 c0000001581e2198 0000000000000000 
+> GPR28: 0000000000000000 c00000015a4e37b0 c0000000007fede8 0000000000000000 
+> NIP [c000000000301e0c] .release_nodes+0x54/0x254
+> LR [c0000000002fb410] .device_del+0x174/0x1e8
+> Call Trace:
+> [c00000015a4e3740] [c00000015a4e3880] 0xc00000015a4e3880 (unreliable)
+> [c00000015a4e37f0] [c0000000002fb410] .device_del+0x174/0x1e8
+> [c00000015a4e3880] [d0000000005454dc] .usb_serial_disconnect+0xf8/0x1d0 [usbserial]
+> [c00000015a4e3930] [c0000000003d1ed0] .usb_unbind_interface+0x7c/0x138
+> [c00000015a4e39d0] [c0000000002fe77c] .__device_release_driver+0xb8/0x100
+> [c00000015a4e3a60] [c0000000002fe930] .device_release_driver+0x30/0x54
+> [c00000015a4e3af0] [c0000000002fd9c8] .bus_remove_device+0xe4/0x124
+> [c00000015a4e3b80] [c0000000002fb404] .device_del+0x168/0x1e8
+> [c00000015a4e3c10] [c0000000003cf08c] .usb_disable_device+0xa4/0x15c
+> [c00000015a4e3cb0] [c0000000003c96ac] .usb_disconnect+0xc4/0x180
+> [c00000015a4e3d60] [c0000000003ca794] .hub_thread+0x594/0x101c
+> [c00000015a4e3f00] [c0000000000672b0] .kthread+0x80/0xcc
+> [c00000015a4e3f90] [c00000000001fef0] .kernel_thread+0x54/0x70
+> Instruction dump:
+> ebc2a398 7c7a1b78 7c872378 39000000 3b800000 3be00000 38010070 f8010070 
+> f8010078 7c1d0378 48000070 e81e8000 <e96a0010> e8840000 7fab0000 419e0014 
+> ---[ end trace f9d8f1b68a9ea04d ]---
 > 
-> So why bother?
+> Pretty clearly a NULL dereference inside release_nodes() called by
+> device_del(). After a bit of disassembly, it looks like the offending
+> dereference is node->release (ie, node_to_group) called with a NULL node,
+> so basically we got to a situation where cur == NULL in the first loop
+> inside of remove_nodes() and it thus blows on
+> 
+> 	grp = node_to_group(node);
+> 
+> It also looks like first is NULL but it's unclear whether it is such
+> as the result of first = first->next or the function was called that
+> way, though I could try to figure it out with added debugging. It -does-
+> seem that "cnt" might be 1 at the time of the crash.
 
-That's exactly the problem a remote attacker or virus
-can gain root and you are completely powerless. You want
-to save data? The attacker just logs you out before you
-can run any command. You can't even backup or save
-data! You are owned. Yes.
+It looks like dev->devres has been corrupted somehow.  As far as I can
+tell, the keyspan driver doesn't touch it at all.  In fact, nothing in
+drivers/usb/serial does.
 
-With this super shell/mode/menu in less then one second, you stop
-everything - a global SIGSTP - and gain control over your machine!
+> Do you need more data ?
 
-You can save all memory, e.g. for controlling what happened 
-or data recovery, sigstop without hurry all processes that seems
-a problem and so on.
+The inner device_del() call comes from usb_serial_disconnect().  You 
+could try adding some debugging there, to find out if dev->devres has 
+been tampered with.
 
-Then when you have saved everything, made a backup of the hdd,
-stopped the processes with viruses or too much memory you can
-unfreeze the system - a global SIGCONT and it was like stopping
-the time. Attackers, viruses, OOM processes are stopped in less
-then one second. You can go back to the system whenever you
-want. You the console user finally have power. 
+Alan Stern
 
-The value of such a tool is only evident once you had it.
-
-I can give you a lot of other reasons, but I must work now,
-maybe in some days.
-
-Regards.
-
-Andrea Gedda
-
-
-
-      
