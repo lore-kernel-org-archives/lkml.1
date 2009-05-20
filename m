@@ -1,125 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755052AbZETQff@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755380AbZETQjZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755052AbZETQff (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 12:35:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753217AbZETQf2
+	id S1755380AbZETQjZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 12:39:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754345AbZETQjR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 12:35:28 -0400
-Received: from claw.goop.org ([74.207.240.146]:58787 "EHLO claw.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752811AbZETQf1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 12:35:27 -0400
-Message-ID: <4A14314E.7030406@goop.org>
-Date: Wed, 20 May 2009 09:35:26 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Wed, 20 May 2009 12:39:17 -0400
+Received: from gw-ca.panasas.com ([209.116.51.66]:1197 "EHLO
+	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753970AbZETQjQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 12:39:16 -0400
+Message-ID: <4A14322A.4000709@panasas.com>
+Date: Wed, 20 May 2009 19:39:06 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Jan Beulich <JBeulich@novell.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [Xen-devel] Re: [GIT PULL] xen /proc/mtrr implementation
-References: <4A0DCC11.10307@goop.org> <m1my9ex818.fsf@fess.ebiederm.org> <4A0DFF78.6000501@goop.org> <20090515202250.0f1218ef@jbarnes-g45> <m1iqk1k708.fsf@fess.ebiederm.org> <4A10EAC4.9070701@goop.org> <20090518085902.GE10687@elte.hu> <4A11A3F8.1010202@goop.org> <20090519095918.GA11790@elte.hu> <4A12A46A02000078000017E1@vpn.id2.novell.com> <20090519110837.GA10548@elte.hu>
-In-Reply-To: <20090519110837.GA10548@elte.hu>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>, Tejun Heo <tj@kernel.org>,
+       James Smart <James.Smart@Emulex.Com>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       FUJITA Tomonori <tomof@acm.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Jens Axboe <Jens.Axboe@oracle.com>
+Subject: Re: [PATCH version 2] [SQUASHME] "FC Pass Thru support" fixed for
+ block/for-2.6.31 tree
+References: <4A12797B.2060901@panasas.com> <4A12AC23.30808@panasas.com>	 <20090520111619.87f815b1.sfr@canb.auug.org.au>	 <1242830240.2881.10.camel@localhost.localdomain>	 <20090521004251.9160e228.sfr@canb.auug.org.au>	 <1242830865.2881.13.camel@localhost.localdomain> <1242836425.2881.44.camel@localhost.localdomain>
+In-Reply-To: <1242836425.2881.44.camel@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 20 May 2009 16:39:11.0722 (UTC) FILETIME=[81154CA0:01C9D969]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Jan Beulich <JBeulich@novell.com> wrote:
->
->   
->>>>> Ingo Molnar <mingo@elte.hu> 19.05.09 11:59 >>>
->>>>>           
->>> Exactly what is 'bizarre' about using the API defined by the 
->>> _CPU_ already, without adding any ad-hoc hypecall? Catch the 
->>> dom0 WRMSRs, filter out the MTRR indices - that's it.
->>>       
->> But that is *not* the same as using the hypercalls: The hypercall 
->> tells Xen "Change all CPUs' MTRRs with the indicated index to the 
->> indicated value", while the MSR write says "Change the MTRR with 
->> the given index on the physical CPU the current virtual CPU 
->> happens to run on to the given value". [...]
->>     
->
-> The change of MTRR's on _any_ of the guest CPUs in a dom0 context 
-> should immediately be refected on all CPUs. Assymetric MTRR settings 
-> are madness.
->
-> ( And the thing is, changing MTRRs is fragile and racy on native 
->   Linux no matter what - even without any hypervisors - due to SMM 
->   contexts possibly relying on them etc. )
->
->   
->> [...] A write-base/write-mask pair may happen to get interrupted 
->> (preempted) by the hypervisor, and hence the two writes may happen 
->> on different pCPU-s. Teaching the hypervisor to (correctly!) guess 
->> what the guest meant in that situation isn't trivial, as then it 
->> needs to handle all possible situations (and it can never know 
->> whether Dom0 really intended to do something that may look 
->> bogus/inconsistent at the first glance). [...]
->>     
->
-> None of this is a problem really if a sane approach is used: a 
-> change to the MTRR state on dom0 is applied symmetrically on all 
-> CPUs.
->
-> Or, alternatively, the hypervisor can expose its own administrative 
-> interface to manage MTRRs.
->
-> There's no need to fuglify the Linux kernel for that.
+On 05/20/2009 07:20 PM, James Bottomley wrote:
+> On Wed, 2009-05-20 at 14:47 +0000, James Bottomley wrote:
+>> OK, so I think your pulling of my posmerge tree can cope with the fact
+>> that I did the necessary rebasing in block for-next before I made it the
+>> base of my combined tree .... think of this as a nice test.
+>>
+>> Just building now ... if it works, I'll push to SCSI post merge and all
+>> our problems should go away.
+> 
+> Unfortunately the combined tree hits a BUG_ON blk-core.c:2045 when doing
+> SPI domain validation.
+> 
+> There will be a short delay ...
+> 
+> James
+> 
+> 
 
-I'm not sure what you mean by that, other than as a description of the 
-current case.  The Xen MTRR hypercall:
+I have rebased block/for-next onto linus/master which should give us the
+same content?
 
-   1. treats MTRR ranges as allocatable resources, and keep track of how
-      many uses there are of each
-   2. updates all physical cpus synchronously (ie, the MTRR is not
-      presented as a property of dom0's virtual CPU, but as a
-      system-wide resource)
-   3. prevents guests from setting inconsistent or conflicting MTRRs
+But line 2045 is on a code comment.
 
-Mapping from MSR writes to this interface is moderately complex, because 
-it requires a mapping from a low-semantic-content interface to a 
-high-semantic-content interface.  It essentially requires parsing the 
-MSR writes to map them back to the relatively high-level operations at 
-the mtrr_ops interface and then present that to Xen.
+if I now do a git-log v2.6.30-rc3..HEAD I have the following patches:
+pick 42dad76 block: simplify I/O stat accounting
+pick af498d7 block: fix the bio_vec array index out-of-bounds test
+pick d616ee5 block: clear req->errors on bio completion only for fs requests
+pick 268ea3d block: merge blk_invoke_request_fn() into __blk_run_queue()
+pick d097b7d block: kill blk_start_queueing()
+pick 3099167 block: don't set REQ_NOMERGE unnecessarily
+pick 4095018 block: cleanup REQ_SOFTBARRIER usages
+pick 17fc349 block: reorder request completion functions
+pick 6e6732a block: reorganize request fetching functions
+pick ca219b4 block: kill blk_end_request_callback()
+pick ea1e706 block: clean up request completion API
+pick 70a8607 block: move rq->start_time initialization to blk_rq_init()
+pick fa6e42b block: implement and use [__]blk_end_request_all()
+pick 861af79 block: kill rq->data
+pick 6abeea3 block: make blk_do_io_stat() do the full "is this rq accountable" checks
+pick 2f94129 block: catch trying to use more bits than request->cmd_flags has
+pick 325f440 block: implement blk_rq_pos/[cur_]sectors() and convert obvious ones
+pick 7168ea4 block: convert to pos and nr_sectors accessors
+pick 209e1e4 block: drop request->hard_* and *nr_sectors
+pick 80d23d0 block: hide request sector and data_len
+pick 563e977 block: implement and enforce request peek/start/fetch
+pick 6cd0982 block: move completion related functions back to blk-core.c
+pick 3978c4e block: set rq->resid_len to blk_rq_bytes() on issue
+pick 01f54fd block: Add blk_make_request(), takes bio, returns a request
+pick 0d58792 block: add warning to blk_make_request()
 
-There are at least a couple of secondary issues which arise from that 
-approach:
+How did you resolve the block/for-next and linus/master merge?
 
-    * mtrr/generic.c also has to do a number of other things like
-      disabling caching, tlb flushes, etc.  That adds complexity because
-      Xen guests are never allowed to globally disable caching, so we'd
-      have to add additional filtering to remove those cr0 writes
-    * As we've discussed, we'd need to make the mtrr writes implicitly
-      change all cpus atomically, as the dom0 kernel can't see physical cpus
-
-
-The net effect would be that we would be making a pile of apparently 
-generic CPU operations (MSR writes, control register writes) actually 
-feed a fairly complex parser, increasing the difference between the Xen 
-and native cases even more.
-
-mtrr/generic.c about 730 lines of fairly intricate arch-specific code.  
-mtrr/xen.c is 120 lines of straightforward hypercalls.  The mtrr_ops 
-interface and the Xen hypercall interface are a close semantic match, so 
-there's very little glue code in there.
-
-
-But that said, this a huge distraction, an unbelievable amount of noise 
-for a fairly minor point.  We can live without these changes, and 
-they're certainly easy enough to carry out of tree in the meantime.  If 
-you can't live with these changes, then drop them and we'll work out 
-something else.
-
-    J
+Thanks
+Boaz
