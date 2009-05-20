@@ -1,95 +1,211 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756235AbZETKOn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754612AbZETKO5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756235AbZETKOn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 06:14:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754184AbZETKOg
+	id S1754612AbZETKO5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 06:14:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754184AbZETKOs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 06:14:36 -0400
-Received: from web32602.mail.mud.yahoo.com ([68.142.207.229]:22660 "HELO
-	web32602.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754070AbZETKOf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 06:14:35 -0400
-Message-ID: <480189.30937.qm@web32602.mail.mud.yahoo.com>
-X-YMail-OSG: VxKwMsUVM1n_y16TGLhESsl4G3OxLrICKAHFJoWnRmNoIWZGTkVsAgiQlqoGYzxPyp10tHdWPLVjvfwAiwRtBua6G1WZS6b0zGHY5L6Z.jLqT4w7EV33FUZCXjMye_fcnbqp5MXapkxnnItl3TRO27oxHIkKMeP8wDJSKz_0oWWZxBR319uVkGItRQSkMa8atW419uViAPM1RRHOKcDPc33oQO.cfICPR9oNH4sJkes.FVzdJLAMQ3eiDqUDaI6JD.ucyGZ37fLUa6_4SspZmJlisv6NqtXXU2ygEBKb6V1Bxume1JaZliff5aARNcQlDXKLTF2XZFvxkZpHlUo-
-X-RocketYMMF: knobi.rm
-X-Mailer: YahooMailRC/1277.43 YahooMailWebService/0.7.289.10
-References: <yO1BmxN79sN.A.xAG.8_zDKB@chimera> <pQ9WADCjgyE.A.scG.LA0DKB@chimera>  <424718.52835.qm@web32607.mail.mud.yahoo.com> <ac3eb2510905181726q3b996b8ei9c6a74fe1d3bb17d@mail.gmail.com>  <783496.86803.qm@web32608.mail.mud.yahoo.com> <ac3eb2510905190158o6682f7aat62ff66ac9aaa2a74@mail.gmail.com>
-Date: Wed, 20 May 2009 03:14:36 -0700 (PDT)
-From: Martin Knoblauch <spamtrap@knobisoft.de>
-Subject: Re: [Bug #13178] Booting very slow
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-In-Reply-To: <ac3eb2510905190158o6682f7aat62ff66ac9aaa2a74@mail.gmail.com>
+	Wed, 20 May 2009 06:14:48 -0400
+Received: from ozlabs.org ([203.10.76.45]:56821 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754169AbZETKOr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 06:14:47 -0400
+Date: Wed, 20 May 2009 20:13:34 +1000
+From: Anton Blanchard <anton@samba.org>
+To: rostedt@goodmis.org, mingo@elte.hu, tzanussi@gmail.com, jbaron@redhat.com,
+       tglx@linutronix.de
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] tracing/events: Add timer and high res timer tracepoints
+Message-ID: <20090520101334.GA23442@kryten>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+Add tracepoints for timer and high res timer execution. We add entry and
+exit tracepoints so we can calculate timer latency.
 
+Example ftrace output:
 
- ------------------------------------------------------
-Martin Knoblauch
-email: k n o b i AT knobisoft DOT de
-www:   http://www.knobisoft.de
+<idle>-0     [000]   264.040506: hrtimer_entry: func=.tick_sched_timer+0x0/0xf0
+<idle>-0     [000]   264.040508: hrtimer_exit: func=.tick_sched_timer+0x0/0xf0 restart=HRTIMER_RESTART
+<idle>-0     [000]   264.040530: timer_entry: func=.e1000_watchdog+0x0/0x8fc
+<idle>-0     [000]   264.040728: timer_exit: func=.e1000_watchdog+0x0/0x8fc
 
+Here we can see e1000_watchdog is taking 0.2ms - it might make sense to
+move this into a workqueue or kernel thread.
 
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
 
------ Original Message ----
-> From: Kay Sievers <kay.sievers@vrfy.org>
-> To: Martin Knoblauch <spamtrap@knobisoft.de>
-> Cc: Rafael J. Wysocki <rjw@sisk.pl>; Linux Kernel Mailing List <linux-kernel@vger.kernel.org>; Kernel Testers List <kernel-testers@vger.kernel.org>
-> Sent: Tuesday, May 19, 2009 10:58:24 AM
-> Subject: Re: [Bug #13178] Booting very slow
-> 
-> On Tue, May 19, 2009 at 09:22, Martin Knoblauch wrote:
-> >> >  The issue is still open. It turns out that starting with 2.6.29-rc1
-> >> /proc/mounts already has a "sysfs" line when entering the startup scripts 
-> from
-> >> initrd. This breaks the RHEL4 firmware hotplug script.
-> >>
-> >> Is that possibly a missing/failing "umount /sys" _in_ initramfs, which
-> >> leaves the sysfs entry in /proc/mounts behind, which then shows up as
-> >> a duplicate when running in the real rootfs?
-> >
-> >  could be. Remains the question, why it never showed up before 2.6.29. I 
-> compared my initrd images for 2.6.28 and 2.6.29-rc1, and they only differ in the 
-> module-binaries.
-> 
-> I wouldn't be surprised if we are just "too fast" again now with the
-> async stuff, for another piece of rather fragile userspace bootup
-> logic, making some wrong assumptions. Are you compiling-in the modules
-> for the root disk and the root filesystem?
-> 
-> Cheers,
-> Kay
-
- timing may actually be the answer. I finally manged to bisect the thing and the first bad commit is this one:
-
-|commit 1120f8b8169fb2cb51219d326892d963e762edb6
-|Author: Stephen Hemminger <shemminger@vyatta.com>
-|Date:   Thu Dec 18 09:17:16 2008 -0800
-|
-|    PCI: handle long delays in VPD access
-|
-|    Accessing the VPD area can take a long time.  The existing
-|    VPD access code fails consistently on my hardware. There are comments
-|
-|    Change the access routines to:
-|      * use a mutex rather than spinning with IRQ's disabled and lock held
-|      * have a much longer timeout
-|      * call cond_resched while spinning
-|
-|    Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
-|    Reviewed-by: Matthew Wilcox <willy@linux.intel.com>
-|    Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
-
-  And no, the "cciss", "ext3" and "jbd" are modules in my intrd image.
-
- I will continue the discussion under the original topic.
-
-Cheers
+Index: linux-2.6-tracing/kernel/hrtimer.c
+===================================================================
+--- linux-2.6-tracing.orig/kernel/hrtimer.c	2009-05-20 17:11:50.000000000 +1000
++++ linux-2.6-tracing/kernel/hrtimer.c	2009-05-20 17:11:52.000000000 +1000
+@@ -46,6 +46,8 @@
+ 
+ #include <asm/uaccess.h>
+ 
++#include <trace/events/timer.h>
++
+ /**
+  * ktime_get - get the monotonic time in ktime_t format
+  *
+@@ -1161,7 +1163,9 @@
+ 	 * the timer base.
+ 	 */
+ 	spin_unlock(&cpu_base->lock);
++	trace_hrtimer_entry(timer);
+ 	restart = fn(timer);
++	trace_hrtimer_exit(timer, restart);
+ 	spin_lock(&cpu_base->lock);
+ 
+ 	/*
+Index: linux-2.6-tracing/kernel/timer.c
+===================================================================
+--- linux-2.6-tracing.orig/kernel/timer.c	2009-05-20 17:11:50.000000000 +1000
++++ linux-2.6-tracing/kernel/timer.c	2009-05-20 17:11:52.000000000 +1000
+@@ -44,6 +44,9 @@
+ #include <asm/timex.h>
+ #include <asm/io.h>
+ 
++#define CREATE_TRACE_POINTS
++#include <trace/events/timer.h>
++
+ u64 jiffies_64 __cacheline_aligned_in_smp = INITIAL_JIFFIES;
+ 
+ EXPORT_SYMBOL(jiffies_64);
+@@ -946,7 +949,9 @@
+ 				 */
+ 				lock_map_acquire(&lockdep_map);
+ 
++				trace_timer_entry(timer);
+ 				fn(data);
++				trace_timer_exit(timer);
+ 
+ 				lock_map_release(&lockdep_map);
+ 
+Index: linux-2.6-tracing/include/trace/events/timer.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-tracing/include/trace/events/timer.h	2009-05-20 17:15:41.000000000 +1000
+@@ -0,0 +1,116 @@
++#if !defined(_TRACE_TIMER_H) || defined(TRACE_HEADER_MULTI_READ)
++#define _TRACE_TIMER_H
++
++#include <linux/tracepoint.h>
++#include <linux/timer.h>
++#include <linux/hrtimer.h>
++
++#undef TRACE_SYSTEM
++#define TRACE_SYSTEM timer
++
++/**
++ * timer_entry - called immediately before the timer
++ * @timer: pointer to struct timer_list
++ *
++ * When used in combination with the timer_exit tracepoint we can
++ * determine the timer latency.
++ */
++TRACE_EVENT(timer_entry,
++
++	TP_PROTO(struct timer_list *timer),
++
++	TP_ARGS(timer),
++
++	TP_STRUCT__entry(
++		__field(void *, function)
++	),
++
++	TP_fast_assign(
++		__entry->function = timer->function;
++	),
++
++	TP_printk("func=%pF", __entry->function)
++);
++
++/**
++ * timer_exit - called immediately after the timer returns
++ * @timer: pointer to struct timer_list
++ *
++ * When used in combination with the timer_entry tracepoint we can
++ * determine the timer latency.
++ */
++TRACE_EVENT(timer_exit,
++
++	TP_PROTO(struct timer_list *timer),
++
++	TP_ARGS(timer),
++
++	TP_STRUCT__entry(
++		__field(void *, function)
++	),
++
++	TP_fast_assign(
++		__entry->function = timer->function;
++	),
++
++	TP_printk("func=%pF", __entry->function)
++);
++
++/**
++ * hrtimer_entry - called immediately before the high res timer
++ * @timer: pointer to struct hrtimer
++ *
++ * When used in combination with the hrtimer_exit tracepoint we can
++ * determine the high res timer latency.
++ */
++TRACE_EVENT(hrtimer_entry,
++
++	TP_PROTO(struct hrtimer *timer),
++
++	TP_ARGS(timer),
++
++	TP_STRUCT__entry(
++		__field(void *, function)
++	),
++
++	TP_fast_assign(
++		__entry->function = timer->function;
++	),
++
++	TP_printk("func=%pF", __entry->function)
++);
++
++/**
++ * hrtimer_exit - called immediately after the high res timer returns
++ * @timer: pointer to struct hrtimer
++ * @restart: high res timer return value
++ *
++ * High res timer will restart if @restart is set to HRTIMER_RESTART.
++ * When used in combination with the hrtimer_entry tracepoint we can
++ * determine the high res timer latency.
++ */
++TRACE_EVENT(hrtimer_exit,
++
++	TP_PROTO(struct hrtimer *timer, int restart),
++
++	TP_ARGS(timer, restart),
++
++	TP_STRUCT__entry(
++		__field(void *, function)
++		__field(int, restart)
++	),
++
++	TP_fast_assign(
++		__entry->function = timer->function;
++		__entry->restart = restart;
++	),
++
++	TP_printk("func=%pF restart=%s", __entry->function,
++		(__entry->restart == HRTIMER_RESTART) ?
++			"HRTIMER_RESTART" : "HRTIMER_NORESTART")
++);
++
++#endif /*  _TRACE_TIMER_H */
++
++/* This part must be outside protection */
++#include <trace/define_trace.h>
