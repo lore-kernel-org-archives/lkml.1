@@ -1,114 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755679AbZETIJU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756563AbZETIJi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755679AbZETIJU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 04:09:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756226AbZETIJA
+	id S1756563AbZETIJi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 04:09:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756450AbZETIJR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 04:09:00 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:55485 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756006AbZETII4 (ORCPT
+	Wed, 20 May 2009 04:09:17 -0400
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:34328 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756409AbZETIJN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 04:08:56 -0400
-Date: Wed, 20 May 2009 17:08:51 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [PATCH 3/3] reset wmark_min and inactive ratio of zone when hotplug happens
-Cc: Minchan Kim <minchan.kim@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Mel Gorman <mel@csn.ul.ie>, Rik van Riel <riel@redhat.com>,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090520162616.744C.A69D9226@jp.fujitsu.com>
-References: <20090520162001.3f3bbe5c.minchan.kim@barrios-desktop> <20090520162616.744C.A69D9226@jp.fujitsu.com>
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20090520170712.6CEE.E1E9C6FF@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Wed, 20 May 2009 04:09:13 -0400
+Date: Wed, 20 May 2009 10:09:12 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Michael Abbott <michael@araneidae.co.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Jan Engelhardt <jengelh@medozas.de>
+Subject: Re: [GIT PULL] cputime patch for 2.6.30-rc6
+Message-ID: <20090520100912.4f9c2037@skybase>
+In-Reply-To: <1242725488.26820.485.camel@twins>
+References: <20090518160904.7df88425@skybase>
+	<1242660243.26820.439.camel@twins>
+	<Pine.LNX.4.64.0905181717001.21259@venus.araneidae.co.uk>
+	<20090519110047.2e0d9e55@skybase>
+	<1242725488.26820.485.camel@twins>
+Organization: IBM Corporation
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.05 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > This patch solve two problems.
-> > 
-> > Whenever memory hotplug sucessfully happens, zone->present_pages
-> > have to be changed.
-> > 
-> > 1) Now, memory hotplug calls setup_per_zone_wmark_min only when
-> > online_pages called, not offline_pages.
-> > 
-> > It breaks balance.
-> > 
-> > 2) If zone->present_pages is changed, we also have to change
-> > zone->inactive_ratio. That's because inactive_ratio depends
-> > on zone->present_pages.
-> 
-> Good catch!
-> looks good to me. but I'm not familiar this area. CC to Goto-san.
-> 
+On Tue, 19 May 2009 11:31:28 +0200
+Peter Zijlstra <peterz@infradead.org> wrote:
 
-Thanks. Looks good!
+> On Tue, 2009-05-19 at 11:00 +0200, Martin Schwidefsky wrote:
+> > I don't see a problem here. In an idle multiple cpu system there IS
+> > more idle time than elapsed time. What would makes sense is to compare
+> > elapsed time * #cpus with the idle time. But then there is cpu hotplug
+> > which forces you to look at the delta of two measuring points where the
+> > number of cpus did not change.
+> 
+> Sure, this one case isn't that bad, esp. as you note its about idle
+> time. However, see for example /proc/stat and fs/proc/stat.c:
+> 
+>         for_each_possible_cpu(i) {
+>                 user = cputime64_add(user, kstat_cpu(i).cpustat.user);
+>                 nice = cputime64_add(nice, kstat_cpu(i).cpustat.nice);
+>                 system = cputime64_add(system, kstat_cpu(i).cpustat.system);
+>                 idle = cputime64_add(idle, kstat_cpu(i).cpustat.idle);
+>                 idle = cputime64_add(idle, arch_idle_time(i));
+>                 iowait = cputime64_add(iowait, kstat_cpu(i).cpustat.iowait);
+>                 irq = cputime64_add(irq, kstat_cpu(i).cpustat.irq);
+>                 softirq = cputime64_add(softirq, kstat_cpu(i).cpustat.softirq);
+>                 steal = cputime64_add(steal, kstat_cpu(i).cpustat.steal);
+>                 guest = cputime64_add(guest, kstat_cpu(i).cpustat.guest);
+>                 for_each_irq_nr(j) {
+>                         sum += kstat_irqs_cpu(j, i);
+>                 }
+>                 sum += arch_irq_stat_cpu(i);
+>         }
+> 
+> If that isn't a problem on a large machine, then I don't know what is.
 
-Acked-by: Yasunori Goto <y-goto@jp.fujitsu.com>
+Well, we better distinguish between the semantical problem and the
+performance consideration, no? One thing is what the proc field is
+supposed to contain, the other is how fast you can do it.
 
-
-
-> 
-> 
-> 
-> 
-> > CC: Mel Gorman <mel@csn.ul.ie>
-> > CC: Rik van Riel <riel@redhat.com>
-> > CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> > CC: Johannes Weiner <hannes@cmpxchg.org>
-> > Signed-off-by: Minchan Kim <minchan.kim@gmail.com>
-> > ---
-> >  mm/memory_hotplug.c |    4 ++++
-> >  1 files changed, 4 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-> > index 40bf385..1611010 100644
-> > --- a/mm/memory_hotplug.c
-> > +++ b/mm/memory_hotplug.c
-> > @@ -423,6 +423,7 @@ int online_pages(unsigned long pfn, unsigned long nr_pages)
-> >  	zone->zone_pgdat->node_present_pages += onlined_pages;
-> >  
-> >  	setup_per_zone_wmark_min();
-> > +	calculate_per_zone_inactive_ratio(zone);
-> >  	if (onlined_pages) {
-> >  		kswapd_run(zone_to_nid(zone));
-> >  		node_set_state(zone_to_nid(zone), N_HIGH_MEMORY);
-> > @@ -832,6 +833,9 @@ repeat:
-> >  	totalram_pages -= offlined_pages;
-> >  	num_physpages -= offlined_pages;
-> >  
-> > +	setup_per_zone_wmark_min();
-> > +	calculate_per_zone_inactive_ratio(zone);
-> > +
-> >  	vm_total_pages = nr_free_pagecache_pages();
-> >  	writeback_set_ratelimit();
-> >  
-> > -- 
-> > 1.5.4.3
-> > 
-> > 
-> > 
-> > -- 
-> > Kinds Regards
-> > Minchan Kim
-> 
-> 
-> 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+I have been refering to the semantical problem, but your point with the
+performance is very valid as well. So
+1) are we agreed that the second field of /proc/uptime should contain
+the aggregate idle time of all cpus?
+2) I agree that an endless loop of 'cat /proc/uptime' or
+'cat /proc/stat' can have negative performance impact on a system with
+many cpus. One way to deal with it would be to restrict access to the
+interface. I do not like that idea to much. Another way would be to
+limit the number of for_each_possible_cpu loops per second. Create
+global variables that contain the aggregate values for the different
+fields. If the last update has been too recent (e.g. less than 0.1
+seconds ago), just print the old values again.
 
 -- 
-Yasunori Goto 
+blue skies,
+   Martin.
 
+"Reality continues to ruin my life." - Calvin.
 
