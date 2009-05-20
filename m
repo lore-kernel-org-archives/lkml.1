@@ -1,66 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758972AbZETL3B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759621AbZETLcz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758972AbZETL3B (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 07:29:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756887AbZETLUc
+	id S1759621AbZETLcz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 07:32:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758697AbZETL2d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 07:20:32 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:55272 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755541AbZETLSt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 07:18:49 -0400
-From: Avi Kivity <avi@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: kvm@vger.kernel.org
-Subject: [PATCH 30/46] KVM: x86 emulator: Add new mode of instruction emulation: skip
-Date: Wed, 20 May 2009 14:18:27 +0300
-Message-Id: <1242818323-10413-31-git-send-email-avi@redhat.com>
-In-Reply-To: <1242818323-10413-1-git-send-email-avi@redhat.com>
-References: <1242818323-10413-1-git-send-email-avi@redhat.com>
+	Wed, 20 May 2009 07:28:33 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:50564 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758877AbZETL2c (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 07:28:32 -0400
+Date: Wed, 20 May 2009 13:34:30 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Cc: Andi Kleen <andi@firstfloor.org>, mingo@elte.hu, tglx@linutronix.de,
+       hpa@zytor.com, linux-kernel@vger.kernel.org
+Subject: Re: [x86] [MCE] Updated 32bit merge for tip x86 mce2 branch
+Message-ID: <20090520113430.GD8684@one.firstfloor.org>
+References: <20090519215631.GA15626@basil.nowhere.org> <4A13D045.6090905@jp.fujitsu.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A13D045.6090905@jp.fujitsu.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Gleb Natapov <gleb@redhat.com>
+> OK.  Please use following patches with my Signed-off-by instead.
+> And an another revert patch should be applied to tip tree too.
 
-In the new mode instruction is decoded, but not executed. The EIP
-is moved to point after the instruction.
+Thanks.
 
-Signed-off-by: Gleb Natapov <gleb@redhat.com>
-Signed-off-by: Avi Kivity <avi@redhat.com>
----
- arch/x86/include/asm/kvm_host.h |    1 +
- arch/x86/kvm/x86.c              |    5 +++++
- 2 files changed, 6 insertions(+), 0 deletions(-)
+Ideally these patches should be just removed before upstreaming. But I didn't 
+want to touch the original branch for now so it's clear what I changed.
 
-diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-index 0e3a7c6..cb306cf 100644
---- a/arch/x86/include/asm/kvm_host.h
-+++ b/arch/x86/include/asm/kvm_host.h
-@@ -562,6 +562,7 @@ enum emulation_result {
- 
- #define EMULTYPE_NO_DECODE	    (1 << 0)
- #define EMULTYPE_TRAP_UD	    (1 << 1)
-+#define EMULTYPE_SKIP		    (1 << 2)
- int emulate_instruction(struct kvm_vcpu *vcpu, struct kvm_run *run,
- 			unsigned long cr2, u16 error_code, int emulation_type);
- void kvm_report_emulation_failure(struct kvm_vcpu *cvpu, const char *context);
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 9b89d9b..0c45df9 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -2409,6 +2409,11 @@ int emulate_instruction(struct kvm_vcpu *vcpu,
- 		}
- 	}
- 
-+	if (emulation_type & EMULTYPE_SKIP) {
-+		kvm_rip_write(vcpu, vcpu->arch.emulate_ctxt.decode.eip);
-+		return EMULATE_DONE;
-+	}
-+
- 	r = x86_emulate_insn(&vcpu->arch.emulate_ctxt, &emulate_ops);
- 
- 	if (vcpu->arch.pio.string)
+-Andi
+
 -- 
-1.6.0.6
-
+ak@linux.intel.com -- Speaking for myself only.
