@@ -1,106 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756240AbZETSVe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756341AbZETSXX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756240AbZETSVe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 14:21:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755541AbZETSV1
+	id S1756341AbZETSXX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 14:23:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755474AbZETSXQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 14:21:27 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46676 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755192AbZETSV0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 14:21:26 -0400
-Date: Wed, 20 May 2009 20:21:18 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Vitaly Mayatskikh <v.mayatskih@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Oleg Nesterov <oleg@redhat.com>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/5] Split wait_noreap_copyout()
-Message-ID: <20090520182118.GA10692@elte.hu>
-References: <1242048349-2766-1-git-send-email-v.mayatskih@gmail.com> <1242048349-2766-2-git-send-email-v.mayatskih@gmail.com> <87tz3fssv1.wl%vmayatsk@redhat.com>
+	Wed, 20 May 2009 14:23:16 -0400
+Received: from smtp3.ultrahosting.com ([74.213.175.254]:46501 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755445AbZETSXQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 14:23:16 -0400
+Date: Wed, 20 May 2009 14:23:00 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@qirst.com
+To: Joe Perches <joe@perches.com>
+cc: linux-kernel@vger.kernel.org,
+       H Hartley Sweeten <hartleys@visionengravers.com>, linux-mm@kvack.org,
+       Matt Mackall <mpm@selenic.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Ingo Molnar <mingo@elte.hu>, David Rientjes <rientjes@google.com>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Subject: Re: [PATCH] mm/slub.c: Use print_hex_dump and remove unnecessary
+ cast
+In-Reply-To: <1242840314-25635-1-git-send-email-joe@perches.com>
+Message-ID: <alpine.DEB.1.10.0905201420050.17511@qirst.com>
+References: <1242840314-25635-1-git-send-email-joe@perches.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87tz3fssv1.wl%vmayatsk@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This was discussed before.
 
-* Vitaly Mayatskikh <v.mayatskih@gmail.com> wrote:
+http://lkml.indiana.edu/hypermail/linux/kernel/0705.3/2671.html
 
-> At Mon, 11 May 2009 15:25:50 +0200, Vitaly Mayatskikh wrote:
-> > 
-> > Move getrusage() and put_user() code from wait_noreap_copyout()
-> > to copy_wait_opts_to_user(). The same code is spreaded across all
-> > wait_task_*() routines, it's better to reuse one copy.
-> > 
-> > Signed-off-by: Vitaly Mayatskikh <v.mayatskih@gmail.com>
-> > ---
-> >  kernel/exit.c |   39 +++++++++++++++++++++++----------------
-> >  1 files changed, 23 insertions(+), 16 deletions(-)
-> > 
-> > diff --git a/kernel/exit.c b/kernel/exit.c
-> > index 25782da..9546362 100644
-> > --- a/kernel/exit.c
-> > +++ b/kernel/exit.c
-> > @@ -1123,27 +1123,34 @@ static int eligible_child(struct wait_opts *wo, struct task_struct *p)
-> >  	return 1;
-> >  }
-> >  
-> > -static int wait_noreap_copyout(struct wait_opts *wo, struct task_struct *p,
-> > -				pid_t pid, uid_t uid, int why, int status)
-> > +static int copy_wait_opts_to_user(struct wait_opts *wo, struct task_struct *p,
-> > +				  pid_t pid, uid_t uid, int why, int status, int signal)
-> >  {
-> > -	struct siginfo __user *infop;
-> > +	struct siginfo __user *infop = wo->wo_info;
-> >  	int retval = wo->wo_rusage
-> >  		? getrusage(p, RUSAGE_BOTH, wo->wo_rusage) : 0;
-> >  
-> > +	if (!retval && infop) {
-> > +		retval = put_user(signal, &infop->si_signo);
-> ...
-> > +static int wait_noreap_copyout(struct wait_opts *wo, struct task_struct *p,
-> > +				pid_t pid, uid_t uid, int why, int status)
-> > +{
-> > +	int retval = copy_wait_opts_to_user(wo, p, pid, uid, why, status, SIGCHLD);
-> >  	put_task_struct(p);
-> > -	infop = wo->wo_info;
-> > -	if (!retval)
-> > -		retval = put_user(SIGCHLD, &infop->si_signo);
-> ...
-> 
-> Oleg has pointed me to broken behaviour here. Previously
-> wait_noreap_copyout was doing unconditional put_user and was returning
-> EFAULT when infop is NULL. Now it uses copy_wait_opts_to_user, which
-> checks infop and return NULL in the same case. This change is visible
-> from userspace in waitid() function.
-> 
-> There're 2 opportunities how to deal with new behaviour:
-> 
-> 1. Assume wait_task_zombie had a bug previously, and let this patch go.
-> 2. Fix copy_wait_opts_to_user to old behaviour by something like:
-> 
-> 	if (!retval && (infop || WNOWAIT)) {
-> 
-> What's your opinion?
+Was hexdump changed? How does the output look after this change?
 
-I'd suggest a variant of 2: keep this large-ish patch an equivalent 
-transformation - i.e. an impact: cleanup type of change.
+On Wed, 20 May 2009, Joe Perches wrote:
 
-Then queue up a patch that removes this quirk. Should this change 
-break any user-space, the quirk can be reinstated promptly, without 
-affecting the cleanups. It will also be a very clear, easy target to 
-bisect to - not obscured by clean-up details.
-
-Does this sound good to you?
-
-	Ingo
+> Signed-off-by: Joe Perches <joe@perches.com>
+> ---
+>  mm/slub.c |   34 ++++------------------------------
+>  1 files changed, 4 insertions(+), 30 deletions(-)
+>
+> diff --git a/mm/slub.c b/mm/slub.c
+> index 65ffda5..5b616d6 100644
+> --- a/mm/slub.c
+> +++ b/mm/slub.c
+> @@ -328,36 +328,10 @@ static char *slub_debug_slabs;
+>  /*
+>   * Object debugging
+>   */
+> -static void print_section(char *text, u8 *addr, unsigned int length)
+> +static void print_section(const char *text, u8 *addr, unsigned int length)
+>  {
+> -	int i, offset;
+> -	int newline = 1;
+> -	char ascii[17];
+> -
+> -	ascii[16] = 0;
+> -
+> -	for (i = 0; i < length; i++) {
+> -		if (newline) {
+> -			printk(KERN_ERR "%8s 0x%p: ", text, addr + i);
+> -			newline = 0;
+> -		}
+> -		printk(KERN_CONT " %02x", addr[i]);
+> -		offset = i % 16;
+> -		ascii[offset] = isgraph(addr[i]) ? addr[i] : '.';
+> -		if (offset == 15) {
+> -			printk(KERN_CONT " %s\n", ascii);
+> -			newline = 1;
+> -		}
+> -	}
+> -	if (!newline) {
+> -		i %= 16;
+> -		while (i < 16) {
+> -			printk(KERN_CONT "   ");
+> -			ascii[i] = ' ';
+> -			i++;
+> -		}
+> -		printk(KERN_CONT " %s\n", ascii);
+> -	}
+> +	print_hex_dump(KERN_ERR, text, DUMP_PREFIX_ADDRESS, 16, 1,
+> +		       addr, length, true);
+>  }
+>
+>  static struct track *get_track(struct kmem_cache *s, void *object,
+> @@ -794,7 +768,7 @@ static void trace(struct kmem_cache *s, struct page *page, void *object,
+>  			page->freelist);
+>
+>  		if (!alloc)
+> -			print_section("Object", (void *)object, s->objsize);
+> +			print_section("Object", object, s->objsize);
+>
+>  		dump_stack();
+>  	}
+>
