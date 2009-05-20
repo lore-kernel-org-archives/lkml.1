@@ -1,65 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755876AbZETHRY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755841AbZETHSi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755876AbZETHRY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 03:17:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753480AbZETHRR
+	id S1755841AbZETHSi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 03:18:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752893AbZETHSb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 03:17:17 -0400
-Received: from mgw2.diku.dk ([130.225.96.92]:34756 "EHLO mgw2.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752319AbZETHRQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 03:17:16 -0400
-Date: Wed, 20 May 2009 09:17:11 +0200 (CEST)
-From: Julia Lawall <julia@diku.dk>
-To: gregkh@suse.de, haas@ems-wuensche.com, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH] drivers/staging/cpc-usb: Adjust NULL test
-Message-ID: <Pine.LNX.4.64.0905200916280.12274@pc-004.diku.dk>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 20 May 2009 03:18:31 -0400
+Received: from mail-px0-f123.google.com ([209.85.216.123]:55587 "EHLO
+	mail-px0-f123.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752811AbZETHSb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 03:18:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:x-mailer:mime-version
+         :content-type:content-transfer-encoding;
+        b=EcSkhkVp3KKOzq/XVfmRU7ffYD92DjMGfHG7Su4Y0k4f/98YCog/M9mXoZvKpa7Una
+         Z/b5rh2w2EC8mEERak0LAHmqroisk/ZokNsae8gBkudHZUf5pPGRRMmqd1JvLzskePtK
+         mF3IYFJp0ZB2tv5eXjQasXUTpixqbax8lKzck=
+Date: Wed, 20 May 2009 16:18:22 +0900
+From: Minchan Kim <minchan.kim@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
+Cc: Mel Gorman <mel@csn.ul.ie>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>, Johannes Weiner <hannes@cmpxchg.org>
+Subject: [PATCH 0/3] fix zone watermark and inactive ration when memory hot
+ plug occur
+Message-Id: <20090520161822.e2f2d94a.minchan.kim@barrios-desktop>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
 
-Since card must already be non-NULL, it seems that what was intended
-was to test the result of kmalloc.
+This patch series clean up setup_per_zone_pages_min 
+and fix memory hotplug bug. (watermark, inactive ratio of zone)
 
-The semantic patch that makes this change is as follows:
-(http://www.emn.fr/x-info/coccinelle/)
+Patch 1/3 is independent of others.
 
-// <smpl>
-@@
-expression E,E1;
-identifier f,fld,fld1;
-statement S1,S2;
-@@
+But I just add it for convinient since it is tivial.
+If anyone want to devide it, i will do it. 
 
-E->fld = f(...);
-... when != E = E1
-    when != E->fld1 = E1
-if (
--   E
-+   E->fld
-           == NULL) S1 else S2
-// </smpl>
+patch 1/3 - change setup_per_zone_pages_min function name 
+patch 2/3 - devide setup_per_zone_inactive_ratio with per 
+zone function. this patch helps 3/3
+patch 3/3 - reset wmark_min and inactive ratio of zone when 
+hotplug happens
 
-Signed-off-by: Julia Lawall <julia@diku.dk>
 
----
- drivers/staging/cpc-usb/cpc-usb_drv.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ include/linux/mm.h  |    3 ++- 
+ mm/memory_hotplug.c |    6 +++++-
+ mm/page_alloc.c     |   28 ++++++++++++++++------------
+ 3 files changed, 23 insertions(+), 14 deletions(-)
 
-diff -u -p a/drivers/staging/cpc-usb/cpc-usb_drv.c b/drivers/staging/cpc-usb/cpc-usb_drv.c
---- a/drivers/staging/cpc-usb/cpc-usb_drv.c
-+++ b/drivers/staging/cpc-usb/cpc-usb_drv.c
-@@ -899,7 +899,7 @@ static int cpcusb_probe(struct usb_inter
- 
- 	/* allocate and initialize the channel struct */
- 	card->chan = kmalloc(sizeof(CPC_CHAN_T), GFP_KERNEL);
--	if (!card) {
-+	if (!card->chan) {
- 		kfree(card);
- 		err("Out of memory");
- 		return -ENOMEM;
+-- 
+Kinds Regards
+Minchan Kim
