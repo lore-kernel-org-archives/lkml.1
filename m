@@ -1,76 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756788AbZETTId@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756819AbZETTK0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756788AbZETTId (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 15:08:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754957AbZETTI0
+	id S1756819AbZETTK0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 15:10:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755033AbZETTKQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 15:08:26 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:53837 "EHLO mx2.redhat.com"
+	Wed, 20 May 2009 15:10:16 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:32984 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754852AbZETTIZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 15:08:25 -0400
-Date: Wed, 20 May 2009 21:03:12 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>,
-       Vitaly Mayatskikh <v.mayatskih@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Q: put_user_try & co (Was: [PATCH 1/5] Split wait_noreap_copyout())
-Message-ID: <20090520190312.GA32333@redhat.com>
-References: <1242036759-4025-1-git-send-email-v.mayatskih@gmail.com> <1242036759-4025-2-git-send-email-v.mayatskih@gmail.com> <20090511120418.GA3859@infradead.org> <20090511121708.GD13954@elte.hu>
+	id S1754852AbZETTKP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 15:10:15 -0400
+Date: Wed, 20 May 2009 21:10:16 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       Boaz Harrosh <bharrosh@panasas.com>, Tejun Heo <tj@kernel.org>,
+       James Smart <James.Smart@Emulex.Com>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       FUJITA Tomonori <tomof@acm.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH version 2] [SQUASHME] "FC Pass Thru support" fixed for
+	block/for-2.6.31 tree
+Message-ID: <20090520191016.GC11363@kernel.dk>
+References: <4A12797B.2060901@panasas.com> <4A12AC23.30808@panasas.com> <20090520111619.87f815b1.sfr@canb.auug.org.au> <1242830240.2881.10.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090511121708.GD13954@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1242830240.2881.10.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/11, Ingo Molnar wrote:
->
-> See the (new) put_user_try / put_user_ex() / put_user_catch()
-> abstraction in arch/x86/include/asm/uaccess.h, and how all the x86
-> signal code makes use of that to optimize such patterns of per field
-> user copies.
+On Wed, May 20 2009, James Bottomley wrote:
+> On Wed, 2009-05-20 at 11:16 +1000, Stephen Rothwell wrote:
+> > On Tue, 19 May 2009 15:54:59 +0300 Boaz Harrosh <bharrosh@panasas.com> wrote:
+> > >
+> > > 
+> > > This patch should be squashed into
+> > >     [SCSI] FC Pass Thru support
+> > > 
+> > > If it needs to compile after Tejun's block-layer revamps
+> > > (all of them)
+> > 
+> > Is there some reason that the FC passthrough support (and any followup
+> > patches) can't be pushed through the block tree.  It clearly currently
+> > doesn't depend on anything new in the scsi tree ...
+> 
+> That would preserve the logical sequence of patches, yes.  However, Jens
+> is a bit pressed for time, so I agreed to do this in SCSI.
+> 
+> Unfortuantely, I still need the block tree for-next to be rebased up to
+> the current linus head because of a couple of conflicts:
+> 
+> CONFLICT (content): Merge conflict in drivers/block/hd.c
+> CONFLICT (content): Merge conflict in drivers/block/mg_disk.c
+> 
+> The are both just rebase/rebase conflicts:  it looks like there are two
+> commit ids for 
 
-Just curious, can't we simplify put_user_{try,ex,catch} ?
+James, I'll get this fixed (either pull linus tree in or rebase) and
+send you a note! It wont be before tomorrow, I think.
 
-Pseudo-code:
-
-	#define put_user_try				\
-		do {					\
-			__label__  __efault_label;	\
-
-
-	#define put_user_catch(err)			\
-			err = 0;			\
-			if (0) {			\
-			__efault_label:			\
-				err = -EFAULT;		\
-			}				\
-		while (0)
-		
-
-	#define __put_user_asm_ex(...)				\
-		asm volatile(					\
-			"1:	mov ..."			\
-			_ASM_EXTABLE(1b, &__efault_label)	\
-		     	: : ...)
-
-
-Now, we don't need thread_info->uaccess_err, and we don't need the
-special "if (fixup->fixup < 16)" hack in fixup_exception(). Once
-any put_user_ex() fails, we jump to the __efault_label and set
-err = -EFAULT.
-
-This also means that we skip other put_user_ex's after the faulted
-one. Not very important, this is unlikely case, but imho nice anyway.
-
-Can this work? (warning: my asm skills is almost zero ;)
-
-Oleg.
+-- 
+Jens Axboe
 
