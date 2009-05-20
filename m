@@ -1,69 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755894AbZETAvg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755659AbZETA7G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755894AbZETAvg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 20:51:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754888AbZETAv2
+	id S1755659AbZETA7G (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 20:59:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755100AbZETA64
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 20:51:28 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:49078 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754887AbZETAv2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 20:51:28 -0400
-Date: Wed, 20 May 2009 10:51:24 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Roel Kluin <roel.kluin@gmail.com>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] tape: beyond ARRAY_SIZE of viocd_diskinfo
-Message-Id: <20090520105124.f758bab3.sfr@canb.auug.org.au>
-In-Reply-To: <4A133C6D.9050300@gmail.com>
-References: <4A133C6D.9050300@gmail.com>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__20_May_2009_10_51_24_+1000_RUi=jpGLDxRN6uD0"
+	Tue, 19 May 2009 20:58:56 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:41474 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754938AbZETA6z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 20:58:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=SjsB1ipRKXN2pOeFITXUAVc0n8PBwITQyw1fY5h8ibjSu1sNZp0ZGHLDIQfOSzu2NU
+         TG8bPrT8o8Smw68kSoFCoEKhUI0GU63P7CZCkhrCvY4l1qYy6M2BwJ7ySuv1dCeN4ufr
+         s/fvwlZnkMjuKVCO9Ji+ieQwI5L+RWU+twuMc=
+Message-ID: <4A1355D0.80406@gmail.com>
+Date: Wed, 20 May 2009 02:58:56 +0200
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090302)
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org
+CC: lkml <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, sfr@canb.auug.org.au
+Subject: [PATCH] tape: beyond ARRAY_SIZE of viocd_diskinfo
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__20_May_2009_10_51_24_+1000_RUi=jpGLDxRN6uD0
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Do not go beyond ARRAY_SIZE of tape_device and viotape_unitinfo
 
-Hi Roel,
-
-On Wed, 20 May 2009 01:10:37 +0200 Roel Kluin <roel.kluin@gmail.com> wrote:
->
-> Do not go beyond ARRAY_SIZE of tape_device and viotape_unitinfo
->=20
-> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-
-Good catch.
-
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
 Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+diff --git a/drivers/char/viotape.c b/drivers/char/viotape.c
+index ffc9254..042c814 100644
+--- a/drivers/char/viotape.c
++++ b/drivers/char/viotape.c
+@@ -867,7 +867,7 @@ static int viotape_probe(struct vio_dev *vdev, const struct vio_device_id *id)
+ 	int j;
+ 	struct device_node *node = vdev->dev.archdata.of_node;
+ 
+-	if (i > VIOTAPE_MAX_TAPE)
++	if (i >= VIOTAPE_MAX_TAPE)
+ 		return -ENODEV;
+ 	if (!node)
+ 		return -ENODEV;
 
-If you don't want to trouble with carrying this, please submit it to
-linuxppc-dev@ozlabs.org (with my Ack) and they will track it and take
-care of it eventually.  This is a legacy driver and noone is likely to
-have enough tape drives attached to such a machine so is not an urgent
-issue.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__20_May_2009_10_51_24_+1000_RUi=jpGLDxRN6uD0
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkoTVAwACgkQjjKRsyhoI8xSQgCfTcc2d6Lc0ldzNWsLzJ2fTXTg
-7vAAn3Ludg+nTZeZyiAGyAydXXeep41s
-=S3Q4
------END PGP SIGNATURE-----
-
---Signature=_Wed__20_May_2009_10_51_24_+1000_RUi=jpGLDxRN6uD0--
