@@ -1,80 +1,229 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756801AbZETKWf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756659AbZETKZb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756801AbZETKWf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 06:22:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755052AbZETKW2
+	id S1756659AbZETKZb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 06:25:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754296AbZETKZU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 06:22:28 -0400
-Received: from web32603.mail.mud.yahoo.com ([68.142.207.230]:23187 "HELO
-	web32603.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753013AbZETKW1 (ORCPT
+	Wed, 20 May 2009 06:25:20 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:40165 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753013AbZETKZT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 06:22:27 -0400
-Message-ID: <461911.6351.qm@web32603.mail.mud.yahoo.com>
-X-YMail-OSG: eU1JgoUVM1mcW.kig17beuLD.i_3bSuwS_INsB.1QBEFIRBOG9jJEoypZ0Rh7wkErmCFIruYZMEzunnp53Mrm_VWRkpkhhJzo41Nhs1JZGY2rOewHMbiopJrdu48PMu.0X.eAEfUimztkKBE_ZqRX5ntmtG12jKU.s4C2qYMAARvFXFNhtuRQxQE6F9EUe4ahjwR_RH20Ab6WA75pwG2yuB9q.GDzI1TLeFdEnYT0xusPek.XBvdXY4ZYKXy8RXcFo2kN0PieP5XHfq.YeisNx3v.znmAiJxeavJ7GWFdblM8NdFHWGdzvKTFMBvZBSQmKX5kJtD1q1HwbtztWwZnePB
-X-RocketYMMF: knobi.rm
-X-Mailer: YahooMailRC/1277.43 YahooMailWebService/0.7.289.10
-References: <409142.83316.qm@web32605.mail.mud.yahoo.com>  <20090428182837.62c51f26.akpm@linux-foundation.org>  <1240977096.5478.3.camel@marge.simson.net>  <20090429011755.c141c599.akpm@linux-foundation.org>  <20090429120827.GI8633@ZenIV.linux.org.uk>  <1241014725.15095.19.camel@marge.simson.net>  <20090505154911.e0309a4f.akpm@linux-foundation.org>  <1241585140.5196.28.camel@marge.simson.net>  <957194.27869.qm@web32605.mail.mud.yahoo.com> <1241599065.18090.18.camel@marge.simson.net>
-Date: Wed, 20 May 2009 03:22:28 -0700 (PDT)
-From: Martin Knoblauch <knobi@knobisoft.de>
-Subject: Re: Analyzed/Solved/Bisected: Booting 2.6.30-rc2-git7 very slow
-To: Mike Galbraith <efault@gmx.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, viro@ZenIV.linux.org.uk,
-       rjw@sisk.pl, linux-kernel@vger.kernel.org, tigran@aivazian.fsnet.co.uks,
-       Kay Sievers <kay.sievers@vrfy.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       shemminger@vyatta.com
-In-Reply-To: <1241599065.18090.18.camel@marge.simson.net>
+	Wed, 20 May 2009 06:25:19 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Anton Blanchard <anton@samba.org>
+Subject: Re: [PATCH] tracing/events: Add timer and high res timer tracepoints
+Cc: kosaki.motohiro@jp.fujitsu.com, rostedt@goodmis.org, mingo@elte.hu,
+       tzanussi@gmail.com, jbaron@redhat.com, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20090520101334.GA23442@kryten>
+References: <20090520101334.GA23442@kryten>
+Message-Id: <20090520192322.744F.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Wed, 20 May 2009 19:25:18 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> 
+> Add tracepoints for timer and high res timer execution. We add entry and
+> exit tracepoints so we can calculate timer latency.
+> 
+> Example ftrace output:
+> 
+> <idle>-0     [000]   264.040506: hrtimer_entry: func=.tick_sched_timer+0x0/0xf0
+> <idle>-0     [000]   264.040508: hrtimer_exit: func=.tick_sched_timer+0x0/0xf0 restart=HRTIMER_RESTART
+> <idle>-0     [000]   264.040530: timer_entry: func=.e1000_watchdog+0x0/0x8fc
+> <idle>-0     [000]   264.040728: timer_exit: func=.e1000_watchdog+0x0/0x8fc
+> 
+> Here we can see e1000_watchdog is taking 0.2ms - it might make sense to
+> move this into a workqueue or kernel thread.
+> 
+> Signed-off-by: Anton Blanchard <anton@samba.org>
 
------ Original Message ----
+This patch don't cover all timer life-cycle. but I think it's good start.
+At least, you prove this patch can find one issue :)
 
-> From: Mike Galbraith <efault@gmx.de>
-> To: Martin Knoblauch <knobi@knobisoft.de>
-> Cc: Andrew Morton <akpm@linux-foundation.org>; viro@ZenIV.linux.org.uk; rjw@sisk.pl; linux-kernel@vger.kernel.org; tigran@aivazian.fsnet.co.uk
-> Sent: Wednesday, May 6, 2009 10:37:45 AM
-> Subject: Re: Analyzed/Solved: Booting 2.6.30-rc2-git7 very slow
-> 
-> On Wed, 2009-05-06 at 00:55 -0700, Martin Knoblauch wrote:
-> 
-> >  just to bring this back to my problem :-)
-> 
-> Good idea :-)
-> 
-> >  Last week I reported that the "new" sysfs entry in /proc/mounts already comes 
-> out of initrd. Does this ring a bell?
-> > 
-> > http://lkml.indiana.edu/hypermail/linux/kernel/0904.3/03048.html
-> 
-> Nope, no bells.
-> 
-> The only thing I can suggest is that you try a bisection.
-> 
->     -Mike
+ - kosaki
 
- OK, so I finally managed to bisect the issue down to the following commit. Not much that I can say about it. Someone else suggested that it might all be a question of timing. Might very well be. I will try it out on a system with a different SCSI/RAID controller. The failing system has an "Smart Array 6i" (cciss). "cciss", "ext3" and "jbd" are all modules coming from initrd.
+> ---
+> 
+> Index: linux-2.6-tracing/kernel/hrtimer.c
+> ===================================================================
+> --- linux-2.6-tracing.orig/kernel/hrtimer.c	2009-05-20 17:11:50.000000000 +1000
+> +++ linux-2.6-tracing/kernel/hrtimer.c	2009-05-20 17:11:52.000000000 +1000
+> @@ -46,6 +46,8 @@
+>  
+>  #include <asm/uaccess.h>
+>  
+> +#include <trace/events/timer.h>
+> +
+>  /**
+>   * ktime_get - get the monotonic time in ktime_t format
+>   *
+> @@ -1161,7 +1163,9 @@
+>  	 * the timer base.
+>  	 */
+>  	spin_unlock(&cpu_base->lock);
+> +	trace_hrtimer_entry(timer);
+>  	restart = fn(timer);
+> +	trace_hrtimer_exit(timer, restart);
+>  	spin_lock(&cpu_base->lock);
+>  
+>  	/*
+> Index: linux-2.6-tracing/kernel/timer.c
+> ===================================================================
+> --- linux-2.6-tracing.orig/kernel/timer.c	2009-05-20 17:11:50.000000000 +1000
+> +++ linux-2.6-tracing/kernel/timer.c	2009-05-20 17:11:52.000000000 +1000
+> @@ -44,6 +44,9 @@
+>  #include <asm/timex.h>
+>  #include <asm/io.h>
+>  
+> +#define CREATE_TRACE_POINTS
+> +#include <trace/events/timer.h>
+> +
+>  u64 jiffies_64 __cacheline_aligned_in_smp = INITIAL_JIFFIES;
+>  
+>  EXPORT_SYMBOL(jiffies_64);
+> @@ -946,7 +949,9 @@
+>  				 */
+>  				lock_map_acquire(&lockdep_map);
+>  
+> +				trace_timer_entry(timer);
+>  				fn(data);
+> +				trace_timer_exit(timer);
+>  
+>  				lock_map_release(&lockdep_map);
+>  
+> Index: linux-2.6-tracing/include/trace/events/timer.h
+> ===================================================================
+> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> +++ linux-2.6-tracing/include/trace/events/timer.h	2009-05-20 17:15:41.000000000 +1000
+> @@ -0,0 +1,116 @@
+> +#if !defined(_TRACE_TIMER_H) || defined(TRACE_HEADER_MULTI_READ)
+> +#define _TRACE_TIMER_H
+> +
+> +#include <linux/tracepoint.h>
+> +#include <linux/timer.h>
+> +#include <linux/hrtimer.h>
+> +
+> +#undef TRACE_SYSTEM
+> +#define TRACE_SYSTEM timer
+> +
+> +/**
+> + * timer_entry - called immediately before the timer
+> + * @timer: pointer to struct timer_list
+> + *
+> + * When used in combination with the timer_exit tracepoint we can
+> + * determine the timer latency.
+> + */
+> +TRACE_EVENT(timer_entry,
+> +
+> +	TP_PROTO(struct timer_list *timer),
+> +
+> +	TP_ARGS(timer),
+> +
+> +	TP_STRUCT__entry(
+> +		__field(void *, function)
+> +	),
+> +
+> +	TP_fast_assign(
+> +		__entry->function = timer->function;
+> +	),
+> +
+> +	TP_printk("func=%pF", __entry->function)
+> +);
+> +
+> +/**
+> + * timer_exit - called immediately after the timer returns
+> + * @timer: pointer to struct timer_list
+> + *
+> + * When used in combination with the timer_entry tracepoint we can
+> + * determine the timer latency.
+> + */
+> +TRACE_EVENT(timer_exit,
+> +
+> +	TP_PROTO(struct timer_list *timer),
+> +
+> +	TP_ARGS(timer),
+> +
+> +	TP_STRUCT__entry(
+> +		__field(void *, function)
+> +	),
+> +
+> +	TP_fast_assign(
+> +		__entry->function = timer->function;
+> +	),
+> +
+> +	TP_printk("func=%pF", __entry->function)
+> +);
+> +
+> +/**
+> + * hrtimer_entry - called immediately before the high res timer
+> + * @timer: pointer to struct hrtimer
+> + *
+> + * When used in combination with the hrtimer_exit tracepoint we can
+> + * determine the high res timer latency.
+> + */
+> +TRACE_EVENT(hrtimer_entry,
+> +
+> +	TP_PROTO(struct hrtimer *timer),
+> +
+> +	TP_ARGS(timer),
+> +
+> +	TP_STRUCT__entry(
+> +		__field(void *, function)
+> +	),
+> +
+> +	TP_fast_assign(
+> +		__entry->function = timer->function;
+> +	),
+> +
+> +	TP_printk("func=%pF", __entry->function)
+> +);
+> +
+> +/**
+> + * hrtimer_exit - called immediately after the high res timer returns
+> + * @timer: pointer to struct hrtimer
+> + * @restart: high res timer return value
+> + *
+> + * High res timer will restart if @restart is set to HRTIMER_RESTART.
+> + * When used in combination with the hrtimer_entry tracepoint we can
+> + * determine the high res timer latency.
+> + */
+> +TRACE_EVENT(hrtimer_exit,
+> +
+> +	TP_PROTO(struct hrtimer *timer, int restart),
+> +
+> +	TP_ARGS(timer, restart),
+> +
+> +	TP_STRUCT__entry(
+> +		__field(void *, function)
+> +		__field(int, restart)
+> +	),
+> +
+> +	TP_fast_assign(
+> +		__entry->function = timer->function;
+> +		__entry->restart = restart;
+> +	),
+> +
+> +	TP_printk("func=%pF restart=%s", __entry->function,
+> +		(__entry->restart == HRTIMER_RESTART) ?
+> +			"HRTIMER_RESTART" : "HRTIMER_NORESTART")
+> +);
+> +
+> +#endif /*  _TRACE_TIMER_H */
+> +
+> +/* This part must be outside protection */
+> +#include <trace/define_trace.h>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-|commit 1120f8b8169fb2cb51219d326892d963e762edb6
-|Author: Stephen Hemminger <shemminger@vyatta.com>
-|Date:   Thu Dec 18 09:17:16 2008 -0800
-|
-|    PCI: handle long delays in VPD access
-|
-|    Accessing the VPD area can take a long time.  The existing
-|    VPD access code fails consistently on my hardware. There are comments
-|
-|    Change the access routines to:
-|      * use a mutex rather than spinning with IRQ's disabled and lock held
-|      * have a much longer timeout
-|      * call cond_resched while spinning
-|
-|    Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
-|    Reviewed-by: Matthew Wilcox <willy@linux.intel.com>
-|    Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
 
-Cheers
-Martin
+
