@@ -1,45 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756406AbZETXET@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756767AbZETXFI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756406AbZETXET (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 19:04:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755481AbZETXEM
+	id S1756767AbZETXFI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 19:05:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754609AbZETXE5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 19:04:12 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:60473 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752623AbZETXEM (ORCPT
+	Wed, 20 May 2009 19:04:57 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:36241 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753548AbZETXE4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 19:04:12 -0400
-Date: Wed, 20 May 2009 19:04:13 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Li Zefan <lizf@cn.fujitsu.com>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [PATCH 1/3] tracing: add __print_flags for events
-Message-ID: <20090520230413.GA11456@infradead.org>
-References: <20090515210342.488025506@goodmis.org> <20090515210717.745370400@goodmis.org> <20090518173854.GA30425@infradead.org> <alpine.DEB.2.00.0905201810300.1080@gandalf.stny.rr.com> <20090520225921.GA15167@infradead.org> <alpine.DEB.2.00.0905201902060.1080@gandalf.stny.rr.com>
+	Wed, 20 May 2009 19:04:56 -0400
+To: Greg KH <gregkh@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Tejun Heo <tj@kernel.org>, Cornelia Huck <cornelia.huck@de.ibm.com>,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 0/20] Sysfs cleanups
+References: <m1bppofm9k.fsf@fess.ebiederm.org>
+	<20090520153718.GB26111@suse.de>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Wed, 20 May 2009 16:04:48 -0700
+In-Reply-To: <20090520153718.GB26111@suse.de> (Greg KH's message of "Wed\, 20 May 2009 08\:37\:18 -0700")
+Message-ID: <m1skizgyun.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0905201902060.1080@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Rcpt-To: gregkh@suse.de, linux-fsdevel@vger.kernel.org, cornelia.huck@de.ibm.com, tj@kernel.org, linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Exit with error (see exim mainlog)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 20, 2009 at 07:02:56PM -0400, Steven Rostedt wrote:
-> You mean more like a "__print_enumerated"? A backward translation of 
-> enumerated types to their names.
+Greg KH <gregkh@suse.de> writes:
 
-Yeah.
+> On Tue, May 19, 2009 at 09:09:43PM -0700, Eric W. Biederman wrote:
+>> 
+>> The following patch series cleans up sysfs to the point where itq is
+>> generally a good citizen of the vfs layer.  The big theme is lazy
+>> synchronization from the sysfs data structures to the vfs data
+>> structures using the same techniques as most other distributed
+>> filesystems.
+>
+> Hm, I only seem to have gotten patch 0/20, none of the actual patches.
+> Did I somehow miss them?
+>
+> confused,
 
-> Perhaps __print_symbolic is a bit nicer name.
+Me too.
 
-Sounds good.
+git-send-email ran.  I got copies of the mail sent.  But fsdevel
+and linux-kernel appears not to have received them.  Hopefully I can figure
+out what went wrong shortly.  My apologies if anyone receives several copies.
 
+Eric
