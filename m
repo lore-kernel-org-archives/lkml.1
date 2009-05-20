@@ -1,57 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753980AbZETHjN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756139AbZETHkh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753980AbZETHjN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 03:39:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752028AbZETHjA
+	id S1756139AbZETHkh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 03:40:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755321AbZETHk2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 03:39:00 -0400
-Received: from casper.infradead.org ([85.118.1.10]:36459 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751680AbZETHi7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 03:38:59 -0400
-Subject: Re: [PATCH 0/3] tracepoints: delay argument evaluation
-From: Peter Zijlstra <peterz@infradead.org>
-To: Roland McGrath <roland@redhat.com>
-Cc: Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
-       fweisbec@gmail.com, mingo@elte.hu, laijs@cn.fujitsu.com,
-       rostedt@goodmis.org, mathieu.desnoyers@polymtl.ca, jiayingz@google.com,
-       mbligh@google.com, fche@redhat.com
-In-Reply-To: <20090520072750.DA9A0FC38D@magilla.sf.frob.com>
-References: <cover.1242763826.git.jbaron@redhat.com>
-	 <1242803524.26820.530.camel@twins>
-	 <20090520072750.DA9A0FC38D@magilla.sf.frob.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Wed, 20 May 2009 09:38:47 +0200
-Message-Id: <1242805127.26820.532.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Wed, 20 May 2009 03:40:28 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42507 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754345AbZETHk0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 03:40:26 -0400
+Date: Wed, 20 May 2009 09:40:14 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Mark Langsdorf <mark.langsdorf@amd.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Joerg Roedel <joerg.roedel@amd.com>, avi@redhat.com, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH][KVM][retry 3] Add support for Pause Filtering to AMD
+	SVM
+Message-ID: <20090520074014.GB14846@elte.hu>
+References: <200905050909.58583.mark.langsdorf@amd.com> <200905071000.14038.mark.langsdorf@amd.com> <200905081203.55484.mark.langsdorf@amd.com> <200905191356.37071.mark.langsdorf@amd.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200905191356.37071.mark.langsdorf@amd.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-05-20 at 00:27 -0700, Roland McGrath wrote:
-> > Why can't 
-> > 
-> > trace_block_bio_complete(arg..)
-> >    if (__trace_block_bio_compete.state)
-> >      __trace_block_bio_complete(arg)
-> > 
-> > work?
-> > 
-> > Surely its possible to wrap the whole stuff in yet another macro layer
-> > that will do the conditional before evaluating the arguments?
-> 
-> That is exactly what Jason has implemented.  
-> He called the new macro layer tracepoint_call.
-> 
-> You can't use a macro to generate a new macro definition, so it's not
-> possible with cpp alone to have the new macro layer be one that defines a
-> separate trace_foobar() macro for each defined tracepoint.
 
-Right, just realized that.
+* Mark Langsdorf <mark.langsdorf@amd.com> wrote:
 
-But I think we should be asking GCC to get fixed. Since inline functions
-don't act like a compiler barrier anyway, they might as well not force
-argument evaluation either.
+> diff --git a/include/linux/sched.h b/include/linux/sched.h
+> index b4c38bc..683bc65 100644
+> --- a/include/linux/sched.h
+> +++ b/include/linux/sched.h
+> @@ -2283,6 +2283,9 @@ static inline unsigned int task_cpu(const struct task_struct *p)
+>  	return task_thread_info(p)->cpu;
+>  }
+>  
+> +extern void set_task_delay(struct task_struct *p, unsigned int delay);
+
+> +++ b/kernel/sched.c
+> @@ -1947,6 +1947,11 @@ task_hot(struct task_struct *p, u64 now, struct sched_domain *sd)
+>  	return delta < (s64)sysctl_sched_migration_cost;
+>  }
+>  
+> +void set_task_delay(struct task_struct *p, unsigned int delay)
+> +{
+> +	p->se.vruntime += delay;
+> +}
+> +EXPORT_SYMBOL(set_task_delay);
+
+vruntime is nice level scaled, so this is broken. Please run this 
+through the scheduler folks, we can get a facility into an isolated 
+brach for Avi to pull, but it needs some thought.
+
+	Ingo
