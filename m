@@ -1,90 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755901AbZETOAy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756123AbZETOER@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755901AbZETOAy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 10:00:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754914AbZETOAq
+	id S1756123AbZETOER (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 10:04:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753897AbZETOEJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 10:00:46 -0400
-Received: from relay2.sgi.com ([192.48.179.30]:56978 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754209AbZETOAp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 10:00:45 -0400
-Date: Wed, 20 May 2009 09:00:45 -0500
-From: Robin Holt <holt@sgi.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Robin Holt <holt@sgi.com>, Christoph Lameter <cl@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>
-Subject: Re: [PATCH 4/4] zone_reclaim_mode is always 0 by default
-Message-ID: <20090520140045.GA29447@sgi.com>
-References: <20090515082836.F5B9.A69D9226@jp.fujitsu.com> <20090515105137.GO7601@sgi.com> <20090519102003.4EAB.A69D9226@jp.fujitsu.com>
+	Wed, 20 May 2009 10:04:09 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:59850 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752557AbZETOEI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 10:04:08 -0400
+Date: Wed, 20 May 2009 10:04:09 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: "K.Prasad" <prasad@linux.vnet.ibm.com>
+cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [Patch 1/2] Improvements and minor fixes to HW Breakpoint
+ interface
+In-Reply-To: <20090520105535.GA17181@in.ibm.com>
+Message-ID: <Pine.LNX.4.44L0.0905200951030.2914-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090519102003.4EAB.A69D9226@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 19, 2009 at 11:53:44AM +0900, KOSAKI Motohiro wrote:
-> Hi
-> 
-> > > Current linux policy is, zone_reclaim_mode is enabled by default if the machine
-> > > has large remote node distance. it's because we could assume that large distance 
-> > > mean large server until recently.
-> > > 
-> > > Unfortunately, recent modern x86 CPU (e.g. Core i7, Opeteron) have P2P transport
-> > > memory controller. IOW it's seen as NUMA from software view.
-> > > 
-> > > Some Core i7 machine has large remote node distance, but zone_reclaim don't
-> > > fit desktop and small file server. it cause performance degression.
-> > > 
-> > > Thus, zone_reclaim == 0 is better by default if the machine is small.
-> > 
-> > What if I had a node 0 with 32GB or 128GB of memory.  In that case,
-> > we would have 3GB for DMA32, 125GB for Normal and then a node 1 with
-> > 128GB.  I would suggest that zone reclaim would perform normally and
-> > be beneficial.
-> > 
-> > You are unfairly classifying this as a size of machine problem when it is
-> > really a problem with the underlying zone reclaim code being triggered
-> > due to imbalanced node/zones, part of which is due to a single node
-> > having multiple zones and those multiple zones setting up the conditions
-> > for extremely agressive reclaim.  In other words, you are putting a
-> > bandage in place to hide a problem on your particular hardware.
-> > 
-> > Can RECLAIM_DISTANCE be adjusted so your Ci7 boxes are no longer caught?
-> > Aren't 4 node Ci7 boxes soon to be readily available?  How are your apps
-> > different from my apps in that you are not impacted by node locality?
-> > Are you being too insensitive to node locality?  Conversely am I being
-> > too sensitive?
-> > 
-> > All that said, I would not stop this from going in.  I just think the
-> > selection criteria is rather random.  I think we know the condition we
-> > are trying to avoid which is a small Normal zone on one node and a larger
-> > Normal zone on another causing zone reclaim to be overly agressive.
-> > I don't know how to quantify "small" versus "large".  I would suggest
-> > that a node 0 with 16 or more GB should have zone reclaim on by default
-> > as well.  Can that be expressed in the selection criteria.
-> 
-> I post my opinion as another mail. please see it.
+On Wed, 20 May 2009, K.Prasad wrote:
 
-I don't think you addressed my actual question.  How much of this is
-a result of having a node where 1/4 of the memory is in the 'Normal'
-zone and 3/4 is in the DMA32 zone?  How much is due to the imbalance
-between Node 0 'Normal' and Node 1 'Normal'?  Shouldn't that type of
-sanity check be used for turning on zone reclaim instead of some random
-number of nodes.  Even with 128 nodes and 256 cpus, I _NEVER_ see the
-system swapping out before allocating off node so I can certainly not
-reproduce the situation you are seeing.
+> --- linux-2.6-tip.hbkpt.orig/arch/x86/kernel/hw_breakpoint.c
+> +++ linux-2.6-tip.hbkpt/arch/x86/kernel/hw_breakpoint.c
+> @@ -296,6 +296,19 @@ void arch_flush_thread_hw_breakpoint(str
+>  
+>  /*
+>   * Handle debug exception notifications.
+> + *
+> + * Return value is either NOTIFY_STOP or NOTIFY_DONE as explained below.
+> + *
+> + * NOTIFY_DONE returned if one of the following conditions is true.
+> + * i) When the causative address is from user-space and the exception
+> + * is a valid one i.e. not triggered a result of lazy debug register
+--------------------^----^  missing ',' characters
+---------------------------------------^ missing "as"
 
-The imbalance I have seen was when I had two small memory nodes and two
-large memory nodes and then oversubscribed memory.  In that situation,
-I noticed that the apps on the small memory nodes were more frequently
-impacted.  This unfairness made sense to me and seemed perfectly
-reasonable.
+> + * switching
+> + * ii) When there are more bits than trap<n> set in DR6 register (such
+> + * as BD, BS or BT) indicating that more than one debug condition is
+> + * met and requires some more action in do_debug().
+> + *
+> + * NOTIFY_STOP returned for all other cases
+> + *
+>   */
+>  int __kprobes hw_breakpoint_handler(struct die_args *args)
+>  {
+> @@ -346,8 +359,10 @@ int __kprobes hw_breakpoint_handler(stru
+>  		 * or due to the delay between updates of hbp_kernel_pos
+>  		 * and this_hbp_kernel.
+>  		 */
+> -		if (!bp)
+> +		if (!bp) {
+> +			rc = NOTIFY_STOP;
+>  			continue;
+> +		}
+>  
+>  		(bp->triggered)(bp, args->regs);
 
-Thanks,
-Robin
+This is the same mistake as before.  If rc had previously been set to 
+NOTIFY_DONE then you will unconditionally change it back to 
+NOTIFY_STOP.  You should make the code do what the comment says, set rc
+to NOTIFY_DONE when a non-NULL user breakpoint occurs:
+
+		if (i >= hbp_kernel_pos) {
+			bp = per_cpu(this_hbp_kernel[i], cpu);
+		} else {
+			bp = current->thread.hbp[i];
+			if (bp)
+				rc = NOTIFY_DONE;
+		}
+		/*
+		 * bp can be NULL due to lazy debug register switching
+		 * or due to the delay between updates of hbp_kernel_pos
+		 * and this_hbp_kernel.
+		 */
+		if (!bp)
+			continue;
+
+		(bp->triggered)(bp, args->regs);
+
+
+The rest of the changes are okay.
+
+Alan Stern
+
