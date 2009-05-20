@@ -1,63 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756551AbZETO5F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756400AbZETPAE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756551AbZETO5F (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 10:57:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755283AbZETO44
+	id S1756400AbZETPAE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 11:00:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753035AbZETO7z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 10:56:56 -0400
-Received: from mga14.intel.com ([143.182.124.37]:18254 "EHLO mga14.intel.com"
+	Wed, 20 May 2009 10:59:55 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:46771 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753579AbZETO4z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 10:56:55 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,221,1241420400"; 
-   d="scan'208";a="144999952"
-Date: Wed, 20 May 2009 22:56:08 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Elladan <elladan@eskimo.com>,
-       Nick Piggin <npiggin@suse.de>, Johannes Weiner <hannes@cmpxchg.org>,
-       Peter Zijlstra <peterz@infradead.org>, Rik van Riel <riel@redhat.com>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "minchan.kim@gmail.com" <minchan.kim@gmail.com>
-Subject: Re: [PATCH 2/3] vmscan: make mapped executable pages the first
-	class citizen
-Message-ID: <20090520145607.GA6281@localhost>
-References: <alpine.DEB.1.10.0905181045340.20244@qirst.com> <20090519032759.GA7608@localhost> <20090519133422.4ECC.A69D9226@jp.fujitsu.com> <20090519062503.GA9580@localhost> <87pre4nhqf.fsf@basil.nowhere.org> <20090520143258.GA5706@localhost> <20090520144731.GB4753@basil.nowhere.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090520144731.GB4753@basil.nowhere.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1751411AbZETO7z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 10:59:55 -0400
+Date: Thu, 21 May 2009 00:59:49 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "David S. Miller" <davem@davemloft.net>,
+       Wai Yew CHAY <wychay@ctl.creative.com>,
+       Ryan RICHARDS <ryan_richards@creativelabs.com>
+Subject: Re: linux-next: sound tree build failure
+Message-Id: <20090521005949.a48d8dab.sfr@canb.auug.org.au>
+In-Reply-To: <s5hmy977rxm.wl%tiwai@suse.de>
+References: <20090521003145.7c31808d.sfr@canb.auug.org.au>
+	<s5hmy977rxm.wl%tiwai@suse.de>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__21_May_2009_00_59_49_+1000_=e7sPhrHsADhZlux"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 20, 2009 at 10:47:31PM +0800, Andi Kleen wrote:
-> > > One scenario that might be useful to test is what happens when some
-> > > very large processes, all mapped and executable exceed memory and
-> > 
-> > Good idea. Too bad I may have to install some bloated desktop in order
-> > to test this out ;) I guess the pgmajfault+pswpin numbers can serve as
-> > negative scores in that case?
-> 
-> I would just generate a large C program with a script and compile
-> and run that. The program can be very dumb (e.g. only run
-> a gigantic loop), it just needs to be large.
-> 
-> Just don't compile it with optimization, that can be quite slow.
-> 
-> And use multiple functions, otherwise gcc might exceed your memory.
+--Signature=_Thu__21_May_2009_00_59_49_+1000_=e7sPhrHsADhZlux
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+Hi Takashi,
 
-Hehe, an arbitrary C program may not be persuasive..but I do have some
-bloated binaries at hand :-)
+On Wed, 20 May 2009 16:46:45 +0200 Takashi Iwai <tiwai@suse.de> wrote:
+>
+> Meanwhile, I'll add Kconfig dependency to x86 so that it won't be
+> built on other architectures (which haven't been tested anyway).
 
--rwsr-sr-x 1 root wfg   36M 2009-04-22 17:21 Xorg
-lrwxrwxrwx 1 wfg  wfg     4 2009-04-22 17:21 X -> Xorg
--rwxr-xr-x 1 wfg  wfg   39M 2009-04-22 17:21 Xvfb
--rwxr-xr-x 1 wfg  wfg   35M 2009-04-22 17:21 Xnest
+OK, thanks.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__21_May_2009_00_59_49_+1000_=e7sPhrHsADhZlux
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkoUGuUACgkQjjKRsyhoI8wz7wCgpgtSxBty+Qat2tk2Y6+cN/1K
+/hYAn2Wvl1+FbXKBF1yjVALdh/rGCzC8
+=K5Ap
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__21_May_2009_00_59_49_+1000_=e7sPhrHsADhZlux--
