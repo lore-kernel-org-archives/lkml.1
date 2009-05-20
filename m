@@ -1,85 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754232AbZETKJL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755658AbZETKMq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754232AbZETKJL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 06:09:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752811AbZETKI7
+	id S1755658AbZETKMq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 06:12:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755783AbZETKMa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 06:08:59 -0400
-Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:34511 "EHLO
-	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753870AbZETKI6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 06:08:58 -0400
-Date: Wed, 20 May 2009 12:08:51 +0200
-From: Pierre Ossman <pierre@ossman.eu>
-To: David Brownell <david-b@pacbell.net>
-Cc: Wolfgang =?UTF-8?B?TcO8ZXM=?= <wolfgang.mues@auerswald.de>,
-       "Matt Fleming" <matt@console-pimps.org>,
-       "Pierre Ossman" <drzeus@drzeus.cx>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Mike Frysinger" <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] mmc_spi: use EILSEQ for possible transmission errors
-Message-ID: <20090520120851.49783a8e@mjolnir.ossman.eu>
-In-Reply-To: <200905200220.46569.david-b@pacbell.net>
-References: <200905192149.07778.david-b@pacbell.net>
-	<200905201035.23964.wolfgang.mues@auerswald.de>
-	<200905200220.46569.david-b@pacbell.net>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.ossman.eu-753-1242814137-0001-2"
+	Wed, 20 May 2009 06:12:30 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:65177 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755419AbZETKM3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 06:12:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=kaylY8po9CEDy/UbOmwfKy9eAcVuZYAV0U1lsli1/2LBC7MEVAju2f/pvAS61b0vvt
+         CDqVzLQp+lKiUoVTlzEjLwPfIEKaJ3HOk3OKfc0wDUA3vBsnIm3q7CpJvVkQCmaqMoZY
+         f6my4qFGurJfsAdQF/Rc3g2JG9pMNRFII/bu0=
+MIME-Version: 1.0
+Date: Wed, 20 May 2009 19:12:29 +0900
+Message-ID: <d50492d40905200312r729608a3nf244b153892ac257@mail.gmail.com>
+Subject: can't flush tlb on e500
+From: Saito Hideo <hsaito.ppc@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+It seems that the code for powerpc with e500 on linux-2.6.29 has an
+regression, because I can't execute hackbench on my platform. I
+apologize if already reported.
 
---=_freyr.ossman.eu-753-1242814137-0001-2
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+For example, following message was asserted, however the command is
+done successfully if the number given to hackbench is small.
 
-On Wed, 20 May 2009 02:20:46 -0700
-David Brownell <david-b@pacbell.net> wrote:
+% ./hackbench 20
+SERVER: read (error: Bad file descriptor)
 
-> On Wednesday 20 May 2009, Wolfgang M=C3=BCes wrote:
-> > R1_SPI_COM_CRC is a transmission error - no doubt. Mapping to EILSEQ is=
- OK.
-> >=20
-> > R1_SPI_ERASE_SEQ and R1_SPI_ERASE_RESET are responses to a sector erase=
-=20
-> > command. block.c is not sending such commands, so block.c can safely as=
-sume=20
-> > that each such response is a transmission error.
->=20
-> Hmm, would hope that's not a long-term plan.  Remember that the
-> firmware in the card can leverage "that's erased" knowledge for
-> things like wear leveling.  SSDs and other storage devices would
-> likewise benefit from such knowledge.  I'm quite certain there's
-> been discussion about adding support for that in the block layer.
->=20
+% ./hackbench 4
+%
 
-It's already in AFAIK. I even had code for hooking it up to mmc_block.
-But it didn't produce any measurable results so I never merged it.
+I think that the tlb should be cleared before mm->context.id is set
+MMU_NO_CONTEXT.
 
-Rgds
---=20
-     -- Pierre Ossman
+--- arch/powerpc/mm/mmu_context_nohash.c.orig	2009-03-24
+08:12:14.000000000 +0900
++++ arch/powerpc/mm/mmu_context_nohash.c	2009-05-20 18:33:53.000000000 +0900
+@@ -122,22 +122,22 @@ static unsigned int steal_context_up(uns
+ 	struct mm_struct *mm;
+ 	int cpu = smp_processor_id();
 
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
+ 	/* Pick up the victim mm */
+ 	mm = context_mm[id];
 
---=_freyr.ossman.eu-753-1242814137-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
+ 	pr_debug("[%d] steal context %d from mm @%p\n", cpu, id, mm);
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.11 (GNU/Linux)
+-	/* Mark this mm has having no context anymore */
+-	mm->context.id = MMU_NO_CONTEXT;
+-
+ 	/* Flush the TLB for that context */
+ 	local_flush_tlb_mm(mm);
 
-iEYEARECAAYFAkoT1rcACgkQ7b8eESbyJLgKuQCfbVIHs1EsvKzfqZTURADEwZ4o
-AD4AnjUiedHDX2McJIFUYgPsu2Td/9Ru
-=vAL6
------END PGP SIGNATURE-----
++	/* Mark this mm has having no context anymore */
++	mm->context.id = MMU_NO_CONTEXT;
++
+ 	/* XXX This clear should ultimately be part of local_flush_tlb_mm */
+ 	__clear_bit(id, stale_map[cpu]);
 
---=_freyr.ossman.eu-753-1242814137-0001-2--
+ 	return id;
+ }
+
+ #ifdef DEBUG_MAP_CONSISTENCY
+ static void context_check_map(void)
