@@ -1,49 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759071AbZETL3g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759206AbZETLaA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759071AbZETL3g (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 07:29:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756967AbZETLUh
+	id S1759206AbZETLaA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 07:30:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756952AbZETLUk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 07:20:37 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:55269 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754218AbZETLSs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 07:18:48 -0400
-From: Avi Kivity <avi@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: kvm@vger.kernel.org
-Subject: [PATCH 17/46] KVM: x86 emulator: fix call near emulation
-Date: Wed, 20 May 2009 14:18:14 +0300
-Message-Id: <1242818323-10413-18-git-send-email-avi@redhat.com>
-In-Reply-To: <1242818323-10413-1-git-send-email-avi@redhat.com>
-References: <1242818323-10413-1-git-send-email-avi@redhat.com>
+	Wed, 20 May 2009 07:20:40 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:52138 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755606AbZETLU1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 07:20:27 -0400
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Elladan <elladan@eskimo.com>,
+       Nick Piggin <npiggin@suse.de>, Johannes Weiner <hannes@cmpxchg.org>,
+       Peter Zijlstra <peterz@infradead.org>, Rik van Riel <riel@redhat.com>,
+       "tytso@mit.edu" <tytso@mit.edu>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "minchan.kim@gmail.com" <minchan.kim@gmail.com>
+Subject: Re: [PATCH 2/3] vmscan: make mapped executable pages the first class citizen
+From: Andi Kleen <andi@firstfloor.org>
+References: <alpine.DEB.1.10.0905181045340.20244@qirst.com>
+	<20090519032759.GA7608@localhost>
+	<20090519133422.4ECC.A69D9226@jp.fujitsu.com>
+	<20090519062503.GA9580@localhost>
+Date: Wed, 20 May 2009 13:20:24 +0200
+In-Reply-To: <20090519062503.GA9580@localhost> (Wu Fengguang's message of "Tue, 19 May 2009 14:25:03 +0800")
+Message-ID: <87pre4nhqf.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Gleb Natapov <gleb@redhat.com>
+Wu Fengguang <fengguang.wu@intel.com> writes:
+>
+> 2.6.30-rc4-mm, VM_EXEC protection ON
+> ------------------------------------
+> begin:       2444             6652            50021              207                0           619959
+> end:          284           231752           233394              210           773879         20890132
+> restore:      399           231973           234352              251           776879         20960568
+>
+> We can reach basically the same conclusion from the above data.
 
-The length of pushed on to the stack return address depends on operand
-size not address size.
+One scenario that might be useful to test is what happens when some very large
+processes, all mapped and executable exceed memory and fight each other
+for the working set. Do you have regressions then compared to without
+the patches?
 
-Signed-off-by: Gleb Natapov <gleb@redhat.com>
-Signed-off-by: Avi Kivity <avi@redhat.com>
----
- arch/x86/kvm/x86_emulate.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+-Andi
 
-diff --git a/arch/x86/kvm/x86_emulate.c b/arch/x86/kvm/x86_emulate.c
-index ca91749..d7c9f6f 100644
---- a/arch/x86/kvm/x86_emulate.c
-+++ b/arch/x86/kvm/x86_emulate.c
-@@ -1792,7 +1792,6 @@ special_insn:
- 		}
- 		c->src.val = (unsigned long) c->eip;
- 		jmp_rel(c, rel);
--		c->op_bytes = c->ad_bytes;
- 		emulate_push(ctxt);
- 		break;
- 	}
 -- 
-1.6.0.6
-
+ak@linux.intel.com -- Speaking for myself only.
