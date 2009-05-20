@@ -1,57 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756767AbZETXFI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756218AbZETXFX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756767AbZETXFI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 19:05:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754609AbZETXE5
+	id S1756218AbZETXFX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 19:05:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756221AbZETXFE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 19:04:57 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:36241 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753548AbZETXE4 (ORCPT
+	Wed, 20 May 2009 19:05:04 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:58981 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756718AbZETXFC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 19:04:56 -0400
-To: Greg KH <gregkh@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Tejun Heo <tj@kernel.org>, Cornelia Huck <cornelia.huck@de.ibm.com>,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 0/20] Sysfs cleanups
-References: <m1bppofm9k.fsf@fess.ebiederm.org>
-	<20090520153718.GB26111@suse.de>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Wed, 20 May 2009 16:04:48 -0700
-In-Reply-To: <20090520153718.GB26111@suse.de> (Greg KH's message of "Wed\, 20 May 2009 08\:37\:18 -0700")
-Message-ID: <m1skizgyun.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Wed, 20 May 2009 19:05:02 -0400
+Message-ID: <4A148C3B.5050100@zytor.com>
+Date: Wed, 20 May 2009 16:03:23 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Rcpt-To: gregkh@suse.de, linux-fsdevel@vger.kernel.org, cornelia.huck@de.ibm.com, tj@kernel.org, linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Exit with error (see exim mainlog)
+To: Andi Kleen <andi@firstfloor.org>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [GIT PULL] xen /proc/mtrr implementation
+References: <4A0DCC11.10307@goop.org> <m1my9ex818.fsf@fess.ebiederm.org> <4A0DFF78.6000501@goop.org> <20090515202250.0f1218ef@jbarnes-g45> <m1iqk1k708.fsf@fess.ebiederm.org> <4A10EAC4.9070701@goop.org> <20090518085902.GE10687@elte.hu> <4A11A3F8.1010202@goop.org> <87tz3gnq91.fsf@basil.nowhere.org> <4A143251.90208@goop.org> <20090520225235.GJ8684@one.firstfloor.org>
+In-Reply-To: <20090520225235.GJ8684@one.firstfloor.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH <gregkh@suse.de> writes:
+Andi Kleen wrote:
+>>> Is this new interface only defined for swiotlb or MMIO mappings?
+>>> If yes did you check the drivers only actually set it on
+>>> swiotlb or MMIO (that seems dubious to me)?
+>> Really?   Do we ever set unusual memory types on normal system memory?  
+> 
+> There were drivers at some point that set WC MTRRs on their
+> transfer rings, not mmio.
+> 
+> Maybe these all switched to PAT now, maybe not
 
-> On Tue, May 19, 2009 at 09:09:43PM -0700, Eric W. Biederman wrote:
->> 
->> The following patch series cleans up sysfs to the point where itq is
->> generally a good citizen of the vfs layer.  The big theme is lazy
->> synchronization from the sysfs data structures to the vfs data
->> structures using the same techniques as most other distributed
->> filesystems.
->
-> Hm, I only seem to have gotten patch 0/20, none of the actual patches.
-> Did I somehow miss them?
->
-> confused,
+Most of those that I've heard of use WB memory and CLFLUSH.
 
-Me too.
+The ones I know of which marked descriptor rings WB were ones which had
+descriptor rings in MMIO space (which makes sense: MMIO reads are fully
+synchronizing, but writes can be posted and write combined.)
 
-git-send-email ran.  I got copies of the mail sent.  But fsdevel
-and linux-kernel appears not to have received them.  Hopefully I can figure
-out what went wrong shortly.  My apologies if anyone receives several copies.
+	-hpa
 
-Eric
