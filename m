@@ -1,159 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755956AbZETBH1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755798AbZETBH4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755956AbZETBH1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 21:07:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754938AbZETBHT
+	id S1755798AbZETBH4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 21:07:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755304AbZETBHs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 21:07:19 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:41174 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754888AbZETBHS (ORCPT
+	Tue, 19 May 2009 21:07:48 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:44711 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754938AbZETBHr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 21:07:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=JEBsQgQbJP9x3gL3V7tJDfMWWtRZZlZmBTgvHkGyP7dBR0XPgb4+5xlILdlwVxMTyf
-         76TgYJDugXi/uPEai/jP3ayj+SpmXNVo8i21isJ+PpF1lGcR7JEcFUUkK/wMTZ8ckURX
-         24UAdT//6FtWCYplae16uT4xnfiz0AgsG7b9M=
-Date: Wed, 20 May 2009 03:07:15 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH][GIT PULL] tracing: add trace_stack interface
-Message-ID: <20090520010714.GG6066@nowhere>
-References: <alpine.DEB.2.00.0905192043090.7816@gandalf.stny.rr.com>
+	Tue, 19 May 2009 21:07:47 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
+Subject: Re: [PATCH] readahead:add blk_run_backing_dev
+Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       linux-mm <linux-mm@kvack.org>, Wu Fengguang <fengguang.wu@intel.com>
+In-Reply-To: <6.0.0.20.2.20090518183752.0581fdc0@172.19.0.2>
+References: <6.0.0.20.2.20090518183752.0581fdc0@172.19.0.2>
+Message-Id: <20090520100602.7438.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0905192043090.7816@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Wed, 20 May 2009 10:07:45 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 19, 2009 at 08:44:50PM -0400, Steven Rostedt wrote:
-> 
-> Ingo,
-> 
-> Please pull the latest tip/tracing/ftrace tree, which can be found at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-> tip/tracing/ftrace
-> 
-> 
-> Steven Rostedt (1):
->       tracing: add trace_stack interface
-> 
-> ----
->  include/linux/kernel.h |    2 ++
->  kernel/trace/trace.c   |   15 +++++++++++++++
->  2 files changed, 17 insertions(+), 0 deletions(-)
-> ---------------------------
-> commit b85d1029ba534376d203c3ac83a2e5a4d6876cb6
-> Author: Steven Rostedt <srostedt@redhat.com>
-> Date:   Tue May 19 18:54:16 2009 -0400
-> 
->     tracing: add trace_stack interface
->     
->     This patch adds the global function
->     
->       void trace_stack(void)
->     
->     This allows a developer to find where a function is called. For example,
->     if you want to know who calls __netif_reschedule, you can add
->     
->      static inline void __netif_reschedule(struct Qdisc *q)
->      {
->      	struct softnet_data *sd;
->      	unsigned long flags;
->     
->     +	trace_stack();
->      	local_irq_save(flags);
->      	sd = &__get_cpu_var(softnet_data);
->      	q->next_sched = sd->output_queue;
->     
->     And see the following in the trace output:
->     
->      <= __ftrace_trace_stack
->      <= trace_stack
+(cc to Wu and linux-mm)
 
-
-
-I guess the depth should begin here :-)
-
-
-
->      <= __netif_schedule
->      <= dev_watchdog
->      <= run_timer_softirq
->      <= __do_softirq
->      <= call_softirq
->      <= do_softirq
->      <= irq_exit
->     
->     Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+> Hi.
 > 
-> diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-> index 883cd44..347a0f1 100644
-> --- a/include/linux/kernel.h
-> +++ b/include/linux/kernel.h
-> @@ -511,6 +511,7 @@ extern int
->  __ftrace_vprintk(unsigned long ip, const char *fmt, va_list ap);
+> I wrote a patch that adds blk_run_backing_dev on page_cache_async_readahead
+> so readahead I/O is unpluged to improve throughput.
+> 
+> Following is the test result with dd.
+> 
+> #dd if=testdir/testfile of=/dev/null bs=16384
+> 
+> -2.6.30-rc6
+> 1048576+0 records in
+> 1048576+0 records out
+> 17179869184 bytes (17 GB) copied, 224.182 seconds, 76.6 MB/s
+> 
+> -2.6.30-rc6-patched
+> 1048576+0 records in
+> 1048576+0 records out
+> 17179869184 bytes (17 GB) copied, 206.465 seconds, 83.2 MB/s
+> 
+> Sequential read performance on a big file was improved.
+> Please merge my patch.
+
+I guess the improvement depend on readahead window size.
+Have you mesure random access workload?
+
+> 
+> Thanks.
+> 
+> Signed-off-by: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
+> 
+> diff -Nrup linux-2.6.30-rc6.org/mm/readahead.c linux-2.6.30-rc6.unplug/mm/readahead.c
+> --- linux-2.6.30-rc6.org/mm/readahead.c	2009-05-18 10:46:15.000000000 +0900
+> +++ linux-2.6.30-rc6.unplug/mm/readahead.c	2009-05-18 13:00:42.000000000 +0900
+> @@ -490,5 +490,7 @@ page_cache_async_readahead(struct addres
 >  
->  extern void ftrace_dump(void);
-> +extern void trace_stack(void);
->  #else
->  static inline void
->  ftrace_special(unsigned long arg1, unsigned long arg2, unsigned long arg3) { }
-> @@ -531,6 +532,7 @@ ftrace_vprintk(const char *fmt, va_list ap)
->  	return 0;
->  }
->  static inline void ftrace_dump(void) { }
-> +static inline void trace_stack(void) { }
->  #endif /* CONFIG_TRACING */
->  
->  /*
-> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-> index dd40d23..33ab502 100644
-> --- a/kernel/trace/trace.c
-> +++ b/kernel/trace/trace.c
-> @@ -1046,6 +1046,21 @@ void __trace_stack(struct trace_array *tr,
->  	__ftrace_trace_stack(tr, flags, skip, pc);
->  }
->  
-> +/**
-> + * trace_stack - dump the stack into the trace buffer
-> + *
-> + * Use this to record the stack trace into the ring buffer. If you
-> + * want to know a caller of a function, place a call to trace_stack
-> + * and the ftrace trace file will display who the callers were.
-> + */
-> +void trace_stack(void)
-> +{
-> +	unsigned long flags;
+>  	/* do read-ahead */
+>  	ondemand_readahead(mapping, ra, filp, true, offset, req_size);
 > +
-> +	local_save_flags(flags);
-> +	__trace_stack(&global_trace, flags, 0, preempt_count());
-> +}
-
-
-
-Stupidly I use a very similar patch while working on reiserfs
-but I forgot to post it.
-
-Another trick is to use trace_printk() combined with:
-
-echo stacktrace > trace_option
-
-
-Frederic.
-
-
->  static void ftrace_trace_userstack(struct trace_array *tr,
->  				   unsigned long flags, int pc)
->  {
+> +	blk_run_backing_dev(mapping->backing_dev_info, NULL);
+>  }
+>  EXPORT_SYMBOL_GPL(page_cache_async_readahead);
 > 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+
 
