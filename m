@@ -1,65 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756577AbZETMLW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756607AbZETMON@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756577AbZETMLW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 08:11:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755577AbZETMLN
+	id S1756607AbZETMON (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 08:14:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755684AbZETMN6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 08:11:13 -0400
-Received: from cantor.suse.de ([195.135.220.2]:47665 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755518AbZETMLM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 08:11:12 -0400
-Date: Wed, 20 May 2009 14:11:12 +0200
-From: Jan Kara <jack@suse.cz>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
-       akpm@linux-foundation.org, yanmin_zhang@linux.intel.com
-Subject: Re: [PATCH 02/11] writeback: switch to per-bdi threads for
-	flushing data
-Message-ID: <20090520121111.GF3760@duck.suse.cz>
-References: <1242649192-16263-1-git-send-email-jens.axboe@oracle.com> <1242649192-16263-3-git-send-email-jens.axboe@oracle.com> <20090520111850.GB3760@duck.suse.cz> <20090520113234.GT11363@kernel.dk>
+	Wed, 20 May 2009 08:13:58 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:40296 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754345AbZETMN5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 08:13:57 -0400
+To: "Han\, Weidong" <weidong.han@intel.com>
+Cc: "'Ingo Molnar'" <mingo@elte.hu>, "'Yinghai Lu'" <yinghai@kernel.org>,
+       "'Joerg Roedel'" <joerg.roedel@amd.com>,
+       "'dwmw2\@infradead.org'" <dwmw2@infradead.org>,
+       "Siddha\, Suresh B" <suresh.b.siddha@intel.com>,
+       "'linux-kernel\@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
+       "'iommu\@lists.linux-foundation.org'" 
+	<iommu@lists.linux-foundation.org>,
+       "'kvm\@vger.kernel.org'" <kvm@vger.kernel.org>
+Subject: Re: [PATCH v2 2/2] Intel-IOMMU, intr-remap: source-id checking
+References: <1242757912-6041-1-git-send-email-weidong.han@intel.com>
+	<1242757912-6041-3-git-send-email-weidong.han@intel.com>
+	<20090519115055.GB14305@elte.hu> <m1k54cj3iz.fsf@fess.ebiederm.org>
+	<20090520082114.GC6736@elte.hu>
+	<715D42877B251141A38726ABF5CABF2C054568FF38@pdsmsx503.ccr.corp.intel.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Wed, 20 May 2009 05:13:54 -0700
+In-Reply-To: <715D42877B251141A38726ABF5CABF2C054568FF38@pdsmsx503.ccr.corp.intel.com> (Weidong Han's message of "Wed\, 20 May 2009 16\:38\:53 +0800")
+Message-ID: <m13ab0m0ot.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090520113234.GT11363@kernel.dk>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Rcpt-To: weidong.han@intel.com, kvm@vger.kernel.org, iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org, suresh.b.siddha@intel.com, dwmw2@infradead.org, joerg.roedel@amd.com, yinghai@kernel.org, mingo@elte.hu
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 20-05-09 13:32:34, Jens Axboe wrote:
-> On Wed, May 20 2009, Jan Kara wrote:
-> >   Hi Jens,
-> > 
-> >   a few comments here. Mainly, I still don't think the sys_sync() is
-> > working right - see comments below.
-> 
-> Thanks! I took the liberty of killing some of the code in between, to
-> make it easier to see.
-> 
-> > > +void bdi_writeback_all(struct super_block *sb, long nr_pages)
-> > > +{
-> > > +	struct backing_dev_info *bdi;
-> > > +
-> > > +	rcu_read_lock();
-> > > +
-> > > +restart:
-> > > +	list_for_each_entry_rcu(bdi, &bdi_list, bdi_list) {
-> >   Isn't the RCU list here a bit overengineering? AFAICS we use the list
-> > only here and if I'm grepping right, generic_sync_sb_inodes() is currently
-> > only used for data integrity sync (after your patches) from fs-writeback.c
-> > and by UBIFS to do equivalent of writeback_inodes(). So simple spinlock
-> > guarding the list should be just fine. Or am I missing something?
-> 
-> Sure, we could. But it's really not that much of a difference,
-> implementation wise.
-  Yeah. It's just that when I see RCU, I'm a bit cautious what's going on.
-When I see spinlock, everything is simple and clear ;). And I'm in favor of
-using the simplest synchronization primitive that does it's work good
-enough ;).
+"Han, Weidong" <weidong.han@intel.com> writes:
 
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+>>> The early pci reading of the bus is just wrong.  What happens if
+>>> the pci layer decided to renumber things?  It looks like we have a
+>>> real dependency on pci there and are avoiding sorting it out with
+>>> this.
+>> 
+>> Yes ... but is there much we can do about this bootstrap dependency?
+>> We want to enable the IO-APIC very early in its final form. There's
+>> quite a bit of IRQ functionality that doesnt go via the PCI layer,
+>> and which is being relied on by early bootup. The timer irq must
+>> work, etc.
+>
+> Currently VT-d code didn't support pci rebalance. There is much work to do. It needs to track devcie identity changes and resultant imapct to Device Scope under each VT-d engine.
+
+Sure.  I am thinking of the much simpler case where the BIOS goofs up
+and we need to apply some fixes at boot time.  If you can't
+delay things enough to get your hands on the pci dev of your
+iommu.  If you can't get that far supporting pci rebalance under VT-d is
+impossible.
+
+Eric
