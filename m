@@ -1,96 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756192AbZETHeU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756249AbZETHeb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756192AbZETHeU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 03:34:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754628AbZETHeL
+	id S1756249AbZETHeb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 03:34:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756032AbZETHeQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 03:34:11 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:32871 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754218AbZETHeK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 03:34:10 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Minchan Kim <minchan.kim@gmail.com>
-Subject: Re: [PATCH 3/3] reset wmark_min and inactive ratio of zone when hotplug happens
-Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Mel Gorman <mel@csn.ul.ie>, Rik van Riel <riel@redhat.com>,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Yasunori Goto <y-goto@jp.fujitsu.com>
-In-Reply-To: <20090520162001.3f3bbe5c.minchan.kim@barrios-desktop>
-References: <20090520162001.3f3bbe5c.minchan.kim@barrios-desktop>
-Message-Id: <20090520162616.744C.A69D9226@jp.fujitsu.com>
+	Wed, 20 May 2009 03:34:16 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48766 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755835AbZETHeP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 03:34:15 -0400
+Date: Wed, 20 May 2009 09:33:48 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jason Baron <jbaron@redhat.com>
+Cc: linux-kernel@vger.kernel.org, fweisbec@gmail.com, laijs@cn.fujitsu.com,
+       rostedt@goodmis.org, peterz@infradead.org, mathieu.desnoyers@polymtl.ca,
+       jiayingz@google.com, mbligh@google.com, roland@redhat.com,
+       fche@redhat.com
+Subject: Re: [PATCH 0/3] tracepoints: delay argument evaluation
+Message-ID: <20090520073348.GA12316@elte.hu>
+References: <cover.1242763826.git.jbaron@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Wed, 20 May 2009 16:34:08 +0900 (JST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <cover.1242763826.git.jbaron@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> This patch solve two problems.
+
+* Jason Baron <jbaron@redhat.com> wrote:
+
+> hi,
 > 
-> Whenever memory hotplug sucessfully happens, zone->present_pages
-> have to be changed.
+> After disassembling some of the tracepoints, I've noticed that 
+> arguments that are passed as macros or that perform dereferences, 
+> evaluate prior to the tracepoint on/off check. This means that we 
+> are needlessly impacting the off case.
 > 
-> 1) Now, memory hotplug calls setup_per_zone_wmark_min only when
-> online_pages called, not offline_pages.
+> I am proposing to fix this by adding a macro that first checks for 
+> on/off and then calls 'trace_##name', preserving type checking. 
+> Thus, callsites have to move from:
 > 
-> It breaks balance.
+> trace_block_bio_complete(md->queue, bio);
 > 
-> 2) If zone->present_pages is changed, we also have to change
-> zone->inactive_ratio. That's because inactive_ratio depends
-> on zone->present_pages.
-
-Good catch!
-looks good to me. but I'm not familiar this area. CC to Goto-san.
-
-
-
-
-
-> CC: Mel Gorman <mel@csn.ul.ie>
-> CC: Rik van Riel <riel@redhat.com>
-> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> CC: Johannes Weiner <hannes@cmpxchg.org>
-> Signed-off-by: Minchan Kim <minchan.kim@gmail.com>
-> ---
->  mm/memory_hotplug.c |    4 ++++
->  1 files changed, 4 insertions(+), 0 deletions(-)
+> to:
 > 
-> diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-> index 40bf385..1611010 100644
-> --- a/mm/memory_hotplug.c
-> +++ b/mm/memory_hotplug.c
-> @@ -423,6 +423,7 @@ int online_pages(unsigned long pfn, unsigned long nr_pages)
->  	zone->zone_pgdat->node_present_pages += onlined_pages;
->  
->  	setup_per_zone_wmark_min();
-> +	calculate_per_zone_inactive_ratio(zone);
->  	if (onlined_pages) {
->  		kswapd_run(zone_to_nid(zone));
->  		node_set_state(zone_to_nid(zone), N_HIGH_MEMORY);
-> @@ -832,6 +833,9 @@ repeat:
->  	totalram_pages -= offlined_pages;
->  	num_physpages -= offlined_pages;
->  
-> +	setup_per_zone_wmark_min();
-> +	calculate_per_zone_inactive_ratio(zone);
-> +
->  	vm_total_pages = nr_free_pagecache_pages();
->  	writeback_set_ratelimit();
->  
-> -- 
-> 1.5.4.3
+> tracepoint_call(block_bio_complete,  md->queue, bio);
+>
+> I've tried '__always_inline', but that did not fix this issue. 
+> Obviously this change will require changes to all the callsites. 
+> But, that shouldn't be very hard, I've already included the 
+> scheduler and block changes with this patch. I think its important 
+> to minimize code execution in the off case, and thus going through 
+> all the callsites is well worth it. If we agree on this change, I 
+> can change the rest in very short order.
 > 
+> Below I'm also showing the assembly in the 'dec_pending()' 
+> function before and after this change to show the difference it 
+> makes. The arguments to the tracepoint are as above, 'md->queue' 
+> and 'bio'. Notice the 2 extra instructions, before the initial 
+> 'je', that could be moved after the 'je'.
+
 > 
+> before:
 > 
-> -- 
-> Kinds Regards
-> Minchan Kim
+> ffffffff8137b2a3:       83 3d de 90 4b 00 00    cmpl   $0x0,0x4b90de(%rip)        # ffffffff81834388 <__tracepoint_block_bio_complete+0x8>
+> ffffffff8137b2aa:       49 8b 45 50             mov    0x50(%r13),%rax
+> ffffffff8137b2ae:       48 89 45 d0             mov    %rax,-0x30(%rbp)
+> ffffffff8137b2b2:       74 1f                   je     ffffffff8137b2d3 <dec_pending+0x101>
 
+> after:
+> 
+> ffffffff8137b2a3:       83 3d de 90 4b 00 00    cmpl   $0x0,0x4b90de(%rip)        # ffffffff81834388 <__tracepoint_block_bio_complete+0x8>
+> ffffffff8137b2aa:       74 27                   je     ffffffff8137b2d3 <dec_pending+0x101>
 
+hm, this is really a compiler bug in essence - the compiler should 
+delay the construction of arguments into unlikely branches - if the 
+arguments are only used there.
 
+We'd basically open-code a clear-cut:
+
+   trace_block_bio_complete(md->queue, bio);
+ 
+into this form:
+
+   trace(block_bio_complete, md->queue, bio);
+
+.. and this latter form could become moot (and a nuisance) if the 
+compiler is fixed.
+
+Have you tried very latest GCC, does it still have this optimization 
+problem?
+
+Note that the compiler getting this right would help a _lot_ of 
+other inline functions in the kernel as well. Arguments only used 
+within unlikely() branches are quite common.
+
+	Ingo
