@@ -1,68 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756099AbZETIg3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755559AbZETIhj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756099AbZETIg3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 04:36:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753735AbZETIgX
+	id S1755559AbZETIhj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 04:37:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753480AbZETIhc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 04:36:23 -0400
-Received: from mu-out-0910.google.com ([209.85.134.188]:63749 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753720AbZETIgW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 04:36:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=qcVNV4+aNtSetnSL8owKmBb/tgbfol31sVne9pBEU+YFUJEgjqpJPecuwiqCpf+LTT
-         2NRaHGxGvxV1yuIYUpS69K5OEkZ934Z4Kyb3wXCJdTzourEIPh9bxQzWTW1gvfY0/RAl
-         GBulmtGJrL9RDIN7lcykskLL4HzJ+7qqla+Fo=
+	Wed, 20 May 2009 04:37:32 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:36127 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751105AbZETIhb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 04:37:31 -0400
+Date: Wed, 20 May 2009 10:37:19 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
+       peterz@infradead.org
+Subject: Re: [PATCH] include KERN_* constant in printk calls
+Message-ID: <20090520083719.GG6736@elte.hu>
+References: <20090518233121.GC3109@chrisubuntu-laptop> <20090519090049.GB9388@elte.hu> <20090520043215.GA3077@chrisubuntu-laptop>
 MIME-Version: 1.0
-In-Reply-To: <20090519230601.GF23114@fluff.org.uk>
-References: <63386a3d0905190736q574d0379hb529aaa105aa36f3@mail.gmail.com>
-	 <20090519230601.GF23114@fluff.org.uk>
-Date: Wed, 20 May 2009 10:36:22 +0200
-Message-ID: <63386a3d0905200136i64bde4acw8944443a005f5d30@mail.gmail.com>
-Subject: Re: [PATCH 1/1] MFD: Add U300 AB3100 core support v3
-From: Linus Walleij <linus.ml.walleij@gmail.com>
-To: Ben Dooks <ben-linux@fluff.org>
-Cc: linux-kernel@vger.kernel.org, sameo@linux.intel.com,
-       linux-i2c@vger.kernel.org, Linus Walleij <linus.walleij@stericsson.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090520043215.GA3077@chrisubuntu-laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks Ben, v4 due soon..
 
-2009/5/20 Ben Dooks <ben-linux@fluff.org>:
+* Chris Sanford <crsanford@gmail.com> wrote:
 
->> +#define AB3100_DEVICE(devname, devid, regstart, regend)              \
->> +static struct resource ab3100_##devname##_resource[] = {     \
->> +     {                                                       \
->> +             .start  = regstart,                             \
->> +             .end    = regend,                               \
->> +             .flags  = IORESOURCE_IO,                        \
->> +     }                                                       \
->
-> is IORESOURCE_IO a good idea here, we may need to add some form of
-> flag to say 'generic data' and for the driver core to not try and
-> register it with any of the ioport or iomem structures.
+> On Tue, May 19 09 11:00, Ingo Molnar wrote:
+> > 
+> > * Chris Sanford <crsanford@gmail.com> wrote:
+> > 
+> > > Add the KERN_CONT constant to two printk calls.
+> > > 
+> > > Signed-off-by: Chris Sanford <crsanford@gmail.com>
+> > > 
+> > > ---
+> > > 
+> > > 
+> > > diff --git a/kernel/sched.c b/kernel/sched.c
+> > > index 26efa47..6a2ed16 100644
+> > > --- a/kernel/sched.c
+> > > +++ b/kernel/sched.c
+> > > @@ -7319,7 +7319,7 @@ static int sched_domain_debug_one(struct sched_domain *sd, int cpu, int level,
+> > >  	printk(KERN_DEBUG "%*s domain %d: ", level, "", level);
+> > >  
+> > >  	if (!(sd->flags & SD_LOAD_BALANCE)) {
+> > > -		printk("does not load-balance\n");
+> > > +		printk(KERN_CONT "does not load-balance\n");
+> > >  		if (sd->parent)
+> > >  			printk(KERN_ERR "ERROR: !SD_LOAD_BALANCE domain"
+> > >  					" has parent");
+> > > @@ -7340,7 +7340,7 @@ static int sched_domain_debug_one(struct sched_domain *sd, int cpu, int level,
+> > >  	printk(KERN_DEBUG "%*s groups:", level + 1, "");
+> > >  	do {
+> > >  		if (!group) {
+> > > -			printk("\n");
+> > > +			printk(KERN_CONT "\n");
+> > >  			printk(KERN_ERR "ERROR: group is NULL\n");
+> > >  			break;
+> > 
+> > Please use pr_cont() - and while at it, perhaps convert all other 
+> > printk()s in sched.c from KERN_* to the pr_*() notation as well?
+> > 
+> > Thanks,
+> > 
+> > 	Ingo
+> > --
+> 
+> The KERN_DEBUG constant is used 5 times when DEBUG is undefined. 
+> Doing a straight conversion from printk(KERN_DEBUG to pr_debug( 
+> will result in no messages being printed. Should these calls have 
+> a different message type, should DEBUG be defined, or should 
+> something else be done?
 
-I'll remove it for the time being, it's not used currently anyway.
+good point - i think it's fine to change it to pr_info().
 
-Yell if you want me to create a patch to include/linux/platform_devices.h
-for this too...
-
->> +     {
->> +             .id = 0xc8,
->> +             .name = "P2B/R2B"
->> +     },
->
-> doing }, { would makes these shorter still.
-
-Yeah CodingStyle actually say so if I read it closely, I'll fix.
-
-Yours,
-Linus Walleij
+	Ingo
