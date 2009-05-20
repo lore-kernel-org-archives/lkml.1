@@ -1,134 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756346AbZETIKV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756660AbZETIKH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756346AbZETIKV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 04:10:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756659AbZETIJy
+	id S1756660AbZETIKH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 04:10:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756441AbZETIJn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 04:09:54 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40463 "EHLO mx3.mail.elte.hu"
+	Wed, 20 May 2009 04:09:43 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:45584 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756661AbZETIJt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 04:09:49 -0400
-Date: Wed, 20 May 2009 10:09:24 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, davem@davemloft.net, dada1@cosmosbay.com,
-       zbr@ioremap.net, jeff.chua.linux@gmail.com, paulus@samba.org,
-       laijs@cn.fujitsu.com, jengelh@medozas.de, r000n@r000n.net,
-       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
-Subject: Re: [PATCH RFC] v5 expedited "big hammer" RCU grace periods
-Message-ID: <20090520080924.GA6736@elte.hu>
-References: <20090517191141.GA25915@linux.vnet.ibm.com> <20090518075630.GA10687@elte.hu> <20090518151421.GB6768@linux.vnet.ibm.com> <20090518154241.GA27047@elte.hu> <20090518160254.GD6768@linux.vnet.ibm.com> <20090519085825.GA9388@elte.hu> <20090519123316.GA7159@linux.vnet.ibm.com> <20090519124436.GA6238@elte.hu> <20090519161839.GA6750@linux.vnet.ibm.com>
+	id S1756578AbZETIJi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 04:09:38 -0400
+Date: Wed, 20 May 2009 10:09:38 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
+       akpm@linux-foundation.org, jack@suse.cz
+Subject: Re: [PATCH 0/11] Per-bdi writeback flusher threads #4
+Message-ID: <20090520080938.GM11363@kernel.dk>
+References: <1242649192-16263-1-git-send-email-jens.axboe@oracle.com> <1242713463.2560.5.camel@ymzhang> <20090519062049.GP4140@kernel.dk> <1242805911.2560.28.camel@ymzhang>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090519161839.GA6750@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <1242805911.2560.28.camel@ymzhang>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
-
-> On Tue, May 19, 2009 at 02:44:36PM +0200, Ingo Molnar wrote:
-> > 
-> > * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
-> > 
-> > > On Tue, May 19, 2009 at 10:58:25AM +0200, Ingo Molnar wrote:
-> > > > 
-> > > > * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
-> > > > 
-> > > > > On Mon, May 18, 2009 at 05:42:41PM +0200, Ingo Molnar wrote:
-> > > > > > 
-> > > > > > * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
-> > > > > > 
-> > > > > > > > i might be missing something fundamental here, but why not just 
-> > > > > > > > have per CPU helper threads, all on the same waitqueue, and wake 
-> > > > > > > > them up via a single wake_up() call? That would remove the SMP 
-> > > > > > > > cross call (wakeups do immediate cross-calls already).
-> > > > > > > 
-> > > > > > > My concern with this is that the cache misses accessing all the 
-> > > > > > > processes on this single waitqueue would be serialized, slowing 
-> > > > > > > things down. In contrast, the bitmask that smp_call_function() 
-> > > > > > > traverses delivers on the order of a thousand CPUs' worth of bits 
-> > > > > > > per cache miss.  I will give it a try, though.
-> > > > > > 
-> > > > > > At least if you go via the migration threads, you can queue up 
-> > > > > > requests to them locally. But there's going to be cachemisses 
-> > > > > > _anyway_, since you have to access them all from a single CPU, 
-> > > > > > and then they have to fetch details about what to do, and then 
-> > > > > > have to notify the originator about completion.
-> > > > > 
-> > > > > Ah, so you are suggesting that I use smp_call_function() to run 
-> > > > > code on each CPU that wakes up that CPU's migration thread?  I 
-> > > > > will take a look at this.
-> > > > 
-> > > > My suggestion was to queue up a dummy 'struct migration_req' up with 
-> > > > it (change migration_req::task == NULL to mean 'nothing') and simply 
-> > > > wake it up using wake_up_process().
-> > > 
-> > > OK.  I was thinking of just using wake_up_process() without the
-> > > migration_req structure, and unconditionally setting a per-CPU
-> > > variable from within migration_thread() just before the list_empty()
-> > > check.  In your approach we would need a NULL-pointer check just
-> > > before the call to __migrate_task().
-> > > 
-> > > > That will force a quiescent state, without the need for any extra 
-> > > > information, right?
-> > > 
-> > > Yep!
-> > > 
-> > > > This is what the scheduler code does, roughly:
-> > > > 
-> > > >                 wake_up_process(rq->migration_thread);
-> > > >                 wait_for_completion(&req.done);
-> > > > 
-> > > > and this will always have to perform well. The 'req' could be put 
-> > > > into PER_CPU, and a loop could be done like this:
-> > > > 
-> > > > 	for_each_online_cpu(cpu)
-> > > >                 wake_up_process(cpu_rq(cpu)->migration_thread);
-> > > > 
-> > > > 	for_each_online_cpu(cpu)
-> > > >                 wait_for_completion(&per_cpu(req, cpu).done);
-> > > > 
-> > > > hm?
-> > > 
-> > > My concern is the linear slowdown for large systems, but this 
-> > > should be OK for modest systems (a few 10s of CPUs).  However, I 
-> > > will try it out -- it does not need to be a long-term solution, 
-> > > after all.
-> > 
-> > I think there is going to be a linear slowdown no matter what - 
-> > because sending that many IPIs is going to be linear. (there are 
-> > no 'broadcast to all' IPIs anymore - on x86 we only have them if 
-> > all physical APIC IDs are 7 or smaller.)
+On Wed, May 20 2009, Zhang, Yanmin wrote:
+> On Tue, 2009-05-19 at 08:20 +0200, Jens Axboe wrote:
+> > On Tue, May 19 2009, Zhang, Yanmin wrote:
+> > > On Mon, 2009-05-18 at 14:19 +0200, Jens Axboe wrote:
+> > > > Hi,
+> > > >
+> > > > This is the fourth version of this patchset. Chances since v3:
+> > > >
+> > > > - Dropped a prep patch, it has been included in mainline since.
+> > > >
+> > > > - Add a work-to-do list to the bdi. This is struct bdi_work. Each
+> > > >   wb thread will notice and execute work on bdi->work_list. The arguments
+> > > >   are which sb (or NULL for all) to flush and how many pages to flush.
+> > > >
+> > > > - Fix a bug where not all bdi's would end up on the bdi_list, so potentially
+> > > >   some data would not be flushed.
+> > > >
+> > > > - Make wb_kupdated() pass on wbc->older_than_this so we maintain the same
+> > > >   behaviour for kupdated flushes.
+> > > >
+> > > > - Have the wb thread flush first before sleeping, to avoid losing the
+> > > >   first flush on lazy register.
+> > > >
+> > > > - Rebase to newer kernels.
 > 
-> With the current code, agreed.  One could imagine making an IPI 
-> tree, so that a given CPU IPIs (say) eight subordinates.  Making 
-> this work nice with CPU hotplug would be entertaining, to say the 
-> least.
+> > I'm attaching two patches - apply #1 to -rc6, and then #2 is a roll-up
+> > of the patch series that you can apply next.
+> Jens,
+> 
+> I run into 2 issues with kernel 2.6.30-rc6+BDI_Flusher_V4. Below is one.
+> 
+> Tue May 19 00:00:00 CST 2009
+> BUG: unable to handle kernel NULL pointer dereference at 00000000000001d8
+> IP: [<ffffffff803f3c4c>] generic_make_request+0x10a/0x384
+> PGD 0
+> Oops: 0000 [#1] SMP
+> last sysfs file: /sys/block/sdb/stat
+> CPU 0
+> Modules linked in: igb
+> Pid: 1445, comm: bdi-8:16 Not tainted 2.6.30-rc6-bdiflusherv4 #1 X8DTN
+> RIP: 0010:[<ffffffff803f3c4c>]  [<ffffffff803f3c4c>] generic_make_request+0x10a/0x384
+> RSP: 0018:ffff8800bd04da60  EFLAGS: 00010206
+> RAX: 0000000000000000 RBX: ffff8801be45d500 RCX: 00000000038a0df8
+> RDX: 0000000000000008 RSI: 0000000000000576 RDI: ffff8801bf408680
+> RBP: ffff8801be45d500 R08: ffffe20001ee8140 R09: ffff8800bd04da98
+> R10: 0000000000000000 R11: ffff8800bd72eb40 R12: ffff8801be45d500
+> R13: ffff88005f51f310 R14: 0000000000000008 R15: ffff8800b15a5458
+> FS:  0000000000000000(0000) GS:ffffc20000000000(0000) knlGS:0000000000000000
+> CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+> CR2: 00000000000001d8 CR3: 0000000000201000 CR4: 00000000000006e0
+> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> Process bdi-8:16 (pid: 1445, threadinfo ffff8800bd04c000, task ffff8800bd1b75f0)
+> Stack:
+>  0000000000000008 ffffffff8027a613 00000000848dc000 ffffffffffffffff
+>  ffff8800a8190f50 ffffffff00000012 ffff8800a81938e0 ffffc2000000001b
+>  0000000000000000 0000000000000000 ffffe200026f9c30 0000000000000000
+> Call Trace:
+>  [<ffffffff8027a613>] ? mempool_alloc+0x59/0x10f
+>  [<ffffffff803f3f70>] ? submit_bio+0xaa/0xb1
+>  [<ffffffff802c6a3f>] ? submit_bh+0xe3/0x103
+>  [<ffffffff802c92ea>] ? __block_write_full_page+0x1fb/0x2f2
+>  [<ffffffff802c7d6a>] ? end_buffer_async_write+0x0/0xfb
+>  [<ffffffff8027e8d2>] ? __writepage+0xa/0x25
+>  [<ffffffff8027f036>] ? write_cache_pages+0x21c/0x338
+>  [<ffffffff8027e8c8>] ? __writepage+0x0/0x25
+>  [<ffffffff8027f195>] ? do_writepages+0x27/0x2d
+>  [<ffffffff802c22c1>] ? __writeback_single_inode+0x159/0x2b3
+>  [<ffffffff8071e52a>] ? thread_return+0x3e/0xaa
+>  [<ffffffff8027f267>] ? determine_dirtyable_memory+0xd/0x1d
+>  [<ffffffff8027f2dd>] ? get_dirty_limits+0x1d/0x255
+>  [<ffffffff802c27bc>] ? generic_sync_wb_inodes+0x1b4/0x220
+>  [<ffffffff802c3130>] ? wb_do_writeback+0x16c/0x215
+>  [<ffffffff802c323e>] ? bdi_writeback_task+0x65/0x10d
+>  [<ffffffff8024cc06>] ? autoremove_wake_function+0x0/0x2e
+>  [<ffffffff8024cb27>] ? bit_waitqueue+0x10/0xa0
+>  [<ffffffff80289257>] ? bdi_start_fn+0x0/0xba
+>  [<ffffffff802892c6>] ? bdi_start_fn+0x6f/0xba
+>  [<ffffffff8024c860>] ? kthread+0x54/0x80
+>  [<ffffffff8020c97a>] ? child_rip+0xa/0x20
+>  [<ffffffff8024c80c>] ? kthread+0x0/0x80
+>  [<ffffffff8020c970>] ? child_rip+0x0/0x20
+> 
+> The panic happened at the beginging of a mmap randrw after a mmap randwrite.
+> 
+> It's triggered in __generic_make_request => bdev_get_queue(bio->bi_bdev),
+> because ???bio->bi_bdev->bd_disk is equal to NULL.
+> 
+> The callchain is:
+> ???bdi_writeback_task =>
+> 	wb_do_writeback =>
+> 		???generic_sync_wb_inodes =>
+> 			???__writeback_single_inode =>
+> 				...
+> 				???__block_write_full_page =>
+> 				???submit_bh =>
+> 				submit_bio=>
+> 				???generic_make_request
 
-Certainly! :-)
+Wow, that is really odd. Can you pass the details of the test you ran?
 
-As a general note, unrelated to your patches: i think our 
-CPU-hotplug related complexity seems to be a bit too much. This is 
-really just a gut feeling - from having seen many patches that also 
-have hotplug notifiers.
+-- 
+Jens Axboe
 
-I'm wondering whether this is because it's structured in a 
-suboptimal way, or because i'm (intuitively) under-estimating the 
-complexity of what it takes to express what happens when a CPU is 
-offlined and then onlined?
-
-	Ingo
