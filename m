@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756798AbZETSul@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757023AbZETSxQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756798AbZETSul (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 14:50:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755578AbZETSuc
+	id S1757023AbZETSxQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 14:53:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755338AbZETSxE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 14:50:32 -0400
-Received: from oblivion.subreption.com ([66.240.236.22]:51579 "EHLO
+	Wed, 20 May 2009 14:53:04 -0400
+Received: from oblivion.subreption.com ([66.240.236.22]:51590 "EHLO
 	mail.subreption.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755338AbZETSub (ORCPT
+	with ESMTP id S1755051AbZETSxD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 14:50:31 -0400
-Date: Wed, 20 May 2009 11:50:05 -0700
+	Wed, 20 May 2009 14:53:03 -0400
+Date: Wed, 20 May 2009 11:52:36 -0700
 From: "Larry H." <research@subreption.com>
 To: linux-kernel@vger.kernel.org
 Cc: Linus Torvalds <torvalds@osdl.org>, linux-mm@kvack.org,
-       Ingo Molnar <mingo@redhat.com>, pageexec@freemail.hu, faith@redhat.com
-Subject: [patch 3/5] Apply the PG_sensitive flag to audit subsystem
-Message-ID: <20090520185005.GC10756@oblivion.subreption.com>
+       Ingo Molnar <mingo@redhat.com>, pageexec@freemail.hu, davem@redhat.com
+Subject: [patch 4/5] Apply the PG_sensitive flag to the AF_KEY
+	implementation
+Message-ID: <20090520185236.GD10756@oblivion.subreption.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -26,27 +27,64 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 This patch deploys the use of the PG_sensitive page allocator flag
-within the audit subsystem. It's not necessarily a high profile
-target for use of this flag, but could be expected to contain
-potentially sensitive information under some circumstances.
+within the AF_KEY implementation.
+
+Since AF_KEY's main purpose is credential management for network
+stacks, it is desirable to mark the memory used to store such data
+as sensitive and assure sanitization upon release.
 
 Signed-off-by: Larry H. <research@subreption.com>
 
 ---
- kernel/audit.c |    3 +++
- 1 file changed, 3 insertions(+)
+ net/key/af_key.c |   10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-Index: linux-2.6/kernel/audit.c
+Index: linux-2.6/net/key/af_key.c
 ===================================================================
---- linux-2.6.orig/kernel/audit.c
-+++ linux-2.6/kernel/audit.c
-@@ -1061,6 +1061,9 @@ static struct audit_buffer * audit_buffe
- 	}
- 	spin_unlock_irqrestore(&audit_freelist_lock, flags);
+--- linux-2.6.orig/net/key/af_key.c
++++ linux-2.6/net/key/af_key.c
+@@ -480,7 +480,7 @@ static inline struct xfrm_user_sec_ctx *
+ 	struct xfrm_user_sec_ctx *uctx = NULL;
+ 	int ctx_size = sec_ctx->sadb_x_ctx_len;
  
-+	if (!(gfp_mask & GFP_SENSITIVE))
-+		gfp_mask |= GFP_SENSITIVE;
-+
- 	if (!ab) {
- 		ab = kmalloc(sizeof(*ab), gfp_mask);
- 		if (!ab)
+-	uctx = kmalloc((sizeof(*uctx)+ctx_size), GFP_KERNEL);
++	uctx = kmalloc((sizeof(*uctx)+ctx_size), GFP_KERNEL | GFP_SENSITIVE);
+ 
+ 	if (!uctx)
+ 		return NULL;
+@@ -1184,7 +1184,7 @@ static struct xfrm_state * pfkey_msg2xfr
+ 		}
+ 		if (key)
+ 			keysize = (key->sadb_key_bits + 7) / 8;
+-		x->aalg = kmalloc(sizeof(*x->aalg) + keysize, GFP_KERNEL);
++		x->aalg = kmalloc(sizeof(*x->aalg) + keysize, GFP_KERNEL | GFP_SENSITIVE);
+ 		if (!x->aalg)
+ 			goto out;
+ 		strcpy(x->aalg->alg_name, a->name);
+@@ -1203,7 +1203,7 @@ static struct xfrm_state * pfkey_msg2xfr
+ 				err = -ENOSYS;
+ 				goto out;
+ 			}
+-			x->calg = kmalloc(sizeof(*x->calg), GFP_KERNEL);
++			x->calg = kmalloc(sizeof(*x->calg), GFP_KERNEL | GFP_SENSITIVE);
+ 			if (!x->calg)
+ 				goto out;
+ 			strcpy(x->calg->alg_name, a->name);
+@@ -1218,7 +1218,7 @@ static struct xfrm_state * pfkey_msg2xfr
+ 			key = (struct sadb_key*) ext_hdrs[SADB_EXT_KEY_ENCRYPT-1];
+ 			if (key)
+ 				keysize = (key->sadb_key_bits + 7) / 8;
+-			x->ealg = kmalloc(sizeof(*x->ealg) + keysize, GFP_KERNEL);
++			x->ealg = kmalloc(sizeof(*x->ealg) + keysize, GFP_KERNEL | GFP_SENSITIVE);
+ 			if (!x->ealg)
+ 				goto out;
+ 			strcpy(x->ealg->alg_name, a->name);
+@@ -1267,7 +1267,7 @@ static struct xfrm_state * pfkey_msg2xfr
+ 		struct sadb_x_nat_t_type* n_type;
+ 		struct xfrm_encap_tmpl *natt;
+ 
+-		x->encap = kmalloc(sizeof(*x->encap), GFP_KERNEL);
++		x->encap = kmalloc(sizeof(*x->encap), GFP_KERNEL | GFP_SENSITIVE);
+ 		if (!x->encap)
+ 			goto out;
+ 
