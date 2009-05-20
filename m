@@ -1,65 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755811AbZETIOp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755981AbZETIQl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755811AbZETIOp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 04:14:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754169AbZETIOa
+	id S1755981AbZETIQl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 04:16:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753971AbZETIQ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 04:14:30 -0400
-Received: from hera.kernel.org ([140.211.167.34]:59502 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754081AbZETIO3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 04:14:29 -0400
-Subject: Re: [PATCH -tip] x86: kvm replace MSR_IA32_TIME_STAMP_COUNTER with
- MSR_IA32_TSC of msr-index.h
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Avi Kivity <avi@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>
-In-Reply-To: <4A105BFD.6030309@redhat.com>
-References: <1242031695.8213.17.camel@yhuang-dev.sh.intel.com>
-	 <1242032701.3114.4.camel@localhost.localdomain>
-	 <1242032889.8213.32.camel@yhuang-dev.sh.intel.com>
-	 <1242279010.4574.6.camel@localhost.localdomain>
-	 <1242282442.4574.11.camel@localhost.localdomain>
-	 <1242393125.3082.4.camel@localhost.localdomain>
-	 <4A105BFD.6030309@redhat.com>
-Content-Type: text/plain
-Date: Wed, 20 May 2009 13:42:48 +0530
-Message-Id: <1242807168.3260.54.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Wed, 20 May 2009 04:16:28 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:59592 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753720AbZETIQ1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 04:16:27 -0400
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Xen-devel <xen-devel@lists.xensource.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [GIT PULL] xen /proc/mtrr implementation
+From: Andi Kleen <andi@firstfloor.org>
+References: <1242170864-13560-1-git-send-email-jeremy@goop.org>
+	<20090513133021.GA7277@elte.hu> <4A0ADBA2.2020300@goop.org>
+	<20090515182757.GA19256@elte.hu> <4A0DCC11.10307@goop.org>
+	<m1my9ex818.fsf@fess.ebiederm.org> <4A0DFF78.6000501@goop.org>
+	<20090515202250.0f1218ef@jbarnes-g45>
+	<m1iqk1k708.fsf@fess.ebiederm.org> <4A10EAC4.9070701@goop.org>
+	<20090518085902.GE10687@elte.hu> <4A11A3F8.1010202@goop.org>
+Date: Wed, 20 May 2009 10:16:26 +0200
+In-Reply-To: <4A11A3F8.1010202@goop.org> (Jeremy Fitzhardinge's message of "Mon, 18 May 2009 11:07:52 -0700")
+Message-ID: <87tz3gnq91.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Avi,
+Jeremy Fitzhardinge <jeremy@goop.org> writes:
 
-On Sun, 2009-05-17 at 21:48 +0300, Avi Kivity wrote:
-> Jaswinder Singh Rajput wrote:
-> > If this patch looks sane to you can apply in kvm tree.
-> >
-> > Here is the updated patch based on kvm tree:
-> >
-> > [PATCH] x86: kvm replace MSR_IA32_TIME_STAMP_COUNTER with MSR_IA32_TSC of msr-index.h
-> >
-> > Use standard msr-index.h's MSR declaration.
-> >
-> > MSR_IA32_TSC is better than MSR_IA32_TIME_STAMP_COUNTER as it also solves
-> > 80 column issue.
-> >   
-> 
-> Applied, thanks.
-> 
+> arch/x86 already defines an mtrr_ops, which defines how to manipulate
+> the MTRR registers.  There are currently several implementations of
+> that interface.  In Xen the MTRR registers belong to the hypervisor,
+> but it allows a privileged kernel to modify them via hypercalls. 
 
-BTW, where you applied this patch.
+One part that's unclear to me in this discussion. Could you perhaps
+clarify Jeremy?:
 
-git://git.kernel.org/pub/scm/linux/kernel/git/avi/kvm.git is still
-showing old data.
+Even Dom0 is not continuous in physical memory, but mapped page by page
+except for swiotlb mappings. But MTRRs are fundamentally a way 
+to change attributes for large physically continous mappings. How do these
+two meet?
 
-Thanks,
---
-JSR
+After all when you change a MTRR for a given range of memory
+linux sees as continuous it isn't necessarily in Xen.
 
+Is this new interface only defined for swiotlb or MMIO mappings?
+If yes did you check the drivers only actually set it on
+swiotlb or MMIO (that seems dubious to me)?
+
+-Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
