@@ -1,112 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756304AbZETPst@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756661AbZETPvR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756304AbZETPst (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 11:48:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755175AbZETPsm
+	id S1756661AbZETPvR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 11:51:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753334AbZETPvJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 11:48:42 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:46225 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754722AbZETPsm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 11:48:42 -0400
-Message-ID: <4A14249F.9080105@ds.jp.nec.com>
-Date: Wed, 20 May 2009 11:41:19 -0400
-From: "IKEDA, Munehiro" <m-ikeda@ds.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Wed, 20 May 2009 11:51:09 -0400
+Received: from ey-out-2122.google.com ([74.125.78.25]:21371 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752761AbZETPvI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 11:51:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=M0AkKodr3VU2GBL6sF3irVcR82ieyy6r3Xn16JJlJZaq4zjbBpOIij+E5jnYuoQBG9
+         aWpzeBBC4TpCBUUY8dtUlWy70JDmPtyJM+Yus0lc/qwJ7MEQQfkRAghQK1wEGMoLt6rK
+         jznwyy2u8MZKMnF8N9FdXL2n5xHnw2xocdsxw=
+Message-ID: <4A1426EB.5080506@gmail.com>
+Date: Wed, 20 May 2009 17:51:07 +0200
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090302)
 MIME-Version: 1.0
-To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-CC: Vivek Goyal <vgoyal@redhat.com>, nauman@google.com, dpshah@google.com,
-       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
-       paolo.valente@unimore.it, jens.axboe@oracle.com, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       righi.andrea@gmail.com, agk@redhat.com, dm-devel@redhat.com,
-       snitzer@redhat.com, akpm@linux-foundation.org
-Subject: Re: [PATCH] IO Controller: Add per-device weight and ioprio_class
- handling
-References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com> <4A0A29B5.7030109@cn.fujitsu.com> <20090513190929.GB18371@redhat.com> <4A0BC7AB.8030703@cn.fujitsu.com> <4A11E244.2000305@ds.jp.nec.com> <4A136090.5090705@cn.fujitsu.com>
-In-Reply-To: <4A136090.5090705@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: ben-linux@fluff.org
+CC: lkml <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] S3C: beyond ARRAY_SIZE of s3c_gpios
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gui Jianfeng wrote:
-> IKEDA, Munehiro wrote:
->> Hi Gui,
->>
->> Gui Jianfeng wrote:
->>> Hi Vivek,
->>>
->>> This patch enables per-cgroup per-device weight and ioprio_class
->>> handling.
->>> A new cgroup interface "policy" is introduced. You can make use of
->>> this file to configure weight and ioprio_class for each device in a
->>> given cgroup.
->>> The original "weight" and "ioprio_class" files are still available. If
->>> you
->>> don't do special configuration for a particular device, "weight" and
->>> "ioprio_class" are used as default values in this device.
->>>
->>> You can use the following format to play with the new interface.
->>> #echo DEV:weight:ioprio_class > /patch/to/cgroup/policy
->>> weight=0 means removing the policy for DEV.
->>>
->>> Examples:
->>> Configure weight=300 ioprio_class=2 on /dev/hdb in this cgroup
->>> # echo /dev/hdb:300:2 > io.policy
->>> # cat io.policy
->>> dev weight class
->>> /dev/hdb 300 2
->> Users can specify a device file of a partition for io.policy.
->> In this case, io_policy_node::dev_name is set as a name of the
->> partition device like /dev/sda2.
->>
->> ex)
->>  # cd /mnt/cgroup
->>  # cat /dev/sda2:500:2 > io.policy
->>  # echo io.policy
->>    dev weight class
->>    /dev/sda2 500 2
->>
->> I believe io_policy_node::dev_name should be set a generic
->> device name like /dev/sda.
->> What do you think about it?
-> 
->   Hi Ikeda-san,
-> 
->   Sorry for the late reply. Thanks for pointing this out. 
->   yes, it does the right thing but shows a wrong name. 
->   IMHO, Inputing a sigle partition should not be allowed since the
->   policy is disk basis. So how about the following patch?
-> 
-> Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-> ---
-> diff --git a/block/elevator-fq.c b/block/elevator-fq.c
-> index 1a0ca07..b620768 100644
-> --- a/block/elevator-fq.c
-> +++ b/block/elevator-fq.c
-> @@ -1650,6 +1650,9 @@ static int devname_to_devnum(const char *buf, dev_t *dev)
->  		return -ENODEV;
->  
->  	disk = get_gendisk(bdev->bd_dev, &part);
-> +	if (part)
-> +		return -EINVAL;
-> +
->  	*dev = MKDEV(disk->major, disk->first_minor);
->  	bdput(bdev);
-> 
+Do not go beyond ARRAY_SIZE of s3c_gpios
 
-It looks nicer and reasonable for me.
-Thanks!
-
-
-
--- 
-IKEDA, Munehiro
- NEC Corporation of America
-   m-ikeda@ds.jp.nec.com
-
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+diff --git a/arch/arm/plat-s3c/gpio.c b/arch/arm/plat-s3c/gpio.c
+index d71dd6d..29926c1 100644
+--- a/arch/arm/plat-s3c/gpio.c
++++ b/arch/arm/plat-s3c/gpio.c
+@@ -28,7 +28,7 @@ static __init void s3c_gpiolib_track(struct s3c_gpio_chip *chip)
+ 
+ 	gpn = chip->chip.base;
+ 	for (i = 0; i < chip->chip.ngpio; i++, gpn++) {
+-		BUG_ON(gpn > ARRAY_SIZE(s3c_gpios));
++		BUG_ON(gpn >= ARRAY_SIZE(s3c_gpios));
+ 		s3c_gpios[gpn] = chip;
+ 	}
+ }
 
