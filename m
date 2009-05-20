@@ -1,52 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756661AbZETPvR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755059AbZETQCR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756661AbZETPvR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 11:51:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753334AbZETPvJ
+	id S1755059AbZETQCR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 12:02:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753334AbZETQCF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 11:51:09 -0400
-Received: from ey-out-2122.google.com ([74.125.78.25]:21371 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752761AbZETPvI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 11:51:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=M0AkKodr3VU2GBL6sF3irVcR82ieyy6r3Xn16JJlJZaq4zjbBpOIij+E5jnYuoQBG9
-         aWpzeBBC4TpCBUUY8dtUlWy70JDmPtyJM+Yus0lc/qwJ7MEQQfkRAghQK1wEGMoLt6rK
-         jznwyy2u8MZKMnF8N9FdXL2n5xHnw2xocdsxw=
-Message-ID: <4A1426EB.5080506@gmail.com>
-Date: Wed, 20 May 2009 17:51:07 +0200
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090302)
+	Wed, 20 May 2009 12:02:05 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:42194 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753013AbZETQCE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 12:02:04 -0400
+Date: Wed, 20 May 2009 17:57:15 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Vitaly Mayatskikh <v.mayatskih@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/5] Split wait_noreap_copyout()
+Message-ID: <20090520155715.GA23682@redhat.com>
+References: <1242048349-2766-1-git-send-email-v.mayatskih@gmail.com> <1242048349-2766-2-git-send-email-v.mayatskih@gmail.com> <87tz3fssv1.wl%vmayatsk@redhat.com>
 MIME-Version: 1.0
-To: ben-linux@fluff.org
-CC: lkml <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] S3C: beyond ARRAY_SIZE of s3c_gpios
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87tz3fssv1.wl%vmayatsk@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Do not go beyond ARRAY_SIZE of s3c_gpios
+On 05/20, Vitaly Mayatskikh wrote:
+>
+> At Mon, 11 May 2009 15:25:50 +0200, Vitaly Mayatskikh wrote:
+> >
+> Oleg has pointed me to broken behaviour here. Previously
+> wait_noreap_copyout was doing unconditional put_user and was returning
+> EFAULT when infop is NULL. Now it uses copy_wait_opts_to_user, which
+> checks infop and return NULL in the same case. This change is visible
+> from userspace in waitid() function.
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-diff --git a/arch/arm/plat-s3c/gpio.c b/arch/arm/plat-s3c/gpio.c
-index d71dd6d..29926c1 100644
---- a/arch/arm/plat-s3c/gpio.c
-+++ b/arch/arm/plat-s3c/gpio.c
-@@ -28,7 +28,7 @@ static __init void s3c_gpiolib_track(struct s3c_gpio_chip *chip)
- 
- 	gpn = chip->chip.base;
- 	for (i = 0; i < chip->chip.ngpio; i++, gpn++) {
--		BUG_ON(gpn > ARRAY_SIZE(s3c_gpios));
-+		BUG_ON(gpn >= ARRAY_SIZE(s3c_gpios));
- 		s3c_gpios[gpn] = chip;
- 	}
- }
+To me, this behaviour change looks like the cleanup (if not fix) too.
+But of course, this should be discussed and at least documented in the
+changelog.
+
+do_wait() && infop interaction is really strange before the patch.
+
+When do_wait() is called without WNOWAIT, then infop == NULL is fine.
+
+If WNOWAIT is set, we return -EFAULT. Except in WCONTINUED case
+infop == NULL is fine again.
+
+
+Can somebody explain what is the supposed behaviour?
+
+
+Otherwise, in my opinion this series realy makes the code better,
+and afaics it allows to simplify the code more.
+
+Oleg.
 
