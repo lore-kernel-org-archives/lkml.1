@@ -1,97 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755374AbZETKcb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755930AbZETKcn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755374AbZETKcb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 06:32:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756773AbZETKcO
+	id S1755930AbZETKcn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 06:32:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757259AbZETKcc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 06:32:14 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:49503 "EHLO gir.skynet.ie"
+	Wed, 20 May 2009 06:32:32 -0400
+Received: from www.tglx.de ([62.245.132.106]:50960 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757149AbZETKcM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 06:32:12 -0400
-Date: Wed, 20 May 2009 11:32:08 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Minchan Kim <minchan.kim@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>, Johannes Weiner <hannes@cmpxchg.org>
-Subject: Re: [PATCH 3/3] reset wmark_min and inactive ratio of zone when
-	hotplug happens
-Message-ID: <20090520103207.GC12433@csn.ul.ie>
-References: <20090520162001.3f3bbe5c.minchan.kim@barrios-desktop>
+	id S1757265AbZETKcb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 06:32:31 -0400
+Date: Wed, 20 May 2009 12:31:36 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Anton Blanchard <anton@samba.org>
+cc: rostedt@goodmis.org, mingo@elte.hu, tzanussi@gmail.com, jbaron@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] tracing/events: Add timer and high res timer
+ tracepoints
+In-Reply-To: <20090520101334.GA23442@kryten>
+Message-ID: <alpine.LFD.2.00.0905201229280.5983@localhost.localdomain>
+References: <20090520101334.GA23442@kryten>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20090520162001.3f3bbe5c.minchan.kim@barrios-desktop>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 20, 2009 at 04:20:01PM +0900, Minchan Kim wrote:
-> This patch solve two problems.
+On Wed, 20 May 2009, Anton Blanchard wrote:
 > 
-> Whenever memory hotplug sucessfully happens, zone->present_pages
-> have to be changed.
+> Add tracepoints for timer and high res timer execution. We add entry and
+> exit tracepoints so we can calculate timer latency.
 > 
-> 1) Now, memory hotplug calls setup_per_zone_wmark_min only when
-> online_pages called, not offline_pages.
+> Example ftrace output:
 > 
-> It breaks balance.
+> <idle>-0     [000]   264.040506: hrtimer_entry: func=.tick_sched_timer+0x0/0xf0
+> <idle>-0     [000]   264.040508: hrtimer_exit: func=.tick_sched_timer+0x0/0xf0 restart=HRTIMER_RESTART
+> <idle>-0     [000]   264.040530: timer_entry: func=.e1000_watchdog+0x0/0x8fc
+> <idle>-0     [000]   264.040728: timer_exit: func=.e1000_watchdog+0x0/0x8fc
 > 
+> Here we can see e1000_watchdog is taking 0.2ms - it might make sense to
+> move this into a workqueue or kernel thread.
 
-Very true.
+Cute. That should help us to pinpoint more such timer abusers :)
 
-> 2) If zone->present_pages is changed, we also have to change
-> zone->inactive_ratio. That's because inactive_ratio depends
-> on zone->present_pages.
-> 
-> CC: Mel Gorman <mel@csn.ul.ie>
-> CC: Rik van Riel <riel@redhat.com>
-> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> CC: Johannes Weiner <hannes@cmpxchg.org>
-> Signed-off-by: Minchan Kim <minchan.kim@gmail.com>
-> ---
->  mm/memory_hotplug.c |    4 ++++
->  1 files changed, 4 insertions(+), 0 deletions(-)
-> 
-> diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-> index 40bf385..1611010 100644
-> --- a/mm/memory_hotplug.c
-> +++ b/mm/memory_hotplug.c
-> @@ -423,6 +423,7 @@ int online_pages(unsigned long pfn, unsigned long nr_pages)
->  	zone->zone_pgdat->node_present_pages += onlined_pages;
->  
->  	setup_per_zone_wmark_min();
-> +	calculate_per_zone_inactive_ratio(zone);
->  	if (onlined_pages) {
->  		kswapd_run(zone_to_nid(zone));
->  		node_set_state(zone_to_nid(zone), N_HIGH_MEMORY);
-> @@ -832,6 +833,9 @@ repeat:
->  	totalram_pages -= offlined_pages;
->  	num_physpages -= offlined_pages;
->  
-> +	setup_per_zone_wmark_min();
-> +	calculate_per_zone_inactive_ratio(zone);
-> +
->  	vm_total_pages = nr_free_pagecache_pages();
->  	writeback_set_ratelimit();
->  
+> Signed-off-by: Anton Blanchard <anton@samba.org>
 
-Seems sensible.;
-
-> -- 
-> 1.5.4.3
-> 
-> 
-> 
-> -- 
-> Kinds Regards
-> Minchan Kim
-> 
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Acked-by: Thomas Gleixner <tglx@linutronix.de>
