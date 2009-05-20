@@ -1,123 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755332AbZETKrt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755813AbZETKtE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755332AbZETKrt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 06:47:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753713AbZETKrm
+	id S1755813AbZETKtE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 06:49:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753713AbZETKsu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 06:47:42 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:33435 "EHLO gir.skynet.ie"
+	Wed, 20 May 2009 06:48:50 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:54770 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753408AbZETKrl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 06:47:41 -0400
-Date: Wed, 20 May 2009 11:47:39 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Minchan Kim <minchan.kim@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>, Johannes Weiner <hannes@cmpxchg.org>
-Subject: Re: [PATCH 1/3] clean up setup_per_zone_pages_min
-Message-ID: <20090520104739.GD12433@csn.ul.ie>
-References: <20090520161853.1bfd415c.minchan.kim@barrios-desktop> <20090520085416.GA27056@csn.ul.ie> <20090520185803.e5b0698a.minchan.kim@barrios-desktop> <20090520102129.GA12433@csn.ul.ie> <20090520193045.2070f7fa.minchan.kim@barrios-desktop>
+	id S1753013AbZETKst (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 06:48:49 -0400
+Date: Wed, 20 May 2009 12:48:33 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Paul Mackerras <paulus@samba.org>,
+       Corey Ashford <cjashfor@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       John Kacur <jkacur@redhat.com>
+Subject: Re: [PATCH 0/4] perf counter bits
+Message-ID: <20090520104833.GA11520@elte.hu>
+References: <20090520102118.377477360@chello.nl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090520193045.2070f7fa.minchan.kim@barrios-desktop>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20090520102118.377477360@chello.nl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0011]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 20, 2009 at 07:30:45PM +0900, Minchan Kim wrote:
-> On Wed, 20 May 2009 11:21:29 +0100
-> Mel Gorman <mel@csn.ul.ie> wrote:
-> 
-> > On Wed, May 20, 2009 at 06:58:03PM +0900, Minchan Kim wrote:
-> > > Hi, Mel. 
-> > > 
-> > > On Wed, 20 May 2009 09:54:16 +0100
-> > > Mel Gorman <mel@csn.ul.ie> wrote:
-> > > 
-> > > > On Wed, May 20, 2009 at 04:18:53PM +0900, Minchan Kim wrote:
-> > > > > 
-> > > > > Mel changed zone->pages_[high/low/min] with zone->watermark array.
-> > > > > So, setup_per_zone_pages_min also have to be changed.
-> > > > > 
-> > > > 
-> > > > Just to be clear, this is a function renaming to match the new zone
-> > > > field name, not something I missed. As the function changes min, low and
-> > > > max, a better name might have been setup_per_zone_watermarks but whether
-> > > 
-> > > At first, I thouht, too. But It's handle of min_free_kbytes.
-> > > Documentation said, it's to compute a watermark[WMARK_MIN]. 
-> > > I think many people already used that knob to contorl pages_min to keep the 
-> > > low pages. 
-> > 
-> > Which documentation?
-> 
-> Documentation/sysctl/vm.txt - min_free_kbytes.
-> 
 
-That documentation states
+Applied to tip:perfcounters/core, thanks Peter!
 
-==== 
-This is used to force the Linux VM to keep a minimum number
-of kilobytes free.  The VM uses this number to compute a pages_min
-value for each lowmem zone in the system.  Each lowmem zone gets
-a number of reserved free pages based proportionally on its size.
-====
-
-This is true. It just happens in the implementation that sets pages_min
-(or it's renamed value) also sets the low and high watermarks are also set
-based on the value of the minimum value. It doesn't need to be updated.
-
-> > I'm looking at the function comment and see
-> > 
-> >  * setup_per_zone_pages_min - called when min_free_kbytes changes.
-> >  *
-> >  * Ensures that the pages_{min,low,high} values for each zone are set
-> >  * correctly with respect to min_free_kbytes.
-> > 
-> > So, the values of all the watermarks are updated by that function depending
-> > on what the new value of min_free_kbytes is. It is a bit wrong I suppose as
-> > it missed memory hot-add
-> > 
-> > setup_per_zone_pages_min - called when min_free_kbytes changes or when memory is hot-added
-> 
-> God!. I changed this function's comments with memory hot plug. 
-> With my mistake, My patch 3/3 lost it. 
-> I will add comment about memory hotplug.
-> 
-> Thanks for pointing me out. :)
-> 
-> 
-> > > 
-> > > So, I determined function name is proper now. 
-> > > If setup_per_zone_watermark is better than it, we also have to change with 
-> > > documentation. 
-> > > 
-> > > > you go with that name or not, this is better than what is there so;
-> > > > 
-> > > > Acked-by: Mel Gorman <mel@csn.ul.ie>
-> > > 
-> > > 
-> > > -- 
-> > > Kinds Regards
-> > > Minchan Kim
-> > > 
-> > 
-> > -- 
-> > Mel Gorman
-> > Part-time Phd Student                          Linux Technology Center
-> > University of Limerick                         IBM Dublin Software Lab
-> 
-> 
-> -- 
-> Kinds Regards
-> Minchan Kim
-> 
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+	Ingo
