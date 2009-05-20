@@ -1,85 +1,444 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756632AbZETJSL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756731AbZETJS0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756632AbZETJSL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 05:18:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755385AbZETJR6
+	id S1756731AbZETJS0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 05:18:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756615AbZETJSF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 05:17:58 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:57106 "EHLO mx2.redhat.com"
+	Wed, 20 May 2009 05:18:05 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:60674 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755025AbZETJR5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 05:17:57 -0400
-Message-ID: <4A13CABB.9010000@redhat.com>
-Date: Wed, 20 May 2009 12:17:47 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	id S1755327AbZETJSA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 05:18:00 -0400
+Date: Wed, 20 May 2009 11:17:58 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, x86@kernel.org,
+       ink@jurassic.park.msu.ru, rth@twiddle.net, linux@arm.linux.org.uk,
+       hskinnemoen@atmel.com, cooloney@kernel.org, starvik@axis.com,
+       jesper.nilsson@axis.com, dhowells@redhat.com,
+       ysato@users.sourceforge.jp, tony.luck@intel.com, takata@linux-m32r.org,
+       geert@linux-m68k.org, monstr@monstr.eu, ralf@linux-mips.org,
+       kyle@mcmartin.ca, benh@kernel.crashing.org, paulus@samba.org,
+       schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com, lethal@linux-sh.org,
+       davem@davemloft.net, jdike@addtoit.com, chris@zankel.net,
+       rusty@rustcorp.com.au, Dave Jones <davej@redhat.com>,
+       Jeremy Fitzhardinge <jeremy@xensource.com>,
+       linux-mm <linux-mm@kvack.org>
+Subject: Re: [PATCH 3/7] percpu: clean up percpu variable definitions
+Message-ID: <20090520091758.GO11363@kernel.dk>
+References: <1242805059-18338-1-git-send-email-tj@kernel.org> <1242805059-18338-4-git-send-email-tj@kernel.org>
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Mark Langsdorf <mark.langsdorf@amd.com>,
-       Joerg Roedel <joerg.roedel@amd.com>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH][KVM][retry 3] Add support for Pause Filtering to AMD
- SVM
-References: <200905050909.58583.mark.langsdorf@amd.com>	 <200905071000.14038.mark.langsdorf@amd.com>	 <200905081203.55484.mark.langsdorf@amd.com>	 <200905191356.37071.mark.langsdorf@amd.com>	 <1242806386.26820.549.camel@twins>  <4A13C199.5020400@redhat.com>	 <1242808954.26820.556.camel@twins>  <4A13C40B.8080608@redhat.com>	 <1242809657.26820.559.camel@twins>  <4A13C7B0.10507@redhat.com> <1242810616.26820.562.camel@twins>
-In-Reply-To: <1242810616.26820.562.camel@twins>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1242805059-18338-4-git-send-email-tj@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
->>>> It's a fully virtualized guest.  There's no way to get this without 
->>>> patching the guest kernel.
->>>>     
->>>>         
->>> Yes there is.. virtualized monitor-wait stuff coupled with a
->>> monitor-wait based spinlock implementation.
->>>   
->>>       
->> That only works if the guest uses monitor/mwait.  Not all of the guests 
->> are under our control.  I don't know whether Windows uses 
->> monitor/mwait.  Further, we don't have timed exits on mwait like we do 
->> with pause.
->>     
->
-> Ugh, you really care about crap like windows?
->   
+On Wed, May 20 2009, Tejun Heo wrote:
+> Percpu variable definition is about to be updated such that
+> 
+> * percpu symbols must be unique even the static ones
+> 
+> * in-function static definition is not allowed
+> 
+> Update percpu variable definitions accoringly.
+> 
+> * as,cfq: rename ioc_count uniquely
+> 
+> * cpufreq: rename cpu_dbs_info uniquely
+> 
+> * xen: move nesting_count out of xen_evtchn_do_upcall() and rename it
+> 
+> * mm: move ratelimits out of balance_dirty_pages_ratelimited_nr() and
+>   rename it
+> 
+> * ipv4,6: rename cookie_scratch uniquely
+> 
+> While at it, make cris:use DECLARE_PER_CPU() instead of extern
+> volatile DEFINE_PER_CPU() for declaration.
+> 
+> [ Impact: percpu usage cleanups, no duplicate static percpu var names ]
 
-Yes, it is used by my users.  Either we convince them not to use 
-Windows, or we find a way to support it well.
+The block bits looks fine.
 
->> I've also heard that monitor/mwait are very slow and only usable on idle 
->> loop stuff.
->>     
->
-> Yeah, current implementations suck, doesn't mean it has to stay that
-> way.
->   
+Acked-by: Jens Axboe <jens.axboe@oracle.com>
 
-Well, I'm not speculating on future cpu changes.  I'd like to support 
-current and near-future software and hardware, not how it should have 
-been done software running on how it should have been done hardware.
-
->>> Once we go change silicon, you might as well do it right.
->>>   
->>>       
->> None of the major x86 vendors are under my control.
->>     
->
-> I thought this patch came from AMD, who changed their silicon so 'solve'
-> one of these virt problems.
->   
-
-They changed the silicon to support existing guests.  For both Linux and 
-Windows, the pause instruction is the only indication the guest is spinning.
-
-> /me goes hide again, and pretend all of virt doesn't exist :-) Think
-> happy thoughts.
->   
-
-You'll end up running permanently in a guest, with no way out.
+> 
+> Signed-off-by: Tejun Heo <tj@kernel.org>
+> Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+> Cc: Jens Axboe <jens.axboe@oracle.com>
+> Cc: Dave Jones <davej@redhat.com>
+> Cc: Jeremy Fitzhardinge <jeremy@xensource.com>
+> Cc: linux-mm <linux-mm@kvack.org>
+> Cc: David S. Miller <davem@davemloft.net>
+> ---
+>  arch/cris/include/asm/mmu_context.h    |    2 +-
+>  block/as-iosched.c                     |   10 +++++-----
+>  block/cfq-iosched.c                    |   10 +++++-----
+>  drivers/cpufreq/cpufreq_conservative.c |   12 ++++++------
+>  drivers/cpufreq/cpufreq_ondemand.c     |   15 ++++++++-------
+>  drivers/xen/events.c                   |    9 +++++----
+>  mm/page-writeback.c                    |    5 +++--
+>  net/ipv4/syncookies.c                  |    4 ++--
+>  net/ipv6/syncookies.c                  |    4 ++--
+>  9 files changed, 37 insertions(+), 34 deletions(-)
+> 
+> diff --git a/arch/cris/include/asm/mmu_context.h b/arch/cris/include/asm/mmu_context.h
+> index 72ba08d..00de1a0 100644
+> --- a/arch/cris/include/asm/mmu_context.h
+> +++ b/arch/cris/include/asm/mmu_context.h
+> @@ -17,7 +17,7 @@ extern void switch_mm(struct mm_struct *prev, struct mm_struct *next,
+>   * registers like cr3 on the i386
+>   */
+>  
+> -extern volatile DEFINE_PER_CPU(pgd_t *,current_pgd); /* defined in arch/cris/mm/fault.c */
+> +DECLARE_PER_CPU(pgd_t *,current_pgd); /* defined in arch/cris/mm/fault.c */
+>  
+>  static inline void enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk)
+>  {
+> diff --git a/block/as-iosched.c b/block/as-iosched.c
+> index c48fa67..96ff4d1 100644
+> --- a/block/as-iosched.c
+> +++ b/block/as-iosched.c
+> @@ -146,7 +146,7 @@ enum arq_state {
+>  #define RQ_STATE(rq)	((enum arq_state)(rq)->elevator_private2)
+>  #define RQ_SET_STATE(rq, state)	((rq)->elevator_private2 = (void *) state)
+>  
+> -static DEFINE_PER_CPU(unsigned long, ioc_count);
+> +static DEFINE_PER_CPU(unsigned long, as_ioc_count);
+>  static struct completion *ioc_gone;
+>  static DEFINE_SPINLOCK(ioc_gone_lock);
+>  
+> @@ -161,7 +161,7 @@ static void as_antic_stop(struct as_data *ad);
+>  static void free_as_io_context(struct as_io_context *aic)
+>  {
+>  	kfree(aic);
+> -	elv_ioc_count_dec(ioc_count);
+> +	elv_ioc_count_dec(as_ioc_count);
+>  	if (ioc_gone) {
+>  		/*
+>  		 * AS scheduler is exiting, grab exit lock and check
+> @@ -169,7 +169,7 @@ static void free_as_io_context(struct as_io_context *aic)
+>  		 * complete ioc_gone and set it back to NULL.
+>  		 */
+>  		spin_lock(&ioc_gone_lock);
+> -		if (ioc_gone && !elv_ioc_count_read(ioc_count)) {
+> +		if (ioc_gone && !elv_ioc_count_read(as_ioc_count)) {
+>  			complete(ioc_gone);
+>  			ioc_gone = NULL;
+>  		}
+> @@ -211,7 +211,7 @@ static struct as_io_context *alloc_as_io_context(void)
+>  		ret->seek_total = 0;
+>  		ret->seek_samples = 0;
+>  		ret->seek_mean = 0;
+> -		elv_ioc_count_inc(ioc_count);
+> +		elv_ioc_count_inc(as_ioc_count);
+>  	}
+>  
+>  	return ret;
+> @@ -1509,7 +1509,7 @@ static void __exit as_exit(void)
+>  	ioc_gone = &all_gone;
+>  	/* ioc_gone's update must be visible before reading ioc_count */
+>  	smp_wmb();
+> -	if (elv_ioc_count_read(ioc_count))
+> +	if (elv_ioc_count_read(as_ioc_count))
+>  		wait_for_completion(&all_gone);
+>  	synchronize_rcu();
+>  }
+> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+> index a55a9bd..deea748 100644
+> --- a/block/cfq-iosched.c
+> +++ b/block/cfq-iosched.c
+> @@ -48,7 +48,7 @@ static int cfq_slice_idle = HZ / 125;
+>  static struct kmem_cache *cfq_pool;
+>  static struct kmem_cache *cfq_ioc_pool;
+>  
+> -static DEFINE_PER_CPU(unsigned long, ioc_count);
+> +static DEFINE_PER_CPU(unsigned long, cfq_ioc_count);
+>  static struct completion *ioc_gone;
+>  static DEFINE_SPINLOCK(ioc_gone_lock);
+>  
+> @@ -1423,7 +1423,7 @@ static void cfq_cic_free_rcu(struct rcu_head *head)
+>  	cic = container_of(head, struct cfq_io_context, rcu_head);
+>  
+>  	kmem_cache_free(cfq_ioc_pool, cic);
+> -	elv_ioc_count_dec(ioc_count);
+> +	elv_ioc_count_dec(cfq_ioc_count);
+>  
+>  	if (ioc_gone) {
+>  		/*
+> @@ -1432,7 +1432,7 @@ static void cfq_cic_free_rcu(struct rcu_head *head)
+>  		 * complete ioc_gone and set it back to NULL
+>  		 */
+>  		spin_lock(&ioc_gone_lock);
+> -		if (ioc_gone && !elv_ioc_count_read(ioc_count)) {
+> +		if (ioc_gone && !elv_ioc_count_read(cfq_ioc_count)) {
+>  			complete(ioc_gone);
+>  			ioc_gone = NULL;
+>  		}
+> @@ -1558,7 +1558,7 @@ cfq_alloc_io_context(struct cfq_data *cfqd, gfp_t gfp_mask)
+>  		INIT_HLIST_NODE(&cic->cic_list);
+>  		cic->dtor = cfq_free_io_context;
+>  		cic->exit = cfq_exit_io_context;
+> -		elv_ioc_count_inc(ioc_count);
+> +		elv_ioc_count_inc(cfq_ioc_count);
+>  	}
+>  
+>  	return cic;
+> @@ -2663,7 +2663,7 @@ static void __exit cfq_exit(void)
+>  	 * this also protects us from entering cfq_slab_kill() with
+>  	 * pending RCU callbacks
+>  	 */
+> -	if (elv_ioc_count_read(ioc_count))
+> +	if (elv_ioc_count_read(cfq_ioc_count))
+>  		wait_for_completion(&all_gone);
+>  	cfq_slab_kill();
+>  }
+> diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
+> index 2ecd95e..e0faa3e 100644
+> --- a/drivers/cpufreq/cpufreq_conservative.c
+> +++ b/drivers/cpufreq/cpufreq_conservative.c
+> @@ -80,7 +80,7 @@ struct cpu_dbs_info_s {
+>  	int cpu;
+>  	unsigned int enable:1;
+>  };
+> -static DEFINE_PER_CPU(struct cpu_dbs_info_s, cpu_dbs_info);
+> +static DEFINE_PER_CPU(struct cpu_dbs_info_s, cs_cpu_dbs_info);
+>  
+>  static unsigned int dbs_enable;	/* number of CPUs using this policy */
+>  
+> @@ -150,7 +150,7 @@ dbs_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
+>  		     void *data)
+>  {
+>  	struct cpufreq_freqs *freq = data;
+> -	struct cpu_dbs_info_s *this_dbs_info = &per_cpu(cpu_dbs_info,
+> +	struct cpu_dbs_info_s *this_dbs_info = &per_cpu(cs_cpu_dbs_info,
+>  							freq->cpu);
+>  
+>  	struct cpufreq_policy *policy;
+> @@ -323,7 +323,7 @@ static ssize_t store_ignore_nice_load(struct cpufreq_policy *policy,
+>  	/* we need to re-evaluate prev_cpu_idle */
+>  	for_each_online_cpu(j) {
+>  		struct cpu_dbs_info_s *dbs_info;
+> -		dbs_info = &per_cpu(cpu_dbs_info, j);
+> +		dbs_info = &per_cpu(cs_cpu_dbs_info, j);
+>  		dbs_info->prev_cpu_idle = get_cpu_idle_time(j,
+>  						&dbs_info->prev_cpu_wall);
+>  		if (dbs_tuners_ins.ignore_nice)
+> @@ -413,7 +413,7 @@ static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
+>  		cputime64_t cur_wall_time, cur_idle_time;
+>  		unsigned int idle_time, wall_time;
+>  
+> -		j_dbs_info = &per_cpu(cpu_dbs_info, j);
+> +		j_dbs_info = &per_cpu(cs_cpu_dbs_info, j);
+>  
+>  		cur_idle_time = get_cpu_idle_time(j, &cur_wall_time);
+>  
+> @@ -553,7 +553,7 @@ static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+>  	unsigned int j;
+>  	int rc;
+>  
+> -	this_dbs_info = &per_cpu(cpu_dbs_info, cpu);
+> +	this_dbs_info = &per_cpu(cs_cpu_dbs_info, cpu);
+>  
+>  	switch (event) {
+>  	case CPUFREQ_GOV_START:
+> @@ -573,7 +573,7 @@ static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+>  
+>  		for_each_cpu(j, policy->cpus) {
+>  			struct cpu_dbs_info_s *j_dbs_info;
+> -			j_dbs_info = &per_cpu(cpu_dbs_info, j);
+> +			j_dbs_info = &per_cpu(cs_cpu_dbs_info, j);
+>  			j_dbs_info->cur_policy = policy;
+>  
+>  			j_dbs_info->prev_cpu_idle = get_cpu_idle_time(j,
+> diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
+> index 338f428..2eaf88f 100644
+> --- a/drivers/cpufreq/cpufreq_ondemand.c
+> +++ b/drivers/cpufreq/cpufreq_ondemand.c
+> @@ -87,7 +87,7 @@ struct cpu_dbs_info_s {
+>  	unsigned int enable:1,
+>  		sample_type:1;
+>  };
+> -static DEFINE_PER_CPU(struct cpu_dbs_info_s, cpu_dbs_info);
+> +static DEFINE_PER_CPU(struct cpu_dbs_info_s, od_cpu_dbs_info);
+>  
+>  static unsigned int dbs_enable;	/* number of CPUs using this policy */
+>  
+> @@ -162,7 +162,8 @@ static unsigned int powersave_bias_target(struct cpufreq_policy *policy,
+>  	unsigned int freq_hi, freq_lo;
+>  	unsigned int index = 0;
+>  	unsigned int jiffies_total, jiffies_hi, jiffies_lo;
+> -	struct cpu_dbs_info_s *dbs_info = &per_cpu(cpu_dbs_info, policy->cpu);
+> +	struct cpu_dbs_info_s *dbs_info = &per_cpu(od_cpu_dbs_info,
+> +						   policy->cpu);
+>  
+>  	if (!dbs_info->freq_table) {
+>  		dbs_info->freq_lo = 0;
+> @@ -207,7 +208,7 @@ static void ondemand_powersave_bias_init(void)
+>  {
+>  	int i;
+>  	for_each_online_cpu(i) {
+> -		struct cpu_dbs_info_s *dbs_info = &per_cpu(cpu_dbs_info, i);
+> +		struct cpu_dbs_info_s *dbs_info = &per_cpu(od_cpu_dbs_info, i);
+>  		dbs_info->freq_table = cpufreq_frequency_get_table(i);
+>  		dbs_info->freq_lo = 0;
+>  	}
+> @@ -322,7 +323,7 @@ static ssize_t store_ignore_nice_load(struct cpufreq_policy *policy,
+>  	/* we need to re-evaluate prev_cpu_idle */
+>  	for_each_online_cpu(j) {
+>  		struct cpu_dbs_info_s *dbs_info;
+> -		dbs_info = &per_cpu(cpu_dbs_info, j);
+> +		dbs_info = &per_cpu(od_cpu_dbs_info, j);
+>  		dbs_info->prev_cpu_idle = get_cpu_idle_time(j,
+>  						&dbs_info->prev_cpu_wall);
+>  		if (dbs_tuners_ins.ignore_nice)
+> @@ -416,7 +417,7 @@ static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
+>  		unsigned int load, load_freq;
+>  		int freq_avg;
+>  
+> -		j_dbs_info = &per_cpu(cpu_dbs_info, j);
+> +		j_dbs_info = &per_cpu(od_cpu_dbs_info, j);
+>  
+>  		cur_idle_time = get_cpu_idle_time(j, &cur_wall_time);
+>  
+> @@ -573,7 +574,7 @@ static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+>  	unsigned int j;
+>  	int rc;
+>  
+> -	this_dbs_info = &per_cpu(cpu_dbs_info, cpu);
+> +	this_dbs_info = &per_cpu(od_cpu_dbs_info, cpu);
+>  
+>  	switch (event) {
+>  	case CPUFREQ_GOV_START:
+> @@ -595,7 +596,7 @@ static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+>  
+>  		for_each_cpu(j, policy->cpus) {
+>  			struct cpu_dbs_info_s *j_dbs_info;
+> -			j_dbs_info = &per_cpu(cpu_dbs_info, j);
+> +			j_dbs_info = &per_cpu(od_cpu_dbs_info, j);
+>  			j_dbs_info->cur_policy = policy;
+>  
+>  			j_dbs_info->prev_cpu_idle = get_cpu_idle_time(j,
+> diff --git a/drivers/xen/events.c b/drivers/xen/events.c
+> index 30963af..4dbe5c0 100644
+> --- a/drivers/xen/events.c
+> +++ b/drivers/xen/events.c
+> @@ -596,6 +596,8 @@ irqreturn_t xen_debug_interrupt(int irq, void *dev_id)
+>  	return IRQ_HANDLED;
+>  }
+>  
+> +static DEFINE_PER_CPU(unsigned, xed_nesting_count);
+> +
+>  /*
+>   * Search the CPUs pending events bitmasks.  For each one found, map
+>   * the event number to an irq, and feed it into do_IRQ() for
+> @@ -611,7 +613,6 @@ void xen_evtchn_do_upcall(struct pt_regs *regs)
+>  	struct pt_regs *old_regs = set_irq_regs(regs);
+>  	struct shared_info *s = HYPERVISOR_shared_info;
+>  	struct vcpu_info *vcpu_info = __get_cpu_var(xen_vcpu);
+> -	static DEFINE_PER_CPU(unsigned, nesting_count);
+>   	unsigned count;
+>  
+>  	exit_idle();
+> @@ -622,7 +623,7 @@ void xen_evtchn_do_upcall(struct pt_regs *regs)
+>  
+>  		vcpu_info->evtchn_upcall_pending = 0;
+>  
+> -		if (__get_cpu_var(nesting_count)++)
+> +		if (__get_cpu_var(xed_nesting_count)++)
+>  			goto out;
+>  
+>  #ifndef CONFIG_X86 /* No need for a barrier -- XCHG is a barrier on x86. */
+> @@ -647,8 +648,8 @@ void xen_evtchn_do_upcall(struct pt_regs *regs)
+>  
+>  		BUG_ON(!irqs_disabled());
+>  
+> -		count = __get_cpu_var(nesting_count);
+> -		__get_cpu_var(nesting_count) = 0;
+> +		count = __get_cpu_var(xed_nesting_count);
+> +		__get_cpu_var(xed_nesting_count) = 0;
+>  	} while(count != 1);
+>  
+>  out:
+> diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+> index bb553c3..0e0c9de 100644
+> --- a/mm/page-writeback.c
+> +++ b/mm/page-writeback.c
+> @@ -606,6 +606,8 @@ void set_page_dirty_balance(struct page *page, int page_mkwrite)
+>  	}
+>  }
+>  
+> +static DEFINE_PER_CPU(unsigned long, bdp_ratelimits) = 0;
+> +
+>  /**
+>   * balance_dirty_pages_ratelimited_nr - balance dirty memory state
+>   * @mapping: address_space which was dirtied
+> @@ -623,7 +625,6 @@ void set_page_dirty_balance(struct page *page, int page_mkwrite)
+>  void balance_dirty_pages_ratelimited_nr(struct address_space *mapping,
+>  					unsigned long nr_pages_dirtied)
+>  {
+> -	static DEFINE_PER_CPU(unsigned long, ratelimits) = 0;
+>  	unsigned long ratelimit;
+>  	unsigned long *p;
+>  
+> @@ -636,7 +637,7 @@ void balance_dirty_pages_ratelimited_nr(struct address_space *mapping,
+>  	 * tasks in balance_dirty_pages(). Period.
+>  	 */
+>  	preempt_disable();
+> -	p =  &__get_cpu_var(ratelimits);
+> +	p =  &__get_cpu_var(bdp_ratelimits);
+>  	*p += nr_pages_dirtied;
+>  	if (unlikely(*p >= ratelimit)) {
+>  		*p = 0;
+> diff --git a/net/ipv4/syncookies.c b/net/ipv4/syncookies.c
+> index b35a950..70ee18c 100644
+> --- a/net/ipv4/syncookies.c
+> +++ b/net/ipv4/syncookies.c
+> @@ -37,12 +37,12 @@ __initcall(init_syncookies);
+>  #define COOKIEBITS 24	/* Upper bits store count */
+>  #define COOKIEMASK (((__u32)1 << COOKIEBITS) - 1)
+>  
+> -static DEFINE_PER_CPU(__u32, cookie_scratch)[16 + 5 + SHA_WORKSPACE_WORDS];
+> +static DEFINE_PER_CPU(__u32, ipv4_cookie_scratch)[16 + 5 + SHA_WORKSPACE_WORDS];
+>  
+>  static u32 cookie_hash(__be32 saddr, __be32 daddr, __be16 sport, __be16 dport,
+>  		       u32 count, int c)
+>  {
+> -	__u32 *tmp = __get_cpu_var(cookie_scratch);
+> +	__u32 *tmp = __get_cpu_var(ipv4_cookie_scratch);
+>  
+>  	memcpy(tmp + 4, syncookie_secret[c], sizeof(syncookie_secret[c]));
+>  	tmp[0] = (__force u32)saddr;
+> diff --git a/net/ipv6/syncookies.c b/net/ipv6/syncookies.c
+> index 711175e..348e38c 100644
+> --- a/net/ipv6/syncookies.c
+> +++ b/net/ipv6/syncookies.c
+> @@ -74,12 +74,12 @@ static inline struct sock *get_cookie_sock(struct sock *sk, struct sk_buff *skb,
+>  	return child;
+>  }
+>  
+> -static DEFINE_PER_CPU(__u32, cookie_scratch)[16 + 5 + SHA_WORKSPACE_WORDS];
+> +static DEFINE_PER_CPU(__u32, ipv6_cookie_scratch)[16 + 5 + SHA_WORKSPACE_WORDS];
+>  
+>  static u32 cookie_hash(struct in6_addr *saddr, struct in6_addr *daddr,
+>  		       __be16 sport, __be16 dport, u32 count, int c)
+>  {
+> -	__u32 *tmp = __get_cpu_var(cookie_scratch);
+> +	__u32 *tmp = __get_cpu_var(ipv6_cookie_scratch);
+>  
+>  	/*
+>  	 * we have 320 bits of information to hash, copy in the remaining
+> -- 
+> 1.6.0.2
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
 -- 
-error compiling committee.c: too many arguments to function
+Jens Axboe
 
