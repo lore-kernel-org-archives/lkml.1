@@ -1,69 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756705AbZETOrx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755660AbZETOs2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756705AbZETOrx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 10:47:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756390AbZETOrn
+	id S1755660AbZETOs2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 10:48:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755864AbZETOsV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 10:47:43 -0400
-Received: from bedivere.hansenpartnership.com ([66.63.167.143]:53057 "EHLO
-	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756389AbZETOrm (ORCPT
+	Wed, 20 May 2009 10:48:21 -0400
+Received: from az33egw02.freescale.net ([192.88.158.103]:64195 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755637AbZETOsU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 10:47:42 -0400
-Subject: Re: [PATCH version 2] [SQUASHME] "FC Pass Thru support" fixed for
-	block/for-2.6.31 tree
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Boaz Harrosh <bharrosh@panasas.com>, Tejun Heo <tj@kernel.org>,
-       James Smart <James.Smart@Emulex.Com>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       FUJITA Tomonori <tomof@acm.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Jens Axboe <Jens.Axboe@oracle.com>
-In-Reply-To: <20090521004251.9160e228.sfr@canb.auug.org.au>
-References: <4A12797B.2060901@panasas.com> <4A12AC23.30808@panasas.com>
-	 <20090520111619.87f815b1.sfr@canb.auug.org.au>
-	 <1242830240.2881.10.camel@localhost.localdomain>
-	 <20090521004251.9160e228.sfr@canb.auug.org.au>
-Content-Type: text/plain
-Date: Wed, 20 May 2009 14:47:45 +0000
-Message-Id: <1242830865.2881.13.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Wed, 20 May 2009 10:48:20 -0400
+Message-ID: <4A141810.4020104@freescale.com>
+Date: Wed, 20 May 2009 09:47:44 -0500
+From: Scott Wood <scottwood@freescale.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+MIME-Version: 1.0
+To: Kumar Gala <galak@kernel.crashing.org>
+CC: Li Yang <leoli@freescale.com>, Wolfgang Denk <wd@denx.de>,
+       linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+       LKML List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] [PowerPC] MPC8272ADS: fix device tree for 8 MB flash
+ size
+References: <1242155174-2513-1-git-send-email-wd@denx.de> <2a27d3730905130328m27743852w2d68a62ebc32ce31@mail.gmail.com> <20090513194249.BA7D9832E416@gemini.denx.de> <156C2E1E-8E67-4358-B72E-4BB67D79C2AF@kernel.crashing.org>
+In-Reply-To: <156C2E1E-8E67-4358-B72E-4BB67D79C2AF@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAWE=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-05-21 at 00:42 +1000, Stephen Rothwell wrote:
-> Hi James,
-> 
-> On Wed, 20 May 2009 14:37:20 +0000 James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
-> >
-> > Unfortuantely, I still need the block tree for-next to be rebased up to
-> > the current linus head because of a couple of conflicts:
-> > 
-> > CONFLICT (content): Merge conflict in drivers/block/hd.c
-> > CONFLICT (content): Merge conflict in drivers/block/mg_disk.c
-> 
-> As discussed elsewhere, a merge of Linus' tree into the block tree will
-> fix this.
+Kumar Gala wrote:
+> Scott, any feedback if our boards have 8M or 32M flash modules?
 
-Yes, I know, I was just adding urgency because scsi-misc has the two
-conflicting commits in it, so it can't be merged into block for-next.
+According to the manual, it comes with 8 but can be expanded to 32.  I 
+don't think we swapped out the flash SIMM that came with the board.
 
-> > So they obviously moved into linus head but wasn't taken out of block
-> > for-next.
-> 
-> Indeed.
+As I wrote earlier in the thread, I don't see any way a current u-boot 
+would enable more than 8MiB of flash on this board anyway.  I'd go ahead 
+and apply the patch.
 
-OK, so I think your pulling of my posmerge tree can cope with the fact
-that I did the necessary rebasing in block for-next before I made it the
-base of my combined tree .... think of this as a nice test.
-
-Just building now ... if it works, I'll push to SCSI post merge and all
-our problems should go away.
-
-James
-
-
+-Scott
