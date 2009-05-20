@@ -1,310 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755817AbZETKzr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755175AbZETK4n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755817AbZETKzr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 06:55:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753013AbZETKzk
+	id S1755175AbZETK4n (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 06:56:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752761AbZETK4g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 06:55:40 -0400
-Received: from e28smtp07.in.ibm.com ([59.145.155.7]:44009 "EHLO
-	e28smtp07.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753281AbZETKzj (ORCPT
+	Wed, 20 May 2009 06:56:36 -0400
+Received: from mga01.intel.com ([192.55.52.88]:4056 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751776AbZETK4g convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 06:55:39 -0400
-Date: Wed, 20 May 2009 16:25:35 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [Patch 1/2] Improvements and minor fixes to HW Breakpoint
-	interface
-Message-ID: <20090520105535.GA17181@in.ibm.com>
-Reply-To: prasad@linux.vnet.ibm.com
-References: <20090519162459.GB26009@in.ibm.com> <Pine.LNX.4.44L0.0905191351380.10557-100000@iolanthe.rowland.org>
+	Wed, 20 May 2009 06:56:36 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,221,1241420400"; 
+   d="scan'208";a="692048493"
+From: "Li, Jiebing" <jiebing.li@intel.com>
+To: Pierre Ossman <pierre@ossman.eu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Arjan van de Ven <arjan@infradead.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Wed, 20 May 2009 18:55:43 +0800
+Subject: RE: [PATCH 2/2] MMC: MMC/SD/CE-ATA/SDIO driver for Intel Moorestown
+  platform
+Thread-Topic: [PATCH 2/2] MMC: MMC/SD/CE-ATA/SDIO driver for Intel
+ Moorestown  platform
+Thread-Index: AcnRnxDoXInqwnIMS3++dVI6ZwL+5QHme0DQ
+Message-ID: <95608CFE3D0C064B8468DB61F8403BE036C16F33FB@PDSMSX501.ccr.corp.intel.com>
+References: <95608CFE3D0C064B8468DB61F8403BE029D298B1F7@PDSMSX501.ccr.corp.intel.com>
+	<95608CFE3D0C064B8468DB61F8403BE029D298B1FF@PDSMSX501.ccr.corp.intel.com>
+ <20090510204214.2c0ce736@mjolnir.ossman.eu>
+In-Reply-To: <20090510204214.2c0ce736@mjolnir.ossman.eu>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0905191351380.10557-100000@iolanthe.rowland.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 19, 2009 at 02:09:12PM -0400, Alan Stern wrote:
-> On Tue, 19 May 2009, K.Prasad wrote:
+Hi all,
+
+Thanks a lot for your comments and instructions! I will modify the code, prepare for the use cases and re-submit the patches in next days.
+
+
+Rgds,
+Jiebing 
+
+-----Original Message-----
+From: Pierre Ossman [mailto:pierre@ossman.eu] 
+Sent: Monday, May 11, 2009 2:42 AM
+To: Li, Jiebing
+Cc: linux-kernel@vger.kernel.org; Johnson, Charles F; Zhu, Daniel; Yuan, Hang; Pasrija, Geeta; Li, Jiebing
+Subject: Re: [PATCH 2/2] MMC: MMC/SD/CE-ATA/SDIO driver for Intel Moorestown platform
+
+On Thu, 30 Apr 2009 17:19:06 +0800
+"Li, Jiebing" <jiebing.li@intel.com> wrote:
+
 > 
-> > This patch brings a couple of changes to the HW Breakpoint infrastructure:
-> > 
-> > - Set/clear TIF_DEBUG task flag in <un>register_user_hw_breakpoint()
-> >   instead of being done by users of this interface (such as ptrace).
-> > 
-> > - Modify return code of hw_breakpoint_handler() to NOTIFY_STOP if
-> >   triggered due to lazy debug register switching.
-> > 
-> > Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
-> > ---
-> >  arch/x86/kernel/hw_breakpoint.c |    4 +++-
-> >  arch/x86/kernel/ptrace.c        |    4 +---
-> >  kernel/hw_breakpoint.c          |   16 +++++++++++++---
-> >  3 files changed, 17 insertions(+), 7 deletions(-)
-> > 
-> > Index: linux-2.6-tip.hbkpt/arch/x86/kernel/hw_breakpoint.c
-> > ===================================================================
-> > --- linux-2.6-tip.hbkpt.orig/arch/x86/kernel/hw_breakpoint.c
-> > +++ linux-2.6-tip.hbkpt/arch/x86/kernel/hw_breakpoint.c
-> > @@ -346,8 +346,10 @@ int __kprobes hw_breakpoint_handler(stru
-> >  		 * or due to the delay between updates of hbp_kernel_pos
-> >  		 * and this_hbp_kernel.
-> >  		 */
-> > -		if (!bp)
-> > +		if (!bp) {
-> > +			rc = NOTIFY_STOP;
-> >  			continue;
-> > +		}
-> >  
-> >  		(bp->triggered)(bp, args->regs);
-> >  		/*
-> 
-> This doesn't look right.  You want to return NOTIFY_DONE if any
-> breakpoints were triggered or any non-breakpoint bits were set in DR6,
-> right?  Otherwise return NOTIFY_STOP.  So this code should be:
+> This patch enables support of SDIO bus driver suspend/resume operation and supply sysfs interface for user
+> to call suspend/resume selectively.Remind that this function should work together with SDIO device driver's
+> suspend/resume function.
 > 
 
-Agreed, we want to return NOTIFY_DONE in the above two cases and the
-patch does the same.
+As Matthew asked, what's the use case?
 
-If there are any more breakpoints (basically more trap bits in DR6 set)
-that require handling, the "continue" statement allows it to be done.
-
-If the non-breakpoint bits were set in DR6, then "rc" value is
-over-written in hw_breakpoint_handler() below the "if (!bp)" check.
-
-	if (dr6 & (~DR_TRAP_BITS))
-		rc = NOTIFY_DONE;
-
-The issue in the original hw_breakpoint_handler() is the return of
-NOTIFY_DONE during lazy debug register switching or mismatched
-this_hbp_kernel[], that may cause SIGTRAP signal for user-space
-in do_debug() function.
-
-> 		if (!bp)
-> 			continue;
-> 
-> 		rc = NOTIFY_DONE;
-> 		(bp->triggered)(bp, args->regs);
-> 
-> and take out the "rc = NOTIFY_DONE" line in the i < hbp_kernel_pos 
-> case earlier.
+> And Moorestown's specific code is added into this patch to enable the second SDIO slot of the host controller.
 > 
 
-This change will unconditionally return NOTIFY_DONE even if exception
-was triggered due to a single kernel-space HW breakpoint.
+Again, stop mixing unrelated things in the same patch.
 
-> It also would be a good idea to add a comment near the start of the
-> function explaining the return value (just paraphrase what I wrote
-> above).
+> @@ -452,3 +828,84 @@ err:
+>         return err;
+>  }
 > 
-> 
+> +/*
+> + * warn device driver and perform a SDIO device reset.
+> + * Assume that device driver knows hot to handle resets.
+> + */
+> +int sdio_reset_device(struct mmc_card *card)
+> +{
 
-I've added a descriptive comment. Let me know if it can be improved.
+Use case?
 
-> > Index: linux-2.6-tip.hbkpt/arch/x86/kernel/ptrace.c
-> > ===================================================================
-> > --- linux-2.6-tip.hbkpt.orig/arch/x86/kernel/ptrace.c
-> > +++ linux-2.6-tip.hbkpt/arch/x86/kernel/ptrace.c
-> > @@ -530,9 +530,7 @@ restore:
-> >  				bp->info.len = len;
-> >  				bp->info.type = type;
-> >  				rc = register_user_hw_breakpoint(tsk, bp);
-> > -				if (!rc)
-> > -					set_tsk_thread_flag(tsk, TIF_DEBUG);
-> > -				else
-> > +				if (rc)
-> >  					kfree(bp);
-> >  			}
-> >  		} else
-> > Index: linux-2.6-tip.hbkpt/kernel/hw_breakpoint.c
-> > ===================================================================
-> > --- linux-2.6-tip.hbkpt.orig/kernel/hw_breakpoint.c
-> > +++ linux-2.6-tip.hbkpt/kernel/hw_breakpoint.c
-> > @@ -233,6 +233,8 @@ int register_user_hw_breakpoint(struct t
-> >  			break;
-> >  		}
-> >  	}
-> > +	if (!rc)
-> > +		set_tsk_thread_flag(tsk, TIF_DEBUG);
-> >  
-> >  	spin_unlock_bh(&hw_breakpoint_lock);
-> >  	return rc;
-> > @@ -272,15 +274,23 @@ void unregister_user_hw_breakpoint(struc
-> >  						struct hw_breakpoint *bp)
-> >  {
-> >  	struct thread_struct *thread = &(tsk->thread);
-> > -	int i;
-> > +	int i, pos = -1, clear_tsk_debug_counter = 0;
+> diff --git a/drivers/mmc/host/Kconfig b/drivers/mmc/host/Kconfig
+> index b4cf691..0c9d2eb 100644
+> --- a/drivers/mmc/host/Kconfig
+> +++ b/drivers/mmc/host/Kconfig
+> @@ -44,6 +44,14 @@ config MMC_SDHCI_IO_ACCESSORS
+>           This is silent Kconfig symbol that is selected by the drivers that
+>           need to overwrite SDHCI IO memory accessors.
 > 
-> I think "hbp_counter" would be a better name.  It's up to you.
-> 
+> +config MMC_SDHCI_MRST_SDIO1
+> +       bool
+> +       depends on MMC_SDHCI
+> +       help
+> +         This enables Moorestown SD host controller's 2nd SDIO slot.
+> +
+> +         If unsure, say N.
+> +
 
-Changed.
+Detect this at runtime.
 
-> >  
-> >  	spin_lock_bh(&hw_breakpoint_lock);
-> >  	for (i = 0; i < hbp_kernel_pos; i++) {
-> > +		if (thread->hbp[i])
-> > +			clear_tsk_debug_counter++;
-> >  		if (bp == thread->hbp[i]) {
-> > -			__unregister_user_hw_breakpoint(i, tsk);
-> > -			break;
-> > +			clear_tsk_debug_counter--;
-> > +			pos = i;
-> >  		}
-> >  	}
-> > +	if (pos >= 0)
-> > +		__unregister_user_hw_breakpoint(pos, tsk);
-> > +
-> > +	if (!clear_tsk_debug_counter)
-> > +		clear_tsk_thread_flag(tsk, TIF_DEBUG);
+> diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
+> index a2804f1..4d4ad6d 100644
+> --- a/drivers/mmc/host/sdhci.c
+> +++ b/drivers/mmc/host/sdhci.c
+> @@ -914,6 +914,17 @@ static void sdhci_send_command(struct sdhci_host *host, struct mmc_command *cmd)
+>         if (cmd->data)
+>                 flags |= SDHCI_CMD_DATA;
 > 
-> This logic could be rearranged a little:
-> 
-> 	for (i = 0; i < hbp_kernel_pos; i++) {
-> 		if (thread->hbp[i])
-> 			clear_tsk_debug_counter++;
-> 		if (bp == thread->hbp[i])
-> 			pos = i;
-> 	}
-> 	if (pos >= 0) {
-> 		__unregister_user_hw_breakpoint(pos, tsk);
-> 		clear_tsk_debug_counter--;
-> 	}
-> 	if (!clear_tsk_debug_counter)
-> 		clear_tsk_thread_flag(tsk, TIF_DEBUG);
-> 
-> Not a big deal; this way is a little more robust in case two 
-> thread->hbp[] entries somehow contain the same pointer.
+> +#ifdef CONFIG_MMC_SDHCI_MRST_SDIO1
+> +       if (host->quirks & SDHCI_QUIRK_MRST_RESTRICTION) {
+> +               u16 clk;
+> +
+> +               clk = sdhci_readw(host, SDHCI_CLOCK_CONTROL);
+> +
+> +               clk |= SDHCI_CLOCK_CARD_EN;
+> +               sdhci_writew(host, clk, SDHCI_CLOCK_CONTROL);
+> +       }
+> +#endif
+> +
+>         sdhci_writew(host, SDHCI_MAKE_CMD(cmd->opcode, flags), SDHCI_COMMAND);
+>  }
 > 
 
-Ok. I have changed it.
+Huh? Is this some kind of multiplexed nonsense?
 
-> > +
-> >  	spin_unlock_bh(&hw_breakpoint_lock);
-> >  }
-> >  EXPORT_SYMBOL_GPL(unregister_user_hw_breakpoint);
+> diff --git a/drivers/mmc/host/sdhci.h b/drivers/mmc/host/sdhci.h
+> index fa87b8b..50be698 100644
+> --- a/drivers/mmc/host/sdhci.h
+> +++ b/drivers/mmc/host/sdhci.h
+> @@ -227,6 +227,8 @@ struct sdhci_host {
+>  #define SDHCI_QUIRK_RESTORE_IRQS_AFTER_RESET           (1<<19)
+>  /* Controller has to be forced to use block size of 2048 bytes */
+>  #define SDHCI_QUIRK_FORCE_BLK_SZ_2048                  (1<<20)
+> +/* Controller of Moorestown specific restriction */
+> +#define SDHCI_QUIRK_MRST_RESTRICTION                   (1<<21)
 > 
-> Alan Stern
-> 
 
-Please find the updated patch below and kindly let me know your
-comments on the same.
+No. Quirks should be defined in a way that allows reuse.
 
+-- 
+     -- Pierre Ossman
 
-Improvements and minor fixes to HW Breakpoint interface
-
-This patch brings a couple of changes to the HW Breakpoint infrastructure:
-
-- Set/clear TIF_DEBUG task flag in <un>register_user_hw_breakpoint()
-  instead of being done by users of this interface (such as ptrace).
-
-- Modify return code of hw_breakpoint_handler() to NOTIFY_STOP if
-  triggered due to lazy debug register switching.
-
-Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
----
- arch/x86/kernel/hw_breakpoint.c |   17 ++++++++++++++++-
- arch/x86/kernel/ptrace.c        |    4 +---
- kernel/hw_breakpoint.c          |   19 ++++++++++++++-----
- 3 files changed, 31 insertions(+), 9 deletions(-)
-
-Index: linux-2.6-tip.hbkpt/arch/x86/kernel/hw_breakpoint.c
-===================================================================
---- linux-2.6-tip.hbkpt.orig/arch/x86/kernel/hw_breakpoint.c
-+++ linux-2.6-tip.hbkpt/arch/x86/kernel/hw_breakpoint.c
-@@ -296,6 +296,19 @@ void arch_flush_thread_hw_breakpoint(str
- 
- /*
-  * Handle debug exception notifications.
-+ *
-+ * Return value is either NOTIFY_STOP or NOTIFY_DONE as explained below.
-+ *
-+ * NOTIFY_DONE returned if one of the following conditions is true.
-+ * i) When the causative address is from user-space and the exception
-+ * is a valid one i.e. not triggered a result of lazy debug register
-+ * switching
-+ * ii) When there are more bits than trap<n> set in DR6 register (such
-+ * as BD, BS or BT) indicating that more than one debug condition is
-+ * met and requires some more action in do_debug().
-+ *
-+ * NOTIFY_STOP returned for all other cases
-+ *
-  */
- int __kprobes hw_breakpoint_handler(struct die_args *args)
- {
-@@ -346,8 +359,10 @@ int __kprobes hw_breakpoint_handler(stru
- 		 * or due to the delay between updates of hbp_kernel_pos
- 		 * and this_hbp_kernel.
- 		 */
--		if (!bp)
-+		if (!bp) {
-+			rc = NOTIFY_STOP;
- 			continue;
-+		}
- 
- 		(bp->triggered)(bp, args->regs);
- 		/*
-Index: linux-2.6-tip.hbkpt/arch/x86/kernel/ptrace.c
-===================================================================
---- linux-2.6-tip.hbkpt.orig/arch/x86/kernel/ptrace.c
-+++ linux-2.6-tip.hbkpt/arch/x86/kernel/ptrace.c
-@@ -530,9 +530,7 @@ restore:
- 				bp->info.len = len;
- 				bp->info.type = type;
- 				rc = register_user_hw_breakpoint(tsk, bp);
--				if (!rc)
--					set_tsk_thread_flag(tsk, TIF_DEBUG);
--				else
-+				if (rc)
- 					kfree(bp);
- 			}
- 		} else
-Index: linux-2.6-tip.hbkpt/kernel/hw_breakpoint.c
-===================================================================
---- linux-2.6-tip.hbkpt.orig/kernel/hw_breakpoint.c
-+++ linux-2.6-tip.hbkpt/kernel/hw_breakpoint.c
-@@ -233,6 +233,8 @@ int register_user_hw_breakpoint(struct t
- 			break;
- 		}
- 	}
-+	if (!rc)
-+		set_tsk_thread_flag(tsk, TIF_DEBUG);
- 
- 	spin_unlock_bh(&hw_breakpoint_lock);
- 	return rc;
-@@ -272,15 +274,22 @@ void unregister_user_hw_breakpoint(struc
- 						struct hw_breakpoint *bp)
- {
- 	struct thread_struct *thread = &(tsk->thread);
--	int i;
-+	int i, pos = -1, hbp_counter = 0;
- 
- 	spin_lock_bh(&hw_breakpoint_lock);
- 	for (i = 0; i < hbp_kernel_pos; i++) {
--		if (bp == thread->hbp[i]) {
--			__unregister_user_hw_breakpoint(i, tsk);
--			break;
--		}
-+		if (thread->hbp[i])
-+			hbp_counter++;
-+		if (bp == thread->hbp[i])
-+			pos = i;
- 	}
-+	if (pos >= 0) {
-+		__unregister_user_hw_breakpoint(pos, tsk);
-+		hbp_counter--;
-+	}
-+	if (!hbp_counter)
-+		clear_tsk_thread_flag(tsk, TIF_DEBUG);
-+
- 	spin_unlock_bh(&hw_breakpoint_lock);
- }
- EXPORT_SYMBOL_GPL(unregister_user_hw_breakpoint);
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
