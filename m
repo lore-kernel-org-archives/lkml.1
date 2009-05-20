@@ -1,49 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756935AbZETUas@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755918AbZETUmx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756935AbZETUas (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 16:30:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756072AbZETUaj
+	id S1755918AbZETUmx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 16:42:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754839AbZETUmp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 16:30:39 -0400
-Received: from mail.deathmatch.net ([72.66.92.28]:1114 "EHLO
-	mail.deathmatch.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754361AbZETUaj (ORCPT
+	Wed, 20 May 2009 16:42:45 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:43982 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754466AbZETUmp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 16:30:39 -0400
-From: "Bob Copeland" <me@bobcopeland.com>
-To: Tobias Doerffel <tobias.doerffel@gmail.com>,
-       Jiri Slaby <jirislaby@gmail.com>
-Cc: linville@tuxdriver.com, mickflemm@gmail.com, lrodriguez@atheros.com,
-       linux-wireless@vger.kernel.org, ath5k-devel@venema.h4ckr.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] ath5k: add support for radio LED
-Date: Wed, 20 May 2009 16:29:42 -0400
-Message-Id: <20090520202124.M71221@bobcopeland.com>
-In-Reply-To: <200905202216.43996.tobias.doerffel@gmail.com>
-References: <1242850139-25438-1-git-send-email-jirislaby@gmail.com> <200905202216.43996.tobias.doerffel@gmail.com>
-X-Mailer: OpenWebMail 2.53 
-X-OriginatingIP: 149.101.1.122 (bob)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=utf-8
+	Wed, 20 May 2009 16:42:45 -0400
+Subject: Re: [patch 0/5] Support for sanitization flag in low-level page
+ allocator
+From: Peter Zijlstra <peterz@infradead.org>
+To: "Larry H." <research@subreption.com>
+Cc: linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>,
+       linux-mm@kvack.org, Ingo Molnar <mingo@redhat.com>
+In-Reply-To: <20090520183045.GB10547@oblivion.subreption.com>
+References: <20090520183045.GB10547@oblivion.subreption.com>
+Content-Type: text/plain
+Date: Wed, 20 May 2009 22:42:38 +0200
+Message-Id: <1242852158.6582.231.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 May 2009 22:16:42 +0200, Tobias Doerffel wrote
-> If there's interest, I'll  prepare a new patch which represents the
-> current state.
+On Wed, 2009-05-20 at 11:30 -0700, Larry H. wrote:
+> This patch adds support for the SENSITIVE flag to the low level page
+> allocator. An additional GFP flag is added for use with higher level
+> allocators (GFP_SENSITIVE, which implies GFP_ZERO).
+> 
+> The code is largely based off the memory sanitization feature in the
+> PaX project (licensed under the GPL v2 terms), and allows fine grained
+> marking of pages for sanitization on allocation and release time, as an
+> opt-in feature (instead of its opt-all counterpart in PaX).
+> 
+> This avoids leaking sensitive information when memory is released to
+> the system after use, for example in cryptographic subsystems.
+> 
+> The next patches in this set deploy this flag for different
+> subsystems that could potentially leak cryptographic secrets or other
+> confidential information by means of an information leak or other kinds
+> of security bugs (ex. use of uninitialized variables or use-after-free),
+> besides extending the remanence of this data on memory (allowing
+> Iceman/coldboot attacks possible).
+> 
+> The "Shredding Your Garbage: Reducing Data Lifetime Through Secure
+> Deallocation" paper by Jim Chow et. al from the Stanford University
+> Department of Computer Science, explains the security implications of
+> insecure deallocation, and provides extensive information with figures
+> and applications thoroughly analyzed for this behavior [1]. More recently
+> this issue came to widespread attention when the "Lest We Remember:
+> Cold Boot Attacks on Encryption Keys" (by Halderman et. al) paper was
+> published [2].
 
-I'm definitely interested in seeing rfkill gpio support getting in,
-it's overdue.  So I say repost it and we can fasttrack that.  Digging
-up your last patchset was already on my todo list.
-
-As for patch 2/3 it might be a good idea to have support for
-which-led-does-what encoded into the driver data anyway; other
-people have asked for that and the "solution" of adding various
-echos to sysfs LED trigger files is rather sad.  OTOH it could
-eventually be a lot of data to carry around.
-
--- 
-Bob Copeland %% www.bobcopeland.com
+Seems like a particularly wasteful use of a pageflag. Why not simply
+erase the buffer before freeing in those few places where we know its
+important (ie. exactly those places you now put the pageflag in)?
 
