@@ -1,56 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756565AbZETOrl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756705AbZETOrx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756565AbZETOrl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 10:47:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753788AbZETOrd
+	id S1756705AbZETOrx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 10:47:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756390AbZETOrn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 10:47:33 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:52760 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753217AbZETOrc (ORCPT
+	Wed, 20 May 2009 10:47:43 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:53057 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756389AbZETOrm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 10:47:32 -0400
-Date: Wed, 20 May 2009 16:47:31 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Elladan <elladan@eskimo.com>,
-       Nick Piggin <npiggin@suse.de>, Johannes Weiner <hannes@cmpxchg.org>,
-       Peter Zijlstra <peterz@infradead.org>, Rik van Riel <riel@redhat.com>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "minchan.kim@gmail.com" <minchan.kim@gmail.com>
-Subject: Re: [PATCH 2/3] vmscan: make mapped executable pages the first
-	class citizen
-Message-ID: <20090520144731.GB4753@basil.nowhere.org>
-References: <alpine.DEB.1.10.0905181045340.20244@qirst.com> <20090519032759.GA7608@localhost> <20090519133422.4ECC.A69D9226@jp.fujitsu.com> <20090519062503.GA9580@localhost> <87pre4nhqf.fsf@basil.nowhere.org> <20090520143258.GA5706@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090520143258.GA5706@localhost>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Wed, 20 May 2009 10:47:42 -0400
+Subject: Re: [PATCH version 2] [SQUASHME] "FC Pass Thru support" fixed for
+	block/for-2.6.31 tree
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Boaz Harrosh <bharrosh@panasas.com>, Tejun Heo <tj@kernel.org>,
+       James Smart <James.Smart@Emulex.Com>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       FUJITA Tomonori <tomof@acm.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Jens Axboe <Jens.Axboe@oracle.com>
+In-Reply-To: <20090521004251.9160e228.sfr@canb.auug.org.au>
+References: <4A12797B.2060901@panasas.com> <4A12AC23.30808@panasas.com>
+	 <20090520111619.87f815b1.sfr@canb.auug.org.au>
+	 <1242830240.2881.10.camel@localhost.localdomain>
+	 <20090521004251.9160e228.sfr@canb.auug.org.au>
+Content-Type: text/plain
+Date: Wed, 20 May 2009 14:47:45 +0000
+Message-Id: <1242830865.2881.13.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > One scenario that might be useful to test is what happens when some
-> > very large processes, all mapped and executable exceed memory and
+On Thu, 2009-05-21 at 00:42 +1000, Stephen Rothwell wrote:
+> Hi James,
 > 
-> Good idea. Too bad I may have to install some bloated desktop in order
-> to test this out ;) I guess the pgmajfault+pswpin numbers can serve as
-> negative scores in that case?
+> On Wed, 20 May 2009 14:37:20 +0000 James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+> >
+> > Unfortuantely, I still need the block tree for-next to be rebased up to
+> > the current linus head because of a couple of conflicts:
+> > 
+> > CONFLICT (content): Merge conflict in drivers/block/hd.c
+> > CONFLICT (content): Merge conflict in drivers/block/mg_disk.c
+> 
+> As discussed elsewhere, a merge of Linus' tree into the block tree will
+> fix this.
 
-I would just generate a large C program with a script and compile
-and run that. The program can be very dumb (e.g. only run
-a gigantic loop), it just needs to be large.
+Yes, I know, I was just adding urgency because scsi-misc has the two
+conflicting commits in it, so it can't be merged into block for-next.
 
-Just don't compile it with optimization, that can be quite slow.
+> > So they obviously moved into linus head but wasn't taken out of block
+> > for-next.
+> 
+> Indeed.
 
-And use multiple functions, otherwise gcc might exceed your memory.
+OK, so I think your pulling of my posmerge tree can cope with the fact
+that I did the necessary rebasing in block for-next before I made it the
+base of my combined tree .... think of this as a nice test.
 
--Andi
--- 
-ak@linux.intel.com -- Speaking for myself only.
+Just building now ... if it works, I'll push to SCSI post merge and all
+our problems should go away.
+
+James
+
+
