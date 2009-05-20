@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756582AbZETTiZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756335AbZETToT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756582AbZETTiZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 15:38:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755474AbZETTiQ
+	id S1756335AbZETToT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 15:44:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755250AbZETToG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 15:38:16 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33745
+	Wed, 20 May 2009 15:44:06 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50784
 	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755465AbZETTiQ (ORCPT
+	by vger.kernel.org with ESMTP id S1755477AbZETToF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 15:38:16 -0400
-Date: Wed, 20 May 2009 12:38:14 -0700 (PDT)
-Message-Id: <20090520.123814.11278413.davem@davemloft.net>
-To: keil@b1-systems.de
-Cc: marcel@holtmann.org, linux-kernel@vger.kernel.org, sfr@canb.auug.org.au,
-       i4ldeveloper@listserv.isdn4linux.de
-Subject: Re: [PATCH 01/19] Add XHFC support for embedded Speech-Design
- board to hfcmulti
+	Wed, 20 May 2009 15:44:05 -0400
+Date: Wed, 20 May 2009 12:44:03 -0700 (PDT)
+Message-Id: <20090520.124403.159818618.davem@davemloft.net>
+To: ebiederm@xmission.com
+Cc: sfr@canb.auug.org.au, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, rmk@arm.linux.org.uk,
+       hskinnemoen@atmel.com
+Subject: Re: linux-next: net tree build failure
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <200905201112.22062.keil@b1-systems.de>
-References: <20090519.121116.52530205.davem@davemloft.net>
-	<1242789181.3147.18.camel@localhost.localdomain>
-	<200905201112.22062.keil@b1-systems.de>
+In-Reply-To: <m1d4a3keqm.fsf@fess.ebiederm.org>
+References: <20090521001928.4bf71911.sfr@canb.auug.org.au>
+	<m1d4a3keqm.fsf@fess.ebiederm.org>
 X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -30,11 +29,11 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Karsten Keil <keil@b1-systems.de>
-Date: Wed, 20 May 2009 11:12:21 +0200
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Wed, 20 May 2009 07:53:21 -0700
 
-> Yes, you are right, I queued it for linux-next because I was remembering that 
-> somebody did suggest this in the past, but this was not really a good idea.
-> I will setup a new merge tree based on net-2.6-next  (or better net-2.6) ?
+> Grrr. Some days it feels like all of the good names are already taken.
+> 
+> How does this look for a solution to the name clash?
 
-For this stuff, net-next-2.6 would be the most appropriate.
+Give me a signoff so I can apply this Eric, thanks.
