@@ -1,50 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756634AbZETOzf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756815AbZETO4i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756634AbZETOzf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 10:55:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753579AbZETOz3
+	id S1756815AbZETO4i (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 10:56:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753579AbZETO4b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 10:55:29 -0400
-Received: from ey-out-2122.google.com ([74.125.78.25]:62296 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752412AbZETOz2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 10:55:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=wB5IoGvTYbeaia6hajK8UHkPIIVjfWIP+NwYGulhEZypRbXHx9HvFRcQLyfXk23yM4
-         Fq5bMP6eBAGOZv0ymZu7Wd4/eyUudVGAD354MZ7oE08WcCoxEDnNyl41po4tyTBsTEhc
-         u9DFDupxZL4dvirRORSqPx2MYWBIa0TJjwoU0=
+	Wed, 20 May 2009 10:56:31 -0400
+Received: from cet.com.ru ([195.178.208.66]:41939 "EHLO tservice.net.ru"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752412AbZETO4b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 10:56:31 -0400
+Date: Wed, 20 May 2009 18:56:23 +0400
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: Mike Frysinger <vapier@gentoo.org>
+Cc: linux-kernel@vger.kernel.org, Patrick McHardy <kaber@trash.net>,
+       Herbert Xu <herbert@gondor.apana.org.au>
+Subject: Re: [PATCH] crypto: hifn_795x - fix __dev{init,exit} markings
+Message-ID: <20090520145623.GA4147@ioremap.net>
+References: <1242633110-16344-1-git-send-email-vapier@gentoo.org>
 MIME-Version: 1.0
-Date: Wed, 20 May 2009 15:55:28 +0100
-Message-ID: <ff5483020905200755h107d40c3ofbd185693c3535f7@mail.gmail.com>
-Subject: FIFO: problems after changing size
-From: Jacques Dirac <jacquesdirac@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1242633110-16344-1-git-send-email-vapier@gentoo.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hi Mike.
 
-In the kernel source (/include/linux/pipe_fs_i.h) I have adjusted the
-size of the FIFOs (named pipes):
+On Mon, May 18, 2009 at 03:51:50AM -0400, Mike Frysinger (vapier@gentoo.org) wrote:
+> The remove member of the pci_driver hifn_pci_driver uses __devexit_p(),
+> so the remove function itself should be marked with __devexit.  And where
+> there be __devexit on the remove, so is there __devinit on the probe.
+> 
+> Similarly, the module_init/module_exit functions should be declared with
+> plain __init/__exit markings, not the hotplug __dev{init,exit} ones.
+> 
+> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+> CC: Evgeniy Polyakov <zbr@ioremap.net>
+> CC: Patrick McHardy <kaber@trash.net>
 
-#define PIPE_SIZE 8192
+Looks good, thank you Mike.
+Ack. Herbert, please apply.
 
-This used to be PAGE_SIZE (=4096bytes?).
-
-Now when I read from the pipe (using the read function in a C program)
-and the pipe contains more than 4096 bytes, my process crashes and
-gives a Segmentation Fault.
-
-Could someone help me on this?
-
-
-Thanks in advance!
-
-Jacques Dirac.
+-- 
+	Evgeniy Polyakov
