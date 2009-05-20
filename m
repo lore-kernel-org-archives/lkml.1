@@ -1,93 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755497AbZETHOu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755256AbZETHQZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755497AbZETHOu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 03:14:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753820AbZETHOn
+	id S1755256AbZETHQZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 03:16:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753864AbZETHQS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 03:14:43 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:34771 "EHLO kernel.dk"
+	Wed, 20 May 2009 03:16:18 -0400
+Received: from hera.kernel.org ([140.211.167.34]:52280 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752312AbZETHOm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 03:14:42 -0400
-Date: Wed, 20 May 2009 09:14:43 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, stable@kernel.org
-Subject: [GIT PULL] block bits for 2.6.30-rc6
-Message-ID: <20090520071443.GH11363@kernel.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+	id S1752466AbZETHQR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 03:16:17 -0400
+Subject: Re: [PATCH 3/10 -tip] x86: Add cpufeatures for Advanced Power
+ Management
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: "H. Peter Anvin" <hpa@kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Robert Richter <robert.richter@amd.com>, Dave Jones <davej@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>, x86 maintainers <x86@kernel.org>
+In-Reply-To: <4A12E122.1020009@kernel.org>
+References: <1242142530.2547.11.camel@ht.satnam>
+	 <1242142623.2547.13.camel@ht.satnam>  <1242142692.2547.15.camel@ht.satnam>
+	 <1242142753.2547.16.camel@ht.satnam> <1242155190.2492.73.camel@ht.satnam>
+	 <alpine.LFD.2.00.0905122219420.3561@localhost.localdomain>
+	 <1242395277.3082.24.camel@localhost.localdomain>
+	 <alpine.LFD.2.00.0905171415150.3516@localhost.localdomain>
+	 <1242745272.3169.13.camel@localhost.localdomain>
+	 <4A12E122.1020009@kernel.org>
+Content-Type: text/plain
+Date: Wed, 20 May 2009 12:45:35 +0530
+Message-Id: <1242803735.3260.44.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tue, 2009-05-19 at 09:41 -0700, H. Peter Anvin wrote:
+> Jaswinder Singh Rajput wrote:
+> > 
+> > Peter, Ingo:
+> > Do you think we need to arrange x86_capability in some order, currently
+> > we are using x86_capability numbering in random order.
+> > 
+> 
+> No.
+> 
 
-Three small fixes, that should also got to stable.
+I think better I will show with the coding to get the clear picture.
 
-  git://git.kernel.dk/linux-2.6-block.git for-linus
+Currently we are using hardcoded x86_capability as [0], [2], [4], [5].
 
-Ian Campbell (2):
-      xen/blkfront: allow xenbus state transition to Closing->Closed  when not Connected
-      xen/blkfront: fix warning when deleting gendisk on unplug/shutdown
+Thomas prefer to use constant so may be we can define current system as:
 
-Roel Kluin (1):
-      cdrom: beyond ARRAY_SIZE of viocd_diskinfo
+enum {
+	CPUID_0000_0001_EDX = 0,	/* 0x00000001 edx */
+	CPUID_8000_0001_EDX,		/* 0x80000001 edx */
+	CPUID_8086_0001_EDX,		/* 0x80860001 edx */
+	CPUID_SOFT_MISC1,		/* Software Misc1 */
+	CPUID_0000_0001_ECX,		/* 0x00000001 ecx */
+	CPUID_C000_0001_EDX,		/* 0xC0000001 edx */
+	CPUID_8000_0001_ECX,		/* 0x80000001 ecx */
+	CPUID_SOFT_MISC2,		/* Software Misc2 */
+	CPUID_SOFT_VIRTUAL,		/* Software Virtualization */
+};
 
- drivers/block/xen-blkfront.c |   10 ++++++----
- drivers/cdrom/viocd.c        |    2 +-
- 2 files changed, 7 insertions(+), 5 deletions(-)
+I was suggesting to also sort it out based on address and register like this:
 
-diff --git a/drivers/block/xen-blkfront.c b/drivers/block/xen-blkfront.c
-index 8f90508..a6cbf7b 100644
---- a/drivers/block/xen-blkfront.c
-+++ b/drivers/block/xen-blkfront.c
-@@ -934,8 +934,6 @@ static void blkfront_closing(struct xenbus_device *dev)
- 
- 	spin_lock_irqsave(&blkif_io_lock, flags);
- 
--	del_gendisk(info->gd);
--
- 	/* No more blkif_request(). */
- 	blk_stop_queue(info->rq);
- 
-@@ -949,6 +947,8 @@ static void blkfront_closing(struct xenbus_device *dev)
- 	blk_cleanup_queue(info->rq);
- 	info->rq = NULL;
- 
-+	del_gendisk(info->gd);
-+
-  out:
- 	xenbus_frontend_closed(dev);
- }
-@@ -977,8 +977,10 @@ static void backend_changed(struct xenbus_device *dev,
- 		break;
- 
- 	case XenbusStateClosing:
--		if (info->gd == NULL)
--			xenbus_dev_fatal(dev, -ENODEV, "gd is NULL");
-+		if (info->gd == NULL) {
-+			xenbus_frontend_closed(dev);
-+			break;
-+		}
- 		bd = bdget_disk(info->gd, 0);
- 		if (bd == NULL)
- 			xenbus_dev_fatal(dev, -ENODEV, "bdget failed");
-diff --git a/drivers/cdrom/viocd.c b/drivers/cdrom/viocd.c
-index 1392935..9b1624e 100644
---- a/drivers/cdrom/viocd.c
-+++ b/drivers/cdrom/viocd.c
-@@ -587,7 +587,7 @@ static int viocd_probe(struct vio_dev *vdev, const struct vio_device_id *id)
- 	struct device_node *node = vdev->dev.archdata.of_node;
- 
- 	deviceno = vdev->unit_address;
--	if (deviceno > VIOCD_MAX_CD)
-+	if (deviceno >= VIOCD_MAX_CD)
- 		return -ENODEV;
- 	if (!node)
- 		return -ENODEV;
+enum {
+	/* Hardware CPUIDs */
+	CPUID_0000_0001_ECX = 0,	/* 0x00000001 ecx */
+	CPUID_0000_0001_EDX,		/* 0x00000001 edx */
+	CPUID_8000_0001_ECX,		/* 0x80000001 ecx */
+	CPUID_8000_0001_EDX,		/* 0x80000001 edx */
+	CPUID_8086_0001_EDX,		/* 0x80860001 edx */
+	CPUID_C000_0001_EDX,		/* 0xC0000001 edx */
 
--- 
-Jens Axboe
+	/* Software/Miscellaneous CPUIDs */
+	CPUID_SOFT_MISC1,		/* Software Misc1 */
+	CPUID_SOFT_MISC2,		/* Software Misc2 */
+	CPUID_SOFT_VIRTUAL,		/* Software Virtualization */
+};
+
+Do you have some better suggestion.
+
+Thanks,
+
+--
+JSR
 
