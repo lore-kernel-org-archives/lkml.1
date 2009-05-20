@@ -1,65 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756819AbZETTK0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756824AbZETTSc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756819AbZETTK0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 15:10:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755033AbZETTKQ
+	id S1756824AbZETTSc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 15:18:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755445AbZETTSZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 15:10:16 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:32984 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754852AbZETTKP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 15:10:15 -0400
-Date: Wed, 20 May 2009 21:10:16 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Boaz Harrosh <bharrosh@panasas.com>, Tejun Heo <tj@kernel.org>,
-       James Smart <James.Smart@Emulex.Com>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       FUJITA Tomonori <tomof@acm.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH version 2] [SQUASHME] "FC Pass Thru support" fixed for
-	block/for-2.6.31 tree
-Message-ID: <20090520191016.GC11363@kernel.dk>
-References: <4A12797B.2060901@panasas.com> <4A12AC23.30808@panasas.com> <20090520111619.87f815b1.sfr@canb.auug.org.au> <1242830240.2881.10.camel@localhost.localdomain>
+	Wed, 20 May 2009 15:18:25 -0400
+Received: from exprod6og110.obsmtp.com ([64.18.1.25]:54237 "HELO
+	exprod6og110.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754839AbZETTSY convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 15:18:24 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1242830240.2881.10.camel@localhost.localdomain>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: [PATCH] mm/slub.c: Use print_hex_dump and remove unnecessary cast
+Date: Wed, 20 May 2009 15:18:22 -0400
+Message-ID: <BD79186B4FD85F4B8E60E381CAEE1909017FEF96@mi8nycmail19.Mi8.com>
+In-Reply-To: <1242844966.22786.52.camel@Joe-Laptop.home>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] mm/slub.c: Use print_hex_dump and remove unnecessary cast
+Thread-Index: AcnZet0mdtk4MGyxT1W4I8Q4e54vmgABCDkg
+References: <1242840314-25635-1-git-send-email-joe@perches.com> <alpine.DEB.1.10.0905201420050.17511@qirst.com> <1242844966.22786.52.camel@Joe-Laptop.home>
+From: "H Hartley Sweeten" <hartleys@visionengravers.com>
+To: "Joe Perches" <joe@perches.com>,
+       "Christoph Lameter" <cl@linux-foundation.org>
+Cc: <linux-kernel@vger.kernel.org>, <linux-mm@kvack.org>,
+       "Matt Mackall" <mpm@selenic.com>,
+       "Pekka Enberg" <penberg@cs.helsinki.fi>, "Ingo Molnar" <mingo@elte.hu>,
+       "David Rientjes" <rientjes@google.com>,
+       "Eduard - Gabriel Munteanu" <eduard.munteanu@linux360.ro>
+X-OriginalArrivalTime: 20 May 2009 19:18:24.0139 (UTC) FILETIME=[BEC475B0:01C9D97F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 20 2009, James Bottomley wrote:
-> On Wed, 2009-05-20 at 11:16 +1000, Stephen Rothwell wrote:
-> > On Tue, 19 May 2009 15:54:59 +0300 Boaz Harrosh <bharrosh@panasas.com> wrote:
-> > >
-> > > 
-> > > This patch should be squashed into
-> > >     [SCSI] FC Pass Thru support
-> > > 
-> > > If it needs to compile after Tejun's block-layer revamps
-> > > (all of them)
-> > 
-> > Is there some reason that the FC passthrough support (and any followup
-> > patches) can't be pushed through the block tree.  It clearly currently
-> > doesn't depend on anything new in the scsi tree ...
-> 
-> That would preserve the logical sequence of patches, yes.  However, Jens
-> is a bit pressed for time, so I agreed to do this in SCSI.
-> 
-> Unfortuantely, I still need the block tree for-next to be rebased up to
-> the current linus head because of a couple of conflicts:
-> 
-> CONFLICT (content): Merge conflict in drivers/block/hd.c
-> CONFLICT (content): Merge conflict in drivers/block/mg_disk.c
-> 
-> The are both just rebase/rebase conflicts:  it looks like there are two
-> commit ids for 
+On Wednesday, May 20, 2009 11:43 AM, Joe Perches wrote:
+> On Wed, 2009-05-20 at 14:23 -0400, Christoph Lameter wrote:
+>> This was discussed before.
+>> http://lkml.indiana.edu/hypermail/linux/kernel/0705.3/2671.html
+>
+> You've got a good memory.
+>
+>> Was hexdump changed?
+>
+> It seems not.
+>
+>> How does the output look after this change?
+>>
+>> From reading the code, the last column is unaligned.
+>
+> I did submit a patch to fix hexdump once.
+> http://lkml.org/lkml/2007/12/6/304
 
-James, I'll get this fixed (either pull linus tree in or rebase) and
-send you a note! It wont be before tomorrow, I think.
+>From what I can tell the current code does properly align the
+ascii output.
 
--- 
-Jens Axboe
+I just chopped the necessary functions out of the kernel and
+created a test program.  If I pass the string:
 
+"This is a sample buffer"
+
+I get the following output:
+
+prefix_type = DUMP_PREFIX_NONE
+
+<7>buffer: 54 68 69 73 20 69 73 20 61 20 73 61 6d 70 6c 65  This is a sample
+<7>buffer: 20 62 75 66 66 65 72                              buffer
+
+prefix_type = DUMP_PREFIX_ADDRESS
+
+<7>buffer: 0x804a008: 54 68 69 73 20 69 73 20 61 20 73 61 6d 70 6c 65  This is a sample
+<7>buffer: 0x804a018: 20 62 75 66 66 65 72                              buffer
+
+prefix_type = DUMP_PREFIX_OFFSET
+
+<7>buffer: 00000000: 54 68 69 73 20 69 73 20 61 20 73 61 6d 70 6c 65  This is a sample
+<7>buffer: 00000010: 20 62 75 66 66 65 72                              buffer
+
+Regards,
+Hartley
