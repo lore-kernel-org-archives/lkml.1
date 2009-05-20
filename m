@@ -1,203 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756764AbZETXmx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756582AbZETXte@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756764AbZETXmx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 19:42:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754037AbZETXmq
+	id S1756582AbZETXte (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 19:49:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754044AbZETXtZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 19:42:46 -0400
-Received: from mail108.messagelabs.com ([216.82.250.51]:42638 "EHLO
-	mail108.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751262AbZETXmp convert rfc822-to-8bit (ORCPT
+	Wed, 20 May 2009 19:49:25 -0400
+Received: from outbound-mail-118.bluehost.com ([69.89.22.18]:57561 "HELO
+	outbound-mail-118.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753229AbZETXtY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 19:42:45 -0400
-X-VirusChecked: Checked
-X-Env-Sender: tanderson@curtisswright.com
-X-Msg-Ref: server-6.tower-108.messagelabs.com!1242862965!65302426!1
-X-StarScan-Version: 6.0.0; banners=curtisswright.com,-,-
-X-Originating-IP: [63.111.32.72]
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: RapidIO - general questions
-Date: Wed, 20 May 2009 16:42:41 -0700
-Message-ID: <DB9BF8E7D974314CA8FEF8445DE4098F047F3EB4@SDGEXCH01.SDG.CW.LOCAL>
-In-Reply-To: <1242802800.9160.143.camel@demuxf9c>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: RapidIO - general questions
-Thread-Index: AcnZGMNBdJ5kt9VsQGCqF8okRDZBDgAirSsA
-References: <1242119872.16400.113.camel@demuxf9c><2a27d3730905130357re0adf41l19f5603a70dac57b@mail.gmail.com><1242372791.26759.34.camel@demuxf9c><2a27d3730905150056m7298b66ckb9db92f9432953d6@mail.gmail.com> <1242802800.9160.143.camel@demuxf9c>
-From: "Anderson, Trevor" <tanderson@curtisswright.com>
-To: "Jan Neskudla" <jan.neskudla.ext@nsn.com>,
-       "ext Li Yang" <leoli@freescale.com>
-Cc: "linuxppc-dev" <linuxppc-dev@ozlabs.org>, <linux-kernel@vger.kernel.org>
+	Wed, 20 May 2009 19:49:24 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=m0jQ63KJd95xKwUhMXUTcSJIIRbIwZnN124wgRf7MvfBoMKW6k+/2JpIP1nV7Mzmfhzew3BjhhXbrO707pkAHPUPFDIoWGwsGMZZcGG1fHmS2oadu1kxw7TrK88f8GVP;
+Date: Wed, 20 May 2009 16:49:10 -0700
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org, Gary Hade <garyhade@us.ibm.com>,
+       Alex Chiang <achiang@hp.com>, linux-acpi@vger.kernel.org,
+       Matthew Wilcox <matthew@wil.cx>
+Subject: Re: [PATCH] x86/pci: do assign root bus res if _CRS is used
+Message-ID: <20090520164910.6939b92b@jbarnes-g45>
+In-Reply-To: <200905081640.12677.bjorn.helgaas@hp.com>
+References: <49ED22EC.2040204@kernel.org>
+	<200904291708.52830.bjorn.helgaas@hp.com>
+	<200904300914.22772.bjorn.helgaas@hp.com>
+	<200905081640.12677.bjorn.helgaas@hp.com>
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With regards to your Oops: we sometimes find that, although a switch may
-report a port being active, whenever
-we try to discover what lies behind it, transfer errors occur that are
-non-recoverable.
+On Fri, 8 May 2009 16:40:10 -0600
+Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
+> Did anything happen with this?
+> 
+> The longer we wait to make "use_crs" the default, the harder it
+> will be, so I'd like to push ahead.
 
-As a solution, on Freescale MPC8641D, we use a DMA transfer to perform a
-simple MAINT read on a new device, just to see if it responds. Transfer
-errors may still happen, but they are recoverable in that case, and you
-can train your code to avoid that port or try it later. (The DMA engine
-will report the error, not the processor.)
+Here's a patch to make CRS the default.  If it looks ok I can push it
+into my linux-next branch.  I'm all for using reliable data from the
+BIOS.  I guess we'll find out fairly quickly if this stuff isn't...
 
+-- 
+Jesse Barnes, Intel Open Source Technology Center
 
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 90b3924..8d798bf 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -1777,7 +1777,7 @@ and is between 256 and 4096 characters. It is defined in the file
+ 				IRQ routing is enabled.
+ 		noacpi		[X86] Do not use ACPI for IRQ routing
+ 				or for PCI scanning.
+-		use_crs		[X86] Use _CRS for PCI resource
++		nocrs		[X86] Don't use _CRS for PCI resource
+ 				allocation.
+ 		routeirq	Do IRQ routing for all PCI devices.
+ 				This is normally done in pci_enable_device(),
+diff --git a/arch/x86/include/asm/pci_x86.h b/arch/x86/include/asm/pci_x86.h
+index e60fd3e..010c08c 100644
+--- a/arch/x86/include/asm/pci_x86.h
++++ b/arch/x86/include/asm/pci_x86.h
+@@ -25,7 +25,7 @@
+ #define PCI_BIOS_IRQ_SCAN	0x2000
+ #define PCI_ASSIGN_ALL_BUSSES	0x4000
+ #define PCI_CAN_SKIP_ISA_ALIGN	0x8000
+-#define PCI_USE__CRS		0x10000
++#define PCI_NO_CRS		0x10000
+ #define PCI_CHECK_ENABLE_AMD_MMCONF	0x20000
+ #define PCI_HAS_IO_ECS		0x40000
+ #define PCI_NOASSIGN_ROMS	0x80000
+diff --git a/arch/x86/pci/acpi.c b/arch/x86/pci/acpi.c
+index c0ecf25..9f562a3 100644
+--- a/arch/x86/pci/acpi.c
++++ b/arch/x86/pci/acpi.c
+@@ -217,7 +217,7 @@ struct pci_bus * __devinit pci_acpi_scan_root(struct acpi_device *device, int do
+ #endif
+ 	}
+ 
+-	if (bus && (pci_probe & PCI_USE__CRS))
++	if (bus && !(pci_probe & PCI_NO_CRS))
+ 		get_current_resources(device, busnum, domain, bus);
+ 	return bus;
+ }
+diff --git a/arch/x86/pci/amd_bus.c b/arch/x86/pci/amd_bus.c
+index f893d6a..cfed6b1 100644
+--- a/arch/x86/pci/amd_bus.c
++++ b/arch/x86/pci/amd_bus.c
+@@ -101,7 +101,7 @@ void x86_pci_root_bus_res_quirks(struct pci_bus *b)
+ 	struct pci_root_info *info;
+ 
+ 	/* don't go for it if _CRS is used */
+-	if (pci_probe & PCI_USE__CRS)
++	if (!(pci_probe & PCI_NO_CRS)
+ 		return;
+ 
+ 	/* if only one root bus, don't need to anything */
+diff --git a/arch/x86/pci/common.c b/arch/x86/pci/common.c
+index 2202b62..3e361c7 100644
+--- a/arch/x86/pci/common.c
++++ b/arch/x86/pci/common.c
+@@ -515,8 +515,8 @@ char * __devinit  pcibios_setup(char *str)
+ 	} else if (!strcmp(str, "assign-busses")) {
+ 		pci_probe |= PCI_ASSIGN_ALL_BUSSES;
+ 		return NULL;
+-	} else if (!strcmp(str, "use_crs")) {
+-		pci_probe |= PCI_USE__CRS;
++	} else if (!strcmp(str, "nocrs")) {
++		pci_probe |= PCI_NO_CRS;
+ 		return NULL;
+ 	} else if (!strcmp(str, "earlydump")) {
+ 		pci_early_dump_regs = 1;
 
-> -----Original Message-----
-> From: linuxppc-dev-bounces+tanderson=curtisswright.com@ozlabs.org
-[mailto:linuxppc-dev-
-> bounces+tanderson=curtisswright.com@ozlabs.org] On Behalf Of Jan
-Neskudla
-> Sent: Wednesday, May 20, 2009 12:00 AM
-> To: ext Li Yang
-> Cc: linuxppc-dev; linux-kernel@vger.kernel.org
-> Subject: Re: RapidIO - general questions
-> 
-> n Fri, 2009-05-15 at 15:56 +0800, ext Li Yang wrote:
-> > On Fri, May 15, 2009 at 3:33 PM, Jan Neskudla
-<jan.neskudla.ext@nsn.com> wrote:
-> > > On Wed, 2009-05-13 at 18:57 +0800, ext Li Yang wrote:
-> > >> cc'ed LKML
-> > >>
-> > >> On Tue, May 12, 2009 at 5:17 PM, Jan Neskudla
-<jan.neskudla.ext@nsn.com> wrote:
-> > >> > Hallo
-> > >> >
-> > >> > we'd likes to use a RapidIO as a general communication bus on
-our new
-> > >> > product, and so I have some questions about general design of
-Linux RIO
-> > >> > subsystem. I did not find any better mailing list for RapidIO
-> > >> > discussion.
-> > >> >
-> > >> > [1] - we'd like to implement following features
-> > >> >    * Hot-plug (hot-insert/hot-remove) of devices
-> > >> >    * Error handling (port-write packets - configuration,
-handling of
-> > >> > them)
-> > >> >    * Static ID configuration based on port numbers
-> > >> >    * Aux driver - basic driver, for sending messages over
-different
-> > >> > mboxes, handling ranges of doorbells
-> > >> >
-> > >> >    Is it here anyone who is working on any improvement, or
-anyone who
-> > >> > knows the development plans for RapidIO subsystem?
-> > >> >
-> > >>
-> > >> AFAIK, there is no one currently working on these features for
-Linux.
-> > >> It will be good if you can add these useful features.
-> > > Yes it looks like that, currently we are analyzing current rapidIO
-> > > system, and how we can add these features.
-> > >
-> > >>
-> > >> > [2] - I have a following problem with a current implementation
-of
-> > >> > loading drivers. The driver probe-function call is based on
-comparison
-> > >> > of VendorID (VID) and DeviceID (DID) only. Thus if I have 3
-devices with
-> > >> > same DID and VID connected to the same network (bus), the
-driver is
-> > >> > loaded 3times, instead only once for the actual device Master
-port.
-> > >>
-> > >> This should be the correct way as you actually have 3 instances
-of the device.
-> > >>
-> > >> >
-> > >> > Rionet driver solved this by enabling to call initialization
-function
-> > >> > just once, and it expect that this is the Master port.
-> > >>
-> > >> Rionet is kind of special.  It's not working like a simple device
-> > >> driver, but more like a customized protocol stack to support
-multiple
-> > >> ethernet over rio links.
-> > >>
-> > >> >
-> > >> > Is it this correct behavior  ? It looks to me that RapidIO is
-handled
-> > >> > like a local bus (like PCI)
-> > >>
-> > >> This is correct behavior.  All of them are using Linux
-device/driver
-> > >> infrastructure, but rionet is a special device.
-> > >
-> > > But I do not have a 3 devices on one silicon. I am talking about 3
-> > > devices (3 x EP8548 boards + IDT switch) connected over rapidIO
-through
-> > > the switch. And in this case I'd like to have only one driver
-siting on
-> > > the top of Linux RapidIO subsystem. I don't see the advantage of
-loading
-> >
-> > You are having one driver, but it probes 3 times for each device
-using
-> > the driver.
-> >
-> > > a driver locally for remote device. Am I missing something  ?
-> >
-> > If you want to interact with the remote device, you need the driver
-to
-> > do the work locally.
-> 
-> We are going to use a RapidIO as a bigger network of active devices,
-and
-> each will have each own driver (sitting on its own), and all the
-> settings will be done over maintenance packets.
-> 
-> May be it will be solved by the fact, that we are going to use a
-> staticIDs, so there will be no discovery as it is now. And thus there
-> will be only one device visible in the internal structures of the
-> subsystem, and thus only one drive will be loaded.
-> 
-> >
-> > >
-> > > And one more think, I am getting so much Bus errors OOPSes.
-Whenever
-> > > there is a problem with a comunication over Rio I get such a
-kernel OPS.
-> > > I had to add some delays into some function to be able to finish
-the
-> > > enum+discovery process. Did you have some experience with some
-bigger
-> > > rio network running under linux ?
-> >
-> > It looks like an known issue for switched rio network, but I don't
-> > have the correct equipment to reproduce the problem here.  Could you
-> > do some basic debugging and share your findings?  Thanks.
-> 
-> I tried to acquired some info about the problem, I found that the OOPS
-> always occur when there is no respond from the device or the respond
-is
-> too slow. I always got that error during function call
-> rio_get_host_deviceid_lock when it tries to access a remote device or
-> switch. This function is the first call of the
-rio_mport_read_config_32
-> so is also first try of remote access to any device.
-> 
-> It is a timing issue, and after placing a printk into the
-> rio_get_host_deviceid_lock the OOPSing almost disappeared.
-> 
->                                  Jan
-> 
-> >
-> > - Leo
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-
-_______________________________________________________________________
-This e-mail and any files transmitted with it are proprietary and intended solely for the use of the individual or entity to whom they are addressed. If you have reason to believe that you have received this e-mail in error, please notify the sender and destroy this email and any attached files. Please note that any views or opinions presented in this e-mail are solely those of the author and do not necessarily represent those of the Curtiss-Wright Corporation or any of its subsidiaries.  Documents attached hereto may contain technology subject to government export regulations. Recipient is solely responsible for ensuring that any re-export, transfer or disclosure of this information is in accordance with applicable government export regulations.  The recipient should check this e-mail and any attachments for the presence of viruses. Curtiss-Wright Corporation and its subsidiaries accept no liability for any damage caused by any virus transmitted by this e-mail.
