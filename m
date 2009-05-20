@@ -1,62 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756393AbZETJn4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755052AbZETJ5E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756393AbZETJn4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 05:43:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754266AbZETJns
+	id S1755052AbZETJ5E (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 05:57:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754070AbZETJ4y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 05:43:48 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:48568 "EHLO
-	IE1EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753985AbZETJnq convert rfc822-to-8bit (ORCPT
+	Wed, 20 May 2009 05:56:54 -0400
+Received: from mail5.tpgi.com.au ([203.12.160.101]:53512 "EHLO
+	mail5.tpgi.com.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754058AbZETJ4y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 05:43:46 -0400
-X-BigFish: VPS-22(zz1432R98dR1805Mzz1202hzzz32i6bh43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KJXSBZ-03-2JM-01
-Date: Wed, 20 May 2009 11:43:10 +0200
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: Ingo Molnar <mingo@elte.hu>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Yinghai Lu <yinghai@kernel.org>, Weidong Han <weidong.han@intel.com>,
-       dwmw2@infradead.org, suresh.b.siddha@intel.com,
-       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
-       kvm@vger.kernel.org
-Subject: Re: [PATCH v2 2/2] Intel-IOMMU, intr-remap: source-id checking
-Message-ID: <20090520094310.GF9835@amd.com>
-References: <1242757912-6041-1-git-send-email-weidong.han@intel.com> <1242757912-6041-3-git-send-email-weidong.han@intel.com> <20090519115055.GB14305@elte.hu> <m1k54cj3iz.fsf@fess.ebiederm.org> <20090520082114.GC6736@elte.hu>
+	Wed, 20 May 2009 05:56:54 -0400
+X-TPG-Junk-Status: Message not scanned
+X-TPG-Antivirus: Passed
+X-TPG-Abuse: host=adsl.samad.com.au; ip=60.241.248.86; date=Wed, 20 May 2009 19:56:44 +1000
+Date: Wed, 20 May 2009 19:56:39 +1000
+From: Alex Samad <alex@samad.com.au>
+To: Dave Chinner <david@fromorbit.com>
+Cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com
+Subject: Re: Kernel crash with 2.6.29 + nfs + xfs (radix-tree)
+Message-ID: <20090520095639.GA27496@samad.com.au>
+References: <20090520003745.GA27491@samad.com.au> <20090520090558.GQ16929@discord.disaster>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="DocE+STaALJfprDB"
 Content-Disposition: inline
-In-Reply-To: <20090520082114.GC6736@elte.hu>
+In-Reply-To: <20090520090558.GQ16929@discord.disaster>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 20 May 2009 09:43:11.0008 (UTC) FILETIME=[63569A00:01C9D92F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 20, 2009 at 10:21:14AM +0200, Ingo Molnar wrote:
-> 
-> * Eric W. Biederman <ebiederm@xmission.com> wrote:
-> > Being a major nitpick, I have to point out that the code is not 
-> > structured to support other iommus, and I think AMD has one that 
-> > can do this as well.
-> 
-> (Joerg Cc:-ed)
 
-The AMD IOMMU does also have an interrupt remapping feature. But it is
-currently unsupported in the Linux driver. When this is going to be
-implemented I think we can go the same way as for device passthrough in
-KVM. This was an Intel-only feature too and was later adapted to support
-AMD IOMMU too.
+--DocE+STaALJfprDB
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Joerg
+On Wed, May 20, 2009 at 07:05:58PM +1000, Dave Chinner wrote:
+> On Wed, May 20, 2009 at 10:37:45AM +1000, Alex Samad wrote:
+> > Hi
+> >=20
+> > I have been quit a lot of crashes on my debian amd64 box in the 2.6.29
+> > series of kernel. Seems for me to be when the system is under load and
+> > there is network action -> nfsd -> xfs.
+>=20
+> Perhaps a use after free or a reference counting problem. Thanks for
+> reporting it.
+>=20
+> > May  5 19:45:38 x kernel: ------------[ cut here ]------------
 
--- 
-           | Advanced Micro Devices GmbH
- Operating | Karl-Hammerschmidt-Str. 34, 85609 Dornach bei München
- System    | 
- Research  | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
- Center    | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-           | Registergericht München, HRB Nr. 43632
+[snip]
 
+> > I have logged a bug with debian
+> > ( more info http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=3D526406),
+> > there has been one other to report this problem.
+> >=20
+> > we believe somebody has already reported a similar problem here
+> > http://groups.google.com/group/linux.kernel/browse_thread/thread/dd00f5=
+2e93397c9e/6b6814dab9b41a05?pli=3D1
+>=20
+> Which no-one noticed was related to XFS (not in the subject line)
+> and so most people (like me) would have simply deleted it without
+> reading it....
+>=20
+> > has any one else seen this problem, who do I need to raise this too ?
+>=20
+
+thanks
+
+> I've cc'd the XFS list.
+>=20
+> > I am able to reproduce this problem on my machine (amd64 phenomem II 8G
+> > ram), running virtualbox, I have a vm access the local filesystem via
+> > nfs (udp) and when I do a rm -fr <some directory ~200M> I see the bug
+>=20
+> I run debian, XFS and 2.6.29 on all my machines but I haven't
+> tripped over the problem - it all appears to be related to calling
+> dispose_list() during/just after removing a lot of files. If you
+> have a simple method of reproducing the problem (e.g. a simple shell
+> script) it would help track down the problem much faster....
+
+my source directory was an openwrt trunk (svn co
+svn://svn.openwrt.org/openwrt/trunk/) which I had done a compile on, I
+went to delete it (just about every time it would cause this problem.
+
+on the original data set (I was in the process of moving from one
+location to another so I still have the original data)
+
+du -s --si=20
+5.2G
+
+find | wc -l
+313320
+
+if you have a look at the debian bug, another person (mike) has
+experienced this on a machine that is basically a backup server so
+heavily stressed out - using xfs partitions - he found going back to
+2.6.28-7 seems to be stable.
+
+
+
+>=20
+> Cheers,
+>=20
+> Dave.
+
+
+--DocE+STaALJfprDB
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkoT09QACgkQkZz88chpJ2P+DwCeKmpLZGr3qPzsnpa1Lp3Pur/0
+QNMAoNSQLT3yKRVDZ8bGScMnyjO+9ux9
+=NCm2
+-----END PGP SIGNATURE-----
+
+--DocE+STaALJfprDB--
