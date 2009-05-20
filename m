@@ -1,119 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757052AbZETJVn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756147AbZETJZi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757052AbZETJVn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 05:21:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754215AbZETJVf
+	id S1756147AbZETJZi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 05:25:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754015AbZETJZ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 05:21:35 -0400
-Received: from bld-mail13.adl6.internode.on.net ([150.101.137.98]:37006 "EHLO
-	mail.internode.on.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753971AbZETJVe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 05:21:34 -0400
-X-Greylist: delayed 926 seconds by postgrey-1.27 at vger.kernel.org; Wed, 20 May 2009 05:21:33 EDT
-Date: Wed, 20 May 2009 19:05:58 +1000
-From: Dave Chinner <david@fromorbit.com>
-To: Alex Samad <alex@samad.com.au>
-Cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: Kernel crash with 2.6.29 + nfs + xfs (radix-tree)
-Message-ID: <20090520090558.GQ16929@discord.disaster>
-References: <20090520003745.GA27491@samad.com.au>
+	Wed, 20 May 2009 05:25:28 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:38043 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752466AbZETJZ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 05:25:27 -0400
+Date: Wed, 20 May 2009 11:25:28 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
+       akpm@linux-foundation.org, jack@suse.cz
+Subject: Re: [PATCH 0/11] Per-bdi writeback flusher threads #4
+Message-ID: <20090520092528.GP11363@kernel.dk>
+References: <1242649192-16263-1-git-send-email-jens.axboe@oracle.com> <1242713463.2560.5.camel@ymzhang> <20090519062049.GP4140@kernel.dk> <1242805911.2560.28.camel@ymzhang> <20090520080938.GM11363@kernel.dk> <20090520085446.GN11363@kernel.dk> <1242811142.2560.33.camel@ymzhang>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090520003745.GA27491@samad.com.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1242811142.2560.33.camel@ymzhang>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 20, 2009 at 10:37:45AM +1000, Alex Samad wrote:
-> Hi
+On Wed, May 20 2009, Zhang, Yanmin wrote:
+> On Wed, 2009-05-20 at 10:54 +0200, Jens Axboe wrote:
+> > On Wed, May 20 2009, Jens Axboe wrote:
+> > > On Wed, May 20 2009, Zhang, Yanmin wrote:
+> > > > On Tue, 2009-05-19 at 08:20 +0200, Jens Axboe wrote:
+> > > > > On Tue, May 19 2009, Zhang, Yanmin wrote:
+> > > > > > On Mon, 2009-05-18 at 14:19 +0200, Jens Axboe wrote:
+> > > > > > > Hi,
+> > > > > > >
+> > > > > > > This is the fourth version of this patchset. Chances since v3:
+> > > > > > >
+> > > > > > > - Dropped a prep patch, it has been included in mainline since.
+> > > > > > >
+> > > > > > > - Add a work-to-do list to the bdi. This is struct bdi_work. Each
+> > > > > > >   wb thread will notice and execute work on bdi->work_list. The arguments
+> > > > > > >   are which sb (or NULL for all) to flush and how many pages to flush.
+> > > > > > >
+> > > > > > > - Fix a bug where not all bdi's would end up on the bdi_list, so potentially
+> > > > > > >   some data would not be flushed.
+> > > > > > >
+> > > > > > > - Make wb_kupdated() pass on wbc->older_than_this so we maintain the same
+> > > > > > >   behaviour for kupdated flushes.
+> > > > > > >
+> > > > > > > - Have the wb thread flush first before sleeping, to avoid losing the
+> > > > > > >   first flush on lazy register.
+> > > > > > >
+> > > > > > > - Rebase to newer kernels.
+> > > > 
+> > > > > I'm attaching two patches - apply #1 to -rc6, and then #2 is a roll-up
+> > > > > of the patch series that you can apply next.
+> > > > Jens,
+> > > > 
+> > > > I run into 2 issues with kernel 2.6.30-rc6+BDI_Flusher_V4. Below is one.
+> > > > 
+> > > > Tue May 19 00:00:00 CST 2009
+> > > > BUG: unable to handle kernel NULL pointer dereference at 00000000000001d8
+> > > > IP: [<ffffffff803f3c4c>] generic_make_request+0x10a/0x384
+> > > > PGD 0
+> > > > Oops: 0000 [#1] SMP
+> > > > last sysfs file: /sys/block/sdb/stat
+> > > > CPU 0
+> > > > Modules linked in: igb
+> > > > Pid: 1445, comm: bdi-8:16 Not tainted 2.6.30-rc6-bdiflusherv4 #1 X8DTN
+> > > > RIP: 0010:[<ffffffff803f3c4c>]  [<ffffffff803f3c4c>] generic_make_request+0x10a/0x384
+> > > > RSP: 0018:ffff8800bd04da60  EFLAGS: 00010206
+> > > > RAX: 0000000000000000 RBX: ffff8801be45d500 RCX: 00000000038a0df8
+> > > > RDX: 0000000000000008 RSI: 0000000000000576 RDI: ffff8801bf408680
+> > > > RBP: ffff8801be45d500 R08: ffffe20001ee8140 R09: ffff8800bd04da98
+> > > > R10: 0000000000000000 R11: ffff8800bd72eb40 R12: ffff8801be45d500
+> > > > R13: ffff88005f51f310 R14: 0000000000000008 R15: ffff8800b15a5458
+> > > > FS:  0000000000000000(0000) GS:ffffc20000000000(0000) knlGS:0000000000000000
+> > > > CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+> > > > CR2: 00000000000001d8 CR3: 0000000000201000 CR4: 00000000000006e0
+> > > > DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> > > > DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> > > > Process bdi-8:16 (pid: 1445, threadinfo ffff8800bd04c000, task ffff8800bd1b75f0)
+> > > > Stack:
+> > > >  0000000000000008 ffffffff8027a613 00000000848dc000 ffffffffffffffff
+> > > >  ffff8800a8190f50 ffffffff00000012 ffff8800a81938e0 ffffc2000000001b
+> > > >  0000000000000000 0000000000000000 ffffe200026f9c30 0000000000000000
+> > > > Call Trace:
+> > > >  [<ffffffff8027a613>] ? mempool_alloc+0x59/0x10f
+> > > >  [<ffffffff803f3f70>] ? submit_bio+0xaa/0xb1
+> > > >  [<ffffffff802c6a3f>] ? submit_bh+0xe3/0x103
+> > > >  [<ffffffff802c92ea>] ? __block_write_full_page+0x1fb/0x2f2
+> > > >  [<ffffffff802c7d6a>] ? end_buffer_async_write+0x0/0xfb
+> > > >  [<ffffffff8027e8d2>] ? __writepage+0xa/0x25
+> > > >  [<ffffffff8027f036>] ? write_cache_pages+0x21c/0x338
+> > > >  [<ffffffff8027e8c8>] ? __writepage+0x0/0x25
+> > > >  [<ffffffff8027f195>] ? do_writepages+0x27/0x2d
+> > > >  [<ffffffff802c22c1>] ? __writeback_single_inode+0x159/0x2b3
+> > > >  [<ffffffff8071e52a>] ? thread_return+0x3e/0xaa
+> > > >  [<ffffffff8027f267>] ? determine_dirtyable_memory+0xd/0x1d
+> > > >  [<ffffffff8027f2dd>] ? get_dirty_limits+0x1d/0x255
+> > > >  [<ffffffff802c27bc>] ? generic_sync_wb_inodes+0x1b4/0x220
+> > > >  [<ffffffff802c3130>] ? wb_do_writeback+0x16c/0x215
+> > > >  [<ffffffff802c323e>] ? bdi_writeback_task+0x65/0x10d
+> > > >  [<ffffffff8024cc06>] ? autoremove_wake_function+0x0/0x2e
+> > > >  [<ffffffff8024cb27>] ? bit_waitqueue+0x10/0xa0
+> > > >  [<ffffffff80289257>] ? bdi_start_fn+0x0/0xba
+> > > >  [<ffffffff802892c6>] ? bdi_start_fn+0x6f/0xba
+> > > >  [<ffffffff8024c860>] ? kthread+0x54/0x80
+> > > >  [<ffffffff8020c97a>] ? child_rip+0xa/0x20
+> > > >  [<ffffffff8024c80c>] ? kthread+0x0/0x80
+> > > >  [<ffffffff8020c970>] ? child_rip+0x0/0x20
+> > > > 
 > 
-> I have been quit a lot of crashes on my debian amd64 box in the 2.6.29
-> series of kernel. Seems for me to be when the system is under load and
-> there is network action -> nfsd -> xfs.
-
-Perhaps a use after free or a reference counting problem. Thanks for
-reporting it.
-
-> May  5 19:45:38 x kernel: ------------[ cut here ]------------
-> May  5 19:45:39 x kernel: kernel BUG at lib/radix-tree.c:485!
-> May  5 19:45:39 x kernel: invalid opcode: 0000 [#1] SMP
-> May  5 19:45:39 x kernel: last sysfs file:
-> /sys/block/sdc/queue/nr_requests
-> May  5 19:45:39 x kernel: CPU 0
-> May  5 19:45:39 x kernel: Pid: 335, comm: kswapd0 Not tainted 2.6.29.2 #1 S2895
-> May  5 19:45:39 x kernel: RIP: 0010:[<ffffffff803916e0>] [<ffffffff803916e0>] radix_tree_tag_set+0x86/0xc6
-> May  5 19:45:39 x kernel: RSP: 0018:ffff88016e2d1c88  EFLAGS: 00010246
-> May  5 19:45:39 x kernel: RAX: 0000000000000004 RBX: 0000000000000000 RCX: 0000000000000000
-> May  5 19:45:39 x kernel: RDX: 0000000000000000 RSI: 0000000000000000 RDI: ffff88016a822b58
-> May  5 19:45:39 x kernel: RBP: 0000000000000004 R08: 0000000000000000 R09: 8000000000000000
-> May  5 19:45:39 x kernel: R10: ffffa5a5a5a5a5a5 R11: ffffffff8037541d R12: 0000000000000001
-> May  5 19:45:39 x kernel: R13: 0000000000000000 R14: ffff88016d1bc310 R15: 0000000000000000
-> May  5 19:45:39 x kernel: FS:  00007fea1903f6e0(0000) GS:ffffffff80759040(0000) knlGS:0000000000000000
-> May  5 19:45:39 x kernel: CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-> May  5 19:45:39 x kernel: CR2: 00007fd2df5ae8e0 CR3: 000000016bad0000 CR4: 00000000000006e0
-> May  5 19:45:39 x kernel: DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> May  5 19:45:39 x kernel: DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> May  5 19:45:39 x kernel: Process kswapd0 (pid: 335, threadinfo ffff88016e2d0000, task ffff88016f23eac0)
-> May  5 19:45:39 x kernel: Stack:
-> May  5 19:45:39 x kernel:  000000000069d804 0000000000000000 ffff88016d1bc2d0 ffff88000a8b7400
-> May  5 19:45:39 x kernel:  ffff88000a8b7400 ffff88016df30000 ffff88000a8b74f8 ffff88016d1bc30c
-> May  5 19:45:39 x kernel:  ffffffff80376b02 ffff88000a8b7580 0000000000000024 ffff88016e2d1d60
-> May  5 19:45:39 x kernel: Call Trace:
-> May  5 19:45:39 x kernel:  [<ffffffff80376b02>] ? xfs_inode_set_reclaim_tag+0x69/0x89
-> May  5 19:45:39 x kernel:  [<ffffffff8036972f>] ? xfs_reclaim+0x99/0x9f
-> May  5 19:45:39 x kernel:  [<ffffffff80375453>] ? xfs_fs_destroy_inode+0x36/0x54
-> May  5 19:45:39 x kernel:  [<ffffffff80290304>] ? dispose_list+0xcd/0xfb
-> May  5 19:45:39 x kernel:  [<ffffffff80290526>] ? shrink_icache_memory+0x1f4/0x22a
-> May  5 19:45:39 x kernel:  [<ffffffff8026242a>] ? shrink_slab+0xe4/0x157
-> May  5 19:45:39 x kernel:  [<ffffffff80262b53>] ? kswapd+0x44f/0x5c9
-> May  5 19:45:39 x kernel:  [<ffffffff8026063e>] ? isolate_pages_global+0x0/0x231
-> May  5 19:45:39 x kernel:  [<ffffffff8024458a>] ? autoremove_wake_function+0x0/0x2e
-> May  5 19:45:39 x kernel:  [<ffffffff8022a80e>] ? __wake_up_common+0x44/0x73
-> May  5 19:45:39 x kernel:  [<ffffffff80262704>] ? kswapd+0x0/0x5c9
-> May  5 19:45:39 x kernel:  [<ffffffff80244266>] ? kthread+0x47/0x73
-> May  5 19:45:39 x kernel:  [<ffffffff8020c4ba>] ? child_rip+0xa/0x20
-> May  5 19:45:39 x kernel:  [<ffffffff8024421f>] ? kthread+0x0/0x73
-> May  5 19:45:39 x kernel:  [<ffffffff8020c4b0>] ? child_rip+0x0/0x20
-> May  5 19:45:39 x kernel: Code: 83 e5 3f 89 ea e8 04 fc ff ff 85 c0 75
-> 10 48 8b 54 24 08 48 8d 84 13 18 02 00 00 0f ab 28 48 63 c5 48 8b 5c c3
-> 18 48 85 db 75 04 <0f> 0b eb fe 41 83 ed 06 41 ff cc 45$
-> May  5 19:45:39 x kernel: RIP  [<ffffffff803916e0>]
-> radix_tree_tag_set+0x86/0xc6
-> May  5 19:45:39 x kernel:  RSP <ffff88016e2d1c88>
-> May  5 19:45:39 x kernel: ---[ end trace aed81d6fef80e624 ]---
+> 
+> > 
+> > I found one issue yesterday and one today that could cause issues, not
+> > sure it would explain this one. But at least it's worth a try, if it's
+> > reproducible.
+> I just reproduced it a moment ago manually.
+> 
+> [global]
+> direct=0
+> ioengine=mmap
+> iodepth=256
+> iodepth_batch=32
+> size=4G
+> bs=4k
+> pre_read=1
+> overwrite=1
+> numjobs=1
+> loops=5
+> runtime=600
+> group_reporting
+> directory=/mnt/stp/fiodata
+> [job_group0_sub0]
+> startdelay=0
+> rw=randwrite
+> filename=data0/f1:data0/f2
 > 
 > 
-> I have logged a bug with debian
-> ( more info http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=526406),
-> there has been one other to report this problem.
+> The fio includes my preread patch to flush files to memory.
 > 
-> we believe somebody has already reported a similar problem here
-> http://groups.google.com/group/linux.kernel/browse_thread/thread/dd00f52e93397c9e/6b6814dab9b41a05?pli=1
+> Before starting the second testing, I did a cache dropping by:
+> #echo "3">/proc/sys/vm/drop_caches.
+> 
+> I suspect the drop_caches trigger it.
 
-Which no-one noticed was related to XFS (not in the subject line)
-and so most people (like me) would have simply deleted it without
-reading it....
+Thanks, will try this. What filesystem and mount options did you use?
 
-> has any one else seen this problem, who do I need to raise this too ?
+> >  I'm attaching the three patches I have against the posted
+> > series. The one in the middle is just an optimization, the first and
+> > third are the bug fixes.
+> I will test it tomorrow.
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-I've cc'd the XFS list.
-
-> I am able to reproduce this problem on my machine (amd64 phenomem II 8G
-> ram), running virtualbox, I have a vm access the local filesystem via
-> nfs (udp) and when I do a rm -fr <some directory ~200M> I see the bug
-
-I run debian, XFS and 2.6.29 on all my machines but I haven't
-tripped over the problem - it all appears to be related to calling
-dispose_list() during/just after removing a lot of files. If you
-have a simple method of reproducing the problem (e.g. a simple shell
-script) it would help track down the problem much faster....
-
-Cheers,
-
-Dave.
 -- 
-Dave Chinner
-david@fromorbit.com
+Jens Axboe
+
