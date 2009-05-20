@@ -1,68 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756609AbZETXPl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756049AbZETXSP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756609AbZETXPl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 19:15:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753548AbZETXPd
+	id S1756049AbZETXSP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 19:18:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754921AbZETXSI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 19:15:33 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:36048 "EHLO bilbo.ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752737AbZETXPd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 19:15:33 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18964.36622.94267.309523@cargo.ozlabs.ibm.com>
-Date: Thu, 21 May 2009 09:15:26 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       Corey Ashford <cjashfor@linux.vnet.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [RFC PATCH] perf_counter: dynamically allocate tasks'
-	perf_counter_context struct
-In-Reply-To: <20090520171207.GA16706@elte.hu>
-References: <18963.63352.489273.92145@cargo.ozlabs.ibm.com>
-	<20090520171207.GA16706@elte.hu>
-X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
+	Wed, 20 May 2009 19:18:08 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:52789 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754609AbZETXSH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 19:18:07 -0400
+X-Sasl-enc: ZMqDIMrLlwH7oDRXMV8KlUidFTqnyP3kQOJmKxY+nuX9 1242861487
+From: Alexander van Heukelum <heukelum@fastmail.fm>
+To: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+Cc: Jan Beulich <JBeulich@novell.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Cyrill Gorcunov <gorcunov@gmail.com>,
+       Alexander van Heukelum <heukelum@fastmail.fm>
+Subject: [PATCH] i386, entry_32: cleanup
+Date: Thu, 21 May 2009 01:17:58 +0200
+Message-Id: <1242861486-7255-1-git-send-email-heukelum@fastmail.fm>
+X-Mailer: git-send-email 1.6.0.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar writes:
+Hi Ingo and others!
 
-> * Paul Mackerras <paulus@samba.org> wrote:
-> 
-> > This replaces the struct perf_counter_context in the task_struct 
-> > with a pointer to a dynamically allocated perf_counter_context 
-> > struct.  The main reason for doing is this is to allow us to 
-> > transfer a perf_counter_context from one task to another when we 
-> > do lazy PMU switching in a later patch.
-> 
-> Hm, i'm not sure how far this gets us towards lazy PMU switching.
-> 
-> In fact i'd say that the term "lazy PMU switching" is probably 
-> misleading, we should use: "equivalent PMU context switching" or 
-> instead.
+Here is a new batch of patches to the entry code. I started
+something similar a few months ago for x86_64, but I lack a
+64-bit machine I can use to test at the moment, so I decided
+to make a start on i386 instead.
 
-Yes, that's what I mean.
+This series takes on the SAVE_ALL macro, which expanded to a
+pretty large number of instructions in every interrupt dispatcher
+in entry_32.S. Instead, it now expands to a call to a function
+(save_entry) that does the register saving and the preparation
+needed to call C functions.
 
-As you say, we need to be able to detect when two tasks have
-equivalent contexts - that is, when their counters are all inherited
-from a common ancestor.  My idea is that in that situation we simply
-swap the contexts: move the context of the outgoing task onto the
-incoming task, and give the incoming task's context to the outgoing
-task.  With my patch, that involves simply swapping the pointers over
-and adjusting the task pointers in the two contexts.
+This also gets rid of the indirect call used in the interrupt
+dispatcher. The old code does some interesting shuffle on the
+stack to pass the address of the C handler to a common piece
+of code. The new version creates a stub that for each interrupt,
+where each stub calls save_entry, does a direct call to the
+C handler and the jumps to a common return path.
 
-That means that all the counters get transferred over to the incoming
-task, so there is nothing in the PMU or the arch code that needs to
-changed or adjusted.  The outgoing task still has a perfectly valid
-context, so it doesn't matter if it migrates to another CPU.  The
-nice thing is that there is nothing special or unusual about the state
-after we have swapped the contexts - nothing that needs to be
-remembered or undone later.
+I did some latency measurements and this code does not perform
+significantly better or worse than the old code on a "Sempron
+2400+". The original aim was to shrink entry_32.o, but this
+goal was not reached. The size has not changes significantly,
+mostly due to the due to the check for %ss==__ESPFIX_SS in the
+exception stubs and the fact that the SAVE_ALL macro expanded
+to a lot of small instructions. On the other hand, entry_32.S
+shrunk by more than 10%:
 
-Hopefully I'll have an actual patch to show you later today.
+ arch/x86/kernel/cpu/mcheck/mce_32.c |    6 +
+ arch/x86/kernel/entry_32.S          |  513 +++++++++++------------------------
+ 2 files changed, 171 insertions(+), 348 deletions(-)
 
-Paul.
+I'ld very much appreciate some more testing in the -x86 pool.
+
+Greetings,
+    Alexander
