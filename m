@@ -1,78 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756121AbZETNXS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754948AbZETNb7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756121AbZETNXS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 09:23:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753730AbZETNXH
+	id S1754948AbZETNb7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 09:31:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753083AbZETNbw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 09:23:07 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:43907 "EHLO mx2.redhat.com"
+	Wed, 20 May 2009 09:31:52 -0400
+Received: from gate.crashing.org ([63.228.1.57]:59417 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753360AbZETNXG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 09:23:06 -0400
-Date: Wed, 20 May 2009 15:18:23 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Ingo Molnar <mingo@elte.hu>, Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: INFO: possible circular locking dependency at
-	cleanup_workqueue_thread
-Message-ID: <20090520131823.GA14933@redhat.com>
-References: <c4e36d110905120059i4c155508oa00672da0b33a07a@mail.gmail.com> <20090517071834.GA8507@elte.hu> <1242821938.26820.586.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1242821938.26820.586.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1751776AbZETNbv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 09:31:51 -0400
+Cc: Li Yang <leoli@freescale.com>, Wolfgang Denk <wd@denx.de>,
+       linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+       LKML List <linux-kernel@vger.kernel.org>
+Message-Id: <156C2E1E-8E67-4358-B72E-4BB67D79C2AF@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Scott Wood <scottwood@freescale.com>
+In-Reply-To: <20090513194249.BA7D9832E416@gemini.denx.de>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: [PATCH] [PowerPC] MPC8272ADS: fix device tree for 8 MB flash size
+Date: Wed, 20 May 2009 08:29:30 -0500
+References: <1242155174-2513-1-git-send-email-wd@denx.de> <2a27d3730905130328m27743852w2d68a62ebc32ce31@mail.gmail.com> <20090513194249.BA7D9832E416@gemini.denx.de>
+X-Mailer: Apple Mail (2.930.3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/20, Peter Zijlstra wrote:
+
+On May 13, 2009, at 2:42 PM, Wolfgang Denk wrote:
+
+> Dear Li Yang,
 >
-> > > =======================================================
-> > > [ INFO: possible circular locking dependency detected ]
-> > > 2.6.30-rc5-00097-gd665355 #59
-> > > -------------------------------------------------------
-> > > pm-suspend/12129 is trying to acquire lock:
-> > >  (events){+.+.+.}, at: [<ffffffff80259496>] cleanup_workqueue_thread+0x26/0xd0
-> > >
-> > > but task is already holding lock:
-> > >  (cpu_add_remove_lock){+.+.+.}, at: [<ffffffff80246e57>]
-> > > cpu_maps_update_begin+0x17/0x20
-> > >
-> > > which lock already depends on the new lock.
-> > >
-> > >
-> > > the existing dependency chain (in reverse order) is:
-> > >
-> > > -> #5 (cpu_add_remove_lock){+.+.+.}:
-> > >        [<ffffffff80271a64>] __lock_acquire+0xc64/0x10a0
-> > >        [<ffffffff80271f38>] lock_acquire+0x98/0x140
-> > >        [<ffffffff8054e78c>] __mutex_lock_common+0x4c/0x3b0
-> > >        [<ffffffff8054ebf6>] mutex_lock_nested+0x46/0x60
-> > >        [<ffffffff80246e57>] cpu_maps_update_begin+0x17/0x20
-> > >        [<ffffffff80259c33>] __create_workqueue_key+0xc3/0x250
-> > >        [<ffffffff80287b20>] stop_machine_create+0x40/0xb0
-> > >        [<ffffffff8027a784>] sys_delete_module+0x84/0x270
-> > >        [<ffffffff8020c15b>] system_call_fastpath+0x16/0x1b
-> > >        [<ffffffffffffffff>] 0xffffffffffffffff
+> In message <2a27d3730905130328m27743852w2d68a62ebc32ce31@mail.gmail.com 
+> > you wrote:
+>>
+>> Although 8MB seems to be the common size used.  It can be very easy
+>> changed as a pluggable module.  It might be better to make the code
+>> working for any reasonable flash sizes.
 >
-> Oleg, why does __create_workqueue_key() require cpu_maps_update_begin()?
-> Wouldn't get_online_cpus() be enough to freeze the online cpus?
+> You either have to provide a correct device tree for your board, or
+> use a boot loader / boot wrapper that fixes the flash base address and
+> size.
+>
+> At the moment, U-Boot does not  contain  any  code  yet  to  do  that
+> (patches  welcome :-), and as far as I understand the cuImage wrapper
+> works just the other way  round:  it  adjusts  the  mappings  to  the
+> settings  in  the  device tree, which may or may not match the actual
+> hardware. This may work, but at least gives  you  a  different  flash
+> memory  map  in Linux than what you had before in U-Boot, so it's not
+> really nice either.
+>
+>
+> Hm... it seems the majority of MPC8272ADS boards seems to come indeed
+> with 8 MB NOR flash, so I wonder if the patch should actually go in?
+>
+> Best regards,
+>
+> Wolfgang Denk
 
-Yes, get_online_cpus() pins online CPUs. But CPU_POST_DEAD calls
-cleanup_workqueue_thread() without cpu_hotplug.lock, this means
-that create/destroy can race with cpu_down().
+Scott, any feedback if our boards have 8M or 32M flash modules?
 
-We can avoid cpu_add_remove_lock, but then we have to add another
-lock to protect workqueues, cpu_populated_map, etc.
-
-> Breaking the setup_lock -> cpu_add_remove_lock dependency seems
-> sufficient.
-
-Hmm. What do you mean? Afaics setup_lock -> cpu_add_remove_lock
-is not a problem?
-
-Oleg.
-
+- k
