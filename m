@@ -1,147 +1,259 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754414AbZETCcS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755602AbZETCeq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754414AbZETCcS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 22:32:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751722AbZETCcD
+	id S1755602AbZETCeq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 22:34:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751067AbZETCej
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 22:32:03 -0400
-Received: from mail4.tpgi.com.au ([203.12.160.61]:43729 "EHLO
-	mail4.tpgi.com.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751067AbZETCcC (ORCPT
+	Tue, 19 May 2009 22:34:39 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:56704 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750879AbZETCei (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 22:32:02 -0400
-X-Greylist: delayed 6852 seconds by postgrey-1.27 at vger.kernel.org; Tue, 19 May 2009 22:32:02 EDT
-X-TPG-Junk-Status: Message not scanned
-X-TPG-Antivirus: Passed
-X-TPG-Abuse: host=adsl.samad.com.au; ip=60.241.248.86; date=Wed, 20 May 2009 10:37:48 +1000
-Date: Wed, 20 May 2009 10:37:45 +1000
-From: Alex Samad <alex@samad.com.au>
-To: linux-kernel@vger.kernel.org
-Subject: Kernel crash with 2.6.29 + nfs + xfs (radix-tree)
-Message-ID: <20090520003745.GA27491@samad.com.au>
+	Tue, 19 May 2009 22:34:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=KQGkNm0j0zIwXxnZeOvtfgKrS4txgxKYuh+14HTxM9wmqRHjc53qjCo0i/zBODqKTp
+         LyWOw/hNYGRs/t/1BUMhWpC4r/eKJusoA08tyEPMS5YwPybGYSkcNKyxeTV5P/JHaF7c
+         fZZxXOFIPF1xhH/MjZygMy3HtS/o+KI+0Xl0M=
+Date: Wed, 20 May 2009 04:34:35 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Tim Bird <tim.bird@am.sony.com>, Ingo Molnar <mingo@elte.hu>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+Subject: Re: [PATCH 2/2] ftrace: add function-graph tracer support for ARM
+	v2
+Message-ID: <20090520023432.GJ6066@nowhere>
+References: <49FB79CF.3020101@am.sony.com> <20090502001100.GH6404@nowhere> <c62985530905090914odb4dcc6pc7ea789f02515167@mail.gmail.com> <20090515210636.GQ650@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="oyUTqETQ0mS9luUI"
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090515210636.GQ650@n2100.arm.linux.org.uk>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---oyUTqETQ0mS9luUI
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-
-Hi
-
-I have been quit a lot of crashes on my debian amd64 box in the 2.6.29
-series of kernel. Seems for me to be when the system is under load and
-there is network action -> nfsd -> xfs.
-
-
-May  5 19:45:38 x kernel: ------------[ cut here ]------------
-May  5 19:45:39 x kernel: kernel BUG at lib/radix-tree.c:485!
-May  5 19:45:39 x kernel: invalid opcode: 0000 [#1] SMP
-May  5 19:45:39 x kernel: last sysfs file:
-/sys/block/sdc/queue/nr_requests
-May  5 19:45:39 x kernel: CPU 0
-May  5 19:45:39 x kernel: Pid: 335, comm: kswapd0 Not tainted 2.6.29.2
-#1 S2895
-May  5 19:45:39 x kernel: RIP: 0010:[<ffffffff803916e0>]
-[<ffffffff803916e0>] radix_tree_tag_set+0x86/0xc6
-May  5 19:45:39 x kernel: RSP: 0018:ffff88016e2d1c88  EFLAGS: 00010246
-May  5 19:45:39 x kernel: RAX: 0000000000000004 RBX: 0000000000000000
-RCX: 0000000000000000
-May  5 19:45:39 x kernel: RDX: 0000000000000000 RSI: 0000000000000000
-RDI: ffff88016a822b58
-May  5 19:45:39 x kernel: RBP: 0000000000000004 R08: 0000000000000000
-R09: 8000000000000000
-May  5 19:45:39 x kernel: R10: ffffa5a5a5a5a5a5 R11: ffffffff8037541d
-R12: 0000000000000001
-May  5 19:45:39 x kernel: R13: 0000000000000000 R14: ffff88016d1bc310
-R15: 0000000000000000
-May  5 19:45:39 x kernel: FS:  00007fea1903f6e0(0000)
-GS:ffffffff80759040(0000) knlGS:0000000000000000
-May  5 19:45:39 x kernel: CS:  0010 DS: 0018 ES: 0018 CR0:
-000000008005003b
-May  5 19:45:39 x kernel: CR2: 00007fd2df5ae8e0 CR3: 000000016bad0000
-CR4: 00000000000006e0
-May  5 19:45:39 x kernel: DR0: 0000000000000000 DR1: 0000000000000000
-DR2: 0000000000000000
-May  5 19:45:39 x kernel: DR3: 0000000000000000 DR6: 00000000ffff0ff0
-DR7: 0000000000000400
-May  5 19:45:39 x kernel: Process kswapd0 (pid: 335, threadinfo
-ffff88016e2d0000, task ffff88016f23eac0)
-May  5 19:45:39 x kernel: Stack:
-May  5 19:45:39 x kernel:  000000000069d804 0000000000000000
-ffff88016d1bc2d0 ffff88000a8b7400
-May  5 19:45:39 x kernel:  ffff88000a8b7400 ffff88016df30000
-ffff88000a8b74f8 ffff88016d1bc30c
-May  5 19:45:39 x kernel:  ffffffff80376b02 ffff88000a8b7580
-0000000000000024 ffff88016e2d1d60
-May  5 19:45:39 x kernel: Call Trace:
-May  5 19:45:39 x kernel:  [<ffffffff80376b02>] ?
-xfs_inode_set_reclaim_tag+0x69/0x89
-May  5 19:45:39 x kernel:  [<ffffffff8036972f>] ? xfs_reclaim+0x99/0x9f
-May  5 19:45:39 x kernel:  [<ffffffff80375453>] ?
-xfs_fs_destroy_inode+0x36/0x54
-May  5 19:45:39 x kernel:  [<ffffffff80290304>] ? dispose_list+0xcd/0xfb
-May  5 19:45:39 x kernel:  [<ffffffff80290526>] ?
-shrink_icache_memory+0x1f4/0x22a
-May  5 19:45:39 x kernel:  [<ffffffff8026242a>] ? shrink_slab+0xe4/0x157
-May  5 19:45:39 x kernel:  [<ffffffff80262b53>] ? kswapd+0x44f/0x5c9
-May  5 19:45:39 x kernel:  [<ffffffff8026063e>] ?
-isolate_pages_global+0x0/0x231
-May  5 19:45:39 x kernel:  [<ffffffff8024458a>] ?
-autoremove_wake_function+0x0/0x2e
-May  5 19:45:39 x kernel:  [<ffffffff8022a80e>] ?
-__wake_up_common+0x44/0x73
-May  5 19:45:39 x kernel:  [<ffffffff80262704>] ? kswapd+0x0/0x5c9
-May  5 19:45:39 x kernel:  [<ffffffff80244266>] ? kthread+0x47/0x73
-May  5 19:45:39 x kernel:  [<ffffffff8020c4ba>] ? child_rip+0xa/0x20
-May  5 19:45:39 x kernel:  [<ffffffff8024421f>] ? kthread+0x0/0x73
-May  5 19:45:39 x kernel:  [<ffffffff8020c4b0>] ? child_rip+0x0/0x20
-May  5 19:45:39 x kernel: Code: 83 e5 3f 89 ea e8 04 fc ff ff 85 c0 75
-10 48 8b 54 24 08 48 8d 84 13 18 02 00 00 0f ab 28 48 63 c5 48 8b 5c c3
-18 48 85 db 75 04 <0f> 0b eb fe 41 83 ed 06 41 ff cc 45$
-May  5 19:45:39 x kernel: RIP  [<ffffffff803916e0>]
-radix_tree_tag_set+0x86/0xc6
-May  5 19:45:39 x kernel:  RSP <ffff88016e2d1c88>
-May  5 19:45:39 x kernel: ---[ end trace aed81d6fef80e624 ]---
+On Fri, May 15, 2009 at 10:06:36PM +0100, Russell King - ARM Linux wrote:
+> On Sat, May 09, 2009 at 06:14:32PM +0200, Frédéric Weisbecker wrote:
+> > Ingo, Russell.
+> > What do you think about this?
+> 
+> If it's suitable for the next merge window, lets get it queued up for
+> it.    What are the dependencies for the patch?  Does it rely on
+> anything queued in anyone elses tree (eg, the addition of
+> ftrace_return_to_handler) ?
 
 
-I have logged a bug with debian
-( more info http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=526406),
-there has been one other to report this problem.
 
-we believe somebody has already reported a similar problem here
-http://groups.google.com/group/linux.kernel/browse_thread/thread/dd00f52e93397c9e/6b6814dab9b41a05?pli=1
-
-has any one else seen this problem, who do I need to raise this too ?
-
-I am able to reproduce this problem on my machine (amd64 phenomem II 8G
-ram), running virtualbox, I have a vm access the local filesystem via
-nfs (udp) and when I do a rm -fr <some directory ~200M> I see the bug
-
-I am moving the partition over to ext3 from xfs :(
+No, until now since -rc1 we hadn't any modifications on the function
+graph tracer that affects arch code.
+It should be fine with upstream tracing code.
 
 
-Alex Samad
-Please cc me as I am not subscribed to the mailing list
+ 
+> However, I'm not sure that this code is entirely right (and I'm not
+> sure what's going on with this patch - my editor is randomly changing
+> the placement of characters in it.  Are you submitting patches using
+> UTF-8 characters in the code?)
+> 
+> > >> @@ -139,8 +144,16 @@ ENTRY(mcount)
+> > >>       adr r0, ftrace_stub
+> > >>       cmp r0, r2
+> > >>       bne trace
+> 
+> If this is r0 != ftrace_stub, go to trace.  So the next block will
+> only be executed if r0 /was/ ftrace_stub, in which case it can't be
+> ftrace_graph_return.
 
 
---oyUTqETQ0mS9luUI
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Ah! This part concerns the function tracer.
+Let's see how it looks like in the original code: (added more comments inside)
 
-iEYEARECAAYFAkoTUNkACgkQkZz88chpJ2M0AwCdHDPIlTLELoMOdB490MAIWSOD
-0yYAoNMTeHZi2L1j+ypg1gxnwWPwS5+5
-=1MBP
------END PGP SIGNATURE-----
 
---oyUTqETQ0mS9luUI--
+ENTRY(mcount)
+	stmdb sp!, {r0-r3, lr}
+	@ ftrace_trace_function points to the function tracer handler
+	ldr r0, =ftrace_trace_function
+	ldr r2, [r0]
+	adr r0, ftrace_stub
+
+@- check if the function tracer is running: ftrace_trace_function != ftrace_stub
+
+	cmp r0, r2
+
+@ if so, go to trace where we jump to the handler (mov pc, r2 in trace:)
+
+	bne trace
+
+
+	ldr lr, [fp, #-4]			@ restore lr
+	ldmia sp!, {r0-r3, pc}
+
+trace:
+	ldr r1, [fp, #-4]			@ lr of instrumented routine
+	mov r0, lr
+	sub r0, r0, #MCOUNT_INSN_SIZE
+	mov lr, pc
+	mov pc, r2
+	mov lr, r1				@ restore lr
+	ldmia sp!, {r0-r3, pc}
+
+
+See? trace actually only handles the function tracer, not the function graph tracer.
+
+Now that we have the function graph tracer, the logic remains the same,
+with a small difference:
+
+- check if function tracer running (ftrace_trace_function != ftrace_stub)
+- if so, then jump to trace
+- otherwise, check if function graph tracer is running (ftrace_graph_return != ftrace_stub)
+- if so, then jump to ftrace_graph_caller
+- otherwise return
+
+Hm?
+
+Frederic.
+
+> > >> +
+> > >> +#ifdef CONFIG_FUNCTION_GRAPH_TRACER
+> > >> +     ldr r1, =ftrace_graph_return
+> > >> +     ldr r2, [r1]
+> > >> +     cmp r0, r2              @ if *ftrace_graph_return != ftrace_stub
+> > >> +     bne ftrace_graph_caller
+> > >> +#endif /* CONFIG_FUNCTION_GRAPH_TRACER */
+> > >> +
+> > >>       ldr lr, [fp, #-4]                       @ restore lr
+> > >> -     ldmia sp!, {r0-r3, pc}
+> > >> +     ldmia sp!, {r0-r3, pc}                  @ return doing nothing
+> > >>
+> > >>  trace:
+> 
+> So surely you want your code above placed here?
+> 
+> > >>       ldr r1, [fp, #-4]                       @ lr of instrumented routine
+> > >> @@ -151,6 +164,25 @@ trace:
+> > >>       mov lr, r1                              @ restore lr
+> > >>       ldmia sp!, {r0-r3, pc}
+> > >>
+> > >> +#ifdef CONFIG_FUNCTION_GRAPH_TRACER
+> > >> +ENTRY(ftrace_graph_caller)
+> > >> +     sub r0, fp, #4                  @ &lr of instrumented routine (&parent)
+> > >> +     mov r1, lr                      @ instrumented routine (func)
+> > >> +     sub r1, r1, #MCOUNT_INSN_SIZE
+> > >> +     bl prepare_ftrace_return
+> > >> +     ldr lr, [fp, #-4]               @ restore lr
+> > >> +     ldmia sp!, {r0-r3, pc}
+> > >> +
+> > >> +     .globl return_to_handler
+> > >> +return_to_handler:
+> > >> +     stmdb sp!, {r0-r3}
+> > >> +     bl ftrace_return_to_handler
+> > >> +     mov lr, r0                      @ r0 has real ret addr
+> > >> +     ldmia sp!, {r0-r3}
+> > >> +     mov pc, lr
+> > >> +
+> > >> +#endif /* CONFIG_FUNCTION_GRAPH_TRACER */
+> > >
+> > >
+> > >
+> > > Looks good.
+> > >
+> > >
+> > >
+> > >>  #endif /* CONFIG_DYNAMIC_FTRACE */
+> > >>
+> > >>       .globl ftrace_stub
+> > >> --- /dev/null
+> > >> +++ b/arch/arm/kernel/ftrace_return.c
+> > >
+> > >
+> > >
+> > > Because it is more commonly known as function graph,
+> > > I would suggest ftrace_graph.c so that people can
+> > > find it more easily.
+> > >
+> > >
+> > >
+> > >> @@ -0,0 +1,44 @@
+> > >> +/*
+> > >> + * function return tracing support.
+> > >> + *
+> > >> + * Copyright (C) 2009 Tim Bird <tim.bird@am.sony.com>
+> > >> + *
+> > >> + * For licencing details, see COPYING.
+> > >> + *
+> > >> + * Defines routine needed for ARM return trampoline for tracing
+> > >> + * function exits.
+> > >> + */
+> > >> +
+> > >> +#include <linux/ftrace.h>
+> > >> +
+> > >> +/*
+> > >> + * Hook the return address and push it in the stack of return addrs
+> > >> + * in current thread info.
+> > >> + */
+> > >> +void prepare_ftrace_return(unsigned long *parent, unsigned long self_addr)
+> > >> +{
+> > >> +     unsigned long old;
+> > >> +
+> > >> +     struct ftrace_graph_ent trace;
+> > >> +     unsigned long return_hooker = (unsigned long)
+> > >> +                             &return_to_handler;
+> > >> +
+> > >> +     if (unlikely(atomic_read(&current->tracing_graph_pause)))
+> > >> +             return;
+> > >> +
+> > >> +     old = *parent;
+> > >> +     *parent = return_hooker;
+> > >> +
+> > >> +     if (ftrace_push_return_trace(old, self_addr, &trace.depth) == -EBUSY) {
+> > >> +             *parent = old;
+> > >> +             return;
+> > >> +     }
+> > >> +
+> > >> +     trace.func = self_addr;
+> > >> +
+> > >> +     /* Only trace if the calling function expects to */
+> > >> +     if (!ftrace_graph_entry(&trace)) {
+> > >> +             current->curr_ret_stack--;
+> > >> +             *parent = old;
+> > >> +     }
+> > >> +}
+> > >> --- a/arch/arm/kernel/vmlinux.lds.S
+> > >> +++ b/arch/arm/kernel/vmlinux.lds.S
+> > >> @@ -99,6 +99,7 @@ SECTIONS
+> > >>                       SCHED_TEXT
+> > >>                       LOCK_TEXT
+> > >>                       KPROBES_TEXT
+> > >> +                     IRQENTRY_TEXT
+> > >>  #ifdef CONFIG_MMU
+> > >>                       *(.fixup)
+> > >>  #endif
+> > >
+> > >
+> > > Well, it looks good to me.
+> > > May be you can also add the fault protection against the return address,
+> > > as a paranoid check. But that can be done later.
+> > >
+> > > Also I wonder how far we are from the dynamic ftrace support, which seems
+> > > half implemented or broken or not tested for a while?
+> > >
+> > > Thanks!
+> > >
+> > > Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+> > >
+> > 
+> > -------------------------------------------------------------------
+> > List admin: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel
+> > FAQ:        http://www.arm.linux.org.uk/mailinglists/faq.php
+> > Etiquette:  http://www.arm.linux.org.uk/mailinglists/etiquette.php
+
