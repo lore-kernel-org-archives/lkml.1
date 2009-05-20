@@ -1,249 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756515AbZETWOm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756187AbZETWSN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756515AbZETWOm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 18:14:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753345AbZETWOg
+	id S1756187AbZETWSN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 18:18:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755374AbZETWSG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 18:14:36 -0400
-Received: from mail-pz0-f177.google.com ([209.85.222.177]:64786 "EHLO
-	mail-pz0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753229AbZETWOf (ORCPT
+	Wed, 20 May 2009 18:18:06 -0400
+Received: from mga05.intel.com ([192.55.52.89]:60695 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754760AbZETWSF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 18:14:35 -0400
-X-Greylist: delayed 544 seconds by postgrey-1.27 at vger.kernel.org; Wed, 20 May 2009 18:14:35 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=hLNBhqbWZLp1dFjp4EctPDr4eSruQnDgLOyGlm5Z6PDzr5GDPtpFlHm06vJGB7amef
-         r0e6L85Ttp2fBhE24sKwJrKjNs3DRP/MWqQcQTOQnZrzxqexsTWgsog47nkJs7XkX2zm
-         ykwIyGpAqwm2GgHxn0yxyo4yUm7PThZmlCJoE=
-From: wuzhangjin@gmail.com
-To: linux-mips@linux-mips.org, Ralf Baechle <ralf@linux-mips.org>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Wu Zhangjin <wuzhangjin@gmail.com>, Yan hua <yanh@lemote.com>,
-       Philippe Vachon <philippe@cowpig.ca>, Zhang Le <r0bertz@gentoo.org>,
-       Zhang Fuxin <zhangfx@lemote.com>, Arnaud Patard <apatard@mandriva.com>,
-       loongson-dev@googlegroups.com, gnewsense-dev@nongnu.org,
-       Nicholas Mc Guire <hofrat@hofr.at>, Liu Junliang <liujl@lemote.com>,
-       Erwan Lerale <erwan@thiscow.com>
-Subject: [loongson-PATCH-v1 27/27] add gcc 4.4 support for MIPS and loongson
-Date: Thu, 21 May 2009 06:14:24 +0800
-Message-Id: <1f9acd8e0b22859752d73ceb9a283d090b04db9c.1242855716.git.wuzhangjin@gmail.com>
-X-Mailer: git-send-email 1.6.2.1
-In-Reply-To: <cover.1242855716.git.wuzhangjin@gmail.com>
-References: <cover.1242855716.git.wuzhangjin@gmail.com>
+	Wed, 20 May 2009 18:18:05 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,223,1241420400"; 
+   d="scan'208";a="459078717"
+Date: Thu, 21 May 2009 00:20:13 +0200
+From: Samuel Ortiz <sameo@linux.intel.com>
+To: Linus Walleij <linus.ml.walleij@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org,
+       Linus Walleij <linus.walleij@stericsson.com>
+Subject: Re: [PATCH 1/1] MFD: Add U300 AB3100 core support v4
+Message-ID: <20090520222012.GB4541@sortiz.org>
+References: <63386a3d0905200217i56accf6fw4ef2f8ed1793e44@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <63386a3d0905200217i56accf6fw4ef2f8ed1793e44@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Wu Zhangjin <wuzhangjin@gmail.com>
+Hi Linus,
 
-the gcc 4.4 support for MIPS mostly refer to this PATCH:
-http://www.nabble.com/-PATCH--MIPS:-Handle-removal-of-%27h%27-constraint-in-GCC-4.4-td22192768.html
-but have been tuned a little.
+On Wed, May 20, 2009 at 11:17:18AM +0200, Linus Walleij wrote:
+> This adds a core driver for the AB3100 mixed-signal circuit
+> found in the ST-Ericsson U300 series platforms. This driver
+> is a singleton proxy for all accesses to the AB3100
+> sub-drivers which will be merged on top of this one, RTC,
+> regulators, battery and system power control, vibrator,
+> LEDs, and an ALSA codec.
+This one looks much better, I still have some comments though:
 
-because only gcc 4.4 have loongson-specific support, so, we need to
-choose the suitable -march argument for gcc <= 4.3 and gcc >= 4.4, and
-we also need to consider use -march=loongson2e and -march=loongson2f for
-loongson2e and loongson2f respectively. this is handled by adding two
-new kernel options: CPU_LOONGSON2E and CPU_LOONGSON2F(thanks for the
-solutin provided by ZhangLe).
 
-I have tested it on FuLoong(2f) in 32bit and 64bit with gcc-4.4 and
-gcc-4.3. so, basically, it works.
+> +
+> +/* A local all-containing singleton */
+> +static struct ab3100 *ab3100_local;
+I dont really like that, but if you insist on having a unique ab3100 instance
+for your driver (instead of allocating one with every probe call and passing
+it as an i2c client data pointer), I could still ACK it. However:
 
-Signed-off-by: Wu Zhangjin <wuzhangjin@gmail.com>
----
- arch/mips/Makefile               |    9 +++++-
- arch/mips/include/asm/compiler.h |   10 ++++++
- arch/mips/include/asm/delay.h    |   58 +++++++++++++++++++++++++------------
- arch/mips/include/asm/div64.h    |   24 +++++++++++++--
- 4 files changed, 77 insertions(+), 24 deletions(-)
+> +static int ab3100_set_test_register(u8 reg, u8 regval)
+> +{
+> +	u8 regandval[2] = {reg, regval};
+> +	int err;
+> +
+> +	err = mutex_lock_interruptible(&ab3100_local->access_mutex);
+...that I wouldnt accept.
+ab3100_set_test_register should be generic enough and have an ab3100 pointer
+as its first parameter. It's called from ab3100_setup(), to which you can
+passe the newly allocated ab3100.
+There are several routines in your driver that rely on the existence of your
+ab3100_local pointer. Let's go through them:
 
-diff --git a/arch/mips/Makefile b/arch/mips/Makefile
-index 8bde363..f679731 100644
---- a/arch/mips/Makefile
-+++ b/arch/mips/Makefile
-@@ -119,7 +119,14 @@ cflags-$(CONFIG_CPU_R4300)	+= -march=r4300 -Wa,--trap
- cflags-$(CONFIG_CPU_VR41XX)	+= -march=r4100 -Wa,--trap
- cflags-$(CONFIG_CPU_R4X00)	+= -march=r4600 -Wa,--trap
- cflags-$(CONFIG_CPU_TX49XX)	+= -march=r4600 -Wa,--trap
--cflags-$(CONFIG_CPU_LOONGSON2)	+= -march=r4600 -Wa,--trap
-+
-+# only gcc >= 4.4 have the loongson-specific support
-+cflags-$(CONFIG_CPU_LOONGSON2)	+= -Wa,--trap
-+cflags-$(CONFIG_CPU_LOONGSON2E)	+= $(shell if [ $(call cc-version) -lt 0440 ] ; then \
-+	echo $(call cc-option,-march=r4600); else echo $(call cc-option,-march=loongson2e); fi ;)
-+cflags-$(CONFIG_CPU_LOONGSON2F)	+= $(shell if [ $(call cc-version) -lt 0440 ] ; then \
-+	echo $(call cc-option,-march=r4600); else echo $(call cc-option,-march=loongson2f); fi ;)
-+
- cflags-$(CONFIG_CPU_MIPS32_R1)	+= $(call cc-option,-march=mips32,-mips32 -U_MIPS_ISA -D_MIPS_ISA=_MIPS_ISA_MIPS32) \
- 			-Wa,-mips32 -Wa,--trap
- cflags-$(CONFIG_CPU_MIPS32_R2)	+= $(call cc-option,-march=mips32r2,-mips32r2 -U_MIPS_ISA -D_MIPS_ISA=_MIPS_ISA_MIPS32) \
-diff --git a/arch/mips/include/asm/compiler.h b/arch/mips/include/asm/compiler.h
-index 71f5c5c..95256a8 100644
---- a/arch/mips/include/asm/compiler.h
-+++ b/arch/mips/include/asm/compiler.h
-@@ -1,5 +1,6 @@
- /*
-  * Copyright (C) 2004, 2007  Maciej W. Rozycki
-+ * Copyright (C) 2009  Wu Zhangjin, wuzj@lemote.com
-  *
-  * This file is subject to the terms and conditions of the GNU General Public
-  * License.  See the file "COPYING" in the main directory of this archive
-@@ -16,4 +17,13 @@
- #define GCC_REG_ACCUM "accum"
- #endif
- 
-+#if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 4)
-+#define GCC_NO_H_CONSTRAINT
-+#ifdef CONFIG_64BIT
-+typedef unsigned int uintx_t __attribute__((mode(TI)));
-+#else
-+typedef u64 uintx_t;
-+#endif
-+#endif
-+
- #endif /* _ASM_COMPILER_H */
-diff --git a/arch/mips/include/asm/delay.h b/arch/mips/include/asm/delay.h
-index b0bccd2..00d7969 100644
---- a/arch/mips/include/asm/delay.h
-+++ b/arch/mips/include/asm/delay.h
-@@ -7,6 +7,7 @@
-  * Copyright (C) 1995 - 2000, 01, 03 by Ralf Baechle
-  * Copyright (C) 1999, 2000 Silicon Graphics, Inc.
-  * Copyright (C) 2007  Maciej W. Rozycki
-+ * Copyright (C) 2009  Wu Zhangjin, wuzj@lemote.com
-  */
- #ifndef _ASM_DELAY_H
- #define _ASM_DELAY_H
-@@ -48,6 +49,43 @@ static inline void __delay(unsigned long loops)
- 		: "0" (loops), "r" (1));
- }
- 
-+/*
-+ * convert usecs to loops
-+ *
-+ * handle removal of 'h' constraint in GCC 4.4
-+ */
-+
-+#ifndef GCC_NO_H_CONSTRAINT	/* gcc <= 4.3 */
-+static inline unsigned long __usecs_to_loops(unsigned long usecs,
-+		unsigned long lpj)
-+{
-+	unsigned long hi, lo;
-+
-+	if (sizeof(long) == 4)
-+		__asm__("multu\t%2, %3"
-+		: "=h" (usecs), "=l" (lo)
-+		: "r" (usecs), "r" (lpj)
-+		: GCC_REG_ACCUM);
-+	else if (sizeof(long) == 8 && !R4000_WAR)
-+		__asm__("dmultu\t%2, %3"
-+		: "=h" (usecs), "=l" (lo)
-+		: "r" (usecs), "r" (lpj)
-+		: GCC_REG_ACCUM);
-+	else if (sizeof(long) == 8 && R4000_WAR)
-+		__asm__("dmultu\t%3, %4\n\tmfhi\t%0"
-+		: "=r" (usecs), "=h" (hi), "=l" (lo)
-+		: "r" (usecs), "r" (lpj)
-+		: GCC_REG_ACCUM);
-+
-+	return usecs;
-+}
-+#else	/* GCC_NO_H_CONSTRAINT, gcc >= 4.4 */
-+static inline unsigned long __usecs_to_loops(unsigned long usecs,
-+		unsigned long lpj)
-+{
-+	return ((uintx_t)usecs * lpj) >> BITS_PER_LONG;
-+}
-+#endif
- 
- /*
-  * Division by multiplication: you don't have to worry about
-@@ -62,8 +100,6 @@ static inline void __delay(unsigned long loops)
- 
- static inline void __udelay(unsigned long usecs, unsigned long lpj)
- {
--	unsigned long hi, lo;
--
- 	/*
- 	 * The rates of 128 is rounded wrongly by the catchall case
- 	 * for 64-bit.  Excessive precission?  Probably ...
-@@ -77,23 +113,7 @@ static inline void __udelay(unsigned long usecs, unsigned long lpj)
- 	                           0x80000000ULL) >> 32);
- #endif
- 
--	if (sizeof(long) == 4)
--		__asm__("multu\t%2, %3"
--		: "=h" (usecs), "=l" (lo)
--		: "r" (usecs), "r" (lpj)
--		: GCC_REG_ACCUM);
--	else if (sizeof(long) == 8 && !R4000_WAR)
--		__asm__("dmultu\t%2, %3"
--		: "=h" (usecs), "=l" (lo)
--		: "r" (usecs), "r" (lpj)
--		: GCC_REG_ACCUM);
--	else if (sizeof(long) == 8 && R4000_WAR)
--		__asm__("dmultu\t%3, %4\n\tmfhi\t%0"
--		: "=r" (usecs), "=h" (hi), "=l" (lo)
--		: "r" (usecs), "r" (lpj)
--		: GCC_REG_ACCUM);
--
--	__delay(usecs);
-+	__delay(__usecs_to_loops(usecs, lpj));
- }
- 
- #define __udelay_val cpu_data[raw_smp_processor_id()].udelay_val
-diff --git a/arch/mips/include/asm/div64.h b/arch/mips/include/asm/div64.h
-index d1d6991..6efc268 100644
---- a/arch/mips/include/asm/div64.h
-+++ b/arch/mips/include/asm/div64.h
-@@ -1,6 +1,7 @@
- /*
-  * Copyright (C) 2000, 2004  Maciej W. Rozycki
-  * Copyright (C) 2003, 07 Ralf Baechle (ralf@linux-mips.org)
-+ * Copyright (C) 2009 Wu Zhangjin (wuzj@lemote.com)
-  *
-  * This file is subject to the terms and conditions of the GNU General Public
-  * License.  See the file "COPYING" in the main directory of this archive
-@@ -56,6 +57,24 @@
- 	(res) = __quot32; \
- 	__mod32; })
- 
-+/*
-+ * __do_divu -- unsigned interger dividing
-+ *
-+ * handle removal of 'h' constraint in GCC 4.4
-+ */
-+#ifndef GCC_NO_H_CONSTRAINT	/* gcc <= 4.3*/
-+#define __do_divu() ({ \
-+	__asm__("divu	$0, %z2, %z3" \
-+		: "=h" (__upper), "=l" (__high) \
-+		: "Jr" (__high), "Jr" (__base) \
-+		: GCC_REG_ACCUM); })
-+
-+#else		/* gcc >= 4.4 */
-+#define __do_divu() ({ \
-+	__upper = (uintx_t)__high % __base; \
-+	__high = (uintx_t)__high / __base; })
-+#endif
-+
- #define do_div(n, base) ({ \
- 	unsigned long long __quot; \
- 	unsigned long __mod; \
-@@ -70,10 +89,7 @@
- 	__upper = __high; \
- 	\
- 	if (__high) \
--		__asm__("divu	$0, %z2, %z3" \
--			: "=h" (__upper), "=l" (__high) \
--			: "Jr" (__high), "Jr" (__base) \
--			: GCC_REG_ACCUM); \
-+		__do_divu();\
- 	\
- 	__mod = do_div64_32(__low, __upper, __low, __base); \
- 	\
+> +/* Interrupt handling worker */
+> +static void ab3100_work(struct work_struct *work)
+> +{
+> +	u8 event_regs[3];
+> +	u32 fatevent;
+> +	int err;
+struct ab3100 *ab3100 = container_of(work, struct ab3100, work);
+
+and you dont have to reference your ab3100_local pointer anymore.
+
+
+> +static irqreturn_t ab3100_irq_handler(int irq, void *data)
+> +{
+struct ab3100 *ab3100 = (struct ab3100 *)data;
+
+you're even passing the ab3100 pointer to request_irq, so it's all set
+already.
+
+
+> + */
+> +static int ab3100_registers_print(struct seq_file *s, void *p)
+> +{
+> +	u8 value;
+> +	u8 reg;
+> +
+> +	seq_printf(s, "AB3100 registers:\n");
+> +
+> +	for (reg = 0; reg < 0xff; reg++) {
+> +		ab3100_get_register(ab3100_local, reg, &value);
+You could pass the probe() time allocated pointer to your debugfs_create_*()
+calls, and then fetch it back here.
+Same applies to all your debugfs code below.
+
+> +static void ab3100_setup_debugfs(void)
+> +{
+This one needs to take a struct ab3100 * as an input.
+
+> +static int __init ab3100_setup(void)
+> +{
+Ditto.
+
+> +static int __init ab3100_probe(struct i2c_client *client,
+> +			const struct i2c_device_id *id)
+> +{
+> +	int err;
+> +	int i;
+> +
+> +	ab3100_local = kzalloc(sizeof(struct ab3100), GFP_KERNEL);
+> +	if (!ab3100_local) {
+> +		dev_err(&client->dev, "could not allocate AB3100 device\n");
+> +		return -ENOMEM;
+> +	}
+> +
+> +	/* Initialize data structure */
+> +	mutex_init(&ab3100_local->access_mutex);
+> +	BLOCKING_INIT_NOTIFIER_HEAD(&ab3100_local->event_subscribers);
+
+i2c_set_clientdata(client, ab3100); and you can get rid of your static
+ab3100_local declaration.
+
+> +	ab3100_local->i2c_client = client;
+> +	ab3100_local->dev = &ab3100_local->i2c_client->dev;
+> +
+> +	/* Read chip ID register */
+> +	err = ab3100_get_register(ab3100_local, AB3100_CID,
+> +				  &ab3100_local->chip_id);
+> +	if (err) {
+> +		dev_err(&client->dev,
+> +			"could not communicate with the AB3100 analog "
+> +			"baseband chip\n");
+> +		goto exit_no_detect;
+> +	}
+
+Cheers,
+Samuel.
+
 -- 
-1.6.2.1
-
+Intel Open Source Technology Centre
+http://oss.intel.com/
