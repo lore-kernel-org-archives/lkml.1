@@ -1,57 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757203AbZETMdU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757245AbZETMhX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757203AbZETMdU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 08:33:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755851AbZETMdN
+	id S1757245AbZETMhX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 08:37:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755334AbZETMhL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 08:33:13 -0400
-Received: from mail-bw0-f222.google.com ([209.85.218.222]:34253 "EHLO
-	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752761AbZETMdN convert rfc822-to-8bit (ORCPT
+	Wed, 20 May 2009 08:37:11 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:46111 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753935AbZETMhK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 08:33:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=TEPJVXl4POS3w5zonPoxvuhyTsTIOq4kX5EXVw/krv6vRYETPbdG3SD17pkHtpWqH9
-         /25jx/YDhvuwKm5zpDet7vHLoOXHfT6NnXJna6QPwhfuTdj7GQ0DuUgGEsJqnKbtGBhN
-         7UKc9cdkASlJ0NS5/b/5t9sMIQV+QqB4u1dek=
+	Wed, 20 May 2009 08:37:10 -0400
+Date: Wed, 20 May 2009 08:37:10 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
+       akpm@linux-foundation.org, jack@suse.cz, yanmin_zhang@linux.intel.com,
+       aia21@cantab.net, linux-ntfs-dev@lists.sourceforge.net
+Subject: Re: [PATCH 02/11] writeback: switch to per-bdi threads for
+	flushing data
+Message-ID: <20090520123710.GA29974@infradead.org>
+References: <1242649192-16263-1-git-send-email-jens.axboe@oracle.com> <1242649192-16263-3-git-send-email-jens.axboe@oracle.com>
 MIME-Version: 1.0
-In-Reply-To: <200905191103.03749.hartleys@visionengravers.com>
-References: <200905191103.03749.hartleys@visionengravers.com>
-Date: Wed, 20 May 2009 15:33:13 +0300
-X-Google-Sender-Auth: 2bc04fcb205c5361
-Message-ID: <84144f020905200533j2e1debc1i97e0dbb96ef0edf6@mail.gmail.com>
-Subject: Re: [PATCH] mm/slub.c: change printk()s to pr_*() notation
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: H Hartley Sweeten <hartleys@visionengravers.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1242649192-16263-3-git-send-email-jens.axboe@oracle.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 19, 2009 at 9:03 PM, H Hartley Sweeten
-<hartleys@visionengravers.com> wrote:
-> Change all the printk()s in mm/slub.c to the pr_*() notation.
->
-> Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
->
-> diff --git a/mm/slub.c b/mm/slub.c
-> index 65ffda5..2805b7f 100644
-> --- a/mm/slub.c
-> +++ b/mm/slub.c
-> @@ -338,25 +338,25 @@ static void print_section(char *text, u8 *addr, unsigned int length)
->
->        for (i = 0; i < length; i++) {
->                if (newline) {
-> -                       printk(KERN_ERR "%8s 0x%p: ", text, addr + i);
-> +                       pr_err("%8s 0x%p: ", text, addr + i);
+Can you run the hunk below past Anton and get it upstream separately?
+The code does indeed looks extremly fishy, but I'd rather not see it
+go in a large unrelated patch..
 
-Hmm, isn't the whole point of pr_err() that you override pr_fmt() to
-include your subsystem name?
+
+On Mon, May 18, 2009 at 02:19:43PM +0200, Jens Axboe wrote:
+> diff --git a/fs/ntfs/super.c b/fs/ntfs/super.c
+> index f76951d..c4cb157 100644
+> --- a/fs/ntfs/super.c
+> +++ b/fs/ntfs/super.c
+> @@ -2373,39 +2373,13 @@ static void ntfs_put_super(struct super_block *sb)
+>  		vol->mftmirr_ino = NULL;
+>  	}
+>  	/*
+> -	 * If any dirty inodes are left, throw away all mft data page cache
+> -	 * pages to allow a clean umount.  This should never happen any more
+> -	 * due to mft.c::ntfs_mft_writepage() cleaning all the dirty pages as
+> -	 * the underlying mft records are written out and cleaned.  If it does,
+> +	 * We should have no dirty inodes left, due to
+> +	 * mft.c::ntfs_mft_writepage() cleaning all the dirty pages as
+> +	 * the underlying mft records are written out and cleaned.
+>  	 * happen anyway, we want to know...
+>  	 */
+>  	ntfs_commit_inode(vol->mft_ino);
+>  	write_inode_now(vol->mft_ino, 1);
+> -	if (sb_has_dirty_inodes(sb)) {
+> -		const char *s1, *s2;
+> -
+> -		mutex_lock(&vol->mft_ino->i_mutex);
+> -		truncate_inode_pages(vol->mft_ino->i_mapping, 0);
+> -		mutex_unlock(&vol->mft_ino->i_mutex);
+> -		write_inode_now(vol->mft_ino, 1);
+> -		if (sb_has_dirty_inodes(sb)) {
+> -			static const char *_s1 = "inodes";
+> -			static const char *_s2 = "";
+> -			s1 = _s1;
+> -			s2 = _s2;
+> -		} else {
+> -			static const char *_s1 = "mft pages";
+> -			static const char *_s2 = "They have been thrown "
+> -					"away.  ";
+> -			s1 = _s1;
+> -			s2 = _s2;
+> -		}
+> -		ntfs_error(sb, "Dirty %s found at umount time.  %sYou should "
+> -				"run chkdsk.  Please email "
+> -				"linux-ntfs-dev@lists.sourceforge.net and say "
+> -				"that you saw this message.  Thank you.", s1,
+> -				s2);
+> -	}
+>  #endif /* NTFS_RW */
+>  
+>  	iput(vol->mft_ino);
+
