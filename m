@@ -1,63 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755918AbZETUmx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755843AbZETUz3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755918AbZETUmx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 16:42:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754839AbZETUmp
+	id S1755843AbZETUz3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 16:55:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754895AbZETUzS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 16:42:45 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:43982 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754466AbZETUmp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 16:42:45 -0400
-Subject: Re: [patch 0/5] Support for sanitization flag in low-level page
- allocator
-From: Peter Zijlstra <peterz@infradead.org>
-To: "Larry H." <research@subreption.com>
-Cc: linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>,
-       linux-mm@kvack.org, Ingo Molnar <mingo@redhat.com>
-In-Reply-To: <20090520183045.GB10547@oblivion.subreption.com>
-References: <20090520183045.GB10547@oblivion.subreption.com>
-Content-Type: text/plain
-Date: Wed, 20 May 2009 22:42:38 +0200
-Message-Id: <1242852158.6582.231.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Wed, 20 May 2009 16:55:18 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:50632 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754848AbZETUzQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 16:55:16 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+Subject: [PATCH -tip v6 2/5] kprobes: checks probe address is instruction
+	boudary on x86
+To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Cc: systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>, Ingo Molnar <mingo@elte.hu>
+Date: Wed, 20 May 2009 16:58:11 -0400
+Message-ID: <20090520205811.25003.20940.stgit@localhost.localdomain>
+In-Reply-To: <20090520205758.25003.44632.stgit@localhost.localdomain>
+References: <20090520205758.25003.44632.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-05-20 at 11:30 -0700, Larry H. wrote:
-> This patch adds support for the SENSITIVE flag to the low level page
-> allocator. An additional GFP flag is added for use with higher level
-> allocators (GFP_SENSITIVE, which implies GFP_ZERO).
-> 
-> The code is largely based off the memory sanitization feature in the
-> PaX project (licensed under the GPL v2 terms), and allows fine grained
-> marking of pages for sanitization on allocation and release time, as an
-> opt-in feature (instead of its opt-all counterpart in PaX).
-> 
-> This avoids leaking sensitive information when memory is released to
-> the system after use, for example in cryptographic subsystems.
-> 
-> The next patches in this set deploy this flag for different
-> subsystems that could potentially leak cryptographic secrets or other
-> confidential information by means of an information leak or other kinds
-> of security bugs (ex. use of uninitialized variables or use-after-free),
-> besides extending the remanence of this data on memory (allowing
-> Iceman/coldboot attacks possible).
-> 
-> The "Shredding Your Garbage: Reducing Data Lifetime Through Secure
-> Deallocation" paper by Jim Chow et. al from the Stanford University
-> Department of Computer Science, explains the security implications of
-> insecure deallocation, and provides extensive information with figures
-> and applications thoroughly analyzed for this behavior [1]. More recently
-> this issue came to widespread attention when the "Lest We Remember:
-> Cold Boot Attacks on Encryption Keys" (by Halderman et. al) paper was
-> published [2].
+Ensure safeness of inserting kprobes by checking whether the specified
+address is at the first byte of a instruction on x86.
+This is done by decoding probed function from its head to the probe point.
 
-Seems like a particularly wasteful use of a pageflag. Why not simply
-erase the buffer before freeing in those few places where we know its
-important (ie. exactly those places you now put the pageflag in)?
+Changes from v5:
+- Add comments to explain recover_probed_function() and decording logic.
 
+Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Cc: Jim Keniston <jkenisto@us.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+---
+
+ arch/x86/kernel/kprobes.c |   69 +++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 69 insertions(+), 0 deletions(-)
+
+diff --git a/arch/x86/kernel/kprobes.c b/arch/x86/kernel/kprobes.c
+index 7b5169d..41d524f 100644
+--- a/arch/x86/kernel/kprobes.c
++++ b/arch/x86/kernel/kprobes.c
+@@ -48,12 +48,14 @@
+ #include <linux/preempt.h>
+ #include <linux/module.h>
+ #include <linux/kdebug.h>
++#include <linux/kallsyms.h>
+ 
+ #include <asm/cacheflush.h>
+ #include <asm/desc.h>
+ #include <asm/pgtable.h>
+ #include <asm/uaccess.h>
+ #include <asm/alternative.h>
++#include <asm/insn.h>
+ 
+ void jprobe_return_end(void);
+ 
+@@ -244,6 +246,71 @@ retry:
+ 	}
+ }
+ 
++/* Recover the probed instruction at addr for further analysis. */
++static int recover_probed_instruction(kprobe_opcode_t *buf, unsigned long addr)
++{
++	struct kprobe *kp;
++	kp = get_kprobe((void *)addr);
++	if (!kp)
++		return -EINVAL;
++
++	/*
++	 *  Basically, kp->ainsn.insn has an original instruction.
++	 *  However, RIP-relative instruction can not do single-stepping
++	 *  at different place, fix_riprel() tweaks the displacement of
++	 *  that instruction. In that case, we can't recover the instruction
++	 *  from the kp->ainsn.insn.
++	 *
++	 *  On the other hand, kp->opcode has a copy of the first byte of
++	 *  the probed instruction, which is overwritten by int3. And
++	 *  the instruction at kp->addr is not modified by kprobes except
++	 *  for the first byte, we can recover the original instruction
++	 *  from it and kp->opcode.
++	 */
++	memcpy(buf, kp->addr, MAX_INSN_SIZE * sizeof(kprobe_opcode_t));
++	buf[0] = kp->opcode;
++	return 0;
++}
++
++/* Dummy buffers for kallsyms_lookup */
++static char __dummy_buf[KSYM_NAME_LEN];
++
++/* Check if paddr is at an instruction boundary */
++static int __kprobes can_probe(unsigned long paddr)
++{
++	int ret;
++	unsigned long addr, offset = 0;
++	struct insn insn;
++	kprobe_opcode_t buf[MAX_INSN_SIZE];
++
++	if (!kallsyms_lookup(paddr, NULL, &offset, NULL, __dummy_buf))
++		return 0;
++
++	/* Decode instructions */
++	addr = paddr - offset;
++	while (addr < paddr) {
++		kernel_insn_init(&insn, (void *)addr);
++		insn_get_opcode(&insn);
++
++		/* Check if the instruction has been modified. */
++		if (OPCODE1(&insn) == BREAKPOINT_INSTRUCTION) {
++			ret = recover_probed_instruction(buf, addr);
++			if (ret)
++				/*
++				 * Another debugging subsystem might insert
++				 * this breakpoint. In that case, we can't
++				 * recover it.
++				 */
++				return 0;
++			kernel_insn_init(&insn, buf);
++		}
++		insn_get_length(&insn);
++		addr += insn.length;
++	}
++
++	return (addr == paddr);
++}
++
+ /*
+  * Returns non-zero if opcode modifies the interrupt flag.
+  */
+@@ -359,6 +426,8 @@ static void __kprobes arch_copy_kprobe(struct kprobe *p)
+ 
+ int __kprobes arch_prepare_kprobe(struct kprobe *p)
+ {
++	if (!can_probe((unsigned long)p->addr))
++		return -EILSEQ;
+ 	/* insn: must be on special executable page on x86. */
+ 	p->ainsn.insn = get_insn_slot();
+ 	if (!p->ainsn.insn)
+
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
