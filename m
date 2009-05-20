@@ -1,95 +1,310 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756082AbZETKxi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755817AbZETKzr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756082AbZETKxi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 06:53:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754612AbZETKxb
+	id S1755817AbZETKzr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 06:55:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753013AbZETKzk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 06:53:31 -0400
-Received: from yx-out-2324.google.com ([74.125.44.29]:55352 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754251AbZETKxa convert rfc822-to-8bit (ORCPT
+	Wed, 20 May 2009 06:55:40 -0400
+Received: from e28smtp07.in.ibm.com ([59.145.155.7]:44009 "EHLO
+	e28smtp07.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753281AbZETKzj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 06:53:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=bEsdTO/JHyZH4AJvGOWvGgM2nK2AU2LcFyVb9uWoZITFGCE/enYdcP+A+X2CLkk3u6
-         qlpQ/LyTO0FUJHojFwu7b7PvZmY2vsjVtYe5laZzdMziEK4QEcnR4EYa5OJ23rvaikEg
-         52UPSvsjp7K+6uUB9r4XipFBQzKeDBt9eoqjE=
+	Wed, 20 May 2009 06:55:39 -0400
+Date: Wed, 20 May 2009 16:25:35 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [Patch 1/2] Improvements and minor fixes to HW Breakpoint
+	interface
+Message-ID: <20090520105535.GA17181@in.ibm.com>
+Reply-To: prasad@linux.vnet.ibm.com
+References: <20090519162459.GB26009@in.ibm.com> <Pine.LNX.4.44L0.0905191351380.10557-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-In-Reply-To: <20090520104739.GD12433@csn.ul.ie>
-References: <20090520161853.1bfd415c.minchan.kim@barrios-desktop>
-	 <20090520085416.GA27056@csn.ul.ie>
-	 <20090520185803.e5b0698a.minchan.kim@barrios-desktop>
-	 <20090520102129.GA12433@csn.ul.ie>
-	 <20090520193045.2070f7fa.minchan.kim@barrios-desktop>
-	 <20090520104739.GD12433@csn.ul.ie>
-Date: Wed, 20 May 2009 19:53:30 +0900
-Message-ID: <28c262360905200353x60af7141gc73e491c2c7d17a3@mail.gmail.com>
-Subject: Re: [PATCH 1/3] clean up setup_per_zone_pages_min
-From: Minchan Kim <minchan.kim@gmail.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>, Johannes Weiner <hannes@cmpxchg.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0905191351380.10557-100000@iolanthe.rowland.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 20, 2009 at 7:47 PM, Mel Gorman <mel@csn.ul.ie> wrote:
-> On Wed, May 20, 2009 at 07:30:45PM +0900, Minchan Kim wrote:
->> On Wed, 20 May 2009 11:21:29 +0100
->> Mel Gorman <mel@csn.ul.ie> wrote:
->>
->> > On Wed, May 20, 2009 at 06:58:03PM +0900, Minchan Kim wrote:
->> > > Hi, Mel.
->> > >
->> > > On Wed, 20 May 2009 09:54:16 +0100
->> > > Mel Gorman <mel@csn.ul.ie> wrote:
->> > >
->> > > > On Wed, May 20, 2009 at 04:18:53PM +0900, Minchan Kim wrote:
->> > > > >
->> > > > > Mel changed zone->pages_[high/low/min] with zone->watermark array.
->> > > > > So, setup_per_zone_pages_min also have to be changed.
->> > > > >
->> > > >
->> > > > Just to be clear, this is a function renaming to match the new zone
->> > > > field name, not something I missed. As the function changes min, low and
->> > > > max, a better name might have been setup_per_zone_watermarks but whether
->> > >
->> > > At first, I thouht, too. But It's handle of min_free_kbytes.
->> > > Documentation said, it's to compute a watermark[WMARK_MIN].
->> > > I think many people already used that knob to contorl pages_min to keep the
->> > > low pages.
->> >
->> > Which documentation?
->>
->> Documentation/sysctl/vm.txt - min_free_kbytes.
->>
->
-> That documentation states
->
-> ====
-> This is used to force the Linux VM to keep a minimum number
-> of kilobytes free.  The VM uses this number to compute a pages_min
-> value for each lowmem zone in the system.  Each lowmem zone gets
-> a number of reserved free pages based proportionally on its size.
-> ====
->
-> This is true. It just happens in the implementation that sets pages_min
-> (or it's renamed value) also sets the low and high watermarks are also set
-> based on the value of the minimum value. It doesn't need to be updated.
->
+On Tue, May 19, 2009 at 02:09:12PM -0400, Alan Stern wrote:
+> On Tue, 19 May 2009, K.Prasad wrote:
+> 
+> > This patch brings a couple of changes to the HW Breakpoint infrastructure:
+> > 
+> > - Set/clear TIF_DEBUG task flag in <un>register_user_hw_breakpoint()
+> >   instead of being done by users of this interface (such as ptrace).
+> > 
+> > - Modify return code of hw_breakpoint_handler() to NOTIFY_STOP if
+> >   triggered due to lazy debug register switching.
+> > 
+> > Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
+> > ---
+> >  arch/x86/kernel/hw_breakpoint.c |    4 +++-
+> >  arch/x86/kernel/ptrace.c        |    4 +---
+> >  kernel/hw_breakpoint.c          |   16 +++++++++++++---
+> >  3 files changed, 17 insertions(+), 7 deletions(-)
+> > 
+> > Index: linux-2.6-tip.hbkpt/arch/x86/kernel/hw_breakpoint.c
+> > ===================================================================
+> > --- linux-2.6-tip.hbkpt.orig/arch/x86/kernel/hw_breakpoint.c
+> > +++ linux-2.6-tip.hbkpt/arch/x86/kernel/hw_breakpoint.c
+> > @@ -346,8 +346,10 @@ int __kprobes hw_breakpoint_handler(stru
+> >  		 * or due to the delay between updates of hbp_kernel_pos
+> >  		 * and this_hbp_kernel.
+> >  		 */
+> > -		if (!bp)
+> > +		if (!bp) {
+> > +			rc = NOTIFY_STOP;
+> >  			continue;
+> > +		}
+> >  
+> >  		(bp->triggered)(bp, args->regs);
+> >  		/*
+> 
+> This doesn't look right.  You want to return NOTIFY_DONE if any
+> breakpoints were triggered or any non-breakpoint bits were set in DR6,
+> right?  Otherwise return NOTIFY_STOP.  So this code should be:
+> 
 
-Okay.
-I will modify function name with setup_per_zone_watermarks at next version.
-Thanks for careful review, Mel.
+Agreed, we want to return NOTIFY_DONE in the above two cases and the
+patch does the same.
+
+If there are any more breakpoints (basically more trap bits in DR6 set)
+that require handling, the "continue" statement allows it to be done.
+
+If the non-breakpoint bits were set in DR6, then "rc" value is
+over-written in hw_breakpoint_handler() below the "if (!bp)" check.
+
+	if (dr6 & (~DR_TRAP_BITS))
+		rc = NOTIFY_DONE;
+
+The issue in the original hw_breakpoint_handler() is the return of
+NOTIFY_DONE during lazy debug register switching or mismatched
+this_hbp_kernel[], that may cause SIGTRAP signal for user-space
+in do_debug() function.
+
+> 		if (!bp)
+> 			continue;
+> 
+> 		rc = NOTIFY_DONE;
+> 		(bp->triggered)(bp, args->regs);
+> 
+> and take out the "rc = NOTIFY_DONE" line in the i < hbp_kernel_pos 
+> case earlier.
+> 
+
+This change will unconditionally return NOTIFY_DONE even if exception
+was triggered due to a single kernel-space HW breakpoint.
+
+> It also would be a good idea to add a comment near the start of the
+> function explaining the return value (just paraphrase what I wrote
+> above).
+> 
+> 
+
+I've added a descriptive comment. Let me know if it can be improved.
+
+> > Index: linux-2.6-tip.hbkpt/arch/x86/kernel/ptrace.c
+> > ===================================================================
+> > --- linux-2.6-tip.hbkpt.orig/arch/x86/kernel/ptrace.c
+> > +++ linux-2.6-tip.hbkpt/arch/x86/kernel/ptrace.c
+> > @@ -530,9 +530,7 @@ restore:
+> >  				bp->info.len = len;
+> >  				bp->info.type = type;
+> >  				rc = register_user_hw_breakpoint(tsk, bp);
+> > -				if (!rc)
+> > -					set_tsk_thread_flag(tsk, TIF_DEBUG);
+> > -				else
+> > +				if (rc)
+> >  					kfree(bp);
+> >  			}
+> >  		} else
+> > Index: linux-2.6-tip.hbkpt/kernel/hw_breakpoint.c
+> > ===================================================================
+> > --- linux-2.6-tip.hbkpt.orig/kernel/hw_breakpoint.c
+> > +++ linux-2.6-tip.hbkpt/kernel/hw_breakpoint.c
+> > @@ -233,6 +233,8 @@ int register_user_hw_breakpoint(struct t
+> >  			break;
+> >  		}
+> >  	}
+> > +	if (!rc)
+> > +		set_tsk_thread_flag(tsk, TIF_DEBUG);
+> >  
+> >  	spin_unlock_bh(&hw_breakpoint_lock);
+> >  	return rc;
+> > @@ -272,15 +274,23 @@ void unregister_user_hw_breakpoint(struc
+> >  						struct hw_breakpoint *bp)
+> >  {
+> >  	struct thread_struct *thread = &(tsk->thread);
+> > -	int i;
+> > +	int i, pos = -1, clear_tsk_debug_counter = 0;
+> 
+> I think "hbp_counter" would be a better name.  It's up to you.
+> 
+
+Changed.
+
+> >  
+> >  	spin_lock_bh(&hw_breakpoint_lock);
+> >  	for (i = 0; i < hbp_kernel_pos; i++) {
+> > +		if (thread->hbp[i])
+> > +			clear_tsk_debug_counter++;
+> >  		if (bp == thread->hbp[i]) {
+> > -			__unregister_user_hw_breakpoint(i, tsk);
+> > -			break;
+> > +			clear_tsk_debug_counter--;
+> > +			pos = i;
+> >  		}
+> >  	}
+> > +	if (pos >= 0)
+> > +		__unregister_user_hw_breakpoint(pos, tsk);
+> > +
+> > +	if (!clear_tsk_debug_counter)
+> > +		clear_tsk_thread_flag(tsk, TIF_DEBUG);
+> 
+> This logic could be rearranged a little:
+> 
+> 	for (i = 0; i < hbp_kernel_pos; i++) {
+> 		if (thread->hbp[i])
+> 			clear_tsk_debug_counter++;
+> 		if (bp == thread->hbp[i])
+> 			pos = i;
+> 	}
+> 	if (pos >= 0) {
+> 		__unregister_user_hw_breakpoint(pos, tsk);
+> 		clear_tsk_debug_counter--;
+> 	}
+> 	if (!clear_tsk_debug_counter)
+> 		clear_tsk_thread_flag(tsk, TIF_DEBUG);
+> 
+> Not a big deal; this way is a little more robust in case two 
+> thread->hbp[] entries somehow contain the same pointer.
+> 
+
+Ok. I have changed it.
+
+> > +
+> >  	spin_unlock_bh(&hw_breakpoint_lock);
+> >  }
+> >  EXPORT_SYMBOL_GPL(unregister_user_hw_breakpoint);
+> 
+> Alan Stern
+> 
+
+Please find the updated patch below and kindly let me know your
+comments on the same.
 
 
--- 
-Kinds regards,
-Minchan Kim
+Improvements and minor fixes to HW Breakpoint interface
+
+This patch brings a couple of changes to the HW Breakpoint infrastructure:
+
+- Set/clear TIF_DEBUG task flag in <un>register_user_hw_breakpoint()
+  instead of being done by users of this interface (such as ptrace).
+
+- Modify return code of hw_breakpoint_handler() to NOTIFY_STOP if
+  triggered due to lazy debug register switching.
+
+Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
+---
+ arch/x86/kernel/hw_breakpoint.c |   17 ++++++++++++++++-
+ arch/x86/kernel/ptrace.c        |    4 +---
+ kernel/hw_breakpoint.c          |   19 ++++++++++++++-----
+ 3 files changed, 31 insertions(+), 9 deletions(-)
+
+Index: linux-2.6-tip.hbkpt/arch/x86/kernel/hw_breakpoint.c
+===================================================================
+--- linux-2.6-tip.hbkpt.orig/arch/x86/kernel/hw_breakpoint.c
++++ linux-2.6-tip.hbkpt/arch/x86/kernel/hw_breakpoint.c
+@@ -296,6 +296,19 @@ void arch_flush_thread_hw_breakpoint(str
+ 
+ /*
+  * Handle debug exception notifications.
++ *
++ * Return value is either NOTIFY_STOP or NOTIFY_DONE as explained below.
++ *
++ * NOTIFY_DONE returned if one of the following conditions is true.
++ * i) When the causative address is from user-space and the exception
++ * is a valid one i.e. not triggered a result of lazy debug register
++ * switching
++ * ii) When there are more bits than trap<n> set in DR6 register (such
++ * as BD, BS or BT) indicating that more than one debug condition is
++ * met and requires some more action in do_debug().
++ *
++ * NOTIFY_STOP returned for all other cases
++ *
+  */
+ int __kprobes hw_breakpoint_handler(struct die_args *args)
+ {
+@@ -346,8 +359,10 @@ int __kprobes hw_breakpoint_handler(stru
+ 		 * or due to the delay between updates of hbp_kernel_pos
+ 		 * and this_hbp_kernel.
+ 		 */
+-		if (!bp)
++		if (!bp) {
++			rc = NOTIFY_STOP;
+ 			continue;
++		}
+ 
+ 		(bp->triggered)(bp, args->regs);
+ 		/*
+Index: linux-2.6-tip.hbkpt/arch/x86/kernel/ptrace.c
+===================================================================
+--- linux-2.6-tip.hbkpt.orig/arch/x86/kernel/ptrace.c
++++ linux-2.6-tip.hbkpt/arch/x86/kernel/ptrace.c
+@@ -530,9 +530,7 @@ restore:
+ 				bp->info.len = len;
+ 				bp->info.type = type;
+ 				rc = register_user_hw_breakpoint(tsk, bp);
+-				if (!rc)
+-					set_tsk_thread_flag(tsk, TIF_DEBUG);
+-				else
++				if (rc)
+ 					kfree(bp);
+ 			}
+ 		} else
+Index: linux-2.6-tip.hbkpt/kernel/hw_breakpoint.c
+===================================================================
+--- linux-2.6-tip.hbkpt.orig/kernel/hw_breakpoint.c
++++ linux-2.6-tip.hbkpt/kernel/hw_breakpoint.c
+@@ -233,6 +233,8 @@ int register_user_hw_breakpoint(struct t
+ 			break;
+ 		}
+ 	}
++	if (!rc)
++		set_tsk_thread_flag(tsk, TIF_DEBUG);
+ 
+ 	spin_unlock_bh(&hw_breakpoint_lock);
+ 	return rc;
+@@ -272,15 +274,22 @@ void unregister_user_hw_breakpoint(struc
+ 						struct hw_breakpoint *bp)
+ {
+ 	struct thread_struct *thread = &(tsk->thread);
+-	int i;
++	int i, pos = -1, hbp_counter = 0;
+ 
+ 	spin_lock_bh(&hw_breakpoint_lock);
+ 	for (i = 0; i < hbp_kernel_pos; i++) {
+-		if (bp == thread->hbp[i]) {
+-			__unregister_user_hw_breakpoint(i, tsk);
+-			break;
+-		}
++		if (thread->hbp[i])
++			hbp_counter++;
++		if (bp == thread->hbp[i])
++			pos = i;
+ 	}
++	if (pos >= 0) {
++		__unregister_user_hw_breakpoint(pos, tsk);
++		hbp_counter--;
++	}
++	if (!hbp_counter)
++		clear_tsk_thread_flag(tsk, TIF_DEBUG);
++
+ 	spin_unlock_bh(&hw_breakpoint_lock);
+ }
+ EXPORT_SYMBOL_GPL(unregister_user_hw_breakpoint);
