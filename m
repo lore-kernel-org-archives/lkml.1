@@ -1,211 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755748AbZETBpT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755881AbZETBqJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755748AbZETBpT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 21:45:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755310AbZETBpG
+	id S1755881AbZETBqJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 21:46:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755439AbZETBp5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 21:45:06 -0400
-Received: from mga14.intel.com ([143.182.124.37]:57207 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755212AbZETBpE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 21:45:04 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,218,1241420400"; 
-   d="scan'208";a="144771135"
-Date: Wed, 20 May 2009 09:44:45 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Christoph Lameter <cl@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Elladan <elladan@eskimo.com>,
-       Nick Piggin <npiggin@suse.de>, Johannes Weiner <hannes@cmpxchg.org>,
-       Peter Zijlstra <peterz@infradead.org>, Rik van Riel <riel@redhat.com>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "minchan.kim@gmail.com" <minchan.kim@gmail.com>
-Subject: Re: [PATCH 2/3] vmscan: make mapped executable pages the first
-	class  citizen
-Message-ID: <20090520014445.GA7645@localhost>
-References: <20090519161756.4EE4.A69D9226@jp.fujitsu.com> <20090519074925.GA690@localhost> <20090519170208.742C.A69D9226@jp.fujitsu.com> <20090519085354.GB2121@localhost> <2f11576a0905190528n5eb29e3fme42785a76eed3551@mail.gmail.com>
+	Tue, 19 May 2009 21:45:57 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:54323 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1755310AbZETBp4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 21:45:56 -0400
+Message-ID: <4A136090.5090705@cn.fujitsu.com>
+Date: Wed, 20 May 2009 09:44:48 +0800
+From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="J/dobhs11T7y2rNN"
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <2f11576a0905190528n5eb29e3fme42785a76eed3551@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: "IKEDA, Munehiro" <m-ikeda@ds.jp.nec.com>, Vivek Goyal <vgoyal@redhat.com>
+CC: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
+       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
+       jens.axboe@oracle.com, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, jmoyer@redhat.com,
+       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       righi.andrea@gmail.com, agk@redhat.com, dm-devel@redhat.com,
+       snitzer@redhat.com, akpm@linux-foundation.org
+Subject: Re: [PATCH] IO Controller: Add per-device weight and ioprio_class
+ handling
+References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com> <4A0A29B5.7030109@cn.fujitsu.com> <20090513190929.GB18371@redhat.com> <4A0BC7AB.8030703@cn.fujitsu.com> <4A11E244.2000305@ds.jp.nec.com>
+In-Reply-To: <4A11E244.2000305@ds.jp.nec.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---J/dobhs11T7y2rNN
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-
-On Tue, May 19, 2009 at 08:28:28PM +0800, KOSAKI Motohiro wrote:
-> Hi
+IKEDA, Munehiro wrote:
+> Hi Gui,
 > 
-> 2009/5/19 Wu Fengguang <fengguang.wu@intel.com>:
-> > On Tue, May 19, 2009 at 04:06:35PM +0800, KOSAKI Motohiro wrote:
-> >> > > > Like the console mode, the absolute nr_mapped drops considerably - to 1/13 of
-> >> > > > the original size - during the streaming IO.
-> >> > > >
-> >> > > > The delta of pgmajfault is 3 vs 107 during IO, or 236 vs 393 during the whole
-> >> > > > process.
-> >> > >
-> >> > > hmmm.
-> >> > >
-> >> > > about 100 page fault don't match Elladan's problem, I think.
-> >> > > perhaps We missed any addional reproduce condition?
-> >> >
-> >> > Elladan's case is not the point of this test.
-> >> > Elladan's IO is use-once, so probably not a caching problem at all.
-> >> >
-> >> > This test case is specifically devised to confirm whether this patch
-> >> > works as expected. Conclusion: it is.
-> >>
-> >> Dejection ;-)
-> >>
-> >> The number should address the patch is useful or not. confirming as expected
-> >> is not so great.
-> >
-> > OK, let's make the conclusion in this way:
-> >
-> > The changelog analyzed the possible beneficial situation, and this
-> > test backs that theory with real numbers, ie: it successfully stops
-> > major faults when the active file list is slowly scanned when there
-> > are partially cache hot streaming IO.
-> >
-> > Another (amazing) finding of the test is, only around 1/10 mapped pages
-> > are actively referenced in the absence of user activities.
-> >
-> > Shall we protect the remaining 9/10 inactive ones? This is a question ;-)
+> Gui Jianfeng wrote:
+>> Hi Vivek,
+>>
+>> This patch enables per-cgroup per-device weight and ioprio_class
+>> handling.
+>> A new cgroup interface "policy" is introduced. You can make use of
+>> this file to configure weight and ioprio_class for each device in a
+>> given cgroup.
+>> The original "weight" and "ioprio_class" files are still available. If
+>> you
+>> don't do special configuration for a particular device, "weight" and
+>> "ioprio_class" are used as default values in this device.
+>>
+>> You can use the following format to play with the new interface.
+>> #echo DEV:weight:ioprio_class > /patch/to/cgroup/policy
+>> weight=0 means removing the policy for DEV.
+>>
+>> Examples:
+>> Configure weight=300 ioprio_class=2 on /dev/hdb in this cgroup
+>> # echo /dev/hdb:300:2 > io.policy
+>> # cat io.policy
+>> dev weight class
+>> /dev/hdb 300 2
 > 
-> Unfortunately, I don't reproduce again.
-> I don't apply your patch yet. but mapped ratio is reduced only very little.
-
-mapped ratio or absolute numbers? The ratio wont change much because
-nr_mapped is already small.
-
-> I think smem can show which library evicted.  Can you try it?
+> Users can specify a device file of a partition for io.policy.
+> In this case, io_policy_node::dev_name is set as a name of the
+> partition device like /dev/sda2.
 > 
-> download:  http://www.selenic.com/smem/
-> usage:   ./smem -m -r --abbreviate
+> ex)
+>  # cd /mnt/cgroup
+>  # cat /dev/sda2:500:2 > io.policy
+>  # echo io.policy
+>    dev weight class
+>    /dev/sda2 500 2
+> 
+> I believe io_policy_node::dev_name should be set a generic
+> device name like /dev/sda.
+> What do you think about it?
 
-Sure, but I don't see much change in its output (see attachments).
+  Hi Ikeda-san,
 
-smem-console-0 is collected after fresh boot,
-smem-console-1 is collected after the big IO.
+  Sorry for the late reply. Thanks for pointing this out. 
+  yes, it does the right thing but shows a wrong name. 
+  IMHO, Inputing a sigle partition should not be allowed since the
+  policy is disk basis. So how about the following patch?
 
-> We can't decide 9/10 is important or not. we need know actual evicted file list.
+Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+---
+diff --git a/block/elevator-fq.c b/block/elevator-fq.c
+index 1a0ca07..b620768 100644
+--- a/block/elevator-fq.c
++++ b/block/elevator-fq.c
+@@ -1650,6 +1650,9 @@ static int devname_to_devnum(const char *buf, dev_t *dev)
+ 		return -ENODEV;
+ 
+ 	disk = get_gendisk(bdev->bd_dev, &part);
++	if (part)
++		return -EINVAL;
++
+ 	*dev = MKDEV(disk->major, disk->first_minor);
+ 	bdput(bdev);
 
-Right. But what I measured is the activeness. Almost zero major page
-faults means the evicted 90% mapped pages are inactive during the
-long 300 seconds of IO.
+> 
+> Signed-off-by: Munehiro "Muuhh" Ikeda <m-ikeda@ds.jp.nec.com>
+> ---
+> block/elevator-fq.c |    7 ++++++-
+> 1 files changed, 6 insertions(+), 1 deletions(-)
+> 
+> diff --git a/block/elevator-fq.c b/block/elevator-fq.c
+> index 39fa2a1..5d3d55c 100644
+> --- a/block/elevator-fq.c
+> +++ b/block/elevator-fq.c
+> @@ -1631,11 +1631,12 @@ static struct io_policy_node
+> *policy_search_node(const struct io_cgroup *iocg,
+>     return NULL;
+> }
+> 
+> -static int devname_to_devnum(const char *buf, dev_t *dev)
+> +static int devname_to_devnum(char *buf, dev_t *dev)
+> {
+>     struct block_device *bdev;
+>     struct gendisk *disk;
+>     int part;
+> +    char *c;
+> 
+>     bdev = lookup_bdev(buf);
+>     if (IS_ERR(bdev))
+> @@ -1645,6 +1646,10 @@ static int devname_to_devnum(const char *buf,
+> dev_t *dev)
+>     *dev = MKDEV(disk->major, disk->first_minor);
+>     bdput(bdev);
+> 
+> +    c = strrchr(buf, '/');
+> +    if (c)
+> +        strcpy(c+1, disk->disk_name);
+> +
+>     return 0;
+> }
+> 
 
-Thanks,
-Fengguang
+-- 
+Regards
+Gui Jianfeng
 
-> > Or, shall we take the "protect active VM_EXEC mapped pages" approach,
-> > or Christoph's "protect all mapped pages all time, unless they grow
-> > too large" attitude?  I still prefer the best effort VM_EXEC heuristics.
-> >
-> > 1) the partially cache hot streaming IO is far more likely to happen
-> >   on (file) servers. For them, evicting the 9/10 inactive mapped
-> >   pages over night should be acceptable for sysadms.
-> >
-> > 2) for use-once IO on desktop, we have Rik's active file list
-> >   protection heuristics, so nothing to worry at all.
-> >
-> > 3) for big working set small memory desktop, the active list will
-> >   still be scanned, in this situation, why not evict some of the
-> >   inactive mapped pages? If they have not been accessed for 1 minute,
-> >   they are not likely be the user focus, and the tight memory
-> >   constraint can only afford to cache the user focused working set.
-> >
-> > Does that make sense?
-
---J/dobhs11T7y2rNN
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename=smem-console-0
-
-Map                                       PIDs   AVGPSS      PSS 
-[heap]                                       2     1.5M     2.9M 
-<anonymous>                                  2   538.0K     1.1M 
-/usr/bin/python2.5                           1     1.0M     1.0M 
-/bin/zsh4                                    1   592.0K   592.0K 
-/usr/lib/zsh/4.3.9/zsh/zle.so                1   216.0K   216.0K 
-/lib/libncursesw.so.5.7                      1   156.0K   156.0K 
-/lib/libc-2.9.so                             2    65.0K   130.0K 
-[stack]                                      2    62.0K   124.0K 
-/usr/lib/zsh/4.3.9/zsh/complete.so           1    56.0K    56.0K 
-/usr/lib/locale/locale-archive               2    28.0K    56.0K 
-/usr/lib/python2.5/lib-dynload/operator.     1    32.0K    32.0K 
-/lib/libm-2.9.so                             2    15.0K    30.0K 
-/usr/lib/zsh/4.3.9/zsh/complist.so           1    28.0K    28.0K 
-/lib/ld-2.9.so                               2    13.0K    26.0K 
-/usr/lib/zsh/4.3.9/zsh/parameter.so          1    24.0K    24.0K 
-/usr/lib/python2.5/lib-dynload/_struct.s     1    24.0K    24.0K 
-/usr/lib/zsh/4.3.9/zsh/zutil.so              1    20.0K    20.0K 
-/usr/lib/python2.5/lib-dynload/time.so       1    20.0K    20.0K 
-/usr/lib/python2.5/lib-dynload/strop.so      1    20.0K    20.0K 
-/usr/lib/python2.5/lib-dynload/_locale.s     1    20.0K    20.0K 
-/lib/libpthread-2.9.so                       1    18.0K    18.0K 
-/lib/libdl-2.9.so                            2     9.0K    18.0K 
-/usr/lib/zsh/4.3.9/zsh/rlimits.so            1    16.0K    16.0K 
-/lib/libcap.so.2.11                          1    16.0K    16.0K 
-/lib/libattr.so.1.1.0                        1    16.0K    16.0K 
-/usr/lib/zsh/4.3.9/zsh/terminfo.so           1    12.0K    12.0K 
-/usr/lib/python2.5/lib-dynload/grp.so        1    12.0K    12.0K 
-/lib/libutil-2.9.so                          1    11.0K    11.0K 
-/lib/libnss_nis-2.9.so                       1    11.0K    11.0K 
-/lib/libnss_files-2.9.so                     1    10.0K    10.0K 
-/lib/libnss_compat-2.9.so                    1    10.0K    10.0K 
-/lib/libnsl-2.9.so                           1    10.0K    10.0K 
-/usr/lib/gconv/gconv-modules.cache           1     5.0K     5.0K 
-[vsyscall]                                   2        0        0 
-[vdso]                                       2        0        0 
-
---J/dobhs11T7y2rNN
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename=smem-console-1
-
-Map                                       PIDs   AVGPSS      PSS 
-[heap]                                       2     1.5M     2.9M 
-<anonymous>                                  2   538.0K     1.1M 
-/usr/bin/python2.5                           1     1.0M     1.0M 
-/bin/zsh4                                    1   496.0K   496.0K 
-/lib/libc-2.9.so                             2   180.0K   360.0K 
-[stack]                                      2    60.0K   120.0K 
-/lib/ld-2.9.so                               2    58.0K   116.0K 
-/usr/lib/zsh/4.3.9/zsh/zle.so                1   112.0K   112.0K 
-/lib/libncursesw.so.5.7                      1    56.0K    56.0K 
-/usr/lib/locale/locale-archive               2    26.0K    52.0K 
-/lib/libpthread-2.9.so                       1    48.0K    48.0K 
-/lib/libm-2.9.so                             2    21.0K    42.0K 
-/usr/lib/python2.5/lib-dynload/operator.     1    32.0K    32.0K 
-/usr/lib/zsh/4.3.9/zsh/complete.so           1    24.0K    24.0K 
-/usr/lib/python2.5/lib-dynload/_struct.s     1    24.0K    24.0K 
-/lib/libdl-2.9.so                            2    12.0K    24.0K 
-/usr/lib/python2.5/lib-dynload/time.so       1    20.0K    20.0K 
-/usr/lib/python2.5/lib-dynload/strop.so      1    20.0K    20.0K 
-/usr/lib/python2.5/lib-dynload/_locale.s     1    20.0K    20.0K 
-/lib/libutil-2.9.so                          1    16.0K    16.0K 
-/usr/lib/python2.5/lib-dynload/grp.so        1    12.0K    12.0K 
-/lib/libcap.so.2.11                          1    12.0K    12.0K 
-/lib/libnss_compat-2.9.so                    1     9.0K     9.0K 
-/usr/lib/zsh/4.3.9/zsh/zutil.so              1     8.0K     8.0K 
-/usr/lib/zsh/4.3.9/zsh/rlimits.so            1     8.0K     8.0K 
-/lib/libnss_nis-2.9.so                       1     8.0K     8.0K 
-/lib/libnss_files-2.9.so                     1     8.0K     8.0K 
-/lib/libnsl-2.9.so                           1     8.0K     8.0K 
-/usr/lib/zsh/4.3.9/zsh/terminfo.so           1     4.0K     4.0K 
-/usr/lib/zsh/4.3.9/zsh/parameter.so          1     4.0K     4.0K 
-/usr/lib/zsh/4.3.9/zsh/complist.so           1     4.0K     4.0K 
-/lib/libattr.so.1.1.0                        1     4.0K     4.0K 
-[vsyscall]                                   2        0        0 
-[vdso]                                       2        0        0 
-/usr/lib/gconv/gconv-modules.cache           1        0        0 
-
---J/dobhs11T7y2rNN--
