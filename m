@@ -1,57 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759561AbZETLcm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759423AbZETLbj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759561AbZETLcm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 07:32:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757249AbZETLV0
+	id S1759423AbZETLbj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 07:31:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757164AbZETLVN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 07:21:26 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:52151 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757239AbZETLVV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 07:21:21 -0400
-Date: Wed, 20 May 2009 13:27:20 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "oprofile-list@lists.sourceforge.net" 
-	<oprofile-list@lists.sourceforge.net>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "rusty@rustcorp.com.au" <rusty@rustcorp.com.au>
-Subject: Re: [BUG 2.6.30-rc1] panic when loading oprofile
-Message-ID: <20090520112720.GB8684@one.firstfloor.org>
-References: <alpine.WNT.2.00.0905131327430.7052__41366.1100705669$1242253861$gmane$org@jbrandeb-desk1.amr.corp.intel.com> <87fxf6pmh5.fsf@basil.nowhere.org> <20090516162017.2525511c.akpm@linux-foundation.org> <F169D4F5E1F1974DBFAFABF47F60C10A335277B5@orsmsx507.amr.corp.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <F169D4F5E1F1974DBFAFABF47F60C10A335277B5@orsmsx507.amr.corp.intel.com>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 20 May 2009 07:21:13 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:55262 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755025AbZETLSr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 07:18:47 -0400
+From: Avi Kivity <avi@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: kvm@vger.kernel.org
+Subject: [PATCH 09/46] KVM: VMX: Fix feature testing
+Date: Wed, 20 May 2009 14:18:06 +0300
+Message-Id: <1242818323-10413-10-git-send-email-avi@redhat.com>
+In-Reply-To: <1242818323-10413-1-git-send-email-avi@redhat.com>
+References: <1242818323-10413-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 20, 2009 at 12:13:24AM -0700, Brandeburg, Jesse wrote:
-> Andrew Morton wrote:
-> > On Fri, 15 May 2009 14:41:26 +0200 Andi Kleen <andi@firstfloor.org>
-> > wrote:
-> >
-> > > "Brandeburg, Jesse" <jesse.brandeburg@intel.com> writes:
-> > >
-> > > Hi Jesse,
-> > >
-> > > > when starting a profile run on the latest net-next kernel, I'm
-> > currently
-> > > > trying to reproduce on 2.6.30-rc5 stock.
-> > >
-> > > Were you able to reproduce it?
-> 
-> For some reason I can no longer reproduce, I'll add a note to the bug too.
+From: Sheng Yang <sheng@linux.intel.com>
 
-Did you have the nmi watchdog enabled?  Does it tick now?
+The testing of feature is too early now, before vmcs_config complete initialization.
 
--Andi
+Signed-off-by: Sheng Yang <sheng@linux.intel.com>
+Signed-off-by: Avi Kivity <avi@redhat.com>
+---
+ arch/x86/kvm/vmx.c |   18 +++++++++---------
+ 1 files changed, 9 insertions(+), 9 deletions(-)
 
+diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
+index 1caa1fc..7d7b0d6 100644
+--- a/arch/x86/kvm/vmx.c
++++ b/arch/x86/kvm/vmx.c
+@@ -1208,15 +1208,6 @@ static __init int setup_vmcs_config(struct vmcs_config *vmcs_conf)
+ 		      vmx_capability.ept, vmx_capability.vpid);
+ 	}
+ 
+-	if (!cpu_has_vmx_vpid())
+-		enable_vpid = 0;
+-
+-	if (!cpu_has_vmx_ept())
+-		enable_ept = 0;
+-
+-	if (!cpu_has_vmx_flexpriority())
+-		flexpriority_enabled = 0;
+-
+ 	min = 0;
+ #ifdef CONFIG_X86_64
+ 	min |= VM_EXIT_HOST_ADDR_SPACE_SIZE;
+@@ -1320,6 +1311,15 @@ static __init int hardware_setup(void)
+ 	if (boot_cpu_has(X86_FEATURE_NX))
+ 		kvm_enable_efer_bits(EFER_NX);
+ 
++	if (!cpu_has_vmx_vpid())
++		enable_vpid = 0;
++
++	if (!cpu_has_vmx_ept())
++		enable_ept = 0;
++
++	if (!cpu_has_vmx_flexpriority())
++		flexpriority_enabled = 0;
++
+ 	return alloc_kvm_area();
+ }
+ 
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+1.6.0.6
+
