@@ -1,71 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755046AbZETHiW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753980AbZETHjN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755046AbZETHiW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 03:38:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752629AbZETHiP
+	id S1753980AbZETHjN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 03:39:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752028AbZETHjA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 03:38:15 -0400
-Received: from hera.kernel.org ([140.211.167.34]:35801 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752466AbZETHiP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 03:38:15 -0400
-Message-ID: <4A13B344.7030307@kernel.org>
-Date: Wed, 20 May 2009 00:37:40 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86: enable_update_mptable should MACRO
-References: <20090518142707.GA24142@elte.hu> <alpine.LFD.2.01.0905180850110.3301@localhost.localdomain> <20090518164921.GA6903@elte.hu> <alpine.LFD.2.01.0905180955550.3301@localhost.localdomain> <20090518170909.GA1623@elte.hu> <20090518190320.GA20260@elte.hu> <alpine.LFD.2.01.0905181208130.3301@localhost.localdomain> <20090518202031.GA26549@elte.hu> <4A12E759.6040806@kernel.org> <20090520071900.GB11952@elte.hu>
-In-Reply-To: <20090520071900.GB11952@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 20 May 2009 03:39:00 -0400
+Received: from casper.infradead.org ([85.118.1.10]:36459 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751680AbZETHi7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 03:38:59 -0400
+Subject: Re: [PATCH 0/3] tracepoints: delay argument evaluation
+From: Peter Zijlstra <peterz@infradead.org>
+To: Roland McGrath <roland@redhat.com>
+Cc: Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
+       fweisbec@gmail.com, mingo@elte.hu, laijs@cn.fujitsu.com,
+       rostedt@goodmis.org, mathieu.desnoyers@polymtl.ca, jiayingz@google.com,
+       mbligh@google.com, fche@redhat.com
+In-Reply-To: <20090520072750.DA9A0FC38D@magilla.sf.frob.com>
+References: <cover.1242763826.git.jbaron@redhat.com>
+	 <1242803524.26820.530.camel@twins>
+	 <20090520072750.DA9A0FC38D@magilla.sf.frob.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Wed, 20 May 2009 09:38:47 +0200
+Message-Id: <1242805127.26820.532.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2009-05-20 at 00:27 -0700, Roland McGrath wrote:
+> > Why can't 
+> > 
+> > trace_block_bio_complete(arg..)
+> >    if (__trace_block_bio_compete.state)
+> >      __trace_block_bio_complete(arg)
+> > 
+> > work?
+> > 
+> > Surely its possible to wrap the whole stuff in yet another macro layer
+> > that will do the conditional before evaluating the arguments?
+> 
+> That is exactly what Jason has implemented.  
+> He called the new macro layer tracepoint_call.
+> 
+> You can't use a macro to generate a new macro definition, so it's not
+> possible with cpp alone to have the new macro layer be one that defines a
+> separate trace_foobar() macro for each defined tracepoint.
 
+Right, just realized that.
 
-instead of declare as one inline function.
-because other case that is variable
-
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-
----
- arch/x86/include/asm/mpspec.h |   11 ++---------
- 1 file changed, 2 insertions(+), 9 deletions(-)
-
-Index: linux-2.6/arch/x86/include/asm/mpspec.h
-===================================================================
---- linux-2.6.orig/arch/x86/include/asm/mpspec.h
-+++ linux-2.6/arch/x86/include/asm/mpspec.h
-@@ -61,9 +61,11 @@ extern void get_smp_config(void);
- #ifdef CONFIG_X86_MPPARSE
- extern void find_smp_config(void);
- extern void early_reserve_e820_mpc_new(void);
-+extern int enable_update_mptable;
- #else
- static inline void find_smp_config(void) { }
- static inline void early_reserve_e820_mpc_new(void) { }
-+#define enable_update_mptable 0
- #endif
- 
- void __cpuinit generic_processor_info(int apicid, int version);
-@@ -87,15 +89,6 @@ static inline int acpi_probe_gsi(void)
- }
- #endif /* CONFIG_ACPI */
- 
--#ifdef CONFIG_X86_MPPARSE
--extern int enable_update_mptable;
--#else
--static inline int enable_update_mptable(void)
--{
--	return 0;
--}
--#endif
--
- #define PHYSID_ARRAY_SIZE	BITS_TO_LONGS(MAX_APICS)
- 
- struct physid_mask {
+But I think we should be asking GCC to get fixed. Since inline functions
+don't act like a compiler barrier anyway, they might as well not force
+argument evaluation either.
