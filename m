@@ -1,29 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756771AbZETU4f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757265AbZETU4u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756771AbZETU4f (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 16:56:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756193AbZETUzo
+	id S1757265AbZETU4u (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 16:56:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756659AbZETUzv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 16:55:44 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:50659 "EHLO mx2.redhat.com"
+	Wed, 20 May 2009 16:55:51 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:50668 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756248AbZETUzg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 16:55:36 -0400
+	id S1756253AbZETUzq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 16:55:46 -0400
 From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH -tip v6 1/5] x86: instruction decorder API
+Subject: [PATCH -tip v6 5/5] tracing: add kprobe-based event tracer
 To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
        lkml <linux-kernel@vger.kernel.org>
 Cc: systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
        DLE <dle-develop@lists.sourceforge.net>,
        Masami Hiramatsu <mhiramat@redhat.com>,
-       Jim Keniston <jkenisto@us.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Christoph Hellwig <hch@infradead.org>,
        Steven Rostedt <rostedt@goodmis.org>,
        Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       Andi Kleen <ak@linux.intel.com>,
-       Vegard Nossum <vegard.nossum@gmail.com>, Avi Kivity <avi@redhat.com>
-Date: Wed, 20 May 2009 16:58:05 -0400
-Message-ID: <20090520205805.25003.71314.stgit@localhost.localdomain>
+       Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>
+Date: Wed, 20 May 2009 16:58:29 -0400
+Message-ID: <20090520205829.25003.70265.stgit@localhost.localdomain>
 In-Reply-To: <20090520205758.25003.44632.stgit@localhost.localdomain>
 References: <20090520205758.25003.44632.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.3
@@ -34,391 +32,259 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add x86 instruction decoder to arch-specific libraries. This decoder
-can decode x86 instructions used in kernel into prefix, opcode, modrm,
-sib, displacement and immediates. This can also show the length of
-instructions.
+Add kprobes based event tracer on ftrace.
 
-This version introduces instruction attributes for decoding instructions.
-The instruction attribute tables are generated from the opcode map file
-(x86-opcode-map.txt) by the generator script(gen-insn-attr-x86.awk).
+This tracer is similar to the events tracer which is based on Tracepoint
+infrastructure. Instead of Tracepoint, this tracer is based on kprobes(kprobe
+and kretprobe). It probes anywhere where kprobes can probe(this means, all
+functions body except for __kprobes functions).
 
-Currently, the opcode maps are based on opcode maps in Intel(R) 64 and
-IA-32 Architectures Software Developers Manual Vol.2: Appendix.A,
-and consist of below two types of opcode tables.
+This tracer supports following probe arguments for each probe.
 
-1-byte/2-bytes/3-bytes opcodes, which has 256 elements, are
-written as below;
-
- Table: table-name
- Referrer: escaped-name
- opcode: mnemonic|GrpXXX [operand1[,operand2...]] [(extra1)[,(extra2)...] [| 2nd-mnemonic ...]
-  (or)
- opcode: escape # escaped-name
- EndTable
-
-Group opcodes, which has 8 elements, are written as below;
-
- GrpTable: GrpXXX
- reg:  mnemonic [operand1[,operand2...]] [(extra1)[,(extra2)...] [| 2nd-mnemonic ...]
- EndTable
-
-These opcode maps do NOT include most of SSE and FP opcodes, because
-those opcodes are not used in the kernel.
+  %REG  : Fetch register REG
+  sN    : Fetch Nth entry of stack (N >= 0)
+  @ADDR : Fetch memory at ADDR (ADDR should be in kernel)
+  @SYM[+|-offs] : Fetch memory at SYM +|- offs (SYM should be a data symbol)
+  aN    : Fetch function argument. (N >= 0)
+  rv    : Fetch return value.
+  ra    : Fetch return address.
+  +|-offs(FETCHARG) : fetch memory at FETCHARG +|- offs address.
 
 Changes from v5:
-- Rename insn_init_kernel() to kernel_insn_init().
-- Use $(AWK) instead of awk in Makefile
-- Use /usr/bin/env to find awk
-- Use charactor classes instead of [a-z] etc.
-- Remove inat-tables.c when running make clean
-
-TODO:
-- Integrate user-space test harness as a build-time test.
+ - Add __kprobes to functions which will be invoked by kprobes.
+ - Merge tracer-core patch and trace-argument support patch.
+ - Add kprobe_trace_entry and kretprobe_trace_entry for recording kprobe
+   events.
+ - Support common arguments filtering via
+   tracing/events/ftrace/kprobe(or kretprobe)/filter.
+ - Add a selftest.
 
 Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Signed-off-by: Jim Keniston <jkenisto@us.ibm.com>
-Cc: H. Peter Anvin <hpa@zytor.com>
+Cc: Christoph Hellwig <hch@infradead.org>
 Cc: Steven Rostedt <rostedt@goodmis.org>
 Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
 Cc: Ingo Molnar <mingo@elte.hu>
 Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Andi Kleen <ak@linux.intel.com>
-Cc: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Avi Kivity <avi@redhat.com>
 ---
 
- arch/x86/include/asm/inat.h            |  125 ++++++
- arch/x86/include/asm/insn.h            |  134 ++++++
- arch/x86/lib/Makefile                  |   13 +
- arch/x86/lib/inat.c                    |   80 ++++
- arch/x86/lib/insn.c                    |  471 +++++++++++++++++++++
- arch/x86/lib/x86-opcode-map.txt        |  711 ++++++++++++++++++++++++++++++++
- arch/x86/scripts/gen-insn-attr-x86.awk |  314 ++++++++++++++
- 7 files changed, 1848 insertions(+), 0 deletions(-)
- create mode 100644 arch/x86/include/asm/inat.h
- create mode 100644 arch/x86/include/asm/insn.h
- create mode 100644 arch/x86/lib/inat.c
- create mode 100644 arch/x86/lib/insn.c
- create mode 100644 arch/x86/lib/x86-opcode-map.txt
- create mode 100644 arch/x86/scripts/gen-insn-attr-x86.awk
+ Documentation/trace/kprobes.txt  |   81 +++
+ kernel/trace/Kconfig             |    9 
+ kernel/trace/Makefile            |    1 
+ kernel/trace/trace.h             |   22 +
+ kernel/trace/trace_event_types.h |   20 +
+ kernel/trace/trace_kprobe.c      |  903 ++++++++++++++++++++++++++++++++++++++
+ 6 files changed, 1036 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/trace/kprobes.txt
+ create mode 100644 kernel/trace/trace_kprobe.c
 
-diff --git a/arch/x86/include/asm/inat.h b/arch/x86/include/asm/inat.h
+diff --git a/Documentation/trace/kprobes.txt b/Documentation/trace/kprobes.txt
 new file mode 100644
-index 0000000..01e079a
+index 0000000..d7c3092
 --- /dev/null
-+++ b/arch/x86/include/asm/inat.h
-@@ -0,0 +1,125 @@
-+#ifndef _ASM_INAT_INAT_H
-+#define _ASM_INAT_INAT_H
-+/*
-+ * x86 instruction attributes
-+ *
-+ * Written by Masami Hiramatsu <mhiramat@redhat.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-+ *
-+ */
-+#include <linux/types.h>
++++ b/Documentation/trace/kprobes.txt
+@@ -0,0 +1,81 @@
++                         Kprobe-based Event Tracer
++                         =========================
 +
-+/* Instruction attributes */
-+typedef u32 insn_attr_t;
++                 Documentation is written by Masami Hiramatsu
 +
-+/*
-+ * Internal bits. Don't use bitmasks directly, because these bits are
-+ * unstable. You should add checking macros and use that macro in
-+ * your code.
-+ */
 +
-+#define INAT_OPCODE_TABLE_SIZE 256
-+#define INAT_GROUP_TABLE_SIZE 8
++Overview
++--------
++This tracer is similar to the events tracer which is based on Tracepoint
++infrastructure. Instead of Tracepoint, this tracer is based on kprobes(kprobe
++and kretprobe). It probes anywhere where kprobes can probe(this means, all
++functions body except for __kprobes functions).
 +
-+/* Legacy instruction prefixes */
-+#define INAT_PFX_OPNDSZ	1	/* 0x66 */ /* LPFX1 */
-+#define INAT_PFX_REPNE	2	/* 0xF2 */ /* LPFX2 */
-+#define INAT_PFX_REPE	3	/* 0xF3 */ /* LPFX3 */
-+#define INAT_PFX_LOCK	4	/* 0xF0 */
-+#define INAT_PFX_CS	5	/* 0x2E */
-+#define INAT_PFX_DS	6	/* 0x3E */
-+#define INAT_PFX_ES	7	/* 0x26 */
-+#define INAT_PFX_FS	8	/* 0x64 */
-+#define INAT_PFX_GS	9	/* 0x65 */
-+#define INAT_PFX_SS	10	/* 0x36 */
-+#define INAT_PFX_ADDRSZ	11	/* 0x67 */
++Unlike the function tracer, this tracer can probe instructions inside of
++kernel functions. It allows you to check which instruction has been executed.
 +
-+#define INAT_LPREFIX_MAX	3
++Unlike the Tracepoint based events tracer, this tracer can add new probe points
++on the fly.
 +
-+/* Immediate size */
-+#define INAT_IMM_BYTE		1
-+#define INAT_IMM_WORD		2
-+#define INAT_IMM_DWORD		3
-+#define INAT_IMM_QWORD		4
-+#define INAT_IMM_PTR		5
-+#define INAT_IMM_VWORD32	6
-+#define INAT_IMM_VWORD		7
++Similar to the events tracer, this tracer doesn't need to be activated via
++current_tracer, instead of that, just set probe points via
++/debug/tracing/kprobe_events.
 +
-+/* Legacy prefix */
-+#define INAT_PFX_OFFS	0
-+#define INAT_PFX_BITS	4
-+#define INAT_PFX_MAX    ((1 << INAT_PFX_BITS) - 1)
-+#define INAT_PFX_MASK	(INAT_PFX_MAX << INAT_PFX_OFFS)
-+/* Escape opcodes */
-+#define INAT_ESC_OFFS	(INAT_PFX_OFFS + INAT_PFX_BITS)
-+#define INAT_ESC_BITS	2
-+#define INAT_ESC_MAX	((1 << INAT_ESC_BITS) - 1)
-+#define INAT_ESC_MASK	(INAT_ESC_MAX << INAT_ESC_OFFS)
-+/* Group opcodes (1-16) */
-+#define INAT_GRP_OFFS	(INAT_ESC_OFFS + INAT_ESC_BITS)
-+#define INAT_GRP_BITS	5
-+#define INAT_GRP_MAX	((1 << INAT_GRP_BITS) - 1)
-+#define INAT_GRP_MASK	(INAT_GRP_MAX << INAT_GRP_OFFS)
-+/* Immediates */
-+#define INAT_IMM_OFFS	(INAT_GRP_OFFS + INAT_GRP_BITS)
-+#define INAT_IMM_BITS	3
-+#define INAT_IMM_MASK	(((1 << INAT_IMM_BITS) - 1) << INAT_IMM_OFFS)
-+/* Flags */
-+#define INAT_FLAG_OFFS	(INAT_IMM_OFFS + INAT_IMM_BITS)
-+#define INAT_REXPFX	(1 << INAT_FLAG_OFFS)
-+#define INAT_MODRM	(1 << (INAT_FLAG_OFFS + 1))
-+#define INAT_FORCE64	(1 << (INAT_FLAG_OFFS + 2))
-+#define INAT_ADDIMM	(1 << (INAT_FLAG_OFFS + 3))
-+#define INAT_MOFFSET	(1 << (INAT_FLAG_OFFS + 4))
-+#define INAT_VARIANT	(1 << (INAT_FLAG_OFFS + 5))
 +
-+/* Attribute search APIs */
-+extern insn_attr_t inat_get_opcode_attribute(u8 opcode);
-+extern insn_attr_t inat_get_escape_attribute(u8 opcode, u8 last_pfx,
-+					     insn_attr_t esc_attr);
-+extern insn_attr_t inat_get_group_attribute(u8 modrm, u8 last_pfx,
-+					    insn_attr_t esc_attr);
++Synopsis of kprobe_events
++-------------------------
++  p SYMBOL[+offs|-offs]|MEMADDR [FETCHARGS]	: set a probe
++  r SYMBOL[+0] [FETCHARGS]			: set a return probe
 +
-+/* Attribute checking macros. Use these macros in your code */
-+#define INAT_IS_PREFIX(attr)	(attr & INAT_PFX_MASK)
-+#define INAT_IS_ADDRSZ(attr)	((attr & INAT_PFX_MASK) == INAT_PFX_ADDRSZ)
-+#define INAT_IS_OPNDSZ(attr)	((attr & INAT_PFX_MASK) == INAT_PFX_OPNDSZ)
-+#define INAT_LPREFIX_NUM(attr)	\
-+	(((attr & INAT_PFX_MASK) > INAT_LPREFIX_MAX) ? 0 :\
-+	 (attr & INAT_PFX_MASK))
-+#define INAT_MAKE_PREFIX(pfx)	(pfx << INAT_PFX_OFFS)
++ FETCHARGS:
++  %REG	: Fetch register REG
++  sN	: Fetch Nth entry of stack (N >= 0)
++  @ADDR	: Fetch memory at ADDR (ADDR should be in kernel)
++  @SYM[+|-offs]	: Fetch memory at SYM +|- offs (SYM should be a data symbol)
++  aN	: Fetch function argument. (N >= 0)(*)
++  rv	: Fetch return value.(**)
++  ra	: Fetch return address.(**)
++  +|-offs(FETCHARG) : fetch memory at FETCHARG +|- offs address.(***)
 +
-+#define INAT_IS_ESCAPE(attr)	(attr & INAT_ESC_MASK)
-+#define INAT_ESCAPE_NUM(attr)	((attr & INAT_ESC_MASK) >> INAT_ESC_OFFS)
-+#define INAT_MAKE_ESCAPE(esc)	(esc << INAT_ESC_OFFS)
++  (*) aN may not correct on asmlinkaged functions and at the middle of
++      function body.
++  (**) only for return probe.
++  (***) this is useful for fetching a field of data structures.
 +
-+#define INAT_IS_GROUP(attr)	(attr & INAT_GRP_MASK)
-+#define INAT_GROUP_NUM(attr)	((attr & INAT_GRP_MASK) >> INAT_GRP_OFFS)
-+#define INAT_GROUP_COMMON(attr)	(attr & ~INAT_GRP_MASK)
-+#define INAT_MAKE_GROUP(grp)	((grp << INAT_GRP_OFFS) | INAT_MODRM)
 +
-+#define INAT_HAS_IMM(attr)	(attr & INAT_IMM_MASK)
-+#define INAT_IMM_SIZE(attr)	((attr & INAT_IMM_MASK) >> INAT_IMM_OFFS)
-+#define INAT_MAKE_IMM(imm)	(imm << INAT_IMM_OFFS)
++Usage examples
++--------------
 +
-+#define INAT_IS_REX_PREFIX(attr)	(attr & INAT_REXPFX)
-+#define INAT_HAS_MODRM(attr)	(attr & INAT_MODRM)
-+#define INAT_IS_FORCE64(attr)	(attr & INAT_FORCE64)
-+#define INAT_HAS_ADDIMM(attr)	(attr & INAT_ADDIMM)
-+#define INAT_HAS_MOFFSET(attr)	(attr & INAT_MOFFSET)
-+#define INAT_HAS_VARIANT(attr)	(attr & INAT_VARIANT)
++  echo p do_sys_open a0 a1 a2 a3 > /debug/tracing/kprobe_events
 +
-+#endif
-diff --git a/arch/x86/include/asm/insn.h b/arch/x86/include/asm/insn.h
-new file mode 100644
-index 0000000..5b50fa3
---- /dev/null
-+++ b/arch/x86/include/asm/insn.h
-@@ -0,0 +1,134 @@
-+#ifndef _ASM_X86_INSN_H
-+#define _ASM_X86_INSN_H
-+/*
-+ * x86 instruction analysis
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-+ *
-+ * Copyright (C) IBM Corporation, 2009
-+ */
++ This sets a kprobe on the top of do_sys_open() function with recording
++1st to 4th arguments.
 +
-+#include <linux/types.h>
-+/* insn_attr_t is defined in inat.h */
-+#include <asm/inat.h>
++  echo r do_sys_open rv ra >> /debug/tracing/kprobe_events
 +
-+struct insn_field {
-+	union {
-+		s32 value;
-+		u8 bytes[4];
-+	};
-+	bool got;	/* true if we've run insn_get_xxx() for this field */
-+	u8 nbytes;
++ This sets a kretprobe on the return point of do_sys_open() function with
++recording return value and return address.
++
++  echo > /debug/tracing/kprobe_events
++
++ This clears all probe points. and you can see the traced information via
++/debug/tracing/trace.
++
++  cat /debug/tracing/trace
++# tracer: nop
++#
++#           TASK-PID    CPU#    TIMESTAMP  FUNCTION
++#              | |       |          |         |
++           <...>-1447  [001] 1038282.286875: do_sys_open+0x0/0xd6: 0x3 0x7fffd1ec4440 0x8000 0x0
++           <...>-1447  [001] 1038282.286878: sys_openat+0xc/0xe <-do_sys_open: 0xfffffffffffffffe 0xffffffff81367a3a
++           <...>-1447  [001] 1038282.286885: do_sys_open+0x0/0xd6: 0xffffff9c 0x40413c 0x8000 0x1b6
++           <...>-1447  [001] 1038282.286915: sys_open+0x1b/0x1d <-do_sys_open: 0x3 0xffffffff81367a3a
++           <...>-1447  [001] 1038282.286969: do_sys_open+0x0/0xd6: 0xffffff9c 0x4041c6 0x98800 0x10
++           <...>-1447  [001] 1038282.286976: sys_open+0x1b/0x1d <-do_sys_open: 0x3 0xffffffff81367a3a
++
++
++ Each line shows when the kernel hits a probe, and <- SYMBOL means kernel
++returns from SYMBOL(e.g. "sys_open+0x1b/0x1d <- do_sys_open" means kernel
++returns from do_sys_open to sys_open+0x1b).
++
++
+diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
+index f61be30..8927864 100644
+--- a/kernel/trace/Kconfig
++++ b/kernel/trace/Kconfig
+@@ -398,6 +398,15 @@ config BLK_DEV_IO_TRACE
+ 
+ 	  If unsure, say N.
+ 
++config KPROBE_TRACER
++	depends on KPROBES
++	depends on X86
++	bool "Trace kprobes"
++	select TRACING
++	help
++	  This tracer probes everywhere where kprobes can probe it, and
++	  records various registers and memories specified by user.
++
+ config DYNAMIC_FTRACE
+ 	bool "enable/disable ftrace tracepoints dynamically"
+ 	depends on FUNCTION_TRACER
+diff --git a/kernel/trace/Makefile b/kernel/trace/Makefile
+index 848e5ce..01ac95b 100644
+--- a/kernel/trace/Makefile
++++ b/kernel/trace/Makefile
+@@ -52,5 +52,6 @@ obj-$(CONFIG_FTRACE_SYSCALLS) += trace_syscalls.o
+ obj-$(CONFIG_EVENT_PROFILE) += trace_event_profile.o
+ obj-$(CONFIG_EVENT_TRACING) += trace_events_filter.o
+ obj-$(CONFIG_EVENT_TRACING) += trace_mm.o
++obj-$(CONFIG_KPROBE_TRACER) += trace_kprobe.o
+ 
+ libftrace-y := ftrace.o
+diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+index 6e735d4..5d7849b 100644
+--- a/kernel/trace/trace.h
++++ b/kernel/trace/trace.h
+@@ -40,6 +40,8 @@ enum trace_type {
+ 	TRACE_KMEM_FREE,
+ 	TRACE_POWER,
+ 	TRACE_BLK,
++	TRACE_KPROBE,
++	TRACE_KRETPROBE,
+ 
+ 	__TRACE_LAST_TYPE,
+ };
+@@ -207,6 +209,22 @@ struct syscall_trace_exit {
+ 	unsigned long		ret;
+ };
+ 
++#define TRACE_KPROBE_ARGS 6
++
++struct kprobe_trace_entry {
++	struct trace_entry	ent;
++	unsigned long		ip;
++	int			nargs;
++	unsigned long		args[TRACE_KPROBE_ARGS];
 +};
 +
-+struct insn {
-+	struct insn_field prefixes;	/*
-+					 * Prefixes
-+					 * prefixes.bytes[3]: last prefix
-+					 */
-+	struct insn_field rex_prefix;	/* REX prefix */
-+	struct insn_field opcode;	/*
-+					 * opcode.bytes[0]: opcode1
-+					 * opcode.bytes[1]: opcode2
-+					 * opcode.bytes[2]: opcode3
-+					 */
-+	struct insn_field modrm;
-+	struct insn_field sib;
-+	struct insn_field displacement;
-+	union {
-+		struct insn_field immediate;
-+		struct insn_field moffset1;	/* for 64bit MOV */
-+		struct insn_field immediate1;	/* for 64bit imm or off16/32 */
-+	};
-+	union {
-+		struct insn_field moffset2;	/* for 64bit MOV */
-+		struct insn_field immediate2;	/* for 64bit imm or seg16 */
-+	};
-+
-+	insn_attr_t attr;
-+	u8 opnd_bytes;
-+	u8 addr_bytes;
-+	u8 length;
-+	bool x86_64;
-+
-+	const u8 *kaddr;	/* kernel address of insn (copy) to analyze */
-+	const u8 *next_byte;
++struct kretprobe_trace_entry {
++	struct trace_entry	ent;
++	unsigned long		func;
++	unsigned long		ret_ip;
++	int			nargs;
++	unsigned long		args[TRACE_KPROBE_ARGS];
 +};
-+
-+#define OPCODE1(insn) ((insn)->opcode.bytes[0])
-+#define OPCODE2(insn) ((insn)->opcode.bytes[1])
-+#define OPCODE3(insn) ((insn)->opcode.bytes[2])
-+
-+#define MODRM_MOD(insn) (((insn)->modrm.value & 0xc0) >> 6)
-+#define MODRM_REG(insn) (((insn)->modrm.value & 0x38) >> 3)
-+#define MODRM_RM(insn) ((insn)->modrm.value & 0x07)
-+
-+#define SIB_SCALE(insn) (((insn)->sib.value & 0xc0) >> 6)
-+#define SIB_INDEX(insn) (((insn)->sib.value & 0x38) >> 3)
-+#define SIB_BASE(insn) ((insn)->sib.value & 0x07)
-+
-+#define REX_W(insn) ((insn)->rex_prefix.value & 8)
-+#define REX_R(insn) ((insn)->rex_prefix.value & 4)
-+#define REX_X(insn) ((insn)->rex_prefix.value & 2)
-+#define REX_B(insn) ((insn)->rex_prefix.value & 1)
-+
-+/* The last prefix is needed for two-byte and three-byte opcodes */
-+#define LAST_PREFIX(insn) ((insn)->prefixes.bytes[3])
-+
-+#define MOFFSET64(insn)	(((u64)((insn)->moffset2.value) << 32) | \
-+			  (u32)((insn)->moffset1.value))
-+
-+#define IMMEDIATE64(insn)	(((u64)((insn)->immediate2.value) << 32) | \
-+				  (u32)((insn)->immediate1.value))
-+
-+extern void insn_init(struct insn *insn, const u8 *kaddr, bool x86_64);
-+extern void insn_get_prefixes(struct insn *insn);
-+extern void insn_get_opcode(struct insn *insn);
-+extern void insn_get_modrm(struct insn *insn);
-+extern void insn_get_sib(struct insn *insn);
-+extern void insn_get_displacement(struct insn *insn);
-+extern void insn_get_immediate(struct insn *insn);
-+extern void insn_get_length(struct insn *insn);
-+
-+/* Attribute will be determined after getting ModRM (for opcode groups) */
-+static inline void insn_get_attr(struct insn *insn)
-+{
-+	insn_get_modrm(insn);
-+}
-+
-+/* Instruction uses RIP-relative addressing */
-+extern bool insn_rip_relative(struct insn *insn);
-+
-+#ifdef CONFIG_X86_64
-+/* Init insn for kernel text */
-+#define kernel_insn_init(insn, kaddr) insn_init(insn, kaddr, 1)
-+#else /* CONFIG_X86_32 */
-+#define kernel_insn_init(insn, kaddr) insn_init(insn, kaddr, 0)
-+#endif
-+
-+#define INSN_PREFIXES_OFFS(insn)	(0)
-+#define INSN_REXPREFIX_OFFS(insn)	((insn)->prefixes.nbytes)
-+#define INSN_OPCODE_OFFS(insn)		(INSN_REXPREFIX_OFFS(insn) + \
-+					 ((insn)->rex_prefix.nbytes))
-+#define INSN_MODRM_OFFS(insn)		(INSN_OPCODE_OFFS(insn) + \
-+					 ((insn)->opcode.nbytes))
-+#define INSN_SIB_OFFS(insn)		(INSN_MODRM_OFFS(insn) + \
-+					 ((insn)->modrm.nbytes))
-+#define INSN_DISPLACEMENT_OFFS(insn)	(INSN_SIB_OFFS(insn) + \
-+					 ((insn)->sib.nbytes))
-+#define INSN_IMMEDIATE_OFFS(insn)	(INSN_DISPLACEMENT_OFFS(insn) + \
-+					 ((insn)->displacement.nbytes))
-+
-+#endif /* _ASM_X86_INSN_H */
-diff --git a/arch/x86/lib/Makefile b/arch/x86/lib/Makefile
-index 55e11aa..db0e3be 100644
---- a/arch/x86/lib/Makefile
-+++ b/arch/x86/lib/Makefile
-@@ -2,12 +2,25 @@
- # Makefile for x86 specific library files.
- #
  
-+inat_tables_script = $(srctree)/arch/x86/scripts/gen-insn-attr-x86.awk
-+inat_tables_maps = $(srctree)/arch/x86/lib/x86-opcode-map.txt
-+quiet_cmd_inat_tables = GEN     $@
-+      cmd_inat_tables = $(AWK) -f $(inat_tables_script) $(inat_tables_maps) > $@
-+
-+$(obj)/inat-tables.c: $(inat_tables_script) $(inat_tables_maps)
-+	$(call cmd,inat_tables)
-+
-+$(obj)/inat.o: $(obj)/inat-tables.c
-+
-+clean-files := inat-tables.c
-+
- obj-$(CONFIG_SMP) := msr-on-cpu.o
+ /*
+  * trace_flag_type is an enumeration that holds different
+@@ -323,6 +341,10 @@ extern void __ftrace_bad_type(void);
+ 			  TRACE_SYSCALL_ENTER);				\
+ 		IF_ASSIGN(var, ent, struct syscall_trace_exit,		\
+ 			  TRACE_SYSCALL_EXIT);				\
++		IF_ASSIGN(var, ent, struct kprobe_trace_entry,		\
++			  TRACE_KPROBE);				\
++		IF_ASSIGN(var, ent, struct kretprobe_trace_entry,	\
++			  TRACE_KRETPROBE);				\
+ 		__ftrace_bad_type();					\
+ 	} while (0)
  
- lib-y := delay.o
- lib-y += thunk_$(BITS).o
- lib-y += usercopy_$(BITS).o getuser.o putuser.o
- lib-y += memcpy_$(BITS).o
-+lib-y += insn.o inat.o
+diff --git a/kernel/trace/trace_event_types.h b/kernel/trace/trace_event_types.h
+index 5e32e37..3be3e32 100644
+--- a/kernel/trace/trace_event_types.h
++++ b/kernel/trace/trace_event_types.h
+@@ -172,4 +172,24 @@ TRACE_EVENT_FORMAT(kmem_free, TRACE_KMEM_FREE, kmemtrace_free_entry, ignore,
+ 	TP_RAW_FMT("type:%u call_site:%lx ptr:%p")
+ );
  
- ifeq ($(CONFIG_X86_32),y)
-         lib-y += checksum_32.o
-diff --git a/arch/x86/lib/inat.c b/arch/x86/lib/inat.c
++TRACE_EVENT_FORMAT(kprobe, TRACE_KPROBE, kprobe_trace_entry, ignore,
++	TRACE_STRUCT(
++		TRACE_FIELD(unsigned long, ip, ip)
++		TRACE_FIELD(int, nargs, nargs)
++		TRACE_FIELD_SPECIAL(unsigned long args[TRACE_KPROBE_ARGS],
++				    args, TRACE_KPROBE_ARGS, args)
++	),
++	TP_RAW_FMT("%08lx: args:0x%lx ...")
++);
++
++TRACE_EVENT_FORMAT(kretprobe, TRACE_KRETPROBE, kretprobe_trace_entry, ignore,
++	TRACE_STRUCT(
++		TRACE_FIELD(unsigned long, func, func)
++		TRACE_FIELD(unsigned long, ret_ip, ret_ip)
++		TRACE_FIELD(int, nargs, nargs)
++		TRACE_FIELD_SPECIAL(unsigned long args[TRACE_KPROBE_ARGS],
++				    args, TRACE_KPROBE_ARGS, args)
++	),
++	TP_RAW_FMT("%08lx <- %08lx: args:0x%lx ...")
++);
+ #undef TRACE_SYSTEM
+diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
 new file mode 100644
-index 0000000..d6a34be
+index 0000000..ecca548
 --- /dev/null
-+++ b/arch/x86/lib/inat.c
-@@ -0,0 +1,80 @@
++++ b/kernel/trace/trace_kprobe.c
+@@ -0,0 +1,903 @@
 +/*
-+ * x86 instruction attribute tables
++ * kprobe based kernel tracer
 + *
-+ * Written by Masami Hiramatsu <mhiramat@redhat.com>
++ * Created by Masami Hiramatsu <mhiramat@redhat.com>
 + *
 + * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
 + *
 + * This program is distributed in the hope that it will be useful,
 + * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -427,1583 +293,893 @@ index 0000000..d6a34be
 + *
 + * You should have received a copy of the GNU General Public License
 + * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-+ *
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 + */
++
 +#include <linux/module.h>
-+#include <asm/insn.h>
-+
-+/* Attribute tables are generated from opcode map */
-+#include "inat-tables.c"
-+
-+/* Attribute search APIs */
-+insn_attr_t inat_get_opcode_attribute(u8 opcode)
-+{
-+	return inat_primary_table[opcode];
-+}
-+
-+insn_attr_t inat_get_escape_attribute(u8 opcode, u8 last_pfx,
-+				      insn_attr_t esc_attr)
-+{
-+	const insn_attr_t *table;
-+	insn_attr_t lpfx_attr;
-+	int n, m = 0;
-+
-+	n = INAT_ESCAPE_NUM(esc_attr);
-+	if (last_pfx) {
-+		lpfx_attr = inat_get_opcode_attribute(last_pfx);
-+		m = INAT_LPREFIX_NUM(lpfx_attr);
-+	}
-+	table = inat_escape_tables[n][0];
-+	if (!table)
-+		return 0;
-+	if (INAT_HAS_VARIANT(table[opcode]) && m) {
-+		table = inat_escape_tables[n][m];
-+		if (!table)
-+			return 0;
-+	}
-+	return table[opcode];
-+}
-+
-+#define REGBITS(modrm) (((modrm) >> 3) & 0x7)
-+
-+insn_attr_t inat_get_group_attribute(u8 modrm, u8 last_pfx,
-+				     insn_attr_t grp_attr)
-+{
-+	const insn_attr_t *table;
-+	insn_attr_t lpfx_attr;
-+	int n, m = 0;
-+
-+	n = INAT_GROUP_NUM(grp_attr);
-+	if (last_pfx) {
-+		lpfx_attr = inat_get_opcode_attribute(last_pfx);
-+		m = INAT_LPREFIX_NUM(lpfx_attr);
-+	}
-+	table = inat_group_tables[n][0];
-+	if (!table)
-+		return INAT_GROUP_COMMON(grp_attr);
-+	if (INAT_HAS_VARIANT(table[REGBITS(modrm)]) && m) {
-+		table = inat_escape_tables[n][m];
-+		if (!table)
-+			return INAT_GROUP_COMMON(grp_attr);
-+	}
-+	return table[REGBITS(modrm)] | INAT_GROUP_COMMON(grp_attr);
-+}
-+
-diff --git a/arch/x86/lib/insn.c b/arch/x86/lib/insn.c
-new file mode 100644
-index 0000000..58de68e
---- /dev/null
-+++ b/arch/x86/lib/insn.c
-@@ -0,0 +1,471 @@
-+/*
-+ * x86 instruction analysis
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-+ *
-+ * Copyright (C) IBM Corporation, 2002, 2004, 2009
-+ */
-+
++#include <linux/uaccess.h>
++#include <linux/kprobes.h>
++#include <linux/seq_file.h>
++#include <linux/slab.h>
++#include <linux/smp.h>
++#include <linux/debugfs.h>
++#include <linux/types.h>
 +#include <linux/string.h>
-+#include <linux/module.h>
-+#include <asm/inat.h>
-+#include <asm/insn.h>
++#include <linux/ctype.h>
++#include <linux/ptrace.h>
 +
-+#define get_next(t, insn)	\
-+	({t r; r = *(t*)insn->next_byte; insn->next_byte += sizeof(t); r; })
++#include "trace.h"
++#include "trace_output.h"
 +
-+#define peek_next(t, insn)	\
-+	({t r; r = *(t*)insn->next_byte; r; })
++/* currently, trace_kprobe only supports X86. */
 +
-+/**
-+ * insn_init() - initialize struct insn
-+ * @insn:	&struct insn to be initialized
-+ * @kaddr:	address (in kernel memory) of instruction (or copy thereof)
-+ * @x86_64:	true for 64-bit kernel or 64-bit app
-+ */
-+void insn_init(struct insn *insn, const u8 *kaddr, bool x86_64)
++struct fetch_func {
++	unsigned long (*func)(struct pt_regs *, void *);
++	void *data;
++};
++
++static __kprobes unsigned long call_fetch(struct fetch_func *f,
++					  struct pt_regs *regs)
 +{
-+	memset(insn, 0, sizeof(*insn));
-+	insn->kaddr = kaddr;
-+	insn->next_byte = kaddr;
-+	insn->x86_64 = x86_64;
-+	insn->opnd_bytes = 4;
-+	if (x86_64)
-+		insn->addr_bytes = 8;
++	return f->func(regs, f->data);
++}
++
++/* fetch handlers */
++static __kprobes unsigned long fetch_register(struct pt_regs *regs,
++					      void *offset)
++{
++	return get_register(regs, (unsigned)((unsigned long)offset));
++}
++
++static __kprobes unsigned long fetch_stack(struct pt_regs *regs,
++					   void *num)
++{
++	return get_kernel_stack_nth(regs, (unsigned)((unsigned long)num));
++}
++
++static __kprobes unsigned long fetch_memory(struct pt_regs *regs, void *addr)
++{
++	unsigned long retval;
++	if (probe_kernel_address(addr, retval))
++		return 0;
++	return retval;
++}
++
++static __kprobes unsigned long fetch_argument(struct pt_regs *regs, void *num)
++{
++	return get_argument_nth(regs, (unsigned)((unsigned long)num));
++}
++
++static __kprobes unsigned long fetch_retvalue(struct pt_regs *regs,
++					      void *dummy)
++{
++	return regs_return_value(regs);
++}
++
++static __kprobes unsigned long fetch_ip(struct pt_regs *regs, void *dummy)
++{
++	return instruction_pointer(regs);
++}
++
++/* Memory fetching by symbol */
++struct symbol_cache {
++	char *symbol;
++	long offset;
++	unsigned long addr;
++};
++
++static unsigned long update_symbol_cache(struct symbol_cache *sc)
++{
++	sc->addr = (unsigned long)kallsyms_lookup_name(sc->symbol);
++	if (sc->addr)
++		sc->addr += sc->offset;
++	return sc->addr;
++}
++
++static void free_symbol_cache(struct symbol_cache *sc)
++{
++	kfree(sc->symbol);
++	kfree(sc);
++}
++
++static struct symbol_cache *alloc_symbol_cache(const char *sym, long offset)
++{
++	struct symbol_cache *sc;
++	if (!sym || strlen(sym) == 0)
++		return NULL;
++	sc = kzalloc(sizeof(struct symbol_cache), GFP_KERNEL);
++	if (!sc)
++		return NULL;
++
++	sc->symbol = kstrdup(sym, GFP_KERNEL);
++	if (!sc->symbol) {
++		kfree(sc);
++		return NULL;
++	}
++	sc->offset = offset;
++
++	update_symbol_cache(sc);
++	return sc;
++}
++
++static __kprobes unsigned long fetch_symbol(struct pt_regs *regs, void *data)
++{
++	struct symbol_cache *sc = data;
++	if (sc->addr)
++		return fetch_memory(regs, (void *)sc->addr);
 +	else
-+		insn->addr_bytes = 4;
++		return 0;
 +}
-+EXPORT_SYMBOL_GPL(insn_init);
++
++/* Special indirect memory access interface */
++struct indirect_fetch_data {
++	struct fetch_func orig;
++	long offset;
++};
++
++static __kprobes unsigned long fetch_indirect(struct pt_regs *regs, void *data)
++{
++	struct indirect_fetch_data *ind = data;
++	unsigned long addr;
++	addr = call_fetch(&ind->orig, regs);
++	if (addr) {
++		addr += ind->offset;
++		return fetch_memory(regs, (void *)addr);
++	} else
++		return 0;
++}
++
++static __kprobes void free_indirect_fetch_data(struct indirect_fetch_data *data)
++{
++	if (data->orig.func == fetch_indirect)
++		free_indirect_fetch_data(data->orig.data);
++	else if (data->orig.func == fetch_symbol)
++		free_symbol_cache(data->orig.data);
++	kfree(data);
++}
 +
 +/**
-+ * insn_get_prefixes - scan x86 instruction prefix bytes
-+ * @insn:	&struct insn containing instruction
-+ *
-+ * Populates the @insn->prefixes bitmap, and updates @insn->next_byte
-+ * to point to the (first) opcode.  No effect if @insn->prefixes.got
-+ * is already true.
++ * kprobe_trace_core
 + */
-+void insn_get_prefixes(struct insn *insn)
++
++struct trace_probe {
++	struct list_head	list;
++	union {
++		struct kprobe		kp;
++		struct kretprobe	rp;
++	};
++	const char		*symbol;	/* symbol name */
++	unsigned int		nr_args;
++	struct fetch_func	args[TRACE_KPROBE_ARGS];
++};
++
++static int kprobe_trace_func(struct kprobe *kp, struct pt_regs *regs);
++static int kretprobe_trace_func(struct kretprobe_instance *ri,
++				struct pt_regs *regs);
++
++static __kprobes int probe_is_return(struct trace_probe *tp)
 +{
-+	struct insn_field *prefixes = &insn->prefixes;
-+	insn_attr_t attr;
-+	u8 b, lb, i, nb;
-+
-+	if (prefixes->got)
-+		return;
-+
-+	nb = 0;
-+	lb = 0;
-+	b = peek_next(u8, insn);
-+	attr = inat_get_opcode_attribute(b);
-+	while (INAT_IS_PREFIX(attr)) {
-+		/* Skip if same prefix */
-+		for (i = 0; i < nb; i++)
-+			if (prefixes->bytes[i] == b)
-+				goto found;
-+		if (nb == 4)
-+			/* Invalid instruction */
-+			break;
-+		prefixes->bytes[nb++] = b;
-+		if (INAT_IS_ADDRSZ(attr)) {
-+			/* address size switches 2/4 or 4/8 */
-+			if (insn->x86_64)
-+				insn->addr_bytes ^= 12;
-+			else
-+				insn->addr_bytes ^= 6;
-+		} else if (INAT_IS_OPNDSZ(attr)) {
-+			/* oprand size switches 2/4 */
-+			insn->opnd_bytes ^= 6;
-+		}
-+found:
-+		prefixes->nbytes++;
-+		insn->next_byte++;
-+		lb = b;
-+		b = peek_next(u8, insn);
-+		attr = inat_get_opcode_attribute(b);
-+	}
-+	/* Set the last prefix */
-+	if (lb && lb != LAST_PREFIX(insn)) {
-+		if (LAST_PREFIX(insn)) {
-+			/* Swap the last prefix */
-+			b = LAST_PREFIX(insn);
-+			for (i = 0; i < nb; i++)
-+				if (prefixes->bytes[i] == lb)
-+					prefixes->bytes[i] = b;
-+		}
-+		LAST_PREFIX(insn) = lb;
-+	}
-+
-+	if (insn->x86_64) {
-+		b = peek_next(u8, insn);
-+		attr = inat_get_opcode_attribute(b);
-+		if (INAT_IS_REX_PREFIX(attr)) {
-+			insn->rex_prefix.value = b;
-+			insn->rex_prefix.nbytes = 1;
-+			insn->rex_prefix.got = true;
-+			insn->next_byte++;
-+			if (REX_W(insn))
-+				/* REX.W overrides opnd_size */
-+				insn->opnd_bytes = 8;
-+		}
-+	}
-+	prefixes->got = true;
-+	return;
++	return (tp->rp.handler == kretprobe_trace_func);
 +}
-+EXPORT_SYMBOL_GPL(insn_get_prefixes);
 +
-+/**
-+ * insn_get_opcode - collect opcode(s)
-+ * @insn:	&struct insn containing instruction
-+ *
-+ * Populates @insn->opcode, updates @insn->next_byte to point past the
-+ * opcode byte(s), and set @insn->attr (except for groups).
-+ * If necessary, first collects any preceding (prefix) bytes.
-+ * Sets @insn->opcode.value = opcode1.  No effect if @insn->opcode.got
-+ * is already true.
-+ *
-+ */
-+void insn_get_opcode(struct insn *insn)
++static __kprobes const char *probe_symbol(struct trace_probe *tp)
 +{
-+	struct insn_field *opcode = &insn->opcode;
-+	u8 op, pfx;
-+	if (opcode->got)
-+		return;
-+	if (!insn->prefixes.got)
-+		insn_get_prefixes(insn);
-+
-+	/* Get first opcode */
-+	op = get_next(u8, insn);
-+	OPCODE1(insn) = op;
-+	opcode->nbytes = 1;
-+	insn->attr = inat_get_opcode_attribute(op);
-+	while (INAT_IS_ESCAPE(insn->attr)) {
-+		/* Get escaped opcode */
-+		op = get_next(u8, insn);
-+		opcode->bytes[opcode->nbytes++] = op;
-+		pfx = LAST_PREFIX(insn);
-+		insn->attr = inat_get_escape_attribute(op, pfx, insn->attr);
-+	}
-+	opcode->got = true;
++	return tp->symbol ? tp->symbol : "unknown";
 +}
-+EXPORT_SYMBOL_GPL(insn_get_opcode);
 +
-+/**
-+ * insn_get_modrm - collect ModRM byte, if any
-+ * @insn:	&struct insn containing instruction
-+ *
-+ * Populates @insn->modrm and updates @insn->next_byte to point past the
-+ * ModRM byte, if any.  If necessary, first collects the preceding bytes
-+ * (prefixes and opcode(s)).  No effect if @insn->modrm.got is already true.
-+ */
-+void insn_get_modrm(struct insn *insn)
++static __kprobes long probe_offset(struct trace_probe *tp)
 +{
-+	struct insn_field *modrm = &insn->modrm;
-+	u8 pfx, mod;
-+	if (modrm->got)
-+		return;
-+	if (!insn->opcode.got)
-+		insn_get_opcode(insn);
++	return (probe_is_return(tp)) ? tp->rp.kp.offset : tp->kp.offset;
++}
 +
-+	if (INAT_HAS_MODRM(insn->attr)) {
-+		mod = get_next(u8, insn);
-+		modrm->value = mod;
-+		modrm->nbytes = 1;
-+		if (INAT_IS_GROUP(insn->attr)) {
-+			pfx = LAST_PREFIX(insn);
-+			insn->attr = inat_get_group_attribute(mod, pfx,
-+							      insn->attr);
++static __kprobes void *probe_address(struct trace_probe *tp)
++{
++	return (probe_is_return(tp)) ? tp->rp.kp.addr : tp->kp.addr;
++}
++
++static int trace_arg_string(char *buf, size_t n, struct fetch_func *ff)
++{
++	int ret = -EINVAL;
++	if (ff->func == fetch_argument)
++		ret = snprintf(buf, n, "a%lu", (unsigned long)ff->data);
++	else if (ff->func == fetch_register) {
++		const char *name;
++		name = query_register_name((unsigned)((long)ff->data));
++		ret = snprintf(buf, n, "%%%s", name);
++	} else if (ff->func == fetch_stack)
++		ret = snprintf(buf, n, "s%lu", (unsigned long)ff->data);
++	else if (ff->func == fetch_memory)
++		ret = snprintf(buf, n, "@0x%p", ff->data);
++	else if (ff->func == fetch_symbol) {
++		struct symbol_cache *sc = ff->data;
++		ret = snprintf(buf, n, "@%s%+ld", sc->symbol, sc->offset);
++	} else if (ff->func == fetch_retvalue)
++		ret = snprintf(buf, n, "rv");
++	else if (ff->func == fetch_ip)
++		ret = snprintf(buf, n, "ra");
++	else if (ff->func == fetch_indirect) {
++		struct indirect_fetch_data *id = ff->data;
++		ret = snprintf(buf, n, "%+ld(", id->offset);
++		if (ret > n)
++			goto end;
++		n -= ret;
++		ret = trace_arg_string(buf, n, &id->orig);
++		if (ret > n)
++			goto end;
++		n -= ret;
++		ret = snprintf(buf, n, ")");
++	}
++end:
++	if (ret > n)
++		return -ENOSPC;
++	return 0;
++}
++
++
++static DEFINE_MUTEX(probe_lock);
++static LIST_HEAD(probe_list);
++
++static struct trace_probe *alloc_trace_probe(const char *symbol)
++{
++	struct trace_probe *tp;
++
++	tp = kzalloc(sizeof(struct trace_probe), GFP_KERNEL);
++	if (!tp)
++		return ERR_PTR(-ENOMEM);
++
++	if (symbol) {
++		tp->symbol = kstrdup(symbol, GFP_KERNEL);
++		if (!tp->symbol) {
++			kfree(tp);
++			return ERR_PTR(-ENOMEM);
 +		}
 +	}
 +
-+	if (insn->x86_64 && INAT_IS_FORCE64(insn->attr))
-+		insn->opnd_bytes = 8;
-+	modrm->got = true;
++	INIT_LIST_HEAD(&tp->list);
++	return tp;
 +}
-+EXPORT_SYMBOL_GPL(insn_get_modrm);
 +
-+
-+/**
-+ * insn_rip_relative() - Does instruction use RIP-relative addressing mode?
-+ * @insn:	&struct insn containing instruction
-+ *
-+ * If necessary, first collects the instruction up to and including the
-+ * ModRM byte.  No effect if @insn->x86_64 is false.
-+ */
-+bool insn_rip_relative(struct insn *insn)
++static void free_trace_probe(struct trace_probe *tp)
 +{
-+	struct insn_field *modrm = &insn->modrm;
++	int i;
++	for (i = 0; i < tp->nr_args; i++)
++		if (tp->args[i].func == fetch_symbol)
++			free_symbol_cache(tp->args[i].data);
++		else if (tp->args[i].func == fetch_indirect)
++			free_indirect_fetch_data(tp->args[i].data);
 +
-+	if (!insn->x86_64)
-+		return false;
-+	if (!modrm->got)
-+		insn_get_modrm(insn);
-+	/*
-+	 * For rip-relative instructions, the mod field (top 2 bits)
-+	 * is zero and the r/m field (bottom 3 bits) is 0x5.
-+	 */
-+	return (modrm->nbytes && (modrm->value & 0xc7) == 0x5);
++	kfree(tp->symbol);
++	kfree(tp);
 +}
-+EXPORT_SYMBOL_GPL(insn_rip_relative);
 +
-+/**
-+ *
-+ * insn_get_sib() - Get the SIB byte of instruction
-+ * @insn:	&struct insn containing instruction
-+ *
-+ * If necessary, first collects the instruction up to and including the
-+ * ModRM byte.
-+ */
-+void insn_get_sib(struct insn *insn)
++static int register_trace_probe(struct trace_probe *tp)
 +{
-+	if (insn->sib.got)
-+		return;
-+	if (!insn->modrm.got)
-+		insn_get_modrm(insn);
-+	if (insn->modrm.nbytes)
-+		if (insn->addr_bytes != 2 &&
-+		    MODRM_MOD(insn) != 3 && MODRM_RM(insn) == 4) {
-+			insn->sib.value = get_next(u8, insn);
-+			insn->sib.nbytes = 1;
++	int ret;
++
++	mutex_lock(&probe_lock);
++	list_add_tail(&tp->list, &probe_list);
++
++	if (probe_is_return(tp))
++		ret = register_kretprobe(&tp->rp);
++	else
++		ret = register_kprobe(&tp->kp);
++
++	if (ret) {
++		pr_warning("Could not insert probe(%d)\n", ret);
++		if (ret == -EILSEQ) {
++			pr_warning("Probing address(0x%p) is not an "
++				   "instruction boundary.\n",
++				   probe_address(tp));
++			ret = -EINVAL;
 +		}
-+	insn->sib.got = true;
++		list_del(&tp->list);
++	}
++	mutex_unlock(&probe_lock);
++	return ret;
 +}
-+EXPORT_SYMBOL_GPL(insn_get_sib);
 +
-+
-+/**
-+ *
-+ * insn_get_displacement() - Get the displacement of instruction
-+ * @insn:	&struct insn containing instruction
-+ *
-+ * If necessary, first collects the instruction up to and including the
-+ * SIB byte.
-+ * Displacement value is sign-expanded.
-+ */
-+void insn_get_displacement(struct insn *insn)
++static void unregister_trace_probe(struct trace_probe *tp)
 +{
-+	u8 mod;
-+	if (insn->displacement.got)
-+		return;
-+	if (!insn->sib.got)
-+		insn_get_sib(insn);
-+	if (insn->modrm.nbytes) {
-+		/*
-+		 * Interpreting the modrm byte:
-+		 * mod = 00 - no displacement fields (exceptions below)
-+		 * mod = 01 - 1-byte displacement field
-+		 * mod = 10 - displacement field is 4 bytes, or 2 bytes if
-+		 * 	address size = 2 (0x67 prefix in 32-bit mode)
-+		 * mod = 11 - no memory operand
-+		 *
-+		 * If address size = 2...
-+		 * mod = 00, r/m = 110 - displacement field is 2 bytes
-+		 *
-+		 * If address size != 2...
-+		 * mod != 11, r/m = 100 - SIB byte exists
-+		 * mod = 00, SIB base = 101 - displacement field is 4 bytes
-+		 * mod = 00, r/m = 101 - rip-relative addressing, displacement
-+		 * 	field is 4 bytes
-+		 */
-+		mod = MODRM_MOD(insn);
-+		if (mod == 3)
-+			goto out;
-+		if (mod == 1) {
-+			insn->displacement.value = get_next(s8, insn);
-+			insn->displacement.nbytes = 1;
-+		} else if (insn->addr_bytes == 2) {
-+			if ((mod == 0 && MODRM_RM(insn) == 6) || mod == 2) {
-+				insn->displacement.value = get_next(s16, insn);
-+				insn->displacement.nbytes = 2;
-+			}
++	if (probe_is_return(tp))
++		unregister_kretprobe(&tp->rp);
++	else
++		unregister_kprobe(&tp->kp);
++	list_del(&tp->list);
++}
++
++/* Split symbol and offset. */
++static int split_symbol_offset(char *symbol, long *offset)
++{
++	char *tmp;
++	int ret;
++
++	if (!offset)
++		return -EINVAL;
++
++	tmp = strchr(symbol, '+');
++	if (!tmp)
++		tmp = strchr(symbol, '-');
++
++	if (tmp) {
++		/* skip sign because strict_strtol doesn't accept '+' */
++		ret = strict_strtol(tmp + 1, 0, offset);
++		if (ret)
++			return ret;
++		if (*tmp == '-')
++			*offset = -(*offset);
++		*tmp = '\0';
++	} else
++		*offset = 0;
++	return 0;
++}
++
++#define PARAM_MAX_ARGS 16
++#define PARAM_MAX_STACK (THREAD_SIZE / sizeof(unsigned long))
++#define MAX_ARGSTR_LEN 63
++
++static int parse_trace_arg(char *arg, struct fetch_func *ff, int is_return)
++{
++	int ret = 0;
++	unsigned long param;
++	long offset;
++	char *tmp;
++
++	switch (arg[0]) {
++	case 'a':	/* argument */
++		ret = strict_strtoul(arg + 1, 10, &param);
++		if (ret || param > PARAM_MAX_ARGS)
++			ret = -EINVAL;
++		else {
++			ff->func = fetch_argument;
++			ff->data = (void *)param;
++		}
++		break;
++	case 'r':	/* retval or retaddr */
++		if (is_return && arg[1] == 'v') {
++			ff->func = fetch_retvalue;
++			ff->data = NULL;
++		} else if (is_return && arg[1] == 'a') {
++			ff->func = fetch_ip;
++			ff->data = NULL;
++		} else
++			ret = -EINVAL;
++		break;
++	case '%':	/* named register */
++		ret = query_register_offset(arg + 1);
++		if (ret >= 0) {
++			ff->func = fetch_register;
++			ff->data = (void *)(unsigned long)ret;
++			ret = 0;
++		}
++		break;
++	case 's':	/* stack */
++		ret = strict_strtoul(arg + 1, 10, &param);
++		if (ret || param > PARAM_MAX_STACK)
++			ret = -EINVAL;
++		else {
++			ff->func = fetch_stack;
++			ff->data = (void *)param;
++		}
++		break;
++	case '@':	/* memory or symbol */
++		if (isdigit(arg[1])) {
++			ret = strict_strtoul(arg + 1, 0, &param);
++			if (ret)
++				break;
++			ff->func = fetch_memory;
++			ff->data = (void *)param;
 +		} else {
-+			if ((mod == 0 && MODRM_RM(insn) == 5) || mod == 2 ||
-+			    (mod == 0 && SIB_BASE(insn) == 5)) {
-+				insn->displacement.value = get_next(s32, insn);
-+				insn->displacement.nbytes = 4;
-+			}
++			ret = split_symbol_offset(arg + 1, &offset);
++			if (ret)
++				break;
++			ff->data = alloc_symbol_cache(arg + 1,
++							      offset);
++			if (ff->data)
++				ff->func = fetch_symbol;
++			else
++				ret = -EINVAL;
 +		}
-+	}
-+out:
-+	insn->displacement.got = true;
-+}
-+EXPORT_SYMBOL_GPL(insn_get_displacement);
-+
-+/* Decode moffset16/32/64 */
-+static void __get_moffset(struct insn *insn)
-+{
-+	switch (insn->addr_bytes) {
-+	case 2:
-+		insn->moffset1.value = get_next(s16, insn);
-+		insn->moffset1.nbytes = 2;
 +		break;
-+	case 4:
-+		insn->moffset1.value = get_next(s32, insn);
-+		insn->moffset1.nbytes = 4;
-+		break;
-+	case 8:
-+		insn->moffset1.value = get_next(s32, insn);
-+		insn->moffset1.nbytes = 4;
-+		insn->moffset2.value = get_next(s32, insn);
-+		insn->moffset2.nbytes = 4;
-+		break;
-+	}
-+	insn->moffset1.got = insn->moffset2.got = true;
-+}
-+
-+/* Decode imm v32(Iz) */
-+static void __get_immv32(struct insn *insn)
-+{
-+	switch (insn->opnd_bytes) {
-+	case 2:
-+		insn->immediate.value = get_next(s16, insn);
-+		insn->immediate.nbytes = 2;
-+		break;
-+	case 4:
-+	case 8:
-+		insn->immediate.value = get_next(s32, insn);
-+		insn->immediate.nbytes = 4;
-+		break;
-+	}
-+}
-+
-+/* Decode imm v64(Iv/Ov) */
-+static void __get_immv(struct insn *insn)
-+{
-+	switch (insn->opnd_bytes) {
-+	case 2:
-+		insn->immediate1.value = get_next(s16, insn);
-+		insn->immediate1.nbytes = 2;
-+		break;
-+	case 4:
-+		insn->immediate1.value = get_next(s32, insn);
-+		insn->immediate1.nbytes = 4;
-+		break;
-+	case 8:
-+		insn->immediate1.value = get_next(s32, insn);
-+		insn->immediate1.nbytes = 4;
-+		insn->immediate2.value = get_next(s32, insn);
-+		insn->immediate2.nbytes = 4;
-+		break;
-+	}
-+	insn->immediate1.got = insn->immediate2.got = true;
-+}
-+
-+/* Decode ptr16:16/32(Ap) */
-+static void __get_immptr(struct insn *insn)
-+{
-+	switch (insn->opnd_bytes) {
-+	case 2:
-+		insn->immediate1.value = get_next(s16, insn);
-+		insn->immediate1.nbytes = 2;
-+		break;
-+	case 4:
-+		insn->immediate1.value = get_next(s32, insn);
-+		insn->immediate1.nbytes = 4;
-+		break;
-+	case 8:
-+		/* ptr16:64 is not supported (no segment) */
-+		WARN_ON(1);
-+		return;
-+	}
-+	insn->immediate2.value = get_next(u16, insn);
-+	insn->immediate2.nbytes = 2;
-+	insn->immediate1.got = insn->immediate2.got = true;
-+}
-+
-+/**
-+ *
-+ * insn_get_immediate() - Get the immediates of instruction
-+ * @insn:	&struct insn containing instruction
-+ *
-+ * If necessary, first collects the instruction up to and including the
-+ * displacement bytes.
-+ * Basically, most of immediates are sign-expanded. Unsigned-value can be
-+ * get by bit masking with ((1 << (nbytes * 8)) - 1)
-+ */
-+void insn_get_immediate(struct insn *insn)
-+{
-+	if (insn->immediate.got)
-+		return;
-+	if (!insn->displacement.got)
-+		insn_get_displacement(insn);
-+
-+	if (INAT_HAS_MOFFSET(insn->attr)) {
-+		__get_moffset(insn);
-+		goto done;
-+	}
-+
-+	if (!INAT_HAS_IMM(insn->attr))
-+		/* no immediates */
-+		goto done;
-+
-+	switch (INAT_IMM_SIZE(insn->attr)) {
-+	case INAT_IMM_BYTE:
-+		insn->immediate.value = get_next(s8, insn);
-+		insn->immediate.nbytes = 1;
-+		break;
-+	case INAT_IMM_WORD:
-+		insn->immediate.value = get_next(s16, insn);
-+		insn->immediate.nbytes = 2;
-+		break;
-+	case INAT_IMM_DWORD:
-+		insn->immediate.value = get_next(s32, insn);
-+		insn->immediate.nbytes = 4;
-+		break;
-+	case INAT_IMM_QWORD:
-+		insn->immediate1.value = get_next(s32, insn);
-+		insn->immediate1.nbytes = 4;
-+		insn->immediate2.value = get_next(s32, insn);
-+		insn->immediate2.nbytes = 4;
-+		break;
-+	case INAT_IMM_PTR:
-+		__get_immptr(insn);
-+		break;
-+	case INAT_IMM_VWORD32:
-+		__get_immv32(insn);
-+		break;
-+	case INAT_IMM_VWORD:
-+		__get_immv(insn);
++	case '+':	/* indirect memory */
++	case '-':
++		tmp = strchr(arg, '(');
++		if (!tmp) {
++			ret = -EINVAL;
++			break;
++		}
++		*tmp = '\0';
++		ret = strict_strtol(arg + 1, 0, &offset);
++		if (ret)
++			break;
++		if (arg[0] == '-')
++			offset = -offset;
++		arg = tmp + 1;
++		tmp = strrchr(arg, ')');
++		if (tmp) {
++			struct indirect_fetch_data *id;
++			*tmp = '\0';
++			id = kzalloc(sizeof(struct indirect_fetch_data),
++				     GFP_KERNEL);
++			if (!id)
++				return -ENOMEM;
++			id->offset = offset;
++			ret = parse_trace_arg(arg, &id->orig, is_return);
++			if (ret)
++				kfree(id);
++			else {
++				ff->func = fetch_indirect;
++				ff->data = (void *)id;
++			}
++		} else
++			ret = -EINVAL;
 +		break;
 +	default:
-+		break;
++		/* TODO: support custom handler */
++		ret = -EINVAL;
 +	}
-+	if (INAT_HAS_ADDIMM(insn->attr)) {
-+		insn->immediate2.value = get_next(s8, insn);
-+		insn->immediate2.nbytes = 1;
-+	}
-+done:
-+	insn->immediate.got = true;
++	return ret;
 +}
-+EXPORT_SYMBOL_GPL(insn_get_immediate);
 +
-+/**
-+ *
-+ * insn_get_length() - Get the length of instruction
-+ * @insn:	&struct insn containing instruction
-+ *
-+ * If necessary, first collects the instruction up to and including the
-+ * immediates bytes.
-+ */
-+void insn_get_length(struct insn *insn)
++static int create_trace_probe(int argc, char **argv)
 +{
-+	if (insn->length)
-+		return;
-+	if (!insn->immediate.got)
-+		insn_get_immediate(insn);
-+	insn->length = (u8)((unsigned long)insn->next_byte
-+			    - (unsigned long)insn->kaddr);
-+}
-+EXPORT_SYMBOL_GPL(insn_get_length);
-diff --git a/arch/x86/lib/x86-opcode-map.txt b/arch/x86/lib/x86-opcode-map.txt
-new file mode 100644
-index 0000000..ab2a58d
---- /dev/null
-+++ b/arch/x86/lib/x86-opcode-map.txt
-@@ -0,0 +1,711 @@
-+# x86 Opcode Maps
-+#
-+#<Opcode maps>
-+# Table: table-name
-+# Referrer: escaped-name
-+# opcode: mnemonic|GrpXXX [operand1[,operand2...]] [(extra1)[,(extra2)...] [| 2nd-mnemonic ...]
-+# (or)
-+# opcode: escape # escaped-name
-+# EndTable
-+#
-+#<group maps>
-+# GrpTable: GrpXXX
-+# reg:  mnemonic [operand1[,operand2...]] [(extra1)[,(extra2)...] [| 2nd-mnemonic ...]
-+# EndTable
-+#
++	/*
++	 * Argument syntax:
++	 *  - Add kprobe: p SYMBOL[+OFFS|-OFFS]|ADDRESS [FETCHARGS]
++	 *  - Add kretprobe: r SYMBOL[+0] [FETCHARGS]
++	 * Fetch args:
++	 *  aN	: fetch Nth of function argument. (N:0-)
++	 *  rv	: fetch return value
++	 *  ra	: fetch return address
++	 *  sN	: fetch Nth of stack (N:0-)
++	 *  @ADDR	: fetch memory at ADDR (ADDR should be in kernel)
++	 *  @SYM[+|-offs] : fetch memory at SYM +|- offs (SYM is a data symbol)
++	 *  %REG	: fetch register REG
++	 * Indirect memory fetch:
++	 *  +|-offs(ARG) : fetch memory at ARG +|- offs address.
++	 */
++	struct trace_probe *tp;
++	struct kprobe *kp;
++	int i, ret = 0;
++	int is_return = 0;
++	char *symbol = NULL;
++	long offset = 0;
++	void *addr = NULL;
 +
-+Table: one byte opcode
-+Referrer:
-+# 0x00 - 0x0f
-+00: ADD Eb,Gb
-+01: ADD Ev,Gv
-+02: ADD Gb,Eb
-+03: ADD Gv,Ev
-+04: ADD AL,Ib
-+05: ADD rAX,Iz
-+06: PUSH ES (i64)
-+07: POP ES (i64)
-+08: OR Eb,Gb
-+09: OR Ev,Gv
-+0a: OR Gb,Eb
-+0b: OR Gv,Ev
-+0c: OR AL,Ib
-+0d: OR rAX,Iz
-+0e: PUSH CS (i64)
-+0f: escape # 2-byte escape
-+# 0x10 - 0x1f
-+10: ADC Eb,Gb
-+11: ADC Ev,Gv
-+12: ADC Gb,Eb
-+13: ADC Gv,Ev
-+14: ADC AL,Ib
-+15: ADC rAX,Iz
-+16: PUSH SS (i64)
-+17: POP SS (i64)
-+18: SBB Eb,Gb
-+19: SBB Ev,Gv
-+1a: SBB Gb,Eb
-+1b: SBB Gv,Ev
-+1c: SBB AL,Ib
-+1d: SBB rAX,Iz
-+1e: PUSH DS (i64)
-+1f: POP DS (i64)
-+# 0x20 - 0x2f
-+20: AND Eb,Gb
-+21: AND Ev,Gv
-+22: AND Gb,Eb
-+23: AND Gv,Ev
-+24: AND AL,Ib
-+25: AND rAx,Iz
-+26: SEG=ES (Prefix)
-+27: DAA (i64)
-+28: SUB Eb,Gb
-+29: SUB Ev,Gv
-+2a: SUB Gb,Eb
-+2b: SUB Gv,Ev
-+2c: SUB AL,Ib
-+2d: SUB rAX,Iz
-+2e: SEG=CS (Prefix)
-+2f: DAS (i64)
-+# 0x30 - 0x3f
-+30: XOR Eb,Gb
-+31: XOR Ev,Gv
-+32: XOR Gb,Eb
-+33: XOR Gv,Ev
-+34: XOR AL,Ib
-+35: XOR rAX,Iz
-+36: SEG=SS (Prefix)
-+37: AAA (i64)
-+38: CMP Eb,Gb
-+39: CMP Ev,Gv
-+3a: CMP Gb,Eb
-+3b: CMP Gv,Ev
-+3c: CMP AL,Ib
-+3d: CMP rAX,Iz
-+3e: SEG=DS (Prefix)
-+3f: AAS (i64)
-+# 0x40 - 0x4f
-+40: INC eAX (i64) | REX (o64)
-+41: INC eCX (i64) | REX.B (o64)
-+42: INC eDX (i64) | REX.X (o64)
-+43: INC eBX (i64) | REX.XB (o64)
-+44: INC eSP (i64) | REX.R (o64)
-+45: INC eBP (i64) | REX.RB (o64)
-+46: INC eSI (i64) | REX.RX (o64)
-+47: INC eDI (i64) | REX.RXB (o64)
-+48: DEC eAX (i64) | REX.W (o64)
-+49: DEC eCX (i64) | REX.WB (o64)
-+4a: DEC eDX (i64) | REX.WX (o64)
-+4b: DEC eBX (i64) | REX.WXB (o64)
-+4c: DEC eSP (i64) | REX.WR (o64)
-+4d: DEC eBP (i64) | REX.WRB (o64)
-+4e: DEC eSI (i64) | REX.WRX (o64)
-+4f: DEC eDI (i64) | REX.WRXB (o64)
-+# 0x50 - 0x5f
-+50: PUSH rAX/r8 (d64)
-+51: PUSH rCX/r9 (d64)
-+52: PUSH rDX/r10 (d64)
-+53: PUSH rBX/r11 (d64)
-+54: PUSH rSP/r12 (d64)
-+55: PUSH rBP/r13 (d64)
-+56: PUSH rSI/r14 (d64)
-+57: PUSH rDI/r15 (d64)
-+58: POP rAX/r8 (d64)
-+59: POP rCX/r9 (d64)
-+5a: POP rDX/r10 (d64)
-+5b: POP rBX/r11 (d64)
-+5c: POP rSP/r12 (d64)
-+5d: POP rBP/r13 (d64)
-+5e: POP rSI/r14 (d64)
-+5f: POP rDI/r15 (d64)
-+# 0x60 - 0x6f
-+60: PUSHA/PUSHAD (i64)
-+61: POPA/POPAD (i64)
-+62: BOUND Gv,Ma (i64)
-+63: ARPL Ew,Gw (i64) | MOVSXD Gv,Ev (o64)
-+64: SEG=FS (Prefix)
-+65: SEG=GS (Prefix)
-+66: Operand-Size (Prefix)
-+67: Address-Size (Prefix)
-+68: PUSH Iz (d64)
-+69: IMUL Gv,Ev,Iz
-+6a: PUSH Ib (d64)
-+6b: IMUL Gv,Ev,Ib
-+6c: INS/INSB Yb,DX
-+6d: INS/INSW/INSD Yz,DX
-+6e: OUTS/OUTSB DX,Xb
-+6f: OUTS/OUTSW/OUTSD DX,Xz
-+# 0x70 - 0x7f
-+70: JO Jb
-+71: JNO Jb
-+72: JB/JNAE/JC Jb
-+73: JNB/JAE/JNC Jb
-+74: JZ/JE Jb
-+75: JNZ/JNE Jb
-+76: JBE/JNA Jb
-+77: JNBE/JA Jb
-+78: JS Jb
-+79: JNS Jb
-+7a: JP/JPE Jb
-+7b: JNP/JPO Jb
-+7c: JL/JNGE Jb
-+7d: JNL/JGE Jb
-+7e: JLE/JNG Jb
-+7f: JNLE/JG Jb
-+# 0x80 - 0x8f
-+80: Grp1 Eb,Ib (1A)
-+81: Grp1 Ev,Iz (1A)
-+82: Grp1 Eb,Ib (1A),(i64)
-+83: Grp1 Ev,Ib (1A)
-+84: TEST Eb,Gb
-+85: TEST Ev,Gv
-+86: XCHG Eb,Gb
-+87: XCHG Ev,Gv
-+88: MOV Eb,Gb
-+89: MOV Ev,Gv
-+8a: MOV Gb,Eb
-+8b: MOV Gv,Ev
-+8c: MOV Ev,Sw
-+8d: LEA Gv,M
-+8e: MOV Sw,Ew
-+8f: Grp1A (1A) | POP Ev (d64)
-+# 0x90 - 0x9f
-+90: NOP | PAUSE (F3) | XCHG r8,rAX
-+91: XCHG rCX/r9,rAX
-+92: XCHG rDX/r10,rAX
-+93: XCHG rBX/r11,rAX
-+94: XCHG rSP/r12,rAX
-+95: XCHG rBP/r13,rAX
-+96: XCHG rSI/r14,rAX
-+97: XCHG rDI/r15,rAX
-+98: CBW/CWDE/CDQE
-+99: CWD/CDQ/CQO
-+9a: CALLF Ap (i64)
-+9b: FWAIT/WAIT
-+9c: PUSHF/D/Q Fv (d64)
-+9d: POPF/D/Q Fv (d64)
-+9e: SAHF
-+9f: LAHF
-+# 0xa0 - 0xaf
-+a0: MOV AL,Ob
-+a1: MOV rAX,Ov
-+a2: MOV Ob,AL
-+a3: MOV Ov,rAX
-+a4: MOVS/B Xb,Yb
-+a5: MOVS/W/D/Q Xv,Yv
-+a6: CMPS/B Xb,Yb
-+a7: CMPS/W/D Xv,Yv
-+a8: TEST AL,Ib
-+a9: TEST rAX,Iz
-+aa: STOS/B Yb,AL
-+ab: STOS/W/D/Q Yv,rAX
-+ac: LODS/B AL,Xb
-+ad: LODS/W/D/Q rAX,Xv
-+ae: SCAS/B AL,Yb
-+af: SCAS/W/D/Q rAX,Xv
-+# 0xb0 - 0xbf
-+b0: MOV AL/R8L,Ib
-+b1: MOV CL/R9L,Ib
-+b2: MOV DL/R10L,Ib
-+b3: MOV BL/R11L,Ib
-+b4: MOV AH/R12L,Ib
-+b5: MOV CH/R13L,Ib
-+b6: MOV DH/R14L,Ib
-+b7: MOV BH/R15L,Ib
-+b8: MOV rAX/r8,Iv
-+b9: MOV rCX/r9,Iv
-+ba: MOV rDX/r10,Iv
-+bb: MOV rBX/r11,Iv
-+bc: MOV rSP/r12,Iv
-+bd: MOV rBP/r13,Iv
-+be: MOV rSI/r14,Iv
-+bf: MOV rDI/r15,Iv
-+# 0xc0 - 0xcf
-+c0: Grp2 Eb,Ib (1A)
-+c1: Grp2 Ev,Ib (1A)
-+c2: RETN Iw (f64)
-+c3: RETN
-+c4: LES Gz,Mp (i64)
-+c5: LDS Gz,Mp (i64)
-+c6: Grp11 Eb,Ib (1A)
-+c7: Grp11 Ev,Iz (1A)
-+c8: ENTER Iw,Ib
-+c9: LEAVE (d64)
-+ca: RETF Iw
-+cb: RETF
-+cc: INT3
-+cd: INT Ib
-+ce: INTO (i64)
-+cf: IRET/D/Q
-+# 0xd0 - 0xdf
-+d0: Grp2 Eb,1 (1A)
-+d1: Grp2 Ev,1 (1A)
-+d2: Grp2 Eb,CL (1A)
-+d3: Grp2 Ev,CL (1A)
-+d4: AAM Ib (i64)
-+d5: AAD Ib (i64)
-+d6:
-+d7: XLAT/XLATB
-+d8: ESC
-+d9: ESC
-+da: ESC
-+db: ESC
-+dc: ESC
-+dd: ESC
-+de: ESC
-+df: ESC
-+# 0xe0 - 0xef
-+e0: LOOPNE/LOOPNZ Jb (f64)
-+e1: LOOPE/LOOPZ Jb (f64)
-+e2: LOOP Jb (f64)
-+e3: JrCXZ Jb (f64)
-+e4: IN AL,Ib
-+e5: IN eAX,Ib
-+e6: OUT Ib,AL
-+e7: OUT Ib,eAX
-+e8: CALL Jz (f64)
-+e9: JMP-near Jz (f64)
-+ea: JMP-far Ap (i64)
-+eb: JMP-short Jb (f64)
-+ec: IN AL,DX
-+ed: IN eAX,DX
-+ee: OUT DX,AL
-+ef: OUT DX,eAX
-+# 0xf0 - 0xff
-+f0: LOCK (Prefix)
-+f1:
-+f2: REPNE (Prefix)
-+f3: REP/REPE (Prefix)
-+f4: HLT
-+f5: CMC
-+f6: Grp3_1 Eb (1A)
-+f7: Grp3_2 Ev (1A)
-+f8: CLC
-+f9: STC
-+fa: CLI
-+fb: STI
-+fc: CLD
-+fd: STD
-+fe: Grp4 (1A)
-+ff: Grp5 (1A)
-+EndTable
++	if (argc < 2)
++		return -EINVAL;
 +
-+Table: 2-byte opcode # First Byte is 0x0f
-+Referrer: 2-byte escape
-+# 0x0f 0x00-0x0f
-+00: Grp6 (1A)
-+01: Grp7 (1A)
-+02: LAR Gv,Ew
-+03: LSL Gv,Ew
-+04:
-+05: SYSCALL (o64)
-+06: CLTS
-+07: SYSRET (o64)
-+08: INVD
-+09: WBINVD
-+0a:
-+0b: UD2 (1B)
-+0c:
-+0d: NOP Ev
-+0e:
-+0f:
-+# 0x0f 0x10-0x1f
-+10:
-+11:
-+12:
-+13:
-+14:
-+15:
-+16:
-+17:
-+18: Grp16 (1A)
-+19:
-+1a:
-+1b:
-+1c:
-+1d:
-+1e:
-+1f: NOP Ev
-+# 0x0f 0x20-0x2f
-+20: MOV Rd,Cd
-+21: MOV Rd,Dd
-+22: MOV Cd,Rd
-+23: MOV Dd,Rd
-+24:
-+25:
-+26:
-+27:
-+28: movaps Vps,Wps | movapd Vpd,Wpd (66)
-+29: movaps Wps,Vps | movapd Wpd,Vpd (66)
-+2a:
-+2b:
-+2c:
-+2d:
-+2e:
-+2f:
-+# 0x0f 0x30-0x3f
-+30: WRMSR
-+31: RDTSC
-+32: RDMSR
-+33: RDPMC
-+34: SYSENTER
-+35: SYSEXIT
-+36:
-+37: GETSEC
-+38: escape # 3-byte escape 1
-+39:
-+3a: escape # 3-byte escape 2
-+3b:
-+3c:
-+3d:
-+3e:
-+3f:
-+# 0x0f 0x40-0x4f
-+40: CMOVO Gv,Ev
-+41: CMOVNO Gv,Ev
-+42: CMOVB/C/NAE Gv,Ev
-+43: CMOVAE/NB/NC Gv,Ev
-+44: CMOVE/Z Gv,Ev
-+45: CMOVNE/NZ Gv,Ev
-+46: CMOVBE/NA Gv,Ev
-+47: CMOVA/NBE Gv,Ev
-+48: CMOVS Gv,Ev
-+49: CMOVNS Gv,Ev
-+4a: CMOVP/PE Gv,Ev
-+4b: CMOVNP/PO Gv,Ev
-+4c: CMOVL/NGE Gv,Ev
-+4d: CMOVNL/GE Gv,Ev
-+4e: CMOVLE/NG Gv,Ev
-+4f: CMOVNLE/G Gv,Ev
-+# 0x0f 0x50-0x5f
-+50:
-+51:
-+52:
-+53:
-+54:
-+55:
-+56:
-+57:
-+58:
-+59:
-+5a:
-+5b:
-+5c:
-+5d:
-+5e:
-+5f:
-+# 0x0f 0x60-0x6f
-+60:
-+61:
-+62:
-+63:
-+64:
-+65:
-+66:
-+67:
-+68:
-+69:
-+6a:
-+6b:
-+6c:
-+6d:
-+6e:
-+6f:
-+# 0x0f 0x70-0x7f
-+70:
-+71: Grp12 (1A)
-+72: Grp13 (1A)
-+73: Grp14 (1A)
-+74:
-+75:
-+76:
-+77:
-+78: VMREAD Ed/q,Gd/q
-+79: VMWRITE Gd/q,Ed/q
-+7a:
-+7b:
-+7c:
-+7d:
-+7e:
-+7f:
-+# 0x0f 0x80-0x8f
-+80: JO Jz (f64)
-+81: JNO Jz (f64)
-+82: JB/JNAE/JC Jz (f64)
-+83: JNB/JAE/JNC Jz (f64)
-+84: JZ/JE Jz (f64)
-+85: JNZ/JNE Jz (f64)
-+86: JBE/JNA Jz (f64)
-+87: JNBE/JA Jz (f64)
-+88: JS Jz (f64)
-+89: JNS Jz (f64)
-+8a: JP/JPE Jz (f64)
-+8b: JNP/JPO Jz (f64)
-+8c: JL/JNGE Jz (f64)
-+8d: JNL/JGE Jz (f64)
-+8e: JLE/JNG Jz (f64)
-+8f: JNLE/JG Jz (f64)
-+# 0x0f 0x90-0x9f
-+90: SETO Eb
-+91: SETNO Eb
-+92: SETB/C/NAE Eb
-+93: SETAE/NB/NC Eb
-+94: SETE/Z Eb
-+95: SETNE/NZ Eb
-+96: SETBE/NA Eb
-+97: SETA/NBE Eb
-+98: SETS Eb
-+99: SETNS Eb
-+9a: SETP/PE Eb
-+9b: SETNP/PO Eb
-+9c: SETL/NGE Eb
-+9d: SETNL/GE Eb
-+9e: SETLE/NG Eb
-+9f: SETNLE/G Eb
-+# 0x0f 0xa0-0xaf
-+a0: PUSH FS (d64)
-+a1: POP FS (d64)
-+a2: CPUID
-+a3: BT Ev,Gv
-+a4: SHLD Ev,Gv,Ib
-+a5: SHLD Ev,Gv,CL
-+a6:
-+a7:
-+a8: PUSH GS (d64)
-+a9: POP GS (d64)
-+aa: RSM
-+ab: BTS Ev,Gv
-+ac: SHRD Ev,Gv,Ib
-+ad: SHRD Ev,Gv,CL
-+ae: Grp15 (1A),(1C)
-+af: IMUL Gv,Ev
-+# 0x0f 0xb0-0xbf
-+b0: CMPXCHG Eb,Gb
-+b1: CMPXCHG Ev,Gv
-+b2: LSS Gv,Mp
-+b3: BTR Ev,Gv
-+b4: LFS Gv,Mp
-+b5: LGS Gv,Mp
-+b6: MOVZX Gv,Eb
-+b7: MOVZX Gv,Ew
-+b8: JMPE | POPCNT Gv,Ev (F3)
-+b9: Grp10 (1A)
-+ba: Grp8 Ev,Ib (1A)
-+bb: BTC Ev,Gv
-+bc: BSF Gv,Ev
-+bd: BSR Gv,Ev
-+be: MOVSX Gv,Eb
-+bf: MOVSX Gv,Ew
-+# 0x0f 0xc0-0xcf
-+c0: XADD Eb,Gb
-+c1: XADD Ev,Gv
-+c2:
-+c3: movnti Md/q,Gd/q
-+c4:
-+c5:
-+c6:
-+c7: Grp9 (1A)
-+c8: BSWAP RAX/EAX/R8/R8D
-+c9: BSWAP RCX/ECX/R9/R9D
-+ca: BSWAP RDX/EDX/R10/R10D
-+cb: BSWAP RBX/EBX/R11/R11D
-+cc: BSWAP RSP/ESP/R12/R12D
-+cd: BSWAP RBP/EBP/R13/R13D
-+ce: BSWAP RSI/ESI/R14/R14D
-+cf: BSWAP RDI/EDI/R15/R15D
-+# 0x0f 0xd0-0xdf
-+d0:
-+d1:
-+d2:
-+d3:
-+d4:
-+d5:
-+d6:
-+d7:
-+d8:
-+d9:
-+da:
-+db:
-+dc:
-+dd:
-+de:
-+df:
-+# 0x0f 0xe0-0xef
-+e0:
-+e1:
-+e2:
-+e3:
-+e4:
-+e5:
-+e6:
-+e7:
-+e8:
-+e9:
-+ea:
-+eb:
-+ec:
-+ed:
-+ee:
-+ef:
-+# 0x0f 0xf0-0xff
-+f0:
-+f1:
-+f2:
-+f3:
-+f4:
-+f5:
-+f6:
-+f7:
-+f8:
-+f9:
-+fa:
-+fb:
-+fc:
-+fd:
-+fe:
-+ff:
-+EndTable
-+
-+Table: 3-byte opcode 1
-+Referrer: 3-byte escape 1
-+80: INVEPT Gd/q,Mdq (66)
-+81: INVPID Gd/q,Mdq (66)
-+f0: MOVBE Gv,Mv | CRC32 Gd,Eb (F2)
-+f1: MOVBE Mv,Gv | CRC32 Gd,Ev (F2)
-+EndTable
-+
-+Table: 3-byte opcode 2
-+Referrer: 3-byte escape 2
-+# all opcode is for SSE
-+EndTable
-+
-+GrpTable: Grp1
-+0: ADD
-+1: OR
-+2: ADC
-+3: SBB
-+4: AND
-+5: SUB
-+6: XOR
-+7: CMP
-+EndTable
-+
-+GrpTable: Grp1A
-+0: POP
-+EndTable
-+
-+GrpTable: Grp2
-+0: ROL
-+1: ROR
-+2: RCL
-+3: RCR
-+4: SHL/SAL
-+5: SHR
-+6:
-+7: SAR
-+EndTable
-+
-+GrpTable: Grp3_1
-+0: TEST Eb,Ib
-+1:
-+2: NOT Eb
-+3: NEG Eb
-+4: MUL AL,Eb
-+5: IMUL AL,Eb
-+6: DIV AL,Eb
-+7: IDIV AL,Eb
-+EndTable
-+
-+GrpTable: Grp3_2
-+0: TEST Ev,Iz
-+1:
-+2: NOT Ev
-+3: NEG Ev
-+4: MUL rAX,Ev
-+5: IMUL rAX,Ev
-+6: DIV rAX,Ev
-+7: IDIV rAX,Ev
-+EndTable
-+
-+GrpTable: Grp4
-+0: INC Eb
-+1: DEC Eb
-+EndTable
-+
-+GrpTable: Grp5
-+0: INC Ev
-+1: DEC Ev
-+2: CALLN Ev (f64)
-+3: CALLF Ep
-+4: JMPN Ev (f64)
-+5: JMPF Ep
-+6: PUSH Ev (d64)
-+7:
-+EndTable
-+
-+GrpTable: Grp6
-+0: SLDT Rv/Mw
-+1: STR Rv/Mw
-+2: LLDT Ew
-+3: LTR Ew
-+4: VERR Ew
-+5: VERW Ew
-+EndTable
-+
-+GrpTable: Grp7
-+0: SGDT Ms | VMCALL (001),(11B) | VMLAUNCH (010),(11B) | VMRESUME (011),(11B) | VMXOFF (100),(11B)
-+1: SIDT Ms | MONITOR (000),(11B) | MWAIT (001)
-+2: LGDT Ms | XGETBV (000),(11B) | XSETBV (001),(11B)
-+3: LIDT Ms
-+4: SMSW Mw/Rv
-+5:
-+6: LMSW Ew
-+7: INVLPG Mb | SWAPGS (o64),(000),(11B) | RDTSCP (001),(11B)
-+EndTable
-+
-+GrpTable: Grp8
-+4: BT
-+5: BTS
-+6: BTR
-+7: BTC
-+EndTable
-+
-+GrpTable: Grp9
-+1: CMPXCHG8B/16B Mq/Mdq
-+6: VMPTRLD Mq | VMCLEAR Mq (66) | VMXON Mq (F3)
-+7: VMPTRST Mq
-+EndTable
-+
-+GrpTable: Grp10
-+EndTable
-+
-+GrpTable: Grp11
-+0: MOV
-+EndTable
-+
-+GrpTable: Grp12
-+EndTable
-+
-+GrpTable: Grp13
-+EndTable
-+
-+GrpTable: Grp14
-+EndTable
-+
-+GrpTable: Grp15
-+0: fxsave
-+1: fxstor
-+2: ldmxcsr
-+3: stmxcsr
-+4: XSAVE
-+5: XRSTOR | lfence (11B)
-+6: mfence (11B)
-+7: clflush | sfence (11B)
-+EndTable
-+
-+GrpTable: Grp16
-+0: prefetch NTA
-+1: prefetch T0
-+2: prefetch T1
-+3: prefetch T2
-+EndTable
-diff --git a/arch/x86/scripts/gen-insn-attr-x86.awk b/arch/x86/scripts/gen-insn-attr-x86.awk
-new file mode 100644
-index 0000000..e53709f
---- /dev/null
-+++ b/arch/x86/scripts/gen-insn-attr-x86.awk
-@@ -0,0 +1,314 @@
-+#!/usr/bin/env awk -f
-+# gen-insn-attr-x86.awk: Instruction attribute table generator
-+# Written by Masami Hiramatsu <mhiramat@redhat.com>
-+#
-+# Usage: cat x86-opcode-map.txt | ./gen-insn-attr-x86.awk > inat-tables.c
-+
-+BEGIN {
-+	print "/* x86 opcode map generated from x86-opcode-map.txt */"
-+	print "/* Do not change this code. */"
-+	ggid = 1
-+	geid = 1
-+
-+	opnd_expr = "^[[:alpha:]]"
-+	ext_expr = "^\\("
-+	sep_expr = "^\\|$"
-+	group_expr = "^Grp[[:digit:]]+A*"
-+
-+	imm_expr = "^[IJAO][[:lower:]]"
-+	imm_flag["Ib"] = "INAT_MAKE_IMM(INAT_IMM_BYTE)"
-+	imm_flag["Jb"] = "INAT_MAKE_IMM(INAT_IMM_BYTE)"
-+	imm_flag["Iw"] = "INAT_MAKE_IMM(INAT_IMM_WORD)"
-+	imm_flag["Id"] = "INAT_MAKE_IMM(INAT_IMM_DWORD)"
-+	imm_flag["Iq"] = "INAT_MAKE_IMM(INAT_IMM_QWORD)"
-+	imm_flag["Ap"] = "INAT_MAKE_IMM(INAT_IMM_PTR)"
-+	imm_flag["Iz"] = "INAT_MAKE_IMM(INAT_IMM_VWORD32)"
-+	imm_flag["Jz"] = "INAT_MAKE_IMM(INAT_IMM_VWORD32)"
-+	imm_flag["Iv"] = "INAT_MAKE_IMM(INAT_IMM_VWORD)"
-+	imm_flag["Ob"] = "INAT_MOFFSET"
-+	imm_flag["Ov"] = "INAT_MOFFSET"
-+
-+	modrm_expr = "^([CDEGMNPQRSUVW][[:lower:]]+|NTA|T[012])"
-+	force64_expr = "\\([df]64\\)"
-+	rex_expr = "^REX(\\.[XRWB]+)*"
-+	fpu_expr = "^ESC" # TODO
-+
-+	lprefix1_expr = "\\(66\\)"
-+	delete lptable1
-+	lprefix2_expr = "\\(F2\\)"
-+	delete lptable2
-+	lprefix3_expr = "\\(F3\\)"
-+	delete lptable3
-+	max_lprefix = 4
-+
-+	prefix_expr = "\\(Prefix\\)"
-+	prefix_num["Operand-Size"] = "INAT_PFX_OPNDSZ"
-+	prefix_num["REPNE"] = "INAT_PFX_REPNE"
-+	prefix_num["REP/REPE"] = "INAT_PFX_REPE"
-+	prefix_num["LOCK"] = "INAT_PFX_LOCK"
-+	prefix_num["SEG=CS"] = "INAT_PFX_CS"
-+	prefix_num["SEG=DS"] = "INAT_PFX_DS"
-+	prefix_num["SEG=ES"] = "INAT_PFX_ES"
-+	prefix_num["SEG=FS"] = "INAT_PFX_FS"
-+	prefix_num["SEG=GS"] = "INAT_PFX_GS"
-+	prefix_num["SEG=SS"] = "INAT_PFX_SS"
-+	prefix_num["Address-Size"] = "INAT_PFX_ADDRSZ"
-+
-+	delete table
-+	delete etable
-+	delete gtable
-+	eid = -1
-+	gid = -1
-+}
-+
-+function semantic_error(msg) {
-+	print "Semantic error at " NR ": " msg > "/dev/stderr"
-+	exit 1
-+}
-+
-+function debug(msg) {
-+	print "DEBUG: " msg
-+}
-+
-+function array_size(arr,   i,c) {
-+	c = 0
-+	for (i in arr)
-+		c++
-+	return c
-+}
-+
-+/^Table:/ {
-+	print "/* " $0 " */"
-+}
-+
-+/^Referrer:/ {
-+	if (NF == 1) {
-+		# primary opcode table
-+		tname = "inat_primary_table"
-+		eid = -1
-+	} else {
-+		# escape opcode table
-+		ref = ""
-+		for (i = 2; i <= NF; i++)
-+			ref = ref $i
-+		eid = escape[ref]
-+		tname = sprintf("inat_escape_table_%d", eid)
-+	}
-+}
-+
-+/^GrpTable:/ {
-+	print "/* " $0 " */"
-+	if (!($2 in group))
-+		semantic_error("No group: " $2 )
-+	gid = group[$2]
-+	tname = "inat_group_table_" gid
-+}
-+
-+function print_table(tbl,name,fmt,n)
-+{
-+	print "const insn_attr_t " name " = {"
-+	for (i = 0; i < n; i++) {
-+		id = sprintf(fmt, i)
-+		if (tbl[id])
-+			print "	[" id "] = " tbl[id] ","
-+	}
-+	print "};"
-+}
-+
-+/^EndTable/ {
-+	if (gid != -1) {
-+		# print group tables
-+		if (array_size(table) != 0) {
-+			print_table(table, tname "[INAT_GROUP_TABLE_SIZE]",
-+				    "0x%x", 8)
-+			gtable[gid,0] = tname
-+		}
-+		if (array_size(lptable1) != 0) {
-+			print_table(lptable1, tname "_1[INAT_GROUP_TABLE_SIZE]",
-+				    "0x%x", 8)
-+			gtable[gid,1] = tname "_1"
-+		}
-+		if (array_size(lptable2) != 0) {
-+			print_table(lptable2, tname "_2[INAT_GROUP_TABLE_SIZE]",
-+				    "0x%x", 8)
-+			gtable[gid,2] = tname "_2"
-+		}
-+		if (array_size(lptable3) != 0) {
-+			print_table(lptable3, tname "_3[INAT_GROUP_TABLE_SIZE]",
-+				    "0x%x", 8)
-+			gtable[gid,3] = tname "_3"
-+		}
-+	} else {
-+		# print primary/escaped tables
-+		if (array_size(table) != 0) {
-+			print_table(table, tname "[INAT_OPCODE_TABLE_SIZE]",
-+				    "0x%02x", 256)
-+			etable[eid,0] = tname
-+		}
-+		if (array_size(lptable1) != 0) {
-+			print_table(lptable1,tname "_1[INAT_OPCODE_TABLE_SIZE]",
-+				    "0x%02x", 256)
-+			etable[eid,1] = tname "_1"
-+		}
-+		if (array_size(lptable2) != 0) {
-+			print_table(lptable2,tname "_2[INAT_OPCODE_TABLE_SIZE]",
-+				    "0x%02x", 256)
-+			etable[eid,2] = tname "_2"
-+		}
-+		if (array_size(lptable3) != 0) {
-+			print_table(lptable3,tname "_3[INAT_OPCODE_TABLE_SIZE]",
-+				    "0x%02x", 256)
-+			etable[eid,3] = tname "_3"
-+		}
-+	}
-+	print ""
-+	delete table
-+	delete lptable1
-+	delete lptable2
-+	delete lptable3
-+	gid = -1
-+	eid = -1
-+}
-+
-+function add_flags(old,new) {
-+	if (old && new)
-+		return old " | " new
-+	else if (old)
-+		return old
++	if (argv[0][0] == 'p')
++		is_return = 0;
++	else if (argv[0][0] == 'r')
++		is_return = 1;
 +	else
-+		return new
++		return -EINVAL;
++
++	if (isdigit(argv[1][0])) {
++		if (is_return)
++			return -EINVAL;
++		/* an address specified */
++		ret = strict_strtoul(&argv[0][2], 0, (unsigned long *)&addr);
++		if (ret)
++			return ret;
++	} else {
++		/* a symbol specified */
++		symbol = argv[1];
++		/* TODO: support .init module functions */
++		ret = split_symbol_offset(symbol, &offset);
++		if (ret)
++			return ret;
++		if (offset && is_return)
++			return -EINVAL;
++	}
++
++	/* setup a probe */
++	tp = alloc_trace_probe(symbol);
++	if (IS_ERR(tp))
++		return PTR_ERR(tp);
++
++	if (is_return) {
++		kp = &tp->rp.kp;
++		tp->rp.handler = kretprobe_trace_func;
++	} else {
++		kp = &tp->kp;
++		tp->kp.pre_handler = kprobe_trace_func;
++	}
++
++	if (tp->symbol) {
++		/* TODO: check offset is collect by using insn_decoder */
++		kp->symbol_name = tp->symbol;
++		kp->offset = offset;
++	} else
++		kp->addr = addr;
++
++	/* parse arguments */
++	argc -= 2; argv += 2; ret = 0;
++	for (i = 0; i < argc && i < TRACE_KPROBE_ARGS; i++) {
++		if (strlen(argv[i]) > MAX_ARGSTR_LEN) {
++			pr_info("Argument%d(%s) is too long.\n", i, argv[i]);
++			ret = -ENOSPC;
++			goto error;
++		}
++		ret = parse_trace_arg(argv[i], &tp->args[i], is_return);
++		if (ret)
++			goto error;
++	}
++	tp->nr_args = i;
++
++	ret = register_trace_probe(tp);
++	if (ret)
++		goto error;
++	return 0;
++
++error:
++	free_trace_probe(tp);
++	return ret;
 +}
 +
-+# convert operands to flags.
-+function convert_operands(opnd,       i,imm,mod)
++static void cleanup_all_probes(void)
 +{
-+	imm = null
-+	mod = null
-+	for (i in opnd) {
-+		i  = opnd[i]
-+		if (match(i, imm_expr) == 1) {
-+			if (!imm_flag[i])
-+				semantic_error("Unknown imm opnd: " i)
-+			if (imm) {
-+				if (i != "Ib")
-+					semantic_error("ADDIMM error")
-+				imm = add_flags(imm, "INAT_ADDIMM")
-+			} else
-+				imm = imm_flag[i]
-+		} else if (match(i, modrm_expr))
-+			mod = "INAT_MODRM"
++	struct trace_probe *tp;
++	mutex_lock(&probe_lock);
++	/* TODO: Use batch unregistration */
++	while (!list_empty(&probe_list)) {
++		tp = list_entry(probe_list.next, struct trace_probe, list);
++		unregister_trace_probe(tp);
++		free_trace_probe(tp);
 +	}
-+	return add_flags(imm, mod)
++	mutex_unlock(&probe_lock);
 +}
 +
-+/^[0-9a-f]+\:/ {
-+	if (NR == 1)
-+		next
-+	# get index
-+	idx = "0x" substr($1, 1, index($1,":") - 1)
-+	if (idx in table)
-+		semantic_error("Redefine " idx " in " tname)
 +
-+	# check if escaped opcode
-+	if ("escape" == $2) {
-+		if ($3 != "#")
-+			semantic_error("No escaped name")
-+		ref = ""
-+		for (i = 4; i <= NF; i++)
-+			ref = ref $i
-+		if (ref in escape)
-+			semantic_error("Redefine escape (" ref ")")
-+		escape[ref] = geid
-+		geid++
-+		table[idx] = "INAT_MAKE_ESCAPE(" escape[ref] ")"
-+		next
-+	}
-+
-+	variant = null
-+	# converts
-+	i = 2
-+	while (i <= NF) {
-+		opcode = $(i++)
-+		delete opnds
-+		ext = null
-+		flags = null
-+		opnd = null
-+		# parse one opcode
-+		if (match($i, opnd_expr)) {
-+			opnd = $i
-+			split($(i++), opnds, ",")
-+			flags = convert_operands(opnds)
-+		}
-+		if (match($i, ext_expr))
-+			ext = $(i++)
-+		if (match($i, sep_expr))
-+			i++
-+		else if (i < NF)
-+			semantic_error($i " is not a separator")
-+
-+		# check if group opcode
-+		if (match(opcode, group_expr)) {
-+			if (!(opcode in group)) {
-+				group[opcode] = ggid
-+				ggid++
-+			}
-+			flags = add_flags(flags, "INAT_MAKE_GROUP(" group[opcode] ")")
-+		}
-+		# check force(or default) 64bit
-+		if (match(ext, force64_expr))
-+			flags = add_flags(flags, "INAT_FORCE64")
-+
-+		# check REX prefix
-+		if (match(opcode, rex_expr))
-+			flags = add_flags(flags, "INAT_REXPFX")
-+
-+		# check coprocessor escape : TODO
-+		if (match(opcode, fpu_expr))
-+			flags = add_flags(flags, "INAT_MODRM")
-+
-+		# check prefixes
-+		if (match(ext, prefix_expr)) {
-+			if (!prefix_num[opcode])
-+				semantic_error("Unknown prefix: " opcode)
-+			flags = add_flags(flags, "INAT_MAKE_PREFIX(" prefix_num[opcode] ")")
-+		}
-+		if (length(flags) == 0)
-+			continue
-+		# check if last prefix
-+		if (match(ext, lprefix1_expr)) {
-+			lptable1[idx] = add_flags(lptable1[idx],flags)
-+			variant = "INAT_VARIANT"
-+		} else if (match(ext, lprefix2_expr)) {
-+			lptable2[idx] = add_flags(lptable2[idx],flags)
-+			variant = "INAT_VARIANT"
-+		} else if (match(ext, lprefix3_expr)) {
-+			lptable3[idx] = add_flags(lptable3[idx],flags)
-+			variant = "INAT_VARIANT"
-+		} else {
-+			table[idx] = add_flags(table[idx],flags)
-+		}
-+	}
-+	if (variant)
-+		table[idx] = add_flags(table[idx],variant)
++/* Probes listing interfaces */
++static void *probes_seq_start(struct seq_file *m, loff_t *pos)
++{
++	mutex_lock(&probe_lock);
++	return seq_list_start(&probe_list, *pos);
 +}
 +
-+END {
-+	# print escape opcode map's array
-+	print "/* Escape opcode map array */"
-+	print "const insn_attr_t const *inat_escape_tables[INAT_ESC_MAX + 1]" \
-+	      "[INAT_LPREFIX_MAX + 1] = {"
-+	for (i = 0; i < geid; i++)
-+		for (j = 0; j < max_lprefix; j++)
-+			if (etable[i,j])
-+				print "	["i"]["j"] = "etable[i,j]","
-+	print "};\n"
-+	# print group opcode map's array
-+	print "/* Group opcode map array */"
-+	print "const insn_attr_t const *inat_group_tables[INAT_GRP_MAX + 1]"\
-+	      "[INAT_LPREFIX_MAX + 1] = {"
-+	for (i = 0; i < ggid; i++)
-+		for (j = 0; j < max_lprefix; j++)
-+			if (gtable[i,j])
-+				print "	["i"]["j"] = "gtable[i,j]","
-+	print "};"
++static void *probes_seq_next(struct seq_file *m, void *v, loff_t *pos)
++{
++	return seq_list_next(v, &probe_list, pos);
 +}
++
++static void probes_seq_stop(struct seq_file *m, void *v)
++{
++	mutex_unlock(&probe_lock);
++}
++
++static int probes_seq_show(struct seq_file *m, void *v)
++{
++	struct trace_probe *tp = v;
++	int i, ret;
++	char buf[MAX_ARGSTR_LEN + 1];
++
++	if (tp == NULL)
++		return 0;
++
++	if (tp->symbol)
++		seq_printf(m, "%c %s%+ld",
++			probe_is_return(tp) ? 'r' : 'p',
++			probe_symbol(tp), probe_offset(tp));
++	else
++		seq_printf(m, "%c 0x%p",
++			probe_is_return(tp) ? 'r' : 'p',
++			probe_address(tp));
++
++	for (i = 0; i < tp->nr_args; i++) {
++		ret = trace_arg_string(buf, MAX_ARGSTR_LEN, &tp->args[i]);
++		if (ret) {
++			pr_warning("Argument%d is too long.\n", i);
++			break;
++		}
++		seq_printf(m, " %s", buf);
++	}
++	seq_printf(m, "\n");
++	return 0;
++}
++
++static const struct seq_operations probes_seq_op = {
++	.start  = probes_seq_start,
++	.next   = probes_seq_next,
++	.stop   = probes_seq_stop,
++	.show   = probes_seq_show
++};
++
++static int probes_open(struct inode *inode, struct file *file)
++{
++	if ((file->f_mode & FMODE_WRITE) &&
++	    !(file->f_flags & O_APPEND))
++		cleanup_all_probes();
++
++	return seq_open(file, &probes_seq_op);
++}
++
++static int command_trace_probe(const char *buf)
++{
++	char **argv;
++	int argc = 0, ret = 0;
++
++	argv = argv_split(GFP_KERNEL, buf, &argc);
++	if (!argv)
++		return -ENOMEM;
++
++	if (argc)
++		ret = create_trace_probe(argc, argv);
++
++	argv_free(argv);
++	return ret;
++}
++
++#define WRITE_BUFSIZE 128
++
++static ssize_t probes_write(struct file *file, const char __user *buffer,
++			    size_t count, loff_t *ppos)
++{
++	char *kbuf, *tmp;
++	int ret;
++	size_t done;
++	size_t size;
++
++	if (!count || count < 0)
++		return 0;
++
++	kbuf = kmalloc(WRITE_BUFSIZE, GFP_KERNEL);
++	if (!kbuf)
++		return -ENOMEM;
++
++	ret = done = 0;
++	do {
++		size = count - done;
++		if (size > WRITE_BUFSIZE)
++			size = WRITE_BUFSIZE;
++		if (copy_from_user(kbuf, buffer + done, size)) {
++			ret = -EFAULT;
++			goto out;
++		}
++		kbuf[size] = '\0';
++		tmp = strchr(kbuf, '\n');
++		if (!tmp) {
++			pr_warning("Line length is too long: "
++				   "Should be less than %d.", WRITE_BUFSIZE);
++			ret = -EINVAL;
++			goto out;
++		}
++		*tmp = '\0';
++		size = tmp - kbuf + 1;
++		done += size;
++		/* Remove comments */
++		tmp = strchr(kbuf, '#');
++		if (tmp)
++			*tmp = '\0';
++
++		ret = command_trace_probe(kbuf);
++		if (ret)
++			goto out;
++
++	} while (done < count);
++	ret = done;
++out:
++	kfree(kbuf);
++	return ret;
++}
++
++static const struct file_operations kprobe_events_ops = {
++	.owner          = THIS_MODULE,
++	.open           = probes_open,
++	.read           = seq_read,
++	.llseek         = seq_lseek,
++	.release        = seq_release,
++	.write		= probes_write,
++};
++
++/* Kprobe handler */
++static __kprobes int kprobe_trace_func(struct kprobe *kp, struct pt_regs *regs)
++{
++	struct trace_probe *tp = container_of(kp, struct trace_probe, kp);
++	struct kprobe_trace_entry *entry;
++	struct ring_buffer_event *event;
++	int size, i, pc;
++	unsigned long irq_flags;
++	struct ftrace_event_call *call = &event_kprobe;
++
++	local_save_flags(irq_flags);
++	pc = preempt_count();
++
++	size = sizeof(struct kprobe_trace_entry) -
++	       (sizeof(unsigned long) * (TRACE_KPROBE_ARGS - tp->nr_args));
++
++	event = trace_current_buffer_lock_reserve(TRACE_KPROBE, size,
++						  irq_flags, pc);
++	if (!event)
++		return 0;
++
++	entry = ring_buffer_event_data(event);
++	entry->nargs = tp->nr_args;
++	entry->ip = (unsigned long)kp->addr;
++	for (i = 0; i < tp->nr_args; i++)
++		entry->args[i] = call_fetch(&tp->args[i], regs);
++
++	if (!filter_current_check_discard(call, entry, event))
++		trace_nowake_buffer_unlock_commit(event, irq_flags, pc);
++	return 0;
++}
++
++/* Kretprobe handler */
++static __kprobes int kretprobe_trace_func(struct kretprobe_instance *ri,
++					  struct pt_regs *regs)
++{
++	struct trace_probe *tp = container_of(ri->rp, struct trace_probe, rp);
++	struct kretprobe_trace_entry *entry;
++	struct ring_buffer_event *event;
++	int size, i, pc;
++	unsigned long irq_flags;
++	struct ftrace_event_call *call = &event_kretprobe;
++
++	local_save_flags(irq_flags);
++	pc = preempt_count();
++
++	size = sizeof(struct kretprobe_trace_entry) -
++	       (sizeof(unsigned long) * (TRACE_KPROBE_ARGS - tp->nr_args));
++
++	event = trace_current_buffer_lock_reserve(TRACE_KRETPROBE, size,
++						  irq_flags, pc);
++	if (!event)
++		return 0;
++
++	entry = ring_buffer_event_data(event);
++	entry->nargs = tp->nr_args;
++	entry->func = (unsigned long)probe_address(tp);
++	entry->ret_ip = (unsigned long)ri->ret_addr;
++	for (i = 0; i < tp->nr_args; i++)
++		entry->args[i] = call_fetch(&tp->args[i], regs);
++
++	if (!filter_current_check_discard(call, entry, event))
++		trace_nowake_buffer_unlock_commit(event, irq_flags, pc);
++
++	return 0;
++}
++
++/* Event entry printers */
++enum print_line_t
++print_kprobe_event(struct trace_iterator *iter, int flags)
++{
++	struct kprobe_trace_entry *field;
++	struct trace_seq *s = &iter->seq;
++	int i;
++
++	trace_assign_type(field, iter->ent);
++
++	if (!seq_print_ip_sym(s, field->ip, flags | TRACE_ITER_SYM_OFFSET))
++		goto partial;
++
++	if (!trace_seq_puts(s, ":"))
++		goto partial;
++
++	for (i = 0; i < field->nargs; i++)
++		if (!trace_seq_printf(s, " 0x%lx", field->args[i]))
++			goto partial;
++
++	if (!trace_seq_puts(s, "\n"))
++		goto partial;
++
++	return TRACE_TYPE_HANDLED;
++partial:
++	return TRACE_TYPE_PARTIAL_LINE;
++}
++
++enum print_line_t
++print_kretprobe_event(struct trace_iterator *iter, int flags)
++{
++	struct kretprobe_trace_entry *field;
++	struct trace_seq *s = &iter->seq;
++	int i;
++
++	trace_assign_type(field, iter->ent);
++
++	if (!seq_print_ip_sym(s, field->ret_ip, flags | TRACE_ITER_SYM_OFFSET))
++		goto partial;
++
++	if (!trace_seq_puts(s, " <- "))
++		goto partial;
++
++	if (!seq_print_ip_sym(s, field->func, flags & ~TRACE_ITER_SYM_OFFSET))
++		goto partial;
++
++	if (!trace_seq_puts(s, ":"))
++		goto partial;
++
++	for (i = 0; i < field->nargs; i++)
++		if (!trace_seq_printf(s, " 0x%lx", field->args[i]))
++			goto partial;
++
++	if (!trace_seq_puts(s, "\n"))
++		goto partial;
++
++	return TRACE_TYPE_HANDLED;
++partial:
++	return TRACE_TYPE_PARTIAL_LINE;
++}
++
++static struct trace_event kprobe_trace_event = {
++	.type	 	= TRACE_KPROBE,
++	.trace		= print_kprobe_event,
++};
++
++static struct trace_event kretprobe_trace_event = {
++	.type	 	= TRACE_KRETPROBE,
++	.trace		= print_kretprobe_event,
++};
++
++/* Make a debugfs interface for controling probe points */
++static __init int init_kprobe_trace(void)
++{
++	struct dentry *d_tracer;
++	struct dentry *entry;
++	int ret;
++
++	ret = register_ftrace_event(&kprobe_trace_event);
++	if (!ret) {
++		pr_warning("Could not register kprobe_trace_event type.\n");
++		return 0;
++	}
++	ret = register_ftrace_event(&kretprobe_trace_event);
++	if (!ret) {
++		pr_warning("Could not register kretprobe_trace_event type.\n");
++		return 0;
++	}
++
++	d_tracer = tracing_init_dentry();
++	if (!d_tracer)
++		return 0;
++
++	entry = debugfs_create_file("kprobe_events", 0644, d_tracer,
++				    NULL, &kprobe_events_ops);
++
++	if (!entry)
++		pr_warning("Could not create debugfs "
++			   "'kprobe_events' entry\n");
++	return 0;
++}
++fs_initcall(init_kprobe_trace);
++
++
++#ifdef CONFIG_FTRACE_STARTUP_TEST
++
++static int kprobe_trace_selftest_target(int a1, int a2, int a3,
++					int a4, int a5, int a6)
++{
++	return a1 + a2 + a3 + a4 + a5 + a6;
++}
++
++static __init int kprobe_trace_self_tests_init(void)
++{
++	int ret;
++	int (*target)(int, int, int, int, int, int);
++	target = kprobe_trace_selftest_target;
++
++	pr_info("Testing kprobe tracing: ");
++
++	ret = command_trace_probe("p kprobe_trace_selftest_target "
++				  "a1 a2 a3 a4 a5 a6");
++	if (WARN_ON_ONCE(ret))
++		pr_warning("error enabling function entry\n");
++
++	ret = command_trace_probe("r kprobe_trace_selftest_target "
++				  "ra rv");
++	if (WARN_ON_ONCE(ret))
++		pr_warning("error enabling function return\n");
++
++	ret = target(1, 2, 3, 4, 5, 6);
++
++	cleanup_all_probes();
++
++	pr_cont("OK\n");
++	return 0;
++}
++
++late_initcall(kprobe_trace_self_tests_init);
++
++#endif
 
 
 -- 
