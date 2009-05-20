@@ -1,43 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756193AbZETJ1b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755289AbZETJmd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756193AbZETJ1b (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 05:27:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756862AbZETJ1V
+	id S1755289AbZETJmd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 05:42:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754072AbZETJm0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 05:27:21 -0400
-Received: from matrixpower.ru ([195.178.208.66]:37830 "EHLO tservice.net.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756988AbZETJ1U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 05:27:20 -0400
-Date: Wed, 20 May 2009 13:27:21 +0400
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -tip] Documentation/connector/cn_test.c remove unused cn_test_want_notify()
-Message-ID: <20090520092721.GA23759@ioremap.net>
-References: <1242797693.3260.15.camel@localhost.localdomain> <20090520072224.GA19823@ioremap.net> <1242805348.3260.52.camel@localhost.localdomain>
+	Wed, 20 May 2009 05:42:26 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:38808 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754019AbZETJmZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 05:42:25 -0400
+Message-ID: <4A13D045.6090905@jp.fujitsu.com>
+Date: Wed, 20 May 2009 18:41:25 +0900
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1242805348.3260.52.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Andi Kleen <andi@firstfloor.org>
+CC: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [x86] [MCE] Updated 32bit merge for tip x86 mce2 branch
+References: <20090519215631.GA15626@basil.nowhere.org>
+In-Reply-To: <20090519215631.GA15626@basil.nowhere.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 20, 2009 at 01:12:28PM +0530, Jaswinder Singh Rajput (jaswinder@kernel.org) wrote:
-> [PATCH -tip] Documentation/connector/cn_test.c comment unused cn_test_want_notify()
-> 
-> Currently cn_test_want_notify() is not having any user.
-> 
-> So adding ifdef and comment which tells to not remove it.
-> 
-> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+Andi Kleen wrote:
+> I also reverted one patch where the patch author agreed it should
+> be reverted.
 
-Looks good, thank you Jaswinder.
-Ack.
+>       Revert "x86, mce: Add mce=nopoll option to disable timer polling"
 
--- 
-	Evgeniy Polyakov
+That is:
+
+> commit 41e654ade96b57c2dca4cea3e21f75819ab9696c
+> Author: Andi Kleen <ak@linux.intel.com>
+> Date:   Wed Apr 29 10:17:01 2009 +0200
+> 
+>     Revert "x86, mce: Add mce=nopoll option to disable timer polling"
+> 
+>     This reverts commit f5b3ca6efb64aa3ab5fa32f0fc9cc0f6cfedee95.
+> 
+>     Seto-san has an updated patch following recent discussion that
+>     should be used instead.
+
+OK.  Please use following patches with my Signed-off-by instead.
+And an another revert patch should be applied to tip tree too.
+
+
+Thanks,
+H.Seto
+
