@@ -1,75 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755224AbZETH6w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756504AbZETH7z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755224AbZETH6w (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 03:58:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754072AbZETH6p
+	id S1756504AbZETH7z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 03:59:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754167AbZETH7q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 03:58:45 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41339 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752220AbZETH6p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 03:58:45 -0400
-Date: Wed, 20 May 2009 09:58:29 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: don't map io_apic two times.
-Message-ID: <20090520075829.GD23959@elte.hu>
-References: <4A1393CD.7080604@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A1393CD.7080604@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 20 May 2009 03:59:46 -0400
+Received: from casper.infradead.org ([85.118.1.10]:59800 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754141AbZETH7p (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 03:59:45 -0400
+Subject: Re: [PATCH][KVM][retry 3] Add support for Pause Filtering to AMD
+ SVM
+From: Peter Zijlstra <peterz@infradead.org>
+To: Mark Langsdorf <mark.langsdorf@amd.com>
+Cc: Joerg Roedel <joerg.roedel@amd.com>, avi@redhat.com, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <200905191356.37071.mark.langsdorf@amd.com>
+References: <200905050909.58583.mark.langsdorf@amd.com>
+	 <200905071000.14038.mark.langsdorf@amd.com>
+	 <200905081203.55484.mark.langsdorf@amd.com>
+	 <200905191356.37071.mark.langsdorf@amd.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Wed, 20 May 2009 09:59:46 +0200
+Message-Id: <1242806386.26820.549.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2009-05-19 at 13:56 -0500, Mark Langsdorf wrote:
+> @@ -1947,6 +1947,11 @@ task_hot(struct task_struct *p, u64 now, struct sched_domain *sd)
+>         return delta < (s64)sysctl_sched_migration_cost;
+>  }
+>  
+> +void set_task_delay(struct task_struct *p, unsigned int delay)
+> +{
+> +       p->se.vruntime += delay;
+> +}
+> +EXPORT_SYMBOL(set_task_delay);
 
-* Yinghai Lu <yinghai@kernel.org> wrote:
+That's broken, you cannot assume that a task is SCHED_OTHER like that.
 
-> mp_register_ioapic() already map it.
-> 
-> [ Impact: don't map io apic address again ]
-> 
-> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> 
-> ---
->  arch/x86/kernel/apic/io_apic.c |    7 ++++++-
->  1 file changed, 6 insertions(+), 1 deletion(-)
-> 
-> Index: linux-2.6/arch/x86/kernel/apic/io_apic.c
-> ===================================================================
-> --- linux-2.6.orig/arch/x86/kernel/apic/io_apic.c
-> +++ linux-2.6/arch/x86/kernel/apic/io_apic.c
-> @@ -4162,7 +4162,12 @@ fake_ioapic_page:
->  				alloc_bootmem_pages(PAGE_SIZE);
->  			ioapic_phys = __pa(ioapic_phys);
->  		}
-> -		set_fixmap_nocache(idx, ioapic_phys);
-> +		/*
-> +		 * when acpi ioapic is used, mp_register_ioapic() map
-> +		 * ioapic_phys already
-> +		 */
-> +		if (!acpi_ioapic)
-> +			set_fixmap_nocache(idx, ioapic_phys);
+Furthermore, you cannot simply change vruntime of any odd task, this
+only works for current. Also, you really need to call schedule() after
+doing this for it to have any immediate effect.
 
-The change is correct, but i'm not sure we want to do this - the 
-acpi_ioapic flag might change its meaning (and then break this code 
-subtly) and this is bootup code so doing the mapping twice should be 
-no issue.
+Also, if you mean delay to be ns, you need to scale it. Furthermore, I
+would really really want to export this as GPL only (ok, preferably not
+at all).
 
-If it were some expensive initialization i'd agree, but here it's 
-really just a couple of instructions and an INVLPG.
+That said, I still thoroughly dislike this whole approach.
 
-Hm?
 
-	Ingo
+/*
+ * Dumb broken yield like interface -- use at your own peril and know
+ * RT people will hate you.
+ *
+ * Like yield, except for SCHED_OTHER/BATCH, where it will give up @ns
+ * time for the 'good' cause.
+ */
+void sched_delay_yield(unsigned long ns)
+{
+	struct task_struct *curr = current;
+
+	if (curr->sched_class == &fair_sched_class) {
+		struct sched_entity *se = &curr->se;
+		__update_curr(cfs_rq_of(se), se, ns);
+		schedule();
+		/* XXX: task accounting ? */
+	} else
+		sched_yield();
+}
+EXPORT_SYMBOL_GPL(sched_delay_yield);
