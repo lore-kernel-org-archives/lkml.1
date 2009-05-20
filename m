@@ -1,191 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755942AbZETWUl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756346AbZETWVQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755942AbZETWUl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 18:20:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755380AbZETWUc
+	id S1756346AbZETWVQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 18:21:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755907AbZETWVA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 18:20:32 -0400
-Received: from tx2ehsobe004.messaging.microsoft.com ([65.55.88.14]:19702 "EHLO
-	TX2EHSOBE007.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754957AbZETWUb (ORCPT
+	Wed, 20 May 2009 18:21:00 -0400
+Received: from mail-pz0-f177.google.com ([209.85.222.177]:36155 "EHLO
+	mail-pz0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755876AbZETWVA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 18:20:31 -0400
-X-BigFish: VPS-2(zzef8Kzz1202hzzz32i6bh)
-X-FB-SS: 5,13,
-X-WSS-ID: 0KJYRDN-02-016-01
-From: Mark Langsdorf <mark.langsdorf@amd.com>
-To: Joerg Roedel <joerg.roedel@amd.com>, peterz@infradead.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH][KVM][retry 4] Add support for Pause Filtering to AMD SVM
-Date: Wed, 20 May 2009 17:25:17 -0500
-User-Agent: KMail/1.9.10
-CC: avi@redhat.com, kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <200905050909.58583.mark.langsdorf@amd.com> <200905081203.55484.mark.langsdorf@amd.com> <200905191356.37071.mark.langsdorf@amd.com>
-In-Reply-To: <200905191356.37071.mark.langsdorf@amd.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-ID: <200905201725.18046.mark.langsdorf@amd.com>
-X-OriginalArrivalTime: 20 May 2009 22:20:23.0456 (UTC) FILETIME=[2B300200:01C9D999]
+	Wed, 20 May 2009 18:21:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=RRUzPgzCox6uu4qhqAXV/3Jy+AssFvTu6ghLWATPM6iHHRNhZDIAXrUiDx1HG8Wlde
+         XZGL9qL4t9W7zjoZxlUM65Pem7rj4x7kQoIiX6XIKiLo/FFjJ4/G8P4Glb88Wz+E0u++
+         amDIX1okb02r55W5wgyNbzAYWVHn/EpkyFt4Q=
+From: wuzhangjin@gmail.com
+To: linux-mips@linux-mips.org, Ralf Baechle <ralf@linux-mips.org>
+Cc: IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       Wu Zhangjin <wuzhangjin@gmail.com>, Yan hua <yanh@lemote.com>,
+       Philippe Vachon <philippe@cowpig.ca>, Zhang Le <r0bertz@gentoo.org>,
+       Zhang Fuxin <zhangfx@lemote.com>, Arnaud Patard <apatard@mandriva.com>,
+       loongson-dev@googlegroups.com, gnewsense-dev@nongnu.org,
+       Nicholas Mc Guire <hofrat@hofr.at>, Liu Junliang <liujl@lemote.com>,
+       Erwan Lerale <erwan@thiscow.com>
+Subject: [loongson-PATCH-v1 24/27] fixup for FUJITSU disk
+Date: Thu, 21 May 2009 06:12:46 +0800
+Message-Id: <a998340033c8f89ec028b354ebe2956239144049.1242855716.git.wuzhangjin@gmail.com>
+X-Mailer: git-send-email 1.6.2.1
+In-Reply-To: <cover.1242855716.git.wuzhangjin@gmail.com>
+References: <cover.1242855716.git.wuzhangjin@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This feature creates a new field in the VMCB called Pause
-Filter Count.  If Pause Filter Count is greater than 0 and
-intercepting PAUSEs is enabled, the processor will increment
-an internal counter when a PAUSE instruction occurs instead
-of intercepting.  When the internal counter reaches the
-Pause Filter Count value, a PAUSE intercept will occur.
+From: Wu Zhangjin <wuzhangjin@gmail.com>
 
-This feature can be used to detect contended spinlocks,
-especially when the lock holding VCPU is not scheduled.
-Rescheduling another VCPU prevents the VCPU seeking the
-lock from wasting its quantum by spinning idly.  Perform
-the reschedule by increasing the the credited time on
-the VCPU.
+This is originally from the to-mips branch from
+http://dev.lemote.com/code/linux_loongson
 
-Experimental results show that most spinlocks are held
-for less than 1000 PAUSE cycles or more than a few
-thousand.  Default the Pause Filter Counter to 3000 to
-detect the contended spinlocks.
-
-Processor support for this feature is indicated by a CPUID
-bit.
-
-On a 24 core system running 4 guests each with 16 VCPUs,
-this patch improved overall performance of each guest's
-32 job kernbench by approximately 1%.  Further performance
-improvement may be possible with a more sophisticated
-yield algorithm.
-
--Mark Langsdorf
-Operating System Research Center
-AMD
-
-Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
+Signed-off-by: Wu Zhangjin <wuzhangjin@gmail.com>
 ---
- arch/x86/include/asm/svm.h |    3 ++-
- arch/x86/kvm/svm.c         |   13 +++++++++++++
- include/linux/sched.h      |    7 +++++++
- kernel/sched.c             |   18 ++++++++++++++++++
- 4 files changed, 40 insertions(+), 1 deletions(-)
+ drivers/ide/amd74xx.c |   19 +++++++++++++++++++
+ 1 files changed, 19 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/include/asm/svm.h b/arch/x86/include/asm/svm.h
-index 85574b7..1fecb7e 100644
---- a/arch/x86/include/asm/svm.h
-+++ b/arch/x86/include/asm/svm.h
-@@ -57,7 +57,8 @@ struct __attribute__ ((__packed__)) vmcb_control_area {
- 	u16 intercept_dr_write;
- 	u32 intercept_exceptions;
- 	u64 intercept;
--	u8 reserved_1[44];
-+	u8 reserved_1[42];
-+	u16 pause_filter_count;
- 	u64 iopm_base_pa;
- 	u64 msrpm_base_pa;
- 	u64 tsc_offset;
-diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
-index ef43a18..dad6c4b 100644
---- a/arch/x86/kvm/svm.c
-+++ b/arch/x86/kvm/svm.c
-@@ -45,6 +45,7 @@ MODULE_LICENSE("GPL");
- #define SVM_FEATURE_NPT  (1 << 0)
- #define SVM_FEATURE_LBRV (1 << 1)
- #define SVM_FEATURE_SVML (1 << 2)
-+#define SVM_FEATURE_PAUSE_FILTER (1 << 10)
+diff --git a/drivers/ide/amd74xx.c b/drivers/ide/amd74xx.c
+index 77267c8..8f488b8 100644
+--- a/drivers/ide/amd74xx.c
++++ b/drivers/ide/amd74xx.c
+@@ -23,6 +23,11 @@
  
- #define DEBUGCTL_RESERVED_BITS (~(0x3fULL))
+ #define DRV_NAME "amd74xx"
  
-@@ -575,6 +576,11 @@ static void init_vmcb(struct vcpu_svm *svm)
- 
- 	svm->nested_vmcb = 0;
- 	svm->vcpu.arch.hflags = HF_GIF_MASK;
++static const char *am74xx_quirk_drives[] = {
++	"FUJITSU MHZ2160BH G2",
++	NULL
++};
 +
-+	if (svm_has(SVM_FEATURE_PAUSE_FILTER)) {
-+		control->pause_filter_count = 3000;
-+		control->intercept |= (1ULL << INTERCEPT_PAUSE);
-+	}
+ enum {
+ 	AMD_IDE_CONFIG		= 0x41,
+ 	AMD_CABLE_DETECT	= 0x42,
+@@ -112,6 +117,19 @@ static void amd_set_pio_mode(ide_drive_t *drive, const u8 pio)
+ 	amd_set_drive(drive, XFER_PIO_0 + pio);
  }
  
- static int svm_vcpu_reset(struct kvm_vcpu *vcpu)
-@@ -2087,6 +2093,12 @@ static int interrupt_window_interception(struct vcpu_svm *svm,
- 	return 1;
- }
- 
-+static int pause_interception(struct vcpu_svm *svm, struct kvm_run *kvm_run)
++static void amd_quirkproc(ide_drive_t *drive)
 +{
-+	sched_delay_yield(1000000);
-+	return 1;
++	const char **list, *m = (char *)&drive->id[ATA_ID_PROD];
++
++	for (list = am74xx_quirk_drives; *list != NULL; list++)
++			if (strstr(m, *list) != NULL) {
++				drive->quirk_list = 2;
++				return;
++			}
++
++	drive->quirk_list = 0;
 +}
 +
- static int (*svm_exit_handlers[])(struct vcpu_svm *svm,
- 				      struct kvm_run *kvm_run) = {
- 	[SVM_EXIT_READ_CR0]           		= emulate_on_interception,
-@@ -2123,6 +2135,7 @@ static int (*svm_exit_handlers[])(struct vcpu_svm *svm,
- 	[SVM_EXIT_CPUID]			= cpuid_interception,
- 	[SVM_EXIT_IRET]                         = iret_interception,
- 	[SVM_EXIT_INVD]                         = emulate_on_interception,
-+	[SVM_EXIT_PAUSE]			= pause_interception,
- 	[SVM_EXIT_HLT]				= halt_interception,
- 	[SVM_EXIT_INVLPG]			= invlpg_interception,
- 	[SVM_EXIT_INVLPGA]			= invalid_op_interception,
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index b4c38bc..9cde585 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -2283,6 +2283,9 @@ static inline unsigned int task_cpu(const struct task_struct *p)
- 	return task_thread_info(p)->cpu;
- }
- 
-+extern void sched_delay_yield(unsigned long ns);
-+
-+
- extern void set_task_cpu(struct task_struct *p, unsigned int cpu);
- 
- #else
-@@ -2292,6 +2295,10 @@ static inline unsigned int task_cpu(const struct task_struct *p)
- 	return 0;
- }
- 
-+void sched_delay_yield(struct task_struct *p, unsigned int delay)
-+{
-+}
-+
- static inline void set_task_cpu(struct task_struct *p, unsigned int cpu)
+ static void amd7409_cable_detect(struct pci_dev *dev)
  {
- }
-diff --git a/kernel/sched.c b/kernel/sched.c
-index b902e58..3aed2f6 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -1947,6 +1947,24 @@ task_hot(struct task_struct *p, u64 now, struct sched_domain *sd)
- 	return delta < (s64)sysctl_sched_migration_cost;
- }
+ 	/* no host side cable detection */
+@@ -194,6 +212,7 @@ static void __devinit init_hwif_amd74xx(ide_hwif_t *hwif)
+ static const struct ide_port_ops amd_port_ops = {
+ 	.set_pio_mode		= amd_set_pio_mode,
+ 	.set_dma_mode		= amd_set_drive,
++	.quirkproc		= amd_quirkproc,
+ 	.cable_detect		= amd_cable_detect,
+ };
  
-+/*
-+ * Interface for yielding a thread by delaying it for a known
-+ * interval.  Use at your own risk and not with real-time.
-+ *
-+ * Like yield, except for SCHED_OTHER/BATCH, where it will
-+ * give us @ns time for the 'good' cause.
-+ */
-+void sched_delay_yield(unsigned long ns)
-+{
-+	struct task_struct *curr = current;
-+	if (curr->sched_class == &fair_sched_class) {
-+		struct sched_entity *se = &curr->se;
-+		__update_curr(cfs_rq_of(se), se, ns);
-+		schedule();
-+	} else
-+		yield();
-+}
-+EXPORT_SYMBOL_GPL(sched_delay_yield);
- 
- void set_task_cpu(struct task_struct *p, unsigned int new_cpu)
- {
 -- 
-1.6.0.2
-
+1.6.2.1
 
