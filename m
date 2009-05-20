@@ -1,108 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754132AbZETCrZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755888AbZETCvq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754132AbZETCrZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 22:47:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752665AbZETCrS
+	id S1755888AbZETCvq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 22:51:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752811AbZETCvh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 22:47:18 -0400
-Received: from rv-out-0506.google.com ([209.85.198.233]:33229 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751832AbZETCrS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 22:47:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=YgafmsqBH52YFPpdGmF/pCspMyCXmumva0VKAxXoK4GrbMTfxGkzAKFeqjqYf7oN6k
-         UOQrBncg8X5v/ZaT4j0dX//agY00PWsblJVh9zwLmvfvoahKrNQRxvaXAaAXqGmNxiO4
-         fu6U4N/QVwW0BKiNg955MouKoQ2QYvLJm4AOg=
-Date: Tue, 19 May 2009 19:47:08 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Sitsofe Wheeler <sitsofe@yahoo.com>
-Cc: linux-kernel@vger.kernel.org,
-       Alan Jenkins <sourcejedi.lkml@googlemail.com>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, mingo@elte.hu
-Subject: Re: EeePC 900 trackpad often not detected at boot in 2.6.30-rc4
-Message-ID: <20090520024658.GD17649@dtor-d630.eng.vmware.com>
-References: <20090511072135.GA4682@sucs.org> <20090513032053.GA29919@dtor-d630.eng.vmware.com> <20090513185356.GA20140@sucs.org> <20090513191953.GA10629@sucs.org> <20090516032754.GC12099@dtor-d630.eng.vmware.com> <20090516032924.GD12099@dtor-d630.eng.vmware.com> <20090518084146.GA25806@sucs.org> <20090518094209.GA21150@sucs.org>
+	Tue, 19 May 2009 22:51:37 -0400
+Received: from mga14.intel.com ([143.182.124.37]:16136 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750906AbZETCvh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 22:51:37 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,218,1241420400"; 
+   d="scan'208";a="144787509"
+Date: Wed, 20 May 2009 10:51:23 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, linux-mm@kvack.org
+Subject: Re: [PATCH] readahead:add blk_run_backing_dev
+Message-ID: <20090520025123.GB8186@localhost>
+References: <6.0.0.20.2.20090518183752.0581fdc0@172.19.0.2> <20090518175259.GL4140@kernel.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090518094209.GA21150@sucs.org>
+In-Reply-To: <20090518175259.GL4140@kernel.dk>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 18, 2009 at 10:42:10AM +0100, Sitsofe Wheeler wrote:
-> On Mon, May 18, 2009 at 09:41:46AM +0100, Sitsofe Wheeler wrote:
+On Mon, May 18, 2009 at 07:53:00PM +0200, Jens Axboe wrote:
+> On Mon, May 18 2009, Hisashi Hifumi wrote:
+> > Hi.
 > > 
-> > And of course just as soon as I finish building a new kernel the issue
-> > disappears. Even in older kernels that were seemingly showing the
-> > problem all the time. Sigh.
+> > I wrote a patch that adds blk_run_backing_dev on page_cache_async_readahead
+> > so readahead I/O is unpluged to improve throughput.
+> > 
+> > Following is the test result with dd.
+> > 
+> > #dd if=testdir/testfile of=/dev/null bs=16384
+> > 
+> > -2.6.30-rc6
+> > 1048576+0 records in
+> > 1048576+0 records out
+> > 17179869184 bytes (17 GB) copied, 224.182 seconds, 76.6 MB/s
+> > 
+> > -2.6.30-rc6-patched
+> > 1048576+0 records in
+> > 1048576+0 records out
+> > 17179869184 bytes (17 GB) copied, 206.465 seconds, 83.2 MB/s
+> > 
+> > Sequential read performance on a big file was improved.
+> > Please merge my patch.
+> > 
+> > Thanks.
+> > 
+> > Signed-off-by: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
+> > 
+> > diff -Nrup linux-2.6.30-rc6.org/mm/readahead.c linux-2.6.30-rc6.unplug/mm/readahead.c
+> > --- linux-2.6.30-rc6.org/mm/readahead.c	2009-05-18 10:46:15.000000000 +0900
+> > +++ linux-2.6.30-rc6.unplug/mm/readahead.c	2009-05-18 13:00:42.000000000 +0900
+> > @@ -490,5 +490,7 @@ page_cache_async_readahead(struct addres
+> >  
+> >  	/* do read-ahead */
+> >  	ondemand_readahead(mapping, ra, filp, true, offset, req_size);
+> > +
+> > +	blk_run_backing_dev(mapping->backing_dev_info, NULL);
+> >  }
+> >  EXPORT_SYMBOL_GPL(page_cache_async_readahead);
 > 
-> After numerous reboots I finally managed to reproduce the problem the
-> original way with your patch installed. I have no idea what the
-> necessary triggers are but I suspect it involves suspend to ram...
-> 
+> I'm surprised this makes much of a difference. It seems correct to me to
+> NOT unplug the device, since it will get unplugged when someone ends up
+> actually waiting for a page. And that will then kick off the remaining
+> IO as well. For this dd case, you'll be hitting lock_page() for the
+> readahead page really soon, definitely not long enough to warrant such a
+> big difference in speed.
 
-It is just unfortunate scheduling that messes us up:
+The possible timing change of this patch is (assuming readahead size=100):
 
-> [    4.267050] drivers/input/serio/i8042.c: 00 <- i8042 (interrupt, 1, 12) [113]
-> [    4.270440] drivers/input/serio/i8042.c: d4 -> i8042 (command) [116]
-> [    4.271016] drivers/input/serio/i8042.c: f2 -> i8042 (parameter) [116]
-> [    4.274883] ALSA device list:
-> [    4.274963]   #0: HDA Intel at 0xf7eb8000 irq 16
-> [    4.275258] TCP cubic registered
-> [    4.276597] NET: Registered protocol family 17
-> [    4.276802] Using IPI Shortcut mode
-> [    4.279191]   Magic number: 9:810:70
-> [    4.279548] rtc_cmos 00:03: setting system clock to 2009-05-18 09:03:27 UTC (1242637407)
-> [    4.281412] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [127]
-> [    4.283338] drivers/input/serio/i8042.c: 00 <- i8042 (interrupt, 1, 12) [129]
-> [    5.406620] libps2: errorneously fail 754 command
+T0   read(100), which triggers readahead(200, 100)
+T1   read(101)
+T2   read(102)
+...
+T100 read(200), find_get_page(200) => readahead(300, 100)
+                lock_page(200) => implicit unplug
 
-As you can see the device responded to our command and interrupt fired
-at 4.28 but for some reason the thread did not get woken up until 5.40,
-second and a half later... Crazy if you ask me.
+The readahead(200, 100) submitted at time T0 *might* be delayed to the
+unplug time of T100.
 
-Ingo, do you have any idea why would it not be woken up for so long???
+But that is only a possibility. In normal cases, the read(200) would
+be blocking and there will be a lock_page(200) that will immediately
+unplug device for readahead(300, 100).
 
-In the meantime, the patch below should fix work around that delay.
-
--- 
-Dmitry
-
-
-Input: libps2 - better handle bad scheduler decisions
-
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-
-Sometimes devices send us their responses in time but due to
-unfortunate scheduling decisions the receiving thread does not
-get scheduled till much later and we erroneously decide that
-device timed out. Work around this problem by checking whether we
-received the data we needed instead of checking timeout
-condition.
-
-Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
----
-
- drivers/input/serio/libps2.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-
-diff --git a/drivers/input/serio/libps2.c b/drivers/input/serio/libps2.c
-index a0d8968..3a95b50 100644
---- a/drivers/input/serio/libps2.c
-+++ b/drivers/input/serio/libps2.c
-@@ -208,7 +208,7 @@ int __ps2_command(struct ps2dev *ps2dev, unsigned char *param, int command)
- 	timeout = wait_event_timeout(ps2dev->wait,
- 				     !(ps2dev->flags & PS2_FLAG_CMD1), timeout);
- 
--	if (ps2dev->cmdcnt && timeout > 0) {
-+	if (ps2dev->cmdcnt && !(ps2dev->flags & PS2_FLAG_CMD1)) {
- 
- 		timeout = ps2_adjust_timeout(ps2dev, command, timeout);
- 		wait_event_timeout(ps2dev->wait,
+Thanks,
+Fengguang
