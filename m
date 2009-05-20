@@ -1,84 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756109AbZETKab@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756920AbZETKbH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756109AbZETKab (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 06:30:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754848AbZETKaX
+	id S1756920AbZETKbH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 06:31:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755355AbZETKa4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 06:30:23 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:64076 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754847AbZETKaW (ORCPT
+	Wed, 20 May 2009 06:30:56 -0400
+Received: from wf-out-1314.google.com ([209.85.200.175]:35822 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754848AbZETKaz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 06:30:22 -0400
+	Wed, 20 May 2009 06:30:55 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=LBXKCX/JX8/C1v+4uNoZcdGmvlA9DdXjTh+oVYhuaG4IQCRMWK/b6K9jfadOscEZlq
-         uDlzPQtVUQ5NKIlHpKt2rPqJRFwJRfz7yrxio7dIKz3BIhP+rDNjxQPjlIxHWuS9rzoJ
-         pRMsBCGiFeMXsROXWNPSR/LqF4NeSq0qeURcE=
-MIME-Version: 1.0
-Date: Wed, 20 May 2009 11:30:21 +0100
-Message-ID: <5c43c2d40905200330p5b14be2ey567bc493374e09b3@mail.gmail.com>
-Subject: Are the cast necessary in function "kfree"?
-From: =?ISO-8859-1?Q?Andr=E9_Lopes?= <andre.neo.net@gmail.com>
-To: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=IG34n1H9Sgrwln+gCUVGEcYN9PmY7OJpU8MzPJ9dsNcq8IsAVZf4jN1TKf/x3VNfly
+         LGmuGgczYCSLj+5+niJnPOsRAd1FzrIoMYOgod55Wd2K1FOtTFfLa9Aop/8JLh7WylGF
+         AnvZai67jNnmniExvra+4nR+jeg6CBKRir7vc=
+Date: Wed, 20 May 2009 19:30:45 +0900
+From: Minchan Kim <minchan.kim@gmail.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Minchan Kim <minchan.kim@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>, Johannes Weiner <hannes@cmpxchg.org>
+Subject: Re: [PATCH 1/3] clean up setup_per_zone_pages_min
+Message-Id: <20090520193045.2070f7fa.minchan.kim@barrios-desktop>
+In-Reply-To: <20090520102129.GA12433@csn.ul.ie>
+References: <20090520161853.1bfd415c.minchan.kim@barrios-desktop>
+	<20090520085416.GA27056@csn.ul.ie>
+	<20090520185803.e5b0698a.minchan.kim@barrios-desktop>
+	<20090520102129.GA12433@csn.ul.ie>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi. This is my first post :-)
+On Wed, 20 May 2009 11:21:29 +0100
+Mel Gorman <mel@csn.ul.ie> wrote:
 
-I was reading this doc (/linux-2.6/Documentation/scsi/ChangeLog.lpfc),
-when I found this phrase: "Replace some kfree((void*)ptr) with
-kfree(ptr)."
+> On Wed, May 20, 2009 at 06:58:03PM +0900, Minchan Kim wrote:
+> > Hi, Mel. 
+> > 
+> > On Wed, 20 May 2009 09:54:16 +0100
+> > Mel Gorman <mel@csn.ul.ie> wrote:
+> > 
+> > > On Wed, May 20, 2009 at 04:18:53PM +0900, Minchan Kim wrote:
+> > > > 
+> > > > Mel changed zone->pages_[high/low/min] with zone->watermark array.
+> > > > So, setup_per_zone_pages_min also have to be changed.
+> > > > 
+> > > 
+> > > Just to be clear, this is a function renaming to match the new zone
+> > > field name, not something I missed. As the function changes min, low and
+> > > max, a better name might have been setup_per_zone_watermarks but whether
+> > 
+> > At first, I thouht, too. But It's handle of min_free_kbytes.
+> > Documentation said, it's to compute a watermark[WMARK_MIN]. 
+> > I think many people already used that knob to contorl pages_min to keep the 
+> > low pages. 
+> 
+> Which documentation?
 
-After that I created a script to detect this situation, in Linux
-source code. The results were:
+Documentation/sysctl/vm.txt - min_free_kbytes.
 
-arch/mips/alchemy/common/dbdma.c:408:        kfree((const void *)desc_base);
-arch/mips/alchemy/common/dbdma.c:834:    kfree((void *)ctp->chan_desc_base);
-arch/s390/include/asm/idals.h:110:        kfree((void *)(unsigned
-long) ccw->cda);
-arch/powerpc/mm/pgtable_32.c:90:    kfree((void *)pgd);
-drivers/ide/ide-acpi.c:369:    kfree((void *)obj_loc);
-drivers/net/vxge/vxge-config.c:4962:        kfree((void *)p);
-drivers/net/vxge/vxge-config.h:1970:    kfree((void *)tmp);
-drivers/net/wan/pc300_tty.c:699:                kfree((void *)buf);
-drivers/net/wireless/zd1211rw/zd_chip.c:149:    kfree((void *)a16);
-drivers/net/lance.c:367:    kfree((void*)lp->rx_buffs);
-drivers/net/lance.c:742:    kfree((void*)lp->rx_buffs);
-drivers/net/ucc_geth.c:1890:                kfree((void
-*)ugeth->tx_bd_ring_offset[i]);
-drivers/net/ucc_geth.c:1920:                kfree((void
-*)ugeth->rx_bd_ring_offset[i]);
-drivers/s390/char/vmur.c:188:        kfree((void *)(addr_t) ptr->cda);
-drivers/block/paride/bpck6.c:227:    kfree((void *)(pi->private));
-drivers/infiniband/hw/cxgb3/iwch_provider.c:449:        kfree((void *)
-(unsigned long) mhp->kva);
-drivers/staging/epl/EplTarget.h:99:#define EPL_FREE(ptr)
-kfree((void *)ptr)
-drivers/video/console/fbcon.c:960:                kfree((void *) softback_buf);
-drivers/video/console/fbcon.c:3428:    kfree((void *)softback_buf);
-drivers/video/au1100fb.c:614:    kfree((void*)fbdev);
-drivers/pci/rom.c:259:        kfree((void*)(unsigned long)res->start);
-drivers/isdn/hisax/config.c:1272:        kfree((void *) cards[cardnr].cs);
-drivers/isdn/hisax/fsm.c:47:    kfree((void *) fsm->jumpmatrix);
-drivers/isdn/mISDN/fsm.c:54:    kfree((void *) fsm->jumpmatrix);
-net/sched/ematch.c:401:                kfree((void *) em->data);
-net/sched/em_meta.c:577:    kfree((void *) v->val);
-sound/oss/sh_dac_audio.c:325:    kfree((void *)data_buffer);
-sound/pci/ice1712/ak4xxx.c:158:        kfree((void*)ak->private_value[0]);
-sound/pci/emu10k1/emufx.c:1724:        kfree((void __force *)icode->gpr_map);
-sound/pci/emu10k1/emufx.c:2345:        kfree((void __force *)icode->gpr_map);
+> I'm looking at the function comment and see
+> 
+>  * setup_per_zone_pages_min - called when min_free_kbytes changes.
+>  *
+>  * Ensures that the pages_{min,low,high} values for each zone are set
+>  * correctly with respect to min_free_kbytes.
+> 
+> So, the values of all the watermarks are updated by that function depending
+> on what the new value of min_free_kbytes is. It is a bit wrong I suppose as
+> it missed memory hot-add
+> 
+> setup_per_zone_pages_min - called when min_free_kbytes changes or when memory is hot-added
 
-The prototype for kfree() is:
-#include<linux/slab.h>
-void kfree(const void *objp)
+God!. I changed this function's comments with memory hot plug. 
+With my mistake, My patch 3/3 lost it. 
+I will add comment about memory hotplug.
 
-These casts are not necessary...I think so. If it's yes, can we apply
-patch's to clean-up this?
+Thanks for pointing me out. :)
 
-Thanks.
+
+> > 
+> > So, I determined function name is proper now. 
+> > If setup_per_zone_watermark is better than it, we also have to change with 
+> > documentation. 
+> > 
+> > > you go with that name or not, this is better than what is there so;
+> > > 
+> > > Acked-by: Mel Gorman <mel@csn.ul.ie>
+> > 
+> > 
+> > -- 
+> > Kinds Regards
+> > Minchan Kim
+> > 
+> 
+> -- 
+> Mel Gorman
+> Part-time Phd Student                          Linux Technology Center
+> University of Limerick                         IBM Dublin Software Lab
+
+
+-- 
+Kinds Regards
+Minchan Kim
