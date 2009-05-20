@@ -1,94 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757241AbZETKcU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755374AbZETKcb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757241AbZETKcU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 06:32:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754184AbZETKcH
+	id S1755374AbZETKcb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 06:32:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756773AbZETKcO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 06:32:07 -0400
-Received: from mx1.auerswald.de ([212.185.163.234]:41421 "EHLO
-	mail.auerswald.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754072AbZETKcG convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 06:32:06 -0400
-From: Wolfgang =?iso-8859-1?q?M=FCes?= <wolfgang.mues@auerswald.de>
-Organization: Auerswald GmbH & Co. KG
-To: "David Brownell" <david-b@pacbell.net>
-Subject: Re: [PATCH] mmc_spi: use EILSEQ for possible transmission errors
-Date: Wed, 20 May 2009 12:31:53 +0200
-User-Agent: KMail/1.9.10
-Cc: "Matt Fleming" <matt@console-pimps.org>,
-       "Pierre Ossman" <drzeus@drzeus.cx>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Mike Frysinger" <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org
-References: <200905200220.46569.david-b@pacbell.net>
-In-Reply-To: <200905200220.46569.david-b@pacbell.net>
+	Wed, 20 May 2009 06:32:14 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:49503 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757149AbZETKcM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 06:32:12 -0400
+Date: Wed, 20 May 2009 11:32:08 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Minchan Kim <minchan.kim@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>, Johannes Weiner <hannes@cmpxchg.org>
+Subject: Re: [PATCH 3/3] reset wmark_min and inactive ratio of zone when
+	hotplug happens
+Message-ID: <20090520103207.GC12433@csn.ul.ie>
+References: <20090520162001.3f3bbe5c.minchan.kim@barrios-desktop>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-Message-Id: <200905201231.53873.wolfgang.mues@auerswald.de>
+In-Reply-To: <20090520162001.3f3bbe5c.minchan.kim@barrios-desktop>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt,
+On Wed, May 20, 2009 at 04:20:01PM +0900, Minchan Kim wrote:
+> This patch solve two problems.
+> 
+> Whenever memory hotplug sucessfully happens, zone->present_pages
+> have to be changed.
+> 
+> 1) Now, memory hotplug calls setup_per_zone_wmark_min only when
+> online_pages called, not offline_pages.
+> 
+> It breaks balance.
+> 
 
-Am Mittwoch, 20. Mai 2009 schrieb David Brownell:
-> > R1_SPI_ERASE_SEQ and R1_SPI_ERASE_RESET are responses to a sector erase
-> > command. block.c is not sending such commands, so block.c can safely
-> > assume that each such response is a transmission error.
->
-> Hmm, would hope that's not a long-term plan.  Remember that the
-> firmware in the card can leverage "that's erased" knowledge for
-> things like wear leveling.  SSDs and other storage devices would
-> likewise benefit from such knowledge.  I'm quite certain there's
-> been discussion about adding support for that in the block layer.
+Very true.
 
-But if the block layer IS sending such erase commands in the future, it CAN 
-treat these error codes different:
+> 2) If zone->present_pages is changed, we also have to change
+> zone->inactive_ratio. That's because inactive_ratio depends
+> on zone->present_pages.
+> 
+> CC: Mel Gorman <mel@csn.ul.ie>
+> CC: Rik van Riel <riel@redhat.com>
+> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> CC: Johannes Weiner <hannes@cmpxchg.org>
+> Signed-off-by: Minchan Kim <minchan.kim@gmail.com>
+> ---
+>  mm/memory_hotplug.c |    4 ++++
+>  1 files changed, 4 insertions(+), 0 deletions(-)
+> 
+> diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
+> index 40bf385..1611010 100644
+> --- a/mm/memory_hotplug.c
+> +++ b/mm/memory_hotplug.c
+> @@ -423,6 +423,7 @@ int online_pages(unsigned long pfn, unsigned long nr_pages)
+>  	zone->zone_pgdat->node_present_pages += onlined_pages;
+>  
+>  	setup_per_zone_wmark_min();
+> +	calculate_per_zone_inactive_ratio(zone);
+>  	if (onlined_pages) {
+>  		kswapd_run(zone_to_nid(zone));
+>  		node_set_state(zone_to_nid(zone), N_HIGH_MEMORY);
+> @@ -832,6 +833,9 @@ repeat:
+>  	totalram_pages -= offlined_pages;
+>  	num_physpages -= offlined_pages;
+>  
+> +	setup_per_zone_wmark_min();
+> +	calculate_per_zone_inactive_ratio(zone);
+> +
+>  	vm_total_pages = nr_free_pagecache_pages();
+>  	writeback_set_ratelimit();
+>  
 
-if (read or write block command)
-   erase errors must be transmission errors
-else
-   accept erase errors;
+Seems sensible.;
 
-As it is not neccessary to change the handling of these errors in mmc_spi.c, 
-no information is lost.
+> -- 
+> 1.5.4.3
+> 
+> 
+> 
+> -- 
+> Kinds Regards
+> Minchan Kim
+> 
 
-> And the key issue is -- correct me if I'm wrong -- that returning
-> EINVAL makes trouble
-
-Yes, because EINVAL is used for TWO different purposes:
-- reporting an error of the driver or host controller
-  (which is by nature non-recoverable, a retry is harmless,
-   but makes no sense).
-- reporting an error from the SD card (in mmc_spi).
-  (which might be a transmission error and retries make
-   sense).
-
-> so you need to change those three codes.  
-
-Yepp.
-
-> The others don't much matter, right?
-
-Yes. I can simple treat them as transmission errors in block.c
-
-regards
- 
-i. A. Wolfgang Mües
 -- 
-Auerswald GmbH & Co. KG
-Hardware Development
-Telefon: +49 (0)5306 9219 0
-Telefax: +49 (0)5306 9219 94 
-E-Mail: Wolfgang.Mues@Auerswald.de
-Web: http://www.auerswald.de
- 
---------------------------------------------------------------
-Auerswald GmbH & Co. KG, Vor den Grashöfen 1, 38162 Cremlingen
-Registriert beim AG Braunschweig HRA 13289
-p.h.G Auerswald Geschäftsführungsges. mbH
-Registriert beim AG Braunschweig HRB 7463
-Geschäftsführer: Dipl-Ing. Gerhard Auerswald
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
