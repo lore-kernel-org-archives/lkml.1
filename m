@@ -1,54 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756218AbZETXFX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756609AbZETXPl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756218AbZETXFX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 19:05:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756221AbZETXFE
+	id S1756609AbZETXPl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 19:15:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753548AbZETXPd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 19:05:04 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:58981 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756718AbZETXFC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 19:05:02 -0400
-Message-ID: <4A148C3B.5050100@zytor.com>
-Date: Wed, 20 May 2009 16:03:23 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Wed, 20 May 2009 19:15:33 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:36048 "EHLO bilbo.ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752737AbZETXPd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 19:15:33 -0400
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [GIT PULL] xen /proc/mtrr implementation
-References: <4A0DCC11.10307@goop.org> <m1my9ex818.fsf@fess.ebiederm.org> <4A0DFF78.6000501@goop.org> <20090515202250.0f1218ef@jbarnes-g45> <m1iqk1k708.fsf@fess.ebiederm.org> <4A10EAC4.9070701@goop.org> <20090518085902.GE10687@elte.hu> <4A11A3F8.1010202@goop.org> <87tz3gnq91.fsf@basil.nowhere.org> <4A143251.90208@goop.org> <20090520225235.GJ8684@one.firstfloor.org>
-In-Reply-To: <20090520225235.GJ8684@one.firstfloor.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18964.36622.94267.309523@cargo.ozlabs.ibm.com>
+Date: Thu, 21 May 2009 09:15:26 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       Corey Ashford <cjashfor@linux.vnet.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [RFC PATCH] perf_counter: dynamically allocate tasks'
+	perf_counter_context struct
+In-Reply-To: <20090520171207.GA16706@elte.hu>
+References: <18963.63352.489273.92145@cargo.ozlabs.ibm.com>
+	<20090520171207.GA16706@elte.hu>
+X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
->>> Is this new interface only defined for swiotlb or MMIO mappings?
->>> If yes did you check the drivers only actually set it on
->>> swiotlb or MMIO (that seems dubious to me)?
->> Really?   Do we ever set unusual memory types on normal system memory?  
+Ingo Molnar writes:
+
+> * Paul Mackerras <paulus@samba.org> wrote:
 > 
-> There were drivers at some point that set WC MTRRs on their
-> transfer rings, not mmio.
+> > This replaces the struct perf_counter_context in the task_struct 
+> > with a pointer to a dynamically allocated perf_counter_context 
+> > struct.  The main reason for doing is this is to allow us to 
+> > transfer a perf_counter_context from one task to another when we 
+> > do lazy PMU switching in a later patch.
 > 
-> Maybe these all switched to PAT now, maybe not
+> Hm, i'm not sure how far this gets us towards lazy PMU switching.
+> 
+> In fact i'd say that the term "lazy PMU switching" is probably 
+> misleading, we should use: "equivalent PMU context switching" or 
+> instead.
 
-Most of those that I've heard of use WB memory and CLFLUSH.
+Yes, that's what I mean.
 
-The ones I know of which marked descriptor rings WB were ones which had
-descriptor rings in MMIO space (which makes sense: MMIO reads are fully
-synchronizing, but writes can be posted and write combined.)
+As you say, we need to be able to detect when two tasks have
+equivalent contexts - that is, when their counters are all inherited
+from a common ancestor.  My idea is that in that situation we simply
+swap the contexts: move the context of the outgoing task onto the
+incoming task, and give the incoming task's context to the outgoing
+task.  With my patch, that involves simply swapping the pointers over
+and adjusting the task pointers in the two contexts.
 
-	-hpa
+That means that all the counters get transferred over to the incoming
+task, so there is nothing in the PMU or the arch code that needs to
+changed or adjusted.  The outgoing task still has a perfectly valid
+context, so it doesn't matter if it migrates to another CPU.  The
+nice thing is that there is nothing special or unusual about the state
+after we have swapped the contexts - nothing that needs to be
+remembered or undone later.
 
+Hopefully I'll have an actual patch to show you later today.
+
+Paul.
