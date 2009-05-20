@@ -1,73 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755337AbZETHMh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755412AbZETHNf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755337AbZETHMh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 03:12:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752312AbZETHMa
+	id S1755412AbZETHNf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 03:13:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752220AbZETHN0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 03:12:30 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:36889 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751680AbZETHMa (ORCPT
+	Wed, 20 May 2009 03:13:26 -0400
+Received: from mga01.intel.com ([192.55.52.88]:40589 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751269AbZETHNZ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 03:12:30 -0400
-Subject: Re: [PATCH 0/3] tracepoints: delay argument evaluation
-From: Peter Zijlstra <peterz@infradead.org>
-To: Jason Baron <jbaron@redhat.com>
-Cc: linux-kernel@vger.kernel.org, fweisbec@gmail.com, mingo@elte.hu,
-       laijs@cn.fujitsu.com, rostedt@goodmis.org, mathieu.desnoyers@polymtl.ca,
-       jiayingz@google.com, mbligh@google.com, roland@redhat.com,
-       fche@redhat.com
-In-Reply-To: <cover.1242763826.git.jbaron@redhat.com>
-References: <cover.1242763826.git.jbaron@redhat.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Wed, 20 May 2009 09:12:04 +0200
-Message-Id: <1242803524.26820.530.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Wed, 20 May 2009 03:13:25 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,219,1241420400"; 
+   d="scan'208";a="691995177"
+From: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "oprofile-list@lists.sourceforge.net" 
+	<oprofile-list@lists.sourceforge.net>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "rusty@rustcorp.com.au" <rusty@rustcorp.com.au>
+Date: Wed, 20 May 2009 00:13:24 -0700
+Subject: RE: [BUG 2.6.30-rc1] panic when loading oprofile
+Thread-Topic: [BUG 2.6.30-rc1] panic when loading oprofile
+Thread-Index: AcnWfOhlvZSs8e9TSJSk5RlF70AvPACnNF3A
+Message-ID: <F169D4F5E1F1974DBFAFABF47F60C10A335277B5@orsmsx507.amr.corp.intel.com>
+References: <alpine.WNT.2.00.0905131327430.7052__41366.1100705669$1242253861$gmane$org@jbrandeb-desk1.amr.corp.intel.com>
+	<87fxf6pmh5.fsf@basil.nowhere.org>
+ <20090516162017.2525511c.akpm@linux-foundation.org>
+In-Reply-To: <20090516162017.2525511c.akpm@linux-foundation.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-05-19 at 17:03 -0400, Jason Baron wrote:
-> hi,
-> 
-> After disassembling some of the tracepoints, I've noticed that arguments that
-> are passed as macros or that perform  dereferences, evaluate prior to the
-> tracepoint on/off check. This means that we are needlessly impacting the 
-> off case.
-> 
-> I am proposing to fix this by adding a macro that first checks for on/off and
-> then calls 'trace_##name', preserving type checking. Thus, callsites have to 
-> move from:
-> 
-> trace_block_bio_complete(md->queue, bio);
-> 
-> to:
-> 
-> tracepoint_call(block_bio_complete,  md->queue, bio);
-> 
-> I've tried '__always_inline', but that did not fix this issue. Obviously this
-> change will require changes to all the callsites. But, that shouldn't be
-> very hard, I've already included the scheduler and block changes with this
-> patch. I think its important to minimize code execution in the off case, and
-> thus going through all the callsites is well worth it. If we agree on this
-> change, I can change the rest in very short order.
-> 
-> Below I'm also showing the assembly in the 'dec_pending()' function before and
-> after this change to show the difference it makes. The arguments to the
-> tracepoint are as above, 'md->queue' and 'bio'. Notice the 2 extra instructions,
-> before the initial 'je', that could be moved after the 'je'.
+Andrew Morton wrote:
+> On Fri, 15 May 2009 14:41:26 +0200 Andi Kleen <andi@firstfloor.org>
+> wrote:
+>
+> > "Brandeburg, Jesse" <jesse.brandeburg@intel.com> writes:
+> >
+> > Hi Jesse,
+> >
+> > > when starting a profile run on the latest net-next kernel, I'm
+> currently
+> > > trying to reproduce on 2.6.30-rc5 stock.
+> >
+> > Were you able to reproduce it?
 
-I really really hate this.
+For some reason I can no longer reproduce, I'll add a note to the bug too.
 
-Why can't 
+My suspicion is my normal process of
+git pull
+make O=../foo
+make modules_install install
 
-trace_block_bio_complete(arg..)
-   if (__trace_block_bio_compete.state)
-     __trace_block_bio_complete(arg)
+somehow picked up the L1_CACHE_BYTES=128 and stuck with it.  I can no longer reproduce that at all, .config always has the same result.
 
-work?
+It also may have been that the problem self repaired when I had to blow away my .oprofile/daemonrc because shortly after these panics my oprofile stopped working on older kernels too.
 
-Surely its possible to wrap the whole stuff in yet another macro layer
-that will do the conditional before evaluating the arguments?
+Sorry for the inconvenience, it was reproducible when I started :-(
+
+> >
+> > >
+> > > config available upon request, arch=x86_64, recent (F10 or newer)
+> oprofile
+> > > userspace.
+> >
+> > it looks like two bugs: oprofile didn't catch a NMI that belongs to
+> > it (most likely) and the NMI watchdog referenced a NULL pointer
+> > while processing an NMI.
+> >
+> > Did you have the nmi watchdog enabled on the command line?
+> >
+> > >
+> > > BUG: unable to handle kernel NULL pointer dereference at (null)
+> > > IP: [<ffffffff8066080a>] nmi_watchdog_tick+0xa1/0x1d6
+
+
+<snip>
+
+> Ping?
+>
+> This is in Rafael's regression list but I suspect that it's a
+> linux-next-only thing?
+
+We can close, unreproducable.  Its bugzilla 13324
