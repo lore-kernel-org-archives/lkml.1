@@ -1,143 +1,191 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756187AbZETWSN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755942AbZETWUl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756187AbZETWSN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 18:18:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755374AbZETWSG
+	id S1755942AbZETWUl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 18:20:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755380AbZETWUc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 18:18:06 -0400
-Received: from mga05.intel.com ([192.55.52.89]:60695 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754760AbZETWSF (ORCPT
+	Wed, 20 May 2009 18:20:32 -0400
+Received: from tx2ehsobe004.messaging.microsoft.com ([65.55.88.14]:19702 "EHLO
+	TX2EHSOBE007.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754957AbZETWUb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 18:18:05 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,223,1241420400"; 
-   d="scan'208";a="459078717"
-Date: Thu, 21 May 2009 00:20:13 +0200
-From: Samuel Ortiz <sameo@linux.intel.com>
-To: Linus Walleij <linus.ml.walleij@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org,
-       Linus Walleij <linus.walleij@stericsson.com>
-Subject: Re: [PATCH 1/1] MFD: Add U300 AB3100 core support v4
-Message-ID: <20090520222012.GB4541@sortiz.org>
-References: <63386a3d0905200217i56accf6fw4ef2f8ed1793e44@mail.gmail.com>
+	Wed, 20 May 2009 18:20:31 -0400
+X-BigFish: VPS-2(zzef8Kzz1202hzzz32i6bh)
+X-FB-SS: 5,13,
+X-WSS-ID: 0KJYRDN-02-016-01
+From: Mark Langsdorf <mark.langsdorf@amd.com>
+To: Joerg Roedel <joerg.roedel@amd.com>, peterz@infradead.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH][KVM][retry 4] Add support for Pause Filtering to AMD SVM
+Date: Wed, 20 May 2009 17:25:17 -0500
+User-Agent: KMail/1.9.10
+CC: avi@redhat.com, kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <200905050909.58583.mark.langsdorf@amd.com> <200905081203.55484.mark.langsdorf@amd.com> <200905191356.37071.mark.langsdorf@amd.com>
+In-Reply-To: <200905191356.37071.mark.langsdorf@amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <63386a3d0905200217i56accf6fw4ef2f8ed1793e44@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-ID: <200905201725.18046.mark.langsdorf@amd.com>
+X-OriginalArrivalTime: 20 May 2009 22:20:23.0456 (UTC) FILETIME=[2B300200:01C9D999]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+This feature creates a new field in the VMCB called Pause
+Filter Count.  If Pause Filter Count is greater than 0 and
+intercepting PAUSEs is enabled, the processor will increment
+an internal counter when a PAUSE instruction occurs instead
+of intercepting.  When the internal counter reaches the
+Pause Filter Count value, a PAUSE intercept will occur.
 
-On Wed, May 20, 2009 at 11:17:18AM +0200, Linus Walleij wrote:
-> This adds a core driver for the AB3100 mixed-signal circuit
-> found in the ST-Ericsson U300 series platforms. This driver
-> is a singleton proxy for all accesses to the AB3100
-> sub-drivers which will be merged on top of this one, RTC,
-> regulators, battery and system power control, vibrator,
-> LEDs, and an ALSA codec.
-This one looks much better, I still have some comments though:
+This feature can be used to detect contended spinlocks,
+especially when the lock holding VCPU is not scheduled.
+Rescheduling another VCPU prevents the VCPU seeking the
+lock from wasting its quantum by spinning idly.  Perform
+the reschedule by increasing the the credited time on
+the VCPU.
 
+Experimental results show that most spinlocks are held
+for less than 1000 PAUSE cycles or more than a few
+thousand.  Default the Pause Filter Counter to 3000 to
+detect the contended spinlocks.
 
-> +
-> +/* A local all-containing singleton */
-> +static struct ab3100 *ab3100_local;
-I dont really like that, but if you insist on having a unique ab3100 instance
-for your driver (instead of allocating one with every probe call and passing
-it as an i2c client data pointer), I could still ACK it. However:
+Processor support for this feature is indicated by a CPUID
+bit.
 
-> +static int ab3100_set_test_register(u8 reg, u8 regval)
-> +{
-> +	u8 regandval[2] = {reg, regval};
-> +	int err;
-> +
-> +	err = mutex_lock_interruptible(&ab3100_local->access_mutex);
-...that I wouldnt accept.
-ab3100_set_test_register should be generic enough and have an ab3100 pointer
-as its first parameter. It's called from ab3100_setup(), to which you can
-passe the newly allocated ab3100.
-There are several routines in your driver that rely on the existence of your
-ab3100_local pointer. Let's go through them:
+On a 24 core system running 4 guests each with 16 VCPUs,
+this patch improved overall performance of each guest's
+32 job kernbench by approximately 1%.  Further performance
+improvement may be possible with a more sophisticated
+yield algorithm.
 
-> +/* Interrupt handling worker */
-> +static void ab3100_work(struct work_struct *work)
-> +{
-> +	u8 event_regs[3];
-> +	u32 fatevent;
-> +	int err;
-struct ab3100 *ab3100 = container_of(work, struct ab3100, work);
+-Mark Langsdorf
+Operating System Research Center
+AMD
 
-and you dont have to reference your ab3100_local pointer anymore.
+Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
+---
+ arch/x86/include/asm/svm.h |    3 ++-
+ arch/x86/kvm/svm.c         |   13 +++++++++++++
+ include/linux/sched.h      |    7 +++++++
+ kernel/sched.c             |   18 ++++++++++++++++++
+ 4 files changed, 40 insertions(+), 1 deletions(-)
 
-
-> +static irqreturn_t ab3100_irq_handler(int irq, void *data)
-> +{
-struct ab3100 *ab3100 = (struct ab3100 *)data;
-
-you're even passing the ab3100 pointer to request_irq, so it's all set
-already.
-
-
-> + */
-> +static int ab3100_registers_print(struct seq_file *s, void *p)
-> +{
-> +	u8 value;
-> +	u8 reg;
-> +
-> +	seq_printf(s, "AB3100 registers:\n");
-> +
-> +	for (reg = 0; reg < 0xff; reg++) {
-> +		ab3100_get_register(ab3100_local, reg, &value);
-You could pass the probe() time allocated pointer to your debugfs_create_*()
-calls, and then fetch it back here.
-Same applies to all your debugfs code below.
-
-> +static void ab3100_setup_debugfs(void)
-> +{
-This one needs to take a struct ab3100 * as an input.
-
-> +static int __init ab3100_setup(void)
-> +{
-Ditto.
-
-> +static int __init ab3100_probe(struct i2c_client *client,
-> +			const struct i2c_device_id *id)
-> +{
-> +	int err;
-> +	int i;
-> +
-> +	ab3100_local = kzalloc(sizeof(struct ab3100), GFP_KERNEL);
-> +	if (!ab3100_local) {
-> +		dev_err(&client->dev, "could not allocate AB3100 device\n");
-> +		return -ENOMEM;
-> +	}
-> +
-> +	/* Initialize data structure */
-> +	mutex_init(&ab3100_local->access_mutex);
-> +	BLOCKING_INIT_NOTIFIER_HEAD(&ab3100_local->event_subscribers);
-
-i2c_set_clientdata(client, ab3100); and you can get rid of your static
-ab3100_local declaration.
-
-> +	ab3100_local->i2c_client = client;
-> +	ab3100_local->dev = &ab3100_local->i2c_client->dev;
-> +
-> +	/* Read chip ID register */
-> +	err = ab3100_get_register(ab3100_local, AB3100_CID,
-> +				  &ab3100_local->chip_id);
-> +	if (err) {
-> +		dev_err(&client->dev,
-> +			"could not communicate with the AB3100 analog "
-> +			"baseband chip\n");
-> +		goto exit_no_detect;
-> +	}
-
-Cheers,
-Samuel.
-
+diff --git a/arch/x86/include/asm/svm.h b/arch/x86/include/asm/svm.h
+index 85574b7..1fecb7e 100644
+--- a/arch/x86/include/asm/svm.h
++++ b/arch/x86/include/asm/svm.h
+@@ -57,7 +57,8 @@ struct __attribute__ ((__packed__)) vmcb_control_area {
+ 	u16 intercept_dr_write;
+ 	u32 intercept_exceptions;
+ 	u64 intercept;
+-	u8 reserved_1[44];
++	u8 reserved_1[42];
++	u16 pause_filter_count;
+ 	u64 iopm_base_pa;
+ 	u64 msrpm_base_pa;
+ 	u64 tsc_offset;
+diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
+index ef43a18..dad6c4b 100644
+--- a/arch/x86/kvm/svm.c
++++ b/arch/x86/kvm/svm.c
+@@ -45,6 +45,7 @@ MODULE_LICENSE("GPL");
+ #define SVM_FEATURE_NPT  (1 << 0)
+ #define SVM_FEATURE_LBRV (1 << 1)
+ #define SVM_FEATURE_SVML (1 << 2)
++#define SVM_FEATURE_PAUSE_FILTER (1 << 10)
+ 
+ #define DEBUGCTL_RESERVED_BITS (~(0x3fULL))
+ 
+@@ -575,6 +576,11 @@ static void init_vmcb(struct vcpu_svm *svm)
+ 
+ 	svm->nested_vmcb = 0;
+ 	svm->vcpu.arch.hflags = HF_GIF_MASK;
++
++	if (svm_has(SVM_FEATURE_PAUSE_FILTER)) {
++		control->pause_filter_count = 3000;
++		control->intercept |= (1ULL << INTERCEPT_PAUSE);
++	}
+ }
+ 
+ static int svm_vcpu_reset(struct kvm_vcpu *vcpu)
+@@ -2087,6 +2093,12 @@ static int interrupt_window_interception(struct vcpu_svm *svm,
+ 	return 1;
+ }
+ 
++static int pause_interception(struct vcpu_svm *svm, struct kvm_run *kvm_run)
++{
++	sched_delay_yield(1000000);
++	return 1;
++}
++
+ static int (*svm_exit_handlers[])(struct vcpu_svm *svm,
+ 				      struct kvm_run *kvm_run) = {
+ 	[SVM_EXIT_READ_CR0]           		= emulate_on_interception,
+@@ -2123,6 +2135,7 @@ static int (*svm_exit_handlers[])(struct vcpu_svm *svm,
+ 	[SVM_EXIT_CPUID]			= cpuid_interception,
+ 	[SVM_EXIT_IRET]                         = iret_interception,
+ 	[SVM_EXIT_INVD]                         = emulate_on_interception,
++	[SVM_EXIT_PAUSE]			= pause_interception,
+ 	[SVM_EXIT_HLT]				= halt_interception,
+ 	[SVM_EXIT_INVLPG]			= invlpg_interception,
+ 	[SVM_EXIT_INVLPGA]			= invalid_op_interception,
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index b4c38bc..9cde585 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -2283,6 +2283,9 @@ static inline unsigned int task_cpu(const struct task_struct *p)
+ 	return task_thread_info(p)->cpu;
+ }
+ 
++extern void sched_delay_yield(unsigned long ns);
++
++
+ extern void set_task_cpu(struct task_struct *p, unsigned int cpu);
+ 
+ #else
+@@ -2292,6 +2295,10 @@ static inline unsigned int task_cpu(const struct task_struct *p)
+ 	return 0;
+ }
+ 
++void sched_delay_yield(struct task_struct *p, unsigned int delay)
++{
++}
++
+ static inline void set_task_cpu(struct task_struct *p, unsigned int cpu)
+ {
+ }
+diff --git a/kernel/sched.c b/kernel/sched.c
+index b902e58..3aed2f6 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -1947,6 +1947,24 @@ task_hot(struct task_struct *p, u64 now, struct sched_domain *sd)
+ 	return delta < (s64)sysctl_sched_migration_cost;
+ }
+ 
++/*
++ * Interface for yielding a thread by delaying it for a known
++ * interval.  Use at your own risk and not with real-time.
++ *
++ * Like yield, except for SCHED_OTHER/BATCH, where it will
++ * give us @ns time for the 'good' cause.
++ */
++void sched_delay_yield(unsigned long ns)
++{
++	struct task_struct *curr = current;
++	if (curr->sched_class == &fair_sched_class) {
++		struct sched_entity *se = &curr->se;
++		__update_curr(cfs_rq_of(se), se, ns);
++		schedule();
++	} else
++		yield();
++}
++EXPORT_SYMBOL_GPL(sched_delay_yield);
+ 
+ void set_task_cpu(struct task_struct *p, unsigned int new_cpu)
+ {
 -- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
+1.6.0.2
+
+
