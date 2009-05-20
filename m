@@ -1,109 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754533AbZETQnh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755978AbZETQpX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754533AbZETQnh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 12:43:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751508AbZETQn3
+	id S1755978AbZETQpX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 12:45:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753897AbZETQpM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 12:43:29 -0400
-Received: from bedivere.hansenpartnership.com ([66.63.167.143]:55301 "EHLO
-	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751411AbZETQn2 (ORCPT
+	Wed, 20 May 2009 12:45:12 -0400
+Received: from e28smtp05.in.ibm.com ([59.145.155.5]:53698 "EHLO
+	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753526AbZETQpL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 12:43:28 -0400
-Subject: Re: [PATCH version 2] [SQUASHME] "FC Pass Thru support" fixed for
-	block/for-2.6.31 tree
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Boaz Harrosh <bharrosh@panasas.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Tejun Heo <tj@kernel.org>,
-       James Smart <James.Smart@Emulex.Com>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       FUJITA Tomonori <tomof@acm.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Jens Axboe <Jens.Axboe@oracle.com>
-In-Reply-To: <4A14322A.4000709@panasas.com>
-References: <4A12797B.2060901@panasas.com> <4A12AC23.30808@panasas.com>
-	 <20090520111619.87f815b1.sfr@canb.auug.org.au>
-	 <1242830240.2881.10.camel@localhost.localdomain>
-	 <20090521004251.9160e228.sfr@canb.auug.org.au>
-	 <1242830865.2881.13.camel@localhost.localdomain>
-	 <1242836425.2881.44.camel@localhost.localdomain>
-	 <4A14322A.4000709@panasas.com>
-Content-Type: text/plain
-Date: Wed, 20 May 2009 16:43:30 +0000
-Message-Id: <1242837810.2881.47.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Wed, 20 May 2009 12:45:11 -0400
+Date: Wed, 20 May 2009 22:15:05 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [Patch 1/2] Improvements and minor fixes to HW Breakpoint
+	interface
+Message-ID: <20090520164505.GA7646@in.ibm.com>
+Reply-To: prasad@linux.vnet.ibm.com
+References: <20090520105535.GA17181@in.ibm.com> <Pine.LNX.4.44L0.0905200951030.2914-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0905200951030.2914-100000@iolanthe.rowland.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-05-20 at 19:39 +0300, Boaz Harrosh wrote:
-> On 05/20/2009 07:20 PM, James Bottomley wrote:
-> > On Wed, 2009-05-20 at 14:47 +0000, James Bottomley wrote:
-> >> OK, so I think your pulling of my posmerge tree can cope with the fact
-> >> that I did the necessary rebasing in block for-next before I made it the
-> >> base of my combined tree .... think of this as a nice test.
-> >>
-> >> Just building now ... if it works, I'll push to SCSI post merge and all
-> >> our problems should go away.
-> > 
-> > Unfortunately the combined tree hits a BUG_ON blk-core.c:2045 when doing
-> > SPI domain validation.
-> > 
-> > There will be a short delay ...
-> > 
-> > James
-> > 
-> > 
+On Wed, May 20, 2009 at 10:04:09AM -0400, Alan Stern wrote:
+> On Wed, 20 May 2009, K.Prasad wrote:
 > 
-> I have rebased block/for-next onto linus/master which should give us the
-> same content?
+> > --- linux-2.6-tip.hbkpt.orig/arch/x86/kernel/hw_breakpoint.c
+> > +++ linux-2.6-tip.hbkpt/arch/x86/kernel/hw_breakpoint.c
+> > @@ -296,6 +296,19 @@ void arch_flush_thread_hw_breakpoint(str
+> >  
+> >  /*
+> >   * Handle debug exception notifications.
+> > + *
+> > + * Return value is either NOTIFY_STOP or NOTIFY_DONE as explained below.
+> > + *
+> > + * NOTIFY_DONE returned if one of the following conditions is true.
+> > + * i) When the causative address is from user-space and the exception
+> > + * is a valid one i.e. not triggered a result of lazy debug register
+> --------------------^----^  missing ',' characters
+> ---------------------------------------^ missing "as"
 > 
-> But line 2045 is on a code comment.
+> > + * switching
+> > + * ii) When there are more bits than trap<n> set in DR6 register (such
+> > + * as BD, BS or BT) indicating that more than one debug condition is
+> > + * met and requires some more action in do_debug().
+> > + *
+> > + * NOTIFY_STOP returned for all other cases
+> > + *
+> >   */
+> >  int __kprobes hw_breakpoint_handler(struct die_args *args)
+> >  {
+> > @@ -346,8 +359,10 @@ int __kprobes hw_breakpoint_handler(stru
+> >  		 * or due to the delay between updates of hbp_kernel_pos
+> >  		 * and this_hbp_kernel.
+> >  		 */
+> > -		if (!bp)
+> > +		if (!bp) {
+> > +			rc = NOTIFY_STOP;
+> >  			continue;
+> > +		}
+> >  
+> >  		(bp->triggered)(bp, args->regs);
 > 
-> if I now do a git-log v2.6.30-rc3..HEAD I have the following patches:
-> pick 42dad76 block: simplify I/O stat accounting
-> pick af498d7 block: fix the bio_vec array index out-of-bounds test
-> pick d616ee5 block: clear req->errors on bio completion only for fs requests
-> pick 268ea3d block: merge blk_invoke_request_fn() into __blk_run_queue()
-> pick d097b7d block: kill blk_start_queueing()
-> pick 3099167 block: don't set REQ_NOMERGE unnecessarily
-> pick 4095018 block: cleanup REQ_SOFTBARRIER usages
-> pick 17fc349 block: reorder request completion functions
-> pick 6e6732a block: reorganize request fetching functions
-> pick ca219b4 block: kill blk_end_request_callback()
-> pick ea1e706 block: clean up request completion API
-> pick 70a8607 block: move rq->start_time initialization to blk_rq_init()
-> pick fa6e42b block: implement and use [__]blk_end_request_all()
-> pick 861af79 block: kill rq->data
-> pick 6abeea3 block: make blk_do_io_stat() do the full "is this rq accountable" checks
-> pick 2f94129 block: catch trying to use more bits than request->cmd_flags has
-> pick 325f440 block: implement blk_rq_pos/[cur_]sectors() and convert obvious ones
-> pick 7168ea4 block: convert to pos and nr_sectors accessors
-> pick 209e1e4 block: drop request->hard_* and *nr_sectors
-> pick 80d23d0 block: hide request sector and data_len
-> pick 563e977 block: implement and enforce request peek/start/fetch
-> pick 6cd0982 block: move completion related functions back to blk-core.c
-> pick 3978c4e block: set rq->resid_len to blk_rq_bytes() on issue
-> pick 01f54fd block: Add blk_make_request(), takes bio, returns a request
-> pick 0d58792 block: add warning to blk_make_request()
+> This is the same mistake as before.  If rc had previously been set to 
+> NOTIFY_DONE then you will unconditionally change it back to 
+> NOTIFY_STOP.  You should make the code do what the comment says, set rc
+> to NOTIFY_DONE when a non-NULL user breakpoint occurs:
 > 
-> How did you resolve the block/for-next and linus/master merge?
+> 		if (i >= hbp_kernel_pos) {
+> 			bp = per_cpu(this_hbp_kernel[i], cpu);
+> 		} else {
+> 			bp = current->thread.hbp[i];
+> 			if (bp)
+> 				rc = NOTIFY_DONE;
+> 		}
+> 		/*
+> 		 * bp can be NULL due to lazy debug register switching
+> 		 * or due to the delay between updates of hbp_kernel_pos
+> 		 * and this_hbp_kernel.
+> 		 */
+> 		if (!bp)
+> 			continue;
+> 
+> 		(bp->triggered)(bp, args->regs);
+> 
+> 
+> The rest of the changes are okay.
+> 
+> Alan Stern
+>
 
-I rebased on to the merge base of scsi-misc.
+Thanks. I am pasting the hw_breakpoint_handler() function completely
+below (as opposed to patch form which may be difficult to follow). Upon
+your consent with the changes, I intend to send a consolidated patchset
+to Ingo (merging the patches over hw_breakpoint.c) for inclusion in -tip
+tree.
 
-If you actually just ask scsi-post-merge-2.6 where this line is, it will
-tell you:
+I have also moved the "(*dr6_p) &= ~(DR_TRAP0 << i)" before the "if (!bp)"
+check.
 
-static void blk_finish_request(struct request *req, int error)
+/*
+ * Handle debug exception notifications.
+ *
+ * Return value is either NOTIFY_STOP or NOTIFY_DONE as explained below.
+ *
+ * NOTIFY_DONE returned if one of the following conditions is true.
+ * i) When the causative address is from user-space and the exception
+ * is a valid one, i.e. not triggered as a result of lazy debug register
+ * switching
+ * ii) When there are more bits than trap<n> set in DR6 register (such
+ * as BD, BS or BT) indicating that more than one debug condition is
+ * met and requires some more action in do_debug().
+ *
+ * NOTIFY_STOP returned for all other cases
+ *
+ */
+int __kprobes hw_breakpoint_handler(struct die_args *args)
 {
-        BUG_ON(blk_queued_rq(req));
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+	int i, cpu, rc = NOTIFY_STOP;
+	struct hw_breakpoint *bp;
+	unsigned long dr7, dr6;
+	unsigned long *dr6_p;
 
-        if (blk_rq_tagged(req))
-                blk_queue_end_tag(req->q, req);
+	/* The DR6 value is pointed by args->err */
+	dr6_p = (unsigned long *)ERR_PTR(args->err);
+	dr6 = *dr6_p;
 
-James
+	/* Do an early return if no trap bits are set in DR6 */
+	if ((dr6 & DR_TRAP_BITS) == 0)
+		return NOTIFY_DONE;
 
+	/* Lazy debug register switching */
+	if (!test_tsk_thread_flag(current, TIF_DEBUG))
+		arch_uninstall_thread_hw_breakpoint();
 
+	get_debugreg(dr7, 7);
+	/* Disable breakpoints during exception handling */
+	set_debugreg(0UL, 7);
+	/*
+	 * Assert that local interrupts are disabled
+	 * Reset the DRn bits in the virtualized register value.
+	 * The ptrace trigger routine will add in whatever is needed.
+	 */
+	current->thread.debugreg6 &= ~DR_TRAP_BITS;
+	cpu = get_cpu();
+
+	/* Handle all the breakpoints that were triggered */
+	for (i = 0; i < HBP_NUM; ++i) {
+		if (likely(!(dr6 & (DR_TRAP0 << i))))
+			continue;
+		/*
+		 * Find the corresponding hw_breakpoint structure and
+		 * invoke its triggered callback.
+		 */
+		if (i >= hbp_kernel_pos)
+			bp = per_cpu(this_hbp_kernel[i], cpu);
+		else {
+			bp = current->thread.hbp[i];
+			if (bp)
+				rc = NOTIFY_DONE;
+		}
+
+		/*
+		 * Reset the 'i'th TRAP bit in dr6 to denote completion of
+		 * exception handling
+		 */
+		(*dr6_p) &= ~(DR_TRAP0 << i);
+		/*
+		 * bp can be NULL due to lazy debug register switching
+		 * or due to the delay between updates of hbp_kernel_pos
+		 * and this_hbp_kernel.
+		 */
+		if (!bp)
+			continue;
+
+		(bp->triggered)(bp, args->regs);
+	}
+	if (dr6 & (~DR_TRAP_BITS))
+		rc = NOTIFY_DONE;
+
+	set_debugreg(dr7, 7);
+	put_cpu_no_resched();
+	return rc;
+}
+
+Thanks,
+K.Prasad
