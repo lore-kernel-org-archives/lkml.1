@@ -1,117 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758964AbZETSdo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759103AbZETSfb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758964AbZETSdo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 14:33:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756905AbZETS0E
+	id S1759103AbZETSfb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 14:35:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755700AbZETSfT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 14:26:04 -0400
-Received: from e39.co.us.ibm.com ([32.97.110.160]:58025 "EHLO
-	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756791AbZETSZp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 14:25:45 -0400
-Subject: [RFC v2][PATCH 33/35] asm-generic/ptemap.h for HIGHPTE implementations
-To: linux-arch@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Dave Hansen <dave@linux.vnet.ibm.com>
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-Date: Wed, 20 May 2009 11:25:37 -0700
-References: <20090520182445.D7B49A7C@kernel>
-In-Reply-To: <20090520182445.D7B49A7C@kernel>
-Message-Id: <20090520182537.AB63BEB5@kernel>
+	Wed, 20 May 2009 14:35:19 -0400
+Received: from hera.kernel.org ([140.211.167.34]:51808 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756026AbZETSfS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 14:35:18 -0400
+Message-ID: <4A144D24.8090607@kernel.org>
+Date: Wed, 20 May 2009 11:34:12 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [PATCH, v2] x86: don't allocate dummy page for wrong madt/mptable
+References: <4A1393CD.7080604@kernel.org> <4A13B50C.5080201@sun.com>
+In-Reply-To: <4A13B50C.5080201@sun.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-x86 and frv have identical CONFIG_HIGHPTE implementations
-of the pte mapping functions.  Consolidate and move these
-to asm-generic/ptemap.h.
+in io_apic_init_mapping, if nr_ioapics > 0, we don't need to check
+smp_found_config further.
 
-Signed-off-by: Dave Hansen <dave@linux.vnet.ibm.com>
+also don't need to allocate dummy pages if we got wrong mptable/madt.
+like bad ioapic address. because skip_ioapic_setup already guard that
+later.
+
+[ Impact: save 4k when bad mptable/madt or skip_ioapic_setup ]
+
+Sign-off-by: Yinghai Lu <yinghai@kernel.org>
 ---
+ arch/x86/kernel/apic/io_apic.c |   48 +++++++++++++++++++++--------------------
+ 1 file changed, 25 insertions(+), 23 deletions(-)
 
- linux-2.6.git-dave/arch/frv/include/asm/ptemap.h  |   14 --------------
- linux-2.6.git-dave/arch/x86/include/asm/ptemap.h  |   19 -------------------
- linux-2.6.git-dave/include/asm-generic/ptemap.h   |   20 ++++++++++++++++++++
- linux-2.6.git-dave/orphan.dir/ptemap-overview.txt |   12 ++++++++++++
- 4 files changed, 32 insertions(+), 33 deletions(-)
-
-diff -puN arch/frv/include/asm/ptemap.h~asm-generic-ptemap-h-highpte arch/frv/include/asm/ptemap.h
---- linux-2.6.git/arch/frv/include/asm/ptemap.h~asm-generic-ptemap-h-highpte	2009-05-20 10:58:55.000000000 -0700
-+++ linux-2.6.git-dave/arch/frv/include/asm/ptemap.h	2009-05-20 10:58:55.000000000 -0700
-@@ -1,15 +1 @@
--#ifndef _FRV_ASM_PTEMAP_H
--#define _FRV_ASM_PTEMAP_H
--
--#if defined(CONFIG_HIGHPTE)
--#define pte_offset_map(dir, address) \
--	((pte_t *)kmap_atomic(pmd_page(*(dir)),KM_PTE0) + pte_index(address))
--#define pte_offset_map_nested(dir, address) \
--	((pte_t *)kmap_atomic(pmd_page(*(dir)),KM_PTE1) + pte_index(address))
--#define pte_unmap(pte) kunmap_atomic(pte, KM_PTE0)
--#define pte_unmap_nested(pte) kunmap_atomic((pte), KM_PTE1)
--#else
- #include <asm-generic/ptemap.h>
--#endif
--
--#endif /* _FRV_ASM_PTEMAP_H */
-diff -puN arch/x86/include/asm/ptemap.h~asm-generic-ptemap-h-highpte arch/x86/include/asm/ptemap.h
---- linux-2.6.git/arch/x86/include/asm/ptemap.h~asm-generic-ptemap-h-highpte	2009-05-20 10:58:55.000000000 -0700
-+++ linux-2.6.git-dave/arch/x86/include/asm/ptemap.h	2009-05-20 10:58:55.000000000 -0700
-@@ -1,20 +1 @@
--#ifndef _X86_ASM_PTEMAP_H
--#define _X86_ASM_PTEMAP_H
--
--#if defined(CONFIG_HIGHPTE)
--#define pte_offset_map(dir, address)					\
--	((pte_t *)kmap_atomic_pte(pmd_page(*(dir)), KM_PTE0) +		\
--	 pte_index((address)))
--#define pte_offset_map_nested(dir, address)				\
--	((pte_t *)kmap_atomic_pte(pmd_page(*(dir)), KM_PTE1) +		\
--	 pte_index((address)))
--#define pte_unmap(pte) kunmap_atomic((pte), KM_PTE0)
--#define pte_unmap_nested(pte) kunmap_atomic((pte), KM_PTE1)
--
--#else /* !CONFIG_HIGHPTE */
--
- #include <asm-generic/ptemap.h>
--
--#endif
--
--#endif /* _X86_ASM_PTEMAP_H */
-diff -puN include/asm-generic/ptemap.h~asm-generic-ptemap-h-highpte include/asm-generic/ptemap.h
---- linux-2.6.git/include/asm-generic/ptemap.h~asm-generic-ptemap-h-highpte	2009-05-20 10:58:55.000000000 -0700
-+++ linux-2.6.git-dave/include/asm-generic/ptemap.h	2009-05-20 10:59:13.000000000 -0700
-@@ -5,11 +5,31 @@
-  * If your architecture has direct-mapped pte pages (no HIGHPTE)
-  * then you just need to implement pte_offset_kernel() and include
-  * this in your asm/ptemap.h.
-+ *
-+ * To support HIGHPTE, you need to have implementations of
-+ * kmap_atomic_pte() (which usually just calls kmap_atomic()),
-+ * pmd_page() and pmd_index().
-  */
+Index: linux-2.6/arch/x86/kernel/apic/io_apic.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/apic/io_apic.c
++++ linux-2.6/arch/x86/kernel/apic/io_apic.c
+@@ -1887,7 +1887,9 @@ __apicdebuginit(int) print_all_ICs(void)
+ 		return 0;
  
-+#include <linux/mm.h>
+ 	print_all_local_APICs();
+-	print_IO_APIC();
 +
-+#ifdef CONFIG_HIGHPTE
-+
-+#include <asm/highmem.h>
-+#define pte_offset_map(dir, address) \
-+	((pte_t *)kmap_atomic_pte(pmd_page(*(dir)),KM_PTE0) + pte_index(address))
-+#define pte_offset_map_nested(dir, address) \
-+	((pte_t *)kmap_atomic_pte(pmd_page(*(dir)),KM_PTE1) + pte_index(address))
-+#define pte_unmap(pte) kunmap_atomic(pte, KM_PTE0)
-+#define pte_unmap_nested(pte) kunmap_atomic((pte), KM_PTE1)
-+
-+#else /* !CONFIG_HIGHPTE */
-+
- #define pte_offset_map(dir,addr)	pte_offset_kernel((dir),(addr))
- #define pte_offset_map_nested(dir,addr)	pte_offset_kernel((dir),(addr))
- #define pte_unmap(pte)			do { } while (0)
- #define pte_unmap_nested(pte)		do { } while (0)
++	if (!skip_ioapic_setup && nr_ioapics)
++		print_IO_APIC();
  
-+#endif /* CONFIG_HIGHPTE */
+ 	return 0;
+ }
+@@ -3828,6 +3830,9 @@ void __init probe_nr_irqs_gsi(void)
+ {
+ 	int nr = 0;
+ 
++	if (skip_ioapic_setup)
++		return;
 +
- #endif /* _ASM_GENERIC_PTEMAP_H */
-diff -puN orphan.dir/ptemap-overview.txt~asm-generic-ptemap-h-highpte orphan.dir/ptemap-overview.txt
+ 	nr = acpi_probe_gsi();
+ 	if (nr > nr_irqs_gsi) {
+ 		nr_irqs_gsi = nr;
+@@ -4139,29 +4144,26 @@ void __init ioapic_init_mappings(void)
+ 	struct resource *ioapic_res;
+ 	int i;
+ 
+-	ioapic_res = ioapic_setup_resources();
++	if (nr_ioapics < 1 || skip_ioapic_setup)
++		return;
++
+ 	for (i = 0; i < nr_ioapics; i++) {
+-		if (smp_found_config) {
+-			ioapic_phys = mp_ioapics[i].apicaddr;
+-#ifdef CONFIG_X86_32
+-			if (!ioapic_phys) {
+-				printk(KERN_ERR
+-				       "WARNING: bogus zero IO-APIC "
+-				       "address found in MPTABLE, "
+-				       "disabling IO/APIC support!\n");
+-				smp_found_config = 0;
+-				skip_ioapic_setup = 1;
+-				goto fake_ioapic_page;
+-			}
+-#endif
+-		} else {
+-#ifdef CONFIG_X86_32
+-fake_ioapic_page:
+-#endif
+-			ioapic_phys = (unsigned long)
+-				alloc_bootmem_pages(PAGE_SIZE);
+-			ioapic_phys = __pa(ioapic_phys);
++		ioapic_phys = mp_ioapics[i].apicaddr;
++		if (!ioapic_phys) {
++			printk(KERN_ERR
++			       "WARNING: bogus zero IO-APIC "
++			       "address found in MPTABLE or MADT, "
++			       "disabling IO/APIC support!\n");
++			smp_found_config = 0;
++			skip_ioapic_setup = 1;
++			return;
+ 		}
++	}
++
++	ioapic_res = ioapic_setup_resources();
++	for (i = 0; i < nr_ioapics; i++) {
++		ioapic_phys = mp_ioapics[i].apicaddr;
++
+ 		set_fixmap_nocache(idx, ioapic_phys);
+ 		apic_printk(APIC_VERBOSE,
+ 			    "mapped IOAPIC to %08lx (%08lx)\n",
+@@ -4182,7 +4184,7 @@ static int __init ioapic_insert_resource
+ 	struct resource *r = ioapic_resources;
+ 
+ 	if (!r) {
+-		if (nr_ioapics > 0) {
++		if (nr_ioapics > 0 && !skip_ioapic_setup) {
+ 			printk(KERN_ERR
+ 				"IO APIC resources couldn't be allocated.\n");
+ 			return -1;
