@@ -1,196 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755978AbZETQpX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754653AbZETQto@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755978AbZETQpX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 12:45:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753897AbZETQpM
+	id S1754653AbZETQto (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 12:49:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753935AbZETQtg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 12:45:12 -0400
-Received: from e28smtp05.in.ibm.com ([59.145.155.5]:53698 "EHLO
-	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753526AbZETQpL (ORCPT
+	Wed, 20 May 2009 12:49:36 -0400
+Received: from rcsinet11.oracle.com ([148.87.113.123]:49559 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753897AbZETQtf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 12:45:11 -0400
-Date: Wed, 20 May 2009 22:15:05 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [Patch 1/2] Improvements and minor fixes to HW Breakpoint
-	interface
-Message-ID: <20090520164505.GA7646@in.ibm.com>
-Reply-To: prasad@linux.vnet.ibm.com
-References: <20090520105535.GA17181@in.ibm.com> <Pine.LNX.4.44L0.0905200951030.2914-100000@iolanthe.rowland.org>
+	Wed, 20 May 2009 12:49:35 -0400
+Message-ID: <4A14352C.5020508@oracle.com>
+Date: Wed, 20 May 2009 09:51:56 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0905200951030.2914-100000@iolanthe.rowland.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Borislav Petkov <borislav.petkov@amd.com>
+CC: Randy Dunlap <randy.dunlap@oracle.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, dougthompson@xmission.com
+Subject: Re: linux-next: Tree for May 20 (amd64_edac)
+References: <20090520170807.b75a9d86.sfr@canb.auug.org.au> <4A142CC9.4050904@oracle.com> <20090520164112.GA29913@aftab>
+In-Reply-To: <20090520164112.GA29913@aftab>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Source-IP: abhmt003.oracle.com [141.146.116.12]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010203.4A14349A.0097:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 20, 2009 at 10:04:09AM -0400, Alan Stern wrote:
-> On Wed, 20 May 2009, K.Prasad wrote:
+Borislav Petkov wrote:
+> Hi,
 > 
-> > --- linux-2.6-tip.hbkpt.orig/arch/x86/kernel/hw_breakpoint.c
-> > +++ linux-2.6-tip.hbkpt/arch/x86/kernel/hw_breakpoint.c
-> > @@ -296,6 +296,19 @@ void arch_flush_thread_hw_breakpoint(str
-> >  
-> >  /*
-> >   * Handle debug exception notifications.
-> > + *
-> > + * Return value is either NOTIFY_STOP or NOTIFY_DONE as explained below.
-> > + *
-> > + * NOTIFY_DONE returned if one of the following conditions is true.
-> > + * i) When the causative address is from user-space and the exception
-> > + * is a valid one i.e. not triggered a result of lazy debug register
-> --------------------^----^  missing ',' characters
-> ---------------------------------------^ missing "as"
+> On Wed, May 20, 2009 at 09:16:09AM -0700, Randy Dunlap wrote:
+>> Stephen Rothwell wrote:
+>>> Hi all,
+>>>
+>>> Changes since 20090519:
+>>>
+>>> Undropped tree:
+>>> 	edac-amd
+>>>
+>>> The edac-amd tree lost its build failure.
+>>
+>> When K8_NB is not enabled:
+>>
+>> drivers/built-in.o: In function `amd64_edac_init':
+>> amd64_edac.c:(.init.text+0x254f6): undefined reference to `cache_k8_northbridges'
+>> amd64_edac.c:(.init.text+0x25c38): undefined reference to `num_k8_northbridges'
 > 
-> > + * switching
-> > + * ii) When there are more bits than trap<n> set in DR6 register (such
-> > + * as BD, BS or BT) indicating that more than one debug condition is
-> > + * met and requires some more action in do_debug().
-> > + *
-> > + * NOTIFY_STOP returned for all other cases
-> > + *
-> >   */
-> >  int __kprobes hw_breakpoint_handler(struct die_args *args)
-> >  {
-> > @@ -346,8 +359,10 @@ int __kprobes hw_breakpoint_handler(stru
-> >  		 * or due to the delay between updates of hbp_kernel_pos
-> >  		 * and this_hbp_kernel.
-> >  		 */
-> > -		if (!bp)
-> > +		if (!bp) {
-> > +			rc = NOTIFY_STOP;
-> >  			continue;
-> > +		}
-> >  
-> >  		(bp->triggered)(bp, args->regs);
+> ah, well, one dependency goes another one comes in :(. Thanks, will fix...
 > 
-> This is the same mistake as before.  If rc had previously been set to 
-> NOTIFY_DONE then you will unconditionally change it back to 
-> NOTIFY_STOP.  You should make the code do what the comment says, set rc
-> to NOTIFY_DONE when a non-NULL user breakpoint occurs:
+>> Error with EDAC_AMD64 =y or =m.
+>> Error on both i386 and on x86_64.
+>>
+>>
+>> Comments on Kconfig for EDAC_AMD64:
+>>
+>> config EDAC_AMD64
+>> 	tristate "AMD64 (Opteron, Athlon64) K8, F10h, F11h"
+>> 	depends on EDAC_MM_EDAC && X86 && PCI
+>> 	default m
+>> 	help
+>> 	Support for error detection and correction on the AMD 64
+>> 	Families of Memory Controllers (K8, F10h and F11h)
+>>
+>>
+>> Does this actually apply to X86_32 or should the depends be on
+>> X86_64 instead of X86?
 > 
-> 		if (i >= hbp_kernel_pos) {
-> 			bp = per_cpu(this_hbp_kernel[i], cpu);
-> 		} else {
-> 			bp = current->thread.hbp[i];
-> 			if (bp)
-> 				rc = NOTIFY_DONE;
-> 		}
-> 		/*
-> 		 * bp can be NULL due to lazy debug register switching
-> 		 * or due to the delay between updates of hbp_kernel_pos
-> 		 * and this_hbp_kernel.
-> 		 */
-> 		if (!bp)
-> 			continue;
+> and since K8_NB depends on X86_64, this answers that question :).
+
+Yes.
+
+>> The default y on EDAC_MM_EDAC and default m on EDAC_AMD64 should
+>> be removed.
 > 
-> 		(bp->triggered)(bp, args->regs);
+> The reasoning behind those comes from Ingo: people who enable EDAC
+> should get the modules automatically on instead of going through the
+> different entries in the subtree. Which sounds kind of reasonable, no?
 > 
+> See
 > 
-> The rest of the changes are okay.
+> http://marc.info/?l=linux-kernel&m=124173363813847
 > 
-> Alan Stern
->
+> for details.
 
-Thanks. I am pasting the hw_breakpoint_handler() function completely
-below (as opposed to patch form which may be difficult to follow). Upon
-your consent with the changes, I intend to send a consolidated patchset
-to Ingo (merging the patches over hw_breakpoint.c) for inclusion in -tip
-tree.
+Distros don't use defaults or defconfig anyway, and having them
+enabled bloats kernels.  I'm sure that Linus has also expressed
+opinions about enabling options in this way, but I can't find it
+just now.
 
-I have also moved the "(*dr6_p) &= ~(DR_TRAP0 << i)" before the "if (!bp)"
-check.
-
-/*
- * Handle debug exception notifications.
- *
- * Return value is either NOTIFY_STOP or NOTIFY_DONE as explained below.
- *
- * NOTIFY_DONE returned if one of the following conditions is true.
- * i) When the causative address is from user-space and the exception
- * is a valid one, i.e. not triggered as a result of lazy debug register
- * switching
- * ii) When there are more bits than trap<n> set in DR6 register (such
- * as BD, BS or BT) indicating that more than one debug condition is
- * met and requires some more action in do_debug().
- *
- * NOTIFY_STOP returned for all other cases
- *
- */
-int __kprobes hw_breakpoint_handler(struct die_args *args)
-{
-	int i, cpu, rc = NOTIFY_STOP;
-	struct hw_breakpoint *bp;
-	unsigned long dr7, dr6;
-	unsigned long *dr6_p;
-
-	/* The DR6 value is pointed by args->err */
-	dr6_p = (unsigned long *)ERR_PTR(args->err);
-	dr6 = *dr6_p;
-
-	/* Do an early return if no trap bits are set in DR6 */
-	if ((dr6 & DR_TRAP_BITS) == 0)
-		return NOTIFY_DONE;
-
-	/* Lazy debug register switching */
-	if (!test_tsk_thread_flag(current, TIF_DEBUG))
-		arch_uninstall_thread_hw_breakpoint();
-
-	get_debugreg(dr7, 7);
-	/* Disable breakpoints during exception handling */
-	set_debugreg(0UL, 7);
-	/*
-	 * Assert that local interrupts are disabled
-	 * Reset the DRn bits in the virtualized register value.
-	 * The ptrace trigger routine will add in whatever is needed.
-	 */
-	current->thread.debugreg6 &= ~DR_TRAP_BITS;
-	cpu = get_cpu();
-
-	/* Handle all the breakpoints that were triggered */
-	for (i = 0; i < HBP_NUM; ++i) {
-		if (likely(!(dr6 & (DR_TRAP0 << i))))
-			continue;
-		/*
-		 * Find the corresponding hw_breakpoint structure and
-		 * invoke its triggered callback.
-		 */
-		if (i >= hbp_kernel_pos)
-			bp = per_cpu(this_hbp_kernel[i], cpu);
-		else {
-			bp = current->thread.hbp[i];
-			if (bp)
-				rc = NOTIFY_DONE;
-		}
-
-		/*
-		 * Reset the 'i'th TRAP bit in dr6 to denote completion of
-		 * exception handling
-		 */
-		(*dr6_p) &= ~(DR_TRAP0 << i);
-		/*
-		 * bp can be NULL due to lazy debug register switching
-		 * or due to the delay between updates of hbp_kernel_pos
-		 * and this_hbp_kernel.
-		 */
-		if (!bp)
-			continue;
-
-		(bp->triggered)(bp, args->regs);
-	}
-	if (dr6 & (~DR_TRAP_BITS))
-		rc = NOTIFY_DONE;
-
-	set_debugreg(dr7, 7);
-	put_cpu_no_resched();
-	return rc;
-}
-
-Thanks,
-K.Prasad
+-- 
+~Randy
+LPC 2009, Sept. 23-25, Portland, Oregon
+http://linuxplumbersconf.org/2009/
