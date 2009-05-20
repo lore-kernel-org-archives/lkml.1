@@ -1,93 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756901AbZETR0R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756161AbZETRf0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756901AbZETR0R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 13:26:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754944AbZETR0H
+	id S1756161AbZETRf0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 13:35:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754209AbZETRfR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 13:26:07 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:52106 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754764AbZETR0F (ORCPT
+	Wed, 20 May 2009 13:35:17 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:18341 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753825AbZETRfQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 13:26:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=aNbc5juitsT9zGZAoMNYfwkxRlPKlZUnEHT229Y9wgeBf9R+K0OVdJGXWc+wCxLu3a
-         lQz/vs+9WXG0nrBstf0Es3Hnm8Ji4nZuMgyrV9E4ZYeYdaIyPV32WVSgvQpK5njoax+L
-         fehuzUKXqVhxmpJLVp0YH2wmd98wsrVhozWIk=
-Date: Wed, 20 May 2009 19:26:01 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Ming Lei <tom.leiming@gmail.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Li Zefan <lizf@cn.fujitsu.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] ftrace: fix check for return value of
-	register_module_notifier in event_trace_init
-Message-ID: <20090520172559.GA5973@nowhere>
+	Wed, 20 May 2009 13:35:16 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=from:subject:to:cc:date:message-id:user-agent:
+	mime-version:content-type:content-transfer-encoding:x-system-of-record;
+	b=vp59ozEL6rcVfjxea0c6baCcD9ApPdjQF99LsGuVFQGxe2IMYxovuygUtO5FcEVR8
+	Ll6zxwN+Vm1w0VCD0O6yQ==
+From: Paul Menage <menage@google.com>
+Subject: [PATCH] cls_cgroup: read classid atomically in classifier
+To: lizf@cn.fujitsu.com, akpm@linux-foundation.org, davem@davemloft.net,
+       tgraf@suug.ch
+Cc: linux-kernel@vger.kernel.org
+Date: Wed, 20 May 2009 10:34:26 -0700
+Message-ID: <20090520173426.15291.93021.stgit@menage.mtv.corp.google.com>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
+cls_cgroup: read classid atomically in classifier
 
-Here is a fixlet from Ming Lei which fixes a spurious warning.
+Avoid reading the unsynchronized value cs->classid multiple times,
+since it could change concurrently from non-zero to zero; this would
+result in the classifier returning a positive result with a bogus
+(zero) classid.
 
-Thanks.
+Signed-off-by: Paul Menage <menage@google.com>
 
-
-The following changes since commit fd51d251e4cdb21f68e9dbc4336514d64a105a79:
-  Stefan Raspl (1):
-        blktrace: remove debugfs entries on bad path
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git
-	tracing/core
-
-Ming Lei (1):
-      ftrace: fix check for return value of register_module_notifier in event_trace_init
-
- kernel/trace/trace_events.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
 ---
->From 5537937696c55530447c20aa27daccb8d0d29b33 Mon Sep 17 00:00:00 2001
-From: Ming Lei <tom.leiming@gmail.com>
-Date: Mon, 18 May 2009 23:04:46 +0800
-Subject: [PATCH] ftrace: fix check for return value of register_module_notifier in event_trace_init
 
-register_module_notifier() returns zero in the success case.
-So fix the inverted fail case check in trace events modules
-handler.
+ net/sched/cls_cgroup.c |   22 +++++++++++-----------
+ 1 files changed, 11 insertions(+), 11 deletions(-)
 
-[ Impact: fix spurious warning on ftrace initialization]
-
-Reported-by: Li Zefan <lizf@cn.fujitsu.com>
-Signed-off-by: Ming Lei <tom.leiming@gmail.com>
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
----
- kernel/trace/trace_events.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
-index 0eec0c5..9e91c4a 100644
---- a/kernel/trace/trace_events.c
-+++ b/kernel/trace/trace_events.c
-@@ -1174,7 +1174,7 @@ static __init int event_trace_init(void)
- 	}
+diff --git a/net/sched/cls_cgroup.c b/net/sched/cls_cgroup.c
+index 1ab4542..4ece6e0 100644
+--- a/net/sched/cls_cgroup.c
++++ b/net/sched/cls_cgroup.c
+@@ -98,8 +98,7 @@ static int cls_cgroup_classify(struct sk_buff *skb, struct tcf_proto *tp,
+ 			       struct tcf_result *res)
+ {
+ 	struct cls_cgroup_head *head = tp->root;
+-	struct cgroup_cls_state *cs;
+-	int ret = 0;
++        u32 classid;
  
- 	ret = register_module_notifier(&trace_module_nb);
--	if (!ret)
-+	if (ret)
- 		pr_warning("Failed to register trace events module notifier\n");
+ 	/*
+ 	 * Due to the nature of the classifier it is required to ignore all
+@@ -115,17 +114,18 @@ static int cls_cgroup_classify(struct sk_buff *skb, struct tcf_proto *tp,
+ 		return -1;
  
- 	return 0;
--- 
-1.6.2.3
-
-
+ 	rcu_read_lock();
+-	cs = task_cls_state(current);
+-	if (cs->classid && tcf_em_tree_match(skb, &head->ematches, NULL)) {
+-		res->classid = cs->classid;
+-		res->class = 0;
+-		ret = tcf_exts_exec(skb, &head->exts, res);
+-	} else
+-		ret = -1;
+-
++	classid = task_cls_state(current)->classid;
+ 	rcu_read_unlock();
+ 
+-	return ret;
++	if (!classid)
++		return -1;
++
++	if (!tcf_em_tree_match(skb, &head->ematches, NULL))
++		return -1;
++
++	res->classid = classid;
++	res->class = 0;
++	return tcf_exts_exec(skb, &head->exts, res);
+ }
+ 
+ static unsigned long cls_cgroup_get(struct tcf_proto *tp, u32 handle)
 
