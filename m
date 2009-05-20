@@ -1,87 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755559AbZETIhj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755897AbZETIhy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755559AbZETIhj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 04:37:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753480AbZETIhc
+	id S1755897AbZETIhy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 04:37:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754525AbZETIhr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 04:37:32 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:36127 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751105AbZETIhb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 04:37:31 -0400
-Date: Wed, 20 May 2009 10:37:19 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
-       peterz@infradead.org
-Subject: Re: [PATCH] include KERN_* constant in printk calls
-Message-ID: <20090520083719.GG6736@elte.hu>
-References: <20090518233121.GC3109@chrisubuntu-laptop> <20090519090049.GB9388@elte.hu> <20090520043215.GA3077@chrisubuntu-laptop>
+	Wed, 20 May 2009 04:37:47 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:62216 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754246AbZETIhq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 04:37:46 -0400
+Message-ID: <4A13C19E.3000303@cn.fujitsu.com>
+Date: Wed, 20 May 2009 16:38:54 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090520043215.GA3077@chrisubuntu-laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Christoph Hellwig <hch@infradead.org>
+CC: Jeff Moyer <jmoyer@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Tom Zanussi <tzanussi@gmail.com>, "Theodore Ts'o" <tytso@mit.edu>,
+       Steven Whitehouse <swhiteho@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC][PATCH] convert block trace points to TRACE_EVENT()
+References: <4A0BB813.9080807@cn.fujitsu.com> <x49ws8d45am.fsf@segfault.boston.devel.redhat.com> <20090519130841.GA3801@infradead.org>
+In-Reply-To: <20090519130841.GA3801@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Chris Sanford <crsanford@gmail.com> wrote:
-
-> On Tue, May 19 09 11:00, Ingo Molnar wrote:
-> > 
-> > * Chris Sanford <crsanford@gmail.com> wrote:
-> > 
-> > > Add the KERN_CONT constant to two printk calls.
-> > > 
-> > > Signed-off-by: Chris Sanford <crsanford@gmail.com>
-> > > 
-> > > ---
-> > > 
-> > > 
-> > > diff --git a/kernel/sched.c b/kernel/sched.c
-> > > index 26efa47..6a2ed16 100644
-> > > --- a/kernel/sched.c
-> > > +++ b/kernel/sched.c
-> > > @@ -7319,7 +7319,7 @@ static int sched_domain_debug_one(struct sched_domain *sd, int cpu, int level,
-> > >  	printk(KERN_DEBUG "%*s domain %d: ", level, "", level);
-> > >  
-> > >  	if (!(sd->flags & SD_LOAD_BALANCE)) {
-> > > -		printk("does not load-balance\n");
-> > > +		printk(KERN_CONT "does not load-balance\n");
-> > >  		if (sd->parent)
-> > >  			printk(KERN_ERR "ERROR: !SD_LOAD_BALANCE domain"
-> > >  					" has parent");
-> > > @@ -7340,7 +7340,7 @@ static int sched_domain_debug_one(struct sched_domain *sd, int cpu, int level,
-> > >  	printk(KERN_DEBUG "%*s groups:", level + 1, "");
-> > >  	do {
-> > >  		if (!group) {
-> > > -			printk("\n");
-> > > +			printk(KERN_CONT "\n");
-> > >  			printk(KERN_ERR "ERROR: group is NULL\n");
-> > >  			break;
-> > 
-> > Please use pr_cont() - and while at it, perhaps convert all other 
-> > printk()s in sched.c from KERN_* to the pr_*() notation as well?
-> > 
-> > Thanks,
-> > 
-> > 	Ingo
-> > --
+Christoph Hellwig wrote:
+> On Tue, May 19, 2009 at 08:59:29AM -0400, Jeff Moyer wrote:
+>> I'm not sure I'm comfortable with this.  Having had to diagnose
+>> performance problems using blktrace, I find the dev_t information for
+>> plugs and unplugs especially interesting.  Maybe we can still figure
+>> this out given the context in the trace, though.  Can you comment on
+>> that?
 > 
-> The KERN_DEBUG constant is used 5 times when DEBUG is undefined. 
-> Doing a straight conversion from printk(KERN_DEBUG to pr_debug( 
-> will result in no messages being printed. Should these calls have 
-> a different message type, should DEBUG be defined, or should 
-> something else be done?
+> The problem is that right now we still allow request queues shared by
+> multiple gendisks, so we can't get at the gendisk.  The blktrace ioctl
+> interface gets around that by doing the setup with an ioctl on the
+> block device node and storing the dev_t at that point.
+> 
+> But I don't think we actually have any drivers left sharing a queue
+> that way, and I'd love to get rid of that for various reasons.
+> 
 
-good point - i think it's fine to change it to pr_info().
+It will be great if this can be done.
 
-	Ingo
+>> from the single letter output to the verbose strings?  Am I just being a
+>> curmudgeon?
+>>
+>> I have one further question, which will expose my ignorance on this
+>> implementation.  Would the proposed patch change the information
+>> available to the blktrace utility,
+> 
+> That's the output from /sys/kernel/debug/tracing/trace when the
+> block events are enabled.  The blktrace utility should continue to
+> work without changes, although it could be ported to use the ftrace
+> binary ring buffer directly in the future.
+> 
+
+Yes, this patch doesn't affect ioctl-based blktrace or ftrace-plugin
+blktrace at all.
+
+To use blktracer:
+  # echo 1 > /sys/block/sda/trace/enable
+  # echo blk > /debug/tracing/current_tracer
+  # cat /debug/tracing/trace_pipe
+
+To use block trace events:
+  # echo 'block:*' > /debug/tracing/set_event
+  # cat /trace_pipe
+
+You can mixed-use blktracer and trace events, to see how they differ
+in the output.
