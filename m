@@ -1,75 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755283AbZETI21@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754210AbZETIeR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755283AbZETI21 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 04:28:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753063AbZETI2T
+	id S1754210AbZETIeR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 04:34:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752220AbZETIeG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 04:28:19 -0400
-Received: from yw-out-2324.google.com ([74.125.46.28]:24286 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752319AbZETI2S convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 04:28:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=c/vmBL6jU3t5NhVtAoAUI4mpcaRpswLdOjkRZsd5Ti9hvKLmdUkXZy5XbF6yQtFCrs
-         +WLQWSOp+smOdE9e8nTTbFpkN+zDg/908/EpDUIMVPRfHFOjobs1nZbAG7r67mGjsPGg
-         BNltLkoiXdCC0UrKsD3xh1HK8xNxpl1W9wQGk=
+	Wed, 20 May 2009 04:34:06 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:49532 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752028AbZETIeF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 04:34:05 -0400
+Date: Wed, 20 May 2009 10:33:50 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Cliff Wickman <cpw@sgi.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] x86: UV BAU activation descriptor init
+Message-ID: <20090520083350.GE6736@elte.hu>
+References: <E1M6YCG-0002eM-1Z@eag09.americas.sgi.com>
 MIME-Version: 1.0
-In-Reply-To: <4A13BCE1.7050209@kernel.org>
-References: <1242805059-18338-1-git-send-email-tj@kernel.org>
-	 <1242805059-18338-3-git-send-email-tj@kernel.org>
-	 <8bd0f97a0905200059pea3469do9e9b1a7644517558@mail.gmail.com>
-	 <4A13B9EA.4030801@kernel.org> <4A13BCE1.7050209@kernel.org>
-Date: Wed, 20 May 2009 04:28:18 -0400
-Message-ID: <8bd0f97a0905200128k1f88276buc1738af4b4332f1e@mail.gmail.com>
-Subject: Re: [PATCH 2/7] linker script: throw away .discard section
-From: Mike Frysinger <vapier.adi@gmail.com>
-To: Tejun Heo <tj@kernel.org>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, x86@kernel.org,
-       ink@jurassic.park.msu.ru, rth@twiddle.net, linux@arm.linux.org.uk,
-       hskinnemoen@atmel.com, cooloney@kernel.org, starvik@axis.com,
-       jesper.nilsson@axis.com, dhowells@redhat.com,
-       ysato@users.sourceforge.jp, tony.luck@intel.com, takata@linux-m32r.org,
-       geert@linux-m68k.org, monstr@monstr.eu, ralf@linux-mips.org,
-       kyle@mcmartin.ca, benh@kernel.crashing.org, paulus@samba.org,
-       schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com, lethal@linux-sh.org,
-       davem@davemloft.net, jdike@addtoit.com, chris@zankel.net,
-       rusty@rustcorp.com.au
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1M6YCG-0002eM-1Z@eag09.americas.sgi.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 20, 2009 at 04:18, Tejun Heo wrote:
-> Tejun Heo wrote:
->> Mike Frysinger wrote:
->>> On Wed, May 20, 2009 at 03:37, Tejun Heo wrote:
->>>> x86 throws away .discard section but no other archs do.  Also,
->>>> .discard is not thrown away while linking modules.  Make every arch
->>>> and module linking throw it away.  This will be used to define dummy
->>>> variables for percpu declarations and definitions.
->>> seems like a good time to introduce a common DISCARD define to
->>> include/asm-generic/vmlinux.lds.h.  considering multiple /DISCARD/
->>> entries are allowed in a linker script, the define should be pretty
->>> straightforward:
->>> #define DISCARDS \
->>>     /DISCARD/ : { \
->>>         EXIT_TEXT \
->>>         EXIT_DATA \
->>>         *(.exitcall.exit) \
->>>         *(.discard) \
->>>     }
->>
->> Hmmm... indeed, that would be nice.  I'll update the patch.
->
-> Eh... handling of EXIT_TEXT and DATA aren't uniform across archs.  I
-> think I'll leave the /DISCARD/ unification for the next time.
 
-right, i think that's a bug where people simply forgot to declare
-them.  if you stick DISCARDS at the end (and only replace when an arch
-already has it at the end), there should be no change in behavior.
--mike
+* Cliff Wickman <cpw@sgi.com> wrote:
+
+> From: Cliff Wickman <cpw@sgi.com>
+> 
+> The UV tlb shootdown code has a serious initialization error.
+> 
+> An array of structures [32*8] is initialized as if it were [32].
+> The array is indexed by (cpu number on the blade)*8, so the short
+> initialization works for up to 4 cpus on a blade.
+> But above that, we provide an invalid opcode to the hub's
+> broadcast assist unit.
+> 
+> This patch changes the allocation of the array to use its symbolic
+> dimensions for better clarity. And initializes all 32*8 entries.
+> 
+> Tested on the UV simulator.
+> 
+> Diffed against 2.6.30-rc6
+> 
+> Signed-off-by: Cliff Wickman <cpw@sgi.com>
+> 
+> ---
+>  arch/x86/kernel/tlb_uv.c |   18 ++++++++++++++++--
+>  1 file changed, 16 insertions(+), 2 deletions(-)
+> 
+> Index: linux/arch/x86/kernel/tlb_uv.c
+> ===================================================================
+> --- linux.orig/arch/x86/kernel/tlb_uv.c
+> +++ linux/arch/x86/kernel/tlb_uv.c
+> @@ -715,7 +715,14 @@ uv_activation_descriptor_init(int node, 
+>  	struct bau_desc *adp;
+>  	struct bau_desc *ad2;
+>  
+> -	adp = (struct bau_desc *)kmalloc_node(16384, GFP_KERNEL, node);
+> +	/*
+> +	 * each bau_desc is 64 bytes; there are 8 (UV_ITEMS_PER_DESCRIPTOR)
+> +	 * per cpu; and up to 32 (UV_ACTIVATION_DESCRIPTOR_SIZE) cpu's
+> +	 * per blade
+> +	 */
+> +	adp = (struct bau_desc *)kmalloc_node(sizeof(struct bau_desc)*
+> +		UV_ACTIVATION_DESCRIPTOR_SIZE*UV_ITEMS_PER_DESCRIPTOR,
+> +		GFP_KERNEL, node);
+>  	BUG_ON(!adp);
+>  
+>  	pa = uv_gpa(adp); /* need the real nasid*/
+> @@ -729,7 +736,14 @@ uv_activation_descriptor_init(int node, 
+>  				      (n << UV_DESC_BASE_PNODE_SHIFT | m));
+>  	}
+>  
+> -	for (i = 0, ad2 = adp; i < UV_ACTIVATION_DESCRIPTOR_SIZE; i++, ad2++) {
+> +	/*
+> +	 * initializing all 8 (UV_ITEMS_PER_DESCRIPTOR) descriptors for each
+> +	 * cpu even though we only use the first one; one descriptor can
+> +	 * describe a broadcast to 256 nodes.
+> +	 */
+> +	for (i = 0, ad2 = adp;
+> +		i < (UV_ACTIVATION_DESCRIPTOR_SIZE*UV_ITEMS_PER_DESCRIPTOR);
+> +		i++, ad2++) {
+>  		memset(ad2, 0, sizeof(struct bau_desc));
+>  		ad2->header.sw_ack_flag = 1;
+>  		/*
+
+looks good but could you please define a shortcut for:
+
+	UV_ACTIVATION_DESCRIPTOR_SIZE*UV_ITEMS_PER_DESCRIPTOR
+
+because its length causes a lot of ugly linebreaks. Something like 
+UV_ADP_SIZE should do the trick?
+
+	Ingo
