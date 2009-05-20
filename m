@@ -1,40 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756150AbZETKMe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756393AbZETLwy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756150AbZETKMe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 06:12:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754131AbZETKM0
+	id S1756393AbZETLwy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 07:52:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753935AbZETLwr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 06:12:26 -0400
-Received: from pmx1.sophos.com ([213.31.172.16]:53997 "EHLO pmx1.sophos.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753500AbZETKMZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 06:12:25 -0400
-From: Tvrtko Ursulin <tvrtko.ursulin@sophos.com>
-Organization: Sophos Plc
-To: Marcin Krol <mrkafk@gmail.com>
+	Wed, 20 May 2009 07:52:47 -0400
+Received: from postman.teamix.net ([194.150.191.120]:38249 "EHLO
+	rproxy.teamix.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752811AbZETLwq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 07:52:46 -0400
+X-Greylist: delayed 1829 seconds by postgrey-1.27 at vger.kernel.org; Wed, 20 May 2009 07:52:46 EDT
+From: Martin Steigerwald <ms@teamix.de>
+Organization: team(ix) GmbH
+To: linux-kernel@vger.kernel.org
 Subject: Re: inotify limits - thousands (tens of thousands?) of watches
-Date: Wed, 20 May 2009 11:12:24 +0100
-User-Agent: KMail/1.9.10
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Wed, 20 May 2009 13:22:05 +0200
+User-Agent: KMail/1.9.9
+Cc: Marcin Krol <mrkafk@gmail.com>
 References: <4A13CCE1.5000106@gmail.com>
 In-Reply-To: <4A13CCE1.5000106@gmail.com>
 MIME-Version: 1.0
-Message-Id: <200905201112.24401.tvrtko.ursulin@sophos.com>
-X-MIMETrack: Itemize by SMTP Server on Mercury/Servers/Sophos(Release 7.0.3|September 26, 2007) at
- 20/05/2009 11:12:24,
-	Serialize by Router on Mercury/Servers/Sophos(Release 7.0.3|September 26, 2007) at
- 20/05/2009 11:12:25,
-	Serialize complete at 20/05/2009 11:12:25
-X-TNEFEvaluated: 1
+Content-Type: multipart/signed;
+  boundary="nextPart1463671.Ad3lGYoccl";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Disposition: inline
+Message-Id: <200905201322.15075.ms@teamix.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 20 May 2009 10:26:57 Marcin Krol wrote:
+--nextPart1463671.Ad3lGYoccl
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+Am Mittwoch, 20. Mai 2009 schrieb Marcin Krol:
 > Hello everyone,
 >
 > First, apols for using up bandwidth, but I honestly found no other place
@@ -47,13 +50,26 @@ On Wednesday 20 May 2009 10:26:57 Marcin Krol wrote:
 > This is for high-availability purposes - events would be collected and
 > once every several minutes changed dirs would be rsync'ed to failover
 > server or smth like that would be done.
->
+
+Hmmm, I think you could just run a rsync periodically. It might even be fas=
+ter=20
+detecting changed files. Unless you are talking really high number of=20
+directories and files.
+
 > As inotify watches particular directory and not its subdirs, I would
 > have to watch all directories.
->
+
+Yes. Thats cumbersome.
+
 > This means I would have to create thousands or even tens of thousands of
 > inotify watches.
->
+
+I wrote a ruby script using libinotify-ruby which does just that. I only sy=
+ncs=20
+on demand tough. I.e. when someplace places a special sync file in a watche=
+d=20
+directory.
+
 > So my questions are:
 >
 > 1. is it safe? that is, will it not lock the kernel up, or cause
@@ -62,17 +78,35 @@ On Wednesday 20 May 2009 10:26:57 Marcin Krol wrote:
 > 2. is it economic in terms of CPU time and RAM? I have no idea how to
 > even measure such a thing happening in the kernel..
 
-Hi,
+That script is running productively for well over a year now.
 
-I don't know the specific answers apart my intuitive feeling, which is that it 
-probably would cause excessive memory use and that it is not elegant at all.
+There have been some problems with it stopping doing work occasionally. It =
+has=20
+to be restarted. Now there is a monitor process which restarts it=20
+automatically should it end. Might be a race condition or programming error=
+=20
+in the script. But the customer is happy with the workaround and didn't wan=
+t=20
+me to put any further efforts in finding the real cause.
 
-What may be interesting to you is the notification "engine" rewrite Eric Paris 
-is doing and new fanotify interface which will, hopefully, come soon on top 
-of it. With fanotify you will be able to monitor all changes much more easily 
-and efficiently.
+Regarding the inotify implementation in the kernel I darkly remember that=20
+there were some improvements. Search inotify or fsnotify in kernel-ml.
 
-Have a look at patch descriptions in:
-http://people.redhat.com/~eparis/fsnotify/
+Ciao,
+=2D-=20
+Martin Steigerwald - team(ix) GmbH - http://www.teamix.de
+gpg: 19E3 8D42 896F D004 08AC A0CA 1E10 C593 0399 AE90
 
-Tvrtko
+--nextPart1463671.Ad3lGYoccl
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkoT598ACgkQHhDFkwOZrpC0NgCePLlnjud2PFwkylCS12dZcJW/
+ioMAn1w8hrD+i5z+psuvX3t2W/VCjzCt
+=pm9n
+-----END PGP SIGNATURE-----
+
+--nextPart1463671.Ad3lGYoccl--
