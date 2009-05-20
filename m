@@ -1,142 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755881AbZETBqJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756082AbZETBqq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755881AbZETBqJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 21:46:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755439AbZETBp5
+	id S1756082AbZETBqq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 21:46:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755212AbZETBqh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 21:45:57 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:54323 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1755310AbZETBp4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 21:45:56 -0400
-Message-ID: <4A136090.5090705@cn.fujitsu.com>
-Date: Wed, 20 May 2009 09:44:48 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
-MIME-Version: 1.0
-To: "IKEDA, Munehiro" <m-ikeda@ds.jp.nec.com>, Vivek Goyal <vgoyal@redhat.com>
-CC: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       jens.axboe@oracle.com, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       righi.andrea@gmail.com, agk@redhat.com, dm-devel@redhat.com,
-       snitzer@redhat.com, akpm@linux-foundation.org
-Subject: Re: [PATCH] IO Controller: Add per-device weight and ioprio_class
- handling
-References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com> <4A0A29B5.7030109@cn.fujitsu.com> <20090513190929.GB18371@redhat.com> <4A0BC7AB.8030703@cn.fujitsu.com> <4A11E244.2000305@ds.jp.nec.com>
-In-Reply-To: <4A11E244.2000305@ds.jp.nec.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Tue, 19 May 2009 21:46:37 -0400
+Received: from mail-px0-f123.google.com ([209.85.216.123]:37300 "EHLO
+	mail-px0-f123.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755143AbZETBqg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 May 2009 21:46:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:reply-to:to:cc:content-type:organization:date
+         :message-id:mime-version:x-mailer;
+        b=mQFBhD3ag/S1peVAxGSVXWr1iX4px3n1XS0FSrGNINdQOkFFalQlZnp1mACdmiY5Oe
+         VZqV33c34jOBjXJBXC5nlOPFT+63OuFmJfwgXFD8MvjeGg6tMogyv4lo0Moro1o18GdU
+         q5dIwJ9RXPopGYuhoc3kJ2qewECBoovjTLbzc=
+Subject: [PATCH 0/1] sched: fix typo in sched-rt-group.txt file
+From: GeunSik Lim <leemgs1@gmail.com>
+Reply-To: leemgs1@gmail.com
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Steven Rostedt <rostedt@goodmis.org>, tglx <tglx@linutronix.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-rt-users <linux-rt-users@vger.kernel.org>
+Content-Type: multipart/mixed; boundary="=-0ZxL3H7JOejuuPCyGgBd"
+Organization: Private
+Date: Wed, 20 May 2009 10:39:12 +0900
+Message-Id: <1242783552.31161.53.camel@centos51>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-IKEDA, Munehiro wrote:
-> Hi Gui,
-> 
-> Gui Jianfeng wrote:
->> Hi Vivek,
->>
->> This patch enables per-cgroup per-device weight and ioprio_class
->> handling.
->> A new cgroup interface "policy" is introduced. You can make use of
->> this file to configure weight and ioprio_class for each device in a
->> given cgroup.
->> The original "weight" and "ioprio_class" files are still available. If
->> you
->> don't do special configuration for a particular device, "weight" and
->> "ioprio_class" are used as default values in this device.
->>
->> You can use the following format to play with the new interface.
->> #echo DEV:weight:ioprio_class > /patch/to/cgroup/policy
->> weight=0 means removing the policy for DEV.
->>
->> Examples:
->> Configure weight=300 ioprio_class=2 on /dev/hdb in this cgroup
->> # echo /dev/hdb:300:2 > io.policy
->> # cat io.policy
->> dev weight class
->> /dev/hdb 300 2
-> 
-> Users can specify a device file of a partition for io.policy.
-> In this case, io_policy_node::dev_name is set as a name of the
-> partition device like /dev/sda2.
-> 
-> ex)
->  # cd /mnt/cgroup
->  # cat /dev/sda2:500:2 > io.policy
->  # echo io.policy
->    dev weight class
->    /dev/sda2 500 2
-> 
-> I believe io_policy_node::dev_name should be set a generic
-> device name like /dev/sda.
-> What do you think about it?
 
-  Hi Ikeda-san,
+--=-0ZxL3H7JOejuuPCyGgBd
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-  Sorry for the late reply. Thanks for pointing this out. 
-  yes, it does the right thing but shows a wrong name. 
-  IMHO, Inputing a sigle partition should not be allowed since the
-  policy is disk basis. So how about the following patch?
 
-Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
----
-diff --git a/block/elevator-fq.c b/block/elevator-fq.c
-index 1a0ca07..b620768 100644
---- a/block/elevator-fq.c
-+++ b/block/elevator-fq.c
-@@ -1650,6 +1650,9 @@ static int devname_to_devnum(const char *buf, dev_t *dev)
- 		return -ENODEV;
+
+Dear Ingo,
+
+
+I made 2 patch files again about static prioriy levels according to ingo's advice 
+and explanation. (Reference: http://marc.info/?t=124211992800003&r=1&w=2 archives. )
+
+Fix static priority related range and chart map(userspace/kernelspace) of ftrace.
+   - about chart map of static priority in  ftrace.txt file
+   - about static priority levels(range) in sched-rt-group.txt file 
+
+
+commit d6af702008117ca489a2f5476239d1688a517e98
+Author: GeunSik,Lim <leemgs1@gmail.com>
+Date:   Tue May 12 17:20:32 2009 +0900
+
+    sched: fix typo in sched-rt-group.txt file
+    
+    Fix typo about static priority's range.
+
+    * Kernel Space priority 0(high) to 99(low)   --> User Space RT priority 99(high) to 1(low)
+    * Kernel Space priority 100(high) to 139(low)--> User Space nice -20(high) to 19(low)
+
+    Processes scheduled with SCHED_OTHER or SCHED_BATCH must be assigned
+    the static priority 0. Processes scheduled under SCHED_FIFO or SCHED_RR 
+    can have a static priority in the range 1 to 99. 
+    (reference: $> man 2 sched_setscheduler)
+    
+    Signed-off-by: GeunSik Lim <geunsik.lim@samsung.com>
+
+diff --git a/Documentation/scheduler/sched-rt-group.txt b/Documentation/scheduler/sched-rt-group.txt
+index 5ba4d3f..1537146 100644
+--- a/Documentation/scheduler/sched-rt-group.txt
++++ b/Documentation/scheduler/sched-rt-group.txt
+@@ -169,7 +169,7 @@ get their allocated time.
  
- 	disk = get_gendisk(bdev->bd_dev, &part);
-+	if (part)
-+		return -EINVAL;
-+
- 	*dev = MKDEV(disk->major, disk->first_minor);
- 	bdput(bdev);
+ Implementing SCHED_EDF might take a while to complete. Priority Inheritance is
+ the biggest challenge as the current linux PI infrastructure is geared towards
+-the limited static priority levels 0-139. With deadline scheduling you need to
++the limited static priority levels 0-99. With deadline scheduling you need to
+ do deadline inheritance (since priority is inversely proportional to the
+ deadline delta (deadline - now).
+ 
 
-> 
-> Signed-off-by: Munehiro "Muuhh" Ikeda <m-ikeda@ds.jp.nec.com>
-> ---
-> block/elevator-fq.c |    7 ++++++-
-> 1 files changed, 6 insertions(+), 1 deletions(-)
-> 
-> diff --git a/block/elevator-fq.c b/block/elevator-fq.c
-> index 39fa2a1..5d3d55c 100644
-> --- a/block/elevator-fq.c
-> +++ b/block/elevator-fq.c
-> @@ -1631,11 +1631,12 @@ static struct io_policy_node
-> *policy_search_node(const struct io_cgroup *iocg,
->     return NULL;
-> }
-> 
-> -static int devname_to_devnum(const char *buf, dev_t *dev)
-> +static int devname_to_devnum(char *buf, dev_t *dev)
-> {
->     struct block_device *bdev;
->     struct gendisk *disk;
->     int part;
-> +    char *c;
-> 
->     bdev = lookup_bdev(buf);
->     if (IS_ERR(bdev))
-> @@ -1645,6 +1646,10 @@ static int devname_to_devnum(const char *buf,
-> dev_t *dev)
->     *dev = MKDEV(disk->major, disk->first_minor);
->     bdput(bdev);
-> 
-> +    c = strrchr(buf, '/');
-> +    if (c)
-> +        strcpy(c+1, disk->disk_name);
-> +
->     return 0;
-> }
-> 
 
--- 
-Regards
-Gui Jianfeng
+
+-----------------------------------------------
+To unsubscribe from this list: send the line "unsubscribe linux-***" 
+in the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
+
+GeunSik Lim (ELS - OS Group - S/W Lab - SAIT - SAMSUNG)
+e-Mail  :1) geunsik.lim@samsung.com
+         2) leemgs@gmail.com , leemgs1@gmail.com
+HomePage: http://intomail.dnip.net/invain/me/
+-----------------------------------------------
+
+--=-0ZxL3H7JOejuuPCyGgBd
+Content-Disposition: attachment; filename=fix-typo-static-priority-levels-sched-rt-group.patch
+Content-Type: text/x-patch; name=fix-typo-static-priority-levels-sched-rt-group.patch; charset=euckr
+Content-Transfer-Encoding: 7bit
+
+commit d6af702008117ca489a2f5476239d1688a517e98
+Author: GeunSik,Lim <leemgs1@gmail.com>
+Date:   Tue May 12 17:20:32 2009 +0900
+
+    sched: fix typo in sched-rt-group.txt file
+    
+    Fix typo about static priority's range.
+
+    * Kernel Space priority 0(high) to 99(low)   --> User Space RT priority 99(high) to 1(low)
+    * Kernel Space priority 100(high) to 139(low)--> User Space nice -20(high) to 19(low)
+
+    Processes scheduled with SCHED_OTHER or SCHED_BATCH must be assigned
+    the static priority 0. Processes scheduled under SCHED_FIFO or SCHED_RR 
+    can have a static priority in the range 1 to 99. 
+    (reference: $> man 2 sched_setscheduler)
+    
+    Signed-off-by: GeunSik Lim <geunsik.lim@samsung.com>
+
+diff --git a/Documentation/scheduler/sched-rt-group.txt b/Documentation/scheduler/sched-rt-group.txt
+index 5ba4d3f..1537146 100644
+--- a/Documentation/scheduler/sched-rt-group.txt
++++ b/Documentation/scheduler/sched-rt-group.txt
+@@ -169,7 +169,7 @@ get their allocated time.
+ 
+ Implementing SCHED_EDF might take a while to complete. Priority Inheritance is
+ the biggest challenge as the current linux PI infrastructure is geared towards
+-the limited static priority levels 0-139. With deadline scheduling you need to
++the limited static priority levels 0-99. With deadline scheduling you need to
+ do deadline inheritance (since priority is inversely proportional to the
+ deadline delta (deadline - now).
+ 
+
+--=-0ZxL3H7JOejuuPCyGgBd--
 
