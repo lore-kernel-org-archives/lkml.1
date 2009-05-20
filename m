@@ -1,444 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756731AbZETJS0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756793AbZETJSy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756731AbZETJS0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 05:18:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756615AbZETJSF
+	id S1756793AbZETJSy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 05:18:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755876AbZETJSp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 05:18:05 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:60674 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755327AbZETJSA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 05:18:00 -0400
-Date: Wed, 20 May 2009 11:17:58 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Tejun Heo <tj@kernel.org>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, x86@kernel.org,
-       ink@jurassic.park.msu.ru, rth@twiddle.net, linux@arm.linux.org.uk,
-       hskinnemoen@atmel.com, cooloney@kernel.org, starvik@axis.com,
-       jesper.nilsson@axis.com, dhowells@redhat.com,
-       ysato@users.sourceforge.jp, tony.luck@intel.com, takata@linux-m32r.org,
-       geert@linux-m68k.org, monstr@monstr.eu, ralf@linux-mips.org,
-       kyle@mcmartin.ca, benh@kernel.crashing.org, paulus@samba.org,
-       schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com, lethal@linux-sh.org,
-       davem@davemloft.net, jdike@addtoit.com, chris@zankel.net,
-       rusty@rustcorp.com.au, Dave Jones <davej@redhat.com>,
-       Jeremy Fitzhardinge <jeremy@xensource.com>,
-       linux-mm <linux-mm@kvack.org>
-Subject: Re: [PATCH 3/7] percpu: clean up percpu variable definitions
-Message-ID: <20090520091758.GO11363@kernel.dk>
-References: <1242805059-18338-1-git-send-email-tj@kernel.org> <1242805059-18338-4-git-send-email-tj@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1242805059-18338-4-git-send-email-tj@kernel.org>
+	Wed, 20 May 2009 05:18:45 -0400
+Received: from mga05.intel.com ([192.55.52.89]:38470 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755874AbZETJSo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 05:18:44 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,220,1241420400"; 
+   d="scan'208";a="692024323"
+Subject: Re: [PATCH 0/11] Per-bdi writeback flusher threads #4
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
+       akpm@linux-foundation.org, jack@suse.cz
+In-Reply-To: <20090520085446.GN11363@kernel.dk>
+References: <1242649192-16263-1-git-send-email-jens.axboe@oracle.com>
+	 <1242713463.2560.5.camel@ymzhang> <20090519062049.GP4140@kernel.dk>
+	 <1242805911.2560.28.camel@ymzhang> <20090520080938.GM11363@kernel.dk>
+	 <20090520085446.GN11363@kernel.dk>
+Content-Type: text/plain
+Date: Wed, 20 May 2009 17:19:02 +0800
+Message-Id: <1242811142.2560.33.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 20 2009, Tejun Heo wrote:
-> Percpu variable definition is about to be updated such that
-> 
-> * percpu symbols must be unique even the static ones
-> 
-> * in-function static definition is not allowed
-> 
-> Update percpu variable definitions accoringly.
-> 
-> * as,cfq: rename ioc_count uniquely
-> 
-> * cpufreq: rename cpu_dbs_info uniquely
-> 
-> * xen: move nesting_count out of xen_evtchn_do_upcall() and rename it
-> 
-> * mm: move ratelimits out of balance_dirty_pages_ratelimited_nr() and
->   rename it
-> 
-> * ipv4,6: rename cookie_scratch uniquely
-> 
-> While at it, make cris:use DECLARE_PER_CPU() instead of extern
-> volatile DEFINE_PER_CPU() for declaration.
-> 
-> [ Impact: percpu usage cleanups, no duplicate static percpu var names ]
+On Wed, 2009-05-20 at 10:54 +0200, Jens Axboe wrote:
+> On Wed, May 20 2009, Jens Axboe wrote:
+> > On Wed, May 20 2009, Zhang, Yanmin wrote:
+> > > On Tue, 2009-05-19 at 08:20 +0200, Jens Axboe wrote:
+> > > > On Tue, May 19 2009, Zhang, Yanmin wrote:
+> > > > > On Mon, 2009-05-18 at 14:19 +0200, Jens Axboe wrote:
+> > > > > > Hi,
+> > > > > >
+> > > > > > This is the fourth version of this patchset. Chances since v3:
+> > > > > >
+> > > > > > - Dropped a prep patch, it has been included in mainline since.
+> > > > > >
+> > > > > > - Add a work-to-do list to the bdi. This is struct bdi_work. Each
+> > > > > >   wb thread will notice and execute work on bdi->work_list. The arguments
+> > > > > >   are which sb (or NULL for all) to flush and how many pages to flush.
+> > > > > >
+> > > > > > - Fix a bug where not all bdi's would end up on the bdi_list, so potentially
+> > > > > >   some data would not be flushed.
+> > > > > >
+> > > > > > - Make wb_kupdated() pass on wbc->older_than_this so we maintain the same
+> > > > > >   behaviour for kupdated flushes.
+> > > > > >
+> > > > > > - Have the wb thread flush first before sleeping, to avoid losing the
+> > > > > >   first flush on lazy register.
+> > > > > >
+> > > > > > - Rebase to newer kernels.
+> > > 
+> > > > I'm attaching two patches - apply #1 to -rc6, and then #2 is a roll-up
+> > > > of the patch series that you can apply next.
+> > > Jens,
+> > > 
+> > > I run into 2 issues with kernel 2.6.30-rc6+BDI_Flusher_V4. Below is one.
+> > > 
+> > > Tue May 19 00:00:00 CST 2009
+> > > BUG: unable to handle kernel NULL pointer dereference at 00000000000001d8
+> > > IP: [<ffffffff803f3c4c>] generic_make_request+0x10a/0x384
+> > > PGD 0
+> > > Oops: 0000 [#1] SMP
+> > > last sysfs file: /sys/block/sdb/stat
+> > > CPU 0
+> > > Modules linked in: igb
+> > > Pid: 1445, comm: bdi-8:16 Not tainted 2.6.30-rc6-bdiflusherv4 #1 X8DTN
+> > > RIP: 0010:[<ffffffff803f3c4c>]  [<ffffffff803f3c4c>] generic_make_request+0x10a/0x384
+> > > RSP: 0018:ffff8800bd04da60  EFLAGS: 00010206
+> > > RAX: 0000000000000000 RBX: ffff8801be45d500 RCX: 00000000038a0df8
+> > > RDX: 0000000000000008 RSI: 0000000000000576 RDI: ffff8801bf408680
+> > > RBP: ffff8801be45d500 R08: ffffe20001ee8140 R09: ffff8800bd04da98
+> > > R10: 0000000000000000 R11: ffff8800bd72eb40 R12: ffff8801be45d500
+> > > R13: ffff88005f51f310 R14: 0000000000000008 R15: ffff8800b15a5458
+> > > FS:  0000000000000000(0000) GS:ffffc20000000000(0000) knlGS:0000000000000000
+> > > CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+> > > CR2: 00000000000001d8 CR3: 0000000000201000 CR4: 00000000000006e0
+> > > DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> > > DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> > > Process bdi-8:16 (pid: 1445, threadinfo ffff8800bd04c000, task ffff8800bd1b75f0)
+> > > Stack:
+> > >  0000000000000008 ffffffff8027a613 00000000848dc000 ffffffffffffffff
+> > >  ffff8800a8190f50 ffffffff00000012 ffff8800a81938e0 ffffc2000000001b
+> > >  0000000000000000 0000000000000000 ffffe200026f9c30 0000000000000000
+> > > Call Trace:
+> > >  [<ffffffff8027a613>] ? mempool_alloc+0x59/0x10f
+> > >  [<ffffffff803f3f70>] ? submit_bio+0xaa/0xb1
+> > >  [<ffffffff802c6a3f>] ? submit_bh+0xe3/0x103
+> > >  [<ffffffff802c92ea>] ? __block_write_full_page+0x1fb/0x2f2
+> > >  [<ffffffff802c7d6a>] ? end_buffer_async_write+0x0/0xfb
+> > >  [<ffffffff8027e8d2>] ? __writepage+0xa/0x25
+> > >  [<ffffffff8027f036>] ? write_cache_pages+0x21c/0x338
+> > >  [<ffffffff8027e8c8>] ? __writepage+0x0/0x25
+> > >  [<ffffffff8027f195>] ? do_writepages+0x27/0x2d
+> > >  [<ffffffff802c22c1>] ? __writeback_single_inode+0x159/0x2b3
+> > >  [<ffffffff8071e52a>] ? thread_return+0x3e/0xaa
+> > >  [<ffffffff8027f267>] ? determine_dirtyable_memory+0xd/0x1d
+> > >  [<ffffffff8027f2dd>] ? get_dirty_limits+0x1d/0x255
+> > >  [<ffffffff802c27bc>] ? generic_sync_wb_inodes+0x1b4/0x220
+> > >  [<ffffffff802c3130>] ? wb_do_writeback+0x16c/0x215
+> > >  [<ffffffff802c323e>] ? bdi_writeback_task+0x65/0x10d
+> > >  [<ffffffff8024cc06>] ? autoremove_wake_function+0x0/0x2e
+> > >  [<ffffffff8024cb27>] ? bit_waitqueue+0x10/0xa0
+> > >  [<ffffffff80289257>] ? bdi_start_fn+0x0/0xba
+> > >  [<ffffffff802892c6>] ? bdi_start_fn+0x6f/0xba
+> > >  [<ffffffff8024c860>] ? kthread+0x54/0x80
+> > >  [<ffffffff8020c97a>] ? child_rip+0xa/0x20
+> > >  [<ffffffff8024c80c>] ? kthread+0x0/0x80
+> > >  [<ffffffff8020c970>] ? child_rip+0x0/0x20
+> > > 
 
-The block bits looks fine.
-
-Acked-by: Jens Axboe <jens.axboe@oracle.com>
 
 > 
-> Signed-off-by: Tejun Heo <tj@kernel.org>
-> Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-> Cc: Jens Axboe <jens.axboe@oracle.com>
-> Cc: Dave Jones <davej@redhat.com>
-> Cc: Jeremy Fitzhardinge <jeremy@xensource.com>
-> Cc: linux-mm <linux-mm@kvack.org>
-> Cc: David S. Miller <davem@davemloft.net>
-> ---
->  arch/cris/include/asm/mmu_context.h    |    2 +-
->  block/as-iosched.c                     |   10 +++++-----
->  block/cfq-iosched.c                    |   10 +++++-----
->  drivers/cpufreq/cpufreq_conservative.c |   12 ++++++------
->  drivers/cpufreq/cpufreq_ondemand.c     |   15 ++++++++-------
->  drivers/xen/events.c                   |    9 +++++----
->  mm/page-writeback.c                    |    5 +++--
->  net/ipv4/syncookies.c                  |    4 ++--
->  net/ipv6/syncookies.c                  |    4 ++--
->  9 files changed, 37 insertions(+), 34 deletions(-)
-> 
-> diff --git a/arch/cris/include/asm/mmu_context.h b/arch/cris/include/asm/mmu_context.h
-> index 72ba08d..00de1a0 100644
-> --- a/arch/cris/include/asm/mmu_context.h
-> +++ b/arch/cris/include/asm/mmu_context.h
-> @@ -17,7 +17,7 @@ extern void switch_mm(struct mm_struct *prev, struct mm_struct *next,
->   * registers like cr3 on the i386
->   */
->  
-> -extern volatile DEFINE_PER_CPU(pgd_t *,current_pgd); /* defined in arch/cris/mm/fault.c */
-> +DECLARE_PER_CPU(pgd_t *,current_pgd); /* defined in arch/cris/mm/fault.c */
->  
->  static inline void enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk)
->  {
-> diff --git a/block/as-iosched.c b/block/as-iosched.c
-> index c48fa67..96ff4d1 100644
-> --- a/block/as-iosched.c
-> +++ b/block/as-iosched.c
-> @@ -146,7 +146,7 @@ enum arq_state {
->  #define RQ_STATE(rq)	((enum arq_state)(rq)->elevator_private2)
->  #define RQ_SET_STATE(rq, state)	((rq)->elevator_private2 = (void *) state)
->  
-> -static DEFINE_PER_CPU(unsigned long, ioc_count);
-> +static DEFINE_PER_CPU(unsigned long, as_ioc_count);
->  static struct completion *ioc_gone;
->  static DEFINE_SPINLOCK(ioc_gone_lock);
->  
-> @@ -161,7 +161,7 @@ static void as_antic_stop(struct as_data *ad);
->  static void free_as_io_context(struct as_io_context *aic)
->  {
->  	kfree(aic);
-> -	elv_ioc_count_dec(ioc_count);
-> +	elv_ioc_count_dec(as_ioc_count);
->  	if (ioc_gone) {
->  		/*
->  		 * AS scheduler is exiting, grab exit lock and check
-> @@ -169,7 +169,7 @@ static void free_as_io_context(struct as_io_context *aic)
->  		 * complete ioc_gone and set it back to NULL.
->  		 */
->  		spin_lock(&ioc_gone_lock);
-> -		if (ioc_gone && !elv_ioc_count_read(ioc_count)) {
-> +		if (ioc_gone && !elv_ioc_count_read(as_ioc_count)) {
->  			complete(ioc_gone);
->  			ioc_gone = NULL;
->  		}
-> @@ -211,7 +211,7 @@ static struct as_io_context *alloc_as_io_context(void)
->  		ret->seek_total = 0;
->  		ret->seek_samples = 0;
->  		ret->seek_mean = 0;
-> -		elv_ioc_count_inc(ioc_count);
-> +		elv_ioc_count_inc(as_ioc_count);
->  	}
->  
->  	return ret;
-> @@ -1509,7 +1509,7 @@ static void __exit as_exit(void)
->  	ioc_gone = &all_gone;
->  	/* ioc_gone's update must be visible before reading ioc_count */
->  	smp_wmb();
-> -	if (elv_ioc_count_read(ioc_count))
-> +	if (elv_ioc_count_read(as_ioc_count))
->  		wait_for_completion(&all_gone);
->  	synchronize_rcu();
->  }
-> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-> index a55a9bd..deea748 100644
-> --- a/block/cfq-iosched.c
-> +++ b/block/cfq-iosched.c
-> @@ -48,7 +48,7 @@ static int cfq_slice_idle = HZ / 125;
->  static struct kmem_cache *cfq_pool;
->  static struct kmem_cache *cfq_ioc_pool;
->  
-> -static DEFINE_PER_CPU(unsigned long, ioc_count);
-> +static DEFINE_PER_CPU(unsigned long, cfq_ioc_count);
->  static struct completion *ioc_gone;
->  static DEFINE_SPINLOCK(ioc_gone_lock);
->  
-> @@ -1423,7 +1423,7 @@ static void cfq_cic_free_rcu(struct rcu_head *head)
->  	cic = container_of(head, struct cfq_io_context, rcu_head);
->  
->  	kmem_cache_free(cfq_ioc_pool, cic);
-> -	elv_ioc_count_dec(ioc_count);
-> +	elv_ioc_count_dec(cfq_ioc_count);
->  
->  	if (ioc_gone) {
->  		/*
-> @@ -1432,7 +1432,7 @@ static void cfq_cic_free_rcu(struct rcu_head *head)
->  		 * complete ioc_gone and set it back to NULL
->  		 */
->  		spin_lock(&ioc_gone_lock);
-> -		if (ioc_gone && !elv_ioc_count_read(ioc_count)) {
-> +		if (ioc_gone && !elv_ioc_count_read(cfq_ioc_count)) {
->  			complete(ioc_gone);
->  			ioc_gone = NULL;
->  		}
-> @@ -1558,7 +1558,7 @@ cfq_alloc_io_context(struct cfq_data *cfqd, gfp_t gfp_mask)
->  		INIT_HLIST_NODE(&cic->cic_list);
->  		cic->dtor = cfq_free_io_context;
->  		cic->exit = cfq_exit_io_context;
-> -		elv_ioc_count_inc(ioc_count);
-> +		elv_ioc_count_inc(cfq_ioc_count);
->  	}
->  
->  	return cic;
-> @@ -2663,7 +2663,7 @@ static void __exit cfq_exit(void)
->  	 * this also protects us from entering cfq_slab_kill() with
->  	 * pending RCU callbacks
->  	 */
-> -	if (elv_ioc_count_read(ioc_count))
-> +	if (elv_ioc_count_read(cfq_ioc_count))
->  		wait_for_completion(&all_gone);
->  	cfq_slab_kill();
->  }
-> diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
-> index 2ecd95e..e0faa3e 100644
-> --- a/drivers/cpufreq/cpufreq_conservative.c
-> +++ b/drivers/cpufreq/cpufreq_conservative.c
-> @@ -80,7 +80,7 @@ struct cpu_dbs_info_s {
->  	int cpu;
->  	unsigned int enable:1;
->  };
-> -static DEFINE_PER_CPU(struct cpu_dbs_info_s, cpu_dbs_info);
-> +static DEFINE_PER_CPU(struct cpu_dbs_info_s, cs_cpu_dbs_info);
->  
->  static unsigned int dbs_enable;	/* number of CPUs using this policy */
->  
-> @@ -150,7 +150,7 @@ dbs_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
->  		     void *data)
->  {
->  	struct cpufreq_freqs *freq = data;
-> -	struct cpu_dbs_info_s *this_dbs_info = &per_cpu(cpu_dbs_info,
-> +	struct cpu_dbs_info_s *this_dbs_info = &per_cpu(cs_cpu_dbs_info,
->  							freq->cpu);
->  
->  	struct cpufreq_policy *policy;
-> @@ -323,7 +323,7 @@ static ssize_t store_ignore_nice_load(struct cpufreq_policy *policy,
->  	/* we need to re-evaluate prev_cpu_idle */
->  	for_each_online_cpu(j) {
->  		struct cpu_dbs_info_s *dbs_info;
-> -		dbs_info = &per_cpu(cpu_dbs_info, j);
-> +		dbs_info = &per_cpu(cs_cpu_dbs_info, j);
->  		dbs_info->prev_cpu_idle = get_cpu_idle_time(j,
->  						&dbs_info->prev_cpu_wall);
->  		if (dbs_tuners_ins.ignore_nice)
-> @@ -413,7 +413,7 @@ static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
->  		cputime64_t cur_wall_time, cur_idle_time;
->  		unsigned int idle_time, wall_time;
->  
-> -		j_dbs_info = &per_cpu(cpu_dbs_info, j);
-> +		j_dbs_info = &per_cpu(cs_cpu_dbs_info, j);
->  
->  		cur_idle_time = get_cpu_idle_time(j, &cur_wall_time);
->  
-> @@ -553,7 +553,7 @@ static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
->  	unsigned int j;
->  	int rc;
->  
-> -	this_dbs_info = &per_cpu(cpu_dbs_info, cpu);
-> +	this_dbs_info = &per_cpu(cs_cpu_dbs_info, cpu);
->  
->  	switch (event) {
->  	case CPUFREQ_GOV_START:
-> @@ -573,7 +573,7 @@ static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
->  
->  		for_each_cpu(j, policy->cpus) {
->  			struct cpu_dbs_info_s *j_dbs_info;
-> -			j_dbs_info = &per_cpu(cpu_dbs_info, j);
-> +			j_dbs_info = &per_cpu(cs_cpu_dbs_info, j);
->  			j_dbs_info->cur_policy = policy;
->  
->  			j_dbs_info->prev_cpu_idle = get_cpu_idle_time(j,
-> diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-> index 338f428..2eaf88f 100644
-> --- a/drivers/cpufreq/cpufreq_ondemand.c
-> +++ b/drivers/cpufreq/cpufreq_ondemand.c
-> @@ -87,7 +87,7 @@ struct cpu_dbs_info_s {
->  	unsigned int enable:1,
->  		sample_type:1;
->  };
-> -static DEFINE_PER_CPU(struct cpu_dbs_info_s, cpu_dbs_info);
-> +static DEFINE_PER_CPU(struct cpu_dbs_info_s, od_cpu_dbs_info);
->  
->  static unsigned int dbs_enable;	/* number of CPUs using this policy */
->  
-> @@ -162,7 +162,8 @@ static unsigned int powersave_bias_target(struct cpufreq_policy *policy,
->  	unsigned int freq_hi, freq_lo;
->  	unsigned int index = 0;
->  	unsigned int jiffies_total, jiffies_hi, jiffies_lo;
-> -	struct cpu_dbs_info_s *dbs_info = &per_cpu(cpu_dbs_info, policy->cpu);
-> +	struct cpu_dbs_info_s *dbs_info = &per_cpu(od_cpu_dbs_info,
-> +						   policy->cpu);
->  
->  	if (!dbs_info->freq_table) {
->  		dbs_info->freq_lo = 0;
-> @@ -207,7 +208,7 @@ static void ondemand_powersave_bias_init(void)
->  {
->  	int i;
->  	for_each_online_cpu(i) {
-> -		struct cpu_dbs_info_s *dbs_info = &per_cpu(cpu_dbs_info, i);
-> +		struct cpu_dbs_info_s *dbs_info = &per_cpu(od_cpu_dbs_info, i);
->  		dbs_info->freq_table = cpufreq_frequency_get_table(i);
->  		dbs_info->freq_lo = 0;
->  	}
-> @@ -322,7 +323,7 @@ static ssize_t store_ignore_nice_load(struct cpufreq_policy *policy,
->  	/* we need to re-evaluate prev_cpu_idle */
->  	for_each_online_cpu(j) {
->  		struct cpu_dbs_info_s *dbs_info;
-> -		dbs_info = &per_cpu(cpu_dbs_info, j);
-> +		dbs_info = &per_cpu(od_cpu_dbs_info, j);
->  		dbs_info->prev_cpu_idle = get_cpu_idle_time(j,
->  						&dbs_info->prev_cpu_wall);
->  		if (dbs_tuners_ins.ignore_nice)
-> @@ -416,7 +417,7 @@ static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
->  		unsigned int load, load_freq;
->  		int freq_avg;
->  
-> -		j_dbs_info = &per_cpu(cpu_dbs_info, j);
-> +		j_dbs_info = &per_cpu(od_cpu_dbs_info, j);
->  
->  		cur_idle_time = get_cpu_idle_time(j, &cur_wall_time);
->  
-> @@ -573,7 +574,7 @@ static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
->  	unsigned int j;
->  	int rc;
->  
-> -	this_dbs_info = &per_cpu(cpu_dbs_info, cpu);
-> +	this_dbs_info = &per_cpu(od_cpu_dbs_info, cpu);
->  
->  	switch (event) {
->  	case CPUFREQ_GOV_START:
-> @@ -595,7 +596,7 @@ static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
->  
->  		for_each_cpu(j, policy->cpus) {
->  			struct cpu_dbs_info_s *j_dbs_info;
-> -			j_dbs_info = &per_cpu(cpu_dbs_info, j);
-> +			j_dbs_info = &per_cpu(od_cpu_dbs_info, j);
->  			j_dbs_info->cur_policy = policy;
->  
->  			j_dbs_info->prev_cpu_idle = get_cpu_idle_time(j,
-> diff --git a/drivers/xen/events.c b/drivers/xen/events.c
-> index 30963af..4dbe5c0 100644
-> --- a/drivers/xen/events.c
-> +++ b/drivers/xen/events.c
-> @@ -596,6 +596,8 @@ irqreturn_t xen_debug_interrupt(int irq, void *dev_id)
->  	return IRQ_HANDLED;
->  }
->  
-> +static DEFINE_PER_CPU(unsigned, xed_nesting_count);
-> +
->  /*
->   * Search the CPUs pending events bitmasks.  For each one found, map
->   * the event number to an irq, and feed it into do_IRQ() for
-> @@ -611,7 +613,6 @@ void xen_evtchn_do_upcall(struct pt_regs *regs)
->  	struct pt_regs *old_regs = set_irq_regs(regs);
->  	struct shared_info *s = HYPERVISOR_shared_info;
->  	struct vcpu_info *vcpu_info = __get_cpu_var(xen_vcpu);
-> -	static DEFINE_PER_CPU(unsigned, nesting_count);
->   	unsigned count;
->  
->  	exit_idle();
-> @@ -622,7 +623,7 @@ void xen_evtchn_do_upcall(struct pt_regs *regs)
->  
->  		vcpu_info->evtchn_upcall_pending = 0;
->  
-> -		if (__get_cpu_var(nesting_count)++)
-> +		if (__get_cpu_var(xed_nesting_count)++)
->  			goto out;
->  
->  #ifndef CONFIG_X86 /* No need for a barrier -- XCHG is a barrier on x86. */
-> @@ -647,8 +648,8 @@ void xen_evtchn_do_upcall(struct pt_regs *regs)
->  
->  		BUG_ON(!irqs_disabled());
->  
-> -		count = __get_cpu_var(nesting_count);
-> -		__get_cpu_var(nesting_count) = 0;
-> +		count = __get_cpu_var(xed_nesting_count);
-> +		__get_cpu_var(xed_nesting_count) = 0;
->  	} while(count != 1);
->  
->  out:
-> diff --git a/mm/page-writeback.c b/mm/page-writeback.c
-> index bb553c3..0e0c9de 100644
-> --- a/mm/page-writeback.c
-> +++ b/mm/page-writeback.c
-> @@ -606,6 +606,8 @@ void set_page_dirty_balance(struct page *page, int page_mkwrite)
->  	}
->  }
->  
-> +static DEFINE_PER_CPU(unsigned long, bdp_ratelimits) = 0;
-> +
->  /**
->   * balance_dirty_pages_ratelimited_nr - balance dirty memory state
->   * @mapping: address_space which was dirtied
-> @@ -623,7 +625,6 @@ void set_page_dirty_balance(struct page *page, int page_mkwrite)
->  void balance_dirty_pages_ratelimited_nr(struct address_space *mapping,
->  					unsigned long nr_pages_dirtied)
->  {
-> -	static DEFINE_PER_CPU(unsigned long, ratelimits) = 0;
->  	unsigned long ratelimit;
->  	unsigned long *p;
->  
-> @@ -636,7 +637,7 @@ void balance_dirty_pages_ratelimited_nr(struct address_space *mapping,
->  	 * tasks in balance_dirty_pages(). Period.
->  	 */
->  	preempt_disable();
-> -	p =  &__get_cpu_var(ratelimits);
-> +	p =  &__get_cpu_var(bdp_ratelimits);
->  	*p += nr_pages_dirtied;
->  	if (unlikely(*p >= ratelimit)) {
->  		*p = 0;
-> diff --git a/net/ipv4/syncookies.c b/net/ipv4/syncookies.c
-> index b35a950..70ee18c 100644
-> --- a/net/ipv4/syncookies.c
-> +++ b/net/ipv4/syncookies.c
-> @@ -37,12 +37,12 @@ __initcall(init_syncookies);
->  #define COOKIEBITS 24	/* Upper bits store count */
->  #define COOKIEMASK (((__u32)1 << COOKIEBITS) - 1)
->  
-> -static DEFINE_PER_CPU(__u32, cookie_scratch)[16 + 5 + SHA_WORKSPACE_WORDS];
-> +static DEFINE_PER_CPU(__u32, ipv4_cookie_scratch)[16 + 5 + SHA_WORKSPACE_WORDS];
->  
->  static u32 cookie_hash(__be32 saddr, __be32 daddr, __be16 sport, __be16 dport,
->  		       u32 count, int c)
->  {
-> -	__u32 *tmp = __get_cpu_var(cookie_scratch);
-> +	__u32 *tmp = __get_cpu_var(ipv4_cookie_scratch);
->  
->  	memcpy(tmp + 4, syncookie_secret[c], sizeof(syncookie_secret[c]));
->  	tmp[0] = (__force u32)saddr;
-> diff --git a/net/ipv6/syncookies.c b/net/ipv6/syncookies.c
-> index 711175e..348e38c 100644
-> --- a/net/ipv6/syncookies.c
-> +++ b/net/ipv6/syncookies.c
-> @@ -74,12 +74,12 @@ static inline struct sock *get_cookie_sock(struct sock *sk, struct sk_buff *skb,
->  	return child;
->  }
->  
-> -static DEFINE_PER_CPU(__u32, cookie_scratch)[16 + 5 + SHA_WORKSPACE_WORDS];
-> +static DEFINE_PER_CPU(__u32, ipv6_cookie_scratch)[16 + 5 + SHA_WORKSPACE_WORDS];
->  
->  static u32 cookie_hash(struct in6_addr *saddr, struct in6_addr *daddr,
->  		       __be16 sport, __be16 dport, u32 count, int c)
->  {
-> -	__u32 *tmp = __get_cpu_var(cookie_scratch);
-> +	__u32 *tmp = __get_cpu_var(ipv6_cookie_scratch);
->  
->  	/*
->  	 * we have 320 bits of information to hash, copy in the remaining
-> -- 
-> 1.6.0.2
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> I found one issue yesterday and one today that could cause issues, not
+> sure it would explain this one. But at least it's worth a try, if it's
+> reproducible.
+I just reproduced it a moment ago manually.
 
--- 
-Jens Axboe
+[global]
+direct=0
+ioengine=mmap
+iodepth=256
+iodepth_batch=32
+size=4G
+bs=4k
+pre_read=1
+overwrite=1
+numjobs=1
+loops=5
+runtime=600
+group_reporting
+directory=/mnt/stp/fiodata
+[job_group0_sub0]
+startdelay=0
+rw=randwrite
+filename=data0/f1:data0/f2
+
+
+The fio includes my preread patch to flush files to memory.
+
+Before starting the second testing, I did a cache dropping by:
+#echo "3">/proc/sys/vm/drop_caches.
+
+I suspect the drop_caches trigger it.
+
+>  I'm attaching the three patches I have against the posted
+> series. The one in the middle is just an optimization, the first and
+> third are the bug fixes.
+I will test it tomorrow.
+
 
