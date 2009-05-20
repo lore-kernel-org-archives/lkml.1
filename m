@@ -1,107 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756249AbZETHeb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755046AbZETHiW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756249AbZETHeb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 03:34:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756032AbZETHeQ
+	id S1755046AbZETHiW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 03:38:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752629AbZETHiP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 03:34:16 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:48766 "EHLO mx2.mail.elte.hu"
+	Wed, 20 May 2009 03:38:15 -0400
+Received: from hera.kernel.org ([140.211.167.34]:35801 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755835AbZETHeP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 03:34:15 -0400
-Date: Wed, 20 May 2009 09:33:48 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jason Baron <jbaron@redhat.com>
-Cc: linux-kernel@vger.kernel.org, fweisbec@gmail.com, laijs@cn.fujitsu.com,
-       rostedt@goodmis.org, peterz@infradead.org, mathieu.desnoyers@polymtl.ca,
-       jiayingz@google.com, mbligh@google.com, roland@redhat.com,
-       fche@redhat.com
-Subject: Re: [PATCH 0/3] tracepoints: delay argument evaluation
-Message-ID: <20090520073348.GA12316@elte.hu>
-References: <cover.1242763826.git.jbaron@redhat.com>
+	id S1752466AbZETHiP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 03:38:15 -0400
+Message-ID: <4A13B344.7030307@kernel.org>
+Date: Wed, 20 May 2009 00:37:40 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <cover.1242763826.git.jbaron@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86: enable_update_mptable should MACRO
+References: <20090518142707.GA24142@elte.hu> <alpine.LFD.2.01.0905180850110.3301@localhost.localdomain> <20090518164921.GA6903@elte.hu> <alpine.LFD.2.01.0905180955550.3301@localhost.localdomain> <20090518170909.GA1623@elte.hu> <20090518190320.GA20260@elte.hu> <alpine.LFD.2.01.0905181208130.3301@localhost.localdomain> <20090518202031.GA26549@elte.hu> <4A12E759.6040806@kernel.org> <20090520071900.GB11952@elte.hu>
+In-Reply-To: <20090520071900.GB11952@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jason Baron <jbaron@redhat.com> wrote:
 
-> hi,
-> 
-> After disassembling some of the tracepoints, I've noticed that 
-> arguments that are passed as macros or that perform dereferences, 
-> evaluate prior to the tracepoint on/off check. This means that we 
-> are needlessly impacting the off case.
-> 
-> I am proposing to fix this by adding a macro that first checks for 
-> on/off and then calls 'trace_##name', preserving type checking. 
-> Thus, callsites have to move from:
-> 
-> trace_block_bio_complete(md->queue, bio);
-> 
-> to:
-> 
-> tracepoint_call(block_bio_complete,  md->queue, bio);
->
-> I've tried '__always_inline', but that did not fix this issue. 
-> Obviously this change will require changes to all the callsites. 
-> But, that shouldn't be very hard, I've already included the 
-> scheduler and block changes with this patch. I think its important 
-> to minimize code execution in the off case, and thus going through 
-> all the callsites is well worth it. If we agree on this change, I 
-> can change the rest in very short order.
-> 
-> Below I'm also showing the assembly in the 'dec_pending()' 
-> function before and after this change to show the difference it 
-> makes. The arguments to the tracepoint are as above, 'md->queue' 
-> and 'bio'. Notice the 2 extra instructions, before the initial 
-> 'je', that could be moved after the 'je'.
+instead of declare as one inline function.
+because other case that is variable
 
-> 
-> before:
-> 
-> ffffffff8137b2a3:       83 3d de 90 4b 00 00    cmpl   $0x0,0x4b90de(%rip)        # ffffffff81834388 <__tracepoint_block_bio_complete+0x8>
-> ffffffff8137b2aa:       49 8b 45 50             mov    0x50(%r13),%rax
-> ffffffff8137b2ae:       48 89 45 d0             mov    %rax,-0x30(%rbp)
-> ffffffff8137b2b2:       74 1f                   je     ffffffff8137b2d3 <dec_pending+0x101>
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
-> after:
-> 
-> ffffffff8137b2a3:       83 3d de 90 4b 00 00    cmpl   $0x0,0x4b90de(%rip)        # ffffffff81834388 <__tracepoint_block_bio_complete+0x8>
-> ffffffff8137b2aa:       74 27                   je     ffffffff8137b2d3 <dec_pending+0x101>
+---
+ arch/x86/include/asm/mpspec.h |   11 ++---------
+ 1 file changed, 2 insertions(+), 9 deletions(-)
 
-hm, this is really a compiler bug in essence - the compiler should 
-delay the construction of arguments into unlikely branches - if the 
-arguments are only used there.
-
-We'd basically open-code a clear-cut:
-
-   trace_block_bio_complete(md->queue, bio);
+Index: linux-2.6/arch/x86/include/asm/mpspec.h
+===================================================================
+--- linux-2.6.orig/arch/x86/include/asm/mpspec.h
++++ linux-2.6/arch/x86/include/asm/mpspec.h
+@@ -61,9 +61,11 @@ extern void get_smp_config(void);
+ #ifdef CONFIG_X86_MPPARSE
+ extern void find_smp_config(void);
+ extern void early_reserve_e820_mpc_new(void);
++extern int enable_update_mptable;
+ #else
+ static inline void find_smp_config(void) { }
+ static inline void early_reserve_e820_mpc_new(void) { }
++#define enable_update_mptable 0
+ #endif
  
-into this form:
-
-   trace(block_bio_complete, md->queue, bio);
-
-.. and this latter form could become moot (and a nuisance) if the 
-compiler is fixed.
-
-Have you tried very latest GCC, does it still have this optimization 
-problem?
-
-Note that the compiler getting this right would help a _lot_ of 
-other inline functions in the kernel as well. Arguments only used 
-within unlikely() branches are quite common.
-
-	Ingo
+ void __cpuinit generic_processor_info(int apicid, int version);
+@@ -87,15 +89,6 @@ static inline int acpi_probe_gsi(void)
+ }
+ #endif /* CONFIG_ACPI */
+ 
+-#ifdef CONFIG_X86_MPPARSE
+-extern int enable_update_mptable;
+-#else
+-static inline int enable_update_mptable(void)
+-{
+-	return 0;
+-}
+-#endif
+-
+ #define PHYSID_ARRAY_SIZE	BITS_TO_LONGS(MAX_APICS)
+ 
+ struct physid_mask {
