@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758521AbZETL0i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755947AbZETLaW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758521AbZETL0i (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 07:26:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756629AbZETLUE
+	id S1755947AbZETLaW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 07:30:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756756AbZETLUa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 07:20:04 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:55284 "EHLO mx2.redhat.com"
+	Wed, 20 May 2009 07:20:30 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:55273 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755676AbZETLSu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 07:18:50 -0400
+	id S1755547AbZETLSt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 07:18:49 -0400
 From: Avi Kivity <avi@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: kvm@vger.kernel.org
-Subject: [PATCH 26/46] KVM: x86 emulator: Complete decoding of call near in decode stage
-Date: Wed, 20 May 2009 14:18:23 +0300
-Message-Id: <1242818323-10413-27-git-send-email-avi@redhat.com>
+Subject: [PATCH 29/46] KVM: x86 emulator: Decode soft interrupt instructions
+Date: Wed, 20 May 2009 14:18:26 +0300
+Message-Id: <1242818323-10413-30-git-send-email-avi@redhat.com>
 In-Reply-To: <1242818323-10413-1-git-send-email-avi@redhat.com>
 References: <1242818323-10413-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -23,45 +23,28 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Gleb Natapov <gleb@redhat.com>
 
+Do not emulate them yet.
+
 Signed-off-by: Gleb Natapov <gleb@redhat.com>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 ---
- arch/x86/kvm/x86_emulate.c |   15 ++-------------
- 1 files changed, 2 insertions(+), 13 deletions(-)
+ arch/x86/kvm/x86_emulate.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
 diff --git a/arch/x86/kvm/x86_emulate.c b/arch/x86/kvm/x86_emulate.c
-index 14b8ee2..4a9cd4c 100644
+index c2f55ca..d2664fc 100644
 --- a/arch/x86/kvm/x86_emulate.c
 +++ b/arch/x86/kvm/x86_emulate.c
-@@ -192,7 +192,7 @@ static u32 opcode_table[256] = {
- 	SrcNone | ByteOp | ImplicitOps, SrcNone | ImplicitOps,
- 	SrcNone | ByteOp | ImplicitOps, SrcNone | ImplicitOps,
- 	/* 0xE8 - 0xEF */
--	ImplicitOps | Stack, SrcImm | ImplicitOps,
-+	SrcImm | Stack, SrcImm | ImplicitOps,
- 	SrcImm | Src2Imm16, SrcImmByte | ImplicitOps,
- 	SrcNone | ByteOp | ImplicitOps, SrcNone | ImplicitOps,
- 	SrcNone | ByteOp | ImplicitOps, SrcNone | ImplicitOps,
-@@ -1781,18 +1781,7 @@ special_insn:
- 		io_dir_in = 0;
- 		goto do_io;
- 	case 0xe8: /* call (near) */ {
--		long int rel;
--		switch (c->op_bytes) {
--		case 2:
--			rel = insn_fetch(s16, 2, c->eip);
--			break;
--		case 4:
--			rel = insn_fetch(s32, 4, c->eip);
--			break;
--		default:
--			DPRINTF("Call: Invalid op_bytes\n");
--			goto cannot_emulate;
--		}
-+		long int rel = c->src.val;
- 		c->src.val = (unsigned long) c->eip;
- 		jmp_rel(c, rel);
- 		emulate_push(ctxt);
+@@ -181,7 +181,8 @@ static u32 opcode_table[256] = {
+ 	0, ImplicitOps | Stack, 0, 0,
+ 	ByteOp | DstMem | SrcImm | ModRM | Mov, DstMem | SrcImm | ModRM | Mov,
+ 	/* 0xC8 - 0xCF */
+-	0, 0, 0, ImplicitOps | Stack, 0, 0, 0, 0,
++	0, 0, 0, ImplicitOps | Stack,
++	ImplicitOps, SrcImmByte, ImplicitOps, ImplicitOps,
+ 	/* 0xD0 - 0xD7 */
+ 	ByteOp | DstMem | SrcImplicit | ModRM, DstMem | SrcImplicit | ModRM,
+ 	ByteOp | DstMem | SrcImplicit | ModRM, DstMem | SrcImplicit | ModRM,
 -- 
 1.6.0.6
 
