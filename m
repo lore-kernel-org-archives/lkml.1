@@ -1,105 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754050AbZFAAZ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756843AbZETJ1U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754050AbZFAAZ6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 May 2009 20:25:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752668AbZFAAZu
+	id S1756843AbZETJ1U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 05:27:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754296AbZETJ1J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 May 2009 20:25:50 -0400
-Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:59781 "EHLO
-	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752631AbZFAAZt (ORCPT
+	Wed, 20 May 2009 05:27:09 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:47337 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754232AbZETJ1I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 May 2009 20:25:49 -0400
-Message-Id: <6.0.0.20.2.20090529142527.071669e0@172.19.0.2>
-X-Mailer: QUALCOMM Windows Eudora Version 6J-Jr3
-Date: Fri, 29 May 2009 14:35:55 +0900
-To: Andrew Morton <akpm@linux-foundation.org>
-From: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
-Subject: [RESEND] [PATCH] readahead:add blk_run_backing_dev
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+	Wed, 20 May 2009 05:27:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=dY+LJfWyF+hwMDQ+SQ70zcvqElHSDAQ/Of1wXDZHR/IdNEomG3heIexX/i6Mat7GX3
+         FAdWK7gaqvgZJP0QK20ZQ6VtFAAfkouvA9YK2X2z0GYAQOQ3or824p5lCz1LdCArhHoD
+         rrJnNyWAd2/fivKsvhmKxvk1fyp7Bfj62UhSI=
+Message-ID: <4A13CCE1.5000106@gmail.com>
+Date: Wed, 20 May 2009 11:26:57 +0200
+From: Marcin Krol <mrkafk@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: inotify limits - thousands (tens of thousands?) of watches
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew.
+Hello everyone,
 
-I added blk_run_backing_dev on page_cache_async_readahead
-so readahead I/O is unpluged to improve throughput on 
-especially RAID environment. 
+First, apols for using up bandwidth, but I honestly found no other place 
+where I can ask about this (and get meaningful reply).
 
-The normal case is, if page N become uptodate at time T(N), then
-T(N) <= T(N+1) holds. With RAID (and NFS to some degree), there 
-is no strict ordering, the data arrival time depends on
-runtime status of individual disks, which breaks that formula. So
-in do_generic_file_read(), just after submitting the async readahead IO
-request, the current page may well be uptodate, so the page won't be locked,
-and the block device won't be implicitly unplugged:
+I'm not a kernel programmer, but I want to develop a program that would 
+watch modifications in *all* user directories on a busy server using 
+inotify.
 
-               if (PageReadahead(page))
-                        page_cache_async_readahead()
-                if (!PageUptodate(page))
-                                goto page_not_up_to_date;
-                //...
-page_not_up_to_date:
-                lock_page_killable(page);
+This is for high-availability purposes - events would be collected and 
+once every several minutes changed dirs would be rsync'ed to failover 
+server or smth like that would be done.
 
-Therefore explicit unplugging can help.
+As inotify watches particular directory and not its subdirs, I would 
+have to watch all directories.
 
-Following is the test result with dd.
+This means I would have to create thousands or even tens of thousands of 
+inotify watches.
 
-#dd if=testdir/testfile of=/dev/null bs=16384
+So my questions are:
 
--2.6.30-rc6
-1048576+0 records in
-1048576+0 records out
-17179869184 bytes (17 GB) copied, 224.182 seconds, 76.6 MB/s
+1. is it safe? that is, will it not lock the kernel up, or cause 
+excessive memory consumption?
 
--2.6.30-rc6-patched
-1048576+0 records in
-1048576+0 records out
-17179869184 bytes (17 GB) copied, 206.465 seconds, 83.2 MB/s
-
-(7Disks RAID-0 Array)
-
--2.6.30-rc6
-1054976+0 records in
-1054976+0 records out
-17284726784 bytes (17 GB) copied, 212.233 seconds, 81.4 MB/s
-
--2.6.30-rc6-patched
-1054976+0 records out
-17284726784 bytes (17 GB) copied, 198.878 seconds, 86.9 MB/s
-
-(7Disks RAID-5 Array)
-
-Thanks.
-
-Signed-off-by: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
-Acked-by: Wu Fengguang <fengguang.wu@intel.com> 
+2. is it economic in terms of CPU time and RAM? I have no idea how to 
+even measure such a thing happening in the kernel..
 
 
- mm/readahead.c |   10 ++++++++++
- 1 file changed, 10 insertions(+)
 
---- linux.orig/mm/readahead.c
-+++ linux/mm/readahead.c
-@@ -490,5 +490,15 @@ page_cache_async_readahead(struct addres
- 
- 	/* do read-ahead */
- 	ondemand_readahead(mapping, ra, filp, true, offset, req_size);
-+
-+	/*
-+	* Normally the current page is !uptodate and lock_page() will be
-+	* immediately called to implicitly unplug the device. However this
-+	* is not always true for RAID conifgurations, where data arrives
-+	* not strictly in their submission order. In this case we need to
-+	* explicitly kick off the IO.
-+	*/
-+	if (PageUptodate(page))
-+		blk_run_backing_dev(mapping->backing_dev_info, NULL);
- }
- EXPORT_SYMBOL_GPL(page_cache_async_readahead); 
 
+Here's first test take on inotify watch (runs on Debian):
+
+######################### cut ################################
+
+#include "stdio.h"
+#include "stdlib.h"
+#include "errno.h"
+#include <linux/types.h>
+#include <linux/inotify.h>
+#include <sys/syscall.h>
+
+#define EVENT_SIZE  ( sizeof (struct inotify_event) )
+#define BUF_LEN     ( 1024 * ( EVENT_SIZE + 16 ) )
+
+
+static inline int inotify_init (void)
+{
+         return syscall (__NR_inotify_init);
+}
+
+static inline int inotify_add_watch (int fd, const char *name, __u32 mask)
+{
+         return syscall (__NR_inotify_add_watch, fd, name, mask);
+}
+
+static inline int inotify_rm_watch (int fd, __u32 wd)
+{
+         return syscall (__NR_inotify_rm_watch, fd, wd);
+}
+
+
+int main( int argc, char **argv )
+{
+   int length, i = 0;
+   int fd;
+   int wd;
+   char buffer[BUF_LEN];
+
+   fd = inotify_init();
+
+   if ( fd < 0 ) {
+     perror( "inotify_init" );
+   }
+
+   wd = inotify_add_watch( fd, argv[1], IN_ALL_EVENTS );
+   length = read( fd, buffer, BUF_LEN );
+
+   if ( length < 0 ) {
+     perror( "read" );
+   }
+
+   while ( i < length ) {
+     struct inotify_event *event = ( struct inotify_event * ) &buffer[ i ];
+     if ( event->len ) {
+       if ( event->mask & IN_CREATE ) {
+         if ( event->mask & IN_ISDIR ) {
+           printf( "The directory %s was created.\n", event->name );
+         }
+         else {
+           printf( "The file %s was created.\n", event->name );
+         }
+       }
+       else if ( event->mask & IN_DELETE ) {
+         if ( event->mask & IN_ISDIR ) {
+           printf( "The directory %s was deleted.\n", event->name );
+         }
+         else {
+           printf( "The file %s was deleted.\n", event->name );
+         }
+       }
+       else if ( event->mask & IN_MODIFY ) {
+         if ( event->mask & IN_ISDIR ) {
+           printf( "The directory %s was modified.\n", event->name );
+         }
+         else {
+           printf( "The file %s was modified.\n", event->name );
+         }
+       }
+       else if ( event->mask & IN_ALL_EVENTS ) {
+           printf("Some other event on %s, mask %x.\n", event->name, 
+event->mask);
+       }
+     }
+     i += EVENT_SIZE + event->len;
+   }
+
+   ( void ) inotify_rm_watch( fd, wd );
+   ( void ) close( fd );
+
+   exit( 0 );
+}
+
+######################### cut ################################
+
+Regards,
+mk
