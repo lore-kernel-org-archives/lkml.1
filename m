@@ -1,67 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757201AbZETMYS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756891AbZETMZD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757201AbZETMYS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 08:24:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754955AbZETMYF
+	id S1756891AbZETMZD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 08:25:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756026AbZETMYx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 08:24:05 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:48551 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754744AbZETMYE (ORCPT
+	Wed, 20 May 2009 08:24:53 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:34053 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754955AbZETMYw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 08:24:04 -0400
-Date: Wed, 20 May 2009 08:24:02 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Jan Kara <jack@suse.cz>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, chris.mason@oracle.com,
-       david@fromorbit.com, hch@infradead.org, akpm@linux-foundation.org,
-       yanmin_zhang@linux.intel.com
-Subject: Re: [PATCH 02/11] writeback: switch to per-bdi threads for
-	flushing data
-Message-ID: <20090520122402.GA19832@infradead.org>
-References: <1242649192-16263-1-git-send-email-jens.axboe@oracle.com> <1242649192-16263-3-git-send-email-jens.axboe@oracle.com> <20090520111850.GB3760@duck.suse.cz> <20090520113234.GT11363@kernel.dk> <20090520121111.GF3760@duck.suse.cz> <20090520121629.GW11363@kernel.dk>
+	Wed, 20 May 2009 08:24:52 -0400
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Yinghai Lu <yinghai@kernel.org>, Joerg Roedel <joerg.roedel@amd.com>,
+       Weidong Han <weidong.han@intel.com>, dwmw2@infradead.org,
+       suresh.b.siddha@intel.com, linux-kernel@vger.kernel.org,
+       iommu@lists.linux-foundation.org, kvm@vger.kernel.org
+Subject: Re: [PATCH v2 2/2] Intel-IOMMU, intr-remap: source-id checking
+References: <1242757912-6041-1-git-send-email-weidong.han@intel.com>
+	<1242757912-6041-3-git-send-email-weidong.han@intel.com>
+	<20090519115055.GB14305@elte.hu> <m1k54cj3iz.fsf@fess.ebiederm.org>
+	<20090520082114.GC6736@elte.hu>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Wed, 20 May 2009 05:24:49 -0700
+In-Reply-To: <20090520082114.GC6736@elte.hu> (Ingo Molnar's message of "Wed\, 20 May 2009 10\:21\:14 +0200")
+Message-ID: <m1fxf0klm6.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090520121629.GW11363@kernel.dk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Rcpt-To: mingo@elte.hu, kvm@vger.kernel.org, iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org, suresh.b.siddha@intel.com, dwmw2@infradead.org, weidong.han@intel.com, joerg.roedel@amd.com, yinghai@kernel.org
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 20, 2009 at 02:16:30PM +0200, Jens Axboe wrote:
-> It's a fine rule, I agree ;-)
-> 
-> I'll take another look at this when splitting the sync paths.
+Ingo Molnar <mingo@elte.hu> writes:
 
-Btw, there has been quite a bit of work on the higher level sync code in
-the VFS tree, and I have some TODO list items for the lower level sync
-code.  The most important one would be splitting data and metadata
-writeback.
+>> The table of apic information by apic_id also seems wrong.  Don't 
+>> we have chip_data or something that should point it that we can 
+>> get from the irq?
+>
+> ->chip_data is already used for io-apic configuration bits - if it's 
+> reused then the right way to do it is to extend struct irq_cfg in 
+> arch/x86/kernel/apic/io_apic.c.
 
-Currently __sync_single_inode first calls do_writepages to write back
-the data, then write_inode to potentially write the metadata and then
-finally filemap_fdatawait to wait for the inode to be completed.
+We are talking about some extra io-apic configuration bits, that
+happen to currently be private to dmar.c.
 
-Now for one thing doing the data wait after the metadata writeout is
-wrong for all those filesystems performing some kind of metadata updates
-in the I/O completion handler, and e.g. XFS has to work around this
-by doing a wait by itself in it's write_inode handler.
+chip_data, handler_data I can never keep those straight except
+when I am deep in the code.  What I do know is that encouraging
+more arrays of size MAX_IO_APICS seems like the wrong direction.
 
-Second inodes are usually clustered together, so if a filesystem can
-issue multiple dirty inodes at the same time performance will be much
-better.
+Which probably means adding the information we need to struct irq_cfg.
 
-So an optimal sync could would first issue data I/O for all inodes it
-wants to write back, then wait for the data I/O to finish and finally
-write out the inodes in big clusters.
-
-I'm not quite sure when we'll get to that, just making sure we don't
-work against this direction anywhere.
-
-And yeah, I really need to take a detailed look at the current
-incarnation of your patchset :)
-
+Eric
