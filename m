@@ -1,146 +1,273 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756968AbZETPda@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756837AbZETPdR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756968AbZETPda (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 11:33:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756031AbZETPcW
+	id S1756837AbZETPdR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 11:33:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755964AbZETPcU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 11:32:22 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:60721 "EHLO
+	Wed, 20 May 2009 11:32:20 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:56712 "EHLO
 	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754839AbZETPcO (ORCPT
+	with ESMTP id S1754215AbZETPcN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 11:32:14 -0400
+	Wed, 20 May 2009 11:32:13 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:subject:date:user-agent:cc:mime-version:content-type
          :content-transfer-encoding:content-disposition:message-id;
-        b=ltzprRXDrIYnbwDx/QeJppcueLOas+sBTq3b1ysXRGrv509EVd+s5UjFiplUEruC2M
-         Co2l0V73E6X+Hnlxoa81RBkQ1I2FXka4GlbrxnSTNp8FRdAlI2IO9CJCWg9CA7fQA+fQ
-         IwIT3KnqLQvt2yR2vjGzMcgUogSumhQ2FEL1Q=
+        b=wBVOlFMuPnnixrKEnWvghvzBZvj+GlwCo2DNhLdTXC1QODwmmly5jsD0g1QwI+fhDU
+         8Ekd1wr8warmVSB3teESi4ZOSbpGqExj9AV2XKjxGbH36fk7et6IqJrE1aNvAOXnSe6Q
+         JH6dSeTbprLNpckgZ1xImA95a8kKezWzk9c/0=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
-Subject: [PATCH 4/4] ide: add IDE_DFLAG_NIEN_QUIRK device flag
-Date: Wed, 20 May 2009 17:35:15 +0200
+Subject: [PATCH 3/4] ide: respect quirk_drives[] list on all controllers
+Date: Wed, 20 May 2009 17:34:41 +0200
 User-Agent: KMail/1.11.2 (Linux/2.6.30-rc6-next-20090518-05332-g0707b5a; KDE/4.2.2; i686; ; )
-Cc: linux-kernel@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200905201735.15489.bzolnier@gmail.com>
+Message-Id: <200905201734.42093.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add IDE_DFLAG_NIEN_QUIRK device flag and use it instead of
-drive->quirk_list.
+* Add ide_check_nien_quirk_list() helper to the core code
+  and then use it in ide_port_tune_devices().
 
-There should be no functional changes caused by this patch.
+* Remove no longer needed ->quirkproc methods from hpt366.c
+  and pdc202xx_{new,old}.c.
 
+Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/hpt366.c   |    2 +-
- drivers/ide/ide-eh.c   |    5 +++--
- drivers/ide/ide-io.c   |    8 ++++++--
- drivers/ide/ide-iops.c |    6 ++----
- include/linux/ide.h    |    2 +-
- 5 files changed, 13 insertions(+), 10 deletions(-)
+ drivers/ide/hpt366.c       |   27 ---------------------------
+ drivers/ide/ide-iops.c     |   25 +++++++++++++++++++++++++
+ drivers/ide/ide-probe.c    |    2 ++
+ drivers/ide/pdc202xx_new.c |   26 --------------------------
+ drivers/ide/pdc202xx_old.c |   27 ---------------------------
+ include/linux/ide.h        |    1 +
+ 6 files changed, 28 insertions(+), 80 deletions(-)
 
 Index: b/drivers/ide/hpt366.c
 ===================================================================
 --- a/drivers/ide/hpt366.c
 +++ b/drivers/ide/hpt366.c
-@@ -727,7 +727,7 @@ static void hpt3xx_maskproc(ide_drive_t 
- 	struct pci_dev	*dev	= to_pci_dev(hwif->dev);
- 	struct hpt_info *info	= hpt3xx_get_info(hwif->dev);
+@@ -138,18 +138,6 @@
+ #undef	HPT_RESET_STATE_ENGINE
+ #undef	HPT_DELAY_INTERRUPT
  
--	if (drive->quirk_list == 0)
-+	if ((drive->dev_flags & IDE_DFLAG_NIEN_QUIRK) == 0)
- 		return;
+-static const char *quirk_drives[] = {
+-	"QUANTUM FIREBALLlct08 08",
+-	"QUANTUM FIREBALLP KA6.4",
+-	"QUANTUM FIREBALLP KA9.1",
+-	"QUANTUM FIREBALLP KX13.6",
+-	"QUANTUM FIREBALLP KX20.5",
+-	"QUANTUM FIREBALLP KX27.3",
+-	"QUANTUM FIREBALLP LM20.4",
+-	"QUANTUM FIREBALLP LM20.5",
+-	NULL
+-};
+-
+ static const char *bad_ata100_5[] = {
+ 	"IBM-DTLA-307075",
+ 	"IBM-DTLA-307060",
+@@ -733,20 +721,6 @@ static void hpt3xx_set_pio_mode(ide_driv
+ 	hpt3xx_set_mode(drive, XFER_PIO_0 + pio);
+ }
  
- 	if (info->chip_type >= HPT370) {
-Index: b/drivers/ide/ide-eh.c
-===================================================================
---- a/drivers/ide/ide-eh.c
-+++ b/drivers/ide/ide-eh.c
-@@ -408,8 +408,9 @@ static ide_startstop_t do_reset1(ide_dri
- 	/* more than enough time */
- 	udelay(10);
- 	/* clear SRST, leave nIEN (unless device is on the quirk list) */
--	tp_ops->write_devctl(hwif, (drive->quirk_list == 2 ? 0 : ATA_NIEN) |
--			     ATA_DEVCTL_OBS);
-+	tp_ops->write_devctl(hwif,
-+		((drive->dev_flags & IDE_DFLAG_NIEN_QUIRK) ? 0 : ATA_NIEN) |
-+		 ATA_DEVCTL_OBS);
- 	/* more than enough time */
- 	udelay(10);
- 	hwif->poll_timeout = jiffies + WAIT_WORSTCASE;
-Index: b/drivers/ide/ide-io.c
-===================================================================
---- a/drivers/ide/ide-io.c
-+++ b/drivers/ide/ide-io.c
-@@ -503,11 +503,15 @@ repeat:
- 
- 		if ((hwif->host->host_flags & IDE_HFLAG_SERIALIZE) &&
- 		    hwif != prev_port) {
-+			ide_drive_t *cur_dev =
-+				prev_port ? prev_port->cur_dev : NULL;
-+
- 			/*
- 			 * set nIEN for previous port, drives in the
--			 * quirk_list may not like intr setups/cleanups
-+			 * quirk list may not like intr setups/cleanups
- 			 */
--			if (prev_port && prev_port->cur_dev->quirk_list == 0)
-+			if (cur_dev &&
-+			    (cur_dev->dev_flags & IDE_DFLAG_NIEN_QUIRK) == 0)
- 				prev_port->tp_ops->write_devctl(prev_port,
- 								ATA_NIEN |
- 								ATA_DEVCTL_OBS);
+-static void hpt3xx_quirkproc(ide_drive_t *drive)
+-{
+-	char *m			= (char *)&drive->id[ATA_ID_PROD];
+-	const  char **list	= quirk_drives;
+-
+-	while (*list)
+-		if (strstr(m, *list++)) {
+-			drive->quirk_list = 2;
+-			return;
+-		}
+-
+-	drive->quirk_list = 0;
+-}
+-
+ static void hpt3xx_maskproc(ide_drive_t *drive, int mask)
+ {
+ 	ide_hwif_t *hwif	= drive->hwif;
+@@ -1408,7 +1382,6 @@ static int __devinit hpt36x_init(struct 
+ static const struct ide_port_ops hpt3xx_port_ops = {
+ 	.set_pio_mode		= hpt3xx_set_pio_mode,
+ 	.set_dma_mode		= hpt3xx_set_mode,
+-	.quirkproc		= hpt3xx_quirkproc,
+ 	.maskproc		= hpt3xx_maskproc,
+ 	.mdma_filter		= hpt3xx_mdma_filter,
+ 	.udma_filter		= hpt3xx_udma_filter,
 Index: b/drivers/ide/ide-iops.c
 ===================================================================
 --- a/drivers/ide/ide-iops.c
 +++ b/drivers/ide/ide-iops.c
-@@ -287,11 +287,9 @@ void ide_check_nien_quirk_list(ide_drive
- 
- 	for (list = nien_quirk_list; *list != NULL; list++)
- 		if (strstr(m, *list) != NULL) {
--			drive->quirk_list = 2;
-+			drive->dev_flags |= IDE_DFLAG_NIEN_QUIRK;
- 			return;
- 		}
--
--	drive->quirk_list = 0;
+@@ -269,6 +269,31 @@ no_80w:
+ 	return 0;
  }
  
++static const char *nien_quirk_list[] = {
++	"QUANTUM FIREBALLlct08 08",
++	"QUANTUM FIREBALLP KA6.4",
++	"QUANTUM FIREBALLP KA9.1",
++	"QUANTUM FIREBALLP KX13.6",
++	"QUANTUM FIREBALLP KX20.5",
++	"QUANTUM FIREBALLP KX27.3",
++	"QUANTUM FIREBALLP LM20.4",
++	"QUANTUM FIREBALLP LM20.5",
++	NULL
++};
++
++void ide_check_nien_quirk_list(ide_drive_t *drive)
++{
++	const char **list, *m = (char *)&drive->id[ATA_ID_PROD];
++
++	for (list = nien_quirk_list; *list != NULL; list++)
++		if (strstr(m, *list) != NULL) {
++			drive->quirk_list = 2;
++			return;
++		}
++
++	drive->quirk_list = 0;
++}
++
  int ide_driveid_update(ide_drive_t *drive)
-@@ -377,7 +375,7 @@ int ide_config_drive_speed(ide_drive_t *
+ {
+ 	u16 *id;
+Index: b/drivers/ide/ide-probe.c
+===================================================================
+--- a/drivers/ide/ide-probe.c
++++ b/drivers/ide/ide-probe.c
+@@ -729,6 +729,8 @@ static void ide_port_tune_devices(ide_hw
+ 	int i;
  
- 	tp_ops->exec_command(hwif, ATA_CMD_SET_FEATURES);
+ 	ide_port_for_each_present_dev(i, drive, hwif) {
++		ide_check_nien_quirk_list(drive);
++
+ 		if (port_ops && port_ops->quirkproc)
+ 			port_ops->quirkproc(drive);
+ 	}
+Index: b/drivers/ide/pdc202xx_new.c
+===================================================================
+--- a/drivers/ide/pdc202xx_new.c
++++ b/drivers/ide/pdc202xx_new.c
+@@ -40,18 +40,6 @@
+ #define DBG(fmt, args...)
+ #endif
  
--	if (drive->quirk_list == 2)
-+	if (drive->dev_flags & IDE_DFLAG_NIEN_QUIRK)
- 		tp_ops->write_devctl(hwif, ATA_DEVCTL_OBS);
+-static const char *pdc_quirk_drives[] = {
+-	"QUANTUM FIREBALLlct08 08",
+-	"QUANTUM FIREBALLP KA6.4",
+-	"QUANTUM FIREBALLP KA9.1",
+-	"QUANTUM FIREBALLP LM20.4",
+-	"QUANTUM FIREBALLP KX13.6",
+-	"QUANTUM FIREBALLP KX20.5",
+-	"QUANTUM FIREBALLP KX27.3",
+-	"QUANTUM FIREBALLP LM20.5",
+-	NULL
+-};
+-
+ static u8 max_dma_rate(struct pci_dev *pdev)
+ {
+ 	u8 mode;
+@@ -200,19 +188,6 @@ static u8 pdcnew_cable_detect(ide_hwif_t
+ 		return ATA_CBL_PATA80;
+ }
  
- 	error = __ide_wait_stat(drive, drive->ready_stat,
+-static void pdcnew_quirkproc(ide_drive_t *drive)
+-{
+-	const char **list, *m = (char *)&drive->id[ATA_ID_PROD];
+-
+-	for (list = pdc_quirk_drives; *list != NULL; list++)
+-		if (strstr(m, *list) != NULL) {
+-			drive->quirk_list = 2;
+-			return;
+-		}
+-
+-	drive->quirk_list = 0;
+-}
+-
+ static void pdcnew_reset(ide_drive_t *drive)
+ {
+ 	/*
+@@ -473,7 +448,6 @@ static struct pci_dev * __devinit pdc202
+ static const struct ide_port_ops pdcnew_port_ops = {
+ 	.set_pio_mode		= pdcnew_set_pio_mode,
+ 	.set_dma_mode		= pdcnew_set_dma_mode,
+-	.quirkproc		= pdcnew_quirkproc,
+ 	.resetproc		= pdcnew_reset,
+ 	.cable_detect		= pdcnew_cable_detect,
+ };
+Index: b/drivers/ide/pdc202xx_old.c
+===================================================================
+--- a/drivers/ide/pdc202xx_old.c
++++ b/drivers/ide/pdc202xx_old.c
+@@ -23,18 +23,6 @@
+ 
+ #define PDC202XX_DEBUG_DRIVE_INFO	0
+ 
+-static const char *pdc_quirk_drives[] = {
+-	"QUANTUM FIREBALLlct08 08",
+-	"QUANTUM FIREBALLP KA6.4",
+-	"QUANTUM FIREBALLP KA9.1",
+-	"QUANTUM FIREBALLP LM20.4",
+-	"QUANTUM FIREBALLP KX13.6",
+-	"QUANTUM FIREBALLP KX20.5",
+-	"QUANTUM FIREBALLP KX27.3",
+-	"QUANTUM FIREBALLP LM20.5",
+-	NULL
+-};
+-
+ static void pdc_old_disable_66MHz_clock(ide_hwif_t *);
+ 
+ static void pdc202xx_set_mode(ide_drive_t *drive, const u8 speed)
+@@ -151,19 +139,6 @@ static void pdc_old_disable_66MHz_clock(
+ 	outb(clock & ~(hwif->channel ? 0x08 : 0x02), clock_reg);
+ }
+ 
+-static void pdc202xx_quirkproc(ide_drive_t *drive)
+-{
+-	const char **list, *m = (char *)&drive->id[ATA_ID_PROD];
+-
+-	for (list = pdc_quirk_drives; *list != NULL; list++)
+-		if (strstr(m, *list) != NULL) {
+-			drive->quirk_list = 2;
+-			return;
+-		}
+-
+-	drive->quirk_list = 0;
+-}
+-
+ static void pdc202xx_dma_start(ide_drive_t *drive)
+ {
+ 	if (drive->current_speed > XFER_UDMA_2)
+@@ -311,13 +286,11 @@ static void __devinit pdc202ata4_fixup_i
+ static const struct ide_port_ops pdc20246_port_ops = {
+ 	.set_pio_mode		= pdc202xx_set_pio_mode,
+ 	.set_dma_mode		= pdc202xx_set_mode,
+-	.quirkproc		= pdc202xx_quirkproc,
+ };
+ 
+ static const struct ide_port_ops pdc2026x_port_ops = {
+ 	.set_pio_mode		= pdc202xx_set_pio_mode,
+ 	.set_dma_mode		= pdc202xx_set_mode,
+-	.quirkproc		= pdc202xx_quirkproc,
+ 	.resetproc		= pdc202xx_reset,
+ 	.cable_detect		= pdc2026x_cable_detect,
+ };
 Index: b/include/linux/ide.h
 ===================================================================
 --- a/include/linux/ide.h
 +++ b/include/linux/ide.h
-@@ -474,6 +474,7 @@ enum {
- 	IDE_DFLAG_NICE1			= (1 << 5),
- 	/* device is physically present */
- 	IDE_DFLAG_PRESENT		= (1 << 6),
-+	IDE_DFLAG_NIEN_QUIRK		= (1 << 7),
- 	/* id read from device (synthetic if not set) */
- 	IDE_DFLAG_ID_READ		= (1 << 8),
- 	IDE_DFLAG_NOPROBE		= (1 << 9),
-@@ -543,7 +544,6 @@ struct ide_drive_s {
- 	u8	waiting_for_dma;	/* dma currently in progress */
- 	u8	dma;			/* atapi dma flag */
+@@ -1464,6 +1464,7 @@ static inline void ide_acpi_set_state(id
+ void ide_register_region(struct gendisk *);
+ void ide_unregister_region(struct gendisk *);
  
--        u8	quirk_list;	/* considered quirky, set for a specific host */
-         u8	init_speed;	/* transfer rate set at boot */
-         u8	current_speed;	/* current transfer rate set */
- 	u8	desired_speed;	/* desired transfer rate set */
++void ide_check_nien_quirk_list(ide_drive_t *);
+ void ide_undecoded_slave(ide_drive_t *);
+ 
+ void ide_port_apply_params(ide_hwif_t *);
