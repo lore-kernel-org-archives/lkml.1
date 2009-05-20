@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757308AbZETLVw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757671AbZETLXV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757308AbZETLVw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 07:21:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756167AbZETLTF
+	id S1757671AbZETLXV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 07:23:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755950AbZETLTX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 07:19:05 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:55296 "EHLO mx2.redhat.com"
+	Wed, 20 May 2009 07:19:23 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:55297 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755882AbZETLSw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755886AbZETLSw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 20 May 2009 07:18:52 -0400
 From: Avi Kivity <avi@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: kvm@vger.kernel.org
-Subject: [PATCH 41/46] KVM: Make kvm_cpu_(has|get)_interrupt() work for userspace irqchip too
-Date: Wed, 20 May 2009 14:18:38 +0300
-Message-Id: <1242818323-10413-42-git-send-email-avi@redhat.com>
+Subject: [PATCH 45/46] KVM: SVM: Coalesce userspace/kernel irqchip interrupt injection logic
+Date: Wed, 20 May 2009 14:18:42 +0300
+Message-Id: <1242818323-10413-46-git-send-email-avi@redhat.com>
 In-Reply-To: <1242818323-10413-1-git-send-email-avi@redhat.com>
 References: <1242818323-10413-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -23,151 +23,312 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Gleb Natapov <gleb@redhat.com>
 
-At the vector level, kernel and userspace irqchip are fairly similar.
+Start to use interrupt/exception queues like VMX does.
+This also fix the bug that if exit was caused by a guest
+internal exception access to IDT the exception was not
+reinjected.
+
+Use EVENTINJ to inject interrupts.  Use VINT only for detecting when IRQ
+windows is open again.  EVENTINJ ensures
+the interrupt is injected immediately and not delayed.
 
 Signed-off-by: Gleb Natapov <gleb@redhat.com>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 ---
- arch/x86/kvm/irq.c |    7 +++++++
- arch/x86/kvm/svm.c |   11 +++++++----
- arch/x86/kvm/vmx.c |   18 +++++++++---------
- arch/x86/kvm/x86.c |    4 ++--
- 4 files changed, 25 insertions(+), 15 deletions(-)
+ arch/x86/kvm/svm.c |  187 ++++++++++++++++++++++++----------------------------
+ 1 files changed, 85 insertions(+), 102 deletions(-)
 
-diff --git a/arch/x86/kvm/irq.c b/arch/x86/kvm/irq.c
-index cf17ed5..11c2757 100644
---- a/arch/x86/kvm/irq.c
-+++ b/arch/x86/kvm/irq.c
-@@ -24,6 +24,7 @@
- 
- #include "irq.h"
- #include "i8254.h"
-+#include "x86.h"
- 
- /*
-  * check if there are pending timer events
-@@ -48,6 +49,9 @@ int kvm_cpu_has_interrupt(struct kvm_vcpu *v)
- {
- 	struct kvm_pic *s;
- 
-+	if (!irqchip_in_kernel(v->kvm))
-+		return v->arch.irq_summary;
-+
- 	if (kvm_apic_has_interrupt(v) == -1) {	/* LAPIC */
- 		if (kvm_apic_accept_pic_intr(v)) {
- 			s = pic_irqchip(v->kvm);	/* PIC */
-@@ -67,6 +71,9 @@ int kvm_cpu_get_interrupt(struct kvm_vcpu *v)
- 	struct kvm_pic *s;
- 	int vector;
- 
-+	if (!irqchip_in_kernel(v->kvm))
-+		return kvm_pop_irq(v);
-+
- 	vector = kvm_get_apic_interrupt(v);	/* APIC */
- 	if (vector == -1) {
- 		if (kvm_apic_accept_pic_intr(v)) {
 diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
-index 8fc6eea..6eef6d2 100644
+index f2933ab..a80ffaa 100644
 --- a/arch/x86/kvm/svm.c
 +++ b/arch/x86/kvm/svm.c
-@@ -2091,8 +2091,9 @@ static int interrupt_window_interception(struct vcpu_svm *svm,
- 	 * If the user space waits to inject interrupts, exit as soon as
- 	 * possible
- 	 */
--	if (kvm_run->request_interrupt_window &&
--	    !svm->vcpu.arch.irq_summary) {
-+	if (!irqchip_in_kernel(svm->vcpu.kvm) &&
-+	    kvm_run->request_interrupt_window &&
-+	    !kvm_cpu_has_interrupt(&svm->vcpu)) {
- 		++svm->vcpu.stat.irq_window_exits;
- 		kvm_run->exit_reason = KVM_EXIT_IRQ_WINDOW_OPEN;
- 		return 0;
-@@ -2373,7 +2374,8 @@ static void do_interrupt_requests(struct kvm_vcpu *vcpu,
- 		 (svm->vmcb->save.rflags & X86_EFLAGS_IF) &&
- 		 (svm->vcpu.arch.hflags & HF_GIF_MASK));
+@@ -70,7 +70,6 @@ module_param(npt, int, S_IRUGO);
+ static int nested = 0;
+ module_param(nested, int, S_IRUGO);
  
--	if (svm->vcpu.arch.interrupt_window_open && svm->vcpu.arch.irq_summary)
-+	if (svm->vcpu.arch.interrupt_window_open &&
-+	    kvm_cpu_has_interrupt(&svm->vcpu))
- 		/*
- 		 * If interrupts enabled, and not blocked by sti or mov ss. Good.
- 		 */
-@@ -2383,7 +2385,8 @@ static void do_interrupt_requests(struct kvm_vcpu *vcpu,
- 	 * Interrupts blocked.  Wait for unblock.
- 	 */
- 	if (!svm->vcpu.arch.interrupt_window_open &&
--	    (svm->vcpu.arch.irq_summary || kvm_run->request_interrupt_window))
-+	    (kvm_cpu_has_interrupt(&svm->vcpu) ||
-+	     kvm_run->request_interrupt_window))
- 		svm_set_vintr(svm);
- 	else
- 		svm_clear_vintr(svm);
-diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
-index c6997c0..b3292c1 100644
---- a/arch/x86/kvm/vmx.c
-+++ b/arch/x86/kvm/vmx.c
-@@ -2535,21 +2535,20 @@ static void do_interrupt_requests(struct kvm_vcpu *vcpu,
- 		vmx_inject_nmi(vcpu);
- 		if (vcpu->arch.nmi_pending)
- 			enable_nmi_window(vcpu);
--		else if (vcpu->arch.irq_summary
--			 || kvm_run->request_interrupt_window)
-+		else if (kvm_cpu_has_interrupt(vcpu) ||
-+			 kvm_run->request_interrupt_window)
- 			enable_irq_window(vcpu);
- 		return;
- 	}
+-static void kvm_reput_irq(struct vcpu_svm *svm);
+ static void svm_flush_tlb(struct kvm_vcpu *vcpu);
  
- 	if (vcpu->arch.interrupt_window_open) {
--		if (vcpu->arch.irq_summary && !vcpu->arch.interrupt.pending)
--			kvm_queue_interrupt(vcpu, kvm_pop_irq(vcpu));
-+		if (kvm_cpu_has_interrupt(vcpu) && !vcpu->arch.interrupt.pending)
-+			kvm_queue_interrupt(vcpu, kvm_cpu_get_interrupt(vcpu));
+ static int nested_svm_exit_handled(struct vcpu_svm *svm, bool kvm_override);
+@@ -199,9 +198,7 @@ static void svm_queue_exception(struct kvm_vcpu *vcpu, unsigned nr,
  
- 		if (vcpu->arch.interrupt.pending)
- 			vmx_inject_irq(vcpu, vcpu->arch.interrupt.nr);
--	}
--	if (!vcpu->arch.interrupt_window_open &&
--	    (vcpu->arch.irq_summary || kvm_run->request_interrupt_window))
-+	} else if(kvm_cpu_has_interrupt(vcpu) ||
-+		  kvm_run->request_interrupt_window)
- 		enable_irq_window(vcpu);
- }
- 
-@@ -2976,8 +2975,9 @@ static int handle_interrupt_window(struct kvm_vcpu *vcpu,
- 	 * If the user space waits to inject interrupts, exit as soon as
- 	 * possible
- 	 */
--	if (kvm_run->request_interrupt_window &&
--	    !vcpu->arch.irq_summary) {
-+	if (!irqchip_in_kernel(vcpu->kvm) &&
-+	    kvm_run->request_interrupt_window &&
-+	    !kvm_cpu_has_interrupt(vcpu)) {
- 		kvm_run->exit_reason = KVM_EXIT_IRQ_WINDOW_OPEN;
- 		return 0;
- 	}
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 6fc53bb..0c9c13c 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -3065,7 +3065,7 @@ EXPORT_SYMBOL_GPL(kvm_emulate_cpuid);
- static int dm_request_for_irq_injection(struct kvm_vcpu *vcpu,
- 					  struct kvm_run *kvm_run)
+ static bool svm_exception_injected(struct kvm_vcpu *vcpu)
  {
--	return (!vcpu->arch.irq_summary &&
-+	return (!irqchip_in_kernel(vcpu->kvm) && !kvm_cpu_has_interrupt(vcpu) &&
- 		kvm_run->request_interrupt_window &&
- 		vcpu->arch.interrupt_window_open &&
- 		(kvm_x86_ops->get_rflags(vcpu) & X86_EFLAGS_IF));
-@@ -3082,7 +3082,7 @@ static void post_kvm_run_save(struct kvm_vcpu *vcpu,
- 	else
- 		kvm_run->ready_for_interrupt_injection =
- 					(vcpu->arch.interrupt_window_open &&
--					 vcpu->arch.irq_summary == 0);
-+					 !kvm_cpu_has_interrupt(vcpu));
+-	struct vcpu_svm *svm = to_svm(vcpu);
+-
+-	return !(svm->vmcb->control.exit_int_info & SVM_EXITINTINFO_VALID);
++	return false;
  }
  
- static void vapic_enter(struct kvm_vcpu *vcpu)
+ static int is_external_interrupt(u32 info)
+@@ -978,12 +975,9 @@ static int svm_guest_debug(struct kvm_vcpu *vcpu, struct kvm_guest_debug *dbg)
+ 
+ static int svm_get_irq(struct kvm_vcpu *vcpu)
+ {
+-	struct vcpu_svm *svm = to_svm(vcpu);
+-	u32 exit_int_info = svm->vmcb->control.exit_int_info;
+-
+-	if (is_external_interrupt(exit_int_info))
+-		return exit_int_info & SVM_EVTINJ_VEC_MASK;
+-	return -1;
++	if (!vcpu->arch.interrupt.pending)
++		return -1;
++	return vcpu->arch.interrupt.nr;
+ }
+ 
+ static void load_host_msrs(struct kvm_vcpu *vcpu)
+@@ -1090,17 +1084,8 @@ static void svm_set_dr(struct kvm_vcpu *vcpu, int dr, unsigned long value,
+ 
+ static int pf_interception(struct vcpu_svm *svm, struct kvm_run *kvm_run)
+ {
+-	u32 exit_int_info = svm->vmcb->control.exit_int_info;
+-	struct kvm *kvm = svm->vcpu.kvm;
+ 	u64 fault_address;
+ 	u32 error_code;
+-	bool event_injection = false;
+-
+-	if (!irqchip_in_kernel(kvm) &&
+-	    is_external_interrupt(exit_int_info)) {
+-		event_injection = true;
+-		kvm_push_irq(&svm->vcpu, exit_int_info & SVM_EVTINJ_VEC_MASK);
+-	}
+ 
+ 	fault_address  = svm->vmcb->control.exit_info_2;
+ 	error_code = svm->vmcb->control.exit_info_1;
+@@ -1120,9 +1105,11 @@ static int pf_interception(struct vcpu_svm *svm, struct kvm_run *kvm_run)
+ 	 */
+ 	if (npt_enabled)
+ 		svm_flush_tlb(&svm->vcpu);
+-
+-	if (!npt_enabled && event_injection)
+-		kvm_mmu_unprotect_page_virt(&svm->vcpu, fault_address);
++	else {
++		if (svm->vcpu.arch.interrupt.pending ||
++				svm->vcpu.arch.exception.pending)
++			kvm_mmu_unprotect_page_virt(&svm->vcpu, fault_address);
++	}
+ 	return kvm_mmu_page_fault(&svm->vcpu, fault_address, error_code);
+ }
+ 
+@@ -2196,7 +2183,6 @@ static int handle_exit(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
+ 		}
+ 	}
+ 
+-	kvm_reput_irq(svm);
+ 
+ 	if (svm->vmcb->control.exit_code == SVM_EXIT_ERR) {
+ 		kvm_run->exit_reason = KVM_EXIT_FAIL_ENTRY;
+@@ -2259,13 +2245,19 @@ static inline void svm_inject_irq(struct vcpu_svm *svm, int irq)
+ 		((/*control->int_vector >> 4*/ 0xf) << V_INTR_PRIO_SHIFT);
+ }
+ 
++static void svm_queue_irq(struct vcpu_svm *svm, unsigned nr)
++{
++	svm->vmcb->control.event_inj = nr |
++		SVM_EVTINJ_VALID | SVM_EVTINJ_TYPE_INTR;
++}
++
+ static void svm_set_irq(struct kvm_vcpu *vcpu, int irq)
+ {
+ 	struct vcpu_svm *svm = to_svm(vcpu);
+ 
+ 	nested_svm_intr(svm);
+ 
+-	svm_inject_irq(svm, irq);
++	svm_queue_irq(svm, irq);
+ }
+ 
+ static void update_cr8_intercept(struct kvm_vcpu *vcpu)
+@@ -2298,98 +2290,47 @@ static int svm_interrupt_allowed(struct kvm_vcpu *vcpu)
+ 		(svm->vcpu.arch.hflags & HF_GIF_MASK);
+ }
+ 
+-static void svm_intr_assist(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
++static void enable_irq_window(struct kvm_vcpu *vcpu)
+ {
+-	struct vcpu_svm *svm = to_svm(vcpu);
+-	struct vmcb *vmcb = svm->vmcb;
+-	int intr_vector = -1;
+-
+-	if ((vmcb->control.exit_int_info & SVM_EVTINJ_VALID) &&
+-	    ((vmcb->control.exit_int_info & SVM_EVTINJ_TYPE_MASK) == 0)) {
+-		intr_vector = vmcb->control.exit_int_info &
+-			      SVM_EVTINJ_VEC_MASK;
+-		vmcb->control.exit_int_info = 0;
+-		svm_inject_irq(svm, intr_vector);
+-		goto out;
+-	}
+-
+-	if (vmcb->control.int_ctl & V_IRQ_MASK)
+-		goto out;
+-
+-	if (!kvm_cpu_has_interrupt(vcpu))
+-		goto out;
+-
+-	if (nested_svm_intr(svm))
+-		goto out;
+-
+-	if (!(svm->vcpu.arch.hflags & HF_GIF_MASK))
+-		goto out;
+-
+-	if (!(vmcb->save.rflags & X86_EFLAGS_IF) ||
+-	    (vmcb->control.int_state & SVM_INTERRUPT_SHADOW_MASK) ||
+-	    (vmcb->control.event_inj & SVM_EVTINJ_VALID)) {
+-		/* unable to deliver irq, set pending irq */
+-		svm_set_vintr(svm);
+-		svm_inject_irq(svm, 0x0);
+-		goto out;
+-	}
+-	/* Okay, we can deliver the interrupt: grab it and update PIC state. */
+-	intr_vector = kvm_cpu_get_interrupt(vcpu);
+-	svm_inject_irq(svm, intr_vector);
+-out:
+-	update_cr8_intercept(vcpu);
++	svm_set_vintr(to_svm(vcpu));
++	svm_inject_irq(to_svm(vcpu), 0x0);
+ }
+ 
+-static void kvm_reput_irq(struct vcpu_svm *svm)
++static void svm_intr_inject(struct kvm_vcpu *vcpu)
+ {
+-	struct vmcb_control_area *control = &svm->vmcb->control;
+-
+-	if ((control->int_ctl & V_IRQ_MASK)
+-	    && !irqchip_in_kernel(svm->vcpu.kvm)) {
+-		control->int_ctl &= ~V_IRQ_MASK;
+-		kvm_push_irq(&svm->vcpu, control->int_vector);
++	/* try to reinject previous events if any */
++	if (vcpu->arch.interrupt.pending) {
++		svm_queue_irq(to_svm(vcpu), vcpu->arch.interrupt.nr);
++		return;
+ 	}
+ 
+-	svm->vcpu.arch.interrupt_window_open =
+-		!(control->int_state & SVM_INTERRUPT_SHADOW_MASK) &&
+-		 (svm->vcpu.arch.hflags & HF_GIF_MASK);
+-}
+-
+-static void svm_do_inject_vector(struct vcpu_svm *svm)
+-{
+-	svm_inject_irq(svm, kvm_pop_irq(&svm->vcpu));
++	/* try to inject new event if pending */
++	if (kvm_cpu_has_interrupt(vcpu)) {
++		if (vcpu->arch.interrupt_window_open) {
++			kvm_queue_interrupt(vcpu, kvm_cpu_get_interrupt(vcpu));
++			svm_queue_irq(to_svm(vcpu), vcpu->arch.interrupt.nr);
++		}
++	}
+ }
+ 
+-static void do_interrupt_requests(struct kvm_vcpu *vcpu,
+-				       struct kvm_run *kvm_run)
++static void svm_intr_assist(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
+ {
+ 	struct vcpu_svm *svm = to_svm(vcpu);
+-	struct vmcb_control_area *control = &svm->vmcb->control;
++	bool req_int_win = !irqchip_in_kernel(vcpu->kvm) &&
++		kvm_run->request_interrupt_window;
+ 
+ 	if (nested_svm_intr(svm))
+-		return;
++		goto out;
+ 
+-	svm->vcpu.arch.interrupt_window_open =
+-		(!(control->int_state & SVM_INTERRUPT_SHADOW_MASK) &&
+-		 (svm->vmcb->save.rflags & X86_EFLAGS_IF) &&
+-		 (svm->vcpu.arch.hflags & HF_GIF_MASK));
++	svm->vcpu.arch.interrupt_window_open = svm_interrupt_allowed(vcpu);
+ 
+-	if (svm->vcpu.arch.interrupt_window_open &&
+-	    kvm_cpu_has_interrupt(&svm->vcpu))
+-		/*
+-		 * If interrupts enabled, and not blocked by sti or mov ss. Good.
+-		 */
+-		svm_do_inject_vector(svm);
++	svm_intr_inject(vcpu);
+ 
+-	/*
+-	 * Interrupts blocked.  Wait for unblock.
+-	 */
+-	if (!svm->vcpu.arch.interrupt_window_open &&
+-	    (kvm_cpu_has_interrupt(&svm->vcpu) ||
+-	     kvm_run->request_interrupt_window))
+-		svm_set_vintr(svm);
+-	else
+-		svm_clear_vintr(svm);
++	if (kvm_cpu_has_interrupt(vcpu) || req_int_win)
++		enable_irq_window(vcpu);
++
++out:
++	update_cr8_intercept(vcpu);
+ }
+ 
+ static int svm_set_tss_addr(struct kvm *kvm, unsigned int addr)
+@@ -2429,6 +2370,46 @@ static inline void sync_lapic_to_cr8(struct kvm_vcpu *vcpu)
+ 	svm->vmcb->control.int_ctl |= cr8 & V_TPR_MASK;
+ }
+ 
++static void svm_complete_interrupts(struct vcpu_svm *svm)
++{
++	u8 vector;
++	int type;
++	u32 exitintinfo = svm->vmcb->control.exit_int_info;
++
++	svm->vcpu.arch.nmi_injected = false;
++	kvm_clear_exception_queue(&svm->vcpu);
++	kvm_clear_interrupt_queue(&svm->vcpu);
++
++	if (!(exitintinfo & SVM_EXITINTINFO_VALID))
++		return;
++
++	vector = exitintinfo & SVM_EXITINTINFO_VEC_MASK;
++	type = exitintinfo & SVM_EXITINTINFO_TYPE_MASK;
++
++	switch (type) {
++	case SVM_EXITINTINFO_TYPE_NMI:
++		svm->vcpu.arch.nmi_injected = true;
++		break;
++	case SVM_EXITINTINFO_TYPE_EXEPT:
++		/* In case of software exception do not reinject an exception
++		   vector, but re-execute and instruction instead */
++		if (vector == BP_VECTOR || vector == OF_VECTOR)
++			break;
++		if (exitintinfo & SVM_EXITINTINFO_VALID_ERR) {
++			u32 err = svm->vmcb->control.exit_int_info_err;
++			kvm_queue_exception_e(&svm->vcpu, vector, err);
++
++		} else
++			kvm_queue_exception(&svm->vcpu, vector);
++		break;
++	case SVM_EXITINTINFO_TYPE_INTR:
++		kvm_queue_interrupt(&svm->vcpu, vector);
++		break;
++	default:
++		break;
++	}
++}
++
+ #ifdef CONFIG_X86_64
+ #define R "r"
+ #else
+@@ -2557,6 +2538,8 @@ static void svm_vcpu_run(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
+ 	sync_cr8_to_lapic(vcpu);
+ 
+ 	svm->next_rip = 0;
++
++	svm_complete_interrupts(svm);
+ }
+ 
+ #undef R
+@@ -2678,7 +2661,7 @@ static struct kvm_x86_ops svm_x86_ops = {
+ 	.queue_exception = svm_queue_exception,
+ 	.exception_injected = svm_exception_injected,
+ 	.inject_pending_irq = svm_intr_assist,
+-	.inject_pending_vectors = do_interrupt_requests,
++	.inject_pending_vectors = svm_intr_assist,
+ 	.interrupt_allowed = svm_interrupt_allowed,
+ 
+ 	.set_tss_addr = svm_set_tss_addr,
 -- 
 1.6.0.6
 
