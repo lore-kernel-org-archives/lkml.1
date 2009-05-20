@@ -1,166 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756147AbZETJZi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756783AbZETJ1B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756147AbZETJZi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 05:25:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754015AbZETJZ2
+	id S1756783AbZETJ1B (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 05:27:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754232AbZETJ0u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 05:25:28 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:38043 "EHLO kernel.dk"
+	Wed, 20 May 2009 05:26:50 -0400
+Received: from hera.kernel.org ([140.211.167.34]:57237 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752466AbZETJZ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 05:25:27 -0400
-Date: Wed, 20 May 2009 11:25:28 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
-       akpm@linux-foundation.org, jack@suse.cz
-Subject: Re: [PATCH 0/11] Per-bdi writeback flusher threads #4
-Message-ID: <20090520092528.GP11363@kernel.dk>
-References: <1242649192-16263-1-git-send-email-jens.axboe@oracle.com> <1242713463.2560.5.camel@ymzhang> <20090519062049.GP4140@kernel.dk> <1242805911.2560.28.camel@ymzhang> <20090520080938.GM11363@kernel.dk> <20090520085446.GN11363@kernel.dk> <1242811142.2560.33.camel@ymzhang>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1242811142.2560.33.camel@ymzhang>
+	id S1752793AbZETJ0t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 05:26:49 -0400
+Subject: Re: [tip:perfcounters/core] perf_counter tools: tidy up in-kernel
+ dependencies
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       tglx@linutronix.de, fengguang.wu@intel.com, mingo@elte.hu
+Cc: linux-tip-commits@vger.kernel.org
+In-Reply-To: <tip-4d1b100b57e8d472ca3b3a628e03c24d66cb782c@git.kernel.org>
+References: <20090323172417.677932499@chello.nl>
+	 <tip-4d1b100b57e8d472ca3b3a628e03c24d66cb782c@git.kernel.org>
+Content-Type: text/plain
+Date: Wed, 20 May 2009 14:56:06 +0530
+Message-Id: <1242811566.3260.58.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 20 2009, Zhang, Yanmin wrote:
-> On Wed, 2009-05-20 at 10:54 +0200, Jens Axboe wrote:
-> > On Wed, May 20 2009, Jens Axboe wrote:
-> > > On Wed, May 20 2009, Zhang, Yanmin wrote:
-> > > > On Tue, 2009-05-19 at 08:20 +0200, Jens Axboe wrote:
-> > > > > On Tue, May 19 2009, Zhang, Yanmin wrote:
-> > > > > > On Mon, 2009-05-18 at 14:19 +0200, Jens Axboe wrote:
-> > > > > > > Hi,
-> > > > > > >
-> > > > > > > This is the fourth version of this patchset. Chances since v3:
-> > > > > > >
-> > > > > > > - Dropped a prep patch, it has been included in mainline since.
-> > > > > > >
-> > > > > > > - Add a work-to-do list to the bdi. This is struct bdi_work. Each
-> > > > > > >   wb thread will notice and execute work on bdi->work_list. The arguments
-> > > > > > >   are which sb (or NULL for all) to flush and how many pages to flush.
-> > > > > > >
-> > > > > > > - Fix a bug where not all bdi's would end up on the bdi_list, so potentially
-> > > > > > >   some data would not be flushed.
-> > > > > > >
-> > > > > > > - Make wb_kupdated() pass on wbc->older_than_this so we maintain the same
-> > > > > > >   behaviour for kupdated flushes.
-> > > > > > >
-> > > > > > > - Have the wb thread flush first before sleeping, to avoid losing the
-> > > > > > >   first flush on lazy register.
-> > > > > > >
-> > > > > > > - Rebase to newer kernels.
-> > > > 
-> > > > > I'm attaching two patches - apply #1 to -rc6, and then #2 is a roll-up
-> > > > > of the patch series that you can apply next.
-> > > > Jens,
-> > > > 
-> > > > I run into 2 issues with kernel 2.6.30-rc6+BDI_Flusher_V4. Below is one.
-> > > > 
-> > > > Tue May 19 00:00:00 CST 2009
-> > > > BUG: unable to handle kernel NULL pointer dereference at 00000000000001d8
-> > > > IP: [<ffffffff803f3c4c>] generic_make_request+0x10a/0x384
-> > > > PGD 0
-> > > > Oops: 0000 [#1] SMP
-> > > > last sysfs file: /sys/block/sdb/stat
-> > > > CPU 0
-> > > > Modules linked in: igb
-> > > > Pid: 1445, comm: bdi-8:16 Not tainted 2.6.30-rc6-bdiflusherv4 #1 X8DTN
-> > > > RIP: 0010:[<ffffffff803f3c4c>]  [<ffffffff803f3c4c>] generic_make_request+0x10a/0x384
-> > > > RSP: 0018:ffff8800bd04da60  EFLAGS: 00010206
-> > > > RAX: 0000000000000000 RBX: ffff8801be45d500 RCX: 00000000038a0df8
-> > > > RDX: 0000000000000008 RSI: 0000000000000576 RDI: ffff8801bf408680
-> > > > RBP: ffff8801be45d500 R08: ffffe20001ee8140 R09: ffff8800bd04da98
-> > > > R10: 0000000000000000 R11: ffff8800bd72eb40 R12: ffff8801be45d500
-> > > > R13: ffff88005f51f310 R14: 0000000000000008 R15: ffff8800b15a5458
-> > > > FS:  0000000000000000(0000) GS:ffffc20000000000(0000) knlGS:0000000000000000
-> > > > CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-> > > > CR2: 00000000000001d8 CR3: 0000000000201000 CR4: 00000000000006e0
-> > > > DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> > > > DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> > > > Process bdi-8:16 (pid: 1445, threadinfo ffff8800bd04c000, task ffff8800bd1b75f0)
-> > > > Stack:
-> > > >  0000000000000008 ffffffff8027a613 00000000848dc000 ffffffffffffffff
-> > > >  ffff8800a8190f50 ffffffff00000012 ffff8800a81938e0 ffffc2000000001b
-> > > >  0000000000000000 0000000000000000 ffffe200026f9c30 0000000000000000
-> > > > Call Trace:
-> > > >  [<ffffffff8027a613>] ? mempool_alloc+0x59/0x10f
-> > > >  [<ffffffff803f3f70>] ? submit_bio+0xaa/0xb1
-> > > >  [<ffffffff802c6a3f>] ? submit_bh+0xe3/0x103
-> > > >  [<ffffffff802c92ea>] ? __block_write_full_page+0x1fb/0x2f2
-> > > >  [<ffffffff802c7d6a>] ? end_buffer_async_write+0x0/0xfb
-> > > >  [<ffffffff8027e8d2>] ? __writepage+0xa/0x25
-> > > >  [<ffffffff8027f036>] ? write_cache_pages+0x21c/0x338
-> > > >  [<ffffffff8027e8c8>] ? __writepage+0x0/0x25
-> > > >  [<ffffffff8027f195>] ? do_writepages+0x27/0x2d
-> > > >  [<ffffffff802c22c1>] ? __writeback_single_inode+0x159/0x2b3
-> > > >  [<ffffffff8071e52a>] ? thread_return+0x3e/0xaa
-> > > >  [<ffffffff8027f267>] ? determine_dirtyable_memory+0xd/0x1d
-> > > >  [<ffffffff8027f2dd>] ? get_dirty_limits+0x1d/0x255
-> > > >  [<ffffffff802c27bc>] ? generic_sync_wb_inodes+0x1b4/0x220
-> > > >  [<ffffffff802c3130>] ? wb_do_writeback+0x16c/0x215
-> > > >  [<ffffffff802c323e>] ? bdi_writeback_task+0x65/0x10d
-> > > >  [<ffffffff8024cc06>] ? autoremove_wake_function+0x0/0x2e
-> > > >  [<ffffffff8024cb27>] ? bit_waitqueue+0x10/0xa0
-> > > >  [<ffffffff80289257>] ? bdi_start_fn+0x0/0xba
-> > > >  [<ffffffff802892c6>] ? bdi_start_fn+0x6f/0xba
-> > > >  [<ffffffff8024c860>] ? kthread+0x54/0x80
-> > > >  [<ffffffff8020c97a>] ? child_rip+0xa/0x20
-> > > >  [<ffffffff8024c80c>] ? kthread+0x0/0x80
-> > > >  [<ffffffff8020c970>] ? child_rip+0x0/0x20
-> > > > 
+On Mon, 2009-03-23 at 20:57 +0000, Ingo Molnar wrote:
+> Commit-ID:  4d1b100b57e8d472ca3b3a628e03c24d66cb782c
+> Gitweb:     http://git.kernel.org/tip/4d1b100b57e8d472ca3b3a628e03c24d66cb782c
+> Author:     Ingo Molnar <mingo@elte.hu>
+> AuthorDate: Mon, 23 Mar 2009 21:49:25 +0100
+> Committer:  Ingo Molnar <mingo@elte.hu>
+> CommitDate: Mon, 23 Mar 2009 21:51:35 +0100
+> 
+> perf_counter tools: tidy up in-kernel dependencies
+> 
+> Remove now unified perfstat.c and perf_counter.h, and link to the
+> in-kernel perf_counter.h.
+> 
+> Cc: Wu Fengguang <fengguang.wu@intel.com>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> LKML-Reference: <20090323172417.677932499@chello.nl>
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
 > 
 > 
-> > 
-> > I found one issue yesterday and one today that could cause issues, not
-> > sure it would explain this one. But at least it's worth a try, if it's
-> > reproducible.
-> I just reproduced it a moment ago manually.
+> ---
+>  Documentation/perf_counter/Makefile       |    2 +-
+>  Documentation/perf_counter/kerneltop.c    |    2 +-
+>  Documentation/perf_counter/perfcounters.h |  142 ----------------
+>  Documentation/perf_counter/perfstat.c     |  251 -----------------------------
+>  4 files changed, 2 insertions(+), 395 deletions(-)
 > 
-> [global]
-> direct=0
-> ioengine=mmap
-> iodepth=256
-> iodepth_batch=32
-> size=4G
-> bs=4k
-> pre_read=1
-> overwrite=1
-> numjobs=1
-> loops=5
-> runtime=600
-> group_reporting
-> directory=/mnt/stp/fiodata
-> [job_group0_sub0]
-> startdelay=0
-> rw=randwrite
-> filename=data0/f1:data0/f2
-> 
-> 
-> The fio includes my preread patch to flush files to memory.
-> 
-> Before starting the second testing, I did a cache dropping by:
-> #echo "3">/proc/sys/vm/drop_caches.
-> 
-> I suspect the drop_caches trigger it.
+> diff --git a/Documentation/perf_counter/Makefile b/Documentation/perf_counter/Makefile
+> index b457497..666da95 100644
+> --- a/Documentation/perf_counter/Makefile
+> +++ b/Documentation/perf_counter/Makefile
+> @@ -2,7 +2,7 @@ BINS = kerneltop perfstat
+>  
+>  all: $(BINS)
+>  
+> -kerneltop: kerneltop.c perfcounters.h
+> +kerneltop: kerneltop.c ../../include/linux/perf_counter.h
+>  	cc -O6 -Wall -lrt `pkg-config --cflags --libs glib-2.0` -o $@ $<
+>  
+>  perfstat: kerneltop
 
-Thanks, will try this. What filesystem and mount options did you use?
 
-> >  I'm attaching the three patches I have against the posted
-> > series. The one in the middle is just an optimization, the first and
-> > third are the bug fixes.
-> I will test it tomorrow.
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Can we support Documentation/perf_counter/Makefile to use
+Documentation/Makefile so that we can also get these perf_counter user
+apps along with new kernel.
 
--- 
-Jens Axboe
+--
+JSR
 
