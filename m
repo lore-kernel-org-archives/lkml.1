@@ -1,51 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755987AbZETKVb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755556AbZETKVl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755987AbZETKVb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 06:21:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754470AbZETKVW
+	id S1755556AbZETKVl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 06:21:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755783AbZETKVd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 06:21:22 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:33198 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753985AbZETKVW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 06:21:22 -0400
-To: vaurora@redhat.com
-CC: miklos@szeredi.hu, jblunck@suse.de, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk,
-       bharata@in.ibm.com, dwmw2@infradead.org, mszeredi@suse.cz
-In-reply-to: <20090519173038.GC722@shell> (message from Valerie Aurora on Tue,
-	19 May 2009 13:30:38 -0400)
-Subject: Re: [PATCH 21/32] union-mount: Make lookup work for union-mounted file systems
-References: <1242662968-11684-1-git-send-email-jblunck@suse.de> <1242662968-11684-22-git-send-email-jblunck@suse.de> <E1M6Ryq-0001RP-Oe@pomaz-ex.szeredi.hu> <20090519173038.GC722@shell>
-Message-Id: <E1M6iv8-0003CB-4O@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Wed, 20 May 2009 12:21:10 +0200
+	Wed, 20 May 2009 06:21:33 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:32930 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756563AbZETKVc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 06:21:32 -0400
+Date: Wed, 20 May 2009 11:21:29 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Minchan Kim <minchan.kim@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>, Johannes Weiner <hannes@cmpxchg.org>
+Subject: Re: [PATCH 1/3] clean up setup_per_zone_pages_min
+Message-ID: <20090520102129.GA12433@csn.ul.ie>
+References: <20090520161853.1bfd415c.minchan.kim@barrios-desktop> <20090520085416.GA27056@csn.ul.ie> <20090520185803.e5b0698a.minchan.kim@barrios-desktop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20090520185803.e5b0698a.minchan.kim@barrios-desktop>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 19 May 2009, Valerie Aurora wrote:
-> On Tue, May 19, 2009 at 06:15:52PM +0200, Miklos Szeredi wrote:
-
-> > Worse, it looks like there are still i_mutex lock ordering issues
-> > (__hash_lookup_topmost()/__hash_lookup_build_union()).  What happens
-> > if two separate unions of two filesystems are built where the order of
-> > branches is reversed?
+On Wed, May 20, 2009 at 06:58:03PM +0900, Minchan Kim wrote:
+> Hi, Mel. 
 > 
-> We have a similar problem in union_copyup_dir().  Hm, thinking about
-> this, only one of the file systems can actually change while we are
-> doing work.  That might help us get out of the lock ordering problems.
-> Thoughts?
+> On Wed, 20 May 2009 09:54:16 +0100
+> Mel Gorman <mel@csn.ul.ie> wrote:
+> 
+> > On Wed, May 20, 2009 at 04:18:53PM +0900, Minchan Kim wrote:
+> > > 
+> > > Mel changed zone->pages_[high/low/min] with zone->watermark array.
+> > > So, setup_per_zone_pages_min also have to be changed.
+> > > 
+> > 
+> > Just to be clear, this is a function renaming to match the new zone
+> > field name, not something I missed. As the function changes min, low and
+> > max, a better name might have been setup_per_zone_watermarks but whether
+> 
+> At first, I thouht, too. But It's handle of min_free_kbytes.
+> Documentation said, it's to compute a watermark[WMARK_MIN]. 
+> I think many people already used that knob to contorl pages_min to keep the 
+> low pages. 
 
-Right, we talked about this with Jan, and came basically to the same
-conclusion.  The lookup on the lower branches needs to be separate
-from the atomic lookup/create on the top branch.  Which means some
-restructuring in the callers...
+Which documentation?
 
-I'm not sure how all this could be simplified, I don't yet even
-understand what all these different lookup functions are meant to do
-(header comments might help).
+I'm looking at the function comment and see
 
-Thanks,
-Miklos
+ * setup_per_zone_pages_min - called when min_free_kbytes changes.
+ *
+ * Ensures that the pages_{min,low,high} values for each zone are set
+ * correctly with respect to min_free_kbytes.
+
+So, the values of all the watermarks are updated by that function depending
+on what the new value of min_free_kbytes is. It is a bit wrong I suppose as
+it missed memory hot-add
+
+setup_per_zone_pages_min - called when min_free_kbytes changes or when memory is hot-added
+
+> 
+> So, I determined function name is proper now. 
+> If setup_per_zone_watermark is better than it, we also have to change with 
+> documentation. 
+> 
+> > you go with that name or not, this is better than what is there so;
+> > 
+> > Acked-by: Mel Gorman <mel@csn.ul.ie>
+> 
+> 
+> -- 
+> Kinds Regards
+> Minchan Kim
+> 
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
