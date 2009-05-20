@@ -1,91 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756563AbZETIJi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756346AbZETIKV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756563AbZETIJi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 04:09:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756450AbZETIJR
+	id S1756346AbZETIKV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 04:10:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756659AbZETIJy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 04:09:17 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:34328 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756409AbZETIJN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 04:09:13 -0400
-Date: Wed, 20 May 2009 10:09:12 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Michael Abbott <michael@araneidae.co.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Jan Engelhardt <jengelh@medozas.de>
-Subject: Re: [GIT PULL] cputime patch for 2.6.30-rc6
-Message-ID: <20090520100912.4f9c2037@skybase>
-In-Reply-To: <1242725488.26820.485.camel@twins>
-References: <20090518160904.7df88425@skybase>
-	<1242660243.26820.439.camel@twins>
-	<Pine.LNX.4.64.0905181717001.21259@venus.araneidae.co.uk>
-	<20090519110047.2e0d9e55@skybase>
-	<1242725488.26820.485.camel@twins>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 20 May 2009 04:09:54 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40463 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756661AbZETIJt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 04:09:49 -0400
+Date: Wed, 20 May 2009 10:09:24 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, davem@davemloft.net, dada1@cosmosbay.com,
+       zbr@ioremap.net, jeff.chua.linux@gmail.com, paulus@samba.org,
+       laijs@cn.fujitsu.com, jengelh@medozas.de, r000n@r000n.net,
+       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
+Subject: Re: [PATCH RFC] v5 expedited "big hammer" RCU grace periods
+Message-ID: <20090520080924.GA6736@elte.hu>
+References: <20090517191141.GA25915@linux.vnet.ibm.com> <20090518075630.GA10687@elte.hu> <20090518151421.GB6768@linux.vnet.ibm.com> <20090518154241.GA27047@elte.hu> <20090518160254.GD6768@linux.vnet.ibm.com> <20090519085825.GA9388@elte.hu> <20090519123316.GA7159@linux.vnet.ibm.com> <20090519124436.GA6238@elte.hu> <20090519161839.GA6750@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090519161839.GA6750@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 19 May 2009 11:31:28 +0200
-Peter Zijlstra <peterz@infradead.org> wrote:
 
-> On Tue, 2009-05-19 at 11:00 +0200, Martin Schwidefsky wrote:
-> > I don't see a problem here. In an idle multiple cpu system there IS
-> > more idle time than elapsed time. What would makes sense is to compare
-> > elapsed time * #cpus with the idle time. But then there is cpu hotplug
-> > which forces you to look at the delta of two measuring points where the
-> > number of cpus did not change.
+* Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+
+> On Tue, May 19, 2009 at 02:44:36PM +0200, Ingo Molnar wrote:
+> > 
+> > * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+> > 
+> > > On Tue, May 19, 2009 at 10:58:25AM +0200, Ingo Molnar wrote:
+> > > > 
+> > > > * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+> > > > 
+> > > > > On Mon, May 18, 2009 at 05:42:41PM +0200, Ingo Molnar wrote:
+> > > > > > 
+> > > > > > * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+> > > > > > 
+> > > > > > > > i might be missing something fundamental here, but why not just 
+> > > > > > > > have per CPU helper threads, all on the same waitqueue, and wake 
+> > > > > > > > them up via a single wake_up() call? That would remove the SMP 
+> > > > > > > > cross call (wakeups do immediate cross-calls already).
+> > > > > > > 
+> > > > > > > My concern with this is that the cache misses accessing all the 
+> > > > > > > processes on this single waitqueue would be serialized, slowing 
+> > > > > > > things down. In contrast, the bitmask that smp_call_function() 
+> > > > > > > traverses delivers on the order of a thousand CPUs' worth of bits 
+> > > > > > > per cache miss.  I will give it a try, though.
+> > > > > > 
+> > > > > > At least if you go via the migration threads, you can queue up 
+> > > > > > requests to them locally. But there's going to be cachemisses 
+> > > > > > _anyway_, since you have to access them all from a single CPU, 
+> > > > > > and then they have to fetch details about what to do, and then 
+> > > > > > have to notify the originator about completion.
+> > > > > 
+> > > > > Ah, so you are suggesting that I use smp_call_function() to run 
+> > > > > code on each CPU that wakes up that CPU's migration thread?  I 
+> > > > > will take a look at this.
+> > > > 
+> > > > My suggestion was to queue up a dummy 'struct migration_req' up with 
+> > > > it (change migration_req::task == NULL to mean 'nothing') and simply 
+> > > > wake it up using wake_up_process().
+> > > 
+> > > OK.  I was thinking of just using wake_up_process() without the
+> > > migration_req structure, and unconditionally setting a per-CPU
+> > > variable from within migration_thread() just before the list_empty()
+> > > check.  In your approach we would need a NULL-pointer check just
+> > > before the call to __migrate_task().
+> > > 
+> > > > That will force a quiescent state, without the need for any extra 
+> > > > information, right?
+> > > 
+> > > Yep!
+> > > 
+> > > > This is what the scheduler code does, roughly:
+> > > > 
+> > > >                 wake_up_process(rq->migration_thread);
+> > > >                 wait_for_completion(&req.done);
+> > > > 
+> > > > and this will always have to perform well. The 'req' could be put 
+> > > > into PER_CPU, and a loop could be done like this:
+> > > > 
+> > > > 	for_each_online_cpu(cpu)
+> > > >                 wake_up_process(cpu_rq(cpu)->migration_thread);
+> > > > 
+> > > > 	for_each_online_cpu(cpu)
+> > > >                 wait_for_completion(&per_cpu(req, cpu).done);
+> > > > 
+> > > > hm?
+> > > 
+> > > My concern is the linear slowdown for large systems, but this 
+> > > should be OK for modest systems (a few 10s of CPUs).  However, I 
+> > > will try it out -- it does not need to be a long-term solution, 
+> > > after all.
+> > 
+> > I think there is going to be a linear slowdown no matter what - 
+> > because sending that many IPIs is going to be linear. (there are 
+> > no 'broadcast to all' IPIs anymore - on x86 we only have them if 
+> > all physical APIC IDs are 7 or smaller.)
 > 
-> Sure, this one case isn't that bad, esp. as you note its about idle
-> time. However, see for example /proc/stat and fs/proc/stat.c:
-> 
->         for_each_possible_cpu(i) {
->                 user = cputime64_add(user, kstat_cpu(i).cpustat.user);
->                 nice = cputime64_add(nice, kstat_cpu(i).cpustat.nice);
->                 system = cputime64_add(system, kstat_cpu(i).cpustat.system);
->                 idle = cputime64_add(idle, kstat_cpu(i).cpustat.idle);
->                 idle = cputime64_add(idle, arch_idle_time(i));
->                 iowait = cputime64_add(iowait, kstat_cpu(i).cpustat.iowait);
->                 irq = cputime64_add(irq, kstat_cpu(i).cpustat.irq);
->                 softirq = cputime64_add(softirq, kstat_cpu(i).cpustat.softirq);
->                 steal = cputime64_add(steal, kstat_cpu(i).cpustat.steal);
->                 guest = cputime64_add(guest, kstat_cpu(i).cpustat.guest);
->                 for_each_irq_nr(j) {
->                         sum += kstat_irqs_cpu(j, i);
->                 }
->                 sum += arch_irq_stat_cpu(i);
->         }
-> 
-> If that isn't a problem on a large machine, then I don't know what is.
+> With the current code, agreed.  One could imagine making an IPI 
+> tree, so that a given CPU IPIs (say) eight subordinates.  Making 
+> this work nice with CPU hotplug would be entertaining, to say the 
+> least.
 
-Well, we better distinguish between the semantical problem and the
-performance consideration, no? One thing is what the proc field is
-supposed to contain, the other is how fast you can do it.
+Certainly! :-)
 
-I have been refering to the semantical problem, but your point with the
-performance is very valid as well. So
-1) are we agreed that the second field of /proc/uptime should contain
-the aggregate idle time of all cpus?
-2) I agree that an endless loop of 'cat /proc/uptime' or
-'cat /proc/stat' can have negative performance impact on a system with
-many cpus. One way to deal with it would be to restrict access to the
-interface. I do not like that idea to much. Another way would be to
-limit the number of for_each_possible_cpu loops per second. Create
-global variables that contain the aggregate values for the different
-fields. If the last update has been too recent (e.g. less than 0.1
-seconds ago), just print the old values again.
+As a general note, unrelated to your patches: i think our 
+CPU-hotplug related complexity seems to be a bit too much. This is 
+really just a gut feeling - from having seen many patches that also 
+have hotplug notifiers.
 
--- 
-blue skies,
-   Martin.
+I'm wondering whether this is because it's structured in a 
+suboptimal way, or because i'm (intuitively) under-estimating the 
+complexity of what it takes to express what happens when a CPU is 
+offlined and then onlined?
 
-"Reality continues to ruin my life." - Calvin.
-
+	Ingo
