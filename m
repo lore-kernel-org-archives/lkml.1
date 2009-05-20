@@ -1,64 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753647AbZETFRQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754174AbZETFTb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753647AbZETFRQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 01:17:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751026AbZETFRD
+	id S1754174AbZETFTb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 01:19:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750963AbZETFTX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 01:17:03 -0400
-Received: from yx-out-2324.google.com ([74.125.44.28]:49757 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750862AbZETFRC convert rfc822-to-8bit (ORCPT
+	Wed, 20 May 2009 01:19:23 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:56198 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750862AbZETFTX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 01:17:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=NW+XPXGpoWYy/XDnZL/K7sEgt5y2nshS8mpm9w/fl4kh0bq7Pv/HZ9iYT0c9vEHRoY
-         K4LbdU+evdXuQMBZix3bPIEkJzVxWmDFzpBh3yEe8ps8T51oZhD4Tl0KT7l9xoQYpZf+
-         tmNHbXKvbdIjTbdge7bxJFn3MPENZXkBTiRDI=
+	Wed, 20 May 2009 01:19:23 -0400
+Message-ID: <4A1392A9.9010609@zytor.com>
+Date: Tue, 19 May 2009 22:18:33 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-In-Reply-To: <af3ea28a0905170804n500126e4tc425dafd9fcaa68a@mail.gmail.com>
-References: <af3ea28a0905170804n500126e4tc425dafd9fcaa68a@mail.gmail.com>
-Date: Wed, 20 May 2009 13:17:03 +0800
-Message-ID: <af3ea28a0905192217x2006dbe4gb456217d110b916f@mail.gmail.com>
-Subject: Re: fix rtc_cmos bug
-From: ye janboe <janboe.ye@gmail.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Cc: rjw@sisk.pl, bunk@kernel.org, bugme-janitors@lists.osdl.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Borislav Petkov <borislav.petkov@amd.com>
+CC: akpm@linux-foundation.org, greg@kroah.com, mingo@elte.hu, norsk5@yahoo.com,
+       tglx@linutronix.de, mchehab@redhat.com, aris@redhat.com, edt@aei.ca,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 01/22] x86: add methods for writing of an MSR on	several
+ CPUs
+References: <1242390153-24493-1-git-send-email-borislav.petkov@amd.com> <1242390153-24493-2-git-send-email-borislav.petkov@amd.com> <20090519172449.GB18874@aftab>
+In-Reply-To: <20090519172449.GB18874@aftab>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-my fix is wrong?
+Borislav Petkov wrote:
+> +
+> +/* rdmsr on a bunch of CPUs
+> + *
+> + * @mask:	which CPUs
+> + * @msr_no:	which MSR
+> + * @msrs:	array of MSR values
+> + *
+> + * Returns:
+> + * 0 - success
+> + * <0 - read failed on at least one CPU (latter in the mask)
+> + */
+> +int rdmsr_on_cpus(const cpumask_t *mask, u32 msr_no, struct msr *msrs)
+> +{
+> +	struct msr *reg;
+> +	int cpu, tmp, err = 0;
+> +	int off = cpumask_first(mask);
+> +
+> +	for_each_cpu(cpu, mask) {
+> +		reg = &msrs[cpu - off];
+> +
+> +		tmp = rdmsr_on_cpu(cpu, msr_no, &reg->l, &reg->h);
+> +		if (tmp)
+> +			err = tmp;
+> +	}
+> +	return err;
+> +}
+> +EXPORT_SYMBOL(rdmsr_on_cpus);
+> +
+> +/*
+> + * wrmsr of a bunch of CPUs
+> + *
+> + * @mask:	which CPUs
+> + * @msr_no:	which MSR
+> + * @msrs:	array of MSR values
+> +  *
+> + * Returns:
+> + * 0 - success
+> + * <0 - write failed on at least one CPU (latter in the mask)
+> + */
+> +int wrmsr_on_cpus(const cpumask_t *mask, u32 msr_no, struct msr *msrs)
+> +{
+> +	struct msr reg;
+> +	int cpu, tmp, err = 0;
+> +	int off = cpumask_first(mask);
+> +
+> +	for_each_cpu(cpu, mask) {
+> +		reg = msrs[cpu - off];
+> +
+> +		tmp = wrmsr_on_cpu(cpu, msr_no, reg.l, reg.h);
+> +		if (tmp)
+> +			err = tmp;
+> +	}
+> +	return err;
+> +}
+> +EXPORT_SYMBOL(wrmsr_on_cpus);
+> +
 
-Why no one ack this patch?
+Okay, now I'm *really* confused.
 
-Thanks
+I thought the whole point of these functions was to allow these MSR
+references to take place in parallel, as opposed to doing outcalls to
+each CPU in order... but that's exactly what these functions do.
 
-Janboe
+So what was the point of them again?
 
-2009/5/17 ye janboe <janboe.ye@gmail.com>:
->    fix  Bug 13326 -  Null pointer dereference in rtc-cmos driver
->    http://bugzilla.kernel.org/show_bug.cgi?id=13326
->
->    Signed-off-by: janboe <janboe.ye@gmail.com>
->
-> diff --git a/drivers/rtc/rtc-cmos.c b/drivers/rtc/rtc-cmos.c
-> index 23e10b6..da132f6 100644
-> --- a/drivers/rtc/rtc-cmos.c
-> +++ b/drivers/rtc/rtc-cmos.c
-> @@ -1179,7 +1179,9 @@ static int __init cmos_init(void)
->        int retval = 0;
->
->  #ifdef CONFIG_PNP
-> -       pnp_register_driver(&cmos_pnp_driver);
-> +       retval = pnp_register_driver(&cmos_pnp_driver);
-> +       if (retval)
-> +               return retval;
->  #endif
->
->        if (!cmos_rtc.dev)
->
+	-hpa
+
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
