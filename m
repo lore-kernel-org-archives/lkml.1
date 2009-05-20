@@ -1,51 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756656AbZETWt4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756873AbZETWw6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756656AbZETWt4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 18:49:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755283AbZETWtr
+	id S1756873AbZETWw6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 18:52:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755354AbZETWwv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 18:49:47 -0400
-Received: from claw.goop.org ([74.207.240.146]:36421 "EHLO claw.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750944AbZETWtq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 18:49:46 -0400
-Message-ID: <4A1488ED.6080604@goop.org>
-Date: Wed, 20 May 2009 15:49:17 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Ingo Molnar <mingo@elte.hu>, Xen-devel <xen-devel@lists.xensource.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [GIT PULL] xen /proc/mtrr implementation
-References: <4A0DCC11.10307@goop.org> <m1my9ex818.fsf@fess.ebiederm.org> <4A0DFF78.6000501@goop.org> <20090515202250.0f1218ef@jbarnes-g45> <m1iqk1k708.fsf@fess.ebiederm.org> <4A10EAC4.9070701@goop.org> <20090518085902.GE10687@elte.hu> <4A11A3F8.1010202@goop.org> <87tz3gnq91.fsf@basil.nowhere.org> <4A143251.90208@goop.org> <20090520225235.GJ8684@one.firstfloor.org>
-In-Reply-To: <20090520225235.GJ8684@one.firstfloor.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 20 May 2009 18:52:51 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33608
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754836AbZETWwu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 18:52:50 -0400
+Date: Wed, 20 May 2009 15:52:48 -0700 (PDT)
+Message-Id: <20090520.155248.03355490.davem@davemloft.net>
+To: ebiederm@xmission.com
+Cc: sfr@canb.auug.org.au, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, rmk@arm.linux.org.uk,
+       hskinnemoen@atmel.com
+Subject: Re: Subject: [PATCH] Sort out syscall_restart name clash.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <m1k54bie6j.fsf_-_@fess.ebiederm.org>
+References: <m1d4a3keqm.fsf@fess.ebiederm.org>
+	<20090520.124403.159818618.davem@davemloft.net>
+	<m1k54bie6j.fsf_-_@fess.ebiederm.org>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> There were drivers at some point that set WC MTRRs on their
-> transfer rings, not mmio.
->   
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Wed, 20 May 2009 15:48:20 -0700
 
-To avoid cache pollution effects?
+> 
+> Stephen Rothwell <sfr@canb.auug.org.au> writes:
+> 
+>> Today's linux-next build of at least some av32 and arm configs failed like this:
+>>
+>> arch/avr32/kernel/signal.c:216: error: conflicting types for 'restart_syscall'
+>> include/linux/sched.h:2184: error: previous definition of 'restart_syscall' was here
+>>
+>> Caused by commit 690cc3ffe33ac4a2857583c22d4c6244ae11684d ("syscall:
+>> Implement a convinience function restart_syscall") from the net tree.
+> 
+> Grrr. Some days it feels like all of the good names are already taken.
+> 
+> Let's just rename the two static users in arm and avr32 to get this
+> sorted out.
+> 
+> Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
 
-> Maybe these all switched to PAT now, maybe not
->
-> It's hard to say because it could be also done from user space.
->   
-
-How does userspace do the virtual to physical mapping?  If the driver 
-can't also deal with the extra conversion from physical to machine under 
-Xen, then it won't have much success either way.
-
-    J
+Applied, thanks Eric.
