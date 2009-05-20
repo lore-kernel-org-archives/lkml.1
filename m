@@ -1,49 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756507AbZETQTZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756684AbZETQUc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756507AbZETQTZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 12:19:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754386AbZETQTS
+	id S1756684AbZETQUc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 12:20:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754386AbZETQUX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 12:19:18 -0400
-Received: from svenhartge.de ([81.169.140.245]:58094 "EHLO svenhartge.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753027AbZETQTR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 12:19:17 -0400
-X-Greylist: delayed 533 seconds by postgrey-1.27 at vger.kernel.org; Wed, 20 May 2009 12:19:17 EDT
-Path: ds9.feds.ath.cx!oweh
-From: Sven Hartge <sven@svenhartge.de>
-Subject: Re: Linux 2.6.29.4
-To: linux-kernel@vger.kernel.org
-References: <20090520053031.GC13453@kroah.com> <5ab239b10905200806h78e2649cy1aa7408fd6653262@mail.gmail.com>
-User-Agent: tin/1.9.4-20090211 ("Rieclachan") (UNIX) (Linux/2.6.28.7-216 (i686))
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 8bit
-Message-Id: <E1M6oN5-0003S3-Gk@mids.svenhartge.de>
-Date: Wed, 20 May 2009 18:10:23 +0200
+	Wed, 20 May 2009 12:20:23 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:49794 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753985AbZETQUX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 12:20:23 -0400
+Subject: Re: [PATCH version 2] [SQUASHME] "FC Pass Thru support" fixed for
+	block/for-2.6.31 tree
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Boaz Harrosh <bharrosh@panasas.com>, Tejun Heo <tj@kernel.org>,
+       James Smart <James.Smart@Emulex.Com>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       FUJITA Tomonori <tomof@acm.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Jens Axboe <Jens.Axboe@oracle.com>
+In-Reply-To: <1242830865.2881.13.camel@localhost.localdomain>
+References: <4A12797B.2060901@panasas.com> <4A12AC23.30808@panasas.com>
+	 <20090520111619.87f815b1.sfr@canb.auug.org.au>
+	 <1242830240.2881.10.camel@localhost.localdomain>
+	 <20090521004251.9160e228.sfr@canb.auug.org.au>
+	 <1242830865.2881.13.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Wed, 20 May 2009 16:20:25 +0000
+Message-Id: <1242836425.2881.44.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"D. Kelly" <user.kernel@gmail.com> wrote:
-> Hi.  I have just updated my kernel from:
+On Wed, 2009-05-20 at 14:47 +0000, James Bottomley wrote:
+> OK, so I think your pulling of my posmerge tree can cope with the fact
+> that I did the necessary rebasing in block for-next before I made it the
+> base of my combined tree .... think of this as a nice test.
+> 
+> Just building now ... if it works, I'll push to SCSI post merge and all
+> our problems should go away.
 
-> ftp://ftp.kernel.org/pub/linux/kernel/v2.6/linux-2.6.29.4.tar.bz2
+Unfortunately the combined tree hits a BUG_ON blk-core.c:2045 when doing
+SPI domain validation.
 
-> However, I am getting some errors after I `make menuconfig`:
+There will be a short delay ...
 
-> exec make kpkg_version=12.013 -f
-> /usr/share/kernel-package/ruleset/minimal.mk debian
-> DEBIAN_REVISION=Build.1  APPEND_TO_VERSION=.amd64-x2.052009.1
-> tail: cannot open `debian/changelog' for reading: No such file or directory
-> dpkg-parsechangelog: failure: tail of debian/changelog gave error exit status 1
+James
 
-Those are harmless messages, which are to be expected when using a
-kernel-package version from Debian Sid. The kernel will be build fine
-and correct.
 
-Grüße,
-S°
-
--- 
-Sig lost. Core dumped.
