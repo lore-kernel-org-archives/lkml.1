@@ -1,47 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756815AbZETO4i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756551AbZETO5F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756815AbZETO4i (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 10:56:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753579AbZETO4b
+	id S1756551AbZETO5F (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 10:57:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755283AbZETO44
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 10:56:31 -0400
-Received: from cet.com.ru ([195.178.208.66]:41939 "EHLO tservice.net.ru"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752412AbZETO4b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 10:56:31 -0400
-Date: Wed, 20 May 2009 18:56:23 +0400
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: Mike Frysinger <vapier@gentoo.org>
-Cc: linux-kernel@vger.kernel.org, Patrick McHardy <kaber@trash.net>,
-       Herbert Xu <herbert@gondor.apana.org.au>
-Subject: Re: [PATCH] crypto: hifn_795x - fix __dev{init,exit} markings
-Message-ID: <20090520145623.GA4147@ioremap.net>
-References: <1242633110-16344-1-git-send-email-vapier@gentoo.org>
+	Wed, 20 May 2009 10:56:56 -0400
+Received: from mga14.intel.com ([143.182.124.37]:18254 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753579AbZETO4z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 10:56:55 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,221,1241420400"; 
+   d="scan'208";a="144999952"
+Date: Wed, 20 May 2009 22:56:08 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Elladan <elladan@eskimo.com>,
+       Nick Piggin <npiggin@suse.de>, Johannes Weiner <hannes@cmpxchg.org>,
+       Peter Zijlstra <peterz@infradead.org>, Rik van Riel <riel@redhat.com>,
+       "tytso@mit.edu" <tytso@mit.edu>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "minchan.kim@gmail.com" <minchan.kim@gmail.com>
+Subject: Re: [PATCH 2/3] vmscan: make mapped executable pages the first
+	class citizen
+Message-ID: <20090520145607.GA6281@localhost>
+References: <alpine.DEB.1.10.0905181045340.20244@qirst.com> <20090519032759.GA7608@localhost> <20090519133422.4ECC.A69D9226@jp.fujitsu.com> <20090519062503.GA9580@localhost> <87pre4nhqf.fsf@basil.nowhere.org> <20090520143258.GA5706@localhost> <20090520144731.GB4753@basil.nowhere.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1242633110-16344-1-git-send-email-vapier@gentoo.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20090520144731.GB4753@basil.nowhere.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mike.
-
-On Mon, May 18, 2009 at 03:51:50AM -0400, Mike Frysinger (vapier@gentoo.org) wrote:
-> The remove member of the pci_driver hifn_pci_driver uses __devexit_p(),
-> so the remove function itself should be marked with __devexit.  And where
-> there be __devexit on the remove, so is there __devinit on the probe.
+On Wed, May 20, 2009 at 10:47:31PM +0800, Andi Kleen wrote:
+> > > One scenario that might be useful to test is what happens when some
+> > > very large processes, all mapped and executable exceed memory and
+> > 
+> > Good idea. Too bad I may have to install some bloated desktop in order
+> > to test this out ;) I guess the pgmajfault+pswpin numbers can serve as
+> > negative scores in that case?
 > 
-> Similarly, the module_init/module_exit functions should be declared with
-> plain __init/__exit markings, not the hotplug __dev{init,exit} ones.
+> I would just generate a large C program with a script and compile
+> and run that. The program can be very dumb (e.g. only run
+> a gigantic loop), it just needs to be large.
 > 
-> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-> CC: Evgeniy Polyakov <zbr@ioremap.net>
-> CC: Patrick McHardy <kaber@trash.net>
+> Just don't compile it with optimization, that can be quite slow.
+> 
+> And use multiple functions, otherwise gcc might exceed your memory.
 
-Looks good, thank you Mike.
-Ack. Herbert, please apply.
 
--- 
-	Evgeniy Polyakov
+Hehe, an arbitrary C program may not be persuasive..but I do have some
+bloated binaries at hand :-)
+
+-rwsr-sr-x 1 root wfg   36M 2009-04-22 17:21 Xorg
+lrwxrwxrwx 1 wfg  wfg     4 2009-04-22 17:21 X -> Xorg
+-rwxr-xr-x 1 wfg  wfg   39M 2009-04-22 17:21 Xvfb
+-rwxr-xr-x 1 wfg  wfg   35M 2009-04-22 17:21 Xnest
