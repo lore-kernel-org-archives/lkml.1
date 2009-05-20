@@ -1,117 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755106AbZETNmP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755799AbZETNo7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755106AbZETNmP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 09:42:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752897AbZETNmB
+	id S1755799AbZETNo7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 09:44:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754508AbZETNow
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 09:42:01 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:55888 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752557AbZETNmA (ORCPT
+	Wed, 20 May 2009 09:44:52 -0400
+Received: from viefep17-int.chello.at ([62.179.121.37]:28769 "EHLO
+	viefep17-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754298AbZETNov (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 09:42:00 -0400
-Subject: Re: [PATCH]cpuset: add new API to change cpuset top group's cpus
-From: Peter Zijlstra <peterz@infradead.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Len Brown <lenb@kernel.org>, Shaohua Li <shaohua.li@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       "menage@google.com" <menage@google.com>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-In-Reply-To: <20090520131301.GF8684@one.firstfloor.org>
-References: <20090519073942.GA10864@sli10-desk.sh.intel.com>
-	 <1242722454.26820.461.camel@twins>
-	 <20090519084852.GA13682@sli10-desk.sh.intel.com>
-	 <1242723364.26820.466.camel@twins> <1242729538.26820.497.camel@twins>
-	 <alpine.LFD.2.00.0905191429440.29241@localhost.localdomain>
-	 <1242772601.26820.527.camel@twins> <87ljosnfzb.fsf@basil.nowhere.org>
-	 <1242821825.26820.583.camel@twins>
-	 <20090520131301.GF8684@one.firstfloor.org>
+	Wed, 20 May 2009 09:44:51 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: INFO: possible circular locking dependency at
+ cleanup_workqueue_thread
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Zdenek Kabelac <zdenek.kabelac@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090520131823.GA14933@redhat.com>
+References: <c4e36d110905120059i4c155508oa00672da0b33a07a@mail.gmail.com>
+	 <20090517071834.GA8507@elte.hu> <1242821938.26820.586.camel@twins>
+	 <20090520131823.GA14933@redhat.com>
 Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Wed, 20 May 2009 15:41:55 +0200
-Message-Id: <1242826915.26820.609.camel@twins>
+Date: Wed, 20 May 2009 15:44:52 +0200
+Message-Id: <1242827092.26820.612.camel@twins>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-05-20 at 15:13 +0200, Andi Kleen wrote:
-> Thanks for the explanation.
+On Wed, 2009-05-20 at 15:18 +0200, Oleg Nesterov wrote:
+> On 05/20, Peter Zijlstra wrote:
+> >
+> > > > =======================================================
+> > > > [ INFO: possible circular locking dependency detected ]
+> > > > 2.6.30-rc5-00097-gd665355 #59
+> > > > -------------------------------------------------------
+> > > > pm-suspend/12129 is trying to acquire lock:
+> > > >  (events){+.+.+.}, at: [<ffffffff80259496>] cleanup_workqueue_thread+0x26/0xd0
+> > > >
+> > > > but task is already holding lock:
+> > > >  (cpu_add_remove_lock){+.+.+.}, at: [<ffffffff80246e57>]
+> > > > cpu_maps_update_begin+0x17/0x20
+> > > >
+> > > > which lock already depends on the new lock.
+> > > >
+> > > >
+> > > > the existing dependency chain (in reverse order) is:
+> > > >
+> > > > -> #5 (cpu_add_remove_lock){+.+.+.}:
+> > > >        [<ffffffff80271a64>] __lock_acquire+0xc64/0x10a0
+> > > >        [<ffffffff80271f38>] lock_acquire+0x98/0x140
+> > > >        [<ffffffff8054e78c>] __mutex_lock_common+0x4c/0x3b0
+> > > >        [<ffffffff8054ebf6>] mutex_lock_nested+0x46/0x60
+> > > >        [<ffffffff80246e57>] cpu_maps_update_begin+0x17/0x20
+> > > >        [<ffffffff80259c33>] __create_workqueue_key+0xc3/0x250
+> > > >        [<ffffffff80287b20>] stop_machine_create+0x40/0xb0
+> > > >        [<ffffffff8027a784>] sys_delete_module+0x84/0x270
+> > > >        [<ffffffff8020c15b>] system_call_fastpath+0x16/0x1b
+> > > >        [<ffffffffffffffff>] 0xffffffffffffffff
+> >
+> > Oleg, why does __create_workqueue_key() require cpu_maps_update_begin()?
+> > Wouldn't get_online_cpus() be enough to freeze the online cpus?
 > 
-> My naive reaction would be to fail if the socket to be taken out
-> is the only member of some cpuset. Or maybe break affinities in this case.
-
-Right, breaking affinities would go against the policy of the admin, I'm
-not sure we'd want to go there. We could start generating msgs about how
-we're in thermal trouble and the given configuration is obstructing
-counter measures etc..
-
-Currently hot-unplug does break affinities, but that's an explicit
-action by the admin himself, so he gets what he asks for (and we do
-generate complaints in syslog about it).
-
-[ Same scenario for the HPC guys who affinity fix all their threads to
-  specific cpus, there's really nothing you can do there. Then again
-  such folks generally run their machines at 100% so they'd better
-  be able to deal with their thermal peak capacity anyway. ]
-
-> > You really want to start shrinking the generic computational capacity
-> > first.
+> Yes, get_online_cpus() pins online CPUs. But CPU_POST_DEAD calls
+> cleanup_workqueue_thread() without cpu_hotplug.lock, this means
+> that create/destroy can race with cpu_down().
 > 
-> One general issue to remember that if you don't react to the platform hint 
-> the platform will likely force a lower p-state on you to not exceed
-> the thermal limits, making everyone slower. 
+> We can avoid cpu_add_remove_lock, but then we have to add another
+> lock to protect workqueues, cpu_populated_map, etc.
+
+Joy..
+
+> > Breaking the setup_lock -> cpu_add_remove_lock dependency seems
+> > sufficient.
 > 
-> (this will likely also not make your real time process happy)
+> Hmm. What do you mean? Afaics setup_lock -> cpu_add_remove_lock
+> is not a problem?
 
-Quite.
+>From what I could see that is the only dependency that makes
+cpu_add_remove_lock nest under "events" workqueue 'lock', which is what
+is generating the deadlock.
 
-> So it's a bit more than a hint; it's more like a command "or else"
-> 
-> So it's a good idea to react or at least make at least a reasonable attempt 
-> to react.
-
-Sure, does the thing give more than a: 'react now, or else' impulse?
-That is, can we see it coming, or will we have to deal with it when
-we're there?
-
-The latter also has the problem that you have to react very quickly.
-
-> > The thing is, you cannot simply rip cpus out from under a system, people
-> > might rely on them being there and have policy attached to them -- esp.
-> > people touching cpusets should know that a machine isn't configured
-> > homogeneous and any odd cpu will do.
-> 
-> Ok, so do you think it's possible to figure out based on the cpuset
-> graph / real time runqueue if a socket can be taken out? 
-
-Right, so all of this depends on a number of things, how frequent and
-how fast would these situations occur?
-
-I would think they'd be rare events, otherwise you really messed up your
-infrastructure. I also think reaction times should be in the seconds,
-otherwise you're cutting it way to close.
-
-
-The work IBM has been doing is centered around overloading neighbouring
-packages in order to keep some idle. The overload is exposed as a
-percentage.
-
-This works within scheduling domains, so if you carve your machine up in
-tiny (<= 1 package) domains its impossible to do anything (corner case,
-we could send cries for help syslog's way).
-
-I was hoping we could control the situation with that. But for that to
-work we need some gradual information in order to make that
-thermal<->overload feedback work.
-
-
-A single: idle a core now (< 'n' sec) or die, isn't really helpful.
-
-[ figuring out how to deal with RT tasks and the like is still open,
-  the problem with SCHED_FIFO/RR is that such tasks don't give
-  utilization numbers, so we'll have to guesstimate them based on
-  historic behaviour.  SCHED_EDF or similar future realtime bits
-  would be much easier to deal with in this case ]
