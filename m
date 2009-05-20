@@ -1,59 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756891AbZETMZD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755049AbZETM26@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756891AbZETMZD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 08:25:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756026AbZETMYx
+	id S1755049AbZETM26 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 08:28:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755789AbZETM2s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 08:24:53 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:34053 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754955AbZETMYw (ORCPT
+	Wed, 20 May 2009 08:28:48 -0400
+Received: from smtp-out003.kontent.com ([81.88.40.217]:48788 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754764AbZETM2r convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 08:24:52 -0400
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Yinghai Lu <yinghai@kernel.org>, Joerg Roedel <joerg.roedel@amd.com>,
-       Weidong Han <weidong.han@intel.com>, dwmw2@infradead.org,
-       suresh.b.siddha@intel.com, linux-kernel@vger.kernel.org,
-       iommu@lists.linux-foundation.org, kvm@vger.kernel.org
-Subject: Re: [PATCH v2 2/2] Intel-IOMMU, intr-remap: source-id checking
-References: <1242757912-6041-1-git-send-email-weidong.han@intel.com>
-	<1242757912-6041-3-git-send-email-weidong.han@intel.com>
-	<20090519115055.GB14305@elte.hu> <m1k54cj3iz.fsf@fess.ebiederm.org>
-	<20090520082114.GC6736@elte.hu>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Wed, 20 May 2009 05:24:49 -0700
-In-Reply-To: <20090520082114.GC6736@elte.hu> (Ingo Molnar's message of "Wed\, 20 May 2009 10\:21\:14 +0200")
-Message-ID: <m1fxf0klm6.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Wed, 20 May 2009 08:28:47 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] Explicitly disable BT radio using rfkill interface on suspend
+Date: Wed, 20 May 2009 14:29:04 +0200
+User-Agent: KMail/1.10.3 (Linux/2.6.27.21-0.1-default; KDE/4.1.3; x86_64; ; )
+Cc: Mario Limonciello <mario_limonciello@dell.com>, linux-usb@vger.kernel.org,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Marcel Holtmann <marcel@holtmann.org>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <Pine.LNX.4.44L0.0905192212560.7309-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0905192212560.7309-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Rcpt-To: mingo@elte.hu, kvm@vger.kernel.org, iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org, suresh.b.siddha@intel.com, dwmw2@infradead.org, weidong.han@intel.com, joerg.roedel@amd.com, yinghai@kernel.org
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200905201429.06113.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar <mingo@elte.hu> writes:
+Am Mittwoch, 20. Mai 2009 04:17:59 schrieb Alan Stern:
+> On Wed, 20 May 2009, Oliver Neukum wrote:
 
->> The table of apic information by apic_id also seems wrong.  Don't 
->> we have chip_data or something that should point it that we can 
->> get from the irq?
+> > Marcel, are the HID devices usable after hid2hci has run? Should we
+> > choose to not resume from power loss any hid device which hid2hci
+> > operated on?
 >
-> ->chip_data is already used for io-apic configuration bits - if it's 
-> reused then the right way to do it is to extend struct irq_cfg in 
-> arch/x86/kernel/apic/io_apic.c.
+> I'd like to know why the device switches back from HID+bluetooth to
+> pure HID during a suspend-resume sequence.  Does it undergo a
+> reset-resume?
 
-We are talking about some extra io-apic configuration bits, that
-happen to currently be private to dmar.c.
+Yes.
 
-chip_data, handler_data I can never keep those straight except
-when I am deep in the code.  What I do know is that encouraging
-more arrays of size MAX_IO_APICS seems like the wrong direction.
+[  111.356035] usb 2-3: reset high speed USB device using ehci_hcd and address 2
+[  111.668045] usb 3-4: reset full speed USB device using ohci_hcd and address 2
+[  112.177152] usb 3-4.1: reset full speed USB device using ohci_hcd and address 3
+[  112.361151] usb 3-4.2: reset full speed USB device using ohci_hcd and address 4
+[  112.471157] pm_op(): usb_dev_resume+0x0/0x10 returns -19
+[  112.471160] PM: Device 3-4.3 failed to resume: error -19
+[  112.471373] PM: resume devices took 3.256 seconds
+[  112.471980] PM: Finishing wakeup.
+[  112.471982] Restarting tasks ... <6>usb 3-4.3: USB disconnect, address 5
+[  112.504314] btusb_send_frame: hci0 urb f4520700 submission failed
+>
+> Here's another question: Since there is a udev removal event for the
+> radio device, why not add a udev rule to switch back to HID+bluetooth
+> mode every time that event occurs?
 
-Which probably means adding the information we need to struct irq_cfg.
+1. You'd have two rules doing the same thing (resume & addition)
+2. It is unclean, as the removal event doesn't tell you which device to run
+hid2hci on
+3. The device might really be physically removed
+4. You can intentionally run hid2hci to switch back to HID
 
-Eric
+	Regards
+		Oliver
+
+PS: Why, oh why don't people use configurations as they were designed?
+
