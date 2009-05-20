@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756658AbZETHmQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754303AbZETHmn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756658AbZETHmQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 03:42:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756235AbZETHk5
+	id S1754303AbZETHmn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 03:42:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756404AbZETHlE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 03:40:57 -0400
-Received: from hera.kernel.org ([140.211.167.34]:42099 "EHLO hera.kernel.org"
+	Wed, 20 May 2009 03:41:04 -0400
+Received: from hera.kernel.org ([140.211.167.34]:42116 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756264AbZETHkz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 03:40:55 -0400
+	id S1756347AbZETHlB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 03:41:01 -0400
 From: Tejun Heo <tj@kernel.org>
 To: mingo@elte.hu, linux-kernel@vger.kernel.org, x86@kernel.org,
        ink@jurassic.park.msu.ru, rth@twiddle.net, linux@arm.linux.org.uk,
@@ -20,395 +20,410 @@ To: mingo@elte.hu, linux-kernel@vger.kernel.org, x86@kernel.org,
        schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com, lethal@linux-sh.org,
        davem@davemloft.net, jdike@addtoit.com, chris@zankel.net,
        rusty@rustcorp.com.au
-Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 2/7] linker script: throw away .discard section
-Date: Wed, 20 May 2009 16:37:34 +0900
-Message-Id: <1242805059-18338-3-git-send-email-tj@kernel.org>
+Cc: Tejun Heo <tj@kernel.org>, Jens Axboe <jens.axboe@oracle.com>,
+       Dave Jones <davej@redhat.com>,
+       Jeremy Fitzhardinge <jeremy@xensource.com>,
+       linux-mm <linux-mm@kvack.org>
+Subject: [PATCH 3/7] percpu: clean up percpu variable definitions
+Date: Wed, 20 May 2009 16:37:35 +0900
+Message-Id: <1242805059-18338-4-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <1242805059-18338-1-git-send-email-tj@kernel.org>
 References: <1242805059-18338-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 20 May 2009 07:37:52 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 20 May 2009 07:38:03 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-x86 throws away .discard section but no other archs do.  Also,
-.discard is not thrown away while linking modules.  Make every arch
-and module linking throw it away.  This will be used to define dummy
-variables for percpu declarations and definitions.
+Percpu variable definition is about to be updated such that
 
-This patch is based on Ivan Kokshaysky's alpha percpu patch.
+* percpu symbols must be unique even the static ones
 
-[ Impact: always throw away everything in .discard ]
+* in-function static definition is not allowed
+
+Update percpu variable definitions accoringly.
+
+* as,cfq: rename ioc_count uniquely
+
+* cpufreq: rename cpu_dbs_info uniquely
+
+* xen: move nesting_count out of xen_evtchn_do_upcall() and rename it
+
+* mm: move ratelimits out of balance_dirty_pages_ratelimited_nr() and
+  rename it
+
+* ipv4,6: rename cookie_scratch uniquely
+
+While at it, make cris:use DECLARE_PER_CPU() instead of extern
+volatile DEFINE_PER_CPU() for declaration.
+
+[ Impact: percpu usage cleanups, no duplicate static percpu var names ]
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
 Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Cc: Richard Henderson <rth@twiddle.net>
-Cc: Russell King <linux@arm.linux.org.uk>
-Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>
-Cc: Bryan Wu <cooloney@kernel.org>
-Cc: Mikael Starvik <starvik@axis.com>
-Cc: Jesper Nilsson <jesper.nilsson@axis.com>
-Cc: David Howells <dhowells@redhat.com>
-Cc: Yoshinori Sato <ysato@users.sourceforge.jp>
-Cc: Tony Luck <tony.luck@intel.com>
-Cc: Hirokazu Takata <takata@linux-m32r.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Michal Simek <monstr@monstr.eu>
-Cc: Ralf Baechle <ralf@linux-mips.org>
-Cc: Kyle McMartin <kyle@mcmartin.ca>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Paul Mundt <lethal@linux-sh.org>
+Cc: Jens Axboe <jens.axboe@oracle.com>
+Cc: Dave Jones <davej@redhat.com>
+Cc: Jeremy Fitzhardinge <jeremy@xensource.com>
+Cc: linux-mm <linux-mm@kvack.org>
 Cc: David S. Miller <davem@davemloft.net>
-Cc: Jeff Dike <jdike@addtoit.com>
-Cc: Chris Zankel <chris@zankel.net>
-Cc: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Ingo Molnar <mingo@elte.hu>
 ---
- Makefile                             |    2 +-
- arch/alpha/kernel/vmlinux.lds.S      |    1 +
- arch/arm/kernel/vmlinux.lds.S        |    1 +
- arch/avr32/kernel/vmlinux.lds.S      |    1 +
- arch/blackfin/kernel/vmlinux.lds.S   |    1 +
- arch/cris/kernel/vmlinux.lds.S       |    1 +
- arch/frv/kernel/vmlinux.lds.S        |    2 ++
- arch/h8300/kernel/vmlinux.lds.S      |    1 +
- arch/ia64/kernel/vmlinux.lds.S       |    1 +
- arch/m32r/kernel/vmlinux.lds.S       |    1 +
- arch/m68k/kernel/vmlinux-std.lds     |    1 +
- arch/m68k/kernel/vmlinux-sun3.lds    |    1 +
- arch/m68knommu/kernel/vmlinux.lds.S  |    1 +
- arch/microblaze/kernel/vmlinux.lds.S |    2 ++
- arch/mips/kernel/vmlinux.lds.S       |    1 +
- arch/mn10300/kernel/vmlinux.lds.S    |    1 +
- arch/parisc/kernel/vmlinux.lds.S     |    1 +
- arch/powerpc/kernel/vmlinux.lds.S    |    1 +
- arch/s390/kernel/vmlinux.lds.S       |    1 +
- arch/sh/kernel/vmlinux_32.lds.S      |    1 +
- arch/sh/kernel/vmlinux_64.lds.S      |    1 +
- arch/sparc/kernel/vmlinux.lds.S      |    1 +
- arch/um/kernel/dyn.lds.S             |    2 ++
- arch/um/kernel/uml.lds.S             |    2 ++
- arch/xtensa/kernel/vmlinux.lds.S     |    1 +
- scripts/module-common.lds            |    8 ++++++++
- 26 files changed, 37 insertions(+), 1 deletions(-)
- create mode 100644 scripts/module-common.lds
+ arch/cris/include/asm/mmu_context.h    |    2 +-
+ block/as-iosched.c                     |   10 +++++-----
+ block/cfq-iosched.c                    |   10 +++++-----
+ drivers/cpufreq/cpufreq_conservative.c |   12 ++++++------
+ drivers/cpufreq/cpufreq_ondemand.c     |   15 ++++++++-------
+ drivers/xen/events.c                   |    9 +++++----
+ mm/page-writeback.c                    |    5 +++--
+ net/ipv4/syncookies.c                  |    4 ++--
+ net/ipv6/syncookies.c                  |    4 ++--
+ 9 files changed, 37 insertions(+), 34 deletions(-)
 
-diff --git a/Makefile b/Makefile
-index b57e1f5..355b449 100644
---- a/Makefile
-+++ b/Makefile
-@@ -335,7 +335,7 @@ CHECKFLAGS     := -D__linux__ -Dlinux -D__STDC__ -Dunix -D__unix__ \
- MODFLAGS	= -DMODULE
- CFLAGS_MODULE   = $(MODFLAGS)
- AFLAGS_MODULE   = $(MODFLAGS)
--LDFLAGS_MODULE  =
-+LDFLAGS_MODULE  = -T $(srctree)/scripts/module-common.lds
- CFLAGS_KERNEL	=
- AFLAGS_KERNEL	=
+diff --git a/arch/cris/include/asm/mmu_context.h b/arch/cris/include/asm/mmu_context.h
+index 72ba08d..00de1a0 100644
+--- a/arch/cris/include/asm/mmu_context.h
++++ b/arch/cris/include/asm/mmu_context.h
+@@ -17,7 +17,7 @@ extern void switch_mm(struct mm_struct *prev, struct mm_struct *next,
+  * registers like cr3 on the i386
+  */
  
-diff --git a/arch/alpha/kernel/vmlinux.lds.S b/arch/alpha/kernel/vmlinux.lds.S
-index b9d6568..75fe1d6 100644
---- a/arch/alpha/kernel/vmlinux.lds.S
-+++ b/arch/alpha/kernel/vmlinux.lds.S
-@@ -139,6 +139,7 @@ SECTIONS
- 		EXIT_TEXT
- 		EXIT_DATA
- 		*(.exitcall.exit)
-+		*(.discard)
+-extern volatile DEFINE_PER_CPU(pgd_t *,current_pgd); /* defined in arch/cris/mm/fault.c */
++DECLARE_PER_CPU(pgd_t *,current_pgd); /* defined in arch/cris/mm/fault.c */
+ 
+ static inline void enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk)
+ {
+diff --git a/block/as-iosched.c b/block/as-iosched.c
+index c48fa67..96ff4d1 100644
+--- a/block/as-iosched.c
++++ b/block/as-iosched.c
+@@ -146,7 +146,7 @@ enum arq_state {
+ #define RQ_STATE(rq)	((enum arq_state)(rq)->elevator_private2)
+ #define RQ_SET_STATE(rq, state)	((rq)->elevator_private2 = (void *) state)
+ 
+-static DEFINE_PER_CPU(unsigned long, ioc_count);
++static DEFINE_PER_CPU(unsigned long, as_ioc_count);
+ static struct completion *ioc_gone;
+ static DEFINE_SPINLOCK(ioc_gone_lock);
+ 
+@@ -161,7 +161,7 @@ static void as_antic_stop(struct as_data *ad);
+ static void free_as_io_context(struct as_io_context *aic)
+ {
+ 	kfree(aic);
+-	elv_ioc_count_dec(ioc_count);
++	elv_ioc_count_dec(as_ioc_count);
+ 	if (ioc_gone) {
+ 		/*
+ 		 * AS scheduler is exiting, grab exit lock and check
+@@ -169,7 +169,7 @@ static void free_as_io_context(struct as_io_context *aic)
+ 		 * complete ioc_gone and set it back to NULL.
+ 		 */
+ 		spin_lock(&ioc_gone_lock);
+-		if (ioc_gone && !elv_ioc_count_read(ioc_count)) {
++		if (ioc_gone && !elv_ioc_count_read(as_ioc_count)) {
+ 			complete(ioc_gone);
+ 			ioc_gone = NULL;
+ 		}
+@@ -211,7 +211,7 @@ static struct as_io_context *alloc_as_io_context(void)
+ 		ret->seek_total = 0;
+ 		ret->seek_samples = 0;
+ 		ret->seek_mean = 0;
+-		elv_ioc_count_inc(ioc_count);
++		elv_ioc_count_inc(as_ioc_count);
  	}
  
- 	.mdebug 0 : {
-diff --git a/arch/arm/kernel/vmlinux.lds.S b/arch/arm/kernel/vmlinux.lds.S
-index c90f272..be63bee 100644
---- a/arch/arm/kernel/vmlinux.lds.S
-+++ b/arch/arm/kernel/vmlinux.lds.S
-@@ -82,6 +82,7 @@ SECTIONS
- 		EXIT_TEXT
- 		EXIT_DATA
- 		*(.exitcall.exit)
-+		*(.discard)
- 		*(.ARM.exidx.exit.text)
- 		*(.ARM.extab.exit.text)
- #ifndef CONFIG_MMU
-diff --git a/arch/avr32/kernel/vmlinux.lds.S b/arch/avr32/kernel/vmlinux.lds.S
-index 7910d41..b832460 100644
---- a/arch/avr32/kernel/vmlinux.lds.S
-+++ b/arch/avr32/kernel/vmlinux.lds.S
-@@ -131,6 +131,7 @@ SECTIONS
- 	/DISCARD/       	: {
- 		EXIT_DATA
- 		*(.exitcall.exit)
-+		*(.discard)
- 	}
- 
- 	DWARF_DEBUG
-diff --git a/arch/blackfin/kernel/vmlinux.lds.S b/arch/blackfin/kernel/vmlinux.lds.S
-index 27952ae..1fa9491 100644
---- a/arch/blackfin/kernel/vmlinux.lds.S
-+++ b/arch/blackfin/kernel/vmlinux.lds.S
-@@ -262,5 +262,6 @@ SECTIONS
- 		EXIT_TEXT
- 		EXIT_DATA
- 		*(.exitcall.exit)
-+		*(.discard)
- 	}
+ 	return ret;
+@@ -1509,7 +1509,7 @@ static void __exit as_exit(void)
+ 	ioc_gone = &all_gone;
+ 	/* ioc_gone's update must be visible before reading ioc_count */
+ 	smp_wmb();
+-	if (elv_ioc_count_read(ioc_count))
++	if (elv_ioc_count_read(as_ioc_count))
+ 		wait_for_completion(&all_gone);
+ 	synchronize_rcu();
  }
-diff --git a/arch/cris/kernel/vmlinux.lds.S b/arch/cris/kernel/vmlinux.lds.S
-index 0d2adfc..a3175eb 100644
---- a/arch/cris/kernel/vmlinux.lds.S
-+++ b/arch/cris/kernel/vmlinux.lds.S
-@@ -145,6 +145,7 @@ SECTIONS
- 		EXIT_TEXT
- 		EXIT_DATA
- 		*(.exitcall.exit)
-+		*(.discard)
-         }
+diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+index a55a9bd..deea748 100644
+--- a/block/cfq-iosched.c
++++ b/block/cfq-iosched.c
+@@ -48,7 +48,7 @@ static int cfq_slice_idle = HZ / 125;
+ static struct kmem_cache *cfq_pool;
+ static struct kmem_cache *cfq_ioc_pool;
  
- 	dram_end = dram_start + (CONFIG_ETRAX_DRAM_SIZE - __CONFIG_ETRAX_VMEM_SIZE)*1024*1024;
-diff --git a/arch/frv/kernel/vmlinux.lds.S b/arch/frv/kernel/vmlinux.lds.S
-index 22d9787..64b5a5e 100644
---- a/arch/frv/kernel/vmlinux.lds.S
-+++ b/arch/frv/kernel/vmlinux.lds.S
-@@ -177,6 +177,8 @@ SECTIONS
-   .debug_ranges		0 : { *(.debug_ranges) }
+-static DEFINE_PER_CPU(unsigned long, ioc_count);
++static DEFINE_PER_CPU(unsigned long, cfq_ioc_count);
+ static struct completion *ioc_gone;
+ static DEFINE_SPINLOCK(ioc_gone_lock);
  
-   .comment 0 : { *(.comment) }
-+
-+  /DISCARD/ : { *(.discard) }
- }
+@@ -1423,7 +1423,7 @@ static void cfq_cic_free_rcu(struct rcu_head *head)
+ 	cic = container_of(head, struct cfq_io_context, rcu_head);
  
- __kernel_image_size_no_bss = __bss_start - __kernel_image_start;
-diff --git a/arch/h8300/kernel/vmlinux.lds.S b/arch/h8300/kernel/vmlinux.lds.S
-index 43a87b9..03d6c0d 100644
---- a/arch/h8300/kernel/vmlinux.lds.S
-+++ b/arch/h8300/kernel/vmlinux.lds.S
-@@ -154,6 +154,7 @@ SECTIONS
- 	}
- 	/DISCARD/ : {
- 		*(.exitcall.exit)
-+		*(.discard)
- 	}
-         .romfs :	
- 	{
-diff --git a/arch/ia64/kernel/vmlinux.lds.S b/arch/ia64/kernel/vmlinux.lds.S
-index 4a95e86..13d9589 100644
---- a/arch/ia64/kernel/vmlinux.lds.S
-+++ b/arch/ia64/kernel/vmlinux.lds.S
-@@ -29,6 +29,7 @@ SECTIONS
- 	EXIT_TEXT
- 	EXIT_DATA
- 	*(.exitcall.exit)
-+	*(.discard)
- 	*(.IA_64.unwind.exit.text)
- 	*(.IA_64.unwind_info.exit.text)
- 	}
-diff --git a/arch/m32r/kernel/vmlinux.lds.S b/arch/m32r/kernel/vmlinux.lds.S
-index 4179adf..480a499 100644
---- a/arch/m32r/kernel/vmlinux.lds.S
-+++ b/arch/m32r/kernel/vmlinux.lds.S
-@@ -125,6 +125,7 @@ SECTIONS
- 	EXIT_TEXT
- 	EXIT_DATA
- 	*(.exitcall.exit)
-+	*(.discard)
+ 	kmem_cache_free(cfq_ioc_pool, cic);
+-	elv_ioc_count_dec(ioc_count);
++	elv_ioc_count_dec(cfq_ioc_count);
+ 
+ 	if (ioc_gone) {
+ 		/*
+@@ -1432,7 +1432,7 @@ static void cfq_cic_free_rcu(struct rcu_head *head)
+ 		 * complete ioc_gone and set it back to NULL
+ 		 */
+ 		spin_lock(&ioc_gone_lock);
+-		if (ioc_gone && !elv_ioc_count_read(ioc_count)) {
++		if (ioc_gone && !elv_ioc_count_read(cfq_ioc_count)) {
+ 			complete(ioc_gone);
+ 			ioc_gone = NULL;
+ 		}
+@@ -1558,7 +1558,7 @@ cfq_alloc_io_context(struct cfq_data *cfqd, gfp_t gfp_mask)
+ 		INIT_HLIST_NODE(&cic->cic_list);
+ 		cic->dtor = cfq_free_io_context;
+ 		cic->exit = cfq_exit_io_context;
+-		elv_ioc_count_inc(ioc_count);
++		elv_ioc_count_inc(cfq_ioc_count);
  	}
  
-   /* Stabs debugging sections.  */
-diff --git a/arch/m68k/kernel/vmlinux-std.lds b/arch/m68k/kernel/vmlinux-std.lds
-index 01d212b..905a797 100644
---- a/arch/m68k/kernel/vmlinux-std.lds
-+++ b/arch/m68k/kernel/vmlinux-std.lds
-@@ -87,6 +87,7 @@ SECTIONS
- 	EXIT_TEXT
- 	EXIT_DATA
- 	*(.exitcall.exit)
-+	*(.discard)
- 	}
- 
-   /* Stabs debugging sections.  */
-diff --git a/arch/m68k/kernel/vmlinux-sun3.lds b/arch/m68k/kernel/vmlinux-sun3.lds
-index c192f77..47d04be 100644
---- a/arch/m68k/kernel/vmlinux-sun3.lds
-+++ b/arch/m68k/kernel/vmlinux-sun3.lds
-@@ -82,6 +82,7 @@ __init_begin = .;
- 	EXIT_TEXT
- 	EXIT_DATA
- 	*(.exitcall.exit)
-+	*(.discard)
- 	}
- 
-   .crap : {
-diff --git a/arch/m68knommu/kernel/vmlinux.lds.S b/arch/m68knommu/kernel/vmlinux.lds.S
-index b7fe505..68111a6 100644
---- a/arch/m68knommu/kernel/vmlinux.lds.S
-+++ b/arch/m68knommu/kernel/vmlinux.lds.S
-@@ -188,6 +188,7 @@ SECTIONS {
- 		EXIT_TEXT
- 		EXIT_DATA
- 		*(.exitcall.exit)
-+		*(.discard)
- 	}
- 
- 	.bss : {
-diff --git a/arch/microblaze/kernel/vmlinux.lds.S b/arch/microblaze/kernel/vmlinux.lds.S
-index 840385e..4547363 100644
---- a/arch/microblaze/kernel/vmlinux.lds.S
-+++ b/arch/microblaze/kernel/vmlinux.lds.S
-@@ -160,4 +160,6 @@ SECTIONS {
- 	}
- 	. = ALIGN(4096);
- 	_end = .;
-+
-+	/DISCARD/ : { *(.discard) }
- }
-diff --git a/arch/mips/kernel/vmlinux.lds.S b/arch/mips/kernel/vmlinux.lds.S
-index 58738c8..4590160 100644
---- a/arch/mips/kernel/vmlinux.lds.S
-+++ b/arch/mips/kernel/vmlinux.lds.S
-@@ -179,6 +179,7 @@ SECTIONS
- 	/* Sections to be discarded */
- 	/DISCARD/ : {
- 		*(.exitcall.exit)
-+		*(.discard)
- 
- 		/* ABI crap starts here */
- 		*(.MIPS.options)
-diff --git a/arch/mn10300/kernel/vmlinux.lds.S b/arch/mn10300/kernel/vmlinux.lds.S
-index 24de6b9..5d9f2f9 100644
---- a/arch/mn10300/kernel/vmlinux.lds.S
-+++ b/arch/mn10300/kernel/vmlinux.lds.S
-@@ -146,6 +146,7 @@ SECTIONS
-   /* Sections to be discarded */
-   /DISCARD/ : {
- 	*(.exitcall.exit)
-+	*(.discard)
- 	}
- 
-   STABS_DEBUG
-diff --git a/arch/parisc/kernel/vmlinux.lds.S b/arch/parisc/kernel/vmlinux.lds.S
-index fd2cc4f..ccf5834 100644
---- a/arch/parisc/kernel/vmlinux.lds.S
-+++ b/arch/parisc/kernel/vmlinux.lds.S
-@@ -240,6 +240,7 @@ SECTIONS
- 	/* Sections to be discarded */
- 	/DISCARD/ : {
- 		*(.exitcall.exit)
-+		*(.discard)
- #ifdef CONFIG_64BIT
- 		/* temporary hack until binutils is fixed to not emit these
- 	 	 * for static binaries
-diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-index 8ef8a14..7fca935 100644
---- a/arch/powerpc/kernel/vmlinux.lds.S
-+++ b/arch/powerpc/kernel/vmlinux.lds.S
-@@ -40,6 +40,7 @@ SECTIONS
- 	/* Sections to be discarded. */
- 	/DISCARD/ : {
- 	*(.exitcall.exit)
-+	*(.discard)
- 	EXIT_DATA
- 	}
- 
-diff --git a/arch/s390/kernel/vmlinux.lds.S b/arch/s390/kernel/vmlinux.lds.S
-index 89399b8..efa7a89 100644
---- a/arch/s390/kernel/vmlinux.lds.S
-+++ b/arch/s390/kernel/vmlinux.lds.S
-@@ -160,6 +160,7 @@ SECTIONS
- 	/DISCARD/ : {
- 		EXIT_DATA
- 		*(.exitcall.exit)
-+		*(.discard)
- 	}
- 
- 	/* Debugging sections.	*/
-diff --git a/arch/sh/kernel/vmlinux_32.lds.S b/arch/sh/kernel/vmlinux_32.lds.S
-index dd9b2ee..5eb6856 100644
---- a/arch/sh/kernel/vmlinux_32.lds.S
-+++ b/arch/sh/kernel/vmlinux_32.lds.S
-@@ -147,6 +147,7 @@ SECTIONS
+ 	return cic;
+@@ -2663,7 +2663,7 @@ static void __exit cfq_exit(void)
+ 	 * this also protects us from entering cfq_slab_kill() with
+ 	 * pending RCU callbacks
  	 */
- 	/DISCARD/ : {
- 		*(.exitcall.exit)
-+		*(.discard)
- 	}
+-	if (elv_ioc_count_read(ioc_count))
++	if (elv_ioc_count_read(cfq_ioc_count))
+ 		wait_for_completion(&all_gone);
+ 	cfq_slab_kill();
+ }
+diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
+index 2ecd95e..e0faa3e 100644
+--- a/drivers/cpufreq/cpufreq_conservative.c
++++ b/drivers/cpufreq/cpufreq_conservative.c
+@@ -80,7 +80,7 @@ struct cpu_dbs_info_s {
+ 	int cpu;
+ 	unsigned int enable:1;
+ };
+-static DEFINE_PER_CPU(struct cpu_dbs_info_s, cpu_dbs_info);
++static DEFINE_PER_CPU(struct cpu_dbs_info_s, cs_cpu_dbs_info);
  
- 	STABS_DEBUG
-diff --git a/arch/sh/kernel/vmlinux_64.lds.S b/arch/sh/kernel/vmlinux_64.lds.S
-index 6966446..afc515a 100644
---- a/arch/sh/kernel/vmlinux_64.lds.S
-+++ b/arch/sh/kernel/vmlinux_64.lds.S
-@@ -156,6 +156,7 @@ SECTIONS
+ static unsigned int dbs_enable;	/* number of CPUs using this policy */
+ 
+@@ -150,7 +150,7 @@ dbs_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
+ 		     void *data)
+ {
+ 	struct cpufreq_freqs *freq = data;
+-	struct cpu_dbs_info_s *this_dbs_info = &per_cpu(cpu_dbs_info,
++	struct cpu_dbs_info_s *this_dbs_info = &per_cpu(cs_cpu_dbs_info,
+ 							freq->cpu);
+ 
+ 	struct cpufreq_policy *policy;
+@@ -323,7 +323,7 @@ static ssize_t store_ignore_nice_load(struct cpufreq_policy *policy,
+ 	/* we need to re-evaluate prev_cpu_idle */
+ 	for_each_online_cpu(j) {
+ 		struct cpu_dbs_info_s *dbs_info;
+-		dbs_info = &per_cpu(cpu_dbs_info, j);
++		dbs_info = &per_cpu(cs_cpu_dbs_info, j);
+ 		dbs_info->prev_cpu_idle = get_cpu_idle_time(j,
+ 						&dbs_info->prev_cpu_wall);
+ 		if (dbs_tuners_ins.ignore_nice)
+@@ -413,7 +413,7 @@ static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
+ 		cputime64_t cur_wall_time, cur_idle_time;
+ 		unsigned int idle_time, wall_time;
+ 
+-		j_dbs_info = &per_cpu(cpu_dbs_info, j);
++		j_dbs_info = &per_cpu(cs_cpu_dbs_info, j);
+ 
+ 		cur_idle_time = get_cpu_idle_time(j, &cur_wall_time);
+ 
+@@ -553,7 +553,7 @@ static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+ 	unsigned int j;
+ 	int rc;
+ 
+-	this_dbs_info = &per_cpu(cpu_dbs_info, cpu);
++	this_dbs_info = &per_cpu(cs_cpu_dbs_info, cpu);
+ 
+ 	switch (event) {
+ 	case CPUFREQ_GOV_START:
+@@ -573,7 +573,7 @@ static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+ 
+ 		for_each_cpu(j, policy->cpus) {
+ 			struct cpu_dbs_info_s *j_dbs_info;
+-			j_dbs_info = &per_cpu(cpu_dbs_info, j);
++			j_dbs_info = &per_cpu(cs_cpu_dbs_info, j);
+ 			j_dbs_info->cur_policy = policy;
+ 
+ 			j_dbs_info->prev_cpu_idle = get_cpu_idle_time(j,
+diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
+index 338f428..2eaf88f 100644
+--- a/drivers/cpufreq/cpufreq_ondemand.c
++++ b/drivers/cpufreq/cpufreq_ondemand.c
+@@ -87,7 +87,7 @@ struct cpu_dbs_info_s {
+ 	unsigned int enable:1,
+ 		sample_type:1;
+ };
+-static DEFINE_PER_CPU(struct cpu_dbs_info_s, cpu_dbs_info);
++static DEFINE_PER_CPU(struct cpu_dbs_info_s, od_cpu_dbs_info);
+ 
+ static unsigned int dbs_enable;	/* number of CPUs using this policy */
+ 
+@@ -162,7 +162,8 @@ static unsigned int powersave_bias_target(struct cpufreq_policy *policy,
+ 	unsigned int freq_hi, freq_lo;
+ 	unsigned int index = 0;
+ 	unsigned int jiffies_total, jiffies_hi, jiffies_lo;
+-	struct cpu_dbs_info_s *dbs_info = &per_cpu(cpu_dbs_info, policy->cpu);
++	struct cpu_dbs_info_s *dbs_info = &per_cpu(od_cpu_dbs_info,
++						   policy->cpu);
+ 
+ 	if (!dbs_info->freq_table) {
+ 		dbs_info->freq_lo = 0;
+@@ -207,7 +208,7 @@ static void ondemand_powersave_bias_init(void)
+ {
+ 	int i;
+ 	for_each_online_cpu(i) {
+-		struct cpu_dbs_info_s *dbs_info = &per_cpu(cpu_dbs_info, i);
++		struct cpu_dbs_info_s *dbs_info = &per_cpu(od_cpu_dbs_info, i);
+ 		dbs_info->freq_table = cpufreq_frequency_get_table(i);
+ 		dbs_info->freq_lo = 0;
+ 	}
+@@ -322,7 +323,7 @@ static ssize_t store_ignore_nice_load(struct cpufreq_policy *policy,
+ 	/* we need to re-evaluate prev_cpu_idle */
+ 	for_each_online_cpu(j) {
+ 		struct cpu_dbs_info_s *dbs_info;
+-		dbs_info = &per_cpu(cpu_dbs_info, j);
++		dbs_info = &per_cpu(od_cpu_dbs_info, j);
+ 		dbs_info->prev_cpu_idle = get_cpu_idle_time(j,
+ 						&dbs_info->prev_cpu_wall);
+ 		if (dbs_tuners_ins.ignore_nice)
+@@ -416,7 +417,7 @@ static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
+ 		unsigned int load, load_freq;
+ 		int freq_avg;
+ 
+-		j_dbs_info = &per_cpu(cpu_dbs_info, j);
++		j_dbs_info = &per_cpu(od_cpu_dbs_info, j);
+ 
+ 		cur_idle_time = get_cpu_idle_time(j, &cur_wall_time);
+ 
+@@ -573,7 +574,7 @@ static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+ 	unsigned int j;
+ 	int rc;
+ 
+-	this_dbs_info = &per_cpu(cpu_dbs_info, cpu);
++	this_dbs_info = &per_cpu(od_cpu_dbs_info, cpu);
+ 
+ 	switch (event) {
+ 	case CPUFREQ_GOV_START:
+@@ -595,7 +596,7 @@ static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+ 
+ 		for_each_cpu(j, policy->cpus) {
+ 			struct cpu_dbs_info_s *j_dbs_info;
+-			j_dbs_info = &per_cpu(cpu_dbs_info, j);
++			j_dbs_info = &per_cpu(od_cpu_dbs_info, j);
+ 			j_dbs_info->cur_policy = policy;
+ 
+ 			j_dbs_info->prev_cpu_idle = get_cpu_idle_time(j,
+diff --git a/drivers/xen/events.c b/drivers/xen/events.c
+index 30963af..4dbe5c0 100644
+--- a/drivers/xen/events.c
++++ b/drivers/xen/events.c
+@@ -596,6 +596,8 @@ irqreturn_t xen_debug_interrupt(int irq, void *dev_id)
+ 	return IRQ_HANDLED;
+ }
+ 
++static DEFINE_PER_CPU(unsigned, xed_nesting_count);
++
+ /*
+  * Search the CPUs pending events bitmasks.  For each one found, map
+  * the event number to an irq, and feed it into do_IRQ() for
+@@ -611,7 +613,6 @@ void xen_evtchn_do_upcall(struct pt_regs *regs)
+ 	struct pt_regs *old_regs = set_irq_regs(regs);
+ 	struct shared_info *s = HYPERVISOR_shared_info;
+ 	struct vcpu_info *vcpu_info = __get_cpu_var(xen_vcpu);
+-	static DEFINE_PER_CPU(unsigned, nesting_count);
+  	unsigned count;
+ 
+ 	exit_idle();
+@@ -622,7 +623,7 @@ void xen_evtchn_do_upcall(struct pt_regs *regs)
+ 
+ 		vcpu_info->evtchn_upcall_pending = 0;
+ 
+-		if (__get_cpu_var(nesting_count)++)
++		if (__get_cpu_var(xed_nesting_count)++)
+ 			goto out;
+ 
+ #ifndef CONFIG_X86 /* No need for a barrier -- XCHG is a barrier on x86. */
+@@ -647,8 +648,8 @@ void xen_evtchn_do_upcall(struct pt_regs *regs)
+ 
+ 		BUG_ON(!irqs_disabled());
+ 
+-		count = __get_cpu_var(nesting_count);
+-		__get_cpu_var(nesting_count) = 0;
++		count = __get_cpu_var(xed_nesting_count);
++		__get_cpu_var(xed_nesting_count) = 0;
+ 	} while(count != 1);
+ 
+ out:
+diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+index bb553c3..0e0c9de 100644
+--- a/mm/page-writeback.c
++++ b/mm/page-writeback.c
+@@ -606,6 +606,8 @@ void set_page_dirty_balance(struct page *page, int page_mkwrite)
+ 	}
+ }
+ 
++static DEFINE_PER_CPU(unsigned long, bdp_ratelimits) = 0;
++
+ /**
+  * balance_dirty_pages_ratelimited_nr - balance dirty memory state
+  * @mapping: address_space which was dirtied
+@@ -623,7 +625,6 @@ void set_page_dirty_balance(struct page *page, int page_mkwrite)
+ void balance_dirty_pages_ratelimited_nr(struct address_space *mapping,
+ 					unsigned long nr_pages_dirtied)
+ {
+-	static DEFINE_PER_CPU(unsigned long, ratelimits) = 0;
+ 	unsigned long ratelimit;
+ 	unsigned long *p;
+ 
+@@ -636,7 +637,7 @@ void balance_dirty_pages_ratelimited_nr(struct address_space *mapping,
+ 	 * tasks in balance_dirty_pages(). Period.
  	 */
- 	/DISCARD/ : {
- 		*(.exitcall.exit)
-+		*(.discard)
- 	}
+ 	preempt_disable();
+-	p =  &__get_cpu_var(ratelimits);
++	p =  &__get_cpu_var(bdp_ratelimits);
+ 	*p += nr_pages_dirtied;
+ 	if (unlikely(*p >= ratelimit)) {
+ 		*p = 0;
+diff --git a/net/ipv4/syncookies.c b/net/ipv4/syncookies.c
+index b35a950..70ee18c 100644
+--- a/net/ipv4/syncookies.c
++++ b/net/ipv4/syncookies.c
+@@ -37,12 +37,12 @@ __initcall(init_syncookies);
+ #define COOKIEBITS 24	/* Upper bits store count */
+ #define COOKIEMASK (((__u32)1 << COOKIEBITS) - 1)
  
- 	STABS_DEBUG
-diff --git a/arch/sparc/kernel/vmlinux.lds.S b/arch/sparc/kernel/vmlinux.lds.S
-index fcbbd00..d63cf91 100644
---- a/arch/sparc/kernel/vmlinux.lds.S
-+++ b/arch/sparc/kernel/vmlinux.lds.S
-@@ -175,6 +175,7 @@ SECTIONS
- 		EXIT_TEXT
- 		EXIT_DATA
- 		*(.exitcall.exit)
-+		*(.discard)
- 	}
+-static DEFINE_PER_CPU(__u32, cookie_scratch)[16 + 5 + SHA_WORKSPACE_WORDS];
++static DEFINE_PER_CPU(__u32, ipv4_cookie_scratch)[16 + 5 + SHA_WORKSPACE_WORDS];
  
- 	STABS_DEBUG
-diff --git a/arch/um/kernel/dyn.lds.S b/arch/um/kernel/dyn.lds.S
-index 9975e1a..2916d6e 100644
---- a/arch/um/kernel/dyn.lds.S
-+++ b/arch/um/kernel/dyn.lds.S
-@@ -156,4 +156,6 @@ SECTIONS
-   STABS_DEBUG
+ static u32 cookie_hash(__be32 saddr, __be32 daddr, __be16 sport, __be16 dport,
+ 		       u32 count, int c)
+ {
+-	__u32 *tmp = __get_cpu_var(cookie_scratch);
++	__u32 *tmp = __get_cpu_var(ipv4_cookie_scratch);
  
-   DWARF_DEBUG
-+
-+  /DISCARD/	: { *(.discard) }
+ 	memcpy(tmp + 4, syncookie_secret[c], sizeof(syncookie_secret[c]));
+ 	tmp[0] = (__force u32)saddr;
+diff --git a/net/ipv6/syncookies.c b/net/ipv6/syncookies.c
+index 711175e..348e38c 100644
+--- a/net/ipv6/syncookies.c
++++ b/net/ipv6/syncookies.c
+@@ -74,12 +74,12 @@ static inline struct sock *get_cookie_sock(struct sock *sk, struct sk_buff *skb,
+ 	return child;
  }
-diff --git a/arch/um/kernel/uml.lds.S b/arch/um/kernel/uml.lds.S
-index 11b8352..1f8a622 100644
---- a/arch/um/kernel/uml.lds.S
-+++ b/arch/um/kernel/uml.lds.S
-@@ -100,4 +100,6 @@ SECTIONS
-   STABS_DEBUG
  
-   DWARF_DEBUG
-+
-+  /DISCARD/	: { *(.discard) }
- }
-diff --git a/arch/xtensa/kernel/vmlinux.lds.S b/arch/xtensa/kernel/vmlinux.lds.S
-index 41c159c..b1e2463 100644
---- a/arch/xtensa/kernel/vmlinux.lds.S
-+++ b/arch/xtensa/kernel/vmlinux.lds.S
-@@ -287,6 +287,7 @@ SECTIONS
- 	EXIT_TEXT
- 	EXIT_DATA
-         *(.exitcall.exit)
-+	*(.discard)
-   }
+-static DEFINE_PER_CPU(__u32, cookie_scratch)[16 + 5 + SHA_WORKSPACE_WORDS];
++static DEFINE_PER_CPU(__u32, ipv6_cookie_scratch)[16 + 5 + SHA_WORKSPACE_WORDS];
  
-   .xt.lit : { *(.xt.lit) }
-diff --git a/scripts/module-common.lds b/scripts/module-common.lds
-new file mode 100644
-index 0000000..47a1f9a
---- /dev/null
-+++ b/scripts/module-common.lds
-@@ -0,0 +1,8 @@
-+/*
-+ * Common module linker script, always used when linking a module.
-+ * Archs are free to supply their own linker scripts.  ld will
-+ * combine them automatically.
-+ */
-+SECTIONS {
-+	/DISCARD/ : { *(.discard) }
-+}
+ static u32 cookie_hash(struct in6_addr *saddr, struct in6_addr *daddr,
+ 		       __be16 sport, __be16 dport, u32 count, int c)
+ {
+-	__u32 *tmp = __get_cpu_var(cookie_scratch);
++	__u32 *tmp = __get_cpu_var(ipv6_cookie_scratch);
+ 
+ 	/*
+ 	 * we have 320 bits of information to hash, copy in the remaining
 -- 
 1.6.0.2
 
