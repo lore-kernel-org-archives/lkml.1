@@ -1,58 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755059AbZETQCR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754842AbZETQEw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755059AbZETQCR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 12:02:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753334AbZETQCF
+	id S1754842AbZETQEw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 12:04:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753931AbZETQEp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 12:02:05 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:42194 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753013AbZETQCE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 12:02:04 -0400
-Date: Wed, 20 May 2009 17:57:15 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Vitaly Mayatskikh <v.mayatskih@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/5] Split wait_noreap_copyout()
-Message-ID: <20090520155715.GA23682@redhat.com>
-References: <1242048349-2766-1-git-send-email-v.mayatskih@gmail.com> <1242048349-2766-2-git-send-email-v.mayatskih@gmail.com> <87tz3fssv1.wl%vmayatsk@redhat.com>
+	Wed, 20 May 2009 12:04:45 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:48847 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752412AbZETQEo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 12:04:44 -0400
+Date: Wed, 20 May 2009 12:04:44 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: [PATCH] tracing: add trace_event_read_lock()
+In-Reply-To: <4A136A23.8040500@cn.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.0905201159140.5749@gandalf.stny.rr.com>
+References: <4A114806.7090302@cn.fujitsu.com> <20090518135930.GC4704@nowhere> <4A1213E1.8050608@cn.fujitsu.com> <20090520002451.GE6066@nowhere> <4A136A23.8040500@cn.fujitsu.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87tz3fssv1.wl%vmayatsk@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/20, Vitaly Mayatskikh wrote:
->
-> At Mon, 11 May 2009 15:25:50 +0200, Vitaly Mayatskikh wrote:
-> >
-> Oleg has pointed me to broken behaviour here. Previously
-> wait_noreap_copyout was doing unconditional put_user and was returning
-> EFAULT when infop is NULL. Now it uses copy_wait_opts_to_user, which
-> checks infop and return NULL in the same case. This change is visible
-> from userspace in waitid() function.
 
-To me, this behaviour change looks like the cleanup (if not fix) too.
-But of course, this should be discussed and at least documented in the
-changelog.
+Sorry for coming in late.
 
-do_wait() && infop interaction is really strange before the patch.
+On Wed, 20 May 2009, Lai Jiangshan wrote:
 
-When do_wait() is called without WNOWAIT, then infop == NULL is fine.
+> Frederic Weisbecker wrote:
+> > On Tue, May 19, 2009 at 10:05:21AM +0800, Lai Jiangshan wrote:
+> >> Frederic Weisbecker wrote:
+> >>> On Mon, May 18, 2009 at 07:35:34PM +0800, Lai Jiangshan wrote:
+> >>>> I found that there is nothing to protect event_hash in
+> >>>> ftrace_find_event().
+> >>>
+> >>>
+> >>> Actually, rcu protects it, but not enough. We have neither
+> >>> synchronize_rcu() nor rcu_read_lock.
+> >> We have no rcu_read_lock(), RCU can not protects it.
+> >>
+> >>> So we protect against concurrent hlist accesses.
+> >>> But the event can be removed when a module is unloaded,
+> >>> and that can happen between the time we get the event output
+> >>> callback and the time we actually use it.
+> >>>
+> >> [...]
+> >>
+> >>> It could be more fine grained.
+> >> I think it's fine-grained enough, write-side(modules loading/unloading)
+> >> is happened rarely. trace_event_read_lock() will not sleep very likely.
+> >>
+> >> Thoughts?
+> > 
+> > 
+> > Yeah, the write lock is a rare event, that's why I think
+> > it's enough fine grained.
+> > 
+> >  
+> >>> We could have a per event rwsem, and also place the
+> >>> protected read section only in trace_print_entry() which is the only racy window.
+> >>>
+> >> print_trace_line() is the only racy window.
+> >> So I just protect print_trace_line()(except __ftrace_dump())
+> >>
+> >> I protect loops which call print_trace_line(), it
+> >> reduces invoke-times:
+> >>
+> >> trace_event_read_lock();
+> >> while (...) {
+> >> 	...
+> >> 	print_trace_line();
+> >> 	...
+> >> }
+> >> trace_event_read_unlock();
+> > 
+> > 
+> > 
+> > Yeah, I meant it could have been:
+> > 
+> > trace_event_read_lock();
+> > print_trace_line();
+> > trace_event_read_unlock();
+> > 
+> > It's more fine grained, but:
+> > 
+> > - the write lock path is rarely taken
+> > - it would add more extra calls then more overhead
+> > 
+> > IMO this is fine as an rwsem design point of view.
+> > 
+> > But I have mixed feelings when I consider it could be
+> > done using rcu. I will explain that in my next answer to
+> > Paul and will wait for your comments.
+> > 
+> 
+> rcu_read_lock() will disable preempt for im-preemptable RCU,
+> it will add latency to kernel, because print_trace_line() is not
+> a short function.
+> 
+> 
+> The smallest window is:
+> (print_trace_line() calls ftrace_find_event() by several paths)
+> 
+> 	XXX_read_lock();
+> 	event = ftrace_find_event(entry->type);
+> 	if (event)
+> 		event->YYYY();
+> 	XXX_read_unlock();
+> 
+> but event->YYYY() is not a short function neither.
+> 
+> Since write-side is rarely taken, sleep-able read-side(rwsem)
+> will not block each other. So I use trace_event_read_lock()
+> protects the biggest window(the loops).
+> 
+> 
+> In LTTng, the tracing code(trace_NAME()) accesses to
+> event type list, so RCU is needed in LTTng for event type list.
+> 
+> But Ftrace's tracing code does not accesses to event type list,
+> I don't know this logic is still true in future. Steven may
+> give me an answer.
 
-If WNOWAIT is set, we return -EFAULT. Except in WCONTINUED case
-infop == NULL is fine again.
+My first thought is to agree with Frederic and say that this is fine with 
+RCU locking.
 
+	rcu_read_lock();
+	event = ftrace_find_event(entry->type);
+	if (event)
+		ret = event->XXXX(iter, 0);
+	rcu_read_unlock();
 
-Can somebody explain what is the supposed behaviour?
+and then do the rcu_synchronize in the module unload (if it is not done 
+after the callback).
 
+But this limits the event->XXXX() function from sleeping, because we can 
+not call a sleeping function in a rcu_read_lock() area. This code is not a 
+fast path. It is the output in text form to the user, so it will be slow 
+to begin with.
 
-Otherwise, in my opinion this series realy makes the code better,
-and afaics it allows to simplify the code more.
+Thus, I agree with Lai's rwsem approach, and
 
-Oleg.
+Acked-by: Steven Rostedt <rostedt@goodmis.org>
+
+-- Steve
 
