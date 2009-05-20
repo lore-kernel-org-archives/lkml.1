@@ -1,78 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755781AbZETIDg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755862AbZETIEM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755781AbZETIDg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 04:03:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753803AbZETIDQ
+	id S1755862AbZETIEM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 04:04:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754070AbZETIDt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 04:03:16 -0400
-Received: from yw-out-2324.google.com ([74.125.46.28]:13659 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753013AbZETIDO convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 04:03:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=VOrZs0iM60Ome8O7pSt5rvuy7ytuGK/YDJVpYOIrWEgYktIjyNKWTza36KJZWF/fVQ
-         lvCEKlBB31hdk0DHZ2eQLWnbdHySUxuyrdhAhY7P/htfpJbXaAoy7fZkmMDoGQFbFhGN
-         LfDtyjXSD5DGcKy4iYH26v7jPQPGPu55feKEc=
+	Wed, 20 May 2009 04:03:49 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:35551 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753803AbZETIDq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 04:03:46 -0400
+Message-ID: <4A13B8E9.9060703@redhat.com>
+Date: Wed, 20 May 2009 10:01:45 +0200
+From: Gerd Hoffmann <kraxel@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
 MIME-Version: 1.0
-In-Reply-To: <20090520075829.GD23959@elte.hu>
-References: <4A1393CD.7080604@kernel.org> <20090520075829.GD23959@elte.hu>
-Date: Wed, 20 May 2009 01:03:14 -0700
-Message-ID: <86802c440905200103o5905e997weec5da0fd0a86c41@mail.gmail.com>
-Subject: Re: [PATCH] x86: don't map io_apic two times.
-From: Yinghai Lu <yhlu.kernel@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+CC: Jan Beulich <JBeulich@novell.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [Xen-devel] Re: [GIT PULL] xen /proc/mtrr implementation
+References: <20090519095918.GA11790@elte.hu> <4A12A46A02000078000017E1@vpn.id2.novell.com> <20090519110837.GA10548@elte.hu> <4A12A05C.6050004@redhat.com> <20090519122623.GD14305@elte.hu> <4A12B244.8070301@redhat.com> <20090519133138.GA8410@elte.hu> <4A12B97C.9040706@redhat.com> <20090519141708.GA6008@elte.hu> <4A12C84A.5070100@redhat.com> <20090519152456.GB21271@elte.hu>
+In-Reply-To: <20090519152456.GB21271@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 20, 2009 at 12:58 AM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Yinghai Lu <yinghai@kernel.org> wrote:
->
->> mp_register_ioapic() already map it.
->>
->> [ Impact: don't map io apic address again ]
->>
->> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
->>
->> ---
->>  arch/x86/kernel/apic/io_apic.c |    7 ++++++-
->>  1 file changed, 6 insertions(+), 1 deletion(-)
->>
->> Index: linux-2.6/arch/x86/kernel/apic/io_apic.c
->> ===================================================================
->> --- linux-2.6.orig/arch/x86/kernel/apic/io_apic.c
->> +++ linux-2.6/arch/x86/kernel/apic/io_apic.c
->> @@ -4162,7 +4162,12 @@ fake_ioapic_page:
->>                               alloc_bootmem_pages(PAGE_SIZE);
->>                       ioapic_phys = __pa(ioapic_phys);
->>               }
->> -             set_fixmap_nocache(idx, ioapic_phys);
->> +             /*
->> +              * when acpi ioapic is used, mp_register_ioapic() map
->> +              * ioapic_phys already
->> +              */
->> +             if (!acpi_ioapic)
->> +                     set_fixmap_nocache(idx, ioapic_phys);
->
-> The change is correct, but i'm not sure we want to do this - the
-> acpi_ioapic flag might change its meaning (and then break this code
-> subtly) and this is bootup code so doing the mapping twice should be
-> no issue.
->
-> If it were some expensive initialization i'd agree, but here it's
-> really just a couple of instructions and an INVLPG.
->
-> Hm?
+On 05/19/09 17:24, Ingo Molnar wrote:
+> the Xen hypervisor can simply repeat all requests (i.e. not care at
+> all about the fact that a guest does these modifications on all CPUs
+> it sees), or realize that the modification has already been done and
+> skip it.
 
-ok, please drop it.
+Could be done, yes.  It still feels wrong that wrmsr(mtrr) works 
+slightly different on xen and on native.  And it wouldn't work on 
+existing Xen deployments as the Xen hypervisor doesn't support that today.
 
-YH
+>>>>> Yeah, the third one is to not touch MTRRs after bootup and use PAT.
+
+> That's a really old CPU, but even Coppermine has PAT support in the
+> CPU. You need to go back to things like P5 200 MHz CPUs to find
+> PAT-less CPUs.
+
+Linux shouln't say "PAT not supported by CPU." then.
+
+Also it doesn't make sense to me to handle things differently on native 
+and xen.  While it might make sense to deprecate mtrrs in favor of PAT 
+(don't know enougth about all the different cpus in the wild to justify 
+that) I don't think it makes sense to do that for xen only.  Native 
+should declare mtrrs obsolete as well.
+
+cheers,
+   Gerd
+
