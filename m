@@ -1,72 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756115AbZETT6k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756735AbZETT7V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756115AbZETT6k (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 15:58:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755918AbZETT6J
+	id S1756735AbZETT7V (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 15:59:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755860AbZETT7D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 15:58:09 -0400
-Received: from alerce.vps.bitfolk.com ([212.13.194.134]:3714 "EHLO
+	Wed, 20 May 2009 15:59:03 -0400
+Received: from alerce.vps.bitfolk.com ([212.13.194.134]:3716 "EHLO
 	alerce.vps.bitfolk.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755453AbZETT6G (ORCPT
+	with ESMTP id S1754044AbZETT7B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 15:58:06 -0400
+	Wed, 20 May 2009 15:59:01 -0400
 From: Alberto Bertogli <albertito@blitiri.com.ar>
-To: linux-ext4@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, tytso@mit.edu, jack@suse.cz,
-       trivial@kernel.org, Alberto Bertogli <albertito@blitiri.com.ar>
-Subject: [PATCH 1/4] Fix minor typos in jbd2's journal.c
-Date: Wed, 20 May 2009 16:01:31 -0300
-Message-Id: <1242846091-1086-1-git-send-email-albertito@blitiri.com.ar>
+To: linux-fsdevel@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
+       Alberto Bertogli <albertito@blitiri.com.ar>
+Subject: [PATCH 2/4] bio_put(): add bio_clone() to the list of functions in the comment
+Date: Wed, 20 May 2009 16:03:55 -0300
+Message-Id: <1242846235-1302-1-git-send-email-albertito@blitiri.com.ar>
 X-Mailer: git-send-email 1.6.2.2.646.gb214
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+In bio_put()'s comment, add bio_clone() to the list of functions that can
+give you a bio reference.
+
 Signed-off-by: Alberto Bertogli <albertito@blitiri.com.ar>
 ---
- fs/jbd2/journal.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+ fs/bio.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/fs/jbd2/journal.c b/fs/jbd2/journal.c
-index 5814410..85af8ea 100644
---- a/fs/jbd2/journal.c
-+++ b/fs/jbd2/journal.c
-@@ -1781,7 +1781,7 @@ int jbd2_journal_wipe(journal_t *journal, int write)
-  * Journal abort has very specific semantics, which we describe
-  * for journal abort.
+diff --git a/fs/bio.c b/fs/bio.c
+index 9871164..48286e4 100644
+--- a/fs/bio.c
++++ b/fs/bio.c
+@@ -404,7 +404,7 @@ EXPORT_SYMBOL(zero_fill_bio);
   *
-- * Two internal function, which provide abort to te jbd layer
-+ * Two internal function, which provide abort to the jbd layer
-  * itself are here.
-  */
- 
-@@ -1879,7 +1879,7 @@ void jbd2_journal_abort(journal_t *journal, int errno)
-  * int jbd2_journal_errno () - returns the journal's error state.
-  * @journal: journal to examine.
-  *
-- * This is the errno numbet set with jbd2_journal_abort(), the last
-+ * This is the errno number set with jbd2_journal_abort(), the last
-  * time the journal was mounted - if the journal was stopped
-  * without calling abort this will be 0.
-  *
-@@ -1903,7 +1903,7 @@ int jbd2_journal_errno(journal_t *journal)
-  * int jbd2_journal_clear_err () - clears the journal's error state
-  * @journal: journal to act on.
-  *
-- * An error must be cleared or Acked to take a FS out of readonly
-+ * An error must be cleared or acked to take a FS out of readonly
-  * mode.
-  */
- int jbd2_journal_clear_err(journal_t *journal)
-@@ -1923,7 +1923,7 @@ int jbd2_journal_clear_err(journal_t *journal)
-  * void jbd2_journal_ack_err() - Ack journal err.
-  * @journal: journal to act on.
-  *
-- * An error must be cleared or Acked to take a FS out of readonly
-+ * An error must be cleared or acked to take a FS out of readonly
-  * mode.
-  */
- void jbd2_journal_ack_err(journal_t *journal)
+  * Description:
+  *   Put a reference to a &struct bio, either one you have gotten with
+- *   bio_alloc or bio_get. The last put of a bio will free it.
++ *   bio_alloc, bio_get or bio_clone. The last put of a bio will free it.
+  **/
+ void bio_put(struct bio *bio)
+ {
 -- 
 1.6.2.2.646.gb214
 
