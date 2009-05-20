@@ -1,77 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756504AbZETH7z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755324AbZETIAK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756504AbZETH7z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 03:59:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754167AbZETH7q
+	id S1755324AbZETIAK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 04:00:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755070AbZETH7w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 03:59:46 -0400
-Received: from casper.infradead.org ([85.118.1.10]:59800 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754141AbZETH7p (ORCPT
+	Wed, 20 May 2009 03:59:52 -0400
+Received: from yw-out-2324.google.com ([74.125.46.29]:11201 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755643AbZETH7v convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 03:59:45 -0400
-Subject: Re: [PATCH][KVM][retry 3] Add support for Pause Filtering to AMD
- SVM
-From: Peter Zijlstra <peterz@infradead.org>
-To: Mark Langsdorf <mark.langsdorf@amd.com>
-Cc: Joerg Roedel <joerg.roedel@amd.com>, avi@redhat.com, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <200905191356.37071.mark.langsdorf@amd.com>
-References: <200905050909.58583.mark.langsdorf@amd.com>
-	 <200905071000.14038.mark.langsdorf@amd.com>
-	 <200905081203.55484.mark.langsdorf@amd.com>
-	 <200905191356.37071.mark.langsdorf@amd.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Wed, 20 May 2009 09:59:46 +0200
-Message-Id: <1242806386.26820.549.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Wed, 20 May 2009 03:59:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=oCU9AsLa5hJJLGeytJXxaant0OSCd6uK6M3F8vs2B1XWchb2rR7xIv2pN7UEskqieI
+         r7fAt+TJKuFo0jRuKFEjrgHEw1UrqM8h5sqmtjKdKEcbNtKvLo0mCyO7ieeECB/JHvDP
+         Ymn1NJMYF0Rh1RM4BZ+nYjTk7f+N7dPyFpBHA=
+MIME-Version: 1.0
+In-Reply-To: <1242805059-18338-3-git-send-email-tj@kernel.org>
+References: <1242805059-18338-1-git-send-email-tj@kernel.org>
+	 <1242805059-18338-3-git-send-email-tj@kernel.org>
+Date: Wed, 20 May 2009 03:59:50 -0400
+Message-ID: <8bd0f97a0905200059pea3469do9e9b1a7644517558@mail.gmail.com>
+Subject: Re: [PATCH 2/7] linker script: throw away .discard section
+From: Mike Frysinger <vapier.adi@gmail.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, x86@kernel.org,
+       ink@jurassic.park.msu.ru, rth@twiddle.net, linux@arm.linux.org.uk,
+       hskinnemoen@atmel.com, cooloney@kernel.org, starvik@axis.com,
+       jesper.nilsson@axis.com, dhowells@redhat.com,
+       ysato@users.sourceforge.jp, tony.luck@intel.com, takata@linux-m32r.org,
+       geert@linux-m68k.org, monstr@monstr.eu, ralf@linux-mips.org,
+       kyle@mcmartin.ca, benh@kernel.crashing.org, paulus@samba.org,
+       schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com, lethal@linux-sh.org,
+       davem@davemloft.net, jdike@addtoit.com, chris@zankel.net,
+       rusty@rustcorp.com.au
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-05-19 at 13:56 -0500, Mark Langsdorf wrote:
-> @@ -1947,6 +1947,11 @@ task_hot(struct task_struct *p, u64 now, struct sched_domain *sd)
->         return delta < (s64)sysctl_sched_migration_cost;
->  }
->  
-> +void set_task_delay(struct task_struct *p, unsigned int delay)
-> +{
-> +       p->se.vruntime += delay;
-> +}
-> +EXPORT_SYMBOL(set_task_delay);
+On Wed, May 20, 2009 at 03:37, Tejun Heo wrote:
+> x86 throws away .discard section but no other archs do.  Also,
+> .discard is not thrown away while linking modules.  Make every arch
+> and module linking throw it away.  This will be used to define dummy
+> variables for percpu declarations and definitions.
 
-That's broken, you cannot assume that a task is SCHED_OTHER like that.
-
-Furthermore, you cannot simply change vruntime of any odd task, this
-only works for current. Also, you really need to call schedule() after
-doing this for it to have any immediate effect.
-
-Also, if you mean delay to be ns, you need to scale it. Furthermore, I
-would really really want to export this as GPL only (ok, preferably not
-at all).
-
-That said, I still thoroughly dislike this whole approach.
-
-
-/*
- * Dumb broken yield like interface -- use at your own peril and know
- * RT people will hate you.
- *
- * Like yield, except for SCHED_OTHER/BATCH, where it will give up @ns
- * time for the 'good' cause.
- */
-void sched_delay_yield(unsigned long ns)
-{
-	struct task_struct *curr = current;
-
-	if (curr->sched_class == &fair_sched_class) {
-		struct sched_entity *se = &curr->se;
-		__update_curr(cfs_rq_of(se), se, ns);
-		schedule();
-		/* XXX: task accounting ? */
-	} else
-		sched_yield();
-}
-EXPORT_SYMBOL_GPL(sched_delay_yield);
+seems like a good time to introduce a common DISCARD define to
+include/asm-generic/vmlinux.lds.h.  considering multiple /DISCARD/
+entries are allowed in a linker script, the define should be pretty
+straightforward:
+#define DISCARDS \
+    /DISCARD/ : { \
+        EXIT_TEXT \
+        EXIT_DATA \
+        *(.exitcall.exit) \
+        *(.discard) \
+    }
+-mike
