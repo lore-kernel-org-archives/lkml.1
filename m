@@ -1,72 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756384AbZETJMc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756450AbZETJQV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756384AbZETJMc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 05:12:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754126AbZETJMZ
+	id S1756450AbZETJQV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 05:16:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754659AbZETJQN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 05:12:25 -0400
-Received: from d112a2.x-mailer.de ([212.162.53.4]:39655 "EHLO
-	d112a2.x-mailer.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753971AbZETJMZ (ORCPT
+	Wed, 20 May 2009 05:16:13 -0400
+Received: from mail-bw0-f222.google.com ([209.85.218.222]:39927 "EHLO
+	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754232AbZETJQM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 05:12:25 -0400
-From: Karsten Keil <keil@b1-systems.de>
-Organization: B1-systems
-To: Marcel Holtmann <marcel@holtmann.org>
-Subject: Re: [PATCH 01/19] Add XHFC support for embedded Speech-Design board to hfcmulti
-Date: Wed, 20 May 2009 11:12:21 +0200
-User-Agent: KMail/1.11.1 (Linux/2.6.27.21-0.1-default; KDE/4.2.1; x86_64; ; )
-Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       sfr@canb.auug.org.au, i4ldeveloper@listserv.isdn4linux.de
-References: <cover.1242739648.git.kkeil@pingi.linux-pingi.de> <20090519.121116.52530205.davem@davemloft.net> <1242789181.3147.18.camel@localhost.localdomain>
-In-Reply-To: <1242789181.3147.18.camel@localhost.localdomain>
+	Wed, 20 May 2009 05:16:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=onlPF80IU5rsypfupTH7zZ1RfCN5baiLaZhdUFWpMQ6AHtwjzLiKKaySdhl6HRRUUW
+         Q90fkXj05za0i81I6rWPc7yWGDSfUUz/OC2xqJj8Rko9tCDclZiquXaLjp8Nc/43OZeB
+         kJqXregdSVNg12dTYhIo6E3tAjjHeHF/x8fwg=
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+Date: Wed, 20 May 2009 11:16:13 +0200
+Message-ID: <63386a3d0905200216q209849e4wd4f2b73d06c74be0@mail.gmail.com>
+Subject: [PATCH 0/1] MFD: Add U300 AB3100 core support v4
+From: Linus Walleij <linus.ml.walleij@gmail.com>
+To: linux-kernel@vger.kernel.org, sameo@linux.intel.com
+Cc: linux-i2c@vger.kernel.org, Linus Walleij <linus.walleij@stericsson.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905201112.22062.keil@b1-systems.de>
-X-Info: valid message
-X-Info: original Date
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Marcel,
-Hi Dave,
+ChangeLog from v3 -> v4:
 
-On Mittwoch, 20. Mai 2009 05:13:01 Marcel Holtmann wrote:
-> Hi Karsten,
->
-> > I have been applying some gigaset patches into the net-next-2.6
-> > and I would therefore suggest that you push ISDN changes bound
-> > for the next kernel release via the networking tree as well.
-> >
-> > In fact I'm very surprised that you're not at least CC:'ing
-> > netdev@vger.kernel.org with these patches.  Not only would they get
-> > review for networking specific issues they would also get your patches
-> > tracked automatically at:
+* Set parent to the AB3100 subdevices properly.
 
-My idea was to not send it on too much lists, but I think you are right, 
-netdev@vger.kernel.org should be  used here and since it should go via the net 
-tree it should be the default.
+* Some brace placement fix-up.
 
-> >
-> > 	http://patchwork.ozlabs.org/project/netdev/list/
-> >
-> > Can you at least state how you intend to manage the ISDN changes you
-> > queue up?  Are you going to submit them independantly and straight to
-> > Linus or are you going to play along and get them in via my
-> > net-next-2.6 tree in order to avoid all of the merge hassles?
->
-> since mISDN uses AF_ISDN and sockets, I personally would prefer if they
-> go via net-2.6 and net-next-2.6 trees. This makes it a lot simpler in
-> case of merge conflicts during the merge windows.
->
+* Error print on main struct allocation failure.
 
-Yes, you are right, I queued it for linux-next because I was remembering that 
-somebody did suggest this in the past, but this was not really a good idea.
-I will setup a new merge tree based on net-2.6-next  (or better net-2.6) ?
+* Remove register range definitions for subdevices
+  for the time being. It's unclear if IORESOURCE_IO
+  is applicable for this usecase. No other MFD devices
+  do this anyway.
 
-Karsten
+* Remove machine-specific debug flag requirement for
+  this driver to expose debugfs. This can be used on
+  other machines so CONFIG_DEBUG_FS.
 
+Yours,
+Linus Walleij
