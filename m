@@ -1,71 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751544AbZETEQq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753285AbZETEad@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751544AbZETEQq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 00:16:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750761AbZETEQg
+	id S1753285AbZETEad (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 00:30:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750892AbZETEaZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 00:16:36 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:48596 "EHLO smtps.tip.net.au"
+	Wed, 20 May 2009 00:30:25 -0400
+Received: from hera.kernel.org ([140.211.167.34]:37765 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750746AbZETEQf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 00:16:35 -0400
-Date: Wed, 20 May 2009 14:16:28 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Boaz Harrosh <bharrosh@panasas.com>
-Cc: Tejun Heo <tj@kernel.org>, James Smart <James.Smart@Emulex.Com>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       FUJITA Tomonori <tomof@acm.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Jens Axboe <Jens.Axboe@oracle.com>
-Subject: Re: [PATCH version 2] [SQUASHME] "FC Pass Thru support" fixed for
- block/for-2.6.31 tree
-Message-Id: <20090520141628.582cb448.sfr@canb.auug.org.au>
-In-Reply-To: <4A12AC23.30808@panasas.com>
-References: <4A12797B.2060901@panasas.com>
-	<4A12AC23.30808@panasas.com>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+	id S1750746AbZETEaZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 00:30:25 -0400
+Subject: [PATCH -tip] x86: kvm/paging_tmpl.h intialize the variable before
+ using it
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>, Avi Kivity <avi@redhat.com>,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 20 May 2009 09:59:35 +0530
+Message-Id: <1242793775.3260.2.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__20_May_2009_14_16_28_+1000_gF8FiI+IDVbYZhMO"
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__20_May_2009_14_16_28_+1000_gF8FiI+IDVbYZhMO
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Boaz,
+May be in some cases paging64_fetch() and paging32_fetch() will return sptep
+without initialization.
 
-On Tue, 19 May 2009 15:54:59 +0300 Boaz Harrosh <bharrosh@panasas.com> wrot=
-e:
->
->=20
-> This patch should be squashed into
->     [SCSI] FC Pass Thru support
->=20
-> If it needs to compile after Tejun's block-layer revamps
-> (all of them)
+Also fixes compilation warning:
+  CC      arch/x86/kernel/io_delay.o
+ arch/x86/kvm/paging_tmpl.h: In function ‘paging64_fetch’:
+ arch/x86/kvm/paging_tmpl.h:279: warning: ‘sptep’ may be used uninitialized in this function
+ arch/x86/kvm/paging_tmpl.h: In function ‘paging32_fetch’:
+ arch/x86/kvm/paging_tmpl.h:279: warning: ‘sptep’ may be used uninitialized in this function
 
-I have used this as my merge fixup for today.  Thanks for that.
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+---
+ arch/x86/kvm/paging_tmpl.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+diff --git a/arch/x86/kvm/paging_tmpl.h b/arch/x86/kvm/paging_tmpl.h
+index 6bd7020..99cb10d 100644
+--- a/arch/x86/kvm/paging_tmpl.h
++++ b/arch/x86/kvm/paging_tmpl.h
+@@ -276,7 +276,7 @@ static u64 *FNAME(fetch)(struct kvm_vcpu *vcpu, gva_t addr,
+ {
+ 	unsigned access = gw->pt_access;
+ 	struct kvm_mmu_page *shadow_page;
+-	u64 spte, *sptep;
++	u64 spte, *sptep = NULL;
+ 	int direct;
+ 	gfn_t table_gfn;
+ 	int r;
+-- 
+1.6.1.1
 
---Signature=_Wed__20_May_2009_14_16_28_+1000_gF8FiI+IDVbYZhMO
-Content-Type: application/pgp-signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEARECAAYFAkoThBwACgkQjjKRsyhoI8wVpACgg0tX0yvpad8e1k60pvWQldMu
-K2cAn2wM7CP0itIQh3I3ecH8R9xGuJo7
-=hETH
------END PGP SIGNATURE-----
-
---Signature=_Wed__20_May_2009_14_16_28_+1000_gF8FiI+IDVbYZhMO--
