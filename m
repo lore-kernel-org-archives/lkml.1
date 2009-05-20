@@ -1,120 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755913AbZETB7S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756051AbZETCAS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755913AbZETB7S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 21:59:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755049AbZETB7K
+	id S1756051AbZETCAS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 22:00:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755419AbZETCAH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 21:59:10 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:47003 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754888AbZETB7J (ORCPT
+	Tue, 19 May 2009 22:00:07 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:61688 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755049AbZETCAG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 21:59:09 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Subject: Re: [PATCH 2/3] vmscan: make mapped executable pages the first class  citizen
-Cc: kosaki.motohiro@jp.fujitsu.com,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Elladan <elladan@eskimo.com>,
-       Nick Piggin <npiggin@suse.de>, Johannes Weiner <hannes@cmpxchg.org>,
-       Peter Zijlstra <peterz@infradead.org>, Rik van Riel <riel@redhat.com>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "minchan.kim@gmail.com" <minchan.kim@gmail.com>
-In-Reply-To: <20090520014445.GA7645@localhost>
-References: <2f11576a0905190528n5eb29e3fme42785a76eed3551@mail.gmail.com> <20090520014445.GA7645@localhost>
-Message-Id: <20090520105159.743B.A69D9226@jp.fujitsu.com>
+	Tue, 19 May 2009 22:00:06 -0400
+Date: Tue, 19 May 2009 22:00:04 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: GeunSik Lim <leemgs1@gmail.com>
+cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-rt-users <linux-rt-users@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, tglx <tglx@linutronix.de>,
+       williams <williams@redhat.com>
+Subject: Re: [PATCH 1/1] ftrace: fix typo in ftrace.txt file
+In-Reply-To: <1242783692.31161.56.camel@centos51>
+Message-ID: <alpine.DEB.2.00.0905192153080.7816@gandalf.stny.rr.com>
+References: <1242783692.31161.56.camel@centos51>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Wed, 20 May 2009 10:59:05 +0900 (JST)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Tue, May 19, 2009 at 08:28:28PM +0800, KOSAKI Motohiro wrote:
-> > Hi
-> > 
-> > 2009/5/19 Wu Fengguang <fengguang.wu@intel.com>:
-> > > On Tue, May 19, 2009 at 04:06:35PM +0800, KOSAKI Motohiro wrote:
-> > >> > > > Like the console mode, the absolute nr_mapped drops considerably - to 1/13 of
-> > >> > > > the original size - during the streaming IO.
-> > >> > > >
-> > >> > > > The delta of pgmajfault is 3 vs 107 during IO, or 236 vs 393 during the whole
-> > >> > > > process.
-> > >> > >
-> > >> > > hmmm.
-> > >> > >
-> > >> > > about 100 page fault don't match Elladan's problem, I think.
-> > >> > > perhaps We missed any addional reproduce condition?
-> > >> >
-> > >> > Elladan's case is not the point of this test.
-> > >> > Elladan's IO is use-once, so probably not a caching problem at all.
-> > >> >
-> > >> > This test case is specifically devised to confirm whether this patch
-> > >> > works as expected. Conclusion: it is.
-> > >>
-> > >> Dejection ;-)
-> > >>
-> > >> The number should address the patch is useful or not. confirming as expected
-> > >> is not so great.
-> > >
-> > > OK, let's make the conclusion in this way:
-> > >
-> > > The changelog analyzed the possible beneficial situation, and this
-> > > test backs that theory with real numbers, ie: it successfully stops
-> > > major faults when the active file list is slowly scanned when there
-> > > are partially cache hot streaming IO.
-> > >
-> > > Another (amazing) finding of the test is, only around 1/10 mapped pages
-> > > are actively referenced in the absence of user activities.
-> > >
-> > > Shall we protect the remaining 9/10 inactive ones? This is a question ;-)
-> > 
-> > Unfortunately, I don't reproduce again.
-> > I don't apply your patch yet. but mapped ratio is reduced only very little.
+
+On Wed, 20 May 2009, GeunSik Lim wrote:
+
 > 
-> mapped ratio or absolute numbers? The ratio wont change much because
-> nr_mapped is already small.
-
-My box is running Fedora 10 initlevel 5 (GNOME desktop).
-
-many GNOME component is mapped very many process (likes >50).
-Thus, these page aren't dropped by typical any workload.
-
-
-
-> > I think smem can show which library evicted.  Can you try it?
-> > 
-> > download:  http://www.selenic.com/smem/
-> > usage:   ./smem -m -r --abbreviate
 > 
-> Sure, but I don't see much change in its output (see attachments).
+> commit 43bf3fdddfd6b0ac65ef59bec3c79d9f9064e8bd
+> Author: GeunSik,Lim <leemgs1@gmail.com>
+> Date:   Thu May 14 13:39:18 2009 +0900
 > 
-> smem-console-0 is collected after fresh boot,
-> smem-console-1 is collected after the big IO.
-
-hmmmm, your result has following characatistics.
-
-- no graphics component
-- very few mapped library
-  (it is almost only zsh library)
-
-Can you try test on X environment?
-
-
-
-> > We can't decide 9/10 is important or not. we need know actual evicted file list.
+>     ftrace: fix typo in ftrace.txt file.
+>     
+>     Fix typo about chart to map the kernel priority to
+>     user land priorities.
+>     
+>     About sched_setscheduler(2)
+>     Processes scheduled under SCHED_FIFO or SCHED_RR
+>     can have a static priority in the range 1 to 99.
+>     
+>         Signed-off-by: GeunSik Lim <geunsik.lim@samsung.com>
 > 
-> Right. But what I measured is the activeness. Almost zero major page
-> faults means the evicted 90% mapped pages are inactive during the
-> long 300 seconds of IO.
+> diff --git a/Documentation/trace/ftrace.txt b/Documentation/trace/ftrace.txt
+> index fd9a3e6..0e17632 100644
+> --- a/Documentation/trace/ftrace.txt
+> +++ b/Documentation/trace/ftrace.txt
+> @@ -518,9 +518,14 @@ priority with zero (0) being the highest priority and the nice
+>  values starting at 100 (nice -20). Below is a quick chart to map
+>  the kernel priority to user land priorities.
+>  
+> -  Kernel priority: 0 to 99    ==> user RT priority 99 to 0
+> -  Kernel priority: 100 to 139 ==> user nice -20 to 19
+> -  Kernel priority: 140        ==> idle task priority
+> + Kernel priority: 0(high) to 99(low)    ==> user RT priority 99(high) to 1(low)
 
-Agreed.
-IOW, I don't think your test environment is typical desktop...
+Shouldn't that be:
 
+ Kernel priority: 0(high) to 98(low)    ==> user RT priority 99(high) to 1(low)
 
+100 items does not map to 99. Which begs the question, what can have 
+internal kernel priority 99?
 
+> + Kernel priority: 100(high) to 139(low) ==> user nice -20(high) to 19(low)
+> + Kernel priority: 140                   ==> idle task priority
+> +
+> +Processes scheduled with SCHED_OTHER or SCHED_BATCH must be assigned
+> +the static priority 0. Processes scheduled under SCHED_FIFO or SCHED_RR 
+
+This line is confusing. "static priorty 0" really has no meaning here. 
+Those now enter the "nice" priorities, and this statement does not 
+represent what is shown in the ftrace output.
+
+> +can have a static priority in the range 1 to 99. 
+> + (reference: $> man 2 sched_setscheduler)
+>  
+
+-- Steve
 
