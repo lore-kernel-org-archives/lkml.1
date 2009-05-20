@@ -1,60 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752563AbZETFPZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753647AbZETFRQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752563AbZETFPZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 01:15:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750997AbZETFPN
+	id S1753647AbZETFRQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 01:17:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751026AbZETFRD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 01:15:13 -0400
-Received: from hera.kernel.org ([140.211.167.34]:54948 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750892AbZETFPM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 01:15:12 -0400
-Subject: [PATCH -tip] Documentation/accounting/getdelays.c intialize the
- variable before using it
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>, Balbir Singh <balbir@in.ibm.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 20 May 2009 10:44:44 +0530
-Message-Id: <1242796484.3260.12.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 8bit
+	Wed, 20 May 2009 01:17:03 -0400
+Received: from yx-out-2324.google.com ([74.125.44.28]:49757 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750862AbZETFRC convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 01:17:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=NW+XPXGpoWYy/XDnZL/K7sEgt5y2nshS8mpm9w/fl4kh0bq7Pv/HZ9iYT0c9vEHRoY
+         K4LbdU+evdXuQMBZix3bPIEkJzVxWmDFzpBh3yEe8ps8T51oZhD4Tl0KT7l9xoQYpZf+
+         tmNHbXKvbdIjTbdge7bxJFn3MPENZXkBTiRDI=
+MIME-Version: 1.0
+In-Reply-To: <af3ea28a0905170804n500126e4tc425dafd9fcaa68a@mail.gmail.com>
+References: <af3ea28a0905170804n500126e4tc425dafd9fcaa68a@mail.gmail.com>
+Date: Wed, 20 May 2009 13:17:03 +0800
+Message-ID: <af3ea28a0905192217x2006dbe4gb456217d110b916f@mail.gmail.com>
+Subject: Re: fix rtc_cmos bug
+From: ye janboe <janboe.ye@gmail.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Cc: rjw@sisk.pl, bunk@kernel.org, bugme-janitors@lists.osdl.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+my fix is wrong?
 
-May be in some cases cmd_type will be used uninitialized.
+Why no one ack this patch?
 
-Also fixes compilation warning:
+Thanks
 
-   CC [M]  Documentation/DocBook/procfs_example.o
-  Documentation/accounting/getdelays.c: In function â€˜mainâ€™:
-  Documentation/accounting/getdelays.c:249: warning: â€˜cmd_typeâ€™ may be used uninitialized in this function
+Janboe
 
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
----
- Documentation/accounting/getdelays.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/Documentation/accounting/getdelays.c b/Documentation/accounting/getdelays.c
-index 7ea2311..36aae3b 100644
---- a/Documentation/accounting/getdelays.c
-+++ b/Documentation/accounting/getdelays.c
-@@ -246,7 +246,7 @@ void print_ioacct(struct taskstats *t)
- 
- int main(int argc, char *argv[])
- {
--	int c, rc, rep_len, aggr_len, len2, cmd_type;
-+	int c, rc, rep_len, aggr_len, len2, cmd_type = TASKSTATS_CMD_ATTR_UNSPEC;
- 	__u16 id;
- 	__u32 mypid;
- 
--- 
-1.6.1.1
-
-
-
+2009/5/17 ye janboe <janboe.ye@gmail.com>:
+>    fix  Bug 13326 -  Null pointer dereference in rtc-cmos driver
+>    http://bugzilla.kernel.org/show_bug.cgi?id=13326
+>
+>    Signed-off-by: janboe <janboe.ye@gmail.com>
+>
+> diff --git a/drivers/rtc/rtc-cmos.c b/drivers/rtc/rtc-cmos.c
+> index 23e10b6..da132f6 100644
+> --- a/drivers/rtc/rtc-cmos.c
+> +++ b/drivers/rtc/rtc-cmos.c
+> @@ -1179,7 +1179,9 @@ static int __init cmos_init(void)
+>        int retval = 0;
+>
+>  #ifdef CONFIG_PNP
+> -       pnp_register_driver(&cmos_pnp_driver);
+> +       retval = pnp_register_driver(&cmos_pnp_driver);
+> +       if (retval)
+> +               return retval;
+>  #endif
+>
+>        if (!cmos_rtc.dev)
+>
