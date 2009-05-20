@@ -1,144 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752593AbZETEkc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752546AbZETEtT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752593AbZETEkc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 00:40:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750899AbZETEkY
+	id S1752546AbZETEtT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 00:49:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750899AbZETEtL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 00:40:24 -0400
-Received: from yw-out-2324.google.com ([74.125.46.31]:1657 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750725AbZETEkX convert rfc822-to-8bit (ORCPT
+	Wed, 20 May 2009 00:49:11 -0400
+Received: from smtp127.sbc.mail.sp1.yahoo.com ([69.147.65.186]:36486 "HELO
+	smtp127.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750784AbZETEtL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 00:40:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=DGi2J93jdIuDt7gNS4IIUpKmpGq0pSoP3EgdxpzfpWCCzhbpXtB8L40rTwctPm3bxo
-         PIoI7dCdAcotihNrNhWHbZ+7aNb1J1QBglYESWnOI9QY5mvZTzmHzWI49iLc/hMNgCTH
-         x2Xy1V5sBAsYHEiIqE+qgvcQdNgKao25pDD5I=
+	Wed, 20 May 2009 00:49:11 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=dT6HZfmUByfb63fmYAWtqy2hODwQx/rQEdwISb1G+641nnUKTVurHYLIRwuYTtlYOcsBxTnj0Bnhxd3bu06DVnIe56eeHMLTxTCJZg9wbzyHrMkiJwpBiKC9N2e2aUx9o4/xMasLZoAFQBDOdwKWkOS+zVXKjAOeJF5sjotxymU=  ;
+X-YMail-OSG: lI9da5cVM1lDEtOqt0IthsuOMxX6Bj3rMUVv32n1HbdAUdoxxU1heiej5kHdLAv3vlrsuCly_VRrcMN1ASiVkjMXSzOu9dwxkOBRme.oGwSq_Pp1QSxzYjDAEsuGa8uDFN_x66FvwA9ZYff_I5Bv53dt
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Matt Fleming <matt@console-pimps.org>
+Subject: Re: [PATCH] mmc_spi: use EILSEQ for possible transmission errors
+Date: Tue, 19 May 2009 21:49:07 -0700
+User-Agent: KMail/1.9.10
+Cc: Wolfgang =?iso-8859-1?q?M=FCes?= <wolfgang.mues@auerswald.de>,
+       Pierre Ossman <drzeus@drzeus.cx>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Mike Frysinger <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org
+References: <200905141324.27908.wolfgang.mues@auerswald.de> <20090519112948.GB28564@console-pimps.org>
+In-Reply-To: <20090519112948.GB28564@console-pimps.org>
 MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.2.00.0905192153080.7816@gandalf.stny.rr.com>
-References: <1242783692.31161.56.camel@centos51>
-	 <alpine.DEB.2.00.0905192153080.7816@gandalf.stny.rr.com>
-Date: Wed, 20 May 2009 13:40:24 +0900
-Message-ID: <49b7c2350905192140nba960d8l7af31c29752a8fcd@mail.gmail.com>
-Subject: Re: [PATCH 1/1] ftrace: fix typo in ftrace.txt file
-From: GeunSik Lim <leemgs1@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-rt-users <linux-rt-users@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, tglx <tglx@linutronix.de>,
-       williams <williams@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200905192149.07778.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/5/20 Steven Rostedt <rostedt@goodmis.org>:
->
-> On Wed, 20 May 2009, GeunSik Lim wrote:
->
->>
->>
->> commit 43bf3fdddfd6b0ac65ef59bec3c79d9f9064e8bd
->> Author: GeunSik,Lim <leemgs1@gmail.com>
->> Date:   Thu May 14 13:39:18 2009 +0900
->>
->>     ftrace: fix typo in ftrace.txt file.
->>
->>     Fix typo about chart to map the kernel priority to
->>     user land priorities.
->>
->>     About sched_setscheduler(2)
->>     Processes scheduled under SCHED_FIFO or SCHED_RR
->>     can have a static priority in the range 1 to 99.
->>
->>         Signed-off-by: GeunSik Lim <geunsik.lim@samsung.com>
->>
->> diff --git a/Documentation/trace/ftrace.txt b/Documentation/trace/ftrace.txt
->> index fd9a3e6..0e17632 100644
->> --- a/Documentation/trace/ftrace.txt
->> +++ b/Documentation/trace/ftrace.txt
->> @@ -518,9 +518,14 @@ priority with zero (0) being the highest priority and the nice
->>  values starting at 100 (nice -20). Below is a quick chart to map
->>  the kernel priority to user land priorities.
->>
->> -  Kernel priority: 0 to 99    ==> user RT priority 99 to 0
->> -  Kernel priority: 100 to 139 ==> user nice -20 to 19
->> -  Kernel priority: 140        ==> idle task priority
->> + Kernel priority: 0(high) to 99(low)    ==> user RT priority 99(high) to 1(low)
->
-> Shouldn't that be:
->
->  Kernel priority: 0(high) to 98(low)    ==> user RT priority 99(high) to 1(low)
->
-Thank you for your opinion.  I think about corrected expression for
-quick chart to map between kernel space and user space in ftrace .
+On Tuesday 19 May 2009, Matt Fleming wrote:
+> Hmm, always returning -EILSEQ is devious. What happens if we sent an
+> illegal command? The value of "value" is passed up to the callers via
+> cmd->error and so may eventually get printed in the pr_debug() call in
+> mmc_request_done(), line 86.
 
-> 100 items does not map to 99. Which begs the question, what can have
-> internal kernel priority 99?
->
-ok.  Below example is about  kernel (static) priority 99 that you said.
-please, refer to
-http://www.kernel.org/doc/man-pages/online/pages/man2/sched_setscheduler.2.html
- webpage.
-
- For processes scheduled under one of the normal scheduling policies
-(SCHED_OTHER, SCHED_IDLE, SCHED_BATCH), sched_priority is not used in
- scheduling decisions (it must be specified as 0).
+True, but a pr_debug from mmc_spi could help that.  A patch doing
+that would need to be less aggressive about ripping out the current
+fault-parsing logic, but it could continue reporting -EILSEQ to
+cope with the possible response mangling.
 
 
-int main (int argc, char **argv)
-{	int pidnumber, ret;
-	struct sched_param p;
-	p.sched_priority = 0; <------ Kernel (static) priority.
-	if (argc != 2) {
-		printf("usage: setbatch <pid>\n");
-		exit(-1);
-	}
-	pidnumber = atol(argv[1]);
-         /* 3 = Number of SCHED_BATCH Constant */
-	ret = sched_setscheduler(pidnumber, 3, &p);
-	if (ret) {
-		printf("could not set pid %d to SCHED_BATCH: err %d.\n", pid, ret);
-		return -1;
-	}
-	printf("pid %d is SCHED_BATCH from now on.\n", pid);
-	return 0;
-}
+> Whereas before the error would display EINVAL for an illegal command
+> now it'll display EILSEQ, which makes no sense. Seeing EILSEQ in my
+> log when really the error is EINVAL is gonna really confuse me.
+> 
+> IMHO always assuming that command errors are caused by transmission
+> problems is not the right solution.
 
+Do you have a better solution to propose though?  If Wolfgang
+is actually observing transmission errors there, I'm not sure
+a better one is to be had.
 
->> + Kernel priority: 100(high) to 139(low) ==> user nice -20(high) to 19(low)
->> + Kernel priority: 140                   ==> idle task priority
->> +
->> +Processes scheduled with SCHED_OTHER or SCHED_BATCH must be assigned
->> +the static priority 0. Processes scheduled under SCHED_FIFO or SCHED_RR
->
-> This line is confusing. "static priorty 0" really has no meaning here.
-> Those now enter the "nice" priorities, and this statement does not
-> represent what is shown in the ftrace output.
->
-I agree with your opinion about exact understanding of ftrace output.
-I will remove this additional description to avoid confusing
-when we use this document as ftrace how to.
+Though I wonder what this would do for anyone trying SDIO over
+the mmc_spi driver.
 
->> +can have a static priority in the range 1 to 99.
->> + (reference: $> man 2 sched_setscheduler)
->>
->
-> -- Steve
->
->
+- Dave
 
-
-
--- 
-Regards,
-GeunSik Lim
---
-To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
