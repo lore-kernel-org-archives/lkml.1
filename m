@@ -1,61 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755862AbZETIEM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755348AbZETIIT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755862AbZETIEM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 04:04:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754070AbZETIDt
+	id S1755348AbZETIIT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 04:08:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754169AbZETIII
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 04:03:49 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:35551 "EHLO mx2.redhat.com"
+	Wed, 20 May 2009 04:08:08 -0400
+Received: from hera.kernel.org ([140.211.167.34]:42844 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753803AbZETIDq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 04:03:46 -0400
-Message-ID: <4A13B8E9.9060703@redhat.com>
-Date: Wed, 20 May 2009 10:01:45 +0200
-From: Gerd Hoffmann <kraxel@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
+	id S1753971AbZETIIH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 04:08:07 -0400
+Message-ID: <4A13B9EA.4030801@kernel.org>
+Date: Wed, 20 May 2009 17:06:02 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Jan Beulich <JBeulich@novell.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [Xen-devel] Re: [GIT PULL] xen /proc/mtrr implementation
-References: <20090519095918.GA11790@elte.hu> <4A12A46A02000078000017E1@vpn.id2.novell.com> <20090519110837.GA10548@elte.hu> <4A12A05C.6050004@redhat.com> <20090519122623.GD14305@elte.hu> <4A12B244.8070301@redhat.com> <20090519133138.GA8410@elte.hu> <4A12B97C.9040706@redhat.com> <20090519141708.GA6008@elte.hu> <4A12C84A.5070100@redhat.com> <20090519152456.GB21271@elte.hu>
-In-Reply-To: <20090519152456.GB21271@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Mike Frysinger <vapier.adi@gmail.com>
+CC: mingo@elte.hu, linux-kernel@vger.kernel.org, x86@kernel.org,
+       ink@jurassic.park.msu.ru, rth@twiddle.net, linux@arm.linux.org.uk,
+       hskinnemoen@atmel.com, cooloney@kernel.org, starvik@axis.com,
+       jesper.nilsson@axis.com, dhowells@redhat.com,
+       ysato@users.sourceforge.jp, tony.luck@intel.com, takata@linux-m32r.org,
+       geert@linux-m68k.org, monstr@monstr.eu, ralf@linux-mips.org,
+       kyle@mcmartin.ca, benh@kernel.crashing.org, paulus@samba.org,
+       schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com, lethal@linux-sh.org,
+       davem@davemloft.net, jdike@addtoit.com, chris@zankel.net,
+       rusty@rustcorp.com.au
+Subject: Re: [PATCH 2/7] linker script: throw away .discard section
+References: <1242805059-18338-1-git-send-email-tj@kernel.org>	 <1242805059-18338-3-git-send-email-tj@kernel.org> <8bd0f97a0905200059pea3469do9e9b1a7644517558@mail.gmail.com>
+In-Reply-To: <8bd0f97a0905200059pea3469do9e9b1a7644517558@mail.gmail.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 20 May 2009 08:06:06 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/19/09 17:24, Ingo Molnar wrote:
-> the Xen hypervisor can simply repeat all requests (i.e. not care at
-> all about the fact that a guest does these modifications on all CPUs
-> it sees), or realize that the modification has already been done and
-> skip it.
+Mike Frysinger wrote:
+> On Wed, May 20, 2009 at 03:37, Tejun Heo wrote:
+>> x86 throws away .discard section but no other archs do.  Also,
+>> .discard is not thrown away while linking modules.  Make every arch
+>> and module linking throw it away.  This will be used to define dummy
+>> variables for percpu declarations and definitions.
+> 
+> seems like a good time to introduce a common DISCARD define to
+> include/asm-generic/vmlinux.lds.h.  considering multiple /DISCARD/
+> entries are allowed in a linker script, the define should be pretty
+> straightforward:
+> #define DISCARDS \
+>     /DISCARD/ : { \
+>         EXIT_TEXT \
+>         EXIT_DATA \
+>         *(.exitcall.exit) \
+>         *(.discard) \
+>     }
 
-Could be done, yes.  It still feels wrong that wrmsr(mtrr) works 
-slightly different on xen and on native.  And it wouldn't work on 
-existing Xen deployments as the Xen hypervisor doesn't support that today.
+Hmmm... indeed, that would be nice.  I'll update the patch.
 
->>>>> Yeah, the third one is to not touch MTRRs after bootup and use PAT.
+Thanks.
 
-> That's a really old CPU, but even Coppermine has PAT support in the
-> CPU. You need to go back to things like P5 200 MHz CPUs to find
-> PAT-less CPUs.
-
-Linux shouln't say "PAT not supported by CPU." then.
-
-Also it doesn't make sense to me to handle things differently on native 
-and xen.  While it might make sense to deprecate mtrrs in favor of PAT 
-(don't know enougth about all the different cpus in the wild to justify 
-that) I don't think it makes sense to do that for xen only.  Native 
-should declare mtrrs obsolete as well.
-
-cheers,
-   Gerd
-
+-- 
+tejun
