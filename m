@@ -1,63 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756116AbZETILg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755606AbZETIMW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756116AbZETILg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 04:11:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752811AbZETILT
+	id S1755606AbZETIMW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 04:12:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752761AbZETIMK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 04:11:19 -0400
-Received: from yx-out-2324.google.com ([74.125.44.30]:57212 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752629AbZETILR (ORCPT
+	Wed, 20 May 2009 04:12:10 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:36427 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752629AbZETIMI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 04:11:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=lT9jrIg6yu+X7Z+4itCOy8GocWJYP/tW04Pfm3RejabztpznnMKAMUWAFlrQ8EArFv
-         O6O2fanx3gOzRBJvqB8n+nSX7VVrUjsUixGNfr7/YAuCNjT6msRg78QPjECK6lXS5iGi
-         k1x0gpU+6DaMWK3cRTX/kQn9YPdPUagAiUS7M=
-Message-ID: <4A13BB1D.10901@panasas.com>
-Date: Wed, 20 May 2009 11:11:09 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
+	Wed, 20 May 2009 04:12:08 -0400
+Date: Wed, 20 May 2009 09:11:50 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Tim Bird <tim.bird@am.sony.com>, Ingo Molnar <mingo@elte.hu>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+Subject: Re: [PATCH 2/2] ftrace: add function-graph tracer support for ARM
+	v2
+Message-ID: <20090520081150.GA22558@n2100.arm.linux.org.uk>
+References: <49FB79CF.3020101@am.sony.com> <20090502001100.GH6404@nowhere> <c62985530905090914odb4dcc6pc7ea789f02515167@mail.gmail.com> <20090515210636.GQ650@n2100.arm.linux.org.uk> <20090520023432.GJ6066@nowhere>
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>,
-       James Smart <James.Smart@Emulex.Com>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>
-CC: Tejun Heo <tj@kernel.org>, linux-scsi <linux-scsi@vger.kernel.org>,
-       FUJITA Tomonori <tomof@acm.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Jens Axboe <Jens.Axboe@oracle.com>
-Subject: Re: [PATCH version 2] [SQUASHME] "FC Pass Thru support" fixed for
- block/for-2.6.31 tree
-References: <4A12797B.2060901@panasas.com>	<4A12AC23.30808@panasas.com> <20090520111619.87f815b1.sfr@canb.auug.org.au>
-In-Reply-To: <20090520111619.87f815b1.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090520023432.GJ6066@nowhere>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/20/2009 04:16 AM, Stephen Rothwell wrote:
-> On Tue, 19 May 2009 15:54:59 +0300 Boaz Harrosh <bharrosh@panasas.com> wrote:
->>
->> This patch should be squashed into
->>     [SCSI] FC Pass Thru support
->>
->> If it needs to compile after Tejun's block-layer revamps
->> (all of them)
+On Wed, May 20, 2009 at 04:34:35AM +0200, Frederic Weisbecker wrote:
+> On Fri, May 15, 2009 at 10:06:36PM +0100, Russell King - ARM Linux wrote:
+> > However, I'm not sure that this code is entirely right (and I'm not
+> > sure what's going on with this patch - my editor is randomly changing
+> > the placement of characters in it.  Are you submitting patches using
+> > UTF-8 characters in the code?)
+> > 
+> > > >> @@ -139,8 +144,16 @@ ENTRY(mcount)
+> > > >>       adr r0, ftrace_stub
+> > > >>       cmp r0, r2
+> > > >>       bne trace
+> > 
+> > If this is r0 != ftrace_stub, go to trace.  So the next block will
+> > only be executed if r0 /was/ ftrace_stub, in which case it can't be
+> > ftrace_graph_return.
 > 
-> Is there some reason that the FC passthrough support (and any followup
-> patches) can't be pushed through the block tree.  It clearly currently
-> doesn't depend on anything new in the scsi tree ...
-> 
+> Ah! This part concerns the function tracer.
+> Let's see how it looks like in the original code: (added more comments
+> inside)
 
-If it will go through block tree it needs James Bottomley's Ack, I
-guess?
-
-It does, in any case, need Ack from James Smart first. James ?
-
-Thanks
-Boaz
+You've completely missed the point I was trying to make.  Please go back
+and re-read my email and think about precisely what's happening in the
+assembly path, particularly which branches will be taken and which code
+paths will be taken with various values of r2.
 
