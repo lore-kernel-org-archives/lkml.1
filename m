@@ -1,211 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754612AbZETKO5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755987AbZETKVb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754612AbZETKO5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 06:14:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754184AbZETKOs
+	id S1755987AbZETKVb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 06:21:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754470AbZETKVW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 06:14:48 -0400
-Received: from ozlabs.org ([203.10.76.45]:56821 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754169AbZETKOr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 06:14:47 -0400
-Date: Wed, 20 May 2009 20:13:34 +1000
-From: Anton Blanchard <anton@samba.org>
-To: rostedt@goodmis.org, mingo@elte.hu, tzanussi@gmail.com, jbaron@redhat.com,
-       tglx@linutronix.de
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] tracing/events: Add timer and high res timer tracepoints
-Message-ID: <20090520101334.GA23442@kryten>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 20 May 2009 06:21:22 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:33198 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753985AbZETKVW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 06:21:22 -0400
+To: vaurora@redhat.com
+CC: miklos@szeredi.hu, jblunck@suse.de, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk,
+       bharata@in.ibm.com, dwmw2@infradead.org, mszeredi@suse.cz
+In-reply-to: <20090519173038.GC722@shell> (message from Valerie Aurora on Tue,
+	19 May 2009 13:30:38 -0400)
+Subject: Re: [PATCH 21/32] union-mount: Make lookup work for union-mounted file systems
+References: <1242662968-11684-1-git-send-email-jblunck@suse.de> <1242662968-11684-22-git-send-email-jblunck@suse.de> <E1M6Ryq-0001RP-Oe@pomaz-ex.szeredi.hu> <20090519173038.GC722@shell>
+Message-Id: <E1M6iv8-0003CB-4O@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 20 May 2009 12:21:10 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 19 May 2009, Valerie Aurora wrote:
+> On Tue, May 19, 2009 at 06:15:52PM +0200, Miklos Szeredi wrote:
 
-Add tracepoints for timer and high res timer execution. We add entry and
-exit tracepoints so we can calculate timer latency.
+> > Worse, it looks like there are still i_mutex lock ordering issues
+> > (__hash_lookup_topmost()/__hash_lookup_build_union()).  What happens
+> > if two separate unions of two filesystems are built where the order of
+> > branches is reversed?
+> 
+> We have a similar problem in union_copyup_dir().  Hm, thinking about
+> this, only one of the file systems can actually change while we are
+> doing work.  That might help us get out of the lock ordering problems.
+> Thoughts?
 
-Example ftrace output:
+Right, we talked about this with Jan, and came basically to the same
+conclusion.  The lookup on the lower branches needs to be separate
+from the atomic lookup/create on the top branch.  Which means some
+restructuring in the callers...
 
-<idle>-0     [000]   264.040506: hrtimer_entry: func=.tick_sched_timer+0x0/0xf0
-<idle>-0     [000]   264.040508: hrtimer_exit: func=.tick_sched_timer+0x0/0xf0 restart=HRTIMER_RESTART
-<idle>-0     [000]   264.040530: timer_entry: func=.e1000_watchdog+0x0/0x8fc
-<idle>-0     [000]   264.040728: timer_exit: func=.e1000_watchdog+0x0/0x8fc
+I'm not sure how all this could be simplified, I don't yet even
+understand what all these different lookup functions are meant to do
+(header comments might help).
 
-Here we can see e1000_watchdog is taking 0.2ms - it might make sense to
-move this into a workqueue or kernel thread.
-
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
-
-Index: linux-2.6-tracing/kernel/hrtimer.c
-===================================================================
---- linux-2.6-tracing.orig/kernel/hrtimer.c	2009-05-20 17:11:50.000000000 +1000
-+++ linux-2.6-tracing/kernel/hrtimer.c	2009-05-20 17:11:52.000000000 +1000
-@@ -46,6 +46,8 @@
- 
- #include <asm/uaccess.h>
- 
-+#include <trace/events/timer.h>
-+
- /**
-  * ktime_get - get the monotonic time in ktime_t format
-  *
-@@ -1161,7 +1163,9 @@
- 	 * the timer base.
- 	 */
- 	spin_unlock(&cpu_base->lock);
-+	trace_hrtimer_entry(timer);
- 	restart = fn(timer);
-+	trace_hrtimer_exit(timer, restart);
- 	spin_lock(&cpu_base->lock);
- 
- 	/*
-Index: linux-2.6-tracing/kernel/timer.c
-===================================================================
---- linux-2.6-tracing.orig/kernel/timer.c	2009-05-20 17:11:50.000000000 +1000
-+++ linux-2.6-tracing/kernel/timer.c	2009-05-20 17:11:52.000000000 +1000
-@@ -44,6 +44,9 @@
- #include <asm/timex.h>
- #include <asm/io.h>
- 
-+#define CREATE_TRACE_POINTS
-+#include <trace/events/timer.h>
-+
- u64 jiffies_64 __cacheline_aligned_in_smp = INITIAL_JIFFIES;
- 
- EXPORT_SYMBOL(jiffies_64);
-@@ -946,7 +949,9 @@
- 				 */
- 				lock_map_acquire(&lockdep_map);
- 
-+				trace_timer_entry(timer);
- 				fn(data);
-+				trace_timer_exit(timer);
- 
- 				lock_map_release(&lockdep_map);
- 
-Index: linux-2.6-tracing/include/trace/events/timer.h
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-tracing/include/trace/events/timer.h	2009-05-20 17:15:41.000000000 +1000
-@@ -0,0 +1,116 @@
-+#if !defined(_TRACE_TIMER_H) || defined(TRACE_HEADER_MULTI_READ)
-+#define _TRACE_TIMER_H
-+
-+#include <linux/tracepoint.h>
-+#include <linux/timer.h>
-+#include <linux/hrtimer.h>
-+
-+#undef TRACE_SYSTEM
-+#define TRACE_SYSTEM timer
-+
-+/**
-+ * timer_entry - called immediately before the timer
-+ * @timer: pointer to struct timer_list
-+ *
-+ * When used in combination with the timer_exit tracepoint we can
-+ * determine the timer latency.
-+ */
-+TRACE_EVENT(timer_entry,
-+
-+	TP_PROTO(struct timer_list *timer),
-+
-+	TP_ARGS(timer),
-+
-+	TP_STRUCT__entry(
-+		__field(void *, function)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->function = timer->function;
-+	),
-+
-+	TP_printk("func=%pF", __entry->function)
-+);
-+
-+/**
-+ * timer_exit - called immediately after the timer returns
-+ * @timer: pointer to struct timer_list
-+ *
-+ * When used in combination with the timer_entry tracepoint we can
-+ * determine the timer latency.
-+ */
-+TRACE_EVENT(timer_exit,
-+
-+	TP_PROTO(struct timer_list *timer),
-+
-+	TP_ARGS(timer),
-+
-+	TP_STRUCT__entry(
-+		__field(void *, function)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->function = timer->function;
-+	),
-+
-+	TP_printk("func=%pF", __entry->function)
-+);
-+
-+/**
-+ * hrtimer_entry - called immediately before the high res timer
-+ * @timer: pointer to struct hrtimer
-+ *
-+ * When used in combination with the hrtimer_exit tracepoint we can
-+ * determine the high res timer latency.
-+ */
-+TRACE_EVENT(hrtimer_entry,
-+
-+	TP_PROTO(struct hrtimer *timer),
-+
-+	TP_ARGS(timer),
-+
-+	TP_STRUCT__entry(
-+		__field(void *, function)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->function = timer->function;
-+	),
-+
-+	TP_printk("func=%pF", __entry->function)
-+);
-+
-+/**
-+ * hrtimer_exit - called immediately after the high res timer returns
-+ * @timer: pointer to struct hrtimer
-+ * @restart: high res timer return value
-+ *
-+ * High res timer will restart if @restart is set to HRTIMER_RESTART.
-+ * When used in combination with the hrtimer_entry tracepoint we can
-+ * determine the high res timer latency.
-+ */
-+TRACE_EVENT(hrtimer_exit,
-+
-+	TP_PROTO(struct hrtimer *timer, int restart),
-+
-+	TP_ARGS(timer, restart),
-+
-+	TP_STRUCT__entry(
-+		__field(void *, function)
-+		__field(int, restart)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->function = timer->function;
-+		__entry->restart = restart;
-+	),
-+
-+	TP_printk("func=%pF restart=%s", __entry->function,
-+		(__entry->restart == HRTIMER_RESTART) ?
-+			"HRTIMER_RESTART" : "HRTIMER_NORESTART")
-+);
-+
-+#endif /*  _TRACE_TIMER_H */
-+
-+/* This part must be outside protection */
-+#include <trace/define_trace.h>
+Thanks,
+Miklos
