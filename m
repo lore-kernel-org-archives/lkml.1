@@ -1,100 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756630AbZETJUy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757052AbZETJVn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756630AbZETJUy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 05:20:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755049AbZETJUr
+	id S1757052AbZETJVn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 05:21:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754215AbZETJVf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 05:20:47 -0400
-Received: from smtp123.sbc.mail.sp1.yahoo.com ([69.147.64.96]:43256 "HELO
-	smtp123.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753985AbZETJUq (ORCPT
+	Wed, 20 May 2009 05:21:35 -0400
+Received: from bld-mail13.adl6.internode.on.net ([150.101.137.98]:37006 "EHLO
+	mail.internode.on.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753971AbZETJVe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 05:20:46 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=qfQHGl/fXp0ghhOEtlz260VGVKcdYnxtimh8SF93pYN+MRjd6rPzaBaAyQ2lVPo3Q52XyjaOwp6CSZnJ/2tOqCYtxjXDclFJdTV6OocyNPGy7QjKwNU9lLg4+rTrm7eHktcXhbDg0Yrf5fSd0hSIEcb2LBoe8A8z/0TzHIlsTgE=  ;
-X-YMail-OSG: PiwWNfAVM1mSSLHEJL084JDJsVb9bxWiZJ.4Z_VYnRfDOeLPHFeohQ6P5QeA2u5qiKvud1UMPm.coTlLdfSthHnRw2upRYNu9skRTOw5fSR7bksiK4dfVkvePHL2hpyVsx3qrQtn8e3OKvptJQ8sz9Na1chQWtsqRlfcxoaZai0NUmoy.Z4Q.Zb5cXqTAxdHjYNPn1MISSWeUhNDb7FxT7dxyj3QoEvCIvymALHST6X8WLXNo.jUSiXfkch9iv7BZPP9DzFgQJzp460-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Wolfgang =?iso-8859-1?q?M=FCes?= <wolfgang.mues@auerswald.de>
-Subject: Re: [PATCH] mmc_spi: use EILSEQ for possible transmission errors
-Date: Wed, 20 May 2009 02:20:46 -0700
-User-Agent: KMail/1.9.10
-Cc: "Matt Fleming" <matt@console-pimps.org>,
-       "Pierre Ossman" <drzeus@drzeus.cx>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Mike Frysinger" <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org
-References: <200905192149.07778.david-b@pacbell.net> <200905201035.23964.wolfgang.mues@auerswald.de>
-In-Reply-To: <200905201035.23964.wolfgang.mues@auerswald.de>
+	Wed, 20 May 2009 05:21:34 -0400
+X-Greylist: delayed 926 seconds by postgrey-1.27 at vger.kernel.org; Wed, 20 May 2009 05:21:33 EDT
+Date: Wed, 20 May 2009 19:05:58 +1000
+From: Dave Chinner <david@fromorbit.com>
+To: Alex Samad <alex@samad.com.au>
+Cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com
+Subject: Re: Kernel crash with 2.6.29 + nfs + xfs (radix-tree)
+Message-ID: <20090520090558.GQ16929@discord.disaster>
+References: <20090520003745.GA27491@samad.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200905200220.46569.david-b@pacbell.net>
+In-Reply-To: <20090520003745.GA27491@samad.com.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 20 May 2009, Wolfgang Mües wrote:
-> what about the following proposal which is not so aggressive?
-
-Seems plausible to me, though note one comment at the end...
-
-
-> The current mapping in mmc_spi.c is:
+On Wed, May 20, 2009 at 10:37:45AM +1000, Alex Samad wrote:
+> Hi
 > 
-> R1_SPI_PARAMETER => EINVAL
-> R1_SPI_ADDRESS => EINVAL
-> R1_SPI_ILLEGAL_COMMAND => EINVAL
-> R1_SPI_COM_CRC => EILSEQ
-> R1_SPI_ERASE_SEQ => EIO
-> R1_SPI_ERASE_RESET => EIO
+> I have been quit a lot of crashes on my debian amd64 box in the 2.6.29
+> series of kernel. Seems for me to be when the system is under load and
+> there is network action -> nfsd -> xfs.
 
-Yeah, that took a bit of head-scratching to come up with.
+Perhaps a use after free or a reference counting problem. Thanks for
+reporting it.
 
-
-> R1_SPI_COM_CRC is a transmission error - no doubt. Mapping to EILSEQ is OK.
+> May  5 19:45:38 x kernel: ------------[ cut here ]------------
+> May  5 19:45:39 x kernel: kernel BUG at lib/radix-tree.c:485!
+> May  5 19:45:39 x kernel: invalid opcode: 0000 [#1] SMP
+> May  5 19:45:39 x kernel: last sysfs file:
+> /sys/block/sdc/queue/nr_requests
+> May  5 19:45:39 x kernel: CPU 0
+> May  5 19:45:39 x kernel: Pid: 335, comm: kswapd0 Not tainted 2.6.29.2 #1 S2895
+> May  5 19:45:39 x kernel: RIP: 0010:[<ffffffff803916e0>] [<ffffffff803916e0>] radix_tree_tag_set+0x86/0xc6
+> May  5 19:45:39 x kernel: RSP: 0018:ffff88016e2d1c88  EFLAGS: 00010246
+> May  5 19:45:39 x kernel: RAX: 0000000000000004 RBX: 0000000000000000 RCX: 0000000000000000
+> May  5 19:45:39 x kernel: RDX: 0000000000000000 RSI: 0000000000000000 RDI: ffff88016a822b58
+> May  5 19:45:39 x kernel: RBP: 0000000000000004 R08: 0000000000000000 R09: 8000000000000000
+> May  5 19:45:39 x kernel: R10: ffffa5a5a5a5a5a5 R11: ffffffff8037541d R12: 0000000000000001
+> May  5 19:45:39 x kernel: R13: 0000000000000000 R14: ffff88016d1bc310 R15: 0000000000000000
+> May  5 19:45:39 x kernel: FS:  00007fea1903f6e0(0000) GS:ffffffff80759040(0000) knlGS:0000000000000000
+> May  5 19:45:39 x kernel: CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+> May  5 19:45:39 x kernel: CR2: 00007fd2df5ae8e0 CR3: 000000016bad0000 CR4: 00000000000006e0
+> May  5 19:45:39 x kernel: DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> May  5 19:45:39 x kernel: DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> May  5 19:45:39 x kernel: Process kswapd0 (pid: 335, threadinfo ffff88016e2d0000, task ffff88016f23eac0)
+> May  5 19:45:39 x kernel: Stack:
+> May  5 19:45:39 x kernel:  000000000069d804 0000000000000000 ffff88016d1bc2d0 ffff88000a8b7400
+> May  5 19:45:39 x kernel:  ffff88000a8b7400 ffff88016df30000 ffff88000a8b74f8 ffff88016d1bc30c
+> May  5 19:45:39 x kernel:  ffffffff80376b02 ffff88000a8b7580 0000000000000024 ffff88016e2d1d60
+> May  5 19:45:39 x kernel: Call Trace:
+> May  5 19:45:39 x kernel:  [<ffffffff80376b02>] ? xfs_inode_set_reclaim_tag+0x69/0x89
+> May  5 19:45:39 x kernel:  [<ffffffff8036972f>] ? xfs_reclaim+0x99/0x9f
+> May  5 19:45:39 x kernel:  [<ffffffff80375453>] ? xfs_fs_destroy_inode+0x36/0x54
+> May  5 19:45:39 x kernel:  [<ffffffff80290304>] ? dispose_list+0xcd/0xfb
+> May  5 19:45:39 x kernel:  [<ffffffff80290526>] ? shrink_icache_memory+0x1f4/0x22a
+> May  5 19:45:39 x kernel:  [<ffffffff8026242a>] ? shrink_slab+0xe4/0x157
+> May  5 19:45:39 x kernel:  [<ffffffff80262b53>] ? kswapd+0x44f/0x5c9
+> May  5 19:45:39 x kernel:  [<ffffffff8026063e>] ? isolate_pages_global+0x0/0x231
+> May  5 19:45:39 x kernel:  [<ffffffff8024458a>] ? autoremove_wake_function+0x0/0x2e
+> May  5 19:45:39 x kernel:  [<ffffffff8022a80e>] ? __wake_up_common+0x44/0x73
+> May  5 19:45:39 x kernel:  [<ffffffff80262704>] ? kswapd+0x0/0x5c9
+> May  5 19:45:39 x kernel:  [<ffffffff80244266>] ? kthread+0x47/0x73
+> May  5 19:45:39 x kernel:  [<ffffffff8020c4ba>] ? child_rip+0xa/0x20
+> May  5 19:45:39 x kernel:  [<ffffffff8024421f>] ? kthread+0x0/0x73
+> May  5 19:45:39 x kernel:  [<ffffffff8020c4b0>] ? child_rip+0x0/0x20
+> May  5 19:45:39 x kernel: Code: 83 e5 3f 89 ea e8 04 fc ff ff 85 c0 75
+> 10 48 8b 54 24 08 48 8d 84 13 18 02 00 00 0f ab 28 48 63 c5 48 8b 5c c3
+> 18 48 85 db 75 04 <0f> 0b eb fe 41 83 ed 06 41 ff cc 45$
+> May  5 19:45:39 x kernel: RIP  [<ffffffff803916e0>]
+> radix_tree_tag_set+0x86/0xc6
+> May  5 19:45:39 x kernel:  RSP <ffff88016e2d1c88>
+> May  5 19:45:39 x kernel: ---[ end trace aed81d6fef80e624 ]---
 > 
-> R1_SPI_ERASE_SEQ and R1_SPI_ERASE_RESET are responses to a sector erase 
-> command. block.c is not sending such commands, so block.c can safely assume 
-> that each such response is a transmission error.
-
-Hmm, would hope that's not a long-term plan.  Remember that the
-firmware in the card can leverage "that's erased" knowledge for
-things like wear leveling.  SSDs and other storage devices would
-likewise benefit from such knowledge.  I'm quite certain there's
-been discussion about adding support for that in the block layer.
-
-
-> R1_SPI_PARAMETER and R1_SPI_ADDRESS are errors from the card controller
-> because a parameter or an address is out of range/invalid. It is mapped to 
-> EINVAL, and so the caller can not distinguish between errors from the host 
-> controller and driver or the card. This has to be changed to some other code,
-> maybe EFAULT /* Bad address */.
-
-OK.
-
-
-> R1_SPI_ILLEGAL_COMMAND is mapped to EINVAL, and I suggest it to replace with
-> ENOSYS /* Function not implemented */.
 > 
-> A quick scan in the mmc directory for EINVAL reveals that there are no callers 
-> which need to be changed.
+> I have logged a bug with debian
+> ( more info http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=526406),
+> there has been one other to report this problem.
 > 
-> As block.c does not send a command, parameter or address which is invalid/out 
-> of range,
+> we believe somebody has already reported a similar problem here
+> http://groups.google.com/group/linux.kernel/browse_thread/thread/dd00f52e93397c9e/6b6814dab9b41a05?pli=1
 
-That is, *today* it doesn't.  For the moment I suspect just logging
-the actual fault code (a pr_debug) may will suffice; this is the kind
-of stuff that shouldn't get buried too deeply.
+Which no-one noticed was related to XFS (not in the subject line)
+and so most people (like me) would have simply deleted it without
+reading it....
 
+> has any one else seen this problem, who do I need to raise this too ?
 
-> these errors must be considered transmission errors in the command  
-> (if CRC is off) or in the response.
+I've cc'd the XFS list.
 
-And the key issue is -- correct me if I'm wrong -- that returning
-EINVAL makes trouble, so you need to change those three codes.  The
-others don't much matter, right?
+> I am able to reproduce this problem on my machine (amd64 phenomem II 8G
+> ram), running virtualbox, I have a vm access the local filesystem via
+> nfs (udp) and when I do a rm -fr <some directory ~200M> I see the bug
 
+I run debian, XFS and 2.6.29 on all my machines but I haven't
+tripped over the problem - it all appears to be related to calling
+dispose_list() during/just after removing a lot of files. If you
+have a simple method of reproducing the problem (e.g. a simple shell
+script) it would help track down the problem much faster....
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
