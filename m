@@ -1,62 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756887AbZETVBr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756101AbZETVFN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756887AbZETVBr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 17:01:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754944AbZETVBk
+	id S1756101AbZETVFN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 17:05:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754214AbZETVFC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 17:01:40 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:56623 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754848AbZETVBk (ORCPT
+	Wed, 20 May 2009 17:05:02 -0400
+Received: from mailservice.tudelft.nl ([130.161.131.5]:15598 "EHLO
+	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754037AbZETVFB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 17:01:40 -0400
-Message-ID: <4A146E78.6000600@zytor.com>
-Date: Wed, 20 May 2009 13:56:24 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Wed, 20 May 2009 17:05:01 -0400
+X-Spam-Flag: NO
+X-Spam-Score: -12.589
+Message-ID: <4A147078.6020208@tremplin-utc.net>
+Date: Wed, 20 May 2009 23:04:56 +0200
+From: =?ISO-8859-1?Q?=C9ric_Piel?= <eric.piel@tremplin-utc.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.21) Gecko/20090319 Mandriva/2.0.0.21-1mdv2009.1 (2009.1) Thunderbird/2.0.0.21 Mnenhy/0.7.5.0
 MIME-Version: 1.0
-To: Roland McGrath <roland@redhat.com>
-CC: Oleg Nesterov <oleg@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Christoph Hellwig <hch@infradead.org>,
-       Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>,
-       Vitaly Mayatskikh <v.mayatskih@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Q: put_user_try & co (Was: [PATCH 1/5] Split wait_noreap_copyout())
-References: <1242036759-4025-1-git-send-email-v.mayatskih@gmail.com>	<1242036759-4025-2-git-send-email-v.mayatskih@gmail.com>	<20090511120418.GA3859@infradead.org>	<20090511121708.GD13954@elte.hu>	<20090520190312.GA32333@redhat.com> <20090520201127.48B54FC38D@magilla.sf.frob.com>
-In-Reply-To: <20090520201127.48B54FC38D@magilla.sf.frob.com>
+To: Christian Thaeter <ct@pipapo.org>
+CC: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] hpfall.c improvements, thoughts
+References: <49C8F338.7030901@pipapo.org> <20090324211555.GA24172@elf.ucw.cz> <49CAA1DF.8060109@pipapo.org>
+In-Reply-To: <49CAA1DF.8060109@pipapo.org>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland McGrath wrote:
+Op 25-03-09 22:27, Christian Thaeter schreef:
+> Some conversation I had with Pavel,
 > 
-> You mean &&__efault_label here (it's a funny syntax, but that's how it is).
-> &&label is a GCC extension that I'm not sure the kernel has used before.
+> imo the example code should be at least barely useable as in not causing
+> harm like I sketched in (1.). Maybe someone else picks that up and
+> improves it later on. Patch at the end, quite sketchy and imature as it
+> doesn't check for errors, but certainly better than before.
 > 
-> I think it can be touchy to have an asm jump into compiled code that way.
-> e.g., perhaps the compiler produced:
-> 
-> 	mov reg, 40(sp)
-> 	mov $123, reg
-> 	#APP
-> 	... inside of your asm ...
-> 	#NO_APP
-> 	mov 40(sp), reg
-> 
-> or some such thing.  If you jump away from inside the asm, you won't ever
-> do "mov 40(sp), reg".  But the compiler might think that reg has its
-> original value at the __efault_label: code location.
-> 
-> Perhaps more important than any particular compiler-confusion scenario we
-> can come up with is simply that this would be an obscure corner of code
-> generation in the compiler that the kernel has not evoked before.  There
-> might be bugs or oddities in various compilers of various vintages, that
-> we don't know about because they never came up before.
-> 
+Hello Christian,
+Would you mind resending the patch with a changelog, so that Andrew can
+merge it?
 
-Yes, it seems like a bad idea to me.
+Thanks,
+Eric
 
-	-hpa
+> 
+> Signed-off-by: Christian Thaeter <ct@pipapo.org>
+Acked-by: Éric Piel <eric.piel@tremplin-utc.net>
+
+> ---
+> 
+> diff --git a/Documentation/hwmon/hpfall.c b/Documentation/hwmon/hpfall.c
+> index bbea1cc..f3cde67 100644
+> --- a/Documentation/hwmon/hpfall.c
+> +++ b/Documentation/hwmon/hpfall.c
+> @@ -16,6 +16,8 @@
+>  #include <stdint.h>
+>  #include <errno.h>
+>  #include <signal.h>
+> +#include <sys/mman.h>
+> +#include <sched.h>
+> 
+>  void write_int(char *path, int i)
+>  {
+> @@ -63,6 +65,7 @@ void ignore_me(void)
+>  int main(int argc, char* argv[])
+>  {
+>         int fd, ret;
+> +       struct sched_param param;
+> 
+>         fd = open("/dev/freefall", O_RDONLY);
+>         if (fd < 0) {
+> @@ -70,7 +73,12 @@ int main(int argc, char* argv[])
+>                 return EXIT_FAILURE;
+>         }
+> 
+> -	signal(SIGALRM, ignore_me);
+> +       daemon(0,0);
+> +       param.sched_priority = sched_get_priority_max(SCHED_FIFO);
+> +       sched_setscheduler(0, SCHED_FIFO, &param);
+> +       mlockall(MCL_CURRENT|MCL_FUTURE);
+> +
+> +       signal(SIGALRM, ignore_me);
+> 
+>         for (;;) {
+>  	       unsigned char count;
+
