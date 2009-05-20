@@ -1,49 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756459AbZETItm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754266AbZETIy0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756459AbZETItm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 04:49:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752861AbZETItd
+	id S1754266AbZETIy0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 04:54:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753480AbZETIyR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 04:49:33 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:54200 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751776AbZETItc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 04:49:32 -0400
-Message-ID: <4A13C40B.8080608@redhat.com>
-Date: Wed, 20 May 2009 11:49:15 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Mark Langsdorf <mark.langsdorf@amd.com>,
-       Joerg Roedel <joerg.roedel@amd.com>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org
+	Wed, 20 May 2009 04:54:17 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:43342 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752861AbZETIyQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 04:54:16 -0400
 Subject: Re: [PATCH][KVM][retry 3] Add support for Pause Filtering to AMD
  SVM
-References: <200905050909.58583.mark.langsdorf@amd.com>	 <200905071000.14038.mark.langsdorf@amd.com>	 <200905081203.55484.mark.langsdorf@amd.com>	 <200905191356.37071.mark.langsdorf@amd.com>	 <1242806386.26820.549.camel@twins>  <4A13C199.5020400@redhat.com> <1242808954.26820.556.camel@twins>
-In-Reply-To: <1242808954.26820.556.camel@twins>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+From: Peter Zijlstra <peterz@infradead.org>
+To: Avi Kivity <avi@redhat.com>
+Cc: Mark Langsdorf <mark.langsdorf@amd.com>,
+       Joerg Roedel <joerg.roedel@amd.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <4A13C40B.8080608@redhat.com>
+References: <200905050909.58583.mark.langsdorf@amd.com>
+	 <200905071000.14038.mark.langsdorf@amd.com>
+	 <200905081203.55484.mark.langsdorf@amd.com>
+	 <200905191356.37071.mark.langsdorf@amd.com>
+	 <1242806386.26820.549.camel@twins>  <4A13C199.5020400@redhat.com>
+	 <1242808954.26820.556.camel@twins>  <4A13C40B.8080608@redhat.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Wed, 20 May 2009 10:54:17 +0200
+Message-Id: <1242809657.26820.559.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
->>> That said, I still thoroughly dislike this whole approach.
->>>   
->>>       
->> Can you explain why?  We have a thread that has detected that it's 
->> spinning.  Keeping on spinning is a waste of cpu time.  Why not let 
->> something else use the cpu?
->>     
->
-> Because its a polling interface. I much prefer it if we were to get a
-> wakeup notification when the vcpu holding the lock releases it.
->   
+On Wed, 2009-05-20 at 11:49 +0300, Avi Kivity wrote:
+> Peter Zijlstra wrote:
+> >>> That said, I still thoroughly dislike this whole approach.
+> >>>   
+> >>>       
+> >> Can you explain why?  We have a thread that has detected that it's 
+> >> spinning.  Keeping on spinning is a waste of cpu time.  Why not let 
+> >> something else use the cpu?
+> >>     
+> >
+> > Because its a polling interface. I much prefer it if we were to get a
+> > wakeup notification when the vcpu holding the lock releases it.
+> >   
+> 
+> It's a fully virtualized guest.  There's no way to get this without 
+> patching the guest kernel.
 
-It's a fully virtualized guest.  There's no way to get this without 
-patching the guest kernel.
+Yes there is.. virtualized monitor-wait stuff coupled with a
+monitor-wait based spinlock implementation.
 
--- 
-error compiling committee.c: too many arguments to function
-
+Once we go change silicon, you might as well do it right.
