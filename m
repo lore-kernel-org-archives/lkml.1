@@ -1,115 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755889AbZETWse@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756656AbZETWt4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755889AbZETWse (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 18:48:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754117AbZETWs0
+	id S1756656AbZETWt4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 18:49:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755283AbZETWtr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 18:48:26 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:55265 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750944AbZETWsZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 18:48:25 -0400
-To: David Miller <davem@davemloft.net>
-Cc: sfr@canb.auug.org.au, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, rmk@arm.linux.org.uk,
-       hskinnemoen@atmel.com
-Subject: Subject: [PATCH] Sort out syscall_restart name clash.
-References: <20090521001928.4bf71911.sfr@canb.auug.org.au>
-	<m1d4a3keqm.fsf@fess.ebiederm.org>
-	<20090520.124403.159818618.davem@davemloft.net>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Wed, 20 May 2009 15:48:20 -0700
-In-Reply-To: <20090520.124403.159818618.davem@davemloft.net> (David Miller's message of "Wed\, 20 May 2009 12\:44\:03 -0700 \(PDT\)")
-Message-ID: <m1k54bie6j.fsf_-_@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Wed, 20 May 2009 18:49:47 -0400
+Received: from claw.goop.org ([74.207.240.146]:36421 "EHLO claw.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750944AbZETWtq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 18:49:46 -0400
+Message-ID: <4A1488ED.6080604@goop.org>
+Date: Wed, 20 May 2009 15:49:17 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Rcpt-To: davem@davemloft.net, hskinnemoen@atmel.com, rmk@arm.linux.org.uk, linux-kernel@vger.kernel.org, linux-next@vger.kernel.org, sfr@canb.auug.org.au
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
+To: Andi Kleen <andi@firstfloor.org>
+CC: Ingo Molnar <mingo@elte.hu>, Xen-devel <xen-devel@lists.xensource.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [GIT PULL] xen /proc/mtrr implementation
+References: <4A0DCC11.10307@goop.org> <m1my9ex818.fsf@fess.ebiederm.org> <4A0DFF78.6000501@goop.org> <20090515202250.0f1218ef@jbarnes-g45> <m1iqk1k708.fsf@fess.ebiederm.org> <4A10EAC4.9070701@goop.org> <20090518085902.GE10687@elte.hu> <4A11A3F8.1010202@goop.org> <87tz3gnq91.fsf@basil.nowhere.org> <4A143251.90208@goop.org> <20090520225235.GJ8684@one.firstfloor.org>
+In-Reply-To: <20090520225235.GJ8684@one.firstfloor.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andi Kleen wrote:
+> There were drivers at some point that set WC MTRRs on their
+> transfer rings, not mmio.
+>   
 
-Stephen Rothwell <sfr@canb.auug.org.au> writes:
+To avoid cache pollution effects?
 
-> Today's linux-next build of at least some av32 and arm configs failed like this:
+> Maybe these all switched to PAT now, maybe not
 >
-> arch/avr32/kernel/signal.c:216: error: conflicting types for 'restart_syscall'
-> include/linux/sched.h:2184: error: previous definition of 'restart_syscall' was here
->
-> Caused by commit 690cc3ffe33ac4a2857583c22d4c6244ae11684d ("syscall:
-> Implement a convinience function restart_syscall") from the net tree.
+> It's hard to say because it could be also done from user space.
+>   
 
-Grrr. Some days it feels like all of the good names are already taken.
+How does userspace do the virtual to physical mapping?  If the driver 
+can't also deal with the extra conversion from physical to machine under 
+Xen, then it won't have much success either way.
 
-Let's just rename the two static users in arm and avr32 to get this
-sorted out.
-
-Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
----
- arch/arm/kernel/signal.c   |    6 +++---
- arch/avr32/kernel/signal.c |    4 ++--
- 2 files changed, 5 insertions(+), 5 deletions(-)
-
-diff --git a/arch/arm/kernel/signal.c b/arch/arm/kernel/signal.c
-index 80b8b5c..614c9f6 100644
---- a/arch/arm/kernel/signal.c
-+++ b/arch/arm/kernel/signal.c
-@@ -532,7 +532,7 @@ setup_rt_frame(int usig, struct k_sigaction *ka, siginfo_t *info,
- 	return err;
- }
- 
--static inline void restart_syscall(struct pt_regs *regs)
-+static inline void setup_syscall_restart(struct pt_regs *regs)
- {
- 	regs->ARM_r0 = regs->ARM_ORIG_r0;
- 	regs->ARM_pc -= thumb_mode(regs) ? 2 : 4;
-@@ -567,7 +567,7 @@ handle_signal(unsigned long sig, struct k_sigaction *ka,
- 			}
- 			/* fallthrough */
- 		case -ERESTARTNOINTR:
--			restart_syscall(regs);
-+			setup_syscall_restart(regs);
- 		}
- 	}
- 
-@@ -691,7 +691,7 @@ static int do_signal(sigset_t *oldset, struct pt_regs *regs, int syscall)
- 		if (regs->ARM_r0 == -ERESTARTNOHAND ||
- 		    regs->ARM_r0 == -ERESTARTSYS ||
- 		    regs->ARM_r0 == -ERESTARTNOINTR) {
--			restart_syscall(regs);
-+			setup_syscall_restart(regs);
- 		}
- 	}
- 	single_step_set(current);
-diff --git a/arch/avr32/kernel/signal.c b/arch/avr32/kernel/signal.c
-index 803d7be..2722756 100644
---- a/arch/avr32/kernel/signal.c
-+++ b/arch/avr32/kernel/signal.c
-@@ -212,7 +212,7 @@ out:
- 	return err;
- }
- 
--static inline void restart_syscall(struct pt_regs *regs)
-+static inline void setup_syscall_restart(struct pt_regs *regs)
- {
- 	if (regs->r12 == -ERESTART_RESTARTBLOCK)
- 		regs->r8 = __NR_restart_syscall;
-@@ -296,7 +296,7 @@ int do_signal(struct pt_regs *regs, sigset_t *oldset, int syscall)
- 			}
- 			/* fall through */
- 		case -ERESTARTNOINTR:
--			restart_syscall(regs);
-+			setup_syscall_restart(regs);
- 		}
- 	}
- 
--- 
-1.6.1.2.350.g88cc
-
+    J
