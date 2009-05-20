@@ -1,64 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755849AbZETIoe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756760AbZETIo4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755849AbZETIoe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 04:44:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754444AbZETIo1
+	id S1756760AbZETIo4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 04:44:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754932AbZETIou
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 04:44:27 -0400
-Received: from rv-out-0506.google.com ([209.85.198.239]:48447 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754072AbZETIo0 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 04:44:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=ZnBvkmOtqlnm+ZyQbLT0/Xc/3FzbCmAi2U4RwAHVA8IMUB9l8TB/n6TwZPnvhp9Uyr
-         cjcWEHUcK2EjB/OG91cfA45zbJkqMfTlsY2isBj1s6QCkgY6YWsddDPjyw9LDz8KzlKa
-         umutRv7PhVzlwb4iQMFB5+aa5cS0E9zX2c8Tk=
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Henrik Rydberg <rydberg@euromail.se>
-Subject: Re: [PATCH] input: mt: Augment the event semantics documentation
-Date: Wed, 20 May 2009 01:44:21 -0700
-User-Agent: KMail/1.11.3 (Linux/2.6.30-rc4; KDE/4.2.3; x86_64; ; )
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <1242593479-9238-1-git-send-email-rydberg@euromail.se> <20090520025957.GE17649@dtor-d630.eng.vmware.com> <4A13BC50.4010705@euromail.se>
-In-Reply-To: <4A13BC50.4010705@euromail.se>
+	Wed, 20 May 2009 04:44:50 -0400
+Received: from araneidae.co.uk ([62.3.233.233]:1920 "EHLO araneidae.co.uk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754444AbZETIot (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 04:44:49 -0400
+Date: Wed, 20 May 2009 09:44:33 +0100 (BST)
+From: Michael Abbott <michael@araneidae.co.uk>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+cc: Peter Zijlstra <peterz@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Jan Engelhardt <jengelh@medozas.de>
+Subject: Re: [GIT PULL] cputime patch for 2.6.30-rc6
+In-Reply-To: <20090520100912.4f9c2037@skybase>
+Message-ID: <Pine.LNX.4.64.0905200918170.14352@venus.araneidae.co.uk>
+References: <20090518160904.7df88425@skybase> <1242660243.26820.439.camel@twins>
+ <Pine.LNX.4.64.0905181717001.21259@venus.araneidae.co.uk>
+ <20090519110047.2e0d9e55@skybase> <1242725488.26820.485.camel@twins>
+ <20090520100912.4f9c2037@skybase>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200905200144.22454.dmitry.torokhov@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 20 May 2009 01:16:16 Henrik Rydberg wrote:
-> Dmitry Torokhov wrote:
-> > Hi Henrik,
-> >
-> > On Sun, May 17, 2009 at 10:51:19PM +0200, Henrik Rydberg wrote:
-> >> Through the collaboration to adapt the N-trig and Stantum HID
-> >> drivers to the MT protocol, some semantic clarifications to the
-> >> protocol have been made. This patch adds them to the MT documentation.
-> >>
-> >> Signed-off-by: Henrik Rydberg <rydberg@euromail.se>
-> >> Tested-by: Stéphane Chatty <chatty@enac.fr>
-> >
-> > I was wondering if the following changes would not make the text a bit
-> > better:
->
-> They do, thanks. I got more comments on the text, perhaps it is easiest
-> if I send an additional patch on top of this one, with your changes
-> included? It seems folding a patch is easier than to find out what
-> changes were made to the changes.
->
+On Wed, 20 May 2009, Martin Schwidefsky wrote:
+> On Tue, 19 May 2009 11:31:28 +0200 Peter Zijlstra <peterz@infradead.org> wrote:
+> > On Tue, 2009-05-19 at 11:00 +0200, Martin Schwidefsky wrote:
+> > > I don't see a problem here. In an idle multiple cpu system there IS 
+> > > more idle time than elapsed time. What would makes sense is to 
+> > > compare elapsed time * #cpus with the idle time. But then there is 
+> > > cpu hotplug which forces you to look at the delta of two measuring 
+> > > points where the number of cpus did not change.
+> 
+> Well, we better distinguish between the semantical problem and the
+> performance consideration, no? One thing is what the proc field is
+> supposed to contain, the other is how fast you can do it.
+> 
+> I have been refering to the semantical problem, but your point with the 
+> performance is very valid as well. So
+> 
+> 1) are we agreed that the second field of /proc/uptime should contain 
+> the aggregate idle time of all cpus?
 
-Sure, send it along.
+I think that this very simple node (only two fields, let me call them 
+uptime and idle) should be amenable to simple interpretation.  In 
+particular, I'd like to be able to compute
 
--- 
-Dmitry
+	busy = uptime - idle
+
+In other words, idle should be in the same units of time as uptime, which 
+is to say it should be in units of elapsed time, not aggregate CPU time.  
+
+As far as I can see, that is how it used to be (at least, that's how it 
+behaves on a dual core processor running a hugely patched 2.6.9 kernel 
+that I'm looking at here).
+
+Thus, the patch to /proc/uptime that we're discussing has, in the view I'm 
+trying to argue, replaced a clearly broken idle field with a more subtly 
+broken version.
+
+The strongest point in my case is this: the first field is in units of 
+elapsed wall clock time, and therefore the second should also be.  Of 
+course, established practice here is also important, but there is some 
+ambiguity in the man pages I'm looking at -- this field is described in 
+proc(5) as:
+
+	the amount of time spent in idle process (seconds)
+
+Not aggregate CPU time, but elapsed time, I think is meant here, but the 
+wording is ambiguous.  Grepping for uptime in Documentation doesn't come 
+up with anything clear either, but I can quote old (2.6.9) precedent 
+(don't have a more recent multi-core system to hand).
