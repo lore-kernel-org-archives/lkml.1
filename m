@@ -1,176 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755876AbZETBzR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755913AbZETB7S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755876AbZETBzR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 May 2009 21:55:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755212AbZETBzH
+	id S1755913AbZETB7S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 May 2009 21:59:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755049AbZETB7K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 May 2009 21:55:07 -0400
-Received: from ey-out-2122.google.com ([74.125.78.25]:32099 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754888AbZETBzE (ORCPT
+	Tue, 19 May 2009 21:59:10 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:47003 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754888AbZETB7J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 May 2009 21:55:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=KVFszrm26A9ggTuRCqXmQzq5FUR6RP/ygfanEgQXaaPsjl4caqF0A8GJdiV4RCcE9+
-         QQZ/L/6hEJ/40FMOqX34Fwpkunvtt0JP3XPIPI0TcOa8MSz278VMT+pg8jtxymKaE97N
-         wqa6h5+VPP+spp8IWJHN7uYAb6DOKEK+SFcfI=
-Date: Wed, 20 May 2009 03:55:02 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH][GIT PULL] tracing: add trace_stack interface
-Message-ID: <20090520015501.GI6066@nowhere>
-References: <alpine.DEB.2.00.0905192043090.7816@gandalf.stny.rr.com> <20090520010714.GG6066@nowhere> <alpine.DEB.2.00.0905192112090.7816@gandalf.stny.rr.com>
+	Tue, 19 May 2009 21:59:09 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Subject: Re: [PATCH 2/3] vmscan: make mapped executable pages the first class  citizen
+Cc: kosaki.motohiro@jp.fujitsu.com,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Elladan <elladan@eskimo.com>,
+       Nick Piggin <npiggin@suse.de>, Johannes Weiner <hannes@cmpxchg.org>,
+       Peter Zijlstra <peterz@infradead.org>, Rik van Riel <riel@redhat.com>,
+       "tytso@mit.edu" <tytso@mit.edu>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "minchan.kim@gmail.com" <minchan.kim@gmail.com>
+In-Reply-To: <20090520014445.GA7645@localhost>
+References: <2f11576a0905190528n5eb29e3fme42785a76eed3551@mail.gmail.com> <20090520014445.GA7645@localhost>
+Message-Id: <20090520105159.743B.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0905192112090.7816@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Wed, 20 May 2009 10:59:05 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 19, 2009 at 09:14:13PM -0400, Steven Rostedt wrote:
+> On Tue, May 19, 2009 at 08:28:28PM +0800, KOSAKI Motohiro wrote:
+> > Hi
+> > 
+> > 2009/5/19 Wu Fengguang <fengguang.wu@intel.com>:
+> > > On Tue, May 19, 2009 at 04:06:35PM +0800, KOSAKI Motohiro wrote:
+> > >> > > > Like the console mode, the absolute nr_mapped drops considerably - to 1/13 of
+> > >> > > > the original size - during the streaming IO.
+> > >> > > >
+> > >> > > > The delta of pgmajfault is 3 vs 107 during IO, or 236 vs 393 during the whole
+> > >> > > > process.
+> > >> > >
+> > >> > > hmmm.
+> > >> > >
+> > >> > > about 100 page fault don't match Elladan's problem, I think.
+> > >> > > perhaps We missed any addional reproduce condition?
+> > >> >
+> > >> > Elladan's case is not the point of this test.
+> > >> > Elladan's IO is use-once, so probably not a caching problem at all.
+> > >> >
+> > >> > This test case is specifically devised to confirm whether this patch
+> > >> > works as expected. Conclusion: it is.
+> > >>
+> > >> Dejection ;-)
+> > >>
+> > >> The number should address the patch is useful or not. confirming as expected
+> > >> is not so great.
+> > >
+> > > OK, let's make the conclusion in this way:
+> > >
+> > > The changelog analyzed the possible beneficial situation, and this
+> > > test backs that theory with real numbers, ie: it successfully stops
+> > > major faults when the active file list is slowly scanned when there
+> > > are partially cache hot streaming IO.
+> > >
+> > > Another (amazing) finding of the test is, only around 1/10 mapped pages
+> > > are actively referenced in the absence of user activities.
+> > >
+> > > Shall we protect the remaining 9/10 inactive ones? This is a question ;-)
+> > 
+> > Unfortunately, I don't reproduce again.
+> > I don't apply your patch yet. but mapped ratio is reduced only very little.
 > 
-> On Wed, 20 May 2009, Frederic Weisbecker wrote:
+> mapped ratio or absolute numbers? The ratio wont change much because
+> nr_mapped is already small.
+
+My box is running Fedora 10 initlevel 5 (GNOME desktop).
+
+many GNOME component is mapped very many process (likes >50).
+Thus, these page aren't dropped by typical any workload.
+
+
+
+> > I think smem can show which library evicted.  Can you try it?
+> > 
+> > download:  http://www.selenic.com/smem/
+> > usage:   ./smem -m -r --abbreviate
 > 
-> > On Tue, May 19, 2009 at 08:44:50PM -0400, Steven Rostedt wrote:
-> > > 
-> > > Ingo,
-> > > 
-> > > Please pull the latest tip/tracing/ftrace tree, which can be found at:
-> > > 
-> > >   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-> > > tip/tracing/ftrace
-> > > 
-> > > 
-> > > Steven Rostedt (1):
-> > >       tracing: add trace_stack interface
-> > > 
-> > > ----
-> > >  include/linux/kernel.h |    2 ++
-> > >  kernel/trace/trace.c   |   15 +++++++++++++++
-> > >  2 files changed, 17 insertions(+), 0 deletions(-)
-> > > ---------------------------
-> > > commit b85d1029ba534376d203c3ac83a2e5a4d6876cb6
-> > > Author: Steven Rostedt <srostedt@redhat.com>
-> > > Date:   Tue May 19 18:54:16 2009 -0400
-> > > 
-> > >     tracing: add trace_stack interface
-> > >     
-> > >     This patch adds the global function
-> > >     
-> > >       void trace_stack(void)
-> > >     
-> > >     This allows a developer to find where a function is called. For example,
-> > >     if you want to know who calls __netif_reschedule, you can add
-> > >     
-> > >      static inline void __netif_reschedule(struct Qdisc *q)
-> > >      {
-> > >      	struct softnet_data *sd;
-> > >      	unsigned long flags;
-> > >     
-> > >     +	trace_stack();
-> > >      	local_irq_save(flags);
-> > >      	sd = &__get_cpu_var(softnet_data);
-> > >      	q->next_sched = sd->output_queue;
-> > >     
-> > >     And see the following in the trace output:
-> > >     
-> > >      <= __ftrace_trace_stack
-> > >      <= trace_stack
-> > 
-> > 
-> > 
-> > I guess the depth should begin here :-)
+> Sure, but I don't see much change in its output (see attachments).
 > 
-> Yeah, I thought about that but since it only prints out the stack trace, 
-> this is sorta the "this is a stack trace" header.
+> smem-console-0 is collected after fresh boot,
+> smem-console-1 is collected after the big IO.
+
+hmmmm, your result has following characatistics.
+
+- no graphics component
+- very few mapped library
+  (it is almost only zsh library)
+
+Can you try test on X environment?
 
 
 
-Indeed :)
-
-
-> > 
-> > 
-> > 
-> > >      <= __netif_schedule
-> > >      <= dev_watchdog
-> > >      <= run_timer_softirq
-> > >      <= __do_softirq
-> > >      <= call_softirq
-> > >      <= do_softirq
-> > >      <= irq_exit
-> > >     
-> > >     Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-> > > 
-> > > diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-> > > index 883cd44..347a0f1 100644
-> > > --- a/include/linux/kernel.h
-> > > +++ b/include/linux/kernel.h
-> > > @@ -511,6 +511,7 @@ extern int
-> > >  __ftrace_vprintk(unsigned long ip, const char *fmt, va_list ap);
-> > >  
-> > >  extern void ftrace_dump(void);
-> > > +extern void trace_stack(void);
-> > >  #else
-> > >  static inline void
-> > >  ftrace_special(unsigned long arg1, unsigned long arg2, unsigned long arg3) { }
-> > > @@ -531,6 +532,7 @@ ftrace_vprintk(const char *fmt, va_list ap)
-> > >  	return 0;
-> > >  }
-> > >  static inline void ftrace_dump(void) { }
-> > > +static inline void trace_stack(void) { }
-> > >  #endif /* CONFIG_TRACING */
-> > >  
-> > >  /*
-> > > diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-> > > index dd40d23..33ab502 100644
-> > > --- a/kernel/trace/trace.c
-> > > +++ b/kernel/trace/trace.c
-> > > @@ -1046,6 +1046,21 @@ void __trace_stack(struct trace_array *tr,
-> > >  	__ftrace_trace_stack(tr, flags, skip, pc);
-> > >  }
-> > >  
-> > > +/**
-> > > + * trace_stack - dump the stack into the trace buffer
-> > > + *
-> > > + * Use this to record the stack trace into the ring buffer. If you
-> > > + * want to know a caller of a function, place a call to trace_stack
-> > > + * and the ftrace trace file will display who the callers were.
-> > > + */
-> > > +void trace_stack(void)
-> > > +{
-> > > +	unsigned long flags;
-> > > +
-> > > +	local_save_flags(flags);
-> > > +	__trace_stack(&global_trace, flags, 0, preempt_count());
-> > > +}
-> > 
-> > 
-> > 
-> > Stupidly I use a very similar patch while working on reiserfs
-> > but I forgot to post it.
-> > 
-> > Another trick is to use trace_printk() combined with:
-> > 
-> > echo stacktrace > trace_option
+> > We can't decide 9/10 is important or not. we need know actual evicted file list.
 > 
-> Yeah, but when you are debugging development work, doing that at every 
-> boot up becomes a pain. You can add it to a rc script but still.
+> Right. But what I measured is the activeness. Almost zero major page
+> faults means the evicted 90% mapped pages are inactive during the
+> long 300 seconds of IO.
+
+Agreed.
+IOW, I don't think your test environment is typical desktop...
 
 
-Right!
 
-
-> I wrote this because of the development I'm doing in the interrupt 
-> threads. I was using this a lot to find what is calling what.
-> 
-> -- Steve
-> 
 
