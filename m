@@ -1,62 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757044AbZETNDT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756720AbZETNHO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757044AbZETNDT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 09:03:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754628AbZETNDM
+	id S1756720AbZETNHO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 09:07:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754192AbZETNHF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 09:03:12 -0400
-Received: from an-out-0708.google.com ([209.85.132.243]:47409 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753713AbZETNDL convert rfc822-to-8bit (ORCPT
+	Wed, 20 May 2009 09:07:05 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:49163 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751556AbZETNHE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 09:03:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=TgX4cvqIAwJcjcfdpHCOJJjlo/8YWsBlBZVsls1AxhV3dVMJ1JM0BJBOlyuJ/MvCUB
-         MmoKMMv/HJjbypz0v9yVHn1Q0iRUrwj7qV1fNKjSM5h3ZJeoaweTw7JDejzN6RUJrQ0D
-         LzSk3AxuFlrGYF69VDp/ELatJ5xLhx2AbNha8=
-MIME-Version: 1.0
-In-Reply-To: <4A13A034.3080008@pardus.org.tr>
-References: <af3ea28a0905170804n500126e4tc425dafd9fcaa68a@mail.gmail.com>
-	 <af3ea28a0905192217x2006dbe4gb456217d110b916f@mail.gmail.com>
-	 <4A13A034.3080008@pardus.org.tr>
-Date: Wed, 20 May 2009 21:03:11 +0800
-Message-ID: <af3ea28a0905200603k173b522bj338d50c27118313a@mail.gmail.com>
-Subject: Re: fix rtc_cmos bug
-From: ye janboe <janboe.ye@gmail.com>
-To: =?ISO-8859-9?Q?Ozan_=C7a=F0layan?= <ozan@pardus.org.tr>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, rjw@sisk.pl, bunk@kernel.org,
-       bugme-janitors@lists.osdl.org
-Content-Type: text/plain; charset=ISO-8859-9
-Content-Transfer-Encoding: 8BIT
+	Wed, 20 May 2009 09:07:04 -0400
+Date: Wed, 20 May 2009 15:13:01 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Andi Kleen <andi@firstfloor.org>, Len Brown <lenb@kernel.org>,
+       Shaohua Li <shaohua.li@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       "menage@google.com" <menage@google.com>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Subject: Re: [PATCH]cpuset: add new API to change cpuset top group's cpus
+Message-ID: <20090520131301.GF8684@one.firstfloor.org>
+References: <20090519073942.GA10864@sli10-desk.sh.intel.com> <1242722454.26820.461.camel@twins> <20090519084852.GA13682@sli10-desk.sh.intel.com> <1242723364.26820.466.camel@twins> <1242729538.26820.497.camel@twins> <alpine.LFD.2.00.0905191429440.29241@localhost.localdomain> <1242772601.26820.527.camel@twins> <87ljosnfzb.fsf@basil.nowhere.org> <1242821825.26820.583.camel@twins>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1242821825.26820.583.camel@twins>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-So if register failed, unregister is requested to invoked, right?
+Thanks for the explanation.
 
-Anyway, thank you for your answer.
+My naive reaction would be to fail if the socket to be taken out
+is the only member of some cpuset. Or maybe break affinities in this case.
 
+> You really want to start shrinking the generic computational capacity
+> first.
 
-2009/5/20 Ozan Çaðlayan <ozan@pardus.org.tr>:
-> ye janboe wrote On 20-05-2009 08:17:
->> my fix is wrong?
->>
->> Why no one ack this patch?
->>
->> Thanks
->>
->> Janboe
->>
->>
->
-> AFAIK any fix in a driver which causes this oops is a partial fix
-> because the case should be handled in driver core. This is what the
-> patch suggested does actually:
->
-> http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/driver-core.current/driver-core-do-not-oops-when-driver_unregister-is-called-for-unregistered-drivers.patch
->
->
->
+One general issue to remember that if you don't react to the platform hint 
+the platform will likely force a lower p-state on you to not exceed
+the thermal limits, making everyone slower. 
+
+(this will likely also not make your real time process happy)
+
+So it's a bit more than a hint; it's more like a command "or else"
+
+So it's a good idea to react or at least make at least a reasonable attempt 
+to react.
+
+> The thing is, you cannot simply rip cpus out from under a system, people
+> might rely on them being there and have policy attached to them -- esp.
+> people touching cpusets should know that a machine isn't configured
+> homogeneous and any odd cpu will do.
+
+Ok, so do you think it's possible to figure out based on the cpuset
+graph / real time runqueue if a socket can be taken out? 
+
+-Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
