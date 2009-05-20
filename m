@@ -1,68 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756955AbZETMQi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757347AbZETMSR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756955AbZETMQi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 08:16:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755684AbZETMQ3
+	id S1757347AbZETMSR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 08:18:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755004AbZETMSG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 08:16:29 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:41997 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755745AbZETMQ3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 08:16:29 -0400
-Date: Wed, 20 May 2009 14:16:30 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Jan Kara <jack@suse.cz>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
-       akpm@linux-foundation.org, yanmin_zhang@linux.intel.com
-Subject: Re: [PATCH 02/11] writeback: switch to per-bdi threads for
-	flushing data
-Message-ID: <20090520121629.GW11363@kernel.dk>
-References: <1242649192-16263-1-git-send-email-jens.axboe@oracle.com> <1242649192-16263-3-git-send-email-jens.axboe@oracle.com> <20090520111850.GB3760@duck.suse.cz> <20090520113234.GT11363@kernel.dk> <20090520121111.GF3760@duck.suse.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090520121111.GF3760@duck.suse.cz>
+	Wed, 20 May 2009 08:18:06 -0400
+Received: from casper.infradead.org ([85.118.1.10]:60849 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751776AbZETMSF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 08:18:05 -0400
+Subject: Re: [PATCH]cpuset: add new API to change cpuset top group's cpus
+From: Peter Zijlstra <peterz@infradead.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Len Brown <lenb@kernel.org>, Shaohua Li <shaohua.li@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       "menage@google.com" <menage@google.com>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+In-Reply-To: <87ljosnfzb.fsf@basil.nowhere.org>
+References: <20090519073942.GA10864@sli10-desk.sh.intel.com>
+	 <1242722454.26820.461.camel@twins>
+	 <20090519084852.GA13682@sli10-desk.sh.intel.com>
+	 <1242723364.26820.466.camel@twins> <1242729538.26820.497.camel@twins>
+	 <alpine.LFD.2.00.0905191429440.29241@localhost.localdomain>
+	 <1242772601.26820.527.camel@twins>  <87ljosnfzb.fsf@basil.nowhere.org>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Wed, 20 May 2009 14:17:05 +0200
+Message-Id: <1242821825.26820.583.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 20 2009, Jan Kara wrote:
-> On Wed 20-05-09 13:32:34, Jens Axboe wrote:
-> > On Wed, May 20 2009, Jan Kara wrote:
-> > >   Hi Jens,
-> > > 
-> > >   a few comments here. Mainly, I still don't think the sys_sync() is
-> > > working right - see comments below.
-> > 
-> > Thanks! I took the liberty of killing some of the code in between, to
-> > make it easier to see.
-> > 
-> > > > +void bdi_writeback_all(struct super_block *sb, long nr_pages)
-> > > > +{
-> > > > +	struct backing_dev_info *bdi;
-> > > > +
-> > > > +	rcu_read_lock();
-> > > > +
-> > > > +restart:
-> > > > +	list_for_each_entry_rcu(bdi, &bdi_list, bdi_list) {
-> > >   Isn't the RCU list here a bit overengineering? AFAICS we use the list
-> > > only here and if I'm grepping right, generic_sync_sb_inodes() is currently
-> > > only used for data integrity sync (after your patches) from fs-writeback.c
-> > > and by UBIFS to do equivalent of writeback_inodes(). So simple spinlock
-> > > guarding the list should be just fine. Or am I missing something?
-> > 
-> > Sure, we could. But it's really not that much of a difference,
-> > implementation wise.
->   Yeah. It's just that when I see RCU, I'm a bit cautious what's going on.
-> When I see spinlock, everything is simple and clear ;). And I'm in favor of
-> using the simplest synchronization primitive that does it's work good
-> enough ;).
+On Wed, 2009-05-20 at 13:58 +0200, Andi Kleen wrote:
 
-It's a fine rule, I agree ;-)
+> Could you explain that please? How does changing the top level
+> cpuset affect other cpu sets?
 
-I'll take another look at this when splitting the sync paths.
 
--- 
-Jens Axboe
+Suppose you have 8 cpus and created 3 cpusets:
+
+ A: cpu0 - system administration stuff
+ B: cpu1-5 - generic computational stuff
+ C: cpu6-7 - latency critical stuff
+
+Each such set is made a load-balance domain (iow load-balancing on the
+top level set is disabled).
+
+Now, suppose someone thinks its a good idea to remove cpu0 because the
+machine is running against some thermal limit -- what will all the
+administration stuff (including sshd) do?
+
+Same goes for the latency critical stuff.
+
+You really want to start shrinking the generic computational capacity
+first.
+
+The thing is, you cannot simply rip cpus out from under a system, people
+might rely on them being there and have policy attached to them -- esp.
+people touching cpusets should know that a machine isn't configured
+homogeneous and any odd cpu will do.
+
 
