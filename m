@@ -1,54 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756873AbZETWw6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756504AbZETW7b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756873AbZETWw6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 18:52:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755354AbZETWwv
+	id S1756504AbZETW7b (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 18:59:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753229AbZETW7X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 18:52:51 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33608
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754836AbZETWwu (ORCPT
+	Wed, 20 May 2009 18:59:23 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:55103 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751996AbZETW7W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 18:52:50 -0400
-Date: Wed, 20 May 2009 15:52:48 -0700 (PDT)
-Message-Id: <20090520.155248.03355490.davem@davemloft.net>
-To: ebiederm@xmission.com
-Cc: sfr@canb.auug.org.au, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, rmk@arm.linux.org.uk,
-       hskinnemoen@atmel.com
-Subject: Re: Subject: [PATCH] Sort out syscall_restart name clash.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <m1k54bie6j.fsf_-_@fess.ebiederm.org>
-References: <m1d4a3keqm.fsf@fess.ebiederm.org>
-	<20090520.124403.159818618.davem@davemloft.net>
-	<m1k54bie6j.fsf_-_@fess.ebiederm.org>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 20 May 2009 18:59:22 -0400
+Date: Wed, 20 May 2009 18:59:21 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Li Zefan <lizf@cn.fujitsu.com>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: Re: [PATCH 1/3] tracing: add __print_flags for events
+Message-ID: <20090520225921.GA15167@infradead.org>
+References: <20090515210342.488025506@goodmis.org> <20090515210717.745370400@goodmis.org> <20090518173854.GA30425@infradead.org> <alpine.DEB.2.00.0905201810300.1080@gandalf.stny.rr.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0905201810300.1080@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Wed, 20 May 2009 15:48:20 -0700
+On Wed, May 20, 2009 at 06:13:37PM -0400, Steven Rostedt wrote:
+> OK, this may even save space. By passing by parameters we must load all 
+> the parameters before calling the function. Even though this is on the 
+> print side, it is still bloated. I'll convert it to an array.
 
-> 
-> Stephen Rothwell <sfr@canb.auug.org.au> writes:
-> 
->> Today's linux-next build of at least some av32 and arm configs failed like this:
->>
->> arch/avr32/kernel/signal.c:216: error: conflicting types for 'restart_syscall'
->> include/linux/sched.h:2184: error: previous definition of 'restart_syscall' was here
->>
->> Caused by commit 690cc3ffe33ac4a2857583c22d4c6244ae11684d ("syscall:
->> Implement a convinience function restart_syscall") from the net tree.
-> 
-> Grrr. Some days it feels like all of the good names are already taken.
-> 
-> Let's just rename the two static users in arm and avr32 to get this
-> sorted out.
-> 
-> Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
+Nice, thanks.
 
-Applied, thanks Eric.
+Btw, it would be nice to add a __print_symbolic cousin that looks for
+an exact match in an array.  That way we can also print translations to
+names in a way that can be read from the format file and duplicated
+by userspace apps using the binary trace buffer.
+
