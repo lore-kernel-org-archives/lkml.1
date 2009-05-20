@@ -1,96 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757773AbZETSlv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756194AbZETSnc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757773AbZETSlv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 14:41:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756179AbZETSlo
+	id S1756194AbZETSnc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 14:43:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755419AbZETSnY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 14:41:44 -0400
-Received: from oblivion.subreption.com ([66.240.236.22]:34108 "EHLO
-	mail.subreption.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756086AbZETSln (ORCPT
+	Wed, 20 May 2009 14:43:24 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:4718 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755374AbZETSnX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 14:41:43 -0400
-Date: Wed, 20 May 2009 11:41:17 -0700
-From: "Larry H." <research@subreption.com>
-To: linux-kernel@vger.kernel.org
-Cc: Linus Torvalds <torvalds@osdl.org>, linux-mm@kvack.org,
-       Ingo Molnar <mingo@redhat.com>
-Subject: [patch 1/5] Apply the PG_sensitive flag to the tty API
-Message-ID: <20090520184117.GA10756@oblivion.subreption.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Organization: Subreption LLC
+	Wed, 20 May 2009 14:43:23 -0400
+Subject: Re: [PATCH] mm/slub.c: Use print_hex_dump and remove unnecessary
+ cast
+From: Joe Perches <joe@perches.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org,
+       H Hartley Sweeten <hartleys@visionengravers.com>, linux-mm@kvack.org,
+       Matt Mackall <mpm@selenic.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Ingo Molnar <mingo@elte.hu>, David Rientjes <rientjes@google.com>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+In-Reply-To: <alpine.DEB.1.10.0905201420050.17511@qirst.com>
+References: <1242840314-25635-1-git-send-email-joe@perches.com>
+	 <alpine.DEB.1.10.0905201420050.17511@qirst.com>
+Content-Type: text/plain
+Date: Wed, 20 May 2009 11:42:46 -0700
+Message-Id: <1242844966.22786.52.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch deploys the use of the PG_sensitive page allocator flag
-within the tty API, in the buffer management, input event handling
-and input auditing code.
+On Wed, 2009-05-20 at 14:23 -0400, Christoph Lameter wrote:
+> This was discussed before.
+> http://lkml.indiana.edu/hypermail/linux/kernel/0705.3/2671.html
 
-This should provide an additional safety layer against tty buffers
-leaking information including passwords and other likely sensitive
-input.
+You've got a good memory.
 
-Again, you might refer to the paper by Jim Chow et. al on reducing
-data resilience through secure deallocation. It explicitly mentions
-this case, as well as other scenarios [1].
+> Was hexdump changed?
 
-	[1] http://www.stanford.edu/~blp/papers/shredding.html
+It seems not.
 
-Signed-off-by: Larry H. <research@subreption.com>
+> How does the output look after this change?
 
----
- drivers/char/tty_audit.c  |    6 +++---
- drivers/char/tty_buffer.c |    2 +-
- drivers/char/tty_io.c     |    2 +-
- 3 files changed, 5 insertions(+), 5 deletions(-)
+>From reading the code, the last column is unaligned.
 
-Index: linux-2.6/drivers/char/tty_audit.c
-===================================================================
---- linux-2.6.orig/drivers/char/tty_audit.c
-+++ linux-2.6/drivers/char/tty_audit.c
-@@ -28,13 +28,13 @@ static struct tty_audit_buf *tty_audit_b
- {
- 	struct tty_audit_buf *buf;
- 
--	buf = kmalloc(sizeof(*buf), GFP_KERNEL);
-+	buf = kmalloc(sizeof(*buf), GFP_KERNEL | GFP_SENSITIVE);
- 	if (!buf)
- 		goto err;
- 	if (PAGE_SIZE != N_TTY_BUF_SIZE)
--		buf->data = kmalloc(N_TTY_BUF_SIZE, GFP_KERNEL);
-+		buf->data = kmalloc(N_TTY_BUF_SIZE, GFP_KERNEL | GFP_SENSITIVE);
- 	else
--		buf->data = (unsigned char *)__get_free_page(GFP_KERNEL);
-+		buf->data = (unsigned char *)__get_free_page(GFP_KERNEL | GFP_SENSITIVE);
- 	if (!buf->data)
- 		goto err_buf;
- 	atomic_set(&buf->count, 1);
-Index: linux-2.6/drivers/char/tty_buffer.c
-===================================================================
---- linux-2.6.orig/drivers/char/tty_buffer.c
-+++ linux-2.6/drivers/char/tty_buffer.c
-@@ -60,7 +60,7 @@ static struct tty_buffer *tty_buffer_all
- 
- 	if (tty->buf.memory_used + size > 65536)
- 		return NULL;
--	p = kmalloc(sizeof(struct tty_buffer) + 2 * size, GFP_ATOMIC);
-+	p = kmalloc(sizeof(struct tty_buffer) + 2 * size, GFP_ATOMIC | GFP_SENSITIVE);
- 	if (p == NULL)
- 		return NULL;
- 	p->used = 0;
-Index: linux-2.6/drivers/char/tty_io.c
-===================================================================
---- linux-2.6.orig/drivers/char/tty_io.c
-+++ linux-2.6/drivers/char/tty_io.c
-@@ -1031,7 +1031,7 @@ static inline ssize_t do_tty_write(
- 		if (chunk < 1024)
- 			chunk = 1024;
- 
--		buf_chunk = kmalloc(chunk, GFP_KERNEL);
-+		buf_chunk = kmalloc(chunk, GFP_KERNEL | GFP_SENSITIVE);
- 		if (!buf_chunk) {
- 			ret = -ENOMEM;
- 			goto out;
+I did submit a patch to fix hexdump once.
+http://lkml.org/lkml/2007/12/6/304
+
+
