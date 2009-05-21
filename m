@@ -1,112 +1,281 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752272AbZEUIEf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752792AbZEUIOk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752272AbZEUIEf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 04:04:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751408AbZEUIEL
+	id S1752792AbZEUIOk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 04:14:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751474AbZEUIO0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 04:04:11 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:57052 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751190AbZEUIEH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 04:04:07 -0400
-To: Tejun Heo <tj@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       Cornelia Huck <cornelia.huck@de.ibm.com>, linux-fsdevel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@aristanetworks.com>
-References: <m1bppofm9k.fsf@fess.ebiederm.org>
-	<1242865694-2100-1-git-send-email-ebiederm@xmission.com>
-	<1242865694-2100-2-git-send-email-ebiederm@xmission.com>
-	<1242865694-2100-3-git-send-email-ebiederm@xmission.com>
-	<1242865694-2100-4-git-send-email-ebiederm@xmission.com>
-	<4A14F356.3030501@kernel.org> <m1k54a7w2x.fsf@fess.ebiederm.org>
-	<4A15046A.10106@kernel.org>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Thu, 21 May 2009 01:04:04 -0700
-In-Reply-To: <4A15046A.10106@kernel.org> (Tejun Heo's message of "Thu\, 21 May 2009 16\:36\:10 +0900")
-Message-ID: <m1octm287f.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Rcpt-To: tj@kernel.org, ebiederm@aristanetworks.com, linux-fsdevel@vger.kernel.org, cornelia.huck@de.ibm.com, linux-kernel@vger.kernel.org, gregkh@suse.de, akpm@linux-foundation.org
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Tejun Heo <tj@kernel.org>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  1.5 XMNoVowels Alpha-numberic number with no vowels
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	*  0.0 BAYES_50 BODY: Bayesian spam probability is 40 to 60%
-	*      [score: 0.4664]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
-Subject: Re: [PATCH 04/20] sysfs: Handle the general case of removing of directories with subdirectories
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
+	Thu, 21 May 2009 04:14:26 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:56719 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751350AbZEUIOY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 May 2009 04:14:24 -0400
+Date: Thu, 21 May 2009 18:14:18 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for May 21
+Message-Id: <20090521181418.4aabde3f.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__21_May_2009_18_14_18_+1000_zw9nOcN/=L64KJL9"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo <tj@kernel.org> writes:
+--Signature=_Thu__21_May_2009_18_14_18_+1000_zw9nOcN/=L64KJL9
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Eric W. Biederman wrote:
->>> I agree we should be heading this way but what happens to attributes
->>> or directories living below the subdirectories?  If it's gonna handle
->>> recursive case, I think it better do it properly.  I had patches of
->>> similar effect.
->> 
->> I do handle it properly.  sysfs_get_one finds the deepest child of the
->> first directory entry.  Then I remove it.  And I repeat until done.
->> 
->> The locking is correct, something that is much more difficult to
->> tell with your version.
->
-> Why? :-)
+Hi all,
 
-Because mine is all in a single place and there is no optimization
-to get locks I don't need.
+Changes since 20090520:
 
-Unless I have misread your patch you are failing to get the
-i_mutex for child directories, if it possible to get it.
+This tree fails to build for powerpc allyesconfig.  It may also have
+trouble with some futex operations do to a (semantic) mismerge on my part.
 
-Something that it is trivial to see that I always do correctly.
-Simply because the distance between the lock and where I depend on
-it is so small.
+The tip-core tree gained a conflict against Linus' tree.
 
->> By grabbing and dropping the sysfs_mutex things are simpler, and they
->> get even simpler in future patches.
->> 
->> Now looking at that code in detail there is a question of what happens if
->> we add a directory entry while we are recursively deleting a directory.
->> Neither your patch, my patch, nor the existing code handle that case
->> (assuming the sysfs_dirent) was looked up before it is removed from it's
->> parent directory.  I expect another patch is called for to plug that
->> theoretical gap.  
->> 
->> I expect the way to close that hole is to have an extra flag that says
->> we are removing a directory entry and refuse to add if that flag is
->> set.
->> 
->> I would prefer to only remove empty directories.  But when I
->> instrumented things up I found cases where that does indeed happen.
->
-> IIRC, my version did the whole thing while holding sysfs_mutex, so
-> it's safe against such races.  I can't really see why ops like this
-> can't be atomic in sysfs.  I don't really care how things are done but
-> please make it atomic.
+The scsi tree moved a conflict over to the scsi-post-merge tree.
 
-Nope.  Holding the sysfs_mutex does not make you safe from such races.
-It actually makes you more prone to someone adding a directory entry to
-a deleted directory and not having it deleted.  I have a chance of
-deleting the added directory entry.
+The net tree gained a conflict against the wireless-current tree.
 
-The problem is that sysfs_add_one takes to sysfs_dirents.  The look up
-of the directory is done before we take the sysfs_mutex.  So the
-sysfs_dirent could be grabbed at any time.
+The block tree lost its build failure.
 
-Eric
+The kvm tree gained a build failure for which I reverted a commit.
+
+----------------------------------------------------------------------------
+
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+(patches at
+http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
+
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups (if any), it is also built with powerpc allnoconfig (32 and
+64 bit), ppc44x_defconfig and allyesconfig (minus
+CONFIG_PROFILE_ALL_BRANCHES) and i386, sparc and sparc64 defconfig.
+These builds also have CONFIG_ENABLE_WARN_DEPRECATED,
+CONFIG_ENABLE_MUST_CHECK and CONFIG_DEBUG_INFO disabled when necessary.
+
+Below is a summary of the state of the merge.
+
+We are up to 138 trees (counting Linus' and 18 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging fixes/fixes
+Merging arm-current/master
+Merging m68k-current/for-linus
+Merging powerpc-merge/merge
+Merging sparc-current/master
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sound-current/for-linus
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/usb.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-linus
+Merging audit-current/for-linus
+Merging crypto-current/master
+Merging dwmw2/master
+Merging arm/devel
+Merging avr32/avr32-arch
+Merging blackfin/for-linus
+Merging cris/for-next
+Merging ia64/test
+Merging m68k/for-next
+Merging m68knommu/for-next
+Merging mips/mips-for-linux-next
+Merging parisc/master
+Merging powerpc/next
+Merging 4xx/next
+Merging galak/next
+Merging pxa/for-next
+CONFLICT (content): Merge conflict in arch/arm/mach-pxa/viper.c
+Merging s390/features
+Merging sh/master
+Merging sparc/master
+Merging x86/auto-x86-next
+Merging xtensa/master
+Merging configfs/linux-next
+Merging ext4/next
+Merging fatfs/master
+Merging fuse/for-next
+Merging gfs2/master
+Merging jfs/next
+Merging nfs/linux-next
+Merging nfsd/nfsd-next
+Merging nilfs2/for-next
+Merging ocfs2/linux-next
+Merging squashfs/master
+Merging v9fs/for-next
+CONFLICT (content): Merge conflict in net/9p/protocol.c
+Merging ubifs/linux-next
+Merging xfs/master
+Merging tip-core/auto-core-next
+CONFLICT (content): Merge conflict in kernel/futex.c
+Merging cpus4096/auto-cpus4096-next
+Merging tracing/auto-tracing-next
+Merging genirq/auto-genirq-next
+CONFLICT (content): Merge conflict in arch/mips/sibyte/bcm1480/irq.c
+CONFLICT (content): Merge conflict in arch/mips/sibyte/sb1250/irq.c
+Merging safe-poison-pointers/auto-safe-poison-pointers-next
+Merging sched/auto-sched-next
+Merging stackprotector/auto-stackprotector-next
+Merging timers/auto-timers-next
+Merging pci/linux-next
+Merging quilt/device-mapper
+Merging hid/for-next
+Merging quilt/i2c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+Merging v4l-dvb/master
+Merging quota/for_next
+Merging kbuild/master
+[master 759d11a] Revert "initconst adjustments"
+Merging ide/for-next
+Merging libata/NEXT
+Merging infiniband/for-next
+Merging acpi/test
+Merging ieee1394/for-next
+Merging ubi/linux-next
+Merging kvm/master
+Merging dlm/next
+Merging scsi/master
+Merging async_tx/next
+Merging udf/for_next
+Merging net/master
+CONFLICT (content): Merge conflict in drivers/net/wireless/iwlwifi/iwl-agn.c
+CONFLICT (content): Merge conflict in drivers/net/wireless/iwlwifi/iwl3945-=
+base.c
+CONFLICT (content): Merge conflict in include/linux/mmc/sdio_ids.h
+Merging wireless/master
+[master cabce58] Revert "rfkill: remove user_claim stuff"
+Merging mtd/master
+Merging crypto/master
+Merging vfs/for-next
+CONFLICT (content): Merge conflict in fs/ext4/super.c
+CONFLICT (content): Merge conflict in fs/fuse/inode.c
+Merging sound/for-next
+Merging cpufreq/next
+Merging quilt/rr
+Merging cifs/master
+Merging mmc/next
+Merging input/next
+Merging bkl-removal/bkl-removal
+Merging lsm/for-next
+Merging block/for-next
+CONFLICT (content): Merge conflict in drivers/block/hd.c
+CONFLICT (content): Merge conflict in drivers/block/mg_disk.c
+CONFLICT (content): Merge conflict in drivers/ide/ide-atapi.c
+CONFLICT (content): Merge conflict in drivers/ide/ide-cd.c
+CONFLICT (content): Merge conflict in drivers/ide/ide-floppy.c
+CONFLICT (content): Merge conflict in drivers/ide/ide-tape.c
+Merging embedded/master
+Merging firmware/master
+Merging pcmcia/master
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+Merging uclinux/for-next
+Merging md/for-next
+Merging mfd/for-next
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+Merging voltage/for-next
+Merging security-testing/next
+Merging lblnet/master
+Merging quilt/ttydev
+Merging agp/agp-next
+Merging generic-ipi/auto-generic-ipi-next
+Merging oprofile/auto-oprofile-next
+Merging fastboot/auto-fastboot-next
+Merging sparseirq/auto-sparseirq-next
+Merging iommu/auto-iommu-next
+Merging uwb/for-upstream
+Merging watchdog/master
+Merging bdev/master
+Merging dwmw2-iommu/master
+CONFLICT (content): Merge conflict in drivers/pci/intel-iommu.c
+CONFLICT (content): Merge conflict in drivers/pci/intr_remapping.c
+Merging cputime/cputime
+Merging osd/linux-next
+Merging jc_docs/docs-next
+Merging nommu/master
+Merging trivial/for-next
+Merging audit/for-next
+Merging omap/for-next
+Merging quilt/aoe
+Merging kmemleak/kmemleak
+CONFLICT (delete/modify): arch/x86/kernel/vmlinux_32.lds.S deleted in HEAD =
+and modified in kmemleak/kmemleak. Version kmemleak/kmemleak of arch/x86/ke=
+rnel/vmlinux_32.lds.S left in tree.
+CONFLICT (delete/modify): arch/x86/kernel/vmlinux_64.lds.S deleted in HEAD =
+and modified in kmemleak/kmemleak. Version kmemleak/kmemleak of arch/x86/ke=
+rnel/vmlinux_64.lds.S left in tree.
+CONFLICT (content): Merge conflict in lib/Kconfig.debug
+CONFLICT (content): Merge conflict in mm/slob.c
+$ git rm -f arch/x86/kernel/vmlinux_32.lds.S arch/x86/kernel/vmlinux_64.lds=
+.S
+Merging suspend/linux-next
+Merging bluetooth/master
+Merging edac-amd/for-next
+Merging asm-generic/next
+Merging quilt/driver-core
+CONFLICT (content): Merge conflict in init/main.c
+Merging quilt/usb
+CONFLICT (content): Merge conflict in drivers/usb/serial/sierra.c
+Merging quilt/staging
+CONFLICT (content): Merge conflict in drivers/staging/rt2860/common/mlme.c
+CONFLICT (content): Merge conflict in drivers/staging/rt2870/common/mlme.c
+CONFLICT (content): Merge conflict in drivers/staging/rt3070/common/mlme.c
+Merging scsi-post-merge/master
+[master 108b242] Revert "KVM: irqfd"
+
+--Signature=_Thu__21_May_2009_18_14_18_+1000_zw9nOcN/=L64KJL9
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkoVDVoACgkQjjKRsyhoI8xomwCdEEJB8HKUo4dvDDQ0CsOIgg54
+V78AoI/QlwhQ3pXejgcdUc1oZcOEltwT
+=8D62
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__21_May_2009_18_14_18_+1000_zw9nOcN/=L64KJL9--
