@@ -1,161 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757537AbZEUOEo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757298AbZEUODb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757537AbZEUOEo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 10:04:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757225AbZEUODY
+	id S1757298AbZEUODb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 10:03:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757015AbZEUOCl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 10:03:24 -0400
-Received: from e23smtp01.au.ibm.com ([202.81.31.143]:59277 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756724AbZEUODX (ORCPT
+	Thu, 21 May 2009 10:02:41 -0400
+Received: from e28smtp05.in.ibm.com ([59.145.155.5]:39539 "EHLO
+	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756976AbZEUOCj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 10:03:23 -0400
-Date: Thu, 21 May 2009 19:33:17 +0530
+	Thu, 21 May 2009 10:02:39 -0400
+Date: Thu, 21 May 2009 19:32:35 +0530
 From: "K.Prasad" <prasad@linux.vnet.ibm.com>
 To: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Alan Stern <stern@rowland.harvard.edu>,
        "K.Prasad" <prasad@linux.vnet.ibm.com>
-Subject: [Patch 12/12] Reset bits in dr6 after the corresponding exception
-	is handled
-Message-ID: <20090521140317.GM13849@in.ibm.com>
+Subject: [Patch 09/12] Cleanup HW Breakpoint registers before kexec
+Message-ID: <20090521140235.GJ13849@in.ibm.com>
 References: <20090521095613.834622717@prasadkr_t60p.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename=dr6_changes_12
+Content-Disposition: inline; filename=modify_kexec_09
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch resets the bit in dr6 after the corresponding exception is
-handled in code.
+This patch disables Hardware breakpoints before doing a 'kexec' on the machine.
 
+Original-patch-by: Alan Stern <stern@rowland.harvard.edu>
 Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
+Reviewed-by: Alan Stern <stern@rowland.harvard.edu>
 ---
- arch/x86/kernel/hw_breakpoint.c |   13 +++++++++++--
- arch/x86/kernel/kgdb.c          |    6 ++++++
- arch/x86/kernel/kprobes.c       |    9 ++++++++-
- arch/x86/kernel/traps.c         |    4 ++--
- arch/x86/mm/kmmio.c             |    8 +++++++-
- 5 files changed, 34 insertions(+), 6 deletions(-)
+ arch/x86/kernel/machine_kexec_32.c |    2 ++
+ arch/x86/kernel/machine_kexec_64.c |    2 ++
+ 2 files changed, 4 insertions(+)
 
-Index: linux-2.6-tip.hbkpt/arch/x86/kernel/hw_breakpoint.c
+Index: linux-2.6-tip.hbkpt/arch/x86/kernel/machine_kexec_32.c
 ===================================================================
---- linux-2.6-tip.hbkpt.orig/arch/x86/kernel/hw_breakpoint.c
-+++ linux-2.6-tip.hbkpt/arch/x86/kernel/hw_breakpoint.c
-@@ -314,8 +314,12 @@ int __kprobes hw_breakpoint_handler(stru
- {
- 	int i, cpu, rc = NOTIFY_STOP;
- 	struct hw_breakpoint *bp;
--	/* The DR6 value is stored in args->err */
--	unsigned long dr7, dr6 = args->err;
-+	unsigned long dr7, dr6;
-+	unsigned long *dr6_p;
-+
-+	/* The DR6 value is pointed by args->err */
-+	dr6_p = (unsigned long *)ERR_PTR(args->err);
-+	dr6 = *dr6_p;
- 
- 	/* Do an early return if no trap bits are set in DR6 */
- 	if ((dr6 & DR_TRAP_BITS) == 0)
-@@ -352,6 +356,11 @@ int __kprobes hw_breakpoint_handler(stru
- 				rc = NOTIFY_DONE;
- 		}
- 		/*
-+		 * Reset the 'i'th TRAP bit in dr6 to denote completion of
-+		 * exception handling
-+		 */
-+		(*dr6_p) &= ~(DR_TRAP0 << i);
-+		/*
- 		 * bp can be NULL due to lazy debug register switching
- 		 * or due to the delay between updates of hbp_kernel_pos
- 		 * and this_hbp_kernel.
-Index: linux-2.6-tip.hbkpt/arch/x86/kernel/kgdb.c
-===================================================================
---- linux-2.6-tip.hbkpt.orig/arch/x86/kernel/kgdb.c
-+++ linux-2.6-tip.hbkpt/arch/x86/kernel/kgdb.c
-@@ -43,6 +43,7 @@
- #include <linux/smp.h>
- #include <linux/nmi.h>
- 
-+#include <asm/debugreg.h>
- #include <asm/apicdef.h>
+--- linux-2.6-tip.hbkpt.orig/arch/x86/kernel/machine_kexec_32.c
++++ linux-2.6-tip.hbkpt/arch/x86/kernel/machine_kexec_32.c
+@@ -25,6 +25,7 @@
+ #include <asm/desc.h>
  #include <asm/system.h>
- 
-@@ -434,6 +435,11 @@ single_step_cont(struct pt_regs *regs, s
- 			"resuming...\n");
- 	kgdb_arch_handle_exception(args->trapnr, args->signr,
- 				   args->err, "c", "", regs);
-+	/*
-+	 * Reset the BS bit in dr6 (pointed by args->err) to
-+	 * denote completion of processing
-+	 */
-+	(*(unsigned long *)ERR_PTR(args->err)) &= ~DR_STEP;
- 
- 	return NOTIFY_STOP;
- }
-Index: linux-2.6-tip.hbkpt/arch/x86/kernel/kprobes.c
-===================================================================
---- linux-2.6-tip.hbkpt.orig/arch/x86/kernel/kprobes.c
-+++ linux-2.6-tip.hbkpt/arch/x86/kernel/kprobes.c
-@@ -54,6 +54,7 @@
- #include <asm/pgtable.h>
- #include <asm/uaccess.h>
- #include <asm/alternative.h>
+ #include <asm/cacheflush.h>
 +#include <asm/debugreg.h>
  
- void jprobe_return_end(void);
+ static void set_idt(void *newidt, __u16 limit)
+ {
+@@ -202,6 +203,7 @@ void machine_kexec(struct kimage *image)
  
-@@ -967,8 +968,14 @@ int __kprobes kprobe_exceptions_notify(s
- 			ret = NOTIFY_STOP;
- 		break;
- 	case DIE_DEBUG:
--		if (post_kprobe_handler(args->regs))
-+		if (post_kprobe_handler(args->regs)) {
-+			/*
-+			 * Reset the BS bit in dr6 (pointed by args->err) to
-+			 * denote completion of processing
-+			 */
-+			(*(unsigned long *)ERR_PTR(args->err)) &= ~DR_STEP;
- 			ret = NOTIFY_STOP;
-+		}
- 		break;
- 	case DIE_GPF:
- 		/*
-Index: linux-2.6-tip.hbkpt/arch/x86/kernel/traps.c
+ 	/* Interrupts aren't acceptable while we reboot */
+ 	local_irq_disable();
++	hw_breakpoint_disable();
+ 
+ 	if (image->preserve_context) {
+ #ifdef CONFIG_X86_IO_APIC
+Index: linux-2.6-tip.hbkpt/arch/x86/kernel/machine_kexec_64.c
 ===================================================================
---- linux-2.6-tip.hbkpt.orig/arch/x86/kernel/traps.c
-+++ linux-2.6-tip.hbkpt/arch/x86/kernel/traps.c
-@@ -550,8 +550,8 @@ dotraplinkage void __kprobes do_debug(st
- 	/* Store the virtualized DR6 value */
- 	tsk->thread.debugreg6 = dr6;
+--- linux-2.6-tip.hbkpt.orig/arch/x86/kernel/machine_kexec_64.c
++++ linux-2.6-tip.hbkpt/arch/x86/kernel/machine_kexec_64.c
+@@ -18,6 +18,7 @@
+ #include <asm/pgtable.h>
+ #include <asm/tlbflush.h>
+ #include <asm/mmu_context.h>
++#include <asm/debugreg.h>
  
--	if (notify_die(DIE_DEBUG, "debug", regs, dr6, error_code,
--						SIGTRAP) == NOTIFY_STOP)
-+	if (notify_die(DIE_DEBUG, "debug", regs, PTR_ERR(&dr6), error_code,
-+							SIGTRAP) == NOTIFY_STOP)
- 		return;
+ static int init_one_level2_page(struct kimage *image, pgd_t *pgd,
+ 				unsigned long addr)
+@@ -282,6 +283,7 @@ void machine_kexec(struct kimage *image)
  
- 	/* It's safe to allow irq's after DR6 has been saved */
-Index: linux-2.6-tip.hbkpt/arch/x86/mm/kmmio.c
-===================================================================
---- linux-2.6-tip.hbkpt.orig/arch/x86/mm/kmmio.c
-+++ linux-2.6-tip.hbkpt/arch/x86/mm/kmmio.c
-@@ -540,8 +540,14 @@ kmmio_die_notifier(struct notifier_block
- 	struct die_args *arg = args;
+ 	/* Interrupts aren't acceptable while we reboot */
+ 	local_irq_disable();
++	hw_breakpoint_disable();
  
- 	if (val == DIE_DEBUG && (arg->err & DR_STEP))
--		if (post_kmmio_handler(arg->err, arg->regs) == 1)
-+		if (post_kmmio_handler(arg->err, arg->regs) == 1) {
-+			/*
-+			 * Reset the BS bit in dr6 (pointed by args->err) to
-+			 * denote completion of processing
-+			 */
-+			(*(unsigned long *)ERR_PTR(arg->err)) &= ~DR_STEP;
- 			return NOTIFY_STOP;
-+		}
- 
- 	return NOTIFY_DONE;
- }
+ 	if (image->preserve_context) {
+ #ifdef CONFIG_X86_IO_APIC
 
