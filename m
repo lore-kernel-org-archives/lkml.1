@@ -1,45 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754054AbZEUNIf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753560AbZEUNKD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754054AbZEUNIf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 09:08:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752773AbZEUNI2
+	id S1753560AbZEUNKD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 09:10:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752773AbZEUNJz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 09:08:28 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:35926 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752319AbZEUNI1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 09:08:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=gK1GiE0ERHwo2G8VqNyXU42uTrKY6+0JkAlpQT3kdDQs6BBy4OxmKLoy5etVDF4NX1
-         MdNIR37wKH7JGmAaEoHMnkNiK9E2mHtJIzKYGdaQnvVSPc+oWMQB8KwcT25KwC5E9JLM
-         +QDXEWpfU4+XpoAC6m+r7WZ4Ytq92+FiSAqrE=
+	Thu, 21 May 2009 09:09:55 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:40342 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752368AbZEUNJy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 May 2009 09:09:54 -0400
+Date: Thu, 21 May 2009 15:05:28 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Zhaolei <zhaolei@cn.fujitsu.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       Tom Zanussi <tzanussi@gmail.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] tracing/workqueue: Get rid of searching last executed
+	worklet in probe_worklet_complete()
+Message-ID: <20090521130528.GA14149@redhat.com>
+References: <4A153345.3040905@cn.fujitsu.com>
 MIME-Version: 1.0
-In-Reply-To: <20090513132342.GA16280@orion>
-References: <1242219648-16165-1-git-send-email-a.beregalov@gmail.com>
-	 <1242219648-16165-2-git-send-email-a.beregalov@gmail.com>
-	 <20090513132342.GA16280@orion>
-Date: Thu, 21 May 2009 17:08:28 +0400
-Message-ID: <a4423d670905210608k25a92253j21fc231dd467bff2@mail.gmail.com>
-Subject: Re: [PATCH 2/2] Staging: comedi: data.c should include delay.h
-From: Alexander Beregalov <a.beregalov@gmail.com>
-To: gregkh@suse.de
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A153345.3040905@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/5/13 Alexander Beregalov <a.beregalov@gmail.com>:
-> Fix this build error:
-> .../data.c:86: error: implicit declaration of function 'udelay'
+On 05/21, Zhaolei wrote:
 >
-> Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
-> ---
+> We don't need search workqueue's worklet list for worklet which was latest
+> executed, instead, we can use a pointer in cpu_workqueue_stats to remember
+> which worklet was just executed.
 
-Greg,
-Please apply instead my another patch, which includes delay.h in comedidev.h.
+Minor nit,
+
+> @@ -192,22 +192,11 @@ probe_worklet_complete(struct task_struct *wq_thread, void *work)
+>  	goto end;
+>
+>  found_wq:
+> -	list_for_each_entry(wfnode, &node->workfunclist, list) {
+> -		u64 executed_time;
+> +	executed_time = trace_clock_global() - node->last_workfunc->start_time;
+> +	node->last_workfunc->total_time += executed_time;
+
+Suppose that "enqueue" handler fails to allocate the memory for the new
+work_struct.
+
+This means that the "execute" handler does not record ->last_workfunc.
+
+In that case probe_worklet_complete() uses the wrong workfunc_stats or
+we can even crash if ->last_workfunc == NULL.
+
+I think _execute() should set ->last_workfunc = NULL first, then serach
+for wfnode. _complete() should check ->last_workfunc != NULL and return
+if it is NULL.
+
+Oleg.
+
