@@ -1,86 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753684AbZEUNoF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755212AbZEUNrM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753684AbZEUNoF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 09:44:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753087AbZEUNnz
+	id S1755212AbZEUNrM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 09:47:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753467AbZEUNq7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 09:43:55 -0400
-Received: from alerce.vps.bitfolk.com ([212.13.194.134]:2779 "EHLO
-	alerce.vps.bitfolk.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752368AbZEUNny (ORCPT
+	Thu, 21 May 2009 09:46:59 -0400
+Received: from ocean.emcraft.com ([213.221.7.182]:33893 "EHLO
+	ocean.emcraft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752368AbZEUNq6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 09:43:54 -0400
-From: Alberto Bertogli <albertito@blitiri.com.ar>
-To: jkosina@suse.cz
-Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org, tytso@mit.edu,
-       jack@suse.cz, trivial@kernel.org,
-       Alberto Bertogli <albertito@blitiri.com.ar>
-Subject: [PATCH] Fix minor typos in jbd2's journal.c
-Date: Thu, 21 May 2009 10:39:47 -0300
-Message-Id: <1242913187-4151-1-git-send-email-albertito@blitiri.com.ar>
-X-Mailer: git-send-email 1.6.2.2.646.gb214
-In-Reply-To: <alpine.LNX.2.00.0905211043100.13917@wotan.suse.de>
-References: <alpine.LNX.2.00.0905211043100.13917@wotan.suse.de>
+	Thu, 21 May 2009 09:46:58 -0400
+Message-ID: <4A155B53.4040905@emcraft.com>
+Date: Thu, 21 May 2009 17:46:59 +0400
+From: Sergei Poselenov <sposelenov@emcraft.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] Re: 'make headers_check' failed to install headers to arbitrary
+ location
+References: <4A0C3BFB.1010305@emcraft.com>
+In-Reply-To: <4A0C3BFB.1010305@emcraft.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Alberto Bertogli <albertito@blitiri.com.ar>
+Hello all,
+
+A time ago I noted a 'make headers_check' failure, see the
+original message here:
+http://lkml.org/lkml/2009/5/14/248
+
+The proposed patch fixes this error, please review.
+Tested on 2.6.30-rc5.
+
+Signed-off-by: Sergei Poselenov <sposelenov@emcraft.com>
 ---
+  scripts/Makefile.headersinst |    5 +++--
+  1 files changed, 3 insertions(+), 2 deletions(-)
 
-On Thu, May 21, 2009 at 10:44:03AM +0200, Jiri Kosina wrote:
-> > - * Two internal function, which provide abort to te jbd layer
-> > + * Two internal function, which provide abort to the jbd layer
-> 
-> function*s*, while you are at it?
+diff --git a/scripts/Makefile.headersinst b/scripts/Makefile.headersinst
+index 095cfc8..2bd5fe4 100644
+--- a/scripts/Makefile.headersinst
++++ b/scripts/Makefile.headersinst
+@@ -54,8 +54,9 @@ quiet_cmd_remove = REMOVE  $(unwanted)
+        cmd_remove = rm -f $(unwanted-file)
 
-Fixed, thanks!
-		Alberto
+  quiet_cmd_check = CHECK   $(printdir) ($(words $(all-files)) files)
+-      cmd_check = $(PERL) $< $(INSTALL_HDR_PATH)/include $(SRCARCH) \
+-                  $(addprefix $(install)/, $(all-files));           \
++      cmd_check = (for f in $(all-files); do                        \
++                  $(PERL) $< $(INSTALL_HDR_PATH)/include $(SRCARCH) \
++                  $(install)/$${f}; done);                          \
+  	          touch $@
 
-
- fs/jbd2/journal.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/fs/jbd2/journal.c b/fs/jbd2/journal.c
-index 5814410..371a17e 100644
---- a/fs/jbd2/journal.c
-+++ b/fs/jbd2/journal.c
-@@ -1781,7 +1781,7 @@ int jbd2_journal_wipe(journal_t *journal, int write)
-  * Journal abort has very specific semantics, which we describe
-  * for journal abort.
-  *
-- * Two internal function, which provide abort to te jbd layer
-+ * Two internal functions which provide abort to the jbd layer
-  * itself are here.
-  */
- 
-@@ -1879,7 +1879,7 @@ void jbd2_journal_abort(journal_t *journal, int errno)
-  * int jbd2_journal_errno () - returns the journal's error state.
-  * @journal: journal to examine.
-  *
-- * This is the errno numbet set with jbd2_journal_abort(), the last
-+ * This is the errno number set with jbd2_journal_abort(), the last
-  * time the journal was mounted - if the journal was stopped
-  * without calling abort this will be 0.
-  *
-@@ -1903,7 +1903,7 @@ int jbd2_journal_errno(journal_t *journal)
-  * int jbd2_journal_clear_err () - clears the journal's error state
-  * @journal: journal to act on.
-  *
-- * An error must be cleared or Acked to take a FS out of readonly
-+ * An error must be cleared or acked to take a FS out of readonly
-  * mode.
-  */
- int jbd2_journal_clear_err(journal_t *journal)
-@@ -1923,7 +1923,7 @@ int jbd2_journal_clear_err(journal_t *journal)
-  * void jbd2_journal_ack_err() - Ack journal err.
-  * @journal: journal to act on.
-  *
-- * An error must be cleared or Acked to take a FS out of readonly
-+ * An error must be cleared or acked to take a FS out of readonly
-  * mode.
-  */
- void jbd2_journal_ack_err(journal_t *journal)
+  PHONY += __headersinst __headerscheck
 -- 
-1.6.2.2.646.gb214
-
+1.6.0.6
