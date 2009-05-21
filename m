@@ -1,57 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756223AbZEUUA2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756766AbZEUUB0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756223AbZEUUA2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 16:00:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754168AbZEUUAQ
+	id S1756766AbZEUUB0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 16:01:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755120AbZEUUBJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 16:00:16 -0400
-Received: from cpsmtpm-eml105.kpnxchange.com ([195.121.3.9]:51422 "EHLO
-	CPSMTPM-EML105.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753847AbZEUUAP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 16:00:15 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Netdev <netdev@vger.kernel.org>
-Subject: Re: [2.6.30] e1000e: pci_enable_pcie_error_reporting failed 0xfffffffb
-Date: Thu, 21 May 2009 22:00:13 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, e1000-devel@lists.sourceforge.net,
-       linux-pm@lists.linux-foundation.org,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-References: <200905141312.35945.elendil@planet.nl>
-In-Reply-To: <200905141312.35945.elendil@planet.nl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905212200.14375.elendil@planet.nl>
-X-OriginalArrivalTime: 21 May 2009 20:00:14.0751 (UTC) FILETIME=[C19F32F0:01C9DA4E]
+	Thu, 21 May 2009 16:01:09 -0400
+Received: from thunk.org ([69.25.196.29]:39203 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754887AbZEUUBI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 May 2009 16:01:08 -0400
+From: "Theodore Ts'o" <tytso@mit.edu>
+To: linux-kernel@vger.kernel.org
+Cc: linux-fsdevel@vger.kernel.org, "Theodore Ts'o" <tytso@mit.edu>
+Subject: [PATCH 4/5] fs: Rearrange inode structure elements to avoid waste due to padding
+Date: Thu, 21 May 2009 16:01:02 -0400
+Message-Id: <1242936063-31689-5-git-send-email-tytso@mit.edu>
+X-Mailer: git-send-email 1.6.3.1.1.g75fc.dirty
+In-Reply-To: <1242936063-31689-4-git-send-email-tytso@mit.edu>
+References: <1242936063-31689-1-git-send-email-tytso@mit.edu>
+ <1242936063-31689-2-git-send-email-tytso@mit.edu>
+ <1242936063-31689-3-git-send-email-tytso@mit.edu>
+ <1242936063-31689-4-git-send-email-tytso@mit.edu>
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 14 May 2009, Frans Pop wrote:
-> With 2.6.30-rc[45] I'm always seeing this error while resuming from STR
-> on my HP 2510p notebook:
->
->   e1000e 0000:00:19.0: PCI INT A -> GSI 22 (level, low) -> IRQ 22
-> ! e1000e 0000:00:19.0: pci_enable_pcie_error_reporting failed 0xfffffffb
->   e1000e 0000:00:19.0: setting latency timer to 64 
->   e1000e 0000:00:19.0: wake-up capability disabled by ACPI
->   e1000e 0000:00:19.0: PME# disabled
->   e1000e 0000:00:19.0: wake-up capability disabled by ACPI
->   e1000e 0000:00:19.0: PME# disabled
->   e1000e 0000:00:19.0: irq 26 for MSI/MSI-X
->
-> The error only shows up during resume, not during normal boot.
->
-> With 2.6.29 the error is not present. Is this something that should be
-> looked into? Networking still comes up normally.
+Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+Cc: linux-fsdevel@vger.kernel.org
+---
+ include/linux/fs.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-I'm still seeing this with 2.6.30-rc6. Should I just ignore it or is it an
-indication of a problem/regression?
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index 7c73c59..88bd16a 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -729,8 +729,8 @@ struct inode {
+ 	struct timespec		i_atime;
+ 	struct timespec		i_mtime;
+ 	struct timespec		i_ctime;
+-	unsigned int		i_blkbits;
+ 	blkcnt_t		i_blocks;
++	unsigned int		i_blkbits;
+ 	unsigned short          i_bytes;
+ 	umode_t			i_mode;
+ 	spinlock_t		i_lock;	/* i_blocks, i_bytes, maybe i_size */
+-- 
+1.6.3.1.1.g75fc.dirty
 
-Cheers,
-FJP
