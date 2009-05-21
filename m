@@ -1,178 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757278AbZEUQRv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757157AbZEUQTj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757278AbZEUQRv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 12:17:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756778AbZEUQQs
+	id S1757157AbZEUQTj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 12:19:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754334AbZEUQTc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 12:16:48 -0400
-Received: from mail3.caviumnetworks.com ([12.108.191.235]:20555 "EHLO
-	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756969AbZEUQQr (ORCPT
+	Thu, 21 May 2009 12:19:32 -0400
+Received: from smtp02.citrix.com ([66.165.176.63]:34856 "EHLO
+	SMTP02.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753174AbZEUQTb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 12:16:47 -0400
-Message-ID: <4A157E66.4040805@caviumnetworks.com>
-Date: Thu, 21 May 2009 09:16:38 -0700
-From: David Daney <ddaney@caviumnetworks.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Thu, 21 May 2009 12:19:31 -0400
+X-IronPort-AV: E=Sophos;i="4.41,228,1241409600"; 
+   d="scan'208";a="52101426"
+Subject: Re: swiotlb: remove __weak hooks in favour of
+	architecture-specific functions
+From: Ian Campbell <Ian.Campbell@eu.citrix.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Becky Bruce <beckyb@kernel.crashing.org>, Olaf Kirch <okir@suse.de>,
+       Ingo Molnar <mingo@elte.hu>, Greg KH <gregkh@suse.de>,
+       xen-devel <xen-devel@lists.xensource.com>,
+       x86 maintainers <x86@kernel.org>, lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <1242922528-5982-1-git-send-email-ian.campbell@citrix.com>
+References: <1242906335.22654.188.camel@zakaz.uk.xensource.com>
+	 <1242922528-5982-1-git-send-email-ian.campbell@citrix.com>
+Content-Type: text/plain
+Organization: Citrix Systems, Inc.
+Date: Thu, 21 May 2009 17:19:30 +0100
+Message-ID: <1242922770.22654.205.camel@zakaz.uk.xensource.com>
 MIME-Version: 1.0
-To: "K.Prasad" <prasad@linux.vnet.ibm.com>
-CC: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Ralf Baechle <ralf@linux-mips.org>
-Subject: Re: [Patch 01/12] Prepare the code for Hardware Breakpoint interfaces
-References: <20090521095613.834622717@prasadkr_t60p.in.ibm.com> <20090521140033.GB13849@in.ibm.com>
-In-Reply-To: <20090521140033.GB13849@in.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 21 May 2009 16:16:38.0684 (UTC) FILETIME=[8505D5C0:01C9DA2F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-K.Prasad wrote:
-[...]
-> +/**
-> + * struct hw_breakpoint - unified kernel/user-space hardware breakpoint
-> + * @triggered: callback invoked after target address access
-> + * @info: arch-specific breakpoint info (address, length, and type)
-> + *
-> + * %hw_breakpoint structures are the kernel's way of representing
-> + * hardware breakpoints.  These are data breakpoints
-> + * (also known as "watchpoints", triggered on data access), and the breakpoint's
-> + * target address can be located in either kernel space or user space.
-> + *
-> + * The breakpoint's address, length, and type are highly
-> + * architecture-specific.  The values are encoded in the @info field; you
-> + * specify them when registering the breakpoint.  To examine the encoded
-> + * values use hw_breakpoint_get_{kaddress,uaddress,len,type}(), declared
-> + * below.
-> + *
-> + * The address is specified as a regular kernel pointer (for kernel-space
-> + * breakponts) or as an %__user pointer (for user-space breakpoints).
-> + * With register_user_hw_breakpoint(), the address must refer to a
-> + * location in user space.  The breakpoint will be active only while the
-> + * requested task is running.  Conversely with
-> + * register_kernel_hw_breakpoint(), the address must refer to a location
-> + * in kernel space, and the breakpoint will be active on all CPUs
-> + * regardless of the current task.
-> + *
-> + * The length is the breakpoint's extent in bytes, which is subject to
-> + * certain limitations.  include/asm/hw_breakpoint.h contains macros
-> + * defining the available lengths for a specific architecture.  Note that
-> + * the address's alignment must match the length.  The breakpoint will
-> + * catch accesses to any byte in the range from address to address +
-> + * (length - 1).
-> + *
-> + * The breakpoint's type indicates the sort of access that will cause it
-> + * to trigger.  Possible values may include:
-> + *
-> + * 	%HW_BREAKPOINT_RW (triggered on read or write access),
-> + * 	%HW_BREAKPOINT_WRITE (triggered on write access), and
-> + * 	%HW_BREAKPOINT_READ (triggered on read access).
-> + *
-> + * Appropriate macros are defined in include/asm/hw_breakpoint.h; not all
-> + * possibilities are available on all architectures.  Execute breakpoints
-> + * must have length equal to the special value %HW_BREAKPOINT_LEN_EXECUTE.
-> + *
-> + * When a breakpoint gets hit, the @triggered callback is
-> + * invoked in_interrupt with a pointer to the %hw_breakpoint structure and the
-> + * processor registers.
-> + * Data breakpoints occur after the memory access has taken place.
-> + * Breakpoints are disabled during execution @triggered, to avoid
-> + * recursive traps and allow unhindered access to breakpointed memory.
-> + *
-> + * This sample code sets a breakpoint on pid_max and registers a callback
-> + * function for writes to that variable.  Note that it is not portable
-> + * as written, because not all architectures support HW_BREAKPOINT_LEN_4.
-> + *
-> + * ----------------------------------------------------------------------
-> + *
-> + * #include <asm/hw_breakpoint.h>
-> + *
-> + * struct hw_breakpoint my_bp;
-> + *
-> + * static void my_triggered(struct hw_breakpoint *bp, struct pt_regs *regs)
-> + * {
-> + * 	printk(KERN_DEBUG "Inside triggered routine of breakpoint exception\n");
-> + * 	dump_stack();
-> + *  	.......<more debugging output>........
-> + * }
-> + *
-> + * static struct hw_breakpoint my_bp;
-> + *
-> + * static int init_module(void)
-> + * {
-> + *	..........<do anything>............
-> + *	my_bp.info.type = HW_BREAKPOINT_WRITE;
-> + *	my_bp.info.len = HW_BREAKPOINT_LEN_4;
-> + *
-> + *	my_bp.installed = (void *)my_bp_installed;
-> + *
-> + *	rc = register_kernel_hw_breakpoint(&my_bp);
-> + *	..........<do anything>............
-> + * }
-> + *
-> + * static void cleanup_module(void)
-> + * {
-> + *	..........<do anything>............
-> + *	unregister_kernel_hw_breakpoint(&my_bp);
-> + *	..........<do anything>............
-> + * }
-> + *
-> + * ----------------------------------------------------------------------
-> + */
-> +struct hw_breakpoint {
-> +	void (*triggered)(struct hw_breakpoint *, struct pt_regs *);
-> +	struct arch_hw_breakpoint info;
-> +};
-> +/*
-> + * len and type values are defined in include/asm/hw_breakpoint.h.
-> + * Available values vary according to the architecture.  On i386 the
-> + * possibilities are:
-> + *
-> + *	HW_BREAKPOINT_LEN_1
-> + *	HW_BREAKPOINT_LEN_2
-> + *	HW_BREAKPOINT_LEN_4
-> + *	HW_BREAKPOINT_RW
-> + *	HW_BREAKPOINT_READ
-> + *
-> + * On other architectures HW_BREAKPOINT_LEN_8 may be available, and the
-> + * 1-, 2-, and 4-byte lengths may be unavailable.  There also may be
-> + * HW_BREAKPOINT_WRITE.  You can use #ifdef to check at compile time.
-> + */
-> +
+On Thu, 2009-05-21 at 12:15 -0400, Ian Campbell wrote:
+> At the end of this series there are no more __weak functions in
+> lib/swiotlb.c
 
-I question weather having all these symbols for lengths is the proper 
-approach.
+Hmm, I was expecting the patches to be numbered in the subject by
+default. The correct order is:
 
-On mips we would currently have:
+swiotlb: make is_buffer_dma_capable architecture-specific
+swiotlb: make range_needs_mapping architecture-specific
+swiotlb/xen: update xen for swiotlb_arch_force_mapping changes
+swiotlb: make swiotlb allocation functions architecture-specific
+swiotlb/xen: update xen for changes to swiotlb allocation interface
+swiotlb: make swiotlb phys<->bus translations architecture-specific
+swiotlb/xen: update xen swiotlb for phys<->bus API changes
+xen: remove arch/x86/xen/pci-swiotlb.c
 
-HW_BREAKPOINT_LEN_8
-HW_BREAKPOINT_LEN_16
-HW_BREAKPOINT_LEN_32
-HW_BREAKPOINT_LEN_64
-HW_BREAKPOINT_LEN_128
-HW_BREAKPOINT_LEN_256
-HW_BREAKPOINT_LEN_512
-HW_BREAKPOINT_LEN_1024
-HW_BREAKPOINT_LEN_2048
+Also xen-devel missed out due to a typo, sorry. See the LKML archives if
+you are interested.
 
-If we were to use a debug agent hooked into the MIPS EJTAG debugger
-support registers, 63 different even powers of 2 are valid lengths.
+Ian.
 
-Determining the range of allowed breakpoint lengths, converting back
-and forth between numeric values that are likely to be used in a
-debugger, and these symbolic values that the proposed kernel interface
-would use, could be a little ugly.
+> 
+> The series adds several hook functions to the x86 architecture. Would
+> they be preferred as a struct x86_swiotlb_ops or as individual hooks?
+> 
+> I was unsure what to do about powerpc in most places since the
+> existing support seems to in-progress so it wasn't always clear where
+> to put the implementation. If there is a tree somewhere with more
+> complete support I'll be happy to provide additional patches.
+> 
+> Boot tested on x86 under xen but not even compiled for ia64 or
+> powerpc. If someone can point me to a decent source of cross compilers
+> I can sort that out. (http://www.kernel.org/pub/tools/crosstool/ seems
+> to be out-of-date and only has ia64 in any case)
+> 
+> Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
+> Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> Cc: Jeremy Fitzhardinge <jeremy@goop.org>
+> Cc: Becky Bruce <beckyb@kernel.crashing.org>
+> Cc: Olaf Kirch <okir@suse.de>
+> Cc: Ingo Molnar <mingo@elte.hu>
+> Cc: Greg KH <gregkh@suse.de>
+> Cc: xen-devel <xendevel@lists.xensource.com>
+> Cc: x86 maintainers <x86@kernel.org>
+> Cc: lkml <linux-kernel@vger.kernel.org>
+> 
+> --- 
+>  arch/ia64/include/asm/dma-mapping.h    |   29 ++++++++++++++
+>  arch/ia64/kernel/pci-swiotlb.c         |   11 +++++
+>  arch/powerpc/include/asm/dma-mapping.h |    5 ++
+>  arch/x86/include/asm/agp.h             |    4 +-
+>  arch/x86/include/asm/dma-mapping.h     |   34 +++++++++++++++++
+>  arch/x86/include/asm/xen/iommu.h       |    4 ++
+>  arch/x86/kernel/pci-dma.c              |    6 ++-
+>  arch/x86/kernel/pci-gart_64.c          |    4 +-
+>  arch/x86/kernel/pci-nommu.c            |    3 +-
+>  arch/x86/kernel/pci-swiotlb.c          |   32 ++++++++++++++++
+>  arch/x86/xen/Makefile                  |    3 +-
+>  arch/x86/xen/pci-swiotlb.c             |   53 --------------------------
+>  drivers/pci/xen-iommu.c                |   20 ++++++++--
+>  include/linux/dma-mapping.h            |    5 --
+>  include/linux/swiotlb.h                |   10 -----
+>  include/xen/swiotlb.h                  |    5 --
+>  lib/swiotlb.c                          |   64 +++++++-------------------------
+>  17 files changed, 156 insertions(+), 136 deletions(-)
 
-Have you thought about passing just the raw length?  And perhaps
-having:
-
-HW_BREAKPOINT_LEN_MASK that would have a bit set for each log2 of a
-legal length?
-
-Or perhaps add a function to the interface that would validate the
-length?
-
-David Daney
