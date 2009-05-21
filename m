@@ -1,67 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751216AbZEUFKA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751034AbZEUFKd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751216AbZEUFKA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 01:10:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751089AbZEUFJw
+	id S1751034AbZEUFKd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 01:10:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751089AbZEUFKS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 01:09:52 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:53745 "EHLO bilbo.ozlabs.org"
+	Thu, 21 May 2009 01:10:18 -0400
+Received: from hera.kernel.org ([140.211.167.34]:53486 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751031AbZEUFJv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 01:09:51 -0400
-Subject: Re: [PATCH] include KERN_* constant in printk calls
-From: Michael Ellerman <michael@ellerman.id.au>
-Reply-To: michael@ellerman.id.au
-To: Chris Sanford <crsanford@gmail.com>
-Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
-       peterz@infradead.org
-In-Reply-To: <20090521024635.GA4030@chrisubuntu-laptop>
-References: <20090518233121.GC3109@chrisubuntu-laptop>
-	 <20090519090049.GB9388@elte.hu> <20090520043215.GA3077@chrisubuntu-laptop>
-	 <20090520083719.GG6736@elte.hu>  <20090521024635.GA4030@chrisubuntu-laptop>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-MfIMBwRLTGQ78GlccD77"
-Date: Thu, 21 May 2009 15:09:52 +1000
-Message-Id: <1242882592.4784.44.camel@concordia>
+	id S1750815AbZEUFKR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 May 2009 01:10:17 -0400
+Subject: Re: [PATCH 3/10 -tip] x86: Add cpufeatures for Advanced Power
+ Management
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: "H. Peter Anvin" <hpa@kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Robert Richter <robert.richter@amd.com>, Dave Jones <davej@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>, x86 maintainers <x86@kernel.org>
+In-Reply-To: <4A144C4D.7070205@kernel.org>
+References: <1242142530.2547.11.camel@ht.satnam>
+	 <1242142623.2547.13.camel@ht.satnam>  <1242142692.2547.15.camel@ht.satnam>
+	 <1242142753.2547.16.camel@ht.satnam> <1242155190.2492.73.camel@ht.satnam>
+	 <alpine.LFD.2.00.0905122219420.3561@localhost.localdomain>
+	 <1242395277.3082.24.camel@localhost.localdomain>
+	 <alpine.LFD.2.00.0905171415150.3516@localhost.localdomain>
+	 <1242745272.3169.13.camel@localhost.localdomain>
+	 <4A12E122.1020009@kernel.org>
+	 <1242803735.3260.44.camel@localhost.localdomain>
+	 <4A144C4D.7070205@kernel.org>
+Content-Type: text/plain
+Date: Thu, 21 May 2009 10:39:27 +0530
+Message-Id: <1242882567.3191.5.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2009-05-20 at 11:30 -0700, H. Peter Anvin wrote:
+> Jaswinder Singh Rajput wrote:
+> > 
+> > I think better I will show with the coding to get the clear picture.
+> > 
+> > Currently we are using hardcoded x86_capability as [0], [2], [4], [5].
+> > 
+> > Thomas prefer to use constant so may be we can define current system as:
+> > 
+> > enum {
+> > 	CPUID_0000_0001_EDX = 0,	/* 0x00000001 edx */
+> > 	CPUID_8000_0001_EDX,		/* 0x80000001 edx */
+> > 	CPUID_8086_0001_EDX,		/* 0x80860001 edx */
+> > 	CPUID_SOFT_MISC1,		/* Software Misc1 */
+> > 	CPUID_0000_0001_ECX,		/* 0x00000001 ecx */
+> > 	CPUID_C000_0001_EDX,		/* 0xC0000001 edx */
+> > 	CPUID_8000_0001_ECX,		/* 0x80000001 ecx */
+> > 	CPUID_SOFT_MISC2,		/* Software Misc2 */
+> > 	CPUID_SOFT_VIRTUAL,		/* Software Virtualization */
+> > };
+> > 
+> 
+> This really seems clumsy to me.  We don't refer to the individual words
+> all that often; and more importantly, I think it'd be hard to get rid of
+> all the places where the words are referenced.
+> 
 
---=-MfIMBwRLTGQ78GlccD77
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+OK. It was thomas request. I hope this explanation will be enough and
+thomas have no objection in Advanced Power Management's cpufeatures
+series.
 
-On Wed, 2009-05-20 at 19:46 -0700, Chris Sanford wrote:
-> Here is the updated patch for sched.c. It replaces all the printk calls w=
-ith their
-> corresponding pr_* call. The five KERN_DEBUG calls have been changed to
-> pr_info.
+Ingo: should I resend new cpufeatures series, or you can use this one.
 
-Switching from KERN_DEBUG to KERN_INFO means the messages will now
-appear for most people, whereas previously they didn't. I'm not sure
-that's a great idea.
-
-If you really want to convert them, then I think we need a macro for
-KERN_DEBUG but not conditionally compiled like pr_debug.
-
-I sent a patch for that once, but I don't think anyone liked it, and
-I've lost it now :D
-
-cheers
-
---=-MfIMBwRLTGQ78GlccD77
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkoU4iAACgkQdSjSd0sB4dLcGwCgv+kunIxTBw+wggS2he6Au+B/
-Ix8An1Rtxj57bgtMm/R0WkABm9Kr2R1Q
-=0sUu
------END PGP SIGNATURE-----
-
---=-MfIMBwRLTGQ78GlccD77--
+Thanks,
+--
+JSR
 
