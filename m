@@ -1,79 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756116AbZEUQ1p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756111AbZEUQhw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756116AbZEUQ1p (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 12:27:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754502AbZEUQ1g
+	id S1756111AbZEUQhw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 12:37:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754502AbZEUQhn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 12:27:36 -0400
-Received: from wa4ehsobe005.messaging.microsoft.com ([216.32.181.15]:34150
-	"EHLO WA4EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754483AbZEUQ1g convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 12:27:36 -0400
-X-BigFish: VPS-23(zz1432R98dR168aJ1805Mzz1202hzzz32i6bh6di43j61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-SS: 5,
-X-WSS-ID: 0KK05PL-01-4ZF-01
-Date: Thu, 21 May 2009 18:26:38 +0200
-From: Borislav Petkov <borislav.petkov@amd.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: akpm@linux-foundation.org, greg@kroah.com, mingo@elte.hu, norsk5@yahoo.com,
-       tglx@linutronix.de, mchehab@redhat.com, aris@redhat.com, edt@aei.ca,
-       linux-kernel@vger.kernel.org,
-       Andreas Herrmann <andreas.herrmann3@amd.com>
-Subject: Re: [PATCH 01/22] x86: add methods for writing of an MSR on several
-	CPUs
-Message-ID: <20090521162638.GA10824@aftab>
-References: <1242390153-24493-1-git-send-email-borislav.petkov@amd.com> <1242390153-24493-2-git-send-email-borislav.petkov@amd.com> <20090519172449.GB18874@aftab> <4A1392A9.9010609@zytor.com> <20090520144905.GA27991@aftab> <4A147891.5000906@zytor.com> <20090521140800.GA3462@aftab> <4A156361.2040507@zytor.com>
+	Thu, 21 May 2009 12:37:43 -0400
+Received: from e7.ny.us.ibm.com ([32.97.182.137]:50093 "EHLO e7.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754330AbZEUQhm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 May 2009 12:37:42 -0400
+Date: Thu, 21 May 2009 09:37:37 -0700
+From: Gary Hade <garyhade@us.ibm.com>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org, Gary Hade <garyhade@us.ibm.com>,
+       Alex Chiang <achiang@hp.com>, linux-acpi@vger.kernel.org,
+       Matthew Wilcox <matthew@wil.cx>
+Subject: Re: [PATCH] x86/pci: do assign root bus res if _CRS is used
+Message-ID: <20090521163737.GA7891@us.ibm.com>
+References: <49ED22EC.2040204@kernel.org> <200905081640.12677.bjorn.helgaas@hp.com> <20090520164910.6939b92b@jbarnes-g45> <200905210846.18292.bjorn.helgaas@hp.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A156361.2040507@zytor.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-OriginalArrivalTime: 21 May 2009 16:26:40.0319 (UTC) FILETIME=[EBA00CF0:01C9DA30]
-Content-Transfer-Encoding: 8BIT
+In-Reply-To: <200905210846.18292.bjorn.helgaas@hp.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 21, 2009 at 07:21:21AM -0700, H. Peter Anvin wrote:
-> Borislav Petkov wrote:
-> >>>
-> >> smp_call_function_many() does allow concurrent execution.
+On Thu, May 21, 2009 at 08:46:17AM -0600, Bjorn Helgaas wrote:
+> On Wednesday 20 May 2009 5:49:10 pm Jesse Barnes wrote:
+> > On Fri, 8 May 2009 16:40:10 -0600
+> > Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
+> > > Did anything happen with this?
+> > > 
+> > > The longer we wait to make "use_crs" the default, the harder it
+> > > will be, so I'd like to push ahead.
 > > 
-> > Well, IMHO, not an absolutely concurrent execution since you can't
-> > control at what moment in time the IPIs will be executed on each core,
-> > IOW, the respective call function IPIs will generally not coincide on
-> > each core at a given moment in time. This is especially true if you're
-> > sending IPIs to cores across nodes.
-> > 
-> > And there's hypothetically a small window where you might get an
-> > inconsistent MSR content across cores. It's a whole another question
-> > whether this is going to be relevant.
-> > 
+> > Here's a patch to make CRS the default.  If it looks ok I can push it
+> > into my linux-next branch.  I'm all for using reliable data from the
+> > BIOS.  I guess we'll find out fairly quickly if this stuff isn't...
 > 
-> It *allows* concurrent execution.  It doesn't *guarantee* concurrent
-> execution.
-
-Exactly what I'm trying to say.
-
-> > So, the actual question is do we need that done in msr.c? If there are
-> > no potential users, I could easily do the whole thing in the driver and
-> > do not touch x86 code.
+> Thanks for following up on this, Jesse.  It was on my to-do list for
+> yesterday, but I didn't get to it.
 > 
-> Only if we care about the additional performance of having it be
-> nonserializing.
+> Yinghai mentioned a specific box where we might have trouble, but we
+> never got enough details to really debug it.  So I think we might as
+> well give it a shot and fine-tune it as we need to.
 
-Well, let's do the nonserializing thing and have it done right from the
-beginning. We might not care now but who knows..?
+I just remembered that Andrew Morton once raised some concerns
+related to the number of _CRS returned resources exceeding the
+fixed resource array size -> http://lkml.org/lkml/2007/11/1/49
+
+I believe PCI_BUS_NUM_RESOURCES was later increased but if 
+that increase was insufficient to cover all systems that the
+code will now be exposed to, it seems like the "And should we
+really be silently ignoring this problem?  Should we at least
+report it?" comment that was not addressed could become relevent.
+
+Gary
 
 -- 
-Regards/Gruss,
-Boris.
-
-Operating | Advanced Micro Devices GmbH
-  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
- Research | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
-  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-  (OSRC)  | Registergericht München, HRB Nr. 43632
+Gary Hade
+System x Enablement
+IBM Linux Technology Center
+503-578-4503  IBM T/L: 775-4503
+garyhade@us.ibm.com
+http://www.ibm.com/linux/ltc
 
