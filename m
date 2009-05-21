@@ -1,67 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757346AbZEUODx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757537AbZEUOEo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757346AbZEUODx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 10:03:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757041AbZEUODD
+	id S1757537AbZEUOEo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 10:04:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757225AbZEUODY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 10:03:03 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:32863 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757191AbZEUODB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 10:03:01 -0400
-Date: Thu, 21 May 2009 06:55:31 -0700
-From: Greg KH <gregkh@suse.de>
-To: "Robert P. J. Day" <rpjday@crashcourse.ca>
-Cc: Alexander Beregalov <a.beregalov@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-next@vger.kernel.org
-Subject: Re: [PATCH] Staging: comedi: comedidev should include delay.h
-Message-ID: <20090521135531.GA29375@suse.de>
-References: <1242911193-30469-1-git-send-email-a.beregalov@gmail.com> <alpine.LFD.2.00.0905210907440.3475@localhost.localdomain>
+	Thu, 21 May 2009 10:03:24 -0400
+Received: from e23smtp01.au.ibm.com ([202.81.31.143]:59277 "EHLO
+	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756724AbZEUODX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 May 2009 10:03:23 -0400
+Date: Thu, 21 May 2009 19:33:17 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       "K.Prasad" <prasad@linux.vnet.ibm.com>
+Subject: [Patch 12/12] Reset bits in dr6 after the corresponding exception
+	is handled
+Message-ID: <20090521140317.GM13849@in.ibm.com>
+References: <20090521095613.834622717@prasadkr_t60p.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0905210907440.3475@localhost.localdomain>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Disposition: inline; filename=dr6_changes_12
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 21, 2009 at 09:09:53AM -0400, Robert P. J. Day wrote:
-> On Thu, 21 May 2009, Alexander Beregalov wrote:
-> 
-> > Fix many build errors like this:
-> > comedi/drivers/adq12b.c:328: error: implicit declaration of function 'udelay'
-> >
-> > The same for aio_aio12_8.c, dmm32at.c and others.
-> >
-> > Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
-> > ---
-> >  drivers/staging/comedi/comedidev.h |    1 +
-> >  1 files changed, 1 insertions(+), 0 deletions(-)
-> >
-> > diff --git a/drivers/staging/comedi/comedidev.h b/drivers/staging/comedi/comedidev.h
-> > index 7a1ccde..3d0e80c 100644
-> > --- a/drivers/staging/comedi/comedidev.h
-> > +++ b/drivers/staging/comedi/comedidev.h
-> > @@ -38,6 +38,7 @@
-> >  #include <linux/dma-mapping.h>
-> >  #include <linux/uaccess.h>
-> >  #include <linux/io.h>
-> > +#include <linux/delay.h>
-> >
-> >  #include "comedi.h"
-> 
->   not sure it's worth noting but the header comedidev.h currently
-> resides in the comedi directory itself, while the source file rt.c
-> contains:
-> 
-> #include <linux/comedidev.h>
-> 
-> which doesn't seem right.
+This patch resets the bit in dr6 after the corresponding exception is
+handled in code.
 
-That's correct, and is one reason why rt.c is now gone in the linux-next
-tree :)
+Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
+---
+ arch/x86/kernel/hw_breakpoint.c |   13 +++++++++++--
+ arch/x86/kernel/kgdb.c          |    6 ++++++
+ arch/x86/kernel/kprobes.c       |    9 ++++++++-
+ arch/x86/kernel/traps.c         |    4 ++--
+ arch/x86/mm/kmmio.c             |    8 +++++++-
+ 5 files changed, 34 insertions(+), 6 deletions(-)
 
-thanks,
+Index: linux-2.6-tip.hbkpt/arch/x86/kernel/hw_breakpoint.c
+===================================================================
+--- linux-2.6-tip.hbkpt.orig/arch/x86/kernel/hw_breakpoint.c
++++ linux-2.6-tip.hbkpt/arch/x86/kernel/hw_breakpoint.c
+@@ -314,8 +314,12 @@ int __kprobes hw_breakpoint_handler(stru
+ {
+ 	int i, cpu, rc = NOTIFY_STOP;
+ 	struct hw_breakpoint *bp;
+-	/* The DR6 value is stored in args->err */
+-	unsigned long dr7, dr6 = args->err;
++	unsigned long dr7, dr6;
++	unsigned long *dr6_p;
++
++	/* The DR6 value is pointed by args->err */
++	dr6_p = (unsigned long *)ERR_PTR(args->err);
++	dr6 = *dr6_p;
+ 
+ 	/* Do an early return if no trap bits are set in DR6 */
+ 	if ((dr6 & DR_TRAP_BITS) == 0)
+@@ -352,6 +356,11 @@ int __kprobes hw_breakpoint_handler(stru
+ 				rc = NOTIFY_DONE;
+ 		}
+ 		/*
++		 * Reset the 'i'th TRAP bit in dr6 to denote completion of
++		 * exception handling
++		 */
++		(*dr6_p) &= ~(DR_TRAP0 << i);
++		/*
+ 		 * bp can be NULL due to lazy debug register switching
+ 		 * or due to the delay between updates of hbp_kernel_pos
+ 		 * and this_hbp_kernel.
+Index: linux-2.6-tip.hbkpt/arch/x86/kernel/kgdb.c
+===================================================================
+--- linux-2.6-tip.hbkpt.orig/arch/x86/kernel/kgdb.c
++++ linux-2.6-tip.hbkpt/arch/x86/kernel/kgdb.c
+@@ -43,6 +43,7 @@
+ #include <linux/smp.h>
+ #include <linux/nmi.h>
+ 
++#include <asm/debugreg.h>
+ #include <asm/apicdef.h>
+ #include <asm/system.h>
+ 
+@@ -434,6 +435,11 @@ single_step_cont(struct pt_regs *regs, s
+ 			"resuming...\n");
+ 	kgdb_arch_handle_exception(args->trapnr, args->signr,
+ 				   args->err, "c", "", regs);
++	/*
++	 * Reset the BS bit in dr6 (pointed by args->err) to
++	 * denote completion of processing
++	 */
++	(*(unsigned long *)ERR_PTR(args->err)) &= ~DR_STEP;
+ 
+ 	return NOTIFY_STOP;
+ }
+Index: linux-2.6-tip.hbkpt/arch/x86/kernel/kprobes.c
+===================================================================
+--- linux-2.6-tip.hbkpt.orig/arch/x86/kernel/kprobes.c
++++ linux-2.6-tip.hbkpt/arch/x86/kernel/kprobes.c
+@@ -54,6 +54,7 @@
+ #include <asm/pgtable.h>
+ #include <asm/uaccess.h>
+ #include <asm/alternative.h>
++#include <asm/debugreg.h>
+ 
+ void jprobe_return_end(void);
+ 
+@@ -967,8 +968,14 @@ int __kprobes kprobe_exceptions_notify(s
+ 			ret = NOTIFY_STOP;
+ 		break;
+ 	case DIE_DEBUG:
+-		if (post_kprobe_handler(args->regs))
++		if (post_kprobe_handler(args->regs)) {
++			/*
++			 * Reset the BS bit in dr6 (pointed by args->err) to
++			 * denote completion of processing
++			 */
++			(*(unsigned long *)ERR_PTR(args->err)) &= ~DR_STEP;
+ 			ret = NOTIFY_STOP;
++		}
+ 		break;
+ 	case DIE_GPF:
+ 		/*
+Index: linux-2.6-tip.hbkpt/arch/x86/kernel/traps.c
+===================================================================
+--- linux-2.6-tip.hbkpt.orig/arch/x86/kernel/traps.c
++++ linux-2.6-tip.hbkpt/arch/x86/kernel/traps.c
+@@ -550,8 +550,8 @@ dotraplinkage void __kprobes do_debug(st
+ 	/* Store the virtualized DR6 value */
+ 	tsk->thread.debugreg6 = dr6;
+ 
+-	if (notify_die(DIE_DEBUG, "debug", regs, dr6, error_code,
+-						SIGTRAP) == NOTIFY_STOP)
++	if (notify_die(DIE_DEBUG, "debug", regs, PTR_ERR(&dr6), error_code,
++							SIGTRAP) == NOTIFY_STOP)
+ 		return;
+ 
+ 	/* It's safe to allow irq's after DR6 has been saved */
+Index: linux-2.6-tip.hbkpt/arch/x86/mm/kmmio.c
+===================================================================
+--- linux-2.6-tip.hbkpt.orig/arch/x86/mm/kmmio.c
++++ linux-2.6-tip.hbkpt/arch/x86/mm/kmmio.c
+@@ -540,8 +540,14 @@ kmmio_die_notifier(struct notifier_block
+ 	struct die_args *arg = args;
+ 
+ 	if (val == DIE_DEBUG && (arg->err & DR_STEP))
+-		if (post_kmmio_handler(arg->err, arg->regs) == 1)
++		if (post_kmmio_handler(arg->err, arg->regs) == 1) {
++			/*
++			 * Reset the BS bit in dr6 (pointed by args->err) to
++			 * denote completion of processing
++			 */
++			(*(unsigned long *)ERR_PTR(arg->err)) &= ~DR_STEP;
+ 			return NOTIFY_STOP;
++		}
+ 
+ 	return NOTIFY_DONE;
+ }
 
-greg k-h
