@@ -1,60 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753774AbZEUHjf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752446AbZEUHlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753774AbZEUHjf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 03:39:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752368AbZEUHjV
+	id S1752446AbZEUHlT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 03:41:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751506AbZEUHlG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 03:39:21 -0400
-Received: from hera.kernel.org ([140.211.167.34]:47078 "EHLO hera.kernel.org"
+	Thu, 21 May 2009 03:41:06 -0400
+Received: from hera.kernel.org ([140.211.167.34]:51406 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751895AbZEUHjU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 03:39:20 -0400
-Subject: Re: [PATCH 1/10 -tip] x86: Add cpufeature for Processor Name
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: "H. Peter Anvin" <hpa@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Robert Richter <robert.richter@amd.com>,
-       Dave Jones <davej@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
-       x86 maintainers <x86@kernel.org>
-In-Reply-To: <4A14F0A1.3000605@kernel.org>
-References: <1242142530.2547.11.camel@ht.satnam>
-	 <1242142623.2547.13.camel@ht.satnam>  <4A14F0A1.3000605@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 21 May 2009 13:08:30 +0530
-Message-Id: <1242891510.8204.3.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 8bit
+	id S1751467AbZEUHlE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 May 2009 03:41:04 -0400
+Message-ID: <4A150587.5080104@kernel.org>
+Date: Thu, 21 May 2009 16:40:55 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       Cornelia Huck <cornelia.huck@de.ibm.com>, linux-fsdevel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>
+Subject: Re: [PATCH 06/20] sysfs: Use dentry_ops instead of directly playing
+ with the dcache
+References: <m1bppofm9k.fsf@fess.ebiederm.org>	<1242865694-2100-1-git-send-email-ebiederm@xmission.com>	<1242865694-2100-2-git-send-email-ebiederm@xmission.com>	<1242865694-2100-3-git-send-email-ebiederm@xmission.com>	<1242865694-2100-4-git-send-email-ebiederm@xmission.com>	<1242865694-2100-5-git-send-email-ebiederm@xmission.com>	<1242865694-2100-6-git-send-email-ebiederm@xmission.com>	<4A14F781.6010103@kernel.org> <m1k54a6h51.fsf@fess.ebiederm.org>
+In-Reply-To: <m1k54a6h51.fsf@fess.ebiederm.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 21 May 2009 07:40:58 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-05-20 at 23:11 -0700, H. Peter Anvin wrote:
-> Jaswinder Singh Rajput wrote:
-> > Processor Name / Brand String (Function 8000_0002h, 8000_0003h, 8000_0004h)
-> > Functions 8000_0002h, 8000_0003h, and 8000_0004h each return up to 16 ASCII
-> > bytes of the processor name in the EAX, EBX, ECX and EDX registers.
-> > 
-> > X86_FEATURE_PNAME will be useful for displaying MSRs like AMD:
-> > MSRC001_00[35:30] Processor Name String Registers
-> > 
+Eric W. Biederman wrote:
+>> Ummm... what happens if sysfs recreates those identical nodes again
+>> while the old dentries are lingering?  The dead ones will linger till
+>> the submounts are gone and then look ups after that will show the new
+>> ones, right?
 > 
-> Pointless and wrong.  The presence of the processor name is not the same
-> thing as the presence of specific MSRs, which are model-specific.
+> Yep.  On the vfs level.  The sysfs dirent tree will reflect what is
+> going on with the hardware.
 > 
+> This is a vfs misfeature, that I hope someday we will get fixed.
+> But for now it is better not to leak mount points.  Especially
+> since no one actually mounts things on sysfs.
 
->From AMD's BIOS and Kernel Developer’s Guide(BKDG) Manual :
+fuse and debugfs do.  :-P
 
- MSRC001_00[35:30] Processor Name String Registers
-Reset: 0000 0000 0000 0000h. These registers holds the CPUID name string in ASCII. The state of these regis-
-ters are returned by CPUID instructions, CPUID Fn8000_000[4:2]. BIOS should set these registers to the
-AMD-provided product name for the processor. Each register contains a block of 8 ASCII characters; the least
-byte corresponds to the first ASCII character of the block; the most-significant byte corresponds to the last
-character of the block. MSRC001_0030 contains the first block of the name string; MSRC001_0035 contains
-the last block of the name string.
+Acked-by: Tejun Heo <tj@kernel.org>
 
-  Bits    Description
-  63:0 CpuNameString. Read-write.
-
---
-JSR
-
+-- 
+tejun
