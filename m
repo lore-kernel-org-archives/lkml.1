@@ -1,87 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756507AbZEUTMb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756605AbZEUTMu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756507AbZEUTMb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 15:12:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754986AbZEUTMN
+	id S1756605AbZEUTMu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 15:12:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754578AbZEUTMk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 15:12:13 -0400
-Received: from mga02.intel.com ([134.134.136.20]:48511 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754568AbZEUTML (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 15:12:11 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,228,1241420400"; 
-   d="scan'208";a="414641730"
-Subject: Re: [GIT PATCH] x86,percpu: fix pageattr handling with remap
- allocator
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: suresh.b.siddha@intel.com
-To: Tejun Heo <tj@kernel.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       "JBeulich@novell.com" <JBeulich@novell.com>,
-       "andi@firstfloor.org" <andi@firstfloor.org>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "linux-kernel-owner@vger.kernel.org" 
-	<linux-kernel-owner@vger.kernel.org>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <4A14B271.5010202@kernel.org>
-References: <1242305390-21958-1-git-send-email-tj@kernel.org>
-	 <1242436626.27006.8623.camel@localhost.localdomain>
-	 <4A0ED8D8.2010303@kernel.org>
-	 <1242500964.27006.8636.camel@localhost.localdomain>
-	 <4A0F672A.3000309@kernel.org>
-	 <1242674444.27006.8691.camel@localhost.localdomain>
-	 <4A11B9E7.8010707@zytor.com>
-	 <1242680835.27006.8734.camel@localhost.localdomain>
-	 <4A120B47.8060200@kernel.org>
-	 <1242860470.27006.10106.camel@localhost.localdomain>
-	 <4A149B89.3010104@kernel.org>
-	 <1242866163.27006.10125.camel@localhost.localdomain>
-	 <4A14B271.5010202@kernel.org>
-Content-Type: text/plain
-Organization: Intel Corp
-Date: Thu, 21 May 2009 12:10:08 -0700
-Message-Id: <1242933008.27006.10150.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
+	Thu, 21 May 2009 15:12:40 -0400
+Received: from h155.mvista.com ([63.81.120.155]:58488 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754453AbZEUTMk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 May 2009 15:12:40 -0400
+Message-ID: <4A15A7DD.1040300@ru.mvista.com>
+Date: Thu, 21 May 2009 23:13:33 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
+MIME-Version: 1.0
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/4] ide: respect quirk_drives[] list on all controllers
+References: <200905201734.42093.bzolnier@gmail.com>
+In-Reply-To: <200905201734.42093.bzolnier@gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-05-20 at 18:46 -0700, Tejun Heo wrote:
-> Yes it will.  The question is which way would be better.  Till now,
-> there hasn't been any actual data on how remap compares to 4k. 
+Bartlomiej Zolnierkiewicz wrote:
 
-I am not sure if we see any measurable difference. Even if we use 4k
-entries, it will be few  entries that kernel will be referring to
-frequently.
+> * Add ide_check_nien_quirk_list() helper to the core code
+>   and then use it in ide_port_tune_devices().
 
-> On NUMA, both remap and 4k add some level of TLB pressure.  remap will
-> waste one more PMD TLB entry (dup) while 4k adds a bunch of 4k ones
-> (non-dup but what used to be accessed by PMD TLB is now accessed with
-> PTE TLB).  Some say using one more PMD TLB is better while others
-> disagree.  So, the best course of action here seems to offer both and
-> easy way to select between them so that data can be gathered, which is
-> what this patchset does.
+> * Remove no longer needed ->quirkproc methods from hpt366.c
+>   and pdc202xx_{new,old}.c.
 
-So with the planned future change of percpu unit allocation during cpu
-online, you are planning to try large page allocation first and then
-fallback to 4k pages, if that doesn't succeed. And then populate new
-percpu ptr accordingly and then sort wrt to other cpu ptr's, so that we
-can keep aliases in sync for future(and in parallel) cpa()'s that might
-be happening.
+    Haha, I remembered about that idea of yours and was thinking of 
+undertaking its implementation just yesterday. You've beten me to it. :-)
 
-There is nothing wrong with all this. Just the code complexity (and
-maintenance) for what we are trying to gain ;)
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 
-> 
-> I don't think the added complexity for cpa() justifies dropping remap
-> without further testing.  The added complexity isn't that big.  Most
-> of the confusion in this patchset came from my ignorance on the
-> subject.  cpa() is a fragile thing but we need it anyway, so...
-> 
-> Thanks.
-> 
+Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 
+> Index: b/drivers/ide/ide-iops.c
+> ===================================================================
+> --- a/drivers/ide/ide-iops.c
+> +++ b/drivers/ide/ide-iops.c
+> @@ -269,6 +269,31 @@ no_80w:
+>  	return 0;
+>  }
+>  
+> +static const char *nien_quirk_list[] = {
+> +	"QUANTUM FIREBALLlct08 08",
+> +	"QUANTUM FIREBALLP KA6.4",
+> +	"QUANTUM FIREBALLP KA9.1",
+> +	"QUANTUM FIREBALLP KX13.6",
+> +	"QUANTUM FIREBALLP KX20.5",
+> +	"QUANTUM FIREBALLP KX27.3",
+> +	"QUANTUM FIREBALLP LM20.4",
+> +	"QUANTUM FIREBALLP LM20.5",
+> +	NULL
+> +};
+> +
+> +void ide_check_nien_quirk_list(ide_drive_t *drive)
+
+    Why not reuse ide_in_drive_list()?
+
+> +{
+> +	const char **list, *m = (char *)&drive->id[ATA_ID_PROD];
+> +
+> +	for (list = nien_quirk_list; *list != NULL; list++)
+> +		if (strstr(m, *list) != NULL) {
+
+    Ah, strstr() vs strcmp()... I think strcmp() should work anyway...
+
+> +			drive->quirk_list = 2;
+> +			return;
+> +		}
+> +
+> +	drive->quirk_list = 0;
+> +}
+> +
+>  int ide_driveid_update(ide_drive_t *drive)
+>  {
+>  	u16 *id;
+
+MBR, Sergei
