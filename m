@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755953AbZEUN1m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756149AbZEUN2e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755953AbZEUN1m (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 09:27:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753087AbZEUN1c
+	id S1756149AbZEUN2e (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 09:28:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752828AbZEUN2X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 09:27:32 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:43548 "EHLO
+	Thu, 21 May 2009 09:28:23 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:58142 "EHLO
 	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752034AbZEUN1b (ORCPT
+	with ESMTP id S1752563AbZEUN2W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 09:27:31 -0400
+	Thu, 21 May 2009 09:28:22 -0400
 From: Gregory Haskins <ghaskins@novell.com>
-Subject: [PATCH v2--refid=<20090521172122.bb12027c.sfr@canb.auug.org.au>] kvm:
-	fix irqfd build failure discovered in linux-next
+Subject: [PATCH v2] kvm: fix irqfd build failure discovered in linux-next
 To: avi@redhat.com
 Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
        sfr@canb.auug.org.au, kvm@vger.kernel.org
-Date: Thu, 21 May 2009 09:27:24 -0400
-Message-ID: <20090521132723.8177.20321.stgit@dev.haskins.net>
+Date: Thu, 21 May 2009 09:28:18 -0400
+Message-ID: <20090521132817.8218.92948.stgit@dev.haskins.net>
+In-Reply-To: <20090521172122.bb12027c.sfr@canb.auug.org.au>
+References: <20090521172122.bb12027c.sfr@canb.auug.org.au>
 User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
