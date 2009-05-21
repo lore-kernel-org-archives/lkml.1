@@ -1,74 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757510AbZEUOGS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757221AbZEUOGa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757510AbZEUOGS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 10:06:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755868AbZEUOGE
+	id S1757221AbZEUOGa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 10:06:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755868AbZEUOGU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 10:06:04 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:35362 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753579AbZEUOGD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 10:06:03 -0400
-Date: Thu, 21 May 2009 10:06:00 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Al Viro <viro@ZenIV.linux.org.uk>
-cc: Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: How to tell whether a struct file is held by a process?
-In-Reply-To: <20090521095217.GU8633@ZenIV.linux.org.uk>
-Message-ID: <Pine.LNX.4.44L0.0905210945290.2886-100000@iolanthe.rowland.org>
+	Thu, 21 May 2009 10:06:20 -0400
+Received: from h155.mvista.com ([63.81.120.155]:49099 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756969AbZEUOGT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 May 2009 10:06:19 -0400
+Message-ID: <4A15600A.40906@ru.mvista.com>
+Date: Thu, 21 May 2009 18:07:06 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/5] ide: ->ide_dma_clear_irq() -> ->clear_irq()
+References: <200808192031.40288.bzolnier@gmail.com> <48AB478B.5040209@ru.mvista.com> <48CEDD89.5060107@ru.mvista.com>
+In-Reply-To: <48CEDD89.5060107@ru.mvista.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 21 May 2009, Al Viro wrote:
+Hello, I wrote:
 
-> On Tue, May 19, 2009 at 12:57:21PM -0400, Alan Stern wrote:
-> > What's the best way to tell whether the current process has a
-> > particular struct file among its open files?  Is there any better way
-> > to find out than blindly calling fget() for each possible fd?
-> > 
-> > Is this a totally insane thing to do?
-> 
-> It is insane.  You might lock fdtable and scan it, but as soon as you
-> drop the spinlock your return value is worthless.
+>>> * Rename ->ide_dma_clear_irq method to ->clear_irq
+>>>   and move it from ide_hwif_t to struct ide_port_ops.
 
-In this case, I believe that changes after the check has been made 
-won't hurt -- everything relevant to my work will be serialized by a 
-separate lock.
+>>> * Move ->waiting_for_dma check inside ->clear_irq method.
 
-> What are you trying to do?  If the process is cooperating, you don't really
-> need that in the kernel, if it's not, the check is not usable...
+>>> * Move ->dma_base check inside ->clear_irq method.
 
-I'm trying to work out a good way to reserve access rights to a device
--- even if that device doesn't exist yet.
+>>> piix.c:
+>>> * Add ich_port_ops and remove init_hwif_ich() wrapper.
 
-Here's the story.  People have requested that the kernel add a
-mechanism whereby a user program can get more-or-less exclusive access
-rights to a USB device.  In fact, they'd like to reserve these rights
-for any device plugged into a particular USB port.  So even if no
-device is plugged into that port at the moment, the program should get
-exclusive access as soon as a new device is detected there.
+>>> There should be no functional changes caused by this patch.
 
-In order to prevent programs from dying without releasing their
-exclusive rights, it seems natural to implement these rights as open
-files.  Thus, opening file A(P) will give a program exclusive access
-rights to any device plugged into USB port P.  Closing A(P) releases
-the rights.  (The A(P) files would be implemented as single-open files, 
-probably in sysfs.)
+[...]
 
-The problem is this.  Let D be the device plugged into port P.  When
-some program opens D's device file, it's necessary to check whether
-that same program has an open file reference for A(P), i.e., has opened
-A(P), or has inherited a descriptor for A(P) from its parent, or has
-been passed such a descriptor over a Unix socket, etc.  If not, and if 
-A(P) is open (owned by someone else), then access to D is denied.
+>>   It may also be worth considering turning this method into 
+>> test-and-clear, so that we can get the actual IDE interrupt state on 
+>> the chips that implement this...
 
-If you can think up a better way to implement these exclusive access 
-rights, I'd be glad to hear it.
+>   Probably might add the test_irq() method to be called on 
+> !hwif->waiting_for_dma. Cleraing the status at once seems impractical...
 
-Alan Stern
+    Yet this seems what ack_intr() method is doing already...
+    What it does is testing IRQ status and "acknowledging" it (the semantics 
+of "acknowledge" is not clear to me, yet it seems that it's clearing the 
+interrupt latch in the drivers where it's implemented). And the call site of 
+ack_intr() method corresponds to where test_irq() should have been called, 
+so it seems we don't need yet another method and probably didn't even need 
+clear_irq() method in the first place?..
+    Bart, could you clarify about how ack_intr() is supposed to work?
+
+MBR, Sergei
 
