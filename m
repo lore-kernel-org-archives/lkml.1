@@ -1,76 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751034AbZEUFKd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752223AbZEUFLw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751034AbZEUFKd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 01:10:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751089AbZEUFKS
+	id S1752223AbZEUFLw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 01:11:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751195AbZEUFLo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 01:10:18 -0400
-Received: from hera.kernel.org ([140.211.167.34]:53486 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750815AbZEUFKR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 01:10:17 -0400
-Subject: Re: [PATCH 3/10 -tip] x86: Add cpufeatures for Advanced Power
- Management
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: "H. Peter Anvin" <hpa@kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       Robert Richter <robert.richter@amd.com>, Dave Jones <davej@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>, x86 maintainers <x86@kernel.org>
-In-Reply-To: <4A144C4D.7070205@kernel.org>
-References: <1242142530.2547.11.camel@ht.satnam>
-	 <1242142623.2547.13.camel@ht.satnam>  <1242142692.2547.15.camel@ht.satnam>
-	 <1242142753.2547.16.camel@ht.satnam> <1242155190.2492.73.camel@ht.satnam>
-	 <alpine.LFD.2.00.0905122219420.3561@localhost.localdomain>
-	 <1242395277.3082.24.camel@localhost.localdomain>
-	 <alpine.LFD.2.00.0905171415150.3516@localhost.localdomain>
-	 <1242745272.3169.13.camel@localhost.localdomain>
-	 <4A12E122.1020009@kernel.org>
-	 <1242803735.3260.44.camel@localhost.localdomain>
-	 <4A144C4D.7070205@kernel.org>
-Content-Type: text/plain
-Date: Thu, 21 May 2009 10:39:27 +0530
-Message-Id: <1242882567.3191.5.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+	Thu, 21 May 2009 01:11:44 -0400
+Received: from yw-out-2324.google.com ([74.125.46.31]:22943 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751051AbZEUFLn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 May 2009 01:11:43 -0400
+MIME-Version: 1.0
+In-Reply-To: <20090520081443.GA8684@one.firstfloor.org>
+References: <a24804730905160036j2720c557o347cec1513df9c4a@mail.gmail.com>
+	 <87eiumq3w2.fsf@basil.nowhere.org>
+	 <a24804730905200011l202733abh89f5d4feaf69610e@mail.gmail.com>
+	 <20090520081443.GA8684@one.firstfloor.org>
+Date: Wed, 20 May 2009 22:11:44 -0700
+Message-ID: <a24804730905202211w77f2d0bay96d22b05e9c45d81@mail.gmail.com>
+Subject: Re: [RFC] mod_timer() helper functions?
+From: Chris Peterson <cpeterso@cpeterso.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-05-20 at 11:30 -0700, H. Peter Anvin wrote:
-> Jaswinder Singh Rajput wrote:
-> > 
-> > I think better I will show with the coding to get the clear picture.
-> > 
-> > Currently we are using hardcoded x86_capability as [0], [2], [4], [5].
-> > 
-> > Thomas prefer to use constant so may be we can define current system as:
-> > 
-> > enum {
-> > 	CPUID_0000_0001_EDX = 0,	/* 0x00000001 edx */
-> > 	CPUID_8000_0001_EDX,		/* 0x80000001 edx */
-> > 	CPUID_8086_0001_EDX,		/* 0x80860001 edx */
-> > 	CPUID_SOFT_MISC1,		/* Software Misc1 */
-> > 	CPUID_0000_0001_ECX,		/* 0x00000001 ecx */
-> > 	CPUID_C000_0001_EDX,		/* 0xC0000001 edx */
-> > 	CPUID_8000_0001_ECX,		/* 0x80000001 ecx */
-> > 	CPUID_SOFT_MISC2,		/* Software Misc2 */
-> > 	CPUID_SOFT_VIRTUAL,		/* Software Virtualization */
-> > };
-> > 
-> 
-> This really seems clumsy to me.  We don't refer to the individual words
-> all that often; and more importantly, I think it'd be hard to get rid of
-> all the places where the words are referenced.
-> 
+>> int timer_settime_msecs(struct timer_list *timer, int msecs)
+>
+> At least this function needs something that indicates it is very approximate
+> (upto 900% error for 1ms with HZ=100)
+> The old open coded pattern showed this.
 
-OK. It was thomas request. I hope this explanation will be enough and
-thomas have no objection in Advanced Power Management's cpufeatures
-series.
+I see your point. But doesn't the open coded pattern with jiffies
+imply an even greater timer precision than milliseconds? Or does
+mod_timer()'s use of an expiration time instead of a time delay avoid
+promising more precision than it can provide?
 
-Ingo: should I resend new cpufeatures series, or you can use this one.
+Quite of a few mod_timer() calls already try to schedule precise
+timeouts in terms of HZ/10 or HZ/20.
 
-Thanks,
---
-JSR
 
+chris
