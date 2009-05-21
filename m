@@ -1,72 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756245AbZEUN5j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756014AbZEUOAb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756245AbZEUN5j (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 09:57:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753337AbZEUN5b
+	id S1756014AbZEUOAb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 10:00:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752833AbZEUOAX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 09:57:31 -0400
-Received: from relay1.sgi.com ([192.48.179.29]:40645 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752034AbZEUN5a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 09:57:30 -0400
-Date: Thu, 21 May 2009 08:57:30 -0500
-From: Robin Holt <holt@sgi.com>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Robin Holt <holt@sgi.com>, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>
-Subject: Re: [PATCH 4/4] zone_reclaim_mode is always 0 by default
-Message-ID: <20090521135730.GA7581@sgi.com>
-References: <20090519102003.4EAB.A69D9226@jp.fujitsu.com> <20090520140045.GA29447@sgi.com> <20090521090549.63B5.A69D9226@jp.fujitsu.com> <alpine.DEB.1.10.0905210924520.31888@qirst.com>
+	Thu, 21 May 2009 10:00:23 -0400
+Received: from e28smtp06.in.ibm.com ([59.145.155.6]:57486 "EHLO
+	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752810AbZEUOAW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 May 2009 10:00:22 -0400
+Date: Thu, 21 May 2009 19:30:20 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: [Patch 00/12] Hardware Breakpoint interfaces
+Message-ID: <20090521140020.GA13849@in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0905210924520.31888@qirst.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 21, 2009 at 09:31:08AM -0400, Christoph Lameter wrote:
-> On Thu, 21 May 2009, KOSAKI Motohiro wrote:
-> 
-> > I can't catch up your message. Can you post your patch?
-> > Can you explain your sanity check?
-> >
-> > Now, I decide to remove "nr_online_nodes >= 4" condition.
-> > Apache regression is really non-sense.
-> 
-> Not sure what that means? Apache regresses with zone reclaim? My
-> measurements when we introduced zone reclaim showed just the opposite
-> because Apache would get node local memory and thus run faster. You can
-> screw this up of course if you load the system so high that the apache
-> processes are tossed around by the scheduler. Then the node local
-> allocation may be worse than round robin because all the pages allocated
-> by a process are now on one node if the scheduler moves the
-> process to a remote node then all accesses are penalized.
+Hi Ingo,
+	Please find the patchset that introduces generic Hardware Breakpoint
+interfaces and an implementation for x86/x86_64 architecture.
 
-I think the point Kosaki is trying to make is that reclaim happens really
-aggressively for processes on node 0 versus node 1.  Maybe I am clinging
-too strongly to one of the earlier posts, but that is what I read between
-the lines.
+In this iteration, the patches for HW Breakpoint interfaces sent here:
+http://lkml.org/lkml/2009/5/15/139 have been combined with patches containing
+improvements and minor fixes (posted here: http://lkml.org/lkml/2009/5/19/264)
+for easy integration into -tip tree.
 
-That frequent reclaim is impacting allocations when he would rather they
-skip the reclaim and go off node.  Again, it sounds like he prefers tuning
-the default to what works best for him.  I don't too strongly disagree,
-as long as the default isn't being changed capriciously.
-
-I have always expected that NUMA boxes had reasons for preferring node
-locality.  Maybe I misunderstand.  Maybe Ci7 is special and does not
-have any impact for off socket references.  I would be surprised by that
-after reading to literature, but I have not tested latency or bandwidth
-on one so I can not say.
-
-Personally, it sounds like if I had a box configured as his is, I would
-use a cpuset to restrict most memory hungry things from using cpus
-on node 0 and leave that as the small 'junk processes' cpu.  Maybe even
-restrict things like cron etc to that corner of the system.
+Kindly accept the same.
 
 Thanks,
-Robin
+K.Prasad
+
