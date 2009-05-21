@@ -1,117 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756075AbZEUNtU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755611AbZEUNwV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756075AbZEUNtU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 09:49:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753817AbZEUNtE
+	id S1755611AbZEUNwV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 09:52:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753087AbZEUNwM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 09:49:04 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:49960 "EHLO mx2.redhat.com"
+	Thu, 21 May 2009 09:52:12 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:44306 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752729AbZEUNtC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 09:49:02 -0400
-Date: Thu, 21 May 2009 15:48:57 +0200
-From: Jiri Pirko <jpirko@redhat.com>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: linux1394-devel@lists.sourceforge.net, linux-hotplug@vger.kernel.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Jay Fenlason <fenlason@redhat.com>
-Subject: Re: [PATCH] ieee1394: eth1394: use "firewire%d" instead of "eth%d"
-	as interface name
-Message-ID: <20090521134856.GA3457@psychotron.englab.brq.redhat.com>
-References: <tkrat.21c425cc195510c9@s5r6.in-berlin.de>
+	id S1752792AbZEUNwL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 May 2009 09:52:11 -0400
+Message-ID: <4A155C86.7010604@redhat.com>
+Date: Thu, 21 May 2009 16:52:06 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <tkrat.21c425cc195510c9@s5r6.in-berlin.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Gregory Haskins <ghaskins@novell.com>
+CC: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       sfr@canb.auug.org.au, kvm@vger.kernel.org
+Subject: Re: [PATCH v2] kvm: fix irqfd build failure discovered in linux-next
+References: <20090521172122.bb12027c.sfr@canb.auug.org.au> <20090521132817.8218.92948.stgit@dev.haskins.net>
+In-Reply-To: <20090521132817.8218.92948.stgit@dev.haskins.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thu, May 21, 2009 at 03:29:10PM CEST, stefanr@s5r6.in-berlin.de wrote:
->Change the initial name of IP-over-1394 networking interfaces from
->"eth[0-9]+" to "firewire[0-9]+".
+Gregory Haskins wrote:
+> Stephen Rothwell noted a build failure in arch != x86 in last nights
+> linux-next tree, as noted here:
 >
->This should have been done years ago for the reason mentioned in the
->inline comment.  The naming issue basically prevented acceptance of
->IP networking over 1394 on Linux.
+> http://lkml.org/lkml/2009/5/21/32
 >
->The future IP-over1394 driver in the newer alternative firewire driver
->stack will use the "firewire%d" format from the start while "eth%d" will
->no longer be used in the new driver.
+> This patch corrects the build issue by requiring explicit support for
+> IRQFD to be defined, and only defining it on x86 (the only arch fully
+> supported).  The code itself isnt architecture dependent, but we need
+> to add a new file to each makefile, advertise the capability, and
+> of course, test that it works for each supported arch.  We will submit
+> patches against each relevant arch at a later time to enable support
+> there as well.
 >
->Necessary changes in userland:
->
->People who use the eth1394 driver either have to update their network
->configuration (or instead perhaps respecpective udev interface renaming
->rules) to the new names, or add
->
->    options eth1394 firewire_interface_name=N
->
->to /etc/modprobe.conf or /etc/modprobe.d/whatever if they really prefer
->the old names.
->
->Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
->---
-> drivers/ieee1394/eth1394.c |   23 ++++++++++++++++++++++-
-> 1 file changed, 22 insertions(+), 1 deletion(-)
->
->Index: linux/drivers/ieee1394/eth1394.c
->===================================================================
->--- linux.orig/drivers/ieee1394/eth1394.c
->+++ linux/drivers/ieee1394/eth1394.c
->@@ -146,6 +146,25 @@ MODULE_DESCRIPTION("IEEE 1394 IPv4 Drive
-> MODULE_LICENSE("GPL");
-> 
-> /*
->+ * Legacy option:  Choose between "eth%d" (old) and "firewire%d" (new, default)
->+ * as name template of eth1304's networking interfaces.
->+ *
->+ * eth1394 used to set "eth[0-9]+" as the initial name of an IP-over-1394
->+ * networking interface.  This caused trouble for users and admins since
->+ * it is indistinguishable from Ethernet drivers' interfaces.
->+ *
->+ * From Linux 2.6.31 on, "eth[0-9]+" remains only an option which can be
->+ * activated by setting the following module parameter to N.  The default
->+ * name format is "firewire[0-9]+" now.  This way, people will immediately
->+ * recognize what kind of networking interface this is, and no mix-ups
->+ * with Ethernet interface configurations will happen anymore.
->+ */
->+static int firewire_interface_name = 1;
->+module_param(firewire_interface_name, bool, S_IRUGO | S_IWUSR);
->+MODULE_PARM_DESC(firewire_interface_name, "use 'firewire' (= Y, default) or "
->+		 "'eth' (= N, legacy option) as name prefix of interfaces");
->+
->+/*
->  * The max_partial_datagrams parameter is the maximum number of fragmented
->  * datagrams per node that eth1394 will keep in memory.  Providing an upper
->  * bound allows us to limit the amount of memory that partial datagrams
->@@ -595,7 +614,9 @@ static void ether1394_add_host(struct hp
-> 		return;
-> 	}
-> 
->-	dev = alloc_netdev(sizeof(*priv), "eth%d", ether1394_init_dev);
->+	dev = alloc_netdev(sizeof(*priv),
->+			   firewire_interface_name ? "firewire%d" : "eth%d",
+>  
+> +config HAVE_KVM_EVENTFD
+> +       bool
+> +       default y
+> +
+>   
 
-Isn't "firewire" too long? Wouldn't it be better to use some addrev like other
-devices do? "fw"? To safe some time and possible troubles with typos.
+The build system will complain if it sees a symbol used but not defined; 
+so you have to define it for all four archs.  So I went ahead and did 
+virt/kvm/Kconfig and adapted your patch to use it.
 
-Just a thought.
 
-		Jirka
+-- 
+error compiling committee.c: too many arguments to function
 
->+			   ether1394_init_dev);
-> 	if (dev == NULL) {
-> 		ETH1394_PRINT_G(KERN_ERR, "Out of memory\n");
-> 		goto out;
->
->-- 
->Stefan Richter
->-=====-==--= -=-= =-=-=
->http://arcgraph.de/sr/
->
->--
->To unsubscribe from this list: send the line "unsubscribe netdev" in
->the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
