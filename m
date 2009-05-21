@@ -1,52 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755611AbZEUQnc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755447AbZEUQrT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755611AbZEUQnc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 12:43:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753786AbZEUQnW
+	id S1755447AbZEUQrT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 12:47:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753243AbZEUQrE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 12:43:22 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:65526 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752959AbZEUQnU convert rfc822-to-8bit (ORCPT
+	Thu, 21 May 2009 12:47:04 -0400
+Received: from acsinet12.oracle.com ([141.146.126.234]:35146 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753171AbZEUQrD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 12:43:20 -0400
+	Thu, 21 May 2009 12:47:03 -0400
+Message-ID: <4A1585AA.9010002@oracle.com>
+Date: Thu, 21 May 2009 09:47:38 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-In-Reply-To: <4A1565B6.10907@s5r6.in-berlin.de>
-References: <tkrat.21c425cc195510c9@s5r6.in-berlin.de> <20090521134856.GA3457@psychotron.englab.brq.redhat.com> 
-	<4A1565B6.10907@s5r6.in-berlin.de>
-From: Kay Sievers <kay.sievers@vrfy.org>
-Date: Thu, 21 May 2009 18:43:01 +0200
-Message-ID: <ac3eb2510905210943h109e6cc6o76e9978fe47a6eac@mail.gmail.com>
-Subject: Re: [PATCH] ieee1394: eth1394: use "firewire%d" instead of "eth%d" as 
-	interface name
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Jiri Pirko <jpirko@redhat.com>, linux1394-devel@lists.sourceforge.net,
-       linux-hotplug@vger.kernel.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Jay Fenlason <fenlason@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: Ian Campbell <ian.campbell@citrix.com>
+CC: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Becky Bruce <beckyb@kernel.crashing.org>, Olaf Kirch <okir@suse.de>,
+       Ingo Molnar <mingo@elte.hu>, Greg KH <gregkh@suse.de>,
+       xen-devel <xendevel@lists.xensource.com>,
+       x86 maintainers <x86@kernel.org>, lkml <linux-kernel@vger.kernel.org>,
+       Tony Breeds <tony@bakeyournoodle.com>
+Subject: Re: swiotlb: remove __weak hooks in favour of architecture-specific
+ functions
+References: <1242906335.22654.188.camel@zakaz.uk.xensource.com> <1242922528-5982-1-git-send-email-ian.campbell@citrix.com>
+In-Reply-To: <1242922528-5982-1-git-send-email-ian.campbell@citrix.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Source-IP: abhmt004.oracle.com [141.146.116.13]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010206.4A158516.0090:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 21, 2009 at 16:31, Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
-> Usually I prefer brevity too.  Alas, it may not be clear to many people what
-> "fw" is supposed to mean.  People might associate it with, let's say,
-> "firewall" before "firewire" when they deal with networking. However, more
->  opinions on this are welcome.
+Ian Campbell wrote:
+> At the end of this series there are no more __weak functions in
+> lib/swiotlb.c
+> 
+> The series adds several hook functions to the x86 architecture. Would
+> they be preferred as a struct x86_swiotlb_ops or as individual hooks?
+> 
+> I was unsure what to do about powerpc in most places since the
+> existing support seems to in-progress so it wasn't always clear where
+> to put the implementation. If there is a tree somewhere with more
+> complete support I'll be happy to provide additional patches.
+> 
+> Boot tested on x86 under xen but not even compiled for ia64 or
+> powerpc. If someone can point me to a decent source of cross compilers
+> I can sort that out. (http://www.kernel.org/pub/tools/crosstool/ seems
+> to be out-of-date and only has ia64 in any case)
 
-Yeah, common one is also "firmware". I think "firewire" is fine.
+Try these.  They are fairly current.  I have used several of them.
 
-> As for practical length restrictions:  The kernel's networking core requires
-> that these names fit into 15 characters plus trailing \0.  I don't have an
-> idea whether there are userland components which have even tighter
-> restrictions.
->
-> Does anybody know of potential trouble in networking tools if interface
-> names are 9 or 10 characters long?
+http://bakeyournoodle.com/cross/
 
-I don't think so, stuff at the tools level usually works flawlessly
-with "eth0_rename_ren" devices, when things went wrong with renaming
-the devices. :)
-
-Kay
+-- 
+~Randy
+LPC 2009, Sept. 23-25, Portland, Oregon
+http://linuxplumbersconf.org/2009/
