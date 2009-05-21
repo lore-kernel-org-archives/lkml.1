@@ -1,58 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756803AbZEUUdX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756656AbZEUUrn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756803AbZEUUdX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 16:33:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755120AbZEUUdI
+	id S1756656AbZEUUrn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 16:47:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753743AbZEUUrf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 16:33:08 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34410
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755081AbZEUUdG (ORCPT
+	Thu, 21 May 2009 16:47:35 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:60363 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753703AbZEUUrf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 16:33:06 -0400
-Date: Thu, 21 May 2009 13:33:04 -0700 (PDT)
-Message-Id: <20090521.133304.10307675.davem@davemloft.net>
-To: stefanr@s5r6.in-berlin.de
-Cc: linux1394-devel@lists.sourceforge.net, linux-hotplug@vger.kernel.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       fenlason@redhat.com
-Subject: Re: [PATCH] ieee1394: eth1394: use "firewire%d" instead of "eth%d"
- as interface name
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <4A15B5FE.3070207@s5r6.in-berlin.de>
-References: <tkrat.21c425cc195510c9@s5r6.in-berlin.de>
-	<20090521.123403.13286908.davem@davemloft.net>
-	<4A15B5FE.3070207@s5r6.in-berlin.de>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Thu, 21 May 2009 16:47:35 -0400
+Date: Thu, 21 May 2009 21:47:13 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Larry H." <research@subreption.com>
+Cc: Rik van Riel <riel@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
+       linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>,
+       linux-mm@kvack.org, Ingo Molnar <mingo@redhat.com>
+Subject: Re: [patch 0/5] Support for sanitization flag in low-level page
+ allocator
+Message-ID: <20090521214713.65adfd6e@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090521195603.GK10756@oblivion.subreption.com>
+References: <20090520183045.GB10547@oblivion.subreption.com>
+	<1242852158.6582.231.camel@laptop>
+	<4A15A69F.3040604@redhat.com>
+	<20090521202628.39625a5d@lxorguk.ukuu.org.uk>
+	<20090521195603.GK10756@oblivion.subreption.com>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Date: Thu, 21 May 2009 22:13:50 +0200
+> > You do at buffer free time.
+> 
+> Alan, I think you will agree with me that forcing people to know what
+> they have to do exactly with their buffers when they will contain
+> confidential/sensitive data is suboptimal. Like it's been said before,
 
-> But I mildly disagree with the notion that the kernel can't start off
-> with more qualification of the names than merely ensuring their
-> uniqueness.  Or the other way around: Even an entirely meaningless
-> prefix would be better than "eth..", or no prefix if that's possible,
-> because eth suspiciously sounds like Ethernet with which the misnamed
-> RFC 2734 driver eth1394 has very little to do.
+In the kernel no and page flags are very precious, very few and if we run
+out will cost us a vast amount of extra kernel memory. If page flags were
+free the question would be trivial - but they are not. Thus it is worth
+asking whether its actually harder to remember to zap the buffer or set
+and clear the flag correctly.
 
-Even the driver source file is named "ethXXX"!  All of the macros
-in the driver are named ETH*.  The eth1394hdr looks eerily similar
-to a real ethernet header except that it lacks a source MAC
-address.  It's addressing information plus a 16-bit (wow, why that
-size huh?) protocol field.  A lot like ethernet.
+> the clearing isn't the only issue here. We have pagination to disk,
+> re-allocation leaks, etc.
 
-At the very least, it's related and similar.  So there is really
-nothing inappropriate about eth* naming.
+There is no kernel paging (except virtualised but that is an entire other
+can of worms we shouldn't open), you can handle reallocation concerns
+without page flags by using a SLAB type for 'secure' allocations which
+clears the entry on free.
 
-> However, how mild my disagreement is should be apparent from the fact
-> that I didn't bother to suggest changing it before now, in 2009. :-)
+> > Still doesn't need a page flag - that is a vma flag which is far cheaper.
+> > Also means you can get rid of the stupid mlock() misuse by things like
+> > GPG to work around OS weaknesses by crypting the page if it hits
+> > disk/swap/whatever.
+> 
+> Do you suggest a vma flag should be created for this as well?
 
-You have more to lose by changing this now (breaking existing systems,
-and yes I did see the hack workaround you posted) instead of fixing
-userspace to make whatever indications you deem appropriate.
+You don't need a page flag, just a per vma flag and something akin to
+madvise() to set the flag on the VMA (and/or split the VMA for partial
+maps as we do for anything else). VMA flags are cheap.
+
+> The point is that the keys or sensitive marked pages should never, ever
+> be swapped to disk, by any means. Right now the patch only affects
+> kernel code, the task related flag and functionality patches haven't been
+> submitted yet.
+
+If you are paging them to a crypted filestore they should be safe on
+disk. What is your problem with that ? If your suspend image is
+compromised it doesn't really matter if you wiped the data as what you
+resume may then wait for the new keys and compromise those. In fact
+having a page flag makes it easier for the attack code to know what to
+capture and send to the bad guys...
+
+> Regarding retrieving the encryption keys, IVs, and so forth, why bother
+> reading the data remaining on disk? You can just retrieve them off
+> memory (ex. via rogue driver or some re-allocation bug scenario,
+> information leak or similar issue) and that's it.
+
+I was assuming you'd wipe such data from memory on a suspend to disk.
+However on a suspend to disk its basically as cheap to wipe all of memory
+and safer than wiping random bits and praying you know what the compiler
+did and you know what some other bit of library did.
+
+> After all, that was the beauty of Linux since the start. We don't need
+> to follow a political or corporate agenda in these regards. Right?
+
+Indeed - but a technically sound solution that doesn't waste a page flag
+is still important. It's btw not as simple as a page flag anyway - the
+kernel stores some stuff in places that do not have page flags, it also
+has kmaps and other things that will give you suprises.
+
+Perhaps you should post your threat model to go with the patches. At the
+moment your model doesn't seem to make sense.
+
+Surely we can attack the problem far more directly for all but S2R by
+
+- choosing to use encrypted swap and encrypted S2D images (already
+  possible)
+- wiping the in memory image on S2D if the user chooses (which would be
+  smart)
+
+That has the advantage that nobody has to label pages sensitive - which
+is flawed anyway, we want to label pages "non-sensitive" in the ideal
+world so we default secure.
+
+
+
