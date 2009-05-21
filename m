@@ -1,169 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752318AbZEUFqm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752866AbZEUFrt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752318AbZEUFqm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 01:46:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751263AbZEUFqe
+	id S1752866AbZEUFrt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 01:47:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751263AbZEUFrk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 01:46:34 -0400
-Received: from rv-out-0506.google.com ([209.85.198.237]:32756 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750847AbZEUFqd (ORCPT
+	Thu, 21 May 2009 01:47:40 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:58368 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750725AbZEUFrj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 01:46:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:reply-to:to:cc:content-type:organization:date
-         :message-id:mime-version:x-mailer;
-        b=Ph4e2h6KpWJJOHjsjC9cllCN25XUakxyRs3zGMac3OY80ZNTH8qWAEyKiMq7U0UJun
-         33gzYyz5Kij7BY0o7BNsGqwocU//zsyzBF+f2TVKkIsR3jCVyEgwTgKNByshhEDOmYxJ
-         6pOednoo50Q7iMsNiq7lrVgst0IEsHTQuqBNw=
-Subject: [PATCH 0/1 ,v3] sched: fix typo in sched-rt-group.txt file
-From: GeunSik Lim <leemgs1@gmail.com>
-Reply-To: leemgs1@gmail.com
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-rt-users <linux-rt-users@vger.kernel.org>,
-       tglx <tglx@linutronix.de>, williams <williams@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Content-Type: multipart/mixed; boundary="=-ltacyN9FSQbNQGx1C6+J"
-Organization: Private
-Date: Thu, 21 May 2009 14:39:20 +0900
-Message-Id: <1242884360.31161.77.camel@centos51>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
+	Thu, 21 May 2009 01:47:39 -0400
+Message-ID: <4A14EA86.2060609@zytor.com>
+Date: Wed, 20 May 2009 22:45:42 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Masami Hiramatsu <mhiramat@redhat.com>
+CC: =?UTF-8?B?UHJ6ZW15c8WCYXcgUGF3ZcWCY3p5aw==?= 
+	<przemyslaw@pawelczyk.it>,
+       Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Andi Kleen <ak@linux.intel.com>,
+       Vegard Nossum <vegard.nossum@gmail.com>, Avi Kivity <avi@redhat.com>
+Subject: Re: [PATCH -tip v6 1/5] x86: instruction decorder API
+References: <20090520205758.25003.44632.stgit@localhost.localdomain>	 <20090520205805.25003.71314.stgit@localhost.localdomain> <40e92d5b0905201501i1548621xe1ee63aa88129a0@mail.gmail.com> <4A1488A2.30706@redhat.com>
+In-Reply-To: <4A1488A2.30706@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Masami Hiramatsu wrote:
+>>
+>> /usr/bin/env 'awk -f' gen-insn-attr-x86.awk
+>>
+>> which is obviously wrong.
+> 
+> Oops, right. Anyway, there is no reason that we make it
+> executable because it's always called from Makefile.
+> So, I think just removing that line is better way.
+> 
 
---=-ltacyN9FSQbNQGx1C6+J
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+I suggest leaving in a #!/bin/awk line just for documentation's sake,
+though.
 
+	-hpa
 
-
-Dear Ingo,
-
-I made 2 patch files again about static prioriy levels to map between kernel-space
-and usper-space according to opinions and helps from Peter, Ingo, Steven.
-
-Fix static priority related range and chart map(userspace/kernelspace) of ftrace.
-  - about chart map of static priority  in ftrace.txt file
-  - about static priority levels(range) in sched-rt-group.txt file
-
-Please, drop my previous version and merge this. 
-
-Changelog since V3
- o Modified kernel static priority to map user rt priority ( 99 ~ 1).
-    - Archives: http://marc.info/?l=linux-kernel&m=124279443511114&w=2
-    - before  : Kernel priority: 0(high) to 99(low)  --> user RT priority 99(high) to 1(low)
-    - after   : Kernel priority: 0(high) to 98(low)  --> user RT priority 99(high) to 1(low)
-
-
-Changelog since V2
- o Modified description static priority(SCHED_FIFO,SCHED_RR) levels of user-space using sched_setscheduler(2)
-     - Archives: http://marc.info/?t=124211992800003&r=1&w=2     
-     - before  : Kernel priority: 0(high) to 99(low)  --> user RT priority 99(high) to 0(low)
-     - after   : Kernel priority: 0(high) to 99(low)  --> user RT priority 99(high) to 1(low)
- o Modified static priority related quick chart of sched_switch section in ./Documentation/trace/ftrace.txt file
-
-
-Changelog since V1
- o Changed static priority levels of kernel-space. ( 0 ~ 139 --> 0-99 ) in sched-rt-group.txt file
-
-
-commit d6af702008117ca489a2f5476239d1688a517e98
-Author: GeunSik,Lim <leemgs1@gmail.com>
-Date:   Tue May 12 17:20:32 2009 +0900
-
-    sched: fix typo in sched-rt-group.txt file
-    
-    Fix typo about static priority's range.
-
-    * Kernel Space priority 0(high) to 98(low)   --> User Space RT priority 99(high) to 1(low) with SCHED_RR or SCHED_FIFO
-    * Kernel Space priority 99 --> sched_priority is not used in scheduling decisions (it must be specified as 0)
-    * Kernel Space priority 100(high) to 139(low)--> User Space nice -20(high) to 19(low)
-
-    For processes scheduled under one of the normal scheduling policies
-    (SCHED_OTHER, SCHED_IDLE, SCHED_BATCH), sched_priority is not used in
-    scheduling decisions (it must be specified as 0).
-
-    Processes scheduled under one of the real-time policies(SCHED_FIFO,SCHED_RR)
-    have a sched_priority value in the range 1 (low) to 99 (high). 
-    (reference: http://www.kernel.org/doc/man-pages/online/pages/man2/sched_setscheduler.2.html)
-    
-    Signed-off-by: GeunSik Lim <geunsik.lim@samsung.com>
-
-diff --git a/Documentation/scheduler/sched-rt-group.txt b/Documentation/scheduler/sched-rt-group.txt
-index 5ba4d3f..1537146 100644
---- a/Documentation/scheduler/sched-rt-group.txt
-+++ b/Documentation/scheduler/sched-rt-group.txt
-@@ -169,7 +169,7 @@ get their allocated time.
- 
- Implementing SCHED_EDF might take a while to complete. Priority Inheritance is
- the biggest challenge as the current linux PI infrastructure is geared towards
--the limited static priority levels 0-139. With deadline scheduling you need to
-+the limited static priority levels 0-99. With deadline scheduling you need to
- do deadline inheritance (since priority is inversely proportional to the
- deadline delta (deadline - now).
- 
-
-
-
-
------------------------------------------------
-To unsubscribe from this list: send the line "unsubscribe linux-***" 
-in the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
-
-GeunSik Lim (ELS - OS Group - S/W Lab - SAIT - SAMSUNG)
-e-Mail  :1) geunsik.lim@samsung.com
-         2) leemgs@gmail.com , leemgs1@gmail.com
-HomePage: http://intomail.dnip.net/invain/me/
------------------------------------------------
-
---=-ltacyN9FSQbNQGx1C6+J
-Content-Disposition: attachment; filename=fix-typo-static-priority-levels-sched-rt-group.v3.patch
-Content-Type: text/x-patch; name=fix-typo-static-priority-levels-sched-rt-group.v3.patch; charset=euckr
-Content-Transfer-Encoding: 7bit
-
-commit d6af702008117ca489a2f5476239d1688a517e98
-Author: GeunSik,Lim <leemgs1@gmail.com>
-Date:   Tue May 12 17:20:32 2009 +0900
-
-    sched: fix typo in sched-rt-group.txt file
-    
-    Fix typo about static priority's range.
-
-    * Kernel Space priority 0(high) to 98(low)   --> User Space RT priority 99(high) to 1(low) with SCHED_RR or SCHED_FIFO
-    * Kernel Space priority 99 --> sched_priority is not used in scheduling decisions (it must be specified as 0)
-    * Kernel Space priority 100(high) to 139(low)--> User Space nice -20(high) to 19(low)
-
-    For processes scheduled under one of the normal scheduling policies
-    (SCHED_OTHER, SCHED_IDLE, SCHED_BATCH), sched_priority is not used in
-    scheduling decisions (it must be specified as 0).
-
-    Processes scheduled under one of the real-time policies(SCHED_FIFO,SCHED_RR)
-    have a sched_priority value in the range 1 (low) to 99 (high). 
-    (reference: http://www.kernel.org/doc/man-pages/online/pages/man2/sched_setscheduler.2.html)
-    
-    Signed-off-by: GeunSik Lim <geunsik.lim@samsung.com>
-
-diff --git a/Documentation/scheduler/sched-rt-group.txt b/Documentation/scheduler/sched-rt-group.txt
-index 5ba4d3f..1537146 100644
---- a/Documentation/scheduler/sched-rt-group.txt
-+++ b/Documentation/scheduler/sched-rt-group.txt
-@@ -169,7 +169,7 @@ get their allocated time.
- 
- Implementing SCHED_EDF might take a while to complete. Priority Inheritance is
- the biggest challenge as the current linux PI infrastructure is geared towards
--the limited static priority levels 0-139. With deadline scheduling you need to
-+the limited static priority levels 0-99. With deadline scheduling you need to
- do deadline inheritance (since priority is inversely proportional to the
- deadline delta (deadline - now).
- 
-
---=-ltacyN9FSQbNQGx1C6+J--
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
