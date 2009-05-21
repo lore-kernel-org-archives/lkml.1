@@ -1,184 +1,277 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754070AbZEUCup@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756621AbZEUCwk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754070AbZEUCup (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 22:50:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754979AbZEUCui
+	id S1756621AbZEUCwk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 22:52:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754918AbZEUCwc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 22:50:38 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:39985 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754944AbZEUCuh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 22:50:37 -0400
-Date: Wed, 20 May 2009 19:50:37 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Janos Haar <djani22@netcenter.hu>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Fw: RCU detected CPU 1 stall (t=4295904002/751 jiffies) Pid:
-	902, comm: md1_raid5
-Message-ID: <20090521025037.GD6839@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <030101c9d92f$d0668600$0400a8c0@dcccs>
+	Wed, 20 May 2009 22:52:32 -0400
+Received: from mail-pz0-f177.google.com ([209.85.222.177]:48661 "EHLO
+	mail-pz0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753596AbZEUCwb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 22:52:31 -0400
+X-Greylist: delayed 352 seconds by postgrey-1.27 at vger.kernel.org; Wed, 20 May 2009 22:52:30 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :user-agent;
+        b=GUqpvmcZ9ZrZivJ/59O3Lir9dUvODJuDTVWiiuuiDU9n0v7NnMbA8jdEKJMa0DJw3b
+         zeQyI6yVMB7cDHjbkwmJcs1frRod/LOZ+rEgzMdGLXnkkZohFyBo/VqMkQ4U4dyMDrGD
+         FPj53X6Wvr5u+ItMQ6Z7j2aVVZaZKOXyHxUks=
+Date: Wed, 20 May 2009 19:46:35 -0700
+From: Chris Sanford <crsanford@gmail.com>
+To: kernel-janitors@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, peterz@infradead.org
+Subject: Re: [PATCH] include KERN_* constant in printk calls
+Message-ID: <20090521024635.GA4030@chrisubuntu-laptop>
+Mail-Followup-To: kernel-janitors@vger.kernel.org,
+	linux-kernel@vger.kernel.org, peterz@infradead.org
+References: <20090518233121.GC3109@chrisubuntu-laptop> <20090519090049.GB9388@elte.hu> <20090520043215.GA3077@chrisubuntu-laptop> <20090520083719.GG6736@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <030101c9d92f$d0668600$0400a8c0@dcccs>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <20090520083719.GG6736@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 20, 2009 at 11:46:07AM +0200, Janos Haar wrote:
-> Hello list,
->
-> Somebody know, what is this?
-> May 17 23:12:13 gladiator-afth1 kernel: RCU detected CPU 1 stall 
-> (t=4295904002/751 jiffies)
-> May 17 23:12:13 gladiator-afth1 kernel: Pid: 902, comm: md1_raid5 Not 
-> tainted 2.6.28.10 #1
-> May 17 23:12:13 gladiator-afth1 kernel: Call Trace:
-> May 17 23:12:13 gladiator-afth1 kernel:  <IRQ>  [<ffffffff80265395>] ? 
-> get_timestamp+0x9/0xf
-> May 17 23:12:13 gladiator-afth1 kernel:  [<ffffffff8026854f>] 
-> __rcu_pending+0x64/0x1e2
-> May 17 23:12:13 gladiator-afth1 kernel:  [<ffffffff80268703>] 
-> rcu_pending+0x36/0x6f
-> May 17 23:12:13 gladiator-afth1 kernel:  [<ffffffff8023f546>] 
-> update_process_times+0x37/0x5f
-> May 17 23:12:13 gladiator-afth1 kernel:  [<ffffffff802504a7>] 
-> tick_periodic+0x6e/0x7a
-> May 17 23:12:13 gladiator-afth1 kernel:  [<ffffffff802504d4>] 
-> tick_handle_periodic+0x21/0x65
-> May 17 23:12:13 gladiator-afth1 kernel:  [<ffffffff8021ad60>] 
-> smp_apic_timer_interrupt+0x8f/0xad
-> May 17 23:12:13 gladiator-afth1 kernel:  [<ffffffff8020bf1b>] 
-> apic_timer_interrupt+0x6b/0x70
-> May 17 23:12:13 gladiator-afth1 kernel:  <EOI>  [<ffffffff80820b8f>] ? 
-> _spin_unlock_irqrestore+0x13/0x17
+Here is the updated patch for sched.c. It replaces all the printk calls with their
+corresponding pr_* call. The five KERN_DEBUG calls have been changed to
+pr_info.
 
-One of the following functions is looping in the kernel.  If you are
-running with HZ=250, it has been looping for about three seconds.
-Interrupts are enabled, but preemption must be disabled (perhaps due
-to !CONFIG_PREEMPT).
+Signed-off-by: Chris Sanford <crsanford@gmail.com>
 
-							Thanx, Paul
+---
 
-> May 17 23:12:13 gladiator-afth1 kernel:  [<ffffffff80728720>] ? 
-> bitmap_daemon_work+0x142/0x3b0
-> May 17 23:12:18 gladiator-afth1 kernel:  [<ffffffff80724c58>] ? 
-> md_check_recovery+0x1b/0x45b
-> May 17 23:12:18 gladiator-afth1 kernel:  [<ffffffff8071976c>] ? 
-> raid5d+0x5d/0x503
-> May 17 23:12:18 gladiator-afth1 kernel:  [<ffffffff80726533>] ? 
-> md_thread+0xd5/0xed
-> May 17 23:12:18 gladiator-afth1 kernel:  [<ffffffff80248e4a>] ? 
-> autoremove_wake_function+0x0/0x38
-> May 17 23:12:18 gladiator-afth1 kernel:  [<ffffffff8072645e>] ? 
-> md_thread+0x0/0xed
-> May 17 23:12:18 gladiator-afth1 kernel:  [<ffffffff80248d3b>] ? 
-> kthread+0x49/0x76
-> May 17 23:12:18 gladiator-afth1 kernel:  [<ffffffff8020c169>] ? 
-> child_rip+0xa/0x11
-> May 17 23:12:18 gladiator-afth1 kernel:  [<ffffffff80248cf2>] ? 
-> kthread+0x0/0x76
-> May 17 23:12:18 gladiator-afth1 kernel:  [<ffffffff8020c15f>] ? 
-> child_rip+0x0/0x11
-> Neilbrown from the RAID list suggested to ask someone else...(The mail is 
-> below.)Thanks,Janos Haar----- Original Message ----- From: "Janos Haar" 
-> <janos.haar@netcenter.hu>
-> To: "Neil Brown" <neilb@suse.de>
-> Cc: <linux-raid@vger.kernel.org>
-> Sent: Tuesday, May 19, 2009 12:30 PM
-> Subject: Re: RCU detected CPU 1 stall (t=4295904002/751 jiffies) Pid: 902, 
-> comm: md1_raid5
->
->
->>
->> ----- Original Message ----- From: "Neil Brown" <neilb@suse.de>
->> To: "Janos Haar" <janos.haar@netcenter.hu>
->> Cc: <linux-raid@vger.kernel.org>
->> Sent: Tuesday, May 19, 2009 3:05 AM
->> Subject: Re: RCU detected CPU 1 stall (t=4295904002/751 jiffies) Pid: 902, 
->> comm: md1_raid5
->>
->>
->>> On Tuesday May 19, janos.haar@netcenter.hu wrote:
->>>> Hello list, Neil,
->>>>
->>>> Somebody can say something about this issue?
->>>> I am not surprised, if it is hardware related, but this is on a brand 
->>>> new
->>>> server, so i am looking for a solution... :-)
->>>> May 17 23:12:13 gladiator-afth1 kernel: RCU detected CPU 1 stall
->>>> (t=4295904002/751 jiffies)
->>>
->>> I have no idea what this means.
->>> I've occasionally seen this sort of message in early boot then the
->>> system continued to work perfectly so I figured it was an early-boot
->>> glitch.  I suggest asking someone who understands RCU.
->>>
->>>>
->>>> The entire log is here:
->>>> http://download.netcenter.hu/bughunt/20090518/messages
->>>>
->>>> The system is on the md1, and working, but slowly.
->>>
->>> How slowly?  Is the slowness due to disk throughput?
->>
->> No no, this is a fresh and idle server.
->> I have configured the disks, raid on another PC, and when it finished, i 
->> have copy up the known good, pre-installed sw pack with old 2.6.18.
->> This pack is good, tested on many times, and this reports too this issue 
->> on this machine. (first)
->> I have compiled the 2.6.28.10 on it, it takes about 6 hour! 8-/
->> But the 2.6.28.10 reports this too.
->>
->> The slowness is not disk based, i think, on idle time if i move the 
->> selector line in mc, this stopps too for some seconds or i can't type in 
->> bash when this happens, and another one RCU message comes to the log...
->> (It happens periodically, independently of i am doing something or not.)
->>
->> I am not sure, it is raid related or not, but the kernel reports only the 
->> md1_raid5 pid, not another one.
->> This is why i am asking here first.
->>
->> Thanks anyway. :-)
->>
->>> Have you tested the individual drives and compared that with the
->>> array?
->>
->> This is a brand new hw, with 4x500GB samsung drive, wich reports no 
->> problem at all by smart.
->>
->>>
->>>
->>>> If i left the server for 1 day,  it will crash without a saved log.
->>>
->>> This is a concern!  It usually points to some sort of hardware
->>> problem, but it is very hard to trace.
->>> Is the power supply rated high enough to support all devices?
->>
->> I am using 550W good quality new PS, and the PC uses only 55-65W, 
->> measured. ;-)
->> (1x core2duo, 4x hdd, nothing more interesting)
->>
->>> I cannot think of anything else to suggest .. except start swapping
->>> components until the problem goes away...
->>
->> In this way, i need to start with the motherboard. 8-(
->>
->> Thanks a lot,
->> Janos Haar
->>
->>>
->>> NeilBrown
->>
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-raid" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html 
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 26efa47..cfe42e7 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -4912,7 +4912,7 @@ static noinline void __schedule_bug(struct task_struct *prev)
+ {
+ 	struct pt_regs *regs = get_irq_regs();
+ 
+-	printk(KERN_ERR "BUG: scheduling while atomic: %s/%d/0x%08x\n",
++	pr_err("BUG: scheduling while atomic: %s/%d/0x%08x\n",
+ 		prev->comm, prev->pid, preempt_count());
+ 
+ 	debug_show_held_locks(prev);
+@@ -6474,23 +6474,23 @@ void sched_show_task(struct task_struct *p)
+ 	unsigned state;
+ 
+ 	state = p->state ? __ffs(p->state) + 1 : 0;
+-	printk(KERN_INFO "%-13.13s %c", p->comm,
++	pr_info("%-13.13s %c", p->comm,
+ 		state < sizeof(stat_nam) - 1 ? stat_nam[state] : '?');
+ #if BITS_PER_LONG == 32
+ 	if (state == TASK_RUNNING)
+-		printk(KERN_CONT " running  ");
++		pr_cont(" running  ");
+ 	else
+-		printk(KERN_CONT " %08lx ", thread_saved_pc(p));
++		pr_cont(" %08lx ", thread_saved_pc(p));
+ #else
+ 	if (state == TASK_RUNNING)
+-		printk(KERN_CONT "  running task    ");
++		pr_cont("  running task    ");
+ 	else
+-		printk(KERN_CONT " %016lx ", thread_saved_pc(p));
++		pr_cont(" %016lx ", thread_saved_pc(p));
+ #endif
+ #ifdef CONFIG_DEBUG_STACK_USAGE
+ 	free = stack_not_used(p);
+ #endif
+-	printk(KERN_CONT "%5lu %5d %6d\n", free,
++	pr_cont("%5lu %5d %6d\n", free,
+ 		task_pid_nr(p), task_pid_nr(p->real_parent));
+ 
+ 	show_stack(p, NULL);
+@@ -6501,10 +6501,10 @@ void show_state_filter(unsigned long state_filter)
+ 	struct task_struct *g, *p;
+ 
+ #if BITS_PER_LONG == 32
+-	printk(KERN_INFO
++	pr_info(
+ 		"  task                PC stack   pid father\n");
+ #else
+-	printk(KERN_INFO
++	pr_info(
+ 		"  task                        PC stack   pid father\n");
+ #endif
+ 	read_lock(&tasklist_lock);
+@@ -6833,7 +6833,7 @@ again:
+ 		 * leave kernel.
+ 		 */
+ 		if (p->mm && printk_ratelimit()) {
+-			printk(KERN_INFO "process %d (%s) no "
++			pr_info("process %d (%s) no "
+ 			       "longer affine to cpu%d\n",
+ 			       task_pid_nr(p), p->comm, dead_cpu);
+ 		}
+@@ -7315,52 +7315,52 @@ static int sched_domain_debug_one(struct sched_domain *sd, int cpu, int level,
+ 
+ 	cpulist_scnprintf(str, sizeof(str), sched_domain_span(sd));
+ 	cpumask_clear(groupmask);
+-
+-	printk(KERN_DEBUG "%*s domain %d: ", level, "", level);
+-
++	
++	pr_info("%*s domain %d: ", level, "", level);
++	
+ 	if (!(sd->flags & SD_LOAD_BALANCE)) {
+-		printk("does not load-balance\n");
++		pr_cont("does not load-balance\n");
+ 		if (sd->parent)
+-			printk(KERN_ERR "ERROR: !SD_LOAD_BALANCE domain"
++			pr_err("ERROR: !SD_LOAD_BALANCE domain"
+ 					" has parent");
+ 		return -1;
+ 	}
+ 
+-	printk(KERN_CONT "span %s level %s\n", str, sd->name);
++	pr_cont("span %s level %s\n", str, sd->name);
+ 
+ 	if (!cpumask_test_cpu(cpu, sched_domain_span(sd))) {
+-		printk(KERN_ERR "ERROR: domain->span does not contain "
++		pr_err("ERROR: domain->span does not contain "
+ 				"CPU%d\n", cpu);
+ 	}
+ 	if (!cpumask_test_cpu(cpu, sched_group_cpus(group))) {
+-		printk(KERN_ERR "ERROR: domain->groups does not contain"
++		pr_err("ERROR: domain->groups does not contain"
+ 				" CPU%d\n", cpu);
+ 	}
+ 
+-	printk(KERN_DEBUG "%*s groups:", level + 1, "");
++	pr_info("%*s groups:", level + 1, "");
+ 	do {
+ 		if (!group) {
+-			printk("\n");
+-			printk(KERN_ERR "ERROR: group is NULL\n");
++			pr_cont("\n");
++			pr_err("ERROR: group is NULL\n");
+ 			break;
+ 		}
+ 
+ 		if (!group->__cpu_power) {
+-			printk(KERN_CONT "\n");
+-			printk(KERN_ERR "ERROR: domain->cpu_power not "
++			pr_cont("\n");
++			pr_err("ERROR: domain->cpu_power not "
+ 					"set\n");
+ 			break;
+ 		}
+ 
+ 		if (!cpumask_weight(sched_group_cpus(group))) {
+-			printk(KERN_CONT "\n");
+-			printk(KERN_ERR "ERROR: empty group\n");
++			pr_cont("\n");
++			pr_err("ERROR: empty group\n");
+ 			break;
+ 		}
+ 
+ 		if (cpumask_intersects(groupmask, sched_group_cpus(group))) {
+-			printk(KERN_CONT "\n");
+-			printk(KERN_ERR "ERROR: repeated CPUs\n");
++			pr_cont("\n");
++			pr_err("ERROR: repeated CPUs\n");
+ 			break;
+ 		}
+ 
+@@ -7368,22 +7368,22 @@ static int sched_domain_debug_one(struct sched_domain *sd, int cpu, int level,
+ 
+ 		cpulist_scnprintf(str, sizeof(str), sched_group_cpus(group));
+ 
+-		printk(KERN_CONT " %s", str);
++		pr_cont(" %s", str);
+ 		if (group->__cpu_power != SCHED_LOAD_SCALE) {
+-			printk(KERN_CONT " (__cpu_power = %d)",
++			pr_cont(" (__cpu_power = %d)",
+ 				group->__cpu_power);
+ 		}
+ 
+ 		group = group->next;
+ 	} while (group != sd->groups);
+-	printk(KERN_CONT "\n");
++	pr_cont("\n");
+ 
+ 	if (!cpumask_equal(sched_domain_span(sd), groupmask))
+-		printk(KERN_ERR "ERROR: groups don't span domain->span\n");
++		pr_err("ERROR: groups don't span domain->span\n");
+ 
+ 	if (sd->parent &&
+ 	    !cpumask_subset(groupmask, sched_domain_span(sd->parent)))
+-		printk(KERN_ERR "ERROR: parent span is not a superset "
++		pr_err("ERROR: parent span is not a superset "
+ 			"of domain->span\n");
+ 	return 0;
+ }
+@@ -7394,14 +7394,14 @@ static void sched_domain_debug(struct sched_domain *sd, int cpu)
+ 	int level = 0;
+ 
+ 	if (!sd) {
+-		printk(KERN_DEBUG "CPU%d attaching NULL sched-domain.\n", cpu);
++		pr_info("CPU%d attaching NULL sched-domain.\n", cpu);
+ 		return;
+ 	}
+ 
+-	printk(KERN_DEBUG "CPU%d attaching sched-domain:\n", cpu);
++	pr_info("CPU%d attaching sched-domain:\n", cpu);
+ 
+ 	if (!alloc_cpumask_var(&groupmask, GFP_KERNEL)) {
+-		printk(KERN_DEBUG "Cannot load-balance (out of memory)\n");
++		pr_info("Cannot load-balance (out of memory)\n");
+ 		return;
+ 	}
+ 
+@@ -8095,14 +8095,14 @@ static int __build_sched_domains(const struct cpumask *cpu_map,
+ 	sched_group_nodes = kcalloc(nr_node_ids, sizeof(struct sched_group *),
+ 				    GFP_KERNEL);
+ 	if (!sched_group_nodes) {
+-		printk(KERN_WARNING "Can not alloc sched group node list\n");
++		pr_warning("Can not alloc sched group node list\n");
+ 		goto free_tmpmask;
+ 	}
+ #endif
+ 
+ 	rd = alloc_rootdomain();
+ 	if (!rd) {
+-		printk(KERN_WARNING "Cannot alloc root domain\n");
++		pr_warning("Cannot alloc root domain\n");
+ 		goto free_sched_groups;
+ 	}
+ 
+@@ -8241,7 +8241,7 @@ static int __build_sched_domains(const struct cpumask *cpu_map,
+ 		sg = kmalloc_node(sizeof(struct sched_group) + cpumask_size(),
+ 				  GFP_KERNEL, i);
+ 		if (!sg) {
+-			printk(KERN_WARNING "Can not alloc domain group for "
++			pr_warning("Can not alloc domain group for "
+ 				"node %d\n", i);
+ 			goto error;
+ 		}
+@@ -8275,7 +8275,7 @@ static int __build_sched_domains(const struct cpumask *cpu_map,
+ 					  cpumask_size(),
+ 					  GFP_KERNEL, i);
+ 			if (!sg) {
+-				printk(KERN_WARNING
++				pr_warning(
+ 				"Can not alloc domain group for node %d\n", j);
+ 				goto error;
+ 			}
+@@ -9075,10 +9075,10 @@ void __might_sleep(char *file, int line)
+ 		return;
+ 	prev_jiffy = jiffies;
+ 
+-	printk(KERN_ERR
++	pr_err(
+ 		"BUG: sleeping function called from invalid context at %s:%d\n",
+ 			file, line);
+-	printk(KERN_ERR
++	pr_err(
+ 		"in_atomic(): %d, irqs_disabled(): %d, pid: %d, name: %s\n",
+ 			in_atomic(), irqs_disabled(),
+ 			current->pid, current->comm);
