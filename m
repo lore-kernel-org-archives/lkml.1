@@ -1,163 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756764AbZEUB4X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756438AbZEUB6L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756764AbZEUB4X (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 21:56:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755593AbZEUB4O
+	id S1756438AbZEUB6L (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 21:58:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753814AbZEUB6E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 21:56:14 -0400
-Received: from stargate.chelsio.com ([67.207.112.58]:29334 "EHLO
-	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756620AbZEUB4M (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 21:56:12 -0400
-From: Divy Le Ray <divy@chelsio.com>
-Subject: [PATCH net-next] cxgb: set phy's mdio dev before the phy init sequence
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       swise@opengridcomputing.com
-Date: Wed, 20 May 2009 18:56:12 -0700
-Message-ID: <20090521015612.1940.83961.stgit@speedy5>
-User-Agent: StGIT/0.14.2
+	Wed, 20 May 2009 21:58:04 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:60995 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753739AbZEUB6E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 21:58:04 -0400
+Message-ID: <4A14B56F.6030109@cn.fujitsu.com>
+Date: Thu, 21 May 2009 09:59:11 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: Jiaying Zhang <jiayingz@google.com>
+CC: Jason Baron <jbaron@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, fweisbec@gmail.com, laijs@cn.fujitsu.com,
+       rostedt@goodmis.org, peterz@infradead.org, mathieu.desnoyers@polymtl.ca,
+       mbligh@google.com, roland@redhat.com, fche@redhat.com
+Subject: Re: [PATCH 0/3] tracepoints: delay argument evaluation
+References: <cover.1242763826.git.jbaron@redhat.com>	 <20090520073348.GA12316@elte.hu> <20090520154241.GC3081@redhat.com> <5df78e1d0905201849l5e71953bg8444166ae3c8f92a@mail.gmail.com>
+In-Reply-To: <5df78e1d0905201849l5e71953bg8444166ae3c8f92a@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Divy Le Ray <divy@chelsio.com>
+Jiaying Zhang wrote:
+> Is it possible to convert blktrace to use event tracer? Then in this case we
 
-mdio's dev field needs to be set before mdio ops occur.
+Yes, I'm doing this, see:
+	http://marc.info/?l=linux-kernel&m=124228198011297&w=2
 
-Signed-off-by: Divy Le Ray <divy@chelsio.com>
----
+> can pass 'md' as the parameter to trace_block_bio_complete and dereference
+> md->queue during assignment.
+> 
 
- drivers/net/chelsio/cphy.h      |    6 ++++--
- drivers/net/chelsio/mv88e1xxx.c |    5 +++--
- drivers/net/chelsio/mv88x201x.c |    4 ++--
- drivers/net/chelsio/my3126.c    |    4 ++--
- drivers/net/chelsio/subr.c      |    5 ++---
- 5 files changed, 13 insertions(+), 11 deletions(-)
+But the problem discussed here exists whether you use plain tracepoints
+or TRACE_EVENT.
 
+Though we can add a new tracepoint named trace_md_bio_complete, this is
+not the way to solve it.
 
-diff --git a/drivers/net/chelsio/cphy.h b/drivers/net/chelsio/cphy.h
-index 8b5165a..1f095a9 100644
---- a/drivers/net/chelsio/cphy.h
-+++ b/drivers/net/chelsio/cphy.h
-@@ -137,10 +137,11 @@ static inline int simple_mdio_write(struct cphy *cphy, int reg,
- }
- 
- /* Convenience initializer */
--static inline void cphy_init(struct cphy *phy, adapter_t *adapter,
-+static inline void cphy_init(struct cphy *phy, struct net_device *dev,
- 			     int phy_addr, struct cphy_ops *phy_ops,
- 			     const struct mdio_ops *mdio_ops)
- {
-+	struct adapter *adapter = netdev_priv(dev);
- 	phy->adapter = adapter;
- 	phy->ops     = phy_ops;
- 	if (mdio_ops) {
-@@ -150,12 +151,13 @@ static inline void cphy_init(struct cphy *phy, adapter_t *adapter,
- 		phy->mdio.mdio_read = mdio_ops->read;
- 		phy->mdio.mdio_write = mdio_ops->write;
- 	}
-+	phy->mdio.dev = dev;
- }
- 
- /* Operations of the PHY-instance factory */
- struct gphy {
- 	/* Construct a PHY instance with the given PHY address */
--	struct cphy *(*create)(adapter_t *adapter, int phy_addr,
-+	struct cphy *(*create)(struct net_device *dev, int phy_addr,
- 			       const struct mdio_ops *mdio_ops);
- 
- 	/*
-diff --git a/drivers/net/chelsio/mv88e1xxx.c b/drivers/net/chelsio/mv88e1xxx.c
-index 0632be0..809047a 100644
---- a/drivers/net/chelsio/mv88e1xxx.c
-+++ b/drivers/net/chelsio/mv88e1xxx.c
-@@ -353,15 +353,16 @@ static struct cphy_ops mv88e1xxx_ops = {
- 	.get_link_status      = mv88e1xxx_get_link_status,
- };
- 
--static struct cphy *mv88e1xxx_phy_create(adapter_t *adapter, int phy_addr,
-+static struct cphy *mv88e1xxx_phy_create(struct net_device *dev, int phy_addr,
- 					 const struct mdio_ops *mdio_ops)
- {
-+	struct adapter *adapter = netdev_priv(dev);
- 	struct cphy *cphy = kzalloc(sizeof(*cphy), GFP_KERNEL);
- 
- 	if (!cphy)
- 		return NULL;
- 
--	cphy_init(cphy, adapter, phy_addr, &mv88e1xxx_ops, mdio_ops);
-+	cphy_init(cphy, dev, phy_addr, &mv88e1xxx_ops, mdio_ops);
- 
- 	/* Configure particular PHY's to run in a different mode. */
- 	if ((board_info(adapter)->caps & SUPPORTED_TP) &&
-diff --git a/drivers/net/chelsio/mv88x201x.c b/drivers/net/chelsio/mv88x201x.c
-index 29e0cba..df880bb 100644
---- a/drivers/net/chelsio/mv88x201x.c
-+++ b/drivers/net/chelsio/mv88x201x.c
-@@ -208,7 +208,7 @@ static struct cphy_ops mv88x201x_ops = {
- 			      MDIO_DEVS_PHYXS | MDIO_DEVS_WIS),
- };
- 
--static struct cphy *mv88x201x_phy_create(adapter_t *adapter, int phy_addr,
-+static struct cphy *mv88x201x_phy_create(struct net_device *dev, int phy_addr,
- 					 const struct mdio_ops *mdio_ops)
- {
- 	u32 val;
-@@ -217,7 +217,7 @@ static struct cphy *mv88x201x_phy_create(adapter_t *adapter, int phy_addr,
- 	if (!cphy)
- 		return NULL;
- 
--	cphy_init(cphy, adapter, phy_addr, &mv88x201x_ops, mdio_ops);
-+	cphy_init(cphy, dev, phy_addr, &mv88x201x_ops, mdio_ops);
- 
- 	/* Commands the PHY to enable XFP's clock. */
- 	cphy_mdio_read(cphy, MDIO_MMD_PCS, 0x8300, &val);
-diff --git a/drivers/net/chelsio/my3126.c b/drivers/net/chelsio/my3126.c
-index 977c7e0..4c60285 100644
---- a/drivers/net/chelsio/my3126.c
-+++ b/drivers/net/chelsio/my3126.c
-@@ -167,7 +167,7 @@ static struct cphy_ops my3126_ops = {
- 				   MDIO_DEVS_PHYXS),
- };
- 
--static struct cphy *my3126_phy_create(adapter_t *adapter,
-+static struct cphy *my3126_phy_create(struct net_device *dev,
- 			int phy_addr, const struct mdio_ops *mdio_ops)
- {
- 	struct cphy *cphy = kzalloc(sizeof (*cphy), GFP_KERNEL);
-@@ -175,7 +175,7 @@ static struct cphy *my3126_phy_create(adapter_t *adapter,
- 	if (!cphy)
- 		return NULL;
- 
--	cphy_init(cphy, adapter, phy_addr, &my3126_ops, mdio_ops);
-+	cphy_init(cphy, dev, phy_addr, &my3126_ops, mdio_ops);
- 	INIT_DELAYED_WORK(&cphy->phy_update, my3216_poll);
- 	cphy->bmsr = 0;
- 
-diff --git a/drivers/net/chelsio/subr.c b/drivers/net/chelsio/subr.c
-index 2564312..17720c6 100644
---- a/drivers/net/chelsio/subr.c
-+++ b/drivers/net/chelsio/subr.c
-@@ -1135,14 +1135,13 @@ int __devinit t1_init_sw_modules(adapter_t *adapter,
- 		struct cmac *mac;
- 		int phy_addr = bi->mdio_phybaseaddr + i;
- 
--		adapter->port[i].phy = bi->gphy->create(adapter, phy_addr,
--							bi->mdio_ops);
-+		adapter->port[i].phy = bi->gphy->create(adapter->port[i].dev,
-+							phy_addr, bi->mdio_ops);
- 		if (!adapter->port[i].phy) {
- 			CH_ERR("%s: PHY %d initialization failed\n",
- 			       adapter->name, i);
- 			goto error;
- 		}
--		adapter->port[i].phy->mdio.dev = adapter->port[i].dev;
- 
- 		adapter->port[i].mac = mac = bi->gmac->create(adapter, i);
- 		if (!mac) {
-
+> Jiaying
+> 
+> On Wed, May 20, 2009 at 8:42 AM, Jason Baron <jbaron@redhat.com> wrote:
+>> On Wed, May 20, 2009 at 09:33:48AM +0200, Ingo Molnar wrote:
+>>> hm, this is really a compiler bug in essence - the compiler should
+>>> delay the construction of arguments into unlikely branches - if the
+>>> arguments are only used there.
+>>>
+>>> We'd basically open-code a clear-cut:
+>>>
+>>>    trace_block_bio_complete(md->queue, bio);
+>>>
+>>> into this form:
+>>>
+>>>    trace(block_bio_complete, md->queue, bio);
+>>>
+>>> .. and this latter form could become moot (and a nuisance) if the
+>>> compiler is fixed.
+>>>
+>>> Have you tried very latest GCC, does it still have this optimization
+>>> problem?
+>>>
+>>> Note that the compiler getting this right would help a _lot_ of
+>>> other inline functions in the kernel as well. Arguments only used
+>>> within unlikely() branches are quite common.
+>>>
+>>>       Ingo
+>> hi,
+>>
+>> I e-mailed the gcc list, where they suggested using a macro, as I've
+>> done. They also suggested filing an enhancement request for this, which
+>> I've done: http://gcc.gnu.org/bugzilla/show_bug.cgi?id=40207 It seems
+>> like they agree with the suggestion.
+>>
+>> It still might make sense to make this requirement explicit (by adding
+>> the extra macro), as the tracepoint off case should really be as optimized as
+>> possible.
+>>
+>> thanks,
+>>
+>> -Jason
+>>
