@@ -1,135 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751748AbZEUGG2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751482AbZEUGNL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751748AbZEUGG2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 02:06:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751258AbZEUGGT
+	id S1751482AbZEUGNL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 02:13:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750924AbZEUGM6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 02:06:19 -0400
-Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:34554 "EHLO
-	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750924AbZEUGGS (ORCPT
+	Thu, 21 May 2009 02:12:58 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:51166 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750725AbZEUGM6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 02:06:18 -0400
-Message-Id: <6.0.0.20.2.20090521145005.06f81fe0@172.19.0.2>
-X-Mailer: QUALCOMM Windows Eudora Version 6J-Jr3
-Date: Thu, 21 May 2009 15:01:47 +0900
-To: Andrew Morton <akpm@linux-foundation.org>
-From: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
-Subject: Re: [PATCH] readahead:add blk_run_backing_dev
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, linux-mm@kvack.org,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       Jens Axboe <jens.axboe@oracle.com>
-In-Reply-To: <20090520025123.GB8186@localhost>
-References: <6.0.0.20.2.20090518183752.0581fdc0@172.19.0.2>
- <20090518175259.GL4140@kernel.dk>
- <20090520025123.GB8186@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+	Thu, 21 May 2009 02:12:58 -0400
+Message-ID: <4A14F0A1.3000605@kernel.org>
+Date: Wed, 20 May 2009 23:11:45 -0700
+From: "H. Peter Anvin" <hpa@kernel.org>
+Organization: Linux Kernel Organization, Inc.
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+CC: Ingo Molnar <mingo@elte.hu>, Robert Richter <robert.richter@amd.com>,
+       Dave Jones <davej@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
+       x86 maintainers <x86@kernel.org>
+Subject: Re: [PATCH 1/10 -tip] x86: Add cpufeature for Processor Name
+References: <1242142530.2547.11.camel@ht.satnam> <1242142623.2547.13.camel@ht.satnam>
+In-Reply-To: <1242142623.2547.13.camel@ht.satnam>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jaswinder Singh Rajput wrote:
+> Processor Name / Brand String (Function 8000_0002h, 8000_0003h, 8000_0004h)
+> Functions 8000_0002h, 8000_0003h, and 8000_0004h each return up to 16 ASCII
+> bytes of the processor name in the EAX, EBX, ECX and EDX registers.
+> 
+> X86_FEATURE_PNAME will be useful for displaying MSRs like AMD:
+> MSRC001_00[35:30] Processor Name String Registers
+> 
 
-At 11:51 09/05/20, Wu Fengguang wrote:
->On Mon, May 18, 2009 at 07:53:00PM +0200, Jens Axboe wrote:
->> On Mon, May 18 2009, Hisashi Hifumi wrote:
->> > Hi.
->> > 
->> > I wrote a patch that adds blk_run_backing_dev on page_cache_async_readahead
->> > so readahead I/O is unpluged to improve throughput.
->> > 
->> > Following is the test result with dd.
->> > 
->> > #dd if=testdir/testfile of=/dev/null bs=16384
->> > 
->> > -2.6.30-rc6
->> > 1048576+0 records in
->> > 1048576+0 records out
->> > 17179869184 bytes (17 GB) copied, 224.182 seconds, 76.6 MB/s
->> > 
->> > -2.6.30-rc6-patched
->> > 1048576+0 records in
->> > 1048576+0 records out
->> > 17179869184 bytes (17 GB) copied, 206.465 seconds, 83.2 MB/s
->> > 
->> > Sequential read performance on a big file was improved.
->> > Please merge my patch.
->> > 
->> > Thanks.
->> > 
->> > Signed-off-by: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
->> > 
->> > diff -Nrup linux-2.6.30-rc6.org/mm/readahead.c 
->linux-2.6.30-rc6.unplug/mm/readahead.c
->> > --- linux-2.6.30-rc6.org/mm/readahead.c	2009-05-18 10:46:15.000000000 +0900
->> > +++ linux-2.6.30-rc6.unplug/mm/readahead.c	2009-05-18 
->13:00:42.000000000 +0900
->> > @@ -490,5 +490,7 @@ page_cache_async_readahead(struct addres
->> >  
->> >  	/* do read-ahead */
->> >  	ondemand_readahead(mapping, ra, filp, true, offset, req_size);
->> > +
->> > +	blk_run_backing_dev(mapping->backing_dev_info, NULL);
->> >  }
->> >  EXPORT_SYMBOL_GPL(page_cache_async_readahead);
->> 
->> I'm surprised this makes much of a difference. It seems correct to me to
->> NOT unplug the device, since it will get unplugged when someone ends up
->> actually waiting for a page. And that will then kick off the remaining
->> IO as well. For this dd case, you'll be hitting lock_page() for the
->> readahead page really soon, definitely not long enough to warrant such a
->> big difference in speed.
->
->The possible timing change of this patch is (assuming readahead size=100):
->
->T0   read(100), which triggers readahead(200, 100)
->T1   read(101)
->T2   read(102)
->...
->T100 read(200), find_get_page(200) => readahead(300, 100)
->                lock_page(200) => implicit unplug
->
->The readahead(200, 100) submitted at time T0 *might* be delayed to the
->unplug time of T100.
->
->But that is only a possibility. In normal cases, the read(200) would
->be blocking and there will be a lock_page(200) that will immediately
->unplug device for readahead(300, 100).
+Pointless and wrong.  The presence of the processor name is not the same
+thing as the presence of specific MSRs, which are model-specific.
 
-
-Hi Andrew.
-Following patch improves sequential read performance and does not harm
-other performance.
-Please merge my patch.
-Comments?
-Thanks.
-
-#dd if=testdir/testfile of=/dev/null bs=16384
--2.6.30-rc6
-1048576+0 records in
-1048576+0 records out
-17179869184 bytes (17 GB) copied, 224.182 seconds, 76.6 MB/s
-
--2.6.30-rc6-patched
-1048576+0 records in
-1048576+0 records out
-17179869184 bytes (17 GB) copied, 206.465 seconds, 83.2 MB/s
-
-Signed-off-by: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
-
-diff -Nrup linux-2.6.30-rc6.org/mm/readahead.c linux-2.6.30-rc6.unplug/mm/readahead.c
---- linux-2.6.30-rc6.org/mm/readahead.c	2009-05-18 10:46:15.000000000 +0900
-+++ linux-2.6.30-rc6.unplug/mm/readahead.c	2009-05-18 13:00:42.000000000 +0900
-@@ -490,5 +490,7 @@ page_cache_async_readahead(struct addres
- 
- 	/* do read-ahead */
- 	ondemand_readahead(mapping, ra, filp, true, offset, req_size);
-+
-+	blk_run_backing_dev(mapping->backing_dev_info, NULL);
- }
- EXPORT_SYMBOL_GPL(page_cache_async_readahead);
-
-
-
+	-hpa
