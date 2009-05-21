@@ -1,61 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753560AbZEUNKD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755384AbZEUNKb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753560AbZEUNKD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 09:10:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752773AbZEUNJz
+	id S1755384AbZEUNKb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 09:10:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754233AbZEUNKR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 09:09:55 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:40342 "EHLO mx2.redhat.com"
+	Thu, 21 May 2009 09:10:17 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:40375 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752368AbZEUNJy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 09:09:54 -0400
-Date: Thu, 21 May 2009 15:05:28 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Zhaolei <zhaolei@cn.fujitsu.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Tom Zanussi <tzanussi@gmail.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] tracing/workqueue: Get rid of searching last executed
-	worklet in probe_worklet_complete()
-Message-ID: <20090521130528.GA14149@redhat.com>
-References: <4A153345.3040905@cn.fujitsu.com>
+	id S1753352AbZEUNKP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 May 2009 09:10:15 -0400
+Message-ID: <4A1552B1.3040502@redhat.com>
+Date: Thu, 21 May 2009 16:10:09 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A153345.3040905@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Gregory Haskins <ghaskins@novell.com>
+CC: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       sfr@canb.auug.org.au, kvm@vger.kernel.org
+Subject: Re: [PATCH] kvm: fix irqfd build failure discovered in linux-next
+References: <20090521172122.bb12027c.sfr@canb.auug.org.au> <20090521130426.22997.77787.stgit@dev.haskins.net>
+In-Reply-To: <20090521130426.22997.77787.stgit@dev.haskins.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/21, Zhaolei wrote:
+Gregory Haskins wrote:
+> Stephen Rothwell noted a build failure in arch != x86 in last nights
+> linux-next tree, as noted here:
 >
-> We don't need search workqueue's worklet list for worklet which was latest
-> executed, instead, we can use a pointer in cpu_workqueue_stats to remember
-> which worklet was just executed.
-
-Minor nit,
-
-> @@ -192,22 +192,11 @@ probe_worklet_complete(struct task_struct *wq_thread, void *work)
->  	goto end;
+> http://lkml.org/lkml/2009/5/21/32
 >
->  found_wq:
-> -	list_for_each_entry(wfnode, &node->workfunclist, list) {
-> -		u64 executed_time;
-> +	executed_time = trace_clock_global() - node->last_workfunc->start_time;
-> +	node->last_workfunc->total_time += executed_time;
+> This patch corrects the build issue by requiring explicit support for
+> IRQFD to be defined, and only defining it on x86 (the only arch fully
+> supported).  The code itself isnt architecture dependent, but we need
+> to add a new file to each makefile, advertise the capability, and
+> of course, test that it works for each supported arch.  We will submit
+> patches against each relevant arch at a later time to enable support
+> there as well.
+>
+> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+> ---
+>
+>  arch/x86/kvm/Makefile    |    1 +
+>  include/linux/kvm_host.h |   17 +++++++++++++++++
+>  virt/kvm/eventfd.c       |    6 ++++++
+>  virt/kvm/kvm_main.c      |    2 +-
+>  4 files changed, 25 insertions(+), 1 deletions(-)
+>
+> diff --git a/arch/x86/kvm/Makefile b/arch/x86/kvm/Makefile
+> index 01e3c61..e5ce95e 100644
+> --- a/arch/x86/kvm/Makefile
+> +++ b/arch/x86/kvm/Makefile
+> @@ -1,5 +1,6 @@
+>  
+>  EXTRA_CFLAGS += -Ivirt/kvm -Iarch/x86/kvm
+> +EXTRA_CFLAGS += -DKVM_HAVE_EVENTFD
+>  
+>   
 
-Suppose that "enqueue" handler fails to allocate the memory for the new
-work_struct.
+The standard idiom for this is to use a Kconfig symbol; see for example 
+HAVE_KVM_IRQCHIP in arch/*/kvm/Kconfig.
 
-This means that the "execute" handler does not record ->last_workfunc.
 
-In that case probe_worklet_complete() uses the wrong workfunc_stats or
-we can even crash if ->last_workfunc == NULL.
-
-I think _execute() should set ->last_workfunc = NULL first, then serach
-for wfnode. _complete() should check ->last_workfunc != NULL and return
-if it is NULL.
-
-Oleg.
+-- 
+error compiling committee.c: too many arguments to function
 
