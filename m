@@ -1,122 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752049AbZEUHLY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752497AbZEUHVm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752049AbZEUHLY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 03:11:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750797AbZEUHLR
+	id S1752497AbZEUHVm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 03:21:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751031AbZEUHVe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 03:11:17 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:54494 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750757AbZEUHLQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 03:11:16 -0400
-Message-ID: <4A14FE45.6070308@cn.fujitsu.com>
-Date: Thu, 21 May 2009 15:09:57 +0800
-From: Zhaolei <zhaolei@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Tom Zanussi <tzanussi@gmail.com>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2/2] ftrace: clean up of using ftrace_event_enable_disable()
-References: <4A14FDFE.2080402@cn.fujitsu.com>
-In-Reply-To: <4A14FDFE.2080402@cn.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 21 May 2009 03:21:34 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:36248 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750794AbZEUHVe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 May 2009 03:21:34 -0400
+Date: Thu, 21 May 2009 17:21:22 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Avi Kivity <avi@qumranet.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Gregory Haskins <ghaskins@novell.com>
+Subject: linux-next: kvm tree build failure
+Message-Id: <20090521172122.bb12027c.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__21_May_2009_17_21_22_+1000_MEgvJr2jiIFW3JU/"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Always use tracing_stop_cmdline_record() to enable/disable a event.
+--Signature=_Thu__21_May_2009_17_21_22_+1000_MEgvJr2jiIFW3JU/
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Impact: cleanup, no functionality changed
+Hi Avi,
 
-Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
----
- kernel/trace/trace_events.c |   44 +++++++++++++-----------------------------
- 1 files changed, 14 insertions(+), 30 deletions(-)
+Today's linux-next build (powerpc ppc44x_defconfig) failed like this:
 
-diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
-index df35e5e..16ef47a 100644
---- a/kernel/trace/trace_events.c
-+++ b/kernel/trace/trace_events.c
-@@ -76,26 +76,9 @@ static void trace_destroy_fields(struct ftrace_event_call *call)
- 
- #endif /* CONFIG_MODULES */
- 
--static void ftrace_clear_events(void)
--{
--	struct ftrace_event_call *call;
--
--	mutex_lock(&event_mutex);
--	list_for_each_entry(call, &ftrace_events, list) {
--
--		if (call->enabled) {
--			call->enabled = 0;
--			tracing_stop_cmdline_record();
--			call->unregfunc();
--		}
--	}
--	mutex_unlock(&event_mutex);
--}
--
- static void ftrace_event_enable_disable(struct ftrace_event_call *call,
- 					int enable)
- {
--
- 	switch (enable) {
- 	case 0:
- 		if (call->enabled) {
-@@ -114,6 +97,17 @@ static void ftrace_event_enable_disable(struct ftrace_event_call *call,
- 	}
- }
- 
-+static void ftrace_clear_events(void)
-+{
-+	struct ftrace_event_call *call;
-+
-+	mutex_lock(&event_mutex);
-+	list_for_each_entry(call, &ftrace_events, list) {
-+		ftrace_event_enable_disable(call, 0);
-+	}
-+	mutex_unlock(&event_mutex);
-+}
-+
- /*
-  * __ftrace_set_clr_event(NULL, NULL, NULL, set) will set/unset all events.
-  */
-@@ -1059,11 +1053,7 @@ static void trace_module_remove_events(struct module *mod)
- 	list_for_each_entry_safe(call, p, &ftrace_events, list) {
- 		if (call->mod == mod) {
- 			found = true;
--			if (call->enabled) {
--				call->enabled = 0;
--				tracing_stop_cmdline_record();
--				call->unregfunc();
--			}
-+			ftrace_event_enable_disable(call, 0);
- 			if (call->event)
- 				unregister_ftrace_event(call->event);
- 			debugfs_remove_recursive(call->dir);
-@@ -1265,15 +1255,9 @@ static __init void event_trace_self_tests(void)
- 			continue;
- 		}
- 
--		call->enabled = 1;
--		tracing_start_cmdline_record();
--		call->regfunc();
--
-+		ftrace_event_enable_disable(call, 1);
- 		event_test_stuff();
--
--		call->unregfunc();
--		tracing_stop_cmdline_record();
--		call->enabled = 0;
-+		ftrace_event_enable_disable(call, 0);
- 
- 		pr_cont("OK\n");
- 	}
--- 
-1.5.5.3
+arch/powerpc/kvm/built-in.o: In function `kvm_destroy_vm':
+kvm_main.c:(.text+0x2cfc): undefined reference to `kvm_irqfd_release'
+arch/powerpc/kvm/built-in.o: In function `kvm_vm_ioctl':
+kvm_main.c:(.text+0x3230): undefined reference to `kvm_irqfd'
 
+Caused by commit 302471ec2b5b6f74eba06973fb85e4584d20ef1e ("KVM: irqfd")
+which I have reverted for today.
 
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__21_May_2009_17_21_22_+1000_MEgvJr2jiIFW3JU/
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkoVAPIACgkQjjKRsyhoI8wtkQCguhOmD0/mA2NysSITpeIwrXhr
+4fwAmwWDpnR7gVxd+LghK2MguyNFtYkv
+=f3ui
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__21_May_2009_17_21_22_+1000_MEgvJr2jiIFW3JU/--
