@@ -1,141 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755915AbZEUV6S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756551AbZEUWIY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755915AbZEUV6S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 17:58:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753703AbZEUV6F
+	id S1756551AbZEUWIY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 18:08:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754847AbZEUWIR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 17:58:05 -0400
-Received: from ns.netcenter.hu ([195.228.254.57]:35918 "EHLO mail.netcenter.hu"
+	Thu, 21 May 2009 18:08:17 -0400
+Received: from smtp02.citrix.com ([66.165.176.63]:3555 "EHLO SMTP02.CITRIX.COM"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753083AbZEUV6F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 17:58:05 -0400
-Message-ID: <050e01c9da5e$8d142b20$0400a8c0@dcccs>
-From: "Janos Haar" <janos.haar@netcenter.hu>
-To: "Neil Brown" <neilb@suse.de>
-Cc: <paulmck@linux.vnet.ibm.com>, <linux-kernel@vger.kernel.org>
-References: <030101c9d92f$d0668600$0400a8c0@dcccs><20090521025037.GD6839@linux.vnet.ibm.com><013501c9d9cf$161a74a0$0400a8c0@dcccs><20090521051658.GE6839@linux.vnet.ibm.com> <18964.63919.206864.619147@notabene.brown>
-Subject: Re: Fw: RCU detected CPU 1 stall (t=4295904002/751 jiffies)Pid:902, comm: md1_raid5
-Date: Thu, 21 May 2009 23:53:16 +0200
+	id S1754725AbZEUWIQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 May 2009 18:08:16 -0400
+X-IronPort-AV: E=Sophos;i="4.41,230,1241409600"; 
+   d="scan'208";a="52147149"
+Subject: Re: [PATCH V2 2/3] powerpc: Add support for swiotlb on 32-bit
+From: Ian Campbell <Ian.Campbell@eu.citrix.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Becky Bruce <beckyb@kernel.crashing.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <4A15B72E.2070202@goop.org>
+References: <1242340949-16369-1-git-send-email-beckyb@kernel.crashing.org>
+	 <1242340949-16369-2-git-send-email-beckyb@kernel.crashing.org>
+	 <20090519142656T.fujita.tomonori@lab.ntt.co.jp>
+	 <19E48A70-3332-423C-ACAD-390F940EE81C@kernel.crashing.org>
+	 <4A1592CF.8000208@goop.org>
+	 <E6DAA792-9923-4B76-9759-6955AABE3EAB@kernel.crashing.org>
+	 <4A15B72E.2070202@goop.org>
+Content-Type: text/plain
+Organization: Citrix Systems, Inc.
+Date: Thu, 21 May 2009 23:08:16 +0100
+Message-ID: <1242943696.25553.658.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	format=flowed;
-	charset="ISO-8859-1";
-	reply-type=original
+X-Mailer: Evolution 2.26.1.1 
 Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.3138
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3350
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Neil, Paul,
+On Thu, 2009-05-21 at 16:18 -0400, Jeremy Fitzhardinge wrote:
+> I guess the test is checking for a bad implementation of map_single().
 
-The problem solved.
-It was a bios bug.
-(The fedora install CD makes the same, and i am checked with the latest BIOS 
-version, and the delays are gone. 8-)
+More importantly the io_tlb_overflow_buffer is basically a second chance
+if you exhaust the swiotlb pool. The check seems to be there to ensure
+that the second chance memory is suitable for the device (it's hard to
+imagine, but possible I suppose, that it wouldn't be), a bad
+implementation of map_single() is a secondary concern I suspect.
 
-Thanks for all help for you too!
+If all the callers of map_page did proper error handling this would all
+be unnecessary. I guess someone was worried, at least at one point, that
+they didn't. The failure case could possibly be scribbling into a random
+memory location or more worryingly sprinkling random memory locations
+onto your disk or whatever. That said I'd imagine that map_page
+returning NULL would cause an oops long before anything tried to DMA
+anything and the second chance probably doesn't buy us much in practice.
 
-Janos Haar
+Ian.
 
------ Original Message ----- 
-From: "Neil Brown" <neilb@suse.de>
-To: <paulmck@linux.vnet.ibm.com>
-Cc: "Janos Haar" <janos.haar@netcenter.hu>; <linux-kernel@vger.kernel.org>
-Sent: Thursday, May 21, 2009 8:50 AM
-Subject: Re: Fw: RCU detected CPU 1 stall (t=4295904002/751 jiffies)Pid:902, 
-comm: md1_raid5
-
-
-> On Wednesday May 20, paulmck@linux.vnet.ibm.com wrote:
->> On Thu, May 21, 2009 at 06:46:15AM +0200, Janos Haar wrote:
->> > Paul,
->> >
->> > Thank you for your attention.
->> > Yes, the PC makes 2-3 second "pauses" and drop this message again and
->> > again.
->> > If i remove the RCU debugging, the message disappears, but the pauses 
->> > still
->> > here, and makes 2-3 load on the idle system.
->> > Can i do something?
->> > You suggest to use PREEMPT? (This is a server.)
->>
->> One possibility is that the lock that bitmap_daemon_work() acquires is
->> being held for too long.  Another possibility is the list traversal in
->> md_check_recovery() that might loop for a long time if the list were
->> excessively long or could be temporarily tied in a knot.
->>
->> Neil, thoughts?
->>
->
-> I would be surprised if any of these things take as long as 3 seconds
-> (or even 1 second) but I cannot completely rule it out.
->
-> I assume that you mean 3 seconds of continuous running with no
-> sleeping, so it cannot be a slow kmalloc that is causing the delay?
->
-> bitmap_daemon_work is the most likely candidate as bitmap->chunks
-> can be very large (thousands, probably not millions though).
-> Taking and dropping the lock every time around that loop doesn't
-> really make much sense, does it....
-> And it looks like it could actually be optimised quite a bit to skip a
-> lot of the iterations in most cases - there are two places where we
-> can accelerate 'j' quite a lot.
->
-> Janos: Can you try this and see if it makes a difference?
-> Thanks.
->
-> NeilBrown
->
-> diff --git a/drivers/md/bitmap.c b/drivers/md/bitmap.c
-> index 47c68bc..56df1ce 100644
-> --- a/drivers/md/bitmap.c
-> +++ b/drivers/md/bitmap.c
-> @@ -1097,14 +1097,12 @@ void bitmap_daemon_work(struct bitmap *bitmap)
->  }
->  bitmap->allclean = 1;
->
-> + spin_lock_irqsave(&bitmap->lock, flags);
->  for (j = 0; j < bitmap->chunks; j++) {
->  bitmap_counter_t *bmc;
-> - spin_lock_irqsave(&bitmap->lock, flags);
-> - if (!bitmap->filemap) {
-> + if (!bitmap->filemap)
->  /* error or shutdown */
-> - spin_unlock_irqrestore(&bitmap->lock, flags);
->  break;
-> - }
->
->  page = filemap_get_page(bitmap, j);
->
-> @@ -1121,6 +1119,8 @@ void bitmap_daemon_work(struct bitmap *bitmap)
->  write_page(bitmap, page, 0);
->  bitmap->allclean = 0;
->  }
-> + spin_lock_irqsave(&bitmap->lock, flags);
-> + j |= (PAGE_BITS - 1);
->  continue;
->  }
->
-> @@ -1181,9 +1181,10 @@ void bitmap_daemon_work(struct bitmap *bitmap)
->  ext2_clear_bit(file_page_offset(j), paddr);
->  kunmap_atomic(paddr, KM_USER0);
->  }
-> - }
-> - spin_unlock_irqrestore(&bitmap->lock, flags);
-> + } else
-> + j |= PAGE_COUNTER_MASK;
->  }
-> + spin_unlock_irqrestore(&bitmap->lock, flags);
->
->  /* now sync the final page */
->  if (lastpage != NULL) {
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/ 
 
