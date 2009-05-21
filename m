@@ -1,138 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755571AbZEUU13@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756712AbZEUU2y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755571AbZEUU13 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 16:27:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754222AbZEUU1W
+	id S1756712AbZEUU2y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 16:28:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754839AbZEUU2q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 16:27:22 -0400
-Received: from hera.kernel.org ([140.211.167.34]:47254 "EHLO hera.kernel.org"
+	Thu, 21 May 2009 16:28:46 -0400
+Received: from thunk.org ([69.25.196.29]:42787 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753786AbZEUU1V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 16:27:21 -0400
-Message-ID: <4A15B8F2.9000804@kernel.org>
-Date: Thu, 21 May 2009 13:26:26 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1754453AbZEUU2q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 May 2009 16:28:46 -0400
+Date: Thu, 21 May 2009 16:28:40 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 5/5] Dump the inode structure (for debugging purposes
+	only)
+Message-ID: <20090521202840.GB9236@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
+	linux-fsdevel@vger.kernel.org
+References: <1242936063-31689-1-git-send-email-tytso@mit.edu> <1242936063-31689-2-git-send-email-tytso@mit.edu> <1242936063-31689-3-git-send-email-tytso@mit.edu> <1242936063-31689-4-git-send-email-tytso@mit.edu> <1242936063-31689-5-git-send-email-tytso@mit.edu> <1242936063-31689-6-git-send-email-tytso@mit.edu> <20090521200942.GA5110@parisc-linux.org>
 MIME-Version: 1.0
-To: Paul Mundt <lethal@linux-sh.org>, Ingo Molnar <mingo@elte.hu>,
-       Yinghai Lu <yinghai@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sparseirq: Enable early irq_desc allocation.
-References: <20090521165647.GA320@linux-sh.org>
-In-Reply-To: <20090521165647.GA320@linux-sh.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090521200942.GA5110@parisc-linux.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-Paul Mundt wrote:
-> Presently non-legacy IRQs have their irq_desc allocated with
-> kzalloc_node(). This assumes that all callers of irq_to_desc_cpu_alloc()
-> will be sufficiently late in the boot process that kmalloc is available.
+On Thu, May 21, 2009 at 02:09:42PM -0600, Matthew Wilcox wrote:
+> On Thu, May 21, 2009 at 04:01:03PM -0400, Theodore Ts'o wrote:
+> > This is not intended for merging; but it's useful for determining how
+> > much varous fields in the struct inode space, and whether there is any
+> > padding leading to waste, especially on a 64-bit platforms.
 > 
-> While porting sparseirq support to sh this blew up immediately, as at the
-> time that we register the CPU's interrupt vector map only bootmem is
-> available.
+> Why not just use acme's pahole?
 > 
-> This adds in a simple after_bootmem check to see where the allocation
-> needs to come from, which is likewise provided by all of the platforms
-> that support sparse irq today. :-)
-> 
-> Cc: Yinghai Lu <yinghai@kernel.org>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> Signed-off-by: Paul Mundt <lethal@linux-sh.org>
-> 
-> ---
-> 
->  kernel/irq/handle.c |   17 ++++++++++++-----
->  1 file changed, 12 insertions(+), 5 deletions(-)
-> 
-> diff --git a/kernel/irq/handle.c b/kernel/irq/handle.c
-> index d82142b..5fb3a5c 100644
-> --- a/kernel/irq/handle.c
-> +++ b/kernel/irq/handle.c
-> @@ -19,7 +19,7 @@
->  #include <linux/hash.h>
->  #include <trace/irq.h>
->  #include <linux/bootmem.h>
-> -
-> +#include <linux/mm.h>
->  #include "internals.h"
->  
->  /*
-> @@ -81,13 +81,17 @@ static struct irq_desc irq_desc_init = {
->  	.lock       = __SPIN_LOCK_UNLOCKED(irq_desc_init.lock),
->  };
->  
-> -void init_kstat_irqs(struct irq_desc *desc, int cpu, int nr)
-> +void __ref init_kstat_irqs(struct irq_desc *desc, int cpu, int nr)
->  {
->  	int node;
->  	void *ptr;
->  
->  	node = cpu_to_node(cpu);
-> -	ptr = kzalloc_node(nr * sizeof(*desc->kstat_irqs), GFP_ATOMIC, node);
-> +	if (after_bootmem)
-> +		ptr = kzalloc_node(nr * sizeof(*desc->kstat_irqs), GFP_ATOMIC, node);
-> +	else
-> +		ptr = alloc_bootmem_node(NODE_DATA(node),
-> +				nr * sizeof(*desc->kstat_irqs));
->  
->  	/*
->  	 * don't overwite if can not get new one
-> @@ -187,7 +191,7 @@ struct irq_desc *irq_to_desc(unsigned int irq)
->  	return NULL;
->  }
->  
-> -struct irq_desc *irq_to_desc_alloc_cpu(unsigned int irq, int cpu)
-> +struct irq_desc * __ref irq_to_desc_alloc_cpu(unsigned int irq, int cpu)
->  {
->  	struct irq_desc *desc;
->  	unsigned long flags;
-> @@ -211,7 +215,10 @@ struct irq_desc *irq_to_desc_alloc_cpu(unsigned int irq, int cpu)
->  		goto out_unlock;
->  
->  	node = cpu_to_node(cpu);
-> -	desc = kzalloc_node(sizeof(*desc), GFP_ATOMIC, node);
-> +	if (after_bootmem)
-> +		desc = kzalloc_node(sizeof(*desc), GFP_ATOMIC, node);
-> +	else
-> +		desc = alloc_bootmem_node(NODE_DATA(node), sizeof(*desc));
->  	printk(KERN_DEBUG "  alloc irq_desc for %d on cpu %d node %d\n",
->  		 irq, cpu, node);
->  	if (!desc) {
 
-can you check tip?
-we change _cpu to node already.
+Because I didn't know about it, and now that I've looked at it, it
+requires compiling the kernel with CONFIG_DEBUG_INFO, which means the
+kernel takes a lot longer to build.  What I did is a bit more hackish,
+to be sure, but it's faster to drop it into the tree and then run it
+under kvm and then pull it out of the console logs.  If you were
+planning on investigating a large number of structures, acme's
+solution probably is a better one; but if you only need one, it might
+be faster to whip up a custom kernel module, perhaps built out of the
+tree, instead of rebuilding the entire kernel with CONFIG_DEBUG_INFO.
 
-also only sh have after_bootmem now.
-arch/sh/mm/init.c:int after_bootmem = 0;
-arch/sh/mm/init.c:      after_bootmem = 1;
-arch/sh/mm/ioremap_64.c:        extern int after_bootmem;
-arch/sh/mm/ioremap_64.c:        if (after_bootmem) {
-include/linux/mm.h:extern int after_bootmem;
-
-for x86 we have bootmem_state ...
-arch/x86/include/asm/page_types.h:enum bootmem_state {
-arch/x86/include/asm/page_types.h:extern enum bootmem_state bootmem_state;
-arch/x86/kernel/setup.c:        bootmem_state = DURING_BOOTMEM;
-arch/x86/mm/init.c:enum bootmem_state bootmem_state = BEFORE_BOOTMEM;
-arch/x86/mm/init.c:     if (bootmem_state == BEFORE_BOOTMEM)
-arch/x86/mm/init.c:     if (bootmem_state == BEFORE_BOOTMEM)
-arch/x86/mm/init.c:     if (bootmem_state == BEFORE_BOOTMEM && !start) {
-arch/x86/mm/init.c:     if (bootmem_state == BEFORE_BOOTMEM &&
-arch/x86/mm/init.c:     if (bootmem_state == BEFORE_BOOTMEM)
-
-Andrew,
-do we need to move bootmem_state back to linux/mm.h?
-
-YH
-
-
-
-
-YH
+      	      	 	    	       	      - Ted
