@@ -1,66 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755509AbZEUQnK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755611AbZEUQnc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755509AbZEUQnK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 12:43:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752167AbZEUQm5
+	id S1755611AbZEUQnc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 12:43:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753786AbZEUQnW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 12:42:57 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:54797 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751258AbZEUQm5 (ORCPT
+	Thu, 21 May 2009 12:43:22 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:65526 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752959AbZEUQnU convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 12:42:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=xoAIOYoSdw1tYRqULIKO3axXF3boZdCzUwHdwAoucWmMqRktV6uQ6pL9bIQjdv/F/8
-         pgTAvmZjoXcFbqaTXczDF1UrtSWzfvV3ylFpeA8X0EILLSwEf+qf6P+PObH4hCCP+CWW
-         DZzgrO0oh1YU2tuFho8nZ4QgDfJeJe2UeX0V4=
-Message-ID: <4A15848E.5030403@gmail.com>
-Date: Thu, 21 May 2009 18:42:54 +0200
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090302)
+	Thu, 21 May 2009 12:43:20 -0400
 MIME-Version: 1.0
-To: Casey Schaufler <casey@schaufler-ca.com>
-CC: jmorris@namei.org, lkml <linux-kernel@vger.kernel.org>,
-       linux-security-module@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] smack:beyond ARRAY_SIZE of data
-References: <4A141F83.10102@gmail.com> <4A1483E0.1030303@schaufler-ca.com>
-In-Reply-To: <4A1483E0.1030303@schaufler-ca.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <4A1565B6.10907@s5r6.in-berlin.de>
+References: <tkrat.21c425cc195510c9@s5r6.in-berlin.de> <20090521134856.GA3457@psychotron.englab.brq.redhat.com> 
+	<4A1565B6.10907@s5r6.in-berlin.de>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Thu, 21 May 2009 18:43:01 +0200
+Message-ID: <ac3eb2510905210943h109e6cc6o76e9978fe47a6eac@mail.gmail.com>
+Subject: Re: [PATCH] ieee1394: eth1394: use "firewire%d" instead of "eth%d" as 
+	interface name
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Jiri Pirko <jpirko@redhat.com>, linux1394-devel@lists.sourceforge.net,
+       linux-hotplug@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Jay Fenlason <fenlason@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Do not go beyond ARRAY_SIZE of data
+On Thu, May 21, 2009 at 16:31, Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
+> Usually I prefer brevity too.  Alas, it may not be clear to many people what
+> "fw" is supposed to mean.  People might associate it with, let's say,
+> "firewall" before "firewire" when they deal with networking. However, more
+>  opinions on this are welcome.
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
->> -	if (count < SMK_NETLBLADDRMIN || count > SMK_NETLBLADDRMAX)
->> +	if (count < SMK_NETLBLADDRMIN || count >= SMK_NETLBLADDRMAX)
->>   
-> 
-> There is a problem here, but this won't fix it. The buffer needs to be
-> allocated bigger than the potential contents (should be
-> SMK_NETLBLADDRMAX + 1 instead of SMK_NETLBLADDRMAX. Your patch will clip
-> the last byte off of a maximum length specification.
+Yeah, common one is also "firmware". I think "firewire" is fine.
 
-Ok, how about this?
+> As for practical length restrictions:  The kernel's networking core requires
+> that these names fit into 15 characters plus trailing \0.  I don't have an
+> idea whether there are userland components which have even tighter
+> restrictions.
+>
+> Does anybody know of potential trouble in networking tools if interface
+> names are 9 or 10 characters long?
 
-diff --git a/security/smack/smackfs.c b/security/smack/smackfs.c
-index e03a7e1..10a4604 100644
---- a/security/smack/smackfs.c
-+++ b/security/smack/smackfs.c
-@@ -775,7 +775,7 @@ static ssize_t smk_write_netlbladdr(struct file *file, const char __user *buf,
- 	struct sockaddr_in newname;
- 	char smack[SMK_LABELLEN];
- 	char *sp;
--	char data[SMK_NETLBLADDRMAX];
-+	char data[SMK_NETLBLADDRMAX + 1];
- 	char *host = (char *)&newname.sin_addr.s_addr;
- 	int rc;
- 	struct netlbl_audit audit_info;
+I don't think so, stuff at the tools level usually works flawlessly
+with "eth0_rename_ren" devices, when things went wrong with renaming
+the devices. :)
 
+Kay
