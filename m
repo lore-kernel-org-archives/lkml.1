@@ -1,72 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757408AbZEUXBS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756970AbZEUXLn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757408AbZEUXBS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 19:01:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756429AbZEUXAa
+	id S1756970AbZEUXLn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 19:11:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755509AbZEUXLf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 19:00:30 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:2552 "EHLO
-	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755459AbZEUXA0 (ORCPT
+	Thu, 21 May 2009 19:11:35 -0400
+Received: from zrtps0kp.nortel.com ([47.140.192.56]:52210 "EHLO
+	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754887AbZEUXLf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 19:00:26 -0400
-From: Joe Perches <joe@perches.com>
-To: linux-kernel@vger.kernel.org
-Cc: cpufreq@vger.kernel.org, Dave Jones <davej@redhat.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@redhat.com>, x86@vger.kernel.org,
-       Len Brown <len.brown@intel.com>, Mike Travis <travis@sgi.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Subject: [PATCH 3/3] kernel.h: Remove unused printk_once
-Date: Thu, 21 May 2009 16:00:24 -0700
-Message-Id: <7122ba0c9a4964039f58763df2378b245851e5ac.1242943463.git.joe@perches.com>
-X-Mailer: git-send-email 1.6.3.1.10.g659a0.dirty
-In-Reply-To: <cover.1242943463.git.joe@perches.com>
-References: <cover.1242943463.git.joe@perches.com>
+	Thu, 21 May 2009 19:11:35 -0400
+Message-ID: <4A15DFA3.70802@nortel.com>
+Date: Thu, 21 May 2009 17:11:31 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090302)
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: =?ISO-8859-1?Q?Simon_Holm_Th=F8gersen?= <odie@cs.aau.dk>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Michael Kerrisk <mtk.manpages@googlemail.com>,
+       Jean-Paul Calderone <exarkun@twistedmatrix.com>
+Subject: Re: Allow signaling a process by all its thread ids?
+References: <1242944179.10298.11.camel@odie.local> <20090521235428.53b71862@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090521235428.53b71862@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 21 May 2009 23:11:33.0002 (UTC) FILETIME=[7B314EA0:01C9DA69]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Joe Perches <joe@perches.com>
----
- include/linux/kernel.h |   15 ---------------
- 1 files changed, 0 insertions(+), 15 deletions(-)
+Alan Cox wrote:
 
-diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index a5520c9..5e37171 100644
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -243,18 +243,6 @@ extern int printk_ratelimit(void);
- extern bool printk_timed_ratelimit(unsigned long *caller_jiffies,
- 				   unsigned int interval_msec);
- 
--/*
-- * Print a one-time message (analogous to WARN_ONCE() et al):
-- */
--#define printk_once(x...) ({			\
--	static int __print_once = 1;		\
--						\
--	if (__print_once) {			\
--		__print_once = 0;		\
--		printk(x);			\
--	}					\
--})
--
- void log_buf_kexec_setup(void);
- #else
- static inline int vprintk(const char *s, va_list args)
-@@ -268,9 +256,6 @@ static inline bool printk_timed_ratelimit(unsigned long *caller_jiffies, \
- 					  unsigned int interval_msec)	\
- 		{ return false; }
- 
--/* No effect, but we still get type checking even in the !PRINTK case: */
--#define printk_once(x...) printk(x)
--
- static inline void log_buf_kexec_setup(void)
- {
- }
--- 
-1.6.3.1.10.g659a0.dirty
+> You need to show that
+> - The current API breaks stuff
+> - The current API is absolutely invalid in posix
+> - Changing it improves the functionality and power of the kernel
 
+I think an argument could be made for these.  A task is not necessarily
+a process, and kill() is only defined to send a signal to one or more
+processes.  This introduces potential problems if a) it is possible to
+send a signal to an individual tid, and b) a tid can be reused in a
+different process.
+
+We already have the tgkill() syscall, which fixes the ambiguity by
+specifying both the pid and tid.  This is what pthread_kill() uses under
+the hood.  The fact that it was seen as necessary (back in 2.5)
+indicates that there are problems with kill() as currently implemented.
+
+> - Changing it doesn't break existing applications
+
+This last one is the kicker.  As I mentioned in my other reply, I
+suspect that making such a change would break a lot of (not-quite-POSIX)
+applications that assume they can send a signal to particular threads
+using kill().
+
+I see analogies to the whole fsync() issue.
+
+Chris
