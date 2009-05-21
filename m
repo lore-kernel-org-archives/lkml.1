@@ -1,152 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753171AbZEUKWW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752902AbZEUK3Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753171AbZEUKWW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 06:22:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752257AbZEUKWN
+	id S1752902AbZEUK3Z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 06:29:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752257AbZEUK3S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 06:22:13 -0400
-Received: from ppsw-5.csi.cam.ac.uk ([131.111.8.135]:55427 "EHLO
-	ppsw-5.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752324AbZEUKWL (ORCPT
+	Thu, 21 May 2009 06:29:18 -0400
+Received: from mtaout03-winn.ispmail.ntl.com ([81.103.221.49]:21058 "EHLO
+	mtaout03-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751780AbZEUK3R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 06:22:11 -0400
-X-Cam-AntiVirus: no malware found
-X-Cam-SpamDetails: not scanned
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-Message-ID: <4A152B3C.1070500@cam.ac.uk>
-Date: Thu, 21 May 2009 10:21:48 +0000
-From: Jonathan Cameron <jic23@cam.ac.uk>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Mohamed Ikbel Boulabiar <boulabiar@gmail.com>
-CC: felipe.balbi@nokia.com, ext Kim Kyuwon <q1.kim@samsung.com>,
-       ext Kim Kyuwon <chammoru@gmail.com>,
-       Trilok Soni <soni.trilok@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>,
-       Kyungmin Park <kyungmin.park@samsung.com>,
-       Jean Delvare <khali@linux-fr.org>
-Subject: Re: [RFC] Add Input IOCTL for accelerometer devices
-References: <20090515131636.GE4443@nokia.com> <5d5443650905151106v2fe7ad1ci6c966463a991e732@mail.gmail.com> 	<45cc95260905151230j5485995dpbbd882dc91b25339@mail.gmail.com> 	<20090515200235.GA11829@nokia.com> <4d34a0a70905180045u6619773dt1563fe38b13d46fb@mail.gmail.com> 	<20090518091236.GH4443@nokia.com> <4A121C54.2040205@samsung.com> 	<20090519104202.GB30597@nokia.com> <45cc95260905190534m561d666ds1fd5d38b4a08ba5b@mail.gmail.com>
-In-Reply-To: <45cc95260905190534m561d666ds1fd5d38b4a08ba5b@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+	Thu, 21 May 2009 06:29:17 -0400
+From: Ian Campbell <ijc@hellion.org.uk>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: jeremy@goop.org, mingo@elte.hu, x86@kernel.org,
+       linux-kernel@vger.kernel.org, xen-devel@lists.xensource.com,
+       gregkh@suse.de, okir@suse.de, beckyb@kernel.crashing.org
+In-Reply-To: <1242901630.22654.135.camel@zakaz.uk.xensource.com>
+References: <20090520002955R.fujita.tomonori@lab.ntt.co.jp>
+	 <1242748597.22654.44.camel@zakaz.uk.xensource.com>
+	 <4A143885.1050502@goop.org> <20090521175436L.fujita.tomonori@lab.ntt.co.jp>
+	 <1242901630.22654.135.camel@zakaz.uk.xensource.com>
+Content-Type: text/plain
+Date: Thu, 21 May 2009 11:28:53 +0100
+Message-Id: <1242901733.22654.138.camel@zakaz.uk.xensource.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-SA-Exim-Connect-IP: 62.200.22.2
+X-SA-Exim-Mail-From: ijc@hellion.org.uk
+Subject: Re: Where do we stand with the Xen patches?
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
+X-Cloudmark-Analysis: v=1.0 c=1 a=GMTY6ZCfsGoA:10 a=UU1a1liyotcA:10 a=tHz9FfFoAAAA:8 a=_TPtRl0Wiwxm06zNxrQA:9 a=23P6lQeqVUxG9C5Jaf9VeYygDBEA:4 a=6O0IECtVFhoA:10
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 2009-05-21 at 11:27 +0100, Ian Campbell wrote:
+> The corresponding the Xen updates will...
+...follow.
 
-> Hi,
-> 
->>>  > But then comes another question: what to do with
->>>> magnetometers, gyroscopes, etc etc ??
->>> If we make a extensible sensor driver, I think we can add these new etc
->>> sensors in the future. step by step.
->> agreed here. But we have to think that this might get extended, so we
->> should start thinking of an abstraction layer that could evolve for
->> magnetometers, gyroscopes and other sensors
-> 
-> Agree with you, there should be an abstraction layer.
-Indeed. There is however a question of where some of this should take
-place. (Pretty much userspace vs kernel space).
+Subject:swiotlb/xen: add implementation of swiotlb_range_needs_mapping hook
 
-Getting some of the more useful information from these sensors
-(particularly where multiple types are available together) will
-require quite sophisticated algorithms that are not available in kernel.
+This function is now implemented via asm/dma-mapping.h rather than as
+a weak hook in swiotlb.c
 
-An example of devices where this is true would be the new wii controller
-add on (although in this case it's all handled on the remote I think).
-Here multiple sensors are used in conjunction to give results that simply
-can't be established with a single sensor type.  Even in cases such
-as analogs adis16350 and similar IMUs there is a lot of processing to be
-done off the chip it self.
+Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
 
-Yes we can do the dumb iphone style (hideously smoothed) accelerometer
-type control, but that only touches the tip of what is possible.
+diff --git a/arch/x86/include/asm/dma-mapping.h b/arch/x86/include/asm/dma-mapping.h
+index a80139a..ed51bd1 100644
+--- a/arch/x86/include/asm/dma-mapping.h
++++ b/arch/x86/include/asm/dma-mapping.h
+@@ -315,9 +315,15 @@ static inline int is_buffer_dma_capable(struct device *dev, u64 mask,
+ 	return addr + size <= mask;
+ }
  
-> According to this, we should collect similar functionalities in one
-> module and make sub-module describing exceptions devices or ones that
-> needs special handling.
-Some things can be wrapped into a core subsystem driver, but a frightening
-amount of this stuff is chip specific.
-> But in the end for the user space apps, they should "see" an
-> accelerometer in a standard way. All exceptions and pre-handling
-> should be done in the abstraction layer as described.
-Such an abstraction layer should exist, but shouldn't be the only way to
-access these devices.  A lot of them provide weird and wonderful elements
-(based on internal processing) that would lead to an obscene amount of bloat
-on any attempt at a general abstraction.
-> We can't bring as many full drivers as devices found, but one driver
-> serving for a group and that can load submodules when necessary.
-Doesn't work.  In hid you can do this because the hardware itself conforms
-to a tight spec.  This simply isn't the case with the types of sensor we
-are talking about here.  They structure that would be needed would be much
-closer to that taken by hwmon, where every chip (or family of chips) has
-to have it's own driver.   Sure it then registers certain elements with
-the core, but fundamentally they aren't similar enough to share all that
-much code.
-> The way HID is coded in Linux is an example for that, dealing with
-> many types of devices.
-> It isn't perfect, but its architecture can be used for other devices.
++#ifdef CONFIG_PCI_XEN
++extern int xen_range_needs_mapping(phys_addr_t paddr, size_t size);
++#else
++static inline int xen_range_needs_mapping(phys_addr_t paddr, size_t size) { return 0; }
++#endif
++
+ static int inline swiotlb_range_needs_mapping(phys_addr_t paddr, size_t size)
+ {
+-	return 0;
++	return xen_range_needs_mapping(paddr, size);
+ }
  
-> To stay with accelerometers, they are sensors, and sensors sense
-> physical properties.
-> Every device use its own methods but in the end they sense the same
-> thing and user wait for a similar feedback.
-Partly true.  There is certainly a core functionality that is shared
-across some of these chips.  However take a look at the drivers in IIO
-or some data sheets and you'll find a frightening variety of other stuff
-in each driver.  For basic input stuff it may be fine to only support the
-common elements, but that's not an option for many other applications.
-You tend to have picked a chip with particular features for a reason!
-> 
-> I post a link describing the HID standard, you can see in page 37 to
-> 39 how they define units, and exponents for sensors.
-> http://www.usb.org/developers/devclass_docs/HID1_11.pdf
-> 
-> Also, we can't imagine all use cases and scenarios, we should bring
-> useful information to userspace apps and they do what they want with
-> these informations.
-> KDE developers may use sensors to automatically rotate the screen
-> 90°/180° if the laptop is rotated. Others will use it to play games,
-> Some others will use light sensors to lighten the keyboard or to
-> change the brightness of the screen,...
-> 
-In a previous (off list) discussion, faking HID was brought up, so I'll
-summarize where we got to.
+ #endif
+diff --git a/arch/x86/xen/pci-swiotlb.c b/arch/x86/xen/pci-swiotlb.c
+index 5a46418..e23b00b 100644
+--- a/arch/x86/xen/pci-swiotlb.c
++++ b/arch/x86/xen/pci-swiotlb.c
+@@ -43,11 +43,3 @@ phys_addr_t swiotlb_bus_to_phys(struct device *hwdev, dma_addr_t baddr)
+ 
+ 	return baddr;
+ }
+-
+-int swiotlb_arch_range_needs_mapping(phys_addr_t paddr, size_t size)
+-{
+-	if (xen_pv_domain())
+-		return xen_range_needs_mapping(paddr, size);
+-
+-	return 0;
+-}
+diff --git a/drivers/pci/xen-iommu.c b/drivers/pci/xen-iommu.c
+index 41c276f..003ffe3 100644
+--- a/drivers/pci/xen-iommu.c
++++ b/drivers/pci/xen-iommu.c
+@@ -132,6 +132,8 @@ static int range_straddles_page_boundary(phys_addr_t p, size_t size)
+ 
+ int xen_range_needs_mapping(phys_addr_t paddr, size_t size)
+ {
++	if (!xen_pv_domain())
++		return 0;
+ 	return range_straddles_page_boundary(paddr, size);
+ }
+ 
 
-Firstly note we would be faking HID.  In it's conventional use, it would be
-the sensors themselves that would provide information about their facilities
-and add all the stuff that it's described in the document above.  Sadly for
-these devices very few manufacturers have gone down that path.  The driver has
-to know what a given chip supports, there is no query method.  It would be possible
-to make this work, but it's a seriously nasty case of blugeoning data into a
-format that although flexible enough, was very much designed for other things.
-Feel free to try and persuade the manufacturers to conform to HID!
 
-To keep this maintenance nightmare minimal, we'd probably have to keep pretty
-much completely separate from the HID system and just rely on matching interfaces.
-(worth bringing in some HID experts but that's the feeling I got from reading
-the code last time round?)
+-- 
+Ian Campbell
+Current Noise: Isis - Wills Dissolve
 
-This in turn means we going to generate a nasty problem with testing any userspace
-developments against both conventional hid and our 'fake' hid implementation.
+"Hey Ivan, check your six."
+-- Sidewinder missile jacket patch, showing a Sidewinder driving up the tail
+ of a Russian Su-27
 
-If we were to go this way it would have to only be one of several interfaces.
-The overhead will be large, and frankly for the high performance sampling end of
-things that I'm interested in (and others who are in the CC's above) this isn't
-an option.  Do you want to make HID deal with hardware (or software) ring buffering
-for example?  It's way out of scope.
-
-My personal preference for this problem area would be to look at how to add some
-minimal core functionality to IIO to make it provide input interfaces as well.
-In a similar fashion to lm-sensors it will be possible to establish functionality
-of a given device by looking at what it exports in sysfs and hence applications
-(or more likely a nice userspace library) can use this to identify what sort of
-data is available and do any aggregation and processing.  In a similar fashion
-to lm-sensors, this library would be kept in sync with the kernel tree.
-
-HID might be an option, but I'm yet to be convinced it would be practical.
-
-Jonathan
