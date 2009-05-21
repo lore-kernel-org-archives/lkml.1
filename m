@@ -1,112 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756656AbZEUUrn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756143AbZEUVH5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756656AbZEUUrn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 16:47:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753743AbZEUUrf
+	id S1756143AbZEUVH5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 17:07:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754037AbZEUVHt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 16:47:35 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:60363 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753703AbZEUUrf (ORCPT
+	Thu, 21 May 2009 17:07:49 -0400
+Received: from mail-bw0-f222.google.com ([209.85.218.222]:41006 "EHLO
+	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753786AbZEUVHt convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 16:47:35 -0400
-Date: Thu, 21 May 2009 21:47:13 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Larry H." <research@subreption.com>
-Cc: Rik van Riel <riel@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
-       linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>,
-       linux-mm@kvack.org, Ingo Molnar <mingo@redhat.com>
-Subject: Re: [patch 0/5] Support for sanitization flag in low-level page
- allocator
-Message-ID: <20090521214713.65adfd6e@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090521195603.GK10756@oblivion.subreption.com>
-References: <20090520183045.GB10547@oblivion.subreption.com>
-	<1242852158.6582.231.camel@laptop>
-	<4A15A69F.3040604@redhat.com>
-	<20090521202628.39625a5d@lxorguk.ukuu.org.uk>
-	<20090521195603.GK10756@oblivion.subreption.com>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 21 May 2009 17:07:49 -0400
+MIME-Version: 1.0
+In-Reply-To: <Pine.LNX.4.44L0.0905210945290.2886-100000@iolanthe.rowland.org>
+References: <20090521095217.GU8633@ZenIV.linux.org.uk> <Pine.LNX.4.44L0.0905210945290.2886-100000@iolanthe.rowland.org>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Thu, 21 May 2009 23:07:29 +0200
+Message-ID: <ac3eb2510905211407l3aec14acx2572a2ad4e675b9@mail.gmail.com>
+Subject: Re: How to tell whether a struct file is held by a process?
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Al Viro <viro@zeniv.linux.org.uk>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > You do at buffer free time.
-> 
-> Alan, I think you will agree with me that forcing people to know what
-> they have to do exactly with their buffers when they will contain
-> confidential/sensitive data is suboptimal. Like it's been said before,
+On Thu, May 21, 2009 at 16:06, Alan Stern <stern@rowland.harvard.edu> wrote:
+> On Thu, 21 May 2009, Al Viro wrote:
+>> On Tue, May 19, 2009 at 12:57:21PM -0400, Alan Stern wrote:
+>> > What's the best way to tell whether the current process has a
+>> > particular struct file among its open files?  Is there any better way
+>> > to find out than blindly calling fget() for each possible fd?
+>> >
+>> > Is this a totally insane thing to do?
+>>
+>> It is insane.  You might lock fdtable and scan it, but as soon as you
+>> drop the spinlock your return value is worthless.
+>
+> In this case, I believe that changes after the check has been made
+> won't hurt -- everything relevant to my work will be serialized by a
+> separate lock.
+>
+>> What are you trying to do?  If the process is cooperating, you don't really
+>> need that in the kernel, if it's not, the check is not usable...
+>
+> I'm trying to work out a good way to reserve access rights to a device
+> -- even if that device doesn't exist yet.
+>
+> Here's the story.  People have requested that the kernel add a
+> mechanism whereby a user program can get more-or-less exclusive access
+> rights to a USB device.  In fact, they'd like to reserve these rights
+> for any device plugged into a particular USB port.  So even if no
+> device is plugged into that port at the moment, the program should get
+> exclusive access as soon as a new device is detected there.
+>
+> In order to prevent programs from dying without releasing their
+> exclusive rights, it seems natural to implement these rights as open
+> files.  Thus, opening file A(P) will give a program exclusive access
+> rights to any device plugged into USB port P.  Closing A(P) releases
+> the rights.  (The A(P) files would be implemented as single-open files,
+> probably in sysfs.)
+>
+> The problem is this.  Let D be the device plugged into port P.  When
+> some program opens D's device file, it's necessary to check whether
+> that same program has an open file reference for A(P), i.e., has opened
+> A(P), or has inherited a descriptor for A(P) from its parent, or has
+> been passed such a descriptor over a Unix socket, etc.  If not, and if
+> A(P) is open (owned by someone else), then access to D is denied.
+>
+> If you can think up a better way to implement these exclusive access
+> rights, I'd be glad to hear it.
 
-In the kernel no and page flags are very precious, very few and if we run
-out will cost us a vast amount of extra kernel memory. If page flags were
-free the question would be trivial - but they are not. Thus it is worth
-asking whether its actually harder to remember to zap the buffer or set
-and clear the flag correctly.
+Not sure, if we already discussed that with a conclusion: this
+"prevent access to a future device" interface needs to work at the pid
+level, or would a uid/gid check be sufficient?
 
-> the clearing isn't the only issue here. We have pagination to disk,
-> re-allocation leaks, etc.
+Root can do all that stuff anyway, even with the locking in place.
+Uid/gid file permissions need to be applied to the "lock file", so
+specified non-root users can use that interface.
 
-There is no kernel paging (except virtualised but that is an entire other
-can of worms we shouldn't open), you can handle reallocation concerns
-without page flags by using a SLAB type for 'secure' allocations which
-clears the entry on free.
+Maybe it would be good enough, to check that the one that opened the
+"lock file" has the same uid/gid as the on that tries to open the
+device when it has shown up?
 
-> > Still doesn't need a page flag - that is a vma flag which is far cheaper.
-> > Also means you can get rid of the stupid mlock() misuse by things like
-> > GPG to work around OS weaknesses by crypting the page if it hits
-> > disk/swap/whatever.
-> 
-> Do you suggest a vma flag should be created for this as well?
-
-You don't need a page flag, just a per vma flag and something akin to
-madvise() to set the flag on the VMA (and/or split the VMA for partial
-maps as we do for anything else). VMA flags are cheap.
-
-> The point is that the keys or sensitive marked pages should never, ever
-> be swapped to disk, by any means. Right now the patch only affects
-> kernel code, the task related flag and functionality patches haven't been
-> submitted yet.
-
-If you are paging them to a crypted filestore they should be safe on
-disk. What is your problem with that ? If your suspend image is
-compromised it doesn't really matter if you wiped the data as what you
-resume may then wait for the new keys and compromise those. In fact
-having a page flag makes it easier for the attack code to know what to
-capture and send to the bad guys...
-
-> Regarding retrieving the encryption keys, IVs, and so forth, why bother
-> reading the data remaining on disk? You can just retrieve them off
-> memory (ex. via rogue driver or some re-allocation bug scenario,
-> information leak or similar issue) and that's it.
-
-I was assuming you'd wipe such data from memory on a suspend to disk.
-However on a suspend to disk its basically as cheap to wipe all of memory
-and safer than wiping random bits and praying you know what the compiler
-did and you know what some other bit of library did.
-
-> After all, that was the beauty of Linux since the start. We don't need
-> to follow a political or corporate agenda in these regards. Right?
-
-Indeed - but a technically sound solution that doesn't waste a page flag
-is still important. It's btw not as simple as a page flag anyway - the
-kernel stores some stuff in places that do not have page flags, it also
-has kmaps and other things that will give you suprises.
-
-Perhaps you should post your threat model to go with the patches. At the
-moment your model doesn't seem to make sense.
-
-Surely we can attack the problem far more directly for all but S2R by
-
-- choosing to use encrypted swap and encrypted S2D images (already
-  possible)
-- wiping the in memory image on S2D if the user chooses (which would be
-  smart)
-
-That has the advantage that nobody has to label pages sensitive - which
-is flawed anyway, we want to label pages "non-sensitive" in the ideal
-world so we default secure.
-
-
-
+Kay
