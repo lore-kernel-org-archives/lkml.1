@@ -1,54 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755578AbZEUBYR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755874AbZEUBYg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755578AbZEUBYR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 21:24:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752950AbZEUBYK
+	id S1755874AbZEUBYg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 21:24:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752950AbZEUBY1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 21:24:10 -0400
-Received: from qw-out-2122.google.com ([74.125.92.26]:43944 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752341AbZEUBYJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 21:24:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=IOwEAvNpQbSJ6a/ql8vZUuDpjqXHyFDPS1VbTb2zwo2uWhNXG6dTKISNvoKi0jcEgq
-         P1mPfpZdoTCc/kFyjiumm7SJV9BU7UqPwx2+jN7E6adEvjNESY3UOG8TtQKcrlw+gQs7
-         pvOmVxa+t43aTPZR/jsk+ciDqJcxSrpnF4IJA=
+	Wed, 20 May 2009 21:24:27 -0400
+Received: from hera.kernel.org ([140.211.167.34]:42293 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753321AbZEUBY0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 21:24:26 -0400
+Message-ID: <4A14ACA4.6050602@kernel.org>
+Date: Thu, 21 May 2009 10:21:40 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Date: Wed, 20 May 2009 18:16:56 -0700
-Message-ID: <cf70f0210905201816g51d5d99ft35e8f33e2c470f5e@mail.gmail.com>
-Subject: Confused with CONFIG_NO_HZ and CONFIG_HZ
-From: Shivdas Gujare <shivdas.tech@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+To: mingo@elte.hu, linux-kernel@vger.kernel.org, x86@kernel.org,
+       ink@jurassic.park.msu.ru, rth@twiddle.net, linux@arm.linux.org.uk,
+       hskinnemoen@atmel.com, cooloney@kernel.org, starvik@axis.com,
+       jesper.nilsson@axis.com, dhowells@redhat.com,
+       ysato@users.sourceforge.jp, tony.luck@intel.com, takata@linux-m32r.org,
+       geert@linux-m68k.org, monstr@monstr.eu, ralf@linux-mips.org,
+       kyle@mcmartin.ca, benh@kernel.crashing.org, paulus@samba.org,
+       schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com, lethal@linux-sh.org,
+       davem@davemloft.net, jdike@addtoit.com, chris@zankel.net,
+       rusty@rustcorp.com.au
+Subject: Re: [PATCHSET core/percpu] percpu: convert most archs to dynamic
+ percpu
+References: <1242805059-18338-1-git-send-email-tj@kernel.org>
+In-Reply-To: <1242805059-18338-1-git-send-email-tj@kernel.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 21 May 2009 01:21:50 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+Tejun Heo wrote:
+> Hello,
+> 
+> Please do NOT pull before maintainers of alpha and s390 ack.  Upon
+> ack, please pull from the following git tree.
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git tj-percpu
 
-I am confused with CONFIG_NO_HZ and CONFIG_HZ? What is the main
-difference between it?
-As per what I understood, CONFIG_NO_HZ is feature of tickless kernel,
-where timer interrupts will be fired only if necessary,
-and CONFIG_HZ decides the timeout of timer interrupts?
+Ingo, I added Martin's and Ivan's acks.  Please go ahead and pull into
+core/percpu.
 
-I came across description[1] from Ingo regarding CONFIG_NO_HZ as "if
-there is no timer to be expired for say 1.5 seconds when
-the system goes idle, then the system will stay totally idle for 1.5
-seconds." then I don't understand how timer will remain unexpired
-during idle if CONFIG_HZ=100,
-i.e. 10ms timer timeout for timer interrupt and during such scenarios
-who decides this 1.5 sec timeout.
+Thanks.
 
-It will be great help, if I get some more information regarding this.
-
-Ref.
-[1] http://kerneltrap.org/node/6750
-
-Thanks and regards,
-Shivdas Gujare
+-- 
+tejun
