@@ -1,64 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757221AbZEUOGa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757247AbZEUOIU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757221AbZEUOGa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 10:06:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755868AbZEUOGU
+	id S1757247AbZEUOIU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 10:08:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753560AbZEUOIN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 10:06:20 -0400
-Received: from h155.mvista.com ([63.81.120.155]:49099 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756969AbZEUOGT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 10:06:19 -0400
-Message-ID: <4A15600A.40906@ru.mvista.com>
-Date: Thu, 21 May 2009 18:07:06 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Thu, 21 May 2009 10:08:13 -0400
+Received: from tx2ehsobe002.messaging.microsoft.com ([65.55.88.12]:11862 "EHLO
+	TX2EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753362AbZEUOIM convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 May 2009 10:08:12 -0400
+X-BigFish: VPS-33(zz1432R98dR168aJ1805M179dRzz1202hzzz32i6bh6di43j)
+X-FB-SS: 5,13,
+X-WSS-ID: 0KJZZ9A-02-WFJ-01
+Date: Thu, 21 May 2009 16:08:00 +0200
+From: Borislav Petkov <borislav.petkov@amd.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: akpm@linux-foundation.org, greg@kroah.com, mingo@elte.hu, norsk5@yahoo.com,
+       tglx@linutronix.de, mchehab@redhat.com, aris@redhat.com, edt@aei.ca,
+       linux-kernel@vger.kernel.org,
+       Andreas Herrmann <andreas.herrmann3@amd.com>
+Subject: Re: [PATCH 01/22] x86: add methods for writing of an MSR on
+	several CPUs
+Message-ID: <20090521140800.GA3462@aftab>
+References: <1242390153-24493-1-git-send-email-borislav.petkov@amd.com> <1242390153-24493-2-git-send-email-borislav.petkov@amd.com> <20090519172449.GB18874@aftab> <4A1392A9.9010609@zytor.com> <20090520144905.GA27991@aftab> <4A147891.5000906@zytor.com>
 MIME-Version: 1.0
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/5] ide: ->ide_dma_clear_irq() -> ->clear_irq()
-References: <200808192031.40288.bzolnier@gmail.com> <48AB478B.5040209@ru.mvista.com> <48CEDD89.5060107@ru.mvista.com>
-In-Reply-To: <48CEDD89.5060107@ru.mvista.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+In-Reply-To: <4A147891.5000906@zytor.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-OriginalArrivalTime: 21 May 2009 14:08:01.0851 (UTC) FILETIME=[8D6E90B0:01C9DA1D]
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, I wrote:
+On Wed, May 20, 2009 at 02:39:29PM -0700, H. Peter Anvin wrote:
+> Borislav Petkov wrote:
+> > 
+> > We currently need them for enabling the NB error reporting bank over
+> > MCG_CTL on each core on the node. The question is whether we really need
+> > the concurrency when accessing an MSR on several cores. With MCG_CTL,
+> > BKDG says "It is expected that this register is programmed to the same
+> > value in all nodes," but nothing concerning concurrency.
+> > 
+> > But you're right, if this interface is supposed to be generic enough,
+> > it is probably wise to access an MSR concurrently. I could imagine
+> > an obscure case where this is required. However, is sending IPIs
+> > (smp_call_function_many) guaranteeing the needed concurrency? Or, should
+> > it be more like how the mtrr code jumps through hoops (set_mtrr())
+> > in order to ensure that _ALL_ registers have been written _before_
+> > continuing?
+> > 
+> 
+> smp_call_function_many() does allow concurrent execution.
 
->>> * Rename ->ide_dma_clear_irq method to ->clear_irq
->>>   and move it from ide_hwif_t to struct ide_port_ops.
+Well, IMHO, not an absolutely concurrent execution since you can't
+control at what moment in time the IPIs will be executed on each core,
+IOW, the respective call function IPIs will generally not coincide on
+each core at a given moment in time. This is especially true if you're
+sending IPIs to cores across nodes.
 
->>> * Move ->waiting_for_dma check inside ->clear_irq method.
+And there's hypothetically a small window where you might get an
+inconsistent MSR content across cores. It's a whole another question
+whether this is going to be relevant.
 
->>> * Move ->dma_base check inside ->clear_irq method.
+> Looping over a list with smp_call_function_one() -- which you
+> currently have -- is serializing, at which point we might just push
+> the loop into the caller rather than worrying about a new interface.
 
->>> piix.c:
->>> * Add ich_port_ops and remove init_hwif_ich() wrapper.
+So, the actual question is do we need that done in msr.c? If there are
+no potential users, I could easily do the whole thing in the driver and
+do not touch x86 code.
 
->>> There should be no functional changes caused by this patch.
+Hmm?
 
-[...]
+-- 
+Regards/Gruss,
+Boris.
 
->>   It may also be worth considering turning this method into 
->> test-and-clear, so that we can get the actual IDE interrupt state on 
->> the chips that implement this...
-
->   Probably might add the test_irq() method to be called on 
-> !hwif->waiting_for_dma. Cleraing the status at once seems impractical...
-
-    Yet this seems what ack_intr() method is doing already...
-    What it does is testing IRQ status and "acknowledging" it (the semantics 
-of "acknowledge" is not clear to me, yet it seems that it's clearing the 
-interrupt latch in the drivers where it's implemented). And the call site of 
-ack_intr() method corresponds to where test_irq() should have been called, 
-so it seems we don't need yet another method and probably didn't even need 
-clear_irq() method in the first place?..
-    Bart, could you clarify about how ack_intr() is supposed to work?
-
-MBR, Sergei
+Operating | Advanced Micro Devices GmbH
+  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
+ Research | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
+  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+  (OSRC)  | Registergericht München, HRB Nr. 43632
 
