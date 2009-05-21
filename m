@@ -1,71 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751216AbZEUFeG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752167AbZEUFgV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751216AbZEUFeG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 01:34:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751134AbZEUFd4
+	id S1752167AbZEUFgV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 01:36:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750946AbZEUFgH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 01:33:56 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:49430 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751074AbZEUFd4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 01:33:56 -0400
-Message-ID: <4A14E805.9040103@cn.fujitsu.com>
-Date: Thu, 21 May 2009 13:35:01 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Thu, 21 May 2009 01:36:07 -0400
+Received: from hera.kernel.org ([140.211.167.34]:38372 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750847AbZEUFgG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 May 2009 01:36:06 -0400
+Message-ID: <4A14E836.5090302@kernel.org>
+Date: Thu, 21 May 2009 14:35:50 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>, Jason Baron <jbaron@redhat.com>
-Subject: Re: [PATCH 5/5] tracing: convert irq events to use __print_symbolic
-References: <20090521031711.494593605@goodmis.org> <20090521031749.639465433@goodmis.org>
-In-Reply-To: <20090521031749.639465433@goodmis.org>
-Content-Type: text/plain; charset=GB2312
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       Cornelia Huck <cornelia.huck@de.ibm.com>, linux-fsdevel@vger.kernel.org,
+       Benjamin Thery <benjamin.thery@bull.net>,
+       Daniel Lezcano <dlezcano@fr.ibm.com>,
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>
+Subject: Re: [PATCH 01/20] sysfs: Implement sysfs_rename_link
+References: <m1bppofm9k.fsf@fess.ebiederm.org> <1242865694-2100-1-git-send-email-ebiederm@xmission.com>
+In-Reply-To: <1242865694-2100-1-git-send-email-ebiederm@xmission.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 21 May 2009 05:35:56 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +#define softirq_name(sirq) { sirq, #sirq }
-> +#define show_softirq_name(val)						\
-> +	__print_symbolic(val,						\
-> +			 softirq_name(HI_SOFTIRQ),			\
-> +			 softirq_name(TIMER_SOFTIRQ),			\
-> +			 softirq_name(NET_TX_SOFTIRQ),			\
-> +			 softirq_name(NET_RX_SOFTIRQ),			\
-> +			 softirq_name(BLOCK_SOFTIRQ),			\
-> +			 softirq_name(TASKLET_SOFTIRQ),			\
-> +			 softirq_name(SCHED_SOFTIRQ),			\
-> +			 softirq_name(HRTIMER_SOFTIRQ),			\
-> +			 softirq_name(RCU_SOFTIRQ))
+Hello,
+
+Eric W. Biederman wrote:
+> +int sysfs_rename_link(struct kobject *kobj, struct kobject *targ,
+> +			const char *old, const char *new)
+> +{
+> +	sysfs_remove_link(kobj, old);
+> +	return sysfs_create_link(kobj, targ, new);
+> +}
 > +
 
-The ending "_SOFTIRQ" is just redundant.
+Removal and creation are done in the reverse order compared to the one
+used in device rename.  The important difference is that previously
+failed operation was noop whereas it now would remove the current
+link.  I think the old order is correct.
 
-And it's you that removed "_SOFTIRQ" in the output of irq
-trace events. ;)
+Thanks.
 
-==========
-commit 899039e8746bb9a09b6487ddb8ab2275ce9d0256
-Author: Steven Rostedt <srostedt@redhat.com>
-Date:   Fri Mar 13 00:43:33 2009 -0400
-
-    softirq: no need to have SOFTIRQ in softirq name
-
-    Impact: clean up
-
-    It is redundant to have 'SOFTIRQ' in the softirq names.
-==========
-
-How about:
-
-#define softirq_name(sirq) { sirq ## _SOFTIRQ, #sirq }
-#define show_softirq_name(val)						\
-	__print_symbolic(val,						\
-			 softirq_name(HI),				\
-
-or:
-
-#define softirq_name(sirq) { sirq, softirq_to_name[sirq] }
-
+-- 
+tejun
