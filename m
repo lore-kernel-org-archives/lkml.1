@@ -1,56 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754643AbZEUXwm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755027AbZEVAAV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754643AbZEUXwm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 19:52:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753892AbZEUXwe
+	id S1755027AbZEVAAV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 20:00:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754246AbZEVAAJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 19:52:34 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:2661 "EHLO
-	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751834AbZEUXwe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 19:52:34 -0400
-Subject: Re: [PATCH 2/3] arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c: Use
- DO_ONCE & spelling fix
-From: Joe Perches <joe@perches.com>
-To: Dave Jones <davej@redhat.com>
-Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org,
-       Greg Kroah-Hartman <gregkh@suse.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@redhat.com>, x86@vger.kernel.org,
-       Len Brown <len.brown@intel.com>, Mike Travis <travis@sgi.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-In-Reply-To: <20090521234726.GA24695@redhat.com>
-References: <cover.1242943463.git.joe@perches.com>
-	 <a4b6b12afa9cf1ee6e936de5eed7cb31181553d8.1242943463.git.joe@perches.com>
-	 <20090521232604.GA26150@redhat.com>
-	 <1242948841.3373.145.camel@Joe-Laptop.home>
-	 <20090521234726.GA24695@redhat.com>
-Content-Type: text/plain
-Date: Thu, 21 May 2009 16:52:19 -0700
-Message-Id: <1242949939.3373.149.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 21 May 2009 20:00:09 -0400
+Received: from tundra.namei.org ([65.99.196.166]:41610 "EHLO tundra.namei.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751834AbZEVAAI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 May 2009 20:00:08 -0400
+Date: Fri, 22 May 2009 09:59:11 +1000 (EST)
+From: James Morris <jmorris@namei.org>
+To: Mimi Zohar <zohar@linux.vnet.ibm.com>
+cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       hooanon05@yahoo.co.jp, "J. Bruce Fields" <bfields@fieldses.org>,
+       Eric Paris <eparis@redhat.com>, Hugh Dickins <hugh@veritas.com>,
+       David Safford <safford@watson.ibm.com>, linux-nfs@vger.kernel.org,
+       Mimi Zohar <zohar@us.ibm.com>
+Subject: Re: [PATCH 2/3] integrity: move ima_counts_get
+In-Reply-To: <4b26da825c7cff6c22e924012011bedb76f7079b.1242753148.git.zohar@linux.vnet.ibm.com>
+Message-ID: <alpine.LRH.2.00.0905220958570.6348@tundra.namei.org>
+References: <8971a1efcc5153f1c9b167997e5ca0c3c40a69d5.1242753145.git.zohar@linux.vnet.ibm.com> <4b26da825c7cff6c22e924012011bedb76f7079b.1242753148.git.zohar@linux.vnet.ibm.com>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-05-21 at 19:47 -0400, Dave Jones wrote:
-> I just think it's a less readable variant of the same thing.
-> The shouty macro, the extra level of brackets, the whole thing 
-> just seems to be ugly to me with no redeeming feature.
+On Tue, 19 May 2009, Mimi Zohar wrote:
+
+> Based on discussion on lkml (Andrew Morton and Eric Paris),
+> move ima_counts_get down a layer into shmem/hugetlb__file_setup().
+> Resolves drm shmem_file_setup() usage case as well.
 > 
-> What does doing this change really bring us?
+> Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
 
-The ability to use pr_<foo> types rather than printk_once(KERN_<foo>
-and have the pr_fmt macro function correctly.
+Applied to
+git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6#next
 
-DO_ONCE(pr_info(
-
-vs
-
-printk_once(KERN_INFO
-
-
+-- 
+James Morris
+<jmorris@namei.org>
