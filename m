@@ -1,91 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755593AbZEUJY3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754136AbZEUJ3T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755593AbZEUJY3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 05:24:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754081AbZEUJXb
+	id S1754136AbZEUJ3T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 05:29:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751780AbZEUJ3I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 05:23:31 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:50333 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753400AbZEUJXa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 05:23:30 -0400
-Message-Id: <20090521092246.999286876@szeredi.hu>
-References: <20090521092231.979256687@szeredi.hu>
-User-Agent: quilt/0.45-1
-Date: Thu, 21 May 2009 11:22:32 +0200
-From: Miklos Szeredi <miklos@szeredi.hu>
-To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: jblunck@suse.de, bharata@in.ibm.com, vaurora@redhat.com,
-       viro@zeniv.linux.org.uk
-Subject: [patch 1/5] union-directory: Introduce MNT_UNION and MS_UNION flags
-Content-Disposition: inline; filename=union-mount-mount_flag.diff
+	Thu, 21 May 2009 05:29:08 -0400
+Received: from hera.kernel.org ([140.211.167.34]:41164 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751051AbZEUJ3G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 May 2009 05:29:06 -0400
+Message-ID: <4A151ECE.50800@kernel.org>
+Date: Thu, 21 May 2009 18:28:46 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       Cornelia Huck <cornelia.huck@de.ibm.com>, linux-fsdevel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>
+Subject: Re: [PATCH 04/20] sysfs: Handle the general case of removing of directories
+ with subdirectories
+References: <m1bppofm9k.fsf@fess.ebiederm.org>	<1242865694-2100-1-git-send-email-ebiederm@xmission.com>	<1242865694-2100-2-git-send-email-ebiederm@xmission.com>	<1242865694-2100-3-git-send-email-ebiederm@xmission.com>	<1242865694-2100-4-git-send-email-ebiederm@xmission.com>	<4A14F356.3030501@kernel.org> <m1k54a7w2x.fsf@fess.ebiederm.org>	<4A15046A.10106@kernel.org> <m1octm287f.fsf@fess.ebiederm.org>	<4A1512E2.2040505@kernel.org> <m1vdnuyftb.fsf@fess.ebiederm.org>
+In-Reply-To: <m1vdnuyftb.fsf@fess.ebiederm.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 21 May 2009 09:29:00 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jan Blunck <jblunck@suse.de>
+Hello, Eric.
 
-Add per mountpoint flag for Union Mount support. You need additional patches
-to util-linux for that to work (ftp.suse.com/pub/people/jblunck/union-mount).
+Eric W. Biederman wrote:
+> Tejun Heo <tj@kernel.org> writes:
+> 
+>> Well, it can be trivially fixed by checking the removed flag.  The
+>> add/rm thing is designed to help additions and removals of multiple
+>> nodes at one go and I'd really like to see it working that way.  Any
+>> chance you can change code toward that direction?
+> 
+> Yes.  We definitely need to check the removed flag in sysfs_add_one.
+> Regardless of anything else.
+> 
+> I need to sleep on this but I am inclined to get rid of the rest of
+> the complications simply by failing the removal of non-empty
+> directories.  Going through the upper layers and making them properly
+> responsible for their actions.
+> 
+> I am afraid friendlier in this circumstance might equate to easier
+> to misuse and let code bugs pile up.
 
-Signed-off-by: Jan Blunck <jblunck@suse.de>
-Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
----
- fs/namespace.c        |    5 ++++-
- include/linux/fs.h    |    1 +
- include/linux/mount.h |    1 +
- 3 files changed, 6 insertions(+), 1 deletion(-)
+I'm going through the latter part of the patchset and the code around
+this area gets much simpler there.  Would it be possible to make it
+atomic after the simplification?  Requiring recursive deletion from
+all the callers is silly and error prone.
 
-Index: linux-2.6/fs/namespace.c
-===================================================================
---- linux-2.6.orig/fs/namespace.c	2009-05-20 15:05:15.000000000 +0200
-+++ linux-2.6/fs/namespace.c	2009-05-20 15:07:46.000000000 +0200
-@@ -796,6 +796,7 @@ static void show_mnt_opts(struct seq_fil
- 		{ MNT_NODIRATIME, ",nodiratime" },
- 		{ MNT_RELATIME, ",relatime" },
- 		{ MNT_STRICTATIME, ",strictatime" },
-+		{ MNT_UNION, ",union" },
- 		{ 0, NULL }
- 	};
- 	const struct proc_fs_info *fs_infop;
-@@ -1952,10 +1953,12 @@ long do_mount(char *dev_name, char *dir_
- 		mnt_flags &= ~(MNT_RELATIME | MNT_NOATIME);
- 	if (flags & MS_RDONLY)
- 		mnt_flags |= MNT_READONLY;
-+	if (flags & MS_UNION)
-+		mnt_flags |= MNT_UNION;
- 
- 	flags &= ~(MS_NOSUID | MS_NOEXEC | MS_NODEV | MS_ACTIVE |
- 		   MS_NOATIME | MS_NODIRATIME | MS_RELATIME| MS_KERNMOUNT |
--		   MS_STRICTATIME);
-+		   MS_STRICTATIME | MS_UNION);
- 
- 	/* ... and get the mountpoint */
- 	retval = kern_path(dir_name, LOOKUP_FOLLOW, &path);
-Index: linux-2.6/include/linux/fs.h
-===================================================================
---- linux-2.6.orig/include/linux/fs.h	2009-05-20 15:05:15.000000000 +0200
-+++ linux-2.6/include/linux/fs.h	2009-05-20 15:07:46.000000000 +0200
-@@ -188,6 +188,7 @@ struct inodes_stat_t {
- #define MS_REMOUNT	32	/* Alter flags of a mounted FS */
- #define MS_MANDLOCK	64	/* Allow mandatory locks on an FS */
- #define MS_DIRSYNC	128	/* Directory modifications are synchronous */
-+#define MS_UNION	256
- #define MS_NOATIME	1024	/* Do not update access times. */
- #define MS_NODIRATIME	2048	/* Do not update directory access times */
- #define MS_BIND		4096
-Index: linux-2.6/include/linux/mount.h
-===================================================================
---- linux-2.6.orig/include/linux/mount.h	2009-05-20 15:05:15.000000000 +0200
-+++ linux-2.6/include/linux/mount.h	2009-05-20 15:07:46.000000000 +0200
-@@ -35,6 +35,7 @@ struct mnt_namespace;
- #define MNT_SHARED	0x1000	/* if the vfsmount is a shared mount */
- #define MNT_UNBINDABLE	0x2000	/* if the vfsmount is a unbindable mount */
- #define MNT_PNODE_MASK	0x3000	/* propagation flag mask */
-+#define MNT_UNION	0x4000	/* if the vfsmount is a union mount */
- 
- struct vfsmount {
- 	struct list_head mnt_hash;
+Thanks.
 
---
+-- 
+tejun
