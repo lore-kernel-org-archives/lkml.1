@@ -1,71 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755093AbZEURqb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755264AbZEURs6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755093AbZEURqb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 13:46:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752252AbZEURqY
+	id S1755264AbZEURs6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 13:48:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753870AbZEURsw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 13:46:24 -0400
-Received: from mho-02-ewr.mailhop.org ([204.13.248.72]:58807 "EHLO
-	mho-02-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752067AbZEURqX (ORCPT
+	Thu, 21 May 2009 13:48:52 -0400
+Received: from nerdhammel.gnuher.de ([88.198.0.170]:32891 "EHLO
+	nerdhammel.gnuher.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753847AbZEURsv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 13:46:23 -0400
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 67.160.239.110
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX1+G5mHD6rWsSxig0YlursCh
-Date: Thu, 21 May 2009 10:46:20 -0700
-From: Tony Lindgren <tony@atomide.com>
-To: Kevin Hilman <khilman@deeprootsystems.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] UART regs: add OMAP wakeup-enable register
-Message-ID: <20090521174620.GN8308@atomide.com>
-References: <1242925798-29672-1-git-send-email-khilman@deeprootsystems.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1242925798-29672-1-git-send-email-khilman@deeprootsystems.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 21 May 2009 13:48:51 -0400
+To: linux-kernel@vger.kernel.org
+Path: not-for-mail
+From: Sven Geggus <lists@fuchsschwanzdomain.de>
+Subject: Re: 2.6.29+ NFS-Server Problem "reconnect_path: npd != pd"
+Date: Thu, 21 May 2009 17:48:51 +0000 (UTC)
+Organization: Geggus clan, virtual section
+Message-ID: <gv4463$6fn$1@ultimate100.geggus.net>
+References: <20090521142026.GA5566@geggus.net> <1242924599.6687.1.camel@heimdal.trondhjem.org> <20090521165751.GA4428@geggus.net> <1242927133.6687.4.camel@heimdal.trondhjem.org>
+NNTP-Posting-Host: diesel.geggus.net
+X-Trace: ultimate100.geggus.net 1242928131 6647 192.168.3.2 (21 May 2009 17:48:51 GMT)
+X-Complaints-To: usenet@geggus.net
+NNTP-Posting-Date: Thu, 21 May 2009 17:48:51 +0000 (UTC)
+Cancel-Lock: sha1:GNMHM+a0Fdyv2/Nm1jJZhYQlBAU=
+X-TERMINAL: rxvt-unicode
+X-OS: Debian GNU/Linux (Kernel 2.6.29.3)
+User-Agent: tin/1.9.3-20080506 ("Dalintober") (UNIX) (Linux/2.6.29.3 (i686))
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Kevin Hilman <khilman@deeprootsystems.com> [090521 10:10]:
-> Add the wakeup enable register to the list of OMAP-specific UART
-> registers.  This is to support forthcoming OMAP PM enhancements which
-> use the wakeup feature of the OMAP's 8250-based UART.
-> 
-> Signed-off-by: Kevin Hilman <khilman@deeprootsystems.com>
-> ---
-> The MAINTAINERS file lists the 8250 driver as orphaned, and posts to
-> linux-serial go unanswered.  How should this go upstream?
+Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
 
-I suggest you merge this into your omap PM queue and we'll merge it
-with that.
+> So what is the underlying filesystem that you are exporting, and what
+> does your /etc/exports file look like?
 
-Tony
+The underlying filesystem is xfs and /etc/exports (unchanged) is here:
 
- 
->  include/linux/serial_reg.h |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
-> 
-> diff --git a/include/linux/serial_reg.h b/include/linux/serial_reg.h
-> index 96c0d93..850db2e 100644
-> --- a/include/linux/serial_reg.h
-> +++ b/include/linux/serial_reg.h
-> @@ -323,6 +323,7 @@
->  #define UART_OMAP_MVER		0x14	/* Module version register */
->  #define UART_OMAP_SYSC		0x15	/* System configuration register */
->  #define UART_OMAP_SYSS		0x16	/* System status register */
-> +#define UART_OMAP_WER		0x17	/* Wake-up enable register */
->  
->  #endif /* _LINUX_SERIAL_REG_H */
->  
-> -- 
-> 1.6.2.2
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+--cut--
+# /etc/exports: the access control list for filesystems which may be exported
+#		to NFS clients.  See exports(5).
+/               192.168.3.2(rw,no_root_squash,async,subtree_check)
+/home/sven	192.168.3.2(rw,no_root_squash,async,subtree_check) 192.168.3.6(rw,no_root_squash,async,subtree_check) 192.168.3.8(rw,no_root_squash,async,subtree_check)
+/home/mp3	192.168.3.2(rw,no_root_squash,async,subtree_check) 192.168.3.6(rw,no_root_squash,async,subtree_check) 192.168.3.8(rw,no_root_squash,async,subtree_check)
+/home/sven/filme 192.168.3.7(ro,async,subtree_check)
+/home/kathi910	192.168.3.7(rw,no_root_squash,async,no_subtree_check)
+--cut--
+
+192.168.3.2 is the client which causes the error, I didn't notice the
+error on the other clients, but they are not used that often.
+
+Especially 192.168.3.7 does seem to work.
+
+Regards
+
+Sven
+
+-- 
+"We don't know the OS that God uses, but the Vatican uses Linux"
+                               (Sister Judith Zoebelein, Vatican Webmaster)
+
+/me is giggls@ircnet, http://sven.gegg.us/ on the Web
