@@ -1,123 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756597AbZEUT4u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755623AbZEUT5r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756597AbZEUT4u (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 15:56:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754445AbZEUT4n
+	id S1755623AbZEUT5r (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 15:57:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754919AbZEUT5k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 15:56:43 -0400
-Received: from oblivion.subreption.com ([66.240.236.22]:37940 "EHLO
-	mail.subreption.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753703AbZEUT4m (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 15:56:42 -0400
-Date: Thu, 21 May 2009 12:56:03 -0700
-From: "Larry H." <research@subreption.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Rik van Riel <riel@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
-       linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>,
-       linux-mm@kvack.org, Ingo Molnar <mingo@redhat.com>
-Subject: Re: [patch 0/5] Support for sanitization flag in low-level page
-	allocator
-Message-ID: <20090521195603.GK10756@oblivion.subreption.com>
-References: <20090520183045.GB10547@oblivion.subreption.com> <1242852158.6582.231.camel@laptop> <4A15A69F.3040604@redhat.com> <20090521202628.39625a5d@lxorguk.ukuu.org.uk>
+	Thu, 21 May 2009 15:57:40 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:56404 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754348AbZEUT5k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 May 2009 15:57:40 -0400
+Date: Thu, 21 May 2009 21:53:30 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org
+Subject: fork() && ftrace_graph_exit_task()
+Message-ID: <20090521195330.GA13604@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090521202628.39625a5d@lxorguk.ukuu.org.uk>
-Organization: Subreption LLC
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 20:26 Thu 21 May     , Alan Cox wrote:
-> > You don't always know this at page free time.
-> 
-> You do at buffer free time.
+What if the task with ->ret_stack != NULL calls fork(), and
+copy_prcoess() fails after successfull dup_task_struct() ?
 
-Alan, I think you will agree with me that forcing people to know what
-they have to do exactly with their buffers when they will contain
-confidential/sensitive data is suboptimal. Like it's been said before,
-the clearing isn't the only issue here. We have pagination to disk,
-re-allocation leaks, etc.
+bad_fork_free: -> free_task()->ftrace_graph_exit_task() will
+free the parent's ->ret_stack copied by arch_dup_task_struct(),
+no?
 
-Rik conveniently recommended me to write a threat model for this and
-that's exactly what will be done so the issues are clarified further
-more. The text had been omitted form the patches to keep them reasonably
-small.
+Oleg.
 
-> Still doesn't need a page flag - that is a vma flag which is far cheaper.
-> Also means you can get rid of the stupid mlock() misuse by things like
-> GPG to work around OS weaknesses by crypting the page if it hits
-> disk/swap/whatever.
-
-I had the intention to cover cases like gnupg's approach to
-pseudo-secure memory (their mlock pool, the three pass memset wipe, etc)
-with this implementation.
-
-We would need to look into a sane approach for encrypting the data. That
-was out of scope for my patches, so far. It adds further complexity and
-might require more invasive changes (if we want to let the user select
-the algorithm on runtime, etc).
-
-Do you suggest a vma flag should be created for this as well?
-
-> > I could also imagine the suspend-to-disk code skipping
-> > PG_sensitive pages when storing data to disk, and
-> > replacing it with some magic signature so programs
-> > that use special PG_sensitive buffers can know that
-> > their crypto key disappeared after a restore.
-> 
-> Its irrelevant in the simple S2D case. I just patch other bits of the
-> suspend image to mail me the new key later. The right answer is crypted
-> swap combined with a hard disk password and thus a crypted and locked
-> suspend image. Playing the "I must not miss any page which might be
-> sensitive even compiler stack copies and library buffers I don't know
-> about" game is not going to build you a secure system - its simply
-> *lousy* engineering and design.
-
-The point is that the keys or sensitive marked pages should never, ever
-be swapped to disk, by any means. Right now the patch only affects
-kernel code, the task related flag and functionality patches haven't been
-submitted yet.
-
-Regarding retrieving the encryption keys, IVs, and so forth, why bother
-reading the data remaining on disk? You can just retrieve them off
-memory (ex. via rogue driver or some re-allocation bug scenario,
-information leak or similar issue) and that's it.
-
-> 
-> Basically though - loss of physical control means you have to assue the
-> recovered system is compromised. I doubt even TC is going to manage to
-> spot firmware compromises on your CD-ROM drive, which thanks to the film
-> industry creating a demand for altered firmware is a well understood
-> field..
-
-I don't see what physical compromise of the machine has to do with
-anything about this patch and the issues it addresses. Although, the
-real benefits from TC will be more about memory containment, untrusted
-code injection prevention and so forth.
-
-Basically things like preventing SELinux from being disabled via some
-kernel vulnerability which let's an attacker abuse a write-4 primitive
-(on x86_64 as well). Or patching the pagetables to make the kernel text
-writable. Or injecting code in the .rodata section. Or redirecting an
-IDT gate to some RWX mapping. The list goes on.
-
-While other vendors might use this technology for locking down their
-users, mutilating their rights and constrain their legitimate use of
-their systems, we can use this technology for a beneficial purpose.
-After all, that was the beauty of Linux since the start. We don't need
-to follow a political or corporate agenda in these regards. Right?
-
-> The cost of doing crypto on suspend to disk relative to media speed is
-> basically irrelevant on a PC today. In the S2R case you might want to
-> crypt those pages against an electronic pure read of RAM type attack but
-> this is getting into serious spook territory.
-
-If someone has access to an oscilloscope and the required equipment to
-read data directly in that manner, well, the problem isn't that they
-have access to your hardware. The problem is that you pissed off the
-wrong people. And the list of things to attract such attention is
-still, fortunately, short. Or so we believe.
-
-	Larry
