@@ -1,54 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755103AbZEUR41@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754839AbZEUR7k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755103AbZEUR41 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 13:56:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752959AbZEUR4U
+	id S1754839AbZEUR7k (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 13:59:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752773AbZEUR7d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 13:56:20 -0400
-Received: from mail-bw0-f222.google.com ([209.85.218.222]:62265 "EHLO
-	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753499AbZEUR4T (ORCPT
+	Thu, 21 May 2009 13:59:33 -0400
+Received: from mail-pz0-f177.google.com ([209.85.222.177]:43996 "EHLO
+	mail-pz0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752664AbZEUR7d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 13:56:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:from:to:cc:subject:date:message-id:x-mailer:in-reply-to
-         :references;
-        b=JR1zoqZD3CxYSq314ndA/IGLuEntWhaYsPOvPtYg1aBEAjxP5EJQtWwqc95fBuf7z3
-         1pqDPtAt3EkzRyFijR0Mxtn5H0GrJBIvFT1cr95FNZkRPCxXGGGP+Ip1VgR5VyQ97TY/
-         zAYUg7t6alRpEG+5ylcAAQhir5iIEDD5hBcDk=
-From: Alessio Igor Bogani <abogani@texware.it>
-To: Daniel Mack <daniel@caiaq.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Jiri Kosina <jkosina@suse.cz>,
-       Alessio Igor Bogani <abogani@texware.it>
-Subject: [PATCH] misc: Fix typo in Kconfig
-Date: Thu, 21 May 2009 19:54:33 +0200
-Message-Id: <1242928473-5633-1-git-send-email-abogani@texware.it>
-X-Mailer: git-send-email 1.6.0.4
-In-Reply-To: <alpine.LNX.2.00.0904151200400.13028@wotan.suse.de>
-References: <alpine.LNX.2.00.0904151200400.13028@wotan.suse.de>
+	Thu, 21 May 2009 13:59:33 -0400
+To: Tony Lindgren <tony@atomide.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] UART regs: add OMAP wakeup-enable register
+References: <1242925798-29672-1-git-send-email-khilman@deeprootsystems.com>
+	<20090521174620.GN8308@atomide.com>
+From: Kevin Hilman <khilman@deeprootsystems.com>
+Organization: Deep Root Systems, LLC
+Date: Thu, 21 May 2009 10:59:31 -0700
+In-Reply-To: <20090521174620.GN8308@atomide.com> (Tony Lindgren's message of "Thu\, 21 May 2009 10\:46\:20 -0700")
+Message-ID: <873aaycp6k.fsf@deeprootsystems.com>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Alessio Igor Bogani <abogani@texware.it>
----
- drivers/input/misc/Kconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Tony Lindgren <tony@atomide.com> writes:
 
-diff --git a/drivers/input/misc/Kconfig b/drivers/input/misc/Kconfig
-index 5c0a631..06f46fc 100644
---- a/drivers/input/misc/Kconfig
-+++ b/drivers/input/misc/Kconfig
-@@ -232,7 +232,7 @@ config INPUT_GPIO_ROTARY_ENCODER
- 	depends on GPIOLIB && GENERIC_GPIO
- 	help
- 	  Say Y here to add support for rotary encoders connected to GPIO lines.
--	  Check file:Documentation/incput/rotary_encoder.txt for more
-+	  Check file:Documentation/input/rotary-encoder.txt for more
- 	  information.
- 
- 	  To compile this driver as a module, choose M here: the
--- 
-1.6.0.4
+> * Kevin Hilman <khilman@deeprootsystems.com> [090521 10:10]:
+>> Add the wakeup enable register to the list of OMAP-specific UART
+>> registers.  This is to support forthcoming OMAP PM enhancements which
+>> use the wakeup feature of the OMAP's 8250-based UART.
+>> 
+>> Signed-off-by: Kevin Hilman <khilman@deeprootsystems.com>
+>> ---
+>> The MAINTAINERS file lists the 8250 driver as orphaned, and posts to
+>> linux-serial go unanswered.  How should this go upstream?
+>
+> I suggest you merge this into your omap PM queue and we'll merge it
+> with that.
 
+OK, I can do that but assumed it would need a serial maintainer
+signoff first.
+
+Kevin
