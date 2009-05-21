@@ -1,87 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757247AbZEUOIU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756148AbZEUOSL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757247AbZEUOIU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 10:08:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753560AbZEUOIN
+	id S1756148AbZEUOSL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 10:18:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755219AbZEUOR7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 10:08:13 -0400
-Received: from tx2ehsobe002.messaging.microsoft.com ([65.55.88.12]:11862 "EHLO
-	TX2EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753362AbZEUOIM convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 10:08:12 -0400
-X-BigFish: VPS-33(zz1432R98dR168aJ1805M179dRzz1202hzzz32i6bh6di43j)
-X-FB-SS: 5,13,
-X-WSS-ID: 0KJZZ9A-02-WFJ-01
-Date: Thu, 21 May 2009 16:08:00 +0200
-From: Borislav Petkov <borislav.petkov@amd.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: akpm@linux-foundation.org, greg@kroah.com, mingo@elte.hu, norsk5@yahoo.com,
-       tglx@linutronix.de, mchehab@redhat.com, aris@redhat.com, edt@aei.ca,
-       linux-kernel@vger.kernel.org,
-       Andreas Herrmann <andreas.herrmann3@amd.com>
-Subject: Re: [PATCH 01/22] x86: add methods for writing of an MSR on
-	several CPUs
-Message-ID: <20090521140800.GA3462@aftab>
-References: <1242390153-24493-1-git-send-email-borislav.petkov@amd.com> <1242390153-24493-2-git-send-email-borislav.petkov@amd.com> <20090519172449.GB18874@aftab> <4A1392A9.9010609@zytor.com> <20090520144905.GA27991@aftab> <4A147891.5000906@zytor.com>
+	Thu, 21 May 2009 10:17:59 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:46113 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754169AbZEUOR6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 May 2009 10:17:58 -0400
+Date: Thu, 21 May 2009 16:12:50 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Vitaly Mayatskikh <v.mayatskih@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/5] Split wait_noreap_copyout()
+Message-ID: <20090521141250.GC14149@redhat.com>
+References: <1242048349-2766-1-git-send-email-v.mayatskih@gmail.com> <1242048349-2766-2-git-send-email-v.mayatskih@gmail.com> <87tz3fssv1.wl%vmayatsk@redhat.com> <20090520182118.GA10692@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A147891.5000906@zytor.com>
+In-Reply-To: <20090520182118.GA10692@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-OriginalArrivalTime: 21 May 2009 14:08:01.0851 (UTC) FILETIME=[8D6E90B0:01C9DA1D]
-Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 20, 2009 at 02:39:29PM -0700, H. Peter Anvin wrote:
-> Borislav Petkov wrote:
-> > 
-> > We currently need them for enabling the NB error reporting bank over
-> > MCG_CTL on each core on the node. The question is whether we really need
-> > the concurrency when accessing an MSR on several cores. With MCG_CTL,
-> > BKDG says "It is expected that this register is programmed to the same
-> > value in all nodes," but nothing concerning concurrency.
-> > 
-> > But you're right, if this interface is supposed to be generic enough,
-> > it is probably wise to access an MSR concurrently. I could imagine
-> > an obscure case where this is required. However, is sending IPIs
-> > (smp_call_function_many) guaranteeing the needed concurrency? Or, should
-> > it be more like how the mtrr code jumps through hoops (set_mtrr())
-> > in order to ensure that _ALL_ registers have been written _before_
-> > continuing?
-> > 
-> 
-> smp_call_function_many() does allow concurrent execution.
+On 05/20, Ingo Molnar wrote:
+>
+> * Vitaly Mayatskikh <v.mayatskih@gmail.com> wrote:
+>
+> > 2. Fix copy_wait_opts_to_user to old behaviour by something like:
+> >
+> > 	if (!retval && (infop || WNOWAIT)) {
+> >
+> > What's your opinion?
+>
+> I'd suggest a variant of 2: keep this large-ish patch an equivalent
+> transformation - i.e. an impact: cleanup type of change.
+>
+> Then queue up a patch that removes this quirk.
 
-Well, IMHO, not an absolutely concurrent execution since you can't
-control at what moment in time the IPIs will be executed on each core,
-IOW, the respective call function IPIs will generally not coincide on
-each core at a given moment in time. This is especially true if you're
-sending IPIs to cores across nodes.
+Yes, this would be the best option.
 
-And there's hypothetically a small window where you might get an
-inconsistent MSR content across cores. It's a whole another question
-whether this is going to be relevant.
+The problem is, it is not trivial to keep the current behaviour and
+make the patch which looks like a cleanup, not uglification.
 
-> Looping over a list with smp_call_function_one() -- which you
-> currently have -- is serializing, at which point we might just push
-> the loop into the caller rather than worrying about a new interface.
+copy_wait_opts_to_user() needs the new "called_from_wait_task_continued"
+argument, and it should do
 
-So, the actual question is do we need that done in msr.c? If there are
-no potential users, I could easily do the whole thing in the driver and
-do not touch x86 code.
+	if (called_from_wait_task_continued && !wo->wo_info)
+		return -EFAULT;
 
-Hmm?
+Or we should add
 
--- 
-Regards/Gruss,
-Boris.
+	if (!infop && WNOWAIT)
+		return -EFAULT;
 
-Operating | Advanced Micro Devices GmbH
-  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
- Research | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
-  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-  (OSRC)  | Registergericht München, HRB Nr. 43632
+to all callers except wait_task_continued().
+
+
+Roland thinks that "-EFAULT -> success" change is acceptable, and I think
+the same. So, to me the best option is just  change the changelog of this
+patch and that is all.
+
+Or. We can make a trivial patch which adds the behavior change first:
+
+	Changelog: always accept the NULL infop, because it is not
+	possible to understand the current behaviour ;)
+
+	User-visible change! needs Acks!
+
+	--- a/kernel/exit.c
+	+++ b/kernel/exit.c
+	@@ -1126,24 +1126,26 @@ static int eligible_child(struct wait_op
+	 static int wait_noreap_copyout(struct wait_opts *wo, struct task_struct *p,
+					pid_t pid, uid_t uid, int why, int status)
+	 {
+	-	struct siginfo __user *infop;
+		int retval = wo->wo_rusage
+			? getrusage(p, RUSAGE_BOTH, wo->wo_rusage) : 0;
+	-
+		put_task_struct(p);
+	-	infop = wo->wo_info;
+	-	if (!retval)
+	-		retval = put_user(SIGCHLD, &infop->si_signo);
+	-	if (!retval)
+	-		retval = put_user(0, &infop->si_errno);
+	-	if (!retval)
+	-		retval = put_user((short)why, &infop->si_code);
+	-	if (!retval)
+	-		retval = put_user(pid, &infop->si_pid);
+	-	if (!retval)
+	-		retval = put_user(uid, &infop->si_uid);
+	-	if (!retval)
+	-		retval = put_user(status, &infop->si_status);
+	+
+	+	if (wo->wo_info) {
+	+		struct siginfo __user *infop = wo->wo_info;
+	+
+	+		if (!retval)
+	+			retval = put_user(SIGCHLD, &infop->si_signo);
+	+		if (!retval)
+	+			retval = put_user(0, &infop->si_errno);
+	+		if (!retval)
+	+			retval = put_user((short)why, &infop->si_code);
+	+		if (!retval)
+	+			retval = put_user(pid, &infop->si_pid);
+	+		if (!retval)
+	+			retval = put_user(uid, &infop->si_uid);
+	+		if (!retval)
+	+			retval = put_user(status, &infop->si_status);
+	+	}
+		if (!retval)
+			retval = pid;
+		return retval;
+
+And then redo Vitaly's patches on top of this change.
+
+What do you and Vitaly think?
+
+Oleg.
 
