@@ -1,54 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756712AbZEUU2y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755237AbZEUUae@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756712AbZEUU2y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 16:28:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754839AbZEUU2q
+	id S1755237AbZEUUae (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 16:30:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754657AbZEUUa0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 16:28:46 -0400
-Received: from thunk.org ([69.25.196.29]:42787 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754453AbZEUU2q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 16:28:46 -0400
-Date: Thu, 21 May 2009 16:28:40 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 5/5] Dump the inode structure (for debugging purposes
-	only)
-Message-ID: <20090521202840.GB9236@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
-	linux-fsdevel@vger.kernel.org
-References: <1242936063-31689-1-git-send-email-tytso@mit.edu> <1242936063-31689-2-git-send-email-tytso@mit.edu> <1242936063-31689-3-git-send-email-tytso@mit.edu> <1242936063-31689-4-git-send-email-tytso@mit.edu> <1242936063-31689-5-git-send-email-tytso@mit.edu> <1242936063-31689-6-git-send-email-tytso@mit.edu> <20090521200942.GA5110@parisc-linux.org>
+	Thu, 21 May 2009 16:30:26 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:45151 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754004AbZEUUaZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 May 2009 16:30:25 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4A15B9CC.9030001@s5r6.in-berlin.de>
+Date: Thu, 21 May 2009 22:30:04 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.21) Gecko/20090411 SeaMonkey/1.1.16
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090521200942.GA5110@parisc-linux.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+To: "Theodore Ts'o" <tytso@mit.edu>
+CC: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       krh@redhat.com
+Subject: Re: [PATCH 2/5] fs: Remove i_cindex from struct inode
+References: <1242936063-31689-1-git-send-email-tytso@mit.edu> <1242936063-31689-2-git-send-email-tytso@mit.edu> <1242936063-31689-3-git-send-email-tytso@mit.edu>
+In-Reply-To: <1242936063-31689-3-git-send-email-tytso@mit.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 21, 2009 at 02:09:42PM -0600, Matthew Wilcox wrote:
-> On Thu, May 21, 2009 at 04:01:03PM -0400, Theodore Ts'o wrote:
-> > This is not intended for merging; but it's useful for determining how
-> > much varous fields in the struct inode space, and whether there is any
-> > padding leading to waste, especially on a 64-bit platforms.
+Theodore Ts'o wrote:
+[...]
+> The firewire driver does not need i_cindex in any fast path, so it's
+> simple enough to calculate when it is needed, instead of wasting space
+> in the inode structure.
 > 
-> Why not just use acme's pahole?
-> 
+> Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+> Cc: krh@redhat.com
+> Cc: stefanr@s5r6.in-berlin.de
+> Cc: linux-fsdevel@vger.kernel.org
+> ---
+>  drivers/ieee1394/dv1394.c        |    5 +++--
+>  drivers/ieee1394/ieee1394_core.h |    5 ++++-
+>  fs/char_dev.c                    |   14 +++++++++++++-
+>  include/linux/cdev.h             |    2 ++
+>  include/linux/fs.h               |    1 -
+>  5 files changed, 22 insertions(+), 5 deletions(-)
+[...]
 
-Because I didn't know about it, and now that I've looked at it, it
-requires compiling the kernel with CONFIG_DEBUG_INFO, which means the
-kernel takes a lot longer to build.  What I did is a bit more hackish,
-to be sure, but it's faster to drop it into the tree and then run it
-under kvm and then pull it out of the console logs.  If you were
-planning on investigating a large number of structures, acme's
-solution probably is a better one; but if you only need one, it might
-be faster to whip up a custom kernel module, perhaps built out of the
-tree, instead of rebuilding the entire kernel with CONFIG_DEBUG_INFO.
+Acked-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 
-      	      	 	    	       	      - Ted
+(No Ack needed from krh, he is concerned with drivers/firewire, not 
+really with driver/ieee1394. :-)
+-- 
+Stefan Richter
+-=====-=-=== -=-= -==-=
+http://arcgraph.de/sr/
