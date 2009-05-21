@@ -1,60 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756970AbZEUXLn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756584AbZEUXLz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756970AbZEUXLn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 19:11:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755509AbZEUXLf
+	id S1756584AbZEUXLz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 19:11:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756250AbZEUXLh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 19:11:35 -0400
-Received: from zrtps0kp.nortel.com ([47.140.192.56]:52210 "EHLO
-	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754887AbZEUXLf (ORCPT
+	Thu, 21 May 2009 19:11:37 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:48817 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755971AbZEUXLg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 19:11:35 -0400
-Message-ID: <4A15DFA3.70802@nortel.com>
-Date: Thu, 21 May 2009 17:11:31 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090302)
+	Thu, 21 May 2009 19:11:36 -0400
+Message-ID: <4A15DF4E.6060209@zytor.com>
+Date: Thu, 21 May 2009 16:10:06 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: =?ISO-8859-1?Q?Simon_Holm_Th=F8gersen?= <odie@cs.aau.dk>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Michael Kerrisk <mtk.manpages@googlemail.com>,
-       Jean-Paul Calderone <exarkun@twistedmatrix.com>
-Subject: Re: Allow signaling a process by all its thread ids?
-References: <1242944179.10298.11.camel@odie.local> <20090521235428.53b71862@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090521235428.53b71862@lxorguk.ukuu.org.uk>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Chuck Ebbert <cebbert@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       "Xin, Xiaohui" <xiaohui.xin@intel.com>, "Li, Xin" <xin.li@intel.com>,
+       "Nakajima, Jun" <jun.nakajima@intel.com>, Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>
+Subject: Re: Performance overhead of paravirt_ops on native identified
+References: <4A0B62F7.5030802@goop.org> <20090521184233.3c3e97ad@dhcp-100-2-144.bos.redhat.com> <4A15DA4E.2090505@goop.org>
+In-Reply-To: <4A15DA4E.2090505@goop.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 21 May 2009 23:11:33.0002 (UTC) FILETIME=[7B314EA0:01C9DA69]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
+Jeremy Fitzhardinge wrote:
+> 
+> In this specific instance of this example, yes.  But if you start 
+> enabling various spinlock debug options then there'll be code following 
+> the call.  It would be hard for the runtime patching machinery to know 
+> when it would be safe to do the substitution.
+> 
 
-> You need to show that
-> - The current API breaks stuff
-> - The current API is absolutely invalid in posix
-> - Changing it improves the functionality and power of the kernel
+"When it is immediately followed by a ret" seems like a straightforward
+rule to me?
 
-I think an argument could be made for these.  A task is not necessarily
-a process, and kill() is only defined to send a signal to one or more
-processes.  This introduces potential problems if a) it is possible to
-send a signal to an individual tid, and b) a tid can be reused in a
-different process.
-
-We already have the tgkill() syscall, which fixes the ambiguity by
-specifying both the pid and tid.  This is what pthread_kill() uses under
-the hood.  The fact that it was seen as necessary (back in 2.5)
-indicates that there are problems with kill() as currently implemented.
-
-> - Changing it doesn't break existing applications
-
-This last one is the kicker.  As I mentioned in my other reply, I
-suspect that making such a change would break a lot of (not-quite-POSIX)
-applications that assume they can send a signal to particular threads
-using kill().
-
-I see analogies to the whole fsync() issue.
-
-Chris
+	-hpa
