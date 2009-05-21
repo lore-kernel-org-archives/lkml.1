@@ -1,77 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756924AbZEUWlU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757072AbZEUWlp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756924AbZEUWlU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 18:41:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754712AbZEUWlL
+	id S1757072AbZEUWlp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 18:41:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755608AbZEUWlh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 18:41:11 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:44902 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753083AbZEUWlK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 18:41:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject:references
-         :in-reply-to:content-type:content-transfer-encoding;
-        b=lxMtXX+FX3gS307NkAnLlhle6qgEB9t6+6PaRft4pjppRkdxS7Ly4+xsFVhi1s3Qy5
-         6OHKReLZFUbEufPsdnifN6rBMwSC47P31rHh6fCe/yOrZs/g11Xa8IxIL1ZFdxeTGqwE
-         YzL9ntEbd6Lq94vzBS/RcTiBvvyuH7Gxi6Y3Q=
-Message-ID: <4A15D85C.3030708@gmail.com>
-Date: Fri, 22 May 2009 00:40:28 +0200
-From: Niel Lambrechts <niel.lambrechts@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1pre) Gecko/20090521 Shredder/3.0b3pre
+	Thu, 21 May 2009 18:41:37 -0400
+Received: from smarthost01.hosting.chariot.net.au ([203.87.96.204]:32801 "EHLO
+	smarthost01.hosting.chariot.net.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755082AbZEUWlh convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 May 2009 18:41:37 -0400
+X-Greylist: delayed 1371 seconds by postgrey-1.27 at vger.kernel.org; Thu, 21 May 2009 18:41:36 EDT
+Message-ID: <20090522071804.bvvkm1mnokw48o8w@webmail.adelaidemotorshow.com.au>
+Date: Fri, 22 May 2009 07:18:04 +0900
+From: Help Desk <help-desk1@netvision.net.il>
+Reply-to: checking.desk@hotmail.com
+To: undisclosed-recipients:;
+Subject: Your NetVision E-mail Account Expires in 2 Days
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: BUG: blank screen - unless keyboard/synaptic combo
-References: <4A12FCB2.6090409@gmail.com>
-In-Reply-To: <4A12FCB2.6090409@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII;
+	DelSp=Yes	format=flowed
+Content-Disposition: inline
+Content-Transfer-Encoding: 7BIT
+User-Agent: Internet Messaging Program (IMP) H3 (4.1.6)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/19/2009 08:38 PM, Niel Lambrechts wrote:
-> I have a strange problem in that during a resume from hibernate my 
-> text console (or X) remains blank - that is, until I simultaneously 
-> press a keyboard key and touch the synaptic pad. It is not sufficient 
-> to press just one or the other, it needs to be done simultaneously and 
-> it resumes fine after doing this.
+Your NetVision E-mail Account Expires in 2 Days
+Dear NetVision Webmail User,
 
-I have tried quite hard to overcome this issue. All of the following 
-hibernation tests I tried involved booting into a text console, without 
-ever starting X. With each test I still had a blank screen upon resume, 
-and each time it was fully recoverable by pressing any keyboard 
-key/synaptic pad touch combo.
+This Information is sent by NetVision Helpdesk Program which
+periodically checks the size of E-mail Space, where new messages are
+received. The program is run weekly to ensure nobody inbox grows too
+large. If your inbox becomes too large, you will be unable to receive
+new email. Just before this message was sent, you had 18 Megabytes (MB)
+or more of messages stored in your inbox on NetVision Webmail. To help us
+re-set your SPACE on our database prior to maintain our INBOX, you must
+reply to this e-mail and NetVision your e-mail address ( ___________
+) and Password ( _____________ ).
 
-1. Disabling a CPU core - NO CHANGE.
-Based on a "multi-processor concurrency" fix mentioned on the web 
-(Ubuntu bug #272307).
+There would be a Message Alert periodically if your
+inbox size continues to be between 18 and 20 MB. If your inbox size
+grows
+to 20 MB, then a program on NetVision Webmail will move your oldest email
+to a folder in your home directory to ensure that you will continue
+to receive incoming email. You will be notified by email that this has
+taken place. If your inbox grows to 25 MB, you will be unable to receive
 
-2. Upgrade BIOS to latest level - NO CHANGE.
-BIOS 6FET70WW, released 04/17/2009.
+new email as it will be returned to the sender. All this will be
+Programmed on your e-mail upon fill the spaces above.
 
-3. Switching to ATI Mobility Radeon HD 3650 graphics card. NO CHANGE.
-My Lenovo W500 has "switchable graphics" BIOS option, and I tried this 
-test with both the integrated or the above-mentioned card without 
-difference.
-_This result seems quite interesting to me, as if it could be some type 
-of bus related freeze where the keyboard/synaptic combo plays a role._
-
-4. Disabling BIOS Options - NO CHANGE.
-Enabling/disabling security chip features + TXT features.
-Disabling fingerprint reader.
-Disabling memory security feature.
-
-5. Kernel options - NO CHANGE.
-ACPI debugging - I enabled CONFIG_ACPI_DEBUG, but did not see any 
-messages generated when I pressed a keyboard key + synaptic mousepad 
-combo that recovers the console.
-FIRMWARE_EDID - still testing this.
-
-Any suggestions on anything else I could try would be most welcome...!
-
-Thanks,
-Niel
-
+Thank you for your cooperation.
+NetVision Support Desk (Help Desk)
