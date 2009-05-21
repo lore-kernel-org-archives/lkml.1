@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757324AbZEUAcG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757703AbZEUAbv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757324AbZEUAcG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 20:32:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756712AbZEUA2v
+	id S1757703AbZEUAbv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 20:31:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753629AbZEUA2k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 20:28:51 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:46339 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754960AbZEUA2S (ORCPT
+	Wed, 20 May 2009 20:28:40 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:37158 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754533AbZEUA2R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 20:28:18 -0400
+	Wed, 20 May 2009 20:28:17 -0400
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: Andrew Morton <akpm@linux-foundation.org>,
        Greg Kroah-Hartman <gregkh@suse.de>
@@ -18,11 +18,11 @@ Cc: <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>,
        <linux-fsdevel@vger.kernel.org>,
        "Eric W. Biederman" <ebiederm@xmission.com>,
        "Eric W. Biederman" <ebiederm@aristanetworks.com>
-Subject: [PATCH 14/20] sysfs: In sysfs_chmod_file lazily propagate the mode change.
-Date: Wed, 20 May 2009 17:28:08 -0700
-Message-Id: <1242865694-2100-14-git-send-email-ebiederm@xmission.com>
+Subject: [PATCH 10/20] sysfs: Fix locking and factor out sysfs_sd_setattr
+Date: Wed, 20 May 2009 17:28:04 -0700
+Message-Id: <1242865694-2100-10-git-send-email-ebiederm@xmission.com>
 X-Mailer: git-send-email 1.6.1.2.350.g88cc
-In-Reply-To: <1242865694-2100-13-git-send-email-ebiederm@xmission.com>
+In-Reply-To: <1242865694-2100-9-git-send-email-ebiederm@xmission.com>
 References: <m1bppofm9k.fsf@fess.ebiederm.org>
  <1242865694-2100-1-git-send-email-ebiederm@xmission.com>
  <1242865694-2100-2-git-send-email-ebiederm@xmission.com>
@@ -33,10 +33,6 @@ References: <m1bppofm9k.fsf@fess.ebiederm.org>
  <1242865694-2100-7-git-send-email-ebiederm@xmission.com>
  <1242865694-2100-8-git-send-email-ebiederm@xmission.com>
  <1242865694-2100-9-git-send-email-ebiederm@xmission.com>
- <1242865694-2100-10-git-send-email-ebiederm@xmission.com>
- <1242865694-2100-11-git-send-email-ebiederm@xmission.com>
- <1242865694-2100-12-git-send-email-ebiederm@xmission.com>
- <1242865694-2100-13-git-send-email-ebiederm@xmission.com>
 X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
 X-SA-Exim-Connect-IP: 76.21.114.89
 X-SA-Exim-Rcpt-To: akpm@linux-foundation.org, gregkh@suse.de, linux-kernel@vger.kernel.org, tj@kernel.org, cornelia.huck@de.ibm.com, linux-fsdevel@vger.kernel.org, ebiederm@xmission.com, ebiederm@aristanetworks.com
@@ -49,67 +45,106 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Eric W. Biederman <ebiederm@xmission.com>
 
-Now that sysfs_getattr and sysfs_permission refresh the vfs
-inode there is no need to immediatly push the mode change
-into the vfs cache.  Reducing the amount of work needed and
-simplifying the locking.
+Cleanly separate the work that is specific to setting the
+attributes of a sysfs_dirent from what is needed to update
+the attributes of a vfs inode.
+
+Additionally grab the sysfs_mutex to keep any nasties from
+surprising us when updating the sysfs_dirent.
 
 Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
 ---
- fs/sysfs/file.c |   31 ++++++++-----------------------
- 1 files changed, 8 insertions(+), 23 deletions(-)
+ fs/sysfs/inode.c |   52 ++++++++++++++++++++++++++++++----------------------
+ fs/sysfs/sysfs.h |    1 +
+ 2 files changed, 31 insertions(+), 22 deletions(-)
 
-diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
-index 0786b41..31cfe1d 100644
---- a/fs/sysfs/file.c
-+++ b/fs/sysfs/file.c
-@@ -577,38 +577,23 @@ EXPORT_SYMBOL_GPL(sysfs_add_file_to_group);
-  */
- int sysfs_chmod_file(struct kobject *kobj, struct attribute *attr, mode_t mode)
+diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
+index 5020a1d..dd154cb 100644
+--- a/fs/sysfs/inode.c
++++ b/fs/sysfs/inode.c
+@@ -42,33 +42,12 @@ int __init sysfs_inode_init(void)
+ 	return bdi_init(&sysfs_backing_dev_info);
+ }
+ 
+-int sysfs_setattr(struct dentry * dentry, struct iattr * iattr)
++int sysfs_sd_setattr(struct sysfs_dirent *sd, struct iattr * iattr)
  {
--	struct sysfs_dirent *victim_sd = NULL;
--	struct dentry *victim = NULL;
--	struct inode * inode;
-+	struct sysfs_dirent *sd;
- 	struct iattr newattrs;
- 	int rc;
+-	struct inode * inode = dentry->d_inode;
+-	struct sysfs_dirent * sd = dentry->d_fsdata;
+ 	struct iattr * sd_iattr;
+ 	unsigned int ia_valid = iattr->ia_valid;
+-	int error;
+-
+-	if (!sd)
+-		return -EINVAL;
  
--	rc = -ENOENT;
--	victim_sd = sysfs_get_dirent(kobj->sd, attr->name);
--	if (!victim_sd)
--		goto out;
-+	mutex_lock(&sysfs_mutex);
- 
--	mutex_lock(&sysfs_rename_mutex);
--	victim = sysfs_get_dentry(victim_sd);
--	mutex_unlock(&sysfs_rename_mutex);
--	if (IS_ERR(victim)) {
--		rc = PTR_ERR(victim);
--		victim = NULL;
-+	rc = -ENOENT;
-+	sd = sysfs_find_dirent(kobj->sd, attr->name);
-+	if (!sd)
- 		goto out;
+ 	sd_iattr = sd->s_iattr;
+-
+-	error = inode_change_ok(inode, iattr);
+-	if (error)
+-		return error;
+-
+-	iattr->ia_valid &= ~ATTR_SIZE; /* ignore size changes */
+-	if (iattr->ia_valid & ATTR_MODE) {
+-		if (!in_group_p(inode->i_gid) && !capable(CAP_FSETID))
+-			iattr->ia_mode &= ~S_ISGID;
 -	}
 -
--	inode = victim->d_inode;
- 
--	mutex_lock(&inode->i_mutex);
+-	error = inode_setattr(inode, iattr);
+-	if (error)
+-		return error;
 -
--	newattrs.ia_mode = (mode & S_IALLUGO) | (inode->i_mode & ~S_IALLUGO);
-+	newattrs.ia_mode = (mode & S_IALLUGO) | (sd->s_mode & ~S_IALLUGO);
- 	newattrs.ia_valid = ATTR_MODE;
--	rc = sysfs_setattr(victim, &newattrs);
-+	rc = sysfs_sd_setattr(sd, &newattrs);
- 
--	mutex_unlock(&inode->i_mutex);
-  out:
--	dput(victim);
--	sysfs_put(victim_sd);
+ 	if (!sd_iattr && (ia_valid & ~ATTR_MODE)) {
+ 		/* setting attributes for the first time, allocate now */
+ 		sd_iattr = kzalloc(sizeof(struct iattr), GFP_KERNEL);
+@@ -103,6 +82,35 @@ int sysfs_setattr(struct dentry * dentry, struct iattr * iattr)
+ 		sd_iattr->ia_ctime = iattr->ia_ctime;
+ 	if (ia_valid & ATTR_MODE)
+ 		sd_iattr->ia_mode = iattr->ia_mode;
++	return 0;
++}
++
++int sysfs_setattr(struct dentry * dentry, struct iattr * iattr)
++{
++	struct inode * inode = dentry->d_inode;
++	struct sysfs_dirent * sd = dentry->d_fsdata;
++	int error;
++
++	if (!sd)
++		return -EINVAL;
++
++	error = inode_change_ok(inode, iattr);
++	if (error)
++		return error;
++
++	iattr->ia_valid &= ~ATTR_SIZE; /* ignore size changes */
++	if (iattr->ia_valid & ATTR_MODE) {
++		if (!in_group_p(inode->i_gid) && !capable(CAP_FSETID))
++			iattr->ia_mode &= ~S_ISGID;
++	}
++
++	error = inode_setattr(inode, iattr);
++	if (error)
++		return error;
++
++	mutex_lock(&sysfs_mutex);
++	error = sysfs_sd_setattr(sd, iattr);
 +	mutex_unlock(&sysfs_mutex);
- 	return rc;
+ 
+ 	return error;
  }
- EXPORT_SYMBOL_GPL(sysfs_chmod_file);
+diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
+index abf05f4..043bb13 100644
+--- a/fs/sysfs/sysfs.h
++++ b/fs/sysfs/sysfs.h
+@@ -146,6 +146,7 @@ static inline void __sysfs_put(struct sysfs_dirent *sd)
+  */
+ struct inode *sysfs_get_inode(struct sysfs_dirent *sd);
+ void sysfs_delete_inode(struct inode *inode);
++int sysfs_sd_setattr(struct sysfs_dirent *sd, struct iattr *iattr);
+ int sysfs_setattr(struct dentry *dentry, struct iattr *iattr);
+ int sysfs_hash_and_remove(struct sysfs_dirent *dir_sd, const char *name);
+ int sysfs_inode_init(void);
 -- 
 1.6.1.2.350.g88cc
 
