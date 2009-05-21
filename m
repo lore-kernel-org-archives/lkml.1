@@ -1,104 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756412AbZEUAYS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756584AbZEUA2e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756412AbZEUAYS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 20:24:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754621AbZEUAYB
+	id S1756584AbZEUA2e (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 20:28:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754618AbZEUA2R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 20:24:01 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:61927 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753900AbZEUAYA (ORCPT
+	Wed, 20 May 2009 20:28:17 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:46295 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752452AbZEUA2Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 20:24:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:x-mailer:mime-version
-         :content-type:content-transfer-encoding;
-        b=N4/fgzle4HRF2LwX4wML5RQQt/zSbt+d/PxKj8+UdB31o6wJ+foCZ9JDvSX5Jniyrm
-         iyCbAdYB8y9T8H7jrK0A62X0RwW6Ug0DiTmWzkuUZXtq8XjoWCmdfN0Mw7G8AISgMNty
-         Ju5f07roG9GHKSylck3/R9bdJhl9VYjZf2gHM=
-Date: Thu, 21 May 2009 09:23:37 +0900
-From: Minchan Kim <minchan.kim@gmail.com>
+	Wed, 20 May 2009 20:28:16 -0400
+From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
-Cc: Mel Gorman <mel@csn.ul.ie>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>, Johannes Weiner <hannes@cmpxchg.org>,
-       Yasunori Goto <y-goto@jp.fujitsu.com>
-Subject: [PATCH 3/3] reset wmark_min and inactive ratio of zone when hotplug
- happens V2
-Message-Id: <20090521092337.bc0f0308.minchan.kim@barrios-desktop>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+       Greg Kroah-Hartman <gregkh@suse.de>
+Cc: <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>,
+       Cornelia Huck <cornelia.huck@de.ibm.com>,
+       <linux-fsdevel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Benjamin Thery <benjamin.thery@bull.net>,
+       Daniel Lezcano <dlezcano@fr.ibm.com>,
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>
+Subject: [PATCH 01/20] sysfs: Implement sysfs_rename_link
+Date: Wed, 20 May 2009 17:27:55 -0700
+Message-Id: <1242865694-2100-1-git-send-email-ebiederm@xmission.com>
+X-Mailer: git-send-email 1.6.1.2.350.g88cc
+In-Reply-To: <m1bppofm9k.fsf@fess.ebiederm.org>
+References: <m1bppofm9k.fsf@fess.ebiederm.org>
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Rcpt-To: akpm@linux-foundation.org, gregkh@suse.de, linux-kernel@vger.kernel.org, tj@kernel.org, cornelia.huck@de.ibm.com, linux-fsdevel@vger.kernel.org, ebiederm@xmission.com, benjamin.thery@bull.net, dlezcano@fr.ibm.com, ebiederm@aristanetworks.com
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Changelog since V1 
- o Add Ack-by of Yasunori Goto
- o Modify setup_per_zone_wmarks's comment
+From: Eric W. Biederman <ebiederm@xmission.com>
 
-This patch solve two problems.
+Because of rename ordering problems we occassionally give false
+warnings about invalid sysfs operations, so implement a helper
+function for this common sysfs idiom.
 
-Whenever memory hotplug sucessfully happens, zone->present_pages
-have to be changed.
+This is a stripped down version of an earlier patch that
+also added sysfs_delete_link.
 
-1) Now memory hotplug calls setup_per_zone_wmark_min only when
-online_pages called, not offline_pages.
-
-It breaks balance.
-
-2) If zone->present_pages is changed, we also have to change
-zone->inactive_ratio. That's because inactive_ratio depends
-on zone->present_pages.
-
-Signed-off-by: Minchan Kim <minchan.kim@gmail.com>
-Acked-by: Yasunori Goto <y-goto@jp.fujitsu.com>
-CC: Rik van Riel <riel@redhat.com>
-CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Benjamin Thery <benjamin.thery@bull.net>
+Cc: Daniel Lezcano <dlezcano@fr.ibm.com>
+Cc: Tejun Heo <tj@kernel.org>
+Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
 ---
- mm/memory_hotplug.c |    4 ++++
- mm/page_alloc.c     |    2 +-
- 2 files changed, 5 insertions(+), 1 deletions(-)
+ fs/sysfs/symlink.c    |   16 ++++++++++++++++
+ include/linux/sysfs.h |    9 +++++++++
+ 2 files changed, 25 insertions(+), 0 deletions(-)
 
-diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-index 037291e..e4412a6 100644
---- a/mm/memory_hotplug.c
-+++ b/mm/memory_hotplug.c
-@@ -423,6 +423,7 @@ int online_pages(unsigned long pfn, unsigned long nr_pages)
- 	zone->zone_pgdat->node_present_pages += onlined_pages;
+diff --git a/fs/sysfs/symlink.c b/fs/sysfs/symlink.c
+index a3ba217..11c4da5 100644
+--- a/fs/sysfs/symlink.c
++++ b/fs/sysfs/symlink.c
+@@ -122,6 +122,22 @@ void sysfs_remove_link(struct kobject * kobj, const char * name)
+ 	sysfs_hash_and_remove(parent_sd, name);
+ }
  
- 	setup_per_zone_wmarks();
-+	calculate_zone_inactive_ratio(zone);
- 	if (onlined_pages) {
- 		kswapd_run(zone_to_nid(zone));
- 		node_set_state(zone_to_nid(zone), N_HIGH_MEMORY);
-@@ -832,6 +833,9 @@ repeat:
- 	totalram_pages -= offlined_pages;
- 	num_physpages -= offlined_pages;
- 
-+	setup_per_zone_wmarks();
-+	calculate_zone_inactive_ratio(zone);
++/**
++ *	sysfs_rename_link - rename symlink in object's directory.
++ *	@kobj:	object we're acting for.
++ *	@targ:	object we're pointing to.
++ *	@old:	previous name of the symlink.
++ *	@new:	new name of the symlink.
++ *
++ *	A helper function for the common rename symlink idiom.
++ */
++int sysfs_rename_link(struct kobject *kobj, struct kobject *targ,
++			const char *old, const char *new)
++{
++	sysfs_remove_link(kobj, old);
++	return sysfs_create_link(kobj, targ, new);
++}
 +
- 	vm_total_pages = nr_free_pagecache_pages();
- 	writeback_set_ratelimit();
+ static int sysfs_get_target_path(struct sysfs_dirent *parent_sd,
+ 				 struct sysfs_dirent *target_sd, char *path)
+ {
+diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
+index 9d68fed..18c8e70 100644
+--- a/include/linux/sysfs.h
++++ b/include/linux/sysfs.h
+@@ -109,6 +109,9 @@ int __must_check sysfs_create_link_nowarn(struct kobject *kobj,
+ 					  const char *name);
+ void sysfs_remove_link(struct kobject *kobj, const char *name);
  
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index f11cfbf..d13f9b5 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -4472,7 +4472,7 @@ static void setup_per_zone_lowmem_reserve(void)
++int sysfs_rename_link(struct kobject *kobj, struct kobject *target,
++			const char *old_name, const char *new_name);
++
+ int __must_check sysfs_create_group(struct kobject *kobj,
+ 				    const struct attribute_group *grp);
+ int sysfs_update_group(struct kobject *kobj,
+@@ -202,6 +205,12 @@ static inline void sysfs_remove_link(struct kobject *kobj, const char *name)
+ {
+ }
  
- /**
-  * setup_per_zone_wmarks - called when min_free_kbytes changes 
-- * or when memory is hot-added
-+ * or when memory is hot-{added|removed}
-  *
-  * Ensures that the watermark[min,low,high] values for each zone are set correctly
-  * with respect to min_free_kbytes.
++static inline int sysfs_rename_link(struct kobject *k, struct kobject *t,
++				    const char *old_name, const char *new_name)
++{
++	return 0;
++}
++
+ static inline int sysfs_create_group(struct kobject *kobj,
+ 				     const struct attribute_group *grp)
+ {
 -- 
-1.5.4.3
+1.6.1.2.350.g88cc
 
