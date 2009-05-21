@@ -1,66 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755732AbZEUVgS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755915AbZEUV6S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755732AbZEUVgS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 17:36:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753315AbZEUVgG
+	id S1755915AbZEUV6S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 17:58:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753703AbZEUV6F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 17:36:06 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:46059 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752987AbZEUVgF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 17:36:05 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4A15C92A.9030300@s5r6.in-berlin.de>
-Date: Thu, 21 May 2009 23:35:38 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.21) Gecko/20090411 SeaMonkey/1.1.16
+	Thu, 21 May 2009 17:58:05 -0400
+Received: from ns.netcenter.hu ([195.228.254.57]:35918 "EHLO mail.netcenter.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753083AbZEUV6F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 May 2009 17:58:05 -0400
+Message-ID: <050e01c9da5e$8d142b20$0400a8c0@dcccs>
+From: "Janos Haar" <janos.haar@netcenter.hu>
+To: "Neil Brown" <neilb@suse.de>
+Cc: <paulmck@linux.vnet.ibm.com>, <linux-kernel@vger.kernel.org>
+References: <030101c9d92f$d0668600$0400a8c0@dcccs><20090521025037.GD6839@linux.vnet.ibm.com><013501c9d9cf$161a74a0$0400a8c0@dcccs><20090521051658.GE6839@linux.vnet.ibm.com> <18964.63919.206864.619147@notabene.brown>
+Subject: Re: Fw: RCU detected CPU 1 stall (t=4295904002/751 jiffies)Pid:902, comm: md1_raid5
+Date: Thu, 21 May 2009 23:53:16 +0200
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: linux1394-devel@lists.sourceforge.net, linux-hotplug@vger.kernel.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       fenlason@redhat.com
-Subject: Re: [PATCH] ieee1394: eth1394: use "firewire%d" instead of "eth%d"
- as interface name
-References: <tkrat.21c425cc195510c9@s5r6.in-berlin.de>	<20090521.123403.13286908.davem@davemloft.net>	<4A15B5FE.3070207@s5r6.in-berlin.de> <20090521.133304.10307675.davem@davemloft.net>
-In-Reply-To: <20090521.133304.10307675.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+	format=flowed;
+	charset="ISO-8859-1";
+	reply-type=original
 Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.3138
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3350
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-> Date: Thu, 21 May 2009 22:13:50 +0200
-> 
->> But I mildly disagree with the notion that the kernel can't start off
->> with more qualification of the names than merely ensuring their
->> uniqueness.  Or the other way around: Even an entirely meaningless
->> prefix would be better than "eth..", or no prefix if that's possible,
->> because eth suspiciously sounds like Ethernet with which the misnamed
->> RFC 2734 driver eth1394 has very little to do.
-> 
-> Even the driver source file is named "ethXXX"!  All of the macros
-> in the driver are named ETH*.  The eth1394hdr looks eerily similar
-> to a real ethernet header except that it lacks a source MAC
-> address.  It's addressing information plus a 16-bit (wow, why that
-> size huh?) protocol field.  A lot like ethernet.
+Neil, Paul,
 
-Sure, because
-   1. eth1394 was initially written with an eye on how Linux Ethernet
-      drivers look like (for quite a while it didn't implement RFC 2734),
-   2. by nature, RFC 2734 as an IP encapsulation can't be very different
-      from Ethernet.  As it happens, RFC 2734 indeed reuses a certain
-      16 bits wide protocol type field in its encapsulation header, with
-      familar values such as 0x0800.
+The problem solved.
+It was a bios bug.
+(The fedora install CD makes the same, and i am checked with the latest BIOS 
+version, and the delays are gone. 8-)
 
-[BTW, the rest of the struct eth1394hdr is not the encapsulation header 
-which goes out to the wire, it's only used internally by the driver. The 
-real on-the-wire headers are 20...28 bytes wide, depending on 
-transaction mode and link fragmentation, and there are 4 bytes trailing 
-data CRC.]
--- 
-Stefan Richter
--=====-=-=== -=-= -==-=
-http://arcgraph.de/sr/
+Thanks for all help for you too!
+
+Janos Haar
+
+----- Original Message ----- 
+From: "Neil Brown" <neilb@suse.de>
+To: <paulmck@linux.vnet.ibm.com>
+Cc: "Janos Haar" <janos.haar@netcenter.hu>; <linux-kernel@vger.kernel.org>
+Sent: Thursday, May 21, 2009 8:50 AM
+Subject: Re: Fw: RCU detected CPU 1 stall (t=4295904002/751 jiffies)Pid:902, 
+comm: md1_raid5
+
+
+> On Wednesday May 20, paulmck@linux.vnet.ibm.com wrote:
+>> On Thu, May 21, 2009 at 06:46:15AM +0200, Janos Haar wrote:
+>> > Paul,
+>> >
+>> > Thank you for your attention.
+>> > Yes, the PC makes 2-3 second "pauses" and drop this message again and
+>> > again.
+>> > If i remove the RCU debugging, the message disappears, but the pauses 
+>> > still
+>> > here, and makes 2-3 load on the idle system.
+>> > Can i do something?
+>> > You suggest to use PREEMPT? (This is a server.)
+>>
+>> One possibility is that the lock that bitmap_daemon_work() acquires is
+>> being held for too long.  Another possibility is the list traversal in
+>> md_check_recovery() that might loop for a long time if the list were
+>> excessively long or could be temporarily tied in a knot.
+>>
+>> Neil, thoughts?
+>>
+>
+> I would be surprised if any of these things take as long as 3 seconds
+> (or even 1 second) but I cannot completely rule it out.
+>
+> I assume that you mean 3 seconds of continuous running with no
+> sleeping, so it cannot be a slow kmalloc that is causing the delay?
+>
+> bitmap_daemon_work is the most likely candidate as bitmap->chunks
+> can be very large (thousands, probably not millions though).
+> Taking and dropping the lock every time around that loop doesn't
+> really make much sense, does it....
+> And it looks like it could actually be optimised quite a bit to skip a
+> lot of the iterations in most cases - there are two places where we
+> can accelerate 'j' quite a lot.
+>
+> Janos: Can you try this and see if it makes a difference?
+> Thanks.
+>
+> NeilBrown
+>
+> diff --git a/drivers/md/bitmap.c b/drivers/md/bitmap.c
+> index 47c68bc..56df1ce 100644
+> --- a/drivers/md/bitmap.c
+> +++ b/drivers/md/bitmap.c
+> @@ -1097,14 +1097,12 @@ void bitmap_daemon_work(struct bitmap *bitmap)
+>  }
+>  bitmap->allclean = 1;
+>
+> + spin_lock_irqsave(&bitmap->lock, flags);
+>  for (j = 0; j < bitmap->chunks; j++) {
+>  bitmap_counter_t *bmc;
+> - spin_lock_irqsave(&bitmap->lock, flags);
+> - if (!bitmap->filemap) {
+> + if (!bitmap->filemap)
+>  /* error or shutdown */
+> - spin_unlock_irqrestore(&bitmap->lock, flags);
+>  break;
+> - }
+>
+>  page = filemap_get_page(bitmap, j);
+>
+> @@ -1121,6 +1119,8 @@ void bitmap_daemon_work(struct bitmap *bitmap)
+>  write_page(bitmap, page, 0);
+>  bitmap->allclean = 0;
+>  }
+> + spin_lock_irqsave(&bitmap->lock, flags);
+> + j |= (PAGE_BITS - 1);
+>  continue;
+>  }
+>
+> @@ -1181,9 +1181,10 @@ void bitmap_daemon_work(struct bitmap *bitmap)
+>  ext2_clear_bit(file_page_offset(j), paddr);
+>  kunmap_atomic(paddr, KM_USER0);
+>  }
+> - }
+> - spin_unlock_irqrestore(&bitmap->lock, flags);
+> + } else
+> + j |= PAGE_COUNTER_MASK;
+>  }
+> + spin_unlock_irqrestore(&bitmap->lock, flags);
+>
+>  /* now sync the final page */
+>  if (lastpage != NULL) {
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/ 
+
