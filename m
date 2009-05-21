@@ -1,61 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757128AbZEUWyS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756770AbZEUW5U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757128AbZEUWyS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 18:54:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755200AbZEUWyJ
+	id S1756770AbZEUW5U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 18:57:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755082AbZEUW5N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 18:54:09 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:35271 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755081AbZEUWyJ (ORCPT
+	Thu, 21 May 2009 18:57:13 -0400
+Received: from zcars04e.nortel.com ([47.129.242.56]:38415 "EHLO
+	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754960AbZEUW5M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 18:54:09 -0400
-Date: Thu, 21 May 2009 23:54:28 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Simon Holm =?ISO-8859-14?B?VGj4Z2Vyc2Vu?= <odie@cs.aau.dk>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+	Thu, 21 May 2009 18:57:12 -0400
+Message-ID: <4A15DC45.5020509@nortel.com>
+Date: Thu, 21 May 2009 16:57:09 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090302)
+MIME-Version: 1.0
+To: =?ISO-8859-1?Q?Simon_Holm_Th=F8gersen?= <odie@cs.aau.dk>
+CC: linux-kernel <linux-kernel@vger.kernel.org>,
        Michael Kerrisk <mtk.manpages@googlemail.com>,
        Jean-Paul Calderone <exarkun@twistedmatrix.com>
 Subject: Re: Allow signaling a process by all its thread ids?
-Message-ID: <20090521235428.53b71862@lxorguk.ukuu.org.uk>
-In-Reply-To: <1242944179.10298.11.camel@odie.local>
 References: <1242944179.10298.11.camel@odie.local>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <1242944179.10298.11.camel@odie.local>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 21 May 2009 22:57:11.0033 (UTC) FILETIME=[796B4690:01C9DA67]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> It may be that POSIX is weakly worded enough that either allowing or
-> disallowing this behavior is valid.  I think that allowing it is a
-> violation of POSIX, but I can find no single, explicit, direct statement
-> in POSIX to back this up.
+Simon Holm Thøgersen wrote:
+> There is a bug report at https://bugs.launchpad.net/bugs/341239 where
+> the question is asked. Should it be possible to signal a process with
+> kill(2) by passing any of the thread ids belong to the process as
+> argument to kill?
 
-If there was a specific explicit statement it might be an argument to add
-a separate poxix_kill(), but the existing kill(2) interface the kernel
-has is API, its been that way forever and you need *very* strong reasons
-to make such changes that might break things.
+Based on POSIX, from the perspective of the kernel I think that a tid
+that is not a tgid should result in ESRCH for the kill() syscall.
 
-You need to show that
-- The current API breaks stuff
-- The current API is absolutely invalid in posix
-- Changing it improves the functionality and power of the kernel
-- Changing it doesn't break existing applications
+Such a tid would however be valid for the tgkill or tkill syscalls.
 
-> There is at least one other argument to disallow this behavior even if
-> it is not technically illegal.  Consider the traditional, widespread
-> convention of pid files.  This behavior drastically reduces their
-> utility, as it greatly increases the chance of PID collisions, a case in
-> which it is difficult to automatically (that is, without human
-> intervention) recognize that a pid file no longer corresponds to a
-> running process which created it.  This is the case in which I
-> encountered the behavior - when it repeatedly caused services not to
-> restart because they encountered a thread of another process and
-> misinterpreted it to mean the service was already running.
+Makes sense to me.  I suspect such a change would break a lot of
+not-strictly-compliant programs though.
 
-Either your pid files are secure, or they are not. If collisions can
-occur by accident I can cause them deliberately. If I can cause them
-deliberately your system is insecure and you need to fix it.
+In the meantime, the pid file scenario could be modified to store both
+the tid and pid (using userspace terminology now) and use the tgkill()
+syscall.  It should be noted that tgkill() is linux-specific.
 
+Chris
