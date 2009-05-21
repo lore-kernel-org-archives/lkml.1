@@ -1,81 +1,197 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755799AbZEUBrQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756523AbZEUBrm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755799AbZEUBrQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 21:47:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754125AbZEUBrD
+	id S1756523AbZEUBrm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 21:47:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752341AbZEUBre
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 21:47:03 -0400
-Received: from hera.kernel.org ([140.211.167.34]:36184 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753805AbZEUBrC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 21:47:02 -0400
-Message-ID: <4A14B271.5010202@kernel.org>
-Date: Thu, 21 May 2009 10:46:25 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Wed, 20 May 2009 21:47:34 -0400
+Received: from mail-gx0-f166.google.com ([209.85.217.166]:48937 "EHLO
+	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753814AbZEUBrd convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 21:47:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=p3dBBW3BulJuBcKLoL/wZGCIaO1q4enfccU6FqUvPHxhTSdENFoj1ln4JlgZxlCDZE
+         mis4tEkzuoKTjjPJJe6EIokRiw0NvSeucuOdSzh89lBJL2MksiU8VDqggfhg+pWMt+Ch
+         qeLZNaeiNFAnMZ5wgONu+vE16b+nbbmPG9VvY=
 MIME-Version: 1.0
-To: suresh.b.siddha@intel.com
-CC: "H. Peter Anvin" <hpa@zytor.com>,
-       "JBeulich@novell.com" <JBeulich@novell.com>,
-       "andi@firstfloor.org" <andi@firstfloor.org>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "linux-kernel-owner@vger.kernel.org" 
-	<linux-kernel-owner@vger.kernel.org>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PATCH] x86,percpu: fix pageattr handling with remap allocator
-References: <1242305390-21958-1-git-send-email-tj@kernel.org>	 <1242436626.27006.8623.camel@localhost.localdomain>	 <4A0ED8D8.2010303@kernel.org>	 <1242500964.27006.8636.camel@localhost.localdomain>	 <4A0F672A.3000309@kernel.org>	 <1242674444.27006.8691.camel@localhost.localdomain>	 <4A11B9E7.8010707@zytor.com>	 <1242680835.27006.8734.camel@localhost.localdomain>	 <4A120B47.8060200@kernel.org>	 <1242860470.27006.10106.camel@localhost.localdomain>	 <4A149B89.3010104@kernel.org> <1242866163.27006.10125.camel@localhost.localdomain>
-In-Reply-To: <1242866163.27006.10125.camel@localhost.localdomain>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 21 May 2009 01:46:28 +0000 (UTC)
+In-Reply-To: <alpine.DEB.2.00.0905201433060.1080@gandalf.stny.rr.com>
+References: <1242783552.31161.53.camel@centos51>
+	 <49b7c2350905192150n4d6b710er571b8a1bd228198b@mail.gmail.com>
+	 <alpine.DEB.2.00.0905201433060.1080@gandalf.stny.rr.com>
+Date: Thu, 21 May 2009 10:47:32 +0900
+Message-ID: <49b7c2350905201847l1ea97fcfvc3dd5067163e73f3@mail.gmail.com>
+Subject: Re: [PATCH 0/1] sched: fix typo in sched-rt-group.txt file
+From: GeunSik Lim <leemgs1@gmail.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       tglx <tglx@linutronix.de>, linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-rt-users <linux-rt-users@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Thu, May 21, 2009 at 3:59 AM, Steven Rostedt <rostedt@goodmis.org> wrote:
+>
+> On Wed, 20 May 2009, GeunSik Lim wrote:
+>
+>> 2009/5/20 GeunSik Lim <leemgs1@gmail.com>:
+>> >
+>> >
+>> > Dear Ingo,
+>> >
+>> >
+>> > I made 2 patch files again about static prioriy levels according to ingo's advice
+>> > and explanation. (Reference: http://marc.info/?t=124211992800003&r=1&w=2 archives. )
+>> >
+>> > Fix static priority related range and chart map(userspace/kernelspace) of ftrace.
+>> >   - about chart map of static priority in  ftrace.txt file
+>> >   - about static priority levels(range) in sched-rt-group.txt file
+>> >
+>> >
+>> > commit d6af702008117ca489a2f5476239d1688a517e98
+>> > Author: GeunSik,Lim <leemgs1@gmail.com>
+>> > Date:   Tue May 12 17:20:32 2009 +0900
+>> >
+>> >    sched: fix typo in sched-rt-group.txt file
+>> >
+>> >    Fix typo about static priority's range.
+>> >
+>> >    * Kernel Space priority 0(high) to 99(low)   --> User Space RT priority 99(high) to 1(low)
+>> >    * Kernel Space priority 100(high) to 139(low)--> User Space nice -20(high) to 19(low)
+>> >
+>>
+>> Ingo,
+>> I want to  change some descriptions according to below discussion.
+>>
+>> before) * Kernel Space priority 0(high) to 99(low)   --> User Space RT
+>> priority 99(high) to 1(low)
+>> after)    *  Kernel Space priority 0(high) to 98(low)   --> User Space
+>> RT priority 99(high) to 1(low)
+>>
+>> I want to your advice and opinion about this changes.
+>>
+>> If I mistook, Please correct me.
+>>
+>> thks.
+>>
+>>
+>>
+>> Steven Rostedt:
+>>   Shouldn't that be:
+>>   Kernel priority: 0(high) to 98(low)    ==> user RT priority 99(high) to 1(low)
+>>
+>> GeunSik Lim :
+>>   Thank you for your opinion.  I think about corrected expression for
+>>   quick chart to map between kernel space and user space in ftrace .
+>>
+>> Steven Rostedt:
+>>  100 items does not map to 99. Which begs the question, what can have
+>>  internal kernel priority 99?
+>>
+>> GeunSik Lim :
+>>   ok.  Below example is about  kernel (static) priority 99 that you said.
+>>   please, refer
+>>   to http://www.kernel.org/doc/man-pages/online/pages/man2/sched_setscheduler.2.html
+>>  webpage.
+>>
+>>   For processes scheduled under one of the normal scheduling policies
+>>   (SCHED_OTHER, SCHED_IDLE, SCHED_BATCH), sched_priority is not used in
+>>   scheduling decisions (it must be specified as 0).
+>>
+>> int main (int argc, char **argv)
+>> {     int pidnumber, ret;
+>>       struct sched_param p;
+>>       p.sched_priority = 0; <------ Kernel (static) priority.
+>>       if (argc != 2) {
+>>               printf("usage: setbatch <pid>\n");
+>>               exit(-1);
+>>       }
+>>       pidnumber = atol(argv[1]);
+>>          /* 3 = Number of SCHED_BATCH Constant */
+>>       ret = sched_setscheduler(pidnumber, 3, &p);
+>>       if (ret) {
+>>               printf("could not set pid %d to SCHED_BATCH: err %d.\n", pid, ret);
+>>               return -1;
+>>       }
+>>       printf("pid %d is SCHED_BATCH from now on.\n", pid);
+>>       return 0;
+>> }
+>>
+>>
+>> >
+>> >    Processes scheduled with SCHED_OTHER or SCHED_BATCH must be assigned
+>> >    the static priority 0. Processes scheduled under SCHED_FIFO or SCHED_RR
+>> >    can have a static priority in the range 1 to 99.
+>> >    (reference: $> man 2 sched_setscheduler)
+>> >
+>> >    Signed-off-by: GeunSik Lim <geunsik.lim@samsung.com>
+>> >
+>> > diff --git a/Documentation/scheduler/sched-rt-group.txt b/Documentation/scheduler/sched-rt-group.txt
+>> > index 5ba4d3f..1537146 100644
+>> > --- a/Documentation/scheduler/sched-rt-group.txt
+>> > +++ b/Documentation/scheduler/sched-rt-group.txt
+>> > @@ -169,7 +169,7 @@ get their allocated time.
+>> >
+>> >  Implementing SCHED_EDF might take a while to complete. Priority Inheritance is
+>> >  the biggest challenge as the current linux PI infrastructure is geared towards
+>> > -the limited static priority levels 0-139. With deadline scheduling you need to
+>> > +the limited static priority levels 0-99. With deadline scheduling you need to
+>> >  do deadline inheritance (since priority is inversely proportional to the
+>> >  deadline delta (deadline - now).
+>
+> Note, this document deals with internal kernel manipulations. The "prio"
+> inside the kernel is indeed 0-139. Actually, if we count the idle task, it
+> is 0-140. The PI code will also deal with non RT tasks so it is correct to
+> say that the priority inheritance deals with 0-139 (I don't think the idle
+> task ever touches anything needing PI).
+>
+> The sched_setscheduler user API uses a different priority mapping. I was
+> looking at the code inside sched.c and I believe this is the mapping:
+>
+>
+> 0 to 98 - maps to RT tasks 99 to 1 (SCHED_RR or SCHED_FIFO)
+>
+> 99 - maps to internal kernel threads that want to be lower than RT tasks
+>     but higher than SCHED_OTHER tasks. Although I'm not sure if any
+>     kernel thread actually uses this. I'm not even sure how this can be
+>     set, because the internal sched_setscheduler function does not allow
+>     for it.
+Thank you for additional explanation about kernel-space static priority 99
+in the map of priority values between kernel-space and user-space.
 
-Suresh Siddha wrote:
->> The dynamic onlining will probably use 4k pages so, yeah, it won't
->> have the alias issues but that's not the issue here, right?  You can
->> already avoid aliasing that way by simply using 4k allocator from the
->> get-go.
-> 
-> But now that I learnt about dynamic online allocation, can we avoid the
-> complexity brought by this patchset, by simply using 4k allocator from
-> get-go.
+I will update like belows.
 
-Sure, we can.
+Kernel priority: 0(high) to 98(low)      ==> user RT priority 99(high)
+to 1(low) with SCHED_RR or SCHED_FIFO
+Kernel priority: 99                            ==> sched_priority is
+not used in scheduling deci
+sions (it must be specified as 0)
+Kernel priority: 100(high) to 139(low) ==> user nice -20(high) to 19(low)
+Kernel priority: 140                          ==> idle task priority
 
-> i.e., can we drop this remap pageattr handling patchset and simply use
-> 4k mapping for now? And move to dynamic allocation at a later point.
 
-4k or not, x86 is already on dynamic allocation.  The only difference
-is how the first chunk is allocated.
+>
+> 100 to 139 - maps nice levels -20 to 19. These are not set via
+>    sched_setscheduler, but are set via the nice system call.
+>
+> 140 - reserved for idle tasks.
+>
+> -- Steve
+>
 
-> This will simplify quite a bit of code.
 
-Yes it will.  The question is which way would be better.  Till now,
-there hasn't been any actual data on how remap compares to 4k.  The
-only thing we know is that, on UMA, embed should behave exactly the
-same for static percpu variables as before the whole dynamic
-allocator.
-
-On NUMA, both remap and 4k add some level of TLB pressure.  remap will
-waste one more PMD TLB entry (dup) while 4k adds a bunch of 4k ones
-(non-dup but what used to be accessed by PMD TLB is now accessed with
-PTE TLB).  Some say using one more PMD TLB is better while others
-disagree.  So, the best course of action here seems to offer both and
-easy way to select between them so that data can be gathered, which is
-what this patchset does.
-
-I don't think the added complexity for cpa() justifies dropping remap
-without further testing.  The added complexity isn't that big.  Most
-of the confusion in this patchset came from my ignorance on the
-subject.  cpa() is a fragile thing but we need it anyway, so...
-
-Thanks.
 
 -- 
-tejun
+Regards,
+GeunSik Lim
+--
+To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
