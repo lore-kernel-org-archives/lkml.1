@@ -1,61 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755509AbZEUTBq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755660AbZEUTIg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755509AbZEUTBq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 15:01:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753362AbZEUTBj
+	id S1755660AbZEUTIg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 15:08:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753475AbZEUTI2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 15:01:39 -0400
-Received: from smtp02.citrix.com ([66.165.176.63]:30170 "EHLO
-	SMTP02.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753352AbZEUTBi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 15:01:38 -0400
-X-IronPort-AV: E=Sophos;i="4.41,228,1241409600"; 
-   d="scan'208";a="52123629"
-Subject: Re: [PATCH V2 2/3] powerpc: Add support for swiotlb on 32-bit
-From: Ian Campbell <Ian.Campbell@eu.citrix.com>
-To: Becky Bruce <beckyb@kernel.crashing.org>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <E6DAA792-9923-4B76-9759-6955AABE3EAB@kernel.crashing.org>
-References: <1242340949-16369-1-git-send-email-beckyb@kernel.crashing.org>
-	 <1242340949-16369-2-git-send-email-beckyb@kernel.crashing.org>
-	 <20090519142656T.fujita.tomonori@lab.ntt.co.jp>
-	 <19E48A70-3332-423C-ACAD-390F940EE81C@kernel.crashing.org>
-	 <4A1592CF.8000208@goop.org>
-	 <E6DAA792-9923-4B76-9759-6955AABE3EAB@kernel.crashing.org>
-Content-Type: text/plain
-Organization: Citrix Systems, Inc.
-Date: Thu, 21 May 2009 20:01:37 +0100
-Message-ID: <1242932497.25553.230.camel@localhost.localdomain>
+	Thu, 21 May 2009 15:08:28 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:45444 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751881AbZEUTI1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 May 2009 15:08:27 -0400
+Message-ID: <4A15A708.9090306@redhat.com>
+Date: Thu, 21 May 2009 15:10:00 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-X-Mailer: Evolution 2.26.1.1 
+To: Andi Kleen <ak@linux.intel.com>
+CC: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Jim Keniston <jkenisto@us.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Vegard Nossum <vegard.nossum@gmail.com>, Avi Kivity <avi@redhat.com>,
+       =?UTF-8?B?UHJ6ZW15c8WCYXdQYXdlxYJjenlr?= <przemyslaw@pawelczyk.it>
+Subject: Re: [PATCH -tip v6.1 1/5] x86: instruction decoder API
+References: <4A1578A5.7090608@redhat.com> <20090521172907.1313.38072.stgit@localhost.localdomain> <4A158F86.6@linux.intel.com>
+In-Reply-To: <4A158F86.6@linux.intel.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-05-21 at 14:27 -0400, Becky Bruce wrote:
-> We have both in every case but one,  
-> which is in swiotlb_map_page where we call address_needs_mapping()  
-> without calling range_needs_mapping.
+Andi Kleen wrote:
+> This might be an unimportant detail, but I would suggest to fix the
+> "decorder" typo in the Subject before the next revision. It seems
+> to have persisted over 6 revisions now, but it still irritatess me @)
 
-The reason it calls address_needs_mapping without range_needs_mapping is
-that in the swiotlb_force=1 case it would trigger every time. If
-address_needs_mapping and range_needs_mapping are merged as proposed and
-they do not subsume the swiotlb_force check (and I don't think they
-would) then I think this will work fine.
+Oops, sorry...
 
-> It's not actually clear to me that we need that check, though.  Can 
-> someone explain what case that was designed to catch?
+-- 
+Masami Hiramatsu
 
-If map_single fails and returns NULL then we try to use
-io_tlb_overflow_buffer, if that is somehow not DMA-able (for the
-particular device) then the check will trigger. I would have thought we
-could arrange that the overflow buffer is always OK and really if
-map_page is failing we must be close the edge already.
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
 
-Ian.
+e-mail: mhiramat@redhat.com
 
