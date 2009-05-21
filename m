@@ -1,68 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755611AbZEUSMh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754657AbZEUSSO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755611AbZEUSMh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 14:12:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753840AbZEUSM3
+	id S1754657AbZEUSSO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 14:18:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753735AbZEUSR6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 14:12:29 -0400
-Received: from mail-out2.uio.no ([129.240.10.58]:36909 "EHLO mail-out2.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753362AbZEUSM2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 14:12:28 -0400
-Subject: Re: 2.6.29+ NFS-Server Problem "reconnect_path: npd != pd"
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Sven Geggus <lists@fuchsschwanzdomain.de>
-Cc: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org
-In-Reply-To: <gv4463$6fn$1@ultimate100.geggus.net>
-References: <20090521142026.GA5566@geggus.net>
-	 <1242924599.6687.1.camel@heimdal.trondhjem.org>
-	 <20090521165751.GA4428@geggus.net>
-	 <1242927133.6687.4.camel@heimdal.trondhjem.org>
-	 <gv4463$6fn$1@ultimate100.geggus.net>
-Content-Type: text/plain
-Date: Thu, 21 May 2009 14:12:26 -0400
-Message-Id: <1242929546.22947.11.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
-X-UiO-Ratelimit-Test: rcpts/h 3 msgs/h 1 sum rcpts/h 4 sum msgs/h 1 total rcpts 398 max rcpts/h 20 ratelimit 0
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=_URIID_)
-X-UiO-Scanned: 24B73299BCEAD6C48076409638D04EE97AC82846
-X-UiO-SPAM-Test: remote_host: 71.227.91.12 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 1 total 300 max/h 5 blacklist 0 greylist 0 ratelimit 0
+	Thu, 21 May 2009 14:17:58 -0400
+Received: from an-out-0708.google.com ([209.85.132.250]:40062 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753352AbZEUSR5 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 May 2009 14:17:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=r/kt49nhpPrqQ1FAm0vB6oYhPAJcXe9CSKAJTRwxN2P8X2IOfUCe1Di3ZKgq62AFEw
+         caLLjmXo8gIK6xDRw0h03EeKMF5348QkjIqNnu9fxc8tisrBiw6Kj23gD5zbxG+hxWz5
+         CcMVZtNvuyTs9w5tPz6G68XXFJ60WqRetBpy8=
+MIME-Version: 1.0
+In-Reply-To: <20090521161317.GU1376@blitiri.com.ar>
+References: <20090521161317.GU1376@blitiri.com.ar>
+Date: Thu, 21 May 2009 14:17:58 -0400
+Message-ID: <87f94c370905211117y13758f72i2ea113c9c6771061@mail.gmail.com>
+Subject: Re: [RFC PATCH] dm-csum: A new device mapper target that checks data 
+	integrity
+From: Greg Freemyer <greg.freemyer@gmail.com>
+To: Alberto Bertogli <albertito@blitiri.com.ar>
+Cc: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       linux-raid@vger.kernel.org, agk@redhat.com, neilb@suse.de
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-05-21 at 17:48 +0000, Sven Geggus wrote:
-> Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
-> 
-> > So what is the underlying filesystem that you are exporting, and what
-> > does your /etc/exports file look like?
-> 
-> The underlying filesystem is xfs and /etc/exports (unchanged) is here:
-> 
-> --cut--
-> # /etc/exports: the access control list for filesystems which may be exported
-> #		to NFS clients.  See exports(5).
-> /               192.168.3.2(rw,no_root_squash,async,subtree_check)
-> /home/sven	192.168.3.2(rw,no_root_squash,async,subtree_check) 192.168.3.6(rw,no_root_squash,async,subtree_check) 192.168.3.8(rw,no_root_squash,async,subtree_check)
-> /home/mp3	192.168.3.2(rw,no_root_squash,async,subtree_check) 192.168.3.6(rw,no_root_squash,async,subtree_check) 192.168.3.8(rw,no_root_squash,async,subtree_check)
-> /home/sven/filme 192.168.3.7(ro,async,subtree_check)
-> /home/kathi910	192.168.3.7(rw,no_root_squash,async,no_subtree_check)
-> --cut--
-> 
-> 192.168.3.2 is the client which causes the error, I didn't notice the
-> error on the other clients, but they are not used that often.
-> 
-> Especially 192.168.3.7 does seem to work.
-> 
-> Regards
-> 
-> Sven
-> 
+On Thu, May 21, 2009 at 12:13 PM, Alberto Bertogli
+<albertito@blitiri.com.ar> wrote:
+>
+> Hi!
+>
+> I'm writing this device mapper target that stores checksums on writes and
+> verifies them on reads.
+>
+> It's not widely tested, but you can run mke2fs on it and do basic file
+> operations. The to-do list is still large, and most of it can be found within
+> the code.
+>
+> To test it, you will need to format the device using the (very rough) attached
+> tool, and then create the dm device with something like:
+>
+>        echo 0 $SIZE csum $REALDEVICE 0 | dmsetup create $NAME
+>
+>
+> I think it can be useful for people who want to detect data corruption and are
+> either using the block layer directly or a filesystem that doesn't check data
+> integrity (which are most, if not all, of the popular ones today). Maybe it
+> could also be used for testing the bio-integrity extensions, although at the
+> moment it's completely independent and I haven't looked much, but it's on my
+> to-do list.
+>
+> It does NOT pretend to be useful for consistency checks for security purposes.
+> Use something else if you do not want someone evil tampering with your data.
+>
+>
+> Comments are obviously welcome. There are also some questions embedded in the
+> code, if anyone cares to answer any of them, I'd really appreciate it.
+>
+> Thanks a lot,
+>                Alberto
 
-Reforwarding the reply for the benefit of the NFS mailing list. Not
-everyone reads lkml...
+I have not looked at your patch, but does this tie into the integrity
+logic that was added to mainline a few months ago?
 
-Trond
+I'm not sure if it should or not, but I am curious how it ties in.
 
+Greg
+-- 
+Greg Freemyer
+Head of EDD Tape Extraction and Processing team
+Litigation Triage Solutions Specialist
+http://www.linkedin.com/in/gregfreemyer
+First 99 Days Litigation White Paper -
+http://www.norcrossgroup.com/forms/whitepapers/99%20Days%20whitepaper.pdf
+
+The Norcross Group
+The Intersection of Evidence & Technology
+http://www.norcrossgroup.com
