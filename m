@@ -1,221 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751944AbZEUFRN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751216AbZEUFeG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751944AbZEUFRN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 01:17:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750911AbZEUFQ7
+	id S1751216AbZEUFeG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 01:34:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751134AbZEUFd4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 01:16:59 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:39414 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750853AbZEUFQ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 01:16:58 -0400
-Date: Wed, 20 May 2009 22:16:58 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Janos Haar <janos.haar@netcenter.hu>
-Cc: linux-kernel@vger.kernel.org, neilb@suse.de
-Subject: Re: Fw: RCU detected CPU 1 stall (t=4295904002/751 jiffies)
-	Pid:902, comm: md1_raid5
-Message-ID: <20090521051658.GE6839@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <030101c9d92f$d0668600$0400a8c0@dcccs> <20090521025037.GD6839@linux.vnet.ibm.com> <013501c9d9cf$161a74a0$0400a8c0@dcccs>
+	Thu, 21 May 2009 01:33:56 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:49430 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751074AbZEUFd4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 May 2009 01:33:56 -0400
+Message-ID: <4A14E805.9040103@cn.fujitsu.com>
+Date: Thu, 21 May 2009 13:35:01 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <013501c9d9cf$161a74a0$0400a8c0@dcccs>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>, Jason Baron <jbaron@redhat.com>
+Subject: Re: [PATCH 5/5] tracing: convert irq events to use __print_symbolic
+References: <20090521031711.494593605@goodmis.org> <20090521031749.639465433@goodmis.org>
+In-Reply-To: <20090521031749.639465433@goodmis.org>
+Content-Type: text/plain; charset=GB2312
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 21, 2009 at 06:46:15AM +0200, Janos Haar wrote:
-> Paul,
->
-> Thank you for your attention.
-> Yes, the PC makes 2-3 second "pauses" and drop this message again and 
-> again.
-> If i remove the RCU debugging, the message disappears, but the pauses still 
-> here, and makes 2-3 load on the idle system.
-> Can i do something?
-> You suggest to use PREEMPT? (This is a server.)
+> +#define softirq_name(sirq) { sirq, #sirq }
+> +#define show_softirq_name(val)						\
+> +	__print_symbolic(val,						\
+> +			 softirq_name(HI_SOFTIRQ),			\
+> +			 softirq_name(TIMER_SOFTIRQ),			\
+> +			 softirq_name(NET_TX_SOFTIRQ),			\
+> +			 softirq_name(NET_RX_SOFTIRQ),			\
+> +			 softirq_name(BLOCK_SOFTIRQ),			\
+> +			 softirq_name(TASKLET_SOFTIRQ),			\
+> +			 softirq_name(SCHED_SOFTIRQ),			\
+> +			 softirq_name(HRTIMER_SOFTIRQ),			\
+> +			 softirq_name(RCU_SOFTIRQ))
+> +
 
-One possibility is that the lock that bitmap_daemon_work() acquires is
-being held for too long.  Another possibility is the list traversal in
-md_check_recovery() that might loop for a long time if the list were
-excessively long or could be temporarily tied in a knot.
+The ending "_SOFTIRQ" is just redundant.
 
-Neil, thoughts?
+And it's you that removed "_SOFTIRQ" in the output of irq
+trace events. ;)
 
-							Thanx, Paul
+==========
+commit 899039e8746bb9a09b6487ddb8ab2275ce9d0256
+Author: Steven Rostedt <srostedt@redhat.com>
+Date:   Fri Mar 13 00:43:33 2009 -0400
 
-> Thank you,
-> Janos Haar
->
-> ----- Original Message ----- From: "Paul E. McKenney" 
-> <paulmck@linux.vnet.ibm.com>
-> To: "Janos Haar" <djani22@netcenter.hu>
-> Cc: <linux-kernel@vger.kernel.org>
-> Sent: Thursday, May 21, 2009 4:50 AM
-> Subject: Re: Fw: RCU detected CPU 1 stall (t=4295904002/751 jiffies) 
-> Pid:902, comm: md1_raid5
->
->
->> On Wed, May 20, 2009 at 11:46:07AM +0200, Janos Haar wrote:
->>> Hello list,
->>>
->>> Somebody know, what is this?
->>> May 17 23:12:13 gladiator-afth1 kernel: RCU detected CPU 1 stall
->>> (t=4295904002/751 jiffies)
->>> May 17 23:12:13 gladiator-afth1 kernel: Pid: 902, comm: md1_raid5 Not
->>> tainted 2.6.28.10 #1
->>> May 17 23:12:13 gladiator-afth1 kernel: Call Trace:
->>> May 17 23:12:13 gladiator-afth1 kernel:  <IRQ>  [<ffffffff80265395>] ?
->>> get_timestamp+0x9/0xf
->>> May 17 23:12:13 gladiator-afth1 kernel:  [<ffffffff8026854f>]
->>> __rcu_pending+0x64/0x1e2
->>> May 17 23:12:13 gladiator-afth1 kernel:  [<ffffffff80268703>]
->>> rcu_pending+0x36/0x6f
->>> May 17 23:12:13 gladiator-afth1 kernel:  [<ffffffff8023f546>]
->>> update_process_times+0x37/0x5f
->>> May 17 23:12:13 gladiator-afth1 kernel:  [<ffffffff802504a7>]
->>> tick_periodic+0x6e/0x7a
->>> May 17 23:12:13 gladiator-afth1 kernel:  [<ffffffff802504d4>]
->>> tick_handle_periodic+0x21/0x65
->>> May 17 23:12:13 gladiator-afth1 kernel:  [<ffffffff8021ad60>]
->>> smp_apic_timer_interrupt+0x8f/0xad
->>> May 17 23:12:13 gladiator-afth1 kernel:  [<ffffffff8020bf1b>]
->>> apic_timer_interrupt+0x6b/0x70
->>> May 17 23:12:13 gladiator-afth1 kernel:  <EOI>  [<ffffffff80820b8f>] ?
->>> _spin_unlock_irqrestore+0x13/0x17
->>
->> One of the following functions is looping in the kernel.  If you are
->> running with HZ=250, it has been looping for about three seconds.
->> Interrupts are enabled, but preemption must be disabled (perhaps due
->> to !CONFIG_PREEMPT).
->>
->> Thanx, Paul
->>
->>> May 17 23:12:13 gladiator-afth1 kernel:  [<ffffffff80728720>] ?
->>> bitmap_daemon_work+0x142/0x3b0
->>> May 17 23:12:18 gladiator-afth1 kernel:  [<ffffffff80724c58>] ?
->>> md_check_recovery+0x1b/0x45b
->>> May 17 23:12:18 gladiator-afth1 kernel:  [<ffffffff8071976c>] ?
->>> raid5d+0x5d/0x503
->>> May 17 23:12:18 gladiator-afth1 kernel:  [<ffffffff80726533>] ?
->>> md_thread+0xd5/0xed
->>> May 17 23:12:18 gladiator-afth1 kernel:  [<ffffffff80248e4a>] ?
->>> autoremove_wake_function+0x0/0x38
->>> May 17 23:12:18 gladiator-afth1 kernel:  [<ffffffff8072645e>] ?
->>> md_thread+0x0/0xed
->>> May 17 23:12:18 gladiator-afth1 kernel:  [<ffffffff80248d3b>] ?
->>> kthread+0x49/0x76
->>> May 17 23:12:18 gladiator-afth1 kernel:  [<ffffffff8020c169>] ?
->>> child_rip+0xa/0x11
->>> May 17 23:12:18 gladiator-afth1 kernel:  [<ffffffff80248cf2>] ?
->>> kthread+0x0/0x76
->>> May 17 23:12:18 gladiator-afth1 kernel:  [<ffffffff8020c15f>] ?
->>> child_rip+0x0/0x11
->>> Neilbrown from the RAID list suggested to ask someone else...(The mail is
->>> below.)Thanks,Janos Haar----- Original Message ----- From: "Janos Haar"
->>> <janos.haar@netcenter.hu>
->>> To: "Neil Brown" <neilb@suse.de>
->>> Cc: <linux-raid@vger.kernel.org>
->>> Sent: Tuesday, May 19, 2009 12:30 PM
->>> Subject: Re: RCU detected CPU 1 stall (t=4295904002/751 jiffies) Pid: 
->>> 902,
->>> comm: md1_raid5
->>>
->>>
->>>>
->>>> ----- Original Message ----- From: "Neil Brown" <neilb@suse.de>
->>>> To: "Janos Haar" <janos.haar@netcenter.hu>
->>>> Cc: <linux-raid@vger.kernel.org>
->>>> Sent: Tuesday, May 19, 2009 3:05 AM
->>>> Subject: Re: RCU detected CPU 1 stall (t=4295904002/751 jiffies) Pid: 
->>>> 902,
->>>> comm: md1_raid5
->>>>
->>>>
->>>>> On Tuesday May 19, janos.haar@netcenter.hu wrote:
->>>>>> Hello list, Neil,
->>>>>>
->>>>>> Somebody can say something about this issue?
->>>>>> I am not surprised, if it is hardware related, but this is on a brand
->>>>>> new
->>>>>> server, so i am looking for a solution... :-)
->>>>>> May 17 23:12:13 gladiator-afth1 kernel: RCU detected CPU 1 stall
->>>>>> (t=4295904002/751 jiffies)
->>>>>
->>>>> I have no idea what this means.
->>>>> I've occasionally seen this sort of message in early boot then the
->>>>> system continued to work perfectly so I figured it was an early-boot
->>>>> glitch.  I suggest asking someone who understands RCU.
->>>>>
->>>>>>
->>>>>> The entire log is here:
->>>>>> http://download.netcenter.hu/bughunt/20090518/messages
->>>>>>
->>>>>> The system is on the md1, and working, but slowly.
->>>>>
->>>>> How slowly?  Is the slowness due to disk throughput?
->>>>
->>>> No no, this is a fresh and idle server.
->>>> I have configured the disks, raid on another PC, and when it finished, i
->>>> have copy up the known good, pre-installed sw pack with old 2.6.18.
->>>> This pack is good, tested on many times, and this reports too this issue
->>>> on this machine. (first)
->>>> I have compiled the 2.6.28.10 on it, it takes about 6 hour! 8-/
->>>> But the 2.6.28.10 reports this too.
->>>>
->>>> The slowness is not disk based, i think, on idle time if i move the
->>>> selector line in mc, this stopps too for some seconds or i can't type in
->>>> bash when this happens, and another one RCU message comes to the log...
->>>> (It happens periodically, independently of i am doing something or not.)
->>>>
->>>> I am not sure, it is raid related or not, but the kernel reports only 
->>>> the
->>>> md1_raid5 pid, not another one.
->>>> This is why i am asking here first.
->>>>
->>>> Thanks anyway. :-)
->>>>
->>>>> Have you tested the individual drives and compared that with the
->>>>> array?
->>>>
->>>> This is a brand new hw, with 4x500GB samsung drive, wich reports no
->>>> problem at all by smart.
->>>>
->>>>>
->>>>>
->>>>>> If i left the server for 1 day,  it will crash without a saved log.
->>>>>
->>>>> This is a concern!  It usually points to some sort of hardware
->>>>> problem, but it is very hard to trace.
->>>>> Is the power supply rated high enough to support all devices?
->>>>
->>>> I am using 550W good quality new PS, and the PC uses only 55-65W,
->>>> measured. ;-)
->>>> (1x core2duo, 4x hdd, nothing more interesting)
->>>>
->>>>> I cannot think of anything else to suggest .. except start swapping
->>>>> components until the problem goes away...
->>>>
->>>> In this way, i need to start with the motherboard. 8-(
->>>>
->>>> Thanks a lot,
->>>> Janos Haar
->>>>
->>>>>
->>>>> NeilBrown
->>>>
->>>> --
->>>> To unsubscribe from this list: send the line "unsubscribe linux-raid" in
->>>> the body of a message to majordomo@vger.kernel.org
->>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>>
->>> --
->>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" 
->>> in
->>> the body of a message to majordomo@vger.kernel.org
->>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>> Please read the FAQ at  http://www.tux.org/lkml/ 
->
+    softirq: no need to have SOFTIRQ in softirq name
+
+    Impact: clean up
+
+    It is redundant to have 'SOFTIRQ' in the softirq names.
+==========
+
+How about:
+
+#define softirq_name(sirq) { sirq ## _SOFTIRQ, #sirq }
+#define show_softirq_name(val)						\
+	__print_symbolic(val,						\
+			 softirq_name(HI),				\
+
+or:
+
+#define softirq_name(sirq) { sirq, softirq_to_name[sirq] }
+
