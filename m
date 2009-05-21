@@ -1,125 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753608AbZEUK5g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753847AbZEULDf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753608AbZEUK5g (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 06:57:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752557AbZEUK52
+	id S1753847AbZEULDf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 07:03:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752686AbZEULD1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 06:57:28 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:57715 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752265AbZEUK52 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 06:57:28 -0400
-Message-ID: <4A153345.3040905@cn.fujitsu.com>
-Date: Thu, 21 May 2009 18:56:05 +0800
-From: Zhaolei <zhaolei@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Tom Zanussi <tzanussi@gmail.com>, Oleg Nesterov <oleg@redhat.com>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] tracing/workqueue: Get rid of searching last executed worklet
- in probe_worklet_complete()
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 21 May 2009 07:03:27 -0400
+Received: from mtaout02-winn.ispmail.ntl.com ([81.103.221.48]:19496 "EHLO
+	mtaout02-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751635AbZEULD0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 May 2009 07:03:26 -0400
+From: Ian Campbell <ijc@hellion.org.uk>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: "jeremy@goop.org" <jeremy@goop.org>,
+       "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
+       "beckyb@kernel.crashing.org" <beckyb@kernel.crashing.org>,
+       "okir@suse.de" <okir@suse.de>, "x86@kernel.org" <x86@kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "mingo@elte.hu" <mingo@elte.hu>, "gregkh@suse.de" <gregkh@suse.de>
+In-Reply-To: <20090521193910W.fujita.tomonori@lab.ntt.co.jp>
+References: <20090521175436L.fujita.tomonori@lab.ntt.co.jp>
+	 <1242901630.22654.135.camel@zakaz.uk.xensource.com>
+	 <1242901733.22654.138.camel@zakaz.uk.xensource.com>
+	 <20090521193910W.fujita.tomonori@lab.ntt.co.jp>
+Content-Type: text/plain
+Date: Thu, 21 May 2009 12:03:05 +0100
+Message-Id: <1242903785.22654.157.camel@zakaz.uk.xensource.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
+X-SA-Exim-Connect-IP: 62.200.22.2
+X-SA-Exim-Mail-From: ijc@hellion.org.uk
+Subject: Re: [Xen-devel] Re: Where do we stand with the Xen patches?
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
+X-Cloudmark-Analysis: v=1.0 c=1 a=ez88a1iWV38A:10 a=-82-ppXOAuYA:10 a=AZfGcq7nAAAA:8 a=cuQgqGksOJk2yNEa9-gA:9 a=M_f3wmcH1XOIuJToxZ0A:7 a=31XbGD-HMVtwKlunzjn8GFCReJ8A:4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We don't need search workqueue's worklet list for worklet which was latest
-executed, instead, we can use a pointer in cpu_workqueue_stats to remember
-which worklet was just executed.
+On Thu, 2009-05-21 at 06:39 -0400, FUJITA Tomonori wrote:
+> On Thu, 21 May 2009 11:28:53 +0100
+> Ian Campbell <ijc@hellion.org.uk> wrote:
+>  
+> > +#ifdef CONFIG_PCI_XEN
+> > +extern int xen_range_needs_mapping(phys_addr_t paddr, size_t size);
+> > +#else
+> > +static inline int xen_range_needs_mapping(phys_addr_t paddr, size_t size) { return 0; }
+> > +#endif
+> 
+> I know Xen can do something like this but you think that this is
+> clean?
 
-Thanks Oleg for pointing it out.
+Well, defining a static inline function when a CONFIG option is disabled
+is fairly idiomatic in the kernel and in general hiding these sorts of
+things in the headers in this way is preferred to having them in .c
+files. See e.g. the handling of CONFIG_PRINTK in include/linux/kernel.h
+or CONFIG_HIGHMEM in include/linux/highmem.h for just two examples out
+of many.
 
-Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
-Reported-by: Oleg Nesterov <oleg@redhat.com>
----
- kernel/trace/trace_workqueue.c |   37 +++++++++++++------------------------
- 1 files changed, 13 insertions(+), 24 deletions(-)
+> In addition, you also the similar hack in
+> arch/ia64/include/asm/dma-mapping.h for ia64's dom0 support, I think.
+> 
+> IMO, your patch just moves the ugly hacks from lib/swiotlb.c to
+> arch/{x86|ia64}/include/asm/dma-mapping.h.
 
-diff --git a/kernel/trace/trace_workqueue.c b/kernel/trace/trace_workqueue.c
-index c67be60..d90f9ac 100644
---- a/kernel/trace/trace_workqueue.c
-+++ b/kernel/trace/trace_workqueue.c
-@@ -25,13 +25,6 @@ struct workfunc_stats {
- 	unsigned int			inserted;
- 	unsigned int			executed;
- 
--	/*
--	 * save latest work_struct's pointer to use as identifier in
--	 * probe_worklet_complete, because we can't use work_struct->...
--	 * after worklet got executed
--	 */
--	void				*work;
--
- 	/* save execution time temporarily for calculate executed time */
- 	u64				start_time;
- 	u64				max_executed_time;
-@@ -46,10 +39,17 @@ struct cpu_workqueue_stats {
- 	/* Protected by cpu workqueue lock */
- 	unsigned int		inserted;
- 	unsigned int		executed;
-+
- 	/* list of struct workfunc_stats in this workqueue */
- 	struct list_head	workfunclist;
- 
- 	/*
-+	 * pointer to last executed worklet's workfunc_stats in this workqueue,
-+	 * used by probe_worklet_complete()
-+	 */
-+	struct workfunc_stats *last_workfunc;
-+
-+	/*
- 	 * the task maybe destroyed when we read stat file
- 	 * we define it to void * because we only use it as a identifier
- 	 */
-@@ -163,7 +163,7 @@ found_wq:
- 		if (wfnode->func == work->func) {
- 			wfnode->executed++;
- 			wfnode->start_time = trace_clock_global();
--			wfnode->work = work;
-+			node->last_workfunc = wfnode;
- 			goto found_wf;
- 		}
- 	pr_debug("trace_workqueue: worklet not found\n");
-@@ -180,7 +180,7 @@ probe_worklet_complete(struct task_struct *wq_thread, void *work)
- {
- 	int cpu = cpumask_first(&wq_thread->cpus_allowed);
- 	struct cpu_workqueue_stats *node;
--	struct workfunc_stats *wfnode;
-+	u64 executed_time;
- 	unsigned long flags;
- 
- 	spin_lock_irqsave(&workqueue_cpu_stat(cpu)->lock, flags);
-@@ -192,22 +192,11 @@ probe_worklet_complete(struct task_struct *wq_thread, void *work)
- 	goto end;
- 
- found_wq:
--	list_for_each_entry(wfnode, &node->workfunclist, list) {
--		u64 executed_time;
-+	executed_time = trace_clock_global() - node->last_workfunc->start_time;
-+	node->last_workfunc->total_time += executed_time;
-+	if (executed_time > node->last_workfunc->max_executed_time)
-+		node->last_workfunc->max_executed_time = executed_time;
- 
--		if (wfnode->work != work)
--			continue;
--
--		executed_time = trace_clock_global() - wfnode->start_time;
--		wfnode->total_time += executed_time;
--		if (executed_time > wfnode->max_executed_time)
--			wfnode->max_executed_time = executed_time;
--		goto found_wf;
--	}
--	pr_debug("trace_workqueue: worklet not found\n");
--	goto end;
--
--found_wf:
- end:
- 	spin_unlock_irqrestore(&workqueue_cpu_stat(cpu)->lock, flags);
- }
+I nearly suggested that for this hook it might actually be preferable to
+put the one line Xen hook directly into swiotlb.c. I didn't think this
+suggestion would go down very well though.
+
+In any case something along these lines needs to go somewhere. I think
+you are slightly mischaracterising this as an "ugly hack" -- it is a
+necessary interface to enable a particular use-case, and it actually has
+a very small cross section (it's basically five or six lines of code).
+
+If there was a cleaner way to achieve the same result we would of course
+go with that. I don't think duplicating swiotlb.c, as has been suggested
+as the alternative, just for that one hook point makes sense.
+
+Ian.
+
 -- 
-1.5.5.3
+Ian Campbell
+Current Noise: Isis - Altered Course
 
+"For a male and female to live continuously together is...  biologically
+speaking, an extremely unnatural condition."
+		-- Robert Briffault
 
