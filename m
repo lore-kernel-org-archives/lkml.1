@@ -1,159 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753196AbZEUJzK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752380AbZEUJ4W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753196AbZEUJzK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 05:55:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751408AbZEUJy7
+	id S1752380AbZEUJ4W (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 05:56:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751408AbZEUJ4N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 05:54:59 -0400
-Received: from ns.netcenter.hu ([195.228.254.57]:37998 "EHLO mail.netcenter.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751307AbZEUJy6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 05:54:58 -0400
-Message-ID: <022101c9d9f9$8ab19df0$0400a8c0@dcccs>
-From: "Janos Haar" <janos.haar@netcenter.hu>
-To: "Neil Brown" <neilb@suse.de>
-Cc: <paulmck@linux.vnet.ibm.com>, <linux-kernel@vger.kernel.org>
-References: <030101c9d92f$d0668600$0400a8c0@dcccs><20090521025037.GD6839@linux.vnet.ibm.com><013501c9d9cf$161a74a0$0400a8c0@dcccs><20090521051658.GE6839@linux.vnet.ibm.com> <18964.63919.206864.619147@notabene.brown>
-Subject: Re: Fw: RCU detected CPU 1 stall (t=4295904002/751 jiffies)Pid:902, comm: md1_raid5
-Date: Thu, 21 May 2009 11:50:13 +0200
-MIME-Version: 1.0
-Content-Type: text/plain;
-	format=flowed;
-	charset="ISO-8859-1";
-	reply-type=original
-Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.3138
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3350
+	Thu, 21 May 2009 05:56:13 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:60554 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751307AbZEUJ4N (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 May 2009 05:56:13 -0400
+To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+CC: jblunck@suse.de, bharata@in.ibm.com, vaurora@redhat.com,
+       viro@zeniv.linux.org.uk
+In-reply-to: <20090521092231.979256687@szeredi.hu> (message from Miklos
+	Szeredi on Thu, 21 May 2009 11:22:31 +0200)
+Subject: Re: [patch 0/5] union-directory implementation
+References: <20090521092231.979256687@szeredi.hu>
+Message-Id: <E1M750T-0005d4-Uq@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 21 May 2009 11:56:09 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Thu, 21 May 2009, Miklos Szeredi wrote:
+> Features:
+> 
+>  - top level directory unification only
+>  - no copy up
+>  - no whiteouts, opaque dir, etc...
+>  - create/rename/unlink only work on top layer
+>  - write works on any layer (without copy up)
+>  - directory entry deduplication in kernel
+>  - supports directory seeking (that hell from POSIX)
 
-Just a brief note preliminary:
-I am still compiling my kernel (without the patch) for preemtion enabled, 
-the load is 2.00.
-I have removed the bitmap from my array, and thel load falls down to 1.00, 
-the delays are gone.
-(The actual kernek not supports RCU debugging, so there is no error 
-message.)
+Forgot an important one:
 
-I need to run now, i will try the patch later....
-Thanks a lot,
+ - filesystem independent, any fs can be part of the union
 
-Janos Haar
-
-[root@gladiator-afth1 ~]# cat /proc/mdstat
-Personalities : [linear] [raid0] [raid1] [raid10] [raid6] [raid5] [raid4] 
-[multipath] [faulty]
-md1 : active raid6 sdd2[3] sdc2[1] sdb2[0] sda2[2]
-      19550976 blocks level 6, 16k chunk, algorithm 2 [4/4] [UUUU]
-
-md0 : active raid1 sdd1[3] sdc1[1] sdb1[0] sda1[2]
-      104320 blocks [4/4] [UUUU]
-
-unused devices: <none>
-[root@gladiator-afth1 ~]#
-
-The internal bitmap was in md1.
-
------ Original Message ----- 
-From: "Neil Brown" <neilb@suse.de>
-To: <paulmck@linux.vnet.ibm.com>
-Cc: "Janos Haar" <janos.haar@netcenter.hu>; <linux-kernel@vger.kernel.org>
-Sent: Thursday, May 21, 2009 8:50 AM
-Subject: Re: Fw: RCU detected CPU 1 stall (t=4295904002/751 jiffies)Pid:902, 
-comm: md1_raid5
-
-
-> On Wednesday May 20, paulmck@linux.vnet.ibm.com wrote:
->> On Thu, May 21, 2009 at 06:46:15AM +0200, Janos Haar wrote:
->> > Paul,
->> >
->> > Thank you for your attention.
->> > Yes, the PC makes 2-3 second "pauses" and drop this message again and
->> > again.
->> > If i remove the RCU debugging, the message disappears, but the pauses 
->> > still
->> > here, and makes 2-3 load on the idle system.
->> > Can i do something?
->> > You suggest to use PREEMPT? (This is a server.)
->>
->> One possibility is that the lock that bitmap_daemon_work() acquires is
->> being held for too long.  Another possibility is the list traversal in
->> md_check_recovery() that might loop for a long time if the list were
->> excessively long or could be temporarily tied in a knot.
->>
->> Neil, thoughts?
->>
->
-> I would be surprised if any of these things take as long as 3 seconds
-> (or even 1 second) but I cannot completely rule it out.
->
-> I assume that you mean 3 seconds of continuous running with no
-> sleeping, so it cannot be a slow kmalloc that is causing the delay?
->
-> bitmap_daemon_work is the most likely candidate as bitmap->chunks
-> can be very large (thousands, probably not millions though).
-> Taking and dropping the lock every time around that loop doesn't
-> really make much sense, does it....
-> And it looks like it could actually be optimised quite a bit to skip a
-> lot of the iterations in most cases - there are two places where we
-> can accelerate 'j' quite a lot.
->
-> Janos: Can you try this and see if it makes a difference?
-> Thanks.
->
-> NeilBrown
->
-> diff --git a/drivers/md/bitmap.c b/drivers/md/bitmap.c
-> index 47c68bc..56df1ce 100644
-> --- a/drivers/md/bitmap.c
-> +++ b/drivers/md/bitmap.c
-> @@ -1097,14 +1097,12 @@ void bitmap_daemon_work(struct bitmap *bitmap)
->  }
->  bitmap->allclean = 1;
->
-> + spin_lock_irqsave(&bitmap->lock, flags);
->  for (j = 0; j < bitmap->chunks; j++) {
->  bitmap_counter_t *bmc;
-> - spin_lock_irqsave(&bitmap->lock, flags);
-> - if (!bitmap->filemap) {
-> + if (!bitmap->filemap)
->  /* error or shutdown */
-> - spin_unlock_irqrestore(&bitmap->lock, flags);
->  break;
-> - }
->
->  page = filemap_get_page(bitmap, j);
->
-> @@ -1121,6 +1119,8 @@ void bitmap_daemon_work(struct bitmap *bitmap)
->  write_page(bitmap, page, 0);
->  bitmap->allclean = 0;
->  }
-> + spin_lock_irqsave(&bitmap->lock, flags);
-> + j |= (PAGE_BITS - 1);
->  continue;
->  }
->
-> @@ -1181,9 +1181,10 @@ void bitmap_daemon_work(struct bitmap *bitmap)
->  ext2_clear_bit(file_page_offset(j), paddr);
->  kunmap_atomic(paddr, KM_USER0);
->  }
-> - }
-> - spin_unlock_irqrestore(&bitmap->lock, flags);
-> + } else
-> + j |= PAGE_COUNTER_MASK;
->  }
-> + spin_unlock_irqrestore(&bitmap->lock, flags);
->
->  /* now sync the final page */
->  if (lastpage != NULL) {
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/ 
-
+Thanks,
+Miklos
