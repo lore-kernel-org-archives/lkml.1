@@ -1,50 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756373AbZEUOUg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752368AbZEUOWw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756373AbZEUOUg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 10:20:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753362AbZEUOU2
+	id S1752368AbZEUOWw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 10:22:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753960AbZEUOWp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 10:20:28 -0400
-Received: from nerdhammel.gnuher.de ([88.198.0.170]:58599 "EHLO
-	nerdhammel.gnuher.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753196AbZEUOU2 (ORCPT
+	Thu, 21 May 2009 10:22:45 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:54722 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753866AbZEUOWo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 10:20:28 -0400
-Date: Thu, 21 May 2009 16:20:26 +0200
-From: Sven Geggus <lists@fuchsschwanzdomain.de>
-To: linux-kernel@vger.kernel.org
-Subject: 2.6.29+ NFS-Server Problem "reconnect_path: npd != pd"
-Message-ID: <20090521142026.GA5566@geggus.net>
+	Thu, 21 May 2009 10:22:44 -0400
+Message-ID: <4A156361.2040507@zytor.com>
+Date: Thu, 21 May 2009 07:21:21 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-MimeOLE: Produced By Exchange Microsoft V6.6.6
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Borislav Petkov <borislav.petkov@amd.com>
+CC: akpm@linux-foundation.org, greg@kroah.com, mingo@elte.hu, norsk5@yahoo.com,
+       tglx@linutronix.de, mchehab@redhat.com, aris@redhat.com, edt@aei.ca,
+       linux-kernel@vger.kernel.org,
+       Andreas Herrmann <andreas.herrmann3@amd.com>
+Subject: Re: [PATCH 01/22] x86: add methods for writing of an MSR on	several
+ CPUs
+References: <1242390153-24493-1-git-send-email-borislav.petkov@amd.com> <1242390153-24493-2-git-send-email-borislav.petkov@amd.com> <20090519172449.GB18874@aftab> <4A1392A9.9010609@zytor.com> <20090520144905.GA27991@aftab> <4A147891.5000906@zytor.com> <20090521140800.GA3462@aftab>
+In-Reply-To: <20090521140800.GA3462@aftab>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Borislav Petkov wrote:
+>>>
+>> smp_call_function_many() does allow concurrent execution.
+> 
+> Well, IMHO, not an absolutely concurrent execution since you can't
+> control at what moment in time the IPIs will be executed on each core,
+> IOW, the respective call function IPIs will generally not coincide on
+> each core at a given moment in time. This is especially true if you're
+> sending IPIs to cores across nodes.
+> 
+> And there's hypothetically a small window where you might get an
+> inconsistent MSR content across cores. It's a whole another question
+> whether this is going to be relevant.
+> 
 
-starting from Kernel 2.6.29.x (x=0 to 4) I get hundreds of the
-following messages on my NFS-Server:
+It *allows* concurrent execution.  It doesn't *guarantee* concurrent
+execution.  Looping with smp_call_function_one() means we wait for
+synchronization after ever one.
 
-reconnect_path: npd != pd
+>> Looping over a list with smp_call_function_one() -- which you
+>> currently have -- is serializing, at which point we might just push
+>> the loop into the caller rather than worrying about a new interface.
+> 
+> So, the actual question is do we need that done in msr.c? If there are
+> no potential users, I could easily do the whole thing in the driver and
+> do not touch x86 code.
 
-The system works fine using 2.6.27.x
+Only if we care about the additional performance of having it be
+nonserializing.
 
-Unfortunatele the message is not harmless, because the client gets stale
-NFS handles which is especially troublesome on diskless Workstations
-using NFS root.
-
-Regards
-
-Sven
-
-P.S.: The userland in use is Debian stable (lenny).
-
+	-hpa
 -- 
-The main thing to note is that when you choose open source you don't
-get a Windows operating system.
-                                  (from http://www.dell.com/ubuntu)
-/me is giggls@ircnet, http://sven.gegg.us/ on the Web
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
