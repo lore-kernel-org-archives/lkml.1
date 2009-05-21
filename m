@@ -1,97 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756771AbZEUDWQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755913AbZEUD24@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756771AbZEUDWQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 23:22:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754944AbZEUDWD
+	id S1755913AbZEUD24 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 23:28:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755120AbZEUD2r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 23:22:03 -0400
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:36491 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755004AbZEUDWB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 23:22:01 -0400
-Date: Thu, 21 May 2009 12:22:03 +0900 (JST)
-Message-Id: <20090521.122203.193689175.ryov@valinux.co.jp>
-To: vgoyal@redhat.com
-Cc: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org,
-       xen-devel@lists.xensource.com
-Subject: Re: [PATCH 1/1] dm-ioband: I/O bandwidth controller
-From: Ryo Tsuruta <ryov@valinux.co.jp>
-In-Reply-To: <20090519133753.GA28679@redhat.com>
-References: <20090519.173928.226784958.ryov@valinux.co.jp>
-	<20090519.174352.71107893.ryov@valinux.co.jp>
-	<20090519133753.GA28679@redhat.com>
-X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 20 May 2009 23:28:47 -0400
+Received: from mga02.intel.com ([134.134.136.20]:32493 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754796AbZEUD2q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 23:28:46 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,225,1241420400"; 
+   d="scan'208";a="517535276"
+From: "Zhang, Yanmin" <yanmin.zhang@intel.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>, Robin Holt <holt@sgi.com>,
+       "Wu, Fengguang" <fengguang.wu@intel.com>
+Date: Thu, 21 May 2009 11:27:12 +0800
+Subject: RE: [PATCH v3] zone_reclaim is always 0 by default
+Thread-Topic: [PATCH v3] zone_reclaim is always 0 by default
+Thread-Index: AcnZvnDPAczU+LdbRdakseMjYrEUdAABGj9g
+Message-ID: <4D05DB80B95B23498C72C700BD6C2E0B2F35B8FA@pdsmsx502.ccr.corp.intel.com>
+References: <20090521114408.63D0.A69D9226@jp.fujitsu.com>
+In-Reply-To: <20090521114408.63D0.A69D9226@jp.fujitsu.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="gb2312"
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha id n4L3TWlL017621
 
-Hi Vivek,
+>>-----Original Message-----
+>>From: KOSAKI Motohiro [mailto:kosaki.motohiro@jp.fujitsu.com]
+>>Sent: 2009Äê5ÔÂ21ÈÕ 10:47
+>>To: LKML; linux-mm; Andrew Morton; Rik van Riel; Christoph Lameter; Robin Holt;
+>>Zhang, Yanmin; Wu, Fengguang
+>>Cc: kosaki.motohiro@jp.fujitsu.com
+>>Subject: [PATCH v3] zone_reclaim is always 0 by default
+>>
+>>
+>>Subject: [PATCH v3] zone_reclaim is always 0 by default
+>>
+>>Current linux policy is, zone_reclaim_mode is enabled by default if the machine
+>>has large remote node distance. it's because we could assume that large distance
+>>mean large server until recently.
+>>
+>>Unfortunately, recent modern x86 CPU (e.g. Core i7, Opeteron) have P2P
+>>transport
+>>memory controller. IOW it's seen as NUMA from software view.
+>>Some Core i7 machine has large remote node distance.
+>>
+>>Yanmin reported zone_reclaim_mode=1 cause large apache regression.
+>>
+>>    One Nehalem machine has 12GB memory,
+>>    but there is always 2GB free although applications accesses lots of files.
+>>    Eventually we located the root cause as zone_reclaim_mode=1.
+>>
+>>Actually, zone_reclaim_mode=1 mean "I dislike remote node allocation rather
+>>than
+>>disk access", it makes performance improvement to HPC workload.
+>>but it makes performance degression desktop, file server and web server.
+>>
+>>In general, workload depended configration shouldn't put into default
+>>settings.
+>>Plus, desktop and file/web server eco-system is much larger than hpc's.
+>>
+>>Thus, zone_reclaim == 0 is better by default.
+[YM] Thanks. I started a series of testing on 2 Nehalem machines by setting
+zone_reclaim_mode=0 (The default is 1 on the 2 machines). I didn't find
+regression with non-disk_I/O (mostly cpubound) benchmarks. disk I/O benchmarks 
+could benefit a little from zone_reclaim_mode=0. As I start benchmark fio with 
+numactl --interleave=all, so the fio improvement is not so bigger like before.
 
-> Anyway, how are you taking care of priorities with-in same class. How will
-> you make sure that a BE prio 0 request is not hidden behind BE prio 7
-> request? Same is true for prio with-in RT class.
+One thing I need mention is my testing with non-disk_I/O might be not good examples
+for this patch, because every node has far more memory than the testing needs.
+Only some disk I/O benchmarks have big requirement on page cache memory, so they could benefit from zone_reclaim_mode=0.
 
-I changed io_limit parameter of dm-ioband and ran your test script
-again. io_limit is a parameter which determines how many IO requests
-can be hold in dm-ioband. Its default value is equal to nr_requests of
-the underlying device. I increased the value from 128 to 256 on this
-test, because the writer requests IOs more than nr_requests.
-The following result shows that dm-ioband does not break the notion of
-CFQ priority. I think that the impact of dm-ioband's internal queue on
-CFQ is insignificant, because the queue is not too long. The notion of
-CFQ priority is preserved within each bandwidth group.
 
-Setting
--------
-ioband1: 0 112455000 ioband 8:18 share1 4 256 user weight 512 :40
-                                          ^^^ io_limit
+>>
+>>
+>>Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+>>Cc: Christoph Lameter <cl@linux-foundation.org>
+>>Cc: Rik van Riel <riel@redhat.com>
+>>Cc: Robin Holt <holt@sgi.com>
+>>Tested-by: "Zhang, Yanmin" <yanmin.zhang@intel.com>
+>>Acked-by: Wu Fengguang <fengguang.wu@intel.com>
+>>---
+>> arch/ia64/include/asm/topology.h |    5 -----
+>> include/linux/topology.h         |    9 +--------
+>> mm/page_alloc.c                  |    7 -------
+>> 3 files changed, 1 insertion(+), 20 deletions(-)
+>>
+>>Index: b/mm/page_alloc.c
+>>===================================================================
+>>--- a/mm/page_alloc.c
+>>+++ b/mm/page_alloc.c
+>>@@ -2494,13 +2494,6 @@ static void build_zonelists(pg_data_t *p
+>> 		int distance = node_distance(local_node, node);
+>>
+>> 		/*
+>>-		 * If another node is sufficiently far away then it is better
+>>-		 * to reclaim pages in a zone before going off node.
+>>-		 */
+>>-		if (distance > RECLAIM_DISTANCE)
+>>-			zone_reclaim_mode = 1;
+>>-
+>>-		/*
+>> 		 * We don't want to pressure a particular node.
+>> 		 * So adding penalty to the first node in same
+>> 		 * distance group to make it round-robin.
+>>Index: b/arch/ia64/include/asm/topology.h
+>>===================================================================
+>>--- a/arch/ia64/include/asm/topology.h
+>>+++ b/arch/ia64/include/asm/topology.h
+>>@@ -21,11 +21,6 @@
+>> #define PENALTY_FOR_NODE_WITH_CPUS 255
+>>
+>> /*
+>>- * Distance above which we begin to use zone reclaim
+>>- */
+>>-#define RECLAIM_DISTANCE 15
+>>-
+>>-/*
+>>  * Returns the number of the node containing CPU 'cpu'
+>>  */
+>> #define cpu_to_node(cpu) (int)(cpu_to_node_map[cpu])
+>>Index: b/include/linux/topology.h
+>>===================================================================
+>>--- a/include/linux/topology.h
+>>+++ b/include/linux/topology.h
+>>@@ -53,14 +53,7 @@ int arch_update_cpu_topology(void);
+>> #ifndef node_distance
+>> #define node_distance(from,to)	((from) == (to) ? LOCAL_DISTANCE :
+>>REMOTE_DISTANCE)
+>> #endif
+>>-#ifndef RECLAIM_DISTANCE
+>>-/*
+>>- * If the distance between nodes in a system is larger than RECLAIM_DISTANCE
+>>- * (in whatever arch specific measurement units returned by node_distance())
+>>- * then switch on zone reclaim on boot.
+>>- */
+>>-#define RECLAIM_DISTANCE 20
+>>-#endif
+>>+
+>> #ifndef PENALTY_FOR_NODE_WITH_CPUS
+>> #define PENALTY_FOR_NODE_WITH_CPUS	(1)
+>> #endif
+>>
 
-Script
-------
-#!/bin/bash
-rm /mnt1/aggressivewriter
-sync
-echo 3 >  /proc/sys/vm/drop_caches
-# launch an hostile writer
-ionice -c2 -n7 dd if=/dev/zero of=/mnt1/aggressivewriter bs=4K \
-        count=524288 conv=fdatasync &
-# Reader
-ionice -c2 -n0 dd if=/mnt1/testzerofile1 of=/dev/null &
-wait $!
-echo "reader finished"
-
-Without dm-ioband
------------------
-First run
-2147483648 bytes (2.1 GB) copied, 34.8201 seconds, 61.7 MB/s (Reader)
-reader finished
-2147483648 bytes (2.1 GB) copied, 68.9099 seconds, 31.2 MB/s (Writer)
-
-Second Run
-2147483648 bytes (2.1 GB) copied, 34.8201 seconds, 61.7 MB/s (Reader)
-reader finished
-2147483648 bytes (2.1 GB) copied, 68.9099 seconds, 31.2 MB/s (Writer)
-
-With dm-ioband
---------------
-First run
-2147483648 bytes (2.1 GB) copied, 35.852 seconds, 59.9 MB/s  (Reader)
-reader finished
-2147483648 bytes (2.1 GB) copied, 73.3991 seconds, 29.3 MB/s (Writer)
-
-Second Run
-2147483648 bytes (2.1 GB) copied, 36.0273 seconds, 59.6 MB/s (Reader)
-reader finished
-2147483648 bytes (2.1 GB) copied, 72.8979 seconds, 29.5 MB/s (Writer)
-
-For reference, the previous test results.
-http://linux.derkeiler.com/Mailing-Lists/Kernel/2009-04/msg08345.html
-
-Thanks,
-Ryo Tsuruta
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
