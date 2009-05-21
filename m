@@ -1,56 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758045AbZEUAeX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756968AbZEUAiR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758045AbZEUAeX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 20:34:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756925AbZEUAeL
+	id S1756968AbZEUAiR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 20:38:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755376AbZEUAiH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 20:34:11 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37619
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756730AbZEUAeJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 20:34:09 -0400
-Date: Wed, 20 May 2009 17:34:08 -0700 (PDT)
-Message-Id: <20090520.173408.126761158.davem@davemloft.net>
-To: linville@tuxdriver.com
-Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: pull request: wireless-2.6 2009-05-20
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090520193446.GA27441@tuxdriver.com>
-References: <20090520193446.GA27441@tuxdriver.com>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Wed, 20 May 2009 20:38:07 -0400
+Received: from mga03.intel.com ([143.182.124.21]:13481 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755247AbZEUAiG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 20:38:06 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,224,1241420400"; 
+   d="scan'208";a="145210756"
+Subject: Re: [GIT PATCH] x86,percpu: fix pageattr handling with remap
+ allocator
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+Reply-To: suresh.b.siddha@intel.com
+To: Tejun Heo <tj@kernel.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>,
+       "JBeulich@novell.com" <JBeulich@novell.com>,
+       "andi@firstfloor.org" <andi@firstfloor.org>,
+       "mingo@elte.hu" <mingo@elte.hu>,
+       "linux-kernel-owner@vger.kernel.org" 
+	<linux-kernel-owner@vger.kernel.org>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <4A149B89.3010104@kernel.org>
+References: <1242305390-21958-1-git-send-email-tj@kernel.org>
+	 <1242436626.27006.8623.camel@localhost.localdomain>
+	 <4A0ED8D8.2010303@kernel.org>
+	 <1242500964.27006.8636.camel@localhost.localdomain>
+	 <4A0F672A.3000309@kernel.org>
+	 <1242674444.27006.8691.camel@localhost.localdomain>
+	 <4A11B9E7.8010707@zytor.com>
+	 <1242680835.27006.8734.camel@localhost.localdomain>
+	 <4A120B47.8060200@kernel.org>
+	 <1242860470.27006.10106.camel@localhost.localdomain>
+	 <4A149B89.3010104@kernel.org>
+Content-Type: text/plain
+Organization: Intel Corp
+Date: Wed, 20 May 2009 17:36:03 -0700
+Message-Id: <1242866163.27006.10125.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "John W. Linville" <linville@tuxdriver.com>
-Date: Wed, 20 May 2009 15:34:47 -0400
+On Wed, 2009-05-20 at 17:08 -0700, Tejun Heo wrote:
+> Heh... the problem is that unless I understand what you're trying to
+> achieve (and vice-versa), our discussion is likely to be riddled with
+> confusions, and currently either you're misunderstanding the whole
+> thing or I'm being slow (not too unusual :-).  It would be nice to
+> determine which way it is.
 
-> Another volley of fixes intended for 2.6.30 -- I know the velocity
-> is a bit high for this part of the cycle, but these are mostly small
-> and well-tested.
-> 
-> The one from me is a "brown paper bag" fix.  My earlier attempt to fix
-> the potential buffer overflow in airo was actually a no-op due to an
-> (unknown to me) type overflow... :-(
-> 
-> The ath5k fixes from Forrest Zhang and Pavel Roskin together fix some
-> regressions with 5GHz operation.  The one from Fabio Rossi avoids an
-> infinite loop reported by Stephen Rostedt.
-> 
-> The wext fix addresses a possible buffer overflow.  The cfg80211 fix
-> addresses a user-reported oops.  The one from Roel avoids and index
-> past the end of an array.
-> 
-> One of iwlwifi patches avoids a deadlock.  The other iwlwifi patch
-> simply enables the use of the firmware image they just released.
-> That one is worth taking for 2.6.30 because the new firmware fixes
-> a couple of bugs that show-up as kernel bug reports.
-> 
-> Please let me know if there are problems!
+At the start of this, I was trying to see a way where we can use large
+page mappings for percpu areas and at the same time, avoid the
+complexity of cpa() that we are adding in this patchset. So, I was going
+down the path of exploiting your bootmem allocation for the first percpu
+chunk (as kernel identity mappings are already taken care by cpa()).
 
-Pulled, thanks John!
+> The dynamic onlining will probably use 4k pages so, yeah, it won't
+> have the alias issues but that's not the issue here, right?  You can
+> already avoid aliasing that way by simply using 4k allocator from the
+> get-go.
+
+But now that I learnt about dynamic online allocation, can we avoid the
+complexity brought by this patchset, by simply using 4k allocator from
+get-go.
+
+i.e., can we drop this remap pageattr handling patchset and simply use
+4k mapping for now? And move to dynamic allocation at a later point.
+
+This will simplify quite a bit of code.
+
+thanks,
+suresh
+
