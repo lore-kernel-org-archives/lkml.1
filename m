@@ -1,46 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752773AbZEUHb5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752347AbZEUHcq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752773AbZEUHb5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 03:31:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751130AbZEUHbs
+	id S1752347AbZEUHcq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 03:32:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751446AbZEUHcj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 03:31:48 -0400
-Received: from hera.kernel.org ([140.211.167.34]:41132 "EHLO hera.kernel.org"
+	Thu, 21 May 2009 03:32:39 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:43867 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750967AbZEUHbr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 03:31:47 -0400
-Message-ID: <4A150359.1000501@kernel.org>
-Date: Thu, 21 May 2009 16:31:37 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1751383AbZEUHci (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 May 2009 03:32:38 -0400
+Message-ID: <4A15038B.1090204@redhat.com>
+Date: Thu, 21 May 2009 10:32:27 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       Cornelia Huck <cornelia.huck@de.ibm.com>, linux-fsdevel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@aristanetworks.com>
-Subject: Re: [PATCH 09/20] sysfs: Simplify iattr assignments
-References: <m1bppofm9k.fsf@fess.ebiederm.org> <1242865694-2100-1-git-send-email-ebiederm@xmission.com> <1242865694-2100-2-git-send-email-ebiederm@xmission.com> <1242865694-2100-3-git-send-email-ebiederm@xmission.com> <1242865694-2100-4-git-send-email-ebiederm@xmission.com> <1242865694-2100-5-git-send-email-ebiederm@xmission.com> <1242865694-2100-6-git-send-email-ebiederm@xmission.com> <1242865694-2100-7-git-send-email-ebiederm@xmission.com> <1242865694-2100-8-git-send-email-ebiederm@xmission.com> <1242865694-2100-9-git-send-email-ebiederm@xmission.com>
-In-Reply-To: <1242865694-2100-9-git-send-email-ebiederm@xmission.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Gregory Haskins <ghaskins@novell.com>
+Subject: Re: linux-next: kvm tree build failure
+References: <20090521172122.bb12027c.sfr@canb.auug.org.au>
+In-Reply-To: <20090521172122.bb12027c.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 21 May 2009 07:31:40 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> From: Eric W. Biederman <ebiederm@xmission.com>
-> 
-> The granularity of sysfs time when we keep it is 1 ns.  Which
-> when passed to timestamp_trunc results in a nop.  So remove
-> the unnecessary function call making sysfs_setattr slightly
-> easier to read.
-> 
-> Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
+Stephen Rothwell wrote:
+> Hi Avi,
+>
+> Today's linux-next build (powerpc ppc44x_defconfig) failed like this:
+>
+> arch/powerpc/kvm/built-in.o: In function `kvm_destroy_vm':
+> kvm_main.c:(.text+0x2cfc): undefined reference to `kvm_irqfd_release'
+> arch/powerpc/kvm/built-in.o: In function `kvm_vm_ioctl':
+> kvm_main.c:(.text+0x3230): undefined reference to `kvm_irqfd'
+>
+> Caused by commit 302471ec2b5b6f74eba06973fb85e4584d20ef1e ("KVM: irqfd")
+> which I have reverted for today.
+>   
 
-Acked-by: Tejun Heo <tj@kernel.org>
+Sorry about that.  I now have build testing for s390 and ia64, so of 
+course it triggered on ppc.
+
+I'll look for a ppc machine for build testing.
 
 -- 
-tejun
+error compiling committee.c: too many arguments to function
+
