@@ -1,45 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752321AbZEUIm6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753244AbZEUIoS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752321AbZEUIm6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 04:42:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751804AbZEUIms
+	id S1753244AbZEUIoS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 04:44:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751427AbZEUIoD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 04:42:48 -0400
-Received: from hera.kernel.org ([140.211.167.34]:51540 "EHLO hera.kernel.org"
+	Thu, 21 May 2009 04:44:03 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:54182 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751496AbZEUImr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 04:42:47 -0400
-Message-ID: <4A1513EB.1010600@kernel.org>
-Date: Thu, 21 May 2009 17:42:19 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1751746AbZEUIoC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 May 2009 04:44:02 -0400
+Date: Thu, 21 May 2009 10:44:03 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jkosina@wotan.suse.de
+To: Alberto Bertogli <albertito@blitiri.com.ar>
+Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org, tytso@mit.edu,
+       jack@suse.cz, trivial@kernel.org
+Subject: Re: [PATCH 1/4] Fix minor typos in jbd2's journal.c
+In-Reply-To: <1242846091-1086-1-git-send-email-albertito@blitiri.com.ar>
+Message-ID: <alpine.LNX.2.00.0905211043100.13917@wotan.suse.de>
+References: <1242846091-1086-1-git-send-email-albertito@blitiri.com.ar>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       Cornelia Huck <cornelia.huck@de.ibm.com>, linux-fsdevel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@aristanetworks.com>
-Subject: Re: [PATCH 11/20] sysfs: Update s_iattr on link and unlink.
-References: <m1bppofm9k.fsf@fess.ebiederm.org> <1242865694-2100-1-git-send-email-ebiederm@xmission.com> <1242865694-2100-2-git-send-email-ebiederm@xmission.com> <1242865694-2100-3-git-send-email-ebiederm@xmission.com> <1242865694-2100-4-git-send-email-ebiederm@xmission.com> <1242865694-2100-5-git-send-email-ebiederm@xmission.com> <1242865694-2100-6-git-send-email-ebiederm@xmission.com> <1242865694-2100-7-git-send-email-ebiederm@xmission.com> <1242865694-2100-8-git-send-email-ebiederm@xmission.com> <1242865694-2100-9-git-send-email-ebiederm@xmission.com> <1242865694-2100-10-git-send-email-ebiederm@xmission.com> <1242865694-2100-11-git-send-email-ebiederm@xmission.com>
-In-Reply-To: <1242865694-2100-11-git-send-email-ebiederm@xmission.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 21 May 2009 08:42:22 +0000 (UTC)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> From: Eric W. Biederman <ebiederm@xmission.com>
-> 
-> Currently sysfs updates the timestamps on the vfs directory
-> inode when we create or remove a directory entry but doesn't
-> update the cached copy on the sysfs_dirent, fix that oversight.
-> 
-> Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
+On Wed, 20 May 2009, Alberto Bertogli wrote:
 
-Acked-by: Tejun Heo <tj@kernel.org>
+> Signed-off-by: Alberto Bertogli <albertito@blitiri.com.ar>
+> ---
+>  fs/jbd2/journal.c |    8 ++++----
+>  1 files changed, 4 insertions(+), 4 deletions(-)
+> 
+> diff --git a/fs/jbd2/journal.c b/fs/jbd2/journal.c
+> index 5814410..85af8ea 100644
+> --- a/fs/jbd2/journal.c
+> +++ b/fs/jbd2/journal.c
+> @@ -1781,7 +1781,7 @@ int jbd2_journal_wipe(journal_t *journal, int write)
+>   * Journal abort has very specific semantics, which we describe
+>   * for journal abort.
+>   *
+> - * Two internal function, which provide abort to te jbd layer
+> + * Two internal function, which provide abort to the jbd layer
+
+function*s*, while you are at it?
 
 -- 
-tejun
+Jiri Kosina
+SUSE Labs
