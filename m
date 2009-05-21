@@ -1,69 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754997AbZEUPuy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755270AbZEUQIX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754997AbZEUPuy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 11:50:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753857AbZEUPup
+	id S1755270AbZEUQIX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 12:08:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754391AbZEUQIM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 11:50:45 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:58140 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753013AbZEUPuo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 11:50:44 -0400
-Message-ID: <4A1578A5.7090608@redhat.com>
-Date: Thu, 21 May 2009 11:52:05 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: =?UTF-8?B?UHJ6ZW15c8WCYXcgUGF3ZcWCY3p5aw==?= 
-	<przemyslaw@pawelczyk.it>,
-       Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Andi Kleen <ak@linux.intel.com>,
-       Vegard Nossum <vegard.nossum@gmail.com>, Avi Kivity <avi@redhat.com>
-Subject: Re: [PATCH -tip v6 1/5] x86: instruction decorder API
-References: <20090520205758.25003.44632.stgit@localhost.localdomain>	 <20090520205805.25003.71314.stgit@localhost.localdomain> <40e92d5b0905201501i1548621xe1ee63aa88129a0@mail.gmail.com> <4A1488A2.30706@redhat.com> <4A14EA86.2060609@zytor.com>
-In-Reply-To: <4A14EA86.2060609@zytor.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Thu, 21 May 2009 12:08:12 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:40764 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754330AbZEUQIL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 May 2009 12:08:11 -0400
+Subject: Re: [mac80211 ] Wifi Network slownes bisected
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Alejandro Riveira =?ISO-8859-1?Q?Fern=E1ndez?= 
+	<ariveira@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org
+In-Reply-To: <20090521173839.1f20b95d@varda>
+References: <20090521173839.1f20b95d@varda>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-nKeeNjl4BRvdjo5SSGK/"
+Date: Thu, 21 May 2009 18:08:11 +0200
+Message-Id: <1242922091.4212.14.camel@johannes.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Masami Hiramatsu wrote:
->>> /usr/bin/env 'awk -f' gen-insn-attr-x86.awk
->>>
->>> which is obviously wrong.
->> Oops, right. Anyway, there is no reason that we make it
->> executable because it's always called from Makefile.
->> So, I think just removing that line is better way.
->>
-> 
-> I suggest leaving in a #!/bin/awk line just for documentation's sake,
-> though.
 
-OK, I'd leave that, and change usage line to use awk command
-instead of run the script directly.
+--=-nKeeNjl4BRvdjo5SSGK/
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Thank you!
+On Thu, 2009-05-21 at 17:38 +0200, Alejandro Riveira Fern=C3=A1ndez wrote:
 
-> 
-> 	-hpa
-> 
+>  I noticed that my wifi connection has slowed when stitching
+> from 2.6.29.1 to 2.6.29.4 (it is also slow on 30-rc6)
+> Also 2.6.27 (ubuntu) does not suffer it.
 
--- 
-Masami Hiramatsu
+> $ git bisect good
+> 64e1b00c974ddeae6a60ebb02e1c487371905cea is first bad commit
+> commit 64e1b00c974ddeae6a60ebb02e1c487371905cea
+> Author: Johannes Berg <johannes@sipsolutions.net>
+> Date:   Fri Apr 24 16:05:16 2009 +0000
+>=20
+>     mac80211: fix basic rate bitmap calculation
 
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
+Well ... How much did your connection slow down? It is clear that this
+commit might possibly slow down your connection, but not by a lot. And
+that's only because before we were sending with a higher rate than the
+AP allowed us to... If you need the higher speed then set your AP to
+G-only to make it include more rates in the basic rate set, that'll
+speed up your connection properly.
 
-e-mail: mhiramat@redhat.com
+That's all discounting driver bugs which may exist, of course.
+
+johannes
+
+--=-nKeeNjl4BRvdjo5SSGK/
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAABAgAGBQJKFXxnAAoJEODzc/N7+Qma8XMQAIFYa+ZzvbiKdxaicE3tHfIE
+yHGS6PneVC17txFW13opEAzMUHiF6d3ViwDjYYWiXjfVMOIsqiRcx5NQdSHJHWIy
+cum2dlh5awrd4jf60G65EEN6PQGU0XFPETdaly8NZzPj98xjcVkrOxJTkpnPeWAl
+brH18LokWl3U0FuxbXmBUIWXaCLsLovnH1vFaj4fH0+wz317zrLx2dHwp96Mt0WK
+4ru1hRJQ0fQyaqKsvi0yeccNitTfCF/3sooC/GoQeNPozK2Pl028zQzjIsaTTmnl
+qoxr4+mCQ9WxmONEuTIuKKc0WeQzDv/zM61lflN4vMfxnd2QgQYx4Ogj/4Nl7vMU
+jalOCQH9KQf1CzGlwcPMpOsNg5uz7IlXvjgZW1BDUwiUB4ALycMeVXXy2HblDRBm
+sDDgacRf/q+Vy0xsMxMgWgfPXFH9K/vkgeMTtC3Q145PBfYk5HIAyQN9BMY1KuuO
+5ug3j3YY1U0if6Rm/ttbEIREVZaH38FPbCrLTGkD8+eJgDLvF1cN3Brur+1V7BEb
+fK6/7JpS7YTLx6JU9lTAkgkhK43pTBJzv82+bHvqITG2EF+807/csMmZj7904RZ6
+6ysjIUKB7Pcq3jx+DaMKdMsTkGgyHSAfWAULRxhXQ96Eou5n/0rNaPsA5iOQcGgB
+jmrNDKczWIb9gpJ5s0Ri
+=VOWE
+-----END PGP SIGNATURE-----
+
+--=-nKeeNjl4BRvdjo5SSGK/--
 
