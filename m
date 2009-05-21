@@ -1,52 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754723AbZEUT3x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755870AbZEUTeU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754723AbZEUT3x (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 15:29:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753475AbZEUT3q
+	id S1755870AbZEUTeU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 15:34:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753613AbZEUTeG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 15:29:46 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:50107 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751872AbZEUT3p (ORCPT
+	Thu, 21 May 2009 15:34:06 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50569
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751872AbZEUTeF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 15:29:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=vKLN7ZCMOjU3PF6dCwN82pm4b99FuMKmgjc5s+vi/nneDEKrydcpQ1kriVhPYesxHJ
-         j/WprSwxKIQmvshbiWeJG3fZCXmH4eAcuB2fYK84GcPQrBn6KI5krD5B3r7lSrYCBzsU
-         t14Cd0D9hV5Mub3qf3PXKQJwJStgU0X+a/DfI=
-MIME-Version: 1.0
-In-Reply-To: <20090520222012.GB4541@sortiz.org>
-References: <63386a3d0905200217i56accf6fw4ef2f8ed1793e44@mail.gmail.com>
-	 <20090520222012.GB4541@sortiz.org>
-Date: Thu, 21 May 2009 21:29:46 +0200
-Message-ID: <63386a3d0905211229t2c02109cp6213b201e451cd74@mail.gmail.com>
-Subject: Re: [PATCH 1/1] MFD: Add U300 AB3100 core support v4
-From: Linus Walleij <linus.ml.walleij@gmail.com>
-To: Samuel Ortiz <sameo@linux.intel.com>
-Cc: linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org,
-       Linus Walleij <linus.walleij@stericsson.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 21 May 2009 15:34:05 -0400
+Date: Thu, 21 May 2009 12:34:03 -0700 (PDT)
+Message-Id: <20090521.123403.13286908.davem@davemloft.net>
+To: stefanr@s5r6.in-berlin.de
+Cc: linux1394-devel@lists.sourceforge.net, linux-hotplug@vger.kernel.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       fenlason@redhat.com
+Subject: Re: [PATCH] ieee1394: eth1394: use "firewire%d" instead of "eth%d"
+ as interface name
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <tkrat.21c425cc195510c9@s5r6.in-berlin.de>
+References: <tkrat.21c425cc195510c9@s5r6.in-berlin.de>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/5/21 Samuel Ortiz <sameo@linux.intel.com>:
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Date: Thu, 21 May 2009 15:29:10 +0200 (CEST)
 
->> +static irqreturn_t ab3100_irq_handler(int irq, void *data)
->> +{
-> struct ab3100 *ab3100 = (struct ab3100 *)data;
->
-> you're even passing the ab3100 pointer to request_irq, so it's all set
-> already.
+> Change the initial name of IP-over-1394 networking interfaces from
+> "eth[0-9]+" to "firewire[0-9]+".
+> 
+> This should have been done years ago for the reason mentioned in the
+> inline comment.  The naming issue basically prevented acceptance of
+> IP networking over 1394 on Linux.
+> 
+> The future IP-over1394 driver in the newer alternative firewire driver
+> stack will use the "firewire%d" format from the start while "eth%d" will
+> no longer be used in the new driver.
+> 
+> Necessary changes in userland:
+> 
+> People who use the eth1394 driver either have to update their network
+> configuration (or instead perhaps respecpective udev interface renaming
+> rules) to the new names, or add
+> 
+>     options eth1394 firewire_interface_name=N
+> 
+> to /etc/modprobe.conf or /etc/modprobe.d/whatever if they really prefer
+> the old names.
+> 
+> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 
-Yeah and all the code was actually the way you wanted it before I started
-to try to separate local accesses to the struct from accesses coming
-in from the outside using a singleton pattern.
+I think the basis for this patch is completely bogus.
 
-But no problem, I'll fix it back in the way you want it, just a minute!
+Device names are just that, names.  If you want to know "what it is"
+or "where it is" you use tools to determine that information.
 
-Linus Walleij
+If you make ethtool's get info command return something useful,
+then the user can see that it's a firewire interface and act
+accordingly, as can sophisticated confiruation applications.
+
+I am completely against this patch.
