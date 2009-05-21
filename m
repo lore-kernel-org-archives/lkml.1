@@ -1,52 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755327AbZEUNx6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756245AbZEUN5j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755327AbZEUNx6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 09:53:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754246AbZEUNxt
+	id S1756245AbZEUN5j (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 09:57:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753337AbZEUN5b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 09:53:49 -0400
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:41193 "EHLO
-	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753730AbZEUNxs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 09:53:48 -0400
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-Content-type: text/plain; CHARSET=US-ASCII
-Date: Thu, 21 May 2009 09:53:15 -0400
-From: Andreas Dilger <adilger@sun.com>
-Subject: Re: [PATCH] Userland for VFS based Union Mount (V3)
-In-reply-to: <20090518204019.GC15754@shell>
-To: Valerie Aurora <vaurora@redhat.com>
-Cc: Jan Blunck <jblunck@suse.de>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk,
-       bharata@in.ibm.com, dwmw2@infradead.org, mszeredi@suse.cz
-Message-id: <20090521135315.GA12502@webber.adilger.int>
-X-GPG-Key: 1024D/0D35BED6
-X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
-References: <1242662968-11684-1-git-send-email-jblunck@suse.de>
- <20090518204019.GC15754@shell>
+	Thu, 21 May 2009 09:57:31 -0400
+Received: from relay1.sgi.com ([192.48.179.29]:40645 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752034AbZEUN5a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 May 2009 09:57:30 -0400
+Date: Thu, 21 May 2009 08:57:30 -0500
+From: Robin Holt <holt@sgi.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Robin Holt <holt@sgi.com>, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>
+Subject: Re: [PATCH 4/4] zone_reclaim_mode is always 0 by default
+Message-ID: <20090521135730.GA7581@sgi.com>
+References: <20090519102003.4EAB.A69D9226@jp.fujitsu.com> <20090520140045.GA29447@sgi.com> <20090521090549.63B5.A69D9226@jp.fujitsu.com> <alpine.DEB.1.10.0905210924520.31888@qirst.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0905210924520.31888@qirst.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On May 18, 2009  16:40 -0400, Valerie Aurora wrote:
-> @@ -705,8 +707,9 @@ struct ext2_dir_entry_2 {
->  #define EXT2_FT_FIFO		5
->  #define EXT2_FT_SOCK		6
->  #define EXT2_FT_SYMLINK		7
-> +#define EXT2_FT_WHT		8
->  
-> -#define EXT2_FT_MAX		8
-> +#define EXT2_FT_MAX		9
+On Thu, May 21, 2009 at 09:31:08AM -0400, Christoph Lameter wrote:
+> On Thu, 21 May 2009, KOSAKI Motohiro wrote:
+> 
+> > I can't catch up your message. Can you post your patch?
+> > Can you explain your sanity check?
+> >
+> > Now, I decide to remove "nr_online_nodes >= 4" condition.
+> > Apache regression is really non-sense.
+> 
+> Not sure what that means? Apache regresses with zone reclaim? My
+> measurements when we introduced zone reclaim showed just the opposite
+> because Apache would get node local memory and thus run faster. You can
+> screw this up of course if you load the system so high that the apache
+> processes are tossed around by the scheduler. Then the node local
+> allocation may be worse than round robin because all the pages allocated
+> by a process are now on one node if the scheduler moves the
+> process to a remote node then all accesses are penalized.
 
-What about the EXT2_FT_FALLTHROUGH used in the union mount patches?
+I think the point Kosaki is trying to make is that reclaim happens really
+aggressively for processes on node 0 versus node 1.  Maybe I am clinging
+too strongly to one of the earlier posts, but that is what I read between
+the lines.
 
-Cheers, Andreas
---
-Andreas Dilger
-Sr. Staff Engineer, Lustre Group
-Sun Microsystems of Canada, Inc.
+That frequent reclaim is impacting allocations when he would rather they
+skip the reclaim and go off node.  Again, it sounds like he prefers tuning
+the default to what works best for him.  I don't too strongly disagree,
+as long as the default isn't being changed capriciously.
 
+I have always expected that NUMA boxes had reasons for preferring node
+locality.  Maybe I misunderstand.  Maybe Ci7 is special and does not
+have any impact for off socket references.  I would be surprised by that
+after reading to literature, but I have not tested latency or bandwidth
+on one so I can not say.
+
+Personally, it sounds like if I had a box configured as his is, I would
+use a cpuset to restrict most memory hungry things from using cpus
+on node 0 and leave that as the small 'junk processes' cpu.  Maybe even
+restrict things like cron etc to that corner of the system.
+
+Thanks,
+Robin
