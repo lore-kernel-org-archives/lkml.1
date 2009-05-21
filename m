@@ -1,68 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756314AbZEUU0r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755571AbZEUU13@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756314AbZEUU0r (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 16:26:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753754AbZEUU0i
+	id S1755571AbZEUU13 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 16:27:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754222AbZEUU1W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 16:26:38 -0400
-Received: from mail-pz0-f177.google.com ([209.85.222.177]:64034 "EHLO
-	mail-pz0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753711AbZEUU0i (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 16:26:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:mail-followup-to:mime-version
-         :content-type:content-disposition:user-agent;
-        b=Ii621P+9obpPyCdnI/Gt1y0DzQHnTfbNnXC95ev0dEBgfRJyx7RopNKkcAcv8k/Epl
-         PHgbFVnQDinJr8aS1zG1dFil7jimwkaMBsga0RagIztKR3qEhKjP1kscSh5rJ3Tx3oUZ
-         b0sIg0uB19O0Hy7/6MntSk/JFYZhIfqR+1lBk=
-Date: Thu, 21 May 2009 17:26:55 -0300
-From: Matheus Izvekov <mizvekov@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [BUG] parport issue on 2.6.29
-Message-ID: <20090521202655.GA13944@izvekov>
-Mail-Followup-To: linux-kernel@vger.kernel.org
+	Thu, 21 May 2009 16:27:22 -0400
+Received: from hera.kernel.org ([140.211.167.34]:47254 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753786AbZEUU1V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 May 2009 16:27:21 -0400
+Message-ID: <4A15B8F2.9000804@kernel.org>
+Date: Thu, 21 May 2009 13:26:26 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Paul Mundt <lethal@linux-sh.org>, Ingo Molnar <mingo@elte.hu>,
+       Yinghai Lu <yinghai@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sparseirq: Enable early irq_desc allocation.
+References: <20090521165647.GA320@linux-sh.org>
+In-Reply-To: <20090521165647.GA320@linux-sh.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This warning happens whenever a specific parallel port control app is run 
-without a device attached to it. After the first timeout, the app hangs,
-and needs SIGKILL to exit.
 
-WARNING: at kernel/sysctl.c:2021 unregister_sysctl_table+0xa3/0x110()
-Hardware name:         
-Modules linked in:
-Pid: 12161, comm: x-killer.exe Not tainted 2.6.29.4 #14
-Call Trace:
-[<ffffffff8024c910>] warn_slowpath+0xd0/0x130
-[<ffffffff80269859>] ? sched_clock_cpu+0xb9/0x190
-[<ffffffff802484b4>] ? try_to_wake_up+0x174/0x330
-[<ffffffff80268554>] ? up+0x34/0x50
-[<ffffffff8024d1cd>] ? release_console_sem+0x1bd/0x210
-[<ffffffff80aaa4d4>] ? printk+0x67/0x69
-[<ffffffff80254ec3>] unregister_sysctl_table+0xa3/0x110
-[<ffffffff806b3128>] parport_device_proc_unregister+0x28/0x40
-[<ffffffff806b05f5>] parport_unregister_device+0x15/0x180
-[<ffffffff806a0acc>] pp_release+0xbc/0x1f0
-[<ffffffff802d3883>] __fput+0xc3/0x1e0
-[<ffffffff802d39bd>] fput+0x1d/0x30
-[<ffffffff802d0220>] filp_close+0x50/0x80
-[<ffffffff8024ec74>] put_files_struct+0x84/0xe0
-[<ffffffff8024ed1e>] exit_files+0x4e/0x60
-[<ffffffff80250696>] do_exit+0x196/0x930
-[<ffffffff80250e6e>] do_group_exit+0x3e/0xb0
-[<ffffffff8025bda4>] get_signal_to_deliver+0x2a4/0x420
-[<ffffffff8020b7aa>] do_notify_resume+0xba/0x900
-[<ffffffff8023c16e>] ? __wake_up+0x4e/0x70
-[<ffffffff8026c4a9>] ? getnstimeofday+0x59/0xe0
-[<ffffffff80267a09>] ? ktime_get_ts+0x59/0x60
-[<ffffffff80274314>] ? compat_sys_futex+0xb4/0x140
-[<ffffffff8020c8b5>] int_signal+0x12/0x17
---[ end trace ff1bd583c825c0c5 ]---
-pdev0: unregistered pardevice
+
+Paul Mundt wrote:
+> Presently non-legacy IRQs have their irq_desc allocated with
+> kzalloc_node(). This assumes that all callers of irq_to_desc_cpu_alloc()
+> will be sufficiently late in the boot process that kmalloc is available.
+> 
+> While porting sparseirq support to sh this blew up immediately, as at the
+> time that we register the CPU's interrupt vector map only bootmem is
+> available.
+> 
+> This adds in a simple after_bootmem check to see where the allocation
+> needs to come from, which is likewise provided by all of the platforms
+> that support sparse irq today. :-)
+> 
+> Cc: Yinghai Lu <yinghai@kernel.org>
+> Cc: Ingo Molnar <mingo@elte.hu>
+> Signed-off-by: Paul Mundt <lethal@linux-sh.org>
+> 
+> ---
+> 
+>  kernel/irq/handle.c |   17 ++++++++++++-----
+>  1 file changed, 12 insertions(+), 5 deletions(-)
+> 
+> diff --git a/kernel/irq/handle.c b/kernel/irq/handle.c
+> index d82142b..5fb3a5c 100644
+> --- a/kernel/irq/handle.c
+> +++ b/kernel/irq/handle.c
+> @@ -19,7 +19,7 @@
+>  #include <linux/hash.h>
+>  #include <trace/irq.h>
+>  #include <linux/bootmem.h>
+> -
+> +#include <linux/mm.h>
+>  #include "internals.h"
+>  
+>  /*
+> @@ -81,13 +81,17 @@ static struct irq_desc irq_desc_init = {
+>  	.lock       = __SPIN_LOCK_UNLOCKED(irq_desc_init.lock),
+>  };
+>  
+> -void init_kstat_irqs(struct irq_desc *desc, int cpu, int nr)
+> +void __ref init_kstat_irqs(struct irq_desc *desc, int cpu, int nr)
+>  {
+>  	int node;
+>  	void *ptr;
+>  
+>  	node = cpu_to_node(cpu);
+> -	ptr = kzalloc_node(nr * sizeof(*desc->kstat_irqs), GFP_ATOMIC, node);
+> +	if (after_bootmem)
+> +		ptr = kzalloc_node(nr * sizeof(*desc->kstat_irqs), GFP_ATOMIC, node);
+> +	else
+> +		ptr = alloc_bootmem_node(NODE_DATA(node),
+> +				nr * sizeof(*desc->kstat_irqs));
+>  
+>  	/*
+>  	 * don't overwite if can not get new one
+> @@ -187,7 +191,7 @@ struct irq_desc *irq_to_desc(unsigned int irq)
+>  	return NULL;
+>  }
+>  
+> -struct irq_desc *irq_to_desc_alloc_cpu(unsigned int irq, int cpu)
+> +struct irq_desc * __ref irq_to_desc_alloc_cpu(unsigned int irq, int cpu)
+>  {
+>  	struct irq_desc *desc;
+>  	unsigned long flags;
+> @@ -211,7 +215,10 @@ struct irq_desc *irq_to_desc_alloc_cpu(unsigned int irq, int cpu)
+>  		goto out_unlock;
+>  
+>  	node = cpu_to_node(cpu);
+> -	desc = kzalloc_node(sizeof(*desc), GFP_ATOMIC, node);
+> +	if (after_bootmem)
+> +		desc = kzalloc_node(sizeof(*desc), GFP_ATOMIC, node);
+> +	else
+> +		desc = alloc_bootmem_node(NODE_DATA(node), sizeof(*desc));
+>  	printk(KERN_DEBUG "  alloc irq_desc for %d on cpu %d node %d\n",
+>  		 irq, cpu, node);
+>  	if (!desc) {
+
+can you check tip?
+we change _cpu to node already.
+
+also only sh have after_bootmem now.
+arch/sh/mm/init.c:int after_bootmem = 0;
+arch/sh/mm/init.c:      after_bootmem = 1;
+arch/sh/mm/ioremap_64.c:        extern int after_bootmem;
+arch/sh/mm/ioremap_64.c:        if (after_bootmem) {
+include/linux/mm.h:extern int after_bootmem;
+
+for x86 we have bootmem_state ...
+arch/x86/include/asm/page_types.h:enum bootmem_state {
+arch/x86/include/asm/page_types.h:extern enum bootmem_state bootmem_state;
+arch/x86/kernel/setup.c:        bootmem_state = DURING_BOOTMEM;
+arch/x86/mm/init.c:enum bootmem_state bootmem_state = BEFORE_BOOTMEM;
+arch/x86/mm/init.c:     if (bootmem_state == BEFORE_BOOTMEM)
+arch/x86/mm/init.c:     if (bootmem_state == BEFORE_BOOTMEM)
+arch/x86/mm/init.c:     if (bootmem_state == BEFORE_BOOTMEM && !start) {
+arch/x86/mm/init.c:     if (bootmem_state == BEFORE_BOOTMEM &&
+arch/x86/mm/init.c:     if (bootmem_state == BEFORE_BOOTMEM)
+
+Andrew,
+do we need to move bootmem_state back to linux/mm.h?
+
+YH
+
+
+
+
+YH
