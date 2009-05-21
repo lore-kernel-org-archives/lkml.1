@@ -1,160 +1,193 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755913AbZEUD24@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756803AbZEUDaT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755913AbZEUD24 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 May 2009 23:28:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755120AbZEUD2r
+	id S1756803AbZEUDaT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 May 2009 23:30:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755358AbZEUDaI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 May 2009 23:28:47 -0400
-Received: from mga02.intel.com ([134.134.136.20]:32493 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754796AbZEUD2q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 May 2009 23:28:46 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,225,1241420400"; 
-   d="scan'208";a="517535276"
-From: "Zhang, Yanmin" <yanmin.zhang@intel.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>, Robin Holt <holt@sgi.com>,
-       "Wu, Fengguang" <fengguang.wu@intel.com>
-Date: Thu, 21 May 2009 11:27:12 +0800
-Subject: RE: [PATCH v3] zone_reclaim is always 0 by default
-Thread-Topic: [PATCH v3] zone_reclaim is always 0 by default
-Thread-Index: AcnZvnDPAczU+LdbRdakseMjYrEUdAABGj9g
-Message-ID: <4D05DB80B95B23498C72C700BD6C2E0B2F35B8FA@pdsmsx502.ccr.corp.intel.com>
-References: <20090521114408.63D0.A69D9226@jp.fujitsu.com>
-In-Reply-To: <20090521114408.63D0.A69D9226@jp.fujitsu.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="gb2312"
-MIME-Version: 1.0
+	Wed, 20 May 2009 23:30:08 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:1311 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754117AbZEUDaG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 May 2009 23:30:06 -0400
+Subject: Re: [PATCH] include KERN_* constant in printk calls
+From: Joe Perches <joe@perches.com>
+To: Chris Sanford <crsanford@gmail.com>
+Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
+       peterz@infradead.org
+In-Reply-To: <20090521024635.GA4030@chrisubuntu-laptop>
+References: <20090518233121.GC3109@chrisubuntu-laptop>
+	 <20090519090049.GB9388@elte.hu> <20090520043215.GA3077@chrisubuntu-laptop>
+	 <20090520083719.GG6736@elte.hu>  <20090521024635.GA4030@chrisubuntu-laptop>
+Content-Type: text/plain
+Date: Wed, 20 May 2009 20:30:01 -0700
+Message-Id: <1242876601.3373.17.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha id n4L3TWlL017621
 
->>-----Original Message-----
->>From: KOSAKI Motohiro [mailto:kosaki.motohiro@jp.fujitsu.com]
->>Sent: 2009Äê5ÔÂ21ÈÕ 10:47
->>To: LKML; linux-mm; Andrew Morton; Rik van Riel; Christoph Lameter; Robin Holt;
->>Zhang, Yanmin; Wu, Fengguang
->>Cc: kosaki.motohiro@jp.fujitsu.com
->>Subject: [PATCH v3] zone_reclaim is always 0 by default
->>
->>
->>Subject: [PATCH v3] zone_reclaim is always 0 by default
->>
->>Current linux policy is, zone_reclaim_mode is enabled by default if the machine
->>has large remote node distance. it's because we could assume that large distance
->>mean large server until recently.
->>
->>Unfortunately, recent modern x86 CPU (e.g. Core i7, Opeteron) have P2P
->>transport
->>memory controller. IOW it's seen as NUMA from software view.
->>Some Core i7 machine has large remote node distance.
->>
->>Yanmin reported zone_reclaim_mode=1 cause large apache regression.
->>
->>    One Nehalem machine has 12GB memory,
->>    but there is always 2GB free although applications accesses lots of files.
->>    Eventually we located the root cause as zone_reclaim_mode=1.
->>
->>Actually, zone_reclaim_mode=1 mean "I dislike remote node allocation rather
->>than
->>disk access", it makes performance improvement to HPC workload.
->>but it makes performance degression desktop, file server and web server.
->>
->>In general, workload depended configration shouldn't put into default
->>settings.
->>Plus, desktop and file/web server eco-system is much larger than hpc's.
->>
->>Thus, zone_reclaim == 0 is better by default.
-[YM] Thanks. I started a series of testing on 2 Nehalem machines by setting
-zone_reclaim_mode=0 (The default is 1 on the 2 machines). I didn't find
-regression with non-disk_I/O (mostly cpubound) benchmarks. disk I/O benchmarks 
-could benefit a little from zone_reclaim_mode=0. As I start benchmark fio with 
-numactl --interleave=all, so the fio improvement is not so bigger like before.
+Hi Chris.
 
-One thing I need mention is my testing with non-disk_I/O might be not good examples
-for this patch, because every node has far more memory than the testing needs.
-Only some disk I/O benchmarks have big requirement on page cache memory, so they could benefit from zone_reclaim_mode=0.
+Minor comments.
 
+On Wed, 2009-05-20 at 19:46 -0700, Chris Sanford wrote:
+> diff --git a/kernel/sched.c b/kernel/sched.c
+> index 26efa47..cfe42e7 100644
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+[]
+> @@ -6501,10 +6501,10 @@ void show_state_filter(unsigned long state_filter)
+>  	struct task_struct *g, *p;
+>  
+>  #if BITS_PER_LONG == 32
+> -	printk(KERN_INFO
+> +	pr_info(
+>  		"  task                PC stack   pid father\n");
+>  #else
+> -	printk(KERN_INFO
+> +	pr_info(
+>  		"  task                        PC stack   pid father\n");
+>  #endif
+>  	read_lock(&tasklist_lock);
 
->>
->>
->>Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
->>Cc: Christoph Lameter <cl@linux-foundation.org>
->>Cc: Rik van Riel <riel@redhat.com>
->>Cc: Robin Holt <holt@sgi.com>
->>Tested-by: "Zhang, Yanmin" <yanmin.zhang@intel.com>
->>Acked-by: Wu Fengguang <fengguang.wu@intel.com>
->>---
->> arch/ia64/include/asm/topology.h |    5 -----
->> include/linux/topology.h         |    9 +--------
->> mm/page_alloc.c                  |    7 -------
->> 3 files changed, 1 insertion(+), 20 deletions(-)
->>
->>Index: b/mm/page_alloc.c
->>===================================================================
->>--- a/mm/page_alloc.c
->>+++ b/mm/page_alloc.c
->>@@ -2494,13 +2494,6 @@ static void build_zonelists(pg_data_t *p
->> 		int distance = node_distance(local_node, node);
->>
->> 		/*
->>-		 * If another node is sufficiently far away then it is better
->>-		 * to reclaim pages in a zone before going off node.
->>-		 */
->>-		if (distance > RECLAIM_DISTANCE)
->>-			zone_reclaim_mode = 1;
->>-
->>-		/*
->> 		 * We don't want to pressure a particular node.
->> 		 * So adding penalty to the first node in same
->> 		 * distance group to make it round-robin.
->>Index: b/arch/ia64/include/asm/topology.h
->>===================================================================
->>--- a/arch/ia64/include/asm/topology.h
->>+++ b/arch/ia64/include/asm/topology.h
->>@@ -21,11 +21,6 @@
->> #define PENALTY_FOR_NODE_WITH_CPUS 255
->>
->> /*
->>- * Distance above which we begin to use zone reclaim
->>- */
->>-#define RECLAIM_DISTANCE 15
->>-
->>-/*
->>  * Returns the number of the node containing CPU 'cpu'
->>  */
->> #define cpu_to_node(cpu) (int)(cpu_to_node_map[cpu])
->>Index: b/include/linux/topology.h
->>===================================================================
->>--- a/include/linux/topology.h
->>+++ b/include/linux/topology.h
->>@@ -53,14 +53,7 @@ int arch_update_cpu_topology(void);
->> #ifndef node_distance
->> #define node_distance(from,to)	((from) == (to) ? LOCAL_DISTANCE :
->>REMOTE_DISTANCE)
->> #endif
->>-#ifndef RECLAIM_DISTANCE
->>-/*
->>- * If the distance between nodes in a system is larger than RECLAIM_DISTANCE
->>- * (in whatever arch specific measurement units returned by node_distance())
->>- * then switch on zone reclaim on boot.
->>- */
->>-#define RECLAIM_DISTANCE 20
->>-#endif
->>+
->> #ifndef PENALTY_FOR_NODE_WITH_CPUS
->> #define PENALTY_FOR_NODE_WITH_CPUS	(1)
->> #endif
->>
+One line please.  pr_info("  task etc...
 
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éÝ¶¥Šwÿº{.nÇ+‰·¥Š{±þG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŽŠÝ¢j"ú¶m§ÿÿ¾«þG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+> @@ -6833,7 +6833,7 @@ again:
+>  		 * leave kernel.
+>  		 */
+>  		if (p->mm && printk_ratelimit()) {
+> -			printk(KERN_INFO "process %d (%s) no "
+> +			pr_info("process %d (%s) no "
+>  			       "longer affine to cpu%d\n",
+>  			       task_pid_nr(p), p->comm, dead_cpu);
+>  		}
+
+pr_info("process $d (%s) no longer affine to cpu%d\n"
+
+> @@ -7315,52 +7315,52 @@ static int sched_domain_debug_one(struct sched_domain *sd, int cpu, int level,
+>  
+>  	cpulist_scnprintf(str, sizeof(str), sched_domain_span(sd));
+>  	cpumask_clear(groupmask);
+> -
+> -	printk(KERN_DEBUG "%*s domain %d: ", level, "", level);
+> -
+> +	
+> +	pr_info("%*s domain %d: ", level, "", level);
+> +	
+>  	if (!(sd->flags & SD_LOAD_BALANCE)) {
+> -		printk("does not load-balance\n");
+> +		pr_cont("does not load-balance\n");
+>  		if (sd->parent)
+> -			printk(KERN_ERR "ERROR: !SD_LOAD_BALANCE domain"
+> +			pr_err("ERROR: !SD_LOAD_BALANCE domain"
+>  					" has parent");
+
+Make single line and add "\n"?
+
+			pr_err("ERROR: !SD_LOAD_BALANCE domain has parent\n"
+>  		return -1;
+>  	}
+>  
+> -	printk(KERN_CONT "span %s level %s\n", str, sd->name);
+> +	pr_cont("span %s level %s\n", str, sd->name);
+>  
+>  	if (!cpumask_test_cpu(cpu, sched_domain_span(sd))) {
+> -		printk(KERN_ERR "ERROR: domain->span does not contain "
+> +		pr_err("ERROR: domain->span does not contain "
+>  				"CPU%d\n", cpu);
+
+Single line?
+
+>  	}
+>  	if (!cpumask_test_cpu(cpu, sched_group_cpus(group))) {
+> -		printk(KERN_ERR "ERROR: domain->groups does not contain"
+> +		pr_err("ERROR: domain->groups does not contain"
+>  				" CPU%d\n", cpu);
+
+Single line?
+
+> @@ -7368,22 +7368,22 @@ static int sched_domain_debug_one(struct sched_domain *sd, int cpu, int level,
+>  
+>  		cpulist_scnprintf(str, sizeof(str), sched_group_cpus(group));
+>  
+> -		printk(KERN_CONT " %s", str);
+> +		pr_cont(" %s", str);
+>  		if (group->__cpu_power != SCHED_LOAD_SCALE) {
+> -			printk(KERN_CONT " (__cpu_power = %d)",
+> +			pr_cont(" (__cpu_power = %d)",
+>  				group->__cpu_power);
+>  		}
+>  
+>  		group = group->next;
+>  	} while (group != sd->groups);
+> -	printk(KERN_CONT "\n");
+> +	pr_cont("\n");
+>  
+>  	if (!cpumask_equal(sched_domain_span(sd), groupmask))
+> -		printk(KERN_ERR "ERROR: groups don't span domain->span\n");
+> +		pr_err("ERROR: groups don't span domain->span\n");
+>  
+>  	if (sd->parent &&
+>  	    !cpumask_subset(groupmask, sched_domain_span(sd->parent)))
+> -		printk(KERN_ERR "ERROR: parent span is not a superset "
+> +		pr_err("ERROR: parent span is not a superset "
+>  			"of domain->span\n");
+
+Single line?
+
+> @@ -8095,14 +8095,14 @@ static int __build_sched_domains(const struct cpumask *cpu_map,
+>  	sched_group_nodes = kcalloc(nr_node_ids, sizeof(struct sched_group *),
+>  				    GFP_KERNEL);
+>  	if (!sched_group_nodes) {
+> -		printk(KERN_WARNING "Can not alloc sched group node list\n");
+> +		pr_warning("Can not alloc sched group node list\n");
+>  		goto free_tmpmask;
+>  	}
+>  #endif
+>  
+>  	rd = alloc_rootdomain();
+>  	if (!rd) {
+> -		printk(KERN_WARNING "Cannot alloc root domain\n");
+> +		pr_warning("Cannot alloc root domain\n");
+>  		goto free_sched_groups;
+>  	}
+>  
+
+"Can not" vs "Cannot", maybe choose a single style?
+
+> @@ -8241,7 +8241,7 @@ static int __build_sched_domains(const struct cpumask *cpu_map,
+>  		sg = kmalloc_node(sizeof(struct sched_group) + cpumask_size(),
+>  				  GFP_KERNEL, i);
+>  		if (!sg) {
+> -			printk(KERN_WARNING "Can not alloc domain group for "
+> +			pr_warning("Can not alloc domain group for "
+>  				"node %d\n", i);
+
+Single line string?  Maybe:
+			pr_warning("Can not alloc domain group for node %d\n",
+				   i);
+
+> @@ -9075,10 +9075,10 @@ void __might_sleep(char *file, int line)
+>  		return;
+>  	prev_jiffy = jiffies;
+>  
+> -	printk(KERN_ERR
+> +	pr_err(
+>  		"BUG: sleeping function called from invalid context at %s:%d\n",
+>  			file, line);
+
+pr_err("BUG: etc
+
+> -	printk(KERN_ERR
+> +	pr_err(
+>  		"in_atomic(): %d, irqs_disabled(): %d, pid: %d, name: %s\n",
+>  			in_atomic(), irqs_disabled(),
+>  			current->pid, current->comm);
+
+here too.
+
+cheers, Joe
+
