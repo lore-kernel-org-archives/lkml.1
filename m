@@ -1,87 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755745AbZEUQuO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756652AbZEUQuq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755745AbZEUQuO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 12:50:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754031AbZEUQts
+	id S1756652AbZEUQuq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 12:50:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755577AbZEUQuE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 12:49:48 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:44664 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751997AbZEUQtp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 12:49:45 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-Subject: [KVM PATCH v3 0/4] iosignalfd
-To: kvm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, avi@redhat.com, --cc=mtosatti@redhat.com
-Date: Thu, 21 May 2009 12:49:26 -0400
-Message-ID: <20090521164241.14617.92951.stgit@dev.haskins.net>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Thu, 21 May 2009 12:50:04 -0400
+Received: from mail-out2.uio.no ([129.240.10.58]:48627 "EHLO mail-out2.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755885AbZEUQuD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 May 2009 12:50:03 -0400
+Subject: Re: 2.6.29+ NFS-Server Problem "reconnect_path: npd != pd"
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Sven Geggus <lists@fuchsschwanzdomain.de>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20090521142026.GA5566@geggus.net>
+References: <20090521142026.GA5566@geggus.net>
+Content-Type: text/plain
+Date: Thu, 21 May 2009 12:49:59 -0400
+Message-Id: <1242924599.6687.1.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
+X-UiO-Ratelimit-Test: rcpts/h 2 msgs/h 1 sum rcpts/h 3 sum msgs/h 1 total rcpts 392 max rcpts/h 20 ratelimit 0
+X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=_URIID_)
+X-UiO-Scanned: DD0D08ECB1006E8F3B007333F1C048E1DE66EA03
+X-UiO-SPAM-Test: remote_host: 71.227.91.12 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 1 total 298 max/h 5 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Applies to kvm.git/master:7391a6d5)
+On Thu, 2009-05-21 at 16:20 +0200, Sven Geggus wrote:
+> Hello,
+> 
+> starting from Kernel 2.6.29.x (x=0 to 4) I get hundreds of the
+> following messages on my NFS-Server:
+> 
+> reconnect_path: npd != pd
+> 
+> The system works fine using 2.6.27.x
+> 
+> Unfortunatele the message is not harmless, because the client gets stale
+> NFS handles which is especially troublesome on diskless Workstations
+> using NFS root.
+> 
+> Regards
+> 
+> Sven
+> 
+> P.S.: The userland in use is Debian stable (lenny).
 
-This is v3 of the series.  For more details, please see the header to
-patch 4/4.
+I can't find any such error message in the kernel. Is this the userland
+NFS server? If so, then this is the wrong list...
 
-This series has been tested against the kvm-eventfd unit test, and
-appears to be functioning properly.  You can download this test here:
+Trond
 
-ftp://ftp.novell.com/dev/ghaskins/kvm-eventfd.tar.bz2
-
-(Note that the test released with irqfd had a bug in it that prevented
-iosignalfd from working properly.  The tarball has been updated with the
-fix)
-
-This series is ready to be considered for inclusion, pending any further
-review comments.
-
-[
-   Changelog:
-
-      v3:
-	   *) fixed patch 2/4 to handle error cases instead of BUG_ON
-	   *) implemented same HAVE_EVENTFD protection mechanism as
-              irqfd to prevent compilation errors on unsupported arches
-	   *) completed testing
-	   *) rebased to kvm.git/master:7391a6d5
-
-      v2:
-           *) added optional data-matching capability (via cookie field)
-           *) changed name from iofd to iosignalfd
-           *) added io_bus unregister function
-           *) implemented deassign feature
-
-      v1:
-           *) original release (integrated into irqfd v7 series as "iofd")
-]
-
-
----
-
-Gregory Haskins (4):
-      kvm: add iosignalfd support
-      kvm: add io_bus unregister function
-      kvm: add return value to kvm_io_bus_register_dev
-      eventfd: export eventfd interfaces for module use
-
-
- arch/x86/kvm/i8254.c      |   27 +++++--
- arch/x86/kvm/i8259.c      |    9 ++
- arch/x86/kvm/x86.c        |    1 
- fs/eventfd.c              |    3 +
- include/linux/kvm.h       |   15 ++++
- include/linux/kvm_host.h  |   18 ++++-
- virt/kvm/coalesced_mmio.c |    8 ++
- virt/kvm/eventfd.c        |  165 +++++++++++++++++++++++++++++++++++++++++++++
- virt/kvm/ioapic.c         |    9 ++
- virt/kvm/kvm_main.c       |   60 ++++++++++++++--
- 10 files changed, 286 insertions(+), 29 deletions(-)
-
--- 
-Signature
