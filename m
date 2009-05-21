@@ -1,75 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754675AbZEUUOe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755976AbZEUUTI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754675AbZEUUOe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 16:14:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754667AbZEUUOX
+	id S1755976AbZEUUTI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 16:19:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754453AbZEUUS5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 16:14:23 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:44968 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754004AbZEUUOX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 16:14:23 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4A15B5FE.3070207@s5r6.in-berlin.de>
-Date: Thu, 21 May 2009 22:13:50 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.21) Gecko/20090411 SeaMonkey/1.1.16
+	Thu, 21 May 2009 16:18:57 -0400
+Received: from claw.goop.org ([74.207.240.146]:33146 "EHLO claw.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753894AbZEUUS4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 May 2009 16:18:56 -0400
+Message-ID: <4A15B72E.2070202@goop.org>
+Date: Thu, 21 May 2009 13:18:54 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: linux1394-devel@lists.sourceforge.net, linux-hotplug@vger.kernel.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       fenlason@redhat.com
-Subject: Re: [PATCH] ieee1394: eth1394: use "firewire%d" instead of "eth%d"
- as interface name
-References: <tkrat.21c425cc195510c9@s5r6.in-berlin.de> <20090521.123403.13286908.davem@davemloft.net>
-In-Reply-To: <20090521.123403.13286908.davem@davemloft.net>
+To: Becky Bruce <beckyb@kernel.crashing.org>
+CC: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, Ian Campbell <Ian.Campbell@citrix.com>
+Subject: Re: [PATCH V2 2/3] powerpc: Add support for swiotlb on 32-bit
+References: <1242340949-16369-1-git-send-email-beckyb@kernel.crashing.org> <1242340949-16369-2-git-send-email-beckyb@kernel.crashing.org> <20090519142656T.fujita.tomonori@lab.ntt.co.jp> <19E48A70-3332-423C-ACAD-390F940EE81C@kernel.crashing.org> <4A1592CF.8000208@goop.org> <E6DAA792-9923-4B76-9759-6955AABE3EAB@kernel.crashing.org>
+In-Reply-To: <E6DAA792-9923-4B76-9759-6955AABE3EAB@kernel.crashing.org>
+X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-> Date: Thu, 21 May 2009 15:29:10 +0200 (CEST)
->> Change the initial name of IP-over-1394 networking interfaces from
->> "eth[0-9]+" to "firewire[0-9]+".
-...
-> I think the basis for this patch is completely bogus.
-> 
-> Device names are just that, names.  If you want to know "what it is"
-> or "where it is" you use tools to determine that information.
-> 
-> If you make ethtool's get info command return something useful,
-> then the user can see that it's a firewire interface and act
-> accordingly, as can sophisticated confiruation applications.
-> 
-> I am completely against this patch.
+Becky Bruce wrote:
+> I can work with that, but it's going to be a bit inefficient, as I 
+> actually need the dma_addr_t, not the phys_addr_t, so I'll have to 
+> convert.  In every case, this is a conversion I've already done and 
+> that I need in the calling code as well.  Can we pass in both the 
+> phys_addr_t and the dma_addr_t?
 
-Ethtool shows:
-	driver: eth1394
-	version:
-	firmware-version:
-	bus-info: ieee1394
-And the sysfs representations of the netdevices have an fw-host* device 
-in the parent device chain.
+The Xen implementation would needs to do the phys to bus conversion page 
+by page anyway, so it wouldn't help much.  But it also wouldn't hurt.
 
-I agree that userland should read less into names as they are handed out 
-by the kernel.  I am also aware that it depends on the use case what 
-naming scheme can be considered useful, hence userspace needs to give 
-his own names anyway, regardless of how the kernel named it.
+How expensive is the phys-to-bus conversion on power?  Is it worth 
+making the interface more complex for?  Would passing phys+bus mean that 
+we wouldn't also need to pass dev?
 
-But I mildly disagree with the notion that the kernel can't start off 
-with more qualification of the names than merely ensuring their 
-uniqueness.  Or the other way around:  Even an entirely meaningless 
-prefix would be better than "eth..", or no prefix if that's possible, 
-because eth suspiciously sounds like Ethernet with which the misnamed 
-RFC 2734 driver eth1394 has very little to do.
+> We have both in every case but one, which is in swiotlb_map_page where 
+> we call address_needs_mapping() without calling range_needs_mapping.  
+> It's not actually clear to me that we need that check, though.  Can 
+> someone explain what case that was designed to catch?
 
-However, how mild my disagreement is should be apparent from the fact 
-that I didn't bother to suggest changing it before now, in 2009. :-)
--- 
-Stefan Richter
--=====-=-=== -=-= -==-=
-http://arcgraph.de/sr/
+It called them together a little earlier in the function, and the phys 
+address is still available.
+
+I guess the test is checking for a bad implementation of map_single().  
+I found a single instance of someone reporting the message (in 2.6.11, 
+when swiotlb was ia64-specific: http://lkml.org/lkml/2008/3/3/249).  
+panic() is an odd way to handle an error (even an one which is an 
+implementation bug), but I guess it's better than scribbling on the 
+wrong memory.
+
+    J
