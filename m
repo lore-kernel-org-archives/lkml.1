@@ -1,182 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755868AbZEVCd7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755518AbZEVChW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755868AbZEVCd7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 22:33:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751831AbZEVCdx
+	id S1755518AbZEVChW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 22:37:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752116AbZEVChK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 22:33:53 -0400
-Received: from mga03.intel.com ([143.182.124.21]:14485 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751747AbZEVCdw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 22:33:52 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,230,1241420400"; 
-   d="scan'208";a="145693785"
-Date: Fri, 22 May 2009 10:33:23 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [PATCH] readahead:add blk_run_backing_dev
-Message-ID: <20090522023323.GA10864@localhost>
-References: <6.0.0.20.2.20090518183752.0581fdc0@172.19.0.2> <20090518175259.GL4140@kernel.dk> <20090520025123.GB8186@localhost> <6.0.0.20.2.20090521145005.06f81fe0@172.19.0.2> <20090522010538.GB6010@localhost> <6.0.0.20.2.20090522102551.0705aea0@172.19.0.2>
+	Thu, 21 May 2009 22:37:10 -0400
+Received: from smtp107.prem.mail.ac4.yahoo.com ([76.13.13.46]:46523 "HELO
+	smtp107.prem.mail.ac4.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751847AbZEVChJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 May 2009 22:37:09 -0400
+X-Yahoo-SMTP: OIJXglSswBDfgLtXluJ6wiAYv6_cnw--
+X-YMail-OSG: bderE4YVM1lyAWAzhgR_gyxqBJVChlKqvoZX_o29Cc48GMNn6MJpj77q.6sa7aw9sXivr_kGy7dvAzUKSIjiBfRVJr86vlSOIdzUp3Vq8LSqYt9A_cvcM6My9aLOL_7MXNUr3eIrBXtFv_hzXvEjaTWZ.acXuTRiAGJ_.GGqK0cxJLwyxdjbAJScZJpGciP._d4MuW_ymAcs.Dtys7ldHQBtNJPZCxtSegIWWLJHlmOqc_RJT_PPZLN5dUUvsFlDvqnDokgJYrpkwdb2BdUVoXSN7izjkemwbXoPeNK_Yhjgtnc1U1Y-
+X-Yahoo-Newman-Property: ymail-3
+Message-ID: <4A160E28.1010306@schaufler-ca.com>
+Date: Thu, 21 May 2009 19:30:00 -0700
+From: Casey Schaufler <casey@schaufler-ca.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <6.0.0.20.2.20090522102551.0705aea0@172.19.0.2>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Roel Kluin <roel.kluin@gmail.com>
+CC: jmorris@namei.org, lkml <linux-kernel@vger.kernel.org>,
+       linux-security-module@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] smack:beyond ARRAY_SIZE of data
+References: <4A141F83.10102@gmail.com> <4A1483E0.1030303@schaufler-ca.com> <4A15848E.5030403@gmail.com>
+In-Reply-To: <4A15848E.5030403@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 22, 2009 at 09:44:59AM +0800, Hisashi Hifumi wrote:
-> 
-> At 10:05 09/05/22, Wu Fengguang wrote:
-> >On Thu, May 21, 2009 at 02:01:47PM +0800, Hisashi Hifumi wrote:
-> >> 
-> >> At 11:51 09/05/20, Wu Fengguang wrote:
-> >> >On Mon, May 18, 2009 at 07:53:00PM +0200, Jens Axboe wrote:
-> >> >> On Mon, May 18 2009, Hisashi Hifumi wrote:
-> >> >> > Hi.
-> >> >> > 
-> >> >> > I wrote a patch that adds blk_run_backing_dev on 
-> >page_cache_async_readahead
-> >> >> > so readahead I/O is unpluged to improve throughput.
-> >> >> > 
-> >> >> > Following is the test result with dd.
-> >> >> > 
-> >> >> > #dd if=testdir/testfile of=/dev/null bs=16384
-> >> >> > 
-> >> >> > -2.6.30-rc6
-> >> >> > 1048576+0 records in
-> >> >> > 1048576+0 records out
-> >> >> > 17179869184 bytes (17 GB) copied, 224.182 seconds, 76.6 MB/s
-> >> >> > 
-> >> >> > -2.6.30-rc6-patched
-> >> >> > 1048576+0 records in
-> >> >> > 1048576+0 records out
-> >> >> > 17179869184 bytes (17 GB) copied, 206.465 seconds, 83.2 MB/s
-> >> >> > 
-> >> >> > Sequential read performance on a big file was improved.
-> >> >> > Please merge my patch.
-> >> >> > 
-> >> >> > Thanks.
-> >> >> > 
-> >> >> > Signed-off-by: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
-> >> >> > 
-> >> >> > diff -Nrup linux-2.6.30-rc6.org/mm/readahead.c 
-> >> >linux-2.6.30-rc6.unplug/mm/readahead.c
-> >> >> > --- linux-2.6.30-rc6.org/mm/readahead.c	2009-05-18 
-> >10:46:15.000000000 +0900
-> >> >> > +++ linux-2.6.30-rc6.unplug/mm/readahead.c	2009-05-18 
-> >> >13:00:42.000000000 +0900
-> >> >> > @@ -490,5 +490,7 @@ page_cache_async_readahead(struct addres
-> >> >> >  
-> >> >> >  	/* do read-ahead */
-> >> >> >  	ondemand_readahead(mapping, ra, filp, true, offset, req_size);
-> >> >> > +
-> >> >> > +	blk_run_backing_dev(mapping->backing_dev_info, NULL);
-> >> >> >  }
-> >> >> >  EXPORT_SYMBOL_GPL(page_cache_async_readahead);
-> >> >> 
-> >> >> I'm surprised this makes much of a difference. It seems correct to me to
-> >> >> NOT unplug the device, since it will get unplugged when someone ends up
-> >> >> actually waiting for a page. And that will then kick off the remaining
-> >> >> IO as well. For this dd case, you'll be hitting lock_page() for the
-> >> >> readahead page really soon, definitely not long enough to warrant such a
-> >> >> big difference in speed.
-> >> >
-> >> >The possible timing change of this patch is (assuming readahead size=100):
-> >> >
-> >> >T0   read(100), which triggers readahead(200, 100)
-> >> >T1   read(101)
-> >> >T2   read(102)
-> >> >...
-> >> >T100 read(200), find_get_page(200) => readahead(300, 100)
-> >> >                lock_page(200) => implicit unplug
-> >> >
-> >> >The readahead(200, 100) submitted at time T0 *might* be delayed to the
-> >> >unplug time of T100.
-> >> >
-> >> >But that is only a possibility. In normal cases, the read(200) would
-> >> >be blocking and there will be a lock_page(200) that will immediately
-> >> >unplug device for readahead(300, 100).
-> >> 
-> >> 
-> >> Hi Andrew.
-> >> Following patch improves sequential read performance and does not harm
-> >> other performance.
-> >> Please merge my patch.
-> >> Comments?
-> >> Thanks.
-> >> 
-> >> #dd if=testdir/testfile of=/dev/null bs=16384
-> >> -2.6.30-rc6
-> >> 1048576+0 records in
-> >> 1048576+0 records out
-> >> 17179869184 bytes (17 GB) copied, 224.182 seconds, 76.6 MB/s
-> >> 
-> >> -2.6.30-rc6-patched
-> >> 1048576+0 records in
-> >> 1048576+0 records out
-> >> 17179869184 bytes (17 GB) copied, 206.465 seconds, 83.2 MB/s
-> >> 
-> >> Signed-off-by: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
-> >> 
-> >> diff -Nrup linux-2.6.30-rc6.org/mm/readahead.c 
-> >linux-2.6.30-rc6.unplug/mm/readahead.c
-> >> --- linux-2.6.30-rc6.org/mm/readahead.c	2009-05-18 10:46:15.000000000 +0900
-> >> +++ linux-2.6.30-rc6.unplug/mm/readahead.c	2009-05-18 13:00:42.000000000 +0900
-> >> @@ -490,5 +490,7 @@ page_cache_async_readahead(struct addres
-> >>  
-> >>  	/* do read-ahead */
-> >>  	ondemand_readahead(mapping, ra, filp, true, offset, req_size);
-> >> +
-> >> +	blk_run_backing_dev(mapping->backing_dev_info, NULL);
-> >>  }
-> >>  EXPORT_SYMBOL_GPL(page_cache_async_readahead);
-> >> 
-> >> 
-> >
-> >Hi Hisashi,
-> >
-> >I wonder if the following updated patch can achieve the same
-> >performance.  Can you try testing this out?
-> >
-> >Thanks,
-> >Fengguang
-> >---
-> >
-> >diff --git a/mm/readahead.c b/mm/readahead.c
-> >index 133b6d5..fd3df66 100644
-> >--- a/mm/readahead.c
-> >+++ b/mm/readahead.c
-> >@@ -490,5 +490,8 @@ page_cache_async_readahead(struct address_space *mapping,
-> > 
-> > 	/* do read-ahead */
-> > 	ondemand_readahead(mapping, ra, filp, true, offset, req_size);
-> >+
-> >+	if (PageUptodate(page))
-> >+		blk_run_backing_dev(mapping->backing_dev_info, NULL);		
-> > }
-> > EXPORT_SYMBOL_GPL(page_cache_async_readahead);
-> 
-> Hi.
-> I tested above patch, and I got same performance number.
-> I wonder why if (PageUptodate(page)) check is there...
+Roel Kluin wrote:
+> Do not go beyond ARRAY_SIZE of data
+>
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+>   
 
-Thanks!  This is an interesting micro timing behavior that
-demands some research work.  The above check is to confirm if it's
-the PageUptodate() case that makes the difference. So why that case
-happens so frequently so as to impact the performance? Will it also
-happen in NFS?
+Acked-by: Casey Schaufler <casey@schaufler-ca.com>
 
-The problem is readahead IO pipeline is not running smoothly, which is
-undesirable and not well understood for now.
+Thank you. The fix is appreciated.
 
-Thanks,
-Fengguang
+
+> ---
+>   
+>>> -	if (count < SMK_NETLBLADDRMIN || count > SMK_NETLBLADDRMAX)
+>>> +	if (count < SMK_NETLBLADDRMIN || count >= SMK_NETLBLADDRMAX)
+>>>   
+>>>       
+>> There is a problem here, but this won't fix it. The buffer needs to be
+>> allocated bigger than the potential contents (should be
+>> SMK_NETLBLADDRMAX + 1 instead of SMK_NETLBLADDRMAX. Your patch will clip
+>> the last byte off of a maximum length specification.
+>>     
+>
+> Ok, how about this?
+>
+> diff --git a/security/smack/smackfs.c b/security/smack/smackfs.c
+> index e03a7e1..10a4604 100644
+> --- a/security/smack/smackfs.c
+> +++ b/security/smack/smackfs.c
+> @@ -775,7 +775,7 @@ static ssize_t smk_write_netlbladdr(struct file *file, const char __user *buf,
+>  	struct sockaddr_in newname;
+>  	char smack[SMK_LABELLEN];
+>  	char *sp;
+> -	char data[SMK_NETLBLADDRMAX];
+> +	char data[SMK_NETLBLADDRMAX + 1];
+>  	char *host = (char *)&newname.sin_addr.s_addr;
+>  	int rc;
+>  	struct netlbl_audit audit_info;
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
+>
+>   
