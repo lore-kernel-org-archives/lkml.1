@@ -1,106 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754502AbZEVBo0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755119AbZEVBtn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754502AbZEVBo0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 21:44:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751303AbZEVBoT
+	id S1755119AbZEVBtn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 21:49:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751606AbZEVBtd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 21:44:19 -0400
-Received: from densangw.densan.co.jp ([218.222.200.50]:3027 "EHLO
-	densangw.densan.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751003AbZEVBoT (ORCPT
+	Thu, 21 May 2009 21:49:33 -0400
+Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:46139 "EHLO
+	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751474AbZEVBtc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 21:44:19 -0400
-X-Greylist: delayed 2774 seconds by postgrey-1.27 at vger.kernel.org; Thu, 21 May 2009 21:44:18 EDT
-Date: Fri, 22 May 2009 09:57:20 +0900 (JST)
-Message-Id: <20090522.095720.68565257.saito@densan.co.jp>
-To: linux-kernel@vger.kernel.org
-Cc: benh@kernel.crashing.org, hsaito.ppc@gmail.com
-Subject: Re: can't flush tlb on e500
-From: Hideo Saito <hsaito.ppc@gmail.com>
-In-Reply-To: <d50492d40905200312r729608a3nf244b153892ac257@mail.gmail.com>
-References: <d50492d40905200312r729608a3nf244b153892ac257@mail.gmail.com>
-X-Mailer: Mew version 3.3 on Emacs 20.7 / Mule 4.0 (HANANOEN)
+	Thu, 21 May 2009 21:49:32 -0400
+Message-Id: <6.0.0.20.2.20090522102551.0705aea0@172.19.0.2>
+X-Mailer: QUALCOMM Windows Eudora Version 6J-Jr3
+Date: Fri, 22 May 2009 10:44:59 +0900
+To: Wu Fengguang <fengguang.wu@intel.com>
+From: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
+Subject: Re: [PATCH] readahead:add blk_run_backing_dev
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       Jens Axboe <jens.axboe@oracle.com>
+In-Reply-To: <20090522010538.GB6010@localhost>
+References: <6.0.0.20.2.20090518183752.0581fdc0@172.19.0.2>
+ <20090518175259.GL4140@kernel.dk>
+ <20090520025123.GB8186@localhost>
+ <6.0.0.20.2.20090521145005.06f81fe0@172.19.0.2>
+ <20090522010538.GB6010@localhost>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-How about following changes because all TLB entries are flushed repeatedly if processes overflow at the table mapping the context. I think that the table should be initialized again because _tlbil_pid() flushes all TLB entries and tlbilx instruction isn't supported on E500(MPC8548).
 
---- arch/powerpc/mm/mmu_context_nohash.c.orig	2009-03-24 08:12:14.000000000 +0900
-+++ arch/powerpc/mm/mmu_context_nohash.c	2009-05-21 16:35:09.000000000 +0900
-@@ -107,39 +107,69 @@ static unsigned int steal_context_smp(un
- 	 */
- 	spin_unlock(&context_lock);
- 	cpu_relax();
- 	spin_lock(&context_lock);
- 	goto again;
- }
- #endif  /* CONFIG_SMP */
- 
-+/*
-+ * We're flushed using the all context
-+ */
-+static void flush_all_context(int cpu)
-+{
-+	struct mm_struct *mm;
-+	int n;
-+
-+	for (n = first_context; n <= last_context; n++) {
-+
-+		mm = context_mm[n];
-+		if (mm == NULL || mm->context.id == MMU_NO_CONTEXT)
-+			continue;
-+
-+		WARN_ON(mm->context.active != 0);
-+
-+		mm->context.id = MMU_NO_CONTEXT;
-+	}
-+	memset(stale_map[cpu], 0, CTX_MAP_SIZE);
-+	memset(context_map, 0, CTX_MAP_SIZE);
-+	context_map[0] = (1 << first_context) - 1;
-+	nr_free_contexts = last_context - first_context + 1;
-+}
-+
- /* Note that this will also be called on SMP if all other CPUs are
-  * offlined, which means that it may be called for cpu != 0. For
-  * this to work, we somewhat assume that CPUs that are onlined
-  * come up with a fully clean TLB (or are cleaned when offlined)
-  */
- static unsigned int steal_context_up(unsigned int id)
- {
- 	struct mm_struct *mm;
- 	int cpu = smp_processor_id();
- 
- 	/* Pick up the victim mm */
- 	mm = context_mm[id];
- 
- 	pr_debug("[%d] steal context %d from mm @%p\n", cpu, id, mm);
- 
--	/* Mark this mm has having no context anymore */
--	mm->context.id = MMU_NO_CONTEXT;
--
- 	/* Flush the TLB for that context */
- 	local_flush_tlb_mm(mm);
- 
-+#ifdef CONFIG_FSL_BOOKE
-+	flush_all_context(cpu);
-+	__set_bit(id, context_map);
-+	nr_free_contexts--;
-+#else
-+	/* Mark this mm has having no context anymore */
-+	mm->context.id = MMU_NO_CONTEXT;
-+
- 	/* XXX This clear should ultimately be part of local_flush_tlb_mm */
- 	__clear_bit(id, stale_map[cpu]);
-+#endif
- 
- 	return id;
- }
- 
- #ifdef DEBUG_MAP_CONSISTENCY
- static void context_check_map(void)
- {
- 	unsigned int id, nrf, nact;
+At 10:05 09/05/22, Wu Fengguang wrote:
+>On Thu, May 21, 2009 at 02:01:47PM +0800, Hisashi Hifumi wrote:
+>> 
+>> At 11:51 09/05/20, Wu Fengguang wrote:
+>> >On Mon, May 18, 2009 at 07:53:00PM +0200, Jens Axboe wrote:
+>> >> On Mon, May 18 2009, Hisashi Hifumi wrote:
+>> >> > Hi.
+>> >> > 
+>> >> > I wrote a patch that adds blk_run_backing_dev on 
+>page_cache_async_readahead
+>> >> > so readahead I/O is unpluged to improve throughput.
+>> >> > 
+>> >> > Following is the test result with dd.
+>> >> > 
+>> >> > #dd if=testdir/testfile of=/dev/null bs=16384
+>> >> > 
+>> >> > -2.6.30-rc6
+>> >> > 1048576+0 records in
+>> >> > 1048576+0 records out
+>> >> > 17179869184 bytes (17 GB) copied, 224.182 seconds, 76.6 MB/s
+>> >> > 
+>> >> > -2.6.30-rc6-patched
+>> >> > 1048576+0 records in
+>> >> > 1048576+0 records out
+>> >> > 17179869184 bytes (17 GB) copied, 206.465 seconds, 83.2 MB/s
+>> >> > 
+>> >> > Sequential read performance on a big file was improved.
+>> >> > Please merge my patch.
+>> >> > 
+>> >> > Thanks.
+>> >> > 
+>> >> > Signed-off-by: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
+>> >> > 
+>> >> > diff -Nrup linux-2.6.30-rc6.org/mm/readahead.c 
+>> >linux-2.6.30-rc6.unplug/mm/readahead.c
+>> >> > --- linux-2.6.30-rc6.org/mm/readahead.c	2009-05-18 
+>10:46:15.000000000 +0900
+>> >> > +++ linux-2.6.30-rc6.unplug/mm/readahead.c	2009-05-18 
+>> >13:00:42.000000000 +0900
+>> >> > @@ -490,5 +490,7 @@ page_cache_async_readahead(struct addres
+>> >> >  
+>> >> >  	/* do read-ahead */
+>> >> >  	ondemand_readahead(mapping, ra, filp, true, offset, req_size);
+>> >> > +
+>> >> > +	blk_run_backing_dev(mapping->backing_dev_info, NULL);
+>> >> >  }
+>> >> >  EXPORT_SYMBOL_GPL(page_cache_async_readahead);
+>> >> 
+>> >> I'm surprised this makes much of a difference. It seems correct to me to
+>> >> NOT unplug the device, since it will get unplugged when someone ends up
+>> >> actually waiting for a page. And that will then kick off the remaining
+>> >> IO as well. For this dd case, you'll be hitting lock_page() for the
+>> >> readahead page really soon, definitely not long enough to warrant such a
+>> >> big difference in speed.
+>> >
+>> >The possible timing change of this patch is (assuming readahead size=100):
+>> >
+>> >T0   read(100), which triggers readahead(200, 100)
+>> >T1   read(101)
+>> >T2   read(102)
+>> >...
+>> >T100 read(200), find_get_page(200) => readahead(300, 100)
+>> >                lock_page(200) => implicit unplug
+>> >
+>> >The readahead(200, 100) submitted at time T0 *might* be delayed to the
+>> >unplug time of T100.
+>> >
+>> >But that is only a possibility. In normal cases, the read(200) would
+>> >be blocking and there will be a lock_page(200) that will immediately
+>> >unplug device for readahead(300, 100).
+>> 
+>> 
+>> Hi Andrew.
+>> Following patch improves sequential read performance and does not harm
+>> other performance.
+>> Please merge my patch.
+>> Comments?
+>> Thanks.
+>> 
+>> #dd if=testdir/testfile of=/dev/null bs=16384
+>> -2.6.30-rc6
+>> 1048576+0 records in
+>> 1048576+0 records out
+>> 17179869184 bytes (17 GB) copied, 224.182 seconds, 76.6 MB/s
+>> 
+>> -2.6.30-rc6-patched
+>> 1048576+0 records in
+>> 1048576+0 records out
+>> 17179869184 bytes (17 GB) copied, 206.465 seconds, 83.2 MB/s
+>> 
+>> Signed-off-by: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
+>> 
+>> diff -Nrup linux-2.6.30-rc6.org/mm/readahead.c 
+>linux-2.6.30-rc6.unplug/mm/readahead.c
+>> --- linux-2.6.30-rc6.org/mm/readahead.c	2009-05-18 10:46:15.000000000 +0900
+>> +++ linux-2.6.30-rc6.unplug/mm/readahead.c	2009-05-18 13:00:42.000000000 +0900
+>> @@ -490,5 +490,7 @@ page_cache_async_readahead(struct addres
+>>  
+>>  	/* do read-ahead */
+>>  	ondemand_readahead(mapping, ra, filp, true, offset, req_size);
+>> +
+>> +	blk_run_backing_dev(mapping->backing_dev_info, NULL);
+>>  }
+>>  EXPORT_SYMBOL_GPL(page_cache_async_readahead);
+>> 
+>> 
+>
+>Hi Hisashi,
+>
+>I wonder if the following updated patch can achieve the same
+>performance.  Can you try testing this out?
+>
+>Thanks,
+>Fengguang
+>---
+>
+>diff --git a/mm/readahead.c b/mm/readahead.c
+>index 133b6d5..fd3df66 100644
+>--- a/mm/readahead.c
+>+++ b/mm/readahead.c
+>@@ -490,5 +490,8 @@ page_cache_async_readahead(struct address_space *mapping,
+> 
+> 	/* do read-ahead */
+> 	ondemand_readahead(mapping, ra, filp, true, offset, req_size);
+>+
+>+	if (PageUptodate(page))
+>+		blk_run_backing_dev(mapping->backing_dev_info, NULL);		
+> }
+> EXPORT_SYMBOL_GPL(page_cache_async_readahead);
+
+Hi.
+I tested above patch, and I got same performance number.
+I wonder why if (PageUptodate(page)) check is there...
+
+
