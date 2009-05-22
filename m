@@ -1,36 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757289AbZEVMzS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757078AbZEVND7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757289AbZEVMzS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 08:55:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755310AbZEVMyt
+	id S1757078AbZEVND7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 09:03:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751655AbZEVNDu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 08:54:49 -0400
-Received: from tomts29-srv.bellnexxia.net ([209.226.175.103]:37419 "EHLO
-	tomts29-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752497AbZEVMyr convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 08:54:47 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AnCaAJc4FkrR4q+H/2dsb2JhbACBL4oDgluSE6caiyCDdwU
-X-Mailer: Openwave WebEngine, version 2.8.11 (webedge20-101-194-20030622)
-X-Originating-IP: [41.219.137.100]
-From: =?ISO-8859-1?B?qUxH?= Alert <chainsawearle@nb.aibn.com>
-Reply-To: brownwilliams09@btinternet.com
-To: <info@lotto.org>
-Subject: Bonanza
-Date: Fri, 22 May 2009 8:54:48 -0400
+	Fri, 22 May 2009 09:03:50 -0400
+Received: from www.tglx.de ([62.245.132.106]:47256 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750916AbZEVNDt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 May 2009 09:03:49 -0400
+Date: Fri, 22 May 2009 15:02:43 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: LKML <linux-kernel@vger.kernel.org>
+cc: rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
+       Clark Williams <williams@redhat.com>,
+       Frank Rowand <frank.rowand@am.sony.com>,
+       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
+       Philippe Reynes <philippe.reynes@isismpp.fr>,
+       Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>,
+       Will Schmidt <will_schmidt@vnet.ibm.com>,
+       Darren Hart <dvhltc@us.ibm.com>, Jan Blunck <jblunck@suse.de>,
+       Sven-Thorsten Dietrich <sdietrich@novell.com>
+Subject: [Announce] 2.6.29.4-rt15
+In-Reply-To: <alpine.LFD.2.00.0905130122250.3561@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0905221459030.3570@localhost.localdomain>
+References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain> <alpine.LFD.2.00.0903122013230.29264@localhost.localdomain> <alpine.LFD.2.00.0903200014320.29264@localhost.localdomain> <alpine.LFD.2.00.0903201832590.29264@localhost.localdomain>
+ <alpine.LFD.2.00.0903231723090.29264@localhost.localdomain> <alpine.LFD.2.00.0903252154040.3397@localhost.localdomain> <alpine.LFD.2.00.0904020155320.12916@localhost.localdomain> <alpine.LFD.2.00.0904031918090.12916@localhost.localdomain>
+ <alpine.LFD.2.00.0904081937191.21577@localhost.localdomain> <alpine.LFD.2.00.0904092046440.21577@localhost.localdomain> <alpine.LFD.2.00.0904110003370.21577@localhost.localdomain> <alpine.LFD.2.00.0904181204420.21577@localhost.localdomain>
+ <alpine.LFD.2.00.0904251500150.4529@localhost.localdomain> <alpine.LFD.2.00.0904290036500.4529@localhost.localdomain> <alpine.LFD.2.00.0905012348200.3375@localhost.localdomain> <alpine.LFD.2.00.0905130122250.3561@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Message-Id: <20090522125448.LRJS1724.tomts29-srv.bellnexxia.net@toip38-bus.srvr.bell.ca>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-You have just been awarded,the sum of  £950.000.00 in the  ELECTRONICS Award 2009, Anniversary Bonanza. held in May.
+We are pleased to announce the next update to our new preempt-rt
+series.
 
-Names:............. Address:..............
-Country:................ Age:..........
+    - rebase to 2.6.29.4 (no conflicts)
+    - futex updates (tglx, dvhart)
 
-Regard
+Download locations:
+
+    http://rt.et.redhat.com/download/
+    http://www.kernel.org/pub/linux/kernel/projects/rt/
+
+Information on the RT patch can be found at:
+
+    http://rt.wiki.kernel.org/index.php/Main_Page
+
+to build the 2.6.29.4-rt15 tree, the following patches should be
+applied:
+
+    http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.29.4.tar.bz2
+    http://www.kernel.org/pub/linux/kernel/projects/rt/patch-2.6.29.4-rt15.bz2
+
+The broken out patches are also available at the same download
+locations.
+
+Enjoy !
+
+       tglx
 
