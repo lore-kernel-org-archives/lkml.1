@@ -1,64 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757042AbZEVIgL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757308AbZEVIg2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757042AbZEVIgL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 04:36:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756826AbZEVIf5
+	id S1757308AbZEVIg2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 04:36:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756826AbZEVIgR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 04:35:57 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:56632 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756767AbZEVIfy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 04:35:54 -0400
-Date: Fri, 22 May 2009 17:34:21 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Paul Menage <menage@google.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.linux-foundation.org>,
+	Fri, 22 May 2009 04:36:17 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:64916 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1757176AbZEVIgO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 May 2009 04:36:14 -0400
+Message-ID: <4A16644F.1090201@cn.fujitsu.com>
+Date: Fri, 22 May 2009 16:37:35 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
        Balbir Singh <balbir@linux.vnet.ibm.com>,
-       libcg-devel@lists.sourceforge.net, dhaval@linux.vnet.ibm.com
-Subject: Re: [PATCH] cgroups: handle failure of cgroup_populate_dir() at
- mount/remount
-Message-Id: <20090522173421.ecacb40e.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <4A1663C2.4080401@cn.fujitsu.com>
-References: <4A16153C.2080004@cn.fujitsu.com>
-	<20090522172545.1e5e5f81.kamezawa.hiroyu@jp.fujitsu.com>
-	<4A1663C2.4080401@cn.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH] memcg: remove forward declaration from sched.h
+References: <4A1645D4.5010001@cn.fujitsu.com> <20090522171737.e9916d1b.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090522171737.e9916d1b.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 22 May 2009 16:35:14 +0800
-Li Zefan <lizf@cn.fujitsu.com> wrote:
-
-> KAMEZAWA Hiroyuki wrote:
-> > On Fri, 22 May 2009 11:00:12 +0800
-> > Li Zefan <lizf@cn.fujitsu.com> wrote:
-> > 
-> >> Now we have 'stat' file in both memory and cpuacct subsystems. If we
-> >> mount these 2 subsystems with option 'noprefix', the creation of 'stat'
-> >> file for cpuacct will fail, but without any notificatin to the user.
-> >>
-> >> With this patch, we fail the mount/remount in this case.
-> >>
-> > 
-> > Hm, shouldn't we allow "noprefix" to be effective only agaisnt cpuset ?
-> > I think it's just for backward-compatibility of cpuset.
-> > (I don't like the option at all.)
-> > 
+KAMEZAWA Hiroyuki wrote:
+> On Fri, 22 May 2009 14:27:32 +0800
+> Li Zefan <lizf@cn.fujitsu.com> wrote:
 > 
-> Yes, this mount option was introduced for cpuset. But it has been here for
-> a long time and people may use it when mounting other cgroup subsystems,
-> then is it OK to change to restrict its use within cpuset only?
+>> This forward declaration seems pointless.
+>>
+>> compile tested.
+>>
+>> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> 
+> Nice catch. (but I don't know why this sneaked into..)
 
-Asking libcgroup people may be appropriate...added CC.
+It was long long ago when memcg was merged ;)
 
-Thanks,
--Kame
+| commit 78fb74669e80883323391090e4d26d17fe29488f
+| Author: Pavel Emelianov <xemul@openvz.org>
+| Date:   Thu Feb 7 00:13:51 2008 -0800
+|
+|    Memory controller: accounting setup
+
+But in that patch, the forward declation in sched.h was unneeded.
 
