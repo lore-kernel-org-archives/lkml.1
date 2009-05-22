@@ -1,45 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757530AbZEVKIt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755779AbZEVKKW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757530AbZEVKIt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 06:08:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757240AbZEVKIV
+	id S1755779AbZEVKKW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 06:10:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753320AbZEVKKM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 06:08:21 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:39523 "EHLO bilbo.ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757285AbZEVKIU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 06:08:20 -0400
-MIME-Version: 1.0
+	Fri, 22 May 2009 06:10:12 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:38821 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751796AbZEVKKL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 May 2009 06:10:11 -0400
+Date: Fri, 22 May 2009 12:16:19 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Cc: Andi Kleen <andi@firstfloor.org>, mingo@elte.hu, tglx@linutronix.de,
+       hpa@zytor.com, linux-kernel@vger.kernel.org
+Subject: Re: [x86] [MCE] Updated 32bit merge for tip x86 mce2 branch
+Message-ID: <20090522101619.GD846@one.firstfloor.org>
+References: <20090519215631.GA15626@basil.nowhere.org> <4A1660A1.20909@jp.fujitsu.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18966.31089.52074.614650@cargo.ozlabs.ibm.com>
-Date: Fri, 22 May 2009 20:07:45 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Corey Ashford <cjashfor@linux.vnet.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 2/2] perf_counter: optimize context switch between
- identical inherited contexts
-In-Reply-To: <1242985332.26820.630.camel@twins>
-References: <18966.10075.781053.231153@cargo.ozlabs.ibm.com>
-	<18966.10666.517218.332164@cargo.ozlabs.ibm.com>
-	<1242984129.26820.627.camel@twins>
-	<1242985332.26820.630.camel@twins>
-X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
+Content-Disposition: inline
+In-Reply-To: <4A1660A1.20909@jp.fujitsu.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra writes:
+On Fri, May 22, 2009 at 05:21:53PM +0900, Hidetoshi Seto wrote:
+> > @@ -1,4 +1,4 @@
+> > -The following is a list of files and features that are going to be
+> > +he following is a list of files and features that are going to be
+> >  removed in the kernel source tree.  Every entry should contain what
+> >  exactly is going away, why it is happening, and who is going to be doing
+> >  the work.  When the feature is removed from the kernel, it should also
+> 
+> Is it necessary?
 
-> Ah, should I read this as 'n' lmbench instances on a single cpu? So that
-> we get multiple inheritance sets mixed and have to switch between them?
+I fixed all that and regenerated the tree.
 
-No, it's one lat_ctx instance, which creates N processes connected in
-a ring with pipes, and passes a token around some number of times and
-measures the overall time to do that.  It subtracts off the time it
-takes to do all the pipe reads and writes in a single process to get
-an estimate of how much the context switches are costing.
+Hopefully the tree can be properly redone now, it's quite messy
+that mce2 is still missing all the rc6 mce_64.c changes. I have
+to patch around because of this on my followup trees.
 
-Paul.
+-Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
