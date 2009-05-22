@@ -1,52 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757412AbZEVJ45@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753320AbZEVKFn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757412AbZEVJ45 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 05:56:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755119AbZEVJ4Z
+	id S1753320AbZEVKFn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 06:05:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751590AbZEVKFf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 05:56:25 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:33100 "EHLO bilbo.ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753338AbZEVJ4Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 05:56:24 -0400
+	Fri, 22 May 2009 06:05:35 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:56651 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751376AbZEVKFf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 May 2009 06:05:35 -0400
+Message-ID: <4A16788F.2060802@cn.fujitsu.com>
+Date: Fri, 22 May 2009 18:03:59 +0800
+From: Zhaolei <zhaolei@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       Tom Zanussi <tzanussi@gmail.com>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH v2 0/2] ftrace: Add task_comm support for trace_event
+References: <4A14FDFE.2080402@cn.fujitsu.com>
+In-Reply-To: <4A14FDFE.2080402@cn.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-ID: <18966.28798.540702.311966@cargo.ozlabs.ibm.com>
-Date: Fri, 22 May 2009 19:29:31 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Corey Ashford <cjashfor@linux.vnet.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 2/2] perf_counter: optimize context switch between
- identical inherited contexts
-In-Reply-To: <1242981131.26820.620.camel@twins>
-References: <18966.10075.781053.231153@cargo.ozlabs.ibm.com>
-	<18966.10666.517218.332164@cargo.ozlabs.ibm.com>
-	<1242981131.26820.620.camel@twins>
-X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra writes:
+Hello,
 
-> Suppose someone writes a malicious proglet that inherits the counters,
-> puts the child to sleep, does 2^32 mods on the counter set, and then
-> wakes up the child.
-> 
-> Would that merely corrupt the results, or make the kernel explode?
+Ingo pointed out that v1 patch can cause kernel compile fail:
+kernel/built-in.o: In function `ftrace_event_enable_disable':
+trace_events.c:(.text+0x6cf7a): undefined reference to `tracing_stop_cmdline_record'
+trace_events.c:(.text+0x6cf91): undefined reference to `tracing_start_cmdline_record'
 
-You'd have to do something like create some counters on yourself,
-fork, do the 2^32 counter creations and deletions, then do another
-fork.  All that would happen is that some of the counters would count
-on one of the child processes when they should be counting on the
-other.
+It is because trace_sched_switch.c is necessary for trace_event.c after patch,
+and there are no dependence between these two files in Kconfig.
 
-But it would be easy and cheap to make the generation count be 64
-bits, and then it won't overflow in my lifetime at least, and after
-that I don't care. :)  So I agree with Ingo that we should just do
-that.
+Changelog:
+v1->v2: Update Kconfig for new file dependence.
 
-Paul.
+Thanks
+Zhaolei
+
+
+
