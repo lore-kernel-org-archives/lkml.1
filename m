@@ -1,46 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758776AbZEVM0b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757355AbZEVMfW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758776AbZEVM0b (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 08:26:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758399AbZEVM0V
+	id S1757355AbZEVMfW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 08:35:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753453AbZEVMfK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 08:26:21 -0400
-Received: from smtp-out003.kontent.com ([81.88.40.217]:46848 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758360AbZEVM0U convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 08:26:20 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: Alan Stern <stern@rowland.harvard.edu>, Al Viro <viro@zeniv.linux.org.uk>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: How to tell whether a struct file is held by a process?
-Date: Fri, 22 May 2009 14:26:43 +0200
-User-Agent: KMail/1.10.3 (Linux/2.6.27.21-0.1-default; KDE/4.1.3; x86_64; ; )
-References: <Pine.LNX.4.44L0.0905210945290.2886-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0905210945290.2886-100000@iolanthe.rowland.org>
+	Fri, 22 May 2009 08:35:10 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38448 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751319AbZEVMfJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 May 2009 08:35:09 -0400
+Date: Fri, 22 May 2009 08:32:31 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+Cc: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
+       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
+       jens.axboe@oracle.com, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, jmoyer@redhat.com,
+       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       righi.andrea@gmail.com, agk@redhat.com, dm-devel@redhat.com,
+       snitzer@redhat.com, m-ikeda@ds.jp.nec.com, akpm@linux-foundation.org
+Subject: Re: [PATCH 02/18] io-controller: Common flat fair queuing code in
+	elevaotor layer
+Message-ID: <20090522123231.GA14972@redhat.com>
+References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com> <1241553525-28095-3-git-send-email-vgoyal@redhat.com> <4A164978.1020604@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200905221426.43466.oliver@neukum.org>
+In-Reply-To: <4A164978.1020604@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Thursday 21 May 2009 16:06:00 schrieben Sie:
-> The problem is this.  Let D be the device plugged into port P.  When
-> some program opens D's device file, it's necessary to check whether
-> that same program has an open file reference for A(P), i.e., has opened
+On Fri, May 22, 2009 at 02:43:04PM +0800, Gui Jianfeng wrote:
+> Vivek Goyal wrote:
+> ...
+> > +/* A request got completed from io_queue. Do the accounting. */
+> > +void elv_ioq_completed_request(struct request_queue *q, struct request *rq)
+> > +{
+> > +	const int sync = rq_is_sync(rq);
+> > +	struct io_queue *ioq = rq->ioq;
+> > +	struct elv_fq_data *efqd = &q->elevator->efqd;
+> > +
+> > +	if (!elv_iosched_fair_queuing_enabled(q->elevator))
+> > +		return;
+> > +
+> > +	elv_log_ioq(efqd, ioq, "complete");
+> > +
+> > +	elv_update_hw_tag(efqd);
+> > +
+> > +	WARN_ON(!efqd->rq_in_driver);
+> > +	WARN_ON(!ioq->dispatched);
+> > +	efqd->rq_in_driver--;
+> > +	ioq->dispatched--;
+> > +
+> > +	if (sync)
+> > +		ioq->last_end_request = jiffies;
+> > +
+> > +	/*
+> > +	 * If this is the active queue, check if it needs to be expired,
+> > +	 * or if we want to idle in case it has no pending requests.
+> > +	 */
+> > +
+> > +	if (elv_active_ioq(q->elevator) == ioq) {
+> > +		if (elv_ioq_slice_new(ioq)) {
+> > +			elv_ioq_set_prio_slice(q, ioq);
+> 
+>   Hi Vivek,
+> 
+>   Would you explain a bit why slice_end should be set when first request completes.
+>   Why not set it just when an ioq gets active?
+>   
 
-No. It is merely nice to do that, not necessary. You can take the position
-that if the port is reserved the kernel won't touch the device but it is
-user space's responsibility to not touch a device user space wants
-to reserve.
+Hi Gui,
 
-Or alternatively, don't create the device file until user space tells
-you to do so.
+I have kept the behavior same as CFQ. I guess reason behind this is that
+when a new queue is scheduled in, first request completion might take more
+time as head of the disk might be quite a distance away (due to previous
+queue) and one probably does not want to charge the new queue for that
+first seek time. That's the reason we start the queue slice when first
+request has completed.
 
-	Regards
-		Oliver
-
+Thanks
+Vivek
