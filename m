@@ -1,50 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757686AbZEVNhy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757577AbZEVNjD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757686AbZEVNhy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 09:37:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757006AbZEVNhr
+	id S1757577AbZEVNjD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 09:39:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757006AbZEVNiz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 09:37:47 -0400
-Received: from smtp-out002.kontent.com ([81.88.40.216]:39887 "EHLO
-	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756527AbZEVNhq (ORCPT
+	Fri, 22 May 2009 09:38:55 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:42253 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756917AbZEVNiy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 09:37:46 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: Pantelis Koukousoulas <pktoss@gmail.com>
-Subject: Re: How to tell whether a struct file is held by a process?
-Date: Fri, 22 May 2009 15:38:08 +0200
-User-Agent: KMail/1.10.3 (Linux/2.6.27.21-0.1-default; KDE/4.1.3; x86_64; ; )
-Cc: Kernel development list <linux-kernel@vger.kernel.org>,
-       Kay Sievers <kay.sievers@vrfy.org>, Al Viro <viro@zeniv.linux.org.uk>,
-       Alan Stern <stern@rowland.harvard.edu>
-References: <ac3eb2510905211407l3aec14acx2572a2ad4e675b9@mail.gmail.com> <Pine.LNX.4.44L0.0905211724050.3914-100000@iolanthe.rowland.org> <1295ed070905220630q67c62569o9753425abf529742@mail.gmail.com>
-In-Reply-To: <1295ed070905220630q67c62569o9753425abf529742@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 22 May 2009 09:38:54 -0400
+Date: Fri, 22 May 2009 14:39:14 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Larry H." <research@subreption.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Rik van Riel <riel@redhat.com>,
+       linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>,
+       linux-mm@kvack.org, Ingo Molnar <mingo@redhat.com>,
+       pageexec@freemail.hu
+Subject: Re: [patch 0/5] Support for sanitization flag in low-level page
+ allocator
+Message-ID: <20090522143914.2019dd47@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090522113809.GB13971@oblivion.subreption.com>
+References: <20090520183045.GB10547@oblivion.subreption.com>
+	<4A15A8C7.2030505@redhat.com>
+	<20090522073436.GA3612@elte.hu>
+	<20090522113809.GB13971@oblivion.subreption.com>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905221538.09073.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Freitag, 22. Mai 2009 15:30:20 schrieb Pantelis Koukousoulas:
-> The only problem I find with leaving mutual exclusion 100% to userspace and
-> burdening the kernel only with the decision of whether a port should be
-> handled by kernel or userspace is this:
->
-> Suppose a device needs a reset as part of its init sequence (a whole lot
-> of them do, this is not purely hypothetical). Then a different process may
-> get to operate the device before and after the reset and hilarity may
-> result from that.
+> > performance point of view: we _dont_ want to clear the full stack 
+> > page for every kernel thread exiting.
+> 
+> Burning the stack there is beyond overkill.
 
-If you leave the locking against user space to user space this can happen
-any time, not just due to a reset. What is so special about reset? You just
-need a user space locking scheme operating on port numbers, not device
-addresses.
-
-	Regards
-		Oliver
-
+Yet most of our historic leaks have been padding bytes in stack based
+structures. Your position seems very inconsistent.
