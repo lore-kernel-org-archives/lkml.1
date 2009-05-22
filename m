@@ -1,48 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751324AbZEVFf6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752241AbZEVFjf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751324AbZEVFf6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 01:35:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750916AbZEVFft
+	id S1752241AbZEVFjf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 01:39:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750990AbZEVFj1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 01:35:49 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:43384 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750851AbZEVFft (ORCPT
+	Fri, 22 May 2009 01:39:27 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:3027 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750880AbZEVFj0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 01:35:49 -0400
-Date: Fri, 22 May 2009 06:35:42 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: James Morris <jmorris@namei.org>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Mimi Zohar <zohar@linux.vnet.ibm.com>
-Subject: Re: linux-next: manual merge of the security-testing tree with
-	Linus' tree
-Message-ID: <20090522053542.GY8633@ZenIV.linux.org.uk>
-References: <20090522152901.2d220889.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090522152901.2d220889.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 22 May 2009 01:39:26 -0400
+Subject: Re: [PATCH V2 0/3] Introduce and use DO_ONCE statement expression
+ macro
+From: Joe Perches <joe@perches.com>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org,
+       Dave Jones <davej@redhat.com>, Greg Kroah-Hartman <gregkh@suse.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>,
+       x86@kernel.org, Len Brown <len.brown@intel.com>,
+       Mike Travis <travis@sgi.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090522052652.GX8633@ZenIV.linux.org.uk>
+References: <cover.1242965306.git.joe@perches.com>
+	 <20090522052652.GX8633@ZenIV.linux.org.uk>
+Content-Type: text/plain
+Date: Thu, 21 May 2009 22:39:16 -0700
+Message-Id: <1242970756.3284.18.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 22, 2009 at 03:29:01PM +1000, Stephen Rothwell wrote:
-> Hi James,
-> 
-> Today's linux-next merge of the security-testing tree got a conflict in
-> fs/exec.c between commits a44ddbb6d8a8ffe4e34e417048dfdd8f3dd1de4f ("Make
-> open_exec() and sys_uselib() use may_open(), instead of duplicating its
-> parts") and 6e8341a11eb21826b7192d0bb88cb5b44900a9af ("Switch open_exec()
-> and sys_uselib() to do_open_filp()") from Linus' tree and commit
-> b9fc745db833bbf74b4988493b8cd902a84c9415 ("integrity: path_check update")
-> from the security-testing tree.
-> 
-> I used the version of these conflicts from Linus' tree as I assume that
-> the changes to may_open() from the latter patch are sufficient.  Please
-> check and let me know (or merge Linus' tree and do the resolution for
-> yourself :-)).
+On Fri, 2009-05-22 at 06:26 +0100, Al Viro wrote:
+> Your DO_ONCE(....) parses as "what the fuck is that?" followed by
+> grepping for definition, and the cost is much higher.
 
-Just drop their changes to sys_uselib() and open_exec() and keep the
-rest of their patch.
+So what do you suggest?
+
+#define pr_info_once(fmt, args...)	printk_once(KERN_INFO pr_fmt(fmt), ##args)
+#define pr_warning_once(fmt, args...)	printk_once(KERN_WARNING pr_fmt(fmt), ##args)
+etc
+
+
