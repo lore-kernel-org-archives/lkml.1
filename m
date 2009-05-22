@@ -1,65 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756324AbZEVA5R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755965AbZEVA77@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756324AbZEVA5R (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 20:57:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754618AbZEVA5I
+	id S1755965AbZEVA77 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 20:59:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754538AbZEVA7w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 20:57:08 -0400
-Received: from mga14.intel.com ([143.182.124.37]:5524 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754538AbZEVA5H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 20:57:07 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,230,1241420400"; 
-   d="scan'208";a="145667124"
-Subject: Re: [GIT PATCH] x86,percpu: fix pageattr handling with remap
- allocator
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: suresh.b.siddha@intel.com
-To: Tejun Heo <tj@kernel.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       "JBeulich@novell.com" <JBeulich@novell.com>,
-       "andi@firstfloor.org" <andi@firstfloor.org>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "linux-kernel-owner@vger.kernel.org" 
-	<linux-kernel-owner@vger.kernel.org>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <4A15E130.1070808@kernel.org>
-References: <1242305390-21958-1-git-send-email-tj@kernel.org>
-	 <1242436626.27006.8623.camel@localhost.localdomain>
-	 <4A0ED8D8.2010303@kernel.org>
-	 <1242500964.27006.8636.camel@localhost.localdomain>
-	 <4A0F672A.3000309@kernel.org>
-	 <1242674444.27006.8691.camel@localhost.localdomain>
-	 <4A11B9E7.8010707@zytor.com>
-	 <1242680835.27006.8734.camel@localhost.localdomain>
-	 <4A120B47.8060200@kernel.org>
-	 <1242860470.27006.10106.camel@localhost.localdomain>
-	 <4A149B89.3010104@kernel.org>
-	 <1242866163.27006.10125.camel@localhost.localdomain>
-	 <4A14B271.5010202@kernel.org>
-	 <1242933008.27006.10150.camel@localhost.localdomain>
-	 <4A15E130.1070808@kernel.org>
-Content-Type: text/plain
-Organization: Intel Corp
-Date: Thu, 21 May 2009 17:55:02 -0700
-Message-Id: <1242953702.27006.10152.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
+	Thu, 21 May 2009 20:59:52 -0400
+Received: from mail-gx0-f166.google.com ([209.85.217.166]:47861 "EHLO
+	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754001AbZEVA7w (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 May 2009 20:59:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=AvhykHHFzU4vYdsEKR+E3BTOD7JyJvKdbx5HCfXRYF/EKmgJAN8UjTkPd46qE3I5LX
+         DIRAn9/qT17YGb4GcsLA6qc0esKvFVrVRkSo70y6Axy6KBvQmuVO9oc6UL5eTSGwduXj
+         2Cp9Pk5a1cahujYXeoWvtW5et9VKdcm+GGBl4=
+MIME-Version: 1.0
+Date: Fri, 22 May 2009 02:59:53 +0200
+Message-ID: <c384c5ea0905211759v11408a03o570980a34d02f0ff@mail.gmail.com>
+Subject: Rich man's version of AIO on Linux 2.6.x?
+From: Leon Woestenberg <leon.woestenberg@gmail.com>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       devel@driverdev.osuosl.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-05-21 at 16:18 -0700, Tejun Heo wrote:
-> No, I'll let the first chunk allocation happen the same way for cpus
-> available on boot and then just do 4k allocations for whatever
-> necessary afterward.  The needed code change in percpu proper isn't
-> that big.
+Hello,
 
-Ok. It will be more cleaner this way.
+On the state-of-art of asynchronous I/O in Linux. I understand we have
+full support for AIO in the Linux 2.6.x kernel but I cannot find how
+to use it from user space.
 
-thanks,
-suresh
 
+I would like to exploit AIO in hardware and the device driver for it,
+by keeping the hardware performing I/O at all times (no setup latency
+between requests by allowing multiple
+I/O requests to be queued in hardware). Note this is a character
+device, not a filesystem.
+
+I implemented aio_read() and aio_write() on my character device
+interface, but it's never been called; read() and write() is called
+instead.
+
+>From "Understanding the Linux kernel, 3rd edition" I read that glibc
+indeed implements aio_read() and friends itself, not through the
+kernel AIO syscalls.
+
+<Quote>
+Essentially, the aio_read( ) or aio_write( ) library function clones
+the current process and lets the child invoke the synchronous read( )
+or write( ) system calls; However, this "poor man's" version of the
+POSIX functions is significantly slower than a version that uses a
+kernel-level implementation of asynchronous I/O.
+<End Quote>
+
+I am looking for a rich man's way to use the kernel functionality;
+essentially I want my drivers aio_read and aio_write ops to be called.
+
+Regards,
+-- 
+Leon
