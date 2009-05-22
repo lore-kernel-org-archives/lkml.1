@@ -1,57 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757529AbZEVQKU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756457AbZEVQWi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757529AbZEVQKU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 12:10:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753349AbZEVQKK
+	id S1756457AbZEVQWi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 12:22:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751535AbZEVQWa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 12:10:10 -0400
-Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:40228 "EHLO
-	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751535AbZEVQKJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 12:10:09 -0400
-Date: Fri, 22 May 2009 18:10:09 +0200
-From: Andreas Mohr <andi@lisas.de>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Peter Feuerer <peter@piie.net>, petkovbb@gmail.com,
-       LKML <linux-kernel@vger.kernel.org>, lenb@kernel.org,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [PATCH] Acer Aspire One Fan Contro
-Message-ID: <20090522161009.GA20476@rhlx01.hs-esslingen.de>
+	Fri, 22 May 2009 12:22:30 -0400
+Received: from hera.kernel.org ([140.211.167.34]:50101 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751442AbZEVQW3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 May 2009 12:22:29 -0400
+Date: Fri, 22 May 2009 16:21:51 GMT
+From: tip-bot for Ingo Molnar <mingo@elte.hu>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
+       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl,
+       mtosatti@redhat.com, tglx@linutronix.de, cjashfor@linux.vnet.ibm.com,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       mtosatti@redhat.com, tglx@linutronix.de, cjashfor@linux.vnet.ibm.com,
+       mingo@elte.hu
+In-Reply-To: <new-submission>
+References: <new-submission>
+Subject: [tip:perfcounters/core] perf_counter tools: increase limits
+Message-ID: <tip-c6eb13847ba081552d2af644219bddeff7110caf@git.kernel.org>
+Git-Commit-ID: c6eb13847ba081552d2af644219bddeff7110caf
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20090522140930.GA26580@elf.ucw.cz>
-X-Priority: none
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 22 May 2009 16:21:53 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Commit-ID:  c6eb13847ba081552d2af644219bddeff7110caf
+Gitweb:     http://git.kernel.org/tip/c6eb13847ba081552d2af644219bddeff7110caf
+Author:     Ingo Molnar <mingo@elte.hu>
+AuthorDate: Fri, 22 May 2009 18:18:28 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Fri, 22 May 2009 18:18:28 +0200
 
-> Yep, I don't disagree. But I strongly suspect that if you force the
-> fan off and overheat the machine, it will shut down in hardware before
-> doing any damage.
+perf_counter tools: increase limits
 
-s/strongly suspect/definitely know/ ;-)
+I tried to run with 300 active counters and the tools bailed out
+because our limit was at 64. So increase the counter limit to 1024
+and the CPU limit to 4096.
 
-Reason being that my machine suddenly dropped dead (2 or 3 times maybe),
-and when I then reactivated it, the fan made a nice tick....tick....tick noise
-as if it tried to start but something blocked it a bit too much.
-Shook and rocked the box a bit (not too difficult with a netbook after all ;),
-then it worked again and ever since.
-Probably a slightly wonky fan, but I'm not sure whether I should care
-all that much at the moment.
-I _am_ using the shell script currently, but within pretty safe limits
-(I'd hope that I'm not insane after all), thus I don't think this negatively
-affected fan health or machine.
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
+Cc: Marcelo Tosatti <mtosatti@redhat.com>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+LKML-Reference: <new-submission>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-I cannot really testify that those had been "properly triggered"
-emergency shutdowns, but from the looks of it they definitely were,
-nothing melted or smoking or whatever.
 
-BIOS v0.3109 (ooold)
+---
+ Documentation/perf_counter/perf.h |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-Andreas Mohr
+diff --git a/Documentation/perf_counter/perf.h b/Documentation/perf_counter/perf.h
+index 6fa3656..81a7374 100644
+--- a/Documentation/perf_counter/perf.h
++++ b/Documentation/perf_counter/perf.h
+@@ -54,8 +54,8 @@ sys_perf_counter_open(struct perf_counter_hw_event *hw_event_uptr,
+ 		       group_fd, flags);
+ }
+ 
+-#define MAX_COUNTERS			64
+-#define MAX_NR_CPUS			256
++#define MAX_COUNTERS			1024
++#define MAX_NR_CPUS			4096
+ 
+ #define EID(type, id) (((__u64)(type) << PERF_COUNTER_TYPE_SHIFT) | (id))
+ 
