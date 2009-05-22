@@ -1,30 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758320AbZEVFDp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758174AbZEVFDQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758320AbZEVFDp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 01:03:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756145AbZEVE4d
+	id S1758174AbZEVFDQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 01:03:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755766AbZEVE4a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 00:56:33 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:22681 "EHLO
+	Fri, 22 May 2009 00:56:30 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:19352 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756072AbZEVE40 (ORCPT
+	with ESMTP id S1755480AbZEVE4W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 00:56:26 -0400
+	Fri, 22 May 2009 00:56:22 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=ZuFkaQGpBAZ950xqwMd/ZC2IptKsQsQCbLVyNZo9/edgzTrF7UFmwT+RyFGsyG4px7
-         pVYCBDi02gpqZV5IkdGr63HULTJtL5KYmf+XLpYd+0oCGvjIXqJOsgp7kPiW+Peye7RD
-         5TNoZJQp5SezJs1udZh99P3zcwrCsrIFaydWg=
+        b=whB3qxoqp4STAFarDFDH7WhbvXICxSSYwwKlkJ07FgFIpBdjn1clp3+QraAYZVCToy
+         GN4qP6NAc3QJVgk5Ra60aCq9U+8GCvjMW7mxWlMuQ6dObBnIeYa2f/bS00GaDLKLEWW5
+         eRrn1MGg1itmLc2yr9CdZVwspVthhvfInXMS0=
 From: Alexey Dobriyan <adobriyan@gmail.com>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
        torvalds@linux-foundation.org, xemul@parallels.com,
        orenl@cs.columbia.edu, serue@us.ibm.com, dave@linux.vnet.ibm.com,
        mingo@elte.hu, Alexey Dobriyan <adobriyan@gmail.com>
-Subject: [PATCH 32/38] C/R: checkpoint/restore struct cred
-Date: Fri, 22 May 2009 08:55:26 +0400
-Message-Id: <1242968132-1044-32-git-send-email-adobriyan@gmail.com>
+Subject: [PATCH 30/38] C/R: checkpoint/restore struct pid_namespace
+Date: Fri, 22 May 2009 08:55:24 +0400
+Message-Id: <1242968132-1044-30-git-send-email-adobriyan@gmail.com>
 X-Mailer: git-send-email 1.5.6.5
 In-Reply-To: <1242968132-1044-1-git-send-email-adobriyan@gmail.com>
 References: <1242968132-1044-1-git-send-email-adobriyan@gmail.com>
@@ -32,475 +32,403 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-->group_info, ->user will be done in next patches
+pidns are hierarchical, so we dump parent pidns first.
+On restore, parent task is restored first and restores parent pidns
+for itself, which means that when child restores its pidns,
+parent pidns already exists.
 
-FIXME: insufficient checks for capabilities at least.
+This fullfills loop protection and, given, every pidns has init task
+which pins it even works reliably. :-)
 
 Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
 ---
- include/linux/kstate-image.h   |   25 ++++++
+ include/linux/kstate-image.h   |    9 ++
  include/linux/kstate.h         |    5 +
- kernel/cred.c                  |  164 ++++++++++++++++++++++++++++++++++++++++
  kernel/kstate/cpt-sys.c        |    6 ++
- kernel/kstate/kstate-context.c |    5 +
- kernel/kstate/kstate-file.c    |   30 +++++++
- kernel/kstate/kstate-object.c  |    3 +
- kernel/kstate/kstate-task.c    |   55 +++++++++++++
- 8 files changed, 293 insertions(+), 0 deletions(-)
+ kernel/kstate/kstate-context.c |    6 ++
+ kernel/kstate/kstate-object.c  |    4 +
+ kernel/nsproxy.c               |   30 ++++++-
+ kernel/pid_namespace.c         |  168 +++++++++++++++++++++++++++++++++++++++-
+ 7 files changed, 223 insertions(+), 5 deletions(-)
 
 diff --git a/include/linux/kstate-image.h b/include/linux/kstate-image.h
-index 8119f2b..3e768ca 100644
+index fa4921b..64328e1 100644
 --- a/include/linux/kstate-image.h
 +++ b/include/linux/kstate-image.h
-@@ -49,6 +49,7 @@ struct kstate_image_header {
+@@ -47,6 +47,7 @@ struct kstate_image_header {
+ #define KSTATE_OBJ_UTS_NS	7
+ #define KSTATE_OBJ_IPC_NS	8
  #define KSTATE_OBJ_MNT_NS	9
- #define KSTATE_OBJ_PID_NS	10
- #define KSTATE_OBJ_NET_NS	11
-+#define KSTATE_OBJ_CRED		12
++#define KSTATE_OBJ_PID_NS	10
  
  struct kstate_object_header {
  	__u32		obj_type;
-@@ -73,6 +74,9 @@ struct kstate_image_task_struct {
- 	kstate_ref_t	ref_mm;
- 	kstate_ref_t	ref_nsproxy;
- 
-+	kstate_ref_t	ref_real_cred;
-+	kstate_ref_t	ref_cred;
-+
- 	__u8		comm[16];
- 
- 	/* Native arch of task, one of KSTATE_ARCH_*. */
-@@ -207,6 +211,7 @@ struct kstate_image_file {
- 	__u32		i_mode;
- 	__u32		f_flags;
- 	__u64		f_pos;
-+	kstate_ref_t	ref_f_cred;
- 	__u32		name_len;	/* including NUL */
- 	/* __u8	name[name_len] */
+@@ -215,6 +216,7 @@ struct kstate_image_nsproxy {
+ 	kstate_ref_t	ref_uts_ns;
+ 	kstate_ref_t	ref_ipc_ns;	/* KSTATE_REF_UNDEF if IPC_NS=n */
+ 	kstate_ref_t	ref_mnt_ns;
++	kstate_ref_t	ref_pid_ns;
  } __packed;
-@@ -250,4 +255,24 @@ struct kstate_image_pid_ns {
- struct kstate_image_net_ns {
+ 
+ struct kstate_image_uts_ns {
+@@ -235,4 +237,11 @@ struct kstate_image_ipc_ns {
+ struct kstate_image_mnt_ns {
  	struct kstate_object_header hdr;
  } __packed;
 +
-+typedef __u64 kstate_cap_t;
-+struct kstate_image_cred {
++struct kstate_image_pid_ns {
 +	struct kstate_object_header hdr;
 +
-+	__u32		uid;
-+	__u32		gid;
-+	__u32		suid;
-+	__u32		sgid;
-+	__u32		euid;
-+	__u32		egid;
-+	__u32		fsuid;
-+	__u32		fsgid;
-+	__u32		securebits;
-+
-+	kstate_cap_t	cap_inheritable;
-+	kstate_cap_t	cap_permitted;
-+	kstate_cap_t	cap_effective;
-+	kstate_cap_t	cap_bset;
++	kstate_ref_t	ref_parent;	/* KSTATE_REF_UNDEF if root pid_ns */
++	__u32		last_pid;
 +} __packed;
  #endif
 diff --git a/include/linux/kstate.h b/include/linux/kstate.h
-index a2bea1a..bbed87b 100644
+index 43e2556..c925cef 100644
 --- a/include/linux/kstate.h
 +++ b/include/linux/kstate.h
-@@ -21,6 +21,7 @@ struct kstate_object {
+@@ -28,6 +28,7 @@ enum kstate_context_obj_type {
+ 	KSTATE_CTX_MM_STRUCT,
+ 	KSTATE_CTX_MNT_NS,
+ 	KSTATE_CTX_NSPROXY,
++	KSTATE_CTX_PID_NS,
+ 	KSTATE_CTX_TASK_STRUCT,
+ 	KSTATE_CTX_UTS_NS,
+ 	NR_KSTATE_CTX_TYPES
+@@ -100,6 +101,10 @@ static inline int kstate_dump_all_ipc_ns(struct kstate_context *ctx)
+ int kstate_collect_all_mnt_ns(struct kstate_context *ctx);
+ int kstate_dump_all_mnt_ns(struct kstate_context *ctx);
  
- /* Not visible to userspace! */
- enum kstate_context_obj_type {
-+	KSTATE_CTX_CRED,
- 	KSTATE_CTX_FILE,
- #ifdef CONFIG_IPC_NS
- 	KSTATE_CTX_IPC_NS,
-@@ -124,6 +125,10 @@ static inline int kstate_dump_all_net_ns(struct kstate_context *ctx)
- }
- #endif
- 
-+int kstate_collect_all_cred(struct kstate_context *ctx);
-+int kstate_dump_all_cred(struct kstate_context *ctx);
-+int kstate_restore_cred(struct kstate_context *ctx, kstate_ref_t *ref);
++int kstate_collect_all_pid_ns(struct kstate_context *ctx);
++int kstate_dump_all_pid_ns(struct kstate_context *ctx);
++int kstate_restore_pid_ns(struct kstate_context *ctx, kstate_ref_t *ref);
 +
  #if defined(CONFIG_X86_32) || defined(CONFIG_X86_64)
  extern const __u32 kstate_kernel_arch;
  int kstate_arch_check_image_header(struct kstate_image_header *i);
-diff --git a/kernel/cred.c b/kernel/cred.c
-index 3a03918..9152c90 100644
---- a/kernel/cred.c
-+++ b/kernel/cred.c
-@@ -2,6 +2,7 @@
-  *
-  * Copyright (C) 2008 Red Hat, Inc. All Rights Reserved.
-  * Written by David Howells (dhowells@redhat.com)
-+ * Copyright (C) 2000-2009 Parallels Holdings, Ltd.
-  *
-  * This program is free software; you can redistribute it and/or
-  * modify it under the terms of the GNU General Public Licence
-@@ -589,3 +590,166 @@ int set_create_files_as(struct cred *new, struct inode *inode)
- 	return security_kernel_create_files_as(new, inode);
- }
- EXPORT_SYMBOL(set_create_files_as);
-+
-+#ifdef CONFIG_CHECKPOINT
-+#include <linux/kstate.h>
-+#include <linux/kstate-image.h>
-+
-+static int check_cred(struct cred *cred)
-+{
-+#ifdef CONFIG_KEYS
-+	if (cred->thread_keyring || cred->request_key_auth || cred->tgcred) {
-+		WARN_ON(1);
-+		return -EINVAL;
-+	}
-+#endif
-+#ifdef CONFIG_SECURITY
-+	if (cred->security) {
-+		WARN_ON(1);
-+		return -EINVAL;
-+	}
-+#endif
-+	return 0;
-+}
-+
-+static int collect_cred(struct kstate_context *ctx, struct cred *cred)
-+{
-+	int rv;
-+
-+	rv = check_cred(cred);
-+	if (rv < 0)
-+		return rv;
-+	rv = kstate_collect_object(ctx, cred, KSTATE_CTX_CRED);
-+	pr_debug("collect cred %p: rv %d\n", cred, rv);
-+	return rv;
-+}
-+
-+int kstate_collect_all_cred(struct kstate_context *ctx)
-+{
-+	struct kstate_object *obj;
-+	int rv;
-+
-+	for_each_kstate_object(ctx, obj, KSTATE_CTX_TASK_STRUCT) {
-+		struct task_struct *tsk = obj->o_obj;
-+
-+		rv = collect_cred(ctx, (struct cred *)tsk->real_cred);
-+		if (rv < 0)
-+			return rv;
-+		rv = collect_cred(ctx, (struct cred *)tsk->cred);
-+		if (rv < 0)
-+			return rv;
-+	}
-+	for_each_kstate_object(ctx, obj, KSTATE_CTX_FILE) {
-+		struct file *file = obj->o_obj;
-+
-+		rv = collect_cred(ctx, (struct cred *)file->f_cred);
-+		if (rv < 0)
-+			return rv;
-+	}
-+	for_each_kstate_object(ctx, obj, KSTATE_CTX_CRED) {
-+		struct cred *cred = obj->o_obj;
-+		unsigned int cnt = atomic_read(&cred->usage);
-+
-+		if (obj->o_count + 1 != cnt) {
-+			pr_err("cred %p has external references %lu:%u\n", cred, obj->o_count, cnt);
-+			return -EINVAL;
-+		}
-+	}
-+	return 0;
-+}
-+
-+static int dump_cred(struct kstate_context *ctx, struct kstate_object *obj)
-+{
-+	struct cred *cred = obj->o_obj;
-+	struct kstate_image_cred *i;
-+	int rv;
-+
-+	i = kstate_prepare_image(KSTATE_OBJ_CRED, sizeof(*i));
-+	if (!i)
-+		return -ENOMEM;
-+
-+	i->uid = cred->uid;
-+	i->gid = cred->gid;
-+	i->suid = cred->suid;
-+	i->sgid = cred->sgid;
-+	i->euid = cred->euid;
-+	i->egid = cred->egid;
-+	i->fsuid = cred->fsuid;
-+	i->fsgid = cred->fsgid;
-+	i->securebits = cred->securebits;
-+
-+	BUILD_BUG_ON(sizeof(kstate_cap_t) != sizeof(kernel_cap_t));
-+	memcpy(&i->cap_inheritable, &cred->cap_inheritable, sizeof(kstate_cap_t));
-+	memcpy(&i->cap_permitted, &cred->cap_permitted, sizeof(kstate_cap_t));
-+	memcpy(&i->cap_effective, &cred->cap_effective, sizeof(kstate_cap_t));
-+	memcpy(&i->cap_bset, &cred->cap_bset, sizeof(kstate_cap_t));
-+
-+	rv = kstate_write_image(ctx, i, sizeof(*i), obj);
-+	kfree(i);
-+	pr_debug("dump cred %p: ref {%llu, %u}, rv %d\n", cred, (unsigned long long)obj->o_ref.pos, obj->o_ref.id, rv);
-+	return rv;
-+}
-+
-+int kstate_dump_all_cred(struct kstate_context *ctx)
-+{
-+	struct kstate_object *obj;
-+	int rv;
-+
-+	for_each_kstate_object(ctx, obj, KSTATE_CTX_CRED) {
-+		rv = dump_cred(ctx, obj);
-+		if (rv < 0)
-+			return rv;
-+	}
-+	return 0;
-+}
-+
-+int kstate_restore_cred(struct kstate_context *ctx, kstate_ref_t *ref)
-+{
-+	struct kstate_image_cred *i;
-+	struct cred *cred;
-+	int rv;
-+
-+	i = kstate_read_image(ctx, ref, KSTATE_OBJ_CRED, sizeof(*i));
-+	if (IS_ERR(i))
-+		return PTR_ERR(i);
-+
-+	cred = kmem_cache_zalloc(cred_jar, GFP_KERNEL);
-+	if (!cred) {
-+		rv = -ENOMEM;
-+		goto out_free_image;
-+	}
-+	atomic_set(&cred->usage, 1);
-+
-+	cred->uid = i->uid;
-+	cred->gid = i->gid;
-+	cred->suid = i->suid;
-+	cred->sgid = i->sgid;
-+	cred->euid = i->euid;
-+	cred->egid = i->egid;
-+	cred->fsuid = i->fsuid;
-+	cred->fsgid = i->fsgid;
-+	cred->securebits = i->securebits;
-+
-+	memcpy(&cred->cap_inheritable, &i->cap_inheritable, sizeof(i->cap_inheritable));
-+	memcpy(&cred->cap_permitted, &i->cap_permitted, sizeof(i->cap_permitted));
-+	memcpy(&cred->cap_effective, &i->cap_effective, sizeof(i->cap_effective));
-+	memcpy(&cred->cap_bset, &i->cap_bset, sizeof(i->cap_bset));
-+
-+	/* FIXME */
-+	cred->group_info = get_group_info(&init_groups);
-+	/* FIXME */
-+	cred->user = get_uid(&root_user);
-+	kfree(i);
-+
-+	rv = kstate_restore_object(ctx, cred, KSTATE_CTX_CRED, ref);
-+	if (rv < 0)
-+		put_cred(cred);
-+	pr_debug("restore cred %p: ref {%llu, %u}, rv %d\n", cred, (unsigned long long)ref->pos, ref->id, rv);
-+	return rv;
-+
-+out_free_image:
-+	kfree(i);
-+	pr_debug("%s: return %d, ref {%llu, %u}\n", __func__, rv, (unsigned long long)ref->pos, ref->id);
-+	return rv;
-+}
-+#endif
 diff --git a/kernel/kstate/cpt-sys.c b/kernel/kstate/cpt-sys.c
-index 620998a..b990fd3 100644
+index 0e3c74c..cbaf038 100644
 --- a/kernel/kstate/cpt-sys.c
 +++ b/kernel/kstate/cpt-sys.c
-@@ -89,6 +89,9 @@ static int kstate_collect(struct kstate_context *ctx)
- 	rv = kstate_collect_all_file(ctx);
+@@ -77,6 +77,9 @@ static int kstate_collect(struct kstate_context *ctx)
+ 	rv = kstate_collect_all_mnt_ns(ctx);
  	if (rv < 0)
  		return rv;
-+	rv = kstate_collect_all_cred(ctx);
++	rv = kstate_collect_all_pid_ns(ctx);
 +	if (rv < 0)
 +		return rv;
- 	return 0;
- }
- 
-@@ -142,6 +145,9 @@ static int kstate_dump(struct kstate_context *ctx)
- 	rv = kstate_dump_all_pid_ns(ctx);
+ 	rv = kstate_collect_all_mm_struct(ctx);
  	if (rv < 0)
  		return rv;
-+	rv = kstate_dump_all_cred(ctx);
+@@ -133,6 +136,9 @@ static int kstate_dump(struct kstate_context *ctx)
+ 	rv = kstate_dump_image_header(ctx);
+ 	if (rv < 0)
+ 		return rv;
++	rv = kstate_dump_all_pid_ns(ctx);
 +	if (rv < 0)
 +		return rv;
  	rv = kstate_dump_all_file(ctx);
  	if (rv < 0)
  		return rv;
 diff --git a/kernel/kstate/kstate-context.c b/kernel/kstate/kstate-context.c
-index 423b45b..01b6e5f 100644
+index 700c0f4..7cd1f45 100644
 --- a/kernel/kstate/kstate-context.c
 +++ b/kernel/kstate/kstate-context.c
-@@ -36,6 +36,11 @@ void kstate_context_destroy(struct kstate_context *ctx)
- {
- 	struct kstate_object *obj, *tmp;
- 
-+	for_each_kstate_object_safe(ctx, obj, tmp, KSTATE_CTX_CRED) {
-+		put_cred((struct cred *)obj->o_obj);
+@@ -4,6 +4,7 @@
+ #include <linux/list.h>
+ #include <linux/mnt_namespace.h>
+ #include <linux/nsproxy.h>
++#include <linux/pid_namespace.h>
+ #include <linux/sched.h>
+ #include <linux/slab.h>
+ #include <linux/utsname.h>
+@@ -61,6 +62,11 @@ void kstate_context_destroy(struct kstate_context *ctx)
+ 		list_del(&obj->o_list);
+ 		kfree(obj);
+ 	}
++	for_each_kstate_object_safe(ctx, obj, tmp, KSTATE_CTX_PID_NS) {
++		put_pid_ns((struct pid_namespace *)obj->o_obj);
 +		list_del(&obj->o_list);
 +		kfree(obj);
 +	}
- 	for_each_kstate_object_safe(ctx, obj, tmp, KSTATE_CTX_FILE) {
- 		fput((struct file *)obj->o_obj);
+ 	for_each_kstate_object_safe(ctx, obj, tmp, KSTATE_CTX_TASK_STRUCT) {
+ 		put_task_struct((struct task_struct *)obj->o_obj);
  		list_del(&obj->o_list);
-diff --git a/kernel/kstate/kstate-file.c b/kernel/kstate/kstate-file.c
-index 8f678cd..f378be3 100644
---- a/kernel/kstate/kstate-file.c
-+++ b/kernel/kstate/kstate-file.c
-@@ -86,6 +86,7 @@ int generic_file_checkpoint(struct file *file, struct kstate_context *ctx)
- {
- 	struct kstate_object *obj;
- 	struct kstate_image_file *i;
-+	struct kstate_object *tmp;
- 	struct kstat stat;
- 	char *buf, *name;
- 	int rv;
-@@ -102,6 +103,9 @@ int generic_file_checkpoint(struct file *file, struct kstate_context *ctx)
- 	/* Assume seeking over file doesn't have history. */
- 	i->f_pos = file->f_pos;
- 
-+	tmp = find_kstate_obj_by_ptr(ctx, file->f_cred, KSTATE_CTX_CRED);
-+	i->ref_f_cred = tmp->o_ref;
-+
- 	buf = kmalloc(PAGE_SIZE, GFP_KERNEL);
- 	if (!buf) {
- 		rv = -ENOMEM;
-@@ -154,6 +158,28 @@ int kstate_dump_all_file(struct kstate_context *ctx)
- 	return 0;
- }
- 
-+static int file_restore_cred(struct kstate_context *ctx, kstate_ref_t *ref, struct file *file)
-+{
-+	struct cred *cred;
-+	const struct cred *old_cred;
-+	struct kstate_object *tmp;
-+	int rv;
-+
-+	tmp = find_kstate_obj_by_ref(ctx, ref, KSTATE_CTX_CRED);
-+	if (!tmp) {
-+		rv = kstate_restore_cred(ctx, ref);
-+		if (rv < 0)
-+			return rv;
-+		tmp = find_kstate_obj_by_ref(ctx, ref, KSTATE_CTX_CRED);
-+	}
-+	cred = tmp->o_obj;
-+
-+	old_cred = file->f_cred;
-+	rcu_assign_pointer(file->f_cred, get_cred(cred));
-+	put_cred(old_cred);
-+	return 0;
-+}
-+
- int kstate_restore_file(struct kstate_context *ctx, kstate_ref_t *ref)
- {
- 	struct kstate_image_file *i;
-@@ -182,6 +208,10 @@ int kstate_restore_file(struct kstate_context *ctx, kstate_ref_t *ref)
- 		rv = -EINVAL;
- 		goto out_fput;
- 	}
-+
-+	rv = file_restore_cred(ctx, &i->ref_f_cred, file);
-+	if (rv < 0)
-+		goto out_fput;
- 	/* Assume seeking over file doesn't have history. */
- 	if (vfs_llseek(file, i->f_pos, SEEK_SET) != i->f_pos) {
- 		rv = -EINVAL;
 diff --git a/kernel/kstate/kstate-object.c b/kernel/kstate/kstate-object.c
-index d9b36fa..8000124 100644
+index 6b1ab4a..13bb75c 100644
 --- a/kernel/kstate/kstate-object.c
 +++ b/kernel/kstate/kstate-object.c
-@@ -35,6 +35,9 @@ int kstate_collect_object(struct kstate_context *ctx, void *p, enum kstate_conte
- 	list_add_tail(&obj->o_list, &ctx->obj[type]);
- 
- 	switch (type) {
-+	case KSTATE_CTX_CRED:
-+		get_cred((struct cred *)obj->o_obj);
-+		break;
- 	case KSTATE_CTX_FILE:
- 		get_file((struct file *)obj->o_obj);
+@@ -4,6 +4,7 @@
+ #include <linux/mm_types.h>
+ #include <linux/mnt_namespace.h>
+ #include <linux/nsproxy.h>
++#include <linux/pid_namespace.h>
+ #include <linux/sched.h>
+ #include <linux/slab.h>
+ #include <linux/utsname.h>
+@@ -50,6 +51,9 @@ int kstate_collect_object(struct kstate_context *ctx, void *p, enum kstate_conte
+ 	case KSTATE_CTX_NSPROXY:
+ 		get_nsproxy((struct nsproxy *)obj->o_obj);
  		break;
-diff --git a/kernel/kstate/kstate-task.c b/kernel/kstate/kstate-task.c
-index de876fe..dc2387b 100644
---- a/kernel/kstate/kstate-task.c
-+++ b/kernel/kstate/kstate-task.c
-@@ -123,6 +123,11 @@ static int dump_task_struct(struct kstate_context *ctx, struct kstate_object *ob
- 	tmp = find_kstate_obj_by_ptr(ctx, tsk->nsproxy, KSTATE_CTX_NSPROXY);
- 	i->ref_nsproxy = tmp->o_ref;
++	case KSTATE_CTX_PID_NS:
++		get_pid_ns((struct pid_namespace *)obj->o_obj);
++		break;
+ 	case KSTATE_CTX_TASK_STRUCT:
+ 		get_task_struct((struct task_struct *)obj->o_obj);
+ 		break;
+diff --git a/kernel/nsproxy.c b/kernel/nsproxy.c
+index 4e22ec4..0b1f66d 100644
+--- a/kernel/nsproxy.c
++++ b/kernel/nsproxy.c
+@@ -288,6 +288,8 @@ static int dump_nsproxy(struct kstate_context *ctx, struct kstate_object *obj)
+ #endif
+ 	tmp = find_kstate_obj_by_ptr(ctx, nsproxy->mnt_ns, KSTATE_CTX_MNT_NS);
+ 	i->ref_mnt_ns = tmp->o_ref;
++	tmp = find_kstate_obj_by_ptr(ctx, nsproxy->pid_ns, KSTATE_CTX_PID_NS);
++	i->ref_pid_ns = tmp->o_ref;
  
-+	tmp = find_kstate_obj_by_ptr(ctx, tsk->real_cred, KSTATE_CTX_CRED);
-+	i->ref_real_cred = tmp->o_ref;
-+	tmp = find_kstate_obj_by_ptr(ctx, tsk->cred, KSTATE_CTX_CRED);
-+	i->ref_cred = tmp->o_ref;
-+
- 	BUILD_BUG_ON(sizeof(i->comm) != sizeof(tsk->comm));
- 	strlcpy((char *)i->comm, (const char *)tsk->comm, sizeof(i->comm));
- 
-@@ -149,6 +154,50 @@ int kstate_dump_all_task_struct(struct kstate_context *ctx)
+ 	rv = kstate_write_image(ctx, i, sizeof(*i), obj);
+ 	kfree(i);
+@@ -387,11 +389,29 @@ static int restore_mnt_ns(struct kstate_context *ctx, kstate_ref_t *ref, struct
  	return 0;
  }
  
-+static int restore_real_cred(struct kstate_context *ctx, kstate_ref_t *ref)
++static int restore_pid_ns(struct kstate_context *ctx, kstate_ref_t *ref, struct nsproxy *nsproxy)
 +{
-+	struct cred *cred;
-+	const struct cred *old_cred;
++	struct pid_namespace *pid_ns;
 +	struct kstate_object *tmp;
 +	int rv;
 +
-+	tmp = find_kstate_obj_by_ref(ctx, ref, KSTATE_CTX_CRED);
++	tmp = find_kstate_obj_by_ref(ctx, ref, KSTATE_CTX_PID_NS);
 +	if (!tmp) {
-+		rv = kstate_restore_cred(ctx, ref);
++		rv = kstate_restore_pid_ns(ctx, ref);
 +		if (rv < 0)
 +			return rv;
-+		tmp = find_kstate_obj_by_ref(ctx, ref, KSTATE_CTX_CRED);
++		tmp = find_kstate_obj_by_ref(ctx, ref, KSTATE_CTX_PID_NS);
 +	}
-+	cred = tmp->o_obj;
++	pid_ns = tmp->o_obj;
 +
-+	old_cred = current->real_cred;
-+	rcu_assign_pointer(current->real_cred, get_cred(cred));
-+	put_cred(old_cred);
++	nsproxy->pid_ns = get_pid_ns(pid_ns);
 +	return 0;
 +}
 +
-+static int restore_cred(struct kstate_context *ctx, kstate_ref_t *ref)
-+{
-+	struct cred *cred;
-+	const struct cred *old_cred;
-+	struct kstate_object *tmp;
-+	int rv;
-+
-+	tmp = find_kstate_obj_by_ref(ctx, ref, KSTATE_CTX_CRED);
-+	if (!tmp) {
-+		rv = kstate_restore_cred(ctx, ref);
-+		if (rv < 0)
-+			return rv;
-+		tmp = find_kstate_obj_by_ref(ctx, ref, KSTATE_CTX_CRED);
-+	}
-+	cred = tmp->o_obj;
-+
-+	old_cred = current->cred;
-+	rcu_assign_pointer(current->cred, get_cred(cred));
-+	put_cred(old_cred);
-+	return 0;
-+}
-+
- static int task_restore_all_vma(struct kstate_context *ctx, kstate_pos_t pos)
+ int kstate_restore_nsproxy(struct kstate_context *ctx, kstate_ref_t *ref)
  {
- 	while (1) {
-@@ -279,6 +328,12 @@ static int task_struct_restorer(void *_tsk_ctx)
- 	rv = restore_nsproxy(ctx, &i->ref_nsproxy);
+ 	struct kstate_image_nsproxy *i;
+ 	struct nsproxy *nsproxy;
+-	struct pid_namespace *pid_ns;
+ #ifdef CONFIG_NET_NS
+ 	struct net *net_ns;
+ #endif
+@@ -416,9 +436,9 @@ int kstate_restore_nsproxy(struct kstate_context *ctx, kstate_ref_t *ref)
+ 	rv = restore_mnt_ns(ctx, &i->ref_mnt_ns, nsproxy);
  	if (rv < 0)
- 		goto out;
-+	rv = restore_real_cred(ctx, &i->ref_real_cred);
+ 		goto out_mnt_ns;
+-
+-	pid_ns = ctx->init_tsk->nsproxy->pid_ns;
+-	nsproxy->pid_ns = get_pid_ns(pid_ns);
++	rv = restore_pid_ns(ctx, &i->ref_pid_ns, nsproxy);
 +	if (rv < 0)
-+		goto out;
-+	rv = restore_cred(ctx, &i->ref_cred);
-+	if (rv < 0)
-+		goto out;
++		goto out_pid_ns;
  
- out:
- 	tsk_ctx->rv = rv;
+ #ifdef CONFIG_NET_NS
+ 	net_ns = ctx->init_tsk->nsproxy->net_ns;
+@@ -432,6 +452,8 @@ int kstate_restore_nsproxy(struct kstate_context *ctx, kstate_ref_t *ref)
+ 	pr_debug("restore nsproxy %p, ref {%llu, %u}, rv %d\n", nsproxy, (unsigned long long)ref->pos, ref->id, rv);
+ 	return rv;
+ 
++out_pid_ns:
++	put_mnt_ns(nsproxy->mnt_ns);
+ out_mnt_ns:
+ 	put_ipc_ns(nsproxy->ipc_ns);
+ out_ipc_ns:
+diff --git a/kernel/pid_namespace.c b/kernel/pid_namespace.c
+index 821722a..104bccb 100644
+--- a/kernel/pid_namespace.c
++++ b/kernel/pid_namespace.c
+@@ -5,11 +5,12 @@
+  *    (C) 2007 Pavel Emelyanov <xemul@openvz.org>, OpenVZ, SWsoft Inc.
+  *    (C) 2007 Sukadev Bhattiprolu <sukadev@us.ibm.com>, IBM
+  *     Many thanks to Oleg Nesterov for comments and help
+- *
++ * Copyright (C) 2000-2009 Parallels Holdings, Ltd.
+  */
+ 
+ #include <linux/pid.h>
+ #include <linux/pid_namespace.h>
++#include <linux/proc_fs.h>
+ #include <linux/syscalls.h>
+ #include <linux/err.h>
+ #include <linux/acct.h>
+@@ -191,3 +192,168 @@ static __init int pid_namespaces_init(void)
+ }
+ 
+ __initcall(pid_namespaces_init);
++
++#ifdef CONFIG_CHECKPOINT
++#include <linux/kstate.h>
++#include <linux/kstate-image.h>
++
++static int check_pid_ns(struct pid_namespace *pid_ns)
++{
++#ifdef CONFIG_BSD_PROCESS_ACCT
++	if (pid_ns->bacct) {
++		WARN_ON(1);
++		return -EINVAL;
++	}
++#endif
++	return 0;
++}
++
++static int collect_pid_ns(struct kstate_context *ctx, struct pid_namespace *pid_ns)
++{
++	int rv;
++
++	rv = check_pid_ns(pid_ns);
++	if (rv < 0)
++		return rv;
++	rv = kstate_collect_object(ctx, pid_ns, KSTATE_CTX_PID_NS);
++	pr_debug("collect pid_ns %p: rv %d\n", pid_ns, rv);
++	return rv;
++}
++
++int kstate_collect_all_pid_ns(struct kstate_context *ctx)
++{
++	struct kstate_object *obj;
++	int rv;
++
++	for_each_kstate_object(ctx, obj, KSTATE_CTX_NSPROXY) {
++		struct nsproxy *nsproxy = obj->o_obj;
++
++		rv = collect_pid_ns(ctx, nsproxy->pid_ns);
++		if (rv < 0)
++			return rv;
++	}
++	/* FIXME check for external references */
++	return 0;
++}
++
++static int dump_pid_ns(struct kstate_context *ctx, struct kstate_object *obj)
++{
++	struct pid_namespace *pid_ns = obj->o_obj;
++	struct kstate_image_pid_ns *i;
++	struct kstate_object *tmp;
++	int rv;
++
++	i = kstate_prepare_image(KSTATE_OBJ_PID_NS, sizeof(*i));
++	if (!i)
++		return -ENOMEM;
++
++	if (pid_ns == ctx->init_tsk->nsproxy->pid_ns)
++		i->ref_parent = KSTATE_REF_UNDEF;
++	else {
++		tmp = find_kstate_obj_by_ptr(ctx, pid_ns->parent, KSTATE_CTX_PID_NS);
++		i->ref_parent = tmp->o_ref;
++	}
++	i->last_pid = pid_ns->last_pid;	/* see /proc/loadavg */
++
++	rv = kstate_write_image(ctx, i, sizeof(*i), obj);
++	kfree(i);
++	pr_debug("dump pid_ns %p: ref {%llu, %u}, rv %d\n", pid_ns, (unsigned long long)obj->o_ref.pos, obj->o_ref.id, rv);
++	return rv;
++}
++
++int kstate_dump_all_pid_ns(struct kstate_context *ctx)
++{
++	struct kstate_object *obj;
++	unsigned int level, nr_dumped;
++	int rv;
++
++	/*
++	 * Unlike other namespaces, pid_ns are hierarchical via ->parent.
++	 *
++	 * Dump pid_ns in certain order to check for loops on restore cheaply:
++	 * lower ->level one goes first. For every pid_ns being restored
++	 * (except root one), it's parent pid_ns was restored already.
++	 * Unresolved ->ref_parent reference is treated like invalid image.
++	 *
++	 * pid_ns pins parent one, which means there are no holes in hierarchy
++	 * wrt ->level, which means loop is finite.
++	 */
++	level = ctx->init_tsk->nsproxy->pid_ns->level;
++	do {
++		nr_dumped = 0;
++		for_each_kstate_object(ctx, obj, KSTATE_CTX_PID_NS) {
++			struct pid_namespace *pid_ns = obj->o_obj;
++
++			if (pid_ns->level != level)
++				continue;
++			rv = dump_pid_ns(ctx, obj);
++			if (rv < 0)
++				return rv;
++			nr_dumped++;
++		}
++		level++;
++	} while (nr_dumped > 0);
++	return 0;
++}
++
++int kstate_restore_pid_ns(struct kstate_context *ctx, kstate_ref_t *ref)
++{
++	struct kstate_image_pid_ns *i;
++	struct pid_namespace *parent_pid_ns, *pid_ns;
++	int rv;
++
++	i = kstate_read_image(ctx, ref, KSTATE_OBJ_PID_NS, sizeof(*i));
++	if (IS_ERR(i))
++		return PTR_ERR(i);
++
++	if (kstate_ref_undefined(&i->ref_parent))
++		parent_pid_ns = ctx->init_tsk->nsproxy->pid_ns;
++	else {
++		struct kstate_object *tmp;
++
++		/*
++		 * Every pid_ns had child reaper alive. Otherwise restore
++		 * includes restore of parent pid_ns, check for loops,
++		 * fighting recursion...
++		 */
++		tmp = find_kstate_obj_by_ref(ctx, &i->ref_parent, KSTATE_CTX_PID_NS);
++		if (!tmp) {
++			rv = -EINVAL;
++			goto out_free_image;
++		}
++		parent_pid_ns = tmp->o_obj;
++	}
++
++	pid_ns = create_pid_namespace(parent_pid_ns);
++	if (IS_ERR(pid_ns)) {
++		rv = PTR_ERR(pid_ns);
++		goto out_free_image;
++	}
++	rv = pid_ns_prepare_proc(pid_ns);
++	if (rv < 0)
++		goto out_put_pid_ns;
++
++	pid_ns->last_pid = i->last_pid;
++	/*
++	 * Depend on child reaper being the first task restoring pid_ns and
++	 * pid_ns restore being done in current context.
++	 */
++	pid_ns->child_reaper = current;
++	kfree(i);
++
++	rv = kstate_restore_object(ctx, pid_ns, KSTATE_CTX_PID_NS, ref);
++	if (rv < 0)
++		goto out_release_proc;
++	pr_debug("restore pid_ns %p: ref {%llu, %u}, rv %d\n", pid_ns, (unsigned long long)ref->pos, ref->id, rv);
++	return rv;
++
++out_release_proc:
++	pid_ns_release_proc(pid_ns);
++out_put_pid_ns:
++	put_pid_ns(pid_ns);
++out_free_image:
++	kfree(i);
++	pr_debug("%s: return %d, ref {%llu, %u}\n", __func__, rv, (unsigned long long)ref->pos, ref->id);
++	return rv;
++}
++#endif
 -- 
 1.5.6.5
 
