@@ -1,67 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757883AbZEVSpj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757660AbZEVSsc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757883AbZEVSpj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 14:45:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752959AbZEVSpd
+	id S1757660AbZEVSsc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 14:48:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751448AbZEVSsZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 14:45:33 -0400
-Received: from mail.tmr.com ([64.65.253.246]:46376 "EHLO partygirl.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751955AbZEVSpc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 14:45:32 -0400
-Message-ID: <4A16F2C9.1000600@tmr.com>
-Date: Fri, 22 May 2009 14:45:29 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.21) Gecko/20090507 Fedora/1.1.16-1.fc9 SeaMonkey/1.1.16
+	Fri, 22 May 2009 14:48:25 -0400
+Received: from mail-bw0-f174.google.com ([209.85.218.174]:54225 "EHLO
+	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750990AbZEVSsZ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 May 2009 14:48:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=WWOiFG1NvK3sXugReYYIWEMPWhH+8PvJRjDl3CHHPEfVqpPvY30VHlH/6oRUQzlC6O
+         nqqL6vbpm3PkKgD9RuEt1s/rA1Q7HuE8ut5xwzxTSiBfhMQMPhpg9j3Jlov2TqUgD+1b
+         onCFBOdRQ1dmvkr47LpWfgbEDbw18Fg3r4MbI=
 MIME-Version: 1.0
-To: "Robert P. J. Day" <rpjday@crashcourse.ca>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: "make config" to another architecture doesn't relink include/asm
-References: <alpine.LFD.2.00.0905221219500.13933@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0905221219500.13933@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <ac3eb2510905221124y412dc3bdp65ad1b74373175a9@mail.gmail.com>
+References: <ac3eb2510905220821n629314c3tb113802f52abc67c@mail.gmail.com>
+	 <Pine.LNX.4.44L0.0905221149030.3006-100000@iolanthe.rowland.org>
+	 <ac3eb2510905221124y412dc3bdp65ad1b74373175a9@mail.gmail.com>
+Date: Fri, 22 May 2009 21:48:25 +0300
+Message-ID: <1295ed070905221148k78c443d6m3a270dd57c948da@mail.gmail.com>
+Subject: Re: How to tell whether a struct file is held by a process?
+From: Pantelis Koukousoulas <pktoss@gmail.com>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Kyle Moffett <kyle@moffetthome.net>, Al Viro <viro@zeniv.linux.org.uk>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert P. J. Day wrote:
->   should i expect this with a fresh tree on x86_64?
-> 
-> $ make distclean
-> $ make defconfig
-> $ make modules_prepare
-> $ ls -l include/asm
-> lrwxrwxrwx    1 rpjday rpjday     7 2009-05-22 12:24 asm -> asm-x86
-> $
-> 
->   oh, wait, i changed my mind, i want to switch architectures so start
-> over:
-> 
-> $ make clean
-> $ make ARCH=arm CROSS_COMPILE=arm-none-linux-gnueabi- omap3_beagle_defconfig
-> $ make ARCH=arm CROSS_COMPILE=arm-none-linux-gnueabi- uImage
-> scripts/kconfig/conf -s arch/arm/Kconfig
-> include/config/auto.conf:15:warning: symbol value 'arch/x86/configs/x86_64_defconfig' invalid for ARCH_DEFCONFIG
->   CHK     include/linux/version.h
-> make[1]: `include/asm-arm/mach-types.h' is up to date.
->   CHK     include/linux/utsrelease.h
->   UPD     include/linux/utsrelease.h
-> ERROR: the symlink include/asm points to asm-x86 but asm-arm was expected
->        set ARCH or save .config and run 'make mrproper' to fix it
-> make: *** [include/asm] Error 1
-> 
-> $ ls -l include/asm
-> lrwxrwxrwx 1 rpjday rpjday 7 2009-05-22 12:24 include/asm -> asm-x86
-> $
-> 
->   shouldn't it be sufficient that, if i do another "make ??_defconfig"
-> to another architecture, all traces of the previous configure are
-> erased and include/asm should be relinked automatically?
-> 
-Does "make distclean" (or maybe "make mrproper") get you to really clean status?
+>> The idea is that there will be one lock file per port.  So for example,
+>> a hub device with four ports might contain inside its sysfs device
+>> directory: ports/1, ..., ports/4.
+>
+> Sounds both good to me.
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+Yes, I 'm happy with that solution too.
+
+Thanks,
+Pantelis
