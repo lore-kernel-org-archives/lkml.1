@@ -1,60 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756814AbZEVGPi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756519AbZEVGSr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756814AbZEVGPi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 02:15:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755015AbZEVGPU
+	id S1756519AbZEVGSr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 02:18:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751323AbZEVGSk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 02:15:20 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:60497 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753892AbZEVGPS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 02:15:18 -0400
-Date: Fri, 22 May 2009 16:15:19 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "David S. Miller" <davem@davemloft.net>,
-       Neil Horman <nhorman@tuxdriver.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: linux-next: manual merge of the tracing tree with the net tree
-Message-Id: <20090522161519.97c8968b.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 22 May 2009 02:18:40 -0400
+Received: from e23smtp08.au.ibm.com ([202.81.31.141]:52809 "EHLO
+	e23smtp08.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750880AbZEVGSj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 May 2009 02:18:39 -0400
+Date: Fri, 22 May 2009 11:48:27 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: David Daney <ddaney@caviumnetworks.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Ralf Baechle <ralf@linux-mips.org>
+Subject: Re: [Patch 01/12] Prepare the code for Hardware Breakpoint
+	interfaces
+Message-ID: <20090522061827.GA9611@in.ibm.com>
+Reply-To: prasad@linux.vnet.ibm.com
+References: <20090521095613.834622717@prasadkr_t60p.in.ibm.com> <20090521140033.GB13849@in.ibm.com> <4A157E66.4040805@caviumnetworks.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A157E66.4040805@caviumnetworks.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Thu, May 21, 2009 at 09:16:38AM -0700, David Daney wrote:
+> K.Prasad wrote:
+> [...]
+>> +struct hw_breakpoint {
+>> +	void (*triggered)(struct hw_breakpoint *, struct pt_regs *);
+>> +	struct arch_hw_breakpoint info;
+>> +};
+>> +/*
+>> + * len and type values are defined in include/asm/hw_breakpoint.h.
+>> + * Available values vary according to the architecture.  On i386 the
+>> + * possibilities are:
+>> + *
+>> + *	HW_BREAKPOINT_LEN_1
+>> + *	HW_BREAKPOINT_LEN_2
+>> + *	HW_BREAKPOINT_LEN_4
+>> + *	HW_BREAKPOINT_RW
+>> + *	HW_BREAKPOINT_READ
+>> + *
+>> + * On other architectures HW_BREAKPOINT_LEN_8 may be available, and the
+>> + * 1-, 2-, and 4-byte lengths may be unavailable.  There also may be
+>> + * HW_BREAKPOINT_WRITE.  You can use #ifdef to check at compile time.
+>> + */
+>> +
+>
+> I question weather having all these symbols for lengths is the proper  
+> approach.
+>
+> On mips we would currently have:
+>
+> HW_BREAKPOINT_LEN_8
+> HW_BREAKPOINT_LEN_16
+> HW_BREAKPOINT_LEN_32
+> HW_BREAKPOINT_LEN_64
+> HW_BREAKPOINT_LEN_128
+> HW_BREAKPOINT_LEN_256
+> HW_BREAKPOINT_LEN_512
+> HW_BREAKPOINT_LEN_1024
+> HW_BREAKPOINT_LEN_2048
+>
+> If we were to use a debug agent hooked into the MIPS EJTAG debugger
+> support registers, 63 different even powers of 2 are valid lengths.
+>
+> Determining the range of allowed breakpoint lengths, converting back
+> and forth between numeric values that are likely to be used in a
+> debugger, and these symbolic values that the proposed kernel interface
+> would use, could be a little ugly.
+>
+> Have you thought about passing just the raw length?  And perhaps
+> having:
+>
+> HW_BREAKPOINT_LEN_MASK that would have a bit set for each log2 of a
+> legal length?
+>
 
-Today's linux-next merge of the tracing tree got a conflict in
-net/core/drop_monitor.c between commit
-4ea7e38696c7e798c47ebbecadfd392f23f814f9 ("dropmon: add ability to detect
-when hardware dropsrxpackets") from the net tree and commit
-ad8d75fff811a6a230f7f43b05a6483099349533 ("tracing/events: move trace
-point headers into include/trace/events") from the tracing tree.
+As explained to you here: http://lkml.org/lkml/2008/12/16/553/, defining
+every possible length of the HW Breakpoint works for x86, but may not be
+suitable for MIPS.
 
-I fixed it up (see below) and can carry the fix as necessary.  I suspect
-that trace/napi.h should eventually go into trace/events as well.
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+As you might have seen, the HW_BREAKPOINT_LEN_* values are defined in
+x86-specific files and will be compared against 'len' field in
+arch-specific 'struct arch_hw_breakpoint', for the reason that these
+attributes are not valid for all architectures and have to be defined
+for each processor in their own way.
 
-diff --cc net/core/drop_monitor.c
-index a6c2ac2,b75b6ce..0000000
---- a/net/core/drop_monitor.c
-+++ b/net/core/drop_monitor.c
-@@@ -22,10 -22,8 +22,10 @@@
-  #include <linux/timer.h>
-  #include <linux/bitops.h>
-  #include <net/genetlink.h>
- +#include <net/netevent.h>
-  
-- #include <trace/skb.h>
-+ #include <trace/events/skb.h>
- +#include <trace/napi.h>
-  
-  #include <asm/unaligned.h>
-  
+Defining a HW_BREAKPOINT_LEN_MASK mask and validation of the input
+length to check if it is a valid power of 2 can still be done for MIPS
+in the arch-specific files and I don't see any part of the generic
+interface being a hurdle during its implementation. Let me know if you
+think there's any.
+
+> Or perhaps add a function to the interface that would validate the
+> length?
+> 
+
+arch_validate_hwbkpt_settings() invoked during
+register_<kernel>/<user>_hw_breakpoint() is that function which
+validates the length.
+
+> David Daney
+
+Thanks,
+K.Prasad
+
