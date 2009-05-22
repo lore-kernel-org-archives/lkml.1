@@ -1,61 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757540AbZEVOLo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757005AbZEVOT5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757540AbZEVOLo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 10:11:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755938AbZEVOLh
+	id S1757005AbZEVOT5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 10:19:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753805AbZEVOTr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 10:11:37 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:47636 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755203AbZEVOLh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 10:11:37 -0400
-Date: Fri, 22 May 2009 15:12:35 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Pantelis Koukousoulas <pktoss@gmail.com>
-Cc: Kernel development list <linux-kernel@vger.kernel.org>,
-       Kay Sievers <kay.sievers@vrfy.org>, Al Viro <viro@zeniv.linux.org.uk>,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: How to tell whether a struct file is held by a process?
-Message-ID: <20090522151235.26432fbc@lxorguk.ukuu.org.uk>
-In-Reply-To: <1295ed070905220652q55c65e8bx992940b626eecda3@mail.gmail.com>
-References: <ac3eb2510905211407l3aec14acx2572a2ad4e675b9@mail.gmail.com>
-	<Pine.LNX.4.44L0.0905211724050.3914-100000@iolanthe.rowland.org>
-	<1295ed070905220630q67c62569o9753425abf529742@mail.gmail.com>
-	<20090522144343.7b26b3a8@lxorguk.ukuu.org.uk>
-	<1295ed070905220652q55c65e8bx992940b626eecda3@mail.gmail.com>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 22 May 2009 10:19:47 -0400
+Received: from tomts31.bellnexxia.net ([209.226.175.105]:58466 "EHLO
+	tomts31-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753396AbZEVOTq convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 May 2009 10:19:46 -0400
+X-Greylist: delayed 5088 seconds by postgrey-1.27 at vger.kernel.org; Fri, 22 May 2009 10:19:46 EDT
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AnCaACs7FkrR4q+H/2dsb2JhbACBL4oDgluSE6cfiyGDdwU
+X-Mailer: Openwave WebEngine, version 2.8.11 (webedge20-101-194-20030622)
+X-Originating-IP: [41.219.137.100]
+From: =?ISO-8859-1?B?qUxH?= Alert <chainsawearle@nb.aibn.com>
+Reply-To: brownwilliams09@btinternet.com
+To: <info@lotto.org>
+Subject: Bonanza
+Date: Fri, 22 May 2009 8:54:47 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Message-Id: <20090522125459.NPZI1756.tomts31-srv.bellnexxia.net@toip39-bus.srvr.bell.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Who is "me" in this case? Assuming that those writing the userspace programs
-> are cooperative though, I agree. We can declare that whatever program does not
+You have just been awarded,the sum of  £950.000.00 in the  ELECTRONICS Award 2009, Anniversary Bonanza. held in May.
 
-The software authors.
+Names:............. Address:..............
+Country:................ Age:..........
 
-> play by the (userspace locking) rules is crap and either fix it (if open source)
-> or refuse to install it / complain (if closed source).
+Regard
 
-Which for the general case I think is reasonable. If the bad program is
-determined to be bad then it can equally just ptrace the process with the
-file open and drive it that way.
-
-> >
-> >> So, if there is a clean / acceptable way to handle the reset issue in userspace
-> >
-> > Firstly can you explain *why* you think there is a problem ?
-> >
-> 
-> I admit this could be a bias from the way I imagined the whole thing
-> to work before
-> this discussion. I think I can see how a userspace locking scheme based on port
-> numbers could avoid also the reset problem
-
-That was a serious request to understand what you think the problem is
-and what problem is worrying you. I'm deeply sceptical of the need for
-any kernel locking on this one but I'd like to understand better why you
-think there are some cases it would be needed.
