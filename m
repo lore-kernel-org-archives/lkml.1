@@ -1,39 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757985AbZEVSX7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757656AbZEVSaH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757985AbZEVSX7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 14:23:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753419AbZEVSXw
+	id S1757656AbZEVSaH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 14:30:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753488AbZEVS35
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 14:23:52 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:46274 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751729AbZEVSXw (ORCPT
+	Fri, 22 May 2009 14:29:57 -0400
+Received: from mail-fx0-f168.google.com ([209.85.220.168]:50264 "EHLO
+	mail-fx0-f168.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753419AbZEVS35 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 14:23:52 -0400
-To: lkml@MoreThan.org
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [BUG FIX] Make x86_32 uni-processor Atomic ops, Atomic
-From: Andi Kleen <andi@firstfloor.org>
-References: <200905221139.26941.lkml@morethan.org>
-Date: Fri, 22 May 2009 20:23:48 +0200
-In-Reply-To: <200905221139.26941.lkml@morethan.org> (Michael S. Zick's message of "Fri, 22 May 2009 11:39:24 -0500")
-Message-ID: <87hbzdngi3.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+	Fri, 22 May 2009 14:29:57 -0400
+X-Greylist: delayed 322 seconds by postgrey-1.27 at vger.kernel.org; Fri, 22 May 2009 14:29:56 EDT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.44L0.0905221149030.3006-100000@iolanthe.rowland.org>
+References: <ac3eb2510905220821n629314c3tb113802f52abc67c@mail.gmail.com> 
+	<Pine.LNX.4.44L0.0905221149030.3006-100000@iolanthe.rowland.org>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Fri, 22 May 2009 20:24:15 +0200
+Message-ID: <ac3eb2510905221124y412dc3bdp65ad1b74373175a9@mail.gmail.com>
+Subject: Re: How to tell whether a struct file is held by a process?
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Kyle Moffett <kyle@moffetthome.net>,
+       Pantelis Koukousoulas <pktoss@gmail.com>,
+       Al Viro <viro@zeniv.linux.org.uk>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Michael S. Zick" <lkml@morethan.org> writes:
+On Fri, May 22, 2009 at 17:54, Alan Stern <stern@rowland.harvard.edu> wrote:
 
-> Found in the bit-rot for 32-bit, x86, Uni-processor builds:
+>> Would releasing the "lock" trigger a kernel-driver-binding call?
+>
+> No.  If the lock owner wants to bind kernel drivers, it can use the
+> existing API in libusb after releasing the lock.  This might cause
+> problems if the owning process terminates abnormally, but I think we
+> can live with that.
+>
+>> The lock will always lock all devices of a specific hub?
+>
+> The idea is that there will be one lock file per port.  So for example,
+> a hub device with four ports might contain inside its sysfs device
+> directory: ports/1, ..., ports/4.
 
-Actually uni processor should not use the lock prefix 
-because it doesn't need it; the only exception are some special
-ops used in para-virtualization which are special cased.
+Sounds both good to me.
 
--Andi
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
+Kay
