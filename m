@@ -1,150 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758524AbZEVWcs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758358AbZEVWoz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758524AbZEVWcs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 18:32:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754481AbZEVWcl
+	id S1758358AbZEVWoz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 18:44:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757773AbZEVWor
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 18:32:41 -0400
-Received: from qw-out-2122.google.com ([74.125.92.25]:30499 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753816AbZEVWcl convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 18:32:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=cVhTgxGm/fYJhWXLPj4BKRpX6ImckeYAv1WYux47mL0Unr7Lq/FFVOYT4E5T0j51BQ
-         ExBMNU8+/ijEjcWLE+SAYfIZImnaK2YLZhYVSmOJGdmQChYNcB8N62rUWaAFnF9Z3Xm0
-         iN9olnyhe2jE8HtIXInPB45bLuY+e96ylHtQ4=
+	Fri, 22 May 2009 18:44:47 -0400
+Received: from claw.goop.org ([74.207.240.146]:54481 "EHLO claw.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757529AbZEVWor (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 May 2009 18:44:47 -0400
+Message-ID: <4A172ADE.3010702@goop.org>
+Date: Fri, 22 May 2009 15:44:46 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-In-Reply-To: <200905222325.27950.rjw@sisk.pl>
-References: <1241483224-7113-1-git-send-email-khilman@deeprootsystems.com> 
-	<4d34a0a70905211953r1138a554w3b7aa99770ba15e2@mail.gmail.com> 
-	<4d34a0a70905220904h6734a8f1y2b2cffe08b6afa8b@mail.gmail.com> 
-	<200905222325.27950.rjw@sisk.pl>
-From: Kim Kyuwon <chammoru@gmail.com>
-Date: Sat, 23 May 2009 07:32:22 +0900
-Message-ID: <4d34a0a70905221532l772d03b6gb6436f0b8eb10274@mail.gmail.com>
-Subject: Re: [PATCH] PM: suspend_device_irqs(): don't disable wakeup IRQs
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Kyungmin Park <kyungmin.park@samsung.com>,
-       Kevin Hilman <khilman@deeprootsystems.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: "Xin, Xiaohui" <xiaohui.xin@intel.com>, Chuck Ebbert <cebbert@redhat.com>,
+       Ingo Molnar <mingo@elte.hu>, "Li, Xin" <xin.li@intel.com>,
+       "Nakajima, Jun" <jun.nakajima@intel.com>, Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>
+Subject: Re: Performance overhead of paravirt_ops on native identified
+References: <4A0B62F7.5030802@goop.org> <20090521184233.3c3e97ad@dhcp-100-2-144.bos.redhat.com> <4A15DA4E.2090505@goop.org> <C85CEDA13AB1CF4D9D597824A86D2B9005760A96DA@PDSMSX501.ccr.corp.intel.com> <4A1629BA.9070309@goop.org> <C85CEDA13AB1CF4D9D597824A86D2B9005760A9940@PDSMSX501.ccr.corp.intel.com> <4A16D3DF.5000600@zytor.com>
+In-Reply-To: <4A16D3DF.5000600@zytor.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 23, 2009 at 6:25 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Friday 22 May 2009, Kim Kyuwon wrote:
->> On Fri, May 22, 2009 at 11:53 AM, Kim Kyuwon <chammoru@gmail.com> wrote:
->> > On Wed, May 6, 2009 at 8:27 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->> >> On Wednesday 06 May 2009, Kevin Hilman wrote:
->> >>> Arve Hjønnevåg <arve@android.com> writes:
->> >>>
->> >>> > On Tue, May 5, 2009 at 8:52 AM, Kevin Hilman
->> >>> > <khilman@deeprootsystems.com> wrote:
->> >>> >> Andrew Morton <akpm@linux-foundation.org> writes:
->> >>> >>
->> >>> >>> On Mon,  4 May 2009 17:27:04 -0700 Kevin Hilman <khilman@deeprootsystems.com> wrote:
->> >>> >>>
->> >>> >>>> Interrupts that are flagged as wakeup sources via set_irq_wake()
->> >>> >>>> should not be disabled for suspend.
->> >>> >>>>
->> >>> >>>
->> >>> >>> Why not?
->> >>> >>>
->> >>> >>
->> >>> >> If an interrupt is a wakeup source, and it is disabled at the chip
->> >>> >> level, it will no longer generate interrupts, and thus no longer wake
->> >>> >> up the system.
->> >>> >>
->> >>> >> I'd be interested in hearing why wakeup interrupts should be disabled
->> >>> >> during suspend.
->> >>
->> >> That depends on whether or not they are used for anything else than wake-up.
->> >>
->> >>>
->> >>> [...]
->> >>>
->> >>> >>>
->> >>> >>> If this fixes some bug then please provide a description of that bug?
->> >>> >>
->> >>> >> The bug is that on TI OMAP, interrupts that are used for wakeup events
->> >>> >> are disabled by this code causing the system to no longer wake up.
->> >>> >
->> >>> > What do you do if the interrupt triggers right after your driver has
->> >>> > returned from its late suspend hook?
->> >>>
->> >>> If it's a wakeup IRQ, I assume you want it to prevent suspend.
->> >>>
->> >>> But I don't see how that can happen in the current code. IIUC, by the
->> >>> time your late suspend hook is run, your device IRQ is already
->> >>> disabled, so it won't trigger an interrupt that will be caught by
->> >>> check_wakeup_irqs() anyways.
->> >>
->> >> My understanding of __disable_irq() was that it didn't actually disable the
->> >> IRQ at the hardware level, allowing the CPU to actually receive the interrupt
->> >> and acknowledge it, but preventing the device driver for receiving it.  Does
->> >> it work differently on the affected systems?
->> >
->> > Hi, Rafael.
->> > Sorry for bring the old issue but please let me ask you about
->> > suspend_device_irqs() function.
->> >
->> > __disable_irq() disables the IRQ at the hardware level in the
->> > following irq_chips
->> >
->> > i8259A_chip
->> > i8259_pic
->> > i8259A_chip
->> > bfin_internal_irqchip
->> > crisv10_irq_type
->> > crisv32_irq_type
->> > h8300irq_chip
->> > m_irq_chip
->> > mn10300_cpu_pic_level
->> > xtensa_irq_chip
->> > iop13xx_msi_chip
->> > msi_irq
->> >
->> > Because these irq_chips mask interrupts in 'disable' hook.
->> >
->> > Thus, your suspend_device_irqs() function disables all IRQs at the
->> > hardware level on all architectures which use irq_chips listed above
->> > in suspend state.
->> > Is this really what you wanted?
->> >
->> > If interrupt can wake up the system from suspend in some architectures
->> > and if disable_irq_wake is not supported in these architectures, I
->> > wonder if suspend_device_irqs() don't allow waking up by interrupt.
->> >
->> > Regards,
->> > Kyuwon
->> >
->>
->> I saw resume_device_irqs() is invoked after arch_suspend_enable_irqs()
->> in your resume code.
->> So in this gap between resume_device_irqs() and
->> arch_suspend_enable_irqs(), a few interrupts would be discarded.
->> i.e, a few data would be lost.
->>
->> If keypad wake up the system, first key pressed information would be lost.
->> If I2C, USB, SPI, UART wake up the system, first a few data would be lost.
->>
->> Did you also consider this issue?
+H. Peter Anvin wrote:
+> That's an indirect jump, though.  I don't think anyone was suggesting
+> using an indirect jump; the final patched version should be a direct
+> jump (instead of a direct call.)
 >
-> I think it would happen anyway with the old code, wouldn't it?
+> I can see how indirect jumps might be slower, since they are probably
+> not optimized as aggressively in hardware as indirect calls -- indirect
+> jumps are generally used for switch tables, which often have low
+> predictability, whereas indirect calls are generally used for method
+> calls, which are (a) incredibly important for OOP languages, and (b)
+> generally highly predictable on the dynamic scale.
+>
+> However, direct jumps and calls don't need prediction at all (although
+> of course rets do.)
 
-That's not quite right.
+I did a quick experiment to see how many sites this optimisation could 
+actually affect.  Firstly, it does absolutely nothing with frame 
+pointers enabled.  Arranging for no frame pointers is quite tricky, 
+since it means disabling all debugging, tracing and other things.
 
-For example, let's assume a keypad device is alive in suspend/resume
-state to wake up the system. Before arch_suspend_enable_irqs(), none
-of keypad irqs is dropped. It is just pending.
-But in your code, a few irqs are discarded due to your resume_device_irqs().
+With no frame pointers, its about 26 of 5400 indirect calls are 
+immediately followed by ret (not all of those sites are pvops calls).  
+With preempt disabled, this goes up to 45 sites.
 
-Regards,
-Kyuwon
+I haven't done any actual runtime tests, but a quick survey of the 
+affected sites shows that only a couple are performance-sensitive; 
+_spin_lock and _spin_lock_irq and _spin_lock_irqsave are the most obvious.
+
+    J
