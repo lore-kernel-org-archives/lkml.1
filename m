@@ -1,139 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756584AbZEVCml@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755970AbZEVC7J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756584AbZEVCml (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 22:42:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754745AbZEVCm1
+	id S1755970AbZEVC7J (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 22:59:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751840AbZEVC65
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 22:42:27 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:50995 "EHLO song.cn.fujitsu.com"
+	Thu, 21 May 2009 22:58:57 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:62345 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1754327AbZEVCm0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 22:42:26 -0400
-Message-ID: <4A1610B6.7010203@cn.fujitsu.com>
-Date: Fri, 22 May 2009 10:40:54 +0800
-From: Zhaolei <zhaolei@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	id S1751831AbZEVC65 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 May 2009 22:58:57 -0400
+Message-ID: <4A16153C.2080004@cn.fujitsu.com>
+Date: Fri, 22 May 2009 11:00:12 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Tom Zanussi <tzanussi@gmail.com>, Oleg Nesterov <oleg@redhat.com>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH v2] tracing/workqueue: Get rid of searching last executed
- worklet in probe_worklet_complete()
-References: <4A153345.3040905@cn.fujitsu.com>
-In-Reply-To: <4A153345.3040905@cn.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Paul Menage <menage@google.com>, LKML <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: [PATCH] cgroups: handle failure of cgroup_populate_dir() at mount/remount
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We don't need search workqueue's worklet list for worklet which was latest
-executed, instead, we can use a pointer in cpu_workqueue_stats to remember
-which worklet was just executed.
+Now we have 'stat' file in both memory and cpuacct subsystems. If we
+mount these 2 subsystems with option 'noprefix', the creation of 'stat'
+file for cpuacct will fail, but without any notificatin to the user.
 
-Thanks Oleg for pointing it out.
+With this patch, we fail the mount/remount in this case.
 
-Changelog:
-v1->v2: Oleg pointed out that if searching executed workfunc_stats failed
-in probe_worklet_execute(), for example, workfunc_stats's memory allocation
-failed previously, cpu_workqueue_stats->last_workfunc is not set to correct
-value, and it will cause wrong accessing in probe_worklet_complete().
-This problem is fixed in v2.
-
-Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
-Reported-by: Oleg Nesterov <oleg@redhat.com>
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 ---
- kernel/trace/trace_workqueue.c |   39 ++++++++++++++++-----------------------
- 1 files changed, 16 insertions(+), 23 deletions(-)
+ kernel/cgroup.c |   18 ++++++++++++++++--
+ 1 files changed, 16 insertions(+), 2 deletions(-)
 
-diff --git a/kernel/trace/trace_workqueue.c b/kernel/trace/trace_workqueue.c
-index c67be60..740de3b 100644
---- a/kernel/trace/trace_workqueue.c
-+++ b/kernel/trace/trace_workqueue.c
-@@ -25,13 +25,6 @@ struct workfunc_stats {
- 	unsigned int			inserted;
- 	unsigned int			executed;
- 
--	/*
--	 * save latest work_struct's pointer to use as identifier in
--	 * probe_worklet_complete, because we can't use work_struct->...
--	 * after worklet got executed
--	 */
--	void				*work;
--
- 	/* save execution time temporarily for calculate executed time */
- 	u64				start_time;
- 	u64				max_executed_time;
-@@ -46,10 +39,17 @@ struct cpu_workqueue_stats {
- 	/* Protected by cpu workqueue lock */
- 	unsigned int		inserted;
- 	unsigned int		executed;
-+
- 	/* list of struct workfunc_stats in this workqueue */
- 	struct list_head	workfunclist;
- 
- 	/*
-+	 * pointer to last executed worklet's workfunc_stats in this workqueue,
-+	 * used by probe_worklet_complete()
-+	 */
-+	struct workfunc_stats *last_workfunc;
-+
-+	/*
- 	 * the task maybe destroyed when we read stat file
- 	 * we define it to void * because we only use it as a identifier
- 	 */
-@@ -163,9 +163,10 @@ found_wq:
- 		if (wfnode->func == work->func) {
- 			wfnode->executed++;
- 			wfnode->start_time = trace_clock_global();
--			wfnode->work = work;
-+			node->last_workfunc = wfnode;
- 			goto found_wf;
- 		}
-+	node->last_workfunc = NULL;
- 	pr_debug("trace_workqueue: worklet not found\n");
- 	goto end;
- 
-@@ -180,7 +181,7 @@ probe_worklet_complete(struct task_struct *wq_thread, void *work)
+diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+index a7267bf..eab83f7 100644
+--- a/kernel/cgroup.c
++++ b/kernel/cgroup.c
+@@ -896,6 +896,7 @@ static int parse_cgroupfs_options(char *data,
+ static int cgroup_remount(struct super_block *sb, int *flags, char *data)
  {
- 	int cpu = cpumask_first(&wq_thread->cpus_allowed);
- 	struct cpu_workqueue_stats *node;
--	struct workfunc_stats *wfnode;
-+	u64 executed_time;
- 	unsigned long flags;
+ 	int ret = 0;
++	unsigned long subsys_bits;
+ 	struct cgroupfs_root *root = sb->s_fs_info;
+ 	struct cgroup *cgrp = &root->top_cgroup;
+ 	struct cgroup_sb_opts opts;
+@@ -914,12 +915,17 @@ static int cgroup_remount(struct super_block *sb, int *flags, char *data)
+ 		goto out_unlock;
+ 	}
  
- 	spin_lock_irqsave(&workqueue_cpu_stat(cpu)->lock, flags);
-@@ -192,22 +193,14 @@ probe_worklet_complete(struct task_struct *wq_thread, void *work)
- 	goto end;
++	subsys_bits = root->subsys_bits;
+ 	ret = rebind_subsystems(root, opts.subsys_bits);
+ 	if (ret)
+ 		goto out_unlock;
  
- found_wq:
--	list_for_each_entry(wfnode, &node->workfunclist, list) {
--		u64 executed_time;
-+	if (!node->last_workfunc)
-+		goto end;
+ 	/* (re)populate subsystem files */
+-	cgroup_populate_dir(cgrp);
++	ret = cgroup_populate_dir(cgrp);
++	if (ret) {
++		rebind_subsystems(root, subsys_bits);
++		goto out_unlock;
++	}
  
--		if (wfnode->work != work)
--			continue;
-+	executed_time = trace_clock_global() - node->last_workfunc->start_time;
-+	node->last_workfunc->total_time += executed_time;
-+	if (executed_time > node->last_workfunc->max_executed_time)
-+		node->last_workfunc->max_executed_time = executed_time;
+ 	if (opts.release_agent)
+ 		strcpy(root->release_agent_path, opts.release_agent);
+@@ -1122,9 +1128,13 @@ static int cgroup_get_sb(struct file_system_type *fs_type,
+ 		BUG_ON(!list_empty(&root_cgrp->children));
+ 		BUG_ON(root->number_of_cgroups != 1);
  
--		executed_time = trace_clock_global() - wfnode->start_time;
--		wfnode->total_time += executed_time;
--		if (executed_time > wfnode->max_executed_time)
--			wfnode->max_executed_time = executed_time;
--		goto found_wf;
--	}
--	pr_debug("trace_workqueue: worklet not found\n");
--	goto end;
--
--found_wf:
- end:
- 	spin_unlock_irqrestore(&workqueue_cpu_stat(cpu)->lock, flags);
+-		cgroup_populate_dir(root_cgrp);
++		ret = cgroup_populate_dir(root_cgrp);
++
+ 		mutex_unlock(&inode->i_mutex);
+ 		mutex_unlock(&cgroup_mutex);
++
++		if (ret)
++			goto drop_new_super;
+ 	}
+ 
+ 	simple_set_mnt(mnt, sb);
+@@ -1803,6 +1813,10 @@ int cgroup_add_file(struct cgroup *cgrp,
+ 		dput(dentry);
+ 	} else
+ 		error = PTR_ERR(dentry);
++
++	if (error)
++		printk(KERN_WARNING "cgroup: Failed to create file '%s': %d\n",
++		       name, error);
+ 	return error;
  }
+ 
 -- 
-1.5.5.3
-
+1.5.4.rc3
 
