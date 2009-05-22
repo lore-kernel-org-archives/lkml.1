@@ -1,60 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756355AbZEVIzQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757034AbZEVIzi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756355AbZEVIzQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 04:55:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752664AbZEVIzF
+	id S1757034AbZEVIzi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 04:55:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753338AbZEVIz1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 04:55:05 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:62127 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751920AbZEVIzD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 04:55:03 -0400
-Message-ID: <4A166829.6070608@cn.fujitsu.com>
-Date: Fri, 22 May 2009 16:54:01 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
+	Fri, 22 May 2009 04:55:27 -0400
+Received: from smtp.citrix.com ([66.165.176.89]:11773 "EHLO SMTP.CITRIX.COM"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752664AbZEVIz0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 May 2009 04:55:26 -0400
+X-IronPort-AV: E=Sophos;i="4.41,232,1241409600"; 
+   d="scan'208";a="4393333"
+Subject: Re: swiotlb: remove __weak hooks in favour of
+	architecture-specific functions
+From: Ian Campbell <Ian.Campbell@eu.citrix.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Becky Bruce <beckyb@kernel.crashing.org>, Olaf Kirch <okir@suse.de>,
+       Ingo Molnar <mingo@elte.hu>, Greg KH <gregkh@suse.de>,
+       xen-devel <xendevel@lists.xensource.com>,
+       x86 maintainers <x86@kernel.org>, lkml <linux-kernel@vger.kernel.org>,
+       Tony Breeds <tony@bakeyournoodle.com>
+In-Reply-To: <4A1585AA.9010002@oracle.com>
+References: <1242906335.22654.188.camel@zakaz.uk.xensource.com>
+	 <1242922528-5982-1-git-send-email-ian.campbell@citrix.com>
+	 <4A1585AA.9010002@oracle.com>
+Content-Type: text/plain
+Organization: Citrix Systems, Inc.
+Date: Fri, 22 May 2009 09:55:24 +0100
+Message-ID: <1242982524.22654.218.camel@zakaz.uk.xensource.com>
 MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       jens.axboe@oracle.com, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       righi.andrea@gmail.com, agk@redhat.com, dm-devel@redhat.com,
-       snitzer@redhat.com, m-ikeda@ds.jp.nec.com, akpm@linux-foundation.org
-Subject: Re: [PATCH 04/18] io-controller: Modify cfq to make use of flat elevator
- fair queuing
-References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com> <1241553525-28095-5-git-send-email-vgoyal@redhat.com>
-In-Reply-To: <1241553525-28095-5-git-send-email-vgoyal@redhat.com>
-Content-Type: text/plain; charset=UTF-8
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Vivek,
+On Thu, 2009-05-21 at 12:47 -0400, Randy Dunlap wrote:
+> Try these.  They are fairly current.  I have used several of them.
+> 
+> http://bakeyournoodle.com/cross/
 
-Since thinking time logic is moving to common layer, corresponding items
-in cic is not needed.
+Thanks for the pointer, these look ideal.
 
-Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
----
-diff --git a/include/linux/iocontext.h b/include/linux/iocontext.h
-index ed52a1f..1fe9d78 100644
---- a/include/linux/iocontext.h
-+++ b/include/linux/iocontext.h
-@@ -42,10 +42,6 @@ struct cfq_io_context {
- 	unsigned long last_end_request;
- 	sector_t last_request_pos;
- 
--	unsigned long ttime_total;
--	unsigned long ttime_samples;
--	unsigned long ttime_mean;
--
- 	unsigned int seek_samples;
- 	u64 seek_total;
- 	sector_t seek_mean;
-
+Ian.
 
 
