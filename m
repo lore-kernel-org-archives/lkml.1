@@ -1,30 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758601AbZEVFFW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758398AbZEVFEU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758601AbZEVFFW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 01:05:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755398AbZEVE4n
+	id S1758398AbZEVFEU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 01:04:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755578AbZEVE4g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 00:56:43 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:45240 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755999AbZEVE4h (ORCPT
+	Fri, 22 May 2009 00:56:36 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:19352 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756223AbZEVE4a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 00:56:37 -0400
+	Fri, 22 May 2009 00:56:30 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=EkL3px6zkVtAxmY/rCLqbe+49xB3b1XGyazH+1fkAuS4+WVViHb7eTnC2oQkxhYW3A
-         E2MsXX8rTU18qwBTasM93T89ECPnrZRWob/l5g1jtZd96HtLOgF3W17EM0BRbbOCl8lp
-         OQRCbmgHA/1bthAp7uPkcAxDFB7YOSFqHkmg4=
+        b=iRdKbQY/4q61NkmShW5xB5BrdI9rplmT0JvUgXbqFSifF7vAMx++uv0T/OfXw7v5jR
+         Qu3E6SNgAoD626JlApyYIkmkWrpbKbcLXYJ+NyvHXgH5PhybC7L8shXC9LLEWgII5v3V
+         l/31fK+i0D+kyhGZayk2dI9sA/QWqdKX5dL6Q=
 From: Alexey Dobriyan <adobriyan@gmail.com>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
        torvalds@linux-foundation.org, xemul@parallels.com,
        orenl@cs.columbia.edu, serue@us.ibm.com, dave@linux.vnet.ibm.com,
        mingo@elte.hu, Alexey Dobriyan <adobriyan@gmail.com>
-Subject: [PATCH 38/38] C/R: checkpoint/restart struct sighand_struct
-Date: Fri, 22 May 2009 08:55:32 +0400
-Message-Id: <1242968132-1044-38-git-send-email-adobriyan@gmail.com>
+Subject: [PATCH 34/38] C/R: checkpoint/restore struct user
+Date: Fri, 22 May 2009 08:55:28 +0400
+Message-Id: <1242968132-1044-34-git-send-email-adobriyan@gmail.com>
 X-Mailer: git-send-email 1.5.6.5
 In-Reply-To: <1242968132-1044-1-git-send-email-adobriyan@gmail.com>
 References: <1242968132-1044-1-git-send-email-adobriyan@gmail.com>
@@ -32,283 +32,228 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Note, user_namespace is in next patch as well as ->creator loop issue.
+
 Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
 ---
- arch/x86/include/asm/signal.h  |    2 +
- include/linux/kstate-image.h   |   17 +++++
- include/linux/kstate.h         |   29 ++++++++
+ include/linux/kstate-image.h   |    8 +++
+ include/linux/kstate.h         |    5 ++
+ kernel/cred.c                  |   28 +++++++++-
  kernel/kstate/cpt-sys.c        |    6 ++
  kernel/kstate/kstate-context.c |    5 ++
  kernel/kstate/kstate-object.c  |    3 +
- kernel/kstate/kstate-task.c    |   32 +++++++++
- kernel/signal.c                |  140 ++++++++++++++++++++++++++++++++++++++++
- 8 files changed, 234 insertions(+), 0 deletions(-)
+ kernel/user.c                  |  121 ++++++++++++++++++++++++++++++++++++++++
+ 7 files changed, 174 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/include/asm/signal.h b/arch/x86/include/asm/signal.h
-index 7761a5d..f7c9040 100644
---- a/arch/x86/include/asm/signal.h
-+++ b/arch/x86/include/asm/signal.h
-@@ -140,6 +140,7 @@ struct sigaction {
- 	__sigrestore_t sa_restorer;
- 	sigset_t sa_mask;		/* mask last for extensibility */
- };
-+#define sa_restorer sa_restorer
- 
- struct k_sigaction {
- 	struct sigaction sa;
-@@ -170,6 +171,7 @@ struct sigaction {
- 	__sigrestore_t sa_restorer;
- 	sigset_t sa_mask;		/* mask last for extensibility */
- };
-+#define sa_restorer sa_restorer
- 
- struct k_sigaction {
- 	struct sigaction sa;
 diff --git a/include/linux/kstate-image.h b/include/linux/kstate-image.h
-index 700fc62..38fb1a4 100644
+index dfd71ea..605a2b5 100644
 --- a/include/linux/kstate-image.h
 +++ b/include/linux/kstate-image.h
-@@ -18,6 +18,9 @@ static inline int kstate_ref_undefined(kstate_ref_t *ref)
- 	return ref->pos == 0 && ref->id == 0;
- }
- 
-+typedef __u8 kstate_sigset_t[16];
-+typedef __u64 kstate_ptr_t;
-+
- struct kstate_image_header {
- 	/* Immutable part except version bumps. */
- #define KSTATE_IMAGE_MAGIC	"LinuxC/R"
-@@ -56,6 +59,7 @@ struct kstate_image_header {
- #define KSTATE_OBJ_PID		16
- #define KSTATE_OBJ_FILES_STRUCT	17
- #define KSTATE_OBJ_FD		18
-+#define KSTATE_OBJ_SIGHAND_STRUCT	19
+@@ -51,6 +51,7 @@ struct kstate_image_header {
+ #define KSTATE_OBJ_NET_NS	11
+ #define KSTATE_OBJ_CRED		12
+ #define KSTATE_OBJ_GROUP_INFO	13
++#define KSTATE_OBJ_USER_STRUCT	14
  
  struct kstate_object_header {
  	__u32		obj_type;
-@@ -88,6 +92,8 @@ struct kstate_image_task_struct {
- 	kstate_ref_t	ref_pgid;
- 	kstate_ref_t	ref_sid;
+@@ -277,6 +278,7 @@ struct kstate_image_cred {
+ 	kstate_cap_t	cap_bset;
  
-+	kstate_ref_t	ref_sighand;
-+
- 	__u8		comm[16];
+ 	kstate_ref_t	ref_group_info;
++	kstate_ref_t	ref_user;
+ } __packed;
  
- 	/* Native arch of task, one of KSTATE_ARCH_*. */
-@@ -334,4 +340,15 @@ struct kstate_image_fd {
- #define KSTATE_FD_FLAGS_CLOEXEC		(1 << 0)
- 	__u32		fd_flags;
+ struct kstate_image_group_info {
+@@ -285,4 +287,10 @@ struct kstate_image_group_info {
+ 	__u32		ngroups;
+ 	/* __u32	gid[ngroups]; */
  } __packed;
 +
-+struct kstate_image_sighand_struct {
++struct kstate_image_user_struct {
 +	struct kstate_object_header hdr;
 +
-+	struct {
-+		kstate_ptr_t	sa_handler;
-+		__u64		sa_flags;
-+		kstate_ptr_t	sa_restorer;
-+		kstate_sigset_t	sa_mask;
-+	} sa[128];
++	__u32		uid;
 +} __packed;
  #endif
 diff --git a/include/linux/kstate.h b/include/linux/kstate.h
-index 2473381..c958d1d 100644
+index 4df3bfa..dd6b982 100644
 --- a/include/linux/kstate.h
 +++ b/include/linux/kstate.h
-@@ -1,7 +1,9 @@
- /* Copyright (C) 2000-2009 Parallels Holdings, Ltd. */
- #ifndef __INCLUDE_LINUX_KSTATE_H
- #define __INCLUDE_LINUX_KSTATE_H
-+#include <linux/compiler.h>
- #include <linux/list.h>
-+#include <asm/signal.h>
- 
- #include <linux/kstate-image.h>
- 
-@@ -36,6 +38,7 @@ enum kstate_context_obj_type {
+@@ -35,6 +35,7 @@ enum kstate_context_obj_type {
  	KSTATE_CTX_NSPROXY,
- 	KSTATE_CTX_PID,
  	KSTATE_CTX_PID_NS,
-+	KSTATE_CTX_SIGHAND_STRUCT,
  	KSTATE_CTX_TASK_STRUCT,
- 	KSTATE_CTX_USER_NS,
- 	KSTATE_CTX_USER_STRUCT,
-@@ -70,6 +73,28 @@ void *kstate_prepare_image(__u32 type, unsigned int len);
- void *kstate_read_image(struct kstate_context *ctx, kstate_ref_t *ref, __u32 type, unsigned int len);
- int kstate_write_image(struct kstate_context *ctx, void *i, unsigned int len, struct kstate_object *obj);
++	KSTATE_CTX_USER_STRUCT,
+ 	KSTATE_CTX_UTS_NS,
+ 	NR_KSTATE_CTX_TYPES
+ };
+@@ -134,6 +135,10 @@ int kstate_collect_all_group_info(struct kstate_context *ctx);
+ int kstate_dump_all_group_info(struct kstate_context *ctx);
+ int kstate_restore_group_info(struct kstate_context *ctx, kstate_ref_t *ref);
  
-+static inline kstate_ptr_t kstate_export_ptr(const void __user *ptr)
-+{
-+	BUILD_BUG_ON(sizeof(kstate_ptr_t) < sizeof(ptr));
-+	return (unsigned long)ptr;
-+}
-+
-+static inline const void __user *kstate_import_ptr(kstate_ptr_t i)
-+{
-+	return (const void __user *)(unsigned long)i;
-+}
-+
-+static inline void kstate_dump_sigset(kstate_sigset_t *i, sigset_t *sig)
-+{
-+	BUILD_BUG_ON(sizeof(sigset_t) > sizeof(kstate_sigset_t));
-+	memcpy(i, sig, sizeof(sigset_t));
-+}
-+
-+static inline void kstate_restore_sigset(sigset_t *sig, kstate_sigset_t *i)
-+{
-+	memcpy(sig, i, sizeof(sigset_t));
-+}
-+
- int kstate_collect_all_task_struct(struct kstate_context *ctx);
- int kstate_dump_all_task_struct(struct kstate_context *ctx);
- int kstate_restore_task_struct(struct kstate_context *ctx, kstate_ref_t *ref);
-@@ -155,6 +180,10 @@ int kstate_dump_all_files_struct(struct kstate_context *ctx);
- int kstate_restore_files_struct(struct kstate_context *ctx, kstate_ref_t *ref);
- int kstate_restore_fd(struct kstate_context *ctx, kstate_pos_t pos);
- 
-+int kstate_collect_all_sighand_struct(struct kstate_context *ctx);
-+int kstate_dump_all_sighand_struct(struct kstate_context *ctx);
-+int kstate_restore_sighand_struct(struct kstate_context *ctx, kstate_ref_t *ref);
++int kstate_collect_all_user_struct(struct kstate_context *ctx);
++int kstate_dump_all_user_struct(struct kstate_context *ctx);
++int kstate_restore_user_struct(struct kstate_context *ctx, kstate_ref_t *ref);
 +
  #if defined(CONFIG_X86_32) || defined(CONFIG_X86_64)
  extern const __u32 kstate_kernel_arch;
  int kstate_arch_check_image_header(struct kstate_image_header *i);
-diff --git a/kernel/kstate/cpt-sys.c b/kernel/kstate/cpt-sys.c
-index 05fc9d8..8225804 100644
---- a/kernel/kstate/cpt-sys.c
-+++ b/kernel/kstate/cpt-sys.c
-@@ -104,6 +104,9 @@ static int kstate_collect(struct kstate_context *ctx)
- 	rv = kstate_collect_all_user_ns(ctx);
- 	if (rv < 0)
- 		return rv;
-+	rv = kstate_collect_all_sighand_struct(ctx);
-+	if (rv < 0)
-+		return rv;
- 	rv = kstate_collect_all_pid(ctx);
- 	if (rv < 0)
- 		return rv;
-@@ -163,6 +166,9 @@ static int kstate_dump(struct kstate_context *ctx)
- 	rv = kstate_dump_all_pid(ctx);
- 	if (rv < 0)
- 		return rv;
-+	rv = kstate_dump_all_sighand_struct(ctx);
-+	if (rv < 0)
-+		return rv;
- 	rv = kstate_dump_all_user_ns(ctx);
- 	if (rv < 0)
- 		return rv;
-diff --git a/kernel/kstate/kstate-context.c b/kernel/kstate/kstate-context.c
-index 3e1589f..44111d1 100644
---- a/kernel/kstate/kstate-context.c
-+++ b/kernel/kstate/kstate-context.c
-@@ -97,6 +97,11 @@ void kstate_context_destroy(struct kstate_context *ctx)
- 		list_del(&obj->o_list);
- 		kfree(obj);
- 	}
-+	for_each_kstate_object_safe(ctx, obj, tmp, KSTATE_CTX_SIGHAND_STRUCT) {
-+		__cleanup_sighand((struct sighand_struct *)obj->o_obj);
-+		list_del(&obj->o_list);
-+		kfree(obj);
-+	}
- 	for_each_kstate_object_safe(ctx, obj, tmp, KSTATE_CTX_TASK_STRUCT) {
- 		put_task_struct((struct task_struct *)obj->o_obj);
- 		list_del(&obj->o_list);
-diff --git a/kernel/kstate/kstate-object.c b/kernel/kstate/kstate-object.c
-index bc27985..f871463 100644
---- a/kernel/kstate/kstate-object.c
-+++ b/kernel/kstate/kstate-object.c
-@@ -74,6 +74,9 @@ int kstate_collect_object(struct kstate_context *ctx, void *p, enum kstate_conte
- 	case KSTATE_CTX_PID_NS:
- 		get_pid_ns((struct pid_namespace *)obj->o_obj);
- 		break;
-+	case KSTATE_CTX_SIGHAND_STRUCT:
-+		atomic_inc(&((struct sighand_struct *)obj->o_obj)->count);
-+		break;
- 	case KSTATE_CTX_TASK_STRUCT:
- 		get_task_struct((struct task_struct *)obj->o_obj);
- 		break;
-diff --git a/kernel/kstate/kstate-task.c b/kernel/kstate/kstate-task.c
-index 101fcb8..2cfcb8f 100644
---- a/kernel/kstate/kstate-task.c
-+++ b/kernel/kstate/kstate-task.c
-@@ -139,6 +139,9 @@ static int dump_task_struct(struct kstate_context *ctx, struct kstate_object *ob
- 	tmp = find_kstate_obj_by_ptr(ctx, tsk->files, KSTATE_CTX_FILES_STRUCT);
- 	i->ref_files = tmp->o_ref;
+diff --git a/kernel/cred.c b/kernel/cred.c
+index 8543360..a16f357 100644
+--- a/kernel/cred.c
++++ b/kernel/cred.c
+@@ -687,6 +687,8 @@ static int dump_cred(struct kstate_context *ctx, struct kstate_object *obj)
  
-+	tmp = find_kstate_obj_by_ptr(ctx, tsk->sighand, KSTATE_CTX_SIGHAND_STRUCT);
-+	i->ref_sighand = tmp->o_ref;
-+
- 	BUILD_BUG_ON(sizeof(i->comm) != sizeof(tsk->comm));
- 	strlcpy((char *)i->comm, (const char *)tsk->comm, sizeof(i->comm));
+ 	tmp = find_kstate_obj_by_ptr(ctx, cred->group_info, KSTATE_CTX_GROUP_INFO);
+ 	i->ref_group_info = tmp->o_ref;
++	tmp = find_kstate_obj_by_ptr(ctx, cred->user, KSTATE_CTX_USER_STRUCT);
++	i->ref_user = tmp->o_ref;
  
-@@ -402,6 +405,32 @@ static int restore_files(struct kstate_context *ctx, kstate_ref_t *ref)
+ 	rv = kstate_write_image(ctx, i, sizeof(*i), obj);
+ 	kfree(i);
+@@ -726,6 +728,25 @@ static int restore_group_info(struct kstate_context *ctx, kstate_ref_t *ref, str
  	return 0;
  }
  
-+static int restore_sighand(struct kstate_context *ctx, kstate_ref_t *ref)
++static int restore_user(struct kstate_context *ctx, kstate_ref_t *ref, struct cred *cred)
 +{
-+	struct sighand_struct *sighand;
++	struct user_struct *user;
 +	struct kstate_object *tmp;
-+	struct sighand_struct *old_sighand;
-+	unsigned long flags;
 +	int rv;
 +
-+	tmp = find_kstate_obj_by_ref(ctx, ref, KSTATE_CTX_SIGHAND_STRUCT);
++	tmp = find_kstate_obj_by_ref(ctx, ref, KSTATE_CTX_USER_STRUCT);
 +	if (!tmp) {
-+		rv = kstate_restore_sighand_struct(ctx, ref);
++		rv = kstate_restore_user_struct(ctx, ref);
 +		if (rv < 0)
 +			return rv;
-+		tmp = find_kstate_obj_by_ref(ctx, ref, KSTATE_CTX_SIGHAND_STRUCT);
++		tmp = find_kstate_obj_by_ref(ctx, ref, KSTATE_CTX_USER_STRUCT);
 +	}
-+	sighand = tmp->o_obj;
++	user = tmp->o_obj;
 +
-+	atomic_inc(&sighand->count);
-+	old_sighand = current->sighand;
-+	spin_lock_irqsave(&old_sighand->siglock, flags);
-+	current->sighand = sighand;
-+	spin_unlock_irqrestore(&old_sighand->siglock, flags);
-+	__cleanup_sighand(old_sighand);
++	cred->user = get_uid(user);
 +	return 0;
 +}
 +
- struct task_struct_restore_context {
- 	struct kstate_context *ctx;
- 	struct kstate_image_task_struct *i;
-@@ -468,6 +497,9 @@ static int task_struct_restorer(void *_tsk_ctx)
- 	rv = restore_files(ctx, &i->ref_files);
- 	if (rv < 0)
- 		goto out;
-+	rv = restore_sighand(ctx, &i->ref_sighand);
-+	if (rv < 0)
-+		goto out;
- 
- out:
- 	tsk_ctx->rv = rv;
-diff --git a/kernel/signal.c b/kernel/signal.c
-index d803473..5d5dc13 100644
---- a/kernel/signal.c
-+++ b/kernel/signal.c
-@@ -2,6 +2,7 @@
-  *  linux/kernel/signal.c
-  *
-  *  Copyright (C) 1991, 1992  Linus Torvalds
-+ *  Copyright (C) 2000-2009 Parallels Holdings, Ltd.
-  *
-  *  1997-11-02  Modified for POSIX.1b signals by Richard Henderson
-  *
-@@ -2656,3 +2657,142 @@ void __init signals_init(void)
+ int kstate_restore_cred(struct kstate_context *ctx, kstate_ref_t *ref)
  {
- 	sigqueue_cachep = KMEM_CACHE(sigqueue, SLAB_PANIC);
+ 	struct kstate_image_cred *i;
+@@ -761,8 +782,9 @@ int kstate_restore_cred(struct kstate_context *ctx, kstate_ref_t *ref)
+ 	rv = restore_group_info(ctx, &i->ref_group_info, cred);
+ 	if (rv < 0)
+ 		goto out_group_info;
+-	/* FIXME */
+-	cred->user = get_uid(&root_user);
++	rv = restore_user(ctx, &i->ref_user, cred);
++	if (rv < 0)
++		goto out_user;
+ 	kfree(i);
+ 
+ 	rv = kstate_restore_object(ctx, cred, KSTATE_CTX_CRED, ref);
+@@ -771,6 +793,8 @@ int kstate_restore_cred(struct kstate_context *ctx, kstate_ref_t *ref)
+ 	pr_debug("restore cred %p: ref {%llu, %u}, rv %d\n", cred, (unsigned long long)ref->pos, ref->id, rv);
+ 	return rv;
+ 
++out_user:
++	put_group_info(cred->group_info);
+ out_group_info:
+ 	kmem_cache_free(cred_jar, cred);
+ out_free_image:
+diff --git a/kernel/kstate/cpt-sys.c b/kernel/kstate/cpt-sys.c
+index 1b352c8..a409577 100644
+--- a/kernel/kstate/cpt-sys.c
++++ b/kernel/kstate/cpt-sys.c
+@@ -95,6 +95,9 @@ static int kstate_collect(struct kstate_context *ctx)
+ 	rv = kstate_collect_all_group_info(ctx);
+ 	if (rv < 0)
+ 		return rv;
++	rv = kstate_collect_all_user_struct(ctx);
++	if (rv < 0)
++		return rv;
+ 	return 0;
  }
+ 
+@@ -148,6 +151,9 @@ static int kstate_dump(struct kstate_context *ctx)
+ 	rv = kstate_dump_all_pid_ns(ctx);
+ 	if (rv < 0)
+ 		return rv;
++	rv = kstate_dump_all_user_struct(ctx);
++	if (rv < 0)
++		return rv;
+ 	rv = kstate_dump_all_group_info(ctx);
+ 	if (rv < 0)
+ 		return rv;
+diff --git a/kernel/kstate/kstate-context.c b/kernel/kstate/kstate-context.c
+index 51b28c0..854f971 100644
+--- a/kernel/kstate/kstate-context.c
++++ b/kernel/kstate/kstate-context.c
+@@ -90,6 +90,11 @@ void kstate_context_destroy(struct kstate_context *ctx)
+ 		list_del(&obj->o_list);
+ 		kfree(obj);
+ 	}
++	for_each_kstate_object_safe(ctx, obj, tmp, KSTATE_CTX_USER_STRUCT) {
++		free_uid((struct user_struct *)obj->o_obj);
++		list_del(&obj->o_list);
++		kfree(obj);
++	}
+ 	for_each_kstate_object_safe(ctx, obj, tmp, KSTATE_CTX_UTS_NS) {
+ 		put_uts_ns((struct uts_namespace *)obj->o_obj);
+ 		list_del(&obj->o_list);
+diff --git a/kernel/kstate/kstate-object.c b/kernel/kstate/kstate-object.c
+index f6ce7a2..75facda 100644
+--- a/kernel/kstate/kstate-object.c
++++ b/kernel/kstate/kstate-object.c
+@@ -69,6 +69,9 @@ int kstate_collect_object(struct kstate_context *ctx, void *p, enum kstate_conte
+ 	case KSTATE_CTX_TASK_STRUCT:
+ 		get_task_struct((struct task_struct *)obj->o_obj);
+ 		break;
++	case KSTATE_CTX_USER_STRUCT:
++		get_uid((struct user_struct *)obj->o_obj);
++		break;
+ 	case KSTATE_CTX_UTS_NS:
+ 		get_uts_ns((struct uts_namespace *)obj->o_obj);
+ 		break;
+diff --git a/kernel/user.c b/kernel/user.c
+index 850e0ba..9fda1f0 100644
+--- a/kernel/user.c
++++ b/kernel/user.c
+@@ -2,6 +2,7 @@
+  * The "user cache".
+  *
+  * (C) Copyright 1991-2000 Linus Torvalds
++ * Copyright (C) 2000-2009 Parallels Holdings, Ltd.
+  *
+  * We have a per-user structure to keep track of how many
+  * processes, files etc the user has claimed, in order to be
+@@ -497,3 +498,123 @@ static int __init uid_cache_init(void)
+ }
+ 
+ module_init(uid_cache_init);
 +
 +#ifdef CONFIG_CHECKPOINT
 +#include <linux/kstate.h>
 +#include <linux/kstate-image.h>
 +
-+static int check_sighand_struct(struct sighand_struct *sighand)
++static int check_user_struct(struct user_struct *user)
 +{
-+#ifdef CONFIG_SIGNALFD
-+	if (waitqueue_active(&sighand->signalfd_wqh)) {
++#ifdef CONFIG_INOTIFY_USER
++	if (atomic_read(&user->inotify_watches) != 0) {
++		WARN_ON(1);
++		return -EINVAL;
++	}
++	if (atomic_read(&user->inotify_devs) != 0) {
++		WARN_ON(1);
++		return -EINVAL;
++	}
++#endif
++#ifdef CONFIG_EPOLL
++	if (atomic_read(&user->epoll_watches) != 0) {
++		WARN_ON(1);
++		return -EINVAL;
++	}
++#endif
++#ifdef CONFIG_KEYS
++	if (user->uid_keyring || user->session_keyring) {
 +		WARN_ON(1);
 +		return -EINVAL;
 +	}
@@ -316,121 +261,86 @@ index d803473..5d5dc13 100644
 +	return 0;
 +}
 +
-+static int collect_sighand_struct(struct kstate_context *ctx, struct sighand_struct *sighand)
++static int collect_user_struct(struct kstate_context *ctx, struct user_struct *user)
 +{
 +	int rv;
 +
-+	rv = check_sighand_struct(sighand);
++	rv = check_user_struct(user);
 +	if (rv < 0)
 +		return rv;
-+	rv = kstate_collect_object(ctx, sighand, KSTATE_CTX_SIGHAND_STRUCT);
-+	pr_debug("collect sighand_struct %p: rv %d\n", sighand, rv);
++	rv = kstate_collect_object(ctx, user, KSTATE_CTX_USER_STRUCT);
++	pr_debug("collect user_struct %p: rv %d\n", user, rv);
 +	return rv;
 +}
 +
-+int kstate_collect_all_sighand_struct(struct kstate_context *ctx)
++int kstate_collect_all_user_struct(struct kstate_context *ctx)
 +{
 +	struct kstate_object *obj;
 +	int rv;
 +
-+	for_each_kstate_object(ctx, obj, KSTATE_CTX_TASK_STRUCT) {
-+		struct task_struct *tsk = obj->o_obj;
++	for_each_kstate_object(ctx, obj, KSTATE_CTX_CRED) {
++		struct cred *cred = obj->o_obj;
 +
-+		rv = collect_sighand_struct(ctx, tsk->sighand);
++		rv = collect_user_struct(ctx, cred->user);
 +		if (rv < 0)
 +			return rv;
-+	}
-+	for_each_kstate_object(ctx, obj, KSTATE_CTX_SIGHAND_STRUCT) {
-+		struct sighand_struct *sighand = obj->o_obj;
-+		unsigned int cnt = atomic_read(&sighand->count);
-+
-+		if (obj->o_count + 1 != cnt) {
-+			pr_err("sighand_struct %p has external references %lu:%u\n", sighand, obj->o_count, cnt);
-+			return -EINVAL;
-+		}
 +	}
 +	return 0;
 +}
 +
-+static int dump_sighand_struct(struct kstate_context *ctx, struct kstate_object *obj)
++static int dump_user_struct(struct kstate_context *ctx, struct kstate_object *obj)
 +{
-+	struct sighand_struct *sighand = obj->o_obj;
-+	struct kstate_image_sighand_struct *i;
-+	unsigned long flags;
-+	int sig;
++	struct user_struct *user = obj->o_obj;
++	struct kstate_image_user_struct *i;
 +	int rv;
 +
-+	i = kstate_prepare_image(KSTATE_OBJ_SIGHAND_STRUCT, sizeof(*i));
++	i = kstate_prepare_image(KSTATE_OBJ_USER_STRUCT, sizeof(*i));
 +	if (!i)
 +		return -ENOMEM;
 +
-+	BUILD_BUG_ON(_NSIG > ARRAY_SIZE(i->sa));
-+	spin_lock_irqsave(&sighand->siglock, flags);
-+	for (sig = 0; sig < _NSIG; sig++) {
-+		struct sigaction *sa = &sighand->action[sig].sa;
-+
-+		i->sa[sig].sa_handler = kstate_export_ptr(sa->sa_handler);
-+		i->sa[sig].sa_flags = sa->sa_flags;
-+#ifdef sa_restorer
-+		i->sa[sig].sa_restorer = kstate_export_ptr(sa->sa_restorer);
-+#endif
-+		kstate_dump_sigset(&i->sa[sig].sa_mask, &sa->sa_mask);
-+	}
-+	spin_unlock_irqrestore(&sighand->siglock, flags);
++	i->uid = user->uid;
 +
 +	rv = kstate_write_image(ctx, i, sizeof(*i), obj);
 +	kfree(i);
-+	pr_debug("dump sighand_struct %p: ref {%llu, %u}, rv %d\n", sighand, (unsigned long long)obj->o_ref.pos, obj->o_ref.id, rv);
++	pr_debug("dump user_struct %p: ref {%llu, %u}, rv %d\n", user, (unsigned long long)obj->o_ref.pos, obj->o_ref.id, rv);
 +	return rv;
 +}
 +
-+int kstate_dump_all_sighand_struct(struct kstate_context *ctx)
++int kstate_dump_all_user_struct(struct kstate_context *ctx)
 +{
 +	struct kstate_object *obj;
 +	int rv;
 +
-+	for_each_kstate_object(ctx, obj, KSTATE_CTX_SIGHAND_STRUCT) {
-+		rv = dump_sighand_struct(ctx, obj);
++	for_each_kstate_object(ctx, obj, KSTATE_CTX_USER_STRUCT) {
++		rv = dump_user_struct(ctx, obj);
 +		if (rv < 0)
 +			return rv;
 +	}
 +	return 0;
 +}
 +
-+int kstate_restore_sighand_struct(struct kstate_context *ctx, kstate_ref_t *ref)
++int kstate_restore_user_struct(struct kstate_context *ctx, kstate_ref_t *ref)
 +{
-+	struct kstate_image_sighand_struct *i;
-+	struct sighand_struct *sighand;
-+	int sig;
++	struct kstate_image_user_struct *i;
++	struct user_struct *user;
 +	int rv;
 +
-+	i = kstate_read_image(ctx, ref, KSTATE_OBJ_SIGHAND_STRUCT, sizeof(*i));
++	i = kstate_read_image(ctx, ref, KSTATE_OBJ_USER_STRUCT, sizeof(*i));
 +	if (IS_ERR(i))
 +		return PTR_ERR(i);
 +
-+	sighand = kmem_cache_alloc(sighand_cachep, GFP_KERNEL);
-+	if (!sighand) {
++	/* FIXME */
++	user = alloc_uid(&init_user_ns, i->uid);
++	if (!user) {
 +		rv = -ENOMEM;
 +		goto out_free_image;
 +	}
-+	atomic_set(&sighand->count, 1);
-+
-+	for (sig = 0; sig < _NSIG; sig++) {
-+		struct sigaction *sa = &sighand->action[sig].sa;
-+
-+		sa->sa_handler = kstate_import_ptr(i->sa[sig].sa_handler);
-+		sa->sa_flags = i->sa[sig].sa_flags;
-+#ifdef sa_restorer
-+		sa->sa_restorer = kstate_import_ptr(i->sa[sig].sa_restorer);
-+#endif
-+		kstate_restore_sigset(&sa->sa_mask, &i->sa[sig].sa_mask);
-+	}
 +	kfree(i);
 +
-+	rv = kstate_restore_object(ctx, sighand, KSTATE_CTX_SIGHAND_STRUCT, ref);
++	rv = kstate_restore_object(ctx, user, KSTATE_CTX_USER_STRUCT, ref);
 +	if (rv < 0)
-+		kmem_cache_free(sighand_cachep, sighand);
-+	pr_debug("restore sighand_struct %p: ref {%llu, %u}, rv %d\n", sighand, (unsigned long long)ref->pos, ref->id, rv);
++		free_uid(user);
++	pr_debug("restore user_struct %p: ref {%llu, %u}, rv %d\n", user, (unsigned long long)ref->pos, ref->id, rv);
 +	return rv;
 +
 +out_free_image:
