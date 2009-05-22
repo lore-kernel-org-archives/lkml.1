@@ -1,52 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754762AbZEVCma@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756584AbZEVCml@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754762AbZEVCma (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 22:42:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751840AbZEVCmX
+	id S1756584AbZEVCml (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 22:42:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754745AbZEVCm1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 22:42:23 -0400
-Received: from tundra.namei.org ([65.99.196.166]:57120 "EHLO tundra.namei.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751782AbZEVCmW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 22:42:22 -0400
-Date: Fri, 22 May 2009 12:42:12 +1000 (EST)
-From: James Morris <jmorris@namei.org>
-To: Casey Schaufler <casey@schaufler-ca.com>
-cc: Roel Kluin <roel.kluin@gmail.com>, lkml <linux-kernel@vger.kernel.org>,
-       linux-security-module@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] smack:beyond ARRAY_SIZE of data
-In-Reply-To: <4A160E28.1010306@schaufler-ca.com>
-Message-ID: <alpine.LRH.2.00.0905221235530.7391@tundra.namei.org>
-References: <4A141F83.10102@gmail.com> <4A1483E0.1030303@schaufler-ca.com> <4A15848E.5030403@gmail.com> <4A160E28.1010306@schaufler-ca.com>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+	Thu, 21 May 2009 22:42:27 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:50995 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754327AbZEVCm0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 May 2009 22:42:26 -0400
+Message-ID: <4A1610B6.7010203@cn.fujitsu.com>
+Date: Fri, 22 May 2009 10:40:54 +0800
+From: Zhaolei <zhaolei@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       Tom Zanussi <tzanussi@gmail.com>, Oleg Nesterov <oleg@redhat.com>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH v2] tracing/workqueue: Get rid of searching last executed
+ worklet in probe_worklet_complete()
+References: <4A153345.3040905@cn.fujitsu.com>
+In-Reply-To: <4A153345.3040905@cn.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 21 May 2009, Casey Schaufler wrote:
+We don't need search workqueue's worklet list for worklet which was latest
+executed, instead, we can use a pointer in cpu_workqueue_stats to remember
+which worklet was just executed.
 
-> Roel Kluin wrote:
-> > Do not go beyond ARRAY_SIZE of data
-> >
-> > Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-> >   
-> 
-> Acked-by: Casey Schaufler <casey@schaufler-ca.com>
-> 
-> Thank you. The fix is appreciated.
-> 
+Thanks Oleg for pointing it out.
 
-Applied to
-git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6#next
+Changelog:
+v1->v2: Oleg pointed out that if searching executed workfunc_stats failed
+in probe_worklet_execute(), for example, workfunc_stats's memory allocation
+failed previously, cpu_workqueue_stats->last_workfunc is not set to correct
+value, and it will cause wrong accessing in probe_worklet_complete().
+This problem is fixed in v2.
 
-(This needs CAP_MAC_ADMIN to trigger, so I'll assume this is not 
-security-critical, but yell if you disagree).
+Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
+Reported-by: Oleg Nesterov <oleg@redhat.com>
+---
+ kernel/trace/trace_workqueue.c |   39 ++++++++++++++++-----------------------
+ 1 files changed, 16 insertions(+), 23 deletions(-)
 
-
-- James
+diff --git a/kernel/trace/trace_workqueue.c b/kernel/trace/trace_workqueue.c
+index c67be60..740de3b 100644
+--- a/kernel/trace/trace_workqueue.c
++++ b/kernel/trace/trace_workqueue.c
+@@ -25,13 +25,6 @@ struct workfunc_stats {
+ 	unsigned int			inserted;
+ 	unsigned int			executed;
+ 
+-	/*
+-	 * save latest work_struct's pointer to use as identifier in
+-	 * probe_worklet_complete, because we can't use work_struct->...
+-	 * after worklet got executed
+-	 */
+-	void				*work;
+-
+ 	/* save execution time temporarily for calculate executed time */
+ 	u64				start_time;
+ 	u64				max_executed_time;
+@@ -46,10 +39,17 @@ struct cpu_workqueue_stats {
+ 	/* Protected by cpu workqueue lock */
+ 	unsigned int		inserted;
+ 	unsigned int		executed;
++
+ 	/* list of struct workfunc_stats in this workqueue */
+ 	struct list_head	workfunclist;
+ 
+ 	/*
++	 * pointer to last executed worklet's workfunc_stats in this workqueue,
++	 * used by probe_worklet_complete()
++	 */
++	struct workfunc_stats *last_workfunc;
++
++	/*
+ 	 * the task maybe destroyed when we read stat file
+ 	 * we define it to void * because we only use it as a identifier
+ 	 */
+@@ -163,9 +163,10 @@ found_wq:
+ 		if (wfnode->func == work->func) {
+ 			wfnode->executed++;
+ 			wfnode->start_time = trace_clock_global();
+-			wfnode->work = work;
++			node->last_workfunc = wfnode;
+ 			goto found_wf;
+ 		}
++	node->last_workfunc = NULL;
+ 	pr_debug("trace_workqueue: worklet not found\n");
+ 	goto end;
+ 
+@@ -180,7 +181,7 @@ probe_worklet_complete(struct task_struct *wq_thread, void *work)
+ {
+ 	int cpu = cpumask_first(&wq_thread->cpus_allowed);
+ 	struct cpu_workqueue_stats *node;
+-	struct workfunc_stats *wfnode;
++	u64 executed_time;
+ 	unsigned long flags;
+ 
+ 	spin_lock_irqsave(&workqueue_cpu_stat(cpu)->lock, flags);
+@@ -192,22 +193,14 @@ probe_worklet_complete(struct task_struct *wq_thread, void *work)
+ 	goto end;
+ 
+ found_wq:
+-	list_for_each_entry(wfnode, &node->workfunclist, list) {
+-		u64 executed_time;
++	if (!node->last_workfunc)
++		goto end;
+ 
+-		if (wfnode->work != work)
+-			continue;
++	executed_time = trace_clock_global() - node->last_workfunc->start_time;
++	node->last_workfunc->total_time += executed_time;
++	if (executed_time > node->last_workfunc->max_executed_time)
++		node->last_workfunc->max_executed_time = executed_time;
+ 
+-		executed_time = trace_clock_global() - wfnode->start_time;
+-		wfnode->total_time += executed_time;
+-		if (executed_time > wfnode->max_executed_time)
+-			wfnode->max_executed_time = executed_time;
+-		goto found_wf;
+-	}
+-	pr_debug("trace_workqueue: worklet not found\n");
+-	goto end;
+-
+-found_wf:
+ end:
+ 	spin_unlock_irqrestore(&workqueue_cpu_stat(cpu)->lock, flags);
+ }
 -- 
-James Morris
-<jmorris@namei.org>
+1.5.5.3
+
+
