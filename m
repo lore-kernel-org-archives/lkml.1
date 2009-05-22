@@ -1,88 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756377AbZEVQ2X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757468AbZEVQd1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756377AbZEVQ2X (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 12:28:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751336AbZEVQ2P
+	id S1757468AbZEVQd1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 12:33:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753699AbZEVQdU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 12:28:15 -0400
-Received: from acsinet12.oracle.com ([141.146.126.234]:42318 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751250AbZEVQ2O (ORCPT
+	Fri, 22 May 2009 12:33:20 -0400
+Received: from astoria.ccjclearline.com ([64.235.106.9]:51952 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751688AbZEVQdT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 12:28:14 -0400
-Message-ID: <4A16D325.4030202@oracle.com>
-Date: Fri, 22 May 2009 09:30:29 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Fri, 22 May 2009 12:33:19 -0400
+Date: Fri, 22 May 2009 12:31:56 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: "make config" to another architecture doesn't relink include/asm
+Message-ID: <alpine.LFD.2.00.0905221219500.13933@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>, Sebastian Haas <haas@ems-wuensche.com>
-Subject: [PATCH -next] cpc-usb: fix PROC_FS dependency
-References: <20090522185110.3f95b03e.sfr@canb.auug.org.au>
-In-Reply-To: <20090522185110.3f95b03e.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt007.oracle.com [141.146.116.16]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010208.4A16D28D.006B:SCFSTAT5015188,ss=1,fgs=0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
 
-The proper way to check for and enforce a kconfig symbol
-dependency is via Kconfig files, not by using #error in
-a source file followed by 9 other compile errors.
+  should i expect this with a fresh tree on x86_64?
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Sebastian Haas <haas@ems-wuensche.com>
----
- drivers/staging/cpc-usb/Kconfig       |    2 +-
- drivers/staging/cpc-usb/cpc-usb_drv.c |   10 +---------
- 2 files changed, 2 insertions(+), 10 deletions(-)
+$ make distclean
+$ make defconfig
+$ make modules_prepare
+$ ls -l include/asm
+lrwxrwxrwx    1 rpjday rpjday     7 2009-05-22 12:24 asm -> asm-x86
+$
 
---- linux-next-20090522.orig/drivers/staging/cpc-usb/cpc-usb_drv.c
-+++ linux-next-20090522/drivers/staging/cpc-usb/cpc-usb_drv.c
-@@ -27,12 +27,8 @@
- #include <linux/completion.h>
- #include <asm/uaccess.h>
- #include <linux/usb.h>
--
- #include <linux/version.h>
--
--#ifdef CONFIG_PROC_FS
--#   include <linux/proc_fs.h>
--#endif
-+#include <linux/proc_fs.h>
- 
- #include "cpc.h"
- 
-@@ -57,10 +53,6 @@ MODULE_LICENSE("GPL v2");
- #define USB_CPCUSB_M16C_PRODUCT_ID    0x0888
- #define USB_CPCUSB_LPC2119_PRODUCT_ID 0x0444
- 
--#ifndef CONFIG_PROC_FS
--#error "PROCFS needed"
--#endif
--
- #define CPC_USB_PROC_DIR     CPC_PROC_DIR "cpc-usb"
- 
- static struct proc_dir_entry *procDir;
---- linux-next-20090522.orig/drivers/staging/cpc-usb/Kconfig
-+++ linux-next-20090522/drivers/staging/cpc-usb/Kconfig
-@@ -1,4 +1,4 @@
- config USB_CPC
- 	tristate "CPC CAN USB driver"
--	depends on USB
-+	depends on USB && PROC_FS
- 	default n
+  oh, wait, i changed my mind, i want to switch architectures so start
+over:
+
+$ make clean
+$ make ARCH=arm CROSS_COMPILE=arm-none-linux-gnueabi- omap3_beagle_defconfig
+$ make ARCH=arm CROSS_COMPILE=arm-none-linux-gnueabi- uImage
+scripts/kconfig/conf -s arch/arm/Kconfig
+include/config/auto.conf:15:warning: symbol value 'arch/x86/configs/x86_64_defconfig' invalid for ARCH_DEFCONFIG
+  CHK     include/linux/version.h
+make[1]: `include/asm-arm/mach-types.h' is up to date.
+  CHK     include/linux/utsrelease.h
+  UPD     include/linux/utsrelease.h
+ERROR: the symlink include/asm points to asm-x86 but asm-arm was expected
+       set ARCH or save .config and run 'make mrproper' to fix it
+make: *** [include/asm] Error 1
+
+$ ls -l include/asm
+lrwxrwxrwx 1 rpjday rpjday 7 2009-05-22 12:24 include/asm -> asm-x86
+$
+
+  shouldn't it be sufficient that, if i do another "make ??_defconfig"
+to another architecture, all traces of the previous configure are
+erased and include/asm should be relinked automatically?
+
+rday
+--
 
 
+========================================================================
+Robert P. J. Day                               Waterloo, Ontario, CANADA
 
--- 
-~Randy
-LPC 2009, Sept. 23-25, Portland, Oregon
-http://linuxplumbersconf.org/2009/
+        Linux Consulting, Training and Annoying Kernel Pedantry.
+
+Web page:                                          http://crashcourse.ca
+Linked In:                             http://www.linkedin.com/in/rpjday
+Twitter:                                       http://twitter.com/rpjday
+========================================================================
