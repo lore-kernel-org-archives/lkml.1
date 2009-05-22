@@ -1,122 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757177AbZEVKHs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757371AbZEVKIZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757177AbZEVKHs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 06:07:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751791AbZEVKHl
+	id S1757371AbZEVKIZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 06:08:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751791AbZEVKIR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 06:07:41 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:63817 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751590AbZEVKHk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 06:07:40 -0400
-Message-ID: <4A16791C.8090501@cn.fujitsu.com>
-Date: Fri, 22 May 2009 18:06:20 +0800
-From: Zhaolei <zhaolei@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Tom Zanussi <tzanussi@gmail.com>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH v2 2/2] ftrace: clean up of using ftrace_event_enable_disable()
-References: <4A14FDFE.2080402@cn.fujitsu.com> <4A16788F.2060802@cn.fujitsu.com>
-In-Reply-To: <4A16788F.2060802@cn.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 22 May 2009 06:08:17 -0400
+Received: from viefep12-int.chello.at ([62.179.121.32]:6777 "EHLO
+	viefep12-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751475AbZEVKIR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 May 2009 06:08:17 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [PATCH 2/2] perf_counter: optimize context switch between
+ identical inherited contexts
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Corey Ashford <cjashfor@linux.vnet.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <18966.30400.611789.434936@cargo.ozlabs.ibm.com>
+References: <18966.10075.781053.231153@cargo.ozlabs.ibm.com>
+	 <18966.10666.517218.332164@cargo.ozlabs.ibm.com>
+	 <1242980169.26820.617.camel@twins>
+	 <18966.30400.611789.434936@cargo.ozlabs.ibm.com>
+Content-Type: text/plain
+Date: Fri, 22 May 2009 12:08:17 +0200
+Message-Id: <1242986897.26820.638.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Always use tracing_stop_cmdline_record() to enable/disable a event.
+On Fri, 2009-05-22 at 19:56 +1000, Paul Mackerras wrote:
+> Peter Zijlstra writes:
+> 
+> > On Fri, 2009-05-22 at 14:27 +1000, Paul Mackerras wrote:
+> > > Since we don't have individual fds for the counters in a cloned
+> > > context, the only thing that can make two clones of a given parent
+> > > different after they have been cloned is enabling or disabling all
+> > > counters with prctl.  To account for this, we keep a count of the
+> > > number of enabled counters in each context.  Two contexts must have
+> > > the same number of enabled counters to be considered equivalent.
+> > 
+> > Curious point that.. so prctl() can disable counters it doesn't own.
+> > 
+> > Shouldn't we instead fix that?
+> 
+> Well, prctl enables/disables the counters that are counting on the
+> current process, regardless of who or what created them.  I always
+> thought that was a little strange; maybe it is useful to be able to
+> disable all the counters that any other process might have put on to
+> you, but I can't think of a scenario where you'd really need to do
+> that, particularly since the disable is a one-shot operation, and
+> doesn't prevent new (enabled) counters being attached to you.
+> 
+> On the other hand, what does "all the counters I own" mean?  Does it
+> mean all the ones that I have fds open for?  Or does it mean all the
+> ones that I created?  Either way we don't have a good way to enumerate
+> them.
 
-Impact: cleanup, no functionality changed
+I'm for all counters you created (ie have a fd for). Being able to
+disable counters others created on you just sounds wrong.
 
-Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
----
- kernel/trace/trace_events.c |   44 +++++++++++++-----------------------------
- 1 files changed, 14 insertions(+), 30 deletions(-)
+If we can settle on a semantic, I'm sure we can implement it :-)
 
-diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
-index df35e5e..16ef47a 100644
---- a/kernel/trace/trace_events.c
-+++ b/kernel/trace/trace_events.c
-@@ -76,26 +76,9 @@ static void trace_destroy_fields(struct ftrace_event_call *call)
- 
- #endif /* CONFIG_MODULES */
- 
--static void ftrace_clear_events(void)
--{
--	struct ftrace_event_call *call;
--
--	mutex_lock(&event_mutex);
--	list_for_each_entry(call, &ftrace_events, list) {
--
--		if (call->enabled) {
--			call->enabled = 0;
--			tracing_stop_cmdline_record();
--			call->unregfunc();
--		}
--	}
--	mutex_unlock(&event_mutex);
--}
--
- static void ftrace_event_enable_disable(struct ftrace_event_call *call,
- 					int enable)
- {
--
- 	switch (enable) {
- 	case 0:
- 		if (call->enabled) {
-@@ -114,6 +97,17 @@ static void ftrace_event_enable_disable(struct ftrace_event_call *call,
- 	}
- }
- 
-+static void ftrace_clear_events(void)
-+{
-+	struct ftrace_event_call *call;
-+
-+	mutex_lock(&event_mutex);
-+	list_for_each_entry(call, &ftrace_events, list) {
-+		ftrace_event_enable_disable(call, 0);
-+	}
-+	mutex_unlock(&event_mutex);
-+}
-+
- /*
-  * __ftrace_set_clr_event(NULL, NULL, NULL, set) will set/unset all events.
-  */
-@@ -1059,11 +1053,7 @@ static void trace_module_remove_events(struct module *mod)
- 	list_for_each_entry_safe(call, p, &ftrace_events, list) {
- 		if (call->mod == mod) {
- 			found = true;
--			if (call->enabled) {
--				call->enabled = 0;
--				tracing_stop_cmdline_record();
--				call->unregfunc();
--			}
-+			ftrace_event_enable_disable(call, 0);
- 			if (call->event)
- 				unregister_ftrace_event(call->event);
- 			debugfs_remove_recursive(call->dir);
-@@ -1265,15 +1255,9 @@ static __init void event_trace_self_tests(void)
- 			continue;
- 		}
- 
--		call->enabled = 1;
--		tracing_start_cmdline_record();
--		call->regfunc();
--
-+		ftrace_event_enable_disable(call, 1);
- 		event_test_stuff();
--
--		call->unregfunc();
--		tracing_stop_cmdline_record();
--		call->enabled = 0;
-+		ftrace_event_enable_disable(call, 0);
- 
- 		pr_cont("OK\n");
- 	}
--- 
-1.5.5.3
-
+Ingo, Corey, any opinions?
 
