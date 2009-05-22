@@ -1,82 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757419AbZEVOJi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755815AbZEVOJt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757419AbZEVOJi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 10:09:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753513AbZEVOJ2
+	id S1755815AbZEVOJt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 10:09:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756486AbZEVOJf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 10:09:28 -0400
-Received: from moutng.kundenserver.de ([212.227.126.171]:57843 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751000AbZEVOJ1 (ORCPT
+	Fri, 22 May 2009 10:09:35 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:52802 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756965AbZEVOJd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 10:09:27 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: Re: [PATCH] asm-generic: add a dma-mapping.h file
-Date: Fri, 22 May 2009 16:07:32 +0200
-User-Agent: KMail/1.9.9
-Cc: jgarzik@pobox.com, hancockrwd@gmail.com, htejun@gmail.com,
-       alan@lxorguk.ukuu.org.uk, flar@allandria.com,
-       schmitz@biophys.uni-duesseldorf.de, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, takata@linux-m32r.org, geert@linux-m68k.org,
-       linux-m68k@vger.kernel.org, ysato@users.sourceforge.jp,
-       Grant Grundler <grundler@google.com>
-References: <200905181645.26305.arnd@arndb.de> <200905191822.48420.arnd@arndb.de> <20090522211258Q.fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20090522211258Q.fujita.tomonori@lab.ntt.co.jp>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Fri, 22 May 2009 10:09:33 -0400
+Date: Fri, 22 May 2009 16:09:30 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Borislav Petkov <petkovbb@googlemail.com>
+Cc: Peter Feuerer <peter@piie.net>, petkovbb@gmail.com,
+       LKML <linux-kernel@vger.kernel.org>, lenb@kernel.org,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [PATCH] Acer Aspire One Fan Control
+Message-ID: <20090522140930.GA26580@elf.ucw.cz>
+References: <1240913055.29860.14.camel@maxim-laptop> <cone.1240949852.549814.7466.1000@mentalhome> <1240950704.3781.12.camel@maxim-laptop> <cone.1241299309.265715.3948.1000@mentalhome> <20090503184617.GA3555@liondog.tnic> <cone.1241648222.299676.7476.1000@mentalhome> <20090509171432.GA31126@liondog.tnic> <cone.1242065107.695268.13534.1000@onepiie> <20090519203015.GA1362@ucw.cz> <9ea470500905220450s2367f8a1uc2b19a9466ea8509@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200905221607.34025.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19Pxt2CEvR8dlxQUwwe89MyMixcJUFBdaBq5WP
- yOARTFiux08GsXg8PGrQS5LRuoCYe5aaIJ0fBqhZzyBUFfaUEG
- 9cdGEfRy98Mt3MYLZsHSw==
+In-Reply-To: <9ea470500905220450s2367f8a1uc2b19a9466ea8509@mail.gmail.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 22 May 2009, FUJITA Tomonori wrote:
-> I don't think that this works for all architectures because a returned
-> buffer of alloc_pages_node might not be DMA-capable. Needs to use the
-> coherent_dma_mask here. See x86's dma_alloc_coherent and Alpha's
-> pci-noop.c (there might be other examples).
+Hi!
 
-Right, Grant also made the same comment.
+> >> The idea of not starting the module in kernel mode was from Matthew. And
+> >> he stated that it could harm the hardware when software controls the fan
+> >> instead of the BIOS. It may also be possible, that the warranty gets
+> >
+> > Well... hw is usually designed to protect itself.
+> 
+> It seems like the fan in the aspire one's is used for cooling the
+> surrounding devices too and while the thermal envelope of the CPU is
+> much wider, the peripherals are much more susceptible to temperatures
+> outside of their allowed operating range. That's why currently the
+> driver lets the BIOS control the fan since its settings are most
+> conservative.
 
-> I think that having a generic header for simple mapping functions
-> (dma_map_single, dma_map_page, dma_map_sg, etc) would be useful but
-> I'm not sure if we can't have a generic version of
-> dma_alloc_coherent.
->
-> There are lots of architectures that do 
-> architecture-specific things. For example, you replaced avr32
-> dma-mapping.h except for dma_alloc_coherent, which seems to be can't
-> be generic.
+Yep, I don't disagree. But I strongly suspect that if you force the
+fan off and overheat the machine, it will shut down in hardware before
+doing any damage.
 
-I agree that it won't be fully generic, because all architectures
-with non-coherent DMA will have to do architecture specific setup
-to get uncached mappings here. I believe that it can be generic
-enough to support all architectures that have a cache-coherent PCI
-bus, hence the #ifdef CONFIG_DMA_COHERENT around this function.
+> > Kernels crash, too, just like userspace does. It would still make
+> > sense to allow userspace to increase fan speed.
+> 
+> Well, if the kernel is dead, userspace has already died
+> too. 
 
-E.g. cris could use a one-line redirect to
-asm-generic/dma-mapping-linear.h if it did not have the
-special dma_get_cache_alignment function. I still would
-like to find a better way to handle this one than to
-redefine the function.
+Yep.
 
-> BTW, it looks odd to add dma_debug to dma_map_single, etc but not
-> dma_alloc_coherent. ;)
+> the module can still be toggled on/off from sysfs. Actually, empirically
+> measured, there seem to be three states of the fan: off, on and on-max
+> where you can hear it rotating at max RPM. The kernel module can handle
+> those completely if you know the respective ACPI EC commands and there's
+> no need for userspace daemon, IMHO.
 
-hehe, sure. I copied the dma_debug stuff from sh, the comments
-from avr32 and the dma_alloc_coherent implementation from powerpc,
-so I missed this one.
+It would be still nice to let the userspace lower the trip points for
+maximum flexibility. No need for userspace _daemon_.
 
-Thanks for the review.
-
-	Arnd <><
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
