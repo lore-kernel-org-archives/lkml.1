@@ -1,87 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757493AbZEVO1e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757217AbZEVO23@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757493AbZEVO1e (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 10:27:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756313AbZEVO1Y
+	id S1757217AbZEVO23 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 10:28:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756246AbZEVO2W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 10:27:24 -0400
-Received: from lvps87-230-0-242.dedicated.hosteurope.de ([87.230.0.242]:34509
-	"EHLO lvps87-230-0-242.dedicated.hosteurope.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755915AbZEVO1X (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 10:27:23 -0400
-Cc: buytenh@wantstofly.org, linux-kernel@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, netdev@vger.kernel.org
-Message-Id: <9E304569-5828-403D-B4B0-845D8F0D6B95@it-loops.com>
-From: Michael Guntsche <mike@it-loops.com>
-To: David Miller <davem@davemloft.net>, afleming@freescale.com
-In-Reply-To: <20090521.152439.79009648.davem@davemloft.net>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v935.3)
-Subject: Re: [BUG] 2.6.30-rc4: Kernel BUG under network load with gianfar
-Date: Fri, 22 May 2009 16:27:20 +0200
-References: <50F164E7-D247-4FD6-B41B-BDAA8681166B@it-loops.com> <20090520214734.GA11277@mail.wantstofly.org> <20090521.152439.79009648.davem@davemloft.net>
-X-Mailer: Apple Mail (2.935.3)
+	Fri, 22 May 2009 10:28:22 -0400
+Received: from www.tglx.de ([62.245.132.106]:35397 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756223AbZEVO2V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 May 2009 10:28:21 -0400
+Date: Fri, 22 May 2009 16:27:40 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Stanislaw Gruszka <sgruszka@redhat.com>
+cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Oleg Nesterov <oleg@redhat.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH resend4 2/3] itimers: fix periodic tics precision
+In-Reply-To: <20090522154339.06d30f0a@dhcp-lab-109.englab.brq.redhat.com>
+Message-ID: <alpine.LFD.2.00.0905221611380.3570@localhost.localdomain>
+References: <20090522154339.06d30f0a@dhcp-lab-109.englab.brq.redhat.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 22 May 2009, Stanislaw Gruszka wrote:
+>  
+> +#define CPUTIME_SUB_NS(ct, real_ns) ({ 		\
+> +	struct timespec ts;			\
+> +	s64 cpu_ns;				\
+> +	cputime_to_timespec(ct, &ts); 		\
+> +	cpu_ns = timespec_to_ns(&ts);		\
+> +	cpu_ns - real_ns;	 		\
+> +})
+> +
 
-On May 22, 2009, at 0:24, David Miller wrote:
+  Please make this an inline function. Also this should have a sanity
+  check for values < 0, which might happen due to rounding errors. In
+  that case you set it simply to 0.
 
-> From: Lennert Buytenhek <buytenh@wantstofly.org>
-> Date: Wed, 20 May 2009 23:47:34 +0200
->
->> gianfar puts skbuffs that are in the rx ring back onto the recycle
->> list if there was a receive error, but this breaks the following
->> invariant: that all skbuffs on the recycle list have skb->data =
->> skb->head + NET_SKB_PAD (NET_SKB_PAD being 32 for you).
->>
->> In this case, the skb's ->data will be skb->head + RXBUF_ALIGNMENT
->> (where RXBUF_ALIGNMENT is 64) when it is put onto the recycle list.
->> And when gfar_new_skb() picks this skb off the recycle list again,
->> it'll do:
->>
->>        alignamount = RXBUF_ALIGNMENT -
->>                (((unsigned long) skb->data) & (RXBUF_ALIGNMENT - 1));
->>
->>        /* We need the data buffer to be aligned properly.  We will  
->> reserve
->>         * as many bytes as needed to align the data properly
->>         */
->>        skb_reserve(skb, alignamount);
->>
->> So now skb->data will be skb->head + 128, and there won't be enough
->> space between skb->head and skb->end to hold a full-sized packet.
->>
->> Something like the patch below would fix it.
->
-> Let me know when a final, tested, version of this patch is available
-> and please make sure it makes it to netdev@vger.kernel.org
+>  	if (cputime_ge(cur_time, it->expires)) {
+> -		it->expires = it->incr;
+> -		if (!cputime_eq(it->expires, cputime_zero))
+> -			it->expires = cputime_add(it->expires, cur_time);
+> +		if (!cputime_eq(it->incr, cputime_zero)) {
+> +			it->expires = cputime_add(it->expires, it->incr);
+> +			it->error += it->incr_error;
+> +			if (it->error >= onecputick) {
+> +				it->expires = cputime_sub(it->expires,
+> +							jiffies_to_cputime(1));
+> +				it->error -= onecputick;
+> +			}
 
-I can confirm that Lennert's patch fixes my panic problems here. After  
-applying it, my connection has been rock solid and I no longer get any  
-kernel panics.
-That said, I think the final descision if this patch should go in like  
-it is now has to be made by Andy Fleming since he wrote the initial  
-code.
+  Yep, that's a sane solution except for jiffies_to_cputime(), which
+  can be precomputed as well.
 
-Kind regards,
-Michael
+Thanks,
 
-diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
-index b2c4967..85883c7 100644
---- a/drivers/net/gianfar.c
-+++ b/drivers/net/gianfar.c
-@@ -1886,7 +1886,7 @@ int gfar_clean_rx_ring(struct net_device *dev,  
-int rx_work_limit)
-			if (unlikely(!newskb))
-				newskb = skb;
-			else if (skb)
--				__skb_queue_head(&priv->rx_recycle, skb);
-+				dev_kfree_skb_any(skb);
-		} else {
-			/* Increment the number of packets */
-			dev->stats.rx_packets++;
-
+	tglx
