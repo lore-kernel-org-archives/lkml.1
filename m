@@ -1,53 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756334AbZEVOKf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757540AbZEVOLo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756334AbZEVOKf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 10:10:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755203AbZEVOK2
+	id S1757540AbZEVOLo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 10:11:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755938AbZEVOLh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 10:10:28 -0400
-Received: from www.tglx.de ([62.245.132.106]:52951 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753051AbZEVOK2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 10:10:28 -0400
-Date: Fri, 22 May 2009 16:08:34 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Stanislaw Gruszka <sgruszka@redhat.com>
-cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Oleg Nesterov <oleg@redhat.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH resend4 1/3] itimers: merge ITIMER_VIRT and ITIMER_PROF
- common code
-In-Reply-To: <20090522154331.3e6f5ca3@dhcp-lab-109.englab.brq.redhat.com>
-Message-ID: <alpine.LFD.2.00.0905221600210.3570@localhost.localdomain>
-References: <20090522154331.3e6f5ca3@dhcp-lab-109.englab.brq.redhat.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 22 May 2009 10:11:37 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:47636 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755203AbZEVOLh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 May 2009 10:11:37 -0400
+Date: Fri, 22 May 2009 15:12:35 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Pantelis Koukousoulas <pktoss@gmail.com>
+Cc: Kernel development list <linux-kernel@vger.kernel.org>,
+       Kay Sievers <kay.sievers@vrfy.org>, Al Viro <viro@zeniv.linux.org.uk>,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: How to tell whether a struct file is held by a process?
+Message-ID: <20090522151235.26432fbc@lxorguk.ukuu.org.uk>
+In-Reply-To: <1295ed070905220652q55c65e8bx992940b626eecda3@mail.gmail.com>
+References: <ac3eb2510905211407l3aec14acx2572a2ad4e675b9@mail.gmail.com>
+	<Pine.LNX.4.44L0.0905211724050.3914-100000@iolanthe.rowland.org>
+	<1295ed070905220630q67c62569o9753425abf529742@mail.gmail.com>
+	<20090522144343.7b26b3a8@lxorguk.ukuu.org.uk>
+	<1295ed070905220652q55c65e8bx992940b626eecda3@mail.gmail.com>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stanislaw,
+> Who is "me" in this case? Assuming that those writing the userspace programs
+> are cooperative though, I agree. We can declare that whatever program does not
 
-On Fri, 22 May 2009, Stanislaw Gruszka wrote:
-> --- a/kernel/fork.c
-> +++ b/kernel/fork.c
-> @@ -790,10 +790,10 @@ static void posix_cpu_timers_init_group(struct signal_struct *sig)
->  	thread_group_cputime_init(sig);
->  
->  	/* Expiration times and increments. */
-> -	sig->it_virt_expires = cputime_zero;
-> -	sig->it_virt_incr = cputime_zero;
-> -	sig->it_prof_expires = cputime_zero;
-> -	sig->it_prof_incr = cputime_zero;
-> +	sig->it[0].expires = cputime_zero;
-> +	sig->it[0].incr = cputime_zero;
-> +	sig->it[1].expires = cputime_zero;
-> +	sig->it[1].incr = cputime_zero;
+The software authors.
 
-  Nit, can we please use CPUCLOCK_PROF/VIRT instead of 0/1 ?
-  
-Thanks,
+> play by the (userspace locking) rules is crap and either fix it (if open source)
+> or refuse to install it / complain (if closed source).
 
-	tglx
+Which for the general case I think is reasonable. If the bad program is
+determined to be bad then it can equally just ptrace the process with the
+file open and drive it that way.
+
+> >
+> >> So, if there is a clean / acceptable way to handle the reset issue in userspace
+> >
+> > Firstly can you explain *why* you think there is a problem ?
+> >
+> 
+> I admit this could be a bias from the way I imagined the whole thing
+> to work before
+> this discussion. I think I can see how a userspace locking scheme based on port
+> numbers could avoid also the reset problem
+
+That was a serious request to understand what you think the problem is
+and what problem is worrying you. I'm deeply sceptical of the need for
+any kernel locking on this one but I'd like to understand better why you
+think there are some cases it would be needed.
