@@ -1,56 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757921AbZEVPVo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757815AbZEVP0Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757921AbZEVPVo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 11:21:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754590AbZEVPVh
+	id S1757815AbZEVP0Y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 11:26:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756982AbZEVP0R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 11:21:37 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:53419 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751000AbZEVPVh convert rfc822-to-8bit (ORCPT
+	Fri, 22 May 2009 11:26:17 -0400
+Received: from mail-px0-f103.google.com ([209.85.216.103]:46715 "EHLO
+	mail-px0-f103.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756953AbZEVP0R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 11:21:37 -0400
+	Fri, 22 May 2009 11:26:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=NnmLvc6+cd3yBzDyggb1YJp1delEg0uG7iIYBXKshmn+g77ZsqyowxnNu8YfejZG2n
+         8r3O3p5mzrRSgbvaWHmyPX0LzCAHOCouzNPF+CKily9W7PU9EWgtQjtTlU4dULJuZpaN
+         CeooMXWXAQK0FwWqMwzmASbSY1npKce5nQGmo=
 MIME-Version: 1.0
-In-Reply-To: <Pine.LNX.4.44L0.0905221051350.3006-100000@iolanthe.rowland.org>
-References: <20090522105313.63e309f0@lxorguk.ukuu.org.uk> <Pine.LNX.4.44L0.0905221051350.3006-100000@iolanthe.rowland.org>
-From: Kay Sievers <kay.sievers@vrfy.org>
-Date: Fri, 22 May 2009 17:21:17 +0200
-Message-ID: <ac3eb2510905220821n629314c3tb113802f52abc67c@mail.gmail.com>
-Subject: Re: How to tell whether a struct file is held by a process?
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Kyle Moffett <kyle@moffetthome.net>,
-       Pantelis Koukousoulas <pktoss@gmail.com>,
-       Al Viro <viro@zeniv.linux.org.uk>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+In-Reply-To: <20090522161016.36ef6f15@lxorguk.ukuu.org.uk>
+References: <1243004787-5362-1-git-send-email-tom.leiming@gmail.com>
+	 <20090522161016.36ef6f15@lxorguk.ukuu.org.uk>
+Date: Fri, 22 May 2009 23:26:16 +0800
+Message-ID: <d82e647a0905220826p378f6bb4vac9150343b5c3622@mail.gmail.com>
+Subject: Re: [PATCH] driver core : fix request_firmware_nowait
+From: Ming Lei <tom.leiming@gmail.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: greg@kroah.com, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 22, 2009 at 17:12, Alan Stern <stern@rowland.harvard.edu> wrote:
-> Anyway, enumeration isn't the problem.  The real problem has two parts:
+2009/5/22 Alan Cox <alan@lxorguk.ukuu.org.uk>:
+> On Fri, 22 May 2009 23:06:27 +0800
+> tom.leiming@gmail.com wrote:
 >
->        Automatic probing and binding of kernel drivers, including
->        selection and installation of a configuration (this really
->        _does_ mess up virtualization).
+>> From: Ming Lei <tom.leiming@gmail.com>
+>>
+>> request_firmware_nowait declares it can be called in non-sleep contexts,
+>> but kthead_run which is called by request_firmware_nowait may sleep.
 >
->        The fact that a window exists immediately after the
->        registration of a newly-detected device before a user
->        process can lock the device file.  During this window,
->        other processes could open the file.
+> Does anyone actually need to call it in a non-sleeping context or can the
+> documentation simply be fixed instead to avoid all the extra complexity ?
 >
-> The second part can be solved (among cooperating processes) by use of
-> port-lock files, with no kernel involvement.  The first part does
-> require a kernel interface of some sort, but it wouldn't have to be
-> complicated.  The mere fact that a port-lock file was open could be
-> enough to prevent automatic configuration, probing, and binding.
->
-> Does this seem like reasonable approach?
 
-Would releasing the "lock" trigger a kernel-driver-binding call?
+It seems no one calls it in a non-sleeping context now, but we can provide it
+without much extra complexity, IMHO.  Also someone has complained it :
 
-The lock will always lock all devices of a specific hub?
+      http://marc.info/?t=124022846400003&r=1&w=2
 
-Thanks,
-Kay
+-- 
+Lei Ming
