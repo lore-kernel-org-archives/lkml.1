@@ -1,160 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756664AbZEVBHR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753352AbZEVBKG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756664AbZEVBHR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 21:07:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754539AbZEVBHG
+	id S1753352AbZEVBKG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 21:10:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750887AbZEVBJ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 21:07:06 -0400
-Received: from mga14.intel.com ([143.182.124.37]:54391 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752228AbZEVBHE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 21:07:04 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,230,1241420400"; 
-   d="scan'208";a="145669806"
-Date: Fri, 22 May 2009 09:05:38 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [PATCH] readahead:add blk_run_backing_dev
-Message-ID: <20090522010538.GB6010@localhost>
-References: <6.0.0.20.2.20090518183752.0581fdc0@172.19.0.2> <20090518175259.GL4140@kernel.dk> <20090520025123.GB8186@localhost> <6.0.0.20.2.20090521145005.06f81fe0@172.19.0.2>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <6.0.0.20.2.20090521145005.06f81fe0@172.19.0.2>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 21 May 2009 21:09:57 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:2733 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750797AbZEVBJ4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 May 2009 21:09:56 -0400
+Subject: Re: [PATCH 1/3] kernel.h: Add DO_ONCE statement expression macro
+From: Joe Perches <joe@perches.com>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org,
+       Dave Jones <davej@redhat.com>, Greg Kroah-Hartman <gregkh@suse.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>,
+       x86@kernel.org, Len Brown <len.brown@intel.com>,
+       Mike Travis <travis@sgi.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+In-Reply-To: <20090522002717.GV8633@ZenIV.linux.org.uk>
+References: <cover.1242943463.git.joe@perches.com>
+	 <7b063fda0675875d51a5da49f59e89520d025eee.1242943463.git.joe@perches.com>
+	 <20090522002717.GV8633@ZenIV.linux.org.uk>
+Content-Type: text/plain
+Date: Thu, 21 May 2009 18:09:45 -0700
+Message-Id: <1242954585.3284.7.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 21, 2009 at 02:01:47PM +0800, Hisashi Hifumi wrote:
+On Fri, 2009-05-22 at 01:27 +0100, Al Viro wrote:
+> On Thu, May 21, 2009 at 04:00:22PM -0700, Joe Perches wrote:
+> > Add a DO_ONCE statement expression analogous to printk_once
+> > that executes any arbitrary statement exactly once.
+> > 
+> > This will take the place of printk_once so that
+> > DO_ONCE(pr_<foo>) or any other statement performed
+> > a single time may be easily written.
 > 
-> At 11:51 09/05/20, Wu Fengguang wrote:
-> >On Mon, May 18, 2009 at 07:53:00PM +0200, Jens Axboe wrote:
-> >> On Mon, May 18 2009, Hisashi Hifumi wrote:
-> >> > Hi.
-> >> > 
-> >> > I wrote a patch that adds blk_run_backing_dev on page_cache_async_readahead
-> >> > so readahead I/O is unpluged to improve throughput.
-> >> > 
-> >> > Following is the test result with dd.
-> >> > 
-> >> > #dd if=testdir/testfile of=/dev/null bs=16384
-> >> > 
-> >> > -2.6.30-rc6
-> >> > 1048576+0 records in
-> >> > 1048576+0 records out
-> >> > 17179869184 bytes (17 GB) copied, 224.182 seconds, 76.6 MB/s
-> >> > 
-> >> > -2.6.30-rc6-patched
-> >> > 1048576+0 records in
-> >> > 1048576+0 records out
-> >> > 17179869184 bytes (17 GB) copied, 206.465 seconds, 83.2 MB/s
-> >> > 
-> >> > Sequential read performance on a big file was improved.
-> >> > Please merge my patch.
-> >> > 
-> >> > Thanks.
-> >> > 
-> >> > Signed-off-by: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
-> >> > 
-> >> > diff -Nrup linux-2.6.30-rc6.org/mm/readahead.c 
-> >linux-2.6.30-rc6.unplug/mm/readahead.c
-> >> > --- linux-2.6.30-rc6.org/mm/readahead.c	2009-05-18 10:46:15.000000000 +0900
-> >> > +++ linux-2.6.30-rc6.unplug/mm/readahead.c	2009-05-18 
-> >13:00:42.000000000 +0900
-> >> > @@ -490,5 +490,7 @@ page_cache_async_readahead(struct addres
-> >> >  
-> >> >  	/* do read-ahead */
-> >> >  	ondemand_readahead(mapping, ra, filp, true, offset, req_size);
-> >> > +
-> >> > +	blk_run_backing_dev(mapping->backing_dev_info, NULL);
-> >> >  }
-> >> >  EXPORT_SYMBOL_GPL(page_cache_async_readahead);
-> >> 
-> >> I'm surprised this makes much of a difference. It seems correct to me to
-> >> NOT unplug the device, since it will get unplugged when someone ends up
-> >> actually waiting for a page. And that will then kick off the remaining
-> >> IO as well. For this dd case, you'll be hitting lock_page() for the
-> >> readahead page really soon, definitely not long enough to warrant such a
-> >> big difference in speed.
-> >
-> >The possible timing change of this patch is (assuming readahead size=100):
-> >
-> >T0   read(100), which triggers readahead(200, 100)
-> >T1   read(101)
-> >T2   read(102)
-> >...
-> >T100 read(200), find_get_page(200) => readahead(300, 100)
-> >                lock_page(200) => implicit unplug
-> >
-> >The readahead(200, 100) submitted at time T0 *might* be delayed to the
-> >unplug time of T100.
-> >
-> >But that is only a possibility. In normal cases, the read(200) would
-> >be blocking and there will be a lock_page(200) that will immediately
-> >unplug device for readahead(300, 100).
-> 
-> 
-> Hi Andrew.
-> Following patch improves sequential read performance and does not harm
-> other performance.
-> Please merge my patch.
-> Comments?
-> Thanks.
-> 
-> #dd if=testdir/testfile of=/dev/null bs=16384
-> -2.6.30-rc6
-> 1048576+0 records in
-> 1048576+0 records out
-> 17179869184 bytes (17 GB) copied, 224.182 seconds, 76.6 MB/s
-> 
-> -2.6.30-rc6-patched
-> 1048576+0 records in
-> 1048576+0 records out
-> 17179869184 bytes (17 GB) copied, 206.465 seconds, 83.2 MB/s
-> 
-> Signed-off-by: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
-> 
-> diff -Nrup linux-2.6.30-rc6.org/mm/readahead.c linux-2.6.30-rc6.unplug/mm/readahead.c
-> --- linux-2.6.30-rc6.org/mm/readahead.c	2009-05-18 10:46:15.000000000 +0900
-> +++ linux-2.6.30-rc6.unplug/mm/readahead.c	2009-05-18 13:00:42.000000000 +0900
-> @@ -490,5 +490,7 @@ page_cache_async_readahead(struct addres
->  
->  	/* do read-ahead */
->  	ondemand_readahead(mapping, ra, filp, true, offset, req_size);
-> +
-> +	blk_run_backing_dev(mapping->backing_dev_info, NULL);
->  }
->  EXPORT_SYMBOL_GPL(page_cache_async_readahead);
-> 
-> 
+> Interesting, how telling somebody that they need to learn C is considered
+> an unacceptable thing to do.  Hostile to newbies, or some such.  Introducing
+> more magic that has to be learnt if one wants to read the kernel source, OTOH,
+> is just fine...
 
-Hi Hisashi,
+I'd be fine if the printk_once macro helper went away.
+It was added in commit f036be96dd9ce442ffb9ab33e3c165f5178815c0
 
-I wonder if the following updated patch can achieve the same
-performance.  Can you try testing this out?
+If the helper exists though, I think it should work with
+all of the pr_<foo> variants.
 
-Thanks,
-Fengguang
----
-
-diff --git a/mm/readahead.c b/mm/readahead.c
-index 133b6d5..fd3df66 100644
---- a/mm/readahead.c
-+++ b/mm/readahead.c
-@@ -490,5 +490,8 @@ page_cache_async_readahead(struct address_space *mapping,
- 
- 	/* do read-ahead */
- 	ondemand_readahead(mapping, ra, filp, true, offset, req_size);
-+
-+	if (PageUptodate(page))
-+		blk_run_backing_dev(mapping->backing_dev_info, NULL);		
- }
- EXPORT_SYMBOL_GPL(page_cache_async_readahead);
