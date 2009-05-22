@@ -1,42 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753924AbZEVF0u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752472AbZEVF1I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753924AbZEVF0u (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 01:26:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750990AbZEVF0m
+	id S1752472AbZEVF1I (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 01:27:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751412AbZEVF0z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 01:26:42 -0400
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:57187 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750851AbZEVF0l (ORCPT
+	Fri, 22 May 2009 01:26:55 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:42624 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753320AbZEVF0x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 01:26:41 -0400
-Date: Fri, 22 May 2009 14:26:34 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [GIT PULL] sh updates for 2.6.30-rc7
-Message-ID: <20090522052634.GA14059@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
+	Fri, 22 May 2009 01:26:53 -0400
+Date: Fri, 22 May 2009 06:26:52 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Joe Perches <joe@perches.com>
+Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org,
+       Dave Jones <davej@redhat.com>, Greg Kroah-Hartman <gregkh@suse.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>,
+       x86@kernel.org, Len Brown <len.brown@intel.com>,
+       Mike Travis <travis@sgi.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH V2 0/3] Introduce and use DO_ONCE statement expression
+	macro
+Message-ID: <20090522052652.GX8633@ZenIV.linux.org.uk>
+References: <cover.1242965306.git.joe@perches.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <cover.1242965306.git.joe@perches.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please pull from:
+On Thu, May 21, 2009 at 09:27:29PM -0700, Joe Perches wrote:
+> The printk_once macro in kernel.h is limited to printk
+> 
+> This generalizes the functionality of printk_once and
+> allows statements like DO_ONCE(pr_info("foo\n"))
+> and DO_ONCE(initialize(foo));
 
-	master.kernel.org:/pub/scm/linux/kernel/git/lethal/sh-2.6.git sh/for-2.6.30
+Sigh...  Please, don't do introduce new control structures without extremely
+good reasons.
 
-Which contains:
+printk_once() has syntax of function call; it's far more tolerable for
+casual reader (e.g. somebody looking through the code while trying to
+localize a bug) since it doesn't interrupt the flow - it parses as
+"some function call, apparently doing some debugging output, let's see
+if there are any obvious side effects in the arguments and move on".
+Your DO_ONCE(....) parses as "what the fuck is that?" followed by
+grepping for definition, and the cost is much higher.
 
-Magnus Damm (2):
-      sh: ap325 camera without i2c driver fix
-      video: stop sh_mobile_lcdcfb only if started
-
- arch/sh/boards/board-ap325rxa.c  |    3 +++
- drivers/video/sh_mobile_lcdcfb.c |    7 ++++++-
- 2 files changed, 9 insertions(+), 1 deletions(-)
+Don't do that.  Staying close to normal syntax is a very good thing;
+preprocessor can be used in a lot of ways that are harmful and introduction
+of (effectively) new kinds of statements is a prime example.  It *does*
+have its place, but it should be done very sparingly.
