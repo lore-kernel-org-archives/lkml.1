@@ -1,139 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755541AbZEVBk0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754502AbZEVBo0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755541AbZEVBk0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 21:40:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750967AbZEVBkR
+	id S1754502AbZEVBo0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 21:44:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751303AbZEVBoT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 21:40:17 -0400
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:42273 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750797AbZEVBkQ (ORCPT
+	Thu, 21 May 2009 21:44:19 -0400
+Received: from densangw.densan.co.jp ([218.222.200.50]:3027 "EHLO
+	densangw.densan.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751003AbZEVBoT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 21:40:16 -0400
-Date: Fri, 22 May 2009 10:40:09 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sparseirq: Enable early irq_desc allocation.
-Message-ID: <20090522014008.GA2806@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org
-References: <20090521165647.GA320@linux-sh.org> <4A15B8F2.9000804@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A15B8F2.9000804@kernel.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 21 May 2009 21:44:19 -0400
+X-Greylist: delayed 2774 seconds by postgrey-1.27 at vger.kernel.org; Thu, 21 May 2009 21:44:18 EDT
+Date: Fri, 22 May 2009 09:57:20 +0900 (JST)
+Message-Id: <20090522.095720.68565257.saito@densan.co.jp>
+To: linux-kernel@vger.kernel.org
+Cc: benh@kernel.crashing.org, hsaito.ppc@gmail.com
+Subject: Re: can't flush tlb on e500
+From: Hideo Saito <hsaito.ppc@gmail.com>
+In-Reply-To: <d50492d40905200312r729608a3nf244b153892ac257@mail.gmail.com>
+References: <d50492d40905200312r729608a3nf244b153892ac257@mail.gmail.com>
+X-Mailer: Mew version 3.3 on Emacs 20.7 / Mule 4.0 (HANANOEN)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 21, 2009 at 01:26:26PM -0700, Yinghai Lu wrote:
-> can you check tip?
-> we change _cpu to node already.
-> 
-> also only sh have after_bootmem now.
-> arch/sh/mm/init.c:int after_bootmem = 0;
-> arch/sh/mm/init.c:      after_bootmem = 1;
-> arch/sh/mm/ioremap_64.c:        extern int after_bootmem;
-> arch/sh/mm/ioremap_64.c:        if (after_bootmem) {
-> include/linux/mm.h:extern int after_bootmem;
-> 
-> for x86 we have bootmem_state ...
-> arch/x86/include/asm/page_types.h:enum bootmem_state {
-> arch/x86/include/asm/page_types.h:extern enum bootmem_state bootmem_state;
-> arch/x86/kernel/setup.c:        bootmem_state = DURING_BOOTMEM;
-> arch/x86/mm/init.c:enum bootmem_state bootmem_state = BEFORE_BOOTMEM;
-> arch/x86/mm/init.c:     if (bootmem_state == BEFORE_BOOTMEM)
-> arch/x86/mm/init.c:     if (bootmem_state == BEFORE_BOOTMEM)
-> arch/x86/mm/init.c:     if (bootmem_state == BEFORE_BOOTMEM && !start) {
-> arch/x86/mm/init.c:     if (bootmem_state == BEFORE_BOOTMEM &&
-> arch/x86/mm/init.c:     if (bootmem_state == BEFORE_BOOTMEM)
-> 
-> Andrew,
-> do we need to move bootmem_state back to linux/mm.h?
+How about following changes because all TLB entries are flushed repeatedly if processes overflow at the table mapping the context. I think that the table should be initialized again because _tlbil_pid() flushes all TLB entries and tlbilx instruction isn't supported on E500(MPC8548).
 
-No need, I just switched to slab_is_available() in the respin. Here is
-v2, against -tip:
-
---
-
-sparseirq: Enable early irq_desc allocation, v2.
-
-Presently non-legacy IRQs have their irq_desc allocated with
-kzalloc_node(). This assumes that all callers of irq_to_desc_node_alloc()
-will be sufficiently late in the boot process that kmalloc is available.
-
-While porting sparseirq support to sh this blew up immediately, as at the
-time that we register the CPU's interrupt vector map only bootmem is
-available. Check slab_is_available() to work out which path to use.
-
-Cc: Yinghai Lu <yinghai@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Paul Mundt <lethal@linux-sh.org>
-
----
-
- V2 updated for -tip, and switched to slab_is_available().
-
- kernel/irq/handle.c |   19 ++++++++++++++-----
- 1 file changed, 14 insertions(+), 5 deletions(-)
-
-diff --git a/kernel/irq/handle.c b/kernel/irq/handle.c
-index 33ff8f5..b5a47d6 100644
---- a/kernel/irq/handle.c
-+++ b/kernel/irq/handle.c
-@@ -18,8 +18,8 @@
- #include <linux/rculist.h>
- #include <linux/hash.h>
- #include <linux/bootmem.h>
-+#include <linux/slab.h>
- #include <trace/events/irq.h>
--
- #include "internals.h"
+--- arch/powerpc/mm/mmu_context_nohash.c.orig	2009-03-24 08:12:14.000000000 +0900
++++ arch/powerpc/mm/mmu_context_nohash.c	2009-05-21 16:35:09.000000000 +0900
+@@ -107,39 +107,69 @@ static unsigned int steal_context_smp(un
+ 	 */
+ 	spin_unlock(&context_lock);
+ 	cpu_relax();
+ 	spin_lock(&context_lock);
+ 	goto again;
+ }
+ #endif  /* CONFIG_SMP */
  
- /*
-@@ -81,11 +81,16 @@ static struct irq_desc irq_desc_init = {
- 	.lock       = __SPIN_LOCK_UNLOCKED(irq_desc_init.lock),
- };
- 
--void init_kstat_irqs(struct irq_desc *desc, int node, int nr)
-+void __ref init_kstat_irqs(struct irq_desc *desc, int node, int nr)
++/*
++ * We're flushed using the all context
++ */
++static void flush_all_context(int cpu)
++{
++	struct mm_struct *mm;
++	int n;
++
++	for (n = first_context; n <= last_context; n++) {
++
++		mm = context_mm[n];
++		if (mm == NULL || mm->context.id == MMU_NO_CONTEXT)
++			continue;
++
++		WARN_ON(mm->context.active != 0);
++
++		mm->context.id = MMU_NO_CONTEXT;
++	}
++	memset(stale_map[cpu], 0, CTX_MAP_SIZE);
++	memset(context_map, 0, CTX_MAP_SIZE);
++	context_map[0] = (1 << first_context) - 1;
++	nr_free_contexts = last_context - first_context + 1;
++}
++
+ /* Note that this will also be called on SMP if all other CPUs are
+  * offlined, which means that it may be called for cpu != 0. For
+  * this to work, we somewhat assume that CPUs that are onlined
+  * come up with a fully clean TLB (or are cleaned when offlined)
+  */
+ static unsigned int steal_context_up(unsigned int id)
  {
- 	void *ptr;
+ 	struct mm_struct *mm;
+ 	int cpu = smp_processor_id();
  
--	ptr = kzalloc_node(nr * sizeof(*desc->kstat_irqs), GFP_ATOMIC, node);
-+	if (slab_is_available())
-+		ptr = kzalloc_node(nr * sizeof(*desc->kstat_irqs),
-+				   GFP_ATOMIC, node);
-+	else
-+		ptr = alloc_bootmem_node(NODE_DATA(node),
-+				nr * sizeof(*desc->kstat_irqs));
+ 	/* Pick up the victim mm */
+ 	mm = context_mm[id];
  
- 	/*
- 	 * don't overwite if can not get new one
-@@ -186,7 +191,7 @@ struct irq_desc *irq_to_desc(unsigned int irq)
- 	return NULL;
+ 	pr_debug("[%d] steal context %d from mm @%p\n", cpu, id, mm);
+ 
+-	/* Mark this mm has having no context anymore */
+-	mm->context.id = MMU_NO_CONTEXT;
+-
+ 	/* Flush the TLB for that context */
+ 	local_flush_tlb_mm(mm);
+ 
++#ifdef CONFIG_FSL_BOOKE
++	flush_all_context(cpu);
++	__set_bit(id, context_map);
++	nr_free_contexts--;
++#else
++	/* Mark this mm has having no context anymore */
++	mm->context.id = MMU_NO_CONTEXT;
++
+ 	/* XXX This clear should ultimately be part of local_flush_tlb_mm */
+ 	__clear_bit(id, stale_map[cpu]);
++#endif
+ 
+ 	return id;
  }
  
--struct irq_desc *irq_to_desc_alloc_node(unsigned int irq, int node)
-+struct irq_desc * __ref irq_to_desc_alloc_node(unsigned int irq, int node)
+ #ifdef DEBUG_MAP_CONSISTENCY
+ static void context_check_map(void)
  {
- 	struct irq_desc *desc;
- 	unsigned long flags;
-@@ -208,7 +213,11 @@ struct irq_desc *irq_to_desc_alloc_node(unsigned int irq, int node)
- 	if (desc)
- 		goto out_unlock;
- 
--	desc = kzalloc_node(sizeof(*desc), GFP_ATOMIC, node);
-+	if (slab_is_available())
-+		desc = kzalloc_node(sizeof(*desc), GFP_ATOMIC, node);
-+	else
-+		desc = alloc_bootmem_node(NODE_DATA(node), sizeof(*desc));
-+
- 	printk(KERN_DEBUG "  alloc irq_desc for %d on node %d\n", irq, node);
- 	if (!desc) {
- 		printk(KERN_ERR "can not alloc irq_desc\n");
+ 	unsigned int id, nrf, nact;
