@@ -1,111 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758299AbZEVM0T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758776AbZEVM0b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758299AbZEVM0T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 08:26:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755847AbZEVM0M
+	id S1758776AbZEVM0b (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 08:26:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758399AbZEVM0V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 08:26:12 -0400
-Received: from relay1.sgi.com ([192.48.179.29]:38669 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755233AbZEVM0L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 08:26:11 -0400
-Date: Fri, 22 May 2009 07:26:09 -0500
-From: Robin Holt <holt@sgi.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>, Robin Holt <holt@sgi.com>,
-       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
-       Wu Fengguang <fengguang.wu@intel.com>
-Subject: Re: [PATCH v3] zone_reclaim is always 0 by default
-Message-ID: <20090522122609.GC29447@sgi.com>
-References: <20090521114408.63D0.A69D9226@jp.fujitsu.com>
+	Fri, 22 May 2009 08:26:21 -0400
+Received: from smtp-out003.kontent.com ([81.88.40.217]:46848 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758360AbZEVM0U convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 May 2009 08:26:20 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: Alan Stern <stern@rowland.harvard.edu>, Al Viro <viro@zeniv.linux.org.uk>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: How to tell whether a struct file is held by a process?
+Date: Fri, 22 May 2009 14:26:43 +0200
+User-Agent: KMail/1.10.3 (Linux/2.6.27.21-0.1-default; KDE/4.1.3; x86_64; ; )
+References: <Pine.LNX.4.44L0.0905210945290.2886-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0905210945290.2886-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20090521114408.63D0.A69D9226@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200905221426.43466.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-OK.  While I did not object earlier, I am starting to feel a NACK
-coming on.
+Am Thursday 21 May 2009 16:06:00 schrieben Sie:
+> The problem is this.  Let D be the device plugged into port P.  When
+> some program opens D's device file, it's necessary to check whether
+> that same program has an open file reference for A(P), i.e., has opened
 
-How did you determine this is the source of your problems?  What leads
-you to believe this is the correct fix instead of an easy change which
-affects some random benchmark?
+No. It is merely nice to do that, not necessary. You can take the position
+that if the port is reserved the kernel won't touch the device but it is
+user space's responsibility to not touch a device user space wants
+to reserve.
 
-Let me clear, I believe you are seeing an impact from reclaim.  I do
-not agree it is necessarily a negative impact for the majority of users.
+Or alternatively, don't create the device file until user space tells
+you to do so.
 
+	Regards
+		Oliver
 
-On Thu, May 21, 2009 at 11:47:01AM +0900, KOSAKI Motohiro wrote:
-> 
-> Subject: [PATCH v3] zone_reclaim is always 0 by default
-> 
-> Current linux policy is, zone_reclaim_mode is enabled by default if the machine
-> has large remote node distance. it's because we could assume that large distance
-> mean large server until recently.
-> 
-> Unfortunately, recent modern x86 CPU (e.g. Core i7, Opeteron) have P2P transport
-> memory controller. IOW it's seen as NUMA from software view.
-> Some Core i7 machine has large remote node distance.
-> 
-> Yanmin reported zone_reclaim_mode=1 cause large apache regression.
-> 
->     One Nehalem machine has 12GB memory,
->     but there is always 2GB free although applications accesses lots of files.
->     Eventually we located the root cause as zone_reclaim_mode=1.
-
-Your root cause analysis is suspect.  You found a knob to turn which
-suddenly improved performance for one specific un-tuned server workload.
-
-> Actually, zone_reclaim_mode=1 mean "I dislike remote node allocation rather than
-> disk access", it makes performance improvement to HPC workload.
-> but it makes performance regression desktop, file server and web server.
-
-zone_reclaim_mode merely means try to free any local unused page before
-going off node.  I have never seen off-node allocations precluded as
-long as the local node's pages are in use.  The effect on your one test
-shows that unused page cache pages get properly discarded and reused by
-the allocator.
-
-> In general, workload depended configuration shouldn't put into default settings.
-> Plus, desktop and file/web server eco-system is much larger than hpc's.
-
-I believe you are putting a workload dependent configuration in as the
-default.  You have not shown this improves anything other than a poorly
-configured system running apache responds better on your tests.  I can
-make a common sense argument that both =1 and =0 are better.  I think
-the fact that it has been =1 for so long and not caused significant
-issues should at least be factored in.  Making an exception for the
-new hardware on the block makes sense as well.
-
-> Thus, zone_reclaim == 0 is better by default.
-
-How did you determine better by default?  I think we already established
-that apache is a server workload and not a desktop workload.  Earlier
-you were arguing that we need this turned off to improve the desktop
-environment.  You have not established this improves desktop performance.
-Actually, you have not established it improves apache performance or
-server performance.  You have documented it improves memory utilization,
-but that is not always the same as faster.
-
-Sorry for being difficult about this, but you are tweaking a knob that
-completely changes performance for my typical workload.  Reclaim has
-been the source of great frustration for me over the years.
-
-Hopefully this is not arrogance on my part, but if you went back to
-something equivalent to my earlier patch which allowed the architecture
-to decide the default, I would go back to not objecting despite the lack
-of proof this is the right fix.  You never did specify what was wrong
-with that patch.  It was simple to understand, accomplished your needs
-as well as mine, allowed flexibility in implementing the default as the
-#define could be expanded to include arch specific checks if sub-arches
-find they need a different default than the rest of the arch.  Compared to
-"Just remove the default", that seems preferable.
-
-Thanks,
-Robin
