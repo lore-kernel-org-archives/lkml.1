@@ -1,65 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758110AbZEVVAB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758051AbZEVVE5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758110AbZEVVAB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 17:00:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757058AbZEVU7y
+	id S1758051AbZEVVE5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 17:04:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757139AbZEVVEp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 16:59:54 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:44923 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757010AbZEVU7x (ORCPT
+	Fri, 22 May 2009 17:04:45 -0400
+Received: from d112a2.x-mailer.de ([212.162.53.4]:42269 "EHLO
+	d112a2.x-mailer.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753396AbZEVVEo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 16:59:53 -0400
-Message-ID: <4A171224.5090500@zytor.com>
-Date: Fri, 22 May 2009 13:59:16 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-CC: Rakib Mullick <rakib.mullick@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>
-Subject: Re: [PATCH] x86,APIC: Detect lapic_is_integrated() once - use on
- and on.
-References: <b9df5fa10905220631y7b1a094dn9a6e13de1b9c43af@mail.gmail.com> <20090522200239.GD5354@lenovo> <4A170713.402@zytor.com> <20090522202154.GG5354@lenovo> <4A1709D9.4070300@zytor.com> <20090522203529.GI5354@lenovo>
-In-Reply-To: <20090522203529.GI5354@lenovo>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 22 May 2009 17:04:44 -0400
+Message-Id: <cover.1243024967.git.kkeil@pingi.linux-pingi.de>
+Date: Fri, 22 May 2009 22:42:47 +0200
+Subject: [mISDN PATCH v2 00/19] mISDN patchset for next
+From: Karsten Keil <keil@b1-systems.de>
+To: linux-kernel@vger.kernel.org
+Cc: netdev@vger.kernel.org, David Miller <davem@davemloft.net>,
+       i4ldeveloper@listserv.isdn4linux.de
+X-Info: valid message
+X-Info: original Date
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cyrill Gorcunov wrote:
-> [H. Peter Anvin - Fri, May 22, 2009 at 01:23:53PM -0700]
-> | Cyrill Gorcunov wrote:
-> | > 
-> | > It was about a half year ago (need googling to be precise :)
-> | > but I was reported about Xeon processor which identify itself
-> | > as having "external" apic. So I hardly believe if real external
-> | > device with ICC bus were used.
-> | >  
-> | 
-> | Details, please.  It might even be a bug in the test.
-> | 
-> | 	-hpa
-> | 
-> 
-> Here is it
-> 
-> 	http://lkml.org/lkml/2008/10/17/147
-> 	http://lkml.org/lkml/2008/10/20/144
-> 
-> and commit db96b0a in mainline
-> 
+This is a update of the mISDN driver for net-next.
+It syncs the mISDN driver with the development on git.misdn.org.
+More updates (new hardware support) will follow.
 
-There isn't much detail about the system... no cpuinfo nor any DMI
-information.  This makes me believe that the problem was misdiagnosed,
-as you yourself speculate at the end of the thread.
+You can pull it from 
+git://master.kernel.org/pub/scm/linux/kernel/git/kkeil/ISDN-2.6-net-next.git for_dave
 
-It's also possible that this particular Xeon might have a different kind
-of APIC, but if so, that's not the same thing as this being a
-non-integrated APIC.  Unfortunately Xeon just means "Intel server chip"
-and without a CPUID it's impossible to know what CPU that was.
+Andreas Eversberg (12):
+  Add watchdog functionality to hfcmulti driver
+  DSP now uses ring buffer for echo canceler
+  Echo canceler now gets delay information from hardware
+  Fixed missing spin lock on pipeline process
+  Added layer-1-hold feature
+  Fix DTMF locking bug issue
+  Hardware acceleration is now possible in conjunction with audio
+    recording
+  Fix TEI and SAPI handling
+  Add "sapi" information to debug messages
+  Add PCI ID for Junghanns 8S card
+  Added PCI ID for new Junghanns.net Single E1 cards.
+  Fix DTMF detection enable/disable
 
-	-hpa
+Arnaldo Carvalho de Melo (1):
+  Use kernel_{send,recv}msg instead of open coding
+
+Frank Seidel (2):
+  Reduce stack size in dsp_cmx_send()
+  Add allocation of recvbuf[1500] at run time to reduce stack size
+
+Karsten Keil (3):
+  Fix skb leak in error cases
+  Add XHFC support for embedded Speech-Design board to hfcmulti
+  Cleanup debug messages
+
+Roel Kluin (1):
+  isdn: get_free_devid() failure ignored
+
+ drivers/isdn/hardware/mISDN/Kconfig         |   11 +-
+ drivers/isdn/hardware/mISDN/hfc_multi.h     |   47 ++-
+ drivers/isdn/hardware/mISDN/hfc_multi_8xx.h |  167 ++++++++
+ drivers/isdn/hardware/mISDN/hfcmulti.c      |  614 ++++++++++++++++++---------
+ drivers/isdn/hardware/mISDN/hfcpci.c        |   98 +++--
+ drivers/isdn/hardware/mISDN/hfcsusb.c       |    4 +-
+ drivers/isdn/mISDN/core.c                   |    8 +-
+ drivers/isdn/mISDN/dsp.h                    |   19 +-
+ drivers/isdn/mISDN/dsp_audio.c              |    5 +-
+ drivers/isdn/mISDN/dsp_cmx.c                |  115 ++++--
+ drivers/isdn/mISDN/dsp_core.c               |   72 ++--
+ drivers/isdn/mISDN/dsp_dtmf.c               |    3 +
+ drivers/isdn/mISDN/dsp_ecdis.h              |    2 +-
+ drivers/isdn/mISDN/dsp_pipeline.c           |    5 +-
+ drivers/isdn/mISDN/dsp_tones.c              |   23 +-
+ drivers/isdn/mISDN/hwchannel.c              |    4 +-
+ drivers/isdn/mISDN/l1oip.h                  |    2 +-
+ drivers/isdn/mISDN/l1oip_codec.c            |    1 +
+ drivers/isdn/mISDN/l1oip_core.c             |   71 ++--
+ drivers/isdn/mISDN/layer2.c                 |   37 +-
+ drivers/isdn/mISDN/layer2.h                 |    2 +-
+ drivers/isdn/mISDN/socket.c                 |   45 ++-
+ drivers/isdn/mISDN/tei.c                    |   80 +++--
+ drivers/isdn/mISDN/timerdev.c               |    2 +-
+ include/linux/mISDNdsp.h                    |    4 +-
+ include/linux/mISDNhw.h                     |    2 +-
+ include/linux/mISDNif.h                     |   19 +-
+ include/linux/pci_ids.h                     |    2 +
+ 28 files changed, 994 insertions(+), 470 deletions(-)
+ create mode 100644 drivers/isdn/hardware/mISDN/hfc_multi_8xx.h
+
