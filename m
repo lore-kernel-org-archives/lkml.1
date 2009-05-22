@@ -1,46 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758173AbZEVV21@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757766AbZEVVdD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758173AbZEVV21 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 17:28:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757305AbZEVV2U
+	id S1757766AbZEVVdD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 17:33:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757454AbZEVVcy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 17:28:20 -0400
-Received: from dallas.jonmasters.org ([72.29.103.172]:52499 "EHLO
-	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757278AbZEVV2U (ORCPT
+	Fri, 22 May 2009 17:32:54 -0400
+Received: from ns01.unsolicited.net ([69.10.132.115]:48907 "EHLO
+	ns01.unsolicited.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757447AbZEVVcy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 17:28:20 -0400
-Subject: LKML Podcast Update
-From: Jon Masters <jonathan@jonmasters.org>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Organization: World Organi[sz]ation Of Broken Dreams
-Date: Fri, 22 May 2009 17:27:37 -0400
-Message-Id: <1243027657.1011.7.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+	Fri, 22 May 2009 17:32:54 -0400
+Message-ID: <4A1719DE.4060009@unsolicited.net>
+Date: Fri, 22 May 2009 22:32:14 +0100
+From: David <david@unsolicited.net>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+MIME-Version: 1.0
+To: linux-media@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: USB/DVB - Old Technotrend TT-connect S-2400 regression tracked down
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SA-Do-Not-Run: Yes
-X-SA-Exim-Connect-IP: 127.0.0.1
-X-SA-Exim-Mail-From: jonathan@jonmasters.org
-X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Folks,
+I reported this DVB-S card breaking between 2.6.26 and 2.6.27. I've
+finally had time to do some digging, and the regression is caused by:
 
-Note: today's podcast was delayed - I'm taking a day off and will be in
-Ottawa over the weekend, back to normal after the US Memorial Day break.
+    b963801164618e25fbdc0cd452ce49c3628b46c8 USB: ehci-hcd unlink speedups
 
-A quick update. We're up to about 300 listeners per day at the moment,
-which is a sufficient number to make it worthwhile, so I'm going to keep
-going. I'm not sure that daily is sustainable, so don't be surprised if
-it becomes a Mon, Wed, Fri, weekend affair. Or something like that. I've
-been trying to publish around midnight Eastern each night.
+..that was introduced in 2.6.27. Reverting this change in 2.6.29-rc5
+makes the card work happily again.
 
-http://podcasts.jonmasters.org/kernel/kernel.xml
+I don't know enough about USB protocols to speculate on whether there
+may be a better fix, but hopefully someone cleverer than me can get to
+the bottom of the problem?
 
-Jon.
+Cheers
+David
+
 
 
