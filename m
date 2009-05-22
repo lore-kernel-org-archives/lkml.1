@@ -1,70 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757564AbZEVTS2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757664AbZEVTSk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757564AbZEVTS2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 15:18:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756903AbZEVTST
+	id S1757664AbZEVTSk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 15:18:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757400AbZEVTSW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 15:18:19 -0400
-Received: from h155.mvista.com ([63.81.120.155]:41818 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751463AbZEVTSS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 15:18:18 -0400
-Message-ID: <4A16FAB0.5020301@ru.mvista.com>
-Date: Fri, 22 May 2009 23:19:12 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Fri, 22 May 2009 15:18:22 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:39734 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757195AbZEVTSU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 May 2009 15:18:20 -0400
+Date: Fri, 22 May 2009 21:18:13 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       Corey Ashford <cjashfor@linux.vnet.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [RFC PATCH] perf_counter: dynamically allocate tasks'
+	perf_counter_context struct
+Message-ID: <20090522191813.GA18651@elte.hu>
+References: <18963.63352.489273.92145@cargo.ozlabs.ibm.com> <20090520171207.GA16706@elte.hu> <18964.36622.94267.309523@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-m68k@vger.kernel.org, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: ->ack_intr in m68k IDE drivers  [was: Re: [PATCH 2/5] ide: ->ide_dma_clear_irq()
- -> ->clear_irq()]
-References: <200808192031.40288.bzolnier@gmail.com> <48CEDD89.5060107@ru.mvista.com> <4A15600A.40906@ru.mvista.com> <200905222044.42688.bzolnier@gmail.com>
-In-Reply-To: <200905222044.42688.bzolnier@gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <18964.36622.94267.309523@cargo.ozlabs.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bartlomiej Zolnierkiewicz wrote:
 
->>>>  It may also be worth considering turning this method into 
->>>>test-and-clear, so that we can get the actual IDE interrupt state on 
->>>>the chips that implement this...
+* Paul Mackerras <paulus@samba.org> wrote:
 
->>>  Probably might add the test_irq() method to be called on 
->>>!hwif->waiting_for_dma. Cleraing the status at once seems impractical...
+> Ingo Molnar writes:
+> 
+> > * Paul Mackerras <paulus@samba.org> wrote:
+> > 
+> > > This replaces the struct perf_counter_context in the task_struct 
+> > > with a pointer to a dynamically allocated perf_counter_context 
+> > > struct.  The main reason for doing is this is to allow us to 
+> > > transfer a perf_counter_context from one task to another when we 
+> > > do lazy PMU switching in a later patch.
+> > 
+> > Hm, i'm not sure how far this gets us towards lazy PMU switching.
+> > 
+> > In fact i'd say that the term "lazy PMU switching" is probably 
+> > misleading, we should use: "equivalent PMU context switching" or 
+> > instead.
+> 
+> Yes, that's what I mean.
+> 
+> As you say, we need to be able to detect when two tasks have 
+> equivalent contexts - that is, when their counters are all 
+> inherited from a common ancestor.  My idea is that in that 
+> situation we simply swap the contexts: move the context of the 
+> outgoing task onto the incoming task, and give the incoming task's 
+> context to the outgoing task.  With my patch, that involves simply 
+> swapping the pointers over and adjusting the task pointers in the 
+> two contexts.
+> 
+> That means that all the counters get transferred over to the 
+> incoming task, so there is nothing in the PMU or the arch code 
+> that needs to changed or adjusted.  The outgoing task still has a 
+> perfectly valid context, so it doesn't matter if it migrates to 
+> another CPU.  The nice thing is that there is nothing special or 
+> unusual about the state after we have swapped the contexts - 
+> nothing that needs to be remembered or undone later.
 
->>    Yet this seems what ack_intr() method is doing already...
->>    What it does is testing IRQ status and "acknowledging" it (the semantics 
->>of "acknowledge" is not clear to me, yet it seems that it's clearing the 
->>interrupt latch in the drivers where it's implemented). And the call site of 
->>ack_intr() method corresponds to where test_irq() should have been called, 
->>so it seems we don't need yet another method and probably didn't even need 
->>clear_irq() method in the first place?..
+Yeah, agreed - your scheme is simpler than the scheme i thought of!
 
-> They have different goals -- the main purpose of ack_intr() (despite its name)
-> seems to be testing whether the IRQ is ours,
-
-    It does clear some interrupt bit if it sees that IRQ is ours too, hence 
-the same.
-
-> OTOH in clear_irq() we know that
-> already and we just want to clear the pending IRQ status.
-
-    There seems to be duplication of functionality b/w ack_intr() and 
-clear_irq() now...
-
-> So I'm not sure if unification is desirable... though some improvements are
-> definitely possibly there (less confusing naming at least)...
-
->>    Bart, could you clarify about how ack_intr() is supposed to work?
-
-> Good question, m68k list would be the best place to look for an answer..
-
-    Well, I seem to have been able to infer it from the code...
-
-MBR, Sergei
+	Ingo
