@@ -1,59 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753419AbZEVJcS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756730AbZEVJem@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753419AbZEVJcS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 05:32:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751286AbZEVJcI
+	id S1756730AbZEVJem (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 05:34:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751551AbZEVJee
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 05:32:08 -0400
-Received: from ppp121-45-215-216.lns11.adl2.internode.on.net ([121.45.215.216]:51815
-	"EHLO homer.shelbyville.oz" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751022AbZEVJcI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 05:32:08 -0400
-X-Greylist: delayed 2460 seconds by postgrey-1.27 at vger.kernel.org; Fri, 22 May 2009 05:32:07 EDT
-Date: Fri, 22 May 2009 18:20:40 +0930
-From: Ron <ron@debian.org>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: cl@linux-foundation.org, mpm@selenic.com, linux-mm@kvack.org,
-       akinobu.mita@gmail.com, linux-kernel@vger.kernel.org
-Subject: [PATCH] slab: add missing guard for kernel_map_pages() use
-Message-ID: <20090522085040.GC4448@homer.shelbyville.oz>
-References: <20090521192822.GB4448@homer.shelbyville.oz> <1242979372.13681.1.camel@penberg-laptop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1242979372.13681.1.camel@penberg-laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: ron@debian.org
-X-SA-Exim-Scanned: No (on homer.shelbyville.oz); SAEximRunCond expanded to false
+	Fri, 22 May 2009 05:34:34 -0400
+Received: from hera.kernel.org ([140.211.167.34]:56222 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751063AbZEVJee (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 May 2009 05:34:34 -0400
+Subject: Re: [PATCH-tip] x86: hwmon/k8temp.c Add support for AMD 10H and 11H
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Rudolf Marek <r.marek@assembler.cz>
+Cc: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       LM Sensors <lm-sensors@lm-sensors.org>
+In-Reply-To: <1242981748.10642.3.camel@localhost.localdomain>
+References: <1242979484.8796.7.camel@localhost.localdomain>
+	 <4A165F67.3020005@assembler.cz>
+	 <1242981748.10642.3.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Fri, 22 May 2009 15:00:48 +0530
+Message-Id: <1242984648.16532.3.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2009-05-22 at 14:12 +0530, Jaswinder Singh Rajput wrote:
+> On Fri, 2009-05-22 at 10:16 +0200, Rudolf Marek wrote:
+> > Hi,
+> > 
+> > The reason why there is no support is that the both 10h and 11h and all of them 
+> > have still the errata which tells that measurements is unreliable. Has it changed?
+> > 
+> 
+> On my 11h laptop I am getting reading from 56-70 degree C and it seems
+> to correct and reliable to me.
+> 
+> Can you share the problem you faced with 10h and 11h, so that I can
+> check on my side.
 
-All other uses of kernel_map_pages() are explicitly excluded without
-CONFIG_DEBUG_PAGEALLOC, this one should be too.
+On further testing I am getting 52 - 88 degree C and I am quite happy
+with these readings.
 
-Signed-off-by: Ron Lee <ron@debian.org>
+Atleast something is better than nothing ;-)
 
-
-diff --git a/mm/slab.c b/mm/slab.c
-index 9a90b00..b5e5b27 100644
---- a/mm/slab.c
-+++ b/mm/slab.c
-@@ -2674,10 +2683,12 @@ static void cache_init_objs(struct kmem_cache *cachep,
- 				slab_error(cachep, "constructor overwrote the"
- 					   " start of an object");
- 		}
-+#ifdef CONFIG_DEBUG_PAGEALLOC
- 		if ((cachep->buffer_size % PAGE_SIZE) == 0 &&
- 			    OFF_SLAB(cachep) && cachep->flags & SLAB_POISON)
- 			kernel_map_pages(virt_to_page(objp),
- 					 cachep->buffer_size / PAGE_SIZE, 0);
-+#endif
- #else
- 		if (cachep->ctor)
- 			cachep->ctor(objp);
-
+Thanks,
+--
+JSR
 
