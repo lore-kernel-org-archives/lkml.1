@@ -1,73 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757460AbZEVTRY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757564AbZEVTS2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757460AbZEVTRY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 15:17:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756879AbZEVTRN
+	id S1757564AbZEVTS2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 15:18:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756903AbZEVTST
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 15:17:13 -0400
-Received: from mx-out2.daemonmail.net ([216.104.160.39]:40874 "EHLO
-	mx-out2.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751688AbZEVTRL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 15:17:11 -0400
-From: "Michael S. Zick" <lkml@morethan.org>
-Reply-To: lkml@morethan.org
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [BUG FIX] Make x86_32 uni-processor Atomic ops, Atomic
-Date: Fri, 22 May 2009 14:17:08 -0500
-User-Agent: KMail/1.9.9
-References: <200905221139.26941.lkml@morethan.org> <20090522183622.GA8385@elte.hu>
-In-Reply-To: <20090522183622.GA8385@elte.hu>
-Cc: linux-kernel@vger.kernel.org
+	Fri, 22 May 2009 15:18:19 -0400
+Received: from h155.mvista.com ([63.81.120.155]:41818 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751463AbZEVTSS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 May 2009 15:18:18 -0400
+Message-ID: <4A16FAB0.5020301@ru.mvista.com>
+Date: Fri, 22 May 2009 23:19:12 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-m68k@vger.kernel.org, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: ->ack_intr in m68k IDE drivers  [was: Re: [PATCH 2/5] ide: ->ide_dma_clear_irq()
+ -> ->clear_irq()]
+References: <200808192031.40288.bzolnier@gmail.com> <48CEDD89.5060107@ru.mvista.com> <4A15600A.40906@ru.mvista.com> <200905222044.42688.bzolnier@gmail.com>
+In-Reply-To: <200905222044.42688.bzolnier@gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905221417.10645.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri May 22 2009, you wrote:
-> 
-> * Michael S. Zick <lkml@morethan.org> wrote:
-> 
-> > Found in the bit-rot for 32-bit, x86, Uni-processor builds:
-> > 
-> > diff --git a/arch/x86/include/asm/alternative.h b/arch/x86/include/asm/alternative.h
-> > index f6aa18e..3c790ef 100644
-> > --- a/arch/x86/include/asm/alternative.h
-> > +++ b/arch/x86/include/asm/alternative.h
-> > @@ -35,7 +35,7 @@
-> >                 "661:\n\tlock; "
-> > 
-> >  #else /* ! CONFIG_SMP */
-> > -#define LOCK_PREFIX ""
-> > +#define LOCK_PREFIX "\n\tlock; "
-> >  #endif
-> 
-> What is your motivation for this change? At first sight this makes 
-> the UP kernel a bit larger and a bit smaller. Are you fixing some 
-> real regression/bug here?
->
+Bartlomiej Zolnierkiewicz wrote:
 
-Yes - but not easy to test for unless you have hardware that can
-generate an interrupt flood for long enough period of time to
-catch the atomic ops inbetween the read bus cycle and the write
-bus cycle - a very small window.
+>>>>  It may also be worth considering turning this method into 
+>>>>test-and-clear, so that we can get the actual IDE interrupt state on 
+>>>>the chips that implement this...
 
-As luck (good? bad? ugly?) would have it, I have a SDHC card and
-machine organization that will trigger a flood from the ehci_hcd driver.
-A poor man's test setup.
+>>>  Probably might add the test_irq() method to be called on 
+>>>!hwif->waiting_for_dma. Cleraing the status at once seems impractical...
 
-Even with that bit of luck, it takes from minutes to hours to hit the window.
-The single lockdep dump I posted was the result of nearly a month's testing.
-It is a _small_ window.  ;)
+>>    Yet this seems what ack_intr() method is doing already...
+>>    What it does is testing IRQ status and "acknowledging" it (the semantics 
+>>of "acknowledge" is not clear to me, yet it seems that it's clearing the 
+>>interrupt latch in the drivers where it's implemented). And the call site of 
+>>ack_intr() method corresponds to where test_irq() should have been called, 
+>>so it seems we don't need yet another method and probably didn't even need 
+>>clear_irq() method in the first place?..
 
-Mike
-> 	Ingo
-> 
-> 
+> They have different goals -- the main purpose of ack_intr() (despite its name)
+> seems to be testing whether the IRQ is ours,
 
+    It does clear some interrupt bit if it sees that IRQ is ours too, hence 
+the same.
 
+> OTOH in clear_irq() we know that
+> already and we just want to clear the pending IRQ status.
+
+    There seems to be duplication of functionality b/w ack_intr() and 
+clear_irq() now...
+
+> So I'm not sure if unification is desirable... though some improvements are
+> definitely possibly there (less confusing naming at least)...
+
+>>    Bart, could you clarify about how ack_intr() is supposed to work?
+
+> Good question, m68k list would be the best place to look for an answer..
+
+    Well, I seem to have been able to infer it from the code...
+
+MBR, Sergei
