@@ -1,94 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758458AbZEVXa2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758374AbZEVXp7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758458AbZEVXa2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 19:30:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757925AbZEVXaV
+	id S1758374AbZEVXp7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 19:45:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757944AbZEVXps
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 19:30:21 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:46907 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756973AbZEVXaU (ORCPT
+	Fri, 22 May 2009 19:45:48 -0400
+Received: from mail.fieldses.org ([141.211.133.115]:41014 "EHLO
+	pickle.fieldses.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757800AbZEVXpr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 19:30:20 -0400
-Message-ID: <4A173580.9050304@zytor.com>
-Date: Fri, 22 May 2009 16:30:08 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Fri, 22 May 2009 19:45:47 -0400
+Date: Fri, 22 May 2009 19:45:08 -0400
+To: Jeff Moyer <jmoyer@redhat.com>
+Cc: Trond Myklebust <trond.myklebust@fys.uio.no>, netdev@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Olga Kornievskaia <aglo@citi.umich.edu>, Jim Rees <rees@umich.edu>,
+       linux-nfs@vger.kernel.org
+Subject: Re: 2.6.30-rc deadline scheduler performance regression for iozone
+	over NFS
+Message-ID: <20090522234508.GC9076@fieldses.org>
+References: <20090512204433.7eb69075.akpm@linux-foundation.org> <x49y6t1rqw0.fsf@segfault.boston.devel.redhat.com> <x49k54ku7i2.fsf@segfault.boston.devel.redhat.com> <1242258338.5407.244.camel@heimdal.trondhjem.org> <x49octv7qr8.fsf@segfault.boston.devel.redhat.com> <1242311620.6560.14.camel@heimdal.trondhjem.org> <x49ws8j686r.fsf@segfault.boston.devel.redhat.com> <1242587454.17796.2.camel@heimdal.trondhjem.org> <1242587524.17796.3.camel@heimdal.trondhjem.org> <x49tz3ia45h.fsf@segfault.boston.devel.redhat.com>
 MIME-Version: 1.0
-To: lkml@morethan.org
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [BUG FIX] Make x86_32 uni-processor Atomic ops, Atomic
-References: <200905221139.26941.lkml@morethan.org> <20090522183622.GA8385@elte.hu> <4A16F62B.40207@zytor.com> <200905221721.08495.lkml@morethan.org>
-In-Reply-To: <200905221721.08495.lkml@morethan.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <x49tz3ia45h.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If there is a driver which relies on locked operations to be atomic with
-respect to the I/O subsystem, it needs to use true locks, not LOCK_PREFIX.
-
-An interrupt cannot interrupt between two parts of a lockable
-instruction even if it isn't locked (there are non-atomic instructions
-in the x86 architecture, but they can never be locked.)
-
-The other thing that you might be seeing is that a locked operation may
-be slow enough to keep an otherwise-present race condition from being
-triggered.
-
-> That tells us nothing, since the CPU technical details are under NDA.
-
-Have you considered that you might be running into a CPU bug or design
-error?  There was the out-of-order store bug on the Winchip that needed
-workarounds (CONFIG_X86_OOSTORE) that I don't think were ever well
-tested and might very well have bitrotted?
-
-> All that can be done in this case is report behavior differences from
-> the closest publicly described processor (Pentium-M).
+On Mon, May 18, 2009 at 10:15:22AM -0400, Jeff Moyer wrote:
+> Trond Myklebust <trond.myklebust@fys.uio.no> writes:
 > 
-> For that purpose, I suggest that a single processor box, with other 
-> hardware that makes memory access independent of the processor's 
-> control using a processor older than P-4 is a potential test bed.
-> "Other hardware that makes memory access..." I previously termed:
-> "buss master DMA" - which is overly specific.  It misleads people
-> into thinking I am seeing hardware control issues rather than
-> non-exclusive memory access.
+> > On Sun, 2009-05-17 at 15:11 -0400, Trond Myklebust wrote:
+> >> On Thu, 2009-05-14 at 11:00 -0400, Jeff Moyer wrote:
+> >> > Sorry for the previous, stupid question.  I applied the patch in
+> >> > addition the last one and here are the results:
+> >> > 
+> >> > 70327
+> >> > 71561
+> >> > 68760
+> >> > 69199
+> >> > 65324
+> >> > 
+> >> > A packet capture for this run is available here:
+> >> >   http://people.redhat.com/jmoyer/trond2.pcap.bz2
+> >> > 
+> >> > Any more ideas?  ;)
+> >> 
+> >> Yep. I've got 2 more patches for you. With both of them applied, I'm
+> >> seeing decent performance on my own test rig. The first patch is
+> >> appended. I'll send the second in another email (to avoid attachments).
+> >
+> > Here is number 2. It is incremental to all the others...
 > 
-> My earlier comments about taking an interrupt between the memory read
-> and the memory write operations is from a different manual than the
-> one posted.  A manual that only applies to processors older than 
-> the ones supported by the Linux kernel.  
-> Sorry, my bad, grabbed the wrong book, posted the correct link (SH).
+> With all 4 patches applied, these are the numbers for 5 runs:
 > 
-> Until one or more specific usages of the LOCK_PREFIX macro can be 
-> demonstrated to be incorrect (at least for some of the processors 
-> using this code) - -
+> 103168
+> 101212
+> 103346
+> 100842
+> 103172
 > 
-> Then making the posted change is a single point change that gives a 
-> pair of builds (one with, one without) to compare the behavior of on 
-> the test bed.
-> 
-> It is *not* the preferred change for a general release kernel, the
-> preferred change would be one that makes a specific rather than
-> general correction.  
-> Perhaps only for some functions, perhaps only for some of the 
-> processors that currently select this code.
-> 
-> The observation that executing an unnecessary 'lock' opcode in some
-> cases slows down the machine is not felt by myself to be significant 
-> to duplicating my observations.  Note: I have been wrong before.
+> It's looking much better, but we're still off by a few percent.  Thanks
+> for the quick turnaround on this, Trond!  If you submit these patches,
+> feel free to add:
 
-What makes you draw that conclusion, in particular?  A lock prefix
-typically slows down the following instruction dramatically, on some
-processors by many hundreds of cycles.
+I'd like to take a look and run some tests of my own when I get back
+from vacation next week.
 
-> This is as informative as I can make the message.
+Then assuming no problems I'm inclined to queue them up for 2.6.31, and,
+in the meantime, revert the autotuning patch temporarily for
+2.6.30--under the assumption that autotuning is still the right thing to
+do, but that this is too significant a regression to ignore, and Trond's
+work is too involved to submit for 2.6.30 this late in the process.
+
+--b.
+
 > 
-> PS: *not* a single machine failure, tested on five machines, owned
-> by four different people, two brands, with different use histories.
-
-What do they have in common?
-
-	-hpa
+> Tested-by: Jeff Moyer <jmoyer@redhat.com>
+> 
+> Cheers,
+> Jeff
