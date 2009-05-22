@@ -1,30 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750976AbZEVE4f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756795AbZEVE5C@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750976AbZEVE4f (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 00:56:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751886AbZEVEzg
+	id S1756795AbZEVE5C (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 00:57:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752515AbZEVEzj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 00:55:36 -0400
+	Fri, 22 May 2009 00:55:39 -0400
 Received: from fg-out-1718.google.com ([72.14.220.155]:3469 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751463AbZEVEzf (ORCPT
+	with ESMTP id S1752316AbZEVEzi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 00:55:35 -0400
+	Fri, 22 May 2009 00:55:38 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=HH/3Ut7y9MEebsO3Iz0oykwFY6/lFO+Dhdvo8dtIJQmQY/My/rJqVwe58ZXYN/VRxg
-         jlPD0/IkNpB+ZZ2Pthn7bdswzwCl3xNZvmc0U0YoElKnFIIsJWwKb2DKLFP28CHiPr4R
-         UECuLrgynV2LXGKbtbe2JykSwn1EZfSat6uvY=
+        b=YzWv8RDDknYup1/1jca2bF6SxKlIL5jNuBGhA6dVr5CC+nR0wdDLqhAacyfwnaKCAS
+         oDYKKp5zeeOb4BTNKOa/0JRV1T6ddk88AeYA6pBhBmN7yjy0NTbJ9l90lvBYU2LeuRSC
+         +mj0j8lMGSg3yCutZN1y+dSc9vLUBUSyPtDDQ=
 From: Alexey Dobriyan <adobriyan@gmail.com>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
        torvalds@linux-foundation.org, xemul@parallels.com,
        orenl@cs.columbia.edu, serue@us.ibm.com, dave@linux.vnet.ibm.com,
        mingo@elte.hu, Alexey Dobriyan <adobriyan@gmail.com>
-Subject: [PATCH 04/38] ipcns 2/4: extract create_ipc_ns()
-Date: Fri, 22 May 2009 08:54:58 +0400
-Message-Id: <1242968132-1044-4-git-send-email-adobriyan@gmail.com>
+Subject: [PATCH 06/38] ipcns 4/2: move free_ipcs() proto
+Date: Fri, 22 May 2009 08:55:00 +0400
+Message-Id: <1242968132-1044-6-git-send-email-adobriyan@gmail.com>
 X-Mailer: git-send-email 1.5.6.5
 In-Reply-To: <1242968132-1044-1-git-send-email-adobriyan@gmail.com>
 References: <1242968132-1044-1-git-send-email-adobriyan@gmail.com>
@@ -32,46 +32,42 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-clone_ipc_ns() is misnamed, it doesn't clone anything and doesn't use passed
-parameter. Rename it.
-
-create_ipc_ns() will be used by C/R to create fresh ipcns.
+Function is really private to ipc/ and avoid struct kern_ipc_perm
+forward declaration.
 
 Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
-Acked-by: Serge Hallyn <serue@us.ibm.com>
 ---
- ipc/namespace.c |    9 ++-------
- 1 files changed, 2 insertions(+), 7 deletions(-)
+ include/linux/ipc_namespace.h |    4 ----
+ ipc/util.h                    |    3 ++-
+ 2 files changed, 2 insertions(+), 5 deletions(-)
 
-diff --git a/ipc/namespace.c b/ipc/namespace.c
-index a56fc59..231ee53 100644
---- a/ipc/namespace.c
-+++ b/ipc/namespace.c
-@@ -14,7 +14,7 @@
- 
- #include "util.h"
- 
--static struct ipc_namespace *clone_ipc_ns(struct ipc_namespace *old_ns)
-+static struct ipc_namespace *create_ipc_ns(void)
+diff --git a/include/linux/ipc_namespace.h b/include/linux/ipc_namespace.h
+index 804e4e4..e408722 100644
+--- a/include/linux/ipc_namespace.h
++++ b/include/linux/ipc_namespace.h
+@@ -96,10 +96,6 @@ static inline int mq_init_ns(struct ipc_namespace *ns) { return 0; }
+ #if defined(CONFIG_IPC_NS)
+ extern struct ipc_namespace *copy_ipcs(unsigned long flags,
+ 				       struct ipc_namespace *ns);
+-extern void free_ipcs(struct ipc_namespace *ns, struct ipc_ids *ids,
+-		      void (*free)(struct ipc_namespace *,
+-				   struct kern_ipc_perm *));
+-
+ static inline struct ipc_namespace *get_ipc_ns(struct ipc_namespace *ns)
  {
- 	struct ipc_namespace *ns;
- 	int err;
-@@ -48,14 +48,9 @@ static struct ipc_namespace *clone_ipc_ns(struct ipc_namespace *old_ns)
- 
- struct ipc_namespace *copy_ipcs(unsigned long flags, struct ipc_namespace *ns)
- {
--	struct ipc_namespace *new_ns;
+ 	if (ns)
+diff --git a/ipc/util.h b/ipc/util.h
+index 1187332..7a2861b 100644
+--- a/ipc/util.h
++++ b/ipc/util.h
+@@ -171,5 +171,6 @@ static inline void ipc_unlock(struct kern_ipc_perm *perm)
+ struct kern_ipc_perm *ipc_lock_check(struct ipc_ids *ids, int id);
+ int ipcget(struct ipc_namespace *ns, struct ipc_ids *ids,
+ 			struct ipc_ops *ops, struct ipc_params *params);
 -
- 	if (!(flags & CLONE_NEWIPC))
- 		return get_ipc_ns(ns);
--
--	new_ns = clone_ipc_ns(ns);
--
--	return new_ns;
-+	return create_ipc_ns();
- }
- 
- /*
++void free_ipcs(struct ipc_namespace *ns, struct ipc_ids *ids,
++		void (*free)(struct ipc_namespace *, struct kern_ipc_perm *));
+ #endif
 -- 
 1.5.6.5
 
