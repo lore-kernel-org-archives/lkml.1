@@ -1,30 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754001AbZEVEz5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754710AbZEVE4Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754001AbZEVEz5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 00:55:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751376AbZEVEzd
+	id S1754710AbZEVE4Q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 00:56:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751546AbZEVEze
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 00:55:33 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:45240 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750916AbZEVEzc (ORCPT
+	Fri, 22 May 2009 00:55:34 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:3469 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751231AbZEVEzd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 00:55:32 -0400
+	Fri, 22 May 2009 00:55:33 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=dDZGylFi15wZ3rdv7pKjqkSAc5b7WgbSKrdTGOsFihzY/paQt/hOZs77b0shIwAGOd
-         2XLFYcfCMSRnDGOs9RgGalHp+xwfgYaGzgTI+QG19lV+/e749ae5GyXDt8P/3xYYmqK3
-         wpQ/ZHZIDdSFiysrnW2YBc2PrBsDLSgBCmuQM=
+        b=GllOOhz08PhNXZcsKux0WThyrf9onxsby5O8voTh8UJmk1DUtgCDWad03f2g+Q4hz5
+         q2U0h19a592PWxRI/9lMEAAMXxQXEnnZ3OXJQ8VcCNGJiufibR/QWC70gbLQhN5Uh/iV
+         JkZRiNJBhKfF/C4GZlM27oC0sxW8Bhh+jr9Oo=
 From: Alexey Dobriyan <adobriyan@gmail.com>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
        torvalds@linux-foundation.org, xemul@parallels.com,
        orenl@cs.columbia.edu, serue@us.ibm.com, dave@linux.vnet.ibm.com,
        mingo@elte.hu, Alexey Dobriyan <adobriyan@gmail.com>
-Subject: [PATCH 02/38] utsns: extract create_uts_ns()
-Date: Fri, 22 May 2009 08:54:56 +0400
-Message-Id: <1242968132-1044-2-git-send-email-adobriyan@gmail.com>
+Subject: [PATCH 03/38] ipcns 1/4: remove useless get/put while CLONE_NEWIPC
+Date: Fri, 22 May 2009 08:54:57 +0400
+Message-Id: <1242968132-1044-3-git-send-email-adobriyan@gmail.com>
 X-Mailer: git-send-email 1.5.6.5
 In-Reply-To: <1242968132-1044-1-git-send-email-adobriyan@gmail.com>
 References: <1242968132-1044-1-git-send-email-adobriyan@gmail.com>
@@ -32,48 +32,34 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-create_uts_ns() will be used by C/R to create fresh uts_ns.
+copy_ipcs() doesn't actually copy anything. If new ipcns is created, it's
+created from scratch, in this case get/put on old ipcns isn't needed.
 
 Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+Acked-by: Serge Hallyn <serue@us.ibm.com>
 ---
- kernel/utsname.c |   13 +++++++++++--
- 1 files changed, 11 insertions(+), 2 deletions(-)
+ ipc/namespace.c |    6 +-----
+ 1 files changed, 1 insertions(+), 5 deletions(-)
 
-diff --git a/kernel/utsname.c b/kernel/utsname.c
-index 815237a..8a82b4b 100644
---- a/kernel/utsname.c
-+++ b/kernel/utsname.c
-@@ -15,6 +15,16 @@
- #include <linux/err.h>
- #include <linux/slab.h>
- 
-+static struct uts_namespace *create_uts_ns(void)
-+{
-+	struct uts_namespace *uts_ns;
-+
-+	uts_ns = kmalloc(sizeof(struct uts_namespace), GFP_KERNEL);
-+	if (uts_ns)
-+		kref_init(&uts_ns->kref);
-+	return uts_ns;
-+}
-+
- /*
-  * Clone a new ns copying an original utsname, setting refcount to 1
-  * @old_ns: namespace to clone
-@@ -24,14 +34,13 @@ static struct uts_namespace *clone_uts_ns(struct uts_namespace *old_ns)
+diff --git a/ipc/namespace.c b/ipc/namespace.c
+index 4a5e752..a56fc59 100644
+--- a/ipc/namespace.c
++++ b/ipc/namespace.c
+@@ -50,15 +50,11 @@ struct ipc_namespace *copy_ipcs(unsigned long flags, struct ipc_namespace *ns)
  {
- 	struct uts_namespace *ns;
+ 	struct ipc_namespace *new_ns;
  
--	ns = kmalloc(sizeof(struct uts_namespace), GFP_KERNEL);
-+	ns = create_uts_ns();
- 	if (!ns)
- 		return ERR_PTR(-ENOMEM);
+-	BUG_ON(!ns);
+-	get_ipc_ns(ns);
+-
+ 	if (!(flags & CLONE_NEWIPC))
+-		return ns;
++		return get_ipc_ns(ns);
  
- 	down_read(&uts_sem);
- 	memcpy(&ns->name, &old_ns->name, sizeof(ns->name));
- 	up_read(&uts_sem);
--	kref_init(&ns->kref);
- 	return ns;
+ 	new_ns = clone_ipc_ns(ns);
+ 
+-	put_ipc_ns(ns);
+ 	return new_ns;
  }
  
 -- 
