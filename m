@@ -1,41 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756889AbZEVGbX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755200AbZEVGob@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756889AbZEVGbX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 02:31:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751590AbZEVGa5
+	id S1755200AbZEVGob (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 02:44:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751375AbZEVGoX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 02:30:57 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57181
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756508AbZEVGa4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 02:30:56 -0400
-Date: Thu, 21 May 2009 23:30:54 -0700 (PDT)
-Message-Id: <20090521.233054.46785912.davem@davemloft.net>
-To: adobriyan@gmail.com
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org, torvalds@linux-foundation.org,
-       xemul@parallels.com, orenl@cs.columbia.edu, serue@us.ibm.com,
-       dave@linux.vnet.ibm.com, mingo@elte.hu
-Subject: Re: [PATCH 10/38] netns 2/2: extract net_create()
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1242968132-1044-10-git-send-email-adobriyan@gmail.com>
-References: <1242968132-1044-1-git-send-email-adobriyan@gmail.com>
-	<1242968132-1044-10-git-send-email-adobriyan@gmail.com>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 22 May 2009 02:44:23 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:55452 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751368AbZEVGoW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 May 2009 02:44:22 -0400
+Message-ID: <4A164978.1020604@cn.fujitsu.com>
+Date: Fri, 22 May 2009 14:43:04 +0800
+From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
+MIME-Version: 1.0
+To: Vivek Goyal <vgoyal@redhat.com>
+CC: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
+       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
+       jens.axboe@oracle.com, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, jmoyer@redhat.com,
+       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       righi.andrea@gmail.com, agk@redhat.com, dm-devel@redhat.com,
+       snitzer@redhat.com, m-ikeda@ds.jp.nec.com, akpm@linux-foundation.org
+Subject: Re: [PATCH 02/18] io-controller: Common flat fair queuing code in
+ elevaotor layer
+References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com> <1241553525-28095-3-git-send-email-vgoyal@redhat.com>
+In-Reply-To: <1241553525-28095-3-git-send-email-vgoyal@redhat.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alexey Dobriyan <adobriyan@gmail.com>
-Date: Fri, 22 May 2009 08:55:04 +0400
+Vivek Goyal wrote:
+...
+> +/* A request got completed from io_queue. Do the accounting. */
+> +void elv_ioq_completed_request(struct request_queue *q, struct request *rq)
+> +{
+> +	const int sync = rq_is_sync(rq);
+> +	struct io_queue *ioq = rq->ioq;
+> +	struct elv_fq_data *efqd = &q->elevator->efqd;
+> +
+> +	if (!elv_iosched_fair_queuing_enabled(q->elevator))
+> +		return;
+> +
+> +	elv_log_ioq(efqd, ioq, "complete");
+> +
+> +	elv_update_hw_tag(efqd);
+> +
+> +	WARN_ON(!efqd->rq_in_driver);
+> +	WARN_ON(!ioq->dispatched);
+> +	efqd->rq_in_driver--;
+> +	ioq->dispatched--;
+> +
+> +	if (sync)
+> +		ioq->last_end_request = jiffies;
+> +
+> +	/*
+> +	 * If this is the active queue, check if it needs to be expired,
+> +	 * or if we want to idle in case it has no pending requests.
+> +	 */
+> +
+> +	if (elv_active_ioq(q->elevator) == ioq) {
+> +		if (elv_ioq_slice_new(ioq)) {
+> +			elv_ioq_set_prio_slice(q, ioq);
 
-> net_create() will be used by C/R to create fresh netns on restart.
-> 
-> Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
-> Acked-by: Serge Hallyn <serue@us.ibm.com>
+  Hi Vivek,
 
-Acked-by: David S. Miller <davem@davemloft.net>
+  Would you explain a bit why slice_end should be set when first request completes.
+  Why not set it just when an ioq gets active?
+  
+  Thanks.
+  Gui Jianfeng
+
+
