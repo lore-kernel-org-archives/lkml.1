@@ -1,43 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758149AbZEVU2w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758085AbZEVU2k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758149AbZEVU2w (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 16:28:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757454AbZEVU2o
+	id S1758085AbZEVU2k (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 16:28:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757454AbZEVU2J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 16:28:44 -0400
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:56447 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757580AbZEVU2n (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 16:28:43 -0400
-Date: Fri, 22 May 2009 15:44:37 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@qirst.com
-To: Randy Dunlap <randy.dunlap@oracle.com>
-cc: Pavel Machek <pavel@ucw.cz>, Dave Hansen <dave@linux.vnet.ibm.com>,
-       David Rientjes <rientjes@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, Nick Piggin <npiggin@suse.de>,
-       Mel Gorman <mel@csn.ul.ie>, Peter Ziljstra <a.p.ziljstra@chello.nl>,
-       San Mehat <san@android.com>, Arve Hj?nnev?g <arve@android.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Misleading OOM messages
-In-Reply-To: <4A16FFA7.5010005@oracle.com>
-Message-ID: <alpine.DEB.1.10.0905221543390.9506@qirst.com>
-References: <1242333519.15391.210.camel@nimitz> <alpine.DEB.2.00.0905141346030.28074@chino.kir.corp.google.com> <1242335120.15391.242.camel@nimitz> <alpine.DEB.1.10.0905141729180.30187@qirst.com> <20090514213403.GB14741@elf.ucw.cz> <1242337299.28440.47.camel@nimitz>
- <20090515130547.GA1976@elf.ucw.cz> <alpine.DEB.1.10.0905151358430.26559@qirst.com> <20090515200213.GA1406@ucw.cz> <alpine.DEB.1.10.0905151713230.26489@qirst.com> <20090519203944.GD1362@ucw.cz> <alpine.DEB.1.10.0905221500390.5204@qirst.com>
- <4A16FFA7.5010005@oracle.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 22 May 2009 16:28:09 -0400
+Received: from mga09.intel.com ([134.134.136.24]:16832 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757008AbZEVU2G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 May 2009 16:28:06 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,235,1241420400"; 
+   d="scan'208";a="414966631"
+Message-Id: <20090522202505.278649000@intel.com>
+References: <20090522202336.942728000@intel.com>
+User-Agent: quilt/0.46-1
+Date: Fri, 22 May 2009 13:23:37 -0700
+From: venkatesh.pallipadi@intel.com
+To: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com
+Cc: linux-kernel@vger.kernel.org, suresh.b.siddha@intel.com,
+       shaohua.li@intel.com,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Subject: [patch 1/2] x86: bugfix wbinvd() model check instead of family check
+Content-Disposition: inline; filename=0001--bugfix-wbinvd-model-check-instead-of-family-chec.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 22 May 2009, Randy Dunlap wrote:
+wbinvd is supported on all CPUs 486 or later. But,
+pageattr.c is checking x86_model >= 4 before wbinvd(), which looks like
+an oversight bug. It was first introduced at one place by changeset
+d7c8f21a8cad0228c7c5ce2bb6dbd95d1ee49d13 and got copied over to second
+place in the same file later.
 
-> But I think that normal users won't know what reclaiming memory is anyway,
-> so the patch doesn't help IMO.
+Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+---
+ arch/x86/mm/pageattr.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-If they dont know then they may ask someone who knows and/or report a bug.
+diff --git a/arch/x86/mm/pageattr.c b/arch/x86/mm/pageattr.c
+index 797f9f1..2cc019a 100644
+--- a/arch/x86/mm/pageattr.c
++++ b/arch/x86/mm/pageattr.c
+@@ -153,7 +153,7 @@ static void __cpa_flush_all(void *arg)
+ 	 */
+ 	__flush_tlb_all();
+ 
+-	if (cache && boot_cpu_data.x86_model >= 4)
++	if (cache && boot_cpu_data.x86 >= 4)
+ 		wbinvd();
+ }
+ 
+@@ -218,7 +218,7 @@ static void cpa_flush_array(unsigned long *start, int numpages, int cache,
+ 
+ 	/* 4M threshold */
+ 	if (numpages >= 1024) {
+-		if (boot_cpu_data.x86_model >= 4)
++		if (boot_cpu_data.x86 >= 4)
+ 			wbinvd();
+ 		return;
+ 	}
+-- 
+1.6.0.6
+
+-- 
 
