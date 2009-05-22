@@ -1,126 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757454AbZEVVHb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757565AbZEVVDt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757454AbZEVVHb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 17:07:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757908AbZEVVEw
+	id S1757565AbZEVVDt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 17:03:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753807AbZEVVDm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 17:04:52 -0400
-Received: from d112a2.x-mailer.de ([212.162.53.4]:46738 "EHLO
-	d112a2.x-mailer.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756755AbZEVVEu (ORCPT
+	Fri, 22 May 2009 17:03:42 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:44557 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753396AbZEVVDl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 17:04:50 -0400
-Message-Id: <ac87c09a8ffdde66c1effd8c4d52893a20d7ab7b.1243024967.git.kkeil@pingi.linux-pingi.de>
-In-Reply-To: <cover.1243024967.git.kkeil@pingi.linux-pingi.de>
-References: <cover.1243024967.git.kkeil@pingi.linux-pingi.de>
-Subject: [mISDN PATCH v2 10/19] Add "sapi" information to debug messages
-From: Karsten Keil <keil@b1-systems.de>
-To: linux-kernel@vger.kernel.org
-Cc: netdev@vger.kernel.org, David Miller <davem@davemloft.net>,
-       i4ldeveloper@listserv.isdn4linux.de
-Date: Fri, 22 May 2009 23:04:51 +0200
-X-Info: valid message
-X-Info: original Date
+	Fri, 22 May 2009 17:03:41 -0400
+Message-ID: <4A171221.5020800@zytor.com>
+Date: Fri, 22 May 2009 13:59:13 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Max Kellermann <mk@cm4all.com>
+CC: Glauber Costa <glommer@redhat.com>, linux-kernel@vger.kernel.org,
+       ijc@hellion.org.uk, Grant Coady <grant_lkml@dodo.com.au>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       "J. Bruce Fields" <bfields@fieldses.org>,
+       Tom Tucker <tom@opengridcomputing.com>,
+       Cyrill Gorcunov <gorcunov@gmail.com>
+Subject: Re: [PATCH] NFS regression in 2.6.26?, "task blocked for more than
+ 120 seconds"
+References: <20081017123207.GA14979@rabbit.intern.cm-ag> <20081017143301.GA18522@poweredge.glommer> <20081020065149.GA11213@rabbit.intern.cm-ag>
+In-Reply-To: <20081020065149.GA11213@rabbit.intern.cm-ag>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andreas Eversberg <andreas@eversberg.eu>
+Max Kellermann wrote:
+> On 2008/10/17 16:33, Glauber Costa <glommer@redhat.com> wrote:
+>> That's probably something related to apic congestion.
+>> Does the problem go away if the only thing you change is this:
+>>
+>>
+>>> @@ -891,11 +897,6 @@ do_rest:
+>>>  		store_NMI_vector(&nmi_high, &nmi_low);
+>>>  
+>>>  		smpboot_setup_warm_reset_vector(start_ip);
+>>> -		/*
+>>> -		 * Be paranoid about clearing APIC errors.
+>>> -	 	*/
+>>> -		apic_write(APIC_ESR, 0);
+>>> -		apic_read(APIC_ESR);
+>>>  	}
+>>
+>> Please let me know.
+> 
+> Hello Glauber,
+> 
+> I have rebooted the server with 2.6.27.1 + this patchlet an hour ago.
+> No problems since.
+> 
+> Hardware: Compaq P4 Xeon server, Broadcom CMIC-WS / CIOB-X2 board.
+> Tell me if you need more detailed information.
+> 
 
-Using sapi values other than 0 work now.
-The "OpenBSC" project does not require special kernel patch anymore.
+I was just pointed to this thread in the archives, and I'm really
+wondering what was going on here.  In particular, if this machine still
+is around, I would appreciate a dump of /proc/cpuinfo as well as
+dmidecode from this machine.
 
-Signed-off-by: Andreas Eversberg <andreas@eversberg.eu>
-Signed-off-by: Karsten Keil <keil@b1-systems.de>
----
- drivers/isdn/mISDN/layer2.c |   24 +++++++++++-------------
- drivers/isdn/mISDN/tei.c    |   11 +++++++++--
- 2 files changed, 20 insertions(+), 15 deletions(-)
+Thanks,
 
-diff --git a/drivers/isdn/mISDN/layer2.c b/drivers/isdn/mISDN/layer2.c
-index 0628ef6..9efee8e 100644
---- a/drivers/isdn/mISDN/layer2.c
-+++ b/drivers/isdn/mISDN/layer2.c
-@@ -99,7 +99,7 @@ l2m_debug(struct FsmInst *fi, char *fmt, ...)
- 	if (!(*debug & DEBUG_L2_FSM))
- 		return;
- 	va_start(va, fmt);
--	printk(KERN_DEBUG "l2 (tei %d): ", l2->tei);
-+	printk(KERN_DEBUG "l2 (sapi %d tei %d): ", l2->sapi, l2->tei);
- 	vprintk(fmt, va);
- 	printk("\n");
- 	va_end(va);
-@@ -1859,20 +1859,18 @@ ph_data_indication(struct layer2 *l2, struct mISDNhead *hh, struct sk_buff *skb)
- 		psapi >>= 2;
- 		ptei >>= 1;
- 		if (psapi != l2->sapi) {
--			/* not our bussiness
--			 * printk(KERN_DEBUG "%s: sapi %d/%d sapi mismatch\n",
--			 *  __func__,
--			 *	psapi, l2->sapi);
--			 */
-+			/* not our bussiness */
-+			if (*debug & DEBUG_L2)
-+				printk(KERN_DEBUG "%s: sapi %d/%d mismatch\n",
-+					__func__, psapi, l2->sapi);
- 			dev_kfree_skb(skb);
- 			return 0;
- 		}
- 		if ((ptei != l2->tei) && (ptei != GROUP_TEI)) {
--			/* not our bussiness
--			 * printk(KERN_DEBUG "%s: tei %d/%d sapi %d mismatch\n",
--			 *  __func__,
--			 *	ptei, l2->tei, psapi);
--			 */
-+			/* not our bussiness */
-+			if (*debug & DEBUG_L2)
-+				printk(KERN_DEBUG "%s: tei %d/%d mismatch\n",
-+					__func__, ptei, l2->tei);
- 			dev_kfree_skb(skb);
- 			return 0;
- 		}
-@@ -1927,8 +1925,8 @@ l2_send(struct mISDNchannel *ch, struct sk_buff *skb)
- 	int 			ret = -EINVAL;
- 
- 	if (*debug & DEBUG_L2_RECV)
--		printk(KERN_DEBUG "%s: prim(%x) id(%x) tei(%d)\n",
--		    __func__, hh->prim, hh->id, l2->tei);
-+		printk(KERN_DEBUG "%s: prim(%x) id(%x) sapi(%d) tei(%d)\n",
-+		    __func__, hh->prim, hh->id, l2->sapi, l2->tei);
- 	switch (hh->prim) {
- 	case PH_DATA_IND:
- 		ret = ph_data_indication(l2, hh, skb);
-diff --git a/drivers/isdn/mISDN/tei.c b/drivers/isdn/mISDN/tei.c
-index 9e88135..4ebba5c 100644
---- a/drivers/isdn/mISDN/tei.c
-+++ b/drivers/isdn/mISDN/tei.c
-@@ -227,7 +227,7 @@ tei_debug(struct FsmInst *fi, char *fmt, ...)
- 	if (!(*debug & DEBUG_L2_TEIFSM))
- 		return;
- 	va_start(va, fmt);
--	printk(KERN_DEBUG "tei(%d): ", tm->l2->tei);
-+	printk(KERN_DEBUG "sapi(%d) tei(%d): ", tm->l2->sapi, tm->l2->tei);
- 	vprintk(fmt, va);
- 	printk("\n");
- 	va_end(va);
-@@ -1188,9 +1188,16 @@ check_data(struct manager *mgr, struct sk_buff *skb)
- 	if ((skb->data[2] & ~0x10) != SABME)
- 		return -ENOTCONN;
- 	/* We got a SABME for a fixed TEI */
-+	if (*debug & DEBUG_L2_CTRL)
-+		printk(KERN_DEBUG "%s: SABME sapi(%d) tei(%d)\n",
-+		    __func__, sapi, tei);
- 	l2 = create_new_tei(mgr, tei, sapi);
--	if (!l2)
-+	if (!l2) {
-+		if (*debug & DEBUG_L2_CTRL)
-+			printk(KERN_DEBUG "%s: failed to create new tei\n",
-+			    __func__);
- 		return -ENOMEM;
-+	}
- 	ret = l2->ch.send(&l2->ch, skb);
- 	return ret;
- }
--- 
-1.6.0.2
-
+	-hpa
