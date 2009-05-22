@@ -1,50 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758072AbZEVPN5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757994AbZEVPPZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758072AbZEVPN5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 11:13:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757464AbZEVPNu
+	id S1757994AbZEVPPZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 11:15:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757486AbZEVPPP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 11:13:50 -0400
-Received: from mail-px0-f103.google.com ([209.85.216.103]:47572 "EHLO
-	mail-px0-f103.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756954AbZEVPNu (ORCPT
+	Fri, 22 May 2009 11:15:15 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:49930 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757464AbZEVPPM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 11:13:50 -0400
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] UART regs: add OMAP wakeup-enable register
-References: <1242925798-29672-1-git-send-email-khilman@deeprootsystems.com>
-	<20090521203725.6d9beaaf@lxorguk.ukuu.org.uk>
-From: Kevin Hilman <khilman@deeprootsystems.com>
-Organization: Deep Root Systems, LLC
-Date: Fri, 22 May 2009 08:13:48 -0700
-In-Reply-To: <20090521203725.6d9beaaf@lxorguk.ukuu.org.uk> (Alan Cox's message of "Thu\, 21 May 2009 20\:37\:25 +0100")
-Message-ID: <873aax891v.fsf@deeprootsystems.com>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 22 May 2009 11:15:12 -0400
+Subject: Re: [PATCH] kernel:lockdep:print the shortest dependency chain if 
+ finding a circle
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Ming Lei <tom.leiming@gmail.com>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+In-Reply-To: <d82e647a0905220812q19aff43fw23cb9dc0ce1b5a76@mail.gmail.com>
+References: <1242918732-4988-1-git-send-email-tom.leiming@gmail.com>
+	 <d82e647a0905220812q19aff43fw23cb9dc0ce1b5a76@mail.gmail.com>
+Content-Type: text/plain
+Date: Fri, 22 May 2009 17:15:05 +0200
+Message-Id: <1243005305.6582.672.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
+On Fri, 2009-05-22 at 23:12 +0800, Ming Lei wrote:
+> Any objections or suggestions?
 
-> On Thu, 21 May 2009 10:09:58 -0700
-> Kevin Hilman <khilman@deeprootsystems.com> wrote:
->
->> Add the wakeup enable register to the list of OMAP-specific UART
->> registers.  This is to support forthcoming OMAP PM enhancements which
->> use the wakeup feature of the OMAP's 8250-based UART.
->> 
->> Signed-off-by: Kevin Hilman <khilman@deeprootsystems.com>
->> ---
->> The MAINTAINERS file lists the 8250 driver as orphaned, and posts to
->> linux-serial go unanswered.  How should this go upstream?
->
-> Via me - I'm sort of defacto serial/8250 caretaker.
+Non yet, yesterday was a holiday here in Europe and I haven't had time
+to go over the patch in detail yet.
 
-OK, good to know.
+I do appreciate it though and at a first glance it does look good.
 
-So are you planning to pull this one in for the  next merge window?
 
-Kevin
+
