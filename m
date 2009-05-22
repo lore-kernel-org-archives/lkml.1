@@ -1,43 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756970AbZEVNmx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756845AbZEVNrQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756970AbZEVNmx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 09:42:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754232AbZEVNmq
+	id S1756845AbZEVNrQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 09:47:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755438AbZEVNrC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 09:42:46 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:36955 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752320AbZEVNmq (ORCPT
+	Fri, 22 May 2009 09:47:02 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:57778 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755356AbZEVNrC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 09:42:46 -0400
-Date: Fri, 22 May 2009 14:43:43 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Pantelis Koukousoulas <pktoss@gmail.com>
-Cc: Kernel development list <linux-kernel@vger.kernel.org>,
-       Kay Sievers <kay.sievers@vrfy.org>, Al Viro <viro@zeniv.linux.org.uk>,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: How to tell whether a struct file is held by a process?
-Message-ID: <20090522144343.7b26b3a8@lxorguk.ukuu.org.uk>
-In-Reply-To: <1295ed070905220630q67c62569o9753425abf529742@mail.gmail.com>
-References: <ac3eb2510905211407l3aec14acx2572a2ad4e675b9@mail.gmail.com>
-	<Pine.LNX.4.44L0.0905211724050.3914-100000@iolanthe.rowland.org>
-	<1295ed070905220630q67c62569o9753425abf529742@mail.gmail.com>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+	Fri, 22 May 2009 09:47:02 -0400
+Subject: Re: [PATCH 2/2] perf_counter: optimize context switch between
+ identical inherited contexts
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Corey Ashford <cjashfor@linux.vnet.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <18966.10666.517218.332164@cargo.ozlabs.ibm.com>
+References: <18966.10075.781053.231153@cargo.ozlabs.ibm.com>
+	 <18966.10666.517218.332164@cargo.ozlabs.ibm.com>
+Content-Type: text/plain
+Date: Fri, 22 May 2009 15:46:56 +0200
+Message-Id: <1243000016.6582.574.camel@laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Suppose a device needs a reset as part of its init sequence (a whole lot
-> of them do, this is not purely hypothetical). Then a different process may
-> get to operate the device before and after the reset and hilarity may result
-> from that.
+On Fri, 2009-05-22 at 14:27 +1000, Paul Mackerras wrote:
+> +       next_ctx = next->perf_counter_ctxp;
+> +       if (next_ctx && context_equiv(ctx, next_ctx)) {
+> +               task->perf_counter_ctxp = next_ctx;
+> +               next->perf_counter_ctxp = ctx;
+> +               ctx->task = next;
+> +               next_ctx->task = task;
+> +               return;
+> +       }
 
-Thats surely up to you to get your lock file usage right. The kernel
-isn't there to play mother to crap programming.
+Ingo just pointed out that there is nothing there to close the race with
+attaching a counter.
 
-> So, if there is a clean / acceptable way to handle the reset issue in userspace
+That is, you could end up attaching your counter to the wrong task.
 
-Firstly can you explain *why* you think there is a problem ?
