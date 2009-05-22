@@ -1,61 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758232AbZEVUfm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758182AbZEVUgp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758232AbZEVUfm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 16:35:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758138AbZEVUfa
+	id S1758182AbZEVUgp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 16:36:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756952AbZEVUgi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 16:35:30 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:14423 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758108AbZEVUf3 (ORCPT
+	Fri, 22 May 2009 16:36:38 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:50940 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756879AbZEVUgh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 16:35:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=frnxpf0ulaw7UCq3vysDzzJjYIpM/ZbKczF1loVlEr8q+jijTr6fDtqkmfSh+UjElN
-         1kZEqtAJOkcuQCUs3EQlvfehOOyyKrF2lDjIveOV5Iyx0jasSdbL5fZR6bSiakNbjHxq
-         QA4/vYrDIlHdFx2WH+1InQNeoGlnJes26uNt0=
-Date: Sat, 23 May 2009 00:35:29 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Rakib Mullick <rakib.mullick@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>
-Subject: Re: [PATCH] x86,APIC: Detect lapic_is_integrated() once - use on
-	and on.
-Message-ID: <20090522203529.GI5354@lenovo>
-References: <b9df5fa10905220631y7b1a094dn9a6e13de1b9c43af@mail.gmail.com> <20090522200239.GD5354@lenovo> <4A170713.402@zytor.com> <20090522202154.GG5354@lenovo> <4A1709D9.4070300@zytor.com>
-MIME-Version: 1.0
+	Fri, 22 May 2009 16:36:37 -0400
+Date: Fri, 22 May 2009 22:42:46 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: "Michael S. Zick" <lkml@morethan.org>
+Cc: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+Subject: Re: [BUG FIX] Make x86_32 uni-processor Atomic ops, Atomic
+Message-ID: <20090522204246.GH846@one.firstfloor.org>
+References: <200905221139.26941.lkml@morethan.org> <200905221453.41895.lkml@morethan.org> <20090522200536.GZ10166@const.famille.thibault.fr> <200905221532.43775.lkml@morethan.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A1709D9.4070300@zytor.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <200905221532.43775.lkml@morethan.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[H. Peter Anvin - Fri, May 22, 2009 at 01:23:53PM -0700]
-| Cyrill Gorcunov wrote:
-| > 
-| > It was about a half year ago (need googling to be precise :)
-| > but I was reported about Xeon processor which identify itself
-| > as having "external" apic. So I hardly believe if real external
-| > device with ICC bus were used.
-| >  
-| 
-| Details, please.  It might even be a bug in the test.
-| 
-| 	-hpa
-| 
+> If it: "Does not make a difference" then it "Should not make a difference"
+> but it does, try it yourself.  Its safe (if LOCK_PREFIX is in the proper
+> places) - the machine will ignore the opcode if is recent enough to not
+> need it - just trust the cpu's micro-code.
 
-Here is it
+It doesn't ignore it, in fact it's extremly slow on some older systems
+where all atomic operations are very costly.
+That is why LOCK is avoided as much as possible.
 
-	http://lkml.org/lkml/2008/10/17/147
-	http://lkml.org/lkml/2008/10/20/144
-
-and commit db96b0a in mainline
-
-	-- Cyrill
+-Andi
+-- 
+ak@linux.intel.com -- Speaking for myself only.
