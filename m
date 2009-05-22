@@ -1,87 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756138AbZEVAus@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756324AbZEVA5R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756138AbZEVAus (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 20:50:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754446AbZEVAuk
+	id S1756324AbZEVA5R (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 20:57:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754618AbZEVA5I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 20:50:40 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:47624 "EHLO smtps.tip.net.au"
+	Thu, 21 May 2009 20:57:08 -0400
+Received: from mga14.intel.com ([143.182.124.37]:5524 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752228AbZEVAuj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 20:50:39 -0400
-Date: Fri, 22 May 2009 10:50:33 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: =?UTF-8?B?RnLDqWTDqXJpYw==?= Weisbecker <fweisbec@gmail.com>
-Cc: Reiserfs <reiserfs-devel@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Jeff Mahoney <jeffm@suse.com>,
-       Chris Mason <chris.mason@oracle.com>, Ingo Molnar <mingo@elte.hu>,
-       Alexander Beregalov <a.beregalov@gmail.com>,
-       Al Viro <viro@zeniv.linux.org.uk>
-Subject: Re: kill-the-bkl/reiserfs: request for linux-next inclusion
-Message-Id: <20090522105033.1426d409.sfr@canb.auug.org.au>
-In-Reply-To: <c62985530905201640j4a550b5bi7673e5a9f21029ce@mail.gmail.com>
-References: <c62985530905201640j4a550b5bi7673e5a9f21029ce@mail.gmail.com>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+	id S1754538AbZEVA5H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 May 2009 20:57:07 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,230,1241420400"; 
+   d="scan'208";a="145667124"
+Subject: Re: [GIT PATCH] x86,percpu: fix pageattr handling with remap
+ allocator
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+Reply-To: suresh.b.siddha@intel.com
+To: Tejun Heo <tj@kernel.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>,
+       "JBeulich@novell.com" <JBeulich@novell.com>,
+       "andi@firstfloor.org" <andi@firstfloor.org>,
+       "mingo@elte.hu" <mingo@elte.hu>,
+       "linux-kernel-owner@vger.kernel.org" 
+	<linux-kernel-owner@vger.kernel.org>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <4A15E130.1070808@kernel.org>
+References: <1242305390-21958-1-git-send-email-tj@kernel.org>
+	 <1242436626.27006.8623.camel@localhost.localdomain>
+	 <4A0ED8D8.2010303@kernel.org>
+	 <1242500964.27006.8636.camel@localhost.localdomain>
+	 <4A0F672A.3000309@kernel.org>
+	 <1242674444.27006.8691.camel@localhost.localdomain>
+	 <4A11B9E7.8010707@zytor.com>
+	 <1242680835.27006.8734.camel@localhost.localdomain>
+	 <4A120B47.8060200@kernel.org>
+	 <1242860470.27006.10106.camel@localhost.localdomain>
+	 <4A149B89.3010104@kernel.org>
+	 <1242866163.27006.10125.camel@localhost.localdomain>
+	 <4A14B271.5010202@kernel.org>
+	 <1242933008.27006.10150.camel@localhost.localdomain>
+	 <4A15E130.1070808@kernel.org>
+Content-Type: text/plain
+Organization: Intel Corp
+Date: Thu, 21 May 2009 17:55:02 -0700
+Message-Id: <1242953702.27006.10152.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__22_May_2009_10_50_33_+1000_etMAzKJ0zwsHxxJi"
+X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__22_May_2009_10_50_33_+1000_etMAzKJ0zwsHxxJi
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thu, 2009-05-21 at 16:18 -0700, Tejun Heo wrote:
+> No, I'll let the first chunk allocation happen the same way for cpus
+> available on boot and then just do 4k allocations for whatever
+> necessary afterward.  The needed code change in percpu proper isn't
+> that big.
 
-Hi Fr=C3=A9d=C3=A9ric,
+Ok. It will be more cleaner this way.
 
-On Thu, 21 May 2009 01:40:57 +0200 Fr=C3=A9d=C3=A9ric Weisbecker <fweisbec@=
-gmail.com> wrote:
->
-> I guess Al is traveling or something.
->=20
-> Until it finds its way to the VFS tree, it would be nice if this
-> reiserfs bkl removal tree could be included in linux-next
-> for testing.
-> Could you please include it ?
->=20
-> You can pull from:
->=20
-> git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git
-> reiserfs/kill-bkl-rc6
+thanks,
+suresh
 
-I have included this tree from today.
-
-What I tell everyone: all patches/commits in the tree/series must
-have been:
-
-	posted to a relevant mailing list
-	reviewed
-	unit tested
-	destined for the next merge window (or the current release)
-
-*before* they are included.  The linux-next tree is for integration
-testing and to lower the impact of conflicts between subsystems in the
-next merge window.
-
-Basically, this should be just what you would send to Linus (or ask him
-to fetch).  It is allowed to be rebased if you deem it necessary.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Fri__22_May_2009_10_50_33_+1000_etMAzKJ0zwsHxxJi
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkoV9tkACgkQjjKRsyhoI8xprACaApKle8g2Mj7PunYPOAK4NueY
-UCUAoIdW6Er9FhjAp6sRO6YDtydxDqTQ
-=KDll
------END PGP SIGNATURE-----
-
---Signature=_Fri__22_May_2009_10_50_33_+1000_etMAzKJ0zwsHxxJi--
