@@ -1,69 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753644AbZEVHFc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755913AbZEVHNt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753644AbZEVHFc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 03:05:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751524AbZEVHFZ
+	id S1755913AbZEVHNt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 03:13:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751995AbZEVHNl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 03:05:25 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:43248 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751483AbZEVHFY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 03:05:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:from:to:subject:date:user-agent:x-face:cc:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :message-id;
-        b=E6Wk9TI5ay/uOynqOMmu/QgM2X6etA+uJ/+KsyiFHiK0SQ/5i0hkSsK6gJPI12gvC3
-         oXD9bUYGV2U/PKG+5f9UUwYkzAQsOPCvLhbtDOo4qhNevAOCsn/iwR53n/MAXkzAdcnz
-         mdMwTHLWeAL1TezUzYwTVKrTzsC0TFAU8qCPk=
-From: Jose Luis Perez Diez <jluis@escomposlinux.org>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH]Perl is needed to build the kernel but it is not in Documentation/Changes
-Date: Fri, 22 May 2009 09:05:11 +0200
-User-Agent: KMail/1.9.9
-X-Face: "2E*FU(q5Y=y<[Q`"$lOX>/8Z*3f.6.tS{0@FUR%P:0AEI1(-e%(?-]KN8p!!j_26I5;)=?utf-8?q?=3F=0A=09n=26+=3D=5ElyOCVxbpJ0?=(;u*$A}%Zw([9#8=IhSg0_o/{4L6tT!*=Mx
-Cc: Jose Luis Perez Diez <jluis@escomposlinux.org>
+	Fri, 22 May 2009 03:13:41 -0400
+Received: from hera.kernel.org ([140.211.167.34]:55343 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751519AbZEVHNk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 May 2009 03:13:40 -0400
+Date: Fri, 22 May 2009 07:12:52 GMT
+From: tip-bot for Zhang Rui <rui.zhang@intel.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       lenb@kernel.org, rui.zhang@intel.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       lenb@kernel.org, rui.zhang@intel.com, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1242963350.32574.53.camel@rzhang-dt>
+References: <1242963350.32574.53.camel@rzhang-dt>
+Subject: [tip:x86/urgent] x86: DMI match for the Sony VGN-Z540N as it needs BIOS reboot
+Message-ID: <tip-88dff4936c0a5fa53080cca68dc963a8a2a674b0@git.kernel.org>
+Git-Commit-ID: 88dff4936c0a5fa53080cca68dc963a8a2a674b0
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-Message-Id: <200905220905.11270.jluis@escomposlinux.org>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 22 May 2009 07:13:05 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Perl is used on the kernel Makefile to generate documentation, firmwares in c
-source form, sources, graphs, and some headers and this fact is undocumented.
+Commit-ID:  88dff4936c0a5fa53080cca68dc963a8a2a674b0
+Gitweb:     http://git.kernel.org/tip/88dff4936c0a5fa53080cca68dc963a8a2a674b0
+Author:     Zhang Rui <rui.zhang@intel.com>
+AuthorDate: Fri, 22 May 2009 11:35:50 +0800
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Fri, 22 May 2009 09:11:30 +0200
 
+x86: DMI match for the Sony VGN-Z540N as it needs BIOS reboot
 
-Signed-off-by:Jose Luis Perez Diez <jluis@escomposlinux.org>
+x86: DMI match for the Sony VGN-Z540N as it needs BIOS reboot,
+see:
+
+  http://bugzilla.kernel.org/show_bug.cgi?id=12901
+
+[ Impact: fix hung reboot on certain systems ]
+
+Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+Cc: Len Brown <lenb@kernel.org>
+LKML-Reference: <1242963350.32574.53.camel@rzhang-dt>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
 
 ---
- Documentation/Changes |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
+ arch/x86/kernel/reboot.c |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
 
-diff --git a/Documentation/Changes b/Documentation/Changes
-index b95082b..6a2d53d 100644
---- a/Documentation/Changes
-+++ b/Documentation/Changes
-@@ -71,6 +71,13 @@ assembling the 16-bit boot code, removing the need for as86 
-to compile
- your kernel.  This change does, however, mean that you need a recent
- release of binutils.
+diff --git a/arch/x86/kernel/reboot.c b/arch/x86/kernel/reboot.c
+index 1340dad..667188e 100644
+--- a/arch/x86/kernel/reboot.c
++++ b/arch/x86/kernel/reboot.c
+@@ -232,6 +232,14 @@ static struct dmi_system_id __initdata reboot_dmi_table[] = {
+ 			DMI_MATCH(DMI_PRODUCT_NAME, "Dell DXP061"),
+ 		},
+ 	},
++	{	/* Handle problems with rebooting on Sony VGN-Z540N */
++		.callback = set_bios_reboot,
++		.ident = "Sony VGN-Z540N",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "Sony Corporation"),
++			DMI_MATCH(DMI_PRODUCT_NAME, "VGN-Z540N"),
++		},
++	},
+ 	{ }
+ };
  
-+Perl
-+----
-+
-+You will need perl 5 and the following modules: Getopt::Long, Getopt::Std, 
-File::Basename, and File::Find to build the kernel.
-+
-+
-+
- System utilities
- ================
- 
--- 
-1.5.6.5
