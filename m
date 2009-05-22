@@ -1,95 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752472AbZEVB2p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755541AbZEVBk0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752472AbZEVB2p (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 21:28:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755578AbZEVB2g
+	id S1755541AbZEVBk0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 21:40:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750967AbZEVBkR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 21:28:36 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:41690 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755027AbZEVB2f (ORCPT
+	Thu, 21 May 2009 21:40:17 -0400
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:42273 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750797AbZEVBkQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 21:28:35 -0400
+	Thu, 21 May 2009 21:40:16 -0400
+Date: Fri, 22 May 2009 10:40:09 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sparseirq: Enable early irq_desc allocation.
+Message-ID: <20090522014008.GA2806@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org
+References: <20090521165647.GA320@linux-sh.org> <4A15B8F2.9000804@kernel.org>
 MIME-Version: 1.0
-In-Reply-To: <20090521231452.676d4898@lxorguk.ukuu.org.uk>
-References: <20090521095217.GU8633@ZenIV.linux.org.uk>
-	 <Pine.LNX.4.44L0.0905210945290.2886-100000@iolanthe.rowland.org>
-	 <ac3eb2510905211407l3aec14acx2572a2ad4e675b9@mail.gmail.com>
-	 <20090521231452.676d4898@lxorguk.ukuu.org.uk>
-Date: Thu, 21 May 2009 21:28:36 -0400
-Message-ID: <f73f7ab80905211828te5c49dcx863a18c8e428a59f@mail.gmail.com>
-Subject: Re: How to tell whether a struct file is held by a process?
-From: Kyle Moffett <kyle@moffetthome.net>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Kay Sievers <kay.sievers@vrfy.org>, Alan Stern <stern@rowland.harvard.edu>,
-       Al Viro <viro@zeniv.linux.org.uk>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A15B8F2.9000804@kernel.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 21, 2009 at 6:14 PM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
->> Not sure, if we already discussed that with a conclusion: this
->> "prevent access to a future device" interface needs to work at the pid
->> level, or would a uid/gid check be sufficient?
->
-> As I said before neither pid or uid make any sense at all for a kernel
-> level check beyond what already exists at user space level (ie chown),
-> and what the usual user space gunk provides for device creation policy
-> (udev)
->
->> Root can do all that stuff anyway, even with the locking in place.
->> Uid/gid file permissions need to be applied to the "lock file", so
->> specified non-root users can use that interface.
->
-> It's actually sometimes important that root can ignore the lock
-> files - eg to send a reset to a channel of a jammed device that is owned
-> by a user and wedged.
->
->> Maybe it would be good enough, to check that the one that opened the
->> "lock file" has the same uid/gid as the on that tries to open the
->> device when it has shown up?
->
-> My feeling too - there simply isn't any need for kernel infrastructure
-> here. The only case the kernel must be involved is when you need
-> exclusivity including telling the kernel to leave things alone, and even
-> that usually only needs to be by specific handle and we normally borrow
-> O_EXCL for it as it has no "traditional" meaning on device nodes.
->
-> We do tty devices with lock files no reason it won't work for USB stuff
-> too.
+On Thu, May 21, 2009 at 01:26:26PM -0700, Yinghai Lu wrote:
+> can you check tip?
+> we change _cpu to node already.
+> 
+> also only sh have after_bootmem now.
+> arch/sh/mm/init.c:int after_bootmem = 0;
+> arch/sh/mm/init.c:      after_bootmem = 1;
+> arch/sh/mm/ioremap_64.c:        extern int after_bootmem;
+> arch/sh/mm/ioremap_64.c:        if (after_bootmem) {
+> include/linux/mm.h:extern int after_bootmem;
+> 
+> for x86 we have bootmem_state ...
+> arch/x86/include/asm/page_types.h:enum bootmem_state {
+> arch/x86/include/asm/page_types.h:extern enum bootmem_state bootmem_state;
+> arch/x86/kernel/setup.c:        bootmem_state = DURING_BOOTMEM;
+> arch/x86/mm/init.c:enum bootmem_state bootmem_state = BEFORE_BOOTMEM;
+> arch/x86/mm/init.c:     if (bootmem_state == BEFORE_BOOTMEM)
+> arch/x86/mm/init.c:     if (bootmem_state == BEFORE_BOOTMEM)
+> arch/x86/mm/init.c:     if (bootmem_state == BEFORE_BOOTMEM && !start) {
+> arch/x86/mm/init.c:     if (bootmem_state == BEFORE_BOOTMEM &&
+> arch/x86/mm/init.c:     if (bootmem_state == BEFORE_BOOTMEM)
+> 
+> Andrew,
+> do we need to move bootmem_state back to linux/mm.h?
 
-Hrm, I think this is missing the point.  Here's a practical example for you:
+No need, I just switched to slab_is_available() in the respin. Here is
+v2, against -tip:
 
-My Debian laptop has a Windows VM (using KVM, specifically) on it for
-the occasional times when work forces me to use such software.  One of
-the things I need the Windows VM for is a USB JTAG debug box that (for
-stupid Windows driver reasons) shows up as an HID device.  The debug
-box needs firmware loaded on it as soon as it is attached or it tends
-to crash or behave unreliably; the firmware loading software is also
-Windows-only.  There are also other random USB devices like encrypted
-flash drives with windows-only software, software license tokens, etc.
+--
 
-My ideal solution is to be able to prevent Linux from automatically
-binding to any devices attached off specific USB ports.  There's
-simply no point in letting the usb-storage or usb-hid modules try to
-scan those devices because I'm just going to immediately "unbind" them
-and drive them with libusb *anyways*.
+sparseirq: Enable early irq_desc allocation, v2.
 
-Basically I want one of my USB ports (which I plug into an external
-hub) to always go to my Windows KVM, and another USB port (also with a
-hub) to always go to my Fedora KVM.  There are a couple requirements
-for this:
+Presently non-legacy IRQs have their irq_desc allocated with
+kzalloc_node(). This assumes that all callers of irq_to_desc_node_alloc()
+will be sufficiently late in the boot process that kmalloc is available.
 
-(1)  I need to be able to exclude any access *BEFORE* a device is connected.
-(2)  This exclusion needs to apply to kernel drivers
+While porting sparseirq support to sh this blew up immediately, as at the
+time that we register the CPU's interrupt vector map only bootmem is
+available. Check slab_is_available() to work out which path to use.
 
-One possible alternative (although I don't know if this would work for
-the OP), is to make there be a global "prevent kernel drivers from
-autobinding to  devices on his port" flag, and manage the rest with
-lockfiles in userspace.
+Cc: Yinghai Lu <yinghai@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Paul Mundt <lethal@linux-sh.org>
 
-Cheers,
-Kyle Moffett
+---
+
+ V2 updated for -tip, and switched to slab_is_available().
+
+ kernel/irq/handle.c |   19 ++++++++++++++-----
+ 1 file changed, 14 insertions(+), 5 deletions(-)
+
+diff --git a/kernel/irq/handle.c b/kernel/irq/handle.c
+index 33ff8f5..b5a47d6 100644
+--- a/kernel/irq/handle.c
++++ b/kernel/irq/handle.c
+@@ -18,8 +18,8 @@
+ #include <linux/rculist.h>
+ #include <linux/hash.h>
+ #include <linux/bootmem.h>
++#include <linux/slab.h>
+ #include <trace/events/irq.h>
+-
+ #include "internals.h"
+ 
+ /*
+@@ -81,11 +81,16 @@ static struct irq_desc irq_desc_init = {
+ 	.lock       = __SPIN_LOCK_UNLOCKED(irq_desc_init.lock),
+ };
+ 
+-void init_kstat_irqs(struct irq_desc *desc, int node, int nr)
++void __ref init_kstat_irqs(struct irq_desc *desc, int node, int nr)
+ {
+ 	void *ptr;
+ 
+-	ptr = kzalloc_node(nr * sizeof(*desc->kstat_irqs), GFP_ATOMIC, node);
++	if (slab_is_available())
++		ptr = kzalloc_node(nr * sizeof(*desc->kstat_irqs),
++				   GFP_ATOMIC, node);
++	else
++		ptr = alloc_bootmem_node(NODE_DATA(node),
++				nr * sizeof(*desc->kstat_irqs));
+ 
+ 	/*
+ 	 * don't overwite if can not get new one
+@@ -186,7 +191,7 @@ struct irq_desc *irq_to_desc(unsigned int irq)
+ 	return NULL;
+ }
+ 
+-struct irq_desc *irq_to_desc_alloc_node(unsigned int irq, int node)
++struct irq_desc * __ref irq_to_desc_alloc_node(unsigned int irq, int node)
+ {
+ 	struct irq_desc *desc;
+ 	unsigned long flags;
+@@ -208,7 +213,11 @@ struct irq_desc *irq_to_desc_alloc_node(unsigned int irq, int node)
+ 	if (desc)
+ 		goto out_unlock;
+ 
+-	desc = kzalloc_node(sizeof(*desc), GFP_ATOMIC, node);
++	if (slab_is_available())
++		desc = kzalloc_node(sizeof(*desc), GFP_ATOMIC, node);
++	else
++		desc = alloc_bootmem_node(NODE_DATA(node), sizeof(*desc));
++
+ 	printk(KERN_DEBUG "  alloc irq_desc for %d on node %d\n", irq, node);
+ 	if (!desc) {
+ 		printk(KERN_ERR "can not alloc irq_desc\n");
