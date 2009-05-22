@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757371AbZEVMHT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757570AbZEVMHw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757371AbZEVMHT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 08:07:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753453AbZEVMHH
+	id S1757570AbZEVMHw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 08:07:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757382AbZEVMHd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 08:07:07 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:46975 "EHLO
-	IE1EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753830AbZEVMHE (ORCPT
+	Fri, 22 May 2009 08:07:33 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:48223 "EHLO
+	IE1EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757443AbZEVMHb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 08:07:04 -0400
-X-BigFish: VPS1(zzzz1202hzzz32i64h)
-X-Spam-TCS-SCL: 3:0
-X-WSS-ID: 0KK1OBF-02-J0S-01
+	Fri, 22 May 2009 08:07:31 -0400
+X-BigFish: VPS1(zzzz1202hzzz32i62h)
+X-Spam-TCS-SCL: 1:0
+X-WSS-ID: 0KK1OBA-01-JCG-01
 From: Joerg Roedel <joerg.roedel@amd.com>
 To: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 CC: Neil Turton <nturton@solarflare.com>, Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 2/4] amd-iommu: fix the handling of device aliases in the AMD IOMMU driver.
-Date: Fri, 22 May 2009 14:06:29 +0200
-Message-ID: <1242993991-28613-3-git-send-email-joerg.roedel@amd.com>
+Subject: [PATCH 1/4] amd-iommu: fix an off-by-one error in the AMD IOMMU driver.
+Date: Fri, 22 May 2009 14:06:28 +0200
+Message-ID: <1242993991-28613-2-git-send-email-joerg.roedel@amd.com>
 X-Mailer: git-send-email 1.6.3.1
 In-Reply-To: <1242993991-28613-1-git-send-email-joerg.roedel@amd.com>
 References: <1242993991-28613-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 22 May 2009 12:06:47.0673 (UTC) FILETIME=[C818D690:01C9DAD5]
+X-OriginalArrivalTime: 22 May 2009 12:06:47.0611 (UTC) FILETIME=[C80F60B0:01C9DAD5]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
@@ -31,12 +31,13 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Neil Turton <nturton@solarflare.com>
 
-[ impact: set flags for the right req-id in the device table ]
+[ impact: bugfix ]
 
-The devid parameter to set_dev_entry_from_acpi is the requester ID
-rather than the device ID since it is used to index the IOMMU device
-table.  The handling of IVHD_DEV_ALIAS used to pass the device ID.
-This patch fixes it to pass the requester ID.
+The variable amd_iommu_last_bdf holds the maximum bdf of any device
+controlled by an IOMMU, so the number of device entries needed is
+amd_iommu_last_bdf+1.  The function tbl_size used amd_iommu_last_bdf
+instead.  This would be a problem if the last device were a large
+enough power of 2.
 
 Signed-off-by: Neil Turton <nturton@solarflare.com>
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
@@ -45,18 +46,18 @@ Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
  1 files changed, 1 insertions(+), 1 deletions(-)
 
 diff --git a/arch/x86/kernel/amd_iommu_init.c b/arch/x86/kernel/amd_iommu_init.c
-index 35fc965..53f93db 100644
+index 8c0be09..35fc965 100644
 --- a/arch/x86/kernel/amd_iommu_init.c
 +++ b/arch/x86/kernel/amd_iommu_init.c
-@@ -618,7 +618,7 @@ static void __init init_iommu_from_acpi(struct amd_iommu *iommu,
- 		case IVHD_DEV_ALIAS:
- 			devid = e->devid;
- 			devid_to = e->ext >> 8;
--			set_dev_entry_from_acpi(iommu, devid, e->flags, 0);
-+			set_dev_entry_from_acpi(iommu, devid_to, e->flags, 0);
- 			amd_iommu_alias_table[devid] = devid_to;
- 			break;
- 		case IVHD_DEV_ALIAS_RANGE:
+@@ -175,7 +175,7 @@ static inline void update_last_devid(u16 devid)
+ static inline unsigned long tbl_size(int entry_size)
+ {
+ 	unsigned shift = PAGE_SHIFT +
+-			 get_order(amd_iommu_last_bdf * entry_size);
++			 get_order(((int)amd_iommu_last_bdf + 1) * entry_size);
+ 
+ 	return 1UL << shift;
+ }
 -- 
 1.6.3.1
 
