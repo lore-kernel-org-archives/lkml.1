@@ -1,86 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757930AbZEVPG0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758024AbZEVPGz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757930AbZEVPG0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 11:06:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755799AbZEVPGR
+	id S1758024AbZEVPGz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 11:06:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757334AbZEVPGr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 11:06:17 -0400
-Received: from moutng.kundenserver.de ([212.227.126.171]:59894 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752386AbZEVPGQ (ORCPT
+	Fri, 22 May 2009 11:06:47 -0400
+Received: from mail-pz0-f177.google.com ([209.85.222.177]:46389 "EHLO
+	mail-pz0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757308AbZEVPGq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 11:06:16 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: Re: [PATCH] asm-generic: add a dma-mapping.h file
-Date: Fri, 22 May 2009 17:05:53 +0200
-User-Agent: KMail/1.9.9
-Cc: jgarzik@pobox.com, hancockrwd@gmail.com, htejun@gmail.com,
-       alan@lxorguk.ukuu.org.uk, flar@allandria.com,
-       schmitz@biophys.uni-duesseldorf.de, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, takata@linux-m32r.org, geert@linux-m68k.org,
-       linux-m68k@vger.kernel.org, ysato@users.sourceforge.jp,
-       grundler@google.com
-References: <200905191822.48420.arnd@arndb.de> <200905221607.34025.arnd@arndb.de> <20090522233846I.fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20090522233846I.fujita.tomonori@lab.ntt.co.jp>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905221705.54426.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+nXe/5mcVitTKNlSk/dhC9R6I0bFZ7F9zkN3t
- YQwxhH4eCqQejgd3M8yuCcZV/kHpQNBgX+K+BUEQX0pgaYFYpt
- Cei0Fci0kdP23F1QXYR4g==
+	Fri, 22 May 2009 11:06:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=LupeOAzL2QBNL4LEvVgO/VAPBT0CTZGLvkqdudyi6SxWpppWw4L2ZHNMAioATblyPC
+         DLSbhKztRctWGaJFeC3eujohw5FEashQsPGqgEuu9zRtBw/qM4tCB0k9C+uRL8R57/8U
+         XSjsKBRKPtcAS4PvDjouNxtg4ydiQmkSswD3k=
+From: tom.leiming@gmail.com
+To: greg@kroah.com
+Cc: linux-kernel@vger.kernel.org, Ming Lei <tom.leiming@gmail.com>
+Subject: [PATCH] driver core : fix request_firmware_nowait
+Date: Fri, 22 May 2009 23:06:27 +0800
+Message-Id: <1243004787-5362-1-git-send-email-tom.leiming@gmail.com>
+X-Mailer: git-send-email 1.6.0.GIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 22 May 2009, FUJITA Tomonori wrote:
-> I'm not sure. And only mips internally uses CONFIG_DMA_COHERENT.
-> 
-> The reason why many architectures need architecture-specific
-> alloc_coherent() is not about coherent or not.
-> 
-> I like a new helper header file having only generic functions without
-> any ifdef.
+From: Ming Lei <tom.leiming@gmail.com>
 
-Ok, fair enough. Fixing dma_alloc_coherent to handle
-coherent_dma_mask and debug_dma correctly would also
-make it even bigger, and it was already doing more than
-you'd want from a commonly used inline function.
-It may be useful to put it into kernel/dma-coherent.c
-under an #ifdef, but I'll leave this one alone for now.
+request_firmware_nowait declares it can be called in non-sleep contexts,
+but kthead_run which is called by request_firmware_nowait may sleep.
+So fix it by starting thread in workqueue to request firmware asynchronously.
 
-I'll leave dma_alloc_coherent and dma_free_coherent
-as extern declarations then, and leave out the
-simple dma_coherent_dev() and dma_cache_sync() that
-all architectures would need to override.
+Signed-off-by: Ming Lei <tom.leiming@gmail.com>
+---
+ drivers/base/firmware_class.c |   66 ++++++++++++++++++++++++++++++++++------
+ 1 files changed, 56 insertions(+), 10 deletions(-)
 
-dma_get_cache_alignment() is still less generic than
-the other functions, as this is still architecture
-specific. Should I leave that out as well then?
+diff --git a/drivers/base/firmware_class.c b/drivers/base/firmware_class.c
+index 2d296b7..0388cf7 100644
+--- a/drivers/base/firmware_class.c
++++ b/drivers/base/firmware_class.c
+@@ -573,15 +573,25 @@ release_firmware(const struct firmware *fw)
+ 
+ /* Async support */
+ struct firmware_work {
+-	struct work_struct work;
+ 	struct module *module;
+ 	const char *name;
+ 	struct device *device;
+ 	void *context;
+ 	void (*cont)(const struct firmware *fw, void *context);
+ 	int uevent;
++	struct list_head list;
++	struct task_struct *task;
++};
++
++struct firmware_schedule{
++	spinlock_t	lock;
++	struct list_head head;
++	struct work_struct work;
+ };
+ 
++static struct firmware_schedule fw_schedule;
++
++
+ static int
+ request_firmware_work_func(void *arg)
+ {
+@@ -605,6 +615,35 @@ request_firmware_work_func(void *arg)
+ 	return ret;
+ }
+ 
++static void fw_schedule_fun(struct work_struct *work)
++{
++	struct firmware_schedule	*fs =
++		container_of(work, struct firmware_schedule, work);
++	unsigned long		flags;
++
++	spin_lock_irqsave(&fs->lock, flags);
++	while (!list_empty(&fs->head)) {
++		struct firmware_work    *fw_work;
++
++		fw_work = list_entry(fs->head.next, struct firmware_work, list);
++		list_del(&fw_work->list);
++
++		spin_unlock_irqrestore(&fs->lock, flags);
++		fw_work->task = kthread_run(request_firmware_work_func, fw_work,
++			    "firmware/%s", fw_work->name);
++		spin_lock_irqsave(&fs->lock, flags);
++
++		if (IS_ERR(fw_work->task)) {
++			fw_work->cont(NULL, fw_work->context);
++			module_put(fw_work->module);
++			kfree(fw_work);
++			dev_err(fw_work->device, "%s: kthread_run failed\n",
++				__func__);
++		}
++	}
++	spin_unlock_irqrestore(&fs->lock, flags);
++}
++
+ /**
+  * request_firmware_nowait: asynchronous version of request_firmware
+  * @module: module requesting the firmware
+@@ -626,7 +665,8 @@ request_firmware_nowait(
+ 	const char *name, struct device *device, void *context,
+ 	void (*cont)(const struct firmware *fw, void *context))
+ {
+-	struct task_struct *task;
++	unsigned long		flags;
++	struct firmware_schedule	*fs = &fw_schedule;
+ 	struct firmware_work *fw_work = kmalloc(sizeof (struct firmware_work),
+ 						GFP_ATOMIC);
+ 
+@@ -646,15 +686,14 @@ request_firmware_nowait(
+ 		.uevent = uevent,
+ 	};
+ 
+-	task = kthread_run(request_firmware_work_func, fw_work,
+-			    "firmware/%s", name);
++	INIT_LIST_HEAD(&fw_work->list);
++
++	spin_lock_irqsave(&fs->lock, flags);
++	list_add_tail(&fw_work->list, &fs->head);
++	spin_unlock_irqrestore(&fs->lock, flags);
++
++	schedule_work(&fs->work);
+ 
+-	if (IS_ERR(task)) {
+-		fw_work->cont(NULL, fw_work->context);
+-		module_put(fw_work->module);
+-		kfree(fw_work);
+-		return PTR_ERR(task);
+-	}
+ 	return 0;
+ }
+ 
+@@ -662,6 +701,13 @@ static int __init
+ firmware_class_init(void)
+ {
+ 	int error;
++	struct firmware_schedule	*fs = &fw_schedule;
++
++	memset(fs, 0, sizeof(*fs));
++	spin_lock_init(&fs->lock);
++	INIT_LIST_HEAD(&fs->head);
++	INIT_WORK(&fs->work, fw_schedule_fun);
++
+ 	error = class_register(&firmware_class);
+ 	if (error) {
+ 		printk(KERN_ERR "%s: class_register failed\n", __func__);
+-- 
+1.6.0.GIT
 
-One more idea I had was to rename all the functions in
-this file from dma_* to dma_linear_*. This would mean
-that all architectures using it would still need to
-do something like #define dma_map_sg dma_linear_map_sg
-for each function they want to use but can easily chose
-to provide their own ones for those they need different.
-
-It might also help architectures that work with dma_ops,
-which could then define their own
-struct dma_ops dma_ops_linear = {
-	.map_single = dma_linear_map_single,
-	.map_sg = dma_linear_map_sg,
-	...
-};
-
-Would you prefer me to do it this way, or just keep the
-standard function names as in the current patch?
-
-	Arnd <><
