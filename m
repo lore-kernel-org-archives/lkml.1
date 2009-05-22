@@ -1,24 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755095AbZEVGav@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752577AbZEVGbE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755095AbZEVGav (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 02:30:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751122AbZEVGak
+	id S1752577AbZEVGbE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 02:31:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754591AbZEVGav
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 02:30:40 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57163
+	Fri, 22 May 2009 02:30:51 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57172
 	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750880AbZEVGak (ORCPT
+	by vger.kernel.org with ESMTP id S1753163AbZEVGau (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 02:30:40 -0400
-Date: Thu, 21 May 2009 23:30:38 -0700 (PDT)
-Message-Id: <20090521.233038.195647453.davem@davemloft.net>
-To: sfr@canb.auug.org.au
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       nhorman@tuxdriver.com, netdev@vger.kernel.org
-Subject: Re: linux-next: net tree build warning
+	Fri, 22 May 2009 02:30:50 -0400
+Date: Thu, 21 May 2009 23:30:48 -0700 (PDT)
+Message-Id: <20090521.233048.263256774.davem@davemloft.net>
+To: adobriyan@gmail.com
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org, torvalds@linux-foundation.org,
+       xemul@parallels.com, orenl@cs.columbia.edu, serue@us.ibm.com,
+       dave@linux.vnet.ibm.com, mingo@elte.hu
+Subject: Re: [PATCH 09/38] netns 1/2: don't get/put old netns on
+ CLONE_NEWNET
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090522151642.e79e22ee.sfr@canb.auug.org.au>
-References: <20090522151642.e79e22ee.sfr@canb.auug.org.au>
+In-Reply-To: <1242968132-1044-9-git-send-email-adobriyan@gmail.com>
+References: <1242968132-1044-1-git-send-email-adobriyan@gmail.com>
+	<1242968132-1044-9-git-send-email-adobriyan@gmail.com>
 X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -27,44 +31,13 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Fri, 22 May 2009 15:16:42 +1000
+From: Alexey Dobriyan <adobriyan@gmail.com>
+Date: Fri, 22 May 2009 08:55:03 +0400
 
-> Hi Dave,
+> copy_net_ns() doesn't copy anything, it creates fresh netns, so get/put of old
+> netns isn't needed.
 > 
-> Today's linux-next build (powerpc ppc64_defconfig) produced this warning:
-> 
-> net/core/netpoll.c: In function 'poll_one_napi':
-> net/core/netpoll.c:141: warning: passing argument 1 of 'trace_napi_poll' from incompatible pointer type
-> include/trace/napi.h:7: note: expected 'struct napi_struct *' but argument is of type 'struct net_device *'
-> 
-> Introduced by commit 4ea7e38696c7e798c47ebbecadfd392f23f814f9 ("dropmon:
-> add ability to detect when hardware dropsrxpackets").
+> Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+> Acked-by: Serge Hallyn <serue@us.ibm.com>
 
-I just pushed the following to fix this:
-
-net: Fix arg to trace_napi_poll() in netpoll.
-
-Reproted by Stephen Rothwell.
-
-Signed-off-by: David S. Miller <davem@davemloft.net>
----
- net/core/netpoll.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/net/core/netpoll.c b/net/core/netpoll.c
-index 00b14e2..67b4f3e 100644
---- a/net/core/netpoll.c
-+++ b/net/core/netpoll.c
-@@ -138,7 +138,7 @@ static int poll_one_napi(struct netpoll_info *npinfo,
- 	set_bit(NAPI_STATE_NPSVC, &napi->state);
- 
- 	work = napi->poll(napi, budget);
--	trace_napi_poll(napi->dev);
-+	trace_napi_poll(napi);
- 
- 	clear_bit(NAPI_STATE_NPSVC, &napi->state);
- 	atomic_dec(&trapped);
--- 
-1.6.3
-
+Acked-by: David S. Miller <davem@davemloft.net>
