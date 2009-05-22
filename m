@@ -1,49 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757034AbZEVIzi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757271AbZEVIzy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757034AbZEVIzi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 04:55:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753338AbZEVIz1
+	id S1757271AbZEVIzy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 04:55:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755485AbZEVIzq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 04:55:27 -0400
-Received: from smtp.citrix.com ([66.165.176.89]:11773 "EHLO SMTP.CITRIX.COM"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752664AbZEVIz0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 04:55:26 -0400
-X-IronPort-AV: E=Sophos;i="4.41,232,1241409600"; 
-   d="scan'208";a="4393333"
-Subject: Re: swiotlb: remove __weak hooks in favour of
-	architecture-specific functions
-From: Ian Campbell <Ian.Campbell@eu.citrix.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-CC: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Becky Bruce <beckyb@kernel.crashing.org>, Olaf Kirch <okir@suse.de>,
-       Ingo Molnar <mingo@elte.hu>, Greg KH <gregkh@suse.de>,
-       xen-devel <xendevel@lists.xensource.com>,
-       x86 maintainers <x86@kernel.org>, lkml <linux-kernel@vger.kernel.org>,
-       Tony Breeds <tony@bakeyournoodle.com>
-In-Reply-To: <4A1585AA.9010002@oracle.com>
-References: <1242906335.22654.188.camel@zakaz.uk.xensource.com>
-	 <1242922528-5982-1-git-send-email-ian.campbell@citrix.com>
-	 <4A1585AA.9010002@oracle.com>
-Content-Type: text/plain
-Organization: Citrix Systems, Inc.
-Date: Fri, 22 May 2009 09:55:24 +0100
-Message-ID: <1242982524.22654.218.camel@zakaz.uk.xensource.com>
+	Fri, 22 May 2009 04:55:46 -0400
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:55928 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753649AbZEVIzq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 May 2009 04:55:46 -0400
+Message-ID: <4A16686C.7060800@linux.vnet.ibm.com>
+Date: Fri, 22 May 2009 10:55:08 +0200
+From: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+To: Ingo Molnar <mingo@elte.hu>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Andi Kleen <andi@firstfloor.org>, Huang Ying <ying.huang@intel.com>,
+       Li Wei <W.Li@Sun.COM>, Michael Ellerman <michaele@au1.ibm.com>,
+       Heiko Carstens <heicars2@linux.vnet.ibm.com>,
+       Martin Schwidefsky <mschwid2@linux.vnet.ibm.com>
+Subject: Re: [PATCH 3/4] gcov: add gcov profiling infrastructure
+References: <20090519142416.356254359@linux.vnet.ibm.com> <20090519142418.583158351@linux.vnet.ibm.com> <20090519150031.GA21271@elte.hu>
+In-Reply-To: <20090519150031.GA21271@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-05-21 at 12:47 -0400, Randy Dunlap wrote:
-> Try these.  They are fairly current.  I have used several of them.
+Ingo Molnar wrote:
+> * Peter Oberparleiter <oberpar@linux.vnet.ibm.com> wrote:
 > 
-> http://bakeyournoodle.com/cross/
+>> +int __gcov_execve(const char *path, char *const argv[], char *const envp[])
+>> +{
+>> +	return kernel_execve(path, argv, envp);
+>> +}
+>> +EXPORT_SYMBOL(__gcov_execve);
+> 
+> Looks weird, why is this needed?
 
-Thanks for the pointer, these look ideal.
+When compiling with -fprofile-arcs, gcc will turn execve calls into a 
+builtin which calls __gcov_execve(). This is needed in userspace to 
+ensure that data for the calling process is correctly saved.
 
-Ian.
-
+Back when kernel_execve() used to be called execve(), this function was 
+required to prevent linker errors. If it's generally agreed not to name 
+kernel functions execve(), this one might as well be removed (not sure 
+about such an agreement though).
 
