@@ -1,50 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757426AbZEVMHm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757371AbZEVMHT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757426AbZEVMHm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 08:07:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755764AbZEVMH1
+	id S1757371AbZEVMHT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 08:07:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753453AbZEVMHH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 08:07:27 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:47975 "EHLO
+	Fri, 22 May 2009 08:07:07 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:46975 "EHLO
 	IE1EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753453AbZEVMH0 (ORCPT
+	with ESMTP id S1753830AbZEVMHE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 08:07:26 -0400
-X-BigFish: VPS-12(z21eWzzz1202hzzz32i43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KK1OB7-04-9QN-01
+	Fri, 22 May 2009 08:07:04 -0400
+X-BigFish: VPS1(zzzz1202hzzz32i64h)
+X-Spam-TCS-SCL: 3:0
+X-WSS-ID: 0KK1OBF-02-J0S-01
 From: Joerg Roedel <joerg.roedel@amd.com>
 To: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 0/4] amd-iommu fixes for 2.6.31
-Date: Fri, 22 May 2009 14:06:27 +0200
-Message-ID: <1242993991-28613-1-git-send-email-joerg.roedel@amd.com>
+CC: Neil Turton <nturton@solarflare.com>, Joerg Roedel <joerg.roedel@amd.com>
+Subject: [PATCH 2/4] amd-iommu: fix the handling of device aliases in the AMD IOMMU driver.
+Date: Fri, 22 May 2009 14:06:29 +0200
+Message-ID: <1242993991-28613-3-git-send-email-joerg.roedel@amd.com>
 X-Mailer: git-send-email 1.6.3.1
-X-OriginalArrivalTime: 22 May 2009 12:06:44.0518 (UTC) FILETIME=[C6376C60:01C9DAD5]
+In-Reply-To: <1242993991-28613-1-git-send-email-joerg.roedel@amd.com>
+References: <1242993991-28613-1-git-send-email-joerg.roedel@amd.com>
+X-OriginalArrivalTime: 22 May 2009 12:06:47.0673 (UTC) FILETIME=[C818D690:01C9DAD5]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This small patchset contain the fixes for the AMD IOMMU driver in the
-Linux kernel I have queued up for 2.6.31. Please review.
+From: Neil Turton <nturton@solarflare.com>
 
-diffstat:
+[ impact: set flags for the right req-id in the device table ]
 
- arch/x86/kernel/amd_iommu.c      |    6 +++++-
- arch/x86/kernel/amd_iommu_init.c |    6 ++++--
- 2 files changed, 9 insertions(+), 3 deletions(-)
+The devid parameter to set_dev_entry_from_acpi is the requester ID
+rather than the device ID since it is used to index the IOMMU device
+table.  The handling of IVHD_DEV_ALIAS used to pass the device ID.
+This patch fixes it to pass the requester ID.
 
-shortlog:
+Signed-off-by: Neil Turton <nturton@solarflare.com>
+Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+---
+ arch/x86/kernel/amd_iommu_init.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Chris Wright (1):
-      amd iommu: properly detach from protection domain on ->remove
-
-Joerg Roedel (1):
-      amd-iommu: make sure only ivmd entries are parsed
-
-Neil Turton (2):
-      amd-iommu: fix an off-by-one error in the AMD IOMMU driver.
-      amd-iommu: fix the handling of device aliases in the AMD IOMMU driver.
+diff --git a/arch/x86/kernel/amd_iommu_init.c b/arch/x86/kernel/amd_iommu_init.c
+index 35fc965..53f93db 100644
+--- a/arch/x86/kernel/amd_iommu_init.c
++++ b/arch/x86/kernel/amd_iommu_init.c
+@@ -618,7 +618,7 @@ static void __init init_iommu_from_acpi(struct amd_iommu *iommu,
+ 		case IVHD_DEV_ALIAS:
+ 			devid = e->devid;
+ 			devid_to = e->ext >> 8;
+-			set_dev_entry_from_acpi(iommu, devid, e->flags, 0);
++			set_dev_entry_from_acpi(iommu, devid_to, e->flags, 0);
+ 			amd_iommu_alias_table[devid] = devid_to;
+ 			break;
+ 		case IVHD_DEV_ALIAS_RANGE:
+-- 
+1.6.3.1
 
 
