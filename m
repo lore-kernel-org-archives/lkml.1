@@ -1,45 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758640AbZEVFFk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753365AbZEVFRI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758640AbZEVFFk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 01:05:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758154AbZEVFCz
+	id S1753365AbZEVFRI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 01:17:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751042AbZEVFQy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 01:02:55 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:33851 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758180AbZEVFCx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 01:02:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=d/qTiG1UQmU1HzCXTFA6PaAbmncc8ntBxajM7tZfaPIs4KF4+C39g16weUTJ2iOJPL
-         1gItt47lGN7zrsSEbCfMTbib5oUsiV2CK1+oR7aH29jje5QmuLDpXVfcxAGeydP1bsl0
-         4HtpnBleJkYqNomqnK1vERonADT9bgLuN7Pyg=
-Date: Fri, 22 May 2009 09:02:54 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       torvalds@linux-foundation.org, xemul@parallels.com,
-       orenl@cs.columbia.edu, serue@us.ibm.com, dave@linux.vnet.ibm.com,
-       mingo@elte.hu
-Subject: Re: [PATCH 01/38] cred: #include init.h in cred.h
-Message-ID: <20090522050254.GA1174@x200.localdomain>
-References: <1242968132-1044-1-git-send-email-adobriyan@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1242968132-1044-1-git-send-email-adobriyan@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 22 May 2009 01:16:54 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:55500 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751085AbZEVFQx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 May 2009 01:16:53 -0400
+Date: Fri, 22 May 2009 15:16:42 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: "David S. Miller" <davem@davemloft.net>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Neil Horman <nhorman@tuxdriver.com>, netdev@vger.kernel.org
+Subject: linux-next: net tree build warning
+Message-Id: <20090522151642.e79e22ee.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__22_May_2009_15_16_42_+1000_TjI_tiSbL0ylo9_I"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-More patches before "[PATCH 18/38] C/R: core stuff" were already
-sent via usual channels and some are already in -next.
-There are being repeated to maintain clean series against mainline.
+--Signature=_Fri__22_May_2009_15_16_42_+1000_TjI_tiSbL0ylo9_I
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I forgot to mention that ->checkpoint hook was not added to vDSO
-mapping for several reasons so if someone want to test, boot with
-vdso=0 for now.
+Hi Dave,
+
+Today's linux-next build (powerpc ppc64_defconfig) produced this warning:
+
+net/core/netpoll.c: In function 'poll_one_napi':
+net/core/netpoll.c:141: warning: passing argument 1 of 'trace_napi_poll' fr=
+om incompatible pointer type
+include/trace/napi.h:7: note: expected 'struct napi_struct *' but argument =
+is of type 'struct net_device *'
+
+Introduced by commit 4ea7e38696c7e798c47ebbecadfd392f23f814f9 ("dropmon:
+add ability to detect when hardware dropsrxpackets").
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Fri__22_May_2009_15_16_42_+1000_TjI_tiSbL0ylo9_I
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkoWNToACgkQjjKRsyhoI8yrbwCeNfjaxPytRnyC94uRiaXqXj1+
+wyoAoJ8nQirfAhVzvpAsLUeb+sjnr5wB
+=dtnZ
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__22_May_2009_15_16_42_+1000_TjI_tiSbL0ylo9_I--
