@@ -1,92 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757397AbZEVOpS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756612AbZEVOyN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757397AbZEVOpS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 10:45:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756116AbZEVOpH
+	id S1756612AbZEVOyN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 10:54:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756279AbZEVOx7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 10:45:07 -0400
-Received: from sh.osrg.net ([192.16.179.4]:48823 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755438AbZEVOpF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 10:45:05 -0400
-Date: Fri, 22 May 2009 23:38:35 +0900
-To: arnd@arndb.de
-Cc: fujita.tomonori@lab.ntt.co.jp, jgarzik@pobox.com, hancockrwd@gmail.com,
-       htejun@gmail.com, alan@lxorguk.ukuu.org.uk, flar@allandria.com,
-       schmitz@biophys.uni-duesseldorf.de, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, takata@linux-m32r.org, geert@linux-m68k.org,
-       linux-m68k@vger.kernel.org, ysato@users.sourceforge.jp,
-       grundler@google.com
-Subject: Re: [PATCH] asm-generic: add a dma-mapping.h file
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <200905221607.34025.arnd@arndb.de>
-References: <200905191822.48420.arnd@arndb.de>
-	<20090522211258Q.fujita.tomonori@lab.ntt.co.jp>
-	<200905221607.34025.arnd@arndb.de>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20090522233846I.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Fri, 22 May 2009 23:38:37 +0900 (JST)
+	Fri, 22 May 2009 10:53:59 -0400
+Received: from mail-bw0-f174.google.com ([209.85.218.174]:37751 "EHLO
+	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754643AbZEVOx7 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 May 2009 10:53:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=uLpUBCcZzPAqF11PIX2nsgDDJQuqna6rKnVLUBpuIroYJTwzOZTDHWwM1ZKlLuNp5q
+         v6RUlneOgS+6l82OTvQQaqFX2/TqGlrY0gYFTxIvhRfAqq5z3s6bEqGRg+htkp1RF1OP
+         6wb56M8mypyhfTjbqtJDAHPzmh3GrqRYgIec4=
+MIME-Version: 1.0
+In-Reply-To: <20090522140930.GA26580@elf.ucw.cz>
+References: <1240913055.29860.14.camel@maxim-laptop>
+	 <1240950704.3781.12.camel@maxim-laptop>
+	 <cone.1241299309.265715.3948.1000@mentalhome>
+	 <20090503184617.GA3555@liondog.tnic>
+	 <cone.1241648222.299676.7476.1000@mentalhome>
+	 <20090509171432.GA31126@liondog.tnic>
+	 <cone.1242065107.695268.13534.1000@onepiie>
+	 <20090519203015.GA1362@ucw.cz>
+	 <9ea470500905220450s2367f8a1uc2b19a9466ea8509@mail.gmail.com>
+	 <20090522140930.GA26580@elf.ucw.cz>
+Date: Fri, 22 May 2009 16:53:59 +0200
+Message-ID: <9ea470500905220753x6c2be25dq14422dff2acea422@mail.gmail.com>
+Subject: Re: [PATCH] Acer Aspire One Fan Control
+From: Borislav Petkov <petkovbb@googlemail.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Peter Feuerer <peter@piie.net>, petkovbb@gmail.com,
+       LKML <linux-kernel@vger.kernel.org>, lenb@kernel.org,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Maxim Levitsky <maximlevitsky@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 22 May 2009 16:07:32 +0200
-Arnd Bergmann <arnd@arndb.de> wrote:
+>> >> The idea of not starting the module in kernel mode was from Matthew. And
+>> >> he stated that it could harm the hardware when software controls the fan
+>> >> instead of the BIOS. It may also be possible, that the warranty gets
+>> >
+>> > Well... hw is usually designed to protect itself.
+>>
+>> It seems like the fan in the aspire one's is used for cooling the
+>> surrounding devices too and while the thermal envelope of the CPU is
+>> much wider, the peripherals are much more susceptible to temperatures
+>> outside of their allowed operating range. That's why currently the
+>> driver lets the BIOS control the fan since its settings are most
+>> conservative.
+>
+> Yep, I don't disagree. But I strongly suspect that if you force the
+> fan off and overheat the machine, it will shut down in hardware before
+> doing any damage.
 
-> On Friday 22 May 2009, FUJITA Tomonori wrote:
-> > I don't think that this works for all architectures because a returned
-> > buffer of alloc_pages_node might not be DMA-capable. Needs to use the
-> > coherent_dma_mask here. See x86's dma_alloc_coherent and Alpha's
-> > pci-noop.c (there might be other examples).
-> 
-> Right, Grant also made the same comment.
-> 
-> > I think that having a generic header for simple mapping functions
-> > (dma_map_single, dma_map_page, dma_map_sg, etc) would be useful but
-> > I'm not sure if we can't have a generic version of
-> > dma_alloc_coherent.
-> >
-> > There are lots of architectures that do 
-> > architecture-specific things. For example, you replaced avr32
-> > dma-mapping.h except for dma_alloc_coherent, which seems to be can't
-> > be generic.
-> 
-> I agree that it won't be fully generic, because all architectures
-> with non-coherent DMA will have to do architecture specific setup
-> to get uncached mappings here. I believe that it can be generic
-> enough to support all architectures that have a cache-coherent PCI
-> bus, hence the #ifdef CONFIG_DMA_COHERENT around this function.
+Yep, however we won't come that far with the current driver since it
+relinquishes control of the fan to the BIOS after a critical temp of
+89° is reached. I'm still quite unpersuaded about that "magical" number
+since it is 1 degree below the high interval boundary of the juncture
+temperature of the Atom CPU. I would like to have a more reliable source
+for the allowed envelope based not only on the CPU but on the whole
+chipset but can't seem to find any data from Acer on that.
 
-I'm not sure. And only mips internally uses CONFIG_DMA_COHERENT.
+>> the module can still be toggled on/off from sysfs. Actually, empirically
+>> measured, there seem to be three states of the fan: off, on and on-max
+>> where you can hear it rotating at max RPM. The kernel module can handle
+>> those completely if you know the respective ACPI EC commands and there's
+>> no need for userspace daemon, IMHO.
+>
+> It would be still nice to let the userspace lower the trip points for
+> maximum flexibility. No need for userspace _daemon_.
 
-The reason why many architectures need architecture-specific
-alloc_coherent() is not about coherent or not.
+I'm sure Peter wouldn't mind adding some other sysfs entries in future
+versions of the driver controlling exactly that.
 
-
-I like a new helper header file having only generic functions without
-any ifdef.
-
-
-> E.g. cris could use a one-line redirect to
-> asm-generic/dma-mapping-linear.h if it did not have the
-> special dma_get_cache_alignment function. I still would
-> like to find a better way to handle this one than to
-> redefine the function.
-> 
-> > BTW, it looks odd to add dma_debug to dma_map_single, etc but not
-> > dma_alloc_coherent. ;)
-> 
-> hehe, sure. I copied the dma_debug stuff from sh, the comments
-> from avr32 and the dma_alloc_coherent implementation from powerpc,
-> so I missed this one.
-> 
-> Thanks for the review.
-> 
-> 	Arnd <><
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+-- 
+Regards/Gruss,
+Boris.
