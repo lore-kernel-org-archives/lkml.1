@@ -1,48 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756551AbZEVHBT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753644AbZEVHFc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756551AbZEVHBT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 03:01:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751524AbZEVHBL
+	id S1753644AbZEVHFc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 03:05:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751524AbZEVHFZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 03:01:11 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:43510 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750916AbZEVHBL (ORCPT
+	Fri, 22 May 2009 03:05:25 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:43248 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751483AbZEVHFY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 03:01:11 -0400
-Date: Fri, 22 May 2009 08:01:11 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Joe Perches <joe@perches.com>
-Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org,
-       Dave Jones <davej@redhat.com>, Greg Kroah-Hartman <gregkh@suse.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>,
-       x86@kernel.org, Len Brown <len.brown@intel.com>,
-       Mike Travis <travis@sgi.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH V2 0/3] Introduce and use DO_ONCE statement expression
-	macro
-Message-ID: <20090522070111.GZ8633@ZenIV.linux.org.uk>
-References: <cover.1242965306.git.joe@perches.com> <20090522052652.GX8633@ZenIV.linux.org.uk> <1242970756.3284.18.camel@Joe-Laptop.home>
+	Fri, 22 May 2009 03:05:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:from:to:subject:date:user-agent:x-face:cc:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :message-id;
+        b=E6Wk9TI5ay/uOynqOMmu/QgM2X6etA+uJ/+KsyiFHiK0SQ/5i0hkSsK6gJPI12gvC3
+         oXD9bUYGV2U/PKG+5f9UUwYkzAQsOPCvLhbtDOo4qhNevAOCsn/iwR53n/MAXkzAdcnz
+         mdMwTHLWeAL1TezUzYwTVKrTzsC0TFAU8qCPk=
+From: Jose Luis Perez Diez <jluis@escomposlinux.org>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH]Perl is needed to build the kernel but it is not in Documentation/Changes
+Date: Fri, 22 May 2009 09:05:11 +0200
+User-Agent: KMail/1.9.9
+X-Face: "2E*FU(q5Y=y<[Q`"$lOX>/8Z*3f.6.tS{0@FUR%P:0AEI1(-e%(?-]KN8p!!j_26I5;)=?utf-8?q?=3F=0A=09n=26+=3D=5ElyOCVxbpJ0?=(;u*$A}%Zw([9#8=IhSg0_o/{4L6tT!*=Mx
+Cc: Jose Luis Perez Diez <jluis@escomposlinux.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1242970756.3284.18.camel@Joe-Laptop.home>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200905220905.11270.jluis@escomposlinux.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 21, 2009 at 10:39:16PM -0700, Joe Perches wrote:
-> On Fri, 2009-05-22 at 06:26 +0100, Al Viro wrote:
-> > Your DO_ONCE(....) parses as "what the fuck is that?" followed by
-> > grepping for definition, and the cost is much higher.
-> 
-> So what do you suggest?
-> 
-> #define pr_info_once(fmt, args...)	printk_once(KERN_INFO pr_fmt(fmt), ##args)
-> #define pr_warning_once(fmt, args...)	printk_once(KERN_WARNING pr_fmt(fmt), ##args)
-> etc
+Perl is used on the kernel Makefile to generate documentation, firmwares in c
+source form, sources, graphs, and some headers and this fact is undocumented.
 
-That would be much saner.
+
+Signed-off-by:Jose Luis Perez Diez <jluis@escomposlinux.org>
+
+---
+ Documentation/Changes |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
+
+diff --git a/Documentation/Changes b/Documentation/Changes
+index b95082b..6a2d53d 100644
+--- a/Documentation/Changes
++++ b/Documentation/Changes
+@@ -71,6 +71,13 @@ assembling the 16-bit boot code, removing the need for as86 
+to compile
+ your kernel.  This change does, however, mean that you need a recent
+ release of binutils.
+ 
++Perl
++----
++
++You will need perl 5 and the following modules: Getopt::Long, Getopt::Std, 
+File::Basename, and File::Find to build the kernel.
++
++
++
+ System utilities
+ ================
+ 
+-- 
+1.5.6.5
