@@ -1,68 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756771AbZEVKSH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754327AbZEVKTu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756771AbZEVKSH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 06:18:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752842AbZEVKR5
+	id S1754327AbZEVKTu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 06:19:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752842AbZEVKTn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 06:17:57 -0400
-Received: from ppp121-45-215-216.lns11.adl2.internode.on.net ([121.45.215.216]:54845
-	"EHLO homer.shelbyville.oz" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752290AbZEVKR4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 06:17:56 -0400
-Date: Fri, 22 May 2009 19:47:33 +0930
-From: Ron <ron@debian.org>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: cl@linux-foundation.org, mpm@selenic.com, linux-mm@kvack.org,
-       akinobu.mita@gmail.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] slab: add missing guard for kernel_map_pages() use
-Message-ID: <20090522101733.GA12967@homer.shelbyville.oz>
-References: <20090521192822.GB4448@homer.shelbyville.oz> <1242979372.13681.1.camel@penberg-laptop> <20090522085040.GC4448@homer.shelbyville.oz>
+	Fri, 22 May 2009 06:19:43 -0400
+Received: from h155.mvista.com ([63.81.120.155]:26242 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751791AbZEVKTm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 May 2009 06:19:42 -0400
+Message-ID: <4A167C3A.7010203@ru.mvista.com>
+Date: Fri, 22 May 2009 14:19:38 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090522085040.GC4448@homer.shelbyville.oz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: ron@debian.org
-X-SA-Exim-Scanned: No (on homer.shelbyville.oz); SAEximRunCond expanded to false
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/4] ide: add IDE_DFLAG_NIEN_QUIRK device flag
+References: <200905201735.15489.bzolnier@gmail.com>
+In-Reply-To: <200905201735.15489.bzolnier@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 22, 2009 at 06:20:40PM +0930, Ron wrote:
-> 
-> All other uses of kernel_map_pages() are explicitly excluded without
-> CONFIG_DEBUG_PAGEALLOC, this one should be too.
-> 
-> Signed-off-by: Ron Lee <ron@debian.org>
-> 
-> 
-> diff --git a/mm/slab.c b/mm/slab.c
-> index 9a90b00..b5e5b27 100644
-> --- a/mm/slab.c
-> +++ b/mm/slab.c
-> @@ -2674,10 +2683,12 @@ static void cache_init_objs(struct kmem_cache *cachep,
->  				slab_error(cachep, "constructor overwrote the"
->  					   " start of an object");
->  		}
-> +#ifdef CONFIG_DEBUG_PAGEALLOC
->  		if ((cachep->buffer_size % PAGE_SIZE) == 0 &&
->  			    OFF_SLAB(cachep) && cachep->flags & SLAB_POISON)
->  			kernel_map_pages(virt_to_page(objp),
->  					 cachep->buffer_size / PAGE_SIZE, 0);
-> +#endif
->  #else
->  		if (cachep->ctor)
->  			cachep->ctor(objp);
+Hello.
 
-Actually, no.  I'm wrong on this one.  The compiler will already take that
-one away because kernel_map_pages() is an empty function in that case.
+Bartlomiej Zolnierkiewicz wrote:
 
-It's subtle, but this extra guard actually adds nothing (unless you consider
-more #ifdefs to be 'clarifying');
+> Add IDE_DFLAG_NIEN_QUIRK device flag and use it instead of
+> drive->quirk_list.
+>
+> There should be no functional changes caused by this patch.
+>
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 
-Sorry for the extra noise,
-Ron
+Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+
+MBR, Sergei
 
 
