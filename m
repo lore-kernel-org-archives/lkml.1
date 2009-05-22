@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758158AbZEVVFR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757746AbZEVVHJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758158AbZEVVFR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 17:05:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757359AbZEVVEq
+	id S1757746AbZEVVHJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 17:07:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758072AbZEVVEv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 17:04:46 -0400
-Received: from d112a2.x-mailer.de ([212.162.53.4]:43017 "EHLO
+	Fri, 22 May 2009 17:04:51 -0400
+Received: from d112a2.x-mailer.de ([212.162.53.4]:48671 "EHLO
 	d112a2.x-mailer.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753807AbZEVVEp (ORCPT
+	with ESMTP id S1757409AbZEVVEt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 17:04:45 -0400
-Message-Id: <c9cf6a56ab02e09941e5916e1d71f0325fdbbb58.1243024967.git.kkeil@pingi.linux-pingi.de>
+	Fri, 22 May 2009 17:04:49 -0400
+Message-Id: <cbbb2723784ecf04bcec253c547a9464a2e722c7.1243024967.git.kkeil@pingi.linux-pingi.de>
 In-Reply-To: <cover.1243024967.git.kkeil@pingi.linux-pingi.de>
 References: <cover.1243024967.git.kkeil@pingi.linux-pingi.de>
-Subject: [mISDN PATCH v2 01/19] Add watchdog functionality to hfcmulti driver
+Subject: [mISDN PATCH v2 09/19] Fix TEI and SAPI handling
 From: Karsten Keil <keil@b1-systems.de>
 To: linux-kernel@vger.kernel.org
 Cc: netdev@vger.kernel.org, David Miller <davem@davemloft.net>,
        i4ldeveloper@listserv.isdn4linux.de
-Date: Fri, 22 May 2009 23:04:44 +0200
+Date: Fri, 22 May 2009 23:04:50 +0200
 X-Info: valid message
 X-Info: original Date
 Sender: linux-kernel-owner@vger.kernel.org
@@ -27,90 +27,180 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Andreas Eversberg <andreas@eversberg.eu>
 
-This patch was made by Titus Moldovan and provides IOCTL functions for enabling
-and disabling the controller's built in watchdog. The use is optional.
+Added SAPI value to use SAPIs different than 0.
+
+Now fixed TEIs work in NT mode. This allows PTP endpoint to be connected
+to PTMP ports together with other PTMP endpoints.
 
 Signed-off-by: Andreas Eversberg <andreas@eversberg.eu>
 Signed-off-by: Karsten Keil <keil@b1-systems.de>
 ---
- drivers/isdn/hardware/mISDN/hfc_multi.h |    1 +
- drivers/isdn/hardware/mISDN/hfcmulti.c  |   32 ++++++++++++++++++++++++++++++-
- include/linux/mISDNif.h                 |    3 +-
- 3 files changed, 34 insertions(+), 2 deletions(-)
+ drivers/isdn/mISDN/layer2.c |   13 +++++++------
+ drivers/isdn/mISDN/layer2.h |    2 +-
+ drivers/isdn/mISDN/tei.c    |   25 ++++++++++++-------------
+ 3 files changed, 20 insertions(+), 20 deletions(-)
 
-diff --git a/drivers/isdn/hardware/mISDN/hfc_multi.h b/drivers/isdn/hardware/mISDN/hfc_multi.h
-index 663b77f..5765e19 100644
---- a/drivers/isdn/hardware/mISDN/hfc_multi.h
-+++ b/drivers/isdn/hardware/mISDN/hfc_multi.h
-@@ -62,6 +62,7 @@ struct hfcm_hw {
- 	u_char	r_sci_msk;
- 	u_char	r_tx0, r_tx1;
- 	u_char	a_st_ctrl0[8];
-+	u_char	r_bert_wd_md;
- 	timer_t	timer;
- };
+diff --git a/drivers/isdn/mISDN/layer2.c b/drivers/isdn/mISDN/layer2.c
+index d6e2863..0628ef6 100644
+--- a/drivers/isdn/mISDN/layer2.c
++++ b/drivers/isdn/mISDN/layer2.c
+@@ -2068,7 +2068,8 @@ l2_ctrl(struct mISDNchannel *ch, u_int cmd, void *arg)
+ }
  
-diff --git a/drivers/isdn/hardware/mISDN/hfcmulti.c b/drivers/isdn/hardware/mISDN/hfcmulti.c
-index 0b28141..ca153de 100644
---- a/drivers/isdn/hardware/mISDN/hfcmulti.c
-+++ b/drivers/isdn/hardware/mISDN/hfcmulti.c
-@@ -4013,11 +4013,41 @@ open_bchannel(struct hfc_multi *hc, struct dchannel *dch,
- static int
- channel_dctrl(struct dchannel *dch, struct mISDN_ctrl_req *cq)
+ struct layer2 *
+-create_l2(struct mISDNchannel *ch, u_int protocol, u_long options, u_long arg)
++create_l2(struct mISDNchannel *ch, u_int protocol, u_long options, u_int tei,
++		u_int sapi)
  {
-+	struct hfc_multi	*hc = dch->hw;
- 	int	ret = 0;
-+	int	wd_mode, wd_cnt;
+ 	struct layer2		*l2;
+ 	struct channel_req	rq;
+@@ -2089,7 +2090,7 @@ create_l2(struct mISDNchannel *ch, u_int protocol, u_long options, u_long arg)
+ 		test_and_set_bit(FLG_LAPD, &l2->flag);
+ 		test_and_set_bit(FLG_LAPD_NET, &l2->flag);
+ 		test_and_set_bit(FLG_MOD128, &l2->flag);
+-		l2->sapi = 0;
++		l2->sapi = sapi;
+ 		l2->maxlen = MAX_DFRAME_LEN;
+ 		if (test_bit(OPTION_L2_PMX, &options))
+ 			l2->window = 7;
+@@ -2099,7 +2100,7 @@ create_l2(struct mISDNchannel *ch, u_int protocol, u_long options, u_long arg)
+ 			test_and_set_bit(FLG_PTP, &l2->flag);
+ 		if (test_bit(OPTION_L2_FIXEDTEI, &options))
+ 			test_and_set_bit(FLG_FIXED_TEI, &l2->flag);
+-		l2->tei = (u_int)arg;
++		l2->tei = tei;
+ 		l2->T200 = 1000;
+ 		l2->N200 = 3;
+ 		l2->T203 = 10000;
+@@ -2114,7 +2115,7 @@ create_l2(struct mISDNchannel *ch, u_int protocol, u_long options, u_long arg)
+ 		test_and_set_bit(FLG_LAPD, &l2->flag);
+ 		test_and_set_bit(FLG_MOD128, &l2->flag);
+ 		test_and_set_bit(FLG_ORIG, &l2->flag);
+-		l2->sapi = 0;
++		l2->sapi = sapi;
+ 		l2->maxlen = MAX_DFRAME_LEN;
+ 		if (test_bit(OPTION_L2_PMX, &options))
+ 			l2->window = 7;
+@@ -2124,7 +2125,7 @@ create_l2(struct mISDNchannel *ch, u_int protocol, u_long options, u_long arg)
+ 			test_and_set_bit(FLG_PTP, &l2->flag);
+ 		if (test_bit(OPTION_L2_FIXEDTEI, &options))
+ 			test_and_set_bit(FLG_FIXED_TEI, &l2->flag);
+-		l2->tei = (u_int)arg;
++		l2->tei = tei;
+ 		l2->T200 = 1000;
+ 		l2->N200 = 3;
+ 		l2->T203 = 10000;
+@@ -2180,7 +2181,7 @@ x75create(struct channel_req *crq)
  
- 	switch (cq->op) {
- 	case MISDN_CTRL_GETOP:
--		cq->op = 0;
-+		cq->op = MISDN_CTRL_HFC_OP;
-+		break;
-+	case MISDN_CTRL_HFC_WD_INIT: /* init the watchdog */
-+		wd_cnt = cq->p1 & 0xf;
-+		wd_mode = !!(cq->p1 >> 4);
-+		if (debug & DEBUG_HFCMULTI_MSG)
-+			printk(KERN_DEBUG
-+			    "%s: MISDN_CTRL_HFC_WD_INIT mode %s counter 0x%x\n",
-+			    __func__, wd_mode ? "AUTO" : "MANUAL", wd_cnt);
-+		/* set the watchdog timer */
-+		HFC_outb(hc, R_TI_WD, poll_timer | (wd_cnt << 4));
-+		hc->hw.r_bert_wd_md = (wd_mode ? V_AUTO_WD_RES : 0);
-+		if (hc->ctype == HFC_TYPE_XHFC)
-+			hc->hw.r_bert_wd_md |= 0x40 /* V_WD_EN */;
-+		/* init the watchdog register and reset the counter */
-+		HFC_outb(hc, R_BERT_WD_MD, hc->hw.r_bert_wd_md | V_WD_RES);
-+		if (test_bit(HFC_CHIP_PLXSD, &hc->chip)) {
-+			/* enable the watchdog output for Speech-Design */
-+			HFC_outb(hc, R_GPIO_SEL, V_GPIO_SEL7);
-+			HFC_outb(hc, R_GPIO_EN1, V_GPIO_EN15);
-+			HFC_outb(hc, R_GPIO_OUT1, 0);
-+			HFC_outb(hc, R_GPIO_OUT1, V_GPIO_OUT15);
-+		}
-+		break;
-+	case MISDN_CTRL_HFC_WD_RESET: /* reset the watchdog counter */
-+		if (debug & DEBUG_HFCMULTI_MSG)
-+			printk(KERN_DEBUG "%s: MISDN_CTRL_HFC_WD_RESET\n",
-+			    __func__);
-+		HFC_outb(hc, R_BERT_WD_MD, hc->hw.r_bert_wd_md | V_WD_RES);
- 		break;
- 	default:
- 		printk(KERN_WARNING "%s: unknown Op %x\n",
-diff --git a/include/linux/mISDNif.h b/include/linux/mISDNif.h
-index 5da3d95..cf97459 100644
---- a/include/linux/mISDNif.h
-+++ b/include/linux/mISDNif.h
-@@ -362,7 +362,8 @@ clear_channelmap(u_int nr, u_char *map)
- #define MISDN_CTRL_HFC_RECEIVE_ON	0x4006
- #define MISDN_CTRL_HFC_ECHOCAN_ON 	0x4007
- #define MISDN_CTRL_HFC_ECHOCAN_OFF 	0x4008
--
-+#define MISDN_CTRL_HFC_WD_INIT		0x4009
-+#define MISDN_CTRL_HFC_WD_RESET		0x400A
+ 	if (crq->protocol != ISDN_P_B_X75SLP)
+ 		return -EPROTONOSUPPORT;
+-	l2 = create_l2(crq->ch, crq->protocol, 0, 0);
++	l2 = create_l2(crq->ch, crq->protocol, 0, 0, 0);
+ 	if (!l2)
+ 		return -ENOMEM;
+ 	crq->ch = &l2->ch;
+diff --git a/drivers/isdn/mISDN/layer2.h b/drivers/isdn/mISDN/layer2.h
+index 6293f80..a85984e 100644
+--- a/drivers/isdn/mISDN/layer2.h
++++ b/drivers/isdn/mISDN/layer2.h
+@@ -90,7 +90,7 @@ enum {
+ #define L2_STATE_COUNT (ST_L2_8+1)
  
- /* socket options */
- #define MISDN_TIME_STAMP		0x0001
+ extern struct layer2	*create_l2(struct mISDNchannel *, u_int,
+-				u_long, u_long);
++				u_long, u_int, u_int);
+ extern int		tei_l2(struct layer2 *, u_int, u_long arg);
+ 
+ 
+diff --git a/drivers/isdn/mISDN/tei.c b/drivers/isdn/mISDN/tei.c
+index c75af76..9e88135 100644
+--- a/drivers/isdn/mISDN/tei.c
++++ b/drivers/isdn/mISDN/tei.c
+@@ -777,7 +777,7 @@ tei_ph_data_ind(struct teimgr *tm, u_int mt, u_char *dp, int len)
+ }
+ 
+ static struct layer2 *
+-create_new_tei(struct manager *mgr, int tei)
++create_new_tei(struct manager *mgr, int tei, int sapi)
+ {
+ 	u_long		opt = 0;
+ 	u_long		flags;
+@@ -791,7 +791,7 @@ create_new_tei(struct manager *mgr, int tei)
+ 	if (mgr->ch.st->dev->Dprotocols
+ 	  & ((1 << ISDN_P_TE_E1) | (1 << ISDN_P_NT_E1)))
+ 		test_and_set_bit(OPTION_L2_PMX, &opt);
+-	l2 = create_l2(mgr->up, ISDN_P_LAPD_NT, (u_int)opt, (u_long)tei);
++	l2 = create_l2(mgr->up, ISDN_P_LAPD_NT, (u_int)opt, tei, sapi);
+ 	if (!l2) {
+ 		printk(KERN_WARNING "%s:no memory for layer2\n", __func__);
+ 		return NULL;
+@@ -839,12 +839,15 @@ new_tei_req(struct manager *mgr, u_char *dp)
+ 	ri += dp[1];
+ 	if (!mgr->up)
+ 		goto denied;
+-	tei = get_free_tei(mgr);
++	if (dp[3] != 0xff)
++		tei = dp[3] >> 1; /* 3GPP TS 08.56 6.1.11.2 */
++	else
++		tei = get_free_tei(mgr);
+ 	if (tei < 0) {
+ 		printk(KERN_WARNING "%s:No free tei\n", __func__);
+ 		goto denied;
+ 	}
+-	l2 = create_new_tei(mgr, tei);
++	l2 = create_new_tei(mgr, tei, 0);
+ 	if (!l2)
+ 		goto denied;
+ 	else
+@@ -976,8 +979,6 @@ create_teimgr(struct manager *mgr, struct channel_req *crq)
+ 			__func__, dev_name(&mgr->ch.st->dev->dev),
+ 			crq->protocol, crq->adr.dev, crq->adr.channel,
+ 			crq->adr.sapi, crq->adr.tei);
+-	if (crq->adr.sapi != 0) /* not supported yet */
+-		return -EINVAL;
+ 	if (crq->adr.tei > GROUP_TEI)
+ 		return -EINVAL;
+ 	if (crq->adr.tei < 64)
+@@ -1025,7 +1026,7 @@ create_teimgr(struct manager *mgr, struct channel_req *crq)
+ 		return 0;
+ 	}
+ 	l2 = create_l2(crq->ch, crq->protocol, (u_int)opt,
+-		(u_long)crq->adr.tei);
++		crq->adr.tei, crq->adr.sapi);
+ 	if (!l2)
+ 		return -ENOMEM;
+ 	l2->tm = kzalloc(sizeof(struct teimgr), GFP_KERNEL);
+@@ -1166,7 +1167,7 @@ static int
+ check_data(struct manager *mgr, struct sk_buff *skb)
+ {
+ 	struct mISDNhead	*hh =  mISDN_HEAD_P(skb);
+-	int			ret, tei;
++	int			ret, tei, sapi;
+ 	struct layer2		*l2;
+ 
+ 	if (*debug & DEBUG_L2_CTRL)
+@@ -1178,18 +1179,16 @@ check_data(struct manager *mgr, struct sk_buff *skb)
+ 		return -ENOTCONN;
+ 	if (skb->len != 3)
+ 		return -ENOTCONN;
+-	if (skb->data[0] != 0)
+-		/* only SAPI 0 command */
+-		return -ENOTCONN;
++	sapi = skb->data[0] >> 2;
+ 	if (!(skb->data[1] & 1)) /* invalid EA1 */
+ 		return -EINVAL;
+-	tei = skb->data[1] >> 0;
++	tei = skb->data[1] >> 1;
+ 	if (tei > 63) /* not a fixed tei */
+ 		return -ENOTCONN;
+ 	if ((skb->data[2] & ~0x10) != SABME)
+ 		return -ENOTCONN;
+ 	/* We got a SABME for a fixed TEI */
+-	l2 = create_new_tei(mgr, tei);
++	l2 = create_new_tei(mgr, tei, sapi);
+ 	if (!l2)
+ 		return -ENOMEM;
+ 	ret = l2->ch.send(&l2->ch, skb);
 -- 
 1.6.0.2
 
