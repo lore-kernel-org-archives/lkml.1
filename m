@@ -1,66 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757076AbZEVIDs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756952AbZEVIET@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757076AbZEVIDs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 04:03:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756435AbZEVID2
+	id S1756952AbZEVIET (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 04:04:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756944AbZEVIDg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 04:03:28 -0400
-Received: from an-out-0708.google.com ([209.85.132.242]:3977 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752792AbZEVID0 convert rfc822-to-8bit (ORCPT
+	Fri, 22 May 2009 04:03:36 -0400
+Received: from mail-px0-f103.google.com ([209.85.216.103]:50536 "EHLO
+	mail-px0-f103.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756974AbZEVIDc convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 04:03:26 -0400
+	Fri, 22 May 2009 04:03:32 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=Ehv8lGiEXWLG3SYdycrlPOT7wCBgXcJIQC/wPBG79irlYRq/+/L9JqFFswHA2wwD8r
-         KXhUOxiuduxlNpogNiy5gmAlRzAyurUx9S46tYVCUYCMPW5esNDPu3W3RaZlwS5PdDpk
-         KYkGJYP6xZZy+r4aA7bvwhKATxWpQk1z8YRX0=
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=OJNVHKfLJcr2gbunUZMV80hkkuPC8CXmOXtop8lKVE/CdvwnVz1N2jAgpnqx2cpawI
+         2UNPtAVY2ODeelr/oIKU1J+Bv2UV+6yHfFgLTsRqktQw6Rpw1XWoVqhYrgw7ARTsAKPz
+         lFdqe5e1jCfSvQ6h3DPsRJ/1s+WEbEAEP2DIA=
 MIME-Version: 1.0
-In-Reply-To: <4A133DEF.6080604@gmail.com>
-References: <4A133DEF.6080604@gmail.com>
-Date: Fri, 22 May 2009 16:03:26 +0800
-X-Google-Sender-Auth: 234caad7db627d26
-Message-ID: <2a27d3730905220103k12d7f9a6n269fcd079818b168@mail.gmail.com>
-Subject: Re: [PATCH] freescale: beyond ARRAY_SIZE of fdev->chan
-From: Li Yang <leoli@freescale.com>
-To: Roel Kluin <roel.kluin@gmail.com>
-Cc: linuxppc-dev@ozlabs.org, lkml <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <1242802064.31350.12.camel@johannes.local>
+References: <c4e36d110905120059i4c155508oa00672da0b33a07a@mail.gmail.com>
+	 <20090517071834.GA8507@elte.hu>
+	 <1242559101.28127.63.camel@johannes.local>
+	 <20090518194749.GA3501@redhat.com>
+	 <1242723104.17164.5.camel@johannes.local>
+	 <20090519120010.GA14782@redhat.com>
+	 <1242747203.4797.39.camel@johannes.local>
+	 <d82e647a0905192036n22db3f50r58e0a325893c4823@mail.gmail.com>
+	 <1242802064.31350.12.camel@johannes.local>
+Date: Fri, 22 May 2009 16:03:32 +0800
+Message-ID: <d82e647a0905220103s23ad0feejfaa787dcd481a41c@mail.gmail.com>
+Subject: Re: INFO: possible circular locking dependency at 
+	cleanup_workqueue_thread
+From: Ming Lei <tom.leiming@gmail.com>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: Oleg Nesterov <oleg@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 20, 2009 at 7:17 AM, Roel Kluin <roel.kluin@gmail.com> wrote:
-> Do not go beyond ARRAY_SIZE of fdev->chan
+2009/5/20 Johannes Berg <johannes@sipsolutions.net>:
+> On Wed, 2009-05-20 at 11:36 +0800, Ming Lei wrote:
 >
-> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-
-Indeed, thanks.
-
-But I would like the title and description of this patch be changed to
-like this:
-
-fsldma: fix check on potential fdev->chan[] overflow
-
-Fix the check of potential array overflow when using corrupted channel
-device tree nodes.
-
-> ---
-> diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-> index da8a8ed..391b1bd 100644
-> --- a/drivers/dma/fsldma.c
-> +++ b/drivers/dma/fsldma.c
-> @@ -830,7 +830,7 @@ static int __devinit fsl_dma_chan_probe(struct fsl_dma_device *fdev,
-> Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â new_fsl_chan->reg.end - new_fsl_chan->reg.start + 1);
+>> > Anyway, you can have a deadlock like this:
+>> >
+>> > CPU 3                   CPU 2                           CPU 1
+>> >                                                        suspend/hibernate
+>> >                        something:
+>> >                        rtnl_lock()                     device_pm_lock()
+>> >                                                        -> mutex_lock(&dpm_list_mtx)
+>> >
+>> >                        mutex_lock(&dpm_list_mtx)
+>>
+>> Would you give a explaination why mutex_lock(&dpm_list_mtx) runs in CPU2
+>> and depends on rtnl_lock?
 >
-> Â  Â  Â  Â new_fsl_chan->id = ((new_fsl_chan->reg.start - 0x100) & 0xfff) >> 7;
-> - Â  Â  Â  if (new_fsl_chan->id > FSL_DMA_MAX_CHANS_PER_DEVICE) {
-> + Â  Â  Â  if (new_fsl_chan->id >= FSL_DMA_MAX_CHANS_PER_DEVICE) {
-> Â  Â  Â  Â  Â  Â  Â  Â dev_err(fdev->dev, "There is no %d channel!\n",
-> Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â new_fsl_chan->id);
-> Â  Â  Â  Â  Â  Â  Â  Â err = -EINVAL;
+> Why not? Something is registering a hotplugged netdev.
+
+It seems dpm_list_mtx is held in kernel_init context, so should not consider
+registering a hotplugged netdev, isn't it?
+
+I am still confused, since rtnl_mutex is held before dpm_list_mtx which
+is acquired in kernel_init context.
+
+[  562.689476] -> #3 (dpm_list_mtx){+.+.+.}:
+[  562.689480]        [<ffffffff8026eae8>] __lock_acquire+0x13a9/0x171c
+[  562.689484]        [<ffffffff8026ef5f>] lock_acquire+0x104/0x130
+[  562.689489]        [<ffffffff804ab2f0>] mutex_lock_nested+0x6f/0x36b
+[  562.689493]        [<ffffffff803f6395>] device_pm_add+0x4b/0xf2
+[  562.689499]        [<ffffffff803ef382>] device_add+0x498/0x62a
+[  562.689503]        [<ffffffff8043fd32>] netdev_register_kobject+0x7b/0x80
+[  562.689509]        [<ffffffff80434761>] register_netdevice+0x2d0/0x469
+[  562.689514]        [<ffffffff80434939>] register_netdev+0x3f/0x4d
+[  562.689519]        [<ffffffff806f634f>] loopback_net_init+0x40/0x7d
+[  562.689524]        [<ffffffff8042ee79>] register_pernet_device+0x32/0x5f
+[  562.689528]        [<ffffffff806fb41a>] net_dev_init+0x143/0x1a1
+[  562.689533]        [<ffffffff80209080>] do_one_initcall+0x75/0x18a
+[  562.689538]        [<ffffffff806d0678>] kernel_init+0x138/0x18e
+[  562.689542]        [<ffffffff8020c33a>] child_rip+0xa/0x20
+[  562.689546]        [<ffffffffffffffff>] 0xffffffffffffffff
+
+>
+> johannes
+>
+
+
+
+-- 
+Lei Ming
