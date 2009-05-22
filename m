@@ -1,80 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756687AbZEVJ2R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753419AbZEVJcS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756687AbZEVJ2R (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 05:28:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751590AbZEVJ2D
+	id S1753419AbZEVJcS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 05:32:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751286AbZEVJcI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 05:28:03 -0400
-Received: from gate.crashing.org ([63.228.1.57]:52434 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751551AbZEVJ2B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 05:28:01 -0400
-Subject: Re: can't flush tlb on e500
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Saito Hideo <hsaito.ppc@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-       Kumar Gala <galak@gate.crashing.org>
-In-Reply-To: <d50492d40905200312r729608a3nf244b153892ac257@mail.gmail.com>
-References: <d50492d40905200312r729608a3nf244b153892ac257@mail.gmail.com>
-Content-Type: text/plain
-Date: Fri, 22 May 2009 19:27:50 +1000
-Message-Id: <1242984470.26104.29.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 22 May 2009 05:32:08 -0400
+Received: from ppp121-45-215-216.lns11.adl2.internode.on.net ([121.45.215.216]:51815
+	"EHLO homer.shelbyville.oz" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751022AbZEVJcI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 May 2009 05:32:08 -0400
+X-Greylist: delayed 2460 seconds by postgrey-1.27 at vger.kernel.org; Fri, 22 May 2009 05:32:07 EDT
+Date: Fri, 22 May 2009 18:20:40 +0930
+From: Ron <ron@debian.org>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: cl@linux-foundation.org, mpm@selenic.com, linux-mm@kvack.org,
+       akinobu.mita@gmail.com, linux-kernel@vger.kernel.org
+Subject: [PATCH] slab: add missing guard for kernel_map_pages() use
+Message-ID: <20090522085040.GC4448@homer.shelbyville.oz>
+References: <20090521192822.GB4448@homer.shelbyville.oz> <1242979372.13681.1.camel@penberg-laptop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1242979372.13681.1.camel@penberg-laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: ron@debian.org
+X-SA-Exim-Scanned: No (on homer.shelbyville.oz); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-05-20 at 19:12 +0900, Saito Hideo wrote:
 
-> I think that the tlb should be cleared before mm->context.id is set
-> MMU_NO_CONTEXT.
+All other uses of kernel_map_pages() are explicitly excluded without
+CONFIG_DEBUG_PAGEALLOC, this one should be too.
 
-You are right, this definitely looks like a bug on platforms that have
-HW support for the tlbil instruction (and thus care about the PID for
-flushing) which afaik is only the case of recent freescale chips.
+Signed-off-by: Ron Lee <ron@debian.org>
 
-Have you verified that this change fixes your problem ?
 
-Can you re-submit to linuxppc-dev@ozlabs.org mailing list, along with
-proper changeset comment and signed-off-by: line ?
+diff --git a/mm/slab.c b/mm/slab.c
+index 9a90b00..b5e5b27 100644
+--- a/mm/slab.c
++++ b/mm/slab.c
+@@ -2674,10 +2683,12 @@ static void cache_init_objs(struct kmem_cache *cachep,
+ 				slab_error(cachep, "constructor overwrote the"
+ 					   " start of an object");
+ 		}
++#ifdef CONFIG_DEBUG_PAGEALLOC
+ 		if ((cachep->buffer_size % PAGE_SIZE) == 0 &&
+ 			    OFF_SLAB(cachep) && cachep->flags & SLAB_POISON)
+ 			kernel_map_pages(virt_to_page(objp),
+ 					 cachep->buffer_size / PAGE_SIZE, 0);
++#endif
+ #else
+ 		if (cachep->ctor)
+ 			cachep->ctor(objp);
 
-Cheers,
-Ben.
-
-> --- arch/powerpc/mm/mmu_context_nohash.c.orig	2009-03-24
-> 08:12:14.000000000 +0900
-> +++ arch/powerpc/mm/mmu_context_nohash.c	2009-05-20 18:33:53.000000000 +0900
-> @@ -122,22 +122,22 @@ static unsigned int steal_context_up(uns
->  	struct mm_struct *mm;
->  	int cpu = smp_processor_id();
-> 
->  	/* Pick up the victim mm */
->  	mm = context_mm[id];
-> 
->  	pr_debug("[%d] steal context %d from mm @%p\n", cpu, id, mm);
-> 
-> -	/* Mark this mm has having no context anymore */
-> -	mm->context.id = MMU_NO_CONTEXT;
-> -
->  	/* Flush the TLB for that context */
->  	local_flush_tlb_mm(mm);
-> 
-> +	/* Mark this mm has having no context anymore */
-> +	mm->context.id = MMU_NO_CONTEXT;
-> +
->  	/* XXX This clear should ultimately be part of local_flush_tlb_mm */
->  	__clear_bit(id, stale_map[cpu]);
-> 
->  	return id;
->  }
-> 
->  #ifdef DEBUG_MAP_CONSISTENCY
->  static void context_check_map(void)
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
 
