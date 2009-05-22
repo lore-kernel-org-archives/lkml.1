@@ -1,93 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757460AbZEVUmO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758233AbZEVUnQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757460AbZEVUmO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 16:42:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756936AbZEVUmA
+	id S1758233AbZEVUnQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 16:43:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757114AbZEVUnD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 16:42:00 -0400
-Received: from wf-out-1314.google.com ([209.85.200.171]:43582 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753807AbZEVUl7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 16:41:59 -0400
-To: Tim Bird <tim.bird@am.sony.com>
-Cc: linux kernel <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       linux-omap-open-source@linux.omap.com
-Subject: Re: [PATCH] omap: add sched_clock for omap1 based on MPU timer
-References: <4A17014C.7080305@am.sony.com>
-From: Kevin Hilman <khilman@deeprootsystems.com>
-Organization: Deep Root Systems, LLC
-Date: Fri, 22 May 2009 13:41:58 -0700
-In-Reply-To: <4A17014C.7080305@am.sony.com> (Tim Bird's message of "Fri\, 22 May 2009 12\:47\:24 -0700")
-Message-ID: <87eiug50q1.fsf@deeprootsystems.com>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Fri, 22 May 2009 16:43:03 -0400
+Received: from solo.fdn.fr ([80.67.169.19]:43684 "EHLO solo.fdn.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756936AbZEVUnD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 May 2009 16:43:03 -0400
+Date: Fri, 22 May 2009 22:43:00 +0200
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+To: "Michael S. Zick" <lkml@morethan.org>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+Subject: Re: [BUG FIX] Make x86_32 uni-processor Atomic ops, Atomic
+Message-ID: <20090522204300.GA10166@const.famille.thibault.fr>
+Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+	"Michael S. Zick" <lkml@morethan.org>,
+	Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+References: <200905221139.26941.lkml@morethan.org> <200905221453.41895.lkml@morethan.org> <20090522200536.GZ10166@const.famille.thibault.fr> <200905221532.43775.lkml@morethan.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200905221532.43775.lkml@morethan.org>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tim Bird <tim.bird@am.sony.com> writes:
+Michael S. Zick, le Fri 22 May 2009 15:32:41 -0500, a écrit :
+> On Fri May 22 2009, Samuel Thibault wrote:
+> > Michael S. Zick, le Fri 22 May 2009 14:53:39 -0500, a écrit :
+> > > Ref: http://developer.intel.com/Assets/PDF/manual/253666.pdf
+> > > Manual page: 3-590  PDF page: 638
+> > > Summary: Processors prior to P-4 can take an interrupt between
+> > > the read cycle and the write cycle. Which is why opcode 0xF0 exists.
+> > 
+> > Where do you see page 638/639 talking about interrupts?  It talks about
+> > multi-processor machines.
+> 
+> No - it talks about "exclusive memory access"
 
-> Define a higher-resolution sched_clock for OMAP
-> using the MPU timer, when it is configured on.
->
-> This produces better results from ftrace.
->
-> Signed-off-by: Tim Bird <tim.bird@am.sony.com>
-> ---
->  arch/arm/mach-omap1/time.c  |    9 +++++++++
->  arch/arm/plat-omap/common.c |    2 ++
->  2 files changed, 11 insertions(+)
->
-> --- a/arch/arm/mach-omap1/time.c
-> +++ b/arch/arm/mach-omap1/time.c
-> @@ -212,6 +212,15 @@ static struct clocksource clocksource_mp
->  	.flags		= CLOCK_SOURCE_IS_CONTINUOUS,
->  };
->
-> +unsigned long long notrace sched_clock(void)
-> +{
-> +	unsigned long long ret;
-> +
-> +	ret = (unsigned long long) ~omap_mpu_timer_read(1);
-> +	ret = (ret * clocksource_mpu.mult_orig) >> clocksource_mpu.shift;
-> +	return ret;
-> +}
-> +
+Right, that's still not interrupts.
 
-Minor nit: I think this should rather look something like:
+> - You got bus master DMA in your test machine?
 
-     cycle_t c;
+That's not related to the LOCK_PREFIX concern, which is about the
+processor only, not interaction with other devices.
 
-     c = clocksource_read(&clocksource_mpu);
-     return cyc2ns(&clocksource_mpu, c);
+> Look people, I just reported what I found from testing - 
 
-This way, if the clocksource implementation is changed (to use a
-different timer for example) this doesn't have to be changed as well.
+What did you test, precisely?
 
-Kevin
-
->  static void __init omap_init_clocksource(unsigned long rate)
->  {
->  	static char err[] __initdata = KERN_ERR
-> --- a/arch/arm/plat-omap/common.c
-> +++ b/arch/arm/plat-omap/common.c
-> @@ -199,6 +199,7 @@ static struct clocksource clocksource_32
->  	.flags		= CLOCK_SOURCE_IS_CONTINUOUS,
->  };
->
-> +#ifndef CONFIG_OMAP_MPU_TIMER
->  /*
->   * Returns current time from boot in nsecs. It's OK for this to wrap
->   * around for now, as it's just a relative time stamp.
-> @@ -211,6 +212,7 @@ unsigned long long notrace sched_clock(v
->  	ret = (ret * clocksource_32k.mult_orig) >> clocksource_32k.shift;
->  	return ret;
->  }
-> +#endif
->
->  static int __init omap_init_clocksource_32k(void)
->  {
-
+Samuel
