@@ -1,47 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756322AbZEVIq6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756845AbZEVIuy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756322AbZEVIq6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 04:46:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751713AbZEVIqu
+	id S1756845AbZEVIuy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 04:50:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751551AbZEVIuq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 04:46:50 -0400
-Received: from hera.kernel.org ([140.211.167.34]:54724 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751584AbZEVIqu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 04:46:50 -0400
-Subject: Re: [PATCH-tip] x86: hwmon/k8temp.c Add support for AMD 10H and 11H
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Rudolf Marek <r.marek@assembler.cz>
-Cc: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       LM Sensors <lm-sensors@lm-sensors.org>
-In-Reply-To: <4A165F67.3020005@assembler.cz>
-References: <1242979484.8796.7.camel@localhost.localdomain>
-	 <4A165F67.3020005@assembler.cz>
-Content-Type: text/plain
-Date: Fri, 22 May 2009 14:12:28 +0530
-Message-Id: <1242981748.10642.3.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Fri, 22 May 2009 04:50:46 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:51861 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751368AbZEVIup (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 May 2009 04:50:45 -0400
+Message-ID: <C81DF133055643E0A5EB3403B72ED073@zhaoleiwin>
+From: "Zhaolei" <zhaolei@cn.fujitsu.com>
+To: "Ingo Molnar" <mingo@elte.hu>, "Steven Rostedt" <rostedt@goodmis.org>
+Cc: "Frederic Weisbecker" <fweisbec@gmail.com>,
+       "Tom Zanussi" <tzanussi@gmail.com>,
+       "LKML" <linux-kernel@vger.kernel.org>
+References: <4A14FDFE.2080402@cn.fujitsu.com> <alpine.DEB.2.00.0905210915080.4632@gandalf.stny.rr.com> <20090522080144.GB11438@elte.hu> <20090522082531.GA5993@elte.hu>
+Subject: Re: [PATCH 1/2] ftrace: Add task_comm support for trace_event
+Date: Fri, 22 May 2009 16:49:18 +0800
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.5512
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha id n4M8p0lL032766
 
-On Fri, 2009-05-22 at 10:16 +0200, Rudolf Marek wrote:
-> Hi,
+* From: "Ingo Molnar" <mingo@elte.hu>
 > 
-> The reason why there is no support is that the both 10h and 11h and all of them 
-> have still the errata which tells that measurements is unreliable. Has it changed?
+> note, this patch fails -tip testing:
 > 
+> kernel/built-in.o: In function `ftrace_event_enable_disable':
+> trace_events.c:(.text+0x6cf7a): undefined reference to `tracing_stop_cmdline_record'
+> trace_events.c:(.text+0x6cf91): undefined reference to `tracing_start_cmdline_record'
 
-On my 11h laptop I am getting reading from 56-70 degree C and it seems
-to correct and reliable to me.
+Hello, Ingo
 
-Can you share the problem you faced with 10h and 11h, so that I can
-check on my side.
+Sorry for this bug.
 
-Thanks,
---
-JSR
+Maybe it is caused by not config sched_switch tracer.
+trace_sched_switch.c is necessary for trace_event.c now.
+I'll test and fix it.
 
+Thanks
+Zhaolei
+
+> 
+> Ingo
+> 
+>ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
