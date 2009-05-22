@@ -1,67 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757252AbZEVPyv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755342AbZEVPzG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757252AbZEVPyv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 11:54:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752418AbZEVPyn
+	id S1755342AbZEVPzG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 11:55:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752418AbZEVPyy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 11:54:43 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:54486 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751000AbZEVPyn (ORCPT
+	Fri, 22 May 2009 11:54:54 -0400
+Received: from rcsinet12.oracle.com ([148.87.113.124]:37428 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757316AbZEVPyw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 11:54:43 -0400
-Date: Fri, 22 May 2009 11:54:43 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Kay Sievers <kay.sievers@vrfy.org>
-cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Kyle Moffett <kyle@moffetthome.net>,
-       Pantelis Koukousoulas <pktoss@gmail.com>,
-       Al Viro <viro@zeniv.linux.org.uk>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: How to tell whether a struct file is held by a process?
-In-Reply-To: <ac3eb2510905220821n629314c3tb113802f52abc67c@mail.gmail.com>
-Message-ID: <Pine.LNX.4.44L0.0905221149030.3006-100000@iolanthe.rowland.org>
+	Fri, 22 May 2009 11:54:52 -0400
+Message-ID: <4A16CB54.9000705@oracle.com>
+Date: Fri, 22 May 2009 08:57:08 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Paul Mundt <lethal@linux-sh.org>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, linux-media@vger.kernel.org,
+       Hans Verkuil <hverkuil@xs4all.nl>
+Subject: Re: [PATCH -next] v4l2: handle unregister for non-I2C builds
+References: <20090511161442.3e9d9cb9.sfr@canb.auug.org.au>	<4A085455.5040108@oracle.com>	<20090522054847.GB14059@linux-sh.org> <20090522175554.19465733.sfr@canb.auug.org.au>
+In-Reply-To: <20090522175554.19465733.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Source-IP: abhmt002.oracle.com [141.146.116.11]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090206.4A16CABC.0045:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 22 May 2009, Kay Sievers wrote:
-
-> On Fri, May 22, 2009 at 17:12, Alan Stern <stern@rowland.harvard.edu> wrote:
-> > Anyway, enumeration isn't the problem.  The real problem has two parts:
-> >
-> >        Automatic probing and binding of kernel drivers, including
-> >        selection and installation of a configuration (this really
-> >        _does_ mess up virtualization).
-> >
-> >        The fact that a window exists immediately after the
-> >        registration of a newly-detected device before a user
-> >        process can lock the device file.  During this window,
-> >        other processes could open the file.
-> >
-> > The second part can be solved (among cooperating processes) by use of
-> > port-lock files, with no kernel involvement.  The first part does
-> > require a kernel interface of some sort, but it wouldn't have to be
-> > complicated.  The mere fact that a port-lock file was open could be
-> > enough to prevent automatic configuration, probing, and binding.
-> >
-> > Does this seem like reasonable approach?
+Stephen Rothwell wrote:
+> On Fri, 22 May 2009 14:48:47 +0900 Paul Mundt <lethal@linux-sh.org> wrote:
+>> On Mon, May 11, 2009 at 09:37:41AM -0700, Randy Dunlap wrote:
+>>> From: Randy Dunlap <randy.dunlap@oracle.com>
+>>>
+>>> Build fails when CONFIG_I2C=n, so handle that case in the if block:
+>>>
+>>> drivers/built-in.o: In function `v4l2_device_unregister':
+>>> (.text+0x157821): undefined reference to `i2c_unregister_device'
+>>>
+>>> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+>> This patch still has not been applied as far as I can tell, and builds
+>> are still broken as a result, almost 2 weeks after the fact.
 > 
-> Would releasing the "lock" trigger a kernel-driver-binding call?
+> In fact there has been no updates to the v4l-dvb tree at all since
+> May 11.  Mauro?
 
-No.  If the lock owner wants to bind kernel drivers, it can use the
-existing API in libusb after releasing the lock.  This might cause
-problems if the owning process terminates abnormally, but I think we
-can live with that.
+I got an 'hg' autocommit message for the patch on May-11, but that's
+all I've seen/heard about it.
 
-> The lock will always lock all devices of a specific hub?
+I'm really concerned about how slowly patches are merged for
+linux-next trees... and not just for drivers/media/
 
-The idea is that there will be one lock file per port.  So for example, 
-a hub device with four ports might contain inside its sysfs device 
-directory: ports/1, ..., ports/4.
 
-Alan Stern
+> I have reverted the patch that caused the build breakage ... (commit
+> d5bc7940d39649210f1affac1fa32f253cc45a81 "V4L/DVB (11673): v4l2-device:
+> unregister i2c_clients when unregistering the v4l2_device").
+> 
+> [By the way, an alternative fix might be to just define
+> V4L2_SUBDEV_FL_IS_I2C to be zero if CONFIG_I2C and CONFIG_I2C_MODULE are
+> not defined (gcc should then just elide the offending code).]
 
+
+-- 
+~Randy
+LPC 2009, Sept. 23-25, Portland, Oregon
+http://linuxplumbersconf.org/2009/
