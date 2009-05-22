@@ -1,121 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757312AbZEVT24@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757480AbZEVTb0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757312AbZEVT24 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 15:28:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754899AbZEVT2t
+	id S1757480AbZEVTb0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 15:31:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756873AbZEVTbT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 15:28:49 -0400
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:34998 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752496AbZEVT2s (ORCPT
+	Fri, 22 May 2009 15:31:19 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:48266 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754899AbZEVTbS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 15:28:48 -0400
-Date: Fri, 22 May 2009 15:01:23 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@qirst.com
-To: Pavel Machek <pavel@ucw.cz>
-cc: Dave Hansen <dave@linux.vnet.ibm.com>,
-       David Rientjes <rientjes@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, Nick Piggin <npiggin@suse.de>,
-       Mel Gorman <mel@csn.ul.ie>, Peter Ziljstra <a.p.ziljstra@chello.nl>,
-       San Mehat <san@android.com>, Arve Hj?nnev?g <arve@android.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Misleading OOM messages
-In-Reply-To: <20090519203944.GD1362@ucw.cz>
-Message-ID: <alpine.DEB.1.10.0905221500390.5204@qirst.com>
-References: <1242333519.15391.210.camel@nimitz> <alpine.DEB.2.00.0905141346030.28074@chino.kir.corp.google.com> <1242335120.15391.242.camel@nimitz> <alpine.DEB.1.10.0905141729180.30187@qirst.com> <20090514213403.GB14741@elf.ucw.cz> <1242337299.28440.47.camel@nimitz>
- <20090515130547.GA1976@elf.ucw.cz> <alpine.DEB.1.10.0905151358430.26559@qirst.com> <20090515200213.GA1406@ucw.cz> <alpine.DEB.1.10.0905151713230.26489@qirst.com> <20090519203944.GD1362@ucw.cz>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Fri, 22 May 2009 15:31:18 -0400
+Date: Fri, 22 May 2009 15:31:18 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Kay Sievers <kay.sievers@vrfy.org>
+cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Kyle Moffett <kyle@moffetthome.net>,
+       Pantelis Koukousoulas <pktoss@gmail.com>,
+       Al Viro <viro@zeniv.linux.org.uk>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: How to tell whether a struct file is held by a process?
+In-Reply-To: <ac3eb2510905221124y412dc3bdp65ad1b74373175a9@mail.gmail.com>
+Message-ID: <Pine.LNX.4.44L0.0905221522560.3006-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: Remove misleading kernel log entries about "Out of Memory" conditions
+On Fri, 22 May 2009, Kay Sievers wrote:
 
-What we traditionally call an "out of memory" failure is mostly not really
-related to having enough physical memory. "out of memory" occurs when the
-memory reclaim attempts fail to provide enough memory for an allocation.
+> On Fri, May 22, 2009 at 17:54, Alan Stern <stern@rowland.harvard.edu> wrote:
+> 
+> >> Would releasing the "lock" trigger a kernel-driver-binding call?
+> >
+> > No.  If the lock owner wants to bind kernel drivers, it can use the
+> > existing API in libusb after releasing the lock.  This might cause
+> > problems if the owning process terminates abnormally, but I think we
+> > can live with that.
+> >
+> >> The lock will always lock all devices of a specific hub?
+> >
+> > The idea is that there will be one lock file per port.  So for example,
+> > a hub device with four ports might contain inside its sysfs device
+> > directory: ports/1, ..., ports/4.
+> 
+> Sounds both good to me.
 
-Typically there is a misconfiguration or kernel bug that is at the root
-of an out of memory issue. The message suggests that the machine does
-not have enough memory which is not true.
+Come to think of it, putting the lock files in sysfs isn't such a good 
+idea.  The core will need to know whether the files are open, so we'll 
+have to have our own file_operations structure for them.
 
-People have done strange things as a result of these messages. Some
-put more physical memory into their machines others limit the memory
-use of their applications with ulimit. Having a clear message avoids
-these reactions.
+Which means the best place to put the lock files is probably somewhere 
+in /dev.  Can this be made to work by generating appropriate uevents, 
+with the default udev rules?
 
-So change the messages to describe what actually went wrong.
+Alan Stern
 
-Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
-
----
- mm/oom_kill.c |   14 +++++++-------
- 1 file changed, 7 insertions(+), 7 deletions(-)
-
-Index: linux-2.6/mm/oom_kill.c
-===================================================================
---- linux-2.6.orig/mm/oom_kill.c	2009-05-12 12:37:52.000000000 -0500
-+++ linux-2.6/mm/oom_kill.c	2009-05-12 12:44:36.000000000 -0500
-@@ -387,7 +387,7 @@ static int oom_kill_process(struct task_
- 	struct task_struct *c;
-
- 	if (printk_ratelimit()) {
--		printk(KERN_WARNING "%s invoked oom-killer: "
-+		printk(KERN_WARNING "%s invoked process-killer: "
- 			"gfp_mask=0x%x, order=%d, oomkilladj=%d\n",
- 			current->comm, gfp_mask, order, current->oomkilladj);
- 		task_lock(current);
-@@ -519,7 +519,7 @@ static void __out_of_memory(gfp_t gfp_ma
-
- 	if (sysctl_oom_kill_allocating_task)
- 		if (!oom_kill_process(current, gfp_mask, order, 0, NULL,
--				"Out of memory (oom_kill_allocating_task)"))
-+				"Failure to reclaim enough memory (oom_kill_allocating_task)"))
- 			return;
- retry:
- 	/*
-@@ -534,11 +534,11 @@ retry:
- 	/* Found nothing?!?! Either we hang forever, or we panic. */
- 	if (!p) {
- 		read_unlock(&tasklist_lock);
--		panic("Out of memory and no killable processes...\n");
-+		panic("Failure to reclaim enough memory and no killable processes...\n");
- 	}
-
- 	if (oom_kill_process(p, gfp_mask, order, points, NULL,
--			     "Out of memory"))
-+			     "Memory reclaim failure"))
- 		goto retry;
- }
-
-@@ -563,7 +563,7 @@ void pagefault_out_of_memory(void)
- 		goto rest_and_return;
-
- 	if (sysctl_panic_on_oom)
--		panic("out of memory from page fault. panic_on_oom is selected.\n");
-+		panic("failure to reclaim enough memory. panic_on_oom is selected.\n");
-
- 	read_lock(&tasklist_lock);
- 	__out_of_memory(0, 0); /* unknown gfp_mask and order */
-@@ -600,7 +600,7 @@ void out_of_memory(struct zonelist *zone
- 		return;
-
- 	if (sysctl_panic_on_oom == 2)
--		panic("out of memory. Compulsory panic_on_oom is selected.\n");
-+		panic("failure to reclaim enough memory. Compulsory panic_on_oom is selected.\n");
-
- 	/*
- 	 * Check if there were limitations on the allocation (only relevant for
-@@ -617,7 +617,7 @@ void out_of_memory(struct zonelist *zone
-
- 	case CONSTRAINT_NONE:
- 		if (sysctl_panic_on_oom)
--			panic("out of memory. panic_on_oom is selected\n");
-+			panic("failure to enough reclaim memory. panic_on_oom is selected\n");
- 		/* Fall-through */
- 	case CONSTRAINT_CPUSET:
- 		__out_of_memory(gfp_mask, order);
