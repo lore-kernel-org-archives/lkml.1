@@ -1,54 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757631AbZEVRAU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757856AbZEVRCR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757631AbZEVRAU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 13:00:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756361AbZEVRAJ
+	id S1757856AbZEVRCR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 13:02:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754985AbZEVRCF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 13:00:09 -0400
-Received: from www.tglx.de ([62.245.132.106]:51519 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756138AbZEVRAI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 13:00:08 -0400
-Date: Fri, 22 May 2009 18:59:03 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Stanislaw Gruszka <sgruszka@redhat.com>
-cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Oleg Nesterov <oleg@redhat.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH resend4 3/3] itimers: simplify arm_timer() code a bit
-In-Reply-To: <20090522163625.1e1dd8ce@dhcp-lab-109.englab.brq.redhat.com>
-Message-ID: <alpine.LFD.2.00.0905221858350.3570@localhost.localdomain>
-References: <20090522154349.396d9ea6@dhcp-lab-109.englab.brq.redhat.com> <alpine.LFD.2.00.0905221629080.3570@localhost.localdomain> <20090522163625.1e1dd8ce@dhcp-lab-109.englab.brq.redhat.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 22 May 2009 13:02:05 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:36296 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751463AbZEVRCE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 May 2009 13:02:04 -0400
+Message-ID: <4A16D9EF.10201@zytor.com>
+Date: Fri, 22 May 2009 09:59:27 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Pavel Machek <pavel@ucw.cz>
+CC: James Morris <jmorris@namei.org>, Theodore Tso <tytso@mit.edu>,
+       Joseph Cihula <joseph.cihula@intel.com>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, arjan@linux.intel.com, andi@firstfloor.org,
+       chrisw@sous-sol.org, jbeulich@novell.com, peterm@redhat.com,
+       gang.wei@intel.com, shane.wang@intel.com, John Gilmore <gnu@toad.com>
+Subject: Re: [RFC v3][PATCH 2/2] intel_txt: Intel(R) TXT and tboot kernel
+ support
+References: <4A03B9C3.9090607@intel.com> <20090512210154.GC23773@mit.edu> <alpine.LRH.2.00.0905151006020.5527@tundra.namei.org> <20090519203051.GB1362@ucw.cz>
+In-Reply-To: <20090519203051.GB1362@ucw.cz>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 22 May 2009, Stanislaw Gruszka wrote:
-> On Fri, 22 May 2009 16:30:09 +0200 (CEST)
-> Thomas Gleixner <tglx@linutronix.de> wrote:
+Pavel Machek wrote:
 > 
-> > On Fri, 22 May 2009, Stanislaw Gruszka wrote:
-> > >  			case CPUCLOCK_PROF:
-> > > -				if (cputime_eq(p->cputime_expires.prof_exp,
-> > > -					       cputime_zero) ||
-> > > -				    cputime_gt(p->cputime_expires.prof_exp,
-> > > -					       nt->expires.cpu))
-> > > -					p->cputime_expires.prof_exp =
-> > > -						nt->expires.cpu;
-> > > +				if (expires_le(p->cputime_expires.prof_exp,
-> > > +					       exp->cpu))
-> > > +					break;
-> > 
-> >   Why the reverse logic and the extra break ?
+> I dont't think my neighbors should have that kind of power over me,
+> and the only way to ensure that seems to be keeping TXT and similar
+> stuff far away from mainline.
 > 
-> Just to use helper and to make similar logic in all cases in this funcion.
 
-Well, you can do that the other way round as well :)
+If with "mainline" you mean Windows, you might have a chance there... :(
 
-Thanks,
+Do note:
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
-	tglx
