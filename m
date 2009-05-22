@@ -1,124 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755789AbZEVNut@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757328AbZEVNwa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755789AbZEVNut (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 09:50:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757066AbZEVNuW
+	id S1757328AbZEVNwa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 09:52:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753043AbZEVNwX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 09:50:22 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:60559 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755789AbZEVNuV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 09:50:21 -0400
-Date: Fri, 22 May 2009 15:43:49 +0200
-From: Stanislaw Gruszka <sgruszka@redhat.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Oleg Nesterov <oleg@redhat.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH resend4 3/3] itimers: simplify arm_timer() code a bit
-Message-ID: <20090522154349.396d9ea6@dhcp-lab-109.englab.brq.redhat.com>
-Organization: RedHat
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 22 May 2009 09:52:23 -0400
+Received: from mail-bw0-f174.google.com ([209.85.218.174]:36330 "EHLO
+	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752763AbZEVNwX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 May 2009 09:52:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=C4VFpe8juO/GQzZ3T+1fuBkiJfXIYTdcEs/N0ERkuK1TCKMVi9lSK1nR52VBCkoVvd
+         fzhxlKZmTufxpL2sVAIAHWpVdtG33baOH2M9YxdnVcBcVtgdsPmcG0HWTadiMyYbwVsG
+         qxiIJvTa4c1hnORmXgAd9gHeZVHLzsS4UfrUc=
+MIME-Version: 1.0
+In-Reply-To: <20090522144343.7b26b3a8@lxorguk.ukuu.org.uk>
+References: <ac3eb2510905211407l3aec14acx2572a2ad4e675b9@mail.gmail.com>
+	 <Pine.LNX.4.44L0.0905211724050.3914-100000@iolanthe.rowland.org>
+	 <1295ed070905220630q67c62569o9753425abf529742@mail.gmail.com>
+	 <20090522144343.7b26b3a8@lxorguk.ukuu.org.uk>
+Date: Fri, 22 May 2009 16:52:23 +0300
+Message-ID: <1295ed070905220652q55c65e8bx992940b626eecda3@mail.gmail.com>
+Subject: Re: How to tell whether a struct file is held by a process?
+From: Pantelis Koukousoulas <pktoss@gmail.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Kernel development list <linux-kernel@vger.kernel.org>,
+       Kay Sievers <kay.sievers@vrfy.org>, Al Viro <viro@zeniv.linux.org.uk>,
+       Alan Stern <stern@rowland.harvard.edu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Don't update values in expiration cache when new ones are equal. Add
-expire_le() helper to simplify code. Make similar control flow on all
-arm_timer() function.
+On Fri, May 22, 2009 at 4:43 PM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+>> Suppose a device needs a reset as part of its init sequence (a whole lot
+>> of them do, this is not purely hypothetical). Then a different process may
+>> get to operate the device before and after the reset and hilarity may result
+>> from that.
+>
+> Thats surely up to you to get your lock file usage right. The kernel
+> isn't there to play mother to crap programming.
 
-Signed-off-by: Stanislaw Gruszka <sgruszka@redhat.com>
----
- kernel/posix-cpu-timers.c |   46 ++++++++++++++++++++++----------------------
- 1 files changed, 23 insertions(+), 23 deletions(-)
+Who is "me" in this case? Assuming that those writing the userspace programs
+are cooperative though, I agree. We can declare that whatever program does not
+play by the (userspace locking) rules is crap and either fix it (if open source)
+or refuse to install it / complain (if closed source).
 
-diff --git a/kernel/posix-cpu-timers.c b/kernel/posix-cpu-timers.c
-index b60d644..ce16e22 100644
---- a/kernel/posix-cpu-timers.c
-+++ b/kernel/posix-cpu-timers.c
-@@ -541,6 +541,13 @@ static void clear_dead_task(struct k_itimer *timer, union cpu_time_count now)
- 					     now);
- }
- 
-+static inline int expires_le(cputime_t expires, cputime_t new_exp)
-+{
-+	if (!cputime_eq(expires, cputime_zero) && cputime_le(expires, new_exp))
-+		return 1;
-+	return 0;
-+}
-+
- /*
-  * Insert the timer on the appropriate list before any timers that
-  * expire later.  This must be called with the tasklist_lock held
-@@ -585,31 +592,28 @@ static void arm_timer(struct k_itimer *timer, union cpu_time_count now)
- 		 */
- 
- 		if (CPUCLOCK_PERTHREAD(timer->it_clock)) {
-+			union cpu_time_count *exp = &nt->expires;
-+
- 			switch (CPUCLOCK_WHICH(timer->it_clock)) {
- 			default:
- 				BUG();
- 			case CPUCLOCK_PROF:
--				if (cputime_eq(p->cputime_expires.prof_exp,
--					       cputime_zero) ||
--				    cputime_gt(p->cputime_expires.prof_exp,
--					       nt->expires.cpu))
--					p->cputime_expires.prof_exp =
--						nt->expires.cpu;
-+				if (expires_le(p->cputime_expires.prof_exp,
-+					       exp->cpu))
-+					break;
-+				p->cputime_expires.prof_exp = exp->cpu;
- 				break;
- 			case CPUCLOCK_VIRT:
--				if (cputime_eq(p->cputime_expires.virt_exp,
--					       cputime_zero) ||
--				    cputime_gt(p->cputime_expires.virt_exp,
--					       nt->expires.cpu))
--					p->cputime_expires.virt_exp =
--						nt->expires.cpu;
-+				if (expires_le(p->cputime_expires.virt_exp,
-+					       exp->cpu))
-+					break;
-+				p->cputime_expires.virt_exp = exp->cpu;
- 				break;
- 			case CPUCLOCK_SCHED:
--				if (p->cputime_expires.sched_exp == 0 ||
--				    p->cputime_expires.sched_exp >
--							nt->expires.sched)
--					p->cputime_expires.sched_exp =
--						nt->expires.sched;
-+				if (p->cputime_expires.sched_exp == 0 &&
-+				    p->cputime_expires.sched_exp <= exp->sched)
-+					break;
-+				p->cputime_expires.sched_exp = exp->sched;
- 				break;
- 			}
- 		} else {
-@@ -623,17 +627,13 @@ static void arm_timer(struct k_itimer *timer, union cpu_time_count now)
- 			default:
- 				BUG();
- 			case CPUCLOCK_VIRT:
--				if (!cputime_eq(sig->it[CPUCLOCK_VIRT].expires,
--						cputime_zero) &&
--				    cputime_lt(sig->it[CPUCLOCK_VIRT].expires,
-+				if (expires_le(sig->it[CPUCLOCK_VIRT].expires,
- 					       exp->cpu))
- 					break;
- 				sig->cputime_expires.virt_exp = exp->cpu;
- 				break;
- 			case CPUCLOCK_PROF:
--				if (!cputime_eq(sig->it[CPUCLOCK_PROF].expires,
--						cputime_zero) &&
--				    cputime_lt(sig->it[CPUCLOCK_PROF].expires,
-+				if (expires_le(sig->it[CPUCLOCK_PROF].expires,
- 					       exp->cpu))
- 					break;
- 				i = sig->rlim[RLIMIT_CPU].rlim_cur;
--- 
-1.5.5.6
+>
+>> So, if there is a clean / acceptable way to handle the reset issue in userspace
+>
+> Firstly can you explain *why* you think there is a problem ?
+>
 
+I admit this could be a bias from the way I imagined the whole thing
+to work before
+this discussion. I think I can see how a userspace locking scheme based on port
+numbers could avoid also the reset problem.
+
+Thanks,
+Pantelis
