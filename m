@@ -1,139 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756562AbZEVQEk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757099AbZEVQE7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756562AbZEVQEk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 12:04:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754323AbZEVQEe
+	id S1757099AbZEVQE7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 12:04:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756423AbZEVQEu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 12:04:34 -0400
-Received: from qw-out-2122.google.com ([74.125.92.27]:38083 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753051AbZEVQEd convert rfc822-to-8bit (ORCPT
+	Fri, 22 May 2009 12:04:50 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:55927 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754323AbZEVQEu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 12:04:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=YAzC9Nno4kQ9495c2LRzEz7tBe+XR5AloF2d0dInwamIRA1vJ5xtCZY6yiZtt+cJKn
-         Z1CfO8rOiV63pUT4XZSnIBHCtjpNm2JWwgJCVbsyV6AIY31mvh1+Fl6zbER3boznrojE
-         zUaWh05ZsOwKlG2+5jFm7vSUTjT/ACYA/Hy5I=
+	Fri, 22 May 2009 12:04:50 -0400
+Date: Fri, 22 May 2009 12:04:49 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Kyle Moffett <kyle@moffetthome.net>,
+       Pantelis Koukousoulas <pktoss@gmail.com>,
+       Kay Sievers <kay.sievers@vrfy.org>, Al Viro <viro@zeniv.linux.org.uk>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: How to tell whether a struct file is held by a process?
+In-Reply-To: <20090522162014.5caa0823@lxorguk.ukuu.org.uk>
+Message-ID: <Pine.LNX.4.44L0.0905221155140.3006-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-In-Reply-To: <4d34a0a70905211953r1138a554w3b7aa99770ba15e2@mail.gmail.com>
-References: <1241483224-7113-1-git-send-email-khilman@deeprootsystems.com> 
-	<d6200be20905051358m34c2be02ped84ad4158cd9865@mail.gmail.com> 
-	<87eiv35eg6.fsf@deeprootsystems.com> <200905060127.24777.rjw@sisk.pl> 
-	<4d34a0a70905211953r1138a554w3b7aa99770ba15e2@mail.gmail.com>
-From: Kim Kyuwon <chammoru@gmail.com>
-Date: Sat, 23 May 2009 01:04:12 +0900
-Message-ID: <4d34a0a70905220904h6734a8f1y2b2cffe08b6afa8b@mail.gmail.com>
-Subject: Re: [PATCH] PM: suspend_device_irqs(): don't disable wakeup IRQs
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Kyungmin Park <kyungmin.park@samsung.com>,
-       Kevin Hilman <khilman@deeprootsystems.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 22, 2009 at 11:53 AM, Kim Kyuwon <chammoru@gmail.com> wrote:
-> On Wed, May 6, 2009 at 8:27 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->> On Wednesday 06 May 2009, Kevin Hilman wrote:
->>> Arve Hjønnevåg <arve@android.com> writes:
->>>
->>> > On Tue, May 5, 2009 at 8:52 AM, Kevin Hilman
->>> > <khilman@deeprootsystems.com> wrote:
->>> >> Andrew Morton <akpm@linux-foundation.org> writes:
->>> >>
->>> >>> On Mon,  4 May 2009 17:27:04 -0700 Kevin Hilman <khilman@deeprootsystems.com> wrote:
->>> >>>
->>> >>>> Interrupts that are flagged as wakeup sources via set_irq_wake()
->>> >>>> should not be disabled for suspend.
->>> >>>>
->>> >>>
->>> >>> Why not?
->>> >>>
->>> >>
->>> >> If an interrupt is a wakeup source, and it is disabled at the chip
->>> >> level, it will no longer generate interrupts, and thus no longer wake
->>> >> up the system.
->>> >>
->>> >> I'd be interested in hearing why wakeup interrupts should be disabled
->>> >> during suspend.
->>
->> That depends on whether or not they are used for anything else than wake-up.
->>
->>>
->>> [...]
->>>
->>> >>>
->>> >>> If this fixes some bug then please provide a description of that bug?
->>> >>
->>> >> The bug is that on TI OMAP, interrupts that are used for wakeup events
->>> >> are disabled by this code causing the system to no longer wake up.
->>> >
->>> > What do you do if the interrupt triggers right after your driver has
->>> > returned from its late suspend hook?
->>>
->>> If it's a wakeup IRQ, I assume you want it to prevent suspend.
->>>
->>> But I don't see how that can happen in the current code. IIUC, by the
->>> time your late suspend hook is run, your device IRQ is already
->>> disabled, so it won't trigger an interrupt that will be caught by
->>> check_wakeup_irqs() anyways.
->>
->> My understanding of __disable_irq() was that it didn't actually disable the
->> IRQ at the hardware level, allowing the CPU to actually receive the interrupt
->> and acknowledge it, but preventing the device driver for receiving it.  Does
->> it work differently on the affected systems?
->
-> Hi, Rafael.
-> Sorry for bring the old issue but please let me ask you about
-> suspend_device_irqs() function.
->
-> __disable_irq() disables the IRQ at the hardware level in the
-> following irq_chips
->
-> i8259A_chip
-> i8259_pic
-> i8259A_chip
-> bfin_internal_irqchip
-> crisv10_irq_type
-> crisv32_irq_type
-> h8300irq_chip
-> m_irq_chip
-> mn10300_cpu_pic_level
-> xtensa_irq_chip
-> iop13xx_msi_chip
-> msi_irq
->
-> Because these irq_chips mask interrupts in 'disable' hook.
->
-> Thus, your suspend_device_irqs() function disables all IRQs at the
-> hardware level on all architectures which use irq_chips listed above
-> in suspend state.
-> Is this really what you wanted?
->
-> If interrupt can wake up the system from suspend in some architectures
-> and if disable_irq_wake is not supported in these architectures, I
-> wonder if suspend_device_irqs() don't allow waking up by interrupt.
->
-> Regards,
-> Kyuwon
->
+On Fri, 22 May 2009, Alan Cox wrote:
 
-I saw resume_device_irqs() is invoked after arch_suspend_enable_irqs()
-in your resume code.
-So in this gap between resume_device_irqs() and
-arch_suspend_enable_irqs(), a few interrupts would be discarded.
-i.e, a few data would be lost.
+> > And just how does initialization and enumeration mess up 
+> > virtualization?
+> 
+> It means that the bus scanning occurs out of control of the virtualised
+> environment which might want to control what occurs
 
-If keypad wake up the system, first key pressed information would be lost.
-If I2C, USB, SPI, UART wake up the system, first a few data would be lost.
+With USB this isn't much of an issue.  There are almost no
+device-specific parameters affecting enumeration and none affecting
+initialization -- understandably, since before initialization the
+kernel doesn't know what kind of device it's dealing with.
 
-Did you also consider this issue?
+> > Anyway, enumeration isn't the problem.  The real problem has two parts:
+> > 
+> > 	Automatic probing and binding of kernel drivers, including
+> > 	selection and installation of a configuration (this really
+> > 	_does_ mess up virtualization).
+> 
+> If enumeration isn't automatic (or even more so if binding isn't always
+> automatic) then the problem doesn't occur.
 
--- 
-Kyuwon (규원)
+I disagree.  For one thing, probing of kernel drivers doesn't occur
+during enumeration.  So we could have automatic enumeration without
+automatic probing, and there would be no problem.  For another, even if
+enumeration were the direct cause of some problem, it would still
+cause that same problem whenever it occurred, whether automatically or
+not.
+
+> > The second part can be solved (among cooperating processes) by use of
+> > port-lock files, with no kernel involvement.  The first part does
+> > require a kernel interface of some sort, but it wouldn't have to be
+> > complicated.  The mere fact that a port-lock file was open could be
+> > enough to prevent automatic configuration, probing, and binding.
+> 
+> Given the layout of devices can change fairly arbitarily would the
+> ability to claim specific device identifiers via libusb do the job any
+> better.
+> 
+> ie would it be better to expose an interface via libusb that was
+> essentially
+> 
+> 	reserve_for_userspace(vendorid, devid);
+
+That's a good question.  I'll defer to the interested parties.  
+Kyle and Pantelis, what do you think?
+
+Alan Stern
+
