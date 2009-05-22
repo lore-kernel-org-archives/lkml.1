@@ -1,47 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757936AbZEVV4M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758321AbZEVWA5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757936AbZEVV4M (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 17:56:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757139AbZEVVz6
+	id S1758321AbZEVWA5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 18:00:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757359AbZEVWAt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 17:55:58 -0400
-Received: from mail-fx0-f168.google.com ([209.85.220.168]:61112 "EHLO
-	mail-fx0-f168.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756527AbZEVVz6 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 17:55:58 -0400
+	Fri, 22 May 2009 18:00:49 -0400
+Received: from solo.fdn.fr ([80.67.169.19]:46216 "EHLO solo.fdn.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757139AbZEVWAs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 May 2009 18:00:48 -0400
+Date: Sat, 23 May 2009 00:00:49 +0200
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: "Michael S. Zick" <lkml@morethan.org>, linux-kernel@vger.kernel.org
+Subject: Re: [BUG FIX] Make x86_32 uni-processor Atomic ops, Atomic
+Message-ID: <20090522220049.GD10166@const.famille.thibault.fr>
+Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+	Andi Kleen <andi@firstfloor.org>,
+	"Michael S. Zick" <lkml@morethan.org>, linux-kernel@vger.kernel.org
+References: <200905221139.26941.lkml@morethan.org> <200905221453.41895.lkml@morethan.org> <20090522200536.GZ10166@const.famille.thibault.fr> <200905221532.43775.lkml@morethan.org> <20090522204300.GA10166@const.famille.thibault.fr> <20090522215939.GI846@one.firstfloor.org>
 MIME-Version: 1.0
-In-Reply-To: <Pine.LNX.4.44L0.0905221522560.3006-100000@iolanthe.rowland.org>
-References: <ac3eb2510905221124y412dc3bdp65ad1b74373175a9@mail.gmail.com> 
-	<Pine.LNX.4.44L0.0905221522560.3006-100000@iolanthe.rowland.org>
-From: Kay Sievers <kay.sievers@vrfy.org>
-Date: Fri, 22 May 2009 23:54:16 +0200
-Message-ID: <ac3eb2510905221454u2fd7fe88tb3d6c13c6ae550a@mail.gmail.com>
-Subject: Re: How to tell whether a struct file is held by a process?
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Kyle Moffett <kyle@moffetthome.net>,
-       Pantelis Koukousoulas <pktoss@gmail.com>,
-       Al Viro <viro@zeniv.linux.org.uk>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090522215939.GI846@one.firstfloor.org>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 22, 2009 at 21:31, Alan Stern <stern@rowland.harvard.edu> wrote:
-> Come to think of it, putting the lock files in sysfs isn't such a good
-> idea.  The core will need to know whether the files are open, so we'll
-> have to have our own file_operations structure for them.
->
-> Which means the best place to put the lock files is probably somewhere
-> in /dev.  Can this be made to work by generating appropriate uevents,
-> with the default udev rules?
+Andi Kleen, le Fri 22 May 2009 23:59:39 +0200, a �crit :
+> > > - You got bus master DMA in your test machine?
+> > 
+> > That's not related to the LOCK_PREFIX concern, which is about the
+> > processor only, not interaction with other devices.
+> 
+> Actually it's related to other devices; but only very few (most MMIO
+> doesn't support atomic cycles and is uncached anyways). But there's no driver 
+> for real hardware in Linux that relies on it to my knowledge.
 
-Nodes in /dev would  need a corresponding device in /sys and belong to
-a subsystem to send an event. That sounds like a lot of stuff for a
-simple interface like this. Can't we just add ioctls to the hub device
-nodes to implement the locking?
+That's what I meant: AIUI, LOCK_PREFIX has always only been used for
+inter-processor interaction (atomic variables, spinlocks, etc.), not for
+processor-device interaction.
 
-Thanks,
-Kay
+Samuel
