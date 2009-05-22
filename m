@@ -1,134 +1,302 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756989AbZEVILn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756969AbZEVIPz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756989AbZEVILn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 04:11:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754445AbZEVIL3
+	id S1756969AbZEVIPz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 04:15:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752760AbZEVIPm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 04:11:29 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:53216 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752508AbZEVIL2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 04:11:28 -0400
-Subject: Re: INFO: possible circular locking dependency at 
- cleanup_workqueue_thread
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Ming Lei <tom.leiming@gmail.com>
-Cc: Oleg Nesterov <oleg@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <d82e647a0905220103s23ad0feejfaa787dcd481a41c@mail.gmail.com>
-References: <c4e36d110905120059i4c155508oa00672da0b33a07a@mail.gmail.com>
-	 <20090517071834.GA8507@elte.hu> <1242559101.28127.63.camel@johannes.local>
-	 <20090518194749.GA3501@redhat.com>
-	 <1242723104.17164.5.camel@johannes.local>
-	 <20090519120010.GA14782@redhat.com>
-	 <1242747203.4797.39.camel@johannes.local>
-	 <d82e647a0905192036n22db3f50r58e0a325893c4823@mail.gmail.com>
-	 <1242802064.31350.12.camel@johannes.local>
-	 <d82e647a0905220103s23ad0feejfaa787dcd481a41c@mail.gmail.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-Zz0uQJBYH8wu44wUEHSL"
-Date: Fri, 22 May 2009 10:11:09 +0200
-Message-Id: <1242979869.4212.32.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1.1 
+	Fri, 22 May 2009 04:15:42 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:37459 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752515AbZEVIPi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 May 2009 04:15:38 -0400
+Date: Fri, 22 May 2009 10:15:39 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Cc: Jan Kara <jack@suse.cz>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, chris.mason@oracle.com,
+       david@fromorbit.com, hch@infradead.org, akpm@linux-foundation.org
+Subject: Re: [PATCH 0/11] Per-bdi writeback flusher threads #4
+Message-ID: <20090522081539.GM11363@kernel.dk>
+References: <20090519062049.GP4140@kernel.dk> <1242805911.2560.28.camel@ymzhang> <20090520080938.GM11363@kernel.dk> <20090520085446.GN11363@kernel.dk> <1242811142.2560.33.camel@ymzhang> <20090520092528.GP11363@kernel.dk> <20090520111910.GS11363@kernel.dk> <1242887627.2560.45.camel@ymzhang> <20090521091033.GA6987@duck.suse.cz> <1242955708.2560.52.camel@ymzhang>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1242955708.2560.52.camel@ymzhang>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, May 22 2009, Zhang, Yanmin wrote:
+> On Thu, 2009-05-21 at 11:10 +0200, Jan Kara wrote:
+> > On Thu 21-05-09 14:33:47, Zhang, Yanmin wrote:
+> > > On Wed, 2009-05-20 at 13:19 +0200, Jens Axboe wrote:
+> > > > On Wed, May 20 2009, Jens Axboe wrote:
+> > > > > On Wed, May 20 2009, Zhang, Yanmin wrote:
+> > > > > > On Wed, 2009-05-20 at 10:54 +0200, Jens Axboe wrote:
+> > > > > > > On Wed, May 20 2009, Jens Axboe wrote:
+> > > > > > > > On Wed, May 20 2009, Zhang, Yanmin wrote:
+> > > > > > > > > On Tue, 2009-05-19 at 08:20 +0200, Jens Axboe wrote:
+> > > > > > > > > > On Tue, May 19 2009, Zhang, Yanmin wrote:
+> > > > > > > > > > > On Mon, 2009-05-18 at 14:19 +0200, Jens Axboe wrote:
+> > > > > > > > > > > > Hi,
+> > > > > > > > > > > >
+> > > > > > > > > > > > This is the fourth version of this patchset. Chances since v3:
+> > > > > > > > > > > >
+> > > > > > > > > > > > - Dropped a prep patch, it has been included in mainline since.
+> > > > > > > > > > > >
+> > > > > > > > > > > > - Add a work-to-do list to the bdi. This is struct bdi_work. Each
+> > > > > > > > > > > >   wb thread will notice and execute work on bdi->work_list. The arguments
+> > > > > > > > > > > >   are which sb (or NULL for all) to flush and how many pages to flush.
+> > > > > > > > > > > >
+> > > > > > > > > > > > - Fix a bug where not all bdi's would end up on the bdi_list, so potentially
+> > > > > > > > > > > >   some data would not be flushed.
+> > > > > > > > > > > >
+> > > > > > > > > > > > - Make wb_kupdated() pass on wbc->older_than_this so we maintain the same
+> > > > > > > > > > > >   behaviour for kupdated flushes.
+> > > > > > > > > > > >
+> > > > > > > > > > > > - Have the wb thread flush first before sleeping, to avoid losing the
+> > > > > > > > > > > >   first flush on lazy register.
+> > > > > > > > > > > >
+> > > > > > > > > > > > - Rebase to newer kernels.
+> > > > > > > > > 
+> > > > > > > > > > I'm attaching two patches - apply #1 to -rc6, and then #2 is a roll-up
+> > > > > > > > > > of the patch series that you can apply next.
+> > > > > > > > > Jens,
+> > > > > > > > > 
+> > > > > > > > > I run into 2 issues with kernel 2.6.30-rc6+BDI_Flusher_V4. Below is one.
+> > > > > > > > > 
+> > > > > > > > > Tue May 19 00:00:00 CST 2009
+> > > > > > > > > BUG: unable to handle kernel NULL pointer dereference at 00000000000001d8
+> > > > > > > > > IP: [<ffffffff803f3c4c>] generic_make_request+0x10a/0x384
+> > > > > > > > > PGD 0
+> > > > > > > > > Oops: 0000 [#1] SMP
+> > > > > > > > > last sysfs file: /sys/block/sdb/stat
+> > > > > > > > > CPU 0
+> > > > > > > > > Modules linked in: igb
+> > > > > > > > > Pid: 1445, comm: bdi-8:16 Not tainted 2.6.30-rc6-bdiflusherv4 #1 X8DTN
+> > > > > > > > > RIP: 0010:[<ffffffff803f3c4c>]  [<ffffffff803f3c4c>] generic_make_request+0x10a/0x384
+> > > > > > > > > RSP: 0018:ffff8800bd04da60  EFLAGS: 00010206
+> > > > > > > > > RAX: 0000000000000000 RBX: ffff8801be45d500 RCX: 00000000038a0df8
+> > > > > > > > > RDX: 0000000000000008 RSI: 0000000000000576 RDI: ffff8801bf408680
+> > > > > > > > > RBP: ffff8801be45d500 R08: ffffe20001ee8140 R09: ffff8800bd04da98
+> > > > > > > > > R10: 0000000000000000 R11: ffff8800bd72eb40 R12: ffff8801be45d500
+> > > > > > > > > R13: ffff88005f51f310 R14: 0000000000000008 R15: ffff8800b15a5458
+> > > > > > > > > FS:  0000000000000000(0000) GS:ffffc20000000000(0000) knlGS:0000000000000000
+> > > > > > > > > CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+> > > > > > > > > CR2: 00000000000001d8 CR3: 0000000000201000 CR4: 00000000000006e0
+> > > > > > > > > DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> > > > > > > > > DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> > > > > > > > > Process bdi-8:16 (pid: 1445, threadinfo ffff8800bd04c000, task ffff8800bd1b75f0)
+> > > > > > > > > Stack:
+> > > > > > > > >  0000000000000008 ffffffff8027a613 00000000848dc000 ffffffffffffffff
+> > > > > > > > >  ffff8800a8190f50 ffffffff00000012 ffff8800a81938e0 ffffc2000000001b
+> > > > > > > > >  0000000000000000 0000000000000000 ffffe200026f9c30 0000000000000000
+> > > > > > > > > Call Trace:
+> > > > > > > > >  [<ffffffff8027a613>] ? mempool_alloc+0x59/0x10f
+> > > > > > > > >  [<ffffffff803f3f70>] ? submit_bio+0xaa/0xb1
+> > > > > > > > >  [<ffffffff802c6a3f>] ? submit_bh+0xe3/0x103
+> > > > > > > > >  [<ffffffff802c92ea>] ? __block_write_full_page+0x1fb/0x2f2
+> > > > > > > > >  [<ffffffff802c7d6a>] ? end_buffer_async_write+0x0/0xfb
+> > > > > > > > >  [<ffffffff8027e8d2>] ? __writepage+0xa/0x25
+> > > > > > > > >  [<ffffffff8027f036>] ? write_cache_pages+0x21c/0x338
+> > > > > > > > >  [<ffffffff8027e8c8>] ? __writepage+0x0/0x25
+> > > > > > > > >  [<ffffffff8027f195>] ? do_writepages+0x27/0x2d
+> > > > > > > > >  [<ffffffff802c22c1>] ? __writeback_single_inode+0x159/0x2b3
+> > > > > > > > >  [<ffffffff8071e52a>] ? thread_return+0x3e/0xaa
+> > > > > > > > >  [<ffffffff8027f267>] ? determine_dirtyable_memory+0xd/0x1d
+> > > > > > > > >  [<ffffffff8027f2dd>] ? get_dirty_limits+0x1d/0x255
+> > > > > > > > >  [<ffffffff802c27bc>] ? generic_sync_wb_inodes+0x1b4/0x220
+> > > > > > > > >  [<ffffffff802c3130>] ? wb_do_writeback+0x16c/0x215
+> > > > > > > > >  [<ffffffff802c323e>] ? bdi_writeback_task+0x65/0x10d
+> > > > > > > > >  [<ffffffff8024cc06>] ? autoremove_wake_function+0x0/0x2e
+> > > > > > > > >  [<ffffffff8024cb27>] ? bit_waitqueue+0x10/0xa0
+> > > > > > > > >  [<ffffffff80289257>] ? bdi_start_fn+0x0/0xba
+> > > > > > > > >  [<ffffffff802892c6>] ? bdi_start_fn+0x6f/0xba
+> > > > > > > > >  [<ffffffff8024c860>] ? kthread+0x54/0x80
+> > > > > > > > >  [<ffffffff8020c97a>] ? child_rip+0xa/0x20
+> > > > > > > > >  [<ffffffff8024c80c>] ? kthread+0x0/0x80
+> > > > > > > > >  [<ffffffff8020c970>] ? child_rip+0x0/0x20
+> > > > > > > > > 
+> > > > > > 
+> > > > > > 
+> > > > > > > 
+> > > > > > > I found one issue yesterday and one today that could cause issues, not
+> > > > > > > sure it would explain this one. But at least it's worth a try, if it's
+> > > > > > > reproducible.
+> > > > > > I just reproduced it a moment ago manually.
+> > > > > > 
+> > > > > > [global]
+> > > > > > direct=0
+> > > > > > ioengine=mmap
+> > > > > > iodepth=256
+> > > > > > iodepth_batch=32
+> > > > > > size=4G
+> > > > > > bs=4k
+> > > > > > pre_read=1
+> > > > > > overwrite=1
+> > > > > > numjobs=1
+> > > > > > loops=5
+> > > > > > runtime=600
+> > > > > > group_reporting
+> > > > > > directory=/mnt/stp/fiodata
+> > > > > > [job_group0_sub0]
+> > > > > > startdelay=0
+> > > > > > rw=randwrite
+> > > > > > filename=data0/f1:data0/f2
+> > > > > > 
+> > > > > > 
+> > > > > > The fio includes my preread patch to flush files to memory.
+> > > > > > 
+> > > > > > Before starting the second testing, I did a cache dropping by:
+> > > > > > #echo "3">/proc/sys/vm/drop_caches.
+> > > > > > 
+> > > > > > I suspect the drop_caches trigger it.
+> > > > > 
+> > > > > Thanks, will try this. What filesystem and mount options did you use?
+> > > > 
+> > > > No luck reproducing so far.
+> > > All my testing are started with automation scripts. I found below step could
+> > > trigger it.
+> > > 1) Use an exclusive partition to test it; for example I use /dev/sdb1 on this
+> > > machine;
+> > > 2) After running the fio test case, immediately umount and mount the disk back:
+> > > #sudo umount /dev/sdb1
+> > > #sudo mount /dev/sdb1 /mnt/stp
+> > > 
+> > > 
+> > > >  In other news, I have finally merged your
+> > > > fio pre_read patch :-)
+> > > Thanks.
+> > > 
+> > > > 
+> > > > I've run it here many times, works fine with the current writeback
+> > > > branch. Since I did the runs anyway, I did comparisons between mainline
+> > > > and writeback for this test. Each test was run 10 times, averages below.
+> > > > The throughput deviated less than 1MB/sec, so results are very stable.
+> > > > CPU usage percentages were always within 0.5%.
+> > > > 
+> > > > Kernel          Throughput       usr         sys        disk util
+> > > > -----------------------------------------------------------------
+> > > > writeback       175MB/sec        17.55%      43.04%     97.80%
+> > > > vanilla         147MB/sec        13.44%      47.33%     85.98%
+> > > > 
+> > > > The results for this test is particularly interesting, since it's very
+> > > > heavy on the writeback side. pdflush/bdi threads were pretty busy. User
+> > > > time is up (even if corrected for higher throughput), but system time is
+> > > > down a lot. Vanilla isn't close to keeping the disk busy, with the
+> > > > writeback patches we are basically there (100% would be pretty much
+> > > > impossible to reach).
+> > > > 
+> > > > Please try with the patches I sent. If you still see problems, we need
+> > > > to look more closely into that.
+> > > I tried the new patches. It seems it improves fio mmap randwrite 4k for about
+> > > 50% on the machine (single disk). The old panic disappears, but there is a new panic.
+> > > 
+> > > [ROOT@LKP-NE01 ~]# BUG: unable to handle kernel NULL pointer dereference at 0000000000000190
+> > > IP: [<ffffffff803270b6>] ext3_invalidatepage+0x18/0x38
+> > > PGD 0
+> > > Oops: 0000 [#1] SMP
+> > > last sysfs file: /sys/block/sdb/stat
+> > > CPU 0
+> > > Modules linked in: igb
+> > > Pid: 7681, comm: umount Not tainted 2.6.30-rc6-bdiflusherv4fix #1 X8DTN
+> > > RIP: 0010:[<ffffffff803270b6>]  [<ffffffff803270b6>] ext3_invalidatepage+0x18/0x38
+> > > RSP: 0018:ffff8801bdc47d20  EFLAGS: 00010246
+> > > RAX: 0000000000000000 RBX: ffffe200058514a0 RCX: 0000000000000002
+> > > RDX: 000000000000000e RSI: 0000000000000000 RDI: ffffe200058514a0
+> > > RBP: 0000000000000000 R08: 0000000000000003 R09: 000000000000000e
+> > > R10: 000000000000000d R11: ffffffff8032709e R12: 0000000000000000
+> > > R13: 0000000000000000 R14: ffff8801bdc47d78 R15: ffff8800bc0dd888
+> > > FS:  00007f48d77237d0(0000) GS:ffffc20000000000(0000) knlGS:0000000000000000
+> > > CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+> > > CR2: 0000000000000190 CR3: 00000000bc867000 CR4: 00000000000006e0
+> > > DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> > > DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> > > Process umount (pid: 7681, threadinfo ffff8801bdc46000, task ffff8801bde194d0)
+> > > Stack:
+> > >  ffffffff80280ef7 ffffe200058514a0 ffffffff80280ffd ffff8801bdc47d78
+> > >  0000000e0290c538 000000000049d801 0000000000000000 0000000000000000
+> > >  ffffffffffffffff 000000000000000e 0000000000000000 ffffe200058514a0
+> > > Call Trace:
+> > >  [<ffffffff80280ef7>] ? truncate_complete_page+0x1d/0x59
+> > >  [<ffffffff80280ffd>] ? truncate_inode_pages_range+0xca/0x32e
+> > >  [<ffffffff802ba8bc>] ? dispose_list+0x39/0xe4
+> > >  [<ffffffff802bac68>] ? invalidate_inodes+0xf1/0x10f
+> > >  [<ffffffff802ab77b>] ? generic_shutdown_super+0x78/0xde
+> > >  [<ffffffff802ab803>] ? kill_block_super+0x22/0x3a
+> > >  [<ffffffff802abe49>] ? deactivate_super+0x5f/0x76
+> > >  [<ffffffff802bdf2f>] ? sys_umount+0x2cd/0x2fc
+> > >  [<ffffffff8020ba2b>] ? system_call_fastpath+0x16/0x1b
+> > > 
+> > > 
+> > > 
+> > > ext3_invalidatepage =>  EXT3_JOURNAL(page->mapping->host) while
+> > > EXT3_SB((inode)->i_sb) is equal to NULL.
+> > > 
+> > > It seems umount triggers the new panic.
+> >   Hmm, unlike previous oops in ext3, this does not seem to be ext3 problem
+> > (at least at the first sight). Somehow invalidate_inodes() is able to find
+> > invalidated inodes on i_sb_list...
+> Caught previous oops again.
+> I(my script) do a sync after fio testing and before umount /dev/sdb1.
+> 
+> 
+>                             BUG: unable to handle kernel NULL pointer dereference at 00000000000001d8
+> IP: [<ffffffff803f3cec>] generic_make_request+0x10a/0x384
+> PGD 0 
+> Oops: 0000 [#1] SMP 
+> last sysfs file: /sys/block/sdb/stat
+> CPU 0 
+> Modules linked in: igb
+> Pid: 1446, comm: bdi-8:16 Not tainted 2.6.30-rc6-bdiflusherV4fix #1 X8DTN
+> RIP: 0010:[<ffffffff803f3cec>]  [<ffffffff803f3cec>] generic_make_request+0x10a/0x384
+> RSP: 0018:ffff8800bd295a60  EFLAGS: 00010206
+> RAX: 0000000000000000 RBX: ffff8800bd405b00 RCX: 0000000002cd1a40
+> RDX: 0000000000000008 RSI: 0000000000000576 RDI: ffff8801bf4096c0
+> RBP: ffff8800bd405b00 R08: ffffe20006141cf8 R09: ffff8800bd295a98
+> R10: 0000000000000000 R11: ffff8800bd405c80 R12: ffff8800bd405b00
+> R13: ffff88008bc4c150 R14: 0000000000000008 R15: ffff88008059dda0
+> FS:  0000000000000000(0000) GS:ffffc20000000000(0000) knlGS:0000000000000000
+> CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+> CR2: 00000000000001d8 CR3: 0000000000201000 CR4: 00000000000006e0
+> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> Process bdi-8:16 (pid: 1446, threadinfo ffff8800bd294000, task ffff8800bd2375f0)
+> Stack:
+>  0000000000000008 ffffffff8027a613 00000000bd0f60d0 ffffffffffffffff
+>  ffff88007b5cfb10 0000000000000001 ffff88007d504000 ffff880000000006
+>  0000000000011200 ffff8800bd61d444 ffffffffffffffcf 0000000000000000
+> Call Trace:
+>  [<ffffffff8027a613>] ? mempool_alloc+0x59/0x10f
+>  [<ffffffff803f4010>] ? submit_bio+0xaa/0xb1
+>  [<ffffffff802c6aeb>] ? submit_bh+0xe3/0x103
+>  [<ffffffff802c9396>] ? __block_write_full_page+0x1fb/0x2f2
+>  [<ffffffff802c7e16>] ? end_buffer_async_write+0x0/0xfb
+>  [<ffffffff8027e8d2>] ? __writepage+0xa/0x25
+>  [<ffffffff8027f036>] ? write_cache_pages+0x21c/0x338
+>  [<ffffffff8027e8c8>] ? __writepage+0x0/0x25
+>  [<ffffffff8027f195>] ? do_writepages+0x27/0x2d
+>  [<ffffffff802c22c9>] ? __writeback_single_inode+0x159/0x2b3
+>  [<ffffffff8071e5ca>] ? thread_return+0x3e/0xaa
+>  [<ffffffff8027f267>] ? determine_dirtyable_memory+0xd/0x1d
+>  [<ffffffff8027f2dd>] ? get_dirty_limits+0x1d/0x255
+>  [<ffffffff802c27c4>] ? generic_sync_wb_inodes+0x1b4/0x220
+>  [<ffffffff802c31dd>] ? wb_do_writeback+0x16c/0x215
+>  [<ffffffff802c32eb>] ? bdi_writeback_task+0x65/0x10d
+>  [<ffffffff8024cc06>] ? autoremove_wake_function+0x0/0x2e
+>  [<ffffffff8024cb27>] ? bit_waitqueue+0x10/0xa0
+>  [<ffffffff80289257>] ? bdi_start_fn+0x0/0xc0
+>  [<ffffffff802892cc>] ? bdi_start_fn+0x75/0xc0
+>  [<ffffffff8024c860>] ? kthread+0x54/0x80
+>  [<ffffffff8020c97a>] ? child_rip+0xa/0x20
+>  [<ffffffff8024c80c>] ? kthread+0x0/0x80
+>  [<ffffffff8020c970>] ? child_rip+0x0/0x20
+> Code: 39 c8 0f 82 ba 01 00 00 44 89 f0 c7 44 24 14 00 00 00 00 48 c7 44 24 18 ff ff ff ff 48 89 04 24 48 8b 7d 10 48 8b 87  
+> RIP  [<ffffffff803f3cec>] generic_make_request+0x10a/0x384
 
---=-Zz0uQJBYH8wu44wUEHSL
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Thanks, I'll get this reproduced and fixed. Can you post the results
+you got comparing writeback and vanilla meanwhile?
 
-On Fri, 2009-05-22 at 16:03 +0800, Ming Lei wrote:
-> 2009/5/20 Johannes Berg <johannes@sipsolutions.net>:
-> > On Wed, 2009-05-20 at 11:36 +0800, Ming Lei wrote:
-> >
-> >> > Anyway, you can have a deadlock like this:
-> >> >
-> >> > CPU 3                   CPU 2                           CPU 1
-> >> >                                                        suspend/hiber=
-nate
-> >> >                        something:
-> >> >                        rtnl_lock()                     device_pm_loc=
-k()
-> >> >                                                        -> mutex_lock=
-(&dpm_list_mtx)
-> >> >
-> >> >                        mutex_lock(&dpm_list_mtx)
-> >>
-> >> Would you give a explaination why mutex_lock(&dpm_list_mtx) runs in CP=
-U2
-> >> and depends on rtnl_lock?
-> >
-> > Why not? Something is registering a hotplugged netdev.
->=20
-> It seems dpm_list_mtx is held in kernel_init context, so should not consi=
-der
-> registering a hotplugged netdev, isn't it?
->=20
-> I am still confused, since rtnl_mutex is held before dpm_list_mtx which
-> is acquired in kernel_init context.
->=20
-> [  562.689476] -> #3 (dpm_list_mtx){+.+.+.}:
-> [  562.689480]        [<ffffffff8026eae8>] __lock_acquire+0x13a9/0x171c
-> [  562.689484]        [<ffffffff8026ef5f>] lock_acquire+0x104/0x130
-> [  562.689489]        [<ffffffff804ab2f0>] mutex_lock_nested+0x6f/0x36b
-> [  562.689493]        [<ffffffff803f6395>] device_pm_add+0x4b/0xf2
-> [  562.689499]        [<ffffffff803ef382>] device_add+0x498/0x62a
-> [  562.689503]        [<ffffffff8043fd32>] netdev_register_kobject+0x7b/0=
-x80
-> [  562.689509]        [<ffffffff80434761>] register_netdevice+0x2d0/0x469
-> [  562.689514]        [<ffffffff80434939>] register_netdev+0x3f/0x4d
-> [  562.689519]        [<ffffffff806f634f>] loopback_net_init+0x40/0x7d
-> [  562.689524]        [<ffffffff8042ee79>] register_pernet_device+0x32/0x=
-5f
-> [  562.689528]        [<ffffffff806fb41a>] net_dev_init+0x143/0x1a1
-> [  562.689533]        [<ffffffff80209080>] do_one_initcall+0x75/0x18a
-> [  562.689538]        [<ffffffff806d0678>] kernel_init+0x138/0x18e
-> [  562.689542]        [<ffffffff8020c33a>] child_rip+0xa/0x20
-> [  562.689546]        [<ffffffffffffffff>] 0xffffffffffffffff
-
-You need to stop looking at the lockdep report. We've strayed far enough
-from it that it's no longer useful. Anyhow, the kernel_init context here
-doesn't matter -- what is relevant is that we have
-	device_pm_add
-being called somewhere inside
-	register_netdev
-
-where register_netdev acquires the rtnl, and device_pm_add acquires
-dpm_list_mtx so we get this dependency of the two which I mapped onto
-CPU 2.
-
-The fact that this is in kernel_init isn't significant, that's because
-the network device is built-in or whatever, if you hotplug a USB network
-device you get the same chain of events starting from USB.
-
-johannes
-
---=-Zz0uQJBYH8wu44wUEHSL
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAABAgAGBQJKFl4aAAoJEODzc/N7+Qmad8UQAMVUtQ7KF7o2rnkeXtbhyNqr
-GL3lnNbc6ThCjh0DNBd5Rz5KA0Ta4xHUDvpQsiQ4wSvsAP6hF9Jx71b8kCTU+sh8
-hxBGY0bSj5wkHTDXZojG77T3GyxSGvmqkQr7vYmPUOhczKJR+XdLjQKS8H/CdPrr
-sSHqQmYafUgvns/cSDjmwBeJvwIGMOr0ymwTtKHVbB0YTMI4DvffulZtTUg23Rvr
-jfaP64H+nyRq8BbAZS8Om0ydPhMB0ge8iBBIAPUJ5Iw7hfQh4rTNmk5S9x6c8925
-t48j77ZJwl8h6aTmfckSX/HqDa6Kg7T+LZ0utLVJtJF6mUumZU76Y5f9KkrM+JPF
-jnLZoBC76gBR5yIx5LyKXywMjbQEAt//4dTAl9oMZ1LgZH+3oYvTtRhhi4OY0pMB
-RvPI68Vyuy6iWfYBw05IRyclLk889+ChQChwonKQr//ZOgjp7M1sqbK3nCt3cJLo
-tfpza3dKZiXYkjlvvEP2psdwME5wv4sw7jtEGk+ZFMfulSCnEppc9jDgAYGMUX6t
-BbdTfODjkjh37GQW10WloEjT1crLgbHQUDd5bJWLGQwgWtZnXKcQITwHfFn+qCVP
-G7xYWq3guGDPLgdtdXvdJksj3UwQu5Z1qWn8YDWvJSJEXzvX+gCWdI/ETgjog7FO
-KHcjPfO08sEW2YcmqiTw
-=U1JQ
------END PGP SIGNATURE-----
-
---=-Zz0uQJBYH8wu44wUEHSL--
+-- 
+Jens Axboe
 
