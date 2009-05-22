@@ -1,82 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757313AbZEVN14@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757467AbZEVNa1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757313AbZEVN14 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 09:27:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753649AbZEVN1r
+	id S1757467AbZEVNa1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 09:30:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754580AbZEVNaU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 09:27:47 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:43795 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752514AbZEVN1q convert rfc822-to-8bit (ORCPT
+	Fri, 22 May 2009 09:30:20 -0400
+Received: from mail-bw0-f174.google.com ([209.85.218.174]:56241 "EHLO
+	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753649AbZEVNaU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 09:27:46 -0400
+	Fri, 22 May 2009 09:30:20 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=Y5amqfo7ecUV1jqCm5Q7nwgtpdrI4g15Pj/Vv8osHCovLZImE8A/H3AVt29ZG+9Kwo
-         OxLQfiK7NDBw00urRcCL0HILwrSTRqIfNFpC3HemRMtxvrScJ3u1x17Xe8blbS+37l1K
-         BvtzeY171onDSxPSTImL2fToxFpHRfUijxTCA=
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=bscgl8BDp6ssEgdCzJmZbn4FaxlBrlv/odmh4P6EuQyjsm0q0/8yOM5OXC4psdEZl/
+         WxdR9PXV/3MSnMcSdsGK7OgQ5t1/XOBSYftKUw4PwPPG72y0zoLhXVnT929cgGjW5ogM
+         XUSDSlNrGM91/55f4iOCS9BrE/gMalff1tx0Q=
 MIME-Version: 1.0
-Date: Fri, 22 May 2009 14:27:45 +0100
-Message-ID: <5c43c2d40905220627g4036fd80n6f0ef8469e48aa1f@mail.gmail.com>
-Subject: [PATCH] oss: Remove void casts
-From: =?ISO-8859-1?Q?Andr=E9_Lopes?= <andre.neo.net@gmail.com>
-To: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
-       askulysh@image.kiev.ua
+In-Reply-To: <Pine.LNX.4.44L0.0905211724050.3914-100000@iolanthe.rowland.org>
+References: <ac3eb2510905211407l3aec14acx2572a2ad4e675b9@mail.gmail.com>
+	 <Pine.LNX.4.44L0.0905211724050.3914-100000@iolanthe.rowland.org>
+Date: Fri, 22 May 2009 16:30:20 +0300
+Message-ID: <1295ed070905220630q67c62569o9753425abf529742@mail.gmail.com>
+Subject: Re: How to tell whether a struct file is held by a process?
+From: Pantelis Koukousoulas <pktoss@gmail.com>
+To: Kernel development list <linux-kernel@vger.kernel.org>
+Cc: Kay Sievers <kay.sievers@vrfy.org>, Al Viro <viro@zeniv.linux.org.uk>,
+       Alan Stern <stern@rowland.harvard.edu>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This trivial patch just remove void cats from sound/oss/sh_dac_audio.c
+The only problem I find with leaving mutual exclusion 100% to userspace and
+burdening the kernel only with the decision of whether a port should be
+handled by kernel or userspace is this:
 
-Signed-off-by: André Lopes <andre.neo.net@gmail.com>
+Suppose a device needs a reset as part of its init sequence (a whole lot
+of them do, this is not purely hypothetical). Then a different process may
+get to operate the device before and after the reset and hilarity may result
+from that.
 
----
- sound/oss/sh_dac_audio.c |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
+There is also the issue of a Program (as in Vmware, Qemu etc, not as in pid)
+thinking it has claimed a port and then finding the device just connected
+there is actually unavailable to operate, but this doesn't sound that bad.
+(After all, the device itself might have been broken, having claimed a port
+in no way guarantees success in operating devices connected there).
 
-diff --git a/sound/oss/sh_dac_audio.c b/sound/oss/sh_dac_audio.c
-index 78cfb66..7247ea1 100755
---- a/sound/oss/sh_dac_audio.c
-+++ b/sound/oss/sh_dac_audio.c
-@@ -200,21 +200,21 @@ static ssize_t dac_audio_write(struct file
-*file, const char *buf, size_t count,
- 	if (count > free)
- 		count = free;
- 	if (buffer_begin > buffer_end) {
--		if (copy_from_user((void *)buffer_end, buf, count))
-+		if (copy_from_user(buffer_end, buf, count))
- 			return -EFAULT;
+So, if there is a clean / acceptable way to handle the reset issue in userspace
+I 'm happy to dispose with kernel-level checks for 'allowed processes'
+altogether.
 
- 		buffer_end += count;
- 	} else {
- 		nbytes = data_buffer + BUFFER_SIZE - buffer_end;
- 		if (nbytes > count) {
--			if (copy_from_user((void *)buffer_end, buf, count))
-+			if (copy_from_user(buffer_end, buf, count))
- 				return -EFAULT;
- 			buffer_end += count;
- 		} else {
--			if (copy_from_user((void *)buffer_end, buf, nbytes))
-+			if (copy_from_user(buffer_end, buf, nbytes))
- 				return -EFAULT;
- 			if (copy_from_user
--			    ((void *)data_buffer, buf + nbytes, count - nbytes))
-+			    (data_buffer, buf + nbytes, count - nbytes))
- 				return -EFAULT;
- 			buffer_end = data_buffer + count - nbytes;
- 		}
-@@ -322,7 +322,7 @@ static void __exit dac_audio_exit(void)
- 	free_irq(TIMER1_IRQ, 0);
+Does that sound reasonable?
 
- 	unregister_sound_dsp(device_major);
--	kfree((void *)data_buffer);
-+	kfree(data_buffer);
- }
-
- module_init(dac_audio_init);
--- 
-1.5.6.5
+Thanks a lot for the discussion,
+Pantelis
