@@ -1,56 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753352AbZEVBKG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751831AbZEVBMN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753352AbZEVBKG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 May 2009 21:10:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750887AbZEVBJ5
+	id S1751831AbZEVBMN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 May 2009 21:12:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750961AbZEVBL7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 May 2009 21:09:57 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:2733 "EHLO
-	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750797AbZEVBJ4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 May 2009 21:09:56 -0400
-Subject: Re: [PATCH 1/3] kernel.h: Add DO_ONCE statement expression macro
-From: Joe Perches <joe@perches.com>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org,
-       Dave Jones <davej@redhat.com>, Greg Kroah-Hartman <gregkh@suse.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>,
-       x86@kernel.org, Len Brown <len.brown@intel.com>,
-       Mike Travis <travis@sgi.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-In-Reply-To: <20090522002717.GV8633@ZenIV.linux.org.uk>
-References: <cover.1242943463.git.joe@perches.com>
-	 <7b063fda0675875d51a5da49f59e89520d025eee.1242943463.git.joe@perches.com>
-	 <20090522002717.GV8633@ZenIV.linux.org.uk>
-Content-Type: text/plain
-Date: Thu, 21 May 2009 18:09:45 -0700
-Message-Id: <1242954585.3284.7.camel@Joe-Laptop.home>
+	Thu, 21 May 2009 21:11:59 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:55818 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750797AbZEVBL6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 May 2009 21:11:58 -0400
+Date: Fri, 22 May 2009 11:11:53 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Paul Mackerras <paulus@samba.org>, <linuxppc-dev@ozlabs.org>,
+       Jan Blunck <jblunck@suse.de>, Arnd Bergmann <arnd@arndb.de>
+Subject: linux-next: powerpc tree build warning
+Message-Id: <20090522111153.38f7bd1c.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__22_May_2009_11_11_53_+1000_Y5oFJdEdanpQ4eJM"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-05-22 at 01:27 +0100, Al Viro wrote:
-> On Thu, May 21, 2009 at 04:00:22PM -0700, Joe Perches wrote:
-> > Add a DO_ONCE statement expression analogous to printk_once
-> > that executes any arbitrary statement exactly once.
-> > 
-> > This will take the place of printk_once so that
-> > DO_ONCE(pr_<foo>) or any other statement performed
-> > a single time may be easily written.
-> 
-> Interesting, how telling somebody that they need to learn C is considered
-> an unacceptable thing to do.  Hostile to newbies, or some such.  Introducing
-> more magic that has to be learnt if one wants to read the kernel source, OTOH,
-> is just fine...
+--Signature=_Fri__22_May_2009_11_11_53_+1000_Y5oFJdEdanpQ4eJM
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I'd be fine if the printk_once macro helper went away.
-It was added in commit f036be96dd9ce442ffb9ab33e3c165f5178815c0
+Hi Ben,
 
-If the helper exists though, I think it should work with
-all of the pr_<foo> variants.
+Today's linux-next build (powerpc ppc64_defconfig) produced this warning:
 
+arch/powerpc/platforms/cell/spufs/inode.c: In function 'spufs_create':
+arch/powerpc/platforms/cell/spufs/inode.c:647: warning: label 'out_dput' de=
+fined but not used
+
+Introduced by commit 45db9240890d9343c934db1fe82d6e68ac2d28da
+("powerpc/spufs: Remove double check for non-negative dentry").
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Fri__22_May_2009_11_11_53_+1000_Y5oFJdEdanpQ4eJM
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkoV+9kACgkQjjKRsyhoI8zQcgCeNsNTRVqIIK8BH6uYTvfNIHNM
+AhMAnip/giJgZvtsxLi8m+nT9dEqM6d0
+=l1V7
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__22_May_2009_11_11_53_+1000_Y5oFJdEdanpQ4eJM--
