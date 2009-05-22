@@ -1,77 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756303AbZEVLjF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757028AbZEVLnS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756303AbZEVLjF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 07:39:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752222AbZEVLiz
+	id S1757028AbZEVLnS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 07:43:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751584AbZEVLnD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 07:38:55 -0400
-Received: from oblivion.subreption.com ([66.240.236.22]:52813 "EHLO
-	mail.subreption.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751000AbZEVLiz (ORCPT
+	Fri, 22 May 2009 07:43:03 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:64567 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751376AbZEVLnB convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 07:38:55 -0400
-Date: Fri, 22 May 2009 04:38:09 -0700
-From: "Larry H." <research@subreption.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@osdl.org>, linux-mm@kvack.org,
-       Ingo Molnar <mingo@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       pageexec@freemail.hu
-Subject: Re: [patch 0/5] Support for sanitization flag in low-level page
-	allocator
-Message-ID: <20090522113809.GB13971@oblivion.subreption.com>
-References: <20090520183045.GB10547@oblivion.subreption.com> <4A15A8C7.2030505@redhat.com> <20090522073436.GA3612@elte.hu>
+	Fri, 22 May 2009 07:43:01 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090522073436.GA3612@elte.hu>
-Organization: Subreption LLC
+In-Reply-To: <20090416.155643.06066521.davem@davemloft.net>
+References: <ac3eb2510903270521i113df787u7ac5d842ece83740@mail.gmail.com> 
+	<20090327.172743.30040617.davem@davemloft.net> <1239898912.17211.7.camel@poy> 
+	<20090416.155643.06066521.davem@davemloft.net>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Fri, 22 May 2009 13:42:42 +0200
+Message-ID: <ac3eb2510905220442n4a1c087nba2ab54a2fba360c@mail.gmail.com>
+Subject: Re: sparc: struct device - replace bus_id with dev_name(), 
+	dev_set_name()
+To: David Miller <davem@davemloft.net>
+Cc: greg@kroah.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-NOTE: Let's keep the PaX Team on CC from now on, they might have further
-input to this discussion. (pageexec at freemail dot hu)
-
-On 09:34 Fri 22 May     , Ingo Molnar wrote:
-> The whole kernel contains data that 'should not be leaked'.
-> _If_ any of this is done, i'd _very_ strongly suggest to describe it 
-> by what it does, not by what its subjective security attribute is.
-> 
-> 'PG_eyes_only' or 'PG_eagle_azf_compartmented' is silly naming. It 
-> is silly because it hardcodes one particular expectation/model of 
-> 'security'.
-> 
-> GFP_NON_PERSISTENT & PG_non_persistent is a _lot_ better, because it 
-> is a technical description of how information spreads. (which is the 
-> underlying principle of every security model)
+On Fri, Apr 17, 2009 at 00:56, David Miller <davem@davemloft.net> wrote:
+>>> > The name size limit is gone, there is no BUS_ID_SIZE thing anymore in
+>>> > the driver core. BUS_ID_SIZE should go away in the 2.6.30 timeframe.
+>>> >
+>>> > Could you please convert/remove BUS_ID_SIZE value from:
+>>> >   drivers/net/gianfar.h:   char    phy_bus_id[BUS_ID_SIZE];
+>>> >   drivers/net/ucc_geth.h:  char phy_bus_id[BUS_ID_SIZE];
+>>> >   drivers/net/pasemi_mac.h:        char    phy_id[BUS_ID_SIZE];
+>>> >   include/linux/phy.h:#define MII_BUS_ID_SIZE      (BUS_ID_SIZE - 3)
+>>> >   include/linux/phy.h:     char bus_id[BUS_ID_SIZE];
+>>> >
+>>> > Or let me know how you want to convert it, so I can do it?
+>>>
+>>> Thanks a lot Kay, I'll look into these cases and take care
+>>> of it.
+>>
+>> This moves the 20 into the netdevice header, we need to get rid
+>> of the driver core define now, otherwise people start adding new
+>> code using it, and we want to finish this thankless job finally. :)
 >
-> That name alone tells us everyting what this does: it does not allow 
-> this data to reach or touch persistent storage. It wont be swapped 
-> and it wont by saved by hibernation. It will also be cleared when 
-> freed, to achieve its goal of never touching persistent storage.
+> I was working on fixing this properly Kay, please be patient.
+>
+> I'll have it killed off in net-next-2.6 soon enough.
 
-The problem is that these patches have a more broad purpose and I never
-mentioned persistent storage as one of them (initially). Check earlier
-messages to see what has been discussed so far.
+Hey David,
+just a quick check, to make sure we are prepared when 2.6.31 opens.
+Any updates regarding the BUS_ID_SIZE conversion?
 
-Regarding the naming changes, those have been done as of Rik's comments
-and I would rather focus on the technical and implementation side now.
-
-> In-kernel crypto key storage using GFP_NON_PERSISTENT makes some 
-> sense - as long as the kernel stack itself is mared 
-> GFP_NON_PERSISTENT as well ... which is quite hairy from a 
-> performance point of view: we _dont_ want to clear the full stack 
-> page for every kernel thread exiting.
-
-Burning the stack there is beyond overkill.
-
-> For user-space keys it is easier to isolate the spreading of that 
-> data, because the kernel never reads it. So MAP_NON_PERSISTENT makes 
-> some sense.
-
-Yes, but that should be incremental patch once we have settled down on
-the other ones.
-
-	Larry
-
+Thanks,
+Kay
