@@ -1,120 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756197AbZEVLXh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757116AbZEVL2Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756197AbZEVLXh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 07:23:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755119AbZEVLX2
+	id S1757116AbZEVL2Q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 07:28:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756197AbZEVL2D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 07:23:28 -0400
-Received: from oblivion.subreption.com ([66.240.236.22]:55267 "EHLO
-	mail.subreption.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753600AbZEVLX1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 07:23:27 -0400
-Date: Fri, 22 May 2009 04:22:36 -0700
-From: "Larry H." <research@subreption.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Rik van Riel <riel@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
-       linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>,
-       linux-mm@kvack.org, Ingo Molnar <mingo@redhat.com>
-Subject: Re: [patch 0/5] Support for sanitization flag in low-level page
-	allocator
-Message-ID: <20090522112236.GA13971@oblivion.subreption.com>
-References: <20090520183045.GB10547@oblivion.subreption.com> <1242852158.6582.231.camel@laptop> <4A15A69F.3040604@redhat.com> <20090521202628.39625a5d@lxorguk.ukuu.org.uk> <20090521195603.GK10756@oblivion.subreption.com> <20090521214713.65adfd6e@lxorguk.ukuu.org.uk> <20090521214638.GL10756@oblivion.subreption.com> <20090521234755.31ab1c3a@lxorguk.ukuu.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090521234755.31ab1c3a@lxorguk.ukuu.org.uk>
-Organization: Subreption LLC
+	Fri, 22 May 2009 07:28:03 -0400
+Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:35577 "EHLO
+	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756116AbZEVL2B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 May 2009 07:28:01 -0400
+Date: Fri, 22 May 2009 13:27:55 +0200
+From: Pierre Ossman <pierre@ossman.eu>
+To: =?UTF-8?B?TWljaGHFgiBNaXJvc8WCYXc=?= <mirq@rere.qmqm.pl>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH/RFC 2.6.29.2] Driver for CB710/720 memory card reader
+ (MMC part) - v4
+Message-ID: <20090522132755.144efcca@mjolnir.ossman.eu>
+In-Reply-To: <20090508151622.GA23006@rere.qmqm.pl>
+References: <20080909090613.GA22158@rere.qmqm.pl>
+	<20080911201307.GA31730@rere.qmqm.pl>
+	<20080912234302.GA19230@rere.qmqm.pl>
+	<20080920130006.69d50cbb@mjolnir.drzeus.cx>
+	<20080925062924.GA32105@rere.qmqm.pl>
+	<20081004215122.0626cd7b@mjolnir.drzeus.cx>
+	<20081029141146.GA17741@rere.qmqm.pl>
+	<20081114220658.38f0645c@mjolnir.drzeus.cx>
+	<20090201185435.GA9165@rere.qmqm.pl>
+	<20090221134603.6bc3c385@mjolnir.ossman.eu>
+	<20090508151622.GA23006@rere.qmqm.pl>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.ossman.eu-26545-1242991679-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 23:47 Thu 21 May     , Alan Cox wrote:
-> Seems a good way to proceed. I think at the point you've got the SLAB/VMA
-> flags you'll find you don't need anything else. The VMA flag is valuable
-> on its own for the more relaxed security case of just wanting to crypt a
-> bit of swap to be safe (or to dump some stuff to a separate secure swap)
-> without doing all swap.
-> 
-> If you've got a rogue module you already lost, except that by marking
-> what is sensitive you made the bad guys job easier.
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-Definitely, but there's no need for this at all. If you want to target
-certain sensitive data, just grep the variable names in the
-world-readable System.map of your distribution of choice.
+--=_freyr.ossman.eu-26545-1242991679-0001-2
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-> Obvious candidates would be AGPGart, DRI buffers, DMA lowmem buffering,
-> pad buffers - I dont think they clear all cases and in some cases
-> (notably DRI) there is data that is potentially "secret" stored in the
-> video RAM.
+On Fri, 8 May 2009 17:16:22 +0200
+Micha=C5=82 Miros=C5=82aw <mirq@rere.qmqm.pl> wrote:
 
-Overkill. Again, you really don't need to scan memory for anything. Much
-less video memory. If you already have CAP_SYS_RAWIO, you have more
-reliable and easier techniques to intercept information.
+> Here is next version of the CB710 SD/MMC reader driver. As in previous
+> versions the code is divided in two parts - virtual 'bus' driver that
+> handles PCI device and registers three new devices one per card reader
+> type. The other device handles SD/MMC part of the reader.
+>=20
+> Key changes from v3:
+>  - kerneldoc for sg_mapping_iterator extension
+>  - free/restore IRQ during suspend/resume
+>  - protect slot->irq_handler by spinlock instead of RCU
+>  - remove verify_serialization()
+>  - Kconfig
+>  - complete patch for linux kernel 2.6.29.2
+>=20
 
-> You can also extract bits of data post clear out of fascinating corners
-> like the debug interfaces to FIFOs on I/O controllers. There are also a
-> large category of buffers that don't get freed/reallocated notably ring
-> buffers for networking, and tty ring buffers which are mostly not freed
-> for the lifetime of the device (ie forever). Cleaning all RAM as an
-> option on S2D and shutdown would be the only real way you'd fix that.
+Looks good to me. I just want you to add a MAINTAINERS entry so that
+people know who to contact if they have problems with this driver.
 
-One of the patches takes care of tty buffer management to adopt the new
-flag. The only real way to solve the lengthy list of security risks
-coming along suspend-to-disk approaches is to simply disable
-suspend-to-disk altogether.
- 
-> However you can't tell what is sensitive, you must assume anything is.
-> Even a graphic pixmap might be sensitive or an executable's presence
-> might reveal things.
+> My patches for sg_mapping_iterator extension went to /dev/null, so I have
+> incorporated them to the cb710 core driver module for now. Probably someo=
+ne
+> with more karma points should look at them (sgbuf2.{c,h}) and push further
+> if they are of any value to other driver writers.
 
-So far we can start off by assuming the cryptoapi kmallocated buffers
-are sensitive, especially those containing context information. The tty
-buffer management ones too. And so are the AF_KEY ones. Etc.
+Give them to Andrew Morton. He's good at finding the right people and
+making sure they notice. :)
 
-Step by step, we'll get to full system memory labeling when there's an
-actual hardware enforcement platform that allows us to implement this in
-a manner which actually works, and isn't subject to being subverted as is
-any other current security mechanism present in the Linux or other OS
-kernels.
+Rgds
+--=20
+     -- Pierre Ossman
 
-> I would argue the logical follow-on from the fact you don't know what is
-> secure, combined with the basic security concept that you start from the
-> secure position and relax rights is that the only safe way to do this is
-> to have an option which turns on scrubbing on free for *all* objects.
-> Ditto clearing all memory on S2D.
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
 
-We're still talking about preventing kernel memory leaks right now, but
-mostly everyone around assumed userland is being discussed. That will
-come later, though.
+--=_freyr.ossman.eu-26545-1242991679-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
 
-> Runtime would be even better (and I think you can argue boot one way or
-> the other). That way distributions can ship the feature for people
-> who want it but without the performance hit.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.11 (GNU/Linux)
 
-Alright, if you want that (no config option, but boot cmdline option), I
-can follow up with a tested patch today. If timing constraints allow it,
-I might be able to provide the updated patchset for SLAB/vma flags too.
+iEYEARECAAYFAkoWjD8ACgkQ7b8eESbyJLiYIACg9fh+WLhzVeJmp+9AU5laAUBl
+Pj4AoNIpBhpMPWXx+q908CWoom98yLqf
+=nRqk
+-----END PGP SIGNATURE-----
 
-I'll follow-up to this thread with those.
-
-> Thats what SELinux is for and with SELinux you can default that way and
-> relax (as you have to because there are lots of things that produce RWX
-> mappings).
-
-I would have preferred to have a binary marking as well, but let's keep
-this discussion for a future thread. You can fire me a private email as
-well, or start a new thread.
-
-> A similar problem is the lack of kernel side true read-only, which is a
-> weakness in the hypervisors. Physical hardware can't do irrevocable read
-> only but it is perfectly doable for a guest under a hypervisor, and the
-> hypervisor kernel can often be configured to have vastly less external
-> exposure. (Rik that's a hint to remind the KVM people ;))
-
-PaX has KERNEXEC with its own methods to allow enforcement of read-only
-and executable kernel pages, to a certain a degree. Perhaps a look at
-its implementation could provide some ideas on these grounds.
-
-	Larry
-
+--=_freyr.ossman.eu-26545-1242991679-0001-2--
