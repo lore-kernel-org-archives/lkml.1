@@ -1,30 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757386AbZEVFCM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757799AbZEVFBT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757386AbZEVFCM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 01:02:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755799AbZEVE4X
+	id S1757799AbZEVFBT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 01:01:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754618AbZEVE4R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 00:56:23 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:22681 "EHLO
+	Fri, 22 May 2009 00:56:17 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:33823 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754366AbZEVE4O (ORCPT
+	with ESMTP id S1754445AbZEVE4H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 00:56:14 -0400
+	Fri, 22 May 2009 00:56:07 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=d6/X4P0A/DoKn1fBdikXVsGvrvP2bNHmSy3EbRhYmu6pUuNHHcV1LGZuusg8lo4FQH
-         TFngmntIpLdEGhfmu2HbavaJcYZtX2V1DuKNaADJNAe+Oy79FXYHkkUJ36sKZV2pWrE3
-         Vsao8l23zIJWten2L4xZ4TY1sB9wdZ9qy4auY=
+        b=j5V9eR6PXy/2ep1jOUwsbMyJ0Zw7mb7xU/g8vgHJ8gxmiEcV37n6rf9LBP8N5cWCGG
+         Myg7vs1kYaaaTWF8p3LO8ecEibHQtmUwxV26oj12rtawx+d3aqUYEXYPdmLDq0isK+r6
+         IDaQZ3tWUgBxJxMrwtqMbrkfQohEpv0pNKRuc=
 From: Alexey Dobriyan <adobriyan@gmail.com>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
        torvalds@linux-foundation.org, xemul@parallels.com,
        orenl@cs.columbia.edu, serue@us.ibm.com, dave@linux.vnet.ibm.com,
        mingo@elte.hu, Alexey Dobriyan <adobriyan@gmail.com>
-Subject: [PATCH 26/38] C/R: nsproxy
-Date: Fri, 22 May 2009 08:55:20 +0400
-Message-Id: <1242968132-1044-26-git-send-email-adobriyan@gmail.com>
+Subject: [PATCH 22/38] C/R: i386 xstate
+Date: Fri, 22 May 2009 08:55:16 +0400
+Message-Id: <1242968132-1044-22-git-send-email-adobriyan@gmail.com>
 X-Mailer: git-send-email 1.5.6.5
 In-Reply-To: <1242968132-1044-1-git-send-email-adobriyan@gmail.com>
 References: <1242968132-1044-1-git-send-email-adobriyan@gmail.com>
@@ -32,355 +32,137 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It can't be argued, that nsproxy shouldn't even be dumped,
-because pointers inside nsproxy are interesting. This is correct,
-however this creates addtitional code on restart and frankly
-more that several nsproxies are rare, so nobody cares.
-
-Current algorithm is simplest:
-- dump all namespaces
-- dump nsproxy as KSTATE_OBJ_NSPROXY type filled with references
-- on restore, read reference, read and restore namespace if needed,
-  bump refcount, glue namespace to nsproxy.
+The only check is if xstate length doesn't match.
+This is insufficient, but posted anyway, because glibc manages
+to do FP calculations and create xstate which would prevent
+checkpointing.
 
 Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
 ---
- include/linux/kstate-image.h   |    6 ++
- include/linux/kstate.h         |    5 ++
- kernel/kstate/cpt-sys.c        |    6 ++
- kernel/kstate/kstate-context.c |    6 ++
- kernel/kstate/kstate-object.c  |    4 +
- kernel/kstate/kstate-task.c    |   26 ++++++++
- kernel/nsproxy.c               |  129 +++++++++++++++++++++++++++++++++++++++-
- 7 files changed, 181 insertions(+), 1 deletions(-)
- create mode 100644 kernel/kstate/kstate-nsproxy.c
+ include/linux/kstate-image.h  |    3 ++
+ kernel/kstate/kstate-x86_32.c |   44 ++++++++++++++++++++++++++++++++++++----
+ 2 files changed, 42 insertions(+), 5 deletions(-)
 
 diff --git a/include/linux/kstate-image.h b/include/linux/kstate-image.h
-index d956d05..b8263c8 100644
+index 6f11b4d..3c93432 100644
 --- a/include/linux/kstate-image.h
 +++ b/include/linux/kstate-image.h
-@@ -43,6 +43,7 @@ struct kstate_image_header {
- #define KSTATE_OBJ_FILE		3
- #define KSTATE_OBJ_VMA		4
- #define KSTATE_OBJ_PAGE		5
-+#define KSTATE_OBJ_NSPROXY	6
+@@ -105,6 +105,9 @@ struct kstate_image_task_struct_i386 {
+ 	__u32		dr7;
  
- struct kstate_object_header {
- 	__u32		obj_type;
-@@ -65,6 +66,7 @@ struct kstate_image_task_struct {
- 	kstate_ref_t	ref_real_parent;
- 
- 	kstate_ref_t	ref_mm;
-+	kstate_ref_t	ref_nsproxy;
- 
- 	__u8		comm[16];
- 
-@@ -203,4 +205,8 @@ struct kstate_image_file {
- 	__u32		name_len;	/* including NUL */
- 	/* __u8	name[name_len] */
+ 	__u64		tls_array[3];
++
++	__u32		len_xstate;
++	/* __u8	xstate[len_xstate]; */
  } __packed;
-+
-+struct kstate_image_nsproxy {
-+	struct kstate_object_header hdr;
-+} __packed;
- #endif
-diff --git a/include/linux/kstate.h b/include/linux/kstate.h
-index 95898ec..bd5c9f1 100644
---- a/include/linux/kstate.h
-+++ b/include/linux/kstate.h
-@@ -23,6 +23,7 @@ struct kstate_object {
- enum kstate_context_obj_type {
- 	KSTATE_CTX_FILE,
- 	KSTATE_CTX_MM_STRUCT,
-+	KSTATE_CTX_NSPROXY,
- 	KSTATE_CTX_TASK_STRUCT,
- 	NR_KSTATE_CTX_TYPES
- };
-@@ -67,6 +68,10 @@ int kstate_collect_all_file(struct kstate_context *ctx);
- int kstate_dump_all_file(struct kstate_context *ctx);
- int kstate_restore_file(struct kstate_context *ctx, kstate_ref_t *ref);
  
-+int kstate_collect_all_nsproxy(struct kstate_context *ctx);
-+int kstate_dump_all_nsproxy(struct kstate_context *ctx);
-+int kstate_restore_nsproxy(struct kstate_context *ctx, kstate_ref_t *ref);
-+
- #if defined(CONFIG_X86_32) || defined(CONFIG_X86_64)
- extern const __u32 kstate_kernel_arch;
- int kstate_arch_check_image_header(struct kstate_image_header *i);
-diff --git a/kernel/kstate/cpt-sys.c b/kernel/kstate/cpt-sys.c
-index 6bc1d0a..1d5e79d 100644
---- a/kernel/kstate/cpt-sys.c
-+++ b/kernel/kstate/cpt-sys.c
-@@ -65,6 +65,9 @@ static int kstate_collect(struct kstate_context *ctx)
- 	rv = kstate_collect_all_task_struct(ctx);
- 	if (rv < 0)
- 		return rv;
-+	rv = kstate_collect_all_nsproxy(ctx);
-+	if (rv < 0)
-+		return rv;
- 	rv = kstate_collect_all_mm_struct(ctx);
- 	if (rv < 0)
- 		return rv;
-@@ -127,6 +130,9 @@ static int kstate_dump(struct kstate_context *ctx)
- 	rv = kstate_dump_all_mm_struct(ctx);
- 	if (rv < 0)
- 		return rv;
-+	rv = kstate_dump_all_nsproxy(ctx);
-+	if (rv < 0)
-+		return rv;
- 	rv = kstate_dump_all_task_struct(ctx);
- 	if (rv < 0)
- 		return rv;
-diff --git a/kernel/kstate/kstate-context.c b/kernel/kstate/kstate-context.c
-index 85d1514..8c728f5 100644
---- a/kernel/kstate/kstate-context.c
-+++ b/kernel/kstate/kstate-context.c
-@@ -1,6 +1,7 @@
+ struct kstate_image_mm_struct {
+diff --git a/kernel/kstate/kstate-x86_32.c b/kernel/kstate/kstate-x86_32.c
+index c738e16..d5c162b 100644
+--- a/kernel/kstate/kstate-x86_32.c
++++ b/kernel/kstate/kstate-x86_32.c
+@@ -1,5 +1,6 @@
  /* Copyright (C) 2000-2009 Parallels Holdings, Ltd. */
- #include <linux/file.h>
- #include <linux/list.h>
-+#include <linux/nsproxy.h>
  #include <linux/sched.h>
- #include <linux/slab.h>
++#include <asm/i387.h>
  
-@@ -40,6 +41,11 @@ void kstate_context_destroy(struct kstate_context *ctx)
- 		list_del(&obj->o_list);
- 		kfree(obj);
+ #include <linux/kstate.h>
+ #include <linux/kstate-image.h>
+@@ -74,12 +75,16 @@ static int check_tls(struct desc_struct *desc)
+ int kstate_arch_check_image_task_struct(struct kstate_image_task_struct *tsk_i)
+ {
+ 	struct kstate_image_task_struct_i386 *i = (void *)(tsk_i + 1);
++	unsigned int len_xstate;
+ 	int rv;
+ 
+ 	if (tsk_i->tsk_arch != KSTATE_ARCH_I386)
+ 		return -EINVAL;
+ 	if (tsk_i->hdr.obj_len < sizeof(*tsk_i) + sizeof(*i))
+ 		return -EINVAL;
++	len_xstate = i->len_xstate;
++	if (tsk_i->hdr.obj_len - sizeof(*tsk_i) - sizeof(*i) < len_xstate)
++		return -EINVAL;
+ 
+ 	rv = check_eflags(i->eflags);
+ 	if (rv < 0)
+@@ -126,22 +131,28 @@ int kstate_arch_check_image_task_struct(struct kstate_image_task_struct *tsk_i)
+ 			return rv;
  	}
-+	for_each_kstate_object_safe(ctx, obj, tmp, KSTATE_CTX_NSPROXY) {
-+		put_nsproxy((struct nsproxy *)obj->o_obj);
-+		list_del(&obj->o_list);
-+		kfree(obj);
+ 
++	if (len_xstate > 0 && len_xstate != xstate_size) {
++		WARN(1, "xstate size mismatch %u:%u\n", len_xstate, xstate_size);
++		return -EINVAL;
 +	}
- 	for_each_kstate_object_safe(ctx, obj, tmp, KSTATE_CTX_TASK_STRUCT) {
- 		put_task_struct((struct task_struct *)obj->o_obj);
- 		list_del(&obj->o_list);
-diff --git a/kernel/kstate/kstate-nsproxy.c b/kernel/kstate/kstate-nsproxy.c
-new file mode 100644
-index 0000000..e69de29
-diff --git a/kernel/kstate/kstate-object.c b/kernel/kstate/kstate-object.c
-index 60ba70d..078bd36 100644
---- a/kernel/kstate/kstate-object.c
-+++ b/kernel/kstate/kstate-object.c
-@@ -1,6 +1,7 @@
- /* Copyright (C) 2000-2009 Parallels Holdings, Ltd. */
- #include <linux/fs.h>
- #include <linux/mm_types.h>
-+#include <linux/nsproxy.h>
- #include <linux/sched.h>
- #include <linux/slab.h>
- 
-@@ -35,6 +36,9 @@ int kstate_collect_object(struct kstate_context *ctx, void *p, enum kstate_conte
- 	case KSTATE_CTX_MM_STRUCT:
- 		atomic_inc(&((struct mm_struct *)obj->o_obj)->mm_users);
- 		break;
-+	case KSTATE_CTX_NSPROXY:
-+		get_nsproxy((struct nsproxy *)obj->o_obj);
-+		break;
- 	case KSTATE_CTX_TASK_STRUCT:
- 		get_task_struct((struct task_struct *)obj->o_obj);
- 		break;
-diff --git a/kernel/kstate/kstate-task.c b/kernel/kstate/kstate-task.c
-index 4f48c32..de876fe 100644
---- a/kernel/kstate/kstate-task.c
-+++ b/kernel/kstate/kstate-task.c
-@@ -120,6 +120,9 @@ static int dump_task_struct(struct kstate_context *ctx, struct kstate_object *ob
- 	tmp = find_kstate_obj_by_ptr(ctx, tsk->mm, KSTATE_CTX_MM_STRUCT);
- 	i->ref_mm = tmp->o_ref;
- 
-+	tmp = find_kstate_obj_by_ptr(ctx, tsk->nsproxy, KSTATE_CTX_NSPROXY);
-+	i->ref_nsproxy = tmp->o_ref;
 +
- 	BUILD_BUG_ON(sizeof(i->comm) != sizeof(tsk->comm));
- 	strlcpy((char *)i->comm, (const char *)tsk->comm, sizeof(i->comm));
- 
-@@ -208,6 +211,26 @@ static int restore_mm(struct kstate_context *ctx, kstate_ref_t *ref)
  	return 0;
  }
  
-+static int restore_nsproxy(struct kstate_context *ctx, kstate_ref_t *ref)
-+{
-+	struct nsproxy *nsproxy;
-+	struct kstate_object *tmp;
-+	int rv;
-+
-+	tmp = find_kstate_obj_by_ref(ctx, ref, KSTATE_CTX_NSPROXY);
-+	if (!tmp) {
-+		rv = kstate_restore_nsproxy(ctx, ref);
-+		if (rv < 0)
-+			return rv;
-+		tmp = find_kstate_obj_by_ref(ctx, ref, KSTATE_CTX_NSPROXY);
-+	}
-+	nsproxy = tmp->o_obj;
-+
-+	get_nsproxy(nsproxy);
-+	switch_task_namespaces(current, nsproxy);
-+	return 0;
-+}
-+
- struct task_struct_restore_context {
- 	struct kstate_context *ctx;
- 	struct kstate_image_task_struct *i;
-@@ -253,6 +276,9 @@ static int task_struct_restorer(void *_tsk_ctx)
- 	rv = restore_mm(ctx, &i->ref_mm);
- 	if (rv < 0)
- 		goto out;
-+	rv = restore_nsproxy(ctx, &i->ref_nsproxy);
-+	if (rv < 0)
-+		goto out;
- 
- out:
- 	tsk_ctx->rv = rv;
-diff --git a/kernel/nsproxy.c b/kernel/nsproxy.c
-index 09b4ff9..b7ccd68 100644
---- a/kernel/nsproxy.c
-+++ b/kernel/nsproxy.c
-@@ -1,5 +1,6 @@
- /*
-  *  Copyright (C) 2006 IBM Corporation
-+ *  Copyright (C) 2009 Parallels Holdings, Ltd.
-  *
-  *  Author: Serge Hallyn <serue@us.ibm.com>
-  *
-@@ -26,7 +27,7 @@ static struct kmem_cache *nsproxy_cachep;
- 
- struct nsproxy init_nsproxy = INIT_NSPROXY(init_nsproxy);
- 
--static inline struct nsproxy *create_nsproxy(void)
-+static struct nsproxy *create_nsproxy(void)
+ unsigned int kstate_arch_len_task_struct(struct task_struct *tsk)
  {
- 	struct nsproxy *nsproxy;
- 
-@@ -228,3 +229,129 @@ static int __init nsproxy_cache_init(void)
+-	return sizeof(struct kstate_image_task_struct_i386);
++	unsigned int len;
++
++	len = sizeof(struct kstate_image_task_struct_i386);
++	if (tsk->thread.xstate)
++		len += xstate_size;
++	return len;
  }
  
- module_init(nsproxy_cache_init);
+ int kstate_arch_check_task_struct(struct task_struct *tsk)
+ {
+ 	struct restart_block *rb;
+ 
+-	if (tsk->thread.xstate) {
+-		WARN_ON(1);
+-		return -EINVAL;
+-	}
+ 	rb = &task_thread_info(tsk)->restart_block;
+ 	if (rb->fn != current_thread_info()->restart_block.fn) {
+ 		WARN(1, "rb->fn = %pF\n", rb->fn);
+@@ -237,13 +248,30 @@ int kstate_arch_dump_task_struct(struct kstate_context *ctx, struct task_struct
+ 	BUILD_BUG_ON(sizeof(tsk->thread.tls_array) != 3 * 8);
+ 	memcpy(i->tls_array, tsk->thread.tls_array, sizeof(i->tls_array));
+ 
++	i->len_xstate = 0;
++	if (tsk->thread.xstate) {
++		i->len_xstate = xstate_size;
++		memcpy(i + 1, tsk->thread.xstate, xstate_size);
++	}
 +
-+#ifdef CONFIG_CHECKPOINT
-+#include <linux/kstate.h>
-+#include <linux/kstate-image.h>
-+
-+static int collect_nsproxy(struct kstate_context *ctx, struct nsproxy *nsproxy)
+ 	return 0;
+ }
+ 
++static int restore_xstate(struct task_struct *tsk, void *xstate, unsigned int len)
 +{
 +	int rv;
 +
-+	rv = kstate_collect_object(ctx, nsproxy, KSTATE_CTX_NSPROXY);
-+	pr_debug("collect nsproxy %p: rv %d\n", nsproxy, rv);
++	rv = init_fpu(tsk);
++	if (rv == 0)
++		memcpy(tsk->thread.xstate, xstate, len);
 +	return rv;
 +}
 +
-+int kstate_collect_all_nsproxy(struct kstate_context *ctx)
-+{
-+	struct kstate_object *obj;
+ asmlinkage void ret_from_fork(void);
+ static int restore_task_struct_i386(struct task_struct *tsk, struct kstate_image_task_struct_i386 *i)
+ {
+ 	struct pt_regs *regs = task_pt_regs(tsk);
 +	int rv;
-+
-+	for_each_kstate_object(ctx, obj, KSTATE_CTX_TASK_STRUCT) {
-+		struct task_struct *tsk = obj->o_obj;
-+
-+		rv = collect_nsproxy(ctx, tsk->nsproxy);
+ 
+ 	tsk->thread.sp = (unsigned long)regs;
+ 	tsk->thread.sp0 = (unsigned long)(regs + 1);
+@@ -281,6 +309,12 @@ static int restore_task_struct_i386(struct task_struct *tsk, struct kstate_image
+ 
+ 	memcpy(tsk->thread.tls_array, i->tls_array, 3 * 8);
+ 
++	if (i->len_xstate) {
++		rv = restore_xstate(tsk, i + 1, i->len_xstate);
 +		if (rv < 0)
 +			return rv;
 +	}
-+	for_each_kstate_object(ctx, obj, KSTATE_CTX_NSPROXY) {
-+		struct nsproxy *nsproxy = obj->o_obj;
-+		unsigned int cnt = atomic_read(&nsproxy->count);
 +
-+		if (obj->o_count + 1 != cnt) {
-+			pr_err("nsproxy %p has external references %lu:%u\n", nsproxy, obj->o_count, cnt);
-+			return -EINVAL;
-+		}
-+	}
-+	return 0;
-+}
-+
-+static int dump_nsproxy(struct kstate_context *ctx, struct kstate_object *obj)
-+{
-+	struct nsproxy *nsproxy = obj->o_obj;
-+	struct kstate_image_nsproxy *i;
-+	int rv;
-+
-+	i = kstate_prepare_image(KSTATE_OBJ_NSPROXY, sizeof(*i));
-+	if (!i)
-+		return -ENOMEM;
-+
-+	rv = kstate_write_image(ctx, i, sizeof(*i), obj);
-+	kfree(i);
-+	pr_debug("dump nsproxy %p: ref {%llu, %u}, rv %d\n", nsproxy, (unsigned long long)obj->o_ref.pos, obj->o_ref.id, rv);
-+	return rv;
-+}
-+
-+int kstate_dump_all_nsproxy(struct kstate_context *ctx)
-+{
-+	struct kstate_object *obj;
-+	int rv;
-+
-+	for_each_kstate_object(ctx, obj, KSTATE_CTX_NSPROXY) {
-+		rv = dump_nsproxy(ctx, obj);
-+		if (rv < 0)
-+			return rv;
-+	}
-+	return 0;
-+}
-+
-+int kstate_restore_nsproxy(struct kstate_context *ctx, kstate_ref_t *ref)
-+{
-+	struct kstate_image_nsproxy *i;
-+	struct nsproxy *nsproxy;
-+	struct uts_namespace *uts_ns;
-+#ifdef CONFIG_IPC_NS
-+	struct ipc_namespace *ipc_ns;
-+#endif
-+	struct mnt_namespace *mnt_ns;
-+	struct pid_namespace *pid_ns;
-+#ifdef CONFIG_NET_NS
-+	struct net *net_ns;
-+#endif
-+	int rv;
-+
-+	i = kstate_read_image(ctx, ref,  KSTATE_OBJ_NSPROXY, sizeof(*i));
-+	if (IS_ERR(i))
-+		return PTR_ERR(i);
-+
-+	nsproxy = create_nsproxy();
-+	if (!nsproxy) {
-+		rv = -ENOMEM;
-+		goto out_free_image;
-+	}
-+
-+	uts_ns = ctx->init_tsk->nsproxy->uts_ns;
-+	get_uts_ns(uts_ns);
-+	nsproxy->uts_ns = uts_ns;
-+
-+#ifdef CONFIG_IPC_NS
-+	ipc_ns = ctx->init_tsk->nsproxy->ipc_ns;
-+	nsproxy->ipc_ns = get_ipc_ns(ipc_ns);
-+#endif
-+
-+	mnt_ns = ctx->init_tsk->nsproxy->mnt_ns;
-+	get_mnt_ns(mnt_ns);
-+	nsproxy->mnt_ns = mnt_ns;
-+
-+	pid_ns = ctx->init_tsk->nsproxy->pid_ns;
-+	nsproxy->pid_ns = get_pid_ns(pid_ns);
-+
-+#ifdef CONFIG_NET_NS
-+	net_ns = ctx->init_tsk->nsproxy->net_ns;
-+	nsproxy->net_ns = get_net(net_ns);
-+#endif
-+	kfree(i);
-+
-+	rv = kstate_restore_object(ctx, nsproxy, KSTATE_CTX_NSPROXY, ref);
-+	if (rv < 0)
-+		put_nsproxy(nsproxy);
-+	pr_debug("restore nsproxy %p, ref {%llu, %u}, rv %d\n", nsproxy, (unsigned long long)ref->pos, ref->id, rv);
-+	return rv;
-+
-+out_free_image:
-+	kfree(i);
-+	pr_debug("%s: return %d, ref {%llu, %u}\n", __func__, rv, (unsigned long long)ref->pos, ref->id);
-+	return rv;
-+}
-+#endif
+ 	return 0;
+ }
+ 
 -- 
 1.5.6.5
 
