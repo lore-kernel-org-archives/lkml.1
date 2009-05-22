@@ -1,384 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758521AbZEVVGw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757516AbZEVVQq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758521AbZEVVGw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 17:06:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758022AbZEVVEv
+	id S1757516AbZEVVQq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 17:16:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753807AbZEVVQh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 17:04:51 -0400
-Received: from d112a2.x-mailer.de ([212.162.53.4]:41455 "EHLO
-	d112a2.x-mailer.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757763AbZEVVEt (ORCPT
+	Fri, 22 May 2009 17:16:37 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:36011 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751729AbZEVVQg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 17:04:49 -0400
-Message-Id: <b66f94ee303b2fcd1d471717551d33f352978c33.1243024967.git.kkeil@pingi.linux-pingi.de>
-In-Reply-To: <cover.1243024967.git.kkeil@pingi.linux-pingi.de>
-References: <cover.1243024967.git.kkeil@pingi.linux-pingi.de>
-Subject: [mISDN PATCH v2 08/19] Hardware acceleration is now possible in conjunction with audio recording
-From: Karsten Keil <keil@b1-systems.de>
-To: linux-kernel@vger.kernel.org
-Cc: netdev@vger.kernel.org, David Miller <davem@davemloft.net>,
-       i4ldeveloper@listserv.isdn4linux.de
-Date: Fri, 22 May 2009 23:04:49 +0200
-X-Info: valid message
-X-Info: original Date
+	Fri, 22 May 2009 17:16:36 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Fri, 22 May 2009 23:16:27 +0200 (CEST)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH 1/2] firewire: core: check for missing struct update at build
+ time, not run time
+To: linux1394-devel@lists.sourceforge.net
+cc: linux-hotplug@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Kay Sievers <kay.sievers@vrfy.org>
+In-Reply-To: <ac3eb2510905220423h23e7aca1u3bc7c204db551eb0@mail.gmail.com>
+Message-ID: <tkrat.7b837daea0cfa5b2@s5r6.in-berlin.de>
+References: <tkrat.d86e749d664670a9@s5r6.in-berlin.de>
+ <ac3eb2510905211001m77eda9e4gb73001d504fd5376@mail.gmail.com> 
+ <4A159899.20506@s5r6.in-berlin.de> <4A165CED.8030601@s5r6.in-berlin.de>
+ <ac3eb2510905220423h23e7aca1u3bc7c204db551eb0@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andreas Eversberg <andreas@eversberg.eu>
+struct fw_attribute_group.attrs.[] must have enough room for all
+attributes.  This can and should be checked at build time.
 
-Audio recording requires software audio processing.
-Both hardware and software processing is simultaniously possible now.
+Our previous check at run time was a little late and not reliable since
+most of the time less than the available attributes are populated.
 
-Signed-off-by: Andreas Eversberg <andreas@eversberg.eu>
-Signed-off-by: Karsten Keil <keil@b1-systems.de>
+Furthermore, omit an increment of an index at its last usage.
+
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 ---
- drivers/isdn/mISDN/dsp.h      |   11 ++++-
- drivers/isdn/mISDN/dsp_cmx.c  |  101 ++++++++++++++++++++++++++---------------
- drivers/isdn/mISDN/dsp_core.c |   17 ++++---
- 3 files changed, 84 insertions(+), 45 deletions(-)
+ drivers/firewire/fw-device.c |   11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/isdn/mISDN/dsp.h b/drivers/isdn/mISDN/dsp.h
-index 41c6cfd..564ea3e 100644
---- a/drivers/isdn/mISDN/dsp.h
-+++ b/drivers/isdn/mISDN/dsp.h
-@@ -151,6 +151,15 @@ struct dsp_tone {
- 	struct timer_list tl;
- };
+Index: linux/drivers/firewire/fw-device.c
+===================================================================
+--- linux.orig/drivers/firewire/fw-device.c
++++ linux/drivers/firewire/fw-device.c
+@@ -289,14 +289,13 @@ static void init_fw_attribute_group(stru
+ 		attr = &config_rom_attributes[i].attr;
+ 		if (attr->show(dev, attr, NULL) < 0)
+ 			continue;
+ 		group->attrs[j++] = &attr->attr;
+ 	}
  
-+/***************
-+ * echo stuff *
-+ ***************/
+-	BUG_ON(j >= ARRAY_SIZE(group->attrs));
+-	group->attrs[j++] = NULL;
++	group->attrs[j] = NULL;
+ 	group->groups[0] = &group->group;
+ 	group->groups[1] = NULL;
+ 	group->group.attrs = group->attrs;
+ 	dev->groups = group->groups;
+ }
+ 
+@@ -570,9 +569,13 @@ static void create_units(struct fw_devic
+ 		unit->device.parent = &device->device;
+ 		dev_set_name(&unit->device, "%s.%d", dev_name(&device->device), i++);
+ 
++		BUILD_BUG_ON(ARRAY_SIZE(unit->attribute_group.attrs) <
++				ARRAY_SIZE(fw_unit_attributes) +
++				ARRAY_SIZE(config_rom_attributes));
+ 		init_fw_attribute_group(&unit->device,
+ 					fw_unit_attributes,
+ 					&unit->attribute_group);
 +
-+struct dsp_echo {
-+	int		software; /* echo is generated by software */
-+	int		hardware; /* echo is generated by hardware */
-+};
+ 		if (device_register(&unit->device) < 0)
+ 			goto skip_unit;
+ 
+@@ -849,9 +852,13 @@ static void fw_device_init(struct work_s
+ 	device->device.devt = MKDEV(fw_cdev_major, minor);
+ 	dev_set_name(&device->device, "fw%d", minor);
+ 
++	BUILD_BUG_ON(ARRAY_SIZE(device->attribute_group.attrs) <
++			ARRAY_SIZE(fw_device_attributes) +
++			ARRAY_SIZE(config_rom_attributes));
+ 	init_fw_attribute_group(&device->device,
+ 				fw_device_attributes,
+ 				&device->attribute_group);
 +
- /*****************
-  * general stuff *
-  *****************/
-@@ -161,7 +170,7 @@ struct dsp {
- 	struct mISDNchannel	*up;
- 	unsigned char	name[64];
- 	int		b_active;
--	int		echo; /* echo is enabled */
-+	struct dsp_echo	echo;
- 	int		rx_disabled; /* what the user wants */
- 	int		rx_is_off; /* what the card is */
- 	int		tx_mix;
-diff --git a/drivers/isdn/mISDN/dsp_cmx.c b/drivers/isdn/mISDN/dsp_cmx.c
-index ac84146..d19b4f6 100644
---- a/drivers/isdn/mISDN/dsp_cmx.c
-+++ b/drivers/isdn/mISDN/dsp_cmx.c
-@@ -163,8 +163,9 @@ dsp_cmx_debug(struct dsp *dsp)
- 
- 	printk(KERN_DEBUG "-----Current DSP\n");
- 	list_for_each_entry(odsp, &dsp_ilist, list) {
--		printk(KERN_DEBUG "* %s echo=%d txmix=%d",
--		    odsp->name, odsp->echo, odsp->tx_mix);
-+		printk(KERN_DEBUG "* %s hardecho=%d softecho=%d txmix=%d",
-+		    odsp->name, odsp->echo.hardware, odsp->echo.software,
-+		    odsp->tx_mix);
- 		if (odsp->conf)
- 			printk(" (Conf %d)", odsp->conf->id);
- 		if (dsp == odsp)
-@@ -177,10 +178,12 @@ dsp_cmx_debug(struct dsp *dsp)
- 		list_for_each_entry(member, &conf->mlist, list) {
- 			printk(KERN_DEBUG
- 			    "  - member = %s (slot_tx %d, bank_tx %d, "
--			    "slot_rx %d, bank_rx %d hfc_conf %d)%s\n",
-+			    "slot_rx %d, bank_rx %d hfc_conf %d "
-+			    "tx_data %d rx_is_off %d)%s\n",
- 			    member->dsp->name, member->dsp->pcm_slot_tx,
- 			    member->dsp->pcm_bank_tx, member->dsp->pcm_slot_rx,
- 			    member->dsp->pcm_bank_rx, member->dsp->hfc_conf,
-+			    member->dsp->tx_data, member->dsp->rx_is_off,
- 			    (member->dsp == dsp) ? " *this*" : "");
- 		}
- 	}
-@@ -385,7 +388,7 @@ dsp_cmx_hardware(struct dsp_conf *conf, struct dsp *dsp)
- 	int		freeunits[8];
- 	u_char		freeslots[256];
- 	int		same_hfc = -1, same_pcm = -1, current_conf = -1,
--	    all_conf = 1;
-+	    all_conf = 1, tx_data = 0;
- 
- 	/* dsp gets updated (no conf) */
- 	if (!conf) {
-@@ -409,7 +412,7 @@ one_member:
- 		/* process hw echo */
- 		if (dsp->features.pcm_banks < 1)
- 			return;
--		if (!dsp->echo) {
-+		if (!dsp->echo.software && !dsp->echo.hardware) {
- 			/* NO ECHO: remove PCM slot if assigned */
- 			if (dsp->pcm_slot_tx >= 0 || dsp->pcm_slot_rx >= 0) {
- 				if (dsp_debug & DEBUG_DSP_CMX)
-@@ -427,10 +430,15 @@ one_member:
- 			}
- 			return;
- 		}
-+		/* echo is enabled, find out if we use soft or hardware */
-+		dsp->echo.software = dsp->tx_data;
-+		dsp->echo.hardware = 0;
- 		/* ECHO: already echo */
- 		if (dsp->pcm_slot_tx >= 0 && dsp->pcm_slot_rx < 0 &&
--		    dsp->pcm_bank_tx == 2 && dsp->pcm_bank_rx == 2)
-+		    dsp->pcm_bank_tx == 2 && dsp->pcm_bank_rx == 2) {
-+			dsp->echo.hardware = 1;
- 			return;
-+		}
- 		/* ECHO: if slot already assigned */
- 		if (dsp->pcm_slot_tx >= 0) {
- 			dsp->pcm_slot_rx = dsp->pcm_slot_tx;
-@@ -443,6 +451,7 @@ one_member:
- 				    dsp->pcm_slot_tx);
- 			dsp_cmx_hw_message(dsp, MISDN_CTRL_HFC_PCM_CONN,
- 			    dsp->pcm_slot_tx, 2, dsp->pcm_slot_rx, 2);
-+			dsp->echo.hardware = 1;
- 			return;
- 		}
- 		/* ECHO: find slot */
-@@ -472,6 +481,7 @@ one_member:
- 				    "%s no slot available for echo\n",
- 				    __func__);
- 			/* no more slots available */
-+			dsp->echo.software = 1;
- 			return;
- 		}
- 		/* assign free slot */
-@@ -485,6 +495,7 @@ one_member:
- 			    __func__, dsp->name, dsp->pcm_slot_tx);
- 		dsp_cmx_hw_message(dsp, MISDN_CTRL_HFC_PCM_CONN,
- 		    dsp->pcm_slot_tx, 2, dsp->pcm_slot_rx, 2);
-+		dsp->echo.hardware = 1;
- 		return;
- 	}
- 
-@@ -554,7 +565,7 @@ conf_software:
- 			return;
- 		}
- 		/* check if member has echo turned on */
--		if (member->dsp->echo) {
-+		if (member->dsp->echo.hardware || member->dsp->echo.software) {
- 			if (dsp_debug & DEBUG_DSP_CMX)
- 				printk(KERN_DEBUG
- 				    "%s dsp %s cannot form a conf, because "
-@@ -592,10 +603,9 @@ conf_software:
- 		if (member->dsp->tx_data) {
- 			if (dsp_debug & DEBUG_DSP_CMX)
- 				printk(KERN_DEBUG
--				    "%s dsp %s cannot form a conf, because "
--				    "tx_data is turned on\n",
-+				    "%s dsp %s tx_data is turned on\n",
- 				    __func__, member->dsp->name);
--			goto conf_software;
-+			tx_data = 1;
- 		}
- 		/* check if pipeline exists */
- 		if (member->dsp->pipeline.inuse) {
-@@ -794,7 +804,7 @@ conf_software:
- 			    nextm->dsp->pcm_slot_tx, nextm->dsp->pcm_bank_tx,
- 			    nextm->dsp->pcm_slot_rx, nextm->dsp->pcm_bank_rx);
- 			conf->hardware = 1;
--			conf->software = 0;
-+			conf->software = tx_data;
- 			return;
- 		/* if members have one bank (or on the same chip) */
- 		} else {
-@@ -904,7 +914,7 @@ conf_software:
- 			    nextm->dsp->pcm_slot_tx, nextm->dsp->pcm_bank_tx,
- 			    nextm->dsp->pcm_slot_rx, nextm->dsp->pcm_bank_rx);
- 			conf->hardware = 1;
--			conf->software = 0;
-+			conf->software = tx_data;
- 			return;
- 		}
- 	}
-@@ -1295,17 +1305,25 @@ dsp_cmx_send_member(struct dsp *dsp, int len, s32 *c, int members)
- 	int r, rr, t, tt, o_r, o_rr;
- 	int preload = 0;
- 	struct mISDNhead *hh, *thh;
-+	int tx_data_only = 0;
- 
- 	/* don't process if: */
- 	if (!dsp->b_active) { /* if not active */
- 		dsp->last_tx = 0;
- 		return;
- 	}
--	if (dsp->pcm_slot_tx >= 0 && /* connected to pcm slot */
-+	if (((dsp->conf && dsp->conf->hardware) || /* hardware conf */
-+	    dsp->echo.hardware) && /* OR hardware echo */
- 	    dsp->tx_R == dsp->tx_W && /* AND no tx-data */
- 	    !(dsp->tone.tone && dsp->tone.software)) { /* AND not soft tones */
--		dsp->last_tx = 0;
--		return;
-+		if (!dsp->tx_data) { /* no tx_data for user space required */
-+			dsp->last_tx = 0;
-+			return;
-+		}
-+		if (dsp->conf && dsp->conf->software && dsp->conf->hardware)
-+			tx_data_only = 1;
-+		if (dsp->conf->software && dsp->echo.hardware)
-+			tx_data_only = 1;
- 	}
- 
- #ifdef CMX_DEBUG
-@@ -1388,7 +1406,7 @@ dsp_cmx_send_member(struct dsp *dsp, int len, s32 *c, int members)
- 	/* PROCESS DATA (one member / no conf) */
- 	if (!conf || members <= 1) {
- 		/* -> if echo is NOT enabled */
--		if (!dsp->echo) {
-+		if (!dsp->echo.software) {
- 			/* -> send tx-data if available or use 0-volume */
- 			while (r != rr && t != tt) {
- 				*d++ = p[t]; /* write tx_buff */
-@@ -1438,7 +1456,7 @@ dsp_cmx_send_member(struct dsp *dsp, int len, s32 *c, int members)
- 		o_r = (o_rr - rr + r) & CMX_BUFF_MASK;
- 			/* start rx-pointer at current read position*/
- 		/* -> if echo is NOT enabled */
--		if (!dsp->echo) {
-+		if (!dsp->echo.software) {
- 			/*
- 			 * -> copy other member's rx-data,
- 			 * if tx-data is available, mix
-@@ -1486,7 +1504,7 @@ dsp_cmx_send_member(struct dsp *dsp, int len, s32 *c, int members)
- #endif
- 	/* PROCESS DATA (three or more members) */
- 	/* -> if echo is NOT enabled */
--	if (!dsp->echo) {
-+	if (!dsp->echo.software) {
- 		/*
- 		 * -> substract rx-data from conf-data,
- 		 * if tx-data is available, mix
-@@ -1550,27 +1568,40 @@ send_packet:
- 	 * becuase we want what we send, not what we filtered
- 	 */
- 	if (dsp->tx_data) {
--		/* PREPARE RESULT */
--		txskb = mI_alloc_skb(len, GFP_ATOMIC);
--		if (!txskb) {
--			printk(KERN_ERR
--			    "FATAL ERROR in mISDN_dsp.o: "
--			    "cannot alloc %d bytes\n", len);
-+		if (tx_data_only) {
-+			hh->prim = DL_DATA_REQ;
-+			hh->id = 0;
-+			/* queue and trigger */
-+			skb_queue_tail(&dsp->sendq, nskb);
-+			schedule_work(&dsp->workq);
-+			/* exit because only tx_data is used */
-+			return;
- 		} else {
--			thh = mISDN_HEAD_P(txskb);
--			thh->prim = DL_DATA_REQ;
--			thh->id = 0;
--			memcpy(skb_put(txskb, len), nskb->data+preload, len);
--			/* queue (trigger later) */
--			skb_queue_tail(&dsp->sendq, txskb);
-+			txskb = mI_alloc_skb(len, GFP_ATOMIC);
-+			if (!txskb) {
-+				printk(KERN_ERR
-+				    "FATAL ERROR in mISDN_dsp.o: "
-+				    "cannot alloc %d bytes\n", len);
-+			} else {
-+				thh = mISDN_HEAD_P(txskb);
-+				thh->prim = DL_DATA_REQ;
-+				thh->id = 0;
-+				memcpy(skb_put(txskb, len), nskb->data+preload,
-+					len);
-+				/* queue (trigger later) */
-+				skb_queue_tail(&dsp->sendq, txskb);
-+			}
- 		}
- 	}
-+
-+	/* send data only to card, if we don't just calculated tx_data */
- 	/* adjust volume */
- 	if (dsp->tx_volume)
- 		dsp_change_volume(nskb, dsp->tx_volume);
- 	/* pipeline */
- 	if (dsp->pipeline.inuse)
--		dsp_pipeline_process_tx(&dsp->pipeline, nskb->data, nskb->len);
-+		dsp_pipeline_process_tx(&dsp->pipeline, nskb->data,
-+			nskb->len);
- 	/* crypt */
- 	if (dsp->bf_enable)
- 		dsp_bf_encrypt(dsp, nskb->data, nskb->len);
-@@ -1891,10 +1922,8 @@ dsp_cmx_hdlc(struct dsp *dsp, struct sk_buff *skb)
- 
- 	/* no conf */
- 	if (!dsp->conf) {
--		/* in case of hardware (echo) */
--		if (dsp->pcm_slot_tx >= 0)
--			return;
--		if (dsp->echo) {
-+		/* in case of software echo */
-+		if (dsp->echo.software) {
- 			nskb = skb_clone(skb, GFP_ATOMIC);
- 			if (nskb) {
- 				hh = mISDN_HEAD_P(nskb);
-@@ -1910,7 +1939,7 @@ dsp_cmx_hdlc(struct dsp *dsp, struct sk_buff *skb)
- 	if (dsp->conf->hardware)
- 		return;
- 	list_for_each_entry(member, &dsp->conf->mlist, list) {
--		if (dsp->echo || member->dsp != dsp) {
-+		if (dsp->echo.software || member->dsp != dsp) {
- 			nskb = skb_clone(skb, GFP_ATOMIC);
- 			if (nskb) {
- 				hh = mISDN_HEAD_P(nskb);
-diff --git a/drivers/isdn/mISDN/dsp_core.c b/drivers/isdn/mISDN/dsp_core.c
-index 6b49398..a0e0af8 100644
---- a/drivers/isdn/mISDN/dsp_core.c
-+++ b/drivers/isdn/mISDN/dsp_core.c
-@@ -203,13 +203,13 @@ dsp_rx_off_member(struct dsp *dsp)
- 	else if (dsp->dtmf.software)
- 		rx_off = 0;
- 	/* echo in software */
--	else if (dsp->echo && dsp->pcm_slot_tx < 0)
-+	else if (dsp->echo.software)
- 		rx_off = 0;
- 	/* bridge in software */
--	else if (dsp->conf) {
--		if (dsp->conf->software)
--			rx_off = 0;
--	}
-+	else if (dsp->conf && dsp->conf->software)
-+		rx_off = 0;
-+	/* data is not required by user space and not required
-+	 * for echo dtmf detection, soft-echo, soft-bridging */
- 
- 	if (rx_off == dsp->rx_is_off)
- 		return;
-@@ -415,7 +415,7 @@ tone_off:
- 		dsp_rx_off(dsp);
- 		break;
- 	case DSP_ECHO_ON: /* enable echo */
--		dsp->echo = 1; /* soft echo */
-+		dsp->echo.software = 1; /* soft echo */
- 		if (dsp_debug & DEBUG_DSP_CORE)
- 			printk(KERN_DEBUG "%s: enable cmx-echo\n", __func__);
- 		dsp_cmx_hardware(dsp->conf, dsp);
-@@ -424,7 +424,8 @@ tone_off:
- 			dsp_cmx_debug(dsp);
- 		break;
- 	case DSP_ECHO_OFF: /* disable echo */
--		dsp->echo = 0;
-+		dsp->echo.software = 0;
-+		dsp->echo.hardware = 0;
- 		if (dsp_debug & DEBUG_DSP_CORE)
- 			printk(KERN_DEBUG "%s: disable cmx-echo\n", __func__);
- 		dsp_cmx_hardware(dsp->conf, dsp);
-@@ -722,7 +723,7 @@ dsp_function(struct mISDNchannel *ch,  struct sk_buff *skb)
- 				skb->len, (dsp_options&DSP_OPT_ULAW)?1:0);
- 		}
- 		/* we need to process receive data if software */
--		if (dsp->pcm_slot_tx < 0 && dsp->pcm_slot_rx < 0) {
-+		if (dsp->conf && dsp->conf->software) {
- 			/* process data from card at cmx */
- 			dsp_cmx_receive(dsp, skb);
- 		}
+ 	if (device_add(&device->device)) {
+ 		fw_error("Failed to add device.\n");
+ 		goto error_with_cdev;
+
 -- 
-1.6.0.2
+Stefan Richter
+-=====-==--= -=-= =-==-
+http://arcgraph.de/sr/
 
