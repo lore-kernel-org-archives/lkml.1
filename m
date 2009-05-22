@@ -1,67 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757078AbZEVND7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757313AbZEVN14@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757078AbZEVND7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 09:03:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751655AbZEVNDu
+	id S1757313AbZEVN14 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 09:27:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753649AbZEVN1r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 09:03:50 -0400
-Received: from www.tglx.de ([62.245.132.106]:47256 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750916AbZEVNDt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 09:03:49 -0400
-Date: Fri, 22 May 2009 15:02:43 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: LKML <linux-kernel@vger.kernel.org>
-cc: rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
-       Clark Williams <williams@redhat.com>,
-       Frank Rowand <frank.rowand@am.sony.com>,
-       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
-       Philippe Reynes <philippe.reynes@isismpp.fr>,
-       Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>,
-       Will Schmidt <will_schmidt@vnet.ibm.com>,
-       Darren Hart <dvhltc@us.ibm.com>, Jan Blunck <jblunck@suse.de>,
-       Sven-Thorsten Dietrich <sdietrich@novell.com>
-Subject: [Announce] 2.6.29.4-rt15
-In-Reply-To: <alpine.LFD.2.00.0905130122250.3561@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0905221459030.3570@localhost.localdomain>
-References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain> <alpine.LFD.2.00.0903122013230.29264@localhost.localdomain> <alpine.LFD.2.00.0903200014320.29264@localhost.localdomain> <alpine.LFD.2.00.0903201832590.29264@localhost.localdomain>
- <alpine.LFD.2.00.0903231723090.29264@localhost.localdomain> <alpine.LFD.2.00.0903252154040.3397@localhost.localdomain> <alpine.LFD.2.00.0904020155320.12916@localhost.localdomain> <alpine.LFD.2.00.0904031918090.12916@localhost.localdomain>
- <alpine.LFD.2.00.0904081937191.21577@localhost.localdomain> <alpine.LFD.2.00.0904092046440.21577@localhost.localdomain> <alpine.LFD.2.00.0904110003370.21577@localhost.localdomain> <alpine.LFD.2.00.0904181204420.21577@localhost.localdomain>
- <alpine.LFD.2.00.0904251500150.4529@localhost.localdomain> <alpine.LFD.2.00.0904290036500.4529@localhost.localdomain> <alpine.LFD.2.00.0905012348200.3375@localhost.localdomain> <alpine.LFD.2.00.0905130122250.3561@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 22 May 2009 09:27:47 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:43795 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752514AbZEVN1q convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 May 2009 09:27:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=Y5amqfo7ecUV1jqCm5Q7nwgtpdrI4g15Pj/Vv8osHCovLZImE8A/H3AVt29ZG+9Kwo
+         OxLQfiK7NDBw00urRcCL0HILwrSTRqIfNFpC3HemRMtxvrScJ3u1x17Xe8blbS+37l1K
+         BvtzeY171onDSxPSTImL2fToxFpHRfUijxTCA=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Fri, 22 May 2009 14:27:45 +0100
+Message-ID: <5c43c2d40905220627g4036fd80n6f0ef8469e48aa1f@mail.gmail.com>
+Subject: [PATCH] oss: Remove void casts
+From: =?ISO-8859-1?Q?Andr=E9_Lopes?= <andre.neo.net@gmail.com>
+To: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
+       askulysh@image.kiev.ua
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We are pleased to announce the next update to our new preempt-rt
-series.
+This trivial patch just remove void cats from sound/oss/sh_dac_audio.c
 
-    - rebase to 2.6.29.4 (no conflicts)
-    - futex updates (tglx, dvhart)
+Signed-off-by: André Lopes <andre.neo.net@gmail.com>
 
-Download locations:
+---
+ sound/oss/sh_dac_audio.c |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
 
-    http://rt.et.redhat.com/download/
-    http://www.kernel.org/pub/linux/kernel/projects/rt/
+diff --git a/sound/oss/sh_dac_audio.c b/sound/oss/sh_dac_audio.c
+index 78cfb66..7247ea1 100755
+--- a/sound/oss/sh_dac_audio.c
++++ b/sound/oss/sh_dac_audio.c
+@@ -200,21 +200,21 @@ static ssize_t dac_audio_write(struct file
+*file, const char *buf, size_t count,
+ 	if (count > free)
+ 		count = free;
+ 	if (buffer_begin > buffer_end) {
+-		if (copy_from_user((void *)buffer_end, buf, count))
++		if (copy_from_user(buffer_end, buf, count))
+ 			return -EFAULT;
 
-Information on the RT patch can be found at:
+ 		buffer_end += count;
+ 	} else {
+ 		nbytes = data_buffer + BUFFER_SIZE - buffer_end;
+ 		if (nbytes > count) {
+-			if (copy_from_user((void *)buffer_end, buf, count))
++			if (copy_from_user(buffer_end, buf, count))
+ 				return -EFAULT;
+ 			buffer_end += count;
+ 		} else {
+-			if (copy_from_user((void *)buffer_end, buf, nbytes))
++			if (copy_from_user(buffer_end, buf, nbytes))
+ 				return -EFAULT;
+ 			if (copy_from_user
+-			    ((void *)data_buffer, buf + nbytes, count - nbytes))
++			    (data_buffer, buf + nbytes, count - nbytes))
+ 				return -EFAULT;
+ 			buffer_end = data_buffer + count - nbytes;
+ 		}
+@@ -322,7 +322,7 @@ static void __exit dac_audio_exit(void)
+ 	free_irq(TIMER1_IRQ, 0);
 
-    http://rt.wiki.kernel.org/index.php/Main_Page
+ 	unregister_sound_dsp(device_major);
+-	kfree((void *)data_buffer);
++	kfree(data_buffer);
+ }
 
-to build the 2.6.29.4-rt15 tree, the following patches should be
-applied:
-
-    http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.29.4.tar.bz2
-    http://www.kernel.org/pub/linux/kernel/projects/rt/patch-2.6.29.4-rt15.bz2
-
-The broken out patches are also available at the same download
-locations.
-
-Enjoy !
-
-       tglx
-
+ module_init(dac_audio_init);
+-- 
+1.5.6.5
