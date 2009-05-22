@@ -1,158 +1,436 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757471AbZEVNbp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757446AbZEVNgM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757471AbZEVNbp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 09:31:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752320AbZEVNbi
+	id S1757446AbZEVNgM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 09:36:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755847AbZEVNf6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 09:31:38 -0400
-Received: from mail-pz0-f177.google.com ([209.85.222.177]:51585 "EHLO
-	mail-pz0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751655AbZEVNbh (ORCPT
+	Fri, 22 May 2009 09:35:58 -0400
+Received: from ppsw-6.csi.cam.ac.uk ([131.111.8.136]:33437 "EHLO
+	ppsw-6.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754590AbZEVNf4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 09:31:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=FcTvd3Ou2ysZksTgPafkjJAv6SZ3vaTSzjV0+GyX1k8Omg2M8Xo6LsF1XHxY/YLwV2
-         CIYE6VX+xAbHK6gqwFLdHfzq9JfXEM10nOwim4rmUGlGyd4EPeAu+HDiJTK0kLx44qS5
-         kW5XgpSri9TnRPAIgIK2csCcz8VmsJcEpMrak=
+	Fri, 22 May 2009 09:35:56 -0400
+X-Cam-AntiVirus: no malware found
+X-Cam-SpamDetails: not scanned
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+Message-ID: <4A16AA1E.9010407@cam.ac.uk>
+Date: Fri, 22 May 2009 13:35:26 +0000
+From: Jonathan Cameron <jic23@cam.ac.uk>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Date: Fri, 22 May 2009 19:31:29 +0600
-Message-ID: <b9df5fa10905220631y7b1a094dn9a6e13de1b9c43af@mail.gmail.com>
-Subject: [PATCH] x86,APIC: Detect lapic_is_integrated() once - use on and on.
-From: Rakib Mullick <rakib.mullick@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Cyrill Gorcunov <gorcunov@openvz.org>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
+To: Kim Kyuwon <q1.kim@samsung.com>
+CC: felipe.balbi@nokia.com, Kim Kyuwon <chammoru@gmail.com>,
+       Mohamed Ikbel Boulabiar <boulabiar@gmail.com>,
+       Trilok Soni <soni.trilok@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>,
+       Kyungmin Park <kyungmin.park@samsung.com>,
+       Jean Delvare <khali@linux-fr.org>,
+       "Zhang, Xing Z" <xing.z.zhang@intel.com>,
+       "Gross, Mark" <mark.gross@intel.com>,
+       jketreno <jketreno@linux.intel.com>,
+       "Trisal, Kalhan" <kalhan.trisal@intel.com>
+Subject: Re: [RFC] Add Input IOCTL for accelerometer devices
+References: <20090515131636.GE4443@nokia.com> <5d5443650905151106v2fe7ad1ci6c966463a991e732@mail.gmail.com> <45cc95260905151230j5485995dpbbd882dc91b25339@mail.gmail.com> <20090515200235.GA11829@nokia.com> <4d34a0a70905180045u6619773dt1563fe38b13d46fb@mail.gmail.com> <20090518091236.GH4443@nokia.com> <4A11344B.3000405@cam.ac.uk> <4A125265.6040509@samsung.com> <4A153E3E.8090509@cam.ac.uk> <4A166083.8080704@samsung.com>
+In-Reply-To: <4A166083.8080704@samsung.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  Impact: Reduce text space through efficient coding
+Hi Kyuwon,
+> Jonathan Cameron wrote:
+>> No, the conclusion was to wait and see if this is practical. It was
+>> kept in
+>> mind during the several iterations of design of IIO, but the focus of
+>> development was always high performance capture and handling all the
+>> facilities
+>> of these highly variable sensors as consistently as possible.
+>>
+>> I guess now we are in a position to see if it is indeed practical to
+>> add input
+>> support.
+> 
+> Thank you for your clarification.
+> 
+>>> I can't understand why you inserted ring buffers related stuffs in iio.
+>>>  Please let me understand in easy words. And please note that in
+>>> /Documentation/SubmittingPatches
+>> Because the hardware I have uses hardware ring buffers e.g. VTI
+>> SCA3000 series,
+>> analog adxl345.  More and more sensors are moving this way as without
+>> a true
+>> real time os, it's the only way of ensuring high data rate data is
+>> available
+>> for sophisticated almost real time processing. 
+> 
+> How can you be so sure that more and more sensors use h/w ring buffer?
+> Is there any data or experts who supports your point?
+I'm basing this on observation and believe me I use a lot of different
+sensors and work with people who use a lot more. I'm not going to waste
+my timing getting them to post a series of 'opinions' on this list when
+a bit of Googling and looking at release dates of sensors will give you
+the same information.
 
- Determine apic is integrated or not - by calling
-lapic_is_integrated() once from APIC_init_uniprocessor() and keep it
-in a variable integrated_lapic. Thus we can determine apic is
-integrated or not, by checking the variable instead of calling
-lapic_is_integrated() on and on. Marking lapic_is_integrated() as
-__init, which reduces some text space. Also allows us to get away from
-messy #ifdef and inline.
+Until recently the only ones I had encountered were VTI's.  Now Analog have
+started producing a range of sensors with various forms of triggered buffer.
+Take a look at their 'new' page.  Admittedly some of the newer ones don't
+fall easily into my current model so some rethinking of elements of it will
+be needed.  The reason none of the below is currently supported is that I
+haven't been able to get them as yet. I'm particularly interested in the
+16240 for some athlete monitoring applications.
 
----
-Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
+We have:
 
---- linus/arch/x86/kernel/apic/apic.c	2009-05-21 22:22:15.000000000 +0600
-+++ rakib/arch/x86/kernel/apic/apic.c	2009-05-21 23:27:26.000000000 +0600
-@@ -127,6 +127,9 @@ early_param("nox2apic", setup_nox2apic);
+* ADIS16220  (I hadn't even seen this one before) Digital Vibration sensor.
+	This has a 1024 sample buffer with various possible triggering modes.
 
- unsigned long mp_lapic_addr;
- int disable_apic;
-+
-+static int integrated_lapic;
-+
- /* Disable local APIC timer from the kernel commandline or via dmi quirk */
- static int disable_apic_timer __cpuinitdata;
- /* Local APIC timer works in C2 */
-@@ -188,13 +191,12 @@ static inline int lapic_get_version(void
- /*
-  * Check, if the APIC is integrated or a separate chip
-  */
--static inline int lapic_is_integrated(void)
-+void __init lapic_is_integrated(void)
- {
--#ifdef CONFIG_X86_64
--	return 1;
--#else
--	return APIC_INTEGRATED(lapic_get_version());
--#endif
-+	if (APIC_INTEGRATED(lapic_get_version()))
-+		integrated_lapic = 1;
-+	else
-+		integrated_lapic = 0;
- }
+* ADIS16240 Impact sensor and recorder 3x8192 sample buffer using triggered events.
 
- /*
-@@ -258,7 +260,7 @@ void __cpuinit enable_NMI_through_LVT0(v
- 	v = APIC_DM_NMI;
+* ADXL346 Accelerometer. 32 levels of output data FIFO minimizes host processor
+	load.
 
- 	/* Level triggered for 82489DX (32bit mode) */
--	if (!lapic_is_integrated())
-+	if (!integrated_lapic)
- 		v |= APIC_LVT_LEVEL_TRIGGER;
+* ADXL335 Analog sensor so unsurprisingly doesn't feature a digital buffer.
 
- 	apic_write(APIC_LVT0, v);
-@@ -313,7 +315,7 @@ static void __setup_APIC_LVTT(unsigned i
- 	lvtt_value = LOCAL_TIMER_VECTOR;
- 	if (!oneshot)
- 		lvtt_value |= APIC_LVT_TIMER_PERIODIC;
--	if (!lapic_is_integrated())
-+	if (!integrated_lapic)
- 		lvtt_value |= SET_APIC_TIMER_BASE(APIC_TIMER_BASE_DIV);
+If we hit the more button and select products in the last year we also gain 
+the ADXL345 wich yet again provides a fifo to reduce load on the processor.
+Before that one, I don't think any of Analog's products featured such buffering.
 
- 	if (!irqen)
-@@ -869,7 +871,7 @@ void clear_local_APIC(void)
- 		apic_write(APIC_LVTPC, APIC_LVT_MASKED);
+So we now have only 2 different manufacturers making sensors with ring buffers
+on them. One of which has put them onto 5 out of their last 6 products (though
+I'll admit the 345 and 346 are extremely closely related).  Looks like
+they think there is a market.
 
- 	/* Integrated APIC (!82489DX) ? */
--	if (lapic_is_integrated()) {
-+	if (integrated_lapic) {
- 		if (maxlvt > 3)
- 			/* Clear ESR due to Pentium errata 3AP and 11AP */
- 			apic_write(APIC_ESR, 0);
-@@ -1064,7 +1066,7 @@ void __init init_bsp_APIC(void)
- 	 */
- 	apic_write(APIC_LVT0, APIC_DM_EXTINT);
- 	value = APIC_DM_NMI;
--	if (!lapic_is_integrated())		/* 82489DX */
-+	if (!integrated_lapic)		/* 82489DX */
- 		value |= APIC_LVT_LEVEL_TRIGGER;
- 	apic_write(APIC_LVT1, value);
- }
-@@ -1073,7 +1075,7 @@ static void __cpuinit lapic_setup_esr(vo
- {
- 	unsigned int oldvalue, value, maxlvt;
+> And although assuming you are right here, STILL only your SCA3000 series
+> have h/w ring buffer. Thus, I think there is no reason the framework
+> should have ring buffer feature
+> 
+>> You can't afford to have gaps
+>> in your data.
+>>
+>>  Also, for my primary application (fast, consistent capture
+>> from a number of different sensors) this is the simplest design that
+>> provides
+>> the performance needed.  We spent a lot of time trying to do this in
+>> other
+>> ways.
+> 
+> Your words('simplest' and 'spending a lot of time') are subjective.
+Yes, ultimately I wrote a system that fulfilled my requirements, not one
+that was designed to meet yours. Let me reemphasize that the framework
+is very much designed to be modular.  If you don't want ring buffers then
+you don't have to use them.  Their presence has NO effect whatsoever on
+drivers that aren't using them.  In fact, even when the driver does support
+them, I've mostly made it a Kconfig option on a per driver basis.
 
--	if (!lapic_is_integrated()) {
-+	if (!integrated_lapic) {
- 		pr_info("No ESR for 82489DX.\n");
- 		return;
- 	}
-@@ -1126,7 +1128,7 @@ void __cpuinit setup_local_APIC(void)
+For my typical application the more esoteric triggering methods are also
+vital.  If I want to synchronize a linux based mote's capture of an
+accelerometer with a high end motion capture system and not miss a single
+sample, within an adaptable framework then I need pretty much every element
+currently in the IIO system.  Likewise, if I want regular 2Khz sampling of
+an ADC connected via 400Khz i2c then I need that to be supported.  Yes these
+aren't your applications, which I'm assuming from your post are control of
+a pretty user interface, but they are an import class of applications for
+other users within both the academic world and industry.
 
- #ifdef CONFIG_X86_32
- 	/* Pound the ESR really hard over the head with a big hammer - mbligh */
--	if (lapic_is_integrated() && apic->disable_esr) {
-+	if (integrated_lapic && apic->disable_esr) {
- 		apic_write(APIC_ESR, 0);
- 		apic_write(APIC_ESR, 0);
- 		apic_write(APIC_ESR, 0);
-@@ -1251,7 +1253,7 @@ void __cpuinit setup_local_APIC(void)
- 		value = APIC_DM_NMI;
- 	else
- 		value = APIC_DM_NMI | APIC_LVT_MASKED;
--	if (!lapic_is_integrated())		/* 82489DX */
-+	if (!integrated_lapic)		/* 82489DX */
- 		value |= APIC_LVT_LEVEL_TRIGGER;
- 	apic_write(APIC_LVT1, value);
 
-@@ -1585,6 +1587,8 @@ int __init APIC_init_uniprocessor(void)
- 		pr_info("Apic disabled by BIOS\n");
- 		return -1;
- 	}
-+	/* Since CONFIG_X86_64, so it's integrated.	*/
-+	integrated_lapic = 1;
- #else
- 	if (!smp_found_config && !cpu_has_apic)
- 		return -1;
-@@ -1599,6 +1603,8 @@ int __init APIC_init_uniprocessor(void)
- 		clear_cpu_cap(&boot_cpu_data, X86_FEATURE_APIC);
- 		return -1;
- 	}
-+	/* Determine APIC is integrated or not	*/
-+	lapic_is_integrated();
- #endif
+> 
+>>> 644 4) Don't over-design.
+>>> 645
+>>> 646 Don't try to anticipate nebulous future cases which may or may not
+>>> 647 be useful:  "Make it as simple as you can, and no simpler."
+>>
+>> The are useful. I'm using them in real applications every day.  It
+>> might not
+>> be your use case but it is a number of other peoples (some of whom are
+>> cc'd
+>> above).
+> 
+> Our objective is merging code upstream. We have lots of kernel drivers
+> and kernel features which we are using everyday However, I know these
+> are can't be merged kernel.
+This is not the place to get into that sort of argument so I'll keep my
+reply to this short.
 
- 	enable_IR_x2apic();
+Why not?  If you have something that is useful, then why not submit it?
+This is particularly true in cases like this were the useful element
+doesn't change anything already in kernel and hence if people don't want
+it then it won't effect them.
+> 
+>> The absolutely crucial thing about the design is that if you don't
+>> want ring
+>> buffers, then don't use them (by which I mean don't compile them in -
+>> it's a
+>> modular design so if you don't want them you don't have to have them.)
+> 
+> I'm just thinking the right functions should be located in the right
+> position. If only SCA3000 series use ring buffer, it should be in the
+> SCA3000 series driver.
+It's not only the SCA3000 series.
+Note whilst they may not matter for your applications the support
+for software ring buffering in kernel is still absolutely vital to me. Also
+see the devices cited above.
+> 
+>> In the first instance I probably wouldn't be pushing that element into
+>> the kernel.
+>> As you are illustrating this is controversial and needs a thorough
+>> discussion.
+>>
+>> At that point the whole system reduces to  much simpler core which
+>> handles
+>> the sysfs interface registration and management of chrdevs associated
+>> with events.
+>> At this level it's fairly similar to input, but without the event
+>> aggregation and
+>> with things like event escalation and dynamic chrdev allocation.
+> 
+> We already have a nice 'input subsystem'. why not just using 'input
+> subsystem'
+See the original discussion and remember that we are dealing with application
+cases beyond using these devices for human input. To quote Dmitry:
+
+>I don't think that input subsystem would be the best choice. While we
+>do support the event-driven mechanism for delivering information to
+>userspace input is mostly oriented for human interface devices, not
+>general data acquisition. If anything input_dev is too fat. Another
+>thing is that input layer anonymizes input devices, makes them
+>capability-oriented. I.e. we dont really care what model of joystick
+>we have, we want something that reports ABS_X, ABS_Y, BTN_FIRE and
+>userpsace can use it whether it a simple analog joystick or something
+>fancy and USB connected. For your purposes you probably do want to know
+>what the device is and what exactly being sampled/measured.
+
+>I'd go with a lean and mean new subsytem.
+(http://lkml.org/lkml/2008/5/21/186)
+
+Now, you might argue that the resulting subsystem is not lean and mean,
+but to my mind it comes down to a case of what code actually runs on a
+given event.  Large chunks of the core subsystem are concerned with
+simplifying shared functionality between different devices,
+but in most use cases the run path from events happening to them hitting
+userspace is as lean and mean as possible whilst maintaining flexibility
+where needed.
+
+If you don't care about he anonymous nature of devices under input then
+fine, submit your drivers to their system.  Then if the sensor in question
+becomes useful to someone who does need some of the additional functionality
+that iio provides we will end up with a second driver.  It's exactly this
+case that lead to the conclusion in the original discussion that there may
+be circumstances where a given device has several separate drivers within
+the kernel. Conclusion was that if the requirements were different enough
+and they could not be easily merged, this may be the best way to go.
+> 
+>>> I can't understand. Why we should make accelerometer(or sensor)
+>>> framework relate to ADC?
+>> There are a couple of reasons:
+>> 1) Accelerometers are effectively analog sensors wired up to an ADC.
+>> As such
+>> they share a lot of common features.
+>> 2) Many real accelerometer rigs out there actually use a pair of chips,
+>> so as far as Linux is concerned you are talking to an adc not the
+>> accelerometer
+>> on the other side. Handling this case is still an open issue and it
+>> was to this
+>> that I was referring above.
+> 
+> If there is still an open issue, it is difficult to merge this IIO
+> subsystem to upstream kernel.
+I disagree. It's irrelevant to merging the subsystem. You don't have to 
+have every use case and every possible setup handled by a subsystem from
+inception.  For now, if you really need your adc connected accelerometer
+to export 'accel_x accel_y' etc then you can trivially write a driver
+for the whole system.  This would obviously lead to a certain amount of
+code duplication and hence I'm suggesting that the question of whether
+this should be a userspace element (similar to lm-sensors config files)
+or the linkages should be specified in kernel (similar to ASoC).
+> 
+>>> My two accelerometer are not in this cases. 
+>> Indeed not.  But many others are and here we are talking about a general
+>> framework.
+>>> If really sensors are related to ADC, it's better make this as
+>>> library or
+>>> application.
+>> That is an open question.  There are cases where it would have to be done
+>> in kernel (where both the accelerometer and the adc have separate control
+>> interfaces). 
+> 
+> Then you can make another device driver module or API that can help
+> intercommunicate between two devices.
+Yes.  That may be the way to go down the line.
+> 
+>>  Why don't we to be simple. Please let me understand in easy
+>>> words.
+>>>
+>>> Let me ask a few question in conclusion.
+>> Firstly thanks for sending this driver, its always enlightening to see
+>> how people have handled such a device.  Out of interest, have you
+>> posted this to the input list?  I'd be interested to see what their
+>> comments are.
+> 
+> I can't add this driver to input list, because this kxsd9 driver is for
+> accelerometer.
+Why does this prevent you posting it there?  It is using the input framework
+so if it was going anywhere in the kernel it would require a review and ACK
+from the relevant people on that list in much the same way as it should also
+be posted to the spi / i2c list as appropriate for review. 
+> 
+>>> 1) Does your iio subsystem have all functions which attached kxsd9
+>>> driver has? i.e.
+>>> a. works in polling mode
+>> Yes,
+>>> b. works in interrupt mode
+>> No, but only because I was utilizing it as an example of a minimalist
+>> driver.
+>> See the lis3l02dq driver in the git tree for how it would be extended.
+>>
+>> Firstly, beware, the interrupt case for this chip is very different to
+>> the more
+>> common cases where the interrupt in question indicates the
+>> availability of a new
+>> reading.
+>>
+>> As a more general comment, I'd also argue that the reading you
+>> take on interrupt is irrelevant. The event was the threshold pass, not
+>> the
+>> value of the reading. It should be up to userspace to decide if it
+>> cares what
+>> the reading is and if it does, it has a polling mode with which to
+>> read it.
+>> As I read the data sheet, the device isn't storing the accelerations at
+>> interrupt, so the value you are reading is not relevant to the event
+>> at all, but
+>> typically will be another reading.
+>>
+>> I like the code you have for bringing it up from low power mode to
+>> grab a current
+>> value and then go back to sleep. I haven't seen this functionality in
+>> many chips.
+>>
+>> There are a couple of ways that it could be handled.
+>> 1) Register the MOTLat event to be passed up to userspace and let
+>> userspace take
+>>    a reading via the normal poll modes. (pretty much what would happen
+>> in input)
+>>
+>> 2) Configure this as and IIO trigger which would allow it to be used
+>> to 'trigger'
+>>    the reading of a number of other sensors as well as the acceleration.
+>>
+>> It should be possible to support both of these but as per your earlier
+>> comment
+>> about not adding features until they are needed, I'd advocate only
+>> supporting the
+>> first option until the someone needs the second.
+>>
+>>> c. provide an interface to user space in order setting a few parameters
+>>> and read x, y, z variances.
+>> Yes, via sysfs.
+>>  
+>>> 2) How long will it take to your iio subsystem is merged into mainline?
+>> Not sure - I still don't have enough reviewers. As far as I'm
+>> concerned, bar
+>> changes relating to reviews it's been ready for merging for a couple of
+>> months.  Since the last posting that got almost no responses the only
+>> changes
+>> have been minor changes and comment clean ups.
+>> My intention is to shortly seek advice on how to go about doing this, but
+>> my current feeling is that it will have to be done in stages.  The idea
+>> is that each stage will involve a relatively small code base and hence
+>> be easier for reviewers to handle.  The white paper was written to assist
+>> with this process by providing an overview of how everything links
+>> together
+>> without reviewers having to read the full code.
+>>
+>> 1) The core functionality.   This gives us something very close to
+>> input with
+>> the principal changes as described above.
+>>
+>> 2) A set of example drivers
+>>
+>> At this point we will have a common framework against which to merge
+>> new drivers.
+>>
+>> 3) The advanced features (triggering and ring buffering)
+>>
+>> 4) The drivers for devices requiring 3.
+>>  
+>>> I have quick review of you iio subsytem. Sorry but I think it' somewhat
+>>> complicated and have a lot of functions which are still not needed.
+>> By you - I repeat that I have been using this system in anger for about 6
+>> months now.  I only know of one bit of functionality in there that I'm
+>> not
+>> currently using (the first of the trigger lists) and that is simply
+>> because
+>> I haven't completed the driver that uses it as yet and dropping it
+>> would be
+>> a trivial change.
+>>> And
+>>> it seems like your coding style doesn't look like Linux coding style
+>>> that I'm familiar with.
+>> As far as I know the code absolutely conforms to every coding style
+>> convention of the kernel.  The version in the 'mess' branch has a few
+>> comment
+>> clean ups as a result of checking the kernel doc comments.  If you have
+>> specific examples please send them on and I'll be happy to clean them up.
+> 
+> For instance, please
+> drivers/industrialio/ -exec ./scripts/checkpatch.pl --file {} \;
+Ok, I'm seeing a couple of minor formatting errors which I typically only
+clean up properly when I am posting a set to lkml.  Those sets are always
+verified with checkpatch. What you are looking at is my development tree
+not one that I've carefully checked before posting.  Some of the errors
+are entirely deliberate.  I frequently use c99 comments in order to
+indicate that I need to clarify them before formally posting patches for
+reviews (precisely because checkpatch ensures I don't forget to do it!)
+
+If that's what you mean by 'your coding style doesn't look like Linux coding
+style' then you are massively exaggerating.
+If these sort of things really cause you trouble then look at the formal
+submissions to lkml. If I hadn't wanted to make the latest and most stable
+version of our internal code available as it was relevant to this discussion
+then I would have waited until I had time to clean up trivial formating
+errors.
+
+> 
+>>> I just hope we can add some accelerometer feature into mainline kernel
+>>> as soon as possible ;)
+>> I agree.  The stop gap solution (which a number drivers have taken) is
+>> to put
+>> them in drivers/misc on the basis that when we do have an agreed
+>> system we can
+>> then move them over at a later date.  I have already offered to do the
+>> conversions for a number of such drivers when iio gets merged.
+>>
+>> Jonathan
+>>
+> 
+> Finally,
+> Are you OK if someone trys making another framework for input(?)-sensor
+> or accelerometer.
+Of course I have no objections.
+
+If people want a unified framework useful for all the common applications
+of these devices then it will need to contain equivalents of what IIO does, if
+as previously discussed it makes more sense to have separate drivers then
+go ahead.  I'd advocate posting your current driver to the input list and
+inquiring what their opinions are on the matter.
+
+My personal opinion on this is:
+
+1) The way accelerometers are currently used for input is very simple, much
+more complex systems using information derived from multiple sensors will
+become common in the future (similar to the new wii remotes) or the stuff
+done by companies like Xsens.  This sort of stuff will require some elements
+similar to IIO (principally synchronized triggered capture from multiple
+sensors).
+
+2) For the level of device support you are talking about, there is no direct
+reason it shouldn't go into the main input system. There is no need for a new
+subsystem. Over to Dmitry to point out what I'm missing.  For example, the lis3lv02
+driver (in hwmon) does exactly this.  That driver was accepted
+by the input guys. Perhaps a drivers/input/accelerometer directory makes sense
+to group the drivers.
+
+Jonathan
