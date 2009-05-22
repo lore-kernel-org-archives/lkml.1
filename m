@@ -1,60 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757028AbZEVLnS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757396AbZEVLnm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757028AbZEVLnS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 07:43:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751584AbZEVLnD
+	id S1757396AbZEVLnm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 07:43:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757215AbZEVLnY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 07:43:03 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:64567 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751376AbZEVLnB convert rfc822-to-8bit (ORCPT
+	Fri, 22 May 2009 07:43:24 -0400
+Received: from smtp02.citrix.com ([66.165.176.63]:32077 "EHLO
+	SMTP02.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756639AbZEVLnX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 07:43:01 -0400
+	Fri, 22 May 2009 07:43:23 -0400
+X-IronPort-AV: E=Sophos;i="4.41,233,1241409600"; 
+   d="scan'208";a="52205408"
+Subject: Re: swiotlb: remove __weak hooks in favour of
+	architecture-specific functions
+From: Ian Campbell <Ian.Campbell@eu.citrix.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+CC: "jeremy@goop.org" <jeremy@goop.org>,
+       "beckyb@kernel.crashing.org" <beckyb@kernel.crashing.org>,
+       "okir@suse.de" <okir@suse.de>, "mingo@elte.hu" <mingo@elte.hu>,
+       "gregkh@suse.de" <gregkh@suse.de>,
+       "xendevel@lists.xensource.com" <xendevel@lists.xensource.com>,
+       "x86@kernel.org" <x86@kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090522201325I.fujita.tomonori@lab.ntt.co.jp>
+References: <1242906335.22654.188.camel@zakaz.uk.xensource.com>
+	 <1242922528-5982-1-git-send-email-ian.campbell@citrix.com>
+	 <20090522201325I.fujita.tomonori@lab.ntt.co.jp>
+Content-Type: text/plain
+Organization: Citrix Systems, Inc.
+Date: Fri, 22 May 2009 12:43:16 +0100
+Message-ID: <1242992596.22654.273.camel@zakaz.uk.xensource.com>
 MIME-Version: 1.0
-In-Reply-To: <20090416.155643.06066521.davem@davemloft.net>
-References: <ac3eb2510903270521i113df787u7ac5d842ece83740@mail.gmail.com> 
-	<20090327.172743.30040617.davem@davemloft.net> <1239898912.17211.7.camel@poy> 
-	<20090416.155643.06066521.davem@davemloft.net>
-From: Kay Sievers <kay.sievers@vrfy.org>
-Date: Fri, 22 May 2009 13:42:42 +0200
-Message-ID: <ac3eb2510905220442n4a1c087nba2ab54a2fba360c@mail.gmail.com>
-Subject: Re: sparc: struct device - replace bus_id with dev_name(), 
-	dev_set_name()
-To: David Miller <davem@davemloft.net>
-Cc: greg@kroah.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 17, 2009 at 00:56, David Miller <davem@davemloft.net> wrote:
->>> > The name size limit is gone, there is no BUS_ID_SIZE thing anymore in
->>> > the driver core. BUS_ID_SIZE should go away in the 2.6.30 timeframe.
->>> >
->>> > Could you please convert/remove BUS_ID_SIZE value from:
->>> >   drivers/net/gianfar.h:   char    phy_bus_id[BUS_ID_SIZE];
->>> >   drivers/net/ucc_geth.h:  char phy_bus_id[BUS_ID_SIZE];
->>> >   drivers/net/pasemi_mac.h:        char    phy_id[BUS_ID_SIZE];
->>> >   include/linux/phy.h:#define MII_BUS_ID_SIZE      (BUS_ID_SIZE - 3)
->>> >   include/linux/phy.h:     char bus_id[BUS_ID_SIZE];
->>> >
->>> > Or let me know how you want to convert it, so I can do it?
->>>
->>> Thanks a lot Kay, I'll look into these cases and take care
->>> of it.
->>
->> This moves the 20 into the netdevice header, we need to get rid
->> of the driver core define now, otherwise people start adding new
->> code using it, and we want to finish this thankless job finally. :)
->
-> I was working on fixing this properly Kay, please be patient.
->
-> I'll have it killed off in net-next-2.6 soon enough.
+On Fri, 2009-05-22 at 07:13 -0400, FUJITA Tomonori wrote:
+> On Thu, 21 May 2009 17:15:21 +0100
+> Ian Campbell <ian.campbell@citrix.com> wrote:
+> Please go with the following way (that I posted yesterday):
+> 
+> http://marc.info/?l=xen-devel&m=124292666214380&w=2
+> 
+> 
+> Export the core feature of swiotlb, managing iotlb buffer and
+> implement the Xen mapping functions.
 
-Hey David,
-just a quick check, to make sure we are prepared when 2.6.31 opens.
-Any updates regarding the BUS_ID_SIZE conversion?
+I feel that should be a last resort, before we go down that path we
+should try and find a way for us to use the generic code in a clean way
+which makes everyone happy.
 
-Thanks,
-Kay
+We have had several attempts at this and admittedly have not yet come up
+with something that satisfies everyone but I don't really think we have
+gotten to the point of admitting defeat and just duplicating the code.
+
+I think the proposal to use a dma_map_range-like function which I sent a
+few minutes ago I think gets us closer to something which satisfies
+everyone's requirements, including yours for a clean abstraction.
+
+>  With that approach, there is not
+> much code duplication and there is no need for ugly hooks for dom0;
+> the phys/bus address conversion and address checking.
+
+The phys/bus address conversion is also needed for powerpc.
+
+I think the two address checking functions can be collapsed into a
+single one which satisfies the needs of both Xen and powerpc.
+
+What dom0 specific "ugly" hooks does that leave? The alloc one? I've
+discussed that in another mail.
+
+Ian.
+
