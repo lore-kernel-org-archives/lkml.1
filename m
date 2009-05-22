@@ -1,129 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758035AbZEVWVS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758187AbZEVWXb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758035AbZEVWVS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 18:21:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757428AbZEVWVK
+	id S1758187AbZEVWXb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 18:23:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757428AbZEVWXY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 18:21:10 -0400
-Received: from mx-out2.daemonmail.net ([216.104.160.39]:41175 "EHLO
-	mx-out2.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757270AbZEVWVJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 18:21:09 -0400
-From: "Michael S. Zick" <lkml@morethan.org>
-Reply-To: lkml@morethan.org
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [BUG FIX] Make x86_32 uni-processor Atomic ops, Atomic
-Date: Fri, 22 May 2009 17:21:05 -0500
-User-Agent: KMail/1.9.9
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org
-References: <200905221139.26941.lkml@morethan.org> <20090522183622.GA8385@elte.hu> <4A16F62B.40207@zytor.com>
-In-Reply-To: <4A16F62B.40207@zytor.com>
+	Fri, 22 May 2009 18:23:24 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:56280 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757270AbZEVWXX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 May 2009 18:23:23 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: INFO: possible circular locking dependency at cleanup_workqueue_thread
+Date: Sat, 23 May 2009 00:23:15 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc6-rjw; KDE/4.2.3; x86_64; ; )
+Cc: Oleg Nesterov <oleg@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <c4e36d110905120059i4c155508oa00672da0b33a07a@mail.gmail.com> <20090519185140.GA32012@redhat.com> <1242989166.4606.5.camel@johannes.local>
+In-Reply-To: <1242989166.4606.5.camel@johannes.local>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: Text/Plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200905221721.08495.lkml@morethan.org>
+Message-Id: <200905230023.16377.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri May 22 2009, H. Peter Anvin wrote:
-> Ingo Molnar wrote:
-> > * Michael S. Zick <lkml@morethan.org> wrote:
+On Friday 22 May 2009, Johannes Berg wrote:
+> On Tue, 2009-05-19 at 20:51 +0200, Oleg Nesterov wrote:
+> 
+> > > > > Anyway, you can have a deadlock like this:
+> > > > >
+> > > > > CPU 3			CPU 2				CPU 1
+> > > > > 							suspend/hibernate
+> > > > > 			something:
+> > > > > 			rtnl_lock()			device_pm_lock()
+> > > > > 							-> mutex_lock(&dpm_list_mtx)
+> > > > >
+> > > > > 			mutex_lock(&dpm_list_mtx)
+> > > > >
+> > > > > linkwatch_work
+> > > > >  -> rtnl_lock()
+> > > > > 							disable_nonboot_cpus()
+> > > >
+> > > > let's suppose disable_nonboot_cpus() does not take cpu_add_remove_lock,
+> > > >
+> > > > > 							-> flush CPU 3 workqueue
+> > > >
+> > > > in this case the deadlock is still here?
+> > > >
+> > > > We can't flush because we hold the lock (dpm_list_mtx) which depends
+> > > > on another lock taken by work->func(), the "classical" bug with flush.
+> > > >
+> > > > No?
+> > >
+> > > Yeah, it looks like cpu_add_remove_lock doesn't make a difference...
+> > > It's just lockdep reporting a longer chain that also leads to a
+> > > deadlock.
 > > 
-> >> Found in the bit-rot for 32-bit, x86, Uni-processor builds:
-> >>
-> >> diff --git a/arch/x86/include/asm/alternative.h b/arch/x86/include/asm/alternative.h
-> >> index f6aa18e..3c790ef 100644
-> >> --- a/arch/x86/include/asm/alternative.h
-> >> +++ b/arch/x86/include/asm/alternative.h
-> >> @@ -35,7 +35,7 @@
-> >>                 "661:\n\tlock; "
-> >>
-> >>  #else /* ! CONFIG_SMP */
-> >> -#define LOCK_PREFIX ""
-> >> +#define LOCK_PREFIX "\n\tlock; "
-> >>  #endif
+> > So. we should not call cpu_down/disable_nonboot_cpus under device_pm_lock().
 > > 
-> > What is your motivation for this change? At first sight this makes 
-> > the UP kernel a bit larger and a bit smaller. Are you fixing some 
-> > real regression/bug here?
+> > At first glance this was changed by
 > > 
+> > 	PM: Change hibernation code ordering
+> > 	4aecd6718939eb3c4145b248369b65f7483a8a02
+> > 
+> > 	PM: Change suspend code ordering
+> > 	900af0d973856d6feb6fc088c2d0d3fde57707d3
+> > 
+> > commits. Rafael, could you take a look?
 > 
-> That looks very odd indeed.  The whole point of the LOCK_PREFIX macro is
-> to squelch it on UP (locks that should not be squelched on UP should not
-> be annotated LOCK_PREFIX.)
-> 
+> I just arrived at the same conclusion, heh. I can't say I understand
+> these changes though, the part about calling the platform differently
+> may make sense, but calling why disable non-boot CPUs at a different
+> place?
 
-I can only act as a messanger to report the behavior I observe;
-But let me see if I can't do a better job of that limited role.
+Because the ordering of platform callbacks and cpu[_up()|_down()] is also
+important, at least on resume.
 
-hpa makes the best point of all in the responses here...
+In principle we can call device_pm_unlock() right before calling
+disable_nonboot_cpus() and take the lock again right after calling
+enable_nonboot_cpus(), if that helps.
 
-What I see (erratic operation, erratic lock-ups of the machine, 
-and the previously posted lockdep dump) -
-
-This may well be misplaced usage of the LOCK_PREFIX macro;
-I have already agreed to keep my eyes open for this more 
-specific problem.
-
-A secondary possibility, hinted at in the context of other replies;
-The usage of the LOCK_PREFIX may not apply equally to all processors
-for which this code gets included.
-It is possible that I am building for one of the exceptions.
-That tells us nothing, since the CPU technical details are under NDA.
-All that can be done in this case is report behavior differences from
-the closest publicly described processor (Pentium-M).
-
-For that purpose, I suggest that a single processor box, with other 
-hardware that makes memory access independent of the processor's 
-control using a processor older than P-4 is a potential test bed.
-"Other hardware that makes memory access..." I previously termed:
-"buss master DMA" - which is overly specific.  It misleads people
-into thinking I am seeing hardware control issues rather than
-non-exclusive memory access.
-
-My earlier comments about taking an interrupt between the memory read
-and the memory write operations is from a different manual than the
-one posted.  A manual that only applies to processors older than 
-the ones supported by the Linux kernel.  
-Sorry, my bad, grabbed the wrong book, posted the correct link (SH).
-
-Until one or more specific usages of the LOCK_PREFIX macro can be 
-demonstrated to be incorrect (at least for some of the processors 
-using this code) - -
-
-Then making the posted change is a single point change that gives a 
-pair of builds (one with, one without) to compare the behavior of on 
-the test bed.
-
-It is *not* the preferred change for a general release kernel, the
-preferred change would be one that makes a specific rather than
-general correction.  
-Perhaps only for some functions, perhaps only for some of the 
-processors that currently select this code.
-
-The observation that executing an unnecessary 'lock' opcode in some
-cases slows down the machine is not felt by myself to be significant 
-to duplicating my observations.  Note: I have been wrong before.
-
-This is as informative as I can make the message.
-
-PS: *not* a single machine failure, tested on five machines, owned
-by four different people, two brands, with different use histories.
-
-Mike
-> 	-hpa
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-> 
-
-
+Thanks,
+Rafael
