@@ -1,36 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757601AbZEVQHV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757529AbZEVQKU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757601AbZEVQHV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 12:07:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754859AbZEVQHL
+	id S1757529AbZEVQKU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 12:10:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753349AbZEVQKK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 12:07:11 -0400
-Received: from tomts52.bellnexxia.net ([209.226.175.177]:62626 "EHLO
-	tomts52-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751535AbZEVQHK convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 12:07:10 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: At6YADxnFkrR4q+H/2dsb2JhbACBL4oDgluSFKgziyKDdwU
-X-Mailer: Openwave WebEngine, version 2.8.11 (webedge20-101-194-20030622)
-X-Originating-IP: [41.219.137.100]
-From: =?ISO-8859-1?B?qUxH?= Alert <macraeins@nb.aibn.com>
-Reply-To: jerry.smith90@btinternet.com
-To: <info@winners.org>
-Subject: Bananza
-Date: Fri, 22 May 2009 12:06:59 -0400
+	Fri, 22 May 2009 12:10:10 -0400
+Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:40228 "EHLO
+	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751535AbZEVQKJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 May 2009 12:10:09 -0400
+Date: Fri, 22 May 2009 18:10:09 +0200
+From: Andreas Mohr <andi@lisas.de>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Peter Feuerer <peter@piie.net>, petkovbb@gmail.com,
+       LKML <linux-kernel@vger.kernel.org>, lenb@kernel.org,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [PATCH] Acer Aspire One Fan Contro
+Message-ID: <20090522161009.GA20476@rhlx01.hs-esslingen.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Message-Id: <20090522160711.KTJF1565.tomts52-srv.bellnexxia.net@toip40-bus.srvr.bell.ca>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090522140930.GA26580@elf.ucw.cz>
+X-Priority: none
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-You have just been awarded,the sum of  £950.000.00 in the  ELECTRONICS Award 2009, Anniversary Bonanza.. held in May.
+Hi,
 
-Names:............. Address:..............
-Country:................ Age:..........
+> Yep, I don't disagree. But I strongly suspect that if you force the
+> fan off and overheat the machine, it will shut down in hardware before
+> doing any damage.
 
-Regard
+s/strongly suspect/definitely know/ ;-)
 
+Reason being that my machine suddenly dropped dead (2 or 3 times maybe),
+and when I then reactivated it, the fan made a nice tick....tick....tick noise
+as if it tried to start but something blocked it a bit too much.
+Shook and rocked the box a bit (not too difficult with a netbook after all ;),
+then it worked again and ever since.
+Probably a slightly wonky fan, but I'm not sure whether I should care
+all that much at the moment.
+I _am_ using the shell script currently, but within pretty safe limits
+(I'd hope that I'm not insane after all), thus I don't think this negatively
+affected fan health or machine.
+
+I cannot really testify that those had been "properly triggered"
+emergency shutdowns, but from the looks of it they definitely were,
+nothing melted or smoking or whatever.
+
+BIOS v0.3109 (ooold)
+
+Andreas Mohr
