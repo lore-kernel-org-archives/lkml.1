@@ -1,93 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758051AbZEVVE5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758184AbZEVVFd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758051AbZEVVE5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 17:04:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757139AbZEVVEp
+	id S1758184AbZEVVFd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 17:05:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757428AbZEVVEq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 17:04:45 -0400
-Received: from d112a2.x-mailer.de ([212.162.53.4]:42269 "EHLO
+	Fri, 22 May 2009 17:04:46 -0400
+Received: from d112a2.x-mailer.de ([212.162.53.4]:42035 "EHLO
 	d112a2.x-mailer.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753396AbZEVVEo (ORCPT
+	with ESMTP id S1756755AbZEVVEp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 17:04:44 -0400
-Message-Id: <cover.1243024967.git.kkeil@pingi.linux-pingi.de>
-Date: Fri, 22 May 2009 22:42:47 +0200
-Subject: [mISDN PATCH v2 00/19] mISDN patchset for next
+	Fri, 22 May 2009 17:04:45 -0400
+Message-Id: <bb4f2bad6654b2dd9f9e7c4a983c0c784654ac3e.1243024967.git.kkeil@pingi.linux-pingi.de>
+In-Reply-To: <cover.1243024967.git.kkeil@pingi.linux-pingi.de>
+References: <cover.1243024967.git.kkeil@pingi.linux-pingi.de>
+Subject: [mISDN PATCH v2 02/19] DSP now uses ring buffer for echo canceler
 From: Karsten Keil <keil@b1-systems.de>
 To: linux-kernel@vger.kernel.org
 Cc: netdev@vger.kernel.org, David Miller <davem@davemloft.net>,
        i4ldeveloper@listserv.isdn4linux.de
+Date: Fri, 22 May 2009 23:04:45 +0200
 X-Info: valid message
 X-Info: original Date
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a update of the mISDN driver for net-next.
-It syncs the mISDN driver with the development on git.misdn.org.
-More updates (new hardware support) will follow.
+From: Andreas Eversberg <andreas@eversberg.eu>
 
-You can pull it from 
-git://master.kernel.org/pub/scm/linux/kernel/git/kkeil/ISDN-2.6-net-next.git for_dave
+DSP now uses ring buffer for echo canceler.
+Added missing include in l1oip_codec.c
 
-Andreas Eversberg (12):
-  Add watchdog functionality to hfcmulti driver
-  DSP now uses ring buffer for echo canceler
-  Echo canceler now gets delay information from hardware
-  Fixed missing spin lock on pipeline process
-  Added layer-1-hold feature
-  Fix DTMF locking bug issue
-  Hardware acceleration is now possible in conjunction with audio
-    recording
-  Fix TEI and SAPI handling
-  Add "sapi" information to debug messages
-  Add PCI ID for Junghanns 8S card
-  Added PCI ID for new Junghanns.net Single E1 cards.
-  Fix DTMF detection enable/disable
+Signed-off-by: Andreas Eversberg <andreas@eversberg.eu>
+Signed-off-by: Karsten Keil <keil@b1-systems.de>
+---
+ drivers/isdn/mISDN/dsp.h         |    3 ++-
+ drivers/isdn/mISDN/l1oip_codec.c |    1 +
+ 2 files changed, 3 insertions(+), 1 deletions(-)
 
-Arnaldo Carvalho de Melo (1):
-  Use kernel_{send,recv}msg instead of open coding
-
-Frank Seidel (2):
-  Reduce stack size in dsp_cmx_send()
-  Add allocation of recvbuf[1500] at run time to reduce stack size
-
-Karsten Keil (3):
-  Fix skb leak in error cases
-  Add XHFC support for embedded Speech-Design board to hfcmulti
-  Cleanup debug messages
-
-Roel Kluin (1):
-  isdn: get_free_devid() failure ignored
-
- drivers/isdn/hardware/mISDN/Kconfig         |   11 +-
- drivers/isdn/hardware/mISDN/hfc_multi.h     |   47 ++-
- drivers/isdn/hardware/mISDN/hfc_multi_8xx.h |  167 ++++++++
- drivers/isdn/hardware/mISDN/hfcmulti.c      |  614 ++++++++++++++++++---------
- drivers/isdn/hardware/mISDN/hfcpci.c        |   98 +++--
- drivers/isdn/hardware/mISDN/hfcsusb.c       |    4 +-
- drivers/isdn/mISDN/core.c                   |    8 +-
- drivers/isdn/mISDN/dsp.h                    |   19 +-
- drivers/isdn/mISDN/dsp_audio.c              |    5 +-
- drivers/isdn/mISDN/dsp_cmx.c                |  115 ++++--
- drivers/isdn/mISDN/dsp_core.c               |   72 ++--
- drivers/isdn/mISDN/dsp_dtmf.c               |    3 +
- drivers/isdn/mISDN/dsp_ecdis.h              |    2 +-
- drivers/isdn/mISDN/dsp_pipeline.c           |    5 +-
- drivers/isdn/mISDN/dsp_tones.c              |   23 +-
- drivers/isdn/mISDN/hwchannel.c              |    4 +-
- drivers/isdn/mISDN/l1oip.h                  |    2 +-
- drivers/isdn/mISDN/l1oip_codec.c            |    1 +
- drivers/isdn/mISDN/l1oip_core.c             |   71 ++--
- drivers/isdn/mISDN/layer2.c                 |   37 +-
- drivers/isdn/mISDN/layer2.h                 |    2 +-
- drivers/isdn/mISDN/socket.c                 |   45 ++-
- drivers/isdn/mISDN/tei.c                    |   80 +++--
- drivers/isdn/mISDN/timerdev.c               |    2 +-
- include/linux/mISDNdsp.h                    |    4 +-
- include/linux/mISDNhw.h                     |    2 +-
- include/linux/mISDNif.h                     |   19 +-
- include/linux/pci_ids.h                     |    2 +
- 28 files changed, 994 insertions(+), 470 deletions(-)
- create mode 100644 drivers/isdn/hardware/mISDN/hfc_multi_8xx.h
+diff --git a/drivers/isdn/mISDN/dsp.h b/drivers/isdn/mISDN/dsp.h
+index 98a33c5..0a4a362 100644
+--- a/drivers/isdn/mISDN/dsp.h
++++ b/drivers/isdn/mISDN/dsp.h
+@@ -112,7 +112,8 @@ struct dsp_conf {
+ 
+ #define DSP_DTMF_NPOINTS 102
+ 
+-#define ECHOCAN_BUFLEN (4*128)
++#define ECHOCAN_BUFF_SIZE 0x400 /* must be 2**n */
++#define ECHOCAN_BUFF_MASK 0x3ff /* -1 */
+ 
+ struct dsp_dtmf {
+ 	int		treshold; /* above this is dtmf (square of) */
+diff --git a/drivers/isdn/mISDN/l1oip_codec.c b/drivers/isdn/mISDN/l1oip_codec.c
+index e4ecba3..bbfd1b8 100644
+--- a/drivers/isdn/mISDN/l1oip_codec.c
++++ b/drivers/isdn/mISDN/l1oip_codec.c
+@@ -48,6 +48,7 @@ NOTE: The bytes are handled as they are law-encoded.
+ 
+ #include <linux/vmalloc.h>
+ #include <linux/mISDNif.h>
++#include <linux/in.h>
+ #include "core.h"
+ #include "l1oip.h"
+ 
+-- 
+1.6.0.2
 
