@@ -1,61 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753365AbZEVFRI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753924AbZEVF0u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753365AbZEVFRI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 01:17:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751042AbZEVFQy
+	id S1753924AbZEVF0u (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 01:26:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750990AbZEVF0m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 01:16:54 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:55500 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751085AbZEVFQx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 01:16:53 -0400
-Date: Fri, 22 May 2009 15:16:42 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: "David S. Miller" <davem@davemloft.net>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Neil Horman <nhorman@tuxdriver.com>, netdev@vger.kernel.org
-Subject: linux-next: net tree build warning
-Message-Id: <20090522151642.e79e22ee.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__22_May_2009_15_16_42_+1000_TjI_tiSbL0ylo9_I"
+	Fri, 22 May 2009 01:26:42 -0400
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:57187 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750851AbZEVF0l (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 May 2009 01:26:41 -0400
+Date: Fri, 22 May 2009 14:26:34 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [GIT PULL] sh updates for 2.6.30-rc7
+Message-ID: <20090522052634.GA14059@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__22_May_2009_15_16_42_+1000_TjI_tiSbL0ylo9_I
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Please pull from:
 
-Hi Dave,
+	master.kernel.org:/pub/scm/linux/kernel/git/lethal/sh-2.6.git sh/for-2.6.30
 
-Today's linux-next build (powerpc ppc64_defconfig) produced this warning:
+Which contains:
 
-net/core/netpoll.c: In function 'poll_one_napi':
-net/core/netpoll.c:141: warning: passing argument 1 of 'trace_napi_poll' fr=
-om incompatible pointer type
-include/trace/napi.h:7: note: expected 'struct napi_struct *' but argument =
-is of type 'struct net_device *'
+Magnus Damm (2):
+      sh: ap325 camera without i2c driver fix
+      video: stop sh_mobile_lcdcfb only if started
 
-Introduced by commit 4ea7e38696c7e798c47ebbecadfd392f23f814f9 ("dropmon:
-add ability to detect when hardware dropsrxpackets").
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Fri__22_May_2009_15_16_42_+1000_TjI_tiSbL0ylo9_I
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkoWNToACgkQjjKRsyhoI8yrbwCeNfjaxPytRnyC94uRiaXqXj1+
-wyoAoJ8nQirfAhVzvpAsLUeb+sjnr5wB
-=dtnZ
------END PGP SIGNATURE-----
-
---Signature=_Fri__22_May_2009_15_16_42_+1000_TjI_tiSbL0ylo9_I--
+ arch/sh/boards/board-ap325rxa.c  |    3 +++
+ drivers/video/sh_mobile_lcdcfb.c |    7 ++++++-
+ 2 files changed, 9 insertions(+), 1 deletions(-)
