@@ -1,80 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751519AbZEVFtI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755704AbZEVFtm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751519AbZEVFtI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 01:49:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751085AbZEVFsz
+	id S1755704AbZEVFtm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 01:49:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751215AbZEVFtb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 01:48:55 -0400
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:56653 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750880AbZEVFsy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 01:48:54 -0400
-Date: Fri, 22 May 2009 14:48:47 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, linux-media@vger.kernel.org,
-       Mauro Carvalho Chehab <mchehab@infradead.org>
-Subject: Re: [PATCH -next] v4l2: handle unregister for non-I2C builds
-Message-ID: <20090522054847.GB14059@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Randy Dunlap <randy.dunlap@oracle.com>,
-	Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-	LKML <linux-kernel@vger.kernel.org>, linux-media@vger.kernel.org,
-	Mauro Carvalho Chehab <mchehab@infradead.org>
-References: <20090511161442.3e9d9cb9.sfr@canb.auug.org.au> <4A085455.5040108@oracle.com>
+	Fri, 22 May 2009 01:49:31 -0400
+Received: from simmts12-srv.bellnexxia.net ([206.47.199.141]:34118 "EHLO
+	simmts12-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751250AbZEVFt3 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 May 2009 01:49:29 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AmwsADfVFUrOL8cR/2dsb2JhbACBT4wZJQGSFLJugjeBQAU
+X-Mailer: Openwave WebEngine, version 2.8.10 (webedge20-101-191-20030113)
+X-Originating-IP: [41.220.75.3]
+From: =?iso-8859-1?B?qU9ubGluZQ==?= Notification 
+	<crfmmontreal@bellnet.ca>
+Reply-To: cgpaycenter2009@8u8.hk
+To: <info@wins.com>
+Subject: Your =?iso-8859-1?B?ozEsMjMwLDMxMA==?= GBP Jackpot
+Date: Fri, 22 May 2009 1:49:29 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A085455.5040108@oracle.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
+Message-Id: <20090522054929.ZMLT1599.simmts12-srv.bellnexxia.net@simip9-ac.srvr.bell.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 11, 2009 at 09:37:41AM -0700, Randy Dunlap wrote:
-> From: Randy Dunlap <randy.dunlap@oracle.com>
-> 
-> Build fails when CONFIG_I2C=n, so handle that case in the if block:
-> 
-> drivers/built-in.o: In function `v4l2_device_unregister':
-> (.text+0x157821): undefined reference to `i2c_unregister_device'
-> 
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+You were selected for the sum of £1,230,310 GBP. Verify this mail immediately by sending in your information. This will include your name, Address, Age, Phone number etc to : cgpaycenter2009@8u8.hk
 
-This patch still has not been applied as far as I can tell, and builds
-are still broken as a result, almost 2 weeks after the fact.
-
-> ---
->  drivers/media/video/v4l2-device.c |    2 ++
->  1 file changed, 2 insertions(+)
-> 
-> --- linux-next-20090511.orig/drivers/media/video/v4l2-device.c
-> +++ linux-next-20090511/drivers/media/video/v4l2-device.c
-> @@ -85,6 +85,7 @@ void v4l2_device_unregister(struct v4l2_
->  	/* Unregister subdevs */
->  	list_for_each_entry_safe(sd, next, &v4l2_dev->subdevs, list) {
->  		v4l2_device_unregister_subdev(sd);
-> +#if defined(CONFIG_I2C) || defined(CONFIG_I2C_MODULE)
->  		if (sd->flags & V4L2_SUBDEV_FL_IS_I2C) {
->  			struct i2c_client *client = v4l2_get_subdevdata(sd);
->  
-> @@ -95,6 +96,7 @@ void v4l2_device_unregister(struct v4l2_
->  			if (client)
->  				i2c_unregister_device(client);
->  		}
-> +#endif
->  	}
->  }
->  EXPORT_SYMBOL_GPL(v4l2_device_unregister);
-> 
-> 
-> -- 
-> ~Randy
-> LPC 2009, Sept. 23-25, Portland, Oregon
-> http://linuxplumbersconf.org/2009/
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-next" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
