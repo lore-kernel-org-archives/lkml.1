@@ -1,47 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756900AbZEVG0n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755095AbZEVGav@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756900AbZEVG0n (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 02:26:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751821AbZEVG0O
+	id S1755095AbZEVGav (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 02:30:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751122AbZEVGak
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 02:26:14 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:64489 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752290AbZEVG0M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 02:26:12 -0400
-Message-ID: <4A1645D4.5010001@cn.fujitsu.com>
-Date: Fri, 22 May 2009 14:27:32 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: [PATCH] memcg: remove forward declaration from sched.h
-Content-Type: text/plain; charset=UTF-8
+	Fri, 22 May 2009 02:30:40 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57163
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750880AbZEVGak (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 May 2009 02:30:40 -0400
+Date: Thu, 21 May 2009 23:30:38 -0700 (PDT)
+Message-Id: <20090521.233038.195647453.davem@davemloft.net>
+To: sfr@canb.auug.org.au
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       nhorman@tuxdriver.com, netdev@vger.kernel.org
+Subject: Re: linux-next: net tree build warning
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090522151642.e79e22ee.sfr@canb.auug.org.au>
+References: <20090522151642.e79e22ee.sfr@canb.auug.org.au>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This forward declaration seems pointless.
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Fri, 22 May 2009 15:16:42 +1000
 
-compile tested.
+> Hi Dave,
+> 
+> Today's linux-next build (powerpc ppc64_defconfig) produced this warning:
+> 
+> net/core/netpoll.c: In function 'poll_one_napi':
+> net/core/netpoll.c:141: warning: passing argument 1 of 'trace_napi_poll' from incompatible pointer type
+> include/trace/napi.h:7: note: expected 'struct napi_struct *' but argument is of type 'struct net_device *'
+> 
+> Introduced by commit 4ea7e38696c7e798c47ebbecadfd392f23f814f9 ("dropmon:
+> add ability to detect when hardware dropsrxpackets").
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+I just pushed the following to fix this:
+
+net: Fix arg to trace_napi_poll() in netpoll.
+
+Reproted by Stephen Rothwell.
+
+Signed-off-by: David S. Miller <davem@davemloft.net>
 ---
- sched.h |    1 -
- 1 file changed, 1 deletion(-)
+ net/core/netpoll.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
---- a/include/linux/sched.h	2009-05-22 13:43:01.000000000 +0800
-+++ b/include/linux/sched.h	2009-05-22 13:38:59.000000000 +0800
-@@ -93,7 +93,6 @@ struct sched_param {
+diff --git a/net/core/netpoll.c b/net/core/netpoll.c
+index 00b14e2..67b4f3e 100644
+--- a/net/core/netpoll.c
++++ b/net/core/netpoll.c
+@@ -138,7 +138,7 @@ static int poll_one_napi(struct netpoll_info *npinfo,
+ 	set_bit(NAPI_STATE_NPSVC, &napi->state);
  
- #include <asm/processor.h>
+ 	work = napi->poll(napi, budget);
+-	trace_napi_poll(napi->dev);
++	trace_napi_poll(napi);
  
--struct mem_cgroup;
- struct exec_domain;
- struct futex_pi_state;
- struct robust_list_head;
+ 	clear_bit(NAPI_STATE_NPSVC, &napi->state);
+ 	atomic_dec(&trapped);
+-- 
+1.6.3
+
