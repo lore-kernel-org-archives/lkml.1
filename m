@@ -1,43 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757948AbZEVPMS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758052AbZEVPMi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757948AbZEVPMS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 11:12:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756989AbZEVPMK
+	id S1758052AbZEVPMi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 11:12:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756314AbZEVPMa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 11:12:10 -0400
-Received: from rv-out-0506.google.com ([209.85.198.232]:60989 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756970AbZEVPMJ (ORCPT
+	Fri, 22 May 2009 11:12:30 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:55015 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755483AbZEVPM3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 11:12:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=dbOQQ6+tp8XzONncJi6yLNP5BlRvxviU9op/DorCSCNqVd3Ru5jxrTcPooLSfL/6UP
-         J9SfHGDb84uCtw1mAneY9VMF1PVN7dQgE/uuRKQKPOy5M2Eqg7ASts2O0ydMfORrSGCo
-         m6KLUr6oNh1IWqFJgRM/iIp9G1k9vIISqh4QU=
+	Fri, 22 May 2009 11:12:29 -0400
+Date: Fri, 22 May 2009 11:12:28 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Kyle Moffett <kyle@moffetthome.net>,
+       Pantelis Koukousoulas <pktoss@gmail.com>,
+       Kay Sievers <kay.sievers@vrfy.org>, Al Viro <viro@zeniv.linux.org.uk>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: How to tell whether a struct file is held by a process?
+In-Reply-To: <20090522105313.63e309f0@lxorguk.ukuu.org.uk>
+Message-ID: <Pine.LNX.4.44L0.0905221051350.3006-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-In-Reply-To: <1242918732-4988-1-git-send-email-tom.leiming@gmail.com>
-References: <1242918732-4988-1-git-send-email-tom.leiming@gmail.com>
-Date: Fri, 22 May 2009 23:12:07 +0800
-Message-ID: <d82e647a0905220812q19aff43fw23cb9dc0ce1b5a76@mail.gmail.com>
-Subject: Re: [PATCH] kernel:lockdep:print the shortest dependency chain if 
-	finding a circle
-From: Ming Lei <tom.leiming@gmail.com>
-To: mingo@elte.hu
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       a.p.zijlstra@chello.nl, Ming Lei <tom.leiming@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Any objections or suggestions?
+On Fri, 22 May 2009, Alan Cox wrote:
 
-Thanks.
+> > the OP), is to make there be a global "prevent kernel drivers from
+> > autobinding to  devices on his port" flag, and manage the rest with
+> > lockfiles in userspace.
+> 
+> Your "practical example" seems to bear no relation to the other stuff,
+> its a separate topic altogether.
+> 
+> Yes a "don't probe this port" would make sense. The fact kernel space
+> probes the USB devices by default like the fact we probe partitions by
+> default and scan scsi busses by default are all really mistakes inherited
+> from traditional OS designs which also mess up virtualisation the same
+> way.
 
+I don't understand this comment.  By "probe" I assume you mean
+"initialize and enumerate", as opposed to calling various drivers'
+probe() routines -- let me know if this isn't what you meant.  If the
+kernel didn't initialize and enumerate devices by default, then when
+would they get initialized and enumerated?
 
--- 
-Lei Ming
+If your answer is "When requested by a user process", then I'll go on
+to ask: What about devices containing the root filesystem, the system 
+console, and so on?
+
+And just how does initialization and enumeration mess up 
+virtualization?
+
+> So add a skip_ports= facility to the usb core code (or a general
+> auto_enumerate=0 and a udev interface to trigger scanning so your udev
+> rules can enumerate just the ports you want). That is probably cleaner
+> because it makes the identification of ports rather cleaner and clearer.
+
+Anyway, enumeration isn't the problem.  The real problem has two parts:
+
+	Automatic probing and binding of kernel drivers, including
+	selection and installation of a configuration (this really
+	_does_ mess up virtualization).
+
+	The fact that a window exists immediately after the 
+	registration of a newly-detected device before a user
+	process can lock the device file.  During this window,
+	other processes could open the file.
+
+The second part can be solved (among cooperating processes) by use of
+port-lock files, with no kernel involvement.  The first part does
+require a kernel interface of some sort, but it wouldn't have to be
+complicated.  The mere fact that a port-lock file was open could be
+enough to prevent automatic configuration, probing, and binding.
+
+Does this seem like reasonable approach?
+
+Alan Stern
+
