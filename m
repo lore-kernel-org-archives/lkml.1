@@ -1,36 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755590AbZEWVFe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756482AbZEWVPs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755590AbZEWVFe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 May 2009 17:05:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753346AbZEWVF0
+	id S1756482AbZEWVPs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 May 2009 17:15:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753672AbZEWVPk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 May 2009 17:05:26 -0400
-Received: from casper.infradead.org ([85.118.1.10]:58368 "EHLO
+	Sat, 23 May 2009 17:15:40 -0400
+Received: from casper.infradead.org ([85.118.1.10]:56596 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752956AbZEWVF0 (ORCPT
+	with ESMTP id S1753531AbZEWVPj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 May 2009 17:05:26 -0400
-Date: Sat, 23 May 2009 14:05:09 -0700
+	Sat, 23 May 2009 17:15:39 -0400
+Date: Sat, 23 May 2009 14:08:30 -0700
 From: Arjan van de Ven <arjan@infradead.org>
-To: "Larry H." <research@subreption.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
-       Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@osdl.org>, linux-mm@kvack.org,
-       Ingo Molnar <mingo@redhat.com>, pageexec@freemail.hu
-Subject: Re: [PATCH] Support for unconditional page sanitization
-Message-ID: <20090523140509.5b4a59e4@infradead.org>
-In-Reply-To: <20090523182141.GK13971@oblivion.subreption.com>
-References: <20090520183045.GB10547@oblivion.subreption.com>
-	<4A15A8C7.2030505@redhat.com>
-	<20090522073436.GA3612@elte.hu>
-	<20090522113809.GB13971@oblivion.subreption.com>
-	<20090522143914.2019dd47@lxorguk.ukuu.org.uk>
-	<20090522180351.GC13971@oblivion.subreption.com>
-	<20090522192158.28fe412e@lxorguk.ukuu.org.uk>
-	<20090522234031.GH13971@oblivion.subreption.com>
-	<20090523090910.3d6c2e85@lxorguk.ukuu.org.uk>
-	<20090523085653.0ad217f8@infradead.org>
-	<20090523182141.GK13971@oblivion.subreption.com>
+To: Justin Mattock <justinmattock@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: running the kernel without hal= how safe with the cpufreq
+Message-ID: <20090523140830.5bff23c3@infradead.org>
+In-Reply-To: <dd18b0c30905231129j7ad812e9sf3eee89864b03fb8@mail.gmail.com>
+References: <dd18b0c30905231129j7ad812e9sf3eee89864b03fb8@mail.gmail.com>
 Organization: Intel
 X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
 Mime-Version: 1.0
@@ -42,19 +29,33 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 23 May 2009 11:21:41 -0700
-"Larry H." <research@subreption.com> wrote:
+On Sat, 23 May 2009 11:29:29 -0700
+Justin Mattock <justinmattock@gmail.com> wrote:
 
-> +static inline void sanitize_highpage(struct page *page)
+> I'm in the process of building a system
+> minus hal(since udev 142 explains itself
+> in the README),
+> Anyways I normally just have
+> "ondemand" compiled as the main
+> cpufreq module, and have no powermgnt or cpufreq
+> userspace tool except or was hal.
+> should I be concerned
+> without having hal due to things like this in
+> ps auxZ
 
-any reason we're not reusing clear_highpage() for this?
-(I know it's currently slightly different, but that is fixable)
+if you use ondemand you don't need anything else; the defaults
+are good and in fact very very few people (if anyone) should ever
+change the tunables (they're more aimed for the ondemand developers).
 
+Any application that touches these tunables is basically broken ;)
 
-also, have you checked that you stopped clearing the page in the
-normal anonymous memory pagefault handler path? If the page is 
-guaranteed to be clear already you can save that copy
-(basically you move the clear from allocate to free..)
+In addition, you should always be safe against hardware breaking,
+as long as you don't do things like poke chipset registers to disable
+SMM etc, there is thermal protection build into the system.
+First it will automatically slow down the CPU (a lot), and if that is
+not sufficient/fast enough, the system will shut down before it lets
+itself be damaged.
+
 
 
 -- 
