@@ -1,63 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756728AbZEWRPa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754636AbZEWRwn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756728AbZEWRPa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 May 2009 13:15:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753295AbZEWRPX
+	id S1754636AbZEWRwn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 May 2009 13:52:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753375AbZEWRwf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 May 2009 13:15:23 -0400
-Received: from g1t0029.austin.hp.com ([15.216.28.36]:47912 "EHLO
-	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752865AbZEWRPW (ORCPT
+	Sat, 23 May 2009 13:52:35 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:36655 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751725AbZEWRwe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 May 2009 13:15:22 -0400
-Date: Sat, 23 May 2009 11:15:22 -0600
-From: dann frazier <dannf@debian.org>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] Remove bashisms from scripts
-Message-ID: <20090523171521.GA20612@ldl.fc.hp.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sat, 23 May 2009 13:52:34 -0400
+Date: Sat, 23 May 2009 18:53:38 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Richard Schmitt <rschmitt@bluepeach.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: TTY/Serial Driver Hangs in tty_wait_until_sent, analysis, and
+ recommendations
+Message-ID: <20090523185338.5754e0f5@lxorguk.ukuu.org.uk>
+In-Reply-To: <60483.14588.qm@web1112.biz.mail.sk1.yahoo.com>
+References: <60483.14588.qm@web1112.biz.mail.sk1.yahoo.com>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The '-e' option to echo and brace expansion are not guaranteed to be supported
-by a POSIX-compliant /bin/sh (e.g. dash)
+> So, the console is hung.  Control C characters and Control Q characters are not processed and there is nothing you can do short of logging on through a different port and killing the shell on the console.
 
-Signed-off-by: dann frazier <dannf@debian.org>
----
- scripts/gcc-version.sh |    2 +-
- scripts/ver_linux      |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+(or reading it from another process if you diagnosis is correct - and it
+sounds so)
 
-diff --git a/scripts/gcc-version.sh b/scripts/gcc-version.sh
-index cc767b3..debecb5 100644
---- a/scripts/gcc-version.sh
-+++ b/scripts/gcc-version.sh
-@@ -18,7 +18,7 @@ compiler="$*"
- 
- if [ ${#compiler} -eq 0 ]; then
- 	echo "Error: No compiler specified."
--	echo -e "Usage:\n\t$0 <gcc-command>"
-+	printf "Usage:\n\t$0 <gcc-command>\n"
- 	exit 1
- fi
- 
-diff --git a/scripts/ver_linux b/scripts/ver_linux
-index dbb3037..7de36df 100755
---- a/scripts/ver_linux
-+++ b/scripts/ver_linux
-@@ -65,7 +65,7 @@ sed -n -e '/^.*\/libc-\([^/]*\)\.so$/{s//\1/;p;q}' < /proc/self/maps
- ldd -v > /dev/null 2>&1 && ldd -v || ldd --version |head -n 1 | awk \
- 'NR==1{print "Dynamic linker (ldd)  ", $NF}'
- 
--ls -l /usr/lib/lib{g,stdc}++.so  2>/dev/null | awk -F. \
-+ls -l /usr/lib/libg++.so /usr/lib/libstdc++.so  2>/dev/null | awk -F. \
-        '{print "Linux C++ Library      " $4"."$5"."$6}'
- 
- ps --version 2>&1 | grep version | awk \
--- 
-1.6.3.1
+> I think there are two long term solutions to this: 1) have the low level serial port drivers (i.e. 8250) treat XON/XOFF out of band and have some back door into the line discipline driver to restart the serial line without needing input buffer space and 2) to change the tty_ioctl handling of a WAIT call to flush the output buffer if the port is stopped.  I figure either of these approaches alters the serial behavior enough that it is more then just a bug fix.
+
+#2 is out of spec for the standards and pushing the flow control down
+into the drivers is a major project (and very hard to do as flow control
+is discipline dependant sometimes). Like a lot of the tty layer its all
+quite ugly 8(
+
+The obvious quick hack would I think be to add an optional ldisc method
+that is called when new data arrives which cannot be queued due to
+throttling and get to snoop on the buffer and perhaps optionally trim
+bytes out of it.
+
+If flush_to_ldisc called such a routine for those bytes that didn't fit
+then something like
+
+		if (c == START_CHAR(tty) && I_IXON(tty) && tty->stopped) {
+			start_tty(tty);
+			process_echoes(tty);
+		}
+
+in the ldisc handler for n_tty would uncork the bottle.
+
 
