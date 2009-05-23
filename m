@@ -1,76 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757383AbZEWXoz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755997AbZEWXyc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757383AbZEWXoz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 May 2009 19:44:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753605AbZEWXor
+	id S1755997AbZEWXyc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 May 2009 19:54:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753375AbZEWXyZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 May 2009 19:44:47 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:53906 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753375AbZEWXoq (ORCPT
+	Sat, 23 May 2009 19:54:25 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:33142 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752160AbZEWXyY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 May 2009 19:44:46 -0400
-Message-ID: <4A188A48.5000208@zytor.com>
-Date: Sat, 23 May 2009 16:44:08 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Sat, 23 May 2009 19:54:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=v7z0zCpxwSMp+ceUXPilPtC5V3KrKocX3/Adi8bRmlcOwVKhlAYCuJlMna3/nGW10Z
+         gDVGViJHTxyA2orT64wyYljSWQEUGOHNa1JSPYr1SGz5Ase6K01wT+EK9XHcoa55TM1o
+         03u7pKC0DIpL6KHN5+kKCmvErrTgJjH1Q3FJU=
+Message-ID: <4A188CAD.1080009@googlemail.com>
+Date: Sun, 24 May 2009 00:54:21 +0100
+From: Ken Milmore <ken.milmore@googlemail.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090302)
 MIME-Version: 1.0
-To: Harald Welte <HaraldWelte@viatech.com>
-CC: lkml@morethan.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [BUG FIX] Make x86_32 uni-processor Atomic ops, Atomic
-References: <200905221139.26941.lkml@morethan.org> <200905221946.01808.lkml@morethan.org> <4A1748A9.1020306@zytor.com> <200905231304.55973.lkml@morethan.org>
-In-Reply-To: <200905231304.55973.lkml@morethan.org>
-Content-Type: text/plain; charset=UTF-8
+To: linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
+       Neil Brown <neilb@suse.de>
+Subject: Write barriers on MD RAID1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Harald,
 
-It looks like there might be a problem with the C7-M ... Michael reports
-that if he sets LOCK_PREFIX to "lock;" it works, but that shouldn't be
-necessary for a uniprocessor.
+Support for write barriers on MD RAID1 devices appears to be broken on 
+2.6.29 and later kernels.  Mounting an ext3 or ext4 filesystem over an 
+md raid1 block device gives the kernel message:
 
-I'm wondering if we have to revive the OOSTORE hack, or some other
-workaround.  It is of course hard for me to track this down since (a) I
-don't have access to the CPU documentation, and (b) I work for Intel
-now, which limits the amount of time I can realistically spend on this.
+   JBD: barrier-based sync failed on md0 - disabling barriers
 
-	-hpa
+Is this intentional?  It looks like a regression to me, since write 
+barriers (ostensibly) worked for MD RAID1 on earlier kernels (well, all 
+of the 2.6.27 series at least...)
 
-[Cc: Alan, who I believed developed the OOSTORE hack back when.]
+Doing a git bisect suggested that this is the culprit:
 
+commit cec0707e40ae25794b5a2de7b7f03c51961f80d9
+Author: Jens Axboe <jens.axboe@oracle.com>
+Date:   Tue Jan 13 15:28:32 2009 +0100
 
-Michael S. Zick wrote:
-> On Fri May 22 2009, H. Peter Anvin wrote:
->> Michael S. Zick wrote:
->>> Same integrated motherboard.
->> Which means same CPU, same BIOS, same motherboard (none of which you're
->> telling us.)
->>
->> cpuinfo and dmidecode would be informative.
->>
-> 
-> The -09143lk files are posted.
-> 
-> Download location:
-> http://hp-umpc.com/ce1200v
-> 
-> Details so far today:
-> http://forum.netbookuser.com/viewtopic.php?pid=6968#p6968
-> 
-> Summary:
-> HP-2133 (C7-M/CN896) - 09143 - No results - Still up 3 1/2 hours.
-> Cloudbook (C7-M/CX700) - 09143 - 45 minutes.
-> Cloudbook (C7-M/CX700) - 09143lk - No results - Still up 1 1/2 hours.
-> 
-> OK - time to look for the missing "memory" in the clobber lists.  ;)
-> 
+     block: silently error an unsupported barrier bio
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+Rolling this back from 2.6.29.4 made the JBD error message go away for 
+me.  I tried to do some disk benchmarking to determine if write barriers 
+were really still working, but the results were not very conclusive.
+
+Details of test setup:
+- 2.6.29.4 kernel (config from slackware-current)
+- ext3 filesystem (mounted with barrier=1), also tried ext4
+- MD RAID1 block device over two SATA disks
+- Intel motherboard AHCI controller (82801)
+
+I got similar behaviour on a virtualised setup using qemu, with the RAID 
+over two emulated IDE disks.
+
+Please contact me if I can provide any further information.
+
+-Ken Milmore.
 
