@@ -1,77 +1,398 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755651AbZEWLrU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756834AbZEWLyN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755651AbZEWLrU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 May 2009 07:47:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753690AbZEWLrK
+	id S1756834AbZEWLyN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 May 2009 07:54:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751676AbZEWLx7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 May 2009 07:47:10 -0400
-Received: from xi.wantstofly.org ([80.101.37.227]:37481 "EHLO
-	mail.wantstofly.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752838AbZEWLrJ (ORCPT
+	Sat, 23 May 2009 07:53:59 -0400
+Received: from yw-out-2324.google.com ([74.125.46.30]:26555 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751491AbZEWLx6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 May 2009 07:47:09 -0400
-Date: Sat, 23 May 2009 13:51:43 +0200
-From: Lennert Buytenhek <buytenh@wantstofly.org>
-To: Andy Fleming <afleming@freescale.com>,
-       Michael Guntsche <mike@it-loops.com>
-Cc: davem@davemloft.net, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH,RFC] gianfar: fix BUG under load after introduction of skb recycling
-Message-ID: <20090523115143.GB1672@mail.wantstofly.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+	Sat, 23 May 2009 07:53:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:sender:reply-to:date:x-google-sender-auth:message-id
+         :subject:from:to:content-type:content-transfer-encoding;
+        b=Ae+lRDSvpglPGQlYBr714xlmYGbk6zmOuNo/JBWMMexqo27vw4s+WG2ukyyDJ30vqr
+         8OqeJGWV3QS+Ttwp5ISsD68DuBRtg0enYlIjYq9S9mefZmnj9maOHihOyWxi7zReqyuz
+         15nu5qn7K1v+YMLhPT0KUFMwZkygI/nVn+few=
+MIME-Version: 1.0
+Reply-To: Tobias_Mueller@twam.info
+Date: Sat, 23 May 2009 13:53:58 +0200
+X-Google-Sender-Auth: 17e6e22b380503a2
+Message-ID: <17be05570905230453i591eb83bnb359f6365c109718@mail.gmail.com>
+Subject: [PATCH 001/001] gpio: AMD CS5535/CS5536 GPIO driver
+From: =?UTF-8?Q?Tobias_M=C3=BCller?= <Tobias_Mueller@twam.info>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since commit 0fd56bb5be6455d0d42241e65aed057244665e5e ("gianfar:
-Add support for skb recycling"), gianfar puts skbuffs that are in
-the rx ring back onto the recycle list as-is in case there was a
-receive error, but this breaks the following invariant: that all
-skbuffs on the recycle list have skb->data = skb->head + NET_SKB_PAD.
+From: Tobias Mueller <Tobias_Mueller@twam.info>
 
-The RXBUF_ALIGNMENT realignment done in gfar_new_skb() will be done
-twice on skbuffs recycled in this way, causing there not to be enough
-room in the skb anymore to receive a full packet, eventually leading
-to an skb_over_panic from gfar_clean_rx_ring() -> skb_put().
-
-Resetting the skb->data pointer to skb->head + NET_SKB_PAD before
-putting the skb back onto the recycle list restores the mentioned
-invariant, and should fix this issue.
-
-Reported-by: Michael Guntsche <mike@it-loops.com>
-Signed-off-by: Lennert Buytenhek <buytenh@wantstofly.org>
+A GPIO driver for AMD Geode Companion Device CS5535/CS5536
+using the GPIO framework as a replacement for old cs5535-gpio driver.
 ---
-This might/should/could fix http://bugzilla.kernel.org/show_bug.cgi?id=13293
+diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
+index edb0253..0b7ef6f 100644
+--- a/drivers/gpio/Kconfig
++++ b/drivers/gpio/Kconfig
+@@ -67,6 +67,14 @@ config GPIO_SYSFS
 
-Michael, can you re-test with this version of the patch?
-Andy, can you see if this is OK with you?
+ comment "Memory mapped GPIO expanders:"
 
-diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
-index b2c4967..a051918 100644
---- a/drivers/net/gianfar.c
-+++ b/drivers/net/gianfar.c
-@@ -1885,8 +1885,17 @@ int gfar_clean_rx_ring(struct net_device *dev, int rx_work_limit)
- 
- 			if (unlikely(!newskb))
- 				newskb = skb;
--			else if (skb)
-+			else if (skb) {
-+				/*
-+				 * We need to reset ->data to what it
-+				 * was before gfar_new_skb() re-aligned
-+				 * it to an RXBUF_ALIGNMENT boundary
-+				 * before we put the skb back on the
-+				 * recycle list.
-+				 */
-+				skb->data = skb->head + NET_SKB_PAD;
- 				__skb_queue_head(&priv->rx_recycle, skb);
-+			}
- 		} else {
- 			/* Increment the number of packets */
- 			dev->stats.rx_packets++;
--- 
-1.5.6.4
-
++config GPIO_CS5535
++	tristate "AMD CS5535/CS5536 (Geode Companion Device)"
++	depends on !CONFIG_CS5535_GPIO && X86 && EXPERIMENTAL
++	default N
++	help
++	  Say yes here to support GPIO pins of AMD CS5535/CS5536
++          (Geode Companion Device)
++
+ config GPIO_XILINX
+ 	bool "Xilinx GPIO support"
+ 	depends on PPC_OF
+diff --git a/drivers/gpio/Makefile b/drivers/gpio/Makefile
+index 49ac64e..949c723 100644
+--- a/drivers/gpio/Makefile
++++ b/drivers/gpio/Makefile
+@@ -12,3 +12,4 @@ obj-$(CONFIG_GPIO_PCF857X)	+= pcf857x.o
+ obj-$(CONFIG_GPIO_TWL4030)	+= twl4030-gpio.o
+ obj-$(CONFIG_GPIO_XILINX)	+= xilinx_gpio.o
+ obj-$(CONFIG_GPIO_BT8XX)	+= bt8xxgpio.o
++obj-$(CONFIG_GPIO_CS5535)	+= gpio_cs5535.o
+diff --git a/drivers/gpio/gpio_cs5535.c b/drivers/gpio/gpio_cs5535.c
+new file mode 100644
+index 0000000..b0f7ef7
+--- /dev/null
++++ b/drivers/gpio/gpio_cs5535.c
+@@ -0,0 +1,321 @@
++/*
++    CS5535/CS5536 GPIO driver
++
++    Copyright (C) 2009 Tobias Mueller <Tobias_Mueller@twam.info>
++
++
++    Derived from the the cs5535_gpio (char) driver:
++
++    Copyright (c) 2005 Ben Gardner <bgardner@wabtec.com>
++
++    This program is free software; you can redistribute it and/or modify
++    it under the terms of the GNU General Public License as published by
++    the Free Software Foundation; either version 2 of the License, or
++    (at your option) any later version.
++
++    This program is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++    GNU General Public License for more details.
++
++    You should have received a copy of the GNU General Public License
++    along with this program; if not, write to the Free Software
++    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++*/
++
++#include <linux/module.h>
++#include <linux/pci.h>
++#include <asm/gpio.h>
++
++#define GPIO_CS5535_NAME	"gpio_cs5535"
++#define GPIO_CS5535_SIZE	256		/* size of I/O area */
++#define GPIO_CS5535_LBAR_GPIO	0x5140000C	/* p. 385 of datasheet */
++#define GPIO_CS5535_OUT_VAL	0x00		/* output value */
++#define GPIO_CS5535_OUT_EN	0x04		/* output enable */
++#define GPIO_CS5535_OD_EN	0x08		/* open-drain enable */
++#define GPIO_CS5535_OUT_AUX1	0x10		/* output aux 1 select */
++#define GPIO_CS5535_OUT_AUX2	0x14		/* output aux 2 select */
++#define GPIO_CS5535_OUT_PU_EN	0x18		/* pull-up enable */
++#define GPIO_CS5535_OUT_PD_EN	0x1C		/* poll-down eable */
++#define GPIO_CS5535_IN_EN	0x20		/* input enable */
++#define GPIO_CS5535_READ_BACK	0x30		/* read back */
++#define GPIO_CS5535_IN_AUX1	0x34		/* input aux 1 select */
++
++/**
++* Some GPIO pins
++*  31-29,23 : reserved (always mask out)
++*  28       : Power Button
++*  26       : PME#
++*  22-16    : LPC
++*  14,15    : SMBus
++*  9,8      : UART1
++*  7        : PCI INTB
++*  3,4      : UART2/DDC
++*  2        : IDE_IRQ0
++*  1        : AC_BEEP
++*  0        : PCI INTA
++*
++* If a mask was not specified, be conservative and only allow:
++*  1,2,5,6,10-13,24,25,27
++*/
++
++#ifndef GPIO_CS5535_DEF_MASK
++#define GPIO_CS5535_DEF_MASK	0x0B003C66
++#endif
++
++static struct pci_device_id gpio_cs5535_pci_tbl[] = {
++	{ PCI_DEVICE(PCI_VENDOR_ID_NS,  PCI_DEVICE_ID_NS_CS5535_ISA) },
++	{ PCI_DEVICE(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_CS5536_ISA) },
++	{ } /* NULL entry */
++};
++
++/* pin names */
++static char* gpio_cs5535_names[] = {
++	"GPIO0", "GPIO1", "GPIO2", "GPIO3",
++	"GPIO4", "GPIO5", "GPIO6", "GPIO7",
++	"GPIO8", "GPIO9", "GPIO10", "GPIO11",
++	"GPIO12", "GPIO13", "GPIO14", "GPIO15",
++	"GPIO16", "GPIO17", "GPIO18", "GPIO19",
++	"GPIO20", "GPIO21", "GPIO22", NULL,
++	"GPIO24", "GPIO25", "GPIO26", "GPIO27",
++	"GPIO28", NULL, NULL, NULL,
++};
++
++struct gpio_cs5535 {
++	struct pci_dev *pdev;
++	struct gpio_chip gpio;
++};
++
++/* base address of gpio I/O*/
++static u32 iobase;
++
++static int gpiobase = 0;
++module_param_named(gpiobase, gpiobase, int, 0444);
++MODULE_PARM_DESC(gpiobase, "The GPIO number base. -1 means dynamic");
++
++static ulong mask = 0;
++module_param_named(mask, mask, ulong, 0444);
++MODULE_PARM_DESC(mask, "GPIO channel mask.");
++
++/* gets the regiter offset for the GPIO bank.
++ *      low (0-15) stats at 0x00, high (16-31) starts at 0x80 */
++static inline u32 gpio_cs5535_lowhigh_base(int offset)
++{
++	return (offset & 0x10) << 3;
++}
++
++/* optional hook for chip-specific activation, such as
++ *      enabling module power and clock; may sleep */
++static int gpio_cs5535_request(struct gpio_chip *chip, unsigned offset)
++{
++	u32 on, off;
++
++	on = 1 << (offset & 0x0F);
++	off = on << 16;
++
++	/* check if this pin is available */
++	if ((mask & (1 << offset)) == 0) {
++		printk(KERN_INFO GPIO_CS5535_NAME "pin %u is not available\n",offset);
++		return -EINVAL;
++	}
++
++	/* disable output aux 1 & 2 on this pin */
++	outl(off,iobase+gpio_cs5535_lowhigh_base(offset)+GPIO_CS5535_OUT_AUX1);
++	outl(off,iobase+gpio_cs5535_lowhigh_base(offset)+GPIO_CS5535_OUT_AUX2);
++
++	/* disable input aux 1 on this pin */
++	outl(off,iobase+gpio_cs5535_lowhigh_base(offset)+GPIO_CS5535_IN_AUX1);
++
++	/* disable output */
++	outl(off,iobase+gpio_cs5535_lowhigh_base(offset)+GPIO_CS5535_OUT_EN);
++
++	/* enable input */
++	outl(on,iobase+gpio_cs5535_lowhigh_base(offset)+GPIO_CS5535_IN_EN);
++
++	return 0;
++}
++
++/* configures signal "offset" as input, or returns error */
++static int gpio_cs5535_direction_input(struct gpio_chip *chip, unsigned offset)
++{
++	u32 on, off;
++
++	on = 1 << (offset & 0x0F);
++	off = on << 16;
++
++	/* disable output */
++	outl(off,iobase+gpio_cs5535_lowhigh_base(offset)+GPIO_CS5535_OUT_EN);
++
++	/* enable input */
++	outl(on,iobase+gpio_cs5535_lowhigh_base(offset)+GPIO_CS5535_IN_EN);
++
++	return 0;
++}
++
++/* returns value for signal "offset"; for output signals this
++ *      returns either the value actually sensed, or zero */
++static int gpio_cs5535_get(struct gpio_chip *chip, unsigned offset)
++{
++	u32 bit;
++
++	bit = 1 << (offset & 0x0F);
++
++	return inl(iobase+gpio_cs5535_lowhigh_base(offset)+GPIO_CS5535_READ_BACK)
+& bit;
++}
++
++/* configures signal "offset" as output, or returns error */
++static int gpio_cs5535_direction_output(struct gpio_chip *chip,
+unsigned offset, int value)
++{
++	u32 on, off;
++
++	on = 1 << (offset & 0x0F);
++	off = on << 16;
++
++	/* disable input */
++	outl(off,iobase+gpio_cs5535_lowhigh_base(offset)+GPIO_CS5535_IN_EN);
++
++	/* set value */
++	outl(value ? on :
+off,iobase+gpio_cs5535_lowhigh_base(offset)+GPIO_CS5535_OUT_VAL);
++
++	/* enable output */
++	outl(on,iobase+gpio_cs5535_lowhigh_base(offset)+GPIO_CS5535_OUT_EN);
++
++	return 0;
++}
++
++/* assigns output value for signal "offset" */
++static void gpio_cs5535_set(struct gpio_chip *chip, unsigned offset, int value)
++{
++	u32 on, off;
++
++	on = 1 << (offset & 0x0F);
++	off = on << 16;
++
++	/* set value */
++	outl(value ? on :
+off,iobase+gpio_cs5535_lowhigh_base(offset)+GPIO_CS5535_OUT_VAL);
++}
++
++/* setups gpio_chip object */
++static void gpio_cs5535_setup(struct gpio_cs5535 *cs5535)
++{
++	struct gpio_chip *c = &cs5535->gpio;
++
++	c->label = dev_name(&cs5535->pdev->dev);
++	c->owner = THIS_MODULE;
++	c->request = gpio_cs5535_request;
++	c->direction_input = gpio_cs5535_direction_input;
++	c->get = gpio_cs5535_get;
++	c->direction_output = gpio_cs5535_direction_output;
++	c->set = gpio_cs5535_set;
++	c->dbg_show = NULL;
++	c->base = gpiobase;
++	c->ngpio = 32;
++	c->can_sleep = 0;
++	c->names = gpio_cs5535_names;
++}
++
++static int gpio_cs5535_probe(struct pci_dev *pdev, const struct
+pci_device_id *pciid)
++{
++	struct gpio_cs5535 *cs5535;
++	u32 low, hi;
++	u32 mask_orig = mask;
++	int err;
++
++	cs5535 = kzalloc(sizeof(*cs5535), GFP_KERNEL);
++	if (!cs5535)
++		return -ENOMEM;
++
++	cs5535->pdev = pdev;
++
++	pci_set_drvdata(pdev, cs5535);
++
++	/* Grab the GPIO I/O range */
++	rdmsr(GPIO_CS5535_LBAR_GPIO, low, hi);
++
++	/* Check the mask and whether GPIO is enabled (sanity check) */
++	if (hi != 0x0000f001) {
++		printk(KERN_WARNING GPIO_CS5535_NAME ": GPIO not enabled\n");
++		err = -ENODEV;
++		goto err_release_mem;
++	}
++
++	iobase = low & 0x000ff00;
++
++	if (!request_region(iobase, GPIO_CS5535_SIZE, GPIO_CS5535_NAME)) {
++		printk(KERN_ERR GPIO_CS5535_NAME ": Can't allocate I/O for GPIO\n");
++		err = -ENODEV;
++		goto err_release_mem;
++	}
++
++	if (mask != 0)
++		mask &= 0x1F7FFFFF; /* mask out reserved */
++	else
++		mask = GPIO_CS5535_DEF_MASK;
++
++	/* do not allow pin 28, Power Button, as there's special handling
++         * in the PMC needed. (note 12, p. 48) */
++	mask &= ~(1 << 28);
++
++	if (mask_orig != mask)
++		printk(KERN_INFO GPIO_CS5535_NAME ": mask changed to 0x%08lX\n",mask);
++
++	gpio_cs5535_setup(cs5535);
++
++	err = gpiochip_add(&cs5535->gpio);
++	if (err) {
++		printk(KERN_ERR GPIO_CS5535_NAME ": Failed to register GPIOs\n");
++		goto err_release_mem;
++	}
++
++	return 0;
++
++err_release_mem:
++	pci_set_drvdata(pdev, NULL);
++	kfree(cs5535);
++
++	return err;
++}
++
++static void gpio_cs5535_remove(struct pci_dev *pdev)
++{
++	struct gpio_cs5535 *cs5535 = pci_get_drvdata(pdev);
++	int status = 0;
++
++	status = gpiochip_remove(&cs5535->gpio);
++
++	if (status == 0) {
++		pci_set_drvdata(pdev, NULL);
++		release_region(iobase, GPIO_CS5535_SIZE);
++		kfree(cs5535);
++	} else {
++                dev_err(&pdev->dev, "%s --> %d\n", "remove", status);
++	}
++}
++
++#define gpio_cs5535_suspend NULL
++#define gpio_cs5535_resume NULL
++
++static struct pci_driver gpio_cs5535_driver = {
++        .name           = "gpio_cs5535",
++        .id_table       = gpio_cs5535_pci_tbl,
++        .probe          = gpio_cs5535_probe,
++        .remove         = gpio_cs5535_remove,
++        .suspend        = gpio_cs5535_suspend,
++        .resume         = gpio_cs5535_resume,
++};
++
++static int __init gpio_cs5535_init(void)
++{
++	return pci_register_driver(&gpio_cs5535_driver);
++}
++module_init(gpio_cs5535_init)
++
++static void __exit gpio_cs5535_exit(void)
++{
++	pci_unregister_driver(&gpio_cs5535_driver);
++}
++module_exit(gpio_cs5535_exit);
++
++MODULE_AUTHOR("Tobias Mueller <Tobias_Mueller@twam.info>");
++MODULE_DESCRIPTION("AMD CS5535/CS5536 GPIO driver");
++MODULE_LICENSE("GPL");
