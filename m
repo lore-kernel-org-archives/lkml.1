@@ -1,67 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755996AbZEWNP1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753269AbZEWNYH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755996AbZEWNP1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 May 2009 09:15:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751984AbZEWNPS
+	id S1753269AbZEWNYH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 May 2009 09:24:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751984AbZEWNX4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 May 2009 09:15:18 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:32807 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751810AbZEWNPR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 May 2009 09:15:17 -0400
-Subject: Re: [PATCH] forget a blankspace before 'name'
-From: Eric Paris <eparis@redhat.com>
-To: Zhenwen Xu <helight.xu@gmail.com>
-Cc: linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk
-In-Reply-To: <20090523101049.GA7209@helight>
-References: <20090523101049.GA7209@helight>
-Content-Type: text/plain
-Date: Sat, 23 May 2009 09:13:36 -0400
-Message-Id: <1243084416.7675.0.camel@dhcp231-142.rdu.redhat.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	Sat, 23 May 2009 09:23:56 -0400
+Received: from mail-in-07.arcor-online.net ([151.189.21.47]:45352 "EHLO
+	mail-in-07.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751810AbZEWNX4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 May 2009 09:23:56 -0400
+X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-11.arcor-online.net 61FD3E3B91
+Date: Sat, 23 May 2009 15:23:54 +0200 (CEST)
+From: Bodo Eggert <7eggert@gmx.de>
+To: Andrea <andrea256it@yahoo.it>
+cc: 7eggert@gmx.de, linux-kernel@vger.kernel.org
+Subject: Re: super root shell/mode/api
+In-Reply-To: <607293.42795.qm@web23608.mail.ird.yahoo.com>
+Message-ID: <alpine.LNX.1.10.0905231505390.28966@be10.lrz>
+References: <607293.42795.qm@web23608.mail.ird.yahoo.com>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-05-23 at 18:10 +0800, Zhenwen Xu wrote:
-> here should add some space before "name="
+On Tue, 19 May 2009, Andrea wrote:
 
-NAK.
+>> If there is a malware with root privileges, this would be of no use. You are
+>> 0wned.
+>>
+>> If there is a malware with user privileges, stopping these processes will
+>> be enough.
+>>
+>> So why bother?
+>
+> That's exactly the problem a remote attacker or virus
+> can gain root and you are completely powerless. You want
+> to save data? The attacker just logs you out before you
+> can run any command. You can't even backup or save
+> data! You are owned. Yes.
+>
+> With this super shell/mode/menu in less then one second, you stop
+> everything - a global SIGSTP - and gain control over your machine!
 
-/* This is a helper-function to print the escaped d_path */
-void audit_log_d_path(struct audit_buffer *ab, const char *prefix,
-                      struct path *path)
-{
-        char *p, *pathname;
+The problem is: You can only do the first step. The second step is 
+prevented by the attacker replacing your super-root shell and the linux 
+kernel with his specially crafted versions.
 
-        if (prefix)
-                audit_log_format(ab, " %s", prefix);
+That's why you need a hypervisor or a virtual machine to do the job.
 
-Look there, a space before the prefix.
+> You can save all memory, e.g. for controlling what happened
+> or data recovery, sigstop without hurry all processes that seems
+> a problem and so on.
 
-
-
-
-> Signed-off-by: Zhenwen Xu <helight.xu@gmail.com>
-> ---
->  kernel/auditsc.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/kernel/auditsc.c b/kernel/auditsc.c
-> index 7d6ac7c..aa0428e 100644
-> --- a/kernel/auditsc.c
-> +++ b/kernel/auditsc.c
-> @@ -1478,7 +1478,7 @@ static void audit_log_exit(struct audit_context *context, struct task_struct *ts
->  			case 0:
->  				/* name was specified as a relative path and the
->  				 * directory component is the cwd */
-> -				audit_log_d_path(ab, "name=", &context->pwd);
-> +				audit_log_d_path(ab, " name=", &context->pwd);
->  				break;
->  			default:
->  				/* log the name's directory component */
-> -- 
-> 1.5.6.5
-> 
-
+You can't, since the attacker modified the "save memory" function to
+exclude the malware and all your personal documents - or simply to
+not work at all.
