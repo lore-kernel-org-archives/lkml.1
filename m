@@ -1,66 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757384AbZEWRDm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756728AbZEWRPa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757384AbZEWRDm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 May 2009 13:03:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753751AbZEWRDd
+	id S1756728AbZEWRPa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 May 2009 13:15:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753295AbZEWRPX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 May 2009 13:03:33 -0400
-Received: from smtp.knology.net ([24.214.63.101]:59257 "EHLO smtp.knology.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753643AbZEWRDc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 May 2009 13:03:32 -0400
-Subject: Re: [PATCH 2.6.30-rc4] r8169: avoid losing MSI interrupts
-From: David Dillow <dave@thedillows.org>
-To: Michael Riepe <michael.riepe@googlemail.com>
-Cc: Michael Buesch <mb@bu3sch.de>, Francois Romieu <romieu@fr.zoreil.com>,
-       Rui Santos <rsantos@grupopie.com>,
-       Michael =?ISO-8859-1?Q?B=FCker?= <m.bueker@berlin.de>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-In-Reply-To: <4A182A08.9050305@googlemail.com>
-References: <200903041828.49972.m.bueker@berlin.de>
-	 <4A0C7443.1010000@googlemail.com>
-	 <1243042174.3580.23.camel@obelisk.thedillows.org>
-	 <200905231124.28925.mb@bu3sch.de>  <4A1809B0.3030109@googlemail.com>
-	 <1243090308.4217.6.camel@obelisk.thedillows.org>
-	 <4A182066.9030201@googlemail.com>
-	 <1243097173.4217.7.camel@obelisk.thedillows.org>
-	 <4A182A08.9050305@googlemail.com>
-Content-Type: text/plain
-Date: Sat, 23 May 2009 13:03:31 -0400
-Message-Id: <1243098211.4217.9.camel@obelisk.thedillows.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Sat, 23 May 2009 13:15:23 -0400
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:47912 "EHLO
+	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752865AbZEWRPW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 May 2009 13:15:22 -0400
+Date: Sat, 23 May 2009 11:15:22 -0600
+From: dann frazier <dannf@debian.org>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] Remove bashisms from scripts
+Message-ID: <20090523171521.GA20612@ldl.fc.hp.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-05-23 at 18:53 +0200, Michael Riepe wrote:
-> 
-> David Dillow wrote:
-> > On Sat, 2009-05-23 at 18:12 +0200, Michael Riepe wrote:
-> > 
-> >>If I use two connections (iperf -P2) and nail iperf to both threads of a
-> >>single core with taskset (the program is multi-threaded, just in case
-> >>you wonder), I get this:
-> >>
-> >>CPU 0+2:  0.0-60.0 sec  4.65 GBytes    665 Mbits/sec
-> >>CPU 1+3:  0.0-60.0 sec  6.43 GBytes    920 Mbits/sec
-> >>
-> >>That's quite a difference, isn't it?
-> >>
-> >>Now I wonder what CPU 0 is doing...
-> > 
-> > 
-> > Where does /proc/interrupts say the irqs are going?
-> 
-> Oh well...
+The '-e' option to echo and brace expansion are not guaranteed to be supported
+by a POSIX-compliant /bin/sh (e.g. dash)
 
->  27:   48463995          0          0          0   PCI-MSI-edge      eth0
+Signed-off-by: dann frazier <dannf@debian.org>
+---
+ scripts/gcc-version.sh |    2 +-
+ scripts/ver_linux      |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-What does it look like if you move the iperf around the CPUs while using
-pci=nomsi? 
-
-I'm looking to make sure I didn't cause a terrible regression in the
-cost of IRQ handling...
+diff --git a/scripts/gcc-version.sh b/scripts/gcc-version.sh
+index cc767b3..debecb5 100644
+--- a/scripts/gcc-version.sh
++++ b/scripts/gcc-version.sh
+@@ -18,7 +18,7 @@ compiler="$*"
+ 
+ if [ ${#compiler} -eq 0 ]; then
+ 	echo "Error: No compiler specified."
+-	echo -e "Usage:\n\t$0 <gcc-command>"
++	printf "Usage:\n\t$0 <gcc-command>\n"
+ 	exit 1
+ fi
+ 
+diff --git a/scripts/ver_linux b/scripts/ver_linux
+index dbb3037..7de36df 100755
+--- a/scripts/ver_linux
++++ b/scripts/ver_linux
+@@ -65,7 +65,7 @@ sed -n -e '/^.*\/libc-\([^/]*\)\.so$/{s//\1/;p;q}' < /proc/self/maps
+ ldd -v > /dev/null 2>&1 && ldd -v || ldd --version |head -n 1 | awk \
+ 'NR==1{print "Dynamic linker (ldd)  ", $NF}'
+ 
+-ls -l /usr/lib/lib{g,stdc}++.so  2>/dev/null | awk -F. \
++ls -l /usr/lib/libg++.so /usr/lib/libstdc++.so  2>/dev/null | awk -F. \
+        '{print "Linux C++ Library      " $4"."$5"."$6}'
+ 
+ ps --version 2>&1 | grep version | awk \
+-- 
+1.6.3.1
 
