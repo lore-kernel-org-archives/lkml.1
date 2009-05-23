@@ -1,115 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755078AbZEWQMf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754775AbZEWQ1O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755078AbZEWQMf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 May 2009 12:12:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752769AbZEWQMZ
+	id S1754775AbZEWQ1O (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 May 2009 12:27:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752769AbZEWQ1A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 May 2009 12:12:25 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:15766 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752656AbZEWQMY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 May 2009 12:12:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:x-accept-language:mime-version:to
-         :cc:subject:references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=RlzyWDorw3fYGDmaL/ds9pQu2jobz7PtCXDIF8vVc8flUCZyFShBcTtCneevwkVPJV
-         Jus0IXppc38sfmslcMJH3C4RS+tM7ArnrNDilngORyHsOxivrebrOUtW5+pkbZoIyX2L
-         znJs1vSV5Lhd9kuBr/QsEs8WhZkIMAUHrTkws=
-Message-ID: <4A182066.9030201@googlemail.com>
-Date: Sat, 23 May 2009 18:12:22 +0200
-From: Michael Riepe <michael.riepe@googlemail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.7.13) Gecko/20060417
-X-Accept-Language: de-de, de, en-us, en
+	Sat, 23 May 2009 12:27:00 -0400
+Received: from web1112.biz.mail.sk1.yahoo.com ([74.6.114.44]:45335 "HELO
+	web1112.biz.mail.sk1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752656AbZEWQ07 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 May 2009 12:26:59 -0400
+Message-ID: <60483.14588.qm@web1112.biz.mail.sk1.yahoo.com>
+X-YMail-OSG: P1eaNlwVM1n9XBhet5YxHdR80s.TmLMsQ.ntT4LGlJoI_jx6iyw.ftJiprbJqpq_oC_RRV1MVKEjQ_gk86zDWsqgSAlF_q5s_1.tssYh0raH68ZYoRauQB88AYmCAYOKw0g382MbNQy6mWvgKLpvEFxoNLNz8ccVOKmM6QIHH9_T98ZmKQW.PbMUCLEYkrYmJsBQjKNNbmHi0gXwecWmNZFRDL_0yIVDBhDq2IgKr9QA8VG8GMgujLQrdvrKG9nbcWDBeoVOhE33iQ--
+X-Mailer: YahooMailRC/1277.35 YahooMailWebService/0.7.289.10
+Date: Sat, 23 May 2009 09:27:00 -0700 (PDT)
+From: Richard Schmitt <rschmitt@bluepeach.com>
+Subject: Re: TTY/Serial Driver Hangs in tty_wait_until_sent, analysis, and recommendations
+To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: David Dillow <dave@thedillows.org>
-CC: Michael Buesch <mb@bu3sch.de>, Francois Romieu <romieu@fr.zoreil.com>,
-       Rui Santos <rsantos@grupopie.com>,
-       =?ISO-8859-15?Q?Michael_B=FCker?= <m.bueker@berlin.de>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH 2.6.30-rc4] r8169: avoid losing MSI interrupts
-References: <200903041828.49972.m.bueker@berlin.de>	 <4A0C7443.1010000@googlemail.com>	 <1243042174.3580.23.camel@obelisk.thedillows.org>	 <200905231124.28925.mb@bu3sch.de>  <4A1809B0.3030109@googlemail.com> <1243090308.4217.6.camel@obelisk.thedillows.org>
-In-Reply-To: <1243090308.4217.6.camel@obelisk.thedillows.org>
-X-Enigmail-Version: 0.91.0.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
 
-David Dillow wrote:
 
-> I wonder if that is the TCP sawtooth pattern -- run up until we drop
-> packets, drop off, repeat. I thought newer congestion algorithms would
-> help with that, but I've not kept up, this may be another red-herring --
-> like the bisection into genirq.
+There is a catch 22 with the linux serial driver architecture that can hang apps and can hang shells.  I can reproduce this at will on our powerpc 8313 system with a 8250 uart driver. 
 
-Actually, I just found out that things are much stranger. A freshly
-booted system (I'm using 2.6.29.2 + the r8169 patch sent by Michael
-Buesch, by the way) behaves like this:
+The problem happens because we can output a lot of text on the console at high speed.  This will overrun the receiver which may send XOFF’s.  Because of the high speed and slow response of the serial port, the linux system does not process the XOFF right away.  Instead, the receiver keeps sendings XOFFs and BELLS to complain that it is dropping data.  There is so much data coming back from the receiver, that eventually the console’s input buffer becomes full.  Because the input buffer is full, the linux system is unable to receive a subsequent XON from the receiver. 
 
-[  3] local 192.168.178.206 port 44090 connected with 192.168.178.204
-port 5001
-[ ID] Interval       Transfer     Bandwidth
-[  3]  0.0-10.0 sec    483 MBytes    405 Mbits/sec
-[  3] 10.0-20.0 sec    472 MBytes    396 Mbits/sec
-[  3] 20.0-30.0 sec    482 MBytes    404 Mbits/sec
-[  3] 30.0-40.0 sec    483 MBytes    405 Mbits/sec
-[  3] 40.0-50.0 sec    480 MBytes    402 Mbits/sec
-[  3] 50.0-60.0 sec    479 MBytes    402 Mbits/sec
-[  3]  0.0-60.0 sec  2.81 GBytes    402 Mbits/sec
+Now in a normal situation this would clear up because the input buffer would get processed but when bash is the program that will read the input buffer,  it may be busy trying to modify the terminal modes.  The bash shell manipulates the terminal settings very often.  When manipulating the settings, it makes a system call that waits for the terminal output buffer to be empty.  Well, since the terminal server has the console in flow control, the buffer is not going to drain right away and since the shell is waiting for the termio to complete it won’t get around to calling a read from the serial port which it needs to do in order for the serial driver to free up some input room for receiving new characters.  Only upon receiving new characters, will it detect an XON and allow the output buffer to drain.
 
-Then I've been running another test, something along the lines of
+So, the console is hung.  Control C characters and Control Q characters are not processed and there is nothing you can do short of logging on through a different port and killing the shell on the console.
 
-	for dest in host1 host1 host2 host2
-	do ssh $dest dd of=/dev/null bs=8k count=10240000 </dev/zero &
-	done
+We do things that compound the situation for ourselves.  One, we send lots of stuff to the console port especially when we are in debug mode.  Second, we run our serial ports at very high baud rates.  Third, our networks are incredibly congested and cause the terminal servers to back up.  Fourth, we use our console as a shell. 
 
-After a while, I killed the ssh processes and ran iperf again. And this
-time, I got:
+I think there are two long term solutions to this: 1) have the low level serial port drivers (i.e. 8250) treat XON/XOFF out of band and have some back door into the line discipline driver to restart the serial line without needing input buffer space and 2) to change the tty_ioctl handling of a WAIT call to flush the output buffer if the port is stopped.  I figure either of these approaches alters the serial behavior enough that it is more then just a bug fix.
 
-[  3] local 192.168.178.206 port 58029 connected with 192.168.178.204
-port 5001
-[ ID] Interval       Transfer     Bandwidth
-[  3]  0.0-10.0 sec    634 MBytes    531 Mbits/sec
-[  3] 10.0-20.0 sec    740 MBytes    621 Mbits/sec
-[  3] 20.0-30.0 sec    641 MBytes    538 Mbits/sec
-[  3] 30.0-40.0 sec    738 MBytes    619 Mbits/sec
-[  3] 40.0-50.0 sec    742 MBytes    622 Mbits/sec
-[  3] 50.0-60.0 sec    743 MBytes    623 Mbits/sec
-[  3]  0.0-60.0 sec  4.14 GBytes    592 Mbits/sec
+Our workaround is to not allow bash to run on the console, but although that will keep us from seeing the problem, it is something others may see and should know about.
 
-Obviously, the high-load ssh test (which would kill the device within a
-few seconds without the patch) triggers something here.
+Some data points we saw with gdb:
 
-A few observations later, however, I was convinced that it's not a TCP
-congestion or driver issue. Actually, the throughput depends on the CPU
-the benchmark is running on. You can see that in gkrellm - whenever the
-process jumps to another CPU, the throughput changes. On the four
-(virtual) CPUs of the Atom 330, I get these results:
+The console was in a ‘stopped’ state waiting for an XON.
+The console had data to send
+The console had no room to receive additional characters from the terminal server
+Bash was waiting for the output buffer to drain and is blocked inside of tty_wait_until_sent
+No one was doing a read on the console port.
+The input buffer was filled with BELLs (^Gs)
 
-CPU 0:  0.0-60.0 sec  2.65 GBytes    380 Mbits/sec
-CPU 1:  0.0-60.0 sec  4.12 GBytes    590 Mbits/sec
-CPU 2:  0.0-60.0 sec  3.79 GBytes    543 Mbits/sec
-CPU 3:  0.0-60.0 sec  4.13 GBytes    592 Mbits/sec
+I’ve searched the various discussion lists and although I’ve seen that folks have seen port hangs with a shell stuck in tty_wait_until_sent, I haven’t seen this analysis described nor any resolution to the problem.  I’ve decided to post this here in the event that a) someone knows of a real fix b) the analysis is new and piques someone’s interest to resolve it, c) the analysis can provide insight to others as to how to work around the problem if they see it.
 
-CPU 0+2 are on the first core, 1+3 on the second.
+I’m not on the kernel mailing list.  If you wish to respond, please include my email explicitly.
 
-If I use two connections (iperf -P2) and nail iperf to both threads of a
-single core with taskset (the program is multi-threaded, just in case
-you wonder), I get this:
-
-CPU 0+2:  0.0-60.0 sec  4.65 GBytes    665 Mbits/sec
-CPU 1+3:  0.0-60.0 sec  6.43 GBytes    920 Mbits/sec
-
-That's quite a difference, isn't it?
-
-Now I wonder what CPU 0 is doing...
-
--- 
-Michael "Tired" Riepe <michael.riepe@googlemail.com>
-X-Tired: Each morning I get up I die a little
+Rich
