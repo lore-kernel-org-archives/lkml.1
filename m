@@ -1,57 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754636AbZEWRwn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755523AbZEWSFI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754636AbZEWRwn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 May 2009 13:52:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753375AbZEWRwf
+	id S1755523AbZEWSFI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 May 2009 14:05:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752980AbZEWSE5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 May 2009 13:52:35 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:36655 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751725AbZEWRwe (ORCPT
+	Sat, 23 May 2009 14:04:57 -0400
+Received: from mx-out.daemonmail.net ([216.104.160.38]:47557 "EHLO
+	mx-out.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752029AbZEWSE5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 May 2009 13:52:34 -0400
-Date: Sat, 23 May 2009 18:53:38 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Richard Schmitt <rschmitt@bluepeach.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: TTY/Serial Driver Hangs in tty_wait_until_sent, analysis, and
- recommendations
-Message-ID: <20090523185338.5754e0f5@lxorguk.ukuu.org.uk>
-In-Reply-To: <60483.14588.qm@web1112.biz.mail.sk1.yahoo.com>
-References: <60483.14588.qm@web1112.biz.mail.sk1.yahoo.com>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 23 May 2009 14:04:57 -0400
+From: "Michael S. Zick" <lkml@morethan.org>
+Reply-To: lkml@morethan.org
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [BUG FIX] Make x86_32 uni-processor Atomic ops, Atomic
+Date: Sat, 23 May 2009 13:04:45 -0500
+User-Agent: KMail/1.9.9
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org
+References: <200905221139.26941.lkml@morethan.org> <200905221946.01808.lkml@morethan.org> <4A1748A9.1020306@zytor.com>
+In-Reply-To: <4A1748A9.1020306@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200905231304.55973.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> So, the console is hung.  Control C characters and Control Q characters are not processed and there is nothing you can do short of logging on through a different port and killing the shell on the console.
+On Fri May 22 2009, H. Peter Anvin wrote:
+> Michael S. Zick wrote:
+> > Same integrated motherboard.
+> 
+> Which means same CPU, same BIOS, same motherboard (none of which you're
+> telling us.)
+> 
+> cpuinfo and dmidecode would be informative.
+>
 
-(or reading it from another process if you diagnosis is correct - and it
-sounds so)
+The -09143lk files are posted.
 
-> I think there are two long term solutions to this: 1) have the low level serial port drivers (i.e. 8250) treat XON/XOFF out of band and have some back door into the line discipline driver to restart the serial line without needing input buffer space and 2) to change the tty_ioctl handling of a WAIT call to flush the output buffer if the port is stopped.  I figure either of these approaches alters the serial behavior enough that it is more then just a bug fix.
+Download location:
+http://hp-umpc.com/ce1200v
 
-#2 is out of spec for the standards and pushing the flow control down
-into the drivers is a major project (and very hard to do as flow control
-is discipline dependant sometimes). Like a lot of the tty layer its all
-quite ugly 8(
+Details so far today:
+http://forum.netbookuser.com/viewtopic.php?pid=6968#p6968
 
-The obvious quick hack would I think be to add an optional ldisc method
-that is called when new data arrives which cannot be queued due to
-throttling and get to snoop on the buffer and perhaps optionally trim
-bytes out of it.
+Summary:
+HP-2133 (C7-M/CN896) - 09143 - No results - Still up 3 1/2 hours.
+Cloudbook (C7-M/CX700) - 09143 - 45 minutes.
+Cloudbook (C7-M/CX700) - 09143lk - No results - Still up 1 1/2 hours.
 
-If flush_to_ldisc called such a routine for those bytes that didn't fit
-then something like
+OK - time to look for the missing "memory" in the clobber lists.  ;)
 
-		if (c == START_CHAR(tty) && I_IXON(tty) && tty->stopped) {
-			start_tty(tty);
-			process_echoes(tty);
-		}
-
-in the ldisc handler for n_tty would uncork the bottle.
+Mike
+ 
+> 	-hpa
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> 
 
 
