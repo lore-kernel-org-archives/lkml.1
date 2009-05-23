@@ -1,106 +1,202 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758492AbZEWAK4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758447AbZEWA0E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758492AbZEWAK4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 20:10:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758260AbZEWAKm
+	id S1758447AbZEWA0E (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 20:26:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753542AbZEWAZr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 20:10:42 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:56541 "EHLO ogre.sisk.pl"
+	Fri, 22 May 2009 20:25:47 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:32865 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758220AbZEWAKk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 20:10:40 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: 2.6.30-rc6: Reported regressions from 2.6.29
-Date: Sat, 23 May 2009 02:10:33 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc6-rjw; KDE/4.2.3; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Network Development <netdev@vger.kernel.org>,
-       Linux ACPI <linux-acpi@vger.kernel.org>,
-       Linux PM List <linux-pm@lists.linux-foundation.org>,
-       Linux SCSI List <linux-scsi@vger.kernel.org>,
-       Linux Wireless List <linux-wireless@vger.kernel.org>,
-       DRI <dri-devel@lists.sourceforge.net>
-References: <_AjETDMbIoL.A.DcH.RYzDKB@chimera> <alpine.LFD.2.01.0905220926150.3555@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.01.0905220926150.3555@localhost.localdomain>
+	id S1751111AbZEWAZq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 May 2009 20:25:46 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+Subject: [PATCH -tip v7 4/6] kprobes: cleanup fix_riprel() using insn decoder
+	on x86
+To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Cc: systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>, Ingo Molnar <mingo@elte.hu>
+Date: Fri, 22 May 2009 20:28:45 -0400
+Message-ID: <20090523002845.8948.94212.stgit@localhost.localdomain>
+In-Reply-To: <20090523002830.8948.51194.stgit@localhost.localdomain>
+References: <20090523002830.8948.51194.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905230210.34531.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 22 May 2009, Linus Torvalds wrote:
-> 
-> On Sat, 16 May 2009, Rafael J. Wysocki wrote:
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13329
-> > Subject		: cifs_close: NULL pointer dereference
-> > Submitter	: Luca Tettamanti <kronos.it@gmail.com>
-> > Date		: 2009-05-16 16:28 (1 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=124249133701702&w=4
-> 
-> Fixed by 703a3b8e5c01cf6fb33c6d8dc99905f889a4e992.
-> 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13298
-> > Subject		: modprobe ipmi_si hangs under 2.6.30-rc5
-> > Submitter	: Ferenc Wagner <wferi@niif.hu>
-> > Date		: 2009-05-12 21:28 (5 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=124216379407177&w=4
-> 
-> Fixed by 9a2845c453d170e4e9b1437fa671dbf39b0e7bd8.
-> 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13297
-> > Subject		: kernel panic -  not syncing : fatel exception in interupt
-> > Submitter	: rob <rob1@housetosell.net>
-> > Date		: 2009-05-12 19:34 (5 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=124216126903309&w=4
-> 
-> This should be fixed by e3b29f05124b07303088795396ff858811d2acb8.
-> 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13177
-> > Subject		: 2.6.30-rc2-git7 build problem
-> > Submitter	: Martin Knoblauch <spamtrap@knobisoft.de>
-> > Date		: 2009-04-21 13:39 (26 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=124032163602132&w=4
-> > 		  http://lkml.org/lkml/2009/4/27/56
-> 
-> This one really looks like a compiler bug (the undefined symbol is an 
-> internal gcc one: ".L192"). And the driver that gets it (kl5kusb105) has 
-> not actually had any changes since 2.6.29 - although header files that it 
-> includes obviously do have some, so it's entirely possible that some 
-> infrastructure change causes it to trigger.
-> 
-> Martin hit another bug with his compiler (an ICE in gcc, fixed by commit 
-> 26a9a418237c0b06528941bca693c49c8d97edbe), which is why I'm so willing to 
-> blame that.
-> 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13107
-> > Subject		: LTP 20080131 causes defunct processes w/2.6.30-rc1
-> > Submitter	: Kumar Gala <galak@kernel.crashing.org>
-> > Date		: 2009-04-09 15:43 (38 days old)
-> > First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=b3bfa0cba867f23365b81658b47efd906830879b
-> > References	: http://marc.info/?l=linux-kernel&m=123929187208953&w=4
-> > 		  http://lkml.org/lkml/2009/4/10/193
-> > Handled-By	: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-> 
-> This one seems to have become "not-a-bug". Yes, LTP used to check that you 
-> cannot send SIGSTP to init, but people do want to send signals to init 
-> (especially when they are inside pid-namespace containers), and as long as 
-> it's only a LTP test that already got modified (and not some actual 
-> real-life usage), I'm considering this a "test failed because it was 
-> testing for behavior that we want to change" at least for now.
+Cleanup fix_riprel() in arch/x86/kernel/kprobes.c by using x86 instruction
+decoder.
 
-Thanks a lot, this really helps! :-)
+Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Cc: Jim Keniston <jkenisto@us.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+---
 
-I've closed all of the bugs above.
+ arch/x86/kernel/kprobes.c |  128 ++++++++-------------------------------------
+ 1 files changed, 23 insertions(+), 105 deletions(-)
 
-Best,
-Rafael
+diff --git a/arch/x86/kernel/kprobes.c b/arch/x86/kernel/kprobes.c
+index 41d524f..ebac470 100644
+--- a/arch/x86/kernel/kprobes.c
++++ b/arch/x86/kernel/kprobes.c
+@@ -108,50 +108,6 @@ static const u32 twobyte_is_boostable[256 / 32] = {
+ 	/*      -----------------------------------------------         */
+ 	/*      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f          */
+ };
+-static const u32 onebyte_has_modrm[256 / 32] = {
+-	/*      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f          */
+-	/*      -----------------------------------------------         */
+-	W(0x00, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0) | /* 00 */
+-	W(0x10, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0) , /* 10 */
+-	W(0x20, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0) | /* 20 */
+-	W(0x30, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0) , /* 30 */
+-	W(0x40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) | /* 40 */
+-	W(0x50, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) , /* 50 */
+-	W(0x60, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0) | /* 60 */
+-	W(0x70, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) , /* 70 */
+-	W(0x80, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) | /* 80 */
+-	W(0x90, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) , /* 90 */
+-	W(0xa0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) | /* a0 */
+-	W(0xb0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) , /* b0 */
+-	W(0xc0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0) | /* c0 */
+-	W(0xd0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1) , /* d0 */
+-	W(0xe0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) | /* e0 */
+-	W(0xf0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1)   /* f0 */
+-	/*      -----------------------------------------------         */
+-	/*      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f          */
+-};
+-static const u32 twobyte_has_modrm[256 / 32] = {
+-	/*      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f          */
+-	/*      -----------------------------------------------         */
+-	W(0x00, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1) | /* 0f */
+-	W(0x10, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0) , /* 1f */
+-	W(0x20, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1) | /* 2f */
+-	W(0x30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) , /* 3f */
+-	W(0x40, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) | /* 4f */
+-	W(0x50, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) , /* 5f */
+-	W(0x60, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) | /* 6f */
+-	W(0x70, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1) , /* 7f */
+-	W(0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) | /* 8f */
+-	W(0x90, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) , /* 9f */
+-	W(0xa0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1) | /* af */
+-	W(0xb0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1) , /* bf */
+-	W(0xc0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0) | /* cf */
+-	W(0xd0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) , /* df */
+-	W(0xe0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) | /* ef */
+-	W(0xf0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0)   /* ff */
+-	/*      -----------------------------------------------         */
+-	/*      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f          */
+-};
+ #undef W
+ 
+ struct kretprobe_blackpoint kretprobe_blacklist[] = {
+@@ -344,68 +300,30 @@ static int __kprobes is_IF_modifier(kprobe_opcode_t *insn)
+ static void __kprobes fix_riprel(struct kprobe *p)
+ {
+ #ifdef CONFIG_X86_64
+-	u8 *insn = p->ainsn.insn;
+-	s64 disp;
+-	int need_modrm;
+-
+-	/* Skip legacy instruction prefixes.  */
+-	while (1) {
+-		switch (*insn) {
+-		case 0x66:
+-		case 0x67:
+-		case 0x2e:
+-		case 0x3e:
+-		case 0x26:
+-		case 0x64:
+-		case 0x65:
+-		case 0x36:
+-		case 0xf0:
+-		case 0xf3:
+-		case 0xf2:
+-			++insn;
+-			continue;
+-		}
+-		break;
+-	}
++	struct insn insn;
++	kernel_insn_init(&insn, p->ainsn.insn);
+ 
+-	/* Skip REX instruction prefix.  */
+-	if (is_REX_prefix(insn))
+-		++insn;
+-
+-	if (*insn == 0x0f) {
+-		/* Two-byte opcode.  */
+-		++insn;
+-		need_modrm = test_bit(*insn,
+-				      (unsigned long *)twobyte_has_modrm);
+-	} else
+-		/* One-byte opcode.  */
+-		need_modrm = test_bit(*insn,
+-				      (unsigned long *)onebyte_has_modrm);
+-
+-	if (need_modrm) {
+-		u8 modrm = *++insn;
+-		if ((modrm & 0xc7) == 0x05) {
+-			/* %rip+disp32 addressing mode */
+-			/* Displacement follows ModRM byte.  */
+-			++insn;
+-			/*
+-			 * The copied instruction uses the %rip-relative
+-			 * addressing mode.  Adjust the displacement for the
+-			 * difference between the original location of this
+-			 * instruction and the location of the copy that will
+-			 * actually be run.  The tricky bit here is making sure
+-			 * that the sign extension happens correctly in this
+-			 * calculation, since we need a signed 32-bit result to
+-			 * be sign-extended to 64 bits when it's added to the
+-			 * %rip value and yield the same 64-bit result that the
+-			 * sign-extension of the original signed 32-bit
+-			 * displacement would have given.
+-			 */
+-			disp = (u8 *) p->addr + *((s32 *) insn) -
+-			       (u8 *) p->ainsn.insn;
+-			BUG_ON((s64) (s32) disp != disp); /* Sanity check.  */
+-			*(s32 *)insn = (s32) disp;
+-		}
++	if (insn_rip_relative(&insn)) {
++		s64 newdisp;
++		u8 *disp;
++		insn_get_displacement(&insn);
++		/*
++		 * The copied instruction uses the %rip-relative addressing
++		 * mode.  Adjust the displacement for the difference between
++		 * the original location of this instruction and the location
++		 * of the copy that will actually be run.  The tricky bit here
++		 * is making sure that the sign extension happens correctly in
++		 * this calculation, since we need a signed 32-bit result to
++		 * be sign-extended to 64 bits when it's added to the %rip
++		 * value and yield the same 64-bit result that the sign-
++		 * extension of the original signed 32-bit displacement would
++		 * have given.
++		 */
++		newdisp = (u8 *) p->addr + (s64) insn.displacement.value -
++			  (u8 *) p->ainsn.insn;
++		BUG_ON((s64) (s32) newdisp != newdisp); /* Sanity check.  */
++		disp = (u8 *) p->ainsn.insn + INSN_DISPLACEMENT_OFFS(&insn);
++		*(s32 *) disp = (s32) newdisp;
+ 	}
+ #endif
+ }
+
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
