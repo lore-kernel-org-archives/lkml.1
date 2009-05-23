@@ -1,87 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757457AbZEWVCq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755590AbZEWVFe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757457AbZEWVCq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 May 2009 17:02:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753729AbZEWVCi
+	id S1755590AbZEWVFe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 May 2009 17:05:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753346AbZEWVF0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 May 2009 17:02:38 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:35019 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753346AbZEWVCh (ORCPT
+	Sat, 23 May 2009 17:05:26 -0400
+Received: from casper.infradead.org ([85.118.1.10]:58368 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752956AbZEWVF0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 May 2009 17:02:37 -0400
-Date: Sat, 23 May 2009 17:02:36 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: David <david@unsolicited.net>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>, <linux-media@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       <dbrownell@users.sourceforge.net>, <leonidv11@gmail.com>,
-       Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: USB/DVB - Old Technotrend TT-connect S-2400 regression tracked
-  down
-In-Reply-To: <4A184CDF.1020901@unsolicited.net>
-Message-ID: <Pine.LNX.4.44L0.0905231657210.22430-100000@netrider.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 23 May 2009 17:05:26 -0400
+Date: Sat, 23 May 2009 14:05:09 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: "Larry H." <research@subreption.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@osdl.org>, linux-mm@kvack.org,
+       Ingo Molnar <mingo@redhat.com>, pageexec@freemail.hu
+Subject: Re: [PATCH] Support for unconditional page sanitization
+Message-ID: <20090523140509.5b4a59e4@infradead.org>
+In-Reply-To: <20090523182141.GK13971@oblivion.subreption.com>
+References: <20090520183045.GB10547@oblivion.subreption.com>
+	<4A15A8C7.2030505@redhat.com>
+	<20090522073436.GA3612@elte.hu>
+	<20090522113809.GB13971@oblivion.subreption.com>
+	<20090522143914.2019dd47@lxorguk.ukuu.org.uk>
+	<20090522180351.GC13971@oblivion.subreption.com>
+	<20090522192158.28fe412e@lxorguk.ukuu.org.uk>
+	<20090522234031.GH13971@oblivion.subreption.com>
+	<20090523090910.3d6c2e85@lxorguk.ukuu.org.uk>
+	<20090523085653.0ad217f8@infradead.org>
+	<20090523182141.GK13971@oblivion.subreption.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 23 May 2009, David wrote:
+On Sat, 23 May 2009 11:21:41 -0700
+"Larry H." <research@subreption.com> wrote:
 
-> My PC (64 bit - ATI chipset, using 2.6.30-rc5)
+> +static inline void sanitize_highpage(struct page *page)
 
-Let's continue to work with 2.6.30-rc for testing purposes.
+any reason we're not reusing clear_highpage() for this?
+(I know it's currently slightly different, but that is fixable)
 
-> [12044.364021] usb 4-10: new high speed USB device using ehci_hcd and address 5
-> [12044.497561] usb 4-10: configuration #1 chosen from 1 choice
-> [12044.881621] dvb-usb: found a 'Technotrend TT-connect S-2400' in cold state, will try to load a firmware
-> [12044.881626] usb 4-10: firmware: requesting dvb-usb-tt-s2400-01.fw
-> [12044.918854] dvb-usb: downloading firmware from file 'dvb-usb-tt-s2400-01.fw'
-> [12044.980719] usbcore: registered new interface driver dvb_usb_ttusb2
-> [12044.981478] usb 4-10: USB disconnect, address 5
-> [12044.985169] dvb-usb: generic DVB-USB module successfully deinitialized and disconnected.
-> [12046.744023] usb 4-10: new high speed USB device using ehci_hcd and address 6
-> [12046.876980] usb 4-10: configuration #1 chosen from 1 choice
-> [12046.877673] dvb-usb: found a 'Technotrend TT-connect S-2400' in warm state.
-> [12046.878601] dvb-usb: will pass the complete MPEG2 transport stream to the software demuxer.
-> [12046.878959] DVB: registering new adapter (Technotrend TT-connect S-2400)
-> [12046.886861] DVB: registering adapter 0 frontend 0 (Philips TDA10086 DVB-S)...
-> [12046.891434] LNBx2x attached on addr=8<3>dvb-usb: recv bulk message failed: -110
-> [12048.888080] ttusb2: there might have been an error during control message transfer. (rlen = 0, was 0)
-> [12048.888320] dvb-usb: Technotrend TT-connect S-2400 successfully initialized and connected.
 
-Yes, there's an obvious problem.
+also, have you checked that you stopped clearing the page in the
+normal anonymous memory pagefault handler path? If the page is 
+guaranteed to be clear already you can save that copy
+(basically you move the clear from allocate to free..)
 
-> Reverting b963801164618e25fbdc0cd452ce49c3628b46c8 (manually, as there
-> are conflicting changes) causes it to work again. The wierd random
-> frontend number looks strange though.
-> 
-> [ 2406.492027] usb 2-10: new high speed USB device using ehci_hcd and address 7
-> [ 2406.625622] usb 2-10: configuration #1 chosen from 1 choice
-> [ 2406.626328] dvb-usb: found a 'Technotrend TT-connect S-2400' in cold state, will try to load a firmware
-> [ 2406.626335] usb 2-10: firmware: requesting dvb-usb-tt-s2400-01.fw
-> [ 2406.628650] dvb-usb: downloading firmware from file 'dvb-usb-tt-s2400-01.fw'
-> [ 2406.690868] usb 2-10: USB disconnect, address 7
-> [ 2406.693282] dvb-usb: generic DVB-USB module successfully deinitialized and disconnected.
-> [ 2408.453024] usb 2-10: new high speed USB device using ehci_hcd and address 8
-> [ 2408.585983] usb 2-10: configuration #1 chosen from 1 choice
-> [ 2408.586652] dvb-usb: found a 'Technotrend TT-connect S-2400' in warm state.
-> [ 2408.587727] dvb-usb: will pass the complete MPEG2 transport stream to the software demuxer.
-> [ 2408.588080] DVB: registering new adapter (Technotrend TT-connect S-2400)
-> [ 2408.591575] DVB: registering adapter 0 frontend 42056112 (Philips TDA10086 DVB-S)...
-> [ 2408.595941] LNBx2x attached on addr=8<6>dvb-usb: Technotrend TT-connect S-2400 successfully initialized and connected.
 
-I don't know what's going on with that frontend number.  In fact, I 
-don't know anything about DVB in general... but I am familiar with 
-EHCI.
-
-It's not obvious what could be causing this, so let's start out easy.  
-Try collecting two usbmon traces (instructions are in
-Documentation/usb/usbmon.txt), showing what happens with and without
-the reversion.  Maybe some difference will stick out.
-
-Alan Stern
-
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
