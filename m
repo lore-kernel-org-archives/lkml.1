@@ -1,104 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754591AbZEWLnX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755651AbZEWLrU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754591AbZEWLnX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 May 2009 07:43:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751664AbZEWLnK
+	id S1755651AbZEWLrU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 May 2009 07:47:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753690AbZEWLrK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 May 2009 07:43:10 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:58188 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750809AbZEWLnI convert rfc822-to-8bit (ORCPT
+	Sat, 23 May 2009 07:47:10 -0400
+Received: from xi.wantstofly.org ([80.101.37.227]:37481 "EHLO
+	mail.wantstofly.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752838AbZEWLrJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 May 2009 07:43:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=C8e9z89/E66W0oav/K0YkR1mZTTE6hd7dF1oKXgciuw6xSJ2pNYSt5wAF+9gHH43IQ
-         FDuDHijzYMroWs4NCx1gNUi/G+z4UlB6EgDbg1B1uvn6Am/HRNatxUnmmsJLersCxt0I
-         lWSL/KB1ZUGVOkz+MXdXl47bTp5bY8KF1IzJM=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: yanh@lemote.com
-Subject: Re: [loongson-PATCH-v1 24/27] fixup for FUJITSU disk
-Date: Sat, 23 May 2009 13:47:34 +0200
-User-Agent: KMail/1.11.3 (Linux/2.6.30-rc6-next-20090518-05332-g0707b5a; KDE/4.2.3; i686; ; )
-Cc: wuzhangjin@gmail.com, linux-mips@linux-mips.org,
-       Ralf Baechle <ralf@linux-mips.org>,
-       "IDE/ATA development list" <linux-ide@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       "linux-scsi" <linux-scsi@vger.kernel.org>,
-       Philippe Vachon <philippe@cowpig.ca>, Zhang Le <r0bertz@gentoo.org>,
-       Zhang Fuxin <zhangfx@lemote.com>, Arnaud Patard <apatard@mandriva.com>,
-       loongson-dev@googlegroups.com, gnewsense-dev@nongnu.org,
-       Nicholas Mc Guire <hofrat@hofr.at>, Liu Junliang <liujl@lemote.com>,
-       Erwan Lerale <erwan@thiscow.com>
-References: <cover.1242855716.git.wuzhangjin@gmail.com> <200905222032.55869.bzolnier@gmail.com> <1243062702.8509.7.camel@localhost.localdomain>
-In-Reply-To: <1243062702.8509.7.camel@localhost.localdomain>
-MIME-Version: 1.0
+	Sat, 23 May 2009 07:47:09 -0400
+Date: Sat, 23 May 2009 13:51:43 +0200
+From: Lennert Buytenhek <buytenh@wantstofly.org>
+To: Andy Fleming <afleming@freescale.com>,
+       Michael Guntsche <mike@it-loops.com>
+Cc: davem@davemloft.net, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH,RFC] gianfar: fix BUG under load after introduction of skb recycling
+Message-ID: <20090523115143.GB1672@mail.wantstofly.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200905231347.34717.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 23 May 2009 09:11:42 yanh wrote:
-> 在 2009-05-22五的 20:32 +0200，Bartlomiej Zolnierkiewicz写道：
-> > On Thursday 21 May 2009 00:12:46 wuzhangjin@gmail.com wrote:
-> > > From: Wu Zhangjin <wuzhangjin@gmail.com>
-> > > 
-> > > This is originally from the to-mips branch from
-> > > http://dev.lemote.com/code/linux_loongson
-> > 
-> > Sadly, the patch description lacks all the important information.
-> > 
-> > What is the original problem that this fixup tries to address?
-> > 
-> > Is it limited to amd74xx controllers?
-> 
-> In loongson2f yeeloong machines, the ide controller is AMD cs5536, or
-> say  amd74xx, and the hard drives is Fujistu. 
+Since commit 0fd56bb5be6455d0d42241e65aed057244665e5e ("gianfar:
+Add support for skb recycling"), gianfar puts skbuffs that are in
+the rx ring back onto the recycle list as-is in case there was a
+receive error, but this breaks the following invariant: that all
+skbuffs on the recycle list have skb->data = skb->head + NET_SKB_PAD.
 
-Then it should use the new & shiny :) native cs5536 IDE host driver
-instead of legacy support in amd74xx...
+The RXBUF_ALIGNMENT realignment done in gfar_new_skb() will be done
+twice on skbuffs recycled in this way, causing there not to be enough
+room in the skb anymore to receive a full packet, eventually leading
+to an skb_over_panic from gfar_clean_rx_ring() -> skb_put().
 
-> While debuging the hard disk suspned and resume, the ide irq can not be
-> cleared. I guess this is a fake interrupt, hence the clear irq action
-> can not be finished. 
+Resetting the skb->data pointer to skb->head + NET_SKB_PAD before
+putting the skb back onto the recycle list restores the mentioned
+invariant, and should fix this issue.
 
-AFAICS the only change that the fixup would cause for suspend/resume paths
-is the one in ide_config_drive_speed() which is called during resume to set
-transfer mode on the drive:
+Reported-by: Michael Guntsche <mike@it-loops.com>
+Signed-off-by: Lennert Buytenhek <buytenh@wantstofly.org>
+---
+This might/should/could fix http://bugzilla.kernel.org/show_bug.cgi?id=13293
 
-       tp_ops->write_devctl(hwif, ATA_NIEN | ATA_DEVCTL_OBS);
+Michael, can you re-test with this version of the patch?
+Andy, can you see if this is OK with you?
 
-        memset(&tf, 0, sizeof(tf));
-        tf.feature = SETFEATURES_XFER;
-        tf.nsect   = speed;
+diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
+index b2c4967..a051918 100644
+--- a/drivers/net/gianfar.c
++++ b/drivers/net/gianfar.c
+@@ -1885,8 +1885,17 @@ int gfar_clean_rx_ring(struct net_device *dev, int rx_work_limit)
+ 
+ 			if (unlikely(!newskb))
+ 				newskb = skb;
+-			else if (skb)
++			else if (skb) {
++				/*
++				 * We need to reset ->data to what it
++				 * was before gfar_new_skb() re-aligned
++				 * it to an RXBUF_ALIGNMENT boundary
++				 * before we put the skb back on the
++				 * recycle list.
++				 */
++				skb->data = skb->head + NET_SKB_PAD;
+ 				__skb_queue_head(&priv->rx_recycle, skb);
++			}
+ 		} else {
+ 			/* Increment the number of packets */
+ 			dev->stats.rx_packets++;
+-- 
+1.5.6.4
 
-        tp_ops->tf_load(drive, &tf, IDE_VALID_FEATURE | IDE_VALID_NSECT);
-
-        tp_ops->exec_command(hwif, ATA_CMD_SET_FEATURES);
---->
-        if (drive->quirk_list == 2)
-                tp_ops->write_devctl(hwif, ATA_DEVCTL_OBS);
---->
-        error = __ide_wait_stat(drive, drive->ready_stat,
-                                ATA_BUSY | ATA_DRQ | ATA_ERR,
-                                WAIT_CMD, &stat);
-
-Please tell me I if understand the issue correctly: if the above quirk is
-not executed we end up with spurious IRQs, right?
-
-> This patch is to fix this issue. Maybe other controller and drives also
-> have this issue, but I am not sure.
-
-Probably moving it to a generic quirk_drives list later will be useful...
-
-Anyway this fixup needs to be ported to / verified with cs5536 first.
-
-Thanks.
-Bart
