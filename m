@@ -1,118 +1,204 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756771AbZEWM7T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756165AbZEWNAu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756771AbZEWM7T (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 May 2009 08:59:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752503AbZEWM7I
+	id S1756165AbZEWNAu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 May 2009 09:00:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752015AbZEWNAk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 May 2009 08:59:08 -0400
-Received: from hera.kernel.org ([140.211.167.34]:34412 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752199AbZEWM7H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 May 2009 08:59:07 -0400
-Date: Sat, 23 May 2009 12:57:52 GMT
-From: tip-bot for Paul Mundt <lethal@linux-sh.org>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       yinghai@kernel.org, mel@csn.ul.ie, lethal@linux-sh.org,
-       akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       yinghai@kernel.org, mel@csn.ul.ie, lethal@linux-sh.org,
-       akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20090522014008.GA2806@linux-sh.org>
-References: <20090522014008.GA2806@linux-sh.org>
-Subject: [tip:irq/numa] sparseirq: Allow early irq_desc allocation
-Message-ID: <tip-948cd52906baf1f92aeea2f9b5c515db1b2e592a@git.kernel.org>
-Git-Commit-ID: 948cd52906baf1f92aeea2f9b5c515db1b2e592a
-X-Mailer: tip-git-log-daemon
+	Sat, 23 May 2009 09:00:40 -0400
+Received: from d112a2.x-mailer.de ([212.162.53.4]:52167 "EHLO
+	d112a2.x-mailer.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751539AbZEWNAj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 May 2009 09:00:39 -0400
+From: Karsten Keil <keil@b1-systems.de>
+Organization: B1-systems
+To: Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [mISDN PATCH v2 09/19] Fix TEI and SAPI handling
+Date: Sat, 23 May 2009 15:00:37 +0200
+User-Agent: KMail/1.11.1 (Linux/2.6.27.21-0.1-default; KDE/4.2.1; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       David Miller <davem@davemloft.net>, i4ldeveloper@listserv.isdn4linux.de
+References: <cover.1243024967.git.kkeil@pingi.linux-pingi.de> <cbbb2723784ecf04bcec253c547a9464a2e722c7.1243024967.git.kkeil@pingi.linux-pingi.de> <20090522215314.GA4592@uranus.ravnborg.org>
+In-Reply-To: <20090522215314.GA4592@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 23 May 2009 12:57:54 +0000 (UTC)
+Message-Id: <200905231500.38092.keil@b1-systems.de>
+X-Info: valid message
+X-Info: original Date
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  948cd52906baf1f92aeea2f9b5c515db1b2e592a
-Gitweb:     http://git.kernel.org/tip/948cd52906baf1f92aeea2f9b5c515db1b2e592a
-Author:     Paul Mundt <lethal@linux-sh.org>
-AuthorDate: Fri, 22 May 2009 10:40:09 +0900
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sat, 23 May 2009 14:55:24 +0200
+Hi Sam,
 
-sparseirq: Allow early irq_desc allocation
+thanks for the review.
 
-Presently non-legacy IRQs have their irq_desc allocated with
-kzalloc_node(). This assumes that all callers of irq_to_desc_node_alloc()
-will be sufficiently late in the boot process that kmalloc is available.
+On Freitag, 22. Mai 2009 23:53:14 Sam Ravnborg wrote:
+> Hi Karsten.
+>
+> Flash from the past looking at some ISDN layer2.
+> Some comments below.
+>
+> 	Sam
+>
+> >  struct layer2 *
+> > -create_l2(struct mISDNchannel *ch, u_int protocol, u_long options,
+> > u_long arg) +create_l2(struct mISDNchannel *ch, u_int protocol, u_long
+> > options, u_int tei, +		u_int sapi)
+>
+> Unrealted to this specific patch...
+> Are there any specific reason why mISDN prefer bsd style (u_int)
+> rather then linux style (u32)?
 
-While porting sparseirq support to sh this blew up immediately, as at the
-time that we register the CPU's interrupt vector map only bootmem is
-available. Check slab_is_available() to work out which path to use.
+No, this was some historic process with the ISDN code.
+I think, if we want change this we should make a separate  patch to change 
+this in all mISDN code later, I usually prefer shorter type names as well :-).
+So as rule of dumb:
+- Use   uN/sN for all values with constant width N ?
 
-[ Impact: fix SH early boot crash with sparseirq enabled ]
+What should be used on functions which are usually defined as int and
+only return 0 or some negative ERROR code, I think int should be OK here ?
 
-Signed-off-by: Paul Mundt <lethal@linux-sh.org>
-Acked-by: Yinghai Lu <yinghai@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Mel Gorman <mel@csn.ul.ie>
-LKML-Reference: <20090522014008.GA2806@linux-sh.org>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+>
+> >  static struct layer2 *
+> > -create_new_tei(struct manager *mgr, int tei)
+> > +create_new_tei(struct manager *mgr, int tei, int sapi)
+> >  {
+>
+> Here tei and sapi are passed as signed.
+> But valid sapi range is [0..63] and tei [0..127].
+> And create_l2 above uses unsigned.
+>
+> This looks confusing.
+
+I think the signed was selected for error handling, but you are correct then 
+it should be the same in all functions.
+
+>
+> >  	u_long		opt = 0;
+> >  	u_long		flags;
+> > @@ -791,7 +791,7 @@ create_new_tei(struct manager *mgr, int tei)
+> >  	if (mgr->ch.st->dev->Dprotocols
+> >  	  & ((1 << ISDN_P_TE_E1) | (1 << ISDN_P_NT_E1)))
+> >  		test_and_set_bit(OPTION_L2_PMX, &opt);
+> > -	l2 = create_l2(mgr->up, ISDN_P_LAPD_NT, (u_int)opt, (u_long)tei);
+> > +	l2 = create_l2(mgr->up, ISDN_P_LAPD_NT, (u_int)opt, tei, sapi);
+> >  	if (!l2) {
+> >  		printk(KERN_WARNING "%s:no memory for layer2\n", __func__);
+> >  		return NULL;
+> > @@ -839,12 +839,15 @@ new_tei_req(struct manager *mgr, u_char *dp)
+> >  	ri += dp[1];
+> >  	if (!mgr->up)
+> >  		goto denied;
+> > -	tei = get_free_tei(mgr);
+> > +	if (dp[3] != 0xff)
+> > +		tei = dp[3] >> 1; /* 3GPP TS 08.56 6.1.11.2 */
+> > +	else
+> > +		tei = get_free_tei(mgr);
+>
+> You should check EA0 here before assuming that any values except
+> EA=1, tei=127 equals ptmp.
+>
+
+make sense.
+
+> >  	if (tei < 0) {
+> >  		printk(KERN_WARNING "%s:No free tei\n", __func__);
+> >  		goto denied;
+> >  	}
+>
+> So get_free_tei() may return a negative value indicating no free tei.
+> So that make my comment above void - but is this really the best way
+> to return an error. Possibly it is..
+>
+We could define 255 as the error value, I will think about this, but in 
+general I prefer negative values for error cases.
+
+> > -	l2 = create_new_tei(mgr, tei);
+> > +	l2 = create_new_tei(mgr, tei, 0);
+>
+> In general I would prefer to read: SAPI_CALLCONTROL rahter than a hardcoded
+> 0.
+>
+
+Yes.
+
+> >  	if (!l2)
+> >  		goto denied;
+> >  	else
+> > @@ -976,8 +979,6 @@ create_teimgr(struct manager *mgr, struct channel_req
+> > *crq) __func__, dev_name(&mgr->ch.st->dev->dev),
+> >  			crq->protocol, crq->adr.dev, crq->adr.channel,
+> >  			crq->adr.sapi, crq->adr.tei);
+> > -	if (crq->adr.sapi != 0) /* not supported yet */
+> > -		return -EINVAL;
+> >  	if (crq->adr.tei > GROUP_TEI)
+> >  		return -EINVAL;
+> >  	if (crq->adr.tei < 64)
+> > @@ -1025,7 +1026,7 @@ create_teimgr(struct manager *mgr, struct
+> > channel_req *crq) return 0;
+> >  	}
+> >  	l2 = create_l2(crq->ch, crq->protocol, (u_int)opt,
+> > -		(u_long)crq->adr.tei);
+> > +		crq->adr.tei, crq->adr.sapi);
+> >  	if (!l2)
+> >  		return -ENOMEM;
+> >  	l2->tm = kzalloc(sizeof(struct teimgr), GFP_KERNEL);
+> > @@ -1166,7 +1167,7 @@ static int
+> >  check_data(struct manager *mgr, struct sk_buff *skb)
+> >  {
+> >  	struct mISDNhead	*hh =  mISDN_HEAD_P(skb);
+> > -	int			ret, tei;
+> > +	int			ret, tei, sapi;
+> >  	struct layer2		*l2;
+> >
+> >  	if (*debug & DEBUG_L2_CTRL)
+> > @@ -1178,18 +1179,16 @@ check_data(struct manager *mgr, struct sk_buff
+> > *skb) return -ENOTCONN;
+> >  	if (skb->len != 3)
+> >  		return -ENOTCONN;
+> > -	if (skb->data[0] != 0)
+> > -		/* only SAPI 0 command */
+> > -		return -ENOTCONN;
+> > +	sapi = skb->data[0] >> 2;
+>
+> PReviously there was an implicit check of EA0.
+> This is missed not that you read sapi and discard the two lower bits.
+>
+> I also wonder if you remeber to check the command/response bit.
+> That was implicitly tested to be 0 before and also ignored now.
+
+Yes,  you are correct.
+
+>
+> >  	if (!(skb->data[1] & 1)) /* invalid EA1 */
+> >  		return -EINVAL;
+> > -	tei = skb->data[1] >> 0;
+> > +	tei = skb->data[1] >> 1;
+>
+> This looks like a bug-fix...
+>
+
+Yes,  I think fixed TEI was never tested with P2MP,  I know
+no device which really use it with SAPI 0, only in P2P we use a
+fixed TEI  of 0.  Also the test suite used by certifications did
+not check for correct fixed TEI handling, it only checks that a
+fixed TEI is rejected in a dynamic TEI assignment.
+With SAPI != 0 fixed TEIs are more common, so the bug was
+detected now.
+
+> >  	if (tei > 63) /* not a fixed tei */
+> >  		return -ENOTCONN;
+> >  	if ((skb->data[2] & ~0x10) != SABME)
+> >  		return -ENOTCONN;
+> >  	/* We got a SABME for a fixed TEI */
+> > -	l2 = create_new_tei(mgr, tei);
+> > +	l2 = create_new_tei(mgr, tei, sapi);
+> >  	if (!l2)
+> >  		return -ENOMEM;
+> >  	ret = l2->ch.send(&l2->ch, skb);
 
 
----
- kernel/irq/handle.c |   18 ++++++++++++++----
- 1 files changed, 14 insertions(+), 4 deletions(-)
-
-diff --git a/kernel/irq/handle.c b/kernel/irq/handle.c
-index a3c671e..18041a2 100644
---- a/kernel/irq/handle.c
-+++ b/kernel/irq/handle.c
-@@ -11,6 +11,7 @@
-  */
- 
- #include <linux/irq.h>
-+#include <linux/slab.h>
- #include <linux/module.h>
- #include <linux/random.h>
- #include <linux/interrupt.h>
-@@ -81,11 +82,16 @@ static struct irq_desc irq_desc_init = {
- 	.lock       = __SPIN_LOCK_UNLOCKED(irq_desc_init.lock),
- };
- 
--void init_kstat_irqs(struct irq_desc *desc, int node, int nr)
-+void __ref init_kstat_irqs(struct irq_desc *desc, int node, int nr)
- {
- 	void *ptr;
- 
--	ptr = kzalloc_node(nr * sizeof(*desc->kstat_irqs), GFP_ATOMIC, node);
-+	if (slab_is_available())
-+		ptr = kzalloc_node(nr * sizeof(*desc->kstat_irqs),
-+				   GFP_ATOMIC, node);
-+	else
-+		ptr = alloc_bootmem_node(NODE_DATA(node),
-+				nr * sizeof(*desc->kstat_irqs));
- 
- 	/*
- 	 * don't overwite if can not get new one
-@@ -186,7 +192,7 @@ struct irq_desc *irq_to_desc(unsigned int irq)
- 	return NULL;
- }
- 
--struct irq_desc *irq_to_desc_alloc_node(unsigned int irq, int node)
-+struct irq_desc * __ref irq_to_desc_alloc_node(unsigned int irq, int node)
- {
- 	struct irq_desc *desc;
- 	unsigned long flags;
-@@ -208,7 +214,11 @@ struct irq_desc *irq_to_desc_alloc_node(unsigned int irq, int node)
- 	if (desc)
- 		goto out_unlock;
- 
--	desc = kzalloc_node(sizeof(*desc), GFP_ATOMIC, node);
-+	if (slab_is_available())
-+		desc = kzalloc_node(sizeof(*desc), GFP_ATOMIC, node);
-+	else
-+		desc = alloc_bootmem_node(NODE_DATA(node), sizeof(*desc));
-+
- 	printk(KERN_DEBUG "  alloc irq_desc for %d on node %d\n", irq, node);
- 	if (!desc) {
- 		printk(KERN_ERR "can not alloc irq_desc\n");
