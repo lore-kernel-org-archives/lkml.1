@@ -1,54 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755755AbZEWUpM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754689AbZEWUr5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755755AbZEWUpM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 May 2009 16:45:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752956AbZEWUpA
+	id S1754689AbZEWUr5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 May 2009 16:47:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753605AbZEWUrt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 May 2009 16:45:00 -0400
-Received: from mail-fx0-f168.google.com ([209.85.220.168]:39889 "EHLO
+	Sat, 23 May 2009 16:47:49 -0400
+Received: from mail-fx0-f168.google.com ([209.85.220.168]:46185 "EHLO
 	mail-fx0-f168.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752399AbZEWUpA (ORCPT
+	with ESMTP id S1752439AbZEWUrs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 May 2009 16:45:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=gkQtCYobF2QEu7+GkygljxgQWfTd1mS4DuxIE9HhCekRZbL7YOYEVSyymKR2Q7O7Yx
-         CZ7mpdidJ5IaVEFctmppQBX5T5A798LyS4VzdaWSUghSR3n2gIbU7rPLZDNVyw2rODbH
-         l+atWz2MHJkMhY2mxnYmMnez7HxmQfYs9R5dg=
+	Sat, 23 May 2009 16:47:48 -0400
 MIME-Version: 1.0
-Date: Sat, 23 May 2009 21:45:00 +0100
-Message-ID: <5c43c2d40905231345x4166fd45p807f21783f73c9ce@mail.gmail.com>
-Subject: [PATCH] b3dfg: Clean up MODULE_PARM_DESC newline
-From: =?ISO-8859-1?Q?Andr=E9_Lopes?= <andre.neo.net@gmail.com>
-To: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jsbronder@brontes3d.com
-Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <m1prdzh97x.fsf@fess.ebiederm.org>
+References: <m1bppofm9k.fsf@fess.ebiederm.org> <m1k54a7w2x.fsf@fess.ebiederm.org> 
+	<4A15046A.10106@kernel.org> <m1octm287f.fsf@fess.ebiederm.org> 
+	<4A1512E2.2040505@kernel.org> <m1vdnuyftb.fsf@fess.ebiederm.org> 
+	<4A151ECE.50800@kernel.org> <m17i08jpk8.fsf@fess.ebiederm.org> 
+	<ac3eb2510905230435n20dc376cw95e10eb2cb0cfecb@mail.gmail.com> 
+	<m1prdzh97x.fsf@fess.ebiederm.org>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Sat, 23 May 2009 22:46:27 +0200
+Message-ID: <ac3eb2510905231346n6f7ba736we0c4f9bce8e5e59f@mail.gmail.com>
+Subject: Re: [PATCH 04/20] sysfs: Handle the general case of removing of 
+	directories with subdirectories
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       Cornelia Huck <cornelia.huck@de.ibm.com>, linux-fsdevel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This trivial patch just clean up MODULE_PARM_DESC newline from
-drivers/staging/b3dfg/b3dfg.c .
+On Sat, May 23, 2009 at 22:09, Eric W. Biederman <ebiederm@xmission.com> wrote:
+> Kay Sievers <kay.sievers@vrfy.org> writes:
+>> What's the problem in /sys/dev/? There are just a bunch of symlinks,
+>> one for every device with a dev_t, and all in flat directories, and no
+>> directory to remove.
+>
+> device_shutdown called during reboot removes /sys/dev/block and /sys/dev/char.
+> The current sysfs_remove_dir (because it empties directories)
+> removes all of those symlinks.
+>
+> The problem is that it is the device objects for each individual
+> device that owns those symlinks, and normally removes those symlinks.
+>
+> Which means that in theory we could have double deletion going on.
+>
+> In practice today it doesn't matter because this is at reboot.
+>
+> And as far as that goes it is wrong to remove anything from sysfs during
+> device_shutdown so the fix is just to not call kobject_put there.
 
----
- drivers/staging/b3dfg/b3dfg.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Yes, that's just a bug. These directories should never be removed.
 
-diff --git a/drivers/staging/b3dfg/b3dfg.c b/drivers/staging/b3dfg/b3dfg.c
-index 75ebe33..7b18cea 100644
---- a/drivers/staging/b3dfg/b3dfg.c
-+++ b/drivers/staging/b3dfg/b3dfg.c
-@@ -42,7 +42,7 @@ static unsigned int b3dfg_nbuf = 2;
-
- module_param_named(buffer_count, b3dfg_nbuf, uint, 0444);
-
--MODULE_PARM_DESC(buffer_count, "Number of buffers (min 2, default 2)\n");
-+MODULE_PARM_DESC(buffer_count, "Number of buffers (min 2, default 2)");
-
- MODULE_AUTHOR("Daniel Drake <ddrake@brontes3d.com>");
- MODULE_DESCRIPTION("Brontes frame grabber driver");
--- 
-1.6.0.6
+Thanks,
+Kay
