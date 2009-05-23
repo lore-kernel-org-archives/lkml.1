@@ -1,115 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757334AbZEWTZi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755755AbZEWTjQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757334AbZEWTZi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 May 2009 15:25:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756625AbZEWTZY
+	id S1755755AbZEWTjQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 May 2009 15:39:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751903AbZEWTjD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 May 2009 15:25:24 -0400
-Received: from ns01.unsolicited.net ([69.10.132.115]:60879 "EHLO
-	ns01.unsolicited.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756326AbZEWTZW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 May 2009 15:25:22 -0400
-Message-ID: <4A184CDF.1020901@unsolicited.net>
-Date: Sat, 23 May 2009 20:22:07 +0100
-From: David <david@unsolicited.net>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
-MIME-Version: 1.0
-To: Alan Stern <stern@rowland.harvard.edu>
-CC: Pekka Enberg <penberg@cs.helsinki.fi>, linux-media@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       dbrownell@users.sourceforge.net, leonidv11@gmail.com,
-       Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: USB/DVB - Old Technotrend TT-connect S-2400 regression tracked
-  down
-References: <Pine.LNX.4.44L0.0905231109140.18397-100000@netrider.rowland.org> <4A183E5E.1070502@unsolicited.net>
-In-Reply-To: <4A183E5E.1070502@unsolicited.net>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 23 May 2009 15:39:03 -0400
+Received: from waste.org ([66.93.16.53]:41664 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751888AbZEWTjC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 May 2009 15:39:02 -0400
+Subject: Re: dd if=/dev/random of=data.bin bs=512 count=1
+From: Matt Mackall <mpm@selenic.com>
+To: Jon <jg@jguk.org>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <4A184ABB.1070902@jguk.org>
+References: <19ac3f7a0905170822q28255239nea01b56d52e3ddf8@mail.gmail.com>
+	 <2f11576a0905170901x41e15f65sf10bb5ee36050d14@mail.gmail.com>
+	 <4A184ABB.1070902@jguk.org>
+Content-Type: text/plain
+Date: Sat, 23 May 2009 14:38:07 -0500
+Message-Id: <1243107487.12761.17.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Again, hopefully with word wrap sorted out...
+On Sat, 2009-05-23 at 20:12 +0100, Jon wrote:
+> Hello KOSAKI,
+> 
+> Thank you for your reply.
+> 
+> KOSAKI Motohiro wrote:
+> >> Hello
+> >>
+> >> Issuing this command, I expected to get a file 4096 bytes in size.
+> >> Could someone let me know if I have missed something..? Or is there a
+> >> problem with using /dev/random this way?
+> >>
+> >> if I have a count=10 it hangs forever (several hours).
+> >>
+> >> Changing to use /dev/urandom and it generates the file ok.
+> > 
+> > you already have the answer. /dev/random might blocked, /dev/urandom doesn't.
+> 
+> Is this a "feature" of /dev/random ? ..it does not seem very useful to 
+> have it able to block for so long.
 
-Media PC (32-bit - Nvidia chipset. kernel 2.6.27)
+Yes. The theory is that it will be secure even in the event of a
+catastrophic failure of the cryptographic compression function. But
+don't worry about that; use /dev/urandom.
 
-19:13:18 s kernel: usb 1-3: new high speed USB device using ehci_hcd and address 6
-19:13:18 s kernel: usb 1-3: configuration #1 chosen from 1 choice
-19:13:18 s kernel: dvb-usb: found a 'Technotrend TT-connect S-2400' in cold state, will try to load a firmware
-19:13:18 s kernel: firmware: requesting dvb-usb-tt-s2400-01.fw
-19:13:18 s kernel: dvb-usb: downloading firmware from file 'dvb-usb-tt-s2400-01.fw'
-19:13:18 s kernel: usb 1-3: USB disconnect, address 6
-19:13:18 s kernel: dvb-usb: generic DVB-USB module successfully deinitialized and disconnected.
-19:13:20 s kernel: usb 1-3: new high speed USB device using ehci_hcd and address 7
-19:13:20 s kernel: usb 1-3: configuration #1 chosen from 1 choice
-19:13:20 s kernel: dvb-usb: found a 'Technotrend TT-connect S-2400' in warm state.
-19:13:20 s kernel: dvb-usb: will pass the complete MPEG2 transport stream to the software demuxer.
-19:13:20 s kernel: DVB: registering new adapter (Technotrend TT-connect S-2400)
-19:13:20 s kernel: DVB: registering frontend 0 (Philips TDA10086 DVB-S)...
-19:13:23 s kernel: dvb-usb: recv bulk message failed: -110
-19:13:23 s kernel: ttusb2: there might have been an error during control message transfer. (rlen = 0, was 0)
-19:13:23 s kernel: dvb-usb: Technotrend TT-connect S-2400 successfully initialized and connected.
-
-The device times out. Reverting b963801164618e25fbdc0cd452ce49c3628b46c8
-causes it to work again
-
-19:09:53 s kernel: usb 1-3: new high speed USB device using ehci_hcd and address 5
-19:09:53 s kernel: usb 1-3: configuration #1 chosen from 1 choice
-19:09:58 s kernel: dvb-usb: found a 'Technotrend TT-connect S-2400' in cold state, will try to load a firmware
-19:09:58 s kernel: firmware: requesting dvb-usb-tt-s2400-01.fw
-19:09:59 s kernel: dvb-usb: downloading firmware from file 'dvb-usb-tt-s2400-01.fw'
-19:09:59 s kernel: usb 1-3: USB disconnect, address 5
-19:09:59 s kernel: dvb-usb: generic DVB-USB module successfully deinitialized and disconnected.
-19:09:59 s kernel: usbcore: registered new interface driver dvb_usb_ttusb2
-19:10:00 s kernel: usb 1-3: new high speed USB device using ehci_hcd and address 6
-19:10:00 s kernel: usb 1-3: configuration #1 chosen from 1 choice
-19:10:01 s kernel: dvb-usb: found a 'Technotrend TT-connect S-2400' in warm state.
-19:10:01 s kernel: dvb-usb: will pass the complete MPEG2 transport stream to the software demuxer.
-19:10:01 s kernel: DVB: registering new adapter (Technotrend TT-connect S-2400)
-19:10:01 s kernel: DVB: registering frontend 3 (Philips TDA10086 DVB-S)...
-19:10:01 s kernel: dvb-usb: Technotrend TT-connect S-2400 successfully initialized and connected.
-
-My PC (64 bit - ATI chipset, using 2.6.30-rc5)
-
-[12044.364021] usb 4-10: new high speed USB device using ehci_hcd and address 5
-[12044.497561] usb 4-10: configuration #1 chosen from 1 choice
-[12044.881621] dvb-usb: found a 'Technotrend TT-connect S-2400' in cold state, will try to load a firmware
-[12044.881626] usb 4-10: firmware: requesting dvb-usb-tt-s2400-01.fw
-[12044.918854] dvb-usb: downloading firmware from file 'dvb-usb-tt-s2400-01.fw'
-[12044.980719] usbcore: registered new interface driver dvb_usb_ttusb2
-[12044.981478] usb 4-10: USB disconnect, address 5
-[12044.985169] dvb-usb: generic DVB-USB module successfully deinitialized and disconnected.
-[12046.744023] usb 4-10: new high speed USB device using ehci_hcd and address 6
-[12046.876980] usb 4-10: configuration #1 chosen from 1 choice
-[12046.877673] dvb-usb: found a 'Technotrend TT-connect S-2400' in warm state.
-[12046.878601] dvb-usb: will pass the complete MPEG2 transport stream to the software demuxer.
-[12046.878959] DVB: registering new adapter (Technotrend TT-connect S-2400)
-[12046.886861] DVB: registering adapter 0 frontend 0 (Philips TDA10086 DVB-S)...
-[12046.891434] LNBx2x attached on addr=8<3>dvb-usb: recv bulk message failed: -110
-[12048.888080] ttusb2: there might have been an error during control message transfer. (rlen = 0, was 0)
-[12048.888320] dvb-usb: Technotrend TT-connect S-2400 successfully initialized and connected.
-
-Reverting b963801164618e25fbdc0cd452ce49c3628b46c8 (manually, as there
-are conflicting changes) causes it to work again. The wierd random
-frontend number looks strange though.
-
-[ 2406.492027] usb 2-10: new high speed USB device using ehci_hcd and address 7
-[ 2406.625622] usb 2-10: configuration #1 chosen from 1 choice
-[ 2406.626328] dvb-usb: found a 'Technotrend TT-connect S-2400' in cold state, will try to load a firmware
-[ 2406.626335] usb 2-10: firmware: requesting dvb-usb-tt-s2400-01.fw
-[ 2406.628650] dvb-usb: downloading firmware from file 'dvb-usb-tt-s2400-01.fw'
-[ 2406.690868] usb 2-10: USB disconnect, address 7
-[ 2406.693282] dvb-usb: generic DVB-USB module successfully deinitialized and disconnected.
-[ 2408.453024] usb 2-10: new high speed USB device using ehci_hcd and address 8
-[ 2408.585983] usb 2-10: configuration #1 chosen from 1 choice
-[ 2408.586652] dvb-usb: found a 'Technotrend TT-connect S-2400' in warm state.
-[ 2408.587727] dvb-usb: will pass the complete MPEG2 transport stream to the software demuxer.
-[ 2408.588080] DVB: registering new adapter (Technotrend TT-connect S-2400)
-[ 2408.591575] DVB: registering adapter 0 frontend 42056112 (Philips TDA10086 DVB-S)...
-[ 2408.595941] LNBx2x attached on addr=8<6>dvb-usb: Technotrend TT-connect S-2400 successfully initialized and connected.
-
+-- 
+http://selenic.com : development and support for Mercurial and Linux
 
 
