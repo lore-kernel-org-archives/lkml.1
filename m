@@ -1,44 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755122AbZEWQ7c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755900AbZEWRCR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755122AbZEWQ7c (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 May 2009 12:59:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754018AbZEWQ7Y
+	id S1755900AbZEWRCR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 May 2009 13:02:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754544AbZEWRCD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 May 2009 12:59:24 -0400
-Received: from ms.trustica.cz ([82.208.32.68]:54437 "EHLO ms.trustica.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753751AbZEWQ7Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 May 2009 12:59:24 -0400
-Message-ID: <4A182B61.5010503@assembler.cz>
-Date: Sat, 23 May 2009 18:59:13 +0200
-From: Rudolf Marek <r.marek@assembler.cz>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	Sat, 23 May 2009 13:02:03 -0400
+Received: from tomts45-srv.bellnexxia.net ([209.226.175.112]:50058 "EHLO
+	tomts45-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753101AbZEWRCD convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 May 2009 13:02:03 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AjKRAIPDF0rR4q/5/2dsb2JhbACEIYl5xBSDdwWGOA
+X-Mailer: Openwave WebEngine, version 2.8.11 (webedge20-101-194-20030622)
+X-Originating-IP: [82.150.63.253]
+From: British Tobacco <jackmandaycare@bellnet.ca>
+Reply-To: drluis09@live.com
+To: <info@co.uk>
+Subject: ***Lucky Winner***
+Date: Sat, 23 May 2009 13:01:55 -0400
 MIME-Version: 1.0
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-CC: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       LM Sensors <lm-sensors@lm-sensors.org>
-Subject: Re: [PATCH-tip] x86: hwmon/k8temp.c Add support for AMD 10H and 11H
-References: <1242979484.8796.7.camel@localhost.localdomain>	 <4A165F67.3020005@assembler.cz>	 <1242981748.10642.3.camel@localhost.localdomain> <1242984648.16532.3.camel@localhost.localdomain>
-In-Reply-To: <1242984648.16532.3.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Message-Id: <20090523170203.KIMH1557.tomts45-srv.bellnexxia.net@toip41-bus.srvr.bell.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-Yes it works for most CPUs, but for unlucky users we might get complains from 
-them - and false alarms.
-
-I'm talking about:
-
-http://www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs/41322.pdf
-
-Errata #319
-
-So far all CPUs have the issue.
-
-Rudolf
+You have just been awarded,£1,000,000,00 GBP
+Names:........
+Address:......
+Country:......
+Sex/Tel.......
 
