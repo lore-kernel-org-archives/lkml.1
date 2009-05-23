@@ -1,86 +1,199 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758580AbZEWBEL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757977AbZEWB3r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758580AbZEWBEL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 May 2009 21:04:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754804AbZEWBD6
+	id S1757977AbZEWB3r (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 May 2009 21:29:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753866AbZEWB3i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 May 2009 21:03:58 -0400
-Received: from wf-out-1314.google.com ([209.85.200.174]:30404 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753764AbZEWBD5 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 May 2009 21:03:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=xANjHZsXtreHNN4CqsY2aw4zpaQgLYv/vZUu05PMsogbim23yI/65Pq30av+vFZJLe
-         bfw+8SE+qgMWDqmuCf2fn0jETf76CCwPFjJrzKOUoAG/OdLlBLB/lYpvJ6o+5JTp1SpY
-         UjAxSvwR1T7ZC3/nbofrvuodpIVrhlg7g+ud8=
-MIME-Version: 1.0
-In-Reply-To: <4A1743C5.9020803@candelatech.com>
-References: <4A1743C5.9020803@candelatech.com>
-Date: Sat, 23 May 2009 09:03:58 +0800
-Message-ID: <d82e647a0905221803w487fcdb3k2319bdaa7d9cc559@mail.gmail.com>
-Subject: Re: Question on lockdep and sysrq - d
-From: Ming Lei <tom.leiming@gmail.com>
-To: Ben Greear <greearb@candelatech.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Fri, 22 May 2009 21:29:38 -0400
+Received: from smtp.knology.net ([24.214.63.101]:51816 "EHLO smtp.knology.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752829AbZEWB3h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 May 2009 21:29:37 -0400
+Subject: [PATCH 2.6.30-rc4] r8169: avoid losing MSI interrupts
+From: David Dillow <dave@thedillows.org>
+To: Michael Riepe <michael.riepe@googlemail.com>
+Cc: Michael Buesch <mb@bu3sch.de>, Francois Romieu <romieu@fr.zoreil.com>,
+       Rui Santos <rsantos@grupopie.com>,
+       Michael =?ISO-8859-1?Q?B=FCker?= <m.bueker@berlin.de>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+In-Reply-To: <4A0C7443.1010000@googlemail.com>
+References: <200903041828.49972.m.bueker@berlin.de>
+	 <1242001754.4093.12.camel@obelisk.thedillows.org>
+	 <200905112248.44868.mb@bu3sch.de> <200905112310.08534.mb@bu3sch.de>
+	 <1242077392.3716.15.camel@lap75545.ornl.gov>
+	 <4A09DC3E.2080807@googlemail.com>
+	 <1242268709.4979.7.camel@obelisk.thedillows.org>
+	 <4A0C6504.8000704@googlemail.com>
+	 <1242328457.32579.12.camel@lap75545.ornl.gov>
+	 <4A0C7443.1010000@googlemail.com>
+Content-Type: text/plain
+Date: Fri, 22 May 2009 21:29:34 -0400
+Message-Id: <1243042174.3580.23.camel@obelisk.thedillows.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-See http://marc.info/?l=linux-kernel&m=124211522525625&w=2.
+The 8169 chip only generates MSI interrupts when all enabled event
+sources are quiescent and one or more sources transition to active. If
+not all of the active events are acknowledged, or a new event becomes
+active while the existing ones are cleared in the handler, we will not
+see a new interrupt.
 
-thanks.
+The current interrupt handler masks off the Rx and Tx events once the
+NAPI handler has been scheduled, which opens a race window in which we
+can get another Rx or Tx event and never ACK'ing it, stopping all
+activity until the link is reset (ifconfig down/up). Fix this by always
+ACK'ing all event sources, and loop in the handler until we have all
+sources quiescent.
 
-2009/5/23 Ben Greear <greearb@candelatech.com>:
-> Hello!
->
-> I'm trying to debug an apparent deadlock in some code I'm
-> writing.
->
-> When I do a sysrq 'd', I get a nice dump of locks (I have lockdep enabled).
->
-> However, the output appears to show multiple processes holding the
-> same locks (rtnl_mutex, for example):
->
-> Showing all locks held in the system:
-> 3 locks held by events/11/63:
->  #0:  (events){--..}, at: [<ffffffff8104f71e>] run_workqueue+0xb1/0x216
->  #1:  ((linkwatch_work).work){--..}, at: [<ffffffff8104f71e>]
-> run_workqueue+0xb1/0x216
->  #2:  (rtnl_mutex){--..}, at: [<ffffffff8125def1>] rtnl_lock+0x12/0x14
-> 1 lock held by irqbalance/3360:
->  #0:  (rtnl_mutex){--..}, at: [<ffffffff8125def1>] rtnl_lock+0x12/0x14
-> 1 lock held by hald/3605:
->  #0:  (rtnl_mutex){--..}, at: [<ffffffff8125def1>] rtnl_lock+0x12/0x14
-> ...
->
-> Is this merely showing processes that are blocked on trying to acquire these
-> locks?
->
-> If so, is there any way to tell which processes have fully acquired locks
-> v/s
-> just waiting to acquire them?
->
-> Thanks,
-> Ben
->
-> --
-> Ben Greear <greearb@candelatech.com>
-> Candela Technologies Inc  http://www.candelatech.com
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+Signed-off-by: David Dillow <dave@thedillows.org>
+---
+This fixes the lockups I've seen. Both MSI and level-triggered interrupt
+configurations survive over an hour of testing when it would lockup in
+under 90 seconds before. I am certain of the analysis of the root cause,
+but there may be better ways to fix it. There may also be a theoretical
+race window between the ending of a NAPI poll cycle and a link change
+interrupt coming in, but I'm not sure it would matter. 
+
+Some variant of this should also be applied to the currently running
+stable trees, as the problem is long-standing.
+
+ r8169.c |  102 +++++++++++++++++++++++++++++++-------------------------
+ 1 file changed, 57 insertions(+), 45 deletions(-)
+
+diff --git a/drivers/net/r8169.c b/drivers/net/r8169.c
+index 0b6e8c8..bdc8d5a 100644
+--- a/drivers/net/r8169.c
++++ b/drivers/net/r8169.c
+@@ -3554,54 +3554,64 @@ static irqreturn_t rtl8169_interrupt(int irq, void *dev_instance)
+ 	int handled = 0;
+ 	int status;
+ 
++	/* loop handling interrupts until we have no new ones or
++	 * we hit a invalid/hotplug case.
++	 */
+ 	status = RTL_R16(IntrStatus);
++	while (status && status != 0xffff) {
++		handled = 1;
+ 
+-	/* hotplug/major error/no more work/shared irq */
+-	if ((status == 0xffff) || !status)
+-		goto out;
+-
+-	handled = 1;
++		/* Handle all of the error cases first. These will reset
++		 * the chip, so just exit the loop.
++		 */
++		if (unlikely(!netif_running(dev))) {
++			rtl8169_asic_down(ioaddr);
++			break;
++		}
+ 
+-	if (unlikely(!netif_running(dev))) {
+-		rtl8169_asic_down(ioaddr);
+-		goto out;
+-	}
++		/* Work around for rx fifo overflow */
++		if (unlikely(status & RxFIFOOver) &&
++	    	(tp->mac_version == RTL_GIGA_MAC_VER_11)) {
++			netif_stop_queue(dev);
++			rtl8169_tx_timeout(dev);
++			break;
++		}
+ 
+-	status &= tp->intr_mask;
+-	RTL_W16(IntrStatus,
+-		(status & RxFIFOOver) ? (status | RxOverflow) : status);
++		if (unlikely(status & SYSErr)) {
++			rtl8169_pcierr_interrupt(dev);
++			break;
++		}
+ 
+-	if (!(status & tp->intr_event))
+-		goto out;
++		if (status & LinkChg)
++			rtl8169_check_link_status(dev, tp, ioaddr);
+ 
+-	/* Work around for rx fifo overflow */
+-	if (unlikely(status & RxFIFOOver) &&
+-	    (tp->mac_version == RTL_GIGA_MAC_VER_11)) {
+-		netif_stop_queue(dev);
+-		rtl8169_tx_timeout(dev);
+-		goto out;
+-	}
++		/* We need to see the lastest version of tp->intr_mask to
++		 * avoid ignoring an MSI interrupt and having to wait for
++		 * another event which may never come.
++		 */
++		smp_rmb();
++		if (status & tp->intr_mask & tp->napi_event) {
++			RTL_W16(IntrMask, tp->intr_event & ~tp->napi_event);
++			tp->intr_mask = ~tp->napi_event;
++
++			if (likely(napi_schedule_prep(&tp->napi)))
++				__napi_schedule(&tp->napi);
++			else if (netif_msg_intr(tp)) {
++				printk(KERN_INFO "%s: interrupt %04x in poll\n",
++			       	dev->name, status);
++			}
++		}
+ 
+-	if (unlikely(status & SYSErr)) {
+-		rtl8169_pcierr_interrupt(dev);
+-		goto out;
++		/* We only get a new MSI interrupt when all active irq
++		 * sources on the chip have been acknowledged. So, ack
++		 * everything we've seen and check if new sources have become
++		 * active to avoid blocking all interrupts from the chip.
++		 */
++		RTL_W16(IntrStatus,
++			(status & RxFIFOOver) ? (status | RxOverflow) : status);
++		status = RTL_R16(IntrStatus);
+ 	}
+ 
+-	if (status & LinkChg)
+-		rtl8169_check_link_status(dev, tp, ioaddr);
+-
+-	if (status & tp->napi_event) {
+-		RTL_W16(IntrMask, tp->intr_event & ~tp->napi_event);
+-		tp->intr_mask = ~tp->napi_event;
+-
+-		if (likely(napi_schedule_prep(&tp->napi)))
+-			__napi_schedule(&tp->napi);
+-		else if (netif_msg_intr(tp)) {
+-			printk(KERN_INFO "%s: interrupt %04x in poll\n",
+-			       dev->name, status);
+-		}
+-	}
+-out:
+ 	return IRQ_RETVAL(handled);
+ }
+ 
+@@ -3617,13 +3627,15 @@ static int rtl8169_poll(struct napi_struct *napi, int budget)
+ 
+ 	if (work_done < budget) {
+ 		napi_complete(napi);
+-		tp->intr_mask = 0xffff;
+-		/*
+-		 * 20040426: the barrier is not strictly required but the
+-		 * behavior of the irq handler could be less predictable
+-		 * without it. Btw, the lack of flush for the posted pci
+-		 * write is safe - FR
++
++		/* We need for force the visibility of tp->intr_mask
++		 * for other CPUs, as we can loose an MSI interrupt
++		 * and potentially wait for a retransmit timeout if we don't.
++		 * The posted write to IntrMask is safe, as it will
++		 * eventually make it to the chip and we won't loose anything
++		 * until it does.
+ 		 */
++		tp->intr_mask = 0xffff;
+ 		smp_wmb();
+ 		RTL_W16(IntrMask, tp->intr_event);
+ 	}
 
 
 
--- 
-Lei Ming
