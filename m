@@ -1,46 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753793AbZEWNvU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756054AbZEWOMw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753793AbZEWNvU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 May 2009 09:51:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752437AbZEWNvM
+	id S1756054AbZEWOMw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 May 2009 10:12:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752554AbZEWOMp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 May 2009 09:51:12 -0400
-Received: from mail-bw0-f174.google.com ([209.85.218.174]:36325 "EHLO
-	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752343AbZEWNvL (ORCPT
+	Sat, 23 May 2009 10:12:45 -0400
+Received: from astoria.ccjclearline.com ([64.235.106.9]:58031 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751908AbZEWOMo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 May 2009 09:51:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=TBsEpclPcn+K0r0kUKUdQ6y/TpS4UZa6U1ud0ccihFf6rWMhLufJsRN3qMzhtkIJf2
-         IM+Wp7skQHGRvvf64eRUG9lIk5Zu38h+bcfukvwujp9MHqfHU3VhGPb7X8cPSNWkPkMC
-         qWzviHv+0yVQAY9M1PE/MQTXV3RMIvFUx2FEM=
+	Sat, 23 May 2009 10:12:44 -0400
+Date: Sat, 23 May 2009 10:11:17 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: Arnd Bergmann <arnd@arndb.de>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-kbuild@vger.kernel.org, sam@ravnborg.org
+Subject: Re: "make config" to another architecture doesn't relink
+ include/asm
+In-Reply-To: <200905231322.16154.arnd@arndb.de>
+Message-ID: <alpine.LFD.2.00.0905231010570.7113@localhost.localdomain>
+References: <alpine.LFD.2.00.0905221219500.13933@localhost.localdomain> <200905231322.16154.arnd@arndb.de>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <607293.42795.qm@web23608.mail.ird.yahoo.com>
-References: <607293.42795.qm@web23608.mail.ird.yahoo.com>
-From: Joao Correia <joaomiguelcorreia@gmail.com>
-Date: Sat, 23 May 2009 14:50:51 +0100
-Message-ID: <a5d9929e0905230650u7221fafeq3394b85509bd7ea3@mail.gmail.com>
-Subject: Re: super root shell/mode/api
-To: Andrea <andrea256it@yahoo.it>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-478106526-1243087881=:7113"
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 19, 2009 at 3:36 PM, Andrea <andrea256it@yahoo.it> wrote:
-> That's exactly the problem a remote attacker or virus
-> can gain root and you are completely powerless. You want
-> to save data? The attacker just logs you out before you
-> can run any command. You can't even backup or save
-> data! You are owned. Yes.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+--8323328-478106526-1243087881=:7113
+Content-Type: TEXT/PLAIN; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+
+On Sat, 23 May 2009, Arnd Bergmann wrote:
+
+> On Friday 22 May 2009, Robert P. J. Day wrote:
+> > =A0 shouldn't it be sufficient that, if i do another "make
+> > ??_defconfig" to another architecture, all traces of the previous
+> > configure are erased and include/asm should be relinked
+> > automatically?
+
+> In 2.6.30, the symlink is finally no longer needed, so maybe we
+> should simply drop it to solve this problem as well.
+
+  or that could work, too.  :-)
+
+rday
+--
 
 
-This isn't Hollywood. Pull the cable.
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+Robert P. J. Day                               Waterloo, Ontario, CANADA
 
-Best regards,
-Joao Correia
+        Linux Consulting, Training and Annoying Kernel Pedantry.
+
+Web page:                                          http://crashcourse.ca
+Linked In:                             http://www.linkedin.com/in/rpjday
+Twitter:                                       http://twitter.com/rpjday
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--8323328-478106526-1243087881=:7113--
