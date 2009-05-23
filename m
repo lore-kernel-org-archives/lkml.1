@@ -1,72 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753643AbZEWJJx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754311AbZEWJRR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753643AbZEWJJx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 May 2009 05:09:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751336AbZEWJJp
+	id S1754311AbZEWJRR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 May 2009 05:17:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751336AbZEWJRC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 May 2009 05:09:45 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:41215 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751324AbZEWJJp (ORCPT
+	Sat, 23 May 2009 05:17:02 -0400
+Received: from comar.pardus.org.tr ([193.140.100.220]:49711 "EHLO
+	pardus.org.tr" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751324AbZEWJRB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 May 2009 05:09:45 -0400
-Subject: Re: [PATCH] plat_nand: add missing __devexit_p()
-From: Artem Bityutskiy <dedekind@infradead.org>
-Reply-To: dedekind@infradead.org
-To: Mike Frysinger <vapier@gentoo.org>
-Cc: linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org
-In-Reply-To: <1242634081-16593-1-git-send-email-vapier@gentoo.org>
-References: <1242634081-16593-1-git-send-email-vapier@gentoo.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 23 May 2009 12:09:08 +0300
-Message-Id: <1243069748.21646.23.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 23 May 2009 09:09:12.0915 (UTC) FILETIME=[23C78A30:01C9DB86]
-X-Nokia-AV: Clean
+	Sat, 23 May 2009 05:17:01 -0400
+Message-ID: <4A17BF10.4030604@pardus.org.tr>
+Date: Sat, 23 May 2009 12:17:04 +0300
+From: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+MIME-Version: 1.0
+To: Kunsheng Chen <linux_kernel_chan@yahoo.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Why current->uid is not working in 2.6.29 ?
+References: <784636.43001.qm@web111109.mail.gq1.yahoo.com>
+In-Reply-To: <784636.43001.qm@web111109.mail.gq1.yahoo.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-05-18 at 04:08 -0400, Mike Frysinger wrote:
-> The remove function uses __devexit, so the .remove assignment needs
-> __devexit_p() to fix a build error with hotplug disabled.
+Kunsheng Chen wrote:
+> Hello everyone,
+>
+> I am new to kernel module programming and got some problem while compiling some old kernel code. 
+>
+> The
+> code is trying to get user id using current->uid,   but it is not
+> working by reminding me 'task_struct; doesn't contain field uid '.  
+>
+> I checked the linux source code , uid is not there any more.
+>   
+They were replaced by some other calls. For example the following is a
+snippet which ports the old code to the new API:
 
-I already have a patch for this in my l2-mtd-2.6.git tree:
+-                      address, current->uid);
++                      address, current_uid());
 
-commit 486dd2676fd0dc0f944ce142a57cda8772eec118
-Author: Thomas Chou <thomas@wytron.com.tw>
-Date:   Tue Apr 21 12:27:34 2009 +0800
 
-    MTD: plat_nand: fix section error
+The commit 1330deb0f6e89525c8e9fcbd6b13522c9243bfc0 is a good example of
+what are the new replacements.
 
-    With CONFIG_HOTPLUG=n, the following eror occurred during link:
-    local symbol 0: discarded in section `.devexit.text' from
-    drivers/built-in.o
+This is all that I know,
 
-    It was caused by improper section reference. The __devexit_p()
-    should be added to the .remove function.
-
-    Signed-off-by: Thomas Chou <thomas@wytron.com.tw>
-    Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-
-diff --git a/drivers/mtd/nand/plat_nand.c b/drivers/mtd/nand/plat_nand.c
-index 86e1d08..28ffd4e 100644
---- a/drivers/mtd/nand/plat_nand.c
-+++ b/drivers/mtd/nand/plat_nand.c
-@@ -128,7 +128,7 @@ static int __devexit plat_nand_remove(struct
-platform_device *pdev)
-
- static struct platform_driver plat_nand_driver = {
-        .probe          = plat_nand_probe,
--       .remove         = plat_nand_remove,
-+       .remove         = __devexit_p(plat_nand_remove),
-        .driver         = {
-                .name   = "gen_nand",
-                .owner  = THIS_MODULE,
-
--- 
-Best regards,
-Artem Bityutskiy (Битюцкий Артём)
-
+Ozan Caglayan
