@@ -1,53 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755433AbZEWPTi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753854AbZEWPoW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755433AbZEWPTi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 May 2009 11:19:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753255AbZEWPTc
+	id S1753854AbZEWPoW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 May 2009 11:44:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753485AbZEWPoO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 May 2009 11:19:32 -0400
-Received: from mail-gx0-f166.google.com ([209.85.217.166]:33687 "EHLO
-	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753275AbZEWPTb convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 May 2009 11:19:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:from:date:x-google-sender-auth:message-id
-         :subject:to:cc:content-type:content-transfer-encoding;
-        b=CQPKrhCLNjIR/avm67A0plQ91gftTmdjidE9Ci6wNKCKfaff13EYX2NcpSlpO1/3fV
-         msdV+l9WBY19Sujy8RbljXn8w+4ZA6lvs6isv9WosgcF9RTj3/sd7zpcCqgHEMkk+8sj
-         CtYiTvNFunr/NuM5Y4z8NhyR2X7JUX3TycdQE=
+	Sat, 23 May 2009 11:44:14 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:51178 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752971AbZEWPoN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 May 2009 11:44:13 -0400
+Message-ID: <4A1819CB.9010104@redhat.com>
+Date: Sat, 23 May 2009 11:44:11 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
 MIME-Version: 1.0
-From: Jan Kucera <kucera.jan.cz@gmail.com>
-Date: Sat, 23 May 2009 17:19:12 +0200
-X-Google-Sender-Auth: 822063b3297ef009
-Message-ID: <ef67228d0905230819x633f0cd0t4dd1be639906f9bc@mail.gmail.com>
-Subject: Possible deadlock in jfs_imap.c?
-To: jfs-discussion@lists.sourceforge.net
-Cc: shaggy@austin.ibm.com, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: John Walsh <server422@gmail.com>
+CC: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: What Distro is best for Starting Kernel Dev?
+References: <9f7f2c020905221910m2ffe4c53v8fd5dbc6cd236602@mail.gmail.com>
+In-Reply-To: <9f7f2c020905221910m2ffe4c53v8fd5dbc6cd236602@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+John Walsh wrote:
+> What Distro is best for Starting Kernel Dev?
 
-for my master thesis, I've designed static checker for finding deadlocks in C.
-My tool found some possible deadlock in file fs/jfs/jfs_imap.c
-between JFS_IP(ipimap)->commit_mutex and  imap->im_aglock[agno].
+If you want to learn more about the system than
+anybody should ever need to know, you can stick
+with a bleeding-edge development distro like
+Fedora Rawhide, Mandriva Cooker or Debian Unstable.
 
-Reason of this problem is probably missed unlocking of
-JFS_IP(ipimap)->commit_mutex in branch starting at line 2564 which
-leaves JFS_IP(ipimap)->commit_mutex locked:
+Make sure to always pull all the latest updates.
 
-    in function diNewIAG(..)
-        locking mutex_lock(&JFS_IP(ipimap)->commit_mutex) at line 2540
-        condition at line 2543 is false
-        condition at line 2564 is true
-        goto out: at 2579
-        IAGFREE_UNLOCK(imap); at line 2654
-    return from diNewIAG(..) at line 2656
+Sometimes you'll have a broken system which you'll
+somehow have to untangle, but it's all part of
+learning more than anybody should ever know...
 
-Version of kernel is 2.6.28 (maybe this code is in newer versions too).
-Could someone confirm, that this is a real bug? Thank you for your time.
+-- 
+All rights reversed.
