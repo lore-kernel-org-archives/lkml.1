@@ -1,126 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757795AbZEWUOk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758035AbZEWUPP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757795AbZEWUOk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 May 2009 16:14:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755213AbZEWUNz
+	id S1758035AbZEWUPP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 May 2009 16:15:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757872AbZEWUPB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 May 2009 16:13:55 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:55185 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754313AbZEWUNr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 May 2009 16:13:47 -0400
-From: "Eric W. Biederman" <ebiederm@xmission.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Cc: <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>,
-       Cornelia Huck <cornelia.huck@de.ibm.com>,
-       <linux-fsdevel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Eric W. Biederman" <ebiederm@aristanetworks.com>
-Date: Sat, 23 May 2009 13:13:10 -0700
-Message-Id: <1243109591-21611-4-git-send-email-ebiederm@xmission.com>
-X-Mailer: git-send-email 1.6.3.1.54.g99dd.dirty
-In-Reply-To: <m1bppofm9k.fsf@fess.ebiederm.org>
-References: <m1bppofm9k.fsf@fess.ebiederm.org>
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Rcpt-To: akpm@linux-foundation.org, gregkh@suse.de, linux-kernel@vger.kernel.org, tj@kernel.org, cornelia.huck@de.ibm.com, linux-fsdevel@vger.kernel.org, ebiederm@xmission.com, ebiederm@aristanetworks.com
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Andrew Morton <akpm@linux-foundation.org>, Greg Kroah-Hartman
-	<gregkh@suse.de>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  1.5 XMNoVowels Alpha-numberic number with no vowels
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -1.1 BAYES_05 BODY: Bayesian spam probability is 1 to 5%
-	*      [score: 0.0461]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 T_TooManySym_01 4+ unique symbols in subject
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-	*  0.0 T_TooManySym_02 5+ unique symbols in subject
-	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
-Subject: [PATCH 24/20] sysfs: In sysfs_add_one fail if the targe directory has been removed.
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
+	Sat, 23 May 2009 16:15:01 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:58966 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753813AbZEWUPA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 May 2009 16:15:00 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Kim Kyuwon <chammoru@gmail.com>
+Subject: Re: [PATCH] PM: suspend_device_irqs(): don't disable wakeup IRQs
+Date: Sat, 23 May 2009 22:14:56 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc6-rjw; KDE/4.2.3; x86_64; ; )
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Kyungmin Park <kyungmin.park@samsung.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+References: <1241483224-7113-1-git-send-email-khilman@deeprootsystems.com> <200905230029.18279.rjw@sisk.pl> <4d34a0a70905221603g785f5b78h330249ff258dbfdd@mail.gmail.com>
+In-Reply-To: <4d34a0a70905221603g785f5b78h330249ff258dbfdd@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200905232214.57186.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Eric W. Biederman <ebiederm@xmission.com>
+On Saturday 23 May 2009, Kim Kyuwon wrote:
+> On Sat, May 23, 2009 at 7:29 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > On Saturday 23 May 2009, Kim Kyuwon wrote:
+[--snip--]
+> >> You changed the really important part of Linux, which may affect most
+> >> processor architectures. I think you should be careful. If some of
+> >> architectures can't take care of it (they can implement
+> >> disable_irq_wake correctly in H/W level, will you revert your changes?
+> >
+> > No, the changes are not going to be reverted.  In fact things should have been
+> > done like this already much earlier.
+> >
+> > Now, do you have any particular example of a problem related to these changes
+> > or is it only a theoretical issue?
+> 
+> I'd CCing you when I'm sending a mail for this particular example of a example.
+> http://markmail.org/thread/fvt7d62arofon5xx
 
-If a bug in the upper layers results in someone attempting to add
-to a sysfs directory that has already been removed, warn about it
-and fail.
+Well, as I said above, reverting the changes that introduced
+[suspend|resume]_device_irqs() is not an option, becuase it was the only sane
+way to achieve the goal they were added for.  So, we need to fix the wake-up
+problem on your platform with the assumption that
+[suspend|resume]_device_irqs() are going to stay.
 
-I don't believe this has ever happened, and it certainly never should
-happen, but be strict to avoid errors creeping in.
+For starters, would it be possible to teach the 'disable' hook of your
+platform's interrupt controller not to mask the IRQs that have both
+IRQ_WAKEUP and IRQ_SUSPENDED set?  That apparently would work around the
+wake-up interrupts problem.
 
-Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
----
- fs/sysfs/dir.c |   37 +++++++++++++++++++++++--------------
- 1 files changed, 23 insertions(+), 14 deletions(-)
-
-diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-index 4da20a3..b3058f5 100644
---- a/fs/sysfs/dir.c
-+++ b/fs/sysfs/dir.c
-@@ -394,21 +394,17 @@ static char *sysfs_pathname(struct sysfs_dirent *sd, char *path)
- int sysfs_add_one(struct sysfs_dirent *parent_sd, struct sysfs_dirent *sd)
- {
- 	struct iattr *ps_iattr;
-+	char *path;
-+	int result;
- 
- 	mutex_lock(&sysfs_mutex);
--	if (sysfs_find_dirent(parent_sd, sd->s_name)) {
--		char *path;
--		mutex_unlock(&sysfs_mutex);
- 
--		path = kzalloc(PATH_MAX, GFP_KERNEL);
--		WARN(1, KERN_WARNING
--		     "sysfs: cannot create duplicate filename '%s'\n",
--		     (path == NULL) ? sd->s_name :
--		     strcat(strcat(sysfs_pathname(parent_sd, path), "/"),
--		            sd->s_name));
--		kfree(path);
--		return -EEXIST;
--	}
-+	result = -ENOENT;
-+	if (parent_sd->s_flags & SYSFS_FLAG_REMOVED)
-+		goto out_err;
-+
-+	if (sysfs_find_dirent(parent_sd, sd->s_name))
-+		goto out_err;
- 
- 	sd->s_parent = sysfs_get(parent_sd);
- 	sysfs_link_sibling(sd);
-@@ -417,9 +413,22 @@ int sysfs_add_one(struct sysfs_dirent *parent_sd, struct sysfs_dirent *sd)
- 	ps_iattr = parent_sd->s_iattr;
- 	if (ps_iattr)
- 		ps_iattr->ia_ctime = ps_iattr->ia_mtime = CURRENT_TIME;
--
- 	mutex_unlock(&sysfs_mutex);
- 	return 0;
-+
-+out_err:
-+	mutex_unlock(&sysfs_mutex);
-+
-+	path = kzalloc(PATH_MAX, GFP_KERNEL);
-+	WARN(1, KERN_WARNING "sysfs: cannot create '%s' %s\n",
-+		(path == NULL) ? sd->s_name :
-+		strcat(strcat(sysfs_pathname(parent_sd, path), "/"),
-+		       sd->s_name),
-+		(result == -EEXIST ? "duplicate filename" : "no such directory")
-+		);
-+	kfree(path);
-+
-+	return result;
- }
- 
- /**
--- 
-1.6.3.1.54.g99dd.dirty
-
+Best,
+Rafael
