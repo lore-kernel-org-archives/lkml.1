@@ -1,84 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751907AbZEWIWs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755596AbZEWJhR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751907AbZEWIWs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 May 2009 04:22:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751676AbZEWIWd
+	id S1755596AbZEWJhR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 May 2009 05:37:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751907AbZEWJhE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 May 2009 04:22:33 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:38202 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751561AbZEWIWc (ORCPT
+	Sat, 23 May 2009 05:37:04 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:63985 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751509AbZEWJhC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 May 2009 04:22:32 -0400
-Subject: Re: INFO: possible circular locking dependency at
- cleanup_workqueue_thread
-From: Johannes Berg <johannes@sipsolutions.net>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Oleg Nesterov <oleg@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <200905230023.16377.rjw@sisk.pl>
-References: <c4e36d110905120059i4c155508oa00672da0b33a07a@mail.gmail.com>
-	 <20090519185140.GA32012@redhat.com>
-	 <1242989166.4606.5.camel@johannes.local>  <200905230023.16377.rjw@sisk.pl>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-FAq1zW0nBKhY6qCAHSM3"
-Date: Sat, 23 May 2009 10:21:42 +0200
-Message-Id: <1243066902.4606.42.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1.1 
+	Sat, 23 May 2009 05:37:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject:references
+         :in-reply-to:content-type:content-transfer-encoding;
+        b=DuJBo5TDNH6dudnQ9yneskFi/155u0Za9JSxt0IsS9Bc3holnsMb1K1Nc39Wvyi6BY
+         t6QWX3c5LMiSG/Q9IzYkDLbnL4qvm8IUH8H09xuFPILNyjS0h/DN51VY1a2oQpCh+7Nr
+         3KPIUEFu2B7qP3yLebTGZU6ZAjvOYv78DVNTA=
+Message-ID: <4A17C39E.2030302@gmail.com>
+Date: Sat, 23 May 2009 11:36:30 +0200
+From: Niel Lambrechts <niel.lambrechts@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1pre) Gecko/20090521 Shredder/3.0b3pre
+MIME-Version: 1.0
+To: Tejun Heo <tj@kernel.org>, "linux.kernel" <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.29 regression: ATA bus errors on resume
+References: <clqON-2Xv-7@gated-at.bofh.it> <clqON-2Xv-9@gated-at.bofh.it> <clqON-2Xv-11@gated-at.bofh.it> <clqON-2Xv-13@gated-at.bofh.it> <clqON-2Xv-15@gated-at.bofh.it> <clqON-2Xv-17@gated-at.bofh.it> <clqON-2Xv-19@gated-at.bofh.it> <clqON-2Xv-5@gated-at.bofh.it> <cmknZ-8lW-9@gated-at.bofh.it> <cmoBl-6Ok-21@gated-at.bofh.it> <cmp4n-7rb-15@gated-at.bofh.it> <cmsYg-5BR-27@gated-at.bofh.it> <cmvW7-1Yj-23@gated-at.bofh.it> <cnheh-3vO-7@gated-at.bofh.it> <cnPg1-7Q4-19@gated-at.bofh.it> <cnTWo-7bV-25@gated-at.bofh.it> <co1Kd-350-5@gated-at.bofh.it> <co2Qf-4QQ-27@gated-at.bofh.it> <co4yj-7Mc-5@gated-at.bofh.it> <cp71c-4py-29@gated-at.bofh.it> <cEVyE-re-1@gated-at.bofh.it>
+In-Reply-To: <cEVyE-re-1@gated-at.bofh.it>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 05/23/2009 11:20 AM, Niel Lambrechts wrote:
+> On 04/09/2009 08:18 PM, Tejun Heo wrote:
+>> Hmm... none of the debugging messages got triggered, so there should
+>> be no noticeable timing change. It seems like you're being lucky for
+>> the time being. Can you please keep testing and report back?
+>
+> Hi Tejun,
+>
+> Just to keep you up informed - this issue is still happening, I've been
+> testing the latest 2.6.30-git kernels the last couple of weeks and just
+> checked my logs after having an unexpected fsck upon system boot - the
+> freeze seems to trigger very infrequently though, since I use s2disk at
+> least twice a day and the error only seems to have happened twice since
+> May 2.
 
---=-FAq1zW0nBKhY6qCAHSM3
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+I notice that if I hibernate with a CD in the drive and then remove it as soon 
+as I boot, I get a hard reset on the ata1 bus.
 
-On Sat, 2009-05-23 at 00:23 +0200, Rafael J. Wysocki wrote:
+I'm not sure if this maybe plays a role in triggering the problem at times, 
+perhaps it is entirely expected - but vim highlights it in red and to a "normal" 
+user that is bad. :)
 
-> > I just arrived at the same conclusion, heh. I can't say I understand
-> > these changes though, the part about calling the platform differently
-> > may make sense, but calling why disable non-boot CPUs at a different
-> > place?
->=20
-> Because the ordering of platform callbacks and cpu[_up()|_down()] is also
-> important, at least on resume.
->=20
-> In principle we can call device_pm_unlock() right before calling
-> disable_nonboot_cpus() and take the lock again right after calling
-> enable_nonboot_cpus(), if that helps.
+Maybe after applying your patch I should play around with this?
 
-Probably, unless the cpu_add_remove_lock wasn't a red herring after all.
-I'd test, but I don't have much time today, will be travelling tomorrow
-and be at UDS all week next week so I don't know when I'll get to it --
-could you provide a patch and also attach it to
-http://bugzilla.kernel.org/show_bug.cgi?id=3D13245 please? Miles (the
-reporter of that bug) has been very helpful in testing before.
 
-johannes
+/var/log/warn:
+May 23 11:28:44 linux-7vph kernel: sd 0:0:0:0: [sda] Starting disk
+May 23 11:28:44 linux-7vph kernel: ata2: SATA link up 1.5 Gbps (SStatus 113 
+SControl 300)
+May 23 11:28:44 linux-7vph kernel: ata1: SATA link up 1.5 Gbps (SStatus 113 
+SControl 300)
+May 23 11:28:44 linux-7vph kernel: ata1.00: ACPI cmd ef/02:00:00:00:00:a0 succeeded
+May 23 11:28:44 linux-7vph kernel: ata1.00: ACPI cmd f5/00:00:00:00:00:a0 
+filtered out
+May 23 11:28:44 linux-7vph kernel: ata1.00: ACPI cmd ef/5f:00:00:00:00:a0 succeeded
+May 23 11:28:44 linux-7vph kernel: ata1.00: ACPI cmd ef/10:03:00:00:00:a0 
+filtered out
+May 23 11:28:44 linux-7vph kernel: ata1.00: ACPI cmd ef/02:00:00:00:00:a0 succeeded
+May 23 11:28:44 linux-7vph kernel: ata1.00: ACPI cmd f5/00:00:00:00:00:a0 
+filtered out
+May 23 11:28:44 linux-7vph kernel: ata1.00: ACPI cmd ef/5f:00:00:00:00:a0 succeeded
+May 23 11:28:44 linux-7vph kernel: ata1.00: ACPI cmd ef/10:03:00:00:00:a0 
+filtered out
+May 23 11:28:44 linux-7vph kernel: ata1.00: configured for UDMA/133
+May 23 11:28:44 linux-7vph kernel: ata1: exception Emask 0x10 SAct 0x0 SErr 0x0 
+action 0x9 t4
+May 23 11:28:44 linux-7vph kernel: ata1: irq_stat 0x00400040, connection status 
+changed
+May 23 11:28:44 linux-7vph kernel: ata1.00: configured for UDMA/133
+May 23 11:28:44 linux-7vph kernel: ata1: EH complete
+May 23 11:28:44 linux-7vph kernel: ata2.00: ACPI cmd e3/00:1f:00:00:00:a0 succeeded
+May 23 11:28:44 linux-7vph kernel: ata2.00: ACPI cmd e3/00:02:00:00:00:a0 succeeded
+May 23 11:28:44 linux-7vph kernel: ata2.00: ACPI cmd e3/00:1f:00:00:00:a0 succeeded
+May 23 11:28:44 linux-7vph kernel: ata2.00: ACPI cmd e3/00:02:00:00:00:a0 succeeded
+May 23 11:28:44 linux-7vph kernel: ata2.00: configured for UDMA/133
+May 23 11:28:44 linux-7vph kernel: pci 0000:00:02.0: restoring config space at 
+offset 0x1 (was 0x900407, writing 0x900403)
+May 23 11:28:44 linux-7vph kernel: pci 0000:00:02.0: setting latency timer to 64
+May 23 11:28:44 linux-7vph kernel: Restarting tasks ... done.
+May 23 11:28:44 linux-7vph kernel: ata2: exception Emask 0x10 SAct 0x0 SErr 0x0 
+action 0x9 t4
+May 23 11:28:44 linux-7vph kernel: ata2: irq_stat 0x40000001
+May 23 11:28:44 linux-7vph kernel: ata2.00: configured for UDMA/133
+May 23 11:28:44 linux-7vph kernel: ata2: EH complete
+May 23 11:28:44 linux-7vph kernel: ata1.00: exception Emask 0x10 SAct 0x1 SErr 
+0x10000 action 0xe frozen
+May 23 11:28:44 linux-7vph kernel: ata1.00: irq_stat 0x00400008, PHY RDY changed
+May 23 11:28:44 linux-7vph kernel: ata1: SError: { PHYRdyChg }
+May 23 11:28:44 linux-7vph kernel: ata1.00: cmd 
+61/08:00:37:5a:f4/00:00:09:00:00/40 tag 0 ncq 4096 out
+May 23 11:28:44 linux-7vph kernel:          res 
+50/00:08:37:5a:f4/00:00:09:00:00/40 Emask 0x10 (ATA bus error)
+May 23 11:28:44 linux-7vph kernel: ata1.00: status: { DRDY }
+May 23 11:28:44 linux-7vph kernel: ata1: hard resetting link
+May 23 11:28:44 linux-7vph kernel: ata1: SATA link up 1.5 Gbps (SStatus 113 
+SControl 300)
+May 23 11:28:44 linux-7vph kernel: ata1.00: ACPI cmd ef/02:00:00:00:00:a0 succeeded
+May 23 11:28:44 linux-7vph kernel: ata1.00: ACPI cmd f5/00:00:00:00:00:a0 
+filtered out
+May 23 11:28:44 linux-7vph kernel: ata1.00: ACPI cmd ef/5f:00:00:00:00:a0 succeeded
+May 23 11:28:44 linux-7vph kernel: ata1.00: ACPI cmd ef/10:03:00:00:00:a0 
+filtered out
+May 23 11:28:44 linux-7vph kernel: ata1.00: ACPI cmd ef/02:00:00:00:00:a0 succeeded
+May 23 11:28:44 linux-7vph kernel: ata1.00: ACPI cmd f5/00:00:00:00:00:a0 
+filtered out
+May 23 11:28:44 linux-7vph kernel: ata1.00: ACPI cmd ef/5f:00:00:00:00:a0 succeeded
+May 23 11:28:44 linux-7vph kernel: ata1.00: ACPI cmd ef/10:03:00:00:00:a0 
+filtered out
+May 23 11:28:44 linux-7vph kernel: ata1.00: configured for UDMA/133
+May 23 11:28:44 linux-7vph kernel: ata1.00: configured for UDMA/133
+May 23 11:28:44 linux-7vph kernel: ata1: EH complete
 
---=-FAq1zW0nBKhY6qCAHSM3
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAABAgAGBQJKF7ITAAoJEODzc/N7+Qma49EP/RbeqpDmSqbPi7uwCT007D7T
-eYXEBJ7NWivzY3Pu2qyOuMrK7XMgOhBKC8W0jtr2XNtIlddrqttvCDtWaDLzSTGm
-vIJ1REOlmHvDnLOj9Dx1/LmMevpkFJkS0KMfn2gnPnxCCy+m89VXYty0ClpXcOGG
-Ll5mHHH/meCABe+cIXZOahNbVcAMHZbCDxdexJ1B8OaQZ1XyZp1dmLJg9jwz3Vwu
-akFu0fpZ9zRkDX22zEjo5TyFeditty7Q9Q1fV+HlGl3rXS6PWciifjy9xx7oUZXQ
-uUvy7p5ir8W9WBUnrZusAskTV1USCddSsk4C5+ffQ/yHyO+LQK8drIWFLH+jL59t
-Gx+XZGi5LjpIRSdo2xmyrA5IwBAaOfZ47NosGUdFh+bO6inifXoQKSrk8Zch2rBX
-eV2xQQxnBTwBX5nJwDfrZMJR+fiD2QkVT/vkjwWIykXfUYHOa73Xaa4vVaWqdWrL
-qClFsPV6PlptxHBv24tu20d4hByrFXIYplAW99lC2zoQYfFwqjdhrronoK/r+3ai
-gJ4HUOfm13gH0Cu5wuDJugfhdDAKFnKxw/LMNnioxYQyY3MiZVHeUuuj4lS7x8K5
-NN+do5xE1vnQ/AL7Nq0cvKCa1j4Kf+f0F4pKycQ5EOwoEN8T+IEMOEahyibsCAdh
-jNj7fzQ0uc35g4xIvctq
-=ahxq
------END PGP SIGNATURE-----
-
---=-FAq1zW0nBKhY6qCAHSM3--
-
+Regards,
+Niel
