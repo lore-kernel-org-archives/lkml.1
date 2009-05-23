@@ -1,92 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756005AbZEWPFy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754318AbZEWPP2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756005AbZEWPFy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 May 2009 11:05:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753021AbZEWPFr
+	id S1754318AbZEWPP2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 May 2009 11:15:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752898AbZEWPPS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 May 2009 11:05:47 -0400
-Received: from mga03.intel.com ([143.182.124.21]:27413 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752726AbZEWPFq convert rfc822-to-8bit (ORCPT
+	Sat, 23 May 2009 11:15:18 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:50864 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752592AbZEWPPQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 May 2009 11:05:46 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,237,1241420400"; 
-   d="scan'208";a="146173839"
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: "mingo@elte.hu" <mingo@elte.hu>, "tglx@linutronix.de" <tglx@linutronix.de>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "lenb@kernel.org" <lenb@kernel.org>,
-       "Li, Shaohua" <shaohua.li@intel.com>,
-       "svaidy@linux.vnet.ibm.com" <svaidy@linux.vnet.ibm.com>
-Date: Sat, 23 May 2009 08:07:55 -0700
-Subject: RE: [patch 1/2] x86: Add pm_play_dead funcptr to power-efficiently
- offline CPUs
-Thread-Topic: [patch 1/2] x86: Add pm_play_dead funcptr to power-efficiently
- offline CPUs
-Thread-Index: Acnbk4iUaqxMINc7TgqQ5iHNaS93SAAIkIEA
-Message-ID: <7E82351C108FA840AB1866AC776AEC46686F550A@orsmsx505.amr.corp.intel.com>
-References: <20090522231940.553094000@intel.com>
-	 <20090522232230.020301000@intel.com> <1243075498.6582.1049.camel@laptop>
-In-Reply-To: <1243075498.6582.1049.camel@laptop>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Sat, 23 May 2009 11:15:16 -0400
+Date: Sat, 23 May 2009 11:15:16 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+cc: David <david@unsolicited.net>, <linux-media@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       <dbrownell@users.sourceforge.net>, <leonidv11@gmail.com>,
+       Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: USB/DVB - Old Technotrend TT-connect S-2400 regression tracked
+  down
+In-Reply-To: <84144f020905230125n32e9533dk112db9b31763e15c@mail.gmail.com>
+Message-ID: <Pine.LNX.4.44L0.0905231109140.18397-100000@netrider.rowland.org>
 MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 
+On Sat, 23 May 2009, Pekka Enberg wrote:
 
->-----Original Message-----
->From: Peter Zijlstra [mailto:a.p.zijlstra@chello.nl] 
->Sent: Saturday, May 23, 2009 3:45 AM
->To: Pallipadi, Venkatesh
->Cc: mingo@elte.hu; tglx@linutronix.de; hpa@zytor.com; 
->linux-kernel@vger.kernel.org; lenb@kernel.org; Li, Shaohua; 
->svaidy@linux.vnet.ibm.com
->Subject: Re: [patch 1/2] x86: Add pm_play_dead funcptr to 
->power-efficiently offline CPUs
->
->On Fri, 2009-05-22 at 16:19 -0700, venkatesh.pallipadi@intel.com wrote:
->> plain text document attachment
->> (0001-x86-Add-pm_play_dead-funcptr-to-power-efficiently-o.patch)
->> Add a funcptr pm_play_dead (similar to pm_idle) that can take
->> the offline CPUs to the most power efficient idle state.
->> 
->> This patch just adds the func pointer. The pointer will get 
->initialized
->> by patch that follows.
->
->Since the pm_idle function pointer has given us so much grief, I don't
->think its wise to repeat that particular disaster.
->
->I'd much rather see a framework where idle functions can be registered,
->and selected from based on criteria such as wakeup latency as provided
->by the pm_qos stuff, and power saving.
->
->This framework should be shared between hotplug-idle and the regular
->idle routines. Hotplug would of course not care about things 
->like wakeup
->latency and might therefore pick another idle routine.
->
+> On Sat, May 23, 2009 at 12:32 AM, David <david@unsolicited.net> wrote:
+> > I reported this DVB-S card breaking between 2.6.26 and 2.6.27. I've
+> > finally had time to do some digging, and the regression is caused by:
+> >
+> >    b963801164618e25fbdc0cd452ce49c3628b46c8 USB: ehci-hcd unlink speedups
+> >
+> > ..that was introduced in 2.6.27. Reverting this change in 2.6.29-rc5
+> > makes the card work happily again.
+> 
+> [ Note: David meant 2.6.30-rc5 here. ]
+> 
+> Thanks for doing the bisect!
+> 
+> On Sat, May 23, 2009 at 12:32 AM, David <david@unsolicited.net> wrote:
+> > I don't know enough about USB protocols to speculate on whether there
+> > may be a better fix, but hopefully someone cleverer than me can get to
+> > the bottom of the problem?
 
-Yes. Thought about that approach. There are issues with that approach however.
-- It would be ugly as we have to add logic in various low level idle handlers we have today mwait_idle, default_idle, acpi_mwait_idle, acpi_ioport_idle to make them aware of offline idle case and disable interrupt and not enable interrupt while going idle and not to wake up on interrupt.
-- There are limitations on what we can and cannot do when offline. We have had issues with calling acpi methods and/or IO port accesses, during suspend before, so CPU going on suspend only uses C1. Specifically, with the above approach we will have:
-1) CPU 1 going offline and starts using regular ACPI IO port C-states.
-2) CPU 0 starts suspend and after some points it is unsafe to access ACPI io port accesses, which can potentially result in crash/hangs.
+It's hard to see how that patch could cause any problems, provided the
+hardware is working correctly.  (There was a case where the hardware
+was _not_ working as expected.)  Is any more information available
+about this failure?
 
-So, I would like to keep ACPI out of play_dead. And keeping idle and play_dead separate seemed to be cleaner way to do it.
+Alan Stern
 
-Thanks,
-Venki
-
- 
