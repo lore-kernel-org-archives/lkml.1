@@ -1,64 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756482AbZEWVPs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755164AbZEWV2C@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756482AbZEWVPs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 May 2009 17:15:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753672AbZEWVPk
+	id S1755164AbZEWV2C (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 May 2009 17:28:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754335AbZEWV1w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 May 2009 17:15:40 -0400
-Received: from casper.infradead.org ([85.118.1.10]:56596 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753531AbZEWVPj (ORCPT
+	Sat, 23 May 2009 17:27:52 -0400
+Received: from mail-bw0-f174.google.com ([209.85.218.174]:44871 "EHLO
+	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753856AbZEWV1w convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 May 2009 17:15:39 -0400
-Date: Sat, 23 May 2009 14:08:30 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Justin Mattock <justinmattock@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: running the kernel without hal= how safe with the cpufreq
-Message-ID: <20090523140830.5bff23c3@infradead.org>
-In-Reply-To: <dd18b0c30905231129j7ad812e9sf3eee89864b03fb8@mail.gmail.com>
-References: <dd18b0c30905231129j7ad812e9sf3eee89864b03fb8@mail.gmail.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sat, 23 May 2009 17:27:52 -0400
+MIME-Version: 1.0
+In-Reply-To: <1243109591-21611-5-git-send-email-ebiederm@xmission.com>
+References: <m1bppofm9k.fsf@fess.ebiederm.org> <1243109591-21611-5-git-send-email-ebiederm@xmission.com>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Sat, 23 May 2009 23:27:32 +0200
+Message-ID: <ac3eb2510905231427x62efaecfod2b11472fcdbcc21@mail.gmail.com>
+Subject: Re: [PATCH 25/20] sysfs: Only support removing emtpy sysfs 
+	directories.
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       Tejun Heo <tj@kernel.org>, Cornelia Huck <cornelia.huck@de.ibm.com>,
+       linux-fsdevel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 23 May 2009 11:29:29 -0700
-Justin Mattock <justinmattock@gmail.com> wrote:
+On Sat, May 23, 2009 at 22:13, Eric W. Biederman <ebiederm@xmission.com> wrote:
+> From: Eric W. Biederman <ebiederm@xmission.com>
+>
+> I have looked and I have not found a single legitimate case today where
+> we remove sysfs directories with anything in them.  The only case I have
+> found to date was a bug.  It was a problem of ownership.  The files in
+> the directory where not owned by the directory itself.   Leaving open
+> the potential for double deletion of the directory contents.
+>
+> Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
 
-> I'm in the process of building a system
-> minus hal(since udev 142 explains itself
-> in the README),
-> Anyways I normally just have
-> "ondemand" compiled as the main
-> cpufreq module, and have no powermgnt or cpufreq
-> userspace tool except or was hal.
-> should I be concerned
-> without having hal due to things like this in
-> ps auxZ
+Sounds good to me. We should try that, and see if there was any valid
+use case we didn't think of, and if not, it's good to do what this
+patch does.
 
-if you use ondemand you don't need anything else; the defaults
-are good and in fact very very few people (if anyone) should ever
-change the tunables (they're more aimed for the ondemand developers).
+Acked-by: Kay Sievers <kay.sievers@vrfy.org>
 
-Any application that touches these tunables is basically broken ;)
-
-In addition, you should always be safe against hardware breaking,
-as long as you don't do things like poke chipset registers to disable
-SMM etc, there is thermal protection build into the system.
-First it will automatically slow down the CPU (a lot), and if that is
-not sufficient/fast enough, the system will shut down before it lets
-itself be damaged.
-
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Thanks,
+Kay
