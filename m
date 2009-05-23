@@ -1,62 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756103AbZEWTEW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755553AbZEWTNS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756103AbZEWTEW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 May 2009 15:04:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752366AbZEWTEN
+	id S1755553AbZEWTNS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 May 2009 15:13:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752548AbZEWTNH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 May 2009 15:04:13 -0400
-Received: from casper.infradead.org ([85.118.1.10]:51460 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751208AbZEWTEN (ORCPT
+	Sat, 23 May 2009 15:13:07 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:42348 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752399AbZEWTNF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 May 2009 15:04:13 -0400
-Subject: Re: [PATCH 6/7] perf_counter: change pctrl() behaviour
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Paul Mackerras <paulus@samba.org>,
-       Corey Ashford <cjashfor@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       John Kacur <jkacur@redhat.com>
-In-Reply-To: <20090523163012.916937244@chello.nl>
-References: <20090523162854.599719825@chello.nl>
-	 <20090523163012.916937244@chello.nl>
-Content-Type: text/plain
-Date: Sat, 23 May 2009 21:04:08 +0200
-Message-Id: <1243105448.6582.1559.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Sat, 23 May 2009 15:13:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=lMrFpCpf+IeOxeV3qIddKFuRF878WEUKOWl9ZwXwtyYnzV5pM6i9GzLP072tu8Khnb
+         SQAPUtUJOMSp1YoJvKSSAoDCxabZqNdaxeekFiIBDBDfX2LQ5foqMa2X+JcgrZ85aBba
+         PTnLtVjlzJtpIi+d1q10dJwcSl+T6UOJd46Gw=
+Message-ID: <4A184ABB.1070902@jguk.org>
+Date: Sat, 23 May 2009 20:12:59 +0100
+From: Jon <jg@jguk.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090409)
+MIME-Version: 1.0
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: dd if=/dev/random of=data.bin bs=512 count=1
+References: <19ac3f7a0905170822q28255239nea01b56d52e3ddf8@mail.gmail.com> <2f11576a0905170901x41e15f65sf10bb5ee36050d14@mail.gmail.com>
+In-Reply-To: <2f11576a0905170901x41e15f65sf10bb5ee36050d14@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-05-23 at 18:29 +0200, Peter Zijlstra wrote:
-> plain text document attachment (perf_counter-ctrl-all.patch)
-> Instead of en/dis-abling all counters acting on a particular task, en/dis-
-> able all counters we created.
+Hello KOSAKI,
+
+Thank you for your reply.
+
+KOSAKI Motohiro wrote:
+>> Hello
+>>
+>> Issuing this command, I expected to get a file 4096 bytes in size.
+>> Could someone let me know if I have missed something..? Or is there a
+>> problem with using /dev/random this way?
+>>
+>> if I have a count=10 it hangs forever (several hours).
+>>
+>> Changing to use /dev/urandom and it generates the file ok.
 > 
-> LKML-Reference: <new-submission>
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> ---
+> you already have the answer. /dev/random might blocked, /dev/urandom doesn't.
 
-Please fold in the below so as to avoid an explosion on first
-sys_perf_counter_open().
+Is this a "feature" of /dev/random ? ..it does not seem very useful to 
+have it able to block for so long.
 
-Index: linux-2.6/kernel/perf_counter.c
-===================================================================
---- linux-2.6.orig/kernel/perf_counter.c
-+++ linux-2.6/kernel/perf_counter.c
-@@ -3446,6 +3446,9 @@ void perf_counter_init_task(struct task_
- 
- 	child->perf_counter_ctxp = NULL;
- 
-+	mutex_init(&child->perf_counter_mutex);
-+	INIT_LIST_HEAD(&child->perf_counter_list);
-+
- 	/*
- 	 * This is executed from the parent task context, so inherit
- 	 * counters that have been marked for cloning.
+Please include my email address in replies,  as I'm not a member of this 
+list.
 
-
-
+Best regards, Jon
