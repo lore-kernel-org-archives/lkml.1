@@ -1,126 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757579AbZEXPvc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758285AbZEXPwd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757579AbZEXPvc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 May 2009 11:51:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755341AbZEXPug
+	id S1758285AbZEXPwd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 May 2009 11:52:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756987AbZEXPvF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 May 2009 11:50:36 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:41821 "EHLO mx2.redhat.com"
+	Sun, 24 May 2009 11:51:05 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:41862 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752849AbZEXPub (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 May 2009 11:50:31 -0400
+	id S1755213AbZEXPuf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 May 2009 11:50:35 -0400
 From: Avi Kivity <avi@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: kvm@vger.kernel.org
-Subject: [PATCH 00/45] KVM updates for the 2.6.31 merge window (batch 3/3)
-Date: Sun, 24 May 2009 18:49:45 +0300
-Message-Id: <1243180230-2480-1-git-send-email-avi@redhat.com>
+Subject: [PATCH 42/45] KVM: inject NMI after IRET from a previous NMI, not before.
+Date: Sun, 24 May 2009 18:50:27 +0300
+Message-Id: <1243180230-2480-43-git-send-email-avi@redhat.com>
+In-Reply-To: <1243180230-2480-1-git-send-email-avi@redhat.com>
+References: <1243180230-2480-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Third batch of the 2.6.31 merge window submission.  Please review.
+From: Gleb Natapov <gleb@redhat.com>
 
-Andre Przywara (1):
-  KVM: SVM: Fix cross vendor migration issue in segment segment
-    descriptor
+If NMI is received during handling of another NMI it should be injected
+immediately after IRET from previous NMI handler, but SVM intercept IRET
+before instruction execution so we can't inject pending NMI at this
+point and there is not way to request exit when NMI window opens. This
+patch fix SVM code to open NMI window after IRET by single stepping over
+IRET instruction.
 
-Avi Kivity (4):
-  KVM: Fix cpuid feature misreporting
-  KVM: Add AMD cpuid bit: cr8_legacy, abm, misaligned sse, sse4, 3dnow
-    prefetch
-  x86: Add cpu features MOVBE and POPCNT
-  KVM: Update cpuid 1.ecx reporting
+Signed-off-by: Gleb Natapov <gleb@redhat.com>
+Signed-off-by: Avi Kivity <avi@redhat.com>
+---
+ arch/x86/include/asm/kvm_host.h |    2 +
+ arch/x86/kvm/svm.c              |   62 +++++++++++++++++++++++++++++++-------
+ 2 files changed, 52 insertions(+), 12 deletions(-)
 
-Carsten Otte (4):
-  KVM: s390: Fix memory slot versus run - v3
-  KVM: s390: Unlink vcpu on destroy - v2
-  KVM: s390: Sanity check on validity intercept
-  KVM: s390: Verify memory in kvm run
-
-Chris Wright (1):
-  KVM: Trivial format fix in setup_routing_entry()
-
-Christian Borntraeger (2):
-  KVM: s390: use hrtimer for clock wakeup from idle - v2
-  KVM: s390: optimize float int lock: spin_lock_bh --> spin_lock
-
-Glauber Costa (3):
-  KVM: fix apic_debug instances
-  KVM: Replace ->drop_interrupt_shadow() by ->set_interrupt_shadow()
-  KVM: Deal with interrupt shadow state for emulated instructions
-
-Gleb Natapov (19):
-  KVM: Remove inject_pending_vectors() callback
-  KVM: Remove kvm_push_irq()
-  KVM: sync_lapic_to_cr8() should always sync cr8 to V_TPR
-  KVM: Do not report TPR write to userspace if new value bigger or
-    equal to a previous one.
-  KVM: Get rid of arch.interrupt_window_open & arch.nmi_window_open
-  KVM: SVM: Add NMI injection support
-  KVM: Fix userspace IRQ chip migration
-  KVM: Get rid of get_irq() callback
-  KVM: SVM: Don't reinject event that caused a task switch
-  KVM: Unprotect a page if #PF happens during NMI injection.
-  KVM: Do not allow interrupt injection from userspace if there is a
-    pending event.
-  KVM: Remove irq_pending bitmap
-  KVM: skip_emulated_instruction() decode instruction if size is not
-    known
-  KVM: Do not re-execute INTn instruction.
-  KVM: Always request IRQ/NMI window if an interrupt is pending
-  KVM: inject NMI after IRET from a previous NMI, not before.
-  KVM: Do not migrate pending software interrupts.
-  KVM: Disable CR8 intercept if tpr patching is active
-  KVM: Move "exit due to NMI" handling into vmx_complete_interrupts()
-
-Jan Blunck (1):
-  KVM: Wake up waitqueue before calling get_cpu()
-
-Jan Kiszka (1):
-  KVM: Drop request_nmi from stats
-
-Marcelo Tosatti (5):
-  KVM: use smp_send_reschedule in kvm_vcpu_kick
-  KVM: protect assigned dev workqueue, int handler and irq acker
-  KVM: MMU: protect kvm_mmu_change_mmu_pages with mmu_lock
-  KVM: take mmu_lock when updating a deleted slot
-  KVM: x86: check for cr3 validity in mmu_alloc_roots
-
-Robert P. J. Day (1):
-  KVM: Expand on "help" info to specify kvm intel and amd module names
-
-Sheng Yang (3):
-  KVM: Replace get_mt_mask_shift with get_mt_mask
-  KVM: Enable snooping control for supported hardware
-  KVM: VMX: Disable VMX when system shutdown
-
- arch/ia64/include/asm/kvm_host.h       |    1 +
- arch/ia64/kernel/irq_ia64.c            |    3 +
- arch/ia64/kvm/kvm-ia64.c               |   22 +--
- arch/s390/include/asm/kvm_host.h       |    5 +-
- arch/s390/kvm/intercept.c              |   28 +++--
- arch/s390/kvm/interrupt.c              |   53 ++++---
- arch/s390/kvm/kvm-s390.c               |   63 +++++++--
- arch/s390/kvm/kvm-s390.h               |    4 +-
- arch/s390/kvm/priv.c                   |    4 +-
- arch/s390/kvm/sigp.c                   |   16 +-
- arch/x86/include/asm/cpufeature.h      |    2 +
- arch/x86/include/asm/kvm_host.h        |   30 +++--
- arch/x86/include/asm/kvm_x86_emulate.h |    6 +
- arch/x86/kernel/smp.c                  |    3 +
- arch/x86/kvm/Kconfig                   |    6 +
- arch/x86/kvm/irq.c                     |    4 +-
- arch/x86/kvm/lapic.c                   |    4 +-
- arch/x86/kvm/mmu.c                     |   50 ++++---
- arch/x86/kvm/svm.c                     |  248 ++++++++++++++++++++-----------
- arch/x86/kvm/vmx.c                     |  260 ++++++++++++++++----------------
- arch/x86/kvm/x86.c                     |  247 ++++++++++++++++++------------
- arch/x86/kvm/x86.h                     |   22 +--
- arch/x86/kvm/x86_emulate.c             |   20 +++
- include/linux/kvm_host.h               |    6 +-
- virt/kvm/iommu.c                       |   27 +++-
- virt/kvm/irq_comm.c                    |    2 +-
- virt/kvm/kvm_main.c                    |   33 +++--
- 27 files changed, 721 insertions(+), 448 deletions(-)
+diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
+index 1d6c3f7..8212943 100644
+--- a/arch/x86/include/asm/kvm_host.h
++++ b/arch/x86/include/asm/kvm_host.h
+@@ -358,6 +358,7 @@ struct kvm_vcpu_arch {
+ 	unsigned int time_offset;
+ 	struct page *time_page;
+ 
++	bool singlestep; /* guest is single stepped by KVM */
+ 	bool nmi_pending;
+ 	bool nmi_injected;
+ 
+@@ -771,6 +772,7 @@ enum {
+ #define HF_HIF_MASK		(1 << 1)
+ #define HF_VINTR_MASK		(1 << 2)
+ #define HF_NMI_MASK		(1 << 3)
++#define HF_IRET_MASK		(1 << 4)
+ 
+ /*
+  * Hardware virtualization extension instructions may fault if a
+diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
+index 377c4f1..71510e0 100644
+--- a/arch/x86/kvm/svm.c
++++ b/arch/x86/kvm/svm.c
+@@ -965,15 +965,16 @@ static void svm_set_segment(struct kvm_vcpu *vcpu,
+ 
+ }
+ 
+-static int svm_guest_debug(struct kvm_vcpu *vcpu, struct kvm_guest_debug *dbg)
++static void update_db_intercept(struct kvm_vcpu *vcpu)
+ {
+-	int old_debug = vcpu->guest_debug;
+ 	struct vcpu_svm *svm = to_svm(vcpu);
+ 
+-	vcpu->guest_debug = dbg->control;
+-
+ 	svm->vmcb->control.intercept_exceptions &=
+ 		~((1 << DB_VECTOR) | (1 << BP_VECTOR));
++
++	if (vcpu->arch.singlestep)
++		svm->vmcb->control.intercept_exceptions |= (1 << DB_VECTOR);
++
+ 	if (vcpu->guest_debug & KVM_GUESTDBG_ENABLE) {
+ 		if (vcpu->guest_debug &
+ 		    (KVM_GUESTDBG_SINGLESTEP | KVM_GUESTDBG_USE_HW_BP))
+@@ -984,6 +985,16 @@ static int svm_guest_debug(struct kvm_vcpu *vcpu, struct kvm_guest_debug *dbg)
+ 				1 << BP_VECTOR;
+ 	} else
+ 		vcpu->guest_debug = 0;
++}
++
++static int svm_guest_debug(struct kvm_vcpu *vcpu, struct kvm_guest_debug *dbg)
++{
++	int old_debug = vcpu->guest_debug;
++	struct vcpu_svm *svm = to_svm(vcpu);
++
++	vcpu->guest_debug = dbg->control;
++
++	update_db_intercept(vcpu);
+ 
+ 	if (vcpu->guest_debug & KVM_GUESTDBG_USE_HW_BP)
+ 		svm->vmcb->save.dr7 = dbg->arch.debugreg[7];
+@@ -1133,14 +1144,30 @@ static int pf_interception(struct vcpu_svm *svm, struct kvm_run *kvm_run)
+ static int db_interception(struct vcpu_svm *svm, struct kvm_run *kvm_run)
+ {
+ 	if (!(svm->vcpu.guest_debug &
+-	      (KVM_GUESTDBG_SINGLESTEP | KVM_GUESTDBG_USE_HW_BP))) {
++	      (KVM_GUESTDBG_SINGLESTEP | KVM_GUESTDBG_USE_HW_BP)) &&
++		!svm->vcpu.arch.singlestep) {
+ 		kvm_queue_exception(&svm->vcpu, DB_VECTOR);
+ 		return 1;
+ 	}
+-	kvm_run->exit_reason = KVM_EXIT_DEBUG;
+-	kvm_run->debug.arch.pc = svm->vmcb->save.cs.base + svm->vmcb->save.rip;
+-	kvm_run->debug.arch.exception = DB_VECTOR;
+-	return 0;
++
++	if (svm->vcpu.arch.singlestep) {
++		svm->vcpu.arch.singlestep = false;
++		if (!(svm->vcpu.guest_debug & KVM_GUESTDBG_SINGLESTEP))
++			svm->vmcb->save.rflags &=
++				~(X86_EFLAGS_TF | X86_EFLAGS_RF);
++		update_db_intercept(&svm->vcpu);
++	}
++
++	if (svm->vcpu.guest_debug &
++	    (KVM_GUESTDBG_SINGLESTEP | KVM_GUESTDBG_USE_HW_BP)){
++		kvm_run->exit_reason = KVM_EXIT_DEBUG;
++		kvm_run->debug.arch.pc =
++			svm->vmcb->save.cs.base + svm->vmcb->save.rip;
++		kvm_run->debug.arch.exception = DB_VECTOR;
++		return 0;
++	}
++
++	return 1;
+ }
+ 
+ static int bp_interception(struct vcpu_svm *svm, struct kvm_run *kvm_run)
+@@ -1887,7 +1914,7 @@ static int iret_interception(struct vcpu_svm *svm, struct kvm_run *kvm_run)
+ {
+ 	++svm->vcpu.stat.nmi_window_exits;
+ 	svm->vmcb->control.intercept &= ~(1UL << INTERCEPT_IRET);
+-	svm->vcpu.arch.hflags &= ~HF_NMI_MASK;
++	svm->vcpu.arch.hflags |= HF_IRET_MASK;
+ 	return 1;
+ }
+ 
+@@ -2357,8 +2384,16 @@ static void enable_nmi_window(struct kvm_vcpu *vcpu)
+ {
+ 	struct vcpu_svm *svm = to_svm(vcpu);
+ 
+-	if (svm->vmcb->control.int_state & SVM_INTERRUPT_SHADOW_MASK)
+-		enable_irq_window(vcpu);
++	if ((svm->vcpu.arch.hflags & (HF_NMI_MASK | HF_IRET_MASK))
++	    == HF_NMI_MASK)
++		return; /* IRET will cause a vm exit */
++
++	/* Something prevents NMI from been injected. Single step over
++	   possible problem (IRET or exception injection or interrupt
++	   shadow) */
++	vcpu->arch.singlestep = true;
++	svm->vmcb->save.rflags |= (X86_EFLAGS_TF | X86_EFLAGS_RF);
++	update_db_intercept(vcpu);
+ }
+ 
+ static int svm_set_tss_addr(struct kvm *kvm, unsigned int addr)
+@@ -2401,6 +2436,9 @@ static void svm_complete_interrupts(struct vcpu_svm *svm)
+ 	int type;
+ 	u32 exitintinfo = svm->vmcb->control.exit_int_info;
+ 
++	if (svm->vcpu.arch.hflags & HF_IRET_MASK)
++		svm->vcpu.arch.hflags &= ~(HF_NMI_MASK | HF_IRET_MASK);
++
+ 	svm->vcpu.arch.nmi_injected = false;
+ 	kvm_clear_exception_queue(&svm->vcpu);
+ 	kvm_clear_interrupt_queue(&svm->vcpu);
+-- 
+1.6.0.6
 
