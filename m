@@ -1,114 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754127AbZEXM1j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754353AbZEXMi4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754127AbZEXM1j (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 May 2009 08:27:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752647AbZEXM1c
+	id S1754353AbZEXMi4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 May 2009 08:38:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752033AbZEXMis
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 May 2009 08:27:32 -0400
-Received: from mx-out2.daemonmail.net ([216.104.160.39]:56521 "EHLO
+	Sun, 24 May 2009 08:38:48 -0400
+Received: from mx-out2.daemonmail.net ([216.104.160.39]:57746 "EHLO
 	mx-out2.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751422AbZEXM1b (ORCPT
+	with ESMTP id S1752647AbZEXMir (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 May 2009 08:27:31 -0400
+	Sun, 24 May 2009 08:38:47 -0400
 From: "Michael S. Zick" <lkml@morethan.org>
 Reply-To: lkml@morethan.org
-To: "H. Peter Anvin" <hpa@zytor.com>
+To: Harald Welte <HaraldWelte@viatech.com>
 Subject: Re: [BUG FIX] Make x86_32 uni-processor Atomic ops, Atomic
-Date: Sun, 24 May 2009 07:27:27 -0500
+Date: Sun, 24 May 2009 07:38:44 -0500
 User-Agent: KMail/1.9.9
-Cc: Harald Welte <HaraldWelte@viatech.com>, Ingo Molnar <mingo@elte.hu>,
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
        Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
        Alan Cox <alan@lxorguk.ukuu.org.uk>
-References: <200905221139.26941.lkml@morethan.org> <200905231304.55973.lkml@morethan.org> <4A188A48.5000208@zytor.com>
-In-Reply-To: <4A188A48.5000208@zytor.com>
+References: <200905221139.26941.lkml@morethan.org> <4A188A48.5000208@zytor.com> <20090524064905.GH20452@prithivi.gnumonks.org>
+In-Reply-To: <20090524064905.GH20452@prithivi.gnumonks.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200905240727.30677.lkml@morethan.org>
+Message-Id: <200905240738.47090.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat May 23 2009, H. Peter Anvin wrote:
-> Hi Harald,
+On Sun May 24 2009, Harald Welte wrote:
+> Dear hpa, and others,
 > 
-> It looks like there might be a problem with the C7-M ... Michael reports
-> that if he sets LOCK_PREFIX to "lock;" it works, but that shouldn't be
-> necessary for a uniprocessor.
+> On Sat, May 23, 2009 at 04:44:08PM -0700, H. Peter Anvin wrote:
+> > It looks like there might be a problem with the C7-M ... Michael reports
+> > that if he sets LOCK_PREFIX to "lock;" it works, but that shouldn't be
+> > necessary for a uniprocessor.
+> > 
 > 
-> I'm wondering if we have to revive the OOSTORE hack, or some other
-> workaround.  It is of course hard for me to track this down since (a) I
-> don't have access to the CPU documentation, and (b) I work for Intel
-> now, which limits the amount of time I can realistically spend on this.
+> I will try my best to help, though I have to admit I'm far from being
+> a x86 expert, and particularly not with regard to low-level bits such as atomic
+> operations.
+> 
+> So please give me some time to research some background about that,
+> and read up all the details on the currently reported/described problem.
+> 
+> Once I understand it in full detail, I can talk to the right people inside
+> CentaurLabs (VIA's CPU division).  
+> 
+> If somebody (optionally) can phrase a precise technical question that I can
+> directly forward to somebody with low-level x86 knowledge but no Linux background,
+> it would definitely help speeding up the process.
+> 
+> > I'm wondering if we have to revive the OOSTORE hack, or some other
+> > workaround.  It is of course hard for me to track this down since (a) I
+> > don't have access to the CPU documentation, 
+> 
+> As far as I know, there really is no such documentation.. all documentation
+> that I've ever seen internally is electrical data sheets and high-level feature
+> set descriptiosn, CPUID, MSR and padlock.  There are no  actual x86 instruction
+> set documents... Centaur is < 100 people, they don't have the resources to work
+> on documents along the lines of what Intel has...
 >
 
-@hpa - I still like your suggestion that it is only one (or a few)
-uses of atomic ops that is incorrect and in general atomic ops
-should compile away on uni-processor.
+My background is in the electronic hardware end of things - -
+Is there someone I can contact for the existing documents -
+Even under NDA would be fine.
 
-Let me translate the findings (see further in the included post) -
-The C7-M/CN896 (no tech manual released for CN896 yet) and
-the C7-M/CX700 (tech manual released since drivers written)
+For instance, the layout of the CPUID results - they don't
+currently seem to match what the marketing people claim is
+inside of the chips.  There are some "VIA specific" fields.
 
-*) I never tested -09143lk on the C7-M/CN896 because -09143 did
-not fail all day (a record for 2.6.30 at the moment).
+Also, those funny looking electrical data sheets with the wiggly
+lines will mean something to me in terms of when to use the
+"lock" prefix.  All you have to do is grow up with such things. ;)
+ 
+Could you also dig around for a tech manual on CN896 similar to
+the one (of two) CX700 manuals that are publicly posted?
+Even under NDA is fine.
 
-*) The difference on the C7-M/CX700 between the -09143 and -09143lk
-I consider significant.
+> > and (b) I work for Intel now, which limits the amount of time I can
+> > realistically spend on this.
+> 
 
-***) But, keep in mind, just because the system chip set is different,
-there are other unknowns - -
-We can *not* say at the moment that both machines where using the same 
-execution paths - even though the binaries where identical.
-
-Also, there where probably different external modules loaded in the
-two runs - not many, mostly things are built-in.
-
-The truly significant point on the C7-M/CX700 running -09143lk was that
-when the echi-hcd driver got hung in its failure loop, generating a 
-flood of messages - it did not take down or lock the kernel.
-
-I consider this "forward progress" - it should be possible to build-in
-the lock-dep checkers and get something in the message buffer -
-rather than just have the machine halt.  Its hard to debug a halted
-machine with only a glowing power-on light for feed-back.  ;)
+I might be able to get you a machine, but if you are scanned
+at the front door for VIA or AMD hardware. . .  ;)
 
 Mike
-
-
- 
-> 	-hpa
-> 
-> [Cc: Alan, who I believed developed the OOSTORE hack back when.]
-> 
-> 
-> Michael S. Zick wrote:
-> > On Fri May 22 2009, H. Peter Anvin wrote:
-> >> Michael S. Zick wrote:
-> >>> Same integrated motherboard.
-> >> Which means same CPU, same BIOS, same motherboard (none of which you're
-> >> telling us.)
-> >>
-> >> cpuinfo and dmidecode would be informative.
-> >>
-> > 
-> > The -09143lk files are posted.
-> > 
-> > Download location:
-> > http://hp-umpc.com/ce1200v
-> > 
-> > Details so far today:
-> > http://forum.netbookuser.com/viewtopic.php?pid=6968#p6968
-> > 
-> > Summary:
-> > HP-2133 (C7-M/CN896) - 09143 - No results - Still up 3 1/2 hours.
-> > Cloudbook (C7-M/CX700) - 09143 - 45 minutes.
-> > Cloudbook (C7-M/CX700) - 09143lk - No results - Still up 1 1/2 hours.
-> > 
-> > OK - time to look for the missing "memory" in the clobber lists.  ;)
-> > 
-> 
+> Sure, thanks for letting me know.
 
 
