@@ -1,44 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754356AbZEXVlf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758128AbZEXV5b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754356AbZEXVlf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 May 2009 17:41:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751720AbZEXVl1
+	id S1758128AbZEXV5b (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 May 2009 17:57:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753484AbZEXV5Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 May 2009 17:41:27 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:56898 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751405AbZEXVl1 (ORCPT
+	Sun, 24 May 2009 17:57:24 -0400
+Received: from fg-out-1718.google.com ([72.14.220.154]:53877 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753383AbZEXV5Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 May 2009 17:41:27 -0400
-Date: Sun, 24 May 2009 17:41:26 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Zhao Lei <zhaolei@cn.fujitsu.com>
-Subject: Re: [PATCH 1/2] ftrace: Add task_comm support for trace_event
-Message-ID: <20090524214125.GA10195@infradead.org>
-References: <20090521141813.123165156@goodmis.org> <20090521141914.208848802@goodmis.org>
+	Sun, 24 May 2009 17:57:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=JzgwvgLUtGQTlaKzqU5wiSwH8+YnqM/Qo4lkv3wh0RKJcwY8PtlA9tvkF+6IM+UdBQ
+         jtOtDpKYeq8IO+iTeTzW4PjVi5fpwsS5PR/EqECdyYgWon8R1eXVE5D/o105X6rRLbjd
+         Eo+S27BKOQqaQPy0UvW5m+srrbZW0JX1jkwdw=
+Message-ID: <4A19C2A3.6030501@gmail.com>
+Date: Sun, 24 May 2009 23:56:51 +0200
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090521141914.208848802@goodmis.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+To: Pavel Machek <pavel@ucw.cz>
+CC: LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux PM List <linux-pm@lists.linux-foundation.org>
+Subject: Re: 2 bugs related to suspend to disk
+References: <4A199A7A.3010705@gmail.com> <20090524205450.GA1693@elf.ucw.cz>
+In-Reply-To: <20090524205450.GA1693@elf.ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 21, 2009 at 10:18:14AM -0400, Steven Rostedt wrote:
-> From: Zhaolei <zhaolei@cn.fujitsu.com>
+Pavel Machek wrote:
+> Hi!
 > 
-> If we use trace_event alone(without function trace, .etc),
-> it can't output enough task command information.
+> 
+>> 2) "s2disk" (from suspend-0.8) suspends, but doesn't resume (and I need to mkswap && swapon -a later)
+>>
+> 
+> I'm afraid we need more details here. Is "resume" binary being ran?
 
-For some reason I still only see the process name sometimes but not
-always.  It is more likely to appear for later entries than earlier
-ones (and no, this is not an IRQ context problem as this is with
-my work in progress XFS trace events, and XFS runs no major piece of
-code in IRQ context)
+Excellent question ;) - I didn't know it has to. I'll try to setup
+initramfs tomorrow.
+
+Thanks and sorry for the noise!
+
+Marcin
