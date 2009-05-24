@@ -1,69 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753812AbZEXIQz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754182AbZEXIZ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753812AbZEXIQz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 May 2009 04:16:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751865AbZEXIQl
+	id S1754182AbZEXIZ0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 May 2009 04:25:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751843AbZEXIZS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 May 2009 04:16:41 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:44445 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751767AbZEXIQj (ORCPT
+	Sun, 24 May 2009 04:25:18 -0400
+Received: from smtp02.citrix.com ([66.165.176.63]:37640 "EHLO
+	SMTP02.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750930AbZEXIZR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 May 2009 04:16:39 -0400
-Date: Sun, 24 May 2009 11:13:17 +0300 (EEST)
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-X-X-Sender: penberg@rocky
-To: mingo@elte.hu
-cc: eduard.munteanu@linux360.ro, linux-kernel@vger.kernel.org
-Subject: [PATCH] kmemtrace: fix kernel parameter documentation
-Message-ID: <alpine.DEB.2.00.0905241112190.10296@rocky>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-Mime-Version: 1.0
-Content-Type: text/plain; format=flowed; charset=us-ascii
+	Sun, 24 May 2009 04:25:17 -0400
+X-IronPort-AV: E=Sophos;i="4.41,239,1241409600"; 
+   d="scan'208";a="52391700"
+Subject: Re: [PATCH] perf_counter: do not create perf counter mlock sysctl
+ when CONFIG_PERF_COUNTERS=n
+From: Ian Campbell <Ian.Campbell@eu.citrix.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: linux-kernel <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>,
+       Corey Ashford <cjashfor@linux.vnet.ibm.com>
+In-Reply-To: <20090522192510.GB18651@elte.hu>
+References: <1242985373.22654.225.camel@zakaz.uk.xensource.com>
+	 <20090522192510.GB18651@elte.hu>
+Content-Type: text/plain
+Organization: Citrix Systems, Inc.
+Date: Sun, 24 May 2009 09:25:16 +0100
+Message-ID: <1243153516.26568.41.camel@localhost.localdomain>
+MIME-Version: 1.0
+X-Mailer: Evolution 2.26.1.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Pekka Enberg <penberg@cs.helsinki.fi>
+On Fri, 2009-05-22 at 15:25 -0400, Ingo Molnar wrote:
+> * Ian Campbell <Ian.Campbell@citrix.com> wrote:
+> 
+> > Building tip from 82811bee3 without CONFIG_PERF_COUNTERS results in:
+> > 
+> >   CC      kernel/sysctl.o
+> > kernel/sysctl.c:928: error: 'sysctl_perf_counter_mlock' undeclared here (not in a function)
 
-The kmemtrace.enable kernel parameter no longer works. To enable kmemtrace at
-boot-time, you must pass "ftrace=kmemtrace" instead.
+> Hm, is this still needed? It doesnt apply here and i'm not seeing 
+> build failures.
 
-Cc: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
----
-  Documentation/kernel-parameters.txt |   10 ----------
-  1 files changed, 0 insertions(+), 10 deletions(-)
+Looks like I was using an obsolete branch, on current tip (790dc57b) it
+was already fixed by the commit which added the first perf counter
+sysctl in 1ccd1549.
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index e87bdbf..9243dd8 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -56,7 +56,6 @@ parameter is applicable:
-  	ISAPNP	ISA PnP code is enabled.
-  	ISDN	Appropriate ISDN support is enabled.
-  	JOY	Appropriate joystick support is enabled.
--	KMEMTRACE kmemtrace is enabled.
-  	LIBATA  Libata driver is enabled
-  	LP	Printer support is enabled.
-  	LOOP	Loopback device support is enabled.
-@@ -1054,15 +1053,6 @@ and is between 256 and 4096 characters. It is defined in the file
-  			use the HighMem zone if it exists, and the Normal
-  			zone if it does not.
-
--	kmemtrace.enable=	[KNL,KMEMTRACE] Format: { yes | no }
--				Controls whether kmemtrace is enabled
--				at boot-time.
--
--	kmemtrace.subbufs=n	[KNL,KMEMTRACE] Overrides the number of
--			subbufs kmemtrace's relay channel has. Set this
--			higher than default (KMEMTRACE_N_SUBBUFS in code) if
--			you experience buffer overruns.
--
-  	kgdboc=		[HW] kgdb over consoles.
-  			Requires a tty driver that supports console polling.
-  			(only serial suported for now)
--- 
-1.6.0.4
+Ian.
 
