@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758246AbZEXCji@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758726AbZEXClE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758246AbZEXCji (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 May 2009 22:39:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756250AbZEXCiJ
+	id S1758726AbZEXClE (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 May 2009 22:41:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755409AbZEXCiO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 May 2009 22:38:09 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:1430 "EHLO
+	Sat, 23 May 2009 22:38:14 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:1438 "EHLO
 	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754484AbZEXCiD (ORCPT
+	with ESMTP id S1755271AbZEXCiF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 May 2009 22:38:03 -0400
+	Sat, 23 May 2009 22:38:05 -0400
 From: Joe Perches <joe@perches.com>
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH 07/18] scripts/get_maintainer.pl - Support both "P:/M:" and integrated "M:" lines
-Date: Sat, 23 May 2009 19:37:38 -0700
-Message-Id: <136e58c251157179f19a7eecedd1e6fe71a3e6d9.1243131992.git.joe@perches.com>
+Subject: [PATCH 15/18] MAINTAINERS - Mark ALSA lists as moderated
+Date: Sat, 23 May 2009 19:37:46 -0700
+Message-Id: <2ef1a2b00b2d0461bc6f2d6c636c36e28a918724.1243131992.git.joe@perches.com>
 X-Mailer: git-send-email 1.6.3.1.10.g659a0.dirty
 In-Reply-To: <cover.1243131992.git.joe@perches.com>
 References: <cover.1243131992.git.joe@perches.com>
@@ -25,83 +25,58 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Joe Perches <joe@perches.com>
 ---
- scripts/get_maintainer.pl |   30 ++++++++++++++++++++++--------
- 1 files changed, 22 insertions(+), 8 deletions(-)
+ MAINTAINERS |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/scripts/get_maintainer.pl b/scripts/get_maintainer.pl
-index 9ea2db0..33872c7 100755
---- a/scripts/get_maintainer.pl
-+++ b/scripts/get_maintainer.pl
-@@ -55,7 +55,7 @@ foreach my $chief (@penguin_chief) {
- }
- my $penguin_chiefs = "\(" . join("|",@penguin_chief_names) . "\)";
+diff --git a/MAINTAINERS b/MAINTAINERS
+index e55bace..11231fb 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -487,7 +487,7 @@ AOA (Apple Onboard Audio) ALSA DRIVER
+ P:	Johannes Berg
+ M:	johannes@sipsolutions.net
+ L:	linuxppc-dev@ozlabs.org
+-L:	alsa-devel@alsa-project.org (subscribers-only)
++L:	alsa-devel@alsa-project.org (moderated for non-subscribers)
+ S:	Maintained
+ F:	sound/aoa/
  
--# rfc822 - preloaded methods go here.
-+# rfc822 email address - preloaded methods go here.
- my $rfc822_lwsp = "(?:(?:\\r\\n)?[ \\t])";
- my $rfc822_char = '[\\000-\\177]';
+@@ -1413,7 +1413,7 @@ F:	drivers/usb/host/ohci-ep93xx.c
+ CIRRUS LOGIC CS4270 SOUND DRIVER
+ P:	Timur Tabi
+ M:	timur@freescale.com
+-L:	alsa-devel@alsa-project.org
++L:	alsa-devel@alsa-project.org (moderated for non-subscribers)
+ S:	Supported
+ F:	sound/soc/codecs/cs4270*
  
-@@ -396,7 +396,19 @@ sub add_categories {
- 		    }
- 		}
- 	    } elsif ($ptype eq "M") {
--		if ($email_maintainer) {
-+		my $p_used = 0;
-+		if ($index >= 0) {
-+		    my $tv = $typevalue[$index - 1];
-+		    if ($tv =~ m/^(\C):\s*(.*)/) {
-+			if ($1 eq "P") {
-+			    if ($email_usename) {
-+				push_email_address(format_email($2, $pvalue));
-+				$p_used = 1;
-+			    }
-+			}
-+		    }
-+		}
-+		if (!$p_used) {
- 		    push_email_addresses($pvalue);
- 		}
- 	    } elsif ($ptype eq "T") {
-@@ -436,13 +448,16 @@ sub push_email_addresses {
- 
-     my @address_list = ();
- 
--    if (@address_list = rfc822_validlist($address)) {
-+    if (rfc822_valid($address)) {
-+	push_email_address($address);
-+    } elsif (@address_list = rfc822_validlist($address)) {
- 	my $array_count = shift(@address_list);
- 	while (my $entry = shift(@address_list)) {
- 	    push_email_address($entry);
- 	}
-+    } else {
-+	warn("Invalid MAINTAINERS address: '" . $address . "'\n");
-     }
--
- }
- 
- sub which {
-@@ -471,9 +486,8 @@ sub recent_git_signoffs {
- 	return;
-     }
-     if (!(-d ".git")) {
--	warn("$P: .git repository not found.\n");
--	warn("Use a .git repository for better results.\n");
--	warn("ie: git clone git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git\n");
-+	warn("$P: .git directory not found.  Use a git repository for better results.\n");
-+	warn("$P: perhaps 'git clone git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git'\n");
- 	return;
-     }
- 
-@@ -632,7 +646,7 @@ sub rfc822_validlist ($) {
-     my @r;
-     if ($s =~ m/^(?:$rfc822re)?(?:,(?:$rfc822re)?)*$/so &&
- 	$s =~ m/^$rfc822_char*$/) {
--        while($s =~ m/(?:^|,$rfc822_lwsp*)($rfc822re)/gos) {
-+        while ($s =~ m/(?:^|,$rfc822_lwsp*)($rfc822re)/gos) {
-             push @r, $1;
-         }
-         return wantarray ? (scalar(@r), @r) : 1;
+@@ -2316,7 +2316,7 @@ F:	drivers/serial/ucc_uart.c
+ FREESCALE SOC SOUND DRIVERS
+ P:	Timur Tabi
+ M:	timur@freescale.com
+-L:	alsa-devel@alsa-project.org
++L:	alsa-devel@alsa-project.org (moderated for non-subscribers)
+ L:	linuxppc-dev@ozlabs.org
+ S:	Supported
+ F:	sound/soc/fsl/fsl*
+@@ -5278,7 +5278,7 @@ P:	Jaroslav Kysela
+ M:	perex@perex.cz
+ P:	Takashi Iwai
+ M:	tiwai@suse.de
+-L:	alsa-devel@alsa-project.org (subscribers-only)
++L:	alsa-devel@alsa-project.org (moderated for non-subscribers)
+ W:	http://www.alsa-project.org/
+ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/tiwai/sound-2.6.git
+ T:	git git://git.alsa-project.org/alsa-kernel.git
+@@ -5293,7 +5293,7 @@ M:	lrg@slimlogic.co.uk
+ P:	Mark Brown
+ M:	broonie@opensource.wolfsonmicro.com
+ T:	git git://opensource.wolfsonmicro.com/linux-2.6-asoc
+-L:	alsa-devel@alsa-project.org (subscribers-only)
++L:	alsa-devel@alsa-project.org (moderated for non-subscribers)
+ W:	http://alsa-project.org/main/index.php/ASoC
+ S:	Supported
+ F:	sound/soc/
 -- 
 1.6.3.1.10.g659a0.dirty
 
