@@ -1,66 +1,209 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754868AbZEXSUE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756651AbZEXSYT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754868AbZEXSUE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 May 2009 14:20:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753260AbZEXSTz
+	id S1756651AbZEXSYT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 May 2009 14:24:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753260AbZEXSYM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 May 2009 14:19:55 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33772 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752903AbZEXSTy (ORCPT
+	Sun, 24 May 2009 14:24:12 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:43447 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752393AbZEXSYL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 May 2009 14:19:54 -0400
-Date: Sun, 24 May 2009 11:18:03 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Yinghai Lu <yinghai@kernel.org>, Jeff Garzik <jgarzik@pobox.com>,
-       Alexander Viro <viro@ftp.linux.org.uk>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [GIT PULL] scheduler fixes
-In-Reply-To: <Pine.LNX.4.64.0905241911120.12189@melkki.cs.Helsinki.FI>
-Message-ID: <alpine.LFD.2.01.0905240947490.3435@localhost.localdomain>
-References: <20090518142707.GA24142@elte.hu> <alpine.LFD.2.01.0905180850110.3301@localhost.localdomain> <20090518164921.GA6903@elte.hu> <alpine.LFD.2.01.0905180955550.3301@localhost.localdomain> <20090518170909.GA1623@elte.hu> <20090518190320.GA20260@elte.hu>
- <alpine.LFD.2.01.0905181208130.3301@localhost.localdomain> <20090518202031.GA26549@elte.hu> <alpine.LFD.2.01.0905181457320.3301@localhost.localdomain> <Pine.LNX.4.64.0905241911120.12189@melkki.cs.Helsinki.FI>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Sun, 24 May 2009 14:24:11 -0400
+X-Sasl-enc: NBc9+78/ibsngks8bNIlyocC093qBPpR73rslpk4UPJx 1243189451
+Date: Sun, 24 May 2009 20:24:09 +0200 (CEST)
+From: Alexander van Heukelum <alexander@mail.messagingengine.com>
+X-X-Sender: alexander@diotoir
+To: Ingo Molnar <mingo@elte.hu>
+cc: Cyrill Gorcunov <gorcunov@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       The stable team <stable@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: i386: fix return to 16-bit stack from NMI handler
+Message-ID: <alpine.DEB.2.00.0905242021460.3810@diotoir>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The nmi handler changes esp on return from the kernel to a process
+with a 16-bit stack. To reproduce, compile and run the following
+program with the nmi watchdog enabled (nmi_watchdog=2 on the command
+line). Using gdb you can see that the high bits of esp contain garbage,
+while the low bits are still correct. This is what the 'espfix' code is
+supposed to fix, but the nmi handler does not include it.
 
+The nmi code cannot call the irqtrace infrastructure. Otherwise, the tail
+of the normal iret-code is correct for the nmi code path too. To be
+able to share this code-path, I moved the TRACE_IRQS_IRET a bit earlier.
+This code-path now includes the espfix code, which explicitly disables
+interrupts. This short interrupts-off section is now not traced anymore.
+The preempt-return-to-kernel path now includes the preliminary test to
+decide if the espfix code should be called. This is never the case, but
+doing it this way keeps the patch simple and the few extra instructions
+should not affect timing in any significant way.
 
-On Sun, 24 May 2009, Pekka J Enberg wrote:
->
-> Ingo, here's a patch that boots UMA+SMP+SLUB x86-64 kernel on qemu all 
-> the way to userspace. It probably breaks bunch of things for now but 
-> something for you to play with if you want.
+#define _GNU_SOURCE
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/mman.h>
+#include <unistd.h>
+#include <sys/syscall.h>
+#include <asm/ldt.h>
 
-Just looking at the patch (not actually trying it out in any way or 
-looking at some bigger context), this absolutely looks like the right 
-direction to go in.
+int modify_ldt(int func, void *ptr, unsigned long bytecount)
+{
+ 	return syscall(SYS_modify_ldt, func, ptr, bytecount);
+}
 
-Our order in init/main.c is largely totally historical, and I think it 
-makes tons of sense to move the memory allocation initialization up much 
-earlier. 
+/* this is assumed to be usable */
+#define SEGBASEADDR 0x10000
+#define SEGLIMIT 0xffff
 
-In fact, it would be nice to perhaps try to move it even earlier. Now you 
-moved it to before the scheduler init (good!), but I do wonder if it could 
-be moved up to even before the setup_per_cpu_areas() etc crud. 
+/* 16-bit segment */
+struct user_desc desc = {
+ 	.entry_number = 0,
+ 	.base_addr = SEGBASEADDR,
+ 	.limit = SEGLIMIT,
+ 	.seg_32bit = 0,
+ 	.contents = 0, /* ??? */
+ 	.read_exec_only = 0,
+ 	.limit_in_pages = 0,
+ 	.seg_not_present = 0,
+ 	.useable = 1
+};
 
-I realize that the allocator wants to use the per-CPU area, but if we have 
-just the boot CPU area set up statically at that point, since it's only 
-the boot CPU running, maybe we could do those per-cpu area allocations 
-without the bootmem allocator too?
+int main(void)
+{
+ 	setvbuf(stdout, NULL, _IONBF, 0);
 
-But even just getting bootmem out of the scheduler setup is a big 
-improvement, I think. So this patch looks very promising as is.
+ 	/* map a 64 kb segment */
+ 	char *pointer = mmap((void *)SEGBASEADDR, SEGLIMIT+1,
+                         PROT_EXEC|PROT_READ|PROT_WRITE,
+                         MAP_SHARED|MAP_ANONYMOUS, -1, 0);
+ 	if (pointer == NULL) {
+ 		printf("could not map space\n");
+ 		return 0;
+ 	}
 
-Did you test whether the other allocators were ok with this too?
+ 	/* write ldt, new mode */
+ 	int err = modify_ldt(0x11, &desc, sizeof(desc));
+ 	if (err) {
+ 		printf("error modifying ldt: %i\n", err);
+ 		return 0;
+ 	}
 
-		Linus
+ 	for (int i=0; i<1000; i++) {
+ 	asm volatile (
+ 		"pusha\n\t"
+ 		"mov %ss, %eax\n\t" /* preserve ss:esp */
+ 		"mov %esp, %ebp\n\t"
+ 		"push $7\n\t" /* index 0, ldt, user mode */
+ 		"push $61440\n\t" /* esp */
+ 		"lss (%esp), %esp\n\t" /* switch to new stack */
+ 		"push %eax\n\t" /* save old ss:esp on new stack */
+ 		"push %ebp\n\t"
+
+ 		"mov %esp, %edx\n\t"
+
+ 		/* wait a bit */
+ 		"mov $10000000, %ecx\n\t"
+ 		"1: loop 1b\n\t"
+
+ 		"cmp %esp, %edx\n\t"
+ 		"je 1f\n\t"
+ 		"ud2\n\t" /* esp changed inexplicably! */
+ 		"1:\n\t"
+ 		"lss (%esp), %esp\n\t" /* restore old ss:esp */
+ 		"popa\n\t");
+
+ 		printf("\rx%ix", i);
+ 	}
+
+ 	return 0;
+}
+
+The bug is present in 2.6.28, and probably even much earlier.
+
+Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Cc: The stable team <stable@kernel.org>
+
+---
+
+Hi Ingo, Peter, Cyrill, ...
+
+Mucking with entry_32.S and trying to exercise all code paths, I found
+the problem described above. Please check this patch carefully for side
+effects I may have overlooked!
+
+Greetings,
+ 	Alexander
+
+  arch/x86/kernel/entry_32.S |   14 ++++++++------
+  1 files changed, 8 insertions(+), 6 deletions(-)
+
+diff --git a/arch/x86/kernel/entry_32.S b/arch/x86/kernel/entry_32.S
+index c929add..4a362f5 100644
+--- a/arch/x86/kernel/entry_32.S
++++ b/arch/x86/kernel/entry_32.S
+@@ -84,7 +84,7 @@
+  #define preempt_stop(clobbers)	DISABLE_INTERRUPTS(clobbers); TRACE_IRQS_OFF
+  #else
+  #define preempt_stop(clobbers)
+-#define resume_kernel		restore_nocheck
++#define resume_kernel		restore_all
+  #endif
+
+  .macro TRACE_IRQS_IRET
+@@ -372,7 +372,7 @@ END(ret_from_exception)
+  ENTRY(resume_kernel)
+  	DISABLE_INTERRUPTS(CLBR_ANY)
+  	cmpl $0,TI_preempt_count(%ebp)	# non-zero preempt_count ?
+-	jnz restore_nocheck
++	jnz restore_all
+  need_resched:
+  	movl TI_flags(%ebp), %ecx	# need_resched set ?
+  	testb $_TIF_NEED_RESCHED, %cl
+@@ -540,6 +540,8 @@ syscall_exit:
+  	jne syscall_exit_work
+
+  restore_all:
++	TRACE_IRQS_IRET
++restore_all_notrace:
+  	movl PT_EFLAGS(%esp), %eax	# mix EFLAGS, SS and CS
+  	# Warning: PT_OLDSS(%esp) contains the wrong/random values if we
+  	# are returning to the kernel.
+@@ -551,8 +553,6 @@ restore_all:
+  	CFI_REMEMBER_STATE
+  	je ldt_ss			# returning to user-space with LDT SS
+  restore_nocheck:
+-	TRACE_IRQS_IRET
+-restore_nocheck_notrace:
+  	RESTORE_REGS 4			# skip orig_eax/error_code
+  	CFI_ADJUST_CFA_OFFSET -4
+  irq_return:
+@@ -601,8 +601,10 @@ ldt_ss:
+  	CFI_ADJUST_CFA_OFFSET 4
+  	pushl %eax
+  	CFI_ADJUST_CFA_OFFSET 4
++	/* Disable interrupts, but do not irqtrace this section: we
++	 * will soon execute iret and the tracer was already set to
++	 * the irqstate after the iret */
+  	DISABLE_INTERRUPTS(CLBR_EAX)
+-	TRACE_IRQS_OFF
+  	lss (%esp), %esp
+  	CFI_ADJUST_CFA_OFFSET -8
+  	jmp restore_nocheck
+@@ -1329,7 +1331,7 @@ nmi_stack_correct:
+  	xorl %edx,%edx		# zero error code
+  	movl %esp,%eax		# pt_regs pointer
+  	call do_nmi
+-	jmp restore_nocheck_notrace
++	jmp restore_all_notrace
+  	CFI_ENDPROC
+
+  nmi_stack_fixup:
