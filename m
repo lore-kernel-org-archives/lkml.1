@@ -1,64 +1,244 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755341AbZEXPQJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755210AbZEXPVB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755341AbZEXPQJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 May 2009 11:16:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752580AbZEXPQD
+	id S1755210AbZEXPVB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 May 2009 11:21:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754043AbZEXPUv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 May 2009 11:16:03 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:35177 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753874AbZEXPQC (ORCPT
+	Sun, 24 May 2009 11:20:51 -0400
+Received: from mail-fx0-f168.google.com ([209.85.220.168]:55192 "EHLO
+	mail-fx0-f168.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753962AbZEXPUu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 May 2009 11:16:02 -0400
-Date: Sun, 24 May 2009 11:16:02 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: David <david@unsolicited.net>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>, <linux-media@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       <dbrownell@users.sourceforge.net>, <leonidv11@gmail.com>,
-       Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: USB/DVB - Old Technotrend TT-connect S-2400 regression tracked
-  down
-In-Reply-To: <4A189187.4020407@unsolicited.net>
-Message-ID: <Pine.LNX.4.44L0.0905241108340.8479-100000@netrider.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 24 May 2009 11:20:50 -0400
+Subject: Re: [PATCH 25/20] sysfs: Only support removing emtpy sysfs 
+ directories.
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       Tejun Heo <tj@kernel.org>, Cornelia Huck <cornelia.huck@de.ibm.com>,
+       linux-fsdevel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>,
+       stern <stern@rowland.harvard.edu>
+In-Reply-To: <m1bppid1pw.fsf@fess.ebiederm.org>
+References: <m1bppofm9k.fsf@fess.ebiederm.org>
+	 <1243109591-21611-5-git-send-email-ebiederm@xmission.com>
+	 <ac3eb2510905231427x62efaecfod2b11472fcdbcc21@mail.gmail.com>
+	 <1243169978.3502.7.camel@poy>  <m1bppid1pw.fsf@fess.ebiederm.org>
+Content-Type: text/plain
+Date: Sun, 24 May 2009 17:20:48 +0200
+Message-Id: <1243178448.4035.12.camel@poy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 24 May 2009, David wrote:
+On Sun, 2009-05-24 at 07:17 -0700, Eric W. Biederman wrote:
 
-> Alan Stern wrote:
-> > It's not obvious what could be causing this, so let's start out easy.  
-> > Try collecting two usbmon traces (instructions are in
-> > Documentation/usb/usbmon.txt), showing what happens with and without
-> > the reversion.  Maybe some difference will stick ou
-> >   
-> Traces attached. Took a while as my quad core hangs solid when 0u is
-> piped to a file (I had to compile on a laptop and take the logs there).
+> Most of these look like attributes, for which the non-empty directory
+> removal was correct.  Although I am puzzled by why we missed them.
 
-I see a suggestive pattern, though the exact mechanism still isn't 
-clear.  The log shows:
+Yes, most of them are attributes. I have USB hubs here with lots of
+devices connected, setups I use for udev testing, so this might trigger
+things that usually don't happen.
 
-	An URB for bulk endpoint 1-in (the only URB queued) completes.
+> host4/target4:0:0 worries me.  I don't have my head wrapped around
+> what that is yet.  But is looks like is a directory (which we currently
+> do not handle correctly), and even more it looks like that is quite
+> possibly two kobjects in a parent/child situation where the child
+> was not removed when the child was.
+> 
+> It definitely warrants more investigation.
 
-	About 150 us later, the driver does Clear-Halt on that 
-	endpoint.
+It seems like a real bug. We get:
+  dir:   host5/target5:0:0
 
-	About 150 us after that, the driver submits another URB.
-	Without the patch this URB completes normally and transfers
-	64 bytes (i.e., only one packet).  With the patch, the URB 
-	times out.
+and we removed a parent from an active child, and the device path misses
+all its parents:
+  'target7:0:0' (ffff880124eb1158): fill_kobj_path: path = '/host7/target7:0:0'
 
-We can safely conclude that the endpoint toggle setting is getting out
-of sync between the device and the host, as a result of the Clear-Halt.  
-There is code in ehci-hcd to prevent this from happening; the question
-is why doesn't it work now when it used to work before?
+it gets cleaned up:
+  'target7:0:0': free name
 
-I'll think about it some more...
+but it should still be fixed in the user. Adding Alan Stern, maybe he
+has an idea what's going on here.
 
-Alan Stern
+Note, that it is hard to reproduce, It only happens with a frequent
+connect/disconnects on a hub full of devices. But it still seems like a
+real bug in the USB device cleanup logic. At the end of this mail is the
+log of all files which did exist at cleanup.
+
+> Let's make the plan to investigate these, and see how hard it would be
+> to actually remove these with the current device/sysfs infrastructure.
+> 
+> Fixing the users and adding back auto-deletion are the only two real options.
+
+Seems, we should remove non-directory files, which in most cases belong
+to the kobject itself, but the user's cleanup logic does not cover the
+removal of the created files.
+
+But I think, we should still warn, if we find a sub-directory inside a
+directory we are going to remove.
+
+Thanks,
+Kay
+
+
+
+attr:  state0/name
+attr:  state0/desc
+attr:  state0/latency
+attr:  state0/power
+attr:  state0/usage
+attr:  state0/time
+attr:  state1/name
+attr:  state1/desc
+attr:  state1/latency
+attr:  state1/power
+attr:  state1/usage
+attr:  state1/time
+attr:  state2/name
+attr:  state2/desc
+attr:  state2/latency
+attr:  state2/power
+attr:  state2/usage
+attr:  state2/time
+attr:  state3/name
+attr:  state3/desc
+attr:  state3/latency
+attr:  state3/power
+attr:  state3/usage
+attr:  state3/time
+attr:  state0/name
+attr:  state0/desc
+attr:  state0/latency
+attr:  state0/power
+attr:  state0/usage
+attr:  state0/time
+attr:  state1/name
+attr:  state1/desc
+attr:  state1/latency
+attr:  state1/power
+attr:  state1/usage
+attr:  state1/time
+attr:  state2/name
+attr:  state2/desc
+attr:  state2/latency
+attr:  state2/power
+attr:  state2/usage
+attr:  state2/time
+attr:  state3/name
+attr:  state3/desc
+attr:  state3/latency
+attr:  state3/power
+attr:  state3/usage
+attr:  state3/time
+battr: 0000:03:00.0/data
+attr:  0000:03:00.0/loading
+attr:  pcmC1D0c/pcm_class
+attr:  card1/id
+attr:  card1/number
+attr:  iosched/quantum
+attr:  iosched/fifo_expire_sync
+attr:  iosched/fifo_expire_async
+attr:  iosched/back_seek_max
+attr:  iosched/back_seek_penalty
+attr:  iosched/slice_sync
+attr:  iosched/slice_async
+attr:  iosched/slice_async_rq
+attr:  iosched/slice_idle
+attr:  queue/nr_requests
+attr:  queue/read_ahead_kb
+attr:  queue/max_hw_sectors_kb
+attr:  queue/max_sectors_kb
+attr:  queue/scheduler
+attr:  queue/hw_sector_size
+attr:  queue/rotational
+attr:  queue/nomerges
+attr:  queue/rq_affinity
+attr:  queue/iostats
+attr:  5:0:0:0/queue_depth
+attr:  5:0:0:0/queue_type
+attr:  5:0:0:0/max_sectors
+attr:  iosched/quantum
+attr:  iosched/fifo_expire_sync
+attr:  iosched/fifo_expire_async
+attr:  iosched/back_seek_max
+attr:  iosched/back_seek_penalty
+attr:  iosched/slice_sync
+attr:  iosched/slice_async
+attr:  iosched/slice_async_rq
+attr:  iosched/slice_idle
+attr:  queue/nr_requests
+attr:  queue/read_ahead_kb
+attr:  queue/max_hw_sectors_kb
+attr:  queue/max_sectors_kb
+attr:  queue/scheduler
+attr:  queue/hw_sector_size
+attr:  queue/rotational
+attr:  queue/nomerges
+attr:  queue/rq_affinity
+attr:  queue/iostats
+attr:  5:0:0:1/queue_depth
+attr:  5:0:0:1/queue_type
+attr:  5:0:0:1/max_sectors
+dir:   host5/target5:0:0
+attr:  pcmC1D0c/pcm_class
+attr:  card1/id
+attr:  card1/number
+attr:  pcmC1D0c/pcm_class
+attr:  card1/id
+attr:  card1/number
+attr:  iosched/quantum
+attr:  iosched/fifo_expire_sync
+attr:  iosched/fifo_expire_async
+attr:  iosched/back_seek_max
+attr:  iosched/back_seek_penalty
+attr:  iosched/slice_sync
+attr:  iosched/slice_async
+attr:  iosched/slice_async_rq
+attr:  iosched/slice_idle
+attr:  queue/nr_requests
+attr:  queue/read_ahead_kb
+attr:  queue/max_hw_sectors_kb
+attr:  queue/max_sectors_kb
+attr:  queue/scheduler
+attr:  queue/hw_sector_size
+attr:  queue/rotational
+attr:  queue/nomerges
+attr:  queue/rq_affinity
+attr:  queue/iostats
+attr:  6:0:0:0/queue_depth
+attr:  6:0:0:0/queue_type
+attr:  6:0:0:0/max_sectors
+attr:  iosched/quantum
+attr:  iosched/fifo_expire_sync
+attr:  iosched/fifo_expire_async
+attr:  iosched/back_seek_max
+attr:  iosched/back_seek_penalty
+attr:  iosched/slice_sync
+attr:  iosched/slice_async
+attr:  iosched/slice_async_rq
+attr:  iosched/slice_idle
+attr:  queue/nr_requests
+attr:  queue/read_ahead_kb
+attr:  queue/max_hw_sectors_kb
+attr:  queue/max_sectors_kb
+attr:  queue/scheduler
+attr:  queue/hw_sector_size
+attr:  queue/rotational
+attr:  queue/nomerges
+attr:  queue/rq_affinity
+attr:  queue/iostats
+attr:  6:0:0:1/queue_depth
+attr:  6:0:0:1/queue_type
+attr:  6:0:0:1/max_sectors
+attr:  pcmC1D0c/pcm_class
+attr:  card1/id
+attr:  card1/number
+attr:  pcmC1D0c/pcm_class
+attr:  card1/id
+attr:  card1/number
 
