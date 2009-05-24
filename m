@@ -1,73 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754831AbZEXUb5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753090AbZEXUg0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754831AbZEXUb5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 May 2009 16:31:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752035AbZEXUbu
+	id S1753090AbZEXUg0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 May 2009 16:36:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752033AbZEXUgS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 May 2009 16:31:50 -0400
-Received: from mail-fx0-f168.google.com ([209.85.220.168]:50074 "EHLO
-	mail-fx0-f168.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752005AbZEXUbt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 May 2009 16:31:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=YWyrac0OZYp8TyssZSA+hbO8K5hX+Wt+F1ldvikQbdCyVTx8nyYxHsYjFm6SX7QEXI
-         NoRfJOlfIGgBxmt7TzmQ5rFCxGmYykJA6USmHq/yVOwpURP2lZ42UiSkqU+OFvjAb1us
-         n8ex2sszuT/9nCzByIa+HeHIHhg+nib1luG8c=
-Date: Sun, 24 May 2009 22:31:51 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] tracing/events: change the type of __str_loc_item to
-	unsigned short
-Message-ID: <20090524203148.GA6471@nowhere>
-References: <4A14EDB6.2050507@cn.fujitsu.com>
+	Sun, 24 May 2009 16:36:18 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:33801 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751820AbZEXUgS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 May 2009 16:36:18 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Chris Howie <cdhowie@gmail.com>
+Subject: Re: Boot problems with 2.6.29.1 - cannot smoothly boot on battery
+Date: Sun, 24 May 2009 22:36:21 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc6-rjw; KDE/4.2.3; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Linux PM List <linux-pm@lists.linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, "H. Anvin" <hpa@zytor.com>,
+       Greg KH <gregkh@suse.de>
+References: <3d2f29dc0905180125x5e7ef51dqf10955a3d44336e2@mail.gmail.com>
+In-Reply-To: <3d2f29dc0905180125x5e7ef51dqf10955a3d44336e2@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4A14EDB6.2050507@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200905242236.22715.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 21, 2009 at 01:59:18PM +0800, Li Zefan wrote:
-> When defining a dynamic size string, we add __str_loc_##item to the
-> trace entry, and it stores the location of the actual string in
-> entry->_str_data[]
+On Monday 18 May 2009, Chris Howie wrote:
+> Folks:
 > 
-> 'unsigned short' should be sufficient to store this information, thus
-> we save 2 bytes per dyn-size string in the ring buffer.
+> I've been running 2.6.29.1 for some time and reported an issue to this
+> mailing list a while ago about the boot process.  I believe I have now
+> nailed down the one factor that determines whether I see this issue.
 > 
-> [ Impact: reduce memory occupied by dyn-size strings in ring buffer ]
+> The problem arises only when booting or halting my laptop when there
+> is no power plugged in, e.g. the system is running on battery.
+> Sometime after init begins starting services I must hold down a key on
+> the keyboard to convince it to continue booting, otherwise it just
+> hangs.  If the system is running on AC then it boots fine.  This same
+> problem repeats itself during the halt process if running on battery.
 > 
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> ---
->  include/trace/ftrace.h |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+> This also happens when resuming a suspend-to-disk image, after loading
+> the data from the hard drive, but before control is returned to
+> userspace.  The keyboard has no effect on this hang, presumably
+> because the kernel is not listening to the keyboard at this point.
+> When this happens the only solution is to hold the power button and
+> boot normally instead.
 > 
-> diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
-> index edb02bc..b5ff2e8 100644
-> --- a/include/trace/ftrace.h
-> +++ b/include/trace/ftrace.h
-> @@ -25,7 +25,7 @@
->  #define __field(type, item)		type	item;
->  
->  #undef __string
-> -#define __string(item, src)		int	__str_loc_##item;
-> +#define __string(item, src)		unsigned short	__str_loc_##item;
->  
->  #undef TP_STRUCT__entry
->  #define TP_STRUCT__entry(args...) args
-> -- 1.5.4.rc3 
+> An issue like this is a serious usability problem for me.  I am
+> neither a kernel developer nor hacker, my coding skills applying
+> mostly to userspace applications.  If there is anything you need from
+> me to help diagnose this problem please let me know.
+> 
+> I am not subscribed so please CC me on replies.
 
+Let's try to make your report a bit more visible (some CCs added).
 
-Yeah, a max length of about 32000 is sufficient, the filter
-engine is bounded to MAX_FILTER_STR_VAL anyway :)
-
-Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
-
+Best,
+Rafael
