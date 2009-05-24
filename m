@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756105AbZEXPu5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757836AbZEXPv6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756105AbZEXPu5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 May 2009 11:50:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755000AbZEXPuf
+	id S1757836AbZEXPv6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 May 2009 11:51:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756401AbZEXPvB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 May 2009 11:50:35 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:41820 "EHLO mx2.redhat.com"
+	Sun, 24 May 2009 11:51:01 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:41864 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752613AbZEXPub (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 May 2009 11:50:31 -0400
+	id S1755280AbZEXPuf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 May 2009 11:50:35 -0400
 From: Avi Kivity <avi@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: kvm@vger.kernel.org
-Subject: [PATCH 04/45] KVM: Do not report TPR write to userspace if new value bigger or equal to a previous one.
-Date: Sun, 24 May 2009 18:49:49 +0300
-Message-Id: <1243180230-2480-5-git-send-email-avi@redhat.com>
+Subject: [PATCH 44/45] KVM: Disable CR8 intercept if tpr patching is active
+Date: Sun, 24 May 2009 18:50:29 +0300
+Message-Id: <1243180230-2480-45-git-send-email-avi@redhat.com>
 In-Reply-To: <1243180230-2480-1-git-send-email-avi@redhat.com>
 References: <1243180230-2480-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -23,63 +23,41 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Gleb Natapov <gleb@redhat.com>
 
-Saves many exits to userspace in a case of IRQ chip in userspace.
-
 Signed-off-by: Gleb Natapov <gleb@redhat.com>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 ---
- arch/x86/kvm/svm.c |    4 ++++
- arch/x86/kvm/vmx.c |   19 ++++++++++++-------
- 2 files changed, 16 insertions(+), 7 deletions(-)
+ arch/x86/kvm/x86.c |   11 ++++++-----
+ 1 files changed, 6 insertions(+), 5 deletions(-)
 
-diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
-index 143818e..e283a63 100644
---- a/arch/x86/kvm/svm.c
-+++ b/arch/x86/kvm/svm.c
-@@ -1862,9 +1862,13 @@ static int emulate_on_interception(struct vcpu_svm *svm,
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index 7037afa..44e87a5 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -3138,7 +3138,10 @@ static void update_cr8_intercept(struct kvm_vcpu *vcpu)
+ 	if (!kvm_x86_ops->update_cr8_intercept)
+ 		return;
  
- static int cr8_write_interception(struct vcpu_svm *svm, struct kvm_run *kvm_run)
- {
-+	u8 cr8_prev = kvm_get_cr8(&svm->vcpu);
-+	/* instruction emulation calls kvm_set_cr8() */
- 	emulate_instruction(&svm->vcpu, NULL, 0, 0, 0);
- 	if (irqchip_in_kernel(svm->vcpu.kvm))
- 		return 1;
-+	if (cr8_prev <= kvm_get_cr8(&svm->vcpu))
-+		return 1;
- 	kvm_run->exit_reason = KVM_EXIT_SET_TPR;
- 	return 0;
- }
-diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
-index 9162b4c..51f804c 100644
---- a/arch/x86/kvm/vmx.c
-+++ b/arch/x86/kvm/vmx.c
-@@ -2724,13 +2724,18 @@ static int handle_cr(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
- 			kvm_set_cr4(vcpu, kvm_register_read(vcpu, reg));
- 			skip_emulated_instruction(vcpu);
- 			return 1;
--		case 8:
--			kvm_set_cr8(vcpu, kvm_register_read(vcpu, reg));
--			skip_emulated_instruction(vcpu);
--			if (irqchip_in_kernel(vcpu->kvm))
--				return 1;
--			kvm_run->exit_reason = KVM_EXIT_SET_TPR;
--			return 0;
-+		case 8: {
-+				u8 cr8_prev = kvm_get_cr8(vcpu);
-+				u8 cr8 = kvm_register_read(vcpu, reg);
-+				kvm_set_cr8(vcpu, cr8);
-+				skip_emulated_instruction(vcpu);
-+				if (irqchip_in_kernel(vcpu->kvm))
-+					return 1;
-+				if (cr8_prev <= cr8)
-+					return 1;
-+				kvm_run->exit_reason = KVM_EXIT_SET_TPR;
-+				return 0;
-+			}
- 		};
- 		break;
- 	case 2: /* clts */
+-	max_irr = kvm_lapic_find_highest_irr(vcpu);
++	if (!vcpu->arch.apic->vapic_addr)
++		max_irr = kvm_lapic_find_highest_irr(vcpu);
++	else
++		max_irr = -1;
+ 
+ 	if (max_irr != -1)
+ 		max_irr >>= 4;
+@@ -3245,10 +3248,8 @@ static int vcpu_enter_guest(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
+ 		kvm_x86_ops->enable_irq_window(vcpu);
+ 
+ 	if (kvm_lapic_enabled(vcpu)) {
+-		if (!vcpu->arch.apic->vapic_addr)
+-			update_cr8_intercept(vcpu);
+-		else
+-			kvm_lapic_sync_to_vapic(vcpu);
++		update_cr8_intercept(vcpu);
++		kvm_lapic_sync_to_vapic(vcpu);
+ 	}
+ 
+ 	up_read(&vcpu->kvm->slots_lock);
 -- 
 1.6.0.6
 
