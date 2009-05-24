@@ -1,60 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755182AbZEXB07@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755078AbZEXBv4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755182AbZEXB07 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 May 2009 21:26:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753712AbZEXB0v
+	id S1755078AbZEXBv4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 May 2009 21:51:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753876AbZEXBvs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 May 2009 21:26:51 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:34320 "EHLO e4.ny.us.ibm.com"
+	Sat, 23 May 2009 21:51:48 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:33546 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753041AbZEXB0v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 May 2009 21:26:51 -0400
-Subject: Re: Possible deadlock in jfs_imap.c?
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: Jan Kucera <kucera.jan.cz@gmail.com>
-Cc: JFS Discussion <jfs-discussion@lists.sourceforge.net>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <ef67228d0905230819x633f0cd0t4dd1be639906f9bc@mail.gmail.com>
-References: <ef67228d0905230819x633f0cd0t4dd1be639906f9bc@mail.gmail.com>
-Content-Type: text/plain
-Date: Sat, 23 May 2009 20:26:50 -0500
-Message-Id: <1243128410.27493.2.camel@norville.austin.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 
-Content-Transfer-Encoding: 7bit
+	id S1753041AbZEXBvs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 May 2009 21:51:48 -0400
+From: "NeilBrown" <neilb@suse.de>
+To: "Ken Milmore" <ken.milmore@googlemail.com>
+Date: Sun, 24 May 2009 11:51:37 +1000 (EST)
+Message-ID: <0fa4b1e19d3edb12931e0d641ce2c7d7.squirrel@neil.brown.name>
+In-Reply-To: <4A188CAD.1080009@googlemail.com>
+References: <4A188CAD.1080009@googlemail.com>
+Subject: Re: Write barriers on MD RAID1
+Cc: linux-kernel@vger.kernel.org, "Jens Axboe" <jens.axboe@oracle.com>
+User-Agent: SquirrelMail/1.4.15
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-05-23 at 17:19 +0200, Jan Kucera wrote:
-> Hi,
-> 
-> for my master thesis, I've designed static checker for finding deadlocks in C.
-> My tool found some possible deadlock in file fs/jfs/jfs_imap.c
-> between JFS_IP(ipimap)->commit_mutex and  imap->im_aglock[agno].
-> 
-> Reason of this problem is probably missed unlocking of
-> JFS_IP(ipimap)->commit_mutex in branch starting at line 2564 which
-> leaves JFS_IP(ipimap)->commit_mutex locked:
-> 
->     in function diNewIAG(..)
->         locking mutex_lock(&JFS_IP(ipimap)->commit_mutex) at line 2540
->         condition at line 2543 is false
->         condition at line 2564 is true
->         goto out: at 2579
->         IAGFREE_UNLOCK(imap); at line 2654
->     return from diNewIAG(..) at line 2656
-> 
-> Version of kernel is 2.6.28 (maybe this code is in newer versions too).
-> Could someone confirm, that this is a real bug? Thank you for your time.
+On Sun, May 24, 2009 9:54 am, Ken Milmore wrote:
+>
+> Support for write barriers on MD RAID1 devices appears to be broken on
+> 2.6.29 and later kernels.  Mounting an ext3 or ext4 filesystem over an
+> md raid1 block device gives the kernel message:
+>
+>    JBD: barrier-based sync failed on md0 - disabling barriers
+>
+> Is this intentional?  It looks like a regression to me, since write
+> barriers (ostensibly) worked for MD RAID1 on earlier kernels (well, all
+> of the 2.6.27 series at least...)
+>
+> Doing a git bisect suggested that this is the culprit:
+>
+> commit cec0707e40ae25794b5a2de7b7f03c51961f80d9
+> Author: Jens Axboe <jens.axboe@oracle.com>
+> Date:   Tue Jan 13 15:28:32 2009 +0100
+>
+>      block: silently error an unsupported barrier bio
 
-Yes, it looks like a real bug.  As the comment states, it's an unlikely
-error path. This would explain how it went undetected this long.  Should
-be fixed anyway.
+Yes, that patch is broken.
+the new code it introduces should probably go in the top of
+__make_request rather than just before the call to ->make_request_fn.
+make_request_fn functions other than __make_request generally
+don't use ->next_ordered at all.
 
-Thanks,
-Shaggy
--- 
-David Kleikamp
-IBM Linux Technology Center
+Jens?  Would you agree?
+
+NeilBrown
+
+
+>
+> Rolling this back from 2.6.29.4 made the JBD error message go away for
+> me.  I tried to do some disk benchmarking to determine if write barriers
+> were really still working, but the results were not very conclusive.
+>
+> Details of test setup:
+> - 2.6.29.4 kernel (config from slackware-current)
+> - ext3 filesystem (mounted with barrier=1), also tried ext4
+> - MD RAID1 block device over two SATA disks
+> - Intel motherboard AHCI controller (82801)
+>
+> I got similar behaviour on a virtualised setup using qemu, with the RAID
+> over two emulated IDE disks.
+>
+> Please contact me if I can provide any further information.
+>
+> -Ken Milmore.
+>
 
