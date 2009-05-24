@@ -1,53 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760517AbZEXWQu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758566AbZEXWU5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760517AbZEXWQu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 May 2009 18:16:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759645AbZEXWQQ
+	id S1758566AbZEXWU5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 May 2009 18:20:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754032AbZEXWUq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 May 2009 18:16:16 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:51639 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760450AbZEXWQP (ORCPT
+	Sun, 24 May 2009 18:20:46 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:34396 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752578AbZEXWUp convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 May 2009 18:16:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=NK9XUAKJLAsLru3ajjAbYbcSeX0v4d0CK080YpAsUuILIUK+1GIxSxVuA3hq6FgN92
-         9rJpl9U5i4cguxKnjuWx+7AR25SwJfrJ1W6FEPHgm4PYF213159CyrjCHNre4X5DSdUV
-         dbpiLmr1+wLQ9X5QPcEXX7VBcX2ASABUf5UE0=
-Date: Mon, 25 May 2009 00:16:16 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: fork() && ftrace_graph_exit_task()
-Message-ID: <20090524221615.GG6471@nowhere>
-References: <20090521195330.GA13604@redhat.com>
+	Sun, 24 May 2009 18:20:45 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Ozan =?utf-8?q?=C3=87a=C4=9Flayan?= <ozan@pardus.org.tr>
+Subject: Re: 2.6.30-rc7: Reported regressions from 2.6.29
+Date: Mon, 25 May 2009 00:20:42 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc6-rjw; KDE/4.2.3; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Network Development <netdev@vger.kernel.org>,
+       Linux ACPI <linux-acpi@vger.kernel.org>,
+       Linux PM List <linux-pm@lists.linux-foundation.org>,
+       Linux SCSI List <linux-scsi@vger.kernel.org>,
+       Linux Wireless List <linux-wireless@vger.kernel.org>,
+       DRI <dri-devel@lists.sourceforge.net>
+References: <ZPPBiNHr1LC.A.9ZH.K9bGKB@chimera> <4A19C51D.7020609@pardus.org.tr>
+In-Reply-To: <4A19C51D.7020609@pardus.org.tr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20090521195330.GA13604@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200905250020.43820.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 21, 2009 at 09:53:30PM +0200, Oleg Nesterov wrote:
-> What if the task with ->ret_stack != NULL calls fork(), and
-> copy_prcoess() fails after successfull dup_task_struct() ?
+On Monday 25 May 2009, Ozan Çağlayan wrote:
+> Rafael J. Wysocki wrote:
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13326
+> > Subject		: [PATCH]Null pointer dereference in rtc-cmos driver
+> > Submitter	: Ozan Çağlayan <ozan@pardus.org.tr>
+> > Date		: 2009-05-14 16:16 (11 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=124231783704696&w=4
+> >   
 > 
-> bad_fork_free: -> free_task()->ftrace_graph_exit_task() will
-> free the parent's ->ret_stack copied by arch_dup_task_struct(),
-> no?
+> Just to notice that the patch for this is at:
 > 
-> Oleg.
->
+> http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/driver-core.current/driver-core-do-not-oops-when-driver_unregister-is-called-for-unregistered-drivers.patch
+> 
+> Can at least be marked as "has a patch".
 
+Thanks, I added the patch to the bug entry and changed its status.
 
-Good catch, that's a rare situation but very dangerous.
-
-I will fix it, thanks for your report!
-
-Frederic.
-
+Best,
+Rafael
