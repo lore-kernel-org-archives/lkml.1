@@ -1,293 +1,240 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756223AbZEXQN7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758067AbZEXQOU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756223AbZEXQN7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 May 2009 12:13:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753483AbZEXQNu
+	id S1758067AbZEXQOU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 May 2009 12:14:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755891AbZEXQN6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 May 2009 12:13:50 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:42038 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752613AbZEXQNt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 May 2009 12:13:49 -0400
-Date: Sun, 24 May 2009 19:13:49 +0300 (EEST)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Yinghai Lu <yinghai@kernel.org>, Jeff Garzik <jgarzik@pobox.com>,
-       Alexander Viro <viro@ftp.linux.org.uk>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [GIT PULL] scheduler fixes
-In-Reply-To: <alpine.LFD.2.01.0905181457320.3301@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0905241911120.12189@melkki.cs.Helsinki.FI>
-References: <20090518142707.GA24142@elte.hu> <alpine.LFD.2.01.0905180850110.3301@localhost.localdomain>
- <20090518164921.GA6903@elte.hu> <alpine.LFD.2.01.0905180955550.3301@localhost.localdomain>
- <20090518170909.GA1623@elte.hu> <20090518190320.GA20260@elte.hu>
- <alpine.LFD.2.01.0905181208130.3301@localhost.localdomain>
- <20090518202031.GA26549@elte.hu> <alpine.LFD.2.01.0905181457320.3301@localhost.localdomain>
-Mime-Version: 1.0
+	Sun, 24 May 2009 12:13:58 -0400
+Received: from aun.it.uu.se ([130.238.12.36]:65258 "EHLO aun.it.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752849AbZEXQNz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 May 2009 12:13:55 -0400
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18969.29245.610133.834819@pilspetsen.it.uu.se>
+Date: Sun, 24 May 2009 18:13:49 +0200
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: linux-kernel@vger.kernel.org
+Cc: linux-ide@vger.kernel.org, arjan@linux.intel.com
+Subject: [2.6.30-rc7 regression] kernel/async.c broke pata_legacy.c
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 18 May 2009, Linus Torvalds wrote:
-> > > I hate that stupid bootmem allocator. I suspect we seriously 
-> > > over-use it, and that we _should_ be able to do the SL*B init 
-> > > earlier.
-> > 
-> > Hm, tempting thought - not sure how to pull it off though.
-> 
-> As far as I can recall, one of the things that historically made us want 
-> to use the bootmem allocator even relatively late was that the real SLAB 
-> allocator had to wait until all the node information etc was initialized. 
-> 
-> That's pretty damn late. And I wonder if SLUB (and SLOB) might not need a 
-> lot less initialization, and work much earlier. Something like that might 
-> be the final nail in the coffin for SLAB, and convince me to just say 
-> 'we don't support it any more".
+I tried booting 2.6.30-rc7 on my old '486, but it fails miserably
+during libata/pata_legacy's device scan:
 
-Ingo, here's a patch that boots UMA+SMP+SLUB x86-64 kernel on qemu all 
-the way to userspace. It probably breaks bunch of things for now but 
-something for you to play with if you want.
+Linux version 2.6.30-rc7 (mikpe@brewer) (gcc version 4.3.4 20090517 (prerelease) (GCC) ) #1 Sun May 24 16:05:18 CEST 2009
+KERNEL supported cpus:
+  Intel GenuineIntel
+BIOS-provided physical RAM map:
+ BIOS-88: 0000000000000000 - 000000000009f000 (usable)
+ BIOS-88: 0000000000100000 - 0000000001c00000 (usable)
+last_pfn = 0x1c00 max_arch_pfn = 0x100000
+init_memory_mapping: 0000000000000000-0000000001c00000
+RAMDISK: 01abb000 - 01bef86b
+28MB LOWMEM available.
+  mapped low ram: 0 - 01c00000
+  low ram: 0 - 01c00000
+  node 0 low ram: 00000000 - 01c00000
+  node 0 bootmap 00001000 - 00001380
+(7 early reservations) ==> bootmem [0000000000 - 0001c00000]
+  #0 [0000000000 - 0000001000]   BIOS data page ==> [0000000000 - 0000001000]
+  #1 [0000100000 - 000031d1ec]    TEXT DATA BSS ==> [0000100000 - 000031d1ec]
+  #2 [0001abb000 - 0001bef86b]          RAMDISK ==> [0001abb000 - 0001bef86b]
+  #3 [000009f000 - 0000100000]    BIOS reserved ==> [000009f000 - 0000100000]
+  #4 [000031e000 - 0000320000]              BRK ==> [000031e000 - 0000320000]
+  #5 [0000007000 - 000000c000]          PGTABLE ==> [0000007000 - 000000c000]
+  #6 [0000001000 - 0000002000]          BOOTMAP ==> [0000001000 - 0000002000]
+Zone PFN ranges:
+  DMA      0x00000000 -> 0x00001000
+  Normal   0x00001000 -> 0x00001c00
+Movable zone start PFN for each node
+early_node_map[2] active PFN ranges
+    0: 0x00000000 -> 0x0000009f
+    0: 0x00000100 -> 0x00001c00
+Allocating PCI resources starting at 10000000 (gap: 1c00000:fe400000)
+Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 7015
+Kernel command line: ro root=LABEL=/ console=ttyS1,115200
+Initializing CPU#0
+NR_IRQS:16
+PID hash table entries: 128 (order: 7, 512 bytes)
+Console: colour VGA+ 80x25
+console [ttyS1] enabled
+Dentry cache hash table entries: 4096 (order: 2, 16384 bytes)
+Inode-cache hash table entries: 2048 (order: 1, 8192 bytes)
+Memory: 24592k/28672k available (1467k kernel code, 3688k reserved, 465k data, 132k init, 0k highmem)
+virtual kernel memory layout:
+    fixmap  : 0xfffeb000 - 0xfffff000   (  80 kB)
+    vmalloc : 0xc2400000 - 0xfffe9000   ( 987 MB)
+    lowmem  : 0xc0000000 - 0xc1c00000   (  28 MB)
+      .init : 0xc02e6000 - 0xc0307000   ( 132 kB)
+      .data : 0xc026eef0 - 0xc02e34f8   ( 465 kB)
+      .text : 0xc0100000 - 0xc026eef0   (1467 kB)
+Checking if this processor honours the WP bit even in supervisor mode...Ok.
+Calibrating delay loop... 49.66 BogoMIPS (lpj=248320)
+Mount-cache hash table entries: 512
 
-			Pekka
+CPU: Intel 486 DX/4 stepping 00
+Checking 'hlt' instruction... OK.
+net_namespace: 296 bytes
+NET: Registered protocol family 16
+bio: create slab <bio-0> at 0
+SCSI subsystem initialized
+NET: Registered protocol family 2
+IP route cache hash table entries: 1024 (order: 0, 4096 bytes)
+TCP established hash table entries: 1024 (order: 1, 8192 bytes)
+TCP bind hash table entries: 1024 (order: 0, 4096 bytes)
+TCP: Hash tables configured (established 1024 bind 1024)
+TCP reno registered
+NET: Registered protocol family 1
+Unpacking initramfs...
+Freeing initrd memory: 1234k freed
+platform rtc_cmos: registered platform RTC device (no PNP device found)
+msgmni has been set to 50
+io scheduler noop registered
+io scheduler anticipatory registered (default)
+io scheduler deadline registered
+io scheduler cfq registered
+Real Time Clock Driver v1.12b
+Serial: 8250/16550 driver, 4 ports, IRQ sharing disabled
+serial8250: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
+serial8250: ttyS1 at I/O 0x2f8 (irq = 3) is a 16550A
+Driver 'sd' needs updating - please use bus_type methods
+scsi0 : pata_legacy
+ata1: PATA max PIO4 cmd 0x1f0 ctl 0x3f6 irq 14
+------------[ cut here ]------------
+WARNING: at drivers/ata/libata-core.c:6222 ata_host_detach+0x75/0x90()
+Modules linked in:
+Pid: 1, comm: swapper Not tainted 2.6.30-rc7 #1
+Call Trace:
+ [<c01fbb05>] ? ata_host_detach+0x75/0x90
+ [<c01fbb05>] ? ata_host_detach+0x75/0x90
+ [<c01139b5>] ? warn_slowpath_common+0x45/0x80
+ [<c01139fa>] ? warn_slowpath_null+0xa/0x10
+ [<c01fbb05>] ? ata_host_detach+0x75/0x90
+ [<c02f40e0>] ? legacy_init+0x44e/0x87f
+ [<c02f3c92>] ? legacy_init+0x0/0x87f
+ [<c0101021>] ? _stext+0x21/0x140
+ [<c01890ff>] ? proc_register+0x2f/0x190
+ [<c018938c>] ? create_proc_entry+0x5c/0xc0
+ [<c0135ebe>] ? register_irq_proc+0x6e/0x90
+ [<c02e6484>] ? kernel_init+0x6e/0xbf
+ [<c02e6416>] ? kernel_init+0x0/0xbf
+ [<c01031d7>] ? kernel_thread_helper+0x7/0x10
+---[ end trace ef1ee36e873ae3a0 ]---
+scsi1 : pata_legacy
+ata2: PATA max PIO4 cmd 0x170 ctl 0x376 irq 15
+------------[ cut here ]------------
+WARNING: at drivers/ata/libata-core.c:6222 ata_host_detach+0x75/0x90()
+Modules linked in:
+Pid: 1, comm: swapper Tainted: G        W  2.6.30-rc7 #1
+Call Trace:
+ [<c01fbb05>] ? ata_host_detach+0x75/0x90
+ [<c01fbb05>] ? ata_host_detach+0x75/0x90
+ [<c01139b5>] ? warn_slowpath_common+0x45/0x80
+ [<c01139fa>] ? warn_slowpath_null+0xa/0x10
+ [<c01fbb05>] ? ata_host_detach+0x75/0x90
+ [<c02f40e0>] ? legacy_init+0x44e/0x87f
+ [<c02f3c92>] ? legacy_init+0x0/0x87f
+ [<c0101021>] ? _stext+0x21/0x140
+ [<c01890ff>] ? proc_register+0x2f/0x190
+ [<c018938c>] ? create_proc_entry+0x5c/0xc0
+ [<c0135ebe>] ? register_irq_proc+0x6e/0x90
+ [<c02e6484>] ? kernel_init+0x6e/0xbf
+ [<c02e6416>] ? kernel_init+0x0/0xbf
+ [<c01031d7>] ? kernel_thread_helper+0x7/0x10
+---[ end trace ef1ee36e873ae3a1 ]---
+scsi2 : pata_legacy
+ata3: PATA max PIO4 cmd 0x1e8 ctl 0x3ee irq 11
+------------[ cut here ]------------
+WARNING: at drivers/ata/libata-core.c:6222 ata_host_detach+0x75/0x90()
+Modules linked in:
+Pid: 1, comm: swapper Tainted: G        W  2.6.30-rc7 #1
+Call Trace:
+ [<c01fbb05>] ? ata_host_detach+0x75/0x90
+ [<c01fbb05>] ? ata_host_detach+0x75/0x90
+ [<c01139b5>] ? warn_slowpath_common+0x45/0x80
+ [<c01139fa>] ? warn_slowpath_null+0xa/0x10
+ [<c01fbb05>] ? ata_host_detach+0x75/0x90
+ [<c02f40e0>] ? legacy_init+0x44e/0x87f
+ [<c02f3c92>] ? legacy_init+0x0/0x87f
+ [<c0101021>] ? _stext+0x21/0x140
+ [<c01890ff>] ? proc_register+0x2f/0x190
+ [<c018938c>] ? create_proc_entry+0x5c/0xc0
+ [<c0135ebe>] ? register_irq_proc+0x6e/0x90
+ [<c02e6484>] ? kernel_init+0x6e/0xbf
+ [<c02e6416>] ? kernel_init+0x0/0xbf
+ [<c01031d7>] ? kernel_thread_helper+0x7/0x10
+---[ end trace ef1ee36e873ae3a2 ]---
+scsi3 : pata_legacy
+ata4: PATA max PIO4 cmd 0x168 ctl 0x36e irq 10
+------------[ cut here ]------------
+WARNING: at drivers/ata/libata-core.c:6222 ata_host_detach+0x75/0x90()
+Modules linked in:
+Pid: 1, comm: swapper Tainted: G        W  2.6.30-rc7 #1
+Call Trace:
+ [<c01fbb05>] ? ata_host_detach+0x75/0x90
+ [<c01fbb05>] ? ata_host_detach+0x75/0x90
+ [<c01139b5>] ? warn_slowpath_common+0x45/0x80
+ [<c01139fa>] ? warn_slowpath_null+0xa/0x10
+ [<c01fbb05>] ? ata_host_detach+0x75/0x90
+ [<c02f40e0>] ? legacy_init+0x44e/0x87f
+ [<c02f3c92>] ? legacy_init+0x0/0x87f
+ [<c0101021>] ? _stext+0x21/0x140
+ [<c01890ff>] ? proc_register+0x2f/0x190
+ [<c018938c>] ? create_proc_entry+0x5c/0xc0
+ [<c0135ebe>] ? register_irq_proc+0x6e/0x90
+ [<c02e6484>] ? kernel_init+0x6e/0xbf
+ [<c02e6416>] ? kernel_init+0x0/0xbf
+ [<c01031d7>] ? kernel_thread_helper+0x7/0x10
+---[ end trace ef1ee36e873ae3a3 ]---
+scsi4 : pata_legacy
+ata5: PATA max PIO4 cmd 0x160 ctl 0x366 irq 12
+------------[ cut here ]------------
+WARNING: at drivers/ata/libata-core.c:6222 ata_host_detach+0x75/0x90()
+Modules linked in:
+Pid: 1, comm: swapper Tainted: G        W  2.6.30-rc7 #1
+Call Trace:
+ [<c01fbb05>] ? ata_host_detach+0x75/0x90
+ [<c01fbb05>] ? ata_host_detach+0x75/0x90
+ [<c01139b5>] ? warn_slowpath_common+0x45/0x80
+ [<c01139fa>] ? warn_slowpath_null+0xa/0x10
+ [<c01fbb05>] ? ata_host_detach+0x75/0x90
+ [<c02f40e0>] ? legacy_init+0x44e/0x87f
+ [<c02f3c92>] ? legacy_init+0x0/0x87f
+ [<c0101021>] ? _stext+0x21/0x140
+ [<c01890ff>] ? proc_register+0x2f/0x190
+ [<c018938c>] ? create_proc_entry+0x5c/0xc0
+ [<c0135ebe>] ? register_irq_proc+0x6e/0x90
+ [<c02e6484>] ? kernel_init+0x6e/0xbf
+ [<c02e6416>] ? kernel_init+0x0/0xbf
+ [<c01031d7>] ? kernel_thread_helper+0x7/0x10
+---[ end trace ef1ee36e873ae3a4 ]---
+serio: i8042 KBD port at 0x60,0x64 irq 1
+serio: i8042 AUX port at 0x60,0x64 irq 12
+mice: PS/2 mouse device common for all mice
+input: PC Speaker as /class/input/input0
+TCP cubic registered
+input: AT Translated Set 2 keyboard as /class/input/input1
 
-diff --git a/init/main.c b/init/main.c
-index 3bbf93b..856afa9 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -575,6 +575,22 @@ asmlinkage void __init start_kernel(void)
- 	setup_nr_cpu_ids();
- 	smp_prepare_boot_cpu();	/* arch-specific boot-cpu hooks */
- 
-+	build_all_zonelists();
-+	page_alloc_init();
-+
-+	printk(KERN_NOTICE "Kernel command line: %s\n", boot_command_line);
-+	parse_early_param();
-+	parse_args("Booting kernel", static_command_line, __start___param,
-+		   __stop___param - __start___param,
-+		   &unknown_bootoption);
-+	/*
-+	 * Setup kernel memory allocators
-+	 */
-+	pidhash_init();
-+	vmalloc_init();
-+	vfs_caches_init_early();
-+	mem_init();
-+	kmem_cache_init();
- 	/*
- 	 * Set up the scheduler prior starting any interrupts (such as the
- 	 * timer interrupt). Full topology setup happens at smp_init()
-@@ -586,13 +602,6 @@ asmlinkage void __init start_kernel(void)
- 	 * fragile until we cpu_idle() for the first time.
- 	 */
- 	preempt_disable();
--	build_all_zonelists();
--	page_alloc_init();
--	printk(KERN_NOTICE "Kernel command line: %s\n", boot_command_line);
--	parse_early_param();
--	parse_args("Booting kernel", static_command_line, __start___param,
--		   __stop___param - __start___param,
--		   &unknown_bootoption);
- 	if (!irqs_disabled()) {
- 		printk(KERN_WARNING "start_kernel(): bug: interrupts were "
- 				"enabled *very* early, fixing it\n");
-@@ -604,7 +613,6 @@ asmlinkage void __init start_kernel(void)
- 	/* init some links before init_ISA_irqs() */
- 	early_irq_init();
- 	init_IRQ();
--	pidhash_init();
- 	init_timers();
- 	hrtimers_init();
- 	softirq_init();
-@@ -646,14 +654,10 @@ asmlinkage void __init start_kernel(void)
- 		initrd_start = 0;
- 	}
- #endif
--	vmalloc_init();
--	vfs_caches_init_early();
- 	cpuset_init_early();
- 	page_cgroup_init();
--	mem_init();
- 	enable_debug_pagealloc();
- 	cpu_hotplug_init();
--	kmem_cache_init();
- 	kmemtrace_init();
- 	debug_objects_mem_init();
- 	idr_init_cache();
-diff --git a/kernel/irq/handle.c b/kernel/irq/handle.c
-index 26e0875..702a696 100644
---- a/kernel/irq/handle.c
-+++ b/kernel/irq/handle.c
-@@ -18,7 +18,7 @@
- #include <linux/rculist.h>
- #include <linux/hash.h>
- #include <trace/irq.h>
--#include <linux/bootmem.h>
-+#include <linux/slab.h>
- 
- #include "internals.h"
- 
-@@ -44,7 +44,7 @@ void handle_bad_irq(unsigned int irq, struct irq_desc *desc)
- #if defined(CONFIG_SMP) && defined(CONFIG_GENERIC_HARDIRQS)
- static void __init init_irq_default_affinity(void)
- {
--	alloc_bootmem_cpumask_var(&irq_default_affinity);
-+	alloc_cpumask_var(&irq_default_affinity, GFP_NOWAIT);
- 	cpumask_setall(irq_default_affinity);
- }
- #else
-@@ -158,12 +158,12 @@ int __init early_irq_init(void)
- 	legacy_count = ARRAY_SIZE(irq_desc_legacy);
- 
- 	/* allocate irq_desc_ptrs array based on nr_irqs */
--	irq_desc_ptrs = alloc_bootmem(nr_irqs * sizeof(void *));
-+	irq_desc_ptrs = kcalloc(nr_irqs, sizeof(void *), GFP_NOWAIT);
- 
- 	/* allocate based on nr_cpu_ids */
- 	/* FIXME: invert kstat_irgs, and it'd be a per_cpu_alloc'd thing */
--	kstat_irqs_legacy = alloc_bootmem(NR_IRQS_LEGACY * nr_cpu_ids *
--					  sizeof(int));
-+	kstat_irqs_legacy = kzalloc(NR_IRQS_LEGACY * nr_cpu_ids *
-+					  sizeof(int), GFP_NOWAIT);
- 
- 	for (i = 0; i < legacy_count; i++) {
- 		desc[i].irq = i;
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 26efa47..b403536 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -68,7 +68,6 @@
- #include <linux/pagemap.h>
- #include <linux/hrtimer.h>
- #include <linux/tick.h>
--#include <linux/bootmem.h>
- #include <linux/debugfs.h>
- #include <linux/ctype.h>
- #include <linux/ftrace.h>
-@@ -7525,21 +7524,18 @@ static void rq_attach_root(struct rq *rq, struct root_domain *rd)
- 
- static int __init_refok init_rootdomain(struct root_domain *rd, bool bootmem)
- {
-+	gfp_t gfp = GFP_KERNEL;
-+
- 	memset(rd, 0, sizeof(*rd));
- 
--	if (bootmem) {
--		alloc_bootmem_cpumask_var(&def_root_domain.span);
--		alloc_bootmem_cpumask_var(&def_root_domain.online);
--		alloc_bootmem_cpumask_var(&def_root_domain.rto_mask);
--		cpupri_init(&rd->cpupri, true);
--		return 0;
--	}
-+	if (bootmem)
-+		gfp = GFP_NOWAIT;
- 
--	if (!alloc_cpumask_var(&rd->span, GFP_KERNEL))
-+	if (!alloc_cpumask_var(&rd->span, gfp))
- 		goto out;
--	if (!alloc_cpumask_var(&rd->online, GFP_KERNEL))
-+	if (!alloc_cpumask_var(&rd->online, gfp))
- 		goto free_span;
--	if (!alloc_cpumask_var(&rd->rto_mask, GFP_KERNEL))
-+	if (!alloc_cpumask_var(&rd->rto_mask, gfp))
- 		goto free_online;
- 
- 	if (cpupri_init(&rd->cpupri, false) != 0)
-@@ -8860,12 +8856,8 @@ void __init sched_init(void)
- #ifdef CONFIG_CPUMASK_OFFSTACK
- 	alloc_size += num_possible_cpus() * cpumask_size();
- #endif
--	/*
--	 * As sched_init() is called before page_alloc is setup,
--	 * we use alloc_bootmem().
--	 */
- 	if (alloc_size) {
--		ptr = (unsigned long)alloc_bootmem(alloc_size);
-+		ptr = (unsigned long) kzalloc(alloc_size, GFP_NOWAIT);
- 
- #ifdef CONFIG_FAIR_GROUP_SCHED
- 		init_task_group.se = (struct sched_entity **)ptr;
-@@ -9051,12 +9043,12 @@ void __init sched_init(void)
- 	current->sched_class = &fair_sched_class;
- 
- 	/* Allocate the nohz_cpu_mask if CONFIG_CPUMASK_OFFSTACK */
--	alloc_bootmem_cpumask_var(&nohz_cpu_mask);
-+	alloc_cpumask_var(&nohz_cpu_mask, GFP_NOWAIT);
- #ifdef CONFIG_SMP
- #ifdef CONFIG_NO_HZ
--	alloc_bootmem_cpumask_var(&nohz.cpu_mask);
-+	alloc_cpumask_var(&nohz.cpu_mask, GFP_NOWAIT);
- #endif
--	alloc_bootmem_cpumask_var(&cpu_isolated_map);
-+	alloc_cpumask_var(&cpu_isolated_map, GFP_NOWAIT);
- #endif /* SMP */
- 
- 	scheduler_running = 1;
-diff --git a/mm/slub.c b/mm/slub.c
-index 65ffda5..0ead807 100644
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -2557,13 +2557,16 @@ static struct kmem_cache *create_kmalloc_cache(struct kmem_cache *s,
- 	if (gfp_flags & SLUB_DMA)
- 		flags = SLAB_CACHE_DMA;
- 
--	down_write(&slub_lock);
-+	/*
-+	 * This function is called with IRQs disabled during early-boot on
-+	 * single CPU so there's no need to take slub_lock here.
-+	 */
- 	if (!kmem_cache_open(s, gfp_flags, name, size, ARCH_KMALLOC_MINALIGN,
- 								flags, NULL))
- 		goto panic;
- 
- 	list_add(&s->list, &slab_caches);
--	up_write(&slub_lock);
-+
- 	if (sysfs_slab_add(s))
- 		goto panic;
- 	return s;
-@@ -3021,7 +3024,7 @@ void __init kmem_cache_init(void)
- 	 * kmem_cache_open for slab_state == DOWN.
- 	 */
- 	create_kmalloc_cache(&kmalloc_caches[0], "kmem_cache_node",
--		sizeof(struct kmem_cache_node), GFP_KERNEL);
-+		sizeof(struct kmem_cache_node), GFP_NOWAIT);
- 	kmalloc_caches[0].refcount = -1;
- 	caches++;
- 
-@@ -3034,16 +3037,16 @@ void __init kmem_cache_init(void)
- 	/* Caches that are not of the two-to-the-power-of size */
- 	if (KMALLOC_MIN_SIZE <= 64) {
- 		create_kmalloc_cache(&kmalloc_caches[1],
--				"kmalloc-96", 96, GFP_KERNEL);
-+				"kmalloc-96", 96, GFP_NOWAIT);
- 		caches++;
- 		create_kmalloc_cache(&kmalloc_caches[2],
--				"kmalloc-192", 192, GFP_KERNEL);
-+				"kmalloc-192", 192, GFP_NOWAIT);
- 		caches++;
- 	}
- 
- 	for (i = KMALLOC_SHIFT_LOW; i < SLUB_PAGE_SHIFT; i++) {
- 		create_kmalloc_cache(&kmalloc_caches[i],
--			"kmalloc", 1 << i, GFP_KERNEL);
-+			"kmalloc", 1 << i, GFP_NOWAIT);
- 		caches++;
- 	}
- 
-@@ -3080,7 +3083,7 @@ void __init kmem_cache_init(void)
- 	/* Provide the correct kmalloc names now that the caches are up */
- 	for (i = KMALLOC_SHIFT_LOW; i < SLUB_PAGE_SHIFT; i++)
- 		kmalloc_caches[i]. name =
--			kasprintf(GFP_KERNEL, "kmalloc-%d", 1 << i);
-+			kasprintf(GFP_NOWAIT, "kmalloc-%d", 1 << i);
- 
- #ifdef CONFIG_SMP
- 	register_cpu_notifier(&slab_notifier);
+At this point the kernel hangs until I flip the power switch.
+This is 100% reproducible.
+
+2.6.29 worked Ok. A bug hunt showed that 2.6.29-git3 was the last kernel
+to boot Ok on this machine, and every single one since 2.6.29-git4 hang.
+
+2.6.29-git4 was when Arjan removed the "async is off by default" code,
+in commit 9710794383ee5008d67f1a6613a4717bf6de47bc. Reverting that
+from 2.6.30-rc7 gives me a working kernel again.
+
+I haven't had any async problems on my other machines, so presumably
+the bug is in pata_legacy, or due to the machine being so insanely slow.
+
+(I just saw James Bottomley's "[PATCH] async: make sure independent async
+domains can't accidentally entangle". Unfortunately that patch makes no
+difference to this machine's async-related boot failure.)
+
+/Mikael
