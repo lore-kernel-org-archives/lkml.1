@@ -1,45 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752783AbZEXIiE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754094AbZEXIjT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752783AbZEXIiE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 May 2009 04:38:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751854AbZEXIhz
+	id S1754094AbZEXIjT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 May 2009 04:39:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751957AbZEXIjK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 May 2009 04:37:55 -0400
-Received: from smtp.cs.aau.dk ([130.225.194.6]:46780 "EHLO smtp.cs.aau.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751843AbZEXIhy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 May 2009 04:37:54 -0400
-Subject: Re: a couple quick kernel questions
-From: Simon Holm =?ISO-8859-1?Q?Th=F8gersen?= <odie@cs.aau.dk>
-To: Tyler Littlefield <tyler@tysdomain.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <75608D7C7FD141D1B20D3AC37A6C77A3@tdsdev>
-References: <75608D7C7FD141D1B20D3AC37A6C77A3@tdsdev>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 24 May 2009 10:38:39 +0200
-Message-Id: <1243154319.16741.38.camel@odie.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.4 
-Content-Transfer-Encoding: 8bit
+	Sun, 24 May 2009 04:39:10 -0400
+Received: from ns01.unsolicited.net ([69.10.132.115]:55969 "EHLO
+	ns01.unsolicited.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751843AbZEXIjI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 May 2009 04:39:08 -0400
+Message-ID: <4A1906DE.8000701@unsolicited.net>
+Date: Sun, 24 May 2009 09:35:42 +0100
+From: David <david@unsolicited.net>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+MIME-Version: 1.0
+To: hermann pitton <hermann-pitton@arcor.de>
+CC: Alan Stern <stern@rowland.harvard.edu>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-media@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       dbrownell@users.sourceforge.net, leonidv11@gmail.com,
+       Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: USB/DVB - Old Technotrend TT-connect S-2400 regression tracked
+ down
+References: <Pine.LNX.4.44L0.0905231657210.22430-100000@netrider.rowland.org>	 <4A189187.4020407@unsolicited.net> <1243126473.3705.6.camel@pc07.localdom.local>
+In-Reply-To: <1243126473.3705.6.camel@pc07.localdom.local>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-lør, 23 05 2009 kl. 17:14 -0600, skrev Tyler Littlefield:
-> Hello all,
-> My name is tyler; I'm new to the list, and new to kernel development.
-> I'd like to find a way I can help out, though I don't have huge servers or a 
-> bunch of hardware to build and test drivers on.
-> Is there a position somewhere where I can learn, and contribute something?
-> 
-> Also, my kernel modules is about 75 mb. I'm trying to figure out if there's 
-> a place that describes all the config options so I can easily go through and 
-> choose what I want. 75 mb isn't bad, but I'd rather not be using the extra 
-> overhead, especially if I don't need it.
+hermann pitton wrote:
+> Hi,
+>
+> Am Sonntag, den 24.05.2009, 01:15 +0100 schrieb David:
+>   
+>> Alan Stern wrote:
+>>     
+>>> It's not obvious what could be causing this, so let's start out easy.  
+>>> Try collecting two usbmon traces (instructions are in
+>>> Documentation/usb/usbmon.txt), showing what happens with and without
+>>> the reversion.  Maybe some difference will stick ou
+>>>   
+>>>       
+>> Traces attached. Took a while as my quad core hangs solid when 0u is
+>> piped to a file (I had to compile on a laptop and take the logs there).
+>>
+>> Cheers
+>> David
+>>
+>>
+>>     
+>
+> just a note, since you said it is some ATI chipset.
+>
+> Is it the SB700?
+>
+> We have lots of reports about disconnects, but then also claimed to be
+> fixed in between, and i don't know the current status ...
+>   
+The latest trace is from an Intel dual core (SL9400) laptop, so the
+problem exists across Nvidia, ATI and Intel USB Hardware.
 
-Use make menuconfig or make config and read the help text for the
-various options.
+The ATI system with the quad core (AMD 790FX, Phenom)  hangs solid when
+trying to use usbmon though (if that's what you are getting at)?
 
-
-Simon Holm Thøgersen
-
+David
