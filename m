@@ -1,68 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752133AbZEXUU0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754831AbZEXUb5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752133AbZEXUU0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 May 2009 16:20:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751888AbZEXUUN
+	id S1754831AbZEXUb5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 May 2009 16:31:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752035AbZEXUbu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 May 2009 16:20:13 -0400
-Received: from casper.infradead.org ([85.118.1.10]:41384 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751676AbZEXUUN (ORCPT
+	Sun, 24 May 2009 16:31:50 -0400
+Received: from mail-fx0-f168.google.com ([209.85.220.168]:50074 "EHLO
+	mail-fx0-f168.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752005AbZEXUbt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 May 2009 16:20:13 -0400
-Date: Sun, 24 May 2009 12:40:09 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] async: make sure independent async domains can't
- accidentally entangle.
-Message-ID: <20090524124009.0be540c5@infradead.org>
-In-Reply-To: <1243191043.2889.20.camel@localhost.localdomain>
-References: <1243175371.2889.17.camel@localhost.localdomain>
-	<1243191043.2889.20.camel@localhost.localdomain>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 24 May 2009 16:31:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=YWyrac0OZYp8TyssZSA+hbO8K5hX+Wt+F1ldvikQbdCyVTx8nyYxHsYjFm6SX7QEXI
+         NoRfJOlfIGgBxmt7TzmQ5rFCxGmYykJA6USmHq/yVOwpURP2lZ42UiSkqU+OFvjAb1us
+         n8ex2sszuT/9nCzByIa+HeHIHhg+nib1luG8c=
+Date: Sun, 24 May 2009 22:31:51 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] tracing/events: change the type of __str_loc_item to
+	unsigned short
+Message-ID: <20090524203148.GA6471@nowhere>
+References: <4A14EDB6.2050507@cn.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A14EDB6.2050507@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 24 May 2009 13:50:43 -0500
-James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
-
-> On Sun, 2009-05-24 at 09:29 -0500, James Bottomley wrote:
-> > The problem occurs when async_synchronize_full_domain() is called
-> > when the async_pending list is not empty.  This will cause
-> > lowest_running() to return the cookie of the first entry on the
-> > async_pending list, which might be nothing at all to do with the
-> > domain being asked for and thus cause the domain synchronization to
-> > wait for an unrelated domain.   This can cause a deadlock if domain
-> > synchronization is used from one domain to wait for another.
-> > 
-> > Fix by running over the async_pending list to see if any pending
-> > items actually belong to our domain (and return their cookies if
-> > they do).
-> > 
-> > Signed-off-by: James Bottomley
-> > <James.Bottomley@HansenPartnership.com>
+On Thu, May 21, 2009 at 01:59:18PM +0800, Li Zefan wrote:
+> When defining a dynamic size string, we add __str_loc_##item to the
+> trace entry, and it stores the location of the actual string in
+> entry->_str_data[]
 > 
-> OK, so that version locked up under testing ... this version doesn't
-> --- I think the phrase "MUST be called with the lock held!" was
-> supposed to be some sort of clue ...
+> 'unsigned short' should be sufficient to store this information, thus
+> we save 2 bytes per dyn-size string in the ring buffer.
+> 
+> [ Impact: reduce memory occupied by dyn-size strings in ring buffer ]
+> 
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> ---
+>  include/trace/ftrace.h |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
+> index edb02bc..b5ff2e8 100644
+> --- a/include/trace/ftrace.h
+> +++ b/include/trace/ftrace.h
+> @@ -25,7 +25,7 @@
+>  #define __field(type, item)		type	item;
+>  
+>  #undef __string
+> -#define __string(item, src)		int	__str_loc_##item;
+> +#define __string(item, src)		unsigned short	__str_loc_##item;
+>  
+>  #undef TP_STRUCT__entry
+>  #define TP_STRUCT__entry(args...) args
+> -- 1.5.4.rc3 
 
-there's not many comments there.. but the ones that exist do mean
-something ;-)
 
-I'll craft this patch into your original description and send it to
-Linus to see if he'll take it for .30, otherwise it'll go for .31
+Yeah, a max length of about 32000 is sufficient, the filter
+engine is bounded to MAX_FILTER_STR_VAL anyway :)
 
+Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
