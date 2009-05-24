@@ -1,77 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758819AbZEXWoY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758467AbZEXWxS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758819AbZEXWoY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 May 2009 18:44:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757764AbZEXWoQ
+	id S1758467AbZEXWxS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 May 2009 18:53:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754791AbZEXWxF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 May 2009 18:44:16 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:57690 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754962AbZEXWoQ (ORCPT
+	Sun, 24 May 2009 18:53:05 -0400
+Received: from static-220-247-10-204.b-man.svips.gol.ne.jp ([220.247.10.204]:55795
+	"EHLO smtp.kamineko.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752919AbZEXWxE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 May 2009 18:44:16 -0400
-Date: Sun, 24 May 2009 17:49:08 -0500
-From: "Serge E. Hallyn" <serge@hallyn.com>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: akpm@linux-foundation.org, xemul@parallels.com,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       dave@linux.vnet.ibm.com, mingo@elte.hu, torvalds@linux-foundation.org
-Subject: Re: [PATCH 06/38] ipcns 4/2: move free_ipcs() proto
-Message-ID: <20090524224908.GE12734@hallyn.com>
-References: <1242968132-1044-1-git-send-email-adobriyan@gmail.com> <1242968132-1044-6-git-send-email-adobriyan@gmail.com>
+	Sun, 24 May 2009 18:53:04 -0400
+Date: Mon, 25 May 2009 07:53:02 +0900
+From: Mattia Dongili <malattia@linux.it>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       fanderay <fanderay4@googlemail.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Len Brown <len.brown@intel.com>, Lin Ming <ming.m.lin@intel.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [Bug #13148] resume after suspend-to-ram broken on Sony Vaio
+	VGN-SR19VN when sony-laptop driver present
+Message-ID: <20090524225302.GA3566@kamineko.org>
+References: <ZPPBiNHr1LC.A.9ZH.K9bGKB@chimera> <uSztiUhmDDC.A.VwB.v-bGKB@chimera>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1242968132-1044-6-git-send-email-adobriyan@gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <uSztiUhmDDC.A.VwB.v-bGKB@chimera>
+X-Message-Flag: Cranky? Try Free Software instead!
+X-Operating-System: Linux 2.6.30-rc7 x86_64
+X-Editor: Vim http://www.vim.org/
+X-Disclaimer: Buh!
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Alexey Dobriyan (adobriyan@gmail.com):
-> Function is really private to ipc/ and avoid struct kern_ipc_perm
-> forward declaration.
+On Sun, May 24, 2009 at 09:11:50PM +0200, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
 > 
-> Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+> The following bug entry is on the current list of known regressions
+> from 2.6.29.  Please verify if it still should be listed and let me know
+> (either way).
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13148
+> Subject		: resume after suspend-to-ram broken on Sony Vaio VGN-SR19VN when sony-laptop driver present
+> Submitter	: fanderay <fanderay4@googlemail.com>
+> Date		: 2009-04-22 14:39 (33 days old)
 
-Reviewed-by: Serge Hallyn <serue@us.ibm.com>
+sorry for not mentioning this before, but it looks like this regression
+was introduced between .28 and .29
 
-> ---
->  include/linux/ipc_namespace.h |    4 ----
->  ipc/util.h                    |    3 ++-
->  2 files changed, 2 insertions(+), 5 deletions(-)
-> 
-> diff --git a/include/linux/ipc_namespace.h b/include/linux/ipc_namespace.h
-> index 804e4e4..e408722 100644
-> --- a/include/linux/ipc_namespace.h
-> +++ b/include/linux/ipc_namespace.h
-> @@ -96,10 +96,6 @@ static inline int mq_init_ns(struct ipc_namespace *ns) { return 0; }
->  #if defined(CONFIG_IPC_NS)
->  extern struct ipc_namespace *copy_ipcs(unsigned long flags,
->  				       struct ipc_namespace *ns);
-> -extern void free_ipcs(struct ipc_namespace *ns, struct ipc_ids *ids,
-> -		      void (*free)(struct ipc_namespace *,
-> -				   struct kern_ipc_perm *));
-> -
->  static inline struct ipc_namespace *get_ipc_ns(struct ipc_namespace *ns)
->  {
->  	if (ns)
-> diff --git a/ipc/util.h b/ipc/util.h
-> index 1187332..7a2861b 100644
-> --- a/ipc/util.h
-> +++ b/ipc/util.h
-> @@ -171,5 +171,6 @@ static inline void ipc_unlock(struct kern_ipc_perm *perm)
->  struct kern_ipc_perm *ipc_lock_check(struct ipc_ids *ids, int id);
->  int ipcget(struct ipc_namespace *ns, struct ipc_ids *ids,
->  			struct ipc_ops *ops, struct ipc_params *params);
-> -
-> +void free_ipcs(struct ipc_namespace *ns, struct ipc_ids *ids,
-> +		void (*free)(struct ipc_namespace *, struct kern_ipc_perm *));
->  #endif
-> -- 
-> 1.5.6.5
-> 
-> _______________________________________________
-> Containers mailing list
-> Containers@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/containers
+cheers
+-- 
+mattia
+:wq!
