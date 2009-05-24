@@ -1,252 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759274AbZEXP4y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757653AbZEXP5N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759274AbZEXP4y (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 May 2009 11:56:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758515AbZEXPxE
+	id S1757653AbZEXP5N (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 May 2009 11:57:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758574AbZEXPw4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 May 2009 11:53:04 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:41845 "EHLO mx2.redhat.com"
+	Sun, 24 May 2009 11:52:56 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:41850 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754645AbZEXPue (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754838AbZEXPue (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 24 May 2009 11:50:34 -0400
 From: Avi Kivity <avi@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: kvm@vger.kernel.org
-Subject: [PATCH 24/45] KVM: Replace ->drop_interrupt_shadow() by ->set_interrupt_shadow()
-Date: Sun, 24 May 2009 18:50:09 +0300
-Message-Id: <1243180230-2480-25-git-send-email-avi@redhat.com>
+Subject: [PATCH 33/45] KVM: s390: Unlink vcpu on destroy - v2
+Date: Sun, 24 May 2009 18:50:18 +0300
+Message-Id: <1243180230-2480-34-git-send-email-avi@redhat.com>
 In-Reply-To: <1243180230-2480-1-git-send-email-avi@redhat.com>
 References: <1243180230-2480-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Glauber Costa <glommer@redhat.com>
+From: Carsten Otte <cotte@de.ibm.com>
 
-This patch replaces drop_interrupt_shadow with the more
-general set_interrupt_shadow, that can either drop or raise
-it, depending on its parameter.  It also adds ->get_interrupt_shadow()
-for future use.
+This patch makes sure we do unlink a vcpu's sie control block
+from the system control area in kvm_arch_vcpu_destroy. This
+prevents illegal accesses to the sie control block from other
+virtual cpus after free.
 
-Signed-off-by: Glauber Costa <glommer@redhat.com>
-CC: H. Peter Anvin <hpa@zytor.com>
-CC: Gleb Natapov <gleb@redhat.com>
+Reported-by: Mijo Safradin <mijo@linux.vnet.ibm.com>
+Signed-off-by: Carsten Otte <cotte@de.ibm.com>
+Signed-off-by: Christian Ehrhardt <ehrhardt@de.ibm.com>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 ---
- arch/x86/include/asm/kvm_host.h        |    3 +-
- arch/x86/include/asm/kvm_x86_emulate.h |    3 ++
- arch/x86/kvm/svm.c                     |   32 +++++++++++++++-----
- arch/x86/kvm/vmx.c                     |   49 +++++++++++++++++++++----------
- arch/x86/kvm/x86.c                     |    2 +-
- 5 files changed, 63 insertions(+), 26 deletions(-)
+ arch/s390/kvm/kvm-s390.c |   10 ++++++++--
+ 1 files changed, 8 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-index ab7de4a..16d1481 100644
---- a/arch/x86/include/asm/kvm_host.h
-+++ b/arch/x86/include/asm/kvm_host.h
-@@ -508,6 +508,8 @@ struct kvm_x86_ops {
- 	void (*run)(struct kvm_vcpu *vcpu, struct kvm_run *run);
- 	int (*handle_exit)(struct kvm_run *run, struct kvm_vcpu *vcpu);
- 	void (*skip_emulated_instruction)(struct kvm_vcpu *vcpu);
-+	void (*set_interrupt_shadow)(struct kvm_vcpu *vcpu, int mask);
-+	u32 (*get_interrupt_shadow)(struct kvm_vcpu *vcpu, int mask);
- 	void (*patch_hypercall)(struct kvm_vcpu *vcpu,
- 				unsigned char *hypercall_addr);
- 	void (*set_irq)(struct kvm_vcpu *vcpu, int vec);
-@@ -519,7 +521,6 @@ struct kvm_x86_ops {
- 	void (*enable_nmi_window)(struct kvm_vcpu *vcpu);
- 	void (*enable_irq_window)(struct kvm_vcpu *vcpu);
- 	void (*update_cr8_intercept)(struct kvm_vcpu *vcpu, int tpr, int irr);
--	void (*drop_interrupt_shadow)(struct kvm_vcpu *vcpu);
- 	int (*set_tss_addr)(struct kvm *kvm, unsigned int addr);
- 	int (*get_tdp_level)(void);
- 	u64 (*get_mt_mask)(struct kvm_vcpu *vcpu, gfn_t gfn, bool is_mmio);
-diff --git a/arch/x86/include/asm/kvm_x86_emulate.h b/arch/x86/include/asm/kvm_x86_emulate.h
-index 6a15973..be40d6e 100644
---- a/arch/x86/include/asm/kvm_x86_emulate.h
-+++ b/arch/x86/include/asm/kvm_x86_emulate.h
-@@ -143,6 +143,9 @@ struct decode_cache {
- 	struct fetch_cache fetch;
- };
+diff --git a/arch/s390/kvm/kvm-s390.c b/arch/s390/kvm/kvm-s390.c
+index 36c654d..628494a 100644
+--- a/arch/s390/kvm/kvm-s390.c
++++ b/arch/s390/kvm/kvm-s390.c
+@@ -196,6 +196,10 @@ out_nokvm:
+ void kvm_arch_vcpu_destroy(struct kvm_vcpu *vcpu)
+ {
+ 	VCPU_EVENT(vcpu, 3, "%s", "free cpu");
++	if (vcpu->kvm->arch.sca->cpu[vcpu->vcpu_id].sda ==
++		(__u64) vcpu->arch.sie_block)
++		vcpu->kvm->arch.sca->cpu[vcpu->vcpu_id].sda = 0;
++	smp_mb();
+ 	free_page((unsigned long)(vcpu->arch.sie_block));
+ 	kvm_vcpu_uninit(vcpu);
+ 	kfree(vcpu);
+@@ -310,8 +314,10 @@ struct kvm_vcpu *kvm_arch_vcpu_create(struct kvm *kvm,
  
-+#define X86_SHADOW_INT_MOV_SS  1
-+#define X86_SHADOW_INT_STI     2
-+
- struct x86_emulate_ctxt {
- 	/* Register state before/after emulation. */
- 	struct kvm_vcpu *vcpu;
-diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
-index f994c6d..8b5ffbd 100644
---- a/arch/x86/kvm/svm.c
-+++ b/arch/x86/kvm/svm.c
-@@ -202,6 +202,27 @@ static int is_external_interrupt(u32 info)
- 	return info == (SVM_EVTINJ_VALID | SVM_EVTINJ_TYPE_INTR);
- }
- 
-+static u32 svm_get_interrupt_shadow(struct kvm_vcpu *vcpu, int mask)
-+{
-+	struct vcpu_svm *svm = to_svm(vcpu);
-+	u32 ret = 0;
-+
-+	if (svm->vmcb->control.int_state & SVM_INTERRUPT_SHADOW_MASK)
-+		ret |= X86_SHADOW_INT_STI | X86_SHADOW_INT_MOV_SS;
-+	return ret & mask;
-+}
-+
-+static void svm_set_interrupt_shadow(struct kvm_vcpu *vcpu, int mask)
-+{
-+	struct vcpu_svm *svm = to_svm(vcpu);
-+
-+	if (mask == 0)
-+		svm->vmcb->control.int_state &= ~SVM_INTERRUPT_SHADOW_MASK;
+ 	vcpu->arch.sie_block->icpua = id;
+ 	BUG_ON(!kvm->arch.sca);
+-	BUG_ON(kvm->arch.sca->cpu[id].sda);
+-	kvm->arch.sca->cpu[id].sda = (__u64) vcpu->arch.sie_block;
++	if (!kvm->arch.sca->cpu[id].sda)
++		kvm->arch.sca->cpu[id].sda = (__u64) vcpu->arch.sie_block;
 +	else
-+		svm->vmcb->control.int_state |= SVM_INTERRUPT_SHADOW_MASK;
-+
-+}
-+
- static void skip_emulated_instruction(struct kvm_vcpu *vcpu)
- {
- 	struct vcpu_svm *svm = to_svm(vcpu);
-@@ -215,7 +236,7 @@ static void skip_emulated_instruction(struct kvm_vcpu *vcpu)
- 		       __func__, kvm_rip_read(vcpu), svm->next_rip);
- 
- 	kvm_rip_write(vcpu, svm->next_rip);
--	svm->vmcb->control.int_state &= ~SVM_INTERRUPT_SHADOW_MASK;
-+	svm_set_interrupt_shadow(vcpu, 0);
- }
- 
- static int has_svm(void)
-@@ -2259,12 +2280,6 @@ static void pre_svm_run(struct vcpu_svm *svm)
- 		new_asid(svm, svm_data);
- }
- 
--static void svm_drop_interrupt_shadow(struct kvm_vcpu *vcpu)
--{
--	struct vcpu_svm *svm = to_svm(vcpu);
--	svm->vmcb->control.int_state &= ~SVM_INTERRUPT_SHADOW_MASK;
--}
--
- static void svm_inject_nmi(struct kvm_vcpu *vcpu)
- {
- 	struct vcpu_svm *svm = to_svm(vcpu);
-@@ -2667,6 +2682,8 @@ static struct kvm_x86_ops svm_x86_ops = {
- 	.run = svm_vcpu_run,
- 	.handle_exit = handle_exit,
- 	.skip_emulated_instruction = skip_emulated_instruction,
-+	.set_interrupt_shadow = svm_set_interrupt_shadow,
-+	.get_interrupt_shadow = svm_get_interrupt_shadow,
- 	.patch_hypercall = svm_patch_hypercall,
- 	.set_irq = svm_set_irq,
- 	.set_nmi = svm_inject_nmi,
-@@ -2676,7 +2693,6 @@ static struct kvm_x86_ops svm_x86_ops = {
- 	.enable_nmi_window = enable_nmi_window,
- 	.enable_irq_window = enable_irq_window,
- 	.update_cr8_intercept = update_cr8_intercept,
--	.drop_interrupt_shadow = svm_drop_interrupt_shadow,
- 
- 	.set_tss_addr = svm_set_tss_addr,
- 	.get_tdp_level = get_npt_level,
-diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
-index e8a5649..f3ab27b 100644
---- a/arch/x86/kvm/vmx.c
-+++ b/arch/x86/kvm/vmx.c
-@@ -736,23 +736,45 @@ static void vmx_set_rflags(struct kvm_vcpu *vcpu, unsigned long rflags)
- 	vmcs_writel(GUEST_RFLAGS, rflags);
- }
- 
-+static u32 vmx_get_interrupt_shadow(struct kvm_vcpu *vcpu, int mask)
-+{
-+	u32 interruptibility = vmcs_read32(GUEST_INTERRUPTIBILITY_INFO);
-+	int ret = 0;
-+
-+	if (interruptibility & GUEST_INTR_STATE_STI)
-+		ret |= X86_SHADOW_INT_STI;
-+	if (interruptibility & GUEST_INTR_STATE_MOV_SS)
-+		ret |= X86_SHADOW_INT_MOV_SS;
-+
-+	return ret & mask;
-+}
-+
-+static void vmx_set_interrupt_shadow(struct kvm_vcpu *vcpu, int mask)
-+{
-+	u32 interruptibility_old = vmcs_read32(GUEST_INTERRUPTIBILITY_INFO);
-+	u32 interruptibility = interruptibility_old;
-+
-+	interruptibility &= ~(GUEST_INTR_STATE_STI | GUEST_INTR_STATE_MOV_SS);
-+
-+	if (mask & X86_SHADOW_INT_MOV_SS)
-+		interruptibility |= GUEST_INTR_STATE_MOV_SS;
-+	if (mask & X86_SHADOW_INT_STI)
-+		interruptibility |= GUEST_INTR_STATE_STI;
-+
-+	if ((interruptibility != interruptibility_old))
-+		vmcs_write32(GUEST_INTERRUPTIBILITY_INFO, interruptibility);
-+}
-+
- static void skip_emulated_instruction(struct kvm_vcpu *vcpu)
- {
- 	unsigned long rip;
--	u32 interruptibility;
- 
- 	rip = kvm_rip_read(vcpu);
- 	rip += vmcs_read32(VM_EXIT_INSTRUCTION_LEN);
- 	kvm_rip_write(vcpu, rip);
- 
--	/*
--	 * We emulated an instruction, so temporary interrupt blocking
--	 * should be removed, if set.
--	 */
--	interruptibility = vmcs_read32(GUEST_INTERRUPTIBILITY_INFO);
--	if (interruptibility & 3)
--		vmcs_write32(GUEST_INTERRUPTIBILITY_INFO,
--			     interruptibility & ~3);
-+	/* skipping an emulated instruction also counts */
-+	vmx_set_interrupt_shadow(vcpu, 0);
- }
- 
- static void vmx_queue_exception(struct kvm_vcpu *vcpu, unsigned nr,
-@@ -2400,12 +2422,6 @@ out:
- 	return ret;
- }
- 
--void vmx_drop_interrupt_shadow(struct kvm_vcpu *vcpu)
--{
--	vmcs_clear_bits(GUEST_INTERRUPTIBILITY_INFO,
--			GUEST_INTR_STATE_STI | GUEST_INTR_STATE_MOV_SS);
--}
--
- static void enable_irq_window(struct kvm_vcpu *vcpu)
- {
- 	u32 cpu_based_vm_exec_control;
-@@ -3649,6 +3665,8 @@ static struct kvm_x86_ops vmx_x86_ops = {
- 	.run = vmx_vcpu_run,
- 	.handle_exit = vmx_handle_exit,
- 	.skip_emulated_instruction = skip_emulated_instruction,
-+	.set_interrupt_shadow = vmx_set_interrupt_shadow,
-+	.get_interrupt_shadow = vmx_get_interrupt_shadow,
- 	.patch_hypercall = vmx_patch_hypercall,
- 	.set_irq = vmx_inject_irq,
- 	.set_nmi = vmx_inject_nmi,
-@@ -3658,7 +3676,6 @@ static struct kvm_x86_ops vmx_x86_ops = {
- 	.enable_nmi_window = enable_nmi_window,
- 	.enable_irq_window = enable_irq_window,
- 	.update_cr8_intercept = update_cr8_intercept,
--	.drop_interrupt_shadow = vmx_drop_interrupt_shadow,
- 
- 	.set_tss_addr = vmx_set_tss_addr,
- 	.get_tdp_level = get_ept_level,
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index fd0a571..c9b81ef 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -3174,7 +3174,7 @@ static void inject_pending_irq(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
- 		kvm_run->request_interrupt_window;
- 
- 	if (vcpu->guest_debug & KVM_GUESTDBG_SINGLESTEP)
--		kvm_x86_ops->drop_interrupt_shadow(vcpu);
-+		kvm_x86_ops->set_interrupt_shadow(vcpu, 0);
- 
- 	inject_irq(vcpu);
++		BUG_ON(!kvm->vcpus[id]); /* vcpu does already exist */
+ 	vcpu->arch.sie_block->scaoh = (__u32)(((__u64)kvm->arch.sca) >> 32);
+ 	vcpu->arch.sie_block->scaol = (__u32)(__u64)kvm->arch.sca;
  
 -- 
 1.6.0.6
