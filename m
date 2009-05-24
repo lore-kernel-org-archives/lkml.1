@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759735AbZEXW34@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759910AbZEXW3V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759735AbZEXW34 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 May 2009 18:29:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759265AbZEXW1p
+	id S1759910AbZEXW3V (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 May 2009 18:29:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759190AbZEXW1l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 May 2009 18:27:45 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:34502 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758819AbZEXW1l convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 24 May 2009 18:27:41 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:34496 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759079AbZEXW1j convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 May 2009 18:27:39 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Marcus Better" <marcus@better.se>
+       "Mark Karpeles" <mark@hell.ne.jp>
 References: <GtY7d2eWpoK.A.ioC.MQcGKB@chimera>
 In-Reply-To: <GtY7d2eWpoK.A.ioC.MQcGKB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,8 +19,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <WCcYF-TAbJC.A.S9D.NRcGKB@chimera>
-Subject: [Bug #12980] lockup in X.org
+Message-ID: <WCcYF-TAbJC.A.-1D.8QcGKB@chimera>
+Subject: [Bug #13024] nozomi: pppd fails on kernel 2.6.29
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Sun, 24 May 2009 21:31:16 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -35,9 +35,9 @@ introduced between 2.6.28 and 2.6.29.  Please verify if it still should
 be listed and let me know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12980
-Subject		: lockup in X.org
-Submitter	: Marcus Better <marcus@better.se>
-Date		: 2009-03-31 08:58 (55 days old)
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13024
+Subject		: nozomi: pppd fails on kernel 2.6.29
+Submitter	: Mark Karpeles <mark@hell.ne.jp>
+Date		: 2009-04-06 19:12 (49 days old)
 
 
