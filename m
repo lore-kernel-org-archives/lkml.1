@@ -1,64 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753274AbZEXLfw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752839AbZEXMJz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753274AbZEXLfw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 May 2009 07:35:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752118AbZEXLfo
+	id S1752839AbZEXMJz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 May 2009 08:09:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752522AbZEXMJq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 May 2009 07:35:44 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:60539 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751772AbZEXLfn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 May 2009 07:35:43 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Len Brown <lenb@kernel.org>
-Subject: Re: Montreal Linux Power Management Mini-Summit -- July 13, 2009
-Date: Sun, 24 May 2009 13:35:32 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc6-rjw; KDE/4.2.3; x86_64; ; )
-Cc: linux-acpi@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <alpine.LFD.2.00.0905211430220.4390@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0905211430220.4390@localhost.localdomain>
+	Sun, 24 May 2009 08:09:46 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:37099 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752375AbZEXMJq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 May 2009 08:09:46 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4A1938FF.7000107@s5r6.in-berlin.de>
+Date: Sun, 24 May 2009 14:09:35 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.21) Gecko/20090411 SeaMonkey/1.1.16
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Kay Sievers <kay.sievers@vrfy.org>
+CC: linux1394-devel@lists.sourceforge.net, linux-hotplug@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] firewire: core: add sysfs attribute for easier udev
+ 	rules
+References: <tkrat.d86e749d664670a9@s5r6.in-berlin.de> <ac3eb2510905211001m77eda9e4gb73001d504fd5376@mail.gmail.com> 	<4A159899.20506@s5r6.in-berlin.de> <4A165CED.8030601@s5r6.in-berlin.de> 	<ac3eb2510905220423h23e7aca1u3bc7c204db551eb0@mail.gmail.com> 	<tkrat.7b837daea0cfa5b2@s5r6.in-berlin.de> <tkrat.acafb37c21e20784@s5r6.in-berlin.de> <ac3eb2510905221735lc5de01j334618ddeb72a813@mail.gmail.com>
+In-Reply-To: <ac3eb2510905221735lc5de01j334618ddeb72a813@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905241335.32613.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Kay Sievers wrote:
+> Looks great. Let me know when you are merging this, so we can put the
+> rules in the udev tree.
 
-On Thursday 21 May 2009, Len Brown wrote:
-> We will hold a Linux Power Management Mini-Summit in Montreal
-> on Monday, July 13, 2009 -- concurrent with day-1 of the
-> tutorials at the at the Linux Symposium.
-> 
-> http://www.linuxsymposium.org/2009/schedule.php
-> 
-> This is an opportunity for members of the Linux Power Management
-> development community to meet face-to-face to discuss the future.
-> 
-> Suggestions for agenda topics should be sent to: 
-> linux-pm@lists.linux-foundation.org
-> 
-> The final agenda will be formed by consensus of the attendees.
-> 
-> As in previous years, attendance is open to those
-> registered as Linux Symposium attendees.
-> 
-> However, we will try to cap attendance at 20 to support the single 
-> discussion.  So requests to attend should be sent to: lenb@kernel.org
-> cc: linux-pm@lists.linux-foundation.org -- please summarize
-> what you bring to the meeting, and what you'd like to discuss.
-
-I'd like to addend and I'd like to discuss the following topics:
-
-* PM-related changes in the Linux kernel since the last PM Mini-Summit
-* Future plans for the PM development, kernel side
-* Run-time PM of I/O devices, from the PCI POV mostly
-
-Thanks,
-Rafael
+Yes, will do.  Thanks for the guidance.
+-- 
+Stefan Richter
+-=====-==--= -=-= =-===
+http://arcgraph.de/sr/
