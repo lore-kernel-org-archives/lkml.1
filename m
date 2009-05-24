@@ -1,81 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757509AbZEXRkV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756065AbZEXR7f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757509AbZEXRkV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 May 2009 13:40:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754995AbZEXRkK
+	id S1756065AbZEXR7f (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 May 2009 13:59:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753319AbZEXR7Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 May 2009 13:40:10 -0400
-Received: from ganesha.gnumonks.org ([213.95.27.120]:36022 "EHLO
-	ganesha.gnumonks.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754737AbZEXRkK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 May 2009 13:40:10 -0400
-Date: Mon, 25 May 2009 01:31:11 +0800
-From: Harald Welte <HaraldWelte@viatech.com>
-To: "Michael S. Zick" <lkml@morethan.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [BUG FIX] Make x86_32 uni-processor Atomic ops, Atomic
-Message-ID: <20090524173111.GD4586@prithivi.gnumonks.org>
-References: <200905221139.26941.lkml@morethan.org> <4A188A48.5000208@zytor.com> <20090524064905.GH20452@prithivi.gnumonks.org> <200905240738.47090.lkml@morethan.org>
+	Sun, 24 May 2009 13:59:25 -0400
+Received: from h155.mvista.com ([63.81.120.155]:14726 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752856AbZEXR7Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 May 2009 13:59:24 -0400
+Message-ID: <4A198B37.1070100@ru.mvista.com>
+Date: Sun, 24 May 2009 22:00:23 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200905240738.47090.lkml@morethan.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Joe Perches <joe@perches.com>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Borislav Petkov <petkovbb@gmail.com>, Tejun Heo <tj@kernel.org>,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] drivers/ide/ide-core: Unsplit constant strings for
+ pr_<level> and dev_<level>
+References: <cover.1243062772.git.joe@perches.com>	 <57f9dd5c33bcdd863793a3ee95ab050e8456bab4.1243062772.git.joe@perches.com>	 <4A19399B.8060207@ru.mvista.com> <1243183596.3560.19.camel@Joe-Laptop.home>
+In-Reply-To: <1243183596.3560.19.camel@Joe-Laptop.home>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Michael,
+Hello.
 
-On Sun, May 24, 2009 at 07:38:44AM -0500, Michael S. Zick wrote:
-> > As far as I know, there really is no such documentation.. all documentation
-> > that I've ever seen internally is electrical data sheets and high-level feature
-> > set descriptiosn, CPUID, MSR and padlock.  There are no  actual x86 instruction
-> > set documents... Centaur is < 100 people, they don't have the resources to work
-> > on documents along the lines of what Intel has...
-> 
-> My background is in the electronic hardware end of things - -
-> Is there someone I can contact for the existing documents -
-> Even under NDA would be fine.
+Joe Perches wrote:
 
-I have inquired right now.  The regular NDA process I would assume is probably
-quite slow.  The CPU documentation is already on its track for becoming public
-at some point (but very slooooow track), so I'll see what I can do and contact
-you in private mail.
+>>>-		dev_err(&drive->gendev, "%s: packet size (0x%02x) is not 12 "
+>>>-			"bytes\n", s, packet_size);
+>>>+		dev_err(&drive->gendev,
+>>>+			"%s: packet size (0x%02x) is not 12 bytes\n",
 
-> For instance, the layout of the CPUID results - they don't
-> currently seem to match what the marketing people claim is
-> inside of the chips.  There are some "VIA specific" fields.
+>>   When the message is broken by the format specifier, turning it into 
+>>one liner can hardly help seraching...
 
-There's two versions of the C7-M, an 'A' model (90nm SOI) and a much more
-recent 'D' model (90nm conventional process).   They CPUID values are 6-a and
-6-d, respectively.  The cpu ID string of the former ones contains Esther,
-the latter one contains C7-M  - but in fact any BIOS could override the cpu
-ID string (not cpuid!) with whatever they want using a backdoor in some MSR.
+> grep "is not 12 bytes"
 
-> Could you also dig around for a tech manual on CN896 similar to
-> the one (of two) CX700 manuals that are publicly posted?
+    Yes, carrying "is not 12 " to that would have made sense.
 
-I've asked about that.  The programming guides for chipsets are generally on
-the 'open track', whereas the electrical data sheets with pinouts and timing
-values are under NDA.
+>>   Oh noes, the indentation...
 
-The CN896 was just already an "old" component when that new open-track policy
-was introduced, and typically VIA is trying to focus on docs and drivers for 
-new products, rather than old ones.  But I have asked if we can release the
-CN896 programming manual public.
+> trade-offs...
 
-> Even under NDA is fine.
+>>>+	"(IO,CoD != (0,1) while issuing a packet command, retrying\n");
 
-Well, I prefer to make sure that we have the neccessary information open.
-NDA's are fine and well for the limited number of customers you have, but
-makign NDA's with various individual programmers really is too painful,
-there should be other ways...
+>>   Sigh...
 
--- 
-- Harald Welte <HaraldWelte@viatech.com>	    http://linux.via.com.tw/
-============================================================================
-VIA Open Source Liaison
+> You seem to sigh a lot.  ;)
+
+    I'm not sure you'll like "ugh" better.
+
+>>>+		"unexpected interrupt, status=0x%02x, count=%ld\n",
+
+>>   Hardly won anything...
+>>
+>>>+ "%s side 80-wire cable detection failed, limiting max speed to UDMA33\n",
+>>
+>>    Will you really use the full message to serch here?
+>>
+>>>+		 "probing with STATUS(0x%02x) instead of ALTSTATUS(0x%02x)\n",
+>>
+>>   Same comment about the line broken by the format specifiers. This 
+>>wins absolutely nothing.
+
+> grep "STATUS.*ALTSTATUS"
+
+    Hm, I didn't think about wildcards. Yet I find search for "probing with 
+STATUS" more probable.
+
+>>>+		"no response (status = 0x%02x), resetting drive\n",
+>>
+>>   And again...
+
+> grep "response.*resetting"
+
+    I'd grep for "no response (status =" in this case.
+
+> cheers, Joe
+
+MBR, Sergei
