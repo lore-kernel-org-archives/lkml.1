@@ -1,70 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754059AbZEXLdo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753274AbZEXLfw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754059AbZEXLdo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 May 2009 07:33:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751772AbZEXLdf
+	id S1753274AbZEXLfw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 May 2009 07:35:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752118AbZEXLfo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 May 2009 07:33:35 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:36377 "EHLO mx2.mail.elte.hu"
+	Sun, 24 May 2009 07:35:44 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:60539 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751179AbZEXLde (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 May 2009 07:33:34 -0400
-Date: Sun, 24 May 2009 13:33:15 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       mtosatti@redhat.com, tglx@linutronix.de, cjashfor@linux.vnet.ibm.com
-Cc: linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:perfcounters/core] perf_counter: Optimize context switch
-	between identical inherited contexts
-Message-ID: <20090524113315.GA16151@elte.hu>
-References: <18966.10666.517218.332164@cargo.ozlabs.ibm.com> <tip-564c2b210add41df9a3a5aaa365c1d97cff6110d@git.kernel.org>
+	id S1751772AbZEXLfn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 May 2009 07:35:43 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Len Brown <lenb@kernel.org>
+Subject: Re: Montreal Linux Power Management Mini-Summit -- July 13, 2009
+Date: Sun, 24 May 2009 13:35:32 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc6-rjw; KDE/4.2.3; x86_64; ; )
+Cc: linux-acpi@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <alpine.LFD.2.00.0905211430220.4390@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0905211430220.4390@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <tip-564c2b210add41df9a3a5aaa365c1d97cff6110d@git.kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0001]
+Message-Id: <200905241335.32613.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-* tip-bot for Paul Mackerras <paulus@samba.org> wrote:
+On Thursday 21 May 2009, Len Brown wrote:
+> We will hold a Linux Power Management Mini-Summit in Montreal
+> on Monday, July 13, 2009 -- concurrent with day-1 of the
+> tutorials at the at the Linux Symposium.
+> 
+> http://www.linuxsymposium.org/2009/schedule.php
+> 
+> This is an opportunity for members of the Linux Power Management
+> development community to meet face-to-face to discuss the future.
+> 
+> Suggestions for agenda topics should be sent to: 
+> linux-pm@lists.linux-foundation.org
+> 
+> The final agenda will be formed by consensus of the attendees.
+> 
+> As in previous years, attendance is open to those
+> registered as Linux Symposium attendees.
+> 
+> However, we will try to cap attendance at 20 to support the single 
+> discussion.  So requests to attend should be sent to: lenb@kernel.org
+> cc: linux-pm@lists.linux-foundation.org -- please summarize
+> what you bring to the meeting, and what you'd like to discuss.
 
-> @@ -885,6 +934,16 @@ void perf_counter_task_sched_out(struct task_struct *task, int cpu)
->  
->  	regs = task_pt_regs(task);
->  	perf_swcounter_event(PERF_COUNT_CONTEXT_SWITCHES, 1, 1, regs, 0);
-> +
-> +	next_ctx = next->perf_counter_ctxp;
-> +	if (next_ctx && context_equiv(ctx, next_ctx)) {
-> +		task->perf_counter_ctxp = next_ctx;
-> +		next->perf_counter_ctxp = ctx;
-> +		ctx->task = next;
-> +		next_ctx->task = task;
-> +		return;
-> +	}
+I'd like to addend and I'd like to discuss the following topics:
 
-there's one complication that this trick is causing - the migration 
-counter relies on ctx->task to get per task migration stats:
+* PM-related changes in the Linux kernel since the last PM Mini-Summit
+* Future plans for the PM development, kernel side
+* Run-time PM of I/O devices, from the PCI POV mostly
 
- static inline u64 get_cpu_migrations(struct perf_counter *counter)
- {
-        struct task_struct *curr = counter->ctx->task;
-
-        if (curr)
-                return curr->se.nr_migrations;
-        return cpu_nr_migrations(smp_processor_id());
- }
-
-as ctx->task is now jumping (while we keep the context), the 
-migration stats are out of whack.
-
-	Ingo
+Thanks,
+Rafael
