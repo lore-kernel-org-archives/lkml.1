@@ -1,86 +1,388 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757346AbZEXSct@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757930AbZEXSfL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757346AbZEXSct (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 May 2009 14:32:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752903AbZEXScl
+	id S1757930AbZEXSfL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 May 2009 14:35:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753979AbZEXSfA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 May 2009 14:32:41 -0400
-Received: from mx-out.daemonmail.net ([216.104.160.38]:43123 "EHLO
-	mx-out.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753250AbZEXScl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 May 2009 14:32:41 -0400
-From: "Michael S. Zick" <lkml@morethan.org>
-Reply-To: lkml@morethan.org
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [BUG FIX] Make x86_32 uni-processor Atomic ops, Atomic
-Date: Sun, 24 May 2009 13:32:37 -0500
-User-Agent: KMail/1.9.9
-Cc: Harald Welte <HaraldWelte@viatech.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-References: <200905221139.26941.lkml@morethan.org> <200905240727.30677.lkml@morethan.org> <4A198B24.9040404@zytor.com>
-In-Reply-To: <4A198B24.9040404@zytor.com>
+	Sun, 24 May 2009 14:35:00 -0400
+Received: from hera.kernel.org ([140.211.167.34]:59561 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753250AbZEXSe7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 May 2009 14:34:59 -0400
+Message-ID: <4A199327.5030503@kernel.org>
+Date: Sun, 24 May 2009 11:34:15 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Pekka J Enberg <penberg@cs.helsinki.fi>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>
+CC: "H. Peter Anvin" <hpa@zytor.com>, Jeff Garzik <jgarzik@pobox.com>,
+       Alexander Viro <viro@ftp.linux.org.uk>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [GIT PULL] scheduler fixes
+References: <20090518142707.GA24142@elte.hu> <alpine.LFD.2.01.0905180850110.3301@localhost.localdomain> <20090518164921.GA6903@elte.hu> <alpine.LFD.2.01.0905180955550.3301@localhost.localdomain> <20090518170909.GA1623@elte.hu> <20090518190320.GA20260@elte.hu> <alpine.LFD.2.01.0905181208130.3301@localhost.localdomain> <20090518202031.GA26549@elte.hu> <alpine.LFD.2.01.0905181457320.3301@localhost.localdomain> <Pine.LNX.4.64.0905241911120.12189@melkki.cs.Helsinki.FI>
+In-Reply-To: <Pine.LNX.4.64.0905241911120.12189@melkki.cs.Helsinki.FI>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905241332.39946.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun May 24 2009, H. Peter Anvin wrote:
-> Michael S. Zick wrote:
-> > 
-> > @hpa - I still like your suggestion that it is only one (or a few)
-> > uses of atomic ops that is incorrect and in general atomic ops
-> > should compile away on uni-processor.
-> > 
+Pekka J Enberg wrote:
+> On Mon, 18 May 2009, Linus Torvalds wrote:
+>>>> I hate that stupid bootmem allocator. I suspect we seriously 
+>>>> over-use it, and that we _should_ be able to do the SL*B init 
+>>>> earlier.
+>>> Hm, tempting thought - not sure how to pull it off though.
+>> As far as I can recall, one of the things that historically made us want 
+>> to use the bootmem allocator even relatively late was that the real SLAB 
+>> allocator had to wait until all the node information etc was initialized. 
+>>
+>> That's pretty damn late. And I wonder if SLUB (and SLOB) might not need a 
+>> lot less initialization, and work much earlier. Something like that might 
+>> be the final nail in the coffin for SLAB, and convince me to just say 
+>> 'we don't support it any more".
 > 
-> Actually, the more I think about it the more I suspect there is a race
-> condition either in the chip set or in any VIA-specific drivers (if
-> there are any.)  Putting LOCKs in random places will slow the CPU down
-> significantly, so it might resolve the race condition without actually
-> solving the problem.
->
-
-They are mostly out of the -09143 and -09144 builds -
-No cpufreq (I.E: no e_powersaver).
-The padlock-* drivers are modules which must be manually loaded. 
-
-The i2c-viapro driver (in spite of its comments) does not work
-on CX700 (written before manual was released) - it is reading
-the serial number rather than the second data port. ;)
-(No access to the chipset temperature/voltage data on SMBus).
-
-The via-fb driver just "doesn't work" - Haven't looked at it yet.
-
-There is a VIA-specific driver for the VIA USB controller, but it
-isn't in the x86 part of the tree - Haven't looked at it yet.
-
-There isn't a driver for the hardware watchdog on CX700 - 
-There isn't a driver for the machine error reporting -
-
-= = = =
-
-Although there may be timing requirement differences on the
-CX700 and CN896 - I think more likely a human error (typo)
-in the "clobber" lines of the asm - Have not yet audited that,
-but it is high on my list.
-
-Note: I have seem to recall that newer gcc's optimizer presume 
-that the flags register is preserved across asm - 
-It didn't use to do that - but there is now a "cc" to deal with
-that - Have not yet audited for that, but it is high on my list.
-
-Busy, busy, busy - -
-The -09144lk on C7-M/CX700 now up for 3 3/4 hours close to a new
-record - but ehci-hcd has not yet gone into a re-try loop.
-
-Mike
-> 	-hpa
+> Ingo, here's a patch that boots UMA+SMP+SLUB x86-64 kernel on qemu all 
+> the way to userspace. It probably breaks bunch of things for now but 
+> something for you to play with if you want.
 > 
 
+updated with tip/master. also add change to cpupri_init
+otherwise will get 
+[    0.000000] Memory: 523096612k/537526272k available (10461k kernel code, 656156k absent, 13773504k reserved, 7186k data, 2548k init)
+[    0.000000] SLUB: Genslabs=14, HWalign=64, Order=0-3, MinObjects=0, CPUs=32, Nodes=8
+[    0.000000] ------------[ cut here ]------------
+[    0.000000] WARNING: at kernel/lockdep.c:2282 lockdep_trace_alloc+0xaf/0xee()
+[    0.000000] Hardware name: Sun Fire X4600 M2
+[    0.000000] Modules linked in:
+[    0.000000] Pid: 0, comm: swapper Not tainted 2.6.30-rc6-tip-01778-g0afdd0f-dirty #259
+[    0.000000] Call Trace:
+[    0.000000]  [<ffffffff810a0274>] ? lockdep_trace_alloc+0xaf/0xee
+[    0.000000]  [<ffffffff81075ab0>] warn_slowpath_common+0x88/0xcb
+[    0.000000]  [<ffffffff81075b15>] warn_slowpath_null+0x22/0x38
+[    0.000000]  [<ffffffff810a0274>] lockdep_trace_alloc+0xaf/0xee
+[    0.000000]  [<ffffffff8110301b>] kmem_cache_alloc_node+0x38/0x14d
+[    0.000000]  [<ffffffff813ec548>] ? alloc_cpumask_var_node+0x4a/0x10a
+[    0.000000]  [<ffffffff8109eb61>] ? lockdep_init_map+0xb9/0x564
+[    0.000000]  [<ffffffff813ec548>] alloc_cpumask_var_node+0x4a/0x10a
+[    0.000000]  [<ffffffff813ec62c>] alloc_cpumask_var+0x24/0x3a
+[    0.000000]  [<ffffffff819e6306>] cpupri_init+0x7f/0x112
+[    0.000000]  [<ffffffff819e5a30>] init_rootdomain+0x72/0xb7
+[    0.000000]  [<ffffffff821facce>] sched_init+0x109/0x660
+[    0.000000]  [<ffffffff82203082>] ? kmem_cache_init+0x193/0x1b2
+[    0.000000]  [<ffffffff821dfd7a>] start_kernel+0x218/0x3f3
+[    0.000000]  [<ffffffff821df2a9>] x86_64_start_reservations+0xb9/0xd4
+[    0.000000]  [<ffffffff821df3b2>] x86_64_start_kernel+0xee/0x109
+[    0.000000] ---[ end trace a7919e7f17c0a725 ]---
 
+works with 8 sockets numa amd64 box.
+
+YH
+
+---
+ init/main.c           |   28 ++++++++++++++++------------
+ kernel/irq/handle.c   |   23 ++++++++---------------
+ kernel/sched.c        |   34 +++++++++++++---------------------
+ kernel/sched_cpupri.c |    9 ++++++---
+ mm/slub.c             |   17 ++++++++++-------
+ 5 files changed, 53 insertions(+), 58 deletions(-)
+
+Index: linux-2.6/init/main.c
+===================================================================
+--- linux-2.6.orig/init/main.c
++++ linux-2.6/init/main.c
+@@ -576,6 +576,22 @@ asmlinkage void __init start_kernel(void
+ 	setup_nr_cpu_ids();
+ 	smp_prepare_boot_cpu();	/* arch-specific boot-cpu hooks */
+ 
++	build_all_zonelists();
++	page_alloc_init();
++
++	printk(KERN_NOTICE "Kernel command line: %s\n", boot_command_line);
++	parse_early_param();
++	parse_args("Booting kernel", static_command_line, __start___param,
++		   __stop___param - __start___param,
++		   &unknown_bootoption);
++	/*
++	 * Setup kernel memory allocators
++	 */
++	pidhash_init();
++	vmalloc_init();
++	vfs_caches_init_early();
++	mem_init();
++	kmem_cache_init();
+ 	/*
+ 	 * Set up the scheduler prior starting any interrupts (such as the
+ 	 * timer interrupt). Full topology setup happens at smp_init()
+@@ -587,13 +603,6 @@ asmlinkage void __init start_kernel(void
+ 	 * fragile until we cpu_idle() for the first time.
+ 	 */
+ 	preempt_disable();
+-	build_all_zonelists();
+-	page_alloc_init();
+-	printk(KERN_NOTICE "Kernel command line: %s\n", boot_command_line);
+-	parse_early_param();
+-	parse_args("Booting kernel", static_command_line, __start___param,
+-		   __stop___param - __start___param,
+-		   &unknown_bootoption);
+ 	if (!irqs_disabled()) {
+ 		printk(KERN_WARNING "start_kernel(): bug: interrupts were "
+ 				"enabled *very* early, fixing it\n");
+@@ -605,7 +614,6 @@ asmlinkage void __init start_kernel(void
+ 	/* init some links before init_ISA_irqs() */
+ 	early_irq_init();
+ 	init_IRQ();
+-	pidhash_init();
+ 	init_timers();
+ 	hrtimers_init();
+ 	softirq_init();
+@@ -647,14 +655,10 @@ asmlinkage void __init start_kernel(void
+ 		initrd_start = 0;
+ 	}
+ #endif
+-	vmalloc_init();
+-	vfs_caches_init_early();
+ 	cpuset_init_early();
+ 	page_cgroup_init();
+-	mem_init();
+ 	enable_debug_pagealloc();
+ 	cpu_hotplug_init();
+-	kmem_cache_init();
+ 	kmemtrace_init();
+ 	debug_objects_mem_init();
+ 	idr_init_cache();
+Index: linux-2.6/kernel/irq/handle.c
+===================================================================
+--- linux-2.6.orig/kernel/irq/handle.c
++++ linux-2.6/kernel/irq/handle.c
+@@ -18,7 +18,7 @@
+ #include <linux/kernel_stat.h>
+ #include <linux/rculist.h>
+ #include <linux/hash.h>
+-#include <linux/bootmem.h>
++#include <linux/slab.h>
+ #include <trace/events/irq.h>
+ 
+ #include "internals.h"
+@@ -45,7 +45,7 @@ void handle_bad_irq(unsigned int irq, st
+ #if defined(CONFIG_SMP) && defined(CONFIG_GENERIC_HARDIRQS)
+ static void __init init_irq_default_affinity(void)
+ {
+-	alloc_bootmem_cpumask_var(&irq_default_affinity);
++	alloc_cpumask_var(&irq_default_affinity, GFP_NOWAIT);
+ 	cpumask_setall(irq_default_affinity);
+ }
+ #else
+@@ -86,12 +86,8 @@ void __ref init_kstat_irqs(struct irq_de
+ {
+ 	void *ptr;
+ 
+-	if (slab_is_available())
+-		ptr = kzalloc_node(nr * sizeof(*desc->kstat_irqs),
+-				   GFP_ATOMIC, node);
+-	else
+-		ptr = alloc_bootmem_node(NODE_DATA(node),
+-				nr * sizeof(*desc->kstat_irqs));
++	ptr = kzalloc_node(nr * sizeof(*desc->kstat_irqs),
++			   GFP_ATOMIC, node);
+ 
+ 	/*
+ 	 * don't overwite if can not get new one
+@@ -162,12 +158,12 @@ int __init early_irq_init(void)
+ 	legacy_count = ARRAY_SIZE(irq_desc_legacy);
+ 
+ 	/* allocate irq_desc_ptrs array based on nr_irqs */
+-	irq_desc_ptrs = alloc_bootmem(nr_irqs * sizeof(void *));
++	irq_desc_ptrs = kcalloc(nr_irqs, sizeof(void *), GFP_NOWAIT);
+ 
+ 	/* allocate based on nr_cpu_ids */
+ 	/* FIXME: invert kstat_irgs, and it'd be a per_cpu_alloc'd thing */
+-	kstat_irqs_legacy = alloc_bootmem(NR_IRQS_LEGACY * nr_cpu_ids *
+-					  sizeof(int));
++	kstat_irqs_legacy = kzalloc(NR_IRQS_LEGACY * nr_cpu_ids *
++					  sizeof(int), GFP_NOWAIT);
+ 
+ 	for (i = 0; i < legacy_count; i++) {
+ 		desc[i].irq = i;
+@@ -214,10 +210,7 @@ struct irq_desc * __ref irq_to_desc_allo
+ 	if (desc)
+ 		goto out_unlock;
+ 
+-	if (slab_is_available())
+-		desc = kzalloc_node(sizeof(*desc), GFP_ATOMIC, node);
+-	else
+-		desc = alloc_bootmem_node(NODE_DATA(node), sizeof(*desc));
++	desc = kzalloc_node(sizeof(*desc), GFP_ATOMIC, node);
+ 
+ 	printk(KERN_DEBUG "  alloc irq_desc for %d on node %d\n", irq, node);
+ 	if (!desc) {
+Index: linux-2.6/kernel/sched.c
+===================================================================
+--- linux-2.6.orig/kernel/sched.c
++++ linux-2.6/kernel/sched.c
+@@ -69,7 +69,6 @@
+ #include <linux/pagemap.h>
+ #include <linux/hrtimer.h>
+ #include <linux/tick.h>
+-#include <linux/bootmem.h>
+ #include <linux/debugfs.h>
+ #include <linux/ctype.h>
+ #include <linux/ftrace.h>
+@@ -7821,24 +7820,21 @@ static void rq_attach_root(struct rq *rq
+ 
+ static int __init_refok init_rootdomain(struct root_domain *rd, bool bootmem)
+ {
++	gfp_t gfp = GFP_KERNEL;
++
+ 	memset(rd, 0, sizeof(*rd));
+ 
+-	if (bootmem) {
+-		alloc_bootmem_cpumask_var(&def_root_domain.span);
+-		alloc_bootmem_cpumask_var(&def_root_domain.online);
+-		alloc_bootmem_cpumask_var(&def_root_domain.rto_mask);
+-		cpupri_init(&rd->cpupri, true);
+-		return 0;
+-	}
++	if (bootmem)
++		gfp = GFP_NOWAIT;
+ 
+-	if (!alloc_cpumask_var(&rd->span, GFP_KERNEL))
++	if (!alloc_cpumask_var(&rd->span, gfp))
+ 		goto out;
+-	if (!alloc_cpumask_var(&rd->online, GFP_KERNEL))
++	if (!alloc_cpumask_var(&rd->online, gfp))
+ 		goto free_span;
+-	if (!alloc_cpumask_var(&rd->rto_mask, GFP_KERNEL))
++	if (!alloc_cpumask_var(&rd->rto_mask, gfp))
+ 		goto free_online;
+ 
+-	if (cpupri_init(&rd->cpupri, false) != 0)
++	if (cpupri_init(&rd->cpupri, bootmem) != 0)
+ 		goto free_rto_mask;
+ 	return 0;
+ 
+@@ -9157,12 +9153,8 @@ void __init sched_init(void)
+ #ifdef CONFIG_CPUMASK_OFFSTACK
+ 	alloc_size += num_possible_cpus() * cpumask_size();
+ #endif
+-	/*
+-	 * As sched_init() is called before page_alloc is setup,
+-	 * we use alloc_bootmem().
+-	 */
+ 	if (alloc_size) {
+-		ptr = (unsigned long)alloc_bootmem(alloc_size);
++		ptr = (unsigned long) kzalloc(alloc_size, GFP_NOWAIT);
+ 
+ #ifdef CONFIG_FAIR_GROUP_SCHED
+ 		init_task_group.se = (struct sched_entity **)ptr;
+@@ -9353,13 +9345,13 @@ void __init sched_init(void)
+ 	current->sched_class = &fair_sched_class;
+ 
+ 	/* Allocate the nohz_cpu_mask if CONFIG_CPUMASK_OFFSTACK */
+-	alloc_bootmem_cpumask_var(&nohz_cpu_mask);
++	alloc_cpumask_var(&nohz_cpu_mask, GFP_NOWAIT);
+ #ifdef CONFIG_SMP
+ #ifdef CONFIG_NO_HZ
+-	alloc_bootmem_cpumask_var(&nohz.cpu_mask);
+-	alloc_bootmem_cpumask_var(&nohz.ilb_grp_nohz_mask);
++	alloc_cpumask_var(&nohz.cpu_mask, GFP_NOWAIT);
++	alloc_cpumask_var(&nohz.ilb_grp_nohz_mask, GFP_NOWAIT);
+ #endif
+-	alloc_bootmem_cpumask_var(&cpu_isolated_map);
++	alloc_cpumask_var(&cpu_isolated_map, GFP_NOWAIT);
+ #endif /* SMP */
+ 
+ 	perf_counter_init();
+Index: linux-2.6/mm/slub.c
+===================================================================
+--- linux-2.6.orig/mm/slub.c
++++ linux-2.6/mm/slub.c
+@@ -2582,13 +2582,16 @@ static struct kmem_cache *create_kmalloc
+ 	if (gfp_flags & SLUB_DMA)
+ 		flags = SLAB_CACHE_DMA;
+ 
+-	down_write(&slub_lock);
++	/*
++	 * This function is called with IRQs disabled during early-boot on
++	 * single CPU so there's no need to take slub_lock here.
++	 */
+ 	if (!kmem_cache_open(s, gfp_flags, name, size, ARCH_KMALLOC_MINALIGN,
+ 								flags, NULL))
+ 		goto panic;
+ 
+ 	list_add(&s->list, &slab_caches);
+-	up_write(&slub_lock);
++
+ 	if (sysfs_slab_add(s))
+ 		goto panic;
+ 	return s;
+@@ -3048,7 +3051,7 @@ void __init kmem_cache_init(void)
+ 	 * kmem_cache_open for slab_state == DOWN.
+ 	 */
+ 	create_kmalloc_cache(&kmalloc_caches[0], "kmem_cache_node",
+-		sizeof(struct kmem_cache_node), GFP_KERNEL);
++		sizeof(struct kmem_cache_node), GFP_NOWAIT);
+ 	kmalloc_caches[0].refcount = -1;
+ 	caches++;
+ 
+@@ -3061,16 +3064,16 @@ void __init kmem_cache_init(void)
+ 	/* Caches that are not of the two-to-the-power-of size */
+ 	if (KMALLOC_MIN_SIZE <= 64) {
+ 		create_kmalloc_cache(&kmalloc_caches[1],
+-				"kmalloc-96", 96, GFP_KERNEL);
++				"kmalloc-96", 96, GFP_NOWAIT);
+ 		caches++;
+ 		create_kmalloc_cache(&kmalloc_caches[2],
+-				"kmalloc-192", 192, GFP_KERNEL);
++				"kmalloc-192", 192, GFP_NOWAIT);
+ 		caches++;
+ 	}
+ 
+ 	for (i = KMALLOC_SHIFT_LOW; i < SLUB_PAGE_SHIFT; i++) {
+ 		create_kmalloc_cache(&kmalloc_caches[i],
+-			"kmalloc", 1 << i, GFP_KERNEL);
++			"kmalloc", 1 << i, GFP_NOWAIT);
+ 		caches++;
+ 	}
+ 
+@@ -3107,7 +3110,7 @@ void __init kmem_cache_init(void)
+ 	/* Provide the correct kmalloc names now that the caches are up */
+ 	for (i = KMALLOC_SHIFT_LOW; i < SLUB_PAGE_SHIFT; i++)
+ 		kmalloc_caches[i]. name =
+-			kasprintf(GFP_KERNEL, "kmalloc-%d", 1 << i);
++			kasprintf(GFP_NOWAIT, "kmalloc-%d", 1 << i);
+ 
+ #ifdef CONFIG_SMP
+ 	register_cpu_notifier(&slab_notifier);
+Index: linux-2.6/kernel/sched_cpupri.c
+===================================================================
+--- linux-2.6.orig/kernel/sched_cpupri.c
++++ linux-2.6/kernel/sched_cpupri.c
+@@ -156,16 +156,19 @@ int __init_refok cpupri_init(struct cpup
+ {
+ 	int i;
+ 
++	gfp_t gfp = GFP_KERNEL;
++
+ 	memset(cp, 0, sizeof(*cp));
+ 
++	if (bootmem)
++		gfp = GFP_NOWAIT;
++
+ 	for (i = 0; i < CPUPRI_NR_PRIORITIES; i++) {
+ 		struct cpupri_vec *vec = &cp->pri_to_cpu[i];
+ 
+ 		spin_lock_init(&vec->lock);
+ 		vec->count = 0;
+-		if (bootmem)
+-			alloc_bootmem_cpumask_var(&vec->mask);
+-		else if (!alloc_cpumask_var(&vec->mask, GFP_KERNEL))
++		if (!alloc_cpumask_var(&vec->mask, gfp))
+ 			goto cleanup;
+ 	}
+ 
