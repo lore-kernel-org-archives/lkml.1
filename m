@@ -1,50 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754094AbZEXE6w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752033AbZEXFQO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754094AbZEXE6w (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 May 2009 00:58:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750977AbZEXE6o
+	id S1752033AbZEXFQO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 May 2009 01:16:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751120AbZEXFQA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 May 2009 00:58:44 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:1535 "EHLO
-	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750933AbZEXE6n (ORCPT
+	Sun, 24 May 2009 01:16:00 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:57742 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751098AbZEXFP7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 May 2009 00:58:43 -0400
-Subject: Re: [PATCH 16/18] MAINTAINERS - Remove L:
- linux-kernel@vger.kernel.org  from all but "THE REST"
-From: Joe Perches <joe@perches.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <fa686aa40905232151g5ed5bcc8t2f19d63ace2277e7@mail.gmail.com>
-References: <cover.1243131992.git.joe@perches.com>
-	 <9f55522f7ab56afcf16d936d06ab2f3a7e699ed5.1243131992.git.joe@perches.com>
-	 <fa686aa40905232018x5e6d1d1aofef790dee2e3bfae@mail.gmail.com>
-	 <1243135358.3560.1.camel@Joe-Laptop.home>
-	 <fa686aa40905232128x475ea76dh861bf4d0fd3e1aef@mail.gmail.com>
-	 <1243139947.3560.7.camel@Joe-Laptop.home>
-	 <fa686aa40905232151g5ed5bcc8t2f19d63ace2277e7@mail.gmail.com>
-Content-Type: text/plain
-Date: Sat, 23 May 2009 21:58:01 -0700
-Message-Id: <1243141081.3560.11.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Sun, 24 May 2009 01:15:59 -0400
+Date: Sun, 24 May 2009 14:15:05 +0900 (JST)
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Christoph Hellwig <hch@infradead.org>
+Subject: Re: [RFC][PATCH] convert block trace points to TRACE_EVENT()
+Cc: kosaki.motohiro@jp.fujitsu.com, Li Zefan <lizf@cn.fujitsu.com>,
+       Jeff Moyer <jmoyer@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Tom Zanussi <tzanussi@gmail.com>, "Theodore Ts'o" <tytso@mit.edu>,
+       Steven Whitehouse <swhiteho@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090523124018.GA15163@infradead.org>
+References: <4A13C19E.3000303@cn.fujitsu.com> <20090523124018.GA15163@infradead.org>
+Message-Id: <20090524141347.0841.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-05-23 at 22:51 -0600, Grant Likely wrote:
-> Do subsystem maintainers think so?  Unless they do (and tell others
-> so), I don't think it will actually happen.  Until that point, I don't
-> think the L:linux-kernel lines should be removed.
+> On Wed, May 20, 2009 at 04:38:54PM +0800, Li Zefan wrote:
+> > Yes, this patch doesn't affect ioctl-based blktrace or ftrace-plugin
+> > blktrace at all.
+> 
+> Is there any good reason for keeping the ftrace plugin once we have
+> the fully function event tracer support for the block events?
 
-Well, if scripts/get_maintainers.pl becomes more widely used,
-cc'ing lkml will become more automatic.
+waiting userland blktrace tool convert using event tracer? 
 
-Anyway, removing lkml from all sections might stop
-a MAINTAINERS reader from thinking lkml should not
-be cc'd when not mentioned.
+just guess :-)
 
-cheers, Joe
+
 
