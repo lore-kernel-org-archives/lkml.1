@@ -1,59 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758467AbZEXWxS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758370AbZEXWz5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758467AbZEXWxS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 May 2009 18:53:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754791AbZEXWxF
+	id S1758370AbZEXWz5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 May 2009 18:55:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754970AbZEXWzr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 May 2009 18:53:05 -0400
-Received: from static-220-247-10-204.b-man.svips.gol.ne.jp ([220.247.10.204]:55795
-	"EHLO smtp.kamineko.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752919AbZEXWxE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 May 2009 18:53:04 -0400
-Date: Mon, 25 May 2009 07:53:02 +0900
-From: Mattia Dongili <malattia@linux.it>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       fanderay <fanderay4@googlemail.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Len Brown <len.brown@intel.com>, Lin Ming <ming.m.lin@intel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [Bug #13148] resume after suspend-to-ram broken on Sony Vaio
-	VGN-SR19VN when sony-laptop driver present
-Message-ID: <20090524225302.GA3566@kamineko.org>
-References: <ZPPBiNHr1LC.A.9ZH.K9bGKB@chimera> <uSztiUhmDDC.A.VwB.v-bGKB@chimera>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <uSztiUhmDDC.A.VwB.v-bGKB@chimera>
-X-Message-Flag: Cranky? Try Free Software instead!
-X-Operating-System: Linux 2.6.30-rc7 x86_64
-X-Editor: Vim http://www.vim.org/
-X-Disclaimer: Buh!
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 24 May 2009 18:55:47 -0400
+Received: from smtp.knology.net ([24.214.63.101]:45760 "EHLO smtp.knology.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754791AbZEXWzq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 May 2009 18:55:46 -0400
+Subject: Re: [PATCH 2.6.30-rc4] r8169: avoid losing MSI interrupts
+From: David Dillow <dave@thedillows.org>
+To: Francois Romieu <romieu@fr.zoreil.com>
+Cc: Michael Riepe <michael.riepe@googlemail.com>,
+       Michael Buesch <mb@bu3sch.de>, Rui Santos <rsantos@grupopie.com>,
+       Michael =?ISO-8859-1?Q?B=FCker?= <m.bueker@berlin.de>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+In-Reply-To: <20090524211557.GA14634@electric-eye.fr.zoreil.com>
+References: <1242001754.4093.12.camel@obelisk.thedillows.org>
+	 <200905112248.44868.mb@bu3sch.de> <200905112310.08534.mb@bu3sch.de>
+	 <1242077392.3716.15.camel@lap75545.ornl.gov>
+	 <4A09DC3E.2080807@googlemail.com>
+	 <1242268709.4979.7.camel@obelisk.thedillows.org>
+	 <4A0C6504.8000704@googlemail.com>
+	 <1242328457.32579.12.camel@lap75545.ornl.gov>
+	 <4A0C7443.1010000@googlemail.com>
+	 <1243042174.3580.23.camel@obelisk.thedillows.org>
+	 <20090524211557.GA14634@electric-eye.fr.zoreil.com>
+Content-Type: text/plain
+Date: Sun, 24 May 2009 18:55:46 -0400
+Message-Id: <1243205746.3609.2.camel@obelisk.thedillows.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 24, 2009 at 09:11:50PM +0200, Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
+On Sun, 2009-05-24 at 23:15 +0200, Francois Romieu wrote:
+> David Dillow <dave@thedillows.org> :
+> [...]
+> > This fixes the lockups I've seen. Both MSI and level-triggered interrupt
+> > configurations survive over an hour of testing when it would lockup in
+> > under 90 seconds before. I am certain of the analysis of the root cause,
+> > but there may be better ways to fix it. There may also be a theoretical
+> > race window between the ending of a NAPI poll cycle and a link change
+> > interrupt coming in, but I'm not sure it would matter. 
 > 
-> The following bug entry is on the current list of known regressions
-> from 2.6.29.  Please verify if it still should be listed and let me know
-> (either way).
+> It makes sense.
 > 
+> If I understand correctly, one should expect to find some pending Tx
+> event in the ISR of a failed card when reading the registers with
+> ethtool.
 > 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13148
-> Subject		: resume after suspend-to-ram broken on Sony Vaio VGN-SR19VN when sony-laptop driver present
-> Submitter	: fanderay <fanderay4@googlemail.com>
-> Date		: 2009-04-22 14:39 (33 days old)
+> Has someone noticed it ?
 
-sorry for not mentioning this before, but it looks like this regression
-was introduced between .28 and .29
+Yes, that's part of how I came to this conclusion, I put a debug patch
+together that looked at the IRQ status 2 seconds after the last IRQ came
+in. Then I waited for the chip to lock and the timer to fire. It showed
+0x0085 in the IntrStatus register.
 
-cheers
--- 
-mattia
-:wq!
+I didn't know I could do that with ethtool, but that would've been a
+nice way to go, too. :)
+
