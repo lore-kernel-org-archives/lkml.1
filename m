@@ -1,79 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755078AbZEXBv4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755694AbZEXCiP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755078AbZEXBv4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 May 2009 21:51:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753876AbZEXBvs
+	id S1755694AbZEXCiP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 May 2009 22:38:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754603AbZEXCiC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 May 2009 21:51:48 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:33546 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753041AbZEXBvs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 May 2009 21:51:48 -0400
-From: "NeilBrown" <neilb@suse.de>
-To: "Ken Milmore" <ken.milmore@googlemail.com>
-Date: Sun, 24 May 2009 11:51:37 +1000 (EST)
-Message-ID: <0fa4b1e19d3edb12931e0d641ce2c7d7.squirrel@neil.brown.name>
-In-Reply-To: <4A188CAD.1080009@googlemail.com>
-References: <4A188CAD.1080009@googlemail.com>
-Subject: Re: Write barriers on MD RAID1
-Cc: linux-kernel@vger.kernel.org, "Jens Axboe" <jens.axboe@oracle.com>
-User-Agent: SquirrelMail/1.4.15
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+	Sat, 23 May 2009 22:38:02 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:1424 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752946AbZEXCiB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 May 2009 22:38:01 -0400
+From: Joe Perches <joe@perches.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: [PATCH 00/18] MAINTAINERS and scripts/get_maintainer.pl updates
+Date: Sat, 23 May 2009 19:37:31 -0700
+Message-Id: <cover.1243131992.git.joe@perches.com>
+X-Mailer: git-send-email 1.6.3.1.10.g659a0.dirty
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 24, 2009 9:54 am, Ken Milmore wrote:
->
-> Support for write barriers on MD RAID1 devices appears to be broken on
-> 2.6.29 and later kernels.  Mounting an ext3 or ext4 filesystem over an
-> md raid1 block device gives the kernel message:
->
->    JBD: barrier-based sync failed on md0 - disabling barriers
->
-> Is this intentional?  It looks like a regression to me, since write
-> barriers (ostensibly) worked for MD RAID1 on earlier kernels (well, all
-> of the 2.6.27 series at least...)
->
-> Doing a git bisect suggested that this is the culprit:
->
-> commit cec0707e40ae25794b5a2de7b7f03c51961f80d9
-> Author: Jens Axboe <jens.axboe@oracle.com>
-> Date:   Tue Jan 13 15:28:32 2009 +0100
->
->      block: silently error an unsupported barrier bio
+A few fixes and updates.
 
-Yes, that patch is broken.
-the new code it introduces should probably go in the top of
-__make_request rather than just before the call to ->make_request_fn.
-make_request_fn functions other than __make_request generally
-don't use ->next_ordered at all.
+This patchset does not change the style of
+MAINTAINERS P: and M: lines to be integrated
+M: "Full Name <address.tld>"
 
-Jens?  Would you agree?
+One day.  Maybe.
 
-NeilBrown
+Joe Perches (18):
+  scripts/get_maintainer.pl - Output first field only in mailing lists and after maintainers.
+  scripts/get_maintainer.pl - Better fix for subscriber-only mailing lists
+  scripts/get_maintainer.pl - improve --git-chief-penquins (Linus Torvalds) filtering
+  scripts/get_maintainer.pl - Warn on missing git or git repository
+  scripts/get_maintainer.pl - support M: lines with names and multiple entries per M: line
+  scripts/get_maintainer.pl - Better email name quoting
+  scripts/get_maintainer.pl - Support both "P:/M:" and integrated "M:" lines
+  scripts/get_maintainer.pl - Don't print maintainers when not requested
+  scripts/get_maintainer.pl - Allow 8 bit characters in email addresses
+  scripts/get_maintainer.pl - change "die" to "warn" when command line file is not a patch
+  MAINTAINERS - Swap mismarked ECRYPT FS M: and P: entries
+  MAINTAINERS - Pair EDAC-E752X P: and M: entries
+  MAINTAINERS - Add file patterns to "THE REST"
+  MAINTAINERS - Update M32R file patterns after rename
+  MAINTAINERS - Mark ALSA lists as moderated
+  MAINTAINERS - Remove L:	linux-kernel@vger.kernel.org from all but "THE REST"
+  MAINTAINERS - Mention scripts/get_maintainer.pl in the preface
+  MAINTAINERS - Add file pattern to CISCO FCOE HBA DRIVER
 
-
->
-> Rolling this back from 2.6.29.4 made the JBD error message go away for
-> me.  I tried to do some disk benchmarking to determine if write barriers
-> were really still working, but the results were not very conclusive.
->
-> Details of test setup:
-> - 2.6.29.4 kernel (config from slackware-current)
-> - ext3 filesystem (mounted with barrier=1), also tried ext4
-> - MD RAID1 block device over two SATA disks
-> - Intel motherboard AHCI controller (82801)
->
-> I got similar behaviour on a virtualised setup using qemu, with the RAID
-> over two emulated IDE disks.
->
-> Please contact me if I can provide any further information.
->
-> -Ken Milmore.
->
+ MAINTAINERS               |  108 ++++-----------------
+ scripts/get_maintainer.pl |  234 ++++++++++++++++++++++++++++++++++++---------
+ 2 files changed, 208 insertions(+), 134 deletions(-)
 
