@@ -1,90 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755006AbZEXTGm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752609AbZEXTJU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755006AbZEXTGm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 May 2009 15:06:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751418AbZEXTGJ
+	id S1752609AbZEXTJU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 May 2009 15:09:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751078AbZEXTJL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 May 2009 15:06:09 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:33532 "EHLO ogre.sisk.pl"
+	Sun, 24 May 2009 15:09:11 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:33557 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751830AbZEXTGH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 May 2009 15:06:07 -0400
+	id S1751037AbZEXTJL convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 May 2009 15:09:11 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
+To: Ming Lei <tom.leiming@gmail.com>
 Subject: Re: INFO: possible circular locking dependency at cleanup_workqueue_thread
-Date: Sun, 24 May 2009 21:06:05 +0200
+Date: Sun, 24 May 2009 21:09:30 +0200
 User-Agent: KMail/1.11.2 (Linux/2.6.30-rc6-rjw; KDE/4.2.3; x86_64; ; )
-Cc: Johannes Berg <johannes@sipsolutions.net>, Oleg Nesterov <oleg@redhat.com>,
+Cc: Johannes Berg <johannes@sipsolutions.net>,
+       Alan Stern <stern@rowland.harvard.edu>, Oleg Nesterov <oleg@redhat.com>,
        Ingo Molnar <mingo@elte.hu>, Zdenek Kabelac <zdenek.kabelac@gmail.com>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        pm list <linux-pm@lists.linux-foundation.org>
-References: <Pine.LNX.4.44L0.0905241016410.7718-100000@netrider.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0905241016410.7718-100000@netrider.rowland.org>
+References: <c4e36d110905120059i4c155508oa00672da0b33a07a@mail.gmail.com> <200905241309.14253.rjw@sisk.pl> <20090524204810.0b70a205@linux-lm>
+In-Reply-To: <20090524204810.0b70a205@linux-lm>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Message-Id: <200905242106.05867.rjw@sisk.pl>
+Message-Id: <200905242109.31265.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 24 May 2009, Alan Stern wrote:
-> On Sun, 24 May 2009, Rafael J. Wysocki wrote:
+On Sunday 24 May 2009, Ming Lei wrote:
+> On Sun, 24 May 2009 13:09:13 +0200
+> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 > 
-> > The patch is appended for reference (Alan, please have a look; I can't recall
-> > why exactly we have called device_pm_lock() from the core suspend/hibernation
-> > code instead of acquiring the lock locally in drivers/base/power/main.c) and
-> > I'll attach it to the bug entry too.
+> > On Sunday 24 May 2009, Ming Lei wrote:
+> > > 于 Sun, 24 May 2009 01:20:29 +0200
+> > > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 > 
-> I can't remember the reason either.  Probably there wasn't any.  The 
-> patch looks fine, and it has the nice added benefit that now the only 
-> user of device_pm_lock() will be device_move().
->
-> > ---
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > Subject: PM: Do not hold dpm_list_mtx while disabling/enabling nonboot CPUs
+> > > [lm@linux-lm linux-2.6]$ patch -p1
+> > > <  ../patch_rx/INFO_possible_circular_locking_dependency_at_cleanup_workqueue_thread.patch
+> > > patching file kernel/power/disk.c Hunk #1 succeeded at 215 with
+> > > fuzz 2. Hunk #3 succeeded at 278 with fuzz 1.
+> > > Hunk #4 FAILED at 343.
+> > > Hunk #5 succeeded at 396 with fuzz 2 (offset -4 lines).
+> > > Hunk #6 FAILED at 454.
+> > > Hunk #7 succeeded at 485 with fuzz 2.
+> > > 2 out of 7 hunks FAILED -- saving rejects to file
+> > > kernel/power/disk.c.rej patching file kernel/power/main.c
+> > > Hunk #1 succeeded at 289 with fuzz 1 (offset 18 lines).
+> > > patching file drivers/base/power/main.c
+> > > Hunk #3 succeeded at 616 with fuzz 2.
+> > > Hunk #4 succeeded at 625 with fuzz 2.
+> > > patching file kernel/kexec.c
+> > > Hunk #1 succeeded at 1451 with fuzz 2.
+> > > Hunk #2 succeeded at 1488 with fuzz 2.
 > > 
-> > We shouldn't hold dpm_list_mtx while executing
-> > [disable|enable]_nonboot_cpus(), because theoretically this may lead
-> > to a deadlock as shown by the following example (provided by Johannes
-> > Berg):
-> > 
-> > CPU 3       CPU 2                     CPU 1
-> >                                       suspend/hibernate
-> >             something:
-> >             rtnl_lock()               device_pm_lock()
-> >                                        -> mutex_lock(&dpm_list_mtx)
-> > 
-> >             mutex_lock(&dpm_list_mtx)
-> > 
-> > linkwatch_work
-> >  -> rtnl_lock()
-> >                                       disable_nonboot_cpus()
-> >                                        -> flush CPU 3 workqueue
-> > 
-> > Fortunately, device drivers are supposed to stop any activities that
-> > might lead to the registration of new device objects and/or to the
-> > removal of the existing ones way before disable_nonboot_cpus() is
+> > The patch applies to the mainline, since it'll be a 2.6.30 candidate
+> > if it's confirmed to fix the problem.
 > 
-> Strictly speaking, drivers are still allowed to unregister existing 
-> devices.  They are forbidden only to register new ones.  This shouldn't 
-> hurt anything, though.
+> After applying the patch against 2.6.30-rc7, my dell d630 box can resume
+> from suspend(s2ram) or hibernation successfully, and lockdep does not 
+> complain with the kind of message in
+> 
+> 	http://bugzilla.kernel.org/show_bug.cgi?id=13245.
 
-You're right, I'll fix the changelog.
- 
-> > called, so it shouldn't be necessary to hold dpm_list_mtx over the
-> > entire late part of device suspend and early part of device resume.
-> > 
-> > Thus, during the late suspend and the early resume of devices acquire
-> > dpm_list_mtx only when dpm_list is going to be traversed and release
-> > it right after that.
+OK, great.  I'm going to push the patch to Linus.
+
+> Another thing, during resume from hibernation, I can find the following
+> messages:
 > 
-> Acked-by: Alan Stern <stern@rowland.harvard.edu>
+> 	[    1.849584] device: 'network_throughput': device_add
+> 	[    1.849630] PM: Adding info for No Bus:network_throughput
+> 	[    1.849788] PM: Resume from disk failed.
+>  
+> I do not known if there is really something wrong in PM,
 
-Thanks!
+No, this only means that there was no hibernation image present on the resume
+partition while the kernel was starting.
 
-Best,
+Thanks,
 Rafael
