@@ -1,63 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754834AbZEXO1Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754753AbZEXO3k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754834AbZEXO1Y (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 May 2009 10:27:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753053AbZEXO1Q
+	id S1754753AbZEXO3k (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 May 2009 10:29:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752971AbZEXO3b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 May 2009 10:27:16 -0400
-Received: from mail-pz0-f177.google.com ([209.85.222.177]:39010 "EHLO
-	mail-pz0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752951AbZEXO1Q (ORCPT
+	Sun, 24 May 2009 10:29:31 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:47033 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752934AbZEXO3b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 May 2009 10:27:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=vGr7M0IXTZTRpA2zK+aNeDMjGaDNIcPHrGJHycXtpeK+WCxHmrkQEusOxiDT83Hd1v
-         tPcyVDi6csG1X6HmkMqtx2e4FGH3Xz6wY1wUrRcvIWCyqUkvBFvsgvzJXXHfkaF3/lmE
-         2cdnrJLlIsaDjOeMOTF5Jy7q+0FR7qpRq1XnM=
-From: tom.leiming@gmail.com
-To: mingo@elte.hu
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       a.p.zijlstra@chello.nl, Ming Lei <tom.leiming@gmail.com>
-Subject: [PATCH] kernel:lockdep:fix statistics for nr_cyclic_check_recursions/checks
-Date: Sun, 24 May 2009 22:27:10 +0800
-Message-Id: <1243175230-4703-1-git-send-email-tom.leiming@gmail.com>
-X-Mailer: git-send-email 1.6.0.GIT
+	Sun, 24 May 2009 10:29:31 -0400
+Subject: [PATCH] async: make sure independent async domains can't
+	accidentally entangle.
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Sun, 24 May 2009 09:29:31 -0500
+Message-Id: <1243175371.2889.17.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ming Lei <tom.leiming@gmail.com>
+The problem occurs when async_synchronize_full_domain() is called when
+the async_pending list is not empty.  This will cause lowest_running()
+to return the cookie of the first entry on the async_pending list, which
+might be nothing at all to do with the domain being asked for and thus
+cause the domain synchronization to wait for an unrelated domain.   This
+can cause a deadlock if domain synchronization is used from one domain
+to wait for another.
 
+Fix by running over the async_pending list to see if any pending items
+actually belong to our domain (and return their cookies if they do).
 
-Signed-off-by: Ming Lei <tom.leiming@gmail.com>
+Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+
 ---
- kernel/lockdep.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/kernel/lockdep.c b/kernel/lockdep.c
-index 8bbeef9..1905357 100644
---- a/kernel/lockdep.c
-+++ b/kernel/lockdep.c
-@@ -1062,7 +1062,7 @@ check_noncircular(struct lock_class *source, unsigned int depth)
- 	if (lockdep_dependency_visit(source, depth))
- 		return 1;
- 
--	debug_atomic_inc(&nr_cyclic_check_recursions);
-+	debug_atomic_inc(&nr_cyclic_check_checks);
- 	if (depth > max_recursion_depth)
- 		max_recursion_depth = depth;
- 	if (depth >= RECURSION_LIMIT)
-@@ -1073,7 +1073,7 @@ check_noncircular(struct lock_class *source, unsigned int depth)
- 	list_for_each_entry(entry, &source->locks_after, entry) {
- 		if (entry->class == hlock_class(check_target))
- 			return print_circular_bug_header(entry, depth+1);
--		debug_atomic_inc(&nr_cyclic_checks);
-+		debug_atomic_inc(&nr_cyclic_recursions);
- 		if (!check_noncircular(entry->class, depth+1))
- 			return print_circular_bug_entry(entry, depth+1);
+diff --git a/kernel/async.c b/kernel/async.c
+index 968ef94..9b01c61 100644
+--- a/kernel/async.c
++++ b/kernel/async.c
+@@ -92,19 +92,24 @@ extern int initcall_debug;
+ static async_cookie_t  __lowest_in_progress(struct list_head *running)
+ {
+ 	struct async_entry *entry;
++	unsigned long flags;
++	async_cookie_t ret = next_cookie; /* begin with "infinity" value */
++
+ 	if (!list_empty(running)) {
+ 		entry = list_first_entry(running,
+ 			struct async_entry, list);
+-		return entry->cookie;
++		ret = entry->cookie;
+ 	} else if (!list_empty(&async_pending)) {
+-		entry = list_first_entry(&async_pending,
+-			struct async_entry, list);
+-		return entry->cookie;
+-	} else {
+-		/* nothing in progress... next_cookie is "infinity" */
+-		return next_cookie;
++		spin_lock_irqsave(&async_lock, flags);
++		list_for_each_entry(entry, &async_pending, list)
++			if (entry->running == running) {
++				ret = entry->cookie;
++				break;
++			}
++		spin_unlock_irqrestore(&async_lock, flags);
  	}
--- 
-1.6.0.GIT
+ 
++	return ret;
+ }
+ 
+ static async_cookie_t  lowest_in_progress(struct list_head *running)
+
 
