@@ -1,136 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754897AbZEXUqa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757384AbZEXUs0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754897AbZEXUqa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 May 2009 16:46:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752096AbZEXUqX
+	id S1757384AbZEXUs0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 May 2009 16:48:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752683AbZEXUsT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 May 2009 16:46:23 -0400
-Received: from mail-bw0-f174.google.com ([209.85.218.174]:48555 "EHLO
-	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752035AbZEXUqX (ORCPT
+	Sun, 24 May 2009 16:48:19 -0400
+Received: from smtp.wellnetcz.com ([212.24.148.102]:50010 "EHLO
+	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752096AbZEXUsT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 May 2009 16:46:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=qm3U538b1nDQ3K3I6Yyo7wPL1xi77oDceE6ao12qGwfZCAc85Qzu+EMO4D+xhfYL2T
-         /SHsXqZ84yVUQk3xfZNM5p9ElnJUC0N3jixyhadFQXyB1FafI/9DIdLqjAoCtTEk1U2U
-         PSOhRHAeh4nin7924SQE1UZdBlCB3BUNbs9TQ=
-Date: Sun, 24 May 2009 22:46:23 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Zhaolei <zhaolei@cn.fujitsu.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Tom Zanussi <tzanussi@gmail.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v2 2/2] ftrace: clean up of using
-	ftrace_event_enable_disable()
-Message-ID: <20090524204620.GC6471@nowhere>
-References: <4A14FDFE.2080402@cn.fujitsu.com> <4A16788F.2060802@cn.fujitsu.com> <4A16791C.8090501@cn.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A16791C.8090501@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 24 May 2009 16:48:19 -0400
+From: Jiri Slaby <jirislaby@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: ebiederm@xmission.com, oleg@tv-sign.ru, roland@redhat.com,
+       linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>,
+       Matthew Wilcox <matthew@wil.cx>
+Subject: [PATCH 1/1] signal: make group kill signal fatal
+Date: Sun, 24 May 2009 22:47:34 +0200
+Message-Id: <1243198054-13816-1-git-send-email-jirislaby@gmail.com>
+X-Mailer: git-send-email 1.6.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 22, 2009 at 06:06:20PM +0800, Zhaolei wrote:
-> Always use tracing_stop_cmdline_record() to enable/disable a event.
-> 
-> Impact: cleanup, no functionality changed
-> 
-> Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
-> ---
->  kernel/trace/trace_events.c |   44 +++++++++++++-----------------------------
->  1 files changed, 14 insertions(+), 30 deletions(-)
-> 
-> diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
-> index df35e5e..16ef47a 100644
-> --- a/kernel/trace/trace_events.c
-> +++ b/kernel/trace/trace_events.c
-> @@ -76,26 +76,9 @@ static void trace_destroy_fields(struct ftrace_event_call *call)
->  
->  #endif /* CONFIG_MODULES */
->  
-> -static void ftrace_clear_events(void)
-> -{
-> -	struct ftrace_event_call *call;
-> -
-> -	mutex_lock(&event_mutex);
-> -	list_for_each_entry(call, &ftrace_events, list) {
+__fatal_signal_pending() returns now true only for a non-group sent
+sigkill, i. e. for example tgkill, send_sig...
 
+Use sigkill_pending() in __fatal_signal_pending() which adds a test also
+for shared_pending queue.
 
-Don't we have a "for_each_event" ?
+Also grab siglock in __fatal_signal_pending().
 
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Cc: Matthew Wilcox <matthew@wil.cx>
+---
+ kernel/signal.c |   28 +++++++++++++++++-----------
+ 1 files changed, 17 insertions(+), 11 deletions(-)
 
-> -
-> -		if (call->enabled) {
-> -			call->enabled = 0;
-> -			tracing_stop_cmdline_record();
-> -			call->unregfunc();
-> -		}
-> -	}
-> -	mutex_unlock(&event_mutex);
-> -}
-> -
->  static void ftrace_event_enable_disable(struct ftrace_event_call *call,
->  					int enable)
->  {
-> -
->  	switch (enable) {
->  	case 0:
->  		if (call->enabled) {
-> @@ -114,6 +97,17 @@ static void ftrace_event_enable_disable(struct ftrace_event_call *call,
->  	}
->  }
->  
-> +static void ftrace_clear_events(void)
-> +{
-> +	struct ftrace_event_call *call;
-> +
-> +	mutex_lock(&event_mutex);
-> +	list_for_each_entry(call, &ftrace_events, list) {
-> +		ftrace_event_enable_disable(call, 0);
-> +	}
-> +	mutex_unlock(&event_mutex);
-> +}
-> +
->  /*
->   * __ftrace_set_clr_event(NULL, NULL, NULL, set) will set/unset all events.
->   */
-> @@ -1059,11 +1053,7 @@ static void trace_module_remove_events(struct module *mod)
->  	list_for_each_entry_safe(call, p, &ftrace_events, list) {
->  		if (call->mod == mod) {
->  			found = true;
-> -			if (call->enabled) {
-> -				call->enabled = 0;
-> -				tracing_stop_cmdline_record();
-> -				call->unregfunc();
-> -			}
-> +			ftrace_event_enable_disable(call, 0);
->  			if (call->event)
->  				unregister_ftrace_event(call->event);
->  			debugfs_remove_recursive(call->dir);
-> @@ -1265,15 +1255,9 @@ static __init void event_trace_self_tests(void)
->  			continue;
->  		}
->  
-> -		call->enabled = 1;
-> -		tracing_start_cmdline_record();
-> -		call->regfunc();
-> -
-> +		ftrace_event_enable_disable(call, 1);
->  		event_test_stuff();
-> -
-> -		call->unregfunc();
-> -		tracing_stop_cmdline_record();
-> -		call->enabled = 0;
-> +		ftrace_event_enable_disable(call, 0);
->  
->  		pr_cont("OK\n");
->  	}
-
-
-Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+diff --git a/kernel/signal.c b/kernel/signal.c
+index e964ad9..a12897a 100644
+--- a/kernel/signal.c
++++ b/kernel/signal.c
+@@ -116,6 +116,16 @@ static inline int has_pending_signals(sigset_t *signal, sigset_t *blocked)
+ 	return ready !=	0;
+ }
+ 
++/*
++ * Return nonzero if there is a SIGKILL that should be waking us up.
++ * Called with the siglock held.
++ */
++static int sigkill_pending(struct task_struct *tsk)
++{
++	return	sigismember(&tsk->pending.signal, SIGKILL) ||
++		sigismember(&tsk->signal->shared_pending.signal, SIGKILL);
++}
++
+ #define PENDING(p,b) has_pending_signals(&(p)->signal, (b))
+ 
+ static int recalc_sigpending_tsk(struct task_struct *t)
+@@ -1033,7 +1043,13 @@ void zap_other_threads(struct task_struct *p)
+ 
+ int __fatal_signal_pending(struct task_struct *tsk)
+ {
+-	return sigismember(&tsk->pending.signal, SIGKILL);
++	int ret;
++
++	spin_lock_irq(&tsk->sighand->siglock);
++	ret = sigkill_pending(tsk);
++	spin_unlock_irq(&tsk->sighand->siglock);
++
++	return ret;
+ }
+ EXPORT_SYMBOL(__fatal_signal_pending);
+ 
+@@ -1549,16 +1565,6 @@ static inline int may_ptrace_stop(void)
+ }
+ 
+ /*
+- * Return nonzero if there is a SIGKILL that should be waking us up.
+- * Called with the siglock held.
+- */
+-static int sigkill_pending(struct task_struct *tsk)
+-{
+-	return	sigismember(&tsk->pending.signal, SIGKILL) ||
+-		sigismember(&tsk->signal->shared_pending.signal, SIGKILL);
+-}
+-
+-/*
+  * This must be called with current->sighand->siglock held.
+  *
+  * This should be the path for all ptrace stops.
+-- 
+1.6.3
 
