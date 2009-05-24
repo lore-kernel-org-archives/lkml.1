@@ -1,42 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753101AbZEXTG3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755006AbZEXTGm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753101AbZEXTG3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 May 2009 15:06:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751267AbZEXTGE
+	id S1755006AbZEXTGm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 May 2009 15:06:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751418AbZEXTGJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 May 2009 15:06:04 -0400
-Received: from CHOKECHERRY.SRV.CS.CMU.EDU ([128.2.201.117]:44195 "EHLO
-	chokecherry.srv.cs.cmu.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751037AbZEXTGD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 May 2009 15:06:03 -0400
-X-Greylist: delayed 2718 seconds by postgrey-1.27 at vger.kernel.org; Sun, 24 May 2009 15:06:02 EDT
-Date: Sun, 24 May 2009 14:20:42 -0400
-From: Eric Cooper <ecc@cmu.edu>
-To: linux-kernel@vger.kernel.org
-Cc: Vlad Cerny <vlad.cerny@gmail.com>
-Subject: Network data corruption on atl1e
-Message-ID: <20090524182042.GA8159@localhost>
-Mail-Followup-To: linux-kernel@vger.kernel.org,
-	Vlad Cerny <vlad.cerny@gmail.com>
-References: <88a913b70905211029j38e22083g407dfba5c17754a1@mail.gmail.com>
+	Sun, 24 May 2009 15:06:09 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:33532 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751830AbZEXTGH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 May 2009 15:06:07 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: INFO: possible circular locking dependency at cleanup_workqueue_thread
+Date: Sun, 24 May 2009 21:06:05 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc6-rjw; KDE/4.2.3; x86_64; ; )
+Cc: Johannes Berg <johannes@sipsolutions.net>, Oleg Nesterov <oleg@redhat.com>,
+       Ingo Molnar <mingo@elte.hu>, Zdenek Kabelac <zdenek.kabelac@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <Pine.LNX.4.44L0.0905241016410.7718-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0905241016410.7718-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <88a913b70905211029j38e22083g407dfba5c17754a1@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200905242106.05867.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Reading large files over NFS using the at1le Ethernet driver results
-in data corruption in 2.6.29.
+On Sunday 24 May 2009, Alan Stern wrote:
+> On Sun, 24 May 2009, Rafael J. Wysocki wrote:
+> 
+> > The patch is appended for reference (Alan, please have a look; I can't recall
+> > why exactly we have called device_pm_lock() from the core suspend/hibernation
+> > code instead of acquiring the lock locally in drivers/base/power/main.c) and
+> > I'll attach it to the bug entry too.
+> 
+> I can't remember the reason either.  Probably there wasn't any.  The 
+> patch looks fine, and it has the nice added benefit that now the only 
+> user of device_pm_lock() will be device_move().
+>
+> > ---
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > Subject: PM: Do not hold dpm_list_mtx while disabling/enabling nonboot CPUs
+> > 
+> > We shouldn't hold dpm_list_mtx while executing
+> > [disable|enable]_nonboot_cpus(), because theoretically this may lead
+> > to a deadlock as shown by the following example (provided by Johannes
+> > Berg):
+> > 
+> > CPU 3       CPU 2                     CPU 1
+> >                                       suspend/hibernate
+> >             something:
+> >             rtnl_lock()               device_pm_lock()
+> >                                        -> mutex_lock(&dpm_list_mtx)
+> > 
+> >             mutex_lock(&dpm_list_mtx)
+> > 
+> > linkwatch_work
+> >  -> rtnl_lock()
+> >                                       disable_nonboot_cpus()
+> >                                        -> flush CPU 3 workqueue
+> > 
+> > Fortunately, device drivers are supposed to stop any activities that
+> > might lead to the registration of new device objects and/or to the
+> > removal of the existing ones way before disable_nonboot_cpus() is
+> 
+> Strictly speaking, drivers are still allowed to unregister existing 
+> devices.  They are forbidden only to register new ones.  This shouldn't 
+> hurt anything, though.
 
-Further details are in this thread:
-  http://lists.alioth.debian.org/pipermail/debian-eeepc-devel/2009-May/002199.html 
+You're right, I'll fix the changelog.
+ 
+> > called, so it shouldn't be necessary to hold dpm_list_mtx over the
+> > entire late part of device suspend and early part of device resume.
+> > 
+> > Thus, during the late suspend and the early resume of devices acquire
+> > dpm_list_mtx only when dpm_list is going to be traversed and release
+> > it right after that.
+> 
+> Acked-by: Alan Stern <stern@rowland.harvard.edu>
 
-I'll be happy to help with further tests, etc.  Please CC Vlad and me
-on any followups, thanks.
+Thanks!
 
--- 
-Eric Cooper             e c c @ c m u . e d u
+Best,
+Rafael
