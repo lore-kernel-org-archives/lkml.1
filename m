@@ -1,268 +1,846 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754702AbZEXTVQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757480AbZEXTWm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754702AbZEXTVQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 May 2009 15:21:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751179AbZEXTU7
+	id S1757480AbZEXTWm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 May 2009 15:22:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751509AbZEXTWd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 May 2009 15:20:59 -0400
-Received: from yw-out-2324.google.com ([74.125.46.29]:44148 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751133AbZEXTU6 (ORCPT
+	Sun, 24 May 2009 15:22:33 -0400
+Received: from mail-fx0-f168.google.com ([209.85.220.168]:59970 "EHLO
+	mail-fx0-f168.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750818AbZEXTW3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 May 2009 15:20:58 -0400
+	Sun, 24 May 2009 15:22:29 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=oLH/HeHAKgDHWYWHcjzZgTPpidlNaQQiJ9ilI9KsoOpjPtJyxl86vyf8lmiq3DCWmV
-         01AisPWEzItLq4YYW5YwnAReQTuAQglGCRWOku8OIXrrUTEaXykVID2wwyLgdMW9GL4W
-         SsPQjyaYc/rKWbPRe7gBBG2ayX/zGLHA7b33Y=
-Message-ID: <4A199E18.70803@gmail.com>
-Date: Sun, 24 May 2009 13:20:56 -0600
-From: Robert Hancock <hancockrwd@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-type:content-disposition
+         :content-transfer-encoding:in-reply-to:user-agent;
+        b=OO3QsDSAhPf5rryuv8ECf1/rnktdabtLzIFIWDkEdM7eAaKmo9jH27BTylWy+3YqRO
+         6A8NV7U0x9jlC+Q7JZlpEE8/gw97rRUUUeI1srw8dTVccq1zatoO4Gm/ZjxVJc2H/mfd
+         ZvgrAKDBiATfDFa6lnPk4Rc2nxgplwUNliUZg=
+Date: Sun, 24 May 2009 21:22:19 +0200
+From: Borislav Petkov <petkovbb@googlemail.com>
+To: Peter Feuerer <peter@piie.net>
+Cc: LKML <linux-kernel@vger.kernel.org>, lenb@kernel.org,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [PATCH] Acer Aspire One Fan Control
+Message-ID: <20090524192219.GA30285@liondog.tnic>
+Mail-Followup-To: Borislav Petkov <petkovbb@gmail.com>,
+	Peter Feuerer <peter@piie.net>, LKML <linux-kernel@vger.kernel.org>,
+	lenb@kernel.org, Matthew Garrett <mjg59@srcf.ucam.org>,
+	Maxim Levitsky <maximlevitsky@gmail.com>
+References: <1240913055.29860.14.camel@maxim-laptop> <cone.1240949852.549814.7466.1000@mentalhome> <1240950704.3781.12.camel@maxim-laptop> <cone.1241299309.265715.3948.1000@mentalhome> <20090503184617.GA3555@liondog.tnic> <cone.1241648222.299676.7476.1000@mentalhome> <20090509171432.GA31126@liondog.tnic> <cone.1242065107.695268.13534.1000@onepiie> <20090512060231.GB26286@liondog.tnic> <cone.1242669880.118150.4276.1000@deskpiie>
 MIME-Version: 1.0
-To: Mikael Pettersson <mikpe@it.uu.se>
-CC: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       arjan@linux.intel.com
-Subject: Re: [2.6.30-rc7 regression] kernel/async.c broke pata_legacy.c
-References: <18969.29245.610133.834819@pilspetsen.it.uu.se>
-In-Reply-To: <18969.29245.610133.834819@pilspetsen.it.uu.se>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <cone.1242669880.118150.4276.1000@deskpiie>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mikael Pettersson wrote:
-> I tried booting 2.6.30-rc7 on my old '486, but it fails miserably
-> during libata/pata_legacy's device scan:
-> 
-> Linux version 2.6.30-rc7 (mikpe@brewer) (gcc version 4.3.4 20090517 (prerelease) (GCC) ) #1 Sun May 24 16:05:18 CEST 2009
-> KERNEL supported cpus:
->   Intel GenuineIntel
-> BIOS-provided physical RAM map:
->  BIOS-88: 0000000000000000 - 000000000009f000 (usable)
->  BIOS-88: 0000000000100000 - 0000000001c00000 (usable)
-> last_pfn = 0x1c00 max_arch_pfn = 0x100000
-> init_memory_mapping: 0000000000000000-0000000001c00000
-> RAMDISK: 01abb000 - 01bef86b
-> 28MB LOWMEM available.
->   mapped low ram: 0 - 01c00000
->   low ram: 0 - 01c00000
->   node 0 low ram: 00000000 - 01c00000
->   node 0 bootmap 00001000 - 00001380
-> (7 early reservations) ==> bootmem [0000000000 - 0001c00000]
->   #0 [0000000000 - 0000001000]   BIOS data page ==> [0000000000 - 0000001000]
->   #1 [0000100000 - 000031d1ec]    TEXT DATA BSS ==> [0000100000 - 000031d1ec]
->   #2 [0001abb000 - 0001bef86b]          RAMDISK ==> [0001abb000 - 0001bef86b]
->   #3 [000009f000 - 0000100000]    BIOS reserved ==> [000009f000 - 0000100000]
->   #4 [000031e000 - 0000320000]              BRK ==> [000031e000 - 0000320000]
->   #5 [0000007000 - 000000c000]          PGTABLE ==> [0000007000 - 000000c000]
->   #6 [0000001000 - 0000002000]          BOOTMAP ==> [0000001000 - 0000002000]
-> Zone PFN ranges:
->   DMA      0x00000000 -> 0x00001000
->   Normal   0x00001000 -> 0x00001c00
-> Movable zone start PFN for each node
-> early_node_map[2] active PFN ranges
->     0: 0x00000000 -> 0x0000009f
->     0: 0x00000100 -> 0x00001c00
-> Allocating PCI resources starting at 10000000 (gap: 1c00000:fe400000)
-> Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 7015
-> Kernel command line: ro root=LABEL=/ console=ttyS1,115200
-> Initializing CPU#0
-> NR_IRQS:16
-> PID hash table entries: 128 (order: 7, 512 bytes)
-> Console: colour VGA+ 80x25
-> console [ttyS1] enabled
-> Dentry cache hash table entries: 4096 (order: 2, 16384 bytes)
-> Inode-cache hash table entries: 2048 (order: 1, 8192 bytes)
-> Memory: 24592k/28672k available (1467k kernel code, 3688k reserved, 465k data, 132k init, 0k highmem)
-> virtual kernel memory layout:
->     fixmap  : 0xfffeb000 - 0xfffff000   (  80 kB)
->     vmalloc : 0xc2400000 - 0xfffe9000   ( 987 MB)
->     lowmem  : 0xc0000000 - 0xc1c00000   (  28 MB)
->       .init : 0xc02e6000 - 0xc0307000   ( 132 kB)
->       .data : 0xc026eef0 - 0xc02e34f8   ( 465 kB)
->       .text : 0xc0100000 - 0xc026eef0   (1467 kB)
-> Checking if this processor honours the WP bit even in supervisor mode...Ok.
-> Calibrating delay loop... 49.66 BogoMIPS (lpj=248320)
-> Mount-cache hash table entries: 512
-> 
-> CPU: Intel 486 DX/4 stepping 00
-> Checking 'hlt' instruction... OK.
-> net_namespace: 296 bytes
-> NET: Registered protocol family 16
-> bio: create slab <bio-0> at 0
-> SCSI subsystem initialized
-> NET: Registered protocol family 2
-> IP route cache hash table entries: 1024 (order: 0, 4096 bytes)
-> TCP established hash table entries: 1024 (order: 1, 8192 bytes)
-> TCP bind hash table entries: 1024 (order: 0, 4096 bytes)
-> TCP: Hash tables configured (established 1024 bind 1024)
-> TCP reno registered
-> NET: Registered protocol family 1
-> Unpacking initramfs...
-> Freeing initrd memory: 1234k freed
-> platform rtc_cmos: registered platform RTC device (no PNP device found)
-> msgmni has been set to 50
-> io scheduler noop registered
-> io scheduler anticipatory registered (default)
-> io scheduler deadline registered
-> io scheduler cfq registered
-> Real Time Clock Driver v1.12b
-> Serial: 8250/16550 driver, 4 ports, IRQ sharing disabled
-> serial8250: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
-> serial8250: ttyS1 at I/O 0x2f8 (irq = 3) is a 16550A
-> Driver 'sd' needs updating - please use bus_type methods
-> scsi0 : pata_legacy
-> ata1: PATA max PIO4 cmd 0x1f0 ctl 0x3f6 irq 14
-> ------------[ cut here ]------------
-> WARNING: at drivers/ata/libata-core.c:6222 ata_host_detach+0x75/0x90()
-> Modules linked in:
-> Pid: 1, comm: swapper Not tainted 2.6.30-rc7 #1
-> Call Trace:
->  [<c01fbb05>] ? ata_host_detach+0x75/0x90
->  [<c01fbb05>] ? ata_host_detach+0x75/0x90
->  [<c01139b5>] ? warn_slowpath_common+0x45/0x80
->  [<c01139fa>] ? warn_slowpath_null+0xa/0x10
->  [<c01fbb05>] ? ata_host_detach+0x75/0x90
->  [<c02f40e0>] ? legacy_init+0x44e/0x87f
->  [<c02f3c92>] ? legacy_init+0x0/0x87f
->  [<c0101021>] ? _stext+0x21/0x140
->  [<c01890ff>] ? proc_register+0x2f/0x190
->  [<c018938c>] ? create_proc_entry+0x5c/0xc0
->  [<c0135ebe>] ? register_irq_proc+0x6e/0x90
->  [<c02e6484>] ? kernel_init+0x6e/0xbf
->  [<c02e6416>] ? kernel_init+0x0/0xbf
->  [<c01031d7>] ? kernel_thread_helper+0x7/0x10
-> ---[ end trace ef1ee36e873ae3a0 ]---
-> scsi1 : pata_legacy
-> ata2: PATA max PIO4 cmd 0x170 ctl 0x376 irq 15
-> ------------[ cut here ]------------
-> WARNING: at drivers/ata/libata-core.c:6222 ata_host_detach+0x75/0x90()
-> Modules linked in:
-> Pid: 1, comm: swapper Tainted: G        W  2.6.30-rc7 #1
-> Call Trace:
->  [<c01fbb05>] ? ata_host_detach+0x75/0x90
->  [<c01fbb05>] ? ata_host_detach+0x75/0x90
->  [<c01139b5>] ? warn_slowpath_common+0x45/0x80
->  [<c01139fa>] ? warn_slowpath_null+0xa/0x10
->  [<c01fbb05>] ? ata_host_detach+0x75/0x90
->  [<c02f40e0>] ? legacy_init+0x44e/0x87f
->  [<c02f3c92>] ? legacy_init+0x0/0x87f
->  [<c0101021>] ? _stext+0x21/0x140
->  [<c01890ff>] ? proc_register+0x2f/0x190
->  [<c018938c>] ? create_proc_entry+0x5c/0xc0
->  [<c0135ebe>] ? register_irq_proc+0x6e/0x90
->  [<c02e6484>] ? kernel_init+0x6e/0xbf
->  [<c02e6416>] ? kernel_init+0x0/0xbf
->  [<c01031d7>] ? kernel_thread_helper+0x7/0x10
-> ---[ end trace ef1ee36e873ae3a1 ]---
-> scsi2 : pata_legacy
-> ata3: PATA max PIO4 cmd 0x1e8 ctl 0x3ee irq 11
-> ------------[ cut here ]------------
-> WARNING: at drivers/ata/libata-core.c:6222 ata_host_detach+0x75/0x90()
-> Modules linked in:
-> Pid: 1, comm: swapper Tainted: G        W  2.6.30-rc7 #1
-> Call Trace:
->  [<c01fbb05>] ? ata_host_detach+0x75/0x90
->  [<c01fbb05>] ? ata_host_detach+0x75/0x90
->  [<c01139b5>] ? warn_slowpath_common+0x45/0x80
->  [<c01139fa>] ? warn_slowpath_null+0xa/0x10
->  [<c01fbb05>] ? ata_host_detach+0x75/0x90
->  [<c02f40e0>] ? legacy_init+0x44e/0x87f
->  [<c02f3c92>] ? legacy_init+0x0/0x87f
->  [<c0101021>] ? _stext+0x21/0x140
->  [<c01890ff>] ? proc_register+0x2f/0x190
->  [<c018938c>] ? create_proc_entry+0x5c/0xc0
->  [<c0135ebe>] ? register_irq_proc+0x6e/0x90
->  [<c02e6484>] ? kernel_init+0x6e/0xbf
->  [<c02e6416>] ? kernel_init+0x0/0xbf
->  [<c01031d7>] ? kernel_thread_helper+0x7/0x10
-> ---[ end trace ef1ee36e873ae3a2 ]---
-> scsi3 : pata_legacy
-> ata4: PATA max PIO4 cmd 0x168 ctl 0x36e irq 10
-> ------------[ cut here ]------------
-> WARNING: at drivers/ata/libata-core.c:6222 ata_host_detach+0x75/0x90()
-> Modules linked in:
-> Pid: 1, comm: swapper Tainted: G        W  2.6.30-rc7 #1
-> Call Trace:
->  [<c01fbb05>] ? ata_host_detach+0x75/0x90
->  [<c01fbb05>] ? ata_host_detach+0x75/0x90
->  [<c01139b5>] ? warn_slowpath_common+0x45/0x80
->  [<c01139fa>] ? warn_slowpath_null+0xa/0x10
->  [<c01fbb05>] ? ata_host_detach+0x75/0x90
->  [<c02f40e0>] ? legacy_init+0x44e/0x87f
->  [<c02f3c92>] ? legacy_init+0x0/0x87f
->  [<c0101021>] ? _stext+0x21/0x140
->  [<c01890ff>] ? proc_register+0x2f/0x190
->  [<c018938c>] ? create_proc_entry+0x5c/0xc0
->  [<c0135ebe>] ? register_irq_proc+0x6e/0x90
->  [<c02e6484>] ? kernel_init+0x6e/0xbf
->  [<c02e6416>] ? kernel_init+0x0/0xbf
->  [<c01031d7>] ? kernel_thread_helper+0x7/0x10
-> ---[ end trace ef1ee36e873ae3a3 ]---
-> scsi4 : pata_legacy
-> ata5: PATA max PIO4 cmd 0x160 ctl 0x366 irq 12
-> ------------[ cut here ]------------
-> WARNING: at drivers/ata/libata-core.c:6222 ata_host_detach+0x75/0x90()
-> Modules linked in:
-> Pid: 1, comm: swapper Tainted: G        W  2.6.30-rc7 #1
-> Call Trace:
->  [<c01fbb05>] ? ata_host_detach+0x75/0x90
->  [<c01fbb05>] ? ata_host_detach+0x75/0x90
->  [<c01139b5>] ? warn_slowpath_common+0x45/0x80
->  [<c01139fa>] ? warn_slowpath_null+0xa/0x10
->  [<c01fbb05>] ? ata_host_detach+0x75/0x90
->  [<c02f40e0>] ? legacy_init+0x44e/0x87f
->  [<c02f3c92>] ? legacy_init+0x0/0x87f
->  [<c0101021>] ? _stext+0x21/0x140
->  [<c01890ff>] ? proc_register+0x2f/0x190
->  [<c018938c>] ? create_proc_entry+0x5c/0xc0
->  [<c0135ebe>] ? register_irq_proc+0x6e/0x90
->  [<c02e6484>] ? kernel_init+0x6e/0xbf
->  [<c02e6416>] ? kernel_init+0x0/0xbf
->  [<c01031d7>] ? kernel_thread_helper+0x7/0x10
-> ---[ end trace ef1ee36e873ae3a4 ]---
-> serio: i8042 KBD port at 0x60,0x64 irq 1
-> serio: i8042 AUX port at 0x60,0x64 irq 12
-> mice: PS/2 mouse device common for all mice
-> input: PC Speaker as /class/input/input0
-> TCP cubic registered
-> input: AT Translated Set 2 keyboard as /class/input/input1
-> 
-> At this point the kernel hangs until I flip the power switch.
-> This is 100% reproducible.
-> 
-> 2.6.29 worked Ok. A bug hunt showed that 2.6.29-git3 was the last kernel
-> to boot Ok on this machine, and every single one since 2.6.29-git4 hang.
-> 
-> 2.6.29-git4 was when Arjan removed the "async is off by default" code,
-> in commit 9710794383ee5008d67f1a6613a4717bf6de47bc. Reverting that
-> from 2.6.30-rc7 gives me a working kernel again.
-> 
-> I haven't had any async problems on my other machines, so presumably
-> the bug is in pata_legacy, or due to the machine being so insanely slow.
+Hi,
 
-Well, it looks like pata_legacy is doing some different things than 
-other drivers, in that it needs to attach to potential host addresses to 
-tell if there is a controller/device there and if it turns out not to 
-be, needs to detach the host entry it just created. This detach is 
-what's triggering the problem. It looks like somehow error handling 
-completes without setting the UNLOADED flag.
+On Mon, May 18, 2009 at 08:04:40PM +0200, Peter Feuerer wrote:
+> Hi,
+>
+> sorry for the delay, was quite busy the last days. New patch attached. I 
+> hope I didn't forget anything you suggested.
+> As usual patched against and tested with current linus git.
 
-I suspect the bug is not actually in pata_legacy though.
 
-> 
-> (I just saw James Bottomley's "[PATCH] async: make sure independent async
-> domains can't accidentally entangle". Unfortunately that patch makes no
-> difference to this machine's async-related boot failure.)
-> 
-> /Mikael
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-ide" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+> How does it work with those "Signed-off-by" and "Tested-by" lines,
+>should I add you to the list of Signed-off people? Or is this done by
+>the person who merges the patch?
 
+There's an excellent manual explaining all that at length:
+<Documentation/development-process/> and especially
+<Documentation/development-process/5.Posting> and
+<Documentation/SubmittingPatches, Section 14> which answers the
+particular question you have. I could try to rephrase that here but
+those documents explain it much better and extensively than I could.
+
+> kind regards and many thanks for your help,
+> --peter
+>
+>
+>
+> Signed-off-by: Peter Feuerer <peter@piie.net>
+
+Ok, minor nitpicks below but it starting to shape up quite ok. You could
+send it for inclusion upstream.
+
+Reviewed-by: Borislav Petkov <petkovbb@gmail.com>
+Tested-by: Borislav Petkov <petkovbb@gmail.com>
+
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 2b349ba..ded6b0c 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -222,6 +222,13 @@ L:	linux-acenic@sunsite.dk
+> S:	Maintained
+> F:	drivers/net/acenic*
+>
+> +ACER ASPIRE ONE TEMPERATURE AND FAN DRIVER
+> +P: Peter Feuerer
+> +M: peter@piie.net
+> +W: http://piie.net/?section=acerhdf
+> +S: Maintained
+> +F: drivers/platform/x86/acerhdf.c
+> +
+> ACER WMI LAPTOP EXTRAS
+> P:	Carlos Corbacho
+> M:	carlos@strangeworlds.co.uk
+> diff --git a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
+> index 284ebac..48b7362 100644
+> --- a/drivers/platform/x86/Kconfig
+> +++ b/drivers/platform/x86/Kconfig
+> @@ -34,6 +34,23 @@ config ACER_WMI
+> 	  If you have an ACPI-WMI compatible Acer/ Wistron laptop, say Y or M
+> 	  here.
+>
+> +config ACERHDF
+> +	tristate "Acer Aspire One temperature and fan driver"
+> +	depends on THERMAL && THERMAL_HWMON
+> +	---help---
+> +	  This is a driver for Acer Aspire One netbooks. It allows to access
+> +	  the temperature sensor and to control the fan.
+> +
+> +	  After loading this driver the BIOS controls still the fan.a
+
+				    the BIOS is still in control of the fan
+
+is better english, IMHO.
+
+> +	  To let the kernel handle the fan, do:
+> +	  echo -n enabled > /sys/class/thermal/thermal_zone0/mode
+> +
+> +	  For more information about this driver see
+> +	  <http://piie.net/files/acerhdf_README.txt>
+> +
+> +	  If you have an Acer Aspire One netbook, say Y or M
+> +	  here.
+> +
+> config ASUS_LAPTOP
+> 	tristate "Asus Laptop Extras (EXPERIMENTAL)"
+> 	depends on ACPI
+> diff --git a/drivers/platform/x86/Makefile b/drivers/platform/x86/Makefile
+> index e40c7bd..641b8bf 100644
+> --- a/drivers/platform/x86/Makefile
+> +++ b/drivers/platform/x86/Makefile
+> @@ -9,6 +9,7 @@ obj-$(CONFIG_COMPAL_LAPTOP)	+= compal-laptop.o
+> obj-$(CONFIG_DELL_LAPTOP)	+= dell-laptop.o
+> obj-$(CONFIG_DELL_WMI)		+= dell-wmi.o
+> obj-$(CONFIG_ACER_WMI)		+= acer-wmi.o
+> +obj-$(CONFIG_ACERHDF)		+= acerhdf.o
+> obj-$(CONFIG_HP_WMI)		+= hp-wmi.o
+> obj-$(CONFIG_TC1100_WMI)	+= tc1100-wmi.o
+> obj-$(CONFIG_SONY_LAPTOP)	+= sony-laptop.o
+> diff --git a/drivers/platform/x86/acerhdf.c b/drivers/platform/x86/acerhdf.c
+> new file mode 100644
+> index 0000000..99ae2e6
+> --- /dev/null
+> +++ b/drivers/platform/x86/acerhdf.c
+> @@ -0,0 +1,530 @@
+> +/*
+> + * acerhdf - A kernelmodule which monitors the temperature
+
+s/kernelmodule/driver/
+
+> + *           of the aspire one netbook, turns on/off the fan
+> + *           as soon as the upper/lower threshold is reached.
+> + *
+> + * (C) 2009 - Peter Feuerer     peter (a) piie.net
+> + *                              http://piie.net
+> + *
+> + * Inspired by and many thanks to:
+> + *  o acerfand   - Rachel Greenham
+> + *  o acer_ec.pl - Michael Kurz     michi.kurz (at) googlemail.com
+> + *               - Petr Tomasek     tomasek (#) etf,cuni,cz
+> + *               - Carlos Corbacho  cathectic (at) gmail.com
+> + *               - Matthew Garrett
+> + *               - Borislav Petkov
+> + *
+> + *  This program is free software; you can redistribute it and/or modify
+> + *  it under the terms of the GNU General Public License as published by
+> + *  the Free Software Foundation; either version 2 of the License, or
+> + *  (at your option) any later version.
+> + *
+> + *  This program is distributed in the hope that it will be useful,
+> + *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + *  GNU General Public License for more details.
+> + *
+> + *  You should have received a copy of the GNU General Public License
+> + *  along with this program; if not, write to the Free Software
+> + *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+> + */
+> +
+> +
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +#include <linux/fs.h>
+> +#include <linux/dmi.h>
+> +#include <acpi/acpi_drivers.h>
+> +#include <linux/sched.h>
+> +#include <linux/thermal.h>
+> +#include <linux/platform_device.h>
+> +
+> +/*
+> + * if you want the module to be started in kernelmode,
+
+s/kernelmode/kernel mode/g
+
+> + * uncomment following line:
+> + */
+> +/* #define START_IN_KERNEL_MODE */
+
+* define the following:
+*/
+#undef START_IN_KERNEL_MODE
+
+is better
+
+> +
+> +#define VERSION "0.5.2"
+> +
+> +/*
+> + * According to the Atom N270 datasheet,
+> + * (http://download.intel.com/design/processor/datashts/320032.pdf) the
+> + * CPU's optimal operating limits denoted in junction temperature as
+> + * measured by the on-die thermal monitor are within 0 <= Tj <= 90. So,
+> + * assume 89°C is critical temperature.
+> + */
+> +#define ACERHDF_TEMP_CRIT 89
+> +#define ACERHDF_FAN_AUTO 1
+> +#define ACERHDF_FAN_OFF 0
+> +
+> +/*
+> + * No matter what value the user puts into the fanon variable, turn on the fan
+> + * at 80 degree Celsius to prevent hardware damage
+> + */
+> +#define ACERHDF_MAX_FANON 80
+> +
+> +/*
+> + * Maximal interval between to temperature checks is 20 seconds, as the die
+> + * can get hot really fast under heavy load
+> + */
+> +#define ACERHDF_MAX_INTERVAL 20
+> +
+> +#define ACERHDF_ERROR -0xffff
+> +
+> +#define acerhdf_printk(loglevel, fmt, args...) \
+> +	printk(loglevel "acerhdf: " fmt, ## args);
+> +
+> +#define acerhdf_notice(fmt, args...) \
+> +	acerhdf_printk(KERN_NOTICE, fmt, ## args);
+> +
+> +#define acerhdf_error(fmt, args...) \
+> +	acerhdf_printk(KERN_ERR, fmt, ## args);
+> +
+> +
+> +#ifdef START_IN_KERNEL_MODE
+> +static int kernelmode = 1;
+> +#else
+> +static int kernelmode;
+> +#endif
+> +
+> +static int interval = 10;
+> +static int fanon = 65;
+> +static int fanoff = 60;
+> +static int verbose;
+> +static int fanstate = ACERHDF_FAN_AUTO;
+> +static int disable_kernelmode;
+> +static int bios_version = -1;
+> +static char force_bios[16];
+> +static int prev_interval;
+> +struct thermal_zone_device *acerhdf_thz_dev;
+> +struct thermal_cooling_device *acerhdf_cool_dev;
+
+let's make all those module parameters unsigned just in case because you
+can write negative values to them and acerhdf_check_param() won't catch
+invalid values:
+
+diff --git a/drivers/platform/x86/acerhdf.c b/drivers/platform/x86/acerhdf.c
+index 99ae2e6..d4fc5d3 100644
+--- a/drivers/platform/x86/acerhdf.c
++++ b/drivers/platform/x86/acerhdf.c
+@@ -83,32 +83,32 @@
+ 
+ 
+ #ifdef START_IN_KERNEL_MODE
+-static int kernelmode = 1;
++static unsigned int kernelmode = 1;
+ #else
+-static int kernelmode;
++static unsigned int kernelmode;
+ #endif
+ 
+-static int interval = 10;
+-static int fanon = 65;
+-static int fanoff = 60;
+-static int verbose;
+-static int fanstate = ACERHDF_FAN_AUTO;
++static unsigned int interval = 10;
++static unsigned int fanon = 65;
++static unsigned int fanoff = 60;
++static unsigned int verbose;
++static unsigned int fanstate = ACERHDF_FAN_AUTO;
+ static int disable_kernelmode;
+ static int bios_version = -1;
+ static char force_bios[16];
+-static int prev_interval;
++static unsigned int prev_interval;
+ struct thermal_zone_device *acerhdf_thz_dev;
+ struct thermal_cooling_device *acerhdf_cool_dev;
+ 
+-module_param(kernelmode, int, 0);
++module_param(kernelmode, uint, 0);
+ MODULE_PARM_DESC(kernelmode, "Kernel mode on / off");
+-module_param(interval, int, 0600);
++module_param(interval, uint, 0600);
+ MODULE_PARM_DESC(interval, "Polling interval of temperature check");
+-module_param(fanon, int, 0600);
++module_param(fanon, uint, 0600);
+ MODULE_PARM_DESC(fanon, "Turn the fan on above this temperature");
+-module_param(fanoff, int, 0600);
++module_param(fanoff, uint, 0600);
+ MODULE_PARM_DESC(fanoff, "Turn the fan off below this temperature");
+-module_param(verbose, int, 0600);
++module_param(verbose, uint, 0600);
+ MODULE_PARM_DESC(verbose, "Enable verbose dmesg outputs");
+ module_param_string(force_bios, force_bios, 16, 0);
+ MODULE_PARM_DESC(force_bios, "Force BIOS version and omit BIOS check");
+
+> +module_param(kernelmode, int, 0);
+> +MODULE_PARM_DESC(kernelmode, "Kernel mode on / off");
+> +module_param(interval, int, 0600);
+> +MODULE_PARM_DESC(interval, "Polling interval of temperature check");
+> +module_param(fanon, int, 0600);
+> +MODULE_PARM_DESC(fanon, "Turn the fan on above this temperature");
+> +module_param(fanoff, int, 0600);
+> +MODULE_PARM_DESC(fanoff, "Turn the fan off below this temperature");
+> +module_param(verbose, int, 0600);
+> +MODULE_PARM_DESC(verbose, "Enable verbose dmesg outputs");
+
+s/outputs/output/
+
+> +module_param_string(force_bios, force_bios, 16, 0);
+> +MODULE_PARM_DESC(force_bios, "Force BIOS version and omit BIOS check");
+> +
+> +/* BIOS settings */
+> +struct bios_settings_t {
+> +	const char *vendor;
+> +	const char *version;
+> +	unsigned char fanreg;
+> +	unsigned char tempreg;
+> +	unsigned char cmd_off;
+> +	unsigned char cmd_auto;
+> +};
+> +
+> +/* Register addresses and values for different BIOS versions */
+> +static const struct bios_settings_t bios_settings[] = {
+> +	{"Acer", "v0.3109", 0x55, 0x58, 0x1f, 0x00},
+> +	{"Acer", "v0.3114", 0x55, 0x58, 0x1f, 0x00},
+> +	{"Acer", "v0.3301", 0x55, 0x58, 0xaf, 0x00},
+> +	{"Acer", "v0.3304", 0x55, 0x58, 0xaf, 0x00},
+> +	{"Acer", "v0.3305", 0x55, 0x58, 0xaf, 0x00},
+> +	{"Acer", "v0.3308", 0x55, 0x58, 0x21, 0x00},
+> +	{"Acer", "v0.3309", 0x55, 0x58, 0x21, 0x00},
+> +	{"Gateway", "v0.3103", 0x55, 0x58, 0x21, 0x00},
+> +	{"Packard Bell", "v0.3105", 0x55, 0x58, 0x21, 0x00},
+> +	{"", 0, 0, 0, 0, 0}
+> +};
+> +
+> +
+> +/* acer ec functions */
+> +static int acerhdf_get_temp(void)
+> +{
+> +	u8 temp;
+> +	/* read temperature */
+> +	if (!ec_read(bios_settings[bios_version].tempreg, &temp)) {
+> +		if (verbose)
+
+you need to check the error status here before printing the temperature
+since it might be invalid if the ec_read has failed:
+
+	u8 temp;
+	int err;
+
+	err = ec_read(bios_settings[bios_version].tempreg, &temp);
+
+	if (err)
+		return ACERHDF_ERROR;
+
+	if (verbose)
+		acerhdf_notice("temp %d\n", temp);
+
+	return temp;
+}
+
+> +			acerhdf_notice("temp %d\n", temp);
+> +		return temp;
+> +	}
+> +	return ACERHDF_ERROR;
+> +}
+> +
+> +static int acerhdf_get_fanstate(void)
+> +{
+> +	u8 fan;
+
+need a new line here.
+
+> +	if (!ec_read(bios_settings[bios_version].fanreg, &fan))
+> +		return (fan == bios_settings[bios_version].cmd_off) ?
+> +			ACERHDF_FAN_OFF : ACERHDF_FAN_AUTO;
+> +
+> +	return ACERHDF_ERROR;
+> +}
+> +
+> +static void acerhdf_change_fanstate(int state)
+> +{
+> +	unsigned char cmd;
+> +
+> +	if (verbose)
+> +		acerhdf_notice("fan %s\n", (state == ACERHDF_FAN_AUTO) ?
+> +				"ON" : "OFF");
+> +
+> +	if (state == ACERHDF_FAN_AUTO) {
+> +		cmd = bios_settings[bios_version].cmd_auto;
+> +		fanstate = ACERHDF_FAN_AUTO;
+> +	} else {
+> +		cmd = bios_settings[bios_version].cmd_off;
+> +		fanstate = ACERHDF_FAN_OFF;
+> +	}
+> +
+> +	ec_write(bios_settings[bios_version].fanreg, cmd);
+> +
+> +}
+> +
+> +/* helpers */
+> +static void acerhdf_check_param(struct thermal_zone_device *thermal)
+> +{
+> +	if (fanon > ACERHDF_MAX_FANON) {
+> +		acerhdf_error("fanon temperature too high, set to %d\n",
+> +				ACERHDF_MAX_FANON);
+> +		fanon = ACERHDF_MAX_FANON;
+> +	}
+> +	if (kernelmode && prev_interval != interval) {
+> +		if (interval > ACERHDF_MAX_INTERVAL) {
+> +			acerhdf_error("interval too high, set to %d\n",
+> +					ACERHDF_MAX_INTERVAL);
+> +			interval = ACERHDF_MAX_INTERVAL;
+> +		}
+> +		if (verbose)
+> +			acerhdf_notice("interval changed to: %d\n",
+> +					interval);
+> +		thermal->polling_delay = interval*1000;
+> +		prev_interval = interval;
+> +	}
+> +}
+> +
+> +/* thermal zone callback functions */
+> +static int acerhdf_get_ec_temp(struct thermal_zone_device *thermal,
+> +		unsigned long *t)
+> +{
+> +	int temp;
+> +
+> +	acerhdf_check_param(thermal);
+> +
+> +	temp = acerhdf_get_temp();
+> +	if (temp == ACERHDF_ERROR)
+> +		return -EINVAL;
+> +
+> +	*t = temp;
+> +	return 0;
+> +}
+> +
+> +static int acerhdf_bind(struct thermal_zone_device *thermal,
+> +		struct thermal_cooling_device *cdev)
+> +{
+> +	/* if the cooling device is the one from acerhdf bind it */
+> +	if (cdev == acerhdf_cool_dev) {
+
+you can save an indentation level here by exiting early:
+
+	if (cdev != acerhdf_cool_dev)
+		return 0;
+
+	if (thermal_zone_bind_cooling_device(thermal, 0, cdev)) {
+		acerhdf_error("error binding cooling dev\n");
+		return -EINVAL;
+	}
+
+	return 0;
+}
+
+> +		if (thermal_zone_bind_cooling_device(thermal, 0, cdev)) {
+> +			acerhdf_error("error binding cooling dev\n");
+> +			return -EINVAL;
+> +		}
+> +	}
+> +	return 0;
+> +}
+> +
+> +static int acerhdf_unbind(struct thermal_zone_device *thermal,
+> +		struct thermal_cooling_device *cdev)
+> +{
+> +	if (cdev == acerhdf_cool_dev) {
+
+same as above.
+
+> +		if (thermal_zone_unbind_cooling_device(thermal, 0, cdev)) {
+> +			acerhdf_error("acerhdf: error unbinding cooling dev\n");
+> +			return -EINVAL;
+> +		}
+> +	}
+> +	return 0;
+> +}
+> +
+> +/*  current operation mode - enabled / disabled */
+> +static int acerhdf_get_mode(struct thermal_zone_device *thermal,
+> +		enum thermal_device_mode *mode)
+> +{
+> +	if (verbose)
+> +		acerhdf_notice("kernelmode %d\n", kernelmode);
+
+s/kernelmode/kernel mode/
+
+> +
+> +	*mode = (kernelmode) ? THERMAL_DEVICE_ENABLED :
+> +		THERMAL_DEVICE_DISABLED;
+> +
+> +	return 0;
+> +}
+> +
+> +/*
+> + * set operation mode;
+> + * enabled: the thermal layer of the kernel takes care about
+> + *          the temperature and the fan.
+> + * disabled: the BIOS takes control of the fan.
+> + */
+> +static int acerhdf_set_mode(struct thermal_zone_device *thermal,
+> +		enum thermal_device_mode mode)
+> +{
+> +	if (mode == THERMAL_DEVICE_DISABLED) {
+> +		acerhdf_notice("kernelmode OFF\n");
+
+ditto.
+
+> +		thermal->polling_delay = 0;
+> +		thermal_zone_device_update(thermal);
+> +		acerhdf_change_fanstate(ACERHDF_FAN_AUTO);
+> +
+> +		/*
+> +		 * let the thermal layer disable kernelmode. This ensures that
+> +		 * the thermal layer doesn't switch off the fan again
+> +		 */
+> +		disable_kernelmode = 1;
+> +	} else {
+> +		acerhdf_notice("kernelmode ON\n");
+
+ditto.
+
+> +		thermal->polling_delay = interval*1000;
+> +		thermal_zone_device_update(thermal);
+> +		kernelmode = 1;
+> +	}
+> +	return 0;
+> +}
+> +
+> +static int acerhdf_get_trip_type(struct thermal_zone_device *thermal,
+> +		int trip, enum thermal_trip_type *type)
+> +{
+> +	if (trip == 0)
+> +		*type = THERMAL_TRIP_ACTIVE;
+> +	return 0;
+> +}
+> +
+> +static int acerhdf_get_trip_temp(struct thermal_zone_device *thermal,
+> +		int trip, unsigned long *temp)
+> +{
+> +	if (trip == 0)
+> +		*temp = fanon;
+> +	return 0;
+> +}
+> +
+> +static int acerhdf_get_crit_temp(struct thermal_zone_device *thermal,
+> +		unsigned long *temperature)
+> +{
+> +	*temperature = ACERHDF_TEMP_CRIT;
+> +	return 0;
+> +}
+> +
+> +/* bind callback functions to thermalzone */
+> +struct thermal_zone_device_ops acerhdf_device_ops = {
+> +	.bind = acerhdf_bind,
+> +	.unbind = acerhdf_unbind,
+> +	.get_temp = acerhdf_get_ec_temp,
+> +	.get_mode = acerhdf_get_mode,
+> +	.set_mode = acerhdf_set_mode,
+> +	.get_trip_type = acerhdf_get_trip_type,
+> +	.get_trip_temp = acerhdf_get_trip_temp,
+> +	.get_crit_temp = acerhdf_get_crit_temp,
+> +};
+> +
+> +
+> +/*
+> + * cooling device callback functions
+> + * get maximal fan cooling state
+> + */
+> +static int acerhdf_get_max_state(struct thermal_cooling_device *cdev,
+> +		unsigned long *state)
+> +{
+> +	*state = 1;
+> +	return 0;
+> +}
+> +
+> +static int acerhdf_get_cur_state(struct thermal_cooling_device *cdev,
+> +		unsigned long *state)
+> +{
+> +	unsigned long st = acerhdf_get_fanstate();
+> +
+> +	if (st == ACERHDF_ERROR)
+> +		return -EINVAL;
+> +
+> +	*state = (st == ACERHDF_FAN_AUTO) ? 1 : 0;
+> +	return 0;
+> +}
+> +
+> +/* change current fan state - is overwritten when running in kernel mode */
+> +static int acerhdf_set_cur_state(struct thermal_cooling_device *cdev,
+> +		unsigned long state)
+> +{
+> +	int old_state;
+
+well, this variable should be called current_state or similar but not
+old since it is written through acerhdf_get_fanstate(), which returns
+the current state.
+
+> +
+> +	/*
+> +	 * let the thermal layer disable kernelmode. This ensures that
+> +	 * the thermal layer doesn't switch off the fan again
+> +	 */
+> +	if (disable_kernelmode) {
+> +		acerhdf_change_fanstate(ACERHDF_FAN_AUTO);
+> +		disable_kernelmode = 0;
+> +		kernelmode = 0;
+> +		return 0;
+> +	}
+> +
+> +	if (!kernelmode) {
+> +		acerhdf_error("changing fan state is not allowed\n");
+> +		return -EINVAL;
+> +	}
+> +
+> +	old_state = acerhdf_get_fanstate();
+> +
+> +	/*
+> +	 * if reading the fan's state returns unexpected value, there's a
+> +	 * problem with the ec register. -> let the BIOS take control of
+> +	 * the fan to prevent hardware damage
+> +	 */
+> +	if (old_state != fanstate) {
+> +		acerhdf_error("failed reading fan state, "
+> +				"disabling kernelmode.\n");
+
+s/kernelmode/kernel mode/
+
+> +
+> +		if (verbose)
+> +			acerhdf_error("read state: %d expected state: %d\n",
+> +					old_state, fanstate);
+> +
+> +		acerhdf_change_fanstate(ACERHDF_FAN_AUTO);
+> +		disable_kernelmode = 1;
+> +	}
+> +
+> +	if (state == 0) {
+> +		/* turn fan off only if below fanoff temperature */
+> +		if ((old_state == ACERHDF_FAN_AUTO) &&
+> +				(acerhdf_get_temp() < fanoff))
+
+it might be cool to tell the user why you're not turning off the fan.
+
+		if (verbose)
+			acerhdf_notice("Not turning off fan due to current temp "
+				       "exceeding fanoff value\n");
+
+> +			acerhdf_change_fanstate(ACERHDF_FAN_OFF);
+> +	} else {
+> +		if (old_state == ACERHDF_FAN_OFF)
+> +			acerhdf_change_fanstate(ACERHDF_FAN_AUTO);
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +/* bind fan callbacks to fan device */
+> +struct thermal_cooling_device_ops acerhdf_cooling_ops = {
+> +	.get_max_state = acerhdf_get_max_state,
+> +	.get_cur_state = acerhdf_get_cur_state,
+> +	.set_cur_state = acerhdf_set_cur_state,
+> +};
+> +
+> +/* check hardware */
+> +static int acerhdf_check_hardware(void)
+> +{
+> +	int i;
+> +	char const *vendor;
+> +	char const *version;
+> +	char const *release;
+> +	char const *product;
+> +
+> +	/* get BIOS data */
+> +	vendor  = dmi_get_system_info(DMI_SYS_VENDOR);
+> +	version = dmi_get_system_info(DMI_BIOS_VERSION);
+> +	release = dmi_get_system_info(DMI_BIOS_DATE);
+> +	product = dmi_get_system_info(DMI_PRODUCT_NAME);
+> +
+> +
+> +	acerhdf_notice("%s found BIOS vendor: \"%s\" version: \"%s\"\n",
+
+let's split that line:
+
+	acerhdf_notice("version %s\n", VERSION);
+	acerhdf_notice("BIOS vendor: \"%s\", version: \"%s\"\n",
+		       vendor, version);
+
+> +	if (verbose)
+> +		acerhdf_notice("BIOS release: \"%s\" product: \"%s\"\n",
+> +				release, product);
+> +
+> +	if (!force_bios[0]) {
+> +		/* check if product is a AO - Aspire One */
+> +		if (strncmp(product, "AO", 2)) {
+> +			acerhdf_error("no Aspire One hardware found\n");
+> +			return ACERHDF_ERROR;
+> +		}
+> +	} else {
+> +		acerhdf_notice("acerhdf: BIOS version: %s forced\n", version);
+> +		version = force_bios;
+> +		kernelmode = 0;
+> +	}
+> +
+> +	/*
+> +	 * if started with kernelmode off, prevent the kernel from switching
+> +	 * off the fan
+> +	 */
+> +	if (!kernelmode) {
+> +		disable_kernelmode = 1;
+> +		acerhdf_notice("Fancontrol off, to enable:\n");
+
+s/Fancontrol/Fan control/
+
+> +		acerhdf_notice("echo -n \"enabled\" > "
+> +			"/sys/class/thermal/thermal_zone0/mode\n");
+> +		acerhdf_notice("http://piie.net/files/acerhdf_README.txt\n");
+> +	}
+> +
+> +
+> +	/* search BIOS version and BIOS vendor in BIOS settings table */
+> +	for (i = 0; bios_settings[i].version[0]; ++i) {
+> +		if (!strcmp(bios_settings[i].vendor, vendor) &&
+> +				!strcmp(bios_settings[i].version, version)) {
+> +			bios_version = i;
+> +			break;
+> +		}
+> +	}
+> +	if (bios_version == -1) {
+> +		acerhdf_error("cannot find BIOS version\n");
+> +		return ACERHDF_ERROR;
+> +	}
+> +	return 0;
+> +}
+> +
+> +static int acerhdf_register_thermal(void)
+> +{
+> +	acerhdf_cool_dev = thermal_cooling_device_register("acerhdf-fan", NULL,
+> +			&acerhdf_cooling_ops);
+> +	if (IS_ERR(acerhdf_cool_dev))
+> +		return ACERHDF_ERROR;
+> +
+> +	acerhdf_thz_dev = thermal_zone_device_register("acerhdf", 1,
+> +			NULL, &acerhdf_device_ops, 0, 0, 0,
+> +			(kernelmode) ? interval*1000 : 0);
+> +	if (IS_ERR(acerhdf_thz_dev))
+> +		return ACERHDF_ERROR;
+> +
+> +	return 0;
+> +}
+> +
+> +static void acerhdf_unregister_thermal(void)
+> +{
+> +	if (acerhdf_cool_dev) {
+> +		thermal_cooling_device_unregister(acerhdf_cool_dev);
+> +		acerhdf_cool_dev = NULL;
+> +	}
+> +
+> +	if (acerhdf_thz_dev) {
+> +		thermal_zone_device_unregister(acerhdf_thz_dev);
+> +		acerhdf_thz_dev = NULL;
+> +	}
+> +}
+> +
+> +/* kernel module init / exit functions */
+> +static int __init acerhdf_init(void)
+> +{
+> +	if (acerhdf_check_hardware() == ACERHDF_ERROR)
+> +		return -ENODEV;
+> +
+> +	if (acerhdf_register_thermal() == ACERHDF_ERROR) {
+> +		acerhdf_unregister_thermal();
+> +		return -ENODEV;
+> +	}
+
+let's make that function even one more readable:
+
+static int __init acerhdf_init(void)
+{
+
+	if (acerhdf_check_hardware() == ACERHDF_ERROR)
+		goto err;
+
+	if (acerhdf_register_thermal() == ACERHDF_ERROR)
+		goto err_unreg;
+
+	return 0;
+
+err_unreg:
+	acerhdf_unregister_thermal();
+
+err:
+	return -EINVAL;
+}
+
+> +
+> +	return 0;
+> +}
+> +
+> +static void __exit acerhdf_exit(void)
+> +{
+> +	acerhdf_change_fanstate(ACERHDF_FAN_AUTO);
+> +
+> +	acerhdf_unregister_thermal();
+> +}
+> +
+> +MODULE_LICENSE("GPL");
+> +MODULE_AUTHOR("Peter Feuerer");
+> +MODULE_DESCRIPTION("Aspire One temperature and fan driver");
+> +MODULE_ALIAS("dmi:*:*Acer*:*:");
+> +MODULE_ALIAS("dmi:*:*Gateway*:*:");
+> +MODULE_ALIAS("dmi:*:*Packard Bell*:*:");
+> +
+> +/* what are the module init/exit functions */
+
+no need for that comment
+
+> +module_init(acerhdf_init);
+> +module_exit(acerhdf_exit);
+
+-- 
+Regards/Gruss,
+    Boris.
