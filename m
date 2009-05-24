@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757262AbZEXTmr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757733AbZEXTm7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757262AbZEXTmr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 May 2009 15:42:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751335AbZEXTmj
+	id S1757733AbZEXTm7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 May 2009 15:42:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755934AbZEXTms
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 May 2009 15:42:39 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:39438 "EHLO
+	Sun, 24 May 2009 15:42:48 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:39468 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751442AbZEXTmi (ORCPT
+	with ESMTP id S1755963AbZEXTmr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 May 2009 15:42:38 -0400
-Date: Sun, 24 May 2009 21:42:31 +0200
+	Sun, 24 May 2009 15:42:47 -0400
+Date: Sun, 24 May 2009 21:42:45 +0200
 From: Pavel Machek <pavel@ucw.cz>
-To: "Cihula, Joseph" <joseph.cihula@intel.com>
-Cc: James Morris <jmorris@namei.org>, Theodore Tso <tytso@mit.edu>,
+To: Theodore Tso <tytso@mit.edu>, "Cihula, Joseph" <joseph.cihula@intel.com>,
+       James Morris <jmorris@namei.org>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
        "mingo@elte.hu" <mingo@elte.hu>,
        "arjan@linux.intel.com" <arjan@linux.intel.com>,
@@ -23,15 +23,15 @@ Cc: James Morris <jmorris@namei.org>, Theodore Tso <tytso@mit.edu>,
        "jbeulich@novell.com" <jbeulich@novell.com>,
        "peterm@redhat.com" <peterm@redhat.com>,
        "Wei, Gang" <gang.wei@intel.com>, "Wang, Shane" <shane.wang@intel.com>,
-       John Gilmore <gnu@toad.com>, pavel@ucw.cz
+       John Gilmore <gnu@toad.com>
 Subject: Re: [RFC v3][PATCH 2/2] intel_txt: Intel(R) TXT and tboot kernel
 	support
-Message-ID: <20090524194231.GB1337@ucw.cz>
-References: <4A03B9C3.9090607@intel.com> <20090512210154.GC23773@mit.edu> <alpine.LRH.2.00.0905151006020.5527@tundra.namei.org> <4F65016F6CB04E49BFFA15D4F7B798D99B4752F3@orsmsx506.amr.corp.intel.com>
+Message-ID: <20090524194245.GC1337@ucw.cz>
+References: <4A03B9C3.9090607@intel.com> <20090512210154.GC23773@mit.edu> <alpine.LRH.2.00.0905151006020.5527@tundra.namei.org> <4F65016F6CB04E49BFFA15D4F7B798D99B4752F3@orsmsx506.amr.corp.intel.com> <20090515120748.GF6816@mit.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4F65016F6CB04E49BFFA15D4F7B798D99B4752F3@orsmsx506.amr.corp.intel.com>
+In-Reply-To: <20090515120748.GF6816@mit.edu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,60 +39,42 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi!
 
-> >   I'd prefer discussion to be public, so I don't mind leaving more
-> >   detailed discussion to that.
-> >
-> >   There has been considerable discussion on the issue, following Linus'
-> >   statement (which I'm sure you're aware of):
-> >
-> >   http://marc.info/?l=linux-kernel&m=105115686114064&w=2
-> >
-> >   My position is similar -- people can decide for themselves whether they
-> >   want to use DRM technology.  I'm also confident that technical measures
-> >   taken to prevent real freedom will always be broken (when have they ever
-> >   not been?)
+> With TXT, however, all of these problems go away.  What you end up
+> booting is completely under "Circit City's DIVX's" control, and may
+> include a miniature Windows environment running in the trusted
+> environment; it could then take over a portion of the screen for the
+> video output, and the hardware would have special features set up to
+> prevent the host OS from having any access to the video output of the
+> movie player running in the TXT environment.  (This was how Intel
+> presented the LaGrande technology to the Kernel Summit several years
+> ago, and I assume the capabilities of TXT hasn't change significantly
+> since then.)
 
-Linus says he hates drm but does not want to stop it through legal
-means, because its impossible. Does that mean we should merge any
-random drm crap? I hope not.
+How does this interact with keyboard handling?
 
-> >   I also feel there may be genuinely useful applications of some of the
-> >   technology (e.g. sealing disk encryption keys in the TPM a la
-> >   BitLocker).
-> >
-> > I'm fairly neutral on the technology itself and feel that "market
-> > pressure" from users as well as local regulatory policy (e.g. anti-trust
-> > laws) should determine how the technology is used, rather than the views
-> > of a few kernel hackers.
+> Essentially, it's hard for me to think up situations where the TCPA
+> chip would not be sufficient in terms of being a solution to a
+> security problem that has the user's best interests at heart, rather
+> than that of Hollywood, and where TXT would be a such a solution.
+> Medical records are perhaps the best example I can come up with; and
+> maybe some kind of bank security system where you're only allowed to
+> engage in on-line banking if you run a bank-supplied application in
+> the TXT environment.  However, it's hard for me to believe banks and
+> hospitals will invest in solutions that implement these sorts of
+> benign solutions, and it's all too easy for me to believe that
+> Hollywood will invest in these sorts of solutions.
 
-So some of the technology is useful -> we merge all of it?
+I suspect it does not 'protect' keyboard at all, meaning it is only
+useful for drm.
+> The bottom line is it this is a social problem, not a technical
+> problem, and probably needs to be solved by social means (i.e., an
+> FSF-led boycott).  But from a technical point of view, I would be
+> shocked if the first major user of the TXT technology *wasn't* to
+> provide DRM enforcement of one kind or another.
 
-> For a balanced view on Trusted Computing, people should also read
-> David Safford's (IBM) rebuttal whitepaper at:
-> http://www.research.ibm.com/gsal/tcpa/tcpa_rebuttal.pdf.
-
-Sorry, but that article is full of hype, nothing balanced on it. Plus
-it speaks about different technology. Plus it is intentionally
-misleading.
-
->Technology (Intel(R) TXT).  Any technology can be used for good or
->bad, but Intel has tried to ensure that users have control of TXT.
-
-I don't see where you got that nonsense.
-
-Try using atomic bomb for something good. Then try to use tv remote
-control for something bad.
-
-TXT was specifically designed to enable atomic bombs^W^W drm, and I
-see no other reasonable use.
- 
-> I would also encourage those who are concerned about these patches
-> to look at the Linux code and tboot code to satisfy themselves that
-> it is providing exactly what we have claimed.
-
-I certainly hope booting secure sandbox is root-only operation... is
-it?
-									Pavel
+I see not merging / dropping changes only useful for drm from linux
+kernelas a valid 'social means'...
+								Pavel
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
