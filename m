@@ -1,240 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758067AbZEXQOU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755456AbZEXQjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758067AbZEXQOU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 May 2009 12:14:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755891AbZEXQN6
+	id S1755456AbZEXQjS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 May 2009 12:39:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752991AbZEXQjI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 May 2009 12:13:58 -0400
-Received: from aun.it.uu.se ([130.238.12.36]:65258 "EHLO aun.it.uu.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752849AbZEXQNz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 May 2009 12:13:55 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 24 May 2009 12:39:08 -0400
+Received: from casper.infradead.org ([85.118.1.10]:34492 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752849AbZEXQjH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 May 2009 12:39:07 -0400
+Date: Sun, 24 May 2009 09:38:51 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: pageexec@freemail.hu
+Cc: "Larry H." <research@subreption.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ingo Molnar <mingo@elte.hu>, Rik van Riel <riel@redhat.com>,
+       linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>,
+       linux-mm@kvack.org, Ingo Molnar <mingo@redhat.com>
+Subject: Re: [PATCH] Support for unconditional page sanitization
+Message-ID: <20090524093851.37cbb4d6@infradead.org>
+In-Reply-To: <4A191F44.24468.2C006647@pageexec.freemail.hu>
+References: <20090520183045.GB10547@oblivion.subreption.com>
+	<20090523182141.GK13971@oblivion.subreption.com>
+	<20090523140509.5b4a59e4@infradead.org>
+	<4A191F44.24468.2C006647@pageexec.freemail.hu>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-ID: <18969.29245.610133.834819@pilspetsen.it.uu.se>
-Date: Sun, 24 May 2009 18:13:49 +0200
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: linux-kernel@vger.kernel.org
-Cc: linux-ide@vger.kernel.org, arjan@linux.intel.com
-Subject: [2.6.30-rc7 regression] kernel/async.c broke pata_legacy.c
-X-Mailer: VM 7.17 under Emacs 20.7.1
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I tried booting 2.6.30-rc7 on my old '486, but it fails miserably
-during libata/pata_legacy's device scan:
+On Sun, 24 May 2009 12:19:48 +0200
+pageexec@freemail.hu wrote:
 
-Linux version 2.6.30-rc7 (mikpe@brewer) (gcc version 4.3.4 20090517 (prerelease) (GCC) ) #1 Sun May 24 16:05:18 CEST 2009
-KERNEL supported cpus:
-  Intel GenuineIntel
-BIOS-provided physical RAM map:
- BIOS-88: 0000000000000000 - 000000000009f000 (usable)
- BIOS-88: 0000000000100000 - 0000000001c00000 (usable)
-last_pfn = 0x1c00 max_arch_pfn = 0x100000
-init_memory_mapping: 0000000000000000-0000000001c00000
-RAMDISK: 01abb000 - 01bef86b
-28MB LOWMEM available.
-  mapped low ram: 0 - 01c00000
-  low ram: 0 - 01c00000
-  node 0 low ram: 00000000 - 01c00000
-  node 0 bootmap 00001000 - 00001380
-(7 early reservations) ==> bootmem [0000000000 - 0001c00000]
-  #0 [0000000000 - 0000001000]   BIOS data page ==> [0000000000 - 0000001000]
-  #1 [0000100000 - 000031d1ec]    TEXT DATA BSS ==> [0000100000 - 000031d1ec]
-  #2 [0001abb000 - 0001bef86b]          RAMDISK ==> [0001abb000 - 0001bef86b]
-  #3 [000009f000 - 0000100000]    BIOS reserved ==> [000009f000 - 0000100000]
-  #4 [000031e000 - 0000320000]              BRK ==> [000031e000 - 0000320000]
-  #5 [0000007000 - 000000c000]          PGTABLE ==> [0000007000 - 000000c000]
-  #6 [0000001000 - 0000002000]          BOOTMAP ==> [0000001000 - 0000002000]
-Zone PFN ranges:
-  DMA      0x00000000 -> 0x00001000
-  Normal   0x00001000 -> 0x00001c00
-Movable zone start PFN for each node
-early_node_map[2] active PFN ranges
-    0: 0x00000000 -> 0x0000009f
-    0: 0x00000100 -> 0x00001c00
-Allocating PCI resources starting at 10000000 (gap: 1c00000:fe400000)
-Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 7015
-Kernel command line: ro root=LABEL=/ console=ttyS1,115200
-Initializing CPU#0
-NR_IRQS:16
-PID hash table entries: 128 (order: 7, 512 bytes)
-Console: colour VGA+ 80x25
-console [ttyS1] enabled
-Dentry cache hash table entries: 4096 (order: 2, 16384 bytes)
-Inode-cache hash table entries: 2048 (order: 1, 8192 bytes)
-Memory: 24592k/28672k available (1467k kernel code, 3688k reserved, 465k data, 132k init, 0k highmem)
-virtual kernel memory layout:
-    fixmap  : 0xfffeb000 - 0xfffff000   (  80 kB)
-    vmalloc : 0xc2400000 - 0xfffe9000   ( 987 MB)
-    lowmem  : 0xc0000000 - 0xc1c00000   (  28 MB)
-      .init : 0xc02e6000 - 0xc0307000   ( 132 kB)
-      .data : 0xc026eef0 - 0xc02e34f8   ( 465 kB)
-      .text : 0xc0100000 - 0xc026eef0   (1467 kB)
-Checking if this processor honours the WP bit even in supervisor mode...Ok.
-Calibrating delay loop... 49.66 BogoMIPS (lpj=248320)
-Mount-cache hash table entries: 512
+> On 23 May 2009 at 14:05, Arjan van de Ven wrote:
+> 
+> > On Sat, 23 May 2009 11:21:41 -0700
+> > "Larry H." <research@subreption.com> wrote:
+> > 
+> > > +static inline void sanitize_highpage(struct page *page)
+> > 
+> > any reason we're not reusing clear_highpage() for this?
+> > (I know it's currently slightly different, but that is fixable)
+> 
+> KM_USER0 users are not supposed to be called from soft/hard irq
+> contexts for high memory pages, something that cannot be guaranteed
+> at this low level of page freeing (i.e., we could be interrupting
+> a clear_highmem and overwrite its KM_USER0 mapping, leaving it dead
+> in the water when we return there). in other words, sanitization
+> must be able to nest within KM_USER*, so that pretty much calls for
+> its own slot.
 
-CPU: Intel 486 DX/4 stepping 00
-Checking 'hlt' instruction... OK.
-net_namespace: 296 bytes
-NET: Registered protocol family 16
-bio: create slab <bio-0> at 0
-SCSI subsystem initialized
-NET: Registered protocol family 2
-IP route cache hash table entries: 1024 (order: 0, 4096 bytes)
-TCP established hash table entries: 1024 (order: 1, 8192 bytes)
-TCP bind hash table entries: 1024 (order: 0, 4096 bytes)
-TCP: Hash tables configured (established 1024 bind 1024)
-TCP reno registered
-NET: Registered protocol family 1
-Unpacking initramfs...
-Freeing initrd memory: 1234k freed
-platform rtc_cmos: registered platform RTC device (no PNP device found)
-msgmni has been set to 50
-io scheduler noop registered
-io scheduler anticipatory registered (default)
-io scheduler deadline registered
-io scheduler cfq registered
-Real Time Clock Driver v1.12b
-Serial: 8250/16550 driver, 4 ports, IRQ sharing disabled
-serial8250: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
-serial8250: ttyS1 at I/O 0x2f8 (irq = 3) is a 16550A
-Driver 'sd' needs updating - please use bus_type methods
-scsi0 : pata_legacy
-ata1: PATA max PIO4 cmd 0x1f0 ctl 0x3f6 irq 14
-------------[ cut here ]------------
-WARNING: at drivers/ata/libata-core.c:6222 ata_host_detach+0x75/0x90()
-Modules linked in:
-Pid: 1, comm: swapper Not tainted 2.6.30-rc7 #1
-Call Trace:
- [<c01fbb05>] ? ata_host_detach+0x75/0x90
- [<c01fbb05>] ? ata_host_detach+0x75/0x90
- [<c01139b5>] ? warn_slowpath_common+0x45/0x80
- [<c01139fa>] ? warn_slowpath_null+0xa/0x10
- [<c01fbb05>] ? ata_host_detach+0x75/0x90
- [<c02f40e0>] ? legacy_init+0x44e/0x87f
- [<c02f3c92>] ? legacy_init+0x0/0x87f
- [<c0101021>] ? _stext+0x21/0x140
- [<c01890ff>] ? proc_register+0x2f/0x190
- [<c018938c>] ? create_proc_entry+0x5c/0xc0
- [<c0135ebe>] ? register_irq_proc+0x6e/0x90
- [<c02e6484>] ? kernel_init+0x6e/0xbf
- [<c02e6416>] ? kernel_init+0x0/0xbf
- [<c01031d7>] ? kernel_thread_helper+0x7/0x10
----[ end trace ef1ee36e873ae3a0 ]---
-scsi1 : pata_legacy
-ata2: PATA max PIO4 cmd 0x170 ctl 0x376 irq 15
-------------[ cut here ]------------
-WARNING: at drivers/ata/libata-core.c:6222 ata_host_detach+0x75/0x90()
-Modules linked in:
-Pid: 1, comm: swapper Tainted: G        W  2.6.30-rc7 #1
-Call Trace:
- [<c01fbb05>] ? ata_host_detach+0x75/0x90
- [<c01fbb05>] ? ata_host_detach+0x75/0x90
- [<c01139b5>] ? warn_slowpath_common+0x45/0x80
- [<c01139fa>] ? warn_slowpath_null+0xa/0x10
- [<c01fbb05>] ? ata_host_detach+0x75/0x90
- [<c02f40e0>] ? legacy_init+0x44e/0x87f
- [<c02f3c92>] ? legacy_init+0x0/0x87f
- [<c0101021>] ? _stext+0x21/0x140
- [<c01890ff>] ? proc_register+0x2f/0x190
- [<c018938c>] ? create_proc_entry+0x5c/0xc0
- [<c0135ebe>] ? register_irq_proc+0x6e/0x90
- [<c02e6484>] ? kernel_init+0x6e/0xbf
- [<c02e6416>] ? kernel_init+0x0/0xbf
- [<c01031d7>] ? kernel_thread_helper+0x7/0x10
----[ end trace ef1ee36e873ae3a1 ]---
-scsi2 : pata_legacy
-ata3: PATA max PIO4 cmd 0x1e8 ctl 0x3ee irq 11
-------------[ cut here ]------------
-WARNING: at drivers/ata/libata-core.c:6222 ata_host_detach+0x75/0x90()
-Modules linked in:
-Pid: 1, comm: swapper Tainted: G        W  2.6.30-rc7 #1
-Call Trace:
- [<c01fbb05>] ? ata_host_detach+0x75/0x90
- [<c01fbb05>] ? ata_host_detach+0x75/0x90
- [<c01139b5>] ? warn_slowpath_common+0x45/0x80
- [<c01139fa>] ? warn_slowpath_null+0xa/0x10
- [<c01fbb05>] ? ata_host_detach+0x75/0x90
- [<c02f40e0>] ? legacy_init+0x44e/0x87f
- [<c02f3c92>] ? legacy_init+0x0/0x87f
- [<c0101021>] ? _stext+0x21/0x140
- [<c01890ff>] ? proc_register+0x2f/0x190
- [<c018938c>] ? create_proc_entry+0x5c/0xc0
- [<c0135ebe>] ? register_irq_proc+0x6e/0x90
- [<c02e6484>] ? kernel_init+0x6e/0xbf
- [<c02e6416>] ? kernel_init+0x0/0xbf
- [<c01031d7>] ? kernel_thread_helper+0x7/0x10
----[ end trace ef1ee36e873ae3a2 ]---
-scsi3 : pata_legacy
-ata4: PATA max PIO4 cmd 0x168 ctl 0x36e irq 10
-------------[ cut here ]------------
-WARNING: at drivers/ata/libata-core.c:6222 ata_host_detach+0x75/0x90()
-Modules linked in:
-Pid: 1, comm: swapper Tainted: G        W  2.6.30-rc7 #1
-Call Trace:
- [<c01fbb05>] ? ata_host_detach+0x75/0x90
- [<c01fbb05>] ? ata_host_detach+0x75/0x90
- [<c01139b5>] ? warn_slowpath_common+0x45/0x80
- [<c01139fa>] ? warn_slowpath_null+0xa/0x10
- [<c01fbb05>] ? ata_host_detach+0x75/0x90
- [<c02f40e0>] ? legacy_init+0x44e/0x87f
- [<c02f3c92>] ? legacy_init+0x0/0x87f
- [<c0101021>] ? _stext+0x21/0x140
- [<c01890ff>] ? proc_register+0x2f/0x190
- [<c018938c>] ? create_proc_entry+0x5c/0xc0
- [<c0135ebe>] ? register_irq_proc+0x6e/0x90
- [<c02e6484>] ? kernel_init+0x6e/0xbf
- [<c02e6416>] ? kernel_init+0x0/0xbf
- [<c01031d7>] ? kernel_thread_helper+0x7/0x10
----[ end trace ef1ee36e873ae3a3 ]---
-scsi4 : pata_legacy
-ata5: PATA max PIO4 cmd 0x160 ctl 0x366 irq 12
-------------[ cut here ]------------
-WARNING: at drivers/ata/libata-core.c:6222 ata_host_detach+0x75/0x90()
-Modules linked in:
-Pid: 1, comm: swapper Tainted: G        W  2.6.30-rc7 #1
-Call Trace:
- [<c01fbb05>] ? ata_host_detach+0x75/0x90
- [<c01fbb05>] ? ata_host_detach+0x75/0x90
- [<c01139b5>] ? warn_slowpath_common+0x45/0x80
- [<c01139fa>] ? warn_slowpath_null+0xa/0x10
- [<c01fbb05>] ? ata_host_detach+0x75/0x90
- [<c02f40e0>] ? legacy_init+0x44e/0x87f
- [<c02f3c92>] ? legacy_init+0x0/0x87f
- [<c0101021>] ? _stext+0x21/0x140
- [<c01890ff>] ? proc_register+0x2f/0x190
- [<c018938c>] ? create_proc_entry+0x5c/0xc0
- [<c0135ebe>] ? register_irq_proc+0x6e/0x90
- [<c02e6484>] ? kernel_init+0x6e/0xbf
- [<c02e6416>] ? kernel_init+0x0/0xbf
- [<c01031d7>] ? kernel_thread_helper+0x7/0x10
----[ end trace ef1ee36e873ae3a4 ]---
-serio: i8042 KBD port at 0x60,0x64 irq 1
-serio: i8042 AUX port at 0x60,0x64 irq 12
-mice: PS/2 mouse device common for all mice
-input: PC Speaker as /class/input/input0
-TCP cubic registered
-input: AT Translated Set 2 keyboard as /class/input/input1
+no arguement that current clear_highpage isn't a fit. I was more
+thinking about using the content of sanitize_highpage(), and just
+calling that clear_highpage(). (or in other words, improve
+clear_highpage to be usable in more situations)
 
-At this point the kernel hangs until I flip the power switch.
-This is 100% reproducible.
 
-2.6.29 worked Ok. A bug hunt showed that 2.6.29-git3 was the last kernel
-to boot Ok on this machine, and every single one since 2.6.29-git4 hang.
-
-2.6.29-git4 was when Arjan removed the "async is off by default" code,
-in commit 9710794383ee5008d67f1a6613a4717bf6de47bc. Reverting that
-from 2.6.30-rc7 gives me a working kernel again.
-
-I haven't had any async problems on my other machines, so presumably
-the bug is in pata_legacy, or due to the machine being so insanely slow.
-
-(I just saw James Bottomley's "[PATCH] async: make sure independent async
-domains can't accidentally entangle". Unfortunately that patch makes no
-difference to this machine's async-related boot failure.)
-
-/Mikael
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
