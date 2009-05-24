@@ -1,43 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760742AbZEXWcp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760862AbZEXWdl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760742AbZEXWcp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 May 2009 18:32:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759640AbZEXW2h
+	id S1760862AbZEXWdl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 May 2009 18:33:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760711AbZEXWcb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 May 2009 18:28:37 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:34544 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759593AbZEXW2e convert rfc822-to-8bit (ORCPT
+	Sun, 24 May 2009 18:32:31 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:53184 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759674AbZEXWca (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 May 2009 18:28:34 -0400
-Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "cedric" <cedric@belbone.be>, "Peter Zijlstra" <peterz@infradead.org>
-References: <GtY7d2eWpoK.A.ioC.MQcGKB@chimera>
-In-Reply-To: <GtY7d2eWpoK.A.ioC.MQcGKB@chimera>
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+	Sun, 24 May 2009 18:32:30 -0400
+Date: Sun, 24 May 2009 17:37:21 -0500
+From: "Serge E. Hallyn" <serge@hallyn.com>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: akpm@linux-foundation.org, xemul@parallels.com,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       dave@linux.vnet.ibm.com, mingo@elte.hu, torvalds@linux-foundation.org
+Subject: Re: [PATCH 02/38] utsns: extract create_uts_ns()
+Message-ID: <20090524223721.GA12734@hallyn.com>
+References: <1242968132-1044-1-git-send-email-adobriyan@gmail.com> <1242968132-1044-2-git-send-email-adobriyan@gmail.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Message-ID: <WCcYF-TAbJC.A.B_C.XQcGKB@chimera>
-Subject: [Bug #13269] WARNING: at kernel/hrtimer.c:625 hres_timers_resume+0x3c/0x48() when resuming
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sun, 24 May 2009 21:31:19 +0200 (CEST)
+In-Reply-To: <1242968132-1044-2-git-send-email-adobriyan@gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This message has been generated automatically as a part of a report
-of regressions introduced between 2.6.28 and 2.6.29.
+Quoting Alexey Dobriyan (adobriyan@gmail.com):
+> create_uts_ns() will be used by C/R to create fresh uts_ns.
+> 
+> Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
 
-The following bug entry is on the current list of known regressions
-introduced between 2.6.28 and 2.6.29.  Please verify if it still should
-be listed and let me know (either way).
+Acked-by: Serge Hallyn <serue@us.ibm.com>
 
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13269
-Subject		: WARNING: at kernel/hrtimer.c:625 hres_timers_resume+0x3c/0x48() when resuming
-Submitter	: cedric <cedric@belbone.be>
-Date		: 2009-05-08 08:48 (17 days old)
-
-
+> ---
+>  kernel/utsname.c |   13 +++++++++++--
+>  1 files changed, 11 insertions(+), 2 deletions(-)
+> 
+> diff --git a/kernel/utsname.c b/kernel/utsname.c
+> index 815237a..8a82b4b 100644
+> --- a/kernel/utsname.c
+> +++ b/kernel/utsname.c
+> @@ -15,6 +15,16 @@
+>  #include <linux/err.h>
+>  #include <linux/slab.h>
+>  
+> +static struct uts_namespace *create_uts_ns(void)
+> +{
+> +	struct uts_namespace *uts_ns;
+> +
+> +	uts_ns = kmalloc(sizeof(struct uts_namespace), GFP_KERNEL);
+> +	if (uts_ns)
+> +		kref_init(&uts_ns->kref);
+> +	return uts_ns;
+> +}
+> +
+>  /*
+>   * Clone a new ns copying an original utsname, setting refcount to 1
+>   * @old_ns: namespace to clone
+> @@ -24,14 +34,13 @@ static struct uts_namespace *clone_uts_ns(struct uts_namespace *old_ns)
+>  {
+>  	struct uts_namespace *ns;
+>  
+> -	ns = kmalloc(sizeof(struct uts_namespace), GFP_KERNEL);
+> +	ns = create_uts_ns();
+>  	if (!ns)
+>  		return ERR_PTR(-ENOMEM);
+>  
+>  	down_read(&uts_sem);
+>  	memcpy(&ns->name, &old_ns->name, sizeof(ns->name));
+>  	up_read(&uts_sem);
+> -	kref_init(&ns->kref);
+>  	return ns;
+>  }
+>  
+> -- 
+> 1.5.6.5
+> 
+> _______________________________________________
+> Containers mailing list
+> Containers@lists.linux-foundation.org
+> https://lists.linux-foundation.org/mailman/listinfo/containers
