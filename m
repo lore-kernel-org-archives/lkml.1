@@ -1,72 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753584AbZEXT6W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754124AbZEXULZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753584AbZEXT6W (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 May 2009 15:58:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751843AbZEXT6O
+	id S1754124AbZEXULZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 May 2009 16:11:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751363AbZEXULR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 May 2009 15:58:14 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:33730 "EHLO ogre.sisk.pl"
+	Sun, 24 May 2009 16:11:17 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:42432 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751239AbZEXT6O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 May 2009 15:58:14 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Marcin Slusarz <marcin.slusarz@gmail.com>
-Subject: Re: 2 bugs related to suspend to disk
-Date: Sun, 24 May 2009 21:58:14 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc6-rjw; KDE/4.2.3; x86_64; ; )
-Cc: LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       Linux PM List <linux-pm@lists.linux-foundation.org>
-References: <4A199A7A.3010705@gmail.com>
-In-Reply-To: <4A199A7A.3010705@gmail.com>
+	id S1751239AbZEXULQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 May 2009 16:11:16 -0400
+Message-ID: <4A19A9A4.8010002@redhat.com>
+Date: Sun, 24 May 2009 23:10:12 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
+To: Ingo Molnar <mingo@elte.hu>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>
+Subject: Re: [GIT PULL] Xen APIC hooks (with io_apic_ops)
+References: <1242170724-13349-1-git-send-email-jeremy@goop.org> <20090519123548.GA26439@elte.hu>
+In-Reply-To: <20090519123548.GA26439@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905242158.15093.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 24 May 2009, Marcin Slusarz wrote:
-> 1) echo platform > /sys/power/disk; echo disk > /sys/power/state
-> 
-> works but prints:
-> 
-> BUG: sleeping function called from invalid context at include/linux/writeback.h:87
-> in_atomic(): 1, irqs_disabled(): 0, pid: 6509, name: sh
-> 3 locks held by sh/6509:
->  #0:  (&buffer->mutex){+.+.+.}, at: [<>] sysfs_write_file+0x38/0x119
->  #1:  (pm_mutex){+.+.+.}, at: [<>] hibernate+0x17/0x169
->  #2:  (swap_lock){+.+...}, at: [<>] swap_type_of+0x2e/0xed
-> Pid: 6509, comm: sh Not tainted 2.6.30-rc7-mod #124
-> Call Trace:
->  ? __debug_show_held_locks
->  ? bdev_test
->  __might_sleep
->  ifind
->  ? bdev_test
->  iget5_locked
->  ? bdev_set
->  bdget
->  swap_type_of
->  swsusp_write
->  ? acpi_sleep_tts_switch
->  hibernate
->  state_store
->  kobj_attr_store
->  sysfs_write_file
->  vfs_write
->  sys_write
->  system_call_fastpath
-> 
-> 2) "s2disk" (from suspend-0.8) suspends, but doesn't resume (and I need to mkswap && swapon -a later)
-> 
-> It's not a regression, because I never tried to STD (STR worked).
+Ingo Molnar wrote:
+>> IO APIC operations are not even slightly performance critical? Are 
+>> they ever used on the interrupt delivery path?
+>>     
+>
+> Since they are not performance critical, then why doesnt Xen catch 
+> the IO-APIC accesses, and virtualizes the device?
+>
+> If you want to hook into the IO-APIC code at such a low level, why 
+> dont you hook into the _hardware_ API - i.e. catch those 
+> setup/routing modifications to the IO-APIC space. No Linux changes 
+> are needed in that case.
+>   
 
-Both look strange, at least the first one does.
+When x2apic is enabled, and EOI broadcast is disabled, then the io apic 
+does become a hot path - it needs to be written for each level-triggered 
+interrupt EOI.  In this case I might want to paravirtualize  the EOI 
+write to exit only if an interrupt is pending; otherwise communicate via 
+shared memory.
 
-Thanks for the report, I'll do my best to take care of this as soon as I can.
+We do something similar for Windows (by patching it) very successfully; 
+Windows likes to touch the APIC TPR ~ 100,000 times per second, usually 
+without triggering an interrupt.  We hijack these writes, do the checks 
+in guest context, and only exit if the TPR write would trigger an interrupt.
 
-Best,
-Rafael
+(kvm will likely gain x2apic support in 2.6.32; patches have already 
+been posted)
+
+-- 
+I have a truly marvellous patch that fixes the bug which this
+signature is too narrow to contain.
+
