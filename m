@@ -1,65 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753505AbZEXNbS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754182AbZEXNpJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753505AbZEXNbS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 May 2009 09:31:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751907AbZEXNbK
+	id S1754182AbZEXNpJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 May 2009 09:45:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752305AbZEXNo6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 May 2009 09:31:10 -0400
-Received: from mout4.freenet.de ([195.4.92.94]:48969 "EHLO mout4.freenet.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751339AbZEXNbJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 May 2009 09:31:09 -0400
-Date: Sun, 24 May 2009 15:30:48 +0200
-From: Alex Riesen <raa.lkml@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: trivial@kernel.org, Stefan Richter <stefanr@s5r6.in-berlin.de>,
+	Sun, 24 May 2009 09:44:58 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:36223 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750908AbZEXNo5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 May 2009 09:44:57 -0400
+Date: Sun, 24 May 2009 22:44:30 +0900 (JST)
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [PATCH 4/4] zone_reclaim_mode is always 0 by default
+Cc: kosaki.motohiro@jp.fujitsu.com, Robin Holt <holt@sgi.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PATCH] Use a format for linux_banner
-Message-ID: <20090524133047.GA24869@blimp.localdomain>
-Reply-To: Alex Riesen <raa.lkml@gmail.com>
-References: <81b0412b0902250104q53f38343o303e980c1446ed3e@mail.gmail.com> <49A92783.1010709@s5r6.in-berlin.de> <20090228133602.GA28239@blimp.localdomain> <alpine.LFD.2.00.0902280924150.3111@localhost.localdomain>
+       Rik van Riel <riel@redhat.com>
+In-Reply-To: <alpine.DEB.1.10.0905210924520.31888@qirst.com>
+References: <20090521090549.63B5.A69D9226@jp.fujitsu.com> <alpine.DEB.1.10.0905210924520.31888@qirst.com>
+Message-Id: <20090524223857.0852.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0902280924150.3111@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There is no format specifiers left in the linux_banner, and gcc-4.3
-complains seeing the printk.
 
-Signed-off-by: Alex Riesen <raa.lkml@gmail.com>
----
+sorry I missed this mail
 
-Linus Torvalds, Sat, Feb 28, 2009 18:27:07 +0100:
-> What people _can_ do is to send it both as a crazy attachment _and_ as 
-> plaintext. If they plaintext gets corrupted, the attachment still works, 
-> and the plaintext is at least somethign I can see and thus in my mail 
-> reader decide whether it's worth my time to save the attachment and look 
-> at it outside the mail reader.
+> > > Even with 128 nodes and 256 cpus, I _NEVER_ see the
+> > > system swapping out before allocating off node so I can certainly not
+> > > reproduce the situation you are seeing.
+> >
+> > hmhm. but I don't think we can assume hpc workload.
+> 
+> System swapping due to zone reclaim? zone reclaim only reclaims unmapped
+> pages so it will not swap. Maybe some bug crept in in the recent changes?
+> Or you overrode the defaults for zone reclaim?
 
-Resent properly. Sorry, took me a while.
+I guess he use zone_reclaim_mode=7 or similar.
 
- init/main.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
+However, I have to explain recent zone reclaim change. current zone reclaim is
 
-diff --git a/init/main.c b/init/main.c
-index 3bbf93b..d721dad 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -566,8 +566,7 @@ asmlinkage void __init start_kernel(void)
- 	tick_init();
- 	boot_cpu_init();
- 	page_address_init();
--	printk(KERN_NOTICE);
--	printk(linux_banner);
-+	printk(KERN_NOTICE "%s", linux_banner);
- 	setup_arch(&command_line);
- 	mm_init_owner(&init_mm, &init_task);
- 	setup_command_line(command_line);
--- 
-1.6.3.1.171.ge2f07
+ 1. zone reclaim can make high order reclaim (by hanns)
+ 2. determine file-backed page by get_scan_ratio
+
+it mean, high order allocation makes lumpy zone reclaim. and shrink_inactive_list()
+don't care may_swap. then, zone_reclaim_mode=1 can makes swap-out if your
+driver makes high order allocation request.
+
+
 
