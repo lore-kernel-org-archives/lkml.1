@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758783AbZEXW12@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759378AbZEXW14@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758783AbZEXW12 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 May 2009 18:27:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758237AbZEXW04
+	id S1759378AbZEXW14 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 May 2009 18:27:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758341AbZEXW07
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 May 2009 18:26:56 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:34458 "EHLO ogre.sisk.pl"
+	Sun, 24 May 2009 18:26:59 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:34468 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754954AbZEXW0y convert rfc822-to-8bit (ORCPT
+	id S1758007AbZEXW0z convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 May 2009 18:26:54 -0400
+	Sun, 24 May 2009 18:26:55 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Dave Airlie" <airlied@redhat.com>,
-       "DRI" <dri-devel@lists.sourceforge.net>,
-       "Jesse Barnes" <jbarnes@virtuousgeek.org>,
-       "=?utf-8?q?Michel=20D=C3=A4nzer?=" <michel@daenzer.net>,
-       "Sitsofe Wheeler" <sitsofe@yahoo.com>
+       "Alexey Starikovskiy" <astarikovskiy@suse.de>,
+       "Len Brown" <len.brown@intel.com>,
+       "Linux ACPI" <linux-acpi@vger.kernel.org>, "Orivej Desh" <smpuj@bk.ru>,
+       "Zhang Rui" <rui.zhang@intel.com>
 References: <GtY7d2eWpoK.A.ioC.MQcGKB@chimera>
 In-Reply-To: <GtY7d2eWpoK.A.ioC.MQcGKB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -23,8 +22,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <WCcYF-TAbJC.A.9dE.cScGKB@chimera>
-Subject: [Bug #12765] i915 VT switch with AIGLX causes X lock up
+Message-ID: <WCcYF-TAbJC.A.Q3E.2ScGKB@chimera>
+Subject: [Bug #12681] s2ram: fails to wake up on Acer Extensa 4220 (SMP disabled)
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Sun, 24 May 2009 21:31:15 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,14 +38,11 @@ introduced between 2.6.28 and 2.6.29.  Please verify if it still should
 be listed and let me know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12765
-Subject		: i915 VT switch with AIGLX causes X lock up
-Submitter	: Sitsofe Wheeler <sitsofe@yahoo.com>
-Date		: 2009-02-21 15:38 (93 days old)
-First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=14d200c5e5bd19219d930bbb9a5a22758c8f5bec
-References	: http://marc.info/?l=linux-kernel&m=123523074304955&w=4
-		  http://lkml.org/lkml/2009/4/27/317
-Handled-By	: Jesse Barnes <jbarnes@virtuousgeek.org>
-Patch		: http://patchwork.kernel.org/patch/20197/
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12681
+Subject		: s2ram: fails to wake up on Acer Extensa 4220 (SMP disabled)
+Submitter	: Orivej Desh <smpuj@bk.ru>
+Date		: 2009-02-09 13:01 (105 days old)
+First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=1cfe62c8010ac56e1bd3827e30386a87cc2f3594
+Handled-By	: Alexey Starikovskiy <astarikovskiy@suse.de>
 
 
