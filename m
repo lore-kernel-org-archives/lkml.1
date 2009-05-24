@@ -1,73 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753908AbZEXH5e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752926AbZEXIAR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753908AbZEXH5e (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 May 2009 03:57:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751596AbZEXH5Z
+	id S1752926AbZEXIAR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 May 2009 04:00:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751843AbZEXIAE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 May 2009 03:57:25 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:53035 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751384AbZEXH5Z (ORCPT
+	Sun, 24 May 2009 04:00:04 -0400
+Received: from yx-out-2324.google.com ([74.125.44.28]:20981 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751384AbZEXIAB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 May 2009 03:57:25 -0400
-Subject: Re: [PATCH] U300 sched_clock implementation
-From: Peter Zijlstra <peterz@infradead.org>
-To: Linus Walleij <linus.ml.walleij@gmail.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu,
-       linux-arm-kernel@lists.arm.linux.org.uk
-In-Reply-To: <63386a3d0905231446h245bb4a9gec111f68a74a44e4@mail.gmail.com>
-References: <63386a3d0905112337p2d426481o5f9bf9b9489cc57e@mail.gmail.com>
-	 <63386a3d0905231446h245bb4a9gec111f68a74a44e4@mail.gmail.com>
-Content-Type: text/plain
+	Sun, 24 May 2009 04:00:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=meBmfSoa4Jb5mXI3hT8fANj501H3dh9x35yWQvI6dp+bA/IaKSQNNm6wgfsSl1voKZ
+         cK9/PAiYyLv4Yv3hY6lFAIsiFIN2WGCKIYbdpK9LD5ObixDW+VpVxXL+B/UbqzK1BZZZ
+         YuiQnLEU7+KiubwB5EXVYkvw454/lxFZhMZCs=
+Message-ID: <4A18FE80.30403@gmail.com>
+Date: Sun, 24 May 2009 02:00:00 -0600
+From: Robert Hancock <hancockrwd@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Miles Lane <miles.lane@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>, Tejun Heo <tj@kernel.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>
+Subject: Re: 2.6.30=rc6=git6 -- ata_piix 0000:00:1f.2: DMA-API: device driver
+ maps memory from kernel text or rodata [addr=c0fff000]
+References: <a44ae5cd0905230731q4df31403nd54ff9e2c496c77a@mail.gmail.com> <200905232223.35780.rjw@sisk.pl>
+In-Reply-To: <200905232223.35780.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Date: Sun, 24 May 2009 09:57:18 +0200
-Message-Id: <1243151839.26820.642.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-05-23 at 23:46 +0200, Linus Walleij wrote:
-
-> This overrides the global sched_clock() symbol in the Linux
-> scheduler with a local implementation which takes advantage of
-> the timesource in U300 giving a scheduling resolution of 1us. The
-> solution is the same as found in the OMAP2 core code.
-
-We assume sched_clock() to return time in ns (e-9) resolution.
-
-> Signed-off-by: Linus Walleij <linus.walleij@stericsson.com>
-> ---
->  arch/arm/mach-u300/timer.c |   16 ++++++++++++++++
->  1 files changed, 16 insertions(+), 0 deletions(-)
+Rafael J. Wysocki wrote:
+> Adding CCs.
 > 
-> diff --git a/arch/arm/mach-u300/timer.c b/arch/arm/mach-u300/timer.c
-> index 4bf82f8..222de18 100644
-> --- a/arch/arm/mach-u300/timer.c
-> +++ b/arch/arm/mach-u300/timer.c
-> @@ -346,6 +346,22 @@ static struct clocksource clocksource_u300_1mhz = {
->        .flags          = CLOCK_SOURCE_IS_CONTINUOUS,
->  };
-> 
-> +/*
-> + * Override the global weak sched_clock symbol with this
-> + * local implementation which uses the clocksource to get some
-> + * better resolution when scheduling the kernel. We accept that
-> + * this wraps around for now, since it is just a relative time
-> + * stamp. (Inspired by OMAP implementation.)
-> + */
-> +unsigned long long sched_clock(void)
-> +{
-> +       unsigned long long ret;
-> +
-> +       ret = (unsigned long long) u300_get_cycles();
-> +       ret = (ret * clocksource_u300_1mhz.mult_orig) >>
-> +               clocksource_u300_1mhz.shift;
-> +       return ret;
-> +}
-> 
->  /*
->  * This sets up the system timers, clock source and clock event.
-> --
-> 1.6.2.1
+> On Saturday 23 May 2009, Miles Lane wrote:
+>> [  865.788574] WARNING: at lib/dma-debug.c:576
+>> check_for_illegal_area+0xdb/0x105()
+>> [  865.788585] Hardware name: 1000HE
+>> [  865.788596] ata_piix 0000:00:1f.2: DMA-API: device driver maps
+>> memory from kernel text or rodata [addr=c0fff000] [size=4096]
+>> [  865.788607] Modules linked in: sco bnep rfcomm l2cap pci_slot
+>> snd_hda_codec_realtek snd_hda_intel snd_hda_codec snd_hwdep
+>> snd_pcm_oss snd_mixer_oss snd_pcm snd_seq_dummy snd_seq_oss
+>> snd_seq_midi_event btusb snd_seq bluetooth snd_timer snd_seq_device
+>> ath9k snd soundcore snd_page_alloc atl1e
+>> [  865.788718] Pid: 1559, comm: mount.ntfs Not tainted 2.6.30-rc6-git6 #2
+>> [  865.788727] Call Trace:
+>> [  865.788745]  [<c10206f4>] warn_slowpath_common+0x65/0x7c
+>> [  865.788761]  [<c11666e2>] ? check_for_illegal_area+0xdb/0x105
+>> [  865.788777]  [<c102073f>] warn_slowpath_fmt+0x24/0x27
+>> [  865.788793]  [<c11666e2>] check_for_illegal_area+0xdb/0x105
+>> [  865.788811]  [<c1167629>] debug_dma_map_sg+0x10f/0x11b
+>> [  865.788829]  [<c121347e>] ata_qc_issue+0x1b0/0x233
+>> [  865.788848]  [<c1218cf0>] __ata_scsi_queuecmd+0x15a/0x1a7
+>> [  865.788864]  [<c11fde34>] ? scsi_done+0x0/0xd
+>> [  865.788879]  [<c12187d4>] ? ata_scsi_rw_xlat+0x0/0x1e9
+>> [  865.788895]  [<c1218dbe>] ata_scsi_queuecmd+0x45/0x73
+>> [  865.788909]  [<c11fde34>] ? scsi_done+0x0/0xd
+>> [  865.788925]  [<c11fdf6e>] scsi_dispatch_cmd+0x12d/0x165
+>> [  865.788941]  [<c1202253>] scsi_request_fn+0x299/0x3ca
+>> [  865.788956]  [<c10282bf>] ? del_timer+0x47/0x4e
+>> [  865.788974]  [<c11505b8>] __generic_unplug_device+0x26/0x29
+>> [  865.788990]  [<c11505ff>] generic_unplug_device+0x21/0x2f
+>> [  865.789006]  [<c11516c6>] blk_unplug+0x16/0x19
+>> [  865.789021]  [<c11516d4>] blk_backing_dev_unplug+0xb/0xd
+>> [  865.789038]  [<c10a57cf>] block_sync_page+0x24/0x28
+>> [  865.789053]  [<c1069728>] sync_page+0x38/0x41
+>> [  865.789068]  [<c106973a>] sync_page_killable+0x9/0x37
+>> [  865.789085]  [<c13ab475>] __wait_on_bit_lock+0x34/0x6f
+>> [  865.789099]  [<c1069731>] ? sync_page_killable+0x0/0x37
+>> [  865.789115]  [<c1069613>] __lock_page_killable+0x71/0x78
+>> [  865.789132]  [<c1030d9f>] ? wake_bit_function+0x0/0x37
+>> [  865.789147]  [<c1069642>] lock_page_killable+0x28/0x2b
+>> [  865.789162]  [<c106ad22>] generic_file_aio_read+0x315/0x493
+>> [  865.789183]  [<c108c36c>] do_sync_read+0xaa/0xe5
+>> [  865.789199]  [<c113181d>] ? file_has_perm+0x87/0xa1
+>> [  865.789216]  [<c1030d70>] ? autoremove_wake_function+0x0/0x2f
+>> [  865.789234]  [<c112e180>] ? security_file_permission+0xf/0x11
+>> [  865.789250]  [<c108c43c>] ? rw_verify_area+0x95/0xb6
+>> [  865.789265]  [<c108c2c2>] ? do_sync_read+0x0/0xe5
+>> [  865.789280]  [<c108ca03>] vfs_read+0x8d/0xea
+>> [  865.789296]  [<c108cab3>] sys_pread64+0x53/0x6b
+>> [  865.789313]  [<c1002c34>] syscall_call+0x7/0xb
+>> [  865.789325] ---[ end trace 1ec3ba9a74f5a8d5 ]---
+
+Well, this seems to tell us that somebody's apparently doing SCSI reads 
+or writes using kernel addresses. Unfortunately it doesn't really tell 
+us where this request came from. The stack trace occurred inside the 
+mount.ntfs process.. could FUSE be doing something bad?
+
+Was anything strange happening on the machine when this showed up?
