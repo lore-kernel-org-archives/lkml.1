@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759461AbZEXP6d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758531AbZEXQBa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759461AbZEXP6d (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 May 2009 11:58:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758687AbZEXPx2
+	id S1758531AbZEXQBa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 May 2009 12:01:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758981AbZEXPy7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 May 2009 11:53:28 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:41844 "EHLO mx2.redhat.com"
+	Sun, 24 May 2009 11:54:59 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:41831 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754583AbZEXPue (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 May 2009 11:50:34 -0400
+	id S1753824AbZEXPuc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 May 2009 11:50:32 -0400
 From: Avi Kivity <avi@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: kvm@vger.kernel.org
-Subject: [PATCH 16/45] KVM: SVM: Don't reinject event that caused a task switch
-Date: Sun, 24 May 2009 18:50:01 +0300
-Message-Id: <1243180230-2480-17-git-send-email-avi@redhat.com>
+Subject: [PATCH 06/45] KVM: SVM: Add NMI injection support
+Date: Sun, 24 May 2009 18:49:51 +0300
+Message-Id: <1243180230-2480-7-git-send-email-avi@redhat.com>
 In-Reply-To: <1243180230-2480-1-git-send-email-avi@redhat.com>
 References: <1243180230-2480-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -23,67 +23,431 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Gleb Natapov <gleb@redhat.com>
 
-If a task switch caused by an event remove it from the event queue.
-VMX already does that.
-
 Signed-off-by: Gleb Natapov <gleb@redhat.com>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 ---
- arch/x86/kvm/svm.c |   23 +++++++++++++++++++++--
- 1 files changed, 21 insertions(+), 2 deletions(-)
+ arch/x86/include/asm/kvm_host.h |    8 +++-
+ arch/x86/kvm/svm.c              |   96 ++++++++++++++++++++-------------------
+ arch/x86/kvm/vmx.c              |   79 ++++++++------------------------
+ arch/x86/kvm/x86.c              |   71 ++++++++++++++++++++++++++++-
+ 4 files changed, 145 insertions(+), 109 deletions(-)
 
+diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
+index 53533ea..dd9ecd3 100644
+--- a/arch/x86/include/asm/kvm_host.h
++++ b/arch/x86/include/asm/kvm_host.h
+@@ -512,10 +512,15 @@ struct kvm_x86_ops {
+ 				unsigned char *hypercall_addr);
+ 	int (*get_irq)(struct kvm_vcpu *vcpu);
+ 	void (*set_irq)(struct kvm_vcpu *vcpu, int vec);
++	void (*set_nmi)(struct kvm_vcpu *vcpu);
+ 	void (*queue_exception)(struct kvm_vcpu *vcpu, unsigned nr,
+ 				bool has_error_code, u32 error_code);
+-	void (*inject_pending_irq)(struct kvm_vcpu *vcpu, struct kvm_run *run);
+ 	int (*interrupt_allowed)(struct kvm_vcpu *vcpu);
++	int (*nmi_allowed)(struct kvm_vcpu *vcpu);
++	void (*enable_nmi_window)(struct kvm_vcpu *vcpu);
++	void (*enable_irq_window)(struct kvm_vcpu *vcpu);
++	void (*update_cr8_intercept)(struct kvm_vcpu *vcpu, int tpr, int irr);
++	void (*drop_interrupt_shadow)(struct kvm_vcpu *vcpu);
+ 	int (*set_tss_addr)(struct kvm *kvm, unsigned int addr);
+ 	int (*get_tdp_level)(void);
+ 	int (*get_mt_mask_shift)(void);
+@@ -763,6 +768,7 @@ enum {
+ #define HF_GIF_MASK		(1 << 0)
+ #define HF_HIF_MASK		(1 << 1)
+ #define HF_VINTR_MASK		(1 << 2)
++#define HF_NMI_MASK		(1 << 3)
+ 
+ /*
+  * Hardware virtualization extension instructions may fault if a
 diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
-index e3ea982..f994c6d 100644
+index 0f53439..1807288 100644
 --- a/arch/x86/kvm/svm.c
 +++ b/arch/x86/kvm/svm.c
-@@ -1811,6 +1811,10 @@ static int task_switch_interception(struct vcpu_svm *svm,
- 	int int_type = svm->vmcb->control.exit_int_info &
- 		SVM_EXITINTINFO_TYPE_MASK;
- 	int int_vec = svm->vmcb->control.exit_int_info & SVM_EVTINJ_VEC_MASK;
-+	uint32_t type =
-+		svm->vmcb->control.exit_int_info & SVM_EXITINTINFO_TYPE_MASK;
-+	uint32_t idt_v =
-+		svm->vmcb->control.exit_int_info & SVM_EXITINTINFO_VALID;
+@@ -1843,6 +1843,14 @@ static int cpuid_interception(struct vcpu_svm *svm, struct kvm_run *kvm_run)
+ 	return 1;
+ }
  
- 	tss_selector = (u16)svm->vmcb->control.exit_info_1;
++static int iret_interception(struct vcpu_svm *svm, struct kvm_run *kvm_run)
++{
++	++svm->vcpu.stat.nmi_window_exits;
++	svm->vmcb->control.intercept &= ~(1UL << INTERCEPT_IRET);
++	svm->vcpu.arch.hflags &= ~HF_NMI_MASK;
++	return 1;
++}
++
+ static int invlpg_interception(struct vcpu_svm *svm, struct kvm_run *kvm_run)
+ {
+ 	if (emulate_instruction(&svm->vcpu, kvm_run, 0, 0, 0) != EMULATE_DONE)
+@@ -1863,8 +1871,10 @@ static int cr8_write_interception(struct vcpu_svm *svm, struct kvm_run *kvm_run)
+ 	u8 cr8_prev = kvm_get_cr8(&svm->vcpu);
+ 	/* instruction emulation calls kvm_set_cr8() */
+ 	emulate_instruction(&svm->vcpu, NULL, 0, 0, 0);
+-	if (irqchip_in_kernel(svm->vcpu.kvm))
++	if (irqchip_in_kernel(svm->vcpu.kvm)) {
++		svm->vmcb->control.intercept_cr_write &= ~INTERCEPT_CR8_MASK;
+ 		return 1;
++	}
+ 	if (cr8_prev <= kvm_get_cr8(&svm->vcpu))
+ 		return 1;
+ 	kvm_run->exit_reason = KVM_EXIT_SET_TPR;
+@@ -2120,6 +2130,7 @@ static int (*svm_exit_handlers[])(struct vcpu_svm *svm,
+ 	[SVM_EXIT_VINTR]			= interrupt_window_interception,
+ 	/* [SVM_EXIT_CR0_SEL_WRITE]		= emulate_on_interception, */
+ 	[SVM_EXIT_CPUID]			= cpuid_interception,
++	[SVM_EXIT_IRET]                         = iret_interception,
+ 	[SVM_EXIT_INVD]                         = emulate_on_interception,
+ 	[SVM_EXIT_HLT]				= halt_interception,
+ 	[SVM_EXIT_INVLPG]			= invlpg_interception,
+@@ -2227,6 +2238,21 @@ static void pre_svm_run(struct vcpu_svm *svm)
+ 		new_asid(svm, svm_data);
+ }
  
-@@ -1820,11 +1824,26 @@ static int task_switch_interception(struct vcpu_svm *svm,
- 	else if (svm->vmcb->control.exit_info_2 &
- 		 (1ULL << SVM_EXITINFOSHIFT_TS_REASON_JMP))
- 		reason = TASK_SWITCH_JMP;
--	else if (svm->vmcb->control.exit_int_info & SVM_EXITINTINFO_VALID)
-+	else if (idt_v)
- 		reason = TASK_SWITCH_GATE;
- 	else
- 		reason = TASK_SWITCH_CALL;
++static void svm_drop_interrupt_shadow(struct kvm_vcpu *vcpu)
++{
++	struct vcpu_svm *svm = to_svm(vcpu);
++	svm->vmcb->control.int_state &= ~SVM_INTERRUPT_SHADOW_MASK;
++}
++
++static void svm_inject_nmi(struct kvm_vcpu *vcpu)
++{
++	struct vcpu_svm *svm = to_svm(vcpu);
++
++	svm->vmcb->control.event_inj = SVM_EVTINJ_VALID | SVM_EVTINJ_TYPE_NMI;
++	vcpu->arch.hflags |= HF_NMI_MASK;
++	svm->vmcb->control.intercept |= (1UL << INTERCEPT_IRET);
++	++vcpu->stat.nmi_injections;
++}
  
-+	if (reason == TASK_SWITCH_GATE) {
-+		switch (type) {
-+		case SVM_EXITINTINFO_TYPE_NMI:
-+			svm->vcpu.arch.nmi_injected = false;
-+			break;
-+		case SVM_EXITINTINFO_TYPE_EXEPT:
-+			kvm_clear_exception_queue(&svm->vcpu);
-+			break;
-+		case SVM_EXITINTINFO_TYPE_INTR:
-+			kvm_clear_interrupt_queue(&svm->vcpu);
-+			break;
-+		default:
-+			break;
+ static inline void svm_inject_irq(struct vcpu_svm *svm, int irq)
+ {
+@@ -2242,8 +2268,10 @@ static inline void svm_inject_irq(struct vcpu_svm *svm, int irq)
+ 		((/*control->int_vector >> 4*/ 0xf) << V_INTR_PRIO_SHIFT);
+ }
+ 
+-static void svm_queue_irq(struct vcpu_svm *svm, unsigned nr)
++static void svm_queue_irq(struct kvm_vcpu *vcpu, unsigned nr)
+ {
++	struct vcpu_svm *svm = to_svm(vcpu);
++
+ 	svm->vmcb->control.event_inj = nr |
+ 		SVM_EVTINJ_VALID | SVM_EVTINJ_TYPE_INTR;
+ }
+@@ -2254,28 +2282,26 @@ static void svm_set_irq(struct kvm_vcpu *vcpu, int irq)
+ 
+ 	nested_svm_intr(svm);
+ 
+-	svm_queue_irq(svm, irq);
++	svm_queue_irq(vcpu, irq);
+ }
+ 
+-static void update_cr8_intercept(struct kvm_vcpu *vcpu)
++static void update_cr8_intercept(struct kvm_vcpu *vcpu, int tpr, int irr)
+ {
+ 	struct vcpu_svm *svm = to_svm(vcpu);
+-	struct vmcb *vmcb = svm->vmcb;
+-	int max_irr, tpr;
+ 
+-	if (!irqchip_in_kernel(vcpu->kvm) || vcpu->arch.apic->vapic_addr)
++	if (irr == -1)
+ 		return;
+ 
+-	vmcb->control.intercept_cr_write &= ~INTERCEPT_CR8_MASK;
+-
+-	max_irr = kvm_lapic_find_highest_irr(vcpu);
+-	if (max_irr == -1)
+-		return;
+-
+-	tpr = kvm_lapic_get_cr8(vcpu) << 4;
++	if (tpr >= irr)
++		svm->vmcb->control.intercept_cr_write |= INTERCEPT_CR8_MASK;
++}
+ 
+-	if (tpr >= (max_irr & 0xf0))
+-		vmcb->control.intercept_cr_write |= INTERCEPT_CR8_MASK;
++static int svm_nmi_allowed(struct kvm_vcpu *vcpu)
++{
++	struct vcpu_svm *svm = to_svm(vcpu);
++	struct vmcb *vmcb = svm->vmcb;
++	return !(vmcb->control.int_state & SVM_INTERRUPT_SHADOW_MASK) &&
++		!(svm->vcpu.arch.hflags & HF_NMI_MASK);
+ }
+ 
+ static int svm_interrupt_allowed(struct kvm_vcpu *vcpu)
+@@ -2293,39 +2319,12 @@ static void enable_irq_window(struct kvm_vcpu *vcpu)
+ 	svm_inject_irq(to_svm(vcpu), 0x0);
+ }
+ 
+-static void svm_intr_inject(struct kvm_vcpu *vcpu)
+-{
+-	/* try to reinject previous events if any */
+-	if (vcpu->arch.interrupt.pending) {
+-		svm_queue_irq(to_svm(vcpu), vcpu->arch.interrupt.nr);
+-		return;
+-	}
+-
+-	/* try to inject new event if pending */
+-	if (kvm_cpu_has_interrupt(vcpu)) {
+-		if (svm_interrupt_allowed(vcpu)) {
+-			kvm_queue_interrupt(vcpu, kvm_cpu_get_interrupt(vcpu));
+-			svm_queue_irq(to_svm(vcpu), vcpu->arch.interrupt.nr);
+-		}
+-	}
+-}
+-
+-static void svm_intr_assist(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
++static void enable_nmi_window(struct kvm_vcpu *vcpu)
+ {
+ 	struct vcpu_svm *svm = to_svm(vcpu);
+-	bool req_int_win = !irqchip_in_kernel(vcpu->kvm) &&
+-		kvm_run->request_interrupt_window;
+ 
+-	if (nested_svm_intr(svm))
+-		goto out;
+-
+-	svm_intr_inject(vcpu);
+-
+-	if (kvm_cpu_has_interrupt(vcpu) || req_int_win)
++	if (svm->vmcb->control.int_state & SVM_INTERRUPT_SHADOW_MASK)
+ 		enable_irq_window(vcpu);
+-
+-out:
+-	update_cr8_intercept(vcpu);
+ }
+ 
+ static int svm_set_tss_addr(struct kvm *kvm, unsigned int addr)
+@@ -2650,9 +2649,14 @@ static struct kvm_x86_ops svm_x86_ops = {
+ 	.patch_hypercall = svm_patch_hypercall,
+ 	.get_irq = svm_get_irq,
+ 	.set_irq = svm_set_irq,
++	.set_nmi = svm_inject_nmi,
+ 	.queue_exception = svm_queue_exception,
+-	.inject_pending_irq = svm_intr_assist,
+ 	.interrupt_allowed = svm_interrupt_allowed,
++	.nmi_allowed = svm_nmi_allowed,
++	.enable_nmi_window = enable_nmi_window,
++	.enable_irq_window = enable_irq_window,
++	.update_cr8_intercept = update_cr8_intercept,
++	.drop_interrupt_shadow = svm_drop_interrupt_shadow,
+ 
+ 	.set_tss_addr = svm_set_tss_addr,
+ 	.get_tdp_level = get_npt_level,
+diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
+index 116eac0..bad2413 100644
+--- a/arch/x86/kvm/vmx.c
++++ b/arch/x86/kvm/vmx.c
+@@ -1314,6 +1314,9 @@ static __init int hardware_setup(void)
+ 	if (!cpu_has_vmx_flexpriority())
+ 		flexpriority_enabled = 0;
+ 
++	if (!cpu_has_vmx_tpr_shadow())
++		kvm_x86_ops->update_cr8_intercept = NULL;
++
+ 	return alloc_kvm_area();
+ }
+ 
+@@ -2404,6 +2407,12 @@ out:
+ 	return ret;
+ }
+ 
++void vmx_drop_interrupt_shadow(struct kvm_vcpu *vcpu)
++{
++	vmcs_clear_bits(GUEST_INTERRUPTIBILITY_INFO,
++			GUEST_INTR_STATE_STI | GUEST_INTR_STATE_MOV_SS);
++}
++
+ static void enable_irq_window(struct kvm_vcpu *vcpu)
+ {
+ 	u32 cpu_based_vm_exec_control;
+@@ -3214,21 +3223,14 @@ static int vmx_handle_exit(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
+ 	return 0;
+ }
+ 
+-static void update_tpr_threshold(struct kvm_vcpu *vcpu)
++static void update_cr8_intercept(struct kvm_vcpu *vcpu, int tpr, int irr)
+ {
+-	int max_irr, tpr;
+-
+-	if (!vm_need_tpr_shadow(vcpu->kvm))
+-		return;
+-
+-	if (!kvm_lapic_enabled(vcpu) ||
+-	    ((max_irr = kvm_lapic_find_highest_irr(vcpu)) == -1)) {
++	if (irr == -1 || tpr < irr) {
+ 		vmcs_write32(TPR_THRESHOLD, 0);
+ 		return;
+ 	}
+ 
+-	tpr = (kvm_lapic_get_cr8(vcpu) & 0x0f) << 4;
+-	vmcs_write32(TPR_THRESHOLD, (max_irr > tpr) ? tpr >> 4 : max_irr >> 4);
++	vmcs_write32(TPR_THRESHOLD, irr);
+ }
+ 
+ static void vmx_complete_interrupts(struct vcpu_vmx *vmx)
+@@ -3300,55 +3302,6 @@ static void vmx_complete_interrupts(struct vcpu_vmx *vmx)
+ 	}
+ }
+ 
+-static void vmx_intr_inject(struct kvm_vcpu *vcpu)
+-{
+-	/* try to reinject previous events if any */
+-	if (vcpu->arch.nmi_injected) {
+-		vmx_inject_nmi(vcpu);
+-		return;
+-	}
+-
+-	if (vcpu->arch.interrupt.pending) {
+-		vmx_inject_irq(vcpu, vcpu->arch.interrupt.nr);
+-		return;
+-	}
+-
+-	/* try to inject new event if pending */
+-	if (vcpu->arch.nmi_pending) {
+-		if (vmx_nmi_allowed(vcpu)) {
+-			vcpu->arch.nmi_pending = false;
+-			vcpu->arch.nmi_injected = true;
+-			vmx_inject_nmi(vcpu);
+-		}
+-	} else if (kvm_cpu_has_interrupt(vcpu)) {
+-		if (vmx_interrupt_allowed(vcpu)) {
+-			kvm_queue_interrupt(vcpu, kvm_cpu_get_interrupt(vcpu));
+-			vmx_inject_irq(vcpu, vcpu->arch.interrupt.nr);
+-		}
+-	}
+-}
+-
+-static void vmx_intr_assist(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
+-{
+-	bool req_int_win = !irqchip_in_kernel(vcpu->kvm) &&
+-		kvm_run->request_interrupt_window;
+-
+-	update_tpr_threshold(vcpu);
+-
+-	if (vcpu->guest_debug & KVM_GUESTDBG_SINGLESTEP)
+-		vmcs_clear_bits(GUEST_INTERRUPTIBILITY_INFO,
+-				GUEST_INTR_STATE_STI |
+-				GUEST_INTR_STATE_MOV_SS);
+-
+-	vmx_intr_inject(vcpu);
+-
+-	/* enable NMI/IRQ window open exits if needed */
+-	if (vcpu->arch.nmi_pending)
+-		enable_nmi_window(vcpu);
+-	else if (kvm_cpu_has_interrupt(vcpu) || req_int_win)
+-		enable_irq_window(vcpu);
+-}
+-
+ /*
+  * Failure to inject an interrupt should give us the information
+  * in IDT_VECTORING_INFO_FIELD.  However, if the failure occurs
+@@ -3683,9 +3636,15 @@ static struct kvm_x86_ops vmx_x86_ops = {
+ 	.patch_hypercall = vmx_patch_hypercall,
+ 	.get_irq = vmx_get_irq,
+ 	.set_irq = vmx_inject_irq,
++	.set_nmi = vmx_inject_nmi,
+ 	.queue_exception = vmx_queue_exception,
+-	.inject_pending_irq = vmx_intr_assist,
+ 	.interrupt_allowed = vmx_interrupt_allowed,
++	.nmi_allowed = vmx_nmi_allowed,
++	.enable_nmi_window = enable_nmi_window,
++	.enable_irq_window = enable_irq_window,
++	.update_cr8_intercept = update_cr8_intercept,
++	.drop_interrupt_shadow = vmx_drop_interrupt_shadow,
++
+ 	.set_tss_addr = vmx_set_tss_addr,
+ 	.get_tdp_level = get_ept_level,
+ 	.get_mt_mask_shift = vmx_get_mt_mask_shift,
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index 4bd56c7..b3ecaf8 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -3110,6 +3110,68 @@ static void vapic_exit(struct kvm_vcpu *vcpu)
+ 	up_read(&vcpu->kvm->slots_lock);
+ }
+ 
++static void update_cr8_intercept(struct kvm_vcpu *vcpu)
++{
++	int max_irr, tpr;
++
++	if (!kvm_x86_ops->update_cr8_intercept)
++		return;
++
++	max_irr = kvm_lapic_find_highest_irr(vcpu);
++
++	if (max_irr != -1)
++		max_irr >>= 4;
++
++	tpr = kvm_lapic_get_cr8(vcpu);
++
++	kvm_x86_ops->update_cr8_intercept(vcpu, tpr, max_irr);
++}
++
++static void inject_irq(struct kvm_vcpu *vcpu)
++{
++	/* try to reinject previous events if any */
++	if (vcpu->arch.nmi_injected) {
++		kvm_x86_ops->set_nmi(vcpu);
++		return;
++	}
++
++	if (vcpu->arch.interrupt.pending) {
++		kvm_x86_ops->set_irq(vcpu, vcpu->arch.interrupt.nr);
++		return;
++	}
++
++	/* try to inject new event if pending */
++	if (vcpu->arch.nmi_pending) {
++		if (kvm_x86_ops->nmi_allowed(vcpu)) {
++			vcpu->arch.nmi_pending = false;
++			vcpu->arch.nmi_injected = true;
++			kvm_x86_ops->set_nmi(vcpu);
++		}
++	} else if (kvm_cpu_has_interrupt(vcpu)) {
++		if (kvm_x86_ops->interrupt_allowed(vcpu)) {
++			kvm_queue_interrupt(vcpu, kvm_cpu_get_interrupt(vcpu));
++			kvm_x86_ops->set_irq(vcpu, vcpu->arch.interrupt.nr);
 +		}
 +	}
++}
++
++static void inject_pending_irq(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
++{
++	bool req_int_win = !irqchip_in_kernel(vcpu->kvm) &&
++		kvm_run->request_interrupt_window;
++
++	if (vcpu->guest_debug & KVM_GUESTDBG_SINGLESTEP)
++		kvm_x86_ops->drop_interrupt_shadow(vcpu);
++
++	inject_irq(vcpu);
++
++	/* enable NMI/IRQ window open exits if needed */
++	if (vcpu->arch.nmi_pending)
++		kvm_x86_ops->enable_nmi_window(vcpu);
++	else if (kvm_cpu_has_interrupt(vcpu) || req_int_win)
++		kvm_x86_ops->enable_irq_window(vcpu);
++}
++
+ static int vcpu_enter_guest(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
+ {
+ 	int r;
+@@ -3168,9 +3230,14 @@ static int vcpu_enter_guest(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
+ 	if (vcpu->arch.exception.pending)
+ 		__queue_exception(vcpu);
+ 	else
+-		kvm_x86_ops->inject_pending_irq(vcpu, kvm_run);
++		inject_pending_irq(vcpu, kvm_run);
  
- 	if (reason != TASK_SWITCH_GATE ||
- 	    int_type == SVM_EXITINTINFO_TYPE_SOFT ||
-@@ -2203,7 +2222,7 @@ static int handle_exit(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
+-	kvm_lapic_sync_to_vapic(vcpu);
++	if (kvm_lapic_enabled(vcpu)) {
++		if (!vcpu->arch.apic->vapic_addr)
++			update_cr8_intercept(vcpu);
++		else
++			kvm_lapic_sync_to_vapic(vcpu);
++	}
  
- 	if (is_external_interrupt(svm->vmcb->control.exit_int_info) &&
- 	    exit_code != SVM_EXIT_EXCP_BASE + PF_VECTOR &&
--	    exit_code != SVM_EXIT_NPF)
-+	    exit_code != SVM_EXIT_NPF && exit_code != SVM_EXIT_TASK_SWITCH)
- 		printk(KERN_ERR "%s: unexpected exit_ini_info 0x%x "
- 		       "exit_code 0x%x\n",
- 		       __func__, svm->vmcb->control.exit_int_info,
+ 	up_read(&vcpu->kvm->slots_lock);
+ 
 -- 
 1.6.0.6
 
