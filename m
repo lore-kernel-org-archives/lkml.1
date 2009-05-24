@@ -1,188 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759206AbZEXP42@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759364AbZEXP5n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759206AbZEXP42 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 May 2009 11:56:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758607AbZEXPw7
+	id S1759364AbZEXP5n (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 May 2009 11:57:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758734AbZEXPxe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 May 2009 11:52:59 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:41848 "EHLO mx2.redhat.com"
+	Sun, 24 May 2009 11:53:34 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:41842 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754757AbZEXPue (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754458AbZEXPue (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 24 May 2009 11:50:34 -0400
 From: Avi Kivity <avi@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: kvm@vger.kernel.org
-Subject: [PATCH 31/45] KVM: s390: use hrtimer for clock wakeup from idle - v2
-Date: Sun, 24 May 2009 18:50:16 +0300
-Message-Id: <1243180230-2480-32-git-send-email-avi@redhat.com>
+Subject: [PATCH 25/45] KVM: Deal with interrupt shadow state for emulated instructions
+Date: Sun, 24 May 2009 18:50:10 +0300
+Message-Id: <1243180230-2480-26-git-send-email-avi@redhat.com>
 In-Reply-To: <1243180230-2480-1-git-send-email-avi@redhat.com>
 References: <1243180230-2480-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Christian Borntraeger <borntraeger@de.ibm.com>
+From: Glauber Costa <glommer@redhat.com>
 
-This patch reworks the s390 clock comparator wakeup to hrtimer. The clock
-comparator is a per-cpu value that is compared against the TOD clock. If
-ckc <= TOD an external interrupt 1004 is triggered. Since the clock comparator
-and the TOD clock have a much higher resolution than jiffies we should use
-hrtimers to trigger the wakeup. This speeds up guest nanosleep for small
-values.
+We currently unblock shadow interrupt state when we skip an instruction,
+but failing to do so when we actually emulate one. This blocks interrupts
+in key instruction blocks, in particular sti; hlt; sequences
 
-Since hrtimers callbacks run in hard-irq context, I added a tasklet to do
-the actual work with enabled interrupts.
+If the instruction emulated is an sti, we have to block shadow interrupts.
+The same goes for mov ss. pop ss also needs it, but we don't currently
+emulate it.
 
-Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
-Signed-off-by: Carsten Otte <cotte@de.ibm.com>
-Signed-off-by: Christian Ehrhardt <ehrhardt@de.ibm.com>
+Without this patch, I cannot boot gpxe option roms at vmx machines.
+This is described at https://bugzilla.redhat.com/show_bug.cgi?id=494469
+
+Signed-off-by: Glauber Costa <glommer@redhat.com>
+CC: H. Peter Anvin <hpa@zytor.com>
+CC: Gleb Natapov <gleb@redhat.com>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 ---
- arch/s390/include/asm/kvm_host.h |    5 ++++-
- arch/s390/kvm/interrupt.c        |   33 +++++++++++++++++++++++----------
- arch/s390/kvm/kvm-s390.c         |    7 +++++--
- arch/s390/kvm/kvm-s390.h         |    4 +++-
- 4 files changed, 35 insertions(+), 14 deletions(-)
+ arch/x86/include/asm/kvm_x86_emulate.h |    3 +++
+ arch/x86/kvm/x86.c                     |    6 +++++-
+ arch/x86/kvm/x86_emulate.c             |   20 ++++++++++++++++++++
+ 3 files changed, 28 insertions(+), 1 deletions(-)
 
-diff --git a/arch/s390/include/asm/kvm_host.h b/arch/s390/include/asm/kvm_host.h
-index 54ea39f..a27d0d5 100644
---- a/arch/s390/include/asm/kvm_host.h
-+++ b/arch/s390/include/asm/kvm_host.h
-@@ -13,6 +13,8 @@
+diff --git a/arch/x86/include/asm/kvm_x86_emulate.h b/arch/x86/include/asm/kvm_x86_emulate.h
+index be40d6e..b7ed2c4 100644
+--- a/arch/x86/include/asm/kvm_x86_emulate.h
++++ b/arch/x86/include/asm/kvm_x86_emulate.h
+@@ -155,6 +155,9 @@ struct x86_emulate_ctxt {
+ 	int mode;
+ 	u32 cs_base;
  
- #ifndef ASM_KVM_HOST_H
- #define ASM_KVM_HOST_H
-+#include <linux/hrtimer.h>
-+#include <linux/interrupt.h>
- #include <linux/kvm_host.h>
- #include <asm/debug.h>
- #include <asm/cpuid.h>
-@@ -210,7 +212,8 @@ struct kvm_vcpu_arch {
- 	s390_fp_regs      guest_fpregs;
- 	unsigned int      guest_acrs[NUM_ACRS];
- 	struct kvm_s390_local_interrupt local_int;
--	struct timer_list ckc_timer;
-+	struct hrtimer    ckc_timer;
-+	struct tasklet_struct tasklet;
- 	union  {
- 		cpuid_t	  cpu_id;
- 		u64	  stidp_data;
-diff --git a/arch/s390/kvm/interrupt.c b/arch/s390/kvm/interrupt.c
-index 4ed4c3a..a48830f 100644
---- a/arch/s390/kvm/interrupt.c
-+++ b/arch/s390/kvm/interrupt.c
-@@ -12,6 +12,8 @@
++	/* interruptibility state, as a result of execution of STI or MOV SS */
++	int interruptibility;
++
+ 	/* decode cache */
+ 	struct decode_cache decode;
+ };
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index c9b81ef..cf97ea0 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -2375,7 +2375,7 @@ int emulate_instruction(struct kvm_vcpu *vcpu,
+ 			u16 error_code,
+ 			int emulation_type)
+ {
+-	int r;
++	int r, shadow_mask;
+ 	struct decode_cache *c;
  
- #include <asm/lowcore.h>
- #include <asm/uaccess.h>
-+#include <linux/hrtimer.h>
-+#include <linux/interrupt.h>
- #include <linux/kvm_host.h>
- #include <linux/signal.h>
- #include "kvm-s390.h"
-@@ -361,12 +363,10 @@ int kvm_s390_handle_wait(struct kvm_vcpu *vcpu)
- 		return 0;
+ 	kvm_clear_exception_queue(vcpu);
+@@ -2429,6 +2429,10 @@ int emulate_instruction(struct kvm_vcpu *vcpu,
  	}
  
--	sltime = (vcpu->arch.sie_block->ckc - now) / (0xf4240000ul / HZ) + 1;
-+	sltime = ((vcpu->arch.sie_block->ckc - now)*125)>>9;
+ 	r = x86_emulate_insn(&vcpu->arch.emulate_ctxt, &emulate_ops);
++	shadow_mask = vcpu->arch.emulate_ctxt.interruptibility;
++
++	if (r == 0)
++		kvm_x86_ops->set_interrupt_shadow(vcpu, shadow_mask);
  
--	vcpu->arch.ckc_timer.expires = jiffies + sltime;
--
--	add_timer(&vcpu->arch.ckc_timer);
--	VCPU_EVENT(vcpu, 5, "enabled wait timer:%llx jiffies", sltime);
-+	hrtimer_start(&vcpu->arch.ckc_timer, ktime_set (0, sltime) , HRTIMER_MODE_REL);
-+	VCPU_EVENT(vcpu, 5, "enabled wait via clock comparator: %llx ns", sltime);
- no_timer:
- 	spin_lock_bh(&vcpu->arch.local_int.float_int->lock);
- 	spin_lock_bh(&vcpu->arch.local_int.lock);
-@@ -389,21 +389,34 @@ no_timer:
- 	remove_wait_queue(&vcpu->wq, &wait);
- 	spin_unlock_bh(&vcpu->arch.local_int.lock);
- 	spin_unlock_bh(&vcpu->arch.local_int.float_int->lock);
--	del_timer(&vcpu->arch.ckc_timer);
-+	hrtimer_try_to_cancel(&vcpu->arch.ckc_timer);
+ 	if (vcpu->arch.pio.string)
+ 		return EMULATE_DO_MMIO;
+diff --git a/arch/x86/kvm/x86_emulate.c b/arch/x86/kvm/x86_emulate.c
+index d2664fc..c1b6c23 100644
+--- a/arch/x86/kvm/x86_emulate.c
++++ b/arch/x86/kvm/x86_emulate.c
+@@ -1361,6 +1361,20 @@ static inline int writeback(struct x86_emulate_ctxt *ctxt,
  	return 0;
  }
  
--void kvm_s390_idle_wakeup(unsigned long data)
-+void kvm_s390_tasklet(unsigned long parm)
- {
--	struct kvm_vcpu *vcpu = (struct kvm_vcpu *)data;
-+	struct kvm_vcpu *vcpu = (struct kvm_vcpu *) parm;
- 
--	spin_lock_bh(&vcpu->arch.local_int.lock);
-+	spin_lock(&vcpu->arch.local_int.lock);
- 	vcpu->arch.local_int.timer_due = 1;
- 	if (waitqueue_active(&vcpu->arch.local_int.wq))
- 		wake_up_interruptible(&vcpu->arch.local_int.wq);
--	spin_unlock_bh(&vcpu->arch.local_int.lock);
-+	spin_unlock(&vcpu->arch.local_int.lock);
- }
- 
-+/*
-+ * low level hrtimer wake routine. Because this runs in hardirq context
-+ * we schedule a tasklet to do the real work.
-+ */
-+enum hrtimer_restart kvm_s390_idle_wakeup(struct hrtimer *timer)
++void toggle_interruptibility(struct x86_emulate_ctxt *ctxt, u32 mask)
 +{
-+	struct kvm_vcpu *vcpu;
-+
-+	vcpu = container_of(timer, struct kvm_vcpu, arch.ckc_timer);
-+	tasklet_schedule(&vcpu->arch.tasklet);
-+
-+	return HRTIMER_NORESTART;
++	u32 int_shadow = kvm_x86_ops->get_interrupt_shadow(ctxt->vcpu, mask);
++	/*
++	 * an sti; sti; sequence only disable interrupts for the first
++	 * instruction. So, if the last instruction, be it emulated or
++	 * not, left the system with the INT_STI flag enabled, it
++	 * means that the last instruction is an sti. We should not
++	 * leave the flag on in this case. The same goes for mov ss
++	 */
++	if (!(int_shadow & mask))
++		ctxt->interruptibility = mask;
 +}
- 
- void kvm_s390_deliver_pending_interrupts(struct kvm_vcpu *vcpu)
++
+ int
+ x86_emulate_insn(struct x86_emulate_ctxt *ctxt, struct x86_emulate_ops *ops)
  {
-diff --git a/arch/s390/kvm/kvm-s390.c b/arch/s390/kvm/kvm-s390.c
-index 86567e1..dc3d068 100644
---- a/arch/s390/kvm/kvm-s390.c
-+++ b/arch/s390/kvm/kvm-s390.c
-@@ -15,6 +15,7 @@
- #include <linux/compiler.h>
- #include <linux/err.h>
- #include <linux/fs.h>
-+#include <linux/hrtimer.h>
- #include <linux/init.h>
- #include <linux/kvm.h>
- #include <linux/kvm_host.h>
-@@ -283,8 +284,10 @@ int kvm_arch_vcpu_setup(struct kvm_vcpu *vcpu)
- 	vcpu->arch.sie_block->gmsor = vcpu->kvm->arch.guest_origin;
- 	vcpu->arch.sie_block->ecb   = 2;
- 	vcpu->arch.sie_block->eca   = 0xC1002001U;
--	setup_timer(&vcpu->arch.ckc_timer, kvm_s390_idle_wakeup,
--		 (unsigned long) vcpu);
-+	hrtimer_init(&vcpu->arch.ckc_timer, CLOCK_REALTIME, HRTIMER_MODE_ABS);
-+	tasklet_init(&vcpu->arch.tasklet, kvm_s390_tasklet,
-+		     (unsigned long) vcpu);
-+	vcpu->arch.ckc_timer.function = kvm_s390_idle_wakeup;
- 	get_cpu_id(&vcpu->arch.cpu_id);
- 	vcpu->arch.cpu_id.version = 0xff;
- 	return 0;
-diff --git a/arch/s390/kvm/kvm-s390.h b/arch/s390/kvm/kvm-s390.h
-index 00bbe69..748fee8 100644
---- a/arch/s390/kvm/kvm-s390.h
-+++ b/arch/s390/kvm/kvm-s390.h
-@@ -14,6 +14,7 @@
- #ifndef ARCH_S390_KVM_S390_H
- #define ARCH_S390_KVM_S390_H
+@@ -1372,6 +1386,8 @@ x86_emulate_insn(struct x86_emulate_ctxt *ctxt, struct x86_emulate_ops *ops)
+ 	int io_dir_in;
+ 	int rc = 0;
  
-+#include <linux/hrtimer.h>
- #include <linux/kvm.h>
- #include <linux/kvm_host.h>
++	ctxt->interruptibility = 0;
++
+ 	/* Shadow copy of register state. Committed on successful emulation.
+ 	 * NOTE: we can copy them from vcpu as x86_decode_insn() doesn't
+ 	 * modify them.
+@@ -1618,6 +1634,9 @@ special_insn:
+ 		int err;
  
-@@ -41,7 +42,8 @@ static inline int __cpu_is_stopped(struct kvm_vcpu *vcpu)
- }
- 
- int kvm_s390_handle_wait(struct kvm_vcpu *vcpu);
--void kvm_s390_idle_wakeup(unsigned long data);
-+enum hrtimer_restart kvm_s390_idle_wakeup(struct hrtimer *timer);
-+void kvm_s390_tasklet(unsigned long parm);
- void kvm_s390_deliver_pending_interrupts(struct kvm_vcpu *vcpu);
- int kvm_s390_inject_vm(struct kvm *kvm,
- 		struct kvm_s390_interrupt *s390int);
+ 		sel = c->src.val;
++		if (c->modrm_reg == VCPU_SREG_SS)
++			toggle_interruptibility(ctxt, X86_SHADOW_INT_MOV_SS);
++
+ 		if (c->modrm_reg <= 5) {
+ 			type_bits = (c->modrm_reg == 1) ? 9 : 1;
+ 			err = kvm_load_segment_descriptor(ctxt->vcpu, sel,
+@@ -1847,6 +1866,7 @@ special_insn:
+ 		c->dst.type = OP_NONE;	/* Disable writeback. */
+ 		break;
+ 	case 0xfb: /* sti */
++		toggle_interruptibility(ctxt, X86_SHADOW_INT_STI);
+ 		ctxt->eflags |= X86_EFLAGS_IF;
+ 		c->dst.type = OP_NONE;	/* Disable writeback. */
+ 		break;
 -- 
 1.6.0.6
 
