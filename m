@@ -1,69 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753874AbZEXLSR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754059AbZEXLdo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753874AbZEXLSR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 May 2009 07:18:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752313AbZEXLSD
+	id S1754059AbZEXLdo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 May 2009 07:33:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751772AbZEXLdf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 May 2009 07:18:03 -0400
-Received: from smtprelay08.ispgateway.de ([80.67.29.8]:60277 "EHLO
-	smtprelay08.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752212AbZEXLSC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 May 2009 07:18:02 -0400
-References: <1240913055.29860.14.camel@maxim-laptop> <1240950704.3781.12.camel@maxim-laptop> <cone.1241299309.265715.3948.1000@mentalhome> <20090503184617.GA3555@liondog.tnic> <cone.1241648222.299676.7476.1000@mentalhome> <20090509171432.GA31126@liondog.tnic> <cone.1242065107.695268.13534.1000@onepiie> <20090519203015.GA1362@ucw.cz> <9ea470500905220450s2367f8a1uc2b19a9466ea8509@mail.gmail.com> <20090522140930.GA26580@elf.ucw.cz> <9ea470500905220753x6c2be25dq14422dff2acea422@mail.gmail.com>
-Message-ID: <cone.1243163619.528098.4387.1000@deskpiie>
-X-Mailer: http://www.courier-mta.org/cone/
-From: Peter Feuerer <peter@piie.net>
-To: Borislav Petkov <petkovbb@googlemail.com>
-Cc: Pavel Machek <pavel@ucw.cz>, petkovbb@gmail.com,
-       LKML <linux-kernel@vger.kernel.org>, lenb@kernel.org,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [PATCH] Acer Aspire One Fan Control
-Date: Sun, 24 May 2009 13:13:39 +0200
-Mime-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="UTF-8"
+	Sun, 24 May 2009 07:33:35 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:36377 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751179AbZEXLde (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 May 2009 07:33:34 -0400
+Date: Sun, 24 May 2009 13:33:15 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       mtosatti@redhat.com, tglx@linutronix.de, cjashfor@linux.vnet.ibm.com
+Cc: linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:perfcounters/core] perf_counter: Optimize context switch
+	between identical inherited contexts
+Message-ID: <20090524113315.GA16151@elte.hu>
+References: <18966.10666.517218.332164@cargo.ozlabs.ibm.com> <tip-564c2b210add41df9a3a5aaa365c1d97cff6110d@git.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-X-Df-Sender: 404094
+In-Reply-To: <tip-564c2b210add41df9a3a5aaa365c1d97cff6110d@git.kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0001]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-Borislav Petkov writes:
+* tip-bot for Paul Mackerras <paulus@samba.org> wrote:
 
->> Yep, I don't disagree. But I strongly suspect that if you force the
->> fan off and overheat the machine, it will shut down in hardware before
->> doing any damage.
-> 
-> Yep, however we won't come that far with the current driver since it
-> relinquishes control of the fan to the BIOS after a critical temp of
-> 89° is reached. I'm still quite unpersuaded about that "magical" number
-> since it is 1 degree below the high interval boundary of the juncture
-> temperature of the Atom CPU. I would like to have a more reliable source
-> for the allowed envelope based not only on the CPU but on the whole
-> chipset but can't seem to find any data from Acer on that.
+> @@ -885,6 +934,16 @@ void perf_counter_task_sched_out(struct task_struct *task, int cpu)
+>  
+>  	regs = task_pt_regs(task);
+>  	perf_swcounter_event(PERF_COUNT_CONTEXT_SWITCHES, 1, 1, regs, 0);
+> +
+> +	next_ctx = next->perf_counter_ctxp;
+> +	if (next_ctx && context_equiv(ctx, next_ctx)) {
+> +		task->perf_counter_ctxp = next_ctx;
+> +		next->perf_counter_ctxp = ctx;
+> +		ctx->task = next;
+> +		next_ctx->task = task;
+> +		return;
+> +	}
 
-I think we are fine the way it is now. The driver allows to read the 
-temperature by default and people who know what they are doing can easily 
-enable kernel based fan control.
+there's one complication that this trick is causing - the migration 
+counter relies on ctx->task to get per task migration stats:
 
->>> the module can still be toggled on/off from sysfs. Actually, empirically
->>> measured, there seem to be three states of the fan: off, on and on-max
->>> where you can hear it rotating at max RPM. The kernel module can handle
->>> those completely if you know the respective ACPI EC commands and there's
->>> no need for userspace daemon, IMHO.
->>
->> It would be still nice to let the userspace lower the trip points for
->> maximum flexibility. No need for userspace _daemon_.
-> 
-> I'm sure Peter wouldn't mind adding some other sysfs entries in future
-> versions of the driver controlling exactly that.
+ static inline u64 get_cpu_migrations(struct perf_counter *counter)
+ {
+        struct task_struct *curr = counter->ctx->task;
 
-You can already change the trip points via the 
-/sys/module/acerhdf/parameters/* files on the fly.
+        if (curr)
+                return curr->se.nr_migrations;
+        return cpu_nr_migrations(smp_processor_id());
+ }
 
-cheers,
---peter
+as ctx->task is now jumping (while we keep the context), the 
+migration stats are out of whack.
+
+	Ingo
