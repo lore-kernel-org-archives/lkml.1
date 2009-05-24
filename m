@@ -1,270 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756024AbZEXPj5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755542AbZEXPnT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756024AbZEXPj5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 May 2009 11:39:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754043AbZEXPjw
+	id S1755542AbZEXPnT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 May 2009 11:43:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754127AbZEXPnM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 May 2009 11:39:52 -0400
-Received: from d112a2.x-mailer.de ([212.162.53.4]:55649 "EHLO
-	d112a2.x-mailer.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753578AbZEXPjv (ORCPT
+	Sun, 24 May 2009 11:43:12 -0400
+Received: from mx-out.daemonmail.net ([216.104.160.38]:54632 "EHLO
+	mx-out.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754112AbZEXPnL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 May 2009 11:39:51 -0400
-From: Karsten Keil <keil@b1-systems.de>
-Organization: B1-systems
-To: i4ldeveloper@listserv.isdn4linux.de
-Subject: Re: [mISDN PATCH v2 09/19] Fix TEI and SAPI handling
-Date: Sun, 24 May 2009 17:39:48 +0200
-User-Agent: KMail/1.11.1 (Linux/2.6.27.21-0.1-default; KDE/4.2.1; x86_64; ; )
-Cc: Sam Ravnborg <sam@ravnborg.org>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>
-References: <cover.1243024967.git.kkeil@pingi.linux-pingi.de> <200905231500.38092.keil@b1-systems.de> <20090523231022.GA13203@uranus.ravnborg.org>
-In-Reply-To: <20090523231022.GA13203@uranus.ravnborg.org>
+	Sun, 24 May 2009 11:43:11 -0400
+From: "Michael S. Zick" <lkml@morethan.org>
+Reply-To: lkml@morethan.org
+To: Harald Welte <HaraldWelte@viatech.com>
+Subject: Re: [BUG FIX] Make x86_32 uni-processor Atomic ops, Atomic
+Date: Sun, 24 May 2009 10:43:07 -0500
+User-Agent: KMail/1.9.9
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+References: <200905221139.26941.lkml@morethan.org> <200905230544.54657.lkml@morethan.org> <20090524070415.GI20452@prithivi.gnumonks.org>
+In-Reply-To: <20090524070415.GI20452@prithivi.gnumonks.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200905241739.48679.keil@b1-systems.de>
-X-Info: valid message
-X-Info: original Date
+Message-Id: <200905241043.10747.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sun May 24 2009, Harald Welte wrote:
+> On Sat, May 23, 2009 at 05:44:52AM -0500, Michael S. Zick wrote:
+> 
+> > *) The HP-2133 MiniNote uses the cn896 chipset, which
+> > has not yet been released from NDA.
+> 
+> I can see towards getting that changed, but I doubt this helps us with the
+> current problem.
+> 
+> > I do not have the C7-M technical reference, it is still
+> > under NDA.
+> 
+> I obviously have access to that documentation (which is also on its way
+> to become public, but needs more time) - but believe me, there is nothing
+> in that documentation that would help you to debug this problem :(
+> 
+> > *But* if a developer on this list has a copy of the
+> > manual *and* owns one of these three brands of machine -
+> > they would have fixed their own machine a year ago.
+> 
+> I actually own a 2133 mininote, but I rarely used it for anything but to test
+> openchrome on it.  What do you suggest me to try?
+>
 
-new version of this patch:
+The {,lk} pair of yesterday - now built against tag 2.6.3-rc7 is
+posted as -09144{,lk}
 
-Subject: [mISDN PATCH v3 09/19] Fix TEI and SAPI handling
-From: Karsten Keil <keil@b1-systems.de>
-To: linux-kernel@vger.kernel.org
-Cc: netdev@vger.kernel.org,
-    David Miller <davem@davemloft.net>,
-    i4ldeveloper@listserv.isdn4linux.de
+Details here:
+http://forum.netbookuser.com/viewtopic.php?pid=6976#p6976
 
-From: Andreas Eversberg <andreas@eversberg.eu>
+Try them on a C7-M/CX700 (or newer NetBook system chipset)
+(I don't normally test on the HP-2133 (C7-M/CN896) since I am
+not (yet) dealing with the Broadcom firmware and SBB driver.)
 
-Added SAPI value to use SAPIs different than 0.
-
-Now fixed TEIs work in NT mode. This allows PTP endpoint to be connected
-to PTMP ports together with other PTMP endpoints.
-
-New enhanced version, thanks to Sam Ravnborg <sam@ravnborg.org> for the
-hints. 
-
-David if you pull from:
-"git://master.kernel.org/pub/scm/linux/kernel/git/kkeil/ISDN-2.6-net-next.git 
-for_david"
-you get the new version.
-
-Signed-off-by: Andreas Eversberg <andreas@eversberg.eu>
-Signed-off-by: Karsten Keil <keil@b1-systems.de>
-
-diff --git a/drivers/isdn/mISDN/layer2.c b/drivers/isdn/mISDN/layer2.c
-index d6e2863..2d2f581 100644
---- a/drivers/isdn/mISDN/layer2.c
-+++ b/drivers/isdn/mISDN/layer2.c
-@@ -2068,7 +2068,8 @@ l2_ctrl(struct mISDNchannel *ch, u_int cmd, void *arg)
- }
- 
- struct layer2 *
--create_l2(struct mISDNchannel *ch, u_int protocol, u_long options, u_long 
-arg)
-+create_l2(struct mISDNchannel *ch, u_int protocol, u_long options, int tei,
-+		int sapi)
- {
- 	struct layer2		*l2;
- 	struct channel_req	rq;
-@@ -2089,7 +2090,7 @@ create_l2(struct mISDNchannel *ch, u_int protocol, 
-u_long options, u_long arg)
- 		test_and_set_bit(FLG_LAPD, &l2->flag);
- 		test_and_set_bit(FLG_LAPD_NET, &l2->flag);
- 		test_and_set_bit(FLG_MOD128, &l2->flag);
--		l2->sapi = 0;
-+		l2->sapi = sapi;
- 		l2->maxlen = MAX_DFRAME_LEN;
- 		if (test_bit(OPTION_L2_PMX, &options))
- 			l2->window = 7;
-@@ -2099,7 +2100,7 @@ create_l2(struct mISDNchannel *ch, u_int protocol, 
-u_long options, u_long arg)
- 			test_and_set_bit(FLG_PTP, &l2->flag);
- 		if (test_bit(OPTION_L2_FIXEDTEI, &options))
- 			test_and_set_bit(FLG_FIXED_TEI, &l2->flag);
--		l2->tei = (u_int)arg;
-+		l2->tei = tei;
- 		l2->T200 = 1000;
- 		l2->N200 = 3;
- 		l2->T203 = 10000;
-@@ -2114,7 +2115,7 @@ create_l2(struct mISDNchannel *ch, u_int protocol, 
-u_long options, u_long arg)
- 		test_and_set_bit(FLG_LAPD, &l2->flag);
- 		test_and_set_bit(FLG_MOD128, &l2->flag);
- 		test_and_set_bit(FLG_ORIG, &l2->flag);
--		l2->sapi = 0;
-+		l2->sapi = sapi;
- 		l2->maxlen = MAX_DFRAME_LEN;
- 		if (test_bit(OPTION_L2_PMX, &options))
- 			l2->window = 7;
-@@ -2124,7 +2125,7 @@ create_l2(struct mISDNchannel *ch, u_int protocol, 
-u_long options, u_long arg)
- 			test_and_set_bit(FLG_PTP, &l2->flag);
- 		if (test_bit(OPTION_L2_FIXEDTEI, &options))
- 			test_and_set_bit(FLG_FIXED_TEI, &l2->flag);
--		l2->tei = (u_int)arg;
-+		l2->tei = tei;
- 		l2->T200 = 1000;
- 		l2->N200 = 3;
- 		l2->T203 = 10000;
-@@ -2180,7 +2181,7 @@ x75create(struct channel_req *crq)
- 
- 	if (crq->protocol != ISDN_P_B_X75SLP)
- 		return -EPROTONOSUPPORT;
--	l2 = create_l2(crq->ch, crq->protocol, 0, 0);
-+	l2 = create_l2(crq->ch, crq->protocol, 0, 0, 0);
- 	if (!l2)
- 		return -ENOMEM;
- 	crq->ch = &l2->ch;
-diff --git a/drivers/isdn/mISDN/layer2.h b/drivers/isdn/mISDN/layer2.h
-index 6293f80..9547fb3 100644
---- a/drivers/isdn/mISDN/layer2.h
-+++ b/drivers/isdn/mISDN/layer2.h
-@@ -90,7 +90,7 @@ enum {
- #define L2_STATE_COUNT (ST_L2_8+1)
- 
- extern struct layer2	*create_l2(struct mISDNchannel *, u_int,
--				u_long, u_long);
-+				u_long, int, int);
- extern int		tei_l2(struct layer2 *, u_int, u_long arg);
- 
- 
-diff --git a/drivers/isdn/mISDN/tei.c b/drivers/isdn/mISDN/tei.c
-index c75af76..55a7c3d 100644
---- a/drivers/isdn/mISDN/tei.c
-+++ b/drivers/isdn/mISDN/tei.c
-@@ -426,7 +426,7 @@ done:
- }
- 
- static void
--put_tei_msg(struct manager *mgr, u_char m_id, unsigned int ri, u_char tei)
-+put_tei_msg(struct manager *mgr, u_char m_id, unsigned int ri, int tei)
- {
- 	struct sk_buff *skb;
- 	u_char bp[8];
-@@ -440,9 +440,8 @@ put_tei_msg(struct manager *mgr, u_char m_id, unsigned int 
-ri, u_char tei)
- 	bp[4] = ri >> 8;
- 	bp[5] = ri & 0xff;
- 	bp[6] = m_id;
--	bp[7] = (tei << 1) | 1;
--	skb = _alloc_mISDN_skb(PH_DATA_REQ, new_id(mgr),
--	    8, bp, GFP_ATOMIC);
-+	bp[7] = ((tei << 1) & 0xff) | 1;
-+	skb = _alloc_mISDN_skb(PH_DATA_REQ, new_id(mgr), 8, bp, GFP_ATOMIC);
- 	if (!skb) {
- 		printk(KERN_WARNING "%s: no skb for tei msg\n", __func__);
- 		return;
-@@ -777,7 +776,7 @@ tei_ph_data_ind(struct teimgr *tm, u_int mt, u_char *dp, 
-int len)
- }
- 
- static struct layer2 *
--create_new_tei(struct manager *mgr, int tei)
-+create_new_tei(struct manager *mgr, int tei, int sapi)
- {
- 	u_long		opt = 0;
- 	u_long		flags;
-@@ -786,12 +785,12 @@ create_new_tei(struct manager *mgr, int tei)
- 
- 	if (!mgr->up)
- 		return NULL;
--	if (tei < 64)
-+	if ((tei >= 0) && (tei < 64))
- 		test_and_set_bit(OPTION_L2_FIXEDTEI, &opt);
- 	if (mgr->ch.st->dev->Dprotocols
- 	  & ((1 << ISDN_P_TE_E1) | (1 << ISDN_P_NT_E1)))
- 		test_and_set_bit(OPTION_L2_PMX, &opt);
--	l2 = create_l2(mgr->up, ISDN_P_LAPD_NT, (u_int)opt, (u_long)tei);
-+	l2 = create_l2(mgr->up, ISDN_P_LAPD_NT, opt, tei, sapi);
- 	if (!l2) {
- 		printk(KERN_WARNING "%s:no memory for layer2\n", __func__);
- 		return NULL;
-@@ -839,12 +838,17 @@ new_tei_req(struct manager *mgr, u_char *dp)
- 	ri += dp[1];
- 	if (!mgr->up)
- 		goto denied;
--	tei = get_free_tei(mgr);
-+	if (!(dp[3] & 1)) /* Extension bit != 1 */
-+		goto denied;
-+	if (dp[3] != 0xff)
-+		tei = dp[3] >> 1; /* 3GPP TS 08.56 6.1.11.2 */
-+	else
-+		tei = get_free_tei(mgr);
- 	if (tei < 0) {
- 		printk(KERN_WARNING "%s:No free tei\n", __func__);
- 		goto denied;
- 	}
--	l2 = create_new_tei(mgr, tei);
-+	l2 = create_new_tei(mgr, tei, CTRL_SAPI);
- 	if (!l2)
- 		goto denied;
- 	else
-@@ -976,8 +980,6 @@ create_teimgr(struct manager *mgr, struct channel_req 
-*crq)
- 			__func__, dev_name(&mgr->ch.st->dev->dev),
- 			crq->protocol, crq->adr.dev, crq->adr.channel,
- 			crq->adr.sapi, crq->adr.tei);
--	if (crq->adr.sapi != 0) /* not supported yet */
--		return -EINVAL;
- 	if (crq->adr.tei > GROUP_TEI)
- 		return -EINVAL;
- 	if (crq->adr.tei < 64)
-@@ -1024,8 +1026,8 @@ create_teimgr(struct manager *mgr, struct channel_req 
-*crq)
- 		}
- 		return 0;
- 	}
--	l2 = create_l2(crq->ch, crq->protocol, (u_int)opt,
--		(u_long)crq->adr.tei);
-+	l2 = create_l2(crq->ch, crq->protocol, opt,
-+		crq->adr.tei, crq->adr.sapi);
- 	if (!l2)
- 		return -ENOMEM;
- 	l2->tm = kzalloc(sizeof(struct teimgr), GFP_KERNEL);
-@@ -1166,7 +1168,7 @@ static int
- check_data(struct manager *mgr, struct sk_buff *skb)
- {
- 	struct mISDNhead	*hh =  mISDN_HEAD_P(skb);
--	int			ret, tei;
-+	int			ret, tei, sapi;
- 	struct layer2		*l2;
- 
- 	if (*debug & DEBUG_L2_CTRL)
-@@ -1178,18 +1180,18 @@ check_data(struct manager *mgr, struct sk_buff *skb)
- 		return -ENOTCONN;
- 	if (skb->len != 3)
- 		return -ENOTCONN;
--	if (skb->data[0] != 0)
--		/* only SAPI 0 command */
--		return -ENOTCONN;
-+	if (skb->data[0] & 3) /* EA0 and CR must be  0 */
-+		return -EINVAL;
-+	sapi = skb->data[0] >> 2;
- 	if (!(skb->data[1] & 1)) /* invalid EA1 */
- 		return -EINVAL;
--	tei = skb->data[1] >> 0;
-+	tei = skb->data[1] >> 1;
- 	if (tei > 63) /* not a fixed tei */
- 		return -ENOTCONN;
- 	if ((skb->data[2] & ~0x10) != SABME)
- 		return -ENOTCONN;
- 	/* We got a SABME for a fixed TEI */
--	l2 = create_new_tei(mgr, tei);
-+	l2 = create_new_tei(mgr, tei, sapi);
- 	if (!l2)
- 		return -ENOMEM;
- 	ret = l2->ch.send(&l2->ch, skb);
--- 
-1.6.0.2
+Mike
+> I also have some other systems with a C7-M, so I can certainly verify
+> certain code on a number of them, if a good testcase exists.
+> 
 
 
