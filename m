@@ -1,68 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755456AbZEXQjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754252AbZEXQsA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755456AbZEXQjS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 May 2009 12:39:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752991AbZEXQjI
+	id S1754252AbZEXQsA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 May 2009 12:48:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753880AbZEXQrw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 May 2009 12:39:08 -0400
-Received: from casper.infradead.org ([85.118.1.10]:34492 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752849AbZEXQjH (ORCPT
+	Sun, 24 May 2009 12:47:52 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:2035 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752974AbZEXQrv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 May 2009 12:39:07 -0400
-Date: Sun, 24 May 2009 09:38:51 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: pageexec@freemail.hu
-Cc: "Larry H." <research@subreption.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ingo Molnar <mingo@elte.hu>, Rik van Riel <riel@redhat.com>,
-       linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>,
-       linux-mm@kvack.org, Ingo Molnar <mingo@redhat.com>
-Subject: Re: [PATCH] Support for unconditional page sanitization
-Message-ID: <20090524093851.37cbb4d6@infradead.org>
-In-Reply-To: <4A191F44.24468.2C006647@pageexec.freemail.hu>
-References: <20090520183045.GB10547@oblivion.subreption.com>
-	<20090523182141.GK13971@oblivion.subreption.com>
-	<20090523140509.5b4a59e4@infradead.org>
-	<4A191F44.24468.2C006647@pageexec.freemail.hu>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+	Sun, 24 May 2009 12:47:51 -0400
+Subject: Re: [PATCH 3/3] drivers/ide/ide-core: Unsplit constant strings for
+ pr_<level> and dev_<level>
+From: Joe Perches <joe@perches.com>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Borislav Petkov <petkovbb@gmail.com>, Tejun Heo <tj@kernel.org>,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <4A19399B.8060207@ru.mvista.com>
+References: <cover.1243062772.git.joe@perches.com>
+	 <57f9dd5c33bcdd863793a3ee95ab050e8456bab4.1243062772.git.joe@perches.com>
+	 <4A19399B.8060207@ru.mvista.com>
+Content-Type: text/plain
+Date: Sun, 24 May 2009 09:46:36 -0700
+Message-Id: <1243183596.3560.19.camel@Joe-Laptop.home>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 24 May 2009 12:19:48 +0200
-pageexec@freemail.hu wrote:
+On Sun, 2009-05-24 at 16:12 +0400, Sergei Shtylyov wrote:
+> > -		dev_err(&drive->gendev, "%s: packet size (0x%02x) is not 12 "
+> > -			"bytes\n", s, packet_size);
+> > +		dev_err(&drive->gendev,
+> > +			"%s: packet size (0x%02x) is not 12 bytes\n",
+>    When the message is broken by the format specifier, turning it into 
+> one liner can hardly help seraching...
 
-> On 23 May 2009 at 14:05, Arjan van de Ven wrote:
-> 
-> > On Sat, 23 May 2009 11:21:41 -0700
-> > "Larry H." <research@subreption.com> wrote:
-> > 
-> > > +static inline void sanitize_highpage(struct page *page)
-> > 
-> > any reason we're not reusing clear_highpage() for this?
-> > (I know it's currently slightly different, but that is fixable)
-> 
-> KM_USER0 users are not supposed to be called from soft/hard irq
-> contexts for high memory pages, something that cannot be guaranteed
-> at this low level of page freeing (i.e., we could be interrupting
-> a clear_highmem and overwrite its KM_USER0 mapping, leaving it dead
-> in the water when we return there). in other words, sanitization
-> must be able to nest within KM_USER*, so that pretty much calls for
-> its own slot.
+grep "is not 12 bytes"
 
-no arguement that current clear_highpage isn't a fit. I was more
-thinking about using the content of sanitize_highpage(), and just
-calling that clear_highpage(). (or in other words, improve
-clear_highpage to be usable in more situations)
+>    Oh noes, the indentation...
 
+trade-offs...
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+> > +	"(IO,CoD != (0,1) while issuing a packet command, retrying\n");
+>    Sigh...
+
+You seem to sigh a lot.  ;)
+
+> > +	"(IO,CoD != (0,1) while issuing a packet command, ignoring\n");
+>    Sigh...
+> > +	"Strange, packet command initiated yet DRQ isn't asserted\n");
+>    Sigh...
+> > +		"(IO,CoD) != (0,1) while issuing a packet command\n");
+>    Sigh...
+> > +		"unexpected interrupt, status=0x%02x, count=%ld\n",
+>    Hardly won anything...
+> > + "%s side 80-wire cable detection failed, limiting max speed to UDMA33\n",
+>     Will you really use the full message to serch here?
+> > +		 "probing with STATUS(0x%02x) instead of ALTSTATUS(0x%02x)\n",
+>    Same comment about the line broken by the format specifiers. This 
+> wins absolutely nothing.
+
+grep "STATUS.*ALTSTATUS"
+
+> > +		"no response (status = 0x%02x), resetting drive\n",
+>    And again...
+
+grep "response.*resetting"
+
+> > +			"%s Multimode Write multcount is not set\n",
+>    Sigh...
+> > +			"%s Multimode Read failure multcount is not set\n",
+>    Sigh...
+> > +		"%s %s: device not capable of full native PCI mode\n",
+>    Sigh...
+> > +		"%s %s: rewrite of PROGIF failed, wanted 0x%04x, got 0x%04x\n",
+> > +		"%s %s: I/O baseregs (BIOS) are reported as MEM for port %d!\n",
+>    Sigh...
+> > +		"%s %s: not 100%% native mode: will probe irqs later\n",
+>    Sigh...
+
+cheers, Joe
+
