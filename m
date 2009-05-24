@@ -1,81 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754753AbZEXO3k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754080AbZEXOae@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754753AbZEXO3k (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 May 2009 10:29:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752971AbZEXO3b
+	id S1754080AbZEXOae (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 May 2009 10:30:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753128AbZEXOa1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 May 2009 10:29:31 -0400
-Received: from bedivere.hansenpartnership.com ([66.63.167.143]:47033 "EHLO
-	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752934AbZEXO3b (ORCPT
+	Sun, 24 May 2009 10:30:27 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:38736 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752951AbZEXOa0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 May 2009 10:29:31 -0400
-Subject: [PATCH] async: make sure independent async domains can't
-	accidentally entangle.
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Sun, 24 May 2009 09:29:31 -0500
-Message-Id: <1243175371.2889.17.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Sun, 24 May 2009 10:30:26 -0400
+Date: Sun, 24 May 2009 10:30:25 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Johannes Berg <johannes@sipsolutions.net>, Oleg Nesterov <oleg@redhat.com>,
+       Ingo Molnar <mingo@elte.hu>, Zdenek Kabelac <zdenek.kabelac@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: INFO: possible circular locking dependency at cleanup_workqueue_thread
+In-Reply-To: <200905240120.30336.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0905241016410.7718-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The problem occurs when async_synchronize_full_domain() is called when
-the async_pending list is not empty.  This will cause lowest_running()
-to return the cookie of the first entry on the async_pending list, which
-might be nothing at all to do with the domain being asked for and thus
-cause the domain synchronization to wait for an unrelated domain.   This
-can cause a deadlock if domain synchronization is used from one domain
-to wait for another.
+On Sun, 24 May 2009, Rafael J. Wysocki wrote:
 
-Fix by running over the async_pending list to see if any pending items
-actually belong to our domain (and return their cookies if they do).
+> The patch is appended for reference (Alan, please have a look; I can't recall
+> why exactly we have called device_pm_lock() from the core suspend/hibernation
+> code instead of acquiring the lock locally in drivers/base/power/main.c) and
+> I'll attach it to the bug entry too.
 
-Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+I can't remember the reason either.  Probably there wasn't any.  The 
+patch looks fine, and it has the nice added benefit that now the only 
+user of device_pm_lock() will be device_move().
 
----
+> ---
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> Subject: PM: Do not hold dpm_list_mtx while disabling/enabling nonboot CPUs
+> 
+> We shouldn't hold dpm_list_mtx while executing
+> [disable|enable]_nonboot_cpus(), because theoretically this may lead
+> to a deadlock as shown by the following example (provided by Johannes
+> Berg):
+> 
+> CPU 3       CPU 2                     CPU 1
+>                                       suspend/hibernate
+>             something:
+>             rtnl_lock()               device_pm_lock()
+>                                        -> mutex_lock(&dpm_list_mtx)
+> 
+>             mutex_lock(&dpm_list_mtx)
+> 
+> linkwatch_work
+>  -> rtnl_lock()
+>                                       disable_nonboot_cpus()
+>                                        -> flush CPU 3 workqueue
+> 
+> Fortunately, device drivers are supposed to stop any activities that
+> might lead to the registration of new device objects and/or to the
+> removal of the existing ones way before disable_nonboot_cpus() is
 
-diff --git a/kernel/async.c b/kernel/async.c
-index 968ef94..9b01c61 100644
---- a/kernel/async.c
-+++ b/kernel/async.c
-@@ -92,19 +92,24 @@ extern int initcall_debug;
- static async_cookie_t  __lowest_in_progress(struct list_head *running)
- {
- 	struct async_entry *entry;
-+	unsigned long flags;
-+	async_cookie_t ret = next_cookie; /* begin with "infinity" value */
-+
- 	if (!list_empty(running)) {
- 		entry = list_first_entry(running,
- 			struct async_entry, list);
--		return entry->cookie;
-+		ret = entry->cookie;
- 	} else if (!list_empty(&async_pending)) {
--		entry = list_first_entry(&async_pending,
--			struct async_entry, list);
--		return entry->cookie;
--	} else {
--		/* nothing in progress... next_cookie is "infinity" */
--		return next_cookie;
-+		spin_lock_irqsave(&async_lock, flags);
-+		list_for_each_entry(entry, &async_pending, list)
-+			if (entry->running == running) {
-+				ret = entry->cookie;
-+				break;
-+			}
-+		spin_unlock_irqrestore(&async_lock, flags);
- 	}
- 
-+	return ret;
- }
- 
- static async_cookie_t  lowest_in_progress(struct list_head *running)
+Strictly speaking, drivers are still allowed to unregister existing 
+devices.  They are forbidden only to register new ones.  This shouldn't 
+hurt anything, though.
 
+> called, so it shouldn't be necessary to hold dpm_list_mtx over the
+> entire late part of device suspend and early part of device resume.
+> 
+> Thus, during the late suspend and the early resume of devices acquire
+> dpm_list_mtx only when dpm_list is going to be traversed and release
+> it right after that.
+
+Acked-by: Alan Stern <stern@rowland.harvard.edu>
 
