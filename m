@@ -1,55 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758351AbZEXWHk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758667AbZEXWHv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758351AbZEXWHk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 May 2009 18:07:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754674AbZEXWHY
+	id S1758667AbZEXWHv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 May 2009 18:07:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755208AbZEXWHd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 May 2009 18:07:24 -0400
-Received: from comar.pardus.org.tr ([193.140.100.220]:42263 "EHLO
-	pardus.org.tr" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754581AbZEXWHW (ORCPT
+	Sun, 24 May 2009 18:07:33 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:34151 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758115AbZEXWHa convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 May 2009 18:07:22 -0400
-Message-ID: <4A19C51D.7020609@pardus.org.tr>
-Date: Mon, 25 May 2009 01:07:25 +0300
-From: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
-MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Network Development <netdev@vger.kernel.org>,
-       Linux ACPI <linux-acpi@vger.kernel.org>,
-       Linux PM List <linux-pm@lists.linux-foundation.org>,
-       Linux SCSI List <linux-scsi@vger.kernel.org>,
-       Linux Wireless List <linux-wireless@vger.kernel.org>,
-       DRI <dri-devel@lists.sourceforge.net>
-Subject: Re: 2.6.30-rc7: Reported regressions from 2.6.29
+	Sun, 24 May 2009 18:07:30 -0400
+Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Gregory Haskins" <ghaskins@novell.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, "Sam Ravnborg" <sam@ravnborg.org>
 References: <ZPPBiNHr1LC.A.9ZH.K9bGKB@chimera>
 In-Reply-To: <ZPPBiNHr1LC.A.9ZH.K9bGKB@chimera>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Disposition: inline
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Message-ID: <uSztiUhmDDC.A.9TC.A_bGKB@chimera>
+Subject: [Bug #13119] Trouble with make-install from a NFS mount
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Date: Sun, 24 May 2009 21:11:49 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13326
-> Subject		: [PATCH]Null pointer dereference in rtc-cmos driver
-> Submitter	: Ozan Çağlayan <ozan@pardus.org.tr>
-> Date		: 2009-05-14 16:16 (11 days old)
-> References	: http://marc.info/?l=linux-kernel&m=124231783704696&w=4
->   
+This message has been generated automatically as a part of a report
+of recent regressions.
 
-Just to notice that the patch for this is at:
+The following bug entry is on the current list of known regressions
+from 2.6.29.  Please verify if it still should be listed and let me know
+(either way).
 
-http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/driver-core.current/driver-core-do-not-oops-when-driver_unregister-is-called-for-unregistered-drivers.patch
 
-Can at least be marked as "has a patch".
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13119
+Subject		: Trouble with make-install from a NFS mount
+Submitter	: Gregory Haskins <ghaskins@novell.com>
+Date		: 2009-04-14 21:32 (41 days old)
+References	: http://marc.info/?l=linux-kernel&m=123974482327044&w=4
+Handled-By	: H. Peter Anvin <hpa@zytor.com>
 
-Thanks,
-Ozan Caglayan
+
