@@ -1,80 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754080AbZEXOae@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754582AbZEXOeI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754080AbZEXOae (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 May 2009 10:30:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753128AbZEXOa1
+	id S1754582AbZEXOeI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 May 2009 10:34:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752985AbZEXOdz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 May 2009 10:30:27 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:38736 "HELO
+	Sun, 24 May 2009 10:33:55 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:50278 "HELO
 	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752951AbZEXOa0 (ORCPT
+	with SMTP id S1751907AbZEXOdz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 May 2009 10:30:26 -0400
-Date: Sun, 24 May 2009 10:30:25 -0400 (EDT)
+	Sun, 24 May 2009 10:33:55 -0400
+Date: Sun, 24 May 2009 10:33:56 -0400 (EDT)
 From: Alan Stern <stern@rowland.harvard.edu>
 X-X-Sender: stern@netrider.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Johannes Berg <johannes@sipsolutions.net>, Oleg Nesterov <oleg@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>, Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+To: David <david@unsolicited.net>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>, <linux-media@vger.kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: INFO: possible circular locking dependency at cleanup_workqueue_thread
-In-Reply-To: <200905240120.30336.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0905241016410.7718-100000@netrider.rowland.org>
+       <dbrownell@users.sourceforge.net>, <leonidv11@gmail.com>,
+       Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: USB/DVB - Old Technotrend TT-connect S-2400 regression tracked
+  down
+In-Reply-To: <4A189187.4020407@unsolicited.net>
+Message-ID: <Pine.LNX.4.44L0.0905241031050.7718-100000@netrider.rowland.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 24 May 2009, Rafael J. Wysocki wrote:
+On Sun, 24 May 2009, David wrote:
 
-> The patch is appended for reference (Alan, please have a look; I can't recall
-> why exactly we have called device_pm_lock() from the core suspend/hibernation
-> code instead of acquiring the lock locally in drivers/base/power/main.c) and
-> I'll attach it to the bug entry too.
+> Traces attached. Took a while as my quad core hangs solid when 0u is
+> piped to a file (I had to compile on a laptop and take the logs there).
 
-I can't remember the reason either.  Probably there wasn't any.  The 
-patch looks fine, and it has the nice added benefit that now the only 
-user of device_pm_lock() will be device_move().
+Is the output file being written to a USB device?  Obviously that's not
+a good thing to do; it's like running tcpdump over an ssh connection --
+you end up dumping the packets containing the dump output!
 
-> ---
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> Subject: PM: Do not hold dpm_list_mtx while disabling/enabling nonboot CPUs
-> 
-> We shouldn't hold dpm_list_mtx while executing
-> [disable|enable]_nonboot_cpus(), because theoretically this may lead
-> to a deadlock as shown by the following example (provided by Johannes
-> Berg):
-> 
-> CPU 3       CPU 2                     CPU 1
->                                       suspend/hibernate
->             something:
->             rtnl_lock()               device_pm_lock()
->                                        -> mutex_lock(&dpm_list_mtx)
-> 
->             mutex_lock(&dpm_list_mtx)
-> 
-> linkwatch_work
->  -> rtnl_lock()
->                                       disable_nonboot_cpus()
->                                        -> flush CPU 3 workqueue
-> 
-> Fortunately, device drivers are supposed to stop any activities that
-> might lead to the registration of new device objects and/or to the
-> removal of the existing ones way before disable_nonboot_cpus() is
+But if not then this is a genuine bug and it should be reported
+separately on the linux-usb mailing list.
 
-Strictly speaking, drivers are still allowed to unregister existing 
-devices.  They are forbidden only to register new ones.  This shouldn't 
-hurt anything, though.
-
-> called, so it shouldn't be necessary to hold dpm_list_mtx over the
-> entire late part of device suspend and early part of device resume.
-> 
-> Thus, during the late suspend and the early resume of devices acquire
-> dpm_list_mtx only when dpm_list is going to be traversed and release
-> it right after that.
-
-Acked-by: Alan Stern <stern@rowland.harvard.edu>
+Alan Stern
 
