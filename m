@@ -1,47 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757348AbZEXBIQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755182AbZEXB07@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757348AbZEXBIQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 May 2009 21:08:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753856AbZEXBIL
+	id S1755182AbZEXB07 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 May 2009 21:26:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753712AbZEXB0v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 May 2009 21:08:11 -0400
-Received: from mail.tmr.com ([64.65.253.246]:35575 "EHLO partygirl.tmr.com"
+	Sat, 23 May 2009 21:26:51 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:34320 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753835AbZEXBIK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 May 2009 21:08:10 -0400
-Message-ID: <4A189DCD.3000802@tmr.com>
-Date: Sat, 23 May 2009 21:07:25 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.21) Gecko/20090507 Fedora/1.1.16-1.fc9 SeaMonkey/1.1.16
-MIME-Version: 1.0
-To: Jon Masters <jonathan@jonmasters.org>
-CC: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: LKML Podcast Update
-References: <1243027657.1011.7.camel@localhost.localdomain>
-In-Reply-To: <1243027657.1011.7.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1753041AbZEXB0v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 May 2009 21:26:51 -0400
+Subject: Re: Possible deadlock in jfs_imap.c?
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: Jan Kucera <kucera.jan.cz@gmail.com>
+Cc: JFS Discussion <jfs-discussion@lists.sourceforge.net>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <ef67228d0905230819x633f0cd0t4dd1be639906f9bc@mail.gmail.com>
+References: <ef67228d0905230819x633f0cd0t4dd1be639906f9bc@mail.gmail.com>
+Content-Type: text/plain
+Date: Sat, 23 May 2009 20:26:50 -0500
+Message-Id: <1243128410.27493.2.camel@norville.austin.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jon Masters wrote:
-> Folks,
+On Sat, 2009-05-23 at 17:19 +0200, Jan Kucera wrote:
+> Hi,
 > 
-> Note: today's podcast was delayed - I'm taking a day off and will be in
-> Ottawa over the weekend, back to normal after the US Memorial Day break.
+> for my master thesis, I've designed static checker for finding deadlocks in C.
+> My tool found some possible deadlock in file fs/jfs/jfs_imap.c
+> between JFS_IP(ipimap)->commit_mutex and  imap->im_aglock[agno].
 > 
-> A quick update. We're up to about 300 listeners per day at the moment,
-> which is a sufficient number to make it worthwhile, so I'm going to keep
-> going. I'm not sure that daily is sustainable, so don't be surprised if
-> it becomes a Mon, Wed, Fri, weekend affair. Or something like that. I've
-> been trying to publish around midnight Eastern each night.
+> Reason of this problem is probably missed unlocking of
+> JFS_IP(ipimap)->commit_mutex in branch starting at line 2564 which
+> leaves JFS_IP(ipimap)->commit_mutex locked:
 > 
-> http://podcasts.jonmasters.org/kernel/kernel.xml
+>     in function diNewIAG(..)
+>         locking mutex_lock(&JFS_IP(ipimap)->commit_mutex) at line 2540
+>         condition at line 2543 is false
+>         condition at line 2564 is true
+>         goto out: at 2579
+>         IAGFREE_UNLOCK(imap); at line 2654
+>     return from diNewIAG(..) at line 2656
 > 
-Seems like a good thing whn I don't have time to follow the list.
+> Version of kernel is 2.6.28 (maybe this code is in newer versions too).
+> Could someone confirm, that this is a real bug? Thank you for your time.
 
+Yes, it looks like a real bug.  As the comment states, it's an unlikely
+error path. This would explain how it went undetected this long.  Should
+be fixed anyway.
+
+Thanks,
+Shaggy
 -- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+David Kleikamp
+IBM Linux Technology Center
+
