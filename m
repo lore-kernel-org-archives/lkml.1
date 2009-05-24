@@ -1,94 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752149AbZEXTOM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754124AbZEXTPe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752149AbZEXTOM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 May 2009 15:14:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751004AbZEXTN7
+	id S1754124AbZEXTPe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 May 2009 15:15:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751037AbZEXTP0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 May 2009 15:13:59 -0400
-Received: from mail-bw0-f174.google.com ([209.85.218.174]:55579 "EHLO
-	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750818AbZEXTN6 (ORCPT
+	Sun, 24 May 2009 15:15:26 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:52242 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750818AbZEXTP0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 May 2009 15:13:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=UdAMu/qBUt+YeTbAYdwwOEJuApES/EvBVG7clSa+5wA5BGkfEy3BXARSFkmms1he1V
-         6Jc3Q0RROMbW1N0kfmuAbtRb/jpJETAbNRgNyvxrey/wcWR5nl+r/b7lCAI2dV8ELJuV
-         ZeZHsUMxZpx4PAdVT3h+WxOq+5FjtYHubOy/Y=
-MIME-Version: 1.0
-In-Reply-To: <alpine.LFD.2.01.0905240947490.3435@localhost.localdomain>
-References: <20090518142707.GA24142@elte.hu> <20090518164921.GA6903@elte.hu>
-	 <alpine.LFD.2.01.0905180955550.3301@localhost.localdomain>
-	 <20090518170909.GA1623@elte.hu> <20090518190320.GA20260@elte.hu>
-	 <alpine.LFD.2.01.0905181208130.3301@localhost.localdomain>
-	 <20090518202031.GA26549@elte.hu>
-	 <alpine.LFD.2.01.0905181457320.3301@localhost.localdomain>
-	 <Pine.LNX.4.64.0905241911120.12189@melkki.cs.Helsinki.FI>
-	 <alpine.LFD.2.01.0905240947490.3435@localhost.localdomain>
-Date: Sun, 24 May 2009 22:13:58 +0300
-X-Google-Sender-Auth: c19e7123bc4018c5
-Message-ID: <84144f020905241213g365362bi130669aff2be58a9@mail.gmail.com>
-Subject: Re: [GIT PULL] scheduler fixes
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Yinghai Lu <yinghai@kernel.org>, Jeff Garzik <jgarzik@pobox.com>,
-       Alexander Viro <viro@ftp.linux.org.uk>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Matt Mackall <mpm@selenic.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 24 May 2009 15:15:26 -0400
+Subject: Re: [2.6.30-rc7 regression] kernel/async.c broke pata_legacy.c
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Mikael Pettersson <mikpe@it.uu.se>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       arjan@linux.intel.com
+In-Reply-To: <18969.29245.610133.834819@pilspetsen.it.uu.se>
+References: <18969.29245.610133.834819@pilspetsen.it.uu.se>
+Content-Type: text/plain
+Date: Sun, 24 May 2009 14:15:26 -0500
+Message-Id: <1243192526.2889.26.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Sun, 2009-05-24 at 18:13 +0200, Mikael Pettersson wrote:
+> I tried booting 2.6.30-rc7 on my old '486, but it fails miserably
+> during libata/pata_legacy's device scan:
+[...]
+> WARNING: at drivers/ata/libata-core.c:6222 ata_host_detach+0x75/0x90()
+> Modules linked in:
+> Pid: 1, comm: swapper Not tainted 2.6.30-rc7 #1
+> Call Trace:
+>  [<c01fbb05>] ? ata_host_detach+0x75/0x90
+>  [<c01fbb05>] ? ata_host_detach+0x75/0x90
+>  [<c01139b5>] ? warn_slowpath_common+0x45/0x80
+>  [<c01139fa>] ? warn_slowpath_null+0xa/0x10
+>  [<c01fbb05>] ? ata_host_detach+0x75/0x90
+>  [<c02f40e0>] ? legacy_init+0x44e/0x87f
+>  [<c02f3c92>] ? legacy_init+0x0/0x87f
+>  [<c0101021>] ? _stext+0x21/0x140
+>  [<c01890ff>] ? proc_register+0x2f/0x190
+>  [<c018938c>] ? create_proc_entry+0x5c/0xc0
+>  [<c0135ebe>] ? register_irq_proc+0x6e/0x90
+>  [<c02e6484>] ? kernel_init+0x6e/0xbf
+>  [<c02e6416>] ? kernel_init+0x0/0xbf
+>  [<c01031d7>] ? kernel_thread_helper+0x7/0x10
 
-On Sun, 24 May 2009, Pekka J Enberg wrote:
->> Ingo, here's a patch that boots UMA+SMP+SLUB x86-64 kernel on qemu all
->> the way to userspace. It probably breaks bunch of things for now but
->> something for you to play with if you want.
+OK, so the basic problem here is that pata_legacy attaches the host,
+sees if it found any devices and detaches it if none were found.  With
+async probing, it's not waiting until discovery is finished before
+deciding it has no devices and trying the detach ... the warning is
+because the detach is racing with the asynchronous probe.
 
-On Sun, May 24, 2009 at 9:18 PM, Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
-> In fact, it would be nice to perhaps try to move it even earlier. Now you
-> moved it to before the scheduler init (good!), but I do wonder if it could
-> be moved up to even before the setup_per_cpu_areas() etc crud.
+One way to fix it would be to put an async_synchronize_full() before
+looking for devices (try the patch below).  A better way might be to
+separate libata into its own domain and only wait for that.
 
-Oh, sure, we can look into that. I just wanted to take the
-conservative approach because I worry about breaking bunch of
-configurations I cannot test. I suspect it's going to get pretty hairy
-if we do kmem_cache_init() even earlier. Furthermore, SLUB does sysfs
-setup in kmem_cache_init() so we probably need to split slab
-initialization in two stages.
+James
 
-On Sun, May 24, 2009 at 9:18 PM, Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
-> I realize that the allocator wants to use the per-CPU area, but if we have
-> just the boot CPU area set up statically at that point, since it's only
-> the boot CPU running, maybe we could do those per-cpu area allocations
-> without the bootmem allocator too?
+---
 
-We probably can. I don't see any fundamental reason why slab
-allocators can't bootstrap early in the boot sequence after we've set
-up the page allocator.
+diff --git a/drivers/ata/pata_legacy.c b/drivers/ata/pata_legacy.c
+index f72c6c5..6932e56 100644
+--- a/drivers/ata/pata_legacy.c
++++ b/drivers/ata/pata_legacy.c
+@@ -48,6 +48,7 @@
+  *
+  */
+ 
++#include <linux/async.h>
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/pci.h>
+@@ -1028,6 +1029,7 @@ static __init int legacy_init_one(struct legacy_probe *probe)
+ 				&legacy_sht);
+ 	if (ret)
+ 		goto fail;
++	async_synchronize_full();
+ 	ld->platform_dev = pdev;
+ 
+ 	/* Nothing found means we drop the port as its probably not there */
 
-On Sun, May 24, 2009 at 9:18 PM, Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
-> But even just getting bootmem out of the scheduler setup is a big
-> improvement, I think. So this patch looks very promising as is.
->
-> Did you test whether the other allocators were ok with this too?
 
-SLUB and SLOB are fine but SLAB explodes. I didn't investigate it yet
-but it's probably because SLAB expects interrupts to be enabled when
-kmem_cache_init() is called.
-
-                       Pekka
