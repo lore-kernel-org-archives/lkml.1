@@ -1,59 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752052AbZEYEQn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754638AbZEYEfZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752052AbZEYEQn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 00:16:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750812AbZEYEQg
+	id S1754638AbZEYEfZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 00:35:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750852AbZEYEfP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 00:16:36 -0400
-Received: from hera.kernel.org ([140.211.167.34]:53859 "EHLO hera.kernel.org"
+	Mon, 25 May 2009 00:35:15 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:38735 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750742AbZEYEQf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 00:16:35 -0400
-Message-ID: <4A1A1B88.6070305@kernel.org>
-Date: Mon, 25 May 2009 13:16:08 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Jan Beulich <JBeulich@novell.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       the arch/x86 maintainers <x86@kernel.org>, suresh.b.siddha@intel.com,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH 2.6.30-rc7] x86: remove remap percpu allocator for the
- time being
-References: <4A1A0A27.4050301@kernel.org> <20090525033429.GC20687@elte.hu> <20090525033920.GD20687@elte.hu>
-In-Reply-To: <20090525033920.GD20687@elte.hu>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1750812AbZEYEfO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 00:35:14 -0400
+Date: Mon, 25 May 2009 14:35:11 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "Martin K. Petersen" <martin.petersen@oracle.com>,
+       Mikulas Patocka <mpatocka@redhat.com>,
+       Mike Snitzer <snitzer@redhat.com>, Alasdair G Kergon <agk@redhat.com>
+Subject: linux-next: block tree build failure
+Message-Id: <20090525143511.f9e76bdc.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 25 May 2009 04:16:11 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Ingo Molnar <mingo@elte.hu> wrote:
-> 
->>> @@ -365,9 +249,7 @@ void __init setup_per_cpu_areas(void)
->>>  	 * of large page mappings.  Please read comments on top of
->>>  	 * each allocator for details.
->>>  	 */
->>> -	ret = setup_pcpu_remap(static_size);
->>> -	if (ret < 0)
->>> -		ret = setup_pcpu_embed(static_size);
->>> +	ret = setup_pcpu_embed(static_size);
->>>  	if (ret < 0)
->>>  		ret = setup_pcpu_4k(static_size);
->>>  	if (ret < 0)
->> Please send a patch that only does the above chunk in essence. We 
->> can deal with the rest in .31.
-> 
-> I've committed the minimal patch below.
+Hi Jens,
 
-Yeap, that works too.
+Today's linux-next build (powerpc ppc64_defconfig) failed like this:
 
-Thanks.
+drivers/md/dm.c: In function 'dm_merge_bvec':
+drivers/md/dm.c:976: error: 'struct request_queue' has no member named 'max_hw_sectors'
+
+Caused by commit 025146e13b63483add912706c101fb0fb6f015cc ("block: Move
+queue limits to an embedded struct") from the block tree interacting with
+commit c8f4b88baca86491a6125cf9373a75e04b22ff8b
+("dm-avoid-unsupported-spanning-of-md-stripe-boundaries") from the
+device-mapper tree.
+
+Another sudden API change ...
+
+The correct way:
+	add new accessor implemented in terms of old API that is a noop
+	push that to Linus
+	fixup all the references to the old API (telling the users)
+	wait for other users (if any) to use new accessor
+	remove old API
+
+We have done this several times ...  Linus is will to take the "add new
+accessor" patches basically any time.
+
+So I added this patch:
+
+diff --git a/drivers/md/dm.c b/drivers/md/dm.c
+index 7b939fa..ea9a9e6 100644
+--- a/drivers/md/dm.c
++++ b/drivers/md/dm.c
+@@ -973,7 +973,7 @@ static int dm_merge_bvec(struct request_queue *q,
+ 	 * entries.  So always set max_size to 0, and the code below allows
+ 	 * just one page.
+ 	 */
+-	else if (q->max_hw_sectors <= PAGE_SIZE >> 9)
++	else if (queue_max_hw_sectors(q) <= PAGE_SIZE >> 9)
+ 		max_size = 0;
+ 
+ out_table:
+
+But now I get:
+
+drivers/md/dm-table.c: In function 'device_area_is_valid':
+drivers/md/dm-table.c:390: error: 'struct io_restrictions' has no member named 'hardsect_size'
+drivers/md/dm-table.c:414: error: 'struct io_restrictions' has no member named 'hardsect_size'
+drivers/md/dm-table.c: In function 'validate_hardsect_alignment':
+drivers/md/dm-table.c:738: error: 'struct io_restrictions' has no member named 'hardsect_size'
+drivers/md/dm-table.c:765: error: 'struct io_restrictions' has no member named 'hardsect_size'
+drivers/md/dm-table.c:777: error: 'struct io_restrictions' has no member named 'hardsect_size'
+
+This is caused by commit e1defc4ff0cf57aca6c5e3ff99fa503f5943c1f1
+("block: Do away with the notion of hardsect_size") from the block tree
+interacting with commits cc1018ae8a413b595a1f0f822928dd9e81a75e59
+("dm-table-ensure-targets-are-aligned-to-hardsect_size") and
+64b184139ca6cd3d53dc45d7782c8be50b3e0331
+("dm-table-validate-device-hardsect_size") from the device-mapper tree.
+
+So I added the following patch as well.
+
+diff --git a/drivers/md/dm-table.c b/drivers/md/dm-table.c
+index d38b911..8f734ad 100644
+--- a/drivers/md/dm-table.c
++++ b/drivers/md/dm-table.c
+@@ -387,7 +387,7 @@ static int device_area_is_valid(struct dm_target *ti, struct block_device *bdev,
+ 			     sector_t start, sector_t len)
+ {
+ 	sector_t dev_size = bdev->bd_inode->i_size >> SECTOR_SHIFT;
+-	unsigned short hardsect_size_sectors = ti->limits.hardsect_size >>
++	unsigned short hardsect_size_sectors = ti->limits.logical_block_size >>
+ 					       SECTOR_SHIFT;
+ 	char b[BDEVNAME_SIZE];
+ 
+@@ -414,7 +414,7 @@ static int device_area_is_valid(struct dm_target *ti, struct block_device *bdev,
+ 		DMWARN("%s: len=%llu not aligned to h/w sector size %hu of %s",
+ 		       dm_device_name(ti->table->md),
+ 		       (unsigned long long)len,
+-		       ti->limits.hardsect_size, bdevname(bdev, b));
++		       ti->limits.logical_block_size, bdevname(bdev, b));
+ 		return 0;
+ 	}
+ 
+@@ -735,7 +735,7 @@ static int validate_hardsect_alignment(struct dm_table *table)
+ 	 * (in units of 512-byte sectors).
+ 	 */
+ 	unsigned short device_hardsect_size_sects =
+-			    table->limits.hardsect_size >> SECTOR_SHIFT;
++			    table->limits.logical_block_size >> SECTOR_SHIFT;
+ 
+ 	/*
+ 	 * Offset of the start of the next table entry, mod hardsect_size.
+@@ -762,7 +762,7 @@ static int validate_hardsect_alignment(struct dm_table *table)
+ 		 * table entry are they compatible with its hardsect_size?
+ 		 */
+ 		if (remaining < ti->len &&
+-		    remaining & ((ti->limits.hardsect_size >>
++		    remaining & ((ti->limits.logical_block_size >>
+ 				  SECTOR_SHIFT) - 1))
+ 			break;	/* Error */
+ 
+@@ -779,7 +779,7 @@ static int validate_hardsect_alignment(struct dm_table *table)
+ 		       dm_device_name(table->md), i,
+ 		       (unsigned long long) ti->begin,
+ 		       (unsigned long long) ti->len,
+-		       table->limits.hardsect_size);
++		       table->limits.logical_block_size);
+ 		return -EINVAL;
+ 	}
+ 
 
 -- 
-tejun
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
