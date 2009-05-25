@@ -1,64 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754738AbZEYXiS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754749AbZEYXqm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754738AbZEYXiS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 19:38:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753651AbZEYXiH
+	id S1754749AbZEYXqm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 19:46:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753431AbZEYXqf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 19:38:07 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:41436 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752893AbZEYXiG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 19:38:06 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: Re: [Bug #13371] s2disk hangs with kernel 2.6.29 and later, SATA, Gigabyte EG45M-DS2H
-Date: Tue, 26 May 2009 01:38:12 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc6-rjw; KDE/4.2.3; x86_64; ; )
-Cc: Richard Atterer <richard@2009.atterer.net>, linux-kernel@vger.kernel.org,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Jeff Garzik <jeff@garzik.org>
-References: <GtY7d2eWpoK.A.ioC.MQcGKB@chimera> <200905260111.40728.rjw@sisk.pl> <200905260119.57542.bzolnier@gmail.com>
-In-Reply-To: <200905260119.57542.bzolnier@gmail.com>
+	Mon, 25 May 2009 19:46:35 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:41193 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752893AbZEYXqe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 19:46:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=UWR8GBUBWAMhuS/SFtH8uWa8Z7p3znCHQtOXCCITqP62GNio0ztE6k8DyRBw3RLCCh
+         hY3aM6fipDHZ23a8BwBz3yswr4a41V3tANr2XL++RGC/ZtkWbR6A2HHIE8S+T8rfnvA/
+         d2LfoGiKvcGDPT50awXnct5SUrZ7rWU4FNpvU=
+Message-ID: <4A1B2DD6.3050405@gmail.com>
+Date: Mon, 25 May 2009 17:46:30 -0600
+From: Robert Hancock <hancockrwd@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
+To: Christoph Pleger <Christoph.Pleger@cs.tu-dortmund.de>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: chmod fails though it pretends to succeed
+References: <20090525164457.278f0ec0.Christoph.Pleger@cs.tu-dortmund.de>
+In-Reply-To: <20090525164457.278f0ec0.Christoph.Pleger@cs.tu-dortmund.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905260138.12880.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 26 May 2009, Bartlomiej Zolnierkiewicz wrote:
-> On Tuesday 26 May 2009 01:11:40 Rafael J. Wysocki wrote:
-> > On Monday 25 May 2009, Richard Atterer wrote:
-> > > On Mon, May 25, 2009 at 04:30:21PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> > > > Hmm, we added ACPI NVS memory handling there and some machines seem
-> > > > to have trouble with it.  I think it would be worth to check it first.
-> > > > 
-> > > > Richard, could you try s2disk on some recent 2.6.30-rc kernel while
-> > > > booting using "acpi_sleep=s4_nonvs"?
-> > > 
-> > > I just tried that with 2.6.30-rc7, unfortunately it doesn't make any 
-> > > difference.
-> > > 
-> > > It turns out that if I wait long enough (just over 1 minute) both during 
-> > > suspend and resume, I *am* able to suspend and resume the machine. I have 
-> > > to manually turn it off or reset it though.
-> > > 
-> > > Another possibly interesting observation: My DVD writer apparently gets 
-> > > reset before the 1-minute hang and my USB hub after the hang.
-> > 
-> > You replied to Jeff that hibernation worked with CONFIG_IDE=n.  What was wrong
-> > with that test?
+Christoph Pleger wrote:
+> Hello,
 > 
-> It didn't work.  That was wrong.
+> I have a strange problem here with a C program that calls chmod.
 > 
-> Please at least read the current thread before asking such questions.
+> The C program is a PAM module called pam-devperm. The purpose of this
+> module is to set appropriate device ownerships and permissions when a
+> user logs in. But the module does not work as expected on my Ubuntu
+> 9.04 system. When a user logs in the first time after system boot, only
+> the device ownerships are changed, the permissions are not. When the
+> user logs out and in again, permissions are changed, too.
+> 
+> I added some lines of code to the the source of of pam-devperm so that
+> it produces more debug output when changing the properties of /dev/dsp.
+> The debug output showed me that chmod has been called to set the
+> permissions of /dev/dsp to 0600 and that chmod returned 0, which means
+> success. In spite of that, device permissions remain at 660.
+> 
+> Now I have two questions:
+> 
+> 1. What can be the reason for chmod to return a value of 0 though
+> device permissions have not been changed?
+> 
+> 2. What can be the reason why this chmod fails on the first login of a
+> user, but succeeds on further logins?
 
-Sorry, I was wondering why Richard told Jeff that the test worked at that time.
+Are you sure that some other process is not changing the device 
+permissions also?
 
-I should have asked differently or something, perhaps.
+> 
+> Regards
+>   Christoph  
 
-Best,
-Rafael
