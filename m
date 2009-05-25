@@ -1,46 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757049AbZEYKjj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755304AbZEYKma@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757049AbZEYKjj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 06:39:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754958AbZEYKjb
+	id S1755304AbZEYKma (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 06:42:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754017AbZEYKmT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 06:39:31 -0400
-Received: from web32407.mail.mud.yahoo.com ([68.142.207.200]:20651 "HELO
-	web32407.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753347AbZEYKja (ORCPT
+	Mon, 25 May 2009 06:42:19 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:41748 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752589AbZEYKmS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 06:39:30 -0400
-X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Mon, 25 May 2009 06:39:30 EDT
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:MIME-Version:Content-Type;
-  b=qxnX9FVMLolsewX0VORpcUZNFz4Zd+3XYDoUrEIp/EIofxuJL3qpD2G842woPj08WFvU15GB1TArWGxZ40vE/LArKk4ybvoy1aNox3HEgGgI9Tg4PJMAPtoh16NVURWn5ZMNrvbWQcD7W9WvJirXK5uBSfy+cKVOGY8xb3Lglbw=;
-Message-ID: <976507.1482.qm@web32407.mail.mud.yahoo.com>
-X-YMail-OSG: 7pgg3OgVM1mGomfCWWNxGnMPH6dcuOnXUpehDr9vtibcfR6.sXttrj8XrD8NKXFcoBfjEfvjM1bjauB_D16WxfT1GKHL61utPL.PTD0qeOQmNv3N0OtDQwdfLiDO34OGVnOWMrkuWeqDuL4_to0sGhSF0gRU5XTByjMMNyKXQevxyOKi_Uxx3GIVDrKGgr5zy3QW3xKLHSq.Gat1WdkOFojR0Z9ABpGrYa_8B3eD.dOISHs97iBlscbSMpaqThCbBwbu8bWQVBUAPCK6bsahnGH2NNty8qBazrL6bVivsNytl2YG446Y
-X-Mailer: YahooMailRC/1277.43 YahooMailWebService/0.7.289.10
-Date: Mon, 25 May 2009 03:32:50 -0700 (PDT)
-From: Adrian Sandor <aditsu@yahoo.com>
-Subject: Can't boot with smp
-To: linux-kernel@vger.kernel.org
+	Mon, 25 May 2009 06:42:18 -0400
+Date: Mon, 25 May 2009 06:42:15 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: Christoph Hellwig <hch@infradead.org>, Jens Axboe <jens.axboe@oracle.com>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, david@fromorbit.com, akpm@linux-foundation.org,
+       jack@suse.cz, yanmin_zhang@linux.intel.com, linux-scsi@vger.kernel.org,
+       Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>
+Subject: Re: [PATCH 03/13] scsi: unify allocation of scsi command and sense
+	buffer
+Message-ID: <20090525104215.GA3191@infradead.org>
+References: <1243236668-3398-1-git-send-email-jens.axboe@oracle.com> <1243236668-3398-6-git-send-email-jens.axboe@oracle.com> <20090525074124.GA31746@infradead.org> <20090525074647.GK11363@kernel.dk> <20090525075008.GA23413@infradead.org> <4A1A7406.5060106@panasas.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A1A7406.5060106@panasas.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, May 25, 2009 at 01:33:42PM +0300, Boaz Harrosh wrote:
+> 1. If we have a machine with few type of hosts active each with it's own
+> cmnd_slab we end up with many more slabs then today. Even though at the
+> end they all happen to be of the same size. (With the pool reserves it
+> can get big also).
 
-Hi, I'm having some problems with a computer - it restarts automatically when trying to boot.
-It only boots successfully if I add the nosmp option to the kernel.
-How can I find out what is happening (and fix it)?
+Note that this should be optional.  Device not having their own
+per-command structure would continue using the global pools.  Those
+that have their own per-command structures already have their own pools
+anyway.
 
-CPU is "Intel(R) Core(TM)2 Duo CPU     E7300  @ 2.66GHz"
-kernel is 2.6.28 (gentoo distro, 2.6.28-gentoo-r5)
-I can provide the kernel config if desired.
+> Hosts specify an size_of_private_command at host template, which might include
+> the common-scsi_cmnd + sense_buffer + private_cmnd + optional scsi_ptr +
+> bidi_data_buffer + ...
 
-Please CC me in replies.
+That sounds fine, too. 
 
-Thanks
-Adrian
-
-
-      
