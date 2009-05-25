@@ -1,52 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753733AbZEYPz1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753345AbZEYP5a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753733AbZEYPz1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 11:55:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752404AbZEYPzR
+	id S1753345AbZEYP5a (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 11:57:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752318AbZEYP5X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 11:55:17 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:44232 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752359AbZEYPzQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 11:55:16 -0400
-Date: Mon, 25 May 2009 17:50:38 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Roland McGrath <roland@redhat.com>, Christoph Hellwig <hch@infradead.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH 3/X] ptrace: introduce the empty "struct
-	ptrace_task"
-Message-ID: <20090525155038.GA10431@redhat.com>
-References: <20090525000001.GA2218@redhat.com> <20090525032426.GA20687@elte.hu>
+	Mon, 25 May 2009 11:57:23 -0400
+Received: from lon1-post-2.mail.demon.net ([195.173.77.149]:57799 "EHLO
+	lon1-post-2.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752148AbZEYP5X (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 11:57:23 -0400
+Message-ID: <4A1ABFE2.9050809@rsk.demon.co.uk>
+Date: Mon, 25 May 2009 16:57:22 +0100
+From: Richard Kennedy <richard@rsk.demon.co.uk>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090525032426.GA20687@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
+       akpm@linux-foundation.org, jack@suse.cz, yanmin_zhang@linux.intel.com
+Subject: Re: [PATCH 0/11] Per-bdi writeback flusher threads #4
+References: <1242649192-16263-1-git-send-email-jens.axboe@oracle.com>
+In-Reply-To: <1242649192-16263-1-git-send-email-jens.axboe@oracle.com>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/25, Ingo Molnar wrote:
->
-> * Oleg Nesterov <oleg@redhat.com> wrote:
->
-> > --- PTRACE/include/linux/sched.h~3_STRUCT	2009-05-24 21:29:04.000000000 +0200
-> > +++ PTRACE/include/linux/sched.h	2009-05-24 22:14:41.000000000 +0200
-> > @@ -1201,6 +1201,7 @@ struct task_struct {
-> >  	struct list_head sibling;	/* linkage in my parent's children list */
-> >  	struct task_struct *group_leader;	/* threadgroup leader */
-> >
-> > +	struct ptrace_task *ptrace_task;
-> >  	/*
-> >  	 * ptraced is the list of tasks this task is using ptrace on.
-> >  	 * This includes both natural children and PTRACE_ATTACH targets.
->
-> the naming sucks.
->
-> Please use 'struct ptrace_context' and '*ptrace_ctx' instead.
+Hi Jens,
 
-As always, I agree with any naming. Will re-name in V2.
+I've been testing this from your git version which builds as
+2.6.30-rc6-00057-g81eabcf.
 
-Oleg.
+Unfortunately it's not doing too well.
+
+When building a kernel with 'make -j 8' on my AMDX2 64bit, the screen
+repeatedly locked up for several minutes at a time,and my music player
+also froze.
+In total the full kernel build took over 80 minutes, normally it's only
+about 15.
+
+However the machine seems to have recovered correctly, & now everything
+is back to normal.
+
+Maybe it does need the congestion handling after all?
+
+regards
+Richard
+
+
 
