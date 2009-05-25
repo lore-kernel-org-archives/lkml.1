@@ -1,27 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751279AbZEYLfZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752744AbZEYLgS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751279AbZEYLfZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 07:35:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751447AbZEYLfP
+	id S1752744AbZEYLgS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 07:36:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751443AbZEYLgL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 07:35:15 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:44363 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751443AbZEYLfO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 07:35:14 -0400
-Date: Mon, 25 May 2009 13:28:14 +0200
-From: Stanislaw Gruszka <sgruszka@redhat.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Oleg Nesterov <oleg@redhat.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH resend4 2/3] itimers: fix periodic tics precision
-Message-ID: <20090525132814.442877e5@dhcp-lab-109.englab.brq.redhat.com>
-In-Reply-To: <alpine.LFD.2.00.0905221611380.3570@localhost.localdomain>
-References: <20090522154339.06d30f0a@dhcp-lab-109.englab.brq.redhat.com>
-	<alpine.LFD.2.00.0905221611380.3570@localhost.localdomain>
-Organization: RedHat
+	Mon, 25 May 2009 07:36:11 -0400
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:51741 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751346AbZEYLgK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 07:36:10 -0400
+Date: Mon, 25 May 2009 13:35:04 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Michael Abbott <michael@araneidae.co.uk>,
+       Jan Engelhardt <jengelh@medozas.de>
+Subject: Re: [GIT PULL] cputime patch for 2.6.30-rc6
+Message-ID: <20090525133504.62c3a6d7@skybase>
+In-Reply-To: <1243249766.26820.665.camel@twins>
+References: <20090518160904.7df88425@skybase>
+	<1242660243.26820.439.camel@twins>
+	<20090519104900.12e1f80c@skybase>
+	<1242723635.26820.471.camel@twins>
+	<20090525125034.159ecb78@skybase>
+	<1243249766.26820.665.camel@twins>
+Organization: IBM Corporation
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -29,181 +35,82 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(linuxppc-dev CC added)
+On Mon, 25 May 2009 13:09:26 +0200
+Peter Zijlstra <peterz@infradead.org> wrote:
 
-On Fri, 22 May 2009 16:27:40 +0200 (CEST)
-Thomas Gleixner <tglx@linutronix.de> wrote:
-
-> >  	if (cputime_ge(cur_time, it->expires)) {
-> > -		it->expires = it->incr;
-> > -		if (!cputime_eq(it->expires, cputime_zero))
-> > -			it->expires = cputime_add(it->expires, cur_time);
-> > +		if (!cputime_eq(it->incr, cputime_zero)) {
-> > +			it->expires = cputime_add(it->expires, it->incr);
-> > +			it->error += it->incr_error;
-> > +			if (it->error >= onecputick) {
-> > +				it->expires = cputime_sub(it->expires,
-> > +							jiffies_to_cputime(1));
-> > +				it->error -= onecputick;
-> > +			}
+> On Mon, 2009-05-25 at 12:50 +0200, Martin Schwidefsky wrote:
+> > On Tue, 19 May 2009 11:00:35 +0200
+> > Peter Zijlstra <peterz@infradead.org> wrote:
+> > 
+> > > So, I'm really not objecting too much to the patch at hand, but I'd love
+> > > to find a solution to this problem.
+> > 
+> > It is not hard so solve the problem for /proc/uptime, e.g. like this:
+> > 
+> > static u64 uptime_jiffies = INITIAL_JIFFIES;
+> > static struct timespec ts_uptime;
+> > static struct timespec ts_idle;
+> > 
+> > static int uptime_proc_show(struct seq_file *m, void *v)
+> > {
+> >         cputime_t idletime;
+> >         u64 now;
+> >         int i;
+> > 
+> >         now = get_jiffies_64();
+> >         if (uptime_jiffies != now) {
+> >                 uptime_jiffies = now;
+> >                 idletime = cputime_zero;
+> >                 for_each_possible_cpu(i)
+> >                         idletime = cputime64_add(idletime,
+> >                                                  kstat_cpu(i).cpustat.idle);
+> >                 do_posix_clock_monotonic_gettime(&ts_uptime);
+> >                 monotonic_to_bootbased(&ts_uptime);
+> >                 cputime_to_timespec(idletime, &ts_idle);
+> >         }
+> > 
+> >         seq_printf(m, "%lu.%02lu %lu.%02lu\n",
+> >                         (unsigned long) ts_uptime.tv_sec,
+> >                         (ts_uptime.tv_nsec / (NSEC_PER_SEC / 100)),
+> >                         (unsigned long) ts_idle.tv_sec,
+> >                         (ts_idle.tv_nsec / (NSEC_PER_SEC / 100)));
+> >         return 0;
+> > }
+> > 
+> > For /proc/stat it is less clear. Just storing the values in static
+> > variables is not such a good idea as there are lots of values.
+> > 10*NR_CPUS + NR_IRQS values to be exact. With NR_CPUS in the thousands
+> > this will waste quite a bit of memory.
 > 
->   Yep, that's a sane solution except for jiffies_to_cputime(), which
->   can be precomputed as well.
+> Right, I know of for_each_possible_cpu() loops that took longer than a
+> jiffy and caused general melt-down -- not saying the loop for idle time
+> will be one such a loop, but then it seems silly anyway, who's
+> incrementing the idle time when we're idle?
 
-I think precomputed is only needed for PPC where jiffies_to_cputime(1) is not
-compile time constant. To not affect other architectures, I wrote a patch with
-cputime_one value, it is global variable for PPC and preprocessor definition
-for others. This patch is against current Linus' tree. I send it as RFC, it
-was only compile tested for x86.
+Psst, I do ;-) Look at the arch_idle_time macro in fs/proc/stat.c..
+ 
+> I really prefer using things like percpu_counter/vmstat that have error
+> bounds that scale with the number of cpus in the system.
+> 
+> We simply have to start educating people that numbers on the global
+> state of the machine are inaccurate (they were anyway, because by the
+> time the userspace bits that read the /proc file get scheduled again the
+> numbers will have changed again).
 
-diff --git a/arch/ia64/include/asm/cputime.h b/arch/ia64/include/asm/cputime.h
-index d20b998..df88b07 100644
---- a/arch/ia64/include/asm/cputime.h
-+++ b/arch/ia64/include/asm/cputime.h
-@@ -30,6 +30,7 @@ typedef u64 cputime_t;
- typedef u64 cputime64_t;
- 
- #define cputime_zero			((cputime_t)0)
-+#define cputime_one			jiffies_to_cputime(1)
- #define cputime_max			((~((cputime_t)0) >> 1) - 1)
- #define cputime_add(__a, __b)		((__a) +  (__b))
- #define cputime_sub(__a, __b)		((__a) -  (__b))
-diff --git a/arch/powerpc/include/asm/cputime.h b/arch/powerpc/include/asm/cputime.h
-index f42e623..e57f951 100644
---- a/arch/powerpc/include/asm/cputime.h
-+++ b/arch/powerpc/include/asm/cputime.h
-@@ -48,6 +48,8 @@ typedef u64 cputime64_t;
- 
- #ifdef __KERNEL__
- 
-+extern cputime_t cputime_one;
-+
- /*
-  * Convert cputime <-> jiffies
-  */
-diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index 48571ac..e46e210 100644
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -498,6 +498,7 @@ static int __init iSeries_tb_recal(void)
- 				tb_to_xs = divres.result_low;
- 				vdso_data->tb_ticks_per_sec = tb_ticks_per_sec;
- 				vdso_data->tb_to_xs = tb_to_xs;
-+				cputime_one = jiffies_to_cputime(1);
- 			}
- 			else {
- 				printk( "Titan recalibrate: FAILED (difference > 4 percent)\n"
-@@ -904,6 +905,7 @@ void __init time_init(void)
- 	tb_ticks_per_usec = ppc_tb_freq / 1000000;
- 	tb_to_us = mulhwu_scale_factor(ppc_tb_freq, 1000000);
- 	calc_cputime_factors();
-+	cputime_one = jiffies_to_cputime(1);
- 
- 	/*
- 	 * Calculate the length of each tick in ns.  It will not be
-diff --git a/arch/s390/include/asm/cputime.h b/arch/s390/include/asm/cputime.h
-index 941384f..f7bbdc9 100644
---- a/arch/s390/include/asm/cputime.h
-+++ b/arch/s390/include/asm/cputime.h
-@@ -39,6 +39,7 @@ __div(unsigned long long n, unsigned int base)
- #endif /* __s390x__ */
- 
- #define cputime_zero			(0ULL)
-+#define cputime_one			jiffies_to_cputime(1)
- #define cputime_max			((~0UL >> 1) - 1)
- #define cputime_add(__a, __b)		((__a) +  (__b))
- #define cputime_sub(__a, __b)		((__a) -  (__b))
-diff --git a/include/asm-generic/cputime.h b/include/asm-generic/cputime.h
-index 1c1fa42..f2b18be 100644
---- a/include/asm-generic/cputime.h
-+++ b/include/asm-generic/cputime.h
-@@ -7,6 +7,7 @@
- typedef unsigned long cputime_t;
- 
- #define cputime_zero			(0UL)
-+#define cputime_one			(1UL)
- #define cputime_max			((~0UL >> 1) - 1)
- #define cputime_add(__a, __b)		((__a) +  (__b))
- #define cputime_sub(__a, __b)		((__a) -  (__b))
-diff --git a/kernel/itimer.c b/kernel/itimer.c
-index 58762f7..ba378c6 100644
---- a/kernel/itimer.c
-+++ b/kernel/itimer.c
-@@ -65,7 +65,7 @@ int do_getitimer(int which, struct itimerval *value)
- 			thread_group_cputimer(tsk, &cputime);
- 			utime = cputime.utime;
- 			if (cputime_le(cval, utime)) { /* about to fire */
--				cval = jiffies_to_cputime(1);
-+				cval = cputime_one;
- 			} else {
- 				cval = cputime_sub(cval, utime);
- 			}
-@@ -85,7 +85,7 @@ int do_getitimer(int which, struct itimerval *value)
- 			thread_group_cputimer(tsk, &times);
- 			ptime = cputime_add(times.utime, times.stime);
- 			if (cputime_le(cval, ptime)) { /* about to fire */
--				cval = jiffies_to_cputime(1);
-+				cval = cputime_one;
- 			} else {
- 				cval = cputime_sub(cval, ptime);
- 			}
-@@ -182,8 +182,7 @@ again:
- 		if (!cputime_eq(cval, cputime_zero) ||
- 		    !cputime_eq(nval, cputime_zero)) {
- 			if (cputime_gt(nval, cputime_zero))
--				nval = cputime_add(nval,
--						   jiffies_to_cputime(1));
-+				nval = cputime_add(nval, cputime_one);
- 			set_process_cpu_timer(tsk, CPUCLOCK_VIRT,
- 					      &nval, &cval);
- 		}
-@@ -204,8 +203,7 @@ again:
- 		if (!cputime_eq(cval, cputime_zero) ||
- 		    !cputime_eq(nval, cputime_zero)) {
- 			if (cputime_gt(nval, cputime_zero))
--				nval = cputime_add(nval,
--						   jiffies_to_cputime(1));
-+				nval = cputime_add(nval, cputime_one);
- 			set_process_cpu_timer(tsk, CPUCLOCK_PROF,
- 					      &nval, &cval);
- 		}
-diff --git a/kernel/posix-cpu-timers.c b/kernel/posix-cpu-timers.c
-index bece7c0..a86333c 100644
---- a/kernel/posix-cpu-timers.c
-+++ b/kernel/posix-cpu-timers.c
-@@ -1456,7 +1456,7 @@ void set_process_cpu_timer(struct task_struct *tsk, unsigned int clock_idx,
- 		if (!cputime_eq(*oldval, cputime_zero)) {
- 			if (cputime_le(*oldval, now.cpu)) {
- 				/* Just about to fire. */
--				*oldval = jiffies_to_cputime(1);
-+				*oldval = cputime_one;
- 			} else {
- 				*oldval = cputime_sub(*oldval, now.cpu);
- 			}
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 26efa47..b17fe3c 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -4726,17 +4726,16 @@ void account_idle_time(cputime_t cputime)
-  */
- void account_process_tick(struct task_struct *p, int user_tick)
- {
--	cputime_t one_jiffy = jiffies_to_cputime(1);
--	cputime_t one_jiffy_scaled = cputime_to_scaled(one_jiffy);
-+	cputime_t one_jiffy_scaled = cputime_to_scaled(cputime_one);
- 	struct rq *rq = this_rq();
- 
- 	if (user_tick)
--		account_user_time(p, one_jiffy, one_jiffy_scaled);
-+		account_user_time(p, cputime_one, one_jiffy_scaled);
- 	else if ((p != rq->idle) || (irq_count() != HARDIRQ_OFFSET))
--		account_system_time(p, HARDIRQ_OFFSET, one_jiffy,
-+		account_system_time(p, HARDIRQ_OFFSET, cputime_one,
- 				    one_jiffy_scaled);
- 	else
--		account_idle_time(one_jiffy);
-+		account_idle_time(cputime_one);
- }
- 
- /*
+That is one problem, the other is that the values you'll get are not
+atomic in any way. Not even the totals in /proc/stat match the sum over
+the cpus.
+
+> There's a variant of Heisenberg's uncertainty principle applicable to
+> (parallel) computers in that one either gets concurrency or accuracy on
+> global state, you cannot have both.
+
+If the time you need to generate a value is longer than the maximum
+error you do have a problem.
+
+-- 
+blue skies,
+   Martin.
+
+"Reality continues to ruin my life." - Calvin.
 
