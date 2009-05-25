@@ -1,50 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753106AbZEYTA0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753546AbZEYTDU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753106AbZEYTA0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 15:00:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752556AbZEYTAP
+	id S1753546AbZEYTDU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 15:03:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752279AbZEYTDN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 15:00:15 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:49837 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751747AbZEYTAN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 15:00:13 -0400
-Date: Mon, 25 May 2009 20:55:02 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Pavel Emelyanov <xemul@openvz.org>, Roland McGrath <roland@redhat.com>,
-       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 1/1] ptrace: do_notify_parent_cldstop: fix the wrong
-	->nsproxy usage
-Message-ID: <20090525185502.GA20781@redhat.com>
+	Mon, 25 May 2009 15:03:13 -0400
+Received: from mx-out2.daemonmail.net ([216.104.160.39]:50898 "EHLO
+	mx-out2.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751747AbZEYTDM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 15:03:12 -0400
+From: "Michael S. Zick" <lkml@morethan.org>
+Reply-To: lkml@morethan.org
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [BUG FIX] Make x86_32 uni-processor Atomic ops, Atomic
+Date: Mon, 25 May 2009 14:03:09 -0500
+User-Agent: KMail/1.9.9
+Cc: Harald Welte <HaraldWelte@viatech.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+References: <200905221139.26941.lkml@morethan.org> <200905241332.39946.lkml@morethan.org> <4A1995F0.6040602@zytor.com>
+In-Reply-To: <4A1995F0.6040602@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200905251403.11786.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If the non-traced sub-thread calls do_notify_parent_cldstop(), we send the
-notification to group_leader->real_parent and we report group_leader's pid.
+On Sun May 24 2009, H. Peter Anvin wrote:
+> Michael S. Zick wrote:
+> > 
+> > Note: I have seem to recall that newer gcc's optimizer presume 
+> > that the flags register is preserved across asm - 
+> > It didn't use to do that - but there is now a "cc" to deal with
+> > that - Have not yet audited for that, but it is high on my list.
+> > 
+> 
+> I am pretty sure that's false... if it was true we'd have failures all
+> over the kernel.
+> 
 
-But, if group_leader is traced we use the wrong ->parent->nsproxy->pid_ns,
-the tracer and parent can live in different namespaces. Change the code
-to use "parent" instead of tsk->parent.
+No information on the above (yet) - but you gotta love this one: ;)
 
-Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+Programmer authors code specifying that the subtraction be done
+prior to the addition to avoid over-flow conditions;
 
---- PTRACE/kernel/signal.c~CLDSTOP_NS	2009-05-25 20:24:50.000000000 +0200
-+++ PTRACE/kernel/signal.c	2009-05-25 20:33:37.000000000 +0200
-@@ -1496,7 +1496,7 @@ static void do_notify_parent_cldstop(str
- 	 * see comment in do_notify_parent() abot the following 3 lines
- 	 */
- 	rcu_read_lock();
--	info.si_pid = task_pid_nr_ns(tsk, tsk->parent->nsproxy->pid_ns);
-+	info.si_pid = task_pid_nr_ns(tsk, parent->nsproxy->pid_ns);
- 	info.si_uid = __task_cred(tsk)->uid;
- 	rcu_read_unlock();
- 
+GCC's optimizer, in its great wisdom, codes in the overflow case:
+( the case of finding the characters used/free in a ring buffer )
+
+extern int diff_umask(int mask, int *cnt1, int *cnt2) 
+{ return (((mask - *cnt1) + *cnt2) & mask); }
+
+/**
+ * gcc -O2 -S -fomit-frame-pointer difftest.c
+ *
+         .file   "difftest.c"
+        .text
+        .p2align 4,,15
+.globl diff_umask
+        .type   diff_umask, @function
+diff_umask:
+        movl    12(%esp), %eax
+        movl    4(%esp), %ecx
+        movl    (%eax), %edx
+        leal    (%ecx,%edx), %eax
+        movl    8(%esp), %edx
+        subl    (%edx), %eax
+        andl    %ecx, %eax
+        ret
+        .size   diff_umask, .-diff_umask
+        .ident  "GCC: (Debian 4.3.2-1.1) 4.3.2"
+        .section        .note.GNU-stack,"",@progbits
+*/
+
+Note: That is not the compiler version I am building my kernels with.
+
+Don't blame me, I didn't write the compiler. ;)
+
+Mike
+> 	-hpa
+> 
+
 
