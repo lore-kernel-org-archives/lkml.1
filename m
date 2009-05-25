@@ -1,154 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753331AbZEYVmC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754595AbZEYVn2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753331AbZEYVmC (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 17:42:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751824AbZEYVly
+	id S1754595AbZEYVn2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 17:43:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752827AbZEYVnV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 17:41:54 -0400
-Received: from mail-gx0-f166.google.com ([209.85.217.166]:52131 "EHLO
-	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751837AbZEYVlx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 17:41:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=b3ElL3a9As0WX43kkJxfjwLR5m3yX5DbsaDWPhBuraqBFveCwSWQ3iGBj+aX/t3vGl
-         1VtqLEdylFKs+BnNO7ICtUjfe/d++b9rupljBe1nco6LzhuPxuXvkoWkBdZowV5ljdkV
-         NPU1CFrwGKBp+obLZLdUEmL1SbpNowq+/xQ30=
+	Mon, 25 May 2009 17:43:21 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:40829 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752485AbZEYVnV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 17:43:21 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: nigel@tuxonice.net
+Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
+Date: Mon, 25 May 2009 23:43:23 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc6-rjw; KDE/4.2.3; x86_64; ; )
+Cc: linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net,
+       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
+References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net> <200905090143.10980.rjw@sisk.pl> <1243245907.16743.101.camel@nigel-laptop>
+In-Reply-To: <1243245907.16743.101.camel@nigel-laptop>
 MIME-Version: 1.0
-In-Reply-To: <1243147091.27293.3.camel@concordia>
-References: <c384c5ea0905231358t4803fbc6gf54618b2839a448a@mail.gmail.com>
-	 <c384c5ea0905231512u72894e34g17746548e640d4fe@mail.gmail.com>
-	 <1243147091.27293.3.camel@concordia>
-Date: Mon, 25 May 2009 23:41:47 +0200
-Message-ID: <c384c5ea0905251441p26af3b8ak6b3009990a43e8b6@mail.gmail.com>
-Subject: Re: mpc8315e-rdb: pci_enable_msi() fails (using today's 
-	galak/powerpc.git tree)
-From: Leon Woestenberg <leon.woestenberg@gmail.com>
-To: michael@ellerman.id.au
-Cc: Linux PPC <linuxppc-dev@ozlabs.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200905252343.23744.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Monday 25 May 2009, Nigel Cunningham wrote:
+> Hi.
 
-On Sun, May 24, 2009 at 8:38 AM, Michael Ellerman
-<michael@ellerman.id.au> wrote:
-> On Sun, 2009-05-24 at 00:12 +0200, Leon Woestenberg wrote:
->> Hello,
->>
->> On Sat, May 23, 2009 at 10:58 PM, Leon Woestenberg
->> <leon.woestenberg@gmail.com> wrote:
->> > using this tree: git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git
->> >
->> > pci_enable_msi() fails on my MPC8315E-RDB board with PCIe device in
->
-> <snip good bug report>
->
-> 'lspci -vvv' of the device in question is often useful too.
->
-Good point. Here's the full list, the last device is my target:
+Hi,
 
-0000:00:00.0 0b20: 1957:00b4 (rev 10)
-	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-Stepping- SERR+ FastB2B- DisINTx-
-	Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort-
-<TAbort- <MAbort+ >SERR- <PERR- INTx-
-	Latency: 128, Cache Line Size: 32 bytes
-	Interrupt: pin A routed to IRQ 17
-	Region 2: Memory at <unassigned> (64-bit, prefetchable)
-	Region 4: Memory at <unassigned> (64-bit, non-prefetchable)
-	Capabilities: [48] CompactPCI hot-swap <?>
-	Capabilities: [80] Power Management version 3
-		Flags: PMEClk+ DSI+ D1+ D2+ AuxCurrent=0mA PME(D0+,D1+,D2+,D3hot+,D3cold-)
-		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+> On Sat, 2009-05-09 at 01:43 +0200, Rafael J. Wysocki wrote:
+> > > On Sat, 2009-05-09 at 00:46 +0200, Rafael J. Wysocki wrote:
+> > > > On Friday 08 May 2009, Nigel Cunningham wrote:
+> > > > > On Fri, 2009-05-08 at 16:11 +0200, Rafael J. Wysocki wrote:
+> > > > > > On Friday 08 May 2009, Nigel Cunningham wrote:
+> > > > > And the code includes some fundamental differences. I freeze processes
+> > > > > and prepare the whole image before saving anything or doing an atomic
+> > > > > copy whereas you just free memory before doing the atomic copy. You save
+> > > > > everything in one part whereas I save the image in two parts.
+> > > > 
+> > > > IMO the differences are not that fundamental.  The whole problem boils down
+> > > > to using the same data structures for memory management and I think we can
+> > > > reach an agreement here.
+> > > 
+> > > I think we might be able to agree on using the same data structures, but
+> > > I'm not so sure about algorithms - I think you're underestimating the
+> > > differences here.
+> > 
+> > Well, which algorithms do you have in mind in particular?
+> 
+> Sorry for the slow reply - just starting to catch up after time away.
 
-0002:02:00.0 0000: 1957:00b4 (rev 10)
-	!!! Invalid class 0000 for header type 01
-	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr+
-Stepping- SERR+ FastB2B- DisINTx-
-	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort-
-<TAbort- <MAbort- >SERR- <PERR- INTx-
-	Latency: 0, Cache Line Size: 32 bytes
-	Bus: primary=02, secondary=03, subordinate=03, sec-latency=0
-	I/O behind bridge: 00000000-00000fff
-	Memory behind bridge: c0000000-cfffffff
-	Prefetchable memory behind bridge: 0000000000100000-00000000000fffff
-	Secondary status: 66MHz- FastB2B- ParErr- DEVSEL=fast >TAbort-
-<TAbort- <MAbort- <SERR- <PERR-
-	BridgeCtl: Parity- SERR- NoISA- VGA- MAbort- >Reset- FastB2B-
-		PriDiscTmr- SecDiscTmr- DiscTmrStat- DiscTmrSERREn-
-	Capabilities: [44] Power Management version 2
-		Flags: PMEClk- DSI+ D1+ D2+ AuxCurrent=0mA PME(D0+,D1+,D2+,D3hot+,D3cold-)
-		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
-	Capabilities: [4c] Express (v1) Root Port (Slot-), MSI 00
-		DevCap:	MaxPayload 128 bytes, PhantFunc 0, Latency L0s <64ns, L1 <1us
-			ExtTag- RBE- FLReset-
-		DevCtl:	Report errors: Correctable- Non-Fatal- Fatal- Unsupported-
-			RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop+
-			MaxPayload 128 bytes, MaxReadReq 512 bytes
-		DevSta:	CorrErr- UncorrErr- FatalErr- UnsuppReq- AuxPwr- TransPend-
-		LnkCap:	Port #0, Speed 2.5GT/s, Width x1, ASPM L0s, Latency L0 <2us,
-L1 unlimited
-			ClockPM- Surprise- LLActRep- BwNot-
-		LnkCtl:	ASPM Disabled; RCB 128 bytes Disabled- Retrain- CommClk-
-			ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
-		LnkSta:	Speed 2.5GT/s, Width x1, TrErr- Train- SlotClk- DLActive-
-BWMgmt- ABWMgmt-
-		RootCtl: ErrCorrectable- ErrNon-Fatal- ErrFatal- PMEIntEna- CRSVisible-
-		RootCap: CRSVisible-
-		RootSta: PME ReqID 0000, PMEStatus- PMEPending-
-	Capabilities: [100] Advanced Error Reporting
-		UESta:	DLP- SDES- TLP- FCP- CmpltTO- CmpltAbrt- UnxCmplt- RxOF-
-MalfTLP- ECRC- UnsupReq- ACSViol-
-		UEMsk:	DLP- SDES- TLP- FCP- CmpltTO- CmpltAbrt- UnxCmplt- RxOF-
-MalfTLP- ECRC- UnsupReq- ACSViol-
-		UESvrt:	DLP+ SDES- TLP- FCP+ CmpltTO- CmpltAbrt- UnxCmplt- RxOF+
-MalfTLP+ ECRC- UnsupReq- ACSViol-
-		CESta:	RxErr- BadTLP- BadDLLP- Rollover- Timeout- NonFatalErr-
-		CEMsk:	RxErr- BadTLP- BadDLLP- Rollover- Timeout- NonFatalErr-
-		AERCap:	First Error Pointer: 00, GenCap+ CGenEn- ChkCap+ ChkEn-
-	Capabilities: [138] Virtual Channel <?>
-	Capabilities: [3f8] Vendor Specific Information <?>
+NP
 
-0002:03:00.0 ff00: 1172:0004 (rev 01)
-	Subsystem: 1172:0004
-	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-Stepping- SERR- FastB2B- DisINTx+
-	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort-
-<TAbort- <MAbort- >SERR- <PERR- INTx-
-	Latency: 0
-	Interrupt: pin A routed to IRQ 25
-	Region 0: Memory at c0000000 (32-bit, non-prefetchable) [size=32K]
-	Capabilities: [50] MSI: Mask- 64bit+ Count=1/4 Enable+
-		Address: 00000000e00007f8  Data: 0000
-	Capabilities: [78] Power Management version 3
-		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
-		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
-	Capabilities: [80] Express (v1) Endpoint, MSI 00
-		DevCap:	MaxPayload 256 bytes, PhantFunc 0, Latency L0s <64ns, L1 <1us
-			ExtTag- AttnBtn- AttnInd- PwrInd- RBE+ FLReset-
-		DevCtl:	Report errors: Correctable- Non-Fatal- Fatal- Unsupported-
-			RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop+
-			MaxPayload 128 bytes, MaxReadReq 512 bytes
-		DevSta:	CorrErr+ UncorrErr- FatalErr- UnsuppReq- AuxPwr- TransPend-
-		LnkCap:	Port #1, Speed 2.5GT/s, Width x1, ASPM L0s L1, Latency L0
-unlimited, L1 unlimited
-			ClockPM- Surprise- LLActRep- BwNot-
-		LnkCtl:	ASPM Disabled; RCB 64 bytes Disabled- Retrain- CommClk-
-			ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
-		LnkSta:	Speed 2.5GT/s, Width x1, TrErr- Train- SlotClk+ DLActive-
-BWMgmt- ABWMgmt-
-	Capabilities: [100] Virtual Channel <?>
-	Kernel driver in use: altpciesgdma
+> The main difference is the order of doing things. TuxOnIce prepares the
+> image after freezing processes and before the atomic copy. It doesn't
+> just do that so that it can store a complete image of memory. It also
+> does it because once processes are frozen, the only thing that's going
+> to allocate storage is TuxOnIce,
 
+This is quite strong statement.  Is it provable?
 
+> and the only things that are going to allocate RAM are TuxOnIce and the
+> drivers' suspend routines.
 
--- 
-Leon
+Hmm.  What about kernel threads that are not frozen?
+
+> The drivers' routines are pretty consistent - once you've seen how much is
+> used for one invocation, you can add a small margin and call that the
+> allowance to use for all future invocations. The amount of memory used
+> by the hibernation code is also entirely predictable - once you know the
+> characteristics of the system as it stands (ie with processes frozen),
+> you know how much you're going to need for the atomic copy and for doing
+> I/O. If you find that something is too big, all you need to do is thaw
+> kernel threads and free some memory until you fit within constraints or
+> (heaven forbid!) find that you're not getting anyway and so want to give
+> up on hibernating all together.
+> 
+> If, on the other hand, you do the drivers suspend etc and then look to
+> see what state you're in, well you might need to thaw drivers etc in
+> order to free memory before trying again. It's more expensive. Right now
+> you're just giving up in that case - yes, you could retry too instead of
+> giving up completely, but it's better IMHO to seek to get things right
+> before suspending drivers.
+> 
+> Oh, before I forget to mention and you ask - how to know what allowance
+> for the drivers? I use a sysfs entry - the user then just needs to see
+> what's needed on their first attempt, set up a means of putting that
+> value in the sysfs file in future (eg /etc/hibernate/tuxonice.conf) and
+> then forget about it.
+
+OK, this is reasonable.
+
+Still, I think your approach is based on some assumptions that need to be
+verified, so that either we are 100% sure they are satisfied, or we have some
+safeguards in place in case they aren't.
+
+Best,
+Rafael
