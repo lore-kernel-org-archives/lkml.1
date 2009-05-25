@@ -1,46 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752343AbZEYCmV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755467AbZEYCzU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752343AbZEYCmV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 May 2009 22:42:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751691AbZEYCmJ
+	id S1755467AbZEYCzU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 May 2009 22:55:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751619AbZEYCzI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 May 2009 22:42:09 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:49989 "EHLO mx2.redhat.com"
+	Sun, 24 May 2009 22:55:08 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:50217 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750849AbZEYCmI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 May 2009 22:42:08 -0400
-Date: Sun, 24 May 2009 20:39:02 -0600
-From: Pete Zaitcev <zaitcev@redhat.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: USB list <linux-usb@vger.kernel.org>, David <david@unsolicited.net>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, <linux-media@vger.kernel.org>,
+	id S1751962AbZEYCzH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 May 2009 22:55:07 -0400
+Date: Mon, 25 May 2009 04:53:53 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Pekka J Enberg <penberg@cs.helsinki.fi>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jeff Garzik <jgarzik@pobox.com>,
+       Alexander Viro <viro@ftp.linux.org.uk>,
+       Rusty Russell <rusty@rustcorp.com.au>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       <dbrownell@users.sourceforge.net>, <leonidv11@gmail.com>,
-       Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: USB/DVB - Old Technotrend TT-connect S-2400 regression tracked
- down
-Message-Id: <20090524203902.594a0eec.zaitcev@redhat.com>
-In-Reply-To: <Pine.LNX.4.44L0.0905242208260.15195-100000@netrider.rowland.org>
-References: <4A1967A2.4050906@unsolicited.net>
-	<Pine.LNX.4.44L0.0905242208260.15195-100000@netrider.rowland.org>
-Organization: Red Hat, Inc.
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [GIT PULL] scheduler fixes
+Message-ID: <20090525025353.GA2580@elte.hu>
+References: <alpine.LFD.2.01.0905180850110.3301@localhost.localdomain> <20090518164921.GA6903@elte.hu> <alpine.LFD.2.01.0905180955550.3301@localhost.localdomain> <20090518170909.GA1623@elte.hu> <20090518190320.GA20260@elte.hu> <alpine.LFD.2.01.0905181208130.3301@localhost.localdomain> <20090518202031.GA26549@elte.hu> <alpine.LFD.2.01.0905181457320.3301@localhost.localdomain> <Pine.LNX.4.64.0905241911120.12189@melkki.cs.Helsinki.FI> <4A199327.5030503@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A199327.5030503@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 24 May 2009 22:10:50 -0400 (EDT), Alan Stern <stern@rowland.harvard.edu> wrote:
 
-> Pete, you should look at this.  It appears to be a problem with the DMA
-> mapping in usbmon.  Probably the same sort of thing you were working on
-> about a week ago (trying to access device memory).
+* Yinghai Lu <yinghai@kernel.org> wrote:
 
-Indeed it looks the same. Is this an AMD CPU?
+> Pekka J Enberg wrote:
+> > On Mon, 18 May 2009, Linus Torvalds wrote:
+> >>>> I hate that stupid bootmem allocator. I suspect we seriously 
+> >>>> over-use it, and that we _should_ be able to do the SL*B init 
+> >>>> earlier.
+> >>> Hm, tempting thought - not sure how to pull it off though.
+> >> As far as I can recall, one of the things that historically made us want 
+> >> to use the bootmem allocator even relatively late was that the real SLAB 
+> >> allocator had to wait until all the node information etc was initialized. 
+> >>
+> >> That's pretty damn late. And I wonder if SLUB (and SLOB) might not need a 
+> >> lot less initialization, and work much earlier. Something like that might 
+> >> be the final nail in the coffin for SLAB, and convince me to just say 
+> >> 'we don't support it any more".
+> > 
+> > Ingo, here's a patch that boots UMA+SMP+SLUB x86-64 kernel on qemu all 
+> > the way to userspace. It probably breaks bunch of things for now but 
+> > something for you to play with if you want.
+> > 
+> 
+> updated with tip/master. also add change to cpupri_init
+> otherwise will get 
+> [    0.000000] Memory: 523096612k/537526272k available (10461k kernel code, 656156k absent, 13773504k reserved, 7186k data, 2548k init)
+> [    0.000000] SLUB: Genslabs=14, HWalign=64, Order=0-3, MinObjects=0, CPUs=32, Nodes=8
+> [    0.000000] ------------[ cut here ]------------
+> [    0.000000] WARNING: at kernel/lockdep.c:2282 lockdep_trace_alloc+0xaf/0xee()
+> [    0.000000] Hardware name: Sun Fire X4600 M2
+> [    0.000000] Modules linked in:
+> [    0.000000] Pid: 0, comm: swapper Not tainted 2.6.30-rc6-tip-01778-g0afdd0f-dirty #259
+> [    0.000000] Call Trace:
+> [    0.000000]  [<ffffffff810a0274>] ? lockdep_trace_alloc+0xaf/0xee
+> [    0.000000]  [<ffffffff81075ab0>] warn_slowpath_common+0x88/0xcb
+> [    0.000000]  [<ffffffff81075b15>] warn_slowpath_null+0x22/0x38
+> [    0.000000]  [<ffffffff810a0274>] lockdep_trace_alloc+0xaf/0xee
+> [    0.000000]  [<ffffffff8110301b>] kmem_cache_alloc_node+0x38/0x14d
+> [    0.000000]  [<ffffffff813ec548>] ? alloc_cpumask_var_node+0x4a/0x10a
+> [    0.000000]  [<ffffffff8109eb61>] ? lockdep_init_map+0xb9/0x564
+> [    0.000000]  [<ffffffff813ec548>] alloc_cpumask_var_node+0x4a/0x10a
+> [    0.000000]  [<ffffffff813ec62c>] alloc_cpumask_var+0x24/0x3a
+> [    0.000000]  [<ffffffff819e6306>] cpupri_init+0x7f/0x112
+> [    0.000000]  [<ffffffff819e5a30>] init_rootdomain+0x72/0xb7
+> [    0.000000]  [<ffffffff821facce>] sched_init+0x109/0x660
+> [    0.000000]  [<ffffffff82203082>] ? kmem_cache_init+0x193/0x1b2
+> [    0.000000]  [<ffffffff821dfd7a>] start_kernel+0x218/0x3f3
+> [    0.000000]  [<ffffffff821df2a9>] x86_64_start_reservations+0xb9/0xd4
+> [    0.000000]  [<ffffffff821df3b2>] x86_64_start_kernel+0xee/0x109
+> [    0.000000] ---[ end trace a7919e7f17c0a725 ]---
+> 
+> works with 8 sockets numa amd64 box.
+> 
+> YH
+> 
+> ---
+>  init/main.c           |   28 ++++++++++++++++------------
+>  kernel/irq/handle.c   |   23 ++++++++---------------
+>  kernel/sched.c        |   34 +++++++++++++---------------------
+>  kernel/sched_cpupri.c |    9 ++++++---
+>  mm/slub.c             |   17 ++++++++++-------
+>  5 files changed, 53 insertions(+), 58 deletions(-)
 
-I wonder if CONFIG_HAVE_DMA_API_DEBUG does it (enabled with a select
-in arch/x86/Kconfig). Strange that it started happening now.
+Very nice!
 
--- Pete
+Would it be possible to restructure things to move kmalloc init to 
+before IRQ init as well? We have a couple of uglinesses there too.
+
+Conceptually, memory should be the first thing set up in general, in 
+a kernel. It does not need IRQs, timers, the scheduler or any of the 
+IO facilities and abstractions. All of them need memory though - and 
+as Linux scales to more and more hardware via the same single image, 
+so will we get more and more dynamic concepts like cpumask_var_t and 
+sparse-irqs, which want to allocate very early.
+
+setup_arch() is one huge function that sets up all architecture 
+details at once - but if we split a separate setup_arch_mem() out of 
+it, and left the rest in setup_arch (and moved it further down), we 
+could remove much of bootmem (especially the ugly uses).
+
+This might even be doable realistically, and we could thus librarize 
+bootmem and eliminate it from x86 at least. Perhaps.
+
+	Ingo
