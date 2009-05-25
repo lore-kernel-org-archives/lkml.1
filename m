@@ -1,76 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753646AbZEYM6o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752764AbZEYNCQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753646AbZEYM6o (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 08:58:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752243AbZEYM6e
+	id S1752764AbZEYNCQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 09:02:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751361AbZEYNCD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 08:58:34 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:50741 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752790AbZEYM6d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 08:58:33 -0400
-Date: Mon, 25 May 2009 15:57:36 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: hirofumi@mail.parknet.co.jp, linux-kernel@vger.kernel.org
-Subject: 2.a.30-rc7: fat filesystem misdetected as amiga
-Message-ID: <20090525125736.GA5582@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 25 May 2009 09:02:03 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:34899 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751279AbZEYNCB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 09:02:01 -0400
+Subject: Re: [PATCH] U300 sched_clock implementation
+From: Peter Zijlstra <peterz@infradead.org>
+To: Linus Walleij <linus.ml.walleij@gmail.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu,
+       linux-arm-kernel@lists.arm.linux.org.uk
+In-Reply-To: <63386a3d0905250513q6ca56eeepcf7bebe46c447fb4@mail.gmail.com>
+References: <63386a3d0905112337p2d426481o5f9bf9b9489cc57e@mail.gmail.com>
+	 <63386a3d0905231446h245bb4a9gec111f68a74a44e4@mail.gmail.com>
+	 <1243151839.26820.642.camel@twins>
+	 <63386a3d0905250513q6ca56eeepcf7bebe46c447fb4@mail.gmail.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Mon, 25 May 2009 15:01:50 +0200
+Message-Id: <1243256510.26820.679.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-I have a disk on key with 2 partitions:
-free hidden partition and after this a fat16
-partition.
+On Mon, 2009-05-25 at 14:13 +0200, Linus Walleij wrote:
+> 2009/5/24 Peter Zijlstra <peterz@infradead.org>:
+> 
+> > On Sat, 2009-05-23 at 23:46 +0200, Linus Walleij wrote:
+> >
+> >> This overrides the global sched_clock() symbol in the Linux
+> >> scheduler with a local implementation which takes advantage of
+> >> the timesource in U300 giving a scheduling resolution of 1us. The
+> >> solution is the same as found in the OMAP2 core code.
+> >
+> > We assume sched_clock() to return time in ns (e-9) resolution.
+> 
+> Yep okay and in this case:
+> 
+> >> +       ret = (unsigned long long) u300_get_cycles();
+> >> +       ret = (ret * clocksource_u300_1mhz.mult_orig) >>
+> >> +               clocksource_u300_1mhz.shift;
+> >> +       return ret;
+> 
+> (mult_orig >> shift) == 1000
 
-An attempt to mount it under linux 2.6.30-rc7 results in these messages:
+Ah, ok -- missed that little detail ;-)
 
-usb 1-3: new high speed USB device using ehci_hcd and address 7
-usb 1-3: New USB device found, idVendor=090c, idProduct=6000
-usb 1-3: New USB device strings: Mfr=1, Product=2, SerialNumber=3
-usb 1-3: Product: USB2.0 Card Reader  
-usb 1-3: Manufacturer: Generic       ,   . 
-usb 1-3: SerialNumber: 0000001       
-usb 1-3: configuration #1 chosen from 1 choice
-Initializing USB Mass Storage driver...
-scsi2 : SCSI emulation for USB Mass Storage devices
-usbcore: registered new interface driver usb-storage
-USB Mass Storage support registered.
-usb-storage: device found at 7
-usb-storage: waiting for device to settle before scanning
-usb-storage: device scan complete
-scsi 2:0:0:0: Direct-Access     Generic                   6000 PQ: 0 ANSI: 0 CCS
-sd 2:0:0:0: Attached scsi generic sg2 type 0
-sd 2:0:0:0: [sdb] 990976 512-byte hardware sectors: (507 MB/483 MiB)
-sd 2:0:0:0: [sdb] Write Protect is off
-sd 2:0:0:0: [sdb] Mode Sense: 4b 00 00 08
-sd 2:0:0:0: [sdb] Assuming drive cache: write through
-sd 2:0:0:0: [sdb] Assuming drive cache: write through
- sdb:<6>sd 2:0:0:0: [sdb] Result: hostbyte=DID_OK driverbyte=DRIVER_SENSE
-sd 2:0:0:0: [sdb] Sense Key : Illegal Request [current] 
-sd 2:0:0:0: [sdb] Add. Sense: Logical block address out of range
-end_request: I/O error, dev sdb, sector 0
-Buffer I/O error on device sdb, logical block 0
-Dev sdb: unable to read RDB block 0
- unable to read partition table
-sd 2:0:0:0: [sdb] Attached SCSI removable disk
-usb 1-3: USB disconnect, address 7
+> So for each cycle in cyclecount register we return 1000 * cycles
+> i.e 1000ns.
+> 
+> If it looks nicer we can of course simply:
+> return (unsigned long long) u300_get_cycles * 1000;
+> 
+> But the question here is whether this resolution is enough for
+> sched_clock() or if it is irrelevant to override sched_clock()
+> if it cannot schedule with better precision than 1000 ns.
 
-parted seems to display both partitions just fine,
-and that other OS does not seem to have any trouble
-accessing the disk.
-
-The message 'unable to read RDB block' seems to come from
-fs/partitions/amiga.c which looks pretty weird.
-
-Any idea what info would be helpful in debugging this?
-Just to clarify, this is not a regression - older linux versions
-as far back as 2.6.24 seem to behave the same way.
-
-
--- 
-MST
+No anything better than jiffies is good, 1us certainly is worth the
+trouble.
