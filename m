@@ -1,72 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752545AbZEYOv7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752782AbZEYOxX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752545AbZEYOv7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 10:51:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751582AbZEYOvu
+	id S1752782AbZEYOxX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 10:53:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751582AbZEYOxQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 10:51:50 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:4793 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751438AbZEYOvt convert rfc822-to-8bit (ORCPT
+	Mon, 25 May 2009 10:53:16 -0400
+Received: from honeydew.cs.uni-dortmund.de ([129.217.4.43]:46852 "EHLO
+	honeydew.cs.uni-dortmund.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751438AbZEYOxP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 10:51:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=FfUybMFO0FVN26R9MbIAFVQsv+VYFDylfM1eLDZWAFUI4CeqAT8XbzLwg9Y6+noUqL
-         y7sxGtgwGRfP0kA/8ow6/X19taLlu3Lw+OMbNVlSsULM0Z+TTKUYn5LPZ6qfOWFl3iZE
-         wGpuHkMjEfS4C5V3cfASRi7PYJ/aci87frPM0=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: =?utf-8?q?=E8=83=A1=E6=B4=AA=E5=85=B5?= <huhb@lemote.com>
-Subject: Re: [loongson-PATCH-v1 24/27] fixup for FUJITSU disk
-Date: Mon, 25 May 2009 16:56:24 +0200
-User-Agent: KMail/1.11.3 (Linux/2.6.30-rc6-next-20090522-05935-g4d19128; KDE/4.2.3; i686; ; )
-Cc: yanh@lemote.com, wuzhangjin@gmail.com, linux-mips@linux-mips.org,
-       Ralf Baechle <ralf@linux-mips.org>,
-       "IDE/ATA development list" <linux-ide@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       "linux-scsi" <linux-scsi@vger.kernel.org>,
-       Philippe Vachon <philippe@cowpig.ca>, Zhang Le <r0bertz@gentoo.org>,
-       Zhang Fuxin <zhangfx@lemote.com>, Arnaud Patard <apatard@mandriva.com>,
-       loongson-dev@googlegroups.com, gnewsense-dev@nongnu.org,
-       Nicholas Mc Guire <hofrat@hofr.at>, Liu Junliang <liujl@lemote.com>,
-       Erwan Lerale <erwan@thiscow.com>
-References: <cover.1242855716.git.wuzhangjin@gmail.com> <1243230339.9819.18.camel@localhost.localdomain> <4A1A4A54.6090401@lemote.com>
-In-Reply-To: <4A1A4A54.6090401@lemote.com>
-MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200905251656.25357.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+	Mon, 25 May 2009 10:53:15 -0400
+X-Greylist: delayed 497 seconds by postgrey-1.27 at vger.kernel.org; Mon, 25 May 2009 10:53:15 EDT
+Date: Mon, 25 May 2009 16:44:57 +0200
+From: Christoph Pleger <Christoph.Pleger@cs.tu-dortmund.de>
+To: linux-kernel@vger.kernel.org
+Subject: chmod fails though it pretends to succeed
+Message-Id: <20090525164457.278f0ec0.Christoph.Pleger@cs.tu-dortmund.de>
+Organization: Technische Universitaet Dortmund
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.6.10; sparc-sun-solaris2.10)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 25 May 2009 09:35:48 胡洪兵 wrote:
-> yanh 写道:
+Hello,
 
-[...]
+I have a strange problem here with a C program that calls chmod.
 
-> > the cs5536 pata driver have some geode platform dependent codes. We can
-> > just ignore it, but the performance is poor(using hdparm to test it),
-> > which only get 22+ MB/s. we find it only use udma2. However if using
-> > amd74xx driver, it can set udma5, and the speed can reach to 50+ MB/s. 
-> >
-> > we will test whether this driver is working well without this patch.
-> >
-> > Anyway, thanks your advice.
-> >   
-> Use the driver drivers/ata/pata_cs5536.c, unfortunately it also have the 
-> same issue.
+The C program is a PAM module called pam-devperm. The purpose of this
+module is to set appropriate device ownerships and permissions when a
+user logs in. But the module does not work as expected on my Ubuntu
+9.04 system. When a user logs in the first time after system boot, only
+the device ownerships are changed, the permissions are not. When the
+user logs out and in again, permissions are changed, too.
 
-Both drivers (pata_cs5536 & cs5536) should handle UDMA5.
+I added some lines of code to the the source of of pam-devperm so that
+it produces more debug output when changing the properties of /dev/dsp.
+The debug output showed me that chmod has been called to set the
+permissions of /dev/dsp to 0600 and that chmod returned 0, which means
+success. In spite of that, device permissions remain at 660.
 
-Could you please explain the issue with platform specific code a bit more?
+Now I have two questions:
 
-Is it related to a cable detection by any chance?
+1. What can be the reason for chmod to return a value of 0 though
+device permissions have not been changed?
 
-Thanks.
-Bart
+2. What can be the reason why this chmod fails on the first login of a
+user, but succeeds on further logins?
+
+Regards
+  Christoph  
