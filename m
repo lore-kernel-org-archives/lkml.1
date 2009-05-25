@@ -1,73 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753167AbZEYVTi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754578AbZEYVUS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753167AbZEYVTi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 17:19:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751998AbZEYVTa
+	id S1754578AbZEYVUS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 17:20:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753502AbZEYVUH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 17:19:30 -0400
-Received: from mail.tmr.com ([64.65.253.246]:57425 "EHLO partygirl.tmr.com"
+	Mon, 25 May 2009 17:20:07 -0400
+Received: from main.gmane.org ([80.91.229.2]:49540 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751373AbZEYVT3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 17:19:29 -0400
-Message-ID: <4A1B0B4A.8050706@tmr.com>
-Date: Mon, 25 May 2009 17:19:06 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.21) Gecko/20090507 Fedora/1.1.16-1.fc9 SeaMonkey/1.1.16
-MIME-Version: 1.0
-To: Thomas Glanzmann <thomas@glanzmann.de>, tytso@thunk.org,
-       LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org
-Subject: Re: zero out blocks of freed user data for operation a virtual machine
-   environment
-References: <20090524170045.GC24753@cip.informatik.uni-erlangen.de>
-In-Reply-To: <20090524170045.GC24753@cip.informatik.uni-erlangen.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1753409AbZEYVUG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 17:20:06 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: =?ISO-8859-1?Q?Simon_K=F6nig?= <simjoko@gmail.com>
+Subject: Re: Unable to compile 2.6.30-rc7 on RHEL 4 - GCC 3.4.6
+Date: Mon, 25 May 2009 23:17:29 +0200
+Message-ID: <gvf1ti$77e$1@ger.gmane.org>
+References: <f24d23310905250956u231fcd90u54d75894b9b91b9a@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: p54a8d081.dip.t-dialin.net
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.9.1pre) Gecko/20090525 Shredder/3.0b3pre
+In-Reply-To: <f24d23310905250956u231fcd90u54d75894b9b91b9a@mail.gmail.com>
+X-Enigmail-Version: 0.96a
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Glanzmann wrote:
-> Hello Ted,
-> I would like to know if there is already a mount option or feature in
-> ext3/ext4 that automatically overwrites freed blocks with zeros? If this
-> is not the case I would like to know if you would consider a patch for
-> upstream? I'm asking this because I currently do some research work on
-> data deduplication in virtual machine environments and corresponding
-> backups. It would be a huge space saver if there is such a feature
-> because todays and tomorrows backup tools for virtual machine
-> environments work on the block layer (VMware Consolidated Backup, VMware
-> Data Recovery, and NetApp Snapshots). This is not only true for backup
-> tools but also for running Virtual machines. The case that this future
-> addresses is the following: A huge file is downloaded and later delted.
-> The backup and datadeduplication that is operating on the block level
-> can't identify the block as unused. This results in backing up the
-> amount of the data that was previously allocated by the file and as such
-> introduces an performance overhead. If you're interested in real live
-> data, I'm able to provide them.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+On 05/25/09 18:56, debian developer wrote:
+> Hi all,
 > 
-> If you don't intend to have such an optional feature in ext3/ext4 I
-> would like to know if you know a tool that makes it possible to zero out
-> unused blocks?
+> I am getting this error when trying to compile the latest rc:
 > 
-Treating blocks as unused due to content seems a bad idea, if you want them to 
-be unused look for references to TRIM, if you want this for security look at 
-shred. And if you are interested in backing sparse files I believe that the tar 
-"-S" option will do what you want or provide code you can use to start writing 
-what you want.
+> /in/inndesk171/linux-2.6.28/arch/x86/Makefile:82: stack protector
+> enabled but no compiler support
 
-I don't think this is a good solution to the problem that unused space is not 
-accounted as you wish it would be. Most filesystems have a bitmap to track this 
-already, a handle on that would be more generally useful.
+Hello!
 
-Deleting files is slow enough, identifying unused storage by content is 1950s 
-thinking, and also ignores the fact that new drives often don't come zeroed, and 
-would behave badly unless you manually zeroed the unused portions.
+As the message states, your compiler does not support this kernel feature.
+You may want to disable CC_STACKPROTECTOR or use a gcc >= 4.2.
 
-I doubt this is the optimal solution, since you would have to read the zeros to 
-see if they were present, making backup smaller but no faster than just doing a 
-copy.
+Regars,
+Simon
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
+
+iEYEARECAAYFAkobCukACgkQzCF5U5e0QtICCACfXka95a8Tn9YlYRte+9zYwTZN
+bpAAn0xxkUuiTE1T7gDqTmyXJurFhQ8Q
+=wjdI
+-----END PGP SIGNATURE-----
+
