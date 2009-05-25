@@ -1,56 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753767AbZEYO6X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753147AbZEYO7n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753767AbZEYO6X (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 10:58:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752115AbZEYO6O
+	id S1753147AbZEYO7n (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 10:59:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751866AbZEYO7g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 10:58:14 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:45671 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751905AbZEYO6N (ORCPT
+	Mon, 25 May 2009 10:59:36 -0400
+Received: from mx1.auerswald.de ([212.185.163.234]:5525 "EHLO
+	mail.auerswald.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751940AbZEYO7f convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 10:58:13 -0400
-Subject: Re: [GIT PULL] scheduler fixes
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yinghai@kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Jeff Garzik <jgarzik@pobox.com>,
-       Alexander Viro <viro@ftp.linux.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, cl@linux-foundation.org,
-       npiggin@suse.de
-In-Reply-To: <1243263359.12761.48.camel@calx>
-References: <alpine.LFD.2.01.0905180955550.3301@localhost.localdomain>
-	 <20090518170909.GA1623@elte.hu> <20090518190320.GA20260@elte.hu>
-	 <alpine.LFD.2.01.0905181208130.3301@localhost.localdomain>
-	 <20090518202031.GA26549@elte.hu>
-	 <alpine.LFD.2.01.0905181457320.3301@localhost.localdomain>
-	 <Pine.LNX.4.64.0905241911120.12189@melkki.cs.Helsinki.FI>
-	 <4A199327.5030503@kernel.org> <20090525025353.GA2580@elte.hu>
-	 <4A1A2261.1000504@kernel.org> <20090525051521.GC23032@elte.hu>
-	 <Pine.LNX.4.64.0905251142140.32568@melkki.cs.Helsinki.FI>
-	 <1243263359.12761.48.camel@calx>
-Date: Mon, 25 May 2009 17:58:13 +0300
-Message-Id: <1243263493.2151.15.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.24.3 
+	Mon, 25 May 2009 10:59:35 -0400
+From: Wolfgang =?utf-8?q?M=C3=BCes?= <wolfgang.mues@auerswald.de>
+Organization: Auerswald GmbH & Co. KG
+To: Pierre Ossman <pierre@ossman.eu>
+Subject: Re: [PATCH] mmc_spi: use EILSEQ for possible transmission errors
+Date: Mon, 25 May 2009 16:59:17 +0200
+User-Agent: KMail/1.9.10
+Cc: "David Brownell" <david-b@pacbell.net>,
+       "Matt Fleming" <matt@console-pimps.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Mike Frysinger" <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org
+References: <200905250243.46984.david-b@pacbell.net> <200905251218.18262.wolfgang.mues@auerswald.de> <20090525135012.13be624c@mjolnir.ossman.eu>
+In-Reply-To: <20090525135012.13be624c@mjolnir.ossman.eu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200905251659.17396.wolfgang.mues@auerswald.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-05-25 at 09:55 -0500, Matt Mackall wrote:
-> > And oh, Christoph/Matt, can I have your NAK/ACK for this patch?
-> 
-> Looks ok to me, though I'd probably split it into three parts (slab,
-> slub, init).
+Pierre,
 
-Yeah, the patch is pretty big but I don't think we can do that. It would
-break git bisect.
+Am Montag, 25. Mai 2009 schrieb Pierre Ossman:
+> I don't remember why
+> mmc_spi is looking at responses to begin with.
 
-			Pekka
+Because responses are very different.
 
+First of all, responses in SD mode and SPI mode are different.
+
+Second, responses in SD mode are CRC-7 protected, so that it is easy to check 
+for transmission errors.
+
+SPI mode responses (R1...) are without any CRC.
+
+Third, if you have SD mode, you use a hardware host controller which manages 
+all command/data/response actions, and what you typically get is the content 
+of the status register of the host controller (which is different from the
+error code of the SD card).
+
+So it is very natural that every host controller driver mapps the responses 
+from the host controller to a common representation (== error code). The 
+error codes with special meanings for MMC/SD are summed up in mmc/core.h .
+
+The SPI host driver is a recent addition to the linux kernel, and the fact 
+that SPI responses are not CRC-protected was not accounted for in the code.
+
+As it makes no sense to code the retry logic in every driver, the prefered way 
+is to code the retry logic in block.c. The non-SPI-mode-drivers will profit 
+from this logic, because they are getting retries for EILSEQ (CRC error) and
+ETIMEDOUT (card has not understand the command).
+
+The biggest problem in the error codes is that EINVAL is used by the SPI 
+driver both for recoverable and for non-recoverable errors, which has to be 
+splitted IMHO.
+
+regards
+ 
+i. A. Wolfgang Mües
+-- 
+Auerswald GmbH & Co. KG
+Hardware Development
+Telefon: +49 (0)5306 9219 0
+Telefax: +49 (0)5306 9219 94 
+E-Mail: Wolfgang.Mues@Auerswald.de
+Web: http://www.auerswald.de
+ 
+--------------------------------------------------------------
+Auerswald GmbH & Co. KG, Vor den Grashöfen 1, 38162 Cremlingen
+Registriert beim AG Braunschweig HRA 13289
+p.h.G Auerswald Geschäftsführungsges. mbH
+Registriert beim AG Braunschweig HRB 7463
+Geschäftsführer: Dipl-Ing. Gerhard Auerswald
