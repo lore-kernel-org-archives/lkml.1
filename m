@@ -1,66 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754072AbZEYPRv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753289AbZEYPXQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754072AbZEYPRv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 11:17:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753355AbZEYPRg
+	id S1753289AbZEYPXQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 11:23:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752100AbZEYPW7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 11:17:36 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:50346 "HELO
+	Mon, 25 May 2009 11:22:59 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:58468 "HELO
 	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752863AbZEYPRf (ORCPT
+	with SMTP id S1751503AbZEYPW6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 11:17:35 -0400
-Date: Mon, 25 May 2009 11:17:36 -0400 (EDT)
+	Mon, 25 May 2009 11:22:58 -0400
+Date: Mon, 25 May 2009 11:23:00 -0400 (EDT)
 From: Alan Stern <stern@rowland.harvard.edu>
 X-X-Sender: stern@netrider.rowland.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       <linux-usb@vger.kernel.org>
-Subject: Re: Oops in usb-serial with keyspan adapter on current upstream
-In-Reply-To: <1243233792.24376.56.camel@pasglop>
-Message-ID: <Pine.LNX.4.44L0.0905251116250.23874-100000@netrider.rowland.org>
+To: David <david@unsolicited.net>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>, <linux-media@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       <dbrownell@users.sourceforge.net>, <leonidv11@gmail.com>,
+       Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: USB/DVB - Old Technotrend TT-connect S-2400 regression tracked
+  down
+In-Reply-To: <4A189187.4020407@unsolicited.net>
+Message-ID: <Pine.LNX.4.44L0.0905251121370.23874-100000@netrider.rowland.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 25 May 2009, Benjamin Herrenschmidt wrote:
+On Sun, 24 May 2009, David wrote:
 
-> Found it. Patch below.
-> 
-> usb-serial: Fix crash when sub-driver attach() returns positive value
-> 
-> This fixes a crash in usb-serial that typically happens with keyspan USB
-> devices, though it would happen potentially with anything that returns
-> a positive value from the subdriver's attach() method to indicate that
-> a FW was loaded and the device will disconnect and reconnect.
-> 
-> What happens is that we haven't yet initialized the struct device embedded
-> inside the struct usb_serial_port when we call "exit:" and return
-> from probe().
-> 
-> Later, when we get the disconnect() call, usb_serial_disconnect() tries
-> to do a device_del() and put_device() on all the ports, despite the fact
-> that in this case, the struct device wasn't initialized. This causes the
-> device core to crash (right, it should be more robust).
+> Alan Stern wrote:
+> > It's not obvious what could be causing this, so let's start out easy.  
+> > Try collecting two usbmon traces (instructions are in
+> > Documentation/usb/usbmon.txt), showing what happens with and without
+> > the reversion.  Maybe some difference will stick ou
+> >   
+> Traces attached. Took a while as my quad core hangs solid when 0u is
+> piped to a file (I had to compile on a laptop and take the logs there).
 
-Very clever.  Does this simpler patch also fix the problem?
+Okay, here's a patch for you to try.  It refreshes the toggle setting 
+in a linked but otherwise idle QH when a new URB is queued.
 
 Alan Stern
 
 
-Index: usb-2.6/drivers/usb/serial/usb-serial.c
+Index: usb-2.6/drivers/usb/host/ehci-q.c
 ===================================================================
---- usb-2.6.orig/drivers/usb/serial/usb-serial.c
-+++ usb-2.6/drivers/usb/serial/usb-serial.c
-@@ -974,6 +974,7 @@ int usb_serial_probe(struct usb_interfac
- 		if (retval > 0) {
- 			/* quietly accept this device, but don't bind to a
- 			   serial port as it's about to disappear */
-+			serial->num_ports = 0;
- 			goto exit;
- 		}
+--- usb-2.6.orig/drivers/usb/host/ehci-q.c
++++ usb-2.6/drivers/usb/host/ehci-q.c
+@@ -88,7 +88,7 @@ static inline void
+ qh_update (struct ehci_hcd *ehci, struct ehci_qh *qh, struct ehci_qtd *qtd)
+ {
+ 	/* writes to an active overlay are unsafe */
+-	BUG_ON(qh->qh_state != QH_STATE_IDLE);
++	BUG_ON(qh->qh_state != QH_STATE_IDLE && !list_empty(&qh->qtd_list));
+ 
+ 	qh->hw_qtd_next = QTD_NEXT(ehci, qtd->qtd_dma);
+ 	qh->hw_alt_next = EHCI_LIST_END(ehci);
+@@ -971,7 +971,13 @@ static struct ehci_qh *qh_append_tds (
+ 		/* can't sleep here, we have ehci->lock... */
+ 		qh = qh_make (ehci, urb, GFP_ATOMIC);
+ 		*ptr = qh;
++	} else if (list_empty(&qh->qtd_list)) {
++		/* There might have been a Clear-Halt while the QH
++		 * was linked but empty.
++		 */
++		qh_refresh(ehci, qh);
  	}
++
+ 	if (likely (qh != NULL)) {
+ 		struct ehci_qtd	*qtd;
+ 
 
