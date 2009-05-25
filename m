@@ -1,125 +1,204 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755467AbZEYCzU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754825AbZEYDDT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755467AbZEYCzU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 May 2009 22:55:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751619AbZEYCzI
+	id S1754825AbZEYDDT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 May 2009 23:03:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752006AbZEYDDK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 May 2009 22:55:08 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50217 "EHLO mx3.mail.elte.hu"
+	Sun, 24 May 2009 23:03:10 -0400
+Received: from hera.kernel.org ([140.211.167.34]:35993 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751962AbZEYCzH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 May 2009 22:55:07 -0400
-Date: Mon, 25 May 2009 04:53:53 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Pekka J Enberg <penberg@cs.helsinki.fi>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Jeff Garzik <jgarzik@pobox.com>,
-       Alexander Viro <viro@ftp.linux.org.uk>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [GIT PULL] scheduler fixes
-Message-ID: <20090525025353.GA2580@elte.hu>
-References: <alpine.LFD.2.01.0905180850110.3301@localhost.localdomain> <20090518164921.GA6903@elte.hu> <alpine.LFD.2.01.0905180955550.3301@localhost.localdomain> <20090518170909.GA1623@elte.hu> <20090518190320.GA20260@elte.hu> <alpine.LFD.2.01.0905181208130.3301@localhost.localdomain> <20090518202031.GA26549@elte.hu> <alpine.LFD.2.01.0905181457320.3301@localhost.localdomain> <Pine.LNX.4.64.0905241911120.12189@melkki.cs.Helsinki.FI> <4A199327.5030503@kernel.org>
+	id S1751619AbZEYDDJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 May 2009 23:03:09 -0400
+Message-ID: <4A1A0A27.4050301@kernel.org>
+Date: Mon, 25 May 2009 12:01:59 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A199327.5030503@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Ingo Molnar <mingo@elte.hu>, Jan Beulich <JBeulich@novell.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       the arch/x86 maintainers <x86@kernel.org>, suresh.b.siddha@intel.com
+CC: Andi Kleen <andi@firstfloor.org>
+Subject: [PATCH 2.6.30-rc7] x86: remove remap percpu allocator for the time
+ being
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 25 May 2009 03:02:04 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Remap percpu allocator has subtle bug when combined with page
+attribute changing.  Remap percpu allocator aliases PMD pages for the
+first chunk and as pageattr doesn't know about the alias it ends up
+updating page attributes of the original mapping thus leaving the
+alises in inconsistent state which might lead to subtle data
+corruption.  Please read the following threads for more information.
 
-* Yinghai Lu <yinghai@kernel.org> wrote:
+  http://thread.gmane.org/gmane.linux.kernel/835783
 
-> Pekka J Enberg wrote:
-> > On Mon, 18 May 2009, Linus Torvalds wrote:
-> >>>> I hate that stupid bootmem allocator. I suspect we seriously 
-> >>>> over-use it, and that we _should_ be able to do the SL*B init 
-> >>>> earlier.
-> >>> Hm, tempting thought - not sure how to pull it off though.
-> >> As far as I can recall, one of the things that historically made us want 
-> >> to use the bootmem allocator even relatively late was that the real SLAB 
-> >> allocator had to wait until all the node information etc was initialized. 
-> >>
-> >> That's pretty damn late. And I wonder if SLUB (and SLOB) might not need a 
-> >> lot less initialization, and work much earlier. Something like that might 
-> >> be the final nail in the coffin for SLAB, and convince me to just say 
-> >> 'we don't support it any more".
-> > 
-> > Ingo, here's a patch that boots UMA+SMP+SLUB x86-64 kernel on qemu all 
-> > the way to userspace. It probably breaks bunch of things for now but 
-> > something for you to play with if you want.
-> > 
-> 
-> updated with tip/master. also add change to cpupri_init
-> otherwise will get 
-> [    0.000000] Memory: 523096612k/537526272k available (10461k kernel code, 656156k absent, 13773504k reserved, 7186k data, 2548k init)
-> [    0.000000] SLUB: Genslabs=14, HWalign=64, Order=0-3, MinObjects=0, CPUs=32, Nodes=8
-> [    0.000000] ------------[ cut here ]------------
-> [    0.000000] WARNING: at kernel/lockdep.c:2282 lockdep_trace_alloc+0xaf/0xee()
-> [    0.000000] Hardware name: Sun Fire X4600 M2
-> [    0.000000] Modules linked in:
-> [    0.000000] Pid: 0, comm: swapper Not tainted 2.6.30-rc6-tip-01778-g0afdd0f-dirty #259
-> [    0.000000] Call Trace:
-> [    0.000000]  [<ffffffff810a0274>] ? lockdep_trace_alloc+0xaf/0xee
-> [    0.000000]  [<ffffffff81075ab0>] warn_slowpath_common+0x88/0xcb
-> [    0.000000]  [<ffffffff81075b15>] warn_slowpath_null+0x22/0x38
-> [    0.000000]  [<ffffffff810a0274>] lockdep_trace_alloc+0xaf/0xee
-> [    0.000000]  [<ffffffff8110301b>] kmem_cache_alloc_node+0x38/0x14d
-> [    0.000000]  [<ffffffff813ec548>] ? alloc_cpumask_var_node+0x4a/0x10a
-> [    0.000000]  [<ffffffff8109eb61>] ? lockdep_init_map+0xb9/0x564
-> [    0.000000]  [<ffffffff813ec548>] alloc_cpumask_var_node+0x4a/0x10a
-> [    0.000000]  [<ffffffff813ec62c>] alloc_cpumask_var+0x24/0x3a
-> [    0.000000]  [<ffffffff819e6306>] cpupri_init+0x7f/0x112
-> [    0.000000]  [<ffffffff819e5a30>] init_rootdomain+0x72/0xb7
-> [    0.000000]  [<ffffffff821facce>] sched_init+0x109/0x660
-> [    0.000000]  [<ffffffff82203082>] ? kmem_cache_init+0x193/0x1b2
-> [    0.000000]  [<ffffffff821dfd7a>] start_kernel+0x218/0x3f3
-> [    0.000000]  [<ffffffff821df2a9>] x86_64_start_reservations+0xb9/0xd4
-> [    0.000000]  [<ffffffff821df3b2>] x86_64_start_kernel+0xee/0x109
-> [    0.000000] ---[ end trace a7919e7f17c0a725 ]---
-> 
-> works with 8 sockets numa amd64 box.
-> 
-> YH
-> 
-> ---
->  init/main.c           |   28 ++++++++++++++++------------
->  kernel/irq/handle.c   |   23 ++++++++---------------
->  kernel/sched.c        |   34 +++++++++++++---------------------
->  kernel/sched_cpupri.c |    9 ++++++---
->  mm/slub.c             |   17 ++++++++++-------
->  5 files changed, 53 insertions(+), 58 deletions(-)
+The following is the proposed fix which teaches pageattr about percpu
+aliases.
 
-Very nice!
+  http://thread.gmane.org/gmane.linux.kernel/837157
 
-Would it be possible to restructure things to move kmalloc init to 
-before IRQ init as well? We have a couple of uglinesses there too.
+However, the above changes are deemed too pervasive for upstream
+inclusion for 2.6.30 release, so this patch removes remap allocator
+from upstream for the time being.
 
-Conceptually, memory should be the first thing set up in general, in 
-a kernel. It does not need IRQs, timers, the scheduler or any of the 
-IO facilities and abstractions. All of them need memory though - and 
-as Linux scales to more and more hardware via the same single image, 
-so will we get more and more dynamic concepts like cpumask_var_t and 
-sparse-irqs, which want to allocate very early.
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Jan Beulich <JBeulich@novell.com>
+Cc: H. Peter Anvin <hpa@zytor.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: Andi Kleen <andi@firstfloor.org>
+---
+Ingo, after this goes upstream, I'll prep a new tj-percpu for
+core/percpu which includes all pending patches and is properly merged
+with this one.
 
-setup_arch() is one huge function that sets up all architecture 
-details at once - but if we split a separate setup_arch_mem() out of 
-it, and left the rest in setup_arch (and moved it further down), we 
-could remove much of bootmem (especially the ugly uses).
+Thanks.
 
-This might even be doable realistically, and we could thus librarize 
-bootmem and eliminate it from x86 at least. Perhaps.
+ arch/x86/kernel/setup_percpu.c |  120 -----------------------------------------
+ 1 file changed, 1 insertion(+), 119 deletions(-)
 
-	Ingo
+diff --git a/arch/x86/kernel/setup_percpu.c b/arch/x86/kernel/setup_percpu.c
+index 3a97a4c..6c77b1c 100644
+--- a/arch/x86/kernel/setup_percpu.c
++++ b/arch/x86/kernel/setup_percpu.c
+@@ -124,122 +124,6 @@ static void * __init pcpu_alloc_bootmem(unsigned int cpu, unsigned long size,
+ }
+ 
+ /*
+- * Remap allocator
+- *
+- * This allocator uses PMD page as unit.  A PMD page is allocated for
+- * each cpu and each is remapped into vmalloc area using PMD mapping.
+- * As PMD page is quite large, only part of it is used for the first
+- * chunk.  Unused part is returned to the bootmem allocator.
+- *
+- * So, the PMD pages are mapped twice - once to the physical mapping
+- * and to the vmalloc area for the first percpu chunk.  The double
+- * mapping does add one more PMD TLB entry pressure but still is much
+- * better than only using 4k mappings while still being NUMA friendly.
+- */
+-#ifdef CONFIG_NEED_MULTIPLE_NODES
+-static size_t pcpur_size __initdata;
+-static void **pcpur_ptrs __initdata;
+-
+-static struct page * __init pcpur_get_page(unsigned int cpu, int pageno)
+-{
+-	size_t off = (size_t)pageno << PAGE_SHIFT;
+-
+-	if (off >= pcpur_size)
+-		return NULL;
+-
+-	return virt_to_page(pcpur_ptrs[cpu] + off);
+-}
+-
+-static ssize_t __init setup_pcpu_remap(size_t static_size)
+-{
+-	static struct vm_struct vm;
+-	size_t ptrs_size, dyn_size;
+-	unsigned int cpu;
+-	ssize_t ret;
+-
+-	/*
+-	 * If large page isn't supported, there's no benefit in doing
+-	 * this.  Also, on non-NUMA, embedding is better.
+-	 */
+-	if (!cpu_has_pse || !pcpu_need_numa())
+-		return -EINVAL;
+-
+-	/*
+-	 * Currently supports only single page.  Supporting multiple
+-	 * pages won't be too difficult if it ever becomes necessary.
+-	 */
+-	pcpur_size = PFN_ALIGN(static_size + PERCPU_MODULE_RESERVE +
+-			       PERCPU_DYNAMIC_RESERVE);
+-	if (pcpur_size > PMD_SIZE) {
+-		pr_warning("PERCPU: static data is larger than large page, "
+-			   "can't use large page\n");
+-		return -EINVAL;
+-	}
+-	dyn_size = pcpur_size - static_size - PERCPU_FIRST_CHUNK_RESERVE;
+-
+-	/* allocate pointer array and alloc large pages */
+-	ptrs_size = PFN_ALIGN(num_possible_cpus() * sizeof(pcpur_ptrs[0]));
+-	pcpur_ptrs = alloc_bootmem(ptrs_size);
+-
+-	for_each_possible_cpu(cpu) {
+-		pcpur_ptrs[cpu] = pcpu_alloc_bootmem(cpu, PMD_SIZE, PMD_SIZE);
+-		if (!pcpur_ptrs[cpu])
+-			goto enomem;
+-
+-		/*
+-		 * Only use pcpur_size bytes and give back the rest.
+-		 *
+-		 * Ingo: The 2MB up-rounding bootmem is needed to make
+-		 * sure the partial 2MB page is still fully RAM - it's
+-		 * not well-specified to have a PAT-incompatible area
+-		 * (unmapped RAM, device memory, etc.) in that hole.
+-		 */
+-		free_bootmem(__pa(pcpur_ptrs[cpu] + pcpur_size),
+-			     PMD_SIZE - pcpur_size);
+-
+-		memcpy(pcpur_ptrs[cpu], __per_cpu_load, static_size);
+-	}
+-
+-	/* allocate address and map */
+-	vm.flags = VM_ALLOC;
+-	vm.size = num_possible_cpus() * PMD_SIZE;
+-	vm_area_register_early(&vm, PMD_SIZE);
+-
+-	for_each_possible_cpu(cpu) {
+-		pmd_t *pmd;
+-
+-		pmd = populate_extra_pmd((unsigned long)vm.addr
+-					 + cpu * PMD_SIZE);
+-		set_pmd(pmd, pfn_pmd(page_to_pfn(virt_to_page(pcpur_ptrs[cpu])),
+-				     PAGE_KERNEL_LARGE));
+-	}
+-
+-	/* we're ready, commit */
+-	pr_info("PERCPU: Remapped at %p with large pages, static data "
+-		"%zu bytes\n", vm.addr, static_size);
+-
+-	ret = pcpu_setup_first_chunk(pcpur_get_page, static_size,
+-				     PERCPU_FIRST_CHUNK_RESERVE, dyn_size,
+-				     PMD_SIZE, vm.addr, NULL);
+-	goto out_free_ar;
+-
+-enomem:
+-	for_each_possible_cpu(cpu)
+-		if (pcpur_ptrs[cpu])
+-			free_bootmem(__pa(pcpur_ptrs[cpu]), PMD_SIZE);
+-	ret = -ENOMEM;
+-out_free_ar:
+-	free_bootmem(__pa(pcpur_ptrs), ptrs_size);
+-	return ret;
+-}
+-#else
+-static ssize_t __init setup_pcpu_remap(size_t static_size)
+-{
+-	return -EINVAL;
+-}
+-#endif
+-
+-/*
+  * Embedding allocator
+  *
+  * The first chunk is sized to just contain the static area plus
+@@ -365,9 +249,7 @@ void __init setup_per_cpu_areas(void)
+ 	 * of large page mappings.  Please read comments on top of
+ 	 * each allocator for details.
+ 	 */
+-	ret = setup_pcpu_remap(static_size);
+-	if (ret < 0)
+-		ret = setup_pcpu_embed(static_size);
++	ret = setup_pcpu_embed(static_size);
+ 	if (ret < 0)
+ 		ret = setup_pcpu_4k(static_size);
+ 	if (ret < 0)
