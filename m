@@ -1,67 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752764AbZEYNCQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753042AbZEYNE2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752764AbZEYNCQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 09:02:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751361AbZEYNCD
+	id S1753042AbZEYNE2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 09:04:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752005AbZEYNET
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 09:02:03 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:34899 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751279AbZEYNCB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 09:02:01 -0400
-Subject: Re: [PATCH] U300 sched_clock implementation
-From: Peter Zijlstra <peterz@infradead.org>
-To: Linus Walleij <linus.ml.walleij@gmail.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu,
-       linux-arm-kernel@lists.arm.linux.org.uk
-In-Reply-To: <63386a3d0905250513q6ca56eeepcf7bebe46c447fb4@mail.gmail.com>
-References: <63386a3d0905112337p2d426481o5f9bf9b9489cc57e@mail.gmail.com>
-	 <63386a3d0905231446h245bb4a9gec111f68a74a44e4@mail.gmail.com>
-	 <1243151839.26820.642.camel@twins>
-	 <63386a3d0905250513q6ca56eeepcf7bebe46c447fb4@mail.gmail.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Mon, 25 May 2009 15:01:50 +0200
-Message-Id: <1243256510.26820.679.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Mon, 25 May 2009 09:04:19 -0400
+Received: from hera.kernel.org ([140.211.167.34]:53283 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751190AbZEYNES (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 09:04:18 -0400
+Date: Mon, 25 May 2009 13:03:44 GMT
+From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
+       hpa@zytor.com, mingo@redhat.com, jkacur@redhat.com,
+       a.p.zijlstra@chello.nl, tglx@linutronix.de, cjashfor@linux.vnet.ibm.com,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, jkacur@redhat.com, a.p.zijlstra@chello.nl,
+       tglx@linutronix.de, cjashfor@linux.vnet.ibm.com, mingo@elte.hu
+In-Reply-To: <20090525124600.116035832@chello.nl>
+References: <20090525124600.116035832@chello.nl>
+Subject: [tip:perfcounters/core] perf_counter: Remove unused ABI bits
+Message-ID: <tip-e527ea312f31e88a7fa5472b71db71c565b0d44f@git.kernel.org>
+Git-Commit-ID: e527ea312f31e88a7fa5472b71db71c565b0d44f
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 25 May 2009 13:03:45 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-05-25 at 14:13 +0200, Linus Walleij wrote:
-> 2009/5/24 Peter Zijlstra <peterz@infradead.org>:
-> 
-> > On Sat, 2009-05-23 at 23:46 +0200, Linus Walleij wrote:
-> >
-> >> This overrides the global sched_clock() symbol in the Linux
-> >> scheduler with a local implementation which takes advantage of
-> >> the timesource in U300 giving a scheduling resolution of 1us. The
-> >> solution is the same as found in the OMAP2 core code.
-> >
-> > We assume sched_clock() to return time in ns (e-9) resolution.
-> 
-> Yep okay and in this case:
-> 
-> >> +       ret = (unsigned long long) u300_get_cycles();
-> >> +       ret = (ret * clocksource_u300_1mhz.mult_orig) >>
-> >> +               clocksource_u300_1mhz.shift;
-> >> +       return ret;
-> 
-> (mult_orig >> shift) == 1000
+Commit-ID:  e527ea312f31e88a7fa5472b71db71c565b0d44f
+Gitweb:     http://git.kernel.org/tip/e527ea312f31e88a7fa5472b71db71c565b0d44f
+Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
+AuthorDate: Mon, 25 May 2009 14:45:25 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Mon, 25 May 2009 14:55:00 +0200
 
-Ah, ok -- missed that little detail ;-)
+perf_counter: Remove unused ABI bits
 
-> So for each cycle in cyclecount register we return 1000 * cycles
-> i.e 1000ns.
-> 
-> If it looks nicer we can of course simply:
-> return (unsigned long long) u300_get_cycles * 1000;
-> 
-> But the question here is whether this resolution is enough for
-> sched_clock() or if it is irrelevant to override sched_clock()
-> if it cannot schedule with better precision than 1000 ns.
+extra_config_len isn't used for anything, remove it.
 
-No anything better than jiffies is good, 1us certainly is worth the
-trouble.
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: John Kacur <jkacur@redhat.com>
+LKML-Reference: <20090525124600.116035832@chello.nl>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ include/linux/perf_counter.h |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/include/linux/perf_counter.h b/include/linux/perf_counter.h
+index 2ddf5e3..b1f2bac 100644
+--- a/include/linux/perf_counter.h
++++ b/include/linux/perf_counter.h
+@@ -154,11 +154,11 @@ struct perf_counter_hw_event {
+ 
+ 				__reserved_1   : 51;
+ 
+-	__u32			extra_config_len;
+ 	__u32			wakeup_events;	/* wakeup every n events */
++	__u32			__reserved_2;
+ 
+-	__u64			__reserved_2;
+ 	__u64			__reserved_3;
++	__u64			__reserved_4;
+ };
+ 
+ /*
