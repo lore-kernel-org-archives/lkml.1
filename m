@@ -1,120 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752500AbZEYO6E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753767AbZEYO6X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752500AbZEYO6E (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 10:58:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751905AbZEYO5z
+	id S1753767AbZEYO6X (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 10:58:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752115AbZEYO6O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 10:57:55 -0400
-Received: from mtagate1.de.ibm.com ([195.212.17.161]:44618 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751798AbZEYO5z (ORCPT
+	Mon, 25 May 2009 10:58:14 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:45671 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751905AbZEYO6N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 10:57:55 -0400
-Date: Mon, 25 May 2009 16:56:10 +0200 (CEST)
-From: Sebastian Ott <sebott@linux.vnet.ibm.com>
-X-X-Sender: sebott@localhost.localdomain
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Marcin Slusarz <marcin.slusarz@gmail.com>,
-       Linux PM List <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-pm] 2 bugs related to suspend to disk
-In-Reply-To: <200905242158.15093.rjw@sisk.pl>
-Message-ID: <alpine.LFD.2.00.0905251614160.4048@localhost.localdomain>
-References: <4A199A7A.3010705@gmail.com> <200905242158.15093.rjw@sisk.pl>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-Organization: "IBM Deutschland Research & Development GmbH Vorsitzender des Aufsichtsrats: Martin Jetter Geschaeftsfuehrung: Erich Baier Sitz der Gesellschaft: Boeblingen Registergericht: Amtsgericht Stuttgart, HRB 243294"
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 25 May 2009 10:58:13 -0400
+Subject: Re: [GIT PULL] scheduler fixes
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yinghai@kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jeff Garzik <jgarzik@pobox.com>,
+       Alexander Viro <viro@ftp.linux.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, cl@linux-foundation.org,
+       npiggin@suse.de
+In-Reply-To: <1243263359.12761.48.camel@calx>
+References: <alpine.LFD.2.01.0905180955550.3301@localhost.localdomain>
+	 <20090518170909.GA1623@elte.hu> <20090518190320.GA20260@elte.hu>
+	 <alpine.LFD.2.01.0905181208130.3301@localhost.localdomain>
+	 <20090518202031.GA26549@elte.hu>
+	 <alpine.LFD.2.01.0905181457320.3301@localhost.localdomain>
+	 <Pine.LNX.4.64.0905241911120.12189@melkki.cs.Helsinki.FI>
+	 <4A199327.5030503@kernel.org> <20090525025353.GA2580@elte.hu>
+	 <4A1A2261.1000504@kernel.org> <20090525051521.GC23032@elte.hu>
+	 <Pine.LNX.4.64.0905251142140.32568@melkki.cs.Helsinki.FI>
+	 <1243263359.12761.48.camel@calx>
+Date: Mon, 25 May 2009 17:58:13 +0300
+Message-Id: <1243263493.2151.15.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hi,
-
-On Sun, 24 May 2009, Rafael J. Wysocki wrote:
-
-> On Sunday 24 May 2009, Marcin Slusarz wrote:
-> > 1) echo platform > /sys/power/disk; echo disk > /sys/power/state
-> > 
-> > works but prints:
-> > 
-> > BUG: sleeping function called from invalid context at include/linux/writeback.h:87
-> > in_atomic(): 1, irqs_disabled(): 0, pid: 6509, name: sh
-> > 3 locks held by sh/6509:
-> >  #0:  (&buffer->mutex){+.+.+.}, at: [<>] sysfs_write_file+0x38/0x119
-> >  #1:  (pm_mutex){+.+.+.}, at: [<>] hibernate+0x17/0x169
-> >  #2:  (swap_lock){+.+...}, at: [<>] swap_type_of+0x2e/0xed
-> > Pid: 6509, comm: sh Not tainted 2.6.30-rc7-mod #124
-> > Call Trace:
-> >  ? __debug_show_held_locks
-> >  ? bdev_test
-> >  __might_sleep
-> >  ifind
-> >  ? bdev_test
-> >  iget5_locked
-> >  ? bdev_set
-> >  bdget
-> >  swap_type_of
-> >  swsusp_write
-> >  ? acpi_sleep_tts_switch
-> >  hibernate
-> >  state_store
-> >  kobj_attr_store
-> >  sysfs_write_file
-> >  vfs_write
-> >  sys_write
-> >  system_call_fastpath
-> > 
-> > 2) "s2disk" (from suspend-0.8) suspends, but doesn't resume (and I need to mkswap && swapon -a later)
-> > 
-> > It's not a regression, because I never tried to STD (STR worked).
+On Mon, 2009-05-25 at 09:55 -0500, Matt Mackall wrote:
+> > And oh, Christoph/Matt, can I have your NAK/ACK for this patch?
 > 
-> Both look strange, at least the first one does.
-> 
-> Thanks for the report, I'll do my best to take care of this as soon as I can.
-> 
+> Looks ok to me, though I'd probably split it into three parts (slab,
+> slub, init).
 
-i've seen a similar warning, the problem seems to be that swap_type_of 
-calls bdget with the swap_lock held.
+Yeah, the patch is pretty big but I don't think we can do that. It would
+break git bisect.
 
-with the attached patch i don't see this warning any more - but i'm not 
-sure if this is the correct way to fix this
+			Pekka
 
-regards, sebastian
----
-
-don't call bdget with swap_lock held
-
-Signed-off-by: Sebastian Ott <sebott@linux.vnet.ibm.com>
----
- mm/swapfile.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-Index: linux-2.5/mm/swapfile.c
-===================================================================
---- linux-2.5.orig/mm/swapfile.c	2009-03-24 13:51:00.000000000 +0100
-+++ linux-2.5/mm/swapfile.c	2009-05-25 15:33:34.000000000 +0200
-@@ -634,10 +634,10 @@ int swap_type_of(dev_t device, sector_t 
- 			continue;
- 
- 		if (!bdev) {
-+			spin_unlock(&swap_lock);
- 			if (bdev_p)
- 				*bdev_p = bdget(sis->bdev->bd_dev);
- 
--			spin_unlock(&swap_lock);
- 			return i;
- 		}
- 		if (bdev == sis->bdev) {
-@@ -646,10 +646,10 @@ int swap_type_of(dev_t device, sector_t 
- 			se = list_entry(sis->extent_list.next,
- 					struct swap_extent, list);
- 			if (se->start_block == offset) {
-+				spin_unlock(&swap_lock);
- 				if (bdev_p)
- 					*bdev_p = bdget(sis->bdev->bd_dev);
- 
--				spin_unlock(&swap_lock);
- 				bdput(bdev);
- 				return i;
- 			}
