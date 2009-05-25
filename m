@@ -1,58 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754578AbZEYVUS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754528AbZEYVYg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754578AbZEYVUS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 17:20:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753502AbZEYVUH
+	id S1754528AbZEYVYg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 17:24:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752338AbZEYVY1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 17:20:07 -0400
-Received: from main.gmane.org ([80.91.229.2]:49540 "EHLO ciao.gmane.org"
+	Mon, 25 May 2009 17:24:27 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:55496 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753409AbZEYVUG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 17:20:06 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: =?ISO-8859-1?Q?Simon_K=F6nig?= <simjoko@gmail.com>
-Subject: Re: Unable to compile 2.6.30-rc7 on RHEL 4 - GCC 3.4.6
-Date: Mon, 25 May 2009 23:17:29 +0200
-Message-ID: <gvf1ti$77e$1@ger.gmane.org>
-References: <f24d23310905250956u231fcd90u54d75894b9b91b9a@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: p54a8d081.dip.t-dialin.net
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.9.1pre) Gecko/20090525 Shredder/3.0b3pre
-In-Reply-To: <f24d23310905250956u231fcd90u54d75894b9b91b9a@mail.gmail.com>
-X-Enigmail-Version: 0.96a
+	id S1751519AbZEYVY0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 17:24:26 -0400
+Date: Tue, 26 May 2009 00:23:25 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Kay Sievers <kay.sievers@vrfy.org>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>
+Subject: Re: 2.a.30-rc7: fat filesystem misdetected as amiga
+Message-ID: <20090525212325.GD6856@redhat.com>
+References: <20090525205353.GB6856@redhat.com> <Pine.LNX.4.44L0.0905251704490.27717-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0905251704490.27717-100000@netrider.rowland.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
-
-On 05/25/09 18:56, debian developer wrote:
-> Hi all,
+On Mon, May 25, 2009 at 05:08:12PM -0400, Alan Stern wrote:
+> On Mon, 25 May 2009, Michael S. Tsirkin wrote:
 > 
-> I am getting this error when trying to compile the latest rc:
+> > > So apparently this is a bug in the device; it doesn't respond correctly
+> > > to the first READ command.  But since it does respond correctly to 
+> > > later commands, everything works okay thereafter.  You ought to be able 
+> > > to recover from the error by running
+> > > 
+> > > 	blockdev --rereadpt /dev/sdb
+> > > 
+> > > manually.
+> > 
+> > Yes, this helps.
+> > Would it make sense for kernel to retry automatically?
+> > Why doesn't it?
 > 
-> /in/inndesk171/linux-2.6.28/arch/x86/Makefile:82: stack protector
-> enabled but no compiler support
+> I don't know the details in this case.  Most likely the error code 
+> (Logical Block Address Out of Range) is interpreted as a fatal 
+> non-retryable error.  For other sorts of errors, the kernel does retry.
 
-Hello!
+Who would know? The scsi crowd?
 
-As the message states, your compiler does not support this kernel feature.
-You may want to disable CC_STACKPROTECTOR or use a gcc >= 4.2.
+> > > As far as I can tell, this has nothing to do with any user programs in 
+> > > the distribution.  It appears to be entirely the device's fault.
+> > > 
+> > > Alan Stern
+> > 
+> > BTW, any idea how come I later get errors apparently from amiga fs?
+> 
+> Not a clue.  Unless it was some odd side effect of the partition code 
+> trying to interpret an uninitialized buffer.
+> 
+> Alan Stern
 
-Regars,
-Simon
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAkobCukACgkQzCF5U5e0QtICCACfXka95a8Tn9YlYRte+9zYwTZN
-bpAAn0xxkUuiTE1T7gDqTmyXJurFhQ8Q
-=wjdI
------END PGP SIGNATURE-----
-
+-- 
+MST
