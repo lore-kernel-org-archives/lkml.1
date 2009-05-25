@@ -1,54 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756506AbZEYKtW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754548AbZEYKuR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756506AbZEYKtW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 06:49:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753588AbZEYKtJ
+	id S1754548AbZEYKuR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 06:50:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753013AbZEYKuF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 06:49:09 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:54925 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753429AbZEYKtH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 06:49:07 -0400
-Date: Mon, 25 May 2009 12:49:08 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Boaz Harrosh <bharrosh@panasas.com>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, chris.mason@oracle.com,
-       david@fromorbit.com, akpm@linux-foundation.org, jack@suse.cz,
-       yanmin_zhang@linux.intel.com, linux-scsi@vger.kernel.org,
-       Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>
-Subject: Re: [PATCH 03/13] scsi: unify allocation of scsi command and sense
-	buffer
-Message-ID: <20090525104908.GV11363@kernel.dk>
-References: <1243236668-3398-1-git-send-email-jens.axboe@oracle.com> <1243236668-3398-6-git-send-email-jens.axboe@oracle.com> <20090525074124.GA31746@infradead.org> <20090525074647.GK11363@kernel.dk> <20090525075008.GA23413@infradead.org> <4A1A7406.5060106@panasas.com> <20090525104215.GA3191@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090525104215.GA3191@infradead.org>
+	Mon, 25 May 2009 06:50:05 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:41506 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752917AbZEYKuE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 06:50:04 -0400
+Subject: Re: [PATCH 2/2] perf_counter: optimize context switch between
+ identical inherited contexts
+From: Peter Zijlstra <peterz@infradead.org>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Corey Ashford <cjashfor@linux.vnet.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <1243247887.26820.651.camel@twins>
+References: <18966.10075.781053.231153@cargo.ozlabs.ibm.com>
+	 <18966.10666.517218.332164@cargo.ozlabs.ibm.com>
+	 <1243000016.6582.574.camel@laptop>
+	 <18969.58137.356360.144339@cargo.ozlabs.ibm.com>
+	 <1243247887.26820.651.camel@twins>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Mon, 25 May 2009 12:50:03 +0200
+Message-Id: <1243248603.26820.652.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 25 2009, Christoph Hellwig wrote:
-> On Mon, May 25, 2009 at 01:33:42PM +0300, Boaz Harrosh wrote:
-> > 1. If we have a machine with few type of hosts active each with it's own
-> > cmnd_slab we end up with many more slabs then today. Even though at the
-> > end they all happen to be of the same size. (With the pool reserves it
-> > can get big also).
+On Mon, 2009-05-25 at 12:38 +0200, Peter Zijlstra wrote:
+> On Mon, 2009-05-25 at 10:15 +1000, Paul Mackerras wrote:
+> > Peter Zijlstra writes:
+> > 
+> > > Ingo just pointed out that there is nothing there to close the race with
+> > > attaching a counter.
+> > > 
+> > > That is, you could end up attaching your counter to the wrong task.
+> > 
+> > Good point.  Doing the unclone in find_get_context would be a start,
+> > but the locking could get tricky (in fact we don't have any way to
+> > remove an inherited counter from a context, so we only have to worry
+> > about counters being attached).  I'll work out a solution after I have
+> > digested your recent batch of patches.
 > 
-> Note that this should be optional.  Device not having their own
-> per-command structure would continue using the global pools.  Those
-> that have their own per-command structures already have their own pools
-> anyway.
+> I'm currently staring at something like the below, trying to find races
+> etc.. ;-)
+> 
+> attach vs destroy vs flip
 
-The multiple pools of the same size "issue" can also easily be resolved
-by having SCSI provide a way to setup/destroy these pools. Then it can
-just reuse an existing pool, if it has the same size.
-
-However, I doubt that this is really a real life issue that's worth
-worrying about.
-
--- 
-Jens Axboe
-
+Hmm, it appears we only unclone ctx on remove, not attach.. how odd..
