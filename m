@@ -1,116 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752744AbZEYLgS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752731AbZEYLiN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752744AbZEYLgS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 07:36:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751443AbZEYLgL
+	id S1752731AbZEYLiN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 07:38:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751633AbZEYLiA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 07:36:11 -0400
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:51741 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751346AbZEYLgK (ORCPT
+	Mon, 25 May 2009 07:38:00 -0400
+Received: from mail-bw0-f174.google.com ([209.85.218.174]:54475 "EHLO
+	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751346AbZEYLh7 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 07:36:10 -0400
-Date: Mon, 25 May 2009 13:35:04 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Michael Abbott <michael@araneidae.co.uk>,
-       Jan Engelhardt <jengelh@medozas.de>
-Subject: Re: [GIT PULL] cputime patch for 2.6.30-rc6
-Message-ID: <20090525133504.62c3a6d7@skybase>
-In-Reply-To: <1243249766.26820.665.camel@twins>
-References: <20090518160904.7df88425@skybase>
-	<1242660243.26820.439.camel@twins>
-	<20090519104900.12e1f80c@skybase>
-	<1242723635.26820.471.camel@twins>
-	<20090525125034.159ecb78@skybase>
-	<1243249766.26820.665.camel@twins>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 25 May 2009 07:37:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=rcN2XvOEWd6x6zwK0Iv0SJJd2KkPfmTurrsfiNTrluP5RPe/bEtDKkKYkO8h1gxYg+
+         TAyH5wdhhzgd/PKo08vk0zXgPoxAkHbd8AId/SD4HYvS2nZyQO/5oiJgiTUhygQU7ULF
+         ShxsFXaG7OMPy0UINdTp6sVzPr7uOvsimdMKc=
+MIME-Version: 1.0
+In-Reply-To: <20090525112504.GB24071@wotan.suse.de>
+References: <20090518190320.GA20260@elte.hu> <20090518202031.GA26549@elte.hu>
+	 <alpine.LFD.2.01.0905181457320.3301@localhost.localdomain>
+	 <Pine.LNX.4.64.0905241911120.12189@melkki.cs.Helsinki.FI>
+	 <4A199327.5030503@kernel.org> <20090525025353.GA2580@elte.hu>
+	 <4A1A2261.1000504@kernel.org> <20090525051521.GC23032@elte.hu>
+	 <Pine.LNX.4.64.0905251142140.32568@melkki.cs.Helsinki.FI>
+	 <20090525112504.GB24071@wotan.suse.de>
+Date: Mon, 25 May 2009 14:37:59 +0300
+X-Google-Sender-Auth: 70b77715f2fd4a41
+Message-ID: <84144f020905250437x585e66a2oc1124a4f1f43059d@mail.gmail.com>
+Subject: Re: [GIT PULL] scheduler fixes
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yinghai@kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jeff Garzik <jgarzik@pobox.com>,
+       Alexander Viro <viro@ftp.linux.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, cl@linux-foundation.org,
+       mpm@selenic.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 25 May 2009 13:09:26 +0200
-Peter Zijlstra <peterz@infradead.org> wrote:
+On Mon, May 25, 2009 at 2:25 PM, Nick Piggin <npiggin@suse.de> wrote:
+>> @@ -576,6 +576,22 @@ asmlinkage void __init start_kernel(void)
+>>       setup_nr_cpu_ids();
+>>       smp_prepare_boot_cpu(); /* arch-specific boot-cpu hooks */
+>>
+>> +     build_all_zonelists();
+>> +     page_alloc_init();
+>> +
+>> +     printk(KERN_NOTICE "Kernel command line: %s\n", boot_command_line);
+>> +     parse_early_param();
+>> +     parse_args("Booting kernel", static_command_line, __start___param,
+>> +                __stop___param - __start___param,
+>> +                &unknown_bootoption);
+>> +     /*
+>> +      * Setup kernel memory allocators
+>> +      */
+>> +     pidhash_init();
+>> +     vmalloc_init();
+>> +     vfs_caches_init_early();
+>> +     mem_init();
+>> +     kmem_cache_init();
 
-> On Mon, 2009-05-25 at 12:50 +0200, Martin Schwidefsky wrote:
-> > On Tue, 19 May 2009 11:00:35 +0200
-> > Peter Zijlstra <peterz@infradead.org> wrote:
-> > 
-> > > So, I'm really not objecting too much to the patch at hand, but I'd love
-> > > to find a solution to this problem.
-> > 
-> > It is not hard so solve the problem for /proc/uptime, e.g. like this:
-> > 
-> > static u64 uptime_jiffies = INITIAL_JIFFIES;
-> > static struct timespec ts_uptime;
-> > static struct timespec ts_idle;
-> > 
-> > static int uptime_proc_show(struct seq_file *m, void *v)
-> > {
-> >         cputime_t idletime;
-> >         u64 now;
-> >         int i;
-> > 
-> >         now = get_jiffies_64();
-> >         if (uptime_jiffies != now) {
-> >                 uptime_jiffies = now;
-> >                 idletime = cputime_zero;
-> >                 for_each_possible_cpu(i)
-> >                         idletime = cputime64_add(idletime,
-> >                                                  kstat_cpu(i).cpustat.idle);
-> >                 do_posix_clock_monotonic_gettime(&ts_uptime);
-> >                 monotonic_to_bootbased(&ts_uptime);
-> >                 cputime_to_timespec(idletime, &ts_idle);
-> >         }
-> > 
-> >         seq_printf(m, "%lu.%02lu %lu.%02lu\n",
-> >                         (unsigned long) ts_uptime.tv_sec,
-> >                         (ts_uptime.tv_nsec / (NSEC_PER_SEC / 100)),
-> >                         (unsigned long) ts_idle.tv_sec,
-> >                         (ts_idle.tv_nsec / (NSEC_PER_SEC / 100)));
-> >         return 0;
-> > }
-> > 
-> > For /proc/stat it is less clear. Just storing the values in static
-> > variables is not such a good idea as there are lots of values.
-> > 10*NR_CPUS + NR_IRQS values to be exact. With NR_CPUS in the thousands
-> > this will waste quite a bit of memory.
-> 
-> Right, I know of for_each_possible_cpu() loops that took longer than a
-> jiffy and caused general melt-down -- not saying the loop for idle time
-> will be one such a loop, but then it seems silly anyway, who's
-> incrementing the idle time when we're idle?
+On Mon, May 25, 2009 at 2:25 PM, Nick Piggin <npiggin@suse.de> wrote:
+> Looks quite OK to me. The comment above maybe misleading?
+>
+> The bootmem allocations of course are required because some hashes may
+> need to be larger than MAX_ORDER without using vmalloc.
+>
+> kmem_cache_init (and mem_init, partially) sets up the kernel memory
+> allocators...
 
-Psst, I do ;-) Look at the arch_idle_time macro in fs/proc/stat.c..
- 
-> I really prefer using things like percpu_counter/vmstat that have error
-> bounds that scale with the number of cpus in the system.
-> 
-> We simply have to start educating people that numbers on the global
-> state of the machine are inaccurate (they were anyway, because by the
-> time the userspace bits that read the /proc file get scheduled again the
-> numbers will have changed again).
+Which comment are you talking about? The "setup kernel memory
+allocators" one? Yeah, I should probably move it couple of lines down.
+It's just that we absolutely need to do the other ones before calling
+mem_init() and then kmem_cache_init().
 
-That is one problem, the other is that the values you'll get are not
-atomic in any way. Not even the totals in /proc/stat match the sum over
-the cpus.
+On Mon, May 25, 2009 at 2:25 PM, Nick Piggin <npiggin@suse.de> wrote:
+> I can take a look at the SLQB side.
 
-> There's a variant of Heisenberg's uncertainty principle applicable to
-> (parallel) computers in that one either gets concurrency or accuracy on
-> global state, you cannot have both.
+Great!
 
-If the time you need to generate a value is longer than the maximum
-error you do have a problem.
-
--- 
-blue skies,
-   Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
+                        Pekka
