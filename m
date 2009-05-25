@@ -1,59 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755039AbZEYIdW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755039AbZEYIhO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755039AbZEYIdW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 04:33:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752657AbZEYIdM
+	id S1755039AbZEYIhO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 04:37:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752136AbZEYIhD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 04:33:12 -0400
-Received: from mail-out.m-online.net ([212.18.0.10]:57901 "EHLO
-	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752364AbZEYIdL (ORCPT
+	Mon, 25 May 2009 04:37:03 -0400
+Received: from web32603.mail.mud.yahoo.com ([68.142.207.230]:40107 "HELO
+	web32603.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752019AbZEYIhC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 04:33:11 -0400
-From: Matthias Schwarzott <zzam@gentoo.org>
-To: linux-hotplug@vger.kernel.org
-Subject: Re: [PATCH] ieee1394: eth1394: use "firewire%d" instead of "eth%d" as interface name
-Date: Mon, 25 May 2009 10:33:08 +0200
-User-Agent: KMail/1.9.10
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Christian Kujau <lists@nerdbynature.de>, linux-kernel@vger.kernel.org,
-       linux1394-devel@lists.sourceforge.net, netdev@vger.kernel.org
-References: <tkrat.21c425cc195510c9@s5r6.in-berlin.de> <alpine.DEB.2.01.0905232309400.7424@bogon> <tkrat.6c3758bf0544a790@s5r6.in-berlin.de>
-In-Reply-To: <tkrat.6c3758bf0544a790@s5r6.in-berlin.de>
+	Mon, 25 May 2009 04:37:02 -0400
+Message-ID: <349066.43765.qm@web32603.mail.mud.yahoo.com>
+X-YMail-OSG: oVIkgW8VM1n_VdZoH8JlQWbgu1GW1U8LP0ra0XIe_FRVSgfyM9K.B6hG0r8ySXRTbk_gE2GBCUeVKJ07ea5ABHLq8PjbVFepqQO0F9RMnc9PofGa5O8uud0jfcu.3pAwY8b9wNfXW_CMHSkZb8S4rXAWLEllpe4uKgLkSioEIkAw6pvRvD6QvTU9c87PLc4CKNfcHBzMaOi1S4tMMogI8nw4ICscWtVoaypz4b9XulkHLXxX8RimCE0jG23U2QKkYnfoP9zmp0rmqsNksPmfILLy3dKst.trFlKV8MPZwn2kO3cj1mAyOPKqUn25wn9NahhgcjE.qRarkLumDTfQ0A--
+X-RocketYMMF: knobi.rm
+X-Mailer: YahooMailRC/1277.43 YahooMailWebService/0.7.289.10
+References: <GtY7d2eWpoK.A.ioC.MQcGKB@chimera> <WCcYF-TAbJC.A.VXD.iQcGKB@chimera>
+Date: Mon, 25 May 2009 01:37:02 -0700 (PDT)
+From: Martin Knoblauch <spamtrap@knobisoft.de>
+Subject: Re: [Bug #13178] Booting very slow
+To: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Kernel Testers List <kernel-testers@vger.kernel.org>
+In-Reply-To: <WCcYF-TAbJC.A.VXD.iQcGKB@chimera>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905251033.09272.zzam@gentoo.org>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sonntag, 24. Mai 2009, Stefan Richter wrote:
-> Christian Kujau wrote at LKML:
-> > If the patch will be accepted at all and it's not too late to ask: I'd
-> > vote for fw%d as well, "firefire" just looks too long, for me at least.
->
-> I think I'll leave the driver as it is.
-> As I just noticed, we would lose interface renaming by udev.
-> From udev/extras/rule_generator/75-persistent-net-generator.rules:
->
->   # device name whitelist
->   KERNEL!="eth*|ath*|wlan*[0-9]|msh*|ra*|sta*|ctc*|lcs*|hsi*",
-> GOTO="persistent_net_generator_end"
->
-> Besides, if we can we should avoid fw%d because this will clash with
-> udev rules which match KERNEL=="fw*", as in
-> udev/rules/redhat/40-redhat.rules.
 
-I suggest a subsystem match here, or generally some
-SUBSYSTEM!="net", GOTO="end_of_file"
-around almost all rule files that should not match on network interfaces, as 
-users can rename them to almost all crazy names.
+----- Original Message ----
 
-@Kay: Perhaps it could simplify some rulesets to have a special jump target or 
-option to skip entiere rules files.
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+> Cc: Kernel Testers List <kernel-testers@vger.kernel.org>; Martin Knoblauch <spamtrap@knobisoft.de>
+> Sent: Sunday, May 24, 2009 9:31:18 PM
+> Subject: [Bug #13178] Booting very slow
+> 
+> This message has been generated automatically as a part of a report
+> of regressions introduced between 2.6.28 and 2.6.29.
+> 
+> The following bug entry is on the current list of known regressions
+> introduced between 2.6.28 and 2.6.29.  Please verify if it still should
+> be listed and let me know (either way).
+> 
+> 
+> Bug-Entry    : http://bugzilla.kernel.org/show_bug.cgi?id=13178
+> Subject        : Booting very slow
+> Submitter    : Martin Knoblauch 
+> Date        : 2009-04-24 12:45 (31 days old)
+> References    : http://marc.info/?l=linux-kernel&m=124057716231773&w=4
 
-Regards
-Matthias
+ Still happens with 2.6.30-rc7. But see my comment on bz. I would be willing to leave this as "fuzzy timing related problem.
+
+Cheers
+Martin
+
