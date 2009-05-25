@@ -1,93 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758473AbZEYHlm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751062AbZEYHn2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758473AbZEYHlm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 03:41:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758822AbZEYHfz
+	id S1751062AbZEYHn2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 03:43:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759413AbZEYHjL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 03:35:55 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:39015 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758311AbZEYHev (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 03:34:51 -0400
-From: Jens Axboe <jens.axboe@oracle.com>
-To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Cc: chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
-       akpm@linux-foundation.org, jack@suse.cz, yanmin_zhang@linux.intel.com,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH 12/12] writeback: check for registered bdi in flusher add and inode dirty
-Date: Mon, 25 May 2009 09:34:47 +0200
-Message-Id: <1243236887-3931-13-git-send-email-jens.axboe@oracle.com>
-X-Mailer: git-send-email 1.6.3.rc0.1.gf800
-In-Reply-To: <1243236887-3931-1-git-send-email-jens.axboe@oracle.com>
-References: <1243236887-3931-1-git-send-email-jens.axboe@oracle.com>
+	Mon, 25 May 2009 03:39:11 -0400
+Received: from [222.92.8.141] ([222.92.8.141]:36123 "EHLO lemote.com"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1759265AbZEYHjJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 03:39:09 -0400
+Message-ID: <4A1A4A54.6090401@lemote.com>
+Date: Mon, 25 May 2009 15:35:48 +0800
+From: =?UTF-8?B?6IOh5rSq5YW1?= <huhb@lemote.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
+MIME-Version: 1.0
+To: yanh@lemote.com
+CC: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, wuzhangjin@gmail.com,
+       linux-mips@linux-mips.org, Ralf Baechle <ralf@linux-mips.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       Philippe Vachon <philippe@cowpig.ca>, Zhang Le <r0bertz@gentoo.org>,
+       Zhang Fuxin <zhangfx@lemote.com>, Arnaud Patard <apatard@mandriva.com>,
+       loongson-dev@googlegroups.com, gnewsense-dev@nongnu.org,
+       Nicholas Mc Guire <hofrat@hofr.at>, Liu Junliang <liujl@lemote.com>,
+       Erwan Lerale <erwan@thiscow.com>
+Subject: Re: [loongson-PATCH-v1 24/27] fixup for FUJITSU disk
+References: <cover.1242855716.git.wuzhangjin@gmail.com>	 <200905222032.55869.bzolnier@gmail.com>	 <1243062702.8509.7.camel@localhost.localdomain>	 <200905231347.34717.bzolnier@gmail.com> <1243230339.9819.18.camel@localhost.localdomain>
+In-Reply-To: <1243230339.9819.18.camel@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Also a debugging aid. We want to catch dirty inodes being added to
-backing devices that don't do writeback.
+yanh 写道:
+> 在 2009-05-23六的 13:47 +0200，Bartlomiej Zolnierkiewicz写道：
+>   
+>> On Saturday 23 May 2009 09:11:42 yanh wrote:
+>>     
+>>> 在 2009-05-22五的 20:32 +0200，Bartlomiej Zolnierkiewicz写道：
+>>>       
+>>>> On Thursday 21 May 2009 00:12:46 wuzhangjin@gmail.com wrote:
+>>>>         
+>>>>> From: Wu Zhangjin <wuzhangjin@gmail.com>
+>>>>>
+>>>>> This is originally from the to-mips branch from
+>>>>> http://dev.lemote.com/code/linux_loongson
+>>>>>           
+>>>> Sadly, the patch description lacks all the important information.
+>>>>
+>>>> What is the original problem that this fixup tries to address?
+>>>>
+>>>> Is it limited to amd74xx controllers?
+>>>>         
+>>> In loongson2f yeeloong machines, the ide controller is AMD cs5536, or
+>>> say  amd74xx, and the hard drives is Fujistu. 
+>>>       
+>> Then it should use the new & shiny :) native cs5536 IDE host driver
+>> instead of legacy support in amd74xx...
+>>
+>>     
+>>> While debuging the hard disk suspned and resume, the ide irq can not be
+>>> cleared. I guess this is a fake interrupt, hence the clear irq action
+>>> can not be finished. 
+>>>       
+>> AFAICS the only change that the fixup would cause for suspend/resume paths
+>> is the one in ide_config_drive_speed() which is called during resume to set
+>> transfer mode on the drive:
+>>
+>>        tp_ops->write_devctl(hwif, ATA_NIEN | ATA_DEVCTL_OBS);
+>>
+>>         memset(&tf, 0, sizeof(tf));
+>>         tf.feature = SETFEATURES_XFER;
+>>         tf.nsect   = speed;
+>>
+>>         tp_ops->tf_load(drive, &tf, IDE_VALID_FEATURE | IDE_VALID_NSECT);
+>>
+>>         tp_ops->exec_command(hwif, ATA_CMD_SET_FEATURES);
+>> --->
+>>         if (drive->quirk_list == 2)
+>>                 tp_ops->write_devctl(hwif, ATA_DEVCTL_OBS);
+>>     
+>
+>   
+>> --->
+>>         error = __ide_wait_stat(drive, drive->ready_stat,
+>>                                 ATA_BUSY | ATA_DRQ | ATA_ERR,
+>>                                 WAIT_CMD, &stat);
+>>
+>> Please tell me I if understand the issue correctly: if the above quirk is
+>> not executed we end up with spurious IRQs, right?
+>>     
+> right.
+>   
+>>> This patch is to fix this issue. Maybe other controller and drives also
+>>> have this issue, but I am not sure.
+>>>       
+>> Probably moving it to a generic quirk_drives list later will be useful...
+>>
+>> Anyway this fixup needs to be ported to / verified with cs5536 first.
+>>     
+> the cs5536 pata driver have some geode platform dependent codes. We can
+> just ignore it, but the performance is poor(using hdparm to test it),
+> which only get 22+ MB/s. we find it only use udma2. However if using
+> amd74xx driver, it can set udma5, and the speed can reach to 50+ MB/s. 
+>
+> we will test whether this driver is working well without this patch.
+>
+> Anyway, thanks your advice.
+>   
+Use the driver drivers/ata/pata_cs5536.c, unfortunately it also have the 
+same issue.
+>> Thanks.
+>> Bart
+>>
+>>     
+>
+>
+>
+>   
 
-Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
----
- fs/fs-writeback.c           |    7 +++++++
- include/linux/backing-dev.h |    1 +
- mm/backing-dev.c            |    6 ++++++
- 3 files changed, 14 insertions(+), 0 deletions(-)
 
-diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
-index 1292a88..bf8e0d5 100644
---- a/fs/fs-writeback.c
-+++ b/fs/fs-writeback.c
-@@ -583,6 +583,13 @@ void __mark_inode_dirty(struct inode *inode, int flags)
- 		 */
- 		if (!was_dirty) {
- 			struct bdi_writeback *wb = inode_get_wb(inode);
-+			struct backing_dev_info *bdi = wb->bdi;
-+
-+			if (bdi_cap_writeback_dirty(bdi) &&
-+			    !test_bit(BDI_registered, &bdi->state)) {
-+				WARN_ON(1);
-+				printk("bdi-%s not registered\n", bdi->name);
-+			}
- 
- 			inode->dirtied_when = jiffies;
- 			list_move(&inode->i_list, &wb->b_dirty);
-diff --git a/include/linux/backing-dev.h b/include/linux/backing-dev.h
-index 4507569..0b20d4b 100644
---- a/include/linux/backing-dev.h
-+++ b/include/linux/backing-dev.h
-@@ -31,6 +31,7 @@ enum bdi_state {
- 	BDI_wblist_lock,	/* bdi->wb_list now needs locking */
- 	BDI_async_congested,	/* The async (write) queue is getting full */
- 	BDI_sync_congested,	/* The sync queue is getting full */
-+	BDI_registered,		/* bdi_register() was done */
- 	BDI_unused,		/* Available bits start here */
- };
- 
-diff --git a/mm/backing-dev.c b/mm/backing-dev.c
-index 0834ff9..ed66081 100644
---- a/mm/backing-dev.c
-+++ b/mm/backing-dev.c
-@@ -504,6 +504,11 @@ static void bdi_add_one_flusher_task(struct backing_dev_info *bdi,
- 	if (!bdi_cap_writeback_dirty(bdi))
- 		return;
- 
-+	if (WARN_ON(!test_bit(BDI_registered, &bdi->state))) {
-+		printk("bdi %p/%s is not registered!\n", bdi, bdi->name);
-+		return;
-+	}
-+
- 	/*
- 	 * Check with the helper whether to proceed adding a task. Will only
- 	 * abort if we two or more simultanous calls to
-@@ -612,6 +617,7 @@ remove_err:
- 	}
- 
- 	bdi_debug_register(bdi, dev_name(dev));
-+	set_bit(BDI_registered, &bdi->state);
- exit:
- 	return ret;
- }
 -- 
-1.6.3.rc0.1.gf800
+---------------------------------------------------------
+Hongbing,Hu (Software Department)
+Tel:    0512-52308631
+E-mail:	huhb@lemote.com
+MSN:	[huhb04@gmail.com]
+JiangSu Lemote Corp. Ltd.
+MengLan, Yushan, Changshu, JiangSu Province, China
+---------------------------------------------------------
 
