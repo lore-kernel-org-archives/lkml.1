@@ -1,90 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755422AbZEYKuz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755114AbZEYKyG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755422AbZEYKuz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 06:50:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754535AbZEYKuh
+	id S1755114AbZEYKyG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 06:54:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753297AbZEYKxx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 06:50:37 -0400
-Received: from mtagate1.de.ibm.com ([195.212.17.161]:43333 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753013AbZEYKug (ORCPT
+	Mon, 25 May 2009 06:53:53 -0400
+Received: from mail-fx0-f168.google.com ([209.85.220.168]:36598 "EHLO
+	mail-fx0-f168.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751649AbZEYKxx convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 06:50:36 -0400
-Date: Mon, 25 May 2009 12:50:34 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Michael Abbott <michael@araneidae.co.uk>,
-       Jan Engelhardt <jengelh@medozas.de>
-Subject: Re: [GIT PULL] cputime patch for 2.6.30-rc6
-Message-ID: <20090525125034.159ecb78@skybase>
-In-Reply-To: <1242723635.26820.471.camel@twins>
-References: <20090518160904.7df88425@skybase>
- <1242660243.26820.439.camel@twins>
- <20090519104900.12e1f80c@skybase>
- <1242723635.26820.471.camel@twins>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 25 May 2009 06:53:53 -0400
+MIME-Version: 1.0
+In-Reply-To: <m13aataaa6.fsf@fess.ebiederm.org>
+References: <m1bppofm9k.fsf@fess.ebiederm.org> <1243109591-21611-5-git-send-email-ebiederm@xmission.com> 
+	<ac3eb2510905231427x62efaecfod2b11472fcdbcc21@mail.gmail.com> 
+	<1243169978.3502.7.camel@poy> <m1bppid1pw.fsf@fess.ebiederm.org> 
+	<1243178448.4035.12.camel@poy> <m1iqjpaap1.fsf@fess.ebiederm.org> 
+	<m13aataaa6.fsf@fess.ebiederm.org>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Mon, 25 May 2009 12:51:57 +0200
+Message-ID: <ac3eb2510905250351x473fd81fuc183d6f355d5b18a@mail.gmail.com>
+Subject: Re: [PATCH 25/20] sysfs: Only support removing emtpy sysfs 
+	directories.
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       Tejun Heo <tj@kernel.org>, Cornelia Huck <cornelia.huck@de.ibm.com>,
+       linux-fsdevel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>,
+       stern <stern@rowland.harvard.edu>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 19 May 2009 11:00:35 +0200
-Peter Zijlstra <peterz@infradead.org> wrote:
+On Mon, May 25, 2009 at 09:53, Eric W. Biederman <ebiederm@xmission.com> wrote:
+> ebiederm@xmission.com (Eric W. Biederman) writes:
 
-> So, I'm really not objecting too much to the patch at hand, but I'd love
-> to find a solution to this problem.
+> Currently I expect that those attributes that are not deleted may
+> actually be bugs as well.  If a driver manually adds sysfs files after
+> device_create/device_register the uevent will have already been sent
+> and you can not safely use those attributes in when processing a hotplug
+> event.
 
-It is not hard so solve the problem for /proc/uptime, e.g. like this:
+That's true, and would be good to fix. I guess we need to come up with
+a way of maintaining binary attributes in the same way as "default"
+attributes. Today they need to be created manually.
 
-static u64 uptime_jiffies = INITIAL_JIFFIES;
-static struct timespec ts_uptime;
-static struct timespec ts_idle;
+Maybe we can get your patch series in, with the version that removes
+the files, but warns on existing directories, and work on fixing the
+users, and possible remove the deletion of files when we fixed all the
+current users?
 
-static int uptime_proc_show(struct seq_file *m, void *v)
-{
-        cputime_t idletime;
-        u64 now;
-        int i;
-
-        now = get_jiffies_64();
-        if (uptime_jiffies != now) {
-                uptime_jiffies = now;
-                idletime = cputime_zero;
-                for_each_possible_cpu(i)
-                        idletime = cputime64_add(idletime,
-                                                 kstat_cpu(i).cpustat.idle);
-                do_posix_clock_monotonic_gettime(&ts_uptime);
-                monotonic_to_bootbased(&ts_uptime);
-                cputime_to_timespec(idletime, &ts_idle);
-        }
-
-        seq_printf(m, "%lu.%02lu %lu.%02lu\n",
-                        (unsigned long) ts_uptime.tv_sec,
-                        (ts_uptime.tv_nsec / (NSEC_PER_SEC / 100)),
-                        (unsigned long) ts_idle.tv_sec,
-                        (ts_idle.tv_nsec / (NSEC_PER_SEC / 100)));
-        return 0;
-}
-
-For /proc/stat it is less clear. Just storing the values in static
-variables is not such a good idea as there are lots of values.
-10*NR_CPUS + NR_IRQS values to be exact. With NR_CPUS in the thousands
-this will waste quite a bit of memory.
-
-I fixed another problem with Michael original patch and added the new
-one to reduce the frequency of accesses to kstat_cpu for /proc/uptime.
-You'll find both at:
-
-	git://git390.marist.edu/pub/scm/linux-2.6.git cputime
-
--- 
-blue skies,
-   Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
+Thanks,
+Kay
