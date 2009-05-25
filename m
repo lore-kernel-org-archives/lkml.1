@@ -1,91 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753502AbZEYWWH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754687AbZEYW1s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753502AbZEYWWH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 18:22:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752682AbZEYWV4
+	id S1754687AbZEYW1s (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 18:27:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753927AbZEYW1k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 18:21:56 -0400
-Received: from moutng.kundenserver.de ([212.227.126.188]:53548 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751715AbZEYWVz (ORCPT
+	Mon, 25 May 2009 18:27:40 -0400
+Received: from cpsmtpm-eml102.kpnxchange.com ([195.121.3.6]:55577 "EHLO
+	CPSMTPM-EML102.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753804AbZEYW1j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 18:21:55 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: monstr@monstr.eu, linux-arch@vger.kernel.org
-Subject: Re: ipc64_perm - generic
-Date: Mon, 25 May 2009 22:21:43 +0000
-User-Agent: KMail/1.11.2 (Linux/2.6.29; KDE/4.2.2; x86_64; ; )
-Cc: John Williams <john.williams@petalogix.com>, linux-kernel@vger.kernel.org,
-       Arnd Bergmann <arnd@arndb.de>
-References: <4A1AE972.9010905@monstr.eu>
-In-Reply-To: <4A1AE972.9010905@monstr.eu>
+	Mon, 25 May 2009 18:27:39 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: Re: [PATCH 1/3] ide: add "ignore_hpa" module parameter
+Date: Tue, 26 May 2009 00:27:38 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <200905252344.11826.bzolnier@gmail.com>
+In-reply-To: <200905252344.11826.bzolnier@gmail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200905252221.44082.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+DF0wAeLU7JXPhjXKjd/z74iZ3kO8bbu4mhQu
- nFDDmid5EUzb6n0Mjzdq3UbBm2d/y88KsQUfhCTGEZqy/MTwBk
- cfqhhISk8BFXtkvW2egaA==
+Message-Id: <200905260027.39330.elendil@planet.nl>
+X-OriginalArrivalTime: 25 May 2009 22:27:39.0971 (UTC) FILETIME=[036FA930:01C9DD88]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 25 May 2009 18:54:42 Michal Simek wrote:
-> 
-> Hi Arnd, cc: John
-> 
-> From asm-generic/posix_types.h
-> 
-> 17 #ifndef __kernel_mode_t
-> 18 typedef unsigned int    __kernel_mode_t;
-> 19 #endif
-> 
-> This structure is not aligned properly because of pad2.
-> 
-> 19 struct ipc64_perm {
-> 20         __kernel_key_t          key;
-> 21         __kernel_uid32_t        uid;
-> 22         __kernel_gid32_t        gid;
-> 23         __kernel_uid32_t        cuid;
-> 24         __kernel_gid32_t        cgid;
-> 25         __kernel_mode_t         mode;
-> 26         unsigned short          __pad1;
-> 27         unsigned short          seq;
-> 28         unsigned short          __pad2;
-> 29         unsigned long           __unused1;
-> 30         unsigned long           __unused2;
-> 31 };
-> 
-> I think we should remove __pad1.
-> What do you think?
+Bartlomiej Zolnierkiewicz wrote:
+> --- a/Documentation/kernel-parameters.txt
+> +++ b/Documentation/kernel-parameters.txt
+[...]
+> +       ide_core.ignore_hpa=
+> +                       [HW] (E)IDE subsystem
+> +                       Ignore HPA limit
 
-Right, well spotted.
+Add a short explanation of what HPA is maybe (or at least expand the 
+acronym)?
 
-I'd like to keep the struct ipc64_perm compatible with most architectures, so
-maybe we can play a little trick here:
+It's also not obvious (at least not to a dumb user like me) that "ignore 
+HPA limit" is equivalent to "preserving the Host Protected Area" as the 
+commit commit says.
+After reading the wiki page on HPA it looks like the actual meaning is to
+"make the HPA visible to the OS"?
 
-> Here is proposed struct.
->  struct ipc64_perm {
->          __kernel_key_t          key;
->          __kernel_uid32_t        uid;
->          __kernel_gid32_t        gid;
->          __kernel_uid32_t        cuid;
->          __kernel_gid32_t        cgid;
->          __kernel_mode_t         mode;
+> +                       Format: { "0" | "1" }
+> +                       0 -- keep BIOS limits
+> +                       1 -- ignore limits, using full disk (default)
 
-+	unsigned char __pad1[4 - sizeof(__kernel_mode_t)];
+Hmm. This looks weird. Is "BIOS limits" a synonym for "HPA limit"?
+Same goes for the MODULE_PARM_DESC.
 
->          unsigned short          seq;
->          unsigned short          __pad2;
->          unsigned long           __unused1;
->          unsigned long           __unused2;
->  };
-
-If that's too much of a hack, we could also change the default __kernel_mode_t
-in asm-generic/posix_types.h to unsigned short, which it is on all 32-bit architectures
-except mips and xtensa. For some reason, all 64 bit architechtures use unsigned
-int for mode_t, but I couldn't find out why. Glibc uses unsigned int externally.
-
-	Arnd <><
+Cheers,
+FJP
