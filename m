@@ -1,75 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756534AbZEYKSh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755076AbZEYK2i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756534AbZEYKSh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 06:18:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752596AbZEYKSa
+	id S1755076AbZEYK2i (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 06:28:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753485AbZEYK2R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 06:18:30 -0400
-Received: from mx1.auerswald.de ([212.185.163.234]:5013 "EHLO
-	mail.auerswald.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751649AbZEYKS3 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 06:18:29 -0400
-From: Wolfgang =?iso-8859-1?q?M=FCes?= <wolfgang.mues@auerswald.de>
-Organization: Auerswald GmbH & Co. KG
-To: "David Brownell" <david-b@pacbell.net>
-Subject: Re: [PATCH] mmc_spi: use EILSEQ for possible transmission errors
-Date: Mon, 25 May 2009 12:18:18 +0200
-User-Agent: KMail/1.9.10
-Cc: "Pierre Ossman" <pierre@ossman.eu>,
-       "Matt Fleming" <matt@console-pimps.org>,
-       "Pierre Ossman" <drzeus@drzeus.cx>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Mike Frysinger" <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org
-References: <200905250243.46984.david-b@pacbell.net>
-In-Reply-To: <200905250243.46984.david-b@pacbell.net>
+	Mon, 25 May 2009 06:28:17 -0400
+Received: from ozlabs.org ([203.10.76.45]:43820 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753141AbZEYK2Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 06:28:16 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Joe Perches <joe@perches.com>
+Subject: Re: [PATCH 1/3] kernel.h: Add DO_ONCE statement expression macro
+Date: Mon, 25 May 2009 16:15:07 +0930
+User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
+Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org,
+       Dave Jones <davej@redhat.com>, "Greg Kroah-Hartman" <gregkh@suse.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>,
+       x86@vger.kernel.org, Len Brown <len.brown@intel.com>,
+       Mike Travis <travis@sgi.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+References: <cover.1242943463.git.joe@perches.com> <7b063fda0675875d51a5da49f59e89520d025eee.1242943463.git.joe@perches.com>
+In-Reply-To: <7b063fda0675875d51a5da49f59e89520d025eee.1242943463.git.joe@perches.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200905251218.18262.wolfgang.mues@auerswald.de>
+Message-Id: <200905251615.08414.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David,
+On Fri, 22 May 2009 08:30:22 am Joe Perches wrote:
+> Add a DO_ONCE statement expression analogous to printk_once
+> that executes any arbitrary statement exactly once.
+>
+> This will take the place of printk_once so that
+> DO_ONCE(pr_<foo>) or any other statement performed
+> a single time may be easily written.
 
-Am Montag, 25. Mai 2009 schrieb David Brownell:
-> It can't.  But when the card controller knows that for example
-> certain logical blocks are not holding data, it can use that
-> for wear leveling ... it's got more physical blocks to use to
-> even out the writes, as well as having any records it kept on
-> writes, reads, and erasures.
+If you're going to use a statement expression, was the intent to make
+it usable for a test?  If so, you want something vaguely like:
 
-OK. So the block layer is issuing erase commands for all sectors which get 
-unused, to let the mmc/sd card controller know that these areas are unused.
+#define DO_ONCE(x...) ({			\
+	static bool __done = false;		\
+	bool did = !__done;			\
+	if (!__done) {				\
+		x;				\
+		__done = true;			\
+	}					\
+	did;					\
+})
 
-Are these erase commands requests (as reads and writes)? I suppose...
+Otherwise, why not just use a normal do {} while (0) ?
 
-So if this code gets integrated, we can do:
+Anyway, statements in macros leave me uncomfortable. I prefer explicit
+ONCE() macro which can be tested.
 
-if (command is erase)
-	accept erase response codes
-else
-	treat erase response codes as transmission errors
-
-Should be no problem...
-
-regards
- 
-i. A. Wolfgang Mües
--- 
-Auerswald GmbH & Co. KG
-Hardware Development
-Telefon: +49 (0)5306 9219 0
-Telefax: +49 (0)5306 9219 94 
-E-Mail: Wolfgang.Mues@Auerswald.de
-Web: http://www.auerswald.de
- 
---------------------------------------------------------------
-Auerswald GmbH & Co. KG, Vor den Grashöfen 1, 38162 Cremlingen
-Registriert beim AG Braunschweig HRA 13289
-p.h.G Auerswald Geschäftsführungsges. mbH
-Registriert beim AG Braunschweig HRB 7463
-Geschäftsführer: Dipl-Ing. Gerhard Auerswald
+Cheers,
+Rusty.
