@@ -1,51 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754145AbZEYQGZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754023AbZEYQIe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754145AbZEYQGZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 12:06:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752588AbZEYQGS
+	id S1754023AbZEYQIe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 12:08:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751975AbZEYQI1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 12:06:18 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:57654 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751633AbZEYQGS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 12:06:18 -0400
-Message-ID: <4A1AC1BE.5050500@zytor.com>
-Date: Mon, 25 May 2009 09:05:18 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Mon, 25 May 2009 12:08:27 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:56359 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751942AbZEYQI0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 12:08:26 -0400
+Date: Mon, 25 May 2009 18:03:51 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Roland McGrath <roland@redhat.com>, Christoph Hellwig <hch@infradead.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH 5/X] ptrace: mv task_struct->ptrace
+	ptrace_task->pt_flags, kill ptrace_link()
+Message-ID: <20090525160351.GB10431@redhat.com>
+References: <20090525000008.GA2228@redhat.com> <20090525033303.GB20687@elte.hu>
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Tomasz Chmielewski <mangoo@wpkg.org>, LKML <linux-kernel@vger.kernel.org>,
-       mingo@elte.hu, Alan <alan@lxorguk.ukuu.org.uk>,
-       Gerd Hoffmann <kraxel@redhat.com>, jeremy@goop.org, JBeulich@novell.com,
-       jbarnes@virtuousgeek.org
-Subject: Re: [Xen-devel] Re: [GIT PULL] xen /proc/mtrr implementation
-References: <4A1A59DD.7030101@wpkg.org> <20090525091530.GW846@one.firstfloor.org>
-In-Reply-To: <20090525091530.GW846@one.firstfloor.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090525033303.GB20687@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> 
-> To my knowledge the only CPUs with broken PAT are some very old Pentium
-> Pros dating from back the time when PAT was new and noone used it.
-> On those it should be disabled or the high bits not used.
-> 
-> The kernel is overall too conservative with its white list.
-> 
-> Today a lot of other common operating systems use PAT extensively,
-> so in general it works on the hardware level.
-> 
+On 05/25, Ingo Molnar wrote:
+>
+> * Oleg Nesterov <oleg@redhat.com> wrote:
+>
+> >  struct ptrace_task {
+> > +	unsigned long	pt_flags;
+> >  };
+>
+> > -	return task->ptrace;
+> > +	return unlikely(task->ptrace_task) ?
+> > +		task->ptrace_task->pt_flags : 0;
+>
+> Please no pt_ prefixes. It is abundantly clear from the
+> '->ptrace_ctx' portion already that it's about ptrace - the rest
+> should be a straightforward minimalistic naming - i.e.
+> ->ptrace_ctx->flags.
 
-Well, we don't use the high bits exactly for this reason.
+OK, will rename.
 
-	-hpa
+But note that you can't use cscope to find the usage of ->flags. Even
+grep is not reliable, unless the code always adds 'ptrace' to the name
+of the pointer.
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+> Also, is the conditional necessary? We should not be calling ptrace
+> methods on tasks with no ptrace context.
+
+It is mostly used as is_task_ptraced() actually, that is why ptrace context
+can be NULL.
+
+This in turn needs cleanups, will be addressed further.
+
+Oleg.
 
