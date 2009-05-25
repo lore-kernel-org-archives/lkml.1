@@ -1,167 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754404AbZEYQWA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753901AbZEYQ24@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754404AbZEYQWA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 12:22:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752228AbZEYQVy
+	id S1753901AbZEYQ24 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 12:28:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752589AbZEYQ2s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 12:21:54 -0400
-Received: from mail-fx0-f168.google.com ([209.85.220.168]:38753 "EHLO
-	mail-fx0-f168.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751975AbZEYQVw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 12:21:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=KsTM930NcGDramdZhwnenv73vV1DJDOvEO+5SINDGAZ7SR6rzCAuHt3wTwFTD24mSa
-         djysPocnVIF+Qm2J/k9TdQ4eaJ+B0apAMWs1enYK6RUmMtjgZLFqbRjBvI5wRxmuWVOx
-         QzrHwJkX45kglUkp4fZyjVD1pBUHkZlOihFbo=
-Message-ID: <4A1AC5A3.9000600@gmail.com>
-Date: Mon, 25 May 2009 18:21:55 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1b5pre) Gecko/20090511 SUSE/3.0b2-9.1 Thunderbird/3.0b3pre
+	Mon, 25 May 2009 12:28:48 -0400
+Received: from mga11.intel.com ([192.55.52.93]:25848 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752545AbZEYQ2r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 12:28:47 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,245,1241420400"; 
+   d="scan'208";a="460271387"
+Message-ID: <4A1AC741.3060600@intel.com>
+Date: Mon, 25 May 2009 09:28:49 -0700
+From: "H. Peter Anvin" <h.peter.anvin@intel.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-To: Oleg Nesterov <oleg@redhat.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, ebiederm@xmission.com,
-       roland@redhat.com, linux-kernel@vger.kernel.org,
-       Matthew Wilcox <matthew@wil.cx>
-Subject: Re: [PATCH 1/1] signal: make group kill signal fatal
-References: <1243198054-13816-1-git-send-email-jirislaby@gmail.com> <20090525000750.GA2301@redhat.com>
-In-Reply-To: <20090525000750.GA2301@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: "Huang, Ying" <ying.huang@intel.com>
+CC: Ingo Molnar <mingo@elte.hu>, Brian Maly <bmaly@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "dannf@hp.com" <dannf@hp.com>
+Subject: Re: [PATCH] rtc: add x86 support for rtc-efi
+References: <49DA40B9.2060804@redhat.com> <49DA817E.8040705@intel.com>	 <49DA8875.5050009@redhat.com>	 <20090409161803.f79c0b64.akpm@linux-foundation.org>	 <20090410135102.GB24809@elte.hu> <49ECADAB.4020609@redhat.com>	 <20090420172045.GA17887@elte.hu>  <49ECBD31.9010607@intel.com> <1243230547.31256.65.camel@yhuang-dev.sh.intel.com>
+In-Reply-To: <1243230547.31256.65.camel@yhuang-dev.sh.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/25/2009 02:07 AM, Oleg Nesterov wrote:
-> On 05/24, Jiri Slaby wrote:
+Huang, Ying wrote:
+> On Tue, 2009-04-21 at 02:21 +0800, Anvin, H Peter wrote:
+>> Ingo Molnar wrote:
+>>> * Brian Maly <bmaly@redhat.com> wrote:
+>>>
+>>>>> Hm, it would be nice to first unify the relevant bits of 
+>>>>> arch/x86/kernel/time_{32|64}.c into arch/x86/kernel/time.c, and 
+>>>>> then we can apply such patches without duplicative effects.
+>>>> Ingo,
+>>>>
+>>>> Are you OK with consolidating this into arch/x86/kernel/rtc.c as 
+>>>> Huang Ying had suggested? This seems like the most logical place 
+>>>> for the rtc-efi init to happen, but your suggestion to consolidate 
+>>>> this into arch/x86/kernel.time.c may have advantages that I am not 
+>>>> aware of.  Anyway, I would appreciate any insight/opinions on this 
+>>>> if you have any.  Thanks.
+>>> Yes, that indeed sounds like an even better place for it.
+>>>
+>> Furthermore, the EFI RTC code probably should be in its own file.
 >>
->> __fatal_signal_pending() returns now true only for a non-group sent
->> sigkill, i. e. for example tgkill, send_sig...
+>> In fact, arch/x86/kernel really could use more subdirectories; at least 
+>> the EFI and UV-specific code should be be moved out.
 > 
-> No. Please look at complete_signal(). If we queue a fatal signal,
-> we always add SIGKILL to any thread.
+> Or, do you think it is appropriate to re-organize EFI related code into
+> a sub-architecture?
+> 
 
-Ah, thanks. But it looks like it doesn't work well in some cases.
-Consider this kernel code:
+No, we're been trying to get rid of subarchitectures in the x86 kernel. 
+  The reason is that the notion of subarchitectures matches reality in 
+x86-land poorly.  Most variants of x86 share considerable code: UV has 
+EFI, PC has EFI or BIOS, Voyager has BIOS and a standard RTC, and so on.
 
-#include <linux/fs.h>
-#include <linux/miscdevice.h>
-#include <linux/module.h>
-#include <linux/poll.h>
-#include <linux/sched.h>
+	-hpa
 
-static int release(struct inode *ino, struct file *file)
-{
-        unsigned int a;
-        printk(KERN_DEBUG "fst\n");
-        for (a = 0; a < 10; a++) {
-                printk(KERN_DEBUG "%s: SP=%u FSP=%u pend=%.16lx
-shpend=%.16lx\n",
-                                __func__,
-                                signal_pending(current),
-                                fatal_signal_pending(current),
-                                current->pending.signal.sig[0],
-
-current->signal->shared_pending.signal.sig[0]);
-                if (fatal_signal_pending(current))
-                        break;
-                msleep(1000);
-        }
-        printk(KERN_DEBUG "done\n");
-        return 0;
-}
-
-static DECLARE_WAIT_QUEUE_HEAD(wq);
-
-static unsigned int poll(struct file *file, struct poll_table_struct *p)
-{
-        poll_wait(file, &wq, p);
-
-        return 0;
-}
-
-static const struct file_operations fops = {
-        .owner = THIS_MODULE,
-        .release = release,
-        .poll = poll,
-};
-
-static struct miscdevice m = {
-        .minor = MISC_DYNAMIC_MINOR,
-        .name = "m",
-        .fops = &fops,
-};
-
-static int init1(void)
-{
-        return misc_register(&m);
-}
-
-static void exit1(void)
-{
-        misc_deregister(&m);
-}
-
-module_init(init1);
-module_exit(exit1);
-
-MODULE_LICENSE("GPL");
-
-
-
-
-
-
-----------------------------------------------
-And this user code:
-#include <err.h>
-#include <fcntl.h>
-#include <poll.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-
-int main(int argc, char **argv)
-{
-        struct pollfd fds = { .events = POLLIN };
-        int fd;
-
-        fd = open("/dev/m", O_RDONLY);
-        if (fd < 0)
-                err(1, "open");
-        fds.fd = fd;
-        if (poll(&fds, 1, -1) < 0)
-                err(2, "poll");
-        close(fd);
-        return 0;
-}
-
-
-
-
-
-
-----------------------------------------------
-It outputs:
-fst
-release: SP=1 FSP=0 pend=0000000000000000 shpend=0000000000000100
-release: SP=1 FSP=0 pend=0000000000000000 shpend=0000000000000100
-release: SP=1 FSP=0 pend=0000000000000000 shpend=0000000000000100
-release: SP=1 FSP=0 pend=0000000000000000 shpend=0000000000000100
-release: SP=1 FSP=0 pend=0000000000000000 shpend=0000000000000100
-release: SP=1 FSP=0 pend=0000000000000000 shpend=0000000000000100
-release: SP=1 FSP=0 pend=0000000000000000 shpend=0000000000000100
-release: SP=1 FSP=0 pend=0000000000000000 shpend=0000000000000100
-release: SP=1 FSP=0 pend=0000000000000000 shpend=0000000000000100
-release: SP=1 FSP=0 pend=0000000000000000 shpend=0000000000000100
-done
-
-I.e. it won't get propagated to current->pending. Don't you have idea
-why? If the poll isn't there, it works well.
-
-glibc 2.9, x86_64
