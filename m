@@ -1,124 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753197AbZEYLZV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753018AbZEYL1R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753197AbZEYLZV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 07:25:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751547AbZEYLZH
+	id S1753018AbZEYL1R (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 07:27:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751263AbZEYL1D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 07:25:07 -0400
-Received: from cantor.suse.de ([195.135.220.2]:33600 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751221AbZEYLZF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 07:25:05 -0400
-Date: Mon, 25 May 2009 13:25:04 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-Cc: Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yinghai@kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Jeff Garzik <jgarzik@pobox.com>,
-       Alexander Viro <viro@ftp.linux.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, cl@linux-foundation.org,
-       mpm@selenic.com
-Subject: Re: [GIT PULL] scheduler fixes
-Message-ID: <20090525112504.GB24071@wotan.suse.de>
-References: <20090518190320.GA20260@elte.hu> <alpine.LFD.2.01.0905181208130.3301@localhost.localdomain> <20090518202031.GA26549@elte.hu> <alpine.LFD.2.01.0905181457320.3301@localhost.localdomain> <Pine.LNX.4.64.0905241911120.12189@melkki.cs.Helsinki.FI> <4A199327.5030503@kernel.org> <20090525025353.GA2580@elte.hu> <4A1A2261.1000504@kernel.org> <20090525051521.GC23032@elte.hu> <Pine.LNX.4.64.0905251142140.32568@melkki.cs.Helsinki.FI>
+	Mon, 25 May 2009 07:27:03 -0400
+Received: from viefep19-int.chello.at ([62.179.121.39]:11700 "EHLO
+	viefep19-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751221AbZEYL1C (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 07:27:02 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [PATCH 2/2] perf_counter: optimize context switch between
+ identical inherited contexts
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Corey Ashford <cjashfor@linux.vnet.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <18970.31699.559802.462479@cargo.ozlabs.ibm.com>
+References: <18966.10075.781053.231153@cargo.ozlabs.ibm.com>
+	 <18966.10666.517218.332164@cargo.ozlabs.ibm.com>
+	 <1243000016.6582.574.camel@laptop>
+	 <18969.58137.356360.144339@cargo.ozlabs.ibm.com>
+	 <1243247887.26820.651.camel@twins>
+	 <18970.31699.559802.462479@cargo.ozlabs.ibm.com>
+Content-Type: text/plain
+Date: Mon, 25 May 2009 13:27:01 +0200
+Message-Id: <1243250821.26820.677.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0905251142140.32568@melkki.cs.Helsinki.FI>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 25, 2009 at 11:47:40AM +0300, Pekka Enberg wrote:
-> On Mon, 25 May 2009, Ingo Molnar wrote:
-> > Ok, i think this all looks pretty realistic - but there's quite a 
-> > bit of layering on top of pending changes in the x86 and irq trees. 
-> > We could do this on top of those topic branches in -tip, and rebase 
-> > in the merge window. Or delay it to .32.
-> > 
-> > ... plus i think we are _very_ close to being able to remove all of 
-> > bootmem on x86 (with some compatibility/migration mechanism in 
-> > place). Which bootmem calls do we have before kmalloc init with 
-> > Pekka's patch applied? I think it's mostly the page table init code.
-> >  
-> > ( beyond the page allocator internal use - where we could use 
-> >   straight e820 based APIs that clip memory off from the beginning 
-> >   of existing e820 RAM ranges - enriched with NUMA/SRAT locality 
-> >   info. )
+On Mon, 2009-05-25 at 21:06 +1000, Paul Mackerras wrote:
+> Peter Zijlstra writes:
 > 
-> OK, here's a version of the patch with Yinghai's rebasing on top of 
-> tip/master. All in-kernel memory allocators boot cleanly now on my 
-> configuration (I did not try SLQB but it probably needs fixing). I would 
-> appreciate if someone gave SLAB+NUMA configuration a try.
+> > I'm currently staring at something like the below, trying to find races
+> > etc.. ;-)
+> [snip]
+> >  	next_ctx = next->perf_counter_ctxp;
+> >  	if (next_ctx && context_equiv(ctx, next_ctx)) {
+> > +		ctx->task = NULL;
+> > +		next_ctx->task = NULL;
 > 
-> Ingo, I don't really want to carry this in slab.git so perhaps you could 
-> put this and Yinghai's irq init cleanup in a "earlyslab" branch in tip for 
-> testing?
-> 
-> And oh, Christoph/Matt, can I have your NAK/ACK for this patch?
-> 
-> 			Pekka
-> 
-> >From f5338db5f1b959cb82ed811037a545e19c7b2b7b Mon Sep 17 00:00:00 2001
-> From: Pekka Enberg <penberg@cs.helsinki.fi>
-> Date: Mon, 25 May 2009 09:44:39 +0300
-> Subject: [PATCH] slab: setup allocators earlier in the boot sequence
-> 
-> This patch makes kmalloc() available earlier in the boot sequence so we can get
-> rid of some bootmem allocations. The bulk of the changes are due to
-> kmem_cache_init() being called with interrupts disabled which requires some
-> changes to allocator boostrap code.
-> 
-> [ yinghai@kernel.org: rebase to tip ]
-> Cc: Nick Piggin <npiggin@suse.de>
-> Cc: Matt Mackall <mpm@selenic.com>
-> Cc: Christoph Lameter <cl@linux-foundation.com>
-> Cc: Linus Torvalds <torvals@linux-foundation.org>
-> Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
-> ---
->  init/main.c           |   28 +++++++++-------
->  kernel/irq/handle.c   |   23 +++++---------
->  kernel/sched.c        |   34 +++++++------------
->  kernel/sched_cpupri.c |    9 +++--
->  mm/slab.c             |   85 ++++++++++++++++++++++++++-----------------------
->  mm/slub.c             |   17 ++++++----
->  6 files changed, 98 insertions(+), 98 deletions(-)
-> 
-> diff --git a/init/main.c b/init/main.c
-> index 33ce929..e7a9c18 100644
-> --- a/init/main.c
-> +++ b/init/main.c
-> @@ -576,6 +576,22 @@ asmlinkage void __init start_kernel(void)
->  	setup_nr_cpu_ids();
->  	smp_prepare_boot_cpu();	/* arch-specific boot-cpu hooks */
+> Trouble is, ctx->task == NULL is used as an indication that this is a
+> per-cpu context in various places.
+
+Yeah, already realized that, its enough to simply put them to the new
+task, before flipping the context pointers.
+
+> Also, in find_get_context, we have a lifetime problem because *ctx
+> could get swapped and then freed underneath us immediately after we
+> read task->perf_counter_ctxp.  So we need a lock in the task_struct
+> that stops sched_out from swapping the context underneath us.  That
+> led me to the patch below, which I'm about to test... :)  It does the
+> unclone in find_get_context; we don't actually need it on remove
+> because we have no way to remove an inherited counter from a task
+> without the task exiting.
+
+Right, I was trying to solve the lifetime issues with RCU and refcount
+tricks and the races with ordering, instead of adding another lock.
+
+> @@ -932,12 +927,32 @@ void perf_counter_task_sched_out(struct task_struct *task,
+>  	regs = task_pt_regs(task);
+>  	perf_swcounter_event(PERF_COUNT_CONTEXT_SWITCHES, 1, 1, regs, 0);
 >  
-> +	build_all_zonelists();
-> +	page_alloc_init();
-> +
-> +	printk(KERN_NOTICE "Kernel command line: %s\n", boot_command_line);
-> +	parse_early_param();
-> +	parse_args("Booting kernel", static_command_line, __start___param,
-> +		   __stop___param - __start___param,
-> +		   &unknown_bootoption);
 > +	/*
-> +	 * Setup kernel memory allocators
+> +	 * Note: task->perf_counter_ctxp and next->perf_counter_ctxp
+> +	 * can't change underneath us here if we see them non-NULL,
+> +	 * because this is the only place where we change which
+> +	 * context a task points to, and the scheduler will ensure
+> +	 * that this code isn't being called for either of these tasks
+> +	 * on any other cpu at the same time.
 > +	 */
-> +	pidhash_init();
-> +	vmalloc_init();
-> +	vfs_caches_init_early();
-> +	mem_init();
-> +	kmem_cache_init();
+>  	next_ctx = next->perf_counter_ctxp;
+>  	if (next_ctx && context_equiv(ctx, next_ctx)) {
+> +		/*
+> +		 * Lock the contexts of both the old and new tasks so that we
+> +		 * don't change things underneath find_get_context etc.
+> +		 * We don't need to be careful about the order in which we
+> +		 * lock the tasks because no other cpu could be trying to lock
+> +		 * both of these tasks -- this is the only place where we lock
+> +		 * two tasks.
+> +		 */
+> +		spin_lock(&task->perf_counter_ctx_lock);
+> +		spin_lock(&next->perf_counter_ctx_lock);
+>  		task->perf_counter_ctxp = next_ctx;
+>  		next->perf_counter_ctxp = ctx;
+>  		ctx->task = next;
+>  		next_ctx->task = task;
+> +		spin_unlock(&next->perf_counter_ctx_lock);
+> +		spin_unlock(&task->perf_counter_ctx_lock);
+>  		return;
+>  	}
 
-Looks quite OK to me. The comment above maybe misleading?
+FWIW that nested lock will make lockdep complain -- it can't deadlock
+since we're under rq->lock and the tasks can't be stolen from the rq in
+that case. So you can silence lockdep by using spin_lock_nested_lock()
 
-The bootmem allocations of course are required because some hashes may
-need to be larger than MAX_ORDER without using vmalloc.
+> @@ -1067,6 +1082,7 @@ static void perf_counter_cpu_sched_in(struct perf_cpu_context *cpuctx, int cpu)
+>  	__perf_counter_sched_in(ctx, cpuctx, cpu);
+>  }
+>  
+> +// XXX doesn't do inherited counters too?
+>  int perf_counter_task_enable(void)
+>  {
+>  	struct perf_counter *counter;
 
-kmem_cache_init (and mem_init, partially) sets up the kernel memory
-allocators...
+Good point,.. perf_counter_for_each_child(counter, perf_counter_disable)
+should fix that I think.
 
-I can take a look at the SLQB side.
+> @@ -1360,7 +1389,7 @@ static int perf_release(struct inode *inode, struct file *file)
+>  	put_task_struct(counter->owner);
+>  
+>  	free_counter(counter);
+> -	put_context(ctx);
+> +	put_context(ctx);		// XXX use after free?
+>  
+>  	return 0;
+>  }
+
+don't htink so, but will have a look.
+
+
