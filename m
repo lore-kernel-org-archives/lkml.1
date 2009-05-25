@@ -1,83 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754874AbZEYVtO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753967AbZEYV5O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754874AbZEYVtO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 17:49:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754617AbZEYVsZ
+	id S1753967AbZEYV5O (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 17:57:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752508AbZEYV5A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 17:48:25 -0400
-Received: from mail.crca.org.au ([67.207.131.56]:55151 "EHLO crca.org.au"
+	Mon, 25 May 2009 17:57:00 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:46081 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754708AbZEYVsX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 17:48:23 -0400
-X-Bogosity: Ham, spamicity=0.000000
-Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
-From: Nigel Cunningham <nigel@tuxonice.net>
-Reply-To: nigel@tuxonice.net
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Oliver Neukum <oliver@neukum.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@lists.linux-foundation.org,
-       tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org
-In-Reply-To: <20090525132613.GA14096@elf.ucw.cz>
-References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
-	 <1243243666.16743.64.camel@nigel-laptop>
-	 <20090525123228.GA13446@elf.ucw.cz> <200905251522.26852.oliver@neukum.org>
-	 <20090525132613.GA14096@elf.ucw.cz>
-Content-Type: text/plain
-Date: Tue, 26 May 2009 07:50:08 +1000
-Message-Id: <1243288208.16743.125.camel@nigel-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	id S1751976AbZEYV5A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 17:57:00 -0400
+Date: Tue, 26 May 2009 00:47:55 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Kay Sievers <kay.sievers@vrfy.org>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>, Tejun Heo <tj@kernel.org>,
+       aeb@cwi.nl
+Subject: Re: 2.a.30-rc7: fat filesystem misdetected as amiga
+Message-ID: <20090525214755.GE6856@redhat.com>
+References: <20090525205353.GB6856@redhat.com> <Pine.LNX.4.44L0.0905251704490.27717-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0905251704490.27717-100000@netrider.rowland.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
-
-On Mon, 2009-05-25 at 15:26 +0200, Pavel Machek wrote:
-> On Mon 2009-05-25 15:22:26, Oliver Neukum wrote:
-> > Am Montag, 25. Mai 2009 14:32:28 schrieb Pavel Machek:
-> > > > I'm going to try to. Unfortunately, they'll require what's basically a
-> > > > group-up redesign of the basic algorithm, because to get maximum
-> > > > reliability, you need to carefully account for the amount of storage
-> > > > you're going to need and the amount of memory you have available, and
-> > > > 'prepare' the image prior to doing the atomic copy.
-> > >
-> > > I don't quite get it; why is that needed?
-> > >
-> > > If there's not enough swap available, swsusp should freeze, realize
-> > > there's no swap, unfreeze and continue. I do not see reliability
-> > > problem there.
+On Mon, May 25, 2009 at 05:08:12PM -0400, Alan Stern wrote:
+> On Mon, 25 May 2009, Michael S. Tsirkin wrote:
+> 
+> > > So apparently this is a bug in the device; it doesn't respond correctly
+> > > to the first READ command.  But since it does respond correctly to 
+> > > later commands, everything works okay thereafter.  You ought to be able 
+> > > to recover from the error by running
+> > > 
+> > > 	blockdev --rereadpt /dev/sdb
+> > > 
+> > > manually.
 > > 
-> > The software suspend may be a part of your response to an imminent
-> > power failure (UPS near empty). The number of retries available is possibly
-> > limited.
+> > Yes, this helps.
+> > Would it make sense for kernel to retry automatically?
+> > Why doesn't it?
 > 
-> If there's no swap (and no hibernation partition), s2disk just will
-> not work.
-
-Yeah - an argument for not being swap centric in storing the image.
-
-But there's more: if there's swap but it's not in the partition pointed
-to by resume=, swsusp and uswsusp won't work either, will they? That's
-another reliability issue.
-
-> > I'd feel safer if hibernation by default wrote to a dedicated partition,
-> > especially as modern practice is to make swap space smaller than RAM.
+> I don't know the details in this case.  Most likely the error code 
+> (Logical Block Address Out of Range) is interpreted as a fatal 
+> non-retryable error.  For other sorts of errors, the kernel does retry.
 > 
-> It would be easy to have dedicated partition. But why waste space on
-> it?
+> > > As far as I can tell, this has nothing to do with any user programs in 
+> > > the distribution.  It appears to be entirely the device's fault.
+> > > 
+> > > Alan Stern
+> > 
+> > BTW, any idea how come I later get errors apparently from amiga fs?
+> 
+> Not a clue.  Unless it was some odd side effect of the partition code 
+> trying to interpret an uninitialized buffer.
+> 
+> Alan Stern
 
-Because it gives you increased reliability. But it doesn't need to be a
-dedicated partition - you can just have a file on a partition.
 
-> Anyway, this debate here is "in what order should we do the swsusp
-> actions". Dedicated partition/etc is for separate thread (please).
+So, the following works for me as a work-around.  But it's probably not
+the appropriate way to solve the problem. Or is it? Can someone who
+understands partitions and filesystems tell?
 
-Yeah; if we keep this discussion up, we'll get to that issue too.
 
-Regards,
 
-Nigel
+block: retry on I/O error when reading partition table
 
+Retry once on an I/O error when reading the partition table:
+there's no much to loose, and this helps with some disk on
+key devices I have.
+
+Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
+
+---
+
+diff --git a/fs/partitions/check.c b/fs/partitions/check.c
+index 99e33ef..28b857a 100644
+--- a/fs/partitions/check.c
++++ b/fs/partitions/check.c
+@@ -510,25 +510,34 @@ int rescan_partitions(struct gendisk *disk, struct block_device *bdev)
+ 	struct hd_struct *part;
+ 	struct parsed_partitions *state;
+ 	int p, highest, res;
++	int i;
+ 
+ 	if (bdev->bd_part_count)
+ 		return -EBUSY;
+-	res = invalidate_partition(disk, 0);
+-	if (res)
+-		return res;
+-
+-	disk_part_iter_init(&piter, disk, DISK_PITER_INCL_EMPTY);
+-	while ((part = disk_part_iter_next(&piter)))
+-		delete_partition(disk, part->partno);
+-	disk_part_iter_exit(&piter);
+ 
+-	if (disk->fops->revalidate_disk)
+-		disk->fops->revalidate_disk(disk);
+-	check_disk_size_change(disk, bdev);
+-	bdev->bd_invalidated = 0;
+-	if (!get_capacity(disk) || !(state = check_partition(disk, bdev)))
+-		return 0;
+-	if (IS_ERR(state))	/* I/O error reading the partition table */
++	/* Michael S. Tsirkin has a disk on key where rescanning helps. */
++#define RESCAN_RETRY_CNT 2
++	for (i = 0; i < RESCAN_RETRY_CNT; ++i) {
++		res = invalidate_partition(disk, 0);
++		if (res)
++			return res;
++
++		disk_part_iter_init(&piter, disk, DISK_PITER_INCL_EMPTY);
++		while ((part = disk_part_iter_next(&piter)))
++			delete_partition(disk, part->partno);
++		disk_part_iter_exit(&piter);
++
++		if (disk->fops->revalidate_disk)
++			disk->fops->revalidate_disk(disk);
++		check_disk_size_change(disk, bdev);
++		bdev->bd_invalidated = 0;
++		if (!get_capacity(disk) || !(state = check_partition(disk, bdev)))
++			return 0;
++		if (!IS_ERR(state))
++			break;
++		/* I/O error reading the partition table. Retry. */
++	}
++	if (IS_ERR(state)) /* I/O error reading the partition table */
+ 		return -EIO;
+ 
+ 	/* tell userspace that the media / partition table may have changed */
+
+-- 
+MST
