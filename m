@@ -1,88 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753546AbZEYTDU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753703AbZEYTEn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753546AbZEYTDU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 15:03:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752279AbZEYTDN
+	id S1753703AbZEYTEn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 15:04:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752346AbZEYTEa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 15:03:13 -0400
-Received: from mx-out2.daemonmail.net ([216.104.160.39]:50898 "EHLO
-	mx-out2.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751747AbZEYTDM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 15:03:12 -0400
-From: "Michael S. Zick" <lkml@morethan.org>
-Reply-To: lkml@morethan.org
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [BUG FIX] Make x86_32 uni-processor Atomic ops, Atomic
-Date: Mon, 25 May 2009 14:03:09 -0500
-User-Agent: KMail/1.9.9
-Cc: Harald Welte <HaraldWelte@viatech.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-References: <200905221139.26941.lkml@morethan.org> <200905241332.39946.lkml@morethan.org> <4A1995F0.6040602@zytor.com>
-In-Reply-To: <4A1995F0.6040602@zytor.com>
+	Mon, 25 May 2009 15:04:30 -0400
+Received: from h155.mvista.com ([63.81.120.155]:49498 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752209AbZEYTEa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 15:04:30 -0400
+Message-ID: <4A1AEBF7.7040402@ru.mvista.com>
+Date: Mon, 25 May 2009 23:05:27 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905251403.11786.lkml@morethan.org>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: =?UTF-8?B?6IOh5rSq5YW1?= <huhb@lemote.com>, yanh@lemote.com,
+       wuzhangjin@gmail.com, linux-mips@linux-mips.org,
+       Ralf Baechle <ralf@linux-mips.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       Philippe Vachon <philippe@cowpig.ca>, Zhang Le <r0bertz@gentoo.org>,
+       Zhang Fuxin <zhangfx@lemote.com>, Arnaud Patard <apatard@mandriva.com>,
+       loongson-dev@googlegroups.com, gnewsense-dev@nongnu.org,
+       Nicholas Mc Guire <hofrat@hofr.at>, Liu Junliang <liujl@lemote.com>,
+       Erwan Lerale <erwan@thiscow.com>
+Subject: Re: [loongson-PATCH-v1 24/27] fixup for FUJITSU disk
+References: <cover.1242855716.git.wuzhangjin@gmail.com> <1243230339.9819.18.camel@localhost.localdomain> <4A1A4A54.6090401@lemote.com> <200905251656.25357.bzolnier@gmail.com>
+In-Reply-To: <200905251656.25357.bzolnier@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun May 24 2009, H. Peter Anvin wrote:
-> Michael S. Zick wrote:
-> > 
-> > Note: I have seem to recall that newer gcc's optimizer presume 
-> > that the flags register is preserved across asm - 
-> > It didn't use to do that - but there is now a "cc" to deal with
-> > that - Have not yet audited for that, but it is high on my list.
-> > 
-> 
-> I am pretty sure that's false... if it was true we'd have failures all
-> over the kernel.
-> 
+Bartlomiej Zolnierkiewicz wrote:
 
-No information on the above (yet) - but you gotta love this one: ;)
+>>yanh 写道:
 
-Programmer authors code specifying that the subtraction be done
-prior to the addition to avoid over-flow conditions;
+> [...]
 
-GCC's optimizer, in its great wisdom, codes in the overflow case:
-( the case of finding the characters used/free in a ring buffer )
+>>>the cs5536 pata driver have some geode platform dependent codes. We can
+>>>just ignore it, but the performance is poor(using hdparm to test it),
+>>>which only get 22+ MB/s. we find it only use udma2. However if using
+>>>amd74xx driver, it can set udma5, and the speed can reach to 50+ MB/s. 
 
-extern int diff_umask(int mask, int *cnt1, int *cnt2) 
-{ return (((mask - *cnt1) + *cnt2) & mask); }
+>>>we will test whether this driver is working well without this patch.
 
-/**
- * gcc -O2 -S -fomit-frame-pointer difftest.c
- *
-         .file   "difftest.c"
-        .text
-        .p2align 4,,15
-.globl diff_umask
-        .type   diff_umask, @function
-diff_umask:
-        movl    12(%esp), %eax
-        movl    4(%esp), %ecx
-        movl    (%eax), %edx
-        leal    (%ecx,%edx), %eax
-        movl    8(%esp), %edx
-        subl    (%edx), %eax
-        andl    %ecx, %eax
-        ret
-        .size   diff_umask, .-diff_umask
-        .ident  "GCC: (Debian 4.3.2-1.1) 4.3.2"
-        .section        .note.GNU-stack,"",@progbits
-*/
+>>>Anyway, thanks your advice.
 
-Note: That is not the compiler version I am building my kernels with.
+>>Use the driver drivers/ata/pata_cs5536.c, unfortunately it also have the 
+>>same issue.
 
-Don't blame me, I didn't write the compiler. ;)
+> Both drivers (pata_cs5536 & cs5536) should handle UDMA5.
 
-Mike
-> 	-hpa
-> 
+> Could you please explain the issue with platform specific code a bit more?
 
+> Is it related to a cable detection by any chance?
 
+    I guess it's rdmsr()/wrmsr()...
+
+> Thanks.
+> Bart
+
+MBR, Sergei
