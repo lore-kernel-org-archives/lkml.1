@@ -1,50 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753966AbZEYUYt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753588AbZEYU00@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753966AbZEYUYt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 16:24:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751998AbZEYUYl
+	id S1753588AbZEYU00 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 16:26:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751789AbZEYU0S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 16:24:41 -0400
-Received: from Cpsmtpm-eml110.kpnxchange.com ([195.121.3.14]:59861 "EHLO
-	CPSMTPM-EML110.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751715AbZEYUYk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 16:24:40 -0400
-From: Frans Pop <elendil@planet.nl>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.30-rc6: Reported regressions from 2.6.29
-Date: Mon, 25 May 2009 22:24:35 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, kernel-testers@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-References: <_AjETDMbIoL.A.DcH.RYzDKB@chimera>
-In-reply-To: <_AjETDMbIoL.A.DcH.RYzDKB@chimera>
+	Mon, 25 May 2009 16:26:18 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:45960 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751781AbZEYU0R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 16:26:17 -0400
+Date: Mon, 25 May 2009 23:25:17 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>
+Subject: Re: 2.a.30-rc7: fat filesystem misdetected as amiga
+Message-ID: <20090525202517.GA6856@redhat.com>
+References: <87y6slb7ug.fsf@devron.myhome.or.jp> <Pine.LNX.4.44L0.0905251127410.23874-100000@netrider.rowland.org> <20090525184816.GB6649@redhat.com> <ac3eb2510905251232t3f0c5029tb006f72c9ab6ef8e@mail.gmail.com> <20090525195045.GA6768@redhat.com> <ac3eb2510905251300n6dcec0e0oc656d46d1b2b82fc@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200905252224.37012.elendil@planet.nl>
-X-OriginalArrivalTime: 25 May 2009 20:24:37.0655 (UTC) FILETIME=[D33BA270:01C9DD76]
+In-Reply-To: <ac3eb2510905251300n6dcec0e0oc656d46d1b2b82fc@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> If you know of any other unresolved regressions from 2.6.29, please let
-> me know either and I'll add them to the list.
+On Mon, May 25, 2009 at 10:00:45PM +0200, Kay Sievers wrote:
+> On Mon, May 25, 2009 at 21:50, Michael S. Tsirkin <mst@redhat.com> wrote:
+> > On Mon, May 25, 2009 at 09:32:27PM +0200, Kay Sievers wrote:
+> >> On Mon, May 25, 2009 at 20:48, Michael S. Tsirkin <mst@redhat.com> wrote:
+> >>
+> >> >> > > Dev sdb: unable to read RDB block 0
+> >>
+> >> Is this Fedora? Or are you running a recent version of DeviceKit-disks?
+> >>
+> >> We've seen such problems when trying to issue SAT commands to some USB
+> >> devices. If it's Fedora, this is fixed with an update to Fedora 11.
+> 
+> > This is 2.6.30-rc6 from kernel.org.
+> 
+> I mean userspace not the kernel. We've seen this triggered by
+> userspace on any recent kernel, and there is nothing wrong with the
+> kernel in the cases we've seen. Do you run DeviceKit-disks or Fedora
+> 11?
 
-It may be worth tracking a possible regression introduced with -rc6 as a 
-result of http://bugzilla.kernel.org/show_bug.cgi?id=13259.
+I see this on fedora 10.
 
-A new warning that was added in drivers/acpi/processor_throttling.c 
-(commit 4973b22a: 'ACPI processor: reset the throttling state once it's 
-invalid') may be triggering in cases where it shouldn't. It seems to 
-trigger during boot and on 'cat /proc/acpi/processor/*/throttling'.
-Otherwise it's probably relatively harmless.
-
-See the comments starting at #23 for details.
-
-Cheers,
-FJP
+-- 
+MST
