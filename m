@@ -1,125 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754468AbZEYNFI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754536AbZEYNEx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754468AbZEYNFI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 09:05:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753710AbZEYNEk
+	id S1754536AbZEYNEx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 09:04:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753989AbZEYNEd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 09:04:40 -0400
-Received: from hera.kernel.org ([140.211.167.34]:53305 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754146AbZEYNEj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 09:04:39 -0400
-Date: Mon, 25 May 2009 13:03:55 GMT
-From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
-       hpa@zytor.com, mingo@redhat.com, jkacur@redhat.com,
-       a.p.zijlstra@chello.nl, tglx@linutronix.de, cjashfor@linux.vnet.ibm.com,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, jkacur@redhat.com, a.p.zijlstra@chello.nl,
-       tglx@linutronix.de, cjashfor@linux.vnet.ibm.com, mingo@elte.hu
-In-Reply-To: <20090525124600.203151469@chello.nl>
-References: <20090525124600.203151469@chello.nl>
-Subject: [tip:perfcounters/core] perf_counter: Make pctrl() affect inherited counters too
-Message-ID: <tip-771d7cde144d87f2d1fbee4da3c6234d61f7e42a@git.kernel.org>
-Git-Commit-ID: 771d7cde144d87f2d1fbee4da3c6234d61f7e42a
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 25 May 2009 13:03:56 +0000 (UTC)
+	Mon, 25 May 2009 09:04:33 -0400
+Received: from mailout2.w1.samsung.com ([210.118.77.12]:53348 "EHLO
+	mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753605AbZEYNEb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 09:04:31 -0400
+Date: Mon, 25 May 2009 15:02:59 +0200
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: [PATCH] [drivers] [SPI] SPI_GPIO: add support for controllers with
+ missing MISO pin
+To: LKML <linux-kernel@vger.kernel.org>,
+       "linux-arm-kernel@lists.arm.linux.org.uk" 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       "spi-devel-general@lists.sourceforge.net" 
+	<spi-devel-general@lists.sourceforge.net>
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+       "kyungmin.park@samsung.com" <kyungmin.park@samsung.com>,
+       Marek Szyprowski <m.szyprowski@samsung.com>
+Message-id: <E4D3F24EA6C9E54F817833EAE0D912AC0227F8F9F8@bssrvexch01.BS.local>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-language: en-US
+Content-transfer-encoding: 7BIT
+Accept-Language: en-US
+Thread-topic: [PATCH] [drivers] [SPI] SPI_GPIO: add support for controllers
+ with missing MISO pin
+Thread-index: AcnPDro/dNLLs3ilSKSkVf9W2XCLRw==
+acceptlanguage: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  771d7cde144d87f2d1fbee4da3c6234d61f7e42a
-Gitweb:     http://git.kernel.org/tip/771d7cde144d87f2d1fbee4da3c6234d61f7e42a
-Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
-AuthorDate: Mon, 25 May 2009 14:45:26 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 25 May 2009 14:55:00 +0200
+There are some boards that do not strictly follow SPI standard and use only 3 wires
+(SCLK, MOSI, SS) for connecting some simple auxiliary chips and controls them with GPIO
+based 'spi controller'. In this configuration the MISO line is missing (it is not
+required if the chip does not transfer any data back to host). The example of such
+board is a NCP ARM S3C64XX based machine. This patch adds support for such non-standard
+configuration in GPIO-based SPI controller.
 
-perf_counter: Make pctrl() affect inherited counters too
+Reviewed-by: Kyungmin Park <kyungmin.park@samsung.com>
+Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
 
-Paul noted that the new ptcrl() didn't work on child counters.
+--- 
 
-Reported-by: Paul Mackerras <paulus@samba.org>
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: John Kacur <jkacur@redhat.com>
-LKML-Reference: <20090525124600.203151469@chello.nl>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- kernel/perf_counter.c |   48 ++++++++++++++++++++++++------------------------
- 1 files changed, 24 insertions(+), 24 deletions(-)
-
-diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
-index 6cdf824..217dbcc 100644
---- a/kernel/perf_counter.c
-+++ b/kernel/perf_counter.c
-@@ -1067,30 +1067,6 @@ static void perf_counter_cpu_sched_in(struct perf_cpu_context *cpuctx, int cpu)
- 	__perf_counter_sched_in(ctx, cpuctx, cpu);
+diff --git a/drivers/spi/spi_gpio.c b/drivers/spi/spi_gpio.c
+index 26bd03e..16f74fd 100644
+--- a/drivers/spi/spi_gpio.c
++++ b/drivers/spi/spi_gpio.c
+@@ -114,7 +114,10 @@ static inline void setmosi(const struct spi_device *spi, int is_on)
+ 
+ static inline int getmiso(const struct spi_device *spi)
+ {
+-	return !!gpio_get_value(SPI_MISO_GPIO);
++	if (gpio_is_valid(SPI_MISO_GPIO))
++		return !!gpio_get_value(SPI_MISO_GPIO);
++	else
++		return 0;
  }
  
--int perf_counter_task_enable(void)
--{
--	struct perf_counter *counter;
--
--	mutex_lock(&current->perf_counter_mutex);
--	list_for_each_entry(counter, &current->perf_counter_list, owner_entry)
--		perf_counter_enable(counter);
--	mutex_unlock(&current->perf_counter_mutex);
--
--	return 0;
--}
--
--int perf_counter_task_disable(void)
--{
--	struct perf_counter *counter;
--
--	mutex_lock(&current->perf_counter_mutex);
--	list_for_each_entry(counter, &current->perf_counter_list, owner_entry)
--		perf_counter_disable(counter);
--	mutex_unlock(&current->perf_counter_mutex);
--
--	return 0;
--}
--
- static void perf_log_period(struct perf_counter *counter, u64 period);
+ #undef pdata
+@@ -243,9 +246,11 @@ spi_gpio_request(struct spi_gpio_platform_data *pdata, const char *label)
+ 	if (value)
+ 		goto done;
  
- static void perf_adjust_freq(struct perf_counter_context *ctx)
-@@ -1505,6 +1481,30 @@ static long perf_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
- 	return 0;
- }
+-	value = spi_gpio_alloc(SPI_MISO_GPIO, label, true);
+-	if (value)
+-		goto free_mosi;
++	if (gpio_is_valid(SPI_MISO_GPIO)) {
++		value = spi_gpio_alloc(SPI_MISO_GPIO, label, true);
++		if (value)
++			goto free_mosi;
++	}
  
-+int perf_counter_task_enable(void)
-+{
-+	struct perf_counter *counter;
-+
-+	mutex_lock(&current->perf_counter_mutex);
-+	list_for_each_entry(counter, &current->perf_counter_list, owner_entry)
-+		perf_counter_for_each_child(counter, perf_counter_enable);
-+	mutex_unlock(&current->perf_counter_mutex);
-+
-+	return 0;
-+}
-+
-+int perf_counter_task_disable(void)
-+{
-+	struct perf_counter *counter;
-+
-+	mutex_lock(&current->perf_counter_mutex);
-+	list_for_each_entry(counter, &current->perf_counter_list, owner_entry)
-+		perf_counter_for_each_child(counter, perf_counter_disable);
-+	mutex_unlock(&current->perf_counter_mutex);
-+
-+	return 0;
-+}
-+
- /*
-  * Callers need to ensure there can be no nesting of this function, otherwise
-  * the seqlock logic goes bad. We can not serialize this because the arch
+ 	value = spi_gpio_alloc(SPI_SCK_GPIO, label, false);
+ 	if (value)
+@@ -254,7 +259,8 @@ spi_gpio_request(struct spi_gpio_platform_data *pdata, const char *label)
+ 	goto done;
+ 
+ free_miso:
+-	gpio_free(SPI_MISO_GPIO);
++	if (gpio_is_valid(SPI_MISO_GPIO))
++		gpio_free(SPI_MISO_GPIO);
+ free_mosi:
+ 	gpio_free(SPI_MOSI_GPIO);
+ done:
+@@ -308,7 +314,8 @@ static int __init spi_gpio_probe(struct platform_device *pdev)
+ 	if (status < 0) {
+ 		spi_master_put(spi_gpio->bitbang.master);
+ gpio_free:
+-		gpio_free(SPI_MISO_GPIO);
++		if (gpio_is_valid(SPI_MISO_GPIO))
++			gpio_free(SPI_MISO_GPIO);
+ 		gpio_free(SPI_MOSI_GPIO);
+ 		gpio_free(SPI_SCK_GPIO);
+ 		spi_master_put(master);
+@@ -332,7 +339,8 @@ static int __exit spi_gpio_remove(struct platform_device *pdev)
+ 
+ 	platform_set_drvdata(pdev, NULL);
+ 
+-	gpio_free(SPI_MISO_GPIO);
++	if (gpio_is_valid(SPI_MISO_GPIO))
++		gpio_free(SPI_MISO_GPIO);
+ 	gpio_free(SPI_MOSI_GPIO);
+ 	gpio_free(SPI_SCK_GPIO);
+
+
