@@ -1,88 +1,189 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753415AbZEYQlu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753175AbZEYQou@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753415AbZEYQlu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 12:41:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752039AbZEYQlm
+	id S1753175AbZEYQou (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 12:44:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752359AbZEYQol
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 12:41:42 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39871 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752005AbZEYQll (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 12:41:41 -0400
-Date: Mon, 25 May 2009 09:39:36 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-cc: Nick Piggin <npiggin@suse.de>, Ingo Molnar <mingo@elte.hu>,
-       Yinghai Lu <yinghai@kernel.org>, Rusty Russell <rusty@rustcorp.com.au>,
-       "H. Peter Anvin" <hpa@zytor.com>, Jeff Garzik <jgarzik@pobox.com>,
-       Alexander Viro <viro@ftp.linux.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, cl@linux-foundation.org,
-       mpm@selenic.com
-Subject: Re: [GIT PULL] scheduler fixes
-In-Reply-To: <Pine.LNX.4.64.0905251443390.4115@melkki.cs.Helsinki.FI>
-Message-ID: <alpine.LFD.2.01.0905250930530.3435@localhost.localdomain>
-References: <20090518202031.GA26549@elte.hu> <alpine.LFD.2.01.0905181457320.3301@localhost.localdomain> <Pine.LNX.4.64.0905241911120.12189@melkki.cs.Helsinki.FI> <4A199327.5030503@kernel.org> <20090525025353.GA2580@elte.hu> <4A1A2261.1000504@kernel.org>
- <20090525051521.GC23032@elte.hu> <Pine.LNX.4.64.0905251142140.32568@melkki.cs.Helsinki.FI> <20090525112504.GB24071@wotan.suse.de> <84144f020905250437x585e66a2oc1124a4f1f43059d@mail.gmail.com> <20090525114127.GE24071@wotan.suse.de>
- <Pine.LNX.4.64.0905251443390.4115@melkki.cs.Helsinki.FI>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Mon, 25 May 2009 12:44:41 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:48859 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752039AbZEYQok (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 12:44:40 -0400
+Date: Mon, 25 May 2009 09:44:46 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, mingo@elte.hu,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       davem@davemloft.net, dada1@cosmosbay.com, zbr@ioremap.net,
+       jeff.chua.linux@gmail.com, paulus@samba.org, jengelh@medozas.de,
+       r000n@r000n.net, benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
+Subject: Re: [PATCH RFC] v7 expedited "big hammer" RCU grace periods
+Message-ID: <20090525164446.GD7168@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090522190525.GA13286@linux.vnet.ibm.com> <4A1A3C23.8090004@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A1A3C23.8090004@cn.fujitsu.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, May 25, 2009 at 02:35:15PM +0800, Lai Jiangshan wrote:
+> Paul E. McKenney wrote:
+> > Seventh cut of "big hammer" expedited RCU grace periods.  This leverages
+> > the existing per-CPU migration kthreads, as suggested by Ingo.  These
+> > are awakened in a loop, and waited for in a second loop.  Not fully
+> > scalable, but removing the extra hop through smp_call_function
+> > reduces latency on systems with moderate numbers of CPUs.  The
+> > synchronize_rcu_expedited() and and synchronize_bh_expedited() primitives
+> > invoke synchronize_sched_expedited(), except for CONFIG_PREEMPT_RCU,
+> > where they instead invoke synchronize_rcu() and synchronize_rcu_bh(),
+> > respectively.  This will be fixed in the future, after preemptable RCU
+> > is folded into the rcutree implementation.
+> > 
+> 
+> I'm strongly need this guarantee:
+> 
+> preempt_disable() guarantees/implies rcu_read_lock().
+> 
+> And
+> local_irq_diable() guarantees/implies rcu_read_lock().
+> rcu_read_lock_bh() guarantees/implies rcu_read_lock().
+> 
+> 
+> It will simplifies codes.
 
+Hmmm...  I did produce a patch that modified preemptable RCU
+in this way quite some time back, but at that time the problem
+was solved in a different way.  The approach was either to add
+rcu_read_lock()/rcu_read_unlock() pairs as needed, or to switch to
+call_rcu_sched() or synchronize_sched() for the update side.
 
-On Mon, 25 May 2009, Pekka J Enberg wrote:
-> diff --git a/init/main.c b/init/main.c
-> index 33ce929..fb0e004 100644
-> --- a/init/main.c
-> +++ b/init/main.c
-> @@ -576,6 +576,22 @@ asmlinkage void __init start_kernel(void)
->  	setup_nr_cpu_ids();
->  	smp_prepare_boot_cpu();	/* arch-specific boot-cpu hooks */
->  
-> +	build_all_zonelists();
-> +	page_alloc_init();
-> +
-> +	printk(KERN_NOTICE "Kernel command line: %s\n", boot_command_line);
-> +	parse_early_param();
-> +	parse_args("Booting kernel", static_command_line, __start___param,
-> +		   __stop___param - __start___param,
-> +		   &unknown_bootoption);
-> +	pidhash_init();
-> +	vmalloc_init();
-> +	vfs_caches_init_early();
-> +	/*
-> +	 * Set up kernel memory allocators
-> +	 */
-> +	mem_init();
-> +	kmem_cache_init();
+But please note that this approach would not permit the current
+implementation of synchronize_sched_expedited() to be used in the
+preemptable-RCU case, because synchronize_sched_expedited() would
+not wait for RCU read-side critical sections that had been preempted.
+And the ability to preempt RCU read-side critical sections is absolutely
+required for CONFIG_PREEMPT_RT versions of the Linux kernel.
 
-So what strikes me is a question:
+> And
+> A lot's of current kernel code does not use rcu_read_lock()
+> when it has preempt_disable()-ed/local_irq_diable()-ed or
+> when it is in irq/softirq.
+> 
+> Without these guarantees, these code is broken.
 
- - why do we want to do pidhash_init and vfs_caches_init_early() so early?
+One way or another, such code does need to be fixed.  Either by
+reintroducing the old patch, or by fixing the code itself.
 
-Yes, pidhash_init() now uses alloc_bootmem. It's an allocation that is not 
-trivially small, but it's not humongous either (max 4096 hash list heads, 
-one pointer each).
+> > +
+> > +static DEFINE_PER_CPU(struct migration_req, rcu_migration_req);
+> > +static DEFINE_MUTEX(rcu_sched_expedited_mutex);
+> > +
+> > +/*
+> > + * Wait for an rcu-sched grace period to elapse, but use "big hammer"
+> > + * approach to force grace period to end quickly.  This consumes
+> > + * significant time on all CPUs, and is thus not recommended for
+> > + * any sort of common-case code.
+> > + */
+> > +void synchronize_sched_expedited(void)
+> > +{
+> > +	int cpu;
+> > +	unsigned long flags;
+> > +	struct rq *rq;
+> > +	struct migration_req *req;
+> > +
+> > +	mutex_lock(&rcu_sched_expedited_mutex);
+> > +	get_online_cpus();
+> > +	for_each_online_cpu(cpu) {
+> > +		rq = cpu_rq(cpu);
+> > +		req = &per_cpu(rcu_migration_req, cpu);
+> > +		init_completion(&req->done);
+> > +		req->task = NULL;
+> > +		req->dest_cpu = -1;
+> > +		spin_lock_irqsave(&rq->lock, flags);
+> > +		list_add(&req->list, &rq->migration_queue);
+> > +		spin_unlock_irqrestore(&rq->lock, flags);
+> > +		wake_up_process(rq->migration_thread);
+> > +	}
+> > +	for_each_online_cpu(cpu) {
+> > +		req = &per_cpu(rcu_migration_req, cpu);
+> > +		wait_for_completion(&req->done);
+> > +	}
+> > +	put_online_cpus();
+> > +	mutex_unlock(&rcu_sched_expedited_mutex);
+> > +}
+> > +EXPORT_SYMBOL_GPL(synchronize_sched_expedited);
+> > +
+> > +#endif /* #else #ifndef CONFIG_SMP */
+> > 
+> > 
+> 
+> Very nice implement!
 
-And vfs_caches_init_early() is actually doing some rather strange things, 
-like doing a "alloc_large_system_hash()" but not unconditionally: it does 
-it in the "late" initialization too, if not done early. inode_init_early 
-does soemthing very similar (ie a _conditional_ early init).
+Glad you like it!!!  The idea is Ingo's.
 
-So none of this seems to really get a huge advantage from the early init. 
-There seems to be some subtle NUMA issues, but do we really want that? I 
-get the feeling that nobody ever wanted to do it early, and then the NUMA 
-people said "I don't wnt to do this early, but I don't want to touch the 
-non-NUMA case, so I'll do it early for non-numa, and late for numa".
+Gah!!!  I need to have included a Suggested-by on v7 of the patch!!!
 
-I'm also not entirely sure we really need to do vmalloc_init() that early, 
-but I dunno. It also uses alloc_bootmem().
+> Only one opinion:
+> get_online_cpus() is a large lock, a lot's of lock in kernel is required
+> after cpu_hotplug.lock.
+> 
+> _cpu_down()
+> 	cpu_hotplug_begin()
+> 		mutex_lock(&cpu_hotplug.lock)
+> 	__raw_notifier_call_chain(CPU_DOWN_PREPARE)
+> 		Lock a-kernel-lock.
+> 
+> It means when we have held a-kernel-lock, we can not call
+> synchronize_sched_expedited(). get_online_cpus() narrows
+> synchronize_sched_expedited()'s usages.
+> 
+> I think we can reuse req->dest_cpu and remove get_online_cpus().
+> (and use preempt_disable() and for_each_possible_cpu())
+> 
+> req->dest_cpu = -2 means @req is not queued
+> req->dest_cpu = -1 means @req is queued
+> 
+> a little like this code:
+> 
+> 	mutex_lock(&rcu_sched_expedited_mutex);
+> 	for_each_possible_cpu(cpu) {
+> 		preempt_disable()
+> 		if (cpu is not online)
+> 			just set req->dest_cpu to -2;
+> 		else
+> 			init and queue req, and wake_up_process().
+> 		preempt_enable()
+> 	}
+> 	for_each_possible_cpu(cpu) {
+> 		if (req is queued)
+> 			wait_for_completion().
+> 	}
+> 	mutex_unlock(&rcu_sched_expedited_mutex);
 
-		Linus
+Good point -- I should at the very least add a comment to
+synchronize_sched_expedited() stating that it cannot be called holding
+any lock that is acquired in a CPU hotplug notifier.  If this restriction
+causes any problems, then your approach seems like a promising fix.
+
+> The coupling of synchronize_sched_expedited() and migration_req
+> is largely increased:
+> 
+> 1) The offline cpu's per_cpu(rcu_migration_req, cpu) is handled.
+>    See migration_call::CPU_DEAD
+
+Good.  ;-)
+
+> 2) migration_call() is the highest priority of cpu notifiers,
+>    So even any other cpu notifier calls synchronize_sched_expedited(),
+>    It'll not cause DEADLOCK.
+
+You mean if using your preempt_disable() approach, right?  Unless I am
+missing something, the current get_online_cpus() approach would deadlock
+in this case.
+
+							Thanx, Paul
