@@ -1,128 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753630AbZEYQVn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754404AbZEYQWA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753630AbZEYQVn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 12:21:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752141AbZEYQVf
+	id S1754404AbZEYQWA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 12:22:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752228AbZEYQVy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 12:21:35 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:46162 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751055AbZEYQVe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 12:21:34 -0400
-Date: Mon, 25 May 2009 09:21:42 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Benjamin LaHaise <bcrl@lhnet.ca>, Denys Fedoryschenko <denys@visp.net.lb>,
-       netdev@vger.kernel.org, linux kernel <linux-kernel@vger.kernel.org>,
-       damien.wyart@free.fr
-Subject: Re: regression: unregister_netdev() unusably slow
-Message-ID: <20090525162142.GC7168@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090524192150.GE24757@kvack.org> <200905250023.31056.denys@visp.net.lb> <20090524213744.GG24757@kvack.org> <4A19BF39.4000305@cosmosbay.com> <20090524214433.GH24757@kvack.org> <4A19C50B.9040304@cosmosbay.com> <20090524221240.GI24757@kvack.org> <4A19CE8B.3070302@cosmosbay.com> <20090525000050.GJ24757@kvack.org> <4A1A2AFA.8020605@cosmosbay.com>
+	Mon, 25 May 2009 12:21:54 -0400
+Received: from mail-fx0-f168.google.com ([209.85.220.168]:38753 "EHLO
+	mail-fx0-f168.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751975AbZEYQVw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 12:21:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=KsTM930NcGDramdZhwnenv73vV1DJDOvEO+5SINDGAZ7SR6rzCAuHt3wTwFTD24mSa
+         djysPocnVIF+Qm2J/k9TdQ4eaJ+B0apAMWs1enYK6RUmMtjgZLFqbRjBvI5wRxmuWVOx
+         QzrHwJkX45kglUkp4fZyjVD1pBUHkZlOihFbo=
+Message-ID: <4A1AC5A3.9000600@gmail.com>
+Date: Mon, 25 May 2009 18:21:55 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1b5pre) Gecko/20090511 SUSE/3.0b2-9.1 Thunderbird/3.0b3pre
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4A1A2AFA.8020605@cosmosbay.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Oleg Nesterov <oleg@redhat.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, ebiederm@xmission.com,
+       roland@redhat.com, linux-kernel@vger.kernel.org,
+       Matthew Wilcox <matthew@wil.cx>
+Subject: Re: [PATCH 1/1] signal: make group kill signal fatal
+References: <1243198054-13816-1-git-send-email-jirislaby@gmail.com> <20090525000750.GA2301@redhat.com>
+In-Reply-To: <20090525000750.GA2301@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 25, 2009 at 07:22:02AM +0200, Eric Dumazet wrote:
-> Benjamin LaHaise a écrit :
-> > On Mon, May 25, 2009 at 12:47:39AM +0200, Eric Dumazet wrote:
-> >> There is a strong dependancy against HZ
-> >> BTW, I am using TREE_RCU
-> > 
-> > I'm using CLASSIC_RCU.  The bisect just completed, and it points to RCU.  
-> > It makes some degree of sense since I'm testing on an otherwise idle 
-> > machine.  That said, where is fixing it going to make sense?  I'm not 
-> > opposed to having device unregister take a few timer ticks, but there 
-> > has to be some way of exposing parallelism to the system, and since the 
-> > synchronize_net() calls are done under rntl_lock(), none is possible at 
-> > present.  Hrm.
+On 05/25/2009 02:07 AM, Oleg Nesterov wrote:
+> On 05/24, Jiri Slaby wrote:
+>>
+>> __fatal_signal_pending() returns now true only for a non-group sent
+>> sigkill, i. e. for example tgkill, send_sig...
 > 
-> Thanks Ben, this bisection indeed confirms how nasty synchronize_rcu() is :)
+> No. Please look at complete_signal(). If we queue a fatal signal,
+> we always add SIGKILL to any thread.
 
-Yet another step in my learning what is required of RCU, it seems!  ;-)
+Ah, thanks. But it looks like it doesn't work well in some cases.
+Consider this kernel code:
 
-> Time to include Paul and lkml in the discussion, and find a better solution than 
-> one provided in February.
+#include <linux/fs.h>
+#include <linux/miscdevice.h>
+#include <linux/module.h>
+#include <linux/poll.h>
+#include <linux/sched.h>
 
-One approach would be to convert the offending synchronize_rcu() to
-call_rcu(), but if this were straightforward, I would guess that you would
-have already done this.  But if the code following the synchronize_rcu()
-does nothing but free up old data structures, this is an easy fix.
-If there are statistics or other state involved, then call_rcu() might
-not be the right tool for the job.
+static int release(struct inode *ino, struct file *file)
+{
+        unsigned int a;
+        printk(KERN_DEBUG "fst\n");
+        for (a = 0; a < 10; a++) {
+                printk(KERN_DEBUG "%s: SP=%u FSP=%u pend=%.16lx
+shpend=%.16lx\n",
+                                __func__,
+                                signal_pending(current),
+                                fatal_signal_pending(current),
+                                current->pending.signal.sig[0],
 
-Another approach is to apply the patch at:
+current->signal->shared_pending.signal.sig[0]);
+                if (fatal_signal_pending(current))
+                        break;
+                msleep(1000);
+        }
+        printk(KERN_DEBUG "done\n");
+        return 0;
+}
 
-	http://lkml.org/lkml/2009/5/22/332
+static DECLARE_WAIT_QUEUE_HEAD(wq);
 
-Then replace the offending synchronize_rcu() with synchronize_rcu_expedited().
-This code is still a bit on the experimental side, but tests have been
-going quite well, so, unlike a week or two ago, it is definitely worth
-trying out.
+static unsigned int poll(struct file *file, struct poll_table_struct *p)
+{
+        poll_wait(file, &wq, p);
 
-Do either of these approaches work for you?
+        return 0;
+}
 
-							Thanx, Paul
+static const struct file_operations fops = {
+        .owner = THIS_MODULE,
+        .release = release,
+        .poll = poll,
+};
 
-> > 		-ben
-> > 
-> > bf51935f3e988e0ed6f34b55593e5912f990750a is first bad commit
-> > commit bf51935f3e988e0ed6f34b55593e5912f990750a
-> > Author: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > Date:   Tue Feb 17 06:01:30 2009 -0800
-> > 
-> >     x86, rcu: fix strange load average and ksoftirqd behavior
-> >     
-> >     Damien Wyart reported high ksoftirqd CPU usage (20%) on an
-> >     otherwise idle system.
-> >     
-> >     The function-graph trace Damien provided:
-> > ...
-> > diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
-> > 
-> > index a546f55..bd4da2a 100644
-> > --- a/arch/x86/kernel/process_32.c
-> > +++ b/arch/x86/kernel/process_32.c
-> > @@ -104,9 +104,6 @@ void cpu_idle(void)
-> >  			check_pgt_cache();
-> >  			rmb();
-> >  
-> > -			if (rcu_pending(cpu))
-> > -				rcu_check_callbacks(cpu, 0);
-> > -
-> >  			if (cpu_is_offline(cpu))
-> >  				play_dead();
-> >  
-> > 
-> > --
-> 
-> Paul, this commit makes net device unregister very slow (more than 100 ms
->  if CONFIG_NO_HZ is set), while it used to be pretty fast in previous kernels.
-> 
-> Quoting Ben : 
-> " I just ran a few L2TP tests against 2.6.30-rc7, and it looks like network 
->   device deletion has become unusably slow.  At least in 2.6.27.10, deleting 
->   1000 network interfaces takes less than 2 seconds of real time.  The same 
->   test run under 2.6.30-rc7 is taking hundreds of seconds to delete 1000 
->   interfaces at a rate of about 5 per second.  The interfaces all share the 
->   same local ip address, but each have a single route to a unique client 
->   ip address."
-> 
-> Device unregister is a synchronize_rcu() abuser (three calls to dismantle
-> a vlan...) so delaying rcu callbacks can be pretty expensive for it.
-> 
-> I wonder if the real root of the problem was not discovered in the meantime,
-> by commit 64ca5ab913f1594ef316556e65f5eae63ff50cee
-> rcu: increment quiescent state counter in ksoftirqd()
-> 
-> Maybe this commit solved Damien Wyart problem as well, and we can revert
-> commit bf51935f3e988e0ed6f34b55593e5912f990750a ?
-> 
-> Thank you
-> 
+static struct miscdevice m = {
+        .minor = MISC_DYNAMIC_MINOR,
+        .name = "m",
+        .fops = &fops,
+};
+
+static int init1(void)
+{
+        return misc_register(&m);
+}
+
+static void exit1(void)
+{
+        misc_deregister(&m);
+}
+
+module_init(init1);
+module_exit(exit1);
+
+MODULE_LICENSE("GPL");
+
+
+
+
+
+
+----------------------------------------------
+And this user code:
+#include <err.h>
+#include <fcntl.h>
+#include <poll.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+
+int main(int argc, char **argv)
+{
+        struct pollfd fds = { .events = POLLIN };
+        int fd;
+
+        fd = open("/dev/m", O_RDONLY);
+        if (fd < 0)
+                err(1, "open");
+        fds.fd = fd;
+        if (poll(&fds, 1, -1) < 0)
+                err(2, "poll");
+        close(fd);
+        return 0;
+}
+
+
+
+
+
+
+----------------------------------------------
+It outputs:
+fst
+release: SP=1 FSP=0 pend=0000000000000000 shpend=0000000000000100
+release: SP=1 FSP=0 pend=0000000000000000 shpend=0000000000000100
+release: SP=1 FSP=0 pend=0000000000000000 shpend=0000000000000100
+release: SP=1 FSP=0 pend=0000000000000000 shpend=0000000000000100
+release: SP=1 FSP=0 pend=0000000000000000 shpend=0000000000000100
+release: SP=1 FSP=0 pend=0000000000000000 shpend=0000000000000100
+release: SP=1 FSP=0 pend=0000000000000000 shpend=0000000000000100
+release: SP=1 FSP=0 pend=0000000000000000 shpend=0000000000000100
+release: SP=1 FSP=0 pend=0000000000000000 shpend=0000000000000100
+release: SP=1 FSP=0 pend=0000000000000000 shpend=0000000000000100
+done
+
+I.e. it won't get propagated to current->pending. Don't you have idea
+why? If the poll isn't there, it works well.
+
+glibc 2.9, x86_64
