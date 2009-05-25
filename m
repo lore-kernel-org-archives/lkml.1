@@ -1,85 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758352AbZEYDz1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755880AbZEYD4R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758352AbZEYDz1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 May 2009 23:55:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754435AbZEYDzB
+	id S1755880AbZEYD4R (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 May 2009 23:56:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751960AbZEYD4C
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 May 2009 23:55:01 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:36920 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754703AbZEYDzA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 May 2009 23:55:00 -0400
-Date: Mon, 25 May 2009 05:54:46 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: Re: [PATCH 02/17] x86: add io_apic_ops to allow interception
-Message-ID: <20090525035446.GC9396@elte.hu>
-References: <1242170724-13349-1-git-send-email-jeremy@goop.org> <1242170724-13349-3-git-send-email-jeremy@goop.org>
+	Sun, 24 May 2009 23:56:02 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:57624 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751984AbZEYD4B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 May 2009 23:56:01 -0400
+Message-ID: <8F90215D2B2846BDBCD0FACB72CD2B6C@zhaoleiwin>
+From: "Zhaolei" <zhaolei@cn.fujitsu.com>
+To: "Frederic Weisbecker" <fweisbec@gmail.com>
+Cc: "Steven Rostedt" <rostedt@goodmis.org>, "Ingo Molnar" <mingo@elte.hu>,
+       "Tom Zanussi" <tzanussi@gmail.com>,
+       "LKML" <linux-kernel@vger.kernel.org>
+References: <4A14FDFE.2080402@cn.fujitsu.com> <4A16788F.2060802@cn.fujitsu.com> <4A1678F1.1060706@cn.fujitsu.com> <20090524204240.GB6471@nowhere>
+Subject: Re: [PATCH v2 1/2] ftrace: Add task_comm support for trace_event
+Date: Mon, 25 May 2009 11:54:27 +0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1242170724-13349-3-git-send-email-jeremy@goop.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: 0.3
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.3 required=5.9 tests=BAYES_00,FRT_LEVITRA autolearn=no SpamAssassin version=3.2.3
-	1.8 FRT_LEVITRA            BODY: ReplaceTags: Levitra
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain;
+	charset="iso-8859-1"
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.5512
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n4P3uM7M026691
 
-
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-
-> From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+* From: "Frederic Weisbecker" <fweisbec@gmail.com>
+> Hi,
 > 
-> Xen dom0 needs to paravirtualize IO operations to the IO APIC, so add
-> a io_apic_ops for it to intercept.  Do this as ops structure because
-> there's at least some chance that another paravirtualized environment
-> may want to intercept these.
 > 
-> [Impact: indirect IO APIC access via io_apic_ops]
-> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-> ---
->  arch/x86/include/asm/io_apic.h |    9 +++++++
->  arch/x86/kernel/apic/io_apic.c |   50 +++++++++++++++++++++++++++++++++++++--
->  2 files changed, 56 insertions(+), 3 deletions(-)
+> On Fri, May 22, 2009 at 06:05:37PM +0800, Zhaolei wrote:
+>> If we use trace_event alone(without function trace, .etc),
+>> it can't output enough task command information.
+>> 
+>> Before patch:
+>>  # echo 1 > debugfs/tracing/events/sched/sched_switch/enable
+>>  # cat debugfs/tracing/trace
+>>  # tracer: nop
+>>  #
+>>  #           TASK-PID    CPU#    TIMESTAMP  FUNCTION
+>>  #              | |       |          |         |
+>>             <...>-2289  [000] 526276.724790: sched_switch: task bash:2289 [120] ==> sshd:2287 [120]
+>>             <...>-2287  [000] 526276.725231: sched_switch: task sshd:2287 [120] ==> bash:2289 [120]
+>>             <...>-2289  [000] 526276.725452: sched_switch: task bash:2289 [120] ==> sshd:2287 [120]
+>>             <...>-2287  [000] 526276.727181: sched_switch: task sshd:2287 [120] ==> swapper:0 [140]
+>>            <idle>-0     [000] 526277.032734: sched_switch: task swapper:0 [140] ==> events/0:5 [115]
+>>             <...>-5     [000] 526277.032782: sched_switch: task events/0:5 [115] ==> swapper:0 [140]
+>>  ...
+>> 
+>> After patch:
+>>  # tracer: nop
+>>  #
+>>  #           TASK-PID    CPU#    TIMESTAMP  FUNCTION
+>>  #              | |       |          |         |
+>>              bash-2269  [000] 527347.989229: sched_switch: task bash:2269 [120] ==> sshd:2267 [120]
+>>              sshd-2267  [000] 527347.990960: sched_switch: task sshd:2267 [120] ==> bash:2269 [120]
+>>              bash-2269  [000] 527347.991143: sched_switch: task bash:2269 [120] ==> sshd:2267 [120]
+>>              sshd-2267  [000] 527347.992959: sched_switch: task sshd:2267 [120] ==> swapper:0 [140]
+>>            <idle>-0     [000] 527348.531989: sched_switch: task swapper:0 [140] ==> events/0:5 [115]
+>>          events/0-5     [000] 527348.532115: sched_switch: task events/0:5 [115] ==> swapper:0 [140]
+>>  ...
+>> 
+>> Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
 > 
-> diff --git a/arch/x86/include/asm/io_apic.h b/arch/x86/include/asm/io_apic.h
-> index 9d826e4..8cbfe73 100644
-> --- a/arch/x86/include/asm/io_apic.h
-> +++ b/arch/x86/include/asm/io_apic.h
-> @@ -21,6 +21,15 @@
->  #define IO_APIC_REDIR_LEVEL_TRIGGER	(1 << 15)
->  #define IO_APIC_REDIR_MASKED		(1 << 16)
->  
-> +struct io_apic_ops {
-> +	void (*init)(void);
-> +	unsigned int (*read)(unsigned int apic, unsigned int reg);
-> +	void (*write)(unsigned int apic, unsigned int reg, unsigned int value);
-> +	void (*modify)(unsigned int apic, unsigned int reg, unsigned int value);
-> +};
-> +
-> +void __init set_io_apic_ops(const struct io_apic_ops *);
+> 
+> Thanks!
+> This is fine but I think it can be factorized.
+> 
+> You could call start_cmdline_record() from
+> 
+> ftrace_raw_reg_event_##call()
+> 
+> and the stop in
+> 
+> ftrace_raw_unreg_event_##call()
+> 
+> No?
 
-ok, could you please turn the whole IO-APIC code into a driver 
-framework? I.e. all IO-APIC calls outside of 
-arch/x86/kernel/apic/io_apic.c should be to some io_apic-> method.
+Hello, Frederic
 
-The advantage will be a proper abstraction for all IO-APIC details - 
-not just a minimalistic one for Xen's need.
+Thanks for your advice.
 
-Also, please name it 'struct io_apic' - similar to the 'struct apic' 
-naming we have for the local APIC driver structure.
+Actually, I considered to put start_cmdline_record() into ftrace_raw_reg_event_##call(),
+but finally I selected to put it into tracing_start_cmdline_record().
 
-Thanks,
+IMHO, we have following reason:
+1: It can make source more readable.
+   Read function is more easy than read macro.
+2: These two way have same performance.
+3: Put start_cmdline_record() into ftrace_event_enable_disable() will reduce
+   binary file size than ftrace_raw_reg_event_##call().
 
-	Ingo
+So I think put start_cmdline_record() into ftrace_event_enable_disable() maybe better.
+
+What is your opinion?
+
+Thanks
+Zhaolei
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
