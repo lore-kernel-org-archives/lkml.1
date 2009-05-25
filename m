@@ -1,102 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752637AbZEYPRl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754072AbZEYPRv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752637AbZEYPRl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 11:17:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751971AbZEYPRd
+	id S1754072AbZEYPRv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 11:17:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753355AbZEYPRg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 11:17:33 -0400
-Received: from tomts5.bellnexxia.net ([209.226.175.25]:40931 "EHLO
-	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751734AbZEYPRc (ORCPT
+	Mon, 25 May 2009 11:17:36 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:50346 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752863AbZEYPRf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 11:17:32 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ArQHANdOGkpMQW1W/2dsb2JhbACBT5ZttHiECwU
-Date: Mon, 25 May 2009 11:17:24 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Jamie Lokier <jamie@shareable.org>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       Catalin Marinas <catalin.marinas@arm.com>,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: Broken ARM atomic ops wrt memory barriers (was : [PATCH] Add
-	cmpxchg support for ARMv6+ systems)
-Message-ID: <20090525151724.GA14321@Krystal>
-References: <20090422171703.19555.83629.stgit@pc1117.cambridge.arm.com> <20090423141248.22193.10543.stgit@pc1117.cambridge.arm.com> <20090524131636.GB3159@n2100.arm.linux.org.uk> <20090524145633.GA14754@Krystal> <20090525132027.GA946@shareable.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20090525132027.GA946@shareable.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 11:08:43 up 86 days, 11:34,  5 users,  load average: 0.34, 0.16,
-	0.10
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 25 May 2009 11:17:35 -0400
+Date: Mon, 25 May 2009 11:17:36 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       <linux-usb@vger.kernel.org>
+Subject: Re: Oops in usb-serial with keyspan adapter on current upstream
+In-Reply-To: <1243233792.24376.56.camel@pasglop>
+Message-ID: <Pine.LNX.4.44L0.0905251116250.23874-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Jamie Lokier (jamie@shareable.org) wrote:
-> Mathieu Desnoyers wrote:
-> > I use a local cmpxchg in the LTTng tree as key instruction to manage the
-> > ring buffer in a irq, softirq and NMI-safe way (due to the atomic nature
-> > of this instruction), but without the overhead of synchronizing across
-> > CPUs.
-> > 
-> > On ARM, the semantic looks a bit like PowerPC with linked load/linked
-> > store, and you don't seem to need memory barriers. I guess that's either
-> > because
-> > 
-> > a) they are implicit in the ll/ls or
-> > b) ARM does not perform out-of-order memory read/writes or
-> > c) they've simply been forgotten, and it's a bug.
-> > 
-> > the cmpxchg local instruction maps currently to cmpxchg, as a fallback,
-> > since there is no difference between the SMP-aware and UP-only
-> > instructions.
-> > 
-> > But if I look at arch/arm/include/asm/spinlock.h, the answer I get seems
-> > to be c) : ARM needs memory barriers.
+On Mon, 25 May 2009, Benjamin Herrenschmidt wrote:
+
+> Found it. Patch below.
 > 
-> Memory barriers only affect the observed access order with respect to
-> other processors (and perhaps other devices).
+> usb-serial: Fix crash when sub-driver attach() returns positive value
 > 
-> So a CPU-local operation would not need barriers.  CPU-local code,
-> including local IRQs, see all memory accesses in the same order as
-> executed instructions.
+> This fixes a crash in usb-serial that typically happens with keyspan USB
+> devices, though it would happen potentially with anything that returns
+> a positive value from the subdriver's attach() method to indicate that
+> a FW was loaded and the device will disconnect and reconnect.
 > 
-> Of course you need barriers at some point, when using the local data
-> to update global data seen by other CPUs at a later time.  But that is
-> hopefully done elsewhere.
+> What happens is that we haven't yet initialized the struct device embedded
+> inside the struct usb_serial_port when we call "exit:" and return
+> from probe().
 > 
-> After considering this, do you think it's still missing barriers?
-> 
+> Later, when we get the disconnect() call, usb_serial_disconnect() tries
+> to do a device_del() and put_device() on all the ports, despite the fact
+> that in this case, the struct device wasn't initialized. This causes the
+> device core to crash (right, it should be more robust).
 
-I realize I have not made myself clear, I apologise :
+Very clever.  Does this simpler patch also fix the problem?
 
-- as you say, cmpxchg_local, xchg_local, local atomic add return do not
-  need any memory barrier whatsoever, given they are cpu-local.
+Alan Stern
 
-- cmpxchg, xchg and atomic add return need memory barriers on
-  architectures which can reorder the relative order in which memory
-  read/writes can be seen between CPUs, which seems to include recent
-  ARM architectures. Those barriers are currently missing on ARM.
 
-Therefore, the standard ARM atomic operations would need to be fixed so
-they provide the memory barriers semantic implied in
-Documentation/atomic_ops.txt. The current ARM atomic ops, which lack the
-proper memory barriers (and are thus only correct on UP) can then be
-used as optimized local ops.
+Index: usb-2.6/drivers/usb/serial/usb-serial.c
+===================================================================
+--- usb-2.6.orig/drivers/usb/serial/usb-serial.c
++++ usb-2.6/drivers/usb/serial/usb-serial.c
+@@ -974,6 +974,7 @@ int usb_serial_probe(struct usb_interfac
+ 		if (retval > 0) {
+ 			/* quietly accept this device, but don't bind to a
+ 			   serial port as it's about to disappear */
++			serial->num_ports = 0;
+ 			goto exit;
+ 		}
+ 	}
 
-Hopefully this is a bit clearer,
-
-Thanks,
-
-Mathieu
-
-> -- Jamie
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
