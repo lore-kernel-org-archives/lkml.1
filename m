@@ -1,108 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754193AbZEYRfW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754058AbZEYRii@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754193AbZEYRfW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 13:35:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752005AbZEYRfK
+	id S1754058AbZEYRii (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 13:38:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752148AbZEYRib
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 13:35:10 -0400
-Received: from ns01.unsolicited.net ([69.10.132.115]:36053 "EHLO
-	ns01.unsolicited.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751747AbZEYRfJ (ORCPT
+	Mon, 25 May 2009 13:38:31 -0400
+Received: from mail-qy0-f113.google.com ([209.85.221.113]:60930 "EHLO
+	mail-qy0-f113.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751747AbZEYRib (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 13:35:09 -0400
-Message-ID: <4A1AD62C.8070907@unsolicited.net>
-Date: Mon, 25 May 2009 18:32:28 +0100
-From: David <david@unsolicited.net>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	Mon, 25 May 2009 13:38:31 -0400
+X-Greylist: delayed 1014 seconds by postgrey-1.27 at vger.kernel.org; Mon, 25 May 2009 13:38:30 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=qBD2/IZbs6Wehbs5RIxRWET6mHzarNEHiVzKH1oK+0CxtlmgjRcVh1p7Fto4J5WlyR
+         l+DIXrR/lAnuyfXD7MueQ4Um8Stlzp+GE9S/U60+el2nT0j/wUpsat1lAVuoPomgcWOX
+         OJjmKmDlJuvPJJUIS/je29dlptdOHpzX8ZEmU=
 MIME-Version: 1.0
-To: Alan Stern <stern@rowland.harvard.edu>
-CC: Pekka Enberg <penberg@cs.helsinki.fi>, linux-media@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       dbrownell@users.sourceforge.net, leonidv11@gmail.com,
-       Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: USB/DVB - Old Technotrend TT-connect S-2400 regression tracked
-  down
-References: <Pine.LNX.4.44L0.0905251121370.23874-100000@netrider.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0905251121370.23874-100000@netrider.rowland.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Date: Tue, 26 May 2009 01:21:36 +0800
+Message-ID: <27943c400905251021s74622e6dl6ec81d7df9146d45@mail.gmail.com>
+Subject: =?Big5?B?ofS7+a7mQKt+veiow62rLKRAq9+rT7FLtmyxSCykaqVpqfE=?=
+	=?Big5?B?pN+hvw==?=
+From: =?Big5?B?tsCyUari?= <16520s4d7kx@gmail.com>
+To: linwenjui@mail.dwu.edu.tw
+Content-Type: text/plain; charset=Big5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n4PHci7M002418
 
-Alan Stern wrote:
-> Okay, here's a patch for you to try.  It refreshes the toggle setting 
-> in a linked but otherwise idle QH when a new URB is queued.
->
-> Alan Stern
->
->
-> Index: usb-2.6/drivers/usb/host/ehci-q.c
-> ===================================================================
-> --- usb-2.6.orig/drivers/usb/host/ehci-q.c
-> +++ usb-2.6/drivers/usb/host/ehci-q.c
-> @@ -88,7 +88,7 @@ static inline void
->  qh_update (struct ehci_hcd *ehci, struct ehci_qh *qh, struct ehci_qtd *qtd)
->  {
->  	/* writes to an active overlay are unsafe */
-> -	BUG_ON(qh->qh_state != QH_STATE_IDLE);
-> +	BUG_ON(qh->qh_state != QH_STATE_IDLE && !list_empty(&qh->qtd_list));
->  
->  	qh->hw_qtd_next = QTD_NEXT(ehci, qtd->qtd_dma);
->  	qh->hw_alt_next = EHCI_LIST_END(ehci);
-> @@ -971,7 +971,13 @@ static struct ehci_qh *qh_append_tds (
->  		/* can't sleep here, we have ehci->lock... */
->  		qh = qh_make (ehci, urb, GFP_ATOMIC);
->  		*ptr = qh;
-> +	} else if (list_empty(&qh->qtd_list)) {
-> +		/* There might have been a Clear-Halt while the QH
-> +		 * was linked but empty.
-> +		 */
-> +		qh_refresh(ehci, qh);
->  	}
-> +
->  	if (likely (qh != NULL)) {
->  		struct ehci_qtd	*qtd;
->  
->
->   
-No luck I'm afraid (although there now appear to be 2 timeouts, not
-one). I'm going to follow up on the laptop and get a USB log.
-
-[  118.017016] usb 1-10: new high speed USB device using ehci_hcd and
-address 5
-[  118.148589] usb 1-10: configuration #1 chosen from 1 choice
-[  118.452964] dvb-usb: found a 'Technotrend TT-connect S-2400' in cold
-state, will try to load a firmware
-[  118.452972] usb 1-10: firmware: requesting dvb-usb-tt-s2400-01.fw
-[  118.488474] dvb-usb: downloading firmware from file
-'dvb-usb-tt-s2400-01.fw'
-[  118.550946] usbcore: registered new interface driver dvb_usb_ttusb2
-[  118.552553] usb 1-10: USB disconnect, address 5
-[  118.561083] dvb-usb: generic DVB-USB module successfully
-deinitialized and disconnected.
-[  120.313020] usb 1-10: new high speed USB device using ehci_hcd and
-address 6
-[  120.444942] usb 1-10: configuration #1 chosen from 1 choice
-[  120.445886] dvb-usb: found a 'Technotrend TT-connect S-2400' in warm
-state.
-[  120.446672] dvb-usb: will pass the complete MPEG2 transport stream to
-the software demuxer.
-[  120.447014] DVB: registering new adapter (Technotrend TT-connect S-2400)
-[  120.455026] DVB: registering adapter 0 frontend 129197120 (Philips
-TDA10086 DVB-S)...
-[  120.458383] LNBx2x attached on addr=8<3>dvb-usb: recv bulk message
-failed: -110
-[  122.457126] ttusb2: there might have been an error during control
-message transfer. (rlen = 0, was 0)
-[  124.456109] dvb-usb: recv bulk message failed: -110
-[  124.456117] ttusb2: there might have been an error during control
-message transfer. (rlen = 0, was 0)
-[  124.456122] dvb-usb: Technotrend TT-connect S-2400 successfully
-initialized and connected.
-
-
-David
-
+2009/5/26 - 1:21:2828­·ªáq¶®Ãık¡¸©ÊºÖ¥Í¬¡4¡¸¼a´A©]¿E±¡s
+³Ì·sP¡A³Ì¦hu¡A´Ú¦¡³Ì»ô¥şpªº±¡½ì¥Î«~8³£¦b³o¸Ì
+±qb²{9¦bp¶}a©lL¦be¤]¤£¥Î®`²Ûvªº¨ì©±­±¥h¶R±¡½ì¥Î«~H¤F
+http://groups.google.com.tw/group/Making-Cash-Online/browse_thread/thread/d7527fd4db9d5fe2
+£¸­Ó¤Hªº©]±ß¬O±I¹æªº¡A¹ï¦Û¤v¦n£¸ÂI£¸­Ó¤H¤]¯à¿W¦Û¨É¨ü©Ê·R»P¿E±¡ªº¼Ö½ì
+²{¦A¥[¤J·|­û¥ş¨t¦C°Ó«~¤E§éÀu´fÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
