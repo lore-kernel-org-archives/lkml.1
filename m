@@ -1,226 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751857AbZEYUFX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754153AbZEYUFm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751857AbZEYUFX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 16:05:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751547AbZEYUFM
+	id S1754153AbZEYUFm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 16:05:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752340AbZEYUFe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 16:05:12 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:45175 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750979AbZEYUFL (ORCPT
+	Mon, 25 May 2009 16:05:34 -0400
+Received: from bc.sympatico.ca ([209.226.175.184]:46286 "EHLO
+	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751547AbZEYUFd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 16:05:11 -0400
-Date: Mon, 25 May 2009 13:03:54 -0700
-Message-Id: <200905252003.n4PK3sFi014919@voreg.hos.anvin.org>
-From: "H. Peter Anvin" <hpa@zytor.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [GIT PULL] x86 fixes for 2.6.30-rc8
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       "Thomas Gleixner <tglx@linutronix.de> Suresh Siddha" 
-	<suresh.siddha@intel.com>,
-       Tejun Heo <tj@kernel.org>,
-       Venkatesh Pallapadi <venkatesh.pallapadi@intel.com>,
-       Zhang Rui <rui.zhang@intel.com>, "H. Peter Anvin" <hpa@zytor.com>
+	Mon, 25 May 2009 16:05:33 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ArQHACeVGkpMQW1W/2dsb2JhbACBT5ZttBCECwU
+Date: Mon, 25 May 2009 16:05:31 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Jamie Lokier <jamie@shareable.org>,
+       Catalin Marinas <catalin.marinas@arm.com>,
+       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: Re: Broken ARM atomic ops wrt memory barriers (was : [PATCH] Add
+	cmpxchg support for ARMv6+ systems)
+Message-ID: <20090525200531.GC22651@Krystal>
+References: <20090422171703.19555.83629.stgit@pc1117.cambridge.arm.com> <20090423141248.22193.10543.stgit@pc1117.cambridge.arm.com> <20090524131636.GB3159@n2100.arm.linux.org.uk> <20090524145633.GA14754@Krystal> <20090525132027.GA946@shareable.org> <20090525151724.GA14321@Krystal> <20090525161941.GA3667@n2100.arm.linux.org.uk> <20090525172955.GA17665@Krystal> <20090525193414.GB3667@n2100.arm.linux.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20090525193414.GB3667@n2100.arm.linux.org.uk>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 16:03:10 up 86 days, 16:29,  9 users,  load average: 0.22, 0.12,
+	0.10
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+* Russell King - ARM Linux (linux@arm.linux.org.uk) wrote:
+> On Mon, May 25, 2009 at 01:29:55PM -0400, Mathieu Desnoyers wrote:
+> > Basically, to make sure we don't forget anything, someone should go
+> > through all the atomic_ops.txt document once more and audit all ARM
+> > primitives.
+> 
+> That's easy to say - it took me more than half an hour of reading through
+> atomic_ops.txt to work out what was required for things like cmpxchg,
+> xchg, etc because it's _very_ waffley and verbose, and directs you to
+> other parts of the document.
+> 
+> For example, for atomic_cmpxchg it directs you to 'cas' but cas doesn't
+> really say what the barrier requirements are - reading it leaves me
+> to expect that provided spinlocks are serializing themselves, it's
+> fine if 'cas' itself isn't.
+> 
+> Maybe if someone has a few days to translate atomic_ops.txt into a
+> succinct set of requirements, and get _that_ reviewed, then we could
+> properly audit this stuff.
 
-A small batch of x86 fixes.
+I thought atomic_ops.txt was already a more succinct read than going back
+into mailing list threads, other architecture implementations, papers by
+Paul McKenney on LWN, etc...
 
-The following changes since commit 59a3759d0fe8d969888c741bb33f4946e4d3750d:
-  Linus Torvalds (1):
-        Linux 2.6.30-rc7
+(papers from Paul :
+Memory Ordering in Modern Microprocessors parts 1/2
+http://www.linuxjournal.com/article/8211
+http://www.linuxjournal.com/article/8212)
 
-are available in the git repository at:
+Well, we'll see if getting something even more succinct is a task
+someone is willing to tackle, given saying that getting memory barriers
+correctly is an easy and straightforward task would be a gross
+understatement. You might want to start by the sites I've identified as
+a first cut at adding proper memory barriers. I'm just not guaranteeing
+I've got them all.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-fixes-for-linus
+Let's add a few more people who dug in other architecture's memory
+barriers in CC so they might bring interesting thoughts about current
+SMP state in recent ARM.
 
-H. Peter Anvin (1):
-      x86, setup: revert ACPI 3 E820 extended attributes support
+BTW I just noticed that my assembler (GNU assembler (GNU Binutils)
+2.18.50.20070820) refuses to deal with "dmb st" (which would be useful
+for wmb(), but supports the heavier dsb st), although the assembler
+reference says it exists
+(http://www.keil.com/support/man/docs/armasm/armasm_cihjfgfe.htm). Who
+is the contact for binutils ?
 
-Suresh Siddha (1):
-      x86: introduce noxsave boot parameter
+Mathieu
 
-Tejun Heo (1):
-      x86: Remove remap percpu allocator for the time being
-
-Zhang Rui (1):
-      x86: DMI match for the Sony VGN-Z540N as it needs BIOS reboot
-
-venkatesh.pallipadi@intel.com (2):
-      x86: bugfix wbinvd() model check instead of family check
-      x86: cpa_flush_array wbinvd should be done on all CPUs
-
- Documentation/kernel-parameters.txt |    4 ++++
- arch/x86/boot/memory.c              |   29 +++++++++++++----------------
- arch/x86/kernel/cpu/common.c        |    7 +++++++
- arch/x86/kernel/reboot.c            |    8 ++++++++
- arch/x86/kernel/setup_percpu.c      |    4 +++-
- arch/x86/mm/pageattr.c              |   12 +++++++++---
- 6 files changed, 44 insertions(+), 20 deletions(-)
-
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index e87bdbf..fd5cac0 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -1535,6 +1535,10 @@ and is between 256 and 4096 characters. It is defined in the file
- 			register save and restore. The kernel will only save
- 			legacy floating-point registers on task switch.
- 
-+	noxsave		[BUGS=X86] Disables x86 extended register state save
-+			and restore using xsave. The kernel will fallback to
-+			enabling legacy floating-point and sse state.
-+
- 	nohlt		[BUGS=ARM,SH] Tells the kernel that the sleep(SH) or
- 			wfi(ARM) instruction doesn't work correctly and not to
- 			use it. This is also useful when using JTAG debugger.
-diff --git a/arch/x86/boot/memory.c b/arch/x86/boot/memory.c
-index 5054c2d..74b3d2b 100644
---- a/arch/x86/boot/memory.c
-+++ b/arch/x86/boot/memory.c
-@@ -17,11 +17,6 @@
- 
- #define SMAP	0x534d4150	/* ASCII "SMAP" */
- 
--struct e820_ext_entry {
--	struct e820entry std;
--	u32 ext_flags;
--} __attribute__((packed));
--
- static int detect_memory_e820(void)
- {
- 	int count = 0;
-@@ -29,13 +24,21 @@ static int detect_memory_e820(void)
- 	u32 size, id, edi;
- 	u8 err;
- 	struct e820entry *desc = boot_params.e820_map;
--	static struct e820_ext_entry buf; /* static so it is zeroed */
-+	static struct e820entry buf; /* static so it is zeroed */
- 
- 	/*
--	 * Set this here so that if the BIOS doesn't change this field
--	 * but still doesn't change %ecx, we're still okay...
-+	 * Note: at least one BIOS is known which assumes that the
-+	 * buffer pointed to by one e820 call is the same one as
-+	 * the previous call, and only changes modified fields.  Therefore,
-+	 * we use a temporary buffer and copy the results entry by entry.
-+	 *
-+	 * This routine deliberately does not try to account for
-+	 * ACPI 3+ extended attributes.  This is because there are
-+	 * BIOSes in the field which report zero for the valid bit for
-+	 * all ranges, and we don't currently make any use of the
-+	 * other attribute bits.  Revisit this if we see the extended
-+	 * attribute bits deployed in a meaningful way in the future.
- 	 */
--	buf.ext_flags = 1;
- 
- 	do {
- 		size = sizeof buf;
-@@ -66,13 +69,7 @@ static int detect_memory_e820(void)
- 			break;
- 		}
- 
--		/* ACPI 3.0 added the extended flags support.  If bit 0
--		   in the extended flags is zero, we're supposed to simply
--		   ignore the entry -- a backwards incompatible change! */
--		if (size > 20 && !(buf.ext_flags & 1))
--			continue;
--
--		*desc++ = buf.std;
-+		*desc++ = buf;
- 		count++;
- 	} while (next && count < ARRAY_SIZE(boot_params.e820_map));
- 
-diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
-index c1caefc..77848d9 100644
---- a/arch/x86/kernel/cpu/common.c
-+++ b/arch/x86/kernel/cpu/common.c
-@@ -114,6 +114,13 @@ DEFINE_PER_CPU_PAGE_ALIGNED(struct gdt_page, gdt_page) = { .gdt = {
- } };
- EXPORT_PER_CPU_SYMBOL_GPL(gdt_page);
- 
-+static int __init x86_xsave_setup(char *s)
-+{
-+	setup_clear_cpu_cap(X86_FEATURE_XSAVE);
-+	return 1;
-+}
-+__setup("noxsave", x86_xsave_setup);
-+
- #ifdef CONFIG_X86_32
- static int cachesize_override __cpuinitdata = -1;
- static int disable_x86_serial_nr __cpuinitdata = 1;
-diff --git a/arch/x86/kernel/reboot.c b/arch/x86/kernel/reboot.c
-index 1340dad..667188e 100644
---- a/arch/x86/kernel/reboot.c
-+++ b/arch/x86/kernel/reboot.c
-@@ -232,6 +232,14 @@ static struct dmi_system_id __initdata reboot_dmi_table[] = {
- 			DMI_MATCH(DMI_PRODUCT_NAME, "Dell DXP061"),
- 		},
- 	},
-+	{	/* Handle problems with rebooting on Sony VGN-Z540N */
-+		.callback = set_bios_reboot,
-+		.ident = "Sony VGN-Z540N",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "Sony Corporation"),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "VGN-Z540N"),
-+		},
-+	},
- 	{ }
- };
- 
-diff --git a/arch/x86/kernel/setup_percpu.c b/arch/x86/kernel/setup_percpu.c
-index 3a97a4c..8f0e13b 100644
---- a/arch/x86/kernel/setup_percpu.c
-+++ b/arch/x86/kernel/setup_percpu.c
-@@ -160,8 +160,10 @@ static ssize_t __init setup_pcpu_remap(size_t static_size)
- 	/*
- 	 * If large page isn't supported, there's no benefit in doing
- 	 * this.  Also, on non-NUMA, embedding is better.
-+	 *
-+	 * NOTE: disabled for now.
- 	 */
--	if (!cpu_has_pse || !pcpu_need_numa())
-+	if (true || !cpu_has_pse || !pcpu_need_numa())
- 		return -EINVAL;
- 
- 	/*
-diff --git a/arch/x86/mm/pageattr.c b/arch/x86/mm/pageattr.c
-index 797f9f1..0f9052b 100644
---- a/arch/x86/mm/pageattr.c
-+++ b/arch/x86/mm/pageattr.c
-@@ -153,7 +153,7 @@ static void __cpa_flush_all(void *arg)
- 	 */
- 	__flush_tlb_all();
- 
--	if (cache && boot_cpu_data.x86_model >= 4)
-+	if (cache && boot_cpu_data.x86 >= 4)
- 		wbinvd();
- }
- 
-@@ -204,6 +204,11 @@ static void cpa_flush_range(unsigned long start, int numpages, int cache)
- 	}
- }
- 
-+static void wbinvd_local(void *unused)
-+{
-+	wbinvd();
-+}
-+
- static void cpa_flush_array(unsigned long *start, int numpages, int cache,
- 			    int in_flags, struct page **pages)
- {
-@@ -218,8 +223,9 @@ static void cpa_flush_array(unsigned long *start, int numpages, int cache,
- 
- 	/* 4M threshold */
- 	if (numpages >= 1024) {
--		if (boot_cpu_data.x86_model >= 4)
--			wbinvd();
-+		if (boot_cpu_data.x86 >= 4)
-+			on_each_cpu(wbinvd_local, NULL, 1);
-+
- 		return;
- 	}
- 	/*
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
