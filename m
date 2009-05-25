@@ -1,176 +1,180 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753710AbZEYPlW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754081AbZEYPmn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753710AbZEYPlW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 11:41:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752668AbZEYPkv
+	id S1754081AbZEYPmn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 11:42:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752228AbZEYPmf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 11:40:51 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:37879 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752417AbZEYPkt (ORCPT
+	Mon, 25 May 2009 11:42:35 -0400
+Received: from mail-bw0-f174.google.com ([209.85.218.174]:49334 "EHLO
+	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751600AbZEYPme (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 11:40:49 -0400
-Message-Id: <20090525153931.616671838@chello.nl>
-References: <20090525153902.692238765@chello.nl>
-User-Agent: quilt/0.46-1
-Date: Mon, 25 May 2009 17:39:04 +0200
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Paul Mackerras <paulus@samba.org>,
-       Corey Ashford <cjashfor@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       John Kacur <jkacur@redhat.com>
-Subject: [PATCH 2/3] perf_counter: x86: remove interrupt throttle
-Content-Disposition: inline; filename=perf_counter-x86-remove-throttle.patch
-X-Bad-Reply: References but no 'Re:' in Subject.
+	Mon, 25 May 2009 11:42:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=IeTEfmt/ptxtSEpej+9aI8DF/cKDxOHAwMP2IvWMD92fSahFMilBjlwrEs8szXxGgV
+         Z6JZVoxzk1j+MxNN0L0OQUtthB7Nv8Q7pR67ye30LH2xWllB/vPnTJTkyist+wu5hvza
+         f+3iX2uQ689lBzl3Atf2PNIwmqwg+oy5HfpRQ=
+Date: Mon, 25 May 2009 17:42:32 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/3] tracing/stat: sort in ascending order
+Message-ID: <20090525154229.GA7121@nowhere>
+References: <4A1A5AD1.3070804@cn.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A1A5AD1.3070804@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-remove the x86 specific interrupt throttle
+On Mon, May 25, 2009 at 04:46:09PM +0800, Li Zefan wrote:
+> Currently the output of trace_stat/workqueues is totally reversed:
+> 
+>  # cat /debug/tracing/trace_stat/workqueues
+>     ...
+>     1       17       17      210       37   `-blk_unplug_work+0x0/0x57
+>     1     3779     3779      181       11   |-cfq_kick_queue+0x0/0x2f
+>     1     3796     3796                     kblockd/1:120
+>     ...
+> 
+> The correct output should be:
+> 
+>     1     3796     3796                     kblockd/1:120
+>     1     3779     3779      181       11   |-cfq_kick_queue+0x0/0x2f
+>     1       17       17      210       37   `-blk_unplug_work+0x0/0x57
+> 
+> It's caused by "tracing/stat: replace linked list by an rbtree for sorting"
+> (53059c9b67a62a3dc8c80204d3da42b9267ea5a0).
+> 
+> Though we can simply change dummy_cmp() to return -1 instead of 1, IMO
+> it's better to always do ascending sorting in trace_stat.c, and leave each
+> stat tracer to decide whether to sort in descending or ascending order.
+> 
+> [ Impact: fix the output of trace_stat/workqueue ]
+> 
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 
-LKML-Reference: <new-submission>
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- arch/x86/kernel/apic/apic.c        |    2 -
- arch/x86/kernel/cpu/perf_counter.c |   47 +++----------------------------------
- include/linux/perf_counter.h       |    2 -
- 3 files changed, 5 insertions(+), 46 deletions(-)
 
-Index: linux-2.6/arch/x86/kernel/apic/apic.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/apic/apic.c
-+++ linux-2.6/arch/x86/kernel/apic/apic.c
-@@ -817,8 +817,6 @@ static void local_apic_timer_interrupt(v
- 	inc_irq_stat(apic_timer_irqs);
- 
- 	evt->event_handler(evt);
--
--	perf_counter_unthrottle();
- }
- 
- /*
-Index: linux-2.6/arch/x86/kernel/cpu/perf_counter.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/perf_counter.c
-+++ linux-2.6/arch/x86/kernel/cpu/perf_counter.c
-@@ -719,11 +719,6 @@ static void intel_pmu_save_and_restart(s
- }
- 
- /*
-- * Maximum interrupt frequency of 100KHz per CPU
-- */
--#define PERFMON_MAX_INTERRUPTS (100000/HZ)
--
--/*
-  * This handler is triggered by the local APIC, so the APIC IRQ handling
-  * rules apply:
-  */
-@@ -775,15 +770,14 @@ again:
- 	if (status)
- 		goto again;
- 
--	if (++cpuc->interrupts != PERFMON_MAX_INTERRUPTS)
--		perf_enable();
-+	perf_enable();
- 
- 	return 1;
- }
- 
- static int amd_pmu_handle_irq(struct pt_regs *regs, int nmi)
- {
--	int cpu, idx, throttle = 0, handled = 0;
-+	int cpu, idx, handled = 0;
- 	struct cpu_hw_counters *cpuc;
- 	struct perf_counter *counter;
- 	struct hw_perf_counter *hwc;
-@@ -792,16 +786,7 @@ static int amd_pmu_handle_irq(struct pt_
- 	cpu = smp_processor_id();
- 	cpuc = &per_cpu(cpu_hw_counters, cpu);
- 
--	if (++cpuc->interrupts == PERFMON_MAX_INTERRUPTS) {
--		throttle = 1;
--		__perf_disable();
--		cpuc->enabled = 0;
--		barrier();
--	}
--
- 	for (idx = 0; idx < x86_pmu.num_counters; idx++) {
--		int disable = 0;
--
- 		if (!test_bit(idx, cpuc->active_mask))
- 			continue;
- 
-@@ -809,45 +794,23 @@ static int amd_pmu_handle_irq(struct pt_
- 		hwc = &counter->hw;
- 
- 		if (counter->hw_event.nmi != nmi)
--			goto next;
-+			continue;
- 
- 		val = x86_perf_counter_update(counter, hwc, idx);
- 		if (val & (1ULL << (x86_pmu.counter_bits - 1)))
--			goto next;
-+			continue;
- 
- 		/* counter overflow */
- 		x86_perf_counter_set_period(counter, hwc, idx);
- 		handled = 1;
- 		inc_irq_stat(apic_perf_irqs);
--		disable = perf_counter_overflow(counter, nmi, regs, 0);
--
--next:
--		if (disable || throttle)
-+		if (perf_counter_overflow(counter, nmi, regs, 0))
- 			amd_pmu_disable_counter(hwc, idx);
- 	}
- 
- 	return handled;
- }
- 
--void perf_counter_unthrottle(void)
--{
--	struct cpu_hw_counters *cpuc;
--
--	if (!x86_pmu_initialized())
--		return;
--
--	cpuc = &__get_cpu_var(cpu_hw_counters);
--	if (cpuc->interrupts >= PERFMON_MAX_INTERRUPTS) {
--		/*
--		 * Clear them before re-enabling irqs/NMIs again:
--		 */
--		cpuc->interrupts = 0;
--		perf_enable();
--	} else {
--		cpuc->interrupts = 0;
--	}
--}
--
- void smp_perf_counter_interrupt(struct pt_regs *regs)
- {
- 	irq_enter();
-Index: linux-2.6/include/linux/perf_counter.h
-===================================================================
---- linux-2.6.orig/include/linux/perf_counter.h
-+++ linux-2.6/include/linux/perf_counter.h
-@@ -570,7 +570,6 @@ extern void perf_counter_init_task(struc
- extern void perf_counter_exit_task(struct task_struct *child);
- extern void perf_counter_do_pending(void);
- extern void perf_counter_print_debug(void);
--extern void perf_counter_unthrottle(void);
- extern void __perf_disable(void);
- extern bool __perf_enable(void);
- extern void perf_disable(void);
-@@ -635,7 +634,6 @@ static inline void perf_counter_init_tas
- static inline void perf_counter_exit_task(struct task_struct *child)	{ }
- static inline void perf_counter_do_pending(void)			{ }
- static inline void perf_counter_print_debug(void)			{ }
--static inline void perf_counter_unthrottle(void)			{ }
- static inline void perf_disable(void)					{ }
- static inline void perf_enable(void)					{ }
- static inline int perf_counter_task_disable(void)	{ return -EINVAL; }
+For now in stat tracing, the ascendent sorting is the most relevant.
+Especially because we always want to see the highest problems first.
 
--- 
+-1 (or < 0) usually means lower and 1 ( > 0) is higher.
+
+I wonder what would most confuse the developers of stat tracers:
+
+- to reverse these common sort values (-1 turn into "higher")
+- keep the default ascendent sorting, which is not natural because the default
+  is often descendent.
+
+I don't know. 
+
+Anyone else. Do you have a preference?
+
+Thanks,
+
+Frederic.
+
+
+> ---
+>  kernel/trace/ftrace.c       |   12 ++++++------
+>  kernel/trace/trace_branch.c |    5 +++--
+>  kernel/trace/trace_stat.c   |    6 +-----
+>  3 files changed, 10 insertions(+), 13 deletions(-)
+> 
+> diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+> index 140699a..3dd16bd 100644
+> --- a/kernel/trace/ftrace.c
+> +++ b/kernel/trace/ftrace.c
+> @@ -315,29 +315,29 @@ static void *function_stat_start(struct tracer_stat *trace)
+>  }
+>  
+>  #ifdef CONFIG_FUNCTION_GRAPH_TRACER
+> -/* function graph compares on total time */
+> +/* function graph compares on total time in reverse order */
+>  static int function_stat_cmp(void *p1, void *p2)
+>  {
+>  	struct ftrace_profile *a = p1;
+>  	struct ftrace_profile *b = p2;
+>  
+> -	if (a->time < b->time)
+> -		return -1;
+>  	if (a->time > b->time)
+> +		return -1;
+> +	if (a->time < b->time)
+>  		return 1;
+>  	else
+>  		return 0;
+>  }
+>  #else
+> -/* not function graph compares against hits */
+> +/* not function graph compares against hits in reverse order */
+>  static int function_stat_cmp(void *p1, void *p2)
+>  {
+>  	struct ftrace_profile *a = p1;
+>  	struct ftrace_profile *b = p2;
+>  
+> -	if (a->counter < b->counter)
+> -		return -1;
+>  	if (a->counter > b->counter)
+> +		return -1;
+> +	if (a->counter < b->counter)
+>  		return 1;
+>  	else
+>  		return 0;
+> diff --git a/kernel/trace/trace_branch.c b/kernel/trace/trace_branch.c
+> index 7a7a9fd..df58411 100644
+> --- a/kernel/trace/trace_branch.c
+> +++ b/kernel/trace/trace_branch.c
+> @@ -301,9 +301,10 @@ static int annotated_branch_stat_cmp(void *p1, void *p2)
+>  	percent_a = get_incorrect_percent(a);
+>  	percent_b = get_incorrect_percent(b);
+>  
+> -	if (percent_a < percent_b)
+> -		return -1;
+> +	/* sort in descending order */
+>  	if (percent_a > percent_b)
+> +		return -1;
+> +	if (percent_a < percent_b)
+>  		return 1;
+>  	else
+>  		return 0;
+> diff --git a/kernel/trace/trace_stat.c b/kernel/trace/trace_stat.c
+> index 2e849b5..6efbcb4 100644
+> --- a/kernel/trace/trace_stat.c
+> +++ b/kernel/trace/trace_stat.c
+> @@ -98,10 +98,6 @@ insert_stat(struct rb_root *root, struct stat_node *data, cmp_stat_t cmp)
+>  {
+>  	struct rb_node **new = &(root->rb_node), *parent = NULL;
+>  
+> -	/*
+> -	 * Figure out where to put new node
+> -	 * This is a descendent sorting
+> -	 */
+>  	while (*new) {
+>  		struct stat_node *this;
+>  		int result;
+> @@ -110,7 +106,7 @@ insert_stat(struct rb_root *root, struct stat_node *data, cmp_stat_t cmp)
+>  		result = cmp(data->stat, this->stat);
+>  
+>  		parent = *new;
+> -		if (result >= 0)
+> +		if (result < 0)
+>  			new = &((*new)->rb_left);
+>  		else
+>  			new = &((*new)->rb_right);
+> -- 
+> 1.5.4.rc3
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
