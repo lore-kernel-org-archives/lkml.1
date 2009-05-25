@@ -1,84 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754165AbZEYXDd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754941AbZEYXDx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754165AbZEYXDd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 19:03:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753020AbZEYXD0
+	id S1754941AbZEYXDx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 19:03:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754260AbZEYXDp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 19:03:26 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:36338 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752892AbZEYXDZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 19:03:25 -0400
-Message-ID: <4A1B2377.3060601@zytor.com>
-Date: Mon, 25 May 2009 16:02:15 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Mon, 25 May 2009 19:03:45 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:41170 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753110AbZEYXDo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 19:03:44 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Martin Knoblauch <spamtrap@knobisoft.de>
+Subject: Re: [Bug #13178] Booting very slow
+Date: Tue, 26 May 2009 01:04:04 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc6-rjw; KDE/4.2.3; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+References: <GtY7d2eWpoK.A.ioC.MQcGKB@chimera> <WCcYF-TAbJC.A.VXD.iQcGKB@chimera> <349066.43765.qm@web32603.mail.mud.yahoo.com>
+In-Reply-To: <349066.43765.qm@web32603.mail.mud.yahoo.com>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Tejun Heo <tj@kernel.org>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [GIT PULL] x86 fixes for 2.6.30-rc8
-References: <200905252003.n4PK3sFi014919@voreg.hos.anvin.org> <alpine.LFD.2.01.0905251543570.3435@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.01.0905251543570.3435@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200905260104.04844.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Replying to add Venki back to the Cc: list since I typed his name]
+On Monday 25 May 2009, Martin Knoblauch wrote:
+> 
+> ----- Original Message ----
+> 
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+> > Cc: Kernel Testers List <kernel-testers@vger.kernel.org>; Martin Knoblauch <spamtrap@knobisoft.de>
+> > Sent: Sunday, May 24, 2009 9:31:18 PM
+> > Subject: [Bug #13178] Booting very slow
+> > 
+> > This message has been generated automatically as a part of a report
+> > of regressions introduced between 2.6.28 and 2.6.29.
+> > 
+> > The following bug entry is on the current list of known regressions
+> > introduced between 2.6.28 and 2.6.29.  Please verify if it still should
+> > be listed and let me know (either way).
+> > 
+> > 
+> > Bug-Entry    : http://bugzilla.kernel.org/show_bug.cgi?id=13178
+> > Subject        : Booting very slow
+> > Submitter    : Martin Knoblauch 
+> > Date        : 2009-04-24 12:45 (31 days old)
+> > References    : http://marc.info/?l=linux-kernel&m=124057716231773&w=4
+> 
+>  Still happens with 2.6.30-rc7. But see my comment on bz. I would be willing to leave this as "fuzzy timing related problem.
 
-Linus Torvalds wrote:
-> 
-> On Mon, 25 May 2009, H. Peter Anvin wrote:
->> +static void wbinvd_local(void *unused)
->> +{
->> +	wbinvd();
->> +}
->> +
->>  static void cpa_flush_array(unsigned long *start, int numpages, int cache,
->>  			    int in_flags, struct page **pages)
->>  {
->> @@ -218,8 +223,9 @@ static void cpa_flush_array(unsigned long *start, int numpages, int cache,
->>  
->>  	/* 4M threshold */
->>  	if (numpages >= 1024) {
->> -		if (boot_cpu_data.x86_model >= 4)
->> -			wbinvd();
->> +		if (boot_cpu_data.x86 >= 4)
->> +			on_each_cpu(wbinvd_local, NULL, 1);
->> +
-> 
-> This looks a bit wrong.
-> 
-> Just above this, we've done
-> 
-> 	on_each_cpu(__cpa_flush_range, NULL, 1);
-> 
-> and quite frankly, it seems to be that what we _should_ have done is to 
-> instead change that to
-> 
-> 	long do_wbinvd = cache && numpages >= 1024;
-> 
-> 	on_each_cpu(__cpa_flush_all, (void *)do_wbinvd, 1);
-> 	if (!cache || do_wbinvd)
-> 		return;
-> 
-> 	.. do the cflush dance .. 
-> 
-> instead.
-> 
-> Now you made it do two different "on_each_cpu" things. Maybe it doesn't 
-> matter, but it just seems wrong.
-> 
-> 		Linus
+OK
 
+I've closed it as "unreproducible".
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+Thanks,
+Rafael
