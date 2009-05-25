@@ -1,204 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754825AbZEYDDT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754038AbZEYDKH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754825AbZEYDDT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 May 2009 23:03:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752006AbZEYDDK
+	id S1754038AbZEYDKH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 May 2009 23:10:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752721AbZEYDJ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 May 2009 23:03:10 -0400
-Received: from hera.kernel.org ([140.211.167.34]:35993 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751619AbZEYDDJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 May 2009 23:03:09 -0400
-Message-ID: <4A1A0A27.4050301@kernel.org>
-Date: Mon, 25 May 2009 12:01:59 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Sun, 24 May 2009 23:09:58 -0400
+Received: from ganesha.gnumonks.org ([213.95.27.120]:52866 "EHLO
+	ganesha.gnumonks.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752428AbZEYDJ5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 May 2009 23:09:57 -0400
+Date: Mon, 25 May 2009 11:09:42 +0800
+From: Harald Welte <HaraldWelte@viatech.com>
+To: JosephChan@via.com.tw
+Cc: drzeus-mmc@drzeus.cx, linux-kernel@vger.kernel.org, arnd@arndb.de,
+       ben-linux@fluff.org, Bruce Chang <BruceChang@via.com.tw>
+Subject: Re: [Patch 1/1 v5] via-sdmmc: VIA MSP card reader driver support
+Message-ID: <20090525030942.GC8702@prithivi.gnumonks.org>
+References: <20090410203520.6e43acb2@mjolnir.ossman.eu> <C80EF34A3D2E494DBAF9AC29C7AE4EB8090CA2D4@exchtp03.taipei.via.com.tw>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Jan Beulich <JBeulich@novell.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       the arch/x86 maintainers <x86@kernel.org>, suresh.b.siddha@intel.com
-CC: Andi Kleen <andi@firstfloor.org>
-Subject: [PATCH 2.6.30-rc7] x86: remove remap percpu allocator for the time
- being
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 25 May 2009 03:02:04 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <C80EF34A3D2E494DBAF9AC29C7AE4EB8090CA2D4@exchtp03.taipei.via.com.tw>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remap percpu allocator has subtle bug when combined with page
-attribute changing.  Remap percpu allocator aliases PMD pages for the
-first chunk and as pageattr doesn't know about the alias it ends up
-updating page attributes of the original mapping thus leaving the
-alises in inconsistent state which might lead to subtle data
-corruption.  Please read the following threads for more information.
+Dear Joseph, Pierre and others.
 
-  http://thread.gmane.org/gmane.linux.kernel/835783
+Since the driver has still not made any progress in recent days, I took the
+liberty of "adopting" it.  It can now be found in my linux-2.6-via.git
+repository under the via-vx855-sdmmc branch (gitweb at
+http://git.gnumonks.org/cgi-bin/gitweb.cgi?p=linux-2.6-via.git;a=shortlog;h=refs/heads/via-vx855-sdmmc)
 
-The following is the proposed fix which teaches pageattr about percpu
-aliases.
+As you can see, there are five incremental patches compared to the last v5
+release that Joseph posted in April.
 
-  http://thread.gmane.org/gmane.linux.kernel/837157
+On Wed, Apr 22, 2009 at 01:35:29AM +0800, JosephChan@via.com.tw wrote:
 
-However, the above changes are deemed too pervasive for upstream
-inclusion for 2.6.30 release, so this patch removes remap allocator
-from upstream for the time being.
+> >> +nodata:
+> >> +	if (cmd->opcode == MMC_STOP_TRANSMISSION)
+> >> +		cmdctrl |= VIA_CRDR_SDCTRL_STOP;
+> > >+
+> 
+> >I didn't check this part properly the last time. I'm assuming you're telling
+> >the hardware that this is a command that terminates a data transmission? If
+> >so, you cannot check the opcode like that. There might be other stop
+> >commands.
+> >What you need to do is to either pass another parameter to your function
+> >when you're calling it with data->stop, or simply have a test in there if
+> >cmd == data->stop (or mrq->stop, whichever is most convenient).
+> 
+> OK, we will change to 
+>        if(cmd == host->mrq->stop)
+>              cmdctrl |= VIA_CRDR_SDCTRL_STOP;
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Jan Beulich <JBeulich@novell.com>
-Cc: H. Peter Anvin <hpa@zytor.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Andi Kleen <andi@firstfloor.org>
----
-Ingo, after this goes upstream, I'll prep a new tj-percpu for
-core/percpu which includes all pending patches and is properly merged
-with this one.
+done.
 
-Thanks.
+> >> +	else if (ios->clock >=  5000000)
+> >> +		clock = PCI_CLK_8M;
+> >>+	else
+> >>+		clock = PCI_CLK_375K;
+> >>+
+> 
+> > This looks a bit strange. Why are you not comparing with the clock
+> > frequency you'll be setting?
+> 
+> Do you mean that we should check the current clock frequency before setting?
+> But our engineer thinks that the following lines can do that work normally
+> too: Any comment? 
 
- arch/x86/kernel/setup_percpu.c |  120 -----------------------------------------
- 1 file changed, 1 insertion(+), 119 deletions(-)
+Well, if the "PCI_CLK" line and the corresponding register actually 1:1
+correspond to the actual SD card clock rate, then 
 
-diff --git a/arch/x86/kernel/setup_percpu.c b/arch/x86/kernel/setup_percpu.c
-index 3a97a4c..6c77b1c 100644
---- a/arch/x86/kernel/setup_percpu.c
-+++ b/arch/x86/kernel/setup_percpu.c
-@@ -124,122 +124,6 @@ static void * __init pcpu_alloc_bootmem(unsigned int cpu, unsigned long size,
- }
- 
- /*
-- * Remap allocator
-- *
-- * This allocator uses PMD page as unit.  A PMD page is allocated for
-- * each cpu and each is remapped into vmalloc area using PMD mapping.
-- * As PMD page is quite large, only part of it is used for the first
-- * chunk.  Unused part is returned to the bootmem allocator.
-- *
-- * So, the PMD pages are mapped twice - once to the physical mapping
-- * and to the vmalloc area for the first percpu chunk.  The double
-- * mapping does add one more PMD TLB entry pressure but still is much
-- * better than only using 4k mappings while still being NUMA friendly.
-- */
--#ifdef CONFIG_NEED_MULTIPLE_NODES
--static size_t pcpur_size __initdata;
--static void **pcpur_ptrs __initdata;
--
--static struct page * __init pcpur_get_page(unsigned int cpu, int pageno)
--{
--	size_t off = (size_t)pageno << PAGE_SHIFT;
--
--	if (off >= pcpur_size)
--		return NULL;
--
--	return virt_to_page(pcpur_ptrs[cpu] + off);
--}
--
--static ssize_t __init setup_pcpu_remap(size_t static_size)
--{
--	static struct vm_struct vm;
--	size_t ptrs_size, dyn_size;
--	unsigned int cpu;
--	ssize_t ret;
--
--	/*
--	 * If large page isn't supported, there's no benefit in doing
--	 * this.  Also, on non-NUMA, embedding is better.
--	 */
--	if (!cpu_has_pse || !pcpu_need_numa())
--		return -EINVAL;
--
--	/*
--	 * Currently supports only single page.  Supporting multiple
--	 * pages won't be too difficult if it ever becomes necessary.
--	 */
--	pcpur_size = PFN_ALIGN(static_size + PERCPU_MODULE_RESERVE +
--			       PERCPU_DYNAMIC_RESERVE);
--	if (pcpur_size > PMD_SIZE) {
--		pr_warning("PERCPU: static data is larger than large page, "
--			   "can't use large page\n");
--		return -EINVAL;
--	}
--	dyn_size = pcpur_size - static_size - PERCPU_FIRST_CHUNK_RESERVE;
--
--	/* allocate pointer array and alloc large pages */
--	ptrs_size = PFN_ALIGN(num_possible_cpus() * sizeof(pcpur_ptrs[0]));
--	pcpur_ptrs = alloc_bootmem(ptrs_size);
--
--	for_each_possible_cpu(cpu) {
--		pcpur_ptrs[cpu] = pcpu_alloc_bootmem(cpu, PMD_SIZE, PMD_SIZE);
--		if (!pcpur_ptrs[cpu])
--			goto enomem;
--
--		/*
--		 * Only use pcpur_size bytes and give back the rest.
--		 *
--		 * Ingo: The 2MB up-rounding bootmem is needed to make
--		 * sure the partial 2MB page is still fully RAM - it's
--		 * not well-specified to have a PAT-incompatible area
--		 * (unmapped RAM, device memory, etc.) in that hole.
--		 */
--		free_bootmem(__pa(pcpur_ptrs[cpu] + pcpur_size),
--			     PMD_SIZE - pcpur_size);
--
--		memcpy(pcpur_ptrs[cpu], __per_cpu_load, static_size);
--	}
--
--	/* allocate address and map */
--	vm.flags = VM_ALLOC;
--	vm.size = num_possible_cpus() * PMD_SIZE;
--	vm_area_register_early(&vm, PMD_SIZE);
--
--	for_each_possible_cpu(cpu) {
--		pmd_t *pmd;
--
--		pmd = populate_extra_pmd((unsigned long)vm.addr
--					 + cpu * PMD_SIZE);
--		set_pmd(pmd, pfn_pmd(page_to_pfn(virt_to_page(pcpur_ptrs[cpu])),
--				     PAGE_KERNEL_LARGE));
--	}
--
--	/* we're ready, commit */
--	pr_info("PERCPU: Remapped at %p with large pages, static data "
--		"%zu bytes\n", vm.addr, static_size);
--
--	ret = pcpu_setup_first_chunk(pcpur_get_page, static_size,
--				     PERCPU_FIRST_CHUNK_RESERVE, dyn_size,
--				     PMD_SIZE, vm.addr, NULL);
--	goto out_free_ar;
--
--enomem:
--	for_each_possible_cpu(cpu)
--		if (pcpur_ptrs[cpu])
--			free_bootmem(__pa(pcpur_ptrs[cpu]), PMD_SIZE);
--	ret = -ENOMEM;
--out_free_ar:
--	free_bootmem(__pa(pcpur_ptrs), ptrs_size);
--	return ret;
--}
--#else
--static ssize_t __init setup_pcpu_remap(size_t static_size)
--{
--	return -EINVAL;
--}
--#endif
--
--/*
-  * Embedding allocator
-  *
-  * The first chunk is sized to just contain the static area plus
-@@ -365,9 +249,7 @@ void __init setup_per_cpu_areas(void)
- 	 * of large page mappings.  Please read comments on top of
- 	 * each allocator for details.
- 	 */
--	ret = setup_pcpu_remap(static_size);
--	if (ret < 0)
--		ret = setup_pcpu_embed(static_size);
-+	ret = setup_pcpu_embed(static_size);
- 	if (ret < 0)
- 		ret = setup_pcpu_4k(static_size);
- 	if (ret < 0)
+>               else if (ios->clock >=  5000000)
+>                      clock = PCI_CLK_8M;
+
+would mean we use 8MHz even at the time the MMC core stack asks us to only
+use 5MHz, whcih is a bug!
+
+I have fixed this in my git tree now.
+
+> >> +	mmc->caps = MMC_CAP_4_BIT_DATA;
+> 
+> > You also need to set the bits stating if the controller supports the
+> > high-speed SD and/or MMC mode, otherwise the core won't go over 25/20 MHz.
+> 
+> 
+> OK, we will add the following line in the via_init_mmc_host function:
+> 
+>        mmc->caps |= MMC_CAP_MMC_HIGHSPEED |MMC_CAP_SD_HIGHSPEED;
+
+Since I cannot see any indication from the VX800 / VX855 data sheet that HS-MMC
+is actually supported, I only use SD_HIGHSPEED for now.
+
+Joseph: Can you find out if the controller actually supports HS-MMC, not only
+SD highspeed?
+
+>        org_data = readl(addrbase + VIA_CRDR_SDEXTCTRL);
+> 
+>        if ((ios->timing == MMC_TIMING_SD_HS) || (ios->timing == MMC_TIMING_MMC_HS))
+>               org_data |= VIA_CRDR_SDEXTCTRL_HISPD;
+>        else
+>               org_data &= ~VIA_CRDR_SDEXTCTRL_HISPD;
+> 
+>        writel(org_data, addrbase + VIA_CRDR_SDEXTCTRL);       
+
+tried that, unfortunately this is buggy, since org_data refers to SDBUSMODE rather than SDEXTCTRL. I've fixed it in this patch:
+http://git.gnumonks.org/cgi-bin/gitweb.cgi?p=linux-2.6-via.git;a=commitdiff;h=bb1f9f2d9d51bbf294ae036d02e2546f2d8b36c3
+
+The resulting driver runs so far fine on my VX855ES based board, but I'll give
+it some more testing before re-submitting the patch.
+
+There is also one case in the code where due to a DMA controller bug, we force
+the clock to 8MHz despite the MMC core requesting 375kHz.  I think the proper
+fix here is to fall back on PIO (non-DMA) mode for 375kHz, rather than
+overclocking the poor card by more than 21 times.
+
+After that has been fixed, plus some more testing, I'll re-submit.
+
+Regards,
+-- 
+- Harald Welte <HaraldWelte@viatech.com>	    http://linux.via.com.tw/
+============================================================================
+VIA Open Source Liaison
