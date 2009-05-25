@@ -1,67 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753901AbZEYQ24@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753415AbZEYQlu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753901AbZEYQ24 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 12:28:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752589AbZEYQ2s
+	id S1753415AbZEYQlu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 12:41:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752039AbZEYQlm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 12:28:48 -0400
-Received: from mga11.intel.com ([192.55.52.93]:25848 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752545AbZEYQ2r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 12:28:47 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,245,1241420400"; 
-   d="scan'208";a="460271387"
-Message-ID: <4A1AC741.3060600@intel.com>
-Date: Mon, 25 May 2009 09:28:49 -0700
-From: "H. Peter Anvin" <h.peter.anvin@intel.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
-MIME-Version: 1.0
-To: "Huang, Ying" <ying.huang@intel.com>
-CC: Ingo Molnar <mingo@elte.hu>, Brian Maly <bmaly@redhat.com>,
+	Mon, 25 May 2009 12:41:42 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39871 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752005AbZEYQll (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 12:41:41 -0400
+Date: Mon, 25 May 2009 09:39:36 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+cc: Nick Piggin <npiggin@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       Yinghai Lu <yinghai@kernel.org>, Rusty Russell <rusty@rustcorp.com.au>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jeff Garzik <jgarzik@pobox.com>,
+       Alexander Viro <viro@ftp.linux.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "dannf@hp.com" <dannf@hp.com>
-Subject: Re: [PATCH] rtc: add x86 support for rtc-efi
-References: <49DA40B9.2060804@redhat.com> <49DA817E.8040705@intel.com>	 <49DA8875.5050009@redhat.com>	 <20090409161803.f79c0b64.akpm@linux-foundation.org>	 <20090410135102.GB24809@elte.hu> <49ECADAB.4020609@redhat.com>	 <20090420172045.GA17887@elte.hu>  <49ECBD31.9010607@intel.com> <1243230547.31256.65.camel@yhuang-dev.sh.intel.com>
-In-Reply-To: <1243230547.31256.65.camel@yhuang-dev.sh.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, cl@linux-foundation.org,
+       mpm@selenic.com
+Subject: Re: [GIT PULL] scheduler fixes
+In-Reply-To: <Pine.LNX.4.64.0905251443390.4115@melkki.cs.Helsinki.FI>
+Message-ID: <alpine.LFD.2.01.0905250930530.3435@localhost.localdomain>
+References: <20090518202031.GA26549@elte.hu> <alpine.LFD.2.01.0905181457320.3301@localhost.localdomain> <Pine.LNX.4.64.0905241911120.12189@melkki.cs.Helsinki.FI> <4A199327.5030503@kernel.org> <20090525025353.GA2580@elte.hu> <4A1A2261.1000504@kernel.org>
+ <20090525051521.GC23032@elte.hu> <Pine.LNX.4.64.0905251142140.32568@melkki.cs.Helsinki.FI> <20090525112504.GB24071@wotan.suse.de> <84144f020905250437x585e66a2oc1124a4f1f43059d@mail.gmail.com> <20090525114127.GE24071@wotan.suse.de>
+ <Pine.LNX.4.64.0905251443390.4115@melkki.cs.Helsinki.FI>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Huang, Ying wrote:
-> On Tue, 2009-04-21 at 02:21 +0800, Anvin, H Peter wrote:
->> Ingo Molnar wrote:
->>> * Brian Maly <bmaly@redhat.com> wrote:
->>>
->>>>> Hm, it would be nice to first unify the relevant bits of 
->>>>> arch/x86/kernel/time_{32|64}.c into arch/x86/kernel/time.c, and 
->>>>> then we can apply such patches without duplicative effects.
->>>> Ingo,
->>>>
->>>> Are you OK with consolidating this into arch/x86/kernel/rtc.c as 
->>>> Huang Ying had suggested? This seems like the most logical place 
->>>> for the rtc-efi init to happen, but your suggestion to consolidate 
->>>> this into arch/x86/kernel.time.c may have advantages that I am not 
->>>> aware of.  Anyway, I would appreciate any insight/opinions on this 
->>>> if you have any.  Thanks.
->>> Yes, that indeed sounds like an even better place for it.
->>>
->> Furthermore, the EFI RTC code probably should be in its own file.
->>
->> In fact, arch/x86/kernel really could use more subdirectories; at least 
->> the EFI and UV-specific code should be be moved out.
-> 
-> Or, do you think it is appropriate to re-organize EFI related code into
-> a sub-architecture?
-> 
 
-No, we're been trying to get rid of subarchitectures in the x86 kernel. 
-  The reason is that the notion of subarchitectures matches reality in 
-x86-land poorly.  Most variants of x86 share considerable code: UV has 
-EFI, PC has EFI or BIOS, Voyager has BIOS and a standard RTC, and so on.
 
-	-hpa
+On Mon, 25 May 2009, Pekka J Enberg wrote:
+> diff --git a/init/main.c b/init/main.c
+> index 33ce929..fb0e004 100644
+> --- a/init/main.c
+> +++ b/init/main.c
+> @@ -576,6 +576,22 @@ asmlinkage void __init start_kernel(void)
+>  	setup_nr_cpu_ids();
+>  	smp_prepare_boot_cpu();	/* arch-specific boot-cpu hooks */
+>  
+> +	build_all_zonelists();
+> +	page_alloc_init();
+> +
+> +	printk(KERN_NOTICE "Kernel command line: %s\n", boot_command_line);
+> +	parse_early_param();
+> +	parse_args("Booting kernel", static_command_line, __start___param,
+> +		   __stop___param - __start___param,
+> +		   &unknown_bootoption);
+> +	pidhash_init();
+> +	vmalloc_init();
+> +	vfs_caches_init_early();
+> +	/*
+> +	 * Set up kernel memory allocators
+> +	 */
+> +	mem_init();
+> +	kmem_cache_init();
 
+So what strikes me is a question:
+
+ - why do we want to do pidhash_init and vfs_caches_init_early() so early?
+
+Yes, pidhash_init() now uses alloc_bootmem. It's an allocation that is not 
+trivially small, but it's not humongous either (max 4096 hash list heads, 
+one pointer each).
+
+And vfs_caches_init_early() is actually doing some rather strange things, 
+like doing a "alloc_large_system_hash()" but not unconditionally: it does 
+it in the "late" initialization too, if not done early. inode_init_early 
+does soemthing very similar (ie a _conditional_ early init).
+
+So none of this seems to really get a huge advantage from the early init. 
+There seems to be some subtle NUMA issues, but do we really want that? I 
+get the feeling that nobody ever wanted to do it early, and then the NUMA 
+people said "I don't wnt to do this early, but I don't want to touch the 
+non-NUMA case, so I'll do it early for non-numa, and late for numa".
+
+I'm also not entirely sure we really need to do vmalloc_init() that early, 
+but I dunno. It also uses alloc_bootmem().
+
+		Linus
