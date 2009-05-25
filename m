@@ -1,69 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752163AbZEYJAp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755551AbZEYJA5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752163AbZEYJAp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 05:00:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750943AbZEYJAh
+	id S1755551AbZEYJA5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 05:00:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751335AbZEYJAo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 05:00:37 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:57130 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750896AbZEYJAh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 05:00:37 -0400
-Message-ID: <7BEB795002534E81BFA42E0464AEFD72@zhaoleiwin>
-From: "Zhaolei" <zhaolei@cn.fujitsu.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Cc: "Frederic Weisbecker" <fweisbec@gmail.com>,
-       "Steven Rostedt" <rostedt@goodmis.org>,
-       "Tom Zanussi" <tzanussi@gmail.com>,
-       "LKML" <linux-kernel@vger.kernel.org>
-References: <4A14FDFE.2080402@cn.fujitsu.com> <4A16788F.2060802@cn.fujitsu.com> <20090522115108.GA10992@elte.hu>
-Subject: Re: [PATCH v2 0/2] ftrace: Add task_comm support for trace_event
-Date: Mon, 25 May 2009 16:59:26 +0800
+	Mon, 25 May 2009 05:00:44 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:52241 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753274AbZEYJAn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 05:00:43 -0400
+Date: Mon, 25 May 2009 10:00:41 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Minchan Kim <minchan.kim@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>, Johannes Weiner <hannes@cmpxchg.org>,
+       Yasunori Goto <y-goto@jp.fujitsu.com>
+Subject: Re: [PATCH 2/3] add inactive ratio calculation function of each
+	zone V2
+Message-ID: <20090525090041.GB12160@csn.ul.ie>
+References: <20090521092321.ee57585e.minchan.kim@barrios-desktop>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.5512
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20090521092321.ee57585e.minchan.kim@barrios-desktop>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n4P90p7M029863
 
-* From: "Ingo Molnar" <mingo@elte.hu>
+On Thu, May 21, 2009 at 09:23:21AM +0900, Minchan Kim wrote:
+> Changelog since V1 
+>  o Change function name from calculate_zone_inactive_ratio to calculate_inactive_ratio
+>    - by Mel Gorman advise
+>  o Modify tab indent - by Mel Gorman advise
 > 
-> it still fails to build:
+> This patch devide setup_per_zone_inactive_ratio with
+> per-zone inactive ratio calculaton.
 > 
-> kernel/built-in.o: In function `ftrace_event_enable_disable':
-> trace_events.c:(.text+0x4df08): undefined reference to `tracing_stop_cmdline_record'
-> trace_events.c:(.text+0x4df1f): undefined reference to `tracing_start_cmdline_record'
+> This patch is just for helping my next patch.
+> (reset wmark_min and inactive ratio of zone when hotplug happens)
 > 
-> config attached.
+> Signed-off-by: Minchan Kim <minchan.kim@gmail.com>
+> Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 
-Hello, Ingo
+Reviewed-by: Mel Gorman <mel@csn.ul.ie>
 
-Thanks for your report.
+> CC: Rik van Riel <riel@redhat.com>
+> CC: Johannes Weiner <hannes@cmpxchg.org>
+> ---
+>  include/linux/mm.h |    1 +
+>  mm/page_alloc.c    |   28 ++++++++++++++++------------
+>  2 files changed, 17 insertions(+), 12 deletions(-)
+> 
+> diff --git a/include/linux/mm.h b/include/linux/mm.h
+> index 7ea4d1b..5d7a835 100644
+> --- a/include/linux/mm.h
+> +++ b/include/linux/mm.h
+> @@ -1059,6 +1059,7 @@ extern void set_dma_reserve(unsigned long new_dma_reserve);
+>  extern void memmap_init_zone(unsigned long, int, unsigned long,
+>  				unsigned long, enum memmap_context);
+>  extern void setup_per_zone_wmarks(void);
+> +extern void calculate_zone_inactive_ratio(struct zone *zone);
+>  extern void mem_init(void);
+>  extern void __init mmap_init(void);
+>  extern void show_mem(void);
+> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> index b518ea7..f11cfbf 100644
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -4553,22 +4553,26 @@ void setup_per_zone_wmarks(void)
+>   *    1TB     101        10GB
+>   *   10TB     320        32GB
+>   */
+> -static void __init setup_per_zone_inactive_ratio(void)
+> +void calculate_zone_inactive_ratio(struct zone *zone)
+>  {
+> -	struct zone *zone;
+> +	unsigned int gb, ratio;
+>  
+> -	for_each_zone(zone) {
+> -		unsigned int gb, ratio;
+> +	/* Zone size in gigabytes */
+> +	gb = zone->present_pages >> (30 - PAGE_SHIFT);
+> +	if (gb)
+> +		ratio = int_sqrt(10 * gb);
+> +	else
+> +		ratio = 1;
+>  
+> -		/* Zone size in gigabytes */
+> -		gb = zone->present_pages >> (30 - PAGE_SHIFT);
+> -		if (gb)
+> -			ratio = int_sqrt(10 * gb);
+> -		else
+> -			ratio = 1;
+> +	zone->inactive_ratio = ratio;
+> +}
+>  
+> -		zone->inactive_ratio = ratio;
+> -	}
+> +static void __init setup_per_zone_inactive_ratio(void)
+> +{
+> +	struct zone *zone;
+> +
+> +	for_each_zone(zone)
+> +		calculate_zone_inactive_ratio(zone);	
+>  }
+>  
+>  /*
+> -- 
+> 1.5.4.3
+> 
 
-I found reason.
-It is because CONFIG_TRACING is on(But CONFIG_FTRACE is off),
-which compiles trace_events but leaves trace_sched_switch.
-(It is different with problem that I fixed in v1->v2, but... sorry......)
-
-I have fixed it, I'll send v3 after following test:
-1: CONFIG_TRACING on, CONFIG_FTRACE off
-2: CONFIG_ENABLE_EVENT_TRACING on, CONFIG_ENABLE_CONTEXT_SWITCH_TRACER off
-2: CONFIG_ENABLE_EVENT_TRACING on, CONFIG_ENABLE_CONTEXT_SWITCH_TRACER on
-
-And RFC:
-IMHO, trace_sched_switch should not have relationship with trace_events,
-in other words, trace_events should run without trace_sched_switch linked.
-
-Can we move codes for record cmdline out of trace_sched_switch.c and put them
-into new cmdline_record.c?
-Then, trace_functions.c and trace_events.c will only need cmdline_record.c.
-
-Thanks
-Zhaolei
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
