@@ -1,82 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753943AbZEYNUg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753510AbZEYNUr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753943AbZEYNUg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 09:20:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751305AbZEYNU3
+	id S1753510AbZEYNUr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 09:20:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752738AbZEYNUf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 09:20:29 -0400
-Received: from casper.infradead.org ([85.118.1.10]:47105 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751249AbZEYNU3 (ORCPT
+	Mon, 25 May 2009 09:20:35 -0400
+Received: from mail2.shareable.org ([80.68.89.115]:59200 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753411AbZEYNUe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 09:20:29 -0400
-Subject: Re: [PATCH] U300 sched_clock implementation
-From: Peter Zijlstra <peterz@infradead.org>
-To: Linus Walleij <linus.ml.walleij@gmail.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu,
-       linux-arm-kernel@lists.arm.linux.org.uk,
-       Thomas Gleixner <tglx@linutronix.de>,
-       John Stultz <johnstul@linux.vnet.ibm.com>
-In-Reply-To: <1243256510.26820.679.camel@twins>
-References: <63386a3d0905112337p2d426481o5f9bf9b9489cc57e@mail.gmail.com>
-	 <63386a3d0905231446h245bb4a9gec111f68a74a44e4@mail.gmail.com>
-	 <1243151839.26820.642.camel@twins>
-	 <63386a3d0905250513q6ca56eeepcf7bebe46c447fb4@mail.gmail.com>
-	 <1243256510.26820.679.camel@twins>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Mon, 25 May 2009 15:20:27 +0200
-Message-Id: <1243257627.26820.683.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Mon, 25 May 2009 09:20:34 -0400
+Date: Mon, 25 May 2009 14:20:27 +0100
+From: Jamie Lokier <jamie@shareable.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       Catalin Marinas <catalin.marinas@arm.com>,
+       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: Broken ARM atomic ops wrt memory barriers (was : [PATCH] Add cmpxchg support for ARMv6+ systems)
+Message-ID: <20090525132027.GA946@shareable.org>
+References: <20090422171703.19555.83629.stgit@pc1117.cambridge.arm.com> <20090423141248.22193.10543.stgit@pc1117.cambridge.arm.com> <20090524131636.GB3159@n2100.arm.linux.org.uk> <20090524145633.GA14754@Krystal>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090524145633.GA14754@Krystal>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-05-25 at 15:01 +0200, Peter Zijlstra wrote:
-> On Mon, 2009-05-25 at 14:13 +0200, Linus Walleij wrote:
-> > 2009/5/24 Peter Zijlstra <peterz@infradead.org>:
-> > 
-> > > On Sat, 2009-05-23 at 23:46 +0200, Linus Walleij wrote:
-> > >
-> > >> This overrides the global sched_clock() symbol in the Linux
-> > >> scheduler with a local implementation which takes advantage of
-> > >> the timesource in U300 giving a scheduling resolution of 1us. The
-> > >> solution is the same as found in the OMAP2 core code.
-> > >
-> > > We assume sched_clock() to return time in ns (e-9) resolution.
-> > 
-> > Yep okay and in this case:
-> > 
-> > >> +       ret = (unsigned long long) u300_get_cycles();
-> > >> +       ret = (ret * clocksource_u300_1mhz.mult_orig) >>
-> > >> +               clocksource_u300_1mhz.shift;
-> > >> +       return ret;
-> > 
-> > (mult_orig >> shift) == 1000
+Mathieu Desnoyers wrote:
+> I use a local cmpxchg in the LTTng tree as key instruction to manage the
+> ring buffer in a irq, softirq and NMI-safe way (due to the atomic nature
+> of this instruction), but without the overhead of synchronizing across
+> CPUs.
 > 
-> Ah, ok -- missed that little detail ;-)
+> On ARM, the semantic looks a bit like PowerPC with linked load/linked
+> store, and you don't seem to need memory barriers. I guess that's either
+> because
 > 
-> > So for each cycle in cyclecount register we return 1000 * cycles
-> > i.e 1000ns.
-> > 
-> > If it looks nicer we can of course simply:
-> > return (unsigned long long) u300_get_cycles * 1000;
-> > 
-> > But the question here is whether this resolution is enough for
-> > sched_clock() or if it is irrelevant to override sched_clock()
-> > if it cannot schedule with better precision than 1000 ns.
+> a) they are implicit in the ll/ls or
+> b) ARM does not perform out-of-order memory read/writes or
+> c) they've simply been forgotten, and it's a bug.
 > 
-> No anything better than jiffies is good, 1us certainly is worth the
-> trouble.
+> the cmpxchg local instruction maps currently to cmpxchg, as a fallback,
+> since there is no difference between the SMP-aware and UP-only
+> instructions.
+> 
+> But if I look at arch/arm/include/asm/spinlock.h, the answer I get seems
+> to be c) : ARM needs memory barriers.
 
-One note, sched_clock() is assumed to be _cheap_. Now I assume you knew
-that and chose a suitable clocksource.
+Memory barriers only affect the observed access order with respect to
+other processors (and perhaps other devices).
 
-But that is the reason this isn't generic, non of the 'stable'
-clocksources on x86 are fast enough to use as sched_clock.
+So a CPU-local operation would not need barriers.  CPU-local code,
+including local IRQs, see all memory accesses in the same order as
+executed instructions.
 
-Of course, x86 isn't the only arch and if enough architectures do show
-this pattern, we could indeed think about doing this in generic code.
+Of course you need barriers at some point, when using the local data
+to update global data seen by other CPUs at a later time.  But that is
+hopefully done elsewhere.
 
+After considering this, do you think it's still missing barriers?
 
+-- Jamie
