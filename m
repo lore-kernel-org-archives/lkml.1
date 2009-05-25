@@ -1,47 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754386AbZEYVRk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753167AbZEYVTi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754386AbZEYVRk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 17:17:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752212AbZEYVRd
+	id S1753167AbZEYVTi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 17:19:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751998AbZEYVTa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 17:17:33 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:57272 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751998AbZEYVRd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 17:17:33 -0400
-Message-ID: <4A1B0ACD.8020502@zytor.com>
-Date: Mon, 25 May 2009 14:17:01 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Mon, 25 May 2009 17:19:30 -0400
+Received: from mail.tmr.com ([64.65.253.246]:57425 "EHLO partygirl.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751373AbZEYVT3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 17:19:29 -0400
+Message-ID: <4A1B0B4A.8050706@tmr.com>
+Date: Mon, 25 May 2009 17:19:06 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.21) Gecko/20090507 Fedora/1.1.16-1.fc9 SeaMonkey/1.1.16
 MIME-Version: 1.0
-To: lkml@morethan.org
-CC: Harald Welte <HaraldWelte@viatech.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [BUG FIX] Make x86_32 uni-processor Atomic ops, Atomic
-References: <200905221139.26941.lkml@morethan.org> <200905251418.39933.lkml@morethan.org> <200905251446.37022.lkml@morethan.org> <200905251610.43071.lkml@morethan.org>
-In-Reply-To: <200905251610.43071.lkml@morethan.org>
-Content-Type: text/plain; charset=UTF-8
+To: Thomas Glanzmann <thomas@glanzmann.de>, tytso@thunk.org,
+       LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org
+Subject: Re: zero out blocks of freed user data for operation a virtual machine
+   environment
+References: <20090524170045.GC24753@cip.informatik.uni-erlangen.de>
+In-Reply-To: <20090524170045.GC24753@cip.informatik.uni-erlangen.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael S. Zick wrote:
-> On Mon May 25 2009, Michael S. Zick wrote:
+Thomas Glanzmann wrote:
+> Hello Ted,
+> I would like to know if there is already a mount option or feature in
+> ext3/ext4 that automatically overwrites freed blocks with zeros? If this
+> is not the case I would like to know if you would consider a patch for
+> upstream? I'm asking this because I currently do some research work on
+> data deduplication in virtual machine environments and corresponding
+> backups. It would be a huge space saver if there is such a feature
+> because todays and tomorrows backup tools for virtual machine
+> environments work on the block layer (VMware Consolidated Backup, VMware
+> Data Recovery, and NetApp Snapshots). This is not only true for backup
+> tools but also for running Virtual machines. The case that this future
+> addresses is the following: A huge file is downloaded and later delted.
+> The backup and datadeduplication that is operating on the block level
+> can't identify the block as unused. This results in backing up the
+> amount of the data that was previously allocated by the file and as such
+> introduces an performance overhead. If you're interested in real live
+> data, I'm able to provide them.
 > 
-> In actual application, this *should not* make a difference.
+> If you don't intend to have such an optional feature in ext3/ext4 I
+> would like to know if you know a tool that makes it possible to zero out
+> unused blocks?
 > 
+Treating blocks as unused due to content seems a bad idea, if you want them to 
+be unused look for references to TRIM, if you want this for security look at 
+shred. And if you are interested in backing sparse files I believe that the tar 
+"-S" option will do what you want or provide code you can use to start writing 
+what you want.
 
-No kidding.  This is a valid transformation for integers, since it is
-all done with 2's-complement arithmetic.
+I don't think this is a good solution to the problem that unused space is not 
+accounted as you wish it would be. Most filesystems have a bitmap to track this 
+already, a handle on that would be more generally useful.
 
-Floating-point numbers is a whole other game.
+Deleting files is slow enough, identifying unused storage by content is 1950s 
+thinking, and also ignores the fact that new drives often don't come zeroed, and 
+would behave badly unless you manually zeroed the unused portions.
 
-	-hpa
+I doubt this is the optimal solution, since you would have to read the zeros to 
+see if they were present, making backup smaller but no faster than just doing a 
+copy.
 
 -- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
