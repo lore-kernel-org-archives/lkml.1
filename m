@@ -1,104 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754595AbZEYVn2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753988AbZEYVpY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754595AbZEYVn2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 17:43:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752827AbZEYVnV
+	id S1753988AbZEYVpY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 17:45:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751824AbZEYVpO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 17:43:21 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:40829 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752485AbZEYVnV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 17:43:21 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: nigel@tuxonice.net
-Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
-Date: Mon, 25 May 2009 23:43:23 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc6-rjw; KDE/4.2.3; x86_64; ; )
-Cc: linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net,
-       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
-References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net> <200905090143.10980.rjw@sisk.pl> <1243245907.16743.101.camel@nigel-laptop>
-In-Reply-To: <1243245907.16743.101.camel@nigel-laptop>
+	Mon, 25 May 2009 17:45:14 -0400
+Received: from mail-gx0-f166.google.com ([209.85.217.166]:58080 "EHLO
+	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751747AbZEYVpM convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 17:45:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=HNBIDLNZqVM7dQeZeNlMge/Vz8/zlkmTJ4vgWeULABEDMceGCWBAZFMJnmkXSPdC6K
+         vdTUzwBQG0LO16e+B85VNzkOqNMTeccmFaIN0usTq+8yrpac13MjLJVc37V3luP+XR3J
+         OVnb9CTvuiLVuFCK+7xTUkgcWWi8Dn6ewR+FQ=
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905252343.23744.rjw@sisk.pl>
+In-Reply-To: <f24d23310905250956u231fcd90u54d75894b9b91b9a@mail.gmail.com>
+References: <f24d23310905250956u231fcd90u54d75894b9b91b9a@mail.gmail.com>
+Date: Tue, 26 May 2009 06:45:12 +0900
+Message-ID: <49b7c2350905251445n14397b82yc993f1a86d715d4d@mail.gmail.com>
+Subject: Re: Unable to compile 2.6.30-rc7 on RHEL 4 - GCC 3.4.6
+From: GeunSik Lim <leemgs1@gmail.com>
+To: debian developer <debiandev@gmail.com>
+Cc: linux kernel <kernelnewbies@nl.linux.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 25 May 2009, Nigel Cunningham wrote:
-> Hi.
-
 Hi,
 
-> On Sat, 2009-05-09 at 01:43 +0200, Rafael J. Wysocki wrote:
-> > > On Sat, 2009-05-09 at 00:46 +0200, Rafael J. Wysocki wrote:
-> > > > On Friday 08 May 2009, Nigel Cunningham wrote:
-> > > > > On Fri, 2009-05-08 at 16:11 +0200, Rafael J. Wysocki wrote:
-> > > > > > On Friday 08 May 2009, Nigel Cunningham wrote:
-> > > > > And the code includes some fundamental differences. I freeze processes
-> > > > > and prepare the whole image before saving anything or doing an atomic
-> > > > > copy whereas you just free memory before doing the atomic copy. You save
-> > > > > everything in one part whereas I save the image in two parts.
-> > > > 
-> > > > IMO the differences are not that fundamental.  The whole problem boils down
-> > > > to using the same data structures for memory management and I think we can
-> > > > reach an agreement here.
-> > > 
-> > > I think we might be able to agree on using the same data structures, but
-> > > I'm not so sure about algorithms - I think you're underestimating the
-> > > differences here.
-> > 
-> > Well, which algorithms do you have in mind in particular?
-> 
-> Sorry for the slow reply - just starting to catch up after time away.
+If you want to use recent kernel source 2.6.24/2.6.28,
+I recommend that you have to update linux distribution from current
+linux distribution to
+RHEL 5.X ( or CENTOS 5.X) in my experience.
 
-NP
+Refer to http://linuxdistrowatch.com website to select linux
+distribution for you.
 
-> The main difference is the order of doing things. TuxOnIce prepares the
-> image after freezing processes and before the atomic copy. It doesn't
-> just do that so that it can store a complete image of memory. It also
-> does it because once processes are frozen, the only thing that's going
-> to allocate storage is TuxOnIce,
+If you keep gcc 3.X.X to compile recent kernel source contiunally,
+You will meet another problems again.
 
-This is quite strong statement.  Is it provable?
+On Tue, May 26, 2009 at 1:56 AM, debian developer <debiandev@gmail.com> wrote:
+> Hi all,
+>
+> I am getting this error when trying to compile the latest rc:
+>
+> /in/inndesk171/linux-2.6.28/arch/x86/Makefile:82: stack protector
+> enabled but no compiler support
+>  CHK     include/linux/version.h
+>  CHK     include/linux/utsrelease.h
+>  SYMLINK include/asm -> include/asm-x86
+>  CALL    scripts/checksyscalls.sh
+>  CC      init/main.o
+> /in/inndesk171/linux-2.6.28/arch/x86/include/asm/paravirt.h: In
+> function `start_kernel':
+> /in/inndesk171/linux-2.6.28/arch/x86/include/asm/paravirt.h:1590:
+> warning: asm operand 1 probably doesn't match constraints
+> /in/inndesk171/linux-2.6.28/arch/x86/include/asm/paravirt.h:1570:
+> warning: asm operand 2 probably doesn't match constraints
+> /in/inndesk171/linux-2.6.28/arch/x86/include/asm/paravirt.h:1590:
+> warning: asm operand 1 probably doesn't match constraints
+> /in/inndesk171/linux-2.6.28/arch/x86/include/asm/paravirt.h:1570:
+> warning: asm operand 2 probably doesn't match constraints
+> /in/inndesk171/linux-2.6.28/arch/x86/include/asm/paravirt.h:1599:
+> warning: asm operand 1 probably doesn't match constraints
+> /in/inndesk171/linux-2.6.28/arch/x86/include/asm/paravirt.h:1590:
+> error: impossible constraint in `asm'
+> /in/inndesk171/linux-2.6.28/arch/x86/include/asm/paravirt.h:1570:
+> error: impossible constraint in `asm'
+> /in/inndesk171/linux-2.6.28/arch/x86/include/asm/paravirt.h:1590:
+> error: impossible constraint in `asm'
+> /in/inndesk171/linux-2.6.28/arch/x86/include/asm/paravirt.h:1570:
+> error: impossible constraint in `asm'
+> /in/inndesk171/linux-2.6.28/arch/x86/include/asm/paravirt.h:1599:
+> error: impossible constraint in `asm'
+> /in/inndesk171/linux-2.6.28/arch/x86/include/asm/paravirt.h:1568:
+> warning: 'f' might be used uninitialized in this function
+> /in/inndesk171/linux-2.6.28/arch/x86/include/asm/paravirt.h:1568:
+> warning: 'f' might be used uninitialized in this function
+> /in/inndesk171/linux-2.6.28/arch/x86/include/asm/paravirt.h:1568:
+> warning: 'f' might be used uninitialized in this function
+> /in/inndesk171/linux-2.6.28/arch/x86/include/asm/paravirt.h:1568:
+> warning: 'f' might be used uninitialized in this function
+> make[1]: *** [init/main.o] Error 1
+> make: *** [init] Error 2
+>
+>
+> The gcc version is as follows:
+> debiandev@inndesk171[80] gcc -v
+> Reading specs from /usr/lib/gcc/x86_64-redhat-linux/3.4.6/specs
+> Configured with: ../configure --prefix=/usr --mandir=/usr/share/man
+> --infodir=/usr/share/info --enable-shared --enable-threads=posix
+> --disable-checking --with-system-zlib --enable-__cxa_atexit
+> --disable-libunwind-exceptions --enable-java-awt=gtk
+> --host=x86_64-redhat-linux
+> Thread model: posix
+> gcc version 3.4.6 20060404 (Red Hat 3.4.6-9)
+>
+>
+> Is this gcc version no longer usable to compile the latest kernel?
+>
+> Thanks,
+> DD
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
 
-> and the only things that are going to allocate RAM are TuxOnIce and the
-> drivers' suspend routines.
 
-Hmm.  What about kernel threads that are not frozen?
 
-> The drivers' routines are pretty consistent - once you've seen how much is
-> used for one invocation, you can add a small margin and call that the
-> allowance to use for all future invocations. The amount of memory used
-> by the hibernation code is also entirely predictable - once you know the
-> characteristics of the system as it stands (ie with processes frozen),
-> you know how much you're going to need for the atomic copy and for doing
-> I/O. If you find that something is too big, all you need to do is thaw
-> kernel threads and free some memory until you fit within constraints or
-> (heaven forbid!) find that you're not getting anyway and so want to give
-> up on hibernating all together.
-> 
-> If, on the other hand, you do the drivers suspend etc and then look to
-> see what state you're in, well you might need to thaw drivers etc in
-> order to free memory before trying again. It's more expensive. Right now
-> you're just giving up in that case - yes, you could retry too instead of
-> giving up completely, but it's better IMHO to seek to get things right
-> before suspending drivers.
-> 
-> Oh, before I forget to mention and you ask - how to know what allowance
-> for the drivers? I use a sysfs entry - the user then just needs to see
-> what's needed on their first attempt, set up a means of putting that
-> value in the sysfs file in future (eg /etc/hibernate/tuxonice.conf) and
-> then forget about it.
-
-OK, this is reasonable.
-
-Still, I think your approach is based on some assumptions that need to be
-verified, so that either we are 100% sure they are satisfied, or we have some
-safeguards in place in case they aren't.
-
-Best,
-Rafael
+-- 
+Regards,
+GeunSik Lim
+--
+To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
