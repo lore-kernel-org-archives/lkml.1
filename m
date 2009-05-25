@@ -1,84 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758238AbZEYDlP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757384AbZEYDwk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758238AbZEYDlP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 May 2009 23:41:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753053AbZEYDlE
+	id S1757384AbZEYDwk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 May 2009 23:52:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752357AbZEYDwb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 May 2009 23:41:04 -0400
-Received: from hera.kernel.org ([140.211.167.34]:60124 "EHLO hera.kernel.org"
+	Sun, 24 May 2009 23:52:31 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:33323 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753449AbZEYDlD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 May 2009 23:41:03 -0400
-Date: Mon, 25 May 2009 03:40:02 GMT
-From: tip-bot for Tejun Heo <tj@kernel.org>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       tj@kernel.org, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tj@kernel.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <4A1A0A27.4050301@kernel.org>
-References: <4A1A0A27.4050301@kernel.org>
-Subject: [tip:x86/urgent] x86: Remove remap percpu allocator for the time being
-Message-ID: <tip-71c9d8b68b299bef614afc7907393564a9f1476f@git.kernel.org>
-Git-Commit-ID: 71c9d8b68b299bef614afc7907393564a9f1476f
-X-Mailer: tip-git-log-daemon
+	id S1751984AbZEYDwb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 May 2009 23:52:31 -0400
+Date: Mon, 25 May 2009 05:51:58 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Avi Kivity <avi@redhat.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>
+Subject: Re: [GIT PULL] Xen APIC hooks (with io_apic_ops)
+Message-ID: <20090525035158.GB9396@elte.hu>
+References: <1242170724-13349-1-git-send-email-jeremy@goop.org> <20090519123548.GA26439@elte.hu> <4A19A9A4.8010002@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 25 May 2009 03:40:03 +0000 (UTC)
+In-Reply-To: <4A19A9A4.8010002@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  71c9d8b68b299bef614afc7907393564a9f1476f
-Gitweb:     http://git.kernel.org/tip/71c9d8b68b299bef614afc7907393564a9f1476f
-Author:     Tejun Heo <tj@kernel.org>
-AuthorDate: Mon, 25 May 2009 12:01:59 +0900
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 25 May 2009 05:37:55 +0200
 
-x86: Remove remap percpu allocator for the time being
+* Avi Kivity <avi@redhat.com> wrote:
 
-Remap percpu allocator has subtle bug when combined with page
-attribute changing.  Remap percpu allocator aliases PMD pages for the
-first chunk and as pageattr doesn't know about the alias it ends up
-updating page attributes of the original mapping thus leaving the
-alises in inconsistent state which might lead to subtle data
-corruption.  Please read the following threads for more information:
+> Ingo Molnar wrote:
+>>> IO APIC operations are not even slightly performance critical? Are  
+>>> they ever used on the interrupt delivery path?
+>>>     
+>>
+>> Since they are not performance critical, then why doesnt Xen catch the 
+>> IO-APIC accesses, and virtualizes the device?
+>>
+>> If you want to hook into the IO-APIC code at such a low level, why  
+>> dont you hook into the _hardware_ API - i.e. catch those setup/routing 
+>> modifications to the IO-APIC space. No Linux changes are needed in that 
+>> case.
+>>   
+>
+> When x2apic is enabled, and EOI broadcast is disabled, then the io 
+> apic does become a hot path - it needs to be written for each 
+> level-triggered interrupt EOI.  In this case I might want to 
+> paravirtualize the EOI write to exit only if an interrupt is 
+> pending; otherwise communicate via shared memory.
+>
+> We do something similar for Windows (by patching it) very 
+> successfully; Windows likes to touch the APIC TPR ~ 100,000 times 
+> per second, usually without triggering an interrupt.  We hijack 
+> these writes, do the checks in guest context, and only exit if the 
+> TPR write would trigger an interrupt.
 
-  http://thread.gmane.org/gmane.linux.kernel/835783
+I suspect you aware of that this is about the io-apic not the local 
+APIC. The local apic methods are already driver-ized - and they sit 
+closer to the CPU so they matter more to performance.
 
-The following is the proposed fix which teaches pageattr about percpu
-aliases.
+> (kvm will likely gain x2apic support in 2.6.32; patches have 
+> already been posted)
 
-  http://thread.gmane.org/gmane.linux.kernel/837157
+ok. This points in the direction of the io-apic driver abstraction 
+from Jeremy being the right long-term approach. We already have a 
+few quirks that could be cleaned up by using a proper driver 
+interface.
 
-However, the above changes are deemed too pervasive for upstream
-inclusion for 2.6.30 release, so this patch essentially disables
-the remap allocator for the time being.
-
-Signed-off-by: Tejun Heo <tj@kernel.org>
-LKML-Reference: <4A1A0A27.4050301@kernel.org>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- arch/x86/kernel/setup_percpu.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
-
-diff --git a/arch/x86/kernel/setup_percpu.c b/arch/x86/kernel/setup_percpu.c
-index 3a97a4c..8f0e13b 100644
---- a/arch/x86/kernel/setup_percpu.c
-+++ b/arch/x86/kernel/setup_percpu.c
-@@ -160,8 +160,10 @@ static ssize_t __init setup_pcpu_remap(size_t static_size)
- 	/*
- 	 * If large page isn't supported, there's no benefit in doing
- 	 * this.  Also, on non-NUMA, embedding is better.
-+	 *
-+	 * NOTE: disabled for now.
- 	 */
--	if (!cpu_has_pse || !pcpu_need_numa())
-+	if (true || !cpu_has_pse || !pcpu_need_numa())
- 		return -EINVAL;
- 
- 	/*
+	Ingo
