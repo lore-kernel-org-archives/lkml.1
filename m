@@ -1,52 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754497AbZEYXCU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754165AbZEYXDd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754497AbZEYXCU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 19:02:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753110AbZEYXCJ
+	id S1754165AbZEYXDd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 19:03:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753020AbZEYXD0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 19:02:09 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:41155 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753020AbZEYXCI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 19:02:08 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Frans Pop <elendil@planet.nl>
-Subject: Re: 2.6.30-rc6: Reported regressions from 2.6.29
-Date: Tue, 26 May 2009 01:02:28 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc6-rjw; KDE/4.2.3; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, kernel-testers@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-References: <_AjETDMbIoL.A.DcH.RYzDKB@chimera> <200905252224.37012.elendil@planet.nl>
-In-Reply-To: <200905252224.37012.elendil@planet.nl>
+	Mon, 25 May 2009 19:03:26 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:36338 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752892AbZEYXDZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 19:03:25 -0400
+Message-ID: <4A1B2377.3060601@zytor.com>
+Date: Mon, 25 May 2009 16:02:15 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Tejun Heo <tj@kernel.org>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [GIT PULL] x86 fixes for 2.6.30-rc8
+References: <200905252003.n4PK3sFi014919@voreg.hos.anvin.org> <alpine.LFD.2.01.0905251543570.3435@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.01.0905251543570.3435@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905260102.29455.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 25 May 2009, Frans Pop wrote:
-> Rafael J. Wysocki wrote:
-> > If you know of any other unresolved regressions from 2.6.29, please let
-> > me know either and I'll add them to the list.
-> 
-> It may be worth tracking a possible regression introduced with -rc6 as a 
-> result of http://bugzilla.kernel.org/show_bug.cgi?id=13259.
-> 
-> A new warning that was added in drivers/acpi/processor_throttling.c 
-> (commit 4973b22a: 'ACPI processor: reset the throttling state once it's 
-> invalid') may be triggering in cases where it shouldn't. It seems to 
-> trigger during boot and on 'cat /proc/acpi/processor/*/throttling'.
-> Otherwise it's probably relatively harmless.
-> 
-> See the comments starting at #23 for details.
+[Replying to add Venki back to the Cc: list since I typed his name]
 
-Hmm.  It's really better if you file a separate bug for that with a reference
-to the previous discussion.
+Linus Torvalds wrote:
+> 
+> On Mon, 25 May 2009, H. Peter Anvin wrote:
+>> +static void wbinvd_local(void *unused)
+>> +{
+>> +	wbinvd();
+>> +}
+>> +
+>>  static void cpa_flush_array(unsigned long *start, int numpages, int cache,
+>>  			    int in_flags, struct page **pages)
+>>  {
+>> @@ -218,8 +223,9 @@ static void cpa_flush_array(unsigned long *start, int numpages, int cache,
+>>  
+>>  	/* 4M threshold */
+>>  	if (numpages >= 1024) {
+>> -		if (boot_cpu_data.x86_model >= 4)
+>> -			wbinvd();
+>> +		if (boot_cpu_data.x86 >= 4)
+>> +			on_each_cpu(wbinvd_local, NULL, 1);
+>> +
+> 
+> This looks a bit wrong.
+> 
+> Just above this, we've done
+> 
+> 	on_each_cpu(__cpa_flush_range, NULL, 1);
+> 
+> and quite frankly, it seems to be that what we _should_ have done is to 
+> instead change that to
+> 
+> 	long do_wbinvd = cache && numpages >= 1024;
+> 
+> 	on_each_cpu(__cpa_flush_all, (void *)do_wbinvd, 1);
+> 	if (!cache || do_wbinvd)
+> 		return;
+> 
+> 	.. do the cflush dance .. 
+> 
+> instead.
+> 
+> Now you made it do two different "on_each_cpu" things. Maybe it doesn't 
+> matter, but it just seems wrong.
+> 
+> 		Linus
 
-Thanks,
-Rafael
+
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
