@@ -1,44 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758270AbZEYAN4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758079AbZEYAWx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758270AbZEYAN4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 May 2009 20:13:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754515AbZEYANl
+	id S1758079AbZEYAWx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 May 2009 20:22:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754535AbZEYAWq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 May 2009 20:13:41 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:59907 "EHLO bilbo.ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755262AbZEYANk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 May 2009 20:13:40 -0400
+	Sun, 24 May 2009 20:22:46 -0400
+Received: from mail14.tpgi.com.au ([203.12.160.182]:58581 "EHLO
+	mail14.tpgi.com.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754496AbZEYAWq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 May 2009 20:22:46 -0400
+X-TPG-Junk-Status: Message not scanned
+X-TPG-Antivirus: Passed
+X-TPG-Abuse: host=adsl.samad.com.au; ip=60.241.248.86; date=Mon, 25 May 2009 10:22:14 +1000
+Date: Mon, 25 May 2009 10:22:10 +1000
+From: Alex Samad <alex@samad.com.au>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Dave Chinner <david@fromorbit.com>
+Subject: Re: [Bug #13375] Kernel crash with 2.6.29 + nfs + xfs (radix-tree)
+Message-ID: <20090525002210.GE1339@samad.com.au>
+References: <GtY7d2eWpoK.A.ioC.MQcGKB@chimera> <WCcYF-TAbJC.A.RuC.RQcGKB@chimera>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18969.56962.588194.319564@cargo.ozlabs.ibm.com>
-Date: Mon, 25 May 2009 09:55:46 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       Corey Ashford <cjashfor@linux.vnet.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 2/2] perf_counter: optimize context switch between
-	identical inherited contexts
-In-Reply-To: <20090523123828.GA13878@elte.hu>
-References: <18966.10075.781053.231153@cargo.ozlabs.ibm.com>
-	<18966.10666.517218.332164@cargo.ozlabs.ibm.com>
-	<1242980169.26820.617.camel@twins>
-	<18966.30400.611789.434936@cargo.ozlabs.ibm.com>
-	<1242986897.26820.638.camel@twins>
-	<20090523123828.GA13878@elte.hu>
-X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="DocE+STaALJfprDB"
+Content-Disposition: inline
+In-Reply-To: <WCcYF-TAbJC.A.RuC.RQcGKB@chimera>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar writes:
 
-> OTOH, enabling/disabling counters in specific functions of a library 
-> might be a valid use-case.
+--DocE+STaALJfprDB
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-If that's the use case, wouldn't we wouldn't the "enable" to restore
-the previous state, rather than enabling all counters?
+Hi
 
-Paul.
+As far as I know it is still a problem=20
+
+Thanks
+Alex=20
+
+On Sun, May 24, 2009 at 09:31:20PM +0200, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of regressions introduced between 2.6.28 and 2.6.29.
+>=20
+> The following bug entry is on the current list of known regressions
+> introduced between 2.6.28 and 2.6.29.  Please verify if it still should
+> be listed and let me know (either way).
+>=20
+>=20
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=3D13375
+> Subject		: Kernel crash with 2.6.29 + nfs + xfs (radix-tree)
+> Submitter	: Alex Samad <alex@samad.com.au>
+> Date		: 2009-05-20 0:37 (5 days old)
+> References	: http://marc.info/?l=3Dlinux-kernel&m=3D124278675503699&w=3D4
+>=20
+>=20
+>=20
+
+
+--DocE+STaALJfprDB
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkoZ5KsACgkQkZz88chpJ2PvEACfSD+fVId1peMc1dtIYC3Y1gre
+mdIAnRg21b1An7/TErnVjQrgzBjv+3+m
+=sICR
+-----END PGP SIGNATURE-----
+
+--DocE+STaALJfprDB--
