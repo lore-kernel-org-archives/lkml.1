@@ -1,49 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752048AbZEYOB7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752671AbZEYOVj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752048AbZEYOB7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 10:01:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751726AbZEYOBv
+	id S1752671AbZEYOVj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 10:21:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751747AbZEYOVb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 10:01:51 -0400
-Received: from faui03.informatik.uni-erlangen.de ([131.188.30.103]:63481 "EHLO
-	faui03.informatik.uni-erlangen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751322AbZEYOBu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 10:01:50 -0400
-Date: Mon, 25 May 2009 16:01:51 +0200
-From: Thomas Glanzmann <thomas@glanzmann.de>
-To: Goswin von Brederlow <goswin-v-b@web.de>
-Cc: Theodore Tso <tytso@mit.edu>, Arjan van de Ven <arjan@infradead.org>,
-       tytso@thunk.org, LKML <linux-kernel@vger.kernel.org>,
-       linux-ext4@vger.kernel.org
-Subject: Re: zero out blocks of freed user data for operation a virtual
-	machine environment
-Message-ID: <20090525140151.GE5534@cip.informatik.uni-erlangen.de>
-Mail-Followup-To: Thomas Glanzmann <thomas@glanzmann.de>,
-	Goswin von Brederlow <goswin-v-b@web.de>,
-	Theodore Tso <tytso@mit.edu>,
-	Arjan van de Ven <arjan@infradead.org>, tytso@thunk.org,
-	LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org
-References: <20090524170045.GC24753@cip.informatik.uni-erlangen.de> <20090524101551.57b706e9@infradead.org> <20090524173933.GD24753@cip.informatik.uni-erlangen.de> <20090525120320.GA25908@mit.edu> <20090525123430.GA5534@cip.informatik.uni-erlangen.de> <87ab51qq91.fsf@frosties.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87ab51qq91.fsf@frosties.localdomain>
-User-Agent: Mutt/1.5.15 (2007-05-02)
+	Mon, 25 May 2009 10:21:31 -0400
+Received: from hera.kernel.org ([140.211.167.34]:40136 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751732AbZEYOVa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 10:21:30 -0400
+Subject: Re: [lm-sensors] [PATCH-tip] x86: hwmon/k8temp.c Add support for 
+ AMD 10H and 11H
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: Rudolf Marek <r.marek@assembler.cz>, Ingo Molnar <mingo@elte.hu>,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       LM Sensors <lm-sensors@lm-sensors.org>
+In-Reply-To: <20090525154501.3f251a23@hyperion.delvare>
+References: <1242979484.8796.7.camel@localhost.localdomain>
+	 <4A165F67.3020005@assembler.cz>
+	 <1242981748.10642.3.camel@localhost.localdomain>
+	 <1242984648.16532.3.camel@localhost.localdomain>
+	 <20090525154501.3f251a23@hyperion.delvare>
+Content-Type: text/plain
+Date: Mon, 25 May 2009 19:47:19 +0530
+Message-Id: <1243261039.3098.5.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Goswin,
+Hello Jean,
 
-> I could imagine a device mapper target that eats TRIM commands and
-> writes out zeroes instead. That should be easy to maintain outside or
-> inside the upstream kernel source.
+On Mon, 2009-05-25 at 15:45 +0200, Jean Delvare wrote:
+> Hi Jaswinder,
+> 
+> On Fri, 22 May 2009 15:00:48 +0530, Jaswinder Singh Rajput wrote:
+> > Atleast something is better than nothing ;-)
+> 
+> Sorry but you are wrong here. When it comes to hardware monitoring (or
+> monitoring in general), potentially wrong data is _worse_ than no data
+> at all, unless you additionally carry the information that the data
+> value may be wrong, and display it in a very visible manner. As our
+> sysfs interface doesn't provide any way to pass reliability information
+> to the reader (and I don't think it would make sense to add one), it is
+> better to not export data that we know can't be trusted.
+> 
 
-again an interesting option and for sure easy to handle. However what
-I'm really looking for is an option that gets upstream and will be
-incorperated in major distributions so that this option is available on
-every Linux distribution shipping in two years. However if this won't be
-the case I'm going to consider writing a device mapper target.
+As I said in my previous email that it seems problem is with few 10H
+cpus and 11H are OK.
 
-        Thomas
+So better we will fix wrong information or suppress information for
+those specific cpus.
+
+On my 11H laptop monitoring seems very reliable. So in the worst case we
+drop support for 10H.
+
+Thanks,
+--
+JSR
+
+
+
