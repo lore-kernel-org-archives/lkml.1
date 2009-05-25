@@ -1,47 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752744AbZEYLle@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753530AbZEYLlp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752744AbZEYLle (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 07:41:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751679AbZEYLl2
+	id S1753530AbZEYLlp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 07:41:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752412AbZEYLlh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 07:41:28 -0400
-Received: from cantor.suse.de ([195.135.220.2]:33922 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751660AbZEYLl1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 07:41:27 -0400
-Date: Mon, 25 May 2009 13:41:27 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yinghai@kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Jeff Garzik <jgarzik@pobox.com>,
-       Alexander Viro <viro@ftp.linux.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Mon, 25 May 2009 07:41:37 -0400
+Received: from relay3.sgi.com ([192.48.156.57]:60201 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753299AbZEYLlf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 07:41:35 -0400
+Date: Mon, 25 May 2009 06:41:35 -0500
+From: Robin Holt <holt@sgi.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Robin Holt <holt@sgi.com>, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, cl@linux-foundation.org,
-       mpm@selenic.com
-Subject: Re: [GIT PULL] scheduler fixes
-Message-ID: <20090525114127.GE24071@wotan.suse.de>
-References: <20090518202031.GA26549@elte.hu> <alpine.LFD.2.01.0905181457320.3301@localhost.localdomain> <Pine.LNX.4.64.0905241911120.12189@melkki.cs.Helsinki.FI> <4A199327.5030503@kernel.org> <20090525025353.GA2580@elte.hu> <4A1A2261.1000504@kernel.org> <20090525051521.GC23032@elte.hu> <Pine.LNX.4.64.0905251142140.32568@melkki.cs.Helsinki.FI> <20090525112504.GB24071@wotan.suse.de> <84144f020905250437x585e66a2oc1124a4f1f43059d@mail.gmail.com>
-Mime-Version: 1.0
+       Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
+       Wu Fengguang <fengguang.wu@intel.com>
+Subject: Re: [PATCH v3] zone_reclaim is always 0 by default
+Message-ID: <20090525114135.GD29447@sgi.com>
+References: <20090521114408.63D0.A69D9226@jp.fujitsu.com> <20090522122609.GC29447@sgi.com> <20090524214554.084F.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <84144f020905250437x585e66a2oc1124a4f1f43059d@mail.gmail.com>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20090524214554.084F.A69D9226@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 25, 2009 at 02:37:59PM +0300, Pekka Enberg wrote:
-> On Mon, May 25, 2009 at 2:25 PM, Nick Piggin <npiggin@suse.de> wrote:
-> > The bootmem allocations of course are required because some hashes may
-> > need to be larger than MAX_ORDER without using vmalloc.
-> >
-> > kmem_cache_init (and mem_init, partially) sets up the kernel memory
-> > allocators...
+On Sun, May 24, 2009 at 10:44:29PM +0900, KOSAKI Motohiro wrote:
+...
+> > Your root cause analysis is suspect.  You found a knob to turn which
+> > suddenly improved performance for one specific un-tuned server workload.
+...
+> The fact is, workload dependency charactetistics of zone reclaim is
+> widely known from very ago.
+> Even Documentaion/sysctl/vm.txt said, 
 > 
-> Which comment are you talking about? The "setup kernel memory
-> allocators" one? Yeah, I should probably move it couple of lines down.
+> > It may be beneficial to switch off zone reclaim if the system is
+> > used for a file server and all of memory should be used for caching files
+> > from disk. In that case the caching effect is more important than
+> > data locality.
+> 
+> Nobody except you oppose this.
 
-Yes, just that one.
+I don't disagree with that statement.  I agree this is a workload specific
+tuneable that for the case where you want to use the system for nothing
+other than file serving, you need to turn it off.  It has been this way
+for ages.  I am saying let's not change that default behavior.
+
+> > How did you determine better by default?  I think we already established
+> > that apache is a server workload and not a desktop workload.  Earlier
+> > you were arguing that we need this turned off to improve the desktop
+> > environment.  You have not established this improves desktop performance.
+> > Actually, you have not established it improves apache performance or
+> > server performance.  You have documented it improves memory utilization,
+> > but that is not always the same as faster.
+> 
+> The fact is, low-end machine performace depend on cache hitting ratio widely.
+> improving memory utilization mean improving cache hitting ratio.
+> 
+> Plus, I already explained about desktop use case. multiple worst case scenario 
+> can happend on it easily.
+> 
+> if big process consume memory rather than node size, zone-reclaim
+> decrease performance largely.
+
+It may improve performance as well.  I agree we can come up with
+theoretical cases that show both.  I am asking for documented cases where
+it does.  Your original post indicated an apache regression.  In that
+case apache was being used under server type loads.  If you have a machine
+with this condition, you should probably be considered the exception.
+
+> zone reclaim decrease page-cache hitting ratio. some desktop don't have
+> much memory. cache missies does'nt only increase latency, but also
+> increase unnecessary I/O. desktop don't have rich I/O bandwidth rather than
+> server or hpc. it makes bad I/O affect.
+
+If low I/O performance should be turning it off, then shouldn't that
+case be coded into the default as opposed to changing the default to
+match your specific opinion?
+
+> However, your past explanation is really wrong and bogus.
+> I wrote
+> 
+> > If this imbalance is an x86_64 only problem, then we could do something
+> > simple like the following untested patch.  This leaves the default
+> > for everyone except x86_64.
+> 
+> and I wrote it isn't true. after that, you haven't provide addisional
+> explanation.
+
+I don't recall seeing your response.  Sorry, but this has been, and will
+remain, low priority for me.  If the default gets changed, we will detect
+the performance regression very early after we start testing this bad
+of a change on a low memory machine and then we will put a tweak into
+place at the next distro release to turn this off following boot.
+
+> Nobody ack CODE-ONLY-PATCH. _You_ have to explain _why_ you think 
+> your approach is better.
+
+Because it doesn't throw out a lot of history based upon your opinion of
+one server type test found under lab conditions on a poorly tuned machine.
+
+Robin
