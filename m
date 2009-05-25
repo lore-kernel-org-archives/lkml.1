@@ -1,169 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754540AbZEYDzJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758352AbZEYDz1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754540AbZEYDzJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 May 2009 23:55:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751960AbZEYDy6
+	id S1758352AbZEYDz1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 May 2009 23:55:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754435AbZEYDzB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 May 2009 23:54:58 -0400
-Received: from mail-px0-f103.google.com ([209.85.216.103]:62365 "EHLO
-	mail-px0-f103.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751580AbZEYDy6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 May 2009 23:54:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=NjBVSvK2T4H0CsfLpNrBAYMv54RLqJFwzcrwkONQy9iR8mSIOQX8Q+4STJy2HSSb/R
-         QY+Xrb92JsFV5ZthrQZOX5XCOMfsLKKDTCWECubUO60W9wZgMaukUxzvH9djLSaKNZu5
-         p2EZABP0+zQGNL9HUrg20P5OIXhmarTgHHhFg=
-From: Huang Shijie <shijie8@gmail.com>
-To: akpm@linux-foundation.org
-Cc: cl@linux-foundation.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Huang Shijie <shijie8@gmail.com>
-Subject: [PATCH] lib : provide a more precise radix_tree_gang_lookup_slot
-Date: Mon, 25 May 2009 11:53:55 +0800
-Message-Id: <1243223635-3449-1-git-send-email-shijie8@gmail.com>
-X-Mailer: git-send-email 1.6.0.6
+	Sun, 24 May 2009 23:55:01 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:36920 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754703AbZEYDzA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 May 2009 23:55:00 -0400
+Date: Mon, 25 May 2009 05:54:46 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Subject: Re: [PATCH 02/17] x86: add io_apic_ops to allow interception
+Message-ID: <20090525035446.GC9396@elte.hu>
+References: <1242170724-13349-1-git-send-email-jeremy@goop.org> <1242170724-13349-3-git-send-email-jeremy@goop.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1242170724-13349-3-git-send-email-jeremy@goop.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: 0.3
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.3 required=5.9 tests=BAYES_00,FRT_LEVITRA autolearn=no SpamAssassin version=3.2.3
+	1.8 FRT_LEVITRA            BODY: ReplaceTags: Levitra
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-	The origin radix_tree_gang_lookup_slot() tries to
-lookup max_items slots.But there are maybe holes for
-find_get_pages_contig() which will only use the contiguous part.
 
-	So a more precise radix_tree_gang_lookup_slot() is needed
-to avoid unneccessary search work.
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-Signed-off-by: Huang Shijie <shijie8@gmail.com>
----
- include/linux/radix-tree.h |    3 ++-
- lib/radix-tree.c           |   27 +++++++++++++++++++++++----
- mm/filemap.c               |    4 ++--
- 3 files changed, 27 insertions(+), 7 deletions(-)
+> From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+> 
+> Xen dom0 needs to paravirtualize IO operations to the IO APIC, so add
+> a io_apic_ops for it to intercept.  Do this as ops structure because
+> there's at least some chance that another paravirtualized environment
+> may want to intercept these.
+> 
+> [Impact: indirect IO APIC access via io_apic_ops]
+> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+> ---
+>  arch/x86/include/asm/io_apic.h |    9 +++++++
+>  arch/x86/kernel/apic/io_apic.c |   50 +++++++++++++++++++++++++++++++++++++--
+>  2 files changed, 56 insertions(+), 3 deletions(-)
+> 
+> diff --git a/arch/x86/include/asm/io_apic.h b/arch/x86/include/asm/io_apic.h
+> index 9d826e4..8cbfe73 100644
+> --- a/arch/x86/include/asm/io_apic.h
+> +++ b/arch/x86/include/asm/io_apic.h
+> @@ -21,6 +21,15 @@
+>  #define IO_APIC_REDIR_LEVEL_TRIGGER	(1 << 15)
+>  #define IO_APIC_REDIR_MASKED		(1 << 16)
+>  
+> +struct io_apic_ops {
+> +	void (*init)(void);
+> +	unsigned int (*read)(unsigned int apic, unsigned int reg);
+> +	void (*write)(unsigned int apic, unsigned int reg, unsigned int value);
+> +	void (*modify)(unsigned int apic, unsigned int reg, unsigned int value);
+> +};
+> +
+> +void __init set_io_apic_ops(const struct io_apic_ops *);
 
-diff --git a/include/linux/radix-tree.h b/include/linux/radix-tree.h
-index 355f6e8..03e25f4 100644
---- a/include/linux/radix-tree.h
-+++ b/include/linux/radix-tree.h
-@@ -164,7 +164,8 @@ radix_tree_gang_lookup(struct radix_tree_root *root, void **results,
- 			unsigned long first_index, unsigned int max_items);
- unsigned int
- radix_tree_gang_lookup_slot(struct radix_tree_root *root, void ***results,
--			unsigned long first_index, unsigned int max_items);
-+			unsigned long first_index, unsigned int max_items,
-+			int contig);
- unsigned long radix_tree_next_hole(struct radix_tree_root *root,
- 				unsigned long index, unsigned long max_scan);
- int radix_tree_preload(gfp_t gfp_mask);
-diff --git a/lib/radix-tree.c b/lib/radix-tree.c
-index 4bb42a0..f81c21c 100644
---- a/lib/radix-tree.c
-+++ b/lib/radix-tree.c
-@@ -666,9 +666,13 @@ unsigned long radix_tree_next_hole(struct radix_tree_root *root,
- }
- EXPORT_SYMBOL(radix_tree_next_hole);
- 
-+/*
-+ * contig == 0 : next_index is index for next search
-+ * contig == 1 : next_index is MAYBE the index of the first NULL slot
-+ */
- static unsigned int
- __lookup(struct radix_tree_node *slot, void ***results, unsigned long index,
--	unsigned int max_items, unsigned long *next_index)
-+	unsigned int max_items, unsigned long *next_index, int contig)
- {
- 	unsigned int nr_found = 0;
- 	unsigned int shift, height;
-@@ -684,6 +688,9 @@ __lookup(struct radix_tree_node *slot, void ***results, unsigned long index,
- 		for (;;) {
- 			if (slot->slots[i] != NULL)
- 				break;
-+			if (contig)
-+				goto out;
-+
- 			index &= ~((1UL << shift) - 1);
- 			index += 1UL << shift;
- 			if (index == 0)
-@@ -706,6 +713,9 @@ __lookup(struct radix_tree_node *slot, void ***results, unsigned long index,
- 			results[nr_found++] = &(slot->slots[i]);
- 			if (nr_found == max_items)
- 				goto out;
-+		} else if (contig) {
-+			index--;
-+			goto out;
- 		}
- 	}
- out:
-@@ -763,7 +773,7 @@ radix_tree_gang_lookup(struct radix_tree_root *root, void **results,
- 		if (cur_index > max_index)
- 			break;
- 		slots_found = __lookup(node, (void ***)results + ret, cur_index,
--					max_items - ret, &next_index);
-+					max_items - ret, &next_index, 0);
- 		nr_found = 0;
- 		for (i = 0; i < slots_found; i++) {
- 			struct radix_tree_node *slot;
-@@ -789,6 +799,7 @@ EXPORT_SYMBOL(radix_tree_gang_lookup);
-  *	@results:	where the results of the lookup are placed
-  *	@first_index:	start the lookup from this key
-  *	@max_items:	place up to this many items at *results
-+ *	@contig:	if the indexes of slots are required to be contiguous
-  *
-  *	Performs an index-ascending scan of the tree for present items.  Places
-  *	their slots at *@results and returns the number of items which were
-@@ -802,7 +813,8 @@ EXPORT_SYMBOL(radix_tree_gang_lookup);
-  */
- unsigned int
- radix_tree_gang_lookup_slot(struct radix_tree_root *root, void ***results,
--			unsigned long first_index, unsigned int max_items)
-+			unsigned long first_index, unsigned int max_items,
-+			int contig)
- {
- 	unsigned long max_index;
- 	struct radix_tree_node *node;
-@@ -831,11 +843,18 @@ radix_tree_gang_lookup_slot(struct radix_tree_root *root, void ***results,
- 		if (cur_index > max_index)
- 			break;
- 		slots_found = __lookup(node, results + ret, cur_index,
--					max_items - ret, &next_index);
-+					max_items - ret, &next_index, contig);
- 		ret += slots_found;
- 		if (next_index == 0)
- 			break;
- 		cur_index = next_index;
-+
-+		if (contig) {
-+			if (slots_found == 0)
-+				break;
-+			if (next_index & RADIX_TREE_MAP_MASK)
-+				break;
-+		}
- 	}
- 
- 	return ret;
-diff --git a/mm/filemap.c b/mm/filemap.c
-index 379ff0b..ec17645 100644
---- a/mm/filemap.c
-+++ b/mm/filemap.c
-@@ -807,7 +807,7 @@ unsigned find_get_pages(struct address_space *mapping, pgoff_t start,
- 	rcu_read_lock();
- restart:
- 	nr_found = radix_tree_gang_lookup_slot(&mapping->page_tree,
--				(void ***)pages, start, nr_pages);
-+				(void ***)pages, start, nr_pages, 0);
- 	ret = 0;
- 	for (i = 0; i < nr_found; i++) {
- 		struct page *page;
-@@ -860,7 +860,7 @@ unsigned find_get_pages_contig(struct address_space *mapping, pgoff_t index,
- 	rcu_read_lock();
- restart:
- 	nr_found = radix_tree_gang_lookup_slot(&mapping->page_tree,
--				(void ***)pages, index, nr_pages);
-+				(void ***)pages, index, nr_pages, 1);
- 	ret = 0;
- 	for (i = 0; i < nr_found; i++) {
- 		struct page *page;
--- 
-1.6.0.6
+ok, could you please turn the whole IO-APIC code into a driver 
+framework? I.e. all IO-APIC calls outside of 
+arch/x86/kernel/apic/io_apic.c should be to some io_apic-> method.
 
+The advantage will be a proper abstraction for all IO-APIC details - 
+not just a minimalistic one for Xen's need.
+
+Also, please name it 'struct io_apic' - similar to the 'struct apic' 
+naming we have for the local APIC driver structure.
+
+Thanks,
+
+	Ingo
