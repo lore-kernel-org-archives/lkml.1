@@ -1,52 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754894AbZEYBhc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756025AbZEYBxm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754894AbZEYBhc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 May 2009 21:37:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753184AbZEYBhY
+	id S1756025AbZEYBxm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 May 2009 21:53:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754359AbZEYBxc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 May 2009 21:37:24 -0400
-Received: from xi.wantstofly.org ([80.101.37.227]:32844 "EHLO
-	mail.wantstofly.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751405AbZEYBhX (ORCPT
+	Sun, 24 May 2009 21:53:32 -0400
+Received: from yx-out-2324.google.com ([74.125.44.29]:6891 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753756AbZEYBxb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 May 2009 21:37:23 -0400
-Date: Mon, 25 May 2009 03:42:53 +0200
-From: Lennert Buytenhek <buytenh@wantstofly.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Andy Fleming <afleming@freescale.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Michael Guntsche <mike@it-loops.com>
-Subject: Re: [Bug #13293] Kernel BUG under network load with gianfar
-Message-ID: <20090525014253.GA14371@mail.wantstofly.org>
-References: <ZPPBiNHr1LC.A.9ZH.K9bGKB@chimera> <uSztiUhmDDC.A.Y_.99bGKB@chimera>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <uSztiUhmDDC.A.Y_.99bGKB@chimera>
-User-Agent: Mutt/1.4.2.2i
+	Sun, 24 May 2009 21:53:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=pYD/+RdELnE9XAfZ06NxOS4Cumpdouzeocfxwli5RXgKRHJHaOiTwWPpyR+/5U0kkI
+         DtqYI4Y+Elg+0ciuSa0GVzvIR3tmfToRjzuquv7Ot3iaHJ9Z9Q1KpcB9BcV9uXVzN0Rv
+         xKKMmTStIKIpAkYDaCfgA0ZlMxoKyFjnazFU0=
+MIME-Version: 1.0
+In-Reply-To: <20090525011819.GA9805@sli10-desk.sh.intel.com>
+References: <3d2f29dc0905180125x5e7ef51dqf10955a3d44336e2@mail.gmail.com>
+	 <200905242236.22715.rjw@sisk.pl> <4A19BA09.4050502@zytor.com>
+	 <20090525011819.GA9805@sli10-desk.sh.intel.com>
+Date: Sun, 24 May 2009 21:53:32 -0400
+Message-ID: <3d2f29dc0905241853h594aa2a9ta21dee45979c567e@mail.gmail.com>
+Subject: Re: Boot problems with 2.6.29.1 - cannot smoothly boot on battery
+From: Chris Howie <cdhowie@gmail.com>
+To: Shaohua Li <shaohua.li@intel.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Linux PM List <linux-pm@lists.linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Greg KH <gregkh@suse.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 24, 2009 at 09:11:52PM +0200, Rafael J. Wysocki wrote:
+On Sun, May 24, 2009 at 9:18 PM, Shaohua Li <shaohua.li@intel.com> wrote:
+> if this is a AMD CPU, please check http://bugzilla.kernel.org/show_bug.cgi?id=13233
 
-> This message has been generated automatically as a part of a report
-> of recent regressions.
-> 
-> The following bug entry is on the current list of known regressions
-> from 2.6.29.  Please verify if it still should be listed and let me know
-> (either way).
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13293
-> Subject		: Kernel BUG under network load with gianfar
-> Submitter	: Michael Guntsche <mike@it-loops.com>
-> Date		: 2009-05-03 13:36 (22 days old)
-> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=0fd56bb5be6455d0d42241e65aed057244665e5e
-> References	: http://marc.info/?l=linux-kernel&m=124135824600924&w=4
-> Handled-By	: Lennert Buytenhek <buytenh@wantstofly.org>
-> Patch		: http://patchwork.kernel.org/patch/25518/
+Ahh, that sounds like it.  I first noticed the problem in 2.6.28 after
+switching from 2.6.26 (but never tried 2.6.27).  So the information
+about versions is indeed consistent.  I'm on an amd64 cpu.
 
-The proposed patch has yet to be ACKed by the maintainer/merged, so
-yes, this regression should still be listed.
+Thanks everyone for the suggestions, I will try to take a look within
+the next couple of days and report my findings.
+
+-- 
+Chris Howie
+http://www.chrishowie.com
+http://en.wikipedia.org/wiki/User:Crazycomputers
