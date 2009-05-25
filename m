@@ -1,180 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754081AbZEYPmn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753137AbZEYPtu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754081AbZEYPmn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 11:42:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752228AbZEYPmf
+	id S1753137AbZEYPtu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 11:49:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752148AbZEYPtj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 11:42:35 -0400
-Received: from mail-bw0-f174.google.com ([209.85.218.174]:49334 "EHLO
-	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751600AbZEYPme (ORCPT
+	Mon, 25 May 2009 11:49:39 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:60381 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751982AbZEYPti (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 11:42:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=IeTEfmt/ptxtSEpej+9aI8DF/cKDxOHAwMP2IvWMD92fSahFMilBjlwrEs8szXxGgV
-         Z6JZVoxzk1j+MxNN0L0OQUtthB7Nv8Q7pR67ye30LH2xWllB/vPnTJTkyist+wu5hvza
-         f+3iX2uQ689lBzl3Atf2PNIwmqwg+oy5HfpRQ=
-Date: Mon, 25 May 2009 17:42:32 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/3] tracing/stat: sort in ascending order
-Message-ID: <20090525154229.GA7121@nowhere>
-References: <4A1A5AD1.3070804@cn.fujitsu.com>
+	Mon, 25 May 2009 11:49:38 -0400
+Date: Mon, 25 May 2009 11:49:38 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Kay Sievers <kay.sievers@vrfy.org>
+cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Boaz Harrosh <bharrosh@panasas.com>,
+       SCSI development list <linux-scsi@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Tejun Heo <tj@kernel.org>, Cornelia Huck <cornelia.huck@de.ibm.com>,
+       <linux-fsdevel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>
+Subject: Re: [PATCH 25/20] sysfs: Only support removing emtpy sysfs  directories.
+In-Reply-To: <1243252896.4853.9.camel@poy>
+Message-ID: <Pine.LNX.4.44L0.0905251144470.24294-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A1A5AD1.3070804@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 25, 2009 at 04:46:09PM +0800, Li Zefan wrote:
-> Currently the output of trace_stat/workqueues is totally reversed:
+Since this appears to be a bug in the SCSI layer, let's add some SCSI
+people to the CC: list.
+
+To summarize the problem: The SCSI core tries to unregister a host 
+while its sysfs directory is still non-empty because the target hasn't 
+been unregistered yet.
+
+On Mon, 25 May 2009, Kay Sievers wrote:
+
+> On Mon, 2009-05-25 at 13:45 +0200, Kay Sievers wrote:
+> > On Mon, May 25, 2009 at 04:06, Alan Stern <stern@rowland.harvard.edu> wrote:
 > 
->  # cat /debug/tracing/trace_stat/workqueues
->     ...
->     1       17       17      210       37   `-blk_unplug_work+0x0/0x57
->     1     3779     3779      181       11   |-cfq_kick_queue+0x0/0x2f
->     1     3796     3796                     kblockd/1:120
->     ...
+> > > by the way -- so it's a little difficult to trigger.
+> > 
+> > I can trigger it pretty reliable now on plain -rc7 , but only with
+> > more hubs in-between the storage device. It usually take less than
+> > 10-15 connect/disconnect cycles.
+> > 
+> > It looks like a serious bug though, after the bug triggered, random,
+> > likely unrelated, applications crash, and I can not cleanly shot down
+> > anymore.
+> > 
+> > > I posted a patch, but the
+> > > reporter never said whether or not the patch fixed the problem.  Hence
+> > > the patch hasn't been submitted.
+> > >
+> > > Here it is for you to try out.
+> > 
+> > I'll give it try now.
 > 
-> The correct output should be:
+> It still shows the same issue. Here is the trace with the target
+> directory left-over, when the host directory goes away: "host5/target5:0:0",
+> and the devpath with the parents lost "path = '/host5/target5:0:0'":
 > 
->     1     3796     3796                     kblockd/1:120
->     1     3779     3779      181       11   |-cfq_kick_queue+0x0/0x2f
->     1       17       17      210       37   `-blk_unplug_work+0x0/0x57
+> Thanks,
+> Kay
 > 
-> It's caused by "tracing/stat: replace linked list by an rbtree for sorting"
-> (53059c9b67a62a3dc8c80204d3da42b9267ea5a0).
 > 
-> Though we can simply change dummy_cmp() to return -1 instead of 1, IMO
-> it's better to always do ascending sorting in trace_stat.c, and leave each
-> stat tracer to decide whether to sort in descending or ascending order.
-> 
-> [ Impact: fix the output of trace_stat/workqueue ]
-> 
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> [   58.399021] kobject: 'host5' (ffff88012c52b558): kobject_uevent_env
+> [   58.399041] kobject: 'host5' (ffff88012c52b558): fill_kobj_path: path = '/devices/pci0000:00/0000:00:1d.7/usb2/2-2/2-2.4/2-2.4:1.0/host5/scsi_host/host5'
+> [   58.399213] kobject: 'scsi_host' (ffff88012548cdd0): kobject_cleanup
+> [   58.399217] kobject: 'scsi_host' (ffff88012548cdd0): auto cleanup kobject_del
+> [   58.399236] kobject: 'scsi_host' (ffff88012548cdd0): calling ktype release
+> [   58.399239] kobject: (ffff88012548cdd0): dynamic_kobj_release
+> [   58.399243] kobject: 'scsi_host': free name
+> [   58.399247] kobject: 'host5' (ffff88012c52b558): kobject_cleanup
+> [   58.399250] kobject: 'host5' (ffff88012c52b558): calling ktype release
+> [   58.399255] kobject: 'host5': free name
+> [   58.399315] kobject: 'host5' (ffff88012c52b388): kobject_uevent_env
+> [   58.399335] kobject: 'host5' (ffff88012c52b388): fill_kobj_path: path = '/devices/pci0000:00/0000:00:1d.7/usb2/2-2/2-2.4/2-2.4:1.0/host5'
+> [   58.399484] ------------[ cut here ]------------
+> [   58.399493] WARNING: at fs/sysfs/dir.c:794 sysfs_remove_dir+0xb2/0xd0()
+> [   58.399497] Hardware name: 2776LEG
+> [   58.399499] XXX dir: host5/target5:0:0
+> ...
+> [   58.399594] Pid: 226, comm: khubd Not tainted 2.6.30-rc7-dirty #40
+> [   58.399598] Call Trace:
+> [   58.399605]  [<ffffffff8023c6a8>] warn_slowpath_common+0x78/0xb0
+> [   58.399610]  [<ffffffff8023c73c>] warn_slowpath_fmt+0x3c/0x40
+> [   58.399614]  [<ffffffff803229f6>] ? sysfs_addrm_start+0x76/0xd0
+> [   58.399619]  [<ffffffff80323012>] sysfs_remove_dir+0xb2/0xd0
+> [   58.399626]  [<ffffffff803e5036>] kobject_del+0x16/0x40
+> [   58.399632]  [<ffffffff80477645>] device_del+0x165/0x1a0
+> [   58.399638]  [<ffffffff8048256f>] scsi_remove_host+0xcf/0x120
+> [   58.399652]  [<ffffffffa02fd3cb>] quiesce_and_remove_host+0x6b/0xb0 [usb_storage]
+> [   58.399662]  [<ffffffffa02fd4f8>] usb_stor_disconnect+0x18/0x30 [usb_storage]
+> [   58.399686]  [<ffffffffa0062fae>] usb_unbind_interface+0x6e/0x140 [usbcore]
+> [   58.399694]  [<ffffffff80479e29>] __device_release_driver+0x59/0xa0
+> [   58.399699]  [<ffffffff80479f68>] device_release_driver+0x28/0x40
+> [   58.399704]  [<ffffffff8047927c>] bus_remove_device+0xac/0xe0
+> [   58.399709]  [<ffffffff80477607>] device_del+0x127/0x1a0
+> [   58.399726]  [<ffffffffa005fb77>] usb_disable_device+0xa7/0x130 [usbcore]
+> [   58.399744]  [<ffffffffa005a818>] usb_disconnect+0xc8/0x140 [usbcore]
+> [   58.399761]  [<ffffffffa005a804>] usb_disconnect+0xb4/0x140 [usbcore]
+> [   58.399778]  [<ffffffffa005b8db>] hub_thread+0x50b/0x1230 [usbcore]
+> [   58.399784]  [<ffffffff80565a56>] ? _spin_unlock_irq+0x26/0x30
+> [   58.399790]  [<ffffffff80237d1e>] ? finish_task_switch+0x7e/0x140
+> [   58.399795]  [<ffffffff80237cdb>] ? finish_task_switch+0x3b/0x140
+> [   58.399802]  [<ffffffff802549e0>] ? autoremove_wake_function+0x0/0x40
+> [   58.399818]  [<ffffffffa005b3d0>] ? hub_thread+0x0/0x1230 [usbcore]
+> [   58.399823]  [<ffffffff802545b5>] kthread+0x55/0xa0
+> [   58.399829]  [<ffffffff8020cf3a>] child_rip+0xa/0x20
+> [   58.399833]  [<ffffffff80254560>] ? kthread+0x0/0xa0
+> [   58.399838]  [<ffffffff8020cf30>] ? child_rip+0x0/0x20
+> [   58.399842] ---[ end trace a5fdfdfd6227b73e ]---
+> ...
+> [   58.853385] kobject: 'target5:0:0' (ffff880129980480): kobject_uevent_env
+> [   58.853405] kobject: 'target5:0:0' (ffff880129980480): fill_kobj_path: path = '/host5/target5:0:0'
+> [   58.853643] kobject: 'target5:0:0' (ffff880129980480): kobject_cleanup
+> [   58.853647] kobject: 'target5:0:0' (ffff880129980480): calling ktype release
+> [   58.853653] kobject: 'host5' (ffff88012c52b388): kobject_cleanup
+> [   58.853657] kobject: 'host5' (ffff88012c52b388): calling ktype release
+> [   58.853701] kobject: '2-2.4:1.0' (ffff8801255319f0): kobject_cleanup
+> [   58.853705] kobject: '2-2.4:1.0' (ffff8801255319f0): calling ktype release
+> [   58.853721] kobject: '2-2.4:1.0': free name
+> [   58.853736] kobject: 'host5': free name
+> [   58.853742] kobject: 'target5:0:0': free name
+> [   58.853748] kobject: '5:0:0:0': free name
 
+Can you provide more of the context?  I'd like to see the log starting 
+from when these devices were first registered.
 
-For now in stat tracing, the ascendent sorting is the most relevant.
-Especially because we always want to see the highest problems first.
-
--1 (or < 0) usually means lower and 1 ( > 0) is higher.
-
-I wonder what would most confuse the developers of stat tracers:
-
-- to reverse these common sort values (-1 turn into "higher")
-- keep the default ascendent sorting, which is not natural because the default
-  is often descendent.
-
-I don't know. 
-
-Anyone else. Do you have a preference?
-
-Thanks,
-
-Frederic.
-
-
-> ---
->  kernel/trace/ftrace.c       |   12 ++++++------
->  kernel/trace/trace_branch.c |    5 +++--
->  kernel/trace/trace_stat.c   |    6 +-----
->  3 files changed, 10 insertions(+), 13 deletions(-)
-> 
-> diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-> index 140699a..3dd16bd 100644
-> --- a/kernel/trace/ftrace.c
-> +++ b/kernel/trace/ftrace.c
-> @@ -315,29 +315,29 @@ static void *function_stat_start(struct tracer_stat *trace)
->  }
->  
->  #ifdef CONFIG_FUNCTION_GRAPH_TRACER
-> -/* function graph compares on total time */
-> +/* function graph compares on total time in reverse order */
->  static int function_stat_cmp(void *p1, void *p2)
->  {
->  	struct ftrace_profile *a = p1;
->  	struct ftrace_profile *b = p2;
->  
-> -	if (a->time < b->time)
-> -		return -1;
->  	if (a->time > b->time)
-> +		return -1;
-> +	if (a->time < b->time)
->  		return 1;
->  	else
->  		return 0;
->  }
->  #else
-> -/* not function graph compares against hits */
-> +/* not function graph compares against hits in reverse order */
->  static int function_stat_cmp(void *p1, void *p2)
->  {
->  	struct ftrace_profile *a = p1;
->  	struct ftrace_profile *b = p2;
->  
-> -	if (a->counter < b->counter)
-> -		return -1;
->  	if (a->counter > b->counter)
-> +		return -1;
-> +	if (a->counter < b->counter)
->  		return 1;
->  	else
->  		return 0;
-> diff --git a/kernel/trace/trace_branch.c b/kernel/trace/trace_branch.c
-> index 7a7a9fd..df58411 100644
-> --- a/kernel/trace/trace_branch.c
-> +++ b/kernel/trace/trace_branch.c
-> @@ -301,9 +301,10 @@ static int annotated_branch_stat_cmp(void *p1, void *p2)
->  	percent_a = get_incorrect_percent(a);
->  	percent_b = get_incorrect_percent(b);
->  
-> -	if (percent_a < percent_b)
-> -		return -1;
-> +	/* sort in descending order */
->  	if (percent_a > percent_b)
-> +		return -1;
-> +	if (percent_a < percent_b)
->  		return 1;
->  	else
->  		return 0;
-> diff --git a/kernel/trace/trace_stat.c b/kernel/trace/trace_stat.c
-> index 2e849b5..6efbcb4 100644
-> --- a/kernel/trace/trace_stat.c
-> +++ b/kernel/trace/trace_stat.c
-> @@ -98,10 +98,6 @@ insert_stat(struct rb_root *root, struct stat_node *data, cmp_stat_t cmp)
->  {
->  	struct rb_node **new = &(root->rb_node), *parent = NULL;
->  
-> -	/*
-> -	 * Figure out where to put new node
-> -	 * This is a descendent sorting
-> -	 */
->  	while (*new) {
->  		struct stat_node *this;
->  		int result;
-> @@ -110,7 +106,7 @@ insert_stat(struct rb_root *root, struct stat_node *data, cmp_stat_t cmp)
->  		result = cmp(data->stat, this->stat);
->  
->  		parent = *new;
-> -		if (result >= 0)
-> +		if (result < 0)
->  			new = &((*new)->rb_left);
->  		else
->  			new = &((*new)->rb_right);
-> -- 
-> 1.5.4.rc3
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Alan Stern
 
