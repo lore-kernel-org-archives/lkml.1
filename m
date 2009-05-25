@@ -1,59 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754911AbZEYXN0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754937AbZEYXOJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754911AbZEYXN0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 19:13:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753249AbZEYXNT
+	id S1754937AbZEYXOJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 19:14:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753056AbZEYXN5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 19:13:19 -0400
-Received: from smtp-out003.kontent.com ([81.88.40.217]:43581 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753151AbZEYXNS (ORCPT
+	Mon, 25 May 2009 19:13:57 -0400
+Received: from Cpsmtpm-eml109.kpnxchange.com ([195.121.3.13]:59174 "EHLO
+	CPSMTPM-EML109.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753151AbZEYXN5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 19:13:18 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
-Date: Tue, 26 May 2009 01:13:46 +0200
-User-Agent: KMail/1.10.3 (Linux/2.6.27.21-0.1-default; KDE/4.1.3; x86_64; ; )
-Cc: nigel@tuxonice.net, linux-pm@lists.linux-foundation.org,
-       tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org,
-       Pavel Machek <pavel@ucw.cz>
-References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net> <200905260045.33902.oliver@neukum.org> <200905260058.54482.rjw@sisk.pl>
-In-Reply-To: <200905260058.54482.rjw@sisk.pl>
+	Mon, 25 May 2009 19:13:57 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: Re: [PATCH 2/3] ide: preserve HPA by default
+Date: Tue, 26 May 2009 01:10:08 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       alan@lxorguk.ukuu.org.uk
+References: <200905252344.57797.bzolnier@gmail.com>
+In-reply-To: <200905252344.57797.bzolnier@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-2"
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200905260113.46440.oliver@neukum.org>
+Message-Id: <200905260110.09496.elendil@planet.nl>
+X-OriginalArrivalTime: 25 May 2009 23:10:09.0970 (UTC) FILETIME=[F35AA120:01C9DD8D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Dienstag, 26. Mai 2009 00:58:53 schrieb Rafael J. Wysocki:
-> On Tuesday 26 May 2009, Oliver Neukum wrote:
+Bartlomiej Zolnierkiewicz wrote:
+> --- a/drivers/ide/Kconfig
+> +++ b/drivers/ide/Kconfig
+> @@ -91,6 +91,28 @@ config BLK_DEV_IDE_SATA
+[...]
+> +config IDE_PRESERVE_HPA
+> +       bool "Preserve Host Protected Area (please read help)"
+> +       default y
+> +       help
+> +         From the majority of modern users perspectives ignoring the HPA
+> +         breaks vendor RAID formats, GPT partitions or risks corrupting
+> +         firmware.
 
-> > No, I am afraid it is not. The average user has no clue. Even if that
-> > is not the problem, the user never knows for sure he has encountered
-> > the worst case.
->
-> OK there, but surely it's better to have a sysfs attribute than a fixed
-> value?
+First sentence would IMO read better as:
+"From the perspective of most users of recent systems, ignoring the
+ HPA can break ..."
 
-Why? The driver knows best. Tunables are generally the worst solution.
+Maybe add "risks overwriting vendor system recovery tools"?
 
-> > If you really have drivers that have exceptionally large memory
-> > requirements (eg. you need to copy video ram), you should tell the system
-> > through struct driver and do accounting at probe and removal of devices.
->
-> Or perhaps the drivers should allocate memory from a PM notifier (which is
-> called before the freezing of tasks) to avoid the problem?
+> +         Unfortunately the original (kernel versions < 2.6.30) behavior
+> +         (ignoring HPA, using full disk capacity) was introduced at the
+> +         time when the main HPA use was with the jumper (or software)
+> +         to make the drive look small enough for the BIOS to allow boot
+> +         with big drives.
 
-That's also possible. It is slightly more wasteful, as you are required
-to actually the memory. If you tell the core, it is sufficient that the memory
-can be freed without a device driver becoming involved, that is the page
-must be cleaned but doesn't have to be dropped.
+"... the main use of HPA was to make the drive look small enough for the
+ BIOS to allow the system to boot with large capacity drives."
 
-	Regards
-		Oliver
+I've dropped the "with the jumper (or software)" as it's confusing and
+IMHO does not really add anything for the user (but see suggestion below).
 
+> +         To allow the maximum compatibility with the existing setups
+> +         (using HPA and partitioned with HPA disabled) the default HPA
+> +         behavior can be also later adjusted using "ignore_hpa" module
+> +         parameter (i.e. "ide_core.ignore_hpa=1").
+
+"... can also be adjusted later using the "ignore_hpa" ..."
+
+Maybe add a para here that explains what "Preserve Host Protected Area"
+actually does, something like:
+"If you say Y, the driver will respect the Host Protected Area if one is
+ defined in the BIOS or (for older drives) through a jumper setting on
+ the drive."
+
+> +         Say Y unless you have such setup and for some reason cannot
+> +         use "ignore_hpa" module parameter.
+
+"... use the "ignore_hpa" module parameter."
+
+Cheers,
+FJP
