@@ -1,72 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754192AbZEYVIl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754354AbZEYVKw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754192AbZEYVIl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 17:08:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752545AbZEYVId
+	id S1754354AbZEYVKw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 17:10:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753004AbZEYVKp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 17:08:33 -0400
-Received: from mail01.peak.org ([69.59.192.41]:1812 "EHLO mail01.peak.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752677AbZEYVIc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 17:08:32 -0400
-X-Greylist: delayed 43351 seconds by postgrey-1.27 at vger.kernel.org; Mon, 25 May 2009 17:08:32 EDT
-Message-ID: <34438.212.116.219.91.1243242187.squirrel@webmail.peak.org>
-Date: Mon, 25 May 2009 02:03:07 -0700 (PDT)
-Subject: Your Account Expire in 2(Days).
-From: "Helpdesk" <santanapro@peak.org>
-Reply-To: webit.help@administrativos.com
-User-Agent: SquirrelMail/1.4.4
+	Mon, 25 May 2009 17:10:45 -0400
+Received: from mx-out2.daemonmail.net ([216.104.160.39]:39435 "EHLO
+	mx-out2.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752895AbZEYVKo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 17:10:44 -0400
+From: "Michael S. Zick" <lkml@morethan.org>
+Reply-To: lkml@morethan.org
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [BUG FIX] Make x86_32 uni-processor Atomic ops, Atomic
+Date: Mon, 25 May 2009 16:10:40 -0500
+User-Agent: KMail/1.9.9
+Cc: Harald Welte <HaraldWelte@viatech.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+References: <200905221139.26941.lkml@morethan.org> <200905251418.39933.lkml@morethan.org> <200905251446.37022.lkml@morethan.org>
+In-Reply-To: <200905251446.37022.lkml@morethan.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
-X-smtp-out.server.peak.org-MailScanner-Information: Please contact the ISP for more information
-X-smtp-out.server.peak.org-MailScanner: Found to be clean
-X-smtp-out.server.peak.org-MailScanner-SpamCheck: not spam,
-	SpamAssassin (cached, score=-1.307, required 6, BAYES_00 -2.60,
-	MISSING_HEADERS 1.29)
-X-smtp-out.server.peak.org-MailScanner-From: santanapro@peak.org
-To: unlisted-recipients:; (no To-header on input)
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200905251610.43071.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon May 25 2009, Michael S. Zick wrote:
 
+In actual application, this *should not* make a difference.
 
-
--- 
-Dear Webmail User,
-
-This message was sent automatically by a program on Webmail admin center
-which periodically checks the size of inbox, where new messages are
-received. The program is run weekly to ensure no one's inbox grows too
-large. If your inbox becomes too large, you will be unable to receive new
-emails.
-
-Just before this message was sent, you had 18 Megabytes (MB) or more of
-messages stored in your inbox. To help us re-set your SPACE on our
-database prior to maintain your INBOX, you must reply to this e-mail and
-enter your Current User name ( ... ... ... ... ) and Password ( ... ...
-... ... ) e-mail ( ... ... ... ... ).
-
-You will continue to receive this warning message periodically if your
-inbox size continues to be between 18 and 50 MB. If your inbox size grows
-to 50 MB, then a program on Webmail admin center will move your oldest
-email to a folder in your home directory to ensure that you will continue
-to be able to receive incoming email. You will be notified by email that
-this has taken place. If your inbox grows to 50 MB, you will be unable to
-receive new email as it will be returned to the sender.
-
-After you read this message, it is best to REPLY with the required
-information to upgrade MailBox.
-
-Note: Your Account Expire in 2(Days). Reply to this message immediately
-Reactivate your Account.
-
-Thank you for your cooperation.
-Webmail Help Desk.
---------------------------------------------
-
+Mike
+> On Mon May 25 2009, Michael S. Zick wrote:
+> > On Mon May 25 2009, Michael S. Zick wrote:
+> > > On Sun May 24 2009, H. Peter Anvin wrote:
+> > > > Michael S. Zick wrote:
+> > > > > 
+> > > > > Note: I have seem to recall that newer gcc's optimizer presume 
+> > > > > that the flags register is preserved across asm - 
+> > > > > It didn't use to do that - but there is now a "cc" to deal with
+> > > > > that - Have not yet audited for that, but it is high on my list.
+> > > > > 
+> > > > 
+> > > > I am pretty sure that's false... if it was true we'd have failures all
+> > > > over the kernel.
+> > > > 
+> > > 
+> > > No information on the above (yet) - but you gotta love this one: ;)
+> > > 
+> > > Programmer authors code specifying that the subtraction be done
+> > > prior to the addition to avoid over-flow conditions;
+> > > 
+> > > GCC's optimizer, in its great wisdom, codes in the overflow case:
+> > > ( the case of finding the characters used/free in a ring buffer )
+> > > 
+> > > extern int diff_umask(int mask, int *cnt1, int *cnt2) 
+> > > { return (((mask - *cnt1) + *cnt2) & mask); }
+> > > 
+> > > /**
+> > >  * gcc -O2 -S -fomit-frame-pointer difftest.c
+> > >  *
+> > >          .file   "difftest.c"
+> > >         .text
+> > >         .p2align 4,,15
+> > > .globl diff_umask
+> > >         .type   diff_umask, @function
+> > > diff_umask:
+> > >         movl    12(%esp), %eax
+> > >         movl    4(%esp), %ecx
+> > >         movl    (%eax), %edx
+> > >         leal    (%ecx,%edx), %eax
+> > >         movl    8(%esp), %edx
+> > >         subl    (%edx), %eax
+> > >         andl    %ecx, %eax
+> > >         ret
+> > >         .size   diff_umask, .-diff_umask
+> > >         .ident  "GCC: (Debian 4.3.2-1.1) 4.3.2"
+> > >         .section        .note.GNU-stack,"",@progbits
+> > > */
+> > > 
+> > > Note: That is not the compiler version I am building my kernels with.
+> > > 
+> > 
+> > The compiler I am using (Gentoo 4.1.2) gets it correct:
+> > 
+> >         .file   "difftest.c"
+> >         .text
+> >         .p2align 4,,15
+> > .globl diff_umask
+> >         .type   diff_umask, @function
+> > diff_umask:
+> >         movl    4(%esp), %eax
+> >         movl    8(%esp), %edx
+> >         movl    %eax, %ecx
+> >         subl    (%edx), %ecx
+> >         movl    %ecx, %edx
+> >         movl    12(%esp), %ecx
+> >         addl    (%ecx), %edx
+> >         andl    %edx, %eax
+> >         ret
+> >         .size   diff_umask, .-diff_umask
+> >         .ident  "GCC: (GNU) 4.1.2 (Gentoo 4.1.2 p1.1)"
+> >         .section        .note.GNU-stack,"",@progbits
+> > 
+> 
+> Gentoo's current 4.3 gets it wrong also:
+> 
+>         .file   "difftest.c"
+>         .text
+>         .p2align 4,,15
+> .globl diff_umask
+>         .type   diff_umask, @function
+> diff_umask:
+>         movl    12(%esp), %eax
+>         movl    4(%esp), %ecx
+>         movl    (%eax), %edx
+>         leal    (%ecx,%edx), %eax
+>         movl    8(%esp), %edx
+>         subl    (%edx), %eax
+>         andl    %ecx, %eax
+>         ret
+>         .size   diff_umask, .-diff_umask
+>         .ident  "GCC: (Gentoo 4.3.2-r3 p1.6, pie-10.1.5) 4.3.2"
+>         .section        .note.GNU-stack,"",@progbits
+> 
+> = = = =
+> 
+> Might be time to put compiler version checking back into the
+> build system and/or re-test the sources that do have version
+> checking in them (hint: the boss's code).
+> 
+> Mike
+> > Mike
+> > > Don't blame me, I didn't write the compiler. ;)
+> > > 
+> > > Mike
+> > > > 	-hpa
+> > > > 
+> > > 
+> > > 
+> > > --
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> 
 
 
