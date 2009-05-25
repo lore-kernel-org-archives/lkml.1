@@ -1,64 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753991AbZEYUBH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754563AbZEYUBX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753991AbZEYUBH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 16:01:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751824AbZEYUA4
+	id S1754563AbZEYUBX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 16:01:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752417AbZEYUBG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 16:00:56 -0400
-Received: from ey-out-2122.google.com ([74.125.78.24]:41967 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753417AbZEYUAz (ORCPT
+	Mon, 25 May 2009 16:01:06 -0400
+Received: from mail-bw0-f222.google.com ([209.85.218.222]:62033 "EHLO
+	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753826AbZEYUBF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 16:00:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=dxE2oI22Nt2W2AdAk/g6k6cfNnlCfpPYvZsXO4LgZ8JItTZcXbE8ULhiLFG85AKp/I
-         KvTrQaodFDtB2Dvd9+6WxS36kIc8m77H5anF7Bl6wxu+Pvtbs9C+8a4ghhX+Dogf3rxc
-         CadDAiEXxeVAHjVQMbhpcKf/ZA40qsHXBDtW0=
-Date: Mon, 25 May 2009 22:00:52 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Anton Blanchard <anton@samba.org>
-Cc: rostedt@goodmis.org, mingo@elte.hu, tzanussi@gmail.com, jbaron@redhat.com,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] tracing/events: Add timer and high res timer
-	tracepoints
-Message-ID: <20090525200050.GC7879@nowhere>
-References: <20090520101334.GA23442@kryten> <c62985530905201701i36527eblae479c07eec06515@mail.gmail.com> <20090521123810.GB23442@kryten>
+	Mon, 25 May 2009 16:01:05 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090521123810.GB23442@kryten>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090525195045.GA6768@redhat.com>
+References: <87y6slb7ug.fsf@devron.myhome.or.jp> <Pine.LNX.4.44L0.0905251127410.23874-100000@netrider.rowland.org> 
+	<20090525184816.GB6649@redhat.com> <ac3eb2510905251232t3f0c5029tb006f72c9ab6ef8e@mail.gmail.com> 
+	<20090525195045.GA6768@redhat.com>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Mon, 25 May 2009 22:00:45 +0200
+Message-ID: <ac3eb2510905251300n6dcec0e0oc656d46d1b2b82fc@mail.gmail.com>
+Subject: Re: 2.a.30-rc7: fat filesystem misdetected as amiga
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 21, 2009 at 10:38:10PM +1000, Anton Blanchard wrote:
-> 
-> Hi Frédéric,
-> 
-> > > +       ),
-> > > +
-> > > +       TP_fast_assign(
-> > > +               __entry->function = timer->function;
-> > > +       ),
-> > > +
-> > > +       TP_printk("func=%pF", __entry->function)
-> > 
-> > 
-> > Please use %pf which only prints the function name and ignore the
-> > offsets and so... These overload
-> > the trace in such case.
-> 
-> Thanks for the suggestion. It doesn't look like %pf has made Ingo's tree
-> yet, do you know if there is a plan to merge it soon?
-> 
-> Anton
+On Mon, May 25, 2009 at 21:50, Michael S. Tsirkin <mst@redhat.com> wrote:
+> On Mon, May 25, 2009 at 09:32:27PM +0200, Kay Sievers wrote:
+>> On Mon, May 25, 2009 at 20:48, Michael S. Tsirkin <mst@redhat.com> wrote:
+>>
+>> >> > > Dev sdb: unable to read RDB block 0
+>>
+>> Is this Fedora? Or are you running a recent version of DeviceKit-disks?
+>>
+>> We've seen such problems when trying to issue SAT commands to some USB
+>> devices. If it's Fedora, this is fixed with an update to Fedora 11.
 
+> This is 2.6.30-rc6 from kernel.org.
 
-It's available on tip:master, may be you are working on another tree, or..?
+I mean userspace not the kernel. We've seen this triggered by
+userspace on any recent kernel, and there is nothing wrong with the
+kernel in the cases we've seen. Do you run DeviceKit-disks or Fedora
+11?
 
+Thanks,
+Kay
