@@ -1,143 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758591AbZEYFgQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754768AbZEYFjO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758591AbZEYFgQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 01:36:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753551AbZEYFgB
+	id S1754768AbZEYFjO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 01:39:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751488AbZEYFjA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 01:36:01 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:63648 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750881AbZEYFgA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 01:36:00 -0400
-Message-ID: <4A1A2DE2.6000304@cn.fujitsu.com>
-Date: Mon, 25 May 2009 13:34:26 +0800
-From: Zhaolei <zhaolei@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Mon, 25 May 2009 01:39:00 -0400
+Received: from rcsinet11.oracle.com ([148.87.113.123]:46717 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751117AbZEYFi7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 01:38:59 -0400
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Jens Axboe <jens.axboe@oracle.com>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       "Martin K. Petersen" <martin.petersen@oracle.com>,
+       Mikulas Patocka <mpatocka@redhat.com>,
+       Mike Snitzer <snitzer@redhat.com>, Alasdair G Kergon <agk@redhat.com>
+Subject: Re: linux-next: block tree build failure
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+Organization: Oracle
+References: <20090525143511.f9e76bdc.sfr@canb.auug.org.au>
+Date: Mon, 25 May 2009 01:38:26 -0400
+In-Reply-To: <20090525143511.f9e76bdc.sfr@canb.auug.org.au> (Stephen
+	Rothwell's message of "Mon, 25 May 2009 14:35:11 +1000")
+Message-ID: <yq1bpphg2st.fsf@sermon.lab.mkp.net>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
 MIME-Version: 1.0
-To: Frederic Weisbecker <fweisbec@gmail.com>
-CC: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Tom Zanussi <tzanussi@gmail.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Re: [PATCH v2 2/2] ftrace: clean up of using	ftrace_event_enable_disable()
-References: <4A14FDFE.2080402@cn.fujitsu.com> <4A16788F.2060802@cn.fujitsu.com> <4A16791C.8090501@cn.fujitsu.com> <20090524204620.GC6471@nowhere>
-In-Reply-To: <20090524204620.GC6471@nowhere>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-Source-IP: abhmt010.oracle.com [141.146.116.19]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A09020A.4A1A2ED7.0062:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frederic Weisbecker wrote:
-> On Fri, May 22, 2009 at 06:06:20PM +0800, Zhaolei wrote:
->> Always use tracing_stop_cmdline_record() to enable/disable a event.
->>
->> Impact: cleanup, no functionality changed
->>
->> Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
->> ---
->>  kernel/trace/trace_events.c |   44 +++++++++++++-----------------------------
->>  1 files changed, 14 insertions(+), 30 deletions(-)
->>
->> diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
->> index df35e5e..16ef47a 100644
->> --- a/kernel/trace/trace_events.c
->> +++ b/kernel/trace/trace_events.c
->> @@ -76,26 +76,9 @@ static void trace_destroy_fields(struct ftrace_event_call *call)
->>  
->>  #endif /* CONFIG_MODULES */
->>  
->> -static void ftrace_clear_events(void)
->> -{
->> -	struct ftrace_event_call *call;
->> -
->> -	mutex_lock(&event_mutex);
->> -	list_for_each_entry(call, &ftrace_events, list) {
-> 
-> 
-> Don't we have a "for_each_event" ?
+>>>>> "Stephen" == Stephen Rothwell <sfr@canb.auug.org.au> writes:
 
-Hello, Frederic
+Stephen> Caused by commit 025146e13b63483add912706c101fb0fb6f015cc
+Stephen> ("block: Move queue limits to an embedded struct") from the
+Stephen> block tree interacting with commit
+Stephen> c8f4b88baca86491a6125cf9373a75e04b22ff8b
+Stephen> ("dm-avoid-unsupported-spanning-of-md-stripe-boundaries") from
+Stephen> the device-mapper tree.
 
-Thanks for your review.
+Stephen> This is caused by commit
+Stephen> e1defc4ff0cf57aca6c5e3ff99fa503f5943c1f1 ("block: Do away with
+Stephen> the notion of hardsect_size") from the block tree interacting
+Stephen> with commits cc1018ae8a413b595a1f0f822928dd9e81a75e59
+Stephen> ("dm-table-ensure-targets-are-aligned-to-hardsect_size") and
+Stephen> 64b184139ca6cd3d53dc45d7782c8be50b3e0331
+Stephen> ("dm-table-validate-device-hardsect_size") from the
+Stephen> device-mapper tree.
 
-IMHO, for_each_event is for iter each tracepoints in one module(or kernel),
-but we need to iter whole tracepoints in manage.
-So, list_for_each_entry(call, &ftrace_events, list) maybe better here.
+Bummer. I wasn't aware Alasdair had taken those patches into his DM tree
+yet.  I thought he was waiting for my block layer patches to land.
 
-Thanks
-Zhaolei
+The accessor function patch in my patch series was explicitly put in
+place to enable changing the API without affecting users.  And we've
+tried to be careful about staging these patches in the right order
+throughout all the involved trees.
 
-> 
-> 
->> -
->> -		if (call->enabled) {
->> -			call->enabled = 0;
->> -			tracing_stop_cmdline_record();
->> -			call->unregfunc();
->> -		}
->> -	}
->> -	mutex_unlock(&event_mutex);
->> -}
->> -
->>  static void ftrace_event_enable_disable(struct ftrace_event_call *call,
->>  					int enable)
->>  {
->> -
->>  	switch (enable) {
->>  	case 0:
->>  		if (call->enabled) {
->> @@ -114,6 +97,17 @@ static void ftrace_event_enable_disable(struct ftrace_event_call *call,
->>  	}
->>  }
->>  
->> +static void ftrace_clear_events(void)
->> +{
->> +	struct ftrace_event_call *call;
->> +
->> +	mutex_lock(&event_mutex);
->> +	list_for_each_entry(call, &ftrace_events, list) {
->> +		ftrace_event_enable_disable(call, 0);
->> +	}
->> +	mutex_unlock(&event_mutex);
->> +}
->> +
->>  /*
->>   * __ftrace_set_clr_event(NULL, NULL, NULL, set) will set/unset all events.
->>   */
->> @@ -1059,11 +1053,7 @@ static void trace_module_remove_events(struct module *mod)
->>  	list_for_each_entry_safe(call, p, &ftrace_events, list) {
->>  		if (call->mod == mod) {
->>  			found = true;
->> -			if (call->enabled) {
->> -				call->enabled = 0;
->> -				tracing_stop_cmdline_record();
->> -				call->unregfunc();
->> -			}
->> +			ftrace_event_enable_disable(call, 0);
->>  			if (call->event)
->>  				unregister_ftrace_event(call->event);
->>  			debugfs_remove_recursive(call->dir);
->> @@ -1265,15 +1255,9 @@ static __init void event_trace_self_tests(void)
->>  			continue;
->>  		}
->>  
->> -		call->enabled = 1;
->> -		tracing_start_cmdline_record();
->> -		call->regfunc();
->> -
->> +		ftrace_event_enable_disable(call, 1);
->>  		event_test_stuff();
->> -
->> -		call->unregfunc();
->> -		tracing_stop_cmdline_record();
->> -		call->enabled = 0;
->> +		ftrace_event_enable_disable(call, 0);
->>  
->>  		pr_cont("OK\n");
->>  	}
-> 
-> 
-> Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
-> 
-> 
+Sorry about the slip-up :|
 
-
+-- 
+Martin K. Petersen	Oracle Linux Engineering
