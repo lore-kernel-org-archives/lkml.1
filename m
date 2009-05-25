@@ -1,127 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754038AbZEYDKH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755597AbZEYD3f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754038AbZEYDKH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 May 2009 23:10:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752721AbZEYDJ6
+	id S1755597AbZEYD3f (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 May 2009 23:29:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751962AbZEYD33
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 May 2009 23:09:58 -0400
-Received: from ganesha.gnumonks.org ([213.95.27.120]:52866 "EHLO
-	ganesha.gnumonks.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752428AbZEYDJ5 (ORCPT
+	Sun, 24 May 2009 23:29:29 -0400
+Received: from hawking.rebel.net.au ([203.20.69.83]:45080 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751619AbZEYD32 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 May 2009 23:09:57 -0400
-Date: Mon, 25 May 2009 11:09:42 +0800
-From: Harald Welte <HaraldWelte@viatech.com>
-To: JosephChan@via.com.tw
-Cc: drzeus-mmc@drzeus.cx, linux-kernel@vger.kernel.org, arnd@arndb.de,
-       ben-linux@fluff.org, Bruce Chang <BruceChang@via.com.tw>
-Subject: Re: [Patch 1/1 v5] via-sdmmc: VIA MSP card reader driver support
-Message-ID: <20090525030942.GC8702@prithivi.gnumonks.org>
-References: <20090410203520.6e43acb2@mjolnir.ossman.eu> <C80EF34A3D2E494DBAF9AC29C7AE4EB8090CA2D4@exchtp03.taipei.via.com.tw>
+	Sun, 24 May 2009 23:29:28 -0400
+Message-ID: <4A1A1094.3020903@davidnewall.com>
+Date: Mon, 25 May 2009 12:59:24 +0930
+From: David Newall <davidn@davidnewall.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
 MIME-Version: 1.0
+To: Thomas Glanzmann <thomas@glanzmann.de>, tytso@thunk.org,
+       LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org
+Subject: Re: zero out blocks of freed user data for operation a virtual machine
+ environment
+References: <20090524170045.GC24753@cip.informatik.uni-erlangen.de>
+In-Reply-To: <20090524170045.GC24753@cip.informatik.uni-erlangen.de>
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <C80EF34A3D2E494DBAF9AC29C7AE4EB8090CA2D4@exchtp03.taipei.via.com.tw>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear Joseph, Pierre and others.
+Thomas Glanzmann wrote:
+> If you don't intend to have such an optional feature in ext3/ext4 I
+> would like to know if you know a tool that makes it possible to zero out
+> unused blocks?
+>
+> The only reference that I found for such a tool for Linux is the
+> following:
+>   
+Astounding use of backquote. I'm not sure about the "percent" bit. I
+think it's some confusion over only 95% of total blocks being available
+for allocation.
 
-Since the driver has still not made any progress in recent days, I took the
-liberty of "adopting" it.  It can now be found in my linux-2.6-via.git
-repository under the via-vx855-sdmmc branch (gitweb at
-http://git.gnumonks.org/cgi-bin/gitweb.cgi?p=linux-2.6-via.git;a=shortlog;h=refs/heads/via-vx855-sdmmc)
+I, too, would not recommend it, but it becomes safer by repeatedly
+allocating only half the remaining disk, stopping when there's only a
+few blocks free, to leave some for all of the other processes.
+Presumably it won't be a problem having (potentially) a few free blocks
+that don't de-duplicate.
 
-As you can see, there are five incremental patches compared to the last v5
-release that Joseph posted in April.
+#!/bin/bash
+FileSystem=`grep ext /etc/mtab| awk -F" " '{ print $2 }'`
 
-On Wed, Apr 22, 2009 at 01:35:29AM +0800, JosephChan@via.com.tw wrote:
+for i in $FileSystem
+do
+       while number=`df -B 512 $i | awk -F" " '$4 < 10 {exit(1)} {print $4 / 2}'`
+       do
+              dd count=$number if=/dev/zero || break
+       done > $i/zf
+       rm -f $i/zf
+done
 
-> >> +nodata:
-> >> +	if (cmd->opcode == MMC_STOP_TRANSMISSION)
-> >> +		cmdctrl |= VIA_CRDR_SDCTRL_STOP;
-> > >+
-> 
-> >I didn't check this part properly the last time. I'm assuming you're telling
-> >the hardware that this is a command that terminates a data transmission? If
-> >so, you cannot check the opcode like that. There might be other stop
-> >commands.
-> >What you need to do is to either pass another parameter to your function
-> >when you're calling it with data->stop, or simply have a test in there if
-> >cmd == data->stop (or mrq->stop, whichever is most convenient).
-> 
-> OK, we will change to 
->        if(cmd == host->mrq->stop)
->              cmdctrl |= VIA_CRDR_SDCTRL_STOP;
 
-done.
 
-> >> +	else if (ios->clock >=  5000000)
-> >> +		clock = PCI_CLK_8M;
-> >>+	else
-> >>+		clock = PCI_CLK_375K;
-> >>+
-> 
-> > This looks a bit strange. Why are you not comparing with the clock
-> > frequency you'll be setting?
-> 
-> Do you mean that we should check the current clock frequency before setting?
-> But our engineer thinks that the following lines can do that work normally
-> too: Any comment? 
-
-Well, if the "PCI_CLK" line and the corresponding register actually 1:1
-correspond to the actual SD card clock rate, then 
-
->               else if (ios->clock >=  5000000)
->                      clock = PCI_CLK_8M;
-
-would mean we use 8MHz even at the time the MMC core stack asks us to only
-use 5MHz, whcih is a bug!
-
-I have fixed this in my git tree now.
-
-> >> +	mmc->caps = MMC_CAP_4_BIT_DATA;
-> 
-> > You also need to set the bits stating if the controller supports the
-> > high-speed SD and/or MMC mode, otherwise the core won't go over 25/20 MHz.
-> 
-> 
-> OK, we will add the following line in the via_init_mmc_host function:
-> 
->        mmc->caps |= MMC_CAP_MMC_HIGHSPEED |MMC_CAP_SD_HIGHSPEED;
-
-Since I cannot see any indication from the VX800 / VX855 data sheet that HS-MMC
-is actually supported, I only use SD_HIGHSPEED for now.
-
-Joseph: Can you find out if the controller actually supports HS-MMC, not only
-SD highspeed?
-
->        org_data = readl(addrbase + VIA_CRDR_SDEXTCTRL);
-> 
->        if ((ios->timing == MMC_TIMING_SD_HS) || (ios->timing == MMC_TIMING_MMC_HS))
->               org_data |= VIA_CRDR_SDEXTCTRL_HISPD;
->        else
->               org_data &= ~VIA_CRDR_SDEXTCTRL_HISPD;
-> 
->        writel(org_data, addrbase + VIA_CRDR_SDEXTCTRL);       
-
-tried that, unfortunately this is buggy, since org_data refers to SDBUSMODE rather than SDEXTCTRL. I've fixed it in this patch:
-http://git.gnumonks.org/cgi-bin/gitweb.cgi?p=linux-2.6-via.git;a=commitdiff;h=bb1f9f2d9d51bbf294ae036d02e2546f2d8b36c3
-
-The resulting driver runs so far fine on my VX855ES based board, but I'll give
-it some more testing before re-submitting the patch.
-
-There is also one case in the code where due to a DMA controller bug, we force
-the clock to 8MHz despite the MMC core requesting 375kHz.  I think the proper
-fix here is to fall back on PIO (non-DMA) mode for 375kHz, rather than
-overclocking the poor card by more than 21 times.
-
-After that has been fixed, plus some more testing, I'll re-submit.
-
-Regards,
--- 
-- Harald Welte <HaraldWelte@viatech.com>	    http://linux.via.com.tw/
-============================================================================
-VIA Open Source Liaison
+Are you proposing to de-duplicate a live filesystem?
