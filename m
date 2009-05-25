@@ -1,73 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754762AbZEYXdO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755052AbZEYXfX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754762AbZEYXdO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 19:33:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753431AbZEYXc7
+	id S1755052AbZEYXfX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 19:35:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753431AbZEYXfM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 19:32:59 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:59022 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753409AbZEYXc6 (ORCPT
+	Mon, 25 May 2009 19:35:12 -0400
+Received: from mx-out2.daemonmail.net ([216.104.160.39]:34582 "EHLO
+	mx-out2.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753151AbZEYXfM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 19:32:58 -0400
-Subject: Re: [PATCH] ath5k: added initial RFKILL support
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Tobias Doerffel <tobias.doerffel@gmail.com>
-Cc: Bob Copeland <me@bobcopeland.com>, Jiri Slaby <jirislaby@gmail.com>,
-       ath5k-devel@venema.h4ckr.net, mickflemm@gmail.com,
-       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <200905260124.03287.tobias.doerffel@gmail.com>
-References: <1242850139-25438-1-git-send-email-jirislaby@gmail.com>
-	 <200905202216.43996.tobias.doerffel@gmail.com>
-	 <20090520202124.M71221@bobcopeland.com>
-	 <200905260124.03287.tobias.doerffel@gmail.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-pwMUlbMbIYrOfiVxTAI1"
-Date: Tue, 26 May 2009 01:32:46 +0200
-Message-Id: <1243294366.29222.10.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1.1 
+	Mon, 25 May 2009 19:35:12 -0400
+From: "Michael S. Zick" <lkml@morethan.org>
+Reply-To: lkml@morethan.org
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [BUG FIX] Make x86_32 uni-processor Atomic ops, Atomic
+Date: Mon, 25 May 2009 18:35:08 -0500
+User-Agent: KMail/1.9.9
+Cc: Harald Welte <HaraldWelte@viatech.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+References: <200905221139.26941.lkml@morethan.org> <4A1B0ACD.8020502@zytor.com> <200905251803.51478.lkml@morethan.org>
+In-Reply-To: <200905251803.51478.lkml@morethan.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200905251835.10958.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon May 25 2009, Michael S. Zick wrote:
 
---=-pwMUlbMbIYrOfiVxTAI1
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+PS: gcc-4.1.2 does compile the function the same
+within the main file or as a stand-alone file.
+Along with maintaining the programmer specified
+order of operations without trying to hardcode
+corrections to LEA.
+I'll stick with 4.1.2 myself.  YMMV
 
-On Tue, 2009-05-26 at 01:24 +0200, Tobias Doerffel wrote:
+Mike
+> On Mon May 25 2009, H. Peter Anvin wrote:
+> > Michael S. Zick wrote:
+> > > On Mon May 25 2009, Michael S. Zick wrote:
+> > > 
+> > > In actual application, this *should not* make a difference.
+> > > 
+> > 
+> > No kidding.  This is a valid transformation for integers, since it is
+> > all done with 2's-complement arithmetic.
+> > 
+> 
+> Load Effective Address does two's complement arithmetic?
+> I'll take your word for it.
+> 
+> For example:
+> 
+> #include <stdio.h>
+> 
+> extern int diff_umask(int mask, int *cnt1, int *cnt2)
+> { return (((mask - *cnt1) + *cnt2) & mask); }
+> 
+> int main() {
+>  int msk  = 0x7fffffff; /* max positive */
+>  int idx1 = 0x7ffffffd; /* max positive - 2 */
+>  int idx2 = 0x7fffffff; /* max positive */
+> 
+>  int rst;
+> 
+>  rst = diff_umask(msk, &idx1, &idx2);
+>  printf("\n\t%d\n", rst);  /* " 1 " - correct */
+> }
+> 
+> But that is because when it is compiled as a
+> single source file, gcc is hardcoding the lea
+> adjustment when it is not an external file:
+> (compare to the above listings)
+> Like I wrote - I don't use 31-bit ring buffers, so I don't care.
+> 
+> objdump -d testdiff:
+> - - - snip - - -
+> 080483b0 <diff_umask>:
+>  80483b0:       8b 44 24 0c             mov    0xc(%esp),%eax
+>  80483b4:       8b 4c 24 04             mov    0x4(%esp),%ecx
+>  80483b8:       8b 10                   mov    (%eax),%edx
+>  80483ba:       8d 04 11                lea    (%ecx,%edx,1),%eax
+>  80483bd:       8b 54 24 08             mov    0x8(%esp),%edx
+>  80483c1:       2b 02                   sub    (%edx),%eax
+>  80483c3:       21 c8                   and    %ecx,%eax
+>  80483c5:       c3                      ret
+> - - - snip - - -
+> 
+> Mike
+> 
+> > Floating-point numbers is a whole other game.
+> > 
+> > 	-hpa
+> > 
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> 
 
-> +       err =3D rfkill_register(sc->rf_kill.rfkill);
-> +       if (err) {
-> +               sc->rf_kill.rfkill =3D NULL;
-> +               return -1;
-> +       }
-
-Missing rfkill_free, and why -EPERM? Could you try to work against v11
-of my rfkill patch, or better even against the cfg80211 rfkill instead?
-
-johannes
-
---=-pwMUlbMbIYrOfiVxTAI1
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAABAgAGBQJKGyqaAAoJEODzc/N7+Qma4kQQAKBt0Hoca77S2xruoQ6BIojI
-obzBtj6uf4xVm3S8cZhIbY5FYDT9pKWrCCHKo1dTCKUn+IEvZvyx5g63/j37Qzre
-8LTjxCph8zwFZSDH9SW+UQkt3eNiFxvU/L+RIkrm9j67DHNQGUFmBKJeSTMRQbl8
-YouT1/yS9cxMtBAemu4MjSQ9T4KaNpgXvJfzPlQdytKxwNIqv5NG3FMa4R9y3G98
-X+hWzy6SBE1YNrwClYKqqXQg4jfeiugzn55fMLE33bQW3QiR2/pgKhfSmgUXe6Z6
-vuZCVBv8BnJkzIcbYYLPYuGJMcsrhaO/9mk4ogPnzy/GMv2u2sEUDAzIQYmgbH9F
-UZu4Iw0AvHfRfiE13nJ1iWvWdUV4o1kt/mZgK+97egsHiVPbuXHO+3Jm+/rVdYC+
-HDaGlX7bbWrERLG7ef1A3DRdDme+jAi4OC5vZl8M1+cPNi8NxL0aQtcatpwzrnzX
-HsA11YUAsLpSY07LpzdGTjgz5FkBRC2BNJ4BTGcnY6pEt2IJjJounkzzhPBc1225
-FJ7JC60t57syM97LAMm9QhGFJEA8XES4c4P5er2SuCt/w/5Go6WpR5lb9b/K/MYR
-LdiP0QKITSiT8n/pxtcdQmgO9xIKrsjo/1lYBQWutTpdasT/48L9CjDywT5ob2a8
-seX488cSixennsH8Evy+
-=bkCz
------END PGP SIGNATURE-----
-
---=-pwMUlbMbIYrOfiVxTAI1--
 
