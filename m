@@ -1,73 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754039AbZEYVso@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754874AbZEYVtO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754039AbZEYVso (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 17:48:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753955AbZEYVsM
+	id S1754874AbZEYVtO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 17:49:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754617AbZEYVsZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 17:48:12 -0400
-Received: from mail-fx0-f168.google.com ([209.85.220.168]:60011 "EHLO
-	mail-fx0-f168.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752485AbZEYVsJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 17:48:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition:message-id;
-        b=viv9SbL0Iiy/VMmB5IxrDY69KJIyuxyMIa9IxXrsp98jkZnaSy9vrHcu6MHdYiB1+/
-         VTJq3Ozr6rfNGOyafCn8t5zRaQ/RwwozYFuXPaq1NXpejhbddlQ4raitQmxUHlTLyRna
-         N6R76qu0kdBqU9uQgtE9trYc84x90+TfgtKos=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: linux-ide@vger.kernel.org
-Subject: [PATCH 3/3] ide: add warning about possible HPA compatibility issue
-Date: Mon, 25 May 2009 23:45:45 +0200
-User-Agent: KMail/1.11.3 (Linux/2.6.30-rc6-next-20090522-05935-g4d19128; KDE/4.2.3; i686; ; )
-Cc: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
+	Mon, 25 May 2009 17:48:25 -0400
+Received: from mail.crca.org.au ([67.207.131.56]:55151 "EHLO crca.org.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754708AbZEYVsX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 17:48:23 -0400
+X-Bogosity: Ham, spamicity=0.000000
+Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
+From: Nigel Cunningham <nigel@tuxonice.net>
+Reply-To: nigel@tuxonice.net
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Oliver Neukum <oliver@neukum.org>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@lists.linux-foundation.org,
+       tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org
+In-Reply-To: <20090525132613.GA14096@elf.ucw.cz>
+References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
+	 <1243243666.16743.64.camel@nigel-laptop>
+	 <20090525123228.GA13446@elf.ucw.cz> <200905251522.26852.oliver@neukum.org>
+	 <20090525132613.GA14096@elf.ucw.cz>
+Content-Type: text/plain
+Date: Tue, 26 May 2009 07:50:08 +1000
+Message-Id: <1243288208.16743.125.camel@nigel-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905252345.45459.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
- drivers/ide/ide-disk.c |   14 +++++++++++++-
- 1 file changed, 13 insertions(+), 1 deletion(-)
+Hi.
 
-Index: b/drivers/ide/ide-disk.c
-===================================================================
---- a/drivers/ide/ide-disk.c
-+++ b/drivers/ide/ide-disk.c
-@@ -302,6 +302,16 @@ static const struct drive_list_entry hpa
- 	{ NULL,		NULL }
- };
- 
-+static inline void ide_disk_hpa_warn(unsigned long long first_sector,
-+				     unsigned long long last_sector)
-+{
-+	printk(KERN_WARNING "\t*** possible compatibility issue:\n"
-+		"\t*** sectors %llu-%llu may be inaccessible\n"
-+		"\t*** if Host Protected Area is used for filesystem data\n"
-+		"\t*** (please refer to \"ignore_hpa\" module parameter)\n",
-+		first_sector, last_sector);
-+}
-+
- static void idedisk_check_hpa(ide_drive_t *drive)
- {
- 	unsigned long long capacity, set_max;
-@@ -330,8 +340,10 @@ static void idedisk_check_hpa(ide_drive_
- 			 capacity, sectors_to_MB(capacity),
- 			 set_max, sectors_to_MB(set_max));
- 
--	if (ide_ignore_hpa == 0)
-+	if (ide_ignore_hpa == 0) {
-+		ide_disk_hpa_warn(capacity, set_max - 1);
- 		return;
-+	}
- 
- 	set_max = idedisk_set_max_address(drive, set_max, lba48);
- 
+On Mon, 2009-05-25 at 15:26 +0200, Pavel Machek wrote:
+> On Mon 2009-05-25 15:22:26, Oliver Neukum wrote:
+> > Am Montag, 25. Mai 2009 14:32:28 schrieb Pavel Machek:
+> > > > I'm going to try to. Unfortunately, they'll require what's basically a
+> > > > group-up redesign of the basic algorithm, because to get maximum
+> > > > reliability, you need to carefully account for the amount of storage
+> > > > you're going to need and the amount of memory you have available, and
+> > > > 'prepare' the image prior to doing the atomic copy.
+> > >
+> > > I don't quite get it; why is that needed?
+> > >
+> > > If there's not enough swap available, swsusp should freeze, realize
+> > > there's no swap, unfreeze and continue. I do not see reliability
+> > > problem there.
+> > 
+> > The software suspend may be a part of your response to an imminent
+> > power failure (UPS near empty). The number of retries available is possibly
+> > limited.
+> 
+> If there's no swap (and no hibernation partition), s2disk just will
+> not work.
+
+Yeah - an argument for not being swap centric in storing the image.
+
+But there's more: if there's swap but it's not in the partition pointed
+to by resume=, swsusp and uswsusp won't work either, will they? That's
+another reliability issue.
+
+> > I'd feel safer if hibernation by default wrote to a dedicated partition,
+> > especially as modern practice is to make swap space smaller than RAM.
+> 
+> It would be easy to have dedicated partition. But why waste space on
+> it?
+
+Because it gives you increased reliability. But it doesn't need to be a
+dedicated partition - you can just have a file on a partition.
+
+> Anyway, this debate here is "in what order should we do the swsusp
+> actions". Dedicated partition/etc is for separate thread (please).
+
+Yeah; if we keep this discussion up, we'll get to that issue too.
+
+Regards,
+
+Nigel
+
