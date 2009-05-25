@@ -1,127 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753988AbZEYVpY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754185AbZEYVpv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753988AbZEYVpY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 17:45:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751824AbZEYVpO
+	id S1754185AbZEYVpv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 17:45:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752920AbZEYVpo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 17:45:14 -0400
-Received: from mail-gx0-f166.google.com ([209.85.217.166]:58080 "EHLO
-	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751747AbZEYVpM convert rfc822-to-8bit (ORCPT
+	Mon, 25 May 2009 17:45:44 -0400
+Received: from tomts20.bellnexxia.net ([209.226.175.74]:34211 "EHLO
+	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751824AbZEYVpo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 17:45:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=HNBIDLNZqVM7dQeZeNlMge/Vz8/zlkmTJ4vgWeULABEDMceGCWBAZFMJnmkXSPdC6K
-         vdTUzwBQG0LO16e+B85VNzkOqNMTeccmFaIN0usTq+8yrpac13MjLJVc37V3luP+XR3J
-         OVnb9CTvuiLVuFCK+7xTUkgcWWi8Dn6ewR+FQ=
-MIME-Version: 1.0
-In-Reply-To: <f24d23310905250956u231fcd90u54d75894b9b91b9a@mail.gmail.com>
-References: <f24d23310905250956u231fcd90u54d75894b9b91b9a@mail.gmail.com>
-Date: Tue, 26 May 2009 06:45:12 +0900
-Message-ID: <49b7c2350905251445n14397b82yc993f1a86d715d4d@mail.gmail.com>
-Subject: Re: Unable to compile 2.6.30-rc7 on RHEL 4 - GCC 3.4.6
-From: GeunSik Lim <leemgs1@gmail.com>
-To: debian developer <debiandev@gmail.com>
-Cc: linux kernel <kernelnewbies@nl.linux.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Mon, 25 May 2009 17:45:44 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: At8EAMCqGkpMQW1W/2dsb2JhbACBT8ovhAsF
+Date: Mon, 25 May 2009 17:45:33 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Jamie Lokier <jamie@shareable.org>,
+       Catalin Marinas <catalin.marinas@arm.com>,
+       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Paul Mackerras <paulus@samba.org>
+Subject: Re: Broken ARM (and powerpc ?) futex wrt memory barriers
+Message-ID: <20090525214533.GA26419@Krystal>
+References: <20090422171703.19555.83629.stgit@pc1117.cambridge.arm.com> <20090423141248.22193.10543.stgit@pc1117.cambridge.arm.com> <20090524131636.GB3159@n2100.arm.linux.org.uk> <20090524145633.GA14754@Krystal> <20090525132027.GA946@shareable.org> <20090525151724.GA14321@Krystal> <20090525161941.GA3667@n2100.arm.linux.org.uk> <20090525172955.GA17665@Krystal> <20090525195656.GC3667@n2100.arm.linux.org.uk> <20090525202210.GD22651@Krystal>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20090525202210.GD22651@Krystal>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 17:30:02 up 86 days, 17:56,  7 users,  load average: 0.19, 0.19,
+	0.14
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+* Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca) wrote:
+> * Russell King - ARM Linux (linux@arm.linux.org.uk) wrote:
+> > Hmm, the mutex is undocumented in the atomic ops document.  Does it
+> > require ordering both before and after, or do some of those ops just
+> > need it before acquire and after release?
+> > 
+> 
+> I guess the mutex fast path should probably be added to atomic_ops.txt.
+> If I look at PowerPC mutex.h, mutex lock provides acquire semantic (like
+> spinlock) and mutex unlock provides release semantic (like spin unlock).
+> 
+> acquire :
+> 
+> take lock
+> smp_mb()
+> (critical section memory accesses)
+> 
+> release :
+> 
+> (critical section memory accesses)
+> smp_mb()
+> release lock
 
-If you want to use recent kernel source 2.6.24/2.6.28,
-I recommend that you have to update linux distribution from current
-linux distribution to
-RHEL 5.X ( or CENTOS 5.X) in my experience.
+* ARM
 
-Refer to http://linuxdistrowatch.com website to select linux
-distribution for you.
+I think we also have to deal with futexes. See
+arch/arm/include/asm/futex.h :
 
-If you keep gcc 3.X.X to compile recent kernel source contiunally,
-You will meet another problems again.
+1 - 
 
-On Tue, May 26, 2009 at 1:56 AM, debian developer <debiandev@gmail.com> wrote:
-> Hi all,
->
-> I am getting this error when trying to compile the latest rc:
->
-> /in/inndesk171/linux-2.6.28/arch/x86/Makefile:82: stack protector
-> enabled but no compiler support
->  CHK     include/linux/version.h
->  CHK     include/linux/utsrelease.h
->  SYMLINK include/asm -> include/asm-x86
->  CALL    scripts/checksyscalls.sh
->  CC      init/main.o
-> /in/inndesk171/linux-2.6.28/arch/x86/include/asm/paravirt.h: In
-> function `start_kernel':
-> /in/inndesk171/linux-2.6.28/arch/x86/include/asm/paravirt.h:1590:
-> warning: asm operand 1 probably doesn't match constraints
-> /in/inndesk171/linux-2.6.28/arch/x86/include/asm/paravirt.h:1570:
-> warning: asm operand 2 probably doesn't match constraints
-> /in/inndesk171/linux-2.6.28/arch/x86/include/asm/paravirt.h:1590:
-> warning: asm operand 1 probably doesn't match constraints
-> /in/inndesk171/linux-2.6.28/arch/x86/include/asm/paravirt.h:1570:
-> warning: asm operand 2 probably doesn't match constraints
-> /in/inndesk171/linux-2.6.28/arch/x86/include/asm/paravirt.h:1599:
-> warning: asm operand 1 probably doesn't match constraints
-> /in/inndesk171/linux-2.6.28/arch/x86/include/asm/paravirt.h:1590:
-> error: impossible constraint in `asm'
-> /in/inndesk171/linux-2.6.28/arch/x86/include/asm/paravirt.h:1570:
-> error: impossible constraint in `asm'
-> /in/inndesk171/linux-2.6.28/arch/x86/include/asm/paravirt.h:1590:
-> error: impossible constraint in `asm'
-> /in/inndesk171/linux-2.6.28/arch/x86/include/asm/paravirt.h:1570:
-> error: impossible constraint in `asm'
-> /in/inndesk171/linux-2.6.28/arch/x86/include/asm/paravirt.h:1599:
-> error: impossible constraint in `asm'
-> /in/inndesk171/linux-2.6.28/arch/x86/include/asm/paravirt.h:1568:
-> warning: 'f' might be used uninitialized in this function
-> /in/inndesk171/linux-2.6.28/arch/x86/include/asm/paravirt.h:1568:
-> warning: 'f' might be used uninitialized in this function
-> /in/inndesk171/linux-2.6.28/arch/x86/include/asm/paravirt.h:1568:
-> warning: 'f' might be used uninitialized in this function
-> /in/inndesk171/linux-2.6.28/arch/x86/include/asm/paravirt.h:1568:
-> warning: 'f' might be used uninitialized in this function
-> make[1]: *** [init/main.o] Error 1
-> make: *** [init] Error 2
->
->
-> The gcc version is as follows:
-> debiandev@inndesk171[80] gcc -v
-> Reading specs from /usr/lib/gcc/x86_64-redhat-linux/3.4.6/specs
-> Configured with: ../configure --prefix=/usr --mandir=/usr/share/man
-> --infodir=/usr/share/info --enable-shared --enable-threads=posix
-> --disable-checking --with-system-zlib --enable-__cxa_atexit
-> --disable-libunwind-exceptions --enable-java-awt=gtk
-> --host=x86_64-redhat-linux
-> Thread model: posix
-> gcc version 3.4.6 20060404 (Red Hat 3.4.6-9)
->
->
-> Is this gcc version no longer usable to compile the latest kernel?
->
-> Thanks,
-> DD
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+#ifdef CONFIG_SMP
+
+#include <asm-generic/futex.h>
+
+#else /* !SMP, we can work around lack of atomic ops by disabling
+preemption */
+
+(arm-specific code here, seems to deal with futexes)
+
+#endif
+
+-> is it just me or this ifdef condition is the exact opposite of what
+it should be ? I thought those generic futexes were for UP-only
+systems...
+
+Given futexes are used as key element of userspace mutex slow path
+implementation, I think we should consider adding memory barriers there
+too.
 
 
+* PowerPC
+
+Powerpc futex.h seems to have a LWSYNC_ON_SMP/ISYNC_ON_SMP before/after
+the futex atomic operation, which act as memory barriers.
+
+Interestingly enough, powerpc futex.h:futex_atomic_cmpxchg_inatomic()
+has both LWSYNC_ON_SMP (before atomic op) and ISYNC_ON_SMP (after); this
+is typical for all powerpc atomic ops. However, __futex_atomic_op() only
+has the LWSYNC_ON_SMP. Is there a reason for not having a ISYNC_ON_SMP
+there ?
+
+Mathieu
 
 -- 
-Regards,
-GeunSik Lim
---
-To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
