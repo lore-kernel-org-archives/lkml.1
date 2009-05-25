@@ -1,54 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751613AbZEYE4j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753710AbZEYE6p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751613AbZEYE4j (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 00:56:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750896AbZEYE4b
+	id S1753710AbZEYE6p (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 00:58:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750896AbZEYE6i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 00:56:31 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:41601 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750852AbZEYE4b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 00:56:31 -0400
-Message-ID: <4A1A24C0.20701@redhat.com>
-Date: Mon, 25 May 2009 07:55:28 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Mon, 25 May 2009 00:58:38 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:41138 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750852AbZEYE6h (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 00:58:37 -0400
+Message-ID: <4A1A241D.603@zytor.com>
+Date: Sun, 24 May 2009 21:52:45 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
 To: Ingo Molnar <mingo@elte.hu>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>,
-       the arch/x86 maintainers <x86@kernel.org>,
+CC: Yinghai Lu <yinghai@kernel.org>, Pekka J Enberg <penberg@cs.helsinki.fi>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jeff Garzik <jgarzik@pobox.com>, Alexander Viro <viro@ftp.linux.org.uk>,
+       Rusty Russell <rusty@rustcorp.com.au>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>
-Subject: Re: [GIT PULL] Xen APIC hooks (with io_apic_ops)
-References: <1242170724-13349-1-git-send-email-jeremy@goop.org> <20090519123548.GA26439@elte.hu> <4A19A9A4.8010002@redhat.com> <20090525035158.GB9396@elte.hu>
-In-Reply-To: <20090525035158.GB9396@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [GIT PULL] scheduler fixes
+References: <alpine.LFD.2.01.0905180850110.3301@localhost.localdomain> <20090518164921.GA6903@elte.hu> <alpine.LFD.2.01.0905180955550.3301@localhost.localdomain> <20090518170909.GA1623@elte.hu> <20090518190320.GA20260@elte.hu> <alpine.LFD.2.01.0905181208130.3301@localhost.localdomain> <20090518202031.GA26549@elte.hu> <alpine.LFD.2.01.0905181457320.3301@localhost.localdomain> <Pine.LNX.4.64.0905241911120.12189@melkki.cs.Helsinki.FI> <4A199327.5030503@kernel.org> <20090525025353.GA2580@elte.hu>
+In-Reply-To: <20090525025353.GA2580@elte.hu>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Ingo Molnar wrote:
->> We do something similar for Windows (by patching it) very 
->> successfully; Windows likes to touch the APIC TPR ~ 100,000 times 
->> per second, usually without triggering an interrupt.  We hijack 
->> these writes, do the checks in guest context, and only exit if the 
->> TPR write would trigger an interrupt.
->>     
->
-> I suspect you aware of that this is about the io-apic not the local 
-> APIC. The local apic methods are already driver-ized - and they sit 
-> closer to the CPU so they matter more to performance.
->   
+> 
+> Would it be possible to restructure things to move kmalloc init to 
+> before IRQ init as well? We have a couple of uglinesses there too.
+> 
+> Conceptually, memory should be the first thing set up in general, in 
+> a kernel. It does not need IRQs, timers, the scheduler or any of the 
+> IO facilities and abstractions. All of them need memory though - and 
+> as Linux scales to more and more hardware via the same single image, 
+> so will we get more and more dynamic concepts like cpumask_var_t and 
+> sparse-irqs, which want to allocate very early.
+> 
+> setup_arch() is one huge function that sets up all architecture 
+> details at once - but if we split a separate setup_arch_mem() out of 
+> it, and left the rest in setup_arch (and moved it further down), we 
+> could remove much of bootmem (especially the ugly uses).
+> 
+> This might even be doable realistically, and we could thus librarize 
+> bootmem and eliminate it from x86 at least. Perhaps.
+> 
 
-Yeah, I gave this as an example.  It's very different -- io-apic vs. 
-local apic, paravirtualization vs. patching the guest behind its back, 
-Linux vs. Windows.
+The only thing that might make sense to set up before memory might be
+exceptions (as opposed to interrupts), but both of those should be
+doable very very early.
 
-Of course if we hook the io-apic EOI we'll want to hook the local apic 
-EOI as well.
+	-hpa
 
 -- 
-I have a truly marvellous patch that fixes the bug which this
-signature is too narrow to contain.
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
