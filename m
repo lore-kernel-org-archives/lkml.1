@@ -1,58 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753840AbZEYK20@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755400AbZEYK2u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753840AbZEYK20 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 06:28:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752505AbZEYK2O
+	id S1755400AbZEYK2u (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 06:28:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753282AbZEYK2Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 06:28:14 -0400
-Received: from ozlabs.org ([203.10.76.45]:43795 "EHLO ozlabs.org"
+	Mon, 25 May 2009 06:28:24 -0400
+Received: from ozlabs.org ([203.10.76.45]:43905 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752181AbZEYK2N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 06:28:13 -0400
+	id S1753588AbZEYK2X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 06:28:23 -0400
 From: Rusty Russell <rusty@rustcorp.com.au>
-To: Tejun Heo <tj@kernel.org>
-Subject: Re: [PATCH 3/7] percpu: clean up percpu variable definitions
-Date: Mon, 25 May 2009 15:37:34 +0930
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [GIT PULL] scheduler fixes
+Date: Mon, 25 May 2009 16:46:06 +0930
 User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, x86@kernel.org,
-       ink@jurassic.park.msu.ru, rth@twiddle.net, linux@arm.linux.org.uk,
-       hskinnemoen@atmel.com, cooloney@kernel.org, starvik@axis.com,
-       jesper.nilsson@axis.com, dhowells@redhat.com,
-       ysato@users.sourceforge.jp, tony.luck@intel.com, takata@linux-m32r.org,
-       geert@linux-m68k.org, monstr@monstr.eu, ralf@linux-mips.org,
-       kyle@mcmartin.ca, benh@kernel.crashing.org, paulus@samba.org,
-       schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com, lethal@linux-sh.org,
-       davem@davemloft.net, jdike@addtoit.com, chris@zankel.net,
-       Jens Axboe <jens.axboe@oracle.com>, Dave Jones <davej@redhat.com>,
-       Jeremy Fitzhardinge <jeremy@xensource.com>,
-       "linux-mm" <linux-mm@kvack.org>
-References: <1242805059-18338-1-git-send-email-tj@kernel.org> <1242805059-18338-4-git-send-email-tj@kernel.org>
-In-Reply-To: <1242805059-18338-4-git-send-email-tj@kernel.org>
+Cc: Yinghai Lu <yinghai@kernel.org>, Pekka J Enberg <penberg@cs.helsinki.fi>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jeff Garzik <jgarzik@pobox.com>,
+       Alexander Viro <viro@ftp.linux.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+References: <alpine.LFD.2.01.0905180850110.3301@localhost.localdomain> <4A199327.5030503@kernel.org> <20090525025353.GA2580@elte.hu>
+In-Reply-To: <20090525025353.GA2580@elte.hu>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="utf-8"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200905251537.35981.rusty@rustcorp.com.au>
+Message-Id: <200905251646.06788.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 May 2009 05:07:35 pm Tejun Heo wrote:
-> Percpu variable definition is about to be updated such that
->
-> * percpu symbols must be unique even the static ones
->
-> * in-function static definition is not allowed
+On Mon, 25 May 2009 12:23:53 pm Ingo Molnar wrote:
+> setup_arch() is one huge function that sets up all architecture
+> details at once - but if we split a separate setup_arch_mem() out of
+> it, and left the rest in setup_arch (and moved it further down), we
+> could remove much of bootmem (especially the ugly uses).
 
-That spluttering noise is be choking on the title of this patch :)
+cmdline parsing needs to be available even before mem setup.  I waded
+into this earlier and broke almost every arch, but if there's renewed 
+enthusiasm I could dig out those patches.
 
-Making these pseudo statics is in no way a cleanup.  How about we just
-say "they can't be static" and do something like:
+(Search for "arch_get_boot_cmdline()").
 
-/* Sorry, can't be static: that breaks archs which need these weak. */
-#define DEFINE_PER_CPU(type, var) \
-	extern typeof(type) var; DEFINE_PER_CPU_SECTION(type, name, "")
-
-Thanks,
+Cheers,
 Rusty.
