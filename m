@@ -1,47 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751839AbZEYLY7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753197AbZEYLZV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751839AbZEYLY7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 07:24:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751221AbZEYLYw
+	id S1753197AbZEYLZV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 07:25:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751547AbZEYLZH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 07:24:52 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:47600 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751215AbZEYLYw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 07:24:52 -0400
-Date: Mon, 25 May 2009 13:24:51 +0200 (CEST)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: Peter Zijlstra <peterz@infradead.org>
-cc: Martin Schwidefsky <schwidefsky@de.ibm.com>,
+	Mon, 25 May 2009 07:25:07 -0400
+Received: from cantor.suse.de ([195.135.220.2]:33600 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751221AbZEYLZF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 07:25:05 -0400
+Date: Mon, 25 May 2009 13:25:04 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+Cc: Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yinghai@kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Michael Abbott <michael@araneidae.co.uk>
-Subject: Re: [GIT PULL] cputime patch for 2.6.30-rc6
-In-Reply-To: <1243249766.26820.665.camel@twins>
-Message-ID: <alpine.LSU.2.00.0905251316510.3539@fbirervta.pbzchgretzou.qr>
-References: <20090518160904.7df88425@skybase>  <1242660243.26820.439.camel@twins> <20090519104900.12e1f80c@skybase>  <1242723635.26820.471.camel@twins>  <20090525125034.159ecb78@skybase> <1243249766.26820.665.camel@twins>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+       "H. Peter Anvin" <hpa@zytor.com>, Jeff Garzik <jgarzik@pobox.com>,
+       Alexander Viro <viro@ftp.linux.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, cl@linux-foundation.org,
+       mpm@selenic.com
+Subject: Re: [GIT PULL] scheduler fixes
+Message-ID: <20090525112504.GB24071@wotan.suse.de>
+References: <20090518190320.GA20260@elte.hu> <alpine.LFD.2.01.0905181208130.3301@localhost.localdomain> <20090518202031.GA26549@elte.hu> <alpine.LFD.2.01.0905181457320.3301@localhost.localdomain> <Pine.LNX.4.64.0905241911120.12189@melkki.cs.Helsinki.FI> <4A199327.5030503@kernel.org> <20090525025353.GA2580@elte.hu> <4A1A2261.1000504@kernel.org> <20090525051521.GC23032@elte.hu> <Pine.LNX.4.64.0905251142140.32568@melkki.cs.Helsinki.FI>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0905251142140.32568@melkki.cs.Helsinki.FI>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, May 25, 2009 at 11:47:40AM +0300, Pekka Enberg wrote:
+> On Mon, 25 May 2009, Ingo Molnar wrote:
+> > Ok, i think this all looks pretty realistic - but there's quite a 
+> > bit of layering on top of pending changes in the x86 and irq trees. 
+> > We could do this on top of those topic branches in -tip, and rebase 
+> > in the merge window. Or delay it to .32.
+> > 
+> > ... plus i think we are _very_ close to being able to remove all of 
+> > bootmem on x86 (with some compatibility/migration mechanism in 
+> > place). Which bootmem calls do we have before kmalloc init with 
+> > Pekka's patch applied? I think it's mostly the page table init code.
+> >  
+> > ( beyond the page allocator internal use - where we could use 
+> >   straight e820 based APIs that clip memory off from the beginning 
+> >   of existing e820 RAM ranges - enriched with NUMA/SRAT locality 
+> >   info. )
+> 
+> OK, here's a version of the patch with Yinghai's rebasing on top of 
+> tip/master. All in-kernel memory allocators boot cleanly now on my 
+> configuration (I did not try SLQB but it probably needs fixing). I would 
+> appreciate if someone gave SLAB+NUMA configuration a try.
+> 
+> Ingo, I don't really want to carry this in slab.git so perhaps you could 
+> put this and Yinghai's irq init cleanup in a "earlyslab" branch in tip for 
+> testing?
+> 
+> And oh, Christoph/Matt, can I have your NAK/ACK for this patch?
+> 
+> 			Pekka
+> 
+> >From f5338db5f1b959cb82ed811037a545e19c7b2b7b Mon Sep 17 00:00:00 2001
+> From: Pekka Enberg <penberg@cs.helsinki.fi>
+> Date: Mon, 25 May 2009 09:44:39 +0300
+> Subject: [PATCH] slab: setup allocators earlier in the boot sequence
+> 
+> This patch makes kmalloc() available earlier in the boot sequence so we can get
+> rid of some bootmem allocations. The bulk of the changes are due to
+> kmem_cache_init() being called with interrupts disabled which requires some
+> changes to allocator boostrap code.
+> 
+> [ yinghai@kernel.org: rebase to tip ]
+> Cc: Nick Piggin <npiggin@suse.de>
+> Cc: Matt Mackall <mpm@selenic.com>
+> Cc: Christoph Lameter <cl@linux-foundation.com>
+> Cc: Linus Torvalds <torvals@linux-foundation.org>
+> Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+> ---
+>  init/main.c           |   28 +++++++++-------
+>  kernel/irq/handle.c   |   23 +++++---------
+>  kernel/sched.c        |   34 +++++++------------
+>  kernel/sched_cpupri.c |    9 +++--
+>  mm/slab.c             |   85 ++++++++++++++++++++++++++-----------------------
+>  mm/slub.c             |   17 ++++++----
+>  6 files changed, 98 insertions(+), 98 deletions(-)
+> 
+> diff --git a/init/main.c b/init/main.c
+> index 33ce929..e7a9c18 100644
+> --- a/init/main.c
+> +++ b/init/main.c
+> @@ -576,6 +576,22 @@ asmlinkage void __init start_kernel(void)
+>  	setup_nr_cpu_ids();
+>  	smp_prepare_boot_cpu();	/* arch-specific boot-cpu hooks */
+>  
+> +	build_all_zonelists();
+> +	page_alloc_init();
+> +
+> +	printk(KERN_NOTICE "Kernel command line: %s\n", boot_command_line);
+> +	parse_early_param();
+> +	parse_args("Booting kernel", static_command_line, __start___param,
+> +		   __stop___param - __start___param,
+> +		   &unknown_bootoption);
+> +	/*
+> +	 * Setup kernel memory allocators
+> +	 */
+> +	pidhash_init();
+> +	vmalloc_init();
+> +	vfs_caches_init_early();
+> +	mem_init();
+> +	kmem_cache_init();
 
-On Monday 2009-05-25 13:09, Peter Zijlstra wrote:
->
->I really prefer using things like percpu_counter/vmstat that have error
->bounds that scale with the number of cpus in the system.
->
->We simply have to start educating people that numbers on the global
->state of the machine are inaccurate (they were anyway, because by the
->time the userspace bits that read the /proc file get scheduled again the
->numbers will have changed again).
->
->There's a variant of Heisenberg's uncertainty principle applicable to
->(parallel) computers in that one either gets concurrency or accuracy on
->global state, you cannot have both.
->
-Inaccuracies are fine, esp. for something like monotic increasing
-idle uptime.
+Looks quite OK to me. The comment above maybe misleading?
+
+The bootmem allocations of course are required because some hashes may
+need to be larger than MAX_ORDER without using vmalloc.
+
+kmem_cache_init (and mem_init, partially) sets up the kernel memory
+allocators...
+
+I can take a look at the SLQB side.
