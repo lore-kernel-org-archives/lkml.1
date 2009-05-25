@@ -1,83 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754833AbZEYIcT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755039AbZEYIdW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754833AbZEYIcT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 04:32:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752090AbZEYIcM
+	id S1755039AbZEYIdW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 04:33:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752657AbZEYIdM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 04:32:12 -0400
-Received: from yw-out-2324.google.com ([74.125.46.30]:36302 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751569AbZEYIcL (ORCPT
+	Mon, 25 May 2009 04:33:12 -0400
+Received: from mail-out.m-online.net ([212.18.0.10]:57901 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752364AbZEYIdL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 04:32:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=AzciCKUFpT0NEy7Y0fLuElN6uFLhtREjIMMKavX+wtIwMRNBsFrNsI6emF8KpWZYhL
-         Yoiq4RQE7rC+mWltDz6OE1wi92T78nUHabme5auwpMOGZNXTrH9JlPwKhhW6Hw3vJCWb
-         4JBj4nGJBhPKwLCDN3bNJnWvT5gAYwllAtiEU=
-Date: Mon, 25 May 2009 10:32:08 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Zhaolei <zhaolei@cn.fujitsu.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Tom Zanussi <tzanussi@gmail.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Re: [PATCH v2 2/2] ftrace: clean up of using
-	ftrace_event_enable_disable()
-Message-ID: <20090525083207.GB6215@nowhere>
-References: <4A14FDFE.2080402@cn.fujitsu.com> <4A16788F.2060802@cn.fujitsu.com> <4A16791C.8090501@cn.fujitsu.com> <20090524204620.GC6471@nowhere> <4A1A2DE2.6000304@cn.fujitsu.com>
+	Mon, 25 May 2009 04:33:11 -0400
+From: Matthias Schwarzott <zzam@gentoo.org>
+To: linux-hotplug@vger.kernel.org
+Subject: Re: [PATCH] ieee1394: eth1394: use "firewire%d" instead of "eth%d" as interface name
+Date: Mon, 25 May 2009 10:33:08 +0200
+User-Agent: KMail/1.9.10
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Christian Kujau <lists@nerdbynature.de>, linux-kernel@vger.kernel.org,
+       linux1394-devel@lists.sourceforge.net, netdev@vger.kernel.org
+References: <tkrat.21c425cc195510c9@s5r6.in-berlin.de> <alpine.DEB.2.01.0905232309400.7424@bogon> <tkrat.6c3758bf0544a790@s5r6.in-berlin.de>
+In-Reply-To: <tkrat.6c3758bf0544a790@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4A1A2DE2.6000304@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200905251033.09272.zzam@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 25, 2009 at 01:34:26PM +0800, Zhaolei wrote:
-> Frederic Weisbecker wrote:
-> > On Fri, May 22, 2009 at 06:06:20PM +0800, Zhaolei wrote:
-> >> Always use tracing_stop_cmdline_record() to enable/disable a event.
-> >>
-> >> Impact: cleanup, no functionality changed
-> >>
-> >> Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
-> >> ---
-> >>  kernel/trace/trace_events.c |   44 +++++++++++++-----------------------------
-> >>  1 files changed, 14 insertions(+), 30 deletions(-)
-> >>
-> >> diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
-> >> index df35e5e..16ef47a 100644
-> >> --- a/kernel/trace/trace_events.c
-> >> +++ b/kernel/trace/trace_events.c
-> >> @@ -76,26 +76,9 @@ static void trace_destroy_fields(struct ftrace_event_call *call)
-> >>  
-> >>  #endif /* CONFIG_MODULES */
-> >>  
-> >> -static void ftrace_clear_events(void)
-> >> -{
-> >> -	struct ftrace_event_call *call;
-> >> -
-> >> -	mutex_lock(&event_mutex);
-> >> -	list_for_each_entry(call, &ftrace_events, list) {
-> > 
-> > 
-> > Don't we have a "for_each_event" ?
-> 
-> Hello, Frederic
-> 
-> Thanks for your review.
-> 
-> IMHO, for_each_event is for iter each tracepoints in one module(or kernel),
-> but we need to iter whole tracepoints in manage.
-> So, list_for_each_entry(call, &ftrace_events, list) maybe better here.
-> 
-> Thanks
-> Zhaolei
+On Sonntag, 24. Mai 2009, Stefan Richter wrote:
+> Christian Kujau wrote at LKML:
+> > If the patch will be accepted at all and it's not too late to ask: I'd
+> > vote for fw%d as well, "firefire" just looks too long, for me at least.
+>
+> I think I'll leave the driver as it is.
+> As I just noticed, we would lose interface renaming by udev.
+> From udev/extras/rule_generator/75-persistent-net-generator.rules:
+>
+>   # device name whitelist
+>   KERNEL!="eth*|ath*|wlan*[0-9]|msh*|ra*|sta*|ctc*|lcs*|hsi*",
+> GOTO="persistent_net_generator_end"
+>
+> Besides, if we can we should avoid fw%d because this will clash with
+> udev rules which match KERNEL=="fw*", as in
+> udev/rules/redhat/40-redhat.rules.
 
+I suggest a subsystem match here, or generally some
+SUBSYSTEM!="net", GOTO="end_of_file"
+around almost all rule files that should not match on network interfaces, as 
+users can rename them to almost all crazy names.
 
-Ah yeah, ok.
+@Kay: Perhaps it could simplify some rulesets to have a special jump target or 
+option to skip entiere rules files.
 
-Thanks.
-
+Regards
+Matthias
