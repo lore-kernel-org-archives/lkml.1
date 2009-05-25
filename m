@@ -1,62 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754941AbZEYXDx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754947AbZEYXEG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754941AbZEYXDx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 19:03:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754260AbZEYXDp
+	id S1754947AbZEYXEG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 19:04:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755047AbZEYXDx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 19:03:45 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:41170 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753110AbZEYXDo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 19:03:44 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Martin Knoblauch <spamtrap@knobisoft.de>
-Subject: Re: [Bug #13178] Booting very slow
-Date: Tue, 26 May 2009 01:04:04 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc6-rjw; KDE/4.2.3; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-References: <GtY7d2eWpoK.A.ioC.MQcGKB@chimera> <WCcYF-TAbJC.A.VXD.iQcGKB@chimera> <349066.43765.qm@web32603.mail.mud.yahoo.com>
-In-Reply-To: <349066.43765.qm@web32603.mail.mud.yahoo.com>
+	Mon, 25 May 2009 19:03:53 -0400
+Received: from mx-out.daemonmail.net ([216.104.160.38]:33281 "EHLO
+	mx-out.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755150AbZEYXDw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 19:03:52 -0400
+From: "Michael S. Zick" <lkml@morethan.org>
+Reply-To: lkml@morethan.org
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [BUG FIX] Make x86_32 uni-processor Atomic ops, Atomic
+Date: Mon, 25 May 2009 18:03:48 -0500
+User-Agent: KMail/1.9.9
+Cc: Harald Welte <HaraldWelte@viatech.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+References: <200905221139.26941.lkml@morethan.org> <200905251610.43071.lkml@morethan.org> <4A1B0ACD.8020502@zytor.com>
+In-Reply-To: <4A1B0ACD.8020502@zytor.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200905260104.04844.rjw@sisk.pl>
+Message-Id: <200905251803.51478.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 25 May 2009, Martin Knoblauch wrote:
+On Mon May 25 2009, H. Peter Anvin wrote:
+> Michael S. Zick wrote:
+> > On Mon May 25 2009, Michael S. Zick wrote:
+> > 
+> > In actual application, this *should not* make a difference.
+> > 
 > 
-> ----- Original Message ----
+> No kidding.  This is a valid transformation for integers, since it is
+> all done with 2's-complement arithmetic.
 > 
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-> > Cc: Kernel Testers List <kernel-testers@vger.kernel.org>; Martin Knoblauch <spamtrap@knobisoft.de>
-> > Sent: Sunday, May 24, 2009 9:31:18 PM
-> > Subject: [Bug #13178] Booting very slow
-> > 
-> > This message has been generated automatically as a part of a report
-> > of regressions introduced between 2.6.28 and 2.6.29.
-> > 
-> > The following bug entry is on the current list of known regressions
-> > introduced between 2.6.28 and 2.6.29.  Please verify if it still should
-> > be listed and let me know (either way).
-> > 
-> > 
-> > Bug-Entry    : http://bugzilla.kernel.org/show_bug.cgi?id=13178
-> > Subject        : Booting very slow
-> > Submitter    : Martin Knoblauch 
-> > Date        : 2009-04-24 12:45 (31 days old)
-> > References    : http://marc.info/?l=linux-kernel&m=124057716231773&w=4
+
+Load Effective Address does two's complement arithmetic?
+I'll take your word for it.
+
+For example:
+
+#include <stdio.h>
+
+extern int diff_umask(int mask, int *cnt1, int *cnt2)
+{ return (((mask - *cnt1) + *cnt2) & mask); }
+
+int main() {
+ int msk  = 0x7fffffff; /* max positive */
+ int idx1 = 0x7ffffffd; /* max positive - 2 */
+ int idx2 = 0x7fffffff; /* max positive */
+
+ int rst;
+
+ rst = diff_umask(msk, &idx1, &idx2);
+ printf("\n\t%d\n", rst);  /* " 1 " - correct */
+}
+
+But that is because when it is compiled as a
+single source file, gcc is hardcoding the lea
+adjustment when it is not an external file:
+(compare to the above listings)
+Like I wrote - I don't use 31-bit ring buffers, so I don't care.
+
+objdump -d testdiff:
+- - - snip - - -
+080483b0 <diff_umask>:
+ 80483b0:       8b 44 24 0c             mov    0xc(%esp),%eax
+ 80483b4:       8b 4c 24 04             mov    0x4(%esp),%ecx
+ 80483b8:       8b 10                   mov    (%eax),%edx
+ 80483ba:       8d 04 11                lea    (%ecx,%edx,1),%eax
+ 80483bd:       8b 54 24 08             mov    0x8(%esp),%edx
+ 80483c1:       2b 02                   sub    (%edx),%eax
+ 80483c3:       21 c8                   and    %ecx,%eax
+ 80483c5:       c3                      ret
+- - - snip - - -
+
+Mike
+
+> Floating-point numbers is a whole other game.
 > 
->  Still happens with 2.6.30-rc7. But see my comment on bz. I would be willing to leave this as "fuzzy timing related problem.
+> 	-hpa
+> 
 
-OK
 
-I've closed it as "unreproducible".
-
-Thanks,
-Rafael
