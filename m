@@ -1,76 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753289AbZEYPXQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753415AbZEYPci@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753289AbZEYPXQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 11:23:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752100AbZEYPW7
+	id S1753415AbZEYPci (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 11:32:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751942AbZEYPca
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 11:22:59 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:58468 "HELO
+	Mon, 25 May 2009 11:32:30 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:47987 "HELO
 	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751503AbZEYPW6 (ORCPT
+	with SMTP id S1751982AbZEYPc3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 11:22:58 -0400
-Date: Mon, 25 May 2009 11:23:00 -0400 (EDT)
+	Mon, 25 May 2009 11:32:29 -0400
+Date: Mon, 25 May 2009 11:32:31 -0400 (EDT)
 From: Alan Stern <stern@rowland.harvard.edu>
 X-X-Sender: stern@netrider.rowland.org
-To: David <david@unsolicited.net>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>, <linux-media@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       <dbrownell@users.sourceforge.net>, <leonidv11@gmail.com>,
-       Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: USB/DVB - Old Technotrend TT-connect S-2400 regression tracked
-  down
-In-Reply-To: <4A189187.4020407@unsolicited.net>
-Message-ID: <Pine.LNX.4.44L0.0905251121370.23874-100000@netrider.rowland.org>
+To: "Michael S. Tsirkin" <mst@redhat.com>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+cc: Kernel development list <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>
+Subject: Re: 2.a.30-rc7: fat filesystem misdetected as amiga
+In-Reply-To: <87y6slb7ug.fsf@devron.myhome.or.jp>
+Message-ID: <Pine.LNX.4.44L0.0905251127410.23874-100000@netrider.rowland.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 24 May 2009, David wrote:
+On Mon, 25 May 2009, OGAWA Hirofumi wrote:
 
-> Alan Stern wrote:
-> > It's not obvious what could be causing this, so let's start out easy.  
-> > Try collecting two usbmon traces (instructions are in
-> > Documentation/usb/usbmon.txt), showing what happens with and without
-> > the reversion.  Maybe some difference will stick ou
-> >   
-> Traces attached. Took a while as my quad core hangs solid when 0u is
-> piped to a file (I had to compile on a laptop and take the logs there).
+> "Michael S. Tsirkin" <mst@redhat.com> writes:
+> 
+> > An attempt to mount it under linux 2.6.30-rc7 results in these messages:
+> >
+> > usb 1-3: new high speed USB device using ehci_hcd and address 7
+> > usb 1-3: New USB device found, idVendor=090c, idProduct=6000
+> > usb 1-3: New USB device strings: Mfr=1, Product=2, SerialNumber=3
+> > usb 1-3: Product: USB2.0 Card Reader  
+> > usb 1-3: Manufacturer: Generic       ,   . 
+> > usb 1-3: SerialNumber: 0000001       
+> > usb 1-3: configuration #1 chosen from 1 choice
+> > Initializing USB Mass Storage driver...
+> > scsi2 : SCSI emulation for USB Mass Storage devices
+> > usbcore: registered new interface driver usb-storage
+> > USB Mass Storage support registered.
+> > usb-storage: device found at 7
+> > usb-storage: waiting for device to settle before scanning
+> > usb-storage: device scan complete
+> > scsi 2:0:0:0: Direct-Access     Generic                   6000 PQ: 0 ANSI: 0 CCS
+> > sd 2:0:0:0: Attached scsi generic sg2 type 0
+> > sd 2:0:0:0: [sdb] 990976 512-byte hardware sectors: (507 MB/483 MiB)
+> > sd 2:0:0:0: [sdb] Write Protect is off
+> > sd 2:0:0:0: [sdb] Mode Sense: 4b 00 00 08
+> > sd 2:0:0:0: [sdb] Assuming drive cache: write through
+> > sd 2:0:0:0: [sdb] Assuming drive cache: write through
+> >  sdb:<6>sd 2:0:0:0: [sdb] Result: hostbyte=DID_OK driverbyte=DRIVER_SENSE
+> > sd 2:0:0:0: [sdb] Sense Key : Illegal Request [current] 
+> > sd 2:0:0:0: [sdb] Add. Sense: Logical block address out of range
+> > end_request: I/O error, dev sdb, sector 0
+> > Buffer I/O error on device sdb, logical block 0
+> > Dev sdb: unable to read RDB block 0
+> >  unable to read partition table
+> > sd 2:0:0:0: [sdb] Attached SCSI removable disk
+> > usb 1-3: USB disconnect, address 7
+> >
+> > parted seems to display both partitions just fine,
+> > and that other OS does not seem to have any trouble
+> > accessing the disk.
+> >
+> > The message 'unable to read RDB block' seems to come from
+> > fs/partitions/amiga.c which looks pretty weird.
+> >
+> > Any idea what info would be helpful in debugging this?
+> > Just to clarify, this is not a regression - older linux versions
+> > as far back as 2.6.24 seem to behave the same way.
+> 
+> It seems I/O error happened while checking the partition types (sector 0).
+> I guess usb people may have knowledge of this. CC to linux-usb.
 
-Okay, here's a patch for you to try.  It refreshes the toggle setting 
-in a linked but otherwise idle QH when a new URB is queued.
+It's hard to imagine why a device would claim that sector 0 was out of 
+range!
+
+Try collecting a usbmon trace of these events (instructions in 
+Documentation/usb/usbmon.txt).
 
 Alan Stern
-
-
-Index: usb-2.6/drivers/usb/host/ehci-q.c
-===================================================================
---- usb-2.6.orig/drivers/usb/host/ehci-q.c
-+++ usb-2.6/drivers/usb/host/ehci-q.c
-@@ -88,7 +88,7 @@ static inline void
- qh_update (struct ehci_hcd *ehci, struct ehci_qh *qh, struct ehci_qtd *qtd)
- {
- 	/* writes to an active overlay are unsafe */
--	BUG_ON(qh->qh_state != QH_STATE_IDLE);
-+	BUG_ON(qh->qh_state != QH_STATE_IDLE && !list_empty(&qh->qtd_list));
- 
- 	qh->hw_qtd_next = QTD_NEXT(ehci, qtd->qtd_dma);
- 	qh->hw_alt_next = EHCI_LIST_END(ehci);
-@@ -971,7 +971,13 @@ static struct ehci_qh *qh_append_tds (
- 		/* can't sleep here, we have ehci->lock... */
- 		qh = qh_make (ehci, urb, GFP_ATOMIC);
- 		*ptr = qh;
-+	} else if (list_empty(&qh->qtd_list)) {
-+		/* There might have been a Clear-Halt while the QH
-+		 * was linked but empty.
-+		 */
-+		qh_refresh(ehci, qh);
- 	}
-+
- 	if (likely (qh != NULL)) {
- 		struct ehci_qtd	*qtd;
- 
 
