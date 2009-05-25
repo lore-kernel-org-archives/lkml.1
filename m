@@ -1,62 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753462AbZEYRXP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751190AbZEYRZ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753462AbZEYRXP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 13:23:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751975AbZEYRXB
+	id S1751190AbZEYRZ1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 13:25:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752099AbZEYRZQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 13:23:01 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:49909 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751940AbZEYRXA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 13:23:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=CIafNJ9D0kt26qZW2mnzSVWqQN9qnicj98om4igZTF1TGLGhecOfuGRw3ep70OvJOF
-         vglvM3w9jXvDGlyloHO7vAp90x1Gf2LOn0Y8SU3Yy2CRO0TkydEx3QV2g7cST3tH2Vk5
-         uzuEYUrmG3rMM/YddsG5B9vGwESSJuVAb5bKM=
-Message-ID: <4A1AD3D1.2010806@gmail.com>
-Date: Mon, 25 May 2009 19:22:25 +0200
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090302)
+	Mon, 25 May 2009 13:25:16 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:36054 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752068AbZEYRZP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 13:25:15 -0400
+Date: Mon, 25 May 2009 19:20:33 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, ebiederm@xmission.com,
+       roland@redhat.com, linux-kernel@vger.kernel.org,
+       Matthew Wilcox <matthew@wil.cx>
+Subject: Re: [PATCH 1/1] signal: make group kill signal fatal
+Message-ID: <20090525172033.GA12586@redhat.com>
+References: <1243198054-13816-1-git-send-email-jirislaby@gmail.com> <20090525000750.GA2301@redhat.com> <4A1AC5A3.9000600@gmail.com>
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Pavel Machek <pavel@ucw.cz>, LKML <linux-kernel@vger.kernel.org>,
-       Linux PM List <linux-pm@lists.linux-foundation.org>
-Subject: Re: 2 bugs related to suspend to disk
-References: <4A199A7A.3010705@gmail.com> <20090524205450.GA1693@elf.ucw.cz> <4A19C2A3.6030501@gmail.com> <200905250004.11927.rjw@sisk.pl>
-In-Reply-To: <200905250004.11927.rjw@sisk.pl>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A1AC5A3.9000600@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> On Sunday 24 May 2009, Marcin Slusarz wrote:
->> Pavel Machek wrote:
->>> Hi!
->>>
->>>
->>>> 2) "s2disk" (from suspend-0.8) suspends, but doesn't resume (and I need to mkswap && swapon -a later)
->>>>
->>> I'm afraid we need more details here. Is "resume" binary being ran?
->> Excellent question ;) - I didn't know it has to. I'll try to setup
->> initramfs tomorrow.
->>
->> Thanks and sorry for the noise!
-> 
-> However, the issue reported as 1) is not really a noise IMO. :-)
-> 
-> Can you please attach a full dmesg output containing these messages?
+On 05/25, Jiri Slaby wrote:
+>
+> On 05/25/2009 02:07 AM, Oleg Nesterov wrote:
+> > On 05/24, Jiri Slaby wrote:
+> >>
+> >> __fatal_signal_pending() returns now true only for a non-group sent
+> >> sigkill, i. e. for example tgkill, send_sig...
+> >
+> > No. Please look at complete_signal(). If we queue a fatal signal,
+> > we always add SIGKILL to any thread.
+>
+> Ah, thanks. But it looks like it doesn't work well in some cases.
+> Consider this kernel code:
+>
+> ...
+> static int release(struct inode *ino, struct file *file)
+> {
+>         unsigned int a;
+>         printk(KERN_DEBUG "fst\n");
+>         for (a = 0; a < 10; a++) {
+>                 printk(KERN_DEBUG "%s: SP=%u FSP=%u pend=%.16lx
+> shpend=%.16lx\n",
+>                                 __func__,
+>                                 signal_pending(current),
+>                                 fatal_signal_pending(current),
+>                                 current->pending.signal.sig[0],
+>
+> current->signal->shared_pending.signal.sig[0]);
+>
+> ...
+>
+> int main(int argc, char **argv)
+> {
+>         struct pollfd fds = { .events = POLLIN };
+>         int fd;
+>
+>         fd = open("/dev/m", O_RDONLY);
+>         if (fd < 0)
+>                 err(1, "open");
+>         fds.fd = fd;
+>         if (poll(&fds, 1, -1) < 0)
+>                 err(2, "poll");
+>         close(fd);
+>         return 0;
+> }
+>
+> ----------------------------------------------
+> It outputs:
+> fst
+> release: SP=1 FSP=0 pend=0000000000000000 shpend=0000000000000100
 
-I've uploaded .config, dmesg (BUG was not saved) and 2 pictures of
-screen just before power loss to http://www.kadu.net/~joi/kernel/2009.05.25/
-(Please ignore first suspend failure (3681.078646 - 3685.514358) - I forgot
-to restore swap)
+Because (I guess) ->release() is called by do_exit()->close_files(),
+by this time the private SIGKILL is already dequeued.
 
-Marcin
+If you kill this program, poll() never returns to the user-space.
 
+> If the poll isn't there, it works well.
+
+Hmm. this is strange. Do you mean that if this program does
+sleep(10000) (or something else) instead of poll() above, it
+prints pend != 0 ?
+
+
+
+Note. There are known issues with fatal_signal_pending() in exit()
+path. But in any case, we should not check ->shared_pending.
+And even if ->signal != NULL we must not use ->siglock. Because
+schedule() checks fatal_signal_pending() under rq->lock, we can
+deadlock. Also, the fact that SIGKILL is actually pending is the
+current implementation detail, probably this will be changed.
+
+__fatal_signal_pending() could check SIGNAL_GROUP_EXIT, but we
+can't do this now, ->signal can be NULL. Actually signal_group_exit()
+is more correct.
+
+And. Why do you need fatal_signal_pending() ? It is special,
+should be used by things like wait_event_killable().
+
+Oleg.
 
