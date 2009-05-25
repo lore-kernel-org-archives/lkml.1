@@ -1,65 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753510AbZEYNUr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753056AbZEYNVV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753510AbZEYNUr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 09:20:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752738AbZEYNUf
+	id S1753056AbZEYNVV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 09:21:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751821AbZEYNVK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 09:20:35 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:59200 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753411AbZEYNUe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 09:20:34 -0400
-Date: Mon, 25 May 2009 14:20:27 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       Catalin Marinas <catalin.marinas@arm.com>,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: Broken ARM atomic ops wrt memory barriers (was : [PATCH] Add cmpxchg support for ARMv6+ systems)
-Message-ID: <20090525132027.GA946@shareable.org>
-References: <20090422171703.19555.83629.stgit@pc1117.cambridge.arm.com> <20090423141248.22193.10543.stgit@pc1117.cambridge.arm.com> <20090524131636.GB3159@n2100.arm.linux.org.uk> <20090524145633.GA14754@Krystal>
+	Mon, 25 May 2009 09:21:10 -0400
+Received: from cantor.suse.de ([195.135.220.2]:37829 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751035AbZEYNVJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 09:21:09 -0400
+Message-ID: <4A1A9B47.2090208@suse.cz>
+Date: Mon, 25 May 2009 15:21:11 +0200
+From: Michal Marek <mmarek@suse.cz>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090524145633.GA14754@Krystal>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] kbuild: handle non-existing options in scripts/config
+References: <cover.1243255664.git.mmarek@suse.cz> <20090525125540.GB12943@sepie.suse.cz> <20090525131144.GZ846@one.firstfloor.org>
+In-Reply-To: <20090525131144.GZ846@one.firstfloor.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mathieu Desnoyers wrote:
-> I use a local cmpxchg in the LTTng tree as key instruction to manage the
-> ring buffer in a irq, softirq and NMI-safe way (due to the atomic nature
-> of this instruction), but without the overhead of synchronizing across
-> CPUs.
+Andi Kleen napsal(a):
+>> -replace() {
+>> -	sed -i -e "$@" $FN
+>> +# set_var name value [before-var]
+>> +set_var() {
+>> +	awk -vvar="$1" -vnew="$2" -vbefore="$3" '
 > 
-> On ARM, the semantic looks a bit like PowerPC with linked load/linked
-> store, and you don't seem to need memory barriers. I guess that's either
-> because
+> This seems rather complicated compared to what was there before.
+
+Calling the function is simpler otoh...
+
+
+> I would just cmp the output file to the input file and if they are
+> the same then add it at the end with a echo
+
+Just doing that would duplicate the variable if it was already set to
+the desired value, causing a "warning: override: reassigning to symbol"
+warning from kbuild.
+
+Hmm, willll try to simplify it somehow.
+
+
 > 
-> a) they are implicit in the ll/ls or
-> b) ARM does not perform out-of-order memory read/writes or
-> c) they've simply been forgotten, and it's a bug.
+>> +	}
+>> +	' "$FN" >"$FN.tmp"
 > 
-> the cmpxchg local instruction maps currently to cmpxchg, as a fallback,
-> since there is no difference between the SMP-aware and UP-only
-> instructions.
-> 
-> But if I look at arch/arm/include/asm/spinlock.h, the answer I get seems
-> to be c) : ARM needs memory barriers.
+> This should be a &&, otherwise you risk removing the output file
+> on ctrl-c
 
-Memory barriers only affect the observed access order with respect to
-other processors (and perhaps other devices).
+Ah, good point.
 
-So a CPU-local operation would not need barriers.  CPU-local code,
-including local IRQs, see all memory accesses in the same order as
-executed instructions.
-
-Of course you need barriers at some point, when using the local data
-to update global data seen by other CPUs at a later time.  But that is
-hopefully done elsewhere.
-
-After considering this, do you think it's still missing barriers?
-
--- Jamie
+Michal
