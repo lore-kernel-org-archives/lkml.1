@@ -1,83 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757422AbZEYJCZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756534AbZEYJDm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757422AbZEYJCZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 05:02:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754207AbZEYJCD
+	id S1756534AbZEYJDm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 05:03:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751490AbZEYJDd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 05:02:03 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:60064 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755508AbZEYJCC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 05:02:02 -0400
-From: Petr Tesarik <ptesarik@suse.cz>
-To: linux-kernel@vger.kernel.org, tglx@linutronix.de, andi@firstfloor.org
-Cc: Petr Tesarik <ptesarik@suse.cz>, Ingo Molnar <mingo@elte.hu>,
-       <stable@kernel.org>
-Subject: [PATCH 1/1] Move rdtsc_barrier() into the TSC vread method
-Date: Mon, 25 May 2009 11:02:02 +0200
-Message-Id: <9d0ea9ea0f866bdc1f4d76831221ae117f11ea67.1243241859.git.ptesarik@suse.cz>
-X-Mailer: git-send-email 1.6.0.2
+	Mon, 25 May 2009 05:03:33 -0400
+Received: from ns01.unsolicited.net ([69.10.132.115]:47929 "EHLO
+	ns01.unsolicited.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751335AbZEYJDc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 05:03:32 -0400
+Message-ID: <4A1A5E24.20201@unsolicited.net>
+Date: Mon, 25 May 2009 10:00:20 +0100
+From: David <david@unsolicited.net>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+MIME-Version: 1.0
+To: Pete Zaitcev <zaitcev@redhat.com>
+CC: Alan Stern <stern@rowland.harvard.edu>,
+       USB list <linux-usb@vger.kernel.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-media@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       dbrownell@users.sourceforge.net, leonidv11@gmail.com,
+       Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: USB/DVB - Old Technotrend TT-connect S-2400 regression tracked
+ down
+References: <4A1967A2.4050906@unsolicited.net>	<Pine.LNX.4.44L0.0905242208260.15195-100000@netrider.rowland.org> <20090524203902.594a0eec.zaitcev@redhat.com>
+In-Reply-To: <20090524203902.594a0eec.zaitcev@redhat.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The *fence instructions were moved to vsyscall_64.c by commit
-cb9e35dce94a1b9c59d46224e8a94377d673e204.  But this breaks the
-vDSO, because vread methods are also called from there.
+Pete Zaitcev wrote:
+> On Sun, 24 May 2009 22:10:50 -0400 (EDT), Alan Stern <stern@rowland.harvard.edu> wrote:
+>
+>   
+>> Pete, you should look at this.  It appears to be a problem with the DMA
+>> mapping in usbmon.  Probably the same sort of thing you were working on
+>> about a week ago (trying to access device memory).
+>>     
+>
+> Indeed it looks the same. Is this an AMD CPU?
+>   
+yes, a Phenom.
 
-Besides, the synchronization might be unnecessary for other
-time sources than TSC.
+> I wonder if CONFIG_HAVE_DMA_API_DEBUG does it (enabled with a select
+> in arch/x86/Kconfig). Strange that it started happening now.
+>   
+That is enabled. I'll switch it off and give it another go.
 
-Signed-off-by: Petr Tesarik <ptesarik@suse.cz>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: <stable@kernel.org>
----
- arch/x86/kernel/tsc.c         |   11 ++++++++++-
- arch/x86/kernel/vsyscall_64.c |    8 --------
- 2 files changed, 10 insertions(+), 9 deletions(-)
-
-diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
-index d57de05..cf8611d 100644
---- a/arch/x86/kernel/tsc.c
-+++ b/arch/x86/kernel/tsc.c
-@@ -710,7 +710,16 @@ static cycle_t read_tsc(struct clocksource *cs)
- #ifdef CONFIG_X86_64
- static cycle_t __vsyscall_fn vread_tsc(void)
- {
--	cycle_t ret = (cycle_t)vget_cycles();
-+	cycle_t ret;
-+
-+	/*
-+	 * Surround the RDTSC by barriers, to make sure it's not
-+	 * speculated to outside the seqlock critical section and
-+	 * does not cause time warps:
-+	 */
-+	rdtsc_barrier();
-+	ret = (cycle_t)vget_cycles();
-+	rdtsc_barrier();
- 
- 	return ret >= __vsyscall_gtod_data.clock.cycle_last ?
- 		ret : __vsyscall_gtod_data.clock.cycle_last;
-diff --git a/arch/x86/kernel/vsyscall_64.c b/arch/x86/kernel/vsyscall_64.c
-index 44153af..25ee06a 100644
---- a/arch/x86/kernel/vsyscall_64.c
-+++ b/arch/x86/kernel/vsyscall_64.c
-@@ -132,15 +132,7 @@ static __always_inline void do_vgettimeofday(struct timeval * tv)
- 			return;
- 		}
- 
--		/*
--		 * Surround the RDTSC by barriers, to make sure it's not
--		 * speculated to outside the seqlock critical section and
--		 * does not cause time warps:
--		 */
--		rdtsc_barrier();
- 		now = vread();
--		rdtsc_barrier();
--
- 		base = __vsyscall_gtod_data.clock.cycle_last;
- 		mask = __vsyscall_gtod_data.clock.mask;
- 		mult = __vsyscall_gtod_data.clock.mult;
--- 
-1.6.0.2
-
+David
