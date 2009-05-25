@@ -1,56 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754765AbZEYWba@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754794AbZEYWfn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754765AbZEYWba (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 18:31:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752825AbZEYWbW
+	id S1754794AbZEYWfn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 18:35:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752778AbZEYWfg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 18:31:22 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:61570 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751715AbZEYWbV (ORCPT
+	Mon, 25 May 2009 18:35:36 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:48093 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752615AbZEYWff (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 18:31:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=O4/FcUv8HcaB55VfqXeBaDtePP28qadoWlyFweA3LAXwCPBovsjJ3QL7JMRgZ0f+Vc
-         8k08RzeY+5jrmpMgW2DOMlCGVlWPq7ClwgHg6hTc1wezdGVwOLMLzZnlO1xZhsybWllP
-         gsEa1fc8AKz3RIb81bgDtkObiaREAidGE3iRA=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] libata: add warning about possible HPA compatibility issue
-Date: Tue, 26 May 2009 00:36:17 +0200
-User-Agent: KMail/1.11.3 (Linux/2.6.30-rc6-next-20090522-05935-g4d19128; KDE/4.2.3; i686; ; )
-Cc: Jeff Garzik <jgarzik@pobox.com>, Jacob <fun2program8@yahoo.com>,
-       Christopher Hogan <chris.c.hogan@gmail.com>,
-       Robert Hancock <hancockrwd@gmail.com>, linux-ide@vger.kernel.org,
+	Mon, 25 May 2009 18:35:35 -0400
+Date: Mon, 25 May 2009 23:36:43 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Frans Pop <elendil@planet.nl>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org,
        linux-kernel@vger.kernel.org
-References: <200905252348.08970.bzolnier@gmail.com> <20090525232014.7b6dd7bd@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090525232014.7b6dd7bd@lxorguk.ukuu.org.uk>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+Subject: Re: [PATCH 1/3] ide: add "ignore_hpa" module parameter
+Message-ID: <20090525233643.0a47e950@lxorguk.ukuu.org.uk>
+In-Reply-To: <200905260027.39330.elendil@planet.nl>
+References: <200905252344.11826.bzolnier@gmail.com>
+	<200905260027.39330.elendil@planet.nl>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905260036.17718.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 26 May 2009 00:20:14 Alan Cox wrote:
-> > +static inline void ata_hpa_warn(unsigned long long first_sector,
-> > +				unsigned long long last_sector)
-> > +{
-> > +	printk(KERN_WARNING "*** possible compatibility issue:\n"
-> > +		"*** sectors %llu-%llu may be inaccessible\n"
-> > +		"*** if Host Protected Area is used for filesystem data\n"
-> > +		"*** (please refer to \"ignore_hpa\" module parameter)\n",
-> > +		first_sector, last_sector);
-> > +}
-> 
-> NAK - this is extremely misleading and will just randomly terrify users,
-> who may then set the paramater and corrupt things like BIOS save areas.
+> It's also not obvious (at least not to a dumb user like me) that "ignore 
+> HPA limit" is equivalent to "preserving the Host Protected Area" as the 
+> commit commit says.
 
-Please propose better description.
+It isn't - its the exact reverse.
+
+Ignoring the HPA limit tells the kernel to ignore the system BIOS and
+firmware set defaults and to stomp the whole disk regardless. On a modern
+system thats almost always a really bad idea. Unfortunately on ancient
+boxes with disk jumpers set to lie about the disk size (32GB clipping
+etc) its the right thing.
+
+Having the same parameter in both stacks seems a good idea but really we
+need Tejun's patch exposing the values and then to propogate the hpa
+ignore into sysfs and trigger a revalidate of the disk if you change it.
+Libata has all the framework for that ready just needing the final bits.
+I don't see anything problematic in old IDE also having that interface.
