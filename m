@@ -1,112 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753032AbZEYNSH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753943AbZEYNUg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753032AbZEYNSH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 09:18:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751249AbZEYNR4
+	id S1753943AbZEYNUg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 09:20:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751305AbZEYNU3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 09:17:56 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:51521 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751143AbZEYNR4 (ORCPT
+	Mon, 25 May 2009 09:20:29 -0400
+Received: from casper.infradead.org ([85.118.1.10]:47105 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751249AbZEYNU3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 09:17:56 -0400
-Date: Mon, 25 May 2009 21:17:53 +0800
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Paul Menage <menage@google.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH] cgroups: handle failure of cgroup_populate_dir() at
-	mount/remount
-Message-ID: <20090525131753.GL4858@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <4A16153C.2080004@cn.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <4A16153C.2080004@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 25 May 2009 09:20:29 -0400
+Subject: Re: [PATCH] U300 sched_clock implementation
+From: Peter Zijlstra <peterz@infradead.org>
+To: Linus Walleij <linus.ml.walleij@gmail.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu,
+       linux-arm-kernel@lists.arm.linux.org.uk,
+       Thomas Gleixner <tglx@linutronix.de>,
+       John Stultz <johnstul@linux.vnet.ibm.com>
+In-Reply-To: <1243256510.26820.679.camel@twins>
+References: <63386a3d0905112337p2d426481o5f9bf9b9489cc57e@mail.gmail.com>
+	 <63386a3d0905231446h245bb4a9gec111f68a74a44e4@mail.gmail.com>
+	 <1243151839.26820.642.camel@twins>
+	 <63386a3d0905250513q6ca56eeepcf7bebe46c447fb4@mail.gmail.com>
+	 <1243256510.26820.679.camel@twins>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Mon, 25 May 2009 15:20:27 +0200
+Message-Id: <1243257627.26820.683.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Li Zefan <lizf@cn.fujitsu.com> [2009-05-22 11:00:12]:
+On Mon, 2009-05-25 at 15:01 +0200, Peter Zijlstra wrote:
+> On Mon, 2009-05-25 at 14:13 +0200, Linus Walleij wrote:
+> > 2009/5/24 Peter Zijlstra <peterz@infradead.org>:
+> > 
+> > > On Sat, 2009-05-23 at 23:46 +0200, Linus Walleij wrote:
+> > >
+> > >> This overrides the global sched_clock() symbol in the Linux
+> > >> scheduler with a local implementation which takes advantage of
+> > >> the timesource in U300 giving a scheduling resolution of 1us. The
+> > >> solution is the same as found in the OMAP2 core code.
+> > >
+> > > We assume sched_clock() to return time in ns (e-9) resolution.
+> > 
+> > Yep okay and in this case:
+> > 
+> > >> +       ret = (unsigned long long) u300_get_cycles();
+> > >> +       ret = (ret * clocksource_u300_1mhz.mult_orig) >>
+> > >> +               clocksource_u300_1mhz.shift;
+> > >> +       return ret;
+> > 
+> > (mult_orig >> shift) == 1000
+> 
+> Ah, ok -- missed that little detail ;-)
+> 
+> > So for each cycle in cyclecount register we return 1000 * cycles
+> > i.e 1000ns.
+> > 
+> > If it looks nicer we can of course simply:
+> > return (unsigned long long) u300_get_cycles * 1000;
+> > 
+> > But the question here is whether this resolution is enough for
+> > sched_clock() or if it is irrelevant to override sched_clock()
+> > if it cannot schedule with better precision than 1000 ns.
+> 
+> No anything better than jiffies is good, 1us certainly is worth the
+> trouble.
 
-> Now we have 'stat' file in both memory and cpuacct subsystems. If we
-> mount these 2 subsystems with option 'noprefix', the creation of 'stat'
-> file for cpuacct will fail, but without any notificatin to the user.
-> 
-> With this patch, we fail the mount/remount in this case.
-> 
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> ---
->  kernel/cgroup.c |   18 ++++++++++++++++--
->  1 files changed, 16 insertions(+), 2 deletions(-)
-> 
-> diff --git a/kernel/cgroup.c b/kernel/cgroup.c
-> index a7267bf..eab83f7 100644
-> --- a/kernel/cgroup.c
-> +++ b/kernel/cgroup.c
-> @@ -896,6 +896,7 @@ static int parse_cgroupfs_options(char *data,
->  static int cgroup_remount(struct super_block *sb, int *flags, char *data)
->  {
->  	int ret = 0;
-> +	unsigned long subsys_bits;
->  	struct cgroupfs_root *root = sb->s_fs_info;
->  	struct cgroup *cgrp = &root->top_cgroup;
->  	struct cgroup_sb_opts opts;
-> @@ -914,12 +915,17 @@ static int cgroup_remount(struct super_block *sb, int *flags, char *data)
->  		goto out_unlock;
->  	}
-> 
-> +	subsys_bits = root->subsys_bits;
->  	ret = rebind_subsystems(root, opts.subsys_bits);
->  	if (ret)
->  		goto out_unlock;
-> 
->  	/* (re)populate subsystem files */
-> -	cgroup_populate_dir(cgrp);
-> +	ret = cgroup_populate_dir(cgrp);
-> +	if (ret) {
+One note, sched_clock() is assumed to be _cheap_. Now I assume you knew
+that and chose a suitable clocksource.
 
-if (ret) means a failure right? So we rebind_subsystems to the older
-subsys_bits? Could you please add a comment, the code can be misread.
+But that is the reason this isn't generic, non of the 'stable'
+clocksources on x86 are fast enough to use as sched_clock.
 
-> +		rebind_subsystems(root, subsys_bits);
-> +		goto out_unlock;
-> +	}
-> 
->  	if (opts.release_agent)
->  		strcpy(root->release_agent_path, opts.release_agent);
-> @@ -1122,9 +1128,13 @@ static int cgroup_get_sb(struct file_system_type *fs_type,
->  		BUG_ON(!list_empty(&root_cgrp->children));
->  		BUG_ON(root->number_of_cgroups != 1);
-> 
-> -		cgroup_populate_dir(root_cgrp);
-> +		ret = cgroup_populate_dir(root_cgrp);
-> +
->  		mutex_unlock(&inode->i_mutex);
->  		mutex_unlock(&cgroup_mutex);
-> +
-> +		if (ret)
-> +			goto drop_new_super;
->  	}
-> 
->  	simple_set_mnt(mnt, sb);
-> @@ -1803,6 +1813,10 @@ int cgroup_add_file(struct cgroup *cgrp,
->  		dput(dentry);
->  	} else
->  		error = PTR_ERR(dentry);
-> +
-> +	if (error)
-> +		printk(KERN_WARNING "cgroup: Failed to create file '%s': %d\n",
-> +		       name, error);
->  	return error;
->  }
->
+Of course, x86 isn't the only arch and if enough architectures do show
+this pattern, we could indeed think about doing this in generic code.
 
-Looks good, should we mark cgroup_populate_dir with __must_check? 
 
--- 
-	Balbir
