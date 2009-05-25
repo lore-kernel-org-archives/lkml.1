@@ -1,55 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756534AbZEYJDm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756105AbZEYJFM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756534AbZEYJDm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 05:03:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751490AbZEYJDd
+	id S1756105AbZEYJFM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 05:05:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751490AbZEYJFD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 05:03:33 -0400
-Received: from ns01.unsolicited.net ([69.10.132.115]:47929 "EHLO
-	ns01.unsolicited.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751335AbZEYJDc (ORCPT
+	Mon, 25 May 2009 05:05:03 -0400
+Received: from mx1.auerswald.de ([212.185.163.234]:4810 "EHLO
+	mail.auerswald.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751117AbZEYJFB convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 05:03:32 -0400
-Message-ID: <4A1A5E24.20201@unsolicited.net>
-Date: Mon, 25 May 2009 10:00:20 +0100
-From: David <david@unsolicited.net>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	Mon, 25 May 2009 05:05:01 -0400
+From: Wolfgang =?iso-8859-1?q?M=FCes?= <wolfgang.mues@auerswald.de>
+Organization: Auerswald GmbH & Co. KG
+To: "David Brownell" <david-b@pacbell.net>
+Subject: Re: [PATCH] mmc_spi: use EILSEQ for possible transmission errors
+Date: Mon, 25 May 2009 11:04:47 +0200
+User-Agent: KMail/1.9.10
+Cc: "Pierre Ossman" <pierre@ossman.eu>,
+       "Matt Fleming" <matt@console-pimps.org>,
+       "Pierre Ossman" <drzeus@drzeus.cx>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Mike Frysinger" <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org
+References: <200905201902.51377.david-b@pacbell.net>
+In-Reply-To: <200905201902.51377.david-b@pacbell.net>
 MIME-Version: 1.0
-To: Pete Zaitcev <zaitcev@redhat.com>
-CC: Alan Stern <stern@rowland.harvard.edu>,
-       USB list <linux-usb@vger.kernel.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-media@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       dbrownell@users.sourceforge.net, leonidv11@gmail.com,
-       Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: USB/DVB - Old Technotrend TT-connect S-2400 regression tracked
- down
-References: <4A1967A2.4050906@unsolicited.net>	<Pine.LNX.4.44L0.0905242208260.15195-100000@netrider.rowland.org> <20090524203902.594a0eec.zaitcev@redhat.com>
-In-Reply-To: <20090524203902.594a0eec.zaitcev@redhat.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200905251104.47550.wolfgang.mues@auerswald.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pete Zaitcev wrote:
-> On Sun, 24 May 2009 22:10:50 -0400 (EDT), Alan Stern <stern@rowland.harvard.edu> wrote:
->
->   
->> Pete, you should look at this.  It appears to be a problem with the DMA
->> mapping in usbmon.  Probably the same sort of thing you were working on
->> about a week ago (trying to access device memory).
->>     
->
-> Indeed it looks the same. Is this an AMD CPU?
->   
-yes, a Phenom.
+David,
 
-> I wonder if CONFIG_HAVE_DMA_API_DEBUG does it (enabled with a select
-> in arch/x86/Kconfig). Strange that it started happening now.
->   
-That is enabled. I'll switch it off and give it another go.
+Am Donnerstag, 21. Mai 2009 schrieb David Brownell:
+> On Wednesday 20 May 2009, Pierre Ossman wrote:
+> > >		 Remember that the
+> > > firmware in the card can leverage "that's erased" knowledge for
+> > > things like wear leveling.  SSDs and other storage devices would
+> > > likewise benefit from such knowledge.  I'm quite certain there's
+> > > been discussion about adding support for that in the block layer.
+> >
+> > It's already in AFAIK. I even had code for hooking it up to mmc_block.
+> > But it didn't produce any measurable results so I never merged it.
+>
+> I'd expect the results would take time to show.  As in, they would
+> facilitate wear leveling logic, which may be difficult to measure
+> except by testing various cards to destruction ... even for vendors
+> that *do* have decent wear leveling.  :)
 
-David
+Can someone please explain for me the purpose and the implementation of this 
+wear level logic in block.c?
+
+I can not see why a sector erase and the sector erase result codes of a MMC/SD 
+card can be used to get any usefull information about wear leveling in the 
+card. The mapping of physical to logical blocks is not reported by the card, 
+and the number of erase cycles for each block is also not reported. SO how 
+can the host be able to optimize the wear leveling?
+
+As far as I can see, the best wear level handling for MMC/SD cards is to 
+optimize the size of the chunks of data to write. I have posted a patch
+(mmc_spi: speedup for slow cards, less wear-out), and it was accepted by 
+Pierre at 11th of april.
+
+best regards
+ 
+i. A. Wolfgang Mües
+-- 
+Auerswald GmbH & Co. KG
+Hardware Development
+Telefon: +49 (0)5306 9219 0
+Telefax: +49 (0)5306 9219 94 
+E-Mail: Wolfgang.Mues@Auerswald.de
+Web: http://www.auerswald.de
+ 
+--------------------------------------------------------------
+Auerswald GmbH & Co. KG, Vor den Grashöfen 1, 38162 Cremlingen
+Registriert beim AG Braunschweig HRA 13289
+p.h.G Auerswald Geschäftsführungsges. mbH
+Registriert beim AG Braunschweig HRB 7463
+Geschäftsführer: Dipl-Ing. Gerhard Auerswald
