@@ -1,120 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755759AbZEYKR1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756534AbZEYKSh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755759AbZEYKR1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 06:17:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753005AbZEYKRT
+	id S1756534AbZEYKSh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 06:18:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752596AbZEYKSa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 06:17:19 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:65453 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752364AbZEYKRT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 06:17:19 -0400
-Message-ID: <4A1A6F67.1040106@cn.fujitsu.com>
-Date: Mon, 25 May 2009 18:13:59 +0800
-From: Zhaolei <zhaolei@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Mon, 25 May 2009 06:18:30 -0400
+Received: from mx1.auerswald.de ([212.185.163.234]:5013 "EHLO
+	mail.auerswald.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751649AbZEYKS3 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 06:18:29 -0400
+From: Wolfgang =?iso-8859-1?q?M=FCes?= <wolfgang.mues@auerswald.de>
+Organization: Auerswald GmbH & Co. KG
+To: "David Brownell" <david-b@pacbell.net>
+Subject: Re: [PATCH] mmc_spi: use EILSEQ for possible transmission errors
+Date: Mon, 25 May 2009 12:18:18 +0200
+User-Agent: KMail/1.9.10
+Cc: "Pierre Ossman" <pierre@ossman.eu>,
+       "Matt Fleming" <matt@console-pimps.org>,
+       "Pierre Ossman" <drzeus@drzeus.cx>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Mike Frysinger" <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org
+References: <200905250243.46984.david-b@pacbell.net>
+In-Reply-To: <200905250243.46984.david-b@pacbell.net>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Tom Zanussi <tzanussi@gmail.com>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH v3 2/2] ftrace: clean up of using ftrace_event_enable_disable()
-References: <4A14FDFE.2080402@cn.fujitsu.com> <4A16788F.2060802@cn.fujitsu.com> <20090522115108.GA10992@elte.hu> <4A1A6CE8.2050100@cn.fujitsu.com>
-In-Reply-To: <4A1A6CE8.2050100@cn.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200905251218.18262.wolfgang.mues@auerswald.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Always use tracing_stop_cmdline_record() to enable/disable a event.
+David,
 
-Impact: cleanup, no functionality changed
+Am Montag, 25. Mai 2009 schrieb David Brownell:
+> It can't.  But when the card controller knows that for example
+> certain logical blocks are not holding data, it can use that
+> for wear leveling ... it's got more physical blocks to use to
+> even out the writes, as well as having any records it kept on
+> writes, reads, and erasures.
 
-Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
----
- kernel/trace/trace_events.c |   44 +++++++++++++-----------------------------
- 1 files changed, 14 insertions(+), 30 deletions(-)
+OK. So the block layer is issuing erase commands for all sectors which get 
+unused, to let the mmc/sd card controller know that these areas are unused.
 
-diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
-index 9b246eb..6c81f9c 100644
---- a/kernel/trace/trace_events.c
-+++ b/kernel/trace/trace_events.c
-@@ -76,26 +76,9 @@ static void trace_destroy_fields(struct ftrace_event_call *call)
- 
- #endif /* CONFIG_MODULES */
- 
--static void ftrace_clear_events(void)
--{
--	struct ftrace_event_call *call;
--
--	mutex_lock(&event_mutex);
--	list_for_each_entry(call, &ftrace_events, list) {
--
--		if (call->enabled) {
--			call->enabled = 0;
--			tracing_stop_cmdline_record();
--			call->unregfunc();
--		}
--	}
--	mutex_unlock(&event_mutex);
--}
--
- static void ftrace_event_enable_disable(struct ftrace_event_call *call,
- 					int enable)
- {
--
- 	switch (enable) {
- 	case 0:
- 		if (call->enabled) {
-@@ -114,6 +97,17 @@ static void ftrace_event_enable_disable(struct ftrace_event_call *call,
- 	}
- }
- 
-+static void ftrace_clear_events(void)
-+{
-+	struct ftrace_event_call *call;
-+
-+	mutex_lock(&event_mutex);
-+	list_for_each_entry(call, &ftrace_events, list) {
-+		ftrace_event_enable_disable(call, 0);
-+	}
-+	mutex_unlock(&event_mutex);
-+}
-+
- /*
-  * __ftrace_set_clr_event(NULL, NULL, NULL, set) will set/unset all events.
-  */
-@@ -1059,11 +1053,7 @@ static void trace_module_remove_events(struct module *mod)
- 	list_for_each_entry_safe(call, p, &ftrace_events, list) {
- 		if (call->mod == mod) {
- 			found = true;
--			if (call->enabled) {
--				call->enabled = 0;
--				tracing_stop_cmdline_record();
--				call->unregfunc();
--			}
-+			ftrace_event_enable_disable(call, 0);
- 			if (call->event)
- 				unregister_ftrace_event(call->event);
- 			debugfs_remove_recursive(call->dir);
-@@ -1265,15 +1255,9 @@ static __init void event_trace_self_tests(void)
- 			continue;
- 		}
- 
--		call->enabled = 1;
--		tracing_start_cmdline_record();
--		call->regfunc();
--
-+		ftrace_event_enable_disable(call, 1);
- 		event_test_stuff();
--
--		call->unregfunc();
--		tracing_stop_cmdline_record();
--		call->enabled = 0;
-+		ftrace_event_enable_disable(call, 0);
- 
- 		pr_cont("OK\n");
- 	}
+Are these erase commands requests (as reads and writes)? I suppose...
+
+So if this code gets integrated, we can do:
+
+if (command is erase)
+	accept erase response codes
+else
+	treat erase response codes as transmission errors
+
+Should be no problem...
+
+regards
+ 
+i. A. Wolfgang Mües
 -- 
-1.5.5.3
-
+Auerswald GmbH & Co. KG
+Hardware Development
+Telefon: +49 (0)5306 9219 0
+Telefax: +49 (0)5306 9219 94 
+E-Mail: Wolfgang.Mues@Auerswald.de
+Web: http://www.auerswald.de
+ 
+--------------------------------------------------------------
+Auerswald GmbH & Co. KG, Vor den Grashöfen 1, 38162 Cremlingen
+Registriert beim AG Braunschweig HRA 13289
+p.h.G Auerswald Geschäftsführungsges. mbH
+Registriert beim AG Braunschweig HRB 7463
+Geschäftsführer: Dipl-Ing. Gerhard Auerswald
