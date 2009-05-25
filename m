@@ -1,142 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757916AbZEYIz7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752163AbZEYJAp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757916AbZEYIz7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 04:55:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752578AbZEYIzv
+	id S1752163AbZEYJAp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 05:00:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750943AbZEYJAh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 04:55:51 -0400
-Received: from ports.donpac.ru ([80.254.111.81]:57848 "EHLO ports.donpac.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754012AbZEYIzu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 04:55:50 -0400
-X-Greylist: delayed 1770 seconds by postgrey-1.27 at vger.kernel.org; Mon, 25 May 2009 04:55:49 EDT
-Date: Mon, 25 May 2009 12:26:18 +0400
-From: Andrey Panin <pazke@donpac.ru>
-To: Gabriele Turchi <gabriele.turchi@l39a.com>
-Cc: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org
-Subject: Re: Asus eee-top touch screen
-Message-ID: <20090525082618.GA5983@ports.donpac.ru>
-Mail-Followup-To: Gabriele Turchi <gabriele.turchi@l39a.com>,
-	linux-kernel@vger.kernel.org, linux-input@vger.kernel.org
-References: <4A18F807.3080406@l39a.com>
+	Mon, 25 May 2009 05:00:37 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:57130 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750896AbZEYJAh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 05:00:37 -0400
+Message-ID: <7BEB795002534E81BFA42E0464AEFD72@zhaoleiwin>
+From: "Zhaolei" <zhaolei@cn.fujitsu.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Cc: "Frederic Weisbecker" <fweisbec@gmail.com>,
+       "Steven Rostedt" <rostedt@goodmis.org>,
+       "Tom Zanussi" <tzanussi@gmail.com>,
+       "LKML" <linux-kernel@vger.kernel.org>
+References: <4A14FDFE.2080402@cn.fujitsu.com> <4A16788F.2060802@cn.fujitsu.com> <20090522115108.GA10992@elte.hu>
+Subject: Re: [PATCH v2 0/2] ftrace: Add task_comm support for trace_event
+Date: Mon, 25 May 2009 16:59:26 +0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A18F807.3080406@l39a.com>
-X-Uname: Linux 2.6.18-4-powerpc64 ppc64
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain;
+	charset="iso-8859-1"
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.5512
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n4P90p7M029863
 
+* From: "Ingo Molnar" <mingo@elte.hu>
+> 
+> it still fails to build:
+> 
+> kernel/built-in.o: In function `ftrace_event_enable_disable':
+> trace_events.c:(.text+0x4df08): undefined reference to `tracing_stop_cmdline_record'
+> trace_events.c:(.text+0x4df1f): undefined reference to `tracing_start_cmdline_record'
+> 
+> config attached.
 
-Added linux-input@vger.kernel.org to the CC.
+Hello, Ingo
 
-On 144, 05 24, 2009 at 09:32:23AM +0200, Gabriele Turchi wrote:
-> Hi all.
-> 
-> I've done some tests to use the touch screen included in the Asus 
-> eee-top PC under Fedora 10/11. From the first results, the touch screen 
-> was detected, but only the mouse button events are generated. I've 
-> googled around a bit to find a solution, but found nothing.
-> 
-> Looking into kernel and X sources, the more viable solution for me was 
-> to write a little kernel module, to modify a bit the event's stream to 
-> make them compatible with X needs.
-> 
-> My module is attached, even if I fully understand that this module could 
-> be the worst conceived and worst written ever... :-)
-> 
-> To be serious: my choice was to make the less invasive solution, and 
-> this module appear to reach the goal: my touch screen works well now. 
-> Maybe mine was the wrong approach, but I've found so little 
-> documentation on how to make a better one. I'll obviously accept any 
-> useful suggestion.
-> 
-> I hope this could be useful.
-> 
-> Gabriele Turchi
-> 
-> P.S.: Please CC me, I'm not subscribed, and my apologies for my horrible 
-> English.
-> 
-> 
-> /*
->  *  HID driver for TouchPack touchscreen
->  *  (ASUS eee top touch screen)
->  *
->  *  Copyright (c) 2009 Gabriele Turchi - gabriele.turchi@l39a.com
->  */
-> 
-> /*
->  * This program is free software; you can redistribute it and/or modify it
->  * under the terms of the GNU General Public License as published by the Free
->  * Software Foundation; either version 2 of the License, or (at your option)
->  * any later version.
->  */
-> 
-> #include <linux/device.h>
-> #include <linux/hid.h>
-> #include <linux/module.h>
-> 
-> #include "hid-ids.h"
-> 
-> static int tp_input_mapping(struct hid_device *device, struct hid_input *hi,
-> 		struct hid_field *field, struct hid_usage *usage,
-> 		unsigned long **bit, int *max)
-> {
-> 	/* This is needed for evdev compatibility: these events are (apparently) never generated, but
->          * X11 evdev driver goes mad with it.
->          */
-> 
-> 	if ( (usage->hid & HID_USAGE_PAGE) == HID_UP_DIGITIZER) {
-> 		printk(KERN_INFO "tp_input_mapping: discard HID_UP_DIGITIZER => 0x%04X\n", usage->hid);
-> 		return -1;
-> 	}
-> 
-> 	return 0;
-> }
-> 
-> static int tp_event(struct hid_device *device, struct hid_field *field, struct hid_usage *usage, __s32 value)
-> {
-> 	/* "Somewere" the right axis number is changed with the wrong one.
->          * Here we restore the correct values.
->          */
-> 
-> 	if ( (usage->code == 0x02) || (usage->code == 0x03) )
-> 		usage->code -= 2;
-> 	return 0;
-> }
-> 
-> 
-> static const struct hid_device_id tp_devices[] = {
-> 	{ HID_USB_DEVICE( 0x1bfd, 0x1688) },
-> 	{ }
-> };
-> MODULE_DEVICE_TABLE(hid, tp_devices);
-> 
-> static struct hid_driver tp_driver = {
-> 	.name = "touchpack",
-> 	.id_table = tp_devices,
-> 	.input_mapping = tp_input_mapping,
-> 	.event = tp_event,
-> };
-> 
-> static int tp_init(void)
-> {
-> 	return hid_register_driver(&tp_driver);
-> }
-> 
-> static void tp_exit(void)
-> {
-> 	hid_unregister_driver(&tp_driver);
-> }
-> 
-> module_init(tp_init);
-> module_exit(tp_exit);
-> MODULE_LICENSE("GPL");
-> 
-> HID_COMPAT_LOAD_DRIVER(touchpack);
+Thanks for your report.
 
+I found reason.
+It is because CONFIG_TRACING is on(But CONFIG_FTRACE is off),
+which compiles trace_events but leaves trace_sched_switch.
+(It is different with problem that I fixed in v1->v2, but... sorry......)
 
+I have fixed it, I'll send v3 after following test:
+1: CONFIG_TRACING on, CONFIG_FTRACE off
+2: CONFIG_ENABLE_EVENT_TRACING on, CONFIG_ENABLE_CONTEXT_SWITCH_TRACER off
+2: CONFIG_ENABLE_EVENT_TRACING on, CONFIG_ENABLE_CONTEXT_SWITCH_TRACER on
 
+And RFC:
+IMHO, trace_sched_switch should not have relationship with trace_events,
+in other words, trace_events should run without trace_sched_switch linked.
+
+Can we move codes for record cmdline out of trace_sched_switch.c and put them
+into new cmdline_record.c?
+Then, trace_functions.c and trace_events.c will only need cmdline_record.c.
+
+Thanks
+Zhaolei
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
