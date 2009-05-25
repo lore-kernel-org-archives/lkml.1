@@ -1,62 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754125AbZEYSPT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754449AbZEYSQT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754125AbZEYSPT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 14:15:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752901AbZEYSPJ
+	id S1754449AbZEYSQT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 14:16:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752901AbZEYSQJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 14:15:09 -0400
-Received: from mail-fx0-f168.google.com ([209.85.220.168]:52546 "EHLO
-	mail-fx0-f168.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752681AbZEYSPH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 14:15:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=LGHTXnhjs5Vavep9dI///kIepTE17Lqb8zvZ6i7kTj1ctTqo8uJ8EdCVA2NmcGcHNP
-         dVWpB6xFc5OzmBq9kYdHVkAitnvGVWpMwWxkaASY7QFa/xOsgCjV6sUecTMId89HCeFy
-         PtRnRmCqZpHeLUIw+tfBz3rMznf4y3h/ROJco=
-Message-ID: <4A1AE02D.5080701@gmail.com>
-Date: Mon, 25 May 2009 20:15:09 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1b5pre) Gecko/20090511 SUSE/3.0b2-9.1 Thunderbird/3.0b3pre
+	Mon, 25 May 2009 14:16:09 -0400
+Received: from gecko.sbs.de ([194.138.37.40]:24641 "EHLO gecko.sbs.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751582AbZEYSQI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 14:16:08 -0400
+Message-ID: <4A1AE04F.9070808@siemens.com>
+Date: Mon, 25 May 2009 20:15:43 +0200
+From: Jan Kiszka <jan.kiszka@siemens.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); de; rv:1.8.1.12) Gecko/20080226 SUSE/2.0.0.12-1.1 Thunderbird/2.0.0.12 Mnenhy/0.7.5.666
 MIME-Version: 1.0
-To: Oleg Nesterov <oleg@redhat.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, ebiederm@xmission.com,
-       roland@redhat.com, linux-kernel@vger.kernel.org,
-       Matthew Wilcox <matthew@wil.cx>
-Subject: Re: [PATCH 1/1] signal: make group kill signal fatal
-References: <1243198054-13816-1-git-send-email-jirislaby@gmail.com> <20090525000750.GA2301@redhat.com> <4A1AC5A3.9000600@gmail.com> <20090525172033.GA12586@redhat.com>
-In-Reply-To: <20090525172033.GA12586@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+To: Avi Kivity <avi@redhat.com>
+CC: Huang Ying <ying.huang@intel.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH -v3] KVM: MCE: Add MCE support to KVM
+References: <1242031695.8213.17.camel@yhuang-dev.sh.intel.com> <4A105DE2.8090200@redhat.com> <4A1AD816.1060702@siemens.com> <4A1ADED5.4020605@redhat.com>
+In-Reply-To: <4A1ADED5.4020605@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/25/2009 07:20 PM, Oleg Nesterov wrote:
-> On 05/25, Jiri Slaby wrote:
->> If the poll isn't there, it works well.
+Avi Kivity wrote:
+> Jan Kiszka wrote:
+>> Avi Kivity wrote:
+>>  
+>>> Huang Ying wrote:
+>>>    
+>>>> The related MSRs are emulated. MCE capability is exported via
+>>>> extension KVM_CAP_MCE and ioctl KVM_X86_GET_MCE_CAP_SUPPORTED.  A new
+>>>> vcpu ioctl command KVM_X86_SETUP_MCE is used to setup MCE emulation
+>>>> such as the mcg_cap. MCE is injected via vcpu ioctl command
+>>>> KVM_X86_SET_MCE. Extended machine-check state (MCG_EXT_P) and CMCI are
+>>>> not implemented.
+>>>>
+>>>>         
+>>> Applied, thanks.
+>>>
+>>>     
+>>
+>> This patch breaks kvm build for 32-bit hosts.
+>>   
 > 
-> Hmm. this is strange. Do you mean that if this program does
-> sleep(10000) (or something else) instead of poll() above, it
-> prints pend != 0 ?
+> Strange, I build-test on i386.  What's your failure?
 
-No, only when there is nothing, i.e. when it directly calls close. It's
-consistent with what you wrote. When there is sleep(), it works the same
-as the poll case.
+This is against some 2.6.28 kernel:
 
-> And. Why do you need fatal_signal_pending() ? It is special,
-> should be used by things like wait_event_killable().
+  CC [M]  /data/kvm-kmod/x86/x86.o
+/data/kvm-kmod/x86/x86.c: In function ‘set_msr_mce’:
+/data/kvm-kmod/x86/x86.c:794: error: ‘MCG_CTL_P’ undeclared (first use in this function)
+/data/kvm-kmod/x86/x86.c:794: error: (Each undeclared identifier is reported only once
+/data/kvm-kmod/x86/x86.c:794: error: for each function it appears in.)
+/data/kvm-kmod/x86/x86.c: In function ‘get_msr_mce’:
+/data/kvm-kmod/x86/x86.c:950: error: ‘MCG_CTL_P’ undeclared (first use in this function)
+/data/kvm-kmod/x86/x86.c: In function ‘kvm_arch_dev_ioctl’:
+/data/kvm-kmod/x86/x86.c:1216: error: ‘MCG_CTL_P’ undeclared (first use in this function)
+/data/kvm-kmod/x86/x86.c: In function ‘kvm_vcpu_ioctl_x86_setup_mce’:
+/data/kvm-kmod/x86/x86.c:1592: error: ‘MCG_CTL_P’ undeclared (first use in this function)
+/data/kvm-kmod/x86/x86.c: In function ‘kvm_vcpu_ioctl_x86_set_mce’:
+/data/kvm-kmod/x86/x86.c:1613: error: ‘MCI_STATUS_VAL’ undeclared (first use in this function)
+/data/kvm-kmod/x86/x86.c:1619: error: ‘MCI_STATUS_UC’ undeclared (first use in this function)
+/data/kvm-kmod/x86/x86.c:1619: error: ‘MCG_CTL_P’ undeclared (first use in this function)
+/data/kvm-kmod/x86/x86.c:1630: error: ‘MCG_STATUS_MCIP’ undeclared (first use in this function)
+/data/kvm-kmod/x86/x86.c:1639: error: ‘MCI_STATUS_OVER’ undeclared (first use in this function)
 
-I need to wait for a device to finish its work in last release, but also
-want to allow user to kill the waiting by SIGKILL if he thinks the
-device locked up (this is pretty usual for that particular device). If I
-use wait_event_killable, I end up with this.
+> 
+>> Is the KVM MCE interface completely or only partially limited to x86-64,
+>> ie. can I completely #ifdef it away on 32-bit hosts (including
+>> KVM_CAP_MCE) or is this more complicated?
+>>   
+> 
+> I don't see any reason to limit it to x86_64?
+> 
 
-Well, there is a STOP ioctl and a user should catch sigterm/int/quit and
-call that ioctl and bail out. But users are weird and get unkillable
-processes.
+Well, if I look at the definition of MCI_STATUS_VAL as (1UL<<63),
+something tells me: "Hey, only use me on 64-bit hosts!" But I have no
+clue about details of this stuff, and from a second glance at it is
+seems to include at least some parts that are valid on 32-bit as well.
 
-Anyway thanks for the clarification.
+Jan
+
+-- 
+Siemens AG, Corporate Technology, CT SE 2
+Corporate Competence Center Embedded Linux
