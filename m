@@ -1,64 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755441AbZEYJuk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755662AbZEYJv7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755441AbZEYJuk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 05:50:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753643AbZEYJu0
+	id S1755662AbZEYJv7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 05:51:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753226AbZEYJvw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 05:50:26 -0400
-Received: from smtp105.sbc.mail.gq1.yahoo.com ([67.195.14.108]:45631 "HELO
-	smtp105.sbc.mail.gq1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754083AbZEYJuZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 05:50:25 -0400
-X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Mon, 25 May 2009 05:50:25 EDT
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=H5irhQd2rBp+9m892lKGvObVU83y0g/yQ06+wR0FvqpYE+dJdJHmH2ZLCkSZtqssL02q81pGpTMKAQsuiOullUP4h3g/tnTxv9iKg9gRgZKtF471H7psTDnnSgspilfuPxb8G+Tb5riUjAl69N17RERyQwYsUiXM6++xU45xqw8=  ;
-X-YMail-OSG: C6ZjumcVM1mZWBYFYRvlwGj5XOLSydW13JhrGi8pTWParknqo3TxFzw4s702dUxftz7UgEL4YOUQ8U7jq1_u3_Q3RPIa3rEpbVUiFaCHCULdjDyVZ9zzvnz6M3YP1aBQIR6YQo_bHTDd4evr15dsZ.GE31cfcc2tRO0LL8O7Kd6aSxj34Io2jYepOCN_UkCqPkp3Vk17w9WVj4vonTUIU13QbPLS4XUZpr25geP4DTg157ONIMMCgEl2Mz1CCQNKhDdOb2Ass8FeOfQ-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Wolfgang =?iso-8859-1?q?M=FCes?= <wolfgang.mues@auerswald.de>
-Subject: Re: [PATCH] mmc_spi: use EILSEQ for possible transmission errors
-Date: Mon, 25 May 2009 02:43:46 -0700
-User-Agent: KMail/1.9.10
-Cc: "Pierre Ossman" <pierre@ossman.eu>,
-       "Matt Fleming" <matt@console-pimps.org>,
-       "Pierre Ossman" <drzeus@drzeus.cx>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Mike Frysinger" <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org
-References: <200905201902.51377.david-b@pacbell.net> <200905251104.47550.wolfgang.mues@auerswald.de>
-In-Reply-To: <200905251104.47550.wolfgang.mues@auerswald.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200905250243.46984.david-b@pacbell.net>
+	Mon, 25 May 2009 05:51:52 -0400
+Received: from mail.crca.org.au ([67.207.131.56]:45249 "EHLO crca.org.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752839AbZEYJvv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 05:51:51 -0400
+X-Bogosity: Ham, spamicity=0.000000
+Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
+From: Nigel Cunningham <nigel@tuxonice.net>
+Reply-To: nigel@tuxonice.net
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@lists.linux-foundation.org,
+       tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org
+In-Reply-To: <20090509135452.GE10859@elf.ucw.cz>
+References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
+	 <200905081611.41865.rjw@sisk.pl> <1241819569.19600.281.camel@nigel-laptop>
+	 <200905090046.21282.rjw@sisk.pl> <1241825408.19600.384.camel@nigel-laptop>
+	 <20090509135452.GE10859@elf.ucw.cz>
+Content-Type: text/plain
+Date: Mon, 25 May 2009 19:53:34 +1000
+Message-Id: <1243245214.16743.90.camel@nigel-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 25 May 2009, Wolfgang Mües wrote:
-> Can someone please explain for me the purpose and the implementation of this 
-> wear level logic in block.c?
+Hi.
 
-I think you're misinterpreting what I said.  The wear leveling
-logic is in the microcontroller *INSIDE THE MMC/SD DEVICE* not
-on the Linux side driver.
+On Sat, 2009-05-09 at 15:54 +0200, Pavel Machek wrote:
+> > This is going to sound arrogant, but please don't take it that way: I
+> > can't see any other way of putting it. I don't *think* my code is
+> > better. It is better. swsusp has essentially stood still since Pavel
+> > first forked the code and got it merged. Yes, you have done some
+> > great
+> 
+> I don't think _I_ forked anything.
 
+The conversation for May 2002 (around when you got it merged into
+vanilla) is here:
 
-> I can not see why a sector erase and the sector erase result codes of a MMC/SD 
-> card can be used to get any usefull information about wear leveling in the 
-> card. The mapping of physical to logical blocks is not reported by the card, 
-> and the number of erase cycles for each block is also not reported. SO how 
-> can the host be able to optimize the wear leveling?
+https://sourceforge.net/mailarchive/forum.php?forum_name=swsusp-devel&max_rows=100&style=flat&viewmonth=200205
 
-It can't.  But when the card controller knows that for example
-certain logical blocks are not holding data, it can use that
-for wear leveling ... it's got more physical blocks to use to
-even out the writes, as well as having any records it kept on
-writes, reads, and erasures.
+Not sure why Sourceforge wants you to log in to get at it.
 
+> > work on improving the code too and yes, you've done your work on the
+> > version that was already merged. But your changes been more in the area
+> > of fixing/improving what's already there than adding new and useful
+> > features. On the other side, I've continued to improve the code,
+> 
+> Yes, that's fair. We kept incremental fixing, improving. On the other
+> hand, you added new features.
+> 
+> > new features (support for multiple swap partitions & files, for writing
+> > to ordinary files, for mulithreaded I/O etc etc) making it more useful
+> > and more reliable. There are some new features that have been put in
+> > swsusp, but in just about every case (I think there might be an
+> > exception or two), they're things TuxOnIce had for ages before. eg: SMP
+> > support came with cpu hotplugging in 2.6.12 or so. TuxOnIce had SMP
+> > support in 2.4.
+> 
+> You were moving faster because you did not have to move in small
+> incremental steps, and you were allowed to add temporary hacks into
+> the code. Is that surprising? Not to me.
 
+No, I moved in small incremental steps too - and the odd big rework.
+
+> [Please update http://www.tuxonice.net/features pages. They are
+> misleading; yes, uswsusp supports threaded writes, can be reconfigured
+> without rebooting and yes we did test failure paths, it can be
+> scripted, and it supports checksums. I don't know what you mean by
+> kexec support, but kexec/kjump could be used as whole another method
+> of hibernating a machine, basically adding fourth row to your table.]
+
+uswsusp supports multithreaded I/O? Wow. When did that happen?
+
+Okay. How do you reconfigure it without rebooting (I mean tell it to
+write the image to a different location)? (So I can put the instructions
+on the page).
+
+Regarding kexec, I'm thinking about making TuxOnice able to do a kexec
+jump and then continue with writing the image (after preparing it in the
+original kernel).
+
+(Note to self for later - look above for other things Pavel says uswsusp
+can do when updating the page).
+
+> > > > I take a modular approach and you have everything hardwired.
+> > > 
+> > > That's because using modules woudn't really make sense for us. :-)
+> > 
+> > I'm not saying modules but modular. TuxOnIce has support for compression
+> > neatly abstracted into one file, for swap in another and so on.
+> > [u]swsusp doesn't.
+> 
+> uswsusp has compression neatly abstracted into userland. I still
+> believe that's superior to kernel module.
+
+Okay, but what about swap support? Modifying swsusp or uswsusp to write
+to ordinary files would require a huge change in multiple places - where
+you store the image isn't currently abstracted at all from the issue of
+what you're storing, and I dare say a person with a slow computer who
+gets no advantage out of compression will have to recompile uswsusp to
+turn it off (if that's allowed for).
+
+> > > > It doesn't disappoint me that you don't won't to replace [u]swsusp with
+> > > > TuxOnIce. I never thought you or Pavel would want to do that.
+> > > > 
+> > > > I did hold out a little hope that you at least might be supportive
+> > > > anyway of getting TuxOnIce added into vanilla - 
+> > > 
+> > > That would take lot of work and we'd also have to ask many other busy people
+> > > to do a lot of work for us.  I think it's better to just avoid it at this point.
+> > 
+> > I just don't see why you think that. As I said in another reply, there's
+> > no work for arch maintainers, very little for mm people and nothing for
+> > filesystem maintainers in what I've sent.
+> 
+> Mainline [u]swsusp does not have ability to save all the memory,
+> because that code was deemed too hard to review by mm people. At that
+> time, that piece of code was nicely separated 300 line diff.
+
+Okay. That will be a nicely separated diff later too (assuming I get
+that far), but the groundwork will be laid well before that little diff
+goes in.
+
+Regards,
+
+Nigel
 
