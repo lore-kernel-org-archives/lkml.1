@@ -1,189 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753175AbZEYQou@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753822AbZEYQp2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753175AbZEYQou (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 12:44:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752359AbZEYQol
+	id S1753822AbZEYQp2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 12:45:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752005AbZEYQpR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 12:44:41 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:48859 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752039AbZEYQok (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 12:44:40 -0400
-Date: Mon, 25 May 2009 09:44:46 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, mingo@elte.hu,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       davem@davemloft.net, dada1@cosmosbay.com, zbr@ioremap.net,
-       jeff.chua.linux@gmail.com, paulus@samba.org, jengelh@medozas.de,
-       r000n@r000n.net, benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
-Subject: Re: [PATCH RFC] v7 expedited "big hammer" RCU grace periods
-Message-ID: <20090525164446.GD7168@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090522190525.GA13286@linux.vnet.ibm.com> <4A1A3C23.8090004@cn.fujitsu.com>
+	Mon, 25 May 2009 12:45:17 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:45762 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752441AbZEYQpP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 12:45:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=PnYNWSV93CmHUCoTwvI+OldW4UkRNl+1aQ7fbATGuTGsIzAKSYWs6KwmBj+aP0sKl+
+         rxLTvlxyS5gvTF/UuppIoaovD9dHMkAK0xvegRstqBpVyRIgM7WSQEJISRHafMr92zXT
+         flCrvIoPnn+QTH02RGDGRUiIPGnrPZ4CG3j3M=
+Date: Mon, 25 May 2009 18:45:13 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Zhaolei <zhaolei@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Tom Zanussi <tzanussi@gmail.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v2 0/2] ftrace: Add task_comm support for trace_event
+Message-ID: <20090525164511.GC7121@nowhere>
+References: <4A14FDFE.2080402@cn.fujitsu.com> <4A16788F.2060802@cn.fujitsu.com> <20090522115108.GA10992@elte.hu> <7BEB795002534E81BFA42E0464AEFD72@zhaoleiwin>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A1A3C23.8090004@cn.fujitsu.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <7BEB795002534E81BFA42E0464AEFD72@zhaoleiwin>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 25, 2009 at 02:35:15PM +0800, Lai Jiangshan wrote:
-> Paul E. McKenney wrote:
-> > Seventh cut of "big hammer" expedited RCU grace periods.  This leverages
-> > the existing per-CPU migration kthreads, as suggested by Ingo.  These
-> > are awakened in a loop, and waited for in a second loop.  Not fully
-> > scalable, but removing the extra hop through smp_call_function
-> > reduces latency on systems with moderate numbers of CPUs.  The
-> > synchronize_rcu_expedited() and and synchronize_bh_expedited() primitives
-> > invoke synchronize_sched_expedited(), except for CONFIG_PREEMPT_RCU,
-> > where they instead invoke synchronize_rcu() and synchronize_rcu_bh(),
-> > respectively.  This will be fixed in the future, after preemptable RCU
-> > is folded into the rcutree implementation.
+On Mon, May 25, 2009 at 04:59:26PM +0800, Zhaolei wrote:
+> * From: "Ingo Molnar" <mingo@elte.hu>
 > > 
-> 
-> I'm strongly need this guarantee:
-> 
-> preempt_disable() guarantees/implies rcu_read_lock().
-> 
-> And
-> local_irq_diable() guarantees/implies rcu_read_lock().
-> rcu_read_lock_bh() guarantees/implies rcu_read_lock().
-> 
-> 
-> It will simplifies codes.
-
-Hmmm...  I did produce a patch that modified preemptable RCU
-in this way quite some time back, but at that time the problem
-was solved in a different way.  The approach was either to add
-rcu_read_lock()/rcu_read_unlock() pairs as needed, or to switch to
-call_rcu_sched() or synchronize_sched() for the update side.
-
-But please note that this approach would not permit the current
-implementation of synchronize_sched_expedited() to be used in the
-preemptable-RCU case, because synchronize_sched_expedited() would
-not wait for RCU read-side critical sections that had been preempted.
-And the ability to preempt RCU read-side critical sections is absolutely
-required for CONFIG_PREEMPT_RT versions of the Linux kernel.
-
-> And
-> A lot's of current kernel code does not use rcu_read_lock()
-> when it has preempt_disable()-ed/local_irq_diable()-ed or
-> when it is in irq/softirq.
-> 
-> Without these guarantees, these code is broken.
-
-One way or another, such code does need to be fixed.  Either by
-reintroducing the old patch, or by fixing the code itself.
-
-> > +
-> > +static DEFINE_PER_CPU(struct migration_req, rcu_migration_req);
-> > +static DEFINE_MUTEX(rcu_sched_expedited_mutex);
-> > +
-> > +/*
-> > + * Wait for an rcu-sched grace period to elapse, but use "big hammer"
-> > + * approach to force grace period to end quickly.  This consumes
-> > + * significant time on all CPUs, and is thus not recommended for
-> > + * any sort of common-case code.
-> > + */
-> > +void synchronize_sched_expedited(void)
-> > +{
-> > +	int cpu;
-> > +	unsigned long flags;
-> > +	struct rq *rq;
-> > +	struct migration_req *req;
-> > +
-> > +	mutex_lock(&rcu_sched_expedited_mutex);
-> > +	get_online_cpus();
-> > +	for_each_online_cpu(cpu) {
-> > +		rq = cpu_rq(cpu);
-> > +		req = &per_cpu(rcu_migration_req, cpu);
-> > +		init_completion(&req->done);
-> > +		req->task = NULL;
-> > +		req->dest_cpu = -1;
-> > +		spin_lock_irqsave(&rq->lock, flags);
-> > +		list_add(&req->list, &rq->migration_queue);
-> > +		spin_unlock_irqrestore(&rq->lock, flags);
-> > +		wake_up_process(rq->migration_thread);
-> > +	}
-> > +	for_each_online_cpu(cpu) {
-> > +		req = &per_cpu(rcu_migration_req, cpu);
-> > +		wait_for_completion(&req->done);
-> > +	}
-> > +	put_online_cpus();
-> > +	mutex_unlock(&rcu_sched_expedited_mutex);
-> > +}
-> > +EXPORT_SYMBOL_GPL(synchronize_sched_expedited);
-> > +
-> > +#endif /* #else #ifndef CONFIG_SMP */
+> > it still fails to build:
 > > 
+> > kernel/built-in.o: In function `ftrace_event_enable_disable':
+> > trace_events.c:(.text+0x4df08): undefined reference to `tracing_stop_cmdline_record'
+> > trace_events.c:(.text+0x4df1f): undefined reference to `tracing_start_cmdline_record'
 > > 
+> > config attached.
 > 
-> Very nice implement!
-
-Glad you like it!!!  The idea is Ingo's.
-
-Gah!!!  I need to have included a Suggested-by on v7 of the patch!!!
-
-> Only one opinion:
-> get_online_cpus() is a large lock, a lot's of lock in kernel is required
-> after cpu_hotplug.lock.
+> Hello, Ingo
 > 
-> _cpu_down()
-> 	cpu_hotplug_begin()
-> 		mutex_lock(&cpu_hotplug.lock)
-> 	__raw_notifier_call_chain(CPU_DOWN_PREPARE)
-> 		Lock a-kernel-lock.
+> Thanks for your report.
 > 
-> It means when we have held a-kernel-lock, we can not call
-> synchronize_sched_expedited(). get_online_cpus() narrows
-> synchronize_sched_expedited()'s usages.
+> I found reason.
+> It is because CONFIG_TRACING is on(But CONFIG_FTRACE is off),
+> which compiles trace_events but leaves trace_sched_switch.
+> (It is different with problem that I fixed in v1->v2, but... sorry......)
 > 
-> I think we can reuse req->dest_cpu and remove get_online_cpus().
-> (and use preempt_disable() and for_each_possible_cpu())
+> I have fixed it, I'll send v3 after following test:
+> 1: CONFIG_TRACING on, CONFIG_FTRACE off
+> 2: CONFIG_ENABLE_EVENT_TRACING on, CONFIG_ENABLE_CONTEXT_SWITCH_TRACER off
+> 2: CONFIG_ENABLE_EVENT_TRACING on, CONFIG_ENABLE_CONTEXT_SWITCH_TRACER on
 > 
-> req->dest_cpu = -2 means @req is not queued
-> req->dest_cpu = -1 means @req is queued
+> And RFC:
+> IMHO, trace_sched_switch should not have relationship with trace_events,
+> in other words, trace_events should run without trace_sched_switch linked.
 > 
-> a little like this code:
+> Can we move codes for record cmdline out of trace_sched_switch.c and put them
+> into new cmdline_record.c?
+> Then, trace_functions.c and trace_events.c will only need cmdline_record.c
+
+
+The problem is that the cmdline recording is very tight to the sched
+switch tracer. tracing_start_cmdline_record() registers the sched switch
+tracer tracepoints and use them to avoid any loss of pid to cmdline
+mapping.
+
+BTW, I have a doubt about this system.
+Isn't tracing_record_cmdline() sufficient for that?
+
+We only need to record the cmdline of the traced task, not all
+of them.
+
+No?
+
+
 > 
-> 	mutex_lock(&rcu_sched_expedited_mutex);
-> 	for_each_possible_cpu(cpu) {
-> 		preempt_disable()
-> 		if (cpu is not online)
-> 			just set req->dest_cpu to -2;
-> 		else
-> 			init and queue req, and wake_up_process().
-> 		preempt_enable()
-> 	}
-> 	for_each_possible_cpu(cpu) {
-> 		if (req is queued)
-> 			wait_for_completion().
-> 	}
-> 	mutex_unlock(&rcu_sched_expedited_mutex);
+> Thanks
+> Zhaolei
 
-Good point -- I should at the very least add a comment to
-synchronize_sched_expedited() stating that it cannot be called holding
-any lock that is acquired in a CPU hotplug notifier.  If this restriction
-causes any problems, then your approach seems like a promising fix.
-
-> The coupling of synchronize_sched_expedited() and migration_req
-> is largely increased:
-> 
-> 1) The offline cpu's per_cpu(rcu_migration_req, cpu) is handled.
->    See migration_call::CPU_DEAD
-
-Good.  ;-)
-
-> 2) migration_call() is the highest priority of cpu notifiers,
->    So even any other cpu notifier calls synchronize_sched_expedited(),
->    It'll not cause DEADLOCK.
-
-You mean if using your preempt_disable() approach, right?  Unless I am
-missing something, the current get_online_cpus() approach would deadlock
-in this case.
-
-							Thanx, Paul
