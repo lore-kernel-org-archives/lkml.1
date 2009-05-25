@@ -1,70 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753536AbZEYQK1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753110AbZEYQPw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753536AbZEYQK1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 12:10:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752491AbZEYQKN
+	id S1753110AbZEYQPw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 12:15:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752318AbZEYQPo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 12:10:13 -0400
-Received: from hera.kernel.org ([140.211.167.34]:51704 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752371AbZEYQKM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 12:10:12 -0400
-Message-ID: <4A1AC234.9020307@kernel.org>
-Date: Tue, 26 May 2009 01:07:16 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Mon, 25 May 2009 12:15:44 -0400
+Received: from fias.uni-frankfurt.de ([141.2.248.1]:38715 "EHLO
+	fias.uni-frankfurt.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752148AbZEYQPn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 12:15:43 -0400
+X-Greylist: delayed 1863 seconds by postgrey-1.27 at vger.kernel.org; Mon, 25 May 2009 12:15:43 EDT
+From: Jan Scholz <scholz@fias.uni-frankfurt.de>
+To: linux-kernel@vger.kernel.org
+Cc: Adrian Bunk <bunk@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>, Jonathan Corbet <corbet@lwn.net>,
+       Paul Mackerras <paulus@samba.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: [regression] adb trackpad disappears after suspend to ram
+Date: Mon, 25 May 2009 17:44:17 +0200
+Message-ID: <878wkl6vce.fsf@scholz.fias.uni-frankfurt.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.94 (gnu/linux)
 MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: mingo@elte.hu, linux-kernel@vger.kernel.org, x86@kernel.org,
-       ink@jurassic.park.msu.ru, rth@twiddle.net, linux@arm.linux.org.uk,
-       hskinnemoen@atmel.com, cooloney@kernel.org, starvik@axis.com,
-       jesper.nilsson@axis.com, dhowells@redhat.com,
-       ysato@users.sourceforge.jp, tony.luck@intel.com, takata@linux-m32r.org,
-       geert@linux-m68k.org, monstr@monstr.eu, ralf@linux-mips.org,
-       kyle@mcmartin.ca, benh@kernel.crashing.org, paulus@samba.org,
-       schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com, lethal@linux-sh.org,
-       davem@davemloft.net, jdike@addtoit.com, chris@zankel.net,
-       Jens Axboe <jens.axboe@oracle.com>, Dave Jones <davej@redhat.com>,
-       Jeremy Fitzhardinge <jeremy@xensource.com>,
-       linux-mm <linux-mm@kvack.org>
-Subject: Re: [PATCH 3/7] percpu: clean up percpu variable definitions
-References: <1242805059-18338-1-git-send-email-tj@kernel.org> <1242805059-18338-4-git-send-email-tj@kernel.org> <200905251537.35981.rusty@rustcorp.com.au>
-In-Reply-To: <200905251537.35981.rusty@rustcorp.com.au>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 25 May 2009 16:07:25 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell wrote:
-> On Wed, 20 May 2009 05:07:35 pm Tejun Heo wrote:
->> Percpu variable definition is about to be updated such that
->>
->> * percpu symbols must be unique even the static ones
->>
->> * in-function static definition is not allowed
-> 
-> That spluttering noise is be choking on the title of this patch :)
-> 
-> Making these pseudo statics is in no way a cleanup.  How about we just
-> say "they can't be static" and do something like:
-> 
-> /* Sorry, can't be static: that breaks archs which need these weak. */
-> #define DEFINE_PER_CPU(type, var) \
-> 	extern typeof(type) var; DEFINE_PER_CPU_SECTION(type, name, "")
+Hi,
 
-Heh... well, even though I authored the patch, I kind of agree with
-you.  Maybe it would be better to simply disallow static declaration /
-definition at all.  I wanted to give a go at the original idea as it
-seemed to have some potential.  The result isn't too disappointing but
-I can't really say there are distinctively compelling advantages to
-justify the added complexity and subtlety.
+On my PowerBook6,5 (iBook G4) the trackpad does not show up on the
+adb-bus after resuming from suspend to ram. This happens in roughly 50%
+of the resume cycles.
+Affected kernel versions: v2.6.30_rc1 through _rc7
 
-What do others think?  Is everyone happy with going extern only?
+Here is a diff of the output of lshal before and after the trackpad vanished:
 
-Thanks.
+--- lshal-ok.out	2009-05-25 17:00:28.000000000 +0200
++++ lshal-notouchpad.out	2009-05-25 17:04:42.000000000 +0200
+@@ -1,5 +1,5 @@
+ 
+-Dumping 81 device(s) from the Global Device List:
++Dumping 80 device(s) from the Global Device List:
+ -------------------------------------------------
+ udi = '/org/freedesktop/Hal/devices/computer'
+   info.addons = {'hald-addon-cpufreq'} (string list)
+@@ -95,21 +95,6 @@
+   linux.subsystem = 'input'  (string)
+   linux.sysfs_path = '/sys/devices/virtual/input/input4/event4'  (string)
+ 
+-udi = '/org/freedesktop/Hal/devices/computer_logicaldev_input_2'
+-  info.capabilities = {'input', 'input.mouse'} (string list)
+-  info.category = 'input'  (string)
+-  info.parent = '/org/freedesktop/Hal/devices/computer'  (string)
+-  info.product = 'ADB mouse'  (string)
+-  info.subsystem = 'input'  (string)
+-  info.udi = '/org/freedesktop/Hal/devices/computer_logicaldev_input_2'  (string)
+-  input.device = '/dev/input/event3'  (string)
+-  input.product = 'ADB mouse'  (string)
+-  input.x11_driver = 'evdev'  (string)
+-  linux.device_file = '/dev/input/event3'  (string)
+-  linux.hotplug_type = 2  (0x2)  (int)
+-  linux.subsystem = 'input'  (string)
+-  linux.sysfs_path = '/sys/devices/virtual/input/input3/event3'  (string)
+-
+ udi = '/org/freedesktop/Hal/devices/computer_logicaldev_input_1'
+   info.addons.singleton = {'hald-addon-input'} (string list)
+   info.capabilities = {'input', 'input.keys', 'button'} (string list)
+@@ -1820,6 +1805,6 @@
+   pci.vendor_id = 4203  (0x106b)  (int)
+ 
+ 
+-Dumped 81 device(s) from the Global Device List.
++Dumped 80 device(s) from the Global Device List.
+ ------------------------------------------------
 
--- 
-tejun
+Please let me know if you need more info.
+
+Regards, 
+ Jan Scholz
