@@ -1,78 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754428AbZEYGGI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754666AbZEYGQB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754428AbZEYGGI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 02:06:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751950AbZEYGF5
+	id S1754666AbZEYGQB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 02:16:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751963AbZEYGPw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 02:05:57 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:38689 "EHLO mx2.mail.elte.hu"
+	Mon, 25 May 2009 02:15:52 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:35279 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751919AbZEYGF4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 02:05:56 -0400
-Date: Mon, 25 May 2009 08:05:31 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Avi Kivity <avi@redhat.com>
-Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -tip] x86: kvm/paging_tmpl.h intialize the variable
-	before using it
-Message-ID: <20090525060531.GA16990@elte.hu>
-References: <1242793775.3260.2.camel@localhost.localdomain> <4A193BCE.90307@redhat.com>
+	id S1751850AbZEYGPv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 02:15:51 -0400
+Date: Mon, 25 May 2009 08:15:52 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Neil Brown <neilb@suse.de>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, raz ben yehuda <raziebe@gmail.com>,
+       "Martin K. Petersen" <martin.petersen@oracle.com>
+Subject: Re: linux-next: md tree build failure
+Message-ID: <20090525061552.GH11363@kernel.dk>
+References: <20090525153346.758483fc.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4A193BCE.90307@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090525153346.758483fc.sfr@canb.auug.org.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, May 25 2009, Stephen Rothwell wrote:
+> Hi Neil,
+> 
+> Today's linux-next build (powerpc ppc64_defconfig) failed like this:
+> 
+> drivers/md/raid0.c: In function 'create_strip_zones':
+> drivers/md/raid0.c:243: error: 'struct request_queue' has no member named 'hardsect_size'
+> 
+> Caused by commit e1defc4ff0cf57aca6c5e3ff99fa503f5943c1f1 ("block: Do
+> away with the notion of hardsect_size") from the block tree interacting
+> with commit 131e4477401ae76a9cbe8539e4b7819e04cfba36 ("md: raid0: chunk
+> size check in raid0_run") from the md tree.
 
-* Avi Kivity <avi@redhat.com> wrote:
+Martin, this is starting to look like a disaster :-(
 
-> Jaswinder Singh Rajput wrote:
->> May be in some cases paging64_fetch() and paging32_fetch() will return sptep
->> without initialization.
->>
->> Also fixes compilation warning:
->>   CC      arch/x86/kernel/io_delay.o
->>  arch/x86/kvm/paging_tmpl.h: In function ‘paging64_fetch’:
->>  arch/x86/kvm/paging_tmpl.h:279: warning: ‘sptep’ may be used uninitialized in this function
->>  arch/x86/kvm/paging_tmpl.h: In function ‘paging32_fetch’:
->>  arch/x86/kvm/paging_tmpl.h:279: warning: ‘sptep’ may be used uninitialized in this function
->>
->> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
->> ---
->>  arch/x86/kvm/paging_tmpl.h |    2 +-
->>  1 files changed, 1 insertions(+), 1 deletions(-)
->>
->> diff --git a/arch/x86/kvm/paging_tmpl.h b/arch/x86/kvm/paging_tmpl.h
->> index 6bd7020..99cb10d 100644
->> --- a/arch/x86/kvm/paging_tmpl.h
->> +++ b/arch/x86/kvm/paging_tmpl.h
->> @@ -276,7 +276,7 @@ static u64 *FNAME(fetch)(struct kvm_vcpu *vcpu, gva_t addr,
->>  {
->>  	unsigned access = gw->pt_access;
->>  	struct kvm_mmu_page *shadow_page;
->> -	u64 spte, *sptep;
->> +	u64 spte, *sptep = NULL;
->>  	int direct;
->>  	gfn_t table_gfn;
->>  	int r;
->>   
->
-> It's a false alarm.  Isn't there a macro to shut up the warning?
+> 
+> I applied the following patch.
+> -- 
+> Cheers,
+> Stephen Rothwell                    sfr@canb.auug.org.au
+> 
+> diff --git a/drivers/md/raid0.c b/drivers/md/raid0.c
+> index b8a0747..0bf275d 100644
+> --- a/drivers/md/raid0.c
+> +++ b/drivers/md/raid0.c
+> @@ -240,7 +240,7 @@ static int create_strip_zones(mddev_t *mddev)
+>  	 * now since we have the hard sector sizes, we can make sure
+>  	 * chunk size is a multiple of that sector size
+>  	 */
+> -	if (mddev->chunk_size % mddev->queue->hardsect_size) {
+> +	if (mddev->chunk_size % queue_logical_block_size(mddev->queue)) {
+>  		printk(KERN_ERR "%s chunk_size of %d not valid\n",
+>  		       mdname(mddev),
+>  		       mddev->chunk_size);
 
-there's uninitialized_var(), but that will shut up the warning and 
-any _correct_ future warning - so it's dangerous. Initialize it to 
-NULL and be done with it? We dont want stray warnings in the kernel.
+-- 
+Jens Axboe
 
-	Ingo
