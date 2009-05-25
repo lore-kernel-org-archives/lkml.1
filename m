@@ -1,50 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753678AbZEYPBT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753630AbZEYPDr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753678AbZEYPBT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 11:01:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752074AbZEYPBN
+	id S1753630AbZEYPDr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 11:03:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752051AbZEYPDk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 11:01:13 -0400
-Received: from vena.lwn.net ([206.168.112.25]:36090 "EHLO vena.lwn.net"
+	Mon, 25 May 2009 11:03:40 -0400
+Received: from waste.org ([66.93.16.53]:43015 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751778AbZEYPBM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 11:01:12 -0400
-Date: Mon, 25 May 2009 09:01:12 -0600
-From: Jonathan Corbet <corbet@lwn.net>
-To: Rik van Riel <riel@redhat.com>
-Cc: John Walsh <server422@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: What Distro is best for Starting Kernel Dev?
-Message-ID: <20090525090112.3919d117@bike.lwn.net>
-In-Reply-To: <4A1819CB.9010104@redhat.com>
-References: <9f7f2c020905221910m2ffe4c53v8fd5dbc6cd236602@mail.gmail.com>
-	<4A1819CB.9010104@redhat.com>
-Organization: LWN.net
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-redhat-linux-gnu)
+	id S1751905AbZEYPDj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 11:03:39 -0400
+Subject: Re: [GIT PULL] scheduler fixes
+From: Matt Mackall <mpm@selenic.com>
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+Cc: Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yinghai@kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jeff Garzik <jgarzik@pobox.com>,
+       Alexander Viro <viro@ftp.linux.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, cl@linux-foundation.org,
+       npiggin@suse.de
+In-Reply-To: <Pine.LNX.4.64.0905251142140.32568@melkki.cs.Helsinki.FI>
+References: <alpine.LFD.2.01.0905180955550.3301@localhost.localdomain>
+	 <20090518170909.GA1623@elte.hu> <20090518190320.GA20260@elte.hu>
+	 <alpine.LFD.2.01.0905181208130.3301@localhost.localdomain>
+	 <20090518202031.GA26549@elte.hu>
+	 <alpine.LFD.2.01.0905181457320.3301@localhost.localdomain>
+	 <Pine.LNX.4.64.0905241911120.12189@melkki.cs.Helsinki.FI>
+	 <4A199327.5030503@kernel.org> <20090525025353.GA2580@elte.hu>
+	 <4A1A2261.1000504@kernel.org> <20090525051521.GC23032@elte.hu>
+	 <Pine.LNX.4.64.0905251142140.32568@melkki.cs.Helsinki.FI>
+Content-Type: text/plain
+Date: Mon, 25 May 2009 09:55:59 -0500
+Message-Id: <1243263359.12761.48.camel@calx>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8bit
+X-Mailer: Evolution 2.26.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 23 May 2009 11:44:11 -0400
-Rik van Riel <riel@redhat.com> wrote:
-
-> John Walsh wrote:
-> > What Distro is best for Starting Kernel Dev?  
+On Mon, 2009-05-25 at 11:47 +0300, Pekka J Enberg wrote:
+> On Mon, 25 May 2009, Ingo Molnar wrote:
+> > Ok, i think this all looks pretty realistic - but there's quite a 
+> > bit of layering on top of pending changes in the x86 and irq trees. 
+> > We could do this on top of those topic branches in -tip, and rebase 
+> > in the merge window. Or delay it to .32.
+> > 
+> > ... plus i think we are _very_ close to being able to remove all of 
+> > bootmem on x86 (with some compatibility/migration mechanism in 
+> > place). Which bootmem calls do we have before kmalloc init with 
+> > Pekka's patch applied? I think it's mostly the page table init code.
+> >  
+> > ( beyond the page allocator internal use - where we could use 
+> >   straight e820 based APIs that clip memory off from the beginning 
+> >   of existing e820 RAM ranges - enriched with NUMA/SRAT locality 
+> >   info. )
 > 
-> If you want to learn more about the system than
-> anybody should ever need to know, you can stick
-> with a bleeding-edge development distro like
-> Fedora Rawhide, Mandriva Cooker or Debian Unstable.
+> OK, here's a version of the patch with Yinghai's rebasing on top of 
+> tip/master. All in-kernel memory allocators boot cleanly now on my 
+> configuration (I did not try SLQB but it probably needs fixing). I would 
+> appreciate if someone gave SLAB+NUMA configuration a try.
+> 
+> Ingo, I don't really want to carry this in slab.git so perhaps you could 
+> put this and Yinghai's irq init cleanup in a "earlyslab" branch in tip for 
+> testing?
+> 
+> And oh, Christoph/Matt, can I have your NAK/ACK for this patch?
 
-I do the bulk of my work on such distributions, but if you're really
-wanting to get started with *kernel* development, there is one thing to
-be aware of: development distributions can be an independent source of
-instability/weirdness in a system.  If you're at an early stage with the
-kernel, you may want to minimize the number of variables which can be
-changing at once.  So it might make more sense to base your work on a
-distribution which is not changing underneath you.
+Looks ok to me, though I'd probably split it into three parts (slab,
+slub, init).
 
-jon
+For future reference, 0xbaadf00d ought to move into poison.h.
+
+-- 
+http://selenic.com : development and support for Mercurial and Linux
+
+
