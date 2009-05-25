@@ -1,231 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752402AbZEYLDf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752744AbZEYLE1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752402AbZEYLDf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 07:03:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751367AbZEYLD2
+	id S1752744AbZEYLE1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 07:04:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751713AbZEYLET
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 07:03:28 -0400
-Received: from wa4ehsobe005.messaging.microsoft.com ([216.32.181.15]:46764
-	"EHLO WA4EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751599AbZEYLD1 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 07:03:27 -0400
-X-BigFish: VPS4(zzzz1202hzzz32i6bh6di43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KK75DF-01-2QZ-01
-Date: Mon, 25 May 2009 13:03:18 +0200
-From: Borislav Petkov <borislav.petkov@amd.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: akpm@linux-foundation.org, greg@kroah.com, mingo@elte.hu, norsk5@yahoo.com,
-       tglx@linutronix.de, mchehab@redhat.com, aris@redhat.com, edt@aei.ca,
-       linux-kernel@vger.kernel.org,
-       Andreas Herrmann <andreas.herrmann3@amd.com>
-Subject: Re: [PATCH 01/22] x86: add methods for writing of an MSR on
-	several CPUs
-Message-ID: <20090525110318.GB10303@aftab>
-References: <4A1392A9.9010609@zytor.com> <20090520144905.GA27991@aftab> <4A147891.5000906@zytor.com> <20090521140800.GA3462@aftab> <4A156361.2040507@zytor.com> <20090521162638.GA10824@aftab> <4A159179.6070607@zytor.com> <20090522143918.GA22850@aftab> <4A16D735.8090104@zytor.com> <20090525110147.GB8956@aftab>
+	Mon, 25 May 2009 07:04:19 -0400
+Received: from hera.kernel.org ([140.211.167.34]:55561 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751313AbZEYLES (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 07:04:18 -0400
+Date: Mon, 25 May 2009 11:03:32 GMT
+From: tip-bot for Mike Galbraith <efault@gmx.de>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <new-submission>
+References: <new-submission>
+Subject: [tip:perfcounters/core] perf top: Reduce display overhead
+Message-ID: <tip-d94b943054721c346b0881865d645f000cd19880@git.kernel.org>
+Git-Commit-ID: d94b943054721c346b0881865d645f000cd19880
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20090525110147.GB8956@aftab>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-OriginalArrivalTime: 25 May 2009 11:03:17.0206 (UTC) FILETIME=[681EF760:01C9DD28]
-Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 25 May 2009 11:03:34 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Borislav Petkov <borislav.petkov@amd.com>
-Date: Fri, 22 May 2009 13:52:19 +0200
-Subject: [PATCH 02/26] x86: MSR: add methods for writing of an MSR on several CPUs
+Commit-ID:  d94b943054721c346b0881865d645f000cd19880
+Gitweb:     http://git.kernel.org/tip/d94b943054721c346b0881865d645f000cd19880
+Author:     Mike Galbraith <efault@gmx.de>
+AuthorDate: Mon, 25 May 2009 09:57:56 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Mon, 25 May 2009 13:01:17 +0200
 
-Provide for concurrent MSR writes on all the CPUs in the cpumask. Also,
-add a temporary workaround for smp_call_function_many which skips the
-CPU we're executing on.
+perf top: Reduce display overhead
 
-CC: H. Peter Anvin <hpa@zytor.com>
-Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
+Iterate over the symbol table once per display interval, and
+copy/sort/tally/decay only those symbols which are active.
+
+Before:
+
+ top - 10:14:53 up  4:08, 17 users,  load average: 1.17, 1.53, 1.49
+ Tasks: 273 total,   5 running, 268 sleeping,   0 stopped,   0 zombie
+ Cpu(s):  6.9%us, 38.2%sy,  0.0%ni, 19.9%id,  0.0%wa,  0.0%hi, 35.0%si,  0.0%st
+
+   PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  P COMMAND
+ 28504 root      20   0  1044  260  164 S   58  0.0   0:04.19 2 netserver
+ 28499 root      20   0  1040  412  316 R   51  0.0   0:04.15 0 netperf
+ 28500 root      20   0  1040  408  316 R   50  0.0   0:04.14 1 netperf
+ 28503 root      20   0  1044  260  164 S   50  0.0   0:04.01 1 netserver
+ 28501 root      20   0  1044  260  164 S   49  0.0   0:03.99 0 netserver
+ 28502 root      20   0  1040  412  316 S   43  0.0   0:03.96 2 netperf
+ 28468 root      20   0 1892m 325m  972 S   16 10.8   0:10.50 3 perf
+ 28467 root      20   0 1892m 325m  972 R    2 10.8   0:00.72 3 perf
+
+After:
+
+ top - 10:16:30 up  4:10, 17 users,  load average: 2.27, 1.88, 1.62
+ Tasks: 273 total,   6 running, 267 sleeping,   0 stopped,   0 zombie
+ Cpu(s):  2.5%us, 39.7%sy,  0.0%ni, 24.6%id,  0.0%wa,  0.0%hi, 33.3%si,  0.0%st
+
+   PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  P COMMAND
+ 28590 root      20   0  1040  412  316 S   54  0.0   0:07.85 2 netperf
+ 28589 root      20   0  1044  260  164 R   54  0.0   0:07.84 0 netserver
+ 28588 root      20   0  1040  412  316 R   50  0.0   0:07.89 1 netperf
+ 28591 root      20   0  1044  256  164 S   50  0.0   0:07.82 1 netserver
+ 28587 root      20   0  1040  408  316 R   47  0.0   0:07.61 0 netperf
+ 28592 root      20   0  1044  260  164 R   47  0.0   0:07.85 2 netserver
+ 28378 root      20   0  8732 1300  860 R    2  0.0   0:01.81 3 top
+ 28577 root      20   0 1892m 165m  972 R    2  5.5   0:00.48 3 perf
+ 28578 root      20   0 1892m 165m  972 S    2  5.5   0:00.04 3 perf
+
+[ Impact: optimization ]
+
+Signed-off-by: Mike Galbraith <efault@gmx.de>
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+LKML-Reference: <new-submission>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
 ---
- arch/x86/include/asm/msr.h |   12 ++++++
- arch/x86/lib/msr.c         |   86 ++++++++++++++++++++++++++++++++++++++++---
- 2 files changed, 92 insertions(+), 6 deletions(-)
+ Documentation/perf_counter/builtin-top.c |   56 +++++++++++++++--------------
+ 1 files changed, 29 insertions(+), 27 deletions(-)
 
-diff --git a/arch/x86/include/asm/msr.h b/arch/x86/include/asm/msr.h
-index 5e12132..2260376 100644
---- a/arch/x86/include/asm/msr.h
-+++ b/arch/x86/include/asm/msr.h
-@@ -227,6 +227,8 @@ do {                                                            \
- #ifdef CONFIG_SMP
- int rdmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h);
- int wrmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h);
-+void rdmsr_on_cpus(const cpumask_t *mask, u32 msr_no, struct msr *msrs);
-+void wrmsr_on_cpus(const cpumask_t *mask, u32 msr_no, struct msr *msrs);
- int rdmsr_safe_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h);
- int wrmsr_safe_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h);
- #else  /*  CONFIG_SMP  */
-@@ -240,6 +242,16 @@ static inline int wrmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h)
- 	wrmsr(msr_no, l, h);
- 	return 0;
- }
-+static inline void rdmsr_on_cpus(const cpumask_t *m, u32 msr_no,
-+				struct msr *msrs)
-+{
-+       rdmsr_on_cpu(0, msr_no, &(msrs[0].l), &(msrs[0].h));
-+}
-+static inline void wrmsr_on_cpus(const cpumask_t *m, u32 msr_no,
-+				struct msr *msrs)
-+{
-+       wrmsr_on_cpu(0, msr_no, msrs[0].l, msrs[0].h);
-+}
- static inline int rdmsr_safe_on_cpu(unsigned int cpu, u32 msr_no,
- 				    u32 *l, u32 *h)
+diff --git a/Documentation/perf_counter/builtin-top.c b/Documentation/perf_counter/builtin-top.c
+index 74021ac..4bed265 100644
+--- a/Documentation/perf_counter/builtin-top.c
++++ b/Documentation/perf_counter/builtin-top.c
+@@ -374,18 +374,26 @@ static struct sym_entry		tmp[MAX_SYMS];
+ 
+ static void print_sym_table(void)
  {
-diff --git a/arch/x86/lib/msr.c b/arch/x86/lib/msr.c
-index cade714..52edaf0 100644
---- a/arch/x86/lib/msr.c
-+++ b/arch/x86/lib/msr.c
-@@ -6,21 +6,37 @@
- struct msr_info {
- 	u32 msr_no;
- 	struct msr reg;
-+	struct msr *msrs;
-+	int off;
- 	int err;
- };
+-	int i, printed;
++	int i, j, active_count, printed;
+ 	int counter;
+ 	float events_per_sec = events/delay_secs;
+ 	float kevents_per_sec = (events-userspace_events)/delay_secs;
+ 	float sum_kevents = 0.0;
  
- static void __rdmsr_on_cpu(void *info)
- {
- 	struct msr_info *rv = info;
-+	struct msr *reg;
-+	int this_cpu = raw_smp_processor_id();
+ 	events = userspace_events = 0;
+-	memcpy(tmp, sym_table, sizeof(sym_table[0])*sym_table_count);
+-	qsort(tmp, sym_table_count, sizeof(tmp[0]), compare);
  
--	rdmsr(rv->msr_no, rv->reg.l, rv->reg.h);
-+	if (rv->msrs)
-+		reg = &rv->msrs[this_cpu - rv->off];
-+	else
-+		reg = &rv->reg;
+-	for (i = 0; i < sym_table_count && tmp[i].count[0]; i++)
+-		sum_kevents += tmp[i].count[0];
++	/* Iterate over symbol table and copy/tally/decay active symbols. */
++	for (i = 0, active_count = 0; i < sym_table_count; i++) {
++		if (sym_table[i].count[0]) {
++			tmp[active_count++] = sym_table[i];
++			sum_kevents += sym_table[i].count[0];
 +
-+	rdmsr(rv->msr_no, reg->l, reg->h);
- }
- 
- static void __wrmsr_on_cpu(void *info)
- {
- 	struct msr_info *rv = info;
-+	struct msr *reg;
-+	int this_cpu = raw_smp_processor_id();
++			for (j = 0; j < nr_counters; j++)
++				sym_table[i].count[j] = zero ? 0 : sym_table[i].count[j] * 7 / 8;
++		}
++	}
 +
-+	if (rv->msrs)
-+		reg = &rv->msrs[this_cpu - rv->off];
-+	else
-+		reg = &rv->reg;
++	qsort(tmp, active_count + 1, sizeof(tmp[0]), compare);
  
--	wrmsr(rv->msr_no, rv->reg.l, rv->reg.h);
-+	wrmsr(rv->msr_no, reg->l, reg->h);
- }
+ 	write(1, CONSOLE_CLEAR, strlen(CONSOLE_CLEAR));
  
- int rdmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h)
-@@ -35,6 +51,7 @@ int rdmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h)
+@@ -433,29 +441,23 @@ static void print_sym_table(void)
+ 	       	       "  ______     ______   _____   ________________   _______________\n\n"
+ 	);
  
- 	return err;
- }
-+EXPORT_SYMBOL(rdmsr_on_cpu);
+-	for (i = 0, printed = 0; i < sym_table_count; i++) {
++	for (i = 0, printed = 0; i < active_count; i++) {
+ 		float pcnt;
+-		int count;
  
- int wrmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h)
- {
-@@ -48,6 +65,66 @@ int wrmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h)
- 
- 	return err;
- }
-+EXPORT_SYMBOL(wrmsr_on_cpu);
-+
-+/* rdmsr on a bunch of CPUs
-+ *
-+ * @mask:       which CPUs
-+ * @msr_no:     which MSR
-+ * @msrs:       array of MSR values
-+ *
-+ */
-+void rdmsr_on_cpus(const cpumask_t *mask, u32 msr_no, struct msr *msrs)
-+{
-+	struct msr_info rv;
-+	int this_cpu;
-+
-+	rv.off    = cpumask_first(mask);
-+	rv.msrs	  = msrs;
-+	rv.msr_no = msr_no;
-+
-+	preempt_disable();
-+	/*
-+	 * FIXME: handle the CPU we're executing on separately for now until
-+	 * smp_call_function_many has been fixed to not skip it.
-+	 */
-+	this_cpu = raw_smp_processor_id();
-+	smp_call_function_single(this_cpu, __rdmsr_on_cpu, &rv, 1);
-+
-+	smp_call_function_many(mask, __rdmsr_on_cpu, &rv, 1);
-+	preempt_enable();
-+}
-+EXPORT_SYMBOL(rdmsr_on_cpus);
-+
-+/*
-+ * wrmsr on a bunch of CPUs
-+ *
-+ * @mask:       which CPUs
-+ * @msr_no:     which MSR
-+ * @msrs:       array of MSR values
-+ *
-+ */
-+void wrmsr_on_cpus(const cpumask_t *mask, u32 msr_no, struct msr *msrs)
-+{
-+	struct msr_info rv;
-+	int this_cpu;
-+
-+	rv.off    = cpumask_first(mask);
-+	rv.msrs   = msrs;
-+	rv.msr_no = msr_no;
-+
-+	preempt_disable();
-+	/*
-+	 * FIXME: handle the CPU we're executing on separately for now until
-+	 * smp_call_function_many has been fixed to not skip it.
-+	 */
-+	this_cpu = raw_smp_processor_id();
-+	smp_call_function_single(this_cpu, __wrmsr_on_cpu, &rv, 1);
-+
-+	smp_call_function_many(mask, __wrmsr_on_cpu, &rv, 1);
-+	preempt_enable();
-+}
-+EXPORT_SYMBOL(wrmsr_on_cpus);
- 
- /* These "safe" variants are slower and should be used when the target MSR
-    may not actually exist. */
-@@ -77,6 +154,7 @@ int rdmsr_safe_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h)
- 
- 	return err ? err : rv.err;
- }
-+EXPORT_SYMBOL(rdmsr_safe_on_cpu);
- 
- int wrmsr_safe_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h)
- {
-@@ -90,8 +168,4 @@ int wrmsr_safe_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h)
- 
- 	return err ? err : rv.err;
- }
+-		if (printed <= 18 && tmp[i].count[0] >= count_filter) {
+-			pcnt = 100.0 - (100.0*((sum_kevents-tmp[i].count[0])/sum_kevents));
 -
--EXPORT_SYMBOL(rdmsr_on_cpu);
--EXPORT_SYMBOL(wrmsr_on_cpu);
--EXPORT_SYMBOL(rdmsr_safe_on_cpu);
- EXPORT_SYMBOL(wrmsr_safe_on_cpu);
--- 
-1.6.2.4
-
--- 
-Regards/Gruss,
-Boris.
-
-Operating | Advanced Micro Devices GmbH
-  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
- Research | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
-  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-  (OSRC)  | Registergericht München, HRB Nr. 43632
-
+-			if (nr_counters == 1)
+-				printf("%19.2f - %4.1f%% - %016llx : %s\n",
+-					sym_weight(tmp + i),
+-					pcnt, tmp[i].addr, tmp[i].sym);
+-			else
+-				printf("%8.1f %10ld - %4.1f%% - %016llx : %s\n",
+-					sym_weight(tmp + i),
+-					tmp[i].count[0],
+-					pcnt, tmp[i].addr, tmp[i].sym);
+-			printed++;
+-		}
+-		/*
+-		 * Add decay to the counts:
+-		 */
+-		for (count = 0; count < nr_counters; count++)
+-			sym_table[i].count[count] = zero ? 0 : sym_table[i].count[count] * 7 / 8;
++		if (++printed > 18 || tmp[i].count[0] < count_filter)
++			break;
++
++		pcnt = 100.0 - (100.0*((sum_kevents-tmp[i].count[0])/sum_kevents));
++
++		if (nr_counters == 1)
++			printf("%19.2f - %4.1f%% - %016llx : %s\n",
++				sym_weight(tmp + i),
++				pcnt, tmp[i].addr, tmp[i].sym);
++		else
++			printf("%8.1f %10ld - %4.1f%% - %016llx : %s\n",
++				sym_weight(tmp + i),
++				tmp[i].count[0],
++				pcnt, tmp[i].addr, tmp[i].sym);
+ 	}
+ 
+ 	if (sym_filter_entry)
