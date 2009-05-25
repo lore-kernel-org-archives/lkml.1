@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753536AbZEYOnx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753456AbZEYOoI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753536AbZEYOnx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 10:43:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752115AbZEYOnZ
+	id S1753456AbZEYOoI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 10:44:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752404AbZEYOn1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 10:43:25 -0400
-Received: from cantor.suse.de ([195.135.220.2]:40095 "EHLO mx1.suse.de"
+	Mon, 25 May 2009 10:43:27 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:41925 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751984AbZEYOnY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 10:43:24 -0400
-Date: Mon, 25 May 2009 16:43:25 +0200
+	id S1752270AbZEYOn0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 10:43:26 -0400
+Date: Mon, 25 May 2009 16:43:27 +0200
 From: Michal Marek <mmarek@suse.cz>
 To: Andi Kleen <andi@firstfloor.org>
 Cc: Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/3] kbuild: simplify argument loop in scripts/config
-Message-ID: <20090525144325.GC22686@sepie.suse.cz>
+Subject: [PATCH 3/3] kbuild: add generic --set-str option to scripts/config
+Message-ID: <20090525144327.GD22686@sepie.suse.cz>
 References: <cover.1243262102.git.mmarek@suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -27,103 +27,37 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Michal Marek <mmarek@suse.cz>
 ---
- scripts/config |   44 ++++++++++++++++----------------------------
- 1 files changed, 16 insertions(+), 28 deletions(-)
+ scripts/config |   11 +++++++++--
+ 1 files changed, 9 insertions(+), 2 deletions(-)
 
 diff --git a/scripts/config b/scripts/config
-index 22cceff..d3576e5 100755
+index d3576e5..b4e56c9 100755
 --- a/scripts/config
 +++ b/scripts/config
-@@ -72,8 +72,7 @@ if [ "$1" = "--file" ]; then
- 	if [ "$FN" = "" ] ; then
- 		usage
- 	fi
--	shift
--	shift
-+	shift 2
- else
- 	FN=.config
- fi
-@@ -86,26 +85,34 @@ while [ "$1" != "" ] ; do
- 	CMD="$1"
- 	shift
- 	case "$CMD" in
--	--enable|-e)
-+	--refresh)
-+		;;
-+	--*-after)
-+		checkarg "$1"
-+		A=$ARG
-+		checkarg "$2"
-+		B=$ARG
-+		shift 2
-+		;;
-+	--*)
- 		checkarg "$1"
--		set_var "CONFIG_$ARG" "CONFIG_$ARG=y"
- 		shift
- 		;;
-+	esac
-+	case "$CMD" in
-+	--enable|-e)
-+		set_var "CONFIG_$ARG" "CONFIG_$ARG=y"
-+		;;
+@@ -9,8 +9,10 @@ config options command ...
+ commands:
+ 	--enable|-e option   Enable option
+ 	--disable|-d option  Disable option
+-	--module|-m option      Turn option into a module
+-	--state|-s option       Print state of option (n,y,m,undef)
++	--module|-m option   Turn option into a module
++	--set-str option value
++	                     Set option to "value"
++	--state|-s option    Print state of option (n,y,m,undef)
  
- 	--disable|-d)
--		checkarg "$1"
- 		set_var "CONFIG_$ARG" "# CONFIG_$ARG is not set"
--		shift
- 		;;
- 
- 	--module|-m)
--		checkarg "$1"
+ 	--enable-after|-E beforeopt option
+                              Enable option directly after other option
+@@ -112,6 +114,11 @@ while [ "$1" != "" ] ; do
  		set_var "CONFIG_$ARG" "CONFIG_$ARG=m"
--		shift
  		;;
  
++	--set-str)
++		set_var "CONFIG_$ARG" "CONFIG_$ARG=\"$1\""
++		shift
++		;;
++
  	--state|-s)
--		checkarg "$1"
  		if grep -q "# CONFIG_$ARG is not set" $FN ; then
  			echo n
- 		else
-@@ -118,37 +125,18 @@ while [ "$1" != "" ] ; do
- 				echo "$V"
- 			fi
- 		fi
--		shift
- 		;;
- 
- 	--enable-after|-E)
--		checkarg "$1"
--		A=$ARG
--		checkarg "$2"
--		B=$ARG
- 		set_var "CONFIG_$B" "CONFIG_$B=y" "CONFIG_$A"
--		shift
--		shift
- 		;;
- 
- 	--disable-after|-D)
--		checkarg "$1"
--		A=$ARG
--		checkarg "$2"
--		B=$ARG
- 		set_var "CONFIG_$B" "# CONFIG_$B is not set" "CONFIG_$A"
--		shift
--		shift
- 		;;
- 
- 	--module-after|-M)
--		checkarg "$1"
--		A=$ARG
--		checkarg "$2"
--		B=$ARG
- 		set_var "CONFIG_$B" "CONFIG_$B=m" "CONFIG_$A"
--		shift
--		shift
- 		;;
- 
- 	# undocumented because it ignores --file (fixme)
 -- 
 1.6.3
-
