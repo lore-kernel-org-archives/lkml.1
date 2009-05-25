@@ -1,69 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752185AbZEYGua@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752022AbZEYGyB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752185AbZEYGua (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 02:50:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751363AbZEYGuW
+	id S1752022AbZEYGyB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 02:54:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751619AbZEYGxy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 02:50:22 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:59676 "EHLO smtps.tip.net.au"
+	Mon, 25 May 2009 02:53:54 -0400
+Received: from ozlabs.org ([203.10.76.45]:47617 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751156AbZEYGuW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 02:50:22 -0400
-Date: Mon, 25 May 2009 16:50:13 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Al Viro <viro@ZenIV.linux.org.uk>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@lst.de>
-Subject: Re: linux-next: manual merge of the vfs tree with the  tree
-Message-Id: <20090525165013.7d641a6d.sfr@canb.auug.org.au>
-In-Reply-To: <20090524220336.GF6471@nowhere>
-References: <20090522112326.9eafa340.sfr@canb.auug.org.au>
-	<20090524220336.GF6471@nowhere>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__25_May_2009_16_50_13_+1000_nBQ2_TptCqti_RXw"
+	id S1751242AbZEYGxx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 02:53:53 -0400
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <greg@kroah.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Mon, 25 May 2009 16:53:31 +1000
+Subject: [PATCH] devres: WARN() and return, don't crash on device_del() of uninitialized device
+Message-Id: <20090525065346.1D991DE2AC@ozlabs.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__25_May_2009_16_50_13_+1000_nBQ2_TptCqti_RXw
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I just debugged an obscure crash caused by a device_del() of a all NULL'd
+out struct device (in usb-serial) and found that a patch like this one would
+have saved me time (in addition to improved chances of a bug report from
+users hitting similar driver bugs).
 
-Hi Frederic,
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-On Mon, 25 May 2009 00:03:38 +0200 Frederic Weisbecker <fweisbec@gmail.com>=
- wrote:
->
-> So for now, IMO you have the right fix. The end result should be:
+ drivers/base/devres.c |    5 +++++
+ 1 file changed, 5 insertions(+)
 
-Thanks for the confirmation.
-
-> > + 	if (s->s_dirt)
-> > + 		reiserfs_write_super(s);
->=20
-> But this part seems to solve another conflict, right?
-> I'm not sure about it.
-
-See Christoph's reply.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Mon__25_May_2009_16_50_13_+1000_nBQ2_TptCqti_RXw
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkoaP6UACgkQjjKRsyhoI8yrpgCeNrLtegTSxyLp8ZkO6tbNBRpu
-fPEAnjbGFRyBf7vGlwFEaN8GK+ZeZNT4
-=ST76
------END PGP SIGNATURE-----
-
---Signature=_Mon__25_May_2009_16_50_13_+1000_nBQ2_TptCqti_RXw--
+--- linux-work.orig/drivers/base/devres.c	2009-05-25 16:43:46.000000000 +1000
++++ linux-work/drivers/base/devres.c	2009-05-25 16:46:36.000000000 +1000
+@@ -428,6 +428,11 @@ int devres_release_all(struct device *de
+ {
+ 	unsigned long flags;
+ 
++	/* Looks like an uninitialized device structure */
++	if (dev->devres_head.next == NULL) {
++		WARN(1);
++		return -ENODEV;
++	}
+ 	spin_lock_irqsave(&dev->devres_lock, flags);
+ 	return release_nodes(dev, dev->devres_head.next, &dev->devres_head,
+ 			     flags);
