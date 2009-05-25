@@ -1,58 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755039AbZEYIhO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753646AbZEYImU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755039AbZEYIhO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 04:37:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752136AbZEYIhD
+	id S1753646AbZEYImU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 04:42:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751781AbZEYImF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 04:37:03 -0400
-Received: from web32603.mail.mud.yahoo.com ([68.142.207.230]:40107 "HELO
-	web32603.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752019AbZEYIhC (ORCPT
+	Mon, 25 May 2009 04:42:05 -0400
+Received: from mx03.syneticon.net ([78.111.66.105]:44780 "EHLO
+	mx03.syneticon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751550AbZEYImE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 04:37:02 -0400
-Message-ID: <349066.43765.qm@web32603.mail.mud.yahoo.com>
-X-YMail-OSG: oVIkgW8VM1n_VdZoH8JlQWbgu1GW1U8LP0ra0XIe_FRVSgfyM9K.B6hG0r8ySXRTbk_gE2GBCUeVKJ07ea5ABHLq8PjbVFepqQO0F9RMnc9PofGa5O8uud0jfcu.3pAwY8b9wNfXW_CMHSkZb8S4rXAWLEllpe4uKgLkSioEIkAw6pvRvD6QvTU9c87PLc4CKNfcHBzMaOi1S4tMMogI8nw4ICscWtVoaypz4b9XulkHLXxX8RimCE0jG23U2QKkYnfoP9zmp0rmqsNksPmfILLy3dKst.trFlKV8MPZwn2kO3cj1mAyOPKqUn25wn9NahhgcjE.qRarkLumDTfQ0A--
-X-RocketYMMF: knobi.rm
-X-Mailer: YahooMailRC/1277.43 YahooMailWebService/0.7.289.10
-References: <GtY7d2eWpoK.A.ioC.MQcGKB@chimera> <WCcYF-TAbJC.A.VXD.iQcGKB@chimera>
-Date: Mon, 25 May 2009 01:37:02 -0700 (PDT)
-From: Martin Knoblauch <spamtrap@knobisoft.de>
-Subject: Re: [Bug #13178] Booting very slow
-To: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Kernel Testers List <kernel-testers@vger.kernel.org>
-In-Reply-To: <WCcYF-TAbJC.A.VXD.iQcGKB@chimera>
+	Mon, 25 May 2009 04:42:04 -0400
+Message-ID: <4A1A59DD.7030101@wpkg.org>
+Date: Mon, 25 May 2009 10:42:05 +0200
+From: Tomasz Chmielewski <mangoo@wpkg.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090319)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: LKML <linux-kernel@vger.kernel.org>
+CC: mingo@elte.hu, Alan <alan@lxorguk.ukuu.org.uk>,
+       Gerd Hoffmann <kraxel@redhat.com>, jeremy@goop.org,
+       Andi Kleen <andi@firstfloor.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       JBeulich@novell.com, jbarnes@virtuousgeek.org
+Subject: Re: [Xen-devel] Re: [GIT PULL] xen /proc/mtrr implementation
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ingo Molnar wrote:
 
------ Original Message ----
+>>>> Oops, the third "proper technical solutions" is missing.
+>>>
+>>> Yeah, the third one is to not touch MTRRs after bootup and use PAT.
+>>
+>> Works only in case the CPU has PAT support.
+> 
+> Which specific CPU without PAT support do you worry about?
 
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-> Cc: Kernel Testers List <kernel-testers@vger.kernel.org>; Martin Knoblauch <spamtrap@knobisoft.de>
-> Sent: Sunday, May 24, 2009 9:31:18 PM
-> Subject: [Bug #13178] Booting very slow
-> 
-> This message has been generated automatically as a part of a report
-> of regressions introduced between 2.6.28 and 2.6.29.
-> 
-> The following bug entry is on the current list of known regressions
-> introduced between 2.6.28 and 2.6.29.  Please verify if it still should
-> be listed and let me know (either way).
-> 
-> 
-> Bug-Entry    : http://bugzilla.kernel.org/show_bug.cgi?id=13178
-> Subject        : Booting very slow
-> Submitter    : Martin Knoblauch 
-> Date        : 2009-04-24 12:45 (31 days old)
-> References    : http://marc.info/?l=linux-kernel&m=124057716231773&w=4
+Are these ones (below) good CPU to worry about? That's slightly 
+off-topic as they are KVM guests, but still, the guest kernel seems to 
+disable PAT (unless I'm mistaken).
 
- Still happens with 2.6.30-rc7. But see my comment on bz. I would be willing to leave this as "fuzzy timing related problem.
 
-Cheers
-Martin
+
+KVM-86 + 2.6.27.19 guest:
+
+# dmesg
+Initializing cgroup subsys cpuset
+Linux version 2.6.27.19-server-1mnb (qateam@titan.mandriva.com) (gcc 
+version 4.3.2 (GCC) ) #1 SMP Thu Mar 5 00:09:04 EST 2009
+PAT WC disabled due to known CPU erratum.
+(...)
+
+# cat /proc/cpuinfo
+processor       : 0
+vendor_id       : GenuineIntel
+cpu family      : 6
+model           : 2
+model name      : QEMU Virtual CPU version 0.10.50
+stepping        : 3
+cpu MHz         : 2133.285
+cache size      : 2048 KB
+fdiv_bug        : no
+hlt_bug         : no
+f00f_bug        : no
+coma_bug        : no
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 2
+wp              : yes
+flags           : fpu de pse tsc msr pae mce cx8 apic mtrr pge mca cmov 
+pat pse36 clflush mmx fxsr sse sse2 syscall lm up pni
+bogomips        : 4266.57
+clflush size    : 64
+power management:
+
+
+KVM-85 + 2.6.29.1 guest:
+
+# dmesg
+Initializing cgroup subsys cpuset
+Initializing cgroup subsys cpu
+Linux version 2.6.29.1-server-4mnb (herton@n2.mandriva.com) (gcc version 
+4.3.2 (GCC) ) #1 SMP Mon Apr 20 20:10:24 EDT 2009
+KERNEL supported cpus:
+   Intel GenuineIntel
+   AMD AuthenticAMD
+   NSC Geode by NSC
+   Cyrix CyrixInstead
+   Centaur CentaurHauls
+   Transmeta GenuineTMx86
+   Transmeta TransmetaCPU
+   UMC UMC UMC UMC
+PAT WC disabled due to known CPU erratum.
+(...)
+
+# cat /proc/cpuinfo
+processor       : 0
+vendor_id       : GenuineIntel
+cpu family      : 6
+model           : 2
+model name      : QEMU Virtual CPU version 0.10.0
+stepping        : 3
+cpu MHz         : 2128.004
+cache size      : 2048 KB
+fdiv_bug        : no
+hlt_bug         : no
+f00f_bug        : no
+coma_bug        : no
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 2
+wp              : yes
+flags           : fpu de pse tsc msr pae mce cx8 apic mtrr pge mca cmov 
+pat pse36 clflush mmx fxsr sse sse2 syscall nx lm up pni hypervisor
+bogomips        : 4256.00
+clflush size    : 64
+power management:
+
+
+
+-- 
+Tomasz Chmielewski
+http://wpkg.org
 
