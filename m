@@ -1,48 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753643AbZEYKGo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754656AbZEYKNe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753643AbZEYKGo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 06:06:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752589AbZEYKGg
+	id S1754656AbZEYKNe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 06:13:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751939AbZEYKNY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 06:06:36 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:61718 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752364AbZEYKGg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 06:06:36 -0400
-Message-ID: <4A1A6CE8.2050100@cn.fujitsu.com>
-Date: Mon, 25 May 2009 18:03:20 +0800
-From: Zhaolei <zhaolei@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Mon, 25 May 2009 06:13:24 -0400
+Received: from cantor.suse.de ([195.135.220.2]:59622 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751649AbZEYKNY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 06:13:24 -0400
+Date: Mon, 25 May 2009 12:13:24 +0200
+From: Jan Kara <jack@suse.cz>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
+       akpm@linux-foundation.org, jack@suse.cz, yanmin_zhang@linux.intel.com
+Subject: Re: [PATCH 06/12] writeback: separate the flushing state/task from
+	the bdi
+Message-ID: <20090525101323.GD23546@duck.suse.cz>
+References: <1243236887-3931-1-git-send-email-jens.axboe@oracle.com> <1243236887-3931-7-git-send-email-jens.axboe@oracle.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Tom Zanussi <tzanussi@gmail.com>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH v3 0/2] ftrace: Add task_comm support for trace_event
-References: <4A14FDFE.2080402@cn.fujitsu.com> <4A16788F.2060802@cn.fujitsu.com> <20090522115108.GA10992@elte.hu>
-In-Reply-To: <20090522115108.GA10992@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1243236887-3931-7-git-send-email-jens.axboe@oracle.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Mon 25-05-09 09:34:41, Jens Axboe wrote:
+> Add a struct bdi_writeback for tracking and handling dirty IO. This
+> is in preparation for adding > 1 flusher task per bdi.
+> 
+> Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+...
+>  static int bdi_start_fn(void *ptr)
+>  {
+> -	struct backing_dev_info *bdi = ptr;
+> +	struct bdi_writeback *wb = ptr;
+> +	struct backing_dev_info *bdi = wb->bdi;
+>  	struct task_struct *tsk = current;
+> -
+> -	/*
+> -	 * Add us to the active bdi_list
+> -	 */
+> -	mutex_lock(&bdi_lock);
+> -	list_add(&bdi->bdi_list, &bdi_list);
+> -	mutex_unlock(&bdi_lock);
+  I'm probably missing something but I cannot find where the bdi is added
+to the bdi_list after this patch...
 
-Ingo pointed out that v2 patch still cause kernel compile fail:
-kernel/built-in.o: In function `ftrace_event_enable_disable':
-trace_events.c:(.text+0x4df08): undefined reference to `tracing_stop_cmdline_record'
-trace_events.c:(.text+0x4df1f): undefined reference to `tracing_start_cmdline_record'
-
-It is because CONFIG_TRACING is on(But CONFIG_FTRACE is off),
-which compiles trace_events but leaves trace_sched_switch.
-(Which is different with problem that I fixed in v1->v2)
-
-Changelog:
-v1->v2: Update Kconfig to select CONTEXT_SWITCH_TRACER in ENABLE_EVENT_TRACING
-v2->v3: v2 can solve problem that caused by config EVENT_TRACING alone,
-        but when CONFIG_FTRACE is off and CONFIG_TRACING is selected by other
-        config, compile fail happened again. This version solves it.
-
-Thanks
-Zhaolei
-
+									Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
