@@ -1,45 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752638AbZEYMdX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753713AbZEYMei@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752638AbZEYMdX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 08:33:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750761AbZEYMdQ
+	id S1753713AbZEYMei (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 08:34:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752446AbZEYMea
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 08:33:16 -0400
-Received: from www.tglx.de ([62.245.132.106]:43730 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750756AbZEYMdP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 08:33:15 -0400
-Date: Mon, 25 May 2009 14:32:14 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Stanislaw Gruszka <sgruszka@redhat.com>
-cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Oleg Nesterov <oleg@redhat.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH resend4 2/3] itimers: fix periodic tics precision
-In-Reply-To: <20090525132814.442877e5@dhcp-lab-109.englab.brq.redhat.com>
-Message-ID: <alpine.LFD.2.00.0905251423490.3582@localhost.localdomain>
-References: <20090522154339.06d30f0a@dhcp-lab-109.englab.brq.redhat.com> <alpine.LFD.2.00.0905221611380.3570@localhost.localdomain> <20090525132814.442877e5@dhcp-lab-109.englab.brq.redhat.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Mon, 25 May 2009 08:34:30 -0400
+Received: from faui03.informatik.uni-erlangen.de ([131.188.30.103]:58473 "EHLO
+	faui03.informatik.uni-erlangen.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750761AbZEYMe3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 08:34:29 -0400
+Date: Mon, 25 May 2009 14:34:30 +0200
+From: Thomas Glanzmann <thomas@glanzmann.de>
+To: Theodore Tso <tytso@mit.edu>, Arjan van de Ven <arjan@infradead.org>,
+       tytso@thunk.org, LKML <linux-kernel@vger.kernel.org>,
+       linux-ext4@vger.kernel.org
+Subject: Re: zero out blocks of freed user data for operation a virtual
+	machine environment
+Message-ID: <20090525123430.GA5534@cip.informatik.uni-erlangen.de>
+Mail-Followup-To: Thomas Glanzmann <thomas@glanzmann.de>,
+	Theodore Tso <tytso@mit.edu>,
+	Arjan van de Ven <arjan@infradead.org>, tytso@thunk.org,
+	LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org
+References: <20090524170045.GC24753@cip.informatik.uni-erlangen.de> <20090524101551.57b706e9@infradead.org> <20090524173933.GD24753@cip.informatik.uni-erlangen.de> <20090525120320.GA25908@mit.edu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090525120320.GA25908@mit.edu>
+User-Agent: Mutt/1.5.15 (2007-05-02)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 25 May 2009, Stanislaw Gruszka wrote:
-> @@ -904,6 +905,7 @@ void __init time_init(void)
->  	tb_ticks_per_usec = ppc_tb_freq / 1000000;
->  	tb_to_us = mulhwu_scale_factor(ppc_tb_freq, 1000000);
->  	calc_cputime_factors();
-> +	cputime_one = jiffies_to_cputime(1);
+Hello Ted,
 
-  1) The variable name is misleading.
+> Yes, it does, sb_issue_discard().  So if you wanted to hook into this
+> routine with a function which issued calls to zero out blocks, it
+> would be easy to create a private patch.
 
-  2) The patch breaks all powerpc platforms which have
-  CONFIG_VIRT_CPU_ACCOUNTING=n and ia64 with
-  CONFIG_VIRT_CPU_ACCOUNTING=y
+that sounds good because it wouldn't only target the most used
+filesystem but every other filesystem that uses the interface as well.
+Do you think that a tunable or configurable patch has a chance to hit
+upstream as well?
 
-Thanks,
-
-	tglx
+        Thomas
