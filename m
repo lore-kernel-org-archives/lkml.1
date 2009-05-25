@@ -1,53 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755011AbZEYAMR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757469AbZEYANp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755011AbZEYAMR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 May 2009 20:12:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753700AbZEYAMF
+	id S1757469AbZEYANp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 May 2009 20:13:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753950AbZEYANi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 May 2009 20:12:05 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:43035 "EHLO mx2.redhat.com"
+	Sun, 24 May 2009 20:13:38 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:59908 "EHLO bilbo.ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752951AbZEYAMD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 May 2009 20:12:03 -0400
-Date: Mon, 25 May 2009 02:07:50 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, ebiederm@xmission.com,
-       roland@redhat.com, linux-kernel@vger.kernel.org,
-       Matthew Wilcox <matthew@wil.cx>
-Subject: Re: [PATCH 1/1] signal: make group kill signal fatal
-Message-ID: <20090525000750.GA2301@redhat.com>
-References: <1243198054-13816-1-git-send-email-jirislaby@gmail.com>
+	id S1752951AbZEYANh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 May 2009 20:13:37 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1243198054-13816-1-git-send-email-jirislaby@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 7bit
+Message-ID: <18969.57730.876306.394502@cargo.ozlabs.ibm.com>
+Date: Mon, 25 May 2009 10:08:34 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Ingo Molnar <mingo@elte.hu>, Corey Ashford <cjashfor@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       John Kacur <jkacur@redhat.com>
+Subject: Re: [PATCH 1/7] perf_counter: fix dynamic irq_period logging
+In-Reply-To: <20090523163012.476197912@chello.nl>
+References: <20090523162854.599719825@chello.nl>
+	<20090523163012.476197912@chello.nl>
+X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/24, Jiri Slaby wrote:
->
-> __fatal_signal_pending() returns now true only for a non-group sent
-> sigkill, i. e. for example tgkill, send_sig...
+Peter Zijlstra writes:
 
-No. Please look at complete_signal(). If we queue a fatal signal,
-we always add SIGKILL to any thread.
+> We call perf_adjust_freq() from perf_counter_task_tick() which is is called
+> under the rq->lock causing lock recursion.
 
-> Use sigkill_pending()
+What was the lock recursion?  I see perf_adjust_freq taking ctx->lock,
+but we were careful not to take any rq->lock within a ctx->lock, at
+least in the past.
 
-Please do not use it, it should die.
-
-> in __fatal_signal_pending() which adds a test also
-> for shared_pending queue.
-
-See above. Afaics this is not needed.
-
-> Also grab siglock in __fatal_signal_pending().
-
-This is wrong. It can be called when the task has already died
-and its ->signal == NULL.
-
-Oleg.
-
+Paul.
