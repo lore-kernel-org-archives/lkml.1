@@ -1,87 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754074AbZEYRth@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754380AbZEYRuu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754074AbZEYRth (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 13:49:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752347AbZEYRtb
+	id S1754380AbZEYRuu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 13:50:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752901AbZEYRup
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 13:49:31 -0400
-Received: from alerce.vps.bitfolk.com ([212.13.194.134]:1431 "EHLO
-	alerce.vps.bitfolk.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752148AbZEYRta (ORCPT
+	Mon, 25 May 2009 13:50:45 -0400
+Received: from rv-out-0506.google.com ([209.85.198.229]:5458 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752851AbZEYRuo convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 13:49:30 -0400
-Date: Mon, 25 May 2009 14:46:30 -0300
-From: Alberto Bertogli <albertito@blitiri.com.ar>
-To: Goswin von Brederlow <goswin-v-b@web.de>
-Cc: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       linux-raid@vger.kernel.org, agk@redhat.com, neilb@suse.de
-Subject: Re: [RFC PATCH] dm-csum: A new device mapper target that checks
-	data integrity
-Message-ID: <20090525174630.GI1376@blitiri.com.ar>
-References: <20090521161317.GU1376@blitiri.com.ar> <87my91qsn4.fsf@frosties.localdomain>
+	Mon, 25 May 2009 13:50:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type:content-transfer-encoding;
+        b=SfvGVJrxg+eUEVbC5kOKpPXG9wkj2Nnh+AQCNEcLhc70cidCw5BFh5Nbj4qeX07W6G
+         6rydQiWiK3WJjCkwVgMIYjeQSLmUadPFMXFaMnKmNVtK1YK4TMEyPluIhv9wxv8cSn+E
+         AD9ZBmsIPRfzoyqBu8TRXxyc2YyvWIfR0NjsU=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87my91qsn4.fsf@frosties.localdomain>
-User-Agent: Mutt/1.5.17 (2008-03-04)
+In-Reply-To: <f3177b9e0905251023n762b815akace1ae34e643458e@mail.gmail.com>
+References: <20090524170045.GC24753@cip.informatik.uni-erlangen.de>
+	 <20090524101551.57b706e9@infradead.org>
+	 <20090524173933.GD24753@cip.informatik.uni-erlangen.de>
+	 <20090525120320.GA25908@mit.edu>
+	 <20090525123430.GA5534@cip.informatik.uni-erlangen.de>
+	 <87ab51qq91.fsf@frosties.localdomain>
+	 <f3177b9e0905251023n762b815akace1ae34e643458e@mail.gmail.com>
+Date: Mon, 25 May 2009 11:26:15 -0600
+Message-ID: <f3177b9e0905251026u54d6b1e0s884dbdedf74b17cd@mail.gmail.com>
+Subject: RE: zero out blocks of freed user data for operation a virtual 
+	machine environment
+From: Chris Worley <worleys@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 25, 2009 at 02:22:23PM +0200, Goswin von Brederlow wrote:
-> Alberto Bertogli <albertito@blitiri.com.ar> writes:
-> > I'm writing this device mapper target that stores checksums on writes and
-> > verifies them on reads.
-> 
-> How does that behave on crashes? Will checksums be out of sync with data?
-> Will pending blocks recalculate their checksum?
+On Mon, May 25, 2009 at 7:14 AM, Goswin von Brederlow <goswin-v-b@web.de> wrote:
+> Thomas Glanzmann <thomas@glanzmann.de> writes:
+> > Hello Ted,
+> >
+> >> Yes, it does, sb_issue_discard().  So if you wanted to hook into this
+> >> routine with a function which issued calls to zero out blocks, it
+> >> would be easy to create a private patch.
+> >
+> > that sounds good because it wouldn't only target the most used
+> > filesystem but every other filesystem that uses the interface as well.
+> > Do you think that a tunable or configurable patch has a chance to hit
+> > upstream as well?
+> >
+> >         Thomas
+>
+> I could imagine a device mapper target that eats TRIM commands and
+> writes out zeroes instead. That should be easy to maintain outside or
+> inside the upstream kernel source.
 
-It should behave well on crashes, the checksums should be in sync (see below),
-and there is no concept of "pending blocks".
+Why bother with a time-consuming performance-draining operation?
+There are devices that already support TRIM/discard commands today,
+and once you discard a block, it's completely irretrievable (you'll
+just get back zeros if you try to read that block w/o writing it after
+the discard).
 
-Quoting from the docs (included at the beginning of the patch):
-
-   It stores an 8-byte "integrity metadata" ("imd", from now on) structure for
-   each 512-byte data sector. imd structures are clustered in groups of 62
-   plus a small header, so they fit a sector (referred to as an "imd sector").
-   Every imd sector has a "brother", another adjacent imd sector, for
-   consistency purposes (explained below). That means we devote two sectors to
-   imd storage for every 62 data sectors.
-
-   [...]
-
-   To guarantee consistency, two imd sectors (named M1 and M2) are kept for
-   every 62 data sectors, and the following procedure is used to update them
-   when a write to a given sector is required:
-
-    - Read both M1 and M2.
-    - Find out (using information stored in their headers) which one is newer.
-      Let's assume M1 is newer than M2.
-    - Update the M2 buffer to mark it's newer, and update the new data's CRC.
-    - Submit the write to M2, and then the write to the data, using a barrier
-      to make sure the metadata is updated _after_ the data.
-
-   Accordingly, the read operations are handled as follows:
-
-    - Read both the data, M1 and M2.
-    - Find out which one is newer. Let's assume M1 is newer than M2.
-    - Calculate the data's CRC, and compare it to the one found in M1. If they
-      match, the reading is successful. If not, compare it to the one found in
-      M2. If they match, the reading is successful; otherwise, fail. If
-      the read involves multiple sectors, it is possible that some of the
-      correct CRCs are in M1 and some in M2.
-
-
-The barrier will be (it's not done yet) replaced with serialized writes for
-cases where the underlying block device does not support them, or when the
-integrity metadata resides on a different block device than the data.
-
-
-This scheme assumes writes to a single sector are atomic in the presence of
-normal crashes, which I'm not sure if it's something sane to assume in
-practise. If it's not, then the scheme can be modified to cope with that.
-
-
-Thanks a lot,
-		Alberto
-
+Chris
+>
+>
+> MfG
+>        Goswin
