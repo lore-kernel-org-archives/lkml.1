@@ -1,88 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752223AbZEYMra@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754062AbZEYMsG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752223AbZEYMra (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 08:47:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751957AbZEYMrF
+	id S1754062AbZEYMsG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 08:48:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753309AbZEYMrJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 08:47:05 -0400
-Received: from hera.kernel.org ([140.211.167.34]:50254 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751249AbZEYMrD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 08:47:03 -0400
-Date: Mon, 25 May 2009 12:45:35 GMT
-From: tip-bot for Ingo Molnar <mingo@elte.hu>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
-       hpa@zytor.com, mingo@redhat.com, jkacur@redhat.com,
-       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
-       cjashfor@linux.vnet.ibm.com, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, jkacur@redhat.com, a.p.zijlstra@chello.nl,
-       efault@gmx.de, tglx@linutronix.de, cjashfor@linux.vnet.ibm.com,
-       mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-Subject: [tip:perfcounters/core] perf stat: flip around ':k' and ':u' flags
-Message-ID: <tip-d3f4b3855ba87caff8f35e738c7e7e3bad0a6ab1@git.kernel.org>
-Git-Commit-ID: d3f4b3855ba87caff8f35e738c7e7e3bad0a6ab1
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 25 May 2009 12:45:37 +0000 (UTC)
+	Mon, 25 May 2009 08:47:09 -0400
+Received: from casper.infradead.org ([85.118.1.10]:47589 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753200AbZEYMrI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 08:47:08 -0400
+Message-Id: <20090525124600.324656474@chello.nl>
+References: <20090525124523.010479297@chello.nl>
+User-Agent: quilt/0.46-1
+Date: Mon, 25 May 2009 14:45:27 +0200
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Paul Mackerras <paulus@samba.org>,
+       Corey Ashford <cjashfor@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       John Kacur <jkacur@redhat.com>
+Subject: [PATCH 4/5] perf_counter: propagate inheritance failures down the fork() path
+Content-Disposition: inline; filename=perf_counter-init-fail.patch
+X-Bad-Reply: References but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  d3f4b3855ba87caff8f35e738c7e7e3bad0a6ab1
-Gitweb:     http://git.kernel.org/tip/d3f4b3855ba87caff8f35e738c7e7e3bad0a6ab1
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Mon, 25 May 2009 14:40:01 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 25 May 2009 14:40:01 +0200
+Fail fork() when we fail inheritance for some reason (-ENOMEM most likely).
 
-perf stat: flip around ':k' and ':u' flags
-
-This output:
-
- $ perf stat -e 0:1:k -e 0:1:u ./hello
-  Performance counter stats for './hello':
-          140131  instructions         (events)
-         1906968  instructions         (events)
-
-Is quite confusing - as :k means "user instructions", :u means
-"kernel instructions".
-
-Flip them around - as the 'exclude' property is not intuitive in
-the flag naming.
-
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: John Kacur <jkacur@redhat.com>
-Cc: Mike Galbraith <efault@gmx.de>
 LKML-Reference: <new-submission>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- Documentation/perf_counter/builtin-stat.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ kernel/fork.c         |    5 ++++-
+ kernel/perf_counter.c |   20 ++++++++++++--------
+ 2 files changed, 16 insertions(+), 9 deletions(-)
 
-diff --git a/Documentation/perf_counter/builtin-stat.c b/Documentation/perf_counter/builtin-stat.c
-index 8ae01d5..88c70be 100644
---- a/Documentation/perf_counter/builtin-stat.c
-+++ b/Documentation/perf_counter/builtin-stat.c
-@@ -266,9 +266,9 @@ static __u64 match_event_symbols(char *str)
+Index: linux-2.6/kernel/fork.c
+===================================================================
+--- linux-2.6.orig/kernel/fork.c
++++ linux-2.6/kernel/fork.c
+@@ -983,7 +983,9 @@ static struct task_struct *copy_process(
+ 		goto fork_out;
  
- 	switch (sscanf(str, "%d:%llu:%2s", &type, &id, mask_str)) {
- 		case 3:
--			if (strchr(mask_str, 'u'))
--				event_mask[nr_counters] |= EVENT_MASK_USER;
- 			if (strchr(mask_str, 'k'))
-+				event_mask[nr_counters] |= EVENT_MASK_USER;
-+			if (strchr(mask_str, 'u'))
- 				event_mask[nr_counters] |= EVENT_MASK_KERNEL;
- 		case 2:
- 			return EID(type, id);
+ 	rt_mutex_init_task(p);
+-	perf_counter_init_task(p);
++	retval = perf_counter_init_task(p);
++	if (retval)
++		goto bad_fork_free;
+ 
+ #ifdef CONFIG_PROVE_LOCKING
+ 	DEBUG_LOCKS_WARN_ON(!p->hardirqs_enabled);
+@@ -1309,6 +1311,7 @@ bad_fork_cleanup_count:
+ 	put_cred(p->real_cred);
+ 	put_cred(p->cred);
+ bad_fork_free:
++	perf_counter_exit_task(p);
+ 	free_task(p);
+ fork_out:
+ 	return ERR_PTR(retval);
+Index: linux-2.6/kernel/perf_counter.c
+===================================================================
+--- linux-2.6.orig/kernel/perf_counter.c
++++ linux-2.6/kernel/perf_counter.c
+@@ -3434,18 +3434,23 @@ again:
+ /*
+  * Initialize the perf_counter context in task_struct
+  */
+-void perf_counter_init_task(struct task_struct *child)
++int perf_counter_init_task(struct task_struct *child)
+ {
+ 	struct perf_counter_context *child_ctx, *parent_ctx;
+ 	struct perf_counter *counter;
+ 	struct task_struct *parent = current;
+ 	int inherited_all = 1;
++	int ret = 0;
+ 
+ 	child->perf_counter_ctxp = NULL;
+ 
+ 	mutex_init(&child->perf_counter_mutex);
+ 	INIT_LIST_HEAD(&child->perf_counter_list);
+ 
++	parent_ctx = parent->perf_counter_ctxp;
++	if (likely(!parent_ctx || !parent_ctx->nr_counters))
++		return 0;
++
+ 	/*
+ 	 * This is executed from the parent task context, so inherit
+ 	 * counters that have been marked for cloning.
+@@ -3454,11 +3459,7 @@ void perf_counter_init_task(struct task_
+ 
+ 	child_ctx = kmalloc(sizeof(struct perf_counter_context), GFP_KERNEL);
+ 	if (!child_ctx)
+-		return;
+-
+-	parent_ctx = parent->perf_counter_ctxp;
+-	if (likely(!parent_ctx || !parent_ctx->nr_counters))
+-		return;
++		return -ENOMEM;
+ 
+ 	__perf_counter_init_context(child_ctx, child);
+ 	child->perf_counter_ctxp = child_ctx;
+@@ -3482,8 +3483,9 @@ void perf_counter_init_task(struct task_
+ 			continue;
+ 		}
+ 
+-		if (inherit_group(counter, parent,
+-				  parent_ctx, child, child_ctx)) {
++		ret = inherit_group(counter, parent, parent_ctx,
++					     child, child_ctx);
++		if (ret) {
+ 			inherited_all = 0;
+ 			break;
+ 		}
+@@ -3505,6 +3507,8 @@ void perf_counter_init_task(struct task_
+ 	}
+ 
+ 	mutex_unlock(&parent_ctx->mutex);
++
++	return ret;
+ }
+ 
+ static void __cpuinit perf_counter_init_cpu(int cpu)
+
+-- 
+
