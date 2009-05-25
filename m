@@ -1,69 +1,204 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753602AbZEYMNs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752579AbZEYMQy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753602AbZEYMNs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 08:13:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752074AbZEYMNm
+	id S1752579AbZEYMQy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 08:16:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751588AbZEYMQs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 08:13:42 -0400
-Received: from mail-bw0-f174.google.com ([209.85.218.174]:60784 "EHLO
-	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751824AbZEYMNl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 08:13:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=rDWiD0LAZ+5a3DaSgkAtKNnx4Smzj9v+Kn5BGiv7mG/0n3qWono+K+8yrT/WRb0Las
-         0sPHS1gU7rFvUhmO2r2LYaETxDOfI9aXxstV0jQGqIGR8FieT8iqhWLp3JiLiV1bEPoi
-         g9HMQKqYUM+JD1MU7s3oxfozuByLpu1m+h6M0=
+	Mon, 25 May 2009 08:16:48 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:60448 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751035AbZEYMQr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 08:16:47 -0400
+Date: Mon, 25 May 2009 14:16:48 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Jan Kara <jack@suse.cz>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
+       akpm@linux-foundation.org, yanmin_zhang@linux.intel.com
+Subject: Re: [PATCH 04/12] writeback: switch to per-bdi threads for
+	flushing data
+Message-ID: <20090525121648.GW11363@kernel.dk>
+References: <1243236887-3931-1-git-send-email-jens.axboe@oracle.com> <1243236887-3931-5-git-send-email-jens.axboe@oracle.com> <20090525095816.GC23546@duck.suse.cz> <20090525103410.GT11363@kernel.dk> <20090525121049.GE23546@duck.suse.cz>
 MIME-Version: 1.0
-In-Reply-To: <1243151839.26820.642.camel@twins>
-References: <63386a3d0905112337p2d426481o5f9bf9b9489cc57e@mail.gmail.com>
-	 <63386a3d0905231446h245bb4a9gec111f68a74a44e4@mail.gmail.com>
-	 <1243151839.26820.642.camel@twins>
-Date: Mon, 25 May 2009 14:13:41 +0200
-Message-ID: <63386a3d0905250513q6ca56eeepcf7bebe46c447fb4@mail.gmail.com>
-Subject: Re: [PATCH] U300 sched_clock implementation
-From: Linus Walleij <linus.ml.walleij@gmail.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu,
-       linux-arm-kernel@lists.arm.linux.org.uk
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090525121049.GE23546@duck.suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/5/24 Peter Zijlstra <peterz@infradead.org>:
+On Mon, May 25 2009, Jan Kara wrote:
+> On Mon 25-05-09 12:34:10, Jens Axboe wrote:
+> > On Mon, May 25 2009, Jan Kara wrote:
+> > >   Hi Jens,
+> > > 
+> > >   I've noticed a few more things:
+> > > 
+> > > On Mon 25-05-09 09:34:39, Jens Axboe wrote:
+> > > > diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
+> > > > index 1137408..7cb4d02 100644
+> > > > --- a/fs/fs-writeback.c
+> > > > +++ b/fs/fs-writeback.c
+> > > > @@ -19,6 +19,8 @@
+> > > >  #include <linux/sched.h>
+> > > >  #include <linux/fs.h>
+> > > >  #include <linux/mm.h>
+> > > > +#include <linux/kthread.h>
+> > > > +#include <linux/freezer.h>
+> > > >  #include <linux/writeback.h>
+> > > >  #include <linux/blkdev.h>
+> > > >  #include <linux/backing-dev.h>
+> > > > @@ -61,10 +63,193 @@ int writeback_in_progress(struct backing_dev_info *bdi)
+> > > >   */
+> > > >  static void writeback_release(struct backing_dev_info *bdi)
+> > > >  {
+> > > > -	BUG_ON(!writeback_in_progress(bdi));
+> > > > +	WARN_ON_ONCE(!writeback_in_progress(bdi));
+> > > > +	bdi->wb_arg.nr_pages = 0;
+> > > > +	bdi->wb_arg.sb = NULL;
+> > > >  	clear_bit(BDI_pdflush, &bdi->state);
+> > > >  }
+> > > >  
+> > > > +int bdi_start_writeback(struct backing_dev_info *bdi, struct super_block *sb,
+> > > > +			 long nr_pages, enum writeback_sync_modes sync_mode)
+> > > > +{
+> > > > +	/*
+> > > > +	 * This only happens the first time someone kicks this bdi, so put
+> > > > +	 * it out-of-line.
+> > > > +	 */
+> > > > +	if (unlikely(!bdi->task)) {
+> > > > +		bdi_add_default_flusher_task(bdi);
+> > > > +		return 1;
+> > > > +	}
+> > > > +
+> > > > +	if (writeback_acquire(bdi)) {
+> > > > +		bdi->wb_arg.nr_pages = nr_pages;
+> > > > +		bdi->wb_arg.sb = sb;
+> > > > +		bdi->wb_arg.sync_mode = sync_mode;
+> > > > +		/*
+> > > > +		 * make above store seen before the task is woken
+> > > > +		 */
+> > > > +		smp_mb();
+> > > > +		wake_up(&bdi->wait);
+> > > > +	}
+> > >   Hmm, wouldn't the interface be more useful if we could just pass down the
+> > > whole writeback_control to the flusher threads?
+> > 
+> > Yeah, that's what the later patch does too, when support for > 1 thread
+> > has been added.
+>   Really? I cannot see it in the series. I see that later you introduce
+> struct bdi_work but it still contains just nr_pages, sb_data and sync_mode.
+> What I meant was we could include 'struct writeback_control' into the bdi
+> (or bdi_work later) and just pass it down so that caller can have more
+> finegrained control of what writeback the thread is going to perform
+> (like nonblocking, older_than_this, maybe something else).
 
-> On Sat, 2009-05-23 at 23:46 +0200, Linus Walleij wrote:
->
->> This overrides the global sched_clock() symbol in the Linux
->> scheduler with a local implementation which takes advantage of
->> the timesource in U300 giving a scheduling resolution of 1us. The
->> solution is the same as found in the OMAP2 core code.
->
-> We assume sched_clock() to return time in ns (e-9) resolution.
+Oh, I don't pass wbc down, but I do pass it async. The problem with
+passing down the wbc is that it is allocated on the stack. So if we do
+that, then we pretty much have to serialize on that. And I want to avoid
+that.
 
-Yep okay and in this case:
+> > > >  void generic_sync_sb_inodes(struct super_block *sb,
+> > > >  				struct writeback_control *wbc)
+> > > >  {
+> > > > -	const int is_blkdev_sb = sb_is_blkdev_sb(sb);
+> > > > -	struct backing_dev_info *bdi;
+> > > > -
+> > > > -	mutex_lock(&bdi_lock);
+> > > > -	list_for_each_entry(bdi, &bdi_list, bdi_list)
+> > > > -		generic_sync_bdi_inodes(bdi, wbc, sb, is_blkdev_sb);
+> > > > -	mutex_unlock(&bdi_lock);
+> > > > +	if (wbc->bdi)
+> > > > +		generic_sync_bdi_inodes(sb, wbc);
+> > > > +	else
+> > > > +		bdi_writeback_all(sb, wbc->nr_to_write, wbc->sync_mode);
+> > >   Hmm, you write in the changelog that bdi_writeback_all() writes inline
+> > > now but AFAICS it still happens through the writeback threads. Which, on a
+> > > second though probably *is* what we want because we want writeback to go in
+> > > parallel on all devices we have.
+> > 
+> > Note that this is patch 4, later it is sync. But yes, I think it should
+>   Ah, right. I missed that.
+> 
+> > be async as well, but we do need a way to wait on the submitted work to
+> > be processed in case of WB_SYNC_ALL.
+>   Yes, this is a bit complicated. You'd need some notification bdi_work is
+> processed.
 
->> +       ret = (unsigned long long) u300_get_cycles();
->> +       ret = (ret * clocksource_u300_1mhz.mult_orig) >>
->> +               clocksource_u300_1mhz.shift;
->> +       return ret;
+It was actually not that hard, I already did it. So right now
+wb_writeback() does this:
 
-(mult_orig >> shift) == 1000
+while (work) {
+        get args;
+        clear pending;
+        do work;
+};
 
-So for each cycle in cyclecount register we return 1000 * cycles
-i.e 1000ns.
+If we just modify that to:
 
-If it looks nicer we can of course simply:
-return (unsigned long long) u300_get_cycles * 1000;
+while (work) {
+        get args;
+        if (sync_mode == WB_SYNC_NONE)
+                clear pending;
+        do work;
+        if (sync_mode == WB_SYNC_ALL)
+                clear_pending;
+};
 
-But the question here is whether this resolution is enough for
-sched_clock() or if it is irrelevant to override sched_clock()
-if it cannot schedule with better precision than 1000 ns.
+We get notification when the work has actually been issued. Then we can
+easily control whether or not to make a piece of work sync or not.
 
-Yours,
-Linus Walleij
+> > > >   * Start writeback of `nr_pages' pages.  If `nr_pages' is zero, write back
+> > > >   * the whole world.  Returns 0 if a pdflush thread was dispatched.  Returns
+> > > >   * -1 if all pdflush threads were busy.
+> > > >   */
+> > > > -int wakeup_pdflush(long nr_pages)
+> > > > +void wakeup_flusher_threads(long nr_pages)
+> > > >  {
+> > > >  	if (nr_pages == 0)
+> > > >  		nr_pages = global_page_state(NR_FILE_DIRTY) +
+> > > >  				global_page_state(NR_UNSTABLE_NFS);
+> > > > -	return pdflush_operation(background_writeout, nr_pages);
+> > > > +	bdi_writeback_all(NULL, nr_pages, WB_SYNC_NONE);
+> > > > +	return;
+> > > >  }
+> > > ...
+> > > > -
+> > > > -static void laptop_flush(unsigned long unused)
+> > > > -{
+> > > > -	sys_sync();
+> > > > -}
+> > > > -
+> > > >  static void laptop_timer_fn(unsigned long unused)
+> > > >  {
+> > > > -	pdflush_operation(laptop_flush, 0);
+> > > > +	wakeup_flusher_threads(0);
+> > > >  }
+> > > >  
+> > > >  /*
+> > >   Here you significantly change the behavior of laptop mode - previously it
+> > > reliably synced all the data to disk once the "laptop writeout timeout"
+> > > elapsed. The idea is that we want to write all the dirty data we have so
+> > > that the drive can go to sleep for a longer period.
+> > Yeah I know, I wrote the original laptop mode implementation :-)
+>   Sorry, I wasn't aware of that.
+> 
+> > >   Now you changed that to asynchronous WB_SYNC_NONE writeback of some
+> > > number of pages.  In particular if the disk gets congested, we'll just stop
+> > > doing writeback which probably isn't what we want for laptop mode...
+> > 
+> > Congestion doesn't matter, we don't do nonblocking writeout from the
+> > threads at all. And it is sync later in the series.
+> > 
+> > I'll switch it back to async in general throughout the series, and add
+> > some way of making sure we actually have things submitted before doing
+> > the filemap_fdatawait() in generic_sync_sb_inodes(). I think that should
+> > fix it.
+>   OK, looking forward to your patches :)
+
+Fiddling with it now, probably a v7 posting coming up tomorrow. And
+thanks again for your great and detailed reviews!
+
+-- 
+Jens Axboe
+
