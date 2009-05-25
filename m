@@ -1,134 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751062AbZEYHn2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759998AbZEYHot@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751062AbZEYHn2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 03:43:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759413AbZEYHjL
+	id S1759998AbZEYHot (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 03:44:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752824AbZEYHoi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 03:39:11 -0400
-Received: from [222.92.8.141] ([222.92.8.141]:36123 "EHLO lemote.com"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1759265AbZEYHjJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 03:39:09 -0400
-Message-ID: <4A1A4A54.6090401@lemote.com>
-Date: Mon, 25 May 2009 15:35:48 +0800
-From: =?UTF-8?B?6IOh5rSq5YW1?= <huhb@lemote.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
+	Mon, 25 May 2009 03:44:38 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:37821 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752478AbZEYHoh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 03:44:37 -0400
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       Tejun Heo <tj@kernel.org>, Cornelia Huck <cornelia.huck@de.ibm.com>,
+       linux-fsdevel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>,
+       stern <stern@rowland.harvard.edu>
+References: <m1bppofm9k.fsf@fess.ebiederm.org>
+	<1243109591-21611-5-git-send-email-ebiederm@xmission.com>
+	<ac3eb2510905231427x62efaecfod2b11472fcdbcc21@mail.gmail.com>
+	<1243169978.3502.7.camel@poy> <m1bppid1pw.fsf@fess.ebiederm.org>
+	<1243178448.4035.12.camel@poy>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Mon, 25 May 2009 00:44:26 -0700
+In-Reply-To: <1243178448.4035.12.camel@poy> (Kay Sievers's message of "Sun\, 24 May 2009 17\:20\:48 +0200")
+Message-ID: <m1iqjpaap1.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-To: yanh@lemote.com
-CC: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, wuzhangjin@gmail.com,
-       linux-mips@linux-mips.org, Ralf Baechle <ralf@linux-mips.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       Philippe Vachon <philippe@cowpig.ca>, Zhang Le <r0bertz@gentoo.org>,
-       Zhang Fuxin <zhangfx@lemote.com>, Arnaud Patard <apatard@mandriva.com>,
-       loongson-dev@googlegroups.com, gnewsense-dev@nongnu.org,
-       Nicholas Mc Guire <hofrat@hofr.at>, Liu Junliang <liujl@lemote.com>,
-       Erwan Lerale <erwan@thiscow.com>
-Subject: Re: [loongson-PATCH-v1 24/27] fixup for FUJITSU disk
-References: <cover.1242855716.git.wuzhangjin@gmail.com>	 <200905222032.55869.bzolnier@gmail.com>	 <1243062702.8509.7.camel@localhost.localdomain>	 <200905231347.34717.bzolnier@gmail.com> <1243230339.9819.18.camel@localhost.localdomain>
-In-Reply-To: <1243230339.9819.18.camel@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Rcpt-To: kay.sievers@vrfy.org, stern@rowland.harvard.edu, ebiederm@aristanetworks.com, linux-fsdevel@vger.kernel.org, cornelia.huck@de.ibm.com, tj@kernel.org, linux-kernel@vger.kernel.org, gregkh@suse.de, akpm@linux-foundation.org
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Kay Sievers <kay.sievers@vrfy.org>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  1.5 XMNoVowels Alpha-numberic number with no vowels
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	*  0.0 BAYES_50 BODY: Bayesian spam probability is 40 to 60%
+	*      [score: 0.4941]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 T_TooManySym_01 4+ unique symbols in subject
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
+Subject: Re: [PATCH 25/20] sysfs: Only support removing emtpy sysfs  directories.
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-yanh 写道:
-> 在 2009-05-23六的 13:47 +0200，Bartlomiej Zolnierkiewicz写道：
->   
->> On Saturday 23 May 2009 09:11:42 yanh wrote:
->>     
->>> 在 2009-05-22五的 20:32 +0200，Bartlomiej Zolnierkiewicz写道：
->>>       
->>>> On Thursday 21 May 2009 00:12:46 wuzhangjin@gmail.com wrote:
->>>>         
->>>>> From: Wu Zhangjin <wuzhangjin@gmail.com>
->>>>>
->>>>> This is originally from the to-mips branch from
->>>>> http://dev.lemote.com/code/linux_loongson
->>>>>           
->>>> Sadly, the patch description lacks all the important information.
->>>>
->>>> What is the original problem that this fixup tries to address?
->>>>
->>>> Is it limited to amd74xx controllers?
->>>>         
->>> In loongson2f yeeloong machines, the ide controller is AMD cs5536, or
->>> say  amd74xx, and the hard drives is Fujistu. 
->>>       
->> Then it should use the new & shiny :) native cs5536 IDE host driver
->> instead of legacy support in amd74xx...
->>
->>     
->>> While debuging the hard disk suspned and resume, the ide irq can not be
->>> cleared. I guess this is a fake interrupt, hence the clear irq action
->>> can not be finished. 
->>>       
->> AFAICS the only change that the fixup would cause for suspend/resume paths
->> is the one in ide_config_drive_speed() which is called during resume to set
->> transfer mode on the drive:
->>
->>        tp_ops->write_devctl(hwif, ATA_NIEN | ATA_DEVCTL_OBS);
->>
->>         memset(&tf, 0, sizeof(tf));
->>         tf.feature = SETFEATURES_XFER;
->>         tf.nsect   = speed;
->>
->>         tp_ops->tf_load(drive, &tf, IDE_VALID_FEATURE | IDE_VALID_NSECT);
->>
->>         tp_ops->exec_command(hwif, ATA_CMD_SET_FEATURES);
->> --->
->>         if (drive->quirk_list == 2)
->>                 tp_ops->write_devctl(hwif, ATA_DEVCTL_OBS);
->>     
->
->   
->> --->
->>         error = __ide_wait_stat(drive, drive->ready_stat,
->>                                 ATA_BUSY | ATA_DRQ | ATA_ERR,
->>                                 WAIT_CMD, &stat);
->>
->> Please tell me I if understand the issue correctly: if the above quirk is
->> not executed we end up with spurious IRQs, right?
->>     
-> right.
->   
->>> This patch is to fix this issue. Maybe other controller and drives also
->>> have this issue, but I am not sure.
->>>       
->> Probably moving it to a generic quirk_drives list later will be useful...
->>
->> Anyway this fixup needs to be ported to / verified with cs5536 first.
->>     
-> the cs5536 pata driver have some geode platform dependent codes. We can
-> just ignore it, but the performance is poor(using hdparm to test it),
-> which only get 22+ MB/s. we find it only use udma2. However if using
-> amd74xx driver, it can set udma5, and the speed can reach to 50+ MB/s. 
->
-> we will test whether this driver is working well without this patch.
->
-> Anyway, thanks your advice.
->   
-Use the driver drivers/ata/pata_cs5536.c, unfortunately it also have the 
-same issue.
->> Thanks.
->> Bart
->>
->>     
->
->
->
->   
+Kay Sievers <kay.sievers@vrfy.org> writes:
 
+>> Let's make the plan to investigate these, and see how hard it would be
+>> to actually remove these with the current device/sysfs infrastructure.
+>> 
+>> Fixing the users and adding back auto-deletion are the only two real options.
+>
+> Seems, we should remove non-directory files, which in most cases belong
+> to the kobject itself, but the user's cleanup logic does not cover the
+> removal of the created files.
+>
+> But I think, we should still warn, if we find a sub-directory inside a
+> directory we are going to remove.
 
--- 
----------------------------------------------------------
-Hongbing,Hu (Software Department)
-Tel:    0512-52308631
-E-mail:	huhb@lemote.com
-MSN:	[huhb04@gmail.com]
-JiangSu Lemote Corp. Ltd.
-MengLan, Yushan, Changshu, JiangSu Province, China
----------------------------------------------------------
+So far complaining about deleting non-empty directories is finding
+real bugs.  It does not appear that too many users that delete
+non-empty directories.
 
+My plan moving forward is to see what has goofed and how hard it is to
+change the callers to clean up after themselves.  If it is not a pain
+to fix the callers who forget to delete their attributes that looks
+like the right way forward.
+
+It is certainly the principle of least surprise.
+
+Eric
