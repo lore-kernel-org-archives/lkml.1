@@ -1,62 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755597AbZEYD3f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754435AbZEYDbS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755597AbZEYD3f (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 May 2009 23:29:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751962AbZEYD33
+	id S1754435AbZEYDbS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 May 2009 23:31:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751832AbZEYDbK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 May 2009 23:29:29 -0400
-Received: from hawking.rebel.net.au ([203.20.69.83]:45080 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751619AbZEYD32 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 May 2009 23:29:28 -0400
-Message-ID: <4A1A1094.3020903@davidnewall.com>
-Date: Mon, 25 May 2009 12:59:24 +0930
-From: David Newall <davidn@davidnewall.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	Sun, 24 May 2009 23:31:10 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:47477 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751580AbZEYDbJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 May 2009 23:31:09 -0400
+Date: Mon, 25 May 2009 05:30:51 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Roland McGrath <roland@redhat.com>, Christoph Hellwig <hch@infradead.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH 3/X] ptrace: introduce the empty "struct
+	ptrace_task"
+Message-ID: <20090525032426.GA20687@elte.hu>
+References: <20090525000001.GA2218@redhat.com>
 MIME-Version: 1.0
-To: Thomas Glanzmann <thomas@glanzmann.de>, tytso@thunk.org,
-       LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org
-Subject: Re: zero out blocks of freed user data for operation a virtual machine
- environment
-References: <20090524170045.GC24753@cip.informatik.uni-erlangen.de>
-In-Reply-To: <20090524170045.GC24753@cip.informatik.uni-erlangen.de>
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20090525000001.GA2218@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0002]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Glanzmann wrote:
-> If you don't intend to have such an optional feature in ext3/ext4 I
-> would like to know if you know a tool that makes it possible to zero out
-> unused blocks?
->
-> The only reference that I found for such a tool for Linux is the
-> following:
->   
-Astounding use of backquote. I'm not sure about the "percent" bit. I
-think it's some confusion over only 95% of total blocks being available
-for allocation.
 
-I, too, would not recommend it, but it becomes safer by repeatedly
-allocating only half the remaining disk, stopping when there's only a
-few blocks free, to leave some for all of the other processes.
-Presumably it won't be a problem having (potentially) a few free blocks
-that don't de-duplicate.
+* Oleg Nesterov <oleg@redhat.com> wrote:
 
-#!/bin/bash
-FileSystem=`grep ext /etc/mtab| awk -F" " '{ print $2 }'`
+> --- PTRACE/include/linux/sched.h~3_STRUCT	2009-05-24 21:29:04.000000000 +0200
+> +++ PTRACE/include/linux/sched.h	2009-05-24 22:14:41.000000000 +0200
+> @@ -1201,6 +1201,7 @@ struct task_struct {
+>  	struct list_head sibling;	/* linkage in my parent's children list */
+>  	struct task_struct *group_leader;	/* threadgroup leader */
+>  
+> +	struct ptrace_task *ptrace_task;
+>  	/*
+>  	 * ptraced is the list of tasks this task is using ptrace on.
+>  	 * This includes both natural children and PTRACE_ATTACH targets.
 
-for i in $FileSystem
-do
-       while number=`df -B 512 $i | awk -F" " '$4 < 10 {exit(1)} {print $4 / 2}'`
-       do
-              dd count=$number if=/dev/zero || break
-       done > $i/zf
-       rm -f $i/zf
-done
+the naming sucks.
 
+Please use 'struct ptrace_context' and '*ptrace_ctx' instead.
 
+Thanks,
 
-Are you proposing to de-duplicate a live filesystem?
+	Ingo
