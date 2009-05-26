@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759162AbZEZXd1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759501AbZEZXdi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759162AbZEZXd1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 19:33:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756951AbZEZXdT
+	id S1759501AbZEZXdi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 19:33:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757083AbZEZXdU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 19:33:19 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:57292 "EHLO smtp.gentoo.org"
+	Tue, 26 May 2009 19:33:20 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:57294 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751229AbZEZXdT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1756468AbZEZXdT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 26 May 2009 19:33:19 -0400
 From: Mike Frysinger <vapier@gentoo.org>
 To: linux-kernel@vger.kernel.org
-Cc: uclinux-dist-devel@blackfin.uclinux.org, Paul Mundt <lethal@linux-sh.org>,
-       Greg Ungerer <gerg@uclinux.org>, uclinux-dev@uclinux.org,
-       linux-mtd@lists.infradead.org
-Subject: [PATCH 1/3] mtd/maps: uclinux: allow systems to override map addr/size
-Date: Tue, 26 May 2009 19:33:16 -0400
-Message-Id: <1243380798-10089-1-git-send-email-vapier@gentoo.org>
+Cc: uclinux-dist-devel@blackfin.uclinux.org, Greg Ungerer <gerg@uclinux.org>,
+       uclinux-dev@uclinux.org, linux-mtd@lists.infradead.org
+Subject: [PATCH 2/3] mtd/maps: uclinux: mark local stuff static
+Date: Tue, 26 May 2009 19:33:17 -0400
+Message-Id: <1243380798-10089-2-git-send-email-vapier@gentoo.org>
 X-Mailer: git-send-email 1.6.3.1
 In-Reply-To: <20090526231902.GA6295@linux-sh.org>
 References: <20090526231902.GA6295@linux-sh.org>
@@ -24,53 +23,44 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Due to a processor anomaly (05000263 to be exact), most Blackfin parts
-cannot keep the embedded filesystem image directly after the kernel in
-RAM.  Instead, the filesystem needs to be relocated to the end of memory.
-As such, we need to tweak the map addr/size during boot for Blackfin
-systems.  This can be done in any early arch/board init code.
+The uclinux_ram_mtdinfo, uclinux_romfs, and uclinux_point symbols do not
+need to be visible outside of this module, so mark them static.
 
 Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-CC: Paul Mundt <lethal@linux-sh.org>
 CC: Greg Ungerer <gerg@uclinux.org>
 CC: uclinux-dev@uclinux.org
 CC: linux-mtd@lists.infradead.org
 ---
- drivers/mtd/maps/uclinux.c |   10 ++++++----
- 1 files changed, 6 insertions(+), 4 deletions(-)
+ drivers/mtd/maps/uclinux.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/mtd/maps/uclinux.c b/drivers/mtd/maps/uclinux.c
-index 81756e3..61d4087 100644
+index 61d4087..d4314fb 100644
 --- a/drivers/mtd/maps/uclinux.c
 +++ b/drivers/mtd/maps/uclinux.c
-@@ -22,8 +22,12 @@
+@@ -30,11 +30,11 @@ struct map_info uclinux_ram_map = {
+ 	.size = 0,
+ };
+ 
+-struct mtd_info *uclinux_ram_mtdinfo;
++static struct mtd_info *uclinux_ram_mtdinfo;
  
  /****************************************************************************/
  
-+extern char _ebss;
-+
- struct map_info uclinux_ram_map = {
- 	.name = "RAM",
-+	.phys = (unsigned long)&_ebss,
-+	.size = 0,
+-struct mtd_partition uclinux_romfs[] = {
++static struct mtd_partition uclinux_romfs[] = {
+ 	{ .name = "ROMfs" }
  };
  
- struct mtd_info *uclinux_ram_mtdinfo;
-@@ -55,12 +59,10 @@ static int __init uclinux_mtd_init(void)
+@@ -42,7 +42,7 @@ struct mtd_partition uclinux_romfs[] = {
+ 
+ /****************************************************************************/
+ 
+-int uclinux_point(struct mtd_info *mtd, loff_t from, size_t len,
++static int uclinux_point(struct mtd_info *mtd, loff_t from, size_t len,
+ 	size_t *retlen, void **virt, resource_size_t *phys)
  {
- 	struct mtd_info *mtd;
- 	struct map_info *mapp;
--	extern char _ebss;
--	unsigned long addr = (unsigned long) &_ebss;
- 
- 	mapp = &uclinux_ram_map;
--	mapp->phys = addr;
--	mapp->size = PAGE_ALIGN(ntohl(*((unsigned long *)(addr + 8))));
-+	if (!mapp->size)
-+		mapp->size = PAGE_ALIGN(ntohl(*((unsigned long *)(mapp->phys + 8))));
- 	mapp->bankwidth = 4;
- 
- 	printk("uclinux[mtd]: RAM probe address=0x%x size=0x%x\n",
+ 	struct map_info *map = mtd->priv;
 -- 
 1.6.3.1
 
