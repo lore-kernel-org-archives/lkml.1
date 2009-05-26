@@ -1,309 +1,221 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757959AbZEZTh1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756320AbZEZTin@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757959AbZEZTh1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 15:37:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757037AbZEZThO
+	id S1756320AbZEZTin (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 15:38:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753932AbZEZTig
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 15:37:14 -0400
-Received: from hera.kernel.org ([140.211.167.34]:47120 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757054AbZEZThM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 15:37:12 -0400
-Date: Tue, 26 May 2009 19:36:33 GMT
-From: tip-bot for Arnaldo Carvalho de Melo <acme@redhat.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, acme@redhat.com,
-       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
-       rostedt@goodmis.org, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, efault@gmx.de,
-       rostedt@goodmis.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20090526191904.GH4424@ghostprotocols.net>
-References: <20090526191904.GH4424@ghostprotocols.net>
-Subject: [tip:perfcounters/core] perf report: Sort output by symbol usage
-Message-ID: <tip-3a4b8cc70b7473a0b9f26f5b4ddc6579b5e214be@git.kernel.org>
-Git-Commit-ID: 3a4b8cc70b7473a0b9f26f5b4ddc6579b5e214be
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 26 May 2009 19:36:35 +0000 (UTC)
+	Tue, 26 May 2009 15:38:36 -0400
+Received: from mail-fx0-f168.google.com ([209.85.220.168]:33158 "EHLO
+	mail-fx0-f168.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753339AbZEZTif (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 15:38:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=swJJRvzY8WJwC7I7l5M0/iRf/BI1aczrmMKiZGJsNHT10H8bmzwZC8n4Ev2epcCc6h
+         xL2cqhvdVlPpRgxmj/vR8eF/HbSEdF6m5Mcmez3IBmB3KBrafkvAuwTAE45KBDAM/l/e
+         OrMdJidQ+Lbfo7icy00Ad/wkRqnV+ozyWrMaI=
+From: Philipp Zabel <philipp.zabel@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Robert Jarzmik <robert.jarzmik@free.fr>,
+       Liam Girdwood <lrg@slimlogic.co.uk>,
+       Mark Brown <mark.brown@wolfsonmicro.com>,
+       Philipp Zabel <philipp.zabel@gmail.com>
+Subject: [PATCH] regulator/max1586: support increased V3 voltage range
+Date: Tue, 26 May 2009 21:39:08 +0200
+Message-Id: <1243366748-8428-1-git-send-email-philipp.zabel@gmail.com>
+X-Mailer: git-send-email 1.6.3.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  3a4b8cc70b7473a0b9f26f5b4ddc6579b5e214be
-Gitweb:     http://git.kernel.org/tip/3a4b8cc70b7473a0b9f26f5b4ddc6579b5e214be
-Author:     Arnaldo Carvalho de Melo <acme@redhat.com>
-AuthorDate: Tue, 26 May 2009 16:19:04 -0300
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 26 May 2009 21:26:30 +0200
+The V3 regulator can be configured with an external resistor
+connected to the feedback pin (R24 in the data sheet) to
+increase the voltage range.
 
-perf report: Sort output by symbol usage
+For example, hx4700 has R24 = 3.32 kOhm to achieve a maximum
+V3 voltage of 1.55 V which is needed for 624 MHz CPU frequency.
 
-[acme@emilia ~]$ perf record find / > /dev/null 2>&1
-[acme@emilia ~]$ perf stat perf report | head -20
- 4.95          find [k] 0xffffffff81393d65 _spin_lock
- 3.89          find [.] 0x000000000000af89 /usr/bin/find: <unknown>
- 2.19          find [k] 0xffffffffa00518e0 ext3fs_dirhash
- 1.87          find [k] 0xffffffff810a6cea __rcu_read_lock
- 1.86          find [k] 0xffffffff811c7312 _atomic_dec_and_lock
- 1.86          find [.] 0x00000000000782ab /lib64/libc-2.5.so: __GI_strlen
- 1.85          find [k] 0xffffffff810fedfb __kmalloc
- 1.62          find [.] 0x00000000000430ff /lib64/libc-2.5.so: vfprintf
- 1.59          find [k] 0xffffffff810a6d6d __rcu_read_unlock
- 1.55          find [k] 0xffffffff81119395 __d_lookup
- 1.39          find [.] 0x0000000000071b40 /lib64/libc-2.5.so: _int_malloc
- 1.30          find [k] 0xffffffffa031c4fc nfs_do_filldir
- 1.21          find [k] 0xffffffff811876a5 avc_has_perm_noaudit
- 1.15          find [k] 0xffffffff810fef62 kmem_cache_alloc
- 1.07          find [k] 0xffffffff811d03fb copy_user_generic_string
- 1.03          find [k] 0xffffffffa0043882 ext3_htree_store_dirent
- 0.99          find [k] 0xffffffff81393ebb _spin_lock_bh
- 0.98          find [k] 0xffffffffa03319a2 nfs3_decode_dirent
- 0.97          find [k] 0xffffffff8100bf20 system_call
- 0.92          find [k] 0xffffffff8139437e _spin_unlock
-
- Performance counter stats for 'perf':
-
-     244.278972  task clock ticks     (msecs)
-              8  context switches     (events)
-              9  CPU migrations       (events)
-           2104  pagefaults           (events)
-       35329669  CPU cycles           (events)  (scaled from 75.40%)
-       13740366  instructions         (events)  (scaled from 75.49%)
-          59073  cache references     (events)  (scaled from 24.60%)
-            196  cache misses         (events)  (scaled from 24.51%)
-
- Wall-clock time elapsed:   246.060717 msecs
-
-[acme@emilia ~]$
-[acme@emilia ~]$ grep "model name" /proc/cpuinfo | head -1
-model name	: Intel(R) Xeon(R) CPU           E5405  @ 2.00GHz
-[acme@emilia ~]$ grep "model name" /proc/cpuinfo | wc -l
-8
-[acme@emilia ~]$
-
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <20090526191904.GH4424@ghostprotocols.net>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
+Signed-off-by: Philipp Zabel <philipp.zabel@gmail.com>
 ---
- Documentation/perf_counter/builtin-report.c |  129 ++++++++++++++++++++------
- 1 files changed, 99 insertions(+), 30 deletions(-)
+ drivers/regulator/max1586.c       |   75 ++++++++++++++++++++++++++++---------
+ include/linux/regulator/max1586.h |    7 +++
+ 2 files changed, 64 insertions(+), 18 deletions(-)
 
-diff --git a/Documentation/perf_counter/builtin-report.c b/Documentation/perf_counter/builtin-report.c
-index a58be7f..a4c6ffa 100644
---- a/Documentation/perf_counter/builtin-report.c
-+++ b/Documentation/perf_counter/builtin-report.c
-@@ -447,26 +447,33 @@ static size_t map__fprintf(struct map *self, FILE *fp)
- 		       self->start, self->end, self->pgoff, self->dso->name);
+diff --git a/drivers/regulator/max1586.c b/drivers/regulator/max1586.c
+index bbbb55f..db11099 100644
+--- a/drivers/regulator/max1586.c
++++ b/drivers/regulator/max1586.c
+@@ -27,43 +27,56 @@
+ #define MAX1586_V3_MAX_VSEL 31
+ #define MAX1586_V6_MAX_VSEL 3
+ 
+-#define MAX1586_V3_MIN_UV   700000
+-#define MAX1586_V3_MAX_UV  1475000
+-#define MAX1586_V3_STEP_UV   25000
+-
+ #define MAX1586_V6_MIN_UV        0
+ #define MAX1586_V6_MAX_UV  3000000
+ 
+ #define I2C_V3_SELECT (0 << 5)
+ #define I2C_V6_SELECT (1 << 5)
+ 
++struct max1586_data {
++	struct i2c_client *client;
++
++	/* min/max V3 voltage */
++	int min_uV;
++	int max_uV;
++};
++
+ /*
+  * V3 voltage
+  * On I2C bus, sending a "x" byte to the max1586 means :
+- *   set V3 to 0.700V + (x & 0x1f) * 0.025V
++ *   set V3 to 0.700V + (x & 0x1f) * 0.025V,
++ *   set V3 to 0.730V + (x & 0x1f) * 0.026V,
++ *   set V3 to 0.750V + (x & 0x1f) * 0.027V or
++ *   set V3 to 0.780V + (x & 0x1f) * 0.028V
++ * depending on the external resistance R24.
+  */
+-static int max1586_v3_calc_voltage(unsigned selector)
++static int max1586_v3_calc_voltage(struct max1586_data *max1586,
++	unsigned selector)
+ {
+-	return MAX1586_V3_MIN_UV + (MAX1586_V3_STEP_UV * selector);
++	unsigned range_uV = max1586->max_uV - max1586->min_uV;
++
++	return max1586->min_uV + (selector * range_uV / 31);
  }
  
-+struct thread;
-+
-+static const char *thread__name(struct thread *self, char *bf, size_t size);
-+
- struct symhist {
- 	struct rb_node	 rb_node;
- 	struct dso	 *dso;
- 	struct symbol	 *sym;
-+	struct thread	 *thread;
- 	uint64_t	 ip;
- 	uint32_t	 count;
- 	char		 level;
- };
- 
- static struct symhist *symhist__new(struct symbol *sym, uint64_t ip,
--				    struct dso *dso, char level)
-+				    struct thread *thread, struct dso *dso,
-+				    char level)
+ static int max1586_v3_set(struct regulator_dev *rdev, int min_uV, int max_uV)
  {
- 	struct symhist *self = malloc(sizeof(*self));
+-	struct i2c_client *client = rdev_get_drvdata(rdev);
++	struct max1586_data *max1586 = rdev_get_drvdata(rdev);
++	struct i2c_client *client = max1586->client;
++	unsigned range_uV = max1586->max_uV - max1586->min_uV;
+ 	unsigned selector;
+ 	u8 v3_prog;
  
- 	if (self != NULL) {
--		self->sym   = sym;
--		self->ip    = ip;
--		self->dso   = dso;
--		self->level = level;
--		self->count = 1;
-+		self->sym    = sym;
-+		self->thread = thread;
-+		self->ip     = ip;
-+		self->dso    = dso;
-+		self->level  = level;
-+		self->count  = 1;
- 	}
+-	if (min_uV < MAX1586_V3_MIN_UV || min_uV > MAX1586_V3_MAX_UV)
+-		return -EINVAL;
+-	if (max_uV < MAX1586_V3_MIN_UV || max_uV > MAX1586_V3_MAX_UV)
++	if (min_uV > max1586->max_uV || max_uV < max1586->min_uV)
+ 		return -EINVAL;
++	if (min_uV < max1586->min_uV)
++		min_uV = max1586->min_uV;
  
- 	return self;
-@@ -482,17 +489,29 @@ static void symhist__inc(struct symhist *self)
- 	++self->count;
+-	selector = (min_uV - MAX1586_V3_MIN_UV) / MAX1586_V3_STEP_UV;
+-	if (max1586_v3_calc_voltage(selector) > max_uV)
++	selector = (min_uV - max1586->min_uV) * 31 / range_uV;
++	if (max1586_v3_calc_voltage(max1586, selector) > max_uV)
+ 		return -EINVAL;
+ 
+ 	dev_dbg(&client->dev, "changing voltage v3 to %dmv\n",
+-		max1586_v3_calc_voltage(selector) / 1000);
++		max1586_v3_calc_voltage(max1586, selector) / 1000);
+ 
+ 	v3_prog = I2C_V3_SELECT | (u8) selector;
+ 	return i2c_smbus_write_byte(client, v3_prog);
+@@ -71,9 +84,11 @@ static int max1586_v3_set(struct regulator_dev *rdev, int min_uV, int max_uV)
+ 
+ static int max1586_v3_list(struct regulator_dev *rdev, unsigned selector)
+ {
++	struct max1586_data *max1586 = rdev_get_drvdata(rdev);
++
+ 	if (selector > MAX1586_V3_MAX_VSEL)
+ 		return -EINVAL;
+-	return max1586_v3_calc_voltage(selector);
++	return max1586_v3_calc_voltage(max1586, selector);
  }
  
--static size_t symhist__fprintf(struct symhist *self, FILE *fp)
-+static size_t
-+symhist__fprintf(struct symhist *self, uint64_t total_samples, FILE *fp)
+ /*
+@@ -164,12 +179,33 @@ static int max1586_pmic_probe(struct i2c_client *client,
  {
--	size_t ret = fprintf(fp, "%#llx [%c] ", (unsigned long long)self->ip, self->level);
-+	char bf[32];
-+	size_t ret;
+ 	struct regulator_dev **rdev;
+ 	struct max1586_platform_data *pdata = client->dev.platform_data;
+-	int i, id, ret = 0;
++	struct max1586_data *max1586;
++	int i, id, ret = -ENOMEM;
+ 
+ 	rdev = kzalloc(sizeof(struct regulator_dev *) * (MAX1586_V6 + 1),
+ 		       GFP_KERNEL);
+ 	if (!rdev)
+-		return -ENOMEM;
++		goto out;
 +
-+	if (total_samples)
-+		ret = fprintf(fp, "%5.2f", (self->count * 100.0) / total_samples);
-+	else
-+		ret = fprintf(fp, "%12d", self->count);
++	max1586 = kzalloc(sizeof(struct max1586_data *), GFP_KERNEL);
++	if (!max1586)
++		goto out_unmap;
 +
-+	ret += fprintf(fp, "%14s [%c] %#018llx ",
-+		       thread__name(self->thread, bf, sizeof(bf)),
-+		       self->level, (unsigned long long)self->ip);
++	max1586->client = client;
++	switch (pdata->r24) {
++	case MAX1586_R24_3k32:
++		max1586->min_uV = 730000;
++		max1586->max_uV = 1550000;
++		break;
++	case MAX1586_R24_5k11:
++		max1586->min_uV = 750000;
++		max1586->max_uV = 1600000;
++		break;
++	case MAX1586_R24_7k5:
++		max1586->min_uV = 780000;
++		max1586->max_uV = 1650000;
++		break;
++	}
  
- 	if (self->level != '.')
--		ret += fprintf(fp, "%s", self->sym ? self->sym->name: "<unknown>");
-+		ret += fprintf(fp, "%s\n",
-+			       self->sym ? self->sym->name : "<unknown>");
- 	else
--		ret += fprintf(fp, "%s: %s",
-+		ret += fprintf(fp, "%s: %s\n",
- 			       self->dso ? self->dso->name : "<unknown>",
- 			       self->sym ? self->sym->name : "<unknown>");
--	return ret + fprintf(fp, ": %u\n", self->count);
-+	return ret;
- }
- 
- struct thread {
-@@ -503,6 +522,15 @@ struct thread {
- 	char		 *comm;
- };
- 
-+static const char *thread__name(struct thread *self, char *bf, size_t size)
-+{
-+	if (self->comm)
-+		return self->comm;
-+
-+	snprintf(bf, sizeof(bf), ":%u", self->pid);
-+	return bf;
-+}
-+
- static struct thread *thread__new(pid_t pid)
- {
- 	struct thread *self = malloc(sizeof(*self));
-@@ -542,7 +570,7 @@ static int thread__symbol_incnew(struct thread *self, struct symbol *sym,
- 			p = &(*p)->rb_right;
- 	}
- 
--	sh = symhist__new(sym, ip, dso, level);
-+	sh = symhist__new(sym, ip, self, dso, level);
- 	if (sh == NULL)
- 		return -ENOMEM;
- 	rb_link_node(&sh->rb_node, parent, p);
-@@ -574,7 +602,7 @@ static size_t thread__fprintf(struct thread *self, FILE *fp)
- 
- 	for (nd = rb_first(&self->symhists); nd; nd = rb_next(nd)) {
- 		struct symhist *pos = rb_entry(nd, struct symhist, rb_node);
--		ret += symhist__fprintf(pos, fp);
-+		ret += symhist__fprintf(pos, 0, fp);
- 	}
- 
+ 	ret = -EINVAL;
+ 	for (i = 0; i < pdata->num_subdevs && i <= MAX1586_V6; i++) {
+@@ -182,7 +218,7 @@ static int max1586_pmic_probe(struct i2c_client *client,
+ 		}
+ 		rdev[i] = regulator_register(&max1586_reg[id], &client->dev,
+ 					     pdata->subdevs[i].platform_data,
+-					     client);
++					     max1586);
+ 		if (IS_ERR(rdev[i])) {
+ 			ret = PTR_ERR(rdev[i]);
+ 			dev_err(&client->dev, "failed to register %s\n",
+@@ -198,7 +234,10 @@ static int max1586_pmic_probe(struct i2c_client *client,
+ err:
+ 	while (--i >= 0)
+ 		regulator_unregister(rdev[i]);
++	kfree(max1586);
++out_unmap:
+ 	kfree(rdev);
++out:
  	return ret;
-@@ -628,7 +656,7 @@ static struct map *thread__find_map(struct thread *self, uint64_t ip)
- 	return NULL;
  }
  
--static void threads__fprintf(FILE *fp)
-+void threads__fprintf(FILE *fp)
- {
- 	struct rb_node *nd;
- 	for (nd = rb_first(&threads); nd; nd = rb_next(nd)) {
-@@ -637,6 +665,61 @@ static void threads__fprintf(FILE *fp)
- 	}
- }
+diff --git a/include/linux/regulator/max1586.h b/include/linux/regulator/max1586.h
+index 2056973..cdf2010 100644
+--- a/include/linux/regulator/max1586.h
++++ b/include/linux/regulator/max1586.h
+@@ -26,6 +26,10 @@
+ #define MAX1586_V3 0
+ #define MAX1586_V6 1
  
-+static struct rb_root global_symhists = RB_ROOT;
++#define MAX1586_R24_3k32 3320
++#define MAX1586_R24_5k11 5110
++#define MAX1586_R24_7k5  7500
 +
-+static void threads__insert_symhist(struct symhist *sh)
-+{
-+	struct rb_node **p = &global_symhists.rb_node;
-+	struct rb_node *parent = NULL;
-+	struct symhist *iter;
-+
-+	while (*p != NULL) {
-+		parent = *p;
-+		iter = rb_entry(parent, struct symhist, rb_node);
-+
-+		/* Reverse order */
-+		if (sh->count > iter->count)
-+			p = &(*p)->rb_left;
-+		else
-+			p = &(*p)->rb_right;
-+	}
-+
-+	rb_link_node(&sh->rb_node, parent, p);
-+	rb_insert_color(&sh->rb_node, &global_symhists);
-+}
-+
-+static void threads__sort_symhists(void)
-+{
-+	struct rb_node *nd;
-+
-+	for (nd = rb_first(&threads); nd; nd = rb_next(nd)) {
-+		struct thread *thread = rb_entry(nd, struct thread, rb_node);
-+		struct rb_node *next = rb_first(&thread->symhists);
-+
-+		while (next) {
-+			struct symhist *n = rb_entry(next, struct symhist,
-+						     rb_node);
-+			next = rb_next(&n->rb_node);
-+			rb_erase(&n->rb_node, &thread->symhists);
-+			threads__insert_symhist(n);
-+		}
-+
-+	}
-+}
-+
-+static size_t threads__symhists_fprintf(uint64_t total_samples, FILE *fp)
-+{
-+	struct rb_node *nd;
-+	size_t ret = 0;
-+
-+	for (nd = rb_first(&global_symhists); nd; nd = rb_next(nd)) {
-+		struct symhist *pos = rb_entry(nd, struct symhist, rb_node);
-+		ret += symhist__fprintf(pos, total_samples, fp);
-+	}
-+
-+	return ret;
-+}
-+
- static int __cmd_report(void)
- {
- 	unsigned long offset = 0;
-@@ -826,23 +909,9 @@ done:
- 		return 0;
- 	}
+ /**
+  * max1586_subdev_data - regulator data
+  * @id: regulator Id (either MAX1586_V3 or MAX1586_V6)
+@@ -43,10 +47,13 @@ struct max1586_subdev_data {
+  * @num_subdevs: number of regultors used (may be 1 or 2)
+  * @subdevs: regulator used
+  *           At most, there will be a regulator for V3 and one for V6 voltages.
++ * @r24: external regulator to increase V3 range
++ *       (0, MAX1586_R24_3k32, MAX1586_R24_5k11 or MAX1586_R24_7k5)
+  */
+ struct max1586_platform_data {
+ 	int num_subdevs;
+ 	struct max1586_subdev_data *subdevs;
++	int r24;
+ };
  
--	//dsos__fprintf(stdout);
--	threads__fprintf(stdout);
--#if 0
--	std::map<std::string, int>::iterator hi = hist.begin();
--
--	while (hi != hist.end()) {
--		rev_hist.insert(std::pair<int, std::string>(hi->second, hi->first));
--		hist.erase(hi++);
--	}
--
--	std::multimap<int, std::string>::const_iterator ri = rev_hist.begin();
-+	threads__sort_symhists();
-+	threads__symhists_fprintf(total, stdout);
- 
--	while (ri != rev_hist.end()) {
--		printf(" %5.2f %s\n", (100.0 * ri->first)/total, ri->second.c_str());
--		ri++;
--	}
--#endif
- 	return rc;
- }
- 
+ #endif
+-- 
+1.6.3.1
+
