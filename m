@@ -1,66 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757550AbZEZVir@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758398AbZEZVjm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757550AbZEZVir (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 17:38:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754478AbZEZVik
+	id S1758398AbZEZVjm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 17:39:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755386AbZEZVja
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 17:38:40 -0400
-Received: from 69-30-77-85.dq1sn.easystreet.com ([69.30.77.85]:35393 "EHLO
-	kingsolver.anholt.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753726AbZEZVij (ORCPT
+	Tue, 26 May 2009 17:39:30 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:57314 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755253AbZEZVj3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 17:38:39 -0400
-Subject: Re: i915_gem_retire_requests oops on 2.6.30-rc7
-From: Eric Anholt <eric@anholt.net>
-To: Alex Bennee <kernel-hacker@bennee.com>
-Cc: lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <b2cdc9f30905260520m6d779cdof202dabe511ed49b@mail.gmail.com>
-References: <b2cdc9f30905260520m6d779cdof202dabe511ed49b@mail.gmail.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-A3Xg05cDiQB/h7RkrUsB"
-Date: Tue, 26 May 2009 14:38:34 -0700
-Message-Id: <1243373914.8400.29.camel@gaiman.anholt.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1.1 
+	Tue, 26 May 2009 17:39:29 -0400
+Date: Tue, 26 May 2009 17:39:29 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+cc: Kay Sievers <kay.sievers@vrfy.org>,
+       SCSI development list <linux-scsi@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Tejun Heo <tj@kernel.org>, Cornelia Huck <cornelia.huck@de.ibm.com>,
+       <linux-fsdevel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>
+Subject: Re: [PATCH 25/20] sysfs: Only support removing emtpy sysfs  directories.
+In-Reply-To: <1243372199.2815.77.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.44L0.0905261726300.11998-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 26 May 2009, James Bottomley wrote:
 
---=-A3Xg05cDiQB/h7RkrUsB
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> Um, well, you're right, it's wrong.  The reap needs to be matched with
+> the reap_ref++
 
-On Tue, 2009-05-26 at 13:20 +0100, Alex Bennee wrote:
-> Hi,
->=20
-> I've just had X crash on me with an attendant oops in the kernel as it di=
-d so:
+I was afraid of that.  Not understanding how the reap_ref counts are 
+supposed to work makes it hard to get them right...
 
-That's not an oops, that's a WARN_ON.  The hardware wasn't caught up by
-the time we gave up when shutting down the harwdare for VT switching.
-That's bad.  But we don't know how long we should wait, since the GPU
-may be hung, and waiting forever would be bad.  So we warn that
-Something Bad may have happened.
+> It's hard to follow the problem without full context, but if I
+> understand correctly the problem is you want all the target directories
+> removed before you call device_del() on the host and the thing that gets
+> in the way is the necessary user context removal of the host.
 
-It's gone with KMS since we never shut down the GPU.
+Removal of the _target_, not the host.  (Do targets ever get reaped
+from non-process context?  I didn't notice any places where that would
+happen.)
 
---=20
-Eric Anholt
-eric@anholt.net                         eric.anholt@intel.com
+That's part of the problem.  The other part is that the target isn't
+unregistered until all the sdevs have been released, which might not
+happen for a long time if the sdevs are pinned for any reason.
 
+That is, the target should be unregistered when all the sdevs are
+deleted, in __scsi_remove_device(), not when scsi_device_dev_release()  
+or scsi_device_dev_release_usercontext() runs.
 
+>  So a
+> simple solution, rather than mucking with the way it works, is to wait
+> for the workqueues to complete.  Does this fix it?
+> 
+> James
+> 
+> ---
+> 
+> diff --git a/drivers/scsi/scsi_scan.c b/drivers/scsi/scsi_scan.c
+> index c447838..5846c26 100644
+> --- a/drivers/scsi/scsi_scan.c
+> +++ b/drivers/scsi/scsi_scan.c
+> @@ -1877,6 +1877,12 @@ void scsi_forget_host(struct Scsi_Host *shost)
+>  		goto restart;
+>  	}
+>  	spin_unlock_irqrestore(shost->host_lock, flags);
+> +
+> +	/*
+> +	 * the sdev removal goes through a workqueue for user context, so
+> +	 * make sure it's all complete before we return
+> +	 */
+> +	flush_scheduled_work();
+>  }
+>  
+>  /*
 
---=-A3Xg05cDiQB/h7RkrUsB
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+This may well fix Kay's problem, but I think the other point needs to 
+be addressed also.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkocYVoACgkQHUdvYGzw6vfGXACfbibc2XEEJVZcL9rMLDIK4DEe
-QBgAn2XPLWegSqgy6+OvbY3OXyD9feMQ
-=8upE
------END PGP SIGNATURE-----
-
---=-A3Xg05cDiQB/h7RkrUsB--
+Alan Stern
 
