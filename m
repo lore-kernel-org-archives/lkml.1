@@ -1,72 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757083AbZEZUYB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757551AbZEZUYU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757083AbZEZUYB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 16:24:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754685AbZEZUXx
+	id S1757551AbZEZUYU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 16:24:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757985AbZEZUYG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 16:23:53 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:43607 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754317AbZEZUXw (ORCPT
+	Tue, 26 May 2009 16:24:06 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49762 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757964AbZEZUYF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 16:23:52 -0400
-Subject: Re: [PATCH] sched: Support current clocksource handling in
- fallback sched_clock().
-From: john stultz <johnstul@us.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Linus Walleij <linus.ml.walleij@gmail.com>,
-       Paul Mundt <lethal@linux-sh.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Victor <linux@maxim.org.za>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-sh@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       John Stultz <johnstul@linux.vnet.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <1243348681.23657.14.camel@twins>
-References: <20090526061532.GD9188@linux-sh.org>
-	 <63386a3d0905260731m655bfee3q82a6f52d71fa3cef@mail.gmail.com>
-	 <1243348681.23657.14.camel@twins>
-Content-Type: text/plain
-Date: Tue, 26 May 2009 13:23:43 -0700
-Message-Id: <1243369423.3275.5.camel@localhost>
+	Tue, 26 May 2009 16:24:05 -0400
+Date: Tue, 26 May 2009 13:23:51 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: sameo@linux.intel.com, holtmann@linux.intel.com, yi.zhu@intel.com,
+       linux-kernel@vger.kernel.org, linville@tuxdriver.com, greg@kroah.com
+Subject: Re: [PATCH] firmware: Allocate firmware id dynamically
+Message-Id: <20090526132351.9805f1e8.akpm@linux-foundation.org>
+In-Reply-To: <ac3eb2510905260711hb273541i8d69128b88933f7f@mail.gmail.com>
+References: <20090526140423.GA14683@sortiz.org>
+	<ac3eb2510905260711hb273541i8d69128b88933f7f@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-05-26 at 16:38 +0200, Peter Zijlstra wrote:
-> Added the generic clock and timer folks to CC.
+On Tue, 26 May 2009 16:11:35 +0200
+Kay Sievers <kay.sievers@vrfy.org> wrote:
+
+> On Tue, May 26, 2009 at 16:04, Samuel Ortiz <sameo@linux.intel.com> wrote:
 > 
-> On Tue, 2009-05-26 at 16:31 +0200, Linus Walleij wrote:
-> > 2009/5/26 Paul Mundt <lethal@linux-sh.org>:
-> > 
-> > >  */
-> > >  unsigned long long __attribute__((weak)) sched_clock(void)
-> > >  {
-> > > +       /*
-> > > +        * Use the current clocksource when it becomes available later in
-> > > +        * the boot process, and ensure that it has a high enough rating
-> > > +        * to make it suitable for general use.
-> > > +        */
-> > > +       if (clock && clock->rating >= 100)
-> > > +               return cyc2ns(clock, clocksource_read(clock));
+> > Since the firmware loader is not maintained by anyone, I'm sending this one to
+> > you, for the next merge window:
+> 
+> It's part of the driver-core directory, and handled by Greg.
 
-I'm not super familiar with the recent sched_clock changes, but how will
-this work if the clocksource wraps (ACPI PM wraps every 2-5 seconds).
+To which it doesn't apply.  It needed more fixes than I felt like making.
 
-Also there's no locking here, so the clocksource could change under you.
+> > The firmware loader has a statically allocated 30 bytes long string for the
+> > firmware id (a.k.a. the firmware file name). There is no reason why we couldnt
+> > allocate dynamically, and avoid having restrictions on the firmware names
+> > lengths.
+> 
+> Looks good.
+> 
+> > Please note that we have to keep the FIRMWARE_NAME_MAX definition around as
+> > some drivers rely on it.
+> 
+> I think the 6 files should be converted, and FIRMWARE_NAME_MAX
+> removed, otherwise people will keep copying that crap around.
+> 
+>   drivers/pcmcia/ds.c
+>   drivers/usb/atm/ueagle-atm.c
+>   drivers/net/wireless/libertas/if_usb.c
+>   drivers/net/wireless/libertas/if_spi.c
+>   drivers/media/dvb/dvb-usb/dvb-usb.h
+>   drivers/media/common/tuners/tuner-xc2028.c
 
-Further, checking for rating being greater then 100 really doesn't mean
-anything. Probably need to check if the clocksource is continuous
-instead.
-
-Overall, I'd probably suggest thinking this through a bit more. At some
-point doing this right will cause sched_clock() to be basically the same
-as ktime_get(). So why not just use that instead of remaking it?
-
-thanks
--john
-
+Yep.
 
