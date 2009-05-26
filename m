@@ -1,90 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758398AbZEZVjm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758571AbZEZVjy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758398AbZEZVjm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 17:39:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755386AbZEZVja
+	id S1758571AbZEZVjy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 17:39:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756543AbZEZVjd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 17:39:30 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:57314 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755253AbZEZVj3 (ORCPT
+	Tue, 26 May 2009 17:39:33 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:1785 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755065AbZEZVja (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 17:39:29 -0400
-Date: Tue, 26 May 2009 17:39:29 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-cc: Kay Sievers <kay.sievers@vrfy.org>,
-       SCSI development list <linux-scsi@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Tejun Heo <tj@kernel.org>, Cornelia Huck <cornelia.huck@de.ibm.com>,
-       <linux-fsdevel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@aristanetworks.com>
-Subject: Re: [PATCH 25/20] sysfs: Only support removing emtpy sysfs  directories.
-In-Reply-To: <1243372199.2815.77.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.44L0.0905261726300.11998-100000@iolanthe.rowland.org>
+	Tue, 26 May 2009 17:39:30 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=Vug2F3Xi8rpVZpp7gLgu8+gUav5IxTIl99T5daaFV5jqOa8SOvYIhdgKIUs0i6YdI
+	8z8ruFn4ppD1rhCeN0/2w==
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <20090526140408.6c829124.akpm@linux-foundation.org>
+References: <20090526195840.8464.36548.stgit@menage.mtv.corp.google.com>
+	 <20090526140408.6c829124.akpm@linux-foundation.org>
+Date: Tue, 26 May 2009 14:39:27 -0700
+Message-ID: <6599ad830905261439s63152c63s8b79f203600a2e5c@mail.gmail.com>
+Subject: Re: [PATCH] cls_cgroup: read classid atomically in classifier
+From: Paul Menage <menage@google.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: lizf@cn.fujitsu.com, davem@davemloft.net, tgraf@suug.ch,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 May 2009, James Bottomley wrote:
+On Tue, May 26, 2009 at 2:04 PM, Andrew Morton
+<akpm@linux-foundation.org> wrote:
+> On Tue, 26 May 2009 12:59:11 -0700
+> Paul Menage <menage@google.com> wrote:
+>
+>> Avoid reading the unsynchronized value cs->classid multiple times,
+>> since it could change concurrently from non-zero to zero; this would
+>> result in the classifier returning a positive result with a bogus
+>> (zero) classid.
+>
+> When this race occurs, what are the user-visible consequences?
 
-> Um, well, you're right, it's wrong.  The reap needs to be matched with
-> the reap_ref++
+My guess is very little - rather than returning -1 to indicate that
+there's no classid associated with the flow, we're returning a
+positive response that the classid is 0. I don't know the network
+scheduling code well enough to predict what effect that would have,
+but I'd guess it results in the subsequent classid->queue lookup
+failing and the packet being shunted down some default queue (unless
+the user happens to have set up a queue with id 0). But the race looks
+to be against the intent of the code, which is to return -1 if the
+classid is 0, or fill in the res struct if it's non-zero.
 
-I was afraid of that.  Not understanding how the reap_ref counts are 
-supposed to work makes it hard to get them right...
+>
+> People who need to decide to which kernels a patch should be applied
+> like to know such things.
+>
 
-> It's hard to follow the problem without full context, but if I
-> understand correctly the problem is you want all the target directories
-> removed before you call device_del() on the host and the thing that gets
-> in the way is the necessary user context removal of the host.
+I don't think this is a -stable candidate.
 
-Removal of the _target_, not the host.  (Do targets ever get reaped
-from non-process context?  I didn't notice any places where that would
-happen.)
-
-That's part of the problem.  The other part is that the target isn't
-unregistered until all the sdevs have been released, which might not
-happen for a long time if the sdevs are pinned for any reason.
-
-That is, the target should be unregistered when all the sdevs are
-deleted, in __scsi_remove_device(), not when scsi_device_dev_release()  
-or scsi_device_dev_release_usercontext() runs.
-
->  So a
-> simple solution, rather than mucking with the way it works, is to wait
-> for the workqueues to complete.  Does this fix it?
-> 
-> James
-> 
-> ---
-> 
-> diff --git a/drivers/scsi/scsi_scan.c b/drivers/scsi/scsi_scan.c
-> index c447838..5846c26 100644
-> --- a/drivers/scsi/scsi_scan.c
-> +++ b/drivers/scsi/scsi_scan.c
-> @@ -1877,6 +1877,12 @@ void scsi_forget_host(struct Scsi_Host *shost)
->  		goto restart;
->  	}
->  	spin_unlock_irqrestore(shost->host_lock, flags);
-> +
-> +	/*
-> +	 * the sdev removal goes through a workqueue for user context, so
-> +	 * make sure it's all complete before we return
-> +	 */
-> +	flush_scheduled_work();
->  }
->  
->  /*
-
-This may well fix Kay's problem, but I think the other point needs to 
-be addressed also.
-
-Alan Stern
-
+Paul
