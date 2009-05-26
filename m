@@ -1,56 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760946AbZEZXuj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760984AbZEZXvX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760946AbZEZXuj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 19:50:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759451AbZEZXub
+	id S1760984AbZEZXvX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 19:51:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759054AbZEZXvP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 19:50:31 -0400
-Received: from hera.kernel.org ([140.211.167.34]:39882 "EHLO hera.kernel.org"
+	Tue, 26 May 2009 19:51:15 -0400
+Received: from www.tglx.de ([62.245.132.106]:49486 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757841AbZEZXu3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 19:50:29 -0400
-Message-ID: <4A1C8091.4050909@kernel.org>
-Date: Wed, 27 May 2009 08:51:45 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1757840AbZEZXvO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 19:51:14 -0400
+Date: Wed, 27 May 2009 01:49:33 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Paul Mundt <lethal@linux-sh.org>
+cc: Peter Zijlstra <peterz@infradead.org>,
+       Linus Walleij <linus.ml.walleij@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Victor <linux@maxim.org.za>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-sh@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       John Stultz <johnstul@linux.vnet.ibm.com>
+Subject: Re: [PATCH] sched: Support current clocksource handling in fallback
+ sched_clock().
+In-Reply-To: <20090526230855.GA27218@linux-sh.org>
+Message-ID: <alpine.LFD.2.00.0905270140030.1762@localhost.localdomain>
+References: <20090526061532.GD9188@linux-sh.org> <63386a3d0905260731m655bfee3q82a6f52d71fa3cef@mail.gmail.com> <1243348681.23657.14.camel@twins> <alpine.LFD.2.00.0905262209160.1762@localhost.localdomain> <20090526230855.GA27218@linux-sh.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Robert Hancock <hancockrwd@gmail.com>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-pci@vger.kernel.org,
-       Greg KH <greg@kroah.com>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       towerlexa@gmx.de
-Subject: Re: Who's responsible for configuring CLS on a cardbus device?
-References: <4A1BE904.8080302@kernel.org> <20090526142300.73d466d0@lxorguk.ukuu.org.uk> <4A1C7EF9.2030000@gmail.com>
-In-Reply-To: <4A1C7EF9.2030000@gmail.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 26 May 2009 23:50:21 +0000 (UTC)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Wed, 27 May 2009, Paul Mundt wrote:
 
-Robert Hancock wrote:
-> Alan Cox wrote:
->> Currently its handled by pci_set_mwi() but there isn't actually a more
->> direct way to do this.
+> On Tue, May 26, 2009 at 10:17:02PM +0200, Thomas Gleixner wrote:
+> > On Tue, 26 May 2009, Peter Zijlstra wrote:
+> > > On Tue, 2009-05-26 at 16:31 +0200, Linus Walleij wrote:
+> > > > The definition of "rating" from the kerneldoc does not
+> > > > seem to imply that, it's a subjective measure AFAICT.
+> > 
+> >   Right, there is no rating threshold defined, which allows to deduce
+> >   that. The TSC on x86 which might be unreliable, but usable as
+> >   sched_clock has an initial rating of 300 which can be changed later
+> >   on to 0 when the TSC is unusable as a time of day source. In that
+> >   case clock is replaced by HPET which has a rating > 100 but is
+> >   definitely not a good choice for sched_clock
+> > 
+> > > > Else you might want an additional criteria, like
+> > > > cyc2ns(1) (much less than) jiffies_to_usecs(1)*1000
+> > > > (however you do that the best way)
+> > > > so you don't pick something
+> > > > that isn't substantially faster than the jiffy counter atleast?
+> > 
+> >   What we can do is add another flag to the clocksource e.g.
+> >   CLOCK_SOURCE_USE_FOR_SCHED_CLOCK and check this instead of the
+> >   rating.
+> > 
+> Ok, so based on this and John's locking concerns, how about something
+> like this? It doesn't handle the wrapping cases, but I wonder if we
+> really want to add that amount of logic to sched_clock() in the first
+> place. Clocksources that wrap frequently could either leave the flag
+> unset, or do something similar to the TSC code where the cyc2ns shift is
+> used. If this is something we want to handle generically, then I'll have
+> a go at generalizing the TSC cyc2ns scaling bits for the next spin.
 
-Thanks Alan.
+Gah. There is no locking issue. As Peter explained before the
+scheduler code can cope with some inaccurate value.
 
-> Yeah, I guess the assumption is that unless the device is using MWI it
-> doesn't care about cache line size. However, in the case of the sata_sil
-> controllers (and possibly other devices), the device cares about it for
-> other purposes (I think it's FIFO handling in this case).
-> 
-> Maybe we should just be setting the cache line size somewhere more
-> basic, like pci_set_master or something?
+The wrap issue is completly academic. If the current clock source has
+a wrap issue then it needs to be addressed anyway by frequent enough
+wakeups to assure correctness of timekeeping and that makes it
+suitable for the sched clock domain as well. Also the scheduler can
+not hit a value which has not gone through the irq_enter() based
+update after a long idle sleep.
 
-Hmmm... given that it is something which is usually handled by the
-system firmware, wouldn't it be more fitting to configure it from pci
-hotplug code?
+So changing your previous patch from
 
-Thanks.
+   if (clock && clock->rating > 100)
 
--- 
-tejun
+to
+
+   if (clock && (clock->flags & CLOCK_SOURCE_USE_FOR_SCHED_CLOCK))
+
+is sufficient.
+
+Thanks,
+
+	tglx
