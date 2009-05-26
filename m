@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759201AbZEZWYQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758826AbZEZWZK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759201AbZEZWYQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 18:24:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758290AbZEZWWh
+	id S1758826AbZEZWZK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 18:25:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758773AbZEZWWm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 18:22:37 -0400
-Received: from utopia.booyaka.com ([72.9.107.138]:33568 "EHLO
+	Tue, 26 May 2009 18:22:42 -0400
+Received: from utopia.booyaka.com ([72.9.107.138]:33615 "EHLO
 	utopia.booyaka.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758633AbZEZWW2 (ORCPT
+	with ESMTP id S1758722AbZEZWWh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 18:22:28 -0400
-MBOX-Line: From nobody Tue May 26 16:12:33 2009
+	Tue, 26 May 2009 18:22:37 -0400
+MBOX-Line: From nobody Tue May 26 16:12:37 2009
 From: Paul Walmsley <paul@pwsan.com>
-Subject: [PATCH 06/10] OMAP3 SRAM: convert SRAM code to use macros rather than
-	magic numbers
+Subject: [PATCH 10/10] OMAP2 clock/powerdomain: off by 1 error in loop timeout
+	comparisons
 To: linux-arm-kernel@lists.arm.linux.org.uk
 Cc: linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org,
-       Paul Walmsley <paul@pwsan.com>
-Date: Tue, 26 May 2009 16:12:33 -0600
-Message-ID: <20090526221232.25381.78536.stgit@localhost.localdomain>
+       Roel Kluin <roel.kluin@gmail.com>, Paul Walmsley <paul@pwsan.com>
+Date: Tue, 26 May 2009 16:12:37 -0600
+Message-ID: <20090526221236.25381.46396.stgit@localhost.localdomain>
 In-Reply-To: <20090526220517.25381.75976.stgit@localhost.localdomain>
 References: <20090526220517.25381.75976.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.3.222.gddca
@@ -29,146 +29,43 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Convert omap3_sram_configure_core_dpll() to use macros rather than
-magic numbers.
+From: Roel Kluin <roel.kluin@gmail.com>
 
+with while (i++ < MAX_CLOCK_ENABLE_WAIT); i can reach MAX_CLOCK_ENABLE_WAIT + 1
+after the loop, so if (i == MAX_CLOCK_ENABLE_WAIT) that's still success.
+
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
 Signed-off-by: Paul Walmsley <paul@pwsan.com>
 ---
- arch/arm/mach-omap2/sram34xx.S |   53 +++++++++++++++++++++++++++++-----------
- 1 files changed, 38 insertions(+), 15 deletions(-)
+ arch/arm/mach-omap2/clock.c       |    2 +-
+ arch/arm/mach-omap2/powerdomain.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/arm/mach-omap2/sram34xx.S b/arch/arm/mach-omap2/sram34xx.S
-index 37a1e1f..16eb4ef 100644
---- a/arch/arm/mach-omap2/sram34xx.S
-+++ b/arch/arm/mach-omap2/sram34xx.S
-@@ -36,6 +36,29 @@
+diff --git a/arch/arm/mach-omap2/clock.c b/arch/arm/mach-omap2/clock.c
+index 076f0a7..3c70c33 100644
+--- a/arch/arm/mach-omap2/clock.c
++++ b/arch/arm/mach-omap2/clock.c
+@@ -302,7 +302,7 @@ int omap2_wait_clock_ready(void __iomem *reg, u32 mask, const char *name)
+ 		udelay(1);
+ 	}
  
- 	.text
+-	if (i < MAX_CLOCK_ENABLE_WAIT)
++	if (i <= MAX_CLOCK_ENABLE_WAIT)
+ 		pr_debug("Clock %s stable after %d loops\n", name, i);
+ 	else
+ 		printk(KERN_ERR "Clock %s didn't enable in %d tries\n",
+diff --git a/arch/arm/mach-omap2/powerdomain.c b/arch/arm/mach-omap2/powerdomain.c
+index 73e2971..983f1cb 100644
+--- a/arch/arm/mach-omap2/powerdomain.c
++++ b/arch/arm/mach-omap2/powerdomain.c
+@@ -1099,7 +1099,7 @@ int pwrdm_wait_transition(struct powerdomain *pwrdm)
+ 	       (c++ < PWRDM_TRANSITION_BAILOUT))
+ 		udelay(1);
  
-+/* r4 parameters */
-+#define SDRC_NO_UNLOCK_DLL		0x0
-+#define SDRC_UNLOCK_DLL			0x1
-+
-+/* SDRC_DLLA_CTRL bit settings */
-+#define DLLIDLE_MASK			0x4
-+
-+/* SDRC_DLLA_STATUS bit settings */
-+#define LOCKSTATUS_MASK			0x4
-+
-+/* SDRC_POWER bit settings */
-+#define SRFRONIDLEREQ_MASK		0x40
-+#define PWDENA_MASK			0x4
-+
-+/* CM_IDLEST1_CORE bit settings */
-+#define ST_SDRC_MASK			0x2
-+
-+/* CM_ICLKEN1_CORE bit settings */
-+#define EN_SDRC_MASK			0x2
-+
-+/* CM_CLKSEL1_PLL bit settings */
-+#define CORE_DPLL_CLKOUT_DIV_SHIFT	0x1b
-+
- /*
-  * omap3_sram_configure_core_dpll - change DPLL3 M2 divider
-  * r0 = new SDRC_RFR_CTRL register contents
-@@ -57,13 +80,13 @@ ENTRY(omap3_sram_configure_core_dpll)
- 	dsb				@ flush buffered writes to interconnect
- 	cmp	r3, #0x2		@ if increasing SDRC clk rate,
- 	blne	configure_sdrc		@ program the SDRC regs early (for RFR)
--	cmp	r4, #0x1		@ set the intended DLL state
-+	cmp	r4, #SDRC_UNLOCK_DLL	@ set the intended DLL state
- 	bleq	unlock_dll
- 	blne	lock_dll
- 	bl	sdram_in_selfrefresh	@ put SDRAM in self refresh, idle SDRC
- 	bl 	configure_core_dpll	@ change the DPLL3 M2 divider
- 	bl	enable_sdrc		@ take SDRC out of idle
--	cmp	r4, #0x1		@ wait for DLL status to change
-+	cmp	r4, #SDRC_UNLOCK_DLL	@ wait for DLL status to change
- 	bleq	wait_dll_unlock
- 	blne	wait_dll_lock
- 	cmp	r3, #0x1		@ if increasing SDRC clk rate,
-@@ -78,33 +101,33 @@ return_to_sdram:
- unlock_dll:
- 	ldr	r11, omap3_sdrc_dlla_ctrl
- 	ldr	r12, [r11]
--	orr	r12, r12, #0x4
-+	orr	r12, r12, #DLLIDLE_MASK
- 	str	r12, [r11]		@ (no OCP barrier needed)
- 	bx	lr
- lock_dll:
- 	ldr	r11, omap3_sdrc_dlla_ctrl
- 	ldr	r12, [r11]
--	bic	r12, r12, #0x4
-+	bic	r12, r12, #DLLIDLE_MASK
- 	str	r12, [r11]		@ (no OCP barrier needed)
- 	bx	lr
- sdram_in_selfrefresh:
- 	ldr	r11, omap3_sdrc_power	@ read the SDRC_POWER register
- 	ldr	r12, [r11]		@ read the contents of SDRC_POWER
- 	mov	r9, r12			@ keep a copy of SDRC_POWER bits
--	orr 	r12, r12, #0x40		@ enable self refresh on idle req
--	bic 	r12, r12, #0x4		@ clear PWDENA
-+	orr 	r12, r12, #SRFRONIDLEREQ_MASK	@ enable self refresh on idle
-+	bic 	r12, r12, #PWDENA_MASK	@ clear PWDENA
- 	str 	r12, [r11]		@ write back to SDRC_POWER register
- 	ldr	r12, [r11]		@ posted-write barrier for SDRC
- idle_sdrc:
- 	ldr	r11, omap3_cm_iclken1_core	@ read the CM_ICLKEN1_CORE reg
- 	ldr	r12, [r11]
--	bic	r12, r12, #0x2		@ disable iclk bit for SDRC
-+	bic	r12, r12, #EN_SDRC_MASK		@ disable iclk bit for SDRC
- 	str 	r12, [r11]
- wait_sdrc_idle:
- 	ldr 	r11, omap3_cm_idlest1_core
- 	ldr 	r12, [r11]
--	and 	r12, r12, #0x2		@ check for SDRC idle
--	cmp 	r12, #2
-+	and 	r12, r12, #ST_SDRC_MASK		@ check for SDRC idle
-+	cmp 	r12, #ST_SDRC_MASK
- 	bne 	wait_sdrc_idle
- 	bx 	lr
- configure_core_dpll:
-@@ -112,7 +135,7 @@ configure_core_dpll:
- 	ldr	r12, [r11]
- 	ldr	r10, core_m2_mask_val	@ modify m2 for core dpll
- 	and	r12, r12, r10
--	orr	r12, r12, r3, lsl #0x1B	@ r3 contains the M2 val
-+	orr	r12, r12, r3, lsl #CORE_DPLL_CLKOUT_DIV_SHIFT
- 	str	r12, [r11]
- 	ldr	r12, [r11]		@ posted-write barrier for CM
- 	bx	lr
-@@ -123,12 +146,12 @@ wait_clk_stable:
- enable_sdrc:
- 	ldr 	r11, omap3_cm_iclken1_core
- 	ldr	r12, [r11]
--	orr 	r12, r12, #0x2		@ enable iclk bit for SDRC
-+	orr 	r12, r12, #EN_SDRC_MASK		@ enable iclk bit for SDRC
- 	str 	r12, [r11]
- wait_sdrc_idle1:
- 	ldr 	r11, omap3_cm_idlest1_core
- 	ldr	r12, [r11]
--	and 	r12, r12, #0x2
-+	and 	r12, r12, #ST_SDRC_MASK
- 	cmp	r12, #0
- 	bne	wait_sdrc_idle1
- restore_sdrc_power_val:
-@@ -138,14 +161,14 @@ restore_sdrc_power_val:
- wait_dll_lock:
- 	ldr	r11, omap3_sdrc_dlla_status
- 	ldr	r12, [r11]
--	and 	r12, r12, #0x4
--	cmp	r12, #0x4
-+	and 	r12, r12, #LOCKSTATUS_MASK
-+	cmp	r12, #LOCKSTATUS_MASK
- 	bne	wait_dll_lock
- 	bx	lr
- wait_dll_unlock:
- 	ldr	r11, omap3_sdrc_dlla_status
- 	ldr	r12, [r11]
--	and	r12, r12, #0x4
-+	and	r12, r12, #LOCKSTATUS_MASK
- 	cmp	r12, #0x0
- 	bne	wait_dll_unlock
- 	bx	lr
+-	if (c >= PWRDM_TRANSITION_BAILOUT) {
++	if (c > PWRDM_TRANSITION_BAILOUT) {
+ 		printk(KERN_ERR "powerdomain: waited too long for "
+ 		       "powerdomain %s to complete transition\n", pwrdm->name);
+ 		return -EAGAIN;
 
 
