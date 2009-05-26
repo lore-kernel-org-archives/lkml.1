@@ -1,40 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756863AbZEZQxp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756023AbZEZQyS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756863AbZEZQxp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 12:53:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755204AbZEZQxh
+	id S1756023AbZEZQyS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 12:54:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755204AbZEZQyD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 12:53:37 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:45304 "EHLO mx2.redhat.com"
+	Tue, 26 May 2009 12:54:03 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:45320 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755175AbZEZQxh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 12:53:37 -0400
-Date: Tue, 26 May 2009 19:52:40 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Kay Sievers <kay.sievers@vrfy.org>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>
-Subject: Re: 2.a.30-rc7: fat filesystem misdetected as amiga
-Message-ID: <20090526165240.GE9842@redhat.com>
-References: <20090526160343.GA9842@redhat.com> <Pine.LNX.4.44L0.0905261248430.9278-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0905261248430.9278-100000@iolanthe.rowland.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1753712AbZEZQyC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 12:54:02 -0400
+Subject: Introducing SELinux sandbox, confining untrusted binaries
+From: Eric Paris <eparis@redhat.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Date: Tue, 26 May 2009 12:54:03 -0400
+Message-Id: <1243356843.2800.23.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 26, 2009 at 12:51:35PM -0400, Alan Stern wrote:
-> It looks exactly the same as this (this was taken from 
-> 2.6.30-rc6).  Look starting at line 844 of drivers/scsi/scsi_lib.c.
-> 
-> Alan Stern
+Dan and I (mostly Dan) have started to play with using SELinux to
+confine random untrusted binaries.  The program is called 'sandbox.'
 
-Yep, sorry.
+http://danwalsh.livejournal.com/28545.html
 
--- 
-MST
+The idea is to allow administrators to lock down tightly untrusted
+applications in a sandbox where they can not use the network and
+open/create any file that is not handed to the process.  Can be used to
+protect a system while allowing it to run some untrusted binary.
+
+A quick dirty example of this sandbox would be to confine the 'cut'
+binary.  If I wanted to create a file of users on my system from
+the /etc/passwd file, I could try
+
+> sandbox cut -d: -f1 /etc/passwd > /tmp/users
+/bin/cut: /etc/passwd: Permission denied
+
+Which shows the sandbox domain is not allowed to open /etc/passwd
+
+But I can execute
+> cat /etc/passwd | sandbox cut -d: -f1 > /tmp/users
+
+And it works just fine.
+
+Inside the sandbox cut wasn't allowed to get to /etc/passwd.  But in the
+second example since /etc/passwd was opened by the shell and handed to
+cut inside the sandbox it works.
+
+I'd love to hear feedback, suggestions, problems, enhancements,
+thoughts, complaints, things of that nature!
+
+Check it out, SELinux confinement made easy.
+
+-Eric
+
