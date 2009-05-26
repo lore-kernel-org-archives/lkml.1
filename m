@@ -1,84 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757707AbZEZVXs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756434AbZEZV0j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757707AbZEZVXs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 17:23:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754938AbZEZVXj
+	id S1756434AbZEZV0j (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 17:26:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752666AbZEZV0d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 17:23:39 -0400
-Received: from bedivere.hansenpartnership.com ([66.63.167.143]:40374 "EHLO
-	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754553AbZEZVXi (ORCPT
+	Tue, 26 May 2009 17:26:33 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:56031 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751044AbZEZV0c convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 17:23:38 -0400
-Subject: Re: Bug in SCSI async probing
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Arjan van de Ven <arjan@linux.intel.com>,
-       SCSI development list <linux-scsi@vger.kernel.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44L0.0905261658430.11998-100000@iolanthe.rowland.org>
-References: <Pine.LNX.4.44L0.0905261658430.11998-100000@iolanthe.rowland.org>
-Content-Type: text/plain
-Date: Tue, 26 May 2009 21:23:39 +0000
-Message-Id: <1243373019.2815.83.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Tue, 26 May 2009 17:26:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=AQnGrVNV1oUmlI7ZMp8AolPK+VseK6y36tNJh3dM5kVVspcZPHo8lVyNplTyo9ASQX
+         ud0L17vg7ECH8WlFLyPw7b+/K3xObXjMfSMs7WmWK2HHiV15Tw0fD+gdDlyMa7ZfxSZn
+         V5wSOWcJCeohZQ4N2j/wDhu9Zy1NwShAttOoo=
+MIME-Version: 1.0
+In-Reply-To: <20090526204302.GB4951@sirena.org.uk>
+References: <1243366748-8428-1-git-send-email-philipp.zabel@gmail.com>
+	 <20090526204302.GB4951@sirena.org.uk>
+Date: Tue, 26 May 2009 23:26:32 +0200
+Message-ID: <74d0deb30905261426w7739c394ge3246c80890f1de6@mail.gmail.com>
+Subject: Re: [PATCH] regulator/max1586: support increased V3 voltage range
+From: pHilipp Zabel <philipp.zabel@gmail.com>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: linux-kernel@vger.kernel.org, Robert Jarzmik <robert.jarzmik@free.fr>,
+       Liam Girdwood <lrg@slimlogic.co.uk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-05-26 at 17:04 -0400, Alan Stern wrote:
-> On Tue, 26 May 2009, James Bottomley wrote:
-> 
-> > > > > (Which reminds me...  Are the calls in wait_scan_init() really enough?  
-> > > > > wait_for_device_probe() does async_synchronize_full() and then
-> > > > > scsi_complete_async_scans() finishes the SCSI scanning.  But if this
-> > > > > scanning involves calling sd_probe(), then more async work will be
-> > > > > queued.  Maybe a second call to wait_for_device_probe() is needed.)
-> > > 
-> > > You didn't respond to this point.
-> > 
-> > Well this was the response:
-> > 
-> > > > None of this really got reviewed through the SCSI list, so I'll let
-> > > > Arjan answer.
-> 
-> Whoops, for some reason I had gotten the idea that you wrote 
-> wait_scan_init().
-> 
-> > > Well then, how does this patch look?
-> > 
-> > Well, it's adding complexity, the best fix is to let async only take
-> > care of the pieces which can't fail, that way we don't need complex
-> > error handling.  The piece that slows probing isn't really the sysfs
-> > appearances, it's the SCSI probing, and the last piece that needs error
-> > handling is the device_add() for sysfs visibility, so that should be the
-> > dividing line between sync and async.
-> 
-> I had exactly the same thought, but it seemed less intrusive to keep
-> the dividing line where Arjan put it.
+Hi Mark,
 
-Not really ... the problem where it is becomes one of error handling.
-It's better to complete all the inline error handling before becoming
-async ... given the code state, that's provably correct (assuming the
-original was).
+thanks for the review.
 
-> > This should restore the logical flow and fix all the error leg problems
-> > (by eliminating the error legs).
-> 
-> You forgot to move the dev_set_drvdata() call into the synchronous 
-> part.  Apart from that it looks fine.  Should I submit it officially?
+On Tue, May 26, 2009 at 10:43 PM, Mark Brown
+<broonie@opensource.wolfsonmicro.com> wrote:
+> On Tue, May 26, 2009 at 09:39:08PM +0200, Philipp Zabel wrote:
+>
+> Please don't use my @wolfsonmicro.com address for anything kernel
+> related - use @opensource.wolfsonmicro.com or @sirena.org.uk.
 
-Well, no ... I forgot to get the drive data after the async_synchronize.
-Since this is an sd bug fix, I'll take it through the SCSI trees.
+Copy&paste error, won't happen again.
 
-> Also, I do still think that wait_scan_init() needs an extra call to 
-> async_synchronize_full() at the end.
+>> -#define MAX1586_V3_MIN_UV   700000
+>> -#define MAX1586_V3_MAX_UV  1475000
+>> -#define MAX1586_V3_STEP_UV   25000
+>
+> I don't see these values being re-added elsewhere in the code?
 
-I need to understand it before commenting ... I'm slowly working my way
-through the async patches.
+Ouh, strange thinko. For some reason I left them out of the switch
+statement because they felt like default values. And why wouldn't the
+structure be initialised with default values, right? Will add them
+there.
 
-James
+>> +     selector = (min_uV - max1586->min_uV) * 31 / range_uV;
+>> +     if (max1586_v3_calc_voltage(max1586, selector) > max_uV)
+>>               return -EINVAL;
+>
+> Might be nice to have a #define for the 31 but then it's the only
+> reference to it.
 
+There is a "#define MAX1586_V3_MAX_VSEL 31" already, I'll use that.
+(And there's a second reference in _calc_voltage)
 
+>>       rdev = kzalloc(sizeof(struct regulator_dev *) * (MAX1586_V6 + 1),
+>>                      GFP_KERNEL);
+>>       if (!rdev)
+>> -             return -ENOMEM;
+>> +             goto out;
+>> +
+>> +     max1586 = kzalloc(sizeof(struct max1586_data *), GFP_KERNEL);
+>> +     if (!max1586)
+>> +             goto out_unmap;
+>
+> Could perhaps make these one struct?  But either way is fine.
+
+Yes, I could put the struct regulator_dev[] at the end of max1586_data.
+
+>> +       switch (pdata->r24) {
+>> +       case MAX1586_R24_3k32:
+>
+> This switch statement doesn't reject invalid values which I'd expect it
+> to and...
+>
+>> + * @r24: external regulator to increase V3 range
+>> + *       (0, MAX1586_R24_3k32, MAX1586_R24_5k11 or MAX1586_R24_7k5)
+>
+> ...I think I'd be more comfortable if an explicit configuration were
+> required for the no feedback case since otherwise the driver will
+> happily start up and begin producing the wrong output voltages by
+> default on platforms which have this feedback resistor fitted.  This
+> could make the system non-obviously unstable and in the worst case
+> possibly lead to long term hardware damage if something is consistently
+> driven over voltage.
+
+Ok. I'll add something like "#define MAX1586_NO_R24 -1" and reject
+everything else with -EINVAL.
+
+regards
+Philipp
