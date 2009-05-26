@@ -1,49 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755009AbZEZJU4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754544AbZEZJWI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755009AbZEZJU4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 05:20:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753470AbZEZJUt
+	id S1754544AbZEZJWI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 05:22:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753910AbZEZJV5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 05:20:49 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:43243 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753423AbZEZJUs (ORCPT
+	Tue, 26 May 2009 05:21:57 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:50852 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753744AbZEZJV4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 05:20:48 -0400
-Date: Tue, 26 May 2009 11:19:40 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Oliver Neukum <oliver@neukum.org>, nigel@tuxonice.net,
-       linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
-Message-ID: <20090526091940.GA29867@elf.ucw.cz>
-References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net> <200905252343.23744.rjw@sisk.pl> <200905260045.33902.oliver@neukum.org> <200905260058.54482.rjw@sisk.pl>
+	Tue, 26 May 2009 05:21:56 -0400
+Date: Tue, 26 May 2009 05:21:57 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Amerigo Wang <amwang@redhat.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       rusty@rustcorp.com.au, jdike@addtoit.com, mingo@elte.hu
+Subject: Re: [Patch 2/4] x86 module: merge the rest functions with macros
+Message-ID: <20090526092157.GA25759@infradead.org>
+References: <20090526083717.5050.32719.sendpatchset@localhost.localdomain> <20090526083734.5050.25473.sendpatchset@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200905260058.54482.rjw@sisk.pl>
-X-Warning: Reading this can be dangerous to your mental health.
+In-Reply-To: <20090526083734.5050.25473.sendpatchset@localhost.localdomain>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Tue, May 26, 2009 at 04:35:22AM -0400, Amerigo Wang wrote:
+> +#if defined(CONFIG_UML) || defined(CONFIG_X86_32)
+> +void *module_alloc(unsigned long size)
+> +{
+> +	if (size == 0)
+> +		return NULL;
+> +	return vmalloc_exec(size);
+> +}
+> +#else /*X86_64*/
+> +void *module_alloc(unsigned long size)
+> +{
+> +	struct vm_struct *area;
+> +
+> +	if (!size)
+> +		return NULL;
+> +	size = PAGE_ALIGN(size);
+> +	if (size > MODULES_LEN)
+> +		return NULL;
+> +
+> +	area = __get_vm_area(size, VM_ALLOC, MODULES_VADDR, MODULES_END);
+> +	if (!area)
+> +		return NULL;
+> +
+> +	return __vmalloc_area(area, GFP_KERNEL, PAGE_KERNEL_EXEC);
+> +}
+> +#endif
 
-> > If you really have drivers that have exceptionally large memory requirements
-> > (eg. you need to copy video ram), you should tell the system through struct
-> > driver and do accounting at probe and removal of devices.
-> 
-> Or perhaps the drivers should allocate memory from a PM notifier (which is
-> called before the freezing of tasks) to avoid the problem?
+vmalloc_exec basically expands to the x86-64 version of that code, just
+using VMALLOC_START/VMALLOC_END instead of MODULES_VADDR/MODULES_END.
 
-Yes, that's how it should work for big allocations.
+So instead of having two variants it would be better to use the x86-64
+unconditionally and define MODULES_VADDR/MODULES_END to
+VMALLOC_START/VMALLOC_END to 32bit and uml.
 
-For small allocations... I still believe we should free a bit of
-memory for s2ram so that small allocations can be done without
-problems.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+And that part should be a patch of it's own, not mixed with others.
+
