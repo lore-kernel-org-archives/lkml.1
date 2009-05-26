@@ -1,68 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757213AbZEZSPI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756730AbZEZSWY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757213AbZEZSPI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 14:15:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754838AbZEZSO5
+	id S1756730AbZEZSWY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 14:22:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755489AbZEZSWQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 14:14:57 -0400
-Received: from cmpxchg.org ([85.214.51.133]:35233 "EHLO cmpxchg.org"
+	Tue, 26 May 2009 14:22:16 -0400
+Received: from hera.kernel.org ([140.211.167.34]:54045 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756220AbZEZSO5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 14:14:57 -0400
-Date: Tue, 26 May 2009 20:14:00 +0200
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH 5/5] (experimental) chase and free cache only swap
-Message-ID: <20090526181359.GB2843@cmpxchg.org>
-References: <20090526121259.b91b3e9d.kamezawa.hiroyu@jp.fujitsu.com> <20090526121834.dd9a4193.kamezawa.hiroyu@jp.fujitsu.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1755403AbZEZSWQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 14:22:16 -0400
+Date: Tue, 26 May 2009 18:21:32 GMT
+From: tip-bot for Ingo Molnar <mingo@elte.hu>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
+       hpa@zytor.com, mingo@redhat.com, jkacur@redhat.com,
+       a.p.zijlstra@chello.nl, efault@gmx.de, mtosatti@redhat.com,
+       tglx@linutronix.de, cjashfor@linux.vnet.ibm.com, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, jkacur@redhat.com, a.p.zijlstra@chello.nl,
+       efault@gmx.de, mtosatti@redhat.com, tglx@linutronix.de,
+       cjashfor@linux.vnet.ibm.com, mingo@elte.hu
+In-Reply-To: <new-submission>
+References: <new-submission>
+Subject: [tip:perfcounters/core] perf report: add more debugging
+Message-ID: <tip-78bfcc8556838bad563b781c49e5f20ec5831611@git.kernel.org>
+Git-Commit-ID: 78bfcc8556838bad563b781c49e5f20ec5831611
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20090526121834.dd9a4193.kamezawa.hiroyu@jp.fujitsu.com>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 26 May 2009 18:21:35 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 26, 2009 at 12:18:34PM +0900, KAMEZAWA Hiroyuki wrote:
-> 
-> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> 
-> Just a trial/example patch.
-> I'd like to consider more. Better implementation idea is welcome.
-> 
-> When the system does swap-in/swap-out repeatedly, there are 
-> cache-only swaps in general.
-> Typically,
->  - swapped out in past but on memory now while vm_swap_full() returns true
-> pages are cache-only swaps. (swap_map has no references.)
-> 
-> This cache-only swaps can be an obstacles for smooth page reclaiming.
-> Current implemantation is very naive, just scan & free.
+Commit-ID:  78bfcc8556838bad563b781c49e5f20ec5831611
+Gitweb:     http://git.kernel.org/tip/78bfcc8556838bad563b781c49e5f20ec5831611
+Author:     Ingo Molnar <mingo@elte.hu>
+AuthorDate: Tue, 26 May 2009 19:03:36 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 26 May 2009 19:15:59 +0200
 
-I think we can just remove that vm_swap_full() check in do_swap_page()
-and try to remove the page from swap cache unconditionally.
+perf report: add more debugging
 
-If it's still mapped someplace else, we let it cached.  If not, there
-is not much use for keeping it around and we free it.
+Add the offset of the file we are analyzing, and the size of the record.
 
-When I removed it and did benchmarks, I couldn't spot any difference
-in the timings, though.  Did you measure the benefits of your patch
-somehow?
+In case of problems it's easier to see where the parser lost track.
 
-According to the git history tree, vm_swap_full() was initially only
-used to aggressively drop cache entries even when they are mapped.
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
+Cc: Marcelo Tosatti <mtosatti@redhat.com>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: John Kacur <jkacur@redhat.com>
+LKML-Reference: <new-submission>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-Rik put it into vmscan to reclaim swap cache _at all_ for activated
-pages.  But I think unconditionally dropping the cache entry makes
-sense if the page gets shuffled around on the LRU list.  Better to
-re-allocate a swap slot close to the new LRU buddies on the next scan.
 
-And having this all covered, the need for the scanning your patch does
-should be gone, unless I missed something.
+---
+ Documentation/perf_counter/builtin-report.c |   12 ++++++++----
+ 1 files changed, 8 insertions(+), 4 deletions(-)
 
-	Hannes
+diff --git a/Documentation/perf_counter/builtin-report.c b/Documentation/perf_counter/builtin-report.c
+index 4b5ccc5..1b16f81 100644
+--- a/Documentation/perf_counter/builtin-report.c
++++ b/Documentation/perf_counter/builtin-report.c
+@@ -709,7 +709,8 @@ more:
+ 		uint64_t ip = event->ip.ip;
+ 
+ 		if (dump_trace) {
+-			fprintf(stderr, "PERF_EVENT (IP, %d): %d: %p\n",
++			fprintf(stderr, "%p: PERF_EVENT (IP, %d): %d: %p\n",
++				(void *)(offset + head),
+ 				event->header.misc,
+ 				event->ip.pid,
+ 				(void *)event->ip.ip);
+@@ -753,7 +754,8 @@ more:
+ 		struct map *map = map__new(&event->mmap);
+ 
+ 		if (dump_trace) {
+-			fprintf(stderr, "PERF_EVENT_MMAP: [%p(%p) @ %p]: %s\n",
++			fprintf(stderr, "%p: PERF_EVENT_MMAP: [%p(%p) @ %p]: %s\n",
++				(void *)(offset + head),
+ 				(void *)event->mmap.start,
+ 				(void *)event->mmap.len,
+ 				(void *)event->mmap.pgoff,
+@@ -771,7 +773,8 @@ more:
+ 		struct thread *thread = threads__findnew(event->comm.pid);
+ 
+ 		if (dump_trace) {
+-			fprintf(stderr, "PERF_EVENT_COMM: %s:%d\n",
++			fprintf(stderr, "%p: PERF_EVENT_COMM: %s:%d\n",
++				(void *)(offset + head),
+ 				event->comm.comm, event->comm.pid);
+ 		}
+ 		if (thread == NULL ||
+@@ -783,7 +786,8 @@ more:
+ 		break;
+ 	}
+ 	default: {
+-		fprintf(stderr, "skipping unknown header type: %d\n",
++		fprintf(stderr, "%p: skipping unknown header type: %d\n",
++			(void *)(offset + head),
+ 			event->header.type);
+ 		total_unknown++;
+ 	}
