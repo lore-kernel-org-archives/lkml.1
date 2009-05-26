@@ -1,161 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756665AbZEZPsU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756143AbZEZP7g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756665AbZEZPsU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 11:48:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754921AbZEZPsI
+	id S1756143AbZEZP7g (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 11:59:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751853AbZEZP72
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 11:48:08 -0400
-Received: from hera.kernel.org ([140.211.167.34]:53516 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754681AbZEZPsH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 11:48:07 -0400
-Subject: Re: [PATCH-tip] x86: hwmon/k8temp.c Add support for AMD 10H and 11H
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Rudolf Marek <r.marek@assembler.cz>
-Cc: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       LM Sensors <lm-sensors@lm-sensors.org>
-In-Reply-To: <4A1C08C6.7060103@assembler.cz>
-References: <1242979484.8796.7.camel@localhost.localdomain>
-	 <4A165F67.3020005@assembler.cz>
-	 <1242981748.10642.3.camel@localhost.localdomain>
-	 <1242984648.16532.3.camel@localhost.localdomain>
-	 <4A182B61.5010503@assembler.cz>
-	 <1243339833.12303.2.camel@localhost.localdomain>
-	 <4A1C08C6.7060103@assembler.cz>
-Content-Type: text/plain
-Date: Tue, 26 May 2009 21:14:32 +0530
-Message-Id: <1243352672.31783.10.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Tue, 26 May 2009 11:59:28 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:60062 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751248AbZEZP71 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 11:59:27 -0400
+Date: Tue, 26 May 2009 16:59:06 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Jamie Lokier <jamie@shareable.org>,
+       Catalin Marinas <catalin.marinas@arm.com>,
+       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: Broken ARM atomic ops wrt memory barriers (was : [PATCH] Add
+	cmpxchg support for ARMv6+ systems)
+Message-ID: <20090526155906.GC26713@n2100.arm.linux.org.uk>
+References: <20090422171703.19555.83629.stgit@pc1117.cambridge.arm.com> <20090423141248.22193.10543.stgit@pc1117.cambridge.arm.com> <20090524131636.GB3159@n2100.arm.linux.org.uk> <20090524145633.GA14754@Krystal> <20090525132027.GA946@shareable.org> <20090525151724.GA14321@Krystal> <20090525161941.GA3667@n2100.arm.linux.org.uk> <20090526145950.GB26713@n2100.arm.linux.org.uk> <20090526153654.GA17096@Krystal>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090526153654.GA17096@Krystal>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-05-26 at 17:20 +0200, Rudolf Marek wrote:
-> Hello,
+On Tue, May 26, 2009 at 11:36:54AM -0400, Mathieu Desnoyers wrote:
+> > diff --git a/arch/arm/include/asm/system.h b/arch/arm/include/asm/system.h
+> > index bd4dc8e..e9889c2 100644
+> > --- a/arch/arm/include/asm/system.h
+> > +++ b/arch/arm/include/asm/system.h
+> > @@ -248,6 +248,8 @@ static inline unsigned long __xchg(unsigned long x, volatile void *ptr, int size
+> >  	unsigned int tmp;
+> >  #endif
+> >  
+> > +	smp_mb();
+> > +
+> >  	switch (size) {
+> >  #if __LINUX_ARM_ARCH__ >= 6
+> >  	case 1:
+> > @@ -258,7 +260,7 @@ static inline unsigned long __xchg(unsigned long x, volatile void *ptr, int size
+> >  		"	bne	1b"
+> >  			: "=&r" (ret), "=&r" (tmp)
+> >  			: "r" (x), "r" (ptr)
+> > -			: "memory", "cc");
+> > +			: "cc");
 > 
-> Sorry I disagree. Lets skip whole 10H. I failed many times to get some useful 
-> info from AMD about this issue. I'm strongly against to impose some limits which 
-> might indicate what is OK and what is not.
-> 
+> I would not remove the "memory" constraint in here. Anyway it's just a
+> compiler barrier, I doubt it would make anyting faster (due to the
+> following smp_mb() added), but it surely makes things harder to
+> understand.
 
-OK, So here is new patch after skipping 10H. I hope I will get ack
-now ;-)
+If you don't already know that smp_mb() is always a compiler barrier then
+I guess it's true, but then if you don't know what the barriers are defined
+to be, should you be trying to understand atomic ops?
 
-Subject: [PATCH] x86: hwmon/k8temp.c Add support for AMD 11H
+> If we determine that some reorderings are not possible on ARM, we might
+> eventually change rmb() for a simple barrier() and make atomic op
+> barriers a bit more lightweight.
 
-This patch will also work for AMD 10H. But we are skipping it as :
+There seems to be no "read memory barrier" on ARM - the dmb instruction
+can be restricted to writes, but not just reads.
 
-AMD 10H cpus reports Inaccurate Temperature Measurement:
-http://www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs/41322.pdf
-Errata #319
+Moreover, there's a comment in the architecture reference manual that
+implementations which don't provide the other dmb variants must default
+to doing the full dmb, but then goes on to say that programs should not
+rely on this (what... that the relaxed dmb()s have any effect what so
+ever?)
 
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
----
- drivers/hwmon/k8temp.c |   31 +++++++++++++++++++++++++++++--
- 1 files changed, 29 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/hwmon/k8temp.c b/drivers/hwmon/k8temp.c
-index 1fe9951..4459dbf 100644
---- a/drivers/hwmon/k8temp.c
-+++ b/drivers/hwmon/k8temp.c
-@@ -1,5 +1,6 @@
- /*
-  * k8temp.c - Linux kernel module for hardware monitoring
-+ * 	      for AMD K8 and derivatives
-  *
-  * Copyright (C) 2006 Rudolf Marek <r.marek@assembler.cz>
-  *
-@@ -33,7 +34,7 @@
- #include <linux/mutex.h>
- #include <asm/processor.h>
- 
--#define TEMP_FROM_REG(val)	(((((val) >> 16) & 0xff) - 49) * 1000)
-+#define REG_TCTL	0xa4
- #define REG_TEMP	0xe4
- #define SEL_PLACE	0x40
- #define SEL_CORE	0x04
-@@ -52,6 +53,14 @@ struct k8temp_data {
- 	u32 temp_offset;
- };
- 
-+static unsigned long temp_from_reg(unsigned long val)
-+{
-+	if (boot_cpu_data.x86 > 0xf)
-+		return ((val) >> 21) * 125;
-+	else
-+		return ((((val) >> 16) & 0xff) - 49) * 1000;
-+}
-+
- static struct k8temp_data *k8temp_update_device(struct device *dev)
- {
- 	struct k8temp_data *data = dev_get_drvdata(dev);
-@@ -62,6 +71,11 @@ static struct k8temp_data *k8temp_update_device(struct device *dev)
- 
- 	if (!data->valid
- 	    || time_after(jiffies, data->last_updated + HZ)) {
-+		if (boot_cpu_data.x86 > 0xf) {
-+			pci_read_config_dword(pdev, REG_TCTL,
-+					      &data->temp[0][0]);
-+			goto update_done;
-+		}
- 		pci_read_config_byte(pdev, REG_TEMP, &tmp);
- 		tmp &= ~(SEL_PLACE | SEL_CORE);		/* Select sensor 0, core0 */
- 		pci_write_config_byte(pdev, REG_TEMP, tmp);
-@@ -89,6 +103,7 @@ static struct k8temp_data *k8temp_update_device(struct device *dev)
- 			}
- 		}
- 
-+update_done:
- 		data->last_updated = jiffies;
- 		data->valid = 1;
- 	}
-@@ -123,7 +138,7 @@ static ssize_t show_temp(struct device *dev,
- 	if (data->swap_core_select)
- 		core = core ? 0 : 1;
- 
--	temp = TEMP_FROM_REG(data->temp[core][place]) + data->temp_offset;
-+	temp = temp_from_reg(data->temp[core][place]) + data->temp_offset;
- 
- 	return sprintf(buf, "%d\n", temp);
- }
-@@ -138,6 +153,14 @@ static DEVICE_ATTR(name, S_IRUGO, show_name, NULL);
- 
- static struct pci_device_id k8temp_ids[] = {
- 	{ PCI_DEVICE(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_K8_NB_MISC) },
-+	/*
-+	 * AMD 10H cpus reports Inaccurate Temperature Measurement :
-+	 * http://www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs/41322.pdf
-+	 *     Errata #319
-+	 * So skipping 10H
-+	{ PCI_DEVICE(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_10H_NB_MISC) },
-+	 */
-+	{ PCI_DEVICE(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_11H_NB_MISC) },
- 	{ 0 },
- };
- 
-@@ -157,6 +180,9 @@ static int __devinit k8temp_probe(struct pci_dev *pdev,
- 		goto exit;
- 	}
- 
-+	if (boot_cpu_data.x86 > 0xf)
-+		goto probe_done;
-+
- 	model = boot_cpu_data.x86_model;
- 	stepping = boot_cpu_data.x86_mask;
- 
-@@ -226,6 +252,7 @@ static int __devinit k8temp_probe(struct pci_dev *pdev,
- 			data->sensorsp &= ~SEL_CORE;
- 	}
- 
-+probe_done:
- 	data->name = "k8temp";
- 	mutex_init(&data->update_lock);
- 	dev_set_drvdata(&pdev->dev, data);
--- 
-1.6.0.6
-
-
-
+Suggest we don't go anywhere near those until ARMv7 stuff has matured
+for a few years and these details resolved.
