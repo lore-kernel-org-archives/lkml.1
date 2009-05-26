@@ -1,56 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755824AbZEZNMT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755923AbZEZNNQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755824AbZEZNMT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 09:12:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751669AbZEZNMM
+	id S1755923AbZEZNNQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 09:13:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751373AbZEZNNE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 09:12:12 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:35363 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751364AbZEZNML (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 09:12:11 -0400
-Date: Tue, 26 May 2009 15:18:38 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, x86@kernel.org,
-       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>,
-       Taketoshi Sakuraba <taketoshi.sakuraba.hc@hitachi.com>
-Subject: Re: [PATCH] [7/16] POISON: Add basic support for poisoned pages in fault handler
-Message-ID: <20090526131838.GE846@one.firstfloor.org>
-References: <20090407509.382219156@firstfloor.org> <20090407151004.2F5D21D0470@basil.firstfloor.org> <4A1BE6BE.90209@hitachi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 26 May 2009 09:13:04 -0400
+Received: from cantor.suse.de ([195.135.220.2]:39033 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751044AbZEZNND (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 09:13:03 -0400
+From: Nikanth Karthikesan <knikanth@suse.de>
+Organization: suse.de
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: [PATCH] Fix build warning and avoid checking for mem != null twice
+Date: Tue, 26 May 2009 18:44:32 +0530
+User-Agent: KMail/1.11.1 (Linux/2.6.27.21-0.1-default; KDE/4.2.1; x86_64; ; )
+Cc: Pavel Emelyanov <xemul@openvz.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4A1BE6BE.90209@hitachi.com>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200905261844.33864.knikanth@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 26, 2009 at 09:55:26PM +0900, Hidehiro Kawai wrote:
-> > +			print_bad_pte(vma, address, pte, NULL);
-> > +			ret = VM_FAULT_OOM;
-> > +		}
-> >  		goto out;
-> >  	}
-> >  	delayacct_set_flag(DELAYACCT_PF_SWAPIN);
-> > @@ -2451,6 +2459,9 @@
-> >  		/* Had to read the page from swap area: Major fault */
-> >  		ret = VM_FAULT_MAJOR;
-> >  		count_vm_event(PGMAJFAULT);
-> > +	} else if (PagePoison(page)) {
-> > +		ret = VM_FAULT_POISON;
-> 
-> delayacct_clear_flag(DELAYACCT_PF_SWAPIN) would be needed here.
+Fix build warning, "mem_cgroup_is_obsolete defined but not used" when
+CONFIG_DEBUG_VM is not set. Also avoid checking for !mem twice.
 
-Thanks for the review. Added.
+Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
 
-Must have been a forward port error, I could swear that wasn't there
-yet when I wrote this originally :)
+---
+diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+index 01c2d8f..420fc61 100644
+--- a/mm/memcontrol.c
++++ b/mm/memcontrol.c
+@@ -314,14 +314,6 @@ static struct mem_cgroup *try_get_mem_cgroup_from_mm(struct mm_struct *mm)
+ 	return mem;
+ }
+ 
+-static bool mem_cgroup_is_obsolete(struct mem_cgroup *mem)
+-{
+-	if (!mem)
+-		return true;
+-	return css_is_removed(&mem->css);
+-}
+-
+-
+ /*
+  * Call callback function against all cgroup under hierarchy tree.
+  */
+@@ -932,7 +924,7 @@ static int __mem_cgroup_try_charge(struct mm_struct *mm,
+ 	if (unlikely(!mem))
+ 		return 0;
+ 
+-	VM_BUG_ON(!mem || mem_cgroup_is_obsolete(mem));
++	VM_BUG_ON(!mem || css_is_removed(&mem->css));
+ 
+ 	while (1) {
+ 		int ret;
 
--Andi
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
