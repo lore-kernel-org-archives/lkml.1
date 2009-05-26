@@ -1,60 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756461AbZEZJqt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755332AbZEZKCP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756461AbZEZJqt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 05:46:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755248AbZEZJqd
+	id S1755332AbZEZKCP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 06:02:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753445AbZEZKCE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 05:46:33 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:44899 "EHLO smtp.gentoo.org"
+	Tue, 26 May 2009 06:02:04 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:53482 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754999AbZEZJqc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 05:46:32 -0400
-From: Mike Frysinger <vapier@gentoo.org>
-To: linux-kernel@vger.kernel.org
-Cc: uclinux-dist-devel@blackfin.uclinux.org, Greg Ungerer <gerg@uclinux.org>,
-       uclinux-dev@uclinux.org, linux-mtd@lists.infradead.org
-Subject: [PATCH 2/2] mtd/maps: uclinux: support Blackfin systems
-Date: Tue, 26 May 2009 05:46:31 -0400
-Message-Id: <1243331191-11445-2-git-send-email-vapier@gentoo.org>
-X-Mailer: git-send-email 1.6.3.1
-In-Reply-To: <1243331191-11445-1-git-send-email-vapier@gentoo.org>
-References: <1243331191-11445-1-git-send-email-vapier@gentoo.org>
+	id S1753133AbZEZKCD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 06:02:03 -0400
+Message-ID: <4A1BBE51.8090208@redhat.com>
+Date: Tue, 26 May 2009 18:02:57 +0800
+From: Amerigo Wang <amwang@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090319)
+MIME-Version: 1.0
+To: Christoph Hellwig <hch@infradead.org>
+CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       rusty@rustcorp.com.au, jdike@addtoit.com, mingo@elte.hu
+Subject: Re: [Patch 2/4] x86 module: merge the rest functions with macros
+References: <20090526083717.5050.32719.sendpatchset@localhost.localdomain> <20090526083734.5050.25473.sendpatchset@localhost.localdomain> <20090526092157.GA25759@infradead.org>
+In-Reply-To: <20090526092157.GA25759@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Due to a processor anomaly (05000263 to be exact), most Blackfin parts
-cannot keep the embedded filesystem image directly after the kernel in
-RAM.  Instead, the filesystem needs to be relocated to the end of memory.
-As such, we need to tweak the initial filesystem address for Blackfin
-systems.
+Christoph Hellwig wrote:
+> On Tue, May 26, 2009 at 04:35:22AM -0400, Amerigo Wang wrote:
+>   
+>> +#if defined(CONFIG_UML) || defined(CONFIG_X86_32)
+>> +void *module_alloc(unsigned long size)
+>> +{
+>> +	if (size == 0)
+>> +		return NULL;
+>> +	return vmalloc_exec(size);
+>> +}
+>> +#else /*X86_64*/
+>> +void *module_alloc(unsigned long size)
+>> +{
+>> +	struct vm_struct *area;
+>> +
+>> +	if (!size)
+>> +		return NULL;
+>> +	size = PAGE_ALIGN(size);
+>> +	if (size > MODULES_LEN)
+>> +		return NULL;
+>> +
+>> +	area = __get_vm_area(size, VM_ALLOC, MODULES_VADDR, MODULES_END);
+>> +	if (!area)
+>> +		return NULL;
+>> +
+>> +	return __vmalloc_area(area, GFP_KERNEL, PAGE_KERNEL_EXEC);
+>> +}
+>> +#endif
+>>     
+>
+> vmalloc_exec basically expands to the x86-64 version of that code, just
+> using VMALLOC_START/VMALLOC_END instead of MODULES_VADDR/MODULES_END.
+>
+> So instead of having two variants it would be better to use the x86-64
+> unconditionally and define MODULES_VADDR/MODULES_END to
+> VMALLOC_START/VMALLOC_END to 32bit and uml.
+>
+> And that part should be a patch of it's own, not mixed with others.
+>   
 
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-CC: Greg Ungerer <gerg@uclinux.org>
-CC: uclinux-dev@uclinux.org
-CC: linux-mtd@lists.infradead.org
----
- drivers/mtd/maps/uclinux.c |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
+Thanks, it is a good idea!
 
-diff --git a/drivers/mtd/maps/uclinux.c b/drivers/mtd/maps/uclinux.c
-index 57699c2..dcb552f 100644
---- a/drivers/mtd/maps/uclinux.c
-+++ b/drivers/mtd/maps/uclinux.c
-@@ -55,8 +55,13 @@ static int __init uclinux_mtd_init(void)
- {
- 	struct mtd_info *mtd;
- 	struct map_info *mapp;
-+#ifdef CONFIG_BLACKFIN
-+	extern unsigned long memory_mtd_start;
-+	unsigned long addr = (unsigned long) memory_mtd_start;
-+#else
- 	extern char _ebss;
- 	unsigned long addr = (unsigned long) &_ebss;
-+#endif
- 
- 	mapp = &uclinux_ram_map;
- 	mapp->phys = addr;
--- 
-1.6.3.1
+But... vmalloc_exec() also sets __GFP_HIGHMEM, this is different from 
+x86_64.
+No? Or __GFP_HIGHMEM is meaningless on x86_64? :-)
+
 
