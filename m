@@ -1,64 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757551AbZEZUYU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758114AbZEZUYa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757551AbZEZUYU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 16:24:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757985AbZEZUYG
+	id S1758114AbZEZUYa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 16:24:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758014AbZEZUYI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Tue, 26 May 2009 16:24:08 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:40529 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757966AbZEZUYG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 26 May 2009 16:24:06 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49762 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757964AbZEZUYF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 16:24:05 -0400
-Date: Tue, 26 May 2009 13:23:51 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: sameo@linux.intel.com, holtmann@linux.intel.com, yi.zhu@intel.com,
-       linux-kernel@vger.kernel.org, linville@tuxdriver.com, greg@kroah.com
-Subject: Re: [PATCH] firmware: Allocate firmware id dynamically
-Message-Id: <20090526132351.9805f1e8.akpm@linux-foundation.org>
-In-Reply-To: <ac3eb2510905260711hb273541i8d69128b88933f7f@mail.gmail.com>
-References: <20090526140423.GA14683@sortiz.org>
-	<ac3eb2510905260711hb273541i8d69128b88933f7f@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@redhat.com>
+X-Fcc: ~/Mail/linus
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] ptrace: wait_task_zombie: s/->parent/->real_parent/
+In-Reply-To: Oleg Nesterov's message of  Monday, 25 May 2009 22:21:45 +0200 <20090525202145.GA25243@redhat.com>
+References: <20090525202145.GA25243@redhat.com>
+X-Antipastobozoticataclysm: Bariumenemanilow
+Message-Id: <20090526202336.E8B3AFC2BD@magilla.sf.frob.com>
+Date: Tue, 26 May 2009 13:23:36 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 May 2009 16:11:35 +0200
-Kay Sievers <kay.sievers@vrfy.org> wrote:
+> Change wait_task_zombie() to use ->real_parent instead of ->parent.
 
-> On Tue, May 26, 2009 at 16:04, Samuel Ortiz <sameo@linux.intel.com> wrote:
-> 
-> > Since the firmware loader is not maintained by anyone, I'm sending this one to
-> > you, for the next merge window:
-> 
-> It's part of the driver-core directory, and handled by Greg.
+Acked-by: Roland McGrath <roland@redhat.com>
 
-To which it doesn't apply.  It needed more fixes than I felt like making.
+> We could even use current afaics, but ->real_parent is more clean.
 
-> > The firmware loader has a statically allocated 30 bytes long string for the
-> > firmware id (a.k.a. the firmware file name). There is no reason why we couldnt
-> > allocate dynamically, and avoid having restrictions on the firmware names
-> > lengths.
-> 
-> Looks good.
-> 
-> > Please note that we have to keep the FIRMWARE_NAME_MAX definition around as
-> > some drivers rely on it.
-> 
-> I think the 6 files should be converted, and FIRMWARE_NAME_MAX
-> removed, otherwise people will keep copying that crap around.
-> 
->   drivers/pcmcia/ds.c
->   drivers/usb/atm/ueagle-atm.c
->   drivers/net/wireless/libertas/if_usb.c
->   drivers/net/wireless/libertas/if_spi.c
->   drivers/media/dvb/dvb-usb/dvb-usb.h
->   drivers/media/common/tuners/tuner-xc2028.c
+Indeed, though the caller might not be ->real_parent, it will always be
+one that shares ->signal with ->real_parent.  But I agree that using
+->real_parent is the clean way.  Incidentally, as readability cleanup it
+would make a lot of sense to move that block into a subroutine.
 
-Yep.
 
+Thanks,
+Roland
