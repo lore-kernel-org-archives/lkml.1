@@ -1,107 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757583AbZEZT3u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757437AbZEZTdf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757583AbZEZT3u (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 15:29:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756253AbZEZT3i
+	id S1757437AbZEZTdf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 15:33:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756178AbZEZTd2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 15:29:38 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:41759 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755939AbZEZT3i (ORCPT
+	Tue, 26 May 2009 15:33:28 -0400
+Received: from mail-fx0-f168.google.com ([209.85.220.168]:64518 "EHLO
+	mail-fx0-f168.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753339AbZEZTd2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 15:29:38 -0400
-Date: Tue, 26 May 2009 15:29:39 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Kay Sievers <kay.sievers@vrfy.org>
-cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       SCSI development list <linux-scsi@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Tejun Heo <tj@kernel.org>, Cornelia Huck <cornelia.huck@de.ibm.com>,
-       <linux-fsdevel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@aristanetworks.com>
-Subject: Re: [PATCH 25/20] sysfs: Only support removing emtpy sysfs  directories.
-In-Reply-To: <ac3eb2510905260927we3c748akbbcaf3f3ac1da096@mail.gmail.com>
-Message-ID: <Pine.LNX.4.44L0.0905261508210.9278-100000@iolanthe.rowland.org>
+	Tue, 26 May 2009 15:33:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Y4wqmKbr/q87ApHuyVdcuXLwehkXN+8TIckO+g8jU/OtGDdbA26X1j2mWMQVp7jAn9
+         kEex2+evETSF/d27zg3J7U5tTaiDKj5VX6Nb+V9MZ7gRbsVGtdInfpy67DIAk/cIkZDx
+         6BbjbXJNj1GdDOfdT9bJOS5AKLGF/gMukU2jA=
+Date: Tue, 26 May 2009 21:33:25 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/3] tracing/stat: simplify rbtree freeing code
+Message-ID: <20090526193322.GC5969@nowhere>
+References: <4A1A5AD1.3070804@cn.fujitsu.com> <4A1A5AE5.70609@cn.fujitsu.com> <20090525155939.GB7121@nowhere> <4A1B42D8.3020809@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A1B42D8.3020809@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 May 2009, Kay Sievers wrote:
-
-> On Mon, May 25, 2009 at 13:45, Kay Sievers <kay.sievers@vrfy.org> wrote:
-> > On Mon, May 25, 2009 at 04:06, Alan Stern <stern@rowland.harvard.edu> wrote:
+On Tue, May 26, 2009 at 09:16:08AM +0800, Li Zefan wrote:
+> Frederic Weisbecker wrote:
+> > On Mon, May 25, 2009 at 04:46:29PM +0800, Li Zefan wrote:
+> >> When closing a trace_stat file, we destroy the rbtree constructed during
+> >> file open, but there is memory leak that the root node is not freed:
+> >>
+> >> static struct rb_node *release_next(struct rb_node *node)
+> >> {
+> >> 	...
+> >> 	else {
+> >> 		if (!parent)		<-- here we leak @node
+> >> 			return NULL;
+> >> 	...
+> >> }
+> >>
+> >> This patch keeps removing root node until the tree is empty. We regress
+> >> from O(n) to O(nlogn), but since both open() and read() are O(nlogn) and
+> >> it's a slow path, this change won't affect scalibility.
+> >>
+> >> [ Impact: fix memory leak when closing a trace_stat file ]
+> >>
+> >> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> >> ---
+> >>  kernel/trace/trace_stat.c |   39 +++++----------------------------------
+> >>  1 files changed, 5 insertions(+), 34 deletions(-)
+> >>
+> >> diff --git a/kernel/trace/trace_stat.c b/kernel/trace/trace_stat.c
+> >> index 6efbcb4..ed18701 100644
+> >> --- a/kernel/trace/trace_stat.c
+> >> +++ b/kernel/trace/trace_stat.c
+> >> @@ -42,47 +42,18 @@ static DEFINE_MUTEX(all_stat_sessions_mutex);
+> >>  /* The root directory for all stat files */
+> >>  static struct dentry		*stat_dir;
+> >>  
+> >> -/*
+> >> - * Iterate through the rbtree using a post order traversal path
+> >> - * to release the next node.
+> >> - * It won't necessary release one at each iteration
+> >> - * but it will at least advance closer to the next one
+> >> - * to be released.
+> >> - */
+> >> -static struct rb_node *release_next(struct rb_node *node)
+> >> +static void reset_stat_session(struct stat_session *session)
+> >>  {
+> >>  	struct stat_node *snode;
+> >> -	struct rb_node *parent = rb_parent(node);
+> >> -
+> >> -	if (node->rb_left)
+> >> -		return node->rb_left;
+> >> -	else if (node->rb_right)
+> >> -		return node->rb_right;
+> >> -	else {
+> >> -		if (!parent)
+> >> -			return NULL;
+> >> -		if (parent->rb_left == node)
+> >> -			parent->rb_left = NULL;
+> >> -		else
+> >> -			parent->rb_right = NULL;
+> >> +	struct rb_root *sroot = &session->stat_root;
+> >>  
+> >> -		snode = container_of(node, struct stat_node, node);
+> >> +	while (!RB_EMPTY_ROOT(sroot)) {
+> >> +		snode = rb_entry(sroot->rb_node, struct stat_node, node);
+> >> +		rb_erase(&snode->node, sroot);
+> > 
+> > 
+> > 
+> > Why not just keep the previous version but sligthly
+> > modified:
+> > 
+> > 
+> > 	while (node)
+> > 		node = release_next(node);
+> > 
+> > 	if (!RB_EMPTY_ROOT(root)) {
+> > 		node = rb_entry(...)
+> > 		kfree(....)
+> > 		root = RB_ROOT
+> > 	}
+> > 
 > 
-> >> by the way -- so it's a little difficult to trigger.
-> >
-> > I can trigger it pretty reliable now on plain -rc7 , but only with
-> > more hubs in-between the storage device. It usually take less than
-> > 10-15 connect/disconnect cycles.
-> >
-> > It looks like a serious bug though, after the bug triggered, random,
-> > likely unrelated, applications crash, and I can not cleanly shot down
-> > anymore.
+> The easiest fix:
 > 
-> Just a heads up if anybody is trying to reproduce this, it trashed my
-> ext3 rootfs, which is not recoverable.
+>  		if (!parent)
+> -			return NULL;
+> -		if (parent->rb_left == node)
+> +			;
+> +		else if (parent->rb_left == node)
 > 
-> Not sure what exactly caused this, but I didn't have anything like
-> this for a very long time.
+> ;)
+
+
+
+Ah, yeah :)
+
+
 > 
-> I tried to reproduce the issue a few times more, and it crashed random
-> processes after the bug triggered, like mentioned above, and the box
-> never shut down cleanly.
+> > Because the problem with rb_erase() is the wasteful color based rebalancing
+> > performed whereas here we just need to walk into the tree and free
+> > the nodes.
+> > 
+> > Hm?
+> > 
 > 
-> It's entirely possible, that bug causes serious issues.
-
-If you don't mind trashing some more ext3 root filesystems :-) you can
-try this patch.  It's almost certainly not quite the right thing to do
-and I have probably messed up the target's reference counting, but
-maybe it's a step in the right direction.
-
-This strange business of deferring unregistration into a workqueue 
-means that the calls might not be executed in the same order that 
-they're made.
-
-Alan Stern
+> Less code, less bugs.
+> 
+> But actually I don't know how costly rb_erase() is, if it's really better to
+> avoid rb_erase(), I'll send another fix.
 
 
-Index: usb-2.6/drivers/scsi/scsi_scan.c
-===================================================================
---- usb-2.6.orig/drivers/scsi/scsi_scan.c
-+++ usb-2.6/drivers/scsi/scsi_scan.c
-@@ -956,6 +956,7 @@ static inline void scsi_destroy_sdev(str
- 	if (sdev->host->hostt->slave_destroy)
- 		sdev->host->hostt->slave_destroy(sdev);
- 	transport_destroy_device(&sdev->sdev_gendev);
-+	put_device(sdev->sdev_gendev.parent);
- 	put_device(&sdev->sdev_gendev);
- }
+
+It is more costly because the tree is rebalanced after erasing
+each node.
+I don't think the change could be really visualized though. Not
+for now at least, but it could if a future tracer has a huge mass of
+entries.
+
  
-Index: usb-2.6/drivers/scsi/scsi_sysfs.c
-===================================================================
---- usb-2.6.orig/drivers/scsi/scsi_sysfs.c
-+++ usb-2.6/drivers/scsi/scsi_sysfs.c
-@@ -327,8 +327,6 @@ static void scsi_device_dev_release_user
- 		sdev->request_queue = NULL;
- 	}
- 
--	scsi_target_reap(scsi_target(sdev));
--
- 	kfree(sdev->inquiry);
- 	kfree(sdev);
- 
-@@ -954,6 +952,7 @@ void __scsi_remove_device(struct scsi_de
- 	if (sdev->host->hostt->slave_destroy)
- 		sdev->host->hostt->slave_destroy(sdev);
- 	transport_destroy_device(dev);
-+	scsi_target_reap(scsi_target(sdev));
- 	put_device(dev);
- }
- 
+> > Frederic.
+> > 
 
