@@ -1,82 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758545AbZEZWIA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758248AbZEZWOW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758545AbZEZWIA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 18:08:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754709AbZEZWHx
+	id S1758248AbZEZWOW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 18:14:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754124AbZEZWOL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 18:07:53 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:48174 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753726AbZEZWHw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 18:07:52 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: jerry_734@verizon.net
-Subject: Re: [Bug #13371] s2disk hangs with kernel 2.6.29 and later, SATA, Gigabyte EG45M-DS2H - culprit found
-Date: Wed, 27 May 2009 00:07:51 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc6-rjw; KDE/4.2.3; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>,
-       Auke Kok <auke-jan.h.kok@intel.com>
-References: <GtY7d2eWpoK.A.ioC.MQcGKB@chimera> <20090525230259.GA5098@vilya> <20090526211058.GB2538@indigo.myhome.westell.com>
-In-Reply-To: <20090526211058.GB2538@indigo.myhome.westell.com>
+	Tue, 26 May 2009 18:14:11 -0400
+Received: from silver.sucs.swan.ac.uk ([137.44.10.1]:47596 "EHLO
+	silver.sucs.swan.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753417AbZEZWOK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 18:14:10 -0400
+Date: Tue, 26 May 2009 23:14:09 +0100
+From: Sitsofe Wheeler <sitsofe@yahoo.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org,
+       Alan Jenkins <sourcejedi.lkml@googlemail.com>,
+       Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: EeePC 900 trackpad often not detected at boot in 2.6.30-rc4
+Message-ID: <20090526221409.GA27961@sucs.org>
+References: <20090511072135.GA4682@sucs.org> <20090513032053.GA29919@dtor-d630.eng.vmware.com> <20090513185356.GA20140@sucs.org> <20090513191953.GA10629@sucs.org> <20090516032754.GC12099@dtor-d630.eng.vmware.com> <20090516032924.GD12099@dtor-d630.eng.vmware.com> <20090518084146.GA25806@sucs.org> <20090518094209.GA21150@sucs.org> <20090520024658.GD17649@dtor-d630.eng.vmware.com> <20090520083846.GH6736@elte.hu>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200905270007.52039.rjw@sisk.pl>
+In-Reply-To: <20090520083846.GH6736@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 26 May 2009, gapeters@worldnet.att.net wrote:
-> On Tue, May 26, 2009 at 01:03:00AM +0200, Richard Atterer wrote:
-> > Hello,
+On Wed, May 20, 2009 at 10:38:46AM +0200, Ingo Molnar wrote:
+> * Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
+> > On Mon, May 18, 2009 at 10:42:10AM +0100, Sitsofe Wheeler wrote:
+> > > On Mon, May 18, 2009 at 09:41:46AM +0100, Sitsofe Wheeler wrote:
+> > > > 
+> > > > And of course just as soon as I finish building a new kernel the issue
+> > > > disappears. Even in older kernels that were seemingly showing the
+> > > > problem all the time. Sigh.
+> > > 
+> > > After numerous reboots I finally managed to reproduce the problem the
+> > > original way with your patch installed. I have no idea what the
+> > > necessary triggers are but I suspect it involves suspend to ram...
 > > 
-> > "Jerry" contacted me off-list with information about the root of the 
-> > problem - many thanks indeed!!!
+> > It is just unfortunate scheduling that messes us up:
 > > 
-> > It turns out that the e100 driver is responsible. (The motherboard actually 
-> > has a r8169 chip, but I added an old Intel PCI ethernet card I own.)
+> > > [    4.267050] drivers/input/serio/i8042.c: 00 <- i8042 (interrupt, 1, 12) [113]
+> > > [    4.270440] drivers/input/serio/i8042.c: d4 -> i8042 (command) [116]
+> > > [    4.271016] drivers/input/serio/i8042.c: f2 -> i8042 (parameter) [116]
+> > > [    4.274883] ALSA device list:
+> > > [    4.274963]   #0: HDA Intel at 0xf7eb8000 irq 16
+> > > [    4.275258] TCP cubic registered
+> > > [    4.276597] NET: Registered protocol family 17
+> > > [    4.276802] Using IPI Shortcut mode
+> > > [    4.279191]   Magic number: 9:810:70
+> > > [    4.279548] rtc_cmos 00:03: setting system clock to 2009-05-18 09:03:27 UTC (1242637407)
+> > > [    4.281412] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [127]
+> > > [    4.283338] drivers/input/serio/i8042.c: 00 <- i8042 (interrupt, 1, 12) [129]
+> > > [    5.406620] libps2: errorneously fail 754 command
 > > 
-> > By rmmoding e100 before s2disk, the problem goes away. Jerry mentions that 
-> > he once saw a message about e100 failing to load its microcode - I never 
-> > saw such a message.
+> > As you can see the device responded to our command and interrupt 
+> > fired at 4.28 but for some reason the thread did not get woken up 
+> > until 5.40, second and a half later... Crazy if you ask me.
 > > 
-> > The most recent e100 commit ac7c992 by Thadeu Lima de Souza Cascardo (Apr 
-> > 28) made some changes to the behaviour in the case of shutdown vs. suspend, 
-> > maybe the problem is there? (But note that during bisecting, I tested 
-> > kernels older than that commit, and not all of them worked.) Before that, 
-> > f902283 (Mar 3 2008) mentions suspend in the log message.
-> > 
-> > Cheers,
-> > 
-> >   Richard
-> > 
-> > -- 
+> > Ingo, do you have any idea why would it not be woken up for so 
+> > long???
 > 
-> I think I saw the firmware loader failure during resume. If you leave the
-> system alone for ~2 minutes it will resume, but the e100 won't work &
-> any thing "touching" it will go into an un-interruptable sleep
-> (ifconfig, cat'ing some of its /sys files).
-> 
-> IIRC started with 2.6.29, with the change to net drivers to use the
-> firmware loader. During the hibernate, for some reason, the e100 is
-> suspended then resumed, at which point it requests its firmware.
-> Userspace is frozen so the firmware load times out (the 2 minute timeout
-> which is why I guessed you were having the same problem).
-> 
-> During resume, the e100 is apparently resumed *before* userspace is
-> un-frozen, so again it times out loading its firmware. At this point
-> it's unusable.
+> possibly something else was running (looping?) in that time? A more 
+> detailed trace would tell i guess.
 
-This theory makes sense.
+What sort of options do I boot with for such a trace? Would
+booting with initcall_debug be enough?
 
-Generally firmware loading is not going to work from the driver's ->suspend()
-and ->resume() callbacks.  For this reason the firmware should be loaded
-into RAM before suspend, for example from a PM notifier.
-
-Thanks,
-Rafael
+-- 
+Sitsofe | http://sucs.org/~sits/
