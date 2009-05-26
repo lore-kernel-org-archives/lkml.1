@@ -1,87 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754989AbZEZJJp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754762AbZEZJQL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754989AbZEZJJp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 05:09:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753664AbZEZJJh
+	id S1754762AbZEZJQL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 05:16:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753867AbZEZJP4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 05:09:37 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:46647 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753133AbZEZJJg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 05:09:36 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: LKML <linux-kernel@vger.kernel.org>,
-       Michael Kerrisk <mtk.manpages@googlemail.com>,
-       linux-man@vger.kernel.org
-Subject: poll never return EBADF?
-Cc: kosaki.motohiro@jp.fujitsu.com
-Message-Id: <20090526175622.687B.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Tue, 26 May 2009 18:09:32 +0900 (JST)
+	Tue, 26 May 2009 05:15:56 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:37385 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753760AbZEZJPz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 05:15:55 -0400
+From: Mike Frysinger <vapier@gentoo.org>
+To: linux-kernel@vger.kernel.org
+Cc: uclinux-dist-devel@blackfin.uclinux.org
+Subject: [PATCH 0/7] Blackfin fixes for 2.6.30
+Date: Tue, 26 May 2009 05:15:49 -0400
+Message-Id: <1243329356-12644-1-git-send-email-vapier@gentoo.org>
+X-Mailer: git-send-email 1.6.3.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+Sorry for being so late, but our previous Blackfin maintainer has moved
+on, so we've been working at picking up the slack.
 
-I have one stupid question.
+So the stuff here for 2.6.30 is just simple build fixes, gitignore tweaks,
+MAINTAINER updates, and hooking up the new pread syscalls (which was posted
+a while ago already).
 
-"man poll" describe this error code.
+Mike Frysinger (7):
+  bfin_mac: fix build error due to net_device_ops convert
+  Blackfin: hook up preadv/pwritev syscalls
+  MAINTAINERS: update Blackfin items
+  MAINTAINERS: drop (subscribers-only) markings on Blackfin lists
+  Blackfin: ignore generated vmlinux.lds
+  Blackfin: drop unneeded asm/.gitignore
+  Blackfin: fix strncmp.o build error
 
->ERRORS
->       EBADF  An invalid file descriptor was given in one of the sets.
-
-but current kernel implementation ignore invalid file descriptor,
-not return EBADF.
-
-
-================ cut code ========================================
-static inline unsigned int do_pollfd(struct pollfd *pollfd, poll_table *pwait)
-{
-        unsigned int mask;
-        int fd;
-
-        mask = 0;
-        fd = pollfd->fd;
-        if (fd >= 0) {					//// here
-                int fput_needed;
-                struct file * file;
-
-                file = fget_light(fd, &fput_needed);
-                mask = POLLNVAL;
-                if (file != NULL) {			//// and here
-                        mask = DEFAULT_POLLMASK;
-                        if (file->f_op && file->f_op->poll)
-                                mask = file->f_op->poll(file, pwait);
-                        /* Mask out unneeded events. */
-                        mask &= pollfd->events | POLLERR | POLLHUP;
-                        fput_light(file, fput_needed);
-                }
-        }
-================ end code ========================================
-
-In the other hand, SUSv3 talk about 
-
-> POLLNVAL
->    The specified fd value is invalid. This flag is only valid in the
->    revents member; it shall ignored in the events member.
-
-and
-
-> If the value of fd is less than 0, events shall be ignored, and revents 
-> shall be set to 0 in that entry on return from poll().
-
-but, no desribe EBADF.
-(see http://www.opengroup.org/onlinepubs/009695399/functions/poll.html)
-
-So, I think the implementation is correct.
-
-
-Why don't we remove EBADF description?
-
-
+ MAINTAINERS                          |   18 +++++++++---------
+ arch/blackfin/include/asm/.gitignore |    1 -
+ arch/blackfin/include/asm/unistd.h   |    4 +++-
+ arch/blackfin/kernel/.gitignore      |    1 +
+ arch/blackfin/lib/strncmp.c          |    3 +--
+ arch/blackfin/mach-common/entry.S    |    2 ++
+ drivers/net/bfin_mac.c               |   29 ++++++++++++++---------------
+ 7 files changed, 30 insertions(+), 28 deletions(-)
+ delete mode 100644 arch/blackfin/include/asm/.gitignore
+ create mode 100644 arch/blackfin/kernel/.gitignore
 
