@@ -1,102 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754352AbZEZAUS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754817AbZEZA1A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754352AbZEZAUS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 20:20:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753455AbZEZAUG
+	id S1754817AbZEZA1A (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 20:27:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752778AbZEZA0w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 20:20:06 -0400
-Received: from yx-out-2324.google.com ([74.125.44.28]:33751 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752827AbZEZAUE convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 20:20:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:reply-to:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=Snvn358Z+qiFm5ZSSx696fhWo8vufMIALC5iuusmfAnBrW4kqa/c3bSCIlQSX2xUvp
-         xLPNohaTYnWzo5XAWYRRdZ2K7Mk6ZvgISRppiSWlfcy5BpFi7FJseNUkQVSZS6SsBTSu
-         xoLsv85hgDxtfOHDYAJQDtza4VZ0JKxHCYxIM=
-MIME-Version: 1.0
-Reply-To: mark.asselstine@windriver.com
-In-Reply-To: <5c43c2d40905220627g4036fd80n6f0ef8469e48aa1f@mail.gmail.com>
-References: <5c43c2d40905220627g4036fd80n6f0ef8469e48aa1f@mail.gmail.com>
-Date: Mon, 25 May 2009 20:20:04 -0400
-X-Google-Sender-Auth: 6c4b627cc785c5f4
-Message-ID: <919fe2b30905251720n24837f56xf24a93ca7bdf89ae@mail.gmail.com>
-Subject: Re: [PATCH] oss: Remove void casts
-From: Mark Asselstine <mark.asselstine@windriver.com>
-To: =?ISO-8859-1?Q?Andr=E9_Lopes?= <andre.neo.net@gmail.com>
-Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
-       askulysh@image.kiev.ua
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Mon, 25 May 2009 20:26:52 -0400
+Received: from mail.crca.org.au ([67.207.131.56]:60470 "EHLO crca.org.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752233AbZEZA0w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 20:26:52 -0400
+X-Bogosity: Ham, spamicity=0.000000
+Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
+From: Nigel Cunningham <nigel@tuxonice.net>
+Reply-To: nigel@tuxonice.net
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Pavel Machek <pavel@ucw.cz>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@lists.linux-foundation.org,
+       tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org
+In-Reply-To: <200905260029.25847.oliver@neukum.org>
+References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
+	 <20090525123228.GA13446@elf.ucw.cz>
+	 <1243287557.16743.114.camel@nigel-laptop>
+	 <200905260029.25847.oliver@neukum.org>
+Content-Type: text/plain
+Date: Tue, 26 May 2009 10:28:28 +1000
+Message-Id: <1243297708.16743.149.camel@nigel-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/5/22 André Lopes <andre.neo.net@gmail.com>:
-> This trivial patch just remove void cats from sound/oss/sh_dac_audio.c
+Hi.
 
-darn cats got out again :P
+On Tue, 2009-05-26 at 00:29 +0200, Oliver Neukum wrote:
+> Am Montag, 25. Mai 2009 23:39:17 schrieb Nigel Cunningham:
+> > > If there's not enough swap available, swsusp should freeze, realize
+> > > there's no swap, unfreeze and continue. I do not see reliability
+> > > problem there.
+> >
+> > If there's not enough storage available (I'm also thinking of the file
+> > allocator Oliver wants), freeing some memory may get you in a position
+> 
+> No, I do want a dedicated partition. Going to a filesystem is just hiding
+> the problem. Filesystems can return -ENOSPC.
+> I also want my sytem to reliably hibernate if the filesystem to hold
+> the image happens to be remounted ro or to be undergoing a filesystem
+> check.
+> 
+> For full reliability you simply need a reservation. In addition that's
+> the fastest solution, too. A simple linear write to an unfragmented
+> area.
+> The typical system today has three orders of magnitude more disk
+> than ram. Do you really have a sytem you want to hibernate that has
+> less than 2two orders of magnitude more disk than ram?
 
-s/void cats/void pointer casts/
+I agree that a dedicated non-swap partition has advantages. The only
+disadvantage I can think of is resizing it if you buy more RAM (and
+since that's not going to happen often, it's not a biggie).
+
+I'm not sure that going to a filesystem is hiding the problem though -
+whatever solution you adopt, there can be situations in which space
+available < space needed. Dedicated non-swap certainly has the least
+difficulties, but least != none.
+
+I want flexibility, because different people have different situations
+and needs. You might care about a dedicated partition. Another person
+might be putting their toe in the Linux water, dual booting with 80% of
+the HDD in M$ and having insufficient space to shuffle Linux data around
+to make the partition.
+
+Read only filesystems aren't a problem, by the way. So long as you can
+bmap the file, that's enough for TuxOnIce - it doesn't currently expand
+files - just bmaps and writes directly to the blocks (not via the fs
+layer). That's simpler because you _have_ to do the same approach in
+reverse at resume time.
 
 Regards,
-Mark
 
->
-> Signed-off-by: André Lopes <andre.neo.net@gmail.com>
->
-> ---
->  sound/oss/sh_dac_audio.c |   10 +++++-----
->  1 files changed, 5 insertions(+), 5 deletions(-)
->
-> diff --git a/sound/oss/sh_dac_audio.c b/sound/oss/sh_dac_audio.c
-> index 78cfb66..7247ea1 100755
-> --- a/sound/oss/sh_dac_audio.c
-> +++ b/sound/oss/sh_dac_audio.c
-> @@ -200,21 +200,21 @@ static ssize_t dac_audio_write(struct file
-> *file, const char *buf, size_t count,
->        if (count > free)
->                count = free;
->        if (buffer_begin > buffer_end) {
-> -               if (copy_from_user((void *)buffer_end, buf, count))
-> +               if (copy_from_user(buffer_end, buf, count))
->                        return -EFAULT;
->
->                buffer_end += count;
->        } else {
->                nbytes = data_buffer + BUFFER_SIZE - buffer_end;
->                if (nbytes > count) {
-> -                       if (copy_from_user((void *)buffer_end, buf, count))
-> +                       if (copy_from_user(buffer_end, buf, count))
->                                return -EFAULT;
->                        buffer_end += count;
->                } else {
-> -                       if (copy_from_user((void *)buffer_end, buf, nbytes))
-> +                       if (copy_from_user(buffer_end, buf, nbytes))
->                                return -EFAULT;
->                        if (copy_from_user
-> -                           ((void *)data_buffer, buf + nbytes, count - nbytes))
-> +                           (data_buffer, buf + nbytes, count - nbytes))
->                                return -EFAULT;
->                        buffer_end = data_buffer + count - nbytes;
->                }
-> @@ -322,7 +322,7 @@ static void __exit dac_audio_exit(void)
->        free_irq(TIMER1_IRQ, 0);
->
->        unregister_sound_dsp(device_major);
-> -       kfree((void *)data_buffer);
-> +       kfree(data_buffer);
->  }
->
->  module_init(dac_audio_init);
-> --
-> 1.5.6.5
-> --
-> To unsubscribe from this list: send the line "unsubscribe kernel-janitors" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
+Nigel
+
