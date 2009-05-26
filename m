@@ -1,44 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759398AbZEZW0O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759115AbZEZWZy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759398AbZEZW0O (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 18:26:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759224AbZEZWZF
+	id S1759115AbZEZWZy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 18:25:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759121AbZEZWYN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 18:25:05 -0400
-Received: from gate.crashing.org ([63.228.1.57]:44069 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759361AbZEZWZE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 18:25:04 -0400
-Subject: Re: [PATCH] devres: WARN() and return, don't crash on device_del()
- of uninitialized device
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, greg@kroah.com,
-       Kay Sievers <kay.sievers@vrfy.org>, Tejun Heo <tj@kernel.org>
-In-Reply-To: <20090526141552.507f8821.akpm@linux-foundation.org>
-References: <20090525065346.1D991DE2AC@ozlabs.org>
-	 <20090526141552.507f8821.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 27 May 2009 08:23:30 +1000
-Message-Id: <1243376610.17847.12.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 26 May 2009 18:24:13 -0400
+Received: from smtp-out002.kontent.com ([81.88.40.216]:55553 "EHLO
+	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758950AbZEZWYM convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 18:24:12 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [linux-pm] [TuxOnIce-devel] [RFC] TuxOnIce
+Date: Wed, 27 May 2009 00:24:38 +0200
+User-Agent: KMail/1.10.3 (Linux/2.6.27.21-0.1-default; KDE/4.1.3; x86_64; ; )
+Cc: Nigel Cunningham <nigel@tuxonice.net>, linux-pm@lists.linux-foundation.org,
+       tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org
+References: <Pine.LNX.4.44L0.0905261754250.11998-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0905261754250.11998-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200905270024.39073.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-05-26 at 14:15 -0700, Andrew Morton wrote:
-> 
-> This could be coded a little more neatly as:
-> 
->         /* Looks like an uninitialized device structure */
->         if (WARN_ON(dev->devres_head.next == NULL))
->                 return -ENODEV;
+Am Dienstag, 26. Mai 2009 23:56:16 schrieb Alan Stern:
+> Probably the driver's author just never got around to adding support
+> for suspend/resume.  Which driver is it?  What happens if you don't
+> rmmod it?
 
-Oh I didn't know we could do that nowadays...
+cxusb. Indeed it does not implement suspend/resume.
 
-Cheers,
-Ben.
-
+	Regards
+		Oliver
 
