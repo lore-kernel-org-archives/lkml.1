@@ -1,81 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756588AbZEZVJ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756856AbZEZVKO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756588AbZEZVJ3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 17:09:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751525AbZEZVJV
+	id S1756856AbZEZVKO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 17:10:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753511AbZEZVKB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 17:09:21 -0400
-Received: from smtp02.lnh.mail.rcn.net ([207.172.157.102]:11642 "EHLO
-	smtp02.lnh.mail.rcn.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751449AbZEZVJV (ORCPT
+	Tue, 26 May 2009 17:10:01 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:53992 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751525AbZEZVJ7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 17:09:21 -0400
-Subject: Re: [2.6.27.24] Kernel coredump to a pipe is failing
-From: Paul Smith <paul@mad-scientist.net>
-Reply-To: paul@mad-scientist.net
-To: Andi Kleen <andi@firstfloor.org>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <878wkjobbm.fsf@basil.nowhere.org>
-References: <1243355634.29250.331.camel@psmith-ubeta.netezza.com>
-	 <878wkjobbm.fsf@basil.nowhere.org>
+	Tue, 26 May 2009 17:09:59 -0400
+Subject: Re: [PATCH 25/20] sysfs: Only support removing emtpy sysfs 
+	directories.
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Kay Sievers <kay.sievers@vrfy.org>,
+       SCSI development list <linux-scsi@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Tejun Heo <tj@kernel.org>, Cornelia Huck <cornelia.huck@de.ibm.com>,
+       linux-fsdevel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>
+In-Reply-To: <Pine.LNX.4.44L0.0905261508210.9278-100000@iolanthe.rowland.org>
+References: <Pine.LNX.4.44L0.0905261508210.9278-100000@iolanthe.rowland.org>
 Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: GNU's Not Unix!
-Date: Tue, 26 May 2009 17:09:16 -0400
-Message-Id: <1243372156.7369.119.camel@homebase.localnet>
+Date: Tue, 26 May 2009 16:09:59 -0500
+Message-Id: <1243372199.2815.77.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-05-26 at 22:31 +0200, Andi Kleen wrote:
-> Paul Smith <paul@mad-scientist.net> writes:
-> > Well, -512 is ERESTARTSYS.  That, to me, seems like a reasonable error
-> > code to get when we're trying to dump core to a pipe.  Yes?  No?
+On Tue, 2009-05-26 at 15:29 -0400, Alan Stern wrote:
+> On Tue, 26 May 2009, Kay Sievers wrote:
 > 
-> Which signal is it? SIGPIPE?
-
-I'm not sure; I'll have to dig in a little further.  I'm not sure
-offhand how to determine which signal it was from inside the kernel but
-it shouldn't be hard to find.
-
-> >
-> > Shouldn't we be doing some kind of error handling here, at least for
-> > basic things like signals?  Should a process that's dumping core be set
-> > to ignore signals?  Should dump_write() try again on ERESTARTSYS?
+> > On Mon, May 25, 2009 at 13:45, Kay Sievers <kay.sievers@vrfy.org> wrote:
+> > > On Mon, May 25, 2009 at 04:06, Alan Stern <stern@rowland.harvard.edu> wrote:
+> > 
+> > >> by the way -- so it's a little difficult to trigger.
+> > >
+> > > I can trigger it pretty reliable now on plain -rc7 , but only with
+> > > more hubs in-between the storage device. It usually take less than
+> > > 10-15 connect/disconnect cycles.
+> > >
+> > > It looks like a serious bug though, after the bug triggered, random,
+> > > likely unrelated, applications crash, and I can not cleanly shot down
+> > > anymore.
+> > 
+> > Just a heads up if anybody is trying to reproduce this, it trashed my
+> > ext3 rootfs, which is not recoverable.
+> > 
+> > Not sure what exactly caused this, but I didn't have anything like
+> > this for a very long time.
+> > 
+> > I tried to reproduce the issue a few times more, and it crashed random
+> > processes after the bug triggered, like mentioned above, and the box
+> > never shut down cleanly.
+> > 
+> > It's entirely possible, that bug causes serious issues.
 > 
-> I think it should block signals. Here's a untested patch.
+> If you don't mind trashing some more ext3 root filesystems :-) you can
+> try this patch.  It's almost certainly not quite the right thing to do
+> and I have probably messed up the target's reference counting, but
+> maybe it's a step in the right direction.
 > 
-> It has the disadvantage that it reports the incorrect blocked mask
-> in the ELF corefile, but that's probably better than truncated 
-> coredumps.
-
-As a quick test I changed dump_write() to retry on ERESTARTSYS after
-disabling the pending signal, like:
-
-        static int dump_write(struct file *file, const void *addr, int nr)
-        {
-                while (1) {
-                        int r = file->f_op->write(file, addr, nr, &file->f_pos);
-                        if (r != -ERESTARTSYS)
-                                return r == nr;
-        
-                        /* We don't handle signals while dumping core. */
-                        clear_thread_flag(TIF_SIGPENDING);
-                }
-        }
-
-I don't know if this is right, but in some quick tests I ran it did
-work: my cores were full size.  I haven't finished testing (and I have
-to go to soccer practice right now).
-
-This obviously doesn't reset the signal mask in the dumping process, but
-it makes the dump_write() more complex and it may cause other issues so
-I can't say whether this is the way to go.
-
+> This strange business of deferring unregistration into a workqueue 
+> means that the calls might not be executed in the same order that 
+> they're made.
+> 
+> Alan Stern
+> 
+> 
+> Index: usb-2.6/drivers/scsi/scsi_scan.c
+> ===================================================================
+> --- usb-2.6.orig/drivers/scsi/scsi_scan.c
+> +++ usb-2.6/drivers/scsi/scsi_scan.c
+> @@ -956,6 +956,7 @@ static inline void scsi_destroy_sdev(str
+>  	if (sdev->host->hostt->slave_destroy)
+>  		sdev->host->hostt->slave_destroy(sdev);
+>  	transport_destroy_device(&sdev->sdev_gendev);
+> +	put_device(sdev->sdev_gendev.parent);
+>  	put_device(&sdev->sdev_gendev);
+>  }
+>  
+> Index: usb-2.6/drivers/scsi/scsi_sysfs.c
+> ===================================================================
+> --- usb-2.6.orig/drivers/scsi/scsi_sysfs.c
+> +++ usb-2.6/drivers/scsi/scsi_sysfs.c
+> @@ -327,8 +327,6 @@ static void scsi_device_dev_release_user
+>  		sdev->request_queue = NULL;
+>  	}
+>  
+> -	scsi_target_reap(scsi_target(sdev));
 > -
-> Block signals during core dump
+>  	kfree(sdev->inquiry);
+>  	kfree(sdev);
+>  
+> @@ -954,6 +952,7 @@ void __scsi_remove_device(struct scsi_de
+>  	if (sdev->host->hostt->slave_destroy)
+>  		sdev->host->hostt->slave_destroy(sdev);
+>  	transport_destroy_device(dev);
+> +	scsi_target_reap(scsi_target(sdev));
+>  	put_device(dev);
+>  }
 
-Cool, I'll test this one as well.
+Um, well, you're right, it's wrong.  The reap needs to be matched with
+the reap_ref++
+
+It's hard to follow the problem without full context, but if I
+understand correctly the problem is you want all the target directories
+removed before you call device_del() on the host and the thing that gets
+in the way is the necessary user context removal of the host.  So a
+simple solution, rather than mucking with the way it works, is to wait
+for the workqueues to complete.  Does this fix it?
+
+James
+
+---
+
+diff --git a/drivers/scsi/scsi_scan.c b/drivers/scsi/scsi_scan.c
+index c447838..5846c26 100644
+--- a/drivers/scsi/scsi_scan.c
++++ b/drivers/scsi/scsi_scan.c
+@@ -1877,6 +1877,12 @@ void scsi_forget_host(struct Scsi_Host *shost)
+ 		goto restart;
+ 	}
+ 	spin_unlock_irqrestore(shost->host_lock, flags);
++
++	/*
++	 * the sdev removal goes through a workqueue for user context, so
++	 * make sure it's all complete before we return
++	 */
++	flush_scheduled_work();
+ }
+ 
+ /*
+
 
