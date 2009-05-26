@@ -1,81 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759601AbZEZXem@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760452AbZEZXey@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759601AbZEZXem (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 19:34:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758254AbZEZXee
+	id S1760452AbZEZXey (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 19:34:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759769AbZEZXeh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 19:34:34 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43444 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757425AbZEZXed (ORCPT
+	Tue, 26 May 2009 19:34:37 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:57797 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759726AbZEZXeg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 19:34:33 -0400
-Date: Tue, 26 May 2009 16:33:33 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Rodolfo Giometti <giometti@linux.it>
-Cc: linux-kernel@vger.kernel.org, dwmw2@infradead.org, davej@redhat.com,
-       sam@ravnborg.org, greg@kroah.com, randy.dunlap@oracle.com,
-       kay.sievers@vrfy.org, alan@lxorguk.ukuu.org.uk, hpa@zytor.com,
-       mingo@elte.hu, mtk.manpages@gmail.com, hch@infradead.org,
-       giometti@linux.it
-Subject: Re: [PATCH 1/1] LinuxPPS core support.
-Message-Id: <20090526163333.052026f6.akpm@linux-foundation.org>
-In-Reply-To: <1242972753-22992-2-git-send-email-giometti@linux.it>
-References: <1242972753-22992-1-git-send-email-giometti@linux.it>
-	<1242972753-22992-2-git-send-email-giometti@linux.it>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Tue, 26 May 2009 19:34:36 -0400
+Date: Wed, 27 May 2009 01:41:09 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andi Kleen <andi@firstfloor.org>, paul@mad-scientist.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6.27.24] Kernel coredump to a pipe is failing
+Message-ID: <20090526234109.GL846@one.firstfloor.org>
+References: <1243355634.29250.331.camel@psmith-ubeta.netezza.com> <878wkjobbm.fsf@basil.nowhere.org> <20090526160017.98fc62e4.akpm@linux-foundation.org> <20090526231428.GK846@one.firstfloor.org> <20090526162821.02e11d5b.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090526162821.02e11d5b.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 22 May 2009 08:12:33 +0200
-Rodolfo Giometti <giometti@linux.it> wrote:
-
-> This patch adds the kernel side of the PPS support currently named
-> "LinuxPPS".
+On Tue, May 26, 2009 at 04:28:21PM -0700, Andrew Morton wrote:
+> On Wed, 27 May 2009 01:14:28 +0200
+> Andi Kleen <andi@firstfloor.org> wrote:
 > 
-> PPS means "pulse per second" and a PPS source is just a device which
-> provides a high precision signal each second so that an application
-> can use it to adjust system clock time.
+> > On Tue, May 26, 2009 at 04:00:17PM -0700, Andrew Morton wrote:
+> > > dump_write() doesn't seem right, either.  If ->write() returns, say,
+> > > 100 then the dump should keep on going.  At present it treats this
+> > > return as an error.
+> > 
+> > I think that's correct actually. Short write typically means serious 
+> > issue like disk full or broken pipe, so stopping is good.
 > 
-> Common use is the combination of the NTPD as userland program with a
-> GPS receiver as PPS source to obtain a wallclock-time with
-> sub-millisecond synchronisation to UTC.
-> 
-> To obtain this goal the userland programs shoud use the PPS API
-> specification (RFC 2783 - Pulse-Per-Second API for UNIX-like Operating
-> Systems, Version 1.0) which in part is implemented by this patch. It
-> provides a set of chars devices, one per PPS source, which can be used
-> to get the time signal. The RFC's functions can be implemented by
-> accessing to these char devices.
->
-> ...
->
->  Documentation/ABI/testing/sysfs-pps  |   73 ++++++++
->  Documentation/ioctl/ioctl-number.txt |    2 +
->  Documentation/pps/pps.txt            |  172 ++++++++++++++++++
->  MAINTAINERS                          |    7 +
->  drivers/Kconfig                      |    2 +
->  drivers/Makefile                     |    1 +
->  drivers/pps/Kconfig                  |   33 ++++
->  drivers/pps/Makefile                 |    8 +
->  drivers/pps/kapi.c                   |  329 ++++++++++++++++++++++++++++++++++
->  drivers/pps/pps.c                    |  312 ++++++++++++++++++++++++++++++++
->  drivers/pps/sysfs.c                  |   98 ++++++++++
->  include/linux/Kbuild                 |    1 +
->  include/linux/pps.h                  |  122 +++++++++++++
->  include/linux/pps_kernel.h           |   89 +++++++++
+> But we shouldn't assume that.  It could be that the ->write
+> implementation is perfectly able to absorb the remaining data.
 
-Well it seems that Christoph's header file suggestion was addressed.
+Maybe in theory, but in practice that's unlikely isn't it?
+Disk is full or pipe is blocking etc.
 
-It's been a long time and there have been many reviews and comments. 
-Have you been keeping track of them all?
+> We should only error out of the write() returned zero or -EFOO.
+> The current code is simply buggy, but got lucky.
 
-If so, can you please let us know which review comments remain
-unaddressed, or were deliberately not addressed because you disagreed
-with them?
+Maybe very pedantically, but I would argue that most programs 
+don't do what you're saying (retry on any short write) and
+it's actually not very nice to always write a loop for each write.
 
-Thanks.
+Also any IO device who relies on that would likely find
+that it won't work with a lot of software.
+
+So I think the current behaviour is ok, just need to get 
+rid of the signals.
+
+-Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
