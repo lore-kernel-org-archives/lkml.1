@@ -1,82 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757850AbZEZVvQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757261AbZEZVvy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757850AbZEZVvQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 17:51:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754197AbZEZVvD
+	id S1757261AbZEZVvy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 17:51:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754589AbZEZVvq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 17:51:03 -0400
-Received: from www.tglx.de ([62.245.132.106]:58088 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753978AbZEZVvB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 17:51:01 -0400
-Date: Tue, 26 May 2009 23:50:46 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-cc: mingo@elte.hu, LKML <linux-kernel@vger.kernel.org>,
-       Zhaolei <zhaolei@cn.fujitsu.com>, kosaki.motohiro@jp.fujitsu.com,
-       Steven Rostedt <rostedt@goodmis.org>, fweisbec@gmail.com
-Subject: Re: [PATCH 3/3] ftrace: add tracepoint for itimer
-In-Reply-To: <4A16767D.8030907@cn.fujitsu.com>
-Message-ID: <alpine.LFD.2.00.0905262344160.1762@localhost.localdomain>
-References: <4A16767D.8030907@cn.fujitsu.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 26 May 2009 17:51:46 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:33617 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754197AbZEZVvp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 17:51:45 -0400
+Subject: Re: [PATCH] trace: disable preemption before taking raw spinlocks
+From: Peter Zijlstra <peterz@infradead.org>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20090526172802.6377e33f@osiris.boeblingen.de.ibm.com>
+References: <20090526172802.6377e33f@osiris.boeblingen.de.ibm.com>
+Content-Type: text/plain
+Date: Tue, 26 May 2009 23:51:40 +0200
+Message-Id: <1243374700.6600.26.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 22 May 2009, Xiao Guangrong wrote:
-> +TRACE_EVENT(itimer_start,
-> +
-> +	TP_PROTO(int which, struct itimerval *value),
-> +
-> +	TP_ARGS(which, value),
-> +
-> +	TP_STRUCT__entry(
-> +		__field(	int,			which		)
-> +		__field(	unsigned long long,	it_value	)
-> +		__field(	unsigned long long,	it_interval	)
-> +		__string(	comm,   		current->comm   )
-> +	),
-> +
-> +	TP_fast_assign(
-> +		__entry->which		= which;
-> +		__entry->it_value	= (which == ITIMER_REAL ?
-> +			ktime_to_ns(timeval_to_ktime(value->it_value)) :
-> +			timeval_to_cputime(&value->it_value));
-> +		 __entry->it_interval 	= (which == ITIMER_REAL ?
-> +			ktime_to_ns(timeval_to_ktime(value->it_interval)) :
-> +			timeval_to_cputime(&value->it_interval));
-> +		__assign_str(comm, current->comm);
-> +	),
+On Tue, 2009-05-26 at 17:28 +0200, Heiko Carstens wrote:
+> From: Heiko Carstens <heiko.carstens@de.ibm.com>
+> 
+> s390 code uses smp_processor_id() in __raw_spin_lock() code which
+> reveals that a (raw) spinlock is taken without preemption disabled.
+> This can potentially deadlock.
+> 
+> To fix this explicitly disable and enable preemption.
+> 
+> BUG: using smp_processor_id() in preemptible [00000000] code: cat/2278
+> caller is trace_find_cmdline+0x40/0xfc
+> CPU: 0 Not tainted 2.6.30-rc7-dirty #39
+> Process cat (pid: 2278, task: 000000003faedb68, ksp: 000000003b33b988)
+> 000000003b33b988 000000003b33bae0 0000000000000002 0000000000000000 
+>        000000003b33bb80 000000003b33baf8 000000003b33baf8 00000000000175d6 
+>        0000000000000001 000000003b33b988 000000003f9b0000 000000000000000b 
+>        000000000000000c 000000003b33bb40 000000003b33bae0 0000000000000000 
+>        0000000000000000 00000000000175d6 000000003b33bae0 000000003b33bb28 
+> Call Trace:
+> ([<00000000000174b2>] show_trace+0x112/0x170)
+>  [<0000000000017582>] show_stack+0x72/0x100
+>  [<0000000000441538>] dump_stack+0xc8/0xd8
+>  [<000000000025c350>] debug_smp_processor_id+0x114/0x130
+>  [<00000000000bf0e4>] trace_find_cmdline+0x40/0xfc
+>  [<00000000000c35d4>] trace_print_context+0x58/0xac
+>  [<00000000000bb676>] print_trace_line+0x416/0x470
+>  [<00000000000bc8fe>] s_show+0x4e/0x428
+>  [<000000000013834e>] seq_read+0x36a/0x5d4
+>  [<0000000000112a78>] vfs_read+0xc8/0x174
+>  [<0000000000112c58>] SyS_read+0x74/0xc4
+>  [<000000000002c7ae>] sysc_noemu+0x10/0x16
+>  [<000002000012436c>] 0x2000012436c
+> 1 lock held by cat/2278:
+>  #0:  (&p->lock){+.+.+.}, at: [<0000000000138056>] seq_read+0x72/0x5d4
 
-  Again, conversion of raw values needs to be done when we analyse the
-  trace and not in the fast path.
+Shouldn't that be preempt_disable_notrace() and co to avoid tracer
+recursion?
 
-....
 
-> +		} else{
-  
-  } else {
-
-  please
->  			tsk->signal->it_real_incr.tv64 = 0;
-> +			trace_itimer_cancel(ITIMER_REAL);
-> +		}
->  
->  		spin_unlock_irq(&tsk->sighand->siglock);
->  		break;
-> @@ -186,7 +191,10 @@ again:
->  						   jiffies_to_cputime(1));
->  			set_process_cpu_timer(tsk, CPUCLOCK_VIRT,
->  					      &nval, &cval);
-> -		}
-> +			trace_itimer_start(ITIMER_VIRTUAL, value);
-> +		}else
-
-  Please run your patches through checkpatch.pl
-
-Thanks,
-
-	tglx
