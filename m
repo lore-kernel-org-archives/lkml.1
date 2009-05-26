@@ -1,181 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756363AbZEZQlw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756511AbZEZQm4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756363AbZEZQlw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 12:41:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755827AbZEZQlm
+	id S1756511AbZEZQm4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 12:42:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755176AbZEZQmt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 12:41:42 -0400
-Received: from tomts16.bellnexxia.net ([209.226.175.4]:60531 "EHLO
-	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755387AbZEZQlk (ORCPT
+	Tue, 26 May 2009 12:42:49 -0400
+Received: from yx-out-2324.google.com ([74.125.44.28]:4079 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754760AbZEZQms convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 12:41:40 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AtIFAKu1G0pMQW1W/2dsb2JhbACBT81ZhAsF
-Date: Tue, 26 May 2009 12:41:29 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Lai Jiangshan <laijs@cn.fujitsu.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, netfilter-devel@vger.kernel.org, mingo@elte.hu,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       davem@davemloft.net, dada1@cosmosbay.com, zbr@ioremap.net,
-       jeff.chua.linux@gmail.com, paulus@samba.org, jengelh@medozas.de,
-       r000n@r000n.net, benh@kernel.crashing.org
-Subject: Re: [PATCH RFC] v7 expedited "big hammer" RCU grace periods
-Message-ID: <20090526164129.GA19443@Krystal>
-References: <20090522190525.GA13286@linux.vnet.ibm.com> <4A1A3C23.8090004@cn.fujitsu.com> <20090525164446.GD7168@linux.vnet.ibm.com> <4A1B3FFB.7090306@cn.fujitsu.com> <20090526012843.GF7168@linux.vnet.ibm.com> <20090526154625.GA8662@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20090526154625.GA8662@linux.vnet.ibm.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 12:03:27 up 87 days, 12:29,  4 users,  load average: 0.35, 0.21,
-	0.12
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 26 May 2009 12:42:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type:content-transfer-encoding;
+        b=EE9fgOKRHSuNM93Vx6yMnOGwqDT3hOC+254k7NU4fU0UUswW1IuHRFICoU29dwdrBS
+         +YmndnqDk8eKoQfGkOWWE7kRK3zmCtdAQe2AeBC6yGaC2b4Xx+GsFVlRk2ZB9beQqhm0
+         TuyTqPW6EMTvKreUq3+jX6yv2FJo+YBFDq8Kw=
+MIME-Version: 1.0
+In-Reply-To: <20090526113122.GB16835@linux-sh.org>
+References: <1243331191-11445-1-git-send-email-vapier@gentoo.org>
+	 <1243331191-11445-2-git-send-email-vapier@gentoo.org>
+	 <20090526113122.GB16835@linux-sh.org>
+Date: Tue, 26 May 2009 12:42:48 -0400
+Message-ID: <8bd0f97a0905260942m4b574d75oc4f38ee3d8849395@mail.gmail.com>
+Subject: Re: [PATCH 2/2] mtd/maps: uclinux: support Blackfin systems
+From: Mike Frysinger <vapier.adi@gmail.com>
+To: Paul Mundt <lethal@linux-sh.org>, linux-kernel@vger.kernel.org,
+       uclinux-dist-devel@blackfin.uclinux.org,
+       Greg Ungerer <gerg@uclinux.org>, uclinux-dev@uclinux.org,
+       linux-mtd@lists.infradead.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> On Mon, May 25, 2009 at 06:28:43PM -0700, Paul E. McKenney wrote:
-> > On Tue, May 26, 2009 at 09:03:55AM +0800, Lai Jiangshan wrote:
-> > > Paul E. McKenney wrote:
-> > > > 
-> > > > Good point -- I should at the very least add a comment to
-> > > > synchronize_sched_expedited() stating that it cannot be called holding
-> > > > any lock that is acquired in a CPU hotplug notifier.  If this restriction
-> > > > causes any problems, then your approach seems like a promising fix.
-> > > 
-> > > Reviewed-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-> > 
-> > Thank you very much for your review and comments!!!
-> > 
-> > > >> The coupling of synchronize_sched_expedited() and migration_req
-> > > >> is largely increased:
-> > > >>
-> > > >> 1) The offline cpu's per_cpu(rcu_migration_req, cpu) is handled.
-> > > >>    See migration_call::CPU_DEAD
-> > > > 
-> > > > Good.  ;-)
-> > > > 
-> > > >> 2) migration_call() is the highest priority of cpu notifiers,
-> > > >>    So even any other cpu notifier calls synchronize_sched_expedited(),
-> > > >>    It'll not cause DEADLOCK.
-> > > > 
-> > > > You mean if using your preempt_disable() approach, right?  Unless I am
-> > > > missing something, the current get_online_cpus() approach would deadlock
-> > > > in this case.
-> > > 
-> > > Yes, I mean if using my preempt_disable() approach. The current
-> > > get_online_cpus() approach would NOT deadlock in this case also,
-> > > we can require get_online_cpus() in cpu notifiers.
-> > 
-> > I have added the comment for the time being, but should people need to
-> > use this in CPU-hotplug notifiers, then again your preempt_disable()
-> > approach looks to be a promising fix.
-> 
-> I looked more closely at your preempt_disable() suggestion, which you
-> presented earlier as follows:
-> 
-> > I think we can reuse req->dest_cpu and remove get_online_cpus().
-> > (and use preempt_disable() and for_each_possible_cpu())
-> > 
-> > req->dest_cpu = -2 means @req is not queued
-> > req->dest_cpu = -1 means @req is queued
-> > 
-> > a little like this code:
-> > 
-> > 	mutex_lock(&rcu_sched_expedited_mutex);
-> > 	for_each_possible_cpu(cpu) {
-> > 		preempt_disable()
-> > 		if (cpu is not online)
-> > 			just set req->dest_cpu to -2;
-> > 		else
-> > 			init and queue req, and wake_up_process().
-> > 		preempt_enable()
-> > 	}
-> > 	for_each_possible_cpu(cpu) {
-> > 		if (req is queued)
-> > 			wait_for_completion().
-> > 	}
-> > 	mutex_unlock(&rcu_sched_expedited_mutex);
-> 
-> I am concerned about the following sequence of events:
-> 
-> o	synchronize_sched_expedited() disables preemption, thus blocking
-> 	offlining operations.
-> 
-> o	CPU 1 starts offlining CPU 0.  It acquires the CPU-hotplug lock,
-> 	and proceeds, and is now waiting for preemption to be enabled.
-> 
-> o	synchronize_sched_expedited() disables preemption, sees
-> 	that CPU 0 is online, so initializes and queues a request,
-> 	does a wake-up-process(), and finally does a preempt_enable().
-> 
-> o	CPU 0 is currently running a high-priority real-time process,
-> 	so the wakeup does not immediately happen.
-> 
-> o	The offlining process completes, including the kthread_stop()
-> 	to the migration task.
-> 
-> o	The migration task wakes up, sees kthread_should_stop(),
-> 	and so exits without checking its queue.
-> 
-> o	synchronize_sched_expedited() waits forever for CPU 0 to respond.
-> 
-> I suppose that one way to handle this would be to check for the CPU
-> going offline before doing the wait_for_completion(), but I am concerned
-> about races affecting this check as well.
-> 
-> Or is there something in the CPU-offline process that makes the above
-> sequence of events impossible?
-> 
+On Tue, May 26, 2009 at 07:31, Paul Mundt wrote:
+> On Tue, May 26, 2009 at 05:46:31AM -0400, Mike Frysinger wrote:
+>> diff --git a/drivers/mtd/maps/uclinux.c b/drivers/mtd/maps/uclinux.c
+>> index 57699c2..dcb552f 100644
+>> --- a/drivers/mtd/maps/uclinux.c
+>> +++ b/drivers/mtd/maps/uclinux.c
+>> @@ -55,8 +55,13 @@ static int __init uclinux_mtd_init(void)
+>>  {
+>>       struct mtd_info *mtd;
+>>       struct map_info *mapp;
+>> +#ifdef CONFIG_BLACKFIN
+>> +     extern unsigned long memory_mtd_start;
+>> +     unsigned long addr = (unsigned long) memory_mtd_start;
+>> +#else
+>>       extern char _ebss;
+>>       unsigned long addr = (unsigned long) &_ebss;
+>> +#endif
+>>
+>>       mapp = &uclinux_ram_map;
+>>       mapp->phys = addr;
+>
+> NAK.
+>
+> I know there's no accounting for taste, but it would be nice to at least
+> see some minimal amount of effort going in to fixing these things
+> sanely rather than just lazily shoving ifdefs in wherever possible.
+>
+> In this case you should just kill all of that crap off, and have the
+> platforms that use this set uclinux_ram_map up themselves, it's already
+> a global. Of course you can use _ebss as a default value for
+> uclinux_ram_map.phys and just override it in your platform.
 
-I think you are right, there is a problem there. The simple fact that
-this needs to disable preemption to protect against cpu hotplug seems a
-bit strange. If I may propose an alternate solution, which assumes that
-threads pinned to a CPU are migrated to a different CPU when a CPU goes
-offline (and will therefore execute anyway), and that a CPU brought
-online after the first iteration on online cpus was already quiescent
-(hopefully my assumptions are right). Preemption is left enabled during
-all the critical section.
+i would agree if it were a board-specific issue, but it's an arch
+issue, so pushing it to the boards level is wrong.  i can however
+replace the addr with a global weak and add a symbol into the Blackfin
+arch code to override it.
 
-It looks a lot like Lai's approach, except that I use a cpumask (I
-thought it looked cleaner and typically involves less operations than
-looping on each possible cpu). I also don't disable preemption and
-assume that cpu hotplug can happen at any point during this critical
-section.
-
-Something along the lines of :
-
-static DECLARE_BITMAP(cpu_wait_expedited_bits, CONFIG_NR_CPUS);
-const struct cpumask *const cpu_wait_expedited_mask =
-			to_cpumask(cpu_wait_expedited_bits);
-
-	mutex_lock(&rcu_sched_expedited_mutex);
-	cpumask_clear(cpu_wait_expedited_mask);
-	for_each_online_cpu(cpu) {
-		init and queue cpu req, and wake_up_process().
-		cpumask_set_cpu(cpu, cpu_wait_expedited_mask);
-	}
-	for_each_cpu_mask(cpu, cpu_wait_expedited_mask) {
-		wait_for_completion(cpu req);
-	}
-	mutex_unlock(&rcu_sched_expedited_mutex);
-
-There is one concern with this approach : if a CPU is hotunplugged and
-hotplugged during the critical section, I think the scheduler would
-migrate the thread to a different CPU (upon hotunplug) and let the
-thread run on this other CPU. If the target CPU is hotplugged again,
-this would mean the thread would have run on a different CPU than the
-target. I think we can argue that a CPU going offline and online again
-will meet quiescent state requirements, so this should not be a problem.
-
-Mathieu
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+the structs being global in this file is simply wrong from what i can
+tell ... everything in there should be static.  i'll send a patch for
+that later on.
+-mike
