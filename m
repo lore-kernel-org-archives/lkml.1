@@ -1,97 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755609AbZEZRdl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756680AbZEZRex@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755609AbZEZRdl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 13:33:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754668AbZEZRde
+	id S1756680AbZEZRex (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 13:34:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755309AbZEZReo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 13:33:34 -0400
-Received: from mga09.intel.com ([134.134.136.24]:39948 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754656AbZEZRdd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 13:33:33 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,253,1241420400"; 
-   d="scan'208";a="415779863"
-Date: Tue, 26 May 2009 10:33:35 -0700
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Tejun Heo <tj@kernel.org>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       "Zhang, Rui" <rui.zhang@intel.com>,
-       Suresh Siddha <suresh.d.siddha@intel.com>
-Subject: Re: [GIT PULL] x86 fixes for 2.6.30-rc8
-Message-ID: <20090526173335.GA28720@linux-os.sc.intel.com>
-References: <200905252003.n4PK3sFi014919@voreg.hos.anvin.org> <alpine.LFD.2.01.0905251543570.3435@localhost.localdomain> <alpine.LFD.2.01.0905251550320.3435@localhost.localdomain> <4A1B23AB.7090204@zytor.com>
+	Tue, 26 May 2009 13:34:44 -0400
+Received: from adsl-67-113-118-6.dsl.sndg02.pacbell.net ([67.113.118.6]:37697
+	"EHLO multivac.one-eyed-alien.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755054AbZEZReo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 13:34:44 -0400
+Date: Tue, 26 May 2009 10:34:32 -0700
+From: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: =?iso-8859-1?Q?Rog=E9rio?= Brito <rbrito@users.sf.net>,
+       Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org
+Subject: Re: Question on the removable flag of USB devices
+Message-ID: <20090526173432.GU28077@one-eyed-alien.net>
+Mail-Followup-To: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+	=?iso-8859-1?Q?Rog=E9rio?= Brito <rbrito@users.sf.net>,
+	Alan Stern <stern@rowland.harvard.edu>,
+	linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+References: <20090525164553.GA5572@ime.usp.br> <20090525184831.GT28077@one-eyed-alien.net> <4A1C1A79.2020500@s5r6.in-berlin.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="FWibJpkbnkY6rrXF"
 Content-Disposition: inline
-In-Reply-To: <4A1B23AB.7090204@zytor.com>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <4A1C1A79.2020500@s5r6.in-berlin.de>
+User-Agent: Mutt/1.4.2.3i
+Organization: One Eyed Alien Networks
+X-Copyright: (C) 2009 Matthew Dharm, all rights reserved.
+X-Message-Flag: Get a real e-mail client.  http://www.mutt.org/
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.12 (multivac.one-eyed-alien.net [127.0.0.1]); Tue, 26 May 2009 10:34:33 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 25, 2009 at 04:03:07PM -0700, H. Peter Anvin wrote:
-> Linus Torvalds wrote:
-> > 
-> > On Mon, 25 May 2009, Linus Torvalds wrote:
-> >> Now you made it do two different "on_each_cpu" things. Maybe it doesn't 
-> >> matter, but it just seems wrong.
-> > 
-> > Btw, I pulled, I just wanted to note that I don't think this was done 
-> > optimally/cleanly.
-> > 
-> 
-> Understood.  Do you want a fix now or for .31?
-> 
 
-Below is the patch that does this optimally.
+--FWibJpkbnkY6rrXF
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Thanks,
-Venki
+On Tue, May 26, 2009 at 06:36:09PM +0200, Stefan Richter wrote:
+> Matthew Dharm wrote:
+> > On Mon, May 25, 2009 at 01:45:54PM -0300, Rog=E9rio Brito wrote:
+> >> The question is: how are devices determined to be removable or not?
+> >> Sorry if this question is too naive.
+> >=20
+> > It's a bit that the device reports.  The usb-storage driver passes this=
+ bit
+> > to the SCSI layer.
+>=20
+> Wasn't this bit actually about removable _media_ rather than
+> hotpluggable transports?  (I.e. hardware where you can pull the medium
+> out of the drive mechanism.)  So in this sense, an USB attached HDD
+> should actually not present itself as "removable" unless it's a SyQuest
+> or Zip or something like that.
 
+In fact, yes, that's the meaning of that bit.  The device indicates if the
+storage media may be removed from the device.
 
-[PATCH] x86: Avoid back to back on_each_cpu in cpa_flush_array
+That said, a great many devices simply lie about this.  Probably developers
+doing a cut-and-paste from templates which have the bit set one way or the
+other.  The "popular" OSes don't seem to really care much about this bit...
 
-Cleanup cpa_flush_array() to avoid back to back on_each_cpu() calls.
+Matt
 
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
----
- arch/x86/mm/pageattr.c |   12 +++---------
- 1 files changed, 3 insertions(+), 9 deletions(-)
+--=20
+Matthew Dharm                              Home: mdharm-usb@one-eyed-alien.=
+net=20
+Maintainer, Linux USB Mass Storage Driver
 
-diff --git a/arch/x86/mm/pageattr.c b/arch/x86/mm/pageattr.c
-index 0f9052b..532d05e 100644
---- a/arch/x86/mm/pageattr.c
-+++ b/arch/x86/mm/pageattr.c
-@@ -213,21 +213,15 @@ static void cpa_flush_array(unsigned long *start, int numpages, int cache,
- 			    int in_flags, struct page **pages)
- {
- 	unsigned int i, level;
-+	unsigned long do_wbinvd = cache && numpages >= 1024; /* 4M threshold */
- 
- 	BUG_ON(irqs_disabled());
- 
--	on_each_cpu(__cpa_flush_range, NULL, 1);
-+	on_each_cpu(__cpa_flush_all, (void *) do_wbinvd, 1);
- 
--	if (!cache)
-+	if (!cache || do_wbinvd)
- 		return;
- 
--	/* 4M threshold */
--	if (numpages >= 1024) {
--		if (boot_cpu_data.x86 >= 4)
--			on_each_cpu(wbinvd_local, NULL, 1);
--
--		return;
--	}
- 	/*
- 	 * We only need to flush on one CPU,
- 	 * clflush is a MESI-coherent instruction that
--- 
-1.6.0.6
+C:  Like the Furby?
+DP: He gives me the creeps.  Think the SPCA will take him?
+					-- Cobb and Dust Puppy
+User Friendly, 1/2/1999
 
+--FWibJpkbnkY6rrXF
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQFKHCgoHL9iwnUZqnkRAoHWAJ9RtZTPfNrJejbpxakt/T4rYt5x4wCglANz
+DoBtlDZK1wR/sIuS6AjnhiE=
+=Tzs1
+-----END PGP SIGNATURE-----
+
+--FWibJpkbnkY6rrXF--
