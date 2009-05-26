@@ -1,82 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758703AbZEZV6S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758794AbZEZV67@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758703AbZEZV6S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 17:58:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755893AbZEZV6J
+	id S1758794AbZEZV67 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 17:58:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755788AbZEZV6v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 17:58:09 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:48512 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755250AbZEZV6I (ORCPT
+	Tue, 26 May 2009 17:58:51 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:55874 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753460AbZEZV6v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 17:58:08 -0400
-Date: Tue, 26 May 2009 17:58:09 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Peter Zijlstra <peterz@infradead.org>
-cc: Heiko Carstens <heiko.carstens@de.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] trace: disable preemption before taking raw spinlocks
-In-Reply-To: <alpine.DEB.2.00.0905261754380.26705@gandalf.stny.rr.com>
-Message-ID: <alpine.DEB.2.00.0905261757500.26705@gandalf.stny.rr.com>
-References: <20090526172802.6377e33f@osiris.boeblingen.de.ibm.com> <1243374700.6600.26.camel@laptop> <alpine.DEB.2.00.0905261754380.26705@gandalf.stny.rr.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 26 May 2009 17:58:51 -0400
+Date: Tue, 26 May 2009 14:57:27 -0700
+Message-Id: <200905262157.n4QLvRVH028289@tazenda.hos.anvin.org>
+From: "H. Peter Anvin" <hpa@zytor.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [GIT PULL] Additional x86 fixes for 2.6.30-rc8
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Tejun Heo <tj@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Linus,
 
-On Tue, 26 May 2009, Steven Rostedt wrote:
+Here is the cleanup of Venki's WBINVD fix, and a fix for building
+relocatable i386 kernels with some binutils versions.
 
-> 
-> On Tue, 26 May 2009, Peter Zijlstra wrote:
-> 
-> > On Tue, 2009-05-26 at 17:28 +0200, Heiko Carstens wrote:
-> > > From: Heiko Carstens <heiko.carstens@de.ibm.com>
-> > > 
-> > > s390 code uses smp_processor_id() in __raw_spin_lock() code which
-> > > reveals that a (raw) spinlock is taken without preemption disabled.
-> > > This can potentially deadlock.
-> > > 
-> > > To fix this explicitly disable and enable preemption.
-> > > 
-> > > BUG: using smp_processor_id() in preemptible [00000000] code: cat/2278
-> > > caller is trace_find_cmdline+0x40/0xfc
-> > > CPU: 0 Not tainted 2.6.30-rc7-dirty #39
-> > > Process cat (pid: 2278, task: 000000003faedb68, ksp: 000000003b33b988)
-> > > 000000003b33b988 000000003b33bae0 0000000000000002 0000000000000000 
-> > >        000000003b33bb80 000000003b33baf8 000000003b33baf8 00000000000175d6 
-> > >        0000000000000001 000000003b33b988 000000003f9b0000 000000000000000b 
-> > >        000000000000000c 000000003b33bb40 000000003b33bae0 0000000000000000 
-> > >        0000000000000000 00000000000175d6 000000003b33bae0 000000003b33bb28 
-> > > Call Trace:
-> > > ([<00000000000174b2>] show_trace+0x112/0x170)
-> > >  [<0000000000017582>] show_stack+0x72/0x100
-> > >  [<0000000000441538>] dump_stack+0xc8/0xd8
-> > >  [<000000000025c350>] debug_smp_processor_id+0x114/0x130
-> > >  [<00000000000bf0e4>] trace_find_cmdline+0x40/0xfc
-> > >  [<00000000000c35d4>] trace_print_context+0x58/0xac
-> > >  [<00000000000bb676>] print_trace_line+0x416/0x470
-> > >  [<00000000000bc8fe>] s_show+0x4e/0x428
-> > >  [<000000000013834e>] seq_read+0x36a/0x5d4
-> > >  [<0000000000112a78>] vfs_read+0xc8/0x174
-> > >  [<0000000000112c58>] SyS_read+0x74/0xc4
-> > >  [<000000000002c7ae>] sysc_noemu+0x10/0x16
-> > >  [<000002000012436c>] 0x2000012436c
-> > > 1 lock held by cat/2278:
-> > >  #0:  (&p->lock){+.+.+.}, at: [<0000000000138056>] seq_read+0x72/0x5d4
-> > 
-> > Shouldn't that be preempt_disable_notrace() and co to avoid tracer
-> > recursion?
-> 
-> Doesn't need to be. That function is done in the output (slow path), not 
-> during an actual trace.
+The following changes since commit e2a1b9ee2335c35e0e34c88a024481b194b3c9cc:
+  Linus Torvalds (1):
+        Merge branch 'bugfixes' of git://git.linux-nfs.org/projects/trondmy/nfs-2.6
 
-Oh, and I should also include:
+are available in the git repository at:
 
-Acked-by: Steven Rostedt <rostedt@goodmis.org>
+  git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-fixes-for-linus
 
--- Steve
+Pallipadi, Venkatesh (1):
+      x86: avoid back to back on_each_cpu in cpa_flush_array
 
+Tejun Heo (1):
+      x86, relocs: ignore R_386_NONE in kernel relocation entries
+
+ arch/x86/boot/compressed/relocs.c |    7 +++++--
+ arch/x86/mm/pageattr.c            |   17 +++--------------
+ 2 files changed, 8 insertions(+), 16 deletions(-)
+
+diff --git a/arch/x86/boot/compressed/relocs.c b/arch/x86/boot/compressed/relocs.c
+index 857e492..bbeb0c3 100644
+--- a/arch/x86/boot/compressed/relocs.c
++++ b/arch/x86/boot/compressed/relocs.c
+@@ -504,8 +504,11 @@ static void walk_relocs(void (*visit)(Elf32_Rel *rel, Elf32_Sym *sym))
+ 			if (sym->st_shndx == SHN_ABS) {
+ 				continue;
+ 			}
+-			if (r_type == R_386_PC32) {
+-				/* PC relative relocations don't need to be adjusted */
++			if (r_type == R_386_NONE || r_type == R_386_PC32) {
++				/*
++				 * NONE can be ignored and and PC relative
++				 * relocations don't need to be adjusted.
++				 */
+ 			}
+ 			else if (r_type == R_386_32) {
+ 				/* Visit relocations that need to be adjusted */
+diff --git a/arch/x86/mm/pageattr.c b/arch/x86/mm/pageattr.c
+index 0f9052b..e17efed 100644
+--- a/arch/x86/mm/pageattr.c
++++ b/arch/x86/mm/pageattr.c
+@@ -204,30 +204,19 @@ static void cpa_flush_range(unsigned long start, int numpages, int cache)
+ 	}
+ }
+ 
+-static void wbinvd_local(void *unused)
+-{
+-	wbinvd();
+-}
+-
+ static void cpa_flush_array(unsigned long *start, int numpages, int cache,
+ 			    int in_flags, struct page **pages)
+ {
+ 	unsigned int i, level;
++	unsigned long do_wbinvd = cache && numpages >= 1024; /* 4M threshold */
+ 
+ 	BUG_ON(irqs_disabled());
+ 
+-	on_each_cpu(__cpa_flush_range, NULL, 1);
++	on_each_cpu(__cpa_flush_all, (void *) do_wbinvd, 1);
+ 
+-	if (!cache)
++	if (!cache || do_wbinvd)
+ 		return;
+ 
+-	/* 4M threshold */
+-	if (numpages >= 1024) {
+-		if (boot_cpu_data.x86 >= 4)
+-			on_each_cpu(wbinvd_local, NULL, 1);
+-
+-		return;
+-	}
+ 	/*
+ 	 * We only need to flush on one CPU,
+ 	 * clflush is a MESI-coherent instruction that
