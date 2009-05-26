@@ -1,48 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758311AbZEZVxC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757166AbZEZVzf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758311AbZEZVxC (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 17:53:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757131AbZEZVwx
+	id S1757166AbZEZVzf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 17:55:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754702AbZEZVz2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 17:52:53 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:40046 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755563AbZEZVww (ORCPT
+	Tue, 26 May 2009 17:55:28 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:45389 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754656AbZEZVz1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 17:52:52 -0400
-Date: Tue, 26 May 2009 17:52:52 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-cc: Arjan van de Ven <arjan@linux.intel.com>,
-       SCSI development list <linux-scsi@vger.kernel.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: Bug in SCSI async probing
-In-Reply-To: <1243373019.2815.83.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.44L0.0905261741430.11998-100000@iolanthe.rowland.org>
+	Tue, 26 May 2009 17:55:27 -0400
+Date: Tue, 26 May 2009 17:55:27 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Peter Zijlstra <peterz@infradead.org>
+cc: Heiko Carstens <heiko.carstens@de.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] trace: disable preemption before taking raw spinlocks
+In-Reply-To: <1243374700.6600.26.camel@laptop>
+Message-ID: <alpine.DEB.2.00.0905261754380.26705@gandalf.stny.rr.com>
+References: <20090526172802.6377e33f@osiris.boeblingen.de.ibm.com> <1243374700.6600.26.camel@laptop>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 May 2009, James Bottomley wrote:
 
-> > Also, I do still think that wait_scan_init() needs an extra call to 
-> > async_synchronize_full() at the end.
+On Tue, 26 May 2009, Peter Zijlstra wrote:
+
+> On Tue, 2009-05-26 at 17:28 +0200, Heiko Carstens wrote:
+> > From: Heiko Carstens <heiko.carstens@de.ibm.com>
+> > 
+> > s390 code uses smp_processor_id() in __raw_spin_lock() code which
+> > reveals that a (raw) spinlock is taken without preemption disabled.
+> > This can potentially deadlock.
+> > 
+> > To fix this explicitly disable and enable preemption.
+> > 
+> > BUG: using smp_processor_id() in preemptible [00000000] code: cat/2278
+> > caller is trace_find_cmdline+0x40/0xfc
+> > CPU: 0 Not tainted 2.6.30-rc7-dirty #39
+> > Process cat (pid: 2278, task: 000000003faedb68, ksp: 000000003b33b988)
+> > 000000003b33b988 000000003b33bae0 0000000000000002 0000000000000000 
+> >        000000003b33bb80 000000003b33baf8 000000003b33baf8 00000000000175d6 
+> >        0000000000000001 000000003b33b988 000000003f9b0000 000000000000000b 
+> >        000000000000000c 000000003b33bb40 000000003b33bae0 0000000000000000 
+> >        0000000000000000 00000000000175d6 000000003b33bae0 000000003b33bb28 
+> > Call Trace:
+> > ([<00000000000174b2>] show_trace+0x112/0x170)
+> >  [<0000000000017582>] show_stack+0x72/0x100
+> >  [<0000000000441538>] dump_stack+0xc8/0xd8
+> >  [<000000000025c350>] debug_smp_processor_id+0x114/0x130
+> >  [<00000000000bf0e4>] trace_find_cmdline+0x40/0xfc
+> >  [<00000000000c35d4>] trace_print_context+0x58/0xac
+> >  [<00000000000bb676>] print_trace_line+0x416/0x470
+> >  [<00000000000bc8fe>] s_show+0x4e/0x428
+> >  [<000000000013834e>] seq_read+0x36a/0x5d4
+> >  [<0000000000112a78>] vfs_read+0xc8/0x174
+> >  [<0000000000112c58>] SyS_read+0x74/0xc4
+> >  [<000000000002c7ae>] sysc_noemu+0x10/0x16
+> >  [<000002000012436c>] 0x2000012436c
+> > 1 lock held by cat/2278:
+> >  #0:  (&p->lock){+.+.+.}, at: [<0000000000138056>] seq_read+0x72/0x5d4
 > 
-> I need to understand it before commenting ... I'm slowly working my way
-> through the async patches.
+> Shouldn't that be preempt_disable_notrace() and co to avoid tracer
+> recursion?
 
-There are two lists of queued asynchronous tasks: Arjan's list and the
-SCSI scanning list.  As things stand now, routines in each list are
-capable of submitting new jobs for the other list.  That is, an async
-task may discover and register a new SCSI host (requiring scanning),
-and the probe of a SCSI disk discovered during scanning will submit
-a sd_probe_async task.
+Doesn't need to be. That function is done in the output (slow path), not 
+during an actual trace.
 
-This makes it difficult to wait for both lists to become idle.  Maybe 
-the whole idea behind scsi_wait_scan.c needs some rethinking...
-
-Alan Stern
+-- Steve
 
