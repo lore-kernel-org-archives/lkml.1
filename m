@@ -1,50 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753432AbZEZA5R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753971AbZEZBH4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753432AbZEZA5R (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 20:57:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752827AbZEZA5E
+	id S1753971AbZEZBH4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 21:07:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbZEZBHp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 20:57:04 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:48061 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752775AbZEZA5C (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 20:57:02 -0400
-Message-ID: <4A1B3E41.5030003@zytor.com>
-Date: Mon, 25 May 2009 17:56:33 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Mon, 25 May 2009 21:07:45 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:63456 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752524AbZEZBHo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 21:07:44 -0400
+Message-ID: <4A1B3FFB.7090306@cn.fujitsu.com>
+Date: Tue, 26 May 2009 09:03:55 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: linux-next: manual merge of the x86 tree with Linus' tree
-References: <20090526105249.986c4f3c.sfr@canb.auug.org.au>
-In-Reply-To: <20090526105249.986c4f3c.sfr@canb.auug.org.au>
+To: paulmck@linux.vnet.ibm.com
+CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, mingo@elte.hu,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       davem@davemloft.net, dada1@cosmosbay.com, zbr@ioremap.net,
+       jeff.chua.linux@gmail.com, paulus@samba.org, jengelh@medozas.de,
+       r000n@r000n.net, benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
+Subject: Re: [PATCH RFC] v7 expedited "big hammer" RCU grace periods
+References: <20090522190525.GA13286@linux.vnet.ibm.com> <4A1A3C23.8090004@cn.fujitsu.com> <20090525164446.GD7168@linux.vnet.ibm.com>
+In-Reply-To: <20090525164446.GD7168@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Rothwell wrote:
-> Hi all,
+Paul E. McKenney wrote:
 > 
-> Today's linux-next merge of the x86 tree got a conflict in
-> arch/x86/boot/memory.c between commit
-> bca23dba760d6705c013f89113c46570378fb626 ("x86, setup: revert ACPI 3 E820
-> extended attributes support") from Linus' tree and commit
-> df7699c56421c0476704f24a43409ac8c505f3d2 ("x86, setup: "glove box" BIOS
-> interrupts in the core boot code") from the x86 tree.
+> Good point -- I should at the very least add a comment to
+> synchronize_sched_expedited() stating that it cannot be called holding
+> any lock that is acquired in a CPU hotplug notifier.  If this restriction
+> causes any problems, then your approach seems like a promising fix.
+
+
+Reviewed-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+
 > 
-> The former removed the code that the latter modified, so I used the
-> former (as is done in -tip).
+>> The coupling of synchronize_sched_expedited() and migration_req
+>> is largely increased:
+>>
+>> 1) The offline cpu's per_cpu(rcu_migration_req, cpu) is handled.
+>>    See migration_call::CPU_DEAD
+> 
+> Good.  ;-)
+> 
+>> 2) migration_call() is the highest priority of cpu notifiers,
+>>    So even any other cpu notifier calls synchronize_sched_expedited(),
+>>    It'll not cause DEADLOCK.
+> 
+> You mean if using your preempt_disable() approach, right?  Unless I am
+> missing something, the current get_online_cpus() approach would deadlock
+> in this case.
+> 
 
-tip:x86/setup should contain a proper merge between the two.
+Yes, I mean if using my preempt_disable() approach. The current
+get_online_cpus() approach would NOT deadlock in this case also,
+we can require get_online_cpus() in cpu notifiers.
 
-	-hpa
+> diff --git a/include/linux/rcupreempt.h b/include/linux/rcupreempt.h
+> index fce5227..78117ed 100644
+> --- a/include/linux/rcupreempt.h
+> +++ b/include/linux/rcupreempt.h
+> @@ -74,6 +74,16 @@ extern int rcu_needs_cpu(int cpu);
+>  
+>  extern void __synchronize_sched(void);
+>  
+> +static inline void synchronize_rcu_expedited(void)
+> +{
+> +	synchronize_rcu();  /* Placeholder for new rcupreempt implementation. */
+> +}
+> +
+> +static inline void synchronize_rcu_bh_expedited(void)
+> +{
+> +	synchronize_rcu();  /* Placeholder for new rcupreempt implementation. */
+> +}
+> +
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+Why not synchronize_rcu_bh() ?
+
+In mainline, rcu_read_lock_bh() is not preemptable,
+So I think synchronize_sched_expedited() is better.
+
+Anyway, synchronize_rcu() is OK for me, because it is
+"Placeholder for new rcupreempt implementation".
+
+Lai
 
