@@ -1,75 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757166AbZEZVzf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758739AbZEZV4W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757166AbZEZVzf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 17:55:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754702AbZEZVz2
+	id S1758739AbZEZV4W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 17:56:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755863AbZEZV4Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 17:55:28 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:45389 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754656AbZEZVz1 (ORCPT
+	Tue, 26 May 2009 17:56:16 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:40050 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755274AbZEZV4P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 17:55:27 -0400
-Date: Tue, 26 May 2009 17:55:27 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Peter Zijlstra <peterz@infradead.org>
-cc: Heiko Carstens <heiko.carstens@de.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] trace: disable preemption before taking raw spinlocks
-In-Reply-To: <1243374700.6600.26.camel@laptop>
-Message-ID: <alpine.DEB.2.00.0905261754380.26705@gandalf.stny.rr.com>
-References: <20090526172802.6377e33f@osiris.boeblingen.de.ibm.com> <1243374700.6600.26.camel@laptop>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 26 May 2009 17:56:15 -0400
+Date: Tue, 26 May 2009 17:56:16 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Nigel Cunningham <nigel@tuxonice.net>
+cc: Oliver Neukum <oliver@neukum.org>, <linux-pm@lists.linux-foundation.org>,
+       <tuxonice-devel@lists.tuxonice.net>, <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-pm] [TuxOnIce-devel] [RFC] TuxOnIce
+In-Reply-To: <1243373613.13930.61.camel@nigel-laptop>
+Message-ID: <Pine.LNX.4.44L0.0905261754250.11998-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 27 May 2009, Nigel Cunningham wrote:
 
-On Tue, 26 May 2009, Peter Zijlstra wrote:
+> USB devices ought to be able to do _something_ though - I have a Dvico
+> Dual Digital 4 card
 
-> On Tue, 2009-05-26 at 17:28 +0200, Heiko Carstens wrote:
-> > From: Heiko Carstens <heiko.carstens@de.ibm.com>
-> > 
-> > s390 code uses smp_processor_id() in __raw_spin_lock() code which
-> > reveals that a (raw) spinlock is taken without preemption disabled.
-> > This can potentially deadlock.
-> > 
-> > To fix this explicitly disable and enable preemption.
-> > 
-> > BUG: using smp_processor_id() in preemptible [00000000] code: cat/2278
-> > caller is trace_find_cmdline+0x40/0xfc
-> > CPU: 0 Not tainted 2.6.30-rc7-dirty #39
-> > Process cat (pid: 2278, task: 000000003faedb68, ksp: 000000003b33b988)
-> > 000000003b33b988 000000003b33bae0 0000000000000002 0000000000000000 
-> >        000000003b33bb80 000000003b33baf8 000000003b33baf8 00000000000175d6 
-> >        0000000000000001 000000003b33b988 000000003f9b0000 000000000000000b 
-> >        000000000000000c 000000003b33bb40 000000003b33bae0 0000000000000000 
-> >        0000000000000000 00000000000175d6 000000003b33bae0 000000003b33bb28 
-> > Call Trace:
-> > ([<00000000000174b2>] show_trace+0x112/0x170)
-> >  [<0000000000017582>] show_stack+0x72/0x100
-> >  [<0000000000441538>] dump_stack+0xc8/0xd8
-> >  [<000000000025c350>] debug_smp_processor_id+0x114/0x130
-> >  [<00000000000bf0e4>] trace_find_cmdline+0x40/0xfc
-> >  [<00000000000c35d4>] trace_print_context+0x58/0xac
-> >  [<00000000000bb676>] print_trace_line+0x416/0x470
-> >  [<00000000000bc8fe>] s_show+0x4e/0x428
-> >  [<000000000013834e>] seq_read+0x36a/0x5d4
-> >  [<0000000000112a78>] vfs_read+0xc8/0x174
-> >  [<0000000000112c58>] SyS_read+0x74/0xc4
-> >  [<000000000002c7ae>] sysc_noemu+0x10/0x16
-> >  [<000002000012436c>] 0x2000012436c
-> > 1 lock held by cat/2278:
-> >  #0:  (&p->lock){+.+.+.}, at: [<0000000000138056>] seq_read+0x72/0x5d4
-> 
-> Shouldn't that be preempt_disable_notrace() and co to avoid tracer
-> recursion?
+What is that?
 
-Doesn't need to be. That function is done in the output (slow path), not 
-during an actual trace.
+> that is forcing me to shutdown X, mythtv-backend,
+> pulse audio and lirc at the moment so that I can rmmod it while
+> hibernating. That ought not be necessary. I'm sure there are good
+> technical reasons why it is necessary at the mooment, but it shouldn't
+> be that way - even if it just does the bare minimum required to avoid
+> requiring the closing of files and the unload.
 
--- Steve
+Probably the driver's author just never got around to adding support
+for suspend/resume.  Which driver is it?  What happens if you don't 
+rmmod it?
+
+Alan Stern
 
