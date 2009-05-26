@@ -1,50 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755793AbZEZMNz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755857AbZEZMOb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755793AbZEZMNz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 08:13:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755638AbZEZMNo
+	id S1755857AbZEZMOb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 08:14:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755876AbZEZMOG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 08:13:44 -0400
-Received: from hera.kernel.org ([140.211.167.34]:51247 "EHLO hera.kernel.org"
+	Tue, 26 May 2009 08:14:06 -0400
+Received: from hera.kernel.org ([140.211.167.34]:51275 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755658AbZEZMNk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 08:13:40 -0400
-Date: Tue, 26 May 2009 12:12:49 GMT
-From: tip-bot for Ingo Molnar <mingo@elte.hu>
+	id S1755325AbZEZMOD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 08:14:03 -0400
+Date: Tue, 26 May 2009 12:13:26 GMT
+From: tip-bot for Arnaldo Carvalho de Melo <acme@redhat.com>
 To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
-       mingo@redhat.com, a.p.zijlstra@chello.nl, mtosatti@redhat.com,
-       tglx@linutronix.de, cjashfor@linux.vnet.ibm.com, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org, acme@redhat.com,
+       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl,
+       mtosatti@redhat.com, tglx@linutronix.de, cjashfor@linux.vnet.ibm.com,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com, paulus@samba.org,
        linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
        mtosatti@redhat.com, tglx@linutronix.de, cjashfor@linux.vnet.ibm.com,
        mingo@elte.hu
 In-Reply-To: <new-submission>
 References: <new-submission>
-Subject: [tip:perfcounters/core] perf_counter tools: remove the standalone perf-report utility
-Message-ID: <tip-fd4242bb35b70557eee8d0c79f82dacc3f3b89e0@git.kernel.org>
-Git-Commit-ID: fd4242bb35b70557eee8d0c79f82dacc3f3b89e0
+Subject: [tip:perfcounters/core] perf_counter: Add our private copy of list.h
+Message-ID: <tip-040e6034124c504d536736ce08e4643e640cd7c2@git.kernel.org>
+Git-Commit-ID: 040e6034124c504d536736ce08e4643e640cd7c2
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 26 May 2009 12:12:50 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 26 May 2009 12:13:27 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  fd4242bb35b70557eee8d0c79f82dacc3f3b89e0
-Gitweb:     http://git.kernel.org/tip/fd4242bb35b70557eee8d0c79f82dacc3f3b89e0
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Wed, 20 May 2009 12:45:34 +0200
+Commit-ID:  040e6034124c504d536736ce08e4643e640cd7c2
+Gitweb:     http://git.kernel.org/tip/040e6034124c504d536736ce08e4643e640cd7c2
+Author:     Arnaldo Carvalho de Melo <acme@redhat.com>
+AuthorDate: Mon, 18 May 2009 16:25:31 -0300
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 26 May 2009 13:52:53 +0200
+CommitDate: Tue, 26 May 2009 13:52:55 +0200
 
-perf_counter tools: remove the standalone perf-report utility
+perf_counter: Add our private copy of list.h
 
-With a built-in 'perf report' command now available, remove the
-standalone implementation for good.
-
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
 Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: Paul Mackerras <paulus@samba.org>
 Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
@@ -55,527 +54,437 @@ Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- Documentation/perf_counter/perf-report.cc |  515 -----------------------------
- 1 files changed, 0 insertions(+), 515 deletions(-)
+ .../perf_counter/util}/list.h                      |  238 ++++++--------------
+ 1 files changed, 73 insertions(+), 165 deletions(-)
 
-diff --git a/Documentation/perf_counter/perf-report.cc b/Documentation/perf_counter/perf-report.cc
-deleted file mode 100644
-index 8855107..0000000
---- a/Documentation/perf_counter/perf-report.cc
-+++ /dev/null
-@@ -1,515 +0,0 @@
--#define _GNU_SOURCE
--#include <sys/types.h>
--#include <sys/stat.h>
--#include <sys/time.h>
--#include <unistd.h>
--#include <stdint.h>
--#include <stdlib.h>
--#include <string.h>
--#include <limits.h>
--#include <fcntl.h>
--#include <stdio.h>
--#include <errno.h>
--#include <ctype.h>
--#include <time.h>
--#include <getopt.h>
--#include <assert.h>
--
--#include <sys/ioctl.h>
--#include <sys/poll.h>
--#include <sys/prctl.h>
--#include <sys/wait.h>
--#include <sys/mman.h>
--#include <sys/types.h>
--#include <sys/stat.h>
--
--#include <linux/unistd.h>
--#include <linux/types.h>
--
--#include "../../include/linux/perf_counter.h"
--
--#include <set>
--#include <map>
--#include <string>
--
--
--#define SHOW_KERNEL	1
--#define SHOW_USER	2
--#define SHOW_HV		4
--
--static char 		const *input_name = "output.perf";
--static int		input;
--static int		show_mask = SHOW_KERNEL | SHOW_USER | SHOW_HV;
--
--static unsigned long	page_size;
--static unsigned long	mmap_window = 32;
--
--struct ip_event {
--	struct perf_event_header header;
--	__u64 ip;
--	__u32 pid, tid;
--};
--struct mmap_event {
--	struct perf_event_header header;
--	__u32 pid, tid;
--	__u64 start;
--	__u64 len;
--	__u64 pgoff;
--	char filename[PATH_MAX];
--};
--struct comm_event {
--	struct perf_event_header header;
--	__u32 pid,tid;
--	char comm[16];
--};
--
--typedef union event_union {
--	struct perf_event_header header;
--	struct ip_event ip;
--	struct mmap_event mmap;
--	struct comm_event comm;
--} event_t;
--
--struct section {
--	uint64_t start;
--	uint64_t end;
--
--	uint64_t offset;
--
--	std::string name;
--
--	section() { };
--
--	section(uint64_t stab) : end(stab) { };
--
--	section(uint64_t start, uint64_t size, uint64_t offset, std::string name) :
--		start(start), end(start + size), offset(offset), name(name)
--	{ };
--
--	bool operator < (const struct section &s) const {
--		return end < s.end;
--	};
--};
--
--typedef std::set<struct section> sections_t;
--
--struct symbol {
--	uint64_t start;
--	uint64_t end;
--
--	std::string name;
--
--	symbol() { };
--
--	symbol(uint64_t ip) : start(ip) { }
--
--	symbol(uint64_t start, uint64_t len, std::string name) :
--		start(start), end(start + len), name(name)
--	{ };
--
--	bool operator < (const struct symbol &s) const {
--		return start < s.start;
--	};
--};
--
--typedef std::set<struct symbol> symbols_t;
--
--struct dso {
--	sections_t sections;
--	symbols_t syms;
--};
--
--static std::map<std::string, struct dso> dsos;
--
--static void load_dso_sections(std::string dso_name)
--{
--	struct dso &dso = dsos[dso_name];
--
--	std::string cmd = "readelf -DSW " + dso_name;
--
--	FILE *file = popen(cmd.c_str(), "r");
--	if (!file) {
--		perror("failed to open pipe");
--		exit(-1);
--	}
--
--	char *line = NULL;
--	size_t n = 0;
--
--	while (!feof(file)) {
--		uint64_t addr, off, size;
--		char name[32];
--
--		if (getline(&line, &n, file) < 0)
--			break;
--		if (!line)
--			break;
--
--		if (sscanf(line, "  [%*2d] %16s %*14s %Lx %Lx %Lx",
--					name, &addr, &off, &size) == 4) {
--
--			dso.sections.insert(section(addr, size, addr - off, name));
--		}
--#if 0
--		/*
--		 * for reading readelf symbols (-s), however these don't seem
--		 * to include nearly everything, so use nm for that.
--		 */
--		if (sscanf(line, " %*4d %*3d: %Lx %5Lu %*7s %*6s %*7s %3d %s",
--			   &start, &size, &section, sym) == 4) {
--
--			start -= dso.section_offsets[section];
--
--			dso.syms.insert(symbol(start, size, std::string(sym)));
--		}
+diff --git a/include/linux/list.h b/Documentation/perf_counter/util/list.h
+similarity index 74%
+copy from include/linux/list.h
+copy to Documentation/perf_counter/util/list.h
+index 969f6e9..e2548e8 100644
+--- a/include/linux/list.h
++++ b/Documentation/perf_counter/util/list.h
+@@ -1,10 +1,33 @@
+ #ifndef _LINUX_LIST_H
+ #define _LINUX_LIST_H
++/*
++  Copyright (C) Cast of dozens, comes from the Linux kernel
++
++  This program is free software; you can redistribute it and/or modify it
++  under the terms of version 2 of the GNU General Public License as
++  published by the Free Software Foundation.
++*/
++
++#include <stddef.h>
++
++/*
++ * These are non-NULL pointers that will result in page faults
++ * under normal circumstances, used to verify that nobody uses
++ * non-initialized list entries.
++ */
++#define LIST_POISON1 ((void *)0x00100100)
++#define LIST_POISON2 ((void *)0x00200200)
+ 
+-#include <linux/stddef.h>
+-#include <linux/poison.h>
+-#include <linux/prefetch.h>
+-#include <asm/system.h>
++/**
++ * container_of - cast a member of a structure out to the containing structure
++ * @ptr:	the pointer to the member.
++ * @type:	the type of the container struct this is embedded in.
++ * @member:	the name of the member within the struct.
++ *
++ */
++#define container_of(ptr, type, member) ({			\
++        const typeof( ((type *)0)->member ) *__mptr = (ptr);	\
++        (type *)( (char *)__mptr - offsetof(type,member) );})
+ 
+ /*
+  * Simple doubly linked list implementation.
+@@ -37,7 +60,6 @@ static inline void INIT_LIST_HEAD(struct list_head *list)
+  * This is only for internal list manipulation where we know
+  * the prev/next entries already!
+  */
+-#ifndef CONFIG_DEBUG_LIST
+ static inline void __list_add(struct list_head *new,
+ 			      struct list_head *prev,
+ 			      struct list_head *next)
+@@ -47,11 +69,6 @@ static inline void __list_add(struct list_head *new,
+ 	new->prev = prev;
+ 	prev->next = new;
+ }
+-#else
+-extern void __list_add(struct list_head *new,
+-			      struct list_head *prev,
+-			      struct list_head *next);
 -#endif
--	}
--	pclose(file);
--}
+ 
+ /**
+  * list_add - add a new entry
+@@ -66,7 +83,6 @@ static inline void list_add(struct list_head *new, struct list_head *head)
+ 	__list_add(new, head, head->next);
+ }
+ 
 -
--static void load_dso_symbols(std::string dso_name, std::string args)
--{
--	struct dso &dso = dsos[dso_name];
--
--	std::string cmd = "nm -nSC " + args + " " + dso_name;
--
--	FILE *file = popen(cmd.c_str(), "r");
--	if (!file) {
--		perror("failed to open pipe");
--		exit(-1);
--	}
--
--	char *line = NULL;
--	size_t n = 0;
--
--	while (!feof(file)) {
--		uint64_t start, size;
--		char c;
--		char sym[1024];
--
--		if (getline(&line, &n, file) < 0)
--			break;
--		if (!line)
--			break;
--
--
--		if (sscanf(line, "%Lx %Lx %c %s", &start, &size, &c, sym) == 4) {
--			sections_t::const_iterator si =
--				dso.sections.upper_bound(section(start));
--			if (si == dso.sections.end()) {
--				printf("symbol in unknown section: %s\n", sym);
--				continue;
--			}
--
--			start -= si->offset;
--
--			dso.syms.insert(symbol(start, size, sym));
--		}
--	}
--	pclose(file);
--}
--
--static void load_dso(std::string dso_name)
--{
--	load_dso_sections(dso_name);
--	load_dso_symbols(dso_name, "-D"); /* dynamic symbols */
--	load_dso_symbols(dso_name, "");   /* regular ones */
--}
--
--void load_kallsyms(void)
--{
--	struct dso &dso = dsos["[kernel]"];
--
--	FILE *file = fopen("/proc/kallsyms", "r");
--	if (!file) {
--		perror("failed to open kallsyms");
--		exit(-1);
--	}
--
--	char *line;
--	size_t n;
--
--	while (!feof(file)) {
--		uint64_t start;
--		char c;
--		char sym[1024000];
--
--		if (getline(&line, &n, file) < 0)
--			break;
--		if (!line)
--			break;
--
--		if (sscanf(line, "%Lx %c %s", &start, &c, sym) == 3)
--			dso.syms.insert(symbol(start, 0x1000000, std::string(sym)));
--	}
--	fclose(file);
--}
--
--struct map {
--	uint64_t start;
--	uint64_t end;
--	uint64_t pgoff;
--
--	std::string dso;
--
--	map() { };
--
--	map(uint64_t ip) : end(ip) { }
--
--	map(mmap_event *mmap) {
--		start = mmap->start;
--		end = mmap->start + mmap->len;
--		pgoff = mmap->pgoff;
--
--		dso = std::string(mmap->filename);
--
--		if (dsos.find(dso) == dsos.end())
--			load_dso(dso);
--	};
--
--	bool operator < (const struct map &m) const {
--		return end < m.end;
--	};
--};
--
--typedef std::set<struct map> maps_t;
--
--static std::map<int, maps_t> maps;
--
--static std::map<int, std::string> comms;
--
--static std::map<std::string, int> hist;
--static std::multimap<int, std::string> rev_hist;
--
--static std::string resolve_comm(int pid)
--{
--	std::string comm;
--
--	std::map<int, std::string>::const_iterator ci = comms.find(pid);
--	if (ci != comms.end()) {
--		comm = ci->second;
--	} else {
--		char pid_str[30];
--
--		sprintf(pid_str, ":%d", pid);
--		comm = pid_str;
--	}
--
--	return comm;
--}
--
--static std::string resolve_user_symbol(int pid, uint64_t ip)
--{
--	std::string sym = "<unknown>";
--
--	maps_t &m = maps[pid];
--	maps_t::const_iterator mi = m.upper_bound(map(ip));
--	if (mi == m.end())
--		return sym;
--
--	ip -= mi->start + mi->pgoff;
--
--	symbols_t &s = dsos[mi->dso].syms;
--	symbols_t::const_iterator si = s.upper_bound(symbol(ip));
--
--	sym = mi->dso + ": <unknown>";
--
--	if (si == s.begin())
--		return sym;
--	si--;
--
--	if (si->start <= ip && ip < si->end)
--		sym = mi->dso + ": " + si->name;
--#if 0
--	else if (si->start <= ip)
--		sym = mi->dso + ": ?" + si->name;
+ /**
+  * list_add_tail - add a new entry
+  * @new: new entry to be added
+@@ -96,26 +112,35 @@ static inline void __list_del(struct list_head * prev, struct list_head * next)
+ /**
+  * list_del - deletes entry from list.
+  * @entry: the element to delete from the list.
+- * Note: list_empty() on entry does not return true after this, the entry is
++ * Note: list_empty on entry does not return true after this, the entry is
+  * in an undefined state.
+  */
+-#ifndef CONFIG_DEBUG_LIST
+ static inline void list_del(struct list_head *entry)
+ {
+ 	__list_del(entry->prev, entry->next);
+ 	entry->next = LIST_POISON1;
+ 	entry->prev = LIST_POISON2;
+ }
+-#else
+-extern void list_del(struct list_head *entry);
 -#endif
--
--	return sym;
--}
--
--static std::string resolve_kernel_symbol(uint64_t ip)
++
++/**
++ * list_del_range - deletes range of entries from list.
++ * @beging: first element in the range to delete from the list.
++ * @beging: first element in the range to delete from the list.
++ * Note: list_empty on the range of entries does not return true after this,
++ * the entries is in an undefined state.
++ */
++static inline void list_del_range(struct list_head *begin,
++				  struct list_head *end)
++{
++	begin->prev->next = end->next;
++	end->next->prev = begin->prev;
++}
+ 
+ /**
+  * list_replace - replace old entry by new one
+  * @old : the element to be replaced
+  * @new : the new element to insert
+- *
+- * If @old was empty, it will be overwritten.
++ * Note: if 'old' was empty, it will be overwritten.
+  */
+ static inline void list_replace(struct list_head *old,
+ 				struct list_head *new)
+@@ -150,8 +175,8 @@ static inline void list_del_init(struct list_head *entry)
+  */
+ static inline void list_move(struct list_head *list, struct list_head *head)
+ {
+-	__list_del(list->prev, list->next);
+-	list_add(list, head);
++        __list_del(list->prev, list->next);
++        list_add(list, head);
+ }
+ 
+ /**
+@@ -162,8 +187,8 @@ static inline void list_move(struct list_head *list, struct list_head *head)
+ static inline void list_move_tail(struct list_head *list,
+ 				  struct list_head *head)
+ {
+-	__list_del(list->prev, list->next);
+-	list_add_tail(list, head);
++        __list_del(list->prev, list->next);
++        list_add_tail(list, head);
+ }
+ 
+ /**
+@@ -205,91 +230,29 @@ static inline int list_empty_careful(const struct list_head *head)
+ 	return (next == head) && (next == head->prev);
+ }
+ 
+-/**
+- * list_is_singular - tests whether a list has just one entry.
+- * @head: the list to test.
+- */
+-static inline int list_is_singular(const struct list_head *head)
 -{
--	std::string sym = "<unknown>";
--
--	symbols_t &s = dsos["[kernel]"].syms;
--	symbols_t::const_iterator si = s.upper_bound(symbol(ip));
--
--	if (si == s.begin())
--		return sym;
--	si--;
--
--	if (si->start <= ip && ip < si->end)
--		sym = si->name;
--
--	return sym;
+-	return !list_empty(head) && (head->next == head->prev);
 -}
 -
--static void display_help(void)
+-static inline void __list_cut_position(struct list_head *list,
+-		struct list_head *head, struct list_head *entry)
 -{
--	printf(
--	"Usage: perf-report [<options>]\n"
--	" -i file   --input=<file>      # input file\n"
--	);
--
--	exit(0);
+-	struct list_head *new_first = entry->next;
+-	list->next = head->next;
+-	list->next->prev = list;
+-	list->prev = entry;
+-	entry->next = list;
+-	head->next = new_first;
+-	new_first->prev = head;
 -}
 -
--static void process_options(int argc, char *argv[])
+-/**
+- * list_cut_position - cut a list into two
+- * @list: a new list to add all removed entries
+- * @head: a list with entries
+- * @entry: an entry within head, could be the head itself
+- *	and if so we won't cut the list
+- *
+- * This helper moves the initial part of @head, up to and
+- * including @entry, from @head to @list. You should
+- * pass on @entry an element you know is on @head. @list
+- * should be an empty list or a list you do not care about
+- * losing its data.
+- *
+- */
+-static inline void list_cut_position(struct list_head *list,
+-		struct list_head *head, struct list_head *entry)
 -{
--	int error = 0;
--
--	for (;;) {
--		int option_index = 0;
--		/** Options for getopt */
--		static struct option long_options[] = {
--			{"input",	required_argument,	NULL, 'i'},
--			{"no-user",	no_argument,		NULL, 'u'},
--			{"no-kernel",	no_argument,		NULL, 'k'},
--			{"no-hv",	no_argument,		NULL, 'h'},
--			{NULL,		0,			NULL,  0 }
--		};
--		int c = getopt_long(argc, argv, "+:i:kuh",
--				    long_options, &option_index);
--		if (c == -1)
--			break;
--
--		switch (c) {
--		case 'i': input_name			= strdup(optarg); break;
--		case 'k': show_mask &= ~SHOW_KERNEL; break;
--		case 'u': show_mask &= ~SHOW_USER; break;
--		case 'h': show_mask &= ~SHOW_HV; break;
--		default: error = 1; break;
--		}
--	}
--
--	if (error)
--		display_help();
+-	if (list_empty(head))
+-		return;
+-	if (list_is_singular(head) &&
+-		(head->next != entry && head != entry))
+-		return;
+-	if (entry == head)
+-		INIT_LIST_HEAD(list);
+-	else
+-		__list_cut_position(list, head, entry);
 -}
 -
--int main(int argc, char *argv[])
+-static inline void __list_splice(const struct list_head *list,
+-				 struct list_head *prev,
+-				 struct list_head *next)
++static inline void __list_splice(struct list_head *list,
++				 struct list_head *head)
+ {
+ 	struct list_head *first = list->next;
+ 	struct list_head *last = list->prev;
++	struct list_head *at = head->next;
+ 
+-	first->prev = prev;
+-	prev->next = first;
+-
+-	last->next = next;
+-	next->prev = last;
+-}
++	first->prev = head;
++	head->next = first;
+ 
+-/**
+- * list_splice - join two lists, this is designed for stacks
+- * @list: the new list to add.
+- * @head: the place to add it in the first list.
+- */
+-static inline void list_splice(const struct list_head *list,
+-				struct list_head *head)
 -{
--	unsigned long offset = 0;
--	unsigned long head = 0;
--	struct stat stat;
--	char *buf;
--	event_t *event;
--	int ret;
--	unsigned long total = 0;
--
--	page_size = getpagesize();
--
--	process_options(argc, argv);
--
--	input = open(input_name, O_RDONLY);
--	if (input < 0) {
--		perror("failed to open file");
--		exit(-1);
+-	if (!list_empty(list))
+-		__list_splice(list, head, head->next);
++	last->next = at;
++	at->prev = last;
+ }
+ 
+ /**
+- * list_splice_tail - join two lists, each list being a queue
++ * list_splice - join two lists
+  * @list: the new list to add.
+  * @head: the place to add it in the first list.
+  */
+-static inline void list_splice_tail(struct list_head *list,
+-				struct list_head *head)
++static inline void list_splice(struct list_head *list, struct list_head *head)
+ {
+ 	if (!list_empty(list))
+-		__list_splice(list, head->prev, head);
++		__list_splice(list, head);
+ }
+ 
+ /**
+@@ -303,24 +266,7 @@ static inline void list_splice_init(struct list_head *list,
+ 				    struct list_head *head)
+ {
+ 	if (!list_empty(list)) {
+-		__list_splice(list, head, head->next);
+-		INIT_LIST_HEAD(list);
 -	}
--
--	ret = fstat(input, &stat);
--	if (ret < 0) {
--		perror("failed to stat file");
--		exit(-1);
--	}
--
--	if (!stat.st_size) {
--		fprintf(stderr, "zero-sized file, nothing to do!\n");
--		exit(0);
--	}
--
--	load_kallsyms();
--
--remap:
--	buf = (char *)mmap(NULL, page_size * mmap_window, PROT_READ,
--			   MAP_SHARED, input, offset);
--	if (buf == MAP_FAILED) {
--		perror("failed to mmap file");
--		exit(-1);
--	}
--
--more:
--	event = (event_t *)(buf + head);
--
--	if (head + event->header.size >= page_size * mmap_window) {
--		unsigned long shift = page_size * (head / page_size);
--		int ret;
--
--		ret = munmap(buf, page_size * mmap_window);
--		assert(ret == 0);
--
--		offset += shift;
--		head -= shift;
--		goto remap;
--	}
--
--
--	if (!event->header.size) {
--		fprintf(stderr, "zero-sized event at file offset %ld\n", offset + head);
--		fprintf(stderr, "skipping %ld bytes of events.\n", stat.st_size - offset - head);
--		goto done;
--	}
--
--	head += event->header.size;
--
--	if (event->header.misc & PERF_EVENT_MISC_OVERFLOW) {
--		std::string comm, sym, level;
--		int show = 0;
--		char output[1024];
--
--		if (event->header.misc & PERF_EVENT_MISC_KERNEL) {
--			show |= SHOW_KERNEL;
--			level = " [k] ";
--			sym = resolve_kernel_symbol(event->ip.ip);
--		} else if (event->header.misc & PERF_EVENT_MISC_USER) {
--			show |= SHOW_USER;
--			level = " [.] ";
--			sym = resolve_user_symbol(event->ip.pid, event->ip.ip);
--		} else {
--			show |= SHOW_HV;
--			level = " [H] ";
--		}
--
--		if (show & show_mask) {
--			comm = resolve_comm(event->ip.pid);
--			snprintf(output, sizeof(output), "%16s %s %s",
--					comm.c_str(), level.c_str(), sym.c_str());
--			hist[output]++;
--		}
--
--		total++;
--
--	} else switch (event->header.type) {
--	case PERF_EVENT_MMAP:
--		maps[event->mmap.pid].insert(map(&event->mmap));
--		break;
--
--	case PERF_EVENT_COMM:
--		comms[event->comm.pid] = std::string(event->comm.comm);
--		break;
--	}
--
--	if (offset + head < stat.st_size)
--		goto more;
--
--done:
--
--	close(input);
--
--	std::map<std::string, int>::iterator hi = hist.begin();
--
--	while (hi != hist.end()) {
--		rev_hist.insert(std::pair<int, std::string>(hi->second, hi->first));
--		hist.erase(hi++);
--	}
--
--	std::multimap<int, std::string>::const_iterator ri = rev_hist.begin();
--
--	while (ri != rev_hist.end()) {
--		printf(" %5.2f %s\n", (100.0 * ri->first)/total, ri->second.c_str());
--		ri++;
--	}
--
--	return 0;
 -}
 -
+-/**
+- * list_splice_tail_init - join two lists and reinitialise the emptied list
+- * @list: the new list to add.
+- * @head: the place to add it in the first list.
+- *
+- * Each of the lists is a queue.
+- * The list at @list is reinitialised
+- */
+-static inline void list_splice_tail_init(struct list_head *list,
+-					 struct list_head *head)
+-{
+-	if (!list_empty(list)) {
+-		__list_splice(list, head->prev, head);
++		__list_splice(list, head);
+ 		INIT_LIST_HEAD(list);
+ 	}
+ }
+@@ -336,9 +282,9 @@ static inline void list_splice_tail_init(struct list_head *list,
+ 
+ /**
+  * list_first_entry - get the first element from a list
+- * @ptr:	the list head to take the element from.
+- * @type:	the type of the struct this is embedded in.
+- * @member:	the name of the list_struct within the struct.
++ * @ptr:       the list head to take the element from.
++ * @type:      the type of the struct this is embedded in.
++ * @member:    the name of the list_struct within the struct.
+  *
+  * Note, that list is expected to be not empty.
+  */
+@@ -351,7 +297,7 @@ static inline void list_splice_tail_init(struct list_head *list,
+  * @head:	the head for your list.
+  */
+ #define list_for_each(pos, head) \
+-	for (pos = (head)->next; prefetch(pos->next), pos != (head); \
++	for (pos = (head)->next; pos != (head); \
+         	pos = pos->next)
+ 
+ /**
+@@ -373,7 +319,7 @@ static inline void list_splice_tail_init(struct list_head *list,
+  * @head:	the head for your list.
+  */
+ #define list_for_each_prev(pos, head) \
+-	for (pos = (head)->prev; prefetch(pos->prev), pos != (head); \
++	for (pos = (head)->prev; pos != (head); \
+         	pos = pos->prev)
+ 
+ /**
+@@ -387,17 +333,6 @@ static inline void list_splice_tail_init(struct list_head *list,
+ 		pos = n, n = pos->next)
+ 
+ /**
+- * list_for_each_prev_safe - iterate over a list backwards safe against removal of list entry
+- * @pos:	the &struct list_head to use as a loop cursor.
+- * @n:		another &struct list_head to use as temporary storage
+- * @head:	the head for your list.
+- */
+-#define list_for_each_prev_safe(pos, n, head) \
+-	for (pos = (head)->prev, n = pos->prev; \
+-	     prefetch(pos->prev), pos != (head); \
+-	     pos = n, n = pos->prev)
+-
+-/**
+  * list_for_each_entry	-	iterate over list of given type
+  * @pos:	the type * to use as a loop cursor.
+  * @head:	the head for your list.
+@@ -405,7 +340,7 @@ static inline void list_splice_tail_init(struct list_head *list,
+  */
+ #define list_for_each_entry(pos, head, member)				\
+ 	for (pos = list_entry((head)->next, typeof(*pos), member);	\
+-	     prefetch(pos->member.next), &pos->member != (head); 	\
++	     &pos->member != (head); 	\
+ 	     pos = list_entry(pos->member.next, typeof(*pos), member))
+ 
+ /**
+@@ -416,16 +351,16 @@ static inline void list_splice_tail_init(struct list_head *list,
+  */
+ #define list_for_each_entry_reverse(pos, head, member)			\
+ 	for (pos = list_entry((head)->prev, typeof(*pos), member);	\
+-	     prefetch(pos->member.prev), &pos->member != (head); 	\
++	     &pos->member != (head); 	\
+ 	     pos = list_entry(pos->member.prev, typeof(*pos), member))
+ 
+ /**
+- * list_prepare_entry - prepare a pos entry for use in list_for_each_entry_continue()
++ * list_prepare_entry - prepare a pos entry for use in list_for_each_entry_continue
+  * @pos:	the type * to use as a start point
+  * @head:	the head of the list
+  * @member:	the name of the list_struct within the struct.
+  *
+- * Prepares a pos entry for use as a start point in list_for_each_entry_continue().
++ * Prepares a pos entry for use as a start point in list_for_each_entry_continue.
+  */
+ #define list_prepare_entry(pos, head, member) \
+ 	((pos) ? : list_entry(head, typeof(*pos), member))
+@@ -441,24 +376,10 @@ static inline void list_splice_tail_init(struct list_head *list,
+  */
+ #define list_for_each_entry_continue(pos, head, member) 		\
+ 	for (pos = list_entry(pos->member.next, typeof(*pos), member);	\
+-	     prefetch(pos->member.next), &pos->member != (head);	\
++	     &pos->member != (head);	\
+ 	     pos = list_entry(pos->member.next, typeof(*pos), member))
+ 
+ /**
+- * list_for_each_entry_continue_reverse - iterate backwards from the given point
+- * @pos:	the type * to use as a loop cursor.
+- * @head:	the head for your list.
+- * @member:	the name of the list_struct within the struct.
+- *
+- * Start to iterate over list of given type backwards, continuing after
+- * the current position.
+- */
+-#define list_for_each_entry_continue_reverse(pos, head, member)		\
+-	for (pos = list_entry(pos->member.prev, typeof(*pos), member);	\
+-	     prefetch(pos->member.prev), &pos->member != (head);	\
+-	     pos = list_entry(pos->member.prev, typeof(*pos), member))
+-
+-/**
+  * list_for_each_entry_from - iterate over list of given type from the current point
+  * @pos:	the type * to use as a loop cursor.
+  * @head:	the head for your list.
+@@ -467,7 +388,7 @@ static inline void list_splice_tail_init(struct list_head *list,
+  * Iterate over list of given type, continuing from current position.
+  */
+ #define list_for_each_entry_from(pos, head, member) 			\
+-	for (; prefetch(pos->member.next), &pos->member != (head);	\
++	for (; &pos->member != (head);	\
+ 	     pos = list_entry(pos->member.next, typeof(*pos), member))
+ 
+ /**
+@@ -619,23 +540,10 @@ static inline void hlist_add_after(struct hlist_node *n,
+ 		next->next->pprev  = &next->next;
+ }
+ 
+-/*
+- * Move a list from one list head to another. Fixup the pprev
+- * reference of the first entry if it exists.
+- */
+-static inline void hlist_move_list(struct hlist_head *old,
+-				   struct hlist_head *new)
+-{
+-	new->first = old->first;
+-	if (new->first)
+-		new->first->pprev = &new->first;
+-	old->first = NULL;
+-}
+-
+ #define hlist_entry(ptr, type, member) container_of(ptr,type,member)
+ 
+ #define hlist_for_each(pos, head) \
+-	for (pos = (head)->first; pos && ({ prefetch(pos->next); 1; }); \
++	for (pos = (head)->first; pos; \
+ 	     pos = pos->next)
+ 
+ #define hlist_for_each_safe(pos, n, head) \
+@@ -651,7 +559,7 @@ static inline void hlist_move_list(struct hlist_head *old,
+  */
+ #define hlist_for_each_entry(tpos, pos, head, member)			 \
+ 	for (pos = (head)->first;					 \
+-	     pos && ({ prefetch(pos->next); 1;}) &&			 \
++	     pos && 			 \
+ 		({ tpos = hlist_entry(pos, typeof(*tpos), member); 1;}); \
+ 	     pos = pos->next)
+ 
+@@ -663,7 +571,7 @@ static inline void hlist_move_list(struct hlist_head *old,
+  */
+ #define hlist_for_each_entry_continue(tpos, pos, member)		 \
+ 	for (pos = (pos)->next;						 \
+-	     pos && ({ prefetch(pos->next); 1;}) &&			 \
++	     pos && 			 \
+ 		({ tpos = hlist_entry(pos, typeof(*tpos), member); 1;}); \
+ 	     pos = pos->next)
+ 
+@@ -674,7 +582,7 @@ static inline void hlist_move_list(struct hlist_head *old,
+  * @member:	the name of the hlist_node within the struct.
+  */
+ #define hlist_for_each_entry_from(tpos, pos, member)			 \
+-	for (; pos && ({ prefetch(pos->next); 1;}) &&			 \
++	for (; pos && 			 \
+ 		({ tpos = hlist_entry(pos, typeof(*tpos), member); 1;}); \
+ 	     pos = pos->next)
+ 
