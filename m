@@ -1,92 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754765AbZEZHcl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754856AbZEZHdw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754765AbZEZHcl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 03:32:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751677AbZEZHc3
+	id S1754856AbZEZHdw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 03:33:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753005AbZEZHdp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 03:32:29 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:39173 "EHLO kernel.dk"
+	Tue, 26 May 2009 03:33:45 -0400
+Received: from cantor.suse.de ([195.135.220.2]:58797 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751481AbZEZHc2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 03:32:28 -0400
-Date: Tue, 26 May 2009 09:32:29 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: James.Bottomley@HansenPartnership.com, rdreier@cisco.com,
-       bharrosh@panasas.com, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, chris.mason@oracle.com,
-       david@fromorbit.com, hch@infradead.org, akpm@linux-foundation.org,
-       jack@suse.cz, yanmin_zhang@linux.intel.com, linux-scsi@vger.kernel.org
-Subject: Re: [PATCH 03/13] scsi: unify allocation of scsi command and sense
-	buffer
-Message-ID: <20090526073229.GC11363@kernel.dk>
-References: <aday6sk8wne.fsf@cisco.com> <20090526132914W.fujita.tomonori@lab.ntt.co.jp> <20090526062952.GB11363@kernel.dk> <20090526162545U.fujita.tomonori@lab.ntt.co.jp>
-MIME-Version: 1.0
+	id S1752757AbZEZHdp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 03:33:45 -0400
+Date: Tue, 26 May 2009 09:33:44 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Pekka J Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
+       Yinghai Lu <yinghai@kernel.org>, Rusty Russell <rusty@rustcorp.com.au>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jeff Garzik <jgarzik@pobox.com>,
+       Alexander Viro <viro@ftp.linux.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, cl@linux-foundation.org,
+       mpm@selenic.com
+Subject: Re: [GIT PULL] scheduler fixes
+Message-ID: <20090526073344.GD21496@wotan.suse.de>
+References: <4A199327.5030503@kernel.org> <20090525025353.GA2580@elte.hu> <4A1A2261.1000504@kernel.org> <20090525051521.GC23032@elte.hu> <Pine.LNX.4.64.0905251142140.32568@melkki.cs.Helsinki.FI> <20090525112504.GB24071@wotan.suse.de> <84144f020905250437x585e66a2oc1124a4f1f43059d@mail.gmail.com> <20090525114127.GE24071@wotan.suse.de> <Pine.LNX.4.64.0905251443390.4115@melkki.cs.Helsinki.FI> <alpine.LFD.2.01.0905250930530.3435@localhost.localdomain>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090526162545U.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <alpine.LFD.2.01.0905250930530.3435@localhost.localdomain>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 26 2009, FUJITA Tomonori wrote:
-> On Tue, 26 May 2009 08:29:53 +0200
-> Jens Axboe <jens.axboe@oracle.com> wrote:
+On Mon, May 25, 2009 at 09:39:36AM -0700, Linus Torvalds wrote:
 > 
-> > On Tue, May 26 2009, FUJITA Tomonori wrote:
-> > > On Mon, 25 May 2009 18:45:25 -0700
-> > > Roland Dreier <rdreier@cisco.com> wrote:
-> > > 
-> > > >  > Ideally there should be a MACRO that is defined to WORD_SIZE on cache-coherent
-> > > >  > ARCHs and to SMP_CACHE_BYTES on none-cache-coherent systems and use that size
-> > > >  > at the __align() attribute. (So only stupid ARCHES get hurt)
-> > > > 
-> > > > this seems to come up repeatedly -- I had a proposal a _long_ time ago
-> > > > that never quite got merged, cf http://lwn.net/Articles/2265/ and
-> > > > http://lwn.net/Articles/2269/ -- from 2002 (!?).  The idea is to go a
-> > > 
-> > > Yeah, I think that Benjamin did last time:
-> > > 
-> > > http://www.mail-archive.com/linux-scsi@vger.kernel.org/msg12632.html
-> > > 
-> > > IIRC, James didn't like it so I wrote the current code. I didn't see
-> > > any big performance difference with scsi_debug:
-> > > 
-> > > http://marc.info/?l=linux-scsi&m=120038907123706&w=2
-> > > 
-> > > Jens, you see the performance difference due to this unification?
-> > 
-> > Yes, it's definitely a worth while optimization. The problem isn't as
-> > such this specific allocation, it's the total number of allocations we
-> > do for a piece of IO. This sense buffer one is just one of many, I'm
-> > continually working to reduce them. If we get rid of this one and add
-> > the ->alloc_cmd() stuff, we can kill one more. The bio path already lost
-> > one. So in the IO stack, we went from 6 allocations to 3 for a piece of
-> > IO. And then it starts to add up. Even at just 30-50k iops, that's more
-> > than 1% of time in the testing I did.
 > 
-> I see, thanks. Hmm, possibly slab becomes slower. ;)
+> On Mon, 25 May 2009, Pekka J Enberg wrote:
+> > diff --git a/init/main.c b/init/main.c
+> > index 33ce929..fb0e004 100644
+> > --- a/init/main.c
+> > +++ b/init/main.c
+> > @@ -576,6 +576,22 @@ asmlinkage void __init start_kernel(void)
+> >  	setup_nr_cpu_ids();
+> >  	smp_prepare_boot_cpu();	/* arch-specific boot-cpu hooks */
+> >  
+> > +	build_all_zonelists();
+> > +	page_alloc_init();
+> > +
+> > +	printk(KERN_NOTICE "Kernel command line: %s\n", boot_command_line);
+> > +	parse_early_param();
+> > +	parse_args("Booting kernel", static_command_line, __start___param,
+> > +		   __stop___param - __start___param,
+> > +		   &unknown_bootoption);
+> > +	pidhash_init();
+> > +	vmalloc_init();
+> > +	vfs_caches_init_early();
+> > +	/*
+> > +	 * Set up kernel memory allocators
+> > +	 */
+> > +	mem_init();
+> > +	kmem_cache_init();
 > 
-> Then I think that we need something like the ->alloc_cmd()
-> method. Let's ask James. 
+> So what strikes me is a question:
 > 
-> I don't think that it's just about simply adding the hook; there are
-> some issues that we need to think about. Though Boaz worries too much
-> a bit, I think.
+>  - why do we want to do pidhash_init and vfs_caches_init_early() so early?
 > 
-> I'm not sure about this patch if we add ->alloc_cmd(). I doubt that
-> there are any llds don't use ->alloc_cmd() worry about the overhead of
-> the separated sense buffer allocation. If a lld doesn't define the own
-> alloc_cmd, then I think it's fine to use the generic command
-> allocator that does the separate sense buffer allocation.
+> Yes, pidhash_init() now uses alloc_bootmem. It's an allocation that is not 
+> trivially small, but it's not humongous either (max 4096 hash list heads, 
+> one pointer each).
 
-I think we should do the two things seperately. If we can safely inline
-the sense buffer in the command by doing the right alignment, then lets
-do that. The ->alloc_cmd() approach will be easier to do with an inline
-sense buffer.
+It would be nice to use the regular page allocator for pidhash_init; For
+my case, I have this patch floating around for a long time which can make
+this (among other things) dynamically resizable without using locking, and
+avoiding the special case for the bootmem allocated hash would be good. 
 
-But there's really no reason to tie the two things together.
 
--- 
-Jens Axboe
+> And vfs_caches_init_early() is actually doing some rather strange things, 
+> like doing a "alloc_large_system_hash()" but not unconditionally: it does 
+> it in the "late" initialization too, if not done early. inode_init_early 
+> does soemthing very similar (ie a _conditional_ early init).
+> 
+> So none of this seems to really get a huge advantage from the early init. 
+> There seems to be some subtle NUMA issues, but do we really want that? I 
+> get the feeling that nobody ever wanted to do it early, and then the NUMA 
+> people said "I don't wnt to do this early, but I don't want to touch the 
+> non-NUMA case, so I'll do it early for non-numa, and late for numa".
+ 
+vfs_caches_init_early wants to allocate with bootmem so it can get
+>= MAX_ORDER cache size in the kernel direct mapping. In the NUMA
+case, it is more important to spread the memory usage and utilisation
+over nodes I guess so they use vmalloc for that. Bootmem and vmalloc
+are not available at the same time, so it has to be 2 cases.
+
+
+> I'm also not entirely sure we really need to do vmalloc_init() that early, 
+> but I dunno. It also uses alloc_bootmem().
+
+Probably not. vmalloc doesn't really work without the page allocator and
+slab allocator already up, so it can probably be moved after them.
 
