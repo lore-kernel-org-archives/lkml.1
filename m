@@ -1,62 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756612AbZEZVbM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758201AbZEZVbk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756612AbZEZVbM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 17:31:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756180AbZEZVa6
+	id S1758201AbZEZVbk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 17:31:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756077AbZEZVbc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 17:30:58 -0400
-Received: from www.tglx.de ([62.245.132.106]:51026 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756039AbZEZVa5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 17:30:57 -0400
-Date: Tue, 26 May 2009 23:30:26 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-cc: mingo@elte.hu, Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       LKML <linux-kernel@vger.kernel.org>, Zhaolei <zhaolei@cn.fujitsu.com>,
-       kosaki.motohiro@jp.fujitsu.com, Steven Rostedt <rostedt@goodmis.org>,
-       fweisbec@gmail.com
-Subject: Re: [PATCH 0/3] ftrace: add tracepoint for timer event
-In-Reply-To: <4A1673AF.30508@cn.fujitsu.com>
-Message-ID: <alpine.LFD.2.00.0905262320330.1762@localhost.localdomain>
-References: <4A1673AF.30508@cn.fujitsu.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 26 May 2009 17:31:32 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51521 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755908AbZEZVbc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 17:31:32 -0400
+Date: Tue, 26 May 2009 14:30:58 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Huang Shijie <shijie8@gmail.com>
+Cc: cl@linux-foundation.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       shijie8@gmail.com
+Subject: Re: [PATCH] lib : provide a more precise
+ radix_tree_gang_lookup_slot
+Message-Id: <20090526143058.c59e6dc1.akpm@linux-foundation.org>
+In-Reply-To: <1243223635-3449-1-git-send-email-shijie8@gmail.com>
+References: <1243223635-3449-1-git-send-email-shijie8@gmail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 22 May 2009, Xiao Guangrong wrote:
-> We already have debugobject in timer to init/activate/deactivate/free,
-> but it can't be covered function of there tracepoints, because:
-> 1: We can't get timer's lifecycle information in userspace by debugobject,
->    it is necessary for system engineer to investigate system trouble caused
->    by using timer.
-> 2: We can't get information of whole lifecycle of timer by debugobject, 
->    for example, deactivation of a timer.
-> 3: There are many different tracing code in many kernel subsystem as
->    blktrace, debugobject, and tracepoint is designed as generic way
->    to unify these tracing way.
+On Mon, 25 May 2009 11:53:55 +0800
+Huang Shijie <shijie8@gmail.com> wrote:
 
-No. You can not unify debugobject into tracepoints. debugobjects is a
-totally different beast. It's main purpose is to prevent undebugable
-system crashes which we have seen several times e.g: freeing of an
-active timer, reinitializing of an active timer ...
+> 	The origin radix_tree_gang_lookup_slot() tries to
+> lookup max_items slots.But there are maybe holes for
+> find_get_pages_contig() which will only use the contiguous part.
+> 
+> 	So a more precise radix_tree_gang_lookup_slot() is needed
+> to avoid unneccessary search work.
+> 
 
-Dealing with these problems is not covered by tracepoints by any
-means. The trace point does not prevent the system crash which happens
-2 seconds after the fact that an active timer is kfree'd, debugobject
-does and it points you to the exact place where the shit happens.
+OK..
 
-I'm not opposed to add tracepoints to the timer code at all. In fact I
-appreciate that, but your idea of substituting debugobjects with
-tracing is just plain wrong.
+> diff --git a/include/linux/radix-tree.h b/include/linux/radix-tree.h
+> index 355f6e8..03e25f4 100644
+> --- a/include/linux/radix-tree.h
+> +++ b/include/linux/radix-tree.h
+> @@ -164,7 +164,8 @@ radix_tree_gang_lookup(struct radix_tree_root *root, void **results,
+>  			unsigned long first_index, unsigned int max_items);
+>  unsigned int
+>  radix_tree_gang_lookup_slot(struct radix_tree_root *root, void ***results,
+> -			unsigned long first_index, unsigned int max_items);
+> +			unsigned long first_index, unsigned int max_items,
+> +			int contig);
 
-It's the other way round. tracing can reuse the existing debugobject
-hooks to insert trace points, but it can not replace the functionality
-at all.
+Variable `contig' could have the type `bool'.  Did you consider and
+reject that option, or just didn't think of it?
 
-Thanks,
 
-	tglx
+> ...
+> +			if (contig)
+> +				goto out;
+> +
+> +		} else if (contig) {
+> +			index--;
+> +			goto out;
+> +
+> +		if (contig) {
+> +			if (slots_found == 0)
+> +				break;
+> +			if (next_index & RADIX_TREE_MAP_MASK)
+> +				break;
+> +		}
+> -				(void ***)pages, start, nr_pages);
+> +				(void ***)pages, start, nr_pages, 0);
+> -				(void ***)pages, index, nr_pages);
+> +				(void ***)pages, index, nr_pages, 1);
+
+The patch adds cycles in some cases and saves them in others.
+
+Does the saving exceed the adding?  How do we know that the patch is a
+net benefit?
