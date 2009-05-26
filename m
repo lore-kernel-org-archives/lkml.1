@@ -1,67 +1,235 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757584AbZEZWky@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758532AbZEZWnW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757584AbZEZWky (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 18:40:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757064AbZEZWko
+	id S1758532AbZEZWnW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 18:43:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755362AbZEZWnM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 18:40:44 -0400
-Received: from mail-bw0-f222.google.com ([209.85.218.222]:47829 "EHLO
-	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756459AbZEZWkn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 18:40:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:x-accept-language:mime-version:to
-         :cc:subject:references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=mn6c6b8QmWsh5cy/Rl3MZofopsdcUT8OcRsKunzVQy4FlMXR4n0yUEBP0BfmiCvbJR
-         42DE+ZjJ2U89rCUBoMzxajQ6vTTmGUF87KvVD8Gn02QcwiWwTsSmURDY3ltwzeGdTsF5
-         W3Yq9UC2H09Ag7QmMJxW6g7HXG7T9Bn91ugqI=
-Message-ID: <4A1C6FE9.1050003@googlemail.com>
-Date: Wed, 27 May 2009 00:40:41 +0200
-From: Michael Riepe <michael.riepe@googlemail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.7.13) Gecko/20060417
-X-Accept-Language: de-de, de, en-us, en
-MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: mb@bu3sch.de, dave@thedillows.org, romieu@fr.zoreil.com,
-       rsantos@grupopie.com, m.bueker@berlin.de, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH 2.6.30-rc4] r8169: avoid losing MSI interrupts
-References: <20090525.225503.173348268.davem@davemloft.net>	<200905262022.24593.mb@bu3sch.de>	<20090526.145211.37114439.davem@davemloft.net> <20090526.151410.109935435.davem@davemloft.net>
-In-Reply-To: <20090526.151410.109935435.davem@davemloft.net>
-X-Enigmail-Version: 0.91.0.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 26 May 2009 18:43:12 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:33133 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755236AbZEZWnM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 18:43:12 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
+       fchecconi@gmail.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
+       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com
+Cc: agk@redhat.com, snitzer@redhat.com, vgoyal@redhat.com,
+       akpm@linux-foundation.org, peterz@infradead.org
+Subject: [PATCH 03/20] io-controller: Charge for time slice based on average disk rate
+Date: Tue, 26 May 2009 18:41:52 -0400
+Message-Id: <1243377729-2176-4-git-send-email-vgoyal@redhat.com>
+In-Reply-To: <1243377729-2176-1-git-send-email-vgoyal@redhat.com>
+References: <1243377729-2176-1-git-send-email-vgoyal@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+o There are situations where a queue gets expired very soon and it looks
+  as if time slice used by that queue is zero. For example, If an async
+  queue dispatches a bunch of requests and queue is expired before first
+  request completes. Another example is where a queue is expired as soon
+  as first request completes and queue has no more requests (sync queues
+  on SSD).
 
+o Currently we just charge 25% of slice length in such cases. This patch tries
+  to improve on that approximation by keeping a track of average disk rate
+  and charging for time by nr_sectors/disk_rate.
 
-David Miller wrote:
-> From: David Miller <davem@davemloft.net>
-> Date: Tue, 26 May 2009 14:52:11 -0700 (PDT)
-> 
-> 
->>From: Michael Buesch <mb@bu3sch.de>
->>Date: Tue, 26 May 2009 20:22:23 +0200
->>
->>
->>>I didn't notice a CC:stable.
->>>I think this should also go to stable.
->>>Does somebody take care?
->>
->>I'll queue it up.
-> 
-> 
-> Actually, this patch doesn't even remotely come close to applying
-> to 2.6.29.4
+o This is still experimental, not very sure if it gives measurable improvement
+  or not.
 
-Michael Buesch already provided a patch against 2.6.29.4 that we both
-tested. I doubt that it will apply to 2.6.27 cleanly, though.
+Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
+---
+ block/elevator-fq.c |   85 +++++++++++++++++++++++++++++++++++++++++++++++++-
+ block/elevator-fq.h |   11 ++++++
+ 2 files changed, 94 insertions(+), 2 deletions(-)
 
+diff --git a/block/elevator-fq.c b/block/elevator-fq.c
+index c5cc080..73b997a 100644
+--- a/block/elevator-fq.c
++++ b/block/elevator-fq.c
+@@ -19,6 +19,9 @@ const int elv_slice_async_rq = 2;
+ int elv_slice_idle = HZ / 125;
+ static struct kmem_cache *elv_ioq_pool;
+ 
++/* Maximum Window length for updating average disk rate */
++static int elv_rate_sampling_window = HZ / 10;
++
+ #define ELV_SLICE_SCALE		(5)
+ #define ELV_HW_QUEUE_MIN	(5)
+ #define IO_SERVICE_TREE_INIT   ((struct io_service_tree)		\
+@@ -1022,6 +1025,47 @@ static void elv_ioq_update_io_thinktime(struct io_queue *ioq)
+ 	ioq->ttime_mean = (ioq->ttime_total + 128) / ioq->ttime_samples;
+ }
+ 
++static void elv_update_io_rate(struct elv_fq_data *efqd, struct request *rq)
++{
++	long elapsed = jiffies - efqd->rate_sampling_start;
++	unsigned long total;
++
++	/* sampling window is off */
++	if (!efqd->rate_sampling_start)
++		return;
++
++	efqd->rate_sectors_current += rq->nr_sectors;
++
++	if (efqd->rq_in_driver && (elapsed < elv_rate_sampling_window))
++		return;
++
++	efqd->rate_sectors = (7*efqd->rate_sectors +
++				256*efqd->rate_sectors_current) / 8;
++
++	if (!elapsed) {
++		/*
++		 * updating rate before a jiffy could complete. Could be a
++		 * problem with fast queuing/non-queuing hardware. Should we
++		 * look at higher resolution time source?
++		 *
++		 * In case of non-queuing hardware we will probably not try to
++		 * dispatch from multiple queues and will be able to account
++		 * for disk time used and will not need this approximation
++		 * anyway?
++		 */
++		elapsed = 1;
++	}
++
++	efqd->rate_time = (7*efqd->rate_time + 256*elapsed) / 8;
++	total = efqd->rate_sectors + (efqd->rate_time/2);
++	efqd->mean_rate = total/efqd->rate_time;
++
++	elv_log(efqd, "mean_rate=%d, t=%d s=%d", efqd->mean_rate,
++			elapsed, efqd->rate_sectors_current);
++	efqd->rate_sampling_start = 0;
++	efqd->rate_sectors_current = 0;
++}
++
+ /*
+  * Disable idle window if the process thinks too long.
+  * This idle flag can also be updated by io scheduler.
+@@ -1312,6 +1356,34 @@ void elv_del_ioq_busy(struct elevator_queue *e, struct io_queue *ioq,
+ }
+ 
+ /*
++ * Calculate the effective disk time used by the queue based on how many
++ * sectors queue has dispatched and what is the average disk rate
++ * Returns disk time in ms.
++ */
++static inline unsigned long elv_disk_time_used(struct request_queue *q,
++					struct io_queue *ioq)
++{
++	struct elv_fq_data *efqd = &q->elevator->efqd;
++	struct io_entity *entity = &ioq->entity;
++	unsigned long jiffies_used = 0;
++
++	if (!efqd->mean_rate)
++		return entity->budget/4;
++
++	/* Charge the queue based on average disk rate */
++	jiffies_used = ioq->nr_sectors/efqd->mean_rate;
++
++	if (!jiffies_used)
++		jiffies_used = 1;
++
++	elv_log_ioq(efqd, ioq, "disk time=%ldms sect=%ld rate=%ld",
++				jiffies_to_msecs(jiffies_used),
++				ioq->nr_sectors, efqd->mean_rate);
++
++	return jiffies_used;
++}
++
++/*
+  * Do the accounting. Determine how much service (in terms of time slices)
+  * current queue used and adjust the start, finish time of queue and vtime
+  * of the tree accordingly.
+@@ -1363,7 +1435,7 @@ void __elv_ioq_slice_expired(struct request_queue *q, struct io_queue *ioq)
+ 	 * the requests to finish. But this will reduce throughput.
+ 	 */
+ 	if (!ioq->slice_end)
+-		slice_used = entity->budget/4;
++		slice_used = elv_disk_time_used(q, ioq);
+ 	else {
+ 		if (time_after(ioq->slice_end, jiffies)) {
+ 			slice_unused = ioq->slice_end - jiffies;
+@@ -1373,7 +1445,7 @@ void __elv_ioq_slice_expired(struct request_queue *q, struct io_queue *ioq)
+ 				 * completing first request. Charge 25% of
+ 				 * slice.
+ 				 */
+-				slice_used = entity->budget/4;
++				slice_used = elv_disk_time_used(q, ioq);
+ 			} else
+ 				slice_used = entity->budget - slice_unused;
+ 		} else {
+@@ -1391,6 +1463,8 @@ void __elv_ioq_slice_expired(struct request_queue *q, struct io_queue *ioq)
+ 	BUG_ON(ioq != efqd->active_queue);
+ 	elv_reset_active_ioq(efqd);
+ 
++	/* Queue is being expired. Reset number of secotrs dispatched */
++	ioq->nr_sectors = 0;
+ 	if (!ioq->nr_queued)
+ 		elv_del_ioq_busy(q->elevator, ioq, 1);
+ 	else
+@@ -1725,6 +1799,7 @@ void elv_fq_dispatched_request(struct elevator_queue *e, struct request *rq)
+ 
+ 	BUG_ON(!ioq);
+ 	elv_ioq_request_dispatched(ioq);
++	ioq->nr_sectors += rq->nr_sectors;
+ 	elv_ioq_request_removed(e, rq);
+ 	elv_clear_ioq_must_dispatch(ioq);
+ }
+@@ -1737,6 +1812,10 @@ void elv_fq_activate_rq(struct request_queue *q, struct request *rq)
+ 		return;
+ 
+ 	efqd->rq_in_driver++;
++
++	if (!efqd->rate_sampling_start)
++		efqd->rate_sampling_start = jiffies;
++
+ 	elv_log_ioq(efqd, rq_ioq(rq), "activate rq, drv=%d",
+ 						efqd->rq_in_driver);
+ }
+@@ -1828,6 +1907,8 @@ void elv_ioq_completed_request(struct request_queue *q, struct request *rq)
+ 	efqd->rq_in_driver--;
+ 	ioq->dispatched--;
+ 
++	elv_update_io_rate(efqd, rq);
++
+ 	if (sync)
+ 		ioq->last_end_request = jiffies;
+ 
+diff --git a/block/elevator-fq.h b/block/elevator-fq.h
+index 3bea279..ce2d671 100644
+--- a/block/elevator-fq.h
++++ b/block/elevator-fq.h
+@@ -165,6 +165,9 @@ struct io_queue {
+ 	/* Requests dispatched from this queue */
+ 	int dispatched;
+ 
++	/* Number of sectors dispatched in current dispatch round */
++	int nr_sectors;
++
+ 	/* Keep a track of think time of processes in this queue */
+ 	unsigned long last_end_request;
+ 	unsigned long ttime_total;
+@@ -223,6 +226,14 @@ struct elv_fq_data {
+ 	struct work_struct unplug_work;
+ 
+ 	unsigned int elv_slice[2];
++
++	/* Fields for keeping track of average disk rate */
++	unsigned long rate_sectors; /* number of sectors finished */
++	unsigned long rate_time;   /* jiffies elapsed */
++	unsigned long mean_rate; /* sectors per jiffy */
++	unsigned long long rate_sampling_start; /*sampling window start jifies*/
++	/* number of sectors finished io during current sampling window */
++	unsigned long rate_sectors_current;
+ };
+ 
+ extern int elv_slice_idle;
 -- 
-Michael "Tired" Riepe <michael.riepe@googlemail.com>
-X-Tired: Each morning I get up I die a little
+1.6.0.1
+
