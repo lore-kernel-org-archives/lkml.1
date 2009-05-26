@@ -1,52 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760698AbZEZWwA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754876AbZEZWvg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760698AbZEZWwA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 18:52:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760579AbZEZWvK
+	id S1754876AbZEZWvg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 18:51:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760267AbZEZWtr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 18:51:10 -0400
-Received: from smtp-out002.kontent.com ([81.88.40.216]:41414 "EHLO
-	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760554AbZEZWvH (ORCPT
+	Tue, 26 May 2009 18:49:47 -0400
+Received: from mga06.intel.com ([134.134.136.21]:8675 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760258AbZEZWtq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 18:51:07 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
-Date: Wed, 27 May 2009 00:51:35 +0200
-User-Agent: KMail/1.10.3 (Linux/2.6.27.21-0.1-default; KDE/4.1.3; x86_64; ; )
-Cc: nigel@tuxonice.net, linux-pm@lists.linux-foundation.org,
-       tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org,
-       Pavel Machek <pavel@ucw.cz>
-References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net> <200905260045.33902.oliver@neukum.org> <200905260058.54482.rjw@sisk.pl>
-In-Reply-To: <200905260058.54482.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905270051.35831.oliver@neukum.org>
+	Tue, 26 May 2009 18:49:46 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,254,1241420400"; 
+   d="scan'208";a="415865915"
+Message-Id: <20090526225155.452895924@linux.intel.com>
+References: <20090526224930.145059254@linux.intel.com>
+User-Agent: quilt/0.46-1
+Date: Wed, 27 May 2009 00:49:36 +0200
+From: Samuel Ortiz <sameo@linux.intel.com>
+To: inux-kernel <linux-kernel@vger.kernel.org>,
+       Greg Kroah-Hartmann <greg@kroah.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: Kay Sievers <kay.sievers@vrfy.org>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Dan Williams <dcbw@redhat.com>, Samuel Ortiz <sameo@linux.intel.com>
+Subject: [PATCH 6/7 v2] wireless/libertas: prepare for FIRMWARE_NAME_MAX removal
+Content-Disposition: inline; filename=firmware-libertas.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Dienstag, 26. Mai 2009 00:58:53 schrieb Rafael J. Wysocki:
-> > No, I am afraid it is not. The average user has no clue. Even if that
-> > is not the problem, the user never knows for sure he has encountered
-> > the worst case.
->
-> OK there, but surely it's better to have a sysfs attribute than a fixed
-> value?
+From: John W. Linville <linville@tuxdriver.com>
 
-Maybe I should have been more verbose.
+We're going to remove the FIRMWARE_NAME_MAX definition in order to avoid any
+firmware name length restriction.
+This patch eplaces the shared FIRMWARE_NAME_MAX definition with a libertas
+local one.
 
-A tunable setting is a race condition in itself. The right amount depends
-on the drivers loaded and the devices attached and possibly on the status
-of devices. Nothing of this can be determined statically.
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
+Acked-by: Dan Williams <dcbw@redhat.com>
+Acked-by: Samuel Ortiz <sameo@linux.intel.com>
+---
+ drivers/net/wireless/libertas/if_spi.c |    8 ++++----
+ drivers/net/wireless/libertas/if_spi.h |    3 +++
+ drivers/net/wireless/libertas/if_usb.c |    8 ++------
+ 3 files changed, 9 insertions(+), 10 deletions(-)
 
-You want hibernation to work even if the user has plugged in a new device.
-You have to calculate that amount in kernel space.
+Index: iwm-2.6/drivers/net/wireless/libertas/if_spi.c
+===================================================================
+--- iwm-2.6.orig/drivers/net/wireless/libertas/if_spi.c	2009-05-25 20:48:40.000000000 +0200
++++ iwm-2.6/drivers/net/wireless/libertas/if_spi.c	2009-05-27 00:29:57.000000000 +0200
+@@ -44,8 +44,8 @@ struct if_spi_card {
+ 	struct lbs_private		*priv;
+ 	struct libertas_spi_platform_data *pdata;
+ 
+-	char				helper_fw_name[FIRMWARE_NAME_MAX];
+-	char				main_fw_name[FIRMWARE_NAME_MAX];
++	char				helper_fw_name[IF_SPI_FW_NAME_MAX];
++	char				main_fw_name[IF_SPI_FW_NAME_MAX];
+ 
+ 	/* The card ID and card revision, as reported by the hardware. */
+ 	u16				card_id;
+@@ -1013,9 +1013,9 @@ static int if_spi_calculate_fw_names(u16
+ 		lbs_pr_err("Unsupported chip_id: 0x%02x\n", card_id);
+ 		return -EAFNOSUPPORT;
+ 	}
+-	snprintf(helper_fw, FIRMWARE_NAME_MAX, "libertas/gspi%d_hlp.bin",
++	snprintf(helper_fw, IF_SPI_FW_NAME_MAX, "libertas/gspi%d_hlp.bin",
+ 		 chip_id_to_device_name[i].name);
+-	snprintf(main_fw, FIRMWARE_NAME_MAX, "libertas/gspi%d.bin",
++	snprintf(main_fw, IF_SPI_FW_NAME_MAX, "libertas/gspi%d.bin",
+ 		 chip_id_to_device_name[i].name);
+ 	return 0;
+ }
+Index: iwm-2.6/drivers/net/wireless/libertas/if_spi.h
+===================================================================
+--- iwm-2.6.orig/drivers/net/wireless/libertas/if_spi.h	2009-05-19 23:40:51.000000000 +0200
++++ iwm-2.6/drivers/net/wireless/libertas/if_spi.h	2009-05-27 00:29:57.000000000 +0200
+@@ -22,6 +22,9 @@
+ #define IF_SPI_CMD_BUF_SIZE 2400
+ 
+ /***************** Firmware *****************/
++
++#define IF_SPI_FW_NAME_MAX 30
++
+ struct chip_ident {
+ 	u16 chip_id;
+ 	u16 name;
+Index: iwm-2.6/drivers/net/wireless/libertas/if_usb.c
+===================================================================
+--- iwm-2.6.orig/drivers/net/wireless/libertas/if_usb.c	2009-05-19 23:40:51.000000000 +0200
++++ iwm-2.6/drivers/net/wireless/libertas/if_usb.c	2009-05-27 00:29:57.000000000 +0200
+@@ -61,11 +61,9 @@ static ssize_t if_usb_firmware_set(struc
+ {
+ 	struct lbs_private *priv = to_net_dev(dev)->ml_priv;
+ 	struct if_usb_card *cardp = priv->card;
+-	char fwname[FIRMWARE_NAME_MAX];
+ 	int ret;
+ 
+-	sscanf(buf, "%29s", fwname); /* FIRMWARE_NAME_MAX - 1 = 29 */
+-	ret = if_usb_prog_firmware(cardp, fwname, BOOT_CMD_UPDATE_FW);
++	ret = if_usb_prog_firmware(cardp, buf, BOOT_CMD_UPDATE_FW);
+ 	if (ret == 0)
+ 		return count;
+ 
+@@ -88,11 +86,9 @@ static ssize_t if_usb_boot2_set(struct d
+ {
+ 	struct lbs_private *priv = to_net_dev(dev)->ml_priv;
+ 	struct if_usb_card *cardp = priv->card;
+-	char fwname[FIRMWARE_NAME_MAX];
+ 	int ret;
+ 
+-	sscanf(buf, "%29s", fwname); /* FIRMWARE_NAME_MAX - 1 = 29 */
+-	ret = if_usb_prog_firmware(cardp, fwname, BOOT_CMD_UPDATE_BOOT2);
++	ret = if_usb_prog_firmware(cardp, buf, BOOT_CMD_UPDATE_BOOT2);
+ 	if (ret == 0)
+ 		return count;
+ 
 
-	Regards
-		Oliver
-
+-- 
+Intel Open Source Technology Centre
+http://oss.intel.com/
