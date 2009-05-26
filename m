@@ -1,418 +1,309 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757860AbZEZTgl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757959AbZEZTh1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757860AbZEZTgl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 15:36:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757902AbZEZTgb
+	id S1757959AbZEZTh1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 15:37:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757037AbZEZThO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 15:36:31 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:60258 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757883AbZEZTg1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 15:36:27 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-Subject: [KVM PATCH v4 3/3] kvm: add iosignalfd support
-To: kvm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, avi@redhat.com, davide@xmailserver.org,
-       mtosatti@redhat.com
-Date: Tue, 26 May 2009 15:15:39 -0400
-Message-ID: <20090526191539.20860.1385.stgit@dev.haskins.net>
-In-Reply-To: <20090526191010.20860.75372.stgit@dev.haskins.net>
-References: <20090526191010.20860.75372.stgit@dev.haskins.net>
-User-Agent: StGIT/0.14.3
+	Tue, 26 May 2009 15:37:14 -0400
+Received: from hera.kernel.org ([140.211.167.34]:47120 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757054AbZEZThM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 15:37:12 -0400
+Date: Tue, 26 May 2009 19:36:33 GMT
+From: tip-bot for Arnaldo Carvalho de Melo <acme@redhat.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org, acme@redhat.com,
+       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
+       rostedt@goodmis.org, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com, paulus@samba.org,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, efault@gmx.de,
+       rostedt@goodmis.org, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <20090526191904.GH4424@ghostprotocols.net>
+References: <20090526191904.GH4424@ghostprotocols.net>
+Subject: [tip:perfcounters/core] perf report: Sort output by symbol usage
+Message-ID: <tip-3a4b8cc70b7473a0b9f26f5b4ddc6579b5e214be@git.kernel.org>
+Git-Commit-ID: 3a4b8cc70b7473a0b9f26f5b4ddc6579b5e214be
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 26 May 2009 19:36:35 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-iosignalfd is a mechanism to register PIO/MMIO regions to trigger an eventfd
-signal when written to by a guest.  Host userspace can register any arbitrary
-IO address with a corresponding eventfd and then pass the eventfd to a
-specific end-point of interest for handling.
+Commit-ID:  3a4b8cc70b7473a0b9f26f5b4ddc6579b5e214be
+Gitweb:     http://git.kernel.org/tip/3a4b8cc70b7473a0b9f26f5b4ddc6579b5e214be
+Author:     Arnaldo Carvalho de Melo <acme@redhat.com>
+AuthorDate: Tue, 26 May 2009 16:19:04 -0300
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 26 May 2009 21:26:30 +0200
 
-Normal IO requires a blocking round-trip since the operation may cause
-side-effects in the emulated model or may return data to the caller.
-Therefore, an IO in KVM traps from the guest to the host, causes a VMX/SVM
-"heavy-weight" exit back to userspace, and is ultimately serviced by qemu's
-device model synchronously before returning control back to the vcpu.
+perf report: Sort output by symbol usage
 
-However, there is a subclass of IO which acts purely as a trigger for
-other IO (such as to kick off an out-of-band DMA request, etc).  For these
-patterns, the synchronous call is particularly expensive since we really
-only want to simply get our notification transmitted asychronously and
-return as quickly as possible.  All the sychronous infrastructure to ensure
-proper data-dependencies are met in the normal IO case are just unecessary
-overhead for signalling.  This adds additional computational load on the
-system, as well as latency to the signalling path.
+[acme@emilia ~]$ perf record find / > /dev/null 2>&1
+[acme@emilia ~]$ perf stat perf report | head -20
+ 4.95          find [k] 0xffffffff81393d65 _spin_lock
+ 3.89          find [.] 0x000000000000af89 /usr/bin/find: <unknown>
+ 2.19          find [k] 0xffffffffa00518e0 ext3fs_dirhash
+ 1.87          find [k] 0xffffffff810a6cea __rcu_read_lock
+ 1.86          find [k] 0xffffffff811c7312 _atomic_dec_and_lock
+ 1.86          find [.] 0x00000000000782ab /lib64/libc-2.5.so: __GI_strlen
+ 1.85          find [k] 0xffffffff810fedfb __kmalloc
+ 1.62          find [.] 0x00000000000430ff /lib64/libc-2.5.so: vfprintf
+ 1.59          find [k] 0xffffffff810a6d6d __rcu_read_unlock
+ 1.55          find [k] 0xffffffff81119395 __d_lookup
+ 1.39          find [.] 0x0000000000071b40 /lib64/libc-2.5.so: _int_malloc
+ 1.30          find [k] 0xffffffffa031c4fc nfs_do_filldir
+ 1.21          find [k] 0xffffffff811876a5 avc_has_perm_noaudit
+ 1.15          find [k] 0xffffffff810fef62 kmem_cache_alloc
+ 1.07          find [k] 0xffffffff811d03fb copy_user_generic_string
+ 1.03          find [k] 0xffffffffa0043882 ext3_htree_store_dirent
+ 0.99          find [k] 0xffffffff81393ebb _spin_lock_bh
+ 0.98          find [k] 0xffffffffa03319a2 nfs3_decode_dirent
+ 0.97          find [k] 0xffffffff8100bf20 system_call
+ 0.92          find [k] 0xffffffff8139437e _spin_unlock
 
-Therefore, we provide a mechanism for registration of an in-kernel trigger
-point that allows the VCPU to only require a very brief, lightweight
-exit just long enough to signal an eventfd.  This also means that any
-clients compatible with the eventfd interface (which includes userspace
-and kernelspace equally well) can now register to be notified. The end
-result should be a more flexible and higher performance notification API
-for the backend KVM hypervisor and perhipheral components.
+ Performance counter stats for 'perf':
 
-To test this theory, we built a test-harness called "doorbell".  This
-module has a function called "doorbell_ring()" which simply increments a
-counter for each time the doorbell is signaled.  It supports signalling
-from either an eventfd, or an ioctl().
+     244.278972  task clock ticks     (msecs)
+              8  context switches     (events)
+              9  CPU migrations       (events)
+           2104  pagefaults           (events)
+       35329669  CPU cycles           (events)  (scaled from 75.40%)
+       13740366  instructions         (events)  (scaled from 75.49%)
+          59073  cache references     (events)  (scaled from 24.60%)
+            196  cache misses         (events)  (scaled from 24.51%)
 
-We then wired up two paths to the doorbell: One via QEMU via a registered
-io region and through the doorbell ioctl().  The other is direct via
-iosignalfd.
+ Wall-clock time elapsed:   246.060717 msecs
 
-You can download this test harness here:
+[acme@emilia ~]$
+[acme@emilia ~]$ grep "model name" /proc/cpuinfo | head -1
+model name	: Intel(R) Xeon(R) CPU           E5405  @ 2.00GHz
+[acme@emilia ~]$ grep "model name" /proc/cpuinfo | wc -l
+8
+[acme@emilia ~]$
 
-ftp://ftp.novell.com/dev/ghaskins/doorbell.tar.bz2
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+LKML-Reference: <20090526191904.GH4424@ghostprotocols.net>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-The measured results are as follows:
 
-qemu-mmio:       110000 iops, 9.09us rtt
-iosignalfd-mmio: 200100 iops, 5.00us rtt
-iosignalfd-pio:  367300 iops, 2.72us rtt
-
-I didn't measure qemu-pio, because I have to figure out how to register a
-PIO region with qemu's device model, and I got lazy.  However, for now we
-can extrapolate based on the data from the NULLIO runs of +2.56us for MMIO,
-and -350ns for HC, we get:
-
-qemu-pio:      153139 iops, 6.53us rtt
-iosignalfd-hc: 412585 iops, 2.37us rtt
-
-these are just for fun, for now, until I can gather more data.
-
-Here is a graph for your convenience:
-
-http://developer.novell.com/wiki/images/7/76/Iofd-chart.png
-
-The conclusion to draw is that we save about 4us by skipping the userspace
-hop.
-
---------------------
-
-Signed-off-by: Gregory Haskins <ghaskins@novell.com>
 ---
+ Documentation/perf_counter/builtin-report.c |  129 ++++++++++++++++++++------
+ 1 files changed, 99 insertions(+), 30 deletions(-)
 
- arch/x86/kvm/x86.c       |    1 
- include/linux/kvm.h      |   15 ++++
- include/linux/kvm_host.h |   10 ++-
- virt/kvm/eventfd.c       |  162 ++++++++++++++++++++++++++++++++++++++++++++++
- virt/kvm/kvm_main.c      |   11 +++
- 5 files changed, 195 insertions(+), 4 deletions(-)
-
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 6d44dd5..31c86a3 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -1089,6 +1089,7 @@ int kvm_dev_ioctl_check_extension(long ext)
- 	case KVM_CAP_IRQ_INJECT_STATUS:
- 	case KVM_CAP_ASSIGN_DEV_IRQ:
- 	case KVM_CAP_IRQFD:
-+	case KVM_CAP_IOSIGNALFD:
- 	case KVM_CAP_PIT2:
- 		r = 1;
- 		break;
-diff --git a/include/linux/kvm.h b/include/linux/kvm.h
-index 65df6f5..b63475e 100644
---- a/include/linux/kvm.h
-+++ b/include/linux/kvm.h
-@@ -300,6 +300,19 @@ struct kvm_guest_debug {
- 	struct kvm_guest_debug_arch arch;
+diff --git a/Documentation/perf_counter/builtin-report.c b/Documentation/perf_counter/builtin-report.c
+index a58be7f..a4c6ffa 100644
+--- a/Documentation/perf_counter/builtin-report.c
++++ b/Documentation/perf_counter/builtin-report.c
+@@ -447,26 +447,33 @@ static size_t map__fprintf(struct map *self, FILE *fp)
+ 		       self->start, self->end, self->pgoff, self->dso->name);
+ }
+ 
++struct thread;
++
++static const char *thread__name(struct thread *self, char *bf, size_t size);
++
+ struct symhist {
+ 	struct rb_node	 rb_node;
+ 	struct dso	 *dso;
+ 	struct symbol	 *sym;
++	struct thread	 *thread;
+ 	uint64_t	 ip;
+ 	uint32_t	 count;
+ 	char		 level;
  };
  
-+#define KVM_IOSIGNALFD_FLAG_DEASSIGN  (1 << 0)
-+#define KVM_IOSIGNALFD_FLAG_PIO       (1 << 1)
-+#define KVM_IOSIGNALFD_FLAG_COOKIE    (1 << 2)
-+
-+struct kvm_iosignalfd {
-+	__u64 cookie;
-+	__u64 addr;
-+	__u32 len;
-+	__u32 fd;
-+	__u32 flags;
-+	__u8  pad[12];
-+};
-+
- #define KVM_TRC_SHIFT           16
- /*
-  * kvm trace categories
-@@ -430,6 +443,7 @@ struct kvm_trace_rec {
- #ifdef __KVM_HAVE_PIT
- #define KVM_CAP_PIT2 33
- #endif
-+#define KVM_CAP_IOSIGNALFD 34
- 
- #ifdef KVM_CAP_IRQ_ROUTING
- 
-@@ -537,6 +551,7 @@ struct kvm_irqfd {
- #define KVM_DEASSIGN_DEV_IRQ       _IOW(KVMIO, 0x75, struct kvm_assigned_irq)
- #define KVM_IRQFD                  _IOW(KVMIO, 0x76, struct kvm_irqfd)
- #define KVM_CREATE_PIT2		   _IOW(KVMIO, 0x77, struct kvm_pit_config)
-+#define KVM_IOSIGNALFD             _IOW(KVMIO, 0x78, struct kvm_iosignalfd)
- 
- /*
-  * ioctls for vcpu fds
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index 7dcae4b..5b2be86 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -138,6 +138,7 @@ struct kvm {
- 	struct kvm_io_bus pio_bus;
- #ifdef CONFIG_HAVE_KVM_EVENTFD
- 	struct list_head irqfds;
-+	struct list_head iosignalfds;
- #endif
- 	struct kvm_vm_stat stat;
- 	struct kvm_arch arch;
-@@ -535,19 +536,24 @@ static inline void kvm_free_irq_routing(struct kvm *kvm) {}
- 
- #ifdef CONFIG_HAVE_KVM_EVENTFD
- 
--void kvm_irqfd_init(struct kvm *kvm);
-+void kvm_eventfd_init(struct kvm *kvm);
- int kvm_irqfd(struct kvm *kvm, int fd, int gsi, int flags);
- void kvm_irqfd_release(struct kvm *kvm);
-+int kvm_iosignalfd(struct kvm *kvm, struct kvm_iosignalfd *args);
- 
- #else
- 
--static inline void kvm_irqfd_init(struct kvm *kvm) {}
-+static inline void kvm_eventfd_init(struct kvm *kvm) {}
- static inline int kvm_irqfd(struct kvm *kvm, int fd, int gsi, int flags)
+ static struct symhist *symhist__new(struct symbol *sym, uint64_t ip,
+-				    struct dso *dso, char level)
++				    struct thread *thread, struct dso *dso,
++				    char level)
  {
- 	return -EINVAL;
+ 	struct symhist *self = malloc(sizeof(*self));
+ 
+ 	if (self != NULL) {
+-		self->sym   = sym;
+-		self->ip    = ip;
+-		self->dso   = dso;
+-		self->level = level;
+-		self->count = 1;
++		self->sym    = sym;
++		self->thread = thread;
++		self->ip     = ip;
++		self->dso    = dso;
++		self->level  = level;
++		self->count  = 1;
+ 	}
+ 
+ 	return self;
+@@ -482,17 +489,29 @@ static void symhist__inc(struct symhist *self)
+ 	++self->count;
  }
  
- static inline void kvm_irqfd_release(struct kvm *kvm) {}
-+static inline int kvm_iosignalfd(struct kvm *kvm, struct kvm_iosignalfd *args)
+-static size_t symhist__fprintf(struct symhist *self, FILE *fp)
++static size_t
++symhist__fprintf(struct symhist *self, uint64_t total_samples, FILE *fp)
+ {
+-	size_t ret = fprintf(fp, "%#llx [%c] ", (unsigned long long)self->ip, self->level);
++	char bf[32];
++	size_t ret;
++
++	if (total_samples)
++		ret = fprintf(fp, "%5.2f", (self->count * 100.0) / total_samples);
++	else
++		ret = fprintf(fp, "%12d", self->count);
++
++	ret += fprintf(fp, "%14s [%c] %#018llx ",
++		       thread__name(self->thread, bf, sizeof(bf)),
++		       self->level, (unsigned long long)self->ip);
+ 
+ 	if (self->level != '.')
+-		ret += fprintf(fp, "%s", self->sym ? self->sym->name: "<unknown>");
++		ret += fprintf(fp, "%s\n",
++			       self->sym ? self->sym->name : "<unknown>");
+ 	else
+-		ret += fprintf(fp, "%s: %s",
++		ret += fprintf(fp, "%s: %s\n",
+ 			       self->dso ? self->dso->name : "<unknown>",
+ 			       self->sym ? self->sym->name : "<unknown>");
+-	return ret + fprintf(fp, ": %u\n", self->count);
++	return ret;
+ }
+ 
+ struct thread {
+@@ -503,6 +522,15 @@ struct thread {
+ 	char		 *comm;
+ };
+ 
++static const char *thread__name(struct thread *self, char *bf, size_t size)
 +{
-+	return -EINVAL;
-+}
- 
- #endif /* CONFIG_HAVE_KVM_EVENTFD */
- 
-diff --git a/virt/kvm/eventfd.c b/virt/kvm/eventfd.c
-index c63ff6a..1112349 100644
---- a/virt/kvm/eventfd.c
-+++ b/virt/kvm/eventfd.c
-@@ -21,12 +21,16 @@
-  */
- 
- #include <linux/kvm_host.h>
-+#include <linux/kvm.h>
- #include <linux/workqueue.h>
- #include <linux/syscalls.h>
- #include <linux/wait.h>
- #include <linux/poll.h>
- #include <linux/file.h>
- #include <linux/list.h>
-+#include <linux/eventfd.h>
++	if (self->comm)
++		return self->comm;
 +
-+#include "iodev.h"
- 
- /*
-  * --------------------------------------------------------------------
-@@ -207,9 +211,10 @@ kvm_deassign_irqfd(struct kvm *kvm, int fd, int gsi)
- }
- 
- void
--kvm_irqfd_init(struct kvm *kvm)
-+kvm_eventfd_init(struct kvm *kvm)
++	snprintf(bf, sizeof(bf), ":%u", self->pid);
++	return bf;
++}
++
+ static struct thread *thread__new(pid_t pid)
  {
- 	INIT_LIST_HEAD(&kvm->irqfds);
-+	INIT_LIST_HEAD(&kvm->iosignalfds);
+ 	struct thread *self = malloc(sizeof(*self));
+@@ -542,7 +570,7 @@ static int thread__symbol_incnew(struct thread *self, struct symbol *sym,
+ 			p = &(*p)->rb_right;
+ 	}
+ 
+-	sh = symhist__new(sym, ip, dso, level);
++	sh = symhist__new(sym, ip, self, dso, level);
+ 	if (sh == NULL)
+ 		return -ENOMEM;
+ 	rb_link_node(&sh->rb_node, parent, p);
+@@ -574,7 +602,7 @@ static size_t thread__fprintf(struct thread *self, FILE *fp)
+ 
+ 	for (nd = rb_first(&self->symhists); nd; nd = rb_next(nd)) {
+ 		struct symhist *pos = rb_entry(nd, struct symhist, rb_node);
+-		ret += symhist__fprintf(pos, fp);
++		ret += symhist__fprintf(pos, 0, fp);
+ 	}
+ 
+ 	return ret;
+@@ -628,7 +656,7 @@ static struct map *thread__find_map(struct thread *self, uint64_t ip)
+ 	return NULL;
  }
  
- int
-@@ -232,3 +237,158 @@ kvm_irqfd_release(struct kvm *kvm)
- 		irqfd_release(irqfd);
+-static void threads__fprintf(FILE *fp)
++void threads__fprintf(FILE *fp)
+ {
+ 	struct rb_node *nd;
+ 	for (nd = rb_first(&threads); nd; nd = rb_next(nd)) {
+@@ -637,6 +665,61 @@ static void threads__fprintf(FILE *fp)
  	}
  }
+ 
++static struct rb_root global_symhists = RB_ROOT;
 +
-+/*
-+ * --------------------------------------------------------------------
-+ * iosignalfd: translate a PIO/MMIO memory write to an eventfd signal.
-+ *
-+ * userspace can register a PIO/MMIO address with an eventfd for recieving
-+ * notification when the memory has been touched.
-+ * --------------------------------------------------------------------
-+ */
-+
-+struct _iosignalfd {
-+	u64                  cookie;
-+	u64                  addr;
-+	size_t               length;
-+	struct file         *file;
-+	struct list_head     list;
-+	struct kvm_io_device dev;
-+};
-+
-+static int
-+iosignalfd_in_range(struct kvm_io_device *this, gpa_t addr, int len,
-+		    int is_write)
++static void threads__insert_symhist(struct symhist *sh)
 +{
-+	struct _iosignalfd *p = (struct _iosignalfd *)this->private;
++	struct rb_node **p = &global_symhists.rb_node;
++	struct rb_node *parent = NULL;
++	struct symhist *iter;
 +
-+	return ((addr >= p->addr && (addr < p->addr + p->length)));
-+}
++	while (*p != NULL) {
++		parent = *p;
++		iter = rb_entry(parent, struct symhist, rb_node);
 +
-+/* writes trigger an event */
-+static void
-+iosignalfd_write(struct kvm_io_device *this, gpa_t addr, int len,
-+		 const void *val)
-+{
-+	struct _iosignalfd *iosignalfd = (struct _iosignalfd *)this->private;
-+
-+	eventfd_signal(iosignalfd->file, 1);
-+}
-+
-+/* reads return all zeros */
-+static void
-+iosignalfd_read(struct kvm_io_device *this, gpa_t addr, int len, void *val)
-+{
-+	memset(val, 0, len);
-+}
-+
-+static void
-+_iosignalfd_destructor(struct _iosignalfd *iosignalfd)
-+{
-+	fput(iosignalfd->file);
-+	list_del(&iosignalfd->list);
-+
-+	kfree(iosignalfd);
-+}
-+
-+static void
-+iosignalfd_destructor(struct kvm_io_device *this)
-+{
-+	struct _iosignalfd *iosignalfd = (struct _iosignalfd *)this->private;
-+
-+	_iosignalfd_destructor(iosignalfd);
-+}
-+
-+static int
-+kvm_assign_iosignalfd(struct kvm *kvm, struct kvm_iosignalfd *args)
-+{
-+	int                 pio = args->flags & KVM_IOSIGNALFD_FLAG_PIO;
-+	struct kvm_io_bus  *bus = pio ? &kvm->pio_bus : &kvm->mmio_bus;
-+	struct _iosignalfd *iosignalfd;
-+	struct file        *file;
-+	int                 ret;
-+
-+	file = eventfd_fget(args->fd);
-+	if (IS_ERR(file)) {
-+		ret = PTR_ERR(file);
-+		printk(KERN_ERR "iosignalfd: failed to get %d eventfd: %d\n",
-+		       args->fd, ret);
-+		return ret;
++		/* Reverse order */
++		if (sh->count > iter->count)
++			p = &(*p)->rb_left;
++		else
++			p = &(*p)->rb_right;
 +	}
 +
-+	iosignalfd = kzalloc(sizeof(*iosignalfd), GFP_KERNEL);
-+	if (!iosignalfd) {
-+		printk(KERN_ERR "iosignalfd: memory pressure\n");
-+		fput(file);
-+		return -ENOMEM;
++	rb_link_node(&sh->rb_node, parent, p);
++	rb_insert_color(&sh->rb_node, &global_symhists);
++}
++
++static void threads__sort_symhists(void)
++{
++	struct rb_node *nd;
++
++	for (nd = rb_first(&threads); nd; nd = rb_next(nd)) {
++		struct thread *thread = rb_entry(nd, struct thread, rb_node);
++		struct rb_node *next = rb_first(&thread->symhists);
++
++		while (next) {
++			struct symhist *n = rb_entry(next, struct symhist,
++						     rb_node);
++			next = rb_next(&n->rb_node);
++			rb_erase(&n->rb_node, &thread->symhists);
++			threads__insert_symhist(n);
++		}
++
 +	}
++}
 +
-+	iosignalfd->dev.read       = iosignalfd_read;
-+	iosignalfd->dev.write      = iosignalfd_write;
-+	iosignalfd->dev.in_range   = iosignalfd_in_range;
-+	iosignalfd->dev.destructor = iosignalfd_destructor;
-+	iosignalfd->dev.private    = iosignalfd;
++static size_t threads__symhists_fprintf(uint64_t total_samples, FILE *fp)
++{
++	struct rb_node *nd;
++	size_t ret = 0;
 +
-+	iosignalfd->cookie         = args->cookie;
-+	iosignalfd->addr           = args->addr;
-+	iosignalfd->length         = args->len;
-+	iosignalfd->file           = file;
-+	INIT_LIST_HEAD(&iosignalfd->list);
-+
-+	ret = kvm_io_bus_register_dev(bus, &iosignalfd->dev);
-+	if (ret < 0) {
-+		printk(KERN_ERR "iosignalfd: failed to register IODEV: %d\n",
-+		       ret);
-+		goto fail;
++	for (nd = rb_first(&global_symhists); nd; nd = rb_next(nd)) {
++		struct symhist *pos = rb_entry(nd, struct symhist, rb_node);
++		ret += symhist__fprintf(pos, total_samples, fp);
 +	}
-+
-+	mutex_lock(&kvm->lock);
-+	list_add_tail(&iosignalfd->list, &kvm->iosignalfds);
-+	mutex_unlock(&kvm->lock);
-+
-+	return 0;
-+
-+fail:
-+	/*
-+	 * This doesn't take a lock, but the failure case will never result
-+	 * in the list being populated anyway
-+	 */
-+	_iosignalfd_destructor(iosignalfd);
 +
 +	return ret;
 +}
 +
-+static int
-+kvm_deassign_iosignalfd(struct kvm *kvm, struct kvm_iosignalfd *args)
-+{
-+	int                   pio = args->flags & KVM_IOSIGNALFD_FLAG_PIO;
-+	struct kvm_io_bus    *bus = pio ? &kvm->pio_bus : &kvm->mmio_bus;
-+	struct _iosignalfd   *iosignalfd, *tmp;
-+
-+	mutex_lock(&kvm->lock);
-+
-+	list_for_each_entry_safe(iosignalfd, tmp, &kvm->iosignalfds, list) {
-+		if (iosignalfd->addr != args->addr)
-+			continue;
-+
-+		if ((args->flags & KVM_IOSIGNALFD_FLAG_COOKIE) &&
-+		    (iosignalfd->cookie != args->cookie))
-+			continue;
-+
-+		kvm_io_bus_unregister_dev(bus, &iosignalfd->dev);
-+		_iosignalfd_destructor(iosignalfd);
-+	}
-+
-+	mutex_unlock(&kvm->lock);
-+
-+	return 0;
-+}
-+
-+int
-+kvm_iosignalfd(struct kvm *kvm, struct kvm_iosignalfd *args)
-+{
-+	if (args->flags & KVM_IOSIGNALFD_FLAG_DEASSIGN)
-+		return kvm_deassign_iosignalfd(kvm, args);
-+
-+	return kvm_assign_iosignalfd(kvm, args);
-+}
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 4c36ac8..79fdc08 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -983,7 +983,7 @@ static struct kvm *kvm_create_vm(void)
- 	atomic_inc(&kvm->mm->mm_count);
- 	spin_lock_init(&kvm->mmu_lock);
- 	kvm_io_bus_init(&kvm->pio_bus);
--	kvm_irqfd_init(kvm);
-+	kvm_eventfd_init(kvm);
- 	mutex_init(&kvm->lock);
- 	kvm_io_bus_init(&kvm->mmio_bus);
- 	init_rwsem(&kvm->slots_lock);
-@@ -2221,6 +2221,15 @@ static long kvm_vm_ioctl(struct file *filp,
- 		r = kvm_irqfd(kvm, data.fd, data.gsi, data.flags);
- 		break;
+ static int __cmd_report(void)
+ {
+ 	unsigned long offset = 0;
+@@ -826,23 +909,9 @@ done:
+ 		return 0;
  	}
-+	case KVM_IOSIGNALFD: {
-+		struct kvm_iosignalfd entry;
-+
-+		r = -EFAULT;
-+		if (copy_from_user(&entry, argp, sizeof entry))
-+			goto out;
-+		r = kvm_iosignalfd(kvm, &entry);
-+		break;
-+	}
- 	default:
- 		r = kvm_arch_vm_ioctl(filp, ioctl, arg);
- 	}
-
+ 
+-	//dsos__fprintf(stdout);
+-	threads__fprintf(stdout);
+-#if 0
+-	std::map<std::string, int>::iterator hi = hist.begin();
+-
+-	while (hi != hist.end()) {
+-		rev_hist.insert(std::pair<int, std::string>(hi->second, hi->first));
+-		hist.erase(hi++);
+-	}
+-
+-	std::multimap<int, std::string>::const_iterator ri = rev_hist.begin();
++	threads__sort_symhists();
++	threads__symhists_fprintf(total, stdout);
+ 
+-	while (ri != rev_hist.end()) {
+-		printf(" %5.2f %s\n", (100.0 * ri->first)/total, ri->second.c_str());
+-		ri++;
+-	}
+-#endif
+ 	return rc;
+ }
+ 
