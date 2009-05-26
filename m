@@ -1,233 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758103AbZEZUwV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758106AbZEZU4R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758103AbZEZUwV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 16:52:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754356AbZEZUwN
+	id S1758106AbZEZU4R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 16:56:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755372AbZEZU4E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 16:52:13 -0400
-Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:27693 "EHLO
-	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753828AbZEZUwM (ORCPT
+	Tue, 26 May 2009 16:56:04 -0400
+Received: from casper.infradead.org ([85.118.1.10]:45669 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753584AbZEZU4D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 16:52:12 -0400
-X-Trace: 201417866/mk-filter-4.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.124.61/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.124.61
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AokFABPzG0pPRXw9/2dsb2JhbACBT80QhAsF
-X-IronPort-AV: E=Sophos;i="4.41,254,1241391600"; 
-   d="scan'208";a="201417866"
-Date: Tue, 26 May 2009 21:51:19 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Mel Gorman <mel@csn.ul.ie>
-cc: kosaki.motohiro@jp.fujitsu.com, npiggin@suse.de, apw@shadowen.org,
-       agl@us.ibm.com, ebmunson@us.ibm.com, andi@firstfloor.org,
-       david@gibson.dropbear.id.au, kenchen@google.com, wli@holomorphy.com,
-       akpm@linux-foundation.org, starlight@binnacle.cx,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH] Determine if mapping is MAP_SHARED using VM_MAYSHARE
- and not VM_SHARED in hugetlbfs
-In-Reply-To: <20090526101245.GA4345@csn.ul.ie>
-Message-ID: <Pine.LNX.4.64.0905262056150.958@sister.anvils>
-References: <20090519083619.GD19146@csn.ul.ie> <Pine.LNX.4.64.0905252122370.8557@sister.anvils>
- <20090526101245.GA4345@csn.ul.ie>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 26 May 2009 16:56:03 -0400
+Subject: Re: [PATCH] sched: Support current clocksource handling in
+ fallback sched_clock().
+From: Peter Zijlstra <peterz@infradead.org>
+To: john stultz <johnstul@us.ibm.com>
+Cc: Linus Walleij <linus.ml.walleij@gmail.com>,
+       Paul Mundt <lethal@linux-sh.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Victor <linux@maxim.org.za>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-sh@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       John Stultz <johnstul@linux.vnet.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <1243370439.3275.13.camel@localhost>
+References: <20090526061532.GD9188@linux-sh.org>
+	 <63386a3d0905260731m655bfee3q82a6f52d71fa3cef@mail.gmail.com>
+	 <1243348681.23657.14.camel@twins>  <1243369423.3275.5.camel@localhost>
+	 <1243369815.6600.2.camel@laptop>  <1243370439.3275.13.camel@localhost>
+Content-Type: text/plain
+Date: Tue, 26 May 2009 22:55:09 +0200
+Message-Id: <1243371309.6600.8.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 May 2009, Mel Gorman wrote:
-> On Mon, May 25, 2009 at 10:09:43PM +0100, Hugh Dickins wrote:
-> ...
-> > Let's make clear that I never attempted to understand hugetlb reservations
-> > and hugetlb private mappings at the time they went in; and after a little
-> > while gazing at the code, I wouldn't pretend to understand them now.  It
-> > would be much better to hear from Adam and Andy about this than me.
-> 
-> For what it's worth, I wrote chunks of the reservation code, particularly
-> with respect to the private reservations.
-
-Ah, I hadn't realized you were so involved in it from the start: good.
-
-> It wasn't complete enough though
-> which Andy fixed up as I was off for two weeks holiday at the time bugs
-> came to light (thanks Andy!). Adam was active in hugetlbfs when the shared
-> reservations were first implemented. Thing is, Adam is not active in kernel
-> work at all any more
-
-And I hadn't realized that either (I did notice you'd left Adam off
-this thread, but he was on the other, so I added him to this too).
-
-> and while Andy still is, it's not in this area. Hopefully
-> they'll respond, but they might not.
-
-...
-> Minimally, this patch fixes a testcase I added to libhugetlbfs
-> specifically for this problem. It's in the "next" branch of libhugetlbfs
-> and should be released as part of 2.4.
-> 
-> # git clone git://libhugetlbfs.git.sourceforge.net/gitroot/libhugetlbfs
-> # cd libhugetlbfs
-> # git checkout origin/next -b origin-next
-> # make
-> # ./obj/hugeadm --create-global-mounts
-> # ./obj/hugeadm --pool-pages-min 2M:128
-> # make func
-
-Originally I was going to say that I was sorry you pointed me there;
-because doing that "make func" a second time did nasty things for me,
-hung and eventually quite froze my machines (and not in shm-perms).
-
-But that was before applying your hugetlb.c patch: the good news
-is that your patch appears to fix all that nastiness.
-
-> 
-> The test that this patch fixes up is shm-perms. It can be run directly
-> with just
-> 
-> # ./tests/obj32/shm-perms
-> 
-> Does this help explain the problem any better?
-
-I'm an ingrate: no, it doesn't help much.  I'd have liked to hear how
-to reproduce "gets inconsistent on how it accounts for the creation
-of reservations and how they are consumed", what /proc/meminfo
-looks like in the end.  I didn't see any such inconsistency when
-I was messing around, and I don't see shm-perms testing for any
-such inconsistency (just testing for whether something you think
-ought to work, does work).
-
-But now I've found your patch fixes my freezes from libhugetlbfs
-testing, I'm much happier with it; and see below for why I'm even
-happier.
-
-> 
-> ======
-> hugetlbfs reserves huge pages and accounts for them differently depending on
-> whether the mapping was mapped MAP_SHARED or MAP_PRIVATE. For MAP_SHARED
-> mappings, hugepages are reserved when mmap() is first called and are
-> tracked based on information associated with the inode. MAP_PRIVATE track
-> the reservations based on the VMA created as part of the mmap() operation.
-> 
-> However, the check hugetlbfs makes when determining if a VMA is MAP_SHARED
-> is with the VM_SHARED flag and not VM_MAYSHARE.  For file-backed mappings,
-> such as hugetlbfs, VM_SHARED is set only if the mapping is MAP_SHARED
-> and the file was opened read-write. If a shared memory mapping was mapped
-> shared-read-write for populating of data and mapped shared-read-only by
-> other processes, then hugetlbfs gets inconsistent on how it accounts for
-> the creation of reservations and how they are consumed.
-> ======
-
-...
-> 
-> Best, I go through the remaining VM_SHARED and see what they are used
-> for and what the expectation is.
-> 
-> copy_hugetlb_page_range
-> 	Here, it's used to determine if COW is happening. In that case
-> 	it wants to know that the mapping it's dealing with is shared
-> 	and read-write so I think that's ok.
-
-Yes, that test is copied from mm/memory.c and should be okay.
-It's an odd test and could be written in other ways, I think
-	cow = !(vma->vm_flags & VM_SHARED)
-would be sufficient, wouldn't it? but perhaps that requires
-too much knowledge of how the flags work.  Anyway, no reason
-to change it; though equally you could change it to VM_MAYSHARE.
-
-> 
-> hugetlb_no_page
-> 	Here, we are checking if COW should be broken early and then 
-> 	it's checking for the right write attribute for the page tables.
-> 	Think that's ok too.
-
-These were the ones which worried me, since reservation checks (which
-you did change) are called conditional upon them.  But in the end I
-agree with you, they don't need changing: because they're checked
-along with write_access (or VM_WRITE), and you cannot write to
-an area on which VM_SHARED and VM_MAYSHARE differ.
-
-> 
-> follow_hugetlb_page
-> 	This is checking of the zero page can be shared or not. Crap,
-> 	this one looks like it should have been converted to VM_MAYSHARE
-> 	as well.
-
-Now, what makes you say that?
-
-I really am eager to understand, because I don't comprehend
-that VM_SHARED at all.  I believe Kosaki-san's 4b2e38ad simply
-copied it from Linus's 672ca28e to mm/memory.c.  But even back
-when that change was made, I confessed to having lost the plot
-on it: so far as I can see, putting a VM_SHARED test in there
-just happened to prevent some VMware code going the wrong way,
-but I don't see the actual justification for it.
-
-So, given that I don't understand it in the first place,
-I can't really support changing that VM_SHARED to VM_MAYSHARE.
-
-> > Something I've noticed, to confirm that I can't really expect
-> > to understand how hugetlb works these days.  I experimented by
-> > creating a hugetlb file, opening read-write, mmap'ing one page
-> > shared read-write (but not faulting it in);
-> 
-> At this point, one hugepage is reserved for the mapping but is not
-> faulted and does not exist in the hugetlbfs page cache.
-> 
-> > opening read-only,
-> > mmap'ing the one page read-only (shared or private, doesn't matter),
-> > faulting it in (contains zeroes of course);
-> 
-> Of course.
-> 
-> > writing ffffffff to
-> > the one page through the read-write mapping,
-> 
-> So, now a hugepage has been allocated and inserted into the page cache.
-> 
-> > then looking at the
-> > read-only mapping - still contains zeroes, whereas with any
-> > normal file and mapping it should contain ffffffff, whether
-> > the read-only mapping was shared or private.
+On Tue, 2009-05-26 at 13:40 -0700, john stultz wrote:
+> On Tue, 2009-05-26 at 22:30 +0200, Peter Zijlstra wrote:
+> > On Tue, 2009-05-26 at 13:23 -0700, john stultz wrote:
+> > > Overall, I'd probably suggest thinking this through a bit more. At some
+> > > point doing this right will cause sched_clock() to be basically the same
+> > > as ktime_get(). So why not just use that instead of remaking it?
 > > 
+> > simply because we don't require the strict global monotonicy for
+> > scheduling as we do from a regular time source (its nice to have
+> > though).
+> > 
+> > That means that on x86 we can always use TSC for sched_clock(), even
+> > when its quite unsuitable for ktime.
 > 
-> I think the critical difference is that a normal file exists on a physical
-> medium so both processes share the same data source. How would the normal
-> file mapping behave on tmpfs for example? If tmpfs behaves correctly, I'll
-> try and get hugetlbfs to match.
-
-tmpfs and ramfs behave just as if there were a normal file existing on
-a physical medium, they behave just like every(?) other filesystem than
-hugetlbfs: a page in a MAP_PRIVATE mapping is shared with the underlying
-object (or other mappings) until it gets modified.
-
+> Right, but I guess what I'm asking is can this be a bit better defined? 
 > 
-> There is one potential problem in there. I would have expected the pages
-> to be shared if the second process was mapping MAP_SHARED because the
-> page should have been in the page cache when the read-write process
-> faulted. I'll check it out.
+> If we are going to use clocksources (or cyclecounters - an area I need
+> to clean up soon), it would be good to get an idea of what is expected
+> of the sched_clock() interface.
+> 
+> So TSC good, HPET bad. Why? 
 
-The big reason why I do now like your patch (modulo your additional
-change to follow_huge_page) is that it seems to fix this for MAP_SHARED.
-It's not quite obvious how it fixes it (you claim to be correcting the
-accounting rather than the actual sharing/COWing of pages), but it does
-seem to do so.
+Because TSC is a few cycles to read, and you can factorize a largish
+prime while doing an HPET read :-)
 
-(I say "seem to" because I've managed to confuse myself with thoroughly
-erratic results here, but now putting it down to forgetting to remove my
-old test file sometimes, so picking up cached pages from earlier tests;
-or getting in a muddle between my readwrite and readonly fds.  Please
-check it out for yourself, before and after your patch.)
+> Is latency all we care about? How bad would
+> the TSC have to be before we wouldn't want to use it?
 
-And while I dislike hugetlbfs's behaviour on the MAP_PRIVATE pages,
-I willingly concede that it's much more important that it behave
-correctly on the MAP_SHARED ones (as it stood before, "shared memory"
-was not necessarily getting shared).
+Anything better than jiffies ;-)
 
-Hugh
+For sched_clock() we want something high-res that is monotonic per cpu
+and has a bounded drift between cpus in the order of jiffies.
+
+Look at kernel/sched_clock.c for what we do to make really shitty TSC
+conform to the above requirements.
+
