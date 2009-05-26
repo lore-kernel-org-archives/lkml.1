@@ -1,213 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754692AbZEZLec@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755289AbZEZLg1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754692AbZEZLec (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 07:34:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752732AbZEZLeY
+	id S1755289AbZEZLg1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 07:36:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753347AbZEZLgT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 07:34:24 -0400
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:40441 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752721AbZEZLeX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 07:34:23 -0400
-Date: Tue, 26 May 2009 20:34:24 +0900 (JST)
-Message-Id: <20090526.203424.39179999.ryov@valinux.co.jp>
-To: righi.andrea@gmail.com
-Cc: vgoyal@redhat.com, guijianfeng@cn.fujitsu.com, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, jens.axboe@oracle.com,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       agk@redhat.com, dm-devel@redhat.com, snitzer@redhat.com,
-       m-ikeda@ds.jp.nec.com, akpm@linux-foundation.org
-Subject: Re: [PATCH] io-controller: Add io group reference handling for
- request
-From: Ryo Tsuruta <ryov@valinux.co.jp>
-In-Reply-To: <20090518143921.GE3113@linux>
-References: <20090517102604.GA4255@linux>
-	<20090518140114.GB27080@redhat.com>
-	<20090518143921.GE3113@linux>
-X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 26 May 2009 07:36:19 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:53330 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752980AbZEZLgT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 07:36:19 -0400
+Date: Tue, 26 May 2009 04:36:18 -0700
+From: Matt Helsley <matthltc@us.ibm.com>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: xemul@parallels.com, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, dave@linux.vnet.ibm.com, mingo@elte.hu,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org
+Subject: Re: [PATCH 14/38] Remove struct mm_struct::exe_file et al
+Message-ID: <20090526113618.GJ28083@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrea and Vivek,
+I don't see any mention in the changelog of the point brought up by Ingo:
 
-From: Andrea Righi <righi.andrea@gmail.com>
-Subject: Re: [PATCH] io-controller: Add io group reference handling for request
-Date: Mon, 18 May 2009 16:39:23 +0200
+http://lkml.org/lkml/2009/4/10/105
 
-> On Mon, May 18, 2009 at 10:01:14AM -0400, Vivek Goyal wrote:
-> > On Sun, May 17, 2009 at 12:26:06PM +0200, Andrea Righi wrote:
-> > > On Fri, May 15, 2009 at 10:06:43AM -0400, Vivek Goyal wrote:
-> > > > On Fri, May 15, 2009 at 09:48:40AM +0200, Andrea Righi wrote:
-> > > > > On Fri, May 15, 2009 at 01:15:24PM +0800, Gui Jianfeng wrote:
-> > > > > > Vivek Goyal wrote:
-> > > > > > ...
-> > > > > > >  }
-> > > > > > > @@ -1462,20 +1462,27 @@ struct io_cgroup *get_iocg_from_bio(stru
-> > > > > > >  /*
-> > > > > > >   * Find the io group bio belongs to.
-> > > > > > >   * If "create" is set, io group is created if it is not already present.
-> > > > > > > + * If "curr" is set, io group is information is searched for current
-> > > > > > > + * task and not with the help of bio.
-> > > > > > > + *
-> > > > > > > + * FIXME: Can we assume that if bio is NULL then lookup group for current
-> > > > > > > + * task and not create extra function parameter ?
-> > > > > > >   *
-> > > > > > > - * Note: There is a narrow window of race where a group is being freed
-> > > > > > > - * by cgroup deletion path and some rq has slipped through in this group.
-> > > > > > > - * Fix it.
-> > > > > > >   */
-> > > > > > > -struct io_group *io_get_io_group_bio(struct request_queue *q, struct bio *bio,
-> > > > > > > -					int create)
-> > > > > > > +struct io_group *io_get_io_group(struct request_queue *q, struct bio *bio,
-> > > > > > > +					int create, int curr)
-> > > > > > 
-> > > > > >   Hi Vivek,
-> > > > > > 
-> > > > > >   IIUC we can get rid of curr, and just determine iog from bio. If bio is not NULL,
-> > > > > >   get iog from bio, otherwise get it from current task.
-> > > > > 
-> > > > > Consider also that get_cgroup_from_bio() is much more slow than
-> > > > > task_cgroup() and need to lock/unlock_page_cgroup() in
-> > > > > get_blkio_cgroup_id(), while task_cgroup() is rcu protected.
-> > > > > 
-> > > > 
-> > > > True.
-> > > > 
-> > > > > BTW another optimization could be to use the blkio-cgroup functionality
-> > > > > only for dirty pages and cut out some blkio_set_owner(). For all the
-> > > > > other cases IO always occurs in the same context of the current task,
-> > > > > and you can use task_cgroup().
-> > > > > 
-> > > > 
-> > > > Yes, may be in some cases we can avoid setting page owner. I will get
-> > > > to it once I have got functionality going well. In the mean time if
-> > > > you have a patch for it, it will be great.
-> > > > 
-> > > > > However, this is true only for page cache pages, for IO generated by
-> > > > > anonymous pages (swap) you still need the page tracking functionality
-> > > > > both for reads and writes.
-> > > > > 
-> > > > 
-> > > > Right now I am assuming that all the sync IO will belong to task
-> > > > submitting the bio hence use task_cgroup() for that. Only for async
-> > > > IO, I am trying to use page tracking functionality to determine the owner.
-> > > > Look at elv_bio_sync(bio).
-> > > > 
-> > > > You seem to be saying that there are cases where even for sync IO, we
-> > > > can't use submitting task's context and need to rely on page tracking
-> > > > functionlity? 
+You also haven't responded to my comment about holding mmap
+semaphore:
 
-I think that there are some kernel threads (e.g., dm-crypt, LVM and md
-devices) which actually submit IOs instead of tasks which originate the
-IOs. When IOs are submitted from such kernel threads, we can't use
-submitting task's context to determine to which cgroup the IO belongs.
+http://lkml.indiana.edu/hypermail/linux/kernel/0904.1/01417.html
 
-> > > > In case of getting page (read) from swap, will it not happen
-> > > > in the context of process who will take a page fault and initiate the
-> > > > swap read?
-> > > 
-> > > No, for example in read_swap_cache_async():
-> > > 
-> > > @@ -308,6 +309,7 @@ struct page *read_swap_cache_async(swp_entry_t entry, gfp_t gfp_mask,
-> > >  		 */
-> > >  		__set_page_locked(new_page);
-> > >  		SetPageSwapBacked(new_page);
-> > > +		blkio_cgroup_set_owner(new_page, current->mm);
-> > >  		err = add_to_swap_cache(new_page, entry, gfp_mask & GFP_KERNEL);
-> > >  		if (likely(!err)) {
-> > >  			/*
-> > > 
-> > > This is a read, but the current task is not always the owner of this
-> > > swap cache page, because it's a readahead operation.
-> > > 
-> > 
-> > But will this readahead be not initiated in the context of the task taking
-> > the page fault?
-> > 
-> > handle_pte_fault()
-> > 	do_swap_page()
-> > 		swapin_readahead()
-> > 			read_swap_cache_async()
-> > 
-> > If yes, then swap reads issued will still be in the context of process and
-> > we should be fine?
-> 
-> Right. I was trying to say that the current task may swap-in also pages
-> belonging to a different task, so from a certain point of view it's not
-> so fair to charge the current task for the whole activity. But ok, I
-> think it's a minor issue.
-> 
-> > 
-> > > Anyway, this is a minor corner case I think. And probably it is safe to
-> > > consider this like any other read IO and get rid of the
-> > > blkio_cgroup_set_owner().
-> > 
-> > Agreed.
-> > 
-> > > 
-> > > I wonder if it would be better to attach the blkio_cgroup to the
-> > > anonymous page only when swap-out occurs.
-> > 
-> > Swap seems to be an interesting case in general. Somebody raised this
-> > question on lwn io controller article also. A user process never asked
-> > for swap activity. It is something enforced by kernel. So while doing
-> > some swap outs, it does not seem too fair to charge the write out to
-> > the process page belongs to and the fact of the matter may be that there
-> > is some other memory hungry application which is forcing these swap outs.
-> > 
-> > Keeping this in mind, should swap activity be considered as system
-> > activity and be charged to root group instead of to user tasks in other
-> > cgroups?
-> 
-> In this case I assume the swap-in activity should be charged to the root
-> cgroup as well.
-> 
-> Anyway, in the logic of the memory and swap control it would seem
-> reasonable to provide IO separation also for the swap IO activity.
-> 
-> In the MEMHOG example, it would be unfair if the memory pressure is
-> caused by a task in another cgroup, but with memory and swap isolation a
-> memory pressure condition can only be caused by a memory hog that runs
-> in the same cgroup. From this point of view it seems more fair to
-> consider the swap activity as the particular cgroup IO activity, instead
-> of charging always the root cgroup.
-> 
-> Otherwise, I suspect, memory pressure would be a simple way to blow away
-> any kind of QoS guarantees provided by the IO controller.
-> 
-> >   
-> > > I mean, just put the
-> > > blkio_cgroup_set_owner() hook in try_to_umap() in order to keep track of
-> > > the IO generated by direct reclaim of anon memory. For all the other
-> > > cases we can simply use the submitting task's context.
+Also, please consider combining with Ingo's point with mine: the mmap
+semaphore will be held for the duration of that long VMA walk. Plus
+any userspace task can trigger that walk as often as they like via
+readlink.
 
-I think that only putting the hook in try_to_unmap() doesn't work
-correctly, because IOs will be charged to reclaiming processes or
-kswapd. These IOs should be charged to processes which cause memory
-pressure.
+It also appears you haven't responded to Eric and Andrew's suggestion
+of a struct path in place of a file reference: 
 
-> > > BTW, O_DIRECT is another case that is possible to optimize, because all
-> > > the bios generated by direct IO occur in the same context of the current
-> > > task.
-> > 
-> > Agreed about the direct IO optimization.
-> > 
-> > Ryo, what do you think? would you like to do include these optimizations
-> > by the Andrea in next version of IO tracking patches?
-> >  
-> > Thanks
-> > Vivek
-> 
-> Thanks,
-> -Andrea
+http://lkml.indiana.edu/hypermail/linux/kernel/0904.1/01698.html
+
+Lastly, please keep me on Cc for future revisions of this patch since
+I am interested in following changes to the implementation of
+/proc/*/exe.
 
 Thanks,
-Ryo Tsuruta
+	-Matt Helsley
+
+----- Forwarded message from Alexey Dobriyan <adobriyan@gmail.com> -----
+
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: akpm@linux-foundation.org
+Subject: [PATCH 14/38] Remove struct mm_struct::exe_file et al
+Date: Fri, 22 May 2009 08:55:08 +0400
+Cc: xemul@parallels.com, containers@lists.linux-foundation.org,
+        linux-kernel@vger.kernel.org, dave@linux.vnet.ibm.com,
+        mingo@elte.hu, torvalds@linux-foundation.org,
+        Alexey Dobriyan <adobriyan@gmail.com>
+
+Commit 925d1c401fa6cfd0df5d2e37da8981494ccdec07 aka "procfs task exe
+symlink".
+introduced struct mm_struct::exe_file and struct
+mm_struct::num_exe_file_vmas.
+
+The rationale is weak: unifying MMU and no-MMU version of /proc/*/exe
+code.
+For this a) struct mm_struct becomes bigger, b) mmap/munmap/exit become
+slower,
+c) patch adds more code than removes in fact.
+
+After commit 8feae13110d60cc6287afabc2887366b0eb226c2 aka
+"NOMMU: Make VMAs per MM as for MMU-mode linux" no-MMU kernels also
+maintain list of VMAs in ->mmap, so we can switch back for MMU version
+of /proc/*/exe.
+
+This also helps C/R, no need to save and restore ->exe_file and to count
+additional references to check if there is a leak of struct file outside
+group of checkpointed resources.
+
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+---
+ fs/exec.c                |    2 -
+ fs/proc/base.c           |  105
++++++++++++++---------------------------------
+ include/linux/mm.h       |   12 -----
+ include/linux/mm_types.h |    6 ---
+ include/linux/proc_fs.h  |   20 ---------
+ kernel/fork.c            |    3 -
+ mm/mmap.c                |   22 ++--------
+ mm/nommu.c               |   16 +------
+ 8 files changed, 36 insertions(+), 150 deletions(-)
+
