@@ -1,88 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757193AbZEZS2I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756854AbZEZSeR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757193AbZEZS2I (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 14:28:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755333AbZEZS15
+	id S1756854AbZEZSeR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 14:34:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755471AbZEZSeG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 14:27:57 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:55609 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755148AbZEZS14 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 14:27:56 -0400
-Message-ID: <4A1C3453.6080402@redhat.com>
-Date: Tue, 26 May 2009 21:26:27 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Tue, 26 May 2009 14:34:06 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:16709 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755333AbZEZSeF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 14:34:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=LjdhdnW5NHqw6LjAc5Q54wI4Ps423Z/OwGzbZw3nLbmJx0KJhiK2sM9yA6pt3LNkct
+         Or2kk/gLu+xFFXlJr3NkOkIMgjcehNqIcX9wJL2zc64/7r8guy/OdPmRhkGbermcGBcK
+         1r8LsPLCNryOmQtrsayjL1SnpKYLH/nZ28HTI=
+Date: Tue, 26 May 2009 22:34:05 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: "Serge E. Hallyn" <serge@hallyn.com>
+Cc: akpm@linux-foundation.org, xemul@parallels.com,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       dave@linux.vnet.ibm.com, mingo@elte.hu, torvalds@linux-foundation.org
+Subject: Re: [PATCH 17/38] groups: move code to kernel/groups.c
+Message-ID: <20090526183405.GA11909@x200.localdomain>
+References: <1242968132-1044-1-git-send-email-adobriyan@gmail.com> <1242968132-1044-17-git-send-email-adobriyan@gmail.com> <20090526144819.GA21502@hallyn.com>
 MIME-Version: 1.0
-To: George Dunlap <George.Dunlap@eu.citrix.com>
-CC: Ingo Molnar <mingo@elte.hu>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Keir Fraser <keir.fraser@eu.citrix.com>
-Subject: Re: [Xen-devel] Re: [GIT PULL] Xen APIC hooks (with io_apic_ops)
-References: <1242170724-13349-1-git-send-email-jeremy@goop.org>	 <20090519123548.GA26439@elte.hu> <4A14447E.9060607@goop.org>	 <20090525041057.GD9396@elte.hu> <de76405a0905260546k56bc866bx1658ec13f65e3eec@mail.gmail.com>
-In-Reply-To: <de76405a0905260546k56bc866bx1658ec13f65e3eec@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090526144819.GA21502@hallyn.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-George Dunlap wrote:
-> As a simple example, take scheduling.  I'm about to re-write the Xen
-> scheduler, and in the process I took a good look at the scheduler you
-> wrote.  I think it's got a lot of really good ideas, which I plan to
-> steal. :-)  However, I'm going to have to make some key changes in
-> order for it to function well as a hypervisor scheduler.  If KVM is
-> used on a production server with 20 or 30 multi-vcpu VMs, I predict
-> the current scheduler will do very poorly, because it wasn't designed
-> with VMs in mind, but with processes.  Making changes so that VMs run
-> better will fundamentally make things that make processes run less
-> well.
->   
+On Tue, May 26, 2009 at 09:48:19AM -0500, Serge E. Hallyn wrote:
+> Quoting Alexey Dobriyan (adobriyan@gmail.com):
+> > Move supplementary groups implementation to kernel/groups.c .
+> > kernel/sys.c already accumulated quite a few random stuff.
+> > 
+> > Do strictly copy/paste + add required headers to compile.
+> > Compile-tested on many configs and archs.
+> > 
+> > Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+> 
+> Actually I needed the following change:
 
-The Linux scheduler already supports multiple scheduling classes.  If we 
-find that none of them will fit our needs, we'll propose a new one.  
-There are also multiple I/O schedulers, multiple allocators (perhaps a 
-bad example), and multiple filesystems.
+This is dealt by first patch:
+"[PATCH 01/38] cred: #include init.h in cred.h"
+which is in -mm already.
 
-When the need can be demonstrated to be real, and the implementation can 
-be clean, Linux can usually be adapted.
+> --- a/kernel/groups.c
+> +++ b/kernel/groups.c
+> @@ -1,6 +1,7 @@
+>  /*
+>   * Supplementary group IDs
+>   */
+> +#include <linux/init.h>
 
-I think the Xen design has merit if it can truly make dom0 a guest -- 
-that is, if it can survive dom0 failure.  Until then, you're just taking 
-a large interdependent codebase and splitting it at some random point, 
-but you don't get any stability or security in return.  It will also be 
-interesting to see how far Xen can get along without real memory 
-management (overcommit).
-
->> The whole Xen design is messed up really: you have taken off bits of
->> the Linux kernel you found interesting, turned them into a
->> micro-kernel in essence and renamed it to 'Xen'.
->>     
->
-> That's how Xen started, and that's really the beauty of open-source.
-> (After all, KVM has stolen some ideas from the Xen shadow code.)  But
-> since then, basically all of the code has been replaced with
-> Xen-written code.  I think if you did an SCO-style audit comparing
-> Linux and Xen 3.4, you'd find a lot less in common than you think.
->   
-
-A lot of the arch code is derived from Linux.
-
->> Xen isnt actually useful _at all_ without Linux/DOM0. Without Dom0
->> Xen is slow and native hardware support within Xen is virtually
->> non-existent, as you point out above.
->>     
->
-> And qemu-kvm isn't useful _at_all_ without Linux either; and Linux-KVM
-> isn't useful _at_all_ without qemu.  Your point?
->   
-
-kvm is actually being used by other userspaces.
-
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
-
+Wrong, groups.c doesn't use __init at all.
