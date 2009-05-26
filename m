@@ -1,90 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754690AbZEZPWB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756346AbZEZPWU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754690AbZEZPWB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 11:22:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754317AbZEZPVy
+	id S1756346AbZEZPWU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 11:22:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755822AbZEZPV7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 11:21:54 -0400
-Received: from rcsinet11.oracle.com ([148.87.113.123]:23789 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751707AbZEZPVx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 11:21:53 -0400
-Message-ID: <4A1C0982.1090300@oracle.com>
-Date: Tue, 26 May 2009 08:23:46 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Tue, 26 May 2009 11:21:59 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:48467 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756063AbZEZPV6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 11:21:58 -0400
+Date: Tue, 26 May 2009 12:21:34 -0300
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: hpa@zytor.com, paulus@samba.org, linux-kernel@vger.kernel.org,
+       jkacur@redhat.com, Peter Zijlstra <peterz@infradead.org>, efault@gmx.de,
+       mtosatti@redhat.com, Thomas Gleixner <tglx@linutronix.de>,
+       cjashfor@linux.vnet.ibm.com
+Subject: [PATCH 1/1 tip] perf: Don't assume /proc/kallsyms is ordered
+Message-ID: <20090526152134.GF4424@ghostprotocols.net>
+References: <tip-59d81029b6804c3d5895d07cad77d7dfddc6b5b2@git.kernel.org>
 MIME-Version: 1.0
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-CC: mingo@elte.hu, eduard.munteanu@linux360.ro, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] kmemtrace: fix kernel parameter documentation
-References: <alpine.DEB.2.00.0905241112190.10296@rocky>
-In-Reply-To: <alpine.DEB.2.00.0905241112190.10296@rocky>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt001.oracle.com [141.146.116.10]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010209.4A1C08DD.01EB:SCFSTAT5015188,ss=1,fgs=0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <tip-59d81029b6804c3d5895d07cad77d7dfddc6b5b2@git.kernel.org>
+X-Url: http://oops.ghostprotocols.net:81/blog
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pekka Enberg wrote:
-> From: Pekka Enberg <penberg@cs.helsinki.fi>
-> 
-> The kmemtrace.enable kernel parameter no longer works. To enable
-> kmemtrace at
-> boot-time, you must pass "ftrace=kmemtrace" instead.
+Please fix the previous fix with this:
 
-Can someone also list the possible tracers in the ftrace= area, please?
+commit 64d254523be740b224533e0e4982cda7f25c0348
+Author: Arnaldo Carvalho de Melo <acme@redhat.com>
+Date:   Tue May 26 12:08:10 2009 -0300
 
-	ftrace=[tracer]
-			[ftrace] will set and start the specified tracer
-			as early as possible in order to facilitate early
-			boot debugging.
+    perf: Don't assume /proc/kallsyms is ordered
+    
+    Since we _are_ ordering it by the symbol start, just traverse the
+    freshly built rbtree setting the prev->end members to curr->start - 1.
+    
+    Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
 
-Thanks.
-
-> Cc: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-> Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
-> ---
->  Documentation/kernel-parameters.txt |   10 ----------
->  1 files changed, 0 insertions(+), 10 deletions(-)
-> 
-> diff --git a/Documentation/kernel-parameters.txt
-> b/Documentation/kernel-parameters.txt
-> index e87bdbf..9243dd8 100644
-> --- a/Documentation/kernel-parameters.txt
-> +++ b/Documentation/kernel-parameters.txt
-> @@ -56,7 +56,6 @@ parameter is applicable:
->      ISAPNP    ISA PnP code is enabled.
->      ISDN    Appropriate ISDN support is enabled.
->      JOY    Appropriate joystick support is enabled.
-> -    KMEMTRACE kmemtrace is enabled.
->      LIBATA  Libata driver is enabled
->      LP    Printer support is enabled.
->      LOOP    Loopback device support is enabled.
-> @@ -1054,15 +1053,6 @@ and is between 256 and 4096 characters. It is
-> defined in the file
->              use the HighMem zone if it exists, and the Normal
->              zone if it does not.
-> 
-> -    kmemtrace.enable=    [KNL,KMEMTRACE] Format: { yes | no }
-> -                Controls whether kmemtrace is enabled
-> -                at boot-time.
-> -
-> -    kmemtrace.subbufs=n    [KNL,KMEMTRACE] Overrides the number of
-> -            subbufs kmemtrace's relay channel has. Set this
-> -            higher than default (KMEMTRACE_N_SUBBUFS in code) if
-> -            you experience buffer overruns.
-> -
->      kgdboc=        [HW] kgdb over consoles.
->              Requires a tty driver that supports console polling.
->              (only serial suported for now)
-
-
--- 
-~Randy
-LPC 2009, Sept. 23-25, Portland, Oregon
-http://linuxplumbersconf.org/2009/
+diff --git a/Documentation/perf_counter/builtin-report.c b/Documentation/perf_counter/builtin-report.c
+index b19b893..5a385e8 100644
+--- a/Documentation/perf_counter/builtin-report.c
++++ b/Documentation/perf_counter/builtin-report.c
+@@ -360,17 +360,9 @@ static int load_kallsyms(void)
+ 	char *line = NULL;
+ 	size_t n;
+ 
+-	if (getline(&line, &n, file) < 0 || !line)
+-		goto out_delete_dso;
+-
+-	unsigned long long previous_start;
+-	char c, previous_symbf[4096];
+-	if (sscanf(line, "%llx %c %s", &previous_start, &c, previous_symbf) != 3)
+-		goto out_delete_line;
+-
+ 	while (!feof(file)) {
+ 		unsigned long long start;
+-		char symbf[4096];
++		char c, symbf[4096];
+ 
+ 		if (getline(&line, &n, file) < 0)
+ 			break;
+@@ -379,21 +371,35 @@ static int load_kallsyms(void)
+ 			goto out_delete_dso;
+ 
+ 		if (sscanf(line, "%llx %c %s", &start, &c, symbf) == 3) {
+-			if (start > previous_start) {
+-				struct symbol *sym = symbol__new(previous_start,
+-								 start - previous_start,
+-								 previous_symbf);
++			/*
++			 * Well fix up the end later, when we have all sorted.
++			 */
++			struct symbol *sym = symbol__new(start, 0xdead, symbf);
+ 
+-				if (sym == NULL)
+-					goto out_delete_dso;
++			if (sym == NULL)
++				goto out_delete_dso;
+ 
+-				dso__insert_symbol(kernel_dso, sym);
+-				previous_start = start;
+-				strcpy(previous_symbf, symbf);
+-			}
++			dso__insert_symbol(kernel_dso, sym);
+ 		}
+ 	}
+ 
++	/*
++	 * Now that we have all sorted out, just set the ->end of all
++	 * symbols
++	 */
++	struct rb_node *nd, *prevnd = rb_first(&kernel_dso->syms);
++
++	if (prevnd == NULL)
++		goto out_delete_line;
++
++	for (nd = rb_next(prevnd); nd; nd = rb_next(nd)) {
++		struct symbol *prev = rb_entry(prevnd, struct symbol, rb_node),
++			      *curr = rb_entry(nd, struct symbol, rb_node);
++		
++		prev->end = curr->start - 1;
++		prevnd = nd;
++	}
++
+ 	dsos__add(kernel_dso);
+ 	free(line);
+ 	fclose(file);
