@@ -1,50 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759363AbZEZXtW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760293AbZEZXto@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759363AbZEZXtW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 19:49:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755368AbZEZXtP
+	id S1760293AbZEZXto (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 19:49:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757841AbZEZXtd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 19:49:15 -0400
-Received: from mail-fx0-f168.google.com ([209.85.220.168]:62015 "EHLO
-	mail-fx0-f168.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754846AbZEZXtO (ORCPT
+	Tue, 26 May 2009 19:49:33 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:45911 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755368AbZEZXtc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 19:49:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=NGL2zs6GqcZL+EyMa93Kau9BWByQXllmiwKVQK5yYFi8P5QWG4Ef/eBVfTao9kwY5R
-         VlgXATkNVuNqkbLI9hir0y7mYmm9LfyKr8tbe/Y5jupc8tRZJYBimkbMipF5tT6PtHBN
-         0dG0IMd/T/4olpL1r9DyG50zhthG8eMHdVUfs=
-Message-ID: <4A1C7FF5.4060205@gmail.com>
-Date: Tue, 26 May 2009 17:49:09 -0600
-From: Robert Hancock <hancockrwd@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Frans Pop <elendil@planet.nl>
-CC: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] ide: add "ignore_hpa" module parameter
-References: <200905252344.11826.bzolnier@gmail.com> <200905260106.13705.elendil@planet.nl> <200905261423.40117.bzolnier@gmail.com> <200905261453.22428.elendil@planet.nl>
-In-Reply-To: <200905261453.22428.elendil@planet.nl>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 26 May 2009 19:49:32 -0400
+Subject: Re: [PATCH 25/20] sysfs: Only support removing emtpy sysfs 
+	directories.
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       SCSI development list <linux-scsi@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Tejun Heo <tj@kernel.org>, Cornelia Huck <cornelia.huck@de.ibm.com>,
+       linux-fsdevel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>
+In-Reply-To: <ac3eb2510905261503k32db6197m84d1e78858e53da1@mail.gmail.com>
+References: <ac3eb2510905261413r54e5bb18n7faf888aa55d8830@mail.gmail.com>
+	 <Pine.LNX.4.44L0.0905261756390.11998-100000@iolanthe.rowland.org>
+	 <ac3eb2510905261503k32db6197m84d1e78858e53da1@mail.gmail.com>
+Content-Type: text/plain
+Date: Tue, 26 May 2009 23:49:32 +0000
+Message-Id: <1243381772.2815.96.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frans Pop wrote:
->> Moreover the (much needed) work from Tejun doesn't help a tiny bit in
->> case of people migrating their *working* setups from IDE to libata
+On Wed, 2009-05-27 at 00:03 +0200, Kay Sievers wrote:
+> On Tue, May 26, 2009 at 23:56, Alan Stern <stern@rowland.harvard.edu> wrote:
+> > On Tue, 26 May 2009, Kay Sievers wrote:
+> >
+> >> Ok, I copied my newly installed system to another disks, to have a
+> >> root filesytem to trash again by this bug. :)
+> >>
+> >> Which of your patches should I try?
+> >
+> > James's patch, not mine.
 > 
-> From what I've seen now that seems the most important case that needs 
-> supporting, as well as the case where a working setup would migrate from 
-> IDE with old HPA default to IDE with new HPA default.
-> 
-> Naive thought: wouldn't it be possible to check whether a partition 
-> overlaps the HPA boundary and warn or even bug out in that case?
+> I tried both, both don't fix the issue. With Alan's patch it *seems*
+> the target device never gets removed, at least I didn't see anything
+> in the kobject debug logs.
 
-It does, you get a warning about the partition exceeding device 
-capacity. Easy to miss that, however.
+OK ... perhaps we have to wait a little harder: try this; it waits until
+all the targets have disappeared from visibility via an event.
+
+James
+
+---
+
+diff --git a/drivers/scsi/hosts.c b/drivers/scsi/hosts.c
+index 89d41a4..b2946bf 100644
+--- a/drivers/scsi/hosts.c
++++ b/drivers/scsi/hosts.c
+@@ -173,6 +173,8 @@ void scsi_remove_host(struct Scsi_Host *shost)
+ 		BUG_ON(scsi_host_set_state(shost, SHOST_DEL_RECOVERY));
+ 	spin_unlock_irqrestore(shost->host_lock, flags);
+ 
++	scsi_wait_for_targets_gone(shost);
++
+ 	transport_unregister_device(&shost->shost_gendev);
+ 	device_unregister(&shost->shost_dev);
+ 	device_del(&shost->shost_gendev);
+diff --git a/drivers/scsi/scsi_scan.c b/drivers/scsi/scsi_scan.c
+index c447838..367216c 100644
+--- a/drivers/scsi/scsi_scan.c
++++ b/drivers/scsi/scsi_scan.c
+@@ -32,6 +32,7 @@
+ #include <linux/delay.h>
+ #include <linux/kthread.h>
+ #include <linux/spinlock.h>
++#include <linux/wait.h>
+ #include <linux/async.h>
+ 
+ #include <scsi/scsi.h>
+@@ -324,6 +325,12 @@ out:
+ 	return NULL;
+ }
+ 
++static  DECLARE_WAIT_QUEUE_HEAD(scsi_target_removed);
++void scsi_wait_for_targets_gone(struct Scsi_Host *shost)
++{
++	wait_event(scsi_target_removed, list_empty(&shost->__targets));
++}
++
+ static void scsi_target_destroy(struct scsi_target *starget)
+ {
+ 	struct device *dev = &starget->dev;
+@@ -336,6 +343,7 @@ static void scsi_target_destroy(struct scsi_target *starget)
+ 		shost->hostt->target_destroy(starget);
+ 	list_del_init(&starget->siblings);
+ 	spin_unlock_irqrestore(shost->host_lock, flags);
++	wake_up(&scsi_target_removed);
+ 	put_device(dev);
+ }
+ 
+diff --git a/include/scsi/scsi_host.h b/include/scsi/scsi_host.h
+index b62a097..b63a901 100644
+--- a/include/scsi/scsi_host.h
++++ b/include/scsi/scsi_host.h
+@@ -747,6 +747,7 @@ static inline int scsi_host_scan_allowed(struct Scsi_Host *shost)
+ 
+ extern void scsi_unblock_requests(struct Scsi_Host *);
+ extern void scsi_block_requests(struct Scsi_Host *);
++extern void scsi_wait_for_targets_gone(struct Scsi_Host *);
+ 
+ struct class_container;
+ 
+
+
