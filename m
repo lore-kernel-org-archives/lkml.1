@@ -1,69 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755467AbZEZVE5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754961AbZEZVGS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755467AbZEZVE5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 17:04:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750883AbZEZVEs
+	id S1754961AbZEZVGS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 17:06:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754592AbZEZVGJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 17:04:48 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:60838 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753726AbZEZVEr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 17:04:47 -0400
-Date: Tue, 26 May 2009 17:04:48 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-cc: Arjan van de Ven <arjan@linux.intel.com>,
-       SCSI development list <linux-scsi@vger.kernel.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: Bug in SCSI async probing
-In-Reply-To: <1243370148.2815.72.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.44L0.0905261658430.11998-100000@iolanthe.rowland.org>
+	Tue, 26 May 2009 17:06:09 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58991 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754553AbZEZVGI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 17:06:08 -0400
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@redhat.com>
+X-Fcc: ~/Mail/linus
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Pavel Emelyanov <xemul@openvz.org>,
+       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] ptrace: do_notify_parent_cldstop: fix the wrong
+	->nsproxy usage
+In-Reply-To: Oleg Nesterov's message of  Monday, 25 May 2009 20:55:02 +0200 <20090525185502.GA20781@redhat.com>
+References: <20090525185502.GA20781@redhat.com>
+Emacs: freely redistributable; void where prohibited by law.
+Message-Id: <20090526210514.C1C91FC2BD@magilla.sf.frob.com>
+Date: Tue, 26 May 2009 14:05:14 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 May 2009, James Bottomley wrote:
+Acked-by: Roland McGrath <roland@redhat.com>
 
-> > > > (Which reminds me...  Are the calls in wait_scan_init() really enough?  
-> > > > wait_for_device_probe() does async_synchronize_full() and then
-> > > > scsi_complete_async_scans() finishes the SCSI scanning.  But if this
-> > > > scanning involves calling sd_probe(), then more async work will be
-> > > > queued.  Maybe a second call to wait_for_device_probe() is needed.)
-> > 
-> > You didn't respond to this point.
-> 
-> Well this was the response:
-> 
-> > > None of this really got reviewed through the SCSI list, so I'll let
-> > > Arjan answer.
+Yes, all cases setting .si_pid should set it using the pid_ns of the
+recipient.  Numerous other cases look wrong too, though maybe Sukadev has
+outstanding patches for those already?  (It's been a while since we went
+around on this, and I am fuzzy on some of the details.)  ptrace_notify,
+ptrace_signal, sys_kill, do_tkill all look wrong to me.  (Only sys_kill
+needs to solve the multiple-recipients problem.)
 
-Whoops, for some reason I had gotten the idea that you wrote 
-wait_scan_init().
 
-> > Well then, how does this patch look?
-> 
-> Well, it's adding complexity, the best fix is to let async only take
-> care of the pieces which can't fail, that way we don't need complex
-> error handling.  The piece that slows probing isn't really the sysfs
-> appearances, it's the SCSI probing, and the last piece that needs error
-> handling is the device_add() for sysfs visibility, so that should be the
-> dividing line between sync and async.
-
-I had exactly the same thought, but it seemed less intrusive to keep
-the dividing line where Arjan put it.
-
-> This should restore the logical flow and fix all the error leg problems
-> (by eliminating the error legs).
-
-You forgot to move the dev_set_drvdata() call into the synchronous 
-part.  Apart from that it looks fine.  Should I submit it officially?
-
-Also, I do still think that wait_scan_init() needs an extra call to 
-async_synchronize_full() at the end.
-
-Alan Stern
-
+Thanks,
+Roland
