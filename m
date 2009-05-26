@@ -1,60 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756856AbZEZVN6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757141AbZEZVOh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756856AbZEZVN6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 17:13:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751857AbZEZVNr
+	id S1757141AbZEZVOh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 17:14:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754598AbZEZVOa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 17:13:47 -0400
-Received: from mail-bw0-f222.google.com ([209.85.218.222]:48246 "EHLO
-	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751044AbZEZVNq convert rfc822-to-8bit (ORCPT
+	Tue, 26 May 2009 17:14:30 -0400
+Received: from 69-30-77-85.dq1sn.easystreet.com ([69.30.77.85]:51765 "EHLO
+	kingsolver.anholt.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751959AbZEZVO3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 17:13:46 -0400
-MIME-Version: 1.0
-In-Reply-To: <1243372199.2815.77.camel@localhost.localdomain>
-References: <Pine.LNX.4.44L0.0905261508210.9278-100000@iolanthe.rowland.org> 
-	<1243372199.2815.77.camel@localhost.localdomain>
-From: Kay Sievers <kay.sievers@vrfy.org>
-Date: Tue, 26 May 2009 23:13:26 +0200
-Message-ID: <ac3eb2510905261413r54e5bb18n7faf888aa55d8830@mail.gmail.com>
-Subject: Re: [PATCH 25/20] sysfs: Only support removing emtpy sysfs 
-	directories.
-To: James Bottomley <James.Bottomley@hansenpartnership.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       SCSI development list <linux-scsi@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Tejun Heo <tj@kernel.org>, Cornelia Huck <cornelia.huck@de.ibm.com>,
-       linux-fsdevel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@aristanetworks.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Tue, 26 May 2009 17:14:29 -0400
+Subject: [GIT PULL] drm-intel fixes for 2.6.30-rc6
+From: Eric Anholt <eric@anholt.net>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-6ZgrkFJrA4B1XB2udmJC"
+Date: Tue, 26 May 2009 14:14:24 -0700
+Message-Id: <1243372464.8400.19.camel@gaiman.anholt.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 26, 2009 at 23:09, James Bottomley
-<James.Bottomley@hansenpartnership.com> wrote:
-> On Tue, 2009-05-26 at 15:29 -0400, Alan Stern wrote:
 
->> If you don't mind trashing some more ext3 root filesystems :-) you can
->> try this patch.  It's almost certainly not quite the right thing to do
->> and I have probably messed up the target's reference counting, but
->> maybe it's a step in the right direction.
+--=-6ZgrkFJrA4B1XB2udmJC
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> It's hard to follow the problem without full context, but if I
-> understand correctly the problem is you want all the target directories
-> removed before you call device_del() on the host and the thing that gets
-> in the way is the necessary user context removal of the host.  So a
-> simple solution, rather than mucking with the way it works, is to wait
-> for the workqueues to complete.  Does this fix it?
+The following changes since commit 1406de8e11eb043681297adf86d6892ff8efc27a=
+:
+  Linus Torvalds (1):
+        Linux 2.6.30-rc6
 
-Ok, I copied my newly installed system to another disks, to have a
-root filesytem to trash again by this bug. :)
+are available in the git repository at:
 
-Which of your patches should I try?
+  git://git.kernel.org/pub/scm/linux/kernel/git/anholt/drm-intel for-linus
 
-Thanks,
-Kay
+Mostly a bunch of KMS fixes to get more hardware working, and most of it
+is right out of the 2D driver.  The notable change is the vmalloc fix,
+which gets firefox working with big panorama photos (along with some
+userland fixes).
+
+Jesse Barnes (2):
+      drm/i915: allocate large pointer arrays with vmalloc
+      i915: support 8xx desktop cursors
+
+Jonas Bonn (1):
+      drm/i915: Determine type before initialising connector
+
+Ma Ling (4):
+      drm/i915: Fetch SDVO LVDS mode lines from VBT, then reserve them
+      drm/i915: Return SDVO LVDS VBT mode if no EDID modes are detected.
+      drm/i915: Use an I2C algo to do the flip to SDVO DDC bus.
+      drm/i915: Add support for VGA load detection (pre-945).
+
+ drivers/gpu/drm/i915/i915_drv.h      |    3 +-
+ drivers/gpu/drm/i915/i915_gem.c      |   42 ++++------
+ drivers/gpu/drm/i915/i915_reg.h      |   17 ++++
+ drivers/gpu/drm/i915/intel_bios.c    |  102 ++++++++++++++++-------
+ drivers/gpu/drm/i915/intel_bios.h    |   17 ++++
+ drivers/gpu/drm/i915/intel_crt.c     |  149 ++++++++++++++++++++++++++++++=
++++-
+ drivers/gpu/drm/i915/intel_display.c |   26 +++++--
+ drivers/gpu/drm/i915/intel_lvds.c    |    4 +-
+ drivers/gpu/drm/i915/intel_sdvo.c    |  137 ++++++++++++++++++++++++++----=
+-
+ include/drm/drmP.h                   |   24 ++++++
+ 10 files changed, 432 insertions(+), 89 deletions(-)
+
+--=20
+Eric Anholt
+eric@anholt.net                         eric.anholt@intel.com
+
+
+
+--=-6ZgrkFJrA4B1XB2udmJC
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkocW7AACgkQHUdvYGzw6verdACeMz5nH2M8c3sPwidXSGaqFuib
+CDsAn2meJ2Xw0DV8yM40DOQ0qFarSdAN
+=VjIw
+-----END PGP SIGNATURE-----
+
+--=-6ZgrkFJrA4B1XB2udmJC--
+
