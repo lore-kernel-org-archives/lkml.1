@@ -1,62 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756912AbZEZSpZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756994AbZEZSrV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756912AbZEZSpZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 14:45:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755404AbZEZSpM
+	id S1756994AbZEZSrV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 14:47:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756113AbZEZSrN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 14:45:12 -0400
-Received: from ns01.unsolicited.net ([69.10.132.115]:34884 "EHLO
-	ns01.unsolicited.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754796AbZEZSpK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 14:45:10 -0400
-Message-ID: <4A1C37F8.2090703@unsolicited.net>
-Date: Tue, 26 May 2009 19:42:00 +0100
-From: David <david@unsolicited.net>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	Tue, 26 May 2009 14:47:13 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:47278 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755962AbZEZSrN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 14:47:13 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Benny Halevy <bhalevy@panasas.com>
+Subject: Re: [Bug #13175] sata_nv incompatible with async scsi scan
+Date: Tue, 26 May 2009 20:47:20 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc6-rjw; KDE/4.2.3; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Arjan van de Ven <arjan@linux.intel.com>, Jeff Garzik <jeff@garzik.org>,
+       Matthew Wilcox <matthew@wil.cx>
+References: <GtY7d2eWpoK.A.ioC.MQcGKB@chimera> <WCcYF-TAbJC.A.NgD.lQcGKB@chimera> <4A1C1B08.2080600@panasas.com>
+In-Reply-To: <4A1C1B08.2080600@panasas.com>
 MIME-Version: 1.0
-To: Pete Zaitcev <zaitcev@redhat.com>
-CC: Alan Stern <stern@rowland.harvard.edu>,
-       USB list <linux-usb@vger.kernel.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-media@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       dbrownell@users.sourceforge.net, leonidv11@gmail.com,
-       Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: USB/DVB - Old Technotrend TT-connect S-2400 regression tracked
- down
-References: <4A1967A2.4050906@unsolicited.net>	<Pine.LNX.4.44L0.0905242208260.15195-100000@netrider.rowland.org>	<20090524203902.594a0eec.zaitcev@redhat.com>	<4A1A5E24.20201@unsolicited.net>	<4A1A8E53.9060108@unsolicited.net> <20090525184843.33c93006.zaitcev@redhat.com>
-In-Reply-To: <20090525184843.33c93006.zaitcev@redhat.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200905262047.20823.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pete Zaitcev wrote:
-> On Mon, 25 May 2009 13:25:55 +0100, David <david@unsolicited.net> wrote:
->
->   
-> I suppose so. I misunderstood how this worked. I guessed that the
-> DMA API debugging was the culprit because its introduction coincided
-> with the recent onset of this oops.
->
-> Although usbmon does essentially illegal tricks to look at data
-> already mapped for DMA, the code used to work for a few releases.
-> Bisecting may help. I cannot be sure of it though, and it's
-> going to take a lot of reboots.
->
-> Unfortunately, although I have an Opteron, the issue does not
-> occur here, so I'm at a loss for the moment. But I'll have to
-> tackle it somehow. Not sure how though. Any suggestions are welcome.
->
-> -- Pete
->   
+On Tuesday 26 May 2009, Benny Halevy wrote:
+> On May. 24, 2009, 22:31 +0300, "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> > This message has been generated automatically as a part of a report
+> > of regressions introduced between 2.6.28 and 2.6.29.
+> > 
+> > The following bug entry is on the current list of known regressions
+> > introduced between 2.6.28 and 2.6.29.  Please verify if it still should
+> > be listed and let me know (either way).
+> 
+> Verified to still exist with 2.6.30-rc7 :-(
+> 
+> [The bug description is misleading though.  More testing
+> lead to post-kernel boot problems where initrd cannot find the sata
+> devices during its init phase]
 
-I've been doing a bit of random rebooting (I don't really have time to
-do a full bisect), and can reproduce the usbmon panic on this machine
-back to 2.6.24.. so it certainly hasn't appeared that recently.
+Thanks for the update.
 
-Cheers
-David
+What description would be better in your opinion?
+
+Rafael
