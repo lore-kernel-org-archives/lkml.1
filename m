@@ -1,110 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756153AbZEZM4V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756154AbZEZM5s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756153AbZEZM4V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 08:56:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755296AbZEZM4M
+	id S1756154AbZEZM5s (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 08:57:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753731AbZEZM5m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 08:56:12 -0400
-Received: from alerce.vps.bitfolk.com ([212.13.194.134]:4703 "EHLO
-	alerce.vps.bitfolk.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755058AbZEZM4L (ORCPT
+	Tue, 26 May 2009 08:57:42 -0400
+Received: from mailx.hitachi.co.jp ([133.145.228.49]:46126 "EHLO
+	mailx.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752863AbZEZM5l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 08:56:11 -0400
-Date: Tue, 26 May 2009 09:52:52 -0300
-From: Alberto Bertogli <albertito@blitiri.com.ar>
-To: Goswin von Brederlow <goswin-v-b@web.de>
-Cc: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       linux-raid@vger.kernel.org, agk@redhat.com, neilb@suse.de
-Subject: Re: [RFC PATCH] dm-csum: A new device mapper target that checks
-	data integrity
-Message-ID: <20090526125252.GL1376@blitiri.com.ar>
-References: <20090521161317.GU1376@blitiri.com.ar> <87my91qsn4.fsf@frosties.localdomain> <20090525174630.GI1376@blitiri.com.ar> <8763fop31e.fsf@frosties.localdomain>
+	Tue, 26 May 2009 08:57:41 -0400
+X-Greylist: delayed 415 seconds by postgrey-1.27 at vger.kernel.org; Tue, 26 May 2009 08:57:40 EDT
+X-AuditID: b753bd60-ac247ba000006009-82-4a1be6c4db31
+Message-ID: <4A1BE6BE.90209@hitachi.com>
+Date: Tue, 26 May 2009 21:55:26 +0900
+From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
+    Gecko/20030624 Netscape/7.1 (ax)
+X-Accept-Language: ja
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <8763fop31e.fsf@frosties.localdomain>
-User-Agent: Mutt/1.5.17 (2008-03-04)
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, x86@kernel.org,
+       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>,
+       Taketoshi Sakuraba <taketoshi.sakuraba.hc@hitachi.com>
+Subject: Re: [PATCH] [7/16] POISON: Add basic support for poisoned pages in
+    fault handler
+References: <20090407509.382219156@firstfloor.org> 
+    <20090407151004.2F5D21D0470@basil.firstfloor.org>
+In-Reply-To: <20090407151004.2F5D21D0470@basil.firstfloor.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAA==
+X-FMFTCR: RANGEC
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 26, 2009 at 12:33:01PM +0200, Goswin von Brederlow wrote:
-> Alberto Bertogli <albertito@blitiri.com.ar> writes:
-> > On Mon, May 25, 2009 at 02:22:23PM +0200, Goswin von Brederlow wrote:
-> >> Alberto Bertogli <albertito@blitiri.com.ar> writes:
-> >> > I'm writing this device mapper target that stores checksums on writes and
-> >> > verifies them on reads.
-> >> 
-> >> How does that behave on crashes? Will checksums be out of sync with data?
-> >> Will pending blocks recalculate their checksum?
-> >
-> >    To guarantee consistency, two imd sectors (named M1 and M2) are kept for
-> >    every 62 data sectors, and the following procedure is used to update them
-> >    when a write to a given sector is required:
-> >
-> >     - Read both M1 and M2.
-> >     - Find out (using information stored in their headers) which one is newer.
-> >       Let's assume M1 is newer than M2.
-> >     - Update the M2 buffer to mark it's newer, and update the new data's CRC.
-> >     - Submit the write to M2, and then the write to the data, using a barrier
-> >       to make sure the metadata is updated _after_ the data.
-> 
-> Consider that the disk writes the data and then the system
-> crashes. Now you have the old checksum but the new data. The checksum
-> is out of sync.
-> 
-> Don't you mean that M2 is written _before_ the data? That way you have
-> the old checksum in M1 and the new in M2. One of them will match
-> depending on wether the data gets written before a crash or not. That
-> would be more consistent with your read operation below.
+Andi Kleen wrote:
 
-Yes, the comment is wrong, thanks for noticing. That is how it's implemented.
-
-
-> >    Accordingly, the read operations are handled as follows:
-> >
-> >     - Read both the data, M1 and M2.
-> >     - Find out which one is newer. Let's assume M1 is newer than M2.
-> >     - Calculate the data's CRC, and compare it to the one found in M1. If they
-> >       match, the reading is successful. If not, compare it to the one found in
-> >       M2. If they match, the reading is successful; otherwise, fail. If
-> >       the read involves multiple sectors, it is possible that some of the
-> >       correct CRCs are in M1 and some in M2.
-> >
-> >
-> > The barrier will be (it's not done yet) replaced with serialized writes for
-> > cases where the underlying block device does not support them, or when the
-> > integrity metadata resides on a different block device than the data.
-> >
-> >
-> > This scheme assumes writes to a single sector are atomic in the presence of
-> > normal crashes, which I'm not sure if it's something sane to assume in
-> > practise. If it's not, then the scheme can be modified to cope with that.
+> - Add a new VM_FAULT_POISON error code to handle_mm_fault. Right now
+> architectures have to explicitely enable poison page support, so
+> this is forward compatible to all architectures. They only need
+> to add it when they enable poison page support.
+> - Add poison page handling in swap in fault code
 > 
-> What happens if you have multiple writes to the same sector? (assuming
-> you ment "before" above)
+> Signed-off-by: Andi Kleen <ak@linux.intel.com>
 > 
-> - user writes to sector
-> - queue up write for M1 and data1
-> - M1 writes
-> - user writes to sector
-> - queue up writes for M2 and data2
-> - data1 is thrown away as data2 overwrites it
-> - M2 writes
-> - system crashes
+> ---
+>  include/linux/mm.h |    3 ++-
+>  mm/memory.c        |   17 ++++++++++++++---
+>  2 files changed, 16 insertions(+), 4 deletions(-)
 > 
-> Now both M1 and M2 have a different checksum than the old data left on
-> disk.
-> 
-> Can this happen?
+> Index: linux/mm/memory.c
+> ===================================================================
+> --- linux.orig/mm/memory.c	2009-04-07 16:39:24.000000000 +0200
+> +++ linux/mm/memory.c	2009-04-07 16:43:06.000000000 +0200
+> @@ -1315,7 +1315,8 @@
+>  				if (ret & VM_FAULT_ERROR) {
+>  					if (ret & VM_FAULT_OOM)
+>  						return i ? i : -ENOMEM;
+> -					else if (ret & VM_FAULT_SIGBUS)
+> +					if (ret &
+> +					    (VM_FAULT_POISON|VM_FAULT_SIGBUS))
+>  						return i ? i : -EFAULT;
+>  					BUG();
+>  				}
+> @@ -2426,8 +2427,15 @@
+>  		goto out;
+>  
+>  	entry = pte_to_swp_entry(orig_pte);
+> -	if (is_migration_entry(entry)) {
+> -		migration_entry_wait(mm, pmd, address);
+> +	if (unlikely(non_swap_entry(entry))) {
+> +		if (is_migration_entry(entry)) {
+> +			migration_entry_wait(mm, pmd, address);
+> +		} else if (is_poison_entry(entry)) {
+> +			ret = VM_FAULT_POISON;
+> +		} else {
+> +			print_bad_pte(vma, address, pte, NULL);
+> +			ret = VM_FAULT_OOM;
+> +		}
+>  		goto out;
+>  	}
+>  	delayacct_set_flag(DELAYACCT_PF_SWAPIN);
+> @@ -2451,6 +2459,9 @@
+>  		/* Had to read the page from swap area: Major fault */
+>  		ret = VM_FAULT_MAJOR;
+>  		count_vm_event(PGMAJFAULT);
+> +	} else if (PagePoison(page)) {
+> +		ret = VM_FAULT_POISON;
 
-No, parallel writes that affect the same metadata sectors will not be allowed.
-At the moment there is a rough lock which does not allow simultaneous updates
-at all, I plan to make that more fine-grained in the future.
+delayacct_clear_flag(DELAYACCT_PF_SWAPIN) would be needed here.
 
-Note that bios that affect more than one sector are just fine, since the
-metadata sector will be properly updated.
+> +		goto out;
+>  	}
+>  
+>  	lock_page(page);
 
-Thanks,
-		Alberto
+Regards,
+-- 
+Hidehiro Kawai
+Hitachi, Systems Development Laboratory
+Linux Technology Center
 
