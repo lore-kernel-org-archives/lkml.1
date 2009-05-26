@@ -1,58 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756782AbZEZRNd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756194AbZEZRTt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756782AbZEZRNd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 13:13:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755195AbZEZRN0
+	id S1756194AbZEZRTt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 13:19:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753712AbZEZRTl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 13:13:26 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:45851 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755107AbZEZRN0 (ORCPT
+	Tue, 26 May 2009 13:19:41 -0400
+Received: from smtp3.ultrahosting.com ([74.213.175.254]:44787 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753466AbZEZRTl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 13:13:26 -0400
-Message-ID: <4A1C2320.1030704@zytor.com>
-Date: Tue, 26 May 2009 10:13:04 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Tue, 26 May 2009 13:19:41 -0400
+Date: Tue, 26 May 2009 13:19:08 -0400 (EDT)
+From: Christoph Lameter <cl@linux.com>
+X-X-Sender: cl@gentwo.org
+To: Matt Mackall <mpm@selenic.com>
+cc: Pekka J Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
+       Yinghai Lu <yinghai@kernel.org>, Rusty Russell <rusty@rustcorp.com.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jeff Garzik <jgarzik@pobox.com>,
+       Alexander Viro <viro@ftp.linux.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, npiggin@suse.de
+Subject: Re: [GIT PULL] scheduler fixes
+In-Reply-To: <1243263359.12761.48.camel@calx>
+Message-ID: <alpine.DEB.1.10.0905261318040.22176@gentwo.org>
+References: <alpine.LFD.2.01.0905180955550.3301@localhost.localdomain>  <20090518170909.GA1623@elte.hu> <20090518190320.GA20260@elte.hu>  <alpine.LFD.2.01.0905181208130.3301@localhost.localdomain>  <20090518202031.GA26549@elte.hu> 
+ <alpine.LFD.2.01.0905181457320.3301@localhost.localdomain>  <Pine.LNX.4.64.0905241911120.12189@melkki.cs.Helsinki.FI>  <4A199327.5030503@kernel.org> <20090525025353.GA2580@elte.hu>  <4A1A2261.1000504@kernel.org> <20090525051521.GC23032@elte.hu> 
+ <Pine.LNX.4.64.0905251142140.32568@melkki.cs.Helsinki.FI> <1243263359.12761.48.camel@calx>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: lkml@morethan.org
-CC: Harald Welte <HaraldWelte@viatech.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [BUG FIX] Make x86_32 uni-processor Atomic ops, Atomic
-References: <200905221139.26941.lkml@morethan.org> <200905251803.51478.lkml@morethan.org> <4A1B3241.3080509@zytor.com> <200905260737.32860.lkml@morethan.org>
-In-Reply-To: <200905260737.32860.lkml@morethan.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael S. Zick wrote:
-> 
-> Disassembly of section .text:
-> 
-> 00000000 <diff_umask>:
->    0:   8b 44 24 0c             mov    0xc(%esp),%eax
->    4:   8b 4c 24 04             mov    0x4(%esp),%ecx
->    8:   8b 10                   mov    (%eax),%edx
->    a:   8d 04 11                lea    (%ecx,%edx,1),%eax
->    d:   8b 54 24 08             mov    0x8(%esp),%edx
->   11:   2b 02                   sub    (%edx),%eax
->   13:   21 c8                   and    %ecx,%eax
->   15:   c3                      ret
-> 
-> = = = =
-> 
-> Checking the byte string 0x8d, 0x04, 0x11 against the Intel
-> documentation shows that the disassembly output of objdump
-> is incorrect - that bit string does not have an offset field.
-> That is the byte encoding for the gcc assembly input.
-> 
-> What's a person to do when the tool-chain lies?
-> 
+On Mon, 25 May 2009, Matt Mackall wrote:
 
-The ,1 isn't an offset field... it's a scale factor.
+> > And oh, Christoph/Matt, can I have your NAK/ACK for this patch?
+>
+> Looks ok to me, though I'd probably split it into three parts (slab,
+> slub, init).
 
-	-hpa
-
+Could we document the core boot strap procedure some more? I think we will
+have slight breakage in various parts if we change the order. If we had
+some design to guide then it may be easier to bring all the components in
+order.
