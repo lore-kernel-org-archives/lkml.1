@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759501AbZEZXdi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757874AbZEZXds@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759501AbZEZXdi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 19:33:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757083AbZEZXdU
+	id S1757874AbZEZXds (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 19:33:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758254AbZEZXdV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 19:33:20 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:57294 "EHLO smtp.gentoo.org"
+	Tue, 26 May 2009 19:33:21 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:57306 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756468AbZEZXdT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 19:33:19 -0400
+	id S1757841AbZEZXdV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 19:33:21 -0400
 From: Mike Frysinger <vapier@gentoo.org>
 To: linux-kernel@vger.kernel.org
-Cc: uclinux-dist-devel@blackfin.uclinux.org, Greg Ungerer <gerg@uclinux.org>,
-       uclinux-dev@uclinux.org, linux-mtd@lists.infradead.org
-Subject: [PATCH 2/3] mtd/maps: uclinux: mark local stuff static
-Date: Tue, 26 May 2009 19:33:17 -0400
-Message-Id: <1243380798-10089-2-git-send-email-vapier@gentoo.org>
+Cc: uclinux-dist-devel@blackfin.uclinux.org, Paul Mundt <lethal@linux-sh.org>,
+       Greg Ungerer <gerg@uclinux.org>, uclinux-dev@uclinux.org,
+       linux-mtd@lists.infradead.org
+Subject: [PATCH 3/3] mtd/maps: uclinux: do not allow to be built as a module
+Date: Tue, 26 May 2009 19:33:18 -0400
+Message-Id: <1243380798-10089-3-git-send-email-vapier@gentoo.org>
 X-Mailer: git-send-email 1.6.3.1
 In-Reply-To: <20090526231902.GA6295@linux-sh.org>
 References: <20090526231902.GA6295@linux-sh.org>
@@ -23,44 +24,33 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The uclinux_ram_mtdinfo, uclinux_romfs, and uclinux_point symbols do not
-need to be visible outside of this module, so mark them static.
+There isn't any benefit to building the uClinux MTD map as a module as the
+rootfs it requires in order to actually be usable is appended to the
+kernel image, not the module.  No known system builds it this way either,
+so change the option to "bool".
 
 Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+CC: Paul Mundt <lethal@linux-sh.org>
 CC: Greg Ungerer <gerg@uclinux.org>
 CC: uclinux-dev@uclinux.org
 CC: linux-mtd@lists.infradead.org
 ---
- drivers/mtd/maps/uclinux.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/mtd/maps/Kconfig |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/mtd/maps/uclinux.c b/drivers/mtd/maps/uclinux.c
-index 61d4087..d4314fb 100644
---- a/drivers/mtd/maps/uclinux.c
-+++ b/drivers/mtd/maps/uclinux.c
-@@ -30,11 +30,11 @@ struct map_info uclinux_ram_map = {
- 	.size = 0,
- };
+diff --git a/drivers/mtd/maps/Kconfig b/drivers/mtd/maps/Kconfig
+index 82923bd..907873b 100644
+--- a/drivers/mtd/maps/Kconfig
++++ b/drivers/mtd/maps/Kconfig
+@@ -501,7 +501,7 @@ config MTD_BFIN_ASYNC
+ 	  If compiled as a module, it will be called bfin-async-flash.
  
--struct mtd_info *uclinux_ram_mtdinfo;
-+static struct mtd_info *uclinux_ram_mtdinfo;
- 
- /****************************************************************************/
- 
--struct mtd_partition uclinux_romfs[] = {
-+static struct mtd_partition uclinux_romfs[] = {
- 	{ .name = "ROMfs" }
- };
- 
-@@ -42,7 +42,7 @@ struct mtd_partition uclinux_romfs[] = {
- 
- /****************************************************************************/
- 
--int uclinux_point(struct mtd_info *mtd, loff_t from, size_t len,
-+static int uclinux_point(struct mtd_info *mtd, loff_t from, size_t len,
- 	size_t *retlen, void **virt, resource_size_t *phys)
- {
- 	struct map_info *map = mtd->priv;
+ config MTD_UCLINUX
+-	tristate "Generic uClinux RAM/ROM filesystem support"
++	bool "Generic uClinux RAM/ROM filesystem support"
+ 	depends on MTD_PARTITIONS && MTD_RAM && !MMU
+ 	help
+ 	  Map driver to support image based filesystems for uClinux.
 -- 
 1.6.3.1
 
