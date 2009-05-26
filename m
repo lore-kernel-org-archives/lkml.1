@@ -1,124 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758251AbZEZUGx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757412AbZEZURR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758251AbZEZUGx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 16:06:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757316AbZEZUGp
+	id S1757412AbZEZURR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 16:17:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754317AbZEZURE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 16:06:45 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:40914 "EHLO
+	Tue, 26 May 2009 16:17:04 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:48091 "EHLO
 	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757011AbZEZUGo (ORCPT
+	with ESMTP id S1753954AbZEZURD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 16:06:44 -0400
+	Tue, 26 May 2009 16:17:03 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=rMlPM68x9DELg2JJWqxgr1oqJPQA0Hr662+KPmtDyu4PK0a8bialnI2eMp69Js2+Mr
-         pvQFS53bqHtrrPnK2/Yni9I/yrBM9hIcVTGidmWAvQTIBUWCERsmItO9VsonEUjR22gG
-         nQ1pS+znJjoG07po+Ph2e/WejN9i11cH3crqw=
-Date: Tue, 26 May 2009 22:06:41 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Zhaolei <zhaolei@cn.fujitsu.com>,
-       Tom Zanussi <tzanussi@gmail.com>
-Subject: Re: [PATCH 0/5] tracing/core: various fixes
-Message-ID: <20090526200640.GD5969@nowhere>
-References: <1243303490-8019-1-git-send-email-fweisbec@gmail.com> <alpine.DEB.2.00.0905261542230.26705@gandalf.stny.rr.com>
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Z3JMcuUhoPvIp22ZXVLui42wTj0yk/9ahTqsR/tGJRvUGWVt1D9mcCw10YDEtX9G/X
+         iaU+W6GiWzNSaiXipLnFhrqkZfpHS64j4MqzA0p0rJ9vo3+7ux8bMNB5w8BLJ72UYPAU
+         33rdF7O68WHsRVJgXgm2jgbbmXAmw7jjbcyFY=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0905261542230.26705@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1243279681-4233-3-git-send-email-philipp.zabel@gmail.com>
+References: <1243279681-4233-1-git-send-email-philipp.zabel@gmail.com>
+	 <1243279681-4233-3-git-send-email-philipp.zabel@gmail.com>
+Date: Tue, 26 May 2009 22:16:59 +0200
+Message-ID: <74d0deb30905261316hd100bbdr96e5e544eed94c2e@mail.gmail.com>
+Subject: Re: [PATCH 2/5] mmc: tmio_mmc: add bus_shift support
+From: pHilipp Zabel <philipp.zabel@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Ian Molton <spyro@f2s.com>, Pierre Ossman <pierre@ossman.eu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 26, 2009 at 03:46:24PM -0400, Steven Rostedt wrote:
-> 
-> I'm just coming back off of a holiday.
-> 
-> 
-> On Tue, 26 May 2009, Frederic Weisbecker wrote:
-> 
-> > Hi Ingo, Steven,
-> > 
-> > I've gathered various tracing fixes that were posted recently.
-> > 
-> > Note: the commit b11c53e12f94a46b50bccc7a1a953d7ca1d54a31
-> > 	(ftrace: Add task_comm support for trace_event)
-> >       looks good to me. This v3 solves the two following unhandled
-> >       dependencies in v1:
-> > 
-> > ENABLE_EVENT_TRACING -> CONTEXT_SWITCH_TRACER
-> > EVENT_TRACING -> CONTEXT_SWITCH_TRACER
-> > 
-> > The latter is tricky because CONTEXT_SWITCH_TRACER depends
-> > on CONFIG_FTRACE (the tracers menu) from which EVENT_TRACING
-> > is excluded. A build error can then occur if something selects
-> > CONFIG_TRACING elsewhere.
-> > 
-> > The fix written by Zhaolei follows the {ENABLE_}EVENT_TRACING
-> > view: we now have CONTEXT_SWITCH_TRACER and ENABLE_CONTEXT_SWITCH_TRACER.
-> > 
-> > The former is used by EVENT_TRACING to record cmdlines.
-> > The latter selects CONTEXT_SWITCH_TRACER plus CONFIG_TRACING.
-> > To sum up, ENABLE_CONTEXT_SWITCH_TRACER acts only as a "relay".
-> 
-> The sched_switch tracer is very light weight. Not sure we need to keep
-> it separate.
-> 
-> Basically, when tracing is enabled, we should simply get the event tracer 
-> and the sched_switch tracer for free. The configs get a bit tricky with 
-> dependencies. I'll take a look at it.
-> 
-> -- Steve
+On Mon, May 25, 2009 at 9:27 PM, Philipp Zabel <philipp.zabel@gmail.com> wrote:
+> Some ASIC3 devices in the wild are connected with the address bus shifted
+> by one line, so that its 16-bit registers appear 32-bit aligned in host
+> memory space.
 
+This patch has to be amended:
 
-So, should I zap these patches from the pull request?
-Or do you think about a delta solution?
+diff --git a/drivers/mmc/host/tmio_mmc.c b/drivers/mmc/host/tmio_mmc.c
+index 245de05..8223977 100644
+--- a/drivers/mmc/host/tmio_mmc.c
++++ b/drivers/mmc/host/tmio_mmc.c
+@@ -495,7 +495,8 @@ static int tmio_mmc_resume(struct platform_device *dev)
 
-Thanks,
-Frederic.
+        /* Enable the MMC/SD Control registers */
+        sd_config_write16(host, CNF_CMD, SDCREN);
+-       sd_config_write32(host, CNF_CTL_BASE, dev->resource[0].start & 0xfffe);
++       sd_config_write32(host, CNF_CTL_BASE,
++               (dev->resource[0].start >> host->bus_shift) & 0xfffe);
 
- 
-> > 
-> > It looks good to me, tell me and Zhaolei if you have doubts
-> > about it.
-> > 
-> > Thanks.
-> > 
-> > The following changes since commit 5537937696c55530447c20aa27daccb8d0d29b33:
-> >   Ming Lei (1):
-> >         ftrace: fix check for return value of register_module_notifier in event_trace_init
-> > 
-> > are available in the git repository at:
-> > 
-> >   git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git
-> > 	tracing/core
-> > 
-> > Lai Jiangshan (1):
-> >       tracing: add trace_event_read_lock()
-> > 
-> > Li Zefan (1):
-> >       tracing/events: change the type of __str_loc_item to unsigned short
-> > 
-> > Pekka Enberg (1):
-> >       kmemtrace: fix kernel parameter documentation
-> > 
-> > Zhaolei (2):
-> >       ftrace: Add task_comm support for trace_event
-> >       ftrace: clean up of using ftrace_event_enable_disable()
-> > 
-> >  Documentation/kernel-parameters.txt |   10 --------
-> >  include/trace/ftrace.h              |    2 +-
-> >  kernel/trace/Kconfig                |    9 +++++-
-> >  kernel/trace/trace.c                |    8 ++++++
-> >  kernel/trace/trace_events.c         |   42 +++++++++++++---------------------
-> >  kernel/trace/trace_output.c         |   25 +++++++++++++++-----
-> >  kernel/trace/trace_output.h         |    2 +
-> >  7 files changed, 52 insertions(+), 46 deletions(-)
-> > 
+        /* Tell the MFD core we are ready to be enabled */
+        if (cell->enable) {
+@@ -566,7 +567,8 @@ static int __devinit tmio_mmc_probe(struct
+platform_device *dev)
 
+        /* Enable the MMC/SD Control registers */
+        sd_config_write16(host, CNF_CMD, SDCREN);
+-       sd_config_write32(host, CNF_CTL_BASE, dev->resource[0].start & 0xfffe);
++       sd_config_write32(host, CNF_CTL_BASE,
++               (dev->resource[0].start >> host->bus_shift) & 0xfffe);
+
+        /* Tell the MFD core we are ready to be enabled */
+        if (cell->enable) {
+
+The resources have to be shifted back when configuring the SD control
+register space.
+
+regards
+Philipp
