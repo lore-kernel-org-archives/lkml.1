@@ -1,95 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756696AbZEZSe6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757168AbZEZSiW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756696AbZEZSe6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 14:34:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755754AbZEZSet
+	id S1757168AbZEZSiW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 14:38:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755697AbZEZSiM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 14:34:49 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:44114 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755471AbZEZSes (ORCPT
+	Tue, 26 May 2009 14:38:12 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:37594 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755471AbZEZSiL convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 14:34:48 -0400
-Date: Tue, 26 May 2009 14:34:49 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-cc: Arjan van de Ven <arjan@linux.intel.com>,
-       SCSI development list <linux-scsi@vger.kernel.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: Bug in SCSI async probing
-In-Reply-To: <1243352063.2815.34.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.44L0.0905261347570.9278-100000@iolanthe.rowland.org>
+	Tue, 26 May 2009 14:38:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=oR2O1CkX1yQeFHlIqJsl19v0fC/F1LFbDZkAr4szXS4Wy+GtYBpfJIt+ZpJwiVYyV4
+         cU/bAHNF475661MDkXSpG9z0us2UiOCLVcpQFEvSiqkJIZWR7xsIm1gp2n77X9ulMA/L
+         aIivfq35fyPIp+DF0X4GQ+56GJM0Pq5Q3gmEg=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <20090526174213.806710164@linux.intel.com>
+References: <20090526174012.423883376@linux.intel.com>
+	 <20090526174213.806710164@linux.intel.com>
+Date: Tue, 26 May 2009 14:32:45 -0400
+X-Google-Sender-Auth: d99579eb8a0a516f
+Message-ID: <37219a840905261132q6b0a7289x3408fb904ddf90df@mail.gmail.com>
+Subject: Re: [PATCH 4/6] dvb/dvb-usb: prepare for FIRMWARE_NAME_MAX removal
+From: Michael Krufky <mkrufky@kernellabs.com>
+To: Samuel Ortiz <sameo@linux.intel.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Greg Kroah-Hartmann <greg@kroah.com>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Kay Sievers <kay.sievers@vrfy.org>,
+       linux-media <linux-media@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 May 2009, James Bottomley wrote:
+On Tue, May 26, 2009 at 1:40 PM, Samuel Ortiz <sameo@linux.intel.com> wrote:
+> From: Samuel Ortiz <sameo@linux.intel.com>
+> To: Mauro Carvalho Chehab <mchehab@infradead.org>
+>
+> We're going to remove the FIRMWARE_NAME_MAX definition in order to avoid any
+> firmware name length restriction.
+> This patch changes the dvb_usb_device_properties firmware field accordingly.
+>
+> Signed-off-by: Samuel Ortiz <sameo@linux.intel.com>
+>
+> ---
+>  drivers/media/dvb/dvb-usb/dvb-usb.h |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> Index: iwm-2.6/drivers/media/dvb/dvb-usb/dvb-usb.h
+> ===================================================================
+> --- iwm-2.6.orig/drivers/media/dvb/dvb-usb/dvb-usb.h    2009-05-26 17:24:36.000000000 +0200
+> +++ iwm-2.6/drivers/media/dvb/dvb-usb/dvb-usb.h 2009-05-26 17:25:19.000000000 +0200
+> @@ -196,7 +196,7 @@ struct dvb_usb_device_properties {
+>  #define CYPRESS_FX2     3
+>        int        usb_ctrl;
+>        int        (*download_firmware) (struct usb_device *, const struct firmware *);
+> -       const char firmware[FIRMWARE_NAME_MAX];
+> +       const char *firmware;
+>        int        no_reconnect;
+>
+>        int size_of_priv;
+>
+> --
+> Intel Open Source Technology Centre
+> http://oss.intel.com/
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
 
-> On Tue, 2009-05-26 at 11:22 -0400, Alan Stern wrote:
-> > James & Arjan:
-> > 
-> > Am I missing something here?  It looks like
-> > 
-> > 	fastboot: make scsi probes asynchronous
-> > 
-> > has introduced a bug in the sd probing code.  AFAICT, there is now
-> > nothing to prevent do_scan_async() from returning before
-> > sd_probe_async() has run.
-> 
-> True, but this isn't really a problem.
+Samuel,
 
-Why not?  I'd say an oops is a problem.  :-)
+Your patch makes the following change:
 
-> > Doesn't this mean that there's nothing to prevent sd_remove() from 
-> > being called and trying to unregister the disk _before_ 
-> > sd_probe_async() has managed to register it?
-> 
-> Yes, we've been discussing this ... most of the removal functions now
-> need async_synchronize calls to mitigate this type of race.
+-       const char firmware[FIRMWARE_NAME_MAX];
++       const char *firmware;
 
-Such as this?
+Before your change, struct dvb_usb_device_properties actually contains
+memory allocated for the firmware filename.  After your change, this
+is nothing but a pointer.
 
+This will cause an OOPS.
 
-Index: usb-2.6/drivers/scsi/scsi_scan.c
-===================================================================
---- usb-2.6.orig/drivers/scsi/scsi_scan.c
-+++ usb-2.6/drivers/scsi/scsi_scan.c
-@@ -1866,6 +1866,12 @@ void scsi_forget_host(struct Scsi_Host *
- 	struct scsi_device *sdev;
- 	unsigned long flags;
- 
-+	/*
-+	 * Don't try to get rid of this host's devices until all the async
-+	 * probing is finished.
-+	 */
-+	async_synchronize_full();
-+
-  restart:
- 	spin_lock_irqsave(shost->host_lock, flags);
- 	list_for_each_entry(sdev, &shost->__devices, siblings) {
+Regards,
 
-
-
-(Which reminds me...  Are the calls in wait_scan_init() really enough?  
-wait_for_device_probe() does async_synchronize_full() and then
-scsi_complete_async_scans() finishes the SCSI scanning.  But if this
-scanning involves calling sd_probe(), then more async work will be
-queued.  Maybe a second call to wait_for_device_probe() is needed.)
-
-There's still more; the patch above isn't sufficient.  What happens if
-the "device_add(&sdkp->dev)" call in sd_probe_async() fails?  Then in
-sd_remove(), sdkp will be NULL and &sdkp->dev will be meaningless.  The 
-device_del() call will crash and the actual scsi_disk structure will be 
-leaked.  This could be fixed by moving the dev_set_drvdata() call from 
-the end of sd_probe_async() back into sd_probe(), but then we'd find 
-sd_remove trying to unregister a device which was never successfully 
-registered.
-
-And why is it that the "out_free_index:" code in sd_probe() acquires 
-sd_index_lock but the corresponding code in sd_probe_async() doesn't?
-
-Alan Stern
-
+Mike Krufky
