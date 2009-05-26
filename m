@@ -1,72 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756575AbZEZPsB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756665AbZEZPsU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756575AbZEZPsB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 11:48:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754681AbZEZPry
+	id S1756665AbZEZPsU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 11:48:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754921AbZEZPsI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 11:47:54 -0400
-Received: from mail-bw0-f222.google.com ([209.85.218.222]:34733 "EHLO
-	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753736AbZEZPrx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 11:47:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=uR6IRAg3RYP2oUmJHhnID6gfGa1NtUZSVuGFqExvJlneK7fh9JPgsnnnzvOVEKv59v
-         opAndmcpXT701IgpyxgPsC3wOAKTk5rf8XUGUV5tLQsnDBq7XuouJ7WVANOK+YFd12m+
-         8oVjooodBK2iQMiA8xBQWE3itMmFBVhv6b4HY=
-Date: Tue, 26 May 2009 19:47:47 +0400
-From: Alexander Beregalov <a.beregalov@gmail.com>
-To: gregkh@suse.de, linux-kernel@vger.kernel.org
-Subject: Staging: rtl8192su: remove dos style EOL
-Message-ID: <20090526154747.GA14893@orion>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Tue, 26 May 2009 11:48:08 -0400
+Received: from hera.kernel.org ([140.211.167.34]:53516 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754681AbZEZPsH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 11:48:07 -0400
+Subject: Re: [PATCH-tip] x86: hwmon/k8temp.c Add support for AMD 10H and 11H
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Rudolf Marek <r.marek@assembler.cz>
+Cc: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       LM Sensors <lm-sensors@lm-sensors.org>
+In-Reply-To: <4A1C08C6.7060103@assembler.cz>
+References: <1242979484.8796.7.camel@localhost.localdomain>
+	 <4A165F67.3020005@assembler.cz>
+	 <1242981748.10642.3.camel@localhost.localdomain>
+	 <1242984648.16532.3.camel@localhost.localdomain>
+	 <4A182B61.5010503@assembler.cz>
+	 <1243339833.12303.2.camel@localhost.localdomain>
+	 <4A1C08C6.7060103@assembler.cz>
+Content-Type: text/plain
+Date: Tue, 26 May 2009 21:14:32 +0530
+Message-Id: <1243352672.31783.10.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Greg,
+On Tue, 2009-05-26 at 17:20 +0200, Rudolf Marek wrote:
+> Hello,
+> 
+> Sorry I disagree. Lets skip whole 10H. I failed many times to get some useful 
+> info from AMD about this issue. I'm strongly against to impose some limits which 
+> might indicate what is OK and what is not.
+> 
 
-Could you please run dos2unix on patch which adds
-drivers/staging/rtl8192su before it will be in Linus's git.
+OK, So here is new patch after skipping 10H. I hope I will get ack
+now ;-)
 
-I do not like to send a patch like this:
+Subject: [PATCH] x86: hwmon/k8temp.c Add support for AMD 11H
 
- drivers/staging/rtl8192su/dot11d.h                 |  204 +-
- drivers/staging/rtl8192su/ieee80211/EndianFree.h   |  398 +-
- drivers/staging/rtl8192su/ieee80211/dot11d.c       |  478 +-
- drivers/staging/rtl8192su/ieee80211/dot11d.h       |  204 +-
- drivers/staging/rtl8192su/ieee80211/rtl819x_BA.h   |  138 +-
- .../staging/rtl8192su/ieee80211/rtl819x_BAProc.c   | 1562 ++--
- drivers/staging/rtl8192su/ieee80211/rtl819x_HT.h   | 1034 +-
- .../staging/rtl8192su/ieee80211/rtl819x_HTProc.c   | 4074 ++++----
- drivers/staging/rtl8192su/ieee80211/rtl819x_Qos.h  | 1498 ++--
- drivers/staging/rtl8192su/ieee80211/rtl819x_TS.h   |  112 +-
- .../staging/rtl8192su/ieee80211/rtl819x_TSProc.c   | 1334 ++--
- drivers/staging/rtl8192su/r8192SU_HWImg.c          | 9804 ++++++++++----------
- drivers/staging/rtl8192su/r8192SU_HWImg.h          |   88 +-
- drivers/staging/rtl8192su/r8192S_Efuse.c           | 4884 +++++-----
- drivers/staging/rtl8192su/r8192S_Efuse.h           |  202 +-
- drivers/staging/rtl8192su/r8192S_FwImgDTM.h        | 7594 ++++++++--------
- drivers/staging/rtl8192su/r8192S_firmware.c        | 2046 ++--
- drivers/staging/rtl8192su/r8192S_phy.c             |10056 ++++++++++----------
- drivers/staging/rtl8192su/r8192S_phy.h             |  276 +-
- drivers/staging/rtl8192su/r8192S_phyreg.h          | 2066 ++--
- drivers/staging/rtl8192su/r8192S_rtl8225.c         |  584 +-
- drivers/staging/rtl8192su/r8192U_dm.c              | 9042 +++++++++---------
- drivers/staging/rtl8192su/r8192U_dm.h              |  618 +-
- drivers/staging/rtl8192su/r819xU_HTGen.h           |   44 +-
- drivers/staging/rtl8192su/r819xU_HTType.h          |  784 +-
- drivers/staging/rtl8192su/r819xU_cmdpkt.c          | 1500 ++--
- drivers/staging/rtl8192su/r819xU_cmdpkt.h          |  438 +-
- drivers/staging/rtl8192su/r819xU_firmware_img.c    | 6894 +++++++-------
- drivers/staging/rtl8192su/r819xU_phy.c             | 3652 ++++----
- drivers/staging/rtl8192su/r819xU_phy.h             |  188 +-
- drivers/staging/rtl8192su/r819xU_phyreg.h          | 1742 ++--
- 31 files changed, 36769 insertions(+), 36769 deletions(-)
+This patch will also work for AMD 10H. But we are skipping it as :
+
+AMD 10H cpus reports Inaccurate Temperature Measurement:
+http://www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs/41322.pdf
+Errata #319
+
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+---
+ drivers/hwmon/k8temp.c |   31 +++++++++++++++++++++++++++++--
+ 1 files changed, 29 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/hwmon/k8temp.c b/drivers/hwmon/k8temp.c
+index 1fe9951..4459dbf 100644
+--- a/drivers/hwmon/k8temp.c
++++ b/drivers/hwmon/k8temp.c
+@@ -1,5 +1,6 @@
+ /*
+  * k8temp.c - Linux kernel module for hardware monitoring
++ * 	      for AMD K8 and derivatives
+  *
+  * Copyright (C) 2006 Rudolf Marek <r.marek@assembler.cz>
+  *
+@@ -33,7 +34,7 @@
+ #include <linux/mutex.h>
+ #include <asm/processor.h>
+ 
+-#define TEMP_FROM_REG(val)	(((((val) >> 16) & 0xff) - 49) * 1000)
++#define REG_TCTL	0xa4
+ #define REG_TEMP	0xe4
+ #define SEL_PLACE	0x40
+ #define SEL_CORE	0x04
+@@ -52,6 +53,14 @@ struct k8temp_data {
+ 	u32 temp_offset;
+ };
+ 
++static unsigned long temp_from_reg(unsigned long val)
++{
++	if (boot_cpu_data.x86 > 0xf)
++		return ((val) >> 21) * 125;
++	else
++		return ((((val) >> 16) & 0xff) - 49) * 1000;
++}
++
+ static struct k8temp_data *k8temp_update_device(struct device *dev)
+ {
+ 	struct k8temp_data *data = dev_get_drvdata(dev);
+@@ -62,6 +71,11 @@ static struct k8temp_data *k8temp_update_device(struct device *dev)
+ 
+ 	if (!data->valid
+ 	    || time_after(jiffies, data->last_updated + HZ)) {
++		if (boot_cpu_data.x86 > 0xf) {
++			pci_read_config_dword(pdev, REG_TCTL,
++					      &data->temp[0][0]);
++			goto update_done;
++		}
+ 		pci_read_config_byte(pdev, REG_TEMP, &tmp);
+ 		tmp &= ~(SEL_PLACE | SEL_CORE);		/* Select sensor 0, core0 */
+ 		pci_write_config_byte(pdev, REG_TEMP, tmp);
+@@ -89,6 +103,7 @@ static struct k8temp_data *k8temp_update_device(struct device *dev)
+ 			}
+ 		}
+ 
++update_done:
+ 		data->last_updated = jiffies;
+ 		data->valid = 1;
+ 	}
+@@ -123,7 +138,7 @@ static ssize_t show_temp(struct device *dev,
+ 	if (data->swap_core_select)
+ 		core = core ? 0 : 1;
+ 
+-	temp = TEMP_FROM_REG(data->temp[core][place]) + data->temp_offset;
++	temp = temp_from_reg(data->temp[core][place]) + data->temp_offset;
+ 
+ 	return sprintf(buf, "%d\n", temp);
+ }
+@@ -138,6 +153,14 @@ static DEVICE_ATTR(name, S_IRUGO, show_name, NULL);
+ 
+ static struct pci_device_id k8temp_ids[] = {
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_K8_NB_MISC) },
++	/*
++	 * AMD 10H cpus reports Inaccurate Temperature Measurement :
++	 * http://www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs/41322.pdf
++	 *     Errata #319
++	 * So skipping 10H
++	{ PCI_DEVICE(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_10H_NB_MISC) },
++	 */
++	{ PCI_DEVICE(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_11H_NB_MISC) },
+ 	{ 0 },
+ };
+ 
+@@ -157,6 +180,9 @@ static int __devinit k8temp_probe(struct pci_dev *pdev,
+ 		goto exit;
+ 	}
+ 
++	if (boot_cpu_data.x86 > 0xf)
++		goto probe_done;
++
+ 	model = boot_cpu_data.x86_model;
+ 	stepping = boot_cpu_data.x86_mask;
+ 
+@@ -226,6 +252,7 @@ static int __devinit k8temp_probe(struct pci_dev *pdev,
+ 			data->sensorsp &= ~SEL_CORE;
+ 	}
+ 
++probe_done:
+ 	data->name = "k8temp";
+ 	mutex_init(&data->update_lock);
+ 	dev_set_drvdata(&pdev->dev, data);
+-- 
+1.6.0.6
+
+
 
