@@ -1,81 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754893AbZEZH6s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754808AbZEZH6h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754893AbZEZH6s (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 03:58:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754764AbZEZH6b
+	id S1754808AbZEZH6h (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 03:58:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754528AbZEZH6Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 03:58:31 -0400
-Received: from hera.kernel.org ([140.211.167.34]:59111 "EHLO hera.kernel.org"
+	Tue, 26 May 2009 03:58:16 -0400
+Received: from sh.osrg.net ([192.16.179.4]:49551 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754723AbZEZH63 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 03:58:29 -0400
-Date: Tue, 26 May 2009 07:57:56 GMT
-From: tip-bot for Ingo Molnar <mingo@elte.hu>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
-       hpa@zytor.com, mingo@redhat.com, jkacur@redhat.com,
-       a.p.zijlstra@chello.nl, efault@gmx.de, mtosatti@redhat.com,
-       tglx@linutronix.de, cjashfor@linux.vnet.ibm.com, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, jkacur@redhat.com, a.p.zijlstra@chello.nl,
-       efault@gmx.de, mtosatti@redhat.com, tglx@linutronix.de,
-       cjashfor@linux.vnet.ibm.com, mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-Subject: [tip:perfcounters/core] perf_counter: Initialize ->oncpu properly
-Message-ID: <tip-329d876d6fd326109f191ae0fb2798b8834fb70b@git.kernel.org>
-Git-Commit-ID: 329d876d6fd326109f191ae0fb2798b8834fb70b
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 26 May 2009 07:57:57 +0000 (UTC)
+	id S1754508AbZEZH6P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 03:58:15 -0400
+Date: Tue, 26 May 2009 16:56:30 +0900
+To: jens.axboe@oracle.com
+Cc: fujita.tomonori@lab.ntt.co.jp, James.Bottomley@HansenPartnership.com,
+       rdreier@cisco.com, bharrosh@panasas.com, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, chris.mason@oracle.com,
+       david@fromorbit.com, hch@infradead.org, akpm@linux-foundation.org,
+       jack@suse.cz, yanmin_zhang@linux.intel.com, linux-scsi@vger.kernel.org
+Subject: Re: [PATCH 03/13] scsi: unify allocation of scsi command and sense
+	buffer
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20090526073229.GC11363@kernel.dk>
+References: <20090526062952.GB11363@kernel.dk>
+	<20090526162545U.fujita.tomonori@lab.ntt.co.jp>
+	<20090526073229.GC11363@kernel.dk>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20090526165644D.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Tue, 26 May 2009 16:56:32 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  329d876d6fd326109f191ae0fb2798b8834fb70b
-Gitweb:     http://git.kernel.org/tip/329d876d6fd326109f191ae0fb2798b8834fb70b
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Tue, 26 May 2009 08:10:00 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 26 May 2009 09:54:13 +0200
+On Tue, 26 May 2009 09:32:29 +0200
+Jens Axboe <jens.axboe@oracle.com> wrote:
 
-perf_counter: Initialize ->oncpu properly
+> On Tue, May 26 2009, FUJITA Tomonori wrote:
+> > On Tue, 26 May 2009 08:29:53 +0200
+> > Jens Axboe <jens.axboe@oracle.com> wrote:
+> > 
+> > > On Tue, May 26 2009, FUJITA Tomonori wrote:
+> > > > On Mon, 25 May 2009 18:45:25 -0700
+> > > > Roland Dreier <rdreier@cisco.com> wrote:
+> > > > 
+> > > > >  > Ideally there should be a MACRO that is defined to WORD_SIZE on cache-coherent
+> > > > >  > ARCHs and to SMP_CACHE_BYTES on none-cache-coherent systems and use that size
+> > > > >  > at the __align() attribute. (So only stupid ARCHES get hurt)
+> > > > > 
+> > > > > this seems to come up repeatedly -- I had a proposal a _long_ time ago
+> > > > > that never quite got merged, cf http://lwn.net/Articles/2265/ and
+> > > > > http://lwn.net/Articles/2269/ -- from 2002 (!?).  The idea is to go a
+> > > > 
+> > > > Yeah, I think that Benjamin did last time:
+> > > > 
+> > > > http://www.mail-archive.com/linux-scsi@vger.kernel.org/msg12632.html
+> > > > 
+> > > > IIRC, James didn't like it so I wrote the current code. I didn't see
+> > > > any big performance difference with scsi_debug:
+> > > > 
+> > > > http://marc.info/?l=linux-scsi&m=120038907123706&w=2
+> > > > 
+> > > > Jens, you see the performance difference due to this unification?
+> > > 
+> > > Yes, it's definitely a worth while optimization. The problem isn't as
+> > > such this specific allocation, it's the total number of allocations we
+> > > do for a piece of IO. This sense buffer one is just one of many, I'm
+> > > continually working to reduce them. If we get rid of this one and add
+> > > the ->alloc_cmd() stuff, we can kill one more. The bio path already lost
+> > > one. So in the IO stack, we went from 6 allocations to 3 for a piece of
+> > > IO. And then it starts to add up. Even at just 30-50k iops, that's more
+> > > than 1% of time in the testing I did.
+> > 
+> > I see, thanks. Hmm, possibly slab becomes slower. ;)
+> > 
+> > Then I think that we need something like the ->alloc_cmd()
+> > method. Let's ask James. 
+> > 
+> > I don't think that it's just about simply adding the hook; there are
+> > some issues that we need to think about. Though Boaz worries too much
+> > a bit, I think.
+> > 
+> > I'm not sure about this patch if we add ->alloc_cmd(). I doubt that
+> > there are any llds don't use ->alloc_cmd() worry about the overhead of
+> > the separated sense buffer allocation. If a lld doesn't define the own
+> > alloc_cmd, then I think it's fine to use the generic command
+> > allocator that does the separate sense buffer allocation.
+> 
+> I think we should do the two things seperately. If we can safely inline
+> the sense buffer in the command by doing the right alignment, then lets
+> do that. The ->alloc_cmd() approach will be easier to do with an inline
+> sense buffer.
 
-This shouldnt matter normally (and i have not seen any
-misbehavior), because active counters always have a
-proper ->oncpu value - but nevertheless initialize the
-field properly to -1.
+BTW, only alignment is not enough (Boaz didn't point out it, I
+think). You need alignment and a hole after the buffer:
 
-[ Impact: cleanup ]
-
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-Cc: Marcelo Tosatti <mtosatti@redhat.com>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: John Kacur <jkacur@redhat.com>
-LKML-Reference: <new-submission>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+http://lkml.org/lkml/2007/12/20/661
 
 
----
- kernel/perf_counter.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-
-diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
-index 070f92d..367299f 100644
---- a/kernel/perf_counter.c
-+++ b/kernel/perf_counter.c
-@@ -3122,6 +3122,8 @@ perf_counter_alloc(struct perf_counter_hw_event *hw_event,
- 	counter->group_leader		= group_leader;
- 	counter->pmu			= NULL;
- 	counter->ctx			= ctx;
-+	counter->oncpu			= -1;
-+
- 	get_ctx(ctx);
- 
- 	counter->state = PERF_COUNTER_STATE_INACTIVE;
+I think that it is one of these good reasons that we should not inline
+the sense buffer. We will enlarge scsi_cmnd lots.
