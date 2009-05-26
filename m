@@ -1,79 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756511AbZEZQm4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756414AbZEZQnP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756511AbZEZQm4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 12:42:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755176AbZEZQmt
+	id S1756414AbZEZQnP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 12:43:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756552AbZEZQm7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 12:42:49 -0400
-Received: from yx-out-2324.google.com ([74.125.44.28]:4079 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754760AbZEZQms convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 12:42:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type:content-transfer-encoding;
-        b=EE9fgOKRHSuNM93Vx6yMnOGwqDT3hOC+254k7NU4fU0UUswW1IuHRFICoU29dwdrBS
-         +YmndnqDk8eKoQfGkOWWE7kRK3zmCtdAQe2AeBC6yGaC2b4Xx+GsFVlRk2ZB9beQqhm0
-         TuyTqPW6EMTvKreUq3+jX6yv2FJo+YBFDq8Kw=
+	Tue, 26 May 2009 12:42:59 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:47054 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756630AbZEZQm5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 12:42:57 -0400
+Date: Tue, 26 May 2009 19:42:01 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com,
+       davidel@xmailserver.org, mtosatti@redhat.com
+Subject: Re: [KVM PATCH v10] kvm: add support for irqfd
+Message-ID: <20090526164201.GD9842@redhat.com>
+References: <20090520142234.22285.72274.stgit@dev.haskins.net>
 MIME-Version: 1.0
-In-Reply-To: <20090526113122.GB16835@linux-sh.org>
-References: <1243331191-11445-1-git-send-email-vapier@gentoo.org>
-	 <1243331191-11445-2-git-send-email-vapier@gentoo.org>
-	 <20090526113122.GB16835@linux-sh.org>
-Date: Tue, 26 May 2009 12:42:48 -0400
-Message-ID: <8bd0f97a0905260942m4b574d75oc4f38ee3d8849395@mail.gmail.com>
-Subject: Re: [PATCH 2/2] mtd/maps: uclinux: support Blackfin systems
-From: Mike Frysinger <vapier.adi@gmail.com>
-To: Paul Mundt <lethal@linux-sh.org>, linux-kernel@vger.kernel.org,
-       uclinux-dist-devel@blackfin.uclinux.org,
-       Greg Ungerer <gerg@uclinux.org>, uclinux-dev@uclinux.org,
-       linux-mtd@lists.infradead.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090520142234.22285.72274.stgit@dev.haskins.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 26, 2009 at 07:31, Paul Mundt wrote:
-> On Tue, May 26, 2009 at 05:46:31AM -0400, Mike Frysinger wrote:
->> diff --git a/drivers/mtd/maps/uclinux.c b/drivers/mtd/maps/uclinux.c
->> index 57699c2..dcb552f 100644
->> --- a/drivers/mtd/maps/uclinux.c
->> +++ b/drivers/mtd/maps/uclinux.c
->> @@ -55,8 +55,13 @@ static int __init uclinux_mtd_init(void)
->>  {
->>       struct mtd_info *mtd;
->>       struct map_info *mapp;
->> +#ifdef CONFIG_BLACKFIN
->> +     extern unsigned long memory_mtd_start;
->> +     unsigned long addr = (unsigned long) memory_mtd_start;
->> +#else
->>       extern char _ebss;
->>       unsigned long addr = (unsigned long) &_ebss;
->> +#endif
->>
->>       mapp = &uclinux_ram_map;
->>       mapp->phys = addr;
->
-> NAK.
->
-> I know there's no accounting for taste, but it would be nice to at least
-> see some minimal amount of effort going in to fixing these things
-> sanely rather than just lazily shoving ifdefs in wherever possible.
->
-> In this case you should just kill all of that crap off, and have the
-> platforms that use this set uclinux_ram_map up themselves, it's already
-> a global. Of course you can use _ebss as a default value for
-> uclinux_ram_map.phys and just override it in your platform.
+On Wed, May 20, 2009 at 10:30:49AM -0400, Gregory Haskins wrote:
+> +static int
+> +irqfd_wakeup(wait_queue_t *wait, unsigned mode, int sync, void *key)
+> +{
+> +	struct _irqfd *irqfd = container_of(wait, struct _irqfd, wait);
+> +
+> +	/*
+> +	 * The wake_up is called with interrupts disabled.  Therefore we need
+> +	 * to defer the IRQ injection until later since we need to acquire the
+> +	 * kvm->lock to do so.
+> +	 */
+> +	schedule_work(&irqfd->work);
+> +
+> +	return 0;
+> +}
 
-i would agree if it were a board-specific issue, but it's an arch
-issue, so pushing it to the boards level is wrong.  i can however
-replace the addr with a global weak and add a symbol into the Blackfin
-arch code to override it.
+This schedule_work is there just to work around the spinlock
+in eventfd_signal, which we don't really need. Isn't this right?
+And this is on each interrupt. Seems like a pity.
+How about a flag in eventfd that would
+convert it from waking up someone to a plain function call?
 
-the structs being global in this file is simply wrong from what i can
-tell ... everything in there should be static.  i'll send a patch for
-that later on.
--mike
+Davide, could we add something like
+
+
+diff --git a/fs/eventfd.c b/fs/eventfd.c
+index 2a701d5..8bfa308 100644
+--- a/fs/eventfd.c
++++ b/fs/eventfd.c
+@@ -29,6 +29,7 @@ struct eventfd_ctx {
+ 	 */
+ 	__u64 count;
+ 	unsigned int flags;
++	int nolock;
+ };
+ 
+ /*
+@@ -46,6 +47,12 @@ int eventfd_signal(struct file *file, int n)
+ 
+ 	if (n < 0)
+ 		return -EINVAL;
++	if (ctx->nolock) {
++               /* Whoever set nolock
++                  better set wqh.func as well. */
++		ctx->wqh.func(&ctx->wqh, 0, 0, NULL);
++		return 0;
++	}
+ 	spin_lock_irqsave(&ctx->wqh.lock, flags);
+ 	if (ULLONG_MAX - ctx->count < n)
+ 		n = (int) (ULLONG_MAX - ctx->count);
+
+-- 
+MST
