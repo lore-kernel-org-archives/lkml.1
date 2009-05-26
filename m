@@ -1,115 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754966AbZEZH67@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754007AbZEZIDs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754966AbZEZH67 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 03:58:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754755AbZEZH6c
+	id S1754007AbZEZIDs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 04:03:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752991AbZEZIDa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 03:58:32 -0400
-Received: from hera.kernel.org ([140.211.167.34]:59116 "EHLO hera.kernel.org"
+	Tue, 26 May 2009 04:03:30 -0400
+Received: from hera.kernel.org ([140.211.167.34]:35392 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754750AbZEZH6a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 03:58:30 -0400
-Date: Tue, 26 May 2009 07:57:44 GMT
-From: tip-bot for Ingo Molnar <mingo@elte.hu>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
-       hpa@zytor.com, mingo@redhat.com, jkacur@redhat.com,
-       a.p.zijlstra@chello.nl, efault@gmx.de, mtosatti@redhat.com,
-       tglx@linutronix.de, cjashfor@linux.vnet.ibm.com, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, jkacur@redhat.com, a.p.zijlstra@chello.nl,
-       efault@gmx.de, mtosatti@redhat.com, tglx@linutronix.de,
-       cjashfor@linux.vnet.ibm.com, mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-Subject: [tip:perfcounters/core] perf_counter, x86: Make NMI lockups more robust
-Message-ID: <tip-aaba98018b8295dfa2119345d17f833d74448cd0@git.kernel.org>
-Git-Commit-ID: aaba98018b8295dfa2119345d17f833d74448cd0
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 26 May 2009 07:57:45 +0000 (UTC)
+	id S1752857AbZEZID2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 04:03:28 -0400
+From: Cheng Renquan <crq@hera.kernel.org>
+To: linux-kbuild@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       crquan@gmail.com
+Subject: [PATCH] Kbuild: remove extra ifdef/endif of top Makefile
+Date: Tue, 26 May 2009 16:03:07 +0800
+Message-Id: <1243324987-17840-1-git-send-email-crq@hera.kernel.org>
+X-Mailer: git-send-email 1.6.3.1
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 26 May 2009 08:03:09 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  aaba98018b8295dfa2119345d17f833d74448cd0
-Gitweb:     http://git.kernel.org/tip/aaba98018b8295dfa2119345d17f833d74448cd0
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Tue, 26 May 2009 08:10:00 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 26 May 2009 09:52:03 +0200
+From: Cheng Renquan <crq@kernel.org>
 
-perf_counter, x86: Make NMI lockups more robust
+The GNU make's origin function know undefined variable well,
+so the outer ifdef/endif is unneeded.
 
-We have a debug check that detects stuck NMIs and returns with
-the PMU disabled in the global ctrl MSR - but i managed to trigger
-a situation where this was not enough to deassert the NMI.
+I've checked the minimal requirements from Documentation/Changes
+is GNU make 3.79.1, and that version of GNU make has support of
+origin function already, so now it's safe to kill the outer
+conditional checking, without upgrading the minimal requirements.
 
-So clear/reset the full PMU and keep the disable count balanced when
-exiting from here. This way the box produces a debug warning but
-stays up and is more debuggable.
-
-[ Impact: in case of PMU related bugs, recover more gracefully ]
-
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-Cc: Marcelo Tosatti <mtosatti@redhat.com>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: John Kacur <jkacur@redhat.com>
-LKML-Reference: <new-submission>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
+Signed-off-by: Cheng Renquan <crq@kernel.org>
 ---
- arch/x86/kernel/cpu/perf_counter.c |   26 ++++++++++++++++++++++++++
- 1 files changed, 26 insertions(+), 0 deletions(-)
+ Makefile |   26 +++++++++-----------------
+ 1 files changed, 9 insertions(+), 17 deletions(-)
 
-diff --git a/arch/x86/kernel/cpu/perf_counter.c b/arch/x86/kernel/cpu/perf_counter.c
-index ece3813..2eeaa99 100644
---- a/arch/x86/kernel/cpu/perf_counter.c
-+++ b/arch/x86/kernel/cpu/perf_counter.c
-@@ -724,6 +724,30 @@ static void intel_pmu_save_and_restart(struct perf_counter *counter)
- 		intel_pmu_enable_counter(hwc, idx);
- }
+diff --git a/Makefile b/Makefile
+index 9b2b58c..3798f26 100644
+--- a/Makefile
++++ b/Makefile
+@@ -35,10 +35,8 @@ MAKEFLAGS += -rR --no-print-directory
+ # To put more focus on warnings, be less verbose as default
+ # Use 'make V=1' to see the full commands
  
-+static void intel_pmu_reset(void)
-+{
-+	unsigned long flags;
-+	int idx;
-+
-+	if (!x86_pmu.num_counters)
-+		return;
-+
-+	local_irq_save(flags);
-+
-+	printk("clearing PMU state on CPU#%d\n", smp_processor_id());
-+
-+	for (idx = 0; idx < x86_pmu.num_counters; idx++) {
-+		checking_wrmsrl(x86_pmu.eventsel + idx, 0ull);
-+		checking_wrmsrl(x86_pmu.perfctr  + idx, 0ull);
-+	}
-+	for (idx = 0; idx < x86_pmu.num_counters_fixed; idx++) {
-+		checking_wrmsrl(MSR_ARCH_PERFMON_FIXED_CTR0 + idx, 0ull);
-+	}
-+
-+	local_irq_restore(flags);
-+}
-+
-+
- /*
-  * This handler is triggered by the local APIC, so the APIC IRQ handling
-  * rules apply:
-@@ -750,6 +774,8 @@ again:
- 	if (++loops > 100) {
- 		WARN_ONCE(1, "perfcounters: irq loop stuck!\n");
- 		perf_counter_print_debug();
-+		intel_pmu_reset();
-+		perf_enable();
- 		return 1;
- 	}
+-ifdef V
+-  ifeq ("$(origin V)", "command line")
+-    KBUILD_VERBOSE = $(V)
+-  endif
++ifeq ("$(origin V)", "command line")
++  KBUILD_VERBOSE = $(V)
+ endif
+ ifndef KBUILD_VERBOSE
+   KBUILD_VERBOSE = 0
+@@ -54,10 +52,8 @@ endif
+ # See the file "Documentation/sparse.txt" for more details, including
+ # where to get the "sparse" utility.
  
+-ifdef C
+-  ifeq ("$(origin C)", "command line")
+-    KBUILD_CHECKSRC = $(C)
+-  endif
++ifeq ("$(origin C)", "command line")
++  KBUILD_CHECKSRC = $(C)
+ endif
+ ifndef KBUILD_CHECKSRC
+   KBUILD_CHECKSRC = 0
+@@ -69,12 +65,10 @@ endif
+ ifdef SUBDIRS
+   KBUILD_EXTMOD ?= $(SUBDIRS)
+ endif
+-ifdef M
+-  ifeq ("$(origin M)", "command line")
+-    KBUILD_EXTMOD := $(M)
+-  endif
+-endif
+ 
++ifeq ("$(origin M)", "command line")
++  KBUILD_EXTMOD := $(M)
++endif
+ 
+ # kbuild supports saving output files in a separate directory.
+ # To locate output files in a separate directory two syntaxes are supported.
+@@ -98,10 +92,8 @@ ifeq ($(KBUILD_SRC),)
+ 
+ # OK, Make called in directory where kernel src resides
+ # Do we want to locate output files in a separate directory?
+-ifdef O
+-  ifeq ("$(origin O)", "command line")
+-    KBUILD_OUTPUT := $(O)
+-  endif
++ifeq ("$(origin O)", "command line")
++  KBUILD_OUTPUT := $(O)
+ endif
+ 
+ # That's our default target when none is given on the command line
+
+-- 
+Cheng Renquan, Shenzhen, China
