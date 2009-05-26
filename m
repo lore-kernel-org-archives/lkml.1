@@ -1,87 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753697AbZEZXyl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754940AbZEZXzA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753697AbZEZXyl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 19:54:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753967AbZEZXye
+	id S1754940AbZEZXzA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 19:55:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754531AbZEZXyl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 19:54:34 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33363 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753889AbZEZXyd (ORCPT
+	Tue, 26 May 2009 19:54:41 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:38572 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755408AbZEZXyl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 19:54:33 -0400
-Date: Tue, 26 May 2009 16:54:16 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Matheus Izvekov <mizvekov@gmail.com>
-Cc: linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [BUG] parport issue on 2.6.29
-Message-Id: <20090526165416.9078d218.akpm@linux-foundation.org>
-In-Reply-To: <20090521202655.GA13944@izvekov>
-References: <20090521202655.GA13944@izvekov>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 26 May 2009 19:54:41 -0400
+From: Andi Kleen <andi@firstfloor.org>
+To: linux-kernel@vger.kernel.org, hpa@zytor.com, x86@kernel.org
+Cc: Andi Kleen <ak@linux.intel.com>
+Subject: [PATCH 01/31] x86: MCE: Synchronize core after machine check handling
+Date: Wed, 27 May 2009 01:54:03 +0200
+Message-Id: <c63915cfa51e24394524ddaa66a6f2cb2fcfe66f.1243381848.git.ak@linux.intel.com>
+X-Mailer: git-send-email 1.6.0.2
+In-Reply-To: <1243382073-29338-1-git-send-email-andi@firstfloor.org>
+References: <1243382073-29338-1-git-send-email-andi@firstfloor.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 21 May 2009 17:26:55 -0300
-Matheus Izvekov <mizvekov@gmail.com> wrote:
+From: Andi Kleen <ak@linux.intel.com>
 
-> This warning happens whenever a specific parallel port control app is run 
-> without a device attached to it. After the first timeout, the app hangs,
-> and needs SIGKILL to exit.
-> 
-> WARNING: at kernel/sysctl.c:2021 unregister_sysctl_table+0xa3/0x110()
+Impact: Spec compliance
 
-I guess this is
+The example code in the IA32 SDM recommends to synchronize the CPU
+after machine check handling. So do that here.
 
-void unregister_sysctl_table(struct ctl_table_header * header)
-{
-	might_sleep();
+Signed-off-by: Andi Kleen <ak@linux.intel.com>
+---
+ arch/x86/kernel/cpu/mcheck/mce.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
-	if (header == NULL)
-		return;
+diff --git a/arch/x86/kernel/cpu/mcheck/mce.c b/arch/x86/kernel/cpu/mcheck/mce.c
+index 87f8198..249e3cf 100644
+--- a/arch/x86/kernel/cpu/mcheck/mce.c
++++ b/arch/x86/kernel/cpu/mcheck/mce.c
+@@ -328,6 +328,8 @@ void machine_check_poll(enum mcp_flags flags, mce_banks_t *b)
+ 	 * Don't clear MCG_STATUS here because it's only defined for
+ 	 * exceptions.
+ 	 */
++
++	sync_core();
+ }
+ EXPORT_SYMBOL_GPL(machine_check_poll);
+ 
+@@ -501,6 +503,7 @@ void do_machine_check(struct pt_regs *regs, long error_code)
+ 	mce_wrmsrl(MSR_IA32_MCG_STATUS, 0);
+  out2:
+ 	atomic_dec(&mce_entry);
++	sync_core();
+ }
+ EXPORT_SYMBOL_GPL(do_machine_check);
+ 
+-- 
+1.6.0.2
 
-	spin_lock(&sysctl_lock);
-	start_unregistering(header);
-	if (!--header->parent->count) {
-		WARN_ON(1);
-
-> Hardware name:         
-> Modules linked in:
-> Pid: 12161, comm: x-killer.exe Not tainted 2.6.29.4 #14
-> Call Trace:
-> [<ffffffff8024c910>] warn_slowpath+0xd0/0x130
-> [<ffffffff80269859>] ? sched_clock_cpu+0xb9/0x190
-> [<ffffffff802484b4>] ? try_to_wake_up+0x174/0x330
-> [<ffffffff80268554>] ? up+0x34/0x50
-> [<ffffffff8024d1cd>] ? release_console_sem+0x1bd/0x210
-> [<ffffffff80aaa4d4>] ? printk+0x67/0x69
-> [<ffffffff80254ec3>] unregister_sysctl_table+0xa3/0x110
-> [<ffffffff806b3128>] parport_device_proc_unregister+0x28/0x40
-> [<ffffffff806b05f5>] parport_unregister_device+0x15/0x180
-> [<ffffffff806a0acc>] pp_release+0xbc/0x1f0
-> [<ffffffff802d3883>] __fput+0xc3/0x1e0
-> [<ffffffff802d39bd>] fput+0x1d/0x30
-> [<ffffffff802d0220>] filp_close+0x50/0x80
-> [<ffffffff8024ec74>] put_files_struct+0x84/0xe0
-> [<ffffffff8024ed1e>] exit_files+0x4e/0x60
-> [<ffffffff80250696>] do_exit+0x196/0x930
-> [<ffffffff80250e6e>] do_group_exit+0x3e/0xb0
-> [<ffffffff8025bda4>] get_signal_to_deliver+0x2a4/0x420
-> [<ffffffff8020b7aa>] do_notify_resume+0xba/0x900
-> [<ffffffff8023c16e>] ? __wake_up+0x4e/0x70
-> [<ffffffff8026c4a9>] ? getnstimeofday+0x59/0xe0
-> [<ffffffff80267a09>] ? ktime_get_ts+0x59/0x60
-> [<ffffffff80274314>] ? compat_sys_futex+0xb4/0x140
-> [<ffffffff8020c8b5>] int_signal+0x12/0x17
-> --[ end trace ff1bd583c825c0c5 ]---
-> pdev0: unregistered pardevice
-
-<looks for explanatory code comments, gets disappointed>
-
-Eric, can you please help decode the reason for this kernel warning?
-
-Thanks.
