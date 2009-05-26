@@ -1,62 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753532AbZEZFYW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753532AbZEZFnS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753532AbZEZFYW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 01:24:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751751AbZEZFYN
+	id S1753532AbZEZFnS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 01:43:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752771AbZEZFnE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 01:24:13 -0400
-Received: from sh.osrg.net ([192.16.179.4]:37800 "EHLO sh.osrg.net"
+	Tue, 26 May 2009 01:43:04 -0400
+Received: from hera.kernel.org ([140.211.167.34]:60232 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751585AbZEZFYN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 01:24:13 -0400
-Date: Tue, 26 May 2009 14:23:38 +0900
-To: bharrosh@panasas.com
-Cc: jens.axboe@oracle.com, fujita.tomonori@lab.ntt.co.jp,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
-       akpm@linux-foundation.org, jack@suse.cz, yanmin_zhang@linux.intel.com
-Subject: Re: [PATCH 03/13] scsi: unify allocation of scsi command and sense
- buffer
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <4A1A64A1.2050409@panasas.com>
-References: <1243236668-3398-1-git-send-email-jens.axboe@oracle.com>
-	<1243236668-3398-6-git-send-email-jens.axboe@oracle.com>
-	<4A1A64A1.2050409@panasas.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	id S1752685AbZEZFnD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 01:43:03 -0400
+Message-ID: <4A1B8150.40702@kernel.org>
+Date: Tue, 26 May 2009 14:42:40 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Linux Kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: [PATCH x86/tip] x86: ignore R_386_NONE in kernel relocation entries
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <20090526142346O.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Tue, 26 May 2009 14:23:39 +0900 (JST)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 26 May 2009 05:42:44 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 25 May 2009 12:28:01 +0300
-Boaz Harrosh <bharrosh@panasas.com> wrote:
+For relocatable 32bit kernels, boot/compressed/relocs.c processes
+relocation entries in the kernel image and appends it to the kernel
+image such that boot/compressed/head_32.S can relocate the kernel.
+The kernel image is one statically linked object and only uses two
+relocation types - R_386_PC32 and R_386_32, of the two only the latter
+needs massaging during kernel relocation and thus handled by relocs.
+R_386_PC32 is ignored and all other relocation types are considered
+error.
 
-> On 05/25/2009 10:30 AM, Jens Axboe wrote:
-> > Fold the sense buffer into the command, thereby eliminating a slab
-> > allocation and free per command.
-> > 
-> > Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
-> 
-> Jens Hi.
-> 
-> I'm "TO:" this to Tomo.
-> 
-> This is the way it used to be for a long time. It was only recently changed by
-> Tomo because of a bug on none-cache-coherent arches that need to dma-access the
-> sense_buffer and also on the other hand change scsi_cmnd members by CPU.
-> 
-> In my opinion all you need is an __aligned(SMP_CACHE_BYTES) declaration at
-> sense_buffer[] and let there be a hole at the end before the array. But Tomo
-> did not like that, so he separated the two.
+When the target of a relocation resides in a discarded section,
+binutils doesn't throw away the relocation record but nullifies it by
+changing it to R_386_NONE, which unfortunately makes relocs fail.
 
-IIRC, it was not my opinion :) I don't think that putting
-CACHE_ALIGNMENT here is a good idea though.
+The problem was triggered by yet out-of-tree x86 stack unwind patches
+but given the binutils behavior, ignoring R_386_NONE is the right
+thing to do.
 
-If this separated sense buffer allocation actually hurts the
-performance, then I prefer the ->alloc_cmnd and ->destroy_cmnd hook
-idea. Then most of llds are happy about the current sense buffer
-scheme and some can use ->alloc_cmnd and ->destroy_cmnd hooks for the
-better performance.
+The problem has been tracke down to binutils behavior by Jan Beulich.
+
+[ Impact: relocs now ignores R_386_NONE ]
+
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Cc: Jan Beulich <JBeulich@novell.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/boot/compressed/relocs.c |    7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/arch/x86/boot/compressed/relocs.c b/arch/x86/boot/compressed/relocs.c
+index 857e492..bbeb0c3 100644
+--- a/arch/x86/boot/compressed/relocs.c
++++ b/arch/x86/boot/compressed/relocs.c
+@@ -504,8 +504,11 @@ static void walk_relocs(void (*visit)(Elf32_Rel *rel, Elf32_Sym *sym))
+ 			if (sym->st_shndx == SHN_ABS) {
+ 				continue;
+ 			}
+-			if (r_type == R_386_PC32) {
+-				/* PC relative relocations don't need to be adjusted */
++			if (r_type == R_386_NONE || r_type == R_386_PC32) {
++				/*
++				 * NONE can be ignored and and PC relative
++				 * relocations don't need to be adjusted.
++				 */
+ 			}
+ 			else if (r_type == R_386_32) {
+ 				/* Visit relocations that need to be adjusted */
