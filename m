@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756121AbZEZQix@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751347AbZEZQlC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756121AbZEZQix (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 12:38:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755356AbZEZQik
+	id S1751347AbZEZQlC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 12:41:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751170AbZEZQky
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 12:38:40 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:52592 "EHLO
+	Tue, 26 May 2009 12:40:54 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:60954 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755699AbZEZQij (ORCPT
+	with ESMTP id S1750822AbZEZQkx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 12:38:39 -0400
-Date: Tue, 26 May 2009 12:38:39 -0400 (EDT)
+	Tue, 26 May 2009 12:40:53 -0400
+Date: Tue, 26 May 2009 12:40:54 -0400 (EDT)
 From: Steven Rostedt <rostedt@goodmis.org>
 X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH] tracing: create events only when configed
-In-Reply-To: <4A167307.7020905@cn.fujitsu.com>
-Message-ID: <alpine.DEB.2.00.0905261227470.26705@gandalf.stny.rr.com>
-References: <4A167307.7020905@cn.fujitsu.com>
+To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+cc: mingo@elte.hu, LKML <linux-kernel@vger.kernel.org>, tglx@linutronix.de,
+       Zhaolei <zhaolei@cn.fujitsu.com>, kosaki.motohiro@jp.fujitsu.com,
+       fweisbec@gmail.com
+Subject: Re: [PATCH 3/3] ftrace: add tracepoint for itimer
+In-Reply-To: <4A16767D.8030907@cn.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.0905261239580.26705@gandalf.stny.rr.com>
+References: <4A16767D.8030907@cn.fujitsu.com>
 User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -28,63 +29,191 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Fri, 22 May 2009, Lai Jiangshan wrote:
 
+On Fri, 22 May 2009, Xiao Guangrong wrote:
+
+> This patch can trace itimer start/expire/cancle event
 > 
-> There some unneeded events in debugfs/tracing/ftrace/ when the
-> corresponding CONFIG_XXXX=n.
+> Example ftrace output:
+>            <...>-4183  [001] 66533.730163: itimer_start: task=main which=0 it_value=13000000000 it_interval=0
+>           <idle>-0     [001] 66546.698154: itimer_expire: task=main which=0
+>            <...>-4183  [000] 66546.698533: itimer_cancel: task=main which=0
 > 
-> And when CONFIG_ENABLE_EVENT_TRACING=n, various events
-> are still created.
+> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+> ---
+>  include/trace/events/timer.h |   66 ++++++++++++++++++++++++++++++++++++++++++
+>  kernel/itimer.c              |   17 +++++++++--
+>  kernel/posix-cpu-timers.c    |    3 ++
+>  3 files changed, 83 insertions(+), 3 deletions(-)
 > 
-> Now when CONFIG_ENABLE_EVENT_TRACING=n, various events are
-> not created, trace_export.c is compiled only for creating
-> TRACEPOINTs.
+> diff --git a/include/trace/events/timer.h b/include/trace/events/timer.h
+> index e5dc9d5..767c703 100644
+> --- a/include/trace/events/timer.h
+> +++ b/include/trace/events/timer.h
+> @@ -175,6 +175,72 @@ TRACE_EVENT(hrtimer_cancel,
+>  	TP_printk("timer=%p func=%pf", __entry->timer, __entry->function)
+>  );
+>  
+> +TRACE_EVENT(itimer_start,
+> +
+> +	TP_PROTO(int which, struct itimerval *value),
+> +
+> +	TP_ARGS(which, value),
+> +
+> +	TP_STRUCT__entry(
+> +		__field(	int,			which		)
+> +		__field(	unsigned long long,	it_value	)
+> +		__field(	unsigned long long,	it_interval	)
+> +		__string(	comm,   		current->comm   )
+> +	),
+> +
+> +	TP_fast_assign(
+> +		__entry->which		= which;
+> +		__entry->it_value	= (which == ITIMER_REAL ?
+> +			ktime_to_ns(timeval_to_ktime(value->it_value)) :
+> +			timeval_to_cputime(&value->it_value));
+> +		 __entry->it_interval 	= (which == ITIMER_REAL ?
+> +			ktime_to_ns(timeval_to_ktime(value->it_interval)) :
+> +			timeval_to_cputime(&value->it_interval));
+
+Wouldn't it be faster to do these time conversions in the printk instead
+of the trace point?
+
+> +		__assign_str(comm, current->comm);
+> +	),
+> +
+> +	TP_printk("task=%s which=%d it_value=%llu it_interval=%llu", __get_str(comm),
+> +		  __entry->which, __entry->it_value, __entry->it_interval)
+> +);
+> +
+> +TRACE_EVENT(itimer_expire,
+> +
+> +	TP_PROTO(int which, struct task_struct *task),
+> +
+> +	TP_ARGS(which, task),
+> +
+> +	TP_STRUCT__entry(
+> +		__field(  int ,	which		)
+> +		__string( comm,	task->comm	)
+> +	),
+> +
+> +	TP_fast_assign(
+> +		__entry->which	 = which;
+> +		__assign_str(comm, task->comm);
+> +	),
+> +
+> +	TP_printk("task=%s which=%d", __get_str(comm), __entry->which)
+> +);
+> +
+> +TRACE_EVENT(itimer_cancel,
+> +
+> +	TP_PROTO(int which),
+> +
+> +	TP_ARGS(which),
+> +
+> +	TP_STRUCT__entry(
+> +		__field(  int ,	which		)
+> +		__string( comm, current->comm	)
+> +	),
+> +
+> +	TP_fast_assign(
+> +		__entry->which	= which;
+> +		__assign_str(comm, current->comm);
+> +	),
+> +
+> +	TP_printk("task=%s which=%d", __get_str(comm), __entry->which)
+> +);
+> +
+>  #endif /*  _TRACE_TIMER_H */
+>  
+>  /* This part must be outside protection */
+> diff --git a/kernel/itimer.c b/kernel/itimer.c
+> index 58762f7..1d2dd64 100644
+> --- a/kernel/itimer.c
+> +++ b/kernel/itimer.c
+> @@ -12,6 +12,7 @@
+>  #include <linux/time.h>
+>  #include <linux/posix-timers.h>
+>  #include <linux/hrtimer.h>
+> +#include <trace/events/timer.h>
+>  
+>  #include <asm/uaccess.h>
+>  
+> @@ -123,6 +124,7 @@ enum hrtimer_restart it_real_fn(struct hrtimer *timer)
+>  	struct signal_struct *sig =
+>  		container_of(timer, struct signal_struct, real_timer);
+>  
+> +	trace_itimer_expire(ITIMER_REAL, pid_task(sig->leader_pid, PIDTYPE_PID));
+>  	kill_pid_info(SIGALRM, SEND_SIG_PRIV, sig->leader_pid);
+>  
+>  	return HRTIMER_NORESTART;
+> @@ -168,8 +170,11 @@ again:
+>  			tsk->signal->it_real_incr =
+>  				timeval_to_ktime(value->it_interval);
+>  			hrtimer_start(timer, expires, HRTIMER_MODE_REL);
+> -		} else
+> +			trace_itimer_start(ITIMER_REAL, value);
+> +		} else{
+>  			tsk->signal->it_real_incr.tv64 = 0;
+> +			trace_itimer_cancel(ITIMER_REAL);
+> +		}
+>  
+>  		spin_unlock_irq(&tsk->sighand->siglock);
+>  		break;
+> @@ -186,7 +191,10 @@ again:
+>  						   jiffies_to_cputime(1));
+>  			set_process_cpu_timer(tsk, CPUCLOCK_VIRT,
+>  					      &nval, &cval);
+> -		}
+> +			trace_itimer_start(ITIMER_VIRTUAL, value);
+> +		}else
+> +			trace_itimer_cancel(ITIMER_VIRTUAL);
+> +
+>  		tsk->signal->it_virt_expires = nval;
+>  		tsk->signal->it_virt_incr = ninterval;
+>  		spin_unlock_irq(&tsk->sighand->siglock);
+> @@ -208,7 +216,10 @@ again:
+>  						   jiffies_to_cputime(1));
+>  			set_process_cpu_timer(tsk, CPUCLOCK_PROF,
+>  					      &nval, &cval);
+> -		}
+> +			trace_itimer_start(ITIMER_PROF, value);
+> +		}else
+> +			trace_itimer_cancel(ITIMER_PROF);
+> +
+>  		tsk->signal->it_prof_expires = nval;
+>  		tsk->signal->it_prof_incr = ninterval;
+>  		spin_unlock_irq(&tsk->sighand->siglock);
+> diff --git a/kernel/posix-cpu-timers.c b/kernel/posix-cpu-timers.c
+> index bece7c0..edb4e8c 100644
+> --- a/kernel/posix-cpu-timers.c
+> +++ b/kernel/posix-cpu-timers.c
+> @@ -8,6 +8,7 @@
+>  #include <linux/math64.h>
+>  #include <asm/uaccess.h>
+>  #include <linux/kernel_stat.h>
+> +#include <trace/events/timer.h>
+>  
+>  /*
+>   * Called after updating RLIMIT_CPU to set timer expiration if necessary.
+> @@ -1160,6 +1161,7 @@ static void check_process_timers(struct task_struct *tsk,
+>  				sig->it_prof_expires = cputime_add(
+>  					sig->it_prof_expires, ptime);
+>  			}
+> +			trace_itimer_expire(ITIMER_PROF, tsk);
+>  			__group_send_sig_info(SIGPROF, SEND_SIG_PRIV, tsk);
+>  		}
+>  		if (!cputime_eq(sig->it_prof_expires, cputime_zero) &&
+> @@ -1176,6 +1178,7 @@ static void check_process_timers(struct task_struct *tsk,
+>  				sig->it_virt_expires = cputime_add(
+>  					sig->it_virt_expires, utime);
+>  			}
+> +			trace_itimer_expire(ITIMER_VIRTUAL, tsk);
+>  			__group_send_sig_info(SIGVTALRM, SEND_SIG_PRIV, tsk);
+>  		}
+>  		if (!cputime_eq(sig->it_virt_expires, cputime_zero) &&
+> -- 
+> 1.6.1.2
 > 
-> [Impact:] cleanup
-
-I have an issue with this patch. I purposely kept the 
-debugfs/tracing/ftrace events there since you may have a binary buffer 
-that you want to read that has those events but you are not running a 
-kernel that enabled them. But I guess the counter arguement for that is 
-then those events may not be the same offset as the kernel that ran it. 
-OK, maybe it would be fine to disable the events if the kernel does not 
-use them. We should also put the same #ifdef's around the structs to make 
-sure no other trace uses them.
-
-Still seems a bit messy with all those ifdefs :-/
-
-The second change with the CONFIG_ENABLE_EVENT_TRACER is something that we 
-are having issue with the make scripts. We want EVENT_TRACE enabled 
-anytime TRACING is enabled. We do _not_ want to disable it.
-
-The config option is there to enable event_tracer when on other tracing is 
-enabled. But we can't get rid of the option when tracing is enabled, 
-because we run into circular dependecies. Here's what we want:
-
-	config TRACING
-		select CONFIG_EVENT_TRACER
-
-	config CONFIG_ENABLE_EVENT_TRACING
-		prompt "select event tracer"
-		depends on !TRACING
-		select CONFIG_EVENT_TRACER
-
-but!
-
-	config CONFIG_EVENT_TRACER
-		select TRACING
-
-Which we then get an error creating the kbuild system due to dependency 
-problems.
-
-The event tracer prompt should not be there when tracing is selected, 
-since we already have events, but I have yet to figure out how to get rid 
-of it.
-
-Thus, I'll be OK with the first part of your patch, but I'm against the 
-second part.
-
--- Steve
-
-
+> 
