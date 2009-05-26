@@ -1,83 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754553AbZEZH07@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754657AbZEZH1T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754553AbZEZH07 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 03:26:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752579AbZEZH0t
+	id S1754657AbZEZH1T (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 03:27:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753889AbZEZH05
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 03:26:49 -0400
-Received: from sh.osrg.net ([192.16.179.4]:56358 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751481AbZEZH0s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 03:26:48 -0400
-Date: Tue, 26 May 2009 16:25:27 +0900
-To: jens.axboe@oracle.com, James.Bottomley@HansenPartnership.com
-Cc: fujita.tomonori@lab.ntt.co.jp, rdreier@cisco.com, bharrosh@panasas.com,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
-       akpm@linux-foundation.org, jack@suse.cz, yanmin_zhang@linux.intel.com,
-       linux-scsi@vger.kernel.org
-Subject: Re: [PATCH 03/13] scsi: unify allocation of scsi command and sense
-	buffer
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20090526062952.GB11363@kernel.dk>
-References: <aday6sk8wne.fsf@cisco.com>
-	<20090526132914W.fujita.tomonori@lab.ntt.co.jp>
-	<20090526062952.GB11363@kernel.dk>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 26 May 2009 03:26:57 -0400
+Received: from rv-out-0506.google.com ([209.85.198.234]:24150 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753683AbZEZH0z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 03:26:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=lQTOOmfFppliOAoFb5q/9NhtwAkx5Q2M8SH5UowducaZ0OBTv6HHUSvqzj9kgmMZI6
+         Pt7hZkS/d+j8WY8kwPCU+SeMqTMx2FnO9W5V2DK5fCa88JHb/E0vQqnJeY+CcLlX8cr0
+         IFUv2J/3Xf+ZVl4L4hTdmswqs/5Ek9W5NG1Hw=
+MIME-Version: 1.0
+In-Reply-To: <f24d23310905252256h74d609d9l7e23b1cdc0a240c6@mail.gmail.com>
+References: <f24d23310905250956u231fcd90u54d75894b9b91b9a@mail.gmail.com>
+	 <49b7c2350905251445n14397b82yc993f1a86d715d4d@mail.gmail.com>
+	 <f24d23310905252256h74d609d9l7e23b1cdc0a240c6@mail.gmail.com>
+Date: Tue, 26 May 2009 16:26:56 +0900
+Message-ID: <49b7c2350905260026h95a229bse4b1f253601a40c8@mail.gmail.com>
+Subject: Re: Unable to compile 2.6.30-rc7 on RHEL 4 - GCC 3.4.6
+From: GeunSik Lim <leemgs1@gmail.com>
+To: debian developer <debiandev@gmail.com>
+Cc: linux kernel <kernelnewbies@nl.linux.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <20090526162545U.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Tue, 26 May 2009 16:25:29 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 May 2009 08:29:53 +0200
-Jens Axboe <jens.axboe@oracle.com> wrote:
+On Tue, May 26, 2009 at 2:56 PM, debian developer <debiandev@gmail.com> wrote:
+> On Tue, May 26, 2009 at 3:15 AM, GeunSik Lim <leemgs1@gmail.com> wrote:
+>> Hi,
+>>
+>> If you keep gcc 3.X.X to compile recent kernel source contiunally,
+>> You will meet another problems again.
+>>
+>
+> OK, so 3.x.x is officially not supposed to be used for compilation?
+It not means that gcc 3.x.x don't support normal compilation of recent
+kernel source officially. Below some cases is about gcc 3.x.x.
+http://kerneltrap.org/mailarchive/linux-kernel/2008/1/8/547730
+https://launchpad.net/ubuntu/hardy/+source/linux/2.6.24-23.48
+https://bugzilla.redhat.com/show_bug.cgi?id=488991
+>
+>
+and, I've mistyped a word. I  figured out typo thanks to Martin.
+X)  http://linuxdistrowatch.com
+O)  http://distrowatch.com/
 
-> On Tue, May 26 2009, FUJITA Tomonori wrote:
-> > On Mon, 25 May 2009 18:45:25 -0700
-> > Roland Dreier <rdreier@cisco.com> wrote:
-> > 
-> > >  > Ideally there should be a MACRO that is defined to WORD_SIZE on cache-coherent
-> > >  > ARCHs and to SMP_CACHE_BYTES on none-cache-coherent systems and use that size
-> > >  > at the __align() attribute. (So only stupid ARCHES get hurt)
-> > > 
-> > > this seems to come up repeatedly -- I had a proposal a _long_ time ago
-> > > that never quite got merged, cf http://lwn.net/Articles/2265/ and
-> > > http://lwn.net/Articles/2269/ -- from 2002 (!?).  The idea is to go a
-> > 
-> > Yeah, I think that Benjamin did last time:
-> > 
-> > http://www.mail-archive.com/linux-scsi@vger.kernel.org/msg12632.html
-> > 
-> > IIRC, James didn't like it so I wrote the current code. I didn't see
-> > any big performance difference with scsi_debug:
-> > 
-> > http://marc.info/?l=linux-scsi&m=120038907123706&w=2
-> > 
-> > Jens, you see the performance difference due to this unification?
-> 
-> Yes, it's definitely a worth while optimization. The problem isn't as
-> such this specific allocation, it's the total number of allocations we
-> do for a piece of IO. This sense buffer one is just one of many, I'm
-> continually working to reduce them. If we get rid of this one and add
-> the ->alloc_cmd() stuff, we can kill one more. The bio path already lost
-> one. So in the IO stack, we went from 6 allocations to 3 for a piece of
-> IO. And then it starts to add up. Even at just 30-50k iops, that's more
-> than 1% of time in the testing I did.
 
-I see, thanks. Hmm, possibly slab becomes slower. ;)
 
-Then I think that we need something like the ->alloc_cmd()
-method. Let's ask James. 
-
-I don't think that it's just about simply adding the hook; there are
-some issues that we need to think about. Though Boaz worries too much
-a bit, I think.
-
-I'm not sure about this patch if we add ->alloc_cmd(). I doubt that
-there are any llds don't use ->alloc_cmd() worry about the overhead of
-the separated sense buffer allocation. If a lld doesn't define the own
-alloc_cmd, then I think it's fine to use the generic command
-allocator that does the separate sense buffer allocation.
+-- 
+Regards,
+GeunSik Lim
+--
+To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
