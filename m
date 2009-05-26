@@ -1,83 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755967AbZEZMxb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756153AbZEZM4V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755967AbZEZMxb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 08:53:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754065AbZEZMxX
+	id S1756153AbZEZM4V (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 08:56:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755296AbZEZM4M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 08:53:23 -0400
-Received: from cpsmtpm-eml104.kpnxchange.com ([195.121.3.8]:52541 "EHLO
-	CPSMTPM-EML104.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752863AbZEZMxW convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 08:53:22 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: Re: [PATCH 1/3] ide: add "ignore_hpa" module parameter
-Date: Tue, 26 May 2009 14:53:21 +0200
-User-Agent: KMail/1.9.9
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <200905252344.11826.bzolnier@gmail.com> <200905260106.13705.elendil@planet.nl> <200905261423.40117.bzolnier@gmail.com>
-In-Reply-To: <200905261423.40117.bzolnier@gmail.com>
+	Tue, 26 May 2009 08:56:12 -0400
+Received: from alerce.vps.bitfolk.com ([212.13.194.134]:4703 "EHLO
+	alerce.vps.bitfolk.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755058AbZEZM4L (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 08:56:11 -0400
+Date: Tue, 26 May 2009 09:52:52 -0300
+From: Alberto Bertogli <albertito@blitiri.com.ar>
+To: Goswin von Brederlow <goswin-v-b@web.de>
+Cc: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       linux-raid@vger.kernel.org, agk@redhat.com, neilb@suse.de
+Subject: Re: [RFC PATCH] dm-csum: A new device mapper target that checks
+	data integrity
+Message-ID: <20090526125252.GL1376@blitiri.com.ar>
+References: <20090521161317.GU1376@blitiri.com.ar> <87my91qsn4.fsf@frosties.localdomain> <20090525174630.GI1376@blitiri.com.ar> <8763fop31e.fsf@frosties.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200905261453.22428.elendil@planet.nl>
-X-OriginalArrivalTime: 26 May 2009 12:53:23.0034 (UTC) FILETIME=[F3EA13A0:01C9DE00]
+In-Reply-To: <8763fop31e.fsf@frosties.localdomain>
+User-Agent: Mutt/1.5.17 (2008-03-04)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 26 May 2009, Bartlomiej Zolnierkiewicz wrote:
-> First time with the introduction of the default IDE HPA behavior of
-> always giving the access to the full capacity of a disk and leaving
-> decisions about HPA preservation/removal up to the installer & user.
->
-> Second time when said distributions switched from IDE to libata (which
-> uses the different default behavior as it limits the capacity to
-> non-HPA part).
+On Tue, May 26, 2009 at 12:33:01PM +0200, Goswin von Brederlow wrote:
+> Alberto Bertogli <albertito@blitiri.com.ar> writes:
+> > On Mon, May 25, 2009 at 02:22:23PM +0200, Goswin von Brederlow wrote:
+> >> Alberto Bertogli <albertito@blitiri.com.ar> writes:
+> >> > I'm writing this device mapper target that stores checksums on writes and
+> >> > verifies them on reads.
+> >> 
+> >> How does that behave on crashes? Will checksums be out of sync with data?
+> >> Will pending blocks recalculate their checksum?
+> >
+> >    To guarantee consistency, two imd sectors (named M1 and M2) are kept for
+> >    every 62 data sectors, and the following procedure is used to update them
+> >    when a write to a given sector is required:
+> >
+> >     - Read both M1 and M2.
+> >     - Find out (using information stored in their headers) which one is newer.
+> >       Let's assume M1 is newer than M2.
+> >     - Update the M2 buffer to mark it's newer, and update the new data's CRC.
+> >     - Submit the write to M2, and then the write to the data, using a barrier
+> >       to make sure the metadata is updated _after_ the data.
+> 
+> Consider that the disk writes the data and then the system
+> crashes. Now you have the old checksum but the new data. The checksum
+> is out of sync.
+> 
+> Don't you mean that M2 is written _before_ the data? That way you have
+> the old checksum in M1 and the new in M2. One of them will match
+> depending on wether the data gets written before a crash or not. That
+> would be more consistent with your read operation below.
 
-Has there really been something like a deliberate switch?
+Yes, the comment is wrong, thanks for noticing. That is how it's implemented.
 
-In my experience with Debian there's been no such thing. ATA has just been 
-gradually enabled. (And initially that resulted in quite a mess because 
-some devices would be supported by two drivers and the kernel couldn't 
-even make up its own mind which one it preferred, resulting in random 
-switches between drivers. At least that was resolved at some point.)
 
-However, I must admit that Debian has not handled the IDE-ATA switch very 
-well. So far users have mostly been left to deal with any fallout for 
-themselves.
+> >    Accordingly, the read operations are handled as follows:
+> >
+> >     - Read both the data, M1 and M2.
+> >     - Find out which one is newer. Let's assume M1 is newer than M2.
+> >     - Calculate the data's CRC, and compare it to the one found in M1. If they
+> >       match, the reading is successful. If not, compare it to the one found in
+> >       M2. If they match, the reading is successful; otherwise, fail. If
+> >       the read involves multiple sectors, it is possible that some of the
+> >       correct CRCs are in M1 and some in M2.
+> >
+> >
+> > The barrier will be (it's not done yet) replaced with serialized writes for
+> > cases where the underlying block device does not support them, or when the
+> > integrity metadata resides on a different block device than the data.
+> >
+> >
+> > This scheme assumes writes to a single sector are atomic in the presence of
+> > normal crashes, which I'm not sure if it's something sane to assume in
+> > practise. If it's not, then the scheme can be modified to cope with that.
+> 
+> What happens if you have multiple writes to the same sector? (assuming
+> you ment "before" above)
+> 
+> - user writes to sector
+> - queue up write for M1 and data1
+> - M1 writes
+> - user writes to sector
+> - queue up writes for M2 and data2
+> - data1 is thrown away as data2 overwrites it
+> - M2 writes
+> - system crashes
+> 
+> Now both M1 and M2 have a different checksum than the old data left on
+> disk.
+> 
+> Can this happen?
 
-> Please note that no fancy sysfs support was needed to prevent the
-> problem: both stacks (ide & libata) support HDIO_DRIVE_TASK ioctl which
-> can be used to execute commands needed to retrieve/change HPA setting.
+No, parallel writes that affect the same metadata sectors will not be allowed.
+At the moment there is a rough lock which does not allow simultaneous updates
+at all, I plan to make that more fine-grained in the future.
 
-I don't really see how that would help. The fact that fancy ioctls exist 
-does not mean users or even distros have the knowledge needed to use 
-them. IMHO such issues should be dealt with at the level where that 
-knowledge is available: the kernel community.
+Note that bios that affect more than one sector are just fine, since the
+metadata sector will be properly updated.
 
-> Moreover the (much needed) work from Tejun doesn't help a tiny bit in
-> case of people migrating their *working* setups from IDE to libata
+Thanks,
+		Alberto
 
->From what I've seen now that seems the most important case that needs 
-supporting, as well as the case where a working setup would migrate from 
-IDE with old HPA default to IDE with new HPA default.
-
-Naive thought: wouldn't it be possible to check whether a partition 
-overlaps the HPA boundary and warn or even bug out in that case?
-
-> (at least in distro upgrade case this could have been handled by distro
-> installer but see above) and hitting the compatibility issue mentioned
-> in bug #13365.
-
-At least in the case of Debian there is no such thing as a "distro 
-installer" involved in upgrades. Debian only uses its installer for new 
-installs, not for upgrades between releases. The last is purely done by 
-regular package management.
-
-It's also not sufficient to rely on that anyway because users sometimes do 
-install newer upstream kernels (whether because of issues or to help with 
-kernel development/testing), which means no distro upgrade is involved.
