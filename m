@@ -1,53 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755265AbZEZQF0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756742AbZEZQGT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755265AbZEZQF0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 12:05:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755071AbZEZQFN
+	id S1756742AbZEZQGT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 12:06:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755232AbZEZQGH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 12:05:13 -0400
-Received: from mail-fx0-f168.google.com ([209.85.220.168]:51777 "EHLO
-	mail-fx0-f168.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754089AbZEZQFK (ORCPT
+	Tue, 26 May 2009 12:06:07 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:48042 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755146AbZEZQGF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 12:05:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=nIBiNC7uwTG6SEWRM6WsNNnN6RbMzJXdGAfv3G3cDmyH7fDyw5QmrpkMjtaAD8DWqr
-         S4UmIJ8o+ZxQvPFskDI9Ee7dDUUt7acaArvM/2UBiWSQEc7I+GsKRakTNYau/wmieJrp
-         oRiBbyDa2bIyWYo8wSCaa0fSjxrkMdAHEkRmw=
-Message-ID: <4A1C1331.8060304@panasas.com>
-Date: Tue, 26 May 2009 19:05:05 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
-MIME-Version: 1.0
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-CC: James.Bottomley@HansenPartnership.com, jens.axboe@oracle.com,
-       rdreier@cisco.com, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, chris.mason@oracle.com,
-       david@fromorbit.com, hch@infradead.org, akpm@linux-foundation.org,
-       jack@suse.cz, yanmin_zhang@linux.intel.com, linux-scsi@vger.kernel.org
-Subject: Re: [PATCH 03/13] scsi: unify allocation of scsi command and sense
- buffer
-References: <20090526073229.GC11363@kernel.dk>	<20090526163823U.fujita.tomonori@lab.ntt.co.jp>	<1243349222.2815.22.camel@localhost.localdomain> <20090527003152X.fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20090527003152X.fujita.tomonori@lab.ntt.co.jp>
-Content-Type: text/plain; charset=UTF-8
+	Tue, 26 May 2009 12:06:05 -0400
+Subject: Re: [PATCH -tip][SCSI] scsi: scsi_transport_iscsi.c initialize the
+	variable before it get used
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: linux-scsi <linux-scsi@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1243353605.31783.25.camel@localhost.localdomain>
+References: <1243351161.31783.5.camel@localhost.localdomain>
+	 <1243351709.2815.33.camel@localhost.localdomain>
+	 <1243353605.31783.25.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Tue, 26 May 2009 16:06:05 +0000
+Message-Id: <1243353966.2815.41.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/26/2009 06:31 PM, FUJITA Tomonori wrote:
+On Tue, 2009-05-26 at 21:30 +0530, Jaswinder Singh Rajput wrote:
+> Hello James,
 > 
-> Can we just fix some drivers not to do the DMA with the sense buffer in
-> scsi_cmnd? IIRC, there are only five or six drivers that do such.
+> On Tue, 2009-05-26 at 10:28 -0500, James Bottomley wrote:
+> > On Tue, 2009-05-26 at 20:49 +0530, Jaswinder Singh Rajput wrote:
+> > > I am watching this problem from long time in -tip.
+> > > 
+> > > Subject: [PATCH] scsi: scsi_transport_iscsi.c initialize the variable before it get used
+> > > 
+> > > In some cases, err will be used uninitialized.
+> > 
+> > What cases?  A simple theoretical analysis shows that this variable is
+> > always set.
+> > 
+> 
+> Ok lets takes your tree:
+> 
+> http://git.kernel.org/?p=linux/kernel/git/jejb/scsi-misc-2.6.git;a=blob;f=drivers/scsi/scsi_transport_iscsi.c;hb=10eb0f013c63c71c82ede77945a5f390c10cfda6
+> 
+> 
+> 672 int iscsi_add_session(struct iscsi_cls_session *session, unsigned int target_id)
+> 673 {
+> 674         struct Scsi_Host *shost = iscsi_session_to_shost(session);
+> 675         struct iscsi_cls_host *ihost;
+> 676         unsigned long flags;
+> 677         unsigned int id = target_id;
+> 678         int err;
+> 679
+> 680         ihost = shost->shost_data;
+> 681         session->sid = atomic_add_return(1, &iscsi_session_nr);
+> 682
+> 683         if (id == ISCSI_MAX_TARGET) {
+> 684                 for (id = 0; id < ISCSI_MAX_TARGET; id++) {
+> 685                         err = device_for_each_child(&shost->shost_gendev, &id,
+> 686                                                     iscsi_get_next_target_id);
+> 687                         if (!err)
+> 688                                 break;
+> 689                 }
+> 690
+> 691                 if (id == ISCSI_MAX_TARGET) {
+> 692                         iscsi_cls_session_printk(KERN_ERR, session,
+> 693                                                  "Too many iscsi targets. Max "
+> 694                                                  "number of targets is %d.\n",
+> 695                                                  ISCSI_MAX_TARGET - 1);
+> 696                         goto release_host;
+> 697                 }
+> 698         }
+> 699         session->target_id = id;
+> 700
+> 701         dev_set_name(&session->dev, "session%u", session->sid);
+> 702         err = device_add(&session->dev);
+> 703         if (err) {
+> 704                 iscsi_cls_session_printk(KERN_ERR, session,
+> 705                                          "could not register session's dev\n");
+> 706                 goto release_host;
+> 707         }
+> 708         transport_register_device(&session->dev);
+> 709
+> 710         spin_lock_irqsave(&sesslock, flags);
+> 711         list_add(&session->sess_list, &sesslist);
+> 712         spin_unlock_irqrestore(&sesslock, flags);
+> 713
+> 714         iscsi_session_event(session, ISCSI_KEVENT_CREATE_SESSION);
+> 715         return 0;
+> 716
+> 717 release_host:
+> 718         scsi_host_put(shost);
+> 719         return err;
+> 720 }
+> 
+> You are right but compiler is confused and giving warning like this :
+> 
+> 1. do not go inside :
+> 684                 for (id = 0; id < ISCSI_MAX_TARGET; id++) {
 
-This is not so.
-All drivers that go through scsi_eh_prep_cmnd() will eventually DMA through
-the regular read path. Including all the drivers that do nothing and let
-scsi-ml do the REQUEST_SENSE
+How? id is an unsigned int and ISCSI_MAX_TARGET is defined to be -1 in
+include/scsi/scsi_transport_iscsi.h (might be better if it were
+UINT_MAX, but -1 is just as good).
 
-Actually I have exact numbers, from the last time I did all that
+James
 
-Boaz
+
