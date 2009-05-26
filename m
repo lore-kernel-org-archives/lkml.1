@@ -1,170 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753339AbZEZEda@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753967AbZEZEh6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753339AbZEZEda (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 00:33:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752685AbZEZEdN
+	id S1753967AbZEZEh6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 00:37:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751178AbZEZEhq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 00:33:13 -0400
-Received: from ozlabs.org ([203.10.76.45]:43834 "EHLO ozlabs.org"
+	Tue, 26 May 2009 00:37:46 -0400
+Received: from sh.osrg.net ([192.16.179.4]:55923 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751698AbZEZEdL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 00:33:11 -0400
-Date: Tue, 26 May 2009 14:31:23 +1000
-From: Anton Blanchard <anton@samba.org>
-To: rostedt@goodmis.org, mingo@elte.hu, tzanussi@gmail.com, jbaron@redhat.com,
-       tglx@linutronix.de, fweisbec@gmail.com, kosaki.motohiro@jp.fujitsu.com
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] tracing/events: Rename worklet_execute to worklet_entry
-	and worklet_complete to worklet_exit
-Message-ID: <20090526043123.GC19728@kryten>
-References: <20090520101334.GA23442@kryten> <20090526042643.GB19728@kryten>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090526042643.GB19728@kryten>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1750965AbZEZEhp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 00:37:45 -0400
+Date: Tue, 26 May 2009 13:36:43 +0900
+To: hch@infradead.org
+Cc: jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, chris.mason@oracle.com,
+       david@fromorbit.com, akpm@linux-foundation.org, jack@suse.cz,
+       yanmin_zhang@linux.intel.com, linux-scsi@vger.kernel.org
+Subject: Re: [PATCH 03/13] scsi: unify allocation of scsi command and sense
+	buffer
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20090525075008.GA23413@infradead.org>
+References: <20090525074124.GA31746@infradead.org>
+	<20090525074647.GK11363@kernel.dk>
+	<20090525075008.GA23413@infradead.org>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20090526133549Q.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Tue, 26 May 2009 13:36:44 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 25 May 2009 03:50:08 -0400
+Christoph Hellwig <hch@infradead.org> wrote:
 
-Keep a common naming convention for tracing the latency of events such as
-softirq_entry/softirq_exit.
+> On Mon, May 25, 2009 at 09:46:47AM +0200, Jens Axboe wrote:
+> > > But that patch looks good to me, avoiding one allocation for each
+> > > command and simplifying the code.  I try to remember why these were
+> > > two slabs to start with but can't find any reason.
+> > > 
+> > > Btw, we might just want to declare the sense buffer directly as a sized
+> > > array in the scsi command as there really doesn't seem to be a reason
+> > > not to allocate it.
+> > 
+> > That is also a workable solution. I've been trying to cut down on the
+> > number of allocations required per-IO, and there's definitely still some
+> > low hanging fruit there. Some of it is already included, like the inline
+> > io_vecs in the bio.
+> 
+> Btw, one thing I wanted to do for years is to add ->alloc_cmnd and
+> ->destroy_cmnd method to the host template which optionally move the
+> command allocation to the LLDD.  That way we can embedd the scsi_cmnd
+> into the drivers per-commad structure and eliminate another memory
+> allocation.  Also this would naturally extend the keep one cmnd pool
+> to drivers without requiring additional code.  As a second step it
+> would also allow killing the scsi_host_cmd_pool byt just having
+> a set of library routines that drivers which need SLAB_CACHE_DMA can
+> use.
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
+We discussed this idea when I rewrote the sense allocation code, I
+think.
 
-What do people think? It seems like a good idea to have a naming convention
-when tracing event latency for softirqs, timers, worklets, etc.
+I like that idea that unifying scsi_cmnd and llds' per-commad
+structure however there is one tricky thing about it.
 
-Index: linux-2.6-master/include/trace/events/workqueue.h
-===================================================================
---- linux-2.6-master.orig/include/trace/events/workqueue.h	2009-05-26 12:40:01.000000000 +1000
-+++ linux-2.6-master/include/trace/events/workqueue.h	2009-05-26 12:40:16.000000000 +1000
-@@ -68,7 +68,7 @@
- 		__entry->cpu, __entry->delay)
- );
- 
--TRACE_EVENT(worklet_execute,
-+TRACE_EVENT(worklet_entry,
- 
- 	TP_PROTO(struct task_struct *wq_thread, struct work_struct *work),
- 
-@@ -93,7 +93,7 @@
- );
- 
- /* Declare work as void *, because we can't use work->... in after f(work) */
--TRACE_EVENT(worklet_complete,
-+TRACE_EVENT(worklet_exit,
- 	TP_PROTO(struct task_struct *wq_thread, void *work),
- 
- 	TP_ARGS(wq_thread, work),
-Index: linux-2.6-master/kernel/trace/trace_workqueue.c
-===================================================================
---- linux-2.6-master.orig/kernel/trace/trace_workqueue.c	2009-05-26 12:43:27.000000000 +1000
-+++ linux-2.6-master/kernel/trace/trace_workqueue.c	2009-05-26 12:43:36.000000000 +1000
-@@ -27,7 +27,7 @@
- 
- 	/*
- 	 * save latest work_struct's pointer to use as identifier in
--	 * probe_worklet_complete, because we can't use work_struct->...
-+	 * probe_worklet_exit, because we can't use work_struct->...
- 	 * after worklet got executed
- 	 */
- 	void				*work;
-@@ -141,7 +141,7 @@
- 
- /* Execution of a work */
- static void
--probe_worklet_execute(struct task_struct *wq_thread, struct work_struct *work)
-+probe_worklet_entry(struct task_struct *wq_thread, struct work_struct *work)
- {
- 	int cpu = cpumask_first(&wq_thread->cpus_allowed);
- 	struct cpu_workqueue_stats *node;
-@@ -176,7 +176,7 @@
- 
- /* Complete of a work */
- static void
--probe_worklet_complete(struct task_struct *wq_thread, void *work)
-+probe_worklet_exit(struct task_struct *wq_thread, void *work)
- {
- 	int cpu = cpumask_first(&wq_thread->cpus_allowed);
- 	struct cpu_workqueue_stats *node;
-@@ -504,17 +504,17 @@
- 	if (ret)
- 		goto out_worklet_enqueue;
- 
--	ret = register_trace_worklet_execute(probe_worklet_execute);
-+	ret = register_trace_worklet_entry(probe_worklet_entry);
- 	if (ret)
- 		goto out_worklet_enqueue_delayed;
- 
--	ret = register_trace_worklet_complete(probe_worklet_complete);
-+	ret = register_trace_worklet_exit(probe_worklet_exit);
- 	if (ret)
--		goto out_worklet_execute;
-+		goto out_worklet_entry;
- 
- 	ret = register_trace_workqueue_creation(probe_workqueue_creation);
- 	if (ret)
--		goto out_worklet_complete;
-+		goto out_worklet_exit;
- 
- 	ret = register_trace_workqueue_destruction(probe_workqueue_destruction);
- 	if (ret)
-@@ -529,10 +529,10 @@
- 
- out_workqueue_creation:
- 	unregister_trace_workqueue_creation(probe_workqueue_creation);
--out_worklet_complete:
--	unregister_trace_worklet_complete(probe_worklet_complete);
--out_worklet_execute:
--	unregister_trace_worklet_execute(probe_worklet_execute);
-+out_worklet_exit:
-+	unregister_trace_worklet_exit(probe_worklet_exit);
-+out_worklet_entry:
-+	unregister_trace_worklet_entry(probe_worklet_entry);
- out_worklet_enqueue_delayed:
- 	unregister_trace_worklet_enqueue_delayed(probe_worklet_enqueue_delayed);
- out_worklet_enqueue:
-Index: linux-2.6-master/kernel/workqueue.c
-===================================================================
---- linux-2.6-master.orig/kernel/workqueue.c	2009-05-26 12:43:59.000000000 +1000
-+++ linux-2.6-master/kernel/workqueue.c	2009-05-26 12:44:01.000000000 +1000
-@@ -296,9 +296,9 @@
- 		work_clear_pending(work);
- 		lock_map_acquire(&cwq->wq->lockdep_map);
- 		lock_map_acquire(&lockdep_map);
--		trace_worklet_execute(cwq->thread, work);
-+		trace_worklet_entry(cwq->thread, work);
- 		f(work);
--		trace_worklet_complete(cwq->thread, work);
-+		trace_worklet_exit(cwq->thread, work);
- 		lock_map_release(&lockdep_map);
- 		lock_map_release(&cwq->wq->lockdep_map);
- 
-Index: linux-2.6-master/Documentation/trace/workqueue.txt
-===================================================================
---- linux-2.6-master.orig/Documentation/trace/workqueue.txt	2009-05-26 12:44:44.000000000 +1000
-+++ linux-2.6-master/Documentation/trace/workqueue.txt	2009-05-26 12:45:05.000000000 +1000
-@@ -98,8 +98,8 @@
- # mount -t debugfs debug /sys/kernel/debug/
- # cd /sys/kernel/debug/tracing/events/workqueue
- # ls
--filter          worklet_complete  worklet_enqueue_delayed  workqueue_creation     workqueue_flush
--worklet_cancel  worklet_enqueue   worklet_execute          workqueue_destruction
-+filter          worklet_exit  worklet_enqueue_delayed  workqueue_creation     workqueue_flush
-+worklet_cancel  worklet_enqueue   worklet_entry          workqueue_destruction
- # for e in $(ls); do echo 1 > $e/enable; done
- # cat /sys/kernel/debug/tracing/trace
- 
-@@ -108,7 +108,7 @@
-  #   | |       |          |         |
- 
- <...>-5627  [000]  4597.858645: worklet_enqueue: thread=ata/0:508 func=ata_pio_task+0x0/0x280 cpu=0
--<...>-508   [000]  4597.858660: worklet_execute: thread=ata/0:508 work=ffff88007e9e67b8 func=ata_pio_task+0x0/0x280
--<...>-508   [000]  4597.858684: worklet_complete: thread=ata/0:508 work=ffff88007e9e67b8
-+<...>-508   [000]  4597.858660: worklet_entry: thread=ata/0:508 work=ffff88007e9e67b8 func=ata_pio_task+0x0/0x280
-+<...>-508   [000]  4597.858684: worklet_exit: thread=ata/0:508 work=ffff88007e9e67b8
- <...>-2437  [000]  4597.861259: worklet_cancel: func=ata_pio_task+0x0/0x280
- [...]
+Currently, a lld frees (or reuses) its per-commad structure when it
+calls scsi_done(). SCSI-ml uses scsi_cmd after that so we need to
+change the lifetime management (so we need to inspect all the llds,
+e.g. this change will break iscsi ldd).
+
+With that change, we can't tell llds how many per-commad structure are
+possibly necessary. In general, LLDs want to know the maximum number
+of per-commad structure; drivers allocates the number of per-commad
+structure equal to host_template->can_queue.
