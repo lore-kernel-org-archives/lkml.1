@@ -1,84 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754205AbZEZIfv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754250AbZEZIgW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754205AbZEZIfv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 04:35:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753490AbZEZIfo
+	id S1754250AbZEZIgW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 04:36:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753956AbZEZIgN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 04:35:44 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:37707 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753445AbZEZIfn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 04:35:43 -0400
-Date: Tue, 26 May 2009 10:35:38 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Minchan Kim <minchan.kim@gmail.com>
-Cc: akpm@linux-foundation.org, Randy Dunlap <randy.dunlap@oracle.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Christoph Lameter <cl@linux-foundation.org>, linux-mm@kvack.org,
-       Dave Hansen <dave@linux.vnet.ibm.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Dominik Brodowski <linux@dominikbrodowski.net>,
-       Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH][mmtom] clean up once printk routine
-Message-ID: <20090526083538.GA29563@elf.ucw.cz>
-References: <20090526135733.3c38f758.minchan.kim@barrios-desktop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090526135733.3c38f758.minchan.kim@barrios-desktop>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 26 May 2009 04:36:13 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:51158 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753910AbZEZIgM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 04:36:12 -0400
+Date: Tue, 26 May 2009 04:35:05 -0400
+From: Amerigo Wang <amwang@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, mingo@elte.hu, jdike@addtoit.com,
+       Amerigo Wang <amwang@redhat.com>, rusty@rustcorp.com.au
+Message-Id: <20090526083717.5050.32719.sendpatchset@localhost.localdomain>
+Subject: [Patch 0/4] module: merge module_32.c and module_64.c
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
 
-> Yes. There are also some places to be able to use printk_once().
-> Are there any place I missed ?
-> 
-> == CUT HERE ==
-> 
-> There are some places to be able to use printk_once instead of hard coding.
-> 
-> It will help code readability and maintenance.
-> This patch doesn't change function's behavior.
-> 
-> Signed-off-by: Minchan Kim <minchan.kim@gmail.com>
-> CC: Dominik Brodowski <linux@dominikbrodowski.net>
-> CC: David S. Miller <davem@davemloft.net>
-> CC: Ingo Molnar <mingo@elte.hu>
-> ---
->  arch/x86/kernel/cpu/common.c  |    8 ++------
->  drivers/net/3c515.c           |    7 ++-----
->  drivers/pcmcia/pcmcia_ioctl.c |    9 +++------
->  3 files changed, 7 insertions(+), 17 deletions(-)
-> 
-> diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
-> index 82bec86..dc0f694 100644
-> --- a/arch/x86/kernel/cpu/common.c
-> +++ b/arch/x86/kernel/cpu/common.c
-> @@ -496,13 +496,9 @@ static void __cpuinit get_cpu_vendor(struct cpuinfo_x86 *c)
->  		}
->  	}
->  
-> -	if (!printed) {
-> -		printed++;
-> -		printk(KERN_ERR
-> +	printk_once(KERN_ERR
->  		    "CPU: vendor_id '%s' unknown, using generic init.\n", v);
-> -
-> -		printk(KERN_ERR "CPU: Your system may be unstable.\n");
-> -	}
-> +	printk_once(KERN_ERR "CPU: Your system may be unstable.\n");
->
+This patch set aims to merge module_32.c and module_64.c into
+module.c. And plus some other related fixes.
 
-You should delete the variable, right?
+Please apply in order.
 
-Plus, the code now uses two variables instead of one.
+I have tested this patch set on x86_64, and uml over x86_64,
+and compile tested on i386. It looks fine.
 
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Signed-off-by: WANG Cong <amwang@redhat.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Ingo Molnar <mingo@elte.hu>
+
+ arch/um/sys-i386/Makefile      |    2 
+ arch/um/sys-x86_64/Makefile    |    4 
+ arch/um/sys-x86_64/um_module.c |   21 ---
+ arch/x86/kernel/Makefile       |    4 
+ arch/x86/kernel/module.c       |  262 ++++++++++++++++++++++++++++++++++++++++-
+ arch/x86/kernel/module_32.c    |  152 -----------------------
+ arch/x86/kernel/module_64.c    |  194 ------------------------------
+ 7 files changed, 264 insertions(+), 375 deletions(-)
+
