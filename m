@@ -1,51 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755980AbZEZTDu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756829AbZEZTHb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755980AbZEZTDu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 15:03:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752221AbZEZTDl
+	id S1756829AbZEZTHb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 15:07:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755830AbZEZTHV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 15:03:41 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:45356 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751483AbZEZTDl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 15:03:41 -0400
-Date: Tue, 26 May 2009 21:02:50 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Rik van Riel <riel@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
-       "Larry H." <research@subreption.com>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@osdl.org>, linux-mm@kvack.org,
-       Ingo Molnar <mingo@redhat.com>
-Subject: Re: [patch 0/5] Support for sanitization flag in low-level page
-	allocator
-Message-ID: <20090526190249.GA1326@ucw.cz>
-References: <20090520183045.GB10547@oblivion.subreption.com> <1242852158.6582.231.camel@laptop> <4A15A69F.3040604@redhat.com> <20090521202628.39625a5d@lxorguk.ukuu.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090521202628.39625a5d@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 26 May 2009 15:07:21 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:44502 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755559AbZEZTHT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 15:07:19 -0400
+Date: Tue, 26 May 2009 13:01:43 -0600
+From: Pete Zaitcev <zaitcev@redhat.com>
+To: David <david@unsolicited.net>
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       USB list <linux-usb@vger.kernel.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-media@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       dbrownell@users.sourceforge.net, leonidv11@gmail.com,
+       Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, zaitcev@redhat.com
+Subject: Re: USB/DVB - Old Technotrend TT-connect S-2400 regression tracked
+ down
+Message-Id: <20090526130143.85475405.zaitcev@redhat.com>
+In-Reply-To: <4A1C37F8.2090703@unsolicited.net>
+References: <4A1967A2.4050906@unsolicited.net>
+	<Pine.LNX.4.44L0.0905242208260.15195-100000@netrider.rowland.org>
+	<20090524203902.594a0eec.zaitcev@redhat.com>
+	<4A1A5E24.20201@unsolicited.net>
+	<4A1A8E53.9060108@unsolicited.net>
+	<20090525184843.33c93006.zaitcev@redhat.com>
+	<4A1C37F8.2090703@unsolicited.net>
+Organization: Red Hat, Inc.
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Tue, 26 May 2009 19:42:00 +0100, David <david@unsolicited.net> wrote:
 
-> > I could also imagine the suspend-to-disk code skipping
-> > PG_sensitive pages when storing data to disk, and
-> > replacing it with some magic signature so programs
-> > that use special PG_sensitive buffers can know that
-> > their crypto key disappeared after a restore.
-> 
-> Its irrelevant in the simple S2D case. I just patch other bits of the
-> suspend image to mail me the new key later. The right answer is crypted
-> swap combined with a hard disk password and thus a crypted and locked
-> suspend image. Playing the "I must not miss any page which might be
+> I've been doing a bit of random rebooting (I don't really have time to
+> do a full bisect), and can reproduce the usbmon panic on this machine
+> back to 2.6.24.. so it certainly hasn't appeared that recently.
 
-uswsusp does have internal encryption, and can use dm_crypt encrypted
-swap... So yes, we can do encrypted swap & s2disk today.
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Actually that's good to know, thanks a lot.
+
+I can always just stub out any attempt to peek into the IOMMU
+on Opterons. This would bring us back into the days of 'D' returned
+from everything, although maybe not so bad as we've cut out some
+unnecessary usb_buffer use. At least, no more crashing.
+
+-- Pete
