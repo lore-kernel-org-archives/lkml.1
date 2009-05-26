@@ -1,60 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760723AbZEZX1S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759433AbZEZX3U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760723AbZEZX1S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 19:27:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758959AbZEZX1C
+	id S1759433AbZEZX3U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 19:29:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757013AbZEZX3N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 19:27:02 -0400
-Received: from rex.securecomputing.com ([203.24.151.4]:47569 "EHLO
-	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758739AbZEZX1B (ORCPT
+	Tue, 26 May 2009 19:29:13 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58136 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756883AbZEZX3M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 19:27:01 -0400
-Date: Wed, 27 May 2009 09:27:01 +1000
-From: David McCullough <David_Mccullough@securecomputing.com>
-To: Paul Mundt <lethal@linux-sh.org>, Mike Frysinger <vapier.adi@gmail.com>,
-       linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
-       Greg Ungerer <gerg@uclinux.org>, uclinux-dev@uclinux.org,
-       linux-mtd@lists.infradead.org
-Subject: Re: [uClinux-dev] Re: [PATCH 2/2] mtd/maps: uclinux: support
-	Blackfin systems
-Message-ID: <20090526232701.GC24644@securecomputing.com>
-References: <1243331191-11445-1-git-send-email-vapier@gentoo.org> <1243331191-11445-2-git-send-email-vapier@gentoo.org> <20090526113122.GB16835@linux-sh.org> <8bd0f97a0905260942m4b574d75oc4f38ee3d8849395@mail.gmail.com> <20090526164735.GA24261@linux-sh.org> <8bd0f97a0905260950i6da64210n7da256627d3e38ff@mail.gmail.com> <20090526170653.GB24261@linux-sh.org> <8bd0f97a0905261024q178fbc80n4a997daca5a3b405@mail.gmail.com> <20090526231902.GA6295@linux-sh.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090526231902.GA6295@linux-sh.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 26 May 2009 19:29:12 -0400
+Date: Tue, 26 May 2009 16:28:21 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: andi@firstfloor.org, paul@mad-scientist.net, linux-kernel@vger.kernel.org
+Subject: Re: [2.6.27.24] Kernel coredump to a pipe is failing
+Message-Id: <20090526162821.02e11d5b.akpm@linux-foundation.org>
+In-Reply-To: <20090526231428.GK846@one.firstfloor.org>
+References: <1243355634.29250.331.camel@psmith-ubeta.netezza.com>
+	<878wkjobbm.fsf@basil.nowhere.org>
+	<20090526160017.98fc62e4.akpm@linux-foundation.org>
+	<20090526231428.GK846@one.firstfloor.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 27 May 2009 01:14:28 +0200
+Andi Kleen <andi@firstfloor.org> wrote:
 
-Jivin Paul Mundt lays it down ...
-> On Tue, May 26, 2009 at 01:24:46PM -0400, Mike Frysinger wrote:
-> > On Tue, May 26, 2009 at 13:06, Paul Mundt wrote:
-> > > Use the attached, and then just set uclinux_ram_map.phys = your_address_here
-> > > in your setup_arch(). Having weak symbols in drivers that are supposed to
-> > > be overriden by the architecture code is just way too backwards for
-> > > words. Globals suffice fine for this sort of thing, if you are not going
-> > > to go to the effort to pass this information to the driver directly that
-> > > is.
-> > 
-> > i was thinking something else, but obviously this is nicer than what i
-> > was thinking
+> On Tue, May 26, 2009 at 04:00:17PM -0700, Andrew Morton wrote:
+> > dump_write() doesn't seem right, either.  If ->write() returns, say,
+> > 100 then the dump should keep on going.  At present it treats this
+> > return as an error.
 > 
-> Unfortunately there is the problem that the map driver itself is a
-> tristate, so if this is built as a module, the symbol will not be
-> available to you. On the other hand, if it doesn't need to ever really be
-> a module, converting it to a bool ought to be workable. There are no
-> in-tree users that enable this as a module anyways.
+> I think that's correct actually. Short write typically means serious 
+> issue like disk full or broken pipe, so stopping is good.
 
-Based on how it relocates the rootfs,  I don't believe a module can ever
-be work,  so a boolean would be a better choice IMO,
+But we shouldn't assume that.  It could be that the ->write
+implementation is perfectly able to absorb the remaining data.
 
-Cheers,
-Davidm
+We should only error out of the write() returned zero or -EFOO.
+The current code is simply buggy, but got lucky.
 
--- 
-David McCullough,  david_mccullough@securecomputing.com,  Ph:+61 734352815
-McAfee - SnapGear  http://www.snapgear.com                http://www.uCdot.org
