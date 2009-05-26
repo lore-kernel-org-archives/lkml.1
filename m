@@ -1,106 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755143AbZEZNeC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754993AbZEZNg7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755143AbZEZNeC (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 09:34:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752181AbZEZNdx
+	id S1754993AbZEZNg7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 09:36:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752722AbZEZNgw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 09:33:53 -0400
-Received: from hera.kernel.org ([140.211.167.34]:45861 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750889AbZEZNdw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 09:33:52 -0400
-Message-ID: <4A1BEFB6.80205@kernel.org>
-Date: Tue, 26 May 2009 22:33:42 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Tue, 26 May 2009 09:36:52 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:33395 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752451AbZEZNgv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 09:36:51 -0400
+Date: Tue, 26 May 2009 21:30:50 +0800
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Nikanth Karthikesan <knikanth@suse.de>
+Cc: Pavel Emelyanov <xemul@openvz.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix build warning and avoid checking for mem != null
+	twice
+Message-ID: <20090526133050.GS4858@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <200905261844.33864.knikanth@suse.de>
 MIME-Version: 1.0
-To: Niel Lambrechts <niel.lambrechts@gmail.com>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "linux.kernel" <linux-kernel@vger.kernel.org>,
-       Theodore Tso <tytso@mit.edu>
-Subject: Re: 2.6.29 regression: ATA bus errors on resume
-References: <clqON-2Xv-7@gated-at.bofh.it>	<clqON-2Xv-9@gated-at.bofh.it>	<clqON-2Xv-11@gated-at.bofh.it>	<clqON-2Xv-13@gated-at.bofh.it>	<clqON-2Xv-15@gated-at.bofh.it>	<clqON-2Xv-17@gated-at.bofh.it>	<clqON-2Xv-19@gated-at.bofh.it>	<clqON-2Xv-5@gated-at.bofh.it>	<cmknZ-8lW-9@gated-at.bofh.it>	<cmoBl-6Ok-21@gated-at.bofh.it>	<cmp4n-7rb-15@gated-at.bofh.it>	<cmsYg-5BR-27@gated-at.bofh.it>	<cmvW7-1Yj-23@gated-at.bofh.it>	<cnheh-3vO-7@gated-at.bofh.it>	<cnPg1-7Q4-19@gated-at.bofh.it>	<cnTWo-7bV-25@gated-at.bofh.it>	<co1Kd-350-5@gated-at.bofh.it>	<co2Qf-4QQ-27@gated-at.bofh.it>	<co4yj-7Mc-5@gated-at.bofh.it>	<cp71c-4py-29@gated-at.bofh.it>	<cEVyE-re-1@gated-at.bofh.it>	<4A17C39E.2030302@gmail.com>	<4A19F006.3000303@kernel.org> <20090525091534.13ae103c@lxorguk.ukuu.org.uk> <4A1B164B.1010108@gmail.com> <4A1B76EB.9040500@kernel.org> <4A1B8193.1010703@gmail.com> <4A1B8328.80801@kernel.org> <4A1B8873.1040101@gmail.com>
-In-Reply-To: <4A1B8873.1040101@gmail.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/mixed;
- boundary="------------050901030802060504010700"
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 26 May 2009 13:33:45 +0000 (UTC)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <200905261844.33864.knikanth@suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------050901030802060504010700
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+* Nikanth Karthikesan <knikanth@suse.de> [2009-05-26 18:44:32]:
 
-Niel Lambrechts wrote:
-> If you send some patches I'll make every effort to test, it beats having
-> to re-install, my installation is just too customized. :)
+> Fix build warning, "mem_cgroup_is_obsolete defined but not used" when
+> CONFIG_DEBUG_VM is not set. Also avoid checking for !mem twice.
+> 
+> Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
 
-First, let's make sure we aren't balking up the wrong tree.  Can you
-please apply the attached patch and report the kernel log?
-
-Thanks.
-
+I thought we fixed this, could you check the latest mmotm please!
 -- 
-tejun
-
---------------050901030802060504010700
-Content-Type: text/x-patch;
- name="noretry-dbg.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="noretry-dbg.patch"
-
-diff --git a/drivers/scsi/scsi_error.c b/drivers/scsi/scsi_error.c
-index 0c2c73b..d92f98c 100644
---- a/drivers/scsi/scsi_error.c
-+++ b/drivers/scsi/scsi_error.c
-@@ -1223,19 +1223,31 @@ static void scsi_eh_offline_sdevs(struct list_head *work_q,
-  */
- int scsi_noretry_cmd(struct scsi_cmnd *scmd)
- {
-+	printk("XXX scmd->result=0x%x ff_t=%d ff_dev=%d ff_drv=%d\n",
-+	       scmd->result, blk_failfast_transport(scmd->request),
-+	       blk_failfast_dev(scmd->request),
-+	       blk_failfast_driver(scmd->request));
-+
- 	switch (host_byte(scmd->result)) {
- 	case DID_OK:
-+		printk("XXX DID_OK\n");
- 		break;
- 	case DID_BUS_BUSY:
-+		printk("XXX DID_BUS_BUSY, returning ff_t\n");
- 		return blk_failfast_transport(scmd->request);
- 	case DID_PARITY:
-+		printk("XXX DID_PARITY, returning ff_dev\n");
- 		return blk_failfast_dev(scmd->request);
- 	case DID_ERROR:
-+		printk("XXX DID_ERROR\n");
- 		if (msg_byte(scmd->result) == COMMAND_COMPLETE &&
--		    status_byte(scmd->result) == RESERVATION_CONFLICT)
-+		    status_byte(scmd->result) == RESERVATION_CONFLICT) {
-+			printk("XXX RESERVATION_CONFLICT\n");
- 			return 0;
-+		}
- 		/* fall through */
- 	case DID_SOFT_ERROR:
-+		printk("XXX DID_SOFT_ERROR, returning ff_drv\n");
- 		return blk_failfast_driver(scmd->request);
- 	}
- 
-@@ -1245,9 +1257,11 @@ int scsi_noretry_cmd(struct scsi_cmnd *scmd)
- 		 * assume caller has checked sense and determinted
- 		 * the check condition was retryable.
- 		 */
-+		printk("XXX CHECK_CONDITION, returning ff_dev\n");
- 		return blk_failfast_dev(scmd->request);
- 	}
- 
-+	printk("XXX returning 0\n");
- 	return 0;
- }
- 
-
---------------050901030802060504010700--
+	Balbir
