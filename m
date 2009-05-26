@@ -1,54 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755686AbZEZNXD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754563AbZEZN2i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755686AbZEZNXD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 09:23:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754563AbZEZNWv
+	id S1754563AbZEZN2i (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 09:28:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753204AbZEZN2a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 09:22:51 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:35786 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755280AbZEZNWu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 09:22:50 -0400
-Date: Tue, 26 May 2009 14:23:00 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Tejun Heo <tj@kernel.org>
-Cc: linux-pci@vger.kernel.org, Greg KH <greg@kroah.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, towerlexa@gmx.de
-Subject: Re: Who's responsible for configuring CLS on a cardbus device?
-Message-ID: <20090526142300.73d466d0@lxorguk.ukuu.org.uk>
-In-Reply-To: <4A1BE904.8080302@kernel.org>
-References: <4A1BE904.8080302@kernel.org>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 26 May 2009 09:28:30 -0400
+Received: from hera.kernel.org ([140.211.167.34]:57025 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751358AbZEZN23 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 09:28:29 -0400
+Date: Tue, 26 May 2009 13:27:45 GMT
+From: tip-bot for Mike Galbraith <efault@gmx.de>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
+       hpa@zytor.com, mingo@redhat.com, jkacur@redhat.com,
+       a.p.zijlstra@chello.nl, efault@gmx.de, mtosatti@redhat.com,
+       tglx@linutronix.de, cjashfor@linux.vnet.ibm.com, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, jkacur@redhat.com, a.p.zijlstra@chello.nl,
+       efault@gmx.de, mtosatti@redhat.com, tglx@linutronix.de,
+       cjashfor@linux.vnet.ibm.com, mingo@elte.hu
+In-Reply-To: <new-submission>
+References: <new-submission>
+Subject: [tip:perfcounters/core] perf top: fix typo in -d option
+Message-ID: <tip-db20c0031288ff524d82b1f240f35f85d4a052eb@git.kernel.org>
+Git-Commit-ID: db20c0031288ff524d82b1f240f35f85d4a052eb
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 26 May 2009 13:27:46 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 May 2009 22:05:08 +0900
-Tejun Heo <tj@kernel.org> wrote:
+Commit-ID:  db20c0031288ff524d82b1f240f35f85d4a052eb
+Gitweb:     http://git.kernel.org/tip/db20c0031288ff524d82b1f240f35f85d4a052eb
+Author:     Mike Galbraith <efault@gmx.de>
+AuthorDate: Tue, 26 May 2009 15:25:34 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 26 May 2009 15:25:34 +0200
 
-> Hello,
-> 
-> This is regarding bko#13257.
-> 
->  http://bugzilla.kernel.org/show_bug.cgi?id=13257
-> 
-> towerlexa@gmx.de was experiencing very slow transfer rate when using a
-> cardbus sata_sil SATA controller which is known to be sensitive to
-> cache line size setting.  The reset default is zero and no one
-> configured it causing poor performance.
-> 
-> This is solvable by simply setting CLS to the correct value but who's
-> job is it?  For non-hotplug devices, this is configured by the BIOS
-> (at least on PC), so for hotplug devices I think falls on the lap of
-> the PCI code but I'm not sure.  If this is something which the
-> sata_sil driver should be responsible for, is there an established way
-> to determine the proper CLS value?
+perf top: fix typo in -d option
 
-Currently its handled by pci_set_mwi() but there isn't actually a more
-direct way to do this.
+Clean up copy/paste options parsing conversion error.
 
-Alan
+[ Impact: reactivate -d option ]
+
+Signed-off-by: Mike Galbraith <efault@gmx.de>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
+Cc: Marcelo Tosatti <mtosatti@redhat.com>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: John Kacur <jkacur@redhat.com>
+LKML-Reference: <new-submission>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ Documentation/perf_counter/builtin-top.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/Documentation/perf_counter/builtin-top.c b/Documentation/perf_counter/builtin-top.c
+index cacaa3c..6b1c66f 100644
+--- a/Documentation/perf_counter/builtin-top.c
++++ b/Documentation/perf_counter/builtin-top.c
+@@ -727,7 +727,7 @@ static const struct option options[] = {
+ 		    "number of mmap data pages"),
+ 	OPT_INTEGER('r', "realtime", &realtime_prio,
+ 		    "collect data with this RT SCHED_FIFO priority"),
+-	OPT_INTEGER('d', "delay", &realtime_prio,
++	OPT_INTEGER('d', "delay", &delay_secs,
+ 		    "number of seconds to delay between refreshes"),
+ 	OPT_BOOLEAN('D', "dump-symtab", &dump_symtab,
+ 			    "dump the symbol table used for profiling"),
