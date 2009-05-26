@@ -1,63 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753859AbZEZBWP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754406AbZEZBXe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753859AbZEZBWP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 21:22:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752751AbZEZBV7
+	id S1754406AbZEZBXe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 21:23:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752751AbZEZBX1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 21:21:59 -0400
-Received: from [222.92.8.141] ([222.92.8.141]:48417 "EHLO lemote.com"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752691AbZEZBV6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 21:21:58 -0400
-Subject: Re: [loongson-PATCH-v1 24/27] fixup for FUJITSU disk
-From: yanh <yanh@lemote.com>
-Reply-To: yanh@lemote.com
-To: "Martin K. Petersen" <martin.petersen@oracle.com>
-Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       =?gb2312?Q?=BA=FA=BA=E9=B1=F8?= <huhb@lemote.com>, wuzhangjin@gmail.com,
-       linux-mips@linux-mips.org, Ralf Baechle <ralf@linux-mips.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       Philippe Vachon <philippe@cowpig.ca>, Zhang Le <r0bertz@gentoo.org>,
-       Zhang Fuxin <zhangfx@lemote.com>, Arnaud Patard <apatard@mandriva.com>,
-       loongson-dev@googlegroups.com, gnewsense-dev@nongnu.org,
-       Nicholas Mc Guire <hofrat@hofr.at>, Liu Junliang <liujl@lemote.com>,
-       Erwan Lerale <erwan@thiscow.com>
-In-Reply-To: <yq1tz39dmmn.fsf@sermon.lab.mkp.net>
-References: <cover.1242855716.git.wuzhangjin@gmail.com>
-	 <1243230339.9819.18.camel@localhost.localdomain>
-	 <4A1A4A54.6090401@lemote.com> <200905251656.25357.bzolnier@gmail.com>
-	 <4A1AEBF7.7040402@ru.mvista.com>  <yq1tz39dmmn.fsf@sermon.lab.mkp.net>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 26 May 2009 09:21:30 +0800
-Message-Id: <1243300890.9819.40.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
-Content-Transfer-Encoding: 8bit
+	Mon, 25 May 2009 21:23:27 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:60173 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752508AbZEZBX1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 21:23:27 -0400
+Message-ID: <4A1B44DC.5050000@cn.fujitsu.com>
+Date: Tue, 26 May 2009 09:24:44 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: balbir@linux.vnet.ibm.com
+CC: Andrew Morton <akpm@linux-foundation.org>, Paul Menage <menage@google.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH] cgroups: handle failure of cgroup_populate_dir() at	mount/remount
+References: <4A16153C.2080004@cn.fujitsu.com> <20090525131753.GL4858@balbir.in.ibm.com>
+In-Reply-To: <20090525131753.GL4858@balbir.in.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-在 2009-05-25一的 15:10 -0400，Martin K. Petersen写道：
-> >>>>> "Sergei" == Sergei Shtylyov <sshtylyov@ru.mvista.com> writes:
+Balbir Singh wrote:
+> * Li Zefan <lizf@cn.fujitsu.com> [2009-05-22 11:00:12]:
 > 
-> >> Could you please explain the issue with platform specific code a bit
-> >> more?
+>> Now we have 'stat' file in both memory and cpuacct subsystems. If we
+>> mount these 2 subsystems with option 'noprefix', the creation of 'stat'
+>> file for cpuacct will fail, but without any notificatin to the user.
+>>
+>> With this patch, we fail the mount/remount in this case.
+>>
+>> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+>> ---
+>>  kernel/cgroup.c |   18 ++++++++++++++++--
+>>  1 files changed, 16 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+>> index a7267bf..eab83f7 100644
+>> --- a/kernel/cgroup.c
+>> +++ b/kernel/cgroup.c
+>> @@ -896,6 +896,7 @@ static int parse_cgroupfs_options(char *data,
+>>  static int cgroup_remount(struct super_block *sb, int *flags, char *data)
+>>  {
+>>  	int ret = 0;
+>> +	unsigned long subsys_bits;
+>>  	struct cgroupfs_root *root = sb->s_fs_info;
+>>  	struct cgroup *cgrp = &root->top_cgroup;
+>>  	struct cgroup_sb_opts opts;
+>> @@ -914,12 +915,17 @@ static int cgroup_remount(struct super_block *sb, int *flags, char *data)
+>>  		goto out_unlock;
+>>  	}
+>>
+>> +	subsys_bits = root->subsys_bits;
+>>  	ret = rebind_subsystems(root, opts.subsys_bits);
+>>  	if (ret)
+>>  		goto out_unlock;
+>>
+>>  	/* (re)populate subsystem files */
+>> -	cgroup_populate_dir(cgrp);
+>> +	ret = cgroup_populate_dir(cgrp);
+>> +	if (ret) {
 > 
-> >> Is it related to a cable detection by any chance?
+> if (ret) means a failure right? So we rebind_subsystems to the older
+> subsys_bits? Could you please add a comment, the code can be misread.
 > 
-> Sergei>    I guess it's rdmsr()/wrmsr()...
-currently, we just commented out the rdmsr/wrmsr.
-and we use pci VSA to access it. 
+
+Sure.
+
+>> +		rebind_subsystems(root, subsys_bits);
+>> +		goto out_unlock;
+>> +	}
+>>
+>>  	if (opts.release_agent)
+>>  		strcpy(root->release_agent_path, opts.release_agent);
+>> @@ -1122,9 +1128,13 @@ static int cgroup_get_sb(struct file_system_type *fs_type,
+>>  		BUG_ON(!list_empty(&root_cgrp->children));
+>>  		BUG_ON(root->number_of_cgroups != 1);
+>>
+>> -		cgroup_populate_dir(root_cgrp);
+>> +		ret = cgroup_populate_dir(root_cgrp);
+>> +
+>>  		mutex_unlock(&inode->i_mutex);
+>>  		mutex_unlock(&cgroup_mutex);
+>> +
+>> +		if (ret)
+>> +			goto drop_new_super;
+>>  	}
+>>
+>>  	simple_set_mnt(mnt, sb);
+>> @@ -1803,6 +1813,10 @@ int cgroup_add_file(struct cgroup *cgrp,
+>>  		dput(dentry);
+>>  	} else
+>>  		error = PTR_ERR(dentry);
+>> +
+>> +	if (error)
+>> +		printk(KERN_WARNING "cgroup: Failed to create file '%s': %d\n",
+>> +		       name, error);
+>>  	return error;
+>>  }
+>>
 > 
-> Those are only used when the driver is explicitly loaded with
-> use_msr=1.  The default is to use PCI config space/VSA.
+> Looks good, should we mark cgroup_populate_dir with __must_check? 
 > 
-> In any case I have yet to see a CS5536 system whose BIOS sets the cable
-> detection bit.  If that's the problem I guess we could add a quirk flag
-> to override the (lack of) BIOS setting.
-> 
-This may be the cause that udma5 cannot be set.
+
+Actually cgroup_populate_dir() is called in 3 cases:
+  - mount
+  - remount
+  - mkdir
+
+This patch only handles the former 2 cases. The return value of
+cgroup_populate_dir() is also ignored when mkdir, and that piece of code
+is inhereted from cpuset. I guess it's because it's hard to handle this
+failure and there was no possibility of name collisions in old cpuset.
+
+Normally name collisions can be caught when mount/remount, thus there
+won't be subsequent mkdir()s.
+
 
