@@ -1,53 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756994AbZEZSrV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757173AbZEZSr5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756994AbZEZSrV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 14:47:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756113AbZEZSrN
+	id S1757173AbZEZSr5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 14:47:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755682AbZEZSrv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 14:47:13 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:47278 "EHLO ogre.sisk.pl"
+	Tue, 26 May 2009 14:47:51 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:47288 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755962AbZEZSrN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 14:47:13 -0400
+	id S1755613AbZEZSru (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 14:47:50 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Benny Halevy <bhalevy@panasas.com>
-Subject: Re: [Bug #13175] sata_nv incompatible with async scsi scan
-Date: Tue, 26 May 2009 20:47:20 +0200
+To: Frans Pop <elendil@planet.nl>
+Subject: Re: 2.6.30-rc6: Reported regressions from 2.6.29
+Date: Tue, 26 May 2009 20:48:12 +0200
 User-Agent: KMail/1.11.2 (Linux/2.6.30-rc6-rjw; KDE/4.2.3; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Arjan van de Ven <arjan@linux.intel.com>, Jeff Garzik <jeff@garzik.org>,
-       Matthew Wilcox <matthew@wil.cx>
-References: <GtY7d2eWpoK.A.ioC.MQcGKB@chimera> <WCcYF-TAbJC.A.NgD.lQcGKB@chimera> <4A1C1B08.2080600@panasas.com>
-In-Reply-To: <4A1C1B08.2080600@panasas.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, kernel-testers@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+References: <_AjETDMbIoL.A.DcH.RYzDKB@chimera> <200905260102.29455.rjw@sisk.pl> <200905261730.53041.elendil@planet.nl>
+In-Reply-To: <200905261730.53041.elendil@planet.nl>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="utf-8"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200905262047.20823.rjw@sisk.pl>
+Message-Id: <200905262048.13325.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 26 May 2009, Benny Halevy wrote:
-> On May. 24, 2009, 22:31 +0300, "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> > This message has been generated automatically as a part of a report
-> > of regressions introduced between 2.6.28 and 2.6.29.
-> > 
-> > The following bug entry is on the current list of known regressions
-> > introduced between 2.6.28 and 2.6.29.  Please verify if it still should
-> > be listed and let me know (either way).
+On Tuesday 26 May 2009, Frans Pop wrote:
+> On Tuesday 26 May 2009, Rafael J. Wysocki wrote:
+> > On Monday 25 May 2009, Frans Pop wrote:
+> > > Rafael J. Wysocki wrote:
+> > > > If you know of any other unresolved regressions from 2.6.29, please
+> > > > let me know either and I'll add them to the list.
+> > >
+> > > It may be worth tracking a possible regression introduced with -rc6
+> > > as a result of http://bugzilla.kernel.org/show_bug.cgi?id=13259.
+> > >
+> > > A new warning that was added in drivers/acpi/processor_throttling.c
+> > > (commit 4973b22a: 'ACPI processor: reset the throttling state once
+> > > it's invalid') may be triggering in cases where it shouldn't. It
+> > > seems to trigger during boot and on 'cat
+> > > /proc/acpi/processor/*/throttling'. Otherwise it's probably
+> > > relatively harmless.
+> > >
+> > > See the comments starting at #23 for details.
+> >
+> > Hmm.  It's really better if you file a separate bug for that with a
+> > reference to the previous discussion.
 > 
-> Verified to still exist with 2.6.30-rc7 :-(
+> Done (after doing additional debugging):
+> http://bugzilla.kernel.org/show_bug.cgi?id=13389
 > 
-> [The bug description is misleading though.  More testing
-> lead to post-kernel boot problems where initrd cannot find the sata
-> devices during its init phase]
+> Marked as regression and set as blocking for #13070.
 
-Thanks for the update.
+Thanks!
 
-What description would be better in your opinion?
-
+Best,
 Rafael
