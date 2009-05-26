@@ -1,75 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755334AbZEZQ23@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755176AbZEZQ2A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755334AbZEZQ23 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 12:28:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753815AbZEZQ2T
+	id S1755176AbZEZQ2A (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 12:28:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754244AbZEZQ1k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 12:28:19 -0400
-Received: from gw-ca.panasas.com ([209.116.51.66]:25813 "EHLO
-	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753421AbZEZQ2R (ORCPT
+	Tue, 26 May 2009 12:27:40 -0400
+Received: from mail-fx0-f168.google.com ([209.85.220.168]:44730 "EHLO
+	mail-fx0-f168.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754702AbZEZQ1i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 12:28:17 -0400
-Message-ID: <4A1C189E.1070200@panasas.com>
-Date: Tue, 26 May 2009 19:28:14 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
+	Tue, 26 May 2009 12:27:38 -0400
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, jens.axboe@oracle.com,
-       rdreier@cisco.com, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, chris.mason@oracle.com,
-       david@fromorbit.com, hch@infradead.org, akpm@linux-foundation.org,
-       jack@suse.cz, yanmin_zhang@linux.intel.com, linux-scsi@vger.kernel.org
-Subject: Re: [PATCH 03/13] scsi: unify allocation of scsi command and sense
- buffer
-References: <20090526062952.GB11363@kernel.dk>	 <20090526162545U.fujita.tomonori@lab.ntt.co.jp>	 <20090526073229.GC11363@kernel.dk>	 <20090526163823U.fujita.tomonori@lab.ntt.co.jp> <1243349222.2815.22.camel@localhost.localdomain> <4A1C14F3.5090209@panasas.com>
-In-Reply-To: <4A1C14F3.5090209@panasas.com>
+In-Reply-To: <ac3eb2510905250445p60035f92k68c29a57039223cf@mail.gmail.com>
+References: <1243178448.4035.12.camel@poy> <Pine.LNX.4.44L0.0905242154560.15195-100000@netrider.rowland.org> 
+	<ac3eb2510905250445p60035f92k68c29a57039223cf@mail.gmail.com>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Tue, 26 May 2009 18:27:19 +0200
+Message-ID: <ac3eb2510905260927we3c748akbbcaf3f3ac1da096@mail.gmail.com>
+Subject: Re: [PATCH 25/20] sysfs: Only support removing emtpy sysfs 
+	directories.
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       Tejun Heo <tj@kernel.org>, Cornelia Huck <cornelia.huck@de.ibm.com>,
+       linux-fsdevel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 26 May 2009 16:28:17.0964 (UTC) FILETIME=[F9E43EC0:01C9DE1E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/26/2009 07:12 PM, Boaz Harrosh wrote:
-> On 05/26/2009 05:47 PM, James Bottomley wrote:
->> There are several other approaches:
->>
->>      1. Keep the sense buffer packed in the command but disallow DMA to
->>         it, which fixes all the alignment problems.  Then we supply a
->>         set of rotating DMA buffers to drivers which need to do the DMA
->>         (which isn't the majority).
-> 
-> This one is not possible because it is scsi-ml in majority of cases that
-> does the DMA request through scsi_eh_prep_cmnd() and a regular read.
-> The drivers don't even know anything about it.
-> 
+On Mon, May 25, 2009 at 13:45, Kay Sievers <kay.sievers@vrfy.org> wrote:
+> On Mon, May 25, 2009 at 04:06, Alan Stern <stern@rowland.harvard.edu> wrote:
 
-I retract that no, yes and scsi-ml is one more possible client of
-the "rotating DMA buffers"
+>> by the way -- so it's a little difficult to trigger.
+>
+> I can trigger it pretty reliable now on plain -rc7 , but only with
+> more hubs in-between the storage device. It usually take less than
+> 10-15 connect/disconnect cycles.
+>
+> It looks like a serious bug though, after the bug triggered, random,
+> likely unrelated, applications crash, and I can not cleanly shot down
+> anymore.
 
->>      2. Sense is a comparative rarity, so us a more compact pooling
->>         scheme and discard sense for reuse as soon as we know it's not
->>         used (as in at softirq time when there's no sense collected).
->>
-> 
-> This is the way to go for sure. And only on ARCHs with none-coherent-cache
-> all the good ARCHs can just use embedded sense just fine.
-> 
->> I'd need a little more clarity on the actual size of the problem before
->> making any choices.
->>
->> The other thing to bear in mind is that two allocations of M and N might
->> be more costly than a single allocation of N+M; however, an allocation
->> of M+N+extra can end up more costly if the extra causes more page
->> reclaim before we get an actual command.
->>
->> James
->>
-> Boaz
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Just a heads up if anybody is trying to reproduce this, it trashed my
+ext3 rootfs, which is not recoverable.
 
+Not sure what exactly caused this, but I didn't have anything like
+this for a very long time.
+
+I tried to reproduce the issue a few times more, and it crashed random
+processes after the bug triggered, like mentioned above, and the box
+never shut down cleanly.
+
+It's entirely possible, that bug causes serious issues.
+
+Thanks,
+Kay
