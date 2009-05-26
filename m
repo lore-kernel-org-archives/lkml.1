@@ -1,93 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756680AbZEZRex@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756718AbZEZRga@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756680AbZEZRex (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 13:34:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755309AbZEZReo
+	id S1756718AbZEZRga (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 13:36:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754547AbZEZRgX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 13:34:44 -0400
-Received: from adsl-67-113-118-6.dsl.sndg02.pacbell.net ([67.113.118.6]:37697
-	"EHLO multivac.one-eyed-alien.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755054AbZEZReo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 13:34:44 -0400
-Date: Tue, 26 May 2009 10:34:32 -0700
-From: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: =?iso-8859-1?Q?Rog=E9rio?= Brito <rbrito@users.sf.net>,
-       Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org
-Subject: Re: Question on the removable flag of USB devices
-Message-ID: <20090526173432.GU28077@one-eyed-alien.net>
-Mail-Followup-To: Stefan Richter <stefanr@s5r6.in-berlin.de>,
-	=?iso-8859-1?Q?Rog=E9rio?= Brito <rbrito@users.sf.net>,
-	Alan Stern <stern@rowland.harvard.edu>,
-	linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-References: <20090525164553.GA5572@ime.usp.br> <20090525184831.GT28077@one-eyed-alien.net> <4A1C1A79.2020500@s5r6.in-berlin.de>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="FWibJpkbnkY6rrXF"
-Content-Disposition: inline
-In-Reply-To: <4A1C1A79.2020500@s5r6.in-berlin.de>
-User-Agent: Mutt/1.4.2.3i
-Organization: One Eyed Alien Networks
-X-Copyright: (C) 2009 Matthew Dharm, all rights reserved.
-X-Message-Flag: Get a real e-mail client.  http://www.mutt.org/
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.12 (multivac.one-eyed-alien.net [127.0.0.1]); Tue, 26 May 2009 10:34:33 -0700 (PDT)
+	Tue, 26 May 2009 13:36:23 -0400
+Received: from mga09.intel.com ([134.134.136.24]:24023 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752051AbZEZRgX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 13:36:23 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,253,1241420400"; 
+   d="scan'208";a="415780664"
+Message-ID: <4A1C2895.7090902@intel.com>
+Date: Tue, 26 May 2009 10:36:21 -0700
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20081103)
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Richard Atterer <richard@2009.atterer.net>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>,
+       "Kirsher, Jeffrey T" <jeffrey.t.kirsher@intel.com>
+Subject: Re: [Bug #13371] s2disk hangs with kernel 2.6.29 and later, SATA,
+ Gigabyte EG45M-DS2H - culprit found
+References: <GtY7d2eWpoK.A.ioC.MQcGKB@chimera> <20090525171305.GA5855@arbonne.lan> <20090525230259.GA5098@vilya> <200905260136.33724.rjw@sisk.pl>
+In-Reply-To: <200905260136.33724.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Rafael J. Wysocki wrote:
+> On Tuesday 26 May 2009, Richard Atterer wrote:
+>> Hello,
+>>
+>> "Jerry" contacted me off-list with information about the root of the 
+>> problem - many thanks indeed!!!
+>>
+>> It turns out that the e100 driver is responsible. (The motherboard actually 
+>> has a r8169 chip, but I added an old Intel PCI ethernet card I own.)
+>>
+>> By rmmoding e100 before s2disk, the problem goes away. Jerry mentions that 
+>> he once saw a message about e100 failing to load its microcode - I never 
+>> saw such a message.
+>>
+>> The most recent e100 commit ac7c992 by Thadeu Lima de Souza Cascardo (Apr 
+>> 28) made some changes to the behaviour in the case of shutdown vs. suspend, 
+>> maybe the problem is there? (But note that during bisecting, I tested 
+>> kernels older than that commit, and not all of them worked.) Before that, 
+>> f902283 (Mar 3 2008) mentions suspend in the log message.
+> 
+> OK, thanks for the information.  I'll have a look at the e100 suspend-resume
+> code, but I really don't think commit ac7c992 is at fault here.
 
---FWibJpkbnkY6rrXF
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+adding Jeff Kirsher to the Cc, who currently maintains the e100 driver.
 
-On Tue, May 26, 2009 at 06:36:09PM +0200, Stefan Richter wrote:
-> Matthew Dharm wrote:
-> > On Mon, May 25, 2009 at 01:45:54PM -0300, Rog=E9rio Brito wrote:
-> >> The question is: how are devices determined to be removable or not?
-> >> Sorry if this question is too naive.
-> >=20
-> > It's a bit that the device reports.  The usb-storage driver passes this=
- bit
-> > to the SCSI layer.
->=20
-> Wasn't this bit actually about removable _media_ rather than
-> hotpluggable transports?  (I.e. hardware where you can pull the medium
-> out of the drive mechanism.)  So in this sense, an USB attached HDD
-> should actually not present itself as "removable" unless it's a SyQuest
-> or Zip or something like that.
-
-In fact, yes, that's the meaning of that bit.  The device indicates if the
-storage media may be removed from the device.
-
-That said, a great many devices simply lie about this.  Probably developers
-doing a cut-and-paste from templates which have the bit set one way or the
-other.  The "popular" OSes don't seem to really care much about this bit...
-
-Matt
-
---=20
-Matthew Dharm                              Home: mdharm-usb@one-eyed-alien.=
-net=20
-Maintainer, Linux USB Mass Storage Driver
-
-C:  Like the Furby?
-DP: He gives me the creeps.  Think the SPCA will take him?
-					-- Cobb and Dust Puppy
-User Friendly, 1/2/1999
-
---FWibJpkbnkY6rrXF
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQFKHCgoHL9iwnUZqnkRAoHWAJ9RtZTPfNrJejbpxakt/T4rYt5x4wCglANz
-DoBtlDZK1wR/sIuS6AjnhiE=
-=Tzs1
------END PGP SIGNATURE-----
-
---FWibJpkbnkY6rrXF--
+Auke
