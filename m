@@ -1,103 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754736AbZEZB2t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753434AbZEZBpg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754736AbZEZB2t (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 21:28:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754022AbZEZB2m
+	id S1753434AbZEZBpg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 21:45:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752463AbZEZBp0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 21:28:42 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:55105 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753216AbZEZB2l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 21:28:41 -0400
-Date: Mon, 25 May 2009 18:28:43 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, mingo@elte.hu,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       davem@davemloft.net, dada1@cosmosbay.com, zbr@ioremap.net,
-       jeff.chua.linux@gmail.com, paulus@samba.org, jengelh@medozas.de,
-       r000n@r000n.net, benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
-Subject: Re: [PATCH RFC] v7 expedited "big hammer" RCU grace periods
-Message-ID: <20090526012843.GF7168@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090522190525.GA13286@linux.vnet.ibm.com> <4A1A3C23.8090004@cn.fujitsu.com> <20090525164446.GD7168@linux.vnet.ibm.com> <4A1B3FFB.7090306@cn.fujitsu.com>
+	Mon, 25 May 2009 21:45:26 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:9193 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752018AbZEZBpZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 21:45:25 -0400
+X-IronPort-AV: E=Sophos;i="4.41,247,1241395200"; 
+   d="scan'208";a="310524172"
+From: Roland Dreier <rdreier@cisco.com>
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
+       akpm@linux-foundation.org, jack@suse.cz, yanmin_zhang@linux.intel.com
+Subject: Re: [PATCH 03/13] scsi: unify allocation of scsi command and sense buffer
+References: <1243236668-3398-1-git-send-email-jens.axboe@oracle.com>
+	<1243236668-3398-6-git-send-email-jens.axboe@oracle.com>
+	<4A1A64A1.2050409@panasas.com>
+X-Message-Flag: Warning: May contain useful information
+Date: Mon, 25 May 2009 18:45:25 -0700
+In-Reply-To: <4A1A64A1.2050409@panasas.com> (Boaz Harrosh's message of "Mon,
+	25 May 2009 12:28:01 +0300")
+Message-ID: <aday6sk8wne.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A1B3FFB.7090306@cn.fujitsu.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-OriginalArrivalTime: 26 May 2009 01:45:26.0377 (UTC) FILETIME=[A45D8590:01C9DDA3]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 26, 2009 at 09:03:55AM +0800, Lai Jiangshan wrote:
-> Paul E. McKenney wrote:
-> > 
-> > Good point -- I should at the very least add a comment to
-> > synchronize_sched_expedited() stating that it cannot be called holding
-> > any lock that is acquired in a CPU hotplug notifier.  If this restriction
-> > causes any problems, then your approach seems like a promising fix.
-> 
-> Reviewed-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+ > Ideally there should be a MACRO that is defined to WORD_SIZE on cache-coherent
+ > ARCHs and to SMP_CACHE_BYTES on none-cache-coherent systems and use that size
+ > at the __align() attribute. (So only stupid ARCHES get hurt)
 
-Thank you very much for your review and comments!!!
+this seems to come up repeatedly -- I had a proposal a _long_ time ago
+that never quite got merged, cf http://lwn.net/Articles/2265/ and
+http://lwn.net/Articles/2269/ -- from 2002 (!?).  The idea is to go a
+step further and create a __dma_buffer annotation for structure members.
 
-> >> The coupling of synchronize_sched_expedited() and migration_req
-> >> is largely increased:
-> >>
-> >> 1) The offline cpu's per_cpu(rcu_migration_req, cpu) is handled.
-> >>    See migration_call::CPU_DEAD
-> > 
-> > Good.  ;-)
-> > 
-> >> 2) migration_call() is the highest priority of cpu notifiers,
-> >>    So even any other cpu notifier calls synchronize_sched_expedited(),
-> >>    It'll not cause DEADLOCK.
-> > 
-> > You mean if using your preempt_disable() approach, right?  Unless I am
-> > missing something, the current get_online_cpus() approach would deadlock
-> > in this case.
-> 
-> Yes, I mean if using my preempt_disable() approach. The current
-> get_online_cpus() approach would NOT deadlock in this case also,
-> we can require get_online_cpus() in cpu notifiers.
+Maybe I should resurrect that work one more time?
 
-I have added the comment for the time being, but should people need to
-use this in CPU-hotplug notifiers, then again your preempt_disable()
-approach looks to be a promising fix.
-
-> > diff --git a/include/linux/rcupreempt.h b/include/linux/rcupreempt.h
-> > index fce5227..78117ed 100644
-> > --- a/include/linux/rcupreempt.h
-> > +++ b/include/linux/rcupreempt.h
-> > @@ -74,6 +74,16 @@ extern int rcu_needs_cpu(int cpu);
-> >  
-> >  extern void __synchronize_sched(void);
-> >  
-> > +static inline void synchronize_rcu_expedited(void)
-> > +{
-> > +	synchronize_rcu();  /* Placeholder for new rcupreempt implementation. */
-> > +}
-> > +
-> > +static inline void synchronize_rcu_bh_expedited(void)
-> > +{
-> > +	synchronize_rcu();  /* Placeholder for new rcupreempt implementation. */
-> > +}
-> > +
-> 
-> Why not synchronize_rcu_bh() ?
-
-Ummm...  Because I did a typo.  Fixed.
-
-> In mainline, rcu_read_lock_bh() is not preemptable,
-> So I think synchronize_sched_expedited() is better.
-> 
-> Anyway, synchronize_rcu() is OK for me, because it is
-> "Placeholder for new rcupreempt implementation".
-
-And I am worried that preemptable RCU's rcu_bh read sides might someday
-become preemptable.  Seems a bit unlikely at this point, but why tempt
-fate?
-
-							Thanx, Paul
+ - R.
