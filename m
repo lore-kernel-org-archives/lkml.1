@@ -1,159 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753924AbZEZCLt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754288AbZEZCQh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753924AbZEZCLt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 22:11:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752930AbZEZCLm
+	id S1754288AbZEZCQh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 22:16:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752908AbZEZCQa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 22:11:42 -0400
-Received: from yw-out-2324.google.com ([74.125.46.30]:31886 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752671AbZEZCLm convert rfc822-to-8bit (ORCPT
+	Mon, 25 May 2009 22:16:30 -0400
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:64831 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752738AbZEZCQa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 22:11:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Dej+mQmsx/CsCITV1idyzPAj2fQPLyxBwys7yqaxmV/zjfykQY2vgv+pKBSEh1RbWv
-         nnHajjd0kfy+sEhis2CVBCp1ZeSsepkGFKeLxY8RVTL1FZ/ur1FK86T0L80OHa7H6vzj
-         6GsAwtSz4oV/wC6afI7u2x52wMciqw3wkLetE=
+	Mon, 25 May 2009 22:16:30 -0400
+Message-ID: <4A1B50F8.1050401@ct.jp.nec.com>
+Date: Tue, 26 May 2009 11:16:24 +0900
+From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-In-Reply-To: <b9df5fa10905251820l3783327ek4f6b7014aa167690@mail.gmail.com>
-References: <b9df5fa10905251820l3783327ek4f6b7014aa167690@mail.gmail.com>
-Date: Mon, 25 May 2009 19:11:42 -0700
-Message-ID: <86802c440905251911h6f6c146eo4c30d306ac8d17d8@mail.gmail.com>
-Subject: Re: [PATCH] v2: x86,APIC: Detect lapic_is_integrated() once - use on 
-	and on
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Rakib Mullick <rakib.mullick@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, macro@linux-mips.org,
-       Cyrill Gorcunov <gorcunov@openvz.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: linux-kernel@vger.kernel.org, "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>,
+       k-ueda@ct.jp.nec.com
+Subject: [PATCH 2.6-block/for-2.6.31] block: fix no diskstat problem
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 25, 2009 at 6:20 PM, Rakib Mullick <rakib.mullick@gmail.com> wrote:
->  This patch was sent previously (http://lkml.org/lkml/2009/5/22/240) -
-> but that one contains flaw as that one prevents compiler to optimize
-> the X86_64 case out. Thomas Gleixner (so thanks Thomas) shows how to
-> prevent that flaw. Also it helps to avoid cache line pollution. So, I
-> think with this patch everyone would be happy.
->
-> Thanks,
-> --
-> Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
->
-> --- linus/arch/x86/kernel/apic/apic.c   2009-05-25 00:20:25.000000000 +0600
-> +++ rakib/arch/x86/kernel/apic/apic.c   2009-05-25 00:50:08.333910872 +0600
-> @@ -127,6 +127,13 @@ early_param("nox2apic", setup_nox2apic);
->
->  unsigned long mp_lapic_addr;
->  int disable_apic;
-> +
-> +#ifdef CONFIG_X86_64
-> +# define integrated_lapic (1)
-> +#else
-> +static int integrated_lapic __read_mostly;
-> +#endif
-> +
->  /* Disable local APIC timer from the kernel commandline or via dmi quirk */
->  static int disable_apic_timer __cpuinitdata;
->  /* Local APIC timer works in C2 */
-> @@ -188,12 +195,10 @@ static inline int lapic_get_version(void
->  /*
->  * Check, if the APIC is integrated or a separate chip
->  */
-> -static inline int lapic_is_integrated(void)
-> +static inline void lapic_is_integrated(void)
->  {
-> -#ifdef CONFIG_X86_64
-> -       return 1;
-> -#else
-> -       return APIC_INTEGRATED(lapic_get_version());
-> +#ifdef CONFIG_X86_32
-> +       integrated_lapic = APIC_INTEGRATED(lapic_get_version());
->  #endif
->  }
->
-> @@ -258,7 +263,7 @@ void __cpuinit enable_NMI_through_LVT0(v
->        v = APIC_DM_NMI;
->
->        /* Level triggered for 82489DX (32bit mode) */
-> -       if (!lapic_is_integrated())
-> +       if (!integrated_lapic)
->                v |= APIC_LVT_LEVEL_TRIGGER;
->
->        apic_write(APIC_LVT0, v);
-> @@ -313,7 +318,7 @@ static void __setup_APIC_LVTT(unsigned i
->        lvtt_value = LOCAL_TIMER_VECTOR;
->        if (!oneshot)
->                lvtt_value |= APIC_LVT_TIMER_PERIODIC;
-> -       if (!lapic_is_integrated())
-> +       if (!integrated_lapic)
->                lvtt_value |= SET_APIC_TIMER_BASE(APIC_TIMER_BASE_DIV);
->
->        if (!irqen)
-> @@ -869,7 +874,7 @@ void clear_local_APIC(void)
->                apic_write(APIC_LVTPC, APIC_LVT_MASKED);
->
->        /* Integrated APIC (!82489DX) ? */
-> -       if (lapic_is_integrated()) {
-> +       if (integrated_lapic) {
->                if (maxlvt > 3)
->                        /* Clear ESR due to Pentium errata 3AP and 11AP */
->                        apic_write(APIC_ESR, 0);
-> @@ -1064,7 +1069,7 @@ void __init init_bsp_APIC(void)
->         */
->        apic_write(APIC_LVT0, APIC_DM_EXTINT);
->        value = APIC_DM_NMI;
-> -       if (!lapic_is_integrated())             /* 82489DX */
-> +       if (!integrated_lapic)          /* 82489DX */
->                value |= APIC_LVT_LEVEL_TRIGGER;
->        apic_write(APIC_LVT1, value);
->  }
-> @@ -1073,7 +1078,7 @@ static void __cpuinit lapic_setup_esr(vo
->  {
->        unsigned int oldvalue, value, maxlvt;
->
-> -       if (!lapic_is_integrated()) {
-> +       if (!integrated_lapic) {
->                pr_info("No ESR for 82489DX.\n");
->                return;
->        }
-> @@ -1126,7 +1131,7 @@ void __cpuinit setup_local_APIC(void)
->
->  #ifdef CONFIG_X86_32
->        /* Pound the ESR really hard over the head with a big hammer - mbligh */
-> -       if (lapic_is_integrated() && apic->disable_esr) {
-> +       if (integrated_lapic && apic->disable_esr) {
->                apic_write(APIC_ESR, 0);
->                apic_write(APIC_ESR, 0);
->                apic_write(APIC_ESR, 0);
-> @@ -1251,7 +1256,7 @@ void __cpuinit setup_local_APIC(void)
->                value = APIC_DM_NMI;
->        else
->                value = APIC_DM_NMI | APIC_LVT_MASKED;
-> -       if (!lapic_is_integrated())             /* 82489DX */
-> +       if (!integrated_lapic)          /* 82489DX */
->                value |= APIC_LVT_LEVEL_TRIGGER;
->        apic_write(APIC_LVT1, value);
->
-> @@ -1599,6 +1604,8 @@ int __init APIC_init_uniprocessor(void)
->                clear_cpu_cap(&boot_cpu_data, X86_FEATURE_APIC);
->                return -1;
->        }
-> +       /* Determine APIC is integrated or not. */
-> +       lapic_is_integrated();
->  #endif
->
->        enable_IR_x2apic();
-> --
+Hi Jens,
 
-do you need to call lapic_is_integrated() for 32bit smp?
+The commit below in 2.6-block/for-2.6.31 causes no diskstat problem
+because the blk_discard_rq() check was added with '&&'.
+It should be 'blk_fs_request() || blk_discard_rq()'.
+This patch does it and fixes the no diskstat problem.
+Please review and apply.
 
-YH
+------ /proc/diskstat without this patch -------------------------------------
+   8       0 sda 0 0 0 0 0 0 0 0 0 0 0
+------------------------------------------------------------------------------
+
+----- /proc/diskstat with this patch applied ---------------------------------
+   8       0 sda 4186 303 373621 61600 9578 3859 107468 169479 2 89755 231059
+------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------
+commit c69d48540c201394d08cb4d48b905e001313d9b8
+Author: Jens Axboe <jens.axboe@oracle.com>
+Date:   Fri Apr 24 08:12:19 2009 +0200
+
+    block: include discard requests in IO accounting
+    
+    We currently don't do merging on discard requests, but we potentially
+    could. If we do, then we need to include discard requests in the IO
+    accounting, or merging would end up decrementing in_flight IO counters
+    for an IO which never incremented them.
+    
+    So enable accounting for discard requests.
+    
+<snip>
+
+ static inline int blk_do_io_stat(struct request *rq)
+ {
+-       return rq->rq_disk && blk_rq_io_stat(rq) && blk_fs_request(rq);
++       return rq->rq_disk && blk_rq_io_stat(rq) && blk_fs_request(rq) &&
++               blk_discard_rq(rq);
+ }
+--------------------------------------------------------------------------
+
+Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>
+---
+ block/blk.h |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+Index: linux-2.6-block/block/blk.h
+===================================================================
+--- linux-2.6-block.orig/block/blk.h
++++ linux-2.6-block/block/blk.h
+@@ -156,12 +156,12 @@ static inline int blk_cpu_to_group(int c
+  *
+  *	a) it's attached to a gendisk, and
+  *	b) the queue had IO stats enabled when this request was started, and
+- *	c) it's a file system request
++ *	c) it's a file system request or a discard request
+  */
+ static inline int blk_do_io_stat(struct request *rq)
+ {
+-	return rq->rq_disk && blk_rq_io_stat(rq) && blk_fs_request(rq) &&
+-		blk_discard_rq(rq);
++	return rq->rq_disk && blk_rq_io_stat(rq) &&
++	       (blk_fs_request(rq) || blk_discard_rq(rq));
+ }
+ 
+ #endif
