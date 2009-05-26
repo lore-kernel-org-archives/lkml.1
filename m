@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753796AbZEZQ11@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755022AbZEZQ1p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753796AbZEZQ11 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 12:27:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751277AbZEZQ1T
+	id S1755022AbZEZQ1p (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 12:27:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752563AbZEZQ1e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 12:27:19 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:58473 "EHLO
+	Tue, 26 May 2009 12:27:34 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:58500 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751015AbZEZQ1T (ORCPT
+	with ESMTP id S1753203AbZEZQ1e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 12:27:19 -0400
-Date: Tue, 26 May 2009 12:27:17 -0400
+	Tue, 26 May 2009 12:27:34 -0400
+Date: Tue, 26 May 2009 12:27:34 -0400
 From: Kyle McMartin <kyle@mcmartin.ca>
 To: airlied@redhat.com
 Cc: dri-devel@lists.sf.net, linux-kernel@vger.kernel.org,
-       jbarnes@virtuousgeek.org, eric@anholt.net, stable@kernel.org,
-       hugh.dickins@tiscali.co.uk, linux-mm@kvack.org, shaohua.li@intel.com
-Subject: [PATCH] drm: i915: ensure objects are allocated below 4GB on PAE
-Message-ID: <20090526162717.GC14808@bombadil.infradead.org>
+       jbarnes@virtuousgeek.org, eric@anholt.net
+Subject: [PATCH trivial] drm: i915: i915_modeset is signed
+Message-ID: <20090526162734.GD14808@bombadil.infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -28,81 +27,24 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Kyle McMartin <kyle@redhat.com>
 
-Ensure we allocate GEM objects below 4GB on PAE machines, otherwise
-misery ensues. This patch is based on a patch found on dri-devel by
-Shaohua Li, but Keith P. expressed reticence that the changes unfairly
-penalized other hardware.
-
-(The mm/shmem.c hunk is necessary to ensure the DMA32 flag isn't used
- by the slab allocator via radix_tree_preload, which will hit a
- WARN_ON.)
-
 Signed-off-by: Kyle McMartin <kyle@redhat.com>
 ---
+ drivers/gpu/drm/i915/i915_drv.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-We're shipping a variant of this in Fedora 11 to fix a myriad of bugs on
-PAE hardware.
+diff --git a/drivers/gpu/drm/i915/i915_drv.c b/drivers/gpu/drm/i915/i915_drv.c
+index 98560e1..06600d1 100644
+--- a/drivers/gpu/drm/i915/i915_drv.c
++++ b/drivers/gpu/drm/i915/i915_drv.c
+@@ -36,7 +36,7 @@
+ #include "drm_pciids.h"
+ #include <linux/console.h>
+ 
+-static unsigned int i915_modeset = -1;
++static int i915_modeset = -1;
+ module_param_named(modeset, i915_modeset, int, 0400);
+ 
+ unsigned int i915_fbpercrtc = 0;
+-- 
+1.6.2.2
 
-cheers, Kyle
-
----
-diff --git a/drivers/gpu/drm/drm_gem.c b/drivers/gpu/drm/drm_gem.c
-index 4984aa8..ae52edc 100644
---- a/drivers/gpu/drm/drm_gem.c
-+++ b/drivers/gpu/drm/drm_gem.c
-@@ -142,6 +142,9 @@ drm_gem_object_alloc(struct drm_device *dev, size_t size)
- 		return NULL;
- 	}
- 
-+	if (dev->gem_flags)
-+		mapping_set_gfp_mask(obj->filp->f_mapping, dev->gem_flags);
-+
- 	kref_init(&obj->refcount);
- 	kref_init(&obj->handlecount);
- 	obj->size = size;
-diff --git a/drivers/gpu/drm/i915/i915_dma.c b/drivers/gpu/drm/i915/i915_dma.c
-index 53d5445..c89ae3d 100644
---- a/drivers/gpu/drm/i915/i915_dma.c
-+++ b/drivers/gpu/drm/i915/i915_dma.c
-@@ -1153,12 +1153,12 @@ int i915_driver_load(struct drm_device *dev, unsigned long flags)
- 	}
- 
- #ifdef CONFIG_HIGHMEM64G
--	/* don't enable GEM on PAE - needs agp + set_memory_* interface fixes */
--	dev_priv->has_gem = 0;
--#else
-+	/* avoid allocating buffers above 4GB on PAE */
-+	dev->gem_flags = GFP_USER | GFP_DMA32;
-+#endif
-+
- 	/* enable GEM by default */
- 	dev_priv->has_gem = 1;
--#endif
- 
- 	dev->driver->get_vblank_counter = i915_get_vblank_counter;
- 	if (IS_GM45(dev))
-diff --git a/include/drm/drmP.h b/include/drm/drmP.h
-index c8c4221..3744c1f 100644
---- a/include/drm/drmP.h
-+++ b/include/drm/drmP.h
-@@ -1019,6 +1019,7 @@ struct drm_device {
- 	uint32_t gtt_total;
- 	uint32_t invalidate_domains;    /* domains pending invalidation */
- 	uint32_t flush_domains;         /* domains pending flush */
-+	gfp_t gem_flags;		/* object allocation flags */
- 	/*@} */
- 
- };
-diff --git a/mm/shmem.c b/mm/shmem.c
-index b25f95c..e615887 100644
---- a/mm/shmem.c
-+++ b/mm/shmem.c
-@@ -1241,7 +1241,7 @@ repeat:
- 		 * Try to preload while we can wait, to not make a habit of
- 		 * draining atomic reserves; but don't latch on to this cpu.
- 		 */
--		error = radix_tree_preload(gfp & ~__GFP_HIGHMEM);
-+		error = radix_tree_preload(gfp & ~(__GFP_HIGHMEM|__GFP_DMA32));
- 		if (error)
- 			goto failed;
- 		radix_tree_preload_end();
