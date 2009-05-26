@@ -1,88 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756060AbZEZXzp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757701AbZEZXz4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756060AbZEZXzp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 19:55:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755763AbZEZXyn
+	id S1757701AbZEZXz4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 19:55:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755965AbZEZXyo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 19:54:43 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:38575 "EHLO
+	Tue, 26 May 2009 19:54:44 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:38586 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755935AbZEZXyl (ORCPT
+	with ESMTP id S1754967AbZEZXym (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 19:54:41 -0400
+	Tue, 26 May 2009 19:54:42 -0400
 From: Andi Kleen <andi@firstfloor.org>
 To: linux-kernel@vger.kernel.org, hpa@zytor.com, x86@kernel.org
-Cc: Huang Ying <ying.huang@intel.com>, Andi Kleen <ak@linux.intel.com>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Subject: [PATCH 02/31] x86: MCE: Improve mce_get_rip v3
-Date: Wed, 27 May 2009 01:54:04 +0200
-Message-Id: <c1d7bf910168f07efb50d98f901f41e289a87f1f.1243381848.git.ak@linux.intel.com>
+Cc: Andi Kleen <ak@linux.intel.com>
+Subject: [PATCH 04/31] x86: MCE: Use extended sysattrs for the check_interval attribute.
+Date: Wed, 27 May 2009 01:54:06 +0200
+Message-Id: <1623cd9a1c77d35fc2044d72c4bfa1246e67a1c0.1243381848.git.ak@linux.intel.com>
 X-Mailer: git-send-email 1.6.0.2
-In-Reply-To: <c63915cfa51e24394524ddaa66a6f2cb2fcfe66f.1243381848.git.ak@linux.intel.com>
+In-Reply-To: <6c6d1f8bbbd2312884dca5a5c75aa5f5a87dae4b.1243381848.git.ak@linux.intel.com>
 References: <1243382073-29338-1-git-send-email-andi@firstfloor.org>
  <c63915cfa51e24394524ddaa66a6f2cb2fcfe66f.1243381848.git.ak@linux.intel.com>
+ <c1d7bf910168f07efb50d98f901f41e289a87f1f.1243381848.git.ak@linux.intel.com>
+ <6c6d1f8bbbd2312884dca5a5c75aa5f5a87dae4b.1243381848.git.ak@linux.intel.com>
 In-Reply-To: <c63915cfa51e24394524ddaa66a6f2cb2fcfe66f.1243381848.git.ak@linux.intel.com>
 References: <c63915cfa51e24394524ddaa66a6f2cb2fcfe66f.1243381848.git.ak@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Huang Ying <ying.huang@intel.com>
+From: Andi Kleen <ak@linux.intel.com>
 
-Assume RIP is valid when either EIPV or RIPV are set. This influences
-whether the machine check exception handler decides to return or panic.
+Impact: Cleanup
 
-This fixes a test case in the mce-test suite and is more compliant
-to the specification.
+Instead of using own callbacks use the generic ones provided by
+the sysdev later.
 
-This currently only makes a difference in a artificial testing
-scenario with the mce-test test suite.
+This finally allows to get rid of the ugly ACCESSOR macros. Should
+also save some text size.
 
-Also in addition do not force the RIP to be valid with the exact
-register MSRs.
-
-[AK: combination of patches from Huang Ying and Hidetoshi Seto, with
-new description by me]
-Signed-off-by: Huang Ying <ying.huang@intel.com>
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
-Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
 ---
- arch/x86/kernel/cpu/mcheck/mce.c |   13 +++++++------
- 1 files changed, 7 insertions(+), 6 deletions(-)
+ arch/x86/kernel/cpu/mcheck/mce.c |   39 ++++++++++++++-----------------------
+ 1 files changed, 15 insertions(+), 24 deletions(-)
 
 diff --git a/arch/x86/kernel/cpu/mcheck/mce.c b/arch/x86/kernel/cpu/mcheck/mce.c
-index 249e3cf..3f158d7 100644
+index e1271ac..8a8af56 100644
 --- a/arch/x86/kernel/cpu/mcheck/mce.c
 +++ b/arch/x86/kernel/cpu/mcheck/mce.c
-@@ -247,21 +247,22 @@ int mce_available(struct cpuinfo_x86 *c)
- 	return cpu_has(c, X86_FEATURE_MCE) && cpu_has(c, X86_FEATURE_MCA);
+@@ -1055,28 +1055,6 @@ DEFINE_PER_CPU(struct sys_device, device_mce);
+ __cpuinitdata
+ void (*threshold_cpu_callback)(unsigned long action, unsigned int cpu);
+ 
+-/* Why are there no generic functions for this? */
+-#define ACCESSOR(name, var, start) \
+-	static ssize_t show_ ## name(struct sys_device *s,		\
+-				     struct sysdev_attribute *attr,	\
+-				     char *buf) {			\
+-		return sprintf(buf, "%Lx\n", (u64)var);			\
+-	}								\
+-	static ssize_t set_ ## name(struct sys_device *s,		\
+-				    struct sysdev_attribute *attr,	\
+-				    const char *buf, size_t siz) {	\
+-		char *end;						\
+-		u64 new = simple_strtoull(buf, &end, 0);		\
+-									\
+-		if (end == buf)						\
+-			return -EINVAL;					\
+-		var = new;						\
+-		start;							\
+-									\
+-		return end-buf;						\
+-	}								\
+-	static SYSDEV_ATTR(name, 0644, show_ ## name, set_ ## name);
+-
+ static struct sysdev_attribute *bank_attrs;
+ 
+ static ssize_t show_bank(struct sys_device *s, struct sysdev_attribute *attr,
+@@ -1127,13 +1105,26 @@ static ssize_t set_trigger(struct sys_device *s, struct sysdev_attribute *attr,
+ 	return len;
  }
  
-+/*
-+ * Get the address of the instruction at the time of the machine check
-+ * error.
-+ */
- static inline void mce_get_rip(struct mce *m, struct pt_regs *regs)
- {
--	if (regs && (m->mcgstatus & MCG_STATUS_RIPV)) {
++static ssize_t store_int_with_restart(struct sys_device *s,
++				      struct sysdev_attribute *attr,
++				      const char *buf, size_t size)
++{
++	ssize_t ret = sysdev_store_int(s, attr, buf, size);
++	mce_restart();
++	return ret;
++}
 +
-+	if (regs && (m->mcgstatus & (MCG_STATUS_RIPV|MCG_STATUS_EIPV))) {
- 		m->ip = regs->ip;
- 		m->cs = regs->cs;
- 	} else {
- 		m->ip = 0;
- 		m->cs = 0;
- 	}
--	if (rip_msr) {
--		/* Assume the RIP in the MSR is exact. Is this true? */
--		m->mcgstatus |= MCG_STATUS_EIPV;
-+	if (rip_msr)
- 		m->ip = mce_rdmsrl(rip_msr);
--		m->cs = 0;
--	}
- }
+ static SYSDEV_ATTR(trigger, 0644, show_trigger, set_trigger);
+ static SYSDEV_INT_ATTR(tolerant, 0644, tolerant);
  
- /*
+-ACCESSOR(check_interval, check_interval, mce_restart())
++static struct sysdev_ext_attribute attr_check_interval = {
++	_SYSDEV_ATTR(check_interval, 0644, sysdev_show_int,
++		     store_int_with_restart),
++	&check_interval
++};
+ 
+ static struct sysdev_attribute *mce_attr[] = {
+-	&attr_tolerant.attr, &attr_check_interval, &attr_trigger,
++	&attr_tolerant.attr, &attr_check_interval.attr, &attr_trigger,
+ 	NULL
+ };
+ 
 -- 
 1.6.0.2
 
