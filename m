@@ -1,84 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760154AbZEZXnW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760881AbZEZXng@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760154AbZEZXnW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 19:43:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758802AbZEZXnO
+	id S1760881AbZEZXng (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 19:43:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758802AbZEZXn1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 19:43:14 -0400
-Received: from www.tglx.de ([62.245.132.106]:38500 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757505AbZEZXnO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 19:43:14 -0400
-Date: Wed, 27 May 2009 01:39:53 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: john stultz <johnstul@us.ibm.com>
-cc: Peter Zijlstra <peterz@infradead.org>,
-       Linus Walleij <linus.ml.walleij@gmail.com>,
-       Paul Mundt <lethal@linux-sh.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Victor <linux@maxim.org.za>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-sh@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       John Stultz <johnstul@linux.vnet.ibm.com>
-Subject: Re: [PATCH] sched: Support current clocksource handling in fallback
- sched_clock().
-In-Reply-To: <1243378835.3275.30.camel@localhost>
-Message-ID: <alpine.LFD.2.00.0905270129210.1762@localhost.localdomain>
-References: <20090526061532.GD9188@linux-sh.org>  <63386a3d0905260731m655bfee3q82a6f52d71fa3cef@mail.gmail.com>  <1243348681.23657.14.camel@twins>  <1243369423.3275.5.camel@localhost>  <1243369815.6600.2.camel@laptop>  <1243370439.3275.13.camel@localhost> 
- <1243371309.6600.8.camel@laptop> <1243378835.3275.30.camel@localhost>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 26 May 2009 19:43:27 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34173 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758850AbZEZXn0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 19:43:26 -0400
+Date: Tue, 26 May 2009 16:42:52 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: hifumi.hisashi@oss.ntt.co.jp, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, kosaki.motohiro@jp.fujitsu.com,
+       linux-mm@kvack.org, jens.axboe@oracle.com
+Subject: Re: [PATCH] readahead:add blk_run_backing_dev
+Message-Id: <20090526164252.0741b392.akpm@linux-foundation.org>
+In-Reply-To: <20090522023323.GA10864@localhost>
+References: <6.0.0.20.2.20090518183752.0581fdc0@172.19.0.2>
+	<20090518175259.GL4140@kernel.dk>
+	<20090520025123.GB8186@localhost>
+	<6.0.0.20.2.20090521145005.06f81fe0@172.19.0.2>
+	<20090522010538.GB6010@localhost>
+	<6.0.0.20.2.20090522102551.0705aea0@172.19.0.2>
+	<20090522023323.GA10864@localhost>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 May 2009, john stultz wrote:
-w> > > Is latency all we care about? How bad would
-> > > the TSC have to be before we wouldn't want to use it?
-> > 
-> > Anything better than jiffies ;-)
+On Fri, 22 May 2009 10:33:23 +0800
+Wu Fengguang <fengguang.wu@intel.com> wrote:
+
+> > I tested above patch, and I got same performance number.
+> > I wonder why if (PageUptodate(page)) check is there...
 > 
-> Except HPET thought, right? :)
-
-Eeek. HPET access serializes across cores. That's orders of magnitudes
-worse than the granularity loss of jiffies.
-
-> > For sched_clock() we want something high-res that is monotonic per cpu
-> > and has a bounded drift between cpus in the order of jiffies.
-> > 
-> > Look at kernel/sched_clock.c for what we do to make really shitty TSC
-> > conform to the above requirements.
+> Thanks!  This is an interesting micro timing behavior that
+> demands some research work.  The above check is to confirm if it's
+> the PageUptodate() case that makes the difference. So why that case
+> happens so frequently so as to impact the performance? Will it also
+> happen in NFS?
 > 
-> Sure, I guess what I'm trying to pull out here is that should we try to
-> create some OK_FOR_SCHED_CLOCK flag for clocksources, and then we try to
-> make this generic so other arches can add that flag and be done, what is
-> the guidance we want to give to arch maintainers for setting that flag?
-> 
-> 1) Has to be very very fast. Can we put a number on this? 50ns to read?
-> 
-> 2) How long does it have to be monotonic for? Is it ok if it wraps every
-> few seconds?
-> 
-> If get_cycles() || jiffies is what we want, then lets leave it there. I
-> just want to avoid mixing the clocksource code into the sched clock code
-> until we really get this sort of definition sorted.
+> The problem is readahead IO pipeline is not running smoothly, which is
+> undesirable and not well understood for now.
 
-The criterion is simple. If arch maintainer decides that the access to
-the particular clock source is the best compromise between granularity
-and access speed vs. jiffies then he can express that by setting the
-flag.
+The patch causes a remarkably large performance increase.  A 9%
+reduction in time for a linear read?  I'd be surprised if the workload
+even consumed 9% of a CPU, so where on earth has the kernel gone to?
 
-Where is the difference between that flag and an arch specific
-sched_clock() implementation which overrides the weak generic one ?
+Have you been able to reproduce this in your testing?
 
-That arch specific function will probably do the same thing:
-
-     return cyc2ns(whathever_clocksource_the_maintainer_thinks_is_the_best);
-
-So let's get rid of those sched_clock() overrrides which do nothing
-else than the generic version.
-
-Thanks,
-
-	tglx
+Thanks.
