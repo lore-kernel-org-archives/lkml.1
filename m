@@ -1,142 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758893AbZEZW45@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759077AbZEZXAs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758893AbZEZW45 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 18:56:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754893AbZEZW4u
+	id S1759077AbZEZXAs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 19:00:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755844AbZEZXAk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 18:56:50 -0400
-Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:30784 "EHLO
-	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754876AbZEZW4t (ORCPT
+	Tue, 26 May 2009 19:00:40 -0400
+Received: from e38.co.us.ibm.com ([32.97.110.159]:55458 "EHLO
+	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753911AbZEZXAj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 18:56:49 -0400
-X-Trace: 205322335/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.124.61/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.124.61
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AokFABMRHEpPRXw9/2dsb2JhbACBT81ghAsF
-X-IronPort-AV: E=Sophos;i="4.41,254,1241391600"; 
-   d="scan'208";a="205322335"
-Date: Tue, 26 May 2009 23:55:50 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Kyle McMartin <kyle@mcmartin.ca>
-cc: airlied@redhat.com, dri-devel@lists.sf.net, linux-kernel@vger.kernel.org,
-       jbarnes@virtuousgeek.org, eric@anholt.net, stable@kernel.org,
-       linux-mm@kvack.org, shaohua.li@intel.com
-Subject: Re: [PATCH] drm: i915: ensure objects are allocated below 4GB on
- PAE
-In-Reply-To: <20090526162717.GC14808@bombadil.infradead.org>
-Message-ID: <Pine.LNX.4.64.0905262343140.13452@sister.anvils>
-References: <20090526162717.GC14808@bombadil.infradead.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 26 May 2009 19:00:39 -0400
+Subject: Re: [PATCH] sched: Support current clocksource handling in
+ fallback sched_clock().
+From: john stultz <johnstul@us.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Linus Walleij <linus.ml.walleij@gmail.com>,
+       Paul Mundt <lethal@linux-sh.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Victor <linux@maxim.org.za>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-sh@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       John Stultz <johnstul@linux.vnet.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <1243371309.6600.8.camel@laptop>
+References: <20090526061532.GD9188@linux-sh.org>
+	 <63386a3d0905260731m655bfee3q82a6f52d71fa3cef@mail.gmail.com>
+	 <1243348681.23657.14.camel@twins>  <1243369423.3275.5.camel@localhost>
+	 <1243369815.6600.2.camel@laptop>  <1243370439.3275.13.camel@localhost>
+	 <1243371309.6600.8.camel@laptop>
+Content-Type: text/plain
+Date: Tue, 26 May 2009 16:00:35 -0700
+Message-Id: <1243378835.3275.30.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 May 2009, Kyle McMartin wrote:
-> From: Kyle McMartin <kyle@redhat.com>
+On Tue, 2009-05-26 at 22:55 +0200, Peter Zijlstra wrote:
+> On Tue, 2009-05-26 at 13:40 -0700, john stultz wrote:
+> > On Tue, 2009-05-26 at 22:30 +0200, Peter Zijlstra wrote:
+> > > On Tue, 2009-05-26 at 13:23 -0700, john stultz wrote:
+> > > > Overall, I'd probably suggest thinking this through a bit more. At some
+> > > > point doing this right will cause sched_clock() to be basically the same
+> > > > as ktime_get(). So why not just use that instead of remaking it?
+> > > 
+> > > simply because we don't require the strict global monotonicy for
+> > > scheduling as we do from a regular time source (its nice to have
+> > > though).
+> > > 
+> > > That means that on x86 we can always use TSC for sched_clock(), even
+> > > when its quite unsuitable for ktime.
+> > 
+> > Right, but I guess what I'm asking is can this be a bit better defined? 
+> > 
+> > If we are going to use clocksources (or cyclecounters - an area I need
+> > to clean up soon), it would be good to get an idea of what is expected
+> > of the sched_clock() interface.
+> > 
+> > So TSC good, HPET bad. Why? 
 > 
-> Ensure we allocate GEM objects below 4GB on PAE machines, otherwise
-> misery ensues. This patch is based on a patch found on dri-devel by
-> Shaohua Li, but Keith P. expressed reticence that the changes unfairly
-> penalized other hardware.
+> Because TSC is a few cycles to read, and you can factorize a largish
+> prime while doing an HPET read :-)
 > 
-> (The mm/shmem.c hunk is necessary to ensure the DMA32 flag isn't used
->  by the slab allocator via radix_tree_preload, which will hit a
->  WARN_ON.)
+> > Is latency all we care about? How bad would
+> > the TSC have to be before we wouldn't want to use it?
 > 
-> Signed-off-by: Kyle McMartin <kyle@redhat.com>
+> Anything better than jiffies ;-)
 
-I'm confused: I thought GFP_DMA32 only applies on x86_64:
-my 32-bit PAE machine with (slightly!) > 4GB shows no ZONE_DMA32.
-Does this patch perhaps depend on another, to enable DMA32 on 32-bit
-PAE, or am I just in a muddle?
+Except HPET thought, right? :)
 
-Regarding the mm/shmem.c hunk:
-> -		error = radix_tree_preload(gfp & ~__GFP_HIGHMEM);
-> +		error = radix_tree_preload(gfp & ~(__GFP_HIGHMEM|__GFP_DMA32));
-
-Yes, that would make sense.  I dislike it, but my dislike is no
-reason to hold you up: what it ought to say is
-		error = radix_tree_preload(gfp & GFP_RECLAIM_MASK);
-and similarly the several other (gfp & ~__GFP_HIGHMEM)s to be found
-in nearby files: it's just an accident of history that nobody has
-hit this issue with __GFP_DMA or __GFP_DMA32 before.  I intended
-to change these months ago, my slowness is no reason to delay you.
-
-Hugh
-
-> ---
+> For sched_clock() we want something high-res that is monotonic per cpu
+> and has a bounded drift between cpus in the order of jiffies.
 > 
-> We're shipping a variant of this in Fedora 11 to fix a myriad of bugs on
-> PAE hardware.
-> 
-> cheers, Kyle
-> 
-> ---
-> diff --git a/drivers/gpu/drm/drm_gem.c b/drivers/gpu/drm/drm_gem.c
-> index 4984aa8..ae52edc 100644
-> --- a/drivers/gpu/drm/drm_gem.c
-> +++ b/drivers/gpu/drm/drm_gem.c
-> @@ -142,6 +142,9 @@ drm_gem_object_alloc(struct drm_device *dev, size_t size)
->  		return NULL;
->  	}
->  
-> +	if (dev->gem_flags)
-> +		mapping_set_gfp_mask(obj->filp->f_mapping, dev->gem_flags);
-> +
->  	kref_init(&obj->refcount);
->  	kref_init(&obj->handlecount);
->  	obj->size = size;
-> diff --git a/drivers/gpu/drm/i915/i915_dma.c b/drivers/gpu/drm/i915/i915_dma.c
-> index 53d5445..c89ae3d 100644
-> --- a/drivers/gpu/drm/i915/i915_dma.c
-> +++ b/drivers/gpu/drm/i915/i915_dma.c
-> @@ -1153,12 +1153,12 @@ int i915_driver_load(struct drm_device *dev, unsigned long flags)
->  	}
->  
->  #ifdef CONFIG_HIGHMEM64G
-> -	/* don't enable GEM on PAE - needs agp + set_memory_* interface fixes */
-> -	dev_priv->has_gem = 0;
-> -#else
-> +	/* avoid allocating buffers above 4GB on PAE */
-> +	dev->gem_flags = GFP_USER | GFP_DMA32;
-> +#endif
-> +
->  	/* enable GEM by default */
->  	dev_priv->has_gem = 1;
-> -#endif
->  
->  	dev->driver->get_vblank_counter = i915_get_vblank_counter;
->  	if (IS_GM45(dev))
-> diff --git a/include/drm/drmP.h b/include/drm/drmP.h
-> index c8c4221..3744c1f 100644
-> --- a/include/drm/drmP.h
-> +++ b/include/drm/drmP.h
-> @@ -1019,6 +1019,7 @@ struct drm_device {
->  	uint32_t gtt_total;
->  	uint32_t invalidate_domains;    /* domains pending invalidation */
->  	uint32_t flush_domains;         /* domains pending flush */
-> +	gfp_t gem_flags;		/* object allocation flags */
->  	/*@} */
->  
->  };
-> diff --git a/mm/shmem.c b/mm/shmem.c
-> index b25f95c..e615887 100644
-> --- a/mm/shmem.c
-> +++ b/mm/shmem.c
-> @@ -1241,7 +1241,7 @@ repeat:
->  		 * Try to preload while we can wait, to not make a habit of
->  		 * draining atomic reserves; but don't latch on to this cpu.
->  		 */
-> -		error = radix_tree_preload(gfp & ~__GFP_HIGHMEM);
-> +		error = radix_tree_preload(gfp & ~(__GFP_HIGHMEM|__GFP_DMA32));
->  		if (error)
->  			goto failed;
->  		radix_tree_preload_end();
+> Look at kernel/sched_clock.c for what we do to make really shitty TSC
+> conform to the above requirements.
+
+Sure, I guess what I'm trying to pull out here is that should we try to
+create some OK_FOR_SCHED_CLOCK flag for clocksources, and then we try to
+make this generic so other arches can add that flag and be done, what is
+the guidance we want to give to arch maintainers for setting that flag?
+
+1) Has to be very very fast. Can we put a number on this? 50ns to read?
+
+2) How long does it have to be monotonic for? Is it ok if it wraps every
+few seconds?
+
+If get_cycles() || jiffies is what we want, then lets leave it there. I
+just want to avoid mixing the clocksource code into the sched clock code
+until we really get this sort of definition sorted.
+
+thanks
+-john
+
+
