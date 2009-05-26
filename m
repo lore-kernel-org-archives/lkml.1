@@ -1,75 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758106AbZEZU4R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758123AbZEZU4v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758106AbZEZU4R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 16:56:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755372AbZEZU4E
+	id S1758123AbZEZU4v (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 16:56:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754782AbZEZU4o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 16:56:04 -0400
-Received: from casper.infradead.org ([85.118.1.10]:45669 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753584AbZEZU4D (ORCPT
+	Tue, 26 May 2009 16:56:44 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:46736 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754208AbZEZU4n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 16:56:03 -0400
-Subject: Re: [PATCH] sched: Support current clocksource handling in
- fallback sched_clock().
-From: Peter Zijlstra <peterz@infradead.org>
-To: john stultz <johnstul@us.ibm.com>
-Cc: Linus Walleij <linus.ml.walleij@gmail.com>,
-       Paul Mundt <lethal@linux-sh.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Victor <linux@maxim.org.za>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-sh@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       John Stultz <johnstul@linux.vnet.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <1243370439.3275.13.camel@localhost>
-References: <20090526061532.GD9188@linux-sh.org>
-	 <63386a3d0905260731m655bfee3q82a6f52d71fa3cef@mail.gmail.com>
-	 <1243348681.23657.14.camel@twins>  <1243369423.3275.5.camel@localhost>
-	 <1243369815.6600.2.camel@laptop>  <1243370439.3275.13.camel@localhost>
-Content-Type: text/plain
-Date: Tue, 26 May 2009 22:55:09 +0200
-Message-Id: <1243371309.6600.8.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 26 May 2009 16:56:43 -0400
+Date: Tue, 26 May 2009 16:56:43 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Li Zefan <lizf@cn.fujitsu.com>
+cc: Ingo Molnar <mingo@elte.hu>, Jens Axboe <jens.axboe@oracle.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Tom Zanussi <tzanussi@gmail.com>, "Theodore Ts'o" <tytso@mit.edu>,
+       Steven Whitehouse <swhiteho@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Jeff Moyer <jmoyer@redhat.com>, Christoph Hellwig <hch@infradead.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v2 1/2] tracing/events: make __string() more general
+In-Reply-To: <4A1B6A4C.3070407@cn.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.0905261655120.26705@gandalf.stny.rr.com>
+References: <4A1B6A2F.2040703@cn.fujitsu.com> <4A1B6A4C.3070407@cn.fujitsu.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-05-26 at 13:40 -0700, john stultz wrote:
-> On Tue, 2009-05-26 at 22:30 +0200, Peter Zijlstra wrote:
-> > On Tue, 2009-05-26 at 13:23 -0700, john stultz wrote:
-> > > Overall, I'd probably suggest thinking this through a bit more. At some
-> > > point doing this right will cause sched_clock() to be basically the same
-> > > as ktime_get(). So why not just use that instead of remaking it?
-> > 
-> > simply because we don't require the strict global monotonicy for
-> > scheduling as we do from a regular time source (its nice to have
-> > though).
-> > 
-> > That means that on x86 we can always use TSC for sched_clock(), even
-> > when its quite unsuitable for ktime.
+
+
+On Tue, 26 May 2009, Li Zefan wrote:
+
+> This changes __string(..., src) to __string(..., len), thus makes it more
+> general, and then block TRACE_EVENT() can use it.
 > 
-> Right, but I guess what I'm asking is can this be a bit better defined? 
+> Also introduce __fetch_str(), which is used in TP_assign() and returns
+> the address of the string, while __get_str() is used in TP_print().
 > 
-> If we are going to use clocksources (or cyclecounters - an area I need
-> to clean up soon), it would be good to get an idea of what is expected
-> of the sched_clock() interface.
-> 
-> So TSC good, HPET bad. Why? 
+> [ Impact: TRACE_EVENT api change ]
 
-Because TSC is a few cycles to read, and you can factorize a largish
-prime while doing an HPET read :-)
+What's the reason for the change?
 
-> Is latency all we care about? How bad would
-> the TSC have to be before we wouldn't want to use it?
+Is it to handle NULL pointers? If so, lets change the ftrace.h to handle
+it instead.
 
-Anything better than jiffies ;-)
+This is why I like the Impact line really be a "rational" line.
+ "TRACE_EVENT api change" is meaningless to me.
 
-For sched_clock() we want something high-res that is monotonic per cpu
-and has a bounded drift between cpus in the order of jiffies.
-
-Look at kernel/sched_clock.c for what we do to make really shitty TSC
-conform to the above requirements.
-
+-- Steve
