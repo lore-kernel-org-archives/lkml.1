@@ -1,49 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754730AbZEZIxf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754340AbZEZI44@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754730AbZEZIxf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 04:53:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753456AbZEZIx1
+	id S1754340AbZEZI44 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 04:56:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753664AbZEZI4s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 04:53:27 -0400
-Received: from wf-out-1314.google.com ([209.85.200.172]:23375 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753295AbZEZIx0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 04:53:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:from:date:message-id:subject:to:cc:content-type
-         :content-transfer-encoding;
-        b=cONzWyCFM1Egsw8WvDK+ZofcZwvTjUnFgE2uLDBgqiVOgoq7pvxWr4mdH+bTHuty6/
-         1yyWAijRaE5QdgasGVttyuHChJEiIij3yFcuqK5ewPPWmL+vspEyNEaGYQMiPdec7trf
-         RjxQ/05uUWgvdfFZtMI9OcajmbydseFrHy4uM=
+	Tue, 26 May 2009 04:56:48 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:50299 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753575AbZEZI4r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 04:56:47 -0400
+Date: Tue, 26 May 2009 10:56:48 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Jan Kara <jack@suse.cz>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
+       akpm@linux-foundation.org, yanmin_zhang@linux.intel.com
+Subject: Re: [PATCH 04/12] writeback: switch to per-bdi threads for
+	flushing data
+Message-ID: <20090526085648.GD11363@kernel.dk>
+References: <1243236887-3931-1-git-send-email-jens.axboe@oracle.com> <1243236887-3931-5-git-send-email-jens.axboe@oracle.com> <20090525095816.GC23546@duck.suse.cz>
 MIME-Version: 1.0
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Date: Tue, 26 May 2009 01:53:07 -0700
-Message-ID: <43e72e890905260153q59c76842ueb967459bc7353ee@mail.gmail.com>
-Subject: ALSA/sound compatibilty package for older kernels
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Cc: Tim Gardner <tim.gardner@canonical.com>,
-       "Perez-Gonzalez, Inaky" <inaky.perez-gonzalez@intel.com>,
-       Hauke Mehrtens <hauke@hauke-m.de>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       "John W. Linville" <linville@tuxdriver.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090525095816.GC23546@duck.suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In spirit with the compat-wireless-2.6 stable releases [1], here is an
-initial attempt at compat-sound-2.6 [2] which allows you to compile
-and install the latest ALSA/sound drivers on kernels >= 2.6.27. I only
-enabled snd_hda_intel as that is what I have home and was able to test
-so far. I actually only tested this on 2.6.28 so far. Patches are
-welcomed to enable new drivers as they get tested, please use the git
-tree for that [3].
+On Mon, May 25 2009, Jan Kara wrote:
+> > +static void bdi_kupdated(struct backing_dev_info *bdi)
+> > +{
+> > +	unsigned long oldest_jif;
+> > +	long nr_to_write;
+> > +	struct writeback_control wbc = {
+> > +		.bdi			= bdi,
+> > +		.sync_mode		= WB_SYNC_NONE,
+> > +		.older_than_this	= &oldest_jif,
+> > +		.nr_to_write		= 0,
+> > +		.for_kupdate		= 1,
+> > +		.range_cyclic		= 1,
+> > +	};
+> > +
+> > +	sync_supers();
+>   Hmm, so each BDI flusher thread is going to sync all the superblocks?
+> Isn't there a better way? I suppose we *should* be able to somehow go
+> from a BDI to a superblock (or maybe a list of those) so that we can write
+> per-fs metadata not bound to inodes.
 
-[1] http://wireless.kernel.org/en/users/Download/stable/
-[2] http://www.kernel.org/pub/linux/kernel/people/mcgrof/compat-sound-2.6/2009-05-26/compat-sound-2.6.tar.bz2
-[3] git://git.kernel.org/pub/scm/linux/kernel/git/mcgrof/compat-sound-2.6.git
+I just moved the sync_supers() to the bdi_forker_task(). That makes it
+global at the same interval of wakeups, instead of doing in the bdi
+threads. It would be nice to sync locally instead, but that's something
+that can wait for later (if ever).
 
-  Luis
+-- 
+Jens Axboe
+
