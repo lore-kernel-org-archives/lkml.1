@@ -1,124 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754837AbZEZQV7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753796AbZEZQ11@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754837AbZEZQV7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 12:21:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753021AbZEZQVt
+	id S1753796AbZEZQ11 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 12:27:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751277AbZEZQ1T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 12:21:49 -0400
-Received: from hera.kernel.org ([140.211.167.34]:59887 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752764AbZEZQVs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 12:21:48 -0400
-Subject: Re: [PATCH -tip][SCSI] scsi: scsi_transport_iscsi.c initialize the
- variable before it get used
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: linux-scsi <linux-scsi@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1243353966.2815.41.camel@localhost.localdomain>
-References: <1243351161.31783.5.camel@localhost.localdomain>
-	 <1243351709.2815.33.camel@localhost.localdomain>
-	 <1243353605.31783.25.camel@localhost.localdomain>
-	 <1243353966.2815.41.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Tue, 26 May 2009 21:51:22 +0530
-Message-Id: <1243354882.31783.34.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Tue, 26 May 2009 12:27:19 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:58473 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751015AbZEZQ1T (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 12:27:19 -0400
+Date: Tue, 26 May 2009 12:27:17 -0400
+From: Kyle McMartin <kyle@mcmartin.ca>
+To: airlied@redhat.com
+Cc: dri-devel@lists.sf.net, linux-kernel@vger.kernel.org,
+       jbarnes@virtuousgeek.org, eric@anholt.net, stable@kernel.org,
+       hugh.dickins@tiscali.co.uk, linux-mm@kvack.org, shaohua.li@intel.com
+Subject: [PATCH] drm: i915: ensure objects are allocated below 4GB on PAE
+Message-ID: <20090526162717.GC14808@bombadil.infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-05-26 at 16:06 +0000, James Bottomley wrote:
-> On Tue, 2009-05-26 at 21:30 +0530, Jaswinder Singh Rajput wrote:
-> > Hello James,
-> > 
-> > On Tue, 2009-05-26 at 10:28 -0500, James Bottomley wrote:
-> > > On Tue, 2009-05-26 at 20:49 +0530, Jaswinder Singh Rajput wrote:
-> > > > I am watching this problem from long time in -tip.
-> > > > 
-> > > > Subject: [PATCH] scsi: scsi_transport_iscsi.c initialize the variable before it get used
-> > > > 
-> > > > In some cases, err will be used uninitialized.
-> > > 
-> > > What cases?  A simple theoretical analysis shows that this variable is
-> > > always set.
-> > > 
-> > 
-> > Ok lets takes your tree:
-> > 
-> > http://git.kernel.org/?p=linux/kernel/git/jejb/scsi-misc-2.6.git;a=blob;f=drivers/scsi/scsi_transport_iscsi.c;hb=10eb0f013c63c71c82ede77945a5f390c10cfda6
-> > 
-> > 
-> > 672 int iscsi_add_session(struct iscsi_cls_session *session, unsigned int target_id)
-> > 673 {
-> > 674         struct Scsi_Host *shost = iscsi_session_to_shost(session);
-> > 675         struct iscsi_cls_host *ihost;
-> > 676         unsigned long flags;
-> > 677         unsigned int id = target_id;
-> > 678         int err;
-> > 679
-> > 680         ihost = shost->shost_data;
-> > 681         session->sid = atomic_add_return(1, &iscsi_session_nr);
-> > 682
-> > 683         if (id == ISCSI_MAX_TARGET) {
-> > 684                 for (id = 0; id < ISCSI_MAX_TARGET; id++) {
-> > 685                         err = device_for_each_child(&shost->shost_gendev, &id,
-> > 686                                                     iscsi_get_next_target_id);
-> > 687                         if (!err)
-> > 688                                 break;
-> > 689                 }
-> > 690
-> > 691                 if (id == ISCSI_MAX_TARGET) {
-> > 692                         iscsi_cls_session_printk(KERN_ERR, session,
-> > 693                                                  "Too many iscsi targets. Max "
-> > 694                                                  "number of targets is %d.\n",
-> > 695                                                  ISCSI_MAX_TARGET - 1);
-> > 696                         goto release_host;
-> > 697                 }
-> > 698         }
-> > 699         session->target_id = id;
-> > 700
-> > 701         dev_set_name(&session->dev, "session%u", session->sid);
-> > 702         err = device_add(&session->dev);
-> > 703         if (err) {
-> > 704                 iscsi_cls_session_printk(KERN_ERR, session,
-> > 705                                          "could not register session's dev\n");
-> > 706                 goto release_host;
-> > 707         }
-> > 708         transport_register_device(&session->dev);
-> > 709
-> > 710         spin_lock_irqsave(&sesslock, flags);
-> > 711         list_add(&session->sess_list, &sesslist);
-> > 712         spin_unlock_irqrestore(&sesslock, flags);
-> > 713
-> > 714         iscsi_session_event(session, ISCSI_KEVENT_CREATE_SESSION);
-> > 715         return 0;
-> > 716
-> > 717 release_host:
-> > 718         scsi_host_put(shost);
-> > 719         return err;
-> > 720 }
-> > 
-> > You are right but compiler is confused and giving warning like this :
-> > 
-> > 1. do not go inside :
-> > 684                 for (id = 0; id < ISCSI_MAX_TARGET; id++) {
-> 
-> How? id is an unsigned int and ISCSI_MAX_TARGET is defined to be -1 in
-> include/scsi/scsi_transport_iscsi.h (might be better if it were
-> UINT_MAX, but -1 is just as good).
-> 
+From: Kyle McMartin <kyle@redhat.com>
 
-Yes, you are right, I was telling you how compiler was confused in 4.3.2
-but I am glad to hear that this problem is fixed in 4.3.3 as you told
-me :-)
+Ensure we allocate GEM objects below 4GB on PAE machines, otherwise
+misery ensues. This patch is based on a patch found on dri-devel by
+Shaohua Li, but Keith P. expressed reticence that the changes unfairly
+penalized other hardware.
 
-So now its upto you. 4.3.2 is not soo old, So either initialize the
-variable or stay with stray warning in the kernel ;-)
+(The mm/shmem.c hunk is necessary to ensure the DMA32 flag isn't used
+ by the slab allocator via radix_tree_preload, which will hit a
+ WARN_ON.)
 
-Thanks,
---
-JSR
+Signed-off-by: Kyle McMartin <kyle@redhat.com>
+---
 
+We're shipping a variant of this in Fedora 11 to fix a myriad of bugs on
+PAE hardware.
+
+cheers, Kyle
+
+---
+diff --git a/drivers/gpu/drm/drm_gem.c b/drivers/gpu/drm/drm_gem.c
+index 4984aa8..ae52edc 100644
+--- a/drivers/gpu/drm/drm_gem.c
++++ b/drivers/gpu/drm/drm_gem.c
+@@ -142,6 +142,9 @@ drm_gem_object_alloc(struct drm_device *dev, size_t size)
+ 		return NULL;
+ 	}
+ 
++	if (dev->gem_flags)
++		mapping_set_gfp_mask(obj->filp->f_mapping, dev->gem_flags);
++
+ 	kref_init(&obj->refcount);
+ 	kref_init(&obj->handlecount);
+ 	obj->size = size;
+diff --git a/drivers/gpu/drm/i915/i915_dma.c b/drivers/gpu/drm/i915/i915_dma.c
+index 53d5445..c89ae3d 100644
+--- a/drivers/gpu/drm/i915/i915_dma.c
++++ b/drivers/gpu/drm/i915/i915_dma.c
+@@ -1153,12 +1153,12 @@ int i915_driver_load(struct drm_device *dev, unsigned long flags)
+ 	}
+ 
+ #ifdef CONFIG_HIGHMEM64G
+-	/* don't enable GEM on PAE - needs agp + set_memory_* interface fixes */
+-	dev_priv->has_gem = 0;
+-#else
++	/* avoid allocating buffers above 4GB on PAE */
++	dev->gem_flags = GFP_USER | GFP_DMA32;
++#endif
++
+ 	/* enable GEM by default */
+ 	dev_priv->has_gem = 1;
+-#endif
+ 
+ 	dev->driver->get_vblank_counter = i915_get_vblank_counter;
+ 	if (IS_GM45(dev))
+diff --git a/include/drm/drmP.h b/include/drm/drmP.h
+index c8c4221..3744c1f 100644
+--- a/include/drm/drmP.h
++++ b/include/drm/drmP.h
+@@ -1019,6 +1019,7 @@ struct drm_device {
+ 	uint32_t gtt_total;
+ 	uint32_t invalidate_domains;    /* domains pending invalidation */
+ 	uint32_t flush_domains;         /* domains pending flush */
++	gfp_t gem_flags;		/* object allocation flags */
+ 	/*@} */
+ 
+ };
+diff --git a/mm/shmem.c b/mm/shmem.c
+index b25f95c..e615887 100644
+--- a/mm/shmem.c
++++ b/mm/shmem.c
+@@ -1241,7 +1241,7 @@ repeat:
+ 		 * Try to preload while we can wait, to not make a habit of
+ 		 * draining atomic reserves; but don't latch on to this cpu.
+ 		 */
+-		error = radix_tree_preload(gfp & ~__GFP_HIGHMEM);
++		error = radix_tree_preload(gfp & ~(__GFP_HIGHMEM|__GFP_DMA32));
+ 		if (error)
+ 			goto failed;
+ 		radix_tree_preload_end();
