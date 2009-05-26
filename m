@@ -1,44 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754736AbZEZF4s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754841AbZEZGCw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754736AbZEZF4s (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 01:56:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753445AbZEZF4l
+	id S1754841AbZEZGCw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 02:02:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754068AbZEZGCp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 01:56:41 -0400
-Received: from mail-px0-f103.google.com ([209.85.216.103]:32925 "EHLO
-	mail-px0-f103.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753415AbZEZF4l (ORCPT
+	Tue, 26 May 2009 02:02:45 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:43053 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754059AbZEZGCo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 01:56:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Q1H1CeTErgf0DgwRbLp9ft8tEXKueCvRS8xc71ycgbwwx32oKOjNLl7IJ8Kr6jsVJF
-         Dc9KRdWPhEGwpeX+22ZkZBEU7KP9m4tK/XVxozF5c0JACgZpbiiszwcK/C/UsO74i71v
-         PcwDlPFRW2smUQt9FFBVMOrfxbFd2BsLq4Vi8=
-MIME-Version: 1.0
-In-Reply-To: <49b7c2350905251445n14397b82yc993f1a86d715d4d@mail.gmail.com>
-References: <f24d23310905250956u231fcd90u54d75894b9b91b9a@mail.gmail.com>
-	 <49b7c2350905251445n14397b82yc993f1a86d715d4d@mail.gmail.com>
-Date: Tue, 26 May 2009 11:26:42 +0530
-Message-ID: <f24d23310905252256h74d609d9l7e23b1cdc0a240c6@mail.gmail.com>
-Subject: Re: Unable to compile 2.6.30-rc7 on RHEL 4 - GCC 3.4.6
-From: debian developer <debiandev@gmail.com>
-To: GeunSik Lim <leemgs1@gmail.com>
-Cc: linux kernel <kernelnewbies@nl.linux.org>,
+	Tue, 26 May 2009 02:02:44 -0400
+Date: Tue, 26 May 2009 02:02:32 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Jens Axboe <jens.axboe@oracle.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Tom Zanussi <tzanussi@gmail.com>, "Theodore Ts'o" <tytso@mit.edu>,
+       Steven Whitehouse <swhiteho@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Jeff Moyer <jmoyer@redhat.com>, Christoph Hellwig <hch@infradead.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
        LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Subject: Re: [PATCH v2 1/2] tracing/events: make __string() more general
+Message-ID: <20090526060232.GA10669@infradead.org>
+References: <4A1B6A2F.2040703@cn.fujitsu.com> <4A1B6A4C.3070407@cn.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A1B6A4C.3070407@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 26, 2009 at 3:15 AM, GeunSik Lim <leemgs1@gmail.com> wrote:
-> Hi,
->
-> If you keep gcc 3.X.X to compile recent kernel source contiunally,
-> You will meet another problems again.
->
+On Tue, May 26, 2009 at 12:04:28PM +0800, Li Zefan wrote:
+> This changes __string(..., src) to __string(..., len), thus makes it more
+> general, and then block TRACE_EVENT() can use it.
+> 
+> Also introduce __fetch_str(), which is used in TP_assign() and returns
+> the address of the string, while __get_str() is used in TP_print().
 
-OK, so 3.x.x is officially not supposed to be used for compilation?
+If you want to make it really generaly dealing with NULL string pointers
+would be extremly helpful.  I ran into that limitation (and the length
+one fixed here) when converting the XFS tracing over.
+
