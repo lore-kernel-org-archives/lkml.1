@@ -1,61 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754813AbZEZInY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754730AbZEZIxf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754813AbZEZInY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 04:43:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752930AbZEZInQ
+	id S1754730AbZEZIxf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 04:53:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753456AbZEZIx1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 04:43:16 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:56916 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751585AbZEZInP (ORCPT
+	Tue, 26 May 2009 04:53:27 -0400
+Received: from wf-out-1314.google.com ([209.85.200.172]:23375 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753295AbZEZIx0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 04:43:15 -0400
-Date: Tue, 26 May 2009 10:43:13 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: nigel@tuxonice.net, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@lists.linux-foundation.org,
-       tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org
-Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
-Message-ID: <20090526084313.GB29563@elf.ucw.cz>
-References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net> <20090525123228.GA13446@elf.ucw.cz> <1243287557.16743.114.camel@nigel-laptop> <200905260029.25847.oliver@neukum.org>
+	Tue, 26 May 2009 04:53:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:from:date:message-id:subject:to:cc:content-type
+         :content-transfer-encoding;
+        b=cONzWyCFM1Egsw8WvDK+ZofcZwvTjUnFgE2uLDBgqiVOgoq7pvxWr4mdH+bTHuty6/
+         1yyWAijRaE5QdgasGVttyuHChJEiIij3yFcuqK5ewPPWmL+vspEyNEaGYQMiPdec7trf
+         RjxQ/05uUWgvdfFZtMI9OcajmbydseFrHy4uM=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200905260029.25847.oliver@neukum.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Date: Tue, 26 May 2009 01:53:07 -0700
+Message-ID: <43e72e890905260153q59c76842ueb967459bc7353ee@mail.gmail.com>
+Subject: ALSA/sound compatibilty package for older kernels
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: Tim Gardner <tim.gardner@canonical.com>,
+       "Perez-Gonzalez, Inaky" <inaky.perez-gonzalez@intel.com>,
+       Hauke Mehrtens <hauke@hauke-m.de>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       "John W. Linville" <linville@tuxdriver.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2009-05-26 00:29:24, Oliver Neukum wrote:
-> Am Montag, 25. Mai 2009 23:39:17 schrieb Nigel Cunningham:
-> > > If there's not enough swap available, swsusp should freeze, realize
-> > > there's no swap, unfreeze and continue. I do not see reliability
-> > > problem there.
-> >
-> > If there's not enough storage available (I'm also thinking of the file
-> > allocator Oliver wants), freeing some memory may get you in a position
-> 
-> No, I do want a dedicated partition. Going to a filesystem is just hiding
-> the problem. Filesystems can return -ENOSPC.
-> I also want my sytem to reliably hibernate if the filesystem to hold
-> the image happens to be remounted ro or to be undergoing a filesystem
-> check.
-> 
-> For full reliability you simply need a reservation. In addition that's
-> the fastest solution, too. A simple linear write to an unfragmented
-> area.
-> The typical system today has three orders of magnitude more disk
-> than ram. Do you really have a sytem you want to hibernate that has
-> less than 2two orders of magnitude more disk than ram?
+In spirit with the compat-wireless-2.6 stable releases [1], here is an
+initial attempt at compat-sound-2.6 [2] which allows you to compile
+and install the latest ALSA/sound drivers on kernels >= 2.6.27. I only
+enabled snd_hda_intel as that is what I have home and was able to test
+so far. I actually only tested this on 2.6.28 so far. Patches are
+welcomed to enable new drivers as they get tested, please use the git
+tree for that [3].
 
-My x60 has 60GB disk and 2GB ram. And yes, I'd prefer not to waste 2GB
-of disk space...
+[1] http://wireless.kernel.org/en/users/Download/stable/
+[2] http://www.kernel.org/pub/linux/kernel/people/mcgrof/compat-sound-2.6/2009-05-26/compat-sound-2.6.tar.bz2
+[3] git://git.kernel.org/pub/scm/linux/kernel/git/mcgrof/compat-sound-2.6.git
 
-Yes, linear write is faster, but it the difference will be lost in noise.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+  Luis
