@@ -1,93 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753971AbZEZBH4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753867AbZEZBIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753971AbZEZBH4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 21:07:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbZEZBHp
+	id S1753867AbZEZBIS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 21:08:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbZEZBID
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 21:07:45 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:63456 "EHLO song.cn.fujitsu.com"
+	Mon, 25 May 2009 21:08:03 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:60809 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752524AbZEZBHo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 21:07:44 -0400
-Message-ID: <4A1B3FFB.7090306@cn.fujitsu.com>
-Date: Tue, 26 May 2009 09:03:55 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	id S1753017AbZEZBIC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 21:08:02 -0400
+Message-ID: <4A1B4144.9060201@cn.fujitsu.com>
+Date: Tue, 26 May 2009 09:09:24 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: paulmck@linux.vnet.ibm.com
-CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, mingo@elte.hu,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       davem@davemloft.net, dada1@cosmosbay.com, zbr@ioremap.net,
-       jeff.chua.linux@gmail.com, paulus@samba.org, jengelh@medozas.de,
-       r000n@r000n.net, benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
-Subject: Re: [PATCH RFC] v7 expedited "big hammer" RCU grace periods
-References: <20090522190525.GA13286@linux.vnet.ibm.com> <4A1A3C23.8090004@cn.fujitsu.com> <20090525164446.GD7168@linux.vnet.ibm.com>
-In-Reply-To: <20090525164446.GD7168@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/3] tracing/stat: sort in ascending order
+References: <4A1A5AD1.3070804@cn.fujitsu.com> <20090525154229.GA7121@nowhere>
+In-Reply-To: <20090525154229.GA7121@nowhere>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul E. McKenney wrote:
-> 
-> Good point -- I should at the very least add a comment to
-> synchronize_sched_expedited() stating that it cannot be called holding
-> any lock that is acquired in a CPU hotplug notifier.  If this restriction
-> causes any problems, then your approach seems like a promising fix.
-
-
-Reviewed-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-
-> 
->> The coupling of synchronize_sched_expedited() and migration_req
->> is largely increased:
+Frederic Weisbecker wrote:
+> On Mon, May 25, 2009 at 04:46:09PM +0800, Li Zefan wrote:
+>> Currently the output of trace_stat/workqueues is totally reversed:
 >>
->> 1) The offline cpu's per_cpu(rcu_migration_req, cpu) is handled.
->>    See migration_call::CPU_DEAD
+>>  # cat /debug/tracing/trace_stat/workqueues
+>>     ...
+>>     1       17       17      210       37   `-blk_unplug_work+0x0/0x57
+>>     1     3779     3779      181       11   |-cfq_kick_queue+0x0/0x2f
+>>     1     3796     3796                     kblockd/1:120
+>>     ...
+>>
+>> The correct output should be:
+>>
+>>     1     3796     3796                     kblockd/1:120
+>>     1     3779     3779      181       11   |-cfq_kick_queue+0x0/0x2f
+>>     1       17       17      210       37   `-blk_unplug_work+0x0/0x57
+>>
+>> It's caused by "tracing/stat: replace linked list by an rbtree for sorting"
+>> (53059c9b67a62a3dc8c80204d3da42b9267ea5a0).
+>>
+>> Though we can simply change dummy_cmp() to return -1 instead of 1, IMO
+>> it's better to always do ascending sorting in trace_stat.c, and leave each
+>> stat tracer to decide whether to sort in descending or ascending order.
+>>
+>> [ Impact: fix the output of trace_stat/workqueue ]
+>>
+>> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 > 
-> Good.  ;-)
 > 
->> 2) migration_call() is the highest priority of cpu notifiers,
->>    So even any other cpu notifier calls synchronize_sched_expedited(),
->>    It'll not cause DEADLOCK.
-> 
-> You mean if using your preempt_disable() approach, right?  Unless I am
-> missing something, the current get_online_cpus() approach would deadlock
-> in this case.
+> For now in stat tracing, the ascendent sorting is the most relevant.
+> Especially because we always want to see the highest problems first.
 > 
 
-Yes, I mean if using my preempt_disable() approach. The current
-get_online_cpus() approach would NOT deadlock in this case also,
-we can require get_online_cpus() in cpu notifiers.
+Yeah, I saw this.
 
-> diff --git a/include/linux/rcupreempt.h b/include/linux/rcupreempt.h
-> index fce5227..78117ed 100644
-> --- a/include/linux/rcupreempt.h
-> +++ b/include/linux/rcupreempt.h
-> @@ -74,6 +74,16 @@ extern int rcu_needs_cpu(int cpu);
->  
->  extern void __synchronize_sched(void);
->  
-> +static inline void synchronize_rcu_expedited(void)
-> +{
-> +	synchronize_rcu();  /* Placeholder for new rcupreempt implementation. */
-> +}
-> +
-> +static inline void synchronize_rcu_bh_expedited(void)
-> +{
-> +	synchronize_rcu();  /* Placeholder for new rcupreempt implementation. */
-> +}
-> +
+> -1 (or < 0) usually means lower and 1 ( > 0) is higher.
+> 
+> I wonder what would most confuse the developers of stat tracers:
+> 
+> - to reverse these common sort values (-1 turn into "higher")
+> - keep the default ascendent sorting, which is not natural because the default
+>   is often descendent.
+> 
+> I don't know. 
+> 
+> Anyone else. Do you have a preference?
+> 
 
-Why not synchronize_rcu_bh() ?
+When I looked into this bug, I was confused why it's descending sorting, though
+then I found out the answer.
 
-In mainline, rcu_read_lock_bh() is not preemptable,
-So I think synchronize_sched_expedited() is better.
+Imagine a new stat tracer wants to sort in ascending order, but it has to define
+a cmp which compares in reverse order. This seems to be odd and confusing.
 
-Anyway, synchronize_rcu() is OK for me, because it is
-"Placeholder for new rcupreempt implementation".
+But to be honest, I'm also not sure which is better, And it doesn't seem to be
+a big issue. So I think I'll make concessions.
 
-Lai
 
