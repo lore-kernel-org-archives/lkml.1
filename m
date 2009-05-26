@@ -1,148 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757454AbZEZSX5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757193AbZEZS2I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757454AbZEZSX5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 14:23:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757049AbZEZSXp
+	id S1757193AbZEZS2I (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 14:28:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755333AbZEZS15
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 14:23:45 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:49798 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757261AbZEZSXo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 14:23:44 -0400
-Date: Tue, 26 May 2009 19:23:10 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Jamie Lokier <jamie@shareable.org>,
-       Catalin Marinas <catalin.marinas@arm.com>,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: Broken ARM atomic ops wrt memory barriers (was : [PATCH] Add
-	cmpxchg support for ARMv6+ systems)
-Message-ID: <20090526182310.GG26713@n2100.arm.linux.org.uk>
-References: <20090423141248.22193.10543.stgit@pc1117.cambridge.arm.com> <20090524131636.GB3159@n2100.arm.linux.org.uk> <20090524145633.GA14754@Krystal> <20090525132027.GA946@shareable.org> <20090525151724.GA14321@Krystal> <20090525161941.GA3667@n2100.arm.linux.org.uk> <20090526145950.GB26713@n2100.arm.linux.org.uk> <20090526153654.GA17096@Krystal> <20090526155906.GC26713@n2100.arm.linux.org.uk> <20090526172322.GB19443@Krystal>
+	Tue, 26 May 2009 14:27:57 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:55609 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755148AbZEZS14 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 14:27:56 -0400
+Message-ID: <4A1C3453.6080402@redhat.com>
+Date: Tue, 26 May 2009 21:26:27 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090526172322.GB19443@Krystal>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: George Dunlap <George.Dunlap@eu.citrix.com>
+CC: Ingo Molnar <mingo@elte.hu>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Keir Fraser <keir.fraser@eu.citrix.com>
+Subject: Re: [Xen-devel] Re: [GIT PULL] Xen APIC hooks (with io_apic_ops)
+References: <1242170724-13349-1-git-send-email-jeremy@goop.org>	 <20090519123548.GA26439@elte.hu> <4A14447E.9060607@goop.org>	 <20090525041057.GD9396@elte.hu> <de76405a0905260546k56bc866bx1658ec13f65e3eec@mail.gmail.com>
+In-Reply-To: <de76405a0905260546k56bc866bx1658ec13f65e3eec@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 26, 2009 at 01:23:22PM -0400, Mathieu Desnoyers wrote:
-> * Russell King - ARM Linux (linux@arm.linux.org.uk) wrote:
-> > On Tue, May 26, 2009 at 11:36:54AM -0400, Mathieu Desnoyers wrote:
-> > > > diff --git a/arch/arm/include/asm/system.h b/arch/arm/include/asm/system.h
-> > > > index bd4dc8e..e9889c2 100644
-> > > > --- a/arch/arm/include/asm/system.h
-> > > > +++ b/arch/arm/include/asm/system.h
-> > > > @@ -248,6 +248,8 @@ static inline unsigned long __xchg(unsigned long x, volatile void *ptr, int size
-> > > >  	unsigned int tmp;
-> > > >  #endif
-> > > >  
-> > > > +	smp_mb();
-> > > > +
-> > > >  	switch (size) {
-> > > >  #if __LINUX_ARM_ARCH__ >= 6
-> > > >  	case 1:
-> > > > @@ -258,7 +260,7 @@ static inline unsigned long __xchg(unsigned long x, volatile void *ptr, int size
-> > > >  		"	bne	1b"
-> > > >  			: "=&r" (ret), "=&r" (tmp)
-> > > >  			: "r" (x), "r" (ptr)
-> > > > -			: "memory", "cc");
-> > > > +			: "cc");
-> > > 
-> > > I would not remove the "memory" constraint in here. Anyway it's just a
-> > > compiler barrier, I doubt it would make anyting faster (due to the
-> > > following smp_mb() added), but it surely makes things harder to
-> > > understand.
-> > 
-> > If you don't already know that smp_mb() is always a compiler barrier then
-> > I guess it's true, but then if you don't know what the barriers are defined
-> > to be, should you be trying to understand atomic ops?
-> > 
-> 
-> The "memory" constaint in a gcc inline assembly has always been there to
-> tell the compiler that the inline assembly has side-effects on memory so
-> the compiler can take the appropriate decisions wrt optimisations.
+George Dunlap wrote:
+> As a simple example, take scheduling.  I'm about to re-write the Xen
+> scheduler, and in the process I took a good look at the scheduler you
+> wrote.  I think it's got a lot of really good ideas, which I plan to
+> steal. :-)  However, I'm going to have to make some key changes in
+> order for it to function well as a hypervisor scheduler.  If KVM is
+> used on a production server with 20 or 30 multi-vcpu VMs, I predict
+> the current scheduler will do very poorly, because it wasn't designed
+> with VMs in mind, but with processes.  Making changes so that VMs run
+> better will fundamentally make things that make processes run less
+> well.
+>   
 
-However, if you have a compiler memory barrier before the operation, and
-after the operation, it's giving it the same information.
+The Linux scheduler already supports multiple scheduling classes.  If we 
+find that none of them will fit our needs, we'll propose a new one.  
+There are also multiple I/O schedulers, multiple allocators (perhaps a 
+bad example), and multiple filesystems.
 
-Think about it:
+When the need can be demonstrated to be real, and the implementation can 
+be clean, Linux can usually be adapted.
 
-	asm("foo" : : : "memory");
+I think the Xen design has merit if it can truly make dom0 a guest -- 
+that is, if it can survive dom0 failure.  Until then, you're just taking 
+a large interdependent codebase and splitting it at some random point, 
+but you don't get any stability or security in return.  It will also be 
+interesting to see how far Xen can get along without real memory 
+management (overcommit).
 
-is a compiler memory barrier - no program accesses specified before
-this statement may be re-ordered after it, and no accesses after the
-statement may be re-ordered before it.
+>> The whole Xen design is messed up really: you have taken off bits of
+>> the Linux kernel you found interesting, turned them into a
+>> micro-kernel in essence and renamed it to 'Xen'.
+>>     
+>
+> That's how Xen started, and that's really the beauty of open-source.
+> (After all, KVM has stolen some ideas from the Xen shadow code.)  But
+> since then, basically all of the code has been replaced with
+> Xen-written code.  I think if you did an SCO-style audit comparing
+> Linux and Xen 3.4, you'd find a lot less in common than you think.
+>   
 
-Now think about:
+A lot of the arch code is derived from Linux.
 
-	asm("" : : : "memory");
-	asm("foo");
-	asm("" : : : "memory");
+>> Xen isnt actually useful _at all_ without Linux/DOM0. Without Dom0
+>> Xen is slow and native hardware support within Xen is virtually
+>> non-existent, as you point out above.
+>>     
+>
+> And qemu-kvm isn't useful _at_all_ without Linux either; and Linux-KVM
+> isn't useful _at_all_ without qemu.  Your point?
+>   
 
-The first and third asm is a compiler memory barrier and behaves just
-as above.  The worker asm is sandwiched between two compiler memory
-barriers which do not permit previous or following programatical
-accesses being re-ordered into or over either of those two barriers.
+kvm is actually being used by other userspaces.
 
-So the guarantee that accesses prior to our "foo" operation are not
-reordered after it, or accesses after are not reordered before is
-preserved.
+-- 
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
 
-> The compiler needs the "memory" clobber in the inline assembly to know
-> that it cannot be put outside of the smp_mb() "memory" clobbers. If you
-> remove this clobber, the compiler is free to move the inline asm outside
-> of the smp_mb()s as long as it only touches registers and reads
-> immediate values.
-
-That means that things can be re-ordered across an asm("" : : : "memory")
-statement, which in effect means that anything can be reordered across
-a Linux mb(), barrier() etc statement.  That means the kernel is extremely
-buggy since these macros (according to your definition) are ineffective.
-
-> A3.7.3 - Ordering requirements for memory accesses
-> 
-> Reading this, especially the table detailing the "Normal vs Normal"
-> memory operation order, makes me wonder if we should map
-> 
-> #define smp_read_barrier_depends	dmb()
-> 
-> Because two consecutive reads are not guaranteed to be globally
-> observable in program order. This means :
-> 
-> cpu A
-> 
-> write data
-> wmb()
-> update ptr
-> 
-> cpu B
-> 
-> cpyptr = rcu_dereference(ptr);
-> if (cpyptr)
->   access *cpyptr data
-> 
-> cpu B could see the new ptr cache-line before the data cache-line, which
-> means we can read garbage.
-
-Well, this comes down to what wmb() is, and that's again dmb() on ARM.
-dmb ensures that accesses before it will be seen by observers within the
-domain before they see accesses after it.
-
-So:
-
-write data
-dmb
-update ptr
-
-means that the write of data is guaranteed to be observable before ptr
-gets updated.  So I don't think we have anything to worry about here.
-If the dmb wasn't there, then it would be possible for the ptr update
-to be seen before the data is written.
-
-Or at least that's my reading of the architecture reference manual (which
-is really what counts, not these satellite documents.)
