@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757982AbZEZTgZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757860AbZEZTgl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757982AbZEZTgZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 15:36:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757349AbZEZTgS
+	id S1757860AbZEZTgl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 15:36:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757902AbZEZTgb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 15:36:18 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:35508 "EHLO
+	Tue, 26 May 2009 15:36:31 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:60258 "EHLO
 	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757159AbZEZTgR (ORCPT
+	with ESMTP id S1757883AbZEZTg1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 15:36:17 -0400
+	Tue, 26 May 2009 15:36:27 -0400
 From: Gregory Haskins <ghaskins@novell.com>
-Subject: [KVM PATCH v4 2/3] kvm: make io_bus interface more robust
+Subject: [KVM PATCH v4 3/3] kvm: add iosignalfd support
 To: kvm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, avi@redhat.com, davide@xmailserver.org,
        mtosatti@redhat.com
-Date: Tue, 26 May 2009 15:15:34 -0400
-Message-ID: <20090526191534.20860.38511.stgit@dev.haskins.net>
+Date: Tue, 26 May 2009 15:15:39 -0400
+Message-ID: <20090526191539.20860.1385.stgit@dev.haskins.net>
 In-Reply-To: <20090526191010.20860.75372.stgit@dev.haskins.net>
 References: <20090526191010.20860.75372.stgit@dev.haskins.net>
 User-Agent: StGIT/0.14.3
@@ -27,289 +27,392 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Today kvm_io_bus_regsiter_dev() returns void and will internally BUG_ON if it
-fails.  We want to create dynamic MMIO/PIO entries driven from userspace later
-in the series, so we need to enhance the code to be more robust with the
-following changes:
+iosignalfd is a mechanism to register PIO/MMIO regions to trigger an eventfd
+signal when written to by a guest.  Host userspace can register any arbitrary
+IO address with a corresponding eventfd and then pass the eventfd to a
+specific end-point of interest for handling.
 
-   1) Add a return value to the registration function
-   2) Fix up all the callsites to check the return code, handle any
-      failures, and percolate the error up to the caller.
-   3) Refactor io_bus to allow "holes" in the array so device hotplug
-      can add/remove devices arbitrarily.
-   4) Add an unregister function
+Normal IO requires a blocking round-trip since the operation may cause
+side-effects in the emulated model or may return data to the caller.
+Therefore, an IO in KVM traps from the guest to the host, causes a VMX/SVM
+"heavy-weight" exit back to userspace, and is ultimately serviced by qemu's
+device model synchronously before returning control back to the vcpu.
+
+However, there is a subclass of IO which acts purely as a trigger for
+other IO (such as to kick off an out-of-band DMA request, etc).  For these
+patterns, the synchronous call is particularly expensive since we really
+only want to simply get our notification transmitted asychronously and
+return as quickly as possible.  All the sychronous infrastructure to ensure
+proper data-dependencies are met in the normal IO case are just unecessary
+overhead for signalling.  This adds additional computational load on the
+system, as well as latency to the signalling path.
+
+Therefore, we provide a mechanism for registration of an in-kernel trigger
+point that allows the VCPU to only require a very brief, lightweight
+exit just long enough to signal an eventfd.  This also means that any
+clients compatible with the eventfd interface (which includes userspace
+and kernelspace equally well) can now register to be notified. The end
+result should be a more flexible and higher performance notification API
+for the backend KVM hypervisor and perhipheral components.
+
+To test this theory, we built a test-harness called "doorbell".  This
+module has a function called "doorbell_ring()" which simply increments a
+counter for each time the doorbell is signaled.  It supports signalling
+from either an eventfd, or an ioctl().
+
+We then wired up two paths to the doorbell: One via QEMU via a registered
+io region and through the doorbell ioctl().  The other is direct via
+iosignalfd.
+
+You can download this test harness here:
+
+ftp://ftp.novell.com/dev/ghaskins/doorbell.tar.bz2
+
+The measured results are as follows:
+
+qemu-mmio:       110000 iops, 9.09us rtt
+iosignalfd-mmio: 200100 iops, 5.00us rtt
+iosignalfd-pio:  367300 iops, 2.72us rtt
+
+I didn't measure qemu-pio, because I have to figure out how to register a
+PIO region with qemu's device model, and I got lazy.  However, for now we
+can extrapolate based on the data from the NULLIO runs of +2.56us for MMIO,
+and -350ns for HC, we get:
+
+qemu-pio:      153139 iops, 6.53us rtt
+iosignalfd-hc: 412585 iops, 2.37us rtt
+
+these are just for fun, for now, until I can gather more data.
+
+Here is a graph for your convenience:
+
+http://developer.novell.com/wiki/images/7/76/Iofd-chart.png
+
+The conclusion to draw is that we save about 4us by skipping the userspace
+hop.
+
+--------------------
 
 Signed-off-by: Gregory Haskins <ghaskins@novell.com>
 ---
 
- arch/x86/kvm/i8254.c      |   34 ++++++++++++++++++++++---------
- arch/x86/kvm/i8259.c      |    9 +++++++-
- include/linux/kvm_host.h  |    8 +++++--
- virt/kvm/coalesced_mmio.c |    8 ++++++-
- virt/kvm/ioapic.c         |    9 ++++++--
- virt/kvm/kvm_main.c       |   49 +++++++++++++++++++++++++++++++++++++++------
- 6 files changed, 92 insertions(+), 25 deletions(-)
+ arch/x86/kvm/x86.c       |    1 
+ include/linux/kvm.h      |   15 ++++
+ include/linux/kvm_host.h |   10 ++-
+ virt/kvm/eventfd.c       |  162 ++++++++++++++++++++++++++++++++++++++++++++++
+ virt/kvm/kvm_main.c      |   11 +++
+ 5 files changed, 195 insertions(+), 4 deletions(-)
 
-diff --git a/arch/x86/kvm/i8254.c b/arch/x86/kvm/i8254.c
-index 584e3d3..6cf84d4 100644
---- a/arch/x86/kvm/i8254.c
-+++ b/arch/x86/kvm/i8254.c
-@@ -564,36 +564,40 @@ struct kvm_pit *kvm_create_pit(struct kvm *kvm, u32 flags)
- {
- 	struct kvm_pit *pit;
- 	struct kvm_kpit_state *pit_state;
-+	int ret;
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index 6d44dd5..31c86a3 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -1089,6 +1089,7 @@ int kvm_dev_ioctl_check_extension(long ext)
+ 	case KVM_CAP_IRQ_INJECT_STATUS:
+ 	case KVM_CAP_ASSIGN_DEV_IRQ:
+ 	case KVM_CAP_IRQFD:
++	case KVM_CAP_IOSIGNALFD:
+ 	case KVM_CAP_PIT2:
+ 		r = 1;
+ 		break;
+diff --git a/include/linux/kvm.h b/include/linux/kvm.h
+index 65df6f5..b63475e 100644
+--- a/include/linux/kvm.h
++++ b/include/linux/kvm.h
+@@ -300,6 +300,19 @@ struct kvm_guest_debug {
+ 	struct kvm_guest_debug_arch arch;
+ };
  
- 	pit = kzalloc(sizeof(struct kvm_pit), GFP_KERNEL);
- 	if (!pit)
- 		return NULL;
- 
- 	pit->irq_source_id = kvm_request_irq_source_id(kvm);
--	if (pit->irq_source_id < 0) {
--		kfree(pit);
--		return NULL;
--	}
--
--	mutex_init(&pit->pit_state.lock);
--	mutex_lock(&pit->pit_state.lock);
--	spin_lock_init(&pit->pit_state.inject_lock);
-+	if (pit->irq_source_id < 0)
-+		goto fail;
- 
- 	/* Initialize PIO device */
- 	pit->dev.read = pit_ioport_read;
- 	pit->dev.write = pit_ioport_write;
- 	pit->dev.in_range = pit_in_range;
- 	pit->dev.private = pit;
--	kvm_io_bus_register_dev(&kvm->pio_bus, &pit->dev);
-+	ret = kvm_io_bus_register_dev(&kvm->pio_bus, &pit->dev);
-+	if (ret < 0)
-+		goto fail;
- 
- 	if (flags & KVM_PIT_SPEAKER_DUMMY) {
- 		pit->speaker_dev.read = speaker_ioport_read;
- 		pit->speaker_dev.write = speaker_ioport_write;
- 		pit->speaker_dev.in_range = speaker_in_range;
- 		pit->speaker_dev.private = pit;
--		kvm_io_bus_register_dev(&kvm->pio_bus, &pit->speaker_dev);
-+		ret = kvm_io_bus_register_dev(&kvm->pio_bus,
-+					      &pit->speaker_dev);
-+		if (ret < 0)
-+			goto fail;
- 	}
- 
-+	mutex_init(&pit->pit_state.lock);
-+	mutex_lock(&pit->pit_state.lock);
-+	spin_lock_init(&pit->pit_state.inject_lock);
++#define KVM_IOSIGNALFD_FLAG_DEASSIGN  (1 << 0)
++#define KVM_IOSIGNALFD_FLAG_PIO       (1 << 1)
++#define KVM_IOSIGNALFD_FLAG_COOKIE    (1 << 2)
 +
- 	kvm->arch.vpit = pit;
- 	pit->kvm = kvm;
++struct kvm_iosignalfd {
++	__u64 cookie;
++	__u64 addr;
++	__u32 len;
++	__u32 fd;
++	__u32 flags;
++	__u8  pad[12];
++};
++
+ #define KVM_TRC_SHIFT           16
+ /*
+  * kvm trace categories
+@@ -430,6 +443,7 @@ struct kvm_trace_rec {
+ #ifdef __KVM_HAVE_PIT
+ #define KVM_CAP_PIT2 33
+ #endif
++#define KVM_CAP_IOSIGNALFD 34
  
-@@ -613,6 +617,16 @@ struct kvm_pit *kvm_create_pit(struct kvm *kvm, u32 flags)
- 	kvm_register_irq_mask_notifier(kvm, 0, &pit->mask_notifier);
+ #ifdef KVM_CAP_IRQ_ROUTING
  
- 	return pit;
-+
-+fail:
-+	kvm_io_bus_unregister_dev(&kvm->pio_bus, &pit->speaker_dev);
-+	kvm_io_bus_unregister_dev(&kvm->pio_bus, &pit->dev);
-+
-+	if (pit->irq_source_id >= 0)
-+		kvm_free_irq_source_id(kvm, pit->irq_source_id);
-+
-+	kfree(pit);
-+	return NULL;
- }
+@@ -537,6 +551,7 @@ struct kvm_irqfd {
+ #define KVM_DEASSIGN_DEV_IRQ       _IOW(KVMIO, 0x75, struct kvm_assigned_irq)
+ #define KVM_IRQFD                  _IOW(KVMIO, 0x76, struct kvm_irqfd)
+ #define KVM_CREATE_PIT2		   _IOW(KVMIO, 0x77, struct kvm_pit_config)
++#define KVM_IOSIGNALFD             _IOW(KVMIO, 0x78, struct kvm_iosignalfd)
  
- void kvm_free_pit(struct kvm *kvm)
-diff --git a/arch/x86/kvm/i8259.c b/arch/x86/kvm/i8259.c
-index 1ccb50c..0caf7d4 100644
---- a/arch/x86/kvm/i8259.c
-+++ b/arch/x86/kvm/i8259.c
-@@ -519,6 +519,8 @@ static void pic_irq_request(void *opaque, int level)
- struct kvm_pic *kvm_create_pic(struct kvm *kvm)
- {
- 	struct kvm_pic *s;
-+	int ret;
-+
- 	s = kzalloc(sizeof(struct kvm_pic), GFP_KERNEL);
- 	if (!s)
- 		return NULL;
-@@ -538,6 +540,11 @@ struct kvm_pic *kvm_create_pic(struct kvm *kvm)
- 	s->dev.write = picdev_write;
- 	s->dev.in_range = picdev_in_range;
- 	s->dev.private = s;
--	kvm_io_bus_register_dev(&kvm->pio_bus, &s->dev);
-+	ret = kvm_io_bus_register_dev(&kvm->pio_bus, &s->dev);
-+	if (ret < 0) {
-+		kfree(s);
-+		return NULL;
-+	}
-+
- 	return s;
- }
+ /*
+  * ioctls for vcpu fds
 diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index 28bd112..7dcae4b 100644
+index 7dcae4b..5b2be86 100644
 --- a/include/linux/kvm_host.h
 +++ b/include/linux/kvm_host.h
-@@ -52,7 +52,7 @@ extern struct kmem_cache *kvm_vcpu_cache;
-  * in one place.
+@@ -138,6 +138,7 @@ struct kvm {
+ 	struct kvm_io_bus pio_bus;
+ #ifdef CONFIG_HAVE_KVM_EVENTFD
+ 	struct list_head irqfds;
++	struct list_head iosignalfds;
+ #endif
+ 	struct kvm_vm_stat stat;
+ 	struct kvm_arch arch;
+@@ -535,19 +536,24 @@ static inline void kvm_free_irq_routing(struct kvm *kvm) {}
+ 
+ #ifdef CONFIG_HAVE_KVM_EVENTFD
+ 
+-void kvm_irqfd_init(struct kvm *kvm);
++void kvm_eventfd_init(struct kvm *kvm);
+ int kvm_irqfd(struct kvm *kvm, int fd, int gsi, int flags);
+ void kvm_irqfd_release(struct kvm *kvm);
++int kvm_iosignalfd(struct kvm *kvm, struct kvm_iosignalfd *args);
+ 
+ #else
+ 
+-static inline void kvm_irqfd_init(struct kvm *kvm) {}
++static inline void kvm_eventfd_init(struct kvm *kvm) {}
+ static inline int kvm_irqfd(struct kvm *kvm, int fd, int gsi, int flags)
+ {
+ 	return -EINVAL;
+ }
+ 
+ static inline void kvm_irqfd_release(struct kvm *kvm) {}
++static inline int kvm_iosignalfd(struct kvm *kvm, struct kvm_iosignalfd *args)
++{
++	return -EINVAL;
++}
+ 
+ #endif /* CONFIG_HAVE_KVM_EVENTFD */
+ 
+diff --git a/virt/kvm/eventfd.c b/virt/kvm/eventfd.c
+index c63ff6a..1112349 100644
+--- a/virt/kvm/eventfd.c
++++ b/virt/kvm/eventfd.c
+@@ -21,12 +21,16 @@
   */
- struct kvm_io_bus {
--	int                   dev_count;
-+	spinlock_t lock;
- #define NR_IOBUS_DEVS 6
- 	struct kvm_io_device *devs[NR_IOBUS_DEVS];
- };
-@@ -61,8 +61,10 @@ void kvm_io_bus_init(struct kvm_io_bus *bus);
- void kvm_io_bus_destroy(struct kvm_io_bus *bus);
- struct kvm_io_device *kvm_io_bus_find_dev(struct kvm_io_bus *bus,
- 					  gpa_t addr, int len, int is_write);
--void kvm_io_bus_register_dev(struct kvm_io_bus *bus,
--			     struct kvm_io_device *dev);
-+int kvm_io_bus_register_dev(struct kvm_io_bus *bus,
-+			    struct kvm_io_device *dev);
-+int kvm_io_bus_unregister_dev(struct kvm_io_bus *bus,
-+			    struct kvm_io_device *dev);
  
- struct kvm_vcpu {
- 	struct kvm *kvm;
-diff --git a/virt/kvm/coalesced_mmio.c b/virt/kvm/coalesced_mmio.c
-index 5ae620d..ede9087 100644
---- a/virt/kvm/coalesced_mmio.c
-+++ b/virt/kvm/coalesced_mmio.c
-@@ -86,6 +86,7 @@ static void coalesced_mmio_destructor(struct kvm_io_device *this)
- int kvm_coalesced_mmio_init(struct kvm *kvm)
- {
- 	struct kvm_coalesced_mmio_dev *dev;
-+	int ret;
- 
- 	dev = kzalloc(sizeof(struct kvm_coalesced_mmio_dev), GFP_KERNEL);
- 	if (!dev)
-@@ -96,9 +97,12 @@ int kvm_coalesced_mmio_init(struct kvm *kvm)
- 	dev->dev.private  = dev;
- 	dev->kvm = kvm;
- 	kvm->coalesced_mmio_dev = dev;
--	kvm_io_bus_register_dev(&kvm->mmio_bus, &dev->dev);
- 
--	return 0;
-+	ret = kvm_io_bus_register_dev(&kvm->mmio_bus, &dev->dev);
-+	if (ret < 0)
-+		kfree(dev);
+ #include <linux/kvm_host.h>
++#include <linux/kvm.h>
+ #include <linux/workqueue.h>
+ #include <linux/syscalls.h>
+ #include <linux/wait.h>
+ #include <linux/poll.h>
+ #include <linux/file.h>
+ #include <linux/list.h>
++#include <linux/eventfd.h>
 +
-+	return ret;
++#include "iodev.h"
+ 
+ /*
+  * --------------------------------------------------------------------
+@@ -207,9 +211,10 @@ kvm_deassign_irqfd(struct kvm *kvm, int fd, int gsi)
  }
  
- int kvm_vm_ioctl_register_coalesced_mmio(struct kvm *kvm,
-diff --git a/virt/kvm/ioapic.c b/virt/kvm/ioapic.c
-index 1eddae9..9be89f5 100644
---- a/virt/kvm/ioapic.c
-+++ b/virt/kvm/ioapic.c
-@@ -317,6 +317,7 @@ void kvm_ioapic_reset(struct kvm_ioapic *ioapic)
- int kvm_ioapic_init(struct kvm *kvm)
+ void
+-kvm_irqfd_init(struct kvm *kvm)
++kvm_eventfd_init(struct kvm *kvm)
  {
- 	struct kvm_ioapic *ioapic;
-+	int ret;
- 
- 	ioapic = kzalloc(sizeof(struct kvm_ioapic), GFP_KERNEL);
- 	if (!ioapic)
-@@ -328,7 +329,11 @@ int kvm_ioapic_init(struct kvm *kvm)
- 	ioapic->dev.in_range = ioapic_in_range;
- 	ioapic->dev.private = ioapic;
- 	ioapic->kvm = kvm;
--	kvm_io_bus_register_dev(&kvm->mmio_bus, &ioapic->dev);
--	return 0;
-+
-+	ret = kvm_io_bus_register_dev(&kvm->mmio_bus, &ioapic->dev);
-+	if (ret < 0)
-+		kfree(ioapic);
-+
-+	return ret;
+ 	INIT_LIST_HEAD(&kvm->irqfds);
++	INIT_LIST_HEAD(&kvm->iosignalfds);
  }
  
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index de042cb..4c36ac8 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -2435,16 +2435,18 @@ static struct notifier_block kvm_reboot_notifier = {
- void kvm_io_bus_init(struct kvm_io_bus *bus)
- {
- 	memset(bus, 0, sizeof(*bus));
-+	spin_lock_init(&bus->lock);
- }
- 
- void kvm_io_bus_destroy(struct kvm_io_bus *bus)
- {
- 	int i;
- 
--	for (i = 0; i < bus->dev_count; i++) {
-+	for (i = 0; i < NR_IOBUS_DEVS; i++) {
- 		struct kvm_io_device *pos = bus->devs[i];
- 
--		kvm_iodevice_destructor(pos);
-+		if (pos)
-+			kvm_iodevice_destructor(pos);
+ int
+@@ -232,3 +237,158 @@ kvm_irqfd_release(struct kvm *kvm)
+ 		irqfd_release(irqfd);
  	}
  }
- 
-@@ -2453,21 +2455,54 @@ struct kvm_io_device *kvm_io_bus_find_dev(struct kvm_io_bus *bus,
- {
- 	int i;
- 
--	for (i = 0; i < bus->dev_count; i++) {
-+	for (i = 0; i < NR_IOBUS_DEVS; i++) {
- 		struct kvm_io_device *pos = bus->devs[i];
- 
--		if (pos->in_range(pos, addr, len, is_write))
-+		if (pos && pos->in_range(pos, addr, len, is_write))
- 			return pos;
- 	}
- 
- 	return NULL;
- }
- 
--void kvm_io_bus_register_dev(struct kvm_io_bus *bus, struct kvm_io_device *dev)
-+int kvm_io_bus_register_dev(struct kvm_io_bus *bus, struct kvm_io_device *dev)
- {
--	BUG_ON(bus->dev_count > (NR_IOBUS_DEVS-1));
-+	int i;
 +
-+	spin_lock(&bus->lock);
++/*
++ * --------------------------------------------------------------------
++ * iosignalfd: translate a PIO/MMIO memory write to an eventfd signal.
++ *
++ * userspace can register a PIO/MMIO address with an eventfd for recieving
++ * notification when the memory has been touched.
++ * --------------------------------------------------------------------
++ */
 +
-+	for (i = 0; i < NR_IOBUS_DEVS; i++) {
-+		if (bus->devs[i])
-+			continue;
++struct _iosignalfd {
++	u64                  cookie;
++	u64                  addr;
++	size_t               length;
++	struct file         *file;
++	struct list_head     list;
++	struct kvm_io_device dev;
++};
 +
-+		bus->devs[i] = dev;
-+		spin_unlock(&bus->lock);
-+		return 0;
-+	}
++static int
++iosignalfd_in_range(struct kvm_io_device *this, gpa_t addr, int len,
++		    int is_write)
++{
++	struct _iosignalfd *p = (struct _iosignalfd *)this->private;
 +
-+	spin_unlock(&bus->lock);
-+
-+	return -ENOSPC;
++	return ((addr >= p->addr && (addr < p->addr + p->length)));
 +}
 +
-+int kvm_io_bus_unregister_dev(struct kvm_io_bus *bus, struct kvm_io_device *dev)
++/* writes trigger an event */
++static void
++iosignalfd_write(struct kvm_io_device *this, gpa_t addr, int len,
++		 const void *val)
 +{
-+	int i;
++	struct _iosignalfd *iosignalfd = (struct _iosignalfd *)this->private;
 +
-+	spin_lock(&bus->lock);
++	eventfd_signal(iosignalfd->file, 1);
++}
 +
-+	for (i = 0; i < NR_IOBUS_DEVS; i++) {
++/* reads return all zeros */
++static void
++iosignalfd_read(struct kvm_io_device *this, gpa_t addr, int len, void *val)
++{
++	memset(val, 0, len);
++}
 +
-+		if (bus->devs[i] == dev) {
-+			bus->devs[i] = NULL;
-+			spin_unlock(&bus->lock);
-+			return 0;
-+		}
++static void
++_iosignalfd_destructor(struct _iosignalfd *iosignalfd)
++{
++	fput(iosignalfd->file);
++	list_del(&iosignalfd->list);
++
++	kfree(iosignalfd);
++}
++
++static void
++iosignalfd_destructor(struct kvm_io_device *this)
++{
++	struct _iosignalfd *iosignalfd = (struct _iosignalfd *)this->private;
++
++	_iosignalfd_destructor(iosignalfd);
++}
++
++static int
++kvm_assign_iosignalfd(struct kvm *kvm, struct kvm_iosignalfd *args)
++{
++	int                 pio = args->flags & KVM_IOSIGNALFD_FLAG_PIO;
++	struct kvm_io_bus  *bus = pio ? &kvm->pio_bus : &kvm->mmio_bus;
++	struct _iosignalfd *iosignalfd;
++	struct file        *file;
++	int                 ret;
++
++	file = eventfd_fget(args->fd);
++	if (IS_ERR(file)) {
++		ret = PTR_ERR(file);
++		printk(KERN_ERR "iosignalfd: failed to get %d eventfd: %d\n",
++		       args->fd, ret);
++		return ret;
 +	}
 +
-+	spin_unlock(&bus->lock);
- 
--	bus->devs[bus->dev_count++] = dev;
-+	return -ENOENT;
- }
- 
- static struct notifier_block kvm_cpu_notifier = {
++	iosignalfd = kzalloc(sizeof(*iosignalfd), GFP_KERNEL);
++	if (!iosignalfd) {
++		printk(KERN_ERR "iosignalfd: memory pressure\n");
++		fput(file);
++		return -ENOMEM;
++	}
++
++	iosignalfd->dev.read       = iosignalfd_read;
++	iosignalfd->dev.write      = iosignalfd_write;
++	iosignalfd->dev.in_range   = iosignalfd_in_range;
++	iosignalfd->dev.destructor = iosignalfd_destructor;
++	iosignalfd->dev.private    = iosignalfd;
++
++	iosignalfd->cookie         = args->cookie;
++	iosignalfd->addr           = args->addr;
++	iosignalfd->length         = args->len;
++	iosignalfd->file           = file;
++	INIT_LIST_HEAD(&iosignalfd->list);
++
++	ret = kvm_io_bus_register_dev(bus, &iosignalfd->dev);
++	if (ret < 0) {
++		printk(KERN_ERR "iosignalfd: failed to register IODEV: %d\n",
++		       ret);
++		goto fail;
++	}
++
++	mutex_lock(&kvm->lock);
++	list_add_tail(&iosignalfd->list, &kvm->iosignalfds);
++	mutex_unlock(&kvm->lock);
++
++	return 0;
++
++fail:
++	/*
++	 * This doesn't take a lock, but the failure case will never result
++	 * in the list being populated anyway
++	 */
++	_iosignalfd_destructor(iosignalfd);
++
++	return ret;
++}
++
++static int
++kvm_deassign_iosignalfd(struct kvm *kvm, struct kvm_iosignalfd *args)
++{
++	int                   pio = args->flags & KVM_IOSIGNALFD_FLAG_PIO;
++	struct kvm_io_bus    *bus = pio ? &kvm->pio_bus : &kvm->mmio_bus;
++	struct _iosignalfd   *iosignalfd, *tmp;
++
++	mutex_lock(&kvm->lock);
++
++	list_for_each_entry_safe(iosignalfd, tmp, &kvm->iosignalfds, list) {
++		if (iosignalfd->addr != args->addr)
++			continue;
++
++		if ((args->flags & KVM_IOSIGNALFD_FLAG_COOKIE) &&
++		    (iosignalfd->cookie != args->cookie))
++			continue;
++
++		kvm_io_bus_unregister_dev(bus, &iosignalfd->dev);
++		_iosignalfd_destructor(iosignalfd);
++	}
++
++	mutex_unlock(&kvm->lock);
++
++	return 0;
++}
++
++int
++kvm_iosignalfd(struct kvm *kvm, struct kvm_iosignalfd *args)
++{
++	if (args->flags & KVM_IOSIGNALFD_FLAG_DEASSIGN)
++		return kvm_deassign_iosignalfd(kvm, args);
++
++	return kvm_assign_iosignalfd(kvm, args);
++}
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index 4c36ac8..79fdc08 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -983,7 +983,7 @@ static struct kvm *kvm_create_vm(void)
+ 	atomic_inc(&kvm->mm->mm_count);
+ 	spin_lock_init(&kvm->mmu_lock);
+ 	kvm_io_bus_init(&kvm->pio_bus);
+-	kvm_irqfd_init(kvm);
++	kvm_eventfd_init(kvm);
+ 	mutex_init(&kvm->lock);
+ 	kvm_io_bus_init(&kvm->mmio_bus);
+ 	init_rwsem(&kvm->slots_lock);
+@@ -2221,6 +2221,15 @@ static long kvm_vm_ioctl(struct file *filp,
+ 		r = kvm_irqfd(kvm, data.fd, data.gsi, data.flags);
+ 		break;
+ 	}
++	case KVM_IOSIGNALFD: {
++		struct kvm_iosignalfd entry;
++
++		r = -EFAULT;
++		if (copy_from_user(&entry, argp, sizeof entry))
++			goto out;
++		r = kvm_iosignalfd(kvm, &entry);
++		break;
++	}
+ 	default:
+ 		r = kvm_arch_vm_ioctl(filp, ioctl, arg);
+ 	}
 
