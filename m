@@ -1,85 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756220AbZEZOib@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756461AbZEZOkJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756220AbZEZOib (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 10:38:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754309AbZEZOiY
+	id S1756461AbZEZOkJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 10:40:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755400AbZEZOkB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 10:38:24 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:38694 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753815AbZEZOiX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 10:38:23 -0400
-Subject: Re: [PATCH] sched: Support current clocksource handling in
- fallback sched_clock().
-From: Peter Zijlstra <peterz@infradead.org>
-To: Linus Walleij <linus.ml.walleij@gmail.com>
-Cc: Paul Mundt <lethal@linux-sh.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Victor <linux@maxim.org.za>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-sh@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       John Stultz <johnstul@linux.vnet.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <63386a3d0905260731m655bfee3q82a6f52d71fa3cef@mail.gmail.com>
-References: <20090526061532.GD9188@linux-sh.org>
-	 <63386a3d0905260731m655bfee3q82a6f52d71fa3cef@mail.gmail.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Tue, 26 May 2009 16:38:01 +0200
-Message-Id: <1243348681.23657.14.camel@twins>
+	Tue, 26 May 2009 10:40:01 -0400
+Received: from [222.92.8.141] ([222.92.8.141]:34859 "EHLO lemote.com"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753736AbZEZOkA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 10:40:00 -0400
+Subject: Re: [loongson-PATCH-v1 24/27] fixup for FUJITSU disk
+From: yanh <yanh@lemote.com>
+Reply-To: yanh@lemote.com
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: "Martin K. Petersen" <martin.petersen@oracle.com>,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       =?gb2312?Q?=BA=FA=BA=E9=B1=F8?= <huhb@lemote.com>, wuzhangjin@gmail.com,
+       linux-mips@linux-mips.org, Ralf Baechle <ralf@linux-mips.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       Philippe Vachon <philippe@cowpig.ca>, Zhang Le <r0bertz@gentoo.org>,
+       Zhang Fuxin <zhangfx@lemote.com>, Arnaud Patard <apatard@mandriva.com>,
+       loongson-dev@googlegroups.com, gnewsense-dev@nongnu.org,
+       Nicholas Mc Guire <hofrat@hofr.at>, Liu Junliang <liujl@lemote.com>,
+       Erwan Lerale <erwan@thiscow.com>
+In-Reply-To: <20090526085605.014d0087@lxorguk.ukuu.org.uk>
+References: <cover.1242855716.git.wuzhangjin@gmail.com>
+	 <1243230339.9819.18.camel@localhost.localdomain>
+	 <4A1A4A54.6090401@lemote.com> <200905251656.25357.bzolnier@gmail.com>
+	 <4A1AEBF7.7040402@ru.mvista.com> <yq1tz39dmmn.fsf@sermon.lab.mkp.net>
+	 <1243300890.9819.40.camel@localhost.localdomain>
+	 <20090526085605.014d0087@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 26 May 2009 22:39:32 +0800
+Message-Id: <1243348772.9819.77.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Added the generic clock and timer folks to CC.
+在 2009-05-26二的 08:56 +0100，Alan Cox写道：
+> > > In any case I have yet to see a CS5536 system whose BIOS sets the cable
+> > > detection bit.  If that's the problem I guess we could add a quirk flag
+> > > to override the (lack of) BIOS setting.
+> > > 
+> > This may be the cause that udma5 cannot be set.
+> 
+> 
+> If the system doesn't have working BIOS cable detect as per the
+> documentation for the chip then just return the "unknown" cable type and
+> libata will do device side cable detect.
 
-On Tue, 2009-05-26 at 16:31 +0200, Linus Walleij wrote:
-> 2009/5/26 Paul Mundt <lethal@linux-sh.org>:
-> 
-> >  */
-> >  unsigned long long __attribute__((weak)) sched_clock(void)
-> >  {
-> > +       /*
-> > +        * Use the current clocksource when it becomes available later in
-> > +        * the boot process, and ensure that it has a high enough rating
-> > +        * to make it suitable for general use.
-> > +        */
-> > +       if (clock && clock->rating >= 100)
-> > +               return cyc2ns(clock, clocksource_read(clock));
-> > +
-> > +       /* Otherwise just fall back on jiffies */
-> >        return (unsigned long long)(jiffies - INITIAL_JIFFIES)
-> >                                        * (NSEC_PER_SEC / HZ);
-> >  }
-> 
-> This seems like it would make the patch I sent the other day
-> unnecessary (subject u300 sched_clock() implementation).
-> 
-> It would also trim off this solution found in all OMAP platforms in
-> arch/arm/plat-omap/common.c
-> 
-> BUT Peter Zijlstra replied to my question about why this wasn't
-> generic with:
-> 
-> [peterz]:
-> > But that is the reason this isn't generic, non of the 'stable'
-> > clocksources on x86 are fast enough to use as sched_clock.
-> 
-> Does that mean clock->rating for these clocksources is
-> for certain < 100?
-> 
-> The definition of "rating" from the kerneldoc does not
-> seem to imply that, it's a subjective measure AFAICT.
-> 
-> Else you might want an additional criteria, like
-> cyc2ns(1) (much less than) jiffies_to_usecs(1)*1000
-> (however you do that the best way)
-> so you don't pick something
-> that isn't substantially faster than the jiffy counter atleast?
+After force cable type as 80 wire, udma5 can be set OK now. 
+after some raw test, the legacy and native driver have no obvious
+difference in performance.
 
+Remain issue: this native driver still have suspend/resume issue.
 
-
+ 
+> 
+> Alan
 
