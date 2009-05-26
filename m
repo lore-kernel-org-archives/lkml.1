@@ -1,79 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759077AbZEZWvY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760698AbZEZWwA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759077AbZEZWvY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 18:51:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760251AbZEZWtk
+	id S1760698AbZEZWwA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 18:52:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760579AbZEZWvK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 18:49:40 -0400
-Received: from mga05.intel.com ([192.55.52.89]:57280 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759809AbZEZWtj (ORCPT
+	Tue, 26 May 2009 18:51:10 -0400
+Received: from smtp-out002.kontent.com ([81.88.40.216]:41414 "EHLO
+	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760554AbZEZWvH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 18:49:39 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,254,1241420400"; 
-   d="scan'208";a="693771896"
-Message-Id: <20090526225148.141003582@linux.intel.com>
-References: <20090526224930.145059254@linux.intel.com>
-User-Agent: quilt/0.46-1
-Date: Wed, 27 May 2009 00:49:35 +0200
-From: Samuel Ortiz <sameo@linux.intel.com>
-To: inux-kernel <linux-kernel@vger.kernel.org>,
-       Greg Kroah-Hartmann <greg@kroah.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Dominik Brodowski <linux@dominikbrodowski.net>
-Cc: Kay Sievers <kay.sievers@vrfy.org>, Samuel Ortiz <sameo@linux.intel.com>
-Subject: [PATCH 5/7 v2] pcmcia/ds: prepare for FIRMWARE_NAME_MAX removal
-Content-Disposition: inline; filename=firmware-ds.patch
+	Tue, 26 May 2009 18:51:07 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
+Date: Wed, 27 May 2009 00:51:35 +0200
+User-Agent: KMail/1.10.3 (Linux/2.6.27.21-0.1-default; KDE/4.1.3; x86_64; ; )
+Cc: nigel@tuxonice.net, linux-pm@lists.linux-foundation.org,
+       tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org,
+       Pavel Machek <pavel@ucw.cz>
+References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net> <200905260045.33902.oliver@neukum.org> <200905260058.54482.rjw@sisk.pl>
+In-Reply-To: <200905260058.54482.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200905270051.35831.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Samuel Ortiz <sameo@linux.intel.com>
-To: Dominik Brodowski <linux@dominikbrodowski.net>
+Am Dienstag, 26. Mai 2009 00:58:53 schrieb Rafael J. Wysocki:
+> > No, I am afraid it is not. The average user has no clue. Even if that
+> > is not the problem, the user never knows for sure he has encountered
+> > the worst case.
+>
+> OK there, but surely it's better to have a sysfs attribute than a fixed
+> value?
 
-We're going to remove the FIRMWARE_NAME_MAX definition in order to avoid any
-firmware name length restriction.
-With the FIRMWARE_NAME_MAX removal, the ds.c reference becomes useless as we
-dont need to check for the firmware name length anymore.
+Maybe I should have been more verbose.
 
-Signed-off-by: Samuel Ortiz <sameo@linux.intel.com>
+A tunable setting is a race condition in itself. The right amount depends
+on the drivers loaded and the devices attached and possibly on the status
+of devices. Nothing of this can be determined statically.
 
----
- drivers/pcmcia/ds.c |   12 +-----------
- 1 file changed, 1 insertion(+), 11 deletions(-)
+You want hibernation to work even if the user has plugged in a new device.
+You have to calculate that amount in kernel space.
 
-Index: iwm-2.6/drivers/pcmcia/ds.c
-===================================================================
---- iwm-2.6.orig/drivers/pcmcia/ds.c	2009-05-26 17:32:21.000000000 +0200
-+++ iwm-2.6/drivers/pcmcia/ds.c	2009-05-26 17:33:07.000000000 +0200
-@@ -828,7 +828,6 @@ static int pcmcia_load_firmware(struct p
- {
- 	struct pcmcia_socket *s = dev->socket;
- 	const struct firmware *fw;
--	char path[FIRMWARE_NAME_MAX];
- 	int ret = -ENOMEM;
- 	int no_funcs;
- 	int old_funcs;
-@@ -839,16 +838,7 @@ static int pcmcia_load_firmware(struct p
- 
- 	ds_dev_dbg(1, &dev->dev, "trying to load CIS file %s\n", filename);
- 
--	if (strlen(filename) > (FIRMWARE_NAME_MAX - 1)) {
--		dev_printk(KERN_WARNING, &dev->dev,
--			   "pcmcia: CIS filename is too long [%s]\n",
--			   filename);
--		return -EINVAL;
--	}
--
--	snprintf(path, sizeof(path), "%s", filename);
--
--	if (request_firmware(&fw, path, &dev->dev) == 0) {
-+	if (request_firmware(&fw, filename, &dev->dev) == 0) {
- 		if (fw->size >= CISTPL_MAX_CIS_SIZE) {
- 			ret = -EINVAL;
- 			dev_printk(KERN_ERR, &dev->dev,
+	Regards
+		Oliver
 
--- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
