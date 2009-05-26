@@ -1,74 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755688AbZEZRbr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755609AbZEZRdl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755688AbZEZRbr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 13:31:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754285AbZEZRbi
+	id S1755609AbZEZRdl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 13:33:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754668AbZEZRde
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 13:31:38 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:51909 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753466AbZEZRbh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 13:31:37 -0400
-Date: Tue, 26 May 2009 14:31:10 -0300
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Paul Mundt <lethal@linux-sh.org>, Randy Dunlap <randy.dunlap@oracle.com>,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       linux-media@vger.kernel.org, Hans Verkuil <hverkuil@xs4all.nl>
-Subject: Re: [PATCH -next] v4l2: handle unregister for non-I2C builds
-Message-ID: <20090526143110.6c7b2e5a@pedra.chehab.org>
-In-Reply-To: <20090522175554.19465733.sfr@canb.auug.org.au>
-References: <20090511161442.3e9d9cb9.sfr@canb.auug.org.au>
-	<4A085455.5040108@oracle.com>
-	<20090522054847.GB14059@linux-sh.org>
-	<20090522175554.19465733.sfr@canb.auug.org.au>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+	Tue, 26 May 2009 13:33:34 -0400
+Received: from mga09.intel.com ([134.134.136.24]:39948 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754656AbZEZRdd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 13:33:33 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,253,1241420400"; 
+   d="scan'208";a="415779863"
+Date: Tue, 26 May 2009 10:33:35 -0700
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Tejun Heo <tj@kernel.org>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       "Zhang, Rui" <rui.zhang@intel.com>,
+       Suresh Siddha <suresh.d.siddha@intel.com>
+Subject: Re: [GIT PULL] x86 fixes for 2.6.30-rc8
+Message-ID: <20090526173335.GA28720@linux-os.sc.intel.com>
+References: <200905252003.n4PK3sFi014919@voreg.hos.anvin.org> <alpine.LFD.2.01.0905251543570.3435@localhost.localdomain> <alpine.LFD.2.01.0905251550320.3435@localhost.localdomain> <4A1B23AB.7090204@zytor.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A1B23AB.7090204@zytor.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Fri, 22 May 2009 17:55:54 +1000
-Stephen Rothwell <sfr@canb.auug.org.au> escreveu:
-
-> On Fri, 22 May 2009 14:48:47 +0900 Paul Mundt <lethal@linux-sh.org> wrote:
-> >
-> > On Mon, May 11, 2009 at 09:37:41AM -0700, Randy Dunlap wrote:
-> > > From: Randy Dunlap <randy.dunlap@oracle.com>
-> > > 
-> > > Build fails when CONFIG_I2C=n, so handle that case in the if block:
-> > > 
-> > > drivers/built-in.o: In function `v4l2_device_unregister':
-> > > (.text+0x157821): undefined reference to `i2c_unregister_device'
-> > > 
-> > > Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+On Mon, May 25, 2009 at 04:03:07PM -0700, H. Peter Anvin wrote:
+> Linus Torvalds wrote:
 > > 
-> > This patch still has not been applied as far as I can tell, and builds
-> > are still broken as a result, almost 2 weeks after the fact.
+> > On Mon, 25 May 2009, Linus Torvalds wrote:
+> >> Now you made it do two different "on_each_cpu" things. Maybe it doesn't 
+> >> matter, but it just seems wrong.
+> > 
+> > Btw, I pulled, I just wanted to note that I don't think this was done 
+> > optimally/cleanly.
+> > 
 > 
-> In fact there has been no updates to the v4l-dvb tree at all since
-> May 11.  Mauro?
-
-Sorry, this email were got by a wrong filtering rule here. Only today I
-noticed it.
-
-Anyway, the tree were updated yesterday, with Randy's patch. Sorry for the mess.
+> Understood.  Do you want a fix now or for .31?
 > 
-> I have reverted the patch that caused the build breakage ... (commit
-> d5bc7940d39649210f1affac1fa32f253cc45a81 "V4L/DVB (11673): v4l2-device:
-> unregister i2c_clients when unregistering the v4l2_device").
-> 
-> [By the way, an alternative fix might be to just define
-> V4L2_SUBDEV_FL_IS_I2C to be zero if CONFIG_I2C and CONFIG_I2C_MODULE are
-> not defined (gcc should then just elide the offending code).]
+
+Below is the patch that does this optimally.
+
+Thanks,
+Venki
 
 
+[PATCH] x86: Avoid back to back on_each_cpu in cpa_flush_array
 
+Cleanup cpa_flush_array() to avoid back to back on_each_cpu() calls.
 
-Cheers,
-Mauro
+Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+---
+ arch/x86/mm/pageattr.c |   12 +++---------
+ 1 files changed, 3 insertions(+), 9 deletions(-)
+
+diff --git a/arch/x86/mm/pageattr.c b/arch/x86/mm/pageattr.c
+index 0f9052b..532d05e 100644
+--- a/arch/x86/mm/pageattr.c
++++ b/arch/x86/mm/pageattr.c
+@@ -213,21 +213,15 @@ static void cpa_flush_array(unsigned long *start, int numpages, int cache,
+ 			    int in_flags, struct page **pages)
+ {
+ 	unsigned int i, level;
++	unsigned long do_wbinvd = cache && numpages >= 1024; /* 4M threshold */
+ 
+ 	BUG_ON(irqs_disabled());
+ 
+-	on_each_cpu(__cpa_flush_range, NULL, 1);
++	on_each_cpu(__cpa_flush_all, (void *) do_wbinvd, 1);
+ 
+-	if (!cache)
++	if (!cache || do_wbinvd)
+ 		return;
+ 
+-	/* 4M threshold */
+-	if (numpages >= 1024) {
+-		if (boot_cpu_data.x86 >= 4)
+-			on_each_cpu(wbinvd_local, NULL, 1);
+-
+-		return;
+-	}
+ 	/*
+ 	 * We only need to flush on one CPU,
+ 	 * clflush is a MESI-coherent instruction that
+-- 
+1.6.0.6
+
