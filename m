@@ -1,58 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754330AbZEZH0P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754553AbZEZH07@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754330AbZEZH0P (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 03:26:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751481AbZEZH0B
+	id S1754553AbZEZH07 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 03:26:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752579AbZEZH0t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 03:26:01 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:55736 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751207AbZEZH0A (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 03:26:00 -0400
-X-Sasl-enc: dvudGIRzzemrADVKwsRI+PGmLJrjhDAOpOvmw7e2e99r 1243322760
-Message-ID: <4A1B9985.5060703@ladisch.de>
-Date: Tue, 26 May 2009 09:25:57 +0200
-From: Clemens Ladisch <clemens@ladisch.de>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
-MIME-Version: 1.0
-To: David Fries <david@fries.net>
-CC: David Griffith <dgriffi@cs.csubak.edu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org
-Subject: Re: bad endpoint address, MOTU FastLane
-References: <20090511221203.GB4300@spacedout.fries.net> <4A092B5C.603@ladisch.de> <20090524220756.GC4300@spacedout.fries.net> <4A1A54DB.3090902@ladisch.de> <20090526004146.GD4300@spacedout.fries.net>
-In-Reply-To: <20090526004146.GD4300@spacedout.fries.net>
-Content-Type: text/plain; charset=us-ascii
+	Tue, 26 May 2009 03:26:49 -0400
+Received: from sh.osrg.net ([192.16.179.4]:56358 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751481AbZEZH0s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 03:26:48 -0400
+Date: Tue, 26 May 2009 16:25:27 +0900
+To: jens.axboe@oracle.com, James.Bottomley@HansenPartnership.com
+Cc: fujita.tomonori@lab.ntt.co.jp, rdreier@cisco.com, bharrosh@panasas.com,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
+       akpm@linux-foundation.org, jack@suse.cz, yanmin_zhang@linux.intel.com,
+       linux-scsi@vger.kernel.org
+Subject: Re: [PATCH 03/13] scsi: unify allocation of scsi command and sense
+	buffer
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20090526062952.GB11363@kernel.dk>
+References: <aday6sk8wne.fsf@cisco.com>
+	<20090526132914W.fujita.tomonori@lab.ntt.co.jp>
+	<20090526062952.GB11363@kernel.dk>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20090526162545U.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Tue, 26 May 2009 16:25:29 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Fries wrote:
-> On Mon, May 25, 2009 at 10:20:43AM +0200, Clemens Ladisch wrote:
-> > David Fries wrote:
-> > > The MOTU Fastlane device is the only one using QUIRK_MIDI_RAW.  How about
-> > > changing the name to QUIRK_MIDI_FASTLANE to imply it isn't completely
-> > > generic anymore and adding a comment?
+On Tue, 26 May 2009 08:29:53 +0200
+Jens Axboe <jens.axboe@oracle.com> wrote:
+
+> On Tue, May 26 2009, FUJITA Tomonori wrote:
+> > On Mon, 25 May 2009 18:45:25 -0700
+> > Roland Dreier <rdreier@cisco.com> wrote:
 > > 
-> > And while we're at it, the driver should claim interface 1 to prevent
-> > anyone else from using it.
-> 
-> Before and after the latest patch snd-usb-audio claims interface 1.
-
-Oops.  Well, that makes the patch easier.  ;-)
-
-> > New patch below.
+> > >  > Ideally there should be a MACRO that is defined to WORD_SIZE on cache-coherent
+> > >  > ARCHs and to SMP_CACHE_BYTES on none-cache-coherent systems and use that size
+> > >  > at the __align() attribute. (So only stupid ARCHES get hurt)
+> > > 
+> > > this seems to come up repeatedly -- I had a proposal a _long_ time ago
+> > > that never quite got merged, cf http://lwn.net/Articles/2265/ and
+> > > http://lwn.net/Articles/2269/ -- from 2002 (!?).  The idea is to go a
 > > 
-> > Are you okay with the tested-by tag?
+> > Yeah, I think that Benjamin did last time:
+> > 
+> > http://www.mail-archive.com/linux-scsi@vger.kernel.org/msg12632.html
+> > 
+> > IIRC, James didn't like it so I wrote the current code. I didn't see
+> > any big performance difference with scsi_debug:
+> > 
+> > http://marc.info/?l=linux-scsi&m=120038907123706&w=2
+> > 
+> > Jens, you see the performance difference due to this unification?
 > 
-> Yes, it works.  I'm watching the LEDs blink on the device and data
-> come across.
+> Yes, it's definitely a worth while optimization. The problem isn't as
+> such this specific allocation, it's the total number of allocations we
+> do for a piece of IO. This sense buffer one is just one of many, I'm
+> continually working to reduce them. If we get rid of this one and add
+> the ->alloc_cmd() stuff, we can kill one more. The bio path already lost
+> one. So in the IO stack, we went from 6 allocations to 3 for a piece of
+> IO. And then it starts to add up. Even at just 30-50k iops, that's more
+> than 1% of time in the testing I did.
 
-Okay, I'll applay it in the sound tree.
+I see, thanks. Hmm, possibly slab becomes slower. ;)
 
+Then I think that we need something like the ->alloc_cmd()
+method. Let's ask James. 
 
-Best regards,
-Clemens
+I don't think that it's just about simply adding the hook; there are
+some issues that we need to think about. Though Boaz worries too much
+a bit, I think.
+
+I'm not sure about this patch if we add ->alloc_cmd(). I doubt that
+there are any llds don't use ->alloc_cmd() worry about the overhead of
+the separated sense buffer allocation. If a lld doesn't define the own
+alloc_cmd, then I think it's fine to use the generic command
+allocator that does the separate sense buffer allocation.
