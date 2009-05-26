@@ -1,52 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758107AbZEZWDl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758222AbZEZWEx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758107AbZEZWDl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 18:03:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753712AbZEZWDc
+	id S1758222AbZEZWEx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 18:04:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753712AbZEZWEp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 18:03:32 -0400
-Received: from mail-bw0-f222.google.com ([209.85.218.222]:61743 "EHLO
-	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751857AbZEZWDb (ORCPT
+	Tue, 26 May 2009 18:04:45 -0400
+Received: from mho-01-ewr.mailhop.org ([204.13.248.71]:52321 "EHLO
+	mho-01-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750883AbZEZWEo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 18:03:31 -0400
+	Tue, 26 May 2009 18:04:44 -0400
+X-Mail-Handler: MailHop Outbound by DynDNS
+X-Originating-IP: 67.160.239.110
+X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
+X-MHO-User: U2FsdGVkX19+ArvYZkdrMukAiChRDumz
+Date: Tue, 26 May 2009 15:04:31 -0700
+From: Tony Lindgren <tony@atomide.com>
+To: Paul Walmsley <paul@pwsan.com>
+Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
+       linux-omap@vger.kernel.org
+Subject: Re: [PATCH 00/10] OMAP clock/SDRC patches on v2.6.30-rc5
+Message-ID: <20090526220431.GF11865@atomide.com>
+References: <20090512235713.10349.49339.stgit@localhost.localdomain> <alpine.DEB.2.00.0905261025350.17019@utopia.booyaka.com> <20090526163703.GF26713@n2100.arm.linux.org.uk> <alpine.DEB.2.00.0905261050560.17019@utopia.booyaka.com>
 MIME-Version: 1.0
-In-Reply-To: <Pine.LNX.4.44L0.0905261756390.11998-100000@iolanthe.rowland.org>
-References: <ac3eb2510905261413r54e5bb18n7faf888aa55d8830@mail.gmail.com> 
-	<Pine.LNX.4.44L0.0905261756390.11998-100000@iolanthe.rowland.org>
-From: Kay Sievers <kay.sievers@vrfy.org>
-Date: Wed, 27 May 2009 00:03:11 +0200
-Message-ID: <ac3eb2510905261503k32db6197m84d1e78858e53da1@mail.gmail.com>
-Subject: Re: [PATCH 25/20] sysfs: Only support removing emtpy sysfs 
-	directories.
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: James Bottomley <James.Bottomley@hansenpartnership.com>,
-       SCSI development list <linux-scsi@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Tejun Heo <tj@kernel.org>, Cornelia Huck <cornelia.huck@de.ibm.com>,
-       linux-fsdevel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@aristanetworks.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0905261050560.17019@utopia.booyaka.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 26, 2009 at 23:56, Alan Stern <stern@rowland.harvard.edu> wrote:
-> On Tue, 26 May 2009, Kay Sievers wrote:
->
->> Ok, I copied my newly installed system to another disks, to have a
->> root filesytem to trash again by this bug. :)
->>
->> Which of your patches should I try?
->
-> James's patch, not mine.
+* Paul Walmsley <paul@pwsan.com> [090526 09:53]:
+> On Tue, 26 May 2009, Russell King - ARM Linux wrote:
+> 
+> > On Tue, May 26, 2009 at 10:29:52AM -0600, Paul Walmsley wrote:
+> > > Hello Russell,
+> > > 
+> > > On Tue, 12 May 2009, Paul Walmsley wrote:
+> > > 
+> > > > This series contains OMAP clock and SDRAM controller patches against
+> > > > v2.6.30-rc5.  If you are happy with these, Tony will merge them into
+> > > > his for-next branch for you to pull.
+> > > > 
+> > > > This series includes the clk_init_one() to clk_preinit() rename that
+> > > > we've discussed recently.  Most of the patches prepare for CORE DPLL
+> > > > M2 rate changing support.
+> > > 
+> > > Any comments on these patches?
+> > 
+> > All look fine to me.
+> 
+> Great, thanks.
 
-I tried both, both don't fix the issue. With Alan's patch it *seems*
-the target device never gets removed, at least I didn't see anything
-in the kobject debug logs.
+I've pulled these to the omap for-next branch to wait for the merge window.
 
-Kay
+Tony
