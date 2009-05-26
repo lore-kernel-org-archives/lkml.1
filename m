@@ -1,75 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753967AbZEZEh6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754360AbZEZEib@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753967AbZEZEh6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 00:37:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751178AbZEZEhq
+	id S1754360AbZEZEib (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 00:38:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753419AbZEZEiN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 00:37:46 -0400
-Received: from sh.osrg.net ([192.16.179.4]:55923 "EHLO sh.osrg.net"
+	Tue, 26 May 2009 00:38:13 -0400
+Received: from ozlabs.org ([203.10.76.45]:43359 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750965AbZEZEhp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 00:37:45 -0400
-Date: Tue, 26 May 2009 13:36:43 +0900
-To: hch@infradead.org
-Cc: jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, chris.mason@oracle.com,
-       david@fromorbit.com, akpm@linux-foundation.org, jack@suse.cz,
-       yanmin_zhang@linux.intel.com, linux-scsi@vger.kernel.org
-Subject: Re: [PATCH 03/13] scsi: unify allocation of scsi command and sense
-	buffer
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20090525075008.GA23413@infradead.org>
-References: <20090525074124.GA31746@infradead.org>
-	<20090525074647.GK11363@kernel.dk>
-	<20090525075008.GA23413@infradead.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20090526133549Q.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Tue, 26 May 2009 13:36:44 +0900 (JST)
+	id S1753996AbZEZEiM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 00:38:12 -0400
+Date: Tue, 26 May 2009 14:36:58 +1000
+From: Anton Blanchard <anton@samba.org>
+To: rostedt@goodmis.org, mingo@elte.hu, tzanussi@gmail.com, jbaron@redhat.com,
+       tglx@linutronix.de, fweisbec@gmail.com, kosaki.motohiro@jp.fujitsu.com
+Cc: linux-kernel@vger.kernel.org
+Subject: tracing/events: Add tasklet tracepoints
+Message-ID: <20090526043658.GE19728@kryten>
+References: <20090520101334.GA23442@kryten> <20090526042643.GB19728@kryten> <20090526043123.GC19728@kryten> <20090526043257.GD19728@kryten>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090526043257.GD19728@kryten>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 25 May 2009 03:50:08 -0400
-Christoph Hellwig <hch@infradead.org> wrote:
 
-> On Mon, May 25, 2009 at 09:46:47AM +0200, Jens Axboe wrote:
-> > > But that patch looks good to me, avoiding one allocation for each
-> > > command and simplifying the code.  I try to remember why these were
-> > > two slabs to start with but can't find any reason.
-> > > 
-> > > Btw, we might just want to declare the sense buffer directly as a sized
-> > > array in the scsi command as there really doesn't seem to be a reason
-> > > not to allocate it.
-> > 
-> > That is also a workable solution. I've been trying to cut down on the
-> > number of allocations required per-IO, and there's definitely still some
-> > low hanging fruit there. Some of it is already included, like the inline
-> > io_vecs in the bio.
-> 
-> Btw, one thing I wanted to do for years is to add ->alloc_cmnd and
-> ->destroy_cmnd method to the host template which optionally move the
-> command allocation to the LLDD.  That way we can embedd the scsi_cmnd
-> into the drivers per-commad structure and eliminate another memory
-> allocation.  Also this would naturally extend the keep one cmnd pool
-> to drivers without requiring additional code.  As a second step it
-> would also allow killing the scsi_host_cmd_pool byt just having
-> a set of library routines that drivers which need SLAB_CACHE_DMA can
-> use.
+Add tracepoints for tasklets. We add entry and exit tracepoints so we can
+calculate tasklet latency.
 
-We discussed this idea when I rewrote the sense allocation code, I
-think.
+Example ftrace output:
 
-I like that idea that unifying scsi_cmnd and llds' per-commad
-structure however there is one tricky thing about it.
+<idle>-0     [000]   327.349213: tasklet_entry: func=.rpavscsi_task
+<idle>-0     [000]   327.349217: tasklet_exit: func=.rpavscsi_task
 
-Currently, a lld frees (or reuses) its per-commad structure when it
-calls scsi_done(). SCSI-ml uses scsi_cmd after that so we need to
-change the lifetime management (so we need to inspect all the llds,
-e.g. this change will break iscsi ldd).
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
 
-With that change, we can't tell llds how many per-commad structure are
-possibly necessary. In general, LLDs want to know the maximum number
-of per-commad structure; drivers allocates the number of per-commad
-structure equal to host_template->can_queue.
+Index: linux-2.6-master/kernel/softirq.c
+===================================================================
+--- linux-2.6-master.orig/kernel/softirq.c	2009-05-26 13:56:58.000000000 +1000
++++ linux-2.6-master/kernel/softirq.c	2009-05-26 13:57:46.000000000 +1000
+@@ -412,7 +412,9 @@
+ 			if (!atomic_read(&t->count)) {
+ 				if (!test_and_clear_bit(TASKLET_STATE_SCHED, &t->state))
+ 					BUG();
++				trace_tasklet_entry(t);
+ 				t->func(t->data);
++				trace_tasklet_exit(t);
+ 				tasklet_unlock(t);
+ 				continue;
+ 			}
+@@ -447,7 +449,9 @@
+ 			if (!atomic_read(&t->count)) {
+ 				if (!test_and_clear_bit(TASKLET_STATE_SCHED, &t->state))
+ 					BUG();
++				trace_tasklet_entry(t);
+ 				t->func(t->data);
++				trace_tasklet_exit(t);
+ 				tasklet_unlock(t);
+ 				continue;
+ 			}
+Index: linux-2.6-master/include/trace/events/irq.h
+===================================================================
+--- linux-2.6-master.orig/include/trace/events/irq.h	2009-05-26 13:56:58.000000000 +1000
++++ linux-2.6-master/include/trace/events/irq.h	2009-05-26 14:35:09.000000000 +1000
+@@ -128,6 +128,54 @@
+ 	TP_printk("softirq=%d action=%s", __entry->vec, __get_str(name))
+ );
+ 
++/**
++ * tasklet_entry - called immediately before the tasklet handler
++ * @t: pointer to struct tasklet_struct
++ *
++ * When used in combination with the tasklet_exit tracepoint we can
++ * determine the tasklet latency.
++ */
++TRACE_EVENT(tasklet_entry,
++
++	TP_PROTO(struct tasklet_struct *t),
++
++	TP_ARGS(t),
++
++	TP_STRUCT__entry(
++		__field(void *, func)
++	),
++
++	TP_fast_assign(
++		__entry->func = t->func;
++	),
++
++	TP_printk("func=%pf", __entry->func)
++);
++
++/**
++ * tasklet_exit - called immediately after the tasklet handler returns
++ * @t: pointer to struct tasklet_struct
++ *
++ * When used in combination with the tasklet_entry tracepoint we can
++ * determine the tasklet latency.
++ */
++TRACE_EVENT(tasklet_exit,
++
++	TP_PROTO(struct tasklet_struct *t),
++
++	TP_ARGS(t),
++
++	TP_STRUCT__entry(
++		__field(void *, func)
++	),
++
++	TP_fast_assign(
++		__entry->func = t->func;
++	),
++
++	TP_printk("func=%pf", __entry->func)
++);
++
+ #endif /*  _TRACE_IRQ_H */
+ 
+ /* This part must be outside protection */
