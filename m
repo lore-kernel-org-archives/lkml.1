@@ -1,100 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759588AbZEZW0c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759444AbZEZWZo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759588AbZEZW0c (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 18:26:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753445AbZEZW0Y
+	id S1759444AbZEZWZo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 18:25:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759062AbZEZWXy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 18:26:24 -0400
-Received: from sabe.cs.wisc.edu ([128.105.6.20]:52104 "EHLO sabe.cs.wisc.edu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750883AbZEZW0X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 18:26:23 -0400
-X-Greylist: delayed 2631 seconds by postgrey-1.27 at vger.kernel.org; Tue, 26 May 2009 18:26:23 EDT
-Message-ID: <4A1C60E8.1070004@cs.wisc.edu>
-Date: Tue, 26 May 2009 16:36:40 -0500
-From: Mike Christie <michaelc@cs.wisc.edu>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Tue, 26 May 2009 18:23:54 -0400
+Received: from silver.sucs.swan.ac.uk ([137.44.10.1]:59896 "EHLO
+	silver.sucs.swan.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758907AbZEZWXw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 18:23:52 -0400
+Date: Tue, 26 May 2009 23:23:52 +0100
+From: Sitsofe Wheeler <sitsofe@yahoo.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Dave Airlie <airlied@redhat.com>, DRI <dri-devel@lists.sourceforge.net>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Michel =?iso-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+Subject: Re: [Bug #12765] i915 VT switch with AIGLX causes X lock up
+Message-ID: <20090526222352.GA1532@sucs.org>
+References: <GtY7d2eWpoK.A.ioC.MQcGKB@chimera> <WCcYF-TAbJC.A.9dE.cScGKB@chimera>
 MIME-Version: 1.0
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-scsi <linux-scsi@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -tip][SCSI] scsi: scsi_transport_iscsi.c initialize the
- variable before it get used
-References: <1243351161.31783.5.camel@localhost.localdomain>
-In-Reply-To: <1243351161.31783.5.camel@localhost.localdomain>
-Content-Type: multipart/mixed;
- boundary="------------060500030205030504050102"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <WCcYF-TAbJC.A.9dE.cScGKB@chimera>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------060500030205030504050102
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-
-Jaswinder Singh Rajput wrote:
-> I am watching this problem from long time in -tip.
+On Sun, May 24, 2009 at 09:31:15PM +0200, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of regressions introduced between 2.6.28 and 2.6.29.
 > 
-> Subject: [PATCH] scsi: scsi_transport_iscsi.c initialize the variable before it get used
+> The following bug entry is on the current list of known regressions
+> introduced between 2.6.28 and 2.6.29.  Please verify if it still should
+> be listed and let me know (either way).
 > 
-> In some cases, err will be used uninitialized.
 > 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12765
+> Subject		: i915 VT switch with AIGLX causes X lock up
+> Submitter	: Sitsofe Wheeler <sitsofe@yahoo.com>
+> Date		: 2009-02-21 15:38 (93 days old)
+> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=14d200c5e5bd19219d930bbb9a5a22758c8f5bec
+> References	: http://marc.info/?l=linux-kernel&m=123523074304955&w=4
+> 		  http://lkml.org/lkml/2009/4/27/317
+> Handled-By	: Jesse Barnes <jbarnes@virtuousgeek.org>
+> Patch		: http://patchwork.kernel.org/patch/20197/
 
-As you guys already discussed it will not get used uninitialized.
+Yes this is still here in  2.6.30-rc7-00066-ge2a1b9e ...
 
-> Also fixed compilation warning :
-> 
->  CC      drivers/scsi/scsi_transport_iscsi.o
-> drivers/scsi/scsi_transport_iscsi.c: In function ‘iscsi_add_session’:
-> drivers/scsi/scsi_transport_iscsi.c:678: warning: ‘err’ may be used uninitialized in this function
-> 
-
-I did the attached patch to silence the compile warning. I goofed and 
-forgot to send it before, because I had change my compiler and was not 
-seeing the error message. I was planning on sending the attached with 
-some other changes for the next feature window. I am going to fix up the 
-patch to use UINT_MAX like James mentioned in the thread.
-
---------------060500030205030504050102
-Content-Type: text/x-patch;
- name="0001-iscsi-class-quiet-iscsi_add_session-compilation-war.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename*0="0001-iscsi-class-quiet-iscsi_add_session-compilation-war.pat";
- filename*1="ch"
-
->From 32ffa5248bf11f4df76ebf3c4a023958a9131f9c Mon Sep 17 00:00:00 2001
-From: Mike Christie <michaelc@cs.wisc.edu>
-Date: Mon, 18 May 2009 11:54:37 -0500
-Subject: [PATCH] iscsi class: quiet iscsi_add_session compilation warning.
-
-If ISCSI_MAX_TARGET was zero then iscsi_add_session could return
-success when it had failed. This will currently not happen because
-ISCSI_MAX_TARGET is a macro and not a variable. But gcc likes to
-complain about it and people keep reporting it. This patch
-just initializes err to be -EINVAL so if we ever defined
-ISCSI_MAX_TARGET incorrectly we would fail gracefully.
----
- drivers/scsi/scsi_transport_iscsi.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/scsi/scsi_transport_iscsi.c b/drivers/scsi/scsi_transport_iscsi.c
-index 0a2ce7b..f508567 100644
---- a/drivers/scsi/scsi_transport_iscsi.c
-+++ b/drivers/scsi/scsi_transport_iscsi.c
-@@ -675,7 +675,7 @@ int iscsi_add_session(struct iscsi_cls_session *session, unsigned int target_id)
- 	struct iscsi_cls_host *ihost;
- 	unsigned long flags;
- 	unsigned int id = target_id;
--	int err;
-+	int err = -EINVAL;
- 
- 	ihost = shost->shost_data;
- 	session->sid = atomic_add_return(1, &iscsi_session_nr);
 -- 
-1.6.0.6
-
-
---------------060500030205030504050102--
+Sitsofe | http://sucs.org/~sits/
