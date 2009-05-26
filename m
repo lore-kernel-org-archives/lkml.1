@@ -1,46 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757503AbZEZTVq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757746AbZEZTXS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757503AbZEZTVq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 15:21:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757397AbZEZTVh
+	id S1757746AbZEZTXS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 15:23:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756992AbZEZTXG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 15:21:37 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:53317 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757847AbZEZTVh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 15:21:37 -0400
-Subject: Re: [PATCH] drm: i915: ensure objects are allocated below 4GB on
- PAE
-From: Peter Zijlstra <peterz@infradead.org>
-To: Kyle McMartin <kyle@mcmartin.ca>
-Cc: airlied@redhat.com, dri-devel@lists.sf.net, linux-kernel@vger.kernel.org,
-       jbarnes@virtuousgeek.org, eric@anholt.net, stable@kernel.org,
-       hugh.dickins@tiscali.co.uk, linux-mm@kvack.org, shaohua.li@intel.com
-In-Reply-To: <20090526162717.GC14808@bombadil.infradead.org>
-References: <20090526162717.GC14808@bombadil.infradead.org>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Tue, 26 May 2009 21:17:53 +0200
-Message-Id: <1243365473.23657.32.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Tue, 26 May 2009 15:23:06 -0400
+Received: from hera.kernel.org ([140.211.167.34]:38576 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755689AbZEZTXE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 15:23:04 -0400
+Date: Tue, 26 May 2009 19:21:30 GMT
+From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
+       hpa@zytor.com, mingo@redhat.com, jkacur@redhat.com,
+       a.p.zijlstra@chello.nl, efault@gmx.de, mtosatti@redhat.com,
+       tglx@linutronix.de, cjashfor@linux.vnet.ibm.com, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, jkacur@redhat.com, a.p.zijlstra@chello.nl,
+       efault@gmx.de, mtosatti@redhat.com, tglx@linutronix.de,
+       cjashfor@linux.vnet.ibm.com, mingo@elte.hu
+In-Reply-To: <new-submission>
+References: <new-submission>
+Subject: [tip:perfcounters/core] perf report: More robust error handling
+Message-ID: <tip-6142f9ec108a4ddbf0d5904c3daa5fdcaa618792@git.kernel.org>
+Git-Commit-ID: 6142f9ec108a4ddbf0d5904c3daa5fdcaa618792
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 26 May 2009 19:21:31 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-05-26 at 12:27 -0400, Kyle McMartin wrote:
-> From: Kyle McMartin <kyle@redhat.com>
-> 
-> Ensure we allocate GEM objects below 4GB on PAE machines, otherwise
-> misery ensues. This patch is based on a patch found on dri-devel by
-> Shaohua Li, but Keith P. expressed reticence that the changes unfairly
-> penalized other hardware.
-> 
-> (The mm/shmem.c hunk is necessary to ensure the DMA32 flag isn't used
->  by the slab allocator via radix_tree_preload, which will hit a
->  WARN_ON.)
+Commit-ID:  6142f9ec108a4ddbf0d5904c3daa5fdcaa618792
+Gitweb:     http://git.kernel.org/tip/6142f9ec108a4ddbf0d5904c3daa5fdcaa618792
+Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
+AuthorDate: Tue, 26 May 2009 20:51:47 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 26 May 2009 20:17:46 +0200
 
-Why is this, is the gart not PAE friendly?
+perf report: More robust error handling
 
-Seems to me its a grand way of promoting 64bit hard/soft-ware.
+Don't let funny events confuse us, stick to what we know and
+try to find sensible data again.
+
+If we find an unknown event, check we're still u64 aligned, and
+increment by one u64. This ensures we're bound to happen upon a
+valid event soon.
+
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
+Cc: Marcelo Tosatti <mtosatti@redhat.com>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: John Kacur <jkacur@redhat.com>
+LKML-Reference: <new-submission>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ Documentation/perf_counter/builtin-report.c |   27 ++++++++++++++++++++-------
+ 1 files changed, 20 insertions(+), 7 deletions(-)
+
+diff --git a/Documentation/perf_counter/builtin-report.c b/Documentation/perf_counter/builtin-report.c
+index 2d4e4cc..a58be7f 100644
+--- a/Documentation/perf_counter/builtin-report.c
++++ b/Documentation/perf_counter/builtin-report.c
+@@ -645,6 +645,7 @@ static int __cmd_report(void)
+ 	char *buf;
+ 	event_t *event;
+ 	int ret, rc = EXIT_FAILURE;
++	uint32_t size;
+ 	unsigned long total = 0, total_mmap = 0, total_comm = 0, total_unknown = 0;
+ 
+ 	input = open(input_name, O_RDONLY);
+@@ -680,6 +681,10 @@ remap:
+ more:
+ 	event = (event_t *)(buf + head);
+ 
++	size = event->header.size;
++	if (!size)
++		size = 8;
++
+ 	if (head + event->header.size >= page_size * mmap_window) {
+ 		unsigned long shift = page_size * (head / page_size);
+ 		int ret;
+@@ -692,12 +697,9 @@ more:
+ 		goto remap;
+ 	}
+ 
+-
+-	if (!event->header.size) {
+-		fprintf(stderr, "zero-sized event at file offset %ld\n", offset + head);
+-		fprintf(stderr, "skipping %ld bytes of events.\n", stat.st_size - offset - head);
+-		goto done;
+-	}
++	size = event->header.size;
++	if (!size)
++		goto broken_event;
+ 
+ 	if (event->header.misc & PERF_EVENT_MISC_OVERFLOW) {
+ 		char level;
+@@ -787,15 +789,26 @@ more:
+ 		break;
+ 	}
+ 	default: {
++broken_event:
+ 		fprintf(stderr, "%p [%p]: skipping unknown header type: %d\n",
+ 			(void *)(offset + head),
+ 			(void *)(long)(event->header.size),
+ 			event->header.type);
+ 		total_unknown++;
++
++		/*
++		 * assume we lost track of the stream, check alignment, and
++		 * increment a single u64 in the hope to catch on again 'soon'.
++		 */
++
++		if (unlikely(head & 7))
++			head &= ~7ULL;
++
++		size = 8;
+ 	}
+ 	}
+ 
+-	head += event->header.size;
++	head += size;
+ 
+ 	if (offset + head < stat.st_size)
+ 		goto more;
