@@ -1,51 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754561AbZEZFzT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754736AbZEZF4s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754561AbZEZFzT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 01:55:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753216AbZEZFzF
+	id S1754736AbZEZF4s (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 01:56:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753445AbZEZF4l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 01:55:05 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59446
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751659AbZEZFzE (ORCPT
+	Tue, 26 May 2009 01:56:41 -0400
+Received: from mail-px0-f103.google.com ([209.85.216.103]:32925 "EHLO
+	mail-px0-f103.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753415AbZEZF4l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 01:55:04 -0400
-Date: Mon, 25 May 2009 22:55:03 -0700 (PDT)
-Message-Id: <20090525.225503.173348268.davem@davemloft.net>
-To: dave@thedillows.org
-Cc: michael.riepe@googlemail.com, mb@bu3sch.de, romieu@fr.zoreil.com,
-       rsantos@grupopie.com, m.bueker@berlin.de, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH 2.6.30-rc4] r8169: avoid losing MSI interrupts
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1243042174.3580.23.camel@obelisk.thedillows.org>
-References: <1242328457.32579.12.camel@lap75545.ornl.gov>
-	<4A0C7443.1010000@googlemail.com>
-	<1243042174.3580.23.camel@obelisk.thedillows.org>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 26 May 2009 01:56:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Q1H1CeTErgf0DgwRbLp9ft8tEXKueCvRS8xc71ycgbwwx32oKOjNLl7IJ8Kr6jsVJF
+         Dc9KRdWPhEGwpeX+22ZkZBEU7KP9m4tK/XVxozF5c0JACgZpbiiszwcK/C/UsO74i71v
+         PcwDlPFRW2smUQt9FFBVMOrfxbFd2BsLq4Vi8=
+MIME-Version: 1.0
+In-Reply-To: <49b7c2350905251445n14397b82yc993f1a86d715d4d@mail.gmail.com>
+References: <f24d23310905250956u231fcd90u54d75894b9b91b9a@mail.gmail.com>
+	 <49b7c2350905251445n14397b82yc993f1a86d715d4d@mail.gmail.com>
+Date: Tue, 26 May 2009 11:26:42 +0530
+Message-ID: <f24d23310905252256h74d609d9l7e23b1cdc0a240c6@mail.gmail.com>
+Subject: Re: Unable to compile 2.6.30-rc7 on RHEL 4 - GCC 3.4.6
+From: debian developer <debiandev@gmail.com>
+To: GeunSik Lim <leemgs1@gmail.com>
+Cc: linux kernel <kernelnewbies@nl.linux.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Dillow <dave@thedillows.org>
-Date: Fri, 22 May 2009 21:29:34 -0400
+On Tue, May 26, 2009 at 3:15 AM, GeunSik Lim <leemgs1@gmail.com> wrote:
+> Hi,
+>
+> If you keep gcc 3.X.X to compile recent kernel source contiunally,
+> You will meet another problems again.
+>
 
-> The 8169 chip only generates MSI interrupts when all enabled event
-> sources are quiescent and one or more sources transition to active. If
-> not all of the active events are acknowledged, or a new event becomes
-> active while the existing ones are cleared in the handler, we will not
-> see a new interrupt.
-> 
-> The current interrupt handler masks off the Rx and Tx events once the
-> NAPI handler has been scheduled, which opens a race window in which we
-> can get another Rx or Tx event and never ACK'ing it, stopping all
-> activity until the link is reset (ifconfig down/up). Fix this by always
-> ACK'ing all event sources, and loop in the handler until we have all
-> sources quiescent.
-> 
-> Signed-off-by: David Dillow <dave@thedillows.org>
-
-I've applied this, thanks David.
+OK, so 3.x.x is officially not supposed to be used for compilation?
