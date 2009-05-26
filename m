@@ -1,71 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760791AbZEZXqS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760960AbZEZXqi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760791AbZEZXqS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 19:46:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758661AbZEZXqI
+	id S1760960AbZEZXqi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 19:46:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758369AbZEZXqa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 19:46:08 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52651 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757239AbZEZXqH (ORCPT
+	Tue, 26 May 2009 19:46:30 -0400
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:58005 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757936AbZEZXqa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 19:46:07 -0400
-Date: Tue, 26 May 2009 16:45:32 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: andi@firstfloor.org, paul@mad-scientist.net, linux-kernel@vger.kernel.org
-Subject: Re: [2.6.27.24] Kernel coredump to a pipe is failing
-Message-Id: <20090526164532.6c780234.akpm@linux-foundation.org>
-In-Reply-To: <20090526234109.GL846@one.firstfloor.org>
-References: <1243355634.29250.331.camel@psmith-ubeta.netezza.com>
-	<878wkjobbm.fsf@basil.nowhere.org>
-	<20090526160017.98fc62e4.akpm@linux-foundation.org>
-	<20090526231428.GK846@one.firstfloor.org>
-	<20090526162821.02e11d5b.akpm@linux-foundation.org>
-	<20090526234109.GL846@one.firstfloor.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 26 May 2009 19:46:30 -0400
+Date: Wed, 27 May 2009 08:46:16 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Mike Frysinger <vapier@gentoo.org>
+Cc: linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
+       Greg Ungerer <gerg@uclinux.org>, uclinux-dev@uclinux.org,
+       linux-mtd@lists.infradead.org
+Subject: Re: [PATCH 1/3] mtd/maps: uclinux: allow systems to override map addr/size
+Message-ID: <20090526234616.GC6295@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Mike Frysinger <vapier@gentoo.org>, linux-kernel@vger.kernel.org,
+	uclinux-dist-devel@blackfin.uclinux.org,
+	Greg Ungerer <gerg@uclinux.org>, uclinux-dev@uclinux.org,
+	linux-mtd@lists.infradead.org
+References: <20090526231902.GA6295@linux-sh.org> <1243380798-10089-1-git-send-email-vapier@gentoo.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1243380798-10089-1-git-send-email-vapier@gentoo.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 May 2009 01:41:09 +0200
-Andi Kleen <andi@firstfloor.org> wrote:
-
-> On Tue, May 26, 2009 at 04:28:21PM -0700, Andrew Morton wrote:
-> > On Wed, 27 May 2009 01:14:28 +0200
-> > Andi Kleen <andi@firstfloor.org> wrote:
-> > 
-> > > On Tue, May 26, 2009 at 04:00:17PM -0700, Andrew Morton wrote:
-> > > > dump_write() doesn't seem right, either.  If ->write() returns, say,
-> > > > 100 then the dump should keep on going.  At present it treats this
-> > > > return as an error.
-> > > 
-> > > I think that's correct actually. Short write typically means serious 
-> > > issue like disk full or broken pipe, so stopping is good.
-> > 
-> > But we shouldn't assume that.  It could be that the ->write
-> > implementation is perfectly able to absorb the remaining data.
-> 
-> Maybe in theory, but in practice that's unlikely isn't it?
-
-I dunno.  Is this true of all linux filesystems in all cases?  Maybe.
-
-> Disk is full or pipe is blocking etc.
-> 
-> > We should only error out of the write() returned zero or -EFOO.
-> > The current code is simply buggy, but got lucky.
-> 
-> Maybe very pedantically, but I would argue that most programs 
-> don't do what you're saying (retry on any short write) and
-> it's actually not very nice to always write a loop for each write.
-> 
-> Also any IO device who relies on that would likely find
-> that it won't work with a lot of software.
-> 
-> So I think the current behaviour is ok, just need to get 
-> rid of the signals.
-
-It's buggy!
+On Tue, May 26, 2009 at 07:33:16PM -0400, Mike Frysinger wrote:
+> +extern char _ebss;
+> +
+Also, it would be nice if the remaining architectures that define _ebss
+could shove this in their asm/sections.h so we can kill this off from the
+driver itself.
