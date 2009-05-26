@@ -1,470 +1,359 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756538AbZEZPXc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756667AbZEZPZt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756538AbZEZPXc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 11:23:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755465AbZEZPXX
+	id S1756667AbZEZPZt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 11:25:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753379AbZEZPZm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 11:23:23 -0400
-Received: from mail-bw0-f222.google.com ([209.85.218.222]:61233 "EHLO
-	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755175AbZEZPXV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 11:23:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
-         :date:message-id:mime-version:x-mailer;
-        b=jwzPQDQJHOdFKLsBJRXUtOs/UcQK/Reciv6x030H/uL+xrfeZnnIPN53DyMawunI1S
-         vVex3pTzXmZmMH5RGqmqqry9kwBrhfWgrZ8WOTeMgV6lWIvAu61N0qmgTK+SL51ho6uU
-         ApU3Jn1rKSnpJ65aSuYsdOFEnZ6o0n7FARWic=
-Subject: Re: [2.6.27-rc7 vs 2.6.29 Regresion] Wifi Network Slownes rt2500pci
-From: Alejandro Riveira =?ISO-8859-1?Q?Fern=E1ndez?= 
-	<alejandro.riveira@gmail.com>
-Reply-To: alejandro.riveira@gmail.com
-To: Ivo van Doorn <ivdoorn@gmail.com>
-Cc: linux-wireless <linux-wireless@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linville@tuxdriver.com,
-       Greg KH <greg@kroah.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
-In-Reply-To: <200905261445.46990.IvDoorn@gmail.com>
-References: <1243247687.5322.8.camel@varda>
-	 <200905261235.36658.IvDoorn@gmail.com> <1243341791.7607.4.camel@varda>
-	 <200905261445.46990.IvDoorn@gmail.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-orF5NzjBlZYAJeoBdCRE"
-Date: Tue, 26 May 2009 17:23:17 +0200
-Message-Id: <1243351397.4888.2.camel@varda>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Tue, 26 May 2009 11:25:42 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:43995 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751248AbZEZPZk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 11:25:40 -0400
+Date: Tue, 26 May 2009 17:25:40 +0200
+From: Michal Marek <mmarek@suse.cz>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] kbuild: generate modules.builtin
+Message-ID: <20090526152540.GA28341@sepie.suse.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+To make it easier for tools like mkinitrd to detect whether a needed
+module is missing or whether it is compiled into the kernel, install a
+modules.builtin file listing all modules built into the kernel. This is
+done by generating an alternate config file with all tristate =y options
+set to =Y and reading the makefiles with this config included. The built
+in modules then appear in obj-Y.
 
---=-orF5NzjBlZYAJeoBdCRE
-Content-Type: multipart/mixed; boundary="=-C0qNm/qgVFKNQQxp2Oom"
+Known issues (found when comparing results with allyesconfig and
+allmodconfig):
+ * ALSA makefiles do some substitutions on the CONFIG_*
+   variables sometimes, which breaks the logic if the alsa modules are
+   built-in. Patch sent to alsa-devel.
+ * samples/kobject/*.o could be compiled built-in, but doesn't show up
+   in modules.builtin (and not even in vmlinux.o). Patch sent to Greg to
+   make it module-only.
+ * net/{8021q/vlan_core,ethernet/pe2,ipv6/inet6_hashtables}.o are always
+   built-in, even though the corresponding config option is tristate:
+   obj-$(subst m,y,$(CONFIG_IPX)) += pe2.o
+   The result is that modules.builtin can contain three built-in
+   "modules" that can't possibly exist as modules. No fix for this so far,
+   as it is not a big issue IMO.
 
+Signed-off-by: Michal Marek <mmarek@suse.cz>
+---
+ .gitignore                  |    1 +
+ Makefile                    |   12 ++++++++--
+ scripts/Kbuild.include      |    6 +++++
+ scripts/Makefile.lib        |    5 +++-
+ scripts/Makefile.modbuiltin |   48 +++++++++++++++++++++++++++++++++++++++++++
+ scripts/kconfig/confdata.c  |   48 ++++++++++++++++++++++++++++++++++++------
+ 6 files changed, 109 insertions(+), 11 deletions(-)
+ create mode 100644 scripts/Makefile.modbuiltin
 
---=-C0qNm/qgVFKNQQxp2Oom
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-El mar, 26-05-2009 a las 14:45 +0200, Ivo van Doorn escribi=C3=B3:
-> Hi,
->=20
-[...]
->=20
-> Ok, that means it is the wrong script, try the other one from the downloa=
-d
-> location you previously refered to. I changed the API some time ago, and
-> am not sure which stable release that change will be in.
-
-I inline the diff between the two dumps the dumps are attached to the
-mail message=20
-
---- reg_dump_bad.txt	2009-05-26 17:16:03.078863719 +0200
-+++ reg_dump_good.txt	2009-05-26 16:48:07.654117749 +0200
-@@ -1,4 +1,4 @@
--kernel: 2.6.29.4-00257-g186f9b1
-+kernel: 2.6.29.4-00258-ga2c0a36
- driver: rt2500pci
- version: 2.2.3
- compiled: May 26 2009 13:05:03
-@@ -23,14 +23,14 @@
- 7 :0x00000000
- 8 :0x000fff86
- 9 :0x00000980
--10 :0xb90c3000
-+10 :0xbe0c8000
- 11 :0x070409a5
- 12 :0x06400640
- 13 :0x000000a0
- 14 :0x0000000b
- 15 :0x00000000
--16 :0x498f3f26
--17 :0x00000078
-+16 :0xe59c4b51
-+17 :0x00000077
- 18 :0x0013000a
- 19 :0x0156001c
- 20 :0x000005a0
-@@ -38,26 +38,26 @@
- 22 :0x00000000
- 23 :0x00000000
- 24 :0x00000000
--25 :0x01614504
-+25 :0x01603b04
- 26 :0x1808182c
--27 :0xb914b000
--28 :0xb9149000
--29 :0xb90bf000
--30 :0xb914a000
-+27 :0xbe044000
-+28 :0xbe9f4000
-+29 :0xbebae000
-+30 :0xbebc8000
- 31 :0x00000000
- 32 :0x0000007e
- 33 :0x0000182c
--34 :0xb90c3000
-+34 :0xbe0c8000
- 35 :0x000003b8
- 36 :0xb3aab3af
- 37 :0x86870885
- 38 :0x8c8d8b8a
--39 :0x0000000f
--40 :0x00000000
-+39 :0x00000f0f
-+40 :0x00000001
- 41 :0x00000000
- 42 :0x0000009c
--43 :0x000033f7
--44 :0x0000028e
-+43 :0x00000007
-+44 :0x00000000
- 45 :0x0003ffff
- 46 :0x00000000
- 47 :0x00000000
-@@ -70,25 +70,25 @@
- 54 :0x000001fe
- 55 :0x1aa83f21
- 56 :0x00213223
--57 :0x00000518
-+57 :0x00000218
- 58 :0x9a009a11
- 59 :0x00000000
- 60 :0x00001150
- 61 :0x14062411
- 62 :0x00011e46
- 63 :0x0000c78f
--64 :0xb90c323c
--65 :0xb914b1b8
--66 :0xb90bf160
--67 :0xb9149000
-+64 :0xbe0c82c0
-+65 :0xbe044134
-+66 :0xbebae1e4
-+67 :0xbe9f4000
- 68 :0x00000020
--69 :0x00000001
--70 :0x000000f5
-+69 :0x0000000d
-+70 :0x000000d7
- 71 :0x000000aa
- 72 :0x00000001
- 73 :0x00000001
- 74 :0x00000000
--75 :0x0000381c
-+75 :0x000363b1
- 76 :0x000500f0
- 77 :0x00000040
- 78 :0x000000f0
-@@ -99,7 +99,7 @@
- 83 :0x7038140a
- 84 :0x1d21252d
- 85 :0x1919191d
--86 :0xb914b000
-+86 :0xbe044000
- 87 :0x821a8202
- 88 :0x00000003
- 89 :0x00000000
-@@ -367,13 +367,13 @@
-=20
- bbp
- 0 :0x12
--1 :0xf3
--2 :0x02
-+1 :0xe6
-+2 :0x1a
- 3 :0x02
- 4 :0x19
--5 :0x0b
--6 :0x00
--7 :0x0e
-+5 :0x08
-+6 :0x01
-+7 :0x2c
- 8 :0x00
- 9 :0x00
- 10 :0x09
-@@ -409,16 +409,16 @@
- 40 :0x02
- 41 :0x60
- 42 :0x09
--43 :0x02
--44 :0x76
-+43 :0x00
-+44 :0x4e
- 45 :0x00
--46 :0x2d
-+46 :0x5a
- 47 :0x14
- 48 :0x00
- 49 :0x01
- 50 :0x98
--51 :0x40
--52 :0x6e
-+51 :0x3c
-+52 :0x04
- 53 :0x10
- 54 :0x18
- 55 :0x05
-
-
->=20
-> > [1] Had to install gawk mawk does not have --posix.=20
->=20
-> Right, that was still something I needed to work on. :)
->=20
-> Ivo
-
-Alejandro
---=20
-> All is fine except that I can reliably "oops" it simply by trying to=20
-> read from /proc/apm (e.g. cat /proc/apm).
-> oops output and ksymoops-2.3.4 output is attached.
-> Is there anything else I can contribute?
-
-The latitude and longtitude of the bios writers current position, and
-a ballistic missile.
-
-                --Alan Cox LKML-December 08,2000=20
-
---=-C0qNm/qgVFKNQQxp2Oom
-Content-Disposition: attachment; filename="reg_dump_bad.txt"
-Content-Transfer-Encoding: base64
-Content-Type: text/plain; name="reg_dump_bad.txt"; charset="UTF-8"
-
-a2VybmVsOiAyLjYuMjkuNC0wMDI1Ny1nMTg2ZjliMQ0KZHJpdmVyOiBydDI1MDBwY2kNCnZlcnNp
-b246IDIuMi4zDQpjb21waWxlZDogTWF5IDI2IDIwMDkgMTM6MDU6MDMNCmRldl9mbGFnczogMHgw
-MDAwMGEyZg0KcnQgY2hpcDogMDIwMQ0KcmYgY2hpcDogMDAwMw0KcmV2aXNpb246MDAwMDAwMDQN
-Cg0KY3NyIGxlbmd0aDogOTMNCmVlcHJvbSBsZW5ndGg6IDI1Ng0KYmJwIGxlbmd0aDogNjQNCnJm
-IGxlbmd0aDogNQ0KDQpjc3INCjAgOjB4MDAwMDAwMDQNCjEgOjB4MDAwMDAwMDQNCjIgOjB4MDAw
-MDAwMDANCjMgOjB4MzU1YTgwMDANCjQgOjB4MDAwMDkxY2YNCjUgOjB4MzE1YTgwMDANCjYgOjB4
-MDAwMGRiOTANCjcgOjB4MDAwMDAwMDANCjggOjB4MDAwZmZmODYNCjkgOjB4MDAwMDA5ODANCjEw
-IDoweGI5MGMzMDAwDQoxMSA6MHgwNzA0MDlhNQ0KMTIgOjB4MDY0MDA2NDANCjEzIDoweDAwMDAw
-MGEwDQoxNCA6MHgwMDAwMDAwYg0KMTUgOjB4MDAwMDAwMDANCjE2IDoweDQ5OGYzZjI2DQoxNyA6
-MHgwMDAwMDA3OA0KMTggOjB4MDAxMzAwMGENCjE5IDoweDAxNTYwMDFjDQoyMCA6MHgwMDAwMDVh
-MA0KMjEgOjB4MDAwMDAwMzANCjIyIDoweDAwMDAwMDAwDQoyMyA6MHgwMDAwMDAwMA0KMjQgOjB4
-MDAwMDAwMDANCjI1IDoweDAxNjE0NTA0DQoyNiA6MHgxODA4MTgyYw0KMjcgOjB4YjkxNGIwMDAN
-CjI4IDoweGI5MTQ5MDAwDQoyOSA6MHhiOTBiZjAwMA0KMzAgOjB4YjkxNGEwMDANCjMxIDoweDAw
-MDAwMDAwDQozMiA6MHgwMDAwMDA3ZQ0KMzMgOjB4MDAwMDE4MmMNCjM0IDoweGI5MGMzMDAwDQoz
-NSA6MHgwMDAwMDNiOA0KMzYgOjB4YjNhYWIzYWYNCjM3IDoweDg2ODcwODg1DQozOCA6MHg4Yzhk
-OGI4YQ0KMzkgOjB4MDAwMDAwMGYNCjQwIDoweDAwMDAwMDAwDQo0MSA6MHgwMDAwMDAwMA0KNDIg
-OjB4MDAwMDAwOWMNCjQzIDoweDAwMDAzM2Y3DQo0NCA6MHgwMDAwMDI4ZQ0KNDUgOjB4MDAwM2Zm
-ZmYNCjQ2IDoweDAwMDAwMDAwDQo0NyA6MHgwMDAwMDAwMA0KNDggOjB4MDAwMDAwMDANCjQ5IDow
-eDNmM2IzMTAwDQo1MCA6MHgwMDAyMDAwMg0KNTEgOjB4MDAwMDAwMDINCjUyIDoweDAwMDIwMDAy
-DQo1MyA6MHgwMDAwMDAwMg0KNTQgOjB4MDAwMDAxZmUNCjU1IDoweDFhYTgzZjIxDQo1NiA6MHgw
-MDIxMzIyMw0KNTcgOjB4MDAwMDA1MTgNCjU4IDoweDlhMDA5YTExDQo1OSA6MHgwMDAwMDAwMA0K
-NjAgOjB4MDAwMDExNTANCjYxIDoweDE0MDYyNDExDQo2MiA6MHgwMDAxMWU0Ng0KNjMgOjB4MDAw
-MGM3OGYNCjY0IDoweGI5MGMzMjNjDQo2NSA6MHhiOTE0YjFiOA0KNjYgOjB4YjkwYmYxNjANCjY3
-IDoweGI5MTQ5MDAwDQo2OCA6MHgwMDAwMDAyMA0KNjkgOjB4MDAwMDAwMDENCjcwIDoweDAwMDAw
-MGY1DQo3MSA6MHgwMDAwMDBhYQ0KNzIgOjB4MDAwMDAwMDENCjczIDoweDAwMDAwMDAxDQo3NCA6
-MHgwMDAwMDAwMA0KNzUgOjB4MDAwMDM4MWMNCjc2IDoweDAwMDUwMGYwDQo3NyA6MHgwMDAwMDA0
-MA0KNzggOjB4MDAwMDAwZjANCjc5IDoweDAwNzAwNDAwDQo4MCA6MHgwMDM4MDQwOQ0KODEgOjB4
-MDAxNDA0MGENCjgyIDoweDAwMGE4NDBiDQo4MyA6MHg3MDM4MTQwYQ0KODQgOjB4MWQyMTI1MmQN
-Cjg1IDoweDE5MTkxOTFkDQo4NiA6MHhiOTE0YjAwMA0KODcgOjB4ODIxYTgyMDINCjg4IDoweDAw
-MDAwMDAzDQo4OSA6MHgwMDAwMDAwMA0KOTAgOjB4MDAwMDAwMDANCjkxIDoweDAwMDAwMDAwDQo5
-MiA6MHg3NjU0MzIxMA0KDQplZXByb20NCjAgOjB4MjU2MA0KMSA6MHhmZmZmDQoyIDoweDgwMDAN
-CjMgOjB4MzU1YQ0KNCA6MHg5MWNmDQo1IDoweDAyMDENCjYgOjB4MTgxNA0KNyA6MHgwNjAxDQo4
-IDoweDAwMDANCjkgOjB4M2MwMQ0KMTAgOjB4MTk0OA0KMTEgOjB4MDAwMA0KMTIgOjB4MDAwMg0K
-MTMgOjB4MDAwMA0KMTQgOjB4ZmZmZg0KMTUgOjB4ZmZmZg0KMTYgOjB4MThlYQ0KMTcgOjB4ZmZm
-MA0KMTggOjB4MDJmZg0KMTkgOjB4MGYzMA0KMjAgOjB4MTEyNg0KMjEgOjB4MTUwZA0KMjIgOjB4
-MTYwZA0KMjMgOjB4MzUxMA0KMjQgOjB4MzYxMA0KMjUgOjB4M2Q2YQ0KMjYgOjB4M2UxMA0KMjcg
-OjB4MjM1MA0KMjggOjB4Mjk2MA0KMjkgOjB4MzYxOA0KMzAgOjB4ZmZmZg0KMzEgOjB4ZmZmZg0K
-MzIgOjB4ZmZmZg0KMzMgOjB4ZmZmZg0KMzQgOjB4ZmZmZg0KMzUgOjB4MTMxMw0KMzYgOjB4MTMx
-Mw0KMzcgOjB4MTIxMg0KMzggOjB4MTIxMg0KMzkgOjB4MTIxMg0KNDAgOjB4MTIxMg0KNDEgOjB4
-MTIxMg0KNDIgOjB4ZmZmZg0KNDMgOjB4ZmZmZg0KNDQgOjB4ZmZmZg0KNDUgOjB4ZmZmZg0KNDYg
-OjB4ZmZmZg0KNDcgOjB4ZmZmZg0KNDggOjB4ZmZmZg0KNDkgOjB4ZmZmZg0KNTAgOjB4ZmZmZg0K
-NTEgOjB4ZmZmZg0KNTIgOjB4ZmZmZg0KNTMgOjB4ZmZmZg0KNTQgOjB4ZmZmZg0KNTUgOjB4ZmZm
-Zg0KNTYgOjB4ZmZmZg0KNTcgOjB4ZmZmZg0KNTggOjB4ZmZmZg0KNTkgOjB4ZmZmZg0KNjAgOjB4
-ZmZmZg0KNjEgOjB4ZmZmZg0KNjIgOjB4ZmY2ZA0KNjMgOjB4MDEwMQ0KNjQgOjB4ZmZmZg0KNjUg
-OjB4ZmZmZg0KNjYgOjB4ZmZmZg0KNjcgOjB4ZmZmZg0KNjggOjB4ZmZmZg0KNjkgOjB4ZmZmZg0K
-NzAgOjB4ZmZmZg0KNzEgOjB4ZmZmZg0KNzIgOjB4ZmZmZg0KNzMgOjB4ZmZmZg0KNzQgOjB4ZmZm
-Zg0KNzUgOjB4ZmZmZg0KNzYgOjB4ZmZmZg0KNzcgOjB4ZmZmZg0KNzggOjB4ZmZmZg0KNzkgOjB4
-ZmZmZg0KODAgOjB4ZmZmZg0KODEgOjB4ZmZmZg0KODIgOjB4ZmZmZg0KODMgOjB4ZmZmZg0KODQg
-OjB4ZmZmZg0KODUgOjB4ZmZmZg0KODYgOjB4ZmZmZg0KODcgOjB4ZmZmZg0KODggOjB4ZmZmZg0K
-ODkgOjB4ZmZmZg0KOTAgOjB4ZmZmZg0KOTEgOjB4ZmZmZg0KOTIgOjB4ZmZmZg0KOTMgOjB4ZmZm
-Zg0KOTQgOjB4ZmZmZg0KOTUgOjB4ZmZmZg0KOTYgOjB4ZmZmZg0KOTcgOjB4ZmZmZg0KOTggOjB4
-ZmZmZg0KOTkgOjB4ZmZmZg0KMTAwIDoweGZmZmYNCjEwMSA6MHhmZmZmDQoxMDIgOjB4ZmZmZg0K
-MTAzIDoweGZmZmYNCjEwNCA6MHhmZmZmDQoxMDUgOjB4ZmZmZg0KMTA2IDoweGZmZmYNCjEwNyA6
-MHhmZmZmDQoxMDggOjB4ZmZmZg0KMTA5IDoweGZmZmYNCjExMCA6MHhmZmZmDQoxMTEgOjB4ZmZm
-Zg0KMTEyIDoweGZmZmYNCjExMyA6MHhmZmZmDQoxMTQgOjB4ZmZmZg0KMTE1IDoweGZmZmYNCjEx
-NiA6MHhmZmZmDQoxMTcgOjB4ZmZmZg0KMTE4IDoweGZmZmYNCjExOSA6MHhmZmZmDQoxMjAgOjB4
-ZmZmZg0KMTIxIDoweGZmZmYNCjEyMiA6MHhmZmZmDQoxMjMgOjB4ZmZmZg0KMTI0IDoweGZmZmYN
-CjEyNSA6MHhmZmZmDQoxMjYgOjB4ZmZmZg0KMTI3IDoweGZmZmYNCjEyOCA6MHgyNTYwDQoxMjkg
-OjB4ZmZmZg0KMTMwIDoweDgwMDANCjEzMSA6MHgzNTVhDQoxMzIgOjB4OTFjZg0KMTMzIDoweDAy
-MDENCjEzNCA6MHgxODE0DQoxMzUgOjB4MDYwMQ0KMTM2IDoweDAwMDANCjEzNyA6MHgzYzAxDQox
-MzggOjB4MTk0OA0KMTM5IDoweDAwMDANCjE0MCA6MHgwMDAyDQoxNDEgOjB4MDAwMA0KMTQyIDow
-eGZmZmYNCjE0MyA6MHhmZmZmDQoxNDQgOjB4MThlYQ0KMTQ1IDoweGZmZmYNCjE0NiA6MHgwMmZm
-DQoxNDcgOjB4MGYzMA0KMTQ4IDoweDExMjYNCjE0OSA6MHgxNTBkDQoxNTAgOjB4MTYwZA0KMTUx
-IDoweDM1MTANCjE1MiA6MHgzNjEwDQoxNTMgOjB4M2Q2YQ0KMTU0IDoweDNlMTANCjE1NSA6MHgy
-MzUwDQoxNTYgOjB4Mjk2MA0KMTU3IDoweDM2MTgNCjE1OCA6MHhmZmZmDQoxNTkgOjB4ZmZmZg0K
-MTYwIDoweGZmZmYNCjE2MSA6MHhmZmZmDQoxNjIgOjB4ZmZmZg0KMTYzIDoweDEzMTMNCjE2NCA6
-MHgxMzEzDQoxNjUgOjB4MTIxMg0KMTY2IDoweDEyMTINCjE2NyA6MHgxMjEyDQoxNjggOjB4MTIx
-Mg0KMTY5IDoweDEyMTINCjE3MCA6MHhmZmZmDQoxNzEgOjB4ZmZmZg0KMTcyIDoweGZmZmYNCjE3
-MyA6MHhmZmZmDQoxNzQgOjB4ZmZmZg0KMTc1IDoweGZmZmYNCjE3NiA6MHhmZmZmDQoxNzcgOjB4
-ZmZmZg0KMTc4IDoweGZmZmYNCjE3OSA6MHhmZmZmDQoxODAgOjB4ZmZmZg0KMTgxIDoweGZmZmYN
-CjE4MiA6MHhmZmZmDQoxODMgOjB4ZmZmZg0KMTg0IDoweGZmZmYNCjE4NSA6MHhmZmZmDQoxODYg
-OjB4ZmZmZg0KMTg3IDoweGZmZmYNCjE4OCA6MHhmZmZmDQoxODkgOjB4ZmZmZg0KMTkwIDoweGZm
-NmQNCjE5MSA6MHgwMTAxDQoxOTIgOjB4ZmZmZg0KMTkzIDoweGZmZmYNCjE5NCA6MHhmZmZmDQox
-OTUgOjB4ZmZmZg0KMTk2IDoweGZmZmYNCjE5NyA6MHhmZmZmDQoxOTggOjB4ZmZmZg0KMTk5IDow
-eGZmZmYNCjIwMCA6MHhmZmZmDQoyMDEgOjB4ZmZmZg0KMjAyIDoweGZmZmYNCjIwMyA6MHhmZmZm
-DQoyMDQgOjB4ZmZmZg0KMjA1IDoweGZmZmYNCjIwNiA6MHhmZmZmDQoyMDcgOjB4ZmZmZg0KMjA4
-IDoweGZmZmYNCjIwOSA6MHhmZmZmDQoyMTAgOjB4ZmZmZg0KMjExIDoweGZmZmYNCjIxMiA6MHhm
-ZmZmDQoyMTMgOjB4ZmZmZg0KMjE0IDoweGZmZmYNCjIxNSA6MHhmZmZmDQoyMTYgOjB4ZmZmZg0K
-MjE3IDoweGZmZmYNCjIxOCA6MHhmZmZmDQoyMTkgOjB4ZmZmZg0KMjIwIDoweGZmZmYNCjIyMSA6
-MHhmZmZmDQoyMjIgOjB4ZmZmZg0KMjIzIDoweGZmZmYNCjIyNCA6MHhmZmZmDQoyMjUgOjB4ZmZm
-Zg0KMjI2IDoweGZmZmYNCjIyNyA6MHhmZmZmDQoyMjggOjB4ZmZmZg0KMjI5IDoweGZmZmYNCjIz
-MCA6MHhmZmZmDQoyMzEgOjB4ZmZmZg0KMjMyIDoweGZmZmYNCjIzMyA6MHhmZmZmDQoyMzQgOjB4
-ZmZmZg0KMjM1IDoweGZmZmYNCjIzNiA6MHhmZmZmDQoyMzcgOjB4ZmZmZg0KMjM4IDoweGZmZmYN
-CjIzOSA6MHhmZmZmDQoyNDAgOjB4ZmZmZg0KMjQxIDoweGZmZmYNCjI0MiA6MHhmZmZmDQoyNDMg
-OjB4ZmZmZg0KMjQ0IDoweGZmZmYNCjI0NSA6MHhmZmZmDQoyNDYgOjB4ZmZmZg0KMjQ3IDoweGZm
-ZmYNCjI0OCA6MHhmZmZmDQoyNDkgOjB4ZmZmZg0KMjUwIDoweGZmZmYNCjI1MSA6MHhmZmZmDQoy
-NTIgOjB4ZmZmZg0KMjUzIDoweGZmZmYNCjI1NCA6MHhmZmZmDQoyNTUgOjB4ZmZmZg0KDQpiYnAN
-CjAgOjB4MTINCjEgOjB4ZjMNCjIgOjB4MDINCjMgOjB4MDINCjQgOjB4MTkNCjUgOjB4MGINCjYg
-OjB4MDANCjcgOjB4MGUNCjggOjB4MDANCjkgOjB4MDANCjEwIDoweDA5DQoxMSA6MHgwNA0KMTIg
-OjB4MDANCjEzIDoweDM4DQoxNCA6MHgxZQ0KMTUgOjB4MzANCjE2IDoweGFjDQoxNyA6MHg1MA0K
-MTggOjB4MTgNCjE5IDoweGZmDQoyMCA6MHgxZQ0KMjEgOjB4MGQNCjIyIDoweDBkDQoyMyA6MHgw
-OA0KMjQgOjB4NzANCjI1IDoweDQwDQoyNiA6MHgwOA0KMjcgOjB4MjMNCjI4IDoweDE4DQoyOSA6
-MHgxOA0KMzAgOjB4MTANCjMxIDoweDJiDQozMiA6MHhiOQ0KMzMgOjB4NTUNCjM0IDoweDEyDQoz
-NSA6MHg1MA0KMzYgOjB4MTENCjM3IDoweDA1DQozOCA6MHgwMA0KMzkgOjB4YzQNCjQwIDoweDAy
-DQo0MSA6MHg2MA0KNDIgOjB4MDkNCjQzIDoweDAyDQo0NCA6MHg3Ng0KNDUgOjB4MDANCjQ2IDow
-eDJkDQo0NyA6MHgxNA0KNDggOjB4MDANCjQ5IDoweDAxDQo1MCA6MHg5OA0KNTEgOjB4NDANCjUy
-IDoweDZlDQo1MyA6MHgxMA0KNTQgOjB4MTgNCjU1IDoweDA1DQo1NiA6MHgwOA0KNTcgOjB4MTAN
-CjU4IDoweDA4DQo1OSA6MHgzZg0KNjAgOjB4MDENCjYxIDoweDZhDQo2MiA6MHgxMA0KNjMgOjB4
-MDANCg0KcmYNCjAgOjB4MDAwMDAwMDANCjEgOjB4MDAwMDIwMjANCjIgOjB4MDAwODBjYjINCjMg
-OjB4MDAwNjI0MTENCjQgOjB4MDAwMDBhMWINCg0KDQo=
-
-
---=-C0qNm/qgVFKNQQxp2Oom
-Content-Disposition: attachment; filename="reg_dump_good.txt"
-Content-Transfer-Encoding: base64
-Content-Type: text/plain; name="reg_dump_good.txt"; charset="UTF-8"
-
-a2VybmVsOiAyLjYuMjkuNC0wMDI1OC1nYTJjMGEzNg0KZHJpdmVyOiBydDI1MDBwY2kNCnZlcnNp
-b246IDIuMi4zDQpjb21waWxlZDogTWF5IDI2IDIwMDkgMTM6MDU6MDMNCmRldl9mbGFnczogMHgw
-MDAwMGEyZg0KcnQgY2hpcDogMDIwMQ0KcmYgY2hpcDogMDAwMw0KcmV2aXNpb246MDAwMDAwMDQN
-Cg0KY3NyIGxlbmd0aDogOTMNCmVlcHJvbSBsZW5ndGg6IDI1Ng0KYmJwIGxlbmd0aDogNjQNCnJm
-IGxlbmd0aDogNQ0KDQpjc3INCjAgOjB4MDAwMDAwMDQNCjEgOjB4MDAwMDAwMDQNCjIgOjB4MDAw
-MDAwMDANCjMgOjB4MzU1YTgwMDANCjQgOjB4MDAwMDkxY2YNCjUgOjB4MzE1YTgwMDANCjYgOjB4
-MDAwMGRiOTANCjcgOjB4MDAwMDAwMDANCjggOjB4MDAwZmZmODYNCjkgOjB4MDAwMDA5ODANCjEw
-IDoweGJlMGM4MDAwDQoxMSA6MHgwNzA0MDlhNQ0KMTIgOjB4MDY0MDA2NDANCjEzIDoweDAwMDAw
-MGEwDQoxNCA6MHgwMDAwMDAwYg0KMTUgOjB4MDAwMDAwMDANCjE2IDoweGU1OWM0YjUxDQoxNyA6
-MHgwMDAwMDA3Nw0KMTggOjB4MDAxMzAwMGENCjE5IDoweDAxNTYwMDFjDQoyMCA6MHgwMDAwMDVh
-MA0KMjEgOjB4MDAwMDAwMzANCjIyIDoweDAwMDAwMDAwDQoyMyA6MHgwMDAwMDAwMA0KMjQgOjB4
-MDAwMDAwMDANCjI1IDoweDAxNjAzYjA0DQoyNiA6MHgxODA4MTgyYw0KMjcgOjB4YmUwNDQwMDAN
-CjI4IDoweGJlOWY0MDAwDQoyOSA6MHhiZWJhZTAwMA0KMzAgOjB4YmViYzgwMDANCjMxIDoweDAw
-MDAwMDAwDQozMiA6MHgwMDAwMDA3ZQ0KMzMgOjB4MDAwMDE4MmMNCjM0IDoweGJlMGM4MDAwDQoz
-NSA6MHgwMDAwMDNiOA0KMzYgOjB4YjNhYWIzYWYNCjM3IDoweDg2ODcwODg1DQozOCA6MHg4Yzhk
-OGI4YQ0KMzkgOjB4MDAwMDBmMGYNCjQwIDoweDAwMDAwMDAxDQo0MSA6MHgwMDAwMDAwMA0KNDIg
-OjB4MDAwMDAwOWMNCjQzIDoweDAwMDAwMDA3DQo0NCA6MHgwMDAwMDAwMA0KNDUgOjB4MDAwM2Zm
-ZmYNCjQ2IDoweDAwMDAwMDAwDQo0NyA6MHgwMDAwMDAwMA0KNDggOjB4MDAwMDAwMDANCjQ5IDow
-eDNmM2IzMTAwDQo1MCA6MHgwMDAyMDAwMg0KNTEgOjB4MDAwMDAwMDINCjUyIDoweDAwMDIwMDAy
-DQo1MyA6MHgwMDAwMDAwMg0KNTQgOjB4MDAwMDAxZmUNCjU1IDoweDFhYTgzZjIxDQo1NiA6MHgw
-MDIxMzIyMw0KNTcgOjB4MDAwMDAyMTgNCjU4IDoweDlhMDA5YTExDQo1OSA6MHgwMDAwMDAwMA0K
-NjAgOjB4MDAwMDExNTANCjYxIDoweDE0MDYyNDExDQo2MiA6MHgwMDAxMWU0Ng0KNjMgOjB4MDAw
-MGM3OGYNCjY0IDoweGJlMGM4MmMwDQo2NSA6MHhiZTA0NDEzNA0KNjYgOjB4YmViYWUxZTQNCjY3
-IDoweGJlOWY0MDAwDQo2OCA6MHgwMDAwMDAyMA0KNjkgOjB4MDAwMDAwMGQNCjcwIDoweDAwMDAw
-MGQ3DQo3MSA6MHgwMDAwMDBhYQ0KNzIgOjB4MDAwMDAwMDENCjczIDoweDAwMDAwMDAxDQo3NCA6
-MHgwMDAwMDAwMA0KNzUgOjB4MDAwMzYzYjENCjc2IDoweDAwMDUwMGYwDQo3NyA6MHgwMDAwMDA0
-MA0KNzggOjB4MDAwMDAwZjANCjc5IDoweDAwNzAwNDAwDQo4MCA6MHgwMDM4MDQwOQ0KODEgOjB4
-MDAxNDA0MGENCjgyIDoweDAwMGE4NDBiDQo4MyA6MHg3MDM4MTQwYQ0KODQgOjB4MWQyMTI1MmQN
-Cjg1IDoweDE5MTkxOTFkDQo4NiA6MHhiZTA0NDAwMA0KODcgOjB4ODIxYTgyMDINCjg4IDoweDAw
-MDAwMDAzDQo4OSA6MHgwMDAwMDAwMA0KOTAgOjB4MDAwMDAwMDANCjkxIDoweDAwMDAwMDAwDQo5
-MiA6MHg3NjU0MzIxMA0KDQplZXByb20NCjAgOjB4MjU2MA0KMSA6MHhmZmZmDQoyIDoweDgwMDAN
-CjMgOjB4MzU1YQ0KNCA6MHg5MWNmDQo1IDoweDAyMDENCjYgOjB4MTgxNA0KNyA6MHgwNjAxDQo4
-IDoweDAwMDANCjkgOjB4M2MwMQ0KMTAgOjB4MTk0OA0KMTEgOjB4MDAwMA0KMTIgOjB4MDAwMg0K
-MTMgOjB4MDAwMA0KMTQgOjB4ZmZmZg0KMTUgOjB4ZmZmZg0KMTYgOjB4MThlYQ0KMTcgOjB4ZmZm
-MA0KMTggOjB4MDJmZg0KMTkgOjB4MGYzMA0KMjAgOjB4MTEyNg0KMjEgOjB4MTUwZA0KMjIgOjB4
-MTYwZA0KMjMgOjB4MzUxMA0KMjQgOjB4MzYxMA0KMjUgOjB4M2Q2YQ0KMjYgOjB4M2UxMA0KMjcg
-OjB4MjM1MA0KMjggOjB4Mjk2MA0KMjkgOjB4MzYxOA0KMzAgOjB4ZmZmZg0KMzEgOjB4ZmZmZg0K
-MzIgOjB4ZmZmZg0KMzMgOjB4ZmZmZg0KMzQgOjB4ZmZmZg0KMzUgOjB4MTMxMw0KMzYgOjB4MTMx
-Mw0KMzcgOjB4MTIxMg0KMzggOjB4MTIxMg0KMzkgOjB4MTIxMg0KNDAgOjB4MTIxMg0KNDEgOjB4
-MTIxMg0KNDIgOjB4ZmZmZg0KNDMgOjB4ZmZmZg0KNDQgOjB4ZmZmZg0KNDUgOjB4ZmZmZg0KNDYg
-OjB4ZmZmZg0KNDcgOjB4ZmZmZg0KNDggOjB4ZmZmZg0KNDkgOjB4ZmZmZg0KNTAgOjB4ZmZmZg0K
-NTEgOjB4ZmZmZg0KNTIgOjB4ZmZmZg0KNTMgOjB4ZmZmZg0KNTQgOjB4ZmZmZg0KNTUgOjB4ZmZm
-Zg0KNTYgOjB4ZmZmZg0KNTcgOjB4ZmZmZg0KNTggOjB4ZmZmZg0KNTkgOjB4ZmZmZg0KNjAgOjB4
-ZmZmZg0KNjEgOjB4ZmZmZg0KNjIgOjB4ZmY2ZA0KNjMgOjB4MDEwMQ0KNjQgOjB4ZmZmZg0KNjUg
-OjB4ZmZmZg0KNjYgOjB4ZmZmZg0KNjcgOjB4ZmZmZg0KNjggOjB4ZmZmZg0KNjkgOjB4ZmZmZg0K
-NzAgOjB4ZmZmZg0KNzEgOjB4ZmZmZg0KNzIgOjB4ZmZmZg0KNzMgOjB4ZmZmZg0KNzQgOjB4ZmZm
-Zg0KNzUgOjB4ZmZmZg0KNzYgOjB4ZmZmZg0KNzcgOjB4ZmZmZg0KNzggOjB4ZmZmZg0KNzkgOjB4
-ZmZmZg0KODAgOjB4ZmZmZg0KODEgOjB4ZmZmZg0KODIgOjB4ZmZmZg0KODMgOjB4ZmZmZg0KODQg
-OjB4ZmZmZg0KODUgOjB4ZmZmZg0KODYgOjB4ZmZmZg0KODcgOjB4ZmZmZg0KODggOjB4ZmZmZg0K
-ODkgOjB4ZmZmZg0KOTAgOjB4ZmZmZg0KOTEgOjB4ZmZmZg0KOTIgOjB4ZmZmZg0KOTMgOjB4ZmZm
-Zg0KOTQgOjB4ZmZmZg0KOTUgOjB4ZmZmZg0KOTYgOjB4ZmZmZg0KOTcgOjB4ZmZmZg0KOTggOjB4
-ZmZmZg0KOTkgOjB4ZmZmZg0KMTAwIDoweGZmZmYNCjEwMSA6MHhmZmZmDQoxMDIgOjB4ZmZmZg0K
-MTAzIDoweGZmZmYNCjEwNCA6MHhmZmZmDQoxMDUgOjB4ZmZmZg0KMTA2IDoweGZmZmYNCjEwNyA6
-MHhmZmZmDQoxMDggOjB4ZmZmZg0KMTA5IDoweGZmZmYNCjExMCA6MHhmZmZmDQoxMTEgOjB4ZmZm
-Zg0KMTEyIDoweGZmZmYNCjExMyA6MHhmZmZmDQoxMTQgOjB4ZmZmZg0KMTE1IDoweGZmZmYNCjEx
-NiA6MHhmZmZmDQoxMTcgOjB4ZmZmZg0KMTE4IDoweGZmZmYNCjExOSA6MHhmZmZmDQoxMjAgOjB4
-ZmZmZg0KMTIxIDoweGZmZmYNCjEyMiA6MHhmZmZmDQoxMjMgOjB4ZmZmZg0KMTI0IDoweGZmZmYN
-CjEyNSA6MHhmZmZmDQoxMjYgOjB4ZmZmZg0KMTI3IDoweGZmZmYNCjEyOCA6MHgyNTYwDQoxMjkg
-OjB4ZmZmZg0KMTMwIDoweDgwMDANCjEzMSA6MHgzNTVhDQoxMzIgOjB4OTFjZg0KMTMzIDoweDAy
-MDENCjEzNCA6MHgxODE0DQoxMzUgOjB4MDYwMQ0KMTM2IDoweDAwMDANCjEzNyA6MHgzYzAxDQox
-MzggOjB4MTk0OA0KMTM5IDoweDAwMDANCjE0MCA6MHgwMDAyDQoxNDEgOjB4MDAwMA0KMTQyIDow
-eGZmZmYNCjE0MyA6MHhmZmZmDQoxNDQgOjB4MThlYQ0KMTQ1IDoweGZmZmYNCjE0NiA6MHgwMmZm
-DQoxNDcgOjB4MGYzMA0KMTQ4IDoweDExMjYNCjE0OSA6MHgxNTBkDQoxNTAgOjB4MTYwZA0KMTUx
-IDoweDM1MTANCjE1MiA6MHgzNjEwDQoxNTMgOjB4M2Q2YQ0KMTU0IDoweDNlMTANCjE1NSA6MHgy
-MzUwDQoxNTYgOjB4Mjk2MA0KMTU3IDoweDM2MTgNCjE1OCA6MHhmZmZmDQoxNTkgOjB4ZmZmZg0K
-MTYwIDoweGZmZmYNCjE2MSA6MHhmZmZmDQoxNjIgOjB4ZmZmZg0KMTYzIDoweDEzMTMNCjE2NCA6
-MHgxMzEzDQoxNjUgOjB4MTIxMg0KMTY2IDoweDEyMTINCjE2NyA6MHgxMjEyDQoxNjggOjB4MTIx
-Mg0KMTY5IDoweDEyMTINCjE3MCA6MHhmZmZmDQoxNzEgOjB4ZmZmZg0KMTcyIDoweGZmZmYNCjE3
-MyA6MHhmZmZmDQoxNzQgOjB4ZmZmZg0KMTc1IDoweGZmZmYNCjE3NiA6MHhmZmZmDQoxNzcgOjB4
-ZmZmZg0KMTc4IDoweGZmZmYNCjE3OSA6MHhmZmZmDQoxODAgOjB4ZmZmZg0KMTgxIDoweGZmZmYN
-CjE4MiA6MHhmZmZmDQoxODMgOjB4ZmZmZg0KMTg0IDoweGZmZmYNCjE4NSA6MHhmZmZmDQoxODYg
-OjB4ZmZmZg0KMTg3IDoweGZmZmYNCjE4OCA6MHhmZmZmDQoxODkgOjB4ZmZmZg0KMTkwIDoweGZm
-NmQNCjE5MSA6MHgwMTAxDQoxOTIgOjB4ZmZmZg0KMTkzIDoweGZmZmYNCjE5NCA6MHhmZmZmDQox
-OTUgOjB4ZmZmZg0KMTk2IDoweGZmZmYNCjE5NyA6MHhmZmZmDQoxOTggOjB4ZmZmZg0KMTk5IDow
-eGZmZmYNCjIwMCA6MHhmZmZmDQoyMDEgOjB4ZmZmZg0KMjAyIDoweGZmZmYNCjIwMyA6MHhmZmZm
-DQoyMDQgOjB4ZmZmZg0KMjA1IDoweGZmZmYNCjIwNiA6MHhmZmZmDQoyMDcgOjB4ZmZmZg0KMjA4
-IDoweGZmZmYNCjIwOSA6MHhmZmZmDQoyMTAgOjB4ZmZmZg0KMjExIDoweGZmZmYNCjIxMiA6MHhm
-ZmZmDQoyMTMgOjB4ZmZmZg0KMjE0IDoweGZmZmYNCjIxNSA6MHhmZmZmDQoyMTYgOjB4ZmZmZg0K
-MjE3IDoweGZmZmYNCjIxOCA6MHhmZmZmDQoyMTkgOjB4ZmZmZg0KMjIwIDoweGZmZmYNCjIyMSA6
-MHhmZmZmDQoyMjIgOjB4ZmZmZg0KMjIzIDoweGZmZmYNCjIyNCA6MHhmZmZmDQoyMjUgOjB4ZmZm
-Zg0KMjI2IDoweGZmZmYNCjIyNyA6MHhmZmZmDQoyMjggOjB4ZmZmZg0KMjI5IDoweGZmZmYNCjIz
-MCA6MHhmZmZmDQoyMzEgOjB4ZmZmZg0KMjMyIDoweGZmZmYNCjIzMyA6MHhmZmZmDQoyMzQgOjB4
-ZmZmZg0KMjM1IDoweGZmZmYNCjIzNiA6MHhmZmZmDQoyMzcgOjB4ZmZmZg0KMjM4IDoweGZmZmYN
-CjIzOSA6MHhmZmZmDQoyNDAgOjB4ZmZmZg0KMjQxIDoweGZmZmYNCjI0MiA6MHhmZmZmDQoyNDMg
-OjB4ZmZmZg0KMjQ0IDoweGZmZmYNCjI0NSA6MHhmZmZmDQoyNDYgOjB4ZmZmZg0KMjQ3IDoweGZm
-ZmYNCjI0OCA6MHhmZmZmDQoyNDkgOjB4ZmZmZg0KMjUwIDoweGZmZmYNCjI1MSA6MHhmZmZmDQoy
-NTIgOjB4ZmZmZg0KMjUzIDoweGZmZmYNCjI1NCA6MHhmZmZmDQoyNTUgOjB4ZmZmZg0KDQpiYnAN
-CjAgOjB4MTINCjEgOjB4ZTYNCjIgOjB4MWENCjMgOjB4MDINCjQgOjB4MTkNCjUgOjB4MDgNCjYg
-OjB4MDENCjcgOjB4MmMNCjggOjB4MDANCjkgOjB4MDANCjEwIDoweDA5DQoxMSA6MHgwNA0KMTIg
-OjB4MDANCjEzIDoweDM4DQoxNCA6MHgxZQ0KMTUgOjB4MzANCjE2IDoweGFjDQoxNyA6MHg1MA0K
-MTggOjB4MTgNCjE5IDoweGZmDQoyMCA6MHgxZQ0KMjEgOjB4MGQNCjIyIDoweDBkDQoyMyA6MHgw
-OA0KMjQgOjB4NzANCjI1IDoweDQwDQoyNiA6MHgwOA0KMjcgOjB4MjMNCjI4IDoweDE4DQoyOSA6
-MHgxOA0KMzAgOjB4MTANCjMxIDoweDJiDQozMiA6MHhiOQ0KMzMgOjB4NTUNCjM0IDoweDEyDQoz
-NSA6MHg1MA0KMzYgOjB4MTENCjM3IDoweDA1DQozOCA6MHgwMA0KMzkgOjB4YzQNCjQwIDoweDAy
-DQo0MSA6MHg2MA0KNDIgOjB4MDkNCjQzIDoweDAwDQo0NCA6MHg0ZQ0KNDUgOjB4MDANCjQ2IDow
-eDVhDQo0NyA6MHgxNA0KNDggOjB4MDANCjQ5IDoweDAxDQo1MCA6MHg5OA0KNTEgOjB4M2MNCjUy
-IDoweDA0DQo1MyA6MHgxMA0KNTQgOjB4MTgNCjU1IDoweDA1DQo1NiA6MHgwOA0KNTcgOjB4MTAN
-CjU4IDoweDA4DQo1OSA6MHgzZg0KNjAgOjB4MDENCjYxIDoweDZhDQo2MiA6MHgxMA0KNjMgOjB4
-MDANCg0KcmYNCjAgOjB4MDAwMDAwMDANCjEgOjB4MDAwMDIwMjANCjIgOjB4MDAwODBjYjINCjMg
-OjB4MDAwNjI0MTENCjQgOjB4MDAwMDBhMWINCg0KDQo=
-
-
---=-C0qNm/qgVFKNQQxp2Oom--
-
---=-orF5NzjBlZYAJeoBdCRE
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Esto es una parte de mensaje firmado digitalmente
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iQIcBAABAgAGBQJKHAlfAAoJEDO4iEReSTB2FikP/2mUpsIkJxPbzOfklF5V1fFC
-GE4kSphS6kJTTOBGoXJGLFjsKthThI7XmYEIwPyjnQnmzyC7Xy92xC8HB2N1cfDe
-OFL8HUk6sUFaPzKzgxJ7rY6caCSN4L8bI2oyfHgJbEfnBrCkEXVdi02kOtwGuHI7
-jSHUVLr+bZvwybdzcrWT35dBa05C/Rezb9/+OdDXKnh5rLqAbgGJIJ3lbIECiBHk
-rU5VqoH/w04Q0TJkVxIiw96qxWZl7pSShRjRNQcCMLAZVA6FpXcMnihIHCiTJ8MH
-d1TcJ7hg0f929/p28aVfRYj1E/IV6EiduPP73L/0Ba1MweFDbvPvMI2SLv7pyzak
-tcPyrwZ4RrEBJa6NiG9d3to9J66njxeQfCRFpBU7MR1d+t/N+S5TDeQPUnEQXsE0
-daCv51XcEdQlJL3UsPZ0QlPVusET6WZfnkCu44scD/nsSaWgeJirfG26Vo0+pJtc
-JGPeZz9SM1ORI2odnvY0o4ohO15OpKCJQnHRh8buS3w+MaiOxv9Hxvshic63snD/
-HkCjYlBGqplcQmJydiNVmZ+/+U3x/J34APZY0+u7QFwZfZkIB/GbcPCKtBE0eoP+
-lsvamsyUnWvcMal0imIxjESGPihmwN5uRRujouSIC5NjC2RQ5ogaHM8CknFLLXpR
-8DFDlPpm/dnk8OKCo7eN
-=r7ZV
------END PGP SIGNATURE-----
-
---=-orF5NzjBlZYAJeoBdCRE--
-
+diff --git a/.gitignore b/.gitignore
+index 51bd99d..7479069 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -22,6 +22,7 @@
+ *.lst
+ *.symtypes
+ *.order
++modules.builtin
+ *.elf
+ *.bin
+ *.gz
+diff --git a/Makefile b/Makefile
+index b57e1f5..d2265ba 100644
+--- a/Makefile
++++ b/Makefile
+@@ -878,6 +878,9 @@ $(sort $(vmlinux-init) $(vmlinux-main)) $(vmlinux-lds): $(vmlinux-dirs) ;
+ PHONY += $(vmlinux-dirs)
+ $(vmlinux-dirs): prepare scripts
+ 	$(Q)$(MAKE) $(build)=$@
++ifdef CONFIG_MODULES
++	$(Q)$(MAKE) $(modbuiltin)=$@
++endif
+ 
+ # Build the kernel release string
+ #
+@@ -1133,6 +1136,7 @@ all: modules
+ PHONY += modules
+ modules: $(vmlinux-dirs) $(if $(KBUILD_BUILTIN),vmlinux)
+ 	$(Q)$(AWK) '!x[$$0]++' $(vmlinux-dirs:%=$(objtree)/%/modules.order) > $(objtree)/modules.order
++	$(Q)$(AWK) '!x[$$0]++' $(vmlinux-dirs:%=$(objtree)/%/modules.builtin) > $(objtree)/modules.builtin
+ 	@$(kecho) '  Building modules, stage 2.';
+ 	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.modpost
+ 	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.fwinst obj=firmware __fw_modbuild
+@@ -1161,7 +1165,7 @@ _modinst_:
+ 		rm -f $(MODLIB)/build ; \
+ 		ln -s $(objtree) $(MODLIB)/build ; \
+ 	fi
+-	@cp -f $(objtree)/modules.order $(MODLIB)/
++	@cp -f $(objtree)/modules.{order,builtin} $(MODLIB)/
+ 	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.modinst
+ 
+ # This depmod is only for convenience to give the initial
+@@ -1224,7 +1228,8 @@ clean: archclean $(clean-dirs)
+ 		\( -name '*.[oas]' -o -name '*.ko' -o -name '.*.cmd' \
+ 		-o -name '.*.d' -o -name '.*.tmp' -o -name '*.mod.c' \
+ 		-o -name '*.symtypes' -o -name 'modules.order' \
+-		-o -name 'Module.markers' -o -name '.tmp_*.o.*' \) \
++		-o -name 'modules.builtin' -o -name 'Module.markers' \
++		-o -name '.tmp_*.o.*' \) \
+ 		-type f -print | xargs rm -f
+ 
+ # mrproper - Delete all generated files, including .config
+@@ -1423,7 +1428,8 @@ $(clean-dirs):
+ clean:	rm-dirs := $(MODVERDIR)
+ clean: rm-files := $(KBUILD_EXTMOD)/Module.symvers \
+                    $(KBUILD_EXTMOD)/Module.markers \
+-                   $(KBUILD_EXTMOD)/modules.order
++                   $(KBUILD_EXTMOD)/modules.order \
++                   $(KBUILD_EXTMOD)/modules.builtin
+ clean: $(clean-dirs)
+ 	$(call cmd,rmdirs)
+ 	$(call cmd,rmfiles)
+diff --git a/scripts/Kbuild.include b/scripts/Kbuild.include
+index c29be8f..1cded3b 100644
+--- a/scripts/Kbuild.include
++++ b/scripts/Kbuild.include
+@@ -143,6 +143,12 @@ ld-option = $(call try-run,\
+ # $(Q)$(MAKE) $(build)=dir
+ build := -f $(if $(KBUILD_SRC),$(srctree)/)scripts/Makefile.build obj
+ 
++###
++# Shorthand for $(Q)$(MAKE) -f scripts/Makefile.modbuiltin obj=
++# Usage:
++# $(Q)$(MAKE) $(modbuiltin)=dir
++modbuiltin := -f $(if $(KBUILD_SRC),$(srctree)/)scripts/Makefile.modbuiltin obj
++
+ # Prefix -I with $(srctree) if it is not an absolute path.
+ # skip if -I has no parameter
+ addtree = $(if $(patsubst -I%,%,$(1)), \
+diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
+index cba61ca..427375e 100644
+--- a/scripts/Makefile.lib
++++ b/scripts/Makefile.lib
+@@ -37,6 +37,8 @@ modorder	:= $(patsubst %/,%/modules.order, $(filter %/, $(obj-y)) $(obj-m:.o=.ko
+ 
+ __subdir-y	:= $(patsubst %/,%,$(filter %/, $(obj-y)))
+ subdir-y	+= $(__subdir-y)
++__subdir-Y	:= $(patsubst %/,%,$(filter %/, $(obj-Y)))
++subdir-Y	+= $(__subdir-Y)
+ __subdir-m	:= $(patsubst %/,%,$(filter %/, $(obj-m)))
+ subdir-m	+= $(__subdir-m)
+ obj-y		:= $(patsubst %/, %/built-in.o, $(obj-y))
+@@ -44,7 +46,7 @@ obj-m		:= $(filter-out %/, $(obj-m))
+ 
+ # Subdirectories we need to descend into
+ 
+-subdir-ym	:= $(sort $(subdir-y) $(subdir-m))
++subdir-ym	:= $(sort $(subdir-y) $(subdir-Y) $(subdir-m))
+ 
+ # if $(foo-objs) exists, foo.o is a composite object 
+ multi-used-y := $(sort $(foreach m,$(obj-y), $(if $(strip $($(m:.o=-objs)) $($(m:.o=-y))), $(m))))
+@@ -76,6 +78,7 @@ always		:= $(addprefix $(obj)/,$(always))
+ targets		:= $(addprefix $(obj)/,$(targets))
+ modorder	:= $(addprefix $(obj)/,$(modorder))
+ obj-y		:= $(addprefix $(obj)/,$(obj-y))
++obj-Y		:= $(addprefix $(obj)/,$(obj-Y))
+ obj-m		:= $(addprefix $(obj)/,$(obj-m))
+ lib-y		:= $(addprefix $(obj)/,$(lib-y))
+ subdir-obj-y	:= $(addprefix $(obj)/,$(subdir-obj-y))
+diff --git a/scripts/Makefile.modbuiltin b/scripts/Makefile.modbuiltin
+new file mode 100644
+index 0000000..55e1885
+--- /dev/null
++++ b/scripts/Makefile.modbuiltin
+@@ -0,0 +1,48 @@
++# ==========================================================================
++# Generating modules.builtin
++# ==========================================================================
++
++src := $(obj)
++
++PHONY := __modbuiltin
++__modbuiltin:
++
++# Read auto2.conf which sets tristate variables to 'Y' instead of 'y'
++# That way, we get the list of built-in modules in obj-Y
++-include include/config/auto2.conf
++
++include scripts/Kbuild.include
++
++# The filename Kbuild has precedence over Makefile
++kbuild-dir := $(if $(filter /%,$(src)),$(src),$(srctree)/$(src))
++kbuild-file := $(if $(wildcard $(kbuild-dir)/Kbuild),$(kbuild-dir)/Kbuild,$(kbuild-dir)/Makefile)
++include $(kbuild-file)
++
++include scripts/Makefile.lib
++
++modbuiltin-subdirs := $(patsubst %,%/modules.builtin, $(subdir-ym))
++modbuiltin-mods    := $(filter %.ko, $(obj-Y:.o=.ko))
++modbuiltin-target  := $(obj)/modules.builtin
++
++__modbuiltin: $(modbuiltin-target) $(subdir-ym)
++	@:
++
++modbuiltin-cmds =						\
++	for m in $(modbuiltin-mods); do echo kernel/$$m; done;	\
++	cat /dev/null $(modbuiltin-subdirs);
++
++$(modbuiltin-target): $(subdir-ym)
++	$(Q)($(modbuiltin-cmds)) > $@
++
++# Descending
++# ---------------------------------------------------------------------------
++
++PHONY += $(subdir-ym)
++$(subdir-ym):
++	$(Q)$(MAKE) $(modbuiltin)=$@
++
++
++# Declare the contents of the .PHONY variable as phony.  We keep that
++# information in a variable se we can use it in if_changed and friends.
++
++.PHONY: $(PHONY)
+diff --git a/scripts/kconfig/confdata.c b/scripts/kconfig/confdata.c
+index 273d738..4982aa2 100644
+--- a/scripts/kconfig/confdata.c
++++ b/scripts/kconfig/confdata.c
+@@ -666,12 +666,27 @@ out:
+ 	return res;
+ }
+ 
++int fprintf2(FILE *f1, FILE *f2, const char *fmt, ...)
++{
++	va_list ap;
++	int res;
++
++	va_start(ap, fmt);
++	vfprintf(f1, fmt, ap);
++	va_end(ap);
++	va_start(ap, fmt);
++	res = vfprintf(f2, fmt, ap);
++	va_end(ap);
++
++	return res;
++}
++
+ int conf_write_autoconf(void)
+ {
+ 	struct symbol *sym;
+ 	const char *str;
+ 	char *name;
+-	FILE *out, *out_h;
++	FILE *out, *out2, *out_h;
+ 	time_t now;
+ 	int i, l;
+ 
+@@ -686,16 +701,23 @@ int conf_write_autoconf(void)
+ 	if (!out)
+ 		return 1;
+ 
++	out2 = fopen(".tmpconfig2", "w");
++	if (!out2) {
++		fclose(out);
++		return 1;
++	}
++
+ 	out_h = fopen(".tmpconfig.h", "w");
+ 	if (!out_h) {
+ 		fclose(out);
++		fclose(out2);
+ 		return 1;
+ 	}
+ 
+ 	sym = sym_lookup("KERNELVERSION", 0);
+ 	sym_calc_value(sym);
+ 	time(&now);
+-	fprintf(out, "#\n"
++	fprintf2(out, out2, "#\n"
+ 		     "# Automatically generated make config: don't edit\n"
+ 		     "# Linux kernel version: %s\n"
+ 		     "# %s"
+@@ -720,45 +742,51 @@ int conf_write_autoconf(void)
+ 			case no:
+ 				break;
+ 			case mod:
+-				fprintf(out, "CONFIG_%s=m\n", sym->name);
++				fprintf2(out, out2, "CONFIG_%s=m\n",
++						sym->name);
+ 				fprintf(out_h, "#define CONFIG_%s_MODULE 1\n", sym->name);
+ 				break;
+ 			case yes:
+ 				fprintf(out, "CONFIG_%s=y\n", sym->name);
++				fprintf(out2, "CONFIG_%s=%c\n", sym->name,
++					sym->type == S_BOOLEAN ? 'y' : 'Y');
+ 				fprintf(out_h, "#define CONFIG_%s 1\n", sym->name);
+ 				break;
+ 			}
+ 			break;
+ 		case S_STRING:
+ 			str = sym_get_string_value(sym);
+-			fprintf(out, "CONFIG_%s=\"", sym->name);
++			fprintf2(out, out2, "CONFIG_%s=\"", sym->name);
+ 			fprintf(out_h, "#define CONFIG_%s \"", sym->name);
+ 			while (1) {
+ 				l = strcspn(str, "\"\\");
+ 				if (l) {
+ 					fwrite(str, l, 1, out);
++					fwrite(str, l, 1, out2);
+ 					fwrite(str, l, 1, out_h);
+ 					str += l;
+ 				}
+ 				if (!*str)
+ 					break;
+-				fprintf(out, "\\%c", *str);
++				fprintf2(out, out2, "\\%c", *str);
+ 				fprintf(out_h, "\\%c", *str);
+ 				str++;
+ 			}
+ 			fputs("\"\n", out);
++			fputs("\"\n", out2);
+ 			fputs("\"\n", out_h);
+ 			break;
+ 		case S_HEX:
+ 			str = sym_get_string_value(sym);
+ 			if (str[0] != '0' || (str[1] != 'x' && str[1] != 'X')) {
+-				fprintf(out, "CONFIG_%s=%s\n", sym->name, str);
++				fprintf2(out, out2, "CONFIG_%s=%s\n",
++						sym->name, str);
+ 				fprintf(out_h, "#define CONFIG_%s 0x%s\n", sym->name, str);
+ 				break;
+ 			}
+ 		case S_INT:
+ 			str = sym_get_string_value(sym);
+-			fprintf(out, "CONFIG_%s=%s\n", sym->name, str);
++			fprintf2(out, out2, "CONFIG_%s=%s\n", sym->name, str);
+ 			fprintf(out_h, "#define CONFIG_%s %s\n", sym->name, str);
+ 			break;
+ 		default:
+@@ -766,6 +794,7 @@ int conf_write_autoconf(void)
+ 		}
+ 	}
+ 	fclose(out);
++	fclose(out2);
+ 	fclose(out_h);
+ 
+ 	name = getenv("KCONFIG_AUTOHEADER");
+@@ -773,6 +802,11 @@ int conf_write_autoconf(void)
+ 		name = "include/linux/autoconf.h";
+ 	if (rename(".tmpconfig.h", name))
+ 		return 1;
++	name = getenv("KCONFIG_AUTOCONFIG2");
++	if (!name)
++		name = "include/config/auto2.conf";
++	if (rename(".tmpconfig2", name))
++		return 1;
+ 	name = getenv("KCONFIG_AUTOCONFIG");
+ 	if (!name)
+ 		name = "include/config/auto.conf";
+-- 
+1.6.3
