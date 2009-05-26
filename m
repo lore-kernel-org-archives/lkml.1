@@ -1,65 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758446AbZEZVcF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757439AbZEZVfo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758446AbZEZVcF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 17:32:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758125AbZEZVbq
+	id S1757439AbZEZVfo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 17:35:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751959AbZEZVff
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 17:31:46 -0400
-Received: from mail.crca.org.au ([67.207.131.56]:35055 "EHLO crca.org.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758522AbZEZVbp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 17:31:45 -0400
-X-Bogosity: Ham, spamicity=0.000000
-Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
-From: Nigel Cunningham <nigel@tuxonice.net>
-Reply-To: nigel@tuxonice.net
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <200905261307.22664.oliver@neukum.org>
-References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
-	 <200905260058.54482.rjw@sisk.pl> <20090526091940.GA29867@elf.ucw.cz>
-	 <200905261307.22664.oliver@neukum.org>
-Content-Type: text/plain
-Date: Wed, 27 May 2009 07:33:33 +1000
-Message-Id: <1243373613.13930.61.camel@nigel-laptop>
+	Tue, 26 May 2009 17:35:35 -0400
+Received: from 69-30-77-85.dq1sn.easystreet.com ([69.30.77.85]:35387 "EHLO
+	kingsolver.anholt.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751857AbZEZVff (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 17:35:35 -0400
+Subject: Re: [PATCH] drm: i915: ensure objects are allocated below 4GB on
+ PAE
+From: Eric Anholt <eric@anholt.net>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Kyle McMartin <kyle@mcmartin.ca>, airlied@redhat.com,
+       dri-devel@lists.sf.net, linux-kernel@vger.kernel.org,
+       jbarnes@virtuousgeek.org, stable@kernel.org, hugh.dickins@tiscali.co.uk,
+       linux-mm@kvack.org, shaohua.li@intel.com
+In-Reply-To: <1243365473.23657.32.camel@twins>
+References: <20090526162717.GC14808@bombadil.infradead.org>
+	 <1243365473.23657.32.camel@twins>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-2b5Qwv+ghC29vTSW04rb"
+Date: Tue, 26 May 2009 14:35:30 -0700
+Message-Id: <1243373730.8400.26.camel@gaiman.anholt.net>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.26.1.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
 
-On Tue, 2009-05-26 at 13:07 +0200, Oliver Neukum wrote:
-> Am Dienstag, 26. Mai 2009 11:19:40 schrieb Pavel Machek:
-> 
-> Hello,
-> 
-> > For small allocations... I still believe we should free a bit of
-> > memory for s2ram so that small allocations can be done without
-> > problems.
-> > 									Pavel
-> 
-> it is essential that this work. Some subsystems, ie. USB, need to allocate
-> memory to do IO. For them to work, small allocations must be possible.
-> 
-> Now, is this a real issue? Can most devices really save a device state?
-> This capability seems to me to be limited to memory mapped IO at best.
-> USB devices generally don't save and restore state but bring the device
-> into the state it ought to be in, not the state it was in during resumption.
+--=-2b5Qwv+ghC29vTSW04rb
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-USB devices ought to be able to do _something_ though - I have a Dvico
-Dual Digital 4 card that is forcing me to shutdown X, mythtv-backend,
-pulse audio and lirc at the moment so that I can rmmod it while
-hibernating. That ought not be necessary. I'm sure there are good
-technical reasons why it is necessary at the mooment, but it shouldn't
-be that way - even if it just does the bare minimum required to avoid
-requiring the closing of files and the unload.
+On Tue, 2009-05-26 at 21:17 +0200, Peter Zijlstra wrote:
+> On Tue, 2009-05-26 at 12:27 -0400, Kyle McMartin wrote:
+> > From: Kyle McMartin <kyle@redhat.com>
+> >=20
+> > Ensure we allocate GEM objects below 4GB on PAE machines, otherwise
+> > misery ensues. This patch is based on a patch found on dri-devel by
+> > Shaohua Li, but Keith P. expressed reticence that the changes unfairly
+> > penalized other hardware.
+> >=20
+> > (The mm/shmem.c hunk is necessary to ensure the DMA32 flag isn't used
+> >  by the slab allocator via radix_tree_preload, which will hit a
+> >  WARN_ON.)
+>=20
+> Why is this, is the gart not PAE friendly?
+>=20
+> Seems to me its a grand way of promoting 64bit hard/soft-ware.
 
-Regards,
+No, the GART's fine.  But the APIs required to make the AGP code
+PAE-friendly got deprecated, so the patches to fix the AGP code got
+NAKed, and Venkatesh  never sent out his patches to undeprecate the APIs
+and use them.
 
-Nigel
+It's been like 6 months now, and it's absurd.  I'd like to see this
+patch go in so people's graphics can start working again and stop
+corrupting system memory.
 
+--=20
+Eric Anholt
+eric@anholt.net                         eric.anholt@intel.com
+
+
+
+--=-2b5Qwv+ghC29vTSW04rb
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkocYKIACgkQHUdvYGzw6vfHiACggawPj/xiVzdN3rZtqnKCioMe
+4zMAnApmzjwYB2DzyB73KILG51NUsn8M
+=QOfV
+-----END PGP SIGNATURE-----
+
+--=-2b5Qwv+ghC29vTSW04rb--
