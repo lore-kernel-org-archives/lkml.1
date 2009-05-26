@@ -1,93 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757454AbZEZTOx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757474AbZEZTPn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757454AbZEZTOx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 15:14:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756248AbZEZTOd
+	id S1757474AbZEZTPn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 15:15:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755689AbZEZTPd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 15:14:33 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:34665 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754760AbZEZTOb (ORCPT
+	Tue, 26 May 2009 15:15:33 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:48239 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754112AbZEZTPc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 15:14:31 -0400
-Date: Tue, 26 May 2009 15:14:30 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-cc: mingo@elte.hu, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] ring_buffer: use list_replace() in
- rb_get_reader_page()
-In-Reply-To: <4A1A1770.6070103@cn.fujitsu.com>
-Message-ID: <alpine.DEB.2.00.0905261510080.26705@gandalf.stny.rr.com>
-References: <4A1A1770.6070103@cn.fujitsu.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 26 May 2009 15:15:32 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+Subject: [KVM PATCH v4 0/3] iosignalfd
+To: kvm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, avi@redhat.com, davide@xmailserver.org,
+       mtosatti@redhat.com
+Date: Tue, 26 May 2009 15:15:23 -0400
+Message-ID: <20090526191010.20860.75372.stgit@dev.haskins.net>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+(Applies to kvm.git/master:74dfca0a)
 
-On Mon, 25 May 2009, Xiao Guangrong wrote:
+This is v4 of the series.  For more details, please see the header to
+patch 3/3.
 
-> Use list_replace() to splice list in rb_get_reader_page()
+This series has been tested against the kvm-eventfd unit test, and
+appears to be functioning properly.  You can download this test here:
 
-This code is very sensitive to change. But I think you actually uncovered 
-a potential bug. There was a reason that I did not use list_replace, and 
-it is because we need memory barriers here. And that is the bug you 
-uncovered. We don't have memory barriers.
+ftp://ftp.novell.com/dev/ghaskins/kvm-eventfd.tar.bz2
 
-Ah, it's not a bug (yet). When we make this lockless we will need to add 
-memory barriers here. Once reader->list.prev->next points to 
-cpu_buffer->reader_page->list, the cpu_buffer->reader_page->list had 
-better have both next and prev visible.
+This series is ready to be considered for inclusion, pending any further
+review comments.
 
-If we add this code now, we will just have to remove it when it goes 
-lockless.
+[
+   Changelog:
 
--- Steve
+      v4:
+	   *) Fixed a bug in the original 2/4 where the PIT failure case
+              would potentially leave the io_bus components registered.
+	   *) Condensed the v3 2/4 and 3/4 into one patch (2/2) since
+              the patches became interdependent with the fix described above
+	   *) Rebased to kvm.git/master:74dfca0a
+
+      v3:
+	   *) fixed patch 2/4 to handle error cases instead of BUG_ON
+	   *) implemented same HAVE_EVENTFD protection mechanism as
+              irqfd to prevent compilation errors on unsupported arches
+	   *) completed testing
+	   *) rebased to kvm.git/master:7391a6d5
+
+      v2:
+           *) added optional data-matching capability (via cookie field)
+           *) changed name from iofd to iosignalfd
+           *) added io_bus unregister function
+           *) implemented deassign feature
+
+      v1:
+           *) original release (integrated into irqfd v7 series as "iofd")
+]
 
 
+---
 
-> 
-> [ Impact: cleanup ]
-> 
-> Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-> ---
->  kernel/trace/ring_buffer.c |   12 ++----------
->  1 files changed, 2 insertions(+), 10 deletions(-)
-> 
-> diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-> index f558b37..f88bfcc 100644
-> --- a/kernel/trace/ring_buffer.c
-> +++ b/kernel/trace/ring_buffer.c
-> @@ -2179,22 +2179,14 @@ rb_get_reader_page(struct ring_buffer_per_cpu *cpu_buffer)
->  	if (cpu_buffer->commit_page == cpu_buffer->reader_page)
->  		goto out;
->  
-> -	/*
-> -	 * Splice the empty reader page into the list around the head.
-> -	 * Reset the reader page to size zero.
-> -	 */
-> -
-> +	/* Reset the reader page to size zero */
->  	reader = cpu_buffer->head_page;
-> -	cpu_buffer->reader_page->list.next = reader->list.next;
-> -	cpu_buffer->reader_page->list.prev = reader->list.prev;
-> -
->  	local_set(&cpu_buffer->reader_page->write, 0);
->  	local_set(&cpu_buffer->reader_page->entries, 0);
->  	local_set(&cpu_buffer->reader_page->page->commit, 0);
->  
->  	/* Make the reader page now replace the head */
-> -	reader->list.prev->next = &cpu_buffer->reader_page->list;
-> -	reader->list.next->prev = &cpu_buffer->reader_page->list;
-> +	list_replace(&reader->list, &cpu_buffer->reader_page->list);
->  
->  	/*
->  	 * If the tail is on the reader, then we must set the head
-> -- 
-> 1.6.1.2
-> 
-> 
-> 
+Gregory Haskins (3):
+      kvm: add iosignalfd support
+      kvm: make io_bus interface more robust
+      eventfd: export eventfd interfaces for module use
+
+
+ arch/x86/kvm/i8254.c      |   34 +++++++--
+ arch/x86/kvm/i8259.c      |    9 ++-
+ arch/x86/kvm/x86.c        |    1 
+ fs/eventfd.c              |    3 +
+ include/linux/kvm.h       |   15 ++++
+ include/linux/kvm_host.h  |   18 ++++-
+ virt/kvm/coalesced_mmio.c |    8 ++
+ virt/kvm/eventfd.c        |  162 +++++++++++++++++++++++++++++++++++++++++++++
+ virt/kvm/ioapic.c         |    9 ++-
+ virt/kvm/kvm_main.c       |   60 ++++++++++++++---
+ 10 files changed, 290 insertions(+), 29 deletions(-)
+
+-- 
+Signature
