@@ -1,157 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757437AbZEZTdf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757403AbZEZTfN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757437AbZEZTdf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 15:33:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756178AbZEZTd2
+	id S1757403AbZEZTfN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 15:35:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757043AbZEZTfC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 15:33:28 -0400
-Received: from mail-fx0-f168.google.com ([209.85.220.168]:64518 "EHLO
-	mail-fx0-f168.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753339AbZEZTd2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 15:33:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Y4wqmKbr/q87ApHuyVdcuXLwehkXN+8TIckO+g8jU/OtGDdbA26X1j2mWMQVp7jAn9
-         kEex2+evETSF/d27zg3J7U5tTaiDKj5VX6Nb+V9MZ7gRbsVGtdInfpy67DIAk/cIkZDx
-         6BbjbXJNj1GdDOfdT9bJOS5AKLGF/gMukU2jA=
-Date: Tue, 26 May 2009 21:33:25 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/3] tracing/stat: simplify rbtree freeing code
-Message-ID: <20090526193322.GC5969@nowhere>
-References: <4A1A5AD1.3070804@cn.fujitsu.com> <4A1A5AE5.70609@cn.fujitsu.com> <20090525155939.GB7121@nowhere> <4A1B42D8.3020809@cn.fujitsu.com>
+	Tue, 26 May 2009 15:35:02 -0400
+Received: from web50101.mail.re2.yahoo.com ([206.190.38.29]:23793 "HELO
+	web50101.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756966AbZEZTfA convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 15:35:00 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding;
+  b=y/lcGwt3Gl5/7ZLF84V+tCS1iYuyYH+LtnN1egirtS+eQ4lf8fo/HBxwvKvoyU4L0njF8z6YpBVLIizBe+iXcXN4pNGmz2ttRnt0CN2e+a2BPRX2jUPz7honrH/xjYc6byJ81TJGhfqWoanmok5nHDi2Gy1XmTB+8tsu2J9ZAN0=;
+Message-ID: <325725.59630.qm@web50101.mail.re2.yahoo.com>
+X-YMail-OSG: BaUdXzcVM1nxWPI.lK5q9e_fdhiiWh.veoXCFuvMKMSLolrnmfSM8kJzHdZyAhDXQe5KWXLrb_0Xbjom6Y.2god1JUHbURga.CkYg.02XHqnI0rDZZH_Rn_i4cVJLNKlO8jAgvf8JTZqez0AKcUP078DTYA3fieARbm7QTxJyhA2uWpFOOs0BSqO96qvgbXcHMbTeLm.rcTzl3S8Nad7WUIw.BHTgfhWkyiPFwbuQyNgP1oLOlRunHQJfdEzk2GousCcNFxMdQb1LoHKg45SFcPpfjxiARhjtPJwMlyYtn9wSBfxacsMqelsEeB9w05lnQECl7leGs7LsbK6eA--
+X-Mailer: YahooMailClassic/5.4.6 YahooMailWebService/0.7.289.10
+Date: Tue, 26 May 2009 12:35:02 -0700 (PDT)
+From: Doug Thompson <norsk5@yahoo.com>
+Subject: Re: [PATCH 12/18] MAINTAINERS - Pair EDAC-E752X P: and M: entries
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Joe Perches <joe@perches.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A1B42D8.3020809@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 26, 2009 at 09:16:08AM +0800, Li Zefan wrote:
-> Frederic Weisbecker wrote:
-> > On Mon, May 25, 2009 at 04:46:29PM +0800, Li Zefan wrote:
-> >> When closing a trace_stat file, we destroy the rbtree constructed during
-> >> file open, but there is memory leak that the root node is not freed:
-> >>
-> >> static struct rb_node *release_next(struct rb_node *node)
-> >> {
-> >> 	...
-> >> 	else {
-> >> 		if (!parent)		<-- here we leak @node
-> >> 			return NULL;
-> >> 	...
-> >> }
-> >>
-> >> This patch keeps removing root node until the tree is empty. We regress
-> >> from O(n) to O(nlogn), but since both open() and read() are O(nlogn) and
-> >> it's a slow path, this change won't affect scalibility.
-> >>
-> >> [ Impact: fix memory leak when closing a trace_stat file ]
-> >>
-> >> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> >> ---
-> >>  kernel/trace/trace_stat.c |   39 +++++----------------------------------
-> >>  1 files changed, 5 insertions(+), 34 deletions(-)
-> >>
-> >> diff --git a/kernel/trace/trace_stat.c b/kernel/trace/trace_stat.c
-> >> index 6efbcb4..ed18701 100644
-> >> --- a/kernel/trace/trace_stat.c
-> >> +++ b/kernel/trace/trace_stat.c
-> >> @@ -42,47 +42,18 @@ static DEFINE_MUTEX(all_stat_sessions_mutex);
-> >>  /* The root directory for all stat files */
-> >>  static struct dentry		*stat_dir;
-> >>  
-> >> -/*
-> >> - * Iterate through the rbtree using a post order traversal path
-> >> - * to release the next node.
-> >> - * It won't necessary release one at each iteration
-> >> - * but it will at least advance closer to the next one
-> >> - * to be released.
-> >> - */
-> >> -static struct rb_node *release_next(struct rb_node *node)
-> >> +static void reset_stat_session(struct stat_session *session)
-> >>  {
-> >>  	struct stat_node *snode;
-> >> -	struct rb_node *parent = rb_parent(node);
-> >> -
-> >> -	if (node->rb_left)
-> >> -		return node->rb_left;
-> >> -	else if (node->rb_right)
-> >> -		return node->rb_right;
-> >> -	else {
-> >> -		if (!parent)
-> >> -			return NULL;
-> >> -		if (parent->rb_left == node)
-> >> -			parent->rb_left = NULL;
-> >> -		else
-> >> -			parent->rb_right = NULL;
-> >> +	struct rb_root *sroot = &session->stat_root;
-> >>  
-> >> -		snode = container_of(node, struct stat_node, node);
-> >> +	while (!RB_EMPTY_ROOT(sroot)) {
-> >> +		snode = rb_entry(sroot->rb_node, struct stat_node, node);
-> >> +		rb_erase(&snode->node, sroot);
-> > 
-> > 
-> > 
-> > Why not just keep the previous version but sligthly
-> > modified:
-> > 
-> > 
-> > 	while (node)
-> > 		node = release_next(node);
-> > 
-> > 	if (!RB_EMPTY_ROOT(root)) {
-> > 		node = rb_entry(...)
-> > 		kfree(....)
-> > 		root = RB_ROOT
-> > 	}
-> > 
-> 
-> The easiest fix:
-> 
->  		if (!parent)
-> -			return NULL;
-> -		if (parent->rb_left == node)
-> +			;
-> +		else if (parent->rb_left == node)
-> 
-> ;)
+
+--- On Sat, 5/23/09, Joe Perches <joe@perches.com> wrote:
+
+From: Joe Perches <joe@perches.com>
+Subject: [PATCH 12/18] MAINTAINERS - Pair EDAC-E752X P: and M: entries
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Date: Saturday, May 23, 2009, 8:37 PM
+
+Entries should be P: name then M: email address
+
+Signed-off-by: Joe Perches <joe@perches.com>
+Acked-by: Doug Thompson <dougthompson@xmission.com>
 
 
+---
+ MAINTAINERS |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Ah, yeah :)
-
-
-> 
-> > Because the problem with rb_erase() is the wasteful color based rebalancing
-> > performed whereas here we just need to walk into the tree and free
-> > the nodes.
-> > 
-> > Hm?
-> > 
-> 
-> Less code, less bugs.
-> 
-> But actually I don't know how costly rb_erase() is, if it's really better to
-> avoid rb_erase(), I'll send another fix.
-
-
-
-It is more costly because the tree is rebalanced after erasing
-each node.
-I don't think the change could be really visualized though. Not
-for now at least, but it could if a future tracer has a huge mass of
-entries.
-
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 1bf74c9..2ae5a2e 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -1971,8 +1971,8 @@ F:    include/linux/edac.h
  
-> > Frederic.
-> > 
+ EDAC-E752X
+ P:    Mark Gross
+-P:    Doug Thompson
+ M:    mark.gross@intel.com
++P:    Doug Thompson
+ M:    dougthompson@xmission.com
+ L:    bluesmoke-devel@lists.sourceforge.net (moderated for non-subscribers)
+ W:    bluesmoke.sourceforge.net
+-- 
+1.6.3.1.10.g659a0.dirty
 
