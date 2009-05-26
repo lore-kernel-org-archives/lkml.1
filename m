@@ -1,37 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755831AbZEZOGe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756397AbZEZOIZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755831AbZEZOGe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 10:06:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751729AbZEZOG2
+	id S1756397AbZEZOIZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 10:08:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754043AbZEZOIU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 10:06:28 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:45619 "HELO
+	Tue, 26 May 2009 10:08:20 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:56580 "HELO
 	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751147AbZEZOG1 (ORCPT
+	with SMTP id S1753056AbZEZOIT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 10:06:27 -0400
-Date: Tue, 26 May 2009 10:06:29 -0400 (EDT)
+	Tue, 26 May 2009 10:08:19 -0400
+Date: Tue, 26 May 2009 10:08:20 -0400 (EDT)
 From: Alan Stern <stern@rowland.harvard.edu>
 X-X-Sender: stern@iolanthe.rowland.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       <linux-usb@vger.kernel.org>
-Subject: Re: Oops in usb-serial with keyspan adapter on current upstream
-In-Reply-To: <1243288836.2858.5.camel@pasglop>
-Message-ID: <Pine.LNX.4.44L0.0905261005000.3584-100000@iolanthe.rowland.org>
+To: Pete Zaitcev <zaitcev@redhat.com>
+cc: David <david@unsolicited.net>, USB list <linux-usb@vger.kernel.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, <linux-media@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       <dbrownell@users.sourceforge.net>, <leonidv11@gmail.com>,
+       Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: USB/DVB - Old Technotrend TT-connect S-2400 regression tracked
+ down
+In-Reply-To: <20090525184843.33c93006.zaitcev@redhat.com>
+Message-ID: <Pine.LNX.4.44L0.0905261006500.3584-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 May 2009, Benjamin Herrenschmidt wrote:
+On Mon, 25 May 2009, Pete Zaitcev wrote:
 
-> Well, both our patches are bogus in the sense that they will leak
-> the stuff in the port structure.
+> On Mon, 25 May 2009 13:25:55 +0100, David <david@unsolicited.net> wrote:
+> 
+> > >> I wonder if CONFIG_HAVE_DMA_API_DEBUG does it (enabled with a select
+> > >> in arch/x86/Kconfig). Strange that it started happening now.
+> > >>     
+> > > That is enabled. I'll switch it off and give it another go.
+> > >   
+> > While CONFIG_HAVE_DMA_API_DEBUG was set, DMA_API_DEBUG was not, so I
+> > guess there's nothing I can do to test?
+> 
+> I suppose so. I misunderstood how this worked. I guessed that the
+> DMA API debugging was the culprit because its introduction coincided
+> with the recent onset of this oops.
+> 
+> Although usbmon does essentially illegal tricks to look at data
+> already mapped for DMA, the code used to work for a few releases.
+> Bisecting may help. I cannot be sure of it though, and it's
+> going to take a lot of reboots.
+> 
+> Unfortunately, although I have an Opteron, the issue does not
+> occur here, so I'm at a loss for the moment. But I'll have to
+> tackle it somehow. Not sure how though. Any suggestions are welcome.
 
-That's not true at all.  Take a look at the destroy_serial() routine.
+Try asking the people responsible for maintaining DMA support for help.  
+
+And David is very good about testing new patches.
 
 Alan Stern
 
