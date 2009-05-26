@@ -1,45 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756612AbZEZV5O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758703AbZEZV6S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756612AbZEZV5O (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 17:57:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757266AbZEZV46
+	id S1758703AbZEZV6S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 17:58:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755893AbZEZV6J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 17:56:58 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:40058 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754685AbZEZV45 (ORCPT
+	Tue, 26 May 2009 17:58:09 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:48512 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755250AbZEZV6I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 17:56:57 -0400
-Date: Tue, 26 May 2009 17:56:58 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Kay Sievers <kay.sievers@vrfy.org>
-cc: James Bottomley <James.Bottomley@hansenpartnership.com>,
-       SCSI development list <linux-scsi@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Tejun Heo <tj@kernel.org>, Cornelia Huck <cornelia.huck@de.ibm.com>,
-       <linux-fsdevel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@aristanetworks.com>
-Subject: Re: [PATCH 25/20] sysfs: Only support removing emtpy sysfs  directories.
-In-Reply-To: <ac3eb2510905261413r54e5bb18n7faf888aa55d8830@mail.gmail.com>
-Message-ID: <Pine.LNX.4.44L0.0905261756390.11998-100000@iolanthe.rowland.org>
+	Tue, 26 May 2009 17:58:08 -0400
+Date: Tue, 26 May 2009 17:58:09 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Peter Zijlstra <peterz@infradead.org>
+cc: Heiko Carstens <heiko.carstens@de.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] trace: disable preemption before taking raw spinlocks
+In-Reply-To: <alpine.DEB.2.00.0905261754380.26705@gandalf.stny.rr.com>
+Message-ID: <alpine.DEB.2.00.0905261757500.26705@gandalf.stny.rr.com>
+References: <20090526172802.6377e33f@osiris.boeblingen.de.ibm.com> <1243374700.6600.26.camel@laptop> <alpine.DEB.2.00.0905261754380.26705@gandalf.stny.rr.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 May 2009, Kay Sievers wrote:
 
-> Ok, I copied my newly installed system to another disks, to have a
-> root filesytem to trash again by this bug. :)
+On Tue, 26 May 2009, Steven Rostedt wrote:
+
 > 
-> Which of your patches should I try?
+> On Tue, 26 May 2009, Peter Zijlstra wrote:
+> 
+> > On Tue, 2009-05-26 at 17:28 +0200, Heiko Carstens wrote:
+> > > From: Heiko Carstens <heiko.carstens@de.ibm.com>
+> > > 
+> > > s390 code uses smp_processor_id() in __raw_spin_lock() code which
+> > > reveals that a (raw) spinlock is taken without preemption disabled.
+> > > This can potentially deadlock.
+> > > 
+> > > To fix this explicitly disable and enable preemption.
+> > > 
+> > > BUG: using smp_processor_id() in preemptible [00000000] code: cat/2278
+> > > caller is trace_find_cmdline+0x40/0xfc
+> > > CPU: 0 Not tainted 2.6.30-rc7-dirty #39
+> > > Process cat (pid: 2278, task: 000000003faedb68, ksp: 000000003b33b988)
+> > > 000000003b33b988 000000003b33bae0 0000000000000002 0000000000000000 
+> > >        000000003b33bb80 000000003b33baf8 000000003b33baf8 00000000000175d6 
+> > >        0000000000000001 000000003b33b988 000000003f9b0000 000000000000000b 
+> > >        000000000000000c 000000003b33bb40 000000003b33bae0 0000000000000000 
+> > >        0000000000000000 00000000000175d6 000000003b33bae0 000000003b33bb28 
+> > > Call Trace:
+> > > ([<00000000000174b2>] show_trace+0x112/0x170)
+> > >  [<0000000000017582>] show_stack+0x72/0x100
+> > >  [<0000000000441538>] dump_stack+0xc8/0xd8
+> > >  [<000000000025c350>] debug_smp_processor_id+0x114/0x130
+> > >  [<00000000000bf0e4>] trace_find_cmdline+0x40/0xfc
+> > >  [<00000000000c35d4>] trace_print_context+0x58/0xac
+> > >  [<00000000000bb676>] print_trace_line+0x416/0x470
+> > >  [<00000000000bc8fe>] s_show+0x4e/0x428
+> > >  [<000000000013834e>] seq_read+0x36a/0x5d4
+> > >  [<0000000000112a78>] vfs_read+0xc8/0x174
+> > >  [<0000000000112c58>] SyS_read+0x74/0xc4
+> > >  [<000000000002c7ae>] sysc_noemu+0x10/0x16
+> > >  [<000002000012436c>] 0x2000012436c
+> > > 1 lock held by cat/2278:
+> > >  #0:  (&p->lock){+.+.+.}, at: [<0000000000138056>] seq_read+0x72/0x5d4
+> > 
+> > Shouldn't that be preempt_disable_notrace() and co to avoid tracer
+> > recursion?
+> 
+> Doesn't need to be. That function is done in the output (slow path), not 
+> during an actual trace.
 
-James's patch, not mine.
+Oh, and I should also include:
 
-Alan Stern
+Acked-by: Steven Rostedt <rostedt@goodmis.org>
+
+-- Steve
 
