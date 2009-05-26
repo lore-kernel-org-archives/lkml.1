@@ -1,62 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753779AbZEZAwI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753815AbZEZAxE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753779AbZEZAwI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 20:52:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752432AbZEZAvy
+	id S1753815AbZEZAxE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 20:53:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752923AbZEZAwz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 20:51:54 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:32842 "EHLO mx2.redhat.com"
+	Mon, 25 May 2009 20:52:55 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:60233 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752339AbZEZAvx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 20:51:53 -0400
-Date: Mon, 25 May 2009 18:48:43 -0600
-From: Pete Zaitcev <zaitcev@redhat.com>
-To: David <david@unsolicited.net>
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       USB list <linux-usb@vger.kernel.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-media@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       dbrownell@users.sourceforge.net, leonidv11@gmail.com,
-       Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, zaitcev@redhat.com
-Subject: Re: USB/DVB - Old Technotrend TT-connect S-2400 regression tracked
- down
-Message-Id: <20090525184843.33c93006.zaitcev@redhat.com>
-In-Reply-To: <4A1A8E53.9060108@unsolicited.net>
-References: <4A1967A2.4050906@unsolicited.net>
-	<Pine.LNX.4.44L0.0905242208260.15195-100000@netrider.rowland.org>
-	<20090524203902.594a0eec.zaitcev@redhat.com>
-	<4A1A5E24.20201@unsolicited.net>
-	<4A1A8E53.9060108@unsolicited.net>
-Organization: Red Hat, Inc.
+	id S1752775AbZEZAwy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 20:52:54 -0400
+Date: Tue, 26 May 2009 10:52:49 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: linux-next: manual merge of the x86 tree with Linus' tree
+Message-Id: <20090526105249.986c4f3c.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__26_May_2009_10_52_49_+1000_JRKoZ5_3_2=WKXc8"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 25 May 2009 13:25:55 +0100, David <david@unsolicited.net> wrote:
+--Signature=_Tue__26_May_2009_10_52_49_+1000_JRKoZ5_3_2=WKXc8
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> >> I wonder if CONFIG_HAVE_DMA_API_DEBUG does it (enabled with a select
-> >> in arch/x86/Kconfig). Strange that it started happening now.
-> >>     
-> > That is enabled. I'll switch it off and give it another go.
-> >   
-> While CONFIG_HAVE_DMA_API_DEBUG was set, DMA_API_DEBUG was not, so I
-> guess there's nothing I can do to test?
+Hi all,
 
-I suppose so. I misunderstood how this worked. I guessed that the
-DMA API debugging was the culprit because its introduction coincided
-with the recent onset of this oops.
+Today's linux-next merge of the x86 tree got a conflict in
+arch/x86/boot/memory.c between commit
+bca23dba760d6705c013f89113c46570378fb626 ("x86, setup: revert ACPI 3 E820
+extended attributes support") from Linus' tree and commit
+df7699c56421c0476704f24a43409ac8c505f3d2 ("x86, setup: "glove box" BIOS
+interrupts in the core boot code") from the x86 tree.
 
-Although usbmon does essentially illegal tricks to look at data
-already mapped for DMA, the code used to work for a few releases.
-Bisecting may help. I cannot be sure of it though, and it's
-going to take a lot of reboots.
+The former removed the code that the latter modified, so I used the
+former (as is done in -tip).
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Unfortunately, although I have an Opteron, the issue does not
-occur here, so I'm at a loss for the moment. But I'll have to
-tackle it somehow. Not sure how though. Any suggestions are welcome.
+--Signature=_Tue__26_May_2009_10_52_49_+1000_JRKoZ5_3_2=WKXc8
+Content-Type: application/pgp-signature
 
--- Pete
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkobPWEACgkQjjKRsyhoI8z7ygCcDmzt7jBeP4T7PfST5Vb+DB+i
+Lk8AoKk1Exsnpf0MS3Ju6JuDkw0Dii6t
+=mYgl
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__26_May_2009_10_52_49_+1000_JRKoZ5_3_2=WKXc8--
