@@ -1,123 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754360AbZEZEib@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754277AbZEZEin@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754360AbZEZEib (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 00:38:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753419AbZEZEiN
+	id S1754277AbZEZEin (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 00:38:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754315AbZEZEiX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 00:38:13 -0400
-Received: from ozlabs.org ([203.10.76.45]:43359 "EHLO ozlabs.org"
+	Tue, 26 May 2009 00:38:23 -0400
+Received: from sh.osrg.net ([192.16.179.4]:55940 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753996AbZEZEiM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 00:38:12 -0400
-Date: Tue, 26 May 2009 14:36:58 +1000
-From: Anton Blanchard <anton@samba.org>
-To: rostedt@goodmis.org, mingo@elte.hu, tzanussi@gmail.com, jbaron@redhat.com,
-       tglx@linutronix.de, fweisbec@gmail.com, kosaki.motohiro@jp.fujitsu.com
-Cc: linux-kernel@vger.kernel.org
-Subject: tracing/events: Add tasklet tracepoints
-Message-ID: <20090526043658.GE19728@kryten>
-References: <20090520101334.GA23442@kryten> <20090526042643.GB19728@kryten> <20090526043123.GC19728@kryten> <20090526043257.GD19728@kryten>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090526043257.GD19728@kryten>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1754221AbZEZEiV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 00:38:21 -0400
+Date: Tue, 26 May 2009 13:36:37 +0900
+To: arnd@arndb.de
+Cc: fujita.tomonori@lab.ntt.co.jp, jgarzik@pobox.com, hancockrwd@gmail.com,
+       htejun@gmail.com, alan@lxorguk.ukuu.org.uk, flar@allandria.com,
+       schmitz@biophys.uni-duesseldorf.de, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, takata@linux-m32r.org, geert@linux-m68k.org,
+       linux-m68k@vger.kernel.org, ysato@users.sourceforge.jp,
+       grundler@google.com
+Subject: Re: [PATCH] asm-generic: add a dma-mapping.h file
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <200905221705.54426.arnd@arndb.de>
+References: <200905221607.34025.arnd@arndb.de>
+	<20090522233846I.fujita.tomonori@lab.ntt.co.jp>
+	<200905221705.54426.arnd@arndb.de>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20090526122423S.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Tue, 26 May 2009 13:36:41 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 22 May 2009 17:05:53 +0200
+Arnd Bergmann <arnd@arndb.de> wrote:
 
-Add tracepoints for tasklets. We add entry and exit tracepoints so we can
-calculate tasklet latency.
+> On Friday 22 May 2009, FUJITA Tomonori wrote:
+> > I'm not sure. And only mips internally uses CONFIG_DMA_COHERENT.
+> > 
+> > The reason why many architectures need architecture-specific
+> > alloc_coherent() is not about coherent or not.
+> > 
+> > I like a new helper header file having only generic functions without
+> > any ifdef.
+> 
+> Ok, fair enough. Fixing dma_alloc_coherent to handle
+> coherent_dma_mask and debug_dma correctly would also
+> make it even bigger, and it was already doing more than
+> you'd want from a commonly used inline function.
+> It may be useful to put it into kernel/dma-coherent.c
+> under an #ifdef, but I'll leave this one alone for now.
 
-Example ftrace output:
+Adding #ifdef into kernel/dma-coherent.c is ugly.
 
-<idle>-0     [000]   327.349213: tasklet_entry: func=.rpavscsi_task
-<idle>-0     [000]   327.349217: tasklet_exit: func=.rpavscsi_task
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
+> I'll leave dma_alloc_coherent and dma_free_coherent
+> as extern declarations then, and leave out the
+> simple dma_coherent_dev() and dma_cache_sync() that
+> all architectures would need to override.
 
-Index: linux-2.6-master/kernel/softirq.c
-===================================================================
---- linux-2.6-master.orig/kernel/softirq.c	2009-05-26 13:56:58.000000000 +1000
-+++ linux-2.6-master/kernel/softirq.c	2009-05-26 13:57:46.000000000 +1000
-@@ -412,7 +412,9 @@
- 			if (!atomic_read(&t->count)) {
- 				if (!test_and_clear_bit(TASKLET_STATE_SCHED, &t->state))
- 					BUG();
-+				trace_tasklet_entry(t);
- 				t->func(t->data);
-+				trace_tasklet_exit(t);
- 				tasklet_unlock(t);
- 				continue;
- 			}
-@@ -447,7 +449,9 @@
- 			if (!atomic_read(&t->count)) {
- 				if (!test_and_clear_bit(TASKLET_STATE_SCHED, &t->state))
- 					BUG();
-+				trace_tasklet_entry(t);
- 				t->func(t->data);
-+				trace_tasklet_exit(t);
- 				tasklet_unlock(t);
- 				continue;
- 			}
-Index: linux-2.6-master/include/trace/events/irq.h
-===================================================================
---- linux-2.6-master.orig/include/trace/events/irq.h	2009-05-26 13:56:58.000000000 +1000
-+++ linux-2.6-master/include/trace/events/irq.h	2009-05-26 14:35:09.000000000 +1000
-@@ -128,6 +128,54 @@
- 	TP_printk("softirq=%d action=%s", __entry->vec, __get_str(name))
- );
- 
-+/**
-+ * tasklet_entry - called immediately before the tasklet handler
-+ * @t: pointer to struct tasklet_struct
-+ *
-+ * When used in combination with the tasklet_exit tracepoint we can
-+ * determine the tasklet latency.
-+ */
-+TRACE_EVENT(tasklet_entry,
-+
-+	TP_PROTO(struct tasklet_struct *t),
-+
-+	TP_ARGS(t),
-+
-+	TP_STRUCT__entry(
-+		__field(void *, func)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->func = t->func;
-+	),
-+
-+	TP_printk("func=%pf", __entry->func)
-+);
-+
-+/**
-+ * tasklet_exit - called immediately after the tasklet handler returns
-+ * @t: pointer to struct tasklet_struct
-+ *
-+ * When used in combination with the tasklet_entry tracepoint we can
-+ * determine the tasklet latency.
-+ */
-+TRACE_EVENT(tasklet_exit,
-+
-+	TP_PROTO(struct tasklet_struct *t),
-+
-+	TP_ARGS(t),
-+
-+	TP_STRUCT__entry(
-+		__field(void *, func)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->func = t->func;
-+	),
-+
-+	TP_printk("func=%pf", __entry->func)
-+);
-+
- #endif /*  _TRACE_IRQ_H */
- 
- /* This part must be outside protection */
+Right, needs to leave the functions that architectures need to
+override.
+
+
+> dma_get_cache_alignment() is still less generic than
+> the other functions, as this is still architecture
+> specific. Should I leave that out as well then?
+
+Yes, I think that only adding generic functions is a better
+approach. Overriding with #ifdef is really ugly.
+
+
+> One more idea I had was to rename all the functions in
+> this file from dma_* to dma_linear_*. This would mean
+> that all architectures using it would still need to
+> do something like #define dma_map_sg dma_linear_map_sg
+> for each function they want to use but can easily chose
+> to provide their own ones for those they need different.
+> 
+> It might also help architectures that work with dma_ops,
+> which could then define their own
+> struct dma_ops dma_ops_linear = {
+> 	.map_single = dma_linear_map_single,
+> 	.map_sg = dma_linear_map_sg,
+> 	...
+> };
+
+To me, looks like this just makes things complicated needlessly. But
+I'm not in a position to ACK or NACK this. it's better to ask
+architecture maintainers.
+
+
+> Would you prefer me to do it this way, or just keep the
+> standard function names as in the current patch?
