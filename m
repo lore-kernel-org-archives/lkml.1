@@ -1,132 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758135AbZEZXcG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759162AbZEZXd1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758135AbZEZXcG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 19:32:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755368AbZEZXb4
+	id S1759162AbZEZXd1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 19:33:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756951AbZEZXdT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 19:31:56 -0400
-Received: from mail-bw0-f222.google.com ([209.85.218.222]:39378 "EHLO
-	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755199AbZEZXbz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 19:31:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=nBHn0Y22SPDu9j0zY++zuBe+t/0RioS0yJ9bOGxKZVVXJoRnm4zCjrVXNfHbSlYAY6
-         4SjAHieRHaR483QEXn9oKUYhpxjdGlJEMRy7QYnkL5gJLTD+gaf7fX9R7EDyxpRWyWV+
-         x6l0EAfDx90LC3SPfMki6x7UWiH13byGvxRfo=
-Date: Wed, 27 May 2009 08:31:31 +0900
-From: Minchan Kim <minchan.kim@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Minchan Kim <minchan.kim@gmail.com>, kosaki.motohiro@jp.fujitsu.com,
-       randy.dunlap@oracle.com, cl@linux-foundation.org, linux-mm@kvack.org,
-       pavel@ucw.cz, dave@linux.vnet.ibm.com, davem@davemloft.net,
-       linux@dominikbrodowski.net, mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: [PATCH][mmtom] clean up printk_once of get_cpu_vendor
-Message-Id: <20090527083131.7e2d161d.minchan.kim@barrios-desktop>
-In-Reply-To: <20090526134134.bb3e1e23.akpm@linux-foundation.org>
-References: <20090526135733.3c38f758.minchan.kim@barrios-desktop>
-	<20090526155155.6871.A69D9226@jp.fujitsu.com>
-	<20090526155943.aef3ba62.minchan.kim@barrios-desktop>
-	<20090526134134.bb3e1e23.akpm@linux-foundation.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 26 May 2009 19:33:19 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:57292 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751229AbZEZXdT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 19:33:19 -0400
+From: Mike Frysinger <vapier@gentoo.org>
+To: linux-kernel@vger.kernel.org
+Cc: uclinux-dist-devel@blackfin.uclinux.org, Paul Mundt <lethal@linux-sh.org>,
+       Greg Ungerer <gerg@uclinux.org>, uclinux-dev@uclinux.org,
+       linux-mtd@lists.infradead.org
+Subject: [PATCH 1/3] mtd/maps: uclinux: allow systems to override map addr/size
+Date: Tue, 26 May 2009 19:33:16 -0400
+Message-Id: <1243380798-10089-1-git-send-email-vapier@gentoo.org>
+X-Mailer: git-send-email 1.6.3.1
+In-Reply-To: <20090526231902.GA6295@linux-sh.org>
+References: <20090526231902.GA6295@linux-sh.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 May 2009 13:41:34 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
+Due to a processor anomaly (05000263 to be exact), most Blackfin parts
+cannot keep the embedded filesystem image directly after the kernel in
+RAM.  Instead, the filesystem needs to be relocated to the end of memory.
+As such, we need to tweak the map addr/size during boot for Blackfin
+systems.  This can be done in any early arch/board init code.
 
-> On Tue, 26 May 2009 15:59:43 +0900
-> Minchan Kim <minchan.kim@gmail.com> wrote:
-> 
-> > On Tue, 26 May 2009 15:52:32 +0900 (JST)
-> > KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
-> > 
-> > > > == CUT HERE ==
-> > > > 
-> > > > There are some places to be able to use printk_once instead of hard coding.
-> > > > 
-> > > > It will help code readability and maintenance.
-> > > > This patch doesn't change function's behavior.
-> > > > 
-> > > > Signed-off-by: Minchan Kim <minchan.kim@gmail.com>
-> > > > CC: Dominik Brodowski <linux@dominikbrodowski.net>
-> > > > CC: David S. Miller <davem@davemloft.net>
-> > > > CC: Ingo Molnar <mingo@elte.hu>
-> > > > ---
-> > > >  arch/x86/kernel/cpu/common.c  |    8 ++------
-> > > >  drivers/net/3c515.c           |    7 ++-----
-> > > >  drivers/pcmcia/pcmcia_ioctl.c |    9 +++------
-> > > >  3 files changed, 7 insertions(+), 17 deletions(-)
-> > > 
-> > > Please separete to three patches ;)
-> > 
-> > After I listen about things I missed, I will repost it at all once with each patch.
-> 
-> Yes, that would be better.  But for a trivial little patch like this I
-> expect we can just merge it and move on.  But please do split up these
-> multi-subsystem patches in future.
-
-Thanks. Andrew. 
-I confiremd what you merged. 
-
-I modifed get_cpu_vendor's printk-once by Pavel Machek's adivse.
-Please, merge with this based on my previous version.
-
-== CUT HERE ==
-
-[PATCH] clean up printk_once of get_cpu_vendor
-
-It remove unnecessary variable and change two static variable
-with one.
-
-Signed-off-by: Minchan Kim <minchan.kim@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>
-CC: Pavel Machek <pavel@ucw.cz>
-
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+CC: Paul Mundt <lethal@linux-sh.org>
+CC: Greg Ungerer <gerg@uclinux.org>
+CC: uclinux-dev@uclinux.org
+CC: linux-mtd@lists.infradead.org
 ---
- arch/x86/kernel/cpu/common.c |    5 ++---
- 1 files changed, 2 insertions(+), 3 deletions(-)
+ drivers/mtd/maps/uclinux.c |   10 ++++++----
+ 1 files changed, 6 insertions(+), 4 deletions(-)
 
-diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
-index dc0f694..c6feb68 100644
---- a/arch/x86/kernel/cpu/common.c
-+++ b/arch/x86/kernel/cpu/common.c
-@@ -479,7 +479,6 @@ out:
- static void __cpuinit get_cpu_vendor(struct cpuinfo_x86 *c)
+diff --git a/drivers/mtd/maps/uclinux.c b/drivers/mtd/maps/uclinux.c
+index 81756e3..61d4087 100644
+--- a/drivers/mtd/maps/uclinux.c
++++ b/drivers/mtd/maps/uclinux.c
+@@ -22,8 +22,12 @@
+ 
+ /****************************************************************************/
+ 
++extern char _ebss;
++
+ struct map_info uclinux_ram_map = {
+ 	.name = "RAM",
++	.phys = (unsigned long)&_ebss,
++	.size = 0,
+ };
+ 
+ struct mtd_info *uclinux_ram_mtdinfo;
+@@ -55,12 +59,10 @@ static int __init uclinux_mtd_init(void)
  {
- 	char *v = c->x86_vendor_id;
--	static int printed;
- 	int i;
+ 	struct mtd_info *mtd;
+ 	struct map_info *mapp;
+-	extern char _ebss;
+-	unsigned long addr = (unsigned long) &_ebss;
  
- 	for (i = 0; i < X86_VENDOR_NUM; i++) {
-@@ -497,8 +496,8 @@ static void __cpuinit get_cpu_vendor(struct cpuinfo_x86 *c)
- 	}
+ 	mapp = &uclinux_ram_map;
+-	mapp->phys = addr;
+-	mapp->size = PAGE_ALIGN(ntohl(*((unsigned long *)(addr + 8))));
++	if (!mapp->size)
++		mapp->size = PAGE_ALIGN(ntohl(*((unsigned long *)(mapp->phys + 8))));
+ 	mapp->bankwidth = 4;
  
- 	printk_once(KERN_ERR
--		    "CPU: vendor_id '%s' unknown, using generic init.\n", v);
--	printk_once(KERN_ERR "CPU: Your system may be unstable.\n");
-+			"CPU: vendor_id '%s' unknown, using generic init.\n" \
-+			"CPU: Your system may be unstable.\n", v);
- 
- 	c->x86_vendor = X86_VENDOR_UNKNOWN;
- 	this_cpu = &default_cpu;
+ 	printk("uclinux[mtd]: RAM probe address=0x%x size=0x%x\n",
 -- 
-1.5.4.3
+1.6.3.1
 
-
-
-
-
-
-
-
--- 
-Kinds Regards
-Minchan Kim
