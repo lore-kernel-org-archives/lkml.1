@@ -1,67 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754544AbZEZJWI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755191AbZEZJ1P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754544AbZEZJWI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 05:22:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753910AbZEZJV5
+	id S1755191AbZEZJ1P (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 05:27:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754182AbZEZJ1B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 05:21:57 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:50852 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753744AbZEZJV4 (ORCPT
+	Tue, 26 May 2009 05:27:01 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35770
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754058AbZEZJ1A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 05:21:56 -0400
-Date: Tue, 26 May 2009 05:21:57 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Amerigo Wang <amwang@redhat.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       rusty@rustcorp.com.au, jdike@addtoit.com, mingo@elte.hu
-Subject: Re: [Patch 2/4] x86 module: merge the rest functions with macros
-Message-ID: <20090526092157.GA25759@infradead.org>
-References: <20090526083717.5050.32719.sendpatchset@localhost.localdomain> <20090526083734.5050.25473.sendpatchset@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090526083734.5050.25473.sendpatchset@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 26 May 2009 05:27:00 -0400
+Date: Tue, 26 May 2009 02:26:59 -0700 (PDT)
+Message-Id: <20090526.022659.11431807.davem@davemloft.net>
+To: vapier@gentoo.org
+Cc: linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org
+Subject: Re: [PATCH 0/7] Blackfin fixes for 2.6.30
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1243329356-12644-1-git-send-email-vapier@gentoo.org>
+References: <1243329356-12644-1-git-send-email-vapier@gentoo.org>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 26, 2009 at 04:35:22AM -0400, Amerigo Wang wrote:
-> +#if defined(CONFIG_UML) || defined(CONFIG_X86_32)
-> +void *module_alloc(unsigned long size)
-> +{
-> +	if (size == 0)
-> +		return NULL;
-> +	return vmalloc_exec(size);
-> +}
-> +#else /*X86_64*/
-> +void *module_alloc(unsigned long size)
-> +{
-> +	struct vm_struct *area;
-> +
-> +	if (!size)
-> +		return NULL;
-> +	size = PAGE_ALIGN(size);
-> +	if (size > MODULES_LEN)
-> +		return NULL;
-> +
-> +	area = __get_vm_area(size, VM_ALLOC, MODULES_VADDR, MODULES_END);
-> +	if (!area)
-> +		return NULL;
-> +
-> +	return __vmalloc_area(area, GFP_KERNEL, PAGE_KERNEL_EXEC);
-> +}
-> +#endif
+From: Mike Frysinger <vapier@gentoo.org>
+Date: Tue, 26 May 2009 05:15:49 -0400
 
-vmalloc_exec basically expands to the x86-64 version of that code, just
-using VMALLOC_START/VMALLOC_END instead of MODULES_VADDR/MODULES_END.
+> Sorry for being so late, but our previous Blackfin maintainer has moved
+> on, so we've been working at picking up the slack.
+> 
+> So the stuff here for 2.6.30 is just simple build fixes, gitignore tweaks,
+> MAINTAINER updates, and hooking up the new pread syscalls (which was posted
+> a while ago already).
 
-So instead of having two variants it would be better to use the x86-64
-unconditionally and define MODULES_VADDR/MODULES_END to
-VMALLOC_START/VMALLOC_END to 32bit and uml.
+Several problems:
 
-And that part should be a patch of it's own, not mixed with others.
+1) 10 patches is way too much this late in the 2.6.30 release process.
 
+   Pick 1 or 2 that are the most critical and submit those for 2.6.30,
+   the rest get queued up for 2.6.31
+
+2) Networking patches must have netdev@vger.kernel.org at least
+   CC:'d so that your patches get properly traced at:
+
+   http://patchwork.ozlabs.org/project/netdev/list/
+
+Thank you.
