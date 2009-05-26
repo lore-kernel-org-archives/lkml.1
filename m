@@ -1,47 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757348AbZEZU1y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756868AbZEZUar@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757348AbZEZU1y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 16:27:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753499AbZEZU1r
+	id S1756868AbZEZUar (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 16:30:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754439AbZEZUak
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 16:27:47 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49293 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753460AbZEZU1q (ORCPT
+	Tue, 26 May 2009 16:30:40 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:36880 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754058AbZEZUaj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 16:27:46 -0400
-Date: Tue, 26 May 2009 13:27:30 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk
-Subject: Re: [PATCH] Remove cred leftovers from sched.h
-Message-Id: <20090526132730.5394d1bc.akpm@linux-foundation.org>
-In-Reply-To: <20090526115953.GA4958@x200.localdomain>
-References: <20090526115953.GA4958@x200.localdomain>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Tue, 26 May 2009 16:30:39 -0400
+Subject: Re: [PATCH] sched: Support current clocksource handling in
+ fallback sched_clock().
+From: Peter Zijlstra <peterz@infradead.org>
+To: john stultz <johnstul@us.ibm.com>
+Cc: Linus Walleij <linus.ml.walleij@gmail.com>,
+       Paul Mundt <lethal@linux-sh.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Victor <linux@maxim.org.za>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-sh@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       John Stultz <johnstul@linux.vnet.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <1243369423.3275.5.camel@localhost>
+References: <20090526061532.GD9188@linux-sh.org>
+	 <63386a3d0905260731m655bfee3q82a6f52d71fa3cef@mail.gmail.com>
+	 <1243348681.23657.14.camel@twins>  <1243369423.3275.5.camel@localhost>
+Content-Type: text/plain
+Date: Tue, 26 May 2009 22:30:15 +0200
+Message-Id: <1243369815.6600.2.camel@laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 May 2009 15:59:53 +0400
-Alexey Dobriyan <adobriyan@gmail.com> wrote:
+On Tue, 2009-05-26 at 13:23 -0700, john stultz wrote:
+> Overall, I'd probably suggest thinking this through a bit more. At some
+> point doing this right will cause sched_clock() to be basically the same
+> as ktime_get(). So why not just use that instead of remaking it?
 
-> struct user_struct and functions which work with it do not belong to sched.h
-> Remove cred.h inclusion from sched.h
-> Add necessary headers where needed (cred.h, capability.h)
-> 
-> As result sched.h inclusion results in something like -6% stuff after
-> preprocessing.
-> 
-> ...
->
->  140 files changed, 197 insertions(+), 156 deletions(-)
+simply because we don't require the strict global monotonicy for
+scheduling as we do from a regular time source (its nice to have
+though).
 
-Someone's going to need to make all this apply to and work with the
-appropriate kernel tree (and that's linux-next, not 2.6.30-rc7).
+That means that on x86 we can always use TSC for sched_clock(), even
+when its quite unsuitable for ktime.
 
-That person could be me, but I have a weeks worth of catchup to do
-here.
+
+
