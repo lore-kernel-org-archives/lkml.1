@@ -1,111 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756572AbZEZOw6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756297AbZEZOyV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756572AbZEZOw6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 10:52:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753379AbZEZOwv
+	id S1756297AbZEZOyV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 10:54:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753736AbZEZOyN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 10:52:51 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:51827 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751783AbZEZOwu (ORCPT
+	Tue, 26 May 2009 10:54:13 -0400
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:42383 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753678AbZEZOyN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 10:52:50 -0400
-From: "John W. Linville" <linville@tuxdriver.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Cc: Samuel Ortiz <sameo@linux.intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Kay Sievers <kay.sievers@vrfy.org>,
-       Marcel Holtmann <holtmann@linux.intel.com>, Zhu Yi <yi.zhu@intel.com>,
-       Dan Williams <dcbw@redhat.com>,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: [PATCH] libertas: adapt for dynamic firmware id allocation
-Date: Tue, 26 May 2009 16:51:50 +0200
-Message-Id: <1243349510-5322-1-git-send-email-linville@tuxdriver.com>
-X-Mailer: git-send-email 1.6.0.6
-In-Reply-To: <20090526140423.GA14683@sortiz.org>
-References: <20090526140423.GA14683@sortiz.org>
+	Tue, 26 May 2009 10:54:13 -0400
+Date: Tue, 26 May 2009 23:53:59 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Linus Walleij <linus.ml.walleij@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Victor <linux@maxim.org.za>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-sh@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk
+Subject: Re: [PATCH] sched: Support current clocksource handling in fallback sched_clock().
+Message-ID: <20090526145359.GA20760@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Linus Walleij <linus.ml.walleij@gmail.com>,
+	Ingo Molnar <mingo@elte.hu>, Andrew Victor <linux@maxim.org.za>,
+	Haavard Skinnemoen <hskinnemoen@atmel.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, linux-sh@vger.kernel.org,
+	linux-arm-kernel@lists.arm.linux.org.uk
+References: <20090526061532.GD9188@linux-sh.org> <63386a3d0905260731m655bfee3q82a6f52d71fa3cef@mail.gmail.com> <20090526144357.GA20577@linux-sh.org> <1243349409.23657.17.camel@twins>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1243349409.23657.17.camel@twins>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
----
- drivers/net/wireless/libertas/if_spi.c |    8 ++++----
- drivers/net/wireless/libertas/if_spi.h |    3 +++
- drivers/net/wireless/libertas/if_usb.c |    8 ++------
- 3 files changed, 9 insertions(+), 10 deletions(-)
+On Tue, May 26, 2009 at 04:50:09PM +0200, Peter Zijlstra wrote:
+> On Tue, 2009-05-26 at 23:43 +0900, Paul Mundt wrote:
+> > > Else you might want an additional criteria, like
+> > > cyc2ns(1) (much less than) jiffies_to_usecs(1)*1000
+> > > (however you do that the best way)
+> > > so you don't pick something
+> > > that isn't substantially faster than the jiffy counter atleast?
+> > > 
+> > This rather defeats the purpose of sched_clock() being fast. If we want
+> > to add a flag that means this in to the clocksource instead of consulting
+> > the rating, that is fine with me too. I know which clocksources I prefer
+> > to use for a sched_clock() and they are all better than jiffies. The
+> > semantics of how we tell sched_clock() that are not so important. Rating
+> > seemed like a good choice from the documentation in struct clocksource at
+> > least.
+> 
+> Am I confused or are we talking about fast HZ vs fast cycles?
+> 
+> sched_clock() should be fast cycles, that is, we don't want to read a
+> clock that takes about 1000 cycles.
+> 
+> sched_clock() is about providing a high resolution clock that is fast
+> (low cycle count) to acquire, and need not be strictly monotonic on smp.
 
-diff --git a/drivers/net/wireless/libertas/if_spi.c b/drivers/net/wireless/libertas/if_spi.c
-index 5fa55fe..b3dc609 100644
---- a/drivers/net/wireless/libertas/if_spi.c
-+++ b/drivers/net/wireless/libertas/if_spi.c
-@@ -44,8 +44,8 @@ struct if_spi_card {
- 	struct lbs_private		*priv;
- 	struct libertas_spi_platform_data *pdata;
- 
--	char				helper_fw_name[FIRMWARE_NAME_MAX];
--	char				main_fw_name[FIRMWARE_NAME_MAX];
-+	char				helper_fw_name[IF_SPI_FW_NAME_MAX];
-+	char				main_fw_name[IF_SPI_FW_NAME_MAX];
- 
- 	/* The card ID and card revision, as reported by the hardware. */
- 	u16				card_id;
-@@ -1013,9 +1013,9 @@ static int if_spi_calculate_fw_names(u16 card_id,
- 		lbs_pr_err("Unsupported chip_id: 0x%02x\n", card_id);
- 		return -EAFNOSUPPORT;
- 	}
--	snprintf(helper_fw, FIRMWARE_NAME_MAX, "libertas/gspi%d_hlp.bin",
-+	snprintf(helper_fw, IF_SPI_FW_NAME_MAX, "libertas/gspi%d_hlp.bin",
- 		 chip_id_to_device_name[i].name);
--	snprintf(main_fw, FIRMWARE_NAME_MAX, "libertas/gspi%d.bin",
-+	snprintf(main_fw, IF_SPI_FW_NAME_MAX, "libertas/gspi%d.bin",
- 		 chip_id_to_device_name[i].name);
- 	return 0;
- }
-diff --git a/drivers/net/wireless/libertas/if_spi.h b/drivers/net/wireless/libertas/if_spi.h
-index 2103869..f87eec4 100644
---- a/drivers/net/wireless/libertas/if_spi.h
-+++ b/drivers/net/wireless/libertas/if_spi.h
-@@ -22,6 +22,9 @@
- #define IF_SPI_CMD_BUF_SIZE 2400
- 
- /***************** Firmware *****************/
-+
-+#define IF_SPI_FW_NAME_MAX 30
-+
- struct chip_ident {
- 	u16 chip_id;
- 	u16 name;
-diff --git a/drivers/net/wireless/libertas/if_usb.c b/drivers/net/wireless/libertas/if_usb.c
-index ea3dc03..713c830 100644
---- a/drivers/net/wireless/libertas/if_usb.c
-+++ b/drivers/net/wireless/libertas/if_usb.c
-@@ -61,11 +61,9 @@ static ssize_t if_usb_firmware_set(struct device *dev,
- {
- 	struct lbs_private *priv = to_net_dev(dev)->ml_priv;
- 	struct if_usb_card *cardp = priv->card;
--	char fwname[FIRMWARE_NAME_MAX];
- 	int ret;
- 
--	sscanf(buf, "%29s", fwname); /* FIRMWARE_NAME_MAX - 1 = 29 */
--	ret = if_usb_prog_firmware(cardp, fwname, BOOT_CMD_UPDATE_FW);
-+	ret = if_usb_prog_firmware(cardp, buf, BOOT_CMD_UPDATE_FW);
- 	if (ret == 0)
- 		return count;
- 
-@@ -88,11 +86,9 @@ static ssize_t if_usb_boot2_set(struct device *dev,
- {
- 	struct lbs_private *priv = to_net_dev(dev)->ml_priv;
- 	struct if_usb_card *cardp = priv->card;
--	char fwname[FIRMWARE_NAME_MAX];
- 	int ret;
- 
--	sscanf(buf, "%29s", fwname); /* FIRMWARE_NAME_MAX - 1 = 29 */
--	ret = if_usb_prog_firmware(cardp, fwname, BOOT_CMD_UPDATE_BOOT2);
-+	ret = if_usb_prog_firmware(cardp, buf, BOOT_CMD_UPDATE_BOOT2);
- 	if (ret == 0)
- 		return count;
- 
--- 
-1.6.0.6
-
+I don't think there's any confusion here. My point is that I didn't want
+to add too much logic in to sched_clock() given that it is supposed to be
+fast. So if the rating test by itself is not sufficient, then we need
+another way to flag a clocksource as being usable for sched_clock().
