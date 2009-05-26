@@ -1,90 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755728AbZEZRYx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755975AbZEZR2S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755728AbZEZRYx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 13:24:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754059AbZEZRYq
+	id S1755975AbZEZR2S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 13:28:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753860AbZEZR2F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 13:24:46 -0400
-Received: from yx-out-2324.google.com ([74.125.44.30]:32307 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753860AbZEZRYp (ORCPT
+	Tue, 26 May 2009 13:28:05 -0400
+Received: from mail-bw0-f222.google.com ([209.85.218.222]:42091 "EHLO
+	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753231AbZEZR2E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 13:24:45 -0400
+	Tue, 26 May 2009 13:28:04 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type:content-transfer-encoding;
-        b=VBMmLd7R+GDertmgATTbRvRAkc7MJfOEiM56nhd7z399kRzY4E4fhs4aVRnC6NA+7t
-         LVayT3nIflnnwhr/qa21r/TAIT0KMBvYdZDuZC6qNdsmdYjHqJx3YyCNSLdWAkeaagb6
-         QMXfH4CMkGsDC3MyemkHBzGIRAc/Zl2TYWc/Y=
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=heR0N+h0jWD/upMFyxC/qOk95BsVE63KkBiK1KgFuy2+yxHnHoodHI74lMUdk7eyYT
+         Q5vIujFnOWyY2gx79aP4jmpkET2Bxak75AgBmMNRuh4G6jmz4o7stoVC5wBRPTpynL8p
+         sI56THq7qTltyd6CHuRoKnjLLBpWtCEGQzaQE=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Frans Pop <elendil@planet.nl>
+Subject: Re: [PATCH 1/3] ide: add "ignore_hpa" module parameter
+Date: Tue, 26 May 2009 19:32:43 +0200
+User-Agent: KMail/1.11.3 (Linux/2.6.30-rc6-next-20090522-05935-g4d19128; KDE/4.2.3; i686; ; )
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <200905252344.11826.bzolnier@gmail.com> <200905261423.40117.bzolnier@gmail.com> <200905261453.22428.elendil@planet.nl>
+In-Reply-To: <200905261453.22428.elendil@planet.nl>
 MIME-Version: 1.0
-In-Reply-To: <20090526170653.GB24261@linux-sh.org>
-References: <1243331191-11445-1-git-send-email-vapier@gentoo.org>
-	 <1243331191-11445-2-git-send-email-vapier@gentoo.org>
-	 <20090526113122.GB16835@linux-sh.org>
-	 <8bd0f97a0905260942m4b574d75oc4f38ee3d8849395@mail.gmail.com>
-	 <20090526164735.GA24261@linux-sh.org>
-	 <8bd0f97a0905260950i6da64210n7da256627d3e38ff@mail.gmail.com>
-	 <20090526170653.GB24261@linux-sh.org>
-Date: Tue, 26 May 2009 13:24:46 -0400
-Message-ID: <8bd0f97a0905261024q178fbc80n4a997daca5a3b405@mail.gmail.com>
-Subject: Re: [PATCH 2/2] mtd/maps: uclinux: support Blackfin systems
-From: Mike Frysinger <vapier.adi@gmail.com>
-To: Paul Mundt <lethal@linux-sh.org>, Mike Frysinger <vapier.adi@gmail.com>,
-       linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
-       Greg Ungerer <gerg@uclinux.org>, uclinux-dev@uclinux.org,
-       linux-mtd@lists.infradead.org
-Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+Message-Id: <200905261932.43657.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 26, 2009 at 13:06, Paul Mundt wrote:
-> On Tue, May 26, 2009 at 12:50:51PM -0400, Mike Frysinger wrote:
->> On Tue, May 26, 2009 at 12:47, Paul Mundt wrote:
->> > On Tue, May 26, 2009 at 12:42:48PM -0400, Mike Frysinger wrote:
->> >> > In this case you should just kill all of that crap off, and have the
->> >> > platforms that use this set uclinux_ram_map up themselves, it's already
->> >> > a global. Of course you can use _ebss as a default value for
->> >> > uclinux_ram_map.phys and just override it in your platform.
->> >>
->> >> i would agree if it were a board-specific issue, but it's an arch
->> >> issue, so pushing it to the boards level is wrong. ??i can however
->> >> replace the addr with a global weak and add a symbol into the Blackfin
->> >> arch code to override it.
->> >>
->> > I obviously meant architectures setting up the address, not the board
->> > code, as this has nothing at all to do with boards. There are already
->> > plenty of cases in setup_arch() for filling in uclinux mtd data, one more
->> > isn't going to make a difference.
->> >
->> > I don't see anything wrong with keeping uclinux_ram_map as a global
->> > however, particularly since platforms that need to special case the
->> > mapping can easily do this under the existing ifdef. Adding weak symbols
->> > for something like this just seems silly.
->>
->> the point of the weak symbol was so that the map could provide a sane
->> default that works for most everyone out there without having to copy
->> & paste the same code to every arch, and to make new arch porters
->> worry about what needs to be done to use this very trivial map
->
-> Did you purposely only read the parts of my email that you felt like?
-> Note the original quoted part that mentions using _ebss as a default and
-> simply overriding it in your platform.
+On Tuesday 26 May 2009 14:53:21 Frans Pop wrote:
+> On Tuesday 26 May 2009, Bartlomiej Zolnierkiewicz wrote:
+> > First time with the introduction of the default IDE HPA behavior of
+> > always giving the access to the full capacity of a disk and leaving
+> > decisions about HPA preservation/removal up to the installer & user.
+> >
+> > Second time when said distributions switched from IDE to libata (which
+> > uses the different default behavior as it limits the capacity to
+> > non-HPA part).
+> 
+> Has there really been something like a deliberate switch?
 
-if i wanted to piss you off, i imagine that would be what i was doing.
- but considering my purpose is to get merged, there's a more logical
-conclusion.  we envisioned different solutions, so having the ideas in
-our minds not line up isnt terribly surprising.
+This heavily depends on distribution.
 
-> Use the attached, and then just set uclinux_ram_map.phys = your_address_here
-> in your setup_arch(). Having weak symbols in drivers that are supposed to
-> be overriden by the architecture code is just way too backwards for
-> words. Globals suffice fine for this sort of thing, if you are not going
-> to go to the effort to pass this information to the driver directly that
-> is.
+> In my experience with Debian there's been no such thing. ATA has just been 
+> gradually enabled. (And initially that resulted in quite a mess because 
+> some devices would be supported by two drivers and the kernel couldn't 
+> even make up its own mind which one it preferred, resulting in random 
+> switches between drivers. At least that was resolved at some point.)
+> 
+> However, I must admit that Debian has not handled the IDE-ATA switch very 
+> well. So far users have mostly been left to deal with any fallout for 
+> themselves.
 
-i was thinking something else, but obviously this is nicer than what i
-was thinking
--mike
+I think that Debian still sticks to IDE (which is correct choice given
+goals of this distribution).
+
+> > Please note that no fancy sysfs support was needed to prevent the
+> > problem: both stacks (ide & libata) support HDIO_DRIVE_TASK ioctl which
+> > can be used to execute commands needed to retrieve/change HPA setting.
+> 
+> I don't really see how that would help. The fact that fancy ioctls exist 
+> does not mean users or even distros have the knowledge needed to use 
+> them. IMHO such issues should be dealt with at the level where that 
+> knowledge is available: the kernel community.
+
+The coordination from distributions was necessary and the answer from
+some distributions was to continuously ignore or downplay the issue.
+
+This has changed only recently with Tejun's work.
+
+> > Moreover the (much needed) work from Tejun doesn't help a tiny bit in
+> > case of people migrating their *working* setups from IDE to libata
+> 
+> From what I've seen now that seems the most important case that needs 
+> supporting, as well as the case where a working setup would migrate from 
+> IDE with old HPA default to IDE with new HPA default.
+
+There is no IDE with new HPA default at the moment.
