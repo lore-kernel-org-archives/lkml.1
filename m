@@ -1,97 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757134AbZEZUrA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758430AbZEZUrV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757134AbZEZUrA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 16:47:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753584AbZEZUqy
+	id S1758430AbZEZUrV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 16:47:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756959AbZEZUrF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 16:46:54 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:63592 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753339AbZEZUqx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 16:46:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=b4XQHGHqVR5Hrs7Ln6ZdtR5sru/y/PLDWU1d1vWSyGovPb5cNzpY1kwpcV7t3+n/mu
-         dyO4fWVzx5IsWrndvKiVjo0sIDG1VvnNrHMuy1lDL/kD1N8mXYDvoS6TLZ7thpa2ZA9a
-         g1vM5xWbZWU5Rad2AkNriGeFF0PBMQRwC+Nec=
-Date: Tue, 26 May 2009 22:46:49 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/3] tracing/stat: sort in ascending order
-Message-ID: <20090526204647.GF5969@nowhere>
-References: <4A1A5AD1.3070804@cn.fujitsu.com> <20090525154229.GA7121@nowhere> <4A1B4144.9060201@cn.fujitsu.com>
+	Tue, 26 May 2009 16:47:05 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:40503 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757528AbZEZUrD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 16:47:03 -0400
+Date: Tue, 26 May 2009 22:47:04 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Damien Wyart <damien.wyart@free.fr>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
+       akpm@linux-foundation.org, jack@suse.cz, yanmin_zhang@linux.intel.com,
+       richard@rsk.demon.co.uk
+Subject: Re: [PATCH 0/12] Per-bdi writeback flusher threads v7
+Message-ID: <20090526204703.GM11363@kernel.dk>
+References: <1243330430-9964-1-git-send-email-jens.axboe@oracle.com> <20090526152501.GA20968@localhost.localdomain> <20090526164117.GJ11363@kernel.dk> <20090526170845.GA3226@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A1B4144.9060201@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090526170845.GA3226@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 26, 2009 at 09:09:24AM +0800, Li Zefan wrote:
-> Frederic Weisbecker wrote:
-> > On Mon, May 25, 2009 at 04:46:09PM +0800, Li Zefan wrote:
-> >> Currently the output of trace_stat/workqueues is totally reversed:
-> >>
-> >>  # cat /debug/tracing/trace_stat/workqueues
-> >>     ...
-> >>     1       17       17      210       37   `-blk_unplug_work+0x0/0x57
-> >>     1     3779     3779      181       11   |-cfq_kick_queue+0x0/0x2f
-> >>     1     3796     3796                     kblockd/1:120
-> >>     ...
-> >>
-> >> The correct output should be:
-> >>
-> >>     1     3796     3796                     kblockd/1:120
-> >>     1     3779     3779      181       11   |-cfq_kick_queue+0x0/0x2f
-> >>     1       17       17      210       37   `-blk_unplug_work+0x0/0x57
-> >>
-> >> It's caused by "tracing/stat: replace linked list by an rbtree for sorting"
-> >> (53059c9b67a62a3dc8c80204d3da42b9267ea5a0).
-> >>
-> >> Though we can simply change dummy_cmp() to return -1 instead of 1, IMO
-> >> it's better to always do ascending sorting in trace_stat.c, and leave each
-> >> stat tracer to decide whether to sort in descending or ascending order.
-> >>
-> >> [ Impact: fix the output of trace_stat/workqueue ]
-> >>
-> >> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> > 
-> > 
-> > For now in stat tracing, the ascendent sorting is the most relevant.
-> > Especially because we always want to see the highest problems first.
-> > 
+On Tue, May 26 2009, Damien Wyart wrote:
+> > > I have been playing with v7 since your sending and after a while
+> > > (short on laptop, longer on desktop, a few hours), writeback doesn't
+> > > seem to work anymore. Manual call to sync hangs (process in D state)
+> > > and Dirty value in meminfo gets growing. As previous versions had
+> > > been heavily tested, I guess there is some regression in v7.
 > 
-> Yeah, I saw this.
+> > Not good, the prime suspect is the sync notification stuff. I'll take
+> > a look and get that fixed. You didn't happen to catch any sysrq-t back
+> > traces or anything like that? Would be interesting to see where
+> > bdi-default and the bdi-* threads are stuck.
 > 
-> > -1 (or < 0) usually means lower and 1 ( > 0) is higher.
-> > 
-> > I wonder what would most confuse the developers of stat tracers:
-> > 
-> > - to reverse these common sort values (-1 turn into "higher")
-> > - keep the default ascendent sorting, which is not natural because the default
-> >   is often descendent.
-> > 
-> > I don't know. 
-> > 
-> > Anyone else. Do you have a preference?
-> > 
+> No, as I was doing many things at the same time and not exclusively
+> debugging, I just rebooted hard and went back to an upatched kernel when
+> the problems occured. But I noticed only bdi-default was alive, the
+> other bdi-* threads had disappeared and the sync commands I had tried
+> were all in D state. Also I tried to reinstall a kernel .deb (these
+> systems are Debian) and this got stuck guring installation, when probing
+> grub config (do not know if there is some sync syscall inthere).
 > 
-> When I looked into this bug, I was confused why it's descending sorting, though
-> then I found out the answer.
-> 
-> Imagine a new stat tracer wants to sort in ascending order, but it has to define
-> a cmp which compares in reverse order. This seems to be odd and confusing.
-> 
-> But to be honest, I'm also not sure which is better, And it doesn't seem to be
-> a big issue. So I think I'll make concessions.
+> Can try to go further tomorrow but will not have a lot of time...
 
+OK, I spotted the problem. If we fallback to the on-stack allocation in
+bdi_writeback_all(), then we do the wait for the work completion with
+the bdi_lock mutex held. This can deadlock with bdi_forker_task(), so if
+we require that to be invoked to make progress (happens if a thread
+needs to be restarted), then we have a deadlock on that mutex.
 
-Ok, so let's keep it as is and we'll see if developers complain :)
+I'll cook up a fix for this, but probably not before the morning.
+
+-- 
+Jens Axboe
 
