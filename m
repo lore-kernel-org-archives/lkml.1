@@ -1,103 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760282AbZEZWuR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759934AbZEZWtc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760282AbZEZWuR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 18:50:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760144AbZEZWtM
+	id S1759934AbZEZWtc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 18:49:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759767AbZEZWqt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 18:49:12 -0400
-Received: from mga09.intel.com ([134.134.136.24]:36753 "EHLO mga09.intel.com"
+	Tue, 26 May 2009 18:46:49 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:33388 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760146AbZEZWtL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 18:49:11 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,254,1241420400"; 
-   d="scan'208";a="415865812"
-Message-Id: <20090526225120.078277700@linux.intel.com>
-References: <20090526224930.145059254@linux.intel.com>
-User-Agent: quilt/0.46-1
-Date: Wed, 27 May 2009 00:49:31 +0200
-From: Samuel Ortiz <sameo@linux.intel.com>
-To: inux-kernel <linux-kernel@vger.kernel.org>,
-       Greg Kroah-Hartmann <greg@kroah.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: Kay Sievers <kay.sievers@vrfy.org>, Samuel Ortiz <sameo@linux.intel.com>,
-       Marcel Holtmann <holtmann@linux.intel.com>, Zhu Yi <yi.zhu@intel.com>,
-       John Linville <linville@tuxdriver.com>
-Subject: [PATCH 1/7 v2] firmware: allocate firmware id dynamically
-Content-Disposition: inline; filename=firmware_class.patch
+	id S1759666AbZEZWqs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 18:46:48 -0400
+Date: Tue, 26 May 2009 19:46:14 -0300
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
+       Mike Galbraith <efault@gmx.de>, Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/1 tip] perf: report should show the IP only in --verbose
+	mode
+Message-ID: <20090526224614.GK4424@ghostprotocols.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Url: http://oops.ghostprotocols.net:81/blog
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Samuel Ortiz <sameo@linux.intel.com>
+commit ce04d315572e173eb2a443ebc973b6bb3f32596a
+Author: Arnaldo Carvalho de Melo <acme@redhat.com>
+Date:   Tue May 26 19:43:25 2009 -0300
 
-The firmware loader has a statically allocated 30 bytes long string for the
-firmware id (a.k.a. the firmware file name). There is no reason why we couldnt
-allocate it dynamically, and avoid having restrictions on the firmware names
-lengths.
+    perf: report should show the IP only in --verbose mode
+    
+    [acme@emilia ~]$ perf report | head
+     4.95          find [k] _spin_lock
+     2.19          find [k] ext3fs_dirhash	[ext3]
+     1.87          find [k] __rcu_read_lock
+     1.86          find [k] _atomic_dec_and_lock
+     1.86          find [.] /lib64/libc-2.5.so: __GI_strlen
+     1.85          find [k] __kmalloc
+     1.62          find [.] /lib64/libc-2.5.so: vfprintf
+     1.59          find [k] __rcu_read_unlock
+     1.55          find [k] __d_lookup
+    
+    Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
 
-Signed-off-by: Samuel Ortiz <sameo@linux.intel.com>
-Cc: Marcel Holtmann <holtmann@linux.intel.com>
-Cc: Zhu Yi <yi.zhu@intel.com>,
-Cc: John Linville <linville@tuxdriver.com>
-
----
- drivers/base/firmware_class.c |   16 +++++++++++++---
- 1 file changed, 13 insertions(+), 3 deletions(-)
-
-Index: iwm-2.6/drivers/base/firmware_class.c
-===================================================================
---- iwm-2.6.orig/drivers/base/firmware_class.c	2009-05-26 16:30:41.000000000 +0200
-+++ iwm-2.6/drivers/base/firmware_class.c	2009-05-26 16:37:20.000000000 +0200
-@@ -40,7 +40,7 @@ static int loading_timeout = 60;	/* In s
- static DEFINE_MUTEX(fw_lock);
+diff --git a/Documentation/perf_counter/builtin-report.c b/Documentation/perf_counter/builtin-report.c
+index a55f15d..e681f38 100644
+--- a/Documentation/perf_counter/builtin-report.c
++++ b/Documentation/perf_counter/builtin-report.c
+@@ -22,6 +22,7 @@ static int		input;
+ static int		show_mask = SHOW_KERNEL | SHOW_USER | SHOW_HV;
  
- struct firmware_priv {
--	char fw_id[FIRMWARE_NAME_MAX];
-+	char *fw_id;
- 	struct completion completion;
- 	struct bin_attribute attr_data;
- 	struct firmware *fw;
-@@ -278,6 +278,7 @@ static void fw_dev_release(struct device
- {
- 	struct firmware_priv *fw_priv = dev_get_drvdata(dev);
+ static int		dump_trace = 0;
++static int 		verbose;
  
-+	kfree(fw_priv->fw_id);
- 	kfree(fw_priv);
- 	kfree(dev);
+ static unsigned long	page_size;
+ static unsigned long	mmap_window = 32;
+@@ -545,9 +546,12 @@ symhist__fprintf(struct symhist *self, uint64_t total_samples, FILE *fp)
+ 	else
+ 		ret = fprintf(fp, "%12d", self->count);
  
-@@ -309,7 +310,13 @@ static int fw_register_device(struct dev
- 
- 	init_completion(&fw_priv->completion);
- 	fw_priv->attr_data = firmware_attr_data_tmpl;
--	strlcpy(fw_priv->fw_id, fw_name, FIRMWARE_NAME_MAX);
-+	fw_priv->fw_id = kstrdup(fw_name, GFP_KERNEL);
-+	if (!fw_priv->fw_id) {
-+		dev_err(device, "%s: Firmware name allocation failed\n",
-+			__func__);
-+		retval = -ENOMEM;
-+		goto error_kfree;
-+	}
- 
- 	fw_priv->timeout.function = firmware_class_timeout;
- 	fw_priv->timeout.data = (u_long) fw_priv;
-@@ -323,11 +330,14 @@ static int fw_register_device(struct dev
- 	retval = device_register(f_dev);
- 	if (retval) {
- 		dev_err(device, "%s: device_register failed\n", __func__);
--		goto error_kfree;
-+		goto error_kfree_fw_id;
- 	}
- 	*dev_p = f_dev;
- 	return 0;
- 
-+error_kfree_fw_id:
-+	kfree(fw_priv->fw_id);
+-	ret += fprintf(fp, "%14s [%c] %#018llx ",
++	ret += fprintf(fp, "%14s [%c] ",
+ 		       thread__name(self->thread, bf, sizeof(bf)),
+-		       self->level, (unsigned long long)self->ip);
++		       self->level);
 +
- error_kfree:
- 	kfree(fw_priv);
- 	kfree(f_dev);
-
--- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
++	if (verbose)
++		ret += fprintf(fp, "%#018llx ", (unsigned long long)self->ip);
+ 
+ 	if (self->level != '.')
+ 		ret += fprintf(fp, "%s\n",
+@@ -968,6 +972,8 @@ static const char * const report_usage[] = {
+ static const struct option options[] = {
+ 	OPT_STRING('i', "input", &input_name, "file",
+ 		    "input file name"),
++	OPT_BOOLEAN('v', "verbose", &verbose,
++		    "be more verbose (show symbol address, etc)"),
+ 	OPT_BOOLEAN('D', "dump-raw-trace", &dump_trace,
+ 		    "dump raw trace in ASCII"),
+ 	OPT_END()
