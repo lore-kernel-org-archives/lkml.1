@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761545AbZE0ABQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761758AbZE0ACN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761545AbZE0ABQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 20:01:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756341AbZEZXzG
+	id S1761758AbZE0ACN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 20:02:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756796AbZEZXzO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 19:55:06 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:38628 "EHLO
+	Tue, 26 May 2009 19:55:14 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:38635 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756358AbZEZXyy (ORCPT
+	with ESMTP id S1756480AbZEZXy6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 19:54:54 -0400
+	Tue, 26 May 2009 19:54:58 -0400
 From: Andi Kleen <andi@firstfloor.org>
 To: linux-kernel@vger.kernel.org, hpa@zytor.com, x86@kernel.org
 Cc: Andi Kleen <ak@linux.intel.com>
-Subject: [PATCH 22/31] x86: MCE: Extend struct mce user interface with more information.
-Date: Wed, 27 May 2009 01:54:24 +0200
-Message-Id: <d9664a5ed1cdbfcd7888c7c7114619494114d4ab.1243381848.git.ak@linux.intel.com>
+Subject: [PATCH 28/31] x86: MCE: Make non Monarch panic message "Fatal machine check" too v2
+Date: Wed, 27 May 2009 01:54:30 +0200
+Message-Id: <504bce650bbfaa513c9386cfd77edf5f5941654b.1243381848.git.ak@linux.intel.com>
 X-Mailer: git-send-email 1.6.0.2
-In-Reply-To: <ecbed09ba385129558d6341f6a48c64edaa164b4.1243381848.git.ak@linux.intel.com>
+In-Reply-To: <2a7abea3d00cb5a1508d54b45bdb7a94fead46ee.1243381848.git.ak@linux.intel.com>
 References: <1243382073-29338-1-git-send-email-andi@firstfloor.org>
  <c63915cfa51e24394524ddaa66a6f2cb2fcfe66f.1243381848.git.ak@linux.intel.com>
  <c1d7bf910168f07efb50d98f901f41e289a87f1f.1243381848.git.ak@linux.intel.com>
@@ -40,6 +40,12 @@ References: <1243382073-29338-1-git-send-email-andi@firstfloor.org>
  <0f7e10122c48b7988b1676be5e7fc75f2c561215.1243381848.git.ak@linux.intel.com>
  <314f7c278aaaa41854bf4f0837a4ca6126160fc8.1243381848.git.ak@linux.intel.com>
  <ecbed09ba385129558d6341f6a48c64edaa164b4.1243381848.git.ak@linux.intel.com>
+ <d9664a5ed1cdbfcd7888c7c7114619494114d4ab.1243381848.git.ak@linux.intel.com>
+ <172ffa34ba8bc6a493e26f7e97fb7239f906b4e8.1243381848.git.ak@linux.intel.com>
+ <e224e71ae8e2b578d4b4a0a079eea963445eaf91.1243381848.git.ak@linux.intel.com>
+ <650bd32edc1814f1f792a07de9c5efebefc9c0b3.1243381848.git.ak@linux.intel.com>
+ <b464e1eb871500ad8f4f6e5e5f6d394aec97e037.1243381848.git.ak@linux.intel.com>
+ <2a7abea3d00cb5a1508d54b45bdb7a94fead46ee.1243381848.git.ak@linux.intel.com>
 In-Reply-To: <c63915cfa51e24394524ddaa66a6f2cb2fcfe66f.1243381848.git.ak@linux.intel.com>
 References: <c63915cfa51e24394524ddaa66a6f2cb2fcfe66f.1243381848.git.ak@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -48,96 +54,31 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Andi Kleen <ak@linux.intel.com>
 
-Experience has shown that struct mce which is used to pass an machine check
-to the user space daemon currently a few limitations.  Also some data
-which is useful to print at panic level is also missing.
+... instead of "Machine check". This is for consistency with the Monarch
+panic message.
 
-This patch addresses most of them. The same information is also
-printed out together with mce panic.
+Based on a report from Ying Huang.
 
-struct mce can be painlessly extended in a compatible way, the mcelog user space
-code just ignores additional fields with a warning.
-
-- It doesn't provide a wall time timestamp. There have been a few
-complaints about that. Fix that by adding a 64bit time_t
-- It doesn't provide the exact CPU identification. This makes
-it awkward for mcelog to decode the event correctly, especially
-when there are variations in the supported MCE codes on different
-CPU models or when mcelog is running on a different host after a panic.
-Previously the administrator had to specify the correct CPU
-when mcelog ran on a different host, but with the more variation
-in machine checks now it's better to auto detect that.
-It's also useful for more detailed analysis of CPU events.
-Pass CPUID 1.EAX and the cpu vendor (as encoded in processor.h) instead.
-- Socket ID and initial APIC ID are useful to report because they
-allow to identify the failing CPU in some (not all) cases.
-This is also especially useful for the panic situation.
-This addresses one of the complaints from Thomas Gleixner earlier.
-- The MCG capabilities MSR needs to be reported for some advanced
-error processing in mcelog
+v2: But add a descriptive postfix so that the test suite can distingush.
 
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 ---
- arch/x86/include/asm/mce.h       |   10 ++++++++--
- arch/x86/kernel/cpu/mcheck/mce.c |   12 ++++++++++++
- 2 files changed, 20 insertions(+), 2 deletions(-)
+ arch/x86/kernel/cpu/mcheck/mce.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/include/asm/mce.h b/arch/x86/include/asm/mce.h
-index ee7d427..e958322 100644
---- a/arch/x86/include/asm/mce.h
-+++ b/arch/x86/include/asm/mce.h
-@@ -36,13 +36,19 @@ struct mce {
- 	__u64 mcgstatus;
- 	__u64 ip;
- 	__u64 tsc;	/* cpu time stamp counter */
--	__u64 res1;	/* for future extension */
--	__u64 res2;	/* dito. */
-+	__u64 time;	/* wall time_t when error was detected */
-+	__u8  cpuvendor;	/* cpu vendor as encoded in system.h */
-+	__u8  pad1;
-+	__u16 pad2;
-+	__u32 cpuid;	/* CPUID 1 EAX */
- 	__u8  cs;		/* code segment */
- 	__u8  bank;	/* machine check bank */
- 	__u8  cpu;	/* cpu number; obsolete; use extcpu now */
- 	__u8  finished;   /* entry is valid */
- 	__u32 extcpu;	/* linux cpu number that detected the error */
-+	__u32 socketid;	/* CPU socket ID */
-+	__u32 apicid;	/* CPU initial apic ID */
-+	__u64 mcgcap;	/* MCGCAP MSR: machine check capabilities of CPU */
- };
- 
- /*
 diff --git a/arch/x86/kernel/cpu/mcheck/mce.c b/arch/x86/kernel/cpu/mcheck/mce.c
-index aa87530..04cb0d4 100644
+index 94dddc7..9029aa0 100644
 --- a/arch/x86/kernel/cpu/mcheck/mce.c
 +++ b/arch/x86/kernel/cpu/mcheck/mce.c
-@@ -110,6 +110,15 @@ void mce_setup(struct mce *m)
- 	memset(m, 0, sizeof(struct mce));
- 	m->cpu = m->extcpu = smp_processor_id();
- 	rdtscll(m->tsc);
-+	/* We hope get_seconds stays lockless */
-+	m->time = get_seconds();
-+	m->cpuvendor = boot_cpu_data.x86_vendor;
-+	m->cpuid = cpuid_eax(1);
-+#ifdef CONFIG_SMP
-+	m->socketid = cpu_data(m->extcpu).phys_proc_id;
-+#endif
-+	m->apicid = cpu_data(m->extcpu).initial_apicid;
-+	rdmsrl(MSR_IA32_MCG_CAP, m->mcgcap);
- }
+@@ -889,7 +889,7 @@ void do_machine_check(struct pt_regs *regs, long error_code)
+ 	 * support MCE broadcasting or it has been disabled.
+ 	 */
+ 	if (no_way_out && tolerant < 3)
+-		mce_panic("Machine check", final, msg);
++		mce_panic("Fatal machine check on current CPU", final, msg);
  
- DEFINE_PER_CPU(struct mce, injectm);
-@@ -187,6 +196,9 @@ static void print_mce(struct mce *m)
- 	if (m->misc)
- 		printk("MISC %llx ", m->misc);
- 	printk("\n");
-+	printk(KERN_EMERG "PROCESSOR %u:%x TIME %llu SOCKET %u APIC %x\n",
-+			m->cpuvendor, m->cpuid, m->time, m->socketid,
-+			m->apicid);
- 	printk(KERN_EMERG "This is not a software problem!\n");
- 	printk(KERN_EMERG "Run through mcelog --ascii to decode "
- 	       "and contact your hardware vendor\n");
+ 	/*
+ 	 * If the error seems to be unrecoverable, something should be
 -- 
 1.6.0.2
 
