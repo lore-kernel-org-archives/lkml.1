@@ -1,57 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755008AbZEZHiV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754945AbZEZHj4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755008AbZEZHiV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 03:38:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752967AbZEZHiO
+	id S1754945AbZEZHj4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 03:39:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752967AbZEZHjq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 03:38:14 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:59162 "EHLO mx2.suse.de"
+	Tue, 26 May 2009 03:39:46 -0400
+Received: from sh.osrg.net ([192.16.179.4]:34753 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752332AbZEZHiN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 03:38:13 -0400
-Date: Tue, 26 May 2009 09:38:13 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yinghai@kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jeff Garzik <jgarzik@pobox.com>, Alexander Viro <viro@ftp.linux.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, cl@linux-foundation.org,
-       mpm@selenic.com
-Subject: Re: [GIT PULL] scheduler fixes
-Message-ID: <20090526073813.GE21496@wotan.suse.de>
-References: <20090525025353.GA2580@elte.hu> <4A1A2261.1000504@kernel.org> <20090525051521.GC23032@elte.hu> <Pine.LNX.4.64.0905251142140.32568@melkki.cs.Helsinki.FI> <20090525112504.GB24071@wotan.suse.de> <84144f020905250437x585e66a2oc1124a4f1f43059d@mail.gmail.com> <20090525114127.GE24071@wotan.suse.de> <Pine.LNX.4.64.0905251443390.4115@melkki.cs.Helsinki.FI> <alpine.LFD.2.01.0905250930530.3435@localhost.localdomain> <4A1AE5CC.1000209@cs.helsinki.fi>
+	id S1752332AbZEZHjp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 03:39:45 -0400
+Date: Tue, 26 May 2009 16:38:09 +0900
+To: jens.axboe@oracle.com
+Cc: fujita.tomonori@lab.ntt.co.jp, James.Bottomley@HansenPartnership.com,
+       rdreier@cisco.com, bharrosh@panasas.com, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, chris.mason@oracle.com,
+       david@fromorbit.com, hch@infradead.org, akpm@linux-foundation.org,
+       jack@suse.cz, yanmin_zhang@linux.intel.com, linux-scsi@vger.kernel.org
+Subject: Re: [PATCH 03/13] scsi: unify allocation of scsi command and sense
+	buffer
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20090526073229.GC11363@kernel.dk>
+References: <20090526062952.GB11363@kernel.dk>
+	<20090526162545U.fujita.tomonori@lab.ntt.co.jp>
+	<20090526073229.GC11363@kernel.dk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A1AE5CC.1000209@cs.helsinki.fi>
-User-Agent: Mutt/1.5.9i
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20090526163823U.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Tue, 26 May 2009 16:38:11 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 25, 2009 at 09:39:08PM +0300, Pekka Enberg wrote:
-> Linus Torvalds wrote:
-> >And vfs_caches_init_early() is actually doing some rather strange things, 
-> >like doing a "alloc_large_system_hash()" but not unconditionally: it does 
-> >it in the "late" initialization too, if not done early. inode_init_early 
-> >does soemthing very similar (ie a _conditional_ early init).
-> >
-> >So none of this seems to really get a huge advantage from the early init. 
-> >There seems to be some subtle NUMA issues, but do we really want that? I 
-> >get the feeling that nobody ever wanted to do it early, and then the NUMA 
-> >people said "I don't wnt to do this early, but I don't want to touch the 
-> >non-NUMA case, so I'll do it early for non-numa, and late for numa".
+On Tue, 26 May 2009 09:32:29 +0200
+Jens Axboe <jens.axboe@oracle.com> wrote:
+
+> On Tue, May 26 2009, FUJITA Tomonori wrote:
+> > On Tue, 26 May 2009 08:29:53 +0200
+> > Jens Axboe <jens.axboe@oracle.com> wrote:
+> > 
+> > > On Tue, May 26 2009, FUJITA Tomonori wrote:
+> > > > On Mon, 25 May 2009 18:45:25 -0700
+> > > > Roland Dreier <rdreier@cisco.com> wrote:
+> > > > 
+> > > > >  > Ideally there should be a MACRO that is defined to WORD_SIZE on cache-coherent
+> > > > >  > ARCHs and to SMP_CACHE_BYTES on none-cache-coherent systems and use that size
+> > > > >  > at the __align() attribute. (So only stupid ARCHES get hurt)
+> > > > > 
+> > > > > this seems to come up repeatedly -- I had a proposal a _long_ time ago
+> > > > > that never quite got merged, cf http://lwn.net/Articles/2265/ and
+> > > > > http://lwn.net/Articles/2269/ -- from 2002 (!?).  The idea is to go a
+> > > > 
+> > > > Yeah, I think that Benjamin did last time:
+> > > > 
+> > > > http://www.mail-archive.com/linux-scsi@vger.kernel.org/msg12632.html
+> > > > 
+> > > > IIRC, James didn't like it so I wrote the current code. I didn't see
+> > > > any big performance difference with scsi_debug:
+> > > > 
+> > > > http://marc.info/?l=linux-scsi&m=120038907123706&w=2
+> > > > 
+> > > > Jens, you see the performance difference due to this unification?
+> > > 
+> > > Yes, it's definitely a worth while optimization. The problem isn't as
+> > > such this specific allocation, it's the total number of allocations we
+> > > do for a piece of IO. This sense buffer one is just one of many, I'm
+> > > continually working to reduce them. If we get rid of this one and add
+> > > the ->alloc_cmd() stuff, we can kill one more. The bio path already lost
+> > > one. So in the IO stack, we went from 6 allocations to 3 for a piece of
+> > > IO. And then it starts to add up. Even at just 30-50k iops, that's more
+> > > than 1% of time in the testing I did.
+> > 
+> > I see, thanks. Hmm, possibly slab becomes slower. ;)
+> > 
+> > Then I think that we need something like the ->alloc_cmd()
+> > method. Let's ask James. 
+> > 
+> > I don't think that it's just about simply adding the hook; there are
+> > some issues that we need to think about. Though Boaz worries too much
+> > a bit, I think.
+> > 
+> > I'm not sure about this patch if we add ->alloc_cmd(). I doubt that
+> > there are any llds don't use ->alloc_cmd() worry about the overhead of
+> > the separated sense buffer allocation. If a lld doesn't define the own
+> > alloc_cmd, then I think it's fine to use the generic command
+> > allocator that does the separate sense buffer allocation.
 > 
-> SLUB does sysfs setup in kmem_cache_init() and if I saw some oopses if I 
-> don't call vfs_caches_init_early() first. I didn't look too closely, though.
+> I think we should do the two things seperately. If we can safely inline
+> the sense buffer in the command by doing the right alignment, then lets
+> do that. The ->alloc_cmd() approach will be easier to do with an inline
+> sense buffer.
 
-Did you also test the NUMA/hashdist case? vfs_caches_init_early doesn't
-do much in that case.
+James rejected this in the past. Let's wait for his verdict.
 
-I would say it is much more robust to do sysfs setup later if we move
-the slab setup so early. Probably it is just quite lucky not to explode
-in the !numa case because the vfs needs quite a bit of setting up...
+Yeah, we can inline the sense buffer but as we discussed in the past
+several times, there are some good reasons that we should not do so, I
+think.
 
+
+> But there's really no reason to tie the two things together.
