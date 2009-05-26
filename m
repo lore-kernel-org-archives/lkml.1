@@ -1,490 +1,265 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755857AbZEZMOb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756154AbZEZMPI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755857AbZEZMOb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 08:14:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755876AbZEZMOG
+	id S1756154AbZEZMPI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 08:15:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755989AbZEZMOk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 08:14:06 -0400
-Received: from hera.kernel.org ([140.211.167.34]:51275 "EHLO hera.kernel.org"
+	Tue, 26 May 2009 08:14:40 -0400
+Received: from hera.kernel.org ([140.211.167.34]:51307 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755325AbZEZMOD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 08:14:03 -0400
-Date: Tue, 26 May 2009 12:13:26 GMT
-From: tip-bot for Arnaldo Carvalho de Melo <acme@redhat.com>
+	id S1756016AbZEZMOj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 08:14:39 -0400
+Date: Tue, 26 May 2009 12:14:00 GMT
+From: tip-bot for Ingo Molnar <mingo@elte.hu>
 To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, acme@redhat.com,
-       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl,
-       mtosatti@redhat.com, tglx@linutronix.de, cjashfor@linux.vnet.ibm.com,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       mtosatti@redhat.com, tglx@linutronix.de, cjashfor@linux.vnet.ibm.com,
-       mingo@elte.hu
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
+       hpa@zytor.com, mingo@redhat.com, jkacur@redhat.com,
+       a.p.zijlstra@chello.nl, efault@gmx.de, mtosatti@redhat.com,
+       tglx@linutronix.de, cjashfor@linux.vnet.ibm.com, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, jkacur@redhat.com, a.p.zijlstra@chello.nl,
+       efault@gmx.de, mtosatti@redhat.com, tglx@linutronix.de,
+       cjashfor@linux.vnet.ibm.com, mingo@elte.hu
 In-Reply-To: <new-submission>
 References: <new-submission>
-Subject: [tip:perfcounters/core] perf_counter: Add our private copy of list.h
-Message-ID: <tip-040e6034124c504d536736ce08e4643e640cd7c2@git.kernel.org>
-Git-Commit-ID: 040e6034124c504d536736ce08e4643e640cd7c2
+Subject: [tip:perfcounters/core] perf record: Convert to Git option parsing
+Message-ID: <tip-53cb8bc2a3d976efd1a800c3de4640a7220afbb3@git.kernel.org>
+Git-Commit-ID: 53cb8bc2a3d976efd1a800c3de4640a7220afbb3
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 26 May 2009 12:13:27 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 26 May 2009 12:14:01 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  040e6034124c504d536736ce08e4643e640cd7c2
-Gitweb:     http://git.kernel.org/tip/040e6034124c504d536736ce08e4643e640cd7c2
-Author:     Arnaldo Carvalho de Melo <acme@redhat.com>
-AuthorDate: Mon, 18 May 2009 16:25:31 -0300
+Commit-ID:  53cb8bc2a3d976efd1a800c3de4640a7220afbb3
+Gitweb:     http://git.kernel.org/tip/53cb8bc2a3d976efd1a800c3de4640a7220afbb3
+Author:     Ingo Molnar <mingo@elte.hu>
+AuthorDate: Tue, 26 May 2009 09:17:18 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 26 May 2009 13:52:55 +0200
+CommitDate: Tue, 26 May 2009 13:05:27 +0200
 
-perf_counter: Add our private copy of list.h
+perf record: Convert to Git option parsing
 
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Remove getopt usage and use Git's much more advanced and more compact
+command option library.
+
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>
 Cc: Paul Mackerras <paulus@samba.org>
 Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
 Cc: Marcelo Tosatti <mtosatti@redhat.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: John Kacur <jkacur@redhat.com>
 LKML-Reference: <new-submission>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- .../perf_counter/util}/list.h                      |  238 ++++++--------------
- 1 files changed, 73 insertions(+), 165 deletions(-)
+ Documentation/perf_counter/builtin-report.c |  126 ++++++++-------------------
+ 1 files changed, 38 insertions(+), 88 deletions(-)
 
-diff --git a/include/linux/list.h b/Documentation/perf_counter/util/list.h
-similarity index 74%
-copy from include/linux/list.h
-copy to Documentation/perf_counter/util/list.h
-index 969f6e9..e2548e8 100644
---- a/include/linux/list.h
-+++ b/Documentation/perf_counter/util/list.h
-@@ -1,10 +1,33 @@
- #ifndef _LINUX_LIST_H
- #define _LINUX_LIST_H
-+/*
-+  Copyright (C) Cast of dozens, comes from the Linux kernel
+diff --git a/Documentation/perf_counter/builtin-report.c b/Documentation/perf_counter/builtin-report.c
+index 21386a8..9e59d60 100644
+--- a/Documentation/perf_counter/builtin-report.c
++++ b/Documentation/perf_counter/builtin-report.c
+@@ -1,52 +1,29 @@
+-#define _GNU_SOURCE
+-#include <sys/types.h>
+-#include <sys/stat.h>
+-#include <sys/time.h>
+-#include <unistd.h>
+-#include <stdint.h>
+-#include <stdbool.h>
+-#include <stdlib.h>
+-#include <string.h>
+-#include <limits.h>
++#include "util/util.h"
 +
-+  This program is free software; you can redistribute it and/or modify it
-+  under the terms of version 2 of the GNU General Public License as
-+  published by the Free Software Foundation.
-+*/
++#include <libelf.h>
+ #include <gelf.h>
+ #include <elf.h>
+-#include <libelf.h>
+-#include <fcntl.h>
+-#include <stdio.h>
+-#include <errno.h>
+-#include <ctype.h>
+-#include <time.h>
+-#include <getopt.h>
+-#include <assert.h>
+-#include <search.h>
+-
+-#include <sys/ioctl.h>
+-#include <sys/poll.h>
+-#include <sys/prctl.h>
+-#include <sys/wait.h>
+-#include <sys/mman.h>
+-#include <sys/types.h>
+-#include <sys/stat.h>
+-
+-#include <linux/unistd.h>
+-#include <linux/types.h>
+-
+-#include "../../include/linux/perf_counter.h"
 +
-+#include <stddef.h>
+ #include "util/list.h"
+ #include "util/rbtree.h"
+ 
++#include "perf.h"
 +
-+/*
-+ * These are non-NULL pointers that will result in page faults
-+ * under normal circumstances, used to verify that nobody uses
-+ * non-initialized list entries.
-+ */
-+#define LIST_POISON1 ((void *)0x00100100)
-+#define LIST_POISON2 ((void *)0x00200200)
- 
--#include <linux/stddef.h>
--#include <linux/poison.h>
--#include <linux/prefetch.h>
--#include <asm/system.h>
-+/**
-+ * container_of - cast a member of a structure out to the containing structure
-+ * @ptr:	the pointer to the member.
-+ * @type:	the type of the container struct this is embedded in.
-+ * @member:	the name of the member within the struct.
-+ *
-+ */
-+#define container_of(ptr, type, member) ({			\
-+        const typeof( ((type *)0)->member ) *__mptr = (ptr);	\
-+        (type *)( (char *)__mptr - offsetof(type,member) );})
- 
- /*
-  * Simple doubly linked list implementation.
-@@ -37,7 +60,6 @@ static inline void INIT_LIST_HEAD(struct list_head *list)
-  * This is only for internal list manipulation where we know
-  * the prev/next entries already!
-  */
--#ifndef CONFIG_DEBUG_LIST
- static inline void __list_add(struct list_head *new,
- 			      struct list_head *prev,
- 			      struct list_head *next)
-@@ -47,11 +69,6 @@ static inline void __list_add(struct list_head *new,
- 	new->prev = prev;
- 	prev->next = new;
- }
--#else
--extern void __list_add(struct list_head *new,
--			      struct list_head *prev,
--			      struct list_head *next);
--#endif
- 
- /**
-  * list_add - add a new entry
-@@ -66,7 +83,6 @@ static inline void list_add(struct list_head *new, struct list_head *head)
- 	__list_add(new, head, head->next);
- }
- 
--
- /**
-  * list_add_tail - add a new entry
-  * @new: new entry to be added
-@@ -96,26 +112,35 @@ static inline void __list_del(struct list_head * prev, struct list_head * next)
- /**
-  * list_del - deletes entry from list.
-  * @entry: the element to delete from the list.
-- * Note: list_empty() on entry does not return true after this, the entry is
-+ * Note: list_empty on entry does not return true after this, the entry is
-  * in an undefined state.
-  */
--#ifndef CONFIG_DEBUG_LIST
- static inline void list_del(struct list_head *entry)
- {
- 	__list_del(entry->prev, entry->next);
- 	entry->next = LIST_POISON1;
- 	entry->prev = LIST_POISON2;
- }
--#else
--extern void list_del(struct list_head *entry);
--#endif
++#include "util/parse-options.h"
++#include "util/parse-events.h"
 +
-+/**
-+ * list_del_range - deletes range of entries from list.
-+ * @beging: first element in the range to delete from the list.
-+ * @beging: first element in the range to delete from the list.
-+ * Note: list_empty on the range of entries does not return true after this,
-+ * the entries is in an undefined state.
-+ */
-+static inline void list_del_range(struct list_head *begin,
-+				  struct list_head *end)
-+{
-+	begin->prev->next = end->next;
-+	end->next->prev = begin->prev;
-+}
+ #define SHOW_KERNEL	1
+ #define SHOW_USER	2
+ #define SHOW_HV		4
  
- /**
-  * list_replace - replace old entry by new one
-  * @old : the element to be replaced
-  * @new : the new element to insert
-- *
-- * If @old was empty, it will be overwritten.
-+ * Note: if 'old' was empty, it will be overwritten.
-  */
- static inline void list_replace(struct list_head *old,
- 				struct list_head *new)
-@@ -150,8 +175,8 @@ static inline void list_del_init(struct list_head *entry)
-  */
- static inline void list_move(struct list_head *list, struct list_head *head)
+-static char 		const *input_name = "output.perf";
++static char		const *input_name = "output.perf";
+ static int		input;
+ static int		show_mask = SHOW_KERNEL | SHOW_USER | SHOW_HV;
+ 
+ static unsigned long	page_size;
+ static unsigned long	mmap_window = 32;
+ 
+-static const char *perf_event_names[] = {
++const char *perf_event_names[] = {
+ 	[PERF_EVENT_MMAP]   = " PERF_EVENT_MMAP",
+ 	[PERF_EVENT_MUNMAP] = " PERF_EVENT_MUNMAP",
+ 	[PERF_EVENT_COMM]   = " PERF_EVENT_COMM",
+@@ -86,7 +63,7 @@ struct section {
+ 	char		 name[0];
+ };
+ 
+-static struct section *section__new(uint64_t start, uint64_t size,
++struct section *section__new(uint64_t start, uint64_t size,
+ 				    uint64_t offset, char *name)
  {
--	__list_del(list->prev, list->next);
--	list_add(list, head);
-+        __list_del(list->prev, list->next);
-+        list_add(list, head);
+ 	struct section *self = malloc(sizeof(*self) + strlen(name) + 1);
+@@ -241,7 +218,7 @@ static inline uint8_t elf_sym__type(const GElf_Sym *sym)
+ 	return GELF_ST_TYPE(sym->st_info);
  }
  
- /**
-@@ -162,8 +187,8 @@ static inline void list_move(struct list_head *list, struct list_head *head)
- static inline void list_move_tail(struct list_head *list,
- 				  struct list_head *head)
+-static inline bool elf_sym__is_function(const GElf_Sym *sym)
++static inline int elf_sym__is_function(const GElf_Sym *sym)
  {
--	__list_del(list->prev, list->next);
--	list_add_tail(list, head);
-+        __list_del(list->prev, list->next);
-+        list_add_tail(list, head);
+ 	return elf_sym__type(sym) == STT_FUNC &&
+ 	       sym->st_name != 0 &&
+@@ -393,7 +370,7 @@ out_delete_dso:
+ 	return NULL;
  }
  
- /**
-@@ -205,91 +230,29 @@ static inline int list_empty_careful(const struct list_head *head)
- 	return (next == head) && (next == head->prev);
+-static void dsos__fprintf(FILE *fp)
++void dsos__fprintf(FILE *fp)
+ {
+ 	struct dso *pos;
+ 
+@@ -503,7 +480,7 @@ static struct symhist *symhist__new(struct symbol *sym, uint64_t ip,
+ 	return self;
  }
  
--/**
-- * list_is_singular - tests whether a list has just one entry.
-- * @head: the list to test.
-- */
--static inline int list_is_singular(const struct list_head *head)
--{
--	return !list_empty(head) && (head->next == head->prev);
--}
--
--static inline void __list_cut_position(struct list_head *list,
--		struct list_head *head, struct list_head *entry)
--{
--	struct list_head *new_first = entry->next;
--	list->next = head->next;
--	list->next->prev = list;
--	list->prev = entry;
--	entry->next = list;
--	head->next = new_first;
--	new_first->prev = head;
--}
--
--/**
-- * list_cut_position - cut a list into two
-- * @list: a new list to add all removed entries
-- * @head: a list with entries
-- * @entry: an entry within head, could be the head itself
-- *	and if so we won't cut the list
-- *
-- * This helper moves the initial part of @head, up to and
-- * including @entry, from @head to @list. You should
-- * pass on @entry an element you know is on @head. @list
-- * should be an empty list or a list you do not care about
-- * losing its data.
-- *
-- */
--static inline void list_cut_position(struct list_head *list,
--		struct list_head *head, struct list_head *entry)
--{
--	if (list_empty(head))
--		return;
--	if (list_is_singular(head) &&
--		(head->next != entry && head != entry))
--		return;
--	if (entry == head)
--		INIT_LIST_HEAD(list);
--	else
--		__list_cut_position(list, head, entry);
--}
--
--static inline void __list_splice(const struct list_head *list,
--				 struct list_head *prev,
--				 struct list_head *next)
-+static inline void __list_splice(struct list_head *list,
-+				 struct list_head *head)
+-static void symhist__delete(struct symhist *self)
++void symhist__delete(struct symhist *self)
  {
- 	struct list_head *first = list->next;
- 	struct list_head *last = list->prev;
-+	struct list_head *at = head->next;
- 
--	first->prev = prev;
--	prev->next = first;
--
--	last->next = next;
--	next->prev = last;
--}
-+	first->prev = head;
-+	head->next = first;
- 
--/**
-- * list_splice - join two lists, this is designed for stacks
-- * @list: the new list to add.
-- * @head: the place to add it in the first list.
-- */
--static inline void list_splice(const struct list_head *list,
--				struct list_head *head)
--{
--	if (!list_empty(list))
--		__list_splice(list, head, head->next);
-+	last->next = at;
-+	at->prev = last;
+ 	free(self);
+ }
+@@ -587,7 +564,7 @@ static int thread__set_comm(struct thread *self, const char *comm)
+ 	return self->comm ? 0 : -ENOMEM;
  }
  
- /**
-- * list_splice_tail - join two lists, each list being a queue
-+ * list_splice - join two lists
-  * @list: the new list to add.
-  * @head: the place to add it in the first list.
-  */
--static inline void list_splice_tail(struct list_head *list,
--				struct list_head *head)
-+static inline void list_splice(struct list_head *list, struct list_head *head)
+-static size_t thread__maps_fprintf(struct thread *self, FILE *fp)
++size_t thread__maps_fprintf(struct thread *self, FILE *fp)
  {
- 	if (!list_empty(list))
--		__list_splice(list, head->prev, head);
-+		__list_splice(list, head);
- }
- 
- /**
-@@ -303,24 +266,7 @@ static inline void list_splice_init(struct list_head *list,
- 				    struct list_head *head)
- {
- 	if (!list_empty(list)) {
--		__list_splice(list, head, head->next);
--		INIT_LIST_HEAD(list);
--	}
--}
--
--/**
-- * list_splice_tail_init - join two lists and reinitialise the emptied list
-- * @list: the new list to add.
-- * @head: the place to add it in the first list.
-- *
-- * Each of the lists is a queue.
-- * The list at @list is reinitialised
-- */
--static inline void list_splice_tail_init(struct list_head *list,
--					 struct list_head *head)
--{
--	if (!list_empty(list)) {
--		__list_splice(list, head->prev, head);
-+		__list_splice(list, head);
- 		INIT_LIST_HEAD(list);
+ 	struct map *pos;
+ 	size_t ret = 0;
+@@ -668,49 +645,7 @@ static void threads__fprintf(FILE *fp)
  	}
  }
-@@ -336,9 +282,9 @@ static inline void list_splice_tail_init(struct list_head *list,
  
- /**
-  * list_first_entry - get the first element from a list
-- * @ptr:	the list head to take the element from.
-- * @type:	the type of the struct this is embedded in.
-- * @member:	the name of the list_struct within the struct.
-+ * @ptr:       the list head to take the element from.
-+ * @type:      the type of the struct this is embedded in.
-+ * @member:    the name of the list_struct within the struct.
-  *
-  * Note, that list is expected to be not empty.
-  */
-@@ -351,7 +297,7 @@ static inline void list_splice_tail_init(struct list_head *list,
-  * @head:	the head for your list.
-  */
- #define list_for_each(pos, head) \
--	for (pos = (head)->next; prefetch(pos->next), pos != (head); \
-+	for (pos = (head)->next; pos != (head); \
-         	pos = pos->next)
- 
- /**
-@@ -373,7 +319,7 @@ static inline void list_splice_tail_init(struct list_head *list,
-  * @head:	the head for your list.
-  */
- #define list_for_each_prev(pos, head) \
--	for (pos = (head)->prev; prefetch(pos->prev), pos != (head); \
-+	for (pos = (head)->prev; pos != (head); \
-         	pos = pos->prev)
- 
- /**
-@@ -387,17 +333,6 @@ static inline void list_splice_tail_init(struct list_head *list,
- 		pos = n, n = pos->next)
- 
- /**
-- * list_for_each_prev_safe - iterate over a list backwards safe against removal of list entry
-- * @pos:	the &struct list_head to use as a loop cursor.
-- * @n:		another &struct list_head to use as temporary storage
-- * @head:	the head for your list.
-- */
--#define list_for_each_prev_safe(pos, n, head) \
--	for (pos = (head)->prev, n = pos->prev; \
--	     prefetch(pos->prev), pos != (head); \
--	     pos = n, n = pos->prev)
--
--/**
-  * list_for_each_entry	-	iterate over list of given type
-  * @pos:	the type * to use as a loop cursor.
-  * @head:	the head for your list.
-@@ -405,7 +340,7 @@ static inline void list_splice_tail_init(struct list_head *list,
-  */
- #define list_for_each_entry(pos, head, member)				\
- 	for (pos = list_entry((head)->next, typeof(*pos), member);	\
--	     prefetch(pos->member.next), &pos->member != (head); 	\
-+	     &pos->member != (head); 	\
- 	     pos = list_entry(pos->member.next, typeof(*pos), member))
- 
- /**
-@@ -416,16 +351,16 @@ static inline void list_splice_tail_init(struct list_head *list,
-  */
- #define list_for_each_entry_reverse(pos, head, member)			\
- 	for (pos = list_entry((head)->prev, typeof(*pos), member);	\
--	     prefetch(pos->member.prev), &pos->member != (head); 	\
-+	     &pos->member != (head); 	\
- 	     pos = list_entry(pos->member.prev, typeof(*pos), member))
- 
- /**
-- * list_prepare_entry - prepare a pos entry for use in list_for_each_entry_continue()
-+ * list_prepare_entry - prepare a pos entry for use in list_for_each_entry_continue
-  * @pos:	the type * to use as a start point
-  * @head:	the head of the list
-  * @member:	the name of the list_struct within the struct.
-  *
-- * Prepares a pos entry for use as a start point in list_for_each_entry_continue().
-+ * Prepares a pos entry for use as a start point in list_for_each_entry_continue.
-  */
- #define list_prepare_entry(pos, head, member) \
- 	((pos) ? : list_entry(head, typeof(*pos), member))
-@@ -441,24 +376,10 @@ static inline void list_splice_tail_init(struct list_head *list,
-  */
- #define list_for_each_entry_continue(pos, head, member) 		\
- 	for (pos = list_entry(pos->member.next, typeof(*pos), member);	\
--	     prefetch(pos->member.next), &pos->member != (head);	\
-+	     &pos->member != (head);	\
- 	     pos = list_entry(pos->member.next, typeof(*pos), member))
- 
- /**
-- * list_for_each_entry_continue_reverse - iterate backwards from the given point
-- * @pos:	the type * to use as a loop cursor.
-- * @head:	the head for your list.
-- * @member:	the name of the list_struct within the struct.
-- *
-- * Start to iterate over list of given type backwards, continuing after
-- * the current position.
-- */
--#define list_for_each_entry_continue_reverse(pos, head, member)		\
--	for (pos = list_entry(pos->member.prev, typeof(*pos), member);	\
--	     prefetch(pos->member.prev), &pos->member != (head);	\
--	     pos = list_entry(pos->member.prev, typeof(*pos), member))
--
--/**
-  * list_for_each_entry_from - iterate over list of given type from the current point
-  * @pos:	the type * to use as a loop cursor.
-  * @head:	the head for your list.
-@@ -467,7 +388,7 @@ static inline void list_splice_tail_init(struct list_head *list,
-  * Iterate over list of given type, continuing from current position.
-  */
- #define list_for_each_entry_from(pos, head, member) 			\
--	for (; prefetch(pos->member.next), &pos->member != (head);	\
-+	for (; &pos->member != (head);	\
- 	     pos = list_entry(pos->member.next, typeof(*pos), member))
- 
- /**
-@@ -619,23 +540,10 @@ static inline void hlist_add_after(struct hlist_node *n,
- 		next->next->pprev  = &next->next;
- }
- 
--/*
-- * Move a list from one list head to another. Fixup the pprev
-- * reference of the first entry if it exists.
-- */
--static inline void hlist_move_list(struct hlist_head *old,
--				   struct hlist_head *new)
+-static void display_help(void)
 -{
--	new->first = old->first;
--	if (new->first)
--		new->first->pprev = &new->first;
--	old->first = NULL;
+-	printf(
+-	"Usage: perf-report [<options>]\n"
+-	" -i file   --input=<file>      # input file\n"
+-	);
+-
+-	exit(0);
 -}
 -
- #define hlist_entry(ptr, type, member) container_of(ptr,type,member)
+-static void process_options(int argc, char *argv[])
+-{
+-	int error = 0;
+-
+-	for (;;) {
+-		int option_index = 0;
+-		/** Options for getopt */
+-		static struct option long_options[] = {
+-			{"input",	required_argument,	NULL, 'i'},
+-			{"no-user",	no_argument,		NULL, 'u'},
+-			{"no-kernel",	no_argument,		NULL, 'k'},
+-			{"no-hv",	no_argument,		NULL, 'h'},
+-			{NULL,		0,			NULL,  0 }
+-		};
+-		int c = getopt_long(argc, argv, "+:i:kuh",
+-				    long_options, &option_index);
+-		if (c == -1)
+-			break;
+-
+-		switch (c) {
+-		case 'i': input_name			= strdup(optarg); break;
+-		case 'k': show_mask &= ~SHOW_KERNEL; break;
+-		case 'u': show_mask &= ~SHOW_USER; break;
+-		case 'h': show_mask &= ~SHOW_HV; break;
+-		default: error = 1; break;
+-		}
+-	}
+-
+-	if (error)
+-		display_help();
+-}
+-
+-int cmd_report(int argc, char **argv)
++static int __cmd_report(void)
+ {
+ 	unsigned long offset = 0;
+ 	unsigned long head = 0;
+@@ -720,12 +655,6 @@ int cmd_report(int argc, char **argv)
+ 	int ret, rc = EXIT_FAILURE;
+ 	unsigned long total = 0;
  
- #define hlist_for_each(pos, head) \
--	for (pos = (head)->first; pos && ({ prefetch(pos->next); 1; }); \
-+	for (pos = (head)->first; pos; \
- 	     pos = pos->next)
+-	elf_version(EV_CURRENT);
+-
+-	page_size = getpagesize();
+-
+-	process_options(argc, argv);
+-
+ 	input = open(input_name, O_RDONLY);
+ 	if (input < 0) {
+ 		perror("failed to open file");
+@@ -867,3 +796,24 @@ done:
+ 	return rc;
+ }
  
- #define hlist_for_each_safe(pos, n, head) \
-@@ -651,7 +559,7 @@ static inline void hlist_move_list(struct hlist_head *old,
-  */
- #define hlist_for_each_entry(tpos, pos, head, member)			 \
- 	for (pos = (head)->first;					 \
--	     pos && ({ prefetch(pos->next); 1;}) &&			 \
-+	     pos && 			 \
- 		({ tpos = hlist_entry(pos, typeof(*tpos), member); 1;}); \
- 	     pos = pos->next)
- 
-@@ -663,7 +571,7 @@ static inline void hlist_move_list(struct hlist_head *old,
-  */
- #define hlist_for_each_entry_continue(tpos, pos, member)		 \
- 	for (pos = (pos)->next;						 \
--	     pos && ({ prefetch(pos->next); 1;}) &&			 \
-+	     pos && 			 \
- 		({ tpos = hlist_entry(pos, typeof(*tpos), member); 1;}); \
- 	     pos = pos->next)
- 
-@@ -674,7 +582,7 @@ static inline void hlist_move_list(struct hlist_head *old,
-  * @member:	the name of the hlist_node within the struct.
-  */
- #define hlist_for_each_entry_from(tpos, pos, member)			 \
--	for (; pos && ({ prefetch(pos->next); 1;}) &&			 \
-+	for (; pos && 			 \
- 		({ tpos = hlist_entry(pos, typeof(*tpos), member); 1;}); \
- 	     pos = pos->next)
- 
++static const char * const report_usage[] = {
++	"perf report [<options>] <command>",
++	NULL
++};
++
++static const struct option options[] = {
++	OPT_STRING('i', "input", &input_name, "file",
++		    "input file name"),
++	OPT_END()
++};
++
++int cmd_report(int argc, const char **argv, const char *prefix)
++{
++	elf_version(EV_CURRENT);
++
++	page_size = getpagesize();
++
++	parse_options(argc, argv, options, report_usage, 0);
++
++	return __cmd_report();
++}
