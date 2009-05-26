@@ -1,112 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754445AbZEZVBa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755016AbZEZVCz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754445AbZEZVBa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 17:01:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752802AbZEZVBV
+	id S1755016AbZEZVCz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 17:02:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751959AbZEZVCs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 17:01:21 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:38120 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751044AbZEZVBU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 17:01:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=agjd9K209Zn6WbRFWzvERonCRGYicohBc5W+843DvQ3s8rKhi4SxNMIP9VNsVRH1aC
-         VbHqnDxKP5U7+mHTobzizUG0wqKCoH+lWZrogG8kljqnbdwNiMcqMzBywnokFMOvgSYX
-         O8YaCZ3oMqIgIMmjh0sl4Kr6czSW5TUoD6eqc=
-Date: Tue, 26 May 2009 23:01:15 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Zhaolei <zhaolei@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/3] tracing/workqueue: make events sort in ascending
-	order
-Message-ID: <20090526210113.GG5969@nowhere>
-References: <4A1BA322.9060505@cn.fujitsu.com> <4A1BA696.9090404@cn.fujitsu.com>
+	Tue, 26 May 2009 17:02:48 -0400
+Received: from kroah.org ([198.145.64.141]:34028 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751147AbZEZVCs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 17:02:48 -0400
+Date: Tue, 26 May 2009 13:54:14 -0700
+From: Greg KH <greg@kroah.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: GeunSik Lim <leemgs1@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, trivial@kernel.org,
+       balagi@justmail.de, bgamari@gmail.com, Ingo Molnar <mingo@elte.hu>,
+       inaky.perez-gonzalez@intel.com
+Subject: Re: [RFC PATCH]debugfs:Fix terminology inconsistency of dir name
+	to mount debugfs filesystem.
+Message-ID: <20090526205414.GA26016@kroah.com>
+References: <1243315163.14685.17.camel@centos51> <alpine.DEB.2.00.0905261642130.26705@gandalf.stny.rr.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A1BA696.9090404@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <alpine.DEB.2.00.0905261642130.26705@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 26, 2009 at 04:21:42PM +0800, Zhaolei wrote:
-> Events in workqueue tracer need to be sorted in ascending order to make user
-> clear.
-> But now it is reversed by "tracing/stat: replace linked list by an rbtree
-> for sorting"(53059c9b67a62a3dc8c80204d3da42b9267ea5a0).
-> We need to define a custom cmp() callback to make sorting correct.
-
-
-That's my bad, the reverse sorting subsequent to this patch is an accident
-so the fix should be done in the stat tracing framework.
-
-I'll fix that.
-
-The other patches for the workqueue tracer look good. I'll apply
-them and send a pull request to Ingo.
-
-Thanks!
-
-
-
+On Tue, May 26, 2009 at 04:44:49PM -0400, Steven Rostedt wrote:
 > 
-> Before patch:
->  # CPU INSERTED EXECUTED   MAX us   AVG us   TASKNAME:PID
->  #  |     |        |         |        |      `-WORKFUNC
->  #  |     |        |         |        |           |
->      0        1        1     1155     1155   `-xprt_autoclose
->      0       19       19      864      143   |-xs_udp_connect_worker4
->  ...
->      0        1        1     4825     4825   |-reg_todo
->      0      443      515                     events/0:5
+> On Tue, 26 May 2009, GeunSik Lim wrote:
 > 
-> After patch:
->  # CPU INSERTED EXECUTED   MAX us   AVG us   TASKNAME:PID
->  #  |     |        |         |        |      `-WORKFUNC
->  #  |     |        |         |        |           |
->      0      443      515                     events/0:5
->      0        1        1     4825     4825   |-reg_todo
->  ...
->      0       19       19      797      134   |-xs_udp_connect_worker4
->      0        1        1     8359     8359   `-xprt_autoclose
+> > 
+> > 
+> >  Hi all, 
+> >    
+> >  I want to hear your opinions about this proposal for consistency of
+> >  mount directory to mount debugfs filesystem that need  by ftrace infrastructure.
+> >  Um... I appended "RFC" word in the subject because this mail is my proposal just.  
+> > 
+> > 
+> > commit 1766a83645706100b1829bb422f852ec757c6f4b
+> > Author: GeunSik,Lim <leemgs1@gmail.com>
+> > Date:   Tue May 26 13:49:23 2009 +0900
+> > 
+> >     Fix terminology inconsistency of dir name to mount debugfs filesystem.
+> >     
+> >       Many developers use "/debug/" directory name to mount debugfs filesystem
+> >       for ftrace according to ./Documentation/tracers/ftrace.txt file.
+> >     
+> >       But, two directory names(ex:/debug/, /debugfs/) is existed in kernel source
+> >       like ftrace, DRM, Wireless, Network[sky2]files to mount debugfs filesystem.
+> >       I think that we don't have to select either "/debug/" directory name or
+> >       "/debugfs/" directory name for terminology consistency.
+> >     
+> >       debugfs means debug filesystem for debugging easy to use by greg kroah
+> >       hartman. "/debug/" name is suitable as directory name of debugfs for
+> >       tracing using ftrace like "/sys/" of sysfs(system filesystem).
+> >       -debugfs related reference: http://lwn.net/Articles/115405/
+> >     
+> >       Fix inconsistency of directory name according to duplicated expression
+> >       to mount debugfs.
+> >     
+> >          Signed-off-by: GeunSik Lim <geunsik.lim@samsung.com>
 > 
-> Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
-> ---
->  kernel/trace/trace_workqueue.c |    7 +++++++
->  1 files changed, 7 insertions(+), 0 deletions(-)
+> I'm guilty of using both /debug and /debugfs in comments. In practice, I 
+> only use /debug.
 > 
-> diff --git a/kernel/trace/trace_workqueue.c b/kernel/trace/trace_workqueue.c
-> index 53fe43e..7fa0d23 100644
-> --- a/kernel/trace/trace_workqueue.c
-> +++ b/kernel/trace/trace_workqueue.c
-> @@ -383,6 +383,12 @@ static void *workqueue_stat_next(void *prev, int idx)
->  	return ret;
->  }
->  
-> +/* To make events sort in ascending order */
-> +static int workqueue_stat_cmp(void *p1, void *p2)
-> +{
-> +	return -1;
-> +}
-> +
->  static int workqueue_stat_show(struct seq_file *s, void *p)
->  {
->  	struct workfunc_stats *wfstat = p;
-> @@ -470,6 +476,7 @@ static struct tracer_stat workqueue_stats __read_mostly = {
->  	.name		= "workqueues",
->  	.stat_start	= workqueue_stat_start,
->  	.stat_next	= workqueue_stat_next,
-> +	.stat_cmp	= workqueue_stat_cmp,
->  	.stat_show	= workqueue_stat_show,
->  	.stat_headers	= workqueue_stat_headers,
->  	.file_open	= workqueue_stat_file_open,
-> -- 
-> 1.5.5.3
+> But...
 > 
+> The filesystem Nazi's out there will argue that the proper place to mount 
+> the debugfs filesystem is /sys/kernel/debug. I personally find that 
+> location annoying.
 
+Why?
+
+When I created debugfs, I was told that I had to pick a place to mount
+it so that everyone could write scripts that "knew" where it would be.
+
+So we picked /sys/kernel/debug/ and the code creates the mount point to
+put it there.  Now distros actually mount debugfs at that location.
+
+So, now you don't like this?  After it's become a standard?  Ick.
+
+Becides, /debug/ is pretty presumptious, it's as if debugging the kernel
+is a system-wide thing :)
+
+So please, don't use /debug/ use the standard, defined, and ACTUALLY
+USED BY DISTROS TODAY mount point of /sys/kernel/debug/
+
+If you want to create your own symlink from /debug/ to that location to
+make it easier to type, feel free, but do not hard code any scripts to
+use that location, or they are going to break.
+
+thanks,
+
+greg k-h
