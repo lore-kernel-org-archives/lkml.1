@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756701AbZEZSK1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756342AbZEZSKi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756701AbZEZSK1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 14:10:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754782AbZEZSKQ
+	id S1756342AbZEZSKi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 14:10:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756478AbZEZSKW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 14:10:16 -0400
-Received: from hera.kernel.org ([140.211.167.34]:44322 "EHLO hera.kernel.org"
+	Tue, 26 May 2009 14:10:22 -0400
+Received: from hera.kernel.org ([140.211.167.34]:44326 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754087AbZEZSKO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 14:10:14 -0400
-Date: Tue, 26 May 2009 18:09:30 GMT
+	id S1756729AbZEZSKU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 14:10:20 -0400
+Date: Tue, 26 May 2009 18:09:42 GMT
 From: tip-bot for Ingo Molnar <mingo@elte.hu>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
@@ -22,30 +22,30 @@ Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
        cjashfor@linux.vnet.ibm.com, mingo@elte.hu
 In-Reply-To: <new-submission>
 References: <new-submission>
-Subject: [tip:perfcounters/core] perf report: add counter for unknown events
-Message-ID: <tip-3e70611460fe74ad32534fa9791774f6bbdd4159@git.kernel.org>
-Git-Commit-ID: 3e70611460fe74ad32534fa9791774f6bbdd4159
+Subject: [tip:perfcounters/core] perf report: add more debugging
+Message-ID: <tip-f95f33e6d0e6ee55f8ed62f70e4febe23e4830dc@git.kernel.org>
+Git-Commit-ID: f95f33e6d0e6ee55f8ed62f70e4febe23e4830dc
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 26 May 2009 18:09:31 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 26 May 2009 18:09:42 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  3e70611460fe74ad32534fa9791774f6bbdd4159
-Gitweb:     http://git.kernel.org/tip/3e70611460fe74ad32534fa9791774f6bbdd4159
+Commit-ID:  f95f33e6d0e6ee55f8ed62f70e4febe23e4830dc
+Gitweb:     http://git.kernel.org/tip/f95f33e6d0e6ee55f8ed62f70e4febe23e4830dc
 Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Tue, 26 May 2009 18:53:17 +0200
+AuthorDate: Tue, 26 May 2009 19:03:36 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 26 May 2009 18:53:17 +0200
+CommitDate: Tue, 26 May 2009 19:03:36 +0200
 
-perf report: add counter for unknown events
+perf report: add more debugging
 
-Add a counter for unknown event records.
+Add the offset of the file we are analyzing.
 
-[ Impact: improve debugging ]
+In case of problems it's easier to see where the parser lost track.
 
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: Mike Galbraith <efault@gmx.de>
@@ -60,41 +60,50 @@ Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- Documentation/perf_counter/builtin-report.c |   10 ++++++----
- 1 files changed, 6 insertions(+), 4 deletions(-)
+ Documentation/perf_counter/builtin-report.c |   12 ++++++++----
+ 1 files changed, 8 insertions(+), 4 deletions(-)
 
 diff --git a/Documentation/perf_counter/builtin-report.c b/Documentation/perf_counter/builtin-report.c
-index 8ea8aaa..4b5ccc5 100644
+index 4b5ccc5..1b16f81 100644
 --- a/Documentation/perf_counter/builtin-report.c
 +++ b/Documentation/perf_counter/builtin-report.c
-@@ -645,7 +645,7 @@ static int __cmd_report(void)
- 	char *buf;
- 	event_t *event;
- 	int ret, rc = EXIT_FAILURE;
--	unsigned long total = 0, total_mmap = 0, total_comm = 0;
-+	unsigned long total = 0, total_mmap = 0, total_comm = 0, total_unknown;
+@@ -709,7 +709,8 @@ more:
+ 		uint64_t ip = event->ip.ip;
  
- 	input = open(input_name, O_RDONLY);
- 	if (input < 0) {
-@@ -785,6 +785,7 @@ more:
+ 		if (dump_trace) {
+-			fprintf(stderr, "PERF_EVENT (IP, %d): %d: %p\n",
++			fprintf(stderr, "%p: PERF_EVENT (IP, %d): %d: %p\n",
++				(void *)(offset + head),
+ 				event->header.misc,
+ 				event->ip.pid,
+ 				(void *)event->ip.ip);
+@@ -753,7 +754,8 @@ more:
+ 		struct map *map = map__new(&event->mmap);
+ 
+ 		if (dump_trace) {
+-			fprintf(stderr, "PERF_EVENT_MMAP: [%p(%p) @ %p]: %s\n",
++			fprintf(stderr, "%p: PERF_EVENT_MMAP: [%p(%p) @ %p]: %s\n",
++				(void *)(offset + head),
+ 				(void *)event->mmap.start,
+ 				(void *)event->mmap.len,
+ 				(void *)event->mmap.pgoff,
+@@ -771,7 +773,8 @@ more:
+ 		struct thread *thread = threads__findnew(event->comm.pid);
+ 
+ 		if (dump_trace) {
+-			fprintf(stderr, "PERF_EVENT_COMM: %s:%d\n",
++			fprintf(stderr, "%p: PERF_EVENT_COMM: %s:%d\n",
++				(void *)(offset + head),
+ 				event->comm.comm, event->comm.pid);
+ 		}
+ 		if (thread == NULL ||
+@@ -783,7 +786,8 @@ more:
+ 		break;
+ 	}
  	default: {
- 		fprintf(stderr, "skipping unknown header type: %d\n",
+-		fprintf(stderr, "skipping unknown header type: %d\n",
++		fprintf(stderr, "%p: skipping unknown header type: %d\n",
++			(void *)(offset + head),
  			event->header.type);
-+		total_unknown++;
- 	}
- 	}
- 
-@@ -796,9 +797,10 @@ done:
- 	close(input);
- 
- 	if (dump_trace) {
--		fprintf(stderr, "   IP events: %10ld\n", total);
--		fprintf(stderr, " mmap events: %10ld\n", total_mmap);
--		fprintf(stderr, " comm events: %10ld\n", total_comm);
-+		fprintf(stderr, "      IP events: %10ld\n", total);
-+		fprintf(stderr, "    mmap events: %10ld\n", total_mmap);
-+		fprintf(stderr, "    comm events: %10ld\n", total_comm);
-+		fprintf(stderr, " unknown events: %10ld\n", total_unknown);
- 
- 		return 0;
+ 		total_unknown++;
  	}
