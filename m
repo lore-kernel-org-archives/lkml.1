@@ -1,118 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756825AbZEZSv5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757352AbZEZSzh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756825AbZEZSv5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 14:51:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755792AbZEZSvt
+	id S1757352AbZEZSzh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 14:55:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756228AbZEZSza
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 14:51:49 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:60933 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755694AbZEZSvs convert rfc822-to-8bit (ORCPT
+	Tue, 26 May 2009 14:55:30 -0400
+Received: from mail-fx0-f168.google.com ([209.85.220.168]:33071 "EHLO
+	mail-fx0-f168.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756027AbZEZSza (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 14:51:48 -0400
+	Tue, 26 May 2009 14:55:30 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=A4h5ZOs4v1GdZrk0itEoDshU4WXaUFax8G7K/gQEzeTzZo1xu1jMf2shY+60mY+mMa
-         urj5fz8Wx/7EQriI83rEz4yPB1K83TXseQGh91x7vYEFtRMr+WA/9GqPPpNvnrq/L2T2
-         uk66oFMyYz+Abdqwa392HRx8chWyh2deXDq0w=
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=iqcwpiw6tePIAjqY0WQM28kwMsx0r+T8S4Ha2Omo1WeitmTegPxDHJoeLx6rpb6UAE
+         9K8L4WrnbqTUUM+THvIsaOvqmAVLvUmHYtEDECUcB9YWy++XcDocvep8xn3WMDvNk1Sg
+         hEhJaDIY2GDUnSPvQFoLagpNGc2rpbjhX/q4w=
+Date: Tue, 26 May 2009 20:55:26 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>, Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Li Zefan <lizf@cn.fujitsu.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Zhaolei <zhaolei@cn.fujitsu.com>,
+       Tom Zanussi <tzanussi@gmail.com>
+Subject: [GIT PULL v2][PATCH 0/10] tracing/core: various fixes
+Message-ID: <20090526185524.GB5969@nowhere>
+References: <1243303490-8019-1-git-send-email-fweisbec@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20090526184216.GA10560@sortiz.org>
-References: <20090526174012.423883376@linux.intel.com>
-	 <20090526174213.806710164@linux.intel.com>
-	 <37219a840905261132q6b0a7289x3408fb904ddf90df@mail.gmail.com>
-	 <20090526184216.GA10560@sortiz.org>
-Date: Tue, 26 May 2009 14:44:45 -0400
-X-Google-Sender-Auth: bcacd59bca9751e5
-Message-ID: <37219a840905261144r1c74a42dq7b24bdce1b8059b@mail.gmail.com>
-Subject: Re: [PATCH 4/6] dvb/dvb-usb: prepare for FIRMWARE_NAME_MAX removal
-From: Michael Krufky <mkrufky@kernellabs.com>
-To: Samuel Ortiz <sameo@linux.intel.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Greg Kroah-Hartmann <greg@kroah.com>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Kay Sievers <kay.sievers@vrfy.org>,
-       linux-media <linux-media@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1243303490-8019-1-git-send-email-fweisbec@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 26, 2009 at 2:42 PM, Samuel Ortiz <sameo@linux.intel.com> wrote:
-> On Tue, May 26, 2009 at 02:32:45PM -0400, Michael Krufky wrote:
->> On Tue, May 26, 2009 at 1:40 PM, Samuel Ortiz <sameo@linux.intel.com> wrote:
->> > From: Samuel Ortiz <sameo@linux.intel.com>
->> > To: Mauro Carvalho Chehab <mchehab@infradead.org>
->> >
->> > We're going to remove the FIRMWARE_NAME_MAX definition in order to avoid any
->> > firmware name length restriction.
->> > This patch changes the dvb_usb_device_properties firmware field accordingly.
->> >
->> > Signed-off-by: Samuel Ortiz <sameo@linux.intel.com>
->> >
->> > ---
->> >  drivers/media/dvb/dvb-usb/dvb-usb.h |    2 +-
->> >  1 file changed, 1 insertion(+), 1 deletion(-)
->> >
->> > Index: iwm-2.6/drivers/media/dvb/dvb-usb/dvb-usb.h
->> > ===================================================================
->> > --- iwm-2.6.orig/drivers/media/dvb/dvb-usb/dvb-usb.h    2009-05-26 17:24:36.000000000 +0200
->> > +++ iwm-2.6/drivers/media/dvb/dvb-usb/dvb-usb.h 2009-05-26 17:25:19.000000000 +0200
->> > @@ -196,7 +196,7 @@ struct dvb_usb_device_properties {
->> >  #define CYPRESS_FX2     3
->> >        int        usb_ctrl;
->> >        int        (*download_firmware) (struct usb_device *, const struct firmware *);
->> > -       const char firmware[FIRMWARE_NAME_MAX];
->> > +       const char *firmware;
->> >        int        no_reconnect;
->> >
->> >        int size_of_priv;
->> >
->> > --
->> > Intel Open Source Technology Centre
->> > http://oss.intel.com/
->> > --
->> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->> > the body of a message to majordomo@vger.kernel.org
->> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> > Please read the FAQ at  http://www.tux.org/lkml/
->> >
->>
->> Samuel,
->>
->> Your patch makes the following change:
->>
->> -       const char firmware[FIRMWARE_NAME_MAX];
->> +       const char *firmware;
->>
->> Before your change, struct dvb_usb_device_properties actually contains
->> memory allocated for the firmware filename.  After your change, this
->> is nothing but a pointer.
->>
->> This will cause an OOPS.
-> No, not if it's correctly initialized, as it seems to be for all the
-> dvb_usb_device_properties users right now.
-> Typically, you'd initialize your dvb_usb_device_properties like this:
->
-> static struct dvb_usb_device_properties a800_properties = {
->        .caps = DVB_USB_IS_AN_I2C_ADAPTER,
->
->        .usb_ctrl = CYPRESS_FX2,
->        .firmware = "dvb-usb-avertv-a800-02.fw",
-> [...]
->
-> And that's fine.
+On Tue, May 26, 2009 at 04:04:45AM +0200, Frederic Weisbecker wrote:
+> Hi Ingo, Steven,
+> 
+> I've gathered various tracing fixes that were posted recently.
 
-You're right -- there is nothing wrong with the change -- my bad.
 
-I traced though the code after posting that last mail.  It looked
-risky when I just looked at the patch, but in the end this is actually
-cleaner and much better.
+I based this topic against tracing/core whereas the latest
+tracing changes were on tracing/ftrace.
 
-Sorry for the noise.
+But tracing/ftrace contains the v1 of:
 
-Acked /
-Reviewed-by: Michael Krufky <mkrufky@kernellabs.com>
+ftrace: Add task_comm support for trace_event
+ftrace: clean up of using ftrace_event_enable_disable()
+
+And my pull request contains the v3 of this pair, fixing
+some build issue.
+
+As you suggested, I've cherry picked the missing patches
+from tracing/ftrace to my tracing/core based tree.
+This new pull request then adds 5 Steven's patches that
+were on tracing/ftrace.
+I'm not posting them because they have been submitted
+in LKML already.
+
+Thanks.
+
+The following changes since commit 5537937696c55530447c20aa27daccb8d0d29b33:
+  Ming Lei (1):
+        ftrace: fix check for return value of register_module_notifier in event_trace_init
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git
+	tracing/core-2
+
+Lai Jiangshan (1):
+      tracing: add trace_event_read_lock()
+
+Li Zefan (1):
+      tracing/events: change the type of __str_loc_item to unsigned short
+
+Pekka Enberg (1):
+      kmemtrace: fix kernel parameter documentation
+
+Steven Rostedt (5):
+      tracing: add __print_flags for events
+      tracing: add previous task state info to sched switch event
+      tracing: add flag output for kmem events
+      tracing: add __print_symbolic to trace events
+      tracing: convert irq events to use __print_symbolic
+
+Zhaolei (2):
+      ftrace: Add task_comm support for trace_event
+      ftrace: clean up of using ftrace_event_enable_disable()
+
+ Documentation/kernel-parameters.txt |   10 ----
+ include/linux/ftrace_event.h        |   16 ++++++-
+ include/trace/events/irq.h          |   23 +++++++--
+ include/trace/events/kmem.h         |   53 ++++++++++++++++++---
+ include/trace/events/sched.h        |    9 +++-
+ include/trace/ftrace.h              |   24 +++++++++-
+ kernel/trace/Kconfig                |    9 +++-
+ kernel/trace/trace.c                |    8 +++
+ kernel/trace/trace_events.c         |   42 ++++++----------
+ kernel/trace/trace_output.c         |   89 ++++++++++++++++++++++++++++++++---
+ kernel/trace/trace_output.h         |    2 +
+ 11 files changed, 223 insertions(+), 62 deletions(-)
+
