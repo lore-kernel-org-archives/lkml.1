@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752185AbZEZKet@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751828AbZEZKfD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752185AbZEZKet (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 06:34:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751123AbZEZKek
+	id S1751828AbZEZKfD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 06:35:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752075AbZEZKen
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 06:34:40 -0400
-Received: from hera.kernel.org ([140.211.167.34]:56434 "EHLO hera.kernel.org"
+	Tue, 26 May 2009 06:34:43 -0400
+Received: from hera.kernel.org ([140.211.167.34]:56438 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750852AbZEZKej (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 06:34:39 -0400
-Date: Tue, 26 May 2009 10:33:50 GMT
+	id S1751519AbZEZKel (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 06:34:41 -0400
+Date: Tue, 26 May 2009 10:34:02 GMT
 From: tip-bot for Ingo Molnar <mingo@elte.hu>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
@@ -22,26 +22,26 @@ Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
        cjashfor@linux.vnet.ibm.com, mingo@elte.hu
 In-Reply-To: <new-submission>
 References: <new-submission>
-Subject: [tip:perfcounters/core] perf record: Straighten out argv types
-Message-ID: <tip-69aa48ab82e17299efe2be6c21795945731a6c17@git.kernel.org>
-Git-Commit-ID: 69aa48ab82e17299efe2be6c21795945731a6c17
+Subject: [tip:perfcounters/core] perf stat: Remove unused variable
+Message-ID: <tip-4e97ddf09ee3ce715fc334399bae4cc0c0a13057@git.kernel.org>
+Git-Commit-ID: 4e97ddf09ee3ce715fc334399bae4cc0c0a13057
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 26 May 2009 10:34:04 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 26 May 2009 10:34:03 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  69aa48ab82e17299efe2be6c21795945731a6c17
-Gitweb:     http://git.kernel.org/tip/69aa48ab82e17299efe2be6c21795945731a6c17
+Commit-ID:  4e97ddf09ee3ce715fc334399bae4cc0c0a13057
+Gitweb:     http://git.kernel.org/tip/4e97ddf09ee3ce715fc334399bae4cc0c0a13057
 Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Tue, 26 May 2009 09:02:27 +0200
+AuthorDate: Tue, 26 May 2009 10:07:44 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 26 May 2009 10:05:56 +0200
+CommitDate: Tue, 26 May 2009 10:08:19 +0200
 
-perf record: Straighten out argv types
+perf stat: Remove unused variable
 
 [ Impact: cleanup ]
 
@@ -58,28 +58,19 @@ Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- Documentation/perf_counter/builtin-record.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ Documentation/perf_counter/builtin-stat.c |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/perf_counter/builtin-record.c b/Documentation/perf_counter/builtin-record.c
-index 1b19f18..f225efa 100644
---- a/Documentation/perf_counter/builtin-record.c
-+++ b/Documentation/perf_counter/builtin-record.c
-@@ -191,7 +191,7 @@ static void display_help(void)
- 	exit(0);
- }
+diff --git a/Documentation/perf_counter/builtin-stat.c b/Documentation/perf_counter/builtin-stat.c
+index 88c70be..c1053d8 100644
+--- a/Documentation/perf_counter/builtin-stat.c
++++ b/Documentation/perf_counter/builtin-stat.c
+@@ -541,8 +541,6 @@ static void skip_signal(int signo)
  
--static void process_options(int argc, const char *argv[])
-+static void process_options(int argc, char * const argv[])
+ int cmd_stat(int argc, char **argv, const char *prefix)
  {
- 	int error = 0, counter;
+-	sigset_t blocked;
+-
+ 	page_size = sysconf(_SC_PAGE_SIZE);
  
-@@ -538,7 +538,7 @@ static void open_counters(int cpu, pid_t pid)
- 	nr_cpu++;
- }
- 
--int cmd_record(int argc, const char **argv)
-+int cmd_record(int argc, char * const argv[])
- {
- 	int i, counter;
- 	pid_t pid;
+ 	process_options(argc, argv);
