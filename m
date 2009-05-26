@@ -1,71 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754192AbZEZILH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754690AbZEZIL2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754192AbZEZILH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 04:11:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753498AbZEZIKz
+	id S1754690AbZEZIL2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 04:11:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753787AbZEZILO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 04:10:55 -0400
-Received: from luminismail.carleton.ca ([134.117.2.27]:36948 "EHLO
-	luminismail.carleton.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753174AbZEZIKy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 04:10:54 -0400
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: text/plain; charset=US-ASCII
-Message-id: <4A1BA409.6040804@superonline.com>
-Date: Tue, 26 May 2009 04:10:49 -0400
-From: "M. Vefa Bicakci" <bicave@superonline.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
-To: linux-kernel@vger.kernel.org
-Subject: Re: [Bisected regression] Microphone no longer works on Toshiba
- Satellite A100
-References: <4A196CF5.8010504@superonline.com> <s5hskiuv4d2.wl%tiwai@suse.de>
- <4A198CAD.6090109@superonline.com> <s5hk545d8sc.wl%tiwai@suse.de>
-In-reply-to: <s5hk545d8sc.wl%tiwai@suse.de>
+	Tue, 26 May 2009 04:11:14 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:37006 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752411AbZEZILM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 04:11:12 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH] kmod: Release sub_info on cred allocation failure.
+To: torvalds@osdl.org, akpm@linux-foundation.org
+Cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
+       David Howells <dhowells@redhat.com>
+Date: Tue, 26 May 2009 09:11:03 +0100
+Message-ID: <20090526081103.9132.98194.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.14.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
 
-I just wanted to let everyone else know that I have tested the
-patch Takashi Iwai provided, and that the microphone works properly
-with the patch applied.
+call_usermodehelper_setup() forgot to kfree(sub_info)
+when prepare_usermodehelper_creds() failed.
 
-Below is our conversation, which I forgot to Cc: to LKML.
+Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
 
-Thanks everyone,
-
-M. Vefa Bicakci
-
-> -------- Original Message --------
-> Subject: Re: [Bisected regression] Microphone no longer works on Toshiba Satellite A100
-> Date: Tue, 26 May 2009 07:49:41 +0200
-> From: Takashi Iwai <tiwai@suse.de>
-> To: M. Vefa Bicakci <bicave@superonline.com>
-> References: <4A196CF5.8010504@superonline.com>	<s5hskiuv4d2.wl%tiwai@suse.de>	<4A198CAD.6090109@superonline.com>	<s5hk545d8sc.wl%tiwai@suse.de>	<4A1B10D5.9000009@superonline.com>
-> 
-> At Mon, 25 May 2009 17:42:45 -0400,
-> M. Vefa Bicakci wrote:
->> 
->> Takashi Iwai wrote:
->> >>> [snip]
->> > Thanks.  Does the patch below work?
->> 
->> Yes, I just tried it by compiling alsa-driver-1.0.20 after applying
->> the patch you provided, and I can happily say that it works beautifully.
->> 
->> Thank you so much! I really hope that this patch will be included in
->> the next ALSA release and the next -rc release for 2.6.30.
-> 
-> I merged now it to sound git tree and will include in the next pull
-> request.
-> 
-> Thanks for testing!
-> 
-> 
-> Takashi
+ kernel/kmod.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
 
 
+diff --git a/kernel/kmod.c b/kernel/kmod.c
+index b750675..7e95bed 100644
+--- a/kernel/kmod.c
++++ b/kernel/kmod.c
+@@ -370,8 +370,10 @@ struct subprocess_info *call_usermodehelper_setup(char *path, char **argv,
+ 	sub_info->argv = argv;
+ 	sub_info->envp = envp;
+ 	sub_info->cred = prepare_usermodehelper_creds();
+-	if (!sub_info->cred)
++	if (!sub_info->cred) {
++		kfree(sub_info);
+ 		return NULL;
++	}
+ 
+   out:
+ 	return sub_info;
 
