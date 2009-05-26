@@ -1,140 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758185AbZEZU5T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754445AbZEZVBa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758185AbZEZU5T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 16:57:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756202AbZEZU5D
+	id S1754445AbZEZVBa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 17:01:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752802AbZEZVBV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 16:57:03 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:41922 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751044AbZEZU5B (ORCPT
+	Tue, 26 May 2009 17:01:21 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:38120 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751044AbZEZVBU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 16:57:01 -0400
-Date: Tue, 26 May 2009 16:57:02 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: David <david@unsolicited.net>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>, <linux-media@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       <dbrownell@users.sourceforge.net>, <leonidv11@gmail.com>,
-       Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: USB/DVB - Old Technotrend TT-connect S-2400 regression tracked
-  down
-In-Reply-To: <4A1AE705.2050809@unsolicited.net>
-Message-ID: <Pine.LNX.4.44L0.0905261646420.11998-100000@iolanthe.rowland.org>
+	Tue, 26 May 2009 17:01:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=agjd9K209Zn6WbRFWzvERonCRGYicohBc5W+843DvQ3s8rKhi4SxNMIP9VNsVRH1aC
+         VbHqnDxKP5U7+mHTobzizUG0wqKCoH+lWZrogG8kljqnbdwNiMcqMzBywnokFMOvgSYX
+         O8YaCZ3oMqIgIMmjh0sl4Kr6czSW5TUoD6eqc=
+Date: Tue, 26 May 2009 23:01:15 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Zhaolei <zhaolei@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/3] tracing/workqueue: make events sort in ascending
+	order
+Message-ID: <20090526210113.GG5969@nowhere>
+References: <4A1BA322.9060505@cn.fujitsu.com> <4A1BA696.9090404@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A1BA696.9090404@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 25 May 2009, David wrote:
-
-> > No luck I'm afraid (although there now appear to be 2 timeouts, not
-> > one). I'm going to follow up on the laptop and get a USB log.
-> >   
-> USB log post-patch attached. Thanks for all the effort so far!
-
-I think the idea of the patch was good, but the endpoint direction
-information got lost (because the information was taken from the dummy
-qTD which is always marked as OUT -- I don't see how this could ever
-have worked properly).  So let's redo it, using the new and proper
-interface for resetting endpoints.
-
-To tell the truth, I'm not entirely certain this will work either.  The 
-hardware may cache the endpoint state, so it may be necessary to unlink 
-the endpoint completely.  Still, try this version and see what happens.
-
-Alan Stern
+On Tue, May 26, 2009 at 04:21:42PM +0800, Zhaolei wrote:
+> Events in workqueue tracer need to be sorted in ascending order to make user
+> clear.
+> But now it is reversed by "tracing/stat: replace linked list by an rbtree
+> for sorting"(53059c9b67a62a3dc8c80204d3da42b9267ea5a0).
+> We need to define a custom cmp() callback to make sorting correct.
 
 
+That's my bad, the reverse sorting subsequent to this patch is an accident
+so the fix should be done in the stat tracing framework.
 
-Index: usb-2.6/drivers/usb/host/ehci-q.c
-===================================================================
---- usb-2.6.orig/drivers/usb/host/ehci-q.c
-+++ usb-2.6/drivers/usb/host/ehci-q.c
-@@ -84,6 +84,30 @@ qtd_fill(struct ehci_hcd *ehci, struct e
- 
- /*-------------------------------------------------------------------------*/
- 
-+static void ehci_endpoint_reset(struct usb_hcd *hcd,
-+		struct usb_host_endpoint *ep)
-+{
-+	struct ehci_hcd		*ehci = hcd_to_ehci(hcd);
-+	struct ehci_qh		*qh;
-+
-+	spin_lock_irq(&ehci->lock);
-+	qh = ep->hcpriv;
-+
-+	/* For Bulk and Interrupt endpoints we maintain the toggle state
-+	 * in the hardware; the toggle bits in udev aren't used at all.
-+	 * When an endpoint is reset by usb_clear_halt() we must reset
-+	 * the toggle bit in the QH.
-+	 */
-+	if (qh && (usb_endpoint_xfer_bulk(&ep->desc) ||
-+			usb_endpoint_xfer_int(&ep->desc))) {
-+		if (qh->qh_state == QH_STATE_IDLE || list_empty(&qh->qtd_list))
-+			qh->hw_token &= ~cpu_to_hc32(ehci, QTD_TOGGLE);
-+		else
-+			WARN_ONCE(1, "clear_halt for an active endpoint\n");
-+	}
-+	spin_unlock_irq(&ehci->lock);
-+}
-+
- static inline void
- qh_update (struct ehci_hcd *ehci, struct ehci_qh *qh, struct ehci_qtd *qtd)
- {
-@@ -93,22 +117,6 @@ qh_update (struct ehci_hcd *ehci, struct
- 	qh->hw_qtd_next = QTD_NEXT(ehci, qtd->qtd_dma);
- 	qh->hw_alt_next = EHCI_LIST_END(ehci);
- 
--	/* Except for control endpoints, we make hardware maintain data
--	 * toggle (like OHCI) ... here (re)initialize the toggle in the QH,
--	 * and set the pseudo-toggle in udev. Only usb_clear_halt() will
--	 * ever clear it.
--	 */
--	if (!(qh->hw_info1 & cpu_to_hc32(ehci, 1 << 14))) {
--		unsigned	is_out, epnum;
--
--		is_out = !(qtd->hw_token & cpu_to_hc32(ehci, 1 << 8));
--		epnum = (hc32_to_cpup(ehci, &qh->hw_info1) >> 8) & 0x0f;
--		if (unlikely (!usb_gettoggle (qh->dev, epnum, is_out))) {
--			qh->hw_token &= ~cpu_to_hc32(ehci, QTD_TOGGLE);
--			usb_settoggle (qh->dev, epnum, is_out, 1);
--		}
--	}
--
- 	/* HC must see latest qtd and qh data before we clear ACTIVE+HALT */
- 	wmb ();
- 	qh->hw_token &= cpu_to_hc32(ehci, QTD_TOGGLE | QTD_STS_PING);
-@@ -893,7 +901,6 @@ done:
- 	qh->qh_state = QH_STATE_IDLE;
- 	qh->hw_info1 = cpu_to_hc32(ehci, info1);
- 	qh->hw_info2 = cpu_to_hc32(ehci, info2);
--	usb_settoggle (urb->dev, usb_pipeendpoint (urb->pipe), !is_input, 1);
- 	qh_refresh (ehci, qh);
- 	return qh;
- }
-@@ -928,7 +935,7 @@ static void qh_link_async (struct ehci_h
- 		}
- 	}
- 
--	/* clear halt and/or toggle; and maybe recover from silicon quirk */
-+	/* clear halt and maybe recover from silicon quirk */
- 	if (qh->qh_state == QH_STATE_IDLE)
- 		qh_refresh (ehci, qh);
- 
-Index: usb-2.6/drivers/usb/host/ehci-pci.c
-===================================================================
---- usb-2.6.orig/drivers/usb/host/ehci-pci.c
-+++ usb-2.6/drivers/usb/host/ehci-pci.c
-@@ -388,6 +388,7 @@ static const struct hc_driver ehci_pci_h
- 	.urb_enqueue =		ehci_urb_enqueue,
- 	.urb_dequeue =		ehci_urb_dequeue,
- 	.endpoint_disable =	ehci_endpoint_disable,
-+	.endpoint_reset =	ehci_endpoint_reset,
- 
- 	/*
- 	 * scheduling support
+I'll fix that.
+
+The other patches for the workqueue tracer look good. I'll apply
+them and send a pull request to Ingo.
+
+Thanks!
+
+
+
+> 
+> Before patch:
+>  # CPU INSERTED EXECUTED   MAX us   AVG us   TASKNAME:PID
+>  #  |     |        |         |        |      `-WORKFUNC
+>  #  |     |        |         |        |           |
+>      0        1        1     1155     1155   `-xprt_autoclose
+>      0       19       19      864      143   |-xs_udp_connect_worker4
+>  ...
+>      0        1        1     4825     4825   |-reg_todo
+>      0      443      515                     events/0:5
+> 
+> After patch:
+>  # CPU INSERTED EXECUTED   MAX us   AVG us   TASKNAME:PID
+>  #  |     |        |         |        |      `-WORKFUNC
+>  #  |     |        |         |        |           |
+>      0      443      515                     events/0:5
+>      0        1        1     4825     4825   |-reg_todo
+>  ...
+>      0       19       19      797      134   |-xs_udp_connect_worker4
+>      0        1        1     8359     8359   `-xprt_autoclose
+> 
+> Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
+> ---
+>  kernel/trace/trace_workqueue.c |    7 +++++++
+>  1 files changed, 7 insertions(+), 0 deletions(-)
+> 
+> diff --git a/kernel/trace/trace_workqueue.c b/kernel/trace/trace_workqueue.c
+> index 53fe43e..7fa0d23 100644
+> --- a/kernel/trace/trace_workqueue.c
+> +++ b/kernel/trace/trace_workqueue.c
+> @@ -383,6 +383,12 @@ static void *workqueue_stat_next(void *prev, int idx)
+>  	return ret;
+>  }
+>  
+> +/* To make events sort in ascending order */
+> +static int workqueue_stat_cmp(void *p1, void *p2)
+> +{
+> +	return -1;
+> +}
+> +
+>  static int workqueue_stat_show(struct seq_file *s, void *p)
+>  {
+>  	struct workfunc_stats *wfstat = p;
+> @@ -470,6 +476,7 @@ static struct tracer_stat workqueue_stats __read_mostly = {
+>  	.name		= "workqueues",
+>  	.stat_start	= workqueue_stat_start,
+>  	.stat_next	= workqueue_stat_next,
+> +	.stat_cmp	= workqueue_stat_cmp,
+>  	.stat_show	= workqueue_stat_show,
+>  	.stat_headers	= workqueue_stat_headers,
+>  	.file_open	= workqueue_stat_file_open,
+> -- 
+> 1.5.5.3
+> 
 
