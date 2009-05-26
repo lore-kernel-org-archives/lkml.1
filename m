@@ -1,104 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751737AbZEZKdU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752185AbZEZKet@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751737AbZEZKdU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 06:33:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751046AbZEZKdH
+	id S1752185AbZEZKet (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 06:34:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751123AbZEZKek
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 06:33:07 -0400
-Received: from fmmailgate03.web.de ([217.72.192.234]:34371 "EHLO
-	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750917AbZEZKdG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 06:33:06 -0400
-From: Goswin von Brederlow <goswin-v-b@web.de>
-To: Alberto Bertogli <albertito@blitiri.com.ar>
-Cc: Goswin von Brederlow <goswin-v-b@web.de>, linux-kernel@vger.kernel.org,
-       dm-devel@redhat.com, linux-raid@vger.kernel.org, agk@redhat.com,
-       neilb@suse.de
-Subject: Re: [RFC PATCH] dm-csum: A new device mapper target that checks data integrity
-References: <20090521161317.GU1376@blitiri.com.ar>
-	<87my91qsn4.fsf@frosties.localdomain>
-	<20090525174630.GI1376@blitiri.com.ar>
-Date: Tue, 26 May 2009 12:33:01 +0200
-In-Reply-To: <20090525174630.GI1376@blitiri.com.ar> (Alberto Bertogli's
-	message of "Mon, 25 May 2009 14:46:30 -0300")
-Message-ID: <8763fop31e.fsf@frosties.localdomain>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) XEmacs/21.4.22 (linux)
+	Tue, 26 May 2009 06:34:40 -0400
+Received: from hera.kernel.org ([140.211.167.34]:56434 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750852AbZEZKej (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 06:34:39 -0400
+Date: Tue, 26 May 2009 10:33:50 GMT
+From: tip-bot for Ingo Molnar <mingo@elte.hu>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
+       hpa@zytor.com, mingo@redhat.com, jkacur@redhat.com,
+       a.p.zijlstra@chello.nl, efault@gmx.de, mtosatti@redhat.com,
+       tglx@linutronix.de, cjashfor@linux.vnet.ibm.com, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, jkacur@redhat.com, a.p.zijlstra@chello.nl,
+       efault@gmx.de, mtosatti@redhat.com, tglx@linutronix.de,
+       cjashfor@linux.vnet.ibm.com, mingo@elte.hu
+In-Reply-To: <new-submission>
+References: <new-submission>
+Subject: [tip:perfcounters/core] perf record: Straighten out argv types
+Message-ID: <tip-69aa48ab82e17299efe2be6c21795945731a6c17@git.kernel.org>
+Git-Commit-ID: 69aa48ab82e17299efe2be6c21795945731a6c17
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Provags-ID: V01U2FsdGVkX19cSs7NSGIDv+3UfvGy60DuJOIJOeZMVjes7mJw
-	YkTwrM1trcLqrgreTcockisH5Z0wTX+RUXu3/AcAAUlGFDHW7u
-	jrn5EKdJ8=
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 26 May 2009 10:34:04 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alberto Bertogli <albertito@blitiri.com.ar> writes:
+Commit-ID:  69aa48ab82e17299efe2be6c21795945731a6c17
+Gitweb:     http://git.kernel.org/tip/69aa48ab82e17299efe2be6c21795945731a6c17
+Author:     Ingo Molnar <mingo@elte.hu>
+AuthorDate: Tue, 26 May 2009 09:02:27 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 26 May 2009 10:05:56 +0200
 
-> On Mon, May 25, 2009 at 02:22:23PM +0200, Goswin von Brederlow wrote:
->> Alberto Bertogli <albertito@blitiri.com.ar> writes:
->> > I'm writing this device mapper target that stores checksums on writes and
->> > verifies them on reads.
->> 
->> How does that behave on crashes? Will checksums be out of sync with data?
->> Will pending blocks recalculate their checksum?
->
->    To guarantee consistency, two imd sectors (named M1 and M2) are kept for
->    every 62 data sectors, and the following procedure is used to update them
->    when a write to a given sector is required:
->
->     - Read both M1 and M2.
->     - Find out (using information stored in their headers) which one is newer.
->       Let's assume M1 is newer than M2.
->     - Update the M2 buffer to mark it's newer, and update the new data's CRC.
->     - Submit the write to M2, and then the write to the data, using a barrier
->       to make sure the metadata is updated _after_ the data.
+perf record: Straighten out argv types
 
-Consider that the disk writes the data and then the system
-crashes. Now you have the old checksum but the new data. The checksum
-is out of sync.
+[ Impact: cleanup ]
 
-Don't you mean that M2 is written _before_ the data? That way you have
-the old checksum in M1 and the new in M2. One of them will match
-depending on wether the data gets written before a crash or not. That
-would be more consistent with your read operation below.
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
+Cc: Marcelo Tosatti <mtosatti@redhat.com>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: John Kacur <jkacur@redhat.com>
+LKML-Reference: <new-submission>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
->    Accordingly, the read operations are handled as follows:
->
->     - Read both the data, M1 and M2.
->     - Find out which one is newer. Let's assume M1 is newer than M2.
->     - Calculate the data's CRC, and compare it to the one found in M1. If they
->       match, the reading is successful. If not, compare it to the one found in
->       M2. If they match, the reading is successful; otherwise, fail. If
->       the read involves multiple sectors, it is possible that some of the
->       correct CRCs are in M1 and some in M2.
->
->
-> The barrier will be (it's not done yet) replaced with serialized writes for
-> cases where the underlying block device does not support them, or when the
-> integrity metadata resides on a different block device than the data.
->
->
-> This scheme assumes writes to a single sector are atomic in the presence of
-> normal crashes, which I'm not sure if it's something sane to assume in
-> practise. If it's not, then the scheme can be modified to cope with that.
 
-What happens if you have multiple writes to the same sector? (assuming
-you ment "before" above)
+---
+ Documentation/perf_counter/builtin-record.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-- user writes to sector
-- queue up write for M1 and data1
-- M1 writes
-- user writes to sector
-- queue up writes for M2 and data2
-- data1 is thrown away as data2 overwrites it
-- M2 writes
-- system crashes
-
-Now both M1 and M2 have a different checksum than the old data left on
-disk.
-
-Can this happen?
-
-MfG
-        Goswin
+diff --git a/Documentation/perf_counter/builtin-record.c b/Documentation/perf_counter/builtin-record.c
+index 1b19f18..f225efa 100644
+--- a/Documentation/perf_counter/builtin-record.c
++++ b/Documentation/perf_counter/builtin-record.c
+@@ -191,7 +191,7 @@ static void display_help(void)
+ 	exit(0);
+ }
+ 
+-static void process_options(int argc, const char *argv[])
++static void process_options(int argc, char * const argv[])
+ {
+ 	int error = 0, counter;
+ 
+@@ -538,7 +538,7 @@ static void open_counters(int cpu, pid_t pid)
+ 	nr_cpu++;
+ }
+ 
+-int cmd_record(int argc, const char **argv)
++int cmd_record(int argc, char * const argv[])
+ {
+ 	int i, counter;
+ 	pid_t pid;
