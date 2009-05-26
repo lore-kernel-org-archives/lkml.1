@@ -1,64 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760452AbZEZXey@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759150AbZEZXhh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760452AbZEZXey (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 19:34:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759769AbZEZXeh
+	id S1759150AbZEZXhh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 19:37:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756180AbZEZXh3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 19:34:37 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:57797 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759726AbZEZXeg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 19:34:36 -0400
-Date: Wed, 27 May 2009 01:41:09 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Andi Kleen <andi@firstfloor.org>, paul@mad-scientist.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6.27.24] Kernel coredump to a pipe is failing
-Message-ID: <20090526234109.GL846@one.firstfloor.org>
-References: <1243355634.29250.331.camel@psmith-ubeta.netezza.com> <878wkjobbm.fsf@basil.nowhere.org> <20090526160017.98fc62e4.akpm@linux-foundation.org> <20090526231428.GK846@one.firstfloor.org> <20090526162821.02e11d5b.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090526162821.02e11d5b.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 26 May 2009 19:37:29 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:35287 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755501AbZEZXh2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 19:37:28 -0400
+From: Mike Frysinger <vapier@gentoo.org>
+To: linux-kernel@vger.kernel.org
+Cc: linux-kbuild@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
+       Bryan Wu <cooloney@kernel.org>, Andy Whitcroft <apw@shadowen.org>
+Subject: [PATCH] checkpatch: add some common Blackfin checks
+Date: Tue, 26 May 2009 19:37:29 -0400
+Message-Id: <1243381049-10359-1-git-send-email-vapier@gentoo.org>
+X-Mailer: git-send-email 1.6.3.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 26, 2009 at 04:28:21PM -0700, Andrew Morton wrote:
-> On Wed, 27 May 2009 01:14:28 +0200
-> Andi Kleen <andi@firstfloor.org> wrote:
-> 
-> > On Tue, May 26, 2009 at 04:00:17PM -0700, Andrew Morton wrote:
-> > > dump_write() doesn't seem right, either.  If ->write() returns, say,
-> > > 100 then the dump should keep on going.  At present it treats this
-> > > return as an error.
-> > 
-> > I think that's correct actually. Short write typically means serious 
-> > issue like disk full or broken pipe, so stopping is good.
-> 
-> But we shouldn't assume that.  It could be that the ->write
-> implementation is perfectly able to absorb the remaining data.
+Add checks for Blackfin-specific issues that seem to crop up from time to
+time.  In particular, we have helper macros to break a 32bit address into
+the hi/lo parts, and we want to make sure people use the csync/ssync
+variant that includes fun anomaly workarounds.
 
-Maybe in theory, but in practice that's unlikely isn't it?
-Disk is full or pipe is blocking etc.
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+Signed-off-by: Bryan Wu <cooloney@kernel.org>
+CC: Andy Whitcroft <apw@shadowen.org>
+---
+ scripts/checkpatch.pl |   22 ++++++++++++++++++++++
+ 1 files changed, 22 insertions(+), 0 deletions(-)
 
-> We should only error out of the write() returned zero or -EFOO.
-> The current code is simply buggy, but got lucky.
-
-Maybe very pedantically, but I would argue that most programs 
-don't do what you're saying (retry on any short write) and
-it's actually not very nice to always write a loop for each write.
-
-Also any IO device who relies on that would likely find
-that it won't work with a lot of software.
-
-So I think the current behaviour is ok, just need to get 
-rid of the signals.
-
--Andi
-
+diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
+index 2d5ece7..2b1852c 100755
+--- a/scripts/checkpatch.pl
++++ b/scripts/checkpatch.pl
+@@ -1336,6 +1336,18 @@ sub process {
+ 			WARN("adding a line without newline at end of file\n" . $herecurr);
+ 		}
+ 
++# Blackfin: use hi/lo macros
++		if ($realfile =~ m@arch/blackfin/.*\.S$@) {
++			if ($line =~ /\.[lL][[:space:]]*=.*&[[:space:]]*0x[fF][fF][fF][fF]/) {
++				my $herevet = "$here\n" . cat_vet($line) . "\n";
++				ERROR("use the LO() macro, not (... & 0xFFFF)\n" . $herevet);
++			}
++			if ($line =~ /\.[hH][[:space:]]*=.*>>[[:space:]]*16/) {
++				my $herevet = "$here\n" . cat_vet($line) . "\n";
++				ERROR("use the HI() macro, not (... >> 16)\n" . $herevet);
++			}
++		}
++
+ # check we are in a valid source file C or perl if not then ignore this hunk
+ 		next if ($realfile !~ /\.(h|c|pl)$/);
+ 
+@@ -1355,6 +1367,16 @@ sub process {
+ 			WARN("CVS style keyword markers, these will _not_ be updated\n". $herecurr);
+ 		}
+ 
++# Blackfin: don't use __builtin_bfin_[cs]sync
++		if ($line =~ /__builtin_bfin_csync/) {
++			my $herevet = "$here\n" . cat_vet($line) . "\n";
++			ERROR("use the CSYNC() macro in asm/blackfin.h\n" . $herevet);
++		}
++		if ($line =~ /__builtin_bfin_ssync/) {
++			my $herevet = "$here\n" . cat_vet($line) . "\n";
++			ERROR("use the SSYNC() macro in asm/blackfin.h\n" . $herevet);
++		}
++
+ # Check for potential 'bare' types
+ 		my ($stat, $cond, $line_nr_next, $remain_next, $off_next);
+ 		if ($realcnt && $line =~ /.\s*\S/) {
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+1.6.3.1
+
