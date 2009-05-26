@@ -1,74 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757578AbZEZTvQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757721AbZEZTvh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757578AbZEZTvQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 15:51:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755559AbZEZTvE
+	id S1757721AbZEZTvh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 15:51:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757011AbZEZTv2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 15:51:04 -0400
-Received: from mga09.intel.com ([134.134.136.24]:1207 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753978AbZEZTvD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 15:51:03 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,253,1241420400"; 
-   d="scan'208";a="519029809"
-From: =?iso-8859-1?q?I=F1aky_P=E9rez-Gonz=E1lez?= 
-	<inaky.perez-gonzalez@intel.com>
-To: "leemgs1@gmail.com" <leemgs1@gmail.com>
-Subject: Re: [RFC PATCH]debugfs:Fix terminology inconsistency of dir name to mount debugfs filesystem.
-Date: Tue, 26 May 2009 12:50:33 -0700
-User-Agent: KMail/1.9.9
-Cc: Steven Rostedt <rostedt@goodmis.org>, Greg KH <greg@kroah.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "trivial@kernel.org" <trivial@kernel.org>,
-       "balagi@justmail.de" <balagi@justmail.de>,
-       "bgamari@gmail.com" <bgamari@gmail.com>, Ingo Molnar <mingo@elte.hu>
-References: <1243315163.14685.17.camel@centos51>
-In-Reply-To: <1243315163.14685.17.camel@centos51>
+	Tue, 26 May 2009 15:51:28 -0400
+Received: from yx-out-2324.google.com ([74.125.44.29]:44406 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756248AbZEZTv1 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 15:51:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=PJIz8bwXslMXjzL8DxzmMcLb8h5qFjm0gvRk2zcsCzdyFiO6CmFFoPPCMkStlEdWNS
+         NVe+vX1lE13BzpXfi0OVO1ot+/DSODVaJOoIOTYjxIQKyigMnH09oBqTFR11JG5kgSq4
+         j6rzwZWKiJPnILasUGuFJQsj9p4if7rn/qBQs=
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905261250.34056.inaky.perez-gonzalez@intel.com>
+In-Reply-To: <3d2f29dc0905241853h594aa2a9ta21dee45979c567e@mail.gmail.com>
+References: <3d2f29dc0905180125x5e7ef51dqf10955a3d44336e2@mail.gmail.com>
+	 <200905242236.22715.rjw@sisk.pl> <4A19BA09.4050502@zytor.com>
+	 <20090525011819.GA9805@sli10-desk.sh.intel.com>
+	 <3d2f29dc0905241853h594aa2a9ta21dee45979c567e@mail.gmail.com>
+Date: Tue, 26 May 2009 15:51:28 -0400
+Message-ID: <3d2f29dc0905261251h701aeb03w3ec6269b04d5e333@mail.gmail.com>
+Subject: Re: Boot problems with 2.6.29.1 - cannot smoothly boot on battery
+From: Chris Howie <cdhowie@gmail.com>
+To: Shaohua Li <shaohua.li@intel.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Linux PM List <linux-pm@lists.linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Greg KH <gregkh@suse.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 25 May 2009, GeunSik Lim wrote:
->  Hi all,
+On Sun, May 24, 2009 at 9:53 PM, Chris Howie <cdhowie@gmail.com> wrote:
+> On Sun, May 24, 2009 at 9:18 PM, Shaohua Li <shaohua.li@intel.com> wrote:
+>> if this is a AMD CPU, please check http://bugzilla.kernel.org/show_bug.cgi?id=13233
 >
->  I want to hear your opinions about this proposal for consistency of
->  mount directory to mount debugfs filesystem that need  by ftrace
-> infrastructure. Um... I appended "RFC" word in the subject because this
-> mail is my proposal just.
+> Ahh, that sounds like it.  I first noticed the problem in 2.6.28 after
+> switching from 2.6.26 (but never tried 2.6.27).  So the information
+> about versions is indeed consistent.  I'm on an amd64 cpu.
 >
->
-> commit 1766a83645706100b1829bb422f852ec757c6f4b
-> Author: GeunSik,Lim <leemgs1@gmail.com>
-> Date:   Tue May 26 13:49:23 2009 +0900
->
->     Fix terminology inconsistency of dir name to mount debugfs filesystem.
->
->       Many developers use "/debug/" directory name to mount debugfs
-> filesystem for ftrace according to ./Documentation/tracers/ftrace.txt file.
->
->       But, two directory names(ex:/debug/, /debugfs/) is existed in kernel
-> source like ftrace, DRM, Wireless, Network[sky2]files to mount debugfs
-> filesystem. I think that we don't have to select either "/debug/" directory
-> name or "/debugfs/" directory name for terminology consistency.
->
->       debugfs means debug filesystem for debugging easy to use by greg
-> kroah hartman. "/debug/" name is suitable as directory name of debugfs for
-> tracing using ftrace like "/sys/" of sysfs(system filesystem). -debugfs
-> related reference: http://lwn.net/Articles/115405/
->
->       Fix inconsistency of directory name according to duplicated
-> expression to mount debugfs.
->
->          Signed-off-by: GeunSik Lim <geunsik.lim@samsung.com>
+> Thanks everyone for the suggestions, I will try to take a look within
+> the next couple of days and report my findings.
 
-For the WiMAX part, not really an issue:
+The bug linked was in fact my problem, and after forward-porting the
+patch to 2.6.29.4 (which required manual patching for one hunk --
+luckily this was straightforward) my system boots perfectly on battery
+and AC.
 
-Acked-By: Inaky Perez-Gonzalez <inaky@linux.intel.com>
+Many thanks all, this was the only issue I've had with the latest
+kernels.  I'm very happy that it's out of the way!
 
+Cheers,
+-- 
+Chris Howie
+http://www.chrishowie.com
+http://en.wikipedia.org/wiki/User:Crazycomputers
