@@ -1,57 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754936AbZEZK2U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751737AbZEZKdU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754936AbZEZK2U (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 06:28:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750852AbZEZK2N
+	id S1751737AbZEZKdU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 06:33:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751046AbZEZKdH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 06:28:13 -0400
-Received: from yw-out-2324.google.com ([74.125.46.29]:35908 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750818AbZEZK2M convert rfc822-to-8bit (ORCPT
+	Tue, 26 May 2009 06:33:07 -0400
+Received: from fmmailgate03.web.de ([217.72.192.234]:34371 "EHLO
+	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750917AbZEZKdG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 06:28:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=KqyjjosgYChs5P6MCWlFq57gG027RtkMeQGPiG6uwientYZq3U04gQyJchEgpJRpCA
-         AoNQYWdRS6rh3U7EvAyJDTRZs4gLu+c4Rn1FVGDmvXRSvue+P10227zffWK7NI+vBdK5
-         KPhF+VwavIhDnPNI0e/TKEht1QX6q+isV3vjk=
+	Tue, 26 May 2009 06:33:06 -0400
+From: Goswin von Brederlow <goswin-v-b@web.de>
+To: Alberto Bertogli <albertito@blitiri.com.ar>
+Cc: Goswin von Brederlow <goswin-v-b@web.de>, linux-kernel@vger.kernel.org,
+       dm-devel@redhat.com, linux-raid@vger.kernel.org, agk@redhat.com,
+       neilb@suse.de
+Subject: Re: [RFC PATCH] dm-csum: A new device mapper target that checks data integrity
+References: <20090521161317.GU1376@blitiri.com.ar>
+	<87my91qsn4.fsf@frosties.localdomain>
+	<20090525174630.GI1376@blitiri.com.ar>
+Date: Tue, 26 May 2009 12:33:01 +0200
+In-Reply-To: <20090525174630.GI1376@blitiri.com.ar> (Alberto Bertogli's
+	message of "Mon, 25 May 2009 14:46:30 -0300")
+Message-ID: <8763fop31e.fsf@frosties.localdomain>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) XEmacs/21.4.22 (linux)
 MIME-Version: 1.0
-In-Reply-To: <20090526102502.GA24737@infradead.org>
-References: <1243332633-15258-1-git-send-email-vapier@gentoo.org>
-	 <20090526102502.GA24737@infradead.org>
-Date: Tue, 26 May 2009 06:28:14 -0400
-Message-ID: <8bd0f97a0905260328ndaa5b64x212eda09d2e20d15@mail.gmail.com>
-Subject: Re: [rtc-linux] Re: [PATCH] drivers/char/rtc: disable legacy RTC 
-	driver on Blackfin systems
-From: Mike Frysinger <vapier.adi@gmail.com>
-To: rtc-linux@googlegroups.com
-Cc: Mike Frysinger <vapier@gentoo.org>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+X-Provags-ID: V01U2FsdGVkX19cSs7NSGIDv+3UfvGy60DuJOIJOeZMVjes7mJw
+	YkTwrM1trcLqrgreTcockisH5Z0wTX+RUXu3/AcAAUlGFDHW7u
+	jrn5EKdJ8=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 26, 2009 at 06:25, Christoph Hellwig wrote:
-> On Tue, May 26, 2009 at 06:10:33AM -0400, Mike Frysinger wrote:
->>       tristate "Enhanced Real Time Clock Support (legacy PC RTC driver)"
->>       depends on !PPC && !PARISC && !IA64 && !M68K && !SPARC && !FRV \
->> -                     && !ARM && !SUPERH && !S390 && !AVR32
->> +                     && !ARM && !SUPERH && !S390 && !AVR32 && !BLACKFIN
->
-> Maybe it's better to have a positive dependency for those that actually
-> support it these days?  Based on the above list that would be:
->
->        depends on ALPHA || CRIS || H8300 || M32R || MICROBLAZE ||
->                   MIPS || MN10300 || SH || X86 || XTENSA
->
-> and I would not be surprised if some of the above don't actually support
-> it either..
+Alberto Bertogli <albertito@blitiri.com.ar> writes:
 
-it was my understanding that this driver was destined to be dropped
-down the line ... easier to extend the cruft for now than try to ping
-arch maintainers for confirmation ...
--mike
+> On Mon, May 25, 2009 at 02:22:23PM +0200, Goswin von Brederlow wrote:
+>> Alberto Bertogli <albertito@blitiri.com.ar> writes:
+>> > I'm writing this device mapper target that stores checksums on writes and
+>> > verifies them on reads.
+>> 
+>> How does that behave on crashes? Will checksums be out of sync with data?
+>> Will pending blocks recalculate their checksum?
+>
+>    To guarantee consistency, two imd sectors (named M1 and M2) are kept for
+>    every 62 data sectors, and the following procedure is used to update them
+>    when a write to a given sector is required:
+>
+>     - Read both M1 and M2.
+>     - Find out (using information stored in their headers) which one is newer.
+>       Let's assume M1 is newer than M2.
+>     - Update the M2 buffer to mark it's newer, and update the new data's CRC.
+>     - Submit the write to M2, and then the write to the data, using a barrier
+>       to make sure the metadata is updated _after_ the data.
+
+Consider that the disk writes the data and then the system
+crashes. Now you have the old checksum but the new data. The checksum
+is out of sync.
+
+Don't you mean that M2 is written _before_ the data? That way you have
+the old checksum in M1 and the new in M2. One of them will match
+depending on wether the data gets written before a crash or not. That
+would be more consistent with your read operation below.
+
+>    Accordingly, the read operations are handled as follows:
+>
+>     - Read both the data, M1 and M2.
+>     - Find out which one is newer. Let's assume M1 is newer than M2.
+>     - Calculate the data's CRC, and compare it to the one found in M1. If they
+>       match, the reading is successful. If not, compare it to the one found in
+>       M2. If they match, the reading is successful; otherwise, fail. If
+>       the read involves multiple sectors, it is possible that some of the
+>       correct CRCs are in M1 and some in M2.
+>
+>
+> The barrier will be (it's not done yet) replaced with serialized writes for
+> cases where the underlying block device does not support them, or when the
+> integrity metadata resides on a different block device than the data.
+>
+>
+> This scheme assumes writes to a single sector are atomic in the presence of
+> normal crashes, which I'm not sure if it's something sane to assume in
+> practise. If it's not, then the scheme can be modified to cope with that.
+
+What happens if you have multiple writes to the same sector? (assuming
+you ment "before" above)
+
+- user writes to sector
+- queue up write for M1 and data1
+- M1 writes
+- user writes to sector
+- queue up writes for M2 and data2
+- data1 is thrown away as data2 overwrites it
+- M2 writes
+- system crashes
+
+Now both M1 and M2 have a different checksum than the old data left on
+disk.
+
+Can this happen?
+
+MfG
+        Goswin
