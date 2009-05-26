@@ -1,27 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759433AbZEZX3U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758135AbZEZXcG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759433AbZEZX3U (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 19:29:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757013AbZEZX3N
+	id S1758135AbZEZXcG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 19:32:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755368AbZEZXb4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 19:29:13 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58136 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756883AbZEZX3M (ORCPT
+	Tue, 26 May 2009 19:31:56 -0400
+Received: from mail-bw0-f222.google.com ([209.85.218.222]:39378 "EHLO
+	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755199AbZEZXbz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 19:29:12 -0400
-Date: Tue, 26 May 2009 16:28:21 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: andi@firstfloor.org, paul@mad-scientist.net, linux-kernel@vger.kernel.org
-Subject: Re: [2.6.27.24] Kernel coredump to a pipe is failing
-Message-Id: <20090526162821.02e11d5b.akpm@linux-foundation.org>
-In-Reply-To: <20090526231428.GK846@one.firstfloor.org>
-References: <1243355634.29250.331.camel@psmith-ubeta.netezza.com>
-	<878wkjobbm.fsf@basil.nowhere.org>
-	<20090526160017.98fc62e4.akpm@linux-foundation.org>
-	<20090526231428.GK846@one.firstfloor.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Tue, 26 May 2009 19:31:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=nBHn0Y22SPDu9j0zY++zuBe+t/0RioS0yJ9bOGxKZVVXJoRnm4zCjrVXNfHbSlYAY6
+         4SjAHieRHaR483QEXn9oKUYhpxjdGlJEMRy7QYnkL5gJLTD+gaf7fX9R7EDyxpRWyWV+
+         x6l0EAfDx90LC3SPfMki6x7UWiH13byGvxRfo=
+Date: Wed, 27 May 2009 08:31:31 +0900
+From: Minchan Kim <minchan.kim@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Minchan Kim <minchan.kim@gmail.com>, kosaki.motohiro@jp.fujitsu.com,
+       randy.dunlap@oracle.com, cl@linux-foundation.org, linux-mm@kvack.org,
+       pavel@ucw.cz, dave@linux.vnet.ibm.com, davem@davemloft.net,
+       linux@dominikbrodowski.net, mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: [PATCH][mmtom] clean up printk_once of get_cpu_vendor
+Message-Id: <20090527083131.7e2d161d.minchan.kim@barrios-desktop>
+In-Reply-To: <20090526134134.bb3e1e23.akpm@linux-foundation.org>
+References: <20090526135733.3c38f758.minchan.kim@barrios-desktop>
+	<20090526155155.6871.A69D9226@jp.fujitsu.com>
+	<20090526155943.aef3ba62.minchan.kim@barrios-desktop>
+	<20090526134134.bb3e1e23.akpm@linux-foundation.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -29,20 +39,94 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 May 2009 01:14:28 +0200
-Andi Kleen <andi@firstfloor.org> wrote:
+On Tue, 26 May 2009 13:41:34 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> On Tue, May 26, 2009 at 04:00:17PM -0700, Andrew Morton wrote:
-> > dump_write() doesn't seem right, either.  If ->write() returns, say,
-> > 100 then the dump should keep on going.  At present it treats this
-> > return as an error.
+> On Tue, 26 May 2009 15:59:43 +0900
+> Minchan Kim <minchan.kim@gmail.com> wrote:
 > 
-> I think that's correct actually. Short write typically means serious 
-> issue like disk full or broken pipe, so stopping is good.
+> > On Tue, 26 May 2009 15:52:32 +0900 (JST)
+> > KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+> > 
+> > > > == CUT HERE ==
+> > > > 
+> > > > There are some places to be able to use printk_once instead of hard coding.
+> > > > 
+> > > > It will help code readability and maintenance.
+> > > > This patch doesn't change function's behavior.
+> > > > 
+> > > > Signed-off-by: Minchan Kim <minchan.kim@gmail.com>
+> > > > CC: Dominik Brodowski <linux@dominikbrodowski.net>
+> > > > CC: David S. Miller <davem@davemloft.net>
+> > > > CC: Ingo Molnar <mingo@elte.hu>
+> > > > ---
+> > > >  arch/x86/kernel/cpu/common.c  |    8 ++------
+> > > >  drivers/net/3c515.c           |    7 ++-----
+> > > >  drivers/pcmcia/pcmcia_ioctl.c |    9 +++------
+> > > >  3 files changed, 7 insertions(+), 17 deletions(-)
+> > > 
+> > > Please separete to three patches ;)
+> > 
+> > After I listen about things I missed, I will repost it at all once with each patch.
+> 
+> Yes, that would be better.  But for a trivial little patch like this I
+> expect we can just merge it and move on.  But please do split up these
+> multi-subsystem patches in future.
 
-But we shouldn't assume that.  It could be that the ->write
-implementation is perfectly able to absorb the remaining data.
+Thanks. Andrew. 
+I confiremd what you merged. 
 
-We should only error out of the write() returned zero or -EFOO.
-The current code is simply buggy, but got lucky.
+I modifed get_cpu_vendor's printk-once by Pavel Machek's adivse.
+Please, merge with this based on my previous version.
 
+== CUT HERE ==
+
+[PATCH] clean up printk_once of get_cpu_vendor
+
+It remove unnecessary variable and change two static variable
+with one.
+
+Signed-off-by: Minchan Kim <minchan.kim@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>
+CC: Pavel Machek <pavel@ucw.cz>
+
+---
+ arch/x86/kernel/cpu/common.c |    5 ++---
+ 1 files changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
+index dc0f694..c6feb68 100644
+--- a/arch/x86/kernel/cpu/common.c
++++ b/arch/x86/kernel/cpu/common.c
+@@ -479,7 +479,6 @@ out:
+ static void __cpuinit get_cpu_vendor(struct cpuinfo_x86 *c)
+ {
+ 	char *v = c->x86_vendor_id;
+-	static int printed;
+ 	int i;
+ 
+ 	for (i = 0; i < X86_VENDOR_NUM; i++) {
+@@ -497,8 +496,8 @@ static void __cpuinit get_cpu_vendor(struct cpuinfo_x86 *c)
+ 	}
+ 
+ 	printk_once(KERN_ERR
+-		    "CPU: vendor_id '%s' unknown, using generic init.\n", v);
+-	printk_once(KERN_ERR "CPU: Your system may be unstable.\n");
++			"CPU: vendor_id '%s' unknown, using generic init.\n" \
++			"CPU: Your system may be unstable.\n", v);
+ 
+ 	c->x86_vendor = X86_VENDOR_UNKNOWN;
+ 	this_cpu = &default_cpu;
+-- 
+1.5.4.3
+
+
+
+
+
+
+
+
+-- 
+Kinds Regards
+Minchan Kim
