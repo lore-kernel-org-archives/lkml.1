@@ -1,97 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759077AbZEZXAs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759368AbZEZXA7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759077AbZEZXAs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 19:00:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755844AbZEZXAk
+	id S1759368AbZEZXA7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 19:00:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758182AbZEZXAl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 19:00:40 -0400
-Received: from e38.co.us.ibm.com ([32.97.110.159]:55458 "EHLO
-	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753911AbZEZXAj (ORCPT
+	Tue, 26 May 2009 19:00:41 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40527 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757685AbZEZXAk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 19:00:39 -0400
-Subject: Re: [PATCH] sched: Support current clocksource handling in
- fallback sched_clock().
-From: john stultz <johnstul@us.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Linus Walleij <linus.ml.walleij@gmail.com>,
-       Paul Mundt <lethal@linux-sh.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Victor <linux@maxim.org.za>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-sh@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       John Stultz <johnstul@linux.vnet.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <1243371309.6600.8.camel@laptop>
-References: <20090526061532.GD9188@linux-sh.org>
-	 <63386a3d0905260731m655bfee3q82a6f52d71fa3cef@mail.gmail.com>
-	 <1243348681.23657.14.camel@twins>  <1243369423.3275.5.camel@localhost>
-	 <1243369815.6600.2.camel@laptop>  <1243370439.3275.13.camel@localhost>
-	 <1243371309.6600.8.camel@laptop>
-Content-Type: text/plain
-Date: Tue, 26 May 2009 16:00:35 -0700
-Message-Id: <1243378835.3275.30.camel@localhost>
+	Tue, 26 May 2009 19:00:40 -0400
+Date: Tue, 26 May 2009 16:00:17 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: paul@mad-scientist.net, linux-kernel@vger.kernel.org
+Subject: Re: [2.6.27.24] Kernel coredump to a pipe is failing
+Message-Id: <20090526160017.98fc62e4.akpm@linux-foundation.org>
+In-Reply-To: <878wkjobbm.fsf@basil.nowhere.org>
+References: <1243355634.29250.331.camel@psmith-ubeta.netezza.com>
+	<878wkjobbm.fsf@basil.nowhere.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-05-26 at 22:55 +0200, Peter Zijlstra wrote:
-> On Tue, 2009-05-26 at 13:40 -0700, john stultz wrote:
-> > On Tue, 2009-05-26 at 22:30 +0200, Peter Zijlstra wrote:
-> > > On Tue, 2009-05-26 at 13:23 -0700, john stultz wrote:
-> > > > Overall, I'd probably suggest thinking this through a bit more. At some
-> > > > point doing this right will cause sched_clock() to be basically the same
-> > > > as ktime_get(). So why not just use that instead of remaking it?
-> > > 
-> > > simply because we don't require the strict global monotonicy for
-> > > scheduling as we do from a regular time source (its nice to have
-> > > though).
-> > > 
-> > > That means that on x86 we can always use TSC for sched_clock(), even
-> > > when its quite unsuitable for ktime.
-> > 
-> > Right, but I guess what I'm asking is can this be a bit better defined? 
-> > 
-> > If we are going to use clocksources (or cyclecounters - an area I need
-> > to clean up soon), it would be good to get an idea of what is expected
-> > of the sched_clock() interface.
-> > 
-> > So TSC good, HPET bad. Why? 
+On Tue, 26 May 2009 22:31:41 +0200
+Andi Kleen <andi@firstfloor.org> wrote:
+
+> Block signals during core dump
 > 
-> Because TSC is a few cycles to read, and you can factorize a largish
-> prime while doing an HPET read :-)
+> When a signal happens during core dump the core dump to a pipe 
+> can fail, because the write returns short, but the ELF core dumpers
+> cannot handle that.
 > 
-> > Is latency all we care about? How bad would
-> > the TSC have to be before we wouldn't want to use it?
+> There's no reason to handle signals during core dumping, so just
+> block them all.
 > 
-> Anything better than jiffies ;-)
-
-Except HPET thought, right? :)
-
-> For sched_clock() we want something high-res that is monotonic per cpu
-> and has a bounded drift between cpus in the order of jiffies.
+> Open issue: ELF puts blocked signals into the core dump and
+> that will be always fully blocked now.  Need to save it somewhere?
 > 
-> Look at kernel/sched_clock.c for what we do to make really shitty TSC
-> conform to the above requirements.
+> Based on debugging by Paul Smith.
+> 
+> Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
-Sure, I guess what I'm trying to pull out here is that should we try to
-create some OK_FOR_SCHED_CLOCK flag for clocksources, and then we try to
-make this generic so other arches can add that flag and be done, what is
-the guidance we want to give to arch maintainers for setting that flag?
+dump_write() doesn't seem right, either.  If ->write() returns, say,
+100 then the dump should keep on going.  At present it treats this
+return as an error.
 
-1) Has to be very very fast. Can we put a number on this? 50ns to read?
-
-2) How long does it have to be monotonic for? Is it ok if it wraps every
-few seconds?
-
-If get_cycles() || jiffies is what we want, then lets leave it there. I
-just want to avoid mixing the clocksource code into the sched clock code
-until we really get this sort of definition sorted.
-
-thanks
--john
-
+I wonder why the signal problem has just turned up now - did we change
+the pipe code or something?
 
