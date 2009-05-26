@@ -1,135 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757746AbZEZTXS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757583AbZEZT3u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757746AbZEZTXS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 15:23:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756992AbZEZTXG
+	id S1757583AbZEZT3u (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 15:29:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756253AbZEZT3i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 15:23:06 -0400
-Received: from hera.kernel.org ([140.211.167.34]:38576 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755689AbZEZTXE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 15:23:04 -0400
-Date: Tue, 26 May 2009 19:21:30 GMT
-From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
-       hpa@zytor.com, mingo@redhat.com, jkacur@redhat.com,
-       a.p.zijlstra@chello.nl, efault@gmx.de, mtosatti@redhat.com,
-       tglx@linutronix.de, cjashfor@linux.vnet.ibm.com, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, jkacur@redhat.com, a.p.zijlstra@chello.nl,
-       efault@gmx.de, mtosatti@redhat.com, tglx@linutronix.de,
-       cjashfor@linux.vnet.ibm.com, mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-Subject: [tip:perfcounters/core] perf report: More robust error handling
-Message-ID: <tip-6142f9ec108a4ddbf0d5904c3daa5fdcaa618792@git.kernel.org>
-Git-Commit-ID: 6142f9ec108a4ddbf0d5904c3daa5fdcaa618792
-X-Mailer: tip-git-log-daemon
+	Tue, 26 May 2009 15:29:38 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:41759 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755939AbZEZT3i (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 15:29:38 -0400
+Date: Tue, 26 May 2009 15:29:39 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Kay Sievers <kay.sievers@vrfy.org>
+cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       SCSI development list <linux-scsi@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Tejun Heo <tj@kernel.org>, Cornelia Huck <cornelia.huck@de.ibm.com>,
+       <linux-fsdevel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>
+Subject: Re: [PATCH 25/20] sysfs: Only support removing emtpy sysfs  directories.
+In-Reply-To: <ac3eb2510905260927we3c748akbbcaf3f3ac1da096@mail.gmail.com>
+Message-ID: <Pine.LNX.4.44L0.0905261508210.9278-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 26 May 2009 19:21:31 +0000 (UTC)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  6142f9ec108a4ddbf0d5904c3daa5fdcaa618792
-Gitweb:     http://git.kernel.org/tip/6142f9ec108a4ddbf0d5904c3daa5fdcaa618792
-Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
-AuthorDate: Tue, 26 May 2009 20:51:47 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 26 May 2009 20:17:46 +0200
+On Tue, 26 May 2009, Kay Sievers wrote:
 
-perf report: More robust error handling
+> On Mon, May 25, 2009 at 13:45, Kay Sievers <kay.sievers@vrfy.org> wrote:
+> > On Mon, May 25, 2009 at 04:06, Alan Stern <stern@rowland.harvard.edu> wrote:
+> 
+> >> by the way -- so it's a little difficult to trigger.
+> >
+> > I can trigger it pretty reliable now on plain -rc7 , but only with
+> > more hubs in-between the storage device. It usually take less than
+> > 10-15 connect/disconnect cycles.
+> >
+> > It looks like a serious bug though, after the bug triggered, random,
+> > likely unrelated, applications crash, and I can not cleanly shot down
+> > anymore.
+> 
+> Just a heads up if anybody is trying to reproduce this, it trashed my
+> ext3 rootfs, which is not recoverable.
+> 
+> Not sure what exactly caused this, but I didn't have anything like
+> this for a very long time.
+> 
+> I tried to reproduce the issue a few times more, and it crashed random
+> processes after the bug triggered, like mentioned above, and the box
+> never shut down cleanly.
+> 
+> It's entirely possible, that bug causes serious issues.
 
-Don't let funny events confuse us, stick to what we know and
-try to find sensible data again.
+If you don't mind trashing some more ext3 root filesystems :-) you can
+try this patch.  It's almost certainly not quite the right thing to do
+and I have probably messed up the target's reference counting, but
+maybe it's a step in the right direction.
 
-If we find an unknown event, check we're still u64 aligned, and
-increment by one u64. This ensures we're bound to happen upon a
-valid event soon.
+This strange business of deferring unregistration into a workqueue 
+means that the calls might not be executed in the same order that 
+they're made.
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-Cc: Marcelo Tosatti <mtosatti@redhat.com>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: John Kacur <jkacur@redhat.com>
-LKML-Reference: <new-submission>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Alan Stern
 
 
----
- Documentation/perf_counter/builtin-report.c |   27 ++++++++++++++++++++-------
- 1 files changed, 20 insertions(+), 7 deletions(-)
-
-diff --git a/Documentation/perf_counter/builtin-report.c b/Documentation/perf_counter/builtin-report.c
-index 2d4e4cc..a58be7f 100644
---- a/Documentation/perf_counter/builtin-report.c
-+++ b/Documentation/perf_counter/builtin-report.c
-@@ -645,6 +645,7 @@ static int __cmd_report(void)
- 	char *buf;
- 	event_t *event;
- 	int ret, rc = EXIT_FAILURE;
-+	uint32_t size;
- 	unsigned long total = 0, total_mmap = 0, total_comm = 0, total_unknown = 0;
+Index: usb-2.6/drivers/scsi/scsi_scan.c
+===================================================================
+--- usb-2.6.orig/drivers/scsi/scsi_scan.c
++++ usb-2.6/drivers/scsi/scsi_scan.c
+@@ -956,6 +956,7 @@ static inline void scsi_destroy_sdev(str
+ 	if (sdev->host->hostt->slave_destroy)
+ 		sdev->host->hostt->slave_destroy(sdev);
+ 	transport_destroy_device(&sdev->sdev_gendev);
++	put_device(sdev->sdev_gendev.parent);
+ 	put_device(&sdev->sdev_gendev);
+ }
  
- 	input = open(input_name, O_RDONLY);
-@@ -680,6 +681,10 @@ remap:
- more:
- 	event = (event_t *)(buf + head);
- 
-+	size = event->header.size;
-+	if (!size)
-+		size = 8;
-+
- 	if (head + event->header.size >= page_size * mmap_window) {
- 		unsigned long shift = page_size * (head / page_size);
- 		int ret;
-@@ -692,12 +697,9 @@ more:
- 		goto remap;
+Index: usb-2.6/drivers/scsi/scsi_sysfs.c
+===================================================================
+--- usb-2.6.orig/drivers/scsi/scsi_sysfs.c
++++ usb-2.6/drivers/scsi/scsi_sysfs.c
+@@ -327,8 +327,6 @@ static void scsi_device_dev_release_user
+ 		sdev->request_queue = NULL;
  	}
  
+-	scsi_target_reap(scsi_target(sdev));
 -
--	if (!event->header.size) {
--		fprintf(stderr, "zero-sized event at file offset %ld\n", offset + head);
--		fprintf(stderr, "skipping %ld bytes of events.\n", stat.st_size - offset - head);
--		goto done;
--	}
-+	size = event->header.size;
-+	if (!size)
-+		goto broken_event;
+ 	kfree(sdev->inquiry);
+ 	kfree(sdev);
  
- 	if (event->header.misc & PERF_EVENT_MISC_OVERFLOW) {
- 		char level;
-@@ -787,15 +789,26 @@ more:
- 		break;
- 	}
- 	default: {
-+broken_event:
- 		fprintf(stderr, "%p [%p]: skipping unknown header type: %d\n",
- 			(void *)(offset + head),
- 			(void *)(long)(event->header.size),
- 			event->header.type);
- 		total_unknown++;
-+
-+		/*
-+		 * assume we lost track of the stream, check alignment, and
-+		 * increment a single u64 in the hope to catch on again 'soon'.
-+		 */
-+
-+		if (unlikely(head & 7))
-+			head &= ~7ULL;
-+
-+		size = 8;
- 	}
- 	}
+@@ -954,6 +952,7 @@ void __scsi_remove_device(struct scsi_de
+ 	if (sdev->host->hostt->slave_destroy)
+ 		sdev->host->hostt->slave_destroy(sdev);
+ 	transport_destroy_device(dev);
++	scsi_target_reap(scsi_target(sdev));
+ 	put_device(dev);
+ }
  
--	head += event->header.size;
-+	head += size;
- 
- 	if (offset + head < stat.st_size)
- 		goto more;
+
