@@ -1,69 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758708AbZEZVkz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758683AbZEZVlS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758708AbZEZVkz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 17:40:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755467AbZEZVks
+	id S1758683AbZEZVlS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 17:41:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757166AbZEZVlD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 17:40:48 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:35793 "EHLO mx2.redhat.com"
+	Tue, 26 May 2009 17:41:03 -0400
+Received: from www.tglx.de ([62.245.132.106]:38692 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755274AbZEZVkr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 17:40:47 -0400
-Date: Tue, 26 May 2009 23:33:47 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Roland McGrath <roland@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] ptrace: do_notify_parent_cldstop: fix the wrong
-	->nsproxy usage
-Message-ID: <20090526213346.GA7073@redhat.com>
-References: <20090525185502.GA20781@redhat.com> <20090526210514.C1C91FC2BD@magilla.sf.frob.com>
+	id S1755467AbZEZVlB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 17:41:01 -0400
+Date: Tue, 26 May 2009 23:40:34 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+cc: mingo@elte.hu, LKML <linux-kernel@vger.kernel.org>,
+       Zhaolei <zhaolei@cn.fujitsu.com>, kosaki.motohiro@jp.fujitsu.com,
+       Steven Rostedt <rostedt@goodmis.org>, fweisbec@gmail.com
+Subject: Re: [PATCH 1/3] ftrace: add tracepoint for timer
+In-Reply-To: <4A167615.7050208@cn.fujitsu.com>
+Message-ID: <alpine.LFD.2.00.0905262334030.1762@localhost.localdomain>
+References: <4A167615.7050208@cn.fujitsu.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090526210514.C1C91FC2BD@magilla.sf.frob.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/26, Roland McGrath wrote:
->
-> Acked-by: Roland McGrath <roland@redhat.com>
->
-> Yes, all cases setting .si_pid should set it using the pid_ns of the
-> recipient.  Numerous other cases look wrong too, though maybe Sukadev has
-> outstanding patches for those already?  (It's been a while since we went
-> around on this, and I am fuzzy on some of the details.)  ptrace_notify,
-> ptrace_signal,
+On Fri, 22 May 2009, Xiao Guangrong wrote:
 
-Yes. Perhaps it would be nice to add a helper,
+> This patch is modify from Mathieu's patch base on ingo's suggestion, the original patch
+> can be found here: 
+> 	http://marc.info/?l=linux-kernel&m=123791201816247&w=2
 
-	task_pid_xxx(struct task_struct child, struct task_struct *parent)
-	{
-		rcu_read_lock();
-		ret = task_pid_nr_ns(tsk, parent->nsproxy->pid_ns);
-		rcu_read_unlock();
+  I have a hard time to connect this patch to the original one.
+ 
+> +TRACE_EVENT(timer_start,
+> +
+> +	TP_PROTO(struct timer_list *timer, int cpu),
+> +
+> +	TP_ARGS(timer, cpu),
+> +
+> +	TP_STRUCT__entry(
+> +		__field( void *,	timer		)
+> +		__field( void *,	function	)
+> +		__field( unsigned long,	expires		)
+> +		__field( int,		cpu		)
+> +	),
+> +
+> +	TP_fast_assign(
+> +		__entry->timer		= timer;
+> +		__entry->function	= timer->function;
+> +		__entry->expires	= timer->expires;
+> +		__entry->cpu		= cpu;
+> +	),
+> +
+> +	TP_printk("timer=%p func=%pf expires=%lu cpu=%d", __entry->timer,
+> +		  __entry->function, __entry->expires, __entry->cpu)
+> +);
 
-		return ret;
-	}
+  How do we connect the trace to the jiffies value when the timer
+  was started ?
 
-ptrace_notify/ptrace_signal can race with untrace + clear ->nsproxy,
-probably we don't care.
+> +
+> +TRACE_EVENT(timer_expire,
+> +
+> +	TP_PROTO(struct timer_list *timer),
+> +
+> +	TP_ARGS(timer),
+> +
+> +	TP_STRUCT__entry(
+> +		__field( void *,	timer		)
+> +		__field( void *,        function	)
+> +	),
+> +
+> +	TP_fast_assign(
+> +		__entry->timer		= timer;
+> +		__entry->function       = timer->function;
+> +	),
+> +
+> +	TP_printk("timer=%p func=%pf", __entry->timer, __entry->function)
+> +);
 
-> sys_kill, do_tkill all look wrong to me.
+  Ditto.
 
-They should be fine, note the
+> +TRACE_EVENT(timer_cancel,
+> +
+> +	TP_PROTO(struct timer_list *timer),
+> +
+> +	TP_ARGS(timer),
+> +
+> +	TP_STRUCT__entry(
+> +		__field( void *,	timer		)
+> +		__field( void *,        function        )
+> +	),
+> +
+> +	TP_fast_assign(
+> +		__entry->timer		= timer;
+> +		__entry->function	= timer->function;
+> +	),
+> +
+> +	TP_printk("timer=%p func=%pf", __entry->timer, __entry->function)
+> +);
 
-	if (from_ancestor_ns)
-		q->info.si_pid = 0;
+  Same here.
 
-in __send_signal(). If we send the signal "down" to the sub-namespace,
-si_pid == 0 is correct. And, unlike do_notify_parent/ptrace_notify/etc
-kill/tkill can't send the signal "up".
+> @@ -547,6 +550,7 @@ void init_timer_key(struct timer_list *timer,
+>  {
+>  	debug_timer_init(timer);
+>  	__init_timer(timer, name, key);
+> +	trace_timer_init(timer);
 
-Oleg.
+  Can we please avoid to have two debug calls in one 2 line function ?
 
+>  }
+>  EXPORT_SYMBOL(init_timer_key);
+>  
+> @@ -565,6 +569,7 @@ static inline void detach_timer(struct timer_list *timer,
+>  	struct list_head *entry = &timer->entry;
+>  
+>  	debug_timer_deactivate(timer);
+> +	trace_timer_cancel(timer);
+
+  Ditto. Please create one debug entity which covers both.
+
+  ....
+
+Thanks,
+
+	tglx
