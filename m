@@ -1,101 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754553AbZEZFru@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754427AbZEZFuu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754553AbZEZFru (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 01:47:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753387AbZEZFrm
+	id S1754427AbZEZFuu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 01:50:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753674AbZEZFun
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 01:47:42 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:32658 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751659AbZEZFrm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 01:47:42 -0400
-Message-ID: <4A1B827B.90302@monstr.eu>
-Date: Tue, 26 May 2009 07:47:39 +0200
-From: Michal Simek <monstr@monstr.eu>
-Reply-To: monstr@monstr.eu
-User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
+	Tue, 26 May 2009 01:50:43 -0400
+Received: from hera.kernel.org ([140.211.167.34]:49407 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753216AbZEZFum (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 01:50:42 -0400
+Message-ID: <4A1B8328.80801@kernel.org>
+Date: Tue, 26 May 2009 14:50:32 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-CC: linux-arch@vger.kernel.org, John Williams <john.williams@petalogix.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: ipc64_perm - generic
-References: <4A1AE972.9010905@monstr.eu> <200905252221.44082.arnd@arndb.de>
-In-Reply-To: <200905252221.44082.arnd@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Niel Lambrechts <niel.lambrechts@gmail.com>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "linux.kernel" <linux-kernel@vger.kernel.org>,
+       Theodore Tso <tytso@mit.edu>
+Subject: Re: 2.6.29 regression: ATA bus errors on resume
+References: <clqON-2Xv-7@gated-at.bofh.it>	<clqON-2Xv-9@gated-at.bofh.it>	<clqON-2Xv-11@gated-at.bofh.it>	<clqON-2Xv-13@gated-at.bofh.it>	<clqON-2Xv-15@gated-at.bofh.it>	<clqON-2Xv-17@gated-at.bofh.it>	<clqON-2Xv-19@gated-at.bofh.it>	<clqON-2Xv-5@gated-at.bofh.it>	<cmknZ-8lW-9@gated-at.bofh.it>	<cmoBl-6Ok-21@gated-at.bofh.it>	<cmp4n-7rb-15@gated-at.bofh.it>	<cmsYg-5BR-27@gated-at.bofh.it>	<cmvW7-1Yj-23@gated-at.bofh.it>	<cnheh-3vO-7@gated-at.bofh.it>	<cnPg1-7Q4-19@gated-at.bofh.it>	<cnTWo-7bV-25@gated-at.bofh.it>	<co1Kd-350-5@gated-at.bofh.it>	<co2Qf-4QQ-27@gated-at.bofh.it>	<co4yj-7Mc-5@gated-at.bofh.it>	<cp71c-4py-29@gated-at.bofh.it>	<cEVyE-re-1@gated-at.bofh.it>	<4A17C39E.2030302@gmail.com>	<4A19F006.3000303@kernel.org> <20090525091534.13ae103c@lxorguk.ukuu.org.uk> <4A1B164B.1010108@gmail.com> <4A1B76EB.9040500@kernel.org> <4A1B8193.1010703@gmail.com>
+In-Reply-To: <4A1B8193.1010703@gmail.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 26 May 2009 05:50:34 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd Bergmann wrote:
-> On Monday 25 May 2009 18:54:42 Michal Simek wrote:
->> Hi Arnd, cc: John
->>
->> From asm-generic/posix_types.h
->>
->> 17 #ifndef __kernel_mode_t
->> 18 typedef unsigned int    __kernel_mode_t;
->> 19 #endif
->>
->> This structure is not aligned properly because of pad2.
->>
->> 19 struct ipc64_perm {
->> 20         __kernel_key_t          key;
->> 21         __kernel_uid32_t        uid;
->> 22         __kernel_gid32_t        gid;
->> 23         __kernel_uid32_t        cuid;
->> 24         __kernel_gid32_t        cgid;
->> 25         __kernel_mode_t         mode;
->> 26         unsigned short          __pad1;
->> 27         unsigned short          seq;
->> 28         unsigned short          __pad2;
->> 29         unsigned long           __unused1;
->> 30         unsigned long           __unused2;
->> 31 };
->>
->> I think we should remove __pad1.
->> What do you think?
+Niel Lambrechts wrote:
+> Urgh. My root file-system is mounted with extents on, I would have to
+> re-install entirely.
 > 
-> Right, well spotted.
-> 
-> I'd like to keep the struct ipc64_perm compatible with most architectures, so
-> maybe we can play a little trick here:
-> 
->> Here is proposed struct.
->>  struct ipc64_perm {
->>          __kernel_key_t          key;
->>          __kernel_uid32_t        uid;
->>          __kernel_gid32_t        gid;
->>          __kernel_uid32_t        cuid;
->>          __kernel_gid32_t        cgid;
->>          __kernel_mode_t         mode;
-> 
-> +	unsigned char __pad1[4 - sizeof(__kernel_mode_t)];
-> 
->>          unsigned short          seq;
->>          unsigned short          __pad2;
->>          unsigned long           __unused1;
->>          unsigned long           __unused2;
->>  };
-> 
-> If that's too much of a hack, we could also change the default __kernel_mode_t
-> in asm-generic/posix_types.h to unsigned short, which it is on all 32-bit architectures
-> except mips and xtensa. For some reason, all 64 bit architechtures use unsigned
-> int for mode_t, but I couldn't find out why. Glibc uses unsigned int externally.
+> I'm wondering why no one else is complaining, or whether the problem is
+> limited to ICH9M/M-E controllers with EXT4 or a certain type of
+> hard-drive. The laptop is a Lenovo W500 (fairly similar to T500), so
+> maybe not a lot of people with this type of controller is using EXT4 yet.
 
-Is it this final solution (that above) or we just change kernel_mode_t to short?
+The double PHY events are not too rare but it's not too frequent
+either.  The number of people using ext4 on machines which have such
+issues and are regularly suspending and resuming might not be too
+high.
 
-Michal
+> Anyhow, I think Theodore may have ruled this out as a EXT4 problem
+> already (I first copied him) so I'm not sure what to do now, it will
+> take some strong will (and even more time) for me to re-install EXT3. I
+> just shouldn't have to, dammit. :-p
 
+Well, that is a pretty easy way to rule out many possibilities from my
+point of view. :-p If it's difficult, we can try to find out where the
+flag is being set with debug patches.
 
-
-
-
-> 
-> 	Arnd <><
-
+Thanks.
 
 -- 
-Michal Simek, Ing. (M.Eng)
-w: www.monstr.eu p: +42-0-721842854
+tejun
