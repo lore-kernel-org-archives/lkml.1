@@ -1,63 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756397AbZEZOIZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756155AbZEZONM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756397AbZEZOIZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 10:08:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754043AbZEZOIU
+	id S1756155AbZEZONM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 10:13:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751481AbZEZONF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 10:08:20 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:56580 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753056AbZEZOIT (ORCPT
+	Tue, 26 May 2009 10:13:05 -0400
+Received: from mail-bw0-f222.google.com ([209.85.218.222]:52040 "EHLO
+	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750852AbZEZONF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 10:08:19 -0400
-Date: Tue, 26 May 2009 10:08:20 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Pete Zaitcev <zaitcev@redhat.com>
-cc: David <david@unsolicited.net>, USB list <linux-usb@vger.kernel.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, <linux-media@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       <dbrownell@users.sourceforge.net>, <leonidv11@gmail.com>,
-       Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: USB/DVB - Old Technotrend TT-connect S-2400 regression tracked
- down
-In-Reply-To: <20090525184843.33c93006.zaitcev@redhat.com>
-Message-ID: <Pine.LNX.4.44L0.0905261006500.3584-100000@iolanthe.rowland.org>
+	Tue, 26 May 2009 10:13:05 -0400
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <20090526140423.GA14683@sortiz.org>
+References: <20090526140423.GA14683@sortiz.org>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Tue, 26 May 2009 16:11:35 +0200
+Message-ID: <ac3eb2510905260711hb273541i8d69128b88933f7f@mail.gmail.com>
+Subject: Re: [PATCH] firmware: Allocate firmware id dynamically
+To: Samuel Ortiz <sameo@linux.intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Marcel Holtmann <holtmann@linux.intel.com>,
+       "Zhu, Yi" <yi.zhu@intel.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "linville@tuxdriver.com" <linville@tuxdriver.com>,
+       Greg Kroah-Hartmann <greg@kroah.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 25 May 2009, Pete Zaitcev wrote:
+On Tue, May 26, 2009 at 16:04, Samuel Ortiz <sameo@linux.intel.com> wrote:
 
-> On Mon, 25 May 2009 13:25:55 +0100, David <david@unsolicited.net> wrote:
-> 
-> > >> I wonder if CONFIG_HAVE_DMA_API_DEBUG does it (enabled with a select
-> > >> in arch/x86/Kconfig). Strange that it started happening now.
-> > >>     
-> > > That is enabled. I'll switch it off and give it another go.
-> > >   
-> > While CONFIG_HAVE_DMA_API_DEBUG was set, DMA_API_DEBUG was not, so I
-> > guess there's nothing I can do to test?
-> 
-> I suppose so. I misunderstood how this worked. I guessed that the
-> DMA API debugging was the culprit because its introduction coincided
-> with the recent onset of this oops.
-> 
-> Although usbmon does essentially illegal tricks to look at data
-> already mapped for DMA, the code used to work for a few releases.
-> Bisecting may help. I cannot be sure of it though, and it's
-> going to take a lot of reboots.
-> 
-> Unfortunately, although I have an Opteron, the issue does not
-> occur here, so I'm at a loss for the moment. But I'll have to
-> tackle it somehow. Not sure how though. Any suggestions are welcome.
+> Since the firmware loader is not maintained by anyone, I'm sending this one to
+> you, for the next merge window:
 
-Try asking the people responsible for maintaining DMA support for help.  
+It's part of the driver-core directory, and handled by Greg.
 
-And David is very good about testing new patches.
+> The firmware loader has a statically allocated 30 bytes long string for the
+> firmware id (a.k.a. the firmware file name). There is no reason why we couldnt
+> allocate dynamically, and avoid having restrictions on the firmware names
+> lengths.
 
-Alan Stern
+Looks good.
 
+> Please note that we have to keep the FIRMWARE_NAME_MAX definition around as
+> some drivers rely on it.
+
+I think the 6 files should be converted, and FIRMWARE_NAME_MAX
+removed, otherwise people will keep copying that crap around.
+
+  drivers/pcmcia/ds.c
+  drivers/usb/atm/ueagle-atm.c
+  drivers/net/wireless/libertas/if_usb.c
+  drivers/net/wireless/libertas/if_spi.c
+  drivers/media/dvb/dvb-usb/dvb-usb.h
+  drivers/media/common/tuners/tuner-xc2028.c
+
+Thanks,
+Kay
