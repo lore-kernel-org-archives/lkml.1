@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759847AbZEZWrN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759989AbZEZWrz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759847AbZEZWrN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 18:47:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758850AbZEZWnt
+	id S1759989AbZEZWrz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 18:47:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759303AbZEZWox
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 18:43:49 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:33245 "EHLO mx2.redhat.com"
+	Tue, 26 May 2009 18:44:53 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:33306 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758826AbZEZWnr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 18:43:47 -0400
+	id S1758756AbZEZWov (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 18:44:51 -0400
 From: Vivek Goyal <vgoyal@redhat.com>
 To: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
        dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
@@ -20,495 +20,415 @@ To: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
        righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com
 Cc: agk@redhat.com, snitzer@redhat.com, vgoyal@redhat.com,
        akpm@linux-foundation.org, peterz@infradead.org
-Subject: [PATCH 13/20] io-controller: anticipatory changes for hierarchical fair queuing
-Date: Tue, 26 May 2009 18:42:02 -0400
-Message-Id: <1243377729-2176-14-git-send-email-vgoyal@redhat.com>
+Subject: [PATCH 18/20] io-controller: Support per cgroup per device weights and io class
+Date: Tue, 26 May 2009 18:42:07 -0400
+Message-Id: <1243377729-2176-19-git-send-email-vgoyal@redhat.com>
 In-Reply-To: <1243377729-2176-1-git-send-email-vgoyal@redhat.com>
 References: <1243377729-2176-1-git-send-email-vgoyal@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch changes anticipatory scheduler to use queue scheduling code from
-elevator layer.  One can go back to old as by deselecting
-CONFIG_IOSCHED_AS_HIER.
+This patch enables per-cgroup per-device weight and ioprio_class handling.
+A new cgroup interface "policy" is introduced. You can make use of this
+file to configure weight and ioprio_class for each device in a given cgroup.
+The original "weight" and "ioprio_class" files are still available. If you
+don't do special configuration for a particular device, "weight" and
+"ioprio_class" are used as default values in this device.
 
-TODO/Issues
-===========
-- AS anticipation logic does not seem to be sufficient to provide BW difference
-  if two "dd" are going in two different cgroups. Needs to be looked into.
+You can use the following format to play with the new interface.
+#echo DEV:weight:ioprio_class > /patch/to/cgroup/policy
+weight=0 means removing the policy for DEV.
 
-- AS write batch number of request adjustment happens upon every W->R batch
-  direction switch. This automatic adjustment depends on how much time a
-  read is taking after a W->R switch.
+Examples:
+Configure weight=300 ioprio_class=2 on /dev/hdb in this cgroup
+# echo /dev/hdb:300:2 > io.policy
+# cat io.policy
+dev weight class
+/dev/hdb 300 2
 
-  This does not gel very well when hierarhical scheduling is enabled and
-  every io group can have its separate read/write batch. Now if io group
-  switching takes place it creates issues.
+Configure weight=500 ioprio_class=1 on /dev/hda in this cgroup
+# echo /dev/hda:500:1 > io.policy
+# cat io.policy
+dev weight class
+/dev/hda 500 1
+/dev/hdb 300 2
 
-  Currently I have disabled write batch length adjustment in hierarchical
-  mode.
+Remove the policy for /dev/hda in this cgroup
+# echo /dev/hda:0:1 > io.policy
+# cat io.policy
+dev weight class
+/dev/hdb 300 2
 
-- Currently performance seems to be very bad in hierarhical mode. Needs
-  to be looked into.
+Changelog (v1 -> v2)
+- Rename some structures
+- Use spin_lock_irqsave() and spin_lock_irqrestore() version to prevent
+  from enabling the interrupts unconditionally.
+- Fix policy setup bug when switching to another io scheduler.
+- If a policy is available for a specific device, don't update weight and
+  io class when writing "weight" and "iprio_class".
+- Fix a bug when parsing policy string.
 
-- I think the whole idea of common layer doing time slice switching between
-  queues and then queue in turn running timed batches is not very good. May
-  be AS can maintain two queues (one for READS and other for WRITES) and let
-  common layer do the time slice switching between these two queues.
-
-Signed-off-by: Nauman Rafique <nauman@google.com>
+Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
 Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
 ---
- block/Kconfig.iosched    |   12 +++
- block/as-iosched.c       |  177 +++++++++++++++++++++++++++++++++++++++++++++-
- block/elevator-fq.c      |   72 ++++++++++++++++---
- include/linux/elevator.h |   16 ++++
- 4 files changed, 264 insertions(+), 13 deletions(-)
+ block/elevator-fq.c |  245 +++++++++++++++++++++++++++++++++++++++++++++++++-
+ block/elevator-fq.h |   11 +++
+ 2 files changed, 251 insertions(+), 5 deletions(-)
 
-diff --git a/block/Kconfig.iosched b/block/Kconfig.iosched
-index 3a9e7d7..77fc786 100644
---- a/block/Kconfig.iosched
-+++ b/block/Kconfig.iosched
-@@ -45,6 +45,18 @@ config IOSCHED_AS
- 	  deadline I/O scheduler, it can also be slower in some cases
- 	  especially some database loads.
- 
-+config IOSCHED_AS_HIER
-+	bool "Anticipatory Hierarchical Scheduling support"
-+	depends on IOSCHED_AS && CGROUPS
-+	select ELV_FAIR_QUEUING
-+	select GROUP_IOSCHED
-+	default n
-+	---help---
-+	  Enable hierarhical scheduling in anticipatory. In this mode
-+	  anticipatory keeps one IO queue per cgroup instead of a global
-+	  queue. Elevator fair queuing logic ensures fairness among various
-+	  queues.
-+
- config IOSCHED_DEADLINE
- 	tristate "Deadline I/O scheduler"
- 	default y
-diff --git a/block/as-iosched.c b/block/as-iosched.c
-index 7158e13..12aea88 100644
---- a/block/as-iosched.c
-+++ b/block/as-iosched.c
-@@ -84,6 +84,19 @@ struct as_queue {
- 	struct list_head fifo_list[2];
- 
- 	struct request *next_rq[2];	/* next in sort order */
-+
-+	/*
-+	 * If an as_queue is switched while a batch is running, then we
-+	 * store the time left before current batch will expire
-+	 */
-+	long current_batch_time_left;
-+
-+	/*
-+	 * batch data dir when queue was scheduled out. This will be used
-+	 * to setup ad->batch_data_dir when queue is scheduled in.
-+	 */
-+	int saved_batch_data_dir;
-+
- 	unsigned long last_check_fifo[2];
- 	int write_batch_count;		/* max # of reqs in a write batch */
- 	int current_write_count;	/* how many requests left this batch */
-@@ -150,6 +163,141 @@ static DEFINE_SPINLOCK(ioc_gone_lock);
- 
- static void as_move_to_dispatch(struct as_data *ad, struct request *rq);
- static void as_antic_stop(struct as_data *ad);
-+static inline int as_batch_expired(struct as_data *ad, struct as_queue *asq);
-+
-+#ifdef CONFIG_IOSCHED_AS_HIER
-+static void as_save_batch_context(struct as_data *ad, struct as_queue *asq)
-+{
-+	/* Save batch data dir */
-+	asq->saved_batch_data_dir = ad->batch_data_dir;
-+
-+	if (ad->changed_batch) {
-+		/*
-+		 * In case of force expire, we come here. Batch changeover
-+		 * has been signalled but we are waiting for all the
-+		 * request to finish from previous batch and then start
-+		 * the new batch. Can't wait now. Mark that full batch time
-+		 * needs to be allocated when this queue is scheduled again.
-+		 */
-+		asq->current_batch_time_left =
-+				ad->batch_expire[ad->batch_data_dir];
-+		ad->changed_batch = 0;
-+		return;
-+	}
-+
-+	if (ad->new_batch) {
-+		/*
-+		 * We should come here only when new_batch has been set
-+		 * but no read request has been issued or if it is a forced
-+		 * expiry.
-+		 *
-+		 * In both the cases, new batch has not started yet so
-+		 * allocate full batch length for next scheduling opportunity.
-+		 * We don't do write batch size adjustment in hierarchical
-+		 * AS so that should not be an issue.
-+		 */
-+		asq->current_batch_time_left =
-+				ad->batch_expire[ad->batch_data_dir];
-+		ad->new_batch = 0;
-+		return;
-+	}
-+
-+	/* Save how much time is left before current batch expires */
-+	if (as_batch_expired(ad, asq))
-+		asq->current_batch_time_left = 0;
-+	else {
-+		asq->current_batch_time_left = ad->current_batch_expires
-+							- jiffies;
-+		BUG_ON((asq->current_batch_time_left) < 0);
-+	}
-+}
-+
-+/*
-+ * FIXME: In original AS, read batch's time account started only after when
-+ * first request had completed (if last batch was a write batch). But here
-+ * we might be rescheduling a read batch right away irrespective of the fact
-+ * of disk cache state.
-+ */
-+static void as_restore_batch_context(struct as_data *ad, struct as_queue *asq)
-+{
-+	/* Adjust the batch expire time */
-+	if (asq->current_batch_time_left)
-+		ad->current_batch_expires = jiffies +
-+						asq->current_batch_time_left;
-+	/* restore asq batch_data_dir info */
-+	ad->batch_data_dir = asq->saved_batch_data_dir;
-+}
-+
-+/* ioq has been set. */
-+static void as_active_ioq_set(struct request_queue *q, void *sched_queue,
-+				int coop)
-+{
-+	struct as_queue *asq = sched_queue;
-+	struct as_data *ad = q->elevator->elevator_data;
-+
-+	as_restore_batch_context(ad, asq);
-+}
-+
-+/*
-+ * This is a notification from common layer that it wishes to expire this
-+ * io queue. AS decides whether queue can be expired, if yes, it also
-+ * saves the batch context.
-+ */
-+static int as_expire_ioq(struct request_queue *q, void *sched_queue,
-+				int slice_expired, int force)
-+{
-+	struct as_data *ad = q->elevator->elevator_data;
-+	int status = ad->antic_status;
-+	struct as_queue *asq = sched_queue;
-+
-+	/* Forced expiry. We don't have a choice */
-+	if (force) {
-+		as_antic_stop(ad);
-+		as_save_batch_context(ad, asq);
-+		return 1;
-+	}
-+
-+	/*
-+	 * We are waiting for requests to finish from last
-+	 * batch. Don't expire the queue now
-+	 */
-+	if (ad->changed_batch)
-+		goto keep_queue;
-+
-+	/*
-+	 * Wait for all requests from existing batch to finish before we
-+	 * switch the queue. New queue might change the batch direction
-+	 * and this is to be consistent with AS philosophy of not dispatching
-+	 * new requests to underlying drive till requests from requests
-+	 * from previous batch are completed.
-+	 */
-+	if (ad->nr_dispatched)
-+		goto keep_queue;
-+
-+	/*
-+	 * If AS anticipation is ON, stop it if slice expired, otherwise
-+	 * keep the queue.
-+	 */
-+	if (status == ANTIC_WAIT_REQ || status == ANTIC_WAIT_NEXT) {
-+		if (slice_expired)
-+			as_antic_stop(ad);
-+		else
-+			/*
-+			 * We are anticipating and time slice has not expired
-+			 * so I would rather prefer waiting than break the
-+			 * anticipation and expire the queue.
-+			 */
-+			goto keep_queue;
-+	}
-+
-+	/* We are good to expire the queue. Save batch context */
-+	as_save_batch_context(ad, asq);
-+	return 1;
-+
-+keep_queue:
-+	return 0;
-+}
-+#endif
- 
- /*
-  * IO Context helper functions
-@@ -805,6 +953,7 @@ static void as_update_rq(struct as_data *ad, struct request *rq)
- 	}
- }
- 
-+#ifndef CONFIG_IOSCHED_AS_HIER
- /*
-  * Gathers timings and resizes the write batch automatically
-  */
-@@ -833,6 +982,7 @@ static void update_write_batch(struct as_data *ad)
- 	if (asq->write_batch_count < 1)
- 		asq->write_batch_count = 1;
- }
-+#endif /* !CONFIG_IOSCHED_AS_HIER */
- 
- /*
-  * as_completed_request is to be called when a request has completed and
-@@ -867,7 +1017,26 @@ static void as_completed_request(struct request_queue *q, struct request *rq)
- 	 * and writeback caches
- 	 */
- 	if (ad->new_batch && ad->batch_data_dir == rq_is_sync(rq)) {
-+#ifndef CONFIG_IOSCHED_AS_HIER
-+		/*
-+		 * Dynamic updation of write batch length is disabled
-+		 * for hierarchical scheduling. It is difficult to do
-+		 * accurate accounting when queue switch can take place
-+		 * in the middle of the batch.
-+		 *
-+		 * Say, A, B are two groups. Following is the sequence of
-+		 * events.
-+		 *
-+		 * Servicing Write batch of A.
-+		 * Queue switch takes place and write batch of B starts.
-+		 * Batch switch takes place and read batch of B starts.
-+		 *
-+		 * In above scenario, writes issued in write batch of A
-+		 * might impact the write batch length of B. Which is not
-+		 * good.
-+		 */
- 		update_write_batch(ad);
-+#endif
- 		ad->current_batch_expires = jiffies +
- 				ad->batch_expire[BLK_RW_SYNC];
- 		ad->new_batch = 0;
-@@ -1516,8 +1685,14 @@ static struct elevator_type iosched_as = {
- 		.trim =				as_trim,
- 		.elevator_alloc_sched_queue_fn = as_alloc_as_queue,
- 		.elevator_free_sched_queue_fn = as_free_as_queue,
-+#ifdef CONFIG_IOSCHED_AS_HIER
-+		.elevator_expire_ioq_fn =       as_expire_ioq,
-+		.elevator_active_ioq_set_fn =   as_active_ioq_set,
- 	},
--
-+	.elevator_features = ELV_IOSCHED_NEED_FQ | ELV_IOSCHED_SINGLE_IOQ | ELV_IOSCHED_DONT_IDLE,
-+#else
-+	},
-+#endif
- 	.elevator_attrs = as_attrs,
- 	.elevator_name = "anticipatory",
- 	.elevator_owner = THIS_MODULE,
 diff --git a/block/elevator-fq.c b/block/elevator-fq.c
-index 10787fd..cb38b1f 100644
+index 0650e03..6d97ad9 100644
 --- a/block/elevator-fq.c
 +++ b/block/elevator-fq.c
-@@ -37,6 +37,8 @@ static inline struct io_queue *elv_close_cooperator(struct request_queue *q,
- struct io_entity *bfq_lookup_next_entity(struct io_sched_data *sd,
- 						 int extract);
- void elv_release_ioq(struct elevator_queue *eq, struct io_queue **ioq_ptr);
-+int elv_iosched_expire_ioq(struct request_queue *q, int slice_expired,
-+					int force);
+@@ -13,6 +13,7 @@
+ #include <linux/blktrace_api.h>
+ #include <linux/seq_file.h>
+ #include <linux/biotrack.h>
++#include <linux/genhd.h>
  
- static inline int elv_prio_slice(struct elv_fq_data *efqd, int sync,
- 					unsigned short prio)
-@@ -2185,6 +2187,9 @@ static void elv_ioq_update_idle_window(struct elevator_queue *eq,
- 	int old_idle, enable_idle;
- 	struct elv_fq_data *efqd = ioq->efqd;
- 
-+	/* If idling is disabled from ioscheduler, return */
-+	if (!elv_gen_idling_enabled(eq))
-+		return;
- 	/*
- 	 * Don't idle for async or idle io prio class
- 	 */
-@@ -2257,7 +2262,7 @@ int elv_init_ioq(struct elevator_queue *eq, struct io_queue *ioq,
- 		ioq->pid = current->pid;
- 
- 	ioq->sched_queue = sched_queue;
--	if (is_sync && !elv_ioq_class_idle(ioq))
-+	if (elv_gen_idling_enabled(eq) && is_sync && !elv_ioq_class_idle(ioq))
- 		elv_mark_ioq_idle_window(ioq);
- 	bfq_init_entity(&ioq->entity, iog);
- 	ioq->entity.budget = elv_prio_to_slice(efqd, ioq);
-@@ -2674,16 +2679,18 @@ int elv_should_preempt(struct request_queue *q, struct io_queue *new_ioq,
- static void elv_preempt_queue(struct request_queue *q, struct io_queue *ioq)
- {
- 	elv_log_ioq(&q->elevator->efqd, ioq, "preempt");
--	elv_ioq_slice_expired(q);
-+	if (elv_iosched_expire_ioq(q, 0, 1)) {
-+		elv_ioq_slice_expired(q);
- 
--	/*
--	 * Put the new queue at the front of the of the current list,
--	 * so we know that it will be selected next.
--	 */
-+		/*
-+		 * Put the new queue at the front of the of the current list,
-+		 * so we know that it will be selected next.
-+		 */
- 
--	elv_activate_ioq(ioq, 1);
--	elv_ioq_set_slice_end(ioq, 0);
--	elv_mark_ioq_slice_new(ioq);
-+		elv_activate_ioq(ioq, 1);
-+		elv_ioq_set_slice_end(ioq, 0);
-+		elv_mark_ioq_slice_new(ioq);
-+	}
+ /* Values taken from cfq */
+ const int elv_slice_sync = HZ / 10;
+@@ -1025,12 +1026,31 @@ struct io_group *io_cgroup_lookup_group(struct io_cgroup *iocg, void *key)
+ 	return NULL;
  }
  
- void elv_ioq_request_add(struct request_queue *q, struct request *rq)
-@@ -2863,11 +2870,44 @@ void elv_free_idle_ioq_list(struct elevator_queue *e)
- 		elv_deactivate_ioq(efqd, ioq, 0);
- }
- 
-+/*
-+ * Call iosched to let that elevator wants to expire the queue. This gives
-+ * iosched like AS to say no (if it is in the middle of batch changeover or
-+ * it is anticipating). it also allows iosched to do some house keeping
-+ *
-+ * force--> it is force dispatch and iosched must clean up its state. This
-+ * 	     is useful when elevator wants to drain iosched and wants to
-+ * 	     expire currnent active queue.
-+ *
-+ * slice_expired--> if 1, ioq slice expired hence elevator fair queuing logic
-+ * 		    wants to switch the queue. iosched should allow that until
-+ * 		    and unless necessary. Currently AS can deny the switch if
-+ * 		    in the middle of batch switch.
-+ *
-+ * 		    if 0, time slice is still remaining. It is up to the iosched
-+ * 		    whether it wants to wait on this queue or just want to
-+ * 		    expire it and move on to next queue.
-+ *
-+ */
-+int elv_iosched_expire_ioq(struct request_queue *q, int slice_expired,
-+					int force)
-+{
-+	struct elevator_queue *e = q->elevator;
-+	struct io_queue *ioq = elv_active_ioq(q->elevator);
+-void io_group_init_entity(struct io_cgroup *iocg, struct io_group *iog)
++static struct io_policy_node *policy_search_node(const struct io_cgroup *iocg,
++						 dev_t dev);
 +
-+	if (e->ops->elevator_expire_ioq_fn)
-+		return e->ops->elevator_expire_ioq_fn(q, ioq->sched_queue,
-+							slice_expired, force);
-+
-+	return 1;
-+}
-+
- /* Common layer function to select the next queue to dispatch from */
- void *elv_fq_select_ioq(struct request_queue *q, int force)
++void io_group_init_entity(struct io_cgroup *iocg, struct io_group *iog,
++			  dev_t dev)
  {
- 	struct elv_fq_data *efqd = &q->elevator->efqd;
- 	struct io_queue *new_ioq = NULL, *ioq = elv_active_ioq(q->elevator);
-+	int slice_expired = 1;
- 
- 	if (!elv_nr_busy_ioq(q->elevator))
- 		return NULL;
-@@ -2962,8 +3002,14 @@ void *elv_fq_select_ioq(struct request_queue *q, int force)
- 		goto keep_queue;
- 	}
- 
-+	slice_expired = 0;
- expire:
--	elv_ioq_slice_expired(q);
-+	if (elv_iosched_expire_ioq(q, slice_expired, force))
-+		elv_ioq_slice_expired(q);
-+	else {
-+		ioq = NULL;
-+		goto keep_queue;
+ 	struct io_entity *entity = &iog->entity;
++	struct io_policy_node *pn;
++	unsigned long flags;
++
++	spin_lock_irqsave(&iocg->lock, flags);
++	pn = policy_search_node(iocg, dev);
++	if (pn) {
++		entity->weight = pn->weight;
++		entity->new_weight = pn->weight;
++		entity->ioprio_class = pn->ioprio_class;
++		entity->new_ioprio_class = pn->ioprio_class;
++	} else {
++		entity->weight = iocg->weight;
++		entity->new_weight = iocg->weight;
++		entity->ioprio_class = iocg->ioprio_class;
++		entity->new_ioprio_class = iocg->ioprio_class;
 +	}
- new_queue:
- 	ioq = elv_set_active_ioq(q, new_ioq);
- keep_queue:
-@@ -3128,7 +3174,8 @@ void elv_ioq_completed_request(struct request_queue *q, struct request *rq)
++	spin_unlock_irqrestore(&iocg->lock, flags);
+ 
+-	entity->weight = entity->new_weight = iocg->weight;
+-	entity->ioprio_class = entity->new_ioprio_class = iocg->ioprio_class;
+ 	entity->ioprio_changed = 1;
+ 	entity->my_sched_data = &iog->sched_data;
+ }
+@@ -1094,6 +1114,7 @@ static int io_cgroup_##__VAR##_write(struct cgroup *cgroup,		\
+ 	struct io_cgroup *iocg;					\
+ 	struct io_group *iog;						\
+ 	struct hlist_node *n;						\
++	struct io_policy_node *pn;					\
+ 									\
+ 	if (val < (__MIN) || val > (__MAX))				\
+ 		return -EINVAL;						\
+@@ -1106,6 +1127,9 @@ static int io_cgroup_##__VAR##_write(struct cgroup *cgroup,		\
+ 	spin_lock_irq(&iocg->lock);					\
+ 	iocg->__VAR = (unsigned long)val;				\
+ 	hlist_for_each_entry(iog, n, &iocg->group_data, group_node) {	\
++		pn = policy_search_node(iocg, iog->dev);		\
++		if (pn)							\
++			continue;					\
+ 		iog->entity.new_##__VAR = (unsigned long)val;		\
+ 		smp_wmb();						\
+ 		iog->entity.ioprio_changed = 1;				\
+@@ -1214,8 +1238,6 @@ struct io_group *io_group_chain_alloc(struct request_queue *q, void *key,
+ 		if (!iog)
+ 			goto cleanup;
+ 
+-		io_group_init_entity(iocg, iog);
+-		iog->my_entity = &iog->entity;
+ 		atomic_set(&iog->ref, 0);
+ 		iog->deleting = 0;
+ 
+@@ -1233,6 +1255,8 @@ struct io_group *io_group_chain_alloc(struct request_queue *q, void *key,
  		}
  
- 		if (elv_ioq_class_idle(ioq)) {
--			elv_ioq_slice_expired(q);
-+			if (elv_iosched_expire_ioq(q, 1, 0))
-+				elv_ioq_slice_expired(q);
- 			goto done;
- 		}
+ 		iog->iocg_id = css_id(&iocg->css);
++		io_group_init_entity(iocg, iog, iog->dev);
++		iog->my_entity = &iog->entity;
  
-@@ -3149,7 +3196,8 @@ void elv_ioq_completed_request(struct request_queue *q, struct request *rq)
- 				elv_ioq_arm_slice_timer(q, 1);
- 			} else {
- 				/* Expire the queue */
--				elv_ioq_slice_expired(q);
-+				if (elv_iosched_expire_ioq(q, 1, 0))
-+					elv_ioq_slice_expired(q);
- 			}
- 		} else if (!ioq->nr_queued && !elv_close_cooperator(q, ioq, 1)
- 			 && sync && !rq_noidle(rq))
-diff --git a/include/linux/elevator.h b/include/linux/elevator.h
-index ee38d08..cbfce0b 100644
---- a/include/linux/elevator.h
-+++ b/include/linux/elevator.h
-@@ -42,6 +42,7 @@ typedef int (elevator_update_idle_window_fn) (struct elevator_queue*, void*,
- 						struct request*);
- typedef struct io_queue* (elevator_close_cooperator_fn) (struct request_queue*,
- 						void*, int probe);
-+typedef int (elevator_expire_ioq_fn) (struct request_queue*, void *, int, int);
- #endif
+ 		blk_init_request_list(&iog->rl);
  
- struct elevator_ops
-@@ -81,6 +82,7 @@ struct elevator_ops
- 	elevator_should_preempt_fn *elevator_should_preempt_fn;
- 	elevator_update_idle_window_fn *elevator_update_idle_window_fn;
- 	elevator_close_cooperator_fn *elevator_close_cooperator_fn;
-+	elevator_expire_ioq_fn  *elevator_expire_ioq_fn;
- #endif
- };
- 
-@@ -252,6 +254,9 @@ enum {
- /* iosched maintains only single ioq per group.*/
- #define ELV_IOSCHED_SINGLE_IOQ        2
- 
-+/* iosched does not need anticipation/idling logic support from common layer */
-+#define ELV_IOSCHED_DONT_IDLE	4
-+
- static inline int elv_iosched_fair_queuing_enabled(struct elevator_queue *e)
- {
- 	return (e->elevator_type->elevator_features) & ELV_IOSCHED_NEED_FQ;
-@@ -262,6 +267,12 @@ static inline int elv_iosched_single_ioq(struct elevator_queue *e)
- 	return (e->elevator_type->elevator_features) & ELV_IOSCHED_SINGLE_IOQ;
+@@ -1507,8 +1531,212 @@ struct io_group *io_alloc_root_group(struct request_queue *q,
+ 	return iog;
  }
  
-+/* returns 1 if elevator layer should enable its idling logic, 0 otherwise */
-+static inline int elv_gen_idling_enabled(struct elevator_queue *e)
++static int io_cgroup_policy_read(struct cgroup *cgrp, struct cftype *cft,
++				  struct seq_file *m)
 +{
-+	return !((e->elevator_type->elevator_features) & ELV_IOSCHED_DONT_IDLE);
-+}
++	struct io_cgroup *iocg;
++	struct io_policy_node *pn;
 +
- #else /* ELV_IOSCHED_FAIR_QUEUING */
- 
- static inline int elv_iosched_fair_queuing_enabled(struct elevator_queue *e)
-@@ -274,6 +285,11 @@ static inline int elv_iosched_single_ioq(struct elevator_queue *e)
- 	return 0;
- }
- 
-+static inline int elv_gen_idling_enabled(struct elevator_queue *e)
-+{
++	iocg = cgroup_to_io_cgroup(cgrp);
++
++	if (list_empty(&iocg->policy_list))
++		goto out;
++
++	seq_printf(m, "dev weight class\n");
++
++	spin_lock_irq(&iocg->lock);
++	list_for_each_entry(pn, &iocg->policy_list, node) {
++		seq_printf(m, "%s %lu %lu\n", pn->dev_name,
++			   pn->weight, pn->ioprio_class);
++	}
++	spin_unlock_irq(&iocg->lock);
++out:
 +	return 0;
 +}
 +
- #endif /* ELV_IOSCHED_FAIR_QUEUING */
- extern void *elv_get_sched_queue(struct request_queue *q, struct request *rq);
- extern void *elv_select_sched_queue(struct request_queue *q, int force);
++static inline void policy_insert_node(struct io_cgroup *iocg,
++					  struct io_policy_node *pn)
++{
++	list_add(&pn->node, &iocg->policy_list);
++}
++
++/* Must be called with iocg->lock held */
++static inline void policy_delete_node(struct io_policy_node *pn)
++{
++	list_del(&pn->node);
++}
++
++/* Must be called with iocg->lock held */
++static struct io_policy_node *policy_search_node(const struct io_cgroup *iocg,
++						 dev_t dev)
++{
++	struct io_policy_node *pn;
++
++	if (list_empty(&iocg->policy_list))
++		return NULL;
++
++	list_for_each_entry(pn, &iocg->policy_list, node) {
++		if (pn->dev == dev)
++			return pn;
++	}
++
++	return NULL;
++}
++
++static int devname_to_devnum(const char *buf, dev_t *dev)
++{
++	struct block_device *bdev;
++	struct gendisk *disk;
++	int part;
++
++	bdev = lookup_bdev(buf);
++	if (IS_ERR(bdev))
++		return -ENODEV;
++
++	disk = get_gendisk(bdev->bd_dev, &part);
++	if (part)
++		return -EINVAL;
++
++	*dev = MKDEV(disk->major, disk->first_minor);
++	bdput(bdev);
++
++	return 0;
++}
++
++static int policy_parse_and_set(char *buf, struct io_policy_node *newpn)
++{
++	char *s[3], *p;
++	int ret;
++	int i = 0;
++
++	memset(s, 0, sizeof(s));
++	while ((p = strsep(&buf, ":")) != NULL) {
++		if (!*p)
++			continue;
++		s[i++] = p;
++	}
++
++	ret = devname_to_devnum(s[0], &newpn->dev);
++	if (ret)
++		return ret;
++
++	strcpy(newpn->dev_name, s[0]);
++
++	if (s[1] == NULL)
++		return -EINVAL;
++
++	ret = strict_strtoul(s[1], 10, &newpn->weight);
++	if (ret || newpn->weight > WEIGHT_MAX)
++		return -EINVAL;
++
++	if (s[2] == NULL)
++		return -EINVAL;
++
++	ret = strict_strtoul(s[2], 10, &newpn->ioprio_class);
++	if (ret || newpn->ioprio_class < IOPRIO_CLASS_RT ||
++	    newpn->ioprio_class > IOPRIO_CLASS_IDLE)
++		return -EINVAL;
++
++	return 0;
++}
++
++static int io_cgroup_policy_write(struct cgroup *cgrp, struct cftype *cft,
++			    const char *buffer)
++{
++	struct io_cgroup *iocg;
++	struct io_policy_node *newpn, *pn;
++	char *buf;
++	int ret = 0;
++	int keep_newpn = 0;
++	struct hlist_node *n;
++	struct io_group *iog;
++
++	buf = kstrdup(buffer, GFP_KERNEL);
++	if (!buf)
++		return -ENOMEM;
++
++	newpn = kzalloc(sizeof(*newpn), GFP_KERNEL);
++	if (!newpn) {
++		ret = -ENOMEM;
++		goto free_buf;
++	}
++
++	ret = policy_parse_and_set(buf, newpn);
++	if (ret)
++		goto free_newpn;
++
++	if (!cgroup_lock_live_group(cgrp)) {
++		ret = -ENODEV;
++		goto free_newpn;
++	}
++
++	iocg = cgroup_to_io_cgroup(cgrp);
++	spin_lock_irq(&iocg->lock);
++
++	pn = policy_search_node(iocg, newpn->dev);
++	if (!pn) {
++		if (newpn->weight != 0) {
++			policy_insert_node(iocg, newpn);
++			keep_newpn = 1;
++		}
++		goto update_io_group;
++	}
++
++	if (newpn->weight == 0) {
++		/* weight == 0 means deleteing a policy */
++		policy_delete_node(pn);
++		goto update_io_group;
++	}
++
++	pn->weight = newpn->weight;
++	pn->ioprio_class = newpn->ioprio_class;
++
++update_io_group:
++	hlist_for_each_entry(iog, n, &iocg->group_data, group_node) {
++		if (iog->dev == newpn->dev) {
++			if (newpn->weight) {
++				iog->entity.new_weight = newpn->weight;
++				iog->entity.new_ioprio_class =
++					newpn->ioprio_class;
++				/*
++				 * iog weight and ioprio_class updating
++				 * actually happens if ioprio_changed is set.
++				 * So ensure ioprio_changed is not set until
++				 * new weight and new ioprio_class are updated.
++				 */
++				smp_wmb();
++				iog->entity.ioprio_changed = 1;
++			} else {
++				iog->entity.new_weight = iocg->weight;
++				iog->entity.new_ioprio_class =
++					iocg->ioprio_class;
++
++				/* The same as above */
++				smp_wmb();
++				iog->entity.ioprio_changed = 1;
++			}
++		}
++	}
++	spin_unlock_irq(&iocg->lock);
++
++	cgroup_unlock();
++
++free_newpn:
++	if (!keep_newpn)
++		kfree(newpn);
++free_buf:
++	kfree(buf);
++	return ret;
++}
++
+ struct cftype bfqio_files[] = {
+ 	{
++		.name = "policy",
++		.read_seq_string = io_cgroup_policy_read,
++		.write_string = io_cgroup_policy_write,
++		.max_write_len = 256,
++	},
++	{
+ 		.name = "weight",
+ 		.read_u64 = io_cgroup_weight_read,
+ 		.write_u64 = io_cgroup_weight_write,
+@@ -1550,6 +1778,7 @@ struct cgroup_subsys_state *iocg_create(struct cgroup_subsys *subsys,
+ 	INIT_HLIST_HEAD(&iocg->group_data);
+ 	iocg->weight = IO_DEFAULT_GRP_WEIGHT;
+ 	iocg->ioprio_class = IO_DEFAULT_GRP_CLASS;
++	INIT_LIST_HEAD(&iocg->policy_list);
+ 
+ 	return &iocg->css;
+ }
+@@ -1739,6 +1968,7 @@ void iocg_destroy(struct cgroup_subsys *subsys, struct cgroup *cgroup)
+ 	struct io_group *iog;
+ 	struct elv_fq_data *efqd;
+ 	unsigned long uninitialized_var(flags);
++	struct io_policy_node *pn, *pntmp;
+ 
+ 	/*
+ 	 * io groups are linked in two lists. One list is maintained
+@@ -1777,6 +2007,11 @@ remove_entry:
+ 	goto remove_entry;
+ 
+ done:
++	list_for_each_entry_safe(pn, pntmp, &iocg->policy_list, node) {
++		policy_delete_node(pn);
++		kfree(pn);
++	}
++
+ 	free_css_id(&io_subsys, &iocg->css);
+ 	rcu_read_unlock();
+ 	BUG_ON(!hlist_empty(&iocg->group_data));
+diff --git a/block/elevator-fq.h b/block/elevator-fq.h
+index 5783f33..9062bfd 100644
+--- a/block/elevator-fq.h
++++ b/block/elevator-fq.h
+@@ -251,6 +251,14 @@ struct io_group {
+ 	struct request_list rl;
+ };
+ 
++struct io_policy_node {
++	struct list_head node;
++	char dev_name[32];
++	dev_t dev;
++	unsigned long weight;
++	unsigned long ioprio_class;
++};
++
+ /**
+  * struct bfqio_cgroup - bfq cgroup data structure.
+  * @css: subsystem state for bfq in the containing cgroup.
+@@ -267,6 +275,9 @@ struct io_cgroup {
+ 
+ 	unsigned long weight, ioprio_class;
+ 
++	/* list of io_policy_node */
++	struct list_head policy_list;
++
+ 	spinlock_t lock;
+ 	struct hlist_head group_data;
+ };
 -- 
 1.6.0.1
 
