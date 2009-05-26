@@ -1,67 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756325AbZEZNAo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756188AbZEZNFm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756325AbZEZNAo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 09:00:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755922AbZEZNAg
+	id S1756188AbZEZNFm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 09:05:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753996AbZEZNFf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 09:00:36 -0400
-Received: from mailx.hitachi.co.jp ([133.145.228.49]:46152 "EHLO
-	mailx.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754087AbZEZNAf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 09:00:35 -0400
-X-AuditID: b753bd60-a7cf8ba00000617e-f9-4a1be5a5bcf9
-Message-ID: <4A1BE58A.9060708@hitachi.com>
-Date: Tue, 26 May 2009 21:50:18 +0900
-From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
-    Gecko/20030624 Netscape/7.1 (ax)
-X-Accept-Language: ja
+	Tue, 26 May 2009 09:05:35 -0400
+Received: from hera.kernel.org ([140.211.167.34]:44293 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752125AbZEZNFe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 09:05:34 -0400
+Message-ID: <4A1BE904.8080302@kernel.org>
+Date: Tue, 26 May 2009 22:05:08 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, x86@kernel.org,
-       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>,
-       Taketoshi Sakuraba <taketoshi.sakuraba.hc@hitachi.com>
-Subject: Re: [PATCH] [0/16] POISON: Intro
-References: <20090407509.382219156@firstfloor.org>
-In-Reply-To: <20090407509.382219156@firstfloor.org>
-Content-Type: text/plain; charset="us-ascii"
+To: linux-pci@vger.kernel.org, Greg KH <greg@kroah.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, towerlexa@gmx.de
+Subject: Who's responsible for configuring CLS on a cardbus device?
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAA==
-X-FMFTCR: RANGEC
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 26 May 2009 13:05:10 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
-(I'm sorry for the very late comment.)
+Hello,
 
-Andi Kleen wrote:
+This is regarding bko#13257.
 
-> Upcoming Intel CPUs have support for recovering from some memory errors. This
-> requires the OS to declare a page "poisoned", kill the processes associated
-> with it and avoid using it in the future. This patchkit implements
-> the necessary infrastructure in the VM.
+ http://bugzilla.kernel.org/show_bug.cgi?id=13257
 
-I think this patch set is a great step to get the Linux system
-reliable close to mainframe.  I really appreciate your work.
+towerlexa@gmx.de was experiencing very slow transfer rate when using a
+cardbus sata_sil SATA controller which is known to be sensitive to
+cache line size setting.  The reset default is zero and no one
+configured it causing poor performance.
 
-I believe people concerning high reliable system are expecting
-this kind of functionality.
-But I wonder why this patch set (including former MCE improvements
-patches) has not been merged into any subsystem trees yet.
-What is the problem?  Because of the deadlock bug and the ref counter
-problem?  Or are we waiting for 32bit unification to complete?
-If so, I'd like to try to narrow down the problems or review
-patches (although I'm afraid I'm not so skillful).
+This is solvable by simply setting CLS to the correct value but who's
+job is it?  For non-hotplug devices, this is configured by the BIOS
+(at least on PC), so for hotplug devices I think falls on the lap of
+the PCI code but I'm not sure.  If this is something which the
+sata_sil driver should be responsible for, is there an established way
+to determine the proper CLS value?
 
-BTW, I looked over this patch set, and I couldn't
-find any problems except for one minor point.  I'll post
-a comment about it later.  It is very late, but better than nothing.
+Thanks.
 
-Regards,
 -- 
-Hidehiro Kawai
-Hitachi, Systems Development Laboratory
-Linux Technology Center
-
+tejun
