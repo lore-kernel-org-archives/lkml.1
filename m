@@ -1,73 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755058AbZEZLYx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755039AbZEZL34@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755058AbZEZLYx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 07:24:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754586AbZEZLYq
+	id S1755039AbZEZL34 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 07:29:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752980AbZEZL3t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 07:24:46 -0400
-Received: from ozlabs.org ([203.10.76.45]:36020 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752609AbZEZLYp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 07:24:45 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PATCH] lguest: fix on Intel when KVM loaded (unhandled trap 13)
-Date: Tue, 26 May 2009 20:54:41 +0930
-User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
-Cc: "kvm-devel" <kvm-devel@lists.sourceforge.net>, lguest <lguest@ozlabs.org>,
-       linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
+	Tue, 26 May 2009 07:29:49 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:45839 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752802AbZEZL3s (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 07:29:48 -0400
+Subject: Re: Broken ARM atomic ops wrt memory barriers (was : [PATCH] Add
+	cmpxchg support for ARMv6+ systems)
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Jamie Lokier <jamie@shareable.org>,
+       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
+In-Reply-To: <20090525193414.GB3667@n2100.arm.linux.org.uk>
+References: <20090422171703.19555.83629.stgit@pc1117.cambridge.arm.com>
+	 <20090423141248.22193.10543.stgit@pc1117.cambridge.arm.com>
+	 <20090524131636.GB3159@n2100.arm.linux.org.uk>
+	 <20090524145633.GA14754@Krystal> <20090525132027.GA946@shareable.org>
+	 <20090525151724.GA14321@Krystal>
+	 <20090525161941.GA3667@n2100.arm.linux.org.uk>
+	 <20090525172955.GA17665@Krystal>
+	 <20090525193414.GB3667@n2100.arm.linux.org.uk>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Tue, 26 May 2009 12:29:12 +0100
+Message-Id: <1243337352.21735.12.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905262054.42566.rusty@rustcorp.com.au>
+X-OriginalArrivalTime: 26 May 2009 11:29:13.0649 (UTC) FILETIME=[323F1210:01C9DDF5]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When KVM is loaded, and hence VT set up, the vmcall instruction in an
-lguest guest causes a #GP, not #UD.
+On Mon, 2009-05-25 at 20:34 +0100, Russell King - ARM Linux wrote:
+> On Mon, May 25, 2009 at 01:29:55PM -0400, Mathieu Desnoyers wrote:
+> > Basically, to make sure we don't forget anything, someone should go
+> > through all the atomic_ops.txt document once more and audit all ARM
+> > primitives.
+> 
+> That's easy to say - it took me more than half an hour of reading through
+> atomic_ops.txt to work out what was required for things like cmpxchg,
+> xchg, etc because it's _very_ waffley and verbose, and directs you to
+> other parts of the document.
+> 
+> For example, for atomic_cmpxchg it directs you to 'cas' but cas doesn't
+> really say what the barrier requirements are - reading it leaves me
+> to expect that provided spinlocks are serializing themselves, it's
+> fine if 'cas' itself isn't.
+> 
+> Maybe if someone has a few days to translate atomic_ops.txt into a
+> succinct set of requirements, and get _that_ reviewed, then we could
+> properly audit this stuff.
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
----
- drivers/lguest/x86/core.c |   19 ++++++++++---------
- 1 file changed, 10 insertions(+), 9 deletions(-)
+Documentation/memory-barriers.txt has a section on atomic operations and
+it states that barriers should be placed on each side of the cmpxchg and
+xchg operations.
 
-diff --git a/drivers/lguest/x86/core.c b/drivers/lguest/x86/core.c
---- a/drivers/lguest/x86/core.c
-+++ b/drivers/lguest/x86/core.c
-@@ -358,6 +358,16 @@ void lguest_arch_handle_trap(struct lg_c
- 			if (emulate_insn(cpu))
- 				return;
- 		}
-+		/* If KVM is active, the vmcall instruction triggers a
-+		 * General Protection Fault.  Normally it triggers an
-+		 * invalid opcode fault (6): */
-+	case 6:
-+		/* We need to check if ring == GUEST_PL and
-+		 * faulting instruction == vmcall. */
-+		if (is_hypercall(cpu)) {
-+			rewrite_hypercall(cpu);
-+			return;
-+		}
- 		break;
- 	case 14: /* We've intercepted a Page Fault. */
- 		/* The Guest accessed a virtual address that wasn't mapped.
-@@ -403,15 +413,6 @@ void lguest_arch_handle_trap(struct lg_c
- 		 * up the pointer now to indicate a hypercall is pending. */
- 		cpu->hcall = (struct hcall_args *)cpu->regs;
- 		return;
--	case 6:
--		/* kvm hypercalls trigger an invalid opcode fault (6).
--		 * We need to check if ring == GUEST_PL and
--		 * faulting instruction == vmcall. */
--		if (is_hypercall(cpu)) {
--			rewrite_hypercall(cpu);
--			return;
--		}
--		break;
- 	}
- 
- 	/* We didn't handle the trap, so it needs to go to the Guest. */
+-- 
+Catalin
 
