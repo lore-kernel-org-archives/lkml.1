@@ -1,62 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757173AbZEZSr5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756825AbZEZSv5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757173AbZEZSr5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 14:47:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755682AbZEZSrv
+	id S1756825AbZEZSv5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 14:51:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755792AbZEZSvt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 14:47:51 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:47288 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755613AbZEZSru (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 14:47:50 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Frans Pop <elendil@planet.nl>
-Subject: Re: 2.6.30-rc6: Reported regressions from 2.6.29
-Date: Tue, 26 May 2009 20:48:12 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc6-rjw; KDE/4.2.3; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, kernel-testers@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-References: <_AjETDMbIoL.A.DcH.RYzDKB@chimera> <200905260102.29455.rjw@sisk.pl> <200905261730.53041.elendil@planet.nl>
-In-Reply-To: <200905261730.53041.elendil@planet.nl>
+	Tue, 26 May 2009 14:51:49 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:60933 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755694AbZEZSvs convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 14:51:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=A4h5ZOs4v1GdZrk0itEoDshU4WXaUFax8G7K/gQEzeTzZo1xu1jMf2shY+60mY+mMa
+         urj5fz8Wx/7EQriI83rEz4yPB1K83TXseQGh91x7vYEFtRMr+WA/9GqPPpNvnrq/L2T2
+         uk66oFMyYz+Abdqwa392HRx8chWyh2deXDq0w=
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905262048.13325.rjw@sisk.pl>
+In-Reply-To: <20090526184216.GA10560@sortiz.org>
+References: <20090526174012.423883376@linux.intel.com>
+	 <20090526174213.806710164@linux.intel.com>
+	 <37219a840905261132q6b0a7289x3408fb904ddf90df@mail.gmail.com>
+	 <20090526184216.GA10560@sortiz.org>
+Date: Tue, 26 May 2009 14:44:45 -0400
+X-Google-Sender-Auth: bcacd59bca9751e5
+Message-ID: <37219a840905261144r1c74a42dq7b24bdce1b8059b@mail.gmail.com>
+Subject: Re: [PATCH 4/6] dvb/dvb-usb: prepare for FIRMWARE_NAME_MAX removal
+From: Michael Krufky <mkrufky@kernellabs.com>
+To: Samuel Ortiz <sameo@linux.intel.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Greg Kroah-Hartmann <greg@kroah.com>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Kay Sievers <kay.sievers@vrfy.org>,
+       linux-media <linux-media@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 26 May 2009, Frans Pop wrote:
-> On Tuesday 26 May 2009, Rafael J. Wysocki wrote:
-> > On Monday 25 May 2009, Frans Pop wrote:
-> > > Rafael J. Wysocki wrote:
-> > > > If you know of any other unresolved regressions from 2.6.29, please
-> > > > let me know either and I'll add them to the list.
-> > >
-> > > It may be worth tracking a possible regression introduced with -rc6
-> > > as a result of http://bugzilla.kernel.org/show_bug.cgi?id=13259.
-> > >
-> > > A new warning that was added in drivers/acpi/processor_throttling.c
-> > > (commit 4973b22a: 'ACPI processor: reset the throttling state once
-> > > it's invalid') may be triggering in cases where it shouldn't. It
-> > > seems to trigger during boot and on 'cat
-> > > /proc/acpi/processor/*/throttling'. Otherwise it's probably
-> > > relatively harmless.
-> > >
-> > > See the comments starting at #23 for details.
-> >
-> > Hmm.  It's really better if you file a separate bug for that with a
-> > reference to the previous discussion.
-> 
-> Done (after doing additional debugging):
-> http://bugzilla.kernel.org/show_bug.cgi?id=13389
-> 
-> Marked as regression and set as blocking for #13070.
+On Tue, May 26, 2009 at 2:42 PM, Samuel Ortiz <sameo@linux.intel.com> wrote:
+> On Tue, May 26, 2009 at 02:32:45PM -0400, Michael Krufky wrote:
+>> On Tue, May 26, 2009 at 1:40 PM, Samuel Ortiz <sameo@linux.intel.com> wrote:
+>> > From: Samuel Ortiz <sameo@linux.intel.com>
+>> > To: Mauro Carvalho Chehab <mchehab@infradead.org>
+>> >
+>> > We're going to remove the FIRMWARE_NAME_MAX definition in order to avoid any
+>> > firmware name length restriction.
+>> > This patch changes the dvb_usb_device_properties firmware field accordingly.
+>> >
+>> > Signed-off-by: Samuel Ortiz <sameo@linux.intel.com>
+>> >
+>> > ---
+>> >  drivers/media/dvb/dvb-usb/dvb-usb.h |    2 +-
+>> >  1 file changed, 1 insertion(+), 1 deletion(-)
+>> >
+>> > Index: iwm-2.6/drivers/media/dvb/dvb-usb/dvb-usb.h
+>> > ===================================================================
+>> > --- iwm-2.6.orig/drivers/media/dvb/dvb-usb/dvb-usb.h    2009-05-26 17:24:36.000000000 +0200
+>> > +++ iwm-2.6/drivers/media/dvb/dvb-usb/dvb-usb.h 2009-05-26 17:25:19.000000000 +0200
+>> > @@ -196,7 +196,7 @@ struct dvb_usb_device_properties {
+>> >  #define CYPRESS_FX2     3
+>> >        int        usb_ctrl;
+>> >        int        (*download_firmware) (struct usb_device *, const struct firmware *);
+>> > -       const char firmware[FIRMWARE_NAME_MAX];
+>> > +       const char *firmware;
+>> >        int        no_reconnect;
+>> >
+>> >        int size_of_priv;
+>> >
+>> > --
+>> > Intel Open Source Technology Centre
+>> > http://oss.intel.com/
+>> > --
+>> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>> > the body of a message to majordomo@vger.kernel.org
+>> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> > Please read the FAQ at  http://www.tux.org/lkml/
+>> >
+>>
+>> Samuel,
+>>
+>> Your patch makes the following change:
+>>
+>> -       const char firmware[FIRMWARE_NAME_MAX];
+>> +       const char *firmware;
+>>
+>> Before your change, struct dvb_usb_device_properties actually contains
+>> memory allocated for the firmware filename.  After your change, this
+>> is nothing but a pointer.
+>>
+>> This will cause an OOPS.
+> No, not if it's correctly initialized, as it seems to be for all the
+> dvb_usb_device_properties users right now.
+> Typically, you'd initialize your dvb_usb_device_properties like this:
+>
+> static struct dvb_usb_device_properties a800_properties = {
+>        .caps = DVB_USB_IS_AN_I2C_ADAPTER,
+>
+>        .usb_ctrl = CYPRESS_FX2,
+>        .firmware = "dvb-usb-avertv-a800-02.fw",
+> [...]
+>
+> And that's fine.
 
-Thanks!
+You're right -- there is nothing wrong with the change -- my bad.
 
-Best,
-Rafael
+I traced though the code after posting that last mail.  It looked
+risky when I just looked at the patch, but in the end this is actually
+cleaner and much better.
+
+Sorry for the noise.
+
+Acked /
+Reviewed-by: Michael Krufky <mkrufky@kernellabs.com>
