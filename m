@@ -1,76 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756143AbZEZP7g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756508AbZEZQAa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756143AbZEZP7g (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 11:59:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751853AbZEZP72
+	id S1756508AbZEZQAa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 12:00:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753924AbZEZQAW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 11:59:28 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:60062 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751248AbZEZP71 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 11:59:27 -0400
-Date: Tue, 26 May 2009 16:59:06 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Jamie Lokier <jamie@shareable.org>,
-       Catalin Marinas <catalin.marinas@arm.com>,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: Broken ARM atomic ops wrt memory barriers (was : [PATCH] Add
-	cmpxchg support for ARMv6+ systems)
-Message-ID: <20090526155906.GC26713@n2100.arm.linux.org.uk>
-References: <20090422171703.19555.83629.stgit@pc1117.cambridge.arm.com> <20090423141248.22193.10543.stgit@pc1117.cambridge.arm.com> <20090524131636.GB3159@n2100.arm.linux.org.uk> <20090524145633.GA14754@Krystal> <20090525132027.GA946@shareable.org> <20090525151724.GA14321@Krystal> <20090525161941.GA3667@n2100.arm.linux.org.uk> <20090526145950.GB26713@n2100.arm.linux.org.uk> <20090526153654.GA17096@Krystal>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090526153654.GA17096@Krystal>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 26 May 2009 12:00:22 -0400
+Received: from hera.kernel.org ([140.211.167.34]:48609 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753770AbZEZQAV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 12:00:21 -0400
+Subject: Re: [PATCH -tip][SCSI] scsi: scsi_transport_iscsi.c initialize the
+ variable before it get used
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: linux-scsi <linux-scsi@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1243351709.2815.33.camel@localhost.localdomain>
+References: <1243351161.31783.5.camel@localhost.localdomain>
+	 <1243351709.2815.33.camel@localhost.localdomain>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 26 May 2009 21:30:05 +0530
+Message-Id: <1243353605.31783.25.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 26, 2009 at 11:36:54AM -0400, Mathieu Desnoyers wrote:
-> > diff --git a/arch/arm/include/asm/system.h b/arch/arm/include/asm/system.h
-> > index bd4dc8e..e9889c2 100644
-> > --- a/arch/arm/include/asm/system.h
-> > +++ b/arch/arm/include/asm/system.h
-> > @@ -248,6 +248,8 @@ static inline unsigned long __xchg(unsigned long x, volatile void *ptr, int size
-> >  	unsigned int tmp;
-> >  #endif
-> >  
-> > +	smp_mb();
-> > +
-> >  	switch (size) {
-> >  #if __LINUX_ARM_ARCH__ >= 6
-> >  	case 1:
-> > @@ -258,7 +260,7 @@ static inline unsigned long __xchg(unsigned long x, volatile void *ptr, int size
-> >  		"	bne	1b"
-> >  			: "=&r" (ret), "=&r" (tmp)
-> >  			: "r" (x), "r" (ptr)
-> > -			: "memory", "cc");
-> > +			: "cc");
+Hello James,
+
+On Tue, 2009-05-26 at 10:28 -0500, James Bottomley wrote:
+> On Tue, 2009-05-26 at 20:49 +0530, Jaswinder Singh Rajput wrote:
+> > I am watching this problem from long time in -tip.
+> > 
+> > Subject: [PATCH] scsi: scsi_transport_iscsi.c initialize the variable before it get used
+> > 
+> > In some cases, err will be used uninitialized.
 > 
-> I would not remove the "memory" constraint in here. Anyway it's just a
-> compiler barrier, I doubt it would make anyting faster (due to the
-> following smp_mb() added), but it surely makes things harder to
-> understand.
+> What cases?  A simple theoretical analysis shows that this variable is
+> always set.
+> 
 
-If you don't already know that smp_mb() is always a compiler barrier then
-I guess it's true, but then if you don't know what the barriers are defined
-to be, should you be trying to understand atomic ops?
+Ok lets takes your tree:
 
-> If we determine that some reorderings are not possible on ARM, we might
-> eventually change rmb() for a simple barrier() and make atomic op
-> barriers a bit more lightweight.
+http://git.kernel.org/?p=linux/kernel/git/jejb/scsi-misc-2.6.git;a=blob;f=drivers/scsi/scsi_transport_iscsi.c;hb=10eb0f013c63c71c82ede77945a5f390c10cfda6
 
-There seems to be no "read memory barrier" on ARM - the dmb instruction
-can be restricted to writes, but not just reads.
 
-Moreover, there's a comment in the architecture reference manual that
-implementations which don't provide the other dmb variants must default
-to doing the full dmb, but then goes on to say that programs should not
-rely on this (what... that the relaxed dmb()s have any effect what so
-ever?)
+672 int iscsi_add_session(struct iscsi_cls_session *session, unsigned int target_id)
+673 {
+674         struct Scsi_Host *shost = iscsi_session_to_shost(session);
+675         struct iscsi_cls_host *ihost;
+676         unsigned long flags;
+677         unsigned int id = target_id;
+678         int err;
+679
+680         ihost = shost->shost_data;
+681         session->sid = atomic_add_return(1, &iscsi_session_nr);
+682
+683         if (id == ISCSI_MAX_TARGET) {
+684                 for (id = 0; id < ISCSI_MAX_TARGET; id++) {
+685                         err = device_for_each_child(&shost->shost_gendev, &id,
+686                                                     iscsi_get_next_target_id);
+687                         if (!err)
+688                                 break;
+689                 }
+690
+691                 if (id == ISCSI_MAX_TARGET) {
+692                         iscsi_cls_session_printk(KERN_ERR, session,
+693                                                  "Too many iscsi targets. Max "
+694                                                  "number of targets is %d.\n",
+695                                                  ISCSI_MAX_TARGET - 1);
+696                         goto release_host;
+697                 }
+698         }
+699         session->target_id = id;
+700
+701         dev_set_name(&session->dev, "session%u", session->sid);
+702         err = device_add(&session->dev);
+703         if (err) {
+704                 iscsi_cls_session_printk(KERN_ERR, session,
+705                                          "could not register session's dev\n");
+706                 goto release_host;
+707         }
+708         transport_register_device(&session->dev);
+709
+710         spin_lock_irqsave(&sesslock, flags);
+711         list_add(&session->sess_list, &sesslist);
+712         spin_unlock_irqrestore(&sesslock, flags);
+713
+714         iscsi_session_event(session, ISCSI_KEVENT_CREATE_SESSION);
+715         return 0;
+716
+717 release_host:
+718         scsi_host_put(shost);
+719         return err;
+720 }
 
-Suggest we don't go anywhere near those until ARMv7 stuff has matured
-for a few years and these details resolved.
+You are right but compiler is confused and giving warning like this :
+
+1. do not go inside :
+684                 for (id = 0; id < ISCSI_MAX_TARGET; id++) {
+
+2. and then choose path :
+696                         goto release_host;
+
+then we return err uninitialized ;-)
+
+> >  CC      drivers/scsi/scsi_transport_iscsi.o
+> > drivers/scsi/scsi_transport_iscsi.c: In function ‘iscsi_add_session’:
+> > drivers/scsi/scsi_transport_iscsi.c:678: warning: ‘err’ may be used
+> > uninitialized in this function
+> 
+> My version of gcc (4.3.3) correctly sees that the variable cannot be
+> uninitialised ... what version are you using?
+> 
+> If it's a popular version, we can always do the uninitialised_var()
+> thing, but if it's just a non-standard compiler, I'd rather not mess up
+> the source code to please gcc.
+> 
+
+gcc version 4.3.2 20081105 (Red Hat 4.3.2-7) (GCC) 
+
+--
+JSR
+
