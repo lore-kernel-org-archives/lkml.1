@@ -1,49 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755996AbZEZMOm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755793AbZEZMNz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755996AbZEZMOm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 08:14:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755516AbZEZMOP
+	id S1755793AbZEZMNz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 08:13:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755638AbZEZMNo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 08:14:15 -0400
-Received: from hera.kernel.org ([140.211.167.34]:51281 "EHLO hera.kernel.org"
+	Tue, 26 May 2009 08:13:44 -0400
+Received: from hera.kernel.org ([140.211.167.34]:51247 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755725AbZEZMOL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 08:14:11 -0400
-Date: Tue, 26 May 2009 12:13:37 GMT
-From: tip-bot for Arnaldo Carvalho de Melo <acme@redhat.com>
+	id S1755658AbZEZMNk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 08:13:40 -0400
+Date: Tue, 26 May 2009 12:12:49 GMT
+From: tip-bot for Ingo Molnar <mingo@elte.hu>
 To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, acme@redhat.com,
-       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl,
-       mtosatti@redhat.com, tglx@linutronix.de, cjashfor@linux.vnet.ibm.com,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com, paulus@samba.org,
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
+       mingo@redhat.com, a.p.zijlstra@chello.nl, mtosatti@redhat.com,
+       tglx@linutronix.de, cjashfor@linux.vnet.ibm.com, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
        linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
        mtosatti@redhat.com, tglx@linutronix.de, cjashfor@linux.vnet.ibm.com,
        mingo@elte.hu
 In-Reply-To: <new-submission>
 References: <new-submission>
-Subject: [tip:perfcounters/core] perf_counter: Use rb_tree for symhists and threads in report
-Message-ID: <tip-ce7e43653b08db094326f378958bc293a68e8e5b@git.kernel.org>
-Git-Commit-ID: ce7e43653b08db094326f378958bc293a68e8e5b
+Subject: [tip:perfcounters/core] perf_counter tools: remove the standalone perf-report utility
+Message-ID: <tip-fd4242bb35b70557eee8d0c79f82dacc3f3b89e0@git.kernel.org>
+Git-Commit-ID: fd4242bb35b70557eee8d0c79f82dacc3f3b89e0
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 26 May 2009 12:13:38 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 26 May 2009 12:12:50 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  ce7e43653b08db094326f378958bc293a68e8e5b
-Gitweb:     http://git.kernel.org/tip/ce7e43653b08db094326f378958bc293a68e8e5b
-Author:     Arnaldo Carvalho de Melo <acme@redhat.com>
-AuthorDate: Tue, 19 May 2009 09:30:23 -0300
+Commit-ID:  fd4242bb35b70557eee8d0c79f82dacc3f3b89e0
+Gitweb:     http://git.kernel.org/tip/fd4242bb35b70557eee8d0c79f82dacc3f3b89e0
+Author:     Ingo Molnar <mingo@elte.hu>
+AuthorDate: Wed, 20 May 2009 12:45:34 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 26 May 2009 13:52:55 +0200
+CommitDate: Tue, 26 May 2009 13:52:53 +0200
 
-perf_counter: Use rb_tree for symhists and threads in report
+perf_counter tools: remove the standalone perf-report utility
 
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+With a built-in 'perf report' command now available, remove the
+standalone implementation for good.
+
 Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: Paul Mackerras <paulus@samba.org>
 Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
@@ -54,232 +55,315 @@ Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- Documentation/perf_counter/builtin-report.c |  178 +++++++++++---------------
- 1 files changed, 75 insertions(+), 103 deletions(-)
+ Documentation/perf_counter/perf-report.cc |  515 -----------------------------
+ 1 files changed, 0 insertions(+), 515 deletions(-)
 
-diff --git a/Documentation/perf_counter/builtin-report.c b/Documentation/perf_counter/builtin-report.c
-index f63057f..e857201 100644
---- a/Documentation/perf_counter/builtin-report.c
-+++ b/Documentation/perf_counter/builtin-report.c
-@@ -479,23 +479,25 @@ static size_t map__fprintf(struct map *self, FILE *fp)
- }
- 
- struct symhist {
--	struct list_head node;
-+	struct rb_node	 rb_node;
- 	struct dso	 *dso;
- 	struct symbol	 *sym;
-+	uint64_t	 ip;
- 	uint32_t	 count;
- 	char		 level;
- };
- 
--static struct symhist *symhist__new(struct symbol *sym, struct dso *dso,
--				    char level)
-+static struct symhist *symhist__new(struct symbol *sym, uint64_t ip,
-+				    struct dso *dso, char level)
- {
- 	struct symhist *self = malloc(sizeof(*self));
- 
- 	if (self != NULL) {
- 		self->sym   = sym;
-+		self->ip    = ip;
- 		self->dso   = dso;
- 		self->level = level;
--		self->count = 0;
-+		self->count = 1;
- 	}
- 
- 	return self;
-@@ -506,12 +508,6 @@ static void symhist__delete(struct symhist *self)
- 	free(self);
- }
- 
--static bool symhist__equal(struct symhist *self, struct symbol *sym,
--			   struct dso *dso, char level)
--{
--	return self->level == level && self->sym == sym && self->dso == dso;
--}
+diff --git a/Documentation/perf_counter/perf-report.cc b/Documentation/perf_counter/perf-report.cc
+deleted file mode 100644
+index 8855107..0000000
+--- a/Documentation/perf_counter/perf-report.cc
++++ /dev/null
+@@ -1,515 +0,0 @@
+-#define _GNU_SOURCE
+-#include <sys/types.h>
+-#include <sys/stat.h>
+-#include <sys/time.h>
+-#include <unistd.h>
+-#include <stdint.h>
+-#include <stdlib.h>
+-#include <string.h>
+-#include <limits.h>
+-#include <fcntl.h>
+-#include <stdio.h>
+-#include <errno.h>
+-#include <ctype.h>
+-#include <time.h>
+-#include <getopt.h>
+-#include <assert.h>
 -
- static void symhist__inc(struct symhist *self)
- {
- 	++self->count;
-@@ -519,7 +515,7 @@ static void symhist__inc(struct symhist *self)
- 
- static size_t symhist__fprintf(struct symhist *self, FILE *fp)
- {
--	size_t ret = fprintf(fp, "[%c] ", self->level);
-+	size_t ret = fprintf(fp, "%#llx [%c] ", (unsigned long long)self->ip, self->level);
- 
- 	if (self->level != '.')
- 		ret += fprintf(fp, "%s", self->sym->name);
-@@ -531,9 +527,9 @@ static size_t symhist__fprintf(struct symhist *self, FILE *fp)
- }
- 
- struct thread {
--	struct list_head node;
-+	struct rb_node	 rb_node;
- 	struct list_head maps;
--	struct list_head symhists;
-+	struct rb_root	 symhists;
- 	pid_t		 pid;
- 	char		 *comm;
- };
-@@ -546,47 +542,43 @@ static struct thread *thread__new(pid_t pid)
- 		self->pid = pid;
- 		self->comm = NULL;
- 		INIT_LIST_HEAD(&self->maps);
--		INIT_LIST_HEAD(&self->symhists);
-+		self->symhists = RB_ROOT;
- 	}
- 
- 	return self;
- }
- 
--static void thread__insert_symhist(struct thread *self,
--				   struct symhist *symhist)
--{
--	list_add_tail(&symhist->node, &self->symhists);
--}
+-#include <sys/ioctl.h>
+-#include <sys/poll.h>
+-#include <sys/prctl.h>
+-#include <sys/wait.h>
+-#include <sys/mman.h>
+-#include <sys/types.h>
+-#include <sys/stat.h>
 -
--static struct symhist *thread__symhists_find(struct thread *self,
--					     struct symbol *sym,
--					     struct dso *dso, char level)
-+static int thread__symbol_incnew(struct thread *self, struct symbol *sym,
-+				 uint64_t ip, struct dso *dso, char level)
- {
--	struct symhist *pos;
-+	struct rb_node **p = &self->symhists.rb_node;
-+	struct rb_node *parent = NULL;
-+	struct symhist *sh;
- 
--	list_for_each_entry(pos, &self->symhists, node)
--		if (symhist__equal(pos, sym, dso, level))
--			return pos;
-+	while (*p != NULL) {
-+		parent = *p;
-+		sh = rb_entry(parent, struct symhist, rb_node);
- 
--	return NULL;
--}
-+		if (sh->sym == sym || ip == sh->ip) {
-+			symhist__inc(sh);
-+			return 0;
-+		}
- 
--static int thread__symbol_incnew(struct thread *self, struct symbol *sym,
--				 struct dso *dso, char level)
--{
--	struct symhist *symhist = thread__symhists_find(self, sym, dso, level);
-+		/* Handle unresolved symbols too */
-+		const uint64_t start = !sh->sym ? sh->ip : sh->sym->start;
- 
--	if (symhist == NULL) {
--		symhist = symhist__new(sym, dso, level);
--		if (symhist == NULL)
--			goto out_error;
--		thread__insert_symhist(self, symhist);
-+		if (ip < start)
-+			p = &(*p)->rb_left;
-+		else
-+			p = &(*p)->rb_right;
- 	}
- 
--	symhist__inc(symhist);
-+	sh = symhist__new(sym, ip, dso, level);
-+	if (sh == NULL)
-+		return -ENOMEM;
-+	rb_link_node(&sh->rb_node, parent, p);
-+	rb_insert_color(&sh->rb_node, &self->symhists);
- 	return 0;
--out_error:
--	return -ENOMEM;
- }
- 
- static int thread__set_comm(struct thread *self, const char *comm)
-@@ -608,43 +600,44 @@ static size_t thread__maps_fprintf(struct thread *self, FILE *fp)
- 
- static size_t thread__fprintf(struct thread *self, FILE *fp)
- {
--	struct symhist *pos;
- 	int ret = fprintf(fp, "thread: %d %s\n", self->pid, self->comm);
-+	struct rb_node *nd;
- 
--	list_for_each_entry(pos, &self->symhists, node)
-+	for (nd = rb_first(&self->symhists); nd; nd = rb_next(nd)) {
-+		struct symhist *pos = rb_entry(nd, struct symhist, rb_node);
- 		ret += symhist__fprintf(pos, fp);
-+	}
- 
- 	return ret;
- }
- 
--static LIST_HEAD(threads);
-+static struct rb_root threads = RB_ROOT;
- 
--static void threads__add(struct thread *thread)
--{
--	list_add_tail(&thread->node, &threads);
--}
+-#include <linux/unistd.h>
+-#include <linux/types.h>
 -
--static struct thread *threads__find(pid_t pid)
-+static struct thread *threads__findnew(pid_t pid)
- {
--	struct thread *pos;
-+	struct rb_node **p = &threads.rb_node;
-+	struct rb_node *parent = NULL;
-+	struct thread *th;
- 
--	list_for_each_entry(pos, &threads, node)
--		if (pos->pid == pid)
--			return pos;
--	return NULL;
--}
-+	while (*p != NULL) {
-+		parent = *p;
-+		th = rb_entry(parent, struct thread, rb_node);
- 
--static struct thread *threads__findnew(pid_t pid)
--{
--	struct thread *thread = threads__find(pid);
-+		if (th->pid == pid)
-+			return th;
- 
--	if (thread == NULL) {
--		thread = thread__new(pid);
--		if (thread != NULL)
--			threads__add(thread);
-+		if (pid < th->pid)
-+			p = &(*p)->rb_left;
-+		else
-+			p = &(*p)->rb_right;
- 	}
- 
--	return thread;
-+	th = thread__new(pid);
-+	if (th != NULL) {
-+		rb_link_node(&th->rb_node, parent, p);
-+		rb_insert_color(&th->rb_node, &threads);
-+	}
-+	return th;
- }
- 
- static void thread__insert_map(struct thread *self, struct map *map)
-@@ -668,44 +661,13 @@ static struct map *thread__find_map(struct thread *self, uint64_t ip)
- 
- static void threads__fprintf(FILE *fp)
- {
--	struct thread *pos;
+-#include "../../include/linux/perf_counter.h"
 -
--	list_for_each_entry(pos, &threads, node)
-+	struct rb_node *nd;
-+	for (nd = rb_first(&threads); nd; nd = rb_next(nd)) {
-+		struct thread *pos = rb_entry(nd, struct thread, rb_node);
- 		thread__fprintf(pos, fp);
-+	}
- }
- 
+-#include <set>
+-#include <map>
+-#include <string>
+-
+-
+-#define SHOW_KERNEL	1
+-#define SHOW_USER	2
+-#define SHOW_HV		4
+-
+-static char 		const *input_name = "output.perf";
+-static int		input;
+-static int		show_mask = SHOW_KERNEL | SHOW_USER | SHOW_HV;
+-
+-static unsigned long	page_size;
+-static unsigned long	mmap_window = 32;
+-
+-struct ip_event {
+-	struct perf_event_header header;
+-	__u64 ip;
+-	__u32 pid, tid;
+-};
+-struct mmap_event {
+-	struct perf_event_header header;
+-	__u32 pid, tid;
+-	__u64 start;
+-	__u64 len;
+-	__u64 pgoff;
+-	char filename[PATH_MAX];
+-};
+-struct comm_event {
+-	struct perf_event_header header;
+-	__u32 pid,tid;
+-	char comm[16];
+-};
+-
+-typedef union event_union {
+-	struct perf_event_header header;
+-	struct ip_event ip;
+-	struct mmap_event mmap;
+-	struct comm_event comm;
+-} event_t;
+-
+-struct section {
+-	uint64_t start;
+-	uint64_t end;
+-
+-	uint64_t offset;
+-
+-	std::string name;
+-
+-	section() { };
+-
+-	section(uint64_t stab) : end(stab) { };
+-
+-	section(uint64_t start, uint64_t size, uint64_t offset, std::string name) :
+-		start(start), end(start + size), offset(offset), name(name)
+-	{ };
+-
+-	bool operator < (const struct section &s) const {
+-		return end < s.end;
+-	};
+-};
+-
+-typedef std::set<struct section> sections_t;
+-
+-struct symbol {
+-	uint64_t start;
+-	uint64_t end;
+-
+-	std::string name;
+-
+-	symbol() { };
+-
+-	symbol(uint64_t ip) : start(ip) { }
+-
+-	symbol(uint64_t start, uint64_t len, std::string name) :
+-		start(start), end(start + len), name(name)
+-	{ };
+-
+-	bool operator < (const struct symbol &s) const {
+-		return start < s.start;
+-	};
+-};
+-
+-typedef std::set<struct symbol> symbols_t;
+-
+-struct dso {
+-	sections_t sections;
+-	symbols_t syms;
+-};
+-
+-static std::map<std::string, struct dso> dsos;
+-
+-static void load_dso_sections(std::string dso_name)
+-{
+-	struct dso &dso = dsos[dso_name];
+-
+-	std::string cmd = "readelf -DSW " + dso_name;
+-
+-	FILE *file = popen(cmd.c_str(), "r");
+-	if (!file) {
+-		perror("failed to open pipe");
+-		exit(-1);
+-	}
+-
+-	char *line = NULL;
+-	size_t n = 0;
+-
+-	while (!feof(file)) {
+-		uint64_t addr, off, size;
+-		char name[32];
+-
+-		if (getline(&line, &n, file) < 0)
+-			break;
+-		if (!line)
+-			break;
+-
+-		if (sscanf(line, "  [%*2d] %16s %*14s %Lx %Lx %Lx",
+-					name, &addr, &off, &size) == 4) {
+-
+-			dso.sections.insert(section(addr, size, addr - off, name));
+-		}
 -#if 0
+-		/*
+-		 * for reading readelf symbols (-s), however these don't seem
+-		 * to include nearly everything, so use nm for that.
+-		 */
+-		if (sscanf(line, " %*4d %*3d: %Lx %5Lu %*7s %*6s %*7s %3d %s",
+-			   &start, &size, &section, sym) == 4) {
+-
+-			start -= dso.section_offsets[section];
+-
+-			dso.syms.insert(symbol(start, size, std::string(sym)));
+-		}
+-#endif
+-	}
+-	pclose(file);
+-}
+-
+-static void load_dso_symbols(std::string dso_name, std::string args)
+-{
+-	struct dso &dso = dsos[dso_name];
+-
+-	std::string cmd = "nm -nSC " + args + " " + dso_name;
+-
+-	FILE *file = popen(cmd.c_str(), "r");
+-	if (!file) {
+-		perror("failed to open pipe");
+-		exit(-1);
+-	}
+-
+-	char *line = NULL;
+-	size_t n = 0;
+-
+-	while (!feof(file)) {
+-		uint64_t start, size;
+-		char c;
+-		char sym[1024];
+-
+-		if (getline(&line, &n, file) < 0)
+-			break;
+-		if (!line)
+-			break;
+-
+-
+-		if (sscanf(line, "%Lx %Lx %c %s", &start, &size, &c, sym) == 4) {
+-			sections_t::const_iterator si =
+-				dso.sections.upper_bound(section(start));
+-			if (si == dso.sections.end()) {
+-				printf("symbol in unknown section: %s\n", sym);
+-				continue;
+-			}
+-
+-			start -= si->offset;
+-
+-			dso.syms.insert(symbol(start, size, sym));
+-		}
+-	}
+-	pclose(file);
+-}
+-
+-static void load_dso(std::string dso_name)
+-{
+-	load_dso_sections(dso_name);
+-	load_dso_symbols(dso_name, "-D"); /* dynamic symbols */
+-	load_dso_symbols(dso_name, "");   /* regular ones */
+-}
+-
+-void load_kallsyms(void)
+-{
+-	struct dso &dso = dsos["[kernel]"];
+-
+-	FILE *file = fopen("/proc/kallsyms", "r");
+-	if (!file) {
+-		perror("failed to open kallsyms");
+-		exit(-1);
+-	}
+-
+-	char *line;
+-	size_t n;
+-
+-	while (!feof(file)) {
+-		uint64_t start;
+-		char c;
+-		char sym[1024000];
+-
+-		if (getline(&line, &n, file) < 0)
+-			break;
+-		if (!line)
+-			break;
+-
+-		if (sscanf(line, "%Lx %c %s", &start, &c, sym) == 3)
+-			dso.syms.insert(symbol(start, 0x1000000, std::string(sym)));
+-	}
+-	fclose(file);
+-}
+-
+-struct map {
+-	uint64_t start;
+-	uint64_t end;
+-	uint64_t pgoff;
+-
+-	std::string dso;
+-
+-	map() { };
+-
+-	map(uint64_t ip) : end(ip) { }
+-
+-	map(mmap_event *mmap) {
+-		start = mmap->start;
+-		end = mmap->start + mmap->len;
+-		pgoff = mmap->pgoff;
+-
+-		dso = std::string(mmap->filename);
+-
+-		if (dsos.find(dso) == dsos.end())
+-			load_dso(dso);
+-	};
+-
+-	bool operator < (const struct map &m) const {
+-		return end < m.end;
+-	};
+-};
+-
+-typedef std::set<struct map> maps_t;
+-
+-static std::map<int, maps_t> maps;
+-
+-static std::map<int, std::string> comms;
+-
+-static std::map<std::string, int> hist;
+-static std::multimap<int, std::string> rev_hist;
+-
+-static std::string resolve_comm(int pid)
+-{
+-	std::string comm;
+-
+-	std::map<int, std::string>::const_iterator ci = comms.find(pid);
+-	if (ci != comms.end()) {
+-		comm = ci->second;
+-	} else {
+-		char pid_str[30];
+-
+-		sprintf(pid_str, ":%d", pid);
+-		comm = pid_str;
+-	}
+-
+-	return comm;
+-}
+-
 -static std::string resolve_user_symbol(int pid, uint64_t ip)
 -{
 -	std::string sym = "<unknown>";
@@ -309,58 +393,189 @@ index f63057f..e857201 100644
 -
 -	return sym;
 -}
--#endif
 -
- static void display_help(void)
- {
- 	printf(
-@@ -824,8 +786,11 @@ more:
- 		struct dso *dso = NULL;
- 		struct thread *thread = threads__findnew(event->ip.pid);
- 
--		if (thread == NULL)
-+		if (thread == NULL) {
-+			fprintf(stderr, "problem processing %d event, bailing out\n",
-+				event->header.type);
- 			goto done;
-+		}
- 
- 		if (event->header.misc & PERF_EVENT_MISC_KERNEL) {
- 			show = SHOW_KERNEL;
-@@ -845,8 +810,11 @@ more:
- 		if (show & show_mask) {
- 			struct symbol *sym = dso__find_symbol(dso, event->ip.ip);
- 
--			if (thread__symbol_incnew(thread, sym, dso, level))
-+			if (thread__symbol_incnew(thread, sym, event->ip.ip,
-+						  dso, level)) {
-+				fprintf(stderr, "problem incrementing symbol count, bailing out\n");
- 				goto done;
-+			}
- 		}
- 		total++;
- 	} else switch (event->header.type) {
-@@ -854,8 +822,10 @@ more:
- 		struct thread *thread = threads__findnew(event->mmap.pid);
- 		struct map *map = map__new(&event->mmap);
- 
--		if (thread == NULL || map == NULL )
-+		if (thread == NULL || map == NULL) {
-+			fprintf(stderr, "problem processing PERF_EVENT_MMAP, bailing out\n");
- 			goto done;
-+		}
- 		thread__insert_map(thread, map);
- 		break;
- 	}
-@@ -863,8 +833,10 @@ more:
- 		struct thread *thread = threads__findnew(event->comm.pid);
- 
- 		if (thread == NULL ||
--		    thread__set_comm(thread, event->comm.comm))
-+		    thread__set_comm(thread, event->comm.comm)) {
-+			fprintf(stderr, "problem processing PERF_EVENT_COMM, bailing out\n");
- 			goto done;
-+		}
- 		break;
- 	}
- 	}
+-static std::string resolve_kernel_symbol(uint64_t ip)
+-{
+-	std::string sym = "<unknown>";
+-
+-	symbols_t &s = dsos["[kernel]"].syms;
+-	symbols_t::const_iterator si = s.upper_bound(symbol(ip));
+-
+-	if (si == s.begin())
+-		return sym;
+-	si--;
+-
+-	if (si->start <= ip && ip < si->end)
+-		sym = si->name;
+-
+-	return sym;
+-}
+-
+-static void display_help(void)
+-{
+-	printf(
+-	"Usage: perf-report [<options>]\n"
+-	" -i file   --input=<file>      # input file\n"
+-	);
+-
+-	exit(0);
+-}
+-
+-static void process_options(int argc, char *argv[])
+-{
+-	int error = 0;
+-
+-	for (;;) {
+-		int option_index = 0;
+-		/** Options for getopt */
+-		static struct option long_options[] = {
+-			{"input",	required_argument,	NULL, 'i'},
+-			{"no-user",	no_argument,		NULL, 'u'},
+-			{"no-kernel",	no_argument,		NULL, 'k'},
+-			{"no-hv",	no_argument,		NULL, 'h'},
+-			{NULL,		0,			NULL,  0 }
+-		};
+-		int c = getopt_long(argc, argv, "+:i:kuh",
+-				    long_options, &option_index);
+-		if (c == -1)
+-			break;
+-
+-		switch (c) {
+-		case 'i': input_name			= strdup(optarg); break;
+-		case 'k': show_mask &= ~SHOW_KERNEL; break;
+-		case 'u': show_mask &= ~SHOW_USER; break;
+-		case 'h': show_mask &= ~SHOW_HV; break;
+-		default: error = 1; break;
+-		}
+-	}
+-
+-	if (error)
+-		display_help();
+-}
+-
+-int main(int argc, char *argv[])
+-{
+-	unsigned long offset = 0;
+-	unsigned long head = 0;
+-	struct stat stat;
+-	char *buf;
+-	event_t *event;
+-	int ret;
+-	unsigned long total = 0;
+-
+-	page_size = getpagesize();
+-
+-	process_options(argc, argv);
+-
+-	input = open(input_name, O_RDONLY);
+-	if (input < 0) {
+-		perror("failed to open file");
+-		exit(-1);
+-	}
+-
+-	ret = fstat(input, &stat);
+-	if (ret < 0) {
+-		perror("failed to stat file");
+-		exit(-1);
+-	}
+-
+-	if (!stat.st_size) {
+-		fprintf(stderr, "zero-sized file, nothing to do!\n");
+-		exit(0);
+-	}
+-
+-	load_kallsyms();
+-
+-remap:
+-	buf = (char *)mmap(NULL, page_size * mmap_window, PROT_READ,
+-			   MAP_SHARED, input, offset);
+-	if (buf == MAP_FAILED) {
+-		perror("failed to mmap file");
+-		exit(-1);
+-	}
+-
+-more:
+-	event = (event_t *)(buf + head);
+-
+-	if (head + event->header.size >= page_size * mmap_window) {
+-		unsigned long shift = page_size * (head / page_size);
+-		int ret;
+-
+-		ret = munmap(buf, page_size * mmap_window);
+-		assert(ret == 0);
+-
+-		offset += shift;
+-		head -= shift;
+-		goto remap;
+-	}
+-
+-
+-	if (!event->header.size) {
+-		fprintf(stderr, "zero-sized event at file offset %ld\n", offset + head);
+-		fprintf(stderr, "skipping %ld bytes of events.\n", stat.st_size - offset - head);
+-		goto done;
+-	}
+-
+-	head += event->header.size;
+-
+-	if (event->header.misc & PERF_EVENT_MISC_OVERFLOW) {
+-		std::string comm, sym, level;
+-		int show = 0;
+-		char output[1024];
+-
+-		if (event->header.misc & PERF_EVENT_MISC_KERNEL) {
+-			show |= SHOW_KERNEL;
+-			level = " [k] ";
+-			sym = resolve_kernel_symbol(event->ip.ip);
+-		} else if (event->header.misc & PERF_EVENT_MISC_USER) {
+-			show |= SHOW_USER;
+-			level = " [.] ";
+-			sym = resolve_user_symbol(event->ip.pid, event->ip.ip);
+-		} else {
+-			show |= SHOW_HV;
+-			level = " [H] ";
+-		}
+-
+-		if (show & show_mask) {
+-			comm = resolve_comm(event->ip.pid);
+-			snprintf(output, sizeof(output), "%16s %s %s",
+-					comm.c_str(), level.c_str(), sym.c_str());
+-			hist[output]++;
+-		}
+-
+-		total++;
+-
+-	} else switch (event->header.type) {
+-	case PERF_EVENT_MMAP:
+-		maps[event->mmap.pid].insert(map(&event->mmap));
+-		break;
+-
+-	case PERF_EVENT_COMM:
+-		comms[event->comm.pid] = std::string(event->comm.comm);
+-		break;
+-	}
+-
+-	if (offset + head < stat.st_size)
+-		goto more;
+-
+-done:
+-
+-	close(input);
+-
+-	std::map<std::string, int>::iterator hi = hist.begin();
+-
+-	while (hi != hist.end()) {
+-		rev_hist.insert(std::pair<int, std::string>(hi->second, hi->first));
+-		hist.erase(hi++);
+-	}
+-
+-	std::multimap<int, std::string>::const_iterator ri = rev_hist.begin();
+-
+-	while (ri != rev_hist.end()) {
+-		printf(" %5.2f %s\n", (100.0 * ri->first)/total, ri->second.c_str());
+-		ri++;
+-	}
+-
+-	return 0;
+-}
+-
