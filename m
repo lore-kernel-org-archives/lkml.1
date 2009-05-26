@@ -1,37 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758617AbZEZVRY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758660AbZEZVS1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758617AbZEZVRY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 17:17:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757034AbZEZVRQ
+	id S1758660AbZEZVS1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 17:18:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756568AbZEZVSU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 17:17:16 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:42230 "EHLO mx2.redhat.com"
+	Tue, 26 May 2009 17:18:20 -0400
+Received: from mail.mnementh.co.uk ([173.45.232.4]:56420 "EHLO mnementh.co.uk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756344AbZEZVRP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 17:17:15 -0400
-Date: Tue, 26 May 2009 23:13:06 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Roland McGrath <roland@redhat.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Q: do_notify_parent/do_notify_parent_cldstop && info.si_xtime
-Message-ID: <20090526211306.GA7065@redhat.com>
+	id S1755793AbZEZVSU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 17:18:20 -0400
+X-Greylist: delayed 304 seconds by postgrey-1.27 at vger.kernel.org; Tue, 26 May 2009 17:18:20 EDT
+Message-ID: <4A1C5B62.4010600@f2s.com>
+Date: Tue, 26 May 2009 22:13:06 +0100
+From: Ian molton <spyro@f2s.com>
+Reply-To: ian@mnementh.co.uk
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: pHilipp Zabel <philipp.zabel@gmail.com>
+CC: linux-kernel@vger.kernel.org, Pierre Ossman <pierre@ossman.eu>
+Subject: Re: [PATCH 2/5] mmc: tmio_mmc: add bus_shift support
+References: <1243279681-4233-1-git-send-email-philipp.zabel@gmail.com>	 <1243279681-4233-3-git-send-email-philipp.zabel@gmail.com> <74d0deb30905261316hd100bbdr96e5e544eed94c2e@mail.gmail.com>
+In-Reply-To: <74d0deb30905261316hd100bbdr96e5e544eed94c2e@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-do_notify_parent() reports .si_Xtime = tsk->Xtime + signal->Xtime,
-but do_notify_parent_cldstop() uses .si_Xtime =  tsk->Xtime.
+wow. suddenly much interest in tmio_mmc.
 
-Is this right?
+I've got some other emails about it to look at so I'll review these in 
+the next couple of days.
 
-Yes, tsk->Xtime + signal->Xtime does not make much sense for
-do_notify_parent_cldstop(), but reporting group_leader->Xtime
-(if not traced) doesn't look very right too. IOW, perhaps we
-need thread_group_cputime() here?
+I'll do a test build then - dmitry, I'll try to test your ac97 patch 
+then too.
 
-Ole.
-
+Thanks guys.
