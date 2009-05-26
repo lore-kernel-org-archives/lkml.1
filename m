@@ -1,126 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754406AbZEZBXe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754736AbZEZB2t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754406AbZEZBXe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 21:23:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752751AbZEZBX1
+	id S1754736AbZEZB2t (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 21:28:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754022AbZEZB2m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 21:23:27 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:60173 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752508AbZEZBX1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 21:23:27 -0400
-Message-ID: <4A1B44DC.5050000@cn.fujitsu.com>
-Date: Tue, 26 May 2009 09:24:44 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Mon, 25 May 2009 21:28:42 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:55105 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753216AbZEZB2l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 21:28:41 -0400
+Date: Mon, 25 May 2009 18:28:43 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, mingo@elte.hu,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       davem@davemloft.net, dada1@cosmosbay.com, zbr@ioremap.net,
+       jeff.chua.linux@gmail.com, paulus@samba.org, jengelh@medozas.de,
+       r000n@r000n.net, benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
+Subject: Re: [PATCH RFC] v7 expedited "big hammer" RCU grace periods
+Message-ID: <20090526012843.GF7168@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090522190525.GA13286@linux.vnet.ibm.com> <4A1A3C23.8090004@cn.fujitsu.com> <20090525164446.GD7168@linux.vnet.ibm.com> <4A1B3FFB.7090306@cn.fujitsu.com>
 MIME-Version: 1.0
-To: balbir@linux.vnet.ibm.com
-CC: Andrew Morton <akpm@linux-foundation.org>, Paul Menage <menage@google.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH] cgroups: handle failure of cgroup_populate_dir() at	mount/remount
-References: <4A16153C.2080004@cn.fujitsu.com> <20090525131753.GL4858@balbir.in.ibm.com>
-In-Reply-To: <20090525131753.GL4858@balbir.in.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A1B3FFB.7090306@cn.fujitsu.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Balbir Singh wrote:
-> * Li Zefan <lizf@cn.fujitsu.com> [2009-05-22 11:00:12]:
+On Tue, May 26, 2009 at 09:03:55AM +0800, Lai Jiangshan wrote:
+> Paul E. McKenney wrote:
+> > 
+> > Good point -- I should at the very least add a comment to
+> > synchronize_sched_expedited() stating that it cannot be called holding
+> > any lock that is acquired in a CPU hotplug notifier.  If this restriction
+> > causes any problems, then your approach seems like a promising fix.
 > 
->> Now we have 'stat' file in both memory and cpuacct subsystems. If we
->> mount these 2 subsystems with option 'noprefix', the creation of 'stat'
->> file for cpuacct will fail, but without any notificatin to the user.
->>
->> With this patch, we fail the mount/remount in this case.
->>
->> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
->> ---
->>  kernel/cgroup.c |   18 ++++++++++++++++--
->>  1 files changed, 16 insertions(+), 2 deletions(-)
->>
->> diff --git a/kernel/cgroup.c b/kernel/cgroup.c
->> index a7267bf..eab83f7 100644
->> --- a/kernel/cgroup.c
->> +++ b/kernel/cgroup.c
->> @@ -896,6 +896,7 @@ static int parse_cgroupfs_options(char *data,
->>  static int cgroup_remount(struct super_block *sb, int *flags, char *data)
->>  {
->>  	int ret = 0;
->> +	unsigned long subsys_bits;
->>  	struct cgroupfs_root *root = sb->s_fs_info;
->>  	struct cgroup *cgrp = &root->top_cgroup;
->>  	struct cgroup_sb_opts opts;
->> @@ -914,12 +915,17 @@ static int cgroup_remount(struct super_block *sb, int *flags, char *data)
->>  		goto out_unlock;
->>  	}
->>
->> +	subsys_bits = root->subsys_bits;
->>  	ret = rebind_subsystems(root, opts.subsys_bits);
->>  	if (ret)
->>  		goto out_unlock;
->>
->>  	/* (re)populate subsystem files */
->> -	cgroup_populate_dir(cgrp);
->> +	ret = cgroup_populate_dir(cgrp);
->> +	if (ret) {
+> Reviewed-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+
+Thank you very much for your review and comments!!!
+
+> >> The coupling of synchronize_sched_expedited() and migration_req
+> >> is largely increased:
+> >>
+> >> 1) The offline cpu's per_cpu(rcu_migration_req, cpu) is handled.
+> >>    See migration_call::CPU_DEAD
+> > 
+> > Good.  ;-)
+> > 
+> >> 2) migration_call() is the highest priority of cpu notifiers,
+> >>    So even any other cpu notifier calls synchronize_sched_expedited(),
+> >>    It'll not cause DEADLOCK.
+> > 
+> > You mean if using your preempt_disable() approach, right?  Unless I am
+> > missing something, the current get_online_cpus() approach would deadlock
+> > in this case.
 > 
-> if (ret) means a failure right? So we rebind_subsystems to the older
-> subsys_bits? Could you please add a comment, the code can be misread.
+> Yes, I mean if using my preempt_disable() approach. The current
+> get_online_cpus() approach would NOT deadlock in this case also,
+> we can require get_online_cpus() in cpu notifiers.
+
+I have added the comment for the time being, but should people need to
+use this in CPU-hotplug notifiers, then again your preempt_disable()
+approach looks to be a promising fix.
+
+> > diff --git a/include/linux/rcupreempt.h b/include/linux/rcupreempt.h
+> > index fce5227..78117ed 100644
+> > --- a/include/linux/rcupreempt.h
+> > +++ b/include/linux/rcupreempt.h
+> > @@ -74,6 +74,16 @@ extern int rcu_needs_cpu(int cpu);
+> >  
+> >  extern void __synchronize_sched(void);
+> >  
+> > +static inline void synchronize_rcu_expedited(void)
+> > +{
+> > +	synchronize_rcu();  /* Placeholder for new rcupreempt implementation. */
+> > +}
+> > +
+> > +static inline void synchronize_rcu_bh_expedited(void)
+> > +{
+> > +	synchronize_rcu();  /* Placeholder for new rcupreempt implementation. */
+> > +}
+> > +
 > 
+> Why not synchronize_rcu_bh() ?
 
-Sure.
+Ummm...  Because I did a typo.  Fixed.
 
->> +		rebind_subsystems(root, subsys_bits);
->> +		goto out_unlock;
->> +	}
->>
->>  	if (opts.release_agent)
->>  		strcpy(root->release_agent_path, opts.release_agent);
->> @@ -1122,9 +1128,13 @@ static int cgroup_get_sb(struct file_system_type *fs_type,
->>  		BUG_ON(!list_empty(&root_cgrp->children));
->>  		BUG_ON(root->number_of_cgroups != 1);
->>
->> -		cgroup_populate_dir(root_cgrp);
->> +		ret = cgroup_populate_dir(root_cgrp);
->> +
->>  		mutex_unlock(&inode->i_mutex);
->>  		mutex_unlock(&cgroup_mutex);
->> +
->> +		if (ret)
->> +			goto drop_new_super;
->>  	}
->>
->>  	simple_set_mnt(mnt, sb);
->> @@ -1803,6 +1813,10 @@ int cgroup_add_file(struct cgroup *cgrp,
->>  		dput(dentry);
->>  	} else
->>  		error = PTR_ERR(dentry);
->> +
->> +	if (error)
->> +		printk(KERN_WARNING "cgroup: Failed to create file '%s': %d\n",
->> +		       name, error);
->>  	return error;
->>  }
->>
+> In mainline, rcu_read_lock_bh() is not preemptable,
+> So I think synchronize_sched_expedited() is better.
 > 
-> Looks good, should we mark cgroup_populate_dir with __must_check? 
-> 
+> Anyway, synchronize_rcu() is OK for me, because it is
+> "Placeholder for new rcupreempt implementation".
 
-Actually cgroup_populate_dir() is called in 3 cases:
-  - mount
-  - remount
-  - mkdir
+And I am worried that preemptable RCU's rcu_bh read sides might someday
+become preemptable.  Seems a bit unlikely at this point, but why tempt
+fate?
 
-This patch only handles the former 2 cases. The return value of
-cgroup_populate_dir() is also ignored when mkdir, and that piece of code
-is inhereted from cpuset. I guess it's because it's hard to handle this
-failure and there was no possibility of name collisions in old cpuset.
-
-Normally name collisions can be caught when mount/remount, thus there
-won't be subsequent mkdir()s.
-
-
+							Thanx, Paul
