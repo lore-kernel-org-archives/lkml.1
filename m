@@ -1,91 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753460AbZEZEdS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753339AbZEZEda@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753460AbZEZEdS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 00:33:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750822AbZEZEdJ
+	id S1753339AbZEZEda (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 00:33:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752685AbZEZEdN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 00:33:09 -0400
-Received: from ozlabs.org ([203.10.76.45]:43830 "EHLO ozlabs.org"
+	Tue, 26 May 2009 00:33:13 -0400
+Received: from ozlabs.org ([203.10.76.45]:43834 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751086AbZEZEdJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 00:33:09 -0400
-Date: Tue, 26 May 2009 14:32:57 +1000
+	id S1751698AbZEZEdL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 00:33:11 -0400
+Date: Tue, 26 May 2009 14:31:23 +1000
 From: Anton Blanchard <anton@samba.org>
 To: rostedt@goodmis.org, mingo@elte.hu, tzanussi@gmail.com, jbaron@redhat.com,
        tglx@linutronix.de, fweisbec@gmail.com, kosaki.motohiro@jp.fujitsu.com
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] tracing/events: Use %pf in workqueue trace events
-Message-ID: <20090526043257.GD19728@kryten>
-References: <20090520101334.GA23442@kryten> <20090526042643.GB19728@kryten> <20090526043123.GC19728@kryten>
+Subject: [PATCH] tracing/events: Rename worklet_execute to worklet_entry
+	and worklet_complete to worklet_exit
+Message-ID: <20090526043123.GC19728@kryten>
+References: <20090520101334.GA23442@kryten> <20090526042643.GB19728@kryten>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090526043123.GC19728@kryten>
+In-Reply-To: <20090526042643.GB19728@kryten>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Using %pf instead of %pF supresses printing of the function offset
-which will always be 0.
+Keep a common naming convention for tracing the latency of events such as
+softirq_entry/softirq_exit.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
 
+What do people think? It seems like a good idea to have a naming convention
+when tracing event latency for softirqs, timers, worklets, etc.
+
 Index: linux-2.6-master/include/trace/events/workqueue.h
 ===================================================================
---- linux-2.6-master.orig/include/trace/events/workqueue.h	2009-05-26 12:55:37.000000000 +1000
-+++ linux-2.6-master/include/trace/events/workqueue.h	2009-05-26 12:55:44.000000000 +1000
-@@ -32,7 +32,7 @@
- 		__entry->cpu		= cpu;
- 	),
- 
--	TP_printk("thread=%s:%d func=%pF cpu=%d", __entry->thread_comm,
-+	TP_printk("thread=%s:%d func=%pf cpu=%d", __entry->thread_comm,
- 		__entry->thread_pid, __entry->func, __entry->cpu)
- );
- 
-@@ -63,7 +63,7 @@
- 		__entry->delay		= delay;
- 	),
- 
--	TP_printk("thread=%s:%d func=%pF cpu=%d delay=%lu",
-+	TP_printk("thread=%s:%d func=%pf cpu=%d delay=%lu",
- 		__entry->thread_comm, __entry->thread_pid, __entry->func,
+--- linux-2.6-master.orig/include/trace/events/workqueue.h	2009-05-26 12:40:01.000000000 +1000
++++ linux-2.6-master/include/trace/events/workqueue.h	2009-05-26 12:40:16.000000000 +1000
+@@ -68,7 +68,7 @@
  		__entry->cpu, __entry->delay)
  );
-@@ -88,7 +88,7 @@
- 		__entry->func		= work->func;
- 	),
  
--	TP_printk("thread=%s:%d work=%p func=%pF", __entry->thread_comm,
-+	TP_printk("thread=%s:%d work=%p func=%pf", __entry->thread_comm,
- 		__entry->thread_pid, __entry->work, __entry->func)
+-TRACE_EVENT(worklet_execute,
++TRACE_EVENT(worklet_entry,
+ 
+ 	TP_PROTO(struct task_struct *wq_thread, struct work_struct *work),
+ 
+@@ -93,7 +93,7 @@
  );
  
-@@ -128,7 +128,7 @@
- 		__entry->func	= work->func;
- 	),
+ /* Declare work as void *, because we can't use work->... in after f(work) */
+-TRACE_EVENT(worklet_complete,
++TRACE_EVENT(worklet_exit,
+ 	TP_PROTO(struct task_struct *wq_thread, void *work),
  
--	TP_printk("func=%pF", __entry->func)
-+	TP_printk("func=%pf", __entry->func)
- );
+ 	TP_ARGS(wq_thread, work),
+Index: linux-2.6-master/kernel/trace/trace_workqueue.c
+===================================================================
+--- linux-2.6-master.orig/kernel/trace/trace_workqueue.c	2009-05-26 12:43:27.000000000 +1000
++++ linux-2.6-master/kernel/trace/trace_workqueue.c	2009-05-26 12:43:36.000000000 +1000
+@@ -27,7 +27,7 @@
  
- /* Trace the creation of one workqueue thread on a cpu */
+ 	/*
+ 	 * save latest work_struct's pointer to use as identifier in
+-	 * probe_worklet_complete, because we can't use work_struct->...
++	 * probe_worklet_exit, because we can't use work_struct->...
+ 	 * after worklet got executed
+ 	 */
+ 	void				*work;
+@@ -141,7 +141,7 @@
+ 
+ /* Execution of a work */
+ static void
+-probe_worklet_execute(struct task_struct *wq_thread, struct work_struct *work)
++probe_worklet_entry(struct task_struct *wq_thread, struct work_struct *work)
+ {
+ 	int cpu = cpumask_first(&wq_thread->cpus_allowed);
+ 	struct cpu_workqueue_stats *node;
+@@ -176,7 +176,7 @@
+ 
+ /* Complete of a work */
+ static void
+-probe_worklet_complete(struct task_struct *wq_thread, void *work)
++probe_worklet_exit(struct task_struct *wq_thread, void *work)
+ {
+ 	int cpu = cpumask_first(&wq_thread->cpus_allowed);
+ 	struct cpu_workqueue_stats *node;
+@@ -504,17 +504,17 @@
+ 	if (ret)
+ 		goto out_worklet_enqueue;
+ 
+-	ret = register_trace_worklet_execute(probe_worklet_execute);
++	ret = register_trace_worklet_entry(probe_worklet_entry);
+ 	if (ret)
+ 		goto out_worklet_enqueue_delayed;
+ 
+-	ret = register_trace_worklet_complete(probe_worklet_complete);
++	ret = register_trace_worklet_exit(probe_worklet_exit);
+ 	if (ret)
+-		goto out_worklet_execute;
++		goto out_worklet_entry;
+ 
+ 	ret = register_trace_workqueue_creation(probe_workqueue_creation);
+ 	if (ret)
+-		goto out_worklet_complete;
++		goto out_worklet_exit;
+ 
+ 	ret = register_trace_workqueue_destruction(probe_workqueue_destruction);
+ 	if (ret)
+@@ -529,10 +529,10 @@
+ 
+ out_workqueue_creation:
+ 	unregister_trace_workqueue_creation(probe_workqueue_creation);
+-out_worklet_complete:
+-	unregister_trace_worklet_complete(probe_worklet_complete);
+-out_worklet_execute:
+-	unregister_trace_worklet_execute(probe_worklet_execute);
++out_worklet_exit:
++	unregister_trace_worklet_exit(probe_worklet_exit);
++out_worklet_entry:
++	unregister_trace_worklet_entry(probe_worklet_entry);
+ out_worklet_enqueue_delayed:
+ 	unregister_trace_worklet_enqueue_delayed(probe_worklet_enqueue_delayed);
+ out_worklet_enqueue:
+Index: linux-2.6-master/kernel/workqueue.c
+===================================================================
+--- linux-2.6-master.orig/kernel/workqueue.c	2009-05-26 12:43:59.000000000 +1000
++++ linux-2.6-master/kernel/workqueue.c	2009-05-26 12:44:01.000000000 +1000
+@@ -296,9 +296,9 @@
+ 		work_clear_pending(work);
+ 		lock_map_acquire(&cwq->wq->lockdep_map);
+ 		lock_map_acquire(&lockdep_map);
+-		trace_worklet_execute(cwq->thread, work);
++		trace_worklet_entry(cwq->thread, work);
+ 		f(work);
+-		trace_worklet_complete(cwq->thread, work);
++		trace_worklet_exit(cwq->thread, work);
+ 		lock_map_release(&lockdep_map);
+ 		lock_map_release(&cwq->wq->lockdep_map);
+ 
 Index: linux-2.6-master/Documentation/trace/workqueue.txt
 ===================================================================
---- linux-2.6-master.orig/Documentation/trace/workqueue.txt	2009-05-26 12:55:52.000000000 +1000
-+++ linux-2.6-master/Documentation/trace/workqueue.txt	2009-05-26 12:56:14.000000000 +1000
-@@ -107,8 +107,8 @@
-  # TASK-PID    CPU#    TIMESTAMP  FUNCTION
+--- linux-2.6-master.orig/Documentation/trace/workqueue.txt	2009-05-26 12:44:44.000000000 +1000
++++ linux-2.6-master/Documentation/trace/workqueue.txt	2009-05-26 12:45:05.000000000 +1000
+@@ -98,8 +98,8 @@
+ # mount -t debugfs debug /sys/kernel/debug/
+ # cd /sys/kernel/debug/tracing/events/workqueue
+ # ls
+-filter          worklet_complete  worklet_enqueue_delayed  workqueue_creation     workqueue_flush
+-worklet_cancel  worklet_enqueue   worklet_execute          workqueue_destruction
++filter          worklet_exit  worklet_enqueue_delayed  workqueue_creation     workqueue_flush
++worklet_cancel  worklet_enqueue   worklet_entry          workqueue_destruction
+ # for e in $(ls); do echo 1 > $e/enable; done
+ # cat /sys/kernel/debug/tracing/trace
+ 
+@@ -108,7 +108,7 @@
   #   | |       |          |         |
  
--<...>-5627  [000]  4597.858645: worklet_enqueue: thread=ata/0:508 func=ata_pio_task+0x0/0x280 cpu=0
--<...>-508   [000]  4597.858660: worklet_entry: thread=ata/0:508 work=ffff88007e9e67b8 func=ata_pio_task+0x0/0x280
-+<...>-5627  [000]  4597.858645: worklet_enqueue: thread=ata/0:508 func=ata_pio_task cpu=0
-+<...>-508   [000]  4597.858660: worklet_entry: thread=ata/0:508 work=ffff88007e9e67b8 func=ata_pio_task
- <...>-508   [000]  4597.858684: worklet_exit: thread=ata/0:508 work=ffff88007e9e67b8
--<...>-2437  [000]  4597.861259: worklet_cancel: func=ata_pio_task+0x0/0x280
-+<...>-2437  [000]  4597.861259: worklet_cancel: func=ata_pio_task
+ <...>-5627  [000]  4597.858645: worklet_enqueue: thread=ata/0:508 func=ata_pio_task+0x0/0x280 cpu=0
+-<...>-508   [000]  4597.858660: worklet_execute: thread=ata/0:508 work=ffff88007e9e67b8 func=ata_pio_task+0x0/0x280
+-<...>-508   [000]  4597.858684: worklet_complete: thread=ata/0:508 work=ffff88007e9e67b8
++<...>-508   [000]  4597.858660: worklet_entry: thread=ata/0:508 work=ffff88007e9e67b8 func=ata_pio_task+0x0/0x280
++<...>-508   [000]  4597.858684: worklet_exit: thread=ata/0:508 work=ffff88007e9e67b8
+ <...>-2437  [000]  4597.861259: worklet_cancel: func=ata_pio_task+0x0/0x280
  [...]
