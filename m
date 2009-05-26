@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754311AbZEZCGJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754319AbZEZCG0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754311AbZEZCGJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 22:06:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753446AbZEZCFA
+	id S1754319AbZEZCG0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 22:06:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753410AbZEZCFF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 22:05:00 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:55492 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753382AbZEZCE7 (ORCPT
+	Mon, 25 May 2009 22:05:05 -0400
+Received: from ey-out-2122.google.com ([74.125.78.26]:27600 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753498AbZEZCFC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 22:04:59 -0400
+	Mon, 25 May 2009 22:05:02 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=uHbK7/rkwqYdAvdxCnekIFwu8pogKv+xzue85Mh3Aty+fWlHZ7IqIsefr9QCwuEbG9
-         KHpI3Us2AaZAkkCI14P+iW4yYFkzDb90ChJFBvPRhHiS3LVVhEoz0CrKnoj56VFGZv8M
-         8CADIFFpSJJQLvJGhTIY4TAlDe9i0urzdP/Pg=
+        b=vS2/Gn+sOrSSMLth6bv5mnDqpenxhF3d5mPK11rUTM7J2XFYatJgUVDnGKW3rjEG0L
+         /QTzMHr9td53tqt1muGFz7+OBXEKipZisvJxyiwd/tOh45DwZJ7USyiFCsspZtU27+P2
+         wvEw9zOsirkCBpQCooARJL0zBlc0FZGMY7XPo=
 From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>, Zhaolei <zhaolei@cn.fujitsu.com>,
@@ -23,9 +23,9 @@ Cc: LKML <linux-kernel@vger.kernel.org>, Zhaolei <zhaolei@cn.fujitsu.com>,
        Steven Rostedt <rostedt@goodmis.org>, Li Zefan <lizf@cn.fujitsu.com>,
        Pekka Enberg <penberg@cs.helsinki.fi>, Tom Zanussi <tzanussi@gmail.com>,
        Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH 4/5] ftrace: Add task_comm support for trace_event
-Date: Tue, 26 May 2009 04:04:49 +0200
-Message-Id: <1243303490-8019-5-git-send-email-fweisbec@gmail.com>
+Subject: [PATCH 5/5] ftrace: clean up of using ftrace_event_enable_disable()
+Date: Tue, 26 May 2009 04:04:50 +0200
+Message-Id: <1243303490-8019-6-git-send-email-fweisbec@gmail.com>
 X-Mailer: git-send-email 1.6.2.3
 In-Reply-To: <1243303490-8019-1-git-send-email-fweisbec@gmail.com>
 References: <1243303490-8019-1-git-send-email-fweisbec@gmail.com>
@@ -35,140 +35,100 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Zhaolei <zhaolei@cn.fujitsu.com>
 
-If we enable a trace event alone without any tracer running (such as
-function tracer, sched switch tracer, etc...) it can't output enough
-task command information.
+Always use ftrace_event_enable_disable() to enable/disable an event
+so that we can factorize out the event toggling code.
 
-We need to use the tracing_{start/stop}_cmdline_record() helpers
-which are designed to keep track of cmdlines for any tasks that
-were scheduled during the tracing.
-
-Before this patch:
- # echo 1 > debugfs/tracing/events/sched/sched_switch/enable
- # cat debugfs/tracing/trace
- # tracer: nop
- #
- #           TASK-PID    CPU#    TIMESTAMP  FUNCTION
- #              | |       |          |         |
-            <...>-2289  [000] 526276.724790: sched_switch: task bash:2289 [120] ==> sshd:2287 [120]
-            <...>-2287  [000] 526276.725231: sched_switch: task sshd:2287 [120] ==> bash:2289 [120]
-            <...>-2289  [000] 526276.725452: sched_switch: task bash:2289 [120] ==> sshd:2287 [120]
-            <...>-2287  [000] 526276.727181: sched_switch: task sshd:2287 [120] ==> swapper:0 [140]
-           <idle>-0     [000] 526277.032734: sched_switch: task swapper:0 [140] ==> events/0:5 [115]
-            <...>-5     [000] 526277.032782: sched_switch: task events/0:5 [115] ==> swapper:0 [140]
- ...
-
-After this patch:
- # tracer: nop
- #
- #           TASK-PID    CPU#    TIMESTAMP  FUNCTION
- #              | |       |          |         |
-             bash-2269  [000] 527347.989229: sched_switch: task bash:2269 [120] ==> sshd:2267 [120]
-             sshd-2267  [000] 527347.990960: sched_switch: task sshd:2267 [120] ==> bash:2269 [120]
-             bash-2269  [000] 527347.991143: sched_switch: task bash:2269 [120] ==> sshd:2267 [120]
-             sshd-2267  [000] 527347.992959: sched_switch: task sshd:2267 [120] ==> swapper:0 [140]
-           <idle>-0     [000] 527348.531989: sched_switch: task swapper:0 [140] ==> events/0:5 [115]
-         events/0-5     [000] 527348.532115: sched_switch: task events/0:5 [115] ==> swapper:0 [140]
- ...
-
-Changelog:
-v1->v2: Update Kconfig to select CONTEXT_SWITCH_TRACER in
-        ENABLE_EVENT_TRACING
-v2->v3: v2 can solve problem that was caused by config EVENT_TRACING
-        alone, but when CONFIG_FTRACE is off and CONFIG_TRACING is
-        selected by other config, compile fail happened again.
-        This version solves it.
-
-[ Impact: fix incomplete output of event tracing ]
+[ Impact: factorize and cleanup event tracing code ]
 
 Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
-Cc: Tom Zanussi <tzanussi@gmail.com>
 Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Tom Zanussi <tzanussi@gmail.com>
 LKML-Reference: <4A14FDFE.2080402@cn.fujitsu.com>
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 ---
- kernel/trace/Kconfig        |    9 +++++++--
- kernel/trace/trace_events.c |    6 ++++++
- 2 files changed, 13 insertions(+), 2 deletions(-)
+ kernel/trace/trace_events.c |   44 +++++++++++++-----------------------------
+ 1 files changed, 14 insertions(+), 30 deletions(-)
 
-diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
-index f61be30..a508b9d 100644
---- a/kernel/trace/Kconfig
-+++ b/kernel/trace/Kconfig
-@@ -49,6 +49,11 @@ config FTRACE_NMI_ENTER
-        default y
- 
- config EVENT_TRACING
-+	select CONTEXT_SWITCH_TRACER
-+	bool
-+
-+config CONTEXT_SWITCH_TRACER
-+	select MARKERS
- 	bool
- 
- config TRACING
-@@ -176,10 +181,10 @@ config SCHED_TRACER
- 	  This tracer tracks the latency of the highest priority task
- 	  to be scheduled in, starting from the point it has woken up.
- 
--config CONTEXT_SWITCH_TRACER
-+config ENABLE_CONTEXT_SWITCH_TRACER
- 	bool "Trace process context switches"
- 	select TRACING
--	select MARKERS
-+	select CONTEXT_SWITCH_TRACER
- 	help
- 	  This tracer gets called from the context switch and records
- 	  all switching of tasks.
 diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
-index 9e91c4a..9b246eb 100644
+index 9b246eb..6c81f9c 100644
 --- a/kernel/trace/trace_events.c
 +++ b/kernel/trace/trace_events.c
-@@ -85,6 +85,7 @@ static void ftrace_clear_events(void)
+@@ -76,26 +76,9 @@ static void trace_destroy_fields(struct ftrace_event_call *call)
  
- 		if (call->enabled) {
- 			call->enabled = 0;
-+			tracing_stop_cmdline_record();
- 			call->unregfunc();
- 		}
- 	}
-@@ -99,12 +100,14 @@ static void ftrace_event_enable_disable(struct ftrace_event_call *call,
+ #endif /* CONFIG_MODULES */
+ 
+-static void ftrace_clear_events(void)
+-{
+-	struct ftrace_event_call *call;
+-
+-	mutex_lock(&event_mutex);
+-	list_for_each_entry(call, &ftrace_events, list) {
+-
+-		if (call->enabled) {
+-			call->enabled = 0;
+-			tracing_stop_cmdline_record();
+-			call->unregfunc();
+-		}
+-	}
+-	mutex_unlock(&event_mutex);
+-}
+-
+ static void ftrace_event_enable_disable(struct ftrace_event_call *call,
+ 					int enable)
+ {
+-
+ 	switch (enable) {
  	case 0:
  		if (call->enabled) {
- 			call->enabled = 0;
-+			tracing_stop_cmdline_record();
- 			call->unregfunc();
- 		}
- 		break;
- 	case 1:
- 		if (!call->enabled) {
- 			call->enabled = 1;
-+			tracing_start_cmdline_record();
- 			call->regfunc();
- 		}
- 		break;
-@@ -1058,6 +1061,7 @@ static void trace_module_remove_events(struct module *mod)
+@@ -114,6 +97,17 @@ static void ftrace_event_enable_disable(struct ftrace_event_call *call,
+ 	}
+ }
+ 
++static void ftrace_clear_events(void)
++{
++	struct ftrace_event_call *call;
++
++	mutex_lock(&event_mutex);
++	list_for_each_entry(call, &ftrace_events, list) {
++		ftrace_event_enable_disable(call, 0);
++	}
++	mutex_unlock(&event_mutex);
++}
++
+ /*
+  * __ftrace_set_clr_event(NULL, NULL, NULL, set) will set/unset all events.
+  */
+@@ -1059,11 +1053,7 @@ static void trace_module_remove_events(struct module *mod)
+ 	list_for_each_entry_safe(call, p, &ftrace_events, list) {
+ 		if (call->mod == mod) {
  			found = true;
- 			if (call->enabled) {
- 				call->enabled = 0;
-+				tracing_stop_cmdline_record();
- 				call->unregfunc();
- 			}
+-			if (call->enabled) {
+-				call->enabled = 0;
+-				tracing_stop_cmdline_record();
+-				call->unregfunc();
+-			}
++			ftrace_event_enable_disable(call, 0);
  			if (call->event)
-@@ -1262,11 +1266,13 @@ static __init void event_trace_self_tests(void)
+ 				unregister_ftrace_event(call->event);
+ 			debugfs_remove_recursive(call->dir);
+@@ -1265,15 +1255,9 @@ static __init void event_trace_self_tests(void)
+ 			continue;
  		}
  
- 		call->enabled = 1;
-+		tracing_start_cmdline_record();
- 		call->regfunc();
- 
+-		call->enabled = 1;
+-		tracing_start_cmdline_record();
+-		call->regfunc();
+-
++		ftrace_event_enable_disable(call, 1);
  		event_test_stuff();
- 
- 		call->unregfunc();
-+		tracing_stop_cmdline_record();
- 		call->enabled = 0;
+-
+-		call->unregfunc();
+-		tracing_stop_cmdline_record();
+-		call->enabled = 0;
++		ftrace_event_enable_disable(call, 0);
  
  		pr_cont("OK\n");
+ 	}
 -- 
 1.6.2.3
 
