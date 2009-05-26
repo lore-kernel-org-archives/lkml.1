@@ -1,70 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754050AbZEZLXE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755058AbZEZLYx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754050AbZEZLXE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 07:23:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752669AbZEZLWy
+	id S1755058AbZEZLYx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 07:24:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754586AbZEZLYq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 07:22:54 -0400
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:52868 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752609AbZEZLWy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 07:22:54 -0400
-Date: Tue, 26 May 2009 20:22:40 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Mike Frysinger <vapier@gentoo.org>, rtc-linux@googlegroups.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       uclinux-dist-devel@blackfin.uclinux.org
-Subject: Re: [PATCH] drivers/char/rtc: disable legacy RTC driver on Blackfin systems
-Message-ID: <20090526112240.GA16835@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Christoph Hellwig <hch@infradead.org>,
-	Mike Frysinger <vapier@gentoo.org>, rtc-linux@googlegroups.com,
-	akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-	uclinux-dist-devel@blackfin.uclinux.org
-References: <1243332633-15258-1-git-send-email-vapier@gentoo.org> <20090526102502.GA24737@infradead.org>
+	Tue, 26 May 2009 07:24:46 -0400
+Received: from ozlabs.org ([203.10.76.45]:36020 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752609AbZEZLYp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 07:24:45 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [PATCH] lguest: fix on Intel when KVM loaded (unhandled trap 13)
+Date: Tue, 26 May 2009 20:54:41 +0930
+User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
+Cc: "kvm-devel" <kvm-devel@lists.sourceforge.net>, lguest <lguest@ozlabs.org>,
+       linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090526102502.GA24737@infradead.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200905262054.42566.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 26, 2009 at 06:25:02AM -0400, Christoph Hellwig wrote:
-> On Tue, May 26, 2009 at 06:10:33AM -0400, Mike Frysinger wrote:
-> >  	tristate "Enhanced Real Time Clock Support (legacy PC RTC driver)"
-> >  	depends on !PPC && !PARISC && !IA64 && !M68K && !SPARC && !FRV \
-> > -			&& !ARM && !SUPERH && !S390 && !AVR32
-> > +			&& !ARM && !SUPERH && !S390 && !AVR32 && !BLACKFIN
-> 
-> Maybe it's better to have a positive dependency for those that actually
-> support it these days?  Based on the above list that would be:
-> 
-> 	depends on ALPHA || CRIS || H8300 || M32R || MICROBLAZE ||
-> 		   MIPS || MN10300 || SH || X86 || XTENSA
-> 
-> and I would not be surprised if some of the above don't actually support
-> it either..
+When KVM is loaded, and hence VT set up, the vmcall instruction in an
+lguest guest causes a #GP, not #UD.
 
-SH shouldn't be included it, we've never supported it. Out of the ones
-that do support this interface, I would guess that they should require
-little to no modification to work with drivers/rtc/rtc-cmos.c.
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+---
+ drivers/lguest/x86/core.c |   19 ++++++++++---------
+ 1 file changed, 10 insertions(+), 9 deletions(-)
 
-Out of the ones that don't actually support this interface but never
-bothered updating the Kconfig bits.. none of h8300/microblaze/xtensa
-define any of the CMOS_READ/WRITE() accessors, so this has no chance at
-all of working there.
+diff --git a/drivers/lguest/x86/core.c b/drivers/lguest/x86/core.c
+--- a/drivers/lguest/x86/core.c
++++ b/drivers/lguest/x86/core.c
+@@ -358,6 +358,16 @@ void lguest_arch_handle_trap(struct lg_c
+ 			if (emulate_insn(cpu))
+ 				return;
+ 		}
++		/* If KVM is active, the vmcall instruction triggers a
++		 * General Protection Fault.  Normally it triggers an
++		 * invalid opcode fault (6): */
++	case 6:
++		/* We need to check if ring == GUEST_PL and
++		 * faulting instruction == vmcall. */
++		if (is_hypercall(cpu)) {
++			rewrite_hypercall(cpu);
++			return;
++		}
+ 		break;
+ 	case 14: /* We've intercepted a Page Fault. */
+ 		/* The Guest accessed a virtual address that wasn't mapped.
+@@ -403,15 +413,6 @@ void lguest_arch_handle_trap(struct lg_c
+ 		 * up the pointer now to indicate a hypercall is pending. */
+ 		cpu->hcall = (struct hcall_args *)cpu->regs;
+ 		return;
+-	case 6:
+-		/* kvm hypercalls trigger an invalid opcode fault (6).
+-		 * We need to check if ring == GUEST_PL and
+-		 * faulting instruction == vmcall. */
+-		if (is_hypercall(cpu)) {
+-			rewrite_hypercall(cpu);
+-			return;
+-		}
+-		break;
+ 	}
+ 
+ 	/* We didn't handle the trap, so it needs to go to the Guest. */
 
-Now to narrow that list down a bit more, both m32r and cris primarily use
-this interface for their ds1302 RTC, which I added a stub driver for in
-drivers/rtc/rtc-ds1302.c some time ago. With a bit of cleanup on the
-driver side and a bit of a push from the architecture side, they should
-also be able to just use the drivers/rtc version directly. I've offered
-to help with the conversion for these platforms before, but neither
-maintainer seemed terribly responsive.
-
-Which basically leaves just alpha, mips, mn10300, and x86. I would be
-surprised if these don't work with rtc-cmos already today.
