@@ -1,93 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757994AbZEZUA1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758171AbZEZUAj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757994AbZEZUA1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 16:00:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756753AbZEZUAM
+	id S1758171AbZEZUAj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 16:00:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757847AbZEZUAX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 16:00:12 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:55552 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756686AbZEZUAK (ORCPT
+	Tue, 26 May 2009 16:00:23 -0400
+Received: from vms173007pub.verizon.net ([206.46.173.7]:27033 "EHLO
+	vms173007pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758020AbZEZUAW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 16:00:10 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=from:subject:to:cc:date:message-id:user-agent:
-	mime-version:content-type:content-transfer-encoding:x-system-of-record;
-	b=ZxmTV+0pAaol71xmmCIeELvzbKXMUpRZviyQbm6ebicPOk1ZIQsdx0JxHxWRtoQrC
-	VtNr8Q2ueljm3ehoiZ1vQ==
-From: Paul Menage <menage@google.com>
-Subject: [PATCH] cls_cgroup: read classid atomically in classifier
-To: lizf@cn.fujitsu.com, akpm@linux-foundation.org, davem@davemloft.net,
-       tgraf@suug.ch
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Date: Tue, 26 May 2009 12:59:11 -0700
-Message-ID: <20090526195840.8464.36548.stgit@menage.mtv.corp.google.com>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-System-Of-Record: true
+	Tue, 26 May 2009 16:00:22 -0400
+Date: Tue, 26 May 2009 16:00:15 -0400 (EDT)
+From: Len Brown <lenb@kernel.org>
+X-X-Sender: lenb@localhost.localdomain
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Eric Anholt <eric@anholt.net>, mjg@redhat.com,
+       Sam Ravnborg <sam@ravnborg.org>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2 -tip] drm/i915: acpi/video.c fix section mismatch
+ warning
+In-reply-to: <1242800768.3260.21.camel@localhost.localdomain>
+Message-id: <alpine.LFD.2.00.0905261559500.18024@localhost.localdomain>
+References: <1242800768.3260.21.camel@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-cls_cgroup: read classid atomically in classifier
+applied to acpi tree.
 
-Avoid reading the unsynchronized value cs->classid multiple times,
-since it could change concurrently from non-zero to zero; this would
-result in the classifier returning a positive result with a bogus
-(zero) classid.
+thanks,
+Len Brown, Intel Open Source Technology Center
 
-Signed-off-by: Paul Menage <menage@google.com>
-Reviewed-by: Li Zefan <lizf@cn.fujitsu.com>
+On Wed, 20 May 2009, Jaswinder Singh Rajput wrote:
 
----
-
-Fixes a whitespace issue from the previous version of the patch
-
- net/sched/cls_cgroup.c |   22 +++++++++++-----------
- 1 files changed, 11 insertions(+), 11 deletions(-)
-
-diff --git a/net/sched/cls_cgroup.c b/net/sched/cls_cgroup.c
-index 1ab4542..0f815cc 100644
---- a/net/sched/cls_cgroup.c
-+++ b/net/sched/cls_cgroup.c
-@@ -98,8 +98,7 @@ static int cls_cgroup_classify(struct sk_buff *skb, struct tcf_proto *tp,
- 			       struct tcf_result *res)
- {
- 	struct cls_cgroup_head *head = tp->root;
--	struct cgroup_cls_state *cs;
--	int ret = 0;
-+	u32 classid;
- 
- 	/*
- 	 * Due to the nature of the classifier it is required to ignore all
-@@ -115,17 +114,18 @@ static int cls_cgroup_classify(struct sk_buff *skb, struct tcf_proto *tp,
- 		return -1;
- 
- 	rcu_read_lock();
--	cs = task_cls_state(current);
--	if (cs->classid && tcf_em_tree_match(skb, &head->ematches, NULL)) {
--		res->classid = cs->classid;
--		res->class = 0;
--		ret = tcf_exts_exec(skb, &head->exts, res);
--	} else
--		ret = -1;
--
-+	classid = task_cls_state(current)->classid;
- 	rcu_read_unlock();
- 
--	return ret;
-+	if (!classid)
-+		return -1;
-+
-+	if (!tcf_em_tree_match(skb, &head->ematches, NULL))
-+		return -1;
-+
-+	res->classid = classid;
-+	res->class = 0;
-+	return tcf_exts_exec(skb, &head->exts, res);
- }
- 
- static unsigned long cls_cgroup_get(struct tcf_proto *tp, u32 handle)
-
+> 
+> Currently acpi_video_exit() is exported as well as using __exit which causes:
+> 
+>   WARNING: drivers/acpi/video.o(__ksymtab+0x0): Section mismatch in reference from the variable __ksymtab_acpi_video_exit to the function .exit.text:acpi_video_exit()
+>   The symbol acpi_video_exit is exported and annotated __exit
+>   Fix this by removing the __exit annotation of acpi_video_exit or drop the export.
+> 
+> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> ---
+>  drivers/acpi/video.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/acpi/video.c b/drivers/acpi/video.c
+> index 810cca9..a79b885 100644
+> --- a/drivers/acpi/video.c
+> +++ b/drivers/acpi/video.c
+> @@ -2334,7 +2334,7 @@ static int __init acpi_video_init(void)
+>  	return acpi_video_register();
+>  }
+>  
+> -void __exit acpi_video_exit(void)
+> +void acpi_video_exit(void)
+>  {
+>  
+>  	acpi_bus_unregister_driver(&acpi_video_bus);
+> -- 
+> 1.6.1.1
+> 
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
