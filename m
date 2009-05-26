@@ -1,84 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754236AbZEZIIp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754192AbZEZILH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754236AbZEZIIp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 04:08:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751733AbZEZIIa
+	id S1754192AbZEZILH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 04:11:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753498AbZEZIKz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 04:08:30 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:51526 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751347AbZEZII3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 04:08:29 -0400
-Message-ID: <4A1BA322.9060505@cn.fujitsu.com>
-Date: Tue, 26 May 2009 16:06:58 +0800
-From: Zhaolei <zhaolei@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/3] tracing/workqueue: fix list header and function name
- format
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 26 May 2009 04:10:55 -0400
+Received: from luminismail.carleton.ca ([134.117.2.27]:36948 "EHLO
+	luminismail.carleton.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753174AbZEZIKy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 04:10:54 -0400
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: text/plain; charset=US-ASCII
+Message-id: <4A1BA409.6040804@superonline.com>
+Date: Tue, 26 May 2009 04:10:49 -0400
+From: "M. Vefa Bicakci" <bicave@superonline.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+To: linux-kernel@vger.kernel.org
+Subject: Re: [Bisected regression] Microphone no longer works on Toshiba
+ Satellite A100
+References: <4A196CF5.8010504@superonline.com> <s5hskiuv4d2.wl%tiwai@suse.de>
+ <4A198CAD.6090109@superonline.com> <s5hk545d8sc.wl%tiwai@suse.de>
+In-reply-to: <s5hk545d8sc.wl%tiwai@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix list header of workqueue trace,
-and use %pf to print the function name only(ignore the offsets).
+Hello,
 
-Before patch:
- # CPU INSERTED EXECUTED    MAX us   AVG us   TASKNAME:PID
- #  |     |        |           |      ` |     -WORKFUNC
- #  |     |        |           |        |          |
-     0        1        1     1053     1053   `-flush_async_commits+0x0/0x90
- ...
+I just wanted to let everyone else know that I have tested the
+patch Takashi Iwai provided, and that the microphone works properly
+with the patch applied.
 
-After patch:
- # CPU INSERTED EXECUTED   MAX us   AVG us   TASKNAME:PID
- #  |     |        |         |        |      `-WORKFUNC
- #  |     |        |         |        |           |
-     0        1        1     1155     1155   `-flush_async_commits
- ...
+Below is our conversation, which I forgot to Cc: to LKML.
 
-Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
----
- kernel/trace/trace_workqueue.c |   14 ++++++++------
- 1 files changed, 8 insertions(+), 6 deletions(-)
+Thanks everyone,
 
-diff --git a/kernel/trace/trace_workqueue.c b/kernel/trace/trace_workqueue.c
-index c67be60..6cee4a8 100644
---- a/kernel/trace/trace_workqueue.c
-+++ b/kernel/trace/trace_workqueue.c
-@@ -409,7 +409,7 @@ static int workqueue_stat_show(struct seq_file *s, void *p)
- 			avg_time = 0;
- 		}
- 
--		seq_printf(s, "  %3d   %6d   %6u   %6llu   %6llu   %c-%pF\n",
-+		seq_printf(s, "  %3d   %6d   %6u   %6llu   %6llu   %c-%pf\n",
- 			cws->cpu,
- 			wfstat->inserted,
- 			wfstat->executed,
-@@ -457,11 +457,13 @@ static void workqueue_stat_file_open(void)
- 		/**/
- static int workqueue_stat_headers(struct seq_file *s)
- {
--	seq_printf(s, "# CPU INSERTED EXECUTED    MAX us   AVG us"
--			"   TASKNAME:PID\n");
--	seq_printf(s, "#  |     |        |           |      ` |"
--			"     -WORKFUNC\n");
--	seq_printf(s, "#  |     |        |           |        |          |\n");
-+	seq_printf(s,
-+		"# CPU INSERTED EXECUTED   MAX us   AVG us   TASKNAME:PID\n");
-+	seq_printf(s,
-+		"#  |     |        |         |        |      `-WORKFUNC\n");
-+	seq_printf(s,
-+		"#  |     |        |         |        |           |\n");
-+
- 	return 0;
- }
- 
--- 
-1.5.5.3
+M. Vefa Bicakci
+
+> -------- Original Message --------
+> Subject: Re: [Bisected regression] Microphone no longer works on Toshiba Satellite A100
+> Date: Tue, 26 May 2009 07:49:41 +0200
+> From: Takashi Iwai <tiwai@suse.de>
+> To: M. Vefa Bicakci <bicave@superonline.com>
+> References: <4A196CF5.8010504@superonline.com>	<s5hskiuv4d2.wl%tiwai@suse.de>	<4A198CAD.6090109@superonline.com>	<s5hk545d8sc.wl%tiwai@suse.de>	<4A1B10D5.9000009@superonline.com>
+> 
+> At Mon, 25 May 2009 17:42:45 -0400,
+> M. Vefa Bicakci wrote:
+>> 
+>> Takashi Iwai wrote:
+>> >>> [snip]
+>> > Thanks.  Does the patch below work?
+>> 
+>> Yes, I just tried it by compiling alsa-driver-1.0.20 after applying
+>> the patch you provided, and I can happily say that it works beautifully.
+>> 
+>> Thank you so much! I really hope that this patch will be included in
+>> the next ALSA release and the next -rc release for 2.6.30.
+> 
+> I merged now it to sound git tree and will include in the next pull
+> request.
+> 
+> Thanks for testing!
+> 
+> 
+> Takashi
+
+
 
