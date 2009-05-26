@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757603AbZEZWVl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758699AbZEZWW0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757603AbZEZWVl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 18:21:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755194AbZEZWVd
+	id S1758699AbZEZWW0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 18:22:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755555AbZEZWWS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 18:21:33 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:39425 "EHLO mx2.redhat.com"
+	Tue, 26 May 2009 18:22:18 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:37656 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751044AbZEZWVc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 18:21:32 -0400
-Date: Tue, 26 May 2009 19:20:57 -0300
+	id S1755386AbZEZWWR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 18:22:17 -0400
+Date: Tue, 26 May 2009 19:21:55 -0300
 From: Arnaldo Carvalho de Melo <acme@redhat.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
        Mike Galbraith <efault@gmx.de>, Thomas Gleixner <tglx@linutronix.de>,
        Steven Rostedt <rostedt@goodmis.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/2 tip] perf: Use hex2long instead of sscanf
-Message-ID: <20090526222057.GI4424@ghostprotocols.net>
+Subject: [PATCH 2/2 tip] perf: report should only load text symbols from
+	kallsyms
+Message-ID: <20090526222155.GJ4424@ghostprotocols.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -27,163 +28,115 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 660a7bf4bd5ac8dad5f33b59527f670b4039208e Mon Sep 17 00:00:00 2001
+>From 7508bc84d541ac245be633803d393244b6860af6 Mon Sep 17 00:00:00 2001
 From: Arnaldo Carvalho de Melo <acme@redhat.com>
-Date: Tue, 26 May 2009 18:34:18 -0300
-Subject: [PATCH] perf: Use hex2long instead of sscanf
+Date: Tue, 26 May 2009 19:14:47 -0300
+Subject: [PATCH] perf: report should only load text symbols from kallsyms
+
+Just like we do for userspace when reading the symtab, reducing the
+number of entries we insert on the symbols rbtree.
 
 Before:
 
-[acme@emilia ~]$ perf record -o perf_report.perf perf stat perf report > /dev/null
+[acme@emilia ~]$ rm -f perf_report.perf ; perf record -o perf_report.perf perf stat perf report > /dev/null
 
  Performance counter stats for 'perf':
 
-     245.414985  task clock ticks     (msecs)
-              6  context switches     (events)
-              6  CPU migrations       (events)
-           2108  pagefaults           (events)
-       37493013  CPU cycles           (events)  (scaled from 67.04%)
-       13576789  instructions         (events)  (scaled from 66.76%)
-          57931  cache references     (events)  (scaled from 21.96%)
-          12263  cache misses         (events)  (scaled from 21.98%)
+     218.138382  task clock ticks     (msecs)
+              4  context switches     (events)
+              8  CPU migrations       (events)
+           2136  pagefaults           (events)
+       32746212  CPU cycles           (events)  (scaled from 67.04%)
+       11961102  instructions         (events)  (scaled from 66.19%)
+          49841  cache references     (events)  (scaled from 21.96%)
+          13777  cache misses         (events)  (scaled from 21.98%)
 
- Wall-clock time elapsed:   246.575587 msecs
+ Wall-clock time elapsed:   218.702477 msecs
 
 [acme@emilia ~]$ perf report -i perf_report.perf | head
-12.15          perf [.] 0x000000000005432a /lib64/libc-2.5.so: _IO_vfscanf_internal
- 9.38          perf [k] 0xffffffff8101b1d2 intel_pmu_enable_all
- 8.53          perf [.] 0x00000000000056b8 /home/acme/git/linux-2.6-tip/Documentation/perf_counter/perf: dso__insert_symbol
- 6.61          perf [.] 0x00000000000057cb /home/acme/git/linux-2.6-tip/Documentation/perf_counter/perf: dso__find_symbol
- 5.33          perf [k] 0xffffffff811ce082 number
- 4.69          perf [.] 0x0000000000034829 /lib64/libc-2.5.so: ____strtoull_l_internal
- 4.48          perf [.] 0x0000000000006505 /home/acme/git/linux-2.6-tip/Documentation/perf_counter/perf: thread__symbol_incnew
- 3.41          perf [.] 0x000000000000fce6 /home/acme/git/linux-2.6-tip/Documentation/perf_counter/perf: rb_insert_color
- 3.20          perf [k] 0xffffffff811cfc01 vsnprintf
- 2.99          perf [k] 0xffffffff811ce5e8 format_decode
+11.06          perf [.] 0x00000000000057cb /home/acme/git/linux-2.6-tip/Documentation/perf_counter/perf: dso__find_symbol
+ 9.15          perf [.] 0x00000000000056a0 /home/acme/git/linux-2.6-tip/Documentation/perf_counter/perf: dso__insert_symbol
+ 8.72          perf [k] 0xffffffff8101b1d2 intel_pmu_enable_all
+ 8.51          perf [.] 0x0000000000006672 /home/acme/git/linux-2.6-tip/Documentation/perf_counter/perf: thread__symbol_incnew
+ 3.83          perf [k] 0xffffffff811cfc5a vsnprintf
+ 3.40          perf [.] 0x0000000000005e33 /home/acme/git/linux-2.6-tip/Documentation/perf_counter/perf: hex
+ 3.40          perf [.] 0x0000000000005ec7 /home/acme/git/linux-2.6-tip/Documentation/perf_counter/perf: hex2long
+ 3.19          perf [k] 0xffffffff811ce1c1 number
+ 2.77          perf [.] 0x0000000000006869 /home/acme/git/linux-2.6-tip/Documentation/perf_counter/perf: threads__findnew
+ 2.77          perf [.] 0x000000000000fde3 /home/acme/git/linux-2.6-tip/Documentation/perf_counter/perf: rb_insert_color
+[acme@emilia ~]$
 
 After:
 
-[acme@emilia ~]$ perf record -o perf_report.perf perf stat perf report > /dev/null
+acme@emilia ~]$ rm -f perf_report.perf ; perf record -o perf_report.perf perf stat perf report > /dev/null
 
  Performance counter stats for 'perf':
 
-     218.186805  task clock ticks     (msecs)
+     190.228511  task clock ticks     (msecs)
               4  context switches     (events)
               7  CPU migrations       (events)
-           2133  pagefaults           (events)
-       32735365  CPU cycles           (events)  (scaled from 67.04%)
-       11952309  instructions         (events)  (scaled from 66.26%)
-          50314  cache references     (events)  (scaled from 21.96%)
-          13228  cache misses         (events)  (scaled from 21.98%)
+           1625  pagefaults           (events)
+       29578745  CPU cycles           (events)  (scaled from 66.92%)
+       10516914  instructions         (events)  (scaled from 66.47%)
+          44015  cache references     (events)  (scaled from 22.04%)
+           8248  cache misses         (events)  (scaled from 22.07%)
 
- Wall-clock time elapsed:   218.810451 msecs
+ Wall-clock time elapsed:   190.816096 msecs
 
 [acme@emilia ~]$ perf report -i perf_report.perf | head
-10.68          perf [.] 0x000000000000578d /home/acme/git/linux-2.6-tip/Documentation/perf_counter/perf: dso__find_symbol
- 9.62          perf [.] 0x00000000000065f7 /home/acme/git/linux-2.6-tip/Documentation/perf_counter/perf: thread__symbol_incnew
- 9.40          perf [.] 0x00000000000056b4 /home/acme/git/linux-2.6-tip/Documentation/perf_counter/perf: dso__insert_symbol
- 9.19          perf [k] 0xffffffff8101b1d2 intel_pmu_enable_all
- 5.13          perf [.] 0x0000000000005ec7 /home/acme/git/linux-2.6-tip/Documentation/perf_counter/perf: hex2long
- 4.49          perf [k] 0xffffffff81083808 kallsyms_expand_symbol
- 3.85          perf [k] 0xffffffff811ce2c1 number
- 3.63          perf [.] 0x0000000000005e81 /home/acme/git/linux-2.6-tip/Documentation/perf_counter/perf: hex
- 2.99          perf [.] 0x000000000000fd5b /home/acme/git/linux-2.6-tip/Documentation/perf_counter/perf: rb_insert_color
- 2.99          perf [k] 0xffffffff811cf251 string
+15.99          perf [.] 0x00000000000057a9 /home/acme/git/linux-2.6-tip/Documentation/perf_counter/perf: dso__find_symbol
+10.87          perf [.] 0x000000000000674d /home/acme/git/linux-2.6-tip/Documentation/perf_counter/perf: thread__symbol_incnew
+ 8.74          perf [k] 0xffffffff8101b1d2 intel_pmu_enable_all
+ 5.54          perf [.] 0x0000000000005e42 /home/acme/git/linux-2.6-tip/Documentation/perf_counter/perf: hex
+ 4.48          perf [.] 0x0000000000005ebe /home/acme/git/linux-2.6-tip/Documentation/perf_counter/perf: hex2long
+ 4.48          perf [k] 0xffffffff811cfba0 vsnprintf
+ 3.84          perf [.] 0x00000000000056b4 /home/acme/git/linux-2.6-tip/Documentation/perf_counter/perf: dso__insert_symbol
+ 3.62          perf [.] 0x00000000000068d0 /home/acme/git/linux-2.6-tip/Documentation/perf_counter/perf: threads__findnew
+ 3.20          perf [k] 0xffffffff811ce0b3 number
+ 2.56          perf [.] 0x0000000000006d78 /home/acme/git/linux-2.6-tip/Documentation/perf_counter/perf: __cmd_report
 [acme@emilia ~]$
 
 Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
 ---
- Documentation/perf_counter/builtin-report.c |   63 +++++++++++++++++++++------
- 1 files changed, 50 insertions(+), 13 deletions(-)
+ Documentation/perf_counter/builtin-report.c |   14 +++++++++++---
+ 1 files changed, 11 insertions(+), 3 deletions(-)
 
 diff --git a/Documentation/perf_counter/builtin-report.c b/Documentation/perf_counter/builtin-report.c
-index a4c6ffa..c517483 100644
+index c517483..a55f15d 100644
 --- a/Documentation/perf_counter/builtin-report.c
 +++ b/Documentation/perf_counter/builtin-report.c
-@@ -348,6 +348,39 @@ void dsos__fprintf(FILE *fp)
- 		dso__fprintf(pos, fp);
- }
+@@ -3,6 +3,7 @@
+ #include <libelf.h>
+ #include <gelf.h>
+ #include <elf.h>
++#include <ctype.h>
  
-+static int hex(char ch)
-+{
-+	if ((ch >= '0') && (ch <= '9'))
-+		return ch - '0';
-+	if ((ch >= 'a') && (ch <= 'f'))
-+		return ch - 'a' + 10;
-+	if ((ch >= 'A') && (ch <= 'F'))
-+		return ch - 'A' + 10;
-+	return -1;
-+}
-+
-+/*
-+ * While we find nice hex chars, build a long_val.
-+ * Return number of chars processed.
-+ */
-+int hex2long(char *ptr, unsigned long *long_val)
-+{
-+	const char *p = ptr;
-+	*long_val = 0;
-+
-+	while (*p) {
-+		const int hex_val = hex(*p);
-+
-+		if (hex_val < 0)
-+			break;
-+
-+		*long_val = (*long_val << 4) | hex_val;
-+		p++;
-+	}
-+
-+	return p - ptr;
-+}
-+
- static int load_kallsyms(void)
- {
- 	kernel_dso = dso__new("[kernel]");
-@@ -363,26 +396,30 @@ static int load_kallsyms(void)
- 	size_t n;
+ #include "util/list.h"
+ #include "util/rbtree.h"
+@@ -408,13 +409,20 @@ static int load_kallsyms(void)
  
- 	while (!feof(file)) {
--		unsigned long long start;
--		char c, symbf[4096];
--
--		if (getline(&line, &n, file) < 0)
-+		unsigned long start;
-+		int line_len = getline(&line, &n, file);
-+		if (line_len < 0)
- 			break;
- 
- 		if (!line)
- 			goto out_delete_dso;
- 
--		if (sscanf(line, "%llx %c %s", &start, &c, symbf) == 3) {
--			/*
--			 * Well fix up the end later, when we have all sorted.
--			 */
--			struct symbol *sym = symbol__new(start, 0xdead, symbf);
-+		line[--line_len] = '\0'; /* \n */
-+
-+		int len = hex2long(line, &start);
-+		
-+		len += 3; /* ' t ' */
-+		if (len >= line_len)
+ 		int len = hex2long(line, &start);
+ 		
+-		len += 3; /* ' t ' */
+-		if (len >= line_len)
++		len++;
++		if (len + 2 >= line_len)
 +			continue;
++
++		char symbol_type = line[len];
 +		/*
-+		 * Well fix up the end later, when we have all sorted.
++		 * We're interested only in code ('T'ext)
 +		 */
-+		struct symbol *sym = symbol__new(start, 0xdead, line + len);
++		if (toupper(symbol_type) != 'T')
+ 			continue;
+ 		/*
+ 		 * Well fix up the end later, when we have all sorted.
+ 		 */
+-		struct symbol *sym = symbol__new(start, 0xdead, line + len);
++		struct symbol *sym = symbol__new(start, 0xdead, line + len + 2);
  
--			if (sym == NULL)
--				goto out_delete_dso;
-+		if (sym == NULL)
-+			goto out_delete_dso;
- 
--			dso__insert_symbol(kernel_dso, sym);
--		}
-+		dso__insert_symbol(kernel_dso, sym);
- 	}
- 
- 	/*
+ 		if (sym == NULL)
+ 			goto out_delete_dso;
 -- 
 1.6.0.6
 
