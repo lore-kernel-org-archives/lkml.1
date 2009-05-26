@@ -1,108 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755701AbZEZN2t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753584AbZEZNd1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755701AbZEZN2t (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 09:28:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754728AbZEZN2i
+	id S1753584AbZEZNd1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 09:33:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751015AbZEZNdU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 09:28:38 -0400
-Received: from hera.kernel.org ([140.211.167.34]:57029 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755312AbZEZN2g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 09:28:36 -0400
-Date: Tue, 26 May 2009 13:27:33 GMT
-From: tip-bot for Mike Galbraith <efault@gmx.de>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
-       hpa@zytor.com, mingo@redhat.com, jkacur@redhat.com,
-       a.p.zijlstra@chello.nl, efault@gmx.de, mtosatti@redhat.com,
-       tglx@linutronix.de, cjashfor@linux.vnet.ibm.com, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, jkacur@redhat.com, a.p.zijlstra@chello.nl,
-       efault@gmx.de, mtosatti@redhat.com, tglx@linutronix.de,
-       cjashfor@linux.vnet.ibm.com, mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-Subject: [tip:perfcounters/core] perf top: Remove leftover NMI/IRQ bits
-Message-ID: <tip-f91183fe3780d44849110a1653dfe8af7bc67aa4@git.kernel.org>
-Git-Commit-ID: f91183fe3780d44849110a1653dfe8af7bc67aa4
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Tue, 26 May 2009 09:33:20 -0400
+Received: from tomts16.bellnexxia.net ([209.226.175.4]:39309 "EHLO
+	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750889AbZEZNdT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 09:33:19 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AtIFAHqLG0pMQW1W/2dsb2JhbACBT80OhAsF
+Date: Tue, 26 May 2009 09:33:19 -0400
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Steve Langstaff <steve.langstaff@pebblebay.com>
+Cc: "'David Miller'" <davem@davemloft.net>, paulmck@linux.vnet.ibm.com,
+       mingo@elte.hu, jwboyer@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       ltt-dev@lists.casi.polymtl.ca, "'Subrata Modak'" <tosubrata@gmail.com>,
+       "'Alan D. Brunelle'" <Alan.Brunelle@hp.com>,
+       "'Andika Triwidada'" <andika@startrek.or.id>
+Subject: Re: [ltt-dev] Test module : benchmarking read-side locking speed
+Message-ID: <20090526133319.GB14851@Krystal>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 26 May 2009 13:27:35 +0000 (UTC)
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 09:31:39 up 87 days,  9:57,  4 users,  load average: 0.71, 0.43,
+	0.21
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  f91183fe3780d44849110a1653dfe8af7bc67aa4
-Gitweb:     http://git.kernel.org/tip/f91183fe3780d44849110a1653dfe8af7bc67aa4
-Author:     Mike Galbraith <efault@gmx.de>
-AuthorDate: Tue, 26 May 2009 15:25:34 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 26 May 2009 15:25:34 +0200
+* Steve Langstaff (steve.langstaff@pebblebay.com) wrote:
+> > From: Mathieu Desnoyers [mailto:compudj@krystal.dyndns.org]
+> > Sent: 22 May 2009 16:02
+> > To: Steve Langstaff
+> > Cc: 'David Miller'; paulmck@linux.vnet.ibm.com; mingo@elte.hu;
+> > jwboyer@linux.vnet.ibm.com; linux-kernel@vger.kernel.org; ltt-
+> > dev@lists.casi.polymtl.ca; 'Subrata Modak'; 'Alan D. Brunelle'; 'Andika
+> > Triwidada'
+> > Subject: Re: [ltt-dev] Test module : benchmarking read-side locking
+> > speed
+> > 
+> > * Steve Langstaff (steve.langstaff@pebblebay.com) wrote:
+> > > > From: Mathieu Desnoyers [mailto:compudj@krystal.dyndns.org]
+> > > > Sent: 21 May 2009 20:12
+> > >
+> > >
+> > > > I am trying to complete my numbers for performance impact of read-
+> > side
+> > > > locking primitives (on the fast path) for various architectures.
+> > >
+> > > > Help with testing on a larger set of architectures would be more
+> > than
+> > > > welcome. Note that this module requires the kernel to be configured
+> > > > with
+> > > > CONFIG_PREEMPT=y. Some config option sanity checking is done at
+> > > > compile-time. Other requirement : disable invasive lockdep-style
+> > > > instrumentation.
+> > >
+> > > Another requirement is that get_cycles() needs to return something
+> > > meaningful :)
+> > >
+> > 
+> > For ARMv7 Omap3, I have the following version (I've been able to get
+> > benchmarks with it yesterday). It requires LTTng to be started for the
+> > trace clock infrastructure to be in place and running to provide a full
+> > 64-bits emulated TSC.
+> 
+> Using your updated test source, I get slightly different results on my
+> PXA255 (total time = 1 rather than 0), but I'm not convinced that the
+> measurements are correct...
+> 
 
-perf top: Remove leftover NMI/IRQ bits
+The LTTng trace clock only uses the cycle counter on ARM OMAP3, AFAIK.
+Therefore, the implementation you use is probably using a jiffy-based
+method+logical clock (see asm-generic/trace-clock.h). Therefore those
+numbers do not represent cycles.
 
-79202b removed IRQ/NMI mode selection, so remove it from
-perf top as well.
+Thanks,
 
-[ Impact: cleanup ]
+Mathieu
 
-Signed-off-by: Mike Galbraith <efault@gmx.de>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-Cc: Marcelo Tosatti <mtosatti@redhat.com>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: John Kacur <jkacur@redhat.com>
-LKML-Reference: <new-submission>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> /lib/modules/2.6.29.2 # insmod ./ltt_test.ko
+> [   81.372318] test init
+> [   81.374647] Number of active CPUs : 1
+> [   81.378806] test results: time for baseline
+> [   81.383010] number of loops: 20000
+> [   81.386510] total time: 1
+> [   81.389147] -> baseline takes 0 cycles
+> [   81.392910] test end
+> [   81.396017] test results: time for spinlock
+> [   81.400292] number of loops: 20000
+> [   81.403711] total time: 1
+> [   81.406417] -> spinlock takes 0 cycles
+> [   81.410184] test end
+> [   81.413293] test results: time for read rwlock
+> [   81.417825] number of loops: 20000
+> [   81.421248] total time: 1
+> [   81.423887] -> read rwlock takes 0 cycles
+> [   81.427990] test end
+> [   81.430844] test results: time for seqlock
+> [   81.434962] number of loops: 20000
+> [   81.438439] total time: 1
+> [   81.441075] -> seqlock takes 0 cycles
+> [   81.444751] test end
+> [   81.447871] test results: time for preempt disable/enable pairs
+> [   81.453818] number of loops: 20000
+> [   81.457300] total time: 1
+> [   81.459940] -> preempt disable/enable pair takes 0 cycles
+> [   81.465359] test end
+> insmod: cannot insert './ltt_test.ko': Resource temporarily unavailable
+> (-1): Resource temporarily unavailable
+> 
+> 
 
-
----
- Documentation/perf_counter/builtin-top.c |   10 ++++------
- 1 files changed, 4 insertions(+), 6 deletions(-)
-
-diff --git a/Documentation/perf_counter/builtin-top.c b/Documentation/perf_counter/builtin-top.c
-index 87b925c..cacaa3c 100644
---- a/Documentation/perf_counter/builtin-top.c
-+++ b/Documentation/perf_counter/builtin-top.c
-@@ -8,7 +8,7 @@
-    Sample output:
- 
- ------------------------------------------------------------------------------
-- KernelTop:    2669 irqs/sec  [NMI, cache-misses/cache-refs],  (all, cpu: 2)
-+ KernelTop:    2669 irqs/sec  [cache-misses/cache-refs],  (all, cpu: 2)
- ------------------------------------------------------------------------------
- 
-              weight         RIP          kernel function
-@@ -92,7 +92,6 @@ static __u64			count_filter		       = 100;
- static int			target_pid				= -1;
- static int			profile_cpu			= -1;
- static int			nr_cpus				=  0;
--static int			nmi				=  1;
- static unsigned int		realtime_prio			=  0;
- static int			group				=  0;
- static unsigned int		page_size;
-@@ -198,10 +197,9 @@ static void print_sym_table(void)
- 
- 	printf(
- "------------------------------------------------------------------------------\n");
--	printf( " KernelTop:%8.0f irqs/sec  kernel:%4.1f%% [%s, ",
-+	printf( " KernelTop:%8.0f irqs/sec  kernel:%4.1f%% [",
- 		events_per_sec,
--		100.0 - (100.0*((events_per_sec-kevents_per_sec)/events_per_sec)),
--		nmi ? "NMI" : "IRQ");
-+		100.0 - (100.0*((events_per_sec-kevents_per_sec)/events_per_sec)));
- 
- 	if (nr_counters == 1)
- 		printf("%d ", event_count[0]);
-@@ -637,7 +635,7 @@ static int __cmd_top(void)
- 			hw_event.config		= event_id[counter];
- 			hw_event.irq_period	= event_count[counter];
- 			hw_event.record_type	= PERF_RECORD_IP | PERF_RECORD_TID;
--			hw_event.nmi		= nmi;
-+			hw_event.nmi		= 1;
- 			hw_event.mmap		= use_mmap;
- 			hw_event.munmap		= use_munmap;
- 			hw_event.freq		= freq;
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
