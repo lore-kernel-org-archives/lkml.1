@@ -1,83 +1,217 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754052AbZEZE6h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754296AbZEZE67@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754052AbZEZE6h (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 00:58:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751685AbZEZE63
+	id S1754296AbZEZE67 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 00:58:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751086AbZEZE6v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 00:58:29 -0400
-Received: from hera.kernel.org ([140.211.167.34]:41078 "EHLO hera.kernel.org"
+	Tue, 26 May 2009 00:58:51 -0400
+Received: from ozlabs.org ([203.10.76.45]:56670 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751653AbZEZE62 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 00:58:28 -0400
-Message-ID: <4A1B76EB.9040500@kernel.org>
-Date: Tue, 26 May 2009 13:58:19 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1751640AbZEZE6v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 00:58:51 -0400
+Date: Tue, 26 May 2009 14:55:28 +1000
+From: Anton Blanchard <anton@samba.org>
+To: rostedt@goodmis.org, mingo@elte.hu, tzanussi@gmail.com, jbaron@redhat.com,
+       tglx@linutronix.de, fweisbec@gmail.com, kosaki.motohiro@jp.fujitsu.com
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH v3] tracing/events: Add timer and high res timer tracepoints
+Message-ID: <20090526045528.GF19728@kryten>
+References: <20090520101334.GA23442@kryten> <20090526042643.GB19728@kryten>
 MIME-Version: 1.0
-To: Niel Lambrechts <niel.lambrechts@gmail.com>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "linux.kernel" <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.29 regression: ATA bus errors on resume
-References: <clqON-2Xv-7@gated-at.bofh.it>	<clqON-2Xv-9@gated-at.bofh.it>	<clqON-2Xv-11@gated-at.bofh.it>	<clqON-2Xv-13@gated-at.bofh.it>	<clqON-2Xv-15@gated-at.bofh.it>	<clqON-2Xv-17@gated-at.bofh.it>	<clqON-2Xv-19@gated-at.bofh.it>	<clqON-2Xv-5@gated-at.bofh.it>	<cmknZ-8lW-9@gated-at.bofh.it>	<cmoBl-6Ok-21@gated-at.bofh.it>	<cmp4n-7rb-15@gated-at.bofh.it>	<cmsYg-5BR-27@gated-at.bofh.it>	<cmvW7-1Yj-23@gated-at.bofh.it>	<cnheh-3vO-7@gated-at.bofh.it>	<cnPg1-7Q4-19@gated-at.bofh.it>	<cnTWo-7bV-25@gated-at.bofh.it>	<co1Kd-350-5@gated-at.bofh.it>	<co2Qf-4QQ-27@gated-at.bofh.it>	<co4yj-7Mc-5@gated-at.bofh.it>	<cp71c-4py-29@gated-at.bofh.it>	<cEVyE-re-1@gated-at.bofh.it>	<4A17C39E.2030302@gmail.com>	<4A19F006.3000303@kernel.org> <20090525091534.13ae103c@lxorguk.ukuu.org.uk> <4A1B164B.1010108@gmail.com>
-In-Reply-To: <4A1B164B.1010108@gmail.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 26 May 2009 04:58:21 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090526042643.GB19728@kryten>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Niel.
 
-Niel Lambrechts wrote:
-> I've tested all of the kernels I have again since 2.6.29.4 also came out
-> just recently. I did a hibernate/resume for each in the console, then
-> repeated the same in X, then continued to the next kernel.
-> 
-> The 2.6.29.4 log is much larger, since some other badness happened there
-> - there is a large kernel trace in there as my first X hibernation
-> attempt failed and came back to X after a few seconds. The system seemed
-> functional, it did not keep generating kernel messages - when I then
-> retried a hibernate it worked, along with the resume. Another unrelated
-> bug perhaps?
-> 
-> As for "hard resetting link" messages, they seemed to always happen
-> under X the times I tried it.
-> 
-> Kernel       EXT4-errors?    Console:ata1 reset?   Console:ata2-reset?    X:ata1 reset?    X:ata2 reset?
-> 2.6.28.10    No              no                     yes                   yes              no
-> 2.6.29.4*    No              no                     no                    no               no
-> 2.6.29.4**   No              -                      -                     yes              no
-> 2.6.30-rc6   Yes             -                      -                     yes              no
-> 2.6.30-rc6   No              no                     no                    yes              no
-> 
-> * Xorg hibernation attempt failed.
-> * Xorg Second hibernation attempt (no extra reboot)
-> 
-> I also did a side by side comparison of the messages I have for
-> 2.6.30-rc6, the one with EXT4 errors I reported on yesterday, and
-> another one that worked just fine tonight. I stripped all time-stamps
-> and some pulseaudio messages from the bad one and attached them here,
-> and also saved the full messages for each kernel to
-> http://bugzilla.kernel.org/show_bug.cgi?id=13017 .
-> 
-> Since analysing the code-path is still a bit beyond me, I'll leave you
-> with a little summary of the differences I notice.
-> 
-> A = 2.6.30-rc6 (EXT4 clean)
-> B = 2.6.30-rc6 (EXT4 errors triggered)
+Add tracepoints for timer and high res timer execution. We add entry and
+exit tracepoints so we can calculate timer latency.
 
-Duplicate PHY events are likely to be dependent on timing and
-non-deterministic.  The ext4 corrupting or not depends on whether a
-request with failfast set was in-flight at the time of the second PHY
-event, which again is dependent on timing.  At any rate, this looks
-like a problem of ext4 (or something between ext4 and the driver).  It
-either shouldn't issue failfast command or should take appropriate
-recovery action if it does.  It would be really nice if you can give a
-shot at ext3.
+Example ftrace output:
 
-Thanks.
+<idle>-0     [000]   264.040506: hrtimer_entry: func=.tick_sched_timer
+<idle>-0     [000]   264.040508: hrtimer_exit: func=.tick_sched_timer restart=HRTIMER_RESTART
+<idle>-0     [000]   264.040530: timer_entry: func=.e1000_watchdog
+<idle>-0     [000]   264.040728: timer_exit: func=.e1000_watchdog
 
--- 
-tejun
+Here we can see e1000_watchdog is taking 0.2ms - it might make sense to
+move this into a workqueue or kernel thread.
+
+Signed-off-by: Anton Blanchard <anton@samba.org>
+Acked-by: Thomas Gleixner <tglx@linutronix.de>
+---
+
+v2: Changed %pF to %pf to remove always 0 function offset.
+v3: Patch was corrupted, must be vi and my fat fingers.
+
+Index: linux-2.6-master/kernel/hrtimer.c
+===================================================================
+--- linux-2.6-master.orig/kernel/hrtimer.c	2009-05-26 12:55:35.000000000 +1000
++++ linux-2.6-master/kernel/hrtimer.c	2009-05-26 13:09:55.000000000 +1000
+@@ -46,6 +46,8 @@
+ 
+ #include <asm/uaccess.h>
+ 
++#include <trace/events/timer.h>
++
+ /**
+  * ktime_get - get the monotonic time in ktime_t format
+  *
+@@ -1161,7 +1163,9 @@
+ 	 * the timer base.
+ 	 */
+ 	spin_unlock(&cpu_base->lock);
++	trace_hrtimer_entry(timer);
+ 	restart = fn(timer);
++	trace_hrtimer_exit(timer, restart);
+ 	spin_lock(&cpu_base->lock);
+ 
+ 	/*
+Index: linux-2.6-master/kernel/timer.c
+===================================================================
+--- linux-2.6-master.orig/kernel/timer.c	2009-05-26 12:55:35.000000000 +1000
++++ linux-2.6-master/kernel/timer.c	2009-05-26 13:09:55.000000000 +1000
+@@ -45,6 +45,9 @@
+ #include <asm/timex.h>
+ #include <asm/io.h>
+ 
++#define CREATE_TRACE_POINTS
++#include <trace/events/timer.h>
++
+ u64 jiffies_64 __cacheline_aligned_in_smp = INITIAL_JIFFIES;
+ 
+ EXPORT_SYMBOL(jiffies_64);
+@@ -947,7 +950,9 @@
+ 				 */
+ 				lock_map_acquire(&lockdep_map);
+ 
++				trace_timer_entry(timer);
+ 				fn(data);
++				trace_timer_exit(timer);
+ 
+ 				lock_map_release(&lockdep_map);
+ 
+Index: linux-2.6-master/include/trace/events/timer.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-master/include/trace/events/timer.h	2009-05-26 13:57:42.000000000 +1000
+@@ -0,0 +1,116 @@
++#if !defined(_TRACE_TIMER_H) || defined(TRACE_HEADER_MULTI_READ)
++#define _TRACE_TIMER_H
++
++#include <linux/tracepoint.h>
++#include <linux/timer.h>
++#include <linux/hrtimer.h>
++
++#undef TRACE_SYSTEM
++#define TRACE_SYSTEM timer
++
++/**
++ * timer_entry - called immediately before the timer
++ * @timer: pointer to struct timer_list
++ *
++ * When used in combination with the timer_exit tracepoint we can
++ * determine the timer latency.
++ */
++TRACE_EVENT(timer_entry,
++
++	TP_PROTO(struct timer_list *timer),
++
++	TP_ARGS(timer),
++
++	TP_STRUCT__entry(
++		__field(void *, function)
++	),
++
++	TP_fast_assign(
++		__entry->function = timer->function;
++	),
++
++	TP_printk("func=%pf", __entry->function)
++);
++
++/**
++ * timer_exit - called immediately after the timer returns
++ * @timer: pointer to struct timer_list
++ *
++ * When used in combination with the timer_entry tracepoint we can
++ * determine the timer latency.
++ */
++TRACE_EVENT(timer_exit,
++
++	TP_PROTO(struct timer_list *timer),
++
++	TP_ARGS(timer),
++
++	TP_STRUCT__entry(
++		__field(void *, function)
++	),
++
++	TP_fast_assign(
++		__entry->function = timer->function;
++	),
++
++	TP_printk("func=%pf", __entry->function)
++);
++
++/**
++ * hrtimer_entry - called immediately before the high res timer
++ * @timer: pointer to struct hrtimer
++ *
++ * When used in combination with the hrtimer_exit tracepoint we can
++ * determine the high res timer latency.
++ */
++TRACE_EVENT(hrtimer_entry,
++
++	TP_PROTO(struct hrtimer *timer),
++
++	TP_ARGS(timer),
++
++	TP_STRUCT__entry(
++		__field(void *, function)
++	),
++
++	TP_fast_assign(
++		__entry->function = timer->function;
++	),
++
++	TP_printk("func=%pf", __entry->function)
++);
++
++/**
++ * hrtimer_exit - called immediately after the high res timer returns
++ * @timer: pointer to struct hrtimer
++ * @restart: high res timer return value
++ *
++ * High res timer will restart if @restart is set to HRTIMER_RESTART.
++ * When used in combination with the hrtimer_entry tracepoint we can
++ * determine the high res timer latency.
++ */
++TRACE_EVENT(hrtimer_exit,
++
++	TP_PROTO(struct hrtimer *timer, int restart),
++
++	TP_ARGS(timer, restart),
++
++	TP_STRUCT__entry(
++		__field(void *, function)
++		__field(int, restart)
++	),
++
++	TP_fast_assign(
++		__entry->function = timer->function;
++		__entry->restart = restart;
++	),
++
++	TP_printk("func=%pf restart=%s", __entry->function,
++		(__entry->restart == HRTIMER_RESTART) ?
++			"HRTIMER_RESTART" : "HRTIMER_NORESTART")
++);
++
++#endif /*  _TRACE_TIMER_H */
++
++/* This part must be outside protection */
++#include <trace/define_trace.h>
