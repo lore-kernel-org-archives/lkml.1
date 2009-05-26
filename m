@@ -1,47 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754694AbZEZE7S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754388AbZEZFJv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754694AbZEZE7S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 00:59:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754476AbZEZE7D
+	id S1754388AbZEZFJv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 01:09:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751347AbZEZFJk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 00:59:03 -0400
-Received: from hera.kernel.org ([140.211.167.34]:41090 "EHLO hera.kernel.org"
+	Tue, 26 May 2009 01:09:40 -0400
+Received: from sh.osrg.net ([192.16.179.4]:45839 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754428AbZEZE7B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 00:59:01 -0400
-Message-ID: <4A1B770E.9090508@kernel.org>
-Date: Tue, 26 May 2009 13:58:54 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Niel Lambrechts <niel.lambrechts@gmail.com>,
-       "linux.kernel" <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.29 regression: ATA bus errors on resume
-References: <clqON-2Xv-7@gated-at.bofh.it>	<clqON-2Xv-9@gated-at.bofh.it>	<clqON-2Xv-11@gated-at.bofh.it>	<clqON-2Xv-13@gated-at.bofh.it>	<clqON-2Xv-15@gated-at.bofh.it>	<clqON-2Xv-17@gated-at.bofh.it>	<clqON-2Xv-19@gated-at.bofh.it>	<clqON-2Xv-5@gated-at.bofh.it>	<cmknZ-8lW-9@gated-at.bofh.it>	<cmoBl-6Ok-21@gated-at.bofh.it>	<cmp4n-7rb-15@gated-at.bofh.it>	<cmsYg-5BR-27@gated-at.bofh.it>	<cmvW7-1Yj-23@gated-at.bofh.it>	<cnheh-3vO-7@gated-at.bofh.it>	<cnPg1-7Q4-19@gated-at.bofh.it>	<cnTWo-7bV-25@gated-at.bofh.it>	<co1Kd-350-5@gated-at.bofh.it>	<co2Qf-4QQ-27@gated-at.bofh.it>	<co4yj-7Mc-5@gated-at.bofh.it>	<cp71c-4py-29@gated-at.bofh.it>	<cEVyE-re-1@gated-at.bofh.it>	<4A17C39E.2030302@gmail.com>	<4A19F006.3000303@kernel.org> <20090525091534.13ae103c@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090525091534.13ae103c@lxorguk.ukuu.org.uk>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1751229AbZEZFJj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 01:09:39 -0400
+Date: Tue, 26 May 2009 14:08:57 +0900
+To: fujita.tomonori@lab.ntt.co.jp
+Cc: hch@infradead.org, jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, chris.mason@oracle.com,
+       david@fromorbit.com, akpm@linux-foundation.org, jack@suse.cz,
+       yanmin_zhang@linux.intel.com, linux-scsi@vger.kernel.org
+Subject: Re: [PATCH 03/13] scsi: unify allocation of scsi command and sense
+	buffer
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20090526133549Q.fujita.tomonori@lab.ntt.co.jp>
+References: <20090525074647.GK11363@kernel.dk>
+	<20090525075008.GA23413@infradead.org>
+	<20090526133549Q.fujita.tomonori@lab.ntt.co.jp>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 26 May 2009 04:58:56 +0000 (UTC)
+Message-Id: <20090526140918I.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Tue, 26 May 2009 14:08:59 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->> something to the cdrom which is attached to ata2.  Something very
->> fishy is going on there.  Sounds like an electric or some sort of
->> interference problem but I'm not sure.  :-(
+On Tue, 26 May 2009 13:36:43 +0900
+FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+
+> On Mon, 25 May 2009 03:50:08 -0400
+> Christoph Hellwig <hch@infradead.org> wrote:
 > 
-> I'm just wondering what happens on a resume if a phy change event is seen
-> by the phy before or during the time registers (such as the port mappings
-> on an ICH) are being restored (or not restored even). That seems to be one
-> way you could get an event on the wrong port.
+> > On Mon, May 25, 2009 at 09:46:47AM +0200, Jens Axboe wrote:
+> > > > But that patch looks good to me, avoiding one allocation for each
+> > > > command and simplifying the code.  I try to remember why these were
+> > > > two slabs to start with but can't find any reason.
+> > > > 
+> > > > Btw, we might just want to declare the sense buffer directly as a sized
+> > > > array in the scsi command as there really doesn't seem to be a reason
+> > > > not to allocate it.
+> > > 
+> > > That is also a workable solution. I've been trying to cut down on the
+> > > number of allocations required per-IO, and there's definitely still some
+> > > low hanging fruit there. Some of it is already included, like the inline
+> > > io_vecs in the bio.
+> > 
+> > Btw, one thing I wanted to do for years is to add ->alloc_cmnd and
+> > ->destroy_cmnd method to the host template which optionally move the
+> > command allocation to the LLDD.  That way we can embedd the scsi_cmnd
+> > into the drivers per-commad structure and eliminate another memory
+> > allocation.  Also this would naturally extend the keep one cmnd pool
+> > to drivers without requiring additional code.  As a second step it
+> > would also allow killing the scsi_host_cmd_pool byt just having
+> > a set of library routines that drivers which need SLAB_CACHE_DMA can
+> > use.
+> 
+> We discussed this idea when I rewrote the sense allocation code, I
+> think.
+> 
+> I like that idea that unifying scsi_cmnd and llds' per-commad
+> structure however there is one tricky thing about it.
+> 
+> Currently, a lld frees (or reuses) its per-commad structure when it
+> calls scsi_done(). SCSI-ml uses scsi_cmd after that so we need to
+> change the lifetime management (so we need to inspect all the llds,
+> e.g. this change will break iscsi ldd).
 
-It doesn't really matter.  Before the ports are resumed, all such
-events are ignored.
+Oops, as you said, this can be optional (so we don't need to convert
+all llds). But as I said, this changes the definition of when
+scsi_cmnd is free and ldds don't like that change, I think.
 
-Thanks.
 
--- 
-tejun
+> With that change, we can't tell llds how many per-commad structure are
+> possibly necessary. In general, LLDs want to know the maximum number
+> of per-commad structure; drivers allocates the number of per-commad
+> structure equal to host_template->can_queue.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
