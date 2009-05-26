@@ -1,109 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754786AbZEZGYi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754970AbZEZG2S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754786AbZEZGYi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 02:24:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753903AbZEZGY3
+	id S1754970AbZEZG2S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 02:28:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754008AbZEZG2J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 02:24:29 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:52041 "EHLO mx2.redhat.com"
+	Tue, 26 May 2009 02:28:09 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:47166 "EHLO bilbo.ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753674AbZEZGY3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 02:24:29 -0400
-Date: Tue, 26 May 2009 09:22:35 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: "Andries E. Brouwer" <Andries.Brouwer@cwi.nl>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Kay Sievers <kay.sievers@vrfy.org>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>, Tejun Heo <tj@kernel.org>
-Subject: Re: 2.a.30-rc7: fat filesystem misdetected as amiga
-Message-ID: <20090526062235.GG6856@redhat.com>
-References: <20090525205353.GB6856@redhat.com> <Pine.LNX.4.44L0.0905251704490.27717-100000@netrider.rowland.org> <20090525214755.GE6856@redhat.com> <20090525223120.GC11648@ub>
+	id S1753726AbZEZG2J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 02:28:09 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090525223120.GC11648@ub>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 7bit
+Message-ID: <18971.35823.643362.446774@cargo.ozlabs.ibm.com>
+Date: Tue, 26 May 2009 16:27:59 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Ingo Molnar <mingo@elte.hu>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       Corey Ashford <cjashfor@linux.vnet.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: [PATCH] perf_counter: powerpc: Implement interrupt throttling
+X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 26, 2009 at 12:31:20AM +0200, Andries E. Brouwer wrote:
-> On Tue, May 26, 2009 at 12:47:55AM +0300, Michael S. Tsirkin wrote:
-> > On Mon, May 25, 2009 at 05:08:12PM -0400, Alan Stern wrote:
-> >> On Mon, 25 May 2009, Michael S. Tsirkin wrote:
-> >> 
-> >>>> So apparently this is a bug in the device; it doesn't respond correctly
-> >>>> to the first READ command.  But since it does respond correctly to 
-> >>>> later commands, everything works okay thereafter.  You ought to be able 
-> >>>> to recover from the error by running
-> >>>> 
-> >>>> 	blockdev --rereadpt /dev/sdb
-> >>>> 
-> >>>> manually.
-> >>> 
-> >>> Yes, this helps.
-> >>> Would it make sense for kernel to retry automatically?
-> >>> Why doesn't it?
-> >> 
-> >> I don't know the details in this case.  Most likely the error code 
-> >> (Logical Block Address Out of Range) is interpreted as a fatal 
-> >> non-retryable error.  For other sorts of errors, the kernel does retry.
-> >> 
-> >>>> As far as I can tell, this has nothing to do with any user programs in 
-> >>>> the distribution.  It appears to be entirely the device's fault.
-> >>>> 
-> >>>> Alan Stern
-> >>> 
-> >>> BTW, any idea how come I later get errors apparently from amiga fs?
-> >> 
-> >> Not a clue.  Unless it was some odd side effect of the partition code 
-> >> trying to interpret an uninitialized buffer.
-> >> 
-> >> Alan Stern
-> 
-> Comments:
-> 
-> The partition reading code tries one by one all partition types that
-> you have configured. If amigafs is one of these, also that will be tried.
-> 
-> I can imagine that your device is a slow starter and needs some time
-> to initialize itself, so that the first, or the first few, commands fail,
-> and after that all is well.
-> 
-> I hate retrying code. Such code is the reason that boot time increases
-> all the time. Usually a read failure is missing media or so, and retrying
-> is totally meaningless. Only at the lowest level should a retry be done,
-> and preferably not blindly "let us try a few times" but only when there
-> is a positive reason to expect that a second time might fare better.
+This implements interrupt throttling on powerpc.  Since we don't have
+individual count enable/disable or interrupt enable/disable controls
+per counter, this simply sets the hardware counter to 0, meaning that
+it will not interrupt again until it has counted 2^31 counts, which
+will take at least 2^30 cycles assuming a maximum of 2 counts per
+cycle.  Also, we set counter->hw.period_left to the maximum possible
+value (2^63 - 1), so we won't report overflows for this counter for
+the forseeable future.
 
-Yea. But I don't know where that is.
-I noted that if I stick a loop around check_partition
-I just get the error reported each time.
+The unthrottle operation restores counter->hw.period_left and the
+hardware counter so that we will once again report a counter overflow
+after counter->hw.irq_period counts.
 
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+---
+ arch/powerpc/kernel/perf_counter.c |   48 +++++++++++++++++++++++++++++++++----
+ 1 file changed, 43 insertions(+), 5 deletions(-)
 
-> (Amiga is not usually the first or second to be tried, so if it fails
-> then either the first few reads fail, or the first read failure is cached.)
-
-Maybe it shouldn't printk stuff on IO failure when probing for
-partitions then.
-
-> Andries
-> 
-> 
-> > So, the following works for me as a work-around.  But it's probably not
-> > the appropriate way to solve the problem. Or is it? Can someone who
-> > understands partitions and filesystems tell?
-> > 
-> > 
-> > 
-> > block: retry on I/O error when reading partition table
-> > 
-> > Retry once on an I/O error when reading the partition table:
-> > there's no much to loose, and this helps with some disk on
-> > key devices I have.
-> > 
-> > Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
-
--- 
-MST
+diff --git a/arch/powerpc/kernel/perf_counter.c b/arch/powerpc/kernel/perf_counter.c
+index fe21b24..f96d55f 100644
+--- a/arch/powerpc/kernel/perf_counter.c
++++ b/arch/powerpc/kernel/perf_counter.c
+@@ -740,10 +740,37 @@ static void power_pmu_disable(struct perf_counter *counter)
+ 	local_irq_restore(flags);
+ }
+ 
++/*
++ * Re-enable interrupts on a counter after they were throttled
++ * because they were coming too fast.
++ */
++static void power_pmu_unthrottle(struct perf_counter *counter)
++{
++	s64 val, left;
++	unsigned long flags;
++
++	if (!counter->hw.idx || !counter->hw.irq_period)
++		return;
++	local_irq_save(flags);
++	perf_disable();
++	power_pmu_read(counter);
++	left = counter->hw.irq_period;
++	val = 0;
++	if (left < 0x80000000L)
++		val = 0x80000000L - left;
++	write_pmc(counter->hw.idx, val);
++	atomic64_set(&counter->hw.prev_count, val);
++	atomic64_set(&counter->hw.period_left, left);
++	perf_counter_update_userpage(counter);
++	perf_enable();
++	local_irq_restore(flags);
++}
++
+ struct pmu power_pmu = {
+ 	.enable		= power_pmu_enable,
+ 	.disable	= power_pmu_disable,
+ 	.read		= power_pmu_read,
++	.unthrottle	= power_pmu_unthrottle,
+ };
+ 
+ /*
+@@ -957,10 +984,6 @@ static void record_and_restart(struct perf_counter *counter, long val,
+ 		if (left < 0x80000000L)
+ 			val = 0x80000000L - left;
+ 	}
+-	write_pmc(counter->hw.idx, val);
+-	atomic64_set(&counter->hw.prev_count, val);
+-	atomic64_set(&counter->hw.period_left, left);
+-	perf_counter_update_userpage(counter);
+ 
+ 	/*
+ 	 * Finally record data if requested.
+@@ -983,8 +1006,23 @@ static void record_and_restart(struct perf_counter *counter, long val,
+ 			if (!(mmcra & MMCRA_SAMPLE_ENABLE) || (mmcra & sdsync))
+ 				addr = mfspr(SPRN_SDAR);
+ 		}
+-		perf_counter_overflow(counter, nmi, regs, addr);
++		if (perf_counter_overflow(counter, nmi, regs, addr)) {
++			/*
++			 * Interrupts are coming too fast - throttle them
++			 * by setting the counter to 0, so it will be
++			 * at least 2^30 cycles until the next interrupt
++			 * (assuming each counter counts at most 2 counts
++			 * per cycle).
++			 */
++			val = 0;
++			left = ~0ULL >> 1;
++		}
+ 	}
++
++	write_pmc(counter->hw.idx, val);
++	atomic64_set(&counter->hw.prev_count, val);
++	atomic64_set(&counter->hw.period_left, left);
++	perf_counter_update_userpage(counter);
+ }
+ 
+ /*
