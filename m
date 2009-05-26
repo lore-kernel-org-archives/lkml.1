@@ -1,173 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754297AbZEZApD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754976AbZEZApu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754297AbZEZApD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 May 2009 20:45:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752839AbZEZAoy
+	id S1754976AbZEZApu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 May 2009 20:45:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752803AbZEZApn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 May 2009 20:44:54 -0400
-Received: from ey-out-2122.google.com ([74.125.78.25]:37826 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752623AbZEZAoy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 May 2009 20:44:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=aqiJ8Nv9unZP+XO/RNyUzpkZygk6IO9e/H0aDL45hbWXudD1NuQBX9odHEa4tJFW6w
-         EahQLNdGR/Mnav9bl5RjIpOTYiVhD5MAwUs6AJQVTeFm+TT1lanvG+WZcGayL0y6jqcU
-         dwaUcpulk23/4zqtey8T2edqxjBbKJ8yENzdE=
-Date: Tue, 26 May 2009 02:44:52 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Zhaolei <zhaolei@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       Tom Zanussi <tzanussi@gmail.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v3 1/2] ftrace: Add task_comm support for trace_event
-Message-ID: <20090526004451.GF7879@nowhere>
-References: <4A14FDFE.2080402@cn.fujitsu.com> <4A16788F.2060802@cn.fujitsu.com> <20090522115108.GA10992@elte.hu> <4A1A6CE8.2050100@cn.fujitsu.com> <4A1A6EEF.2090902@cn.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A1A6EEF.2090902@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 25 May 2009 20:45:43 -0400
+Received: from mail.crca.org.au ([67.207.131.56]:59288 "EHLO crca.org.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753460AbZEZApn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 May 2009 20:45:43 -0400
+X-Bogosity: Ham, spamicity=0.000000
+Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
+From: Nigel Cunningham <nigel@tuxonice.net>
+Reply-To: nigel@tuxonice.net
+To: david@lang.hm
+Cc: Oliver Neukum <oliver@neukum.org>, Pavel Machek <pavel@ucw.cz>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@lists.linux-foundation.org,
+       tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.DEB.1.10.0905251732310.18053@asgard>
+References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
+	 <20090525123228.GA13446@elf.ucw.cz>
+	 <1243287557.16743.114.camel@nigel-laptop>
+	 <200905260029.25847.oliver@neukum.org>
+	 <alpine.DEB.1.10.0905251732310.18053@asgard>
+Content-Type: text/plain
+Date: Tue, 26 May 2009 10:47:27 +1000
+Message-Id: <1243298847.16743.169.camel@nigel-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 25, 2009 at 06:11:59PM +0800, Zhaolei wrote:
-> If we use trace_event alone(without function trace, .etc),
-> it can't output enough task command information.
+Hi.
+
+On Mon, 2009-05-25 at 17:35 -0700, david@lang.hm wrote:
+> On Tue, 26 May 2009, Oliver Neukum wrote:
 > 
-> Before patch:
->  # echo 1 > debugfs/tracing/events/sched/sched_switch/enable
->  # cat debugfs/tracing/trace
->  # tracer: nop
->  #
->  #           TASK-PID    CPU#    TIMESTAMP  FUNCTION
->  #              | |       |          |         |
->             <...>-2289  [000] 526276.724790: sched_switch: task bash:2289 [120] ==> sshd:2287 [120]
->             <...>-2287  [000] 526276.725231: sched_switch: task sshd:2287 [120] ==> bash:2289 [120]
->             <...>-2289  [000] 526276.725452: sched_switch: task bash:2289 [120] ==> sshd:2287 [120]
->             <...>-2287  [000] 526276.727181: sched_switch: task sshd:2287 [120] ==> swapper:0 [140]
->            <idle>-0     [000] 526277.032734: sched_switch: task swapper:0 [140] ==> events/0:5 [115]
->             <...>-5     [000] 526277.032782: sched_switch: task events/0:5 [115] ==> swapper:0 [140]
->  ...
+> > Am Montag, 25. Mai 2009 23:39:17 schrieb Nigel Cunningham:
+> >>> If there's not enough swap available, swsusp should freeze, realize
+> >>> there's no swap, unfreeze and continue. I do not see reliability
+> >>> problem there.
+> >>
+> >> If there's not enough storage available (I'm also thinking of the file
+> >> allocator Oliver wants), freeing some memory may get you in a position
+> >
+> > No, I do want a dedicated partition. Going to a filesystem is just hiding
+> > the problem. Filesystems can return -ENOSPC.
+> > I also want my sytem to reliably hibernate if the filesystem to hold
+> > the image happens to be remounted ro or to be undergoing a filesystem
+> > check.
+> >
+> > For full reliability you simply need a reservation. In addition that's
+> > the fastest solution, too. A simple linear write to an unfragmented
+> > area.
+> > The typical system today has three orders of magnitude more disk
+> > than ram. Do you really have a sytem you want to hibernate that has
+> > less than 2two orders of magnitude more disk than ram?
 > 
-> After patch:
->  # tracer: nop
->  #
->  #           TASK-PID    CPU#    TIMESTAMP  FUNCTION
->  #              | |       |          |         |
->              bash-2269  [000] 527347.989229: sched_switch: task bash:2269 [120] ==> sshd:2267 [120]
->              sshd-2267  [000] 527347.990960: sched_switch: task sshd:2267 [120] ==> bash:2269 [120]
->              bash-2269  [000] 527347.991143: sched_switch: task bash:2269 [120] ==> sshd:2267 [120]
->              sshd-2267  [000] 527347.992959: sched_switch: task sshd:2267 [120] ==> swapper:0 [140]
->            <idle>-0     [000] 527348.531989: sched_switch: task swapper:0 [140] ==> events/0:5 [115]
->          events/0-5     [000] 527348.532115: sched_switch: task events/0:5 [115] ==> swapper:0 [140]
->  ...
+> I actually have a couple of systems that have 128G of ram and 144G of 
+> disk. and it can't take 3.5" drives (and I don't know if it's SAS 
+> backplane can drive SATA drives, if so it can't take many of them) so the 
+> 'dives are cheap' answer may not work.
 > 
-> Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
-> ---
->  kernel/trace/Kconfig        |    9 +++++++--
->  kernel/trace/trace_events.c |    6 ++++++
->  2 files changed, 13 insertions(+), 2 deletions(-)
-> 
-> diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
-> index f61be30..a508b9d 100644
-> --- a/kernel/trace/Kconfig
-> +++ b/kernel/trace/Kconfig
-> @@ -49,6 +49,11 @@ config FTRACE_NMI_ENTER
->         default y
->  
->  config EVENT_TRACING
-> +	select CONTEXT_SWITCH_TRACER
-> +	bool
-> +
-> +config CONTEXT_SWITCH_TRACER
-> +	select MARKERS
->  	bool
->  
->  config TRACING
-> @@ -176,10 +181,10 @@ config SCHED_TRACER
->  	  This tracer tracks the latency of the highest priority task
->  	  to be scheduled in, starting from the point it has woken up.
->  
-> -config CONTEXT_SWITCH_TRACER
-> +config ENABLE_CONTEXT_SWITCH_TRACER
->  	bool "Trace process context switches"
->  	select TRACING
-> -	select MARKERS
-> +	select CONTEXT_SWITCH_TRACER
+> now, the question of if it makes sense to try and hibernate this system is 
+> a very valid one.
 
+It is. I guess you have to ask how long it takes to get your working set
+back if you shutdown instead and whether you can spare ~70G of HDD space
+(maybe less, perhaps your compression ration will be very good) for the
+storage.
 
+What sort of hard drive throughput do you get? If you double that
+(allowing for compression), you should have a good approximation (on the
+conservative side) of the throughput you'll be able to get hibernating
+and resuming (assuming the CPU(s) can compress the data fast enough).
 
-I didn't like this part at a first glance.
-But actually that makes sense.
+Regards,
 
-I don't think it would be that worth to separate the cmdline record
-from the sched switch tracer because they are both too tight in essence.
-
-So this new ENABLE_CONTEXT_SWITCH_TRACER seems to me a good way
-to solve this problem.
-
-Thanks,
-Frederic.
-
-
-
->  	help
->  	  This tracer gets called from the context switch and records
->  	  all switching of tasks.
-> diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
-> index 9e91c4a..9b246eb 100644
-> --- a/kernel/trace/trace_events.c
-> +++ b/kernel/trace/trace_events.c
-> @@ -85,6 +85,7 @@ static void ftrace_clear_events(void)
->  
->  		if (call->enabled) {
->  			call->enabled = 0;
-> +			tracing_stop_cmdline_record();
->  			call->unregfunc();
->  		}
->  	}
-> @@ -99,12 +100,14 @@ static void ftrace_event_enable_disable(struct ftrace_event_call *call,
->  	case 0:
->  		if (call->enabled) {
->  			call->enabled = 0;
-> +			tracing_stop_cmdline_record();
->  			call->unregfunc();
->  		}
->  		break;
->  	case 1:
->  		if (!call->enabled) {
->  			call->enabled = 1;
-> +			tracing_start_cmdline_record();
->  			call->regfunc();
->  		}
->  		break;
-> @@ -1058,6 +1061,7 @@ static void trace_module_remove_events(struct module *mod)
->  			found = true;
->  			if (call->enabled) {
->  				call->enabled = 0;
-> +				tracing_stop_cmdline_record();
->  				call->unregfunc();
->  			}
->  			if (call->event)
-> @@ -1262,11 +1266,13 @@ static __init void event_trace_self_tests(void)
->  		}
->  
->  		call->enabled = 1;
-> +		tracing_start_cmdline_record();
->  		call->regfunc();
->  
->  		event_test_stuff();
->  
->  		call->unregfunc();
-> +		tracing_stop_cmdline_record();
->  		call->enabled = 0;
->  
->  		pr_cont("OK\n");
-> -- 
-> 1.5.5.3
-> 
+Nigel
 
