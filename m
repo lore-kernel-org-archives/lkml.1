@@ -1,64 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756274AbZEZSXc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757037AbZEZSXq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756274AbZEZSXc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 14:23:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755918AbZEZSXX
+	id S1757037AbZEZSXq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 14:23:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756275AbZEZSXh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 14:23:23 -0400
-Received: from bu3sch.de ([62.75.166.246]:60775 "EHLO vs166246.vserver.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755891AbZEZSXW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 14:23:22 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: David Miller <davem@davemloft.net>
-Subject: Re: [PATCH 2.6.30-rc4] r8169: avoid losing MSI interrupts
-Date: Tue, 26 May 2009 20:22:23 +0200
-User-Agent: KMail/1.9.9
-Cc: dave@thedillows.org, michael.riepe@googlemail.com, romieu@fr.zoreil.com,
-       rsantos@grupopie.com, m.bueker@berlin.de, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-References: <1242328457.32579.12.camel@lap75545.ornl.gov> <1243042174.3580.23.camel@obelisk.thedillows.org> <20090525.225503.173348268.davem@davemloft.net>
-In-Reply-To: <20090525.225503.173348268.davem@davemloft.net>
-X-Move-Along: Nothing to see here. No, really... Nothing.
+	Tue, 26 May 2009 14:23:37 -0400
+Received: from wf-out-1314.google.com ([209.85.200.174]:56181 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756302AbZEZSXh convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 14:23:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=ROYkXxGU9ovIj0kgXgcuz1dZv0601lZEapamV9g7JQXL2EAKp10xer8tYI1DlZjHzJ
+         +EIHvajl1gO1bwVl3g3QP4PRjQXUBQjofwW8Okl2Fus9VLzgXOcOb2AuA3WEUSxkFg3b
+         zKM9aTsHlYVtnoJCR5BenrcczfNOSY4KzQ5TE=
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905262022.24593.mb@bu3sch.de>
+In-Reply-To: <s5h1vqb924p.wl%tiwai@suse.de>
+References: <43e72e890905260153q59c76842ueb967459bc7353ee@mail.gmail.com> 
+	<s5h1vqb924p.wl%tiwai@suse.de>
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Date: Tue, 26 May 2009 11:23:18 -0700
+Message-ID: <43e72e890905261123q183baee9waa4c5299484b3cf1@mail.gmail.com>
+Subject: Re: ALSA/sound compatibilty package for older kernels
+To: Takashi Iwai <tiwai@suse.de>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Tim Gardner <tim.gardner@canonical.com>,
+       "Perez-Gonzalez, Inaky" <inaky.perez-gonzalez@intel.com>,
+       Hauke Mehrtens <hauke@hauke-m.de>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       "John W. Linville" <linville@tuxdriver.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 26 May 2009 07:55:03 David Miller wrote:
-> From: David Dillow <dave@thedillows.org>
-> Date: Fri, 22 May 2009 21:29:34 -0400
-> 
-> > The 8169 chip only generates MSI interrupts when all enabled event
-> > sources are quiescent and one or more sources transition to active. If
-> > not all of the active events are acknowledged, or a new event becomes
-> > active while the existing ones are cleared in the handler, we will not
-> > see a new interrupt.
-> > 
-> > The current interrupt handler masks off the Rx and Tx events once the
-> > NAPI handler has been scheduled, which opens a race window in which we
-> > can get another Rx or Tx event and never ACK'ing it, stopping all
-> > activity until the link is reset (ifconfig down/up). Fix this by always
-> > ACK'ing all event sources, and loop in the handler until we have all
-> > sources quiescent.
-> > 
-> > Signed-off-by: David Dillow <dave@thedillows.org>
-> 
-> I've applied this, thanks David.
-> 
-> 
+On Tue, May 26, 2009 at 10:59 AM, Takashi Iwai <tiwai@suse.de> wrote:
+> At Tue, 26 May 2009 01:53:07 -0700,
+> Luis R. Rodriguez wrote:
+>>
+>> In spirit with the compat-wireless-2.6 stable releases [1], here is an
+>> initial attempt at compat-sound-2.6 [2] which allows you to compile
+>> and install the latest ALSA/sound drivers on kernels >= 2.6.27.
+>
+> Well, the alsa-driver tarball can install the drivers on older
+> kernels, even on 2.2 and 2.4 kernels :)
+>
+> The latest snapshot tarball is found at:
+>    ftp://ftp.kernel.org/pub/linux/kernel/people/tiwai/snapshot/alsa-driver-snapshot.tar.gz
 
-I didn't notice a CC:stable.
-I think this should also go to stable.
-Does somebody take care?
+Oh nice :) I did not realize.
 
-(wiggle is able to apply the patch to stable without any problems, so it's easy
-to do a patch)
-
--- 
-Greetings, Michael.
+  Luis
