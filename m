@@ -1,83 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755846AbZEZMf7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755716AbZEZMhl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755846AbZEZMf7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 08:35:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752125AbZEZMfw
+	id S1755716AbZEZMhl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 08:37:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753826AbZEZMhe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 08:35:52 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:61688 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751086AbZEZMfv (ORCPT
+	Tue, 26 May 2009 08:37:34 -0400
+Received: from mx-out2.daemonmail.net ([216.104.160.39]:48266 "EHLO
+	mx-out2.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752465AbZEZMhe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 08:35:51 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] asm-generic: add a dma-mapping.h file
-Date: Tue, 26 May 2009 13:35:41 +0100
-User-Agent: KMail/1.11.90 (Linux/2.6.30-5-generic; KDE/4.2.85; x86_64; ; )
-References: <200905221607.34025.arnd@arndb.de> <200905221705.54426.arnd@arndb.de> <20090526122423S.fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20090526122423S.fujita.tomonori@lab.ntt.co.jp>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?iso-8859-1?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60?=
- =?iso-8859-1?q?Y=2Ea=5E3zb?=)
- =?iso-8859-1?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5C?=
- =?iso-8859-1?q?wg=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Tue, 26 May 2009 08:37:34 -0400
+From: "Michael S. Zick" <lkml@morethan.org>
+Reply-To: lkml@morethan.org
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [BUG FIX] Make x86_32 uni-processor Atomic ops, Atomic
+Date: Tue, 26 May 2009 07:37:30 -0500
+User-Agent: KMail/1.9.9
+Cc: Harald Welte <HaraldWelte@viatech.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+References: <200905221139.26941.lkml@morethan.org> <200905251803.51478.lkml@morethan.org> <4A1B3241.3080509@zytor.com>
+In-Reply-To: <4A1B3241.3080509@zytor.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200905261335.41643.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/MZCvIx9GoPIbivzPpwSr8vW968JnCE8z2w5f
- C73WleNT9mKGc+P4cC5lOIFlQBbq3jGn1TuzZ7FGSMtBLkTvdN
- IzK4lGguxhk1LogdolyW7cWOQLDvxnl
+Content-Disposition: inline
+Message-Id: <200905260737.32860.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 26 May 2009, FUJITA Tomonori wrote:
-> > dma_get_cache_alignment() is still less generic than
-> > the other functions, as this is still architecture
-> > specific. Should I leave that out as well then?
+On Mon May 25 2009, H. Peter Anvin wrote:
+> Michael S. Zick wrote:
+> > 
+> > Load Effective Address does two's complement arithmetic?
+> > I'll take your word for it.
+> > 
 > 
-> Yes, I think that only adding generic functions is a better
-> approach. Overriding with #ifdef is really ugly.
+> LEA, and all other address calculations use 2's-complement arithmetic:
+> 
+> 	leal -1(%ebx),%eax
+> 	leal 0xffffffff(%ebx),%eax
+> 
+> ... is the same instruction.
+> 
+> However, gcc has been known to optimize out range checks when operating
+> on signed integers; it is allowed to do this by the C standard, but it
+> can give surprising results if the user expected wraparound.
+>
+
+Well, it isn't a range check - - but this illustrates where my (false)
+concern came from: 
+
+Given this input file:
+extern int diff_umask(int mask, int *cnt1, int *cnt2)
+{ return (((mask - *cnt1) + *cnt2) & mask); }
+
+Doing:
+gcc -O2 -S -fomit-frame-pointer difftest.c
+
+Yields (as difftest.s):
+        .file   "difftest.c"
+        .text
+        .p2align 4,,15
+.globl diff_umask
+        .type   diff_umask, @function
+diff_umask:
+        movl    12(%esp), %eax
+        movl    4(%esp), %ecx
+        movl    (%eax), %edx
+        leal    (%ecx,%edx), %eax
+        movl    8(%esp), %edx
+        subl    (%edx), %eax
+        andl    %ecx, %eax
+        ret
+        .size   diff_umask, .-diff_umask
+        .ident  "GCC: (Debian 4.3.2-1.1) 4.3.2"
+        .section        .note.GNU-stack,"",@progbits
+
+How follow that up with the commands:
+gcc -O2 -c -fomit-frame-pointer difftest.s
+
+Then examine the result with objdump:
+objdump -d difftest.o
+
+In relevant part, yields:
+difftest.o:     file format elf32-i386
+
+Disassembly of section .text:
+
+00000000 <diff_umask>:
+   0:   8b 44 24 0c             mov    0xc(%esp),%eax
+   4:   8b 4c 24 04             mov    0x4(%esp),%ecx
+   8:   8b 10                   mov    (%eax),%edx
+   a:   8d 04 11                lea    (%ecx,%edx,1),%eax
+   d:   8b 54 24 08             mov    0x8(%esp),%edx
+  11:   2b 02                   sub    (%edx),%eax
+  13:   21 c8                   and    %ecx,%eax
+  15:   c3                      ret
+
+= = = =
+
+Checking the byte string 0x8d, 0x04, 0x11 against the Intel
+documentation shows that the disassembly output of objdump
+is incorrect - that bit string does not have an offset field.
+That is the byte encoding for the gcc assembly input.
+
+What's a person to do when the tool-chain lies?
+
+Mike
+> 	-hpa
 > 
 
-Ok, will do.
 
-[trimming Cc list a bit, as the subject has changed]
-
-Could you be more specific as to why you think the #ifdef
-in this file is ugly? I agree that we should always avoid
-#ifdef in a device driver file or around the usage of an
-API, but we use it everywhere when defining an optional
-API, e.g.
-
-#ifdef CONFIG_DMA_API_DEBUG
-extern void dma_debug_add_bus(struct bus_type *bus);
-#else
-static inline void dma_debug_add_bus(struct bus_type *bus)
-{
-{
-#endif
-
-or
-
-#ifndef clear_user_highpage
-static inline void clear_user_highpage(struct page *page, unsigned long vaddr)
-{
-	void *addr = kmap_atomic(page, KM_USER0);
-	clear_user_page(addr, vaddr, page);
-	kunmap_atomic(addr, KM_USER0);
-}
-#endif
-
-This has always made a lot of sense to me when you are defining
-something that you want to become a No-op in certain configurations
-or that only needs special handling in a few cases. IIRC, Linus
-has stated that he prefers the second of the two styles above when
-you have the choice, which is why I started out that way, while
-for the dma_debug stuff, the CONFIG_ symbol clearly makes sense.
-
-	Arnd <><
