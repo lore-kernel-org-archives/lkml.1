@@ -1,89 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760984AbZEZXvX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761065AbZEZXvg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760984AbZEZXvX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 19:51:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759054AbZEZXvP
+	id S1761065AbZEZXvg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 19:51:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759054AbZEZXv1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 19:51:15 -0400
-Received: from www.tglx.de ([62.245.132.106]:49486 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757840AbZEZXvO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 19:51:14 -0400
-Date: Wed, 27 May 2009 01:49:33 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Paul Mundt <lethal@linux-sh.org>
-cc: Peter Zijlstra <peterz@infradead.org>,
-       Linus Walleij <linus.ml.walleij@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Victor <linux@maxim.org.za>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-sh@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       John Stultz <johnstul@linux.vnet.ibm.com>
-Subject: Re: [PATCH] sched: Support current clocksource handling in fallback
- sched_clock().
-In-Reply-To: <20090526230855.GA27218@linux-sh.org>
-Message-ID: <alpine.LFD.2.00.0905270140030.1762@localhost.localdomain>
-References: <20090526061532.GD9188@linux-sh.org> <63386a3d0905260731m655bfee3q82a6f52d71fa3cef@mail.gmail.com> <1243348681.23657.14.camel@twins> <alpine.LFD.2.00.0905262209160.1762@localhost.localdomain> <20090526230855.GA27218@linux-sh.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 26 May 2009 19:51:27 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:41902 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760823AbZEZXvY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 19:51:24 -0400
+Date: Wed, 27 May 2009 08:49:50 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Johannes Weiner <hannes@cmpxchg.org>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC][PATCH 3/5] count cache-only swaps
+Message-Id: <20090527084950.db645ae1.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090526173736.GA2843@cmpxchg.org>
+References: <20090526121259.b91b3e9d.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090526121638.398c6951.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090526173736.GA2843@cmpxchg.org>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 May 2009, Paul Mundt wrote:
+On Tue, 26 May 2009 19:37:36 +0200
+Johannes Weiner <hannes@cmpxchg.org> wrote:
 
-> On Tue, May 26, 2009 at 10:17:02PM +0200, Thomas Gleixner wrote:
-> > On Tue, 26 May 2009, Peter Zijlstra wrote:
-> > > On Tue, 2009-05-26 at 16:31 +0200, Linus Walleij wrote:
-> > > > The definition of "rating" from the kerneldoc does not
-> > > > seem to imply that, it's a subjective measure AFAICT.
+> On Tue, May 26, 2009 at 12:16:38PM +0900, KAMEZAWA Hiroyuki wrote:
+> > From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 > > 
-> >   Right, there is no rating threshold defined, which allows to deduce
-> >   that. The TSC on x86 which might be unreliable, but usable as
-> >   sched_clock has an initial rating of 300 which can be changed later
-> >   on to 0 when the TSC is unusable as a time of day source. In that
-> >   case clock is replaced by HPET which has a rating > 100 but is
-> >   definitely not a good choice for sched_clock
+> > This patch adds a counter for unused swap caches.
+> > Maybe useful to see "we're really under shortage of swap".
 > > 
-> > > > Else you might want an additional criteria, like
-> > > > cyc2ns(1) (much less than) jiffies_to_usecs(1)*1000
-> > > > (however you do that the best way)
-> > > > so you don't pick something
-> > > > that isn't substantially faster than the jiffy counter atleast?
+> > The value can be seen as kernel message at Sysrq-m etc.
 > > 
-> >   What we can do is add another flag to the clocksource e.g.
-> >   CLOCK_SOURCE_USE_FOR_SCHED_CLOCK and check this instead of the
-> >   rating.
+> > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > ---
+> >  include/linux/swap.h |    3 +++
+> >  mm/swap_state.c      |    2 ++
+> >  mm/swapfile.c        |   23 ++++++++++++++++++++---
+> >  3 files changed, 25 insertions(+), 3 deletions(-)
 > > 
-> Ok, so based on this and John's locking concerns, how about something
-> like this? It doesn't handle the wrapping cases, but I wonder if we
-> really want to add that amount of logic to sched_clock() in the first
-> place. Clocksources that wrap frequently could either leave the flag
-> unset, or do something similar to the TSC code where the cyc2ns shift is
-> used. If this is something we want to handle generically, then I'll have
-> a go at generalizing the TSC cyc2ns scaling bits for the next spin.
-
-Gah. There is no locking issue. As Peter explained before the
-scheduler code can cope with some inaccurate value.
-
-The wrap issue is completly academic. If the current clock source has
-a wrap issue then it needs to be addressed anyway by frequent enough
-wakeups to assure correctness of timekeeping and that makes it
-suitable for the sched clock domain as well. Also the scheduler can
-not hit a value which has not gone through the irq_enter() based
-update after a long idle sleep.
-
-So changing your previous patch from
-
-   if (clock && clock->rating > 100)
-
-to
-
-   if (clock && (clock->flags & CLOCK_SOURCE_USE_FOR_SCHED_CLOCK))
-
-is sufficient.
+> > Index: new-trial-swapcount/include/linux/swap.h
+> > ===================================================================
+> > --- new-trial-swapcount.orig/include/linux/swap.h
+> > +++ new-trial-swapcount/include/linux/swap.h
+> > @@ -155,6 +155,7 @@ struct swap_info_struct {
+> >  	unsigned int max;
+> >  	unsigned int inuse_pages;
+> >  	unsigned int old_block_size;
+> > +	unsigned int cache_only;
+> >  };
+> >  
+> >  struct swap_list_t {
+> > @@ -298,6 +299,7 @@ extern struct page *swapin_readahead(swp
+> >  /* linux/mm/swapfile.c */
+> >  extern long nr_swap_pages;
+> >  extern long total_swap_pages;
+> > +extern long nr_cache_only_swaps;
+> >  extern void si_swapinfo(struct sysinfo *);
+> >  extern swp_entry_t get_swap_page(void);
+> >  extern swp_entry_t get_swap_page_of_type(int);
+> > @@ -358,6 +360,7 @@ static inline void mem_cgroup_uncharge_s
+> >  #define nr_swap_pages				0L
+> >  #define total_swap_pages			0L
+> >  #define total_swapcache_pages			0UL
+> > +#define nr_cache_only_swaps			0UL
+> >  
+> >  #define si_swapinfo(val) \
+> >  	do { (val)->freeswap = (val)->totalswap = 0; } while (0)
+> > Index: new-trial-swapcount/mm/swapfile.c
+> > ===================================================================
+> > --- new-trial-swapcount.orig/mm/swapfile.c
+> > +++ new-trial-swapcount/mm/swapfile.c
+> > @@ -39,6 +39,7 @@ static DEFINE_SPINLOCK(swap_lock);
+> >  static unsigned int nr_swapfiles;
+> >  long nr_swap_pages;
+> >  long total_swap_pages;
+> > +long nr_cache_only_swaps;
+> >  static int swap_overflow;
+> >  static int least_priority;
+> >  
+> > @@ -306,9 +307,11 @@ checks:
+> >  		si->lowest_bit = si->max;
+> >  		si->highest_bit = 0;
+> >  	}
+> > -	if (cache) /* at usual swap-out via vmscan.c */
+> > +	if (cache) {/* at usual swap-out via vmscan.c */
+> >  		si->swap_map[offset] = make_swap_count(0, 1);
+> > -	else /* at suspend */
+> > +		si->cache_only++;
+> > +		nr_cache_only_swaps++;
+> > +	} else /* at suspend */
+> >  		si->swap_map[offset] = make_swap_count(1, 0);
+> >  	si->cluster_next = offset + 1;
+> >  	si->flags -= SWP_SCANNING;
+> > @@ -513,7 +516,10 @@ static int swap_entry_free(struct swap_i
+> >  	} else { /* dropping swap cache flag */
+> >  		VM_BUG_ON(!has_cache);
+> >  		p->swap_map[offset] = make_swap_count(count, 0);
+> > -
+> > +		if (!count) {
+> > +			p->cache_only--;
+> > +			nr_cache_only_swaps--;
+> > +		}
+> >  	}
+> >  	/* return code. */
+> >  	count = p->swap_map[offset];
+> > @@ -529,6 +535,11 @@ static int swap_entry_free(struct swap_i
+> >  		p->inuse_pages--;
+> >  		mem_cgroup_uncharge_swap(ent);
+> >  	}
+> > +	if (swap_has_cache(count) && !swap_count(count)) {
+> > +		nr_cache_only_swaps++;
+> > +		p->cache_only++;
+> > +	}
+> > +
+> >  	return count;
+> >  }
+> >  
+> > @@ -1128,6 +1139,8 @@ static int try_to_unuse(unsigned int typ
+> >  		if (swap_count(*swap_map) == SWAP_MAP_MAX) {
+> >  			spin_lock(&swap_lock);
+> >  			*swap_map = make_swap_count(0, 1);
+> > +			si->cache_only++;
+> > +			nr_cache_only_swaps++;
+> >  			spin_unlock(&swap_lock);
+> >  			reset_overflow = 1;
+> >  		}
+> > @@ -2033,6 +2046,10 @@ static int __swap_duplicate(swp_entry_t 
+> >  		if (count < SWAP_MAP_MAX - 1) {
+> >  			p->swap_map[offset] = make_swap_count(count + 1,
+> >  							      has_cache);
+> > +			if (has_cache && !count) {
+> > +				p->cache_only--;
+> > +				nr_cache_only_swaps--;
+> > +			}
+> >  			result = 1;
+> >  		} else if (count <= SWAP_MAP_MAX) {
+> >  			if (swap_overflow++ < 5)
+> > Index: new-trial-swapcount/mm/swap_state.c
+> > ===================================================================
+> > --- new-trial-swapcount.orig/mm/swap_state.c
+> > +++ new-trial-swapcount/mm/swap_state.c
+> > @@ -63,6 +63,8 @@ void show_swap_cache_info(void)
+> >  		swap_cache_info.find_success, swap_cache_info.find_total);
+> >  	printk("Free swap  = %ldkB\n", nr_swap_pages << (PAGE_SHIFT - 10));
+> >  	printk("Total swap = %lukB\n", total_swap_pages << (PAGE_SHIFT - 10));
+> > +	printk("Cache only swap = %lukB\n",
+> > +	       nr_cache_only_swaps << (PAGE_SHIFT - 10));
+> >  }
+> 
+> This is shown rather seldomly (sysrq and oom), for that purpose two
+> counters are overkill.  Maybe remove the global one and sum up the
+> per-swapdevice counters on demand?
+> 
+One for scanning (as 5/5), One for checking we should scan or not.
+But yes, I feel 2 counters may be overkilling....
+Maybe I'll remove global counter in the next version.
 
 Thanks,
+-Kame
 
-	tglx
+
+
+
