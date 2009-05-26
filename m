@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755786AbZEZJeg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755920AbZEZJey@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755786AbZEZJeg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 05:34:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754989AbZEZJdx
+	id S1755920AbZEZJey (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 05:34:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755292AbZEZJdy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 05:33:53 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:54775 "EHLO kernel.dk"
+	Tue, 26 May 2009 05:33:54 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:54783 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753133AbZEZJdw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753470AbZEZJdw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 26 May 2009 05:33:52 -0400
 From: Jens Axboe <jens.axboe@oracle.com>
 To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
 Cc: chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
        akpm@linux-foundation.org, jack@suse.cz, yanmin_zhang@linux.intel.com,
        richard@rsk.demon.co.uk, Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH 01/12] ntfs: remove old debug check for dirty data in ntfs_put_super()
-Date: Tue, 26 May 2009 11:33:39 +0200
-Message-Id: <1243330430-9964-2-git-send-email-jens.axboe@oracle.com>
+Subject: [PATCH 02/12] btrfs: properly register fs backing device
+Date: Tue, 26 May 2009 11:33:40 +0200
+Message-Id: <1243330430-9964-3-git-send-email-jens.axboe@oracle.com>
 X-Mailer: git-send-email 1.6.3.rc0.1.gf800
 In-Reply-To: <1243330430-9964-1-git-send-email-jens.axboe@oracle.com>
 References: <1243330430-9964-1-git-send-email-jens.axboe@oracle.com>
@@ -24,61 +24,71 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This should not trigger anymore, so kill it.
+btrfs assigns this bdi to all inodes on that file system, so make
+sure it's registered. This isn't really important now, but will be
+when we put dirty inodes there. Even now, we miss the stats when the
+bdi isn't visible.
 
-Acked-by: Anton Altaparmakov <aia21@cam.ac.uk>
+Also fixes failure to check bdi_init() return value, and bad inherit of
+->capabilities flags from the default bdi.
+
 Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 ---
- fs/ntfs/super.c |   33 +++------------------------------
- 1 files changed, 3 insertions(+), 30 deletions(-)
+ fs/btrfs/disk-io.c |   23 ++++++++++++++++++-----
+ 1 files changed, 18 insertions(+), 5 deletions(-)
 
-diff --git a/fs/ntfs/super.c b/fs/ntfs/super.c
-index f76951d..3fc03bd 100644
---- a/fs/ntfs/super.c
-+++ b/fs/ntfs/super.c
-@@ -2373,39 +2373,12 @@ static void ntfs_put_super(struct super_block *sb)
- 		vol->mftmirr_ino = NULL;
- 	}
- 	/*
--	 * If any dirty inodes are left, throw away all mft data page cache
--	 * pages to allow a clean umount.  This should never happen any more
--	 * due to mft.c::ntfs_mft_writepage() cleaning all the dirty pages as
--	 * the underlying mft records are written out and cleaned.  If it does,
--	 * happen anyway, we want to know...
-+	 * We should have no dirty inodes left, due to
-+	 * mft.c::ntfs_mft_writepage() cleaning all the dirty pages as
-+	 * the underlying mft records are written out and cleaned.
- 	 */
- 	ntfs_commit_inode(vol->mft_ino);
- 	write_inode_now(vol->mft_ino, 1);
--	if (sb_has_dirty_inodes(sb)) {
--		const char *s1, *s2;
--
--		mutex_lock(&vol->mft_ino->i_mutex);
--		truncate_inode_pages(vol->mft_ino->i_mapping, 0);
--		mutex_unlock(&vol->mft_ino->i_mutex);
--		write_inode_now(vol->mft_ino, 1);
--		if (sb_has_dirty_inodes(sb)) {
--			static const char *_s1 = "inodes";
--			static const char *_s2 = "";
--			s1 = _s1;
--			s2 = _s2;
--		} else {
--			static const char *_s1 = "mft pages";
--			static const char *_s2 = "They have been thrown "
--					"away.  ";
--			s1 = _s1;
--			s2 = _s2;
--		}
--		ntfs_error(sb, "Dirty %s found at umount time.  %sYou should "
--				"run chkdsk.  Please email "
--				"linux-ntfs-dev@lists.sourceforge.net and say "
--				"that you saw this message.  Thank you.", s1,
--				s2);
--	}
- #endif /* NTFS_RW */
+diff --git a/fs/btrfs/disk-io.c b/fs/btrfs/disk-io.c
+index 4b0ea0b..2dc19c9 100644
+--- a/fs/btrfs/disk-io.c
++++ b/fs/btrfs/disk-io.c
+@@ -1345,12 +1345,24 @@ static void btrfs_unplug_io_fn(struct backing_dev_info *bdi, struct page *page)
+ 	free_extent_map(em);
+ }
  
- 	iput(vol->mft_ino);
++/*
++ * If this fails, caller must call bdi_destroy() to get rid of the
++ * bdi again.
++ */
+ static int setup_bdi(struct btrfs_fs_info *info, struct backing_dev_info *bdi)
+ {
+-	bdi_init(bdi);
++	int err;
++
++	bdi->capabilities = BDI_CAP_MAP_COPY;
++	err = bdi_init(bdi);
++	if (err)
++		return err;
++
++	err = bdi_register(bdi, NULL, "btrfs");
++	if (err)
++		return err;
++
+ 	bdi->ra_pages	= default_backing_dev_info.ra_pages;
+-	bdi->state		= 0;
+-	bdi->capabilities	= default_backing_dev_info.capabilities;
+ 	bdi->unplug_io_fn	= btrfs_unplug_io_fn;
+ 	bdi->unplug_io_data	= info;
+ 	bdi->congested_fn	= btrfs_congested_fn;
+@@ -1574,7 +1586,8 @@ struct btrfs_root *open_ctree(struct super_block *sb,
+ 	fs_info->sb = sb;
+ 	fs_info->max_extent = (u64)-1;
+ 	fs_info->max_inline = 8192 * 1024;
+-	setup_bdi(fs_info, &fs_info->bdi);
++	if (setup_bdi(fs_info, &fs_info->bdi))
++		goto fail_bdi;
+ 	fs_info->btree_inode = new_inode(sb);
+ 	fs_info->btree_inode->i_ino = 1;
+ 	fs_info->btree_inode->i_nlink = 1;
+@@ -1931,8 +1944,8 @@ fail_iput:
+ 
+ 	btrfs_close_devices(fs_info->fs_devices);
+ 	btrfs_mapping_tree_free(&fs_info->mapping_tree);
++fail_bdi:
+ 	bdi_destroy(&fs_info->bdi);
+-
+ fail:
+ 	kfree(extent_root);
+ 	kfree(tree_root);
 -- 
 1.6.3.rc0.1.gf800
 
