@@ -1,53 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754873AbZEZJCg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754709AbZEZJHu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754873AbZEZJCg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 05:02:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753889AbZEZJC1
+	id S1754709AbZEZJHu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 05:07:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753445AbZEZJHl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 05:02:27 -0400
-Received: from qw-out-2122.google.com ([74.125.92.24]:2159 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753445AbZEZJC1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 05:02:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Y0OyQzly7L3m1GvUgssQTZBr3oYStxnDCvIcmAKVAKfZs95mgRpjaB9w7NupquxAez
-         Gp3KuKE2IsMIRLl7ogxG5/jCCVs51x0St4obDJyRqDvulONTD35HBkG0H30x1mnnzpL0
-         YfJ4mfEx9eFY6rJZ9iVFkYbfPcA15DdQO1jYw=
+	Tue, 26 May 2009 05:07:41 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:42935 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753331AbZEZJHl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 05:07:41 -0400
+Date: Tue, 26 May 2009 11:07:42 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Jan Kara <jack@suse.cz>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, chris.mason@oracle.com,
+       david@fromorbit.com, akpm@linux-foundation.org,
+       yanmin_zhang@linux.intel.com
+Subject: Re: [PATCH 04/12] writeback: switch to per-bdi threads for
+	flushing data
+Message-ID: <20090526090741.GE11363@kernel.dk>
+References: <1243236887-3931-1-git-send-email-jens.axboe@oracle.com> <1243236887-3931-5-git-send-email-jens.axboe@oracle.com> <20090525095816.GC23546@duck.suse.cz> <20090526085648.GD11363@kernel.dk> <20090526085905.GA5094@infradead.org>
 MIME-Version: 1.0
-In-Reply-To: <1243236668-3398-14-git-send-email-jens.axboe@oracle.com>
-References: <1243236668-3398-1-git-send-email-jens.axboe@oracle.com>
-	 <1243236668-3398-14-git-send-email-jens.axboe@oracle.com>
-Date: Tue, 26 May 2009 14:32:27 +0530
-Message-ID: <807b3a220905260202u11a9a9f8wd1874fce82d6b313@mail.gmail.com>
-Subject: Re: [PATCH 07/13] block: avoid indirect calls to enter cfq io 
-	scheduler
-From: Nikanth K <nikanth@gmail.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
-       akpm@linux-foundation.org, jack@suse.cz, yanmin_zhang@linux.intel.com,
-       Nikanth Karthikesan <knikanth@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090526085905.GA5094@infradead.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 25, 2009 at 1:00 PM, Jens Axboe <jens.axboe@oracle.com> wrote:
->
-> They can be expensive, since CPUs generally do not branch predict
-> well for them.
->
+On Tue, May 26 2009, Christoph Hellwig wrote:
+> On Tue, May 26, 2009 at 10:56:48AM +0200, Jens Axboe wrote:
+> > >   Hmm, so each BDI flusher thread is going to sync all the superblocks?
+> > > Isn't there a better way? I suppose we *should* be able to somehow go
+> > > from a BDI to a superblock (or maybe a list of those) so that we can write
+> > > per-fs metadata not bound to inodes.
+> > 
+> > I just moved the sync_supers() to the bdi_forker_task(). That makes it
+> > global at the same interval of wakeups, instead of doing in the bdi
+> > threads. It would be nice to sync locally instead, but that's something
+> > that can wait for later (if ever).
+> 
+> For now it might be easier to just have a separate thread for calling
+> sync_supers instead of interwinding it with the data writeback.
+> 
+> Btw, XFS currently has a per-device thread for that, to avoid any global
+> contention.
 
-Cant gcc take care of this? Comparing a pointer and then calling the
-function directly without using the pointer! Wont this increase the
-text size of the kernel and possibly degrade performance? Do you have
-any measurement of the improvement? Is this kind of optimization being
-used elsewhere?
+That's basically what the mentioned change does. bdi_forker_task() is a
+the default_backing_dev task, it does little more than simply setup new
+threads and such.
 
-Thanks
-Nikanth
+-- 
+Jens Axboe
+
