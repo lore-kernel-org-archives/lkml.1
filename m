@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756883AbZEZWn4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757042AbZEZWo2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756883AbZEZWn4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 18:43:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758284AbZEZWnU
+	id S1757042AbZEZWo2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 18:44:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758690AbZEZWnY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 18:43:20 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:33178 "EHLO mx2.redhat.com"
+	Tue, 26 May 2009 18:43:24 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:33192 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758187AbZEZWnT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 18:43:19 -0400
+	id S1757635AbZEZWnW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 18:43:22 -0400
 From: Vivek Goyal <vgoyal@redhat.com>
 To: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
        dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
@@ -20,201 +20,426 @@ To: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
        righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com
 Cc: agk@redhat.com, snitzer@redhat.com, vgoyal@redhat.com,
        akpm@linux-foundation.org, peterz@infradead.org
-Subject: [RFC] IO scheduler based IO controller V3
-Date: Tue, 26 May 2009 18:41:49 -0400
-Message-Id: <1243377729-2176-1-git-send-email-vgoyal@redhat.com>
+Subject: [PATCH 10/20] io-conroller: Prepare elevator layer for single queue schedulers
+Date: Tue, 26 May 2009 18:41:59 -0400
+Message-Id: <1243377729-2176-11-git-send-email-vgoyal@redhat.com>
+In-Reply-To: <1243377729-2176-1-git-send-email-vgoyal@redhat.com>
+References: <1243377729-2176-1-git-send-email-vgoyal@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Elevator layer now has support for hierarchical fair queuing. cfq has
+been migrated to make use of it and now it is time to do groundwork for
+noop, deadline and AS.
 
-Hi All,
+noop deadline and AS don't maintain separate queues for different processes.
+There is only one single queue. Effectively one can think that in hierarchical
+setup, there will be one queue per cgroup where requests from all the
+processes in the cgroup will be queued.
 
-Here is the V3 of the IO controller patches generated on top of 2.6.30-rc7.
+Generally io scheduler takes care of creating queues. Because there is
+only one queue here, we have modified common layer to take care of queue
+creation and some other functionality. This special casing helps in keeping
+the changes to noop, deadline and AS to the minimum.
 
-Previous versions of the patches was posted here.
+Signed-off-by: Nauman Rafique <nauman@google.com>
+Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
+---
+ block/elevator-fq.c      |  160 +++++++++++++++++++++++++++++++++++++++++++++-
+ block/elevator-fq.h      |   67 +++++++++++++++++++
+ block/elevator.c         |   35 ++++++++++-
+ include/linux/elevator.h |   14 ++++
+ 4 files changed, 274 insertions(+), 2 deletions(-)
 
-http://lkml.org/lkml/2009/3/11/486
-http://lkml.org/lkml/2009/5/5/275
-
-This patchset is still work in progress but I want to keep on getting the
-snapshot of my tree out at regular intervals to get the feedback hence V3.
-
-Changes from V2
-===============
-- Now this patcheset supports per device per cgroup rules. Thanks to Gui for
-  the patch. Previously a cgroup had same weight on all the block devices
-  in the system. Now one can specify different weights on different devices
-  for same cgroup.
-
-- Made disk time and disk sector statistics per device per cgroup. 
-
-- Replaced the old io group refcounting patch with new patch from nauman.
-  Core change being that during cgroup deletion we don't try to hold
-  both io_cgroup lock and queue lock at the same time.
-
-- Fixed few bugs in per cgropup request descriptor infrastructure. There
-  were instances when a process be put to indefinite sleep after frequent
-  elevator switches.
-
-- Did some cleanups like get rid of rq->iog and rq->rl fields. Thanks to
-  the nauman and Gui for ideas and patches. Got rid of some dead code too.
-
-- Introduced some more debugging help in the form of two more cgrop files
-  "io.disk_queue" and "io.disk_dequeue". It gives the information how many
-  a times a group was queued for disk access and how many a times it got
-  out of contention.
-
-- Introduced an experimental debug patch where one can wait for new reuquest
-  on an async queue before it is expired.
-
-Limitations
-===========
-
-- This IO controller provides the bandwidth control at the IO scheduler
-  level (leaf node in stacked hiearchy of logical devices). So there can
-  be cases (depending on configuration) where application does not see
-  proportional BW division at higher logical level device.
-
-  LWN has written an article about the issue here.
-
-	http://lwn.net/Articles/332839/
-
-How to solve the issue of fairness at higher level logical devices
-==================================================================
-Couple of suggestions have come forward.
-
-- Implement IO control at IO scheduler layer and then with the help of
-  some daemon, adjust the weight on underlying devices dynamiclly, depending
-  on what kind of BW gurantees are to be achieved at higher level logical
-  block devices.
-
-- Also implement a higher level IO controller along with IO scheduler
-  based controller and let user choose one depending on his needs.
-
-  A higher level controller does not know about the assumptions/policies
-  of unerldying IO scheduler, hence it has the potential to break down
-  the IO scheduler's policy with-in cgroup. A lower level controller
-  can work with IO scheduler much more closely and efficiently.
+diff --git a/block/elevator-fq.c b/block/elevator-fq.c
+index 201785e..10787fd 100644
+--- a/block/elevator-fq.c
++++ b/block/elevator-fq.c
+@@ -916,6 +916,12 @@ void io_put_io_group_queues(struct elevator_queue *e, struct io_group *iog)
  
-Other active IO controller developments
-=======================================
+ 	/* Free up async idle queue */
+ 	elv_release_ioq(e, &iog->async_idle_queue);
++
++#ifdef CONFIG_GROUP_IOSCHED
++	/* Optimization for io schedulers having single ioq */
++	if (elv_iosched_single_ioq(e))
++		elv_release_ioq(e, &iog->ioq);
++#endif
+ }
+ 
+ /*
+@@ -1665,6 +1671,153 @@ int io_group_allow_merge(struct request *rq, struct bio *bio)
+ 	return (iog == __iog);
+ }
+ 
++/*
++ * Find/Create the io queue the rq should go in. This is an optimization
++ * for the io schedulers (noop, deadline and AS) which maintain only single
++ * io queue per cgroup. In this case common layer can just maintain a
++ * pointer in group data structure and keeps track of it.
++ *
++ * For the io schdulers like cfq, which maintain multiple io queues per
++ * cgroup, and decide the io queue  of request based on process, this
++ * function is not invoked.
++ */
++int elv_fq_set_request_ioq(struct request_queue *q, struct request *rq,
++					gfp_t gfp_mask)
++{
++	struct elevator_queue *e = q->elevator;
++	unsigned long flags;
++	struct io_queue *ioq = NULL, *new_ioq = NULL;
++	struct io_group *iog;
++	void *sched_q = NULL, *new_sched_q = NULL;
++
++	if (!elv_iosched_fair_queuing_enabled(e))
++		return 0;
++
++	might_sleep_if(gfp_mask & __GFP_WAIT);
++	spin_lock_irqsave(q->queue_lock, flags);
++
++retry:
++	/* Determine the io group request belongs to */
++	iog = io_get_io_group(q, 1);
++	BUG_ON(!iog);
++
++	/* Get the iosched queue */
++	ioq = io_group_ioq(iog);
++	if (!ioq) {
++		/* io queue and sched_queue needs to be allocated */
++		BUG_ON(!e->ops->elevator_alloc_sched_queue_fn);
++
++		if (new_sched_q) {
++			goto alloc_ioq;
++		} else if (gfp_mask & __GFP_WAIT) {
++			/*
++			 * Inform the allocator of the fact that we will
++			 * just repeat this allocation if it fails, to allow
++			 * the allocator to do whatever it needs to attempt to
++			 * free memory.
++			 */
++			spin_unlock_irq(q->queue_lock);
++			/* Call io scheduer to create scheduler queue */
++			new_sched_q = e->ops->elevator_alloc_sched_queue_fn(q,
++					e, gfp_mask | __GFP_NOFAIL
++					| __GFP_ZERO);
++			spin_lock_irq(q->queue_lock);
++			goto retry;
++		} else {
++			sched_q = e->ops->elevator_alloc_sched_queue_fn(q, e,
++						gfp_mask | __GFP_ZERO);
++			if (!sched_q)
++				goto queue_fail;
++		}
++
++alloc_ioq:
++		if (new_ioq) {
++			ioq = new_ioq;
++			new_ioq = NULL;
++			sched_q = new_sched_q;
++			new_sched_q = NULL;
++		} else if (gfp_mask & __GFP_WAIT) {
++			/*
++			 * Inform the allocator of the fact that we will
++			 * just repeat this allocation if it fails, to allow
++			 * the allocator to do whatever it needs to attempt to
++			 * free memory.
++			 */
++			spin_unlock_irq(q->queue_lock);
++			new_ioq = elv_alloc_ioq(q, gfp_mask | __GFP_NOFAIL
++							| __GFP_ZERO);
++			spin_lock_irq(q->queue_lock);
++			goto retry;
++		} else {
++			ioq = elv_alloc_ioq(q, gfp_mask | __GFP_ZERO);
++			if (!ioq) {
++				e->ops->elevator_free_sched_queue_fn(e,
++							sched_q);
++				sched_q = NULL;
++				goto queue_fail;
++			}
++		}
++
++		elv_init_ioq(e, ioq, iog, sched_q, IOPRIO_CLASS_BE, 4, 1);
++		io_group_set_ioq(iog, ioq);
++		elv_mark_ioq_sync(ioq);
++	}
++
++	if (new_sched_q)
++		e->ops->elevator_free_sched_queue_fn(q->elevator, sched_q);
++
++	if (new_ioq)
++		elv_free_ioq(new_ioq);
++
++	/* Request reference */
++	elv_get_ioq(ioq);
++	rq->ioq = ioq;
++	spin_unlock_irqrestore(q->queue_lock, flags);
++	return 0;
++
++queue_fail:
++	WARN_ON((gfp_mask & __GFP_WAIT) && !ioq);
++	elv_schedule_dispatch(q);
++	spin_unlock_irqrestore(q->queue_lock, flags);
++	return 1;
++}
++
++/*
++ * Find out the io queue of current task. Optimization for single ioq
++ * per io group io schedulers.
++ */
++struct io_queue *elv_lookup_ioq_current(struct request_queue *q)
++{
++	struct io_group *iog;
++
++	/* Determine the io group and io queue of the bio submitting task */
++	iog = io_get_io_group(q, 0);
++	if (!iog) {
++		/* May be task belongs to a cgroup for which io group has
++		 * not been setup yet. */
++		return NULL;
++	}
++	return io_group_ioq(iog);
++}
++
++/*
++ * This request has been serviced. Clean up ioq info and drop the reference.
++ * Again this is called only for single queue per cgroup schedulers (noop,
++ * deadline, AS).
++ */
++void elv_fq_unset_request_ioq(struct request_queue *q, struct request *rq)
++{
++	struct io_queue *ioq = rq->ioq;
++
++	if (!elv_iosched_fair_queuing_enabled(q->elevator))
++		return;
++
++	if (ioq) {
++		rq->ioq = NULL;
++		elv_put_ioq(ioq);
++	}
++}
++
+ #else /* GROUP_IOSCHED */
+ void bfq_init_entity(struct io_entity *entity, struct io_group *iog)
+ {
+@@ -2097,7 +2250,12 @@ int elv_init_ioq(struct elevator_queue *eq, struct io_queue *ioq,
+ 	ioq->efqd = efqd;
+ 	elv_ioq_set_ioprio_class(ioq, ioprio_class);
+ 	elv_ioq_set_ioprio(ioq, ioprio);
+-	ioq->pid = current->pid;
++
++	if (elv_iosched_single_ioq(eq))
++		ioq->pid = 0;
++	else
++		ioq->pid = current->pid;
++
+ 	ioq->sched_queue = sched_queue;
+ 	if (is_sync && !elv_ioq_class_idle(ioq))
+ 		elv_mark_ioq_idle_window(ioq);
+diff --git a/block/elevator-fq.h b/block/elevator-fq.h
+index 4f11be3..d79dad7 100644
+--- a/block/elevator-fq.h
++++ b/block/elevator-fq.h
+@@ -241,6 +241,9 @@ struct io_group {
+ 	/* The device MKDEV(major, minor), this group has been created for */
+ 	dev_t	dev;
+ 
++	/* Single ioq per group, used for noop, deadline, anticipatory */
++	struct io_queue *ioq;
++
+ };
+ 
+ /**
+@@ -512,6 +515,28 @@ static inline bfq_weight_t iog_weight(struct io_group *iog)
+ 	return iog->entity.weight;
+ }
+ 
++extern int elv_fq_set_request_ioq(struct request_queue *q, struct request *rq,
++					gfp_t gfp_mask);
++extern void elv_fq_unset_request_ioq(struct request_queue *q,
++					struct request *rq);
++extern struct io_queue *elv_lookup_ioq_current(struct request_queue *q);
++
++/* Returns single ioq associated with the io group. */
++static inline struct io_queue *io_group_ioq(struct io_group *iog)
++{
++	BUG_ON(!iog);
++	return iog->ioq;
++}
++
++/* Sets the single ioq associated with the io group. (noop, deadline, AS) */
++static inline void io_group_set_ioq(struct io_group *iog, struct io_queue *ioq)
++{
++	BUG_ON(!iog);
++	/* io group reference. Will be dropped when group is destroyed. */
++	elv_get_ioq(ioq);
++	iog->ioq = ioq;
++}
++
+ #else /* !GROUP_IOSCHED */
+ /*
+  * No ioq movement is needed in case of flat setup. root io group gets cleaned
+@@ -538,6 +563,32 @@ static inline bfq_weight_t iog_weight(struct io_group *iog)
+ 	return 0;
+ }
+ 
++/* Returns single ioq associated with the io group. */
++static inline struct io_queue *io_group_ioq(struct io_group *iog)
++{
++	return NULL;
++}
++
++static inline void io_group_set_ioq(struct io_group *iog, struct io_queue *ioq)
++{
++}
++
++static inline int elv_fq_set_request_ioq(struct request_queue *q,
++					struct request *rq, gfp_t gfp_mask)
++{
++	return 0;
++}
++
++static inline void elv_fq_unset_request_ioq(struct request_queue *q,
++						struct request *rq)
++{
++}
++
++static inline struct io_queue *elv_lookup_ioq_current(struct request_queue *q)
++{
++	return NULL;
++}
++
+ #endif /* GROUP_IOSCHED */
+ 
+ /* Functions used by blksysfs.c */
+@@ -651,5 +702,21 @@ static inline int io_group_allow_merge(struct request *rq, struct bio *bio)
+ {
+ 	return 1;
+ }
++static inline int elv_fq_set_request_ioq(struct request_queue *q,
++					struct request *rq, gfp_t gfp_mask)
++{
++	return 0;
++}
++
++static inline void elv_fq_unset_request_ioq(struct request_queue *q,
++						struct request *rq)
++{
++}
++
++static inline struct io_queue *elv_lookup_ioq_current(struct request_queue *q)
++{
++	return NULL;
++}
++
+ #endif /* CONFIG_ELV_FAIR_QUEUING */
+ #endif /* _BFQ_SCHED_H */
+diff --git a/block/elevator.c b/block/elevator.c
+index 67a0601..8b2206f 100644
+--- a/block/elevator.c
++++ b/block/elevator.c
+@@ -211,6 +211,14 @@ static void *elevator_alloc_sched_queue(struct request_queue *q,
+ {
+ 	void *sched_queue = NULL;
+ 
++	/*
++	 * If fair queuing is enabled, then queue allocation takes place
++	 * during set_request() functions when request actually comes
++	 * in.
++	 */
++	if (elv_iosched_fair_queuing_enabled(eq))
++		return NULL;
++
+ 	if (eq->ops->elevator_alloc_sched_queue_fn) {
+ 		sched_queue = eq->ops->elevator_alloc_sched_queue_fn(q, eq,
+ 								GFP_KERNEL);
+@@ -963,6 +971,13 @@ int elv_set_request(struct request_queue *q, struct request *rq, gfp_t gfp_mask)
+ {
+ 	struct elevator_queue *e = q->elevator;
+ 
++	/*
++	 * Optimization for noop, deadline and AS which maintain only single
++	 * ioq per io group
++	 */
++	if (elv_iosched_single_ioq(e))
++		return elv_fq_set_request_ioq(q, rq, gfp_mask);
++
+ 	if (e->ops->elevator_set_req_fn)
+ 		return e->ops->elevator_set_req_fn(q, rq, gfp_mask);
+ 
+@@ -974,6 +989,15 @@ void elv_put_request(struct request_queue *q, struct request *rq)
+ {
+ 	struct elevator_queue *e = q->elevator;
+ 
++	/*
++	 * Optimization for noop, deadline and AS which maintain only single
++	 * ioq per io group
++	 */
++	if (elv_iosched_single_ioq(e)) {
++		elv_fq_unset_request_ioq(q, rq);
++		return;
++	}
++
+ 	if (e->ops->elevator_put_req_fn)
+ 		e->ops->elevator_put_req_fn(rq);
+ }
+@@ -1345,9 +1369,18 @@ EXPORT_SYMBOL(elv_select_sched_queue);
+ 
+ /*
+  * Get the io scheduler queue pointer for current task.
++ *
++ * If fair queuing is enabled, determine the io group of task and retrieve
++ * the ioq pointer from that. This is used by only single queue ioschedulers
++ * for retrieving the queue associated with the group to decide whether the
++ * new bio can do a front merge or not.
+  */
+ void *elv_get_sched_queue_current(struct request_queue *q)
+ {
+-	return q->elevator->sched_queue;
++	/* Fair queuing is not enabled. There is only one queue. */
++	if (!elv_iosched_fair_queuing_enabled(q->elevator))
++		return q->elevator->sched_queue;
++
++	return ioq_sched_queue(elv_lookup_ioq_current(q));
+ }
+ EXPORT_SYMBOL(elv_get_sched_queue_current);
+diff --git a/include/linux/elevator.h b/include/linux/elevator.h
+index 3729a2f..ee38d08 100644
+--- a/include/linux/elevator.h
++++ b/include/linux/elevator.h
+@@ -249,17 +249,31 @@ enum {
+ /* iosched wants to use fq logic of elevator layer */
+ #define	ELV_IOSCHED_NEED_FQ	1
+ 
++/* iosched maintains only single ioq per group.*/
++#define ELV_IOSCHED_SINGLE_IOQ        2
++
+ static inline int elv_iosched_fair_queuing_enabled(struct elevator_queue *e)
+ {
+ 	return (e->elevator_type->elevator_features) & ELV_IOSCHED_NEED_FQ;
+ }
+ 
++static inline int elv_iosched_single_ioq(struct elevator_queue *e)
++{
++	return (e->elevator_type->elevator_features) & ELV_IOSCHED_SINGLE_IOQ;
++}
++
+ #else /* ELV_IOSCHED_FAIR_QUEUING */
+ 
+ static inline int elv_iosched_fair_queuing_enabled(struct elevator_queue *e)
+ {
+ 	return 0;
+ }
++
++static inline int elv_iosched_single_ioq(struct elevator_queue *e)
++{
++	return 0;
++}
++
+ #endif /* ELV_IOSCHED_FAIR_QUEUING */
+ extern void *elv_get_sched_queue(struct request_queue *q, struct request *rq);
+ extern void *elv_select_sched_queue(struct request_queue *q, int force);
+-- 
+1.6.0.1
 
-IO throttling
--------------
-
-  This is a max bandwidth controller and not the proportional one. Secondly
-  it is a second level controller which can break the IO scheduler's
-  policy/assumtions with-in cgroup. 
-
-dm-ioband
----------
-
- This is a proportional bandwidth controller implemented as device mapper
- driver. It is also a second level controller which can break the
- IO scheduler's policy/assumptions with-in cgroup.
-
-Testing
-=======
-
-Again, I have been able to do only very basic testing of reads and writes.
-
-Test1 (Fairness for synchronous reads)
-======================================
-- Two dd in two cgroups with cgrop weights 1000 and 500. Ran two "dd" in those
-  cgroups (With CFQ scheduler and /sys/block/<device>/queue/fairness = 1)
-
-dd if=/mnt/$BLOCKDEV/zerofile1 of=/dev/null &
-dd if=/mnt/$BLOCKDEV/zerofile2 of=/dev/null &
-
-234179072 bytes (234 MB) copied, 4.0167 s, 58.3 MB/s
-234179072 bytes (234 MB) copied, 5.21889 s, 44.9 MB/s
-
-group1 time=8 16 2483 group1 sectors=8 16 457840
-group2 time=8 16 1317 group2 sectors=8 16 242664
-
-First two fields in time and sectors statistics represent major and minor
-number of the device. Third field represents disk time in milliseconds and
-number of sectors transferred respectively.
-
-This patchset tries to provide fairness in terms of disk time received. group1
-got almost double of group2 disk time (At the time of first dd finish). These
-time and sectors statistics can be read using io.disk_time and io.disk_sector
-files in cgroup. More about it in documentation file.
-
-Test2 (Fairness for async writes)
-=================================
-Fairness for async writes is tricy and biggest reason is that async writes
-are cached in higher layers (page cahe) and are dispatched to lower layers
-not necessarily in proportional manner. For example, consider two dd threads
-reading /dev/zero as input file and doing writes of huge files. Very soon
-we will cross vm_dirty_ratio and dd thread will be forced to write out some
-pages to disk before more pages can be dirtied. But not necessarily dirty
-pages of same thread are picked. It can very well pick the inode of lesser
-priority dd thread and do some writeout. So effectively higher weight dd is
-doing writeouts of lower weight dd pages and we don't see service differentation
-
-IOW, the core problem with async write fairness is that higher weight thread
-does not throw enought IO traffic at IO controller to keep the queue
-continuously backlogged. This are many .2 to .8 second intervals where higher
-weight queue is empty and in that duration lower weight queue get lots of job
-done giving the impression that there was no service differentiation.
-
-In summary, from IO controller point of view async writes support is there. Now
-we need to do some more work in higher layers to make sure higher weight process
-is not blocked behind IO of some lower weight process. This is a TODO item.
-
-So to test async writes I generated lots of write traffic in two cgroups (50
-fio threads) and watched the disk time statistics in respective cgroups at
-the interval of 2 seconds. Thanks to ryo tsuruta for the test case.
-
-*****************************************************************
-sync
-echo 3 > /proc/sys/vm/drop_caches
-
-fio_args="--size=64m --rw=write --numjobs=50 --group_reporting"
-
-echo $$ > /cgroup/bfqio/test1/tasks
-fio $fio_args --name=test1 --directory=/mnt/sdd1/fio/ --output=/mnt/sdd1/fio/test1.log &
-
-echo $$ > /cgroup/bfqio/test2/tasks
-fio $fio_args --name=test2 --directory=/mnt/sdd2/fio/ --output=/mnt/sdd2/fio/test2.log &
-*********************************************************************** 
-
-And watched the disk time and sector statistics for the both the cgroups
-every 2 seconds using a script. How is snippet from output.
-
-test1 statistics: time=8 48 4325   sectors=8 48 226696 dq=8 48 2
-test2 statistics: time=8 48 2163   sectors=8 48 107040 dq=8 48 1
-
-test1 statistics: time=8 48 8460   sectors=8 48 489152 dq=8 48 4
-test2 statistics: time=8 48 4425   sectors=8 48 256984 dq=8 48 3
-
-test1 statistics: time=8 48 12928   sectors=8 48 792192 dq=8 48 6
-test2 statistics: time=8 48 6813   sectors=8 48 384944 dq=8 48 5
-
-test1 statistics: time=8 48 17256   sectors=8 48 1092744 dq=8 48 7
-test2 statistics: time=8 48 8980   sectors=8 48 524840 dq=8 48 6
-
-test1 statistics: time=8 48 20488   sectors=8 48 1300832 dq=8 48 8
-test2 statistics: time=8 48 10920   sectors=8 48 634864 dq=8 48 7
-
-First two fields in time and sectors statistics represent major and minor
-number of the device. Third field represents disk time in milliseconds and
-number of sectors transferred respectively.
-
-So disk time consumed by group1 is almost double of group2.
-
-TODO
-====
-- Lots of code cleanups, testing, bug fixing, optimizations, benchmarking
-  etc...
-
-- Debug and fix some of the areas like page cache where higher weight cgroup
-  async writes are stuck behind lower weight cgroup async writes.
-
-- Anticipatory code will need more work. It is not working properly currently
-  and needs more thought regarding idling etc.
-
-Thanks
-Vivek
