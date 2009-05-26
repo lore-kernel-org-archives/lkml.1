@@ -1,47 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758739AbZEZV4W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756612AbZEZV5O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758739AbZEZV4W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 17:56:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755863AbZEZV4Q
+	id S1756612AbZEZV5O (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 17:57:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757266AbZEZV46
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 17:56:16 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:40050 "HELO
+	Tue, 26 May 2009 17:56:58 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:40058 "HELO
 	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755274AbZEZV4P (ORCPT
+	with SMTP id S1754685AbZEZV45 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 17:56:15 -0400
-Date: Tue, 26 May 2009 17:56:16 -0400 (EDT)
+	Tue, 26 May 2009 17:56:57 -0400
+Date: Tue, 26 May 2009 17:56:58 -0400 (EDT)
 From: Alan Stern <stern@rowland.harvard.edu>
 X-X-Sender: stern@iolanthe.rowland.org
-To: Nigel Cunningham <nigel@tuxonice.net>
-cc: Oliver Neukum <oliver@neukum.org>, <linux-pm@lists.linux-foundation.org>,
-       <tuxonice-devel@lists.tuxonice.net>, <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-pm] [TuxOnIce-devel] [RFC] TuxOnIce
-In-Reply-To: <1243373613.13930.61.camel@nigel-laptop>
-Message-ID: <Pine.LNX.4.44L0.0905261754250.11998-100000@iolanthe.rowland.org>
+To: Kay Sievers <kay.sievers@vrfy.org>
+cc: James Bottomley <James.Bottomley@hansenpartnership.com>,
+       SCSI development list <linux-scsi@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Tejun Heo <tj@kernel.org>, Cornelia Huck <cornelia.huck@de.ibm.com>,
+       <linux-fsdevel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>
+Subject: Re: [PATCH 25/20] sysfs: Only support removing emtpy sysfs  directories.
+In-Reply-To: <ac3eb2510905261413r54e5bb18n7faf888aa55d8830@mail.gmail.com>
+Message-ID: <Pine.LNX.4.44L0.0905261756390.11998-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 May 2009, Nigel Cunningham wrote:
+On Tue, 26 May 2009, Kay Sievers wrote:
 
-> USB devices ought to be able to do _something_ though - I have a Dvico
-> Dual Digital 4 card
+> Ok, I copied my newly installed system to another disks, to have a
+> root filesytem to trash again by this bug. :)
+> 
+> Which of your patches should I try?
 
-What is that?
-
-> that is forcing me to shutdown X, mythtv-backend,
-> pulse audio and lirc at the moment so that I can rmmod it while
-> hibernating. That ought not be necessary. I'm sure there are good
-> technical reasons why it is necessary at the mooment, but it shouldn't
-> be that way - even if it just does the bare minimum required to avoid
-> requiring the closing of files and the unload.
-
-Probably the driver's author just never got around to adding support
-for suspend/resume.  Which driver is it?  What happens if you don't 
-rmmod it?
+James's patch, not mine.
 
 Alan Stern
 
