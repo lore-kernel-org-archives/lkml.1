@@ -1,78 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758371AbZEZUo5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757134AbZEZUrA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758371AbZEZUo5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 16:44:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755689AbZEZUou
+	id S1757134AbZEZUrA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 16:47:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753584AbZEZUqy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 16:44:50 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:65392 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755159AbZEZUou (ORCPT
+	Tue, 26 May 2009 16:46:54 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:63592 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753339AbZEZUqx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 16:44:50 -0400
-Date: Tue, 26 May 2009 16:44:49 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: GeunSik Lim <leemgs1@gmail.com>
-cc: Greg KH <greg@kroah.com>, linux-kernel <linux-kernel@vger.kernel.org>,
-       trivial@kernel.org, balagi@justmail.de, bgamari@gmail.com,
-       Ingo Molnar <mingo@elte.hu>, inaky.perez-gonzalez@intel.com
-Subject: Re: [RFC PATCH]debugfs:Fix terminology inconsistency of dir name to
- mount debugfs filesystem.
-In-Reply-To: <1243315163.14685.17.camel@centos51>
-Message-ID: <alpine.DEB.2.00.0905261642130.26705@gandalf.stny.rr.com>
-References: <1243315163.14685.17.camel@centos51>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 26 May 2009 16:46:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=b4XQHGHqVR5Hrs7Ln6ZdtR5sru/y/PLDWU1d1vWSyGovPb5cNzpY1kwpcV7t3+n/mu
+         dyO4fWVzx5IsWrndvKiVjo0sIDG1VvnNrHMuy1lDL/kD1N8mXYDvoS6TLZ7thpa2ZA9a
+         g1vM5xWbZWU5Rad2AkNriGeFF0PBMQRwC+Nec=
+Date: Tue, 26 May 2009 22:46:49 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/3] tracing/stat: sort in ascending order
+Message-ID: <20090526204647.GF5969@nowhere>
+References: <4A1A5AD1.3070804@cn.fujitsu.com> <20090525154229.GA7121@nowhere> <4A1B4144.9060201@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A1B4144.9060201@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Tue, 26 May 2009, GeunSik Lim wrote:
-
+On Tue, May 26, 2009 at 09:09:24AM +0800, Li Zefan wrote:
+> Frederic Weisbecker wrote:
+> > On Mon, May 25, 2009 at 04:46:09PM +0800, Li Zefan wrote:
+> >> Currently the output of trace_stat/workqueues is totally reversed:
+> >>
+> >>  # cat /debug/tracing/trace_stat/workqueues
+> >>     ...
+> >>     1       17       17      210       37   `-blk_unplug_work+0x0/0x57
+> >>     1     3779     3779      181       11   |-cfq_kick_queue+0x0/0x2f
+> >>     1     3796     3796                     kblockd/1:120
+> >>     ...
+> >>
+> >> The correct output should be:
+> >>
+> >>     1     3796     3796                     kblockd/1:120
+> >>     1     3779     3779      181       11   |-cfq_kick_queue+0x0/0x2f
+> >>     1       17       17      210       37   `-blk_unplug_work+0x0/0x57
+> >>
+> >> It's caused by "tracing/stat: replace linked list by an rbtree for sorting"
+> >> (53059c9b67a62a3dc8c80204d3da42b9267ea5a0).
+> >>
+> >> Though we can simply change dummy_cmp() to return -1 instead of 1, IMO
+> >> it's better to always do ascending sorting in trace_stat.c, and leave each
+> >> stat tracer to decide whether to sort in descending or ascending order.
+> >>
+> >> [ Impact: fix the output of trace_stat/workqueue ]
+> >>
+> >> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> > 
+> > 
+> > For now in stat tracing, the ascendent sorting is the most relevant.
+> > Especially because we always want to see the highest problems first.
+> > 
 > 
+> Yeah, I saw this.
 > 
->  Hi all, 
->    
->  I want to hear your opinions about this proposal for consistency of
->  mount directory to mount debugfs filesystem that need  by ftrace infrastructure.
->  Um... I appended "RFC" word in the subject because this mail is my proposal just.  
+> > -1 (or < 0) usually means lower and 1 ( > 0) is higher.
+> > 
+> > I wonder what would most confuse the developers of stat tracers:
+> > 
+> > - to reverse these common sort values (-1 turn into "higher")
+> > - keep the default ascendent sorting, which is not natural because the default
+> >   is often descendent.
+> > 
+> > I don't know. 
+> > 
+> > Anyone else. Do you have a preference?
+> > 
 > 
+> When I looked into this bug, I was confused why it's descending sorting, though
+> then I found out the answer.
 > 
-> commit 1766a83645706100b1829bb422f852ec757c6f4b
-> Author: GeunSik,Lim <leemgs1@gmail.com>
-> Date:   Tue May 26 13:49:23 2009 +0900
+> Imagine a new stat tracer wants to sort in ascending order, but it has to define
+> a cmp which compares in reverse order. This seems to be odd and confusing.
 > 
->     Fix terminology inconsistency of dir name to mount debugfs filesystem.
->     
->       Many developers use "/debug/" directory name to mount debugfs filesystem
->       for ftrace according to ./Documentation/tracers/ftrace.txt file.
->     
->       But, two directory names(ex:/debug/, /debugfs/) is existed in kernel source
->       like ftrace, DRM, Wireless, Network[sky2]files to mount debugfs filesystem.
->       I think that we don't have to select either "/debug/" directory name or
->       "/debugfs/" directory name for terminology consistency.
->     
->       debugfs means debug filesystem for debugging easy to use by greg kroah
->       hartman. "/debug/" name is suitable as directory name of debugfs for
->       tracing using ftrace like "/sys/" of sysfs(system filesystem).
->       -debugfs related reference: http://lwn.net/Articles/115405/
->     
->       Fix inconsistency of directory name according to duplicated expression
->       to mount debugfs.
->     
->          Signed-off-by: GeunSik Lim <geunsik.lim@samsung.com>
+> But to be honest, I'm also not sure which is better, And it doesn't seem to be
+> a big issue. So I think I'll make concessions.
 
-I'm guilty of using both /debug and /debugfs in comments. In practice, I 
-only use /debug.
 
-But...
-
-The filesystem Nazi's out there will argue that the proper place to mount 
-the debugfs filesystem is /sys/kernel/debug. I personally find that 
-location annoying.
-
--- Steve
+Ok, so let's keep it as is and we'll see if developers complain :)
 
