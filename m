@@ -1,140 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758100AbZE0IGd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756796AbZE0ILf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758100AbZE0IGd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 04:06:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755969AbZE0IGZ
+	id S1756796AbZE0ILf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 04:11:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756612AbZE0ILU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 04:06:25 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:55492 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754906AbZE0IGV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 04:06:21 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Robin Holt <holt@sgi.com>
-Subject: Re: [PATCH v3] zone_reclaim is always 0 by default
-Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
-       Wu Fengguang <fengguang.wu@intel.com>
-In-Reply-To: <20090525114135.GD29447@sgi.com>
-References: <20090524214554.084F.A69D9226@jp.fujitsu.com> <20090525114135.GD29447@sgi.com>
-Message-Id: <20090527164549.68B4.A69D9226@jp.fujitsu.com>
+	Wed, 27 May 2009 04:11:20 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:54068 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1756410AbZE0ILT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 04:11:19 -0400
+Message-ID: <4A1CF5F2.6050209@cn.fujitsu.com>
+Date: Wed, 27 May 2009 16:12:34 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: Christoph Hellwig <hch@infradead.org>
+CC: Ingo Molnar <mingo@elte.hu>, Jens Axboe <jens.axboe@oracle.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Tom Zanussi <tzanussi@gmail.com>, "Theodore Ts'o" <tytso@mit.edu>,
+       Steven Whitehouse <swhiteho@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Jeff Moyer <jmoyer@redhat.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v2 1/2] tracing/events: make __string() more general
+References: <4A1B6A2F.2040703@cn.fujitsu.com> <4A1B6A4C.3070407@cn.fujitsu.com> <20090526060232.GA10669@infradead.org> <4A1C9AC4.3090704@cn.fujitsu.com> <20090527072956.GC24381@infradead.org>
+In-Reply-To: <20090527072956.GC24381@infradead.org>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Wed, 27 May 2009 17:06:18 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Sun, May 24, 2009 at 10:44:29PM +0900, KOSAKI Motohiro wrote:
-> ...
-> > > Your root cause analysis is suspect.  You found a knob to turn which
-> > > suddenly improved performance for one specific un-tuned server workload.
-> ...
-> > The fact is, workload dependency charactetistics of zone reclaim is
-> > widely known from very ago.
-> > Even Documentaion/sysctl/vm.txt said, 
-> > 
-> > > It may be beneficial to switch off zone reclaim if the system is
-> > > used for a file server and all of memory should be used for caching files
-> > > from disk. In that case the caching effect is more important than
-> > > data locality.
-> > 
-> > Nobody except you oppose this.
+Christoph Hellwig wrote:
+> On Wed, May 27, 2009 at 09:43:32AM +0800, Li Zefan wrote:
+>> I'm not suffering from NULL str, so I'm not quite sure how you want __string()
+>> deal with it.
 > 
-> I don't disagree with that statement.  I agree this is a workload specific
-> tuneable that for the case where you want to use the system for nothing
-> other than file serving, you need to turn it off.  It has been this way
-> for ages.  I am saying let's not change that default behavior.
+> The internals of __string is still magic to me, need to finish my
+> advance cpp abuse degree first ;-)
 > 
-> > > How did you determine better by default?  I think we already established
-> > > that apache is a server workload and not a desktop workload.  Earlier
-> > > you were arguing that we need this turned off to improve the desktop
-> > > environment.  You have not established this improves desktop performance.
-> > > Actually, you have not established it improves apache performance or
-> > > server performance.  You have documented it improves memory utilization,
-> > > but that is not always the same as faster.
-> > 
-> > The fact is, low-end machine performace depend on cache hitting ratio widely.
-> > improving memory utilization mean improving cache hitting ratio.
-> > 
-> > Plus, I already explained about desktop use case. multiple worst case scenario 
-> > can happend on it easily.
-> > 
-> > if big process consume memory rather than node size, zone-reclaim
-> > decrease performance largely.
+
+It's no longer magic to me. ;)
+
+> But the expected outcome would be that when we get a NULL pointer as
+> input we get a NULL pointer as output again.
 > 
-> It may improve performance as well.  I agree we can come up with
-> theoretical cases that show both.  I am asking for documented cases where
-> it does.  Your original post indicated an apache regression.  In that
-> case apache was being used under server type loads.  If you have a machine
-> with this condition, you should probably be considered the exception.
+
+The following trick should meet your needs (based on this 1/2 patch):
+
+(Not even compiled!)
+
+diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
+index d1c0cc5..c5911d0 100644
+--- a/include/trace/ftrace.h
++++ b/include/trace/ftrace.h
+@@ -117,7 +117,10 @@
+ #define TP_printk(fmt, args...) fmt "\n", args
+ 
+ #undef __get_str
+-#define __get_str(field)	((char *)__entry + __entry->__str_loc_##field)
++#define __get_str(field)						\
++	(__entry->__str_lock_##field != -1) ?				\
++		((char *)__entry + __entry->__str_loc_##field) :	\
++		NULL
+ 
+ #undef TRACE_EVENT
+ #define TRACE_EVENT(call, proto, args, tstruct, assign, print)		\
+@@ -412,8 +415,11 @@ static void ftrace_profile_disable_##call(struct ftrace_event_call *call) \
+ 
+ #undef __string
+ #define __string(item, len)						 \
+-	__str_offsets.item = __str_size +				 \
+-			     offsetof(typeof(*entry), __str_data);	 \
++	if (len)							 \
++		__str_offsets.item = __str_size +			 \
++				     offsetof(typeof(*entry), __str_data);\
++	else								 \
++		__str_offsets.item = -1;				 \
+ 	__str_size += (len) + 1;
+ 
+ #undef __fetch_str
+
+> What I currently do is:
 > 
-> > zone reclaim decrease page-cache hitting ratio. some desktop don't have
-> > much memory. cache missies does'nt only increase latency, but also
-> > increase unnecessary I/O. desktop don't have rich I/O bandwidth rather than
-> > server or hpc. it makes bad I/O affect.
+> TRACE_EVENT(xfs_dir2,
+> 	TP_PROTO(struct xfs_da_args *args, int i, int j, int count),
+> 	TP_ARGS(args, i, j, count),
 > 
-> If low I/O performance should be turning it off, then shouldn't that
-> case be coded into the default as opposed to changing the default to
-> match your specific opinion?
+> 	TP_STRUCT__entry(
+> 		__field(xfs_ino_t, ino)
+> 		__array(char, name, TRACE_MAXNAMELEN)
+> 		__field(int, namelen)
+> 		...
+> 	),
 > 
-> > However, your past explanation is really wrong and bogus.
-> > I wrote
-> > 
-> > > If this imbalance is an x86_64 only problem, then we could do something
-> > > simple like the following untested patch.  This leaves the default
-> > > for everyone except x86_64.
-> > 
-> > and I wrote it isn't true. after that, you haven't provide addisional
-> > explanation.
+>         TP_fast_assign(
+> 		__entry->ino = args->dp->i_ino;
+> 		if (args->namelen)
+> 			memcpy(__entry->name, args->name,
+> 			       min(args->namelen, TRACE_MAXNAMELEN));
+
+This string is not NULL-terminated?
+
+> 		__entry->namelen = args->namelen;
+> 		...
+> 	),
 > 
-> I don't recall seeing your response.  Sorry, but this has been, and will
-> remain, low priority for me.  If the default gets changed, we will detect
-> the performance regression very early after we start testing this bad
-> of a change on a low memory machine and then we will put a tweak into
-> place at the next distro release to turn this off following boot.
+> 	TP_printk("ino 0x%lld %pF name %.*s namelen %d hashval 0x%x "
+> 		  "inumber 0x%llx op_flags %s i %d j %d count %d",
+> 		  __entry->ino,
+> 		  (void *)__entry->caller_ip,
+> 		  min(__entry->namelen, TRACE_MAXNAMELEN),
+> 		  __entry->namelen ? __entry->name : NULL,
+> 		  __entry->namelen,
+> 		  ...)
+> );
 > 
-> > Nobody ack CODE-ONLY-PATCH. _You_ have to explain _why_ you think 
-> > your approach is better.
-> 
-> Because it doesn't throw out a lot of history based upon your opinion of
-> one server type test found under lab conditions on a poorly tuned machine.
 
-Robin, sorry, if this is all of your intention, I can't agree it. firstly,
-poorly tuned machine is not wrong at all. valume zone server (low-end sever)
-and deskrop people never change kernel parameter. default parameter shold
-be optimal. because they are majority user. Yanmin did test proper condition.
-secondly, a lot history is not good enough reason in this case. in past days,
-larger distance remote node machine is verrrrrrrrrrry few. it was very expensive.
-but Core i7 is cheap. There are Ci7 user much x1000 times than high-end
-hpc machine user.
+Then the above code can be rewrote:
 
-your last patch is one of considerable thing. but it has one weakness.
-in general "ifdef x86" is wrong idea. almost minor architecture don't
-have sufficient tester. the difference against x86 often makes bug.
-Then, unnecessary difference is hated by much people.
+TRACE_EVENT(xfs_dir2,
+	TP_PROTO(struct xfs_da_args *args, int i, int j, int count),
+	TP_ARGS(args, i, j, count),
 
-So, I think we have two selectable choice.
+	TP_STRUCT__entry(
+		__field(xfs_ino_t, ino)
+		__string(name, args->namelen)
+		__field(int, namelen)
+		...
+	),
 
-1. remove zone_reclaim default setting completely (this patch)
-2. Only PowerPC and IA64 have default zone_reclaim_mode settings,
-   other architecture always use zone_reclaim_mode=0.
+        TP_fast_assign(
+		__entry->ino = args->dp->i_ino;
+		memcpy(__fetch_str(name), args->name, args->namelen);
+		__entry->namelen = args->namelen;
+		...
+	),
 
-it mean larger distance remote node machine are only in ia64 and power
-as a matter of practice. (nobody sale high-end linux on parisc nor sparc)
-
-Changing "as a matter of practice" to "formally" is not caused your worried
-risk.
-
-
-
-Here is your turn. comments?
-
+	TP_printk("ino 0x%lld %pF name %.*s namelen %d hashval 0x%x "
+		  "inumber 0x%llx op_flags %s i %d j %d count %d",
+		  __entry->ino,
+		  (void *)__entry->caller_ip,
+		  __entry->namelen,
+		  __get_str(name),
+		  __entry->namelen,
+		  ...)
+);
 
