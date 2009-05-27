@@ -1,56 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763101AbZE0Ms1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763272AbZE0Mtd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763101AbZE0Ms1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 08:48:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762819AbZE0MsM
+	id S1763272AbZE0Mtd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 08:49:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762609AbZE0Mt0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 08:48:12 -0400
-Received: from gate1.ipvision.dk ([94.127.49.2]:53931 "EHLO gate1.ipvision.dk"
+	Wed, 27 May 2009 08:49:26 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:60389 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762856AbZE0MsL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 08:48:11 -0400
-X-Greylist: delayed 1259 seconds by postgrey-1.27 at vger.kernel.org; Wed, 27 May 2009 08:48:11 EDT
-To: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
-Cc: romieu@fr.zoreil.com (Francois Romieu), dave@thedillows.org (David Dillow),
-       linux-kernel@vger.kernel.org, edward_hsu@realtek.com.tw (Edward Hsu)
-Subject: Re: Realtek 8168D: no active link (2.6.29.2)
-References: <20090519213213.GA6377@electric-eye.fr.zoreil.com>
-	<200905251014.n4PAEi0k027544@mercury.physics.adelaide.edu.au>
-From: Benny Amorsen <benny+usenet@amorsen.dk>
-Date: Wed, 27 May 2009 14:27:04 +0200
-In-Reply-To: <200905251014.n4PAEi0k027544@mercury.physics.adelaide.edu.au> (Jonathan Woithe's message of "Mon\, 25 May 2009 19\:44\:44 +0930 \(CST\)")
-Message-ID: <m3octeu3xj.fsf@ursa.amorsen.dk>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.3 (gnu/linux)
+	id S1762890AbZE0Mt0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 08:49:26 -0400
+Date: Wed, 27 May 2009 14:49:27 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+Cc: linux-kernel@vger.kernel.org, "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
+Subject: Re: [PATCH 2.6-block/for-2.6.31] block: fix no diskstat problem
+Message-ID: <20090527124927.GK11363@kernel.dk>
+References: <4A1B50F8.1050401@ct.jp.nec.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-Spam-Score: -5.2 (-----)
-X-Spam-Report: ALL_TRUSTED=-3.3, AWL=1.166, BAYES_00=-3.099
+Content-Disposition: inline
+In-Reply-To: <4A1B50F8.1050401@ct.jp.nec.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jonathan Woithe <jwoithe@physics.adelaide.edu.au> writes:
+On Tue, May 26 2009, Kiyoshi Ueda wrote:
+> Hi Jens,
+> 
+> The commit below in 2.6-block/for-2.6.31 causes no diskstat problem
+> because the blk_discard_rq() check was added with '&&'.
+> It should be 'blk_fs_request() || blk_discard_rq()'.
+> This patch does it and fixes the no diskstat problem.
+> Please review and apply.
 
->   ethtool -s eth0 autoneg off speed 10
->     - 10 Mbps speed set
->
->   ethtool -s eth0 autoneg off speed 100
->     - 100 Mbps speed achieved
->
->   ethtool -s eth0 autoneg on speed 1000
->     - 1000 Mbps speed attained
->
-> The duplex setting might not be having an effect though since my switch's
-> FDx (full duplex) LED was extinguished for both the 10 and 100 Mbps cases
-> above.  Explicitly setting the duplex flag using
->
->   ethtool -s eth0 autoneg off speed 100 duplex full
->
-> didn't make any difference - the FDx LED remained off.
+Oops, thanks! Applied.
 
-You turned auto negotiation off, and you are surprised that the switch
-doesn't autonegotiate full duplex?
-
-
-/Benny
+-- 
+Jens Axboe
 
