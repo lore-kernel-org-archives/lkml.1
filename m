@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764044AbZE0RuS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761538AbZE0Rty@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764044AbZE0RuS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 13:50:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763377AbZE0RqH
+	id S1761538AbZE0Rty (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 13:49:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763353AbZE0RqE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 13:46:07 -0400
-Received: from jalapeno.cc.columbia.edu ([128.59.29.5]:54690 "EHLO
+	Wed, 27 May 2009 13:46:04 -0400
+Received: from jalapeno.cc.columbia.edu ([128.59.29.5]:54689 "EHLO
 	jalapeno.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763466AbZE0Rp7 (ORCPT
+	with ESMTP id S1763401AbZE0Rp7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 27 May 2009 13:45:59 -0400
 From: Oren Laadan <orenl@cs.columbia.edu>
@@ -19,11 +19,11 @@ Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
        "H. Peter Anvin" <hpa@zytor.com>,
        Alexander Viro <viro@zeniv.linux.org.uk>,
        Pavel Emelyanov <xemul@openvz.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>, Dan Smith <danms@us.ibm.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
        Oren Laadan <orenl@cs.columbia.edu>
-Subject: [RFC v16][PATCH 29/43] c/r: support for UTS namespace
-Date: Wed, 27 May 2009 13:32:55 -0400
-Message-Id: <1243445589-32388-30-git-send-email-orenl@cs.columbia.edu>
+Subject: [RFC v16][PATCH 26/43] splice: added support for pipe-to-pipe splice()
+Date: Wed, 27 May 2009 13:32:52 -0400
+Message-Id: <1243445589-32388-27-git-send-email-orenl@cs.columbia.edu>
 X-Mailer: git-send-email 1.6.0.1
 In-Reply-To: <1243445589-32388-1-git-send-email-orenl@cs.columbia.edu>
 References: <1243445589-32388-1-git-send-email-orenl@cs.columbia.edu>
@@ -32,341 +32,306 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Dan Smith <danms@us.ibm.com>
+This patch is a modified version of Max Kellerman patch that allows
+splice() between pipes (see http://patchwork/kernel/org/patch/21042).
+By refactoring link_pipe(), do_tee() and do_splice_pipes() shrink
+considerably. Below is Max's original description:
 
-This patch adds a "phase" of checkpoint that saves out information about any
-namespaces the task(s) may have.  Do this by tracking the namespace objects
-of the tasks and making sure that tasks with the same namespace that follow
-get properly referenced in the checkpoint stream.
+--
+This patch enables the splice() system call to copy buffers from one
+pipe to another.  This obvious and trivial use case for splice() was
+not supported until now.
 
-Changes:
-  - Take uts_sem around access to uts data
-  - Remove the kernel restore path
-  - Punt on nested namespaces
-  - Use __NEW_UTS_LEN in nodename and domainname buffers
-  - Add a note to Documentation/checkpoint/internals.txt to indicate where
-    in the save/restore process the UTS information is kept
-  - Store (and track) the objref of the namespace itself instead of the
-    nsproxy (based on comments from Dave on IRC)
-  - Remove explicit check for non-root nsproxy
-  - Store the nodename and domainname lengths and use ckpt_write_string()
-    to store the actual name strings
-  - Catch failure of ckpt_obj_add_ptr() in ckpt_write_namespaces()
-  - Remove "types" bitfield and use the "is this new" flag to determine
-    whether or not we should write out a new ns descriptor
-  - Replace kernel restore path
-  - Move the namespace information to be directly after the task
-    information record
-  - Update Documentation to reflect new location of namespace info
-  - Support checkpoint and restart of nested UTS namespaces
+It reuses the functions link_ipipe_prep() and link_opipe_prep() from
+the tee() system call implementation.
+--
 
-Signed-off-by: Dan Smith <danms@us.ibm.com>
 Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
 ---
- checkpoint/checkpoint.c        |    2 -
- checkpoint/objhash.c           |   26 +++++++
- checkpoint/process.c           |  160 +++++++++++++++++++++++++++++++++++++++-
- include/linux/checkpoint_hdr.h |   15 ++++
- 4 files changed, 200 insertions(+), 3 deletions(-)
+ fs/splice.c |  203 ++++++++++++++++++++++++++++++++++++++++++++++++-----------
+ 1 files changed, 166 insertions(+), 37 deletions(-)
 
-diff --git a/checkpoint/checkpoint.c b/checkpoint/checkpoint.c
-index e66f82b..904f19b 100644
---- a/checkpoint/checkpoint.c
-+++ b/checkpoint/checkpoint.c
-@@ -310,8 +310,6 @@ static int may_checkpoint_task(struct ckpt_ctx *ctx, struct task_struct *t)
+diff --git a/fs/splice.c b/fs/splice.c
+index 92dd63c..96e0d58 100644
+--- a/fs/splice.c
++++ b/fs/splice.c
+@@ -903,13 +903,95 @@ ssize_t generic_splice_sendpage(struct pipe_inode_info *pipe, struct file *out,
+ EXPORT_SYMBOL(generic_splice_sendpage);
  
- 	rcu_read_lock();
- 	nsproxy = task_nsproxy(t);
--	if (nsproxy->uts_ns != ctx->root_nsproxy->uts_ns)
--		ret = -EPERM;
- 	if (nsproxy->ipc_ns != ctx->root_nsproxy->ipc_ns)
- 		ret = -EPERM;
- 	if (nsproxy->mnt_ns != ctx->root_nsproxy->mnt_ns)
-diff --git a/checkpoint/objhash.c b/checkpoint/objhash.c
-index 56553ae..8b7adc6 100644
---- a/checkpoint/objhash.c
-+++ b/checkpoint/objhash.c
-@@ -143,6 +143,22 @@ static int obj_ns_users(void *ptr)
- 	return atomic_read(&((struct nsproxy *) ptr)->count);
- }
- 
-+static int obj_uts_ns_grab(void *ptr)
+ /*
++ * After the inode slimming patch, i_pipe/i_bdev/i_cdev share the same
++ * location, so checking ->i_pipe is not enough to verify that this is a
++ * pipe.
++ */
++static inline struct pipe_inode_info *pipe_info(struct inode *inode)
 +{
-+	get_uts_ns((struct uts_namespace *) ptr);
-+	return 0;
++	if (S_ISFIFO(inode->i_mode))
++		return inode->i_pipe;
++
++	return NULL;
 +}
 +
-+static void obj_uts_ns_drop(void *ptr)
++static int link_pipe_prep(struct pipe_inode_info *ipipe,
++			  struct pipe_inode_info *opipe,
++			  unsigned int flags);
++static long do_link_pipe(struct pipe_inode_info *ipipe,
++			 struct pipe_inode_info *opipe,
++			 size_t len, unsigned int flags, int move);
++
++/**
++* Splice pages from one pipe to another.
++*
++* @ipipe the input pipe
++* @opipe the output pipe
++* @len the maximum number of bytes to move
++* @flags splice modifier flags
++*/
++static long do_splice_pipes(struct pipe_inode_info *ipipe,
++			    struct pipe_inode_info *opipe,
++			    size_t len, unsigned int flags)
 +{
-+	put_uts_ns((struct uts_namespace *) ptr);
-+}
++	int do_wakeup;
++	long ret;
 +
-+static int obj_uts_ns_users(void *ptr)
-+{
-+	return atomic_read(&((struct uts_namespace *) ptr)->kref.refcount);
-+}
-+
- static struct ckpt_obj_ops ckpt_obj_ops[] = {
- 	/* ignored object */
- 	{
-@@ -200,6 +216,16 @@ static struct ckpt_obj_ops ckpt_obj_ops[] = {
- 		.checkpoint = checkpoint_ns,
- 		.restore = restore_ns,
- 	},
-+	/* uts_ns object */
-+	{
-+		.obj_name = "UTS_NS",
-+		.obj_type = CKPT_OBJ_UTS_NS,
-+		.ref_drop = obj_uts_ns_drop,
-+		.ref_grab = obj_uts_ns_grab,
-+		.ref_users = obj_uts_ns_users,
-+		.checkpoint = checkpoint_bad,
-+		.restore = restore_bad,
-+	},
- };
- 
- 
-diff --git a/checkpoint/process.c b/checkpoint/process.c
-index fbe0d16..a827987 100644
---- a/checkpoint/process.c
-+++ b/checkpoint/process.c
-@@ -16,8 +16,10 @@
- #include <linux/posix-timers.h>
- #include <linux/futex.h>
- #include <linux/poll.h>
-+#include <linux/utsname.h>
- #include <linux/checkpoint.h>
- #include <linux/checkpoint_hdr.h>
-+#include <linux/syscalls.h>
- 
- /***********************************************************************
-  * Checkpoint
-@@ -50,10 +52,69 @@ static int checkpoint_task_struct(struct ckpt_ctx *ctx, struct task_struct *t)
- 	return ckpt_write_string(ctx, t->comm, TASK_COMM_LEN);
- }
- 
-+static int checkpoint_uts_ns(struct ckpt_ctx *ctx, struct uts_namespace *uts_ns)
-+{
-+	struct ckpt_hdr_utsns *h;
-+	int domainname_len;
-+	int nodename_len;
-+	int ret;
-+
-+	h = ckpt_hdr_get_type(ctx, sizeof(*h), CKPT_HDR_UTS_NS);
-+	if (!h)
-+		return -ENOMEM;
-+
-+	nodename_len = sizeof(uts_ns->name.nodename);
-+	domainname_len = sizeof(uts_ns->name.domainname);
-+
-+	h->nodename_len = nodename_len;
-+	h->domainname_len = domainname_len;
-+
-+	ret = ckpt_write_obj(ctx, &h->h);
-+	ckpt_hdr_put(ctx, h);
-+	if (ret < 0)
-+		return ret;
-+
-+	down_read(&uts_sem);
-+	ret = ckpt_write_string(ctx, uts_ns->name.nodename, nodename_len);
-+	if (ret < 0)
-+		goto up;
-+	ret = ckpt_write_string(ctx, uts_ns->name.domainname, domainname_len);
-+ up:
-+	up_read(&uts_sem);
-+	return ret;
-+}
- 
- static int do_checkpoint_ns(struct ckpt_ctx *ctx, struct nsproxy *nsproxy)
- {
--	return 0;
-+	struct ckpt_hdr_ns *h;
-+	int ns_flags = 0;
-+	int uts_objref;
-+	int first, ret;
-+
-+	uts_objref = ckpt_obj_lookup_add(ctx, nsproxy->uts_ns,
-+					 CKPT_OBJ_UTS_NS, &first);
-+	if (uts_objref <= 0)
-+		return uts_objref;
-+	if (first)
-+		ns_flags |= CLONE_NEWUTS;
-+
-+	h = ckpt_hdr_get_type(ctx, sizeof(*h), CKPT_HDR_NS);
-+	if (!h)
-+		return -ENOMEM;
-+
-+	h->flags = ns_flags;
-+	h->uts_objref = uts_objref;
-+
-+	ret = ckpt_write_obj(ctx, &h->h);
-+	ckpt_hdr_put(ctx, h);
-+	if (ret < 0)
-+		return ret;
-+
-+	if (ns_flags & CLONE_NEWUTS)
-+		ret = checkpoint_uts_ns(ctx, nsproxy->uts_ns);
-+
-+	/* FIX: Write other namespaces here */
-+	return ret;
- }
- 
- int checkpoint_ns(struct ckpt_ctx *ctx, void *ptr)
-@@ -300,10 +361,107 @@ static int restore_task_struct(struct ckpt_ctx *ctx)
- 	return ret;
- }
- 
-+static int do_restore_uts_ns(struct ckpt_ctx *ctx)
-+{
-+	struct ckpt_hdr_utsns *h;
-+	struct uts_namespace *ns;
-+	int ret;
-+
-+	h = ckpt_read_obj_type(ctx, sizeof(*h), CKPT_HDR_UTS_NS);
-+	if (IS_ERR(h))
-+		return PTR_ERR(h);
-+
-+	ret = -EINVAL;
-+	if (h->nodename_len > sizeof(ns->name.nodename) ||
-+	    h->domainname_len > sizeof(ns->name.domainname))
-+		goto out;
-+
-+	ns = current->nsproxy->uts_ns;
-+
-+	/* no need to take uts_sem because we are the sole users */
-+
-+	memset(ns->name.nodename, 0, sizeof(ns->name.nodename));
-+	ret = _ckpt_read_string(ctx, ns->name.nodename, h->nodename_len);
-+	if (ret < 0)
-+		goto out;
-+	memset(ns->name.domainname, 0, sizeof(ns->name.domainname));
-+	ret = _ckpt_read_string(ctx, ns->name.domainname, h->domainname_len);
-+ out:
-+	ckpt_hdr_put(ctx, h);
-+	return ret;
-+}
-+
-+static int restore_uts_ns(struct ckpt_ctx *ctx, int ns_objref, int flags)
-+{
-+	struct uts_namespace *uts_ns;
-+	int ret = 0;
-+
-+	uts_ns = ckpt_obj_fetch(ctx, ns_objref, CKPT_OBJ_UTS_NS);
-+	if (PTR_ERR(uts_ns) == -EINVAL)
-+		uts_ns = NULL;
-+	else if (IS_ERR(uts_ns))
-+		return PTR_ERR(uts_ns);
-+
-+	/* sanity: CLONE_NEWUTS if-and-only-if uts_ns is NULL (first timer) */
-+	if (!!uts_ns ^ !(flags & CLONE_NEWUTS))
++	if (ipipe == opipe)
 +		return -EINVAL;
 +
-+	if (!uts_ns) {
-+		ret = do_restore_uts_ns(ctx);
-+		if (ret < 0)
-+			return ret;
-+		ret = ckpt_obj_insert(ctx, current->nsproxy->uts_ns,
-+				    ns_objref, CKPT_OBJ_UTS_NS);
-+	} else {
-+		struct uts_namespace *old_uts_ns;
++	ret = link_pipe_prep(ipipe, opipe, flags);
++	if (ret < 0)
++		return ret;
 +
-+		/* safe because nsproxy->count must be 1 ... */
-+		BUG_ON(atomic_read(&current->nsproxy->count) != 1);
++	/* both pipes are now locked */
 +
-+		old_uts_ns = current->nsproxy->uts_ns;
-+		current->nsproxy->uts_ns = uts_ns;
-+		get_uts_ns(uts_ns);
-+		put_uts_ns(old_uts_ns);
++	do_wakeup = ipipe->nrbufs;
++	ret = do_link_pipe(ipipe, opipe, len, flags, 1);
++	do_wakeup -= ipipe->nrbufs;
++
++	pipe_unlock(ipipe);
++	pipe_unlock(opipe);
++
++	if (do_wakeup) {
++		/* at least one buffer was removed from the
++		   input pipe: wake up potential writers */
++		smp_mb();
++		if (waitqueue_active(&ipipe->wait))
++			wake_up_interruptible(&ipipe->wait);
++		kill_fasync(&ipipe->fasync_writers, SIGIO, POLL_OUT);
++	}
++
++	/*
++	 * If we put data in the output pipe, wakeup any potential
++	 * readers.
++	 */
++	if (ret > 0) {
++		smp_mb();
++		if (waitqueue_active(&opipe->wait))
++			wake_up_interruptible(&opipe->wait);
++		kill_fasync(&opipe->fasync_readers, SIGIO, POLL_IN);
 +	}
 +
 +	return ret;
 +}
 +
- static struct nsproxy *do_restore_ns(struct ckpt_ctx *ctx)
++/*
+  * Attempt to initiate a splice from pipe to file.
+  */
+ static long do_splice_from(struct pipe_inode_info *pipe, struct file *out,
+ 			   loff_t *ppos, size_t len, unsigned int flags)
  {
-+	struct ckpt_hdr_ns *h;
- 	struct nsproxy *nsproxy;
-+	int ret;
-+
-+	h = ckpt_read_obj_type(ctx, sizeof(*h), CKPT_HDR_NS);
-+	if (IS_ERR(h))
-+		return (struct nsproxy *) h;
-+
-+	ret = -EINVAL;
-+	if (h->uts_objref <= 0)
-+		goto out;
-+	if (h->flags & ~CLONE_NEWUTS)
-+		goto out;
++	struct pipe_inode_info *opipe;
+ 	int ret;
  
-+	/* each unseen-before namespace will be un-shared now */
-+	ret = sys_unshare(h->flags);
-+	if (ret)
-+		goto out;
++	opipe = pipe_info(out->f_dentry->d_inode);
++	if (opipe) {
++		if (unlikely(!(out->f_mode & FMODE_WRITE)))
++			return -EBADF;
++		return do_splice_pipes(pipe, opipe, len, flags);
++	}
 +
-+	/*
-+	 * For each unseen-before namespace 'xxx', it is now safe to
-+	 * modify the nsproxy->xxx_ns without locking because unshare()
-+	 * gave a brand new nsproxy and nsproxy->xxx_ns, and we're the
-+	 * sole users at this point.
-+	 */
-+	ret = restore_uts_ns(ctx, h->uts_objref, h->flags);
-+	ckpt_debug("uts ns: %d\n", ret);
+ 	if (unlikely(!out->f_op || !out->f_op->splice_write))
+ 		return -EINVAL;
+ 
+@@ -933,8 +1015,16 @@ static long do_splice_to(struct file *in, loff_t *ppos,
+ 			 struct pipe_inode_info *pipe, size_t len,
+ 			 unsigned int flags)
+ {
++	struct pipe_inode_info *ipipe;
+ 	int ret;
+ 
++	ipipe = pipe_info(in->f_dentry->d_inode);
++	if (ipipe) {
++		if (unlikely(!(in->f_mode & FMODE_READ)))
++			return -EBADF;
++		return do_splice_pipes(ipipe, pipe, len, flags);
++	}
 +
-+	/* FIX: add more namespaces here */
-+ out:
-+	ckpt_hdr_put(ctx, h);
+ 	if (unlikely(!in->f_op || !in->f_op->splice_read))
+ 		return -EINVAL;
+ 
+@@ -1113,19 +1203,6 @@ long do_splice_direct(struct file *in, loff_t *ppos, struct file *out,
+ }
+ 
+ /*
+- * After the inode slimming patch, i_pipe/i_bdev/i_cdev share the same
+- * location, so checking ->i_pipe is not enough to verify that this is a
+- * pipe.
+- */
+-static inline struct pipe_inode_info *pipe_info(struct inode *inode)
+-{
+-	if (S_ISFIFO(inode->i_mode))
+-		return inode->i_pipe;
+-
+-	return NULL;
+-}
+-
+-/*
+  * Determine where to splice to/from.
+  */
+ static long do_splice(struct file *in, loff_t __user *off_in,
+@@ -1140,7 +1217,10 @@ static long do_splice(struct file *in, loff_t __user *off_in,
+ 	if (pipe) {
+ 		if (off_in)
+ 			return -ESPIPE;
++
+ 		if (off_out) {
++			if (pipe_info(out->f_path.dentry->d_inode))
++				return -ESPIPE;
+ 			if (out->f_op->llseek == no_llseek)
+ 				return -EINVAL;
+ 			if (copy_from_user(&offset, off_out, sizeof(loff_t)))
+@@ -1639,21 +1719,36 @@ static int link_pipe_prep(struct pipe_inode_info *ipipe,
+ 	return 0;
+ }
+ 
+-/*
+- * Link contents of ipipe to opipe.
+- */
+-static int link_pipe(struct pipe_inode_info *ipipe,
+-		     struct pipe_inode_info *opipe,
+-		     size_t len, unsigned int flags)
++/**
++* Returns the nth pipe buffer after the current one.
++*
++* @i the buffer index, relative to the current one
++*/
++static inline struct pipe_buffer *
++pipe_buffer_at(struct pipe_inode_info *pipe, unsigned i)
+ {
+-	struct pipe_buffer *ibuf, *obuf;
+-	int ret, i = 0, nbuf;
++	BUG_ON(i >= PIPE_BUFFERS);
+ 
+-	ret = link_pipe_prep(ipipe, opipe, flags);
+-	if (ret < 0)
+-		return ret;
++	return pipe->bufs + ((pipe->curbuf + i) & (PIPE_BUFFERS - 1));
++}
+ 
+-	/* pipes are now locked */
++/**
++ * do_link_pipe - copy or move (splice) contents of ipipe to opipe.
++ * @ipipe: the input pipe
++ * @opipe: the output pipe
++ * @len: the maximum number of byte to copy/move
++ * @flags: splice modifier flags
++ * @move: indicates move operation (otherwise copy)
++ *
++ * expects both pipes to be locked
++ */
++static long do_link_pipe(struct pipe_inode_info *ipipe,
++			struct pipe_inode_info *opipe,
++			size_t len, unsigned int flags, int move)
++{
++	struct pipe_buffer *ibuf, *obuf;
++	long ret = 0;
++	int i = 0;
+ 
+ 	do {
+ 		if (!opipe->readers) {
+@@ -1670,16 +1765,8 @@ static int link_pipe(struct pipe_inode_info *ipipe,
+ 		if (i >= ipipe->nrbufs || opipe->nrbufs >= PIPE_BUFFERS)
+ 			break;
+ 
+-		ibuf = ipipe->bufs + ((ipipe->curbuf + i) & (PIPE_BUFFERS - 1));
+-		nbuf = (opipe->curbuf + opipe->nrbufs) & (PIPE_BUFFERS - 1);
+-
+-		/*
+-		 * Get a reference to this pipe buffer,
+-		 * so we can copy the contents over.
+-		 */
+-		ibuf->ops->get(ipipe, ibuf);
+-
+-		obuf = opipe->bufs + nbuf;
++		ibuf = pipe_buffer_at(ipipe, i);
++		obuf = pipe_buffer_at(opipe, opipe->nrbufs);
+ 		*obuf = *ibuf;
+ 
+ 		/*
+@@ -1688,13 +1775,35 @@ static int link_pipe(struct pipe_inode_info *ipipe,
+ 		 */
+ 		obuf->flags &= ~PIPE_BUF_FLAG_GIFT;
+ 
+-		if (obuf->len > len)
++		/* increase the reference count */
++		obuf->ops->get(opipe, obuf);
++
++		/* partial or complete copy/move ? */
++		if (obuf->len > len) {
+ 			obuf->len = len;
++			if (move) {
++				/* remove portion from ibuf */
++				ibuf->offset += len;
++				ibuf->len -= len;
++			}
++		} else {
++			if (move) {
++				/* remove entirely from ibuf */
++				ibuf->ops->release(ipipe, ibuf);
++				ibuf->ops = NULL;
++
++				ipipe->curbuf = (ipipe->curbuf + 1) &
++					(PIPE_BUFFERS - 1);
++				ipipe->nrbufs--;
++			} else {
++				/* advance pointer in ibuf */
++				i++;
++			}
++		}
+ 
+ 		opipe->nrbufs++;
+ 		ret += obuf->len;
+ 		len -= obuf->len;
+-		i++;
+ 	} while (len);
+ 
+ 	/*
+@@ -1704,6 +1813,26 @@ static int link_pipe(struct pipe_inode_info *ipipe,
+ 	if (!ret && ipipe->waiting_writers && (flags & SPLICE_F_NONBLOCK))
+ 		ret = -EAGAIN;
+ 
++	return ret;
++}
++
++/*
++ * Link contents of ipipe to opipe.
++ */
++long link_pipe(struct pipe_inode_info *ipipe,
++	       struct pipe_inode_info *opipe,
++	       size_t len, unsigned int flags)
++{
++	long ret;
++
++	ret = link_pipe_prep(ipipe, opipe, flags);
 +	if (ret < 0)
-+		return ERR_PTR(ret);
- 	nsproxy = task_nsproxy(current);
- 	get_nsproxy(nsproxy);
- 	return nsproxy;
-diff --git a/include/linux/checkpoint_hdr.h b/include/linux/checkpoint_hdr.h
-index da1ae79..1603279 100644
---- a/include/linux/checkpoint_hdr.h
-+++ b/include/linux/checkpoint_hdr.h
-@@ -53,6 +53,8 @@ enum {
- 	CKPT_HDR_RESTART_BLOCK,
- 	CKPT_HDR_THREAD,
- 	CKPT_HDR_CPU,
-+	CKPT_HDR_NS,
-+	CKPT_HDR_UTS_NS,
- 
- 	/* 201-299: reserved for arch-dependent */
- 
-@@ -92,6 +94,7 @@ enum obj_type {
- 	CKPT_OBJ_FILE,
- 	CKPT_OBJ_MM,
- 	CKPT_OBJ_NS,
-+	CKPT_OBJ_UTS_NS,
- 	CKPT_OBJ_MAX
- };
- 
-@@ -160,6 +163,12 @@ struct ckpt_hdr_task_ns {
- 	__s32 ns_objref;
- } __attribute__((aligned(8)));
- 
-+struct ckpt_hdr_ns {
-+	struct ckpt_hdr h;
-+	__u32 flags;
-+	__s32 uts_objref;
-+} __attribute__((aligned(8)));
++		return ret;
 +
- /* task's shared resources */
- struct ckpt_hdr_task_objs {
- 	struct ckpt_hdr h;
-@@ -235,6 +244,12 @@ struct ckpt_hdr_file_pipe_state {
- 	__s32 pipe_len;
- } __attribute__((aligned(8)));
- 
-+struct ckpt_hdr_utsns {
-+	struct ckpt_hdr h;
-+	__u32 nodename_len;
-+	__u32 domainname_len;
-+} __attribute__((aligned(8)));
++	/* pipes are now locked */
 +
- /* memory layout */
- struct ckpt_hdr_mm {
- 	struct ckpt_hdr h;
++	ret = do_link_pipe(ipipe, opipe, len, flags, 0);
++
+ 	pipe_unlock(ipipe);
+ 	pipe_unlock(opipe);
+ 
 -- 
 1.6.0.4
 
