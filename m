@@ -1,59 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762727AbZE0Mr2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762803AbZE0Mrz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762727AbZE0Mr2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 08:47:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761143AbZE0MrS
+	id S1762803AbZE0Mrz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 08:47:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751999AbZE0Mrp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 08:47:18 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:60352 "EHLO kernel.dk"
+	Wed, 27 May 2009 08:47:45 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:60365 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760904AbZE0MrS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 08:47:18 -0400
-Date: Wed, 27 May 2009 14:47:19 +0200
+	id S1761351AbZE0Mrp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 08:47:45 -0400
+Date: Wed, 27 May 2009 14:47:46 +0200
 From: Jens Axboe <jens.axboe@oracle.com>
-To: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Cc: Arnd Bergmann <arnd@arndb.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: [PATCH 00/19] periodic write-back timer optimization
-Message-ID: <20090527124719.GH11363@kernel.dk>
-References: <20090527130503.4913.62042.sendpatchset@localhost.localdomain> <200905271323.29818.arnd@arndb.de> <4A1D31BA.6060903@nokia.com> <20090527123320.GF11363@kernel.dk> <4A1D3418.8060909@nokia.com>
+To: Richard Kennedy <richard@rsk.demon.co.uk>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
+       akpm@linux-foundation.org, jack@suse.cz, yanmin_zhang@linux.intel.com,
+       damien.wyart@free.fr
+Subject: Re: [PATCH 0/11] Per-bdi writeback flusher threads v8
+Message-ID: <20090527124746.GI11363@kernel.dk>
+References: <1243417312-7444-1-git-send-email-jens.axboe@oracle.com> <1243428088.2769.12.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A1D3418.8060909@nokia.com>
+In-Reply-To: <1243428088.2769.12.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 27 2009, Artem Bityutskiy wrote:
-> Jens Axboe wrote:
->> On Wed, May 27 2009, Artem Bityutskiy wrote:
->>> ext Arnd Bergmann wrote:
->>>> On Wednesday 27 May 2009, Artem Bityutskiy wrote:
->>>>> Hi,
->>>>>
->>>>> This is the second attempt. The first one was here:
->>>>> http://marc.info/?l=linux-fsdevel&m=124301072305588&w=2
->>>>> It was very hacky and got no comments.
->>>> How does this relate to the per-BDI writeback patches that
->>>> Jens is working on? Doesn't that require a completely different
->>>> (probably simpler) implementation of your patch?
->>> At a quick glance, our works do not intersect. He seems
->>> to be changing the guts of write-back, while I only touch
->>> the timer which wakes up the periodic write-back thread,
->>> nothing else. I'll try to take Jens' patches and see.
->>
->> There's definitely overlap! The timer is gone with my patches and so is
->> pdflush. For an idle (idle here meaning no background writeback
->> activity) system, there should just be bdi-default running. And that
->> will wake up every dirty_writeback_interval by default.
->
-> Hmm, right. Will be working on top of your patches then.
+On Wed, May 27 2009, Richard Kennedy wrote:
+> On Wed, 2009-05-27 at 11:41 +0200, Jens Axboe wrote:
+> > Hi,
+> > 
+> > Here's the 8th version of the writeback patches. Changes since v7:
+> > 
+> > - Fold the "include default_backing_dev_info in writeback" patch into
+> >   the core, we should just do it from the beginning.
+> > - More series cleanup, I think it should be mostly complete now. No
+> >   hunks are split between patches now (things like comments for
+> >   functions added earlier, and so on).
+> > - Fix hang with calling bdi_wait_on_work_clear() inside the bdi_lock
+> >   mutex when the default wb thread had exited.
+> > - Fix hang with queuing work on exited wb thread, it would have no
+> >   receipients since the default wb thread wrongly cleared the bit
+> >   from the register mask on exit. It must be persistent, which is
+> >   why it gets initialized on bdi_register() already.
+> > 
+> > For ease of patching, I've put the full diff here:
+> > 
+> >   http://kernel.dk/writeback-v8.patch
+> > 
+> > and also stored this in a writeback-v7 branch that will not change,
+> > you can pull that into Linus tree from here:
+> > 
+> >   git://git.kernel.dk/linux-2.6-block.git writeback-v8
+> > 
+> >  b/block/blk-core.c            |    1 
+> >  b/drivers/block/aoe/aoeblk.c  |    1 
+> >  b/drivers/char/mem.c          |    1 
+> >  b/fs/btrfs/disk-io.c          |   24 -
+> >  b/fs/buffer.c                 |    2 
+> >  b/fs/char_dev.c               |    1 
+> >  b/fs/configfs/inode.c         |    1 
+> >  b/fs/fs-writeback.c           |  807 +++++++++++++++++++++++++++-------
+> >  b/fs/fuse/inode.c             |    1 
+> >  b/fs/hugetlbfs/inode.c        |    1 
+> >  b/fs/nfs/client.c             |    1 
+> >  b/fs/ntfs/super.c             |   33 -
+> >  b/fs/ocfs2/dlm/dlmfs.c        |    1 
+> >  b/fs/ramfs/inode.c            |    1 
+> >  b/fs/super.c                  |    3 
+> >  b/fs/sync.c                   |    2 
+> >  b/fs/sysfs/inode.c            |    1 
+> >  b/fs/ubifs/super.c            |    1 
+> >  b/include/linux/backing-dev.h |   74 +++
+> >  b/include/linux/fs.h          |   11 
+> >  b/include/linux/writeback.h   |   15 
+> >  b/kernel/cgroup.c             |    1 
+> >  b/mm/Makefile                 |    2 
+> >  b/mm/backing-dev.c            |  476 +++++++++++++++++++-
+> >  b/mm/page-writeback.c         |  151 ------
+> >  b/mm/swap_state.c             |    1 
+> >  b/mm/vmscan.c                 |    2 
+> >  mm/pdflush.c                  |  269 -----------
+> >  28 files changed, 1248 insertions(+), 637 deletions(-)
+> > 
+> Hi Jens,
+> 
+> This is working nicely for me. It's successfully built a kernel with no
+> problems at all, so you've fixed the earlier problem I had.
+> 
+> Early fio tests writing to 2 disks at the same time indicate that it's
+> faster too. But there's a fair amount of variability so I will run more
+> tests & see what the trend really is.
 
-That would be great, I would have no problem integrating such a feature.
-It definitely makes sense.
+That's good to hear, thanks for testing! Do let me know if you run into
+anything suspicious later on.
 
 -- 
 Jens Axboe
