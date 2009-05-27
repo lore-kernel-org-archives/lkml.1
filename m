@@ -1,99 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759123AbZE0IWs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758571AbZE0IYn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759123AbZE0IWs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 04:22:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755537AbZE0IWe
+	id S1758571AbZE0IYn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 04:24:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752752AbZE0IY1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 04:22:34 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:62390 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1754932AbZE0IWc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 04:22:32 -0400
-Message-ID: <4A1CF77E.20003@cn.fujitsu.com>
-Date: Wed, 27 May 2009 16:19:10 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Wed, 27 May 2009 04:24:27 -0400
+Received: from yx-out-2324.google.com ([74.125.44.29]:62317 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752030AbZE0IYZ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 04:24:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=olypyN68xHzGcwP+hnEDvnlLiR8zDAigujfVsbTKeQrQI5UbACKyggbuS9Urke2yHB
+         +OUM6wk2xzfN5q+IGU6q92eFcp0fgJ+VxCZAW1f+eco9UlhGD7EMF9Uy+cBWh2Y5iq9A
+         PGgTdP/8JE16Om+F7Gn6R52QQ9UEXg8YYhORI=
 MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH] tracing: create events only when configed
-References: <4A167307.7020905@cn.fujitsu.com> <alpine.DEB.2.00.0905261227470.26705@gandalf.stny.rr.com>
-In-Reply-To: <alpine.DEB.2.00.0905261227470.26705@gandalf.stny.rr.com>
+In-Reply-To: <e9c3a7c20905261659v5d785df3w646efd4cbba2e6dd@mail.gmail.com>
+References: <2a27d3730905220347s59dbd152kc69c8399693ae307@mail.gmail.com>
+	 <e9c3a7c20905261659v5d785df3w646efd4cbba2e6dd@mail.gmail.com>
+Date: Wed, 27 May 2009 16:24:26 +0800
+X-Google-Sender-Auth: 3609251fe20483e6
+Message-ID: <2a27d3730905270124q235cb2b9n1d079cf66a541028@mail.gmail.com>
+Subject: Re: [GIT PULL] fsldma driver fixes
+From: Li Yang <leoli@freescale.com>
+To: Dan Williams <dan.j.williams@intel.com>
+Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
+       Ira Snyder <iws@ovro.caltech.edu>, lkml <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt wrote:
-> On Fri, 22 May 2009, Lai Jiangshan wrote:
-> 
->> There some unneeded events in debugfs/tracing/ftrace/ when the
->> corresponding CONFIG_XXXX=n.
+On Wed, May 27, 2009 at 7:59 AM, Dan Williams <dan.j.williams@intel.com> wrote:
+> On Fri, May 22, 2009 at 3:47 AM, Li Yang <leoli@freescale.com> wrote:
+>> Hi Dan,
 >>
->> And when CONFIG_ENABLE_EVENT_TRACING=n, various events
->> are still created.
+>> Here are fixes for Freescale DMA engine driver.
 >>
->> Now when CONFIG_ENABLE_EVENT_TRACING=n, various events are
->> not created, trace_export.c is compiled only for creating
->> TRACEPOINTs.
+>> Thanks,
+>> - Leo
 >>
->> [Impact:] cleanup
-> 
-> I have an issue with this patch. I purposely kept the 
-> debugfs/tracing/ftrace events there since you may have a binary buffer 
-> that you want to read that has those events but you are not running a 
-> kernel that enabled them. But I guess the counter arguement for that is 
-> then those events may not be the same offset as the kernel that ran it. 
-> OK, maybe it would be fine to disable the events if the kernel does not 
-> use them. 
+>>
+>> The following changes since commit 5805977e63a36ad56594a623f3bd2bebcb7db233:
+>>  Linus Torvalds (1):
+>>        Merge branch 'for-linus' of git://git.kernel.org/.../jbarnes/drm-2.6
+>>
+>> are available in the git repository at:
+>>
+>>  git://git.kernel.org/pub/scm/linux/kernel/git/leo/fsl-soc.git fsldma
+>>
+>> Ira Snyder (4):
+>>      fsldma: fix "DMA halt timeout!" errors
+>>      fsldma: fix infinite loop on multi-descriptor DMA chain completion
+>>      fsldma: snooping is not enabled for last entry in descriptor chain
+>>      fsldma: fix memory leak on error path in fsl_dma_prep_memcpy()
+>>
+>> Li Yang (1):
+>>      fsldma: update mailling list address in MAINTAINERS
+>>
+>> Roel Kluin (1):
+>>      fsldma: fix check on potential fdev->chan[] overflow
+>>
+>
+> Pulled, thanks.  These all look like 2.6.30 candidates, right?
 
-All these offset/format/id(except TRACE_EVENT's id) are constant
-when kernel built.
+Yes, they are pure fixes.
 
-Could we GENERATE all these info when kernel built?
-
-This info will be installed to system when we 'make modules_install',
-and this info will be put into kernel-XXXXX.rpm by distributions
-which enable ftrace.
-
-This will highly help for reading a binary buffer which events
-are not for current running kernel. (And this binary buffer is
-maybe extracted a vmcore.)
-
-> We should also put the same #ifdef's around the structs to make 
-> sure no other trace uses them.
-
-Maybe I miss something,  I have no idea around WHICH structs
-we should also put the same #ifdef's. ^_^
-
-> 
-> Still seems a bit messy with all those ifdefs :-/
-> 
-> The second change with the CONFIG_ENABLE_EVENT_TRACER is something that we 
-> are having issue with the make scripts. We want EVENT_TRACE enabled 
-> anytime TRACING is enabled. We do _not_ want to disable it.
-> 
-
-Thank you for told me.
-
-One other thing:
-
-config EVENT_TRACING
-	bool
-
-config TRACING
-	bool
-	select DEBUG_FS
-	select RING_BUFFER
-	select STACKTRACE if STACKTRACE_SUPPORT
-	select TRACEPOINTS
-	select NOP_TRACER
-	select BINARY_PRINTF
-	select EVENT_TRACING
-
-No other config slects EVENT_TRACING, it means TRACING and EVENT_TRACING are the same thing, can we covert all config EVENT_TRACING to config TRACING, and remove EVENT_TRACING? (or reverse)
-
-Lai
-
+- Leo
