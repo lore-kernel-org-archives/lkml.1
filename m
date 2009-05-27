@@ -1,58 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932184AbZE0HhJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932153AbZE0Hgy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932184AbZE0HhJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 03:37:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762646AbZE0HbO
+	id S932153AbZE0Hgy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 03:36:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762877AbZE0Haj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 03:31:14 -0400
-Received: from gw-ca.panasas.com ([209.116.51.66]:26980 "EHLO
-	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762883AbZE0HbN (ORCPT
+	Wed, 27 May 2009 03:30:39 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:53778 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762872AbZE0Hah (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 03:31:13 -0400
-Message-ID: <4A1CEC3D.5030908@panasas.com>
-Date: Wed, 27 May 2009 10:31:09 +0300
-From: Benny Halevy <bhalevy@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.9.1b3pre) Gecko/20090223 Thunderbird/3.0b2
+	Wed, 27 May 2009 03:30:37 -0400
+Date: Wed, 27 May 2009 03:30:02 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Tom Zanussi <tzanussi@gmail.com>, "Theodore Ts'o" <tytso@mit.edu>,
+       Steven Whitehouse <swhiteho@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Jeff Moyer <jmoyer@redhat.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v2 1/2] tracing/events: make __string() more general
+Message-ID: <20090527072956.GC24381@infradead.org>
+References: <4A1B6A2F.2040703@cn.fujitsu.com> <4A1B6A4C.3070407@cn.fujitsu.com> <20090526060232.GA10669@infradead.org> <4A1C9AC4.3090704@cn.fujitsu.com>
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Arjan van de Ven <arjan@linux.intel.com>, Jeff Garzik <jeff@garzik.org>,
-       Matthew Wilcox <matthew@wil.cx>
-Subject: Re: [Bug #13175] sata_nv incompatible with async scsi scan
-References: <GtY7d2eWpoK.A.ioC.MQcGKB@chimera> <WCcYF-TAbJC.A.NgD.lQcGKB@chimera> <4A1C1B08.2080600@panasas.com> <200905262047.20823.rjw@sisk.pl>
-In-Reply-To: <200905262047.20823.rjw@sisk.pl>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 27 May 2009 07:31:13.0610 (UTC) FILETIME=[1D17CAA0:01C9DE9D]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A1C9AC4.3090704@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On May. 26, 2009, 21:47 +0300, "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> On Tuesday 26 May 2009, Benny Halevy wrote:
->> On May. 24, 2009, 22:31 +0300, "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
->>> This message has been generated automatically as a part of a report
->>> of regressions introduced between 2.6.28 and 2.6.29.
->>>
->>> The following bug entry is on the current list of known regressions
->>> introduced between 2.6.28 and 2.6.29.  Please verify if it still should
->>> be listed and let me know (either way).
->> Verified to still exist with 2.6.30-rc7 :-(
->>
->> [The bug description is misleading though.  More testing
->> lead to post-kernel boot problems where initrd cannot find the sata
->> devices during its init phase]
-> 
-> Thanks for the update.
-> 
-> What description would be better in your opinion?
+On Wed, May 27, 2009 at 09:43:32AM +0800, Li Zefan wrote:
+> I'm not suffering from NULL str, so I'm not quite sure how you want __string()
+> deal with it.
 
-How about: initrd fails to find /dev/sda* (sata_nv)
+The internals of __string is still magic to me, need to finish my
+advance cpp abuse degree first ;-)
 
-Benny
+But the expected outcome would be that when we get a NULL pointer as
+input we get a NULL pointer as output again.
+
+What I currently do is:
+
+TRACE_EVENT(xfs_dir2,
+	TP_PROTO(struct xfs_da_args *args, int i, int j, int count),
+	TP_ARGS(args, i, j, count),
+
+	TP_STRUCT__entry(
+		__field(xfs_ino_t, ino)
+		__array(char, name, TRACE_MAXNAMELEN)
+		__field(int, namelen)
+		...
+	),
+
+        TP_fast_assign(
+		__entry->ino = args->dp->i_ino;
+		if (args->namelen)
+			memcpy(__entry->name, args->name,
+			       min(args->namelen, TRACE_MAXNAMELEN));
+		__entry->namelen = args->namelen;
+		...
+	),
+
+	TP_printk("ino 0x%lld %pF name %.*s namelen %d hashval 0x%x "
+		  "inumber 0x%llx op_flags %s i %d j %d count %d",
+		  __entry->ino,
+		  (void *)__entry->caller_ip,
+		  min(__entry->namelen, TRACE_MAXNAMELEN),
+		  __entry->namelen ? __entry->name : NULL,
+		  __entry->namelen,
+		  ...)
+);
 
 > 
-> Rafael
+> 
+---end quoted text---
