@@ -1,36 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763539AbZE0Ndo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932069AbZE0Ng0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763539AbZE0Ndo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 09:33:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763525AbZE0Nd1
+	id S932069AbZE0Ng0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 09:36:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762139AbZE0NgS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 09:33:27 -0400
-Received: from www.tglx.de ([62.245.132.106]:41960 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763487AbZE0NdZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 09:33:25 -0400
-Date: Wed, 27 May 2009 15:33:03 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Rik van Riel <riel@redhat.com>
-cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tero.kristo@nokia.com, ext-eero.nurkkala@nokia.com,
-       venkatesh.pallipadi@intel.com
-Subject: Re: [tip:timers/urgent] NOHZ: Properly feed cpufreq ondemand
- governor
-In-Reply-To: <4A1D3EEC.3050106@redhat.com>
-Message-ID: <alpine.LFD.2.00.0905271532250.3397@localhost.localdomain>
-References: <12432346571351-git-send-email-ext-eero.nurkkala@nokia.com> <tip-cf1240033cc81216a18eec0ca71466f7fe4eeda8@git.kernel.org> <4A1D3EEC.3050106@redhat.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 27 May 2009 09:36:18 -0400
+Received: from mx-out.daemonmail.net ([216.104.160.38]:45924 "EHLO
+	mx-out.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760731AbZE0NgS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 09:36:18 -0400
+From: "Michael S. Zick" <lkml@morethan.org>
+Reply-To: lkml@morethan.org
+To: Harald Welte <HaraldWelte@viatech.com>
+Subject: Re: i2c-viapro / via-fb drivers on VIA CX700
+Date: Wed, 27 May 2009 08:36:12 -0500
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org
+References: <200905221139.26941.lkml@morethan.org> <200905241332.39946.lkml@morethan.org> <20090525013132.GA8702@prithivi.gnumonks.org>
+In-Reply-To: <20090525013132.GA8702@prithivi.gnumonks.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200905270836.17802.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 May 2009, Rik van Riel wrote:
-> Calling return without restoring the
-> local_irq_save(flags) right above the
-> line where you get the CPU number seems
-> like a bad idea.
+On Sun May 24 2009, Harald Welte wrote:
+> On Sun, May 24, 2009 at 01:32:37PM -0500, Michael S. Zick wrote:
+> 
+> > The i2c-viapro driver (in spite of its comments) does not work
+> > on CX700 (written before manual was released) - it is reading
+> > the serial number rather than the second data port. ;)
+> > (No access to the chipset temperature/voltage data on SMBus).
+> 
+> This is surprising.  I just manually verified the driver against the
+> cx700 programming manual, and it seems to do the right thing.  Lacking
+> access to a cx700 board right now, I cannot perform an actual test.
+> 
+> Where exactly is the bug about the wrong register that you mentioned?
+> I'd rather fix that ASAP.
+> 
 
-I should probably stay away from keyboard today. :(
+I'll send you some reference material on how Everex is using the SMBus
+on their ce1200v (the original Cloudbook) off-list.
+
+Mike
