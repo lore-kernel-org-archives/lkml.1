@@ -1,56 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760824AbZE0RZ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759101AbZE0Rc4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760824AbZE0RZ6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 13:25:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756789AbZE0RZt
+	id S1759101AbZE0Rc4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 13:32:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752491AbZE0Rcu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 13:25:49 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:37188 "EHLO mx2.redhat.com"
+	Wed, 27 May 2009 13:32:50 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:49183 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756021AbZE0RZs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 13:25:48 -0400
-Subject: Re: [KVM PATCH v4 3/3] kvm: add iosignalfd support
-From: Mark McLoughlin <markmc@redhat.com>
-Reply-To: Mark McLoughlin <markmc@redhat.com>
-To: Avi Kivity <avi@redhat.com>
-Cc: Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Davide Libenzi <davidel@xmailserver.org>,
-       mtosatti@redhat.com
-In-Reply-To: <4A1D2DD8.2050709@redhat.com>
-References: <20090526191010.20860.75372.stgit@dev.haskins.net>
-	 <20090526191539.20860.1385.stgit@dev.haskins.net>
-	 <4A1D01F8.8080508@redhat.com> <4A1D285C.9050008@novell.com>
-	 <4A1D2DD8.2050709@redhat.com>
-Content-Type: text/plain
-Date: Wed, 27 May 2009 17:25:44 +0000
-Message-Id: <1243445144.16318.15.camel@blaa>
-Mime-Version: 1.0
+	id S1751516AbZE0Rct (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 13:32:49 -0400
+Message-ID: <4A1D7935.10000@redhat.com>
+Date: Wed, 27 May 2009 13:32:37 -0400
+From: Rik van Riel <riel@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Johannes Weiner <hannes@cmpxchg.org>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Subject: Re: [rfc][patch] swap: virtual swap readahead
+References: <1243436746-2698-1-git-send-email-hannes@cmpxchg.org>
+In-Reply-To: <1243436746-2698-1-git-send-email-hannes@cmpxchg.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-05-27 at 15:11 +0300, Avi Kivity wrote:
+Johannes Weiner wrote:
 
-> Multiple cookies on the same address are required by virtio.  You can't 
-> mux since the data doesn't go anywhere.
+> This patch makes swap-in base its readaround window on the virtual
+> proximity of pages in the faulting VMA, as an indicator for pages
+> needed in the near future, while still taking physical locality of
+> swap slots into account.
 > 
-> Virtio can survive by checking all rings on a notify, and we can later 
-> add a mechanism that has a distinct address for each ring, but let's see 
-> if we can cope with multiple cookies.  Mark?
+> This has the advantage of reading in big batches when the LRU order
+> matches the swap slot order while automatically throttling readahead
+> when the system is thrashing and swap slots are no longer nicely
+> grouped by LRU order.
 
-Trying to catch up, but you're talking about replacing virtio-pci
-QUEUE_NOTIFY handling with iosignalfd ?
+This is a nice simple implementation of proper
+swapin readahead.  The performance results are
+surprisingly good.
 
-For a perfect replacement, what you really need is to be able to
-register multiple cookies per address range, but only have them trigger
-if the written data matches a provided value.
+I suspect the performance oddity you see with
+single-process qsbench might be due to qsbench
+having a weird access pattern that just happens
+to benefit from getting pages back into memory
+in LRU order - not something that I expect to
+be common, so not a concern.
 
-If the data is lost, virtio has no way of knowing which queue is being
-notified, so we either end up with per-device, rather than per-queue,
-notifications (probably not too bad for net, at least) or a different
-notify address per queue (limiting the number of queues per device).
+> Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
+> Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+> Cc: Rik van Riel <riel@redhat.com>
 
-Cheers,
-Mark.
-
+Reviewed-by: Rik van Riel <riel@redhat.com>
