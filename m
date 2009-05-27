@@ -1,57 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758913AbZE0CMM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758190AbZE0CNq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758913AbZE0CMM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 22:12:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756099AbZE0CL5
+	id S1758190AbZE0CNq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 22:13:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755364AbZE0CNh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 22:11:57 -0400
-Received: from mail-bw0-f222.google.com ([209.85.218.222]:37723 "EHLO
-	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756842AbZE0CL4 (ORCPT
+	Tue, 26 May 2009 22:13:37 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:34978 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751147AbZE0CNh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 22:11:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=lyc7nFjiS2STHZhjgAlXUG5HnfyWNAac2JakyJckBYkB5vPpvzk+jZRcUNIgCLp3Cr
-         HqKqrPDNQfnwwZoIuyCCErgxwbltj4mXtN2wfYXHg9rxbMA36WvHpLsz2wUP7C0mt41Q
-         DwGxpk2drXQVdni8oANX1P4ifFj8t64orXqtE=
+	Tue, 26 May 2009 22:13:37 -0400
+Date: Tue, 26 May 2009 22:13:37 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       <linux-usb@vger.kernel.org>
+Subject: Re: Oops in usb-serial with keyspan adapter on current upstream
+In-Reply-To: <1243376885.17847.15.camel@pasglop>
+Message-ID: <Pine.LNX.4.44L0.0905262210350.21274-100000@netrider.rowland.org>
 MIME-Version: 1.0
-In-Reply-To: <4A1C7DDB.9010605@gmail.com>
-References: <64bb37e0905261214g2957924ar837339367f320d4c@mail.gmail.com>
-	 <4A1C7DDB.9010605@gmail.com>
-Date: Wed, 27 May 2009 04:11:56 +0200
-Message-ID: <64bb37e0905261911v1b80456ckbc7b7c7858d4b28a@mail.gmail.com>
-Subject: Re: sata_sil24 0000:04:00.0: DMA-API: device driver frees DMA sg list 
-	with different entry count [map count=13] [unmap count=10]
-From: Torsten Kaiser <just.for.lkml@googlemail.com>
-To: Robert Hancock <hancockrwd@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       SCSI development list <linux-scsi@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 27, 2009 at 1:40 AM, Robert Hancock <hancockrwd@gmail.com> wrote:
-> Torsten Kaiser wrote:
->>
->> On upgrading to 2.6.30-rc1 I enable the DMA-Debugging option
->> CONFIG_DMA_API_DEBUG=y
->> Since then I get the following or similar errors on each boot:
->
-> Please retest with a newer -rc, this patch likely fixes it:
->
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=5825627c9463581fd9e70f8285685889ae5bb9bb
->
+On Wed, 27 May 2009, Benjamin Herrenschmidt wrote:
 
-I saw this with 2.6.30-rc1 the first time, but I'm not sure if it
-broke during the merge window or if it was always broken, because I
-did not have enable DMA_API_DEBUG with earlier kernels.
+> On Tue, 2009-05-26 at 10:06 -0400, Alan Stern wrote:
+> > On Tue, 26 May 2009, Benjamin Herrenschmidt wrote:
+> > 
+> > > Well, both our patches are bogus in the sense that they will leak
+> > > the stuff in the port structure.
+> > 
+> > That's not true at all.  Take a look at the destroy_serial() routine.
+> 
+> Right... hrm. This is an horrible mess, I can't wait to see that
+> refcount going wrong and things trying to double free or leaking the
+> structure.
+> 
+> Oh well, fix it the way your want, I don't care as long as it's fixed.
+> This driver is just plain horrible.
 
-But I'm seeing it with all -rc since then. The traces I posted were
-from -rc6 and -rc7.
+I can't disagree with that.  :-)  The usb-serial design was a mess to 
+begin with, and it didn't get much better when the serial bus was 
+introduced.
 
-Torsten
+I'm inclined to use my patch because it's shortest.  Can I add your 
+"Tested-by:"?
+
+Alan Stern
+
