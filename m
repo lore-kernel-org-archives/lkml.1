@@ -1,53 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759714AbZE0FQu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759768AbZE0FTo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759714AbZE0FQu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 01:16:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757308AbZE0FQm
+	id S1759768AbZE0FTo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 01:19:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758658AbZE0FTa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 01:16:42 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:51665 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757584AbZE0FQl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 01:16:41 -0400
-Date: Wed, 27 May 2009 15:16:36 +1000
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Evgeniy Polyakov <zbr@ioremap.net>
-Cc: Mike Frysinger <vapier@gentoo.org>, linux-kernel@vger.kernel.org,
-       Patrick McHardy <kaber@trash.net>
-Subject: Re: [PATCH] crypto: hifn_795x - fix __dev{init,exit} markings
-Message-ID: <20090527051635.GD7474@gondor.apana.org.au>
-References: <1242633110-16344-1-git-send-email-vapier@gentoo.org> <20090520145623.GA4147@ioremap.net>
+	Wed, 27 May 2009 01:19:30 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:61235 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1755763AbZE0FTa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 01:19:30 -0400
+Message-ID: <4A1CCD84.2040607@cn.fujitsu.com>
+Date: Wed, 27 May 2009 13:20:04 +0800
+From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090520145623.GA4147@ioremap.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: mingo@elte.hu, Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       LKML <linux-kernel@vger.kernel.org>, Zhaolei <zhaolei@cn.fujitsu.com>,
+       kosaki.motohiro@jp.fujitsu.com, Steven Rostedt <rostedt@goodmis.org>,
+       fweisbec@gmail.com
+Subject: Re: [PATCH 0/3] ftrace: add tracepoint for timer event
+References: <4A1673AF.30508@cn.fujitsu.com> <alpine.LFD.2.00.0905262320330.1762@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0905262320330.1762@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 20, 2009 at 06:56:23PM +0400, Evgeniy Polyakov wrote:
-> Hi Mike.
-> 
-> On Mon, May 18, 2009 at 03:51:50AM -0400, Mike Frysinger (vapier@gentoo.org) wrote:
-> > The remove member of the pci_driver hifn_pci_driver uses __devexit_p(),
-> > so the remove function itself should be marked with __devexit.  And where
-> > there be __devexit on the remove, so is there __devinit on the probe.
-> > 
-> > Similarly, the module_init/module_exit functions should be declared with
-> > plain __init/__exit markings, not the hotplug __dev{init,exit} ones.
-> > 
-> > Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-> > CC: Evgeniy Polyakov <zbr@ioremap.net>
-> > CC: Patrick McHardy <kaber@trash.net>
-> 
-> Looks good, thank you Mike.
-> Ack. Herbert, please apply.
 
-Applied to cryptodev.  Thanks a lot!
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+
+Thomas Gleixner wrote:
+> On Fri, 22 May 2009, Xiao Guangrong wrote:
+>> We already have debugobject in timer to init/activate/deactivate/free,
+>> but it can't be covered function of there tracepoints, because:
+>> 1: We can't get timer's lifecycle information in userspace by debugobject,
+>>    it is necessary for system engineer to investigate system trouble caused
+>>    by using timer.
+>> 2: We can't get information of whole lifecycle of timer by debugobject, 
+>>    for example, deactivation of a timer.
+>> 3: There are many different tracing code in many kernel subsystem as
+>>    blktrace, debugobject, and tracepoint is designed as generic way
+>>    to unify these tracing way.
+> 
+> No. You can not unify debugobject into tracepoints. debugobjects is a
+> totally different beast. It's main purpose is to prevent undebugable
+> system crashes which we have seen several times e.g: freeing of an
+> active timer, reinitializing of an active timer ...
+> 
+> Dealing with these problems is not covered by tracepoints by any
+> means. The trace point does not prevent the system crash which happens
+> 2 seconds after the fact that an active timer is kfree'd, debugobject
+> does and it points you to the exact place where the shit happens.
+> 
+> I'm not opposed to add tracepoints to the timer code at all. In fact I
+> appreciate that, but your idea of substituting debugobjects with
+> tracing is just plain wrong.
+> 
+> It's the other way round. tracing can reuse the existing debugobject
+> hooks to insert trace points, but it can not replace the functionality
+> at all.
+> 
+
+Hello tglx:
+Thanks for you review!
+
+Totally agree.
+Actually I do know the difference between debugobject and tracepoint. Sorry
+for making you misunderstand what I said for my pool English.
+
+Thanks,
+Xiao Guangrong
+
+> 	tglx
+> 
+> 
