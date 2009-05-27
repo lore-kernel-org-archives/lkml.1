@@ -1,87 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764346AbZE0UQX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933261AbZE0UQj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764346AbZE0UQX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 16:16:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760865AbZE0UMs
+	id S933261AbZE0UQj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 16:16:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761578AbZE0UMs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Wed, 27 May 2009 16:12:48 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:35936 "EHLO
+Received: from one.firstfloor.org ([213.235.205.2]:35937 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761578AbZE0UMq (ORCPT
+	with ESMTP id S1761486AbZE0UMq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 27 May 2009 16:12:46 -0400
 From: Andi Kleen <andi@firstfloor.org>
 References: <200905271012.668777061@firstfloor.org>
 In-Reply-To: <200905271012.668777061@firstfloor.org>
-To: fengguang.wu@intel.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       fengguang.wu@intel.com
-Subject: [PATCH] [12/16] HWPOISON: check and isolate corrupted free pages
-Message-Id: <20090527201238.BD1661D0290@basil.firstfloor.org>
-Date: Wed, 27 May 2009 22:12:38 +0200 (CEST)
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, fengguang.wu@intel.com
+Subject: [PATCH] [11/16] HWPOISON: Handle poisoned pages in set_page_dirty()
+Message-Id: <20090527201237.B7A611D028F@basil.firstfloor.org>
+Date: Wed, 27 May 2009 22:12:37 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: Wu Fengguang <fengguang.wu@intel.com>
+Bail out early in set_page_dirty for poisoned pages. We don't want any
+of the dirty accounting done or file system write back started, because
+the page will be just thrown away.
 
-If memory corruption hits the free buddy pages, we can safely ignore them.
-No one will access them until page allocation time, then prep_new_page()
-will automatically check and isolate PG_hwpoison page for us (for 0-order
-allocation).
-
-This patch expands prep_new_page() to check every component page in a high
-order page allocation, in order to completely stop PG_hwpoison pages from
-being recirculated.
-
-Note that the common case -- only allocating a single page, doesn't
-do any more work than before. Allocating > order 0 does a bit more work,
-but that's relatively uncommon.
-
-This simple implementation may drop some innocent neighbor pages, hopefully
-it is not a big problem because the event should be rare enough.
-
-This patch adds some runtime costs to high order page users.
-
-[AK: Improved description]
-Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
 ---
- mm/page_alloc.c |   22 ++++++++++++++++------
- 1 file changed, 16 insertions(+), 6 deletions(-)
+ mm/page-writeback.c |    4 ++++
+ 1 file changed, 4 insertions(+)
 
-Index: linux/mm/page_alloc.c
+Index: linux/mm/page-writeback.c
 ===================================================================
---- linux.orig/mm/page_alloc.c	2009-05-27 21:13:54.000000000 +0200
-+++ linux/mm/page_alloc.c	2009-05-27 21:14:21.000000000 +0200
-@@ -633,12 +633,22 @@
-  */
- static int prep_new_page(struct page *page, int order, gfp_t gfp_flags)
+--- linux.orig/mm/page-writeback.c	2009-05-26 22:15:37.000000000 +0200
++++ linux/mm/page-writeback.c	2009-05-27 21:14:21.000000000 +0200
+@@ -1277,6 +1277,10 @@
  {
--	if (unlikely(page_mapcount(page) |
--		(page->mapping != NULL)  |
--		(page_count(page) != 0)  |
--		(page->flags & PAGE_FLAGS_CHECK_AT_PREP))) {
--		bad_page(page);
--		return 1;
-+	int i;
-+
-+	for (i = 0; i < (1 << order); i++) {
-+		struct page *p = page + i;
-+
-+		if (unlikely(page_mapcount(p) |
-+			(p->mapping != NULL)  |
-+			(page_count(p) != 0)  |
-+			(p->flags & PAGE_FLAGS_CHECK_AT_PREP))) {
-+			/*
-+			 * The whole array of pages will be dropped,
-+			 * hopefully this is a rare and abnormal event.
-+			 */
-+			bad_page(p);
-+			return 1;
-+		}
- 	}
+ 	struct address_space *mapping = page_mapping(page);
  
- 	set_page_private(page, 0);
++	if (unlikely(PageHWPoison(page))) {
++		SetPageDirty(page);
++		return 0;
++	}
+ 	if (likely(mapping)) {
+ 		int (*spd)(struct page *) = mapping->a_ops->set_page_dirty;
+ #ifdef CONFIG_BLOCK
