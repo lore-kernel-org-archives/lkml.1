@@ -1,309 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755819AbZE0Uqo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758689AbZE0UrI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755819AbZE0Uqo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 16:46:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754416AbZE0Uqf
+	id S1758689AbZE0UrI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 16:47:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756161AbZE0Uqz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 16:46:35 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46800 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752248AbZE0Uqe (ORCPT
+	Wed, 27 May 2009 16:46:55 -0400
+Received: from yw-out-2324.google.com ([74.125.46.31]:62441 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752248AbZE0Uqy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 16:46:34 -0400
-Date: Wed, 27 May 2009 13:43:57 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Johannes Weiner <jw@emlix.com>
-Cc: lethal@linux-sh.org, os@emlix.com, dhowells@redhat.com,
-       rmk@arm.linux.org.uk, cooloney@kernel.org, geert@linux-m68k.org,
-       vapier.adi@gmail.com, gerg@uclinux.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -v3] flat: fix data sections alignment
-Message-Id: <20090527134357.601c3c87.akpm@linux-foundation.org>
-In-Reply-To: <20090527114955.GA23343@emlix.com>
-References: <E1LfGwO-0007Kq-6c@mailer.emlix.com>
-	<20090310073350.GH10393@linux-sh.org>
-	<20090402135343.d18d17a5.akpm@linux-foundation.org>
-	<20090409142553.GA3330@emlix.com>
-	<20090505140847.GB25409@emlix.com>
-	<20090527114955.GA23343@emlix.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 27 May 2009 16:46:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type;
+        b=nuzdjQHLBt9+hhPzPv8p+rOOXZ43xgV5jjbUYPrna06NyLwwzkqJY1ELSkl9e6isVX
+         rThf+Om/+jqX7e6c17e1Zum7ONmKOf+oAMkffUDmDHssdZqrsl+znBJfmQoYuVxH8eGT
+         JtijGtXXaXH7sfujiLuw72NQTJE2EGLfsG9Wo=
+Message-ID: <4A1DA6BC.4020104@gmail.com>
+Date: Wed, 27 May 2009 16:46:52 -0400
+From: Gregory Haskins <gregory.haskins@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
+MIME-Version: 1.0
+To: "Michael S. Tsirkin" <mst@redhat.com>
+CC: Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, avi@redhat.com, davidel@xmailserver.org,
+       mtosatti@redhat.com
+Subject: Re: [KVM PATCH v10] kvm: add support for irqfd
+References: <20090520142234.22285.72274.stgit@dev.haskins.net> <20090527130447.GA11643@redhat.com> <4A1D48FA.9080403@novell.com> <20090527184106.GA18463@redhat.com> <4A1D9D7B.9080507@novell.com> <20090527204324.GA22915@redhat.com>
+In-Reply-To: <20090527204324.GA22915@redhat.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigB891F47413A56DCCF1C71CC6"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 May 2009 13:49:56 +0200
-Johannes Weiner <jw@emlix.com> wrote:
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigB891F47413A56DCCF1C71CC6
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-> On Tue, May 05, 2009 at 04:08:47PM +0200, Johannes Weiner wrote:
-> > On Thu, Apr 09, 2009 at 04:25:53PM +0200, Johannes Weiner wrote:
-> > > On Thu, Apr 02, 2009 at 01:53:43PM -0700, Andrew Morton wrote:
-> > > > On Tue, 10 Mar 2009 16:33:50 +0900
-> > > > Paul Mundt <lethal@linux-sh.org> wrote:
-> > > > 
-> > > > > On Thu, Mar 05, 2009 at 06:00:59PM +0100, Oskar Schirmer wrote:
-> > > > > > The flat loader uses an architecture's flat_stack_align() to align the
-> > > > > > stack but assumes word-alignment is enough for the data sections.
-> > > > > > 
-> > > > > > However, on the Xtensa S6000 we have registers up to 128bit width
-> > > > > > which can be used from userspace and therefor need userspace stack and
-> > > > > > data-section alignment of at least this size.
-> > > > > > 
-> > > > > > This patch drops flat_stack_align() and uses the same alignment that
-> > > > > > is required for slab caches, ARCH_SLAB_MINALIGN, or wordsize if it's
-> > > > > > not defined by the architecture.
-> > > > > > 
-> > > > > > It also fixes m32r which was obviously kaput, aligning an
-> > > > > > uninitialized stack entry instead of the stack pointer.
-> > > > > > 
-> > > > > > Signed-off-by: Oskar Schirmer <os@emlix.com>
-> > > > > > Signed-off-by: Johannes Weiner <jw@emlix.com>
-> > > > > > Cc: David Howells <dhowells@redhat.com>
-> > > > > > Cc: Russell King <rmk@arm.linux.org.uk>
-> > > > > > Cc: Bryan Wu <cooloney@kernel.org>
-> > > > > > Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-> > > > > > Cc: Paul Mundt <lethal@linux-sh.org>
-> > > > > > Cc: Greg Ungerer <gerg@uclinux.org>
-> > > > > > Cc: Mike Frysinger <vapier.adi@gmail.com>
-> > > > > 
-> > > > > The updated version looks ok to me anyways, and it's certainly an
-> > > > > improvement over defining the same alignment requirements all over the
-> > > > > place.
-> > > > > 
-> > > > > Acked-by: Paul Mundt <lethal@linux-sh.org>
-> > > > 
-> > > > Quite a few people expressed quite a few reservations over v2.
-> > > > 
-> > > > Are we all OK with a v3 merge?
-> > > 
-> > > Paul and Mike had complaints.  Paul acked the last revision.  Mike?
-> > > We need this for upstream to compile on our configuration.
+Michael S. Tsirkin wrote:
+> On Wed, May 27, 2009 at 04:07:23PM -0400, Gregory Haskins wrote:
+>  =20
+>> Do you have a particular suggestion in mind?
+>>    =20
+>
+> Yes. I'll try to post a patch soon.
+>
+>  =20
 
-Who is Mike?
+Sounds good.  Thanks Michael.
 
-(A pox upon email clients which strip real names)
+-Greg
 
-> > Can we get this merged?  Nobody complained.
-> 
-> <periodic echo-request>
-> 
-> What are the plans on this now?  I assume it drowned in other changes...
-> Is it too late to get this in .30 now?
 
-The patch had a fairly shaky start and it's been unclear to me that
-everyone is happy with it and has tested it.
+--------------enigB891F47413A56DCCF1C71CC6
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
- arch/arm/include/asm/flat.h      |    3 --
- arch/blackfin/include/asm/flat.h |    1 
- arch/h8300/include/asm/flat.h    |    1 
- arch/m32r/include/asm/flat.h     |    1 
- arch/m68k/include/asm/flat.h     |    1 
- arch/sh/include/asm/flat.h       |    1 
- fs/binfmt_flat.c                 |   46 ++++++++++++++++++++++++++-------------
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
-I guess ARM is the major architecture amongst that lot.  Have Russell
-and co had a decent look through this?
+iEYEARECAAYFAkodprwACgkQP5K2CMvXmqEs1wCgicf9fmODckolIBeDr6tRm0qN
+kgcAn09OniHQSPMQmf1JULr3Xz9GroY5
+=ZBdE
+-----END PGP SIGNATURE-----
 
-From: Oskar Schirmer <os@emlix.com>
-
-The flat loader uses an architecture's flat_stack_align() to align the
-stack but assumes word-alignment is enough for the data sections.
-
-However, on the Xtensa S6000 we have registers up to 128bit width
-which can be used from userspace and therefor need userspace stack and
-data-section alignment of at least this size.
-
-This patch drops flat_stack_align() and uses the same alignment that
-is required for slab caches, ARCH_SLAB_MINALIGN, or wordsize if it's
-not defined by the architecture.
-
-It also fixes m32r which was obviously kaput, aligning an
-uninitialized stack entry instead of the stack pointer.
-
-[akpm@linux-foundation.org: coding-style fixes]
-Signed-off-by: Oskar Schirmer <os@emlix.com>
-Cc: David Howells <dhowells@redhat.com>
-Cc: Russell King <rmk@arm.linux.org.uk>
-Cc: Bryan Wu <cooloney@kernel.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-Acked-by: Paul Mundt <lethal@linux-sh.org>
-Cc: Greg Ungerer <gerg@uclinux.org>
-Signed-off-by: Johannes Weiner <jw@emlix.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
-
- arch/arm/include/asm/flat.h      |    3 -
- arch/blackfin/include/asm/flat.h |    1 
- arch/h8300/include/asm/flat.h    |    1 
- arch/m32r/include/asm/flat.h     |    1 
- arch/m68k/include/asm/flat.h     |    1 
- arch/sh/include/asm/flat.h       |    1 
- fs/binfmt_flat.c                 |   46 +++++++++++++++++++----------
- 7 files changed, 31 insertions(+), 23 deletions(-)
-
-diff -puN arch/arm/include/asm/flat.h~flat-fix-data-sections-alignment arch/arm/include/asm/flat.h
---- a/arch/arm/include/asm/flat.h~flat-fix-data-sections-alignment
-+++ a/arch/arm/include/asm/flat.h
-@@ -5,9 +5,6 @@
- #ifndef __ARM_FLAT_H__
- #define __ARM_FLAT_H__
- 
--/* An odd number of words will be pushed after this alignment, so
--   deliberately misalign the value.  */
--#define	flat_stack_align(sp)	sp = (void *)(((unsigned long)(sp) - 4) | 4)
- #define	flat_argvp_envp_on_stack()		1
- #define	flat_old_ram_flag(flags)		(flags)
- #define	flat_reloc_valid(reloc, size)		((reloc) <= (size))
-diff -puN arch/blackfin/include/asm/flat.h~flat-fix-data-sections-alignment arch/blackfin/include/asm/flat.h
---- a/arch/blackfin/include/asm/flat.h~flat-fix-data-sections-alignment
-+++ a/arch/blackfin/include/asm/flat.h
-@@ -10,7 +10,6 @@
- 
- #include <asm/unaligned.h>
- 
--#define	flat_stack_align(sp)	/* nothing needed */
- #define	flat_argvp_envp_on_stack()		0
- #define	flat_old_ram_flag(flags)		(flags)
- 
-diff -puN arch/h8300/include/asm/flat.h~flat-fix-data-sections-alignment arch/h8300/include/asm/flat.h
---- a/arch/h8300/include/asm/flat.h~flat-fix-data-sections-alignment
-+++ a/arch/h8300/include/asm/flat.h
-@@ -5,7 +5,6 @@
- #ifndef __H8300_FLAT_H__
- #define __H8300_FLAT_H__
- 
--#define	flat_stack_align(sp)			/* nothing needed */
- #define	flat_argvp_envp_on_stack()		1
- #define	flat_old_ram_flag(flags)		1
- #define	flat_reloc_valid(reloc, size)		((reloc) <= (size))
-diff -puN arch/m32r/include/asm/flat.h~flat-fix-data-sections-alignment arch/m32r/include/asm/flat.h
---- a/arch/m32r/include/asm/flat.h~flat-fix-data-sections-alignment
-+++ a/arch/m32r/include/asm/flat.h
-@@ -12,7 +12,6 @@
- #ifndef __ASM_M32R_FLAT_H
- #define __ASM_M32R_FLAT_H
- 
--#define	flat_stack_align(sp)		(*sp += (*sp & 3 ? (4 - (*sp & 3)): 0))
- #define	flat_argvp_envp_on_stack()		0
- #define	flat_old_ram_flag(flags)		(flags)
- #define	flat_set_persistent(relval, p)		0
-diff -puN arch/m68k/include/asm/flat.h~flat-fix-data-sections-alignment arch/m68k/include/asm/flat.h
---- a/arch/m68k/include/asm/flat.h~flat-fix-data-sections-alignment
-+++ a/arch/m68k/include/asm/flat.h
-@@ -5,7 +5,6 @@
- #ifndef __M68KNOMMU_FLAT_H__
- #define __M68KNOMMU_FLAT_H__
- 
--#define	flat_stack_align(sp)			/* nothing needed */
- #define	flat_argvp_envp_on_stack()		1
- #define	flat_old_ram_flag(flags)		(flags)
- #define	flat_reloc_valid(reloc, size)		((reloc) <= (size))
-diff -puN arch/sh/include/asm/flat.h~flat-fix-data-sections-alignment arch/sh/include/asm/flat.h
---- a/arch/sh/include/asm/flat.h~flat-fix-data-sections-alignment
-+++ a/arch/sh/include/asm/flat.h
-@@ -12,7 +12,6 @@
- #ifndef __ASM_SH_FLAT_H
- #define __ASM_SH_FLAT_H
- 
--#define	flat_stack_align(sp)			/* nothing needed */
- #define	flat_argvp_envp_on_stack()		0
- #define	flat_old_ram_flag(flags)		(flags)
- #define	flat_reloc_valid(reloc, size)		((reloc) <= (size))
-diff -puN fs/binfmt_flat.c~flat-fix-data-sections-alignment fs/binfmt_flat.c
---- a/fs/binfmt_flat.c~flat-fix-data-sections-alignment
-+++ a/fs/binfmt_flat.c
-@@ -41,6 +41,7 @@
- #include <asm/uaccess.h>
- #include <asm/unaligned.h>
- #include <asm/cacheflush.h>
-+#include <asm/page.h>
- 
- /****************************************************************************/
- 
-@@ -54,6 +55,18 @@
- #define	DBG_FLT(a...)
- #endif
- 
-+/*
-+ * User data (stack, data section and bss) needs to be aligned
-+ * for the same reasons as SLAB memory is, and to the same amount.
-+ * Avoid duplicating architecture specific code by using the same
-+ * macro as with SLAB allocation:
-+ */
-+#ifdef ARCH_SLAB_MINALIGN
-+#define FLAT_DATA_ALIGN	(ARCH_SLAB_MINALIGN)
-+#else
-+#define FLAT_DATA_ALIGN	(sizeof(void *))
-+#endif
-+
- #define RELOC_FAILED 0xff00ff01		/* Relocation incorrect somewhere */
- #define UNLOADED_LIB 0x7ff000ff		/* Placeholder for unused library */
- 
-@@ -114,20 +127,18 @@ static unsigned long create_flat_tables(
- 	int envc = bprm->envc;
- 	char uninitialized_var(dummy);
- 
--	sp = (unsigned long *) ((-(unsigned long)sizeof(char *))&(unsigned long) p);
-+	sp = (unsigned long *)p;
-+	sp -= (envc + argc + 2) + 1 + (flat_argvp_envp_on_stack() ? 2 : 0);
-+	sp = (unsigned long *) ((unsigned long)sp & -FLAT_DATA_ALIGN);
-+	argv = sp + 1 + (flat_argvp_envp_on_stack() ? 2 : 0);
-+	envp = argv + (argc + 1);
- 
--	sp -= envc+1;
--	envp = sp;
--	sp -= argc+1;
--	argv = sp;
--
--	flat_stack_align(sp);
- 	if (flat_argvp_envp_on_stack()) {
--		--sp; put_user((unsigned long) envp, sp);
--		--sp; put_user((unsigned long) argv, sp);
-+		put_user((unsigned long) envp, sp + 2);
-+		put_user((unsigned long) argv, sp + 1);
- 	}
- 
--	put_user(argc,--sp);
-+	put_user(argc, sp);
- 	current->mm->arg_start = (unsigned long) p;
- 	while (argc-->0) {
- 		put_user((unsigned long) p, argv++);
-@@ -558,7 +569,9 @@ static int load_flat_file(struct linux_b
- 			ret = realdatastart;
- 			goto err;
- 		}
--		datapos = realdatastart + MAX_SHARED_LIBS * sizeof(unsigned long);
-+		datapos = ALIGN(realdatastart +
-+				MAX_SHARED_LIBS * sizeof(unsigned long),
-+				FLAT_DATA_ALIGN);
- 
- 		DBG_FLT("BINFMT_FLAT: Allocated data+bss+stack (%d bytes): %x\n",
- 				(int)(data_len + bss_len + stack_len), (int)datapos);
-@@ -604,9 +617,12 @@ static int load_flat_file(struct linux_b
- 		}
- 
- 		realdatastart = textpos + ntohl(hdr->data_start);
--		datapos = realdatastart + MAX_SHARED_LIBS * sizeof(unsigned long);
--		reloc = (unsigned long *) (textpos + ntohl(hdr->reloc_start) +
--				MAX_SHARED_LIBS * sizeof(unsigned long));
-+		datapos = ALIGN(realdatastart +
-+				MAX_SHARED_LIBS * sizeof(unsigned long),
-+				FLAT_DATA_ALIGN);
-+
-+		reloc = (unsigned long *)
-+			(datapos + (ntohl(hdr->reloc_start) - text_len));
- 		memp = textpos;
- 		memp_size = len;
- #ifdef CONFIG_BINFMT_ZFLAT
-@@ -854,7 +870,7 @@ static int load_flat_binary(struct linux
- 	stack_len = TOP_OF_ARGS - bprm->p;             /* the strings */
- 	stack_len += (bprm->argc + 1) * sizeof(char *); /* the argv array */
- 	stack_len += (bprm->envc + 1) * sizeof(char *); /* the envp array */
--
-+	stack_len += FLAT_DATA_ALIGN - 1;  /* reserve for upcoming alignment */
- 	
- 	res = load_flat_file(bprm, &libinfo, 0, &stack_len);
- 	if (res > (unsigned long)-4096)
-_
-
+--------------enigB891F47413A56DCCF1C71CC6--
