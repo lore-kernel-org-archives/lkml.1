@@ -1,70 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932151AbZE0HoV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764486AbZE0Hoy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932151AbZE0HoV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 03:44:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763994AbZE0HjR
+	id S1764486AbZE0Hoy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 03:44:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764170AbZE0Hkz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 03:39:17 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:59778 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763958AbZE0HjP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 03:39:15 -0400
-Date: Wed, 27 May 2009 17:39:08 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Boaz Harrosh <bharrosh@panasas.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: linux-next: failed to fetch osd tree
-Message-Id: <20090527173908.0271bc6b.sfr@canb.auug.org.au>
-In-Reply-To: <4A1CEB19.1010001@panasas.com>
-References: <20090527105815.95bb2a29.sfr@canb.auug.org.au>
-	<4A1CEB19.1010001@panasas.com>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__27_May_2009_17_39_08_+1000_cjrdx3z44Q8A5aO8"
+	Wed, 27 May 2009 03:40:55 -0400
+Received: from mail-px0-f123.google.com ([209.85.216.123]:50626 "EHLO
+	mail-px0-f123.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764162AbZE0Hky (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 03:40:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=rllcQmwuF1f0Xupuf8SVZJv5knTV24zqqnabiC7HrzIbf01o8fyOsXiVDuMRDfX10w
+         E6ofVxqzHSGdwVXSHpSjZIBZVVZDlrmO0c9/+TuCkLN7oOGB09xm+U+rMAXEJQnQ9PZl
+         /TRvUDYlnRBOLEZmt2woNP4QsKJZ9/16/CEdo=
+Message-ID: <4A1CEE3F.6030504@gmail.com>
+Date: Wed, 27 May 2009 15:39:43 +0800
+From: Huang Shijie <shijie8@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: cl@linux-foundation.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] lib : provide a more precise radix_tree_gang_lookup_slot
+References: <1243223635-3449-1-git-send-email-shijie8@gmail.com> <20090526143058.c59e6dc1.akpm@linux-foundation.org>
+In-Reply-To: <20090526143058.c59e6dc1.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__27_May_2009_17_39_08_+1000_cjrdx3z44Q8A5aO8
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Boaz,
-
-On Wed, 27 May 2009 10:26:17 +0300 Boaz Harrosh <bharrosh@panasas.com> wrot=
-e:
+>> diff --git a/include/linux/radix-tree.h b/include/linux/radix-tree.h
+>> index 355f6e8..03e25f4 100644
+>> --- a/include/linux/radix-tree.h
+>> +++ b/include/linux/radix-tree.h
+>> @@ -164,7 +164,8 @@ radix_tree_gang_lookup(struct radix_tree_root *root, void **results,
+>>  			unsigned long first_index, unsigned int max_items);
+>>  unsigned int
+>>  radix_tree_gang_lookup_slot(struct radix_tree_root *root, void ***results,
+>> -			unsigned long first_index, unsigned int max_items);
+>> +			unsigned long first_index, unsigned int max_items,
+>> +			int contig);
+>>     
 >
-> On 05/27/2009 03:58 AM, Stephen Rothwell wrote:
-> >=20
-> > I got this error trying to fetch the osd tree this morning:
-> >=20
-> > git.open-osd.org[0: 67.152.220.82]: errno=3DConnection timed out
-> > fatal: unable to connect a socket (Connection timed out)
-> >=20
-> > I will use the tree I fetched yesterday.
->=20
-> Sorry about that. There was a power outage at the ISP
-> for a few hours. It should be good now.
+> Variable `contig' could have the type `bool'.  Did you consider and
+> reject that option, or just didn't think of it?
+>
+>
+>   
+Yes, type `bool' is better.
+>> ...
+>> +			if (contig)
+>> +				goto out;
+>> +
+>> +		} else if (contig) {
+>> +			index--;
+>> +			goto out;
+>> +
+>> +		if (contig) {
+>> +			if (slots_found == 0)
+>> +				break;
+>> +			if (next_index & RADIX_TREE_MAP_MASK)
+>> +				break;
+>> +		}
+>> -				(void ***)pages, start, nr_pages);
+>> +				(void ***)pages, start, nr_pages, 0);
+>> -				(void ***)pages, index, nr_pages);
+>> +				(void ***)pages, index, nr_pages, 1);
+>>     
+>
+> The patch adds cycles in some cases and saves them in others.
+>
+> Does the saving exceed the adding?  How do we know that the patch is a
+> net benefit?
+>
+>   
 
-Its not a problem, I was just letting you know.  I will refetch it
-tomorrow.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Assume that:
+    f0 = called frequency of find_get_pages() (contig == 0)
+    f1 = called frequency of find_get_pages_contig() (contig == 1)
 
---Signature=_Wed__27_May_2009_17_39_08_+1000_cjrdx3z44Q8A5aO8
-Content-Type: application/pgp-signature
+The primary user of find_get_pages() is ->writepage[s] of some file 
+systems such as ext4.
+( I think the shmem_lock() ,truncate() run occasionally which also call it.)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+The primary user of find_get_pages_contig()  is also the ->writepage[s] 
+of some filesystem
+such as afs.( I am not sure whether btrfs is also the main user of it )
 
-iEYEARECAAYFAkoc7hwACgkQjjKRsyhoI8xf1wCgs48ekJOdzyT7fB8EWcsyhiEA
-zy4AmwQ32D3WdKJQI62kgxRz9gkD9VYL
-=W5c6
------END PGP SIGNATURE-----
+   So if (f0 nearly equal f1)
+         cycles saving >> cycles adding
 
---Signature=_Wed__27_May_2009_17_39_08_+1000_cjrdx3z44Q8A5aO8--
+  __lookup() saves much cycles when there are holes and the contig==1.
+     
+
+
+
