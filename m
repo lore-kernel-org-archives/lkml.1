@@ -1,134 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759148AbZE0TfQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932379AbZE0TiJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759148AbZE0TfQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 15:35:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755664AbZE0TfC
+	id S932379AbZE0TiJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 15:38:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757900AbZE0Th5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 15:35:02 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:54292 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751548AbZE0TfA (ORCPT
+	Wed, 27 May 2009 15:37:57 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:32980 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756240AbZE0Th4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 15:35:00 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Wed, 27 May 2009 12:28:57 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@makko.or.mcafeemobile.com
-To: "Michael S. Tsirkin" <mst@redhat.com>
-cc: Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       avi@redhat.com, mtosatti@redhat.com
-Subject: Re: [KVM PATCH v10] kvm: add support for irqfd
-In-Reply-To: <20090527184106.GA18463@redhat.com>
-Message-ID: <alpine.DEB.1.10.0905271222590.20243@makko.or.mcafeemobile.com>
-References: <20090520142234.22285.72274.stgit@dev.haskins.net> <20090527130447.GA11643@redhat.com> <4A1D48FA.9080403@novell.com> <20090527184106.GA18463@redhat.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Wed, 27 May 2009 15:37:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Uyt0GrjR4qN93MeABDllwXNJr2PRkdyQwCYZXhwMTRlMYlcBuFRoRsWV3O/RRM1Co+
+         aVFX5/mAFgPNeo+wtXN/wOLX0CxEt12FysbtE+97nksDNugk9qYQU7a1RVZ4UqCy+mP5
+         z7E9DP68Ge3wGXBV0+9kKZFoFHEuaFrymKLgg=
+Date: Wed, 27 May 2009 23:37:58 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Oren Laadan <orenl@cs.columbia.edu>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@osdl.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-api@vger.kernel.org,
+       Serge Hallyn <serue@us.ibm.com>, Dave Hansen <dave@linux.vnet.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Alexander Viro <viro@zeniv.linux.org.uk>,
+       Pavel Emelyanov <xemul@openvz.org>
+Subject: Re: [RFC v16][PATCH 23/43] c/r: restart multiple processes
+Message-ID: <20090527193758.GC31930@x200.localdomain>
+References: <1243445589-32388-1-git-send-email-orenl@cs.columbia.edu> <1243445589-32388-24-git-send-email-orenl@cs.columbia.edu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1243445589-32388-24-git-send-email-orenl@cs.columbia.edu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 May 2009, Michael S. Tsirkin wrote:
-
-> On Wed, May 27, 2009 at 10:06:50AM -0400, Gregory Haskins wrote:
-> > Michael S. Tsirkin wrote:
-> > > On Wed, May 20, 2009 at 10:30:49AM -0400, Gregory Haskins wrote:
-> > >   
-> > >> +static int
-> > >> +kvm_assign_irqfd(struct kvm *kvm, int fd, int gsi)
-> > >> +{
-> > >> +	struct _irqfd *irqfd;
-> > >> +	struct file *file = NULL;
-> > >> +	int ret;
-> > >> +
-> > >> +	irqfd = kzalloc(sizeof(*irqfd), GFP_KERNEL);
-> > >> +	if (!irqfd)
-> > >> +		return -ENOMEM;
-> > >> +
-> > >> +	irqfd->kvm = kvm;
-> > >> +	irqfd->gsi = gsi;
-> > >> +	INIT_LIST_HEAD(&irqfd->list);
-> > >> +	INIT_WORK(&irqfd->work, irqfd_inject);
-> > >> +
-> > >> +	/*
-> > >> +	 * Embed the file* lifetime in the irqfd.
-> > >> +	 */
-> > >> +	file = fget(fd);
-> > >> +	if (IS_ERR(file)) {
-> > >> +		ret = PTR_ERR(file);
-> > >> +		goto fail;
-> > >> +	}
-> > >>     
-> > >
-> > > So we get a reference to a file, and unless the user is nice to us, it
-> > > will only be dropped when kvm char device file is closed?
-> > > I think this will deadlock if the fd in question is the open kvm char device.
-> > >
-> > >
-> > >   
-> > Hmm...I hadn't considered this possibility, though I am not sure if it
-> > would cause a deadlock in the pattern you suggest.  It seems more like
-> > it would result in, at worst, an extra reference to itself (and thus a
-> > leak) rather than a deadlock...
-> > 
-> > I digress.  In either case, perhaps I should s/fget/eventfd_fget to at
-> > least limit the type of fd to eventfd.  I was trying to be "slick" by
-> > not needing the eventfd_fget() exported, but I am going to need to
-> > export it later anyway for iosignalfd, so its probably a moot point.
-> > 
-> > Thanks Michael,
-> > -Greg
-> > 
+On Wed, May 27, 2009 at 01:32:49PM -0400, Oren Laadan wrote:
+> Restarting of multiple processes expects all restarting tasks to call
+> sys_restart(). Once inside the system call, each task will restart
+> itself at the same order that they were saved. The internals of the
+> syscall will take care of in-kernel synchronization bewteen tasks.
 > 
-> This only works as long as eventfd does not do fget on some fd as well.
-> Which it does not do now, and may never do - but we create a fragile
-> system this way.
+> This patch does _not_ create the task tree in the kernel. Instead it
+> assumes that all tasks are created in some way and then invoke the
+> restart syscall. You can use the userspace mktree.c program to do
+> that.
 > 
-> I think it's really wrong, fundamentally, to keep a reference to a
-> file until another file is closed, unless you are code under fs/.
-> We will get nasty circular references sooner or later.
+> The init task (*) has a special role: it allocates the restart context
+> (ctx), and coordinates the operation. In particular, it first waits
+> until all participating tasks enter the kernel, and provides them the
+> common restart context. Once everyone in ready, it begins to restart
+> itself.
 > 
-> Isn't the real reason we use fd to be able to support the same interface
-> on top of both kvm and lguest?
-> And if so, wouldn't some kind of bus be a better solution?
+> In contrast, the other tasks enter the kernel, locate the init task (*)
+> and grab its restart context, and then wait for their turn to restore.
+> 
+> When a task (init or not) completes its restart, it hands the control
+> over to the next in line, by waking that task.
+> 
+> An array of pids (the one saved during the checkpoint) is used to
+> synchronize the operation. The first task in the array is the init
+> task (*). The restart context (ctx) maintain a "current position" in
+> the array, which indicates which task is currently active. Once the
+> currently active task completes its own restart, it increments that
+> position and wakes up the next task.
+> 
+> Restart assumes that userspace provides meaningful data, otherwise
+> it's garbage-in-garbage-out. In this case, the syscall may block
+> indefinitely, but in TASK_INTERRUPTIBLE, so the user can ctrl-c or
+> otherwise kill the stray restarting tasks.
+> 
+> In terms of security, restart runs as the user the invokes it, so it
+> will not allow a user to do more than is otherwise permitted by the
+> usual system semantics and policy.
+> 
+> Currently we ignore threads and zombies
 
-Another solution, that I proposed in the past, is having irqfd hold no 
-references to the eventfd. It's just register (holding an eventfd-get()) 
-for events (in the way that currently does), notice the POLLHUP, unchain 
-from it, and propagate the eventfd-close event to whatever the irqfd logic 
-is supposed to.
+Let's discuss threads and zombies.
 
-
-
-- Davide
-
-
-
----
- fs/eventfd.c |   10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
-
-Index: linux-2.6.mod/fs/eventfd.c
-===================================================================
---- linux-2.6.mod.orig/fs/eventfd.c	2009-05-27 12:10:03.000000000 -0700
-+++ linux-2.6.mod/fs/eventfd.c	2009-05-27 12:16:57.000000000 -0700
-@@ -59,7 +59,15 @@ int eventfd_signal(struct file *file, in
- 
- static int eventfd_release(struct inode *inode, struct file *file)
- {
--	kfree(file->private_data);
-+	struct eventfd_ctx *ctx = file->private_data;
-+
-+	/*
-+	 * No need to hold the lock here, since we are on the file cleanup
-+	 * path and the ones still attached to the wait queue will be
-+	 * serialized by wake_up_locked_poll().
-+	 */
-+	wake_up_locked_poll(&ctx->wqh, POLLHUP);
-+	kfree(ctx);
- 	return 0;
- }
- 
+1. Will zombie end up in a image?
+2. If yes, how it will be restored. Will it be forked, call restart(2)
+   and then somehow zombified inside kernel?
+3. How thread group will be restored, will every thread be CLONE_THREAD'ed?
+   What to do with exited thread group leaders, will they be forked, then
+   CLONE_THREAD thread group?
