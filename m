@@ -1,50 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760650AbZE0I5U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760845AbZE0I5c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760650AbZE0I5U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 04:57:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760622AbZE0I5A
+	id S1760845AbZE0I5c (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 04:57:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760678AbZE0I5I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 04:57:00 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:54735 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760122AbZE0I46 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 04:56:58 -0400
-Date: Wed, 27 May 2009 09:56:31 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Jamie Lokier <jamie@shareable.org>,
-       Catalin Marinas <catalin.marinas@arm.com>,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: Broken ARM atomic ops wrt memory barriers (was : [PATCH] Add
-	cmpxchg support for ARMv6+ systems)
-Message-ID: <20090527085631.GA18768@n2100.arm.linux.org.uk>
-References: <20090524145633.GA14754@Krystal> <20090525132027.GA946@shareable.org> <20090525151724.GA14321@Krystal> <20090525161941.GA3667@n2100.arm.linux.org.uk> <20090526145950.GB26713@n2100.arm.linux.org.uk> <20090526153654.GA17096@Krystal> <20090526155906.GC26713@n2100.arm.linux.org.uk> <20090526172322.GB19443@Krystal> <20090526182310.GG26713@n2100.arm.linux.org.uk> <20090527012243.GB29692@Krystal>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090527012243.GB29692@Krystal>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 27 May 2009 04:57:08 -0400
+Received: from hera.kernel.org ([140.211.167.34]:43804 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759310AbZE0I5H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 04:57:07 -0400
+Subject: Re: [Patch 2/2] Doc: move Documentation/exception.txt into x86
+ subdir
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Amerigo Wang <amwang@redhat.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       rdunlap@xenotime.net, mingo@elte.hu
+In-Reply-To: <4A1CFBCB.8020808@redhat.com>
+References: <20090527072952.6279.72977.sendpatchset@localhost.localdomain>
+	 <20090527073001.6279.90725.sendpatchset@localhost.localdomain>
+	 <1243412698.3109.4.camel@localhost.localdomain>
+	 <4A1CFBCB.8020808@redhat.com>
+Content-Type: text/plain
+Date: Wed, 27 May 2009 14:26:34 +0530
+Message-Id: <1243414594.3109.10.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 26, 2009 at 09:22:43PM -0400, Mathieu Desnoyers wrote:
-> My point was not about the wmb() : we _clearly_ need a dmb there. My
-> point is about the hidden
+On Wed, 2009-05-27 at 16:37 +0800, Amerigo Wang wrote:
+> Jaswinder Singh Rajput wrote:
+> > On Wed, 2009-05-27 at 03:28 -0400, Amerigo Wang wrote:
+> >   
+> >> exception.txt only explains the code on x86, so it's better to
+> >> move it into Documentation/x86 directory.
+> >>
+> >> This patch is on top of the previous one.
+> >>
+> >> Signed-off-by: WANG Cong <amwang@redhat.com>
+> >> Cc: Randy Dunlap <rdunlap@xenotime.net>
+> >> Cc: Ingo Molnar <mingo@elte.hu>
+> >>
+> >> ---
+> >> Index: linux-2.6/Documentation/exception.txt
+> >> ===================================================================
+> >> --- linux-2.6.orig/Documentation/exception.txt
+> >> +++ /dev/null
+> >>     
+> >
+> >   
+> >> Index: linux-2.6/Documentation/x86/extable.txt
+> >> ===================================================================
+> >> --- /dev/null
+> >> +++ linux-2.6/Documentation/x86/extable.txt
+> >>     
+> >
+> > What is the reason of this name change exception.txt -> extable.txt
+> >   
+> Hello,
 > 
-> smp_read_barrier_depends() in rcu_dereference() :
+> Because this doc explains how exception tables work on x86, not the 
+> hardware concept
+> "exceptions" of x86 CPU, thus extable.txt is much more reasonable. :)
 > 
-> cpyptr = ptr;
-> smp_read_barrier_depends();
-> access *cpyptr data
-> 
-> Which is needed to make sure we update our global view of memory between
-> the pointer value read and the moment we read the data pointed to. This
-> makes sure the data read is not garbage.
 
-There is a dependency between reading 'ptr' and reading 'data'.
-I think there was a paragraph in the ARM ARM about this which says
-that they happen in program order, but I don't have access at the
-moment to the ARM ARM to check right now.
+In such case you can use exception-tables.txt or
+exception-tables-howto.txt
+
+--
+JSR
+
