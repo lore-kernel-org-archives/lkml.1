@@ -1,67 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759808AbZE0Fua@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760318AbZE0FvU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759808AbZE0Fua (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 01:50:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758991AbZE0FuW
+	id S1760318AbZE0FvU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 01:51:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758991AbZE0FvI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 01:50:22 -0400
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:33632 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751228AbZE0FuW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 01:50:22 -0400
-Date: Wed, 27 May 2009 14:50:06 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Joe Perches <joe@perches.com>
-Cc: Grant Likely <grant.likely@secretlab.ca>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 16/18] MAINTAINERS - Remove L: linux-kernel@vger.kernel.org from all but "THE REST"
-Message-ID: <20090527055005.GA9802@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Joe Perches <joe@perches.com>,
-	Grant Likely <grant.likely@secretlab.ca>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org
-References: <cover.1243131992.git.joe@perches.com> <9f55522f7ab56afcf16d936d06ab2f3a7e699ed5.1243131992.git.joe@perches.com> <fa686aa40905232018x5e6d1d1aofef790dee2e3bfae@mail.gmail.com> <1243135358.3560.1.camel@Joe-Laptop.home> <fa686aa40905232128x475ea76dh861bf4d0fd3e1aef@mail.gmail.com> <1243139947.3560.7.camel@Joe-Laptop.home> <fa686aa40905232151g5ed5bcc8t2f19d63ace2277e7@mail.gmail.com> <20090527013303.GB8979@linux-sh.org> <1243402718.27337.8.camel@Joe-Laptop.home>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1243402718.27337.8.camel@Joe-Laptop.home>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 27 May 2009 01:51:08 -0400
+Received: from hera.kernel.org ([140.211.167.34]:45259 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759255AbZE0FvG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 01:51:06 -0400
+Subject: Re: [RFC PATCH]debugfs:Fix terminology inconsistency of dir name
+ to mount debugfs filesystem.
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: GeunSik Lim <leemgs1@gmail.com>, Greg KH <greg@kroah.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, trivial@kernel.org,
+       balagi@justmail.de, bgamari@gmail.com, Ingo Molnar <mingo@elte.hu>,
+       inaky.perez-gonzalez@intel.com
+In-Reply-To: <alpine.DEB.2.00.0905262231210.27902@gandalf.stny.rr.com>
+References: <1243315163.14685.17.camel@centos51>
+	 <alpine.DEB.2.00.0905261642130.26705@gandalf.stny.rr.com>
+	 <20090526205414.GA26016@kroah.com>
+	 <alpine.DEB.2.00.0905261711310.26705@gandalf.stny.rr.com>
+	 <49b7c2350905261924h34e5f019g9e38735bb64bbf87@mail.gmail.com>
+	 <alpine.DEB.2.00.0905262231210.27902@gandalf.stny.rr.com>
+Content-Type: text/plain
+Date: Wed, 27 May 2009 11:20:37 +0530
+Message-Id: <1243403437.3118.10.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 26, 2009 at 10:38:38PM -0700, Joe Perches wrote:
-> On Wed, 2009-05-27 at 10:33 +0900, Paul Mundt wrote:
-> > On Sat, May 23, 2009 at 10:51:24PM -0600, Grant Likely wrote:
-> > > Do subsystem maintainers think so?  Unless they do (and tell others
-> > > so), I don't think it will actually happen.  Until that point, I don't
-> > > think the L:linux-kernel lines should be removed.
-> > > 
-> > Ultimately it should come to common sense. If you are only touching
-> > subsystem or architecture-specific code and it's unlikely anyone on l-k
-> > is going to care, or have much to add to it, then there really isn't a
-> > lot of point in mindlessly Cc-ing the list on every change.
-> 
-> And if you already know who or to what list you
-> want to submit a patch to, the MAINTAINERS entry
-> doesn't much matter.
-> 
-That's not true. If I have to hack something up in some random subsystem
-then I will often have to hunt for both the list address (if there is one
-at all!), as well as the folks looking after that code. Yes, I could
-blindly send it to a given list, but it's much more likely to fall
-through than sending it directly to the people who care.
+Hello Steve,
 
-MAINTAINERS is very useful for randomly looking up people and email
-addresses, especially if they aren't people you routinely interact with.
-It's also much faster to look through than remembering the proper
-incantation for a specific perl script ;-)
+On Tue, 2009-05-26 at 22:38 -0400, Steven Rostedt wrote:
 
-Knowing where to look and knowing who to talk to are two different
-things. Most subsystem maintainers only interact with a small group of
-other subsystem maintainers on any sort of regular basis, while things
-like build errors in -next often send you scurrying one way or the other.
+> If you look in Documentation/trace/ftrace.txt I have:
+> 
+> ===
+> To mount the debugfs system:
+> 
+>   # mkdir /debug
+>   # mount -t debugfs nodev /debug
+> 
+> ( Note: it is more common to mount at /sys/kernel/debug, but for
+>   simplicity this document will use /debug)
+> ===
+> 
+
+Please standardize Documentation/trace/ftrace.txt and avoid confusion to
+users:
+
+===
+To mount the debugfs system:
+
+  # mount -t debugfs nodev /sys/kernel/debug
+===
+
+Thanks,
+--
+JSR
+
