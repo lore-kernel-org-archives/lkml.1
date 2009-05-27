@@ -1,50 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762834AbZE0O7V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764252AbZE0O7c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762834AbZE0O7V (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 10:59:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755244AbZE0O7I
+	id S1764252AbZE0O7c (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 10:59:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762619AbZE0O7N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 10:59:08 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:52076 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751503AbZE0O7H (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 10:59:07 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-Subject: [PATCH 0/2] kvm: validate irqfd type
-To: mst@redhat.com
-Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com,
-       davidel@xmailserver.org, mtosatti@redhat.com
-Date: Wed, 27 May 2009 10:36:55 -0400
-Message-ID: <20090527143251.14024.89090.stgit@dev.haskins.net>
-In-Reply-To: <4A1D48FA.9080403@novell.com>
-References: <4A1D48FA.9080403@novell.com>
-User-Agent: StGIT/0.14.3
+	Wed, 27 May 2009 10:59:13 -0400
+Received: from cantor.suse.de ([195.135.220.2]:54156 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761743AbZE0O7K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 10:59:10 -0400
+Date: Wed, 27 May 2009 16:59:11 +0200
+From: Jan Kara <jack@suse.cz>
+To: Theodore Tso <tytso@mit.edu>, Jan Kara <jack@suse.cz>,
+       LKML <linux-kernel@vger.kernel.org>, npiggin@suse.de,
+       linux-ext4@vger.kernel.org
+Subject: Re: [PATCH 0/11] Fix page_mkwrite() for blocksize < pagesize
+Message-ID: <20090527145911.GH16006@duck.suse.cz>
+References: <1243429268-3028-1-git-send-email-jack@suse.cz> <20090527142332.GB10842@mit.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090527142332.GB10842@mit.edu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Tsirkin pointed out an issue in kvm.git w.r.t. malicious userspace
-configuring irqfd objects:
+On Wed 27-05-09 10:23:32, Theodore Tso wrote:
+> On Wed, May 27, 2009 at 03:00:57PM +0200, Jan Kara wrote:
+> > 
+> > The series is against 2.6.30-rc7. The first two patches are just
+> > small cleanup and should be merged separately (Ted should have the
+> > ext4 cleanup rebased on top of current ext4 tree). 
+> 
+> So I can take the cleanup (which will be different given the changes
+> that are ready to get merged once the merge window opens), but it
+  I sent you yesterday the version of the cleanup which should apply to the
+latest patch queue. I think you can merge it right away.
+ In fact, this series should not depend on the cleanup in ext4 at all, I've
+just included it for completeness along with ext3 cleanup of the same
+problem (and the patch series depends on ext3 cleanup).
 
-http://lkml.org/lkml/2009/5/27/341
+> looks like the the second ext4 patch can't go in until we get
+> agreement that changes to the VFS layer should go in, correct?  So
+> we'll have a merge order dependency here.
+  Yes, we have to agree on VFS changes before ext4 changes make sense.
 
-This series applies to kvm.git/master:1a6a35a1 to attempt to close the
-vulnerability.
+> (And this one will be the 2nd merge order dependency we have in the
+> ext4 tree, since I also have some patches in the unstable portion of
+> the tree which are waiting for some tracing patches to go in.)
+> 
+> OK, what I'll probably do is to merge the core VFS patch plus the 2nd
+> ext4 patch into the ext4 patch queue in the unstable portion of the
+> queue for testing purposes, but I won't actually push the VFS core
+> changes.  We can figure out later who actually pushes the ext4 patch
+> which utilizes the new VFS infrastructure.
+  Yes, that would be fine. Thanks. Luckily, the dependence is just one way
+(ext4 change has to go after the VFS patch) so it's just enough to merge
+that ext4 change some time after VFS changes go in.
 
----
-
-Gregory Haskins (2):
-      kvm: validate irqfd type
-      eventfd: export eventfd interfaces for module use
-
-
- fs/eventfd.c       |    3 +++
- virt/kvm/eventfd.c |    3 ++-
- 2 files changed, 5 insertions(+), 1 deletions(-)
-
+								Honza
 -- 
-Signature
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
