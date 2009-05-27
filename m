@@ -1,182 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761854AbZE0HiM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763895AbZE0Hhu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761854AbZE0HiM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 03:38:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763589AbZE0Hfg
+	id S1763895AbZE0Hhu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 03:37:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763417AbZE0Hd6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 03:35:36 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:50170 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1762502AbZE0Hfe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 03:35:34 -0400
-Message-ID: <4A1CED66.7030805@cn.fujitsu.com>
-Date: Wed, 27 May 2009 15:36:06 +0800
-From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Wed, 27 May 2009 03:33:58 -0400
+Received: from mga06.intel.com ([134.134.136.21]:7158 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1762359AbZE0Hd5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 03:33:57 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,258,1241420400"; 
+   d="scan'208";a="415981564"
+Date: Wed, 27 May 2009 15:17:36 +0800
+From: Yong Wang <yong.y.wang@linux.intel.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org
+Subject: One question about perf_counter on IA
+Message-ID: <20090527071736.GA26774@ywang-moblin2.bj.intel.com>
 MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: mingo@elte.hu, LKML <linux-kernel@vger.kernel.org>,
-       Zhaolei <zhaolei@cn.fujitsu.com>, kosaki.motohiro@jp.fujitsu.com,
-       Steven Rostedt <rostedt@goodmis.org>, fweisbec@gmail.com
-Subject: Re: [PATCH 1/3] ftrace: add tracepoint for timer
-References: <4A167615.7050208@cn.fujitsu.com> <alpine.LFD.2.00.0905262334030.1762@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0905262334030.1762@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I noticed that the LVT error register is masked and then unmasked during
+perf_counter initialization on IA in arch/x86/kernel/cpu/perf_counter.c
 
-
-Thomas Gleixner wrote:
-> On Fri, 22 May 2009, Xiao Guangrong wrote:
-> 
->> This patch is modify from Mathieu's patch base on ingo's suggestion, the original patch
->> can be found here: 
->> 	http://marc.info/?l=linux-kernel&m=123791201816247&w=2
-> 
->   I have a hard time to connect this patch to the original one.
->  
-
-There are some timer hook in Mathieu's patch, I just modify the tracepoint name and
-add the tracepoint in other suitable place.
-
->> +TRACE_EVENT(timer_start,
->> +
->> +	TP_PROTO(struct timer_list *timer, int cpu),
->> +
->> +	TP_ARGS(timer, cpu),
->> +
->> +	TP_STRUCT__entry(
->> +		__field( void *,	timer		)
->> +		__field( void *,	function	)
->> +		__field( unsigned long,	expires		)
->> +		__field( int,		cpu		)
->> +	),
->> +
->> +	TP_fast_assign(
->> +		__entry->timer		= timer;
->> +		__entry->function	= timer->function;
->> +		__entry->expires	= timer->expires;
->> +		__entry->cpu		= cpu;
->> +	),
->> +
->> +	TP_printk("timer=%p func=%pf expires=%lu cpu=%d", __entry->timer,
->> +		  __entry->function, __entry->expires, __entry->cpu)
->> +);
-> 
->   How do we connect the trace to the jiffies value when the timer
->   was started ?
-> 
-
-ftrace already have time information in trace event's output, we can use it instead
-
->> +
->> +TRACE_EVENT(timer_expire,
->> +
->> +	TP_PROTO(struct timer_list *timer),
->> +
->> +	TP_ARGS(timer),
->> +
->> +	TP_STRUCT__entry(
->> +		__field( void *,	timer		)
->> +		__field( void *,        function	)
->> +	),
->> +
->> +	TP_fast_assign(
->> +		__entry->timer		= timer;
->> +		__entry->function       = timer->function;
->> +	),
->> +
->> +	TP_printk("timer=%p func=%pf", __entry->timer, __entry->function)
->> +);
-> 
->   Ditto.
-> 
-
-Yes, you are right, I'll remove __entry->function in v2 patch
-
->> +TRACE_EVENT(timer_cancel,
->> +
->> +	TP_PROTO(struct timer_list *timer),
->> +
->> +	TP_ARGS(timer),
->> +
->> +	TP_STRUCT__entry(
->> +		__field( void *,	timer		)
->> +		__field( void *,        function        )
->> +	),
->> +
->> +	TP_fast_assign(
->> +		__entry->timer		= timer;
->> +		__entry->function	= timer->function;
->> +	),
->> +
->> +	TP_printk("timer=%p func=%pf", __entry->timer, __entry->function)
->> +);
-> 
->   Same here.
-> 
->> @@ -547,6 +550,7 @@ void init_timer_key(struct timer_list *timer,
->>  {
->>  	debug_timer_init(timer);
->>  	__init_timer(timer, name, key);
->> +	trace_timer_init(timer);
-> 
->   Can we please avoid to have two debug calls in one 2 line function ?
-> 
-
-debug_timer_init() must call before object's init, but tracepoint have to call
-after object's init beacuse if we move the tracepoint to before object init, the
-object has no data yet.
-
->>  }
->>  EXPORT_SYMBOL(init_timer_key);
->>  
->> @@ -565,6 +569,7 @@ static inline void detach_timer(struct timer_list *timer,
->>  	struct list_head *entry = &timer->entry;
->>  
->>  	debug_timer_deactivate(timer);
->> +	trace_timer_cancel(timer);
-> 
->   Ditto. Please create one debug entity which covers both.
->
-
-IMHO, we can't create one entity for init event, so we do better detach other event.
-
-for example:  
-
-in init event:
-void init_timer_key(...)
+void perf_counters_lapic_init(int nmi)
 {
-	debug_timer_init(timer); 
-	__init_timer(timer, name, key);
-	trace_timer_init(timer); 
-}
- 
-but in detach event ():
-void detach_timer(...)
-{
-	......
-	trace_timer_deactivate()
+	u32 apic_val;
+
+	if (!x86_pmu_initialized())
+		return;
+
+	/*
+	 * Enable the performance counter vector in the APIC LVT:
+	 */
+	apic_val = apic_read(APIC_LVTERR);
+
+	apic_write(APIC_LVTERR, apic_val | APIC_LVT_MASKED);
+	if (nmi)
+		apic_write(APIC_LVTPC, APIC_DM_NMI);
+	else
+		apic_write(APIC_LVTPC, LOCAL_PERF_VECTOR);
+	apic_write(APIC_LVTERR, apic_val);
 }
 
-void trace_timer_deactivate()
-{
-	debug_timer_deactivate(timer);
-	trace_timer_cancel(timer);
-}
- 
-it's  disunity for us.
+Why is this needed? Is this documented somewhere in the spec? I tried
+commenting out the masking and unmasking operations and I did not any
+error interrupt generated.
 
-Thanks,
-Xiao Guangrong
- 
->   ....
-> 
-> Thanks,
-> 
-> 	tglx
-> 
-> 
+Thanks
+-Yong
