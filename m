@@ -1,61 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760996AbZE0Jv1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761541AbZE0Jzy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760996AbZE0Jv1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 05:51:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759733AbZE0JvT
+	id S1761541AbZE0Jzy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 05:55:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757210AbZE0Jzq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 05:51:19 -0400
-Received: from mga06.intel.com ([134.134.136.21]:64329 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755794AbZE0JvT (ORCPT
+	Wed, 27 May 2009 05:55:46 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:45251 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751568AbZE0Jzp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 05:51:19 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,258,1241420400"; 
-   d="scan'208";a="416013622"
-Date: Wed, 27 May 2009 11:53:28 +0200
-From: Samuel Ortiz <sameo@linux.intel.com>
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Kay Sievers <kay.sievers@vrfy.org>, holtmann@linux.intel.com,
-       yi.zhu@intel.com, linux-kernel@vger.kernel.org, greg@kroah.com
-Subject: Re: [PATCH] firmware: Allocate firmware id dynamically
-Message-ID: <20090527095326.GD3777@sortiz.org>
-References: <20090526140423.GA14683@sortiz.org> <ac3eb2510905260711hb273541i8d69128b88933f7f@mail.gmail.com> <20090526132351.9805f1e8.akpm@linux-foundation.org> <20090527115748.9ff0bad1.sfr@canb.auug.org.au> <20090527081732.GB3777@sortiz.org> <20090527091611.GA3986@tuxdriver.com>
+	Wed, 27 May 2009 05:55:45 -0400
+Date: Wed, 27 May 2009 05:55:33 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Tom Zanussi <tzanussi@gmail.com>, "Theodore Ts'o" <tytso@mit.edu>,
+       Steven Whitehouse <swhiteho@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Jeff Moyer <jmoyer@redhat.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v2 1/2] tracing/events: make __string() more general
+Message-ID: <20090527095532.GA17236@infradead.org>
+References: <4A1B6A2F.2040703@cn.fujitsu.com> <4A1B6A4C.3070407@cn.fujitsu.com> <20090526060232.GA10669@infradead.org> <4A1C9AC4.3090704@cn.fujitsu.com> <20090527072956.GC24381@infradead.org> <4A1CF5F2.6050209@cn.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090527091611.GA3986@tuxdriver.com>
+In-Reply-To: <4A1CF5F2.6050209@cn.fujitsu.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 27, 2009 at 11:16:13AM +0200, John W. Linville wrote:
-> On Wed, May 27, 2009 at 10:17:33AM +0200, Samuel Ortiz wrote:
+On Wed, May 27, 2009 at 04:12:34PM +0800, Li Zefan wrote:
+> >         TP_fast_assign(
+> > 		__entry->ino = args->dp->i_ino;
+> > 		if (args->namelen)
+> > 			memcpy(__entry->name, args->name,
+> > 			       min(args->namelen, TRACE_MAXNAMELEN));
 > 
-> > > next-20090526:drivers/net/wireless/p54/p54usb.c
+> This string is not NULL-terminated?
+
+As written a little above it's indeed not NULL-terminated.
+
+> Then the above code can be rewrote:
 > 
-> > All of those have been taken care of by my last patch set, see:
-> > http://lkml.org/lkml/2009/5/26/518
-> > 
-> > The p54usb one has been sent to John and linux-wireless as it's coming from
-> > wireless-testing.
+> TRACE_EVENT(xfs_dir2,
+> 	TP_PROTO(struct xfs_da_args *args, int i, int j, int count),
+> 	TP_ARGS(args, i, j, count),
 > 
-> Is that patch dependent on other p54 bits in wireless-next-2.6?
-The p54usb.c FIRMWARE_NAME_MAX reference was introduce with commit
-1ca5f2e94c40b04d5dec437cd41fd5ba12aaac31 from your wireless-next-2.6 tree.
+> 	TP_STRUCT__entry(
+> 		__field(xfs_ino_t, ino)
+> 		__string(name, args->namelen)
+> 		__field(int, namelen)
+> 		...
+> 	),
+> 
+>         TP_fast_assign(
+> 		__entry->ino = args->dp->i_ino;
+> 		memcpy(__fetch_str(name), args->name, args->namelen);
+> 		__entry->namelen = args->namelen;
+> 		...
+> 	),
+> 
+> 	TP_printk("ino 0x%lld %pF name %.*s namelen %d hashval 0x%x "
+> 		  "inumber 0x%llx op_flags %s i %d j %d count %d",
+> 		  __entry->ino,
+> 		  (void *)__entry->caller_ip,
+> 		  __entry->namelen,
+> 		  __get_str(name),
+> 		  __entry->namelen,
 
-Cheers,
-Samuel.
-
- 
-> John
-> -- 
-> John W. Linville		Someday the world will need a hero, and you
-> linville@tuxdriver.com			might be all we have.  Be ready.
-
--- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
+That's indeed wht I would love to see.
