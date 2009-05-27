@@ -1,65 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762403AbZE0Pnk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760820AbZE0P70@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762403AbZE0Pnk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 11:43:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760078AbZE0Pnb
+	id S1760820AbZE0P70 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 11:59:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756539AbZE0P7S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 11:43:31 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55869 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758981AbZE0Pna (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 11:43:30 -0400
-Date: Wed, 27 May 2009 08:34:22 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-cc: Ingo Molnar <mingo@elte.hu>, the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>, Greg KH <gregkh@suse.de>,
-       Jens Axboe <jens.axboe@oracle.com>, Chris Wright <chrisw@redhat.com>,
-       kurt.hackel@oracle.com, Andrew Morton <akpm@linux-foundation.org>,
-       Ky Srinivasan <ksrinivasan@novell.com>, Beulich <jbeulich@novell.com>,
-       Avi Kivity <avi@redhat.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: Re: [PATCH 17/17] xen: disable MSI
-In-Reply-To: <1243409850-21577-18-git-send-email-jeremy@goop.org>
-Message-ID: <alpine.LFD.2.01.0905270829530.3435@localhost.localdomain>
-References: <1243409850-21577-1-git-send-email-jeremy@goop.org> <1243409850-21577-18-git-send-email-jeremy@goop.org>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Wed, 27 May 2009 11:59:18 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:48783 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756073AbZE0P7S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 11:59:18 -0400
+Date: Wed, 27 May 2009 08:59:17 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Catalin Marinas <catalin.marinas@arm.com>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       Jamie Lokier <jamie@shareable.org>,
+       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: Broken ARM atomic ops wrt memory barriers (was : [PATCH] Add
+	cmpxchg support for ARMv6+ systems)
+Message-ID: <20090527155917.GB6729@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090525151724.GA14321@Krystal> <20090525161941.GA3667@n2100.arm.linux.org.uk> <20090526145950.GB26713@n2100.arm.linux.org.uk> <20090526153654.GA17096@Krystal> <20090526155906.GC26713@n2100.arm.linux.org.uk> <20090526172322.GB19443@Krystal> <20090526182310.GG26713@n2100.arm.linux.org.uk> <20090527012243.GB29692@Krystal> <1243415686.1947.24.camel@pc1117.cambridge.arm.com> <20090527145244.GC16459@Krystal>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090527145244.GC16459@Krystal>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 27 May 2009, Jeremy Fitzhardinge wrote:
+On Wed, May 27, 2009 at 10:52:44AM -0400, Mathieu Desnoyers wrote:
+> * Catalin Marinas (catalin.marinas@arm.com) wrote:
+> > On Tue, 2009-05-26 at 21:22 -0400, Mathieu Desnoyers wrote:
+> > > So, my questions is : is ARMv7 weak memory ordering model as weak as
+> > > Alpha ?
+> > 
+> > I'm not familiar with Alpha but ARM allows a weakly ordered memory
+> > system (starting with ARMv6), it's up to the processor implementer to
+> > decide how weak but within the ARM ARM restrictions (section A3.8.2).
+> > 
+> > I think the main difference with Alpha is that ARM doesn't do
+> > speculative writes, only speculative reads. The write cannot become
+> > visible to other observers in the same shareability domain before the
+> > instruction occurs in program order. But because of the write buffer,
+> > there is no guarantee on the order of two writes becoming visible to
+> > other observers in the same shareability domain. The reads from normal
+> > memory can happen speculatively (with a few restrictions)
+> > 
+> > Summarising from the ARM ARM, there are two terms used:
+> > 
+> >         Address dependency - an address dependency exists when the value
+> >         returned by a read access is used to compute the virtual address
+> >         of a subsequent read or write access.
+> >         
+> >         Control dependency - a control dependency exists when the data
+> >         value returned by a read access is used to determine the
+> >         condition code flags, and the values of the flags are used for
+> >         condition code checking to determine the address of a subsequent
+> >         read access.
+> >         
+> > The (simplified) memory ordering restrictions of two explicit accesses
+> > (where multiple observers are present and in the same shareability
+> > domain):
+> > 
+> >       * If there is an address dependency then the two memory accesses
+> >         are observed in program order by any observer
+> >       * If the value returned by a read access is used as data written
+> >         by a subsequent write access, then the two memory accesses are
+> >         observed in program order
+> >       * It is impossible for an observer of a memory location to observe
+> >         a write access to that memory location if that location would
+> >         not be written to in a sequential execution of a program
+> > 
+> > Outside of these restrictions, the processor implementer can do whatever
+> > it makes the CPU faster. To ensure the relative ordering between memory
+> > accesses (either read or write), the software should have DMB
+> > instructions.
 > 
-> [ Impact: prevent MSI subsystem from crashing ]
+> Great, so no need to worry about smp_read_barrier_depend then, given
+> there is an address dependency.
 
-Grr.
+No need to worry from a CPU viewpoint, but still need to disable any
+value-speculation optimizations that the compiler guys might indulge in.
 
-I looked at several of these impact lines, and they were _all_ totally 
-misleading.
+							Thanx, Paul
 
-Please, guys. Stop with the F*CKING impact lines already. Add them if they 
-are obvious, but don't make them this idiotic "do an impact line whether 
-or not it makes sense".
-
-I hate them. They are stupid. 90% of all the impact lines I see are either 
-(a) misleading or (b) totally inane and pointless. 
-
-In this case, we would have been a LOT BETTER OFF with having just a 
-better header line that said "xen: disable MSI to avoid crash" or 
-something like that. But no. THAT F*CKING IMPACT LINE apparently meant 
-that Jeremy just turned off his brain, and made _both_ the header line and 
-the Impact: line be non-descriptive.
-
-Really. Stop it. Ingo, start saying "no" to people, at least for impact 
-lines that do not make sense. It adds _nothing_, and it actually detracts 
-from real content, because just the inanity of them delutes the whole 
-meaning of it.
-
-		Linus
+> Thanks !
+> 
+> Mathieu
+> 
+> > -- 
+> > Catalin
+> > 
+> 
+> -- 
+> Mathieu Desnoyers
+> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
