@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932098AbZE0Hd1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763355AbZE0Hdj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932098AbZE0Hd1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 03:33:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762457AbZE0H1N
+	id S1763355AbZE0Hdj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 03:33:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762473AbZE0H1P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 03:27:13 -0400
+	Wed, 27 May 2009 03:27:15 -0400
 Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:46942 "EHLO
 	monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762426AbZE0H1K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 03:27:10 -0400
+	id S1762454AbZE0H1N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 03:27:13 -0400
 From: Michal Simek <monstr@monstr.eu>
 To: linux-kernel@vger.kernel.org
 Cc: john.williams@petalogix.com, microblaze-uclinux@itee.uq.edu.au,
        michal.simek@petalogix.com, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 07/29] microblaze_mmu_v2: Page fault handling high level - fault.c
-Date: Wed, 27 May 2009 08:47:32 +0200
-Message-Id: <1243406874-3917-8-git-send-email-monstr@monstr.eu>
+Subject: [PATCH 08/29] microblaze_mmu_v2: Context handling - mmu_context.c/h
+Date: Wed, 27 May 2009 08:47:33 +0200
+Message-Id: <1243406874-3917-9-git-send-email-monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <1243406874-3917-7-git-send-email-monstr@monstr.eu>
+In-Reply-To: <1243406874-3917-8-git-send-email-monstr@monstr.eu>
 References: <1243406874-3917-1-git-send-email-monstr@monstr.eu>
  <1243406874-3917-2-git-send-email-monstr@monstr.eu>
  <1243406874-3917-3-git-send-email-monstr@monstr.eu>
@@ -25,325 +25,303 @@ References: <1243406874-3917-1-git-send-email-monstr@monstr.eu>
  <1243406874-3917-5-git-send-email-monstr@monstr.eu>
  <1243406874-3917-6-git-send-email-monstr@monstr.eu>
  <1243406874-3917-7-git-send-email-monstr@monstr.eu>
+ <1243406874-3917-8-git-send-email-monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/mm/fault.c |  304 ++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 304 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/mm/fault.c
+ arch/microblaze/include/asm/mmu_context.h    |   26 +----
+ arch/microblaze/include/asm/mmu_context_mm.h |  140 ++++++++++++++++++++++++++
+ arch/microblaze/include/asm/mmu_context_no.h |   23 ++++
+ arch/microblaze/mm/mmu_context.c             |   70 +++++++++++++
+ 4 files changed, 238 insertions(+), 21 deletions(-)
+ create mode 100644 arch/microblaze/include/asm/mmu_context_mm.h
+ create mode 100644 arch/microblaze/include/asm/mmu_context_no.h
+ create mode 100644 arch/microblaze/mm/mmu_context.c
 
-diff --git a/arch/microblaze/mm/fault.c b/arch/microblaze/mm/fault.c
+diff --git a/arch/microblaze/include/asm/mmu_context.h b/arch/microblaze/include/asm/mmu_context.h
+index 150ca01..385fed1 100644
+--- a/arch/microblaze/include/asm/mmu_context.h
++++ b/arch/microblaze/include/asm/mmu_context.h
+@@ -1,21 +1,5 @@
+-/*
+- * Copyright (C) 2006 Atmark Techno, Inc.
+- *
+- * This file is subject to the terms and conditions of the GNU General Public
+- * License. See the file "COPYING" in the main directory of this archive
+- * for more details.
+- */
+-
+-#ifndef _ASM_MICROBLAZE_MMU_CONTEXT_H
+-#define _ASM_MICROBLAZE_MMU_CONTEXT_H
+-
+-# define init_new_context(tsk, mm)		({ 0; })
+-
+-# define enter_lazy_tlb(mm, tsk)		do {} while (0)
+-# define change_mm_context(old, ctx, _pml4)	do {} while (0)
+-# define destroy_context(mm)			do {} while (0)
+-# define deactivate_mm(tsk, mm)			do {} while (0)
+-# define switch_mm(prev, next, tsk)		do {} while (0)
+-# define activate_mm(prev, next)		do {} while (0)
+-
+-#endif /* _ASM_MICROBLAZE_MMU_CONTEXT_H */
++#ifdef CONFIG_MMU
++# include "mmu_context_mm.h"
++#else
++# include "mmu_context_no.h"
++#endif
+diff --git a/arch/microblaze/include/asm/mmu_context_mm.h b/arch/microblaze/include/asm/mmu_context_mm.h
 new file mode 100644
-index 0000000..5e67cd1
+index 0000000..3e5c254
 --- /dev/null
-+++ b/arch/microblaze/mm/fault.c
-@@ -0,0 +1,304 @@
++++ b/arch/microblaze/include/asm/mmu_context_mm.h
+@@ -0,0 +1,140 @@
 +/*
-+ *  arch/microblaze/mm/fault.c
++ * Copyright (C) 2008-2009 Michal Simek <monstr@monstr.eu>
++ * Copyright (C) 2008-2009 PetaLogix
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ */
++
++#ifndef _ASM_MICROBLAZE_MMU_CONTEXT_H
++#define _ASM_MICROBLAZE_MMU_CONTEXT_H
++
++#include <asm/atomic.h>
++#include <asm/bitops.h>
++#include <asm/mmu.h>
++#include <asm-generic/mm_hooks.h>
++
++# ifdef __KERNEL__
++/*
++ * This function defines the mapping from contexts to VSIDs (virtual
++ * segment IDs).  We use a skew on both the context and the high 4 bits
++ * of the 32-bit virtual address (the "effective segment ID") in order
++ * to spread out the entries in the MMU hash table.
++ */
++# define CTX_TO_VSID(ctx, va)	(((ctx) * (897 * 16) + ((va) >> 28) * 0x111) \
++				 & 0xffffff)
++
++/*
++   MicroBlaze has 256 contexts, so we can just rotate through these
++   as a way of "switching" contexts.  If the TID of the TLB is zero,
++   the PID/TID comparison is disabled, so we can use a TID of zero
++   to represent all kernel pages as shared among all contexts.
++ */
++
++static inline void enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk)
++{
++}
++
++# define NO_CONTEXT	256
++# define LAST_CONTEXT	255
++# define FIRST_CONTEXT	1
++
++/*
++ * Set the current MMU context.
++ * This is done byloading up the segment registers for the user part of the
++ * address space.
++ *
++ * Since the PGD is immediately available, it is much faster to simply
++ * pass this along as a second parameter, which is required for 8xx and
++ * can be used for debugging on all processors (if you happen to have
++ * an Abatron).
++ */
++extern void set_context(mm_context_t context, pgd_t *pgd);
++
++/*
++ * Bitmap of contexts in use.
++ * The size of this bitmap is LAST_CONTEXT + 1 bits.
++ */
++extern unsigned long context_map[];
++
++/*
++ * This caches the next context number that we expect to be free.
++ * Its use is an optimization only, we can't rely on this context
++ * number to be free, but it usually will be.
++ */
++extern mm_context_t next_mmu_context;
++
++/*
++ * Since we don't have sufficient contexts to give one to every task
++ * that could be in the system, we need to be able to steal contexts.
++ * These variables support that.
++ */
++extern atomic_t nr_free_contexts;
++extern struct mm_struct *context_mm[LAST_CONTEXT+1];
++extern void steal_context(void);
++
++/*
++ * Get a new mmu context for the address space described by `mm'.
++ */
++static inline void get_mmu_context(struct mm_struct *mm)
++{
++	mm_context_t ctx;
++
++	if (mm->context != NO_CONTEXT)
++		return;
++	while (atomic_dec_if_positive(&nr_free_contexts) < 0)
++		steal_context();
++	ctx = next_mmu_context;
++	while (test_and_set_bit(ctx, context_map)) {
++		ctx = find_next_zero_bit(context_map, LAST_CONTEXT+1, ctx);
++		if (ctx > LAST_CONTEXT)
++			ctx = 0;
++	}
++	next_mmu_context = (ctx + 1) & LAST_CONTEXT;
++	mm->context = ctx;
++	context_mm[ctx] = mm;
++}
++
++/*
++ * Set up the context for a new address space.
++ */
++# define init_new_context(tsk, mm)	(((mm)->context = NO_CONTEXT), 0)
++
++/*
++ * We're finished using the context for an address space.
++ */
++static inline void destroy_context(struct mm_struct *mm)
++{
++	if (mm->context != NO_CONTEXT) {
++		clear_bit(mm->context, context_map);
++		mm->context = NO_CONTEXT;
++		atomic_inc(&nr_free_contexts);
++	}
++}
++
++static inline void switch_mm(struct mm_struct *prev, struct mm_struct *next,
++			     struct task_struct *tsk)
++{
++	tsk->thread.pgdir = next->pgd;
++	get_mmu_context(next);
++	set_context(next->context, next->pgd);
++}
++
++/*
++ * After we have set current->mm to a new value, this activates
++ * the context for the new mm so we see the new mappings.
++ */
++static inline void activate_mm(struct mm_struct *active_mm,
++			struct mm_struct *mm)
++{
++	current->thread.pgdir = mm->pgd;
++	get_mmu_context(mm);
++	set_context(mm->context, mm->pgd);
++}
++
++extern void mmu_context_init(void);
++
++# endif /* __KERNEL__ */
++#endif /* _ASM_MICROBLAZE_MMU_CONTEXT_H */
+diff --git a/arch/microblaze/include/asm/mmu_context_no.h b/arch/microblaze/include/asm/mmu_context_no.h
+new file mode 100644
+index 0000000..ba55671
+--- /dev/null
++++ b/arch/microblaze/include/asm/mmu_context_no.h
+@@ -0,0 +1,23 @@
++/*
++ * Copyright (C) 2008-2009 Michal Simek <monstr@monstr.eu>
++ * Copyright (C) 2008-2009 PetaLogix
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ */
++
++#ifndef _ASM_MICROBLAZE_MMU_CONTEXT_H
++#define _ASM_MICROBLAZE_MMU_CONTEXT_H
++
++# define init_new_context(tsk, mm)		({ 0; })
++
++# define enter_lazy_tlb(mm, tsk)		do {} while (0)
++# define change_mm_context(old, ctx, _pml4)	do {} while (0)
++# define destroy_context(mm)			do {} while (0)
++# define deactivate_mm(tsk, mm)			do {} while (0)
++# define switch_mm(prev, next, tsk)		do {} while (0)
++# define activate_mm(prev, next)		do {} while (0)
++
++#endif /* _ASM_MICROBLAZE_MMU_CONTEXT_H */
+diff --git a/arch/microblaze/mm/mmu_context.c b/arch/microblaze/mm/mmu_context.c
+new file mode 100644
+index 0000000..26ff82f
+--- /dev/null
++++ b/arch/microblaze/mm/mmu_context.c
+@@ -0,0 +1,70 @@
++/*
++ * This file contains the routines for handling the MMU.
 + *
 + *    Copyright (C) 2007 Xilinx, Inc.  All rights reserved.
 + *
-+ *  Derived from "arch/ppc/mm/fault.c"
++ *  Derived from arch/ppc/mm/4xx_mmu.c:
++ *  -- paulus
++ *
++ *  Derived from arch/ppc/mm/init.c:
 + *    Copyright (C) 1995-1996 Gary Thomas (gdt@linuxppc.org)
 + *
-+ *  Derived from "arch/i386/mm/fault.c"
++ *  Modifications by Paul Mackerras (PowerMac) (paulus@cs.anu.edu.au)
++ *  and Cort Dougan (PReP) (cort@cs.nmt.edu)
++ *    Copyright (C) 1996 Paul Mackerras
++ *  Amiga/APUS changes by Jesper Skov (jskov@cygnus.co.uk).
++ *
++ *  Derived from "arch/i386/mm/init.c"
 + *    Copyright (C) 1991, 1992, 1993, 1994  Linus Torvalds
 + *
-+ *  Modified by Cort Dougan and Paul Mackerras.
-+ *
-+ * This file is subject to the terms and conditions of the GNU General
-+ * Public License.  See the file COPYING in the main directory of this
-+ * archive for more details.
++ *  This program is free software; you can redistribute it and/or
++ *  modify it under the terms of the GNU General Public License
++ *  as published by the Free Software Foundation; either version
++ *  2 of the License, or (at your option) any later version.
 + *
 + */
 +
-+#include <linux/module.h>
-+#include <linux/signal.h>
-+#include <linux/sched.h>
-+#include <linux/kernel.h>
-+#include <linux/errno.h>
-+#include <linux/string.h>
-+#include <linux/types.h>
-+#include <linux/ptrace.h>
-+#include <linux/mman.h>
 +#include <linux/mm.h>
-+#include <linux/interrupt.h>
++#include <linux/init.h>
 +
-+#include <asm/page.h>
-+#include <asm/pgtable.h>
-+#include <asm/mmu.h>
++#include <asm/tlbflush.h>
 +#include <asm/mmu_context.h>
-+#include <asm/system.h>
-+#include <linux/uaccess.h>
-+#include <asm/exceptions.h>
 +
-+#if defined(CONFIG_KGDB)
-+int debugger_kernel_faults = 1;
-+#endif
-+
-+static unsigned long pte_misses;	/* updated by do_page_fault() */
-+static unsigned long pte_errors;	/* updated by do_page_fault() */
++mm_context_t next_mmu_context;
++unsigned long context_map[LAST_CONTEXT / BITS_PER_LONG + 1];
++atomic_t nr_free_contexts;
++struct mm_struct *context_mm[LAST_CONTEXT+1];
 +
 +/*
-+ * Check whether the instruction at regs->pc is a store using
-+ * an update addressing form which will update r1.
++ * Initialize the context management stuff.
 + */
-+static int store_updates_sp(struct pt_regs *regs)
++void __init mmu_context_init(void)
 +{
-+	unsigned int inst;
-+
-+	if (get_user(inst, (unsigned int *)regs->pc))
-+		return 0;
-+	/* check for 1 in the rD field */
-+	if (((inst >> 21) & 0x1f) != 1)
-+		return 0;
-+	/* check for store opcodes */
-+	if ((inst & 0xd0000000) == 0xd0000000)
-+		return 1;
-+	return 0;
-+}
-+
-+
-+/*
-+ * bad_page_fault is called when we have a bad access from the kernel.
-+ * It is called from do_page_fault above and from some of the procedures
-+ * in traps.c.
-+ */
-+static void bad_page_fault(struct pt_regs *regs, unsigned long address, int sig)
-+{
-+	const struct exception_table_entry *fixup;
-+/* MS: no context */
-+	/* Are we prepared to handle this fault?  */
-+	fixup = search_exception_tables(regs->pc);
-+	if (fixup) {
-+		regs->pc = fixup->fixup;
-+		return;
-+	}
-+
-+	/* kernel has accessed a bad area */
-+#if defined(CONFIG_KGDB)
-+	if (debugger_kernel_faults)
-+		debugger(regs);
-+#endif
-+	die("kernel access of bad area", regs, sig);
++	/*
++	 * The use of context zero is reserved for the kernel.
++	 * This code assumes FIRST_CONTEXT < 32.
++	 */
++	context_map[0] = (1 << FIRST_CONTEXT) - 1;
++	next_mmu_context = FIRST_CONTEXT;
++	atomic_set(&nr_free_contexts, LAST_CONTEXT - FIRST_CONTEXT + 1);
 +}
 +
 +/*
-+ * The error_code parameter is ESR for a data fault,
-+ * 0 for an instruction fault.
++ * Steal a context from a task that has one at the moment.
++ *
++ * This isn't an LRU system, it just frees up each context in
++ * turn (sort-of pseudo-random replacement :).  This would be the
++ * place to implement an LRU scheme if anyone were motivated to do it.
 + */
-+void do_page_fault(struct pt_regs *regs, unsigned long address,
-+		   unsigned long error_code)
++void steal_context(void)
 +{
-+	struct vm_area_struct *vma;
-+	struct mm_struct *mm = current->mm;
-+	siginfo_t info;
-+	int code = SEGV_MAPERR;
-+	int is_write = error_code & ESR_S;
-+	int fault;
++	struct mm_struct *mm;
 +
-+	regs->ear = address;
-+	regs->esr = error_code;
-+
-+	/* On a kernel SLB miss we can only check for a valid exception entry */
-+	if (kernel_mode(regs) && (address >= TASK_SIZE)) {
-+		printk(KERN_WARNING "kernel task_size exceed");
-+		_exception(SIGSEGV, regs, code, address);
-+	}
-+
-+	/* for instr TLB miss and instr storage exception ESR_S is undefined */
-+	if ((error_code & 0x13) == 0x13 || (error_code & 0x11) == 0x11)
-+		is_write = 0;
-+
-+#if defined(CONFIG_KGDB)
-+	if (debugger_fault_handler && regs->trap == 0x300) {
-+		debugger_fault_handler(regs);
-+		return;
-+	}
-+#endif /* CONFIG_KGDB */
-+
-+	if (in_atomic() || mm == NULL) {
-+		/* FIXME */
-+		if (kernel_mode(regs)) {
-+			printk(KERN_EMERG
-+				"Page fault in kernel mode - Oooou!!! pid %d\n",
-+				current->pid);
-+			_exception(SIGSEGV, regs, code, address);
-+			return;
-+		}
-+		/* in_atomic() in user mode is really bad,
-+		   as is current->mm == NULL. */
-+		printk(KERN_EMERG "Page fault in user mode with "
-+		       "in_atomic(), mm = %p\n", mm);
-+		printk(KERN_EMERG "r15 = %lx  MSR = %lx\n",
-+		       regs->r15, regs->msr);
-+		die("Weird page fault", regs, SIGSEGV);
-+	}
-+
-+	/* When running in the kernel we expect faults to occur only to
-+	 * addresses in user space.  All other faults represent errors in the
-+	 * kernel and should generate an OOPS.  Unfortunately, in the case of an
-+	 * erroneous fault occurring in a code path which already holds mmap_sem
-+	 * we will deadlock attempting to validate the fault against the
-+	 * address space.  Luckily the kernel only validly references user
-+	 * space from well defined areas of code, which are listed in the
-+	 * exceptions table.
-+	 *
-+	 * As the vast majority of faults will be valid we will only perform
-+	 * the source reference check when there is a possibility of a deadlock.
-+	 * Attempt to lock the address space, if we cannot we then validate the
-+	 * source.  If this is invalid we can skip the address space check,
-+	 * thus avoiding the deadlock.
-+	 */
-+	if (!down_read_trylock(&mm->mmap_sem)) {
-+		if (kernel_mode(regs) && !search_exception_tables(regs->pc))
-+			goto bad_area_nosemaphore;
-+
-+		down_read(&mm->mmap_sem);
-+	}
-+
-+	vma = find_vma(mm, address);
-+	if (!vma)
-+		goto bad_area;
-+
-+	if (vma->vm_start <= address)
-+		goto good_area;
-+
-+	if (!(vma->vm_flags & VM_GROWSDOWN))
-+		goto bad_area;
-+
-+	if (!is_write)
-+		goto bad_area;
-+
-+	/*
-+	 * N.B. The ABI allows programs to access up to
-+	 * a few hundred bytes below the stack pointer (TBD).
-+	 * The kernel signal delivery code writes up to about 1.5kB
-+	 * below the stack pointer (r1) before decrementing it.
-+	 * The exec code can write slightly over 640kB to the stack
-+	 * before setting the user r1.  Thus we allow the stack to
-+	 * expand to 1MB without further checks.
-+	 */
-+	if (address + 0x100000 < vma->vm_end) {
-+
-+		/* get user regs even if this fault is in kernel mode */
-+		struct pt_regs *uregs = current->thread.regs;
-+		if (uregs == NULL)
-+			goto bad_area;
-+
-+		/*
-+		 * A user-mode access to an address a long way below
-+		 * the stack pointer is only valid if the instruction
-+		 * is one which would update the stack pointer to the
-+		 * address accessed if the instruction completed,
-+		 * i.e. either stwu rs,n(r1) or stwux rs,r1,rb
-+		 * (or the byte, halfword, float or double forms).
-+		 *
-+		 * If we don't check this then any write to the area
-+		 * between the last mapped region and the stack will
-+		 * expand the stack rather than segfaulting.
-+		 */
-+		if (address + 2048 < uregs->r1
-+			&& (kernel_mode(regs) || !store_updates_sp(regs)))
-+				goto bad_area;
-+	}
-+	if (expand_stack(vma, address))
-+		goto bad_area;
-+
-+good_area:
-+	code = SEGV_ACCERR;
-+
-+	/* a write */
-+	if (is_write) {
-+		if (!(vma->vm_flags & VM_WRITE))
-+			goto bad_area;
-+	/* a read */
-+	} else {
-+		/* protection fault */
-+		if (error_code & 0x08000000)
-+			goto bad_area;
-+		if (!(vma->vm_flags & (VM_READ | VM_EXEC)))
-+			goto bad_area;
-+	}
-+
-+	/*
-+	 * If for any reason at all we couldn't handle the fault,
-+	 * make sure we exit gracefully rather than endlessly redo
-+	 * the fault.
-+	 */
-+survive:
-+	fault = handle_mm_fault(mm, vma, address, is_write);
-+	if (unlikely(fault & VM_FAULT_ERROR)) {
-+		if (fault & VM_FAULT_OOM)
-+			goto out_of_memory;
-+		else if (fault & VM_FAULT_SIGBUS)
-+			goto do_sigbus;
-+		BUG();
-+	}
-+	if (fault & VM_FAULT_MAJOR)
-+		current->maj_flt++;
-+	else
-+		current->min_flt++;
-+	up_read(&mm->mmap_sem);
-+	/*
-+	 * keep track of tlb+htab misses that are good addrs but
-+	 * just need pte's created via handle_mm_fault()
-+	 * -- Cort
-+	 */
-+	pte_misses++;
-+	return;
-+
-+bad_area:
-+	up_read(&mm->mmap_sem);
-+
-+bad_area_nosemaphore:
-+	pte_errors++;
-+
-+	/* User mode accesses cause a SIGSEGV */
-+	if (user_mode(regs)) {
-+		_exception(SIGSEGV, regs, code, address);
-+/*		info.si_signo = SIGSEGV;
-+		info.si_errno = 0;
-+		info.si_code = code;
-+		info.si_addr = (void *) address;
-+		force_sig_info(SIGSEGV, &info, current);*/
-+		return;
-+	}
-+
-+	bad_page_fault(regs, address, SIGSEGV);
-+	return;
-+
-+/*
-+ * We ran out of memory, or some other thing happened to us that made
-+ * us unable to handle the page fault gracefully.
-+ */
-+out_of_memory:
-+	if (current->pid == 1) {
-+		yield();
-+		down_read(&mm->mmap_sem);
-+		goto survive;
-+	}
-+	up_read(&mm->mmap_sem);
-+	printk(KERN_WARNING "VM: killing process %s\n", current->comm);
-+	if (user_mode(regs))
-+		do_exit(SIGKILL);
-+	bad_page_fault(regs, address, SIGKILL);
-+	return;
-+
-+do_sigbus:
-+	up_read(&mm->mmap_sem);
-+	if (user_mode(regs)) {
-+		info.si_signo = SIGBUS;
-+		info.si_errno = 0;
-+		info.si_code = BUS_ADRERR;
-+		info.si_addr = (void __user *)address;
-+		force_sig_info(SIGBUS, &info, current);
-+		return;
-+	}
-+	bad_page_fault(regs, address, SIGBUS);
++	/* free up context `next_mmu_context' */
++	/* if we shouldn't free context 0, don't... */
++	if (next_mmu_context < FIRST_CONTEXT)
++		next_mmu_context = FIRST_CONTEXT;
++	mm = context_mm[next_mmu_context];
++	flush_tlb_mm(mm);
++	destroy_context(mm);
 +}
 -- 
 1.5.5.1
