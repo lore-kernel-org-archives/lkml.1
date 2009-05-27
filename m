@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758658AbZE0BZf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758500AbZE0BZS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758658AbZE0BZf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 21:25:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757175AbZE0BYl
+	id S1758500AbZE0BZS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 21:25:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756434AbZE0BYh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 21:24:41 -0400
-Received: from sh.osrg.net ([192.16.179.4]:52965 "EHLO sh.osrg.net"
+	Tue, 26 May 2009 21:24:37 -0400
+Received: from sh.osrg.net ([192.16.179.4]:52963 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757072AbZE0BYk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 21:24:40 -0400
+	id S1753988AbZE0BYg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 21:24:36 -0400
 From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 To: mingo@elte.hu
 Cc: joerg.roedel@amd.com, fujita.tomonori@lab.ntt.co.jp,
        linux-kernel@vger.kernel.org
-Subject: [PATCH -tip 3/3] dma-debug: fix debug_dma_sync_sg_for_cpu and debug_dma_sync_sg_for_device
-Date: Wed, 27 May 2009 09:43:03 +0900
-Message-Id: <1243384983-3863-4-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCH -tip 1/3] dma-debug: use sg_dma_address accessor instead of using dma_address directly
+Date: Wed, 27 May 2009 09:43:01 +0900
+Message-Id: <1243384983-3863-2-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 X-Mailer: git-send-email 1.6.0.6
 In-Reply-To: <1243384983-3863-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 References: <1243384983-3863-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
@@ -24,115 +24,59 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-DMA-mapping.txt says that debug_dma_sync_sg family must be called with
-the _same_ one you passed into the dma_map_sg call, it should _NOT_ be
-the 'count' value _returned_ from the dma_map_sg call.
-
-debug_dma_sync_sg_for_cpu and debug_dma_sync_sg_for_device can't
-handle this properly; they need to use the sg_mapped_ents in struct
-dma_debug_entry as debug_dma_unmap_sg() does.
+Architectures might not have dma_address in struct scatterlist (PARISC
+doesn't). Directly accessing to dma_address in struct scatterlist is
+wrong; we need to use sg_dma_address() accesssor instead.
 
 Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 ---
- lib/dma-debug.c |   48 +++++++++++++++++++++++++++++++++++++-----------
- 1 files changed, 37 insertions(+), 11 deletions(-)
+ lib/dma-debug.c |   12 ++++++------
+ 1 files changed, 6 insertions(+), 6 deletions(-)
 
 diff --git a/lib/dma-debug.c b/lib/dma-debug.c
-index df9e475..e10a981 100644
+index cdd205d..64aaa96 100644
 --- a/lib/dma-debug.c
 +++ b/lib/dma-debug.c
-@@ -799,13 +799,32 @@ void debug_dma_map_sg(struct device *dev, struct scatterlist *sg,
+@@ -784,7 +784,7 @@ void debug_dma_map_sg(struct device *dev, struct scatterlist *sg,
+ 		entry->dev            = dev;
+ 		entry->paddr          = sg_phys(s);
+ 		entry->size           = s->length;
+-		entry->dev_addr       = s->dma_address;
++		entry->dev_addr       = sg_dma_address(s);
+ 		entry->direction      = direction;
+ 		entry->sg_call_ents   = nents;
+ 		entry->sg_mapped_ents = mapped_ents;
+@@ -816,7 +816,7 @@ void debug_dma_unmap_sg(struct device *dev, struct scatterlist *sglist,
+ 			.type           = dma_debug_sg,
+ 			.dev            = dev,
+ 			.paddr          = sg_phys(s),
+-			.dev_addr       = s->dma_address,
++			.dev_addr       = sg_dma_address(s),
+ 			.size           = s->length,
+ 			.direction      = dir,
+ 			.sg_call_ents   = 0,
+@@ -940,8 +940,8 @@ void debug_dma_sync_sg_for_cpu(struct device *dev, struct scatterlist *sg,
+ 		return;
+ 
+ 	for_each_sg(sg, s, nelems, i) {
+-		check_sync(dev, s->dma_address, s->dma_length, 0,
+-				direction, true);
++		check_sync(dev, sg_dma_address(s), s->dma_length, 0,
++			   direction, true);
+ 	}
  }
- EXPORT_SYMBOL(debug_dma_map_sg);
- 
-+static int get_nr_mapped_entries(struct device *dev, struct scatterlist *s)
-+{
-+	struct dma_debug_entry *entry;
-+	struct hash_bucket *bucket;
-+	unsigned long flags;
-+	int mapped_ents = 0;
-+	struct dma_debug_entry ref;
-+
-+	ref.dev = dev;
-+	ref.dev_addr = sg_dma_address(s);
-+	ref.size = sg_dma_len(s),
-+
-+	bucket = get_hash_bucket(&ref, &flags);
-+	entry = hash_bucket_find(bucket, &ref);
-+	if (entry)
-+		mapped_ents = entry->sg_mapped_ents;
-+	put_hash_bucket(bucket, &flags);
-+
-+	return mapped_ents;
-+}
-+
- void debug_dma_unmap_sg(struct device *dev, struct scatterlist *sglist,
- 			int nelems, int dir)
- {
--	struct dma_debug_entry *entry;
- 	struct scatterlist *s;
- 	int mapped_ents = 0, i;
--	unsigned long flags;
- 
- 	if (unlikely(global_disable))
- 		return;
-@@ -825,14 +844,9 @@ void debug_dma_unmap_sg(struct device *dev, struct scatterlist *sglist,
- 		if (mapped_ents && i >= mapped_ents)
- 			break;
- 
--		if (mapped_ents == 0) {
--			struct hash_bucket *bucket;
-+		if (!i) {
- 			ref.sg_call_ents = nelems;
--			bucket = get_hash_bucket(&ref, &flags);
--			entry = hash_bucket_find(bucket, &ref);
--			if (entry)
--				mapped_ents = entry->sg_mapped_ents;
--			put_hash_bucket(bucket, &flags);
-+			mapped_ents = get_nr_mapped_entries(dev, s);
- 		}
- 
- 		check_unmap(&ref);
-@@ -934,12 +948,18 @@ void debug_dma_sync_sg_for_cpu(struct device *dev, struct scatterlist *sg,
- 			       int nelems, int direction)
- {
- 	struct scatterlist *s;
--	int i;
-+	int mapped_ents = 0, i;
- 
- 	if (unlikely(global_disable))
+ EXPORT_SYMBOL(debug_dma_sync_sg_for_cpu);
+@@ -956,8 +956,8 @@ void debug_dma_sync_sg_for_device(struct device *dev, struct scatterlist *sg,
  		return;
  
  	for_each_sg(sg, s, nelems, i) {
-+		if (!i)
-+			mapped_ents = get_nr_mapped_entries(dev, s);
-+
-+		if (i >= mapped_ents)
-+			break;
-+
- 		check_sync(dev, sg_dma_address(s), sg_dma_len(s), 0,
- 			   direction, true);
+-		check_sync(dev, s->dma_address, s->dma_length, 0,
+-				direction, false);
++		check_sync(dev, sg_dma_address(s), s->dma_length, 0,
++			   direction, false);
  	}
-@@ -950,12 +970,18 @@ void debug_dma_sync_sg_for_device(struct device *dev, struct scatterlist *sg,
- 				  int nelems, int direction)
- {
- 	struct scatterlist *s;
--	int i;
-+	int mapped_ents = 0, i;
- 
- 	if (unlikely(global_disable))
- 		return;
- 
- 	for_each_sg(sg, s, nelems, i) {
-+		if (!i)
-+			mapped_ents = get_nr_mapped_entries(dev, s);
-+
-+		if (i >= mapped_ents)
-+			break;
-+
- 		check_sync(dev, sg_dma_address(s), sg_dma_len(s), 0,
- 			   direction, false);
- 	}
+ }
+ EXPORT_SYMBOL(debug_dma_sync_sg_for_device);
 -- 
 1.6.0.6
 
