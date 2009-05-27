@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763900AbZE0NDM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764076AbZE0NDo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763900AbZE0NDM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 09:03:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760392AbZE0NB0
+	id S1764076AbZE0NDo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 09:03:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763271AbZE0NBc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 09:01:26 -0400
-Received: from cantor.suse.de ([195.135.220.2]:49588 "EHLO mx1.suse.de"
+	Wed, 27 May 2009 09:01:32 -0400
+Received: from cantor.suse.de ([195.135.220.2]:49587 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763313AbZE0NBL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1763332AbZE0NBL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 27 May 2009 09:01:11 -0400
 From: Jan Kara <jack@suse.cz>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: npiggin@suse.de, linux-ext4@vger.kernel.org, Jan Kara <jack@suse.cz>
-Subject: [PATCH 09/11] fs: Don't clear dirty bits in block_write_full_page()
-Date: Wed, 27 May 2009 15:01:06 +0200
-Message-Id: <1243429268-3028-10-git-send-email-jack@suse.cz>
+Subject: [PATCH 02/11] ext4: Get rid of extend_disksize parameter of ext4_get_blocks_handle()
+Date: Wed, 27 May 2009 15:00:59 +0200
+Message-Id: <1243429268-3028-3-git-send-email-jack@suse.cz>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <1243429268-3028-1-git-send-email-jack@suse.cz>
 References: <1243429268-3028-1-git-send-email-jack@suse.cz>
@@ -22,114 +22,244 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If getblock() fails in block_write_full_page(), we don't want to clear
-dirty bits on buffers. Actually, we even want to redirty the page. This
-way we just won't silently discard users data (written e.g. through mmap)
-in case of ENOSPC, EDQUOT, EIO or other write error (which may be just
-transient e.g. because we have to commit a transaction to free up some space).
-The downside of this approach is that if the error is persistent we have this
-page pinned in memory forever and if there are lots of such pages, we can bring
-the machine OOM.
-
-We also don't want to clear dirty bits from buffers above i_size because that
-is a generally a bussiness of invalidatepage where filesystem might want to do
-some additional work. If we clear dirty bits already in block_write_full_page,
-memory reclaim can reap the page before invalidatepage is called on the page
-and thus confusing the filesystem.
+Get rid of extenddisksize parameter of ext4_get_blocks_handle(). This seems to
+be a relict from some old days and setting disksize in this function does not
+make much sence. Currently it was set only by ext4_getblk().  Since the
+parameter has some effect only if create == 1, it is easy to check that the
+three callers which end up calling ext4_getblk() with create == 1 (ext4_append,
+ext4_quota_write, ext4_mkdir) do the right thing and set disksize themselves.
 
 Signed-off-by: Jan Kara <jack@suse.cz>
 ---
- fs/buffer.c |   40 +++++++++++++++++-----------------------
- 1 files changed, 17 insertions(+), 23 deletions(-)
+ fs/ext4/dir.c     |    3 +--
+ fs/ext4/ext4.h    |    6 ++----
+ fs/ext4/extents.c |   16 +++-------------
+ fs/ext4/inode.c   |   43 ++++++++++++-------------------------------
+ 4 files changed, 18 insertions(+), 50 deletions(-)
 
-diff --git a/fs/buffer.c b/fs/buffer.c
-index 3d0bced..6d18739 100644
---- a/fs/buffer.c
-+++ b/fs/buffer.c
-@@ -1662,19 +1662,14 @@ static int __block_write_full_page(struct inode *inode, struct page *page,
- 	 * handle any aliases from the underlying blockdev's mapping.
- 	 */
- 	do {
--		if (block > last_block) {
--			/*
--			 * mapped buffers outside i_size will occur, because
--			 * this page can be outside i_size when there is a
--			 * truncate in progress.
--			 */
--			/*
--			 * The buffer was zeroed by block_write_full_page()
--			 */
--			clear_buffer_dirty(bh);
--			set_buffer_uptodate(bh);
--		} else if ((!buffer_mapped(bh) || buffer_delay(bh)) &&
--			   buffer_dirty(bh)) {
-+		/*
-+		 * Mapped buffers outside i_size will occur, because
-+		 * this page can be outside i_size when there is a
-+		 * truncate in progress.
-+		 */
-+		if (block <= last_block &&
-+		    (!buffer_mapped(bh) || buffer_delay(bh)) &&
-+		    buffer_dirty(bh)) {
- 			WARN_ON(bh->b_size != blocksize);
- 			err = get_block(inode, block, bh, 1);
- 			if (err)
-@@ -1692,9 +1687,10 @@ static int __block_write_full_page(struct inode *inode, struct page *page,
- 		block++;
- 	} while (bh != head);
+diff --git a/fs/ext4/dir.c b/fs/ext4/dir.c
+index b647899..c8e0623 100644
+--- a/fs/ext4/dir.c
++++ b/fs/ext4/dir.c
+@@ -131,8 +131,7 @@ static int ext4_readdir(struct file *filp,
+ 		struct buffer_head *bh = NULL;
  
-+	block = (sector_t)page->index << (PAGE_CACHE_SHIFT - inode->i_blkbits);
- 	do {
--		if (!buffer_mapped(bh))
--			continue;
-+		if (!buffer_mapped(bh) || block > last_block)
-+			goto next;
+ 		map_bh.b_state = 0;
+-		err = ext4_get_blocks_wrap(NULL, inode, blk, 1, &map_bh,
+-						0, 0, 0);
++		err = ext4_get_blocks_wrap(NULL, inode, blk, 1, &map_bh, 0, 0);
+ 		if (err > 0) {
+ 			pgoff_t index = map_bh.b_blocknr >>
+ 					(PAGE_CACHE_SHIFT - inode->i_blkbits);
+diff --git a/fs/ext4/ext4.h b/fs/ext4/ext4.h
+index d0f15ef..2b02ae0 100644
+--- a/fs/ext4/ext4.h
++++ b/fs/ext4/ext4.h
+@@ -1338,8 +1338,7 @@ extern int ext4_ext_index_trans_blocks(struct inode *inode, int nrblocks,
+ 				       int chunk);
+ extern int ext4_ext_get_blocks(handle_t *handle, struct inode *inode,
+ 			       ext4_lblk_t iblock, unsigned int max_blocks,
+-			       struct buffer_head *bh_result,
+-			       int create, int extend_disksize);
++			       struct buffer_head *bh_result, int create);
+ extern void ext4_ext_truncate(struct inode *);
+ extern void ext4_ext_init(struct super_block *);
+ extern void ext4_ext_release(struct super_block *);
+@@ -1347,8 +1346,7 @@ extern long ext4_fallocate(struct inode *inode, int mode, loff_t offset,
+ 			  loff_t len);
+ extern int ext4_get_blocks_wrap(handle_t *handle, struct inode *inode,
+ 			sector_t block, unsigned int max_blocks,
+-			struct buffer_head *bh, int create,
+-			int extend_disksize, int flag);
++			struct buffer_head *bh, int create, int flag);
+ extern int ext4_fiemap(struct inode *inode, struct fiemap_extent_info *fieinfo,
+ 			__u64 start, __u64 len);
+ 
+diff --git a/fs/ext4/extents.c b/fs/ext4/extents.c
+index e3a55eb..6b0eeaf 100644
+--- a/fs/ext4/extents.c
++++ b/fs/ext4/extents.c
+@@ -2782,9 +2782,8 @@ fix_extent_len:
+  * return < 0, error case.
+  */
+ int ext4_ext_get_blocks(handle_t *handle, struct inode *inode,
+-			ext4_lblk_t iblock,
+-			unsigned int max_blocks, struct buffer_head *bh_result,
+-			int create, int extend_disksize)
++			ext4_lblk_t iblock, unsigned int max_blocks,
++			struct buffer_head *bh_result, int create)
+ {
+ 	struct ext4_ext_path *path = NULL;
+ 	struct ext4_extent_header *eh;
+@@ -2793,7 +2792,6 @@ int ext4_ext_get_blocks(handle_t *handle, struct inode *inode,
+ 	int err = 0, depth, ret, cache_type;
+ 	unsigned int allocated = 0;
+ 	struct ext4_allocation_request ar;
+-	loff_t disksize;
+ 
+ 	__clear_bit(BH_New, &bh_result->b_state);
+ 	ext_debug("blocks %u/%u requested for inode %u\n",
+@@ -2983,14 +2981,6 @@ int ext4_ext_get_blocks(handle_t *handle, struct inode *inode,
+ 	newblock = ext_pblock(&newex);
+ 	allocated = ext4_ext_get_actual_len(&newex);
+ outnew:
+-	if (extend_disksize) {
+-		disksize = ((loff_t) iblock + ar.len) << inode->i_blkbits;
+-		if (disksize > i_size_read(inode))
+-			disksize = i_size_read(inode);
+-		if (disksize > EXT4_I(inode)->i_disksize)
+-			EXT4_I(inode)->i_disksize = disksize;
+-	}
+-
+ 	set_buffer_new(bh_result);
+ 
+ 	/* Cache only when it is _not_ an uninitialized extent */
+@@ -3152,7 +3142,7 @@ retry:
+ 		}
+ 		ret = ext4_get_blocks_wrap(handle, inode, block,
+ 					  max_blocks, &map_bh,
+-					  EXT4_CREATE_UNINITIALIZED_EXT, 0, 0);
++					  EXT4_CREATE_UNINITIALIZED_EXT, 0);
+ 		if (ret <= 0) {
+ #ifdef EXT4FS_DEBUG
+ 			WARN_ON(ret <= 0);
+diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
+index 2a9ffd5..7fcceb0 100644
+--- a/fs/ext4/inode.c
++++ b/fs/ext4/inode.c
+@@ -916,8 +916,7 @@ err_out:
+  */
+ static int ext4_get_blocks_handle(handle_t *handle, struct inode *inode,
+ 				  ext4_lblk_t iblock, unsigned int maxblocks,
+-				  struct buffer_head *bh_result,
+-				  int create, int extend_disksize)
++				  struct buffer_head *bh_result, int create)
+ {
+ 	int err = -EIO;
+ 	ext4_lblk_t offsets[4];
+@@ -927,11 +926,8 @@ static int ext4_get_blocks_handle(handle_t *handle, struct inode *inode,
+ 	int indirect_blks;
+ 	int blocks_to_boundary = 0;
+ 	int depth;
+-	struct ext4_inode_info *ei = EXT4_I(inode);
+ 	int count = 0;
+ 	ext4_fsblk_t first_block = 0;
+-	loff_t disksize;
+-
+ 
+ 	J_ASSERT(!(EXT4_I(inode)->i_flags & EXT4_EXTENTS_FL));
+ 	J_ASSERT(handle != NULL || create == 0);
+@@ -997,18 +993,6 @@ static int ext4_get_blocks_handle(handle_t *handle, struct inode *inode,
+ 	if (!err)
+ 		err = ext4_splice_branch(handle, inode, iblock,
+ 					partial, indirect_blks, count);
+-	/*
+-	 * i_disksize growing is protected by i_data_sem.  Don't forget to
+-	 * protect it if you're about to implement concurrent
+-	 * ext4_get_block() -bzzz
+-	*/
+-	if (!err && extend_disksize) {
+-		disksize = ((loff_t) iblock + count) << inode->i_blkbits;
+-		if (disksize > i_size_read(inode))
+-			disksize = i_size_read(inode);
+-		if (disksize > ei->i_disksize)
+-			ei->i_disksize = disksize;
+-	}
+ 	if (err)
+ 		goto cleanup;
+ 
+@@ -1144,7 +1128,7 @@ static void ext4_da_update_reserve_space(struct inode *inode, int used)
+  */
+ int ext4_get_blocks_wrap(handle_t *handle, struct inode *inode, sector_t block,
+ 			unsigned int max_blocks, struct buffer_head *bh,
+-			int create, int extend_disksize, int flag)
++			int create, int flag)
+ {
+ 	int retval;
+ 
+@@ -1158,10 +1142,10 @@ int ext4_get_blocks_wrap(handle_t *handle, struct inode *inode, sector_t block,
+ 	down_read((&EXT4_I(inode)->i_data_sem));
+ 	if (EXT4_I(inode)->i_flags & EXT4_EXTENTS_FL) {
+ 		retval =  ext4_ext_get_blocks(handle, inode, block, max_blocks,
+-				bh, 0, 0);
++				bh, 0);
+ 	} else {
+ 		retval = ext4_get_blocks_handle(handle,
+-				inode, block, max_blocks, bh, 0, 0);
++				inode, block, max_blocks, bh, 0);
+ 	}
+ 	up_read((&EXT4_I(inode)->i_data_sem));
+ 
+@@ -1213,10 +1197,10 @@ int ext4_get_blocks_wrap(handle_t *handle, struct inode *inode, sector_t block,
+ 	 */
+ 	if (EXT4_I(inode)->i_flags & EXT4_EXTENTS_FL) {
+ 		retval =  ext4_ext_get_blocks(handle, inode, block, max_blocks,
+-				bh, create, extend_disksize);
++				bh, create);
+ 	} else {
+ 		retval = ext4_get_blocks_handle(handle, inode, block,
+-				max_blocks, bh, create, extend_disksize);
++				max_blocks, bh, create);
+ 
+ 		if (retval > 0 && buffer_new(bh)) {
+ 			/*
+@@ -1269,7 +1253,7 @@ int ext4_get_block(struct inode *inode, sector_t iblock,
+ 	}
+ 
+ 	ret = ext4_get_blocks_wrap(handle, inode, iblock,
+-					max_blocks, bh_result, create, 0, 0);
++					max_blocks, bh_result, create, 0);
+ 	if (ret > 0) {
+ 		bh_result->b_size = (ret << inode->i_blkbits);
+ 		ret = 0;
+@@ -1294,8 +1278,7 @@ struct buffer_head *ext4_getblk(handle_t *handle, struct inode *inode,
+ 	dummy.b_state = 0;
+ 	dummy.b_blocknr = -1000;
+ 	buffer_trace_init(&dummy.b_history);
+-	err = ext4_get_blocks_wrap(handle, inode, block, 1,
+-					&dummy, create, 1, 0);
++	err = ext4_get_blocks_wrap(handle, inode, block, 1, &dummy, create, 0);
+ 	/*
+ 	 * ext4_get_blocks_handle() returns number of blocks
+ 	 * mapped. 0 in case of a HOLE.
+@@ -2002,7 +1985,7 @@ static int ext4_da_get_block_write(struct inode *inode, sector_t iblock,
+ 	handle = ext4_journal_current_handle();
+ 	BUG_ON(!handle);
+ 	ret = ext4_get_blocks_wrap(handle, inode, iblock, max_blocks,
+-				   bh_result, create, 0, EXT4_DELALLOC_RSVED);
++				   bh_result, create, EXT4_DELALLOC_RSVED);
+ 	if (ret <= 0)
+ 		return ret;
+ 
+@@ -2020,9 +2003,7 @@ static int ext4_da_get_block_write(struct inode *inode, sector_t iblock,
+ 	}
+ 
+ 	/*
+-	 * Update on-disk size along with block allocation we don't
+-	 * use 'extend_disksize' as size may change within already
+-	 * allocated block -bzzz
++	 * Update on-disk size along with block allocation.
+ 	 */
+ 	disksize = ((loff_t) iblock + ret) << inode->i_blkbits;
+ 	if (disksize > i_size_read(inode))
+@@ -2323,7 +2304,7 @@ static int ext4_da_get_block_prep(struct inode *inode, sector_t iblock,
+ 	 * preallocated blocks are unmapped but should treated
+ 	 * the same as allocated blocks.
+ 	 */
+-	ret = ext4_get_blocks_wrap(NULL, inode, iblock, 1,  bh_result, 0, 0, 0);
++	ret = ext4_get_blocks_wrap(NULL, inode, iblock, 1,  bh_result, 0, 0);
+ 	if ((ret == 0) && !buffer_delay(bh_result)) {
+ 		/* the block isn't (pre)allocated yet, let's reserve space */
  		/*
- 		 * If it's a fully non-blocking write attempt and we cannot
- 		 * lock the buffer then redirty the page.  Note that this can
-@@ -1706,13 +1702,15 @@ static int __block_write_full_page(struct inode *inode, struct page *page,
- 			lock_buffer(bh);
- 		} else if (!trylock_buffer(bh)) {
- 			redirty_page_for_writepage(wbc, page);
--			continue;
-+			goto next;
- 		}
- 		if (test_clear_buffer_dirty(bh)) {
- 			mark_buffer_async_write_endio(bh, handler);
- 		} else {
- 			unlock_buffer(bh);
- 		}
-+next:
-+		block++;
- 	} while ((bh = bh->b_this_page) != head);
- 
- 	/*
-@@ -1753,9 +1751,11 @@ recover:
- 	/*
- 	 * ENOSPC, or some other error.  We may already have added some
- 	 * blocks to the file, so we need to write these out to avoid
--	 * exposing stale data.
-+	 * exposing stale data. We redirty the page so that we don't
-+	 * loose data we are unable to write.
- 	 * The page is currently locked and not marked for writeback
+@@ -2373,7 +2354,7 @@ static int ext4_normal_get_block_write(struct inode *inode, sector_t iblock,
+ 	 * so call get_block_wrap with create = 0
  	 */
-+	redirty_page_for_writepage(wbc, page);
- 	bh = head;
- 	/* Recovery: lock and submit the mapped buffers */
- 	do {
-@@ -1763,12 +1763,6 @@ recover:
- 		    !buffer_delay(bh)) {
- 			lock_buffer(bh);
- 			mark_buffer_async_write_endio(bh, handler);
--		} else {
--			/*
--			 * The buffer may have been set dirty during
--			 * attachment to a dirty page.
--			 */
--			clear_buffer_dirty(bh);
- 		}
- 	} while ((bh = bh->b_this_page) != head);
- 	SetPageError(page);
+ 	ret = ext4_get_blocks_wrap(NULL, inode, iblock, max_blocks,
+-				   bh_result, 0, 0, 0);
++				   bh_result, 0, 0);
+ 	if (ret > 0) {
+ 		bh_result->b_size = (ret << inode->i_blkbits);
+ 		ret = 0;
 -- 
 1.6.0.2
 
