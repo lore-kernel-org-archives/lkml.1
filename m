@@ -1,151 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756796AbZE0ILf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757487AbZE0IPg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756796AbZE0ILf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 04:11:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756612AbZE0ILU
+	id S1757487AbZE0IPg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 04:15:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752112AbZE0IPZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 04:11:20 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:54068 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1756410AbZE0ILT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 04:11:19 -0400
-Message-ID: <4A1CF5F2.6050209@cn.fujitsu.com>
-Date: Wed, 27 May 2009 16:12:34 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Wed, 27 May 2009 04:15:25 -0400
+Received: from mga12.intel.com ([143.182.124.36]:3867 "EHLO
+	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752030AbZE0IPY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 04:15:24 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,258,1241420400"; 
+   d="scan'208";a="147355352"
+Date: Wed, 27 May 2009 10:17:33 +0200
+From: Samuel Ortiz <sameo@linux.intel.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Kay Sievers <kay.sievers@vrfy.org>, holtmann@linux.intel.com,
+       yi.zhu@intel.com, linux-kernel@vger.kernel.org, linville@tuxdriver.com,
+       greg@kroah.com
+Subject: Re: [PATCH] firmware: Allocate firmware id dynamically
+Message-ID: <20090527081732.GB3777@sortiz.org>
+References: <20090526140423.GA14683@sortiz.org> <ac3eb2510905260711hb273541i8d69128b88933f7f@mail.gmail.com> <20090526132351.9805f1e8.akpm@linux-foundation.org> <20090527115748.9ff0bad1.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>
-CC: Ingo Molnar <mingo@elte.hu>, Jens Axboe <jens.axboe@oracle.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Tom Zanussi <tzanussi@gmail.com>, "Theodore Ts'o" <tytso@mit.edu>,
-       Steven Whitehouse <swhiteho@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Jeff Moyer <jmoyer@redhat.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v2 1/2] tracing/events: make __string() more general
-References: <4A1B6A2F.2040703@cn.fujitsu.com> <4A1B6A4C.3070407@cn.fujitsu.com> <20090526060232.GA10669@infradead.org> <4A1C9AC4.3090704@cn.fujitsu.com> <20090527072956.GC24381@infradead.org>
-In-Reply-To: <20090527072956.GC24381@infradead.org>
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20090527115748.9ff0bad1.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig wrote:
-> On Wed, May 27, 2009 at 09:43:32AM +0800, Li Zefan wrote:
->> I'm not suffering from NULL str, so I'm not quite sure how you want __string()
->> deal with it.
+Hi Stephen,
+
+On Wed, May 27, 2009 at 11:57:48AM +1000, Stephen Rothwell wrote:
+> Hi all,
 > 
-> The internals of __string is still magic to me, need to finish my
-> advance cpp abuse degree first ;-)
+> On Tue, 26 May 2009 13:23:51 -0700 Andrew Morton <akpm@linux-foundation.org> wrote:
+> >
+> > > > Please note that we have to keep the FIRMWARE_NAME_MAX definition around as
+> > > > some drivers rely on it.
+> > > 
+> > > I think the 6 files should be converted, and FIRMWARE_NAME_MAX
+> > > removed, otherwise people will keep copying that crap around.
+> > > 
+> > >   drivers/pcmcia/ds.c
+> > >   drivers/usb/atm/ueagle-atm.c
+> > >   drivers/net/wireless/libertas/if_usb.c
+> > >   drivers/net/wireless/libertas/if_spi.c
+> > >   drivers/media/dvb/dvb-usb/dvb-usb.h
+> > >   drivers/media/common/tuners/tuner-xc2028.c
+> > 
+> > Yep.
 > 
+> $ git grep -l -w FIRMWARE_NAME_MAX next-20090526 
+> next-20090526:drivers/base/firmware_class.c
+> next-20090526:drivers/media/common/tuners/tuner-xc2028.c
+> next-20090526:drivers/media/dvb/dvb-usb/dvb-usb.h
+> next-20090526:drivers/net/wireless/libertas/if_spi.c
+> next-20090526:drivers/net/wireless/libertas/if_usb.c
+> next-20090526:drivers/net/wireless/p54/p54usb.c
+> next-20090526:drivers/pcmcia/ds.c
+> next-20090526:drivers/usb/atm/ueagle-atm.c
+> next-20090526:include/linux/firmware.h
+All of those have been taken care of by my last patch set, see:
+http://lkml.org/lkml/2009/5/26/518
 
-It's no longer magic to me. ;)
+The p54usb one has been sent to John and linux-wireless as it's coming from
+wireless-testing.
 
-> But the expected outcome would be that when we get a NULL pointer as
-> input we get a NULL pointer as output again.
-> 
 
-The following trick should meet your needs (based on this 1/2 patch):
+> next-20090526:samples/firmware_class/firmware_sample_firmware_class.c
+Do I really need to fix this one too ?
 
-(Not even compiled!)
-
-diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
-index d1c0cc5..c5911d0 100644
---- a/include/trace/ftrace.h
-+++ b/include/trace/ftrace.h
-@@ -117,7 +117,10 @@
- #define TP_printk(fmt, args...) fmt "\n", args
- 
- #undef __get_str
--#define __get_str(field)	((char *)__entry + __entry->__str_loc_##field)
-+#define __get_str(field)						\
-+	(__entry->__str_lock_##field != -1) ?				\
-+		((char *)__entry + __entry->__str_loc_##field) :	\
-+		NULL
- 
- #undef TRACE_EVENT
- #define TRACE_EVENT(call, proto, args, tstruct, assign, print)		\
-@@ -412,8 +415,11 @@ static void ftrace_profile_disable_##call(struct ftrace_event_call *call) \
- 
- #undef __string
- #define __string(item, len)						 \
--	__str_offsets.item = __str_size +				 \
--			     offsetof(typeof(*entry), __str_data);	 \
-+	if (len)							 \
-+		__str_offsets.item = __str_size +			 \
-+				     offsetof(typeof(*entry), __str_data);\
-+	else								 \
-+		__str_offsets.item = -1;				 \
- 	__str_size += (len) + 1;
- 
- #undef __fetch_str
-
-> What I currently do is:
-> 
-> TRACE_EVENT(xfs_dir2,
-> 	TP_PROTO(struct xfs_da_args *args, int i, int j, int count),
-> 	TP_ARGS(args, i, j, count),
-> 
-> 	TP_STRUCT__entry(
-> 		__field(xfs_ino_t, ino)
-> 		__array(char, name, TRACE_MAXNAMELEN)
-> 		__field(int, namelen)
-> 		...
-> 	),
-> 
->         TP_fast_assign(
-> 		__entry->ino = args->dp->i_ino;
-> 		if (args->namelen)
-> 			memcpy(__entry->name, args->name,
-> 			       min(args->namelen, TRACE_MAXNAMELEN));
-
-This string is not NULL-terminated?
-
-> 		__entry->namelen = args->namelen;
-> 		...
-> 	),
-> 
-> 	TP_printk("ino 0x%lld %pF name %.*s namelen %d hashval 0x%x "
-> 		  "inumber 0x%llx op_flags %s i %d j %d count %d",
-> 		  __entry->ino,
-> 		  (void *)__entry->caller_ip,
-> 		  min(__entry->namelen, TRACE_MAXNAMELEN),
-> 		  __entry->namelen ? __entry->name : NULL,
-> 		  __entry->namelen,
-> 		  ...)
-> );
-> 
-
-Then the above code can be rewrote:
-
-TRACE_EVENT(xfs_dir2,
-	TP_PROTO(struct xfs_da_args *args, int i, int j, int count),
-	TP_ARGS(args, i, j, count),
-
-	TP_STRUCT__entry(
-		__field(xfs_ino_t, ino)
-		__string(name, args->namelen)
-		__field(int, namelen)
-		...
-	),
-
-        TP_fast_assign(
-		__entry->ino = args->dp->i_ino;
-		memcpy(__fetch_str(name), args->name, args->namelen);
-		__entry->namelen = args->namelen;
-		...
-	),
-
-	TP_printk("ino 0x%lld %pF name %.*s namelen %d hashval 0x%x "
-		  "inumber 0x%llx op_flags %s i %d j %d count %d",
-		  __entry->ino,
-		  (void *)__entry->caller_ip,
-		  __entry->namelen,
-		  __get_str(name),
-		  __entry->namelen,
-		  ...)
-);
-
+Cheers,
+Samuel.
+-- 
+Intel Open Source Technology Centre
+http://oss.intel.com/
