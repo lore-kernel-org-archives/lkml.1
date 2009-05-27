@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759198AbZE0H0f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762253AbZE0H0Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759198AbZE0H0f (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 03:26:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762113AbZE0HZP
+	id S1762253AbZE0H0Y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 03:26:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761395AbZE0HZJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 03:25:15 -0400
-Received: from claw.goop.org ([74.207.240.146]:33585 "EHLO claw.goop.org"
+	Wed, 27 May 2009 03:25:09 -0400
+Received: from claw.goop.org ([74.207.240.146]:33572 "EHLO claw.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762107AbZE0HZN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 03:25:13 -0400
+	id S1762025AbZE0HZG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 03:25:06 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: the arch/x86 maintainers <x86@kernel.org>,
@@ -20,11 +20,12 @@ Cc: the arch/x86 maintainers <x86@kernel.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Matthew Wilcox <matthew@wil.cx>,
        Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 10/10] xen: define BIOVEC_PHYS_MERGEABLE()
-Date: Wed, 27 May 2009 00:24:42 -0700
-Message-Id: <1243409082-21349-11-git-send-email-jeremy@goop.org>
+       Alex Nixon <alex.nixon@citrix.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
+       Ian Campbell <ian.campbell@citrix.com>
+Subject: [PATCH 04/10] xen: Add xen_create_contiguous_region
+Date: Wed, 27 May 2009 00:24:36 -0700
+Message-Id: <1243409082-21349-5-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
 In-Reply-To: <1243409082-21349-1-git-send-email-jeremy@goop.org>
 References: <1243409082-21349-1-git-send-email-jeremy@goop.org>
@@ -32,85 +33,316 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When running in Xen domain with device access, we need to make sure
-the block subsystem doesn't merge requests across pages which aren't
-machine physically contiguous.  To do this, we define our own
-BIOVEC_PHYS_MERGEABLE.  When CONFIG_XEN isn't enabled, or we're not
-running in a Xen domain, this has identical behaviour to the normal
-implementation.  When running under Xen, we also make sure the
-underlying machine pages are the same or adjacent.
+From: Alex Nixon <alex.nixon@citrix.com>
 
-[ Impact: allow Xen control of bio merging ]
+A memory region must be physically contiguous in order to be accessed
+through DMA.  This patch adds xen_create_contiguous_region, which
+ensures a region of contiguous virtual memory is also physically
+contiguous.
 
+Based on Stephen Tweedie's port of the 2.6.18-xen version.
+
+Remove contiguous_bitmap[] as it's no longer needed.
+
+Ported from linux-2.6.18-xen.hg 707:e410857fd83c
+
+[ Impact: add Xen-internal API to make pages phys-contig ]
+
+Signed-off-by: Alex Nixon <alex.nixon@citrix.com>
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
 ---
- arch/x86/include/asm/io.h |   13 +++++++++++++
- drivers/xen/Makefile      |    2 +-
- drivers/xen/biomerge.c    |   14 ++++++++++++++
- 3 files changed, 28 insertions(+), 1 deletions(-)
- create mode 100644 drivers/xen/biomerge.c
+ arch/x86/xen/mmu.c             |  200 ++++++++++++++++++++++++++++++++++++++++
+ include/xen/interface/memory.h |   42 +++++++++
+ include/xen/xen-ops.h          |    6 +
+ 3 files changed, 248 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/include/asm/io.h b/arch/x86/include/asm/io.h
-index 57c7b26..c75e9eb 100644
---- a/arch/x86/include/asm/io.h
-+++ b/arch/x86/include/asm/io.h
-@@ -7,6 +7,8 @@
- #include <asm-generic/int-ll64.h>
- #include <asm/page.h>
+diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
+index 9cee943..fed27f1 100644
+--- a/arch/x86/xen/mmu.c
++++ b/arch/x86/xen/mmu.c
+@@ -51,6 +51,7 @@
+ #include <asm/paravirt.h>
+ #include <asm/e820.h>
+ #include <asm/linkage.h>
++#include <asm/page.h>
  
-+#include <asm/xen/hypervisor.h>
-+
- extern int isapnp_disable;
+ #include <asm/xen/hypercall.h>
+ #include <asm/xen/hypervisor.h>
+@@ -2099,6 +2100,205 @@ const struct pv_mmu_ops xen_mmu_ops __initdata = {
+ };
  
- #define build_mmio_read(name, size, type, reg, barrier) \
-@@ -201,6 +203,17 @@ extern void __iomem *early_memremap(resource_size_t phys_addr,
- 				    unsigned long size);
- extern void early_iounmap(void __iomem *addr, unsigned long size);
  
-+#ifdef CONFIG_XEN
-+struct bio_vec;
++/* Protected by xen_reservation_lock. */
++#define MAX_CONTIG_ORDER 9 /* 2MB */
++static unsigned long discontig_frames[1<<MAX_CONTIG_ORDER];
 +
-+extern bool xen_biovec_phys_mergeable(const struct bio_vec *vec1,
-+				      const struct bio_vec *vec2);
-+
-+#define BIOVEC_PHYS_MERGEABLE(vec1, vec2)				\
-+	(__BIOVEC_PHYS_MERGEABLE(vec1, vec2) &&				\
-+	 (!xen_domain() || xen_biovec_phys_mergeable(vec1, vec2)))
-+#endif	/* CONFIG_XEN */
-+
- #define IO_SPACE_LIMIT 0xffff
- 
- #endif /* _ASM_X86_IO_H */
-diff --git a/drivers/xen/Makefile b/drivers/xen/Makefile
-index ec2a39b..e6c8b85 100644
---- a/drivers/xen/Makefile
-+++ b/drivers/xen/Makefile
-@@ -1,4 +1,4 @@
--obj-y	+= grant-table.o features.o events.o manage.o
-+obj-y	+= grant-table.o features.o events.o manage.o biomerge.o
- obj-y	+= xenbus/
- 
- obj-$(CONFIG_HOTPLUG_CPU)	+= cpu_hotplug.o
-diff --git a/drivers/xen/biomerge.c b/drivers/xen/biomerge.c
-new file mode 100644
-index 0000000..d40f534
---- /dev/null
-+++ b/drivers/xen/biomerge.c
-@@ -0,0 +1,14 @@
-+#include <linux/bio.h>
-+#include <asm/io.h>
-+#include <xen/page.h>
-+
-+bool xen_biovec_phys_mergeable(const struct bio_vec *vec1,
-+			       const struct bio_vec *vec2)
++#define VOID_PTE (mfn_pte(0, __pgprot(0)))
++static void xen_zap_pfn_range(unsigned long vaddr, unsigned int order,
++				unsigned long *in_frames,
++				unsigned long *out_frames)
 +{
-+	unsigned long mfn1 = pfn_to_mfn(page_to_pfn(vec1->bv_page));
-+	unsigned long mfn2 = pfn_to_mfn(page_to_pfn(vec2->bv_page));
++	int i;
++	struct multicall_space mcs;
 +
-+	return __BIOVEC_PHYS_MERGEABLE(vec1, vec2) &&
-+		((mfn1 == mfn2) || ((mfn1+1) == mfn2));
++	xen_mc_batch();
++	for (i = 0; i < (1UL<<order); i++, vaddr += PAGE_SIZE) {
++		mcs = __xen_mc_entry(0);
++
++		if (in_frames)
++			in_frames[i] = virt_to_mfn(vaddr);
++
++		MULTI_update_va_mapping(mcs.mc, vaddr, VOID_PTE, 0);
++		set_phys_to_machine(virt_to_pfn(vaddr), INVALID_P2M_ENTRY);
++
++		if (out_frames)
++			out_frames[i] = virt_to_pfn(vaddr);
++	}
++	xen_mc_issue(0);
 +}
 +
++/*
++ * Update the pfn-to-mfn mappings for a virtual address range, either to
++ * point to an array of mfns, or contiguously from a single starting
++ * mfn.
++ */
++static void xen_remap_exchanged_ptes(unsigned long vaddr, int order,
++				     unsigned long *mfns,
++				     unsigned long first_mfn)
++{
++	unsigned i, limit;
++	unsigned long mfn;
++
++	xen_mc_batch();
++
++	limit = 1u << order;
++	for (i = 0; i < limit; i++, vaddr += PAGE_SIZE) {
++		struct multicall_space mcs;
++		unsigned flags;
++
++		mcs = __xen_mc_entry(0);
++		if (mfns)
++			mfn = mfns[i];
++		else
++			mfn = first_mfn + i;
++
++		if (i < (limit - 1))
++			flags = 0;
++		else {
++			if (order == 0)
++				flags = UVMF_INVLPG | UVMF_ALL;
++			else
++				flags = UVMF_TLB_FLUSH | UVMF_ALL;
++		}
++
++		MULTI_update_va_mapping(mcs.mc, vaddr,
++				mfn_pte(mfn, PAGE_KERNEL), flags);
++
++		set_phys_to_machine(virt_to_pfn(vaddr), mfn);
++	}
++
++	xen_mc_issue(0);
++}
++
++/*
++ * Perform the hypercall to exchange a region of our pfns to point to
++ * memory with the required contiguous alignment.  Takes the pfns as
++ * input, and populates mfns as output.
++ *
++ * Returns a success code indicating whether the hypervisor was able to
++ * satisfy the request or not.
++ */
++static int xen_exchange_memory(unsigned long extents_in, unsigned int order_in,
++			       unsigned long *pfns_in,
++			       unsigned long extents_out, unsigned int order_out,
++			       unsigned long *mfns_out,
++			       unsigned int address_bits)
++{
++	long rc;
++	int success;
++
++	struct xen_memory_exchange exchange = {
++		.in = {
++			.nr_extents   = extents_in,
++			.extent_order = order_in,
++			.extent_start = pfns_in,
++			.domid        = DOMID_SELF
++		},
++		.out = {
++			.nr_extents   = extents_out,
++			.extent_order = order_out,
++			.extent_start = mfns_out,
++			.address_bits = address_bits,
++			.domid        = DOMID_SELF
++		}
++	};
++
++	BUG_ON(extents_in << order_in != extents_out << order_out);
++
++	rc = HYPERVISOR_memory_op(XENMEM_exchange, &exchange);
++	success = (exchange.nr_exchanged == extents_in);
++
++	BUG_ON(!success && ((exchange.nr_exchanged != 0) || (rc == 0)));
++	BUG_ON(success && (rc != 0));
++
++	return success;
++}
++
++int xen_create_contiguous_region(unsigned long vstart, unsigned int order,
++				 unsigned int address_bits)
++{
++	unsigned long *in_frames = discontig_frames, out_frame;
++	unsigned long  flags;
++	int            success;
++
++	/*
++	 * Currently an auto-translated guest will not perform I/O, nor will
++	 * it require PAE page directories below 4GB. Therefore any calls to
++	 * this function are redundant and can be ignored.
++	 */
++
++	if (xen_feature(XENFEAT_auto_translated_physmap))
++		return 0;
++
++	if (unlikely(order > MAX_CONTIG_ORDER))
++		return -ENOMEM;
++
++	memset((void *) vstart, 0, PAGE_SIZE << order);
++
++	vm_unmap_aliases();
++
++	spin_lock_irqsave(&xen_reservation_lock, flags);
++
++	/* 1. Zap current PTEs, remembering MFNs. */
++	xen_zap_pfn_range(vstart, order, in_frames, NULL);
++
++	/* 2. Get a new contiguous memory extent. */
++	out_frame = virt_to_pfn(vstart);
++	success = xen_exchange_memory(1UL << order, 0, in_frames,
++				      1, order, &out_frame,
++				      address_bits);
++
++	/* 3. Map the new extent in place of old pages. */
++	if (success)
++		xen_remap_exchanged_ptes(vstart, order, NULL, out_frame);
++	else
++		xen_remap_exchanged_ptes(vstart, order, in_frames, 0);
++
++	spin_unlock_irqrestore(&xen_reservation_lock, flags);
++
++	return success ? 0 : -ENOMEM;
++}
++EXPORT_SYMBOL_GPL(xen_create_contiguous_region);
++
++void xen_destroy_contiguous_region(unsigned long vstart, unsigned int order)
++{
++	unsigned long *out_frames = discontig_frames, in_frame;
++	unsigned long  flags;
++	int success;
++
++	if (xen_feature(XENFEAT_auto_translated_physmap))
++		return;
++
++	if (unlikely(order > MAX_CONTIG_ORDER))
++		return;
++
++	memset((void *) vstart, 0, PAGE_SIZE << order);
++
++	vm_unmap_aliases();
++
++	spin_lock_irqsave(&xen_reservation_lock, flags);
++
++	/* 1. Find start MFN of contiguous extent. */
++	in_frame = virt_to_mfn(vstart);
++
++	/* 2. Zap current PTEs. */
++	xen_zap_pfn_range(vstart, order, NULL, out_frames);
++
++	/* 3. Do the exchange for non-contiguous MFNs. */
++	success = xen_exchange_memory(1, order, &in_frame, 1UL << order,
++					0, out_frames, 0);
++
++	/* 4. Map new pages in place of old pages. */
++	if (success)
++		xen_remap_exchanged_ptes(vstart, order, out_frames, 0);
++	else
++		xen_remap_exchanged_ptes(vstart, order, NULL, in_frame);
++
++	spin_unlock_irqrestore(&xen_reservation_lock, flags);
++}
++EXPORT_SYMBOL_GPL(xen_destroy_contiguous_region);
++
+ #ifdef CONFIG_XEN_DEBUG_FS
+ 
+ static struct dentry *d_mmu_debug;
+diff --git a/include/xen/interface/memory.h b/include/xen/interface/memory.h
+index 9ddf473..48fc968 100644
+--- a/include/xen/interface/memory.h
++++ b/include/xen/interface/memory.h
+@@ -55,6 +55,48 @@ struct xen_memory_reservation {
+ DEFINE_GUEST_HANDLE_STRUCT(xen_memory_reservation);
+ 
+ /*
++ * An atomic exchange of memory pages. If return code is zero then
++ * @out.extent_list provides GMFNs of the newly-allocated memory.
++ * Returns zero on complete success, otherwise a negative error code.
++ * On complete success then always @nr_exchanged == @in.nr_extents.
++ * On partial success @nr_exchanged indicates how much work was done.
++ */
++#define XENMEM_exchange             11
++struct xen_memory_exchange {
++    /*
++     * [IN] Details of memory extents to be exchanged (GMFN bases).
++     * Note that @in.address_bits is ignored and unused.
++     */
++    struct xen_memory_reservation in;
++
++    /*
++     * [IN/OUT] Details of new memory extents.
++     * We require that:
++     *  1. @in.domid == @out.domid
++     *  2. @in.nr_extents  << @in.extent_order ==
++     *     @out.nr_extents << @out.extent_order
++     *  3. @in.extent_start and @out.extent_start lists must not overlap
++     *  4. @out.extent_start lists GPFN bases to be populated
++     *  5. @out.extent_start is overwritten with allocated GMFN bases
++     */
++    struct xen_memory_reservation out;
++
++    /*
++     * [OUT] Number of input extents that were successfully exchanged:
++     *  1. The first @nr_exchanged input extents were successfully
++     *     deallocated.
++     *  2. The corresponding first entries in the output extent list correctly
++     *     indicate the GMFNs that were successfully exchanged.
++     *  3. All other input and output extents are untouched.
++     *  4. If not all input exents are exchanged then the return code of this
++     *     command will be non-zero.
++     *  5. THIS FIELD MUST BE INITIALISED TO ZERO BY THE CALLER!
++     */
++    unsigned long nr_exchanged;
++};
++
++DEFINE_GUEST_HANDLE_STRUCT(xen_memory_exchange);
++/*
+  * Returns the maximum machine frame number of mapped RAM in this system.
+  * This command always succeeds (it never returns an error code).
+  * arg == NULL.
+diff --git a/include/xen/xen-ops.h b/include/xen/xen-ops.h
+index 883a21b..d789c93 100644
+--- a/include/xen/xen-ops.h
++++ b/include/xen/xen-ops.h
+@@ -14,4 +14,10 @@ void xen_mm_unpin_all(void);
+ void xen_timer_resume(void);
+ void xen_arch_resume(void);
+ 
++extern unsigned long *xen_contiguous_bitmap;
++int xen_create_contiguous_region(unsigned long vstart, unsigned int order,
++				unsigned int address_bits);
++
++void xen_destroy_contiguous_region(unsigned long vstart, unsigned int order);
++
+ #endif /* INCLUDE_XEN_OPS_H */
 -- 
 1.6.0.6
 
