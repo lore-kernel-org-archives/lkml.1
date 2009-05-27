@@ -1,105 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760687AbZE0GSX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760725AbZE0GUS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760687AbZE0GSX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 02:18:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759796AbZE0GSP
+	id S1760725AbZE0GUS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 02:20:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759645AbZE0GUF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 02:18:15 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:49764 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759757AbZE0GSO (ORCPT
+	Wed, 27 May 2009 02:20:05 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:53598 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759452AbZE0GUE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 02:18:14 -0400
-Date: Wed, 27 May 2009 15:16:40 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Paul Menage <menage@google.com>, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.linux-foundation.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: Re: [PATCH] cgroups: handle failure of cgroup_populate_dir() at 
- mount/remount
-Message-Id: <20090527151640.52323b90.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <4A1CB266.8000400@cn.fujitsu.com>
-References: <4A16153C.2080004@cn.fujitsu.com>
-	<20090522172545.1e5e5f81.kamezawa.hiroyu@jp.fujitsu.com>
-	<6599ad830905261506x480f2167naf1034177bbc7036@mail.gmail.com>
-	<4A1C9253.3060108@cn.fujitsu.com>
-	<20090527103404.81d3c1a4.kamezawa.hiroyu@jp.fujitsu.com>
-	<4A1CB266.8000400@cn.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Wed, 27 May 2009 02:20:04 -0400
+Subject: Re: [PATCH] firmware: Allocate firmware id dynamically
+From: Marcel Holtmann <holtmann@linux.intel.com>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Samuel Ortiz <sameo@linux.intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>, "Zhu, Yi" <yi.zhu@intel.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "linville@tuxdriver.com" <linville@tuxdriver.com>,
+       Greg Kroah-Hartmann <greg@kroah.com>
+In-Reply-To: <ac3eb2510905260711hb273541i8d69128b88933f7f@mail.gmail.com>
+References: <20090526140423.GA14683@sortiz.org>
+	 <ac3eb2510905260711hb273541i8d69128b88933f7f@mail.gmail.com>
+Content-Type: text/plain
+Date: Wed, 27 May 2009 08:19:46 +0200
+Message-Id: <1243405186.20399.8.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 May 2009 11:24:22 +0800
-Li Zefan <lizf@cn.fujitsu.com> wrote:
+Hi Samuel,
 
-> KAMEZAWA Hiroyuki wrote:
-> > On Wed, 27 May 2009 09:07:31 +0800
-> > Li Zefan <lizf@cn.fujitsu.com> wrote:
-> > 
-> >> Paul Menage wrote:
-> >>> On Fri, May 22, 2009 at 1:25 AM, KAMEZAWA Hiroyuki
-> >>> <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> >>>> Hm, shouldn't we allow "noprefix" to be effective only agaisnt cpuset ?
-> >>>> I think it's just for backward-compatibility of cpuset.
-> >>>> (I don't like the option at all.)
-> >>> Yes, exposing the "noprefix" option externally was one of the mistakes
-> >>> I made when developing cgroups.
-> >>>
-> >>> It seems to me really unlikely that anyone is using "noprefix" for
-> >> And "noprefix" is not documented in cgroups.txt, so I guess not
-> >> many people know this option. Even libcgroup doesn't handle it.
-> >>
-> >>> anything other than implicitly when mounting the "cpuset" filesystem.
-> >>> So I'd be inclined to just forbid it if we're mounting more than just
-> >>> the cpuset subsystem. A bit of a nasty abstraction violation, but it
-> >>> makes more sense overall. The only problem is that someone *might* be
-> >>> using it - do we have any way to determine how, and how big do they
-> >>> have to be before we care?
-> >>>
-> >> I think we can never know..
-> > 
-> > How about this method ?
-> > 
-> >  - add "noprefix" to "to-be-removed" list.
-> >  - add "WARNING: noprefix option will be removed in 2.6.32 (or 2.6.31)" now
-> >  - remove "noprefix" in 2.6.31-rc or later
-> > 
+> > Since the firmware loader is not maintained by anyone, I'm sending this one to
+> > you, for the next merge window:
 > 
-> I don't see how we can remove noprefix while reserve the compatibility of
-> old cpuset..
+> It's part of the driver-core directory, and handled by Greg.
 > 
-> As Paul Menage said, we can allow noprefix to be used only if we mount just
-> cpuset subsystem:
+> > The firmware loader has a statically allocated 30 bytes long string for the
+> > firmware id (a.k.a. the firmware file name). There is no reason why we couldnt
+> > allocate dynamically, and avoid having restrictions on the firmware names
+> > lengths.
 > 
-I have no objection.
+> Looks good.
 
--Kame
+Acked-by: Marcel Holtmann <marcel@holtmann.org>
 
+> > Please note that we have to keep the FIRMWARE_NAME_MAX definition around as
+> > some drivers rely on it.
+> 
+> I think the 6 files should be converted, and FIRMWARE_NAME_MAX
+> removed, otherwise people will keep copying that crap around.
+> 
+>   drivers/pcmcia/ds.c
+>   drivers/usb/atm/ueagle-atm.c
+>   drivers/net/wireless/libertas/if_usb.c
+>   drivers/net/wireless/libertas/if_spi.c
+>   drivers/media/dvb/dvb-usb/dvb-usb.h
+>   drivers/media/common/tuners/tuner-xc2028.c
 
-> (pseudo code)
-> 
-> diff --git a/kernel/cgroup.c b/kernel/cgroup.c
-> --- a/kernel/cgroup.c
-> +++ b/kernel/cgroup.c
-> @@ -886,6 +886,11 @@ static int parse_cgroupfs_options(char *data,
->                 }
->         }
-> 
-> +
-> +       if (test_bit(ROOT_NOPREFIX, &opts->flags) &&
-> +           (opts->subsys_bits & ~cpuset_subsys_id) != 0)
-> +               return -EINVAL;
-> +
->         /* We can't have an empty hierarchy */
->         if (!opts->subsys_bits)
->                 return -EINVAL;
-> 
-> 
+I do agree with Kay here that we should just go ahead and fix these.
+
+Regards
+
+Marcel
+
 
