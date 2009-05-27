@@ -1,83 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755555AbZE0Bd1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755560AbZE0Bfu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755555AbZE0Bd1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 21:33:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754106AbZE0BdU
+	id S1755560AbZE0Bfu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 21:35:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754091AbZE0Bfn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 21:33:20 -0400
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:55609 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754317AbZE0BdT (ORCPT
+	Tue, 26 May 2009 21:35:43 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:48828 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751044AbZE0Bfn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 21:33:19 -0400
-Date: Wed, 27 May 2009 10:33:03 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Grant Likely <grant.likely@secretlab.ca>
-Cc: Joe Perches <joe@perches.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 16/18] MAINTAINERS - Remove L: linux-kernel@vger.kernel.org from all but "THE REST"
-Message-ID: <20090527013303.GB8979@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Grant Likely <grant.likely@secretlab.ca>,
-	Joe Perches <joe@perches.com>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org
-References: <cover.1243131992.git.joe@perches.com> <9f55522f7ab56afcf16d936d06ab2f3a7e699ed5.1243131992.git.joe@perches.com> <fa686aa40905232018x5e6d1d1aofef790dee2e3bfae@mail.gmail.com> <1243135358.3560.1.camel@Joe-Laptop.home> <fa686aa40905232128x475ea76dh861bf4d0fd3e1aef@mail.gmail.com> <1243139947.3560.7.camel@Joe-Laptop.home> <fa686aa40905232151g5ed5bcc8t2f19d63ace2277e7@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <fa686aa40905232151g5ed5bcc8t2f19d63ace2277e7@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 26 May 2009 21:35:43 -0400
+Date: Wed, 27 May 2009 10:34:04 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Paul Menage <menage@google.com>, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.linux-foundation.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: [PATCH] cgroups: handle failure of cgroup_populate_dir() at 
+ mount/remount
+Message-Id: <20090527103404.81d3c1a4.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <4A1C9253.3060108@cn.fujitsu.com>
+References: <4A16153C.2080004@cn.fujitsu.com>
+	<20090522172545.1e5e5f81.kamezawa.hiroyu@jp.fujitsu.com>
+	<6599ad830905261506x480f2167naf1034177bbc7036@mail.gmail.com>
+	<4A1C9253.3060108@cn.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 23, 2009 at 10:51:24PM -0600, Grant Likely wrote:
-> On Sat, May 23, 2009 at 10:39 PM, Joe Perches <joe@perches.com> wrote:
-> > On Sat, 2009-05-23 at 22:28 -0600, Grant Likely wrote:
-> >> On Sat, May 23, 2009 at 9:22 PM, Joe Perches <joe@perches.com> wrote:
-> >> > On Sat, 2009-05-23 at 21:18 -0600, Grant Likely wrote:
-> >> >> Really? ?That makes the assumption that lack of an "L:" tag is
-> >> >> equivalent to an "L:linux-kernel" tag, which IMNSHO I don't believe is
-> >> >> true.
-> >> > Documentation/SubmittingPatches
-> >> > 6) Select your CC (e-mail carbon copy) list.
-> >> > Unless you have a reason NOT to do so, CC linux-kernel@vger.kernel.org.
-> >> Is that actually true in practice? ?At least on linuxppc-dev, very few
-> >> patches are cc'd to lkml. ?I don't remember ever being prompted to cc
-> >> lkml on all patches, and I haven't been prompting others to do so.
-> >
-> > Hi Grant.
-> >
-> > I think cc:ing lkml should be the default for patches.
+On Wed, 27 May 2009 09:07:31 +0800
+Li Zefan <lizf@cn.fujitsu.com> wrote:
+
+> Paul Menage wrote:
+> > On Fri, May 22, 2009 at 1:25 AM, KAMEZAWA Hiroyuki
+> > <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> >> Hm, shouldn't we allow "noprefix" to be effective only agaisnt cpuset ?
+> >> I think it's just for backward-compatibility of cpuset.
+> >> (I don't like the option at all.)
+> > 
+> > Yes, exposing the "noprefix" option externally was one of the mistakes
+> > I made when developing cgroups.
+> > 
+> > It seems to me really unlikely that anyone is using "noprefix" for
 > 
-> Do subsystem maintainers think so?  Unless they do (and tell others
-> so), I don't think it will actually happen.  Until that point, I don't
-> think the L:linux-kernel lines should be removed.
+> And "noprefix" is not documented in cgroups.txt, so I guess not
+> many people know this option. Even libcgroup doesn't handle it.
 > 
-Ultimately it should come to common sense. If you are only touching
-subsystem or architecture-specific code and it's unlikely anyone on l-k
-is going to care, or have much to add to it, then there really isn't a
-lot of point in mindlessly Cc-ing the list on every change.
+> > anything other than implicitly when mounting the "cpuset" filesystem.
+> > So I'd be inclined to just forbid it if we're mounting more than just
+> > the cpuset subsystem. A bit of a nasty abstraction violation, but it
+> > makes more sense overall. The only problem is that someone *might* be
+> > using it - do we have any way to determine how, and how big do they
+> > have to be before we care?
+> > 
+> 
+> I think we can never know..
 
-The signal to noise ratio on l-k is already limping along without
-encouraging people to submit every random patch for review. If you are
-told to resubmit and add the list and random people to the Cc, or if you
-are at all in doubt over a patch submission, then naturally cc'ing l-k is
-the way to go.
+How about this method ?
 
-In practice we are well beyond the stage of monitoring every single
-patch that is going in anyways, these days you are more likely to find an
-obscure change in git than you are on the list. If a process problem
-arises, it is usually quite easily corrected.
+ - add "noprefix" to "to-be-removed" list.
+ - add "WARNING: noprefix option will be removed in 2.6.32 (or 2.6.31)" now
+ - remove "noprefix" in 2.6.31-rc or later
 
-People might disagree, but at least based on the architecture lists, it
-is more the exception than the norm that l-k is CCed, and it's only the
-odd times when a discussion carries over and someone has to either
-summarize or point at archives.
+Thanks,
+-Kame
 
-Conversely, if you need to read SubmittingPatches to figure out how to
-submit a patch, yes, you are probably better off CCing l-k just to be on
-the safe side. As a blanket policy though it makes no sense.
+
+
+
+
