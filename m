@@ -1,64 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757280AbZE0BXA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756797AbZE0BXY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757280AbZE0BXA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 21:23:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752337AbZE0BWv
+	id S1756797AbZE0BXY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 21:23:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755403AbZE0BXJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 21:22:51 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:41523 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753988AbZE0BWv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 21:22:51 -0400
-Date: Wed, 27 May 2009 11:22:46 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Neil Brown <neilb@suse.de>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: linux-next: Linus' tree build warning
-Message-Id: <20090527112246.5c9734ec.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__27_May_2009_11_22_46_+1000_Yfdqo5le/ySqqMht"
+	Tue, 26 May 2009 21:23:09 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:59632 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754789AbZE0BXH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 21:23:07 -0400
+Message-ID: <4A1C9645.7010107@cn.fujitsu.com>
+Date: Wed, 27 May 2009 09:24:21 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: Ingo Molnar <mingo@elte.hu>, Jens Axboe <jens.axboe@oracle.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Tom Zanussi <tzanussi@gmail.com>, "Theodore Ts'o" <tytso@mit.edu>,
+       Steven Whitehouse <swhiteho@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Jeff Moyer <jmoyer@redhat.com>, Christoph Hellwig <hch@infradead.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v2 1/2] tracing/events: make __string() more general
+References: <4A1B6A2F.2040703@cn.fujitsu.com> <4A1B6A4C.3070407@cn.fujitsu.com> <alpine.DEB.2.00.0905261655120.26705@gandalf.stny.rr.com>
+In-Reply-To: <alpine.DEB.2.00.0905261655120.26705@gandalf.stny.rr.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__27_May_2009_11_22_46_+1000_Yfdqo5le/ySqqMht
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Steven Rostedt wrote:
+> 
+> On Tue, 26 May 2009, Li Zefan wrote:
+> 
+>> This changes __string(..., src) to __string(..., len), thus makes it more
+>> general, and then block TRACE_EVENT() can use it.
+>>
+>> Also introduce __fetch_str(), which is used in TP_assign() and returns
+>> the address of the string, while __get_str() is used in TP_print().
+>>
+>> [ Impact: TRACE_EVENT api change ]
+> 
+> What's the reason for the change?
+> 
+> Is it to handle NULL pointers? If so, lets change the ftrace.h to handle
+> it instead.
+> 
 
-Hi Neil,
+No, not for this purpose.
 
-Today's linux-next build (powerpc ppc64_defconfig) produced these
-warnings:
+With __string(..., src), we need to have a source string, but sometimes no
+source string is available, and what we know is how big the string will be.
 
-drivers/md/raid5.c: In function 'reshape_request':
-drivers/md/raid5.c:3814: warning: comparison of distinct pointer types lack=
-s a cast
-drivers/md/raid5.c:3819: warning: comparison of distinct pointer types lack=
-s a cast
-drivers/md/raid5.c:3820: warning: comparison of distinct pointer types lack=
-s a cast
+Take block trace events for example, I want to convert an unsigned char array
+into a string, after this patch, this can be done this way:
 
-Introduced by commit 848b3182365fdf5a05bcd5ed949071cac2c894b3 ("md:
-raid5: avoid sector values going negative when testing reshape progress").
+TP_STRUCT_entry(
+	__string( cmd, rq->cmd_len * 3 )
+)
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+TP_fast_assign(
+	construct_str( cmd )
+)
 
---Signature=_Wed__27_May_2009_11_22_46_+1000_Yfdqo5le/ySqqMht
-Content-Type: application/pgp-signature
+TP_prink("%s\n", get_str(cmd))
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Seems Christoph also runs into this problem while doing his XFS tracing.
+(and NULL str ptr that I'm not suffering)
 
-iEYEARECAAYFAkocleYACgkQjjKRsyhoI8wMGQCeMDj8EfEgj4fOB6v7P1956RA0
-BAIAoKALq3hAtrOLmte5c19Wup9kRtcT
-=PU20
------END PGP SIGNATURE-----
+> This is why I like the Impact line really be a "rational" line.
+>  "TRACE_EVENT api change" is meaningless to me.
+> 
 
---Signature=_Wed__27_May_2009_11_22_46_+1000_Yfdqo5le/ySqqMht--
+So what should this impact be. :(
