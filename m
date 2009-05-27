@@ -1,232 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759140AbZE0Rgn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760118AbZE0Rhj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759140AbZE0Rgn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 13:36:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751516AbZE0Rgf
+	id S1760118AbZE0Rhj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 13:37:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751516AbZE0Rha
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 13:36:35 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:49316 "EHLO mx2.redhat.com"
+	Wed, 27 May 2009 13:37:30 -0400
+Received: from www.tglx.de ([62.245.132.106]:49907 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751182AbZE0Rge (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 13:36:34 -0400
-Date: Wed, 27 May 2009 13:32:59 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Ryo Tsuruta <ryov@valinux.co.jp>
-Cc: righi.andrea@gmail.com, guijianfeng@cn.fujitsu.com, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, jens.axboe@oracle.com,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       agk@redhat.com, dm-devel@redhat.com, snitzer@redhat.com,
-       m-ikeda@ds.jp.nec.com, akpm@linux-foundation.org
-Subject: Re: [PATCH] io-controller: Add io group reference handling for
-	request
-Message-ID: <20090527173259.GD3425@redhat.com>
-References: <20090518140114.GB27080@redhat.com> <20090518143921.GE3113@linux> <20090526.203424.39179999.ryov@valinux.co.jp> <20090527.155631.226800550.ryov@valinux.co.jp>
+	id S1751182AbZE0Rh3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 13:37:29 -0400
+Date: Wed, 27 May 2009 19:36:32 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Chris Friesen <cfriesen@nortel.com>
+cc: LKML <linux-kernel@vger.kernel.org>, Ulrich Drepper <drepper@redhat.com>,
+       Roland McGrath <roland@redhat.com>
+Subject: Re: linux missing support for _POSIX_THREAD_CPUTIME?
+In-Reply-To: <4A1D7512.9080604@nortel.com>
+Message-ID: <alpine.LFD.2.00.0905271922470.3397@localhost.localdomain>
+References: <4A1D6E71.90602@nortel.com> <alpine.LFD.2.00.0905271855290.3397@localhost.localdomain> <4A1D7512.9080604@nortel.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090527.155631.226800550.ryov@valinux.co.jp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 27, 2009 at 03:56:31PM +0900, Ryo Tsuruta wrote:
-> Hi Andrea and Vivek,
-> 
-> Ryo Tsuruta <ryov@valinux.co.jp> wrote:
-> > Hi Andrea and Vivek,
-> > 
-> > From: Andrea Righi <righi.andrea@gmail.com>
-> > Subject: Re: [PATCH] io-controller: Add io group reference handling for request
-> > Date: Mon, 18 May 2009 16:39:23 +0200
-> > 
-> > > On Mon, May 18, 2009 at 10:01:14AM -0400, Vivek Goyal wrote:
-> > > > On Sun, May 17, 2009 at 12:26:06PM +0200, Andrea Righi wrote:
-> > > > > On Fri, May 15, 2009 at 10:06:43AM -0400, Vivek Goyal wrote:
-> > > > > > On Fri, May 15, 2009 at 09:48:40AM +0200, Andrea Righi wrote:
-> > > > > > > On Fri, May 15, 2009 at 01:15:24PM +0800, Gui Jianfeng wrote:
-> > > > > > > > Vivek Goyal wrote:
-> > > > > > > > ...
-> > > > > > > > >  }
-> > > > > > > > > @@ -1462,20 +1462,27 @@ struct io_cgroup *get_iocg_from_bio(stru
-> > > > > > > > >  /*
-> > > > > > > > >   * Find the io group bio belongs to.
-> > > > > > > > >   * If "create" is set, io group is created if it is not already present.
-> > > > > > > > > + * If "curr" is set, io group is information is searched for current
-> > > > > > > > > + * task and not with the help of bio.
-> > > > > > > > > + *
-> > > > > > > > > + * FIXME: Can we assume that if bio is NULL then lookup group for current
-> > > > > > > > > + * task and not create extra function parameter ?
-> > > > > > > > >   *
-> > > > > > > > > - * Note: There is a narrow window of race where a group is being freed
-> > > > > > > > > - * by cgroup deletion path and some rq has slipped through in this group.
-> > > > > > > > > - * Fix it.
-> > > > > > > > >   */
-> > > > > > > > > -struct io_group *io_get_io_group_bio(struct request_queue *q, struct bio *bio,
-> > > > > > > > > -					int create)
-> > > > > > > > > +struct io_group *io_get_io_group(struct request_queue *q, struct bio *bio,
-> > > > > > > > > +					int create, int curr)
-> > > > > > > > 
-> > > > > > > >   Hi Vivek,
-> > > > > > > > 
-> > > > > > > >   IIUC we can get rid of curr, and just determine iog from bio. If bio is not NULL,
-> > > > > > > >   get iog from bio, otherwise get it from current task.
-> > > > > > > 
-> > > > > > > Consider also that get_cgroup_from_bio() is much more slow than
-> > > > > > > task_cgroup() and need to lock/unlock_page_cgroup() in
-> > > > > > > get_blkio_cgroup_id(), while task_cgroup() is rcu protected.
-> > > > > > > 
-> > > > > > 
-> > > > > > True.
-> > > > > > 
-> > > > > > > BTW another optimization could be to use the blkio-cgroup functionality
-> > > > > > > only for dirty pages and cut out some blkio_set_owner(). For all the
-> > > > > > > other cases IO always occurs in the same context of the current task,
-> > > > > > > and you can use task_cgroup().
-> > > > > > > 
-> > > > > > 
-> > > > > > Yes, may be in some cases we can avoid setting page owner. I will get
-> > > > > > to it once I have got functionality going well. In the mean time if
-> > > > > > you have a patch for it, it will be great.
-> > > > > > 
-> > > > > > > However, this is true only for page cache pages, for IO generated by
-> > > > > > > anonymous pages (swap) you still need the page tracking functionality
-> > > > > > > both for reads and writes.
-> > > > > > > 
-> > > > > > 
-> > > > > > Right now I am assuming that all the sync IO will belong to task
-> > > > > > submitting the bio hence use task_cgroup() for that. Only for async
-> > > > > > IO, I am trying to use page tracking functionality to determine the owner.
-> > > > > > Look at elv_bio_sync(bio).
-> > > > > > 
-> > > > > > You seem to be saying that there are cases where even for sync IO, we
-> > > > > > can't use submitting task's context and need to rely on page tracking
-> > > > > > functionlity? 
-> > 
-> > I think that there are some kernel threads (e.g., dm-crypt, LVM and md
-> > devices) which actually submit IOs instead of tasks which originate the
-> > IOs. When IOs are submitted from such kernel threads, we can't use
-> > submitting task's context to determine to which cgroup the IO belongs.
-> > 
-> > > > > > In case of getting page (read) from swap, will it not happen
-> > > > > > in the context of process who will take a page fault and initiate the
-> > > > > > swap read?
-> > > > > 
-> > > > > No, for example in read_swap_cache_async():
-> > > > > 
-> > > > > @@ -308,6 +309,7 @@ struct page *read_swap_cache_async(swp_entry_t entry, gfp_t gfp_mask,
-> > > > >  		 */
-> > > > >  		__set_page_locked(new_page);
-> > > > >  		SetPageSwapBacked(new_page);
-> > > > > +		blkio_cgroup_set_owner(new_page, current->mm);
-> > > > >  		err = add_to_swap_cache(new_page, entry, gfp_mask & GFP_KERNEL);
-> > > > >  		if (likely(!err)) {
-> > > > >  			/*
-> > > > > 
-> > > > > This is a read, but the current task is not always the owner of this
-> > > > > swap cache page, because it's a readahead operation.
-> > > > > 
-> > > > 
-> > > > But will this readahead be not initiated in the context of the task taking
-> > > > the page fault?
-> > > > 
-> > > > handle_pte_fault()
-> > > > 	do_swap_page()
-> > > > 		swapin_readahead()
-> > > > 			read_swap_cache_async()
-> > > > 
-> > > > If yes, then swap reads issued will still be in the context of process and
-> > > > we should be fine?
-> > > 
-> > > Right. I was trying to say that the current task may swap-in also pages
-> > > belonging to a different task, so from a certain point of view it's not
-> > > so fair to charge the current task for the whole activity. But ok, I
-> > > think it's a minor issue.
-> > > 
-> > > > 
-> > > > > Anyway, this is a minor corner case I think. And probably it is safe to
-> > > > > consider this like any other read IO and get rid of the
-> > > > > blkio_cgroup_set_owner().
-> > > > 
-> > > > Agreed.
-> > > > 
-> > > > > 
-> > > > > I wonder if it would be better to attach the blkio_cgroup to the
-> > > > > anonymous page only when swap-out occurs.
-> > > > 
-> > > > Swap seems to be an interesting case in general. Somebody raised this
-> > > > question on lwn io controller article also. A user process never asked
-> > > > for swap activity. It is something enforced by kernel. So while doing
-> > > > some swap outs, it does not seem too fair to charge the write out to
-> > > > the process page belongs to and the fact of the matter may be that there
-> > > > is some other memory hungry application which is forcing these swap outs.
-> > > > 
-> > > > Keeping this in mind, should swap activity be considered as system
-> > > > activity and be charged to root group instead of to user tasks in other
-> > > > cgroups?
-> > > 
-> > > In this case I assume the swap-in activity should be charged to the root
-> > > cgroup as well.
-> > > 
-> > > Anyway, in the logic of the memory and swap control it would seem
-> > > reasonable to provide IO separation also for the swap IO activity.
-> > > 
-> > > In the MEMHOG example, it would be unfair if the memory pressure is
-> > > caused by a task in another cgroup, but with memory and swap isolation a
-> > > memory pressure condition can only be caused by a memory hog that runs
-> > > in the same cgroup. From this point of view it seems more fair to
-> > > consider the swap activity as the particular cgroup IO activity, instead
-> > > of charging always the root cgroup.
-> > > 
-> > > Otherwise, I suspect, memory pressure would be a simple way to blow away
-> > > any kind of QoS guarantees provided by the IO controller.
-> > > 
-> > > >   
-> > > > > I mean, just put the
-> > > > > blkio_cgroup_set_owner() hook in try_to_umap() in order to keep track of
-> > > > > the IO generated by direct reclaim of anon memory. For all the other
-> > > > > cases we can simply use the submitting task's context.
-> > 
-> > I think that only putting the hook in try_to_unmap() doesn't work
-> > correctly, because IOs will be charged to reclaiming processes or
-> > kswapd. These IOs should be charged to processes which cause memory
-> > pressure.
-> 
-> Consider the following case:
-> 
->   (1) There are two processes Proc-A and Proc-B.
->   (2) Proc-A maps a large file into many pages by mmap() and writes
->       many data to the file.
->   (3) After (2), Proc-B try to get a page, but there are no available
->       pages because Proc-A has used them.
->   (4) kernel starts to reclaim pages, call try_to_unmap() to unmap
->       a page which is owned by Proc-A, then blkio_cgroup_set_owner()
->       sets Proc-B's ID on the page because the task's context is Proc-B.
->   (5) After (4), kernel writes the page out to a disk. This IO is
->       charged to Proc-B.
-> 
-> In the above case, I think that the IO should be charged to a Proc-A,
-> because the IO is caused by Proc-A's memory pressure. 
-> I think we should consider in the case without memory and swap
-> isolation.
-> 
+On Wed, 27 May 2009, Chris Friesen wrote:
 
-But what happens if Proc-B is consuming lots of memory and then process A
-asks for one page of memory and that triggers the memory reclaim. In that
-case we are kind of penalizing process A from IO point of view because
-some other process consumed lots of memory?
+> Thomas Gleixner wrote:
+> > On Wed, 27 May 2009, Chris Friesen wrote:
+> > 
+> > That's more a question for the glibc folks. CC'ed.
+> 
+> Actually, I'm looking at the kernel code here.  It looks like
+> posix_cpu_clock_get() should be able to handle a per-task cpu clock for
+> another thread within the same process.  However, it's only ever called
+> by thread_cpu_clock_get(), which hardcodes a clock_id of THREAD_CLOCK,
+> which corresponds to the current thread.
 
-So it looks like that if one mounts mem+swap and io controller on same
-hierarchy, then things probably would be fine as swap IO generated due
-to either memory pressure or periodic reclaim by kswapd, will be charged
-to right cgroup.
+No, it's also called via the CLOCK_DISPATCH magic in posix_timers.c
+ 
+> Similarly, invalid_clockid() will say that the clock_id is invalid if
+> it's positive but greater than 15.  If my math is right, this means that
+> any pid > 2 will result in invalid_clockid() failing.
 
-But if they are not mounted on same hiearchy, then I guess it is not too
-bad to charge the owner of the page for swap IO. It is not very accurate
-but at the same time there does not seem to be an easy way out?
+posix_cpu_clock_get() does:
 
-Thanks
-Vivek
+  const pid_t pid = CPUCLOCK_PID(which_clock);
+
+CPUCLOCK_PID is defined as:
+
+#define CPUCLOCK_PID(clock)  ((pid_t) ~((clock) >> 3))
+
+include/linux/posix-timers.h has the helper macros to build the
+clock_id value for posix_cpu_clock_get()
+
+#define MAKE_PROCESS_CPUCLOCK(pid, clock) \
+        ((~(clockid_t) (pid) << 3) | (clockid_t) (clock))
+#define MAKE_THREAD_CPUCLOCK(tid, clock) \
+        MAKE_PROCESS_CPUCLOCK((tid), (clock) | CPUCLOCK_PERTHREAD_MASK)
+
+Hope that helps,
+
+     tglx
