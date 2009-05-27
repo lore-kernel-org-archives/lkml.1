@@ -1,85 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762905AbZE0LQj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763069AbZE0LRD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762905AbZE0LQj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 07:16:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760573AbZE0LMj
+	id S1763069AbZE0LRD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 07:17:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760338AbZE0LMu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 07:12:39 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:56166 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760398AbZE0LMa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 07:12:30 -0400
-From: Mel Gorman <mel@csn.ul.ie>
-To: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       stable@kernel.org, Linux Memory Management List <linux-mm@kvack.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, starlight@binnacle.cx,
-       Eric B Munson <ebmunson@us.ibm.com>, Adam Litke <agl@us.ibm.com>,
-       Andy Whitcroft <apw@canonical.com>, wli@movementarian.org
-Subject: [PATCH 1/2] x86: Ignore VM_LOCKED when determining if hugetlb-backed page tables can be shared or not
-Date: Wed, 27 May 2009 12:12:28 +0100
-Message-Id: <1243422749-6256-2-git-send-email-mel@csn.ul.ie>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1243422749-6256-1-git-send-email-mel@csn.ul.ie>
-References: <1243422749-6256-1-git-send-email-mel@csn.ul.ie>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+	Wed, 27 May 2009 07:12:50 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:54658 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760502AbZE0LMr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 07:12:47 -0400
+From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+To: linux-kernel@vger.kernel.org
+Cc: linux-fsdevel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
+       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Date: Wed, 27 May 2009 16:06:34 +0300
+Message-Id: <20090527130634.4913.42099.sendpatchset@localhost.localdomain>
+In-Reply-To: <20090527130503.4913.62042.sendpatchset@localhost.localdomain>
+References: <20090527130503.4913.62042.sendpatchset@localhost.localdomain>
+Subject: [PATCH 14/19] UDF: do not manipulate s_dirt directly
+X-OriginalArrivalTime: 27 May 2009 11:12:36.0499 (UTC) FILETIME=[0A4FCE30:01C9DEBC]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On x86 and x86-64, it is possible that page tables are shared beween shared
-mappings backed by hugetlbfs. As part of this, page_table_shareable() checks
-a pair of vma->vm_flags and they must match if they are to be shared. All
-VMA flags are taken into account, including VM_LOCKED.
+From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Subject: [PATCH] UDF: do not manipulate s_dirt directly
 
-The problem is that VM_LOCKED is cleared on fork(). When a process with a
-shared memory segment forks() to exec() a helper, there will be shared VMAs
-with different flags. The impact is that the shared segment is sometimes
-considered shareable and other times not, depending on what process is
-checking.
+... use new VFS helpers instead.
 
-What happens is that the segment page tables are being shared but the count is
-inaccurate depending on the ordering of events. As the page tables are freed
-with put_page(), bad pmd's are found when some of the children exit. The
-hugepage counters also get corrupted and the Total and Free count will
-no longer match even when all the hugepage-backed regions are freed. This
-requires a reboot of the machine to "fix".
-
-This patch addresses the problem by comparing all flags except VM_LOCKED when
-deciding if pagetables should be shared or not for hugetlbfs-backed mapping.
-
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-Acked-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Cc: Christoph Hellwig <hch@infradead.org>
 ---
- arch/x86/mm/hugetlbpage.c |    6 +++++-
- 1 files changed, 5 insertions(+), 1 deletions(-)
+ fs/udf/super.c   |    6 +++---
+ fs/udf/udfdecl.h |    2 +-
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/arch/x86/mm/hugetlbpage.c b/arch/x86/mm/hugetlbpage.c
-index 8f307d9..f46c340 100644
---- a/arch/x86/mm/hugetlbpage.c
-+++ b/arch/x86/mm/hugetlbpage.c
-@@ -26,12 +26,16 @@ static unsigned long page_table_shareable(struct vm_area_struct *svma,
- 	unsigned long sbase = saddr & PUD_MASK;
- 	unsigned long s_end = sbase + PUD_SIZE;
+diff --git a/fs/udf/super.c b/fs/udf/super.c
+index e2e06b0..7926436 100644
+--- a/fs/udf/super.c
++++ b/fs/udf/super.c
+@@ -1908,7 +1908,7 @@ static int udf_fill_super(struct super_block *sb, void *options, int silent)
+ 	sb->s_op = &udf_sb_ops;
+ 	sb->s_export_op = &udf_export_ops;
+ 	sb->dq_op = NULL;
+-	sb->s_dirt = 0;
++	mark_sb_clean(sb);
+ 	sb->s_magic = UDF_SUPER_MAGIC;
+ 	sb->s_time_gran = 1000;
  
-+	/* Allow segments to share if only one is marked locked */
-+	unsigned long vm_flags = vma->vm_flags & ~VM_LOCKED;
-+	unsigned long svm_flags = svma->vm_flags & ~VM_LOCKED;
-+
- 	/*
- 	 * match the virtual addresses, permission and the alignment of the
- 	 * page table page.
- 	 */
- 	if (pmd_index(addr) != pmd_index(saddr) ||
--	    vma->vm_flags != svma->vm_flags ||
-+	    vm_flags != svm_flags ||
- 	    sbase < svma->vm_start || svma->vm_end < s_end)
- 		return 0;
+@@ -2035,7 +2035,7 @@ static void udf_error(struct super_block *sb, const char *function,
+ 
+ 	if (!(sb->s_flags & MS_RDONLY)) {
+ 		/* mark sb error */
+-		sb->s_dirt = 1;
++		mark_sb_dirty(sb);
+ 	}
+ 	va_start(args, fmt);
+ 	vsnprintf(error_buf, sizeof(error_buf), fmt, args);
+@@ -2095,7 +2095,7 @@ static int udf_sync_fs(struct super_block *sb, int wait)
+ 		 * the buffer for IO
+ 		 */
+ 		mark_buffer_dirty(sbi->s_lvid_bh);
+-		sb->s_dirt = 0;
++		mark_sb_clean(sb);
+ 		sbi->s_lvid_dirty = 0;
+ 	}
+ 	mutex_unlock(&sbi->s_alloc_mutex);
+diff --git a/fs/udf/udfdecl.h b/fs/udf/udfdecl.h
+index cac51b7..8ad1818 100644
+--- a/fs/udf/udfdecl.h
++++ b/fs/udf/udfdecl.h
+@@ -119,7 +119,7 @@ static inline void udf_updated_lvid(struct super_block *sb)
+ 	WARN_ON_ONCE(((struct logicalVolIntegrityDesc *)
+ 		     bh->b_data)->integrityType !=
+ 		     cpu_to_le32(LVID_INTEGRITY_TYPE_OPEN));
+-	sb->s_dirt = 1;
++	mark_sb_dirty(sb);
+ 	UDF_SB(sb)->s_lvid_dirty = 1;
+ }
  
 -- 
-1.5.6.5
+1.6.0.6
 
