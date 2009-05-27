@@ -1,65 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756949AbZE0Uig@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757286AbZE0UjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756949AbZE0Uig (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 16:38:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751233AbZE0Ui2
+	id S1757286AbZE0UjS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 16:39:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754968AbZE0UjG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 16:38:28 -0400
-Received: from 42.mail-out.ovh.net ([213.251.189.42]:45427 "HELO
-	42.mail-out.ovh.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751887AbZE0Ui1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 16:38:27 -0400
-Date: Wed, 27 May 2009 22:27:01 +0200
-From: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-To: David Miller <davem@davemloft.net>
-Cc: rmk+lkml@arm.linux.org.uk, devicetree-discuss@ozlabs.org,
-       linux-kernel@vger.kernel.org, timur@freescale.com,
-       scottwood@freescale.com, yuan-bo.ye@motorola.com,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-sh@vger.kernel.org
-Subject: Re: [RFC] [PATCH] Device Tree on ARM platform
-Message-ID: <20090527202701.GA16219@game.jcrosoft.org>
-References: <20090527175609.GB31861@flint.arm.linux.org.uk> <4A1D8FBA.6040802@freescale.com> <20090527192909.GA32398@flint.arm.linux.org.uk> <20090527.132328.78091350.davem@davemloft.net>
+	Wed, 27 May 2009 16:39:06 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:46141 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754405AbZE0UjF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 16:39:05 -0400
+Date: Wed, 27 May 2009 22:34:05 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Paul Smith <paul@mad-scientist.net>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>
+Subject: Re: [2.6.27.24] Kernel coredump to a pipe is failing
+Message-ID: <20090527203405.GA3296@redhat.com>
+References: <1243355634.29250.331.camel@psmith-ubeta.netezza.com> <878wkjobbm.fsf@basil.nowhere.org> <20090527183109.GA30574@redhat.com> <20090527185056.GW1065@one.firstfloor.org> <20090527190513.GA32452@redhat.com> <1243453783.29250.434.camel@psmith-ubeta.netezza.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090527.132328.78091350.davem@davemloft.net>
+In-Reply-To: <1243453783.29250.434.camel@psmith-ubeta.netezza.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Ovh-Tracer-Id: 11871207144491494181
-X-Ovh-Remote: 213.251.161.87 (ns32433.ovh.net)
-X-Ovh-Local: 213.186.33.20 (ns0.ovh.net)
-X-Spam-Check: DONE|H 0.500005/N
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 13:23 Wed 27 May     , David Miller wrote:
-> From: Russell King <rmk+lkml@arm.linux.org.uk>
-> Date: Wed, 27 May 2009 20:29:10 +0100
-> 
-> > To program them into the hardware registers, which is not what we in
-> > the ARM community say, but it's what the _network_ guys tell people
-> > they should be doing.
-> > 
-> > I've suggested in the past having a standard kernel parameter such
-> > that you can specify a mac address on a per-device basis in a totally
-> > platform independent way, but the network folk don't like that idea.
-> 
-> As a "network guy" I can tell you that when the system firmware
-> provides a system-wide or device specific MAC address in it's device
-> tree, that is what you should use.
-> 
-> And that's what I've been doing on sparc FOR 15 YEARS.
-> 
-> Device trees are the only systematic generic mechanism for
-> describing device layouts on the myriad of embedded boards
-> out there which you will ever find.
-> 
-> Two platforms, and now a third, have been using this scheme
-> over a very proven period of time.  It's not a hack, there is
-> infrastructure to get the boot loaders to do the right thing,
-> and only ARM seems to resist it. :-)
-The SH, avr32, mips, x86 does not support it too IIRC
+On 05/27, Paul Smith wrote:
+>
+> On Wed, 2009-05-27 at 21:05 +0200, Oleg Nesterov wrote:
+> > On 05/27, Andi Kleen wrote:
+> > >
+> > > > Actually, I think there is a strong reason to handle signals during
+> > > > core dumping. The coredump can take a lot of time/resources, not good
+> > > > it looks like unkillable procees to users.
+> > >
+> > > One problem with that is if you send a process a string of signals that cause
+> > > a core dump and then kill. In the old case you would just get a full core dump
+> > > on the first signal and be done. With your change it would process
+> > > the second signal too and stop the dumping and you get none or a partial
+> > > core dump. That might well break existing setups.
+> >
+> > I don't think we should worry about this particular case. Suppose a user
+> > does
+> >
+> > 	kill(pid, SIGQUIT);
+> > 	kill(pid, SIGKILL);
+>
+> I'm not sure about this.  Why even bother with SIGQUIT (or anything
+> else) if you're just going to immediately SIGKILL afterwards?
 
-Best Regards,
-J.
+Probably I misunderstood what Andi meant.
+
+> What
+> people do all the time, and I think should be supported, is something
+> like this:
+>
+> 	<do 5 times>
+> 		kill(pid, SIGINT);
+> 		sleep(1);
+> 		<if pid is dead break>
+> 	kill(pid, SIGKILL);
+>
+> Often with other signals in the mix like SIGHUP or whatever.  The idea
+> is to give the process a chance to do "whatever it does" to clean up and
+> then, if it's still there we consider it too wedged to respond and send
+> a SIGKILL.  If the cleanup operations invoked by receiving the SIGINT
+> caused a core dump, then you wouldn't want the SIGKILL to stop the core
+> dump.
+
+Yes. Once again, this change is user-visble and it can confuse/break
+existing setups, I agree. As almost any user-visible change ;)
+
+> On the other hand I do agree that it would be nice to be able to smash a
+> core dump that was taking a long time or trying to write to an
+> unavailable resource like a stalled NFS mount or whatever.  Sigh.
+
+Yes.
+
+Oleg.
+
