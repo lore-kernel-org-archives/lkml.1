@@ -1,248 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933210AbZE0SZj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933704AbZE0SZ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933210AbZE0SZj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 14:25:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933528AbZE0SWt
+	id S933704AbZE0SZ7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 14:25:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933517AbZE0SX2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 14:22:49 -0400
-Received: from jalapeno.cc.columbia.edu ([128.59.29.5]:62755 "EHLO
-	jalapeno.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933515AbZE0SWr (ORCPT
+	Wed, 27 May 2009 14:23:28 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:58194 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763321AbZE0SX0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 14:22:47 -0400
-From: Oren Laadan <orenl@cs.columbia.edu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       linux-api@vger.kernel.org, Serge Hallyn <serue@us.ibm.com>,
-       Dave Hansen <dave@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Alexander Viro <viro@zeniv.linux.org.uk>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Oren Laadan <orenl@cs.columbia.edu>
-Subject: [RFC v16][PATCH 03/43] c/r: create syscalls: sys_checkpoint, sys_restart
-Date: Wed, 27 May 2009 13:32:29 -0400
-Message-Id: <1243445589-32388-4-git-send-email-orenl@cs.columbia.edu>
-X-Mailer: git-send-email 1.6.0.1
-In-Reply-To: <1243445589-32388-1-git-send-email-orenl@cs.columbia.edu>
-References: <1243445589-32388-1-git-send-email-orenl@cs.columbia.edu>
-X-No-Spam-Score: Local
+	Wed, 27 May 2009 14:23:26 -0400
+Date: Wed, 27 May 2009 14:23:07 -0400
+From: Kyle McMartin <kyle@mcmartin.ca>
+To: Eric Anholt <eric@anholt.net>
+Cc: Shaohua Li <shaohua.li@intel.com>, Kyle McMartin <kyle@mcmartin.ca>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       "airlied@redhat.com" <airlied@redhat.com>,
+       "dri-devel@lists.sf.net" <dri-devel@lists.sf.net>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       "stable@kernel.org" <stable@kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH] drm: i915: ensure objects are allocated below 4GB on
+	PAE
+Message-ID: <20090527182307.GA30228@bombadil.infradead.org>
+References: <20090526162717.GC14808@bombadil.infradead.org> <Pine.LNX.4.64.0905262343140.13452@sister.anvils> <20090527001840.GC16929@bombadil.infradead.org> <20090527004250.GA11835@sli10-desk.sh.intel.com> <1243446012.8400.37.camel@gaiman.anholt.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1243446012.8400.37.camel@gaiman.anholt.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Create trivial sys_checkpoint and sys_restore system calls. They will
-enable to checkpoint and restart an entire container, to and from a
-checkpoint image file descriptor.
+On Wed, May 27, 2009 at 10:40:12AM -0700, Eric Anholt wrote:
+> On Wed, 2009-05-27 at 08:42 +0800, Shaohua Li wrote:
+> > On Wed, May 27, 2009 at 08:18:40AM +0800, Kyle McMartin wrote:
+> > > On Tue, May 26, 2009 at 11:55:50PM +0100, Hugh Dickins wrote:
+> > > > I'm confused: I thought GFP_DMA32 only applies on x86_64:
+> > > > my 32-bit PAE machine with (slightly!) > 4GB shows no ZONE_DMA32.
+> > > > Does this patch perhaps depend on another, to enable DMA32 on 32-bit
+> > > > PAE, or am I just in a muddle?
+> > > > 
+> > > 
+> > > No, you're exactly right, I'm just a muppet and missed the obvious.
+> > > Looks like the "correct" fix is the fact that the allocation is thus
+> > > filled out with GFP_USER, therefore, from ZONE_NORMAL, and below
+> > > max_low_pfn.
+> > > 
+> > > Looks like we'll need some additional thinking to get true ZONE_DMA32 on
+> > > i386... ugh, I'll look into it tonight.
+> > For i386, GFP_USER is enough. But 945G GART can only map to physical page < 4G,
+> > so for x64, we need GFP_DMA32. This is the reason I add extra GFP_DMA32.
+> 
+> Those 945Gs don't have memory located above 4G, from my reading of the
+> chipset specs.
+> 
 
-The syscalls take a pid, a file descriptor (for the image file) and
-flags as arguments. The pid identifies the top-most (root) task in the
-process tree, e.g. the container init: for sys_checkpoint the first
-argument identifies the pid of the target container/subtree; for
-sys_restart it will identify the pid of restarting root task.
+Indeed, I thought they were clipped to 3G memory, max. (I assume we mean
+945 in the strictest sense, and not "son of 945" like the G33 series?)
 
-A checkpoint, much like a process coredump, dumps the state of multiple
-processes at once, including the state of the container. The checkpoint
-image is written to (and read from) the file descriptor directly from
-the kernel. This way the data is generated and then pushed out naturally
-as resources and tasks are scanned to save their state. This is the
-approach taken by, e.g., Zap and OpenVZ.
+(But yeah, the ifdef in my patch should be nuked strictly, I guess.)
 
-By using a return value and not a file descriptor, we can distinguish
-between a return from checkpoint, a return from restart (in case of a
-checkpoint that includes self, i.e. a task checkpointing its own
-container, or itself), and an error condition, in a manner analogous
-to a fork() call.
-
-We don't use copy_from_user()/copy_to_user() because it requires
-holding the entire image in user space, and does not make sense for
-restart.  Also, we don't use a pipe, pseudo-fs file and the like,
-because they work by generating data on demand as the user pulls it
-(unless the entire image is buffered in the kernel) and would require
-more complex logic.  They also would significantly complicate
-checkpoint that includes self.
-
-Changelog[v16]:
-  - Change sys_restart() first argument to be 'pid_t pid'
-
-Changelog[v14]:
-  - Change CONFIG_CHEKCPOINT_RESTART to CONFIG_CHECKPOINT (Ingo)
-  - Remove line 'def_bool n' (default is already 'n')
-  - Add CHECKPOINT_SUPPORT in Kconfig (Nathan Lynch)
-
-Changelog[v5]:
-  - Config is 'def_bool n' by default
-
-Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
-Acked-by: Serge Hallyn <serue@us.ibm.com>
-Signed-off-by: Dave Hansen <dave@linux.vnet.ibm.com>
----
- arch/x86/Kconfig                   |    4 +++
- arch/x86/include/asm/unistd_32.h   |    2 +
- arch/x86/kernel/syscall_table_32.S |    2 +
- checkpoint/Kconfig                 |   14 ++++++++++++
- checkpoint/Makefile                |    5 ++++
- checkpoint/sys.c                   |   41 ++++++++++++++++++++++++++++++++++++
- include/linux/syscalls.h           |    2 +
- init/Kconfig                       |    2 +
- kernel/sys_ni.c                    |    4 +++
- 9 files changed, 76 insertions(+), 0 deletions(-)
-
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index a6efe0a..2891a26 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -77,6 +77,10 @@ config STACKTRACE_SUPPORT
- config HAVE_LATENCYTOP_SUPPORT
- 	def_bool y
- 
-+config CHECKPOINT_SUPPORT
-+	bool
-+	default y if X86_32
-+
- config FAST_CMPXCHG_LOCAL
- 	bool
- 	default y
-diff --git a/arch/x86/include/asm/unistd_32.h b/arch/x86/include/asm/unistd_32.h
-index 6e72d74..48557e1 100644
---- a/arch/x86/include/asm/unistd_32.h
-+++ b/arch/x86/include/asm/unistd_32.h
-@@ -340,6 +340,8 @@
- #define __NR_inotify_init1	332
- #define __NR_preadv		333
- #define __NR_pwritev		334
-+#define __NR_checkpoint		335
-+#define __NR_restart		336
- 
- #ifdef __KERNEL__
- 
-diff --git a/arch/x86/kernel/syscall_table_32.S b/arch/x86/kernel/syscall_table_32.S
-index ff5c873..e70b7ee 100644
---- a/arch/x86/kernel/syscall_table_32.S
-+++ b/arch/x86/kernel/syscall_table_32.S
-@@ -334,3 +334,5 @@ ENTRY(sys_call_table)
- 	.long sys_inotify_init1
- 	.long sys_preadv
- 	.long sys_pwritev
-+	.long sys_checkpoint
-+	.long sys_restart
-diff --git a/checkpoint/Kconfig b/checkpoint/Kconfig
-new file mode 100644
-index 0000000..1761b0a
---- /dev/null
-+++ b/checkpoint/Kconfig
-@@ -0,0 +1,14 @@
-+# Architectures should define CHECKPOINT_SUPPORT when they have
-+# implemented the hooks for processor state etc. needed by the
-+# core checkpoint/restart code.
-+
-+config CHECKPOINT
-+	bool "Enable checkpoint/restart (EXPERIMENTAL)"
-+	depends on CHECKPOINT_SUPPORT && EXPERIMENTAL
-+	help
-+	  Application checkpoint/restart is the ability to save the
-+	  state of a running application so that it can later resume
-+	  its execution from the time at which it was checkpointed.
-+
-+	  Turning this option on will enable checkpoint and restart
-+	  functionality in the kernel.
-diff --git a/checkpoint/Makefile b/checkpoint/Makefile
-new file mode 100644
-index 0000000..8a32c6f
---- /dev/null
-+++ b/checkpoint/Makefile
-@@ -0,0 +1,5 @@
-+#
-+# Makefile for linux checkpoint/restart.
-+#
-+
-+obj-$(CONFIG_CHECKPOINT) += sys.o
-diff --git a/checkpoint/sys.c b/checkpoint/sys.c
-new file mode 100644
-index 0000000..9d4caff
---- /dev/null
-+++ b/checkpoint/sys.c
-@@ -0,0 +1,41 @@
-+/*
-+ *  Generic container checkpoint-restart
-+ *
-+ *  Copyright (C) 2008 Oren Laadan
-+ *
-+ *  This file is subject to the terms and conditions of the GNU General Public
-+ *  License.  See the file COPYING in the main directory of the Linux
-+ *  distribution for more details.
-+ */
-+
-+#include <linux/sched.h>
-+#include <linux/kernel.h>
-+#include <linux/syscalls.h>
-+
-+/**
-+ * sys_checkpoint - checkpoint a container
-+ * @pid: pid of the container init(1) process
-+ * @fd: file to which dump the checkpoint image
-+ * @flags: checkpoint operation flags
-+ *
-+ * Returns positive identifier on success, 0 when returning from restart
-+ * or negative value on error
-+ */
-+SYSCALL_DEFINE3(checkpoint, pid_t, pid, int, fd, unsigned long, flags)
-+{
-+	return -ENOSYS;
-+}
-+
-+/**
-+ * sys_restart - restart a container
-+ * @crid: checkpoint image identifier
-+ * @fd: file from which read the checkpoint image
-+ * @flags: restart operation flags
-+ *
-+ * Returns negative value on error, or otherwise returns in the realm
-+ * of the original checkpoint
-+ */
-+SYSCALL_DEFINE3(restart, pid_t, pid, int, fd, unsigned long, flags)
-+{
-+	return -ENOSYS;
-+}
-diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-index 3052084..5dc3f9a 100644
---- a/include/linux/syscalls.h
-+++ b/include/linux/syscalls.h
-@@ -752,6 +752,8 @@ asmlinkage long sys_ppoll(struct pollfd __user *, unsigned int,
- 			  size_t);
- asmlinkage long sys_pipe2(int __user *, int);
- asmlinkage long sys_pipe(int __user *);
-+asmlinkage long sys_checkpoint(pid_t pid, int fd, unsigned long flags);
-+asmlinkage long sys_restart(int crid, int fd, unsigned long flags);
- 
- int kernel_execve(const char *filename, char *const argv[], char *const envp[]);
- 
-diff --git a/init/Kconfig b/init/Kconfig
-index 7be4d38..adb4260 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -1042,6 +1042,8 @@ config SLOW_WORK
- 
- 	  See Documentation/slow-work.txt.
- 
-+source "checkpoint/Kconfig"
-+
- endmenu		# General setup
- 
- config HAVE_GENERIC_DMA_COHERENT
-diff --git a/kernel/sys_ni.c b/kernel/sys_ni.c
-index 27dad29..e9e749d 100644
---- a/kernel/sys_ni.c
-+++ b/kernel/sys_ni.c
-@@ -175,3 +175,7 @@ cond_syscall(compat_sys_timerfd_settime);
- cond_syscall(compat_sys_timerfd_gettime);
- cond_syscall(sys_eventfd);
- cond_syscall(sys_eventfd2);
-+
-+/* checkpoint/restart */
-+cond_syscall(sys_checkpoint);
-+cond_syscall(sys_restart);
--- 
-1.6.0.4
-
+cheers, Kyle
