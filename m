@@ -1,75 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758254AbZE0Wf3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760354AbZE0Wft@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758254AbZE0Wf3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 18:35:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757422AbZE0WfI
+	id S1760354AbZE0Wft (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 18:35:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759079AbZE0WfP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 18:35:08 -0400
-Received: from hera.kernel.org ([140.211.167.34]:59570 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756395AbZE0WfF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 18:35:05 -0400
-Date: Wed, 27 May 2009 22:34:35 GMT
-From: tip-bot for Li Zefan <lizf@cn.fujitsu.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       fweisbec@gmail.com, rostedt@goodmis.org, lizf@cn.fujitsu.com,
-       tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       fweisbec@gmail.com, lizf@cn.fujitsu.com, rostedt@goodmis.org,
-       tglx@linutronix.de
-In-Reply-To: <4A14EDB6.2050507@cn.fujitsu.com>
-References: <4A14EDB6.2050507@cn.fujitsu.com>
-Subject: [tip:tracing/core] tracing/events: change the type of __str_loc_item to unsigned short
-Message-ID: <tip-b0aae68cc5508f3c2fbf728988c954db4c8b8a53@git.kernel.org>
-Git-Commit-ID: b0aae68cc5508f3c2fbf728988c954db4c8b8a53
-X-Mailer: tip-git-log-daemon
+	Wed, 27 May 2009 18:35:15 -0400
+Received: from brinza.cc.columbia.edu ([128.59.29.8]:39952 "EHLO
+	brinza.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756236AbZE0WfN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 18:35:13 -0400
+Date: Wed, 27 May 2009 18:32:28 -0400 (EDT)
+From: Oren Laadan <orenl@cs.columbia.edu>
+X-X-Sender: orenl@takamine.ncl.cs.columbia.edu
+To: Alexey Dobriyan <adobriyan@gmail.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@osdl.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-api@vger.kernel.org,
+       Serge Hallyn <serue@us.ibm.com>, Dave Hansen <dave@linux.vnet.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Alexander Viro <viro@zeniv.linux.org.uk>,
+       Pavel Emelyanov <xemul@openvz.org>
+Subject: Re: [RFC v16][PATCH 19/43] c/r: external checkpoint of a task	other
+ than ourself
+In-Reply-To: <20090527211950.GA7855@x200.localdomain>
+Message-ID: <Pine.LNX.4.64.0905271831030.7284@takamine.ncl.cs.columbia.edu>
+References: <1243445589-32388-1-git-send-email-orenl@cs.columbia.edu>
+ <1243445589-32388-20-git-send-email-orenl@cs.columbia.edu>
+ <20090527211950.GA7855@x200.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 27 May 2009 22:34:39 +0000 (UTC)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  b0aae68cc5508f3c2fbf728988c954db4c8b8a53
-Gitweb:     http://git.kernel.org/tip/b0aae68cc5508f3c2fbf728988c954db4c8b8a53
-Author:     Li Zefan <lizf@cn.fujitsu.com>
-AuthorDate: Thu, 21 May 2009 13:59:18 +0800
-Committer:  Frederic Weisbecker <fweisbec@gmail.com>
-CommitDate: Tue, 26 May 2009 00:15:21 +0200
+On Thu, 28 May 2009, Alexey Dobriyan wrote:
 
-tracing/events: change the type of __str_loc_item to unsigned short
+> On Wed, May 27, 2009 at 01:32:45PM -0400, Oren Laadan wrote:
+> > Now we can do "external" checkpoint, i.e. act on another task.
+> 
+> > +static int may_checkpoint_task(struct ckpt_ctx *ctx, struct task_struct *t)
+> > +{
+> > +	if (t->state == TASK_DEAD) {
+> > +		pr_warning("c/r: task %d is TASK_DEAD\n", task_pid_vnr(t));
+> > +		return -EAGAIN;
+> > +	}
+> > +
+> > +	if (!ptrace_may_access(t, PTRACE_MODE_READ)) {
+> > +		__ckpt_write_err(ctx, "access to task %d (%s) denied",
+> > +				 task_pid_vnr(t), t->comm);
+> > +		return -EPERM;
+> > +	}
+> > +
+> > +	/* verify that the task is frozen (unless self) */
+> > +	if (t != current && !frozen(t)) {
+> > +		__ckpt_write_err(ctx, "task %d (%s) is not frozen",
+> > +				 task_pid_vnr(t), t->comm);
+> > +		return -EBUSY;
+> > +	}
+> > +
+> > +	/* FIX: add support for ptraced tasks */
+> > +	if (task_ptrace(t)) {
+> > +		__ckpt_write_err(ctx, "task %d (%s) is ptraced",
+> > +				 task_pid_vnr(t), t->comm);
+> > +		return -EBUSY;
+> > +	}
+> > +
+> > +	return 0;
+> > +}
+> > +
+> > +static int get_container(struct ckpt_ctx *ctx, pid_t pid)
+> > +{
+> > +	struct task_struct *task = NULL;
+> > +	struct nsproxy *nsproxy = NULL;
+> > +	int ret;
+> > +
+> > +	ctx->root_pid = pid;
+> > +
+> > +	read_lock(&tasklist_lock);
+> > +	task = find_task_by_vpid(pid);
+> > +	if (task)
+> > +		get_task_struct(task);
+> > +	read_unlock(&tasklist_lock);
+> > +
+> > +	if (!task)
+> > +		return -ESRCH;
+> > +
+> > +	ret = may_checkpoint_task(ctx, task);
+> > +	if (ret) {
+> > +		ckpt_write_err(ctx, NULL);
+> > +		put_task_struct(task);
+> > +		return ret;
+> > +	}
+> > +
+> > +	rcu_read_lock();
+> > +	nsproxy = task_nsproxy(task);
+> > +	get_nsproxy(nsproxy);
+> 
+> Will oops if init is multi-threaded and thread group leader exited
+> (nsproxy = NULL). I need to think what to do, too.
 
-When defining a dynamic size string, we add __str_loc_##item to the
-trace entry, and it stores the location of the actual string in
-entry->_str_data[]
 
-'unsigned short' should be sufficient to store this information, thus
-we save 2 bytes per dyn-size string in the ring buffer.
+ood catch. Since all threads share same nsproxy (except those
+who exits.. duh) we can test for this case, and get the nsproxy
+from any of the other threads, something like this (untested):
 
-[ Impact: reduce memory occupied by dyn-size strings in ring buffer ]
-
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-LKML-Reference: <4A14EDB6.2050507@cn.fujitsu.com>
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-
-
----
- include/trace/ftrace.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
-index edb02bc..b5ff2e8 100644
---- a/include/trace/ftrace.h
-+++ b/include/trace/ftrace.h
-@@ -25,7 +25,7 @@
- #define __field(type, item)		type	item;
+diff --git a/checkpoint/checkpoint.c b/checkpoint/checkpoint.c
+index afc7300..b303876 100644
+--- a/checkpoint/checkpoint.c
++++ b/checkpoint/checkpoint.c
+@@ -522,9 +522,33 @@ static int get_container(struct ckpt_ctx *ctx, pid_t pid)
  
- #undef __string
--#define __string(item, src)		int	__str_loc_##item;
-+#define __string(item, src)		unsigned short	__str_loc_##item;
+ 	rcu_read_lock();
+ 	nsproxy = task_nsproxy(task);
+-	get_nsproxy(nsproxy);
++	if (nsproxy)
++		get_nsproxy(nsproxy);
+ 	rcu_read_unlock();
  
- #undef TP_STRUCT__entry
- #define TP_STRUCT__entry(args...) args
++	/*
++	 * If we hit a zombie thread-group-leader, nsproxy will be NULL,
++	 * and we instead grab it from one of the other threads.
++	 */
++	if (!nsproxy) {
++		struct task_struct *p = next_thread(task);
++
++		BUG_ON(task->state != TASK_DEAD);
++		read_lock(&tasklist_lock);
++		while (p != task && !task_nsproxy(p))
++			p = next_thread(p);
++		nsproxy = get_nsproxy(p);
++		if (nsproxy)
++			get_nsproxy(nsproxy);
++		read_unlock(&tasklist_lock);
++	}
++
++	/* still not ... too bad ... */
++	if (!nsproxy) {
++		put_task_struct(task);
++		return -ESRCH;
++	}
++
+ 	ctx->root_task = task;
+ 	ctx->root_nsproxy = nsproxy;
+ 	ctx->root_init = is_container_init(task);
+
