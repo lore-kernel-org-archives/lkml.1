@@ -1,83 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932843AbZE0Ryh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932752AbZE0RyX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932843AbZE0Ryh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 13:54:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932374AbZE0RsL
+	id S932752AbZE0RyX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 13:54:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932109AbZE0Rqw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 13:48:11 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:42292 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932309AbZE0RsJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 13:48:09 -0400
-Subject: Re: [KVM PATCH v4 3/3] kvm: add iosignalfd support
-From: Mark McLoughlin <markmc@redhat.com>
-Reply-To: Mark McLoughlin <markmc@redhat.com>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: Avi Kivity <avi@redhat.com>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Davide Libenzi <davidel@xmailserver.org>,
-       mtosatti@redhat.com
-In-Reply-To: <4A1D7AFD.40004@novell.com>
-References: <20090526191010.20860.75372.stgit@dev.haskins.net>
-	 <20090526191539.20860.1385.stgit@dev.haskins.net>
-	 <4A1D01F8.8080508@redhat.com> <4A1D285C.9050008@novell.com>
-	 <4A1D2DD8.2050709@redhat.com> <1243445144.16318.15.camel@blaa>
-	 <4A1D7AFD.40004@novell.com>
-Content-Type: text/plain
-Date: Wed, 27 May 2009 18:48:04 +0100
-Message-Id: <1243446484.4852.13.camel@blaa>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	Wed, 27 May 2009 13:46:52 -0400
+Received: from jalapeno.cc.columbia.edu ([128.59.29.5]:54965 "EHLO
+	jalapeno.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932102AbZE0Rqu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 13:46:50 -0400
+From: Oren Laadan <orenl@cs.columbia.edu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       linux-api@vger.kernel.org, Serge Hallyn <serue@us.ibm.com>,
+       Dave Hansen <dave@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Alexander Viro <viro@zeniv.linux.org.uk>,
+       Pavel Emelyanov <xemul@openvz.org>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Oren Laadan <orenl@cs.columbia.edu>, Dan Smith <danms@us.ibm.com>
+Subject: [RFC v16][PATCH 41/43] c/r: (s390): expose a constant for the number of words (CRs)
+Date: Wed, 27 May 2009 13:33:07 -0400
+Message-Id: <1243445589-32388-42-git-send-email-orenl@cs.columbia.edu>
+X-Mailer: git-send-email 1.6.0.1
+In-Reply-To: <1243445589-32388-1-git-send-email-orenl@cs.columbia.edu>
+References: <1243445589-32388-1-git-send-email-orenl@cs.columbia.edu>
+X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-05-27 at 13:40 -0400, Gregory Haskins wrote:
-> Mark McLoughlin wrote:
-> > On Wed, 2009-05-27 at 15:11 +0300, Avi Kivity wrote:
-> >
-> >   
-> >> Multiple cookies on the same address are required by virtio.  You can't 
-> >> mux since the data doesn't go anywhere.
-> >>
-> >> Virtio can survive by checking all rings on a notify, and we can later 
-> >> add a mechanism that has a distinct address for each ring, but let's see 
-> >> if we can cope with multiple cookies.  Mark?
-> >>     
-> >
-> > Trying to catch up, but you're talking about replacing virtio-pci
-> > QUEUE_NOTIFY handling with iosignalfd ?
-> >
-> > For a perfect replacement, what you really need is to be able to
-> > register multiple cookies per address range, but only have them trigger
-> > if the written data matches a provided value.
-> >   
-> 
-> Hmm..thats an interesting idea.  To date, the "cookie" has really been
-> for identifying the proper range selected for deassignment.  I never
-> thought of using it as an actual trigger value at run-time.
-> 
-> > If the data is lost, virtio has no way of knowing which queue is being
-> > notified, so we either end up with per-device, rather than per-queue,
-> > notifications (probably not too bad for net, at least) or a different
-> > notify address per queue (limiting the number of queues per device).
-> >   
-> 
-> The addr-per-queue is how I was envisioning it, but the trigger value
-> concept hadn't occurred to me.  I could make this an option during
-> assignment (e.g. "COOKIE" flag means only trigger on writes of the
-> provided cookie, otherwise trigger on any write).  Sound good?
+We need to use this value in the checkpoint/restart code and would like to
+have a constant instead of a magic '3'.
 
-Ah, I'd been thinking of the trigger data being provided separately to
-the cookie.
+Changelog:
+    Mar 30:
+            . Add CHECKPOINT_SUPPORT in Kconfig (Nathan Lynch)
+    Mar 03:
+            . Picked up additional use of magic '3' in ptrace.h
 
-The virtio ABI is fixed, so we couldn't e.g. have the guest use a cookie
-to identify a queue - it's just going to continue using a per-device
-queue number. So, if the cookie was also the trigger, we'd need an
-eventfd per device.
+Signed-off-by: Dan Smith <danms@us.ibm.com>
+---
+ arch/s390/Kconfig |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
-And if this was a device where the guest writes similar values to
-multiple addresses, you'd need an eventfd per address.
-
-Cheers,
-Mark.
+diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
+index 2eca5fe..bf62cad 100644
+--- a/arch/s390/Kconfig
++++ b/arch/s390/Kconfig
+@@ -49,6 +49,10 @@ config GENERIC_TIME_VSYSCALL
+ config GENERIC_CLOCKEVENTS
+ 	def_bool y
+ 
++config CHECKPOINT_SUPPORT
++	bool
++	default y if 64BIT
++
+ config GENERIC_BUG
+ 	bool
+ 	depends on BUG
+-- 
+1.6.0.4
 
