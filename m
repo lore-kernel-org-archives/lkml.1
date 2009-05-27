@@ -1,184 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932460AbZE0Rxx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932884AbZE0Ryz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932460AbZE0Rxx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 13:53:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763754AbZE0Rqn
+	id S932884AbZE0Ryz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 13:54:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764082AbZE0RuV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 13:46:43 -0400
-Received: from jalapeno.cc.columbia.edu ([128.59.29.5]:54910 "EHLO
-	jalapeno.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763716AbZE0Rql (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 13:46:41 -0400
-From: Oren Laadan <orenl@cs.columbia.edu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       linux-api@vger.kernel.org, Serge Hallyn <serue@us.ibm.com>,
-       Dave Hansen <dave@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Alexander Viro <viro@zeniv.linux.org.uk>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Oren Laadan <orenl@cs.columbia.edu>
-Subject: [RFC v16][PATCH 25/43] tee: don't return 0 when another task drains/fills a pipe
-Date: Wed, 27 May 2009 13:32:51 -0400
-Message-Id: <1243445589-32388-26-git-send-email-orenl@cs.columbia.edu>
-X-Mailer: git-send-email 1.6.0.1
-In-Reply-To: <1243445589-32388-1-git-send-email-orenl@cs.columbia.edu>
-References: <1243445589-32388-1-git-send-email-orenl@cs.columbia.edu>
-X-No-Spam-Score: Local
+	Wed, 27 May 2009 13:50:21 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:57185 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764013AbZE0RuT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 13:50:19 -0400
+Date: Wed, 27 May 2009 19:50:19 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Jan Kara <jack@suse.cz>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
+       akpm@linux-foundation.org, yanmin_zhang@linux.intel.com,
+       richard@rsk.demon.co.uk, damien.wyart@free.fr
+Subject: Re: [PATCH 04/11] writeback: switch to per-bdi threads for
+	flushing data
+Message-ID: <20090527175019.GN11363@kernel.dk>
+References: <1243417312-7444-1-git-send-email-jens.axboe@oracle.com> <1243417312-7444-5-git-send-email-jens.axboe@oracle.com> <20090527151452.GI16006@duck.suse.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090527151452.GI16006@duck.suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch is a modified version of Max Kellerman patch that fixes
-a race in do_tee() (see http://patchwork/kernel/org/patch/21040).
+On Wed, May 27 2009, Jan Kara wrote:
+>   The patch set seems easier to read now. Thanks for cleaning it up.
 
-It differs in that it rafactors link_pipe() so that the following
-patch (that adds support for splice() between pipes, also based on
-a patch by Max Kellerman), can better share code.
+No problem. The issue is mainly that I have to maintain these
+intermediate steps, and as code gets added and bugs fixed, things have
+to be shuffled back and forth. Now that things are stabilizing more,
+it's easier.
 
-Below is Max's original description:
---
-Cite from the tee() manual page:
+> > +void bdi_writeback_all(struct super_block *sb, struct writeback_control *wbc)
+> > +{
+> > +	struct backing_dev_info *bdi, *tmp;
+> > +
+> > +	mutex_lock(&bdi_lock);
+> > +
+> > +	list_for_each_entry_safe(bdi, tmp, &bdi_list, bdi_list) {
+> > +		if (!bdi_has_dirty_io(bdi))
+> > +			continue;
+> > +		bdi_start_writeback(bdi, sb, wbc->nr_to_write, wbc->sync_mode);
+> > +	}
+> > +
+> > +	mutex_unlock(&bdi_lock);
+> > +}
+> > +
+>   Looking at this function, I've realized that wbc->nr_to_write has a bit
+> silly meaning here. Each BDI will be kicked to write nr_to_write pages
+> which is not what it used to mean originally. I don't think it really matters
+> but we should have this in mind...
 
- "A return value of 0 means that there was no data to transfer, and it
- would not make sense to block, because there are no writers connected
- to the write end of the pipe"
+Yes, I know about that difference. I don't think it matters a whole lot,
+since we typically just use MAX_WRITEBACK_PAGES which is only 4MB of IO.
+And in the case of writing back the world, we'll just come short on each
+bdi.
 
-There is however a race condition in the tee() implementation, which
-violates this definition:
+> > @@ -591,13 +715,10 @@ static void generic_sync_bdi_inodes(struct backing_dev_info *bdi,
+> >  void generic_sync_sb_inodes(struct super_block *sb,
+> >  				struct writeback_control *wbc)
+> >  {
+> > -	const int is_blkdev_sb = sb_is_blkdev_sb(sb);
+> > -	struct backing_dev_info *bdi;
+> > -
+> > -	mutex_lock(&bdi_lock);
+> > -	list_for_each_entry(bdi, &bdi_list, bdi_list)
+> > -		generic_sync_bdi_inodes(bdi, wbc, sb, is_blkdev_sb);
+> > -	mutex_unlock(&bdi_lock);
+> > +	if (wbc->bdi)
+> > +		generic_sync_bdi_inodes(sb, wbc);
+> > +	else
+> > +		bdi_writeback_all(sb, wbc);
+>   I guess this asynchronousness is just transient...
 
-- do_tee() ensures that ipipe is readable and opipe is writable by
-  calling link_ipipe_prep() and link_opipe_prep()
-- these two functions unlock the pipe after they have waited
-- during this unlocked phase, there is a short window where other
-  tasks may drain the input pipe or fill the output pipe
-- do_tee() now calls link_pipe(), which re-locks both pipes
-- link_pipe() sees that it is unable to read ("i >= ipipe->nrbufs ||
-  opipe->nrbufs >= PIPE_BUFFERS") and breaks from the loop
-- link_pipe() returns 0
+Right, if it bothers you, I can fix that up too :-)
 
-Although there may be writers connected to the input pipe, tee() now
-returns 0, and the caller (spuriously) assumes this is the end of the
-stream.
+> > +static int bdi_forker_task(void *ptr)
+> > +{
+> > +	struct backing_dev_info *me = ptr;
+> > +	DEFINE_WAIT(wait);
+> > +
+> > +	for (;;) {
+> > +		struct backing_dev_info *bdi, *tmp;
+> > +
+> > +		/*
+> > +		 * Do this periodically, like kupdated() did before.
+> > +		 */
+> > +		sync_supers();
+>   Ugh, this looks nasty. Moreover I'm afraid of forker_task() getting stuck
+> (and thus not being able to start new threads) in sync_supers() when some
+> fs is busy and other needs to create flusher thread...
+>   Why not just having a separate thread for this? I know we have lots of
+> kernel threads already but this one seems like a useful one... Or do you
+> plan getting rid of this completely sometime in the near future and sync
+> supers also from per-bdi thread (which would make a lot of sence to me)?
 
-This patch wraps the link_[io]pipe_prep() invocation in a loop within
-link_pipe(), and loops until the result is reliable.
---
+It's ugly, and I think this is precisely what Ted hit. He's in umount,
+has ->s_umount sem held and waiting for IO.
 
-Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
----
- fs/splice.c |   80 +++++++++++++++++++++++++++++++++++++++++++++--------------
- 1 files changed, 61 insertions(+), 19 deletions(-)
+So there's definitely trouble brewing there. As a short term solution, a
+separate thread will do. Longer term, the sync_supers_bdi() type setup I
+mentioned earlier would probably be the best. But once we start dealing
+with the super blocks, we have to be more careful with referencing.
+Which we also discussed in a previous mail :-)
 
-diff --git a/fs/splice.c b/fs/splice.c
-index 666953d..92dd63c 100644
---- a/fs/splice.c
-+++ b/fs/splice.c
-@@ -1586,6 +1586,59 @@ static int link_opipe_prep(struct pipe_inode_info *pipe, unsigned int flags)
- 	return ret;
- }
- 
-+/**
-+ * link_pipe_prep - make sure there's readable data and writable room
-+ * @ipipe: the input pipe
-+ * @opipe: the output pipe
-+ * @flags: splice modifier flags
-+ *
-+ * Wrap the link_[io]pipe_prep() invocation in a loop until the result
-+ * is reliable.
-+ *
-+ * Expects pipes to be unlocked, and on success returns them locked.
-+ */
-+static int link_pipe_prep(struct pipe_inode_info *ipipe,
-+			  struct pipe_inode_info *opipe,
-+			  unsigned int flags)
-+{
-+	int ret;
-+
-+	while (1) {
-+		/* wait for ipipe to become ready to read */
-+		ret = link_ipipe_prep(ipipe, flags);
-+		if (ret)
-+			return ret;
-+
-+		/* wait for opipe to become ready to write */
-+		ret = link_opipe_prep(opipe, flags);
-+		if (ret)
-+			return ret;
-+
-+		/*
-+		 * Potential ABBA deadlock, work around it by ordering
-+		 * lock grabbing by inode address. Otherwise two
-+		 * different processes could deadlock (one doing tee
-+		 * from A -> B, the other from B -> A).
-+		 */
-+		pipe_double_lock(ipipe, opipe);
-+
-+		/* see if the tee() is still possible */
-+		if ((ipipe->nrbufs > 0 || ipipe->writers == 0) &&
-+		    opipe->nrbufs < PIPE_BUFFERS)
-+			/* yes, it is - keep the locks and end this
-+			   loop */
-+			break;
-+
-+		/* no - someone has drained ipipe or has filled opipe
-+		   between link_[io]pipe_pre()'s lock and our lock.
-+		   Drop both locks and wait again. */
-+		pipe_unlock(ipipe);
-+		pipe_unlock(opipe);
-+	}
-+
-+	return 0;
-+}
-+
- /*
-  * Link contents of ipipe to opipe.
-  */
-@@ -1594,14 +1647,13 @@ static int link_pipe(struct pipe_inode_info *ipipe,
- 		     size_t len, unsigned int flags)
- {
- 	struct pipe_buffer *ibuf, *obuf;
--	int ret = 0, i = 0, nbuf;
-+	int ret, i = 0, nbuf;
- 
--	/*
--	 * Potential ABBA deadlock, work around it by ordering lock
--	 * grabbing by pipe info address. Otherwise two different processes
--	 * could deadlock (one doing tee from A -> B, the other from B -> A).
--	 */
--	pipe_double_lock(ipipe, opipe);
-+	ret = link_pipe_prep(ipipe, opipe, flags);
-+	if (ret < 0)
-+		return ret;
-+
-+	/* pipes are now locked */
- 
- 	do {
- 		if (!opipe->readers) {
-@@ -1685,18 +1737,8 @@ static long do_tee(struct file *in, struct file *out, size_t len,
- 	 * Duplicate the contents of ipipe to opipe without actually
- 	 * copying the data.
- 	 */
--	if (ipipe && opipe && ipipe != opipe) {
--		/*
--		 * Keep going, unless we encounter an error. The ipipe/opipe
--		 * ordering doesn't really matter.
--		 */
--		ret = link_ipipe_prep(ipipe, flags);
--		if (!ret) {
--			ret = link_opipe_prep(opipe, flags);
--			if (!ret)
--				ret = link_pipe(ipipe, opipe, len, flags);
--		}
--	}
-+	if (ipipe && opipe && ipipe != opipe)
-+		ret = link_pipe(ipipe, opipe, len, flags);
- 
- 	return ret;
- }
 -- 
-1.6.0.4
+Jens Axboe
 
