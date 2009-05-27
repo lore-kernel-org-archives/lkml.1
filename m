@@ -1,230 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764117AbZE0NEv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764435AbZE0NGk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764117AbZE0NEv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 09:04:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764167AbZE0NEO
+	id S1764435AbZE0NGk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 09:06:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764227AbZE0NGV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 09:04:14 -0400
-Received: from hera.kernel.org ([140.211.167.34]:52835 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764161AbZE0NEM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 09:04:12 -0400
-Date: Wed, 27 May 2009 13:03:32 GMT
-From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
-       hpa@zytor.com, mingo@redhat.com, jkacur@redhat.com,
-       a.p.zijlstra@chello.nl, efault@gmx.de, mtosatti@redhat.com,
-       tglx@linutronix.de, cjashfor@linux.vnet.ibm.com, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, jkacur@redhat.com, a.p.zijlstra@chello.nl,
-       efault@gmx.de, mtosatti@redhat.com, tglx@linutronix.de,
-       cjashfor@linux.vnet.ibm.com, mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-Subject: [tip:perfcounters/core] perf_counter: tools: /usr/lib/debug%s.debug support
-Message-ID: <tip-b7a16eac5e679fb5f531b9eeff7db7952303e77d@git.kernel.org>
-Git-Commit-ID: b7a16eac5e679fb5f531b9eeff7db7952303e77d
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 27 May 2009 13:03:34 +0000 (UTC)
+	Wed, 27 May 2009 09:06:21 -0400
+Received: from lon1-post-1.mail.demon.net ([195.173.77.148]:45968 "EHLO
+	lon1-post-1.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1763742AbZE0NGT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 09:06:19 -0400
+X-Greylist: delayed 1490 seconds by postgrey-1.27 at vger.kernel.org; Wed, 27 May 2009 09:06:19 EDT
+Subject: Re: [PATCH 0/11] Per-bdi writeback flusher threads v8
+From: Richard Kennedy <richard@rsk.demon.co.uk>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
+       akpm@linux-foundation.org, jack@suse.cz, yanmin_zhang@linux.intel.com,
+       damien.wyart@free.fr
+In-Reply-To: <1243417312-7444-1-git-send-email-jens.axboe@oracle.com>
+References: <1243417312-7444-1-git-send-email-jens.axboe@oracle.com>
+Content-Type: text/plain
+Date: Wed, 27 May 2009 13:41:28 +0100
+Message-Id: <1243428088.2769.12.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  b7a16eac5e679fb5f531b9eeff7db7952303e77d
-Gitweb:     http://git.kernel.org/tip/b7a16eac5e679fb5f531b9eeff7db7952303e77d
-Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
-AuthorDate: Wed, 27 May 2009 13:35:35 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 27 May 2009 14:54:29 +0200
+On Wed, 2009-05-27 at 11:41 +0200, Jens Axboe wrote:
+> Hi,
+> 
+> Here's the 8th version of the writeback patches. Changes since v7:
+> 
+> - Fold the "include default_backing_dev_info in writeback" patch into
+>   the core, we should just do it from the beginning.
+> - More series cleanup, I think it should be mostly complete now. No
+>   hunks are split between patches now (things like comments for
+>   functions added earlier, and so on).
+> - Fix hang with calling bdi_wait_on_work_clear() inside the bdi_lock
+>   mutex when the default wb thread had exited.
+> - Fix hang with queuing work on exited wb thread, it would have no
+>   receipients since the default wb thread wrongly cleared the bit
+>   from the register mask on exit. It must be persistent, which is
+>   why it gets initialized on bdi_register() already.
+> 
+> For ease of patching, I've put the full diff here:
+> 
+>   http://kernel.dk/writeback-v8.patch
+> 
+> and also stored this in a writeback-v7 branch that will not change,
+> you can pull that into Linus tree from here:
+> 
+>   git://git.kernel.dk/linux-2.6-block.git writeback-v8
+> 
+>  b/block/blk-core.c            |    1 
+>  b/drivers/block/aoe/aoeblk.c  |    1 
+>  b/drivers/char/mem.c          |    1 
+>  b/fs/btrfs/disk-io.c          |   24 -
+>  b/fs/buffer.c                 |    2 
+>  b/fs/char_dev.c               |    1 
+>  b/fs/configfs/inode.c         |    1 
+>  b/fs/fs-writeback.c           |  807 +++++++++++++++++++++++++++-------
+>  b/fs/fuse/inode.c             |    1 
+>  b/fs/hugetlbfs/inode.c        |    1 
+>  b/fs/nfs/client.c             |    1 
+>  b/fs/ntfs/super.c             |   33 -
+>  b/fs/ocfs2/dlm/dlmfs.c        |    1 
+>  b/fs/ramfs/inode.c            |    1 
+>  b/fs/super.c                  |    3 
+>  b/fs/sync.c                   |    2 
+>  b/fs/sysfs/inode.c            |    1 
+>  b/fs/ubifs/super.c            |    1 
+>  b/include/linux/backing-dev.h |   74 +++
+>  b/include/linux/fs.h          |   11 
+>  b/include/linux/writeback.h   |   15 
+>  b/kernel/cgroup.c             |    1 
+>  b/mm/Makefile                 |    2 
+>  b/mm/backing-dev.c            |  476 +++++++++++++++++++-
+>  b/mm/page-writeback.c         |  151 ------
+>  b/mm/swap_state.c             |    1 
+>  b/mm/vmscan.c                 |    2 
+>  mm/pdflush.c                  |  269 -----------
+>  28 files changed, 1248 insertions(+), 637 deletions(-)
+> 
+Hi Jens,
 
-perf_counter: tools: /usr/lib/debug%s.debug support
+This is working nicely for me. It's successfully built a kernel with no
+problems at all, so you've fixed the earlier problem I had.
 
-Some distros seem to store debuginfo in weird places.
+Early fio tests writing to 2 disks at the same time indicate that it's
+faster too. But there's a fair amount of variability so I will run more
+tests & see what the trend really is.
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-Cc: Marcelo Tosatti <mtosatti@redhat.com>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: John Kacur <jkacur@redhat.com>
-LKML-Reference: <new-submission>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+regards
+Richard
 
 
----
- Documentation/perf_counter/builtin-report.c |   94 +++++++++++++++++++++-----
- 1 files changed, 76 insertions(+), 18 deletions(-)
-
-diff --git a/Documentation/perf_counter/builtin-report.c b/Documentation/perf_counter/builtin-report.c
-index 6265bed..a9ff49a 100644
---- a/Documentation/perf_counter/builtin-report.c
-+++ b/Documentation/perf_counter/builtin-report.c
-@@ -190,7 +190,8 @@ static inline int elf_sym__is_function(const GElf_Sym *sym)
- {
- 	return elf_sym__type(sym) == STT_FUNC &&
- 	       sym->st_name != 0 &&
--	       sym->st_shndx != SHN_UNDEF;
-+	       sym->st_shndx != SHN_UNDEF &&
-+	       sym->st_size != 0;
- }
- 
- static inline const char *elf_sym__name(const GElf_Sym *sym,
-@@ -222,11 +223,11 @@ static Elf_Scn *elf_section_by_name(Elf *elf, GElf_Ehdr *ep,
- 	return sec;
- }
- 
--static int dso__load(struct dso *self)
-+static int dso__load_sym(struct dso *self, int fd, char *name)
- {
- 	Elf_Data *symstrs;
- 	uint32_t nr_syms;
--	int fd, err = -1;
-+	int err = -1;
- 	uint32_t index;
- 	GElf_Ehdr ehdr;
- 	GElf_Shdr shdr;
-@@ -234,16 +235,12 @@ static int dso__load(struct dso *self)
- 	GElf_Sym sym;
- 	Elf_Scn *sec;
- 	Elf *elf;
--
--
--	fd = open(self->name, O_RDONLY);
--	if (fd == -1)
--		return -1;
-+	int nr = 0;
- 
- 	elf = elf_begin(fd, ELF_C_READ_MMAP, NULL);
- 	if (elf == NULL) {
- 		fprintf(stderr, "%s: cannot read %s ELF file.\n",
--			__func__, self->name);
-+			__func__, name);
- 		goto out_close;
- 	}
- 
-@@ -292,16 +289,63 @@ static int dso__load(struct dso *self)
- 			goto out_elf_end;
- 
- 		dso__insert_symbol(self, f);
-+
-+		nr++;
- 	}
- 
--	err = 0;
-+	err = nr;
- out_elf_end:
- 	elf_end(elf);
- out_close:
--	close(fd);
- 	return err;
- }
- 
-+static int dso__load(struct dso *self)
-+{
-+	int size = strlen(self->name) + sizeof("/usr/lib/debug%s.debug");
-+	char *name = malloc(size);
-+	int variant = 0;
-+	int ret = -1;
-+	int fd;
-+
-+	if (!name)
-+		return -1;
-+
-+more:
-+	do {
-+		switch (variant) {
-+		case 0: /* Fedora */
-+			snprintf(name, size, "/usr/lib/debug%s.debug", self->name);
-+			break;
-+		case 1: /* Ubuntu */
-+			snprintf(name, size, "/usr/lib/debug%s", self->name);
-+			break;
-+		case 2: /* Sane people */
-+			snprintf(name, size, "%s", self->name);
-+			break;
-+
-+		default:
-+			goto out;
-+		}
-+		variant++;
-+
-+		fd = open(name, O_RDONLY);
-+	} while (fd < 0);
-+
-+	ret = dso__load_sym(self, fd, name);
-+	close(fd);
-+
-+	/*
-+	 * Some people seem to have debuginfo files _WITHOUT_ debug info!?!?
-+	 */
-+	if (!ret)
-+		goto more;
-+
-+out:
-+	free(name);
-+	return ret;
-+}
-+
- static size_t dso__fprintf(struct dso *self, FILE *fp)
- {
- 	size_t ret = fprintf(fp, "dso: %s\n", self->name);
-@@ -336,11 +380,23 @@ static struct dso *dsos__find(const char *name)
- static struct dso *dsos__findnew(const char *name)
- {
- 	struct dso *dso = dsos__find(name);
-+	int nr;
- 
- 	if (dso == NULL) {
- 		dso = dso__new(name);
--		if (dso != NULL && dso__load(dso) < 0)
-+		if (!dso)
-+			goto out_delete_dso;
-+
-+		nr = dso__load(dso);
-+		if (nr < 0) {
-+			fprintf(stderr, "Failed to open: %s\n", name);
- 			goto out_delete_dso;
-+		}
-+		if (!nr) {
-+			fprintf(stderr,
-+		"Failed to find debug symbols for: %s, maybe install a debug package?\n",
-+					name);
-+		}
- 
- 		dsos__add(dso);
- 	}
-@@ -547,9 +603,9 @@ symhist__fprintf(struct symhist *self, uint64_t total_samples, FILE *fp)
- 	size_t ret;
- 
- 	if (total_samples)
--		ret = fprintf(fp, "%5.2f", (self->count * 100.0) / total_samples);
-+		ret = fprintf(fp, "%5.2f%% ", (self->count * 100.0) / total_samples);
- 	else
--		ret = fprintf(fp, "%12d", self->count);
-+		ret = fprintf(fp, "%12d ", self->count);
- 
- 	ret += fprintf(fp, "%14s [%c] ",
- 		       thread__name(self->thread, bf, sizeof(bf)),
-@@ -922,10 +978,12 @@ more:
- 	}
- 	default: {
- broken_event:
--		fprintf(stderr, "%p [%p]: skipping unknown header type: %d\n",
--			(void *)(offset + head),
--			(void *)(long)(event->header.size),
--			event->header.type);
-+		if (dump_trace)
-+			fprintf(stderr, "%p [%p]: skipping unknown header type: %d\n",
-+					(void *)(offset + head),
-+					(void *)(long)(event->header.size),
-+					event->header.type);
-+
- 		total_unknown++;
- 
- 		/*
