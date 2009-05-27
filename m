@@ -1,58 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932435AbZE0UXk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761762AbZE0UYN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932435AbZE0UXk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 16:23:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755891AbZE0UXa
+	id S1761762AbZE0UYN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 16:24:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754632AbZE0UX4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 16:23:30 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53289
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755193AbZE0UX3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 16:23:29 -0400
-Date: Wed, 27 May 2009 13:23:28 -0700 (PDT)
-Message-Id: <20090527.132328.78091350.davem@davemloft.net>
-To: rmk+lkml@arm.linux.org.uk
-Cc: scottwood@freescale.com, jacmet@sunsite.dk, r.schwebel@pengutronix.de,
-       devicetree-discuss@ozlabs.org, linux-kernel@vger.kernel.org,
-       linux-arm-kernel@lists.arm.linux.org.uk, yuan-bo.ye@motorola.com,
-       timur@freescale.com
-Subject: Re: [RFC] [PATCH] Device Tree on ARM platform
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090527192909.GA32398@flint.arm.linux.org.uk>
-References: <20090527175609.GB31861@flint.arm.linux.org.uk>
-	<4A1D8FBA.6040802@freescale.com>
-	<20090527192909.GA32398@flint.arm.linux.org.uk>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Wed, 27 May 2009 16:23:56 -0400
+Received: from mta.netezza.com ([12.148.248.132]:62720 "EHLO netezza.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755891AbZE0UX4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 16:23:56 -0400
+Subject: Re: [2.6.27.24] Kernel coredump to a pipe is failing
+From: Paul Smith <paul@mad-scientist.net>
+Reply-To: paul@mad-scientist.net
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>
+In-Reply-To: <20090527200419.GA1655@redhat.com>
+References: <1243355634.29250.331.camel@psmith-ubeta.netezza.com>
+	 <878wkjobbm.fsf@basil.nowhere.org> <20090527183109.GA30574@redhat.com>
+	 <20090527200419.GA1655@redhat.com>
+Content-Type: text/plain
+Organization: GNU's Not Unix!
+Date: Wed, 27 May 2009 16:22:49 -0400
+Message-Id: <1243455769.29250.459.camel@psmith-ubeta.netezza.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 27 May 2009 20:22:50.0151 (UTC) FILETIME=[E7FB5370:01C9DF08]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-Date: Wed, 27 May 2009 20:29:10 +0100
-
-> To program them into the hardware registers, which is not what we in
-> the ARM community say, but it's what the _network_ guys tell people
-> they should be doing.
+On Wed, 2009-05-27 at 22:04 +0200, Oleg Nesterov wrote:
+> Forgot to mention, and we have problems with OOM. Not only the coredumping
+> task can't be killed (and it can populate the memory via get_user_pages).
+> The coredump just disables OOM, if select_bad_process() sees the PF_EXITING
+> task with ->mm == NULL it returns -1.
 > 
-> I've suggested in the past having a standard kernel parameter such
-> that you can specify a mac address on a per-device basis in a totally
-> platform independent way, but the network folk don't like that idea.
+> > This all needs more discussion, but imho for now something like
+> > Paul's patch http://marc.info/?l=linux-kernel&m=124340506200729
+> > is the best workaround. Note that we have the same dump_write()
+> > in binfmt_elf.c and binfmt_aout.c, perhaps it makes sense to
+> > create coredump_file_write() helper in fs/exec.c.
+> 
+> But I didn't notice Paul also reports the kernel panic:
+> 
+> 	page:ffffe20010d63d00 flags:0x8000000000000001 mapping:0000000000000000 mapcount:0 \
+> 	count:0 Trying to fix it up, but a reboot is needed
+> 	Backtrace:
+> 	Pid: 3346, comm: worker Tainted: P          2.6.27.24-worker #4
+> 
+> 	Call Trace:
+> 	 [<ffffffff80284fd4>] bad_page+0x74/0xc0
+> 	 [<ffffffff80286168>] free_hot_cold_page+0x248/0x2f0
+> 	 [<ffffffff802f4096>] free_wr_note_data+0x56/0x70
+> 	 [<ffffffff802a95c6>] kfree+0x86/0x100
+> 	 [<ffffffff802f4096>] free_wr_note_data+0x56/0x70
+> 	 [<ffffffff802f0991>] elf_core_dump+0x611/0x1160
+> 
+> At first glance, this looks like a bug outside of coredump.c,
+> we are trying to free PG_locked page?
 
-As a "network guy" I can tell you that when the system firmware
-provides a system-wide or device specific MAC address in it's device
-tree, that is what you should use.
+This might be something different, or a side-effect that's not
+understood; I haven't seen this happen again since I applied my change,
+and I used to be able to make it happen every time within 2 or 3
+invocations of my "failing" core dump procedure.  Now I have dumped core
+using my "failing" procedure 10-15 times in a row with no ill-effects.
 
-And that's what I've been doing on sparc FOR 15 YEARS.
+I'll keep an eye out for this one though.
 
-Device trees are the only systematic generic mechanism for
-describing device layouts on the myriad of embedded boards
-out there which you will ever find.
-
-Two platforms, and now a third, have been using this scheme
-over a very proven period of time.  It's not a hack, there is
-infrastructure to get the boot loaders to do the right thing,
-and only ARM seems to resist it. :-)
