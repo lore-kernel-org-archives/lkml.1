@@ -1,59 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932958AbZE0Rzu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932192AbZE0R4P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932958AbZE0Rzu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 13:55:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932651AbZE0Rvv
+	id S932192AbZE0R4P (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 13:56:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932731AbZE0RxK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 13:51:51 -0400
-Received: from mout4.freenet.de ([195.4.92.94]:59401 "EHLO mout4.freenet.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932649AbZE0Rvu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 13:51:50 -0400
-Date: Wed, 27 May 2009 19:51:39 +0200
-From: Alex Riesen <raa.lkml@gmail.com>
-To: trivial@kernel.org
-Cc: linux-kernel@vger.kernel.org, Herbert Xu <herbert@gondor.apana.org.au>
-Subject: [PATCH] Use formatting of module name in crypto API
-Message-ID: <20090527175139.GA8969@blimp.localdomain>
-Reply-To: Alex Riesen <raa.lkml@gmail.com>
+	Wed, 27 May 2009 13:53:10 -0400
+Received: from mail-gx0-f166.google.com ([209.85.217.166]:38230 "EHLO
+	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764255AbZE0RxJ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 13:53:09 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090527174440.GA31861@flint.arm.linux.org.uk>
+References: <1243408083.13460.14.camel@debian-nb> <fa686aa40905270727m31250984tf12249fc87179ce9@mail.gmail.com> 
+	<20090527174440.GA31861@flint.arm.linux.org.uk>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Wed, 27 May 2009 11:52:50 -0600
+Message-ID: <fa686aa40905271052k3f55eb73k2cb0c3cff3c94d7b@mail.gmail.com>
+Subject: Re: [RFC] [PATCH] Device Tree on ARM platform
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Cc: Janboe Ye <yuan-bo.ye@motorola.com>,
+       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
+       jwboyer@linux.vnet.ibm.com, paulus@samba.org,
+       devicetree-discuss <devicetree-discuss@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Besdies, for the old code, gcc-4.3.3 produced this warning:
-  "format not a string literal and no format arguments"
+On Wed, May 27, 2009 at 11:44 AM, Russell King
+<rmk+lkml@arm.linux.org.uk> wrote:
+> (For whatever reason, I don't have the initial email on this.)
+>
+> On Wed, May 27, 2009 at 08:27:10AM -0600, Grant Likely wrote:
+>> On Wed, May 27, 2009 at 1:08 AM, Janboe Ye <yuan-bo.ye@motorola.com> wrote:
+>> > Hi, All
+>> >
+>> > Currently, ARM linux uses mach-type to figure out platform. But mach-type could not handle variants well and it doesn't tell the kernel about info about attached peripherals.
+>> >
+>> > The device-tree used by powerpc and sparc could simplifiy board ports, less platform specific code and simplify device driver code.
+>> >
+>> > Please reference to Grant Likely and Josh Boyer's paper, A Symphony of Flavours: Using the device tree to describe embedded hardware , for the detail of device tree.
+>> >
+>> > www.kernel.org/doc/ols/2008/ols2008v2-pages-27-38.pdf
+>> >
+>> > Signed-off-by: janboe <yuan-bo.ye@motorola.com>
+>>
+>> Heeheehe, This is Fantastic.  I'm actually working on this too.  Would
+>> you like to join our efforts?
+>
+> My position is that I don't like this approach.  We have _enough_ of a
+> problem getting boot loaders to do stuff they should be doing on ARM
+> platforms, that handing them the ability to define a whole device tree
+> is just insanely stupid.
 
-Signed-off-by: Alex Riesen <raa.lkml@gmail.com>
----
- crypto/api.c |    9 +++------
- 1 files changed, 3 insertions(+), 6 deletions(-)
+The point of this approach is that the device tree is *not* create by
+firmware.  Firmware can pass it in if it is convenient to do so, (ie;
+the device tree blob stored in flash as a separate image) but it
+doesn't have to be and it is not 'owned' by firmware.
 
-diff --git a/crypto/api.c b/crypto/api.c
-index fd2545d..fe98517 100644
---- a/crypto/api.c
-+++ b/crypto/api.c
-@@ -217,14 +217,11 @@ struct crypto_alg *crypto_larval_lookup(const char *name, u32 type, u32 mask)
- 
- 	alg = crypto_alg_lookup(name, type, mask);
- 	if (!alg) {
--		char tmp[CRYPTO_MAX_ALG_NAME];
--
--		request_module(name);
-+		request_module("%s", name);
- 
- 		if (!((type ^ CRYPTO_ALG_NEED_FALLBACK) & mask &
--		      CRYPTO_ALG_NEED_FALLBACK) &&
--		    snprintf(tmp, sizeof(tmp), "%s-all", name) < sizeof(tmp))
--			request_module(tmp);
-+		      CRYPTO_ALG_NEED_FALLBACK))
-+			request_module("%s-all", name);
- 
- 		alg = crypto_alg_lookup(name, type, mask);
- 	}
+It is also true that there is the option for firmware to manipulate
+the .dts, but once again it is not required and it does not replace
+the existing ATAGs.
+
+If a board port does get the device tree wrong; no big deal, we just
+fix it and ship it with the next kernel.
+
+> The end story is that as far as machine developers are concerned, a
+> boot loader, once programmed into the device, is immutable.  They never
+> _ever_ want to change it, period.
+
+I agree 100%.
+
+g.
+
 -- 
-1.6.3.1.197.g41544
-
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
