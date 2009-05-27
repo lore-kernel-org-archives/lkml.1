@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932659AbZE0Rvx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764029AbZE0RvU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932659AbZE0Rvx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 13:51:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763554AbZE0RqS
+	id S1764029AbZE0RvU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 13:51:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763532AbZE0RqN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 13:46:18 -0400
-Received: from jalapeno.cc.columbia.edu ([128.59.29.5]:54777 "EHLO
-	jalapeno.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763316AbZE0RqN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 27 May 2009 13:46:13 -0400
+Received: from jalapeno.cc.columbia.edu ([128.59.29.5]:54715 "EHLO
+	jalapeno.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763480AbZE0RqD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 13:46:03 -0400
 From: Oren Laadan <orenl@cs.columbia.edu>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
@@ -21,9 +21,9 @@ Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
        Pavel Emelyanov <xemul@openvz.org>,
        Alexey Dobriyan <adobriyan@gmail.com>,
        Oren Laadan <orenl@cs.columbia.edu>
-Subject: [RFC v16][PATCH 33/43] c/r (ipc): helpers to save and restore kern_ipc_perm structures
-Date: Wed, 27 May 2009 13:32:59 -0400
-Message-Id: <1243445589-32388-34-git-send-email-orenl@cs.columbia.edu>
+Subject: [RFC v16][PATCH 24/43] c/r: detect resource leaks for whole-container checkpoint
+Date: Wed, 27 May 2009 13:32:50 -0400
+Message-Id: <1243445589-32388-25-git-send-email-orenl@cs.columbia.edu>
 X-Mailer: git-send-email 1.6.0.1
 In-Reply-To: <1243445589-32388-1-git-send-email-orenl@cs.columbia.edu>
 References: <1243445589-32388-1-git-send-email-orenl@cs.columbia.edu>
@@ -32,217 +32,255 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add the helpers to save and restore the contents of 'struct
-kern_ipc_perm'. Add header structures for ipc state. Put
-place-holders to save and restore ipc state.
+Add a 'users' count to objhash items, and, for a !CHECKPOINT_SUBTREE
+checkpoint, return an error code if the actual objects' counts are
+higher, indicating leaks (references to the objects from a task not
+being checkpointed).  Of course, by this time most of the checkpoint
+image has been written out to disk, so this is purely advisory.  But
+then, it's probably naive to argue that anything more than an advisory
+'this went wrong' error code is useful.
 
-TODO:
-This patch does _not_ address the issues of users/groups and the
-related security issues. For now, it saves the old user/group of
-ipc objects, but does not restore them during restart.
+The comparison of the objhash user counts to object refcounts as a
+basis for checking for leaks comes from Alexey's OpenVZ-based c/r
+patchset.
 
 Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
 ---
- include/linux/checkpoint.h     |    7 +++-
- include/linux/checkpoint_hdr.h |   29 ++++++++++++++
- ipc/Makefile                   |    1 +
- ipc/checkpoint.c               |   81 ++++++++++++++++++++++++++++++++++++++++
- ipc/util.h                     |    8 ++++
- 5 files changed, 125 insertions(+), 1 deletions(-)
+ checkpoint/checkpoint.c    |    8 ++++
+ checkpoint/objhash.c       |   82 ++++++++++++++++++++++++++++++++++++++++++--
+ include/linux/checkpoint.h |    1 +
+ 3 files changed, 88 insertions(+), 3 deletions(-)
 
+diff --git a/checkpoint/checkpoint.c b/checkpoint/checkpoint.c
+index 92f219e..b70adf4 100644
+--- a/checkpoint/checkpoint.c
++++ b/checkpoint/checkpoint.c
+@@ -578,6 +578,14 @@ int do_checkpoint(struct ckpt_ctx *ctx, pid_t pid)
+ 	if (ret < 0)
+ 		goto out;
+ 
++	if (!(ctx->uflags & CHECKPOINT_SUBTREE)) {
++		/* verify that all objects are contained (no leaks) */
++		if (!ckpt_obj_contained(ctx)) {
++			ret = -EBUSY;
++			goto out;
++		}
++	}
++
+ 	/* on success, return (unique) checkpoint identifier */
+ 	ctx->crid = atomic_inc_return(&ctx_count);
+ 	ret = ctx->crid;
+diff --git a/checkpoint/objhash.c b/checkpoint/objhash.c
+index ff9388d..e481911 100644
+--- a/checkpoint/objhash.c
++++ b/checkpoint/objhash.c
+@@ -27,19 +27,23 @@ struct ckpt_obj_ops {
+ 	enum obj_type obj_type;
+ 	void (*ref_drop)(void *ptr);
+ 	int (*ref_grab)(void *ptr);
++	int (*ref_users)(void *ptr);
+ 	int (*checkpoint)(struct ckpt_ctx *ctx, void *ptr);
+ 	void *(*restore)(struct ckpt_ctx *ctx);
+ };
+ 
+ struct ckpt_obj {
++	int users;
+ 	int objref;
+ 	void *ptr;
+ 	struct ckpt_obj_ops *ops;
+ 	struct hlist_node hash;
++	struct hlist_node next;
+ };
+ 
+ struct ckpt_obj_hash {
+ 	struct hlist_head *head;
++	struct hlist_head list;
+ 	int next_free_objref;
+ };
+ 
+@@ -53,7 +57,7 @@ void *restore_bad(struct ckpt_ctx *ctx)
+ 	return ERR_PTR(-EINVAL);
+ }
+ 
+-/* helper grab/drop functions: */
++/* helper grab/drop/users functions */
+ 
+ static void obj_no_drop(void *ptr)
+ {
+@@ -86,6 +90,11 @@ static void obj_file_table_drop(void *ptr)
+ 	put_files_struct((struct files_struct *) ptr);
+ }
+ 
++static int obj_file_table_users(void *ptr)
++{
++	return atomic_read(&((struct files_struct *) ptr)->count);
++}
++
+ static int obj_file_grab(void *ptr)
+ {
+ 	get_file((struct file *) ptr);
+@@ -97,6 +106,11 @@ static void obj_file_drop(void *ptr)
+ 	fput((struct file *) ptr);
+ }
+ 
++static int obj_file_users(void *ptr)
++{
++	return atomic_long_read(&((struct file *) ptr)->f_count);
++}
++
+ static int obj_mm_grab(void *ptr)
+ {
+ 	atomic_inc(&((struct mm_struct *) ptr)->mm_users);
+@@ -108,6 +122,11 @@ static void obj_mm_drop(void *ptr)
+ 	mmput((struct mm_struct *) ptr);
+ }
+ 
++static int obj_mm_users(void *ptr)
++{
++	return atomic_read(&((struct mm_struct *) ptr)->mm_users);
++}
++
+ static struct ckpt_obj_ops ckpt_obj_ops[] = {
+ 	/* ignored object */
+ 	{
+@@ -131,6 +150,7 @@ static struct ckpt_obj_ops ckpt_obj_ops[] = {
+ 		.obj_type = CKPT_OBJ_FILE_TABLE,
+ 		.ref_drop = obj_file_table_drop,
+ 		.ref_grab = obj_file_table_grab,
++		.ref_users = obj_file_table_users,
+ 		.checkpoint = checkpoint_file_table,
+ 		.restore = restore_file_table,
+ 	},
+@@ -140,6 +160,7 @@ static struct ckpt_obj_ops ckpt_obj_ops[] = {
+ 		.obj_type = CKPT_OBJ_FILE,
+ 		.ref_drop = obj_file_drop,
+ 		.ref_grab = obj_file_grab,
++		.ref_users = obj_file_users,
+ 		.checkpoint = checkpoint_file,
+ 		.restore = restore_file,
+ 	},
+@@ -149,6 +170,7 @@ static struct ckpt_obj_ops ckpt_obj_ops[] = {
+ 		.obj_type = CKPT_OBJ_MM,
+ 		.ref_drop = obj_mm_drop,
+ 		.ref_grab = obj_mm_grab,
++		.ref_users = obj_mm_users,
+ 		.checkpoint = checkpoint_mm,
+ 		.restore = restore_mm,
+ 	},
+@@ -201,6 +223,7 @@ int ckpt_obj_hash_alloc(struct ckpt_ctx *ctx)
+ 
+ 	obj_hash->head = head;
+ 	obj_hash->next_free_objref = 1;
++	INIT_HLIST_HEAD(&obj_hash->list);
+ 
+ 	ctx->obj_hash = obj_hash;
+ 	return 0;
+@@ -259,6 +282,7 @@ static int obj_new(struct ckpt_ctx *ctx, void *ptr, int objref,
+ 
+ 	obj->ptr = ptr;
+ 	obj->ops = ops;
++	obj->users = 2;  /* extra reference that objhash itself takes */
+ 
+ 	if (objref) {
+ 		/* use @obj->objref to index (restart) */
+@@ -271,10 +295,12 @@ static int obj_new(struct ckpt_ctx *ctx, void *ptr, int objref,
+ 	}
+ 
+ 	ret = ops->ref_grab(obj->ptr);
+-	if (ret < 0)
++	if (ret < 0) {
+ 		kfree(obj);
+-	else
++	} else {
+ 		hlist_add_head(&obj->hash, &ctx->obj_hash->head[i]);
++		hlist_add_head(&obj->next, &ctx->obj_hash->list);
++	}
+ 
+ 	return (ret < 0 ? ret : obj->objref);
+ }
+@@ -335,6 +361,7 @@ int ckpt_obj_lookup_add(struct ckpt_ctx *ctx, void *ptr,
+ 		return -EINVAL;
+ 	} else {
+ 		objref = obj->objref;
++		obj->users++;
+ 		*first = 0;
+ 	}
+ 
+@@ -342,6 +369,54 @@ int ckpt_obj_lookup_add(struct ckpt_ctx *ctx, void *ptr,
+ 	return objref;
+ }
+ 
++/* increment the 'users' count of an object */
++static void ckpt_obj_users_inc(struct ckpt_ctx *ctx, void *ptr, int increment)
++{
++	struct ckpt_obj *obj;
++
++	obj = obj_find_by_ptr(ctx, ptr);
++	if (obj)
++		obj->users += increment;
++}
++
++/**
++ * ckpt_obj_contained - test if shared objects are "contained" in checkpoint
++ * @ctx: checkpoint
++ *
++ * Loops through all objects in the table and compares the number of
++ * references accumulated during checkpoint, with the reference count
++ * reported by the kernel.
++ *
++ * Return 1 if respective counts match for all objects, 0 otherwise.
++ */
++int ckpt_obj_contained(struct ckpt_ctx *ctx)
++{
++	struct ckpt_obj *obj;
++	struct hlist_node *node;
++
++	/* account for ctx->file reference (if in the table already) */
++	ckpt_obj_users_inc(ctx, ctx->file, 1);
++
++	hlist_for_each_entry(obj, node, &ctx->obj_hash->list, next) {
++		if (!obj->ops->ref_users)
++			continue;
++		if (obj->ops->ref_users(obj->ptr) != obj->users) {
++			ckpt_debug("usage leak: %s\n", obj->ops->obj_name);
++			ckpt_write_err(ctx, "%s leak: users %d != c/r %d\n",
++				       obj->ops->obj_name,
++				       obj->ops->ref_users(obj->ptr),
++				       obj->users);
++			printk(KERN_NOTICE "c/r: %s users %d != count %d\n",
++			       obj->ops->obj_name,
++			       obj->ops->ref_users(obj->ptr),
++			       obj->users);
++			return 0;
++		}
++	}
++
++	return 1;
++}
++
+ /**
+  * checkpoint_obj - if not already in hash, add object and checkpoint
+  * @ctx: checkpoint context
+@@ -371,6 +446,7 @@ int checkpoint_obj(struct ckpt_ctx *ctx, void *ptr, enum obj_type type)
+ 	obj = obj_find_by_ptr(ctx, ptr);
+ 	if (obj) {
+ 		BUG_ON(obj->ops->obj_type != type);
++		obj->users++;
+ 		return obj->objref;
+ 	}
+ 
 diff --git a/include/linux/checkpoint.h b/include/linux/checkpoint.h
-index 5a42399..9a7517f 100644
+index e9efa34..171e92e 100644
 --- a/include/linux/checkpoint.h
 +++ b/include/linux/checkpoint.h
-@@ -10,6 +10,10 @@
-  *  distribution for more details.
-  */
+@@ -44,6 +44,7 @@ extern int ckpt_obj_hash_alloc(struct ckpt_ctx *ctx);
  
-+#include <linux/sched.h>
-+#include <linux/nsproxy.h>
-+#include <linux/ipc_namespace.h>
-+
- #include <linux/checkpoint_types.h>
- #include <linux/checkpoint_hdr.h>
- #include <asm/checkpoint_hdr.h>
-@@ -157,8 +161,9 @@ extern int restore_memory_contents(struct ckpt_ctx *ctx, struct inode *inode);
- #define CKPT_DFILE	0x10		/* files and filesystem */
- #define CKPT_DMEM	0x20		/* memory state */
- #define CKPT_DPAGE	0x40		/* memory pages */
-+#define CKPT_DIPC	0x80		/* sysvipc */
- 
--#define CKPT_DDEFAULT	0x37		/* default debug level */
-+#define CKPT_DDEFAULT	0xb7		/* default debug level */
- 
- #ifndef CKPT_DFLAG
- #define CKPT_DFLAG	0x0		/* nothing */
-diff --git a/include/linux/checkpoint_hdr.h b/include/linux/checkpoint_hdr.h
-index 44a48dc..05769f4 100644
---- a/include/linux/checkpoint_hdr.h
-+++ b/include/linux/checkpoint_hdr.h
-@@ -70,6 +70,11 @@ enum {
- 	CKPT_HDR_PGARR,
- 	CKPT_HDR_MM_CONTEXT,
- 
-+	CKPT_HDR_IPC = 501,
-+	CKPT_HDR_IPC_SHM,
-+	CKPT_HDR_IPC_MSG,
-+	CKPT_HDR_IPC_SEM,
-+
- 	CKPT_HDR_TAIL = 9001,
- 
- 	CKPT_HDR_ERROR = 9999,
-@@ -299,4 +304,28 @@ struct ckpt_hdr_pgarr {
- } __attribute__((aligned(8)));
- 
- 
-+/* ipc commons */
-+struct ckpt_hdr_ipc_perms {
-+	__s32 id;
-+	__u32 key;
-+	__u32 uid;
-+	__u32 gid;
-+	__u32 cuid;
-+	__u32 cgid;
-+	__u32 mode;
-+	__u32 _padding;
-+	__u64 seq;
-+} __attribute__((aligned(8)));
-+
-+
-+#define CKPT_TST_OVERFLOW_16(a, b) \
-+	((sizeof(a) > sizeof(b)) && ((a) > SHORT_MAX))
-+
-+#define CKPT_TST_OVERFLOW_32(a, b) \
-+	((sizeof(a) > sizeof(b)) && ((a) > INT_MAX))
-+
-+#define CKPT_TST_OVERFLOW_64(a, b) \
-+	((sizeof(a) > sizeof(b)) && ((a) > LONG_MAX))
-+
-+
- #endif /* _CHECKPOINT_CKPT_HDR_H_ */
-diff --git a/ipc/Makefile b/ipc/Makefile
-index 4e1955e..aa6c8dd 100644
---- a/ipc/Makefile
-+++ b/ipc/Makefile
-@@ -9,4 +9,5 @@ obj_mq-$(CONFIG_COMPAT) += compat_mq.o
- obj-$(CONFIG_POSIX_MQUEUE) += mqueue.o msgutil.o $(obj_mq-y)
- obj-$(CONFIG_IPC_NS) += namespace.o
- obj-$(CONFIG_POSIX_MQUEUE_SYSCTL) += mq_sysctl.o
-+obj-$(CONFIG_CHECKPOINT) += checkpoint.o
- 
-diff --git a/ipc/checkpoint.c b/ipc/checkpoint.c
-new file mode 100644
-index 0000000..b7b48b0
---- /dev/null
-+++ b/ipc/checkpoint.c
-@@ -0,0 +1,81 @@
-+/*
-+ *  Checkpoint logic and helpers
-+ *
-+ *  Copyright (C) 2009 Oren Laadan
-+ *
-+ *  This file is subject to the terms and conditions of the GNU General Public
-+ *  License.  See the file COPYING in the main directory of the Linux
-+ *  distribution for more details.
-+ */
-+
-+/* default debug level for output */
-+#define CKPT_DFLAG  CKPT_DIPC
-+
-+#include <linux/ipc.h>
-+#include <linux/msg.h>
-+#include <linux/sched.h>
-+#include <linux/ipc_namespace.h>
-+#include <linux/checkpoint.h>
-+#include <linux/checkpoint_hdr.h>
-+
-+#include "util.h"
-+
-+int checkpoint_ipcns(struct ckpt_ctx *ctx, struct ipc_namespace *ipc_ns)
-+{
-+	return 0;
-+}
-+
-+int restore_ipcns(struct ckpt_ctx *ctx)
-+{
-+	return 0;
-+}
-+
-+int checkpoint_fill_ipc_perms(struct ckpt_hdr_ipc_perms *h,
-+			      struct kern_ipc_perm *perm)
-+{
-+	if (ipcperms(perm, S_IROTH))
-+		return -EACCES;
-+
-+	h->id = perm->id;
-+	h->key = perm->key;
-+	h->uid = perm->uid;
-+	h->gid = perm->gid;
-+	h->cuid = perm->cuid;
-+	h->cgid = perm->cgid;
-+	h->mode = perm->mode & S_IRWXUGO;
-+	h->seq = perm->seq;
-+
-+	return 0;
-+}
-+
-+int restore_load_ipc_perms(struct ckpt_hdr_ipc_perms *h,
-+			   struct kern_ipc_perm *perm)
-+{
-+	if (h->id < 0)
-+		return -EINVAL;
-+	if (CKPT_TST_OVERFLOW_16(h->uid, perm->uid) ||
-+	    CKPT_TST_OVERFLOW_16(h->gid, perm->gid) ||
-+	    CKPT_TST_OVERFLOW_16(h->cuid, perm->cuid) ||
-+	    CKPT_TST_OVERFLOW_16(h->cgid, perm->cgid) ||
-+	    CKPT_TST_OVERFLOW_16(h->mode, perm->mode))
-+		return -EINVAL;
-+	if (h->seq >= USHORT_MAX)
-+		return -EINVAL;
-+	if (h->mode & ~S_IRWXUGO)
-+		return -EINVAL;
-+
-+	/* FIX: verify the ->mode field makes sense */
-+
-+	perm->id = h->id;
-+	perm->key = h->key;
-+#if 0 /* FIX: requires security checks */
-+	perm->uid = h->uid;
-+	perm->gid = h->gid;
-+	perm->cuid = h->cuid;
-+	perm->cgid = h->cgid;
-+#endif
-+	perm->mode = h->mode;
-+	perm->seq = h->seq;
-+
-+	return 0;
-+}
-diff --git a/ipc/util.h b/ipc/util.h
-index c75e3b2..1356909 100644
---- a/ipc/util.h
-+++ b/ipc/util.h
-@@ -11,6 +11,7 @@
- #define _IPC_UTIL_H
- 
- #include <linux/err.h>
-+#include <linux/checkpoint_hdr.h>
- 
- #define SEQ_MULTIPLIER	(IPCMNI)
- 
-@@ -177,5 +178,12 @@ extern int do_shmget(key_t key, size_t size, int shmflg, int req_id);
- 
- extern void do_shm_rmid(struct ipc_namespace *ns, struct kern_ipc_perm *ipcp);
- 
-+#ifdef CONFIG_CHECKPOINT
-+extern int checkpoint_fill_ipc_perms(struct ckpt_hdr_ipc_perms *h,
-+				     struct kern_ipc_perm *perm);
-+extern int restore_load_ipc_perms(struct ckpt_hdr_ipc_perms *h,
-+				  struct kern_ipc_perm *perm);
-+#endif
-+
- 
- #endif
+ extern int restore_obj(struct ckpt_ctx *ctx, struct ckpt_hdr_objref *h);
+ extern int checkpoint_obj(struct ckpt_ctx *ctx, void *ptr, enum obj_type type);
++extern int ckpt_obj_contained(struct ckpt_ctx *ctx);
+ extern void *ckpt_obj_fetch(struct ckpt_ctx *ctx, int objref,
+ 			    enum obj_type type);
+ extern int ckpt_obj_lookup_add(struct ckpt_ctx *ctx, void *ptr,
 -- 
 1.6.0.4
 
