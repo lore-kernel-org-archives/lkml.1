@@ -1,103 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758989AbZE0Cm5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758394AbZE0CqR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758989AbZE0Cm5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 22:42:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755560AbZE0Cmr
+	id S1758394AbZE0CqR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 22:46:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755241AbZE0CqD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 22:42:47 -0400
-Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:58850 "EHLO
-	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754083AbZE0Cmr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 22:42:47 -0400
-Message-Id: <6.0.0.20.2.20090527113743.076aac48@172.19.0.2>
-X-Mailer: QUALCOMM Windows Eudora Version 6J-Jr3
-Date: Wed, 27 May 2009 11:38:08 +0900
-To: Andrew Morton <akpm@linux-foundation.org>
-From: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
-Subject: Re: [PATCH] readahead:add blk_run_backing_dev
-Cc: Wu Fengguang <fengguang.wu@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>
-In-Reply-To: <20090526193601.b825af5f.akpm@linux-foundation.org>
-References: <6.0.0.20.2.20090518183752.0581fdc0@172.19.0.2>
- <20090518175259.GL4140@kernel.dk>
- <20090520025123.GB8186@localhost>
- <6.0.0.20.2.20090521145005.06f81fe0@172.19.0.2>
- <20090522010538.GB6010@localhost>
- <6.0.0.20.2.20090522102551.0705aea0@172.19.0.2>
- <20090522023323.GA10864@localhost>
- <20090526164252.0741b392.akpm@linux-foundation.org>
- <6.0.0.20.2.20090527092105.076be238@172.19.0.2>
- <20090527020909.GB17658@localhost>
- <6.0.0.20.2.20090527110937.0770c420@172.19.0.2>
- <20090526193601.b825af5f.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+	Tue, 26 May 2009 22:46:03 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:60554 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754589AbZE0CqB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 22:46:01 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@redhat.com>
+X-Fcc: ~/Mail/linus
+Cc: Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH 8/X] ptrace: introduce ptrace_tracer() helper
+In-Reply-To: Oleg Nesterov's message of  Tuesday, 26 May 2009 00:39:32 +0200 <20090525223932.GA11508@redhat.com>
+References: <20090525000016.GA2239@redhat.com>
+	<20090525215903.GA9113@redhat.com>
+	<20090525223932.GA11508@redhat.com>
+X-Antipastobozoticataclysm: When George Bush projectile vomits antipasto on the Japanese.
+Message-Id: <20090527024540.177FAFC36B@magilla.sf.frob.com>
+Date: Tue, 26 May 2009 19:45:40 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> Introduce ptrace_tracer() (or suggest a better name) to simplify/cleanup
+> the code which needs the tracer and checks task_ptrace(). From now nobody
+> else uses ->pt_tracer except ptrace_link/ptrace_unlink.
 
-At 11:36 09/05/27, Andrew Morton wrote:
->On Wed, 27 May 2009 11:21:53 +0900 Hisashi Hifumi 
-><hifumi.hisashi@oss.ntt.co.jp> wrote:
->
->> 
->> At 11:09 09/05/27, Wu Fengguang wrote:
->> >On Wed, May 27, 2009 at 08:25:04AM +0800, Hisashi Hifumi wrote:
->> >> 
->> >> At 08:42 09/05/27, Andrew Morton wrote:
->> >> >On Fri, 22 May 2009 10:33:23 +0800
->> >> >Wu Fengguang <fengguang.wu@intel.com> wrote:
->> >> >
->> >> >> > I tested above patch, and I got same performance number.
->> >> >> > I wonder why if (PageUptodate(page)) check is there...
->> >> >> 
->> >> >> Thanks!  This is an interesting micro timing behavior that
->> >> >> demands some research work.  The above check is to confirm if it's
->> >> >> the PageUptodate() case that makes the difference. So why that case
->> >> >> happens so frequently so as to impact the performance? Will it also
->> >> >> happen in NFS?
->> >> >> 
->> >> >> The problem is readahead IO pipeline is not running smoothly, which is
->> >> >> undesirable and not well understood for now.
->> >> >
->> >> >The patch causes a remarkably large performance increase.  A 9%
->> >> >reduction in time for a linear read? I'd be surprised if the workload
->> >> 
->> >> Hi Andrew.
->> >> Yes, I tested this with dd.
->> >> 
->> >> >even consumed 9% of a CPU, so where on earth has the kernel gone to?
->> >> >
->> >> >Have you been able to reproduce this in your testing?
->> >> 
->> >> Yes, this test on my environment is reproducible.
->> >
->> >Hisashi, does your environment have some special configurations?
->> 
->> Hi.
->> My testing environment is as follows:
->> Hardware: HP DL580 
->> CPU:Xeon 3.2GHz *4 HT enabled
->> Memory:8GB
->> Storage: Dothill SANNet2 FC (7Disks RAID-0 Array)
->> 
->> I did dd to this disk-array and got improved performance number.
->> 
->> I noticed that when a disk is just one HDD, performance improvement
->> is very small.
->> 
->
->Ah.  So it's likely to be some strange interaction with the RAID setup.
->
->I assume that you're using the SANNet 2's "hardware raid"?  Or is the
->array set up as jbod and you're using kernel raid0?
+There is nothing really wrong with this.  But I think that this stuff will
+get sufficiently reworked again differently later on if it's converted to
+use utrace that this incremental cleanup may not really help any.
 
-I used SANNet 2's "hardware raid".
+> Question. Note that ptrace_tracer() is equal to tracehook_tracer_task().
+> But I do not understand the future plans for tracehook_tracer_task().
+> Should we just use tracehook_tracer_task() ? If yes, how
+> ptrace_reparented() can use this helper?
 
+It seems likely that we will rework tracehook_tracer_task() later.
+It has three kinds of callers:
+
+1. task_state() for "TracerPid:" line.
+   It remains to be seen if we want to make some hookified way that might
+   ever have a non-ptrace tracer supply the value here.  This was the main
+   original expectation of what tracehook_tracer_task() would do.
+2. check_mem_permission()
+   I've already suggested to you that I think we want to swallow this
+   use as part of the clean-up/replacement of ptrace_may_access().
+3. SELinux: selinux_bprm_set_creds(), selinux_setprocattr()
+   It makes sure that "PROCESS PTRACE" tracer->tracee avc checks can
+   inhibit the transition (exec/setprocattr call).
+
+For each of these, we have yet to hash out whether we will only ever want a
+cleaned-up ptrace support here, or if in a future generalized tracing setup
+like utrace these should be hooks that some non-ptrace kind of tracer
+facility could also supply.  Figuring any piece of all that out is way
+beyond the simple data structure cleanup phase.  I don't think we want to
+get into any of that quite yet.
+
+> +	parent = ptrace_tracer(tsk);
+> +	if (likely(!parent))
+>  		parent = tsk->real_parent;
+
+This likely() doesn't buy much anyway, I'd just write the shorter:
+
+	parent = ptrace_tracer(task) ?: tsk->real_parent;
+
+>  static inline int may_ptrace_stop(void)
+>  {
+> -	if (!likely(task_ptrace(current)))
+> +	struct task_struct *tracer = ptrace_tracer(current);
+> +
+> +	if (!likely(tracer))
+>  		return 0;
+
+Is there a particular rationale to checking ptrace_tracer() != NULL vs
+task_ptrace() != 0?  Or is it just that they should already be guaranteed
+synonymous, and here you have use for the tracer pointer a few lines later?
+
+> +	pid = task_pid_vnr(tracer);
+> +	uid = task_uid(tracer);
+>  
+>  	ptrace_signal_deliver(regs, cookie);
+>  
+> @@ -1779,8 +1785,8 @@ static int ptrace_signal(int signr, sigi
+>  		info->si_signo = signr;
+>  		info->si_errno = 0;
+>  		info->si_code = SI_USER;
+> -		info->si_pid = task_pid_vnr(current->ptrace_task->pt_tracer);
+> -		info->si_uid = task_uid(current->ptrace_task->pt_tracer);
+> +		info->si_pid = pid;
+> +		info->si_uid = uid;
+
+I think the different clean-up I suggested is better for this.  (Move that
+logic to resume-time in the tracer context.)  It's an inconsequential nit,
+but it feels a little wrong e.g. that you take task_uid(tracer) before the
+stop, but the tracer could call setuid() before it does PTRACE_CONT.  The
+PTRACE_CONT (or whatever) is the "signal generation event", so that's the
+point at which the si_uid value being determined makes most sense to me
+because it parallels what a normal signal generation does.
+
+
+Thanks,
+Roland
