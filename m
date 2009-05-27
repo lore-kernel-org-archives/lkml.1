@@ -1,217 +1,230 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763845AbZE0NG1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764117AbZE0NEv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763845AbZE0NG1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 09:06:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762670AbZE0NGS
+	id S1764117AbZE0NEv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 09:04:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764167AbZE0NEO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 09:06:18 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:33076 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760244AbZE0NGR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 09:06:17 -0400
-X-Sasl-enc: r0rJxEQmyPIKjs02BfwSCEOvc3d43GiBns/HZZn7h6Yn 1243429577
-Date: Wed, 27 May 2009 15:06:14 +0200 (CEST)
-From: Alexander van Heukelum <heukelum@fastmail.fm>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Cyrill Gorcunov <gorcunov@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, The stable team <stable@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Andi Kleen <andi@firstfloor.org>
-Subject: [PATCH,resend] i386: fix return to 16-bit stack from NMI handler
-Message-ID: <alpine.DEB.2.00.0905271459580.15211@diotoir>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Wed, 27 May 2009 09:04:14 -0400
+Received: from hera.kernel.org ([140.211.167.34]:52835 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764161AbZE0NEM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 09:04:12 -0400
+Date: Wed, 27 May 2009 13:03:32 GMT
+From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
+       hpa@zytor.com, mingo@redhat.com, jkacur@redhat.com,
+       a.p.zijlstra@chello.nl, efault@gmx.de, mtosatti@redhat.com,
+       tglx@linutronix.de, cjashfor@linux.vnet.ibm.com, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, jkacur@redhat.com, a.p.zijlstra@chello.nl,
+       efault@gmx.de, mtosatti@redhat.com, tglx@linutronix.de,
+       cjashfor@linux.vnet.ibm.com, mingo@elte.hu
+In-Reply-To: <new-submission>
+References: <new-submission>
+Subject: [tip:perfcounters/core] perf_counter: tools: /usr/lib/debug%s.debug support
+Message-ID: <tip-b7a16eac5e679fb5f531b9eeff7db7952303e77d@git.kernel.org>
+Git-Commit-ID: b7a16eac5e679fb5f531b9eeff7db7952303e77d
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 27 May 2009 13:03:34 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit 55f327fa9e876758491a82af7491104f1cc3fc4d changed the return path
-of the NMI handler to skip the check and fixup for return to environments
-with a 16-bit stack segment. If a task is running with such a 16-bit SS,
-and an NMI intervenes, the top half of the task's esp is replaced with
-the top half of the kernel's esp. To reproduce, run the included program
-with the nmi watchdog enabled. This patch fixes it.
+Commit-ID:  b7a16eac5e679fb5f531b9eeff7db7952303e77d
+Gitweb:     http://git.kernel.org/tip/b7a16eac5e679fb5f531b9eeff7db7952303e77d
+Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
+AuthorDate: Wed, 27 May 2009 13:35:35 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 27 May 2009 14:54:29 +0200
 
-The patch is slightly more involved than changing the jump target at the
-end of 'nmi_stack_correct' from 'restore_nocheck_notrace' back to
-'restore_all', because the latter includes TRACE_IRQS_IRET, which
-cannot be used in handling the NMI. Therefore, to keep things simple,
-I moved the TRACE_IRQS_IRET to just after 'restore_all' and introduced
-'restore_all_notrace' just below it.
+perf_counter: tools: /usr/lib/debug%s.debug support
 
-Side effect of moving TRACE_IRQS_IRET is that the espfix code is now
-executed after this macro, while it disables interrupts explicitly
-in case the stack switch is needed. I removed the TRACE_IRQS_OFF there
-to fix the tracing.
+Some distros seem to store debuginfo in weird places.
 
-In !PREEMPT, 'check_userspace' is changed to jump to restore_all
-instead of restore_nocheck in case the return is back to kernelspace,
-such that the TRACE_IRQS_IRET is again included in the return path.
-This code path does now include the espfix check too. Including the few
-extra instructions keeps the patch simple and should not affect timing
-in any significant way.
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
+Cc: Marcelo Tosatti <mtosatti@redhat.com>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: John Kacur <jkacur@redhat.com>
+LKML-Reference: <new-submission>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-
-#define _GNU_SOURCE
-#include <stdio.h>
-#include <sys/types.h>
-#include <sys/mman.h>
-#include <unistd.h>
-#include <sys/syscall.h>
-#include <asm/ldt.h>
-
-int modify_ldt(int func, void *ptr, unsigned long bytecount)
-{
-  	return syscall(SYS_modify_ldt, func, ptr, bytecount);
-}
-
-/* this is assumed to be usable */
-#define SEGBASEADDR 0x10000
-#define SEGLIMIT 0xffff
-
-/* 16-bit segment */
-struct user_desc desc = {
-  	.entry_number = 0,
-  	.base_addr = SEGBASEADDR,
-  	.limit = SEGLIMIT,
-  	.seg_32bit = 0,
-  	.contents = 0, /* ??? */
-  	.read_exec_only = 0,
-  	.limit_in_pages = 0,
-  	.seg_not_present = 0,
-  	.useable = 1
-};
-
-int main(void)
-{
-  	setvbuf(stdout, NULL, _IONBF, 0);
-
-  	/* map a 64 kb segment */
-  	char *pointer = mmap((void *)SEGBASEADDR, SEGLIMIT+1,
-                          PROT_EXEC|PROT_READ|PROT_WRITE,
-                          MAP_SHARED|MAP_ANONYMOUS, -1, 0);
-  	if (pointer == NULL) {
-  		printf("could not map space\n");
-  		return 0;
-  	}
-
-  	/* write ldt, new mode */
-  	int err = modify_ldt(0x11, &desc, sizeof(desc));
-  	if (err) {
-  		printf("error modifying ldt: %i\n", err);
-  		return 0;
-  	}
-
-  	for (int i=0; i<1000; i++) {
-  	asm volatile (
-  		"pusha\n\t"
-  		"mov %ss, %eax\n\t" /* preserve ss:esp */
-  		"mov %esp, %ebp\n\t"
-  		"push $7\n\t" /* index 0, ldt, user mode */
-  		"push $61440\n\t" /* esp */
-  		"lss (%esp), %esp\n\t" /* switch to new stack */
-  		"push %eax\n\t" /* save old ss:esp on new stack */
-  		"push %ebp\n\t"
-
-  		"mov %esp, %edx\n\t"
-
-  		/* wait a bit */
-  		"mov $10000000, %ecx\n\t"
-  		"1: loop 1b\n\t"
-
-  		"cmp %esp, %edx\n\t"
-  		"je 1f\n\t"
-  		"ud2\n\t" /* esp changed inexplicably! */
-  		"1:\n\t"
-  		"lss (%esp), %esp\n\t" /* restore old ss:esp */
-  		"popa\n\t");
-
-  		printf("\rx%ix", i);
-  	}
-
-  	return 0;
-}
-
-Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>
-Cc: The stable team <stable@kernel.org>
 
 ---
+ Documentation/perf_counter/builtin-report.c |   94 +++++++++++++++++++++-----
+ 1 files changed, 76 insertions(+), 18 deletions(-)
 
-Hi Ingo,
-
-Mucking with entry_32.S and trying to exercise all entry/exit code
-paths, I found the problem described above. I sent this fix before,
-but you may have missed it due to a mangled From-address in the last
-attempt.
-
-Greetings,
- 	Alexander
-
-   arch/x86/kernel/entry_32.S |   14 ++++++++------
-   1 files changed, 8 insertions(+), 6 deletions(-)
-
-diff --git a/arch/x86/kernel/entry_32.S b/arch/x86/kernel/entry_32.S
-index c929add..4a362f5 100644
---- a/arch/x86/kernel/entry_32.S
-+++ b/arch/x86/kernel/entry_32.S
-@@ -84,7 +84,7 @@
-   #define preempt_stop(clobbers)	DISABLE_INTERRUPTS(clobbers); TRACE_IRQS_OFF
-   #else
-   #define preempt_stop(clobbers)
--#define resume_kernel		restore_nocheck
-+#define resume_kernel		restore_all
-   #endif
-
-   .macro TRACE_IRQS_IRET
-@@ -372,7 +372,7 @@ END(ret_from_exception)
-   ENTRY(resume_kernel)
-   	DISABLE_INTERRUPTS(CLBR_ANY)
-   	cmpl $0,TI_preempt_count(%ebp)	# non-zero preempt_count ?
--	jnz restore_nocheck
-+	jnz restore_all
-   need_resched:
-   	movl TI_flags(%ebp), %ecx	# need_resched set ?
-   	testb $_TIF_NEED_RESCHED, %cl
-@@ -540,6 +540,8 @@ syscall_exit:
-   	jne syscall_exit_work
-
-   restore_all:
-+	TRACE_IRQS_IRET
-+restore_all_notrace:
-   	movl PT_EFLAGS(%esp), %eax	# mix EFLAGS, SS and CS
-   	# Warning: PT_OLDSS(%esp) contains the wrong/random values if we
-   	# are returning to the kernel.
-@@ -551,8 +553,6 @@ restore_all:
-   	CFI_REMEMBER_STATE
-   	je ldt_ss			# returning to user-space with LDT SS
-   restore_nocheck:
--	TRACE_IRQS_IRET
--restore_nocheck_notrace:
-   	RESTORE_REGS 4			# skip orig_eax/error_code
-   	CFI_ADJUST_CFA_OFFSET -4
-   irq_return:
-@@ -601,8 +601,10 @@ ldt_ss:
-   	CFI_ADJUST_CFA_OFFSET 4
-   	pushl %eax
-   	CFI_ADJUST_CFA_OFFSET 4
-+	/* Disable interrupts, but do not irqtrace this section: we
-+	 * will soon execute iret and the tracer was already set to
-+	 * the irqstate after the iret */
-   	DISABLE_INTERRUPTS(CLBR_EAX)
--	TRACE_IRQS_OFF
-   	lss (%esp), %esp
-   	CFI_ADJUST_CFA_OFFSET -8
-   	jmp restore_nocheck
-@@ -1329,7 +1331,7 @@ nmi_stack_correct:
-   	xorl %edx,%edx		# zero error code
-   	movl %esp,%eax		# pt_regs pointer
-   	call do_nmi
--	jmp restore_nocheck_notrace
-+	jmp restore_all_notrace
-   	CFI_ENDPROC
-
-   nmi_stack_fixup:
+diff --git a/Documentation/perf_counter/builtin-report.c b/Documentation/perf_counter/builtin-report.c
+index 6265bed..a9ff49a 100644
+--- a/Documentation/perf_counter/builtin-report.c
++++ b/Documentation/perf_counter/builtin-report.c
+@@ -190,7 +190,8 @@ static inline int elf_sym__is_function(const GElf_Sym *sym)
+ {
+ 	return elf_sym__type(sym) == STT_FUNC &&
+ 	       sym->st_name != 0 &&
+-	       sym->st_shndx != SHN_UNDEF;
++	       sym->st_shndx != SHN_UNDEF &&
++	       sym->st_size != 0;
+ }
+ 
+ static inline const char *elf_sym__name(const GElf_Sym *sym,
+@@ -222,11 +223,11 @@ static Elf_Scn *elf_section_by_name(Elf *elf, GElf_Ehdr *ep,
+ 	return sec;
+ }
+ 
+-static int dso__load(struct dso *self)
++static int dso__load_sym(struct dso *self, int fd, char *name)
+ {
+ 	Elf_Data *symstrs;
+ 	uint32_t nr_syms;
+-	int fd, err = -1;
++	int err = -1;
+ 	uint32_t index;
+ 	GElf_Ehdr ehdr;
+ 	GElf_Shdr shdr;
+@@ -234,16 +235,12 @@ static int dso__load(struct dso *self)
+ 	GElf_Sym sym;
+ 	Elf_Scn *sec;
+ 	Elf *elf;
+-
+-
+-	fd = open(self->name, O_RDONLY);
+-	if (fd == -1)
+-		return -1;
++	int nr = 0;
+ 
+ 	elf = elf_begin(fd, ELF_C_READ_MMAP, NULL);
+ 	if (elf == NULL) {
+ 		fprintf(stderr, "%s: cannot read %s ELF file.\n",
+-			__func__, self->name);
++			__func__, name);
+ 		goto out_close;
+ 	}
+ 
+@@ -292,16 +289,63 @@ static int dso__load(struct dso *self)
+ 			goto out_elf_end;
+ 
+ 		dso__insert_symbol(self, f);
++
++		nr++;
+ 	}
+ 
+-	err = 0;
++	err = nr;
+ out_elf_end:
+ 	elf_end(elf);
+ out_close:
+-	close(fd);
+ 	return err;
+ }
+ 
++static int dso__load(struct dso *self)
++{
++	int size = strlen(self->name) + sizeof("/usr/lib/debug%s.debug");
++	char *name = malloc(size);
++	int variant = 0;
++	int ret = -1;
++	int fd;
++
++	if (!name)
++		return -1;
++
++more:
++	do {
++		switch (variant) {
++		case 0: /* Fedora */
++			snprintf(name, size, "/usr/lib/debug%s.debug", self->name);
++			break;
++		case 1: /* Ubuntu */
++			snprintf(name, size, "/usr/lib/debug%s", self->name);
++			break;
++		case 2: /* Sane people */
++			snprintf(name, size, "%s", self->name);
++			break;
++
++		default:
++			goto out;
++		}
++		variant++;
++
++		fd = open(name, O_RDONLY);
++	} while (fd < 0);
++
++	ret = dso__load_sym(self, fd, name);
++	close(fd);
++
++	/*
++	 * Some people seem to have debuginfo files _WITHOUT_ debug info!?!?
++	 */
++	if (!ret)
++		goto more;
++
++out:
++	free(name);
++	return ret;
++}
++
+ static size_t dso__fprintf(struct dso *self, FILE *fp)
+ {
+ 	size_t ret = fprintf(fp, "dso: %s\n", self->name);
+@@ -336,11 +380,23 @@ static struct dso *dsos__find(const char *name)
+ static struct dso *dsos__findnew(const char *name)
+ {
+ 	struct dso *dso = dsos__find(name);
++	int nr;
+ 
+ 	if (dso == NULL) {
+ 		dso = dso__new(name);
+-		if (dso != NULL && dso__load(dso) < 0)
++		if (!dso)
++			goto out_delete_dso;
++
++		nr = dso__load(dso);
++		if (nr < 0) {
++			fprintf(stderr, "Failed to open: %s\n", name);
+ 			goto out_delete_dso;
++		}
++		if (!nr) {
++			fprintf(stderr,
++		"Failed to find debug symbols for: %s, maybe install a debug package?\n",
++					name);
++		}
+ 
+ 		dsos__add(dso);
+ 	}
+@@ -547,9 +603,9 @@ symhist__fprintf(struct symhist *self, uint64_t total_samples, FILE *fp)
+ 	size_t ret;
+ 
+ 	if (total_samples)
+-		ret = fprintf(fp, "%5.2f", (self->count * 100.0) / total_samples);
++		ret = fprintf(fp, "%5.2f%% ", (self->count * 100.0) / total_samples);
+ 	else
+-		ret = fprintf(fp, "%12d", self->count);
++		ret = fprintf(fp, "%12d ", self->count);
+ 
+ 	ret += fprintf(fp, "%14s [%c] ",
+ 		       thread__name(self->thread, bf, sizeof(bf)),
+@@ -922,10 +978,12 @@ more:
+ 	}
+ 	default: {
+ broken_event:
+-		fprintf(stderr, "%p [%p]: skipping unknown header type: %d\n",
+-			(void *)(offset + head),
+-			(void *)(long)(event->header.size),
+-			event->header.type);
++		if (dump_trace)
++			fprintf(stderr, "%p [%p]: skipping unknown header type: %d\n",
++					(void *)(offset + head),
++					(void *)(long)(event->header.size),
++					event->header.type);
++
+ 		total_unknown++;
+ 
+ 		/*
