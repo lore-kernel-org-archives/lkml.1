@@ -1,65 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760137AbZE0VVw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758369AbZE0VZy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760137AbZE0VVw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 17:21:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754944AbZE0VVo
+	id S1758369AbZE0VZy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 17:25:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752621AbZE0VZq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 17:21:44 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:49445 "EHLO mx2.redhat.com"
+	Wed, 27 May 2009 17:25:46 -0400
+Received: from hera.kernel.org ([140.211.167.34]:37805 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754158AbZE0VVo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 17:21:44 -0400
-From: Jarod Wilson <jarod@redhat.com>
-Organization: Red Hat, Inc.
-To: dri-devel@lists.sourceforge.net
-Subject: [PATCH] drm: intel: add ignore lvds quirk info for AOpen Mini PC
-Date: Wed, 27 May 2009 17:20:39 -0400
-User-Agent: KMail/1.11.3 (Linux/2.6.29.3-140.fc11.x86_64; KDE/4.2.3; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, xorg-devel@lists.x.org,
-       Eric Anholt <eric@anholt.net>, Florian Demmer <florian@demmer.org>
+	id S1752350AbZE0VZo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 17:25:44 -0400
+Date: Wed, 27 May 2009 21:25:08 GMT
+From: tip-bot for Ingo Molnar <mingo@elte.hu>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
+       hpa@zytor.com, mingo@redhat.com, jkacur@redhat.com,
+       a.p.zijlstra@chello.nl, efault@gmx.de, mtosatti@redhat.com,
+       tglx@linutronix.de, cjashfor@linux.vnet.ibm.com, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, jkacur@redhat.com, a.p.zijlstra@chello.nl,
+       efault@gmx.de, mtosatti@redhat.com, tglx@linutronix.de,
+       cjashfor@linux.vnet.ibm.com, mingo@elte.hu
+In-Reply-To: <new-submission>
+References: <new-submission>
+Subject: [tip:perfcounters/core] pref_counter: tools: report: Robustify in case of weird events
+Message-ID: <tip-55717314c4e3a5180a54228a2f97e50f3496de4c@git.kernel.org>
+Git-Commit-ID: 55717314c4e3a5180a54228a2f97e50f3496de4c
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-Message-Id: <200905271720.40776.jarod@redhat.com>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 27 May 2009 21:25:10 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix a FIXME in the intel LVDS bring-up code, adding the appropriate
-blacklist entry for the AOpen Mini PC, courtesy of a dmidecode
-dump from Florian Demmer.
+Commit-ID:  55717314c4e3a5180a54228a2f97e50f3496de4c
+Gitweb:     http://git.kernel.org/tip/55717314c4e3a5180a54228a2f97e50f3496de4c
+Author:     Ingo Molnar <mingo@elte.hu>
+AuthorDate: Wed, 27 May 2009 22:13:17 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 27 May 2009 22:19:58 +0200
 
-Signed-off-by: Jarod Wilson <jarod@redhat.com>
-CC: Florian Demmer <florian@demmer.org>
+pref_counter: tools: report: Robustify in case of weird events
+
+This error condition:
+
+  aldebaran:~/linux/linux/Documentation/perf_counter> perf report
+  dso__load_sym: cannot get elf header.
+  failed to open: /etc/ld.so.cache
+  problem processing PERF_EVENT_MMAP, bailing out
+
+caused the profile to be very short - as the error was at the beginning
+of the file and we bailed out completely.
+
+Be more permissive and consider the event broken instead.
+
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
+Cc: Marcelo Tosatti <mtosatti@redhat.com>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: John Kacur <jkacur@redhat.com>
+LKML-Reference: <new-submission>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
 
 ---
- drivers/gpu/drm/i915/intel_lvds.c |   10 ++++++++--
- 1 files changed, 8 insertions(+), 2 deletions(-)
+ Documentation/perf_counter/builtin-report.c |   17 ++++++++---------
+ 1 files changed, 8 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/gpu/drm/i915/intel_lvds.c b/drivers/gpu/drm/i915/intel_lvds.c
-index 439a865..7ac00c3 100644
---- a/drivers/gpu/drm/i915/intel_lvds.c
-+++ b/drivers/gpu/drm/i915/intel_lvds.c
-@@ -424,8 +424,14 @@ static const struct dmi_system_id __initdata intel_no_lvds[] = {
- 			DMI_MATCH(DMI_PRODUCT_NAME, "Studio Hybrid 140g"),
- 		},
- 	},
--
--	/* FIXME: add a check for the Aopen Mini PC */
-+	{
-+		.callback = intel_no_lvds_dmi_callback,
-+		.ident = "AOpen Mini PC",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "AOpen"),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "i965GMx-IF"),
-+		},
-+	},
+diff --git a/Documentation/perf_counter/builtin-report.c b/Documentation/perf_counter/builtin-report.c
+index 6df95c2..5993c12 100644
+--- a/Documentation/perf_counter/builtin-report.c
++++ b/Documentation/perf_counter/builtin-report.c
+@@ -1117,9 +1117,9 @@ more:
+ 		}
  
- 	{ }	/* terminating entry */
- };
-
--- 
-Jarod Wilson
-jarod@redhat.com
+ 		if (thread == NULL) {
+-			fprintf(stderr, "problem processing %d event, bailing out\n",
++			fprintf(stderr, "problem processing %d event, skipping it.\n",
+ 				event->header.type);
+-			goto done;
++			goto broken_event;
+ 		}
+ 
+ 		if (event->header.misc & PERF_EVENT_MISC_KERNEL) {
+@@ -1149,8 +1149,8 @@ more:
+ 
+ 			if (hist_entry__add(thread, map, dso, sym, ip, level)) {
+ 				fprintf(stderr,
+-		"problem incrementing symbol count, bailing out\n");
+-				goto done;
++		"problem incrementing symbol count, skipping event\n");
++				goto broken_event;
+ 			}
+ 		}
+ 		total++;
+@@ -1169,8 +1169,8 @@ more:
+ 				event->mmap.filename);
+ 		}
+ 		if (thread == NULL || map == NULL) {
+-			fprintf(stderr, "problem processing PERF_EVENT_MMAP, bailing out\n");
+-			goto done;
++			fprintf(stderr, "problem processing PERF_EVENT_MMAP, skipping event.\n");
++			goto broken_event;
+ 		}
+ 		thread__insert_map(thread, map);
+ 		total_mmap++;
+@@ -1187,8 +1187,8 @@ more:
+ 		}
+ 		if (thread == NULL ||
+ 		    thread__set_comm(thread, event->comm.comm)) {
+-			fprintf(stderr, "problem processing PERF_EVENT_COMM, bailing out\n");
+-			goto done;
++			fprintf(stderr, "problem processing PERF_EVENT_COMM, skipping event.\n");
++			goto broken_event;
+ 		}
+ 		total_comm++;
+ 		break;
+@@ -1221,7 +1221,6 @@ broken_event:
+ 		goto more;
+ 
+ 	rc = EXIT_SUCCESS;
+-done:
+ 	close(input);
+ 
+ 	if (dump_trace) {
