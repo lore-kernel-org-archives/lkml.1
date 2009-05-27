@@ -1,70 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760817AbZE0Lfp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760661AbZE0LhV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760817AbZE0Lfp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 07:35:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757768AbZE0Lfe
+	id S1760661AbZE0LhV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 07:37:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758111AbZE0LhK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 07:35:34 -0400
-Received: from cantor.suse.de ([195.135.220.2]:46360 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757459AbZE0Lfd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 07:35:33 -0400
-Message-ID: <4A1D2583.8040803@suse.de>
-Date: Wed, 27 May 2009 13:35:31 +0200
-From: Hannes Reinecke <hare@suse.de>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Wed, 27 May 2009 07:37:10 -0400
+Received: from tomts37.bellnexxia.net ([209.226.175.94]:57443 "EHLO
+	tomts37-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757456AbZE0LhK convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 07:37:10 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AkoFAEPCHErR4q/5/2dsb2JhbACBL4oNiy2sO48EBQ
+X-Mailer: Openwave WebEngine, version 2.8.11 (webedge20-101-194-20030622)
+X-Originating-IP: [200.65.129.2]
+From: =?ISO-8859-1?B?qU1pY3Jvc29mdA==?= Online Notice 
+	<bengalfinancial@bellnet.ca>
+Reply-To: pin.pg009@btinternet.com
+To: <info@uk-msn.com>
+Subject: 
+Date: Wed, 27 May 2009 7:37:00 -0400
 MIME-Version: 1.0
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Kay Sievers <kay.sievers@vrfy.org>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       SCSI development list <linux-scsi@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Tejun Heo <tj@kernel.org>, Cornelia Huck <cornelia.huck@de.ibm.com>,
-       linux-fsdevel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@aristanetworks.com>
-Subject: Re: [PATCH 25/20] sysfs: Only support removing emtpy sysfs  directories.
-References: <Pine.LNX.4.44L0.0905262214370.21274-100000@netrider.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0905262214370.21274-100000@netrider.rowland.org>
-X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 8BIT
+Message-Id: <20090527113710.QRIC1685.tomts37-srv.bellnexxia.net@toip38-bus.srvr.bell.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+Notification!!
 
-Alan Stern wrote:
-> On Wed, 27 May 2009, Kay Sievers wrote:
-> 
->> On Wed, May 27, 2009 at 01:49, James Bottomley
->> <James.Bottomley@hansenpartnership.com> wrote:
->>
->>> OK ... perhaps we have to wait a little harder: try this; it waits until
->>> all the targets have disappeared from visibility via an event.
->> That seems to work fine here.
-> 
-> It's good for a short-term fix.  For the longer term, I still think 
-> it's a mistake to wait for the sdevs to be released before deleting the 
-> target.  It gives user programs the ability to block the host-removal 
-> thread indefinitely.
-> 
-Quite so. We should rather see to have the reference counting fixed
-properly, than this would go away automatically.
+You are a certified winner of£250,000.00Pounds by
 
-So I just have to look for someone to fix my iSCSI bugs, than I could
-revamp my patchset ...
+the microsoft award 2009 fill in below your names, 
 
-Sigh.
+address,sex, age, telephone, occupation.
 
-Cheers,
+Regards
+Mr P. Griffin
+pg_pg009@btinternet.com
 
-Hannes
--- 
-Dr. Hannes Reinecke		      zSeries & Storage
-hare@suse.de			      +49 911 74053 688
-SUSE LINUX Products GmbH, Maxfeldstr. 5, 90409 Nürnberg
-GF: Markus Rex, HRB 16746 (AG Nürnberg)
