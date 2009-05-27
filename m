@@ -1,77 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755560AbZE0Bfu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756569AbZE0Bir@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755560AbZE0Bfu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 21:35:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754091AbZE0Bfn
+	id S1756569AbZE0Bir (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 21:38:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754320AbZE0Big
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 21:35:43 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:48828 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751044AbZE0Bfn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 21:35:43 -0400
-Date: Wed, 27 May 2009 10:34:04 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Paul Menage <menage@google.com>, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.linux-foundation.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: Re: [PATCH] cgroups: handle failure of cgroup_populate_dir() at 
- mount/remount
-Message-Id: <20090527103404.81d3c1a4.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <4A1C9253.3060108@cn.fujitsu.com>
-References: <4A16153C.2080004@cn.fujitsu.com>
-	<20090522172545.1e5e5f81.kamezawa.hiroyu@jp.fujitsu.com>
-	<6599ad830905261506x480f2167naf1034177bbc7036@mail.gmail.com>
-	<4A1C9253.3060108@cn.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Tue, 26 May 2009 21:38:36 -0400
+Received: from sh.osrg.net ([192.16.179.4]:49539 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752337AbZE0Bif (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 21:38:35 -0400
+Date: Wed, 27 May 2009 10:36:40 +0900
+To: bharrosh@panasas.com
+Cc: fujita.tomonori@lab.ntt.co.jp, James.Bottomley@HansenPartnership.com,
+       jens.axboe@oracle.com, rdreier@cisco.com, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, chris.mason@oracle.com,
+       david@fromorbit.com, hch@infradead.org, akpm@linux-foundation.org,
+       jack@suse.cz, yanmin_zhang@linux.intel.com, linux-scsi@vger.kernel.org
+Subject: Re: [PATCH 03/13] scsi: unify allocation of scsi command and sense
+ buffer
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <4A1C1331.8060304@panasas.com>
+References: <1243349222.2815.22.camel@localhost.localdomain>
+	<20090527003152X.fujita.tomonori@lab.ntt.co.jp>
+	<4A1C1331.8060304@panasas.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20090527103637W.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Wed, 27 May 2009 10:36:42 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 May 2009 09:07:31 +0800
-Li Zefan <lizf@cn.fujitsu.com> wrote:
+On Tue, 26 May 2009 19:05:05 +0300
+Boaz Harrosh <bharrosh@panasas.com> wrote:
 
-> Paul Menage wrote:
-> > On Fri, May 22, 2009 at 1:25 AM, KAMEZAWA Hiroyuki
-> > <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> >> Hm, shouldn't we allow "noprefix" to be effective only agaisnt cpuset ?
-> >> I think it's just for backward-compatibility of cpuset.
-> >> (I don't like the option at all.)
+> On 05/26/2009 06:31 PM, FUJITA Tomonori wrote:
 > > 
-> > Yes, exposing the "noprefix" option externally was one of the mistakes
-> > I made when developing cgroups.
-> > 
-> > It seems to me really unlikely that anyone is using "noprefix" for
+> > Can we just fix some drivers not to do the DMA with the sense buffer in
+> > scsi_cmnd? IIRC, there are only five or six drivers that do such.
 > 
-> And "noprefix" is not documented in cgroups.txt, so I guess not
-> many people know this option. Even libcgroup doesn't handle it.
+> This is not so.
+> All drivers that go through scsi_eh_prep_cmnd() will eventually DMA through
+> the regular read path. Including all the drivers that do nothing and let
+> scsi-ml do the REQUEST_SENSE
 > 
-> > anything other than implicitly when mounting the "cpuset" filesystem.
-> > So I'd be inclined to just forbid it if we're mounting more than just
-> > the cpuset subsystem. A bit of a nasty abstraction violation, but it
-> > makes more sense overall. The only problem is that someone *might* be
-> > using it - do we have any way to determine how, and how big do they
-> > have to be before we care?
-> > 
-> 
-> I think we can never know..
+> Actually I have exact numbers, from the last time I did all that
 
-How about this method ?
+Hmm, we discussed this before, I think.
 
- - add "noprefix" to "to-be-removed" list.
- - add "WARNING: noprefix option will be removed in 2.6.32 (or 2.6.31)" now
- - remove "noprefix" in 2.6.31-rc or later
+scsi-ml uses scsi_eh_prep_cmnd only via scsi_send_eh_cmnd(). There are
+some users of scsi_send_eh_cmnd in scsi-ml but only scsi_request_sense
+does the DMA in the sense_buffer of scsi_cmnd.
 
-Thanks,
--Kame
-
-
-
-
-
+Only scsi_error_handler() uses scsi_request_sense() and
+scsi_send_eh_cmnd() works synchronously. So scsi-ml can easily avoid
+the the DMA in the sense_buffer of scsi_cmnd if we have one sense
+buffer per scsi_host.
