@@ -1,48 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763108AbZE0Hno@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932151AbZE0HoV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763108AbZE0Hno (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 03:43:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762625AbZE0Hi0
+	id S932151AbZE0HoV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 03:44:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763994AbZE0HjR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 03:38:26 -0400
-Received: from mga09.intel.com ([134.134.136.24]:23880 "EHLO mga09.intel.com"
+	Wed, 27 May 2009 03:39:17 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:59778 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763894AbZE0HiZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 03:38:25 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,258,1241420400"; 
-   d="scan'208";a="415982566"
-Subject: Re: [PATCH 03/31] x86: MCE: Fix EIPV behaviour with !PCC
-From: Huang Ying <ying.huang@intel.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "hpa@zytor.com" <hpa@zytor.com>, "x86@kernel.org" <x86@kernel.org>,
-       Andi Kleen <ak@linux.intel.com>
-In-Reply-To: <20090527073809.GU846@one.firstfloor.org>
-References: <1243382073-29338-1-git-send-email-andi@firstfloor.org>
-	 <c63915cfa51e24394524ddaa66a6f2cb2fcfe66f.1243381848.git.ak@linux.intel.com>
-	 <c1d7bf910168f07efb50d98f901f41e289a87f1f.1243381848.git.ak@linux.intel.com>
-	 <6c6d1f8bbbd2312884dca5a5c75aa5f5a87dae4b.1243381848.git.ak@linux.intel.com>
-	 <4A1CC1E0.2030300@jp.fujitsu.com> <20090527073809.GU846@one.firstfloor.org>
-Content-Type: text/plain
-Date: Wed, 27 May 2009 15:38:25 +0800
-Message-Id: <1243409905.8361.29.camel@yhuang-dev.sh.intel.com>
+	id S1763958AbZE0HjP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 03:39:15 -0400
+Date: Wed, 27 May 2009 17:39:08 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: linux-next: failed to fetch osd tree
+Message-Id: <20090527173908.0271bc6b.sfr@canb.auug.org.au>
+In-Reply-To: <4A1CEB19.1010001@panasas.com>
+References: <20090527105815.95bb2a29.sfr@canb.auug.org.au>
+	<4A1CEB19.1010001@panasas.com>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__27_May_2009_17_39_08_+1000_cjrdx3z44Q8A5aO8"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-05-27 at 15:38 +0800, Andi Kleen wrote:
-> > We never reach there with tolerant == 0.
-> 
-> Fair point. Ying do you remember which test case that fixed?
+--Signature=_Wed__27_May_2009_17_39_08_+1000_cjrdx3z44Q8A5aO8
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I think I fixed a "bug" that does not exist. So I think maybe we should
-drop this patch. Sorry about that.
+Hi Boaz,
 
-Best Regards,
-Huang Ying
+On Wed, 27 May 2009 10:26:17 +0300 Boaz Harrosh <bharrosh@panasas.com> wrot=
+e:
+>
+> On 05/27/2009 03:58 AM, Stephen Rothwell wrote:
+> >=20
+> > I got this error trying to fetch the osd tree this morning:
+> >=20
+> > git.open-osd.org[0: 67.152.220.82]: errno=3DConnection timed out
+> > fatal: unable to connect a socket (Connection timed out)
+> >=20
+> > I will use the tree I fetched yesterday.
+>=20
+> Sorry about that. There was a power outage at the ISP
+> for a few hours. It should be good now.
 
+Its not a problem, I was just letting you know.  I will refetch it
+tomorrow.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__27_May_2009_17_39_08_+1000_cjrdx3z44Q8A5aO8
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkoc7hwACgkQjjKRsyhoI8xf1wCgs48ekJOdzyT7fB8EWcsyhiEA
+zy4AmwQ32D3WdKJQI62kgxRz9gkD9VYL
+=W5c6
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__27_May_2009_17_39_08_+1000_cjrdx3z44Q8A5aO8--
