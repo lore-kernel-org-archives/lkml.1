@@ -1,81 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932897AbZE0STa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933373AbZE0ST5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932897AbZE0STa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 14:19:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762045AbZE0STT
+	id S933373AbZE0ST5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 14:19:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932564AbZE0STr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 14:19:19 -0400
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:38677 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762931AbZE0STS convert rfc822-to-8bit (ORCPT
+	Wed, 27 May 2009 14:19:47 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:2932 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933138AbZE0STq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 14:19:18 -0400
-From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
-To: "Owens, James" <JOwens@hp.com>, Martin Knoblauch <knobi@knobisoft.de>
-CC: Matthew Wilcox <matthew@wil.cx>, Andrew Morton <akpm@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>,
-       "viro@ZenIV.linux.org.uk" <viro@ZenIV.linux.org.uk>,
-       "rjw@sisk.pl" <rjw@sisk.pl>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "tigran@aivazian.fsnet.co.uk" <tigran@aivazian.fsnet.co.uk>,
-       Kay Sievers <kay.sievers@vrfy.org>,
-       "shemminger@vyatta.com" <shemminger@vyatta.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Date: Wed, 27 May 2009 18:18:46 +0000
-Subject: RE: Analyzed/Solved/Bisected: Booting 2.6.30-rc2-git7 very slow
-Thread-Topic: Analyzed/Solved/Bisected: Booting 2.6.30-rc2-git7 very slow
-Thread-Index: Acne9gOwdwblwdNXRM2JEDvmtJUhCQAAHkXw
-Message-ID: <0F5B06BAB751E047AB5C87D1F77A7788694630B931@GVW0547EXC.americas.hpqcorp.net>
-References: <1240977096.5478.3.camel@marge.simson.net>
- <20090429011755.c141c599.akpm@linux-foundation.org>
- <20090429120827.GI8633@ZenIV.linux.org.uk>
- <1241014725.15095.19.camel@marge.simson.net>
- <20090505154911.e0309a4f.akpm@linux-foundation.org>
- <1241585140.5196.28.camel@marge.simson.net>
- <957194.27869.qm@web32605.mail.mud.yahoo.com>
- <1241599065.18090.18.camel@marge.simson.net>
- <461911.6351.qm@web32603.mail.mud.yahoo.com>
- <20090526233102.b86e7f84.akpm@linux-foundation.org>
- <20090527112153.GE5816@parisc-linux.org>
- <840102.98312.qm@web32603.mail.mud.yahoo.com> <4A1D8161.2020009@hp.com>
-In-Reply-To: <4A1D8161.2020009@hp.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	Wed, 27 May 2009 14:19:46 -0400
+Subject: [PATCH] MAINTAINERS: Add Paul McKenney to RCU and RCUTORTURE
+From: Joe Perches <joe@perches.com>
+To: paulmck@linux.vnet.ibm.com
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Josh Triplett <josh@freedesktop.org>,
+       Dipankar Sarma <dipankar@in.ibm.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20090526234241.GD7006@linux.vnet.ibm.com>
+References: <cover.1243131992.git.joe@perches.com>
+	 <9f55522f7ab56afcf16d936d06ab2f3a7e699ed5.1243131992.git.joe@perches.com>
+	 <20090526234241.GD7006@linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Wed, 27 May 2009 11:18:36 -0700
+Message-Id: <1243448316.27337.28.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > 
-> >  Finally, today I built the ccsii driver into the kernel. 
-> It was previously modularized and loaded from initrd. The 
-> second "sysfs" line went away. But does this make cciss 
-> guilty? It is now loaded about 2 seconds earlier in the boot 
-> sequence, which is a big change in timing I guess.
-> > 
-> >  Enlighten me :-)
+On Tue, 2009-05-26 at 16:42 -0700, Paul E. McKenney wrote:
+> Hmmm...  Given that you are removing LKML from RCU and rcutorture,
+> could you please add me?  If someone misses "THE REST", I very likely
+> won't see their bug/issue/question.
 > 
-> No idea what is going on, but since I saw your May 20 
-> message, I have been trying to wake up someone whose day job 
-> it should be to care about dl380s and smartarrays. :)
+> P:	Paul E. McKenney
+> M:	paulmck@linux.vnet.ibm.com
 
-What? I know Martin has pinged me in the past, but I do not think it was about this issue. If there's multiple sysfs entries for cciss I can't explain that offhand. We do little to nothing for sysfs in the driver.
-Had something similiar happen recently where "/" changed to "!". Had do to with our nested directory structure, /dev/cciss/name vs /dev/name. But we did not make that change, either.
+Signed-off-by: Joe Perches <joe@perches.com>
+---
+ MAINTAINERS |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
--- mikem
+diff --git a/MAINTAINERS b/MAINTAINERS
+index ab45488..0426b39 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -4630,6 +4630,8 @@ F:	drivers/net/wireless/ray*
+ RCUTORTURE MODULE
+ P:	Josh Triplett
+ M:	josh@freedesktop.org
++P:	Paul E. McKenney
++M:	paulmck@linux.vnet.ibm.com
+ S:	Maintained
+ F:	Documentation/RCU/torture.txt
+ F:	kernel/rcutorture.c
+@@ -4656,6 +4658,8 @@ F:	net/rds/
+ READ-COPY UPDATE (RCU)
+ P:	Dipankar Sarma
+ M:	dipankar@in.ibm.com
++P:	Paul E. McKenney
++M:	paulmck@linux.vnet.ibm.com
+ W:	http://www.rdrop.com/users/paulmck/rclock/
+ S:	Supported
+ F:	Documentation/RCU/rcu.txt
 
-> 
-> If they don't react soon, I'll make this my own day job to 
-> try to reproduce it.  We will need hardware config details 
-> and firmware revs to start.
-> 
-> So I would not close the bug just yet.
-> 
-> jim
-> 
-> 
+
