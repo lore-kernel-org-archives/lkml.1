@@ -1,115 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758300AbZE0HQg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758318AbZE0HRE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758300AbZE0HQg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 03:16:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758254AbZE0HQU
+	id S1758318AbZE0HRE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 03:17:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758927AbZE0HQ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 03:16:20 -0400
-Received: from claw.goop.org ([74.207.240.146]:41355 "EHLO claw.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758134AbZE0HQT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 03:16:19 -0400
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>, Greg KH <gregkh@suse.de>,
-       Jens Axboe <jens.axboe@oracle.com>, Chris Wright <chrisw@redhat.com>,
-       kurt.hackel@oracle.com, Andrew Morton <akpm@linux-foundation.org>,
-       Ky Srinivasan <ksrinivasan@novell.com>, Beulich <jbeulich@novell.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [GIT PULL REPOST] xen/dom0/core - core Xen dom0 support changes
-Date: Wed, 27 May 2009 00:15:22 -0700
-Message-Id: <1243408538-21100-1-git-send-email-jeremy@goop.org>
-X-Mailer: git-send-email 1.6.0.6
+	Wed, 27 May 2009 03:16:28 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:46510 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758860AbZE0HQ2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 03:16:28 -0400
+Date: Wed, 27 May 2009 09:23:02 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       hpa@zytor.com, x86@kernel.org, Huang Ying <ying.huang@intel.com>,
+       Andi Kleen <ak@linux.intel.com>
+Subject: Re: [PATCH 02/31] x86: MCE: Improve mce_get_rip v3
+Message-ID: <20090527072302.GR846@one.firstfloor.org>
+References: <1243382073-29338-1-git-send-email-andi@firstfloor.org> <c63915cfa51e24394524ddaa66a6f2cb2fcfe66f.1243381848.git.ak@linux.intel.com> <c1d7bf910168f07efb50d98f901f41e289a87f1f.1243381848.git.ak@linux.intel.com> <4A1CC19C.3010409@jp.fujitsu.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A1CC19C.3010409@jp.fujitsu.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
+On Wed, May 27, 2009 at 01:29:16PM +0900, Hidetoshi Seto wrote:
+> Andi Kleen wrote:
+> > From: Huang Ying <ying.huang@intel.com>
+> > 
+> > Assume RIP is valid when either EIPV or RIPV are set.
+> 
+> Bad description.
+> If RIP means "restart IP" that is valid only if RIPV is set,
+> this sentence doesn't make sense completely.
 
-This is the 3rd? 4th? repost of the core Xen dom0 changes.  This is
-unchanged from the last posting, and it has no outstanding issues.
+No it doesn't mean restart IP, it just means normal instruction
+pointer like everywhere else.
 
-The branch makes the bare changes to allow a Linux kernel to boot as dom0
-Xen kernel.  It is sufficient to get the kernel started and to print on
-the console.
+> 
+> > This influences
+> > whether the machine check exception handler decides to return or panic.
+> 
+> I suppose you are pointing logics in:
 
-Please pull it into tip.git as x86/xen/dom0/core.
+Yes.
 
-Thanks,
-	J
+> 
+>                 mce_get_rip(&m, regs);
+>  :
+>                         panicm = m;
+>  :
+>                 /*
+>                  * If the EIPV bit is set, it means the saved IP is the
+>                  * instruction which caused the MCE.
+>                  */
+>                 if (m.mcgstatus & MCG_STATUS_EIPV)
+>                         user_space = panicm.ip && (panicm.cs & 3);
+> 
+>                 /*
+>                  * If we know that the error was in user space, send a
+>                  * SIGBUS.  Otherwise, panic if tolerance is low.
+>                  *
+>                  * force_sig() takes an awful lot of locks and has a slight
+>                  * risk of deadlocking.
+>                  */
+>                 if (user_space) {
+>                         force_sig(SIGBUS, current);
+>                 } else if (panic_on_oops || tolerant < 2) {
+>                         mce_panic("Uncorrected machine check",
+>                                 &panicm, mcestart);
+>                 }
+> 
+> So EIPV without RIPV will be no ip and will result in panic,
+> while expected result is SIGBUS. 
 
-The following changes since commit a789ed5fb6d0256c4177c2cc27e06520ddbe4d4c:
-  Jeremy Fitzhardinge (1):
-        xen: cache cr0 value to avoid trap'n'emulate for read_cr0
+First this is only for the !MCA recovery case. In the MCA recovery
+case we have more information and can decide better.
 
-are available in the git repository at:
+In this case no EIPV means that the kernel isn't sure where the 
+error occurred so it cannot safely decide if it was user space 
+or kernel space and in the tolerant == 2 case has to panic
+just in case a kernel kill would cause deadlock.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/jeremy/xen.git for-ingo/xen/dom0/core
+With MCA recovery this whole this is replaced by a new improved
+mechanism using the high level handler.
 
-Christophe Saout (1):
-      paravirtualize IO permission bitmap
+> > 
+> > Also in addition do not force the RIP to be valid with the exact
+> > register MSRs.
+> 
+> I think the forced one is EIP:
+> > -		m->mcgstatus |= MCG_STATUS_EIPV;
 
-Ian Campbell (4):
-      xen: disable PAT
-      xen/dom0: Use host E820 map
-      xen: implement XENMEM_machphys_mapping
-      xen: clear reserved bits in l3 entries given in the initial pagetables
+True. Changed.
 
-Jeremy Fitzhardinge (7):
-      xen dom0: Make hvc_xen console work for dom0.
-      xen/dom0: use _PAGE_IOMAP in ioremap to do machine mappings
-      xen: allow enable use of VGA console on dom0
-      xen/dom0: add XEN_DOM0 config option
-      x86: make /dev/mem mappings _PAGE_IOMAP
-      x86: don't need "changed" parameter for set_io_bitmap()
-      xen/i386: make sure initial VGA/ISA mappings are not overridden
+> 
+> And please note that it keep use CS on stack even if MSR is available.
+> 
+> I made an alternative patch for this, with no functional change.
+> Please consider replacing.
 
-Juan Quintela (2):
-      xen dom0: Initialize xenbus for dom0.
-      xen dom0: Set up basic IO permissions for dom0.
+No, sorry I got burned too much last time you touched the description
+of this simple patch. I think my description is simple and to the point
+and this patch doesn't really deserve anything more.
 
-Stephen Tweedie (2):
-      xen dom0: Add support for the platform_ops hypercall
-      xen mtrr: Add mtrr_ops support for Xen mtrr
-
- arch/x86/include/asm/paravirt.h         |    9 ++
- arch/x86/include/asm/pat.h              |    5 +
- arch/x86/include/asm/processor.h        |    4 +
- arch/x86/include/asm/xen/hypercall.h    |    8 +
- arch/x86/include/asm/xen/interface.h    |    6 +-
- arch/x86/include/asm/xen/interface_32.h |    5 +
- arch/x86/include/asm/xen/interface_64.h |   13 +--
- arch/x86/include/asm/xen/page.h         |   15 +--
- arch/x86/kernel/cpu/mtrr/Makefile       |    1 +
- arch/x86/kernel/cpu/mtrr/amd.c          |    1 +
- arch/x86/kernel/cpu/mtrr/centaur.c      |    1 +
- arch/x86/kernel/cpu/mtrr/cyrix.c        |    1 +
- arch/x86/kernel/cpu/mtrr/generic.c      |    1 +
- arch/x86/kernel/cpu/mtrr/main.c         |   11 +-
- arch/x86/kernel/cpu/mtrr/mtrr.h         |    5 +
- arch/x86/kernel/cpu/mtrr/xen.c          |   56 ++++++++
- arch/x86/kernel/ioport.c                |   29 +++-
- arch/x86/kernel/paravirt.c              |    1 +
- arch/x86/kernel/process.c               |   27 +---
- arch/x86/mm/pat.c                       |    9 +-
- arch/x86/xen/Kconfig                    |   26 ++++
- arch/x86/xen/Makefile                   |    3 +-
- arch/x86/xen/enlighten.c                |   51 +++++++-
- arch/x86/xen/mmu.c                      |  134 ++++++++++++++++++-
- arch/x86/xen/setup.c                    |   51 +++++++-
- arch/x86/xen/vga.c                      |   67 +++++++++
- arch/x86/xen/xen-ops.h                  |   12 ++
- drivers/char/hvc_xen.c                  |   99 +++++++++-----
- drivers/xen/events.c                    |    2 +-
- drivers/xen/xenbus/xenbus_probe.c       |   30 ++++-
- include/xen/events.h                    |    2 +
- include/xen/interface/memory.h          |   42 ++++++
- include/xen/interface/platform.h        |  222 +++++++++++++++++++++++++++++++
- include/xen/interface/xen.h             |   41 ++++++
- 34 files changed, 882 insertions(+), 108 deletions(-)
- create mode 100644 arch/x86/kernel/cpu/mtrr/xen.c
- create mode 100644 arch/x86/xen/vga.c
- create mode 100644 include/xen/interface/platform.h
-
+-Andi
+-- 
+ak@linux.intel.com -- Speaking for myself only.
