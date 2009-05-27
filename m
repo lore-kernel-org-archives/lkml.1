@@ -1,111 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756797AbZE0Cwg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759177AbZE0C4a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756797AbZE0Cwg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 22:52:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755364AbZE0Cw1
+	id S1759177AbZE0C4a (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 22:56:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755379AbZE0C4X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 22:52:27 -0400
-Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:59296 "EHLO
-	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754515AbZE0Cw0 (ORCPT
+	Tue, 26 May 2009 22:56:23 -0400
+Received: from relais.videotron.ca ([24.201.245.36]:55340 "EHLO
+	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754846AbZE0C4W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 22:52:26 -0400
-Message-Id: <6.0.0.20.2.20090527114200.076aab00@172.19.0.2>
-X-Mailer: QUALCOMM Windows Eudora Version 6J-Jr3
-Date: Wed, 27 May 2009 11:47:47 +0900
-To: Wu Fengguang <fengguang.wu@intel.com>
-From: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
-Subject: Re: [PATCH] readahead:add blk_run_backing_dev
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>
-In-Reply-To: <20090527023638.GA27079@localhost>
-References: <20090518175259.GL4140@kernel.dk>
- <20090520025123.GB8186@localhost>
- <6.0.0.20.2.20090521145005.06f81fe0@172.19.0.2>
- <20090522010538.GB6010@localhost>
- <6.0.0.20.2.20090522102551.0705aea0@172.19.0.2>
- <20090522023323.GA10864@localhost>
- <20090526164252.0741b392.akpm@linux-foundation.org>
- <6.0.0.20.2.20090527092105.076be238@172.19.0.2>
- <20090527020909.GB17658@localhost>
- <6.0.0.20.2.20090527110937.0770c420@172.19.0.2>
- <20090527023638.GA27079@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+	Tue, 26 May 2009 22:56:22 -0400
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: text/plain; charset=UTF-8; format=flowed
+Message-id: <4A1CABD8.9010802@gmail.com>
+Date: Tue, 26 May 2009 22:56:24 -0400
+From: Marc Dionne <marc.c.dionne@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre)
+ Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+To: linux-kernel@vger.kernel.org
+Cc: yu.zhao@intel.com
+Subject: JMicron SATA controller not available - bisected
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+With current git the SATA DVD writer on my system is no longer detected, 
+and these errors show up:
 
-At 11:36 09/05/27, Wu Fengguang wrote:
->On Wed, May 27, 2009 at 10:21:53AM +0800, Hisashi Hifumi wrote:
->>
->> At 11:09 09/05/27, Wu Fengguang wrote:
->> >On Wed, May 27, 2009 at 08:25:04AM +0800, Hisashi Hifumi wrote:
->> >>
->> >> At 08:42 09/05/27, Andrew Morton wrote:
->> >> >On Fri, 22 May 2009 10:33:23 +0800
->> >> >Wu Fengguang <fengguang.wu@intel.com> wrote:
->> >> >
->> >> >> > I tested above patch, and I got same performance number.
->> >> >> > I wonder why if (PageUptodate(page)) check is there...
->> >> >>
->> >> >> Thanks!  This is an interesting micro timing behavior that
->> >> >> demands some research work.  The above check is to confirm if it's
->> >> >> the PageUptodate() case that makes the difference. So why that case
->> >> >> happens so frequently so as to impact the performance? Will it also
->> >> >> happen in NFS?
->> >> >>
->> >> >> The problem is readahead IO pipeline is not running smoothly, which is
->> >> >> undesirable and not well understood for now.
->> >> >
->> >> >The patch causes a remarkably large performance increase.  A 9%
->> >> >reduction in time for a linear read? I'd be surprised if the workload
->> >>
->> >> Hi Andrew.
->> >> Yes, I tested this with dd.
->> >>
->> >> >even consumed 9% of a CPU, so where on earth has the kernel gone to?
->> >> >
->> >> >Have you been able to reproduce this in your testing?
->> >>
->> >> Yes, this test on my environment is reproducible.
->> >
->> >Hisashi, does your environment have some special configurations?
->>
->> Hi.
->> My testing environment is as follows:
->> Hardware: HP DL580
->> CPU:Xeon 3.2GHz *4 HT enabled
->> Memory:8GB
->> Storage: Dothill SANNet2 FC (7Disks RAID-0 Array)
->
->This is a big hardware RAID. What's the readahead size?
->
->The numbers look too small for a 7 disk RAID:
->
->        > #dd if=testdir/testfile of=/dev/null bs=16384
->        >
->        > -2.6.30-rc6
->        > 1048576+0 records in
->        > 1048576+0 records out
->        > 17179869184 bytes (17 GB) copied, 224.182 seconds, 76.6 MB/s
->        >
->        > -2.6.30-rc6-patched
->        > 1048576+0 records in
->        > 1048576+0 records out
->        > 17179869184 bytes (17 GB) copied, 206.465 seconds, 83.2 MB/s
->
->I'd suggest you to configure the array properly before coming back to
->measuring the impact of this patch.
+pci 0000:05:00.0: BAR 2: can't allocate resource
+pci 0000:05:00.0: BAR 3: can't allocate resource
+ahci 0000:05:00.0: device not available because of BAR 2 [0x00-0x07] 
+collisions
 
+.. where 05:00.0 is this SATA controller where the DVD is plugged in:
 
-I created 16GB file to this disk array, and mounted to testdir, dd to this directory.
+05:00.0 SATA controller: JMicron Technologies, Inc. 20360/20363 Serial 
+ATA Controller (rev 03)
 
-Thanks.
+This is an ICH10-based board that has the JMicron controller in addition 
+to the onboard SATA.  The drive works fine if plugged into one of the 
+onboard ports, and also works fine with kernel 2.6.29 on the JMicron 
+controller.
+
+I bisected the problem down to this commit:
+480b93b7837fb3cf0579a42f4953ac463a5b9e1e: PCI: centralize device setup code
+
+Note that this worked with recent 2.6.30-rc kernels until I had to reset 
+the board's CMOS, so a change in a BIOS setting was probably a trigger.
+
+Marc
 
