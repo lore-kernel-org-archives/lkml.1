@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762582AbZE0H1o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762499AbZE0H13@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762582AbZE0H1o (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 03:27:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762122AbZE0HZ3
+	id S1762499AbZE0H13 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 03:27:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761194AbZE0HZZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 03:25:29 -0400
-Received: from claw.goop.org ([74.207.240.146]:33623 "EHLO claw.goop.org"
+	Wed, 27 May 2009 03:25:25 -0400
+Received: from claw.goop.org ([74.207.240.146]:33612 "EHLO claw.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757950AbZE0HZ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 03:25:27 -0400
+	id S1762125AbZE0HZX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 03:25:23 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: the arch/x86 maintainers <x86@kernel.org>,
@@ -22,9 +22,9 @@ Cc: the arch/x86 maintainers <x86@kernel.org>,
        Jesse Barnes <jbarnes@virtuousgeek.org>,
        Alex Nixon <alex.nixon@citrix.com>,
        Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 06/10] x86/PCI: Enable scanning of all pci functions
-Date: Wed, 27 May 2009 00:24:38 -0700
-Message-Id: <1243409082-21349-7-git-send-email-jeremy@goop.org>
+Subject: [PATCH 05/10] x86/PCI: Clean up pci_cache_line_size
+Date: Wed, 27 May 2009 00:24:37 -0700
+Message-Id: <1243409082-21349-6-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
 In-Reply-To: <1243409082-21349-1-git-send-email-jeremy@goop.org>
 References: <1243409082-21349-1-git-send-email-jeremy@goop.org>
@@ -34,85 +34,75 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Alex Nixon <alex.nixon@citrix.com>
 
-Xen may want to enable scanning of all pci functions - if for example
-the device at function 0 is not passed through to the guest, but the
-device at function 1 is.
+Separate out x86 cache_line_size initialisation code into its own
+function (so it can be shared by Xen later in this patch series)
 
-Jesse objected to the "#undef pcibios_scan_all_fns"'s ugliness,
-so replace it with the more common HAVE_ARCH_ idiom.
-
-[ Impact: allow passthrough of just some PCI functions. ]
+[ Impact: cleanup ]
 
 Signed-off-by: Alex Nixon <alex.nixon@citrix.com>
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 Reviewed-by: "H. Peter Anvin" <hpa@zytor.com>
 Reviewed-by: Matthew Wilcox <willy@linux.intel.com>
-Acked-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+Reviewed-by: Jesse Barnes <jbarnes@virtuousgeek.org>
 ---
- arch/x86/include/asm/pci.h |    8 +++++++-
- arch/x86/pci/common.c      |    1 +
- include/asm-generic/pci.h  |    2 ++
- 3 files changed, 10 insertions(+), 1 deletions(-)
+ arch/x86/include/asm/pci_x86.h |    1 +
+ arch/x86/pci/common.c          |   17 +++++++++++------
+ 2 files changed, 12 insertions(+), 6 deletions(-)
 
-diff --git a/arch/x86/include/asm/pci.h b/arch/x86/include/asm/pci.h
-index b51a1e8..cabea93 100644
---- a/arch/x86/include/asm/pci.h
-+++ b/arch/x86/include/asm/pci.h
-@@ -21,6 +21,7 @@ struct pci_sysdata {
- extern int pci_routeirq;
- extern int noioapicquirk;
- extern int noioapicreroute;
-+extern int pci_scan_all_fns;
+diff --git a/arch/x86/include/asm/pci_x86.h b/arch/x86/include/asm/pci_x86.h
+index e60fd3e..5401ca2 100644
+--- a/arch/x86/include/asm/pci_x86.h
++++ b/arch/x86/include/asm/pci_x86.h
+@@ -45,6 +45,7 @@ enum pci_bf_sort_state {
+ extern unsigned int pcibios_max_latency;
  
- /* scan a bus after allocating a pci_sysdata for it */
- extern struct pci_bus *pci_scan_bus_on_node(int busno, struct pci_ops *ops,
-@@ -48,7 +49,11 @@ extern unsigned int pcibios_assign_all_busses(void);
- #else
- #define pcibios_assign_all_busses()	0
- #endif
--#define pcibios_scan_all_fns(a, b)	0
-+
-+static inline int pcibios_scan_all_fns(struct pci_bus *bus, int devfn)
-+{
-+	return pci_scan_all_fns;
-+}
+ void pcibios_resource_survey(void);
++void pcibios_set_cache_line_size(void);
  
- extern unsigned long pci_mem_start;
- #define PCIBIOS_MIN_IO		0x1000
-@@ -129,6 +134,7 @@ extern void pci_iommu_alloc(void);
- #include <asm-generic/pci-dma-compat.h>
+ /* pci-pc.c */
  
- /* generic pci stuff */
-+#define HAVE_ARCH_PCIBIOS_SCAN_ALL_FNS
- #include <asm-generic/pci.h>
- 
- #ifdef CONFIG_NUMA
 diff --git a/arch/x86/pci/common.c b/arch/x86/pci/common.c
-index 011ff45..6a522c2 100644
+index 2202b62..011ff45 100644
 --- a/arch/x86/pci/common.c
 +++ b/arch/x86/pci/common.c
-@@ -22,6 +22,7 @@ unsigned int pci_probe = PCI_PROBE_BIOS | PCI_PROBE_CONF1 | PCI_PROBE_CONF2 |
- unsigned int pci_early_dump_regs;
- static int pci_bf_sort;
- int pci_routeirq;
-+int pci_scan_all_fns;
- int noioapicquirk;
- #ifdef CONFIG_X86_REROUTE_FOR_BROKEN_BOOT_IRQS
- int noioapicreroute = 0;
-diff --git a/include/asm-generic/pci.h b/include/asm-generic/pci.h
-index c36a77d..9ad9cb7 100644
---- a/include/asm-generic/pci.h
-+++ b/include/asm-generic/pci.h
-@@ -43,7 +43,9 @@ pcibios_select_root(struct pci_dev *pdev, struct resource *res)
- 	return root;
- }
+@@ -412,26 +412,31 @@ struct pci_bus * __devinit pcibios_scan_root(int busnum)
  
-+#ifndef HAVE_ARCH_PCIBIOS_SCAN_ALL_FNS
- #define pcibios_scan_all_fns(a, b)	0
-+#endif
+ extern u8 pci_cache_line_size;
  
- #ifndef HAVE_ARCH_PCI_GET_LEGACY_IDE_IRQ
- static inline int pci_get_legacy_ide_irq(struct pci_dev *dev, int channel)
+-int __init pcibios_init(void)
++void __init pcibios_set_cache_line_size(void)
+ {
+ 	struct cpuinfo_x86 *c = &boot_cpu_data;
+ 
+-	if (!raw_pci_ops) {
+-		printk(KERN_WARNING "PCI: System does not support PCI\n");
+-		return 0;
+-	}
+-
+ 	/*
+ 	 * Assume PCI cacheline size of 32 bytes for all x86s except K7/K8
+ 	 * and P4. It's also good for 386/486s (which actually have 16)
+ 	 * as quite a few PCI devices do not support smaller values.
+ 	 */
++
+ 	pci_cache_line_size = 32 >> 2;
+ 	if (c->x86 >= 6 && c->x86_vendor == X86_VENDOR_AMD)
+ 		pci_cache_line_size = 64 >> 2;	/* K7 & K8 */
+ 	else if (c->x86 > 6 && c->x86_vendor == X86_VENDOR_INTEL)
+ 		pci_cache_line_size = 128 >> 2;	/* P4 */
++}
++
++int __init pcibios_init(void)
++{
++	if (!raw_pci_ops) {
++		printk(KERN_WARNING "PCI: System does not support PCI\n");
++		return 0;
++	}
+ 
++	pcibios_set_cache_line_size();
+ 	pcibios_resource_survey();
+ 
+ 	if (pci_bf_sort >= pci_force_bf)
 -- 
 1.6.0.6
 
