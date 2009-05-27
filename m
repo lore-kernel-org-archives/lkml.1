@@ -1,92 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763476AbZE0MzN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762786AbZE0NBI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763476AbZE0MzN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 08:55:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762367AbZE0MzA
+	id S1762786AbZE0NBI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 09:01:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758137AbZE0NA4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 08:55:00 -0400
-Received: from hera.kernel.org ([140.211.167.34]:51214 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759354AbZE0My5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 08:54:57 -0400
-Date: Wed, 27 May 2009 12:54:31 GMT
-From: tip-bot for Eero Nurkkala <ext-eero.nurkkala@nokia.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       venkatesh.pallipadi@intel.com, riel@redhat.com, tero.kristo@nokia.com,
-       ext-eero.nurkkala@nokia.com, tglx@linutronix.de
-Reply-To: riel@redhat.com, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, tero.kristo@nokia.com,
-       ext-eero.nurkkala@nokia.com, venkatesh.pallipadi@intel.com,
-       tglx@linutronix.de
-In-Reply-To: <12432346571351-git-send-email-ext-eero.nurkkala@nokia.com>
-References: <12432346571351-git-send-email-ext-eero.nurkkala@nokia.com>
-Subject: [tip:timers/urgent] NOHZ: Properly feed cpufreq ondemand governor
-Message-ID: <tip-cf1240033cc81216a18eec0ca71466f7fe4eeda8@git.kernel.org>
-Git-Commit-ID: cf1240033cc81216a18eec0ca71466f7fe4eeda8
-X-Mailer: tip-git-log-daemon
+	Wed, 27 May 2009 09:00:56 -0400
+Received: from mx-out.daemonmail.net ([216.104.160.38]:33066 "EHLO
+	mx-out.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758100AbZE0NA4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 09:00:56 -0400
+From: "Michael S. Zick" <lkml@morethan.org>
+Reply-To: lkml@morethan.org
+To: Harald Welte <HaraldWelte@viatech.com>
+Subject: Re: [VIA Support] was: [BUG FIX] Make x86_32 uni-processor Atomic ops, Atomic
+Date: Wed, 27 May 2009 08:00:53 -0500
+User-Agent: KMail/1.9.9
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+References: <200905221139.26941.lkml@morethan.org> <200905270718.11093.lkml@morethan.org> <20090527124736.GU4024@prithivi.gnumonks.org>
+In-Reply-To: <20090527124736.GU4024@prithivi.gnumonks.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 27 May 2009 12:54:32 +0000 (UTC)
+Message-Id: <200905270800.55509.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  cf1240033cc81216a18eec0ca71466f7fe4eeda8
-Gitweb:     http://git.kernel.org/tip/cf1240033cc81216a18eec0ca71466f7fe4eeda8
-Author:     Eero Nurkkala <ext-eero.nurkkala@nokia.com>
-AuthorDate: Mon, 25 May 2009 09:57:37 +0300
-Committer:  Thomas Gleixner <tglx@linutronix.de>
-CommitDate: Wed, 27 May 2009 14:51:47 +0200
+On Wed May 27 2009, Harald Welte wrote:
+> On Wed, May 27, 2009 at 07:18:08AM -0500, Michael S. Zick wrote:
+> > On Sun May 24 2009, Harald Welte wrote:
+> > > 
+> > > Once I understand it in full detail, I can talk to the right people inside
+> > > CentaurLabs (VIA's CPU division).  
+> > > 
+> > > If somebody (optionally) can phrase a precise technical question that I can
+> > > directly forward to somebody with low-level x86 knowledge but no Linux background,
+> > > it would definitely help speeding up the process.
+> > > 
+> > 
+> > What is the PCI Cache Line size in the CX700?  In the CN896?
+> 
+> The chipset documentation doesn't say anything about that, I'd have to inquire
+> inside VIA.  I doubt any difference between CX700/CN896.
+> 
+> Also, setting the PCI config space register to a too small cache line size
+> (such as 32) on a system that supports more (say 64) doesn't really cause any
+> problems, but just reduces performance - as far as I know.
+> 
+> Setting it too big will cause trouble.  But since 32 is the default and
+> only on AMD and Intel CPU's it is increased, I see no issue here either.
+> 
 
-NOHZ: Properly feed cpufreq ondemand governor
+Since the system chip sets where designed for use with the processor -
+I am going to poke it up to the processor cache line size - just for fun.
 
-A call from irq_exit() may occasionally pause the timing
-info for cpufreq ondemand governor. This results in the
-cpufreq ondemand governor to fail to calculate the
-system load properly. Thus, relocate the checks for this
-particular case to keep the governor always functional.
+If our assumptions are correct (I do agree with your statements myself) -
+then all that will happen is we halve the number of cache line flushes. ;)
+If not, perhaps we get another test case data point to consider.
 
-Signed-off-by: Eero Nurkkala <ext-eero.nurkkala@nokia.com>
-Reported-by: Tero Kristo <tero.kristo@nokia.com>
-Acked-by: Rik van Riel <riel@redhat.com>
-Acked-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-LKML-Reference: <12432346571351-git-send-email-ext-eero.nurkkala@nokia.com>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Thanks for the quick reply;
+Mike
 
-
----
- kernel/time/tick-sched.c |   12 +++++++++---
- 1 files changed, 9 insertions(+), 3 deletions(-)
-
-diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
-index d3f1ef4..233b4e7 100644
---- a/kernel/time/tick-sched.c
-+++ b/kernel/time/tick-sched.c
-@@ -222,6 +222,15 @@ void tick_nohz_stop_sched_tick(int inidle)
- 
- 	cpu = smp_processor_id();
- 	ts = &per_cpu(tick_cpu_sched, cpu);
-+
-+	/*
-+	 * Call to tick_nohz_start_idle stops the last_update_time from being
-+	 * updated. Thus, it must not be called in the event we are called from
-+	 * irq_exit() with the prior state different than idle.
-+	 */
-+	if (!inidle && !ts->inidle)
-+		return;
-+
- 	now = tick_nohz_start_idle(ts);
- 
- 	/*
-@@ -239,9 +248,6 @@ void tick_nohz_stop_sched_tick(int inidle)
- 	if (unlikely(ts->nohz_mode == NOHZ_MODE_INACTIVE))
- 		goto end;
- 
--	if (!inidle && !ts->inidle)
--		goto end;
--
- 	ts->inidle = 1;
- 
- 	if (need_resched())
