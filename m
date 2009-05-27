@@ -1,114 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932884AbZE0Ryz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932843AbZE0Ryh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932884AbZE0Ryz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 13:54:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764082AbZE0RuV
+	id S932843AbZE0Ryh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 13:54:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932374AbZE0RsL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 13:50:21 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:57185 "EHLO kernel.dk"
+	Wed, 27 May 2009 13:48:11 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:42292 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764013AbZE0RuT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 13:50:19 -0400
-Date: Wed, 27 May 2009 19:50:19 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Jan Kara <jack@suse.cz>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
-       akpm@linux-foundation.org, yanmin_zhang@linux.intel.com,
-       richard@rsk.demon.co.uk, damien.wyart@free.fr
-Subject: Re: [PATCH 04/11] writeback: switch to per-bdi threads for
-	flushing data
-Message-ID: <20090527175019.GN11363@kernel.dk>
-References: <1243417312-7444-1-git-send-email-jens.axboe@oracle.com> <1243417312-7444-5-git-send-email-jens.axboe@oracle.com> <20090527151452.GI16006@duck.suse.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090527151452.GI16006@duck.suse.cz>
+	id S932309AbZE0RsJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 13:48:09 -0400
+Subject: Re: [KVM PATCH v4 3/3] kvm: add iosignalfd support
+From: Mark McLoughlin <markmc@redhat.com>
+Reply-To: Mark McLoughlin <markmc@redhat.com>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: Avi Kivity <avi@redhat.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Davide Libenzi <davidel@xmailserver.org>,
+       mtosatti@redhat.com
+In-Reply-To: <4A1D7AFD.40004@novell.com>
+References: <20090526191010.20860.75372.stgit@dev.haskins.net>
+	 <20090526191539.20860.1385.stgit@dev.haskins.net>
+	 <4A1D01F8.8080508@redhat.com> <4A1D285C.9050008@novell.com>
+	 <4A1D2DD8.2050709@redhat.com> <1243445144.16318.15.camel@blaa>
+	 <4A1D7AFD.40004@novell.com>
+Content-Type: text/plain
+Date: Wed, 27 May 2009 18:48:04 +0100
+Message-Id: <1243446484.4852.13.camel@blaa>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 27 2009, Jan Kara wrote:
->   The patch set seems easier to read now. Thanks for cleaning it up.
+On Wed, 2009-05-27 at 13:40 -0400, Gregory Haskins wrote:
+> Mark McLoughlin wrote:
+> > On Wed, 2009-05-27 at 15:11 +0300, Avi Kivity wrote:
+> >
+> >   
+> >> Multiple cookies on the same address are required by virtio.  You can't 
+> >> mux since the data doesn't go anywhere.
+> >>
+> >> Virtio can survive by checking all rings on a notify, and we can later 
+> >> add a mechanism that has a distinct address for each ring, but let's see 
+> >> if we can cope with multiple cookies.  Mark?
+> >>     
+> >
+> > Trying to catch up, but you're talking about replacing virtio-pci
+> > QUEUE_NOTIFY handling with iosignalfd ?
+> >
+> > For a perfect replacement, what you really need is to be able to
+> > register multiple cookies per address range, but only have them trigger
+> > if the written data matches a provided value.
+> >   
+> 
+> Hmm..thats an interesting idea.  To date, the "cookie" has really been
+> for identifying the proper range selected for deassignment.  I never
+> thought of using it as an actual trigger value at run-time.
+> 
+> > If the data is lost, virtio has no way of knowing which queue is being
+> > notified, so we either end up with per-device, rather than per-queue,
+> > notifications (probably not too bad for net, at least) or a different
+> > notify address per queue (limiting the number of queues per device).
+> >   
+> 
+> The addr-per-queue is how I was envisioning it, but the trigger value
+> concept hadn't occurred to me.  I could make this an option during
+> assignment (e.g. "COOKIE" flag means only trigger on writes of the
+> provided cookie, otherwise trigger on any write).  Sound good?
 
-No problem. The issue is mainly that I have to maintain these
-intermediate steps, and as code gets added and bugs fixed, things have
-to be shuffled back and forth. Now that things are stabilizing more,
-it's easier.
+Ah, I'd been thinking of the trigger data being provided separately to
+the cookie.
 
-> > +void bdi_writeback_all(struct super_block *sb, struct writeback_control *wbc)
-> > +{
-> > +	struct backing_dev_info *bdi, *tmp;
-> > +
-> > +	mutex_lock(&bdi_lock);
-> > +
-> > +	list_for_each_entry_safe(bdi, tmp, &bdi_list, bdi_list) {
-> > +		if (!bdi_has_dirty_io(bdi))
-> > +			continue;
-> > +		bdi_start_writeback(bdi, sb, wbc->nr_to_write, wbc->sync_mode);
-> > +	}
-> > +
-> > +	mutex_unlock(&bdi_lock);
-> > +}
-> > +
->   Looking at this function, I've realized that wbc->nr_to_write has a bit
-> silly meaning here. Each BDI will be kicked to write nr_to_write pages
-> which is not what it used to mean originally. I don't think it really matters
-> but we should have this in mind...
+The virtio ABI is fixed, so we couldn't e.g. have the guest use a cookie
+to identify a queue - it's just going to continue using a per-device
+queue number. So, if the cookie was also the trigger, we'd need an
+eventfd per device.
 
-Yes, I know about that difference. I don't think it matters a whole lot,
-since we typically just use MAX_WRITEBACK_PAGES which is only 4MB of IO.
-And in the case of writing back the world, we'll just come short on each
-bdi.
+And if this was a device where the guest writes similar values to
+multiple addresses, you'd need an eventfd per address.
 
-> > @@ -591,13 +715,10 @@ static void generic_sync_bdi_inodes(struct backing_dev_info *bdi,
-> >  void generic_sync_sb_inodes(struct super_block *sb,
-> >  				struct writeback_control *wbc)
-> >  {
-> > -	const int is_blkdev_sb = sb_is_blkdev_sb(sb);
-> > -	struct backing_dev_info *bdi;
-> > -
-> > -	mutex_lock(&bdi_lock);
-> > -	list_for_each_entry(bdi, &bdi_list, bdi_list)
-> > -		generic_sync_bdi_inodes(bdi, wbc, sb, is_blkdev_sb);
-> > -	mutex_unlock(&bdi_lock);
-> > +	if (wbc->bdi)
-> > +		generic_sync_bdi_inodes(sb, wbc);
-> > +	else
-> > +		bdi_writeback_all(sb, wbc);
->   I guess this asynchronousness is just transient...
-
-Right, if it bothers you, I can fix that up too :-)
-
-> > +static int bdi_forker_task(void *ptr)
-> > +{
-> > +	struct backing_dev_info *me = ptr;
-> > +	DEFINE_WAIT(wait);
-> > +
-> > +	for (;;) {
-> > +		struct backing_dev_info *bdi, *tmp;
-> > +
-> > +		/*
-> > +		 * Do this periodically, like kupdated() did before.
-> > +		 */
-> > +		sync_supers();
->   Ugh, this looks nasty. Moreover I'm afraid of forker_task() getting stuck
-> (and thus not being able to start new threads) in sync_supers() when some
-> fs is busy and other needs to create flusher thread...
->   Why not just having a separate thread for this? I know we have lots of
-> kernel threads already but this one seems like a useful one... Or do you
-> plan getting rid of this completely sometime in the near future and sync
-> supers also from per-bdi thread (which would make a lot of sence to me)?
-
-It's ugly, and I think this is precisely what Ted hit. He's in umount,
-has ->s_umount sem held and waiting for IO.
-
-So there's definitely trouble brewing there. As a short term solution, a
-separate thread will do. Longer term, the sync_supers_bdi() type setup I
-mentioned earlier would probably be the best. But once we start dealing
-with the super blocks, we have to be more careful with referencing.
-Which we also discussed in a previous mail :-)
-
--- 
-Jens Axboe
+Cheers,
+Mark.
 
