@@ -1,70 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933714AbZE0T5v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763340AbZE0UAb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933714AbZE0T5v (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 15:57:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756950AbZE0T5m
+	id S1763340AbZE0UAb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 16:00:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757852AbZE0UAX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 15:57:42 -0400
-Received: from 42.mail-out.ovh.net ([213.251.189.42]:56491 "HELO
-	42.mail-out.ovh.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1758708AbZE0T5l (ORCPT
+	Wed, 27 May 2009 16:00:23 -0400
+Received: from zcars04e.nortel.com ([47.129.242.56]:55012 "EHLO
+	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759550AbZE0UAW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 15:57:41 -0400
-X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Wed, 27 May 2009 15:57:41 EDT
-Date: Wed, 27 May 2009 21:39:27 +0200
-From: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Jon Smirl <jonsmirl@gmail.com>, Scott Wood <scottwood@freescale.com>,
-       Peter Korsgaard <jacmet@sunsite.dk>,
-       Robert Schwebel <r.schwebel@pengutronix.de>,
-       devicetree-discuss <devicetree-discuss@ozlabs.org>,
-       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       Janboe Ye <yuan-bo.ye@motorola.com>, Timur Tabi <timur@freescale.com>
-Subject: Re: [RFC] [PATCH] Device Tree on ARM platform
-Message-ID: <20090527193927.GD30039@game.jcrosoft.org>
-References: <1243408083.13460.14.camel@debian-nb> <fa686aa40905270727m31250984tf12249fc87179ce9@mail.gmail.com> <ed82fe3e0905270739k38018c87ka11f62c5977e45fb@mail.gmail.com> <20090527150527.GK6805@pengutronix.de> <87vdnm8sec.fsf@macbook.be.48ers.dk> <4A1D6901.2090508@freescale.com> <20090527175609.GB31861@flint.arm.linux.org.uk> <4A1D8FBA.6040802@freescale.com> <9e4733910905271213k7f4b93e7i7e6f2af24d85f@mail.gmail.com> <20090527192116.GA31110@n2100.arm.linux.org.uk>
+	Wed, 27 May 2009 16:00:22 -0400
+Message-ID: <4A1D9BD0.8090508@nortel.com>
+Date: Wed, 27 May 2009 14:00:16 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090527192116.GA31110@n2100.arm.linux.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Ovh-Tracer-Id: 11067596085741792179
-X-Ovh-Remote: 213.251.161.87 (ns32433.ovh.net)
-X-Ovh-Local: 213.186.33.20 (ns0.ovh.net)
-X-Spam-Check: DONE|H 0.5/N
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: LKML <linux-kernel@vger.kernel.org>, Ulrich Drepper <drepper@redhat.com>,
+       Roland McGrath <roland@redhat.com>
+Subject: Re: linux missing support for _POSIX_THREAD_CPUTIME?
+References: <4A1D6E71.90602@nortel.com> <alpine.LFD.2.00.0905271855290.3397@localhost.localdomain> <4A1D7512.9080604@nortel.com> <alpine.LFD.2.00.0905271922470.3397@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0905271922470.3397@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 27 May 2009 20:00:21.0460 (UTC) FILETIME=[C4196940:01C9DF05]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 20:21 Wed 27 May     , Russell King - ARM Linux wrote:
-> On Wed, May 27, 2009 at 03:13:55PM -0400, Jon Smirl wrote:
-> > On Wed, May 27, 2009 at 3:08 PM, Scott Wood <scottwood@freescale.com> wrote:
-> > > I'm not talking about platform specific code, I'm talking about code to
-> > > retrieve information about a device from the device tree.  There would not
-> > > be separate instances of this for "platforms X, Y and Z", just one
-> > > of_platform binding in each driver.  It's no different than having a
-> > > platform bus binding, except in the data structures used.
-> > >
-> > > But to restate, having external glue to create platform devices from the
-> > > device tree is fine if that's what you want to do.  We used to do that, but
-> > > it was a pain compared to keeping everything in one place.  Your experience
-> > > may differ.
-> > 
-> > Could 'struct platform_device' and 'struct of_platform_device" be
-> > unified into a single structure? It's personal preference whether the
-> > internal representation of the hardware is done via a device tree or
-> > snippets of platform code, but do we need to have to different device
-> > types?
+Thomas Gleixner wrote:
+> On Wed, 27 May 2009, Chris Friesen wrote:
 > 
-> That's a damned good question - platform devices have been around since
-> the dawn of the device model, so the real question which needs to be
-> asked is: what was the reason that of_platform_device created rather
-> than unifying it with the already provided platform_device ?
-I agree at 100%
+> 
+>>Thomas Gleixner wrote:
+>>
+>>>On Wed, 27 May 2009, Chris Friesen wrote:
+>>>
+>>>That's more a question for the glibc folks. CC'ed.
+>>
+>>Actually, I'm looking at the kernel code here.  It looks like
+>>posix_cpu_clock_get() should be able to handle a per-task cpu clock for
+>>another thread within the same process.  However, it's only ever called
+>>by thread_cpu_clock_get(), which hardcodes a clock_id of THREAD_CLOCK,
+>>which corresponds to the current thread.
+> 
+> 
+> No, it's also called via the CLOCK_DISPATCH magic in posix_timers.c
 
-when you have to support the same driver for non OF and OF platform it's
-really a pain in the ass
+>>Similarly, invalid_clockid() will say that the clock_id is invalid if
+>>it's positive but greater than 15.  If my math is right, this means that
+>>any pid > 2 will result in invalid_clockid() failing.
 
-Best Regards,
-J.
+Both invalid_clockid() and CLOCK_DISPATCH assume that the clock_id will
+be negative in order to call posix_cpu_clock_get().
+
+In pthread_getcpuclockid() in glibc, I couldn't see how we were ending
+up with a negative clock_id.  However, I finally clued in to the fact
+that there are multiple implementations of this function, and in one
+code path in one of the implementations we call MAKE_THREAD_CPUCLOCK()
+which can result in a negative clock_id.
+
+Thanks for the help.
+
+Chris
