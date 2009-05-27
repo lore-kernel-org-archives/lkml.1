@@ -1,72 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754401AbZE0Wdu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755808AbZE0WfH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754401AbZE0Wdu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 18:33:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751974AbZE0Wdn
+	id S1755808AbZE0WfH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 18:35:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753365AbZE0We5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 18:33:43 -0400
-Received: from mx-out.daemonmail.net ([216.104.160.38]:38270 "EHLO
-	mx-out.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750996AbZE0Wdn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 18:33:43 -0400
-From: "Michael S. Zick" <lkml@morethan.org>
-Reply-To: lkml@morethan.org
-To: Roland Dreier <rdreier@cisco.com>
-Subject: Re: [BUG FIX] Make x86_32 uni-processor Atomic ops, Atomic
-Date: Wed, 27 May 2009 17:33:37 -0500
-User-Agent: KMail/1.9.9
-Cc: peterz@infradead.org, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org
-References: <200905221139.26941.lkml@morethan.org> <200905230544.54657.lkml@morethan.org> <adar5ya5h4w.fsf@cisco.com>
-In-Reply-To: <adar5ya5h4w.fsf@cisco.com>
+	Wed, 27 May 2009 18:34:57 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35942 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753339AbZE0We5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 18:34:57 -0400
+Date: Thu, 28 May 2009 00:34:21 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Rik van Riel <riel@redhat.com>
+Cc: "Larry H." <research@subreption.com>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@osdl.org>, linux-mm@kvack.org,
+       Ingo Molnar <mingo@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       pageexec@freemail.hu
+Subject: Re: [patch 0/5] Support for sanitization flag in low-level page
+	allocator
+Message-ID: <20090527223421.GA9503@elte.hu>
+References: <20090520183045.GB10547@oblivion.subreption.com> <4A15A8C7.2030505@redhat.com> <20090522073436.GA3612@elte.hu> <20090522113809.GB13971@oblivion.subreption.com> <20090523124944.GA23042@elte.hu> <4A187BDE.5070601@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200905271733.42266.lkml@morethan.org>
+In-Reply-To: <4A187BDE.5070601@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed May 27 2009, Roland Dreier wrote:
-> 
->  > The only objective information is posted here:
->  > http://lkml.org/lkml/2009/5/20/342
-> 
-> Not sure if you've looked at this, but it's a lockdep trace that looks
-> to be a valid lockdep report due to non-annotated code (I don't *think*
-> it's a bug).  To summarize, there is the code path in
-> kernel/irq/spurious.c that does:
+
+* Rik van Riel <riel@redhat.com> wrote:
+
+> Ingo Molnar wrote:
 >
+>> What you are missing is that your patch makes _no technical 
+>> sense_ if you allow the same information to leak over the kernel 
+>> stack. Kernel stacks can be freed and reused, swapped out and 
+>> thus 'exposed'.
+>
+> Kernel stacks may be freed and reused, but Larry's latest patch 
+> takes care of that by clearing them at page free time.
+>
+> As for being swapped out - I do not believe that kernel stacks can 
+> ever be swapped out in Linux.
 
-I haven't looked at it - beyond my skill level.
+yes, i referred to that as an undesirable option - because it slows 
+down pthread_create() quite substantially.
 
-Still trying to deal with a machine where the only symptom is a deadlock.
-So I post these for someone else's eyes until I figure out the deadlock.
+This needs before/after pthread_create() benchmark results.
 
-Mike
- 
->     poll_spurious_irq_timer ->
->       poll_spurious_irqs()     [from timer, with hard IRQs on] ->
->       poll_all_shared_irqs()   [if we think an IRQ got stuck] ->
->       try_one_irq() ->
->       spin_lock(&desc->lock)   [as above -- hard IRQs on]
-> 
-> while kernel/irq/chip.c has:
-> 
->     handle_level_irq()         [called with hard IRQs off] ->
->       spin_lock(&desc->lock)   [as above -- hard IRQs off]
-> 
-> and lockdep can't tell that the interrupt corresponding to desc has been
-> disabled if we ever actually reach try_one_irq(), so there's no risk of
-> the interrupt coming in and deadlocking while the try_one_irq() code
-> holds desc->lock.
-> 
-> Unfortunately I don't know how to annotate this...
-> 
-> 
-
-
+	Ingo
