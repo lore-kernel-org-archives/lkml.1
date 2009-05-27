@@ -1,121 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761122AbZE0Vmn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758674AbZE0VsL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761122AbZE0Vmn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 17:42:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755451AbZE0Vmc
+	id S1758674AbZE0VsL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 17:48:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752397AbZE0Vr6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 17:42:32 -0400
-Received: from bedivere.hansenpartnership.com ([66.63.167.143]:55684 "EHLO
-	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755153AbZE0Vma (ORCPT
+	Wed, 27 May 2009 17:47:58 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46566 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751514AbZE0Vr5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 17:42:30 -0400
-Subject: Re: [PATCH 25/20] sysfs: Only support removing emtpy sysfs 
-	directories.
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Hannes Reinecke <hare@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
-       SCSI development list <linux-scsi@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Tejun Heo <tj@kernel.org>, Cornelia Huck <cornelia.huck@de.ibm.com>,
-       linux-fsdevel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@aristanetworks.com>
-In-Reply-To: <Pine.LNX.4.44L0.0905271710040.2669-100000@iolanthe.rowland.org>
-References: <Pine.LNX.4.44L0.0905271710040.2669-100000@iolanthe.rowland.org>
-Content-Type: text/plain
-Date: Wed, 27 May 2009 21:42:30 +0000
-Message-Id: <1243460550.6067.82.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Wed, 27 May 2009 17:47:57 -0400
+Date: Wed, 27 May 2009 14:46:15 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Ingo Molnar <mingo@elte.hu>
+cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>, Greg KH <gregkh@suse.de>,
+       Jens Axboe <jens.axboe@oracle.com>, Chris Wright <chrisw@redhat.com>,
+       kurt.hackel@oracle.com, Andrew Morton <akpm@linux-foundation.org>,
+       Ky Srinivasan <ksrinivasan@novell.com>, Beulich <jbeulich@novell.com>,
+       Avi Kivity <avi@redhat.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Subject: Re: [PATCH 17/17] xen: disable MSI
+In-Reply-To: <20090527211828.GA6166@elte.hu>
+Message-ID: <alpine.LFD.2.01.0905271436140.3435@localhost.localdomain>
+References: <1243409850-21577-1-git-send-email-jeremy@goop.org> <1243409850-21577-18-git-send-email-jeremy@goop.org> <alpine.LFD.2.01.0905270829530.3435@localhost.localdomain> <20090527211828.GA6166@elte.hu>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-05-27 at 17:31 -0400, Alan Stern wrote:
-> On Wed, 27 May 2009, James Bottomley wrote:
-> 
-> > > I can't tell whether you understood my point.  After a scsi_device is
-> > > unregistered but before it is released -- i.e., when its state is
-> > > SDEV_DEL -- it _is_ essentially unusable.  So why wait until it is
-> > > released to decrement the target's device counter?  Why not do the
-> > > decrement in __scsi_remove_device()?
-> > 
-> > because the use model of the device still requires a valid target.  Even
-> > though it gets gated in several places in SDEV_DEL, we still have use of
-> > the target parent.  This is fixable, but only by a long audit of all the
-> > sdev uses plus the enforcement of no use of target in DEL state rule,
-> > which adds complexity.
-> 
-> You're failing to distinguish properly between "delete" and "release".  
-> A target (or device in general) is deleted when it is removed from
-> visibility -- i.e., when device_del() is called.  It is released when
-> the final put_device() call occurs and the data structure is
-> deallocated.
-
-I find the terms delete and release too close for comfort, which is why
-I've always been careful to say remove from visibility.
-
-> So, all I'm saying is there's nothing wrong with deleting a target
-> when all its children are deleted, provided the target isn't released
-> until all the children are released.  Below you say the same thing.
-> 
-> 
-> > > > Perhaps I haven't made the problem clear enough.  You only want early
-> > > > del if the host is going away, otherwise the target might be reused and
-> > > > it can't be if you've called del on it.  So there needs to be an
-> > > > integration into the host lifecycle in some form.
-> > > 
-> > > Yes, granted.  That integration doesn't have to be complicated.  
-> > > Basically, you just decrement the counters in all the targets when
-> > > setting a host's state to SHOST_DEL or SHOST_DEL_RECOVERY.  At that 
-> > 
-> > And SHOST_CANCEL and SHOST_CANCEL_RECOVERY.
-> 
-> If you prefer.  I thought SHOST_DEL would be more appropriate because
-> it occurs after scsi_forget_host() is called.  All those transitions
-> occur in scsi_remove_host(), anyway.
-
-I mean in all four states.
-
-> > > point there's no reason to keep an unpopulated target around, right?
-> > 
-> > If the child list were empty, sure.  However, it's likely not going to
-> > be at this point.
-> 
-> Regardless, it will work either way.
-> 
-> > > Up until that point, the counter's value should be one more than the
-> > > number of underlying sdevs.  So if the counter decrements to 0 then
-> > > there were no underlying sdevs and the target is deleted immediately;
-> > > otherwise it is deleted when the last remaining sdev is deleted.
-> > 
-> > No, that's the problem.  It can be removed from visibility if it has no
-> > visible sdevs, but it can't be deleted until the last sdev is released.
-> 
-> Allow me to rephrase this: A target can be removed from visibility if 
-> it has no visible sdevs, but it can't be _released_ until the last sdev 
-> is released.
-> 
-> That's fine.  You remove a target from visibility when target->reap_ref
-> becomes 0.  The target isn't released until the target's embedded
-> struct device's refcount becomes 0.  To make this work, simply have
-> scsi_alloc_sdev() call
-> 
-> 	get_device(&starget->dev);
-> 
-> and have scsi_device_dev_release_usercontext() call
-> 
-> 	put_device(&starget->dev);
-> 
-> Doesn't that do exactly what you're asking for?
-
-That's um what we do to day ... the addition has to be to the visibility
-management.
-
-James
 
 
+On Wed, 27 May 2009, Ingo Molnar wrote:
+> 
+> hm, i have to concur. Too often it ends up splitting attention away 
+> from the title of the commit. I do reject (or fix up) bad impact 
+> lines - will stop doing them altogether if you think there's a net 
+> downside to them ...
+
+I actually think that if there is a good reason for them, they can stay. 
+
+Just don't make it one of those "every commit that goes through me has to 
+have one".
+
+Pu another way: if they actually add value in highlighting the commits 
+that _should_ stand out, then hey, by all means, keep such ones. I would 
+not at all object if it was an issue of 
+
+ [ Impact: fix bugzilla entry 455123 ]
+
+or
+
+ [ Impact: fix user-triggerable oops ]
+
+or something that actually matters, and that you _want_ to stand out, and 
+that you may well _want_ to grep for.
+
+It's when the whole series has them, and they don't add anything that 
+isn't better said in the summary line, _that's_ what I dislike.
+
+So to take the above bugzilla example: it really wouldn't be a good 
+summary line (because the summary line should describe what the commit 
+does, not point to some bugzilla entry), but at the same time it's clearly 
+something that I do think we might want to automate the logs for.
+
+IOW, that is something even I personally wouldn't mind adding to a commit, 
+to help people like Rafael that track bugzilla. It makes sense as a 
+special marker, even though it clearly _shoudln't_ be the summary. See?
+
+Similarly, the "user-triggerable oops" might well be worth high-lighting 
+in some manner. Now, the summary _might_ talk about it, but equally well 
+the summary might be more specific in the actual implementation issue, and 
+then perhaps the impact line is worth it.
+
+But if all commits have them (at least for the x86-tip), then it's not a 
+really highlight event any more, is it? At that point, anything it says is 
+probably just as well described by the summary line - at least for any 
+"regular" commits that aren't in some way worth the extra attention.
+
+			Linus
