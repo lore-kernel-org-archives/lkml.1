@@ -1,79 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761541AbZE0Jzy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761794AbZE0J4T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761541AbZE0Jzy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 05:55:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757210AbZE0Jzq
+	id S1761794AbZE0J4T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 05:56:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757210AbZE0J4K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 05:55:46 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:45251 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751568AbZE0Jzp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 05:55:45 -0400
-Date: Wed, 27 May 2009 05:55:33 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Tom Zanussi <tzanussi@gmail.com>, "Theodore Ts'o" <tytso@mit.edu>,
-       Steven Whitehouse <swhiteho@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Jeff Moyer <jmoyer@redhat.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v2 1/2] tracing/events: make __string() more general
-Message-ID: <20090527095532.GA17236@infradead.org>
-References: <4A1B6A2F.2040703@cn.fujitsu.com> <4A1B6A4C.3070407@cn.fujitsu.com> <20090526060232.GA10669@infradead.org> <4A1C9AC4.3090704@cn.fujitsu.com> <20090527072956.GC24381@infradead.org> <4A1CF5F2.6050209@cn.fujitsu.com>
+	Wed, 27 May 2009 05:56:10 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:43249 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756935AbZE0J4J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 05:56:09 -0400
+Date: Wed, 27 May 2009 10:56:08 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>, npiggin@suse.de,
+       apw@shadowen.org, agl@us.ibm.com, ebmunson@us.ibm.com,
+       andi@firstfloor.org, david@gibson.dropbear.id.au, kenchen@google.com,
+       wli@holomorphy.com, akpm@linux-foundation.org, starlight@binnacle.cx,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH] Determine if mapping is MAP_SHARED using VM_MAYSHARE
+	and not VM_SHARED in hugetlbfs
+Message-ID: <20090527095607.GB633@csn.ul.ie>
+References: <Pine.LNX.4.64.0905262056150.958@sister.anvils> <20090527004859.GB6189@csn.ul.ie> <20090527111652.688B.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <4A1CF5F2.6050209@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <20090527111652.688B.A69D9226@jp.fujitsu.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 27, 2009 at 04:12:34PM +0800, Li Zefan wrote:
-> >         TP_fast_assign(
-> > 		__entry->ino = args->dp->i_ino;
-> > 		if (args->namelen)
-> > 			memcpy(__entry->name, args->name,
-> > 			       min(args->namelen, TRACE_MAXNAMELEN));
+On Wed, May 27, 2009 at 12:17:41PM +0900, KOSAKI Motohiro wrote:
+> Hi
 > 
-> This string is not NULL-terminated?
+> > > > follow_hugetlb_page
+> > > > 	This is checking of the zero page can be shared or not. Crap,
+> > > > 	this one looks like it should have been converted to VM_MAYSHARE
+> > > > 	as well.
+> > > 
+> > > Now, what makes you say that?
+> > > 
+> > > I really am eager to understand, because I don't comprehend
+> > > that VM_SHARED at all. 
+> > 
+> > I think I understand it, but I keep changing my mind on whether
+> > VM_SHARED is sufficient or not.
+> > 
+> > In this specific case, the zeropage must not be used by process A where
+> > it's possible that process B has populated it with data. when I said "Crap"
+> > earlier, the scenario I imagined went something like;
+> > 
+> > o Process A opens a hugetlbfs file read/write but does not map the file
+> > o Process B opens the same hugetlbfs read-only and maps it
+> >   MAP_SHARED. hugetlbfs allows mmaps to files that have not been ftruncate()
+> >   so it can fault pages without SIGBUS
+> > o Process A writes the file - currently this is impossible as hugetlbfs
+> >   does not support write() but lets pretend it was possible
+> > o Process B calls mlock() which calls into follow_hugetlb_page().
+> >   VM_SHARED is not set because it's a read-only mapping and it returns
+> >   the wrong page.
+> > 
+> > This last step is where I went wrong. As process 2 had no PTE for that
+> > location, it would have faulted the page as normal and gotten the correct
+> > page and never considered the zero page so VM_SHARED was ok after all.
+> > 
+> > But this is sufficiently difficult that I'm worried that there is some other
+> > scenario where Process B uses the zero page when it shouldn't. Testing for
+> > VM_MAYSHARE would prevent the zero page being used incorrectly whether the
+> > mapping is read-only or read-write but maybe that's too paranoid.
+> > 
+> > Kosaki, can you comment on what impact (if any) testing for VM_MAYSHARE
+> > would have here with respect to core-dumping?
+> 
+> Thank you for very kindful explanation.
+> 
+> Perhaps, I don't understand this issue yet. Honestly I didn't think this
+> issue at my patch making time.
+> 
+> following is my current analysis. if I'm misunderstanding anythink, please
+> correct me.
+> 
+> hugepage mlocking call make_pages_present().
+> above case, follow_page_page() don't use ZERO_PAGE because vma don't have
+> VM_SHARED.
+> but that's ok. make_pages_present's intention is not get struct page,
+> it is to make page population. in this case, we need follow_hugetlb_page() call
+> hugetlb_fault(), I think.
+> 
+> 
+> In the other hand, when core-dump case
+> 
+> .text segment: open(O_RDONLY) + mmap(MAP_SHARED)
+> .data segment: open(O_RDONLY) + mmap(MAP_PRIVATE)
+> 
+> it mean .text can't use ZERO_PAGE. but I think no problem. In general
+> .text is smaller than .data. It doesn't make so slowness.
+> 
 
-As written a little above it's indeed not NULL-terminated.
+Ok, in that case, I'm going to leave VM_SHARED here alone rather than
+switching it to VM_MAYSHARE. Right now, VM_SHARED appears to be covering
+the cases we care about in this instance.
 
-> Then the above code can be rewrote:
-> 
-> TRACE_EVENT(xfs_dir2,
-> 	TP_PROTO(struct xfs_da_args *args, int i, int j, int count),
-> 	TP_ARGS(args, i, j, count),
-> 
-> 	TP_STRUCT__entry(
-> 		__field(xfs_ino_t, ino)
-> 		__string(name, args->namelen)
-> 		__field(int, namelen)
-> 		...
-> 	),
-> 
->         TP_fast_assign(
-> 		__entry->ino = args->dp->i_ino;
-> 		memcpy(__fetch_str(name), args->name, args->namelen);
-> 		__entry->namelen = args->namelen;
-> 		...
-> 	),
-> 
-> 	TP_printk("ino 0x%lld %pF name %.*s namelen %d hashval 0x%x "
-> 		  "inumber 0x%llx op_flags %s i %d j %d count %d",
-> 		  __entry->ino,
-> 		  (void *)__entry->caller_ip,
-> 		  __entry->namelen,
-> 		  __get_str(name),
-> 		  __entry->namelen,
+Thanks.
 
-That's indeed wht I would love to see.
+> 
+> 
+> > > I believe Kosaki-san's 4b2e38ad simply
+> > > copied it from Linus's 672ca28e to mm/memory.c.  But even back
+> > > when that change was made, I confessed to having lost the plot
+> > > on it: so far as I can see, putting a VM_SHARED test in there
+> > > just happened to prevent some VMware code going the wrong way,
+> > > but I don't see the actual justification for it.
+> > > 
+> > 
+> > Having no idea how vmware broke exactly, I'm not sure what exactly was
+> > fixed. Maybe by not checking VM_SHARED, it was possible that a caller of
+> > get_user_pages() would not see updates made by a parallel writer.
+> > 
+> > > So, given that I don't understand it in the first place,
+> > > I can't really support changing that VM_SHARED to VM_MAYSHARE.
+> > > 
+> > 
+> > Lets see what Kosaki says. If he's happy with VM_SHARED, I'll leave it
+> > alone.
+> 
+> 
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
