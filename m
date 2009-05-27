@@ -1,54 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759329AbZE0Cth@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756797AbZE0Cwg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759329AbZE0Cth (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 22:49:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755241AbZE0Cta
+	id S1756797AbZE0Cwg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 22:52:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755364AbZE0Cw1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 22:49:30 -0400
-Received: from mail-px0-f123.google.com ([209.85.216.123]:37003 "EHLO
-	mail-px0-f123.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754515AbZE0Ct3 (ORCPT
+	Tue, 26 May 2009 22:52:27 -0400
+Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:59296 "EHLO
+	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754515AbZE0Cw0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 22:49:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=jQdQOHuadD2xxJ053f3fv1n1p+5wgK1LPPGrJ0y/GQh82Gv77kyC3zpt37c3/HiN/k
-         NbeMIsgMv7wMS4xrd8QLjvC7qbcWqtObDSz8T2kSD7wwUx4ZyU+0q/s1fubVXAHGdvta
-         UACWUauHd4d75kZrw0EjajpBJ1heYlWBUhUtk=
-MIME-Version: 1.0
-In-Reply-To: <86802c440905251911h6f6c146eo4c30d306ac8d17d8@mail.gmail.com>
-References: <b9df5fa10905251820l3783327ek4f6b7014aa167690@mail.gmail.com>
-	 <86802c440905251911h6f6c146eo4c30d306ac8d17d8@mail.gmail.com>
-Date: Wed, 27 May 2009 08:49:31 +0600
-Message-ID: <b9df5fa10905261949j3eb4dc9ft321dba3c46c335db@mail.gmail.com>
-Subject: Re: [PATCH] v2: x86,APIC: Detect lapic_is_integrated() once - use on 
-	and on
-From: Rakib Mullick <rakib.mullick@gmail.com>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, macro@linux-mips.org,
-       Cyrill Gorcunov <gorcunov@openvz.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 26 May 2009 22:52:26 -0400
+Message-Id: <6.0.0.20.2.20090527114200.076aab00@172.19.0.2>
+X-Mailer: QUALCOMM Windows Eudora Version 6J-Jr3
+Date: Wed, 27 May 2009 11:47:47 +0900
+To: Wu Fengguang <fengguang.wu@intel.com>
+From: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
+Subject: Re: [PATCH] readahead:add blk_run_backing_dev
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>
+In-Reply-To: <20090527023638.GA27079@localhost>
+References: <20090518175259.GL4140@kernel.dk>
+ <20090520025123.GB8186@localhost>
+ <6.0.0.20.2.20090521145005.06f81fe0@172.19.0.2>
+ <20090522010538.GB6010@localhost>
+ <6.0.0.20.2.20090522102551.0705aea0@172.19.0.2>
+ <20090522023323.GA10864@localhost>
+ <20090526164252.0741b392.akpm@linux-foundation.org>
+ <6.0.0.20.2.20090527092105.076be238@172.19.0.2>
+ <20090527020909.GB17658@localhost>
+ <6.0.0.20.2.20090527110937.0770c420@172.19.0.2>
+ <20090527023638.GA27079@localhost>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/26/09, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
 
-> do you need to call lapic_is_integrated() for 32bit smp?
-
- Actually, external APIC were used in older version of intel
-processors ( probably some P4 and it's earlier version - if i'm not
-wrong). So I don't think it's  required. And current implementation
-doesn't separate the case of smp or non-smp - it just deals with 32 or
-64 bit processors. Is there anything that i'm missing ?
-
-Thanks,
+At 11:36 09/05/27, Wu Fengguang wrote:
+>On Wed, May 27, 2009 at 10:21:53AM +0800, Hisashi Hifumi wrote:
+>>
+>> At 11:09 09/05/27, Wu Fengguang wrote:
+>> >On Wed, May 27, 2009 at 08:25:04AM +0800, Hisashi Hifumi wrote:
+>> >>
+>> >> At 08:42 09/05/27, Andrew Morton wrote:
+>> >> >On Fri, 22 May 2009 10:33:23 +0800
+>> >> >Wu Fengguang <fengguang.wu@intel.com> wrote:
+>> >> >
+>> >> >> > I tested above patch, and I got same performance number.
+>> >> >> > I wonder why if (PageUptodate(page)) check is there...
+>> >> >>
+>> >> >> Thanks!  This is an interesting micro timing behavior that
+>> >> >> demands some research work.  The above check is to confirm if it's
+>> >> >> the PageUptodate() case that makes the difference. So why that case
+>> >> >> happens so frequently so as to impact the performance? Will it also
+>> >> >> happen in NFS?
+>> >> >>
+>> >> >> The problem is readahead IO pipeline is not running smoothly, which is
+>> >> >> undesirable and not well understood for now.
+>> >> >
+>> >> >The patch causes a remarkably large performance increase.  A 9%
+>> >> >reduction in time for a linear read? I'd be surprised if the workload
+>> >>
+>> >> Hi Andrew.
+>> >> Yes, I tested this with dd.
+>> >>
+>> >> >even consumed 9% of a CPU, so where on earth has the kernel gone to?
+>> >> >
+>> >> >Have you been able to reproduce this in your testing?
+>> >>
+>> >> Yes, this test on my environment is reproducible.
+>> >
+>> >Hisashi, does your environment have some special configurations?
+>>
+>> Hi.
+>> My testing environment is as follows:
+>> Hardware: HP DL580
+>> CPU:Xeon 3.2GHz *4 HT enabled
+>> Memory:8GB
+>> Storage: Dothill SANNet2 FC (7Disks RAID-0 Array)
 >
-> YH
+>This is a big hardware RAID. What's the readahead size?
 >
+>The numbers look too small for a 7 disk RAID:
+>
+>        > #dd if=testdir/testfile of=/dev/null bs=16384
+>        >
+>        > -2.6.30-rc6
+>        > 1048576+0 records in
+>        > 1048576+0 records out
+>        > 17179869184 bytes (17 GB) copied, 224.182 seconds, 76.6 MB/s
+>        >
+>        > -2.6.30-rc6-patched
+>        > 1048576+0 records in
+>        > 1048576+0 records out
+>        > 17179869184 bytes (17 GB) copied, 206.465 seconds, 83.2 MB/s
+>
+>I'd suggest you to configure the array properly before coming back to
+>measuring the impact of this patch.
+
+
+I created 16GB file to this disk array, and mounted to testdir, dd to this directory.
+
+Thanks.
+
