@@ -1,77 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763189AbZE0UNi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932356AbZE0UN5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763189AbZE0UNi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 16:13:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756008AbZE0UMc
+	id S932356AbZE0UN5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 16:13:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760768AbZE0UMg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 16:12:32 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:35905 "EHLO
+	Wed, 27 May 2009 16:12:36 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:35911 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756240AbZE0UMa (ORCPT
+	with ESMTP id S1760706AbZE0UMf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 16:12:30 -0400
+	Wed, 27 May 2009 16:12:35 -0400
 From: Andi Kleen <andi@firstfloor.org>
 References: <200905271012.668777061@firstfloor.org>
 In-Reply-To: <200905271012.668777061@firstfloor.org>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
        linux-mm@kvack.org, fengguang.wu@intel.com
-Subject: [PATCH] [3/16] HWPOISON: Export some rmap vma locking to outside world
-Message-Id: <20090527201229.152961D028F@basil.firstfloor.org>
-Date: Wed, 27 May 2009 22:12:28 +0200 (CEST)
+Subject: [PATCH] [5/16] HWPOISON: Add new SIGBUS error codes for hardware poison signals
+Message-Id: <20090527201231.379EE1D028F@basil.firstfloor.org>
+Date: Wed, 27 May 2009 22:12:31 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Needed for later patch that walks rmap entries on its own.
+Add new SIGBUS codes for reporting machine checks as signals. When 
+the hardware detects an uncorrected ECC error it can trigger these
+signals.
 
-This used to be very frowned upon, but memory-failure.c does
-some rather specialized rmap walking and rmap has been stable
-for quite some time, so I think it's ok now to export it.
+This is needed for telling KVM's qemu about machine checks that happen to
+guests, so that it can inject them, but might be also useful for other programs.
+I find it useful in my test programs.
+
+This patch merely defines the new types.
+
+- Define two new si_codes for SIGBUS.  BUS_MCEERR_AO and BUS_MCEERR_AR
+* BUS_MCEERR_AO is for "Action Optional" machine checks, which means that some
+corruption has been detected in the background, but nothing has been consumed
+so far. The program can ignore those if it wants (but most programs would
+already get killed)
+* BUS_MCEERR_AR is for "Action Required" machine checks. This happens
+when corrupted data is consumed or the application ran into an area
+which has been known to be corrupted earlier. These require immediate
+action and cannot just returned to. Most programs would kill themselves.
+- They report the address of the corruption in the user address space
+in si_addr.
+- Define a new si_addr_lsb field that reports the extent of the corruption
+to user space. That's currently always a (small) page. The user application
+cannot tell where in this page the corruption happened.
+
+AK: I plan to write a man page update before anyone asks.
 
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
 ---
- include/linux/rmap.h |    6 ++++++
- mm/rmap.c            |    4 ++--
- 2 files changed, 8 insertions(+), 2 deletions(-)
+ include/asm-generic/siginfo.h |    8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
-Index: linux/include/linux/rmap.h
+Index: linux/include/asm-generic/siginfo.h
 ===================================================================
---- linux.orig/include/linux/rmap.h	2009-05-27 21:13:54.000000000 +0200
-+++ linux/include/linux/rmap.h	2009-05-27 21:19:19.000000000 +0200
-@@ -118,6 +118,12 @@
- }
+--- linux.orig/include/asm-generic/siginfo.h	2009-05-27 21:13:54.000000000 +0200
++++ linux/include/asm-generic/siginfo.h	2009-05-27 21:14:21.000000000 +0200
+@@ -82,6 +82,7 @@
+ #ifdef __ARCH_SI_TRAPNO
+ 			int _trapno;	/* TRAP # which caused the signal */
  #endif
++			short _addr_lsb; /* LSB of the reported address */
+ 		} _sigfault;
  
-+/*
-+ * Called by memory-failure.c to kill processes.
-+ */
-+struct anon_vma *page_lock_anon_vma(struct page *page);
-+void page_unlock_anon_vma(struct anon_vma *anon_vma);
-+
- #else	/* !CONFIG_MMU */
+ 		/* SIGPOLL */
+@@ -112,6 +113,7 @@
+ #ifdef __ARCH_SI_TRAPNO
+ #define si_trapno	_sifields._sigfault._trapno
+ #endif
++#define si_addr_lsb	_sifields._sigfault._addr_lsb
+ #define si_band		_sifields._sigpoll._band
+ #define si_fd		_sifields._sigpoll._fd
  
- #define anon_vma_init()		do {} while (0)
-Index: linux/mm/rmap.c
-===================================================================
---- linux.orig/mm/rmap.c	2009-05-26 22:15:37.000000000 +0200
-+++ linux/mm/rmap.c	2009-05-27 21:19:19.000000000 +0200
-@@ -191,7 +191,7 @@
-  * Getting a lock on a stable anon_vma from a page off the LRU is
-  * tricky: page_lock_anon_vma rely on RCU to guard against the races.
-  */
--static struct anon_vma *page_lock_anon_vma(struct page *page)
-+struct anon_vma *page_lock_anon_vma(struct page *page)
- {
- 	struct anon_vma *anon_vma;
- 	unsigned long anon_mapping;
-@@ -211,7 +211,7 @@
- 	return NULL;
- }
+@@ -192,7 +194,11 @@
+ #define BUS_ADRALN	(__SI_FAULT|1)	/* invalid address alignment */
+ #define BUS_ADRERR	(__SI_FAULT|2)	/* non-existant physical address */
+ #define BUS_OBJERR	(__SI_FAULT|3)	/* object specific hardware error */
+-#define NSIGBUS		3
++/* hardware memory error consumed on a machine check: action required */
++#define BUS_MCEERR_AR	(__SI_FAULT|4)
++/* hardware memory error detected in process but not consumed: action optional*/
++#define BUS_MCEERR_AO	(__SI_FAULT|5)
++#define NSIGBUS		5
  
--static void page_unlock_anon_vma(struct anon_vma *anon_vma)
-+void page_unlock_anon_vma(struct anon_vma *anon_vma)
- {
- 	spin_unlock(&anon_vma->lock);
- 	rcu_read_unlock();
+ /*
+  * SIGTRAP si_codes
