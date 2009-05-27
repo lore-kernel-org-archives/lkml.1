@@ -1,132 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761794AbZE0J4T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762067AbZE0J7e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761794AbZE0J4T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 05:56:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757210AbZE0J4K
+	id S1762067AbZE0J7e (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 05:59:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760898AbZE0J70
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 05:56:10 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:43249 "EHLO gir.skynet.ie"
+	Wed, 27 May 2009 05:59:26 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:34534 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756935AbZE0J4J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 05:56:09 -0400
-Date: Wed, 27 May 2009 10:56:08 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>, npiggin@suse.de,
-       apw@shadowen.org, agl@us.ibm.com, ebmunson@us.ibm.com,
-       andi@firstfloor.org, david@gibson.dropbear.id.au, kenchen@google.com,
-       wli@holomorphy.com, akpm@linux-foundation.org, starlight@binnacle.cx,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH] Determine if mapping is MAP_SHARED using VM_MAYSHARE
-	and not VM_SHARED in hugetlbfs
-Message-ID: <20090527095607.GB633@csn.ul.ie>
-References: <Pine.LNX.4.64.0905262056150.958@sister.anvils> <20090527004859.GB6189@csn.ul.ie> <20090527111652.688B.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20090527111652.688B.A69D9226@jp.fujitsu.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	id S1756238AbZE0J7Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 05:59:25 -0400
+Subject: Re: linux-next: manual merge of the vfs tree with the gfs2 tree
+From: Steven Whitehouse <swhiteho@redhat.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Al Viro <viro@ZenIV.linux.org.uk>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>
+In-Reply-To: <20090527115253.37abd576.sfr@canb.auug.org.au>
+References: <20090527115253.37abd576.sfr@canb.auug.org.au>
+Content-Type: text/plain
+Organization: Red Hat (UK) Ltd (Registered in England and Wales, No.
+ 3798903) Registered office: Red Hat UK Ltd, Amberley Place, 107-111 Peascod
+ Street, Windsor, Berkshire, SL4 ITE
+Date: Wed, 27 May 2009 10:58:51 +0100
+Message-Id: <1243418331.29604.445.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 27, 2009 at 12:17:41PM +0900, KOSAKI Motohiro wrote:
-> Hi
-> 
-> > > > follow_hugetlb_page
-> > > > 	This is checking of the zero page can be shared or not. Crap,
-> > > > 	this one looks like it should have been converted to VM_MAYSHARE
-> > > > 	as well.
-> > > 
-> > > Now, what makes you say that?
-> > > 
-> > > I really am eager to understand, because I don't comprehend
-> > > that VM_SHARED at all. 
-> > 
-> > I think I understand it, but I keep changing my mind on whether
-> > VM_SHARED is sufficient or not.
-> > 
-> > In this specific case, the zeropage must not be used by process A where
-> > it's possible that process B has populated it with data. when I said "Crap"
-> > earlier, the scenario I imagined went something like;
-> > 
-> > o Process A opens a hugetlbfs file read/write but does not map the file
-> > o Process B opens the same hugetlbfs read-only and maps it
-> >   MAP_SHARED. hugetlbfs allows mmaps to files that have not been ftruncate()
-> >   so it can fault pages without SIGBUS
-> > o Process A writes the file - currently this is impossible as hugetlbfs
-> >   does not support write() but lets pretend it was possible
-> > o Process B calls mlock() which calls into follow_hugetlb_page().
-> >   VM_SHARED is not set because it's a read-only mapping and it returns
-> >   the wrong page.
-> > 
-> > This last step is where I went wrong. As process 2 had no PTE for that
-> > location, it would have faulted the page as normal and gotten the correct
-> > page and never considered the zero page so VM_SHARED was ok after all.
-> > 
-> > But this is sufficiently difficult that I'm worried that there is some other
-> > scenario where Process B uses the zero page when it shouldn't. Testing for
-> > VM_MAYSHARE would prevent the zero page being used incorrectly whether the
-> > mapping is read-only or read-write but maybe that's too paranoid.
-> > 
-> > Kosaki, can you comment on what impact (if any) testing for VM_MAYSHARE
-> > would have here with respect to core-dumping?
-> 
-> Thank you for very kindful explanation.
-> 
-> Perhaps, I don't understand this issue yet. Honestly I didn't think this
-> issue at my patch making time.
-> 
-> following is my current analysis. if I'm misunderstanding anythink, please
-> correct me.
-> 
-> hugepage mlocking call make_pages_present().
-> above case, follow_page_page() don't use ZERO_PAGE because vma don't have
-> VM_SHARED.
-> but that's ok. make_pages_present's intention is not get struct page,
-> it is to make page population. in this case, we need follow_hugetlb_page() call
-> hugetlb_fault(), I think.
-> 
-> 
-> In the other hand, when core-dump case
-> 
-> .text segment: open(O_RDONLY) + mmap(MAP_SHARED)
-> .data segment: open(O_RDONLY) + mmap(MAP_PRIVATE)
-> 
-> it mean .text can't use ZERO_PAGE. but I think no problem. In general
-> .text is smaller than .data. It doesn't make so slowness.
-> 
+Hi,
 
-Ok, in that case, I'm going to leave VM_SHARED here alone rather than
-switching it to VM_MAYSHARE. Right now, VM_SHARED appears to be covering
-the cases we care about in this instance.
+On Wed, 2009-05-27 at 11:52 +1000, Stephen Rothwell wrote:
+> Hi Al,
+> 
+> Today's linux-next merge of the vfs tree got a conflict in
+> fs/gfs2/ops_super.c between commit
+> 9e6e0a128bca0a151d8d3fbd9459b22fc21cfebb ("GFS2: Merge mount.c and
+> ops_super.c into super.c") from the gfs2 tree and commits
+> 17af8f24a7750ea3d947904f97eb6dfacf9a88aa ("gfs2: remove ->write_super and
+> stop maintaining ->s_dirt") and 8123178eb9ca12cde31a95170746e15a79528a62
+> ("push BKL down into ->put_super") from the vfs tree.
+> 
+> The former commit removed the file.  I have mechanically applied the
+> changes in the latter two commits to fs/gfs2/super.c (see below) and can
+> carry this as a merge fix as necessary.
+> -- 
+> Cheers,
+> Stephen Rothwell                    sfr@canb.auug.org.au
+> 
+Thanks for fixing this up.
 
-Thanks.
+> diff --git a/fs/gfs2/super.c b/fs/gfs2/super.c
+> index 40bcc37..c8930b3 100644
+> --- a/fs/gfs2/super.c
+> +++ b/fs/gfs2/super.c
+> @@ -719,6 +719,8 @@ static void gfs2_put_super(struct super_block *sb)
+>  	int error;
+>  	struct gfs2_jdesc *jd;
+>  
+> +	lock_kernel();
+> +
+>  	/*  Unfreeze the filesystem, if we need to  */
+>  
+>  	mutex_lock(&sdp->sd_freeze_lock);
+> @@ -785,17 +787,8 @@ restart:
+>  
+>  	/*  At this point, we're through participating in the lockspace  */
+>  	gfs2_sys_fs_del(sdp);
+> -}
 
-> 
-> 
-> > > I believe Kosaki-san's 4b2e38ad simply
-> > > copied it from Linus's 672ca28e to mm/memory.c.  But even back
-> > > when that change was made, I confessed to having lost the plot
-> > > on it: so far as I can see, putting a VM_SHARED test in there
-> > > just happened to prevent some VMware code going the wrong way,
-> > > but I don't see the actual justification for it.
-> > > 
-> > 
-> > Having no idea how vmware broke exactly, I'm not sure what exactly was
-> > fixed. Maybe by not checking VM_SHARED, it was possible that a caller of
-> > get_user_pages() would not see updates made by a parallel writer.
-> > 
-> > > So, given that I don't understand it in the first place,
-> > > I can't really support changing that VM_SHARED to VM_MAYSHARE.
-> > > 
-> > 
-> > Lets see what Kosaki says. If he's happy with VM_SHARED, I'll leave it
-> > alone.
-> 
-> 
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Al/Christoph, what is the purpose of the lock_kernel() ? I don't see why
+this is required. What is it protecting against?
+
+Steve.
+
+
