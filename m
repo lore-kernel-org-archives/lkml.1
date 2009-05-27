@@ -1,54 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755648AbZE0WMW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759029AbZE0WN0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755648AbZE0WMW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 18:12:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754583AbZE0WML
+	id S1759029AbZE0WN0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 18:13:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753468AbZE0WNS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 18:12:11 -0400
-Received: from gate.crashing.org ([63.228.1.57]:60400 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757142AbZE0WMK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 18:12:10 -0400
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Message-Id: <E6F31282-646E-46B6-9D5B-B39D4595C984@kernel.crashing.org>
-From: Becky Bruce <beckyb@kernel.crashing.org>
-To: Ian Campbell <Ian.Campbell@eu.citrix.com>
-In-Reply-To: <1243456159.4399.42.camel@localhost.localdomain>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: [PATCH V2 2/3] powerpc: Add support for swiotlb on 32-bit
-Date: Wed, 27 May 2009 17:11:57 -0500
-References: <1242340949-16369-1-git-send-email-beckyb@kernel.crashing.org> <1242340949-16369-2-git-send-email-beckyb@kernel.crashing.org> <20090519142656T.fujita.tomonori@lab.ntt.co.jp> <19E48A70-3332-423C-ACAD-390F940EE81C@kernel.crashing.org> <4A1592CF.8000208@goop.org> <E6DAA792-9923-4B76-9759-6955AABE3EAB@kernel.crashing.org> <1242990702.22654.253.camel@zakaz.uk.xensource.com> <0628DF07-E085-4CC8-ADFC-1B0798343159@kernel.crashing.org> <1243456159.4399.42.camel@localhost.localdomain>
-X-Mailer: Apple Mail (2.930.3)
+	Wed, 27 May 2009 18:13:18 -0400
+Received: from sj-iport-1.cisco.com ([171.71.176.70]:37094 "EHLO
+	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751182AbZE0WNR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 18:13:17 -0400
+X-IronPort-AV: E=Sophos;i="4.41,261,1241395200"; 
+   d="scan'208";a="191032945"
+From: Roland Dreier <rdreier@cisco.com>
+To: peterz@infradead.org
+Cc: lkml@MoreThan.org, "H. Peter Anvin" <hpa@zytor.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [BUG FIX] Make x86_32 uni-processor Atomic ops, Atomic
+References: <200905221139.26941.lkml@morethan.org>
+	<200905221946.01808.lkml@morethan.org> <4A1748A9.1020306@zytor.com>
+	<200905230544.54657.lkml@morethan.org>
+X-Message-Flag: Warning: May contain useful information
+Date: Wed, 27 May 2009 15:13:19 -0700
+In-Reply-To: <200905230544.54657.lkml@morethan.org> (Michael S. Zick's message
+	of "Sat, 23 May 2009 05:44:52 -0500")
+Message-ID: <adar5ya5h4w.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 27 May 2009 22:13:19.0480 (UTC) FILETIME=[575EA780:01C9DF18]
+Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On May 27, 2009, at 3:29 PM, Ian Campbell wrote:
+ > The only objective information is posted here:
+ > http://lkml.org/lkml/2009/5/20/342
 
-> On Wed, 2009-05-27 at 15:05 -0400, Becky Bruce wrote:
->> On May 22, 2009, at 6:11 AM, Ian Campbell wrote:
->>>
->>>
->>> BTW do you need swiotlb_bus_to_virt to be __weak or is the fact that
->>> it
->>> is implemented in terms of swiotlb_bus_to_phys sufficient?
->>
->> The default one in swiotlb calls phys_to_virt on the result of
->> swiotlb_bus_to_phys, which only works on lowmem.
->
-> Perhaps we can simply enhance the default one to handle highmem  
-> instead
-> of making it arch specific?
+Not sure if you've looked at this, but it's a lockdep trace that looks
+to be a valid lockdep report due to non-annotated code (I don't *think*
+it's a bug).  To summarize, there is the code path in
+kernel/irq/spurious.c that does:
 
-That's fine by me - as long as what I've got will work for you guys  
-I'm happy to stick it in the standard one (inside a nice pretty #ifdef  
-CONFIG_HIGHMEM, of course).
+    poll_spurious_irq_timer ->
+      poll_spurious_irqs()     [from timer, with hard IRQs on] ->
+      poll_all_shared_irqs()   [if we think an IRQ got stuck] ->
+      try_one_irq() ->
+      spin_lock(&desc->lock)   [as above -- hard IRQs on]
 
-Cheers,
-B
+while kernel/irq/chip.c has:
+
+    handle_level_irq()         [called with hard IRQs off] ->
+      spin_lock(&desc->lock)   [as above -- hard IRQs off]
+
+and lockdep can't tell that the interrupt corresponding to desc has been
+disabled if we ever actually reach try_one_irq(), so there's no risk of
+the interrupt coming in and deadlocking while the try_one_irq() code
+holds desc->lock.
+
+Unfortunately I don't know how to annotate this...
