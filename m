@@ -1,66 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932482AbZE0TOG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764376AbZE0TPc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932482AbZE0TOG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 15:14:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759442AbZE0TNz
+	id S1764376AbZE0TPc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 15:15:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759442AbZE0TPY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 15:13:55 -0400
-Received: from mail-qy0-f190.google.com ([209.85.221.190]:48352 "EHLO
-	mail-qy0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755555AbZE0TNz convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 15:13:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=p9fKAfBHkVWC9VJNqyjFGlWUOI3E7tlKDNKhbb37b81jjlpV9QLi/wgq3qz32dNeA4
-         uo2Nx+GG2pMLTdkiDcHK01j06PEKGJ1j7S7pPfQM2Ta7DKF+oZnBjFq1iNuZ1TUTaoEH
-         xrobG8jlqxMpX8dvDKSC6Tl5WEhmEyFOQFekI=
+	Wed, 27 May 2009 15:15:24 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:57096 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757202AbZE0TPX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 15:15:23 -0400
+Date: Wed, 27 May 2009 21:15:24 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Theodore Tso <tytso@mit.edu>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
+       akpm@linux-foundation.org, jack@suse.cz, yanmin_zhang@linux.intel.com,
+       richard@rsk.demon.co.uk, damien.wyart@free.fr
+Subject: Re: [PATCH 0/11] Per-bdi writeback flusher threads v8
+Message-ID: <20090527191524.GS11363@kernel.dk>
+References: <1243417312-7444-1-git-send-email-jens.axboe@oracle.com> <20090527144754.GD10842@mit.edu> <20090527175353.GE10842@mit.edu> <20090527175830.GF10842@mit.edu> <20090527181402.GP11363@kernel.dk>
 MIME-Version: 1.0
-In-Reply-To: <4A1D8FBA.6040802@freescale.com>
-References: <1243408083.13460.14.camel@debian-nb>
-	 <fa686aa40905270727m31250984tf12249fc87179ce9@mail.gmail.com>
-	 <ed82fe3e0905270739k38018c87ka11f62c5977e45fb@mail.gmail.com>
-	 <20090527150527.GK6805@pengutronix.de>
-	 <87vdnm8sec.fsf@macbook.be.48ers.dk> <4A1D6901.2090508@freescale.com>
-	 <20090527175609.GB31861@flint.arm.linux.org.uk>
-	 <4A1D8FBA.6040802@freescale.com>
-Date: Wed, 27 May 2009 15:13:55 -0400
-Message-ID: <9e4733910905271213k7f4b93e7i7e6f2af24d85f@mail.gmail.com>
-Subject: Re: [RFC] [PATCH] Device Tree on ARM platform
-From: Jon Smirl <jonsmirl@gmail.com>
-To: Scott Wood <scottwood@freescale.com>
-Cc: Russell King <rmk+lkml@arm.linux.org.uk>,
-       Peter Korsgaard <jacmet@sunsite.dk>,
-       Robert Schwebel <r.schwebel@pengutronix.de>,
-       devicetree-discuss <devicetree-discuss@ozlabs.org>,
-       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       Janboe Ye <yuan-bo.ye@motorola.com>, Timur Tabi <timur@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090527181402.GP11363@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 27, 2009 at 3:08 PM, Scott Wood <scottwood@freescale.com> wrote:
-> I'm not talking about platform specific code, I'm talking about code to
-> retrieve information about a device from the device tree.  There would not
-> be separate instances of this for "platforms X, Y and Z", just one
-> of_platform binding in each driver.  It's no different than having a
-> platform bus binding, except in the data structures used.
->
-> But to restate, having external glue to create platform devices from the
-> device tree is fine if that's what you want to do.  We used to do that, but
-> it was a pain compared to keeping everything in one place.  Your experience
-> may differ.
+On Wed, May 27 2009, Jens Axboe wrote:
+> On Wed, May 27 2009, Theodore Tso wrote:
+> > On Wed, May 27, 2009 at 01:53:53PM -0400, Theodore Tso wrote:
+> > > On Wed, May 27, 2009 at 10:47:54AM -0400, Theodore Tso wrote:
+> > > > 
+> > > > I'll retry the test with your stock writeback-v8 git branch w/o any
+> > > > ext4 patches planned the next mere window mainline to see if I get the
+> > > > same soft lockup, but I thought I should give you an early heads up.
+> > > 
+> > > Confirmed.  I had to run fsstress twice, but I was able to trigger a
+> > > soft hangup with just the per-bdi v8 patches using ext4.
+> > 
+> > As you requested, here's the .config file which I used.  This was on a
+> > Lenovo S10 (N270 Atom dual-core CPU, 1.5 gigs of memory, 5400 rpm hdd).
+> 
+> If you have time, can you rerun with this little patch? It moves the
+> super sync to a separate thread. Thanks!
+> 
+> diff --git a/mm/backing-dev.c b/mm/backing-dev.c
+> index f71588c..8b30f29 100644
+> --- a/mm/backing-dev.c
+> +++ b/mm/backing-dev.c
+> @@ -218,10 +218,14 @@ static __init int bdi_class_init(void)
+>  }
+>  postcore_initcall(bdi_class_init);
+>  
+> +static int bdi_sync_supers(void *unused);
+> +
+>  static int __init default_bdi_init(void)
+>  {
+>  	int err;
+>  
+> +	kthread_run(bdi_sync_supers, NULL, "bdi-super");
+> +
+>  	err = bdi_init(&default_backing_dev_info);
+>  	if (!err)
+>  		bdi_register(&default_backing_dev_info, NULL, "default");
+> @@ -412,6 +416,20 @@ static void bdi_flush_io(struct backing_dev_info *bdi)
+>  	generic_sync_bdi_inodes(NULL, &wbc);
+>  }
+>  
+> +static int bdi_sync_supers(void *unused)
+> +{
+> +	while (!kthread_should_stop()) {
+> +		schedule_timeout(dirty_expire_interval * 10);
 
-Could 'struct platform_device' and 'struct of_platform_device" be
-unified into a single structure? It's personal preference whether the
-internal representation of the hardware is done via a device tree or
-snippets of platform code, but do we need to have to different device
-types?
+Woops, that should be
+
+                schedule_timeout(msecs_to_jiffies(dirty_expire_interval * 10));
+
+of course, otherwise we sync quite a lot :-)
 
 -- 
-Jon Smirl
-jonsmirl@gmail.com
+Jens Axboe
+
