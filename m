@@ -1,53 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754950AbZE0BEU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757701AbZE0BGS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754950AbZE0BEU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 21:04:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752494AbZE0BEN
+	id S1757701AbZE0BGS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 21:06:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755701AbZE0BGK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 21:04:13 -0400
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:42258 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752168AbZE0BEN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 21:04:13 -0400
-Date: Wed, 27 May 2009 10:03:59 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Mike Frysinger <vapier@gentoo.org>
-Cc: linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
-       Greg Ungerer <gerg@uclinux.org>, uclinux-dev@uclinux.org,
-       linux-mtd@lists.infradead.org
-Subject: Re: [PATCH 1/3] mtd/maps: uclinux: allow systems to override map addr/size
-Message-ID: <20090527010359.GA8979@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Mike Frysinger <vapier@gentoo.org>, linux-kernel@vger.kernel.org,
-	uclinux-dist-devel@blackfin.uclinux.org,
-	Greg Ungerer <gerg@uclinux.org>, uclinux-dev@uclinux.org,
-	linux-mtd@lists.infradead.org
-References: <20090526231902.GA6295@linux-sh.org> <1243380798-10089-1-git-send-email-vapier@gentoo.org> <20090526234616.GC6295@linux-sh.org> <200905262047.21041.vapier@gentoo.org>
+	Tue, 26 May 2009 21:06:10 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:52711 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752494AbZE0BGK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 21:06:10 -0400
+Message-ID: <4A1C9253.3060108@cn.fujitsu.com>
+Date: Wed, 27 May 2009 09:07:31 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200905262047.21041.vapier@gentoo.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Paul Menage <menage@google.com>
+CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.linux-foundation.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: [PATCH] cgroups: handle failure of cgroup_populate_dir() at 
+ mount/remount
+References: <4A16153C.2080004@cn.fujitsu.com>	 <20090522172545.1e5e5f81.kamezawa.hiroyu@jp.fujitsu.com> <6599ad830905261506x480f2167naf1034177bbc7036@mail.gmail.com>
+In-Reply-To: <6599ad830905261506x480f2167naf1034177bbc7036@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 26, 2009 at 08:46:24PM -0400, Mike Frysinger wrote:
-> On Tuesday 26 May 2009 19:46:16 Paul Mundt wrote:
-> > On Tue, May 26, 2009 at 07:33:16PM -0400, Mike Frysinger wrote:
-> > > +extern char _ebss;
-> > > +
-> >
-> > Also, it would be nice if the remaining architectures that define _ebss
-> > could shove this in their asm/sections.h so we can kill this off from the
-> > driver itself.
+Paul Menage wrote:
+> On Fri, May 22, 2009 at 1:25 AM, KAMEZAWA Hiroyuki
+> <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+>> Hm, shouldn't we allow "noprefix" to be effective only agaisnt cpuset ?
+>> I think it's just for backward-compatibility of cpuset.
+>> (I don't like the option at all.)
 > 
-> well, everyone would still have to define the _ebss symbol otherwise they'd 
-> get an undefined error due to how the map is initialized.
+> Yes, exposing the "noprefix" option externally was one of the mistakes
+> I made when developing cgroups.
+> 
+> It seems to me really unlikely that anyone is using "noprefix" for
 
-Yes, but that is not the issue. The issue is that the section
-extern has no place in a driver, this is precisely what asm/sections.h is
-for. Only microblaze and sh define it there today, and there is already
-inconsistency. Having the others define it for themselves and agreeing on
-a type would permit us to kill it off from the driver.
+And "noprefix" is not documented in cgroups.txt, so I guess not
+many people know this option. Even libcgroup doesn't handle it.
+
+> anything other than implicitly when mounting the "cpuset" filesystem.
+> So I'd be inclined to just forbid it if we're mounting more than just
+> the cpuset subsystem. A bit of a nasty abstraction violation, but it
+> makes more sense overall. The only problem is that someone *might* be
+> using it - do we have any way to determine how, and how big do they
+> have to be before we care?
+> 
+
+I think we can never know..
