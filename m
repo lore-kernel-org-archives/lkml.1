@@ -1,81 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760880AbZE0G5o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760902AbZE0G7T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760880AbZE0G5o (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 02:57:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755891AbZE0G5h
+	id S1760902AbZE0G7T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 02:59:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759028AbZE0G7K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 02:57:37 -0400
-Received: from gw1.transmode.se ([213.115.205.20]:37871 "EHLO gw1.transmode.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752274AbZE0G5g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 02:57:36 -0400
-X-Greylist: delayed 506 seconds by postgrey-1.27 at vger.kernel.org; Wed, 27 May 2009 02:57:36 EDT
-In-Reply-To: <D7CCA83BB0796C49BC0BB53B6AB1208934920A@zch01exm21.fsl.freescale.net>
-References: <D7CCA83BB0796C49BC0BB53B6AB1208934920A@zch01exm21.fsl.freescale.net>
-Subject: Re: Net: ucc_geth ethernet driver optimization space
-X-KeepSent: ED0E4273:051DFDD2-C12575C3:00246ED3;
- type=4; name=$KeepSent
-To: "Liu Dave-R63238" <DaveLiu@freescale.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       linuxppc-dev-bounces+joakim.tjernlund=transmode.se@ozlabs.org,
-       netdev@vger.kernel.org
-X-Mailer: Lotus Notes Release 8.5 December 05, 2008
-Message-ID: <OFED0E4273.051DFDD2-ONC12575C3.00246ED3-C12575C3.0025759F@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Wed, 27 May 2009 08:49:09 +0200
-X-MIMETrack: Serialize by Router on sesr04/Transmode(Release 8.5 HF407|May 07, 2009) at
- 2009-05-27 08:49:10
-MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
+	Wed, 27 May 2009 02:59:10 -0400
+Received: from casper.infradead.org ([85.118.1.10]:32881 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751040AbZE0G7J (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 02:59:09 -0400
+Subject: Re: [PATCH] sched: Support current clocksource handling in
+ fallback sched_clock().
+From: Peter Zijlstra <peterz@infradead.org>
+To: john stultz <johnstul@us.ibm.com>
+Cc: Linus Walleij <linus.ml.walleij@gmail.com>,
+       Paul Mundt <lethal@linux-sh.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Victor <linux@maxim.org.za>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-sh@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       John Stultz <johnstul@linux.vnet.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <1243378835.3275.30.camel@localhost>
+References: <20090526061532.GD9188@linux-sh.org>
+	 <63386a3d0905260731m655bfee3q82a6f52d71fa3cef@mail.gmail.com>
+	 <1243348681.23657.14.camel@twins>  <1243369423.3275.5.camel@localhost>
+	 <1243369815.6600.2.camel@laptop>  <1243370439.3275.13.camel@localhost>
+	 <1243371309.6600.8.camel@laptop>  <1243378835.3275.30.camel@localhost>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Wed, 27 May 2009 08:58:46 +0200
+Message-Id: <1243407526.23657.37.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2009-05-26 at 16:00 -0700, john stultz wrote:
 
+> Sure, I guess what I'm trying to pull out here is that should we try to
+> create some OK_FOR_SCHED_CLOCK flag for clocksources, and then we try to
+> make this generic so other arches can add that flag and be done, what is
+> the guidance we want to give to arch maintainers for setting that flag?
+> 
+> 1) Has to be very very fast. Can we put a number on this? 50ns to read?
 
-linuxppc-dev-bounces+joakim.tjernlund=transmode.se@ozlabs.org wrote on 27/05/2009 07:08:07:
->
-> Guys,
->
-> The ucc_geth ethernet driver have dozens of strong sync read/write
-> operation, such as in_be32/16/8, out_be32/16/8.
->
-> all of them is sync read/write, it is very expensive for performance.
->
-> For the critical patch, we can remove some unnecessary in_be(x),
-> out_be(x) with normal memory operation, and keep some necessary
-> memory barrier.
->
-> eg: BD access in the interrupt handler and start_xmit.
->
-> The BD operation only need the memory barrier between length/buffer
-> and status.
->
-> struct buffer descriptor {
->    u16 status;
->    u16 length;
->    u32 buffer;
-> } __attribute__ ((packed));
->
-> struct buffer descriptor *BD;
->
-> BD->length = xxxx;
-> BD->buffer = yyyy;
-> wmb();
-> BD->status = zzzz;
->
-> For powerpc, eieio is enough for 60x, mbar 1 is enough for e500.
-> Of couse, also need the memory clobber to avoid the compiler
-> reorder between them.
->
-> Thanks, Dave
+I'd express it in cpu cycles, but not sure, the very fastest the arch
+has :-) Just tell people this is in their scheduling hot-path and they
+might understand.
 
-Yes, pretty please :)
+> 2) How long does it have to be monotonic for? 
 
-You might want to combine status and length into one U32 though:
-BD->buffer = yyyy;
-wmb();
-BD->stat_len = zzzz << 16 | xxxx;
+Forever? (per cpu)
 
-  Jocke
+> Is it ok if it wraps every few seconds?
+
+No, if it wraps it needs to wrap on u64.
 
