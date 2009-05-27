@@ -1,78 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762067AbZE0J7e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761987AbZE0KBf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762067AbZE0J7e (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 05:59:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760898AbZE0J70
+	id S1761987AbZE0KBf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 06:01:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760745AbZE0KB1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 05:59:26 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:34534 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756238AbZE0J7Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 05:59:25 -0400
-Subject: Re: linux-next: manual merge of the vfs tree with the gfs2 tree
-From: Steven Whitehouse <swhiteho@redhat.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Al Viro <viro@ZenIV.linux.org.uk>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>
-In-Reply-To: <20090527115253.37abd576.sfr@canb.auug.org.au>
-References: <20090527115253.37abd576.sfr@canb.auug.org.au>
-Content-Type: text/plain
-Organization: Red Hat (UK) Ltd (Registered in England and Wales, No.
- 3798903) Registered office: Red Hat UK Ltd, Amberley Place, 107-111 Peascod
- Street, Windsor, Berkshire, SL4 ITE
-Date: Wed, 27 May 2009 10:58:51 +0100
-Message-Id: <1243418331.29604.445.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	Wed, 27 May 2009 06:01:27 -0400
+Received: from ch-smtp02.sth.basefarm.net ([80.76.149.213]:59468 "EHLO
+	ch-smtp02.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760628AbZE0KB0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 06:01:26 -0400
+Date: Wed, 27 May 2009 11:59:10 +0200
+To: jbarnes@virtuousgeek.org
+Cc: linux-kernel@vger.kernel.org, trivial@kernel.org
+Message-ID: <20090527095910.GA31832@mea.homelinux.org>
+References: <20090512100523.GA31131@mea.homelinux.org> <4A0A05FC.10906@gmail.com>
+MIME-Version: 1.0
+Content-Disposition: inline
+In-Reply-To: <4A0A05FC.10906@gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Mats Erik Andersson <mats.andersson@gisladisker.se>
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Rcpt-To: jbarnes@virtuousgeek.org, linux-kernel@vger.kernel.org, trivial@kernel.org
+X-SA-Exim-Mail-From: mats.andersson@gisladisker.se
+Subject: Re: [PATCH 1/1] pci: expose SMBus on Asus notebook A6L
+Content-Type: text/plain; charset=us-ascii
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on aun.utmark.mea)
+X-Originating-IP: 83.253.254.238
+X-Scan-Result: No virus found in message 1M9Fwl-0004QV-8N.
+X-Scan-Signature: ch-smtp02.sth.basefarm.net 1M9Fwl-0004QV-8N 60e1e056b08e59b07fa791d0d03d994a
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Some hardware observation on my suggested patch.
 
-On Wed, 2009-05-27 at 11:52 +1000, Stephen Rothwell wrote:
-> Hi Al,
+tisdag den 12 maj 2009 klockan 17:27 skrev Robert Hancock detta:
+> Mats Erik Andersson wrote:
+> >From: Mats Erik Andersson <mats.andersson@gisladisker.se>
+> >
+> >Addition of one unknown subsystem identifier to the
+> >quirks handler for chipset i82855GM_HB on notebook
+> >Asus A6L. This exposes the otherwise hidden SMBus
+> >controller within the south bridge ICH4-M.
+> >
+> >Signed-off-by: Mats Erik Andersson <mats.andersson@gisladisker.se>
+> >---
+> >
+> >Tried and successfully used on kernel 2.6.29 and 2.6.23.17.
+> >
+> >--- drivers/pci/quirks.c.orig	2009-05-09 00:47:21.000000000 +0200
+> >+++ drivers/pci/quirks.c	2009-05-12 11:20:04.000000000 +0200
+> >@@ -1068,8 +1068,9 @@ static void __init asus_hides_smbus_host
+> > 		else if (dev->device == PCI_DEVICE_ID_INTEL_82855GM_HB)
+> > 			switch (dev->subsystem_device) {
+> > 			case 0x1751: /* M2N notebook */
+> > 			case 0x1821: /* M5N notebook */
+> >+			case 0x1897: /* A6L notebook */
+> > 				asus_hides_smbus = 1;
+> > 			}
+> > 		else if (dev->device == PCI_DEVICE_ID_INTEL_82855PM_HB)
+> > 			switch (dev->subsystem_device) {
 > 
-> Today's linux-next merge of the vfs tree got a conflict in
-> fs/gfs2/ops_super.c between commit
-> 9e6e0a128bca0a151d8d3fbd9459b22fc21cfebb ("GFS2: Merge mount.c and
-> ops_super.c into super.c") from the gfs2 tree and commits
-> 17af8f24a7750ea3d947904f97eb6dfacf9a88aa ("gfs2: remove ->write_super and
-> stop maintaining ->s_dirt") and 8123178eb9ca12cde31a95170746e15a79528a62
-> ("push BKL down into ->put_super") from the vfs tree.
-> 
-> The former commit removed the file.  I have mechanically applied the
-> changes in the latter two commits to fs/gfs2/super.c (see below) and can
-> carry this as a merge fix as necessary.
-> -- 
-> Cheers,
-> Stephen Rothwell                    sfr@canb.auug.org.au
-> 
-Thanks for fixing this up.
+> This has to be done with caution. If the BIOS accesses the SMBus 
+> controller from ACPI AML code or SMI code, then allowing a Linux driver 
+> to access the controller may cause problems.
 
-> diff --git a/fs/gfs2/super.c b/fs/gfs2/super.c
-> index 40bcc37..c8930b3 100644
-> --- a/fs/gfs2/super.c
-> +++ b/fs/gfs2/super.c
-> @@ -719,6 +719,8 @@ static void gfs2_put_super(struct super_block *sb)
->  	int error;
->  	struct gfs2_jdesc *jd;
->  
-> +	lock_kernel();
-> +
->  	/*  Unfreeze the filesystem, if we need to  */
->  
->  	mutex_lock(&sdp->sd_freeze_lock);
-> @@ -785,17 +787,8 @@ restart:
->  
->  	/*  At this point, we're through participating in the lockspace  */
->  	gfs2_sys_fs_del(sdp);
-> -}
+My notebook Asus A6L can use the driver it87-isa without any
+modification to the vanilla kernel, but that only exposes the
+fan sensors and it only claims 0 RPM for all three measurements.
+I have been dissatisfies with the fan control for three years now,
+since it never completely slows down!
 
+When exposing the hidden SMBus, thus using driver max6657-i2c,
+the temperature sensors for motherboard and cpu becomes accessible
+for lm-sensors for the first time. However, this cpu temperature
+coincides with the claims done by the proc-acpi entry. 
 
-Al/Christoph, what is the purpose of the lock_kernel() ? I don't see why
-this is required. What is it protecting against?
+I am since some time now using a recompiled kernel with my suggested
+patch activated, and I have as of yet not noticed any difference
+in system behaviour. On the other hand I still cannot silence
+the fan.
 
-Steve.
+Regards
+
+Mats Erik Andersson
 
 
