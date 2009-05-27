@@ -1,64 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761329AbZE0Tda@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759148AbZE0TfQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761329AbZE0Tda (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 15:33:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755232AbZE0TdX
+	id S1759148AbZE0TfQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 15:35:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755664AbZE0TfC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 15:33:23 -0400
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:40317 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753691AbZE0TdW (ORCPT
+	Wed, 27 May 2009 15:35:02 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:54292 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751548AbZE0TfA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 15:33:22 -0400
-Date: Wed, 27 May 2009 15:33:12 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@gentwo.org
-To: linux-kernel@vger.kernel.org
-cc: Tejun Heo <tj@kernel.org>, Dan Williams <dan.j.williams@intel.com>,
-       Eric Biederman <ebiederm@aristanetworks.com>,
-       Stephen Hemminger <shemminger@vyatta.com>,
-       Trond Myklebust <Trond.Myklebust@netapp.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       David L Stevens <dlstevens@us.ibm.com>, mingo@elte.hu,
-       rusty@rustcorp.com.au, davem@davemloft.net
-Subject: Re: [my_cpu_ptr 3/5] Elimninate get/put_cpu
-In-Reply-To: <20090527180716.187512073@gentwo.org>
-Message-ID: <alpine.DEB.1.10.0905271532270.30618@gentwo.org>
-References: <20090527180635.008102701@gentwo.org> <20090527180716.187512073@gentwo.org>
+	Wed, 27 May 2009 15:35:00 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Wed, 27 May 2009 12:28:57 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@makko.or.mcafeemobile.com
+To: "Michael S. Tsirkin" <mst@redhat.com>
+cc: Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       avi@redhat.com, mtosatti@redhat.com
+Subject: Re: [KVM PATCH v10] kvm: add support for irqfd
+In-Reply-To: <20090527184106.GA18463@redhat.com>
+Message-ID: <alpine.DEB.1.10.0905271222590.20243@makko.or.mcafeemobile.com>
+References: <20090520142234.22285.72274.stgit@dev.haskins.net> <20090527130447.GA11643@redhat.com> <4A1D48FA.9080403@novell.com> <20090527184106.GA18463@redhat.com>
 User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-dmaengine.c was not compiled.... Fixes:
+On Wed, 27 May 2009, Michael S. Tsirkin wrote:
 
-Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
+> On Wed, May 27, 2009 at 10:06:50AM -0400, Gregory Haskins wrote:
+> > Michael S. Tsirkin wrote:
+> > > On Wed, May 20, 2009 at 10:30:49AM -0400, Gregory Haskins wrote:
+> > >   
+> > >> +static int
+> > >> +kvm_assign_irqfd(struct kvm *kvm, int fd, int gsi)
+> > >> +{
+> > >> +	struct _irqfd *irqfd;
+> > >> +	struct file *file = NULL;
+> > >> +	int ret;
+> > >> +
+> > >> +	irqfd = kzalloc(sizeof(*irqfd), GFP_KERNEL);
+> > >> +	if (!irqfd)
+> > >> +		return -ENOMEM;
+> > >> +
+> > >> +	irqfd->kvm = kvm;
+> > >> +	irqfd->gsi = gsi;
+> > >> +	INIT_LIST_HEAD(&irqfd->list);
+> > >> +	INIT_WORK(&irqfd->work, irqfd_inject);
+> > >> +
+> > >> +	/*
+> > >> +	 * Embed the file* lifetime in the irqfd.
+> > >> +	 */
+> > >> +	file = fget(fd);
+> > >> +	if (IS_ERR(file)) {
+> > >> +		ret = PTR_ERR(file);
+> > >> +		goto fail;
+> > >> +	}
+> > >>     
+> > >
+> > > So we get a reference to a file, and unless the user is nice to us, it
+> > > will only be dropped when kvm char device file is closed?
+> > > I think this will deadlock if the fd in question is the open kvm char device.
+> > >
+> > >
+> > >   
+> > Hmm...I hadn't considered this possibility, though I am not sure if it
+> > would cause a deadlock in the pattern you suggest.  It seems more like
+> > it would result in, at worst, an extra reference to itself (and thus a
+> > leak) rather than a deadlock...
+> > 
+> > I digress.  In either case, perhaps I should s/fget/eventfd_fget to at
+> > least limit the type of fd to eventfd.  I was trying to be "slick" by
+> > not needing the eventfd_fget() exported, but I am going to need to
+> > export it later anyway for iosignalfd, so its probably a moot point.
+> > 
+> > Thanks Michael,
+> > -Greg
+> > 
+> 
+> This only works as long as eventfd does not do fget on some fd as well.
+> Which it does not do now, and may never do - but we create a fragile
+> system this way.
+> 
+> I think it's really wrong, fundamentally, to keep a reference to a
+> file until another file is closed, unless you are code under fs/.
+> We will get nasty circular references sooner or later.
+> 
+> Isn't the real reason we use fd to be able to support the same interface
+> on top of both kvm and lguest?
+> And if so, wouldn't some kind of bus be a better solution?
+
+Another solution, that I proposed in the past, is having irqfd hold no 
+references to the eventfd. It's just register (holding an eventfd-get()) 
+for events (in the way that currently does), notice the POLLHUP, unchain 
+from it, and propagate the eventfd-close event to whatever the irqfd logic 
+is supposed to.
+
+
+
+- Davide
+
+
 
 ---
- drivers/dma/dmaengine.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ fs/eventfd.c |   10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
 
-Index: linux-2.6/drivers/dma/dmaengine.c
+Index: linux-2.6.mod/fs/eventfd.c
 ===================================================================
---- linux-2.6.orig/drivers/dma/dmaengine.c	2009-05-27 14:30:32.000000000 -0500
-+++ linux-2.6/drivers/dma/dmaengine.c	2009-05-27 14:31:19.000000000 -0500
-@@ -328,7 +328,7 @@ struct dma_chan *dma_find_channel(enum d
+--- linux-2.6.mod.orig/fs/eventfd.c	2009-05-27 12:10:03.000000000 -0700
++++ linux-2.6.mod/fs/eventfd.c	2009-05-27 12:16:57.000000000 -0700
+@@ -59,7 +59,15 @@ int eventfd_signal(struct file *file, in
+ 
+ static int eventfd_release(struct inode *inode, struct file *file)
  {
- 	struct dma_chan *chan;
-
--	preempt_disable()
-+	preempt_disable();
- 	chan = my_cpu_ptr(channel_table[tx_type])->chan;
- 	preempt_enable();
-
-@@ -918,7 +918,7 @@ dma_async_memcpy_pg_to_pg(struct dma_cha
- 	preempt_disable();
- 	my_cpu_ptr(chan->local)->bytes_transferred += len;
- 	my_cpu_ptr(chan->local)->memcpy_count++;
--	preempt_disable();
-+	preempt_enable();
-
- 	return cookie;
+-	kfree(file->private_data);
++	struct eventfd_ctx *ctx = file->private_data;
++
++	/*
++	 * No need to hold the lock here, since we are on the file cleanup
++	 * path and the ones still attached to the wait queue will be
++	 * serialized by wake_up_locked_poll().
++	 */
++	wake_up_locked_poll(&ctx->wqh, POLLHUP);
++	kfree(ctx);
+ 	return 0;
  }
+ 
