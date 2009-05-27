@@ -1,63 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761341AbZE0JuW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760996AbZE0Jv1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761341AbZE0JuW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 05:50:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759733AbZE0JuK
+	id S1760996AbZE0Jv1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 05:51:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759733AbZE0JvT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 05:50:10 -0400
-Received: from relay2.sgi.com ([192.48.179.30]:46189 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756839AbZE0JuI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 05:50:08 -0400
-Date: Wed, 27 May 2009 04:50:06 -0500
-From: Robin Holt <holt@sgi.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Robin Holt <holt@sgi.com>, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>,
+	Wed, 27 May 2009 05:51:19 -0400
+Received: from mga06.intel.com ([134.134.136.21]:64329 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755794AbZE0JvT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 05:51:19 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,258,1241420400"; 
+   d="scan'208";a="416013622"
+Date: Wed, 27 May 2009 11:53:28 +0200
+From: Samuel Ortiz <sameo@linux.intel.com>
+To: "John W. Linville" <linville@tuxdriver.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
-       Wu Fengguang <fengguang.wu@intel.com>
-Subject: Re: [PATCH v3] zone_reclaim is always 0 by default
-Message-ID: <20090527095006.GE29447@sgi.com>
-References: <20090524214554.084F.A69D9226@jp.fujitsu.com> <20090525114135.GD29447@sgi.com> <20090527164549.68B4.A69D9226@jp.fujitsu.com>
+       Kay Sievers <kay.sievers@vrfy.org>, holtmann@linux.intel.com,
+       yi.zhu@intel.com, linux-kernel@vger.kernel.org, greg@kroah.com
+Subject: Re: [PATCH] firmware: Allocate firmware id dynamically
+Message-ID: <20090527095326.GD3777@sortiz.org>
+References: <20090526140423.GA14683@sortiz.org> <ac3eb2510905260711hb273541i8d69128b88933f7f@mail.gmail.com> <20090526132351.9805f1e8.akpm@linux-foundation.org> <20090527115748.9ff0bad1.sfr@canb.auug.org.au> <20090527081732.GB3777@sortiz.org> <20090527091611.GA3986@tuxdriver.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090527164549.68B4.A69D9226@jp.fujitsu.com>
+In-Reply-To: <20090527091611.GA3986@tuxdriver.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 27, 2009 at 05:06:18PM +0900, KOSAKI Motohiro wrote:
-> your last patch is one of considerable thing. but it has one weakness.
-> in general "ifdef x86" is wrong idea. almost minor architecture don't
-> have sufficient tester. the difference against x86 often makes bug.
-> Then, unnecessary difference is hated by much people.
-
-Let me start by saying I can barely understand this entire email.
-I appreciate that english is a second language for you and you are
-doing a service to the linux community with your contributions despite
-the language barrier.  I commend you for your efforts.  I do ask that if
-there was more information contained in your email than I am replying too,
-please reword it so I may understand.
-
-IIRC, my last patch made it an arch header option to set zone_reclaim_mode
-to any value it desired while leaving the default as 1.  The only arch
-that changed the default was x86 (both 32 and 64 bit).  That seems the
-least disruptive to existing users.
-
-> So, I think we have two selectable choice.
+On Wed, May 27, 2009 at 11:16:13AM +0200, John W. Linville wrote:
+> On Wed, May 27, 2009 at 10:17:33AM +0200, Samuel Ortiz wrote:
 > 
-> 1. remove zone_reclaim default setting completely (this patch)
-> 2. Only PowerPC and IA64 have default zone_reclaim_mode settings,
->    other architecture always use zone_reclaim_mode=0.
+> > > next-20090526:drivers/net/wireless/p54/p54usb.c
+> 
+> > All of those have been taken care of by my last patch set, see:
+> > http://lkml.org/lkml/2009/5/26/518
+> > 
+> > The p54usb one has been sent to John and linux-wireless as it's coming from
+> > wireless-testing.
+> 
+> Is that patch dependent on other p54 bits in wireless-next-2.6?
+The p54usb.c FIRMWARE_NAME_MAX reference was introduce with commit
+1ca5f2e94c40b04d5dec437cd41fd5ba12aaac31 from your wireless-next-2.6 tree.
 
-Looks like 2 is the inverse of my patch.  That is fine as well.  The only
-reason I formed the patch with the default of 1 and override on x86 is
-it was one less line of change and one less file.
+Cheers,
+Samuel.
 
-Thanks,
-Robin
+ 
+> John
+> -- 
+> John W. Linville		Someday the world will need a hero, and you
+> linville@tuxdriver.com			might be all we have.  Be ready.
+
+-- 
+Intel Open Source Technology Centre
+http://oss.intel.com/
