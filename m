@@ -1,307 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761152AbZE0L5b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762583AbZE0L6U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761152AbZE0L5b (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 07:57:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758258AbZE0L5Y
+	id S1762583AbZE0L6U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 07:58:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760739AbZE0L6H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 07:57:24 -0400
-Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:56839 "EHLO
-	monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757047AbZE0L5X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 07:57:23 -0400
-From: Michal Simek <monstr@monstr.eu>
-To: linux-kernel@vger.kernel.org
-Cc: john.williams@petalogix.com, microblaze-uclinux@itee.uq.edu.au,
-       michal.simek@petalogix.com, arnd@arndb.de,
-       Michal Simek <monstr@monstr.eu>
-Subject: [PATCH] microblaze_mmu_v2: Context handling - mmu_context.c/h
-Date: Wed, 27 May 2009 13:57:12 +0200
-Message-Id: <1243425432-14295-1-git-send-email-monstr@monstr.eu>
-X-Mailer: git-send-email 1.5.5.1
+	Wed, 27 May 2009 07:58:07 -0400
+Received: from hera.kernel.org ([140.211.167.34]:35058 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758258AbZE0L6E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 07:58:04 -0400
+Date: Wed, 27 May 2009 11:57:33 GMT
+From: tip-bot for Eero Nurkkala <ext-eero.nurkkala@nokia.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       venkatesh.pallipadi@intel.com, riel@redhat.com, tero.kristo@nokia.com,
+       ext-eero.nurkkala@nokia.com, tglx@linutronix.de
+Reply-To: riel@redhat.com, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, tero.kristo@nokia.com,
+       ext-eero.nurkkala@nokia.com, venkatesh.pallipadi@intel.com,
+       tglx@linutronix.de
+In-Reply-To: <12432346571351-git-send-email-ext-eero.nurkkala@nokia.com>
+References: <12432346571351-git-send-email-ext-eero.nurkkala@nokia.com>
+Subject: [tip:timers/urgent] NOHZ: Properly feed cpufreq ondemand governor
+Message-ID: <tip-4e67ac87c460a3c876019fa05149591122ec5287@git.kernel.org>
+Git-Commit-ID: 4e67ac87c460a3c876019fa05149591122ec5287
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 27 May 2009 11:57:34 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Michal Simek <monstr@monstr.eu>
+Commit-ID:  4e67ac87c460a3c876019fa05149591122ec5287
+Gitweb:     http://git.kernel.org/tip/4e67ac87c460a3c876019fa05149591122ec5287
+Author:     Eero Nurkkala <ext-eero.nurkkala@nokia.com>
+AuthorDate: Mon, 25 May 2009 09:57:37 +0300
+Committer:  Thomas Gleixner <tglx@linutronix.de>
+CommitDate: Wed, 27 May 2009 13:55:00 +0200
+
+NOHZ: Properly feed cpufreq ondemand governor
+
+A call from irq_exit() may occasionally pause the timing
+info for cpufreq ondemand governor. This results in the
+cpufreq ondemand governor to fail to calculate the
+system load properly. Thus, relocate the checks for this
+particular case to keep the governor always functional.
+
+[ tglx: moved the check to the top of the function ]
+
+Signed-off-by: Eero Nurkkala <ext-eero.nurkkala@nokia.com>
+Reported-by: Tero Kristo <tero.kristo@nokia.com>
+Acked-by: Rik van Riel <riel@redhat.com>
+Acked-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+LKML-Reference: <12432346571351-git-send-email-ext-eero.nurkkala@nokia.com>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+
+
 ---
- arch/microblaze/include/asm/mmu_context.h          |   26 +---
- arch/microblaze/include/asm/mmu_context_mm.h       |  140 ++++++++++++++++++++
- .../asm/{mmu_context.h => mmu_context_no.h}        |    2 +
- arch/microblaze/mm/mmu_context.c                   |   70 ++++++++++
- 4 files changed, 217 insertions(+), 21 deletions(-)
- rewrite arch/microblaze/include/asm/mmu_context.h (100%)
- create mode 100644 arch/microblaze/include/asm/mmu_context_mm.h
- rename arch/microblaze/include/asm/{mmu_context.h => mmu_context_no.h} (87%)
- create mode 100644 arch/microblaze/mm/mmu_context.c
+ kernel/time/tick-sched.c |   12 ++++++++----
+ 1 files changed, 8 insertions(+), 4 deletions(-)
 
-diff --git a/arch/microblaze/include/asm/mmu_context.h b/arch/microblaze/include/asm/mmu_context.h
-dissimilarity index 100%
-index 150ca01..385fed1 100644
---- a/arch/microblaze/include/asm/mmu_context.h
-+++ b/arch/microblaze/include/asm/mmu_context.h
-@@ -1,21 +1,5 @@
--/*
-- * Copyright (C) 2006 Atmark Techno, Inc.
-- *
-- * This file is subject to the terms and conditions of the GNU General Public
-- * License. See the file "COPYING" in the main directory of this archive
-- * for more details.
-- */
--
--#ifndef _ASM_MICROBLAZE_MMU_CONTEXT_H
--#define _ASM_MICROBLAZE_MMU_CONTEXT_H
--
--# define init_new_context(tsk, mm)		({ 0; })
--
--# define enter_lazy_tlb(mm, tsk)		do {} while (0)
--# define change_mm_context(old, ctx, _pml4)	do {} while (0)
--# define destroy_context(mm)			do {} while (0)
--# define deactivate_mm(tsk, mm)			do {} while (0)
--# define switch_mm(prev, next, tsk)		do {} while (0)
--# define activate_mm(prev, next)		do {} while (0)
--
--#endif /* _ASM_MICROBLAZE_MMU_CONTEXT_H */
-+#ifdef CONFIG_MMU
-+# include "mmu_context_mm.h"
-+#else
-+# include "mmu_context_no.h"
-+#endif
-diff --git a/arch/microblaze/include/asm/mmu_context_mm.h b/arch/microblaze/include/asm/mmu_context_mm.h
-new file mode 100644
-index 0000000..3e5c254
---- /dev/null
-+++ b/arch/microblaze/include/asm/mmu_context_mm.h
-@@ -0,0 +1,140 @@
-+/*
-+ * Copyright (C) 2008-2009 Michal Simek <monstr@monstr.eu>
-+ * Copyright (C) 2008-2009 PetaLogix
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ */
-+
-+#ifndef _ASM_MICROBLAZE_MMU_CONTEXT_H
-+#define _ASM_MICROBLAZE_MMU_CONTEXT_H
-+
-+#include <asm/atomic.h>
-+#include <asm/bitops.h>
-+#include <asm/mmu.h>
-+#include <asm-generic/mm_hooks.h>
-+
-+# ifdef __KERNEL__
-+/*
-+ * This function defines the mapping from contexts to VSIDs (virtual
-+ * segment IDs).  We use a skew on both the context and the high 4 bits
-+ * of the 32-bit virtual address (the "effective segment ID") in order
-+ * to spread out the entries in the MMU hash table.
-+ */
-+# define CTX_TO_VSID(ctx, va)	(((ctx) * (897 * 16) + ((va) >> 28) * 0x111) \
-+				 & 0xffffff)
-+
-+/*
-+   MicroBlaze has 256 contexts, so we can just rotate through these
-+   as a way of "switching" contexts.  If the TID of the TLB is zero,
-+   the PID/TID comparison is disabled, so we can use a TID of zero
-+   to represent all kernel pages as shared among all contexts.
-+ */
-+
-+static inline void enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk)
-+{
-+}
-+
-+# define NO_CONTEXT	256
-+# define LAST_CONTEXT	255
-+# define FIRST_CONTEXT	1
-+
-+/*
-+ * Set the current MMU context.
-+ * This is done byloading up the segment registers for the user part of the
-+ * address space.
-+ *
-+ * Since the PGD is immediately available, it is much faster to simply
-+ * pass this along as a second parameter, which is required for 8xx and
-+ * can be used for debugging on all processors (if you happen to have
-+ * an Abatron).
-+ */
-+extern void set_context(mm_context_t context, pgd_t *pgd);
-+
-+/*
-+ * Bitmap of contexts in use.
-+ * The size of this bitmap is LAST_CONTEXT + 1 bits.
-+ */
-+extern unsigned long context_map[];
-+
-+/*
-+ * This caches the next context number that we expect to be free.
-+ * Its use is an optimization only, we can't rely on this context
-+ * number to be free, but it usually will be.
-+ */
-+extern mm_context_t next_mmu_context;
-+
-+/*
-+ * Since we don't have sufficient contexts to give one to every task
-+ * that could be in the system, we need to be able to steal contexts.
-+ * These variables support that.
-+ */
-+extern atomic_t nr_free_contexts;
-+extern struct mm_struct *context_mm[LAST_CONTEXT+1];
-+extern void steal_context(void);
-+
-+/*
-+ * Get a new mmu context for the address space described by `mm'.
-+ */
-+static inline void get_mmu_context(struct mm_struct *mm)
-+{
-+	mm_context_t ctx;
-+
-+	if (mm->context != NO_CONTEXT)
-+		return;
-+	while (atomic_dec_if_positive(&nr_free_contexts) < 0)
-+		steal_context();
-+	ctx = next_mmu_context;
-+	while (test_and_set_bit(ctx, context_map)) {
-+		ctx = find_next_zero_bit(context_map, LAST_CONTEXT+1, ctx);
-+		if (ctx > LAST_CONTEXT)
-+			ctx = 0;
-+	}
-+	next_mmu_context = (ctx + 1) & LAST_CONTEXT;
-+	mm->context = ctx;
-+	context_mm[ctx] = mm;
-+}
-+
-+/*
-+ * Set up the context for a new address space.
-+ */
-+# define init_new_context(tsk, mm)	(((mm)->context = NO_CONTEXT), 0)
-+
-+/*
-+ * We're finished using the context for an address space.
-+ */
-+static inline void destroy_context(struct mm_struct *mm)
-+{
-+	if (mm->context != NO_CONTEXT) {
-+		clear_bit(mm->context, context_map);
-+		mm->context = NO_CONTEXT;
-+		atomic_inc(&nr_free_contexts);
-+	}
-+}
-+
-+static inline void switch_mm(struct mm_struct *prev, struct mm_struct *next,
-+			     struct task_struct *tsk)
-+{
-+	tsk->thread.pgdir = next->pgd;
-+	get_mmu_context(next);
-+	set_context(next->context, next->pgd);
-+}
-+
-+/*
-+ * After we have set current->mm to a new value, this activates
-+ * the context for the new mm so we see the new mappings.
-+ */
-+static inline void activate_mm(struct mm_struct *active_mm,
-+			struct mm_struct *mm)
-+{
-+	current->thread.pgdir = mm->pgd;
-+	get_mmu_context(mm);
-+	set_context(mm->context, mm->pgd);
-+}
-+
-+extern void mmu_context_init(void);
-+
-+# endif /* __KERNEL__ */
-+#endif /* _ASM_MICROBLAZE_MMU_CONTEXT_H */
-diff --git a/arch/microblaze/include/asm/mmu_context.h b/arch/microblaze/include/asm/mmu_context_no.h
-similarity index 87%
-rename from arch/microblaze/include/asm/mmu_context.h
-rename to arch/microblaze/include/asm/mmu_context_no.h
-index 150ca01..ba55671 100644
---- a/arch/microblaze/include/asm/mmu_context.h
-+++ b/arch/microblaze/include/asm/mmu_context_no.h
-@@ -1,4 +1,6 @@
- /*
-+ * Copyright (C) 2008-2009 Michal Simek <monstr@monstr.eu>
-+ * Copyright (C) 2008-2009 PetaLogix
-  * Copyright (C) 2006 Atmark Techno, Inc.
-  *
-  * This file is subject to the terms and conditions of the GNU General Public
-diff --git a/arch/microblaze/mm/mmu_context.c b/arch/microblaze/mm/mmu_context.c
-new file mode 100644
-index 0000000..26ff82f
---- /dev/null
-+++ b/arch/microblaze/mm/mmu_context.c
-@@ -0,0 +1,70 @@
-+/*
-+ * This file contains the routines for handling the MMU.
-+ *
-+ *    Copyright (C) 2007 Xilinx, Inc.  All rights reserved.
-+ *
-+ *  Derived from arch/ppc/mm/4xx_mmu.c:
-+ *  -- paulus
-+ *
-+ *  Derived from arch/ppc/mm/init.c:
-+ *    Copyright (C) 1995-1996 Gary Thomas (gdt@linuxppc.org)
-+ *
-+ *  Modifications by Paul Mackerras (PowerMac) (paulus@cs.anu.edu.au)
-+ *  and Cort Dougan (PReP) (cort@cs.nmt.edu)
-+ *    Copyright (C) 1996 Paul Mackerras
-+ *  Amiga/APUS changes by Jesper Skov (jskov@cygnus.co.uk).
-+ *
-+ *  Derived from "arch/i386/mm/init.c"
-+ *    Copyright (C) 1991, 1992, 1993, 1994  Linus Torvalds
-+ *
-+ *  This program is free software; you can redistribute it and/or
-+ *  modify it under the terms of the GNU General Public License
-+ *  as published by the Free Software Foundation; either version
-+ *  2 of the License, or (at your option) any later version.
-+ *
-+ */
-+
-+#include <linux/mm.h>
-+#include <linux/init.h>
-+
-+#include <asm/tlbflush.h>
-+#include <asm/mmu_context.h>
-+
-+mm_context_t next_mmu_context;
-+unsigned long context_map[LAST_CONTEXT / BITS_PER_LONG + 1];
-+atomic_t nr_free_contexts;
-+struct mm_struct *context_mm[LAST_CONTEXT+1];
-+
-+/*
-+ * Initialize the context management stuff.
-+ */
-+void __init mmu_context_init(void)
-+{
+diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
+index d3f1ef4..d3d6f3f 100644
+--- a/kernel/time/tick-sched.c
++++ b/kernel/time/tick-sched.c
+@@ -218,8 +218,15 @@ void tick_nohz_stop_sched_tick(int inidle)
+ 	struct clock_event_device *dev = __get_cpu_var(tick_cpu_device).evtdev;
+ 	int cpu;
+ 
+-	local_irq_save(flags);
 +	/*
-+	 * The use of context zero is reserved for the kernel.
-+	 * This code assumes FIRST_CONTEXT < 32.
++	 * Call to tick_nohz_start_idle stops the last_update_time from being
++	 * updated. Thus, it must not be called in the event we are called from
++	 * irq_exit() with the prior state different than idle.
 +	 */
-+	context_map[0] = (1 << FIRST_CONTEXT) - 1;
-+	next_mmu_context = FIRST_CONTEXT;
-+	atomic_set(&nr_free_contexts, LAST_CONTEXT - FIRST_CONTEXT + 1);
-+}
-+
-+/*
-+ * Steal a context from a task that has one at the moment.
-+ *
-+ * This isn't an LRU system, it just frees up each context in
-+ * turn (sort-of pseudo-random replacement :).  This would be the
-+ * place to implement an LRU scheme if anyone were motivated to do it.
-+ */
-+void steal_context(void)
-+{
-+	struct mm_struct *mm;
-+
-+	/* free up context `next_mmu_context' */
-+	/* if we shouldn't free context 0, don't... */
-+	if (next_mmu_context < FIRST_CONTEXT)
-+		next_mmu_context = FIRST_CONTEXT;
-+	mm = context_mm[next_mmu_context];
-+	flush_tlb_mm(mm);
-+	destroy_context(mm);
-+}
--- 
-1.5.5.1
-
++	if (!inidle && !ts->inidle)
++		return;
+ 
++	local_irq_save(flags);
+ 	cpu = smp_processor_id();
+ 	ts = &per_cpu(tick_cpu_sched, cpu);
+ 	now = tick_nohz_start_idle(ts);
+@@ -239,9 +246,6 @@ void tick_nohz_stop_sched_tick(int inidle)
+ 	if (unlikely(ts->nohz_mode == NOHZ_MODE_INACTIVE))
+ 		goto end;
+ 
+-	if (!inidle && !ts->inidle)
+-		goto end;
+-
+ 	ts->inidle = 1;
+ 
+ 	if (need_resched())
