@@ -1,78 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762115AbZE0MLU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759659AbZE0MSU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762115AbZE0MLU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 08:11:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759312AbZE0MLH
+	id S1759659AbZE0MSU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 08:18:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752115AbZE0MSM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 08:11:07 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:49642 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758111AbZE0MLF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 08:11:05 -0400
-Message-ID: <4A1D2DD8.2050709@redhat.com>
-Date: Wed, 27 May 2009 15:11:04 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Wed, 27 May 2009 08:18:12 -0400
+Received: from mx-out2.daemonmail.net ([216.104.160.39]:51618 "EHLO
+	mx-out2.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751795AbZE0MSL convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 08:18:11 -0400
+From: "Michael S. Zick" <lkml@morethan.org>
+Reply-To: lkml@morethan.org
+To: Harald Welte <HaraldWelte@viatech.com>
+Subject: Re:[VIA Support] was: [BUG FIX] Make x86_32 uni-processor Atomic ops, Atomic
+Date: Wed, 27 May 2009 07:18:08 -0500
+User-Agent: KMail/1.9.9
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+References: <200905221139.26941.lkml@morethan.org> <4A188A48.5000208@zytor.com> <20090524064905.GH20452@prithivi.gnumonks.org>
+In-Reply-To: <20090524064905.GH20452@prithivi.gnumonks.org>
 MIME-Version: 1.0
-To: Gregory Haskins <ghaskins@novell.com>
-CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Davide Libenzi <davidel@xmailserver.org>, mtosatti@redhat.com,
-       Mark McLoughlin <markmc@redhat.com>
-Subject: Re: [KVM PATCH v4 3/3] kvm: add iosignalfd support
-References: <20090526191010.20860.75372.stgit@dev.haskins.net> <20090526191539.20860.1385.stgit@dev.haskins.net> <4A1D01F8.8080508@redhat.com> <4A1D285C.9050008@novell.com>
-In-Reply-To: <4A1D285C.9050008@novell.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200905270718.11093.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gregory Haskins wrote:
->
->> What happens if you register to iosignalfds for the same address but
->> with different cookies (a very practical scenario)?
->>     
->
-> This is really only supported at the iosignal interface level.  Today,
-> you can do this and the registration will succeed, but at run-time an
-> IO-exit will stop at the first in_range() hit it finds.  Therefore, you
-> will only get service on the first/lowest registered range.
->
-> I knew this was a limitation of the current io_bus, but I put the
-> feature into iosignalfd anyway so that the user/kern interface was
-> robust enough to support the notion should we ever need it (and can thus
-> patch io_bus at that time).  Perhaps that is short-sighted because
-> userspace would never know its ranges weren't really registered properly.
->
-> I guess its simple enough to have io_bus check all devices for a match
-> instead of stopping on the first.  Should I just make a patch to fix
-> this, or should I fix iosignalfd to check for in_range matches and fail
-> if it finds overlap?  (We could then add a CAP_OVERLAP_IO bit in the
-> future if we finally fix the io_bus capability).  I am inclined to lean
-> towards option 2, since its not known whether this will ever be useful,
-> and io_bus scanning is in a hot-path.
->
-> Thinking about it some more, I wonder if we should just get rid of the
-> notion of overlap to begin with.  Its a slippery slope (should we also
-> return to userspace after scanning and matching io_bus to see if it has
-> any overlap too?).  I am not sure if it would ever be used (real
-> hardware doesn't have multiple devices at the same address), and we can
-> always have multiple end-points mux from one iosignalfd if we really
-> need that.  Thoughts?
->   
+On Sun May 24 2009, Harald Welte wrote:
+> 
+> Once I understand it in full detail, I can talk to the right people inside
+> CentaurLabs (VIA's CPU division).  
+> 
+> If somebody (optionally) can phrase a precise technical question that I can
+> directly forward to somebody with low-level x86 knowledge but no Linux background,
+> it would definitely help speeding up the process.
+> 
 
-Multiple cookies on the same address are required by virtio.  You can't 
-mux since the data doesn't go anywhere.
+What is the PCI Cache Line size in the CX700?  In the CN896?
 
-Virtio can survive by checking all rings on a notify, and we can later 
-add a mechanism that has a distinct address for each ring, but let's see 
-if we can cope with multiple cookies.  Mark?
+Ref:
+arch/x86/pci/common.c
 
-You could search existing iosignalfds for the same address and re-use 
-the same iodevice.  I don't want to search the entire list since that 
-precludes tricks like using hashtables or sorting the list by frequency 
-of access.
+As in:
+        /*
+         * Assume PCI cacheline size of 32 bytes for all x86s except K7/K8
+         * and P4. It's also good for 386/486s (which actually have 16)
+         * as quite a few PCI devices do not support smaller values.
+         */
 
--- 
-error compiling committee.c: too many arguments to function
+        pci_cache_line_size = 32 >> 2;
+        if (c->x86 >= 6 && c->x86_vendor == X86_VENDOR_AMD)
+                pci_cache_line_size = 64 >> 2;  /* K7 & K8 */
+        else if (c->x86 > 6 && c->x86_vendor == X86_VENDOR_INTEL)
+                pci_cache_line_size = 128 >> 2; /* P4 */
 
+A problem with cache coherency, alignment, or consistency would explain
+the problems I am seeing - and the differences in the test cases.
+
+Mike
