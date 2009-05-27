@@ -1,61 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762715AbZE0O2e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932098AbZE0Oa1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762715AbZE0O2e (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 10:28:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760817AbZE0O20
+	id S932098AbZE0Oa1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 10:30:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760817AbZE0OaQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 10:28:26 -0400
-Received: from sabe.cs.wisc.edu ([128.105.6.20]:59073 "EHLO sabe.cs.wisc.edu"
+	Wed, 27 May 2009 10:30:16 -0400
+Received: from THUNK.ORG ([69.25.196.29]:36784 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753996AbZE0O2Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 10:28:25 -0400
-Message-ID: <4A1D4DBA.8050802@cs.wisc.edu>
-Date: Wed, 27 May 2009 09:27:06 -0500
-From: Mike Christie <michaelc@cs.wisc.edu>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	id S1758598AbZE0OaP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 10:30:15 -0400
+Date: Wed, 27 May 2009 10:30:06 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Jan Kara <jack@suse.cz>
+Cc: LKML <linux-kernel@vger.kernel.org>, npiggin@suse.de,
+       linux-ext4@vger.kernel.org,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [PATCH 05/11] ext4: Make sure blocks are properly allocated
+	under mmaped page even when blocksize < pagesize
+Message-ID: <20090527143006.GC10842@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Jan Kara <jack@suse.cz>,
+	LKML <linux-kernel@vger.kernel.org>, npiggin@suse.de,
+	linux-ext4@vger.kernel.org,
+	"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+References: <1243429268-3028-1-git-send-email-jack@suse.cz> <1243429268-3028-6-git-send-email-jack@suse.cz>
 MIME-Version: 1.0
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-scsi <linux-scsi@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH] [SCSI]: scsi_transport_iscsi.c return -EOVERFLOW
- for Too many iscsi targets
-References: <1243401279.3118.2.camel@localhost.localdomain>
-In-Reply-To: <1243401279.3118.2.camel@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1243429268-3028-6-git-send-email-jack@suse.cz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jaswinder Singh Rajput wrote:
-> setting err as -EOVERFLOW for Too many iscsi targets.
+On Wed, May 27, 2009 at 03:01:02PM +0200, Jan Kara wrote:
+> In a situation like:
+>   truncate(f, 1024);
+>   a = mmap(f, 0, 4096);
+>   a[0] = 'a';
+>   truncate(f, 4096);
 > 
-> Also fixes compiler warning for gcc < 4.3.3 :
+> we end up with a dirty page which does not have all blocks allocated /
+> reserved.  Fix the problem by using new VFS infrastructure.
 > 
->   CC      drivers/scsi/scsi_transport_iscsi.o
-> drivers/scsi/scsi_transport_iscsi.c: In function ‘iscsi_add_session’:
-> drivers/scsi/scsi_transport_iscsi.c:678: warning: ‘err’ may be used uninitialized in this function
-> 
-> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> ---
->  drivers/scsi/scsi_transport_iscsi.c |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/scsi/scsi_transport_iscsi.c b/drivers/scsi/scsi_transport_iscsi.c
-> index 0947954..fdcda7f 100644
-> --- a/drivers/scsi/scsi_transport_iscsi.c
-> +++ b/drivers/scsi/scsi_transport_iscsi.c
-> @@ -693,6 +693,7 @@ int iscsi_add_session(struct iscsi_cls_session *session, unsigned int target_id)
->  						 "Too many iscsi targets. Max "
->  						 "number of targets is %d.\n",
->  						 ISCSI_MAX_TARGET - 1);
-> +			err = -EOVERFLOW;
->  			goto release_host;
->  		}
->  	}
+> Signed-off-by: Jan Kara <jack@suse.cz>
 
+Hi Jan,
 
-Fine by me. Send it through whatever tree you guys want.
+Have you tested with -o nodelalloc?  There is apparently a problem
+with ext4 when blocksize < pagesize which Aneesh has been working on.
+He has been able to reproduce the problem, and theorized that an
+earlier version your patch set would address the problem, but it
+apparently did not.  See:
 
-Acked-by: Mike Christie <michaelc@cs.wisc.edu>
+	http://bugzilla.kernel.org/show_bug.cgi?id=13369
+
+... and Aneesh can provide more details.  Aneesh, you might want to
+try testing with this latest set and see if you can reproduce the
+problem with this set.
+
+						- Ted
