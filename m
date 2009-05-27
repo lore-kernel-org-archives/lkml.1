@@ -1,105 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759114AbZE0ChN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759478AbZE0CiR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759114AbZE0ChN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 22:37:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754905AbZE0ChA
+	id S1759478AbZE0CiR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 22:38:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756347AbZE0CiE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 22:37:00 -0400
-Received: from mga14.intel.com ([143.182.124.37]:30612 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756478AbZE0ChA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 22:37:00 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,256,1241420400"; 
-   d="scan'208";a="147257854"
-Date: Wed, 27 May 2009 10:36:38 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>
-Subject: Re: [PATCH] readahead:add blk_run_backing_dev
-Message-ID: <20090527023638.GA27079@localhost>
-References: <20090518175259.GL4140@kernel.dk> <20090520025123.GB8186@localhost> <6.0.0.20.2.20090521145005.06f81fe0@172.19.0.2> <20090522010538.GB6010@localhost> <6.0.0.20.2.20090522102551.0705aea0@172.19.0.2> <20090522023323.GA10864@localhost> <20090526164252.0741b392.akpm@linux-foundation.org> <6.0.0.20.2.20090527092105.076be238@172.19.0.2> <20090527020909.GB17658@localhost> <6.0.0.20.2.20090527110937.0770c420@172.19.0.2>
+	Tue, 26 May 2009 22:38:04 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:51272 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754454AbZE0CiD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 22:38:03 -0400
+Date: Tue, 26 May 2009 22:38:03 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: GeunSik Lim <leemgs1@gmail.com>
+cc: Greg KH <greg@kroah.com>, linux-kernel <linux-kernel@vger.kernel.org>,
+       trivial@kernel.org, balagi@justmail.de, bgamari@gmail.com,
+       Ingo Molnar <mingo@elte.hu>, inaky.perez-gonzalez@intel.com
+Subject: Re: [RFC PATCH]debugfs:Fix terminology inconsistency of dir name to
+  mount debugfs filesystem.
+In-Reply-To: <49b7c2350905261924h34e5f019g9e38735bb64bbf87@mail.gmail.com>
+Message-ID: <alpine.DEB.2.00.0905262231210.27902@gandalf.stny.rr.com>
+References: <1243315163.14685.17.camel@centos51>  <alpine.DEB.2.00.0905261642130.26705@gandalf.stny.rr.com>  <20090526205414.GA26016@kroah.com>  <alpine.DEB.2.00.0905261711310.26705@gandalf.stny.rr.com>
+ <49b7c2350905261924h34e5f019g9e38735bb64bbf87@mail.gmail.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <6.0.0.20.2.20090527110937.0770c420@172.19.0.2>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-1268308244-1243391884=:27902"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 27, 2009 at 10:21:53AM +0800, Hisashi Hifumi wrote:
->
-> At 11:09 09/05/27, Wu Fengguang wrote:
-> >On Wed, May 27, 2009 at 08:25:04AM +0800, Hisashi Hifumi wrote:
-> >>
-> >> At 08:42 09/05/27, Andrew Morton wrote:
-> >> >On Fri, 22 May 2009 10:33:23 +0800
-> >> >Wu Fengguang <fengguang.wu@intel.com> wrote:
-> >> >
-> >> >> > I tested above patch, and I got same performance number.
-> >> >> > I wonder why if (PageUptodate(page)) check is there...
-> >> >>
-> >> >> Thanks!  This is an interesting micro timing behavior that
-> >> >> demands some research work.  The above check is to confirm if it's
-> >> >> the PageUptodate() case that makes the difference. So why that case
-> >> >> happens so frequently so as to impact the performance? Will it also
-> >> >> happen in NFS?
-> >> >>
-> >> >> The problem is readahead IO pipeline is not running smoothly, which is
-> >> >> undesirable and not well understood for now.
-> >> >
-> >> >The patch causes a remarkably large performance increase.  A 9%
-> >> >reduction in time for a linear read? I'd be surprised if the workload
-> >>
-> >> Hi Andrew.
-> >> Yes, I tested this with dd.
-> >>
-> >> >even consumed 9% of a CPU, so where on earth has the kernel gone to?
-> >> >
-> >> >Have you been able to reproduce this in your testing?
-> >>
-> >> Yes, this test on my environment is reproducible.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+--8323328-1268308244-1243391884=:27902
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+
+
+
+
+On Wed, 27 May 2009, GeunSik Lim wrote:
+
+> On Wed, May 27, 2009 at 6:15 AM, Steven Rostedt <rostedt@goodmis.org> wro=
+te:
 > >
-> >Hisashi, does your environment have some special configurations?
->
-> Hi.
-> My testing environment is as follows:
-> Hardware: HP DL580
-> CPU:Xeon 3.2GHz *4 HT enabled
-> Memory:8GB
-> Storage: Dothill SANNet2 FC (7Disks RAID-0 Array)
+> > On Tue, 26 May 2009, Greg KH wrote:
+> >> >
+> >> > The filesystem Nazi's out there will argue that the proper place to =
+mount
+> >> > the debugfs filesystem is /sys/kernel/debug. I personally find that
+> >> > location annoying.
+> >>
+> >> Why?
+> >
+> > Because it is too much to type ;-)
+> I think so. But, when we consider many developers that use linux kernel
+> source all over the world, I think that a regular rules or consistency
+> is important
+> as greg k-h explained.
+>=20
+> Recently, I read "ftrace-world.odp" presentation file  of steven rostedt.
+>=20
+> For example, about Mounting debugfs...
+> #> mount -t debugfs nodev /sys/kernel/debug
+> OR
+> #> mkdir /debug
+> #> mount -t debugfs nodev /debug
+>=20
+> I want that we will reach a consensus about mount directory name of
+> debugfs filesystem to avoid confusing among the kernel developers.
+>=20
+> /debug/ ?
+> or   /sys/kernel/debug/?
+>  .....
+>=20
+> Frankly speaking, I like /sys/kernel/debug/ rule is better than /debug/ r=
+ule
+> for consistency.
 
-This is a big hardware RAID. What's the readahead size?
+And this is why I always mention that directory.
 
-The numbers look too small for a 7 disk RAID:
+>=20
+> >
+> >>
+> >> When I created debugfs, I was told that I had to pick a place to mount
+> >> it so that everyone could write scripts that "knew" where it would be.
+> >>
+> >> So we picked /sys/kernel/debug/ and the code creates the mount point t=
+o
+> >> put it there. =C2=A0Now distros actually mount debugfs at that locatio=
+n.
+> >>
+> >> So, now you don't like this? =C2=A0After it's become a standard? =C2=
+=A0Ick.
+> >>
+> >> Becides, /debug/ is pretty presumptious, it's as if debugging the kern=
+el
+> >> is a system-wide thing :)
+> >>
+> >> So please, don't use /debug/ use the standard, defined, and ACTUALLY
+> >> USED BY DISTROS TODAY mount point of /sys/kernel/debug/
+> >>
+> >> If you want to create your own symlink from /debug/ to that location t=
+o
+> >> make it easier to type, feel free, but do not hard code any scripts to
+> >> use that location, or they are going to break.
+> >
+> > All my scripts search /proc/mounts to find where debugfs is mounted, th=
+en
+> > it uses that.
+> >
+> > Hmm, Not sure what packages in the distros use the default. I don't see
+> > the debugfs in /etc/fstab in any of my machines.
+> >
+> Yes.. In my case, I use linux distributions like Ubuntu 8.10, Fedora
+> 9/10, CENTOS 5.3 currently. This distributions  use proc , tmpfs,
+> devpts, sysfs for official release
+> by default.
+>=20
 
-        > #dd if=testdir/testfile of=/dev/null bs=16384
-        >
-        > -2.6.30-rc6
-        > 1048576+0 records in
-        > 1048576+0 records out
-        > 17179869184 bytes (17 GB) copied, 224.182 seconds, 76.6 MB/s
-        >
-        > -2.6.30-rc6-patched
-        > 1048576+0 records in
-        > 1048576+0 records out
-        > 17179869184 bytes (17 GB) copied, 206.465 seconds, 83.2 MB/s
+The key thing is not to have scripts depend on a path. When debugfs is=20
+enabled in a kernel, you automatically get /sys/kernel/debug, so that is a=
+=20
+natural place to mount it.
 
-I'd suggest you to configure the array properly before coming back to
-measuring the impact of this patch.
+I have also suggested to people (as Greg suggested earlier to me) that you=
+=20
+can mount it there and then make a soft link to it. Which also works.
 
-> I did dd to this disk-array and got improved performance number.
->
-> I noticed that when a disk is just one HDD, performance improvement
-> is very small.
+I personally just mount it at /debug.
 
-OK. You should mention the single disk and RAID performance earlier.
+To handle the scripts problem, all my scripts start with:
 
-Thanks,
-Fengguang
+# grep debugfs /proc/mounts | cut -d ' ' -f 2
+
+I also have a C function to do a search for debugfs in /proc/mounts.
+
+If you look in Documentation/trace/ftrace.txt I have:
+
+=3D=3D=3D
+To mount the debugfs system:
+
+  # mkdir /debug
+  # mount -t debugfs nodev /debug
+
+( Note: it is more common to mount at /sys/kernel/debug, but for
+  simplicity this document will use /debug)
+=3D=3D=3D
+
+Thus it is a personal preference of mine to put it at /debug. But I do not=
+=20
+hide the fact that it is recommended to be in /sys/kernel/debug. Heck, I'm=
+=20
+the one that brought to light that path in this thread. I just curse it=20
+everytime I have to say it ;-)
+
+-- Steve
+
+--8323328-1268308244-1243391884=:27902--
