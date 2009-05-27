@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760989AbZE0HSn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761181AbZE0HS3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760989AbZE0HSn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 03:18:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757574AbZE0HQ7
+	id S1761181AbZE0HS3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 03:18:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756965AbZE0HQ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 03:16:59 -0400
-Received: from claw.goop.org ([74.207.240.146]:41417 "EHLO claw.goop.org"
+	Wed, 27 May 2009 03:16:56 -0400
+Received: from claw.goop.org ([74.207.240.146]:41409 "EHLO claw.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759432AbZE0HQ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 03:16:58 -0400
+	id S1759950AbZE0HQy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 03:16:54 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: the arch/x86 maintainers <x86@kernel.org>,
@@ -18,11 +18,11 @@ Cc: the arch/x86 maintainers <x86@kernel.org>,
        kurt.hackel@oracle.com, Andrew Morton <akpm@linux-foundation.org>,
        Ky Srinivasan <ksrinivasan@novell.com>, Beulich <jbeulich@novell.com>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Ian Campbell <ian.campbell@citrix.com>,
+       Stephen Tweedie <sct@redhat.com>,
        Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 08/16] xen/dom0: Use host E820 map
-Date: Wed, 27 May 2009 00:15:30 -0700
-Message-Id: <1243408538-21100-9-git-send-email-jeremy@goop.org>
+Subject: [PATCH 05/16] xen mtrr: Add mtrr_ops support for Xen mtrr
+Date: Wed, 27 May 2009 00:15:27 -0700
+Message-Id: <1243408538-21100-6-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
 In-Reply-To: <1243408538-21100-1-git-send-email-jeremy@goop.org>
 References: <1243408538-21100-1-git-send-email-jeremy@goop.org>
@@ -30,132 +30,228 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ian Campbell <ian.campbell@citrix.com>
+From: Stephen Tweedie <sct@redhat.com>
 
-Unlike the non-paravirt Xen port we do not have distinct psuedo-physical
-and I/O memory resource-spaces and therefore resources in the two
-can clash. Fix this by registering a memory map which matches the
-underlying I/O map. Currently this wastes the memory in the reserved
-regions. Eventually we should remap this memory to the end of the
-address space.
+Add a Xen mtrr type, and reorganise mtrr initialisation slightly to
+allow the mtrr driver to set up num_var_ranges (Xen needs to do this by
+querying the hypervisor itself.)
 
-[ Impact: synthesize virtual E820 using real one as template ]
+Only the boot path is handled for now: we set up a xen-specific mtrr_if
+and set up the mtrr tables based on hypervisor information, but we don't
+yet handle mtrr entry add/delete.
 
-Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
+[ Impact: add basic MTRR support (enough to get started) ]
+
+Signed-off-by: Stephen Tweedie <sct@redhat.com>
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- arch/x86/xen/setup.c           |   45 +++++++++++++++++++++++++++++++++++++--
- include/xen/interface/memory.h |   29 +++++++++++++++++++++++++
- 2 files changed, 71 insertions(+), 3 deletions(-)
+ arch/x86/kernel/cpu/mtrr/Makefile  |    1 +
+ arch/x86/kernel/cpu/mtrr/amd.c     |    1 +
+ arch/x86/kernel/cpu/mtrr/centaur.c |    1 +
+ arch/x86/kernel/cpu/mtrr/cyrix.c   |    1 +
+ arch/x86/kernel/cpu/mtrr/generic.c |    1 +
+ arch/x86/kernel/cpu/mtrr/main.c    |   11 +++++--
+ arch/x86/kernel/cpu/mtrr/mtrr.h    |    5 +++
+ arch/x86/kernel/cpu/mtrr/xen.c     |   56 ++++++++++++++++++++++++++++++++++++
+ 8 files changed, 74 insertions(+), 3 deletions(-)
+ create mode 100644 arch/x86/kernel/cpu/mtrr/xen.c
 
-diff --git a/arch/x86/xen/setup.c b/arch/x86/xen/setup.c
-index dc55171..805ae53 100644
---- a/arch/x86/xen/setup.c
-+++ b/arch/x86/xen/setup.c
-@@ -19,6 +19,7 @@
+diff --git a/arch/x86/kernel/cpu/mtrr/Makefile b/arch/x86/kernel/cpu/mtrr/Makefile
+index f4361b5..404e458 100644
+--- a/arch/x86/kernel/cpu/mtrr/Makefile
++++ b/arch/x86/kernel/cpu/mtrr/Makefile
+@@ -1,3 +1,4 @@
+ obj-y		:= main.o if.o generic.o state.o cleanup.o
+ obj-$(CONFIG_X86_32) += amd.o cyrix.o centaur.o
++obj-$(CONFIG_XEN_DOM0) += xen.o
  
- #include <xen/page.h>
- #include <xen/interface/callback.h>
-+#include <xen/interface/memory.h>
- #include <xen/interface/physdev.h>
- #include <xen/features.h>
- 
-@@ -36,16 +37,54 @@ extern void xen_syscall32_target(void);
- /**
-  * machine_specific_memory_setup - Hook for machine specific memory setup.
-  **/
--
- char * __init xen_memory_setup(void)
- {
- 	unsigned long max_pfn = xen_start_info->nr_pages;
-+	unsigned long long mem_end;
-+	int rc;
-+	struct xen_memory_map memmap;
-+	/*
-+	 * This is rather large for a stack variable but this early in
-+	 * the boot process we know we have plenty slack space.
-+	 */
-+	struct e820entry map[E820MAX];
-+	int op = xen_initial_domain() ?
-+		XENMEM_machine_memory_map :
-+		XENMEM_memory_map;
-+	int i;
- 
- 	max_pfn = min(MAX_DOMAIN_PAGES, max_pfn);
-+	mem_end = PFN_PHYS((u64)max_pfn);
-+
-+	memmap.nr_entries = E820MAX;
-+	set_xen_guest_handle(memmap.buffer, map);
-+
-+	rc = HYPERVISOR_memory_op(op, &memmap);
-+	if (rc == -ENOSYS) {
-+		memmap.nr_entries = 1;
-+		map[0].addr = 0ULL;
-+		map[0].size = mem_end;
-+		/* 8MB slack (to balance backend allocations). */
-+		map[0].size += 8ULL << 20;
-+		map[0].type = E820_RAM;
-+		rc = 0;
-+	}
-+	BUG_ON(rc);
- 
- 	e820.nr_map = 0;
--
--	e820_add_region(0, PFN_PHYS((u64)max_pfn), E820_RAM);
-+	for (i = 0; i < memmap.nr_entries; i++) {
-+		unsigned long long end = map[i].addr + map[i].size;
-+		if (map[i].type == E820_RAM) {
-+			if (map[i].addr > mem_end)
-+				continue;
-+			if (end > mem_end) {
-+				/* Truncate region to max_mem. */
-+				map[i].size -= end - mem_end;
-+			}
-+		}
-+		if (map[i].size > 0)
-+			e820_add_region(map[i].addr, map[i].size, map[i].type);
-+	}
- 
- 	/*
- 	 * Even though this is normal, usable memory under Xen, reserve
-diff --git a/include/xen/interface/memory.h b/include/xen/interface/memory.h
-index af36ead..e6c6bcb 100644
---- a/include/xen/interface/memory.h
-+++ b/include/xen/interface/memory.h
-@@ -142,4 +142,33 @@ struct xen_translate_gpfn_list {
+diff --git a/arch/x86/kernel/cpu/mtrr/amd.c b/arch/x86/kernel/cpu/mtrr/amd.c
+index ee2331b..7bf23de 100644
+--- a/arch/x86/kernel/cpu/mtrr/amd.c
++++ b/arch/x86/kernel/cpu/mtrr/amd.c
+@@ -108,6 +108,7 @@ static struct mtrr_ops amd_mtrr_ops = {
+ 	.get_free_region   = generic_get_free_region,
+ 	.validate_add_page = amd_validate_add_page,
+ 	.have_wrcomb       = positive_have_wrcomb,
++	.num_var_ranges	   = common_num_var_ranges,
  };
- DEFINE_GUEST_HANDLE_STRUCT(xen_translate_gpfn_list);
  
-+/*
-+ * Returns the pseudo-physical memory map as it was when the domain
-+ * was started (specified by XENMEM_set_memory_map).
-+ * arg == addr of struct xen_memory_map.
-+ */
-+#define XENMEM_memory_map           9
-+struct xen_memory_map {
-+    /*
-+     * On call the number of entries which can be stored in buffer. On
-+     * return the number of entries which have been stored in
-+     * buffer.
-+     */
-+    unsigned int nr_entries;
+ int __init amd_init_mtrr(void)
+diff --git a/arch/x86/kernel/cpu/mtrr/centaur.c b/arch/x86/kernel/cpu/mtrr/centaur.c
+index cb9aa3a..7e3f74f 100644
+--- a/arch/x86/kernel/cpu/mtrr/centaur.c
++++ b/arch/x86/kernel/cpu/mtrr/centaur.c
+@@ -213,6 +213,7 @@ static struct mtrr_ops centaur_mtrr_ops = {
+ 	.get_free_region   = centaur_get_free_region,
+ 	.validate_add_page = centaur_validate_add_page,
+ 	.have_wrcomb       = positive_have_wrcomb,
++	.num_var_ranges	   = common_num_var_ranges,
+ };
+ 
+ int __init centaur_init_mtrr(void)
+diff --git a/arch/x86/kernel/cpu/mtrr/cyrix.c b/arch/x86/kernel/cpu/mtrr/cyrix.c
+index ff14c32..c7bb5e3 100644
+--- a/arch/x86/kernel/cpu/mtrr/cyrix.c
++++ b/arch/x86/kernel/cpu/mtrr/cyrix.c
+@@ -263,6 +263,7 @@ static struct mtrr_ops cyrix_mtrr_ops = {
+ 	.get_free_region   = cyrix_get_free_region,
+ 	.validate_add_page = generic_validate_add_page,
+ 	.have_wrcomb       = positive_have_wrcomb,
++	.num_var_ranges	   = common_num_var_ranges,
+ };
+ 
+ int __init cyrix_init_mtrr(void)
+diff --git a/arch/x86/kernel/cpu/mtrr/generic.c b/arch/x86/kernel/cpu/mtrr/generic.c
+index 0b776c0..c66dda1 100644
+--- a/arch/x86/kernel/cpu/mtrr/generic.c
++++ b/arch/x86/kernel/cpu/mtrr/generic.c
+@@ -722,4 +722,5 @@ struct mtrr_ops generic_mtrr_ops = {
+ 	.set               = generic_set_mtrr,
+ 	.validate_add_page = generic_validate_add_page,
+ 	.have_wrcomb       = generic_have_wrcomb,
++	.num_var_ranges	   = common_num_var_ranges,
+ };
+diff --git a/arch/x86/kernel/cpu/mtrr/main.c b/arch/x86/kernel/cpu/mtrr/main.c
+index 03cda01..fd5ac04 100644
+--- a/arch/x86/kernel/cpu/mtrr/main.c
++++ b/arch/x86/kernel/cpu/mtrr/main.c
+@@ -99,7 +99,7 @@ static int have_wrcomb(void)
+ }
+ 
+ /*  This function returns the number of variable MTRRs  */
+-static void __init set_num_var_ranges(void)
++int __init common_num_var_ranges(void)
+ {
+ 	unsigned long config = 0, dummy;
+ 
+@@ -109,7 +109,7 @@ static void __init set_num_var_ranges(void)
+ 		config = 2;
+ 	else if (is_cpu(CYRIX) || is_cpu(CENTAUR))
+ 		config = 8;
+-	num_var_ranges = config & 0xff;
++	return config & 0xff;
+ }
+ 
+ static void __init init_table(void)
+@@ -622,12 +622,17 @@ int __initdata changed_by_mtrr_cleanup;
+ void __init mtrr_bp_init(void)
+ {
+ 	u32 phys_addr;
 +
-+    /*
-+     * Entries in the buffer are in the same format as returned by the
-+     * BIOS INT 0x15 EAX=0xE820 call.
-+     */
-+    GUEST_HANDLE(void) buffer;
+ 	init_ifs();
+ 
+ 	phys_addr = 32;
+ 
+ 	if (cpu_has_mtrr) {
+ 		mtrr_if = &generic_mtrr_ops;
++#ifdef CONFIG_XEN_DOM0
++		xen_init_mtrr();
++#endif
++
+ 		size_or_mask = 0xff000000;	/* 36 bits */
+ 		size_and_mask = 0x00f00000;
+ 		phys_addr = 36;
+@@ -685,7 +690,7 @@ void __init mtrr_bp_init(void)
+ 	}
+ 
+ 	if (mtrr_if) {
+-		set_num_var_ranges();
++		num_var_ranges = mtrr_if->num_var_ranges();
+ 		init_table();
+ 		if (use_intel()) {
+ 			get_mtrr_state();
+diff --git a/arch/x86/kernel/cpu/mtrr/mtrr.h b/arch/x86/kernel/cpu/mtrr/mtrr.h
+index 77f67f7..3502f6c 100644
+--- a/arch/x86/kernel/cpu/mtrr/mtrr.h
++++ b/arch/x86/kernel/cpu/mtrr/mtrr.h
+@@ -41,6 +41,8 @@ struct mtrr_ops {
+ 	int	(*validate_add_page)(unsigned long base, unsigned long size,
+ 				     unsigned int type);
+ 	int	(*have_wrcomb)(void);
++
++	int	(*num_var_ranges)(void);
+ };
+ 
+ extern int generic_get_free_region(unsigned long base, unsigned long size,
+@@ -52,6 +54,8 @@ extern struct mtrr_ops generic_mtrr_ops;
+ 
+ extern int positive_have_wrcomb(void);
+ 
++extern int __init common_num_var_ranges(void);
++
+ /* library functions for processor-specific routines */
+ struct set_mtrr_context {
+ 	unsigned long flags;
+@@ -89,6 +93,7 @@ void mtrr_wrmsr(unsigned, unsigned, unsigned);
+ int amd_init_mtrr(void);
+ int cyrix_init_mtrr(void);
+ int centaur_init_mtrr(void);
++void xen_init_mtrr(void);
+ 
+ extern int changed_by_mtrr_cleanup;
+ extern int mtrr_cleanup(unsigned address_bits);
+diff --git a/arch/x86/kernel/cpu/mtrr/xen.c b/arch/x86/kernel/cpu/mtrr/xen.c
+new file mode 100644
+index 0000000..6760907
+--- /dev/null
++++ b/arch/x86/kernel/cpu/mtrr/xen.c
+@@ -0,0 +1,56 @@
++#include <linux/init.h>
++#include <linux/proc_fs.h>
++#include <linux/ctype.h>
++#include <linux/module.h>
++#include <linux/seq_file.h>
++#include <asm/uaccess.h>
++#include <linux/mutex.h>
++
++#include <asm/mtrr.h>
++#include "mtrr.h"
++
++#include <xen/interface/platform.h>
++#include <asm/xen/hypervisor.h>
++#include <asm/xen/hypercall.h>
++
++static int __init xen_num_var_ranges(void);
++
++/* DOM0 TODO: Need to fill in the remaining mtrr methods to have full
++ * working userland mtrr support. */
++static struct mtrr_ops xen_mtrr_ops = {
++	.vendor            = X86_VENDOR_UNKNOWN,
++	.get_free_region   = generic_get_free_region,
++	.have_wrcomb       = positive_have_wrcomb,
++	.use_intel_if	   = 0,
++	.num_var_ranges	   = xen_num_var_ranges,
 +};
-+DEFINE_GUEST_HANDLE_STRUCT(xen_memory_map);
 +
-+/*
-+ * Returns the real physical memory map. Passes the same structure as
-+ * XENMEM_memory_map.
-+ * arg == addr of struct xen_memory_map.
-+ */
-+#define XENMEM_machine_memory_map   10
++static int __init xen_num_var_ranges(void)
++{
++	int ranges;
++	struct xen_platform_op op;
 +
- #endif /* __XEN_PUBLIC_MEMORY_H__ */
++	for (ranges = 0; ; ranges++) {
++		op.cmd = XENPF_read_memtype;
++		op.u.read_memtype.reg = ranges;
++		if (HYPERVISOR_dom0_op(&op) != 0)
++			break;
++	}
++	return ranges;
++}
++
++void __init xen_init_mtrr(void)
++{
++	struct cpuinfo_x86 *c = &boot_cpu_data;
++
++	if (!xen_initial_domain())
++		return;
++
++	if ((!cpu_has(c, X86_FEATURE_MTRR)) &&
++	    (!cpu_has(c, X86_FEATURE_K6_MTRR)) &&
++	    (!cpu_has(c, X86_FEATURE_CYRIX_ARR)) &&
++	    (!cpu_has(c, X86_FEATURE_CENTAUR_MCR)))
++		return;
++
++	mtrr_if = &xen_mtrr_ops;
++}
 -- 
 1.6.0.6
 
