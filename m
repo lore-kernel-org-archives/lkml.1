@@ -1,32 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760702AbZE0Gwg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760566AbZE0G4L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760702AbZE0Gwg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 02:52:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760297AbZE0Gw3
+	id S1760566AbZE0G4L (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 02:56:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758946AbZE0Gz7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 02:52:29 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:51635 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759787AbZE0Gw2 (ORCPT
+	Wed, 27 May 2009 02:55:59 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51164 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758350AbZE0Gz6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 02:52:28 -0400
-Date: Wed, 27 May 2009 15:50:55 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
-       "hannes@cmpxchg.org" <hannes@cmpxchg.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH 5/5] (experimental) chase and free cache only swap
-Message-Id: <20090527155055.2dcee5ce.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090527153024.bb275962.nishimura@mxp.nes.nec.co.jp>
-References: <20090526121259.b91b3e9d.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090526121834.dd9a4193.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090527141442.d191dc2d.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090527153024.bb275962.nishimura@mxp.nes.nec.co.jp>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Wed, 27 May 2009 02:55:58 -0400
+Date: Tue, 26 May 2009 23:54:42 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Balbir Singh <balbir@in.ibm.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -tip] Documentation/accounting/getdelays.c intialize the
+ variable before using it
+Message-Id: <20090526235442.d793ac89.akpm@linux-foundation.org>
+In-Reply-To: <1242796484.3260.12.camel@localhost.localdomain>
+References: <1242796484.3260.12.camel@localhost.localdomain>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -34,114 +29,42 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 May 2009 15:30:24 +0900
-Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
-
-> On Wed, 27 May 2009 14:14:42 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> > On Tue, 26 May 2009 12:18:34 +0900
-> > KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> > 
-> > > 
-> > > From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> > > 
-> > This is a replacement for this. (just an idea, not testd.)
-> > 
-> > I think this works well. Does anyone has concerns ?
-> I think so too, except some trivial build errors ;)
-> 
-Oh, will be fixed in the next post :(
-
-> I'll test it, but it will take a long time to see the effect of this patch
-> even if setting the swap space to reasonable size.
-> 
-Yes, Hot-to-test is my concern, too..
-
-Thanks,
--Kame
-
+On Wed, 20 May 2009 10:44:44 +0530 Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
 
 > 
-> Thanks,
-> Daisuke Nishimura.
+> May be in some cases cmd_type will be used uninitialized.
 > 
-> > Do I have to modify swap-cluster code to do this in sane way ?
-> > 
-> > ---
-> >  mm/swapfile.c |   40 ++++++++++++++++++++++++++++++++++++++++
-> >  1 file changed, 40 insertions(+)
-> > 
-> > Index: new-trial-swapcount/mm/swapfile.c
-> > ===================================================================
-> > --- new-trial-swapcount.orig/mm/swapfile.c
-> > +++ new-trial-swapcount/mm/swapfile.c
-> > @@ -74,6 +74,26 @@ static inline unsigned short make_swap_c
-> >  	return ret;
-> >  }
-> >  
-> > +static int try_to_reuse_swap(struct swap_info_struct *si, unsigned long offset)
-> > +{
-> > +	int type = si - swap_info;
-> > +	swp_entry_t entry = swp_entry(type, offset);
-> > +	struct page *page;
-> > +
-> > +	page = find_get_page(page);
-> > +	if (!page)
-> > +		return 0;
-> > +	if (!trylock_page(page)) {
-> > +		page_cache_release(page);
-> > +		return 0;
-> > +	}
-> > +	try_to_free_swap(page);
-> > +	unlock_page(page);
-> > +	page_cache_release(page);
-> > +	return 1;
-> > +}
-> > +
-> > +
-> >  /*
-> >   * We need this because the bdev->unplug_fn can sleep and we cannot
-> >   * hold swap_lock while calling the unplug_fn. And swap_lock
-> > @@ -295,6 +315,18 @@ checks:
-> >  		goto no_page;
-> >  	if (offset > si->highest_bit)
-> >  		scan_base = offset = si->lowest_bit;
-> > +
-> > +	/* reuse swap entry of cache-only swap if not busy. */
-> > +	if (vm_swap_full() && si->swap_map[offset] == SWAP_HAS_CACHE) {
-> > +		int ret;
-> > +		spin_unlock(&swap_lock);
-> > +		ret = try_to_reuse_swap(si, offset));
-> > +		spin_lock(&swap_lock);
-> > +		if (ret)
-> > +			goto checks; /* we released swap_lock */
-> > +		goto scan;
-> > +	}
-> > +
-> >  	if (si->swap_map[offset])
-> >  		goto scan;
-> >  
-> > @@ -378,6 +410,10 @@ scan:
-> >  			spin_lock(&swap_lock);
-> >  			goto checks;
-> >  		}
-> > +		if (vm_swap_full() && si->swap_map[offset] == SWAP_HAS_CACHE) {
-> > +			spin_lock(&swap_lock);
-> > +			goto checks;
-> > +		}
-> >  		if (unlikely(--latency_ration < 0)) {
-> >  			cond_resched();
-> >  			latency_ration = LATENCY_LIMIT;
-> > @@ -389,6 +425,10 @@ scan:
-> >  			spin_lock(&swap_lock);
-> >  			goto checks;
-> >  		}
-> > +		if (vm_swap_full() && si->swap_map[offset] == SWAP_HAS_CACHE) {
-> > +			spin_lock(&swap_lock);
-> > +			goto checks;
-> > +		}
-> >  		if (unlikely(--latency_ration < 0)) {
-> >  			cond_resched();
-> >  			latency_ration = LATENCY_LIMIT;
-> > 
+> Also fixes compilation warning:
 > 
+>    CC [M]  Documentation/DocBook/procfs_example.o
+>   Documentation/accounting/getdelays.c: In function ___main___:
+>   Documentation/accounting/getdelays.c:249: warning: ___cmd_type___ may be used uninitialized in this function
+> 
+> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> ---
+>  Documentation/accounting/getdelays.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/Documentation/accounting/getdelays.c b/Documentation/accounting/getdelays.c
+> index 7ea2311..36aae3b 100644
+> --- a/Documentation/accounting/getdelays.c
+> +++ b/Documentation/accounting/getdelays.c
+> @@ -246,7 +246,7 @@ void print_ioacct(struct taskstats *t)
+>  
+>  int main(int argc, char *argv[])
+>  {
+> -	int c, rc, rep_len, aggr_len, len2, cmd_type;
+> +	int c, rc, rep_len, aggr_len, len2, cmd_type = TASKSTATS_CMD_ATTR_UNSPEC;
+>  	__u16 id;
+>  	__u32 mypid;
+>  
 
+>From my reading of the code there is no bug here - we'll only use
+cmd_type if tid != 0, and cmd_type is always initialised when tid != 0.
+
+But I suppose we should squish the warning anyway.
+
+btw, whichever version of gcc you're using has apparently regressed -
+my gcc-4.3.0 manages to work out what's happening.  Hence please prefer
+to include the gcc version in the changelog.  And send a bug report at
+the gcc guys if appropriate ;)
