@@ -1,52 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755451AbZE0UcY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755784AbZE0Uch@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755451AbZE0UcY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 16:32:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750928AbZE0UcO
+	id S1755784AbZE0Uch (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 16:32:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755231AbZE0UcU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 16:32:14 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53159 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750868AbZE0UcN (ORCPT
+	Wed, 27 May 2009 16:32:20 -0400
+Received: from swampdragon.chaosbits.net ([90.184.90.115]:11124 "EHLO
+	swampdragon.chaosbits.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751898AbZE0UcT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 16:32:13 -0400
-Date: Wed, 27 May 2009 13:31:25 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Martin Knoblauch <knobi@knobisoft.de>
-Cc: efault@gmx.de, viro@ZenIV.linux.org.uk, rjw@sisk.pl,
-       linux-kernel@vger.kernel.org, kay.sievers@vrfy.org,
-       shemminger@vyatta.com, jbarnes@virtuousgeek.org, matthew@wil.cx,
-       mike.miller@hp.com
-Subject: Re: Analyzed/Solved/Bisected: Booting 2.6.30-rc2-git7 very slow
-Message-Id: <20090527133125.c36381b5.akpm@linux-foundation.org>
-In-Reply-To: <488605.71443.qm@web32605.mail.mud.yahoo.com>
-References: <488605.71443.qm@web32605.mail.mud.yahoo.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 27 May 2009 16:32:19 -0400
+X-Greylist: delayed 389 seconds by postgrey-1.27 at vger.kernel.org; Wed, 27 May 2009 16:32:19 EDT
+Date: Wed, 27 May 2009 22:25:50 +0200 (CEST)
+From: Jesper Juhl <jj@chaosbits.net>
+To: Andi Kleen <andi@firstfloor.org>
+cc: Andrew Morton <akpm@linux-foundation.org>, paul@mad-scientist.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6.27.24] Kernel coredump to a pipe is failing
+In-Reply-To: <20090526234109.GL846@one.firstfloor.org>
+Message-ID: <alpine.LNX.2.00.0905272223080.2477@swampdragon.chaosbits.net>
+References: <1243355634.29250.331.camel@psmith-ubeta.netezza.com> <878wkjobbm.fsf@basil.nowhere.org> <20090526160017.98fc62e4.akpm@linux-foundation.org> <20090526231428.GK846@one.firstfloor.org> <20090526162821.02e11d5b.akpm@linux-foundation.org>
+ <20090526234109.GL846@one.firstfloor.org>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 May 2009 04:25:57 -0700 (PDT)
-Martin Knoblauch <knobi@knobisoft.de> wrote:
+On Wed, 27 May 2009, Andi Kleen wrote:
 
->  FWIW, I compiled the CCISS driver into the kernel. This makes the second "/sys" line in /proc/mounts go away, dmesg attached. But does it prove anything? The initialization of the CCISS hardware now happens about 2 seconds earlier in the bootup sequence. Does this hint to a problem with CCISS, or just confirms that the whole issue is really timing dependent? Anyway, I add Mike to CC.
+> On Tue, May 26, 2009 at 04:28:21PM -0700, Andrew Morton wrote:
+> > On Wed, 27 May 2009 01:14:28 +0200
+> > Andi Kleen <andi@firstfloor.org> wrote:
+> > 
+> > > On Tue, May 26, 2009 at 04:00:17PM -0700, Andrew Morton wrote:
+> > > > dump_write() doesn't seem right, either.  If ->write() returns, say,
+> > > > 100 then the dump should keep on going.  At present it treats this
+> > > > return as an error.
+> > > 
+> > > I think that's correct actually. Short write typically means serious 
+> > > issue like disk full or broken pipe, so stopping is good.
+> > 
+> > But we shouldn't assume that.  It could be that the ->write
+> > implementation is perfectly able to absorb the remaining data.
 > 
+> Maybe in theory, but in practice that's unlikely isn't it?
+> Disk is full or pipe is blocking etc.
+> 
+> > We should only error out of the write() returned zero or -EFOO.
+> > The current code is simply buggy, but got lucky.
+> 
+> Maybe very pedantically, but I would argue that most programs 
+> don't do what you're saying (retry on any short write) and
+> it's actually not very nice to always write a loop for each write.
+> 
+My experience, from userspace, both with the codebases I currently work on 
+professionally and my own hobby projects, is that people usually write a 
+"write wrapper" function that deals with short writes, interrupted system 
+call etc and then just call the wrapper so one does not have to open-code 
+a loop everywhere one wants to call write() - one just calls the wrapper 
+function that does the right thing.
 
-It seems that the PCI change caused timing changes which triggered a
-udev/sysfs/whatever problem, which manifests as the duplicated
-/proc/mounts entry to turn up.
-
-What we don't know (afaik) is why the kernel permitted two entries in
-/proc/mounts.  That might be a bug.
-
-It could be that if dual /proc/mounts problem gets fixed, everything
-works OK - by intent or by accident, the userspace startup scripts may
-then work acceptably.
-
-I think Al asked you a few questions around the behaviour of mount(8)
-and the mount syscall, so we could delve further into why /proc/mounts
-is getting mucked up.  Did you end up running those tests?
+-- 
+Jesper Juhl <jj@chaosbits.net>             http://www.chaosbits.net/
+Plain text mails only, please      http://www.expita.com/nomime.html
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
 
