@@ -1,171 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760769AbZE0Wp6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762294AbZE0WqV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760769AbZE0Wp6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 18:45:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752340AbZE0Wpu
+	id S1762294AbZE0WqV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 18:46:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756118AbZE0WqM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 18:45:50 -0400
-Received: from serrano.cc.columbia.edu ([128.59.29.6]:39172 "EHLO
-	serrano.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750996AbZE0Wpu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 18:45:50 -0400
-Message-ID: <4A1DC270.8080807@cs.columbia.edu>
-Date: Wed, 27 May 2009 18:45:04 -0400
-From: Oren Laadan <orenl@cs.columbia.edu>
-Organization: Columbia University
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Wed, 27 May 2009 18:46:12 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:53137 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752340AbZE0WqL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 18:46:11 -0400
+Date: Thu, 28 May 2009 00:41:40 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Roland McGrath <roland@redhat.com>
+Cc: Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH 7/X] ptrace: mv task->parent ptrace_task->pt_tracer
+Message-ID: <20090527224140.GC6770@redhat.com>
+References: <20090525000016.GA2239@redhat.com> <20090525215903.GA9113@redhat.com> <20090527021131.4778BFC36B@magilla.sf.frob.com>
 MIME-Version: 1.0
-To: Alexey Dobriyan <adobriyan@gmail.com>
-CC: "Serge E. Hallyn" <serge@hallyn.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, containers@lists.linux-foundation.org,
-       xemul@parallels.com
-Subject: Re: [PATCH 18/38] C/R: core stuff
-References: <1242968132-1044-1-git-send-email-adobriyan@gmail.com> <1242968132-1044-18-git-send-email-adobriyan@gmail.com> <20090526131644.GA20920@hallyn.com> <20090526193503.GB11909@x200.localdomain> <4A1DA8FB.3000306@cs.columbia.edu> <20090527221753.GB8321@x200.localdomain>
-In-Reply-To: <20090527221753.GB8321@x200.localdomain>
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-No-Spam-Score: Local
+Content-Disposition: inline
+In-Reply-To: <20090527021131.4778BFC36B@magilla.sf.frob.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 05/26, Roland McGrath wrote:
+>
+> > But is the current code correct? If we are not traced any longer
+> > si_pid/si_uid are not necessary right either, we should calculate them
+> > before ptrace_stop(), no?
+>
+> Yes, though nothing really cares about these values for such cases.
+> (It's really only there for dealing with debuggers that were written
+> before PTRACE_SETSIGINFO was invented.)
+>
+> It's probably best now to clean this up so that this logic is
+> applied in the tracer causing the resumption rather than in the
+> tracee.  i.e. do it in ptrace_resume() and ptrace_detach().
 
+Hmm. Didn't think about this, and I agree this looks nicer...
+So, we need something like
 
-Alexey Dobriyan wrote:
-> On Wed, May 27, 2009 at 04:56:27PM -0400, Oren Laadan wrote:
->> Alexey Dobriyan wrote:
->>> On Tue, May 26, 2009 at 08:16:44AM -0500, Serge E. Hallyn wrote:
->>>> Quoting Alexey Dobriyan (adobriyan@gmail.com):
->>>>> Introduction
->>>>> ------------
->>>>> Checkpoint/restart (C/R from now) allows to dump group of processes to disk
->>>>> for various reasons like saving process state in case of box failure or
->>>>> restoration of group of processes on another or same machine later.
->>>>>
->>>>> Unlike, let's say, hypervisor C/R style which only needs to freeze guest kernel
->>>>> and dump more or less raw pages, proposed C/R doesn't require hypervisor.
->>>>> For that C/R code needs to know about all little and big intimate kernel details.
->>>>>
->>>>> The good thing is that not all details needs to be serialized and saved
->>>>> like, say, readahead state. The bad things is still quite a few things
->>>>> need to be.
->>>> Hi Alexey,
->>>>
->>>> the last time you posted this, I went through and tried to discern the
->>>> meaningful differences between yours and Oren's patchsets.  Then I sent some
->>>> patches to Oren to make his set configurable to act more like yours.  And Oren
->>>> took them!  But now you resend this patchset with no real changelog, no
->>>> acknowledgment that Oren's set even exists
->>> Is this a requirement? Everybody following topic already knows about
->>> Oren's patchset.
->> Some people do ack other people's work. See for example patches #1
->> and #24 in my recent post. You're welcome.
->>
->>>> - or is much farther along and pretty widely reviewed and tested (which is
->>>> only because he started earlier and, when we asked for your counterpatches
->>>> at an earlier stage, you would never reply) - or, most importantly, what
->>>> it is that you think your patchset does that his does not and cannot.
->>> There are differences. And they're not small like you're trying to describe
->>> but pretty big compared the scale of the problem.
->> I've asked before, and I repeat now: can you enumerate these "big"
->> scary differences that make it such a "big" problem ?
->>
->> So far, we identified two main "design" issues -
-> 
-> Why in "? Yes, they are high-level design issues.
-> 
+	void ptrace_set_exit_code(struct task_struct *child, int exit_code)
+	{
+		unsigned long flags;
 
-In quotes, because I argued further on that, although my patchset
-takes a stand on both issues, it can be easily reverted _within_
-that patchset. Moreover, I argue that they can co-exist.
+		if (!exit_code)
+			child->exit_code = exit_code;
 
->> 1) Whether or not allow c/r of sub-container (partial hierarchy)
->>
->> 2) Creation of restarting process hierarchy in kernel or in userspace
->>
->> As for #1, you are the _only_ one who advocates restricting c/r to
->> a full container only. I guess you have your reasons, but I'm unsure
->> what they may be.
-> 
-> The reason is that checkpointing half-frozen, half-live container is
-> essentially equivalent to live container which adds much complexity
-> to code fundamentally preventing kernel from taking coherent snapshot.
-> 
-> In such situations kernel will do its job badly.
+		if (child->exit_code == exit_code)
+			return;
 
-In such situation the kernel will do a bad job if the user is asking
-for a bad job. Just like checkpointing without snapshotting the
-file system and expecting it to always work.
+		if (lock_task_sighand(child, &flags)) {
+			siginfo_t *info = child->last_siginfo;
 
-But if the user is a bit more careful (and even then, not that much),
-she can enjoy the wonderful benefits of c/r without the wonderful
-benefits of containers.
+			if (info && info->info->si_signo != exit_code) {
+				info->si_signo = exit_code;
+				info->si_errno = 0;
+				info->si_code = SI_USER;
+				info->si_pid = task_pid_nr_ns(current, child->nsproxy->pid_ns);
+				info->si_uid = task_uid(current);
 
-If useful, it's easy to pass a flag to checkpoint() that will ask
-to enforce, say, shared memory "leaks" but not nsproxy or file "leaks".
+			}
+			child->exit_code = exit_code;
+			unlock_task_sighand(child, &flags);
+		}
+	}
 
-In fact, even shared memory "leaks" may be useful for some users (e.g.
-what the guys from kerlabs pointed out).
+And ptrace_resume/ptrace_detach should use ptrace_set_exit_code()
+instead of child->exit_code = data.
 
-> 
-> Manpage will be filled with strings like "if $FOO is shared then $BAR is
-> not guaranteed".
-> 
-> What to do if user simply doesn't know if container is bounded?
-> Checkpoint and to hell with consequences?
-> 
-> If two tasks share mm_struct you can't even detect that pages you dump
-> aren't filled with garbage meanwhile from second task.
-> 
-> If two tasks share mm_struct, other task can issue AIO indefinitely
-> preventing from taking even coherent filesystem snapshot.
-> 
-> That's why I raise this issue again to hear from people what they think
-> and these people shouldn't be containers and C/R people, because the
-> latter already made up their minds.
+The disadvantage is, ptrace_notify() does not need this, we add the
+little pessimization...
 
-Lol .. and disagreement persists among us :)
+And. This change adds another dependency with arches which implement
+their own resume.
 
-And indeed, I have heard and seen already a few opinions in favor
-of permitting non-container checkpoint. From potential users (not
-c/r people).
+So. Do you think this cleanup should be done before/with this series
+or we can do it later?
 
-> 
-> This is super-important issue to get right from the beginning.
-> 
->> On the other hand, there has been a handful of use-cases and opinions
->> in favor of allowing both capabilities to co-exist. Not the mention
->> that nearly no additional code is necessary, on the contrary.
->>
->> As for #2, you didn't even bother to reply to the discussion that I
->> had started about it. This decision is important to allow future
->> flexibility of the mechanism, and to address the needs of several
->> potential users, as seen in that discussion and others. Here, too,
->> you are the _only_ one that advocates that direction.
-> 
-> Are you going to fork to-become-zombies, make them call restart(2) and
-> zombify?
-
-Yes.
-
-> 
->> And the funniest thing -- *both* decisions can be *easily* overturned
->> in my patchset. In fact, regarding #2 - either way can be easily done
->> in it.
->>
->> So I wonder, what are the "big" issues that bother you so much ?
->> "if there is a will, there is a way".
-> 
-> Oren, don't you really understand?
-> 
-> Users want millions of things, but every thing has price.
-
-I beg to differ: there is marginal price to support both -- in fact,
-enforcing the container requirement (e.g. leaks detection - which,
-btw, is imperfect and cannot be made race-free) *adds* code over
-the non-container case. So in a sense, we get the no-container case
-for free.
-
-Oren.
+Oleg.
 
