@@ -1,72 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760760AbZE0Gc4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760446AbZE0Glb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760760AbZE0Gc4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 02:32:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759028AbZE0Gct
+	id S1760446AbZE0Glb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 02:41:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759694AbZE0GlY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 02:32:49 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53313 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752895AbZE0Gcs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 02:32:48 -0400
-Date: Tue, 26 May 2009 23:32:44 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Martin Knoblauch <spamtrap@knobisoft.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Stephen Hemminger <shemminger@vyatta.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [Bug #13178] Booting very slow
-Message-Id: <20090526233244.b817948e.akpm@linux-foundation.org>
-In-Reply-To: <200905260104.04844.rjw@sisk.pl>
-References: <GtY7d2eWpoK.A.ioC.MQcGKB@chimera>
-	<WCcYF-TAbJC.A.VXD.iQcGKB@chimera>
-	<349066.43765.qm@web32603.mail.mud.yahoo.com>
-	<200905260104.04844.rjw@sisk.pl>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Wed, 27 May 2009 02:41:24 -0400
+Received: from gate.crashing.org ([63.228.1.57]:58016 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759558AbZE0GlX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 02:41:23 -0400
+Subject: [git pull] Please pull powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Wed, 27 May 2009 16:40:53 +1000
+Message-Id: <1243406453.17847.185.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 May 2009 01:04:04 +0200 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+Hi Linus
 
-> On Monday 25 May 2009, Martin Knoblauch wrote:
-> > 
-> > ----- Original Message ----
-> > 
-> > > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > > To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-> > > Cc: Kernel Testers List <kernel-testers@vger.kernel.org>; Martin Knoblauch <spamtrap@knobisoft.de>
-> > > Sent: Sunday, May 24, 2009 9:31:18 PM
-> > > Subject: [Bug #13178] Booting very slow
-> > > 
-> > > This message has been generated automatically as a part of a report
-> > > of regressions introduced between 2.6.28 and 2.6.29.
-> > > 
-> > > The following bug entry is on the current list of known regressions
-> > > introduced between 2.6.28 and 2.6.29.  Please verify if it still should
-> > > be listed and let me know (either way).
-> > > 
-> > > 
-> > > Bug-Entry    : http://bugzilla.kernel.org/show_bug.cgi?id=13178
-> > > Subject        : Booting very slow
-> > > Submitter    : Martin Knoblauch 
-> > > Date        : 2009-04-24 12:45 (31 days old)
-> > > References    : http://marc.info/?l=linux-kernel&m=124057716231773&w=4
-> > 
-> >  Still happens with 2.6.30-rc7. But see my comment on bz. I would be willing to leave this as "fuzzy timing related problem.
-> 
-> OK
-> 
-> I've closed it as "unreproducible".
-> 
+And here's the rest of the fixes I was talking about. Hopefully that
+should bring back all non-coherent DMA platforms into proper working
+conditions. It's a bit invasive so late in the process but it's been
+reasonably well tested for a few days.
 
-afacit this should remain open.  It's a reproducible regression on one
-of Martin's machines and it has been bisected down to a particular
-commit which quite clearly has the potential to increase device
-intialisation times by a lot.  Especially if that commit was buggy.
+The following changes since commit cd86a536c81e9300d984327517548ca0652eebf9:
+  Linus Torvalds (1):
+        Merge branch 'x86-fixes-for-linus' of git://git.kernel.org/.../tip/linux-2.6-tip
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+
+Benjamin Herrenschmidt (4):
+      Revert "powerpc: Rework dma-noncoherent to use generic vmalloc layer"
+      powerpc: Move dma-noncoherent.c from arch/powerpc/lib to arch/powerpc/mm
+      powerpc: Minor cleanups of kernel virt address space definitions
+      powerpc: Fix up dma_alloc_coherent() on platforms without cache coherency.
+
+ arch/powerpc/Kconfig                     |   12 +
+ arch/powerpc/include/asm/dma-mapping.h   |    6 +-
+ arch/powerpc/include/asm/fixmap.h        |    4 +-
+ arch/powerpc/include/asm/pgtable-ppc32.h |   26 ++-
+ arch/powerpc/kernel/dma.c                |    2 +-
+ arch/powerpc/lib/Makefile                |    1 -
+ arch/powerpc/lib/dma-noncoherent.c       |  237 ------------------
+ arch/powerpc/mm/Makefile                 |    1 +
+ arch/powerpc/mm/dma-noncoherent.c        |  400 ++++++++++++++++++++++++++++++
+ arch/powerpc/mm/init_32.c                |    8 +-
+ arch/powerpc/mm/mem.c                    |   17 ++
+ arch/powerpc/mm/pgtable_32.c             |    2 -
+ 12 files changed, 463 insertions(+), 253 deletions(-)
+ delete mode 100644 arch/powerpc/lib/dma-noncoherent.c
+ create mode 100644 arch/powerpc/mm/dma-noncoherent.c
+
+
