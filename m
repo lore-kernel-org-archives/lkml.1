@@ -1,118 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758592AbZE0EaW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759130AbZE0Eas@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758592AbZE0EaW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 00:30:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755995AbZE0EaF
+	id S1759130AbZE0Eas (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 00:30:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753008AbZE0Eah
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 00:30:05 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:43396 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757536AbZE0EaC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 00:30:02 -0400
-Date: Tue, 26 May 2009 21:30:01 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, mingo@elte.hu,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       davem@davemloft.net, dada1@cosmosbay.com, zbr@ioremap.net,
-       jeff.chua.linux@gmail.com, paulus@samba.org, jengelh@medozas.de,
-       r000n@r000n.net, benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
-Subject: Re: [PATCH RFC] v7 expedited "big hammer" RCU grace periods
-Message-ID: <20090527043001.GD6882@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090522190525.GA13286@linux.vnet.ibm.com> <4A1A3C23.8090004@cn.fujitsu.com> <20090525164446.GD7168@linux.vnet.ibm.com> <4A1B3FFB.7090306@cn.fujitsu.com> <20090526012843.GF7168@linux.vnet.ibm.com> <20090526154625.GA8662@linux.vnet.ibm.com> <4A1C9DFF.70708@cn.fujitsu.com>
+	Wed, 27 May 2009 00:30:37 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:54235 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751040AbZE0Eaf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 00:30:35 -0400
+Message-ID: <4A1CC1E0.2030300@jp.fujitsu.com>
+Date: Wed, 27 May 2009 13:30:24 +0900
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A1C9DFF.70708@cn.fujitsu.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Andi Kleen <andi@firstfloor.org>
+CC: linux-kernel@vger.kernel.org, hpa@zytor.com, x86@kernel.org,
+       Huang Ying <ying.huang@intel.com>, Andi Kleen <ak@linux.intel.com>
+Subject: Re: [PATCH 03/31] x86: MCE: Fix EIPV behaviour with !PCC
+References: <1243382073-29338-1-git-send-email-andi@firstfloor.org> <c63915cfa51e24394524ddaa66a6f2cb2fcfe66f.1243381848.git.ak@linux.intel.com> <c1d7bf910168f07efb50d98f901f41e289a87f1f.1243381848.git.ak@linux.intel.com> <6c6d1f8bbbd2312884dca5a5c75aa5f5a87dae4b.1243381848.git.ak@linux.intel.com>
+In-Reply-To: <6c6d1f8bbbd2312884dca5a5c75aa5f5a87dae4b.1243381848.git.ak@linux.intel.com>
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 27, 2009 at 09:57:19AM +0800, Lai Jiangshan wrote:
-> Paul E. McKenney wrote:
-> > 
-> > I am concerned about the following sequence of events:
-> > 
-> > o	synchronize_sched_expedited() disables preemption, thus blocking
-> > 	offlining operations.
-> > 
-> > o	CPU 1 starts offlining CPU 0.  It acquires the CPU-hotplug lock,
-> > 	and proceeds, and is now waiting for preemption to be enabled.
-> > 
-> > o	synchronize_sched_expedited() disables preemption, sees
-> > 	that CPU 0 is online, so initializes and queues a request,
-> > 	does a wake-up-process(), and finally does a preempt_enable().
-> > 
-> > o	CPU 0 is currently running a high-priority real-time process,
-> > 	so the wakeup does not immediately happen.
-> > 
-> > o	The offlining process completes, including the kthread_stop()
-> > 	to the migration task.
-> > 
-> > o	The migration task wakes up, sees kthread_should_stop(),
-> > 	and so exits without checking its queue.
-> > 
-> > o	synchronize_sched_expedited() waits forever for CPU 0 to respond.
-> > 
-> > I suppose that one way to handle this would be to check for the CPU
-> > going offline before doing the wait_for_completion(), but I am concerned
-> > about races affecting this check as well.
-> > 
-> > Or is there something in the CPU-offline process that makes the above
-> > sequence of events impossible?
-> > 
-> > 							Thanx, Paul
-> > 
-> > 
+Andi Kleen wrote:
+> From: Huang Ying <ying.huang@intel.com>
 > 
-> I realized this, I wrote this:
-> > 
-> > The coupling of synchronize_sched_expedited() and migration_req
-> > is largely increased:
-> > 
-> > 1) The offline cpu's per_cpu(rcu_migration_req, cpu) is handled.
-> >    See migration_call::CPU_DEAD
+> Impact: Spec compliance
 > 
-> synchronize_sched_expedited() will not wait for CPU#0, because
-> migration_call()::case CPU_DEAD wakes up the requestors.
+> When tolerant == 0, system should go panic instead of send SIGBUS even
+> for a MCE with EPIV && !PCC on user space.
 > 
-> migration_call()
-> {
-> 	...
-> 	case CPU_DEAD:
-> 	case CPU_DEAD_FROZEN:
-> 		...
-> 		/*
-> 		 * No need to migrate the tasks: it was best-effort if
-> 		 * they didn't take sched_hotcpu_mutex. Just wake up
-> 		 * the requestors.
-> 		 */
-> 		spin_lock_irq(&rq->lock);
-> 		while (!list_empty(&rq->migration_queue)) {
-> 			struct migration_req *req;
+> Signed-off-by: Huang Ying <ying.huang@intel.com>
+> Signed-off-by: Andi Kleen <ak@linux.intel.com>
+> ---
+>  arch/x86/kernel/cpu/mcheck/mce.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 > 
-> 			req = list_entry(rq->migration_queue.next,
-> 					 struct migration_req, list);
-> 			list_del_init(&req->list);
-> 			spin_unlock_irq(&rq->lock);
-> 			complete(&req->done);
-> 			spin_lock_irq(&rq->lock);
-> 		}
-> 		spin_unlock_irq(&rq->lock);
-> 		...
-> 	...
-> }
-> 
-> My approach depend on the requestors are waked up at any case.
-> migration_call() does it for us but the coupling is largely
-> increased.
+> diff --git a/arch/x86/kernel/cpu/mcheck/mce.c b/arch/x86/kernel/cpu/mcheck/mce.c
+> index 3f158d7..e1271ac 100644
+> --- a/arch/x86/kernel/cpu/mcheck/mce.c
+> +++ b/arch/x86/kernel/cpu/mcheck/mce.c
+> @@ -485,7 +485,7 @@ void do_machine_check(struct pt_regs *regs, long error_code)
+>  		 * force_sig() takes an awful lot of locks and has a slight
+>  		 * risk of deadlocking.
+>  		 */
+> -		if (user_space) {
+> +		if (user_space && tolerant > 0) {
+>  			force_sig(SIGBUS, current);
+>  		} else if (panic_on_oops || tolerant < 2) {
+>  			mce_panic("Uncorrected machine check",
 
-OK, good point!  I do need to think about this.
+Again, this patch is useless.
 
-In the meantime, where do you see a need to run
-synchronize_sched_expedited() from within a hotplug CPU notifier?
+                if (m.status & MCI_STATUS_EN) {
+                        /* if PCC was set, there's no way out */
+                        no_way_out |= !!(m.status & MCI_STATUS_PCC);
+                        /*
+                         * If this error was uncorrectable and there was
+                         * an overflow, we're in trouble.  If no overflow,
+                         * we might get away with just killing a task.
+                         */
+                        if (m.status & MCI_STATUS_UC) {
+                                if (tolerant < 1 || m.status & MCI_STATUS_OVER)
+                                        no_way_out = 1;
+                                kill_it = 1;
+                        }
+                } else {
+ :
+        if (no_way_out && tolerant < 3)
+                mce_panic("Machine check", &panicm, mcestart);
+ :
+        if (kill_it && tolerant < 3) {
+ :
+                if (user_space) {
+                        force_sig(SIGBUS, current);
+                } else if (panic_on_oops || tolerant < 2) {
+                        mce_panic("Uncorrected machine check",
+                                &panicm, mcestart);
+                }
+        }
 
-						Thanx, Paul
+We never reach there with tolerant == 0.
+
+And you will remove this code in your 25/31.
+
+
+Thanks,
+H.Seto
+
