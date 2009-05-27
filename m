@@ -1,49 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759497AbZE0WLg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755648AbZE0WMW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759497AbZE0WLg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 18:11:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757142AbZE0WL3
+	id S1755648AbZE0WMW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 18:12:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754583AbZE0WML
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 18:11:29 -0400
-Received: from rs35.luxsci.com ([66.216.127.90]:58154 "EHLO rs35.luxsci.com"
+	Wed, 27 May 2009 18:12:11 -0400
+Received: from gate.crashing.org ([63.228.1.57]:60400 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753468AbZE0WL2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 18:11:28 -0400
-X-Greylist: delayed 474 seconds by postgrey-1.27 at vger.kernel.org; Wed, 27 May 2009 18:11:28 EDT
-Message-ID: <4A1DB855.2030608@firmworks.com>
-Date: Thu, 28 May 2009 06:01:57 +0800
-From: Mitch Bradley <wmb@firmworks.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
-MIME-Version: 1.0
-To: Timur Tabi <timur@freescale.com>
-CC: Janboe Ye <yuan-bo.ye@motorola.com>,
-       devicetree-discuss <devicetree-discuss@ozlabs.org>,
-       linux-kernel@vger.kernel.org, rmk@arm.linux.org.uk,
-       linux-arm-kernel@lists.arm.linux.org.uk
-Subject: Re: [RFC] [PATCH] Device Tree on ARM platform
-References: <1243408083.13460.14.camel@debian-nb>	<fa686aa40905270727m31250984tf12249fc87179ce9@mail.gmail.com> <ed82fe3e0905270739k38018c87ka11f62c5977e45fb@mail.gmail.com>
-In-Reply-To: <ed82fe3e0905270739k38018c87ka11f62c5977e45fb@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1757142AbZE0WMK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 18:12:10 -0400
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Message-Id: <E6F31282-646E-46B6-9D5B-B39D4595C984@kernel.crashing.org>
+From: Becky Bruce <beckyb@kernel.crashing.org>
+To: Ian Campbell <Ian.Campbell@eu.citrix.com>
+In-Reply-To: <1243456159.4399.42.camel@localhost.localdomain>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: [PATCH V2 2/3] powerpc: Add support for swiotlb on 32-bit
+Date: Wed, 27 May 2009 17:11:57 -0500
+References: <1242340949-16369-1-git-send-email-beckyb@kernel.crashing.org> <1242340949-16369-2-git-send-email-beckyb@kernel.crashing.org> <20090519142656T.fujita.tomonori@lab.ntt.co.jp> <19E48A70-3332-423C-ACAD-390F940EE81C@kernel.crashing.org> <4A1592CF.8000208@goop.org> <E6DAA792-9923-4B76-9759-6955AABE3EAB@kernel.crashing.org> <1242990702.22654.253.camel@zakaz.uk.xensource.com> <0628DF07-E085-4CC8-ADFC-1B0798343159@kernel.crashing.org> <1243456159.4399.42.camel@localhost.localdomain>
+X-Mailer: Apple Mail (2.930.3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If anybody is interested, the core ARM support has been added to the 
-Open Firmware tree at svn://openfirmware.info/openfirmware - the same 
-version of OFW that's used on OLPC - under an MIT-style license. This is 
-a full-featured Open Firmware whose lineage traces back to the original 
-Open Boot implementation that I wrote for Sun starting in 1987.
 
-It's not yet fully elaborated for specific platforms and devices, but it 
-does contain all the core IEE1275 device tree stuff and the standard 
-support packages.  It gets you to an ok prompt on Beagle Board and 
-Gumstix Overo systems.  The source-level and assembly-language debuggers 
-are fully functional. As currently configured on those systems, you can 
-load it into memory either via u-boot or instead of u-boot.
+On May 27, 2009, at 3:29 PM, Ian Campbell wrote:
 
-This base ARM port, while newly released as FOSS, is quite solid, having 
-been developed some years ago for the Digital (RIP) DNARD system.
+> On Wed, 2009-05-27 at 15:05 -0400, Becky Bruce wrote:
+>> On May 22, 2009, at 6:11 AM, Ian Campbell wrote:
+>>>
+>>>
+>>> BTW do you need swiotlb_bus_to_virt to be __weak or is the fact that
+>>> it
+>>> is implemented in terms of swiotlb_bus_to_phys sufficient?
+>>
+>> The default one in swiotlb calls phys_to_virt on the result of
+>> swiotlb_bus_to_phys, which only works on lowmem.
+>
+> Perhaps we can simply enhance the default one to handle highmem  
+> instead
+> of making it arch specific?
 
-I'd be happy to work with people to add deeper support for specific 
-device and platforms.
+That's fine by me - as long as what I've got will work for you guys  
+I'm happy to stick it in the standard one (inside a nice pretty #ifdef  
+CONFIG_HIGHMEM, of course).
+
+Cheers,
+B
