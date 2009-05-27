@@ -1,60 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760067AbZE0Vi7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760964AbZE0VjW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760067AbZE0Vi7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 17:38:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755428AbZE0Vit
+	id S1760964AbZE0VjW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 17:39:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756730AbZE0VjE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 17:38:49 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:54880 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753736AbZE0Vis (ORCPT
+	Wed, 27 May 2009 17:39:04 -0400
+Received: from zelda.netsplit.com ([87.194.19.211]:36634 "EHLO
+	zelda.netsplit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755428AbZE0VjC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 17:38:48 -0400
-Date: Wed, 27 May 2009 17:38:50 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-cc: Kay Sievers <kay.sievers@vrfy.org>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       SCSI development list <linux-scsi@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Tejun Heo <tj@kernel.org>, Cornelia Huck <cornelia.huck@de.ibm.com>,
-       <linux-fsdevel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@aristanetworks.com>
-Subject: Re: [PATCH 25/20] sysfs: Only support removing emtpy sysfs  directories.
-In-Reply-To: <m1hbz69zfd.fsf@fess.ebiederm.org>
-Message-ID: <Pine.LNX.4.44L0.0905271736460.2669-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 27 May 2009 17:39:02 -0400
+Subject: Re: [PATCH] kbuild: generate modules.builtin
+From: Scott James Remnant <scott@ubuntu.com>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Michal Marek <mmarek@suse.cz>, Sam Ravnborg <sam@ravnborg.org>,
+       linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <ac3eb2510905271426m7ef228aq2c86940ee8a727bb@mail.gmail.com>
+References: <20090526152540.GA28341@sepie.suse.cz>
+	 <ac3eb2510905271426m7ef228aq2c86940ee8a727bb@mail.gmail.com>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-B2W1YLK0KHOXM7snRpRs"
+Date: Wed, 27 May 2009 23:38:49 +0200
+Message-Id: <1243460329.7913.1.camel@wing-commander>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 May 2009, Eric W. Biederman wrote:
 
-> Alan Stern <stern@rowland.harvard.edu> writes:
-> 
-> >
-> > As fas as I know, they can't.  Instead, they can cause the SCSI layer 
-> > to unregister a sysfs directory containing a child directory.  :-)
-> >
-> > Basically, a user program can delay removal of the child (i.e., the
-> > target) directory indefinitely, because currently the target isn't
-> > unregistered when all its children are removed -- it's unregistered
-> > when all its children are _released_.
-> 
-> Ok.  Is this opens of /dev/sda1 and the like that are being held open by
-> userspace that are potentially causing problems?
+--=-B2W1YLK0KHOXM7snRpRs
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Yes, plus any other mechanism for preventing a struct device's refcount 
-from going to 0.
+On Wed, 2009-05-27 at 23:26 +0200, Kay Sievers wrote:
 
-> I think I have the fix to that...
+> On Tue, May 26, 2009 at 17:25, Michal Marek <mmarek@suse.cz> wrote:
+> > To make it easier for tools like mkinitrd to detect whether a needed
+> > module is missing or whether it is compiled into the kernel, install a
+> > modules.builtin file listing all modules built into the kernel. This is
+> > done by generating an alternate config file with all tristate =3Dy opti=
+ons
+> > set to =3DY and reading the makefiles with this config included. The bu=
+ilt
+> > in modules then appear in obj-Y.
+>=20
+> That looks very useful.
+>=20
+> We like to have that for modprobe not to throw an error if a "module"
+> is already in the kernel, because it is compiled in. Only modules with
+> parameters show up in /sys/modules/ and they are already handled fine.
+>=20
+Agree, this helps us support both distro kernels with some built-ins and
+modular kernels.
 
-The fix is to delete the target when its children are deleted, and not
-wait until the children are released.
+Scott
+--=20
+Scott James Remnant
+scott@ubuntu.com
 
-Alan Stern
+--=-B2W1YLK0KHOXM7snRpRs
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkodsukACgkQSnQiFMl4yK5loACfZRmDZ8lTtxSAZLL7iBxLEfGH
+/hwAn1g6bkuv2+enlMkdRb938kY6env3
+=hbwn
+-----END PGP SIGNATURE-----
+
+--=-B2W1YLK0KHOXM7snRpRs--
 
