@@ -1,70 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759887AbZE0UtT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760161AbZE0Utc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759887AbZE0UtT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 16:49:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753152AbZE0UtA
+	id S1760161AbZE0Utc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 16:49:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756523AbZE0UtF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 16:49:00 -0400
-Received: from qw-out-2122.google.com ([74.125.92.24]:32967 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750868AbZE0Us6 (ORCPT
+	Wed, 27 May 2009 16:49:05 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:46020 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755261AbZE0UtD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 16:48:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=sRzihU860dr51mEYfaozHX1oFQ/XcA5AhfnZaBiZo6U73Gn/YgA2iJsZWd6V7v5obZ
-         w3gd00AEfoJ6+x6UM7KaYxHr5vUsL6fBZmLDFzfuIMDK1xXXaIGKON70AqIAqiB7hJY5
-         J0oaOpOq9GiIzVFNMPQGjPj6wHfuy6F0HkMsg=
-Date: Wed, 27 May 2009 16:48:34 -0400
-From: Josh Boyer <jwboyer@gmail.com>
-To: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-Cc: David Miller <davem@davemloft.net>, rmk+lkml@arm.linux.org.uk,
-       devicetree-discuss@ozlabs.org, linux-sh@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       scottwood@freescale.com, yuan-bo.ye@motorola.com, timur@freescale.com
-Subject: Re: [RFC] [PATCH] Device Tree on ARM platform
-Message-ID: <20090527204834.GA3095@hansolo.jdub.homelinux.org>
-References: <20090527175609.GB31861@flint.arm.linux.org.uk> <4A1D8FBA.6040802@freescale.com> <20090527192909.GA32398@flint.arm.linux.org.uk> <20090527.132328.78091350.davem@davemloft.net> <20090527202701.GA16219@game.jcrosoft.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090527202701.GA16219@game.jcrosoft.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Wed, 27 May 2009 16:49:03 -0400
+Subject: Re: [PATCH 25/20] sysfs: Only support removing emtpy sysfs 
+	directories.
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Hannes Reinecke <hare@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
+       SCSI development list <linux-scsi@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Tejun Heo <tj@kernel.org>, Cornelia Huck <cornelia.huck@de.ibm.com>,
+       linux-fsdevel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>
+In-Reply-To: <Pine.LNX.4.44L0.0905271625080.2653-100000@iolanthe.rowland.org>
+References: <Pine.LNX.4.44L0.0905271625080.2653-100000@iolanthe.rowland.org>
+Content-Type: text/plain
+Date: Wed, 27 May 2009 20:49:02 +0000
+Message-Id: <1243457342.6067.69.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 27, 2009 at 10:27:01PM +0200, Jean-Christophe PLAGNIOL-VILLARD wrote:
->On 13:23 Wed 27 May     , David Miller wrote:
->> From: Russell King <rmk+lkml@arm.linux.org.uk>
->> Date: Wed, 27 May 2009 20:29:10 +0100
->> 
->> > To program them into the hardware registers, which is not what we in
->> > the ARM community say, but it's what the _network_ guys tell people
->> > they should be doing.
->> > 
->> > I've suggested in the past having a standard kernel parameter such
->> > that you can specify a mac address on a per-device basis in a totally
->> > platform independent way, but the network folk don't like that idea.
->> 
->> As a "network guy" I can tell you that when the system firmware
->> provides a system-wide or device specific MAC address in it's device
->> tree, that is what you should use.
->> 
->> And that's what I've been doing on sparc FOR 15 YEARS.
->> 
->> Device trees are the only systematic generic mechanism for
->> describing device layouts on the myriad of embedded boards
->> out there which you will ever find.
->> 
->> Two platforms, and now a third, have been using this scheme
->> over a very proven period of time.  It's not a hack, there is
->> infrastructure to get the boot loaders to do the right thing,
->> and only ARM seems to resist it. :-)
->The SH, avr32, mips, x86 does not support it too IIRC
+On Wed, 2009-05-27 at 16:40 -0400, Alan Stern wrote:
+> On Wed, 27 May 2009, James Bottomley wrote:
+> 
+> > On Wed, 2009-05-27 at 14:07 -0400, Alan Stern wrote:
+> > > On Wed, 27 May 2009, James Bottomley wrote:
+> > > 
+> > > > By refcount, I mean count of underlying devices.
+> > > 
+> > > Does that mean only registered devices, or does it include devices 
+> > > which are unregistered but not yet released?
+> > 
+> > All devices ... scsi_device has to has a target parent before its
+> > usable.
+> 
+> I can't tell whether you understood my point.  After a scsi_device is
+> unregistered but before it is released -- i.e., when its state is
+> SDEV_DEL -- it _is_ essentially unusable.  So why wait until it is
+> released to decrement the target's device counter?  Why not do the
+> decrement in __scsi_remove_device()?
 
-x86 has a variant.  The OLPC uses OF.
+because the use model of the device still requires a valid target.  Even
+though it gets gated in several places in SDEV_DEL, we still have use of
+the target parent.  This is fixable, but only by a long audit of all the
+sdev uses plus the enforcement of no use of target in DEL state rule,
+which adds complexity.
 
-josh
+> > > > Um, well, that's roughly how I said we'd have to fix all of this in the
+> > > > email to hannes ... it would be much easier if we could make a del'd
+> > > > device visible,
+> > > 
+> > > I don't follow.  Why would you want to delete a target before the host
+> > > is removed and then make it visible again later?  Because it doesn't
+> > > have any underlying devices at the moment but may gain some later on?
+> > 
+> > Perhaps I haven't made the problem clear enough.  You only want early
+> > del if the host is going away, otherwise the target might be reused and
+> > it can't be if you've called del on it.  So there needs to be an
+> > integration into the host lifecycle in some form.
+> 
+> Yes, granted.  That integration doesn't have to be complicated.  
+> Basically, you just decrement the counters in all the targets when
+> setting a host's state to SHOST_DEL or SHOST_DEL_RECOVERY.  At that 
+
+And SHOST_CANCEL and SHOST_CANCEL_RECOVERY.
+
+> point there's no reason to keep an unpopulated target around, right?
+
+If the child list were empty, sure.  However, it's likely not going to
+be at this point.
+
+> Up until that point, the counter's value should be one more than the
+> number of underlying sdevs.  So if the counter decrements to 0 then
+> there were no underlying sdevs and the target is deleted immediately;
+> otherwise it is deleted when the last remaining sdev is deleted.
+
+No, that's the problem.  It can be removed from visibility if it has no
+visible sdevs, but it can't be deleted until the last sdev is released.
+
+James
+
+
