@@ -1,69 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757551AbZE0A3w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759488AbZE0Aaj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757551AbZE0A3w (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 20:29:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755420AbZE0A3o
+	id S1759488AbZE0Aaj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 20:30:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755882AbZE0Aac
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 20:29:44 -0400
-Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:52953 "EHLO
-	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752895AbZE0A3n (ORCPT
+	Tue, 26 May 2009 20:30:32 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41011 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755204AbZE0Aab (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 20:29:43 -0400
-Message-Id: <6.0.0.20.2.20090527092105.076be238@172.19.0.2>
-X-Mailer: QUALCOMM Windows Eudora Version 6J-Jr3
-Date: Wed, 27 May 2009 09:25:04 +0900
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Wu Fengguang <fengguang.wu@intel.com>
-From: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
-Subject: Re: [PATCH] readahead:add blk_run_backing_dev
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org,
-       jens.axboe@oracle.com
-In-Reply-To: <20090526164252.0741b392.akpm@linux-foundation.org>
-References: <6.0.0.20.2.20090518183752.0581fdc0@172.19.0.2>
- <20090518175259.GL4140@kernel.dk>
- <20090520025123.GB8186@localhost>
- <6.0.0.20.2.20090521145005.06f81fe0@172.19.0.2>
- <20090522010538.GB6010@localhost>
- <6.0.0.20.2.20090522102551.0705aea0@172.19.0.2>
- <20090522023323.GA10864@localhost>
- <20090526164252.0741b392.akpm@linux-foundation.org>
+	Tue, 26 May 2009 20:30:31 -0400
+Date: Tue, 26 May 2009 17:29:35 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: paul@mad-scientist.net, linux-kernel@vger.kernel.org
+Subject: Re: [2.6.27.24] Kernel coredump to a pipe is failing
+Message-Id: <20090526172935.fad52c49.akpm@linux-foundation.org>
+In-Reply-To: <20090527001104.GN846@one.firstfloor.org>
+References: <1243355634.29250.331.camel@psmith-ubeta.netezza.com>
+	<878wkjobbm.fsf@basil.nowhere.org>
+	<20090526160017.98fc62e4.akpm@linux-foundation.org>
+	<20090526231428.GK846@one.firstfloor.org>
+	<20090526162821.02e11d5b.akpm@linux-foundation.org>
+	<20090526234109.GL846@one.firstfloor.org>
+	<20090526164532.6c780234.akpm@linux-foundation.org>
+	<20090527001104.GN846@one.firstfloor.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 27 May 2009 02:11:04 +0200 Andi Kleen <andi@firstfloor.org> wrote:
 
-At 08:42 09/05/27, Andrew Morton wrote:
->On Fri, 22 May 2009 10:33:23 +0800
->Wu Fengguang <fengguang.wu@intel.com> wrote:
->
->> > I tested above patch, and I got same performance number.
->> > I wonder why if (PageUptodate(page)) check is there...
->> 
->> Thanks!  This is an interesting micro timing behavior that
->> demands some research work.  The above check is to confirm if it's
->> the PageUptodate() case that makes the difference. So why that case
->> happens so frequently so as to impact the performance? Will it also
->> happen in NFS?
->> 
->> The problem is readahead IO pipeline is not running smoothly, which is
->> undesirable and not well understood for now.
->
->The patch causes a remarkably large performance increase.  A 9%
->reduction in time for a linear read? I'd be surprised if the workload
+> > I dunno.  Is this true of all linux filesystems in all cases?  Maybe.
+> 
+> Assuming one of them is not would you rather want to fix that file system
+> or 10 zillion user programs (including the kernel core dumper) that 
+> get it wrong? @)
+> 
 
-Hi Andrew.
-Yes, I tested this with dd.
+I think that removing one bug is better than adding one.
 
->even consumed 9% of a CPU, so where on earth has the kernel gone to?
->
->Have you been able to reproduce this in your testing?
-
-Yes, this test on my environment is reproducible.
-
-Thanks.
+Many filesystems will return a short write if they hit a memory
+allocation failure, for example.  pipe_write() sure will.  Retrying
+is appropriate in such a case.
 
