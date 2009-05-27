@@ -1,66 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762852AbZE0Tyh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933609AbZE0T5T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762852AbZE0Tyh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 15:54:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762487AbZE0TyY
+	id S933609AbZE0T5T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 15:57:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759718AbZE0T5J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 15:54:24 -0400
-Received: from mail-bw0-f222.google.com ([209.85.218.222]:55926 "EHLO
-	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933556AbZE0TyW (ORCPT
+	Wed, 27 May 2009 15:57:09 -0400
+Received: from az33egw02.freescale.net ([192.88.158.103]:50466 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757954AbZE0T5I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 15:54:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=AZoeU1e3FKhY91p7GtzGDCf3uR9QzUmvX0Rb6Y6i0CSscI5XJ+rNTpa7IE4Ula8qwh
-         QgDJj1uHjtxYUdvK1fBe1ofileQiQ+z9ZjmgME1RlaKamokTOJf3dEZyEvwDlAgxGy4j
-         ov1cfO+QE83J8Rq4ulvy7fsKRd64nwzkFDfIk=
-Message-ID: <4A1D9A4C.4000600@gmail.com>
-Date: Wed, 27 May 2009 21:53:48 +0200
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090302)
+	Wed, 27 May 2009 15:57:08 -0400
+Message-ID: <4A1D9A66.5020002@freescale.com>
+Date: Wed, 27 May 2009 14:54:14 -0500
+From: Timur Tabi <timur@freescale.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090504 SeaMonkey/2.0a3
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Pavel Machek <pavel@ucw.cz>, LKML <linux-kernel@vger.kernel.org>,
-       Linux PM List <linux-pm@lists.linux-foundation.org>
-Subject: Re: 2 bugs related to suspend to disk
-References: <4A199A7A.3010705@gmail.com> <200905250004.11927.rjw@sisk.pl> <4A1AD3D1.2010806@gmail.com> <200905252331.02488.rjw@sisk.pl>
-In-Reply-To: <200905252331.02488.rjw@sisk.pl>
+To: Scott Wood <scottwood@freescale.com>
+CC: Russell King <rmk+lkml@arm.linux.org.uk>,
+       Peter Korsgaard <jacmet@sunsite.dk>,
+       Robert Schwebel <r.schwebel@pengutronix.de>,
+       devicetree-discuss <devicetree-discuss@ozlabs.org>,
+       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       Janboe Ye <yuan-bo.ye@motorola.com>
+Subject: Re: [RFC] [PATCH] Device Tree on ARM platform
+References: <1243408083.13460.14.camel@debian-nb> <fa686aa40905270727m31250984tf12249fc87179ce9@mail.gmail.com> <ed82fe3e0905270739k38018c87ka11f62c5977e45fb@mail.gmail.com> <20090527150527.GK6805@pengutronix.de> <87vdnm8sec.fsf@macbook.be.48ers.dk> <4A1D6901.2090508@freescale.com> <20090527175609.GB31861@flint.arm.linux.org.uk> <4A1D8FBA.6040802@freescale.com> <20090527192909.GA32398@flint.arm.linux.org.uk> <4A1D9A1E.80603@freescale.com>
+In-Reply-To: <4A1D9A1E.80603@freescale.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAWE=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote
-> On Monday 25 May 2009, Marcin Slusarz wrote:
->> Rafael J. Wysocki wrote:
->>> On Sunday 24 May 2009, Marcin Slusarz wrote:
->>>> Pavel Machek wrote:
->>>>> Hi!
->>>>>
->>>>>
->>>>>> 2) "s2disk" (from suspend-0.8) suspends, but doesn't resume (and I need to mkswap && swapon -a later)
->>>>>>
->>>>> I'm afraid we need more details here. Is "resume" binary being ran?
->>>> Excellent question ;) - I didn't know it has to. I'll try to setup
->>>> initramfs tomorrow.
->>>>
->>>> Thanks and sorry for the noise!
->>> However, the issue reported as 1) is not really a noise IMO. :-)
->>>
->>> Can you please attach a full dmesg output containing these messages?
->> I've uploaded .config, dmesg (BUG was not saved) and 2 pictures of
->> screen just before power loss to http://www.kadu.net/~joi/kernel/2009.05.25/
->> (Please ignore first suspend failure (3681.078646 - 3685.514358) - I forgot
->> to restore swap)
-> 
-> Thanks.
-> 
-> Can you please test the patch sent by Sebastian Ott in this thread?
+Scott Wood wrote:
+> The patches that were proposed (and NACKed) in u-boot did exactly this 
+> -- except supposedly they would only set the MAC address if the 
+> interface were actually used prior to booting the kernel.
 
-BUG disappeared with this patch. Is this a final fix?
+How does a Linux driver normally get a MAC address if it's not passed via the device tree and it isn't already programmed in the hardware?  Is there some file in /etc that stores these things?
 
-Marcin
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
