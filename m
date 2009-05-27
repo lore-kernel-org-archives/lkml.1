@@ -1,74 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761733AbZE0PmA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762403AbZE0Pnk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761733AbZE0PmA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 11:42:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758780AbZE0Plv
+	id S1762403AbZE0Pnk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 11:43:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760078AbZE0Pnb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 11:41:51 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:22385 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755793AbZE0Plu (ORCPT
+	Wed, 27 May 2009 11:43:31 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55869 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758981AbZE0Pna (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 11:41:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:to:cc:subject:references:from:date:in-reply-to:message-id
-         :user-agent:mime-version:content-type;
-        b=X9CKOSuoPwYUrx35WuDRVoNFqG99KnV2aFAY4QAx9XTA2oY4+0wSTA3N47E1KVcLEe
-         FCAkazrG2xXQvafQofx+qlVKtHYJrWUhpwcVjgnCKIUpNCtq6Xjh+NV5nY9dPM+NsEi1
-         KQpaOn/qKoOo+e7eAZYERY9NSejNG4/EG15o8=
-To: Robert Schwebel <r.schwebel@pengutronix.de>
-Cc: Timur Tabi <timur@freescale.com>,
-       devicetree-discuss <devicetree-discuss@ozlabs.org>,
-       linux-kernel@vger.kernel.org, Janboe Ye <yuan-bo.ye@motorola.com>,
-       linux-arm-kernel@lists.arm.linux.org.uk, rmk@arm.linux.org.uk
-Subject: Re: [RFC] [PATCH] Device Tree on ARM platform
-References: <1243408083.13460.14.camel@debian-nb>
-	<fa686aa40905270727m31250984tf12249fc87179ce9@mail.gmail.com>
-	<ed82fe3e0905270739k38018c87ka11f62c5977e45fb@mail.gmail.com>
-	<20090527150527.GK6805@pengutronix.de>
-From: Peter Korsgaard <jacmet@sunsite.dk>
-Date: Wed, 27 May 2009 17:41:47 +0200
-In-Reply-To: <20090527150527.GK6805@pengutronix.de> (Robert Schwebel's message of "Wed\, 27 May 2009 17\:05\:27 +0200")
-Message-ID: <87vdnm8sec.fsf@macbook.be.48ers.dk>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Wed, 27 May 2009 11:43:30 -0400
+Date: Wed, 27 May 2009 08:34:22 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+cc: Ingo Molnar <mingo@elte.hu>, the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>, Greg KH <gregkh@suse.de>,
+       Jens Axboe <jens.axboe@oracle.com>, Chris Wright <chrisw@redhat.com>,
+       kurt.hackel@oracle.com, Andrew Morton <akpm@linux-foundation.org>,
+       Ky Srinivasan <ksrinivasan@novell.com>, Beulich <jbeulich@novell.com>,
+       Avi Kivity <avi@redhat.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Subject: Re: [PATCH 17/17] xen: disable MSI
+In-Reply-To: <1243409850-21577-18-git-send-email-jeremy@goop.org>
+Message-ID: <alpine.LFD.2.01.0905270829530.3435@localhost.localdomain>
+References: <1243409850-21577-1-git-send-email-jeremy@goop.org> <1243409850-21577-18-git-send-email-jeremy@goop.org>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Robert" == Robert Schwebel <r.schwebel@pengutronix.de> writes:
 
-Hi,
 
- Robert> - The whole concept is based on the assumption that bindings
- Robert> are defined *once*, then never to be changed again. As this
- Robert> is not true (check MPC5200 to find out what I mean), oftree
- Robert> wreckage is *the* main cause of new kernels not working on
- Robert> old bootloaders any more. Is there a solution of this
- Robert> problem? I have not seen a good idea how to avoid the
- Robert> constant change in definitions.
+On Wed, 27 May 2009, Jeremy Fitzhardinge wrote:
+> 
+> [ Impact: prevent MSI subsystem from crashing ]
 
-Just bundle the .dtb with the kernel and they'll always be in sync. I
-know this isn't really in the spirit of OF, but currently imho the
-only realistic solution.
+Grr.
 
-I did a (nacked) patch to do this with the multi-image support in
-U-Boot some time ago:
+I looked at several of these impact lines, and they were _all_ totally 
+misleading.
 
-http://patchwork.ozlabs.org/patch/589/
+Please, guys. Stop with the F*CKING impact lines already. Add them if they 
+are obvious, but don't make them this idiotic "do an impact line whether 
+or not it makes sense".
 
- Robert> - The oftree layering is fundamentally broken. We already
- Robert> have a sane abstraction for arbitrary hardware in the kernel:
- Robert> platform devices.  Why not instanciate platform devices from
- Robert> a generic oftree core?
+I hate them. They are stupid. 90% of all the impact lines I see are either 
+(a) misleading or (b) totally inane and pointless. 
 
- Robert> - Platform data makes it possible to store function
- Robert> pointers. There is no equivalent to this concept in
- Robert> oftree-land.
+In this case, we would have been a LOT BETTER OFF with having just a 
+better header line that said "xen: disable MSI to avoid crash" or 
+something like that. But no. THAT F*CKING IMPACT LINE apparently meant 
+that Jeremy just turned off his brain, and made _both_ the header line and 
+the Impact: line be non-descriptive.
 
-Yeah.
+Really. Stop it. Ingo, start saying "no" to people, at least for impact 
+lines that do not make sense. It adds _nothing_, and it actually detracts 
+from real content, because just the inanity of them delutes the whole 
+meaning of it.
 
--- 
-Bye, Peter Korsgaard
+		Linus
