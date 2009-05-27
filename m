@@ -1,167 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933322AbZE0SR1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933355AbZE0SRq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933322AbZE0SR1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 14:17:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933210AbZE0SQh
+	id S933355AbZE0SRq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 14:17:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933206AbZE0SQx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 14:16:37 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:36827 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933197AbZE0SQf (ORCPT
+	Wed, 27 May 2009 14:16:53 -0400
+Received: from jalapeno.cc.columbia.edu ([128.59.29.5]:61215 "EHLO
+	jalapeno.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933240AbZE0SQv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 14:16:35 -0400
-Subject: Re: [PATCH 2/2] Dynamic Tick: Allow 32-bit machines to sleep for
- more than 2.15 seconds
-From: john stultz <johnstul@us.ibm.com>
-To: Jon Hunter <jon-hunter@ti.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <4A1D52EB.8040107@ti.com>
-References: <4A1D52EB.8040107@ti.com>
-Content-Type: text/plain
-Date: Wed, 27 May 2009 11:16:16 -0700
-Message-Id: <1243448176.7440.12.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Wed, 27 May 2009 14:16:51 -0400
+From: Oren Laadan <orenl@cs.columbia.edu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       linux-api@vger.kernel.org, Serge Hallyn <serue@us.ibm.com>,
+       Dave Hansen <dave@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Alexander Viro <viro@zeniv.linux.org.uk>,
+       Pavel Emelyanov <xemul@openvz.org>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Oren Laadan <orenl@cs.columbia.edu>
+Subject: [RFC v16][PATCH 08/43] c/r: introduce '->checkpoint()' method in 'struct file_operations'
+Date: Wed, 27 May 2009 13:32:34 -0400
+Message-Id: <1243445589-32388-9-git-send-email-orenl@cs.columbia.edu>
+X-Mailer: git-send-email 1.6.0.1
+In-Reply-To: <1243445589-32388-1-git-send-email-orenl@cs.columbia.edu>
+References: <1243445589-32388-1-git-send-email-orenl@cs.columbia.edu>
+X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-05-27 at 09:49 -0500, Jon Hunter wrote:
-> In the dynamic tick code, "max_delta_ns" (member of the 
-> "clock_event_device" structure) represents the maximum sleep time that 
-> can occur between timer events in nanoseconds.
-> 
-> The variable, "max_delta_ns", is defined as an unsigned long which is a 
-> 32-bit integer for 32-bit machines and a 64-bit integer for 64-bit 
-> machines (if -m64 option is used for gcc). The value of max_delta_ns is 
-> set by calling the function "clockevent_delta2ns()" which returns a 
-> maximum value of LONG_MAX. For a 32-bit machine LONG_MAX is equal to 
-> 0x7fffffff and in nanoseconds this equates to ~2.15 seconds. Hence, the 
-> maximum sleep time for a 32-bit machine is ~2.15 seconds, where as for a 
-> 64-bit machine it will be many years.
-> 
-> This patch changes the type of max_delta_ns to be "unsigned long long" 
-> instead of "unsigned long" so that this variable is a 64-bit type for 
-> both 32-bit and 64-bit machines. It also changes the maximum value 
-> returned by clockevent_delta2ns() to LLONG_MAX. Hence this allows a 
-> 32-bit machine to sleep for longer than ~2.15 seconds. Please note that 
-> this patch changes "min_delta_ns" to be "unsigned long long" as well and 
-> although this is probably unnecessary, it makes the patch simpler.
-> 
-> Signed-off-by: Jon Hunter <jon-hunter@ti.com>
+While we assume all normal files and directories can be checkpointed,
+there are, as usual in the VFS, specialized places that will always
+need an ability to override these defaults. Although we could do this
+completely in the checkpoint code, that would bitrot quickly.
 
-Acked-by: John Stultz <johnstul@us.ibm.com>
+This adds a new 'file_operations' function for checkpointing a file.
+It is assumed that there should be a dirt-simple way to make something
+(un)checkpointable that fits in with current code.
 
+As you can see in the ext[234] patches down the road, all that we have
+to do to make something simple be supported is add a single "generic"
+f_op entry.
 
-> ---
->   include/linux/clockchips.h |    6 +++---
->   kernel/hrtimer.c           |    2 +-
->   kernel/time/clockevents.c  |   10 +++++-----
->   kernel/time/tick-oneshot.c |    2 +-
->   kernel/time/timer_list.c   |    4 ++--
->   5 files changed, 12 insertions(+), 12 deletions(-)
-> 
-> diff --git a/include/linux/clockchips.h b/include/linux/clockchips.h
-> index 3a1dbba..8154bc6 100644
-> --- a/include/linux/clockchips.h
-> +++ b/include/linux/clockchips.h
-> @@ -77,8 +77,8 @@ enum clock_event_nofitiers {
->   struct clock_event_device {
->   	const char		*name;
->   	unsigned int		features;
-> -	unsigned long		max_delta_ns;
-> -	unsigned long		min_delta_ns;
-> +	unsigned long long	max_delta_ns;
-> +	unsigned long long	min_delta_ns;
->   	unsigned long		mult;
->   	int			shift;
->   	int			rating;
-> @@ -116,7 +116,7 @@ static inline unsigned long div_sc(unsigned long 
-> ticks, unsigned long nsec,
->   }
-> 
->   /* Clock event layer functions */
-> -extern unsigned long clockevent_delta2ns(unsigned long latch,
-> +extern unsigned long long clockevent_delta2ns(unsigned long latch,
->   					 struct clock_event_device *evt);
->   extern void clockevents_register_device(struct clock_event_device *dev);
-> 
-> diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
-> index cb8a15c..5b1cdc4 100644
-> --- a/kernel/hrtimer.c
-> +++ b/kernel/hrtimer.c
-> @@ -1199,7 +1199,7 @@ hrtimer_interrupt_hanging(struct 
-> clock_event_device *dev,
->   	force_clock_reprogram = 1;
->   	dev->min_delta_ns = (unsigned long)try_time.tv64 * 3;
->   	printk(KERN_WARNING "hrtimer: interrupt too slow, "
-> -		"forcing clock min delta to %lu ns\n", dev->min_delta_ns);
-> +		"forcing clock min delta to %llu ns\n", dev->min_delta_ns);
->   }
->   /*
->    * High resolution timer interrupt
-> diff --git a/kernel/time/clockevents.c b/kernel/time/clockevents.c
-> index d13be21..3fa07b3 100644
-> --- a/kernel/time/clockevents.c
-> +++ b/kernel/time/clockevents.c
-> @@ -36,10 +36,10 @@ static DEFINE_SPINLOCK(clockevents_lock);
->    *
->    * Math helper, returns latch value converted to nanoseconds (bound 
-> checked)
->    */
-> -unsigned long clockevent_delta2ns(unsigned long latch,
-> +unsigned long long clockevent_delta2ns(unsigned long latch,
->   				  struct clock_event_device *evt)
->   {
-> -	u64 clc = ((u64) latch << evt->shift);
-> +	unsigned long long clc = ((unsigned long long) latch << evt->shift);
-> 
->   	if (unlikely(!evt->mult)) {
->   		evt->mult = 1;
-> @@ -49,10 +49,10 @@ unsigned long clockevent_delta2ns(unsigned long latch,
->   	do_div(clc, evt->mult);
->   	if (clc < 1000)
->   		clc = 1000;
-> -	if (clc > LONG_MAX)
-> -		clc = LONG_MAX;
-> +	if (clc > LLONG_MAX)
-> +		clc = LLONG_MAX;
-> 
-> -	return (unsigned long) clc;
-> +	return clc;
->   }
-> 
->   /**
-> diff --git a/kernel/time/tick-oneshot.c b/kernel/time/tick-oneshot.c
-> index 2e8de67..857087b 100644
-> --- a/kernel/time/tick-oneshot.c
-> +++ b/kernel/time/tick-oneshot.c
-> @@ -50,7 +50,7 @@ int tick_dev_program_event(struct clock_event_device 
-> *dev, ktime_t expires,
->   				dev->min_delta_ns += dev->min_delta_ns >> 1;
-> 
->   			printk(KERN_WARNING
-> -			       "CE: %s increasing min_delta_ns to %lu nsec\n",
-> +			       "CE: %s increasing min_delta_ns to %llu nsec\n",
->   			       dev->name ? dev->name : "?",
->   			       dev->min_delta_ns << 1);
-> 
-> diff --git a/kernel/time/timer_list.c b/kernel/time/timer_list.c
-> index a999b92..3bf30b4 100644
-> --- a/kernel/time/timer_list.c
-> +++ b/kernel/time/timer_list.c
-> @@ -204,8 +204,8 @@ print_tickdevice(struct seq_file *m, struct 
-> tick_device *td, int cpu)
->   		return;
->   	}
->   	SEQ_printf(m, "%s\n", dev->name);
-> -	SEQ_printf(m, " max_delta_ns:   %lu\n", dev->max_delta_ns);
-> -	SEQ_printf(m, " min_delta_ns:   %lu\n", dev->min_delta_ns);
-> +	SEQ_printf(m, " max_delta_ns:   %llu\n", dev->max_delta_ns);
-> +	SEQ_printf(m, " min_delta_ns:   %llu\n", dev->min_delta_ns);
->   	SEQ_printf(m, " mult:           %lu\n", dev->mult);
->   	SEQ_printf(m, " shift:          %d\n", dev->shift);
->   	SEQ_printf(m, " mode:           %d\n", dev->mode);
+Also introduce vfs_fcntl() so that it can be called from restart (see
+patch adding restart of files).
+
+Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
+---
+ fs/fcntl.c                       |   21 +++++++++++++--------
+ include/linux/checkpoint_types.h |    2 ++
+ include/linux/fs.h               |    6 ++++++
+ 3 files changed, 21 insertions(+), 8 deletions(-)
+
+diff --git a/fs/fcntl.c b/fs/fcntl.c
+index 1ad7031..17020a9 100644
+--- a/fs/fcntl.c
++++ b/fs/fcntl.c
+@@ -337,6 +337,18 @@ static long do_fcntl(int fd, unsigned int cmd, unsigned long arg,
+ 	return err;
+ }
+ 
++int vfs_fcntl(int fd, unsigned int cmd, unsigned long arg, struct file *filp)
++{
++	int err;
++
++	err = security_file_fcntl(filp, cmd, arg);
++	if (err)
++		goto out;
++	err = do_fcntl(fd, cmd, arg, filp);
++ out:
++	return err;
++}
++
+ SYSCALL_DEFINE3(fcntl, unsigned int, fd, unsigned int, cmd, unsigned long, arg)
+ {	
+ 	struct file *filp;
+@@ -346,14 +358,7 @@ SYSCALL_DEFINE3(fcntl, unsigned int, fd, unsigned int, cmd, unsigned long, arg)
+ 	if (!filp)
+ 		goto out;
+ 
+-	err = security_file_fcntl(filp, cmd, arg);
+-	if (err) {
+-		fput(filp);
+-		return err;
+-	}
+-
+-	err = do_fcntl(fd, cmd, arg, filp);
+-
++	err = vfs_fcntl(fd, cmd, arg, filp);
+  	fput(filp);
+ out:
+ 	return err;
+diff --git a/include/linux/checkpoint_types.h b/include/linux/checkpoint_types.h
+index c1032fa..9c14034 100644
+--- a/include/linux/checkpoint_types.h
++++ b/include/linux/checkpoint_types.h
+@@ -15,6 +15,8 @@
+ 
+ #ifdef __KERNEL__
+ 
++#include <linux/sched.h>
++
+ struct ckpt_ctx {
+ 	int crid;		/* unique checkpoint id */
+ 
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index 9c4348a..60d9229 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -8,6 +8,7 @@
+ 
+ #include <linux/limits.h>
+ #include <linux/ioctl.h>
++#include <linux/checkpoint_types.h>
+ 
+ /*
+  * It's silly to have NR_OPEN bigger than NR_FILE, but you can change
+@@ -1082,6 +1083,8 @@ struct file_lock {
+ 
+ #include <linux/fcntl.h>
+ 
++extern int vfs_fcntl(int fd, unsigned cmd, unsigned long arg, struct file *fp);
++
+ extern void send_sigio(struct fown_struct *fown, int fd, int band);
+ 
+ /* fs/sync.c */
+@@ -1508,6 +1511,7 @@ struct file_operations {
+ 	ssize_t (*splice_write)(struct pipe_inode_info *, struct file *, loff_t *, size_t, unsigned int);
+ 	ssize_t (*splice_read)(struct file *, loff_t *, struct pipe_inode_info *, size_t, unsigned int);
+ 	int (*setlease)(struct file *, long, struct file_lock **);
++	int (*checkpoint)(struct ckpt_ctx *, struct file *);
+ };
+ 
+ struct inode_operations {
+@@ -2306,6 +2310,8 @@ void inode_sub_bytes(struct inode *inode, loff_t bytes);
+ loff_t inode_get_bytes(struct inode *inode);
+ void inode_set_bytes(struct inode *inode, loff_t bytes);
+ 
++#define generic_file_checkpoint NULL
++
+ extern int vfs_readdir(struct file *, filldir_t, void *);
+ 
+ extern int vfs_stat(char __user *, struct kstat *);
+-- 
+1.6.0.4
 
