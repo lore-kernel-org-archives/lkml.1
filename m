@@ -1,90 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764723AbZE0Hqa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758765AbZE0Hr4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764723AbZE0Hqa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 03:46:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764678AbZE0Hp4
+	id S1758765AbZE0Hr4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 03:47:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754356AbZE0Hrr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 03:45:56 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42467 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1764657AbZE0Hpw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 03:45:52 -0400
-Date: Wed, 27 May 2009 00:45:25 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: paul@mad-scientist.net, linux-kernel@vger.kernel.org
-Subject: Re: [2.6.27.24] Kernel coredump to a pipe is failing
-Message-Id: <20090527004525.1d70c134.akpm@linux-foundation.org>
-In-Reply-To: <20090527073136.GT846@one.firstfloor.org>
-References: <1243355634.29250.331.camel@psmith-ubeta.netezza.com>
-	<878wkjobbm.fsf@basil.nowhere.org>
-	<20090526160017.98fc62e4.akpm@linux-foundation.org>
-	<20090526231428.GK846@one.firstfloor.org>
-	<20090526162821.02e11d5b.akpm@linux-foundation.org>
-	<20090526234109.GL846@one.firstfloor.org>
-	<20090526164532.6c780234.akpm@linux-foundation.org>
-	<20090527001104.GN846@one.firstfloor.org>
-	<20090526172935.fad52c49.akpm@linux-foundation.org>
-	<20090527073136.GT846@one.firstfloor.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 27 May 2009 03:47:47 -0400
+Received: from claw.goop.org ([74.207.240.146]:53658 "EHLO claw.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755952AbZE0Hrq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 03:47:46 -0400
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>, Greg KH <gregkh@suse.de>,
+       Jens Axboe <jens.axboe@oracle.com>, Chris Wright <chrisw@redhat.com>,
+       kurt.hackel@oracle.com, Andrew Morton <akpm@linux-foundation.org>,
+       Ky Srinivasan <ksrinivasan@novell.com>, Beulich <jbeulich@novell.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Avi Kivity <avi@redhat.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Subject: [PATCH 17/17] xen: disable MSI
+Date: Wed, 27 May 2009 00:37:30 -0700
+Message-Id: <1243409850-21577-18-git-send-email-jeremy@goop.org>
+X-Mailer: git-send-email 1.6.0.6
+In-Reply-To: <1243409850-21577-1-git-send-email-jeremy@goop.org>
+References: <1243409850-21577-1-git-send-email-jeremy@goop.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 May 2009 09:31:36 +0200 Andi Kleen <andi@firstfloor.org> wrote:
+From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 
-> On Tue, May 26, 2009 at 05:29:35PM -0700, Andrew Morton wrote:
-> > On Wed, 27 May 2009 02:11:04 +0200 Andi Kleen <andi@firstfloor.org> wrote:
-> > 
-> > > > I dunno.  Is this true of all linux filesystems in all cases?  Maybe.
-> > > 
-> > > Assuming one of them is not would you rather want to fix that file system
-> > > or 10 zillion user programs (including the kernel core dumper) that 
-> > > get it wrong? @)
-> > > 
-> > 
-> > I think that removing one bug is better than adding one.
-> > 
-> > Many filesystems will return a short write if they hit a memory
-> > allocation failure, for example.  pipe_write() sure will.  Retrying
-> > is appropriate in such a case.
-> 
-> Sorry but are you really suggesting every program in the world that uses
-> write() anywhere should put it into a loop? That seems just like really
-> bad API design to me, requiring such contortions in a fundamental
-> system call just to work around kernel deficiencies.
-> 
-> I can just imagine the programmers putting nasty comments
-> about the Linux kernel on top of those loops and they would
-> be fully deserved.
-> 
+Disable MSI until we support it properly.
 
-Hey, don't look at me - blame Brian Kernighan or George Bush or
-someone.
+[ Impact: prevent MSI subsystem from crashing ]
 
-> And the same applies to in-kernel users really.
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+---
+ arch/x86/xen/apic.c |    3 +++
+ drivers/pci/pci.h   |    2 --
+ include/linux/pci.h |    6 ++++++
+ 3 files changed, 9 insertions(+), 2 deletions(-)
 
-We could delete a rather nice amount of tricky VFS code if we were to
-make this assumption.  But of course we daren't do that.
+diff --git a/arch/x86/xen/apic.c b/arch/x86/xen/apic.c
+index 35a8af7..fece57a 100644
+--- a/arch/x86/xen/apic.c
++++ b/arch/x86/xen/apic.c
+@@ -1,6 +1,7 @@
+ #include <linux/kernel.h>
+ #include <linux/threads.h>
+ #include <linux/bitmap.h>
++#include <linux/pci.h>
+ 
+ #include <asm/io_apic.h>
+ #include <asm/acpi.h>
+@@ -54,6 +55,8 @@ void xen_init_apic(void)
+ 	if (!xen_initial_domain())
+ 		return;
+ 
++	pci_no_msi();
++
+ 	set_io_apic_ops(&xen_ioapic_ops);
+ 
+ #ifdef CONFIG_ACPI
+diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
+index d03f6b9..79ada7b 100644
+--- a/drivers/pci/pci.h
++++ b/drivers/pci/pci.h
+@@ -111,10 +111,8 @@ extern struct rw_semaphore pci_bus_sem;
+ extern unsigned int pci_pm_d3_delay;
+ 
+ #ifdef CONFIG_PCI_MSI
+-void pci_no_msi(void);
+ extern void pci_msi_init_pci_dev(struct pci_dev *dev);
+ #else
+-static inline void pci_no_msi(void) { }
+ static inline void pci_msi_init_pci_dev(struct pci_dev *dev) { }
+ #endif
+ 
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index 72698d8..724d030 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -1253,5 +1253,11 @@ static inline irqreturn_t pci_sriov_migration(struct pci_dev *dev)
+ }
+ #endif
+ 
++#ifdef CONFIG_PCI_MSI
++void pci_no_msi(void);
++#else
++static inline void pci_no_msi(void) { }
++#endif
++
+ #endif /* __KERNEL__ */
+ #endif /* LINUX_PCI_H */
+-- 
+1.6.0.6
 
-And as long as we're attempting to correctly handle partial writes all
-over the kernel, it's a bit dopey to deliberately avoid doing this at one
-particular codesite.
-
-I bet glibc handles partial writes...
-
-> The memory allocation case more sounds like a bug in these fs and
-> in pipe.
-> 
-> e.g. the network stack sleeps waiting for memory, perhaps these
-> file systems should too.
-> 
-> Or it should just always return -ENOMEM. Typically when the 
-> system is badly out of memory you're gonna lose anyways because
-> a lot of things start failing.
-
-The kernel should only fail if it has no other option.
