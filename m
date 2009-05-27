@@ -1,62 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761272AbZE0Mi0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762541AbZE0Mks@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761272AbZE0Mi0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 08:38:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754067AbZE0MiP
+	id S1762541AbZE0Mks (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 08:40:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752760AbZE0Mkk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 08:38:15 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:19042 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751873AbZE0MiO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 08:38:14 -0400
-Message-ID: <4A1D3418.8060909@nokia.com>
-Date: Wed, 27 May 2009 15:37:44 +0300
-From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Reply-To: Artem.Bityutskiy@nokia.com
-Organization: Nokia OYJ
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Wed, 27 May 2009 08:40:40 -0400
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:43104 "EHLO e8.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751873AbZE0Mkk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 08:40:40 -0400
+Date: Wed, 27 May 2009 20:17:18 +0800
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Randy Dunlap <randy.dunlap@oracle.com>,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH -tip] Documentation/accounting/getdelays.c intialize
+	the variable before using it
+Message-ID: <20090527121718.GD30062@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <1242796484.3260.12.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: Arnd Bergmann <arnd@arndb.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: [PATCH 00/19] periodic write-back timer optimization
-References: <20090527130503.4913.62042.sendpatchset@localhost.localdomain> <200905271323.29818.arnd@arndb.de> <4A1D31BA.6060903@nokia.com> <20090527123320.GF11363@kernel.dk>
-In-Reply-To: <20090527123320.GF11363@kernel.dk>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 27 May 2009 12:37:49.0192 (UTC) FILETIME=[F1B6D880:01C9DEC7]
-X-Nokia-AV: Clean
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <1242796484.3260.12.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
-> On Wed, May 27 2009, Artem Bityutskiy wrote:
->> ext Arnd Bergmann wrote:
->>> On Wednesday 27 May 2009, Artem Bityutskiy wrote:
->>>> Hi,
->>>>
->>>> This is the second attempt. The first one was here:
->>>> http://marc.info/?l=linux-fsdevel&m=124301072305588&w=2
->>>> It was very hacky and got no comments.
->>> How does this relate to the per-BDI writeback patches that
->>> Jens is working on? Doesn't that require a completely different
->>> (probably simpler) implementation of your patch?
->> At a quick glance, our works do not intersect. He seems
->> to be changing the guts of write-back, while I only touch
->> the timer which wakes up the periodic write-back thread,
->> nothing else. I'll try to take Jens' patches and see.
-> 
-> There's definitely overlap! The timer is gone with my patches and so is
-> pdflush. For an idle (idle here meaning no background writeback
-> activity) system, there should just be bdi-default running. And that
-> will wake up every dirty_writeback_interval by default.
+* Jaswinder Singh Rajput <jaswinder@kernel.org> [2009-05-20 10:44:44]:
 
-Hmm, right. Will be working on top of your patches then.
+> 
+> May be in some cases cmd_type will be used uninitialized.
+> 
+> Also fixes compilation warning:
+> 
+>    CC [M]  Documentation/DocBook/procfs_example.o
+>   Documentation/accounting/getdelays.c: In function ???main???:
+>   Documentation/accounting/getdelays.c:249: warning: ???cmd_type??? may be used uninitialized in this function
+> 
+> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> ---
+>  Documentation/accounting/getdelays.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/Documentation/accounting/getdelays.c b/Documentation/accounting/getdelays.c
+> index 7ea2311..36aae3b 100644
+> --- a/Documentation/accounting/getdelays.c
+> +++ b/Documentation/accounting/getdelays.c
+> @@ -246,7 +246,7 @@ void print_ioacct(struct taskstats *t)
+> 
+>  int main(int argc, char *argv[])
+>  {
+> -	int c, rc, rep_len, aggr_len, len2, cmd_type;
+> +	int c, rc, rep_len, aggr_len, len2, cmd_type = TASKSTATS_CMD_ATTR_UNSPEC;
+
+Thanks. The fix seems correct
+
+
+Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+
+I am away traveling with almost no time to check emails, hence I've
+been slow responding. Thanks for being patient. 
 
 -- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
+	Balbir
