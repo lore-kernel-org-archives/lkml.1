@@ -1,58 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933002AbZE0SIi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932823AbZE0SLg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933002AbZE0SIi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 14:08:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762171AbZE0SI3
+	id S932823AbZE0SLg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 14:11:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762470AbZE0SL2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 14:08:29 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:36277 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759913AbZE0SI2 (ORCPT
+	Wed, 27 May 2009 14:11:28 -0400
+Received: from jalapeno.cc.columbia.edu ([128.59.29.5]:60068 "EHLO
+	jalapeno.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760981AbZE0SL1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 14:08:28 -0400
-To: Harald Welte <HaraldWelte@viatech.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, lkml@morethan.org,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: LOCK prefix on uni processor has its use
-From: Andi Kleen <andi@firstfloor.org>
-References: <200905221139.26941.lkml@morethan.org>
-	<200905221946.01808.lkml@morethan.org> <4A1748A9.1020306@zytor.com>
-	<200905231304.55973.lkml@morethan.org> <4A188A48.5000208@zytor.com>
-	<20090527170118.GC4024@prithivi.gnumonks.org>
-Date: Wed, 27 May 2009 20:08:27 +0200
-In-Reply-To: <20090527170118.GC4024@prithivi.gnumonks.org> (Harald Welte's message of "Wed, 27 May 2009 19:01:18 +0200")
-Message-ID: <87vdnmmnac.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 27 May 2009 14:11:27 -0400
+From: Oren Laadan <orenl@cs.columbia.edu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       linux-api@vger.kernel.org, Serge Hallyn <serue@us.ibm.com>,
+       Dave Hansen <dave@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Alexander Viro <viro@zeniv.linux.org.uk>,
+       Pavel Emelyanov <xemul@openvz.org>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Oren Laadan <orenl@cs.columbia.edu>
+Subject: [RFC v16][PATCH 02/43] c/r: make file_pos_read/write() public
+Date: Wed, 27 May 2009 13:32:28 -0400
+Message-Id: <1243445589-32388-3-git-send-email-orenl@cs.columbia.edu>
+X-Mailer: git-send-email 1.6.0.1
+In-Reply-To: <1243445589-32388-1-git-send-email-orenl@cs.columbia.edu>
+References: <1243445589-32388-1-git-send-email-orenl@cs.columbia.edu>
+X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Harald Welte <HaraldWelte@viatech.com> writes:
-> * All X86 instructions except rep-strings are atomic wrt interrupts.
-> * The lock prefix has uses on a UP processor: It keeps DMA devices from
->   interfering with a read-modify-write sequence
+These two are used in the next patch when calling vfs_read/write()
 
-In theory yes, but not in Linux -- normal drivers simply don't use LOCK in any way
-on a UP kernel.
+Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
+---
+ fs/read_write.c    |   10 ----------
+ include/linux/fs.h |   10 ++++++++++
+ 2 files changed, 10 insertions(+), 10 deletions(-)
 
-We discussed exactly this in the earlier subthread :)
-
-> Now the question is: Is this a valid operation of a driver?  Should the driver
-> do such things, or is such a driver broken? 
-
-The driver is broken because if it relies on this it will not work on a UP kernel.
-Also it's not portable and in general a bad idea.
-
-> When would that occur?  I'm trying
-> to come up with a case, but typically you e.g. allocate some DMA buffer and
-> then don't touch it until the hardware has processed it.
-
-Is it known which driver has this problem?
-
--Andi (who finds hpa's "timing theory" to be more believable anyways)
-
+diff --git a/fs/read_write.c b/fs/read_write.c
+index 9d1e76b..ed63ea3 100644
+--- a/fs/read_write.c
++++ b/fs/read_write.c
+@@ -359,16 +359,6 @@ ssize_t vfs_write(struct file *file, const char __user *buf, size_t count, loff_
+ 
+ EXPORT_SYMBOL(vfs_write);
+ 
+-static inline loff_t file_pos_read(struct file *file)
+-{
+-	return file->f_pos;
+-}
+-
+-static inline void file_pos_write(struct file *file, loff_t pos)
+-{
+-	file->f_pos = pos;
+-}
+-
+ SYSCALL_DEFINE3(read, unsigned int, fd, char __user *, buf, size_t, count)
+ {
+ 	struct file *file;
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index 3b534e5..9c4348a 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -1546,6 +1546,16 @@ ssize_t rw_copy_check_uvector(int type, const struct iovec __user * uvector,
+ 				struct iovec *fast_pointer,
+ 				struct iovec **ret_pointer);
+ 
++static inline loff_t file_pos_read(struct file *file)
++{
++	return file->f_pos;
++}
++
++static inline void file_pos_write(struct file *file, loff_t pos)
++{
++	file->f_pos = pos;
++}
++
+ extern ssize_t vfs_read(struct file *, char __user *, size_t, loff_t *);
+ extern ssize_t vfs_write(struct file *, const char __user *, size_t, loff_t *);
+ extern ssize_t vfs_readv(struct file *, const struct iovec __user *,
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+1.6.0.4
+
