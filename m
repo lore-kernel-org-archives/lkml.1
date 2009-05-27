@@ -1,81 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758980AbZE0Cft@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759341AbZE0CgZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758980AbZE0Cft (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 22:35:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756347AbZE0Cfl
+	id S1759341AbZE0CgZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 22:36:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756568AbZE0CgQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 22:35:41 -0400
-Received: from relais.videotron.ca ([24.201.245.36]:31540 "EHLO
-	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756546AbZE0Cfk (ORCPT
+	Tue, 26 May 2009 22:36:16 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54931 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755797AbZE0CgQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 22:35:40 -0400
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: TEXT/PLAIN; charset=US-ASCII
-Date: Tue, 26 May 2009 22:35:34 -0400 (EDT)
-From: Nicolas Pitre <nico@cam.org>
-X-X-Sender: nico@xanadu.home
-To: Pierre Ossman <pierre@ossman.eu>
-Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH] mvsdio: fix config failure with some high speed SDHC cards
-Message-id: <alpine.LFD.2.00.0905262231120.3906@xanadu.home>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Tue, 26 May 2009 22:36:16 -0400
+Date: Tue, 26 May 2009 19:36:01 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
+Cc: Wu Fengguang <fengguang.wu@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>
+Subject: Re: [PATCH] readahead:add blk_run_backing_dev
+Message-Id: <20090526193601.b825af5f.akpm@linux-foundation.org>
+In-Reply-To: <6.0.0.20.2.20090527110937.0770c420@172.19.0.2>
+References: <6.0.0.20.2.20090518183752.0581fdc0@172.19.0.2>
+	<20090518175259.GL4140@kernel.dk>
+	<20090520025123.GB8186@localhost>
+	<6.0.0.20.2.20090521145005.06f81fe0@172.19.0.2>
+	<20090522010538.GB6010@localhost>
+	<6.0.0.20.2.20090522102551.0705aea0@172.19.0.2>
+	<20090522023323.GA10864@localhost>
+	<20090526164252.0741b392.akpm@linux-foundation.org>
+	<6.0.0.20.2.20090527092105.076be238@172.19.0.2>
+	<20090527020909.GB17658@localhost>
+	<6.0.0.20.2.20090527110937.0770c420@172.19.0.2>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-    
-Especially with Sandisk SDHC cards, the second SWITCH command was failing
-with a timeout and the card was not recognized at all.  However if the
-system was busy, or debugging was enabled, or a udelay(100) was inserted
-before the second SWITCH command in the core code, then the timing was
-so that the card started to work.
+On Wed, 27 May 2009 11:21:53 +0900 Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp> wrote:
 
-This appears to be a problem with the host hardware.  With some unusual
-block sizes, the data FIFO status doesn't indicate a "empty" state right
-away when the data transfer is done.  Queuing another data transfer in
-that condition results in a transfer timeout.
+> 
+> At 11:09 09/05/27, Wu Fengguang wrote:
+> >On Wed, May 27, 2009 at 08:25:04AM +0800, Hisashi Hifumi wrote:
+> >> 
+> >> At 08:42 09/05/27, Andrew Morton wrote:
+> >> >On Fri, 22 May 2009 10:33:23 +0800
+> >> >Wu Fengguang <fengguang.wu@intel.com> wrote:
+> >> >
+> >> >> > I tested above patch, and I got same performance number.
+> >> >> > I wonder why if (PageUptodate(page)) check is there...
+> >> >> 
+> >> >> Thanks!  This is an interesting micro timing behavior that
+> >> >> demands some research work.  The above check is to confirm if it's
+> >> >> the PageUptodate() case that makes the difference. So why that case
+> >> >> happens so frequently so as to impact the performance? Will it also
+> >> >> happen in NFS?
+> >> >> 
+> >> >> The problem is readahead IO pipeline is not running smoothly, which is
+> >> >> undesirable and not well understood for now.
+> >> >
+> >> >The patch causes a remarkably large performance increase.  A 9%
+> >> >reduction in time for a linear read? I'd be surprised if the workload
+> >> 
+> >> Hi Andrew.
+> >> Yes, I tested this with dd.
+> >> 
+> >> >even consumed 9% of a CPU, so where on earth has the kernel gone to?
+> >> >
+> >> >Have you been able to reproduce this in your testing?
+> >> 
+> >> Yes, this test on my environment is reproducible.
+> >
+> >Hisashi, does your environment have some special configurations?
+> 
+> Hi.
+> My testing environment is as follows:
+> Hardware: HP DL580 
+> CPU:Xeon 3.2GHz *4 HT enabled
+> Memory:8GB
+> Storage: Dothill SANNet2 FC (7Disks RAID-0 Array)
+> 
+> I did dd to this disk-array and got improved performance number.
+> 
+> I noticed that when a disk is just one HDD, performance improvement
+> is very small.
+> 
 
-The empty FIFO bit eventually get set by itself in less than 50 usecs
-when it is not set right away. So let's just poll for that bit before
-configuring the controller with a new data transfer.
+Ah.  So it's likely to be some strange interaction with the RAID setup.
 
-Signed-off-by: Nicolas Pitre <nico@marvell.com>
+I assume that you're using the SANNet 2's "hardware raid"?  Or is the
+array set up as jbod and you're using kernel raid0?
 
-diff --git a/drivers/mmc/host/mvsdio.c b/drivers/mmc/host/mvsdio.c
-index 9d3cfa9..b56d72f 100644
---- a/drivers/mmc/host/mvsdio.c
-+++ b/drivers/mmc/host/mvsdio.c
-@@ -64,6 +64,31 @@ static int mvsd_setup_data(struct mvsd_host *host, struct mmc_data *data)
- 	unsigned int tmout;
- 	int tmout_index;
- 
-+	/*
-+	 * Hardware weirdness.  The FIFO_EMPTY bit of the HW_STATE
-+	 * register is sometimes not set before a while when some
-+	 * "unusual" data block sizes are used (such as with the SWITCH
-+	 * command), even despite the fact that the XFER_DONE interrupt
-+	 * was raised.  And if another data transfer starts before
-+	 * this bit comes to good sense (which eventually happens by
-+	 * itself) then the new transfer simply fails with a timeout.
-+	 */
-+	if (!(mvsd_read(MVSD_HW_STATE) & (1 << 13))) {
-+		unsigned long t = jiffies + HZ;
-+		unsigned int hw_state,  count = 0;
-+		do {
-+			if (time_after(jiffies, t)) {
-+				dev_warn(host->dev, "FIFO_EMPTY bit missing\n");
-+				break;
-+			}
-+			hw_state = mvsd_read(MVSD_HW_STATE);
-+			count++;
-+		} while (!(hw_state & (1 << 13)));
-+		dev_dbg(host->dev, "*** wait for FIFO_EMPTY bit "
-+				   "(hw=0x%04x, count=%d, jiffies=%ld)\n",
-+				   hw_state, count, jiffies - (t - HZ));
-+	}
-+
- 	/* If timeout=0 then maximum timeout index is used. */
- 	tmout = DIV_ROUND_UP(data->timeout_ns, host->ns_per_clk);
- 	tmout += data->timeout_clks;
