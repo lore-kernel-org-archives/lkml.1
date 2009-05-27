@@ -1,87 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933229AbZE0STI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932897AbZE0STa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933229AbZE0STI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 14:19:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761582AbZE0SS4
+	id S932897AbZE0STa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 14:19:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762045AbZE0STT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 14:18:56 -0400
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:47122 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761538AbZE0SSz (ORCPT
+	Wed, 27 May 2009 14:19:19 -0400
+Received: from g4t0015.houston.hp.com ([15.201.24.18]:38677 "EHLO
+	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762931AbZE0STS convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 14:18:55 -0400
-X-Amavis-Alert: BAD HEADER, Header field occurs more than once: "Cc" occurs 4
-	times
-Message-Id: <20090527180716.456986138@gentwo.org>
-References: <20090527180635.008102701@gentwo.org>
-User-Agent: quilt/0.46-1
-Date: Wed, 27 May 2009 13:47:02 -0400
-From: cl@linux-foundation.org
-To: linux-kernel@vger.kernel.org
-Cc: Tejun Heo <tj@kernel.org>, Christoph Hellwig <hch@lst.de>,
-       Olaf Weber <olaf@sgi.com>
-Cc: mingo@elte.hu
-Cc: rusty@rustcorp.com.au
-Cc: davem@davemloft.net
-Subject: [my_cpu_ptr 4/5] sda_icsb_modify_counters() does not need a "cpu" variable
-Content-Disposition: inline; filename=my_cpu_ptr_xfs
+	Wed, 27 May 2009 14:19:18 -0400
+From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
+To: "Owens, James" <JOwens@hp.com>, Martin Knoblauch <knobi@knobisoft.de>
+CC: Matthew Wilcox <matthew@wil.cx>, Andrew Morton <akpm@linux-foundation.org>,
+       Mike Galbraith <efault@gmx.de>,
+       "viro@ZenIV.linux.org.uk" <viro@ZenIV.linux.org.uk>,
+       "rjw@sisk.pl" <rjw@sisk.pl>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "tigran@aivazian.fsnet.co.uk" <tigran@aivazian.fsnet.co.uk>,
+       Kay Sievers <kay.sievers@vrfy.org>,
+       "shemminger@vyatta.com" <shemminger@vyatta.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Date: Wed, 27 May 2009 18:18:46 +0000
+Subject: RE: Analyzed/Solved/Bisected: Booting 2.6.30-rc2-git7 very slow
+Thread-Topic: Analyzed/Solved/Bisected: Booting 2.6.30-rc2-git7 very slow
+Thread-Index: Acne9gOwdwblwdNXRM2JEDvmtJUhCQAAHkXw
+Message-ID: <0F5B06BAB751E047AB5C87D1F77A7788694630B931@GVW0547EXC.americas.hpqcorp.net>
+References: <1240977096.5478.3.camel@marge.simson.net>
+ <20090429011755.c141c599.akpm@linux-foundation.org>
+ <20090429120827.GI8633@ZenIV.linux.org.uk>
+ <1241014725.15095.19.camel@marge.simson.net>
+ <20090505154911.e0309a4f.akpm@linux-foundation.org>
+ <1241585140.5196.28.camel@marge.simson.net>
+ <957194.27869.qm@web32605.mail.mud.yahoo.com>
+ <1241599065.18090.18.camel@marge.simson.net>
+ <461911.6351.qm@web32603.mail.mud.yahoo.com>
+ <20090526233102.b86e7f84.akpm@linux-foundation.org>
+ <20090527112153.GE5816@parisc-linux.org>
+ <840102.98312.qm@web32603.mail.mud.yahoo.com> <4A1D8161.2020009@hp.com>
+In-Reply-To: <4A1D8161.2020009@hp.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The xfs_icsb_modify_counters() function no longer needs the cpu variable
-if we use my_cpu_ptr() and we can get rid of get/put_cpu().
+> > 
+> >  Finally, today I built the ccsii driver into the kernel. 
+> It was previously modularized and loaded from initrd. The 
+> second "sysfs" line went away. But does this make cciss 
+> guilty? It is now loaded about 2 seconds earlier in the boot 
+> sequence, which is a big change in timing I guess.
+> > 
+> >  Enlighten me :-)
+> 
+> No idea what is going on, but since I saw your May 20 
+> message, I have been trying to wake up someone whose day job 
+> it should be to care about dl380s and smartarrays. :)
 
-Cc: Christoph Hellwig <hch@lst.de>
-Cc: Olaf Weber <olaf@sgi.com>
-Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
+What? I know Martin has pinged me in the past, but I do not think it was about this issue. If there's multiple sysfs entries for cciss I can't explain that offhand. We do little to nothing for sysfs in the driver.
+Had something similiar happen recently where "/" changed to "!". Had do to with our nested directory structure, /dev/cciss/name vs /dev/name. But we did not make that change, either.
 
----
- fs/xfs/xfs_mount.c |   12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+-- mikem
 
-Index: linux-2.6/fs/xfs/xfs_mount.c
-===================================================================
---- linux-2.6.orig/fs/xfs/xfs_mount.c	2009-05-27 11:54:37.000000000 -0500
-+++ linux-2.6/fs/xfs/xfs_mount.c	2009-05-27 11:55:10.000000000 -0500
-@@ -2320,12 +2320,12 @@ xfs_icsb_modify_counters(
- {
- 	xfs_icsb_cnts_t	*icsbp;
- 	long long	lcounter;	/* long counter for 64 bit fields */
--	int		cpu, ret = 0;
-+	int		ret = 0;
- 
- 	might_sleep();
- again:
--	cpu = get_cpu();
--	icsbp = (xfs_icsb_cnts_t *)per_cpu_ptr(mp->m_sb_cnts, cpu);
-+	preempt_disable();
-+	icsbp = (xfs_icsb_cnts_t *)my_cpu_ptr(mp->m_sb_cnts);
- 
- 	/*
- 	 * if the counter is disabled, go to slow path
-@@ -2369,11 +2369,11 @@ again:
- 		break;
- 	}
- 	xfs_icsb_unlock_cntr(icsbp);
--	put_cpu();
-+	preempt_enable();
- 	return 0;
- 
- slow_path:
--	put_cpu();
-+	preempt_enable();
- 
- 	/*
- 	 * serialise with a mutex so we don't burn lots of cpu on
-@@ -2421,7 +2421,7 @@ slow_path:
- 
- balance_counter:
- 	xfs_icsb_unlock_cntr(icsbp);
--	put_cpu();
-+	preempt_enable();
- 
- 	/*
- 	 * We may have multiple threads here if multiple per-cpu
-
--- 
+> 
+> If they don't react soon, I'll make this my own day job to 
+> try to reproduce it.  We will need hardware config details 
+> and firmware revs to start.
+> 
+> So I would not close the bug just yet.
+> 
+> jim
+> 
+> 
