@@ -1,318 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761134AbZE0JH1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758839AbZE0JKO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761134AbZE0JH1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 05:07:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758315AbZE0JHQ
+	id S1758839AbZE0JKO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 05:10:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751553AbZE0JKD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 05:07:16 -0400
-Received: from hera.kernel.org ([140.211.167.34]:55970 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756575AbZE0JHN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 05:07:13 -0400
-Date: Wed, 27 May 2009 09:06:34 GMT
-From: tip-bot for Ingo Molnar <mingo@elte.hu>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
-       hpa@zytor.com, mingo@redhat.com, jkacur@redhat.com,
-       a.p.zijlstra@chello.nl, efault@gmx.de, mtosatti@redhat.com,
-       tglx@linutronix.de, cjashfor@linux.vnet.ibm.com, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, jkacur@redhat.com, a.p.zijlstra@chello.nl,
-       efault@gmx.de, mtosatti@redhat.com, tglx@linutronix.de,
-       cjashfor@linux.vnet.ibm.com, mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-Subject: [tip:perfcounters/core] perf_counter tools: Add built-in pager support
-Message-ID: <tip-a930d2c0d0a685ab955472b08baad041cc5edb4a@git.kernel.org>
-Git-Commit-ID: a930d2c0d0a685ab955472b08baad041cc5edb4a
-X-Mailer: tip-git-log-daemon
+	Wed, 27 May 2009 05:10:03 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:63659 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750826AbZE0JKC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 05:10:02 -0400
+Message-ID: <4A1D038D.40704@cn.fujitsu.com>
+Date: Wed, 27 May 2009 17:10:37 +0800
+From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
+To: mingo@elte.hu
+CC: LKML <linux-kernel@vger.kernel.org>, kosaki.motohiro@jp.fujitsu.com,
+       Zhaolei <zhaolei@cn.fujitsu.com>, Steven Rostedt <rostedt@goodmis.org>,
+       Thomas Gleixner <tglx@linutronix.de>, fweisbec@gmail.com,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Tom Zanussi <tzanussi@gmail.com>
+Subject: [PATCH] ftrace: add tracepoint for xtime
 Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 27 May 2009 09:06:35 +0000 (UTC)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  a930d2c0d0a685ab955472b08baad041cc5edb4a
-Gitweb:     http://git.kernel.org/tip/a930d2c0d0a685ab955472b08baad041cc5edb4a
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Wed, 27 May 2009 09:50:13 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 27 May 2009 09:59:00 +0200
+This patch can trace current xtime and wall_to_monotonic. Then user can
+use ctime() to convert them to wall time which is easier to be understood, 
+especially for flight-recorder which need to get trace event from a kernel
+dump file. 
 
-perf_counter tools: Add built-in pager support
+Example of ftrace output:
+          <idle>-0     [000] 20118.489849: gtod_update_xtime: xtime=1243265589.999999824 wall_to_monotonic=3051713268.744158739
+           <...>-4020  [001] 20118.489855: sys_open(filename: bf9e66e0, flags: 98800, mode: bf9e66e0)
+           <...>-4020  [001] 20118.489873: sys_open -> 0xffffffec
 
-Add Git's pager.c (and sigchain) code. A command only
-has to call setup_pager() to get paged interactive
-output.
+ctime(1243265590) = date:Mon May 25 11:33:10 2009
+So we can realize the task with pid 4020 open a file at
+Mon May 25 11:33:10 2009
 
-Non-interactive (redirected, command-piped, etc.) uses
-are not affected.
-
-Update perf-report to make use of this.
-
-[ Impact: new feature ]
-
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-Cc: Marcelo Tosatti <mtosatti@redhat.com>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: John Kacur <jkacur@redhat.com>
-LKML-Reference: <new-submission>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
+Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
 ---
- Documentation/perf_counter/Makefile           |    4 +
- Documentation/perf_counter/builtin-report.c   |    3 +
- Documentation/perf_counter/util/environment.c |    8 ++
- Documentation/perf_counter/util/pager.c       |   99 +++++++++++++++++++++++++
- Documentation/perf_counter/util/sigchain.c    |   52 +++++++++++++
- Documentation/perf_counter/util/sigchain.h    |   11 +++
- 6 files changed, 177 insertions(+), 0 deletions(-)
+ include/trace/events/xtime.h |   38 ++++++++++++++++++++++++++++++++++++++
+ kernel/time/ntp.c            |    2 ++
+ kernel/time/timekeeping.c    |    5 +++++
+ 3 files changed, 45 insertions(+), 0 deletions(-)
+ create mode 100644 include/trace/events/xtime.h
 
-diff --git a/Documentation/perf_counter/Makefile b/Documentation/perf_counter/Makefile
-index efb0589..51b13f9 100644
---- a/Documentation/perf_counter/Makefile
-+++ b/Documentation/perf_counter/Makefile
-@@ -297,11 +297,13 @@ LIB_H += util/util.h
- LIB_H += util/help.h
- LIB_H += util/strbuf.h
- LIB_H += util/run-command.h
-+LIB_H += util/sigchain.h
- 
- LIB_OBJS += util/abspath.o
- LIB_OBJS += util/alias.o
- LIB_OBJS += util/config.o
- LIB_OBJS += util/ctype.o
-+LIB_OBJS += util/environment.o
- LIB_OBJS += util/exec_cmd.o
- LIB_OBJS += util/help.o
- LIB_OBJS += util/levenshtein.o
-@@ -314,6 +316,8 @@ LIB_OBJS += util/quote.o
- LIB_OBJS += util/strbuf.o
- LIB_OBJS += util/usage.o
- LIB_OBJS += util/wrapper.o
-+LIB_OBJS += util/sigchain.o
-+LIB_OBJS += util/pager.o
- 
- BUILTIN_OBJS += builtin-help.o
- BUILTIN_OBJS += builtin-record.o
-diff --git a/Documentation/perf_counter/builtin-report.c b/Documentation/perf_counter/builtin-report.c
-index e2712cd..9aef7c5 100644
---- a/Documentation/perf_counter/builtin-report.c
-+++ b/Documentation/perf_counter/builtin-report.c
-@@ -7,6 +7,7 @@
- #include <ctype.h>
- 
- #include "util/list.h"
-+#include "util/cache.h"
- #include "util/rbtree.h"
- 
- #include "perf.h"
-@@ -992,5 +993,7 @@ int cmd_report(int argc, const char **argv, const char *prefix)
- 
- 	parse_options(argc, argv, options, report_usage, 0);
- 
-+	setup_pager();
+diff --git a/include/trace/events/xtime.h b/include/trace/events/xtime.h
+new file mode 100644
+index 0000000..f07bb64
+--- /dev/null
++++ b/include/trace/events/xtime.h
+@@ -0,0 +1,38 @@
++#if !defined(_TRACE_XTIME_H) || defined(TRACE_HEADER_MULTI_READ)
++#define _TRACE_XTIME_H
 +
- 	return __cmd_report();
++#include <linux/time.h>
++#include <linux/tracepoint.h>
++
++#undef TRACE_SYSTEM
++#define TRACE_SYSTEM xtime
++
++TRACE_EVENT(gtod_update_xtime,
++
++	TP_PROTO(struct timespec *xtime, struct timespec *wall_to_monotonic),
++
++	TP_ARGS(xtime, wall_to_monotonic),
++
++	TP_STRUCT__entry(
++		__field(	long,	xtime_sec		)
++		__field(	long,	xtime_nsec		)
++		__field(	long,	wall_to_monotonic_sec	)
++		__field(	long,	wall_to_monotonic_nsec	)
++	),
++
++	TP_fast_assign(
++		__entry->xtime_sec		= xtime->tv_sec;
++		__entry->xtime_nsec		= xtime->tv_nsec;
++		__entry->wall_to_monotonic_sec	= wall_to_monotonic->tv_sec;
++		__entry->wall_to_monotonic_nsec	= wall_to_monotonic->tv_nsec;
++	),
++
++	TP_printk("xtime=%ld.%09ld wall_to_monotonic=%ld.%09ld",
++		  __entry->xtime_sec, __entry->xtime_nsec,
++		  __entry->wall_to_monotonic_sec, __entry->wall_to_monotonic_nsec)
++);
++
++#endif /* _TRACE_XTIME_H */
++
++/* This part must be outside protection */
++#include <trace/define_trace.h>
+diff --git a/kernel/time/ntp.c b/kernel/time/ntp.c
+index 7fc6437..33db762 100644
+--- a/kernel/time/ntp.c
++++ b/kernel/time/ntp.c
+@@ -14,6 +14,7 @@
+ #include <linux/timex.h>
+ #include <linux/time.h>
+ #include <linux/mm.h>
++#include <trace/events/xtime.h>
+ 
+ /*
+  * NTP timekeeping variables:
+@@ -220,6 +221,7 @@ static enum hrtimer_restart ntp_leap_second(struct hrtimer *timer)
+ 		break;
+ 	}
+ 	update_vsyscall(&xtime, clock);
++	trace_gtod_update_xtime(&xtime, &wall_to_monotonic);
+ 
+ 	write_sequnlock(&xtime_lock);
+ 
+diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
+index e8c77d9..798f93e 100644
+--- a/kernel/time/timekeeping.c
++++ b/kernel/time/timekeeping.c
+@@ -19,6 +19,9 @@
+ #include <linux/time.h>
+ #include <linux/tick.h>
+ 
++#define CREATE_TRACE_POINTS
++#include <trace/events/xtime.h>
++
+ 
+ /*
+  * This read-write spinlock protects us from races in SMP while
+@@ -171,6 +174,7 @@ int do_settimeofday(struct timespec *tv)
+ 	ntp_clear();
+ 
+ 	update_vsyscall(&xtime, clock);
++	trace_gtod_update_xtime(&xtime, &wall_to_monotonic);
+ 
+ 	write_sequnlock_irqrestore(&xtime_lock, flags);
+ 
+@@ -568,6 +572,7 @@ void update_wall_time(void)
+ 	/* check to see if there is a new clocksource to use */
+ 	change_clocksource();
+ 	update_vsyscall(&xtime, clock);
++	trace_gtod_update_xtime(&xtime, &wall_to_monotonic);
  }
-diff --git a/Documentation/perf_counter/util/environment.c b/Documentation/perf_counter/util/environment.c
-new file mode 100644
-index 0000000..9b1c819
---- /dev/null
-+++ b/Documentation/perf_counter/util/environment.c
-@@ -0,0 +1,8 @@
-+/*
-+ * We put all the perf config variables in this same object
-+ * file, so that programs can link against the config parser
-+ * without having to link against all the rest of perf.
-+ */
-+#include "cache.h"
-+
-+const char *pager_program;
-diff --git a/Documentation/perf_counter/util/pager.c b/Documentation/perf_counter/util/pager.c
-new file mode 100644
-index 0000000..a28bcca
---- /dev/null
-+++ b/Documentation/perf_counter/util/pager.c
-@@ -0,0 +1,99 @@
-+#include "cache.h"
-+#include "run-command.h"
-+#include "sigchain.h"
-+
-+/*
-+ * This is split up from the rest of git so that we can do
-+ * something different on Windows.
-+ */
-+
-+static int spawned_pager;
-+
-+#ifndef __MINGW32__
-+static void pager_preexec(void)
-+{
-+	/*
-+	 * Work around bug in "less" by not starting it until we
-+	 * have real input
-+	 */
-+	fd_set in;
-+
-+	FD_ZERO(&in);
-+	FD_SET(0, &in);
-+	select(1, &in, NULL, &in, NULL);
-+
-+	setenv("LESS", "FRSX", 0);
-+}
-+#endif
-+
-+static const char *pager_argv[] = { "sh", "-c", NULL, NULL };
-+static struct child_process pager_process;
-+
-+static void wait_for_pager(void)
-+{
-+	fflush(stdout);
-+	fflush(stderr);
-+	/* signal EOF to pager */
-+	close(1);
-+	close(2);
-+	finish_command(&pager_process);
-+}
-+
-+static void wait_for_pager_signal(int signo)
-+{
-+	wait_for_pager();
-+	sigchain_pop(signo);
-+	raise(signo);
-+}
-+
-+void setup_pager(void)
-+{
-+	const char *pager = getenv("PERF_PAGER");
-+
-+	if (!isatty(1))
-+		return;
-+	if (!pager) {
-+		if (!pager_program)
-+			perf_config(perf_default_config, NULL);
-+		pager = pager_program;
-+	}
-+	if (!pager)
-+		pager = getenv("PAGER");
-+	if (!pager)
-+		pager = "less";
-+	else if (!*pager || !strcmp(pager, "cat"))
-+		return;
-+
-+	spawned_pager = 1; /* means we are emitting to terminal */
-+
-+	/* spawn the pager */
-+	pager_argv[2] = pager;
-+	pager_process.argv = pager_argv;
-+	pager_process.in = -1;
-+#ifndef __MINGW32__
-+	pager_process.preexec_cb = pager_preexec;
-+#endif
-+	if (start_command(&pager_process))
-+		return;
-+
-+	/* original process continues, but writes to the pipe */
-+	dup2(pager_process.in, 1);
-+	if (isatty(2))
-+		dup2(pager_process.in, 2);
-+	close(pager_process.in);
-+
-+	/* this makes sure that the parent terminates after the pager */
-+	sigchain_push_common(wait_for_pager_signal);
-+	atexit(wait_for_pager);
-+}
-+
-+int pager_in_use(void)
-+{
-+	const char *env;
-+
-+	if (spawned_pager)
-+		return 1;
-+
-+	env = getenv("PERF_PAGER_IN_USE");
-+	return env ? perf_config_bool("PERF_PAGER_IN_USE", env) : 0;
-+}
-diff --git a/Documentation/perf_counter/util/sigchain.c b/Documentation/perf_counter/util/sigchain.c
-new file mode 100644
-index 0000000..1118b99
---- /dev/null
-+++ b/Documentation/perf_counter/util/sigchain.c
-@@ -0,0 +1,52 @@
-+#include "sigchain.h"
-+#include "cache.h"
-+
-+#define SIGCHAIN_MAX_SIGNALS 32
-+
-+struct sigchain_signal {
-+	sigchain_fun *old;
-+	int n;
-+	int alloc;
-+};
-+static struct sigchain_signal signals[SIGCHAIN_MAX_SIGNALS];
-+
-+static void check_signum(int sig)
-+{
-+	if (sig < 1 || sig >= SIGCHAIN_MAX_SIGNALS)
-+		die("BUG: signal out of range: %d", sig);
-+}
-+
-+int sigchain_push(int sig, sigchain_fun f)
-+{
-+	struct sigchain_signal *s = signals + sig;
-+	check_signum(sig);
-+
-+	ALLOC_GROW(s->old, s->n + 1, s->alloc);
-+	s->old[s->n] = signal(sig, f);
-+	if (s->old[s->n] == SIG_ERR)
-+		return -1;
-+	s->n++;
-+	return 0;
-+}
-+
-+int sigchain_pop(int sig)
-+{
-+	struct sigchain_signal *s = signals + sig;
-+	check_signum(sig);
-+	if (s->n < 1)
-+		return 0;
-+
-+	if (signal(sig, s->old[s->n - 1]) == SIG_ERR)
-+		return -1;
-+	s->n--;
-+	return 0;
-+}
-+
-+void sigchain_push_common(sigchain_fun f)
-+{
-+	sigchain_push(SIGINT, f);
-+	sigchain_push(SIGHUP, f);
-+	sigchain_push(SIGTERM, f);
-+	sigchain_push(SIGQUIT, f);
-+	sigchain_push(SIGPIPE, f);
-+}
-diff --git a/Documentation/perf_counter/util/sigchain.h b/Documentation/perf_counter/util/sigchain.h
-new file mode 100644
-index 0000000..618083b
---- /dev/null
-+++ b/Documentation/perf_counter/util/sigchain.h
-@@ -0,0 +1,11 @@
-+#ifndef SIGCHAIN_H
-+#define SIGCHAIN_H
-+
-+typedef void (*sigchain_fun)(int);
-+
-+int sigchain_push(int sig, sigchain_fun f);
-+int sigchain_pop(int sig);
-+
-+void sigchain_push_common(sigchain_fun f);
-+
-+#endif /* SIGCHAIN_H */
+ 
+ /**
+-- 
+1.6.1.2
+
