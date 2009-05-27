@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760594AbZE0HRn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761073AbZE0HSR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760594AbZE0HRn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 03:17:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757213AbZE0HQm
+	id S1761073AbZE0HSR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 03:18:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756543AbZE0HQs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 03:16:42 -0400
-Received: from claw.goop.org ([74.207.240.146]:41390 "EHLO claw.goop.org"
+	Wed, 27 May 2009 03:16:48 -0400
+Received: from claw.goop.org ([74.207.240.146]:41400 "EHLO claw.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759378AbZE0HQk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 03:16:40 -0400
+	id S1757206AbZE0HQr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 03:16:47 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: the arch/x86 maintainers <x86@kernel.org>,
@@ -18,11 +18,11 @@ Cc: the arch/x86 maintainers <x86@kernel.org>,
        kurt.hackel@oracle.com, Andrew Morton <akpm@linux-foundation.org>,
        Ky Srinivasan <ksrinivasan@novell.com>, Beulich <jbeulich@novell.com>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Juan Quintela <quintela@redhat.com>,
+       Ian Campbell <ian.campbell@citrix.com>,
        Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 03/16] xen dom0: Set up basic IO permissions for dom0.
-Date: Wed, 27 May 2009 00:15:25 -0700
-Message-Id: <1243408538-21100-4-git-send-email-jeremy@goop.org>
+Subject: [PATCH 06/16] xen: disable PAT
+Date: Wed, 27 May 2009 00:15:28 -0700
+Message-Id: <1243408538-21100-7-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
 In-Reply-To: <1243408538-21100-1-git-send-email-jeremy@goop.org>
 References: <1243408538-21100-1-git-send-email-jeremy@goop.org>
@@ -30,126 +30,87 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Juan Quintela <quintela@redhat.com>
+From: Ian Campbell <ian.campbell@citrix.com>
 
-Add the direct mapping area for ISA bus access, and enable IO space
-access for the guest when running as dom0.
+Xen imposes a particular PAT layout on all paravirtual guests which
+does not match the layout Linux would like to use.
 
-[ Impact: set iopl for dom0 kernel; map ISA ]
+Force PAT to be disabled until this is resolved.
 
+[ Impact: disable PAT under Xen, due to incompatible configurations ]
+
+Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Signed-off-by: Juan Quintela <quintela@redhat.com>
 ---
- arch/x86/xen/enlighten.c |    8 ++++++++
- arch/x86/xen/mmu.c       |   24 ++++++++++++++++++++++++
- arch/x86/xen/setup.c     |    6 +++++-
- arch/x86/xen/xen-ops.h   |    1 +
- 4 files changed, 38 insertions(+), 1 deletions(-)
+ arch/x86/include/asm/pat.h |    5 +++++
+ arch/x86/mm/pat.c          |    7 +------
+ arch/x86/xen/enlighten.c   |    3 +++
+ 3 files changed, 9 insertions(+), 6 deletions(-)
 
+diff --git a/arch/x86/include/asm/pat.h b/arch/x86/include/asm/pat.h
+index 7af14e5..fe7be93 100644
+--- a/arch/x86/include/asm/pat.h
++++ b/arch/x86/include/asm/pat.h
+@@ -6,8 +6,13 @@
+ 
+ #ifdef CONFIG_X86_PAT
+ extern int pat_enabled;
++extern void pat_disable(const char *reason);
+ #else
+ static const int pat_enabled;
++static inline void pat_disable(const char *reason)
++{
++	(void)reason;
++}
+ #endif
+ 
+ extern void pat_init(void);
+diff --git a/arch/x86/mm/pat.c b/arch/x86/mm/pat.c
+index e6718bb..5ba8d88 100644
+--- a/arch/x86/mm/pat.c
++++ b/arch/x86/mm/pat.c
+@@ -31,7 +31,7 @@
+ #ifdef CONFIG_X86_PAT
+ int __read_mostly pat_enabled = 1;
+ 
+-static inline void pat_disable(const char *reason)
++void pat_disable(const char *reason)
+ {
+ 	pat_enabled = 0;
+ 	printk(KERN_INFO "%s\n", reason);
+@@ -43,11 +43,6 @@ static int __init nopat(char *str)
+ 	return 0;
+ }
+ early_param("nopat", nopat);
+-#else
+-static inline void pat_disable(const char *reason)
+-{
+-	(void)reason;
+-}
+ #endif
+ 
+ 
 diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
-index 0a1700a..50580fc 100644
+index 50580fc..89f47da 100644
 --- a/arch/x86/xen/enlighten.c
 +++ b/arch/x86/xen/enlighten.c
-@@ -1045,6 +1045,7 @@ asmlinkage void __init xen_start_kernel(void)
+@@ -51,6 +51,7 @@
+ #include <asm/pgtable.h>
+ #include <asm/tlbflush.h>
+ #include <asm/reboot.h>
++#include <asm/pat.h>
  
- 	xen_raw_console_write("mapping kernel into physical memory\n");
- 	pgd = xen_setup_kernel_pagetable(pgd, xen_start_info->nr_pages);
-+	xen_ident_map_ISA();
+ #include "xen-ops.h"
+ #include "mmu.h"
+@@ -1085,6 +1086,8 @@ asmlinkage void __init xen_start_kernel(void)
+ 		add_preferred_console("hvc", 0, NULL);
+ 	}
  
- 	init_mm.pgd = pgd;
- 
-@@ -1054,6 +1055,13 @@ asmlinkage void __init xen_start_kernel(void)
- 	if (xen_feature(XENFEAT_supervisor_mode_kernel))
- 		pv_info.kernel_rpl = 0;
- 
-+	if (xen_initial_domain()) {
-+		struct physdev_set_iopl set_iopl;
-+		set_iopl.iopl = 1;
-+		if (HYPERVISOR_physdev_op(PHYSDEVOP_set_iopl, &set_iopl) == -1)
-+			BUG();
-+	}
++	pat_disable("PAT disabled on Xen");
 +
- 	/* set the limit of our address space */
- 	xen_reserve_top();
+ 	xen_raw_console_write("about to get started...\n");
  
-diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
-index 760e3a5..dc840ed 100644
---- a/arch/x86/xen/mmu.c
-+++ b/arch/x86/xen/mmu.c
-@@ -1615,6 +1615,7 @@ static void *m2v(phys_addr_t maddr)
- 	return __ka(m2p(maddr));
- }
- 
-+/* Set the page permissions on an identity-mapped pages */
- static void set_page_prot(void *addr, pgprot_t prot)
- {
- 	unsigned long pfn = __pa(addr) >> PAGE_SHIFT;
-@@ -1840,6 +1841,29 @@ static void xen_set_fixmap(unsigned idx, phys_addr_t phys, pgprot_t prot)
- #endif
- }
- 
-+__init void xen_ident_map_ISA(void)
-+{
-+	unsigned long pa;
-+
-+	/*
-+	 * If we're dom0, then linear map the ISA machine addresses into
-+	 * the kernel's address space.
-+	 */
-+	if (!xen_initial_domain())
-+		return;
-+
-+	xen_raw_printk("Xen: setup ISA identity maps\n");
-+
-+	for (pa = ISA_START_ADDRESS; pa < ISA_END_ADDRESS; pa += PAGE_SIZE) {
-+		pte_t pte = mfn_pte(PFN_DOWN(pa), PAGE_KERNEL_IO);
-+
-+		if (HYPERVISOR_update_va_mapping(PAGE_OFFSET + pa, pte, 0))
-+			BUG();
-+	}
-+
-+	xen_flush_tlb();
-+}
-+
- __init void xen_post_allocator_init(void)
- {
- 	pv_mmu_ops.set_pte = xen_set_pte;
-diff --git a/arch/x86/xen/setup.c b/arch/x86/xen/setup.c
-index ad0047f..dc55171 100644
---- a/arch/x86/xen/setup.c
-+++ b/arch/x86/xen/setup.c
-@@ -51,6 +51,9 @@ char * __init xen_memory_setup(void)
- 	 * Even though this is normal, usable memory under Xen, reserve
- 	 * ISA memory anyway because too many things think they can poke
- 	 * about in there.
-+	 *
-+	 * In a dom0 kernel, this region is identity mapped with the
-+	 * hardware ISA area, so it really is out of bounds.
- 	 */
- 	e820_add_region(ISA_START_ADDRESS, ISA_END_ADDRESS - ISA_START_ADDRESS,
- 			E820_RESERVED);
-@@ -188,7 +191,8 @@ void __init xen_arch_setup(void)
- 
- 	pm_idle = xen_idle;
- 
--	paravirt_disable_iospace();
-+	if (!xen_initial_domain())
-+		paravirt_disable_iospace();
- 
- 	fiddle_vdso();
- }
-diff --git a/arch/x86/xen/xen-ops.h b/arch/x86/xen/xen-ops.h
-index 5c50a10..6ff6203 100644
---- a/arch/x86/xen/xen-ops.h
-+++ b/arch/x86/xen/xen-ops.h
-@@ -29,6 +29,7 @@ void xen_setup_machphys_mapping(void);
- pgd_t *xen_setup_kernel_pagetable(pgd_t *pgd, unsigned long max_pfn);
- void xen_ident_map_ISA(void);
- void xen_reserve_top(void);
-+void xen_ident_map_ISA(void);
- 
- void xen_post_allocator_init(void);
- 
+ 	/* Start the world */
 -- 
 1.6.0.6
 
