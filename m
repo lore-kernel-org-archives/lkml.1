@@ -1,66 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933704AbZE0SZ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933818AbZE0S0X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933704AbZE0SZ7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 14:25:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933517AbZE0SX2
+	id S933818AbZE0S0X (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 14:26:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933697AbZE0SYv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 14:23:28 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:58194 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763321AbZE0SX0 (ORCPT
+	Wed, 27 May 2009 14:24:51 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:43415 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933633AbZE0SYq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 14:23:26 -0400
-Date: Wed, 27 May 2009 14:23:07 -0400
-From: Kyle McMartin <kyle@mcmartin.ca>
-To: Eric Anholt <eric@anholt.net>
-Cc: Shaohua Li <shaohua.li@intel.com>, Kyle McMartin <kyle@mcmartin.ca>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       "airlied@redhat.com" <airlied@redhat.com>,
-       "dri-devel@lists.sf.net" <dri-devel@lists.sf.net>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "stable@kernel.org" <stable@kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH] drm: i915: ensure objects are allocated below 4GB on
-	PAE
-Message-ID: <20090527182307.GA30228@bombadil.infradead.org>
-References: <20090526162717.GC14808@bombadil.infradead.org> <Pine.LNX.4.64.0905262343140.13452@sister.anvils> <20090527001840.GC16929@bombadil.infradead.org> <20090527004250.GA11835@sli10-desk.sh.intel.com> <1243446012.8400.37.camel@gaiman.anholt.net>
+	Wed, 27 May 2009 14:24:46 -0400
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Kay Sievers <kay.sievers@vrfy.org>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       SCSI development list <linux-scsi@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Tejun Heo <tj@kernel.org>, Cornelia Huck <cornelia.huck@de.ibm.com>,
+       <linux-fsdevel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>
+References: <Pine.LNX.4.44L0.0905271410410.15690-100000@iolanthe.rowland.org>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Wed, 27 May 2009 11:24:38 -0700
+In-Reply-To: <Pine.LNX.4.44L0.0905271410410.15690-100000@iolanthe.rowland.org> (Alan Stern's message of "Wed\, 27 May 2009 14\:15\:42 -0400 \(EDT\)")
+Message-ID: <m1hbz69zfd.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1243446012.8400.37.camel@gaiman.anholt.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Rcpt-To: stern@rowland.harvard.edu, ebiederm@aristanetworks.com, linux-fsdevel@vger.kernel.org, cornelia.huck@de.ibm.com, tj@kernel.org, linux-kernel@vger.kernel.org, gregkh@suse.de, akpm@linux-foundation.org, linux-scsi@vger.kernel.org, James.Bottomley@hansenpartnership.com, kay.sievers@vrfy.org
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Alan Stern <stern@rowland.harvard.edu>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  1.5 XMNoVowels Alpha-numberic number with no vowels
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -0.7 BAYES_20 BODY: Bayesian spam probability is 5 to 20%
+	*      [score: 0.1578]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 T_TooManySym_01 4+ unique symbols in subject
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
+Subject: Re: [PATCH 25/20] sysfs: Only support removing emtpy sysfs  directories.
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 27, 2009 at 10:40:12AM -0700, Eric Anholt wrote:
-> On Wed, 2009-05-27 at 08:42 +0800, Shaohua Li wrote:
-> > On Wed, May 27, 2009 at 08:18:40AM +0800, Kyle McMartin wrote:
-> > > On Tue, May 26, 2009 at 11:55:50PM +0100, Hugh Dickins wrote:
-> > > > I'm confused: I thought GFP_DMA32 only applies on x86_64:
-> > > > my 32-bit PAE machine with (slightly!) > 4GB shows no ZONE_DMA32.
-> > > > Does this patch perhaps depend on another, to enable DMA32 on 32-bit
-> > > > PAE, or am I just in a muddle?
-> > > > 
-> > > 
-> > > No, you're exactly right, I'm just a muppet and missed the obvious.
-> > > Looks like the "correct" fix is the fact that the allocation is thus
-> > > filled out with GFP_USER, therefore, from ZONE_NORMAL, and below
-> > > max_low_pfn.
-> > > 
-> > > Looks like we'll need some additional thinking to get true ZONE_DMA32 on
-> > > i386... ugh, I'll look into it tonight.
-> > For i386, GFP_USER is enough. But 945G GART can only map to physical page < 4G,
-> > so for x64, we need GFP_DMA32. This is the reason I add extra GFP_DMA32.
-> 
-> Those 945Gs don't have memory located above 4G, from my reading of the
-> chipset specs.
-> 
+Alan Stern <stern@rowland.harvard.edu> writes:
 
-Indeed, I thought they were clipped to 3G memory, max. (I assume we mean
-945 in the strictest sense, and not "son of 945" like the G33 series?)
+>
+> As fas as I know, they can't.  Instead, they can cause the SCSI layer 
+> to unregister a sysfs directory containing a child directory.  :-)
+>
+> Basically, a user program can delay removal of the child (i.e., the
+> target) directory indefinitely, because currently the target isn't
+> unregistered when all its children are removed -- it's unregistered
+> when all its children are _released_.
 
-(But yeah, the ifdef in my patch should be nuked strictly, I guess.)
+Ok.  Is this opens of /dev/sda1 and the like that are being held open by
+userspace that are potentially causing problems?
 
-cheers, Kyle
+I think I have the fix to that...
+
+Eric
