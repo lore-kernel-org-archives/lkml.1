@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761520AbZE0Hiq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764014AbZE0HjY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761520AbZE0Hiq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 03:38:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763807AbZE0Hhd
+	id S1764014AbZE0HjY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 03:39:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763885AbZE0Hhs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 03:37:33 -0400
-Received: from claw.goop.org ([74.207.240.146]:41614 "EHLO claw.goop.org"
+	Wed, 27 May 2009 03:37:48 -0400
+Received: from claw.goop.org ([74.207.240.146]:41669 "EHLO claw.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763835AbZE0Hhb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 03:37:31 -0400
+	id S1763881AbZE0Hhr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 03:37:47 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: the arch/x86 maintainers <x86@kernel.org>,
@@ -20,9 +20,9 @@ Cc: the arch/x86 maintainers <x86@kernel.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Avi Kivity <avi@redhat.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
        Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 04/17] xen: create dummy ioapic mapping
-Date: Wed, 27 May 2009 00:37:17 -0700
-Message-Id: <1243409850-21577-5-git-send-email-jeremy@goop.org>
+Subject: [PATCH 03/17] xen: implement io_apic_ops
+Date: Wed, 27 May 2009 00:37:16 -0700
+Message-Id: <1243409850-21577-4-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
 In-Reply-To: <1243409850-21577-1-git-send-email-jeremy@goop.org>
 References: <1243409850-21577-1-git-send-email-jeremy@goop.org>
@@ -30,38 +30,137 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We don't allow direct access to the IO apic, so make sure that any
-request to map it just "maps" non-present pages.  We should see any
-attempts at direct access explode nicely.
+Writes to the IO APIC are paravirtualized via hypercalls, so implement
+the appropriate operations.
 
-[ Impact: debuggability (make failures obvious) ]
+[ Impact: implement Xen interface for io_apic_ops ]
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- arch/x86/xen/mmu.c |   10 ++++++++++
- 1 files changed, 10 insertions(+), 0 deletions(-)
+ arch/x86/xen/Makefile    |    2 +-
+ arch/x86/xen/apic.c      |   64 ++++++++++++++++++++++++++++++++++++++++++++++
+ arch/x86/xen/enlighten.c |    2 +
+ arch/x86/xen/xen-ops.h   |    6 ++++
+ 4 files changed, 73 insertions(+), 1 deletions(-)
+ create mode 100644 arch/x86/xen/apic.c
 
-diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
-index 331e52d..139c8de 100644
---- a/arch/x86/xen/mmu.c
-+++ b/arch/x86/xen/mmu.c
-@@ -1919,6 +1919,16 @@ static void xen_set_fixmap(unsigned idx, phys_addr_t phys, pgprot_t prot)
- 		pte = pfn_pte(phys, prot);
- 		break;
+diff --git a/arch/x86/xen/Makefile b/arch/x86/xen/Makefile
+index c4cda96..73ecb74 100644
+--- a/arch/x86/xen/Makefile
++++ b/arch/x86/xen/Makefile
+@@ -11,4 +11,4 @@ obj-y		:= enlighten.o setup.o multicalls.o mmu.o irq.o \
  
-+#ifdef CONFIG_X86_IO_APIC
-+	case FIX_IO_APIC_BASE_0 ... FIX_IO_APIC_BASE_END:
-+		/*
-+		 * We just don't map the IO APIC - all access is via
-+		 * hypercalls.  Keep the address in the pte for reference.
-+		 */
-+		pte = pfn_pte(phys, PAGE_NONE);
-+		break;
-+#endif
+ obj-$(CONFIG_SMP)		+= smp.o spinlock.o
+ obj-$(CONFIG_XEN_DEBUG_FS)	+= debugfs.o
+-obj-$(CONFIG_XEN_DOM0)		+= vga.o
++obj-$(CONFIG_XEN_DOM0)		+= vga.o apic.o
+diff --git a/arch/x86/xen/apic.c b/arch/x86/xen/apic.c
+new file mode 100644
+index 0000000..8ae563c
+--- /dev/null
++++ b/arch/x86/xen/apic.c
+@@ -0,0 +1,64 @@
++#include <linux/kernel.h>
++#include <linux/threads.h>
++#include <linux/bitmap.h>
 +
- 	case FIX_PARAVIRT_BOOTMAP:
- 		/* This is an MFN, but it isn't an IO mapping from the
- 		   IO domain */
++#include <asm/io_apic.h>
++#include <asm/acpi.h>
++
++#include <asm/xen/hypervisor.h>
++#include <asm/xen/hypercall.h>
++
++#include <xen/interface/xen.h>
++#include <xen/interface/physdev.h>
++
++static void __init xen_io_apic_init(void)
++{
++}
++
++static unsigned int xen_io_apic_read(unsigned apic, unsigned reg)
++{
++	struct physdev_apic apic_op;
++	int ret;
++
++	apic_op.apic_physbase = mp_ioapics[apic].apicaddr;
++	apic_op.reg = reg;
++	ret = HYPERVISOR_physdev_op(PHYSDEVOP_apic_read, &apic_op);
++	if (ret)
++		BUG();
++	return apic_op.value;
++}
++
++
++static void xen_io_apic_write(unsigned int apic, unsigned int reg, unsigned int value)
++{
++	struct physdev_apic apic_op;
++
++	apic_op.apic_physbase = mp_ioapics[apic].apicaddr;
++	apic_op.reg = reg;
++	apic_op.value = value;
++	if (HYPERVISOR_physdev_op(PHYSDEVOP_apic_write, &apic_op))
++		BUG();
++}
++
++static struct io_apic_ops __initdata xen_ioapic_ops = {
++	.init = xen_io_apic_init,
++	.read = xen_io_apic_read,
++	.write = xen_io_apic_write,
++	.modify = xen_io_apic_write,
++};
++
++void xen_init_apic(void)
++{
++	if (!xen_initial_domain())
++		return;
++
++	set_io_apic_ops(&xen_ioapic_ops);
++
++#ifdef CONFIG_ACPI
++	/*
++	 * Pretend ACPI found our lapic even though we've disabled it,
++ 	 * to prevent MP tables from setting up lapics.
++ 	 */
++	acpi_lapic = 1;
++#endif
++}
+diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
+index 12e4d9c..3a4932a 100644
+--- a/arch/x86/xen/enlighten.c
++++ b/arch/x86/xen/enlighten.c
+@@ -1085,6 +1085,8 @@ asmlinkage void __init xen_start_kernel(void)
+ 		set_iopl.iopl = 1;
+ 		if (HYPERVISOR_physdev_op(PHYSDEVOP_set_iopl, &set_iopl) == -1)
+ 			BUG();
++
++		xen_init_apic();
+ 	}
+ 
+ 	/* set the limit of our address space */
+diff --git a/arch/x86/xen/xen-ops.h b/arch/x86/xen/xen-ops.h
+index 40abcef..0853949 100644
+--- a/arch/x86/xen/xen-ops.h
++++ b/arch/x86/xen/xen-ops.h
+@@ -76,13 +76,19 @@ struct dom0_vga_console_info;
+ 
+ #ifdef CONFIG_XEN_DOM0
+ void xen_init_vga(const struct dom0_vga_console_info *, size_t size);
++void xen_init_apic(void);
+ #else
+ static inline void xen_init_vga(const struct dom0_vga_console_info *info,
+ 				size_t size)
+ {
+ }
++
++static inline void xen_init_apic(void)
++{
++}
+ #endif
+ 
++
+ /* Declare an asm function, along with symbols needed to make it
+    inlineable */
+ #define DECL_ASM(ret, name, ...)		\
 -- 
 1.6.0.6
 
