@@ -1,70 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762210AbZE0WPs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932127AbZE0WQG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762210AbZE0WPs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 18:15:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759850AbZE0WP0
+	id S932127AbZE0WQG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 18:16:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762001AbZE0WPc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 18:15:26 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:46498 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755927AbZE0WPY (ORCPT
+	Wed, 27 May 2009 18:15:32 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58009 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761833AbZE0WP3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 18:15:24 -0400
-Date: Wed, 27 May 2009 18:15:25 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-cc: Hannes Reinecke <hare@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
-       SCSI development list <linux-scsi@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Tejun Heo <tj@kernel.org>, Cornelia Huck <cornelia.huck@de.ibm.com>,
-       <linux-fsdevel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@aristanetworks.com>
-Subject: Re: [PATCH 25/20] sysfs: Only support removing emtpy sysfs  directories.
-In-Reply-To: <1243460550.6067.82.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.44L0.0905271810320.2669-100000@iolanthe.rowland.org>
+	Wed, 27 May 2009 18:15:29 -0400
+Date: Wed, 27 May 2009 15:13:10 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Roland Dreier <rdreier@cisco.com>
+cc: Ingo Molnar <mingo@elte.hu>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>, Greg KH <gregkh@suse.de>,
+       Jens Axboe <jens.axboe@oracle.com>, Chris Wright <chrisw@redhat.com>,
+       kurt.hackel@oracle.com, Andrew Morton <akpm@linux-foundation.org>,
+       Ky Srinivasan <ksrinivasan@novell.com>, Beulich <jbeulich@novell.com>,
+       Avi Kivity <avi@redhat.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Subject: Re: [PATCH 17/17] xen: disable MSI
+In-Reply-To: <adavdnm5hkx.fsf@cisco.com>
+Message-ID: <alpine.LFD.2.01.0905271511440.3435@localhost.localdomain>
+References: <1243409850-21577-1-git-send-email-jeremy@goop.org> <1243409850-21577-18-git-send-email-jeremy@goop.org> <alpine.LFD.2.01.0905270829530.3435@localhost.localdomain> <20090527211828.GA6166@elte.hu> <alpine.LFD.2.01.0905271436140.3435@localhost.localdomain>
+ <adavdnm5hkx.fsf@cisco.com>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 May 2009, James Bottomley wrote:
 
-> I find the terms delete and release too close for comfort, which is why
-> I've always been careful to say remove from visibility.
 
-Okay; I'll use your terms when conversing with you.  :-)
-
-> > That's fine.  You remove a target from visibility when target->reap_ref
-> > becomes 0.  The target isn't released until the target's embedded
-> > struct device's refcount becomes 0.  To make this work, simply have
-> > scsi_alloc_sdev() call
-> > 
-> > 	get_device(&starget->dev);
-> > 
-> > and have scsi_device_dev_release_usercontext() call
-> > 
-> > 	put_device(&starget->dev);
-> > 
-> > Doesn't that do exactly what you're asking for?
+On Wed, 27 May 2009, Roland Dreier wrote:
 > 
-> That's um what we do to day ... the addition has to be to the visibility
-> management.
+> I could see adding a tag along the lines of tested-by, reported-by,
+> reviewed-by, etc.  Maybe something like
+> 
+>     Closes-bug: <URL>
 
-That's what I was trying to accomplish in the patch you said was wrong.  
-It moved the call to scsi_target_reap() from
-scsi_device_dev_release_usercontext() into __scsi_remove_device().  
-That is, the target's count of underlying sdevs was to be decremented
-whenever an sdev was removed from visibility, not when the sdev was
-released.
+I agree that that would work, but that way also lies endless other tags. 
+People seem to always want to have some magic tag to grep for, if we can 
+make 'impact:' be it rather than have potentially lots of random ones, 
+maybe impact: is simply better?
 
-That's how the problem should be solved.  But the details need to be 
-correct, and I don't understand how they all work (as you noticed when 
-reading the patch).
-
-Alan Stern
-
+		Linus
