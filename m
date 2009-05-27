@@ -1,79 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759823AbZE0RBi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758701AbZE0RGl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759823AbZE0RBi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 13:01:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758146AbZE0RBa
+	id S1758701AbZE0RGl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 13:06:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754550AbZE0RGd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 13:01:30 -0400
-Received: from ganesha.gnumonks.org ([213.95.27.120]:34329 "EHLO
-	ganesha.gnumonks.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756789AbZE0RB3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 13:01:29 -0400
-Date: Wed, 27 May 2009 19:01:18 +0200
-From: Harald Welte <HaraldWelte@viatech.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: lkml@morethan.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: LOCK prefix on uni processor has its use (was Re: [BUG FIX] Make
-	x86_32 uni-processor Atomic ops, Atomic)
-Message-ID: <20090527170118.GC4024@prithivi.gnumonks.org>
-References: <200905221139.26941.lkml@morethan.org> <200905221946.01808.lkml@morethan.org> <4A1748A9.1020306@zytor.com> <200905231304.55973.lkml@morethan.org> <4A188A48.5000208@zytor.com>
+	Wed, 27 May 2009 13:06:33 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:59417 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750984AbZE0RGc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 13:06:32 -0400
+Date: Wed, 27 May 2009 13:06:48 -0400
+From: Josef Bacik <josef@redhat.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: Josef Bacik <josef@redhat.com>, Jan Kara <jack@suse.cz>,
+       LKML <linux-kernel@vger.kernel.org>, npiggin@suse.de,
+       linux-ext4@vger.kernel.org
+Subject: Re: [PATCH 03/11] vfs: Add better VFS support for page_mkwrite
+	when blocksize < pagesize
+Message-ID: <20090527170648.GF14035@dhcp231-156.rdu.redhat.com>
+References: <1243429268-3028-1-git-send-email-jack@suse.cz> <1243429268-3028-4-git-send-email-jack@suse.cz> <20090527160005.GA14035@dhcp231-156.rdu.redhat.com> <20090527164504.GC19989@skywalker>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A188A48.5000208@zytor.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090527164504.GC19989@skywalker>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi hpa and others,
+On Wed, May 27, 2009 at 10:15:04PM +0530, Aneesh Kumar K.V wrote:
+> On Wed, May 27, 2009 at 12:00:06PM -0400, Josef Bacik wrote:
+> > On Wed, May 27, 2009 at 03:01:00PM +0200, Jan Kara wrote:
+> .....
+> ....
+> 
+> > >  		if (offset > inode->i_sb->s_maxbytes)
+> > >  			goto out_big;
+> > > -		i_size_write(inode, offset);
+> > > +		do_extend_i_size(inode, offset, 0);
+> > >  	} else {
+> > >  		struct address_space *mapping = inode->i_mapping;
+> > >
+> > 
+> > Sorry if I'm being a bit dense, I'm just kind of confused.  In the case you
+> > outlined, we only allocate one block, as we should, but then the truncate
+> > extends i_size so that when writepage() comes along, its valid to write the
+> > whole page out, except we didn't allocate blocks for the whole page sine
+> > blocksize < pagesize.
+> 
+> We can't do block allocation in writepage because we can't handler
+> ENOSPC during writepage. So the patch attempt to make sure we do
+> all block allocation in the process context. For mmap we should
+> do it in page_mkwrite and for write in write_begin.
+> 
 
-On Sat, May 23, 2009 at 04:44:08PM -0700, H. Peter Anvin wrote:
- 
-> It looks like there might be a problem with the C7-M ... Michael reports
-> that if he sets LOCK_PREFIX to "lock;" it works, but that shouldn't be
-> necessary for a uniprocessor.
+Right, I get that part, its the next part that confused me.
 
-It seems, they are neccessary.
+> > 
+> > But if we didn't extend i_size, writepage would only have written the block's
+> > worth of data correct?  If thats the case, why don't we just make it so that
+> > happens in this case as well? 
+> 
+> That is what is done in the patch i posted
+> http://article.gmane.org/gmane.comp.file-systems.ext4/13468
+> 
+> But that is not just enough. We also need to make sure we get a
+> page_fault when we try to write at another offset via mmap address so
+> that we can do block allocation via page_mkwrite. To do that all code
+> path that extend i_size should mark the page write protect.
+> 
 
-Here are some statements from the CPU logic guys at VIA/Centaur:
+Thank you, this is where I was confused.  I didn't think about the fact that
+we'd not hit page_mkwrite() on that page anymore even though we would need to
+allocate more blocks to actually write out the entire page.
+> 
+> >Technically only one part of the page is dirty,
+> > so we just need to write that out, not the whole thing.  I assume there is a way
+> > to do this, since it presumably happens in the case where i_size < page size.
+> > If thats not possible then I guess this way is a good answer, it just seems
+> > overly complicated to me.
+> 
+> 
+> __block_write_full_page already does that. It looks at the last_block
+> 
 
-* A read-modify-write sequence cannot be interupted.
-* All X86 instructions except rep-strings are atomic wrt interrupts.
-* The lock prefix has uses on a UP processor: It keeps DMA devices from
-  interfering with a read-modify-write sequence
+Gotcha.  Thanks for explaining this to me,
 
-Furthermore, they have done some experimentation in the past, making the
-CPU simply ignore the LOCK prefix on uni-processor (running a certain popular
-proprietary operating system): It doesn't work, presumably of the abovementioned
-DMA related conflict.
-
-Also, the engineers believe that it is only a matter of time until different
-CPU/chipset combination would expose the same bug.  Since the in-order
-single-retire C7-M is more vulnerable than out-of-order, multiple-retire CPU's,
-they are not surprised that the issue shows first on the C7-M.
-
-The recommendation from the CPU engineers, unsurprisingly, thus is to put the
-LOCK prefixes back where they were.
-
-Hope this helps you.
-
-Now if I understand the issues correctly, it would mean that there is some
-driver code that modifies a certain chunk of memory, while DMA of some
-peripheral is also accessing that memory.  I suppose it would not have to be
-the same actual address, but probably being within the same cache line is
-already sufficient.
-
-Now the question is: Is this a valid operation of a driver?  Should the driver
-do such things, or is such a driver broken?  When would that occur?  I'm trying
-to come up with a case, but typically you e.g. allocate some DMA buffer and
-then don't touch it until the hardware has processed it.
-
-Regards,
--- 
-- Harald Welte <HaraldWelte@viatech.com>	    http://linux.via.com.tw/
-============================================================================
-VIA Free and Open Source Software Liaison
+Josef
