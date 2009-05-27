@@ -1,90 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758248AbZE0B6V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758137AbZE0CAk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758248AbZE0B6V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 21:58:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756729AbZE0B55
+	id S1758137AbZE0CAk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 22:00:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755210AbZE0CA3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 21:57:57 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:39381 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756021AbZE0B55 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 21:57:57 -0400
-Date: Wed, 27 May 2009 11:57:48 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Kay Sievers <kay.sievers@vrfy.org>, sameo@linux.intel.com,
-       holtmann@linux.intel.com, yi.zhu@intel.com,
-       linux-kernel@vger.kernel.org, linville@tuxdriver.com, greg@kroah.com
-Subject: Re: [PATCH] firmware: Allocate firmware id dynamically
-Message-Id: <20090527115748.9ff0bad1.sfr@canb.auug.org.au>
-In-Reply-To: <20090526132351.9805f1e8.akpm@linux-foundation.org>
-References: <20090526140423.GA14683@sortiz.org>
-	<ac3eb2510905260711hb273541i8d69128b88933f7f@mail.gmail.com>
-	<20090526132351.9805f1e8.akpm@linux-foundation.org>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__27_May_2009_11_57_48_+1000_mv6k7d0UV6MmGsCk"
+	Tue, 26 May 2009 22:00:29 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:52213 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1755173AbZE0CA2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 22:00:28 -0400
+Message-ID: <4A1C9DFF.70708@cn.fujitsu.com>
+Date: Wed, 27 May 2009 09:57:19 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: paulmck@linux.vnet.ibm.com
+CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, mingo@elte.hu,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       davem@davemloft.net, dada1@cosmosbay.com, zbr@ioremap.net,
+       jeff.chua.linux@gmail.com, paulus@samba.org, jengelh@medozas.de,
+       r000n@r000n.net, benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
+Subject: Re: [PATCH RFC] v7 expedited "big hammer" RCU grace periods
+References: <20090522190525.GA13286@linux.vnet.ibm.com> <4A1A3C23.8090004@cn.fujitsu.com> <20090525164446.GD7168@linux.vnet.ibm.com> <4A1B3FFB.7090306@cn.fujitsu.com> <20090526012843.GF7168@linux.vnet.ibm.com> <20090526154625.GA8662@linux.vnet.ibm.com>
+In-Reply-To: <20090526154625.GA8662@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__27_May_2009_11_57_48_+1000_mv6k7d0UV6MmGsCk
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Paul E. McKenney wrote:
+> 
+> I am concerned about the following sequence of events:
+> 
+> o	synchronize_sched_expedited() disables preemption, thus blocking
+> 	offlining operations.
+> 
+> o	CPU 1 starts offlining CPU 0.  It acquires the CPU-hotplug lock,
+> 	and proceeds, and is now waiting for preemption to be enabled.
+> 
+> o	synchronize_sched_expedited() disables preemption, sees
+> 	that CPU 0 is online, so initializes and queues a request,
+> 	does a wake-up-process(), and finally does a preempt_enable().
+> 
+> o	CPU 0 is currently running a high-priority real-time process,
+> 	so the wakeup does not immediately happen.
+> 
+> o	The offlining process completes, including the kthread_stop()
+> 	to the migration task.
+> 
+> o	The migration task wakes up, sees kthread_should_stop(),
+> 	and so exits without checking its queue.
+> 
+> o	synchronize_sched_expedited() waits forever for CPU 0 to respond.
+> 
+> I suppose that one way to handle this would be to check for the CPU
+> going offline before doing the wait_for_completion(), but I am concerned
+> about races affecting this check as well.
+> 
+> Or is there something in the CPU-offline process that makes the above
+> sequence of events impossible?
+> 
+> 							Thanx, Paul
+> 
+> 
 
-Hi all,
+I realized this, I wrote this:
+> 
+> The coupling of synchronize_sched_expedited() and migration_req
+> is largely increased:
+> 
+> 1) The offline cpu's per_cpu(rcu_migration_req, cpu) is handled.
+>    See migration_call::CPU_DEAD
 
-On Tue, 26 May 2009 13:23:51 -0700 Andrew Morton <akpm@linux-foundation.org=
-> wrote:
->
-> > > Please note that we have to keep the FIRMWARE_NAME_MAX definition aro=
-und as
-> > > some drivers rely on it.
-> >=20
-> > I think the 6 files should be converted, and FIRMWARE_NAME_MAX
-> > removed, otherwise people will keep copying that crap around.
-> >=20
-> >   drivers/pcmcia/ds.c
-> >   drivers/usb/atm/ueagle-atm.c
-> >   drivers/net/wireless/libertas/if_usb.c
-> >   drivers/net/wireless/libertas/if_spi.c
-> >   drivers/media/dvb/dvb-usb/dvb-usb.h
-> >   drivers/media/common/tuners/tuner-xc2028.c
->=20
-> Yep.
+synchronize_sched_expedited() will not wait for CPU#0, because
+migration_call()::case CPU_DEAD wakes up the requestors.
 
-$ git grep -l -w FIRMWARE_NAME_MAX next-20090526=20
-next-20090526:drivers/base/firmware_class.c
-next-20090526:drivers/media/common/tuners/tuner-xc2028.c
-next-20090526:drivers/media/dvb/dvb-usb/dvb-usb.h
-next-20090526:drivers/net/wireless/libertas/if_spi.c
-next-20090526:drivers/net/wireless/libertas/if_usb.c
-next-20090526:drivers/net/wireless/p54/p54usb.c
-next-20090526:drivers/pcmcia/ds.c
-next-20090526:drivers/usb/atm/ueagle-atm.c
-next-20090526:include/linux/firmware.h
-next-20090526:samples/firmware_class/firmware_sample_firmware_class.c
+migration_call()
+{
+	...
+	case CPU_DEAD:
+	case CPU_DEAD_FROZEN:
+		...
+		/*
+		 * No need to migrate the tasks: it was best-effort if
+		 * they didn't take sched_hotcpu_mutex. Just wake up
+		 * the requestors.
+		 */
+		spin_lock_irq(&rq->lock);
+		while (!list_empty(&rq->migration_queue)) {
+			struct migration_req *req;
 
-Its already started ...
+			req = list_entry(rq->migration_queue.next,
+					 struct migration_req, list);
+			list_del_init(&req->list);
+			spin_unlock_irq(&rq->lock);
+			complete(&req->done);
+			spin_lock_irq(&rq->lock);
+		}
+		spin_unlock_irq(&rq->lock);
+		...
+	...
+}
 
-/me looks forward to more breakage in -next :-(
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+My approach depend on the requestors are waked up at any case.
+migration_call() does it for us but the coupling is largely
+increased.
 
---Signature=_Wed__27_May_2009_11_57_48_+1000_mv6k7d0UV6MmGsCk
-Content-Type: application/pgp-signature
+Lai
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkocnhwACgkQjjKRsyhoI8zDmACgpeFlrhZL0mBr7WwZUislCAog
-COwAn0+kxfwodyC9OXeaKUlOqgauR6ZU
-=Al9+
------END PGP SIGNATURE-----
-
---Signature=_Wed__27_May_2009_11_57_48_+1000_mv6k7d0UV6MmGsCk--
