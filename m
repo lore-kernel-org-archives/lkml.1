@@ -1,30 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760586AbZE0GpQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760754AbZE0Gp7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760586AbZE0GpQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 02:45:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759081AbZE0GpF
+	id S1760754AbZE0Gp7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 02:45:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751040AbZE0Gpw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 02:45:05 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:51303 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758601AbZE0GpD (ORCPT
+	Wed, 27 May 2009 02:45:52 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:64447 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757902AbZE0Gpw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 02:45:03 -0400
-Date: Wed, 27 May 2009 15:43:27 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+	Wed, 27 May 2009 02:45:52 -0400
+Date: Wed, 27 May 2009 15:30:24 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
 To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
        "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
        "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
        "hannes@cmpxchg.org" <hannes@cmpxchg.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH] memcg: fix swap account (26/May)[0/5]
-Message-Id: <20090527154327.0926fc23.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090526121259.b91b3e9d.kamezawa.hiroyu@jp.fujitsu.com>
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Subject: Re: [RFC][PATCH 5/5] (experimental) chase and free cache only swap
+Message-Id: <20090527153024.bb275962.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <20090527141442.d191dc2d.kamezawa.hiroyu@jp.fujitsu.com>
 References: <20090526121259.b91b3e9d.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	<20090526121834.dd9a4193.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090527141442.d191dc2d.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: NEC Soft, Ltd.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -32,38 +34,101 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 May 2009 12:12:59 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+On Wed, 27 May 2009 14:14:42 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> On Tue, 26 May 2009 12:18:34 +0900
+> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> 
+> > 
+> > From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > 
+> This is a replacement for this. (just an idea, not testd.)
+> 
+> I think this works well. Does anyone has concerns ?
+I think so too, except some trivial build errors ;)
 
-> [1/5] change interface of swap_duplicate()/swap_free()
->     Adds an function swapcache_prepare() and swapcache_free().
-> 
-> [2/5] add SWAP_HAS_CACHE flag to swap_map
->     Add SWAP_HAS_CACHE flag to swap_map array for knowing an information that
->     "there is an only swap cache and swap has no reference" 
->     without calling find_get_page().
-> 
-> [3/5] Count the number of swap-cache-only swaps
->     After repeating swap-in/out, there are tons of cache-only swaps.
->    (via a mapped swapcache under vm_swap_full()==false)
->     This patch counts the number of entry and show it in debug information.
->    (for example, sysrq-m)
-> 
-> [4/5] fix memcg's swap accounting.
->     change the memcg's swap accounting logic to see # of references to swap.
-> 
-> [5/5] experimental garbage collection for cache-only swaps.
->     reclaim swap enty which is not used.
-> 
+I'll test it, but it will take a long time to see the effect of this patch
+even if setting the swap space to reasonable size.
 
-Thank you for all reviews. I'll repost when new mmotm comes. 
-maybe
-[1/5] ... nochage
-[2/5] ... fix the bug Nishimura-san pointed out
-[3/5] ... drop
-[4/5] ... no change
-[5/5] ... will use direct reclaim in get_swap_page().
 
 Thanks,
--Kame
+Daisuke Nishimura.
 
+> Do I have to modify swap-cluster code to do this in sane way ?
+> 
+> ---
+>  mm/swapfile.c |   40 ++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 40 insertions(+)
+> 
+> Index: new-trial-swapcount/mm/swapfile.c
+> ===================================================================
+> --- new-trial-swapcount.orig/mm/swapfile.c
+> +++ new-trial-swapcount/mm/swapfile.c
+> @@ -74,6 +74,26 @@ static inline unsigned short make_swap_c
+>  	return ret;
+>  }
+>  
+> +static int try_to_reuse_swap(struct swap_info_struct *si, unsigned long offset)
+> +{
+> +	int type = si - swap_info;
+> +	swp_entry_t entry = swp_entry(type, offset);
+> +	struct page *page;
+> +
+> +	page = find_get_page(page);
+> +	if (!page)
+> +		return 0;
+> +	if (!trylock_page(page)) {
+> +		page_cache_release(page);
+> +		return 0;
+> +	}
+> +	try_to_free_swap(page);
+> +	unlock_page(page);
+> +	page_cache_release(page);
+> +	return 1;
+> +}
+> +
+> +
+>  /*
+>   * We need this because the bdev->unplug_fn can sleep and we cannot
+>   * hold swap_lock while calling the unplug_fn. And swap_lock
+> @@ -295,6 +315,18 @@ checks:
+>  		goto no_page;
+>  	if (offset > si->highest_bit)
+>  		scan_base = offset = si->lowest_bit;
+> +
+> +	/* reuse swap entry of cache-only swap if not busy. */
+> +	if (vm_swap_full() && si->swap_map[offset] == SWAP_HAS_CACHE) {
+> +		int ret;
+> +		spin_unlock(&swap_lock);
+> +		ret = try_to_reuse_swap(si, offset));
+> +		spin_lock(&swap_lock);
+> +		if (ret)
+> +			goto checks; /* we released swap_lock */
+> +		goto scan;
+> +	}
+> +
+>  	if (si->swap_map[offset])
+>  		goto scan;
+>  
+> @@ -378,6 +410,10 @@ scan:
+>  			spin_lock(&swap_lock);
+>  			goto checks;
+>  		}
+> +		if (vm_swap_full() && si->swap_map[offset] == SWAP_HAS_CACHE) {
+> +			spin_lock(&swap_lock);
+> +			goto checks;
+> +		}
+>  		if (unlikely(--latency_ration < 0)) {
+>  			cond_resched();
+>  			latency_ration = LATENCY_LIMIT;
+> @@ -389,6 +425,10 @@ scan:
+>  			spin_lock(&swap_lock);
+>  			goto checks;
+>  		}
+> +		if (vm_swap_full() && si->swap_map[offset] == SWAP_HAS_CACHE) {
+> +			spin_lock(&swap_lock);
+> +			goto checks;
+> +		}
+>  		if (unlikely(--latency_ration < 0)) {
+>  			cond_resched();
+>  			latency_ration = LATENCY_LIMIT;
+> 
