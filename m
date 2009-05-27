@@ -1,83 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761110AbZE0Vjh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761905AbZE0Vjx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761110AbZE0Vjh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 17:39:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760682AbZE0VjI
+	id S1761905AbZE0Vjx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 17:39:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759255AbZE0VjT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 17:39:08 -0400
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:34754 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759200AbZE0VjG (ORCPT
+	Wed, 27 May 2009 17:39:19 -0400
+Received: from jalapeno.cc.columbia.edu ([128.59.29.5]:41523 "EHLO
+	jalapeno.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760789AbZE0VjR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 17:39:06 -0400
-Date: Wed, 27 May 2009 22:38:45 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Cc: Robert Schwebel <r.schwebel@pengutronix.de>,
-       Timur Tabi <timur@freescale.com>, Janboe Ye <yuan-bo.ye@motorola.com>,
-       devicetree-discuss <devicetree-discuss@ozlabs.org>,
-       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       rmk@arm.linux.org.uk
-Message-ID: <20090527213841.GB5591@sirena.org.uk>
-References: <1243408083.13460.14.camel@debian-nb> <fa686aa40905270727m31250984tf12249fc87179ce9@mail.gmail.com> <ed82fe3e0905270739k38018c87ka11f62c5977e45fb@mail.gmail.com> <20090527150527.GK6805@pengutronix.de> <20090527163223.GE1970@sirena.org.uk> <fa686aa40905271342v5bc51665tb9b5d92950a43b82@mail.gmail.com>
+	Wed, 27 May 2009 17:39:17 -0400
+Message-ID: <4A1DB2E6.8000102@cs.columbia.edu>
+Date: Wed, 27 May 2009 17:38:46 -0400
+From: Oren Laadan <orenl@cs.columbia.edu>
+Organization: Columbia University
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
+To: Alexey Dobriyan <adobriyan@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@osdl.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-api@vger.kernel.org,
+       Serge Hallyn <serue@us.ibm.com>, Dave Hansen <dave@linux.vnet.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Alexander Viro <viro@zeniv.linux.org.uk>,
+       Pavel Emelyanov <xemul@openvz.org>
+Subject: Re: [RFC v16][PATCH 23/43] c/r: restart multiple processes
+References: <1243445589-32388-1-git-send-email-orenl@cs.columbia.edu> <1243445589-32388-24-git-send-email-orenl@cs.columbia.edu> <20090527193758.GC31930@x200.localdomain>
+In-Reply-To: <20090527193758.GC31930@x200.localdomain>
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <fa686aa40905271342v5bc51665tb9b5d92950a43b82@mail.gmail.com>
-X-Cookie: You now have Asian Flu.
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 82.41.28.43
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-Subject: Re: [RFC] [PATCH] Device Tree on ARM platform
-X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
-X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
+Content-Transfer-Encoding: 7bit
+X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 27, 2009 at 02:42:13PM -0600, Grant Likely wrote:
-> On Wed, May 27, 2009 at 10:32 AM, Mark Brown
 
-> > The handling of platform data is my main concern as someone working
-> > primarily on platform independant drivers - function pointers are a
-> > particular problem but the possibility of having to write code to
-> > handle both OF and non-OF systems to cater for systems using both
-> > approaches is also a concern for me.
 
-> Having a hook function which generates a pdata structure from a device
-> node on a per driver basis is a common approach.  Essentially, the
-> hook becomes an addon to the driver which doesn't impact the driver as
-> a whole.  i2c and SPI device tend to take this approach.
+Alexey Dobriyan wrote:
+> On Wed, May 27, 2009 at 01:32:49PM -0400, Oren Laadan wrote:
+>> Restarting of multiple processes expects all restarting tasks to call
+>> sys_restart(). Once inside the system call, each task will restart
+>> itself at the same order that they were saved. The internals of the
+>> syscall will take care of in-kernel synchronization bewteen tasks.
+>>
+>> This patch does _not_ create the task tree in the kernel. Instead it
+>> assumes that all tasks are created in some way and then invoke the
+>> restart syscall. You can use the userspace mktree.c program to do
+>> that.
+>>
+>> The init task (*) has a special role: it allocates the restart context
+>> (ctx), and coordinates the operation. In particular, it first waits
+>> until all participating tasks enter the kernel, and provides them the
+>> common restart context. Once everyone in ready, it begins to restart
+>> itself.
+>>
+>> In contrast, the other tasks enter the kernel, locate the init task (*)
+>> and grab its restart context, and then wait for their turn to restore.
+>>
+>> When a task (init or not) completes its restart, it hands the control
+>> over to the next in line, by waking that task.
+>>
+>> An array of pids (the one saved during the checkpoint) is used to
+>> synchronize the operation. The first task in the array is the init
+>> task (*). The restart context (ctx) maintain a "current position" in
+>> the array, which indicates which task is currently active. Once the
+>> currently active task completes its own restart, it increments that
+>> position and wakes up the next task.
+>>
+>> Restart assumes that userspace provides meaningful data, otherwise
+>> it's garbage-in-garbage-out. In this case, the syscall may block
+>> indefinitely, but in TASK_INTERRUPTIBLE, so the user can ctrl-c or
+>> otherwise kill the stray restarting tasks.
+>>
+>> In terms of security, restart runs as the user the invokes it, so it
+>> will not allow a user to do more than is otherwise permitted by the
+>> usual system semantics and policy.
+>>
+>> Currently we ignore threads and zombies
+> 
+> Let's discuss threads and zombies.
+> 
+> 1. Will zombie end up in a image?
 
-Yes, this is what I mean about doing it twice - you have to have the
-regular platform data structure plus another function to map the
-OpenFirmware data into it.  The fact that quite a few of the devices I
-deal with want function pointers as platform data doesn't help here.
+Zombies will be mentioned in the hierarchy description, and will
+have very little state saved (e.g. exit status, parent).
 
-> > This worries me too, my experiences with OF device tree handling for
-> > ASoC have been pretty negative - but then audio is one of the worst
-> > cases for handling within the device tree.
+> 2. If yes, how it will be restored. Will it be forked, call restart(2)
+>    and then somehow zombified inside kernel?
 
-> First steps are hard.  I2C and SPI work had similar groans and pains,
-> and ASoC is considerably more complex.  In the end the stuff in
-> drivers/of/* was added to handle the creation of i2c, spi and phy
-> devices from data in the device tree.  It is a mechanism which seems
-> to be working well.
+(not part of this patchset, but soon will be added to ckpt-v16-dev)
+Zombie will be restarted as a normal process, will restore bare
+minimum needed, and will call do_exit(). It will have to ensure
+that there are no side effects on (=signals to) parent/children.
 
-Instantiating the devices is a solved problem - with the current code
-you can load the drivers for all the various parts of the audio
-subsystem via the standard device model with everything appearing on
-whatever bus it normally should.  The only exception to that is AC97
-(because it's a bit special and needs some general TLC).  Some more work
-is needed on the core to fully take advantage of what this bought us but
-as far as loading and initialising device drivers goes you should be
-there already.
+> 3. How thread group will be restored, will every thread be CLONE_THREAD'ed?
+>    What to do with exited thread group leaders, will they be forked, then
+>    CLONE_THREAD thread group?
 
-What's a really crippling problem for what people seem to want to do
-with the device tree right now is expressing the clocking trees and
-requirements for a non-trivial audio subsystem.  The current clock API
-is quite a way off being able to cope with this at runtime and without
-that the benefits of trying to put the data into device trees are
-questionable - a plaform independant representation of this data most
-likely needs us to be able to automatically configure the clock tree
-based on a description of the interconnects and their constraints.
+First, user space creates the entire tree hierarchy, including
+zombies. Then each task calls sys_restart(). Inside, they are
+coordinated to restore their state one after the other. So that
+eventually, the to-be-zombies, be it a thread-group-leader or not,
+will call do_exit() and zombify themselves.
+
+Take a look at mktree.c (part of the user tools). It's already done
+there using CLONE_THREAD.  The reason I wrote that it isn't supported
+well is because I think that in full-container mode the link count
+won't work correctly. Other than that, threads should work as long
+as you don't play with "partial" sharing (e.g. only CLONE_FS).
+
+Oren.
+
+
