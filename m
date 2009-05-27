@@ -1,115 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761905AbZE0Vjx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761122AbZE0Vmn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761905AbZE0Vjx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 17:39:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759255AbZE0VjT
+	id S1761122AbZE0Vmn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 17:42:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755451AbZE0Vmc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 17:39:19 -0400
-Received: from jalapeno.cc.columbia.edu ([128.59.29.5]:41523 "EHLO
-	jalapeno.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760789AbZE0VjR (ORCPT
+	Wed, 27 May 2009 17:42:32 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:55684 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755153AbZE0Vma (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 17:39:17 -0400
-Message-ID: <4A1DB2E6.8000102@cs.columbia.edu>
-Date: Wed, 27 May 2009 17:38:46 -0400
-From: Oren Laadan <orenl@cs.columbia.edu>
-Organization: Columbia University
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
-MIME-Version: 1.0
-To: Alexey Dobriyan <adobriyan@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@osdl.org>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, linux-api@vger.kernel.org,
-       Serge Hallyn <serue@us.ibm.com>, Dave Hansen <dave@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Alexander Viro <viro@zeniv.linux.org.uk>,
-       Pavel Emelyanov <xemul@openvz.org>
-Subject: Re: [RFC v16][PATCH 23/43] c/r: restart multiple processes
-References: <1243445589-32388-1-git-send-email-orenl@cs.columbia.edu> <1243445589-32388-24-git-send-email-orenl@cs.columbia.edu> <20090527193758.GC31930@x200.localdomain>
-In-Reply-To: <20090527193758.GC31930@x200.localdomain>
-Content-Type: text/plain; charset=us-ascii
+	Wed, 27 May 2009 17:42:30 -0400
+Subject: Re: [PATCH 25/20] sysfs: Only support removing emtpy sysfs 
+	directories.
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Hannes Reinecke <hare@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
+       SCSI development list <linux-scsi@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Tejun Heo <tj@kernel.org>, Cornelia Huck <cornelia.huck@de.ibm.com>,
+       linux-fsdevel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>
+In-Reply-To: <Pine.LNX.4.44L0.0905271710040.2669-100000@iolanthe.rowland.org>
+References: <Pine.LNX.4.44L0.0905271710040.2669-100000@iolanthe.rowland.org>
+Content-Type: text/plain
+Date: Wed, 27 May 2009 21:42:30 +0000
+Message-Id: <1243460550.6067.82.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
-X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-Alexey Dobriyan wrote:
-> On Wed, May 27, 2009 at 01:32:49PM -0400, Oren Laadan wrote:
->> Restarting of multiple processes expects all restarting tasks to call
->> sys_restart(). Once inside the system call, each task will restart
->> itself at the same order that they were saved. The internals of the
->> syscall will take care of in-kernel synchronization bewteen tasks.
->>
->> This patch does _not_ create the task tree in the kernel. Instead it
->> assumes that all tasks are created in some way and then invoke the
->> restart syscall. You can use the userspace mktree.c program to do
->> that.
->>
->> The init task (*) has a special role: it allocates the restart context
->> (ctx), and coordinates the operation. In particular, it first waits
->> until all participating tasks enter the kernel, and provides them the
->> common restart context. Once everyone in ready, it begins to restart
->> itself.
->>
->> In contrast, the other tasks enter the kernel, locate the init task (*)
->> and grab its restart context, and then wait for their turn to restore.
->>
->> When a task (init or not) completes its restart, it hands the control
->> over to the next in line, by waking that task.
->>
->> An array of pids (the one saved during the checkpoint) is used to
->> synchronize the operation. The first task in the array is the init
->> task (*). The restart context (ctx) maintain a "current position" in
->> the array, which indicates which task is currently active. Once the
->> currently active task completes its own restart, it increments that
->> position and wakes up the next task.
->>
->> Restart assumes that userspace provides meaningful data, otherwise
->> it's garbage-in-garbage-out. In this case, the syscall may block
->> indefinitely, but in TASK_INTERRUPTIBLE, so the user can ctrl-c or
->> otherwise kill the stray restarting tasks.
->>
->> In terms of security, restart runs as the user the invokes it, so it
->> will not allow a user to do more than is otherwise permitted by the
->> usual system semantics and policy.
->>
->> Currently we ignore threads and zombies
+On Wed, 2009-05-27 at 17:31 -0400, Alan Stern wrote:
+> On Wed, 27 May 2009, James Bottomley wrote:
 > 
-> Let's discuss threads and zombies.
+> > > I can't tell whether you understood my point.  After a scsi_device is
+> > > unregistered but before it is released -- i.e., when its state is
+> > > SDEV_DEL -- it _is_ essentially unusable.  So why wait until it is
+> > > released to decrement the target's device counter?  Why not do the
+> > > decrement in __scsi_remove_device()?
+> > 
+> > because the use model of the device still requires a valid target.  Even
+> > though it gets gated in several places in SDEV_DEL, we still have use of
+> > the target parent.  This is fixable, but only by a long audit of all the
+> > sdev uses plus the enforcement of no use of target in DEL state rule,
+> > which adds complexity.
 > 
-> 1. Will zombie end up in a image?
+> You're failing to distinguish properly between "delete" and "release".  
+> A target (or device in general) is deleted when it is removed from
+> visibility -- i.e., when device_del() is called.  It is released when
+> the final put_device() call occurs and the data structure is
+> deallocated.
 
-Zombies will be mentioned in the hierarchy description, and will
-have very little state saved (e.g. exit status, parent).
+I find the terms delete and release too close for comfort, which is why
+I've always been careful to say remove from visibility.
 
-> 2. If yes, how it will be restored. Will it be forked, call restart(2)
->    and then somehow zombified inside kernel?
+> So, all I'm saying is there's nothing wrong with deleting a target
+> when all its children are deleted, provided the target isn't released
+> until all the children are released.  Below you say the same thing.
+> 
+> 
+> > > > Perhaps I haven't made the problem clear enough.  You only want early
+> > > > del if the host is going away, otherwise the target might be reused and
+> > > > it can't be if you've called del on it.  So there needs to be an
+> > > > integration into the host lifecycle in some form.
+> > > 
+> > > Yes, granted.  That integration doesn't have to be complicated.  
+> > > Basically, you just decrement the counters in all the targets when
+> > > setting a host's state to SHOST_DEL or SHOST_DEL_RECOVERY.  At that 
+> > 
+> > And SHOST_CANCEL and SHOST_CANCEL_RECOVERY.
+> 
+> If you prefer.  I thought SHOST_DEL would be more appropriate because
+> it occurs after scsi_forget_host() is called.  All those transitions
+> occur in scsi_remove_host(), anyway.
 
-(not part of this patchset, but soon will be added to ckpt-v16-dev)
-Zombie will be restarted as a normal process, will restore bare
-minimum needed, and will call do_exit(). It will have to ensure
-that there are no side effects on (=signals to) parent/children.
+I mean in all four states.
 
-> 3. How thread group will be restored, will every thread be CLONE_THREAD'ed?
->    What to do with exited thread group leaders, will they be forked, then
->    CLONE_THREAD thread group?
+> > > point there's no reason to keep an unpopulated target around, right?
+> > 
+> > If the child list were empty, sure.  However, it's likely not going to
+> > be at this point.
+> 
+> Regardless, it will work either way.
+> 
+> > > Up until that point, the counter's value should be one more than the
+> > > number of underlying sdevs.  So if the counter decrements to 0 then
+> > > there were no underlying sdevs and the target is deleted immediately;
+> > > otherwise it is deleted when the last remaining sdev is deleted.
+> > 
+> > No, that's the problem.  It can be removed from visibility if it has no
+> > visible sdevs, but it can't be deleted until the last sdev is released.
+> 
+> Allow me to rephrase this: A target can be removed from visibility if 
+> it has no visible sdevs, but it can't be _released_ until the last sdev 
+> is released.
+> 
+> That's fine.  You remove a target from visibility when target->reap_ref
+> becomes 0.  The target isn't released until the target's embedded
+> struct device's refcount becomes 0.  To make this work, simply have
+> scsi_alloc_sdev() call
+> 
+> 	get_device(&starget->dev);
+> 
+> and have scsi_device_dev_release_usercontext() call
+> 
+> 	put_device(&starget->dev);
+> 
+> Doesn't that do exactly what you're asking for?
 
-First, user space creates the entire tree hierarchy, including
-zombies. Then each task calls sys_restart(). Inside, they are
-coordinated to restore their state one after the other. So that
-eventually, the to-be-zombies, be it a thread-group-leader or not,
-will call do_exit() and zombify themselves.
+That's um what we do to day ... the addition has to be to the visibility
+management.
 
-Take a look at mktree.c (part of the user tools). It's already done
-there using CLONE_THREAD.  The reason I wrote that it isn't supported
-well is because I think that in full-container mode the link count
-won't work correctly. Other than that, threads should work as long
-as you don't play with "partial" sharing (e.g. only CLONE_FS).
-
-Oren.
+James
 
 
