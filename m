@@ -1,68 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759685AbZE0Fbx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759830AbZE0Fdi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759685AbZE0Fbx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 01:31:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752543AbZE0Fbp
+	id S1759830AbZE0Fdi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 01:33:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753049AbZE0Fda
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 01:31:45 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41318 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751553AbZE0Fbp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 01:31:45 -0400
-Date: Tue, 26 May 2009 22:30:02 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Minchan Kim <minchan.kim@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Mel Gorman <mel@csn.ul.ie>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>, Johannes Weiner <hannes@cmpxchg.org>,
-       Yasunori Goto <y-goto@jp.fujitsu.com>
-Subject: Re: [PATCH 2/3] add inactive ratio calculation function of each
- zone V2
-Message-Id: <20090526223002.f283bcd2.akpm@linux-foundation.org>
-In-Reply-To: <20090521092321.ee57585e.minchan.kim@barrios-desktop>
-References: <20090521092321.ee57585e.minchan.kim@barrios-desktop>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 27 May 2009 01:33:30 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:45253 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752274AbZE0Fda (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 01:33:30 -0400
+From: Mike Frysinger <vapier@gentoo.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [git pull] Blackfin fixes for 2.6.30
+Date: Wed, 27 May 2009 01:33:30 -0400
+Message-Id: <1243402410-25008-1-git-send-email-vapier@gentoo.org>
+X-Mailer: git-send-email 1.6.3.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 21 May 2009 09:23:21 +0900 Minchan Kim <minchan.kim@gmail.com> wrote:
+The following changes since commit cd86a536c81e9300d984327517548ca0652eebf9:
+  Linus Torvalds (1):
+        Merge branch 'x86-fixes-for-linus' of git://git.kernel.org/.../tip/linux-2.6-tip
 
-> Changelog since V1 
->  o Change function name from calculate_zone_inactive_ratio to calculate_inactive_ratio
->    - by Mel Gorman advise
->  o Modify tab indent - by Mel Gorman advise
+are available in the git repository at:
 
-The first two patches still had various trivial whitespace bustages. 
-You don't need Mel to find these things when we have the very nice
-scripts/checkpatch.pl.  Please incorporate that script into your patch
-preparation tools
+  git://git.kernel.org/pub/scm/linux/kernel/git/vapier/blackfin.git for-linus
 
-> This patch devide setup_per_zone_inactive_ratio with
-> per-zone inactive ratio calculaton.
+Mike Frysinger (6):
+      Blackfin: hook up preadv/pwritev syscalls
+      MAINTAINERS: update Blackfin items
+      MAINTAINERS: drop (subscribers-only) markings on Blackfin lists
+      Blackfin: ignore generated vmlinux.lds
+      Blackfin: drop unneeded asm/.gitignore
+      Blackfin: fix strncmp.o build error
 
-The above sentence appears to be the changelog for this patch but it
-doesn't make a lot of sense.
-
-afaict the changelog should be:
-
-"factor the per-zone arithemetic inside
-setup_per_zone_inactive_ratio()'s loop into a a separate function,
-calculate_zone_inactive_ratio().  This function will be used in a later
-patch".
-
-yes?
-
-
-> This patch is just for helping my next patch.
-> (reset wmark_min and inactive ratio of zone when hotplug happens)
-> 
-> Signed-off-by: Minchan Kim <minchan.kim@gmail.com>
-> Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> CC: Rik van Riel <riel@redhat.com>
-> CC: Johannes Weiner <hannes@cmpxchg.org>
+ MAINTAINERS                          |   18 +++++++++---------
+ arch/blackfin/include/asm/.gitignore |    1 -
+ arch/blackfin/include/asm/unistd.h   |    4 +++-
+ arch/blackfin/kernel/.gitignore      |    1 +
+ arch/blackfin/lib/strncmp.c          |    3 +--
+ arch/blackfin/mach-common/entry.S    |    2 ++
+ 6 files changed, 16 insertions(+), 13 deletions(-)
+ delete mode 100644 arch/blackfin/include/asm/.gitignore
+ create mode 100644 arch/blackfin/kernel/.gitignore
