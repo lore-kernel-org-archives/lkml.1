@@ -1,72 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761379AbZE0Q0B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761717AbZE0Q0o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761379AbZE0Q0B (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 12:26:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758093AbZE0QZy
+	id S1761717AbZE0Q0o (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 12:26:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759566AbZE0Q0f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 12:25:54 -0400
-Received: from fifo99.com ([67.223.236.141]:51829 "EHLO fifo99.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757042AbZE0QZx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 12:25:53 -0400
-Subject: Re: [PATCH] sched: Support current clocksource handling in
-	fallback sched_clock().
-From: Daniel Walker <dwalker@fifo99.com>
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Linus Walleij <linus.ml.walleij@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Victor <linux@maxim.org.za>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-sh@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       John Stultz <johnstul@linux.vnet.ibm.com>
-In-Reply-To: <20090527001543.GA8493@linux-sh.org>
-References: <20090526061532.GD9188@linux-sh.org>
-	 <63386a3d0905260731m655bfee3q82a6f52d71fa3cef@mail.gmail.com>
-	 <1243348681.23657.14.camel@twins>
-	 <alpine.LFD.2.00.0905262209160.1762@localhost.localdomain>
-	 <20090526230855.GA27218@linux-sh.org>
-	 <alpine.LFD.2.00.0905270140030.1762@localhost.localdomain>
-	 <20090527001543.GA8493@linux-sh.org>
-Content-Type: text/plain
-Date: Wed, 27 May 2009 09:25:25 -0700
-Message-Id: <1243441525.28705.19.camel@desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Wed, 27 May 2009 12:26:35 -0400
+Received: from az33egw02.freescale.net ([192.88.158.103]:47127 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758903AbZE0Q0e (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 12:26:34 -0400
+Message-ID: <4A1D6901.2090508@freescale.com>
+Date: Wed, 27 May 2009 11:23:29 -0500
+From: Scott Wood <scottwood@freescale.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+MIME-Version: 1.0
+To: Peter Korsgaard <jacmet@sunsite.dk>
+CC: Robert Schwebel <r.schwebel@pengutronix.de>,
+       devicetree-discuss <devicetree-discuss@ozlabs.org>,
+       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       Janboe Ye <yuan-bo.ye@motorola.com>, Timur Tabi <timur@freescale.com>,
+       rmk@arm.linux.org.uk
+Subject: Re: [RFC] [PATCH] Device Tree on ARM platform
+References: <1243408083.13460.14.camel@debian-nb>	<fa686aa40905270727m31250984tf12249fc87179ce9@mail.gmail.com>	<ed82fe3e0905270739k38018c87ka11f62c5977e45fb@mail.gmail.com>	<20090527150527.GK6805@pengutronix.de> <87vdnm8sec.fsf@macbook.be.48ers.dk>
+In-Reply-To: <87vdnm8sec.fsf@macbook.be.48ers.dk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAWE=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-05-27 at 09:15 +0900, Paul Mundt wrote:
+Peter Korsgaard wrote:
+>>>>>> "Robert" == Robert Schwebel <r.schwebel@pengutronix.de> writes:
+> 
+> Hi,
+> 
+>  Robert> - The whole concept is based on the assumption that bindings
+>  Robert> are defined *once*, then never to be changed again. As this
+>  Robert> is not true (check MPC5200 to find out what I mean), oftree
+>  Robert> wreckage is *the* main cause of new kernels not working on
+>  Robert> old bootloaders any more. Is there a solution of this
+>  Robert> problem? I have not seen a good idea how to avoid the
+>  Robert> constant change in definitions.
+> 
+> Just bundle the .dtb with the kernel and they'll always be in sync. I
+> know this isn't really in the spirit of OF, but currently imho the
+> only realistic solution.
 
->  unsigned long long __attribute__((weak)) sched_clock(void)
->  {
-> +	/*
-> +	 * Use the current clocksource when it becomes available later in
-> +	 * the boot process, and ensure that it is usable for sched_clock().
-> +	 */
-> +	if (clock && (clock->flags & CLOCK_SOURCE_USE_FOR_SCHED_CLOCK))
-> +		return cyc2ns(clock, clocksource_read(clock));
-> +
-> +	/* Otherwise just fall back on jiffies */
->  	return (unsigned long long)(jiffies - INITIAL_JIFFIES)
+That removes the ability to use the device tree to pass information from 
+the bootloader, such as MAC addresses and clock frequencies.  On the 
+u-boot list, you'll find people trying such hacks (which were rightly 
+NACKed) as passing the information in the device's volatile registers 
+(which the Linux driver must then not reset) to deal with ARM Linux's 
+lack of this ability.
 
-Do we really need all this complexity in a fast path? the jiffies
-clocksource is static and always ready. Could we instead remove the
-usage of "clock" and create a new pointer called "sched_clocksource" and
-initialize it to the jiffies clock, and allow the clocksource management
-code to update that new pointer based on the
-CLOCK_SOURCE_USE_FOR_SCHED_CLOCK flag when new clocksources are
-registered/removed/marked unstable etc..
+>  Robert> - The oftree layering is fundamentally broken. We already
+>  Robert> have a sane abstraction for arbitrary hardware in the kernel:
+>  Robert> platform devices.  Why not instanciate platform devices from
+>  Robert> a generic oftree core?
 
-that would eliminate all the code in sched_clock except one line,
+You can, if you want.  But you'll need extra glue code that understands 
+the individual bindings.  IMHO that logic is usually better off in the 
+driver itself, but if you really need platform code to involve itself in 
+some way (such as providing callbacks), then exceptions can be made.
 
-unsigned long long __attribute__((weak)) sched_clock(void)
-{
-	return cyc2ns(sched_clocksource, clocksource_read(sched_clocksource));
-}
-
-Daniel
+-Scott
 
