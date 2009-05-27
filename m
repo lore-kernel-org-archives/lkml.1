@@ -1,34 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755362AbZE0DqU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759141AbZE0DrW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755362AbZE0DqU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 23:46:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754089AbZE0DqE
+	id S1759141AbZE0DrW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 23:47:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756060AbZE0DrM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 23:46:04 -0400
-Received: from vms173015pub.verizon.net ([206.46.173.15]:37746 "EHLO
-	vms173015pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754124AbZE0DqD (ORCPT
+	Tue, 26 May 2009 23:47:12 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48620
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755691AbZE0DrL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 23:46:03 -0400
-Date: Tue, 26 May 2009 23:45:43 -0400 (EDT)
-From: Len Brown <lenb@kernel.org>
-X-X-Sender: lenb@localhost.localdomain
-To: Shaohua Li <shaohua.li@intel.com>
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, mingo@redhat.com,
-       thisistempbox@yahoo.com
-Subject: Re: [PATCH 2/2]cpuidle: makes AMD C1E works in suspend/resume path
-In-reply-to: <20090519080954.GB12117@sli10-desk.sh.intel.com>
-Message-id: <alpine.LFD.2.00.0905262345390.19698@localhost.localdomain>
-References: <20090519080954.GB12117@sli10-desk.sh.intel.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 26 May 2009 23:47:11 -0400
+Date: Tue, 26 May 2009 20:47:10 -0700 (PDT)
+Message-Id: <20090526.204710.124271694.davem@davemloft.net>
+To: menage@google.com
+Cc: lizf@cn.fujitsu.com, akpm@linux-foundation.org, tgraf@suug.ch,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] cls_cgroup: read classid atomically in classifier
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090526195840.8464.36548.stgit@menage.mtv.corp.google.com>
+References: <20090526195840.8464.36548.stgit@menage.mtv.corp.google.com>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-applied
+From: Paul Menage <menage@google.com>
+Date: Tue, 26 May 2009 12:59:11 -0700
 
-thanks,
-Len Brown, Intel Open Source Technology Center
+> cls_cgroup: read classid atomically in classifier
+> 
+> Avoid reading the unsynchronized value cs->classid multiple times,
+> since it could change concurrently from non-zero to zero; this would
+> result in the classifier returning a positive result with a bogus
+> (zero) classid.
+> 
+> Signed-off-by: Paul Menage <menage@google.com>
+> Reviewed-by: Li Zefan <lizf@cn.fujitsu.com>
 
+Patch applied, thanks!
