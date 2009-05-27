@@ -1,65 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760118AbZE0Rhj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761232AbZE0RkV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760118AbZE0Rhj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 13:37:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751516AbZE0Rha
+	id S1761232AbZE0RkV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 13:40:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757070AbZE0RkN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 13:37:30 -0400
-Received: from www.tglx.de ([62.245.132.106]:49907 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751182AbZE0Rh3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 13:37:29 -0400
-Date: Wed, 27 May 2009 19:36:32 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Chris Friesen <cfriesen@nortel.com>
-cc: LKML <linux-kernel@vger.kernel.org>, Ulrich Drepper <drepper@redhat.com>,
-       Roland McGrath <roland@redhat.com>
-Subject: Re: linux missing support for _POSIX_THREAD_CPUTIME?
-In-Reply-To: <4A1D7512.9080604@nortel.com>
-Message-ID: <alpine.LFD.2.00.0905271922470.3397@localhost.localdomain>
-References: <4A1D6E71.90602@nortel.com> <alpine.LFD.2.00.0905271855290.3397@localhost.localdomain> <4A1D7512.9080604@nortel.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 27 May 2009 13:40:13 -0400
+Received: from 69-30-77-85.dq1sn.easystreet.com ([69.30.77.85]:47739 "EHLO
+	kingsolver.anholt.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756021AbZE0RkM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 13:40:12 -0400
+Subject: Re: [PATCH] drm: i915: ensure objects are allocated below 4GB on
+ PAE
+From: Eric Anholt <eric@anholt.net>
+To: Shaohua Li <shaohua.li@intel.com>
+Cc: Kyle McMartin <kyle@mcmartin.ca>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       "airlied@redhat.com" <airlied@redhat.com>,
+       "dri-devel@lists.sf.net" <dri-devel@lists.sf.net>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       "stable@kernel.org" <stable@kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+In-Reply-To: <20090527004250.GA11835@sli10-desk.sh.intel.com>
+References: <20090526162717.GC14808@bombadil.infradead.org>
+	 <Pine.LNX.4.64.0905262343140.13452@sister.anvils>
+	 <20090527001840.GC16929@bombadil.infradead.org>
+	 <20090527004250.GA11835@sli10-desk.sh.intel.com>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-gVhHpGaJA1/89bQ8nK4v"
+Date: Wed, 27 May 2009 10:40:12 -0700
+Message-Id: <1243446012.8400.37.camel@gaiman.anholt.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 May 2009, Chris Friesen wrote:
 
-> Thomas Gleixner wrote:
-> > On Wed, 27 May 2009, Chris Friesen wrote:
-> > 
-> > That's more a question for the glibc folks. CC'ed.
-> 
-> Actually, I'm looking at the kernel code here.  It looks like
-> posix_cpu_clock_get() should be able to handle a per-task cpu clock for
-> another thread within the same process.  However, it's only ever called
-> by thread_cpu_clock_get(), which hardcodes a clock_id of THREAD_CLOCK,
-> which corresponds to the current thread.
+--=-gVhHpGaJA1/89bQ8nK4v
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-No, it's also called via the CLOCK_DISPATCH magic in posix_timers.c
- 
-> Similarly, invalid_clockid() will say that the clock_id is invalid if
-> it's positive but greater than 15.  If my math is right, this means that
-> any pid > 2 will result in invalid_clockid() failing.
+On Wed, 2009-05-27 at 08:42 +0800, Shaohua Li wrote:
+> On Wed, May 27, 2009 at 08:18:40AM +0800, Kyle McMartin wrote:
+> > On Tue, May 26, 2009 at 11:55:50PM +0100, Hugh Dickins wrote:
+> > > I'm confused: I thought GFP_DMA32 only applies on x86_64:
+> > > my 32-bit PAE machine with (slightly!) > 4GB shows no ZONE_DMA32.
+> > > Does this patch perhaps depend on another, to enable DMA32 on 32-bit
+> > > PAE, or am I just in a muddle?
+> > >=20
+> >=20
+> > No, you're exactly right, I'm just a muppet and missed the obvious.
+> > Looks like the "correct" fix is the fact that the allocation is thus
+> > filled out with GFP_USER, therefore, from ZONE_NORMAL, and below
+> > max_low_pfn.
+> >=20
+> > Looks like we'll need some additional thinking to get true ZONE_DMA32 o=
+n
+> > i386... ugh, I'll look into it tonight.
+> For i386, GFP_USER is enough. But 945G GART can only map to physical page=
+ < 4G,
+> so for x64, we need GFP_DMA32. This is the reason I add extra GFP_DMA32.
 
-posix_cpu_clock_get() does:
+Those 945Gs don't have memory located above 4G, from my reading of the
+chipset specs.
 
-  const pid_t pid = CPUCLOCK_PID(which_clock);
+--=20
+Eric Anholt
+eric@anholt.net                         eric.anholt@intel.com
 
-CPUCLOCK_PID is defined as:
 
-#define CPUCLOCK_PID(clock)  ((pid_t) ~((clock) >> 3))
 
-include/linux/posix-timers.h has the helper macros to build the
-clock_id value for posix_cpu_clock_get()
+--=-gVhHpGaJA1/89bQ8nK4v
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
-#define MAKE_PROCESS_CPUCLOCK(pid, clock) \
-        ((~(clockid_t) (pid) << 3) | (clockid_t) (clock))
-#define MAKE_THREAD_CPUCLOCK(tid, clock) \
-        MAKE_PROCESS_CPUCLOCK((tid), (clock) | CPUCLOCK_PERTHREAD_MASK)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-Hope that helps,
+iEYEABECAAYFAkodevwACgkQHUdvYGzw6vcEngCgjb9B+8tpQB4CH1x/3rE63frA
+H9wAn06Mh1ljZtMcAFVVbstunBWdz18J
+=hwZx
+-----END PGP SIGNATURE-----
 
-     tglx
+--=-gVhHpGaJA1/89bQ8nK4v--
