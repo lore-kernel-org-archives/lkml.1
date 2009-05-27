@@ -1,52 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753685AbZE0U2h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752433AbZE0U3a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753685AbZE0U2h (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 16:28:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750916AbZE0U23
+	id S1752433AbZE0U3a (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 16:29:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750916AbZE0U3V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 16:28:29 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57331
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750756AbZE0U22 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 16:28:28 -0400
-Date: Wed, 27 May 2009 13:28:27 -0700 (PDT)
-Message-Id: <20090527.132827.65331718.davem@davemloft.net>
-To: plagnioj@jcrosoft.com
-Cc: linux@arm.linux.org.uk, jonsmirl@gmail.com, scottwood@freescale.com,
-       jacmet@sunsite.dk, r.schwebel@pengutronix.de,
-       devicetree-discuss@ozlabs.org, linux-kernel@vger.kernel.org,
-       linux-arm-kernel@lists.arm.linux.org.uk, yuan-bo.ye@motorola.com,
-       timur@freescale.com
-Subject: Re: [RFC] [PATCH] Device Tree on ARM platform
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090527193927.GD30039@game.jcrosoft.org>
-References: <9e4733910905271213k7f4b93e7i7e6f2af24d85f@mail.gmail.com>
-	<20090527192116.GA31110@n2100.arm.linux.org.uk>
-	<20090527193927.GD30039@game.jcrosoft.org>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 27 May 2009 16:29:21 -0400
+Received: from smtp02.citrix.com ([66.165.176.63]:2884 "EHLO SMTP02.CITRIX.COM"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750756AbZE0U3U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 16:29:20 -0400
+X-IronPort-AV: E=Sophos;i="4.41,261,1241409600"; 
+   d="scan'208";a="52803654"
+Subject: Re: [PATCH V2 2/3] powerpc: Add support for swiotlb on 32-bit
+From: Ian Campbell <Ian.Campbell@eu.citrix.com>
+To: Becky Bruce <beckyb@kernel.crashing.org>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <0628DF07-E085-4CC8-ADFC-1B0798343159@kernel.crashing.org>
+References: <1242340949-16369-1-git-send-email-beckyb@kernel.crashing.org>
+	 <1242340949-16369-2-git-send-email-beckyb@kernel.crashing.org>
+	 <20090519142656T.fujita.tomonori@lab.ntt.co.jp>
+	 <19E48A70-3332-423C-ACAD-390F940EE81C@kernel.crashing.org>
+	 <4A1592CF.8000208@goop.org>
+	 <E6DAA792-9923-4B76-9759-6955AABE3EAB@kernel.crashing.org>
+	 <1242990702.22654.253.camel@zakaz.uk.xensource.com>
+	 <0628DF07-E085-4CC8-ADFC-1B0798343159@kernel.crashing.org>
+Content-Type: text/plain
+Organization: Citrix Systems, Inc.
+Date: Wed, 27 May 2009 21:29:19 +0100
+Message-ID: <1243456159.4399.42.camel@localhost.localdomain>
+MIME-Version: 1.0
+X-Mailer: Evolution 2.26.1.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-Date: Wed, 27 May 2009 21:39:27 +0200
+On Wed, 2009-05-27 at 15:05 -0400, Becky Bruce wrote:
+> On May 22, 2009, at 6:11 AM, Ian Campbell wrote:
+> >
+> >
+> > BTW do you need swiotlb_bus_to_virt to be __weak or is the fact that  
+> > it
+> > is implemented in terms of swiotlb_bus_to_phys sufficient?
+> 
+> The default one in swiotlb calls phys_to_virt on the result of  
+> swiotlb_bus_to_phys, which only works on lowmem.
 
-> when you have to support the same driver for non OF and OF platform it's
-> really a pain in the ass
+Perhaps we can simply enhance the default one to handle highmem instead
+of making it arch specific?
 
-We could embed the platform_device object into the of_platform_device
-structure, it's just an implementation issue.
+Ian.
 
-But more to the point, I can tell you that anything platform_device
-does can be implemented in terms of of_platform_device but the
-opposite is not true.
 
-Actually, I kind of appreciate the existence of both kinds of objects.
-When you're instantiating LEDs or similar small devices on a MDIO
-bus, and the LED driver has to work on OF and non-OF platforms,
-I see nothing wrong with using platform devices for instantiation.
-And I've done this myself for system LED devices on sparc64 boxes.
