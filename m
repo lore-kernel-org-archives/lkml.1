@@ -1,53 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762223AbZE0X5g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761061AbZE0X7l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762223AbZE0X5g (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 19:57:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761490AbZE0X5Z
+	id S1761061AbZE0X7l (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 19:59:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756193AbZE0X7e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 19:57:25 -0400
-Received: from mail.samba.org ([66.70.73.150]:58468 "EHLO lists.samba.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761175AbZE0X5Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 19:57:24 -0400
+	Wed, 27 May 2009 19:59:34 -0400
+Received: from az33egw02.freescale.net ([192.88.158.103]:46207 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755965AbZE0X7d (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 19:59:33 -0400
+Message-ID: <4A1DD3A0.3010501@freescale.com>
+Date: Wed, 27 May 2009 18:58:24 -0500
+From: Scott Wood <scottwood@freescale.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Robert Schwebel <r.schwebel@pengutronix.de>
+CC: Grant Likely <grant.likely@secretlab.ca>,
+       devicetree-discuss <devicetree-discuss@ozlabs.org>,
+       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       Janboe Ye <yuan-bo.ye@motorola.com>, Timur Tabi <timur@freescale.com>,
+       rmk@arm.linux.org.uk
+Subject: Re: [RFC] [PATCH] Device Tree on ARM platform
+References: <1243408083.13460.14.camel@debian-nb>	<fa686aa40905270727m31250984tf12249fc87179ce9@mail.gmail.com>	<ed82fe3e0905270739k38018c87ka11f62c5977e45fb@mail.gmail.com>	<20090527150527.GK6805@pengutronix.de>	<fa686aa40905270839m375bbdacqb1acb1be0a2d2da0@mail.gmail.com>	<20090527162000.GM6805@pengutronix.de>	<fa686aa40905271335o1165419hda2334bef42aa3f@mail.gmail.com> <20090527234801.GP6805@pengutronix.de>
+In-Reply-To: <20090527234801.GP6805@pengutronix.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-ID: <18973.54100.522638.314377@samba.org>
-Date: Thu, 28 May 2009 09:57:08 +1000
-To: vimal singh <vimal.newwork@gmail.com>
-Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
-       Paul McKenney <paulmck@linux.vnet.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-Subject: Re: [PATCH] Add CONFIG_VFAT_NO_CREATE_WITH_LONGNAMES option
-In-Reply-To: <ce9ab5790905270505i530febcerfda874f5049c6c93@mail.gmail.com>
-References: <1241199689.13073.6.camel@norville.austin.ibm.com>
-	<87fxfnbytu.fsf@devron.myhome.or.jp>
-	<87ws8zak1m.fsf@devron.myhome.or.jp>
-	<87bpqbaji9.fsf@devron.myhome.or.jp>
-	<18940.9039.850580.48730@samba.org>
-	<87ab5v9381.fsf@devron.myhome.or.jp>
-	<18940.10942.989329.993465@samba.org>
-	<87ocub7ngh.fsf@devron.myhome.or.jp>
-	<18940.12667.429391.927727@samba.org>
-	<8763gj7m23.fsf@devron.myhome.or.jp>
-	<ce9ab5790905270505i530febcerfda874f5049c6c93@mail.gmail.com>
-X-Mailer: VM 8.0.12 under 22.2.1 (x86_64-pc-linux-gnu)
-Reply-To: tridge@samba.org
-From: tridge@samba.org
+X-Brightmail-Tracker: AAAAAQAAAWE=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Vimal,
+Robert Schwebel wrote:
+> The oftree by design wants to be a complete hardware description. As you
+> mention above, there are cases where you *nevertheless* need ad-hoc
+> information about things *not* encoded into the device tree.
+> 
+> This renders the whole concept ad absurdum. You need a machine number
+> again - and if you need that: why not stay with the ARM model, define
+> everything with platform data and avoid the whole thing?
 
- > Any conclusion has been reached reagarding this patch...?
+Because it's better to have a little platform specific code than a lot 
+of it?
 
-We've been working to resolve some of the issues people raised (for
-example, a public explanation on why the patch is needed). We have
-also been working towards an improved version of the patch. Sorry it's
-taking so long, but we hope to be able to post a new patch soon.
-
-Cheers, Tridge
+-Scott
