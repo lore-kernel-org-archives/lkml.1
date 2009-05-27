@@ -1,100 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758134AbZE0D7Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751076AbZE0EGZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758134AbZE0D7Q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 23:59:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756297AbZE0D7D
+	id S1751076AbZE0EGZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 00:06:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750814AbZE0EGP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 23:59:03 -0400
-Received: from sh.osrg.net ([192.16.179.4]:44985 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756476AbZE0D7C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 23:59:02 -0400
-Date: Wed, 27 May 2009 12:58:46 +0900
-To: arnd@arndb.de
-Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] asm-generic: add a dma-mapping.h file
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <200905261335.41643.arnd@arndb.de>
-References: <200905221705.54426.arnd@arndb.de>
-	<20090526122423S.fujita.tomonori@lab.ntt.co.jp>
-	<200905261335.41643.arnd@arndb.de>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 27 May 2009 00:06:15 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:55677 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750752AbZE0EGO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 00:06:14 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Subject: Re: [PATCH] readahead:add blk_run_backing_dev
+Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
+       Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>
+In-Reply-To: <20090527035505.GA16916@localhost>
+References: <20090526193601.b825af5f.akpm@linux-foundation.org> <20090527035505.GA16916@localhost>
+Message-Id: <20090527130358.689C.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20090527125801B.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Wed, 27 May 2009 12:58:47 +0900 (JST)
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Wed, 27 May 2009 13:06:12 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 May 2009 13:35:41 +0100
-Arnd Bergmann <arnd@arndb.de> wrote:
-
-> On Tuesday 26 May 2009, FUJITA Tomonori wrote:
-> > > dma_get_cache_alignment() is still less generic than
-> > > the other functions, as this is still architecture
-> > > specific. Should I leave that out as well then?
-> > 
-> > Yes, I think that only adding generic functions is a better
-> > approach. Overriding with #ifdef is really ugly.
-> > 
+> > Ah.  So it's likely to be some strange interaction with the RAID setup.
 > 
-> Ok, will do.
+> The normal case is, if page N become uptodate at time T(N), then
+> T(N) <= T(N+1) holds. But for RAID, the data arrival time depends on
+> runtime status of individual disks, which breaks that formula. So
+> in do_generic_file_read(), just after submitting the async readahead IO
+> request, the current page may well be uptodate, so the page won't be locked,
+> and the block device won't be implicitly unplugged:
+
+Hifumi-san, Can you get blktrace data and confirm Wu's assumption?
+
+
 > 
-> [trimming Cc list a bit, as the subject has changed]
+>                if (PageReadahead(page))
+>                         page_cache_async_readahead()
+>                 if (!PageUptodate(page))
+>                                 goto page_not_up_to_date;
+>                 //...
+> page_not_up_to_date:
+>                 lock_page_killable(page);
 > 
-> Could you be more specific as to why you think the #ifdef
-> in this file is ugly? I agree that we should always avoid
-> #ifdef in a device driver file or around the usage of an
-> API, but we use it everywhere when defining an optional
-
-Seems that people think regard #ifdef in *.c bad, I think.
-
-
-> API, e.g.
 > 
-> #ifdef CONFIG_DMA_API_DEBUG
-> extern void dma_debug_add_bus(struct bus_type *bus);
-> #else
-> static inline void dma_debug_add_bus(struct bus_type *bus)
-> {
-> {
-> #endif
-
-This example is inappropriate; a different way to use #ifdef.
-
-This just ensures that dma_debug_add_bus() is available even if
-CONFIG_DMA_API_DEBUG is disabled.
-
-It's completely different from a way how you use #ifdef.
-
-
-> #ifndef clear_user_highpage
-> static inline void clear_user_highpage(struct page *page, unsigned long vaddr)
-> {
-> 	void *addr = kmap_atomic(page, KM_USER0);
-> 	clear_user_page(addr, vaddr, page);
-> 	kunmap_atomic(addr, KM_USER0);
-> }
-> #endif
-
-#define clear_user_highpage(page,vaddr)		\
-	 __cpu_clear_user_highpage(page, vaddr)
-
-Personally, I don't fancy this style but it's a matter of taste, I
-guess.
-
-
-> This has always made a lot of sense to me when you are defining
-> something that you want to become a No-op in certain configurations
-> or that only needs special handling in a few cases. IIRC, Linus
-> has stated that he prefers the second of the two styles above when
-> you have the choice, which is why I started out that way, while
-> for the dma_debug stuff, the CONFIG_ symbol clearly makes sense.
+> Therefore explicit unplugging can help, so
 > 
-> 	Arnd <><
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+>         Acked-by: Wu Fengguang <fengguang.wu@intel.com> 
+> 
+> The only question is, shall we avoid the double unplug by doing this?
+> 
+> ---
+>  mm/readahead.c |   10 ++++++++++
+>  1 file changed, 10 insertions(+)
+> 
+> --- linux.orig/mm/readahead.c
+> +++ linux/mm/readahead.c
+> @@ -490,5 +490,15 @@ page_cache_async_readahead(struct addres
+>  
+>  	/* do read-ahead */
+>  	ondemand_readahead(mapping, ra, filp, true, offset, req_size);
+> +
+> +	/*
+> +	 * Normally the current page is !uptodate and lock_page() will be
+> +	 * immediately called to implicitly unplug the device. However this
+> +	 * is not always true for RAID conifgurations, where data arrives
+> +	 * not strictly in their submission order. In this case we need to
+> +	 * explicitly kick off the IO.
+> +	 */
+> +	if (PageUptodate(page))
+> +		blk_run_backing_dev(mapping->backing_dev_info, NULL);
+>  }
+>  EXPORT_SYMBOL_GPL(page_cache_async_readahead);
+
+
+
