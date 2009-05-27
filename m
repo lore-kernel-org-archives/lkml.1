@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761566AbZE0HU6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761765AbZE0HVr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761566AbZE0HU6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 03:20:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752274AbZE0HRh
+	id S1761765AbZE0HVr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 03:21:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760504AbZE0HRl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 03:17:37 -0400
-Received: from claw.goop.org ([74.207.240.146]:41492 "EHLO claw.goop.org"
+	Wed, 27 May 2009 03:17:41 -0400
+Received: from claw.goop.org ([74.207.240.146]:41501 "EHLO claw.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760092AbZE0HRf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 03:17:35 -0400
+	id S1758254AbZE0HRj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 03:17:39 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: the arch/x86 maintainers <x86@kernel.org>,
@@ -18,11 +18,10 @@ Cc: the arch/x86 maintainers <x86@kernel.org>,
        kurt.hackel@oracle.com, Andrew Morton <akpm@linux-foundation.org>,
        Ky Srinivasan <ksrinivasan@novell.com>, Beulich <jbeulich@novell.com>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
        Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 11/16] xen: allow enable use of VGA console on dom0
-Date: Wed, 27 May 2009 00:15:33 -0700
-Message-Id: <1243408538-21100-12-git-send-email-jeremy@goop.org>
+Subject: [PATCH 15/16] x86: don't need "changed" parameter for set_io_bitmap()
+Date: Wed, 27 May 2009 00:15:37 -0700
+Message-Id: <1243408538-21100-16-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
 In-Reply-To: <1243408538-21100-1-git-send-email-jeremy@goop.org>
 References: <1243408538-21100-1-git-send-email-jeremy@goop.org>
@@ -30,200 +29,142 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Get the information about the VGA console hardware from Xen, and put
-it into the form the bootloader normally generates, so that the rest
-of the kernel can deal with VGA as usual.
+From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 
-[ Impact: make VGA console work in dom0 ]
+The "changed" parameter isn't really used, so don't bother passing it.
+(xen_set_io_bitmap can keep track of it for itself, if it wants.)
+
+[ Impact: cleanup ]
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- arch/x86/xen/Makefile       |    3 +-
- arch/x86/xen/enlighten.c    |   10 ++++++
- arch/x86/xen/vga.c          |   67 +++++++++++++++++++++++++++++++++++++++++++
- arch/x86/xen/xen-ops.h      |   11 +++++++
- include/xen/interface/xen.h |   39 +++++++++++++++++++++++++
- 5 files changed, 129 insertions(+), 1 deletions(-)
- create mode 100644 arch/x86/xen/vga.c
+ arch/x86/include/asm/paravirt.h  |    6 +++---
+ arch/x86/include/asm/processor.h |    2 +-
+ arch/x86/kernel/ioport.c         |    9 +++------
+ arch/x86/kernel/process.c        |    4 ++--
+ arch/x86/xen/enlighten.c         |    5 +----
+ 5 files changed, 10 insertions(+), 16 deletions(-)
 
-diff --git a/arch/x86/xen/Makefile b/arch/x86/xen/Makefile
-index 3b767d0..c4cda96 100644
---- a/arch/x86/xen/Makefile
-+++ b/arch/x86/xen/Makefile
-@@ -10,4 +10,5 @@ obj-y		:= enlighten.o setup.o multicalls.o mmu.o irq.o \
- 			grant-table.o suspend.o
+diff --git a/arch/x86/include/asm/paravirt.h b/arch/x86/include/asm/paravirt.h
+index 8b02fd0..c7136e8 100644
+--- a/arch/x86/include/asm/paravirt.h
++++ b/arch/x86/include/asm/paravirt.h
+@@ -157,7 +157,7 @@ struct pv_cpu_ops {
  
- obj-$(CONFIG_SMP)		+= smp.o spinlock.o
--obj-$(CONFIG_XEN_DEBUG_FS)	+= debugfs.o
-\ No newline at end of file
-+obj-$(CONFIG_XEN_DEBUG_FS)	+= debugfs.o
-+obj-$(CONFIG_XEN_DOM0)		+= vga.o
+ 	void (*set_iopl_mask)(unsigned mask);
+ 	void (*set_io_bitmap)(struct thread_struct *thread,
+-	                      int changed, unsigned long bytes_updated);
++			      unsigned long bytes_updated);
+ 
+ 	void (*wbinvd)(void);
+ 	void (*io_delay)(void);
+@@ -1005,9 +1005,9 @@ static inline void set_iopl_mask(unsigned mask)
+ }
+ 
+ static inline void set_io_bitmap(struct thread_struct *thread,
+-                                 int changed, unsigned long bytes_updated)
++				 unsigned long bytes_updated)
+ {
+-	PVOP_VCALL3(pv_cpu_ops.set_io_bitmap, thread, changed, bytes_updated);
++	PVOP_VCALL2(pv_cpu_ops.set_io_bitmap, thread, bytes_updated);
+ }
+ 
+ /* The paravirtualized I/O functions */
+diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
+index 1c70563..ed0e363 100644
+--- a/arch/x86/include/asm/processor.h
++++ b/arch/x86/include/asm/processor.h
+@@ -545,7 +545,7 @@ static inline void native_set_iopl_mask(unsigned mask)
+ }
+ 
+ extern void native_set_io_bitmap(struct thread_struct *thread,
+-				 int changed, unsigned long updated_bytes);
++				 unsigned long updated_bytes);
+ 
+ static inline void
+ native_load_sp0(struct tss_struct *tss, struct thread_struct *thread)
+diff --git a/arch/x86/kernel/ioport.c b/arch/x86/kernel/ioport.c
+index b5c1918..0a421d3 100644
+--- a/arch/x86/kernel/ioport.c
++++ b/arch/x86/kernel/ioport.c
+@@ -31,7 +31,7 @@ static void set_bitmap(unsigned long *bitmap, unsigned int base,
+ }
+ 
+ void native_set_io_bitmap(struct thread_struct *t,
+-			  int changed, unsigned long bytes_updated)
++			  unsigned long bytes_updated)
+ {
+ 	struct tss_struct *tss;
+ 
+@@ -54,7 +54,6 @@ asmlinkage long sys_ioperm(unsigned long from, unsigned long num, int turn_on)
+ {
+ 	struct thread_struct *t = &current->thread;
+ 	unsigned int i, max_long, bytes, bytes_updated;
+-	int changed;
+ 
+ 	if ((from + num <= from) || (from + num > IO_BITMAP_BITS))
+ 		return -EINVAL;
+@@ -75,9 +74,7 @@ asmlinkage long sys_ioperm(unsigned long from, unsigned long num, int turn_on)
+ 		memset(bitmap, 0xff, IO_BITMAP_BYTES);
+ 		t->io_bitmap_ptr = bitmap;
+ 		set_thread_flag(TIF_IO_BITMAP);
+-		changed = 1;
+-	} else
+-		changed = 0;
++	}
+ 
+ 	/*
+ 	 * do it in the per-thread copy
+@@ -104,7 +101,7 @@ asmlinkage long sys_ioperm(unsigned long from, unsigned long num, int turn_on)
+ 
+ 	t->io_bitmap_max = bytes;
+ 
+-	set_io_bitmap(t, changed, bytes_updated);
++	set_io_bitmap(t, bytes_updated);
+ 
+ 	preempt_enable();
+ 
+diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
+index 0c1a4fb..a520f7a 100644
+--- a/arch/x86/kernel/process.c
++++ b/arch/x86/kernel/process.c
+@@ -74,7 +74,7 @@ void exit_thread(void)
+ 		preempt_disable();
+ 		t->io_bitmap_ptr = NULL;
+ 		clear_thread_flag(TIF_IO_BITMAP);
+-		set_io_bitmap(t, 1, t->io_bitmap_max);
++		set_io_bitmap(t, t->io_bitmap_max);
+ 		t->io_bitmap_max = 0;
+ 		preempt_enable();
+ 		kfree(bp);
+@@ -209,7 +209,7 @@ void __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p,
+ 
+ 	if (test_tsk_thread_flag(next_p, TIF_IO_BITMAP) ||
+ 	    test_tsk_thread_flag(prev_p, TIF_IO_BITMAP))
+-		set_io_bitmap(next, 1,
++		set_io_bitmap(next,
+ 			      max(prev->io_bitmap_max, next->io_bitmap_max));
+ }
+ 
 diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
-index 339163f..79b9b84 100644
+index 3317c91..12e4d9c 100644
 --- a/arch/x86/xen/enlighten.c
 +++ b/arch/x86/xen/enlighten.c
-@@ -1093,6 +1093,16 @@ asmlinkage void __init xen_start_kernel(void)
- 		add_preferred_console("xenboot", 0, NULL);
- 		add_preferred_console("tty", 0, NULL);
- 		add_preferred_console("hvc", 0, NULL);
-+
-+		boot_params.screen_info.orig_video_isVGA = 0;
-+	} else {
-+		const struct dom0_vga_console_info *info =
-+			(void *)((char *)xen_start_info +
-+				 xen_start_info->console.dom0.info_off);
-+
-+		xen_init_vga(info, xen_start_info->console.dom0.info_size);
-+		xen_start_info->console.domU.mfn = 0;
-+		xen_start_info->console.domU.evtchn = 0;
- 	}
+@@ -606,13 +606,10 @@ static void xen_set_iopl_mask(unsigned mask)
+ }
  
- 	pat_disable("PAT disabled on Xen");
-diff --git a/arch/x86/xen/vga.c b/arch/x86/xen/vga.c
-new file mode 100644
-index 0000000..1cd7f4d
---- /dev/null
-+++ b/arch/x86/xen/vga.c
-@@ -0,0 +1,67 @@
-+#include <linux/screen_info.h>
-+#include <linux/init.h>
-+
-+#include <asm/bootparam.h>
-+#include <asm/setup.h>
-+
-+#include <xen/interface/xen.h>
-+
-+#include "xen-ops.h"
-+
-+void __init xen_init_vga(const struct dom0_vga_console_info *info, size_t size)
-+{
-+	struct screen_info *screen_info = &boot_params.screen_info;
-+
-+	/* This is drawn from a dump from vgacon:startup in
-+	 * standard Linux. */
-+	screen_info->orig_video_mode = 3;
-+	screen_info->orig_video_isVGA = 1;
-+	screen_info->orig_video_lines = 25;
-+	screen_info->orig_video_cols = 80;
-+	screen_info->orig_video_ega_bx = 3;
-+	screen_info->orig_video_points = 16;
-+	screen_info->orig_y = screen_info->orig_video_lines - 1;
-+
-+	switch (info->video_type) {
-+	case XEN_VGATYPE_TEXT_MODE_3:
-+		if (size < offsetof(struct dom0_vga_console_info, u.text_mode_3)
-+		    + sizeof(info->u.text_mode_3))
-+			break;
-+		screen_info->orig_video_lines = info->u.text_mode_3.rows;
-+		screen_info->orig_video_cols = info->u.text_mode_3.columns;
-+		screen_info->orig_x = info->u.text_mode_3.cursor_x;
-+		screen_info->orig_y = info->u.text_mode_3.cursor_y;
-+		screen_info->orig_video_points =
-+			info->u.text_mode_3.font_height;
-+		break;
-+
-+	case XEN_VGATYPE_VESA_LFB:
-+		if (size < offsetof(struct dom0_vga_console_info,
-+				    u.vesa_lfb.gbl_caps))
-+			break;
-+		screen_info->orig_video_isVGA = VIDEO_TYPE_VLFB;
-+		screen_info->lfb_width = info->u.vesa_lfb.width;
-+		screen_info->lfb_height = info->u.vesa_lfb.height;
-+		screen_info->lfb_depth = info->u.vesa_lfb.bits_per_pixel;
-+		screen_info->lfb_base = info->u.vesa_lfb.lfb_base;
-+		screen_info->lfb_size = info->u.vesa_lfb.lfb_size;
-+		screen_info->lfb_linelength = info->u.vesa_lfb.bytes_per_line;
-+		screen_info->red_size = info->u.vesa_lfb.red_size;
-+		screen_info->red_pos = info->u.vesa_lfb.red_pos;
-+		screen_info->green_size = info->u.vesa_lfb.green_size;
-+		screen_info->green_pos = info->u.vesa_lfb.green_pos;
-+		screen_info->blue_size = info->u.vesa_lfb.blue_size;
-+		screen_info->blue_pos = info->u.vesa_lfb.blue_pos;
-+		screen_info->rsvd_size = info->u.vesa_lfb.rsvd_size;
-+		screen_info->rsvd_pos = info->u.vesa_lfb.rsvd_pos;
-+		if (size >= offsetof(struct dom0_vga_console_info,
-+				     u.vesa_lfb.gbl_caps)
-+		    + sizeof(info->u.vesa_lfb.gbl_caps))
-+			screen_info->capabilities = info->u.vesa_lfb.gbl_caps;
-+		if (size >= offsetof(struct dom0_vga_console_info,
-+				     u.vesa_lfb.mode_attrs)
-+		    + sizeof(info->u.vesa_lfb.mode_attrs))
-+			screen_info->vesa_attributes = info->u.vesa_lfb.mode_attrs;
-+		break;
-+	}
-+}
-diff --git a/arch/x86/xen/xen-ops.h b/arch/x86/xen/xen-ops.h
-index 6ff6203..40abcef 100644
---- a/arch/x86/xen/xen-ops.h
-+++ b/arch/x86/xen/xen-ops.h
-@@ -72,6 +72,17 @@ static inline void xen_smp_init(void) {}
- #endif
+ static void xen_set_io_bitmap(struct thread_struct *thread,
+-			      int changed, unsigned long bytes_updated)
++			      unsigned long bytes_updated)
+ {
+ 	struct physdev_set_iobitmap set_iobitmap;
  
- 
-+struct dom0_vga_console_info;
-+
-+#ifdef CONFIG_XEN_DOM0
-+void xen_init_vga(const struct dom0_vga_console_info *, size_t size);
-+#else
-+static inline void xen_init_vga(const struct dom0_vga_console_info *info,
-+				size_t size)
-+{
-+}
-+#endif
-+
- /* Declare an asm function, along with symbols needed to make it
-    inlineable */
- #define DECL_ASM(ret, name, ...)		\
-diff --git a/include/xen/interface/xen.h b/include/xen/interface/xen.h
-index 18b5599..412326d 100644
---- a/include/xen/interface/xen.h
-+++ b/include/xen/interface/xen.h
-@@ -449,6 +449,45 @@ struct start_info {
- 	int8_t cmd_line[MAX_GUEST_CMDLINE];
- };
- 
-+struct dom0_vga_console_info {
-+	uint8_t video_type; /* DOM0_VGA_CONSOLE_??? */
-+#define XEN_VGATYPE_TEXT_MODE_3 0x03
-+#define XEN_VGATYPE_VESA_LFB    0x23
-+
-+	union {
-+		struct {
-+			/* Font height, in pixels. */
-+			uint16_t font_height;
-+			/* Cursor location (column, row). */
-+			uint16_t cursor_x, cursor_y;
-+			/* Number of rows and columns (dimensions in characters). */
-+			uint16_t rows, columns;
-+		} text_mode_3;
-+
-+		struct {
-+			/* Width and height, in pixels. */
-+			uint16_t width, height;
-+			/* Bytes per scan line. */
-+			uint16_t bytes_per_line;
-+			/* Bits per pixel. */
-+			uint16_t bits_per_pixel;
-+			/* LFB physical address, and size (in units of 64kB). */
-+			uint32_t lfb_base;
-+			uint32_t lfb_size;
-+			/* RGB mask offsets and sizes, as defined by VBE 1.2+ */
-+			uint8_t  red_pos, red_size;
-+			uint8_t  green_pos, green_size;
-+			uint8_t  blue_pos, blue_size;
-+			uint8_t  rsvd_pos, rsvd_size;
-+
-+			/* VESA capabilities (offset 0xa, VESA command 0x4f00). */
-+			uint32_t gbl_caps;
-+			/* Mode attributes (offset 0x0, VESA command 0x4f01). */
-+			uint16_t mode_attrs;
-+		} vesa_lfb;
-+	} u;
-+};
-+
- /* These flags are passed in the 'flags' field of start_info_t. */
- #define SIF_PRIVILEGED    (1<<0)  /* Is the domain privileged? */
- #define SIF_INITDOMAIN    (1<<1)  /* Is this the initial control domain? */
+-	if (!changed)
+-		return;
+-
+ 	set_xen_guest_handle(set_iobitmap.bitmap,
+ 			     (char *)thread->io_bitmap_ptr);
+ 	set_iobitmap.nr_ports = thread->io_bitmap_ptr ? IO_BITMAP_BITS : 0;
 -- 
 1.6.0.6
 
