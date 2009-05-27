@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762440AbZE0Rox@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762280AbZE0Rpb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762440AbZE0Rox (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 13:44:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759900AbZE0Rnw
+	id S1762280AbZE0Rpb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 13:45:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760350AbZE0RoE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 13:43:52 -0400
-Received: from jalapeno.cc.columbia.edu ([128.59.29.5]:53883 "EHLO
+	Wed, 27 May 2009 13:44:04 -0400
+Received: from jalapeno.cc.columbia.edu ([128.59.29.5]:54026 "EHLO
 	jalapeno.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760047AbZE0Rnu (ORCPT
+	with ESMTP id S1761563AbZE0RoB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 13:43:50 -0400
+	Wed, 27 May 2009 13:44:01 -0400
 From: Oren Laadan <orenl@cs.columbia.edu>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
@@ -19,11 +19,11 @@ Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
        "H. Peter Anvin" <hpa@zytor.com>,
        Alexander Viro <viro@zeniv.linux.org.uk>,
        Pavel Emelyanov <xemul@openvz.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>, Dan Smith <danms@us.ibm.com>,
        Oren Laadan <orenl@cs.columbia.edu>
-Subject: [RFC v16][PATCH 16/43] c/r: export shmem_getpage() to support shared memory
-Date: Wed, 27 May 2009 13:32:42 -0400
-Message-Id: <1243445589-32388-17-git-send-email-orenl@cs.columbia.edu>
+Subject: [RFC v16][PATCH 30/43] c/r: stub implementation for IPC namespace
+Date: Wed, 27 May 2009 13:32:56 -0400
+Message-Id: <1243445589-32388-31-git-send-email-orenl@cs.columbia.edu>
 X-Mailer: git-send-email 1.6.0.1
 In-Reply-To: <1243445589-32388-1-git-send-email-orenl@cs.columbia.edu>
 References: <1243445589-32388-1-git-send-email-orenl@cs.columbia.edu>
@@ -32,81 +32,211 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Export functionality to retrieve specific pages from shared memory
-given an inode in shmem-fs; this will be used in the next two patches
-to provide support for c/r of shared memory.
+From: Dan Smith <danms@us.ibm.com>
 
-mm/shmem.c:
-- shmem_getpage() and 'enum sgp_type' moved to linux/mm.h
+Changes:
+ - Update to match UTS changes
 
+Signed-off-by: Dan Smith <danms@us.ibm.com>
 Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
 ---
- include/linux/mm.h |   11 +++++++++++
- mm/shmem.c         |   15 ++-------------
- 2 files changed, 13 insertions(+), 13 deletions(-)
+ checkpoint/checkpoint.c        |    2 --
+ checkpoint/objhash.c           |   28 ++++++++++++++++++++++++++++
+ checkpoint/process.c           |   24 ++++++++++++++++++++++--
+ include/linux/checkpoint.h     |   15 +++++++++++++++
+ include/linux/checkpoint_hdr.h |    3 +++
+ 5 files changed, 68 insertions(+), 4 deletions(-)
 
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index ae70b50..53e916a 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -330,6 +330,17 @@ void put_pages_list(struct list_head *pages);
+diff --git a/checkpoint/checkpoint.c b/checkpoint/checkpoint.c
+index 904f19b..afc7300 100644
+--- a/checkpoint/checkpoint.c
++++ b/checkpoint/checkpoint.c
+@@ -310,8 +310,6 @@ static int may_checkpoint_task(struct ckpt_ctx *ctx, struct task_struct *t)
  
- void split_page(struct page *page, unsigned int order);
+ 	rcu_read_lock();
+ 	nsproxy = task_nsproxy(t);
+-	if (nsproxy->ipc_ns != ctx->root_nsproxy->ipc_ns)
+-		ret = -EPERM;
+ 	if (nsproxy->mnt_ns != ctx->root_nsproxy->mnt_ns)
+ 		ret = -EPERM;
+ 	if (nsproxy->pid_ns != ctx->root_nsproxy->pid_ns)
+diff --git a/checkpoint/objhash.c b/checkpoint/objhash.c
+index 8b7adc6..045a920 100644
+--- a/checkpoint/objhash.c
++++ b/checkpoint/objhash.c
+@@ -15,6 +15,8 @@
+ #include <linux/hash.h>
+ #include <linux/file.h>
+ #include <linux/fdtable.h>
++#include <linux/sched.h>
++#include <linux/ipc_namespace.h>
+ #include <linux/checkpoint.h>
+ #include <linux/checkpoint_hdr.h>
  
-+/* Flag allocation requirements to shmem_getpage and shmem_swp_alloc */
-+enum sgp_type {
-+	SGP_READ,	/* don't exceed i_size, don't allocate page */
-+	SGP_CACHE,	/* don't exceed i_size, may allocate page */
-+	SGP_DIRTY,	/* like SGP_CACHE, but set new page dirty */
-+	SGP_WRITE,	/* may exceed i_size, may allocate page */
-+};
-+
-+extern int shmem_getpage(struct inode *inode, unsigned long idx,
-+			 struct page **pagep, enum sgp_type sgp, int *type);
-+
- /*
-  * Compound pages have a destructor function.  Provide a
-  * prototype for that function and accessor functions.
-diff --git a/mm/shmem.c b/mm/shmem.c
-index b25f95c..f260336 100644
---- a/mm/shmem.c
-+++ b/mm/shmem.c
-@@ -99,14 +99,6 @@ static struct vfsmount *shm_mnt;
- /* Pretend that each entry is of this size in directory's i_size */
- #define BOGO_DIRENT_SIZE 20
- 
--/* Flag allocation requirements to shmem_getpage and shmem_swp_alloc */
--enum sgp_type {
--	SGP_READ,	/* don't exceed i_size, don't allocate page */
--	SGP_CACHE,	/* don't exceed i_size, may allocate page */
--	SGP_DIRTY,	/* like SGP_CACHE, but set new page dirty */
--	SGP_WRITE,	/* may exceed i_size, may allocate page */
--};
--
- #ifdef CONFIG_TMPFS
- static unsigned long shmem_default_max_blocks(void)
- {
-@@ -119,9 +111,6 @@ static unsigned long shmem_default_max_inodes(void)
+@@ -159,6 +161,22 @@ static int obj_uts_ns_users(void *ptr)
+ 	return atomic_read(&((struct uts_namespace *) ptr)->kref.refcount);
  }
- #endif
  
--static int shmem_getpage(struct inode *inode, unsigned long idx,
--			 struct page **pagep, enum sgp_type sgp, int *type);
--
- static inline struct page *shmem_dir_alloc(gfp_t gfp_mask)
- {
- 	/*
-@@ -1202,8 +1191,8 @@ static inline struct mempolicy *shmem_get_sbmpol(struct shmem_sb_info *sbinfo)
-  * vm. If we swap it in we mark it dirty since we also free the swap
-  * entry since a page cannot live in both the swap and page cache
-  */
--static int shmem_getpage(struct inode *inode, unsigned long idx,
--			struct page **pagep, enum sgp_type sgp, int *type)
-+int shmem_getpage(struct inode *inode, unsigned long idx,
-+		  struct page **pagep, enum sgp_type sgp, int *type)
- {
- 	struct address_space *mapping = inode->i_mapping;
- 	struct shmem_inode_info *info = SHMEM_I(inode);
++static int obj_ipc_ns_grab(void *ptr)
++{
++	get_ipc_ns((struct ipc_namespace *) ptr);
++	return 0;
++}
++
++static void obj_ipc_ns_drop(void *ptr)
++{
++	put_ipc_ns((struct ipc_namespace *) ptr);
++}
++
++static int obj_ipc_ns_users(void *ptr)
++{
++	return atomic_read(&((struct ipc_namespace *) ptr)->count);
++}
++
+ static struct ckpt_obj_ops ckpt_obj_ops[] = {
+ 	/* ignored object */
+ 	{
+@@ -226,6 +244,16 @@ static struct ckpt_obj_ops ckpt_obj_ops[] = {
+ 		.checkpoint = checkpoint_bad,
+ 		.restore = restore_bad,
+ 	},
++	/* ipc_ns object */
++	{
++		.obj_name = "IPC_NS",
++		.obj_type = CKPT_OBJ_IPC_NS,
++		.ref_drop = obj_ipc_ns_drop,
++		.ref_grab = obj_ipc_ns_grab,
++		.ref_users = obj_ipc_ns_users,
++		.checkpoint = checkpoint_bad,
++		.restore = restore_bad,
++	},
+ };
+ 
+ 
+diff --git a/checkpoint/process.c b/checkpoint/process.c
+index a827987..eff3d76 100644
+--- a/checkpoint/process.c
++++ b/checkpoint/process.c
+@@ -89,6 +89,7 @@ static int do_checkpoint_ns(struct ckpt_ctx *ctx, struct nsproxy *nsproxy)
+ 	struct ckpt_hdr_ns *h;
+ 	int ns_flags = 0;
+ 	int uts_objref;
++	int ipc_objref;
+ 	int first, ret;
+ 
+ 	uts_objref = ckpt_obj_lookup_add(ctx, nsproxy->uts_ns,
+@@ -98,12 +99,20 @@ static int do_checkpoint_ns(struct ckpt_ctx *ctx, struct nsproxy *nsproxy)
+ 	if (first)
+ 		ns_flags |= CLONE_NEWUTS;
+ 
++	ipc_objref = ckpt_obj_lookup_add(ctx, nsproxy->ipc_ns,
++					 CKPT_OBJ_IPC_NS, &first);
++	if (ipc_objref < 0)
++		return ipc_objref;
++	if (first)
++		ns_flags |= CLONE_NEWIPC;
++
+ 	h = ckpt_hdr_get_type(ctx, sizeof(*h), CKPT_HDR_NS);
+ 	if (!h)
+ 		return -ENOMEM;
+ 
+ 	h->flags = ns_flags;
+ 	h->uts_objref = uts_objref;
++	h->ipc_objref = ipc_objref;
+ 
+ 	ret = ckpt_write_obj(ctx, &h->h);
+ 	ckpt_hdr_put(ctx, h);
+@@ -112,6 +121,10 @@ static int do_checkpoint_ns(struct ckpt_ctx *ctx, struct nsproxy *nsproxy)
+ 
+ 	if (ns_flags & CLONE_NEWUTS)
+ 		ret = checkpoint_uts_ns(ctx, nsproxy->uts_ns);
++#if 0
++	if (!ret && (ns_flags & CLONE_NEWIPC))
++		ret = checkpoint_ipc_ns(ctx, nsproxy->ipc_ns);
++#endif
+ 
+ 	/* FIX: Write other namespaces here */
+ 	return ret;
+@@ -438,9 +451,10 @@ static struct nsproxy *do_restore_ns(struct ckpt_ctx *ctx)
+ 		return (struct nsproxy *) h;
+ 
+ 	ret = -EINVAL;
+-	if (h->uts_objref <= 0)
++	if (h->uts_objref <= 0 ||
++	    h->ipc_objref <= 0)
+ 		goto out;
+-	if (h->flags & ~CLONE_NEWUTS)
++	if (h->flags & ~(CLONE_NEWUTS | CLONE_NEWIPC))
+ 		goto out;
+ 
+ 	/* each unseen-before namespace will be un-shared now */
+@@ -456,6 +470,12 @@ static struct nsproxy *do_restore_ns(struct ckpt_ctx *ctx)
+ 	 */
+ 	ret = restore_uts_ns(ctx, h->uts_objref, h->flags);
+ 	ckpt_debug("uts ns: %d\n", ret);
++	if (ret < 0)
++		goto out;
++#if 0
++	ret = restore_ipc_ns(ctx, h->ipc_objref, h->flags);
++	ckpt_debug("ipc ns: %d\n", ret);
++#endif
+ 
+ 	/* FIX: add more namespaces here */
+  out:
+diff --git a/include/linux/checkpoint.h b/include/linux/checkpoint.h
+index a7125fc..5a42399 100644
+--- a/include/linux/checkpoint.h
++++ b/include/linux/checkpoint.h
+@@ -81,6 +81,21 @@ extern int restore_restart_block(struct ckpt_ctx *ctx);
+ extern int checkpoint_ns(struct ckpt_ctx *ctx, void *ptr);
+ extern void *restore_ns(struct ckpt_ctx *ctx);
+ 
++#if 0
++/* ipc-ns */
++#ifdef CONFIG_SYSVIPC
++extern int checkpoint_ipc_ns(struct ckpt_ctx *ctx,
++			     struct ipc_namespace *ipc_ns);
++extern int restore_ipc_ns(struct ckpt_ctx *ctx, int ns_objref, int flags);
++#else
++static inline int checkpoint_ipc_ns(struct ckpt_ctx *ctx,
++				    struct ipc_namespace *ipc_ns)
++{ return 0; }
++static inline int restore_ipc_ns(struct ckpt_ctx *ctx)
++{ return 0; }
++#endif /* CONFIG_SYSVIPC */
++#endif
++
+ /* file table */
+ extern int checkpoint_obj_file_table(struct ckpt_ctx *ctx,
+ 				     struct task_struct *t);
+diff --git a/include/linux/checkpoint_hdr.h b/include/linux/checkpoint_hdr.h
+index 1603279..44a48dc 100644
+--- a/include/linux/checkpoint_hdr.h
++++ b/include/linux/checkpoint_hdr.h
+@@ -55,6 +55,7 @@ enum {
+ 	CKPT_HDR_CPU,
+ 	CKPT_HDR_NS,
+ 	CKPT_HDR_UTS_NS,
++	CKPT_HDR_IPC_NS,
+ 
+ 	/* 201-299: reserved for arch-dependent */
+ 
+@@ -95,6 +96,7 @@ enum obj_type {
+ 	CKPT_OBJ_MM,
+ 	CKPT_OBJ_NS,
+ 	CKPT_OBJ_UTS_NS,
++	CKPT_OBJ_IPC_NS,
+ 	CKPT_OBJ_MAX
+ };
+ 
+@@ -167,6 +169,7 @@ struct ckpt_hdr_ns {
+ 	struct ckpt_hdr h;
+ 	__u32 flags;
+ 	__s32 uts_objref;
++	__u32 ipc_objref;
+ } __attribute__((aligned(8)));
+ 
+ /* task's shared resources */
 -- 
 1.6.0.4
 
