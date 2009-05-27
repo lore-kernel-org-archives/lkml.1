@@ -1,107 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760749AbZE0MKq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762115AbZE0MLU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760749AbZE0MKq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 08:10:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752853AbZE0MKj
+	id S1762115AbZE0MLU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 08:11:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759312AbZE0MLH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 08:10:39 -0400
-Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:52289 "EHLO
-	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752446AbZE0MKi convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 08:10:38 -0400
-From: Bela Lubkin <blubkin@vmware.com>
-To: "'Ferenc Wagner'" <wferi@niif.hu>, Corey Minyard <minyard@acm.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       "openipmi-developer@lists.sourceforge.net" 
-	<openipmi-developer@lists.sourceforge.net>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Wed, 27 May 2009 05:10:39 -0700
-Subject: RE: [Openipmi-developer] modprobe ipmi_si hangs under 2.6.30-rc5
-Thread-Topic: [Openipmi-developer] modprobe ipmi_si hangs under 2.6.30-rc5
-Thread-Index: AcnZ+WX+PXKAfWrdSMSE7Z5P2C/89AEyIVqA
-Message-ID: <E0AA796A7E3F4C4E8F1065D15FE478610765E1A0@EXCH-MBX-4.vmware.com>
-References: <87tz3qnh7o.fsf@tac.ki.iif.hu>
-	<20090516170959.8057c9e4.akpm@linux-foundation.org>
-	<877i0eqpss.fsf@tac.ki.iif.hu> <20090518184053.GA24134@minyard.local>
-	<87iqjxzjz4.fsf@tac.ki.iif.hu> <4A1326C5.4010308@acm.org>
-	<87ljoriwcw.fsf@tac.ki.iif.hu> <4A143103.9050302@acm.org>
- <878wkqpz2n.fsf@tac.ki.iif.hu>
-In-Reply-To: <878wkqpz2n.fsf@tac.ki.iif.hu>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Wed, 27 May 2009 08:11:07 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:49642 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758111AbZE0MLF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 08:11:05 -0400
+Message-ID: <4A1D2DD8.2050709@redhat.com>
+Date: Wed, 27 May 2009 15:11:04 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
+To: Gregory Haskins <ghaskins@novell.com>
+CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Davide Libenzi <davidel@xmailserver.org>, mtosatti@redhat.com,
+       Mark McLoughlin <markmc@redhat.com>
+Subject: Re: [KVM PATCH v4 3/3] kvm: add iosignalfd support
+References: <20090526191010.20860.75372.stgit@dev.haskins.net> <20090526191539.20860.1385.stgit@dev.haskins.net> <4A1D01F8.8080508@redhat.com> <4A1D285C.9050008@novell.com>
+In-Reply-To: <4A1D285C.9050008@novell.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The driver only behaves this way on systems where it has to.
-If the BMC System Interface (SI) provides an interrupt, the
-kernel thread doesn't run.  Everything is interrupt driven.
+Gregory Haskins wrote:
+>
+>> What happens if you register to iosignalfds for the same address but
+>> with different cookies (a very practical scenario)?
+>>     
+>
+> This is really only supported at the iosignal interface level.  Today,
+> you can do this and the registration will succeed, but at run-time an
+> IO-exit will stop at the first in_range() hit it finds.  Therefore, you
+> will only get service on the first/lowest registered range.
+>
+> I knew this was a limitation of the current io_bus, but I put the
+> feature into iosignalfd anyway so that the user/kern interface was
+> robust enough to support the notion should we ever need it (and can thus
+> patch io_bus at that time).  Perhaps that is short-sighted because
+> userspace would never know its ranges weren't really registered properly.
+>
+> I guess its simple enough to have io_bus check all devices for a match
+> instead of stopping on the first.  Should I just make a patch to fix
+> this, or should I fix iosignalfd to check for in_range matches and fail
+> if it finds overlap?  (We could then add a CAP_OVERLAP_IO bit in the
+> future if we finally fix the io_bus capability).  I am inclined to lean
+> towards option 2, since its not known whether this will ever be useful,
+> and io_bus scanning is in a hot-path.
+>
+> Thinking about it some more, I wonder if we should just get rid of the
+> notion of overlap to begin with.  Its a slippery slope (should we also
+> return to userspace after scanning and matching io_bus to see if it has
+> any overlap too?).  I am not sure if it would ever be used (real
+> hardware doesn't have multiple devices at the same address), and we can
+> always have multiple end-points mux from one iosignalfd if we really
+> need that.  Thoughts?
+>   
 
-Anyone doing system software for x86 servers should be
-harrassing the hardware vendors to get this right...
+Multiple cookies on the same address are required by virtio.  You can't 
+mux since the data doesn't go anywhere.
 
-Interrupts can be used with any of the SIs (BT, KCS, SMIC),
-but BT has the dual advantages of doing its transfers all at
-once via DMA, and having a well defined interrupt mechanism.
-Hardware designers implementing an interrupt for KCS or SMIC
-have to guess at a few too many details.
+Virtio can survive by checking all rings on a notify, and we can later 
+add a mechanism that has a distinct address for each ring, but let's see 
+if we can cope with multiple cookies.  Mark?
 
-Agitate for BT IPMI SI!
+You could search existing iosignalfds for the same address and re-use 
+the same iodevice.  I don't want to search the entire list since that 
+precludes tricks like using hashtables or sorting the list by frequency 
+of access.
 
-(HP's IPMI causes the least drag of any of the big vendors.
-Although they use the same crummy char-by-char KCS SI [SMIC
-on older systems], they always provide an IPMI interrupt.
-I've heard that some modern Sun models use BT; haven't seen
-it in action yet.)
+-- 
+error compiling committee.c: too many arguments to function
 
->Bela<
-
-> -----Original Message-----
-> From: Ferenc Wagner [mailto:wferi@niif.hu] 
-> Sent: Thursday, May 21, 2009 2:47 AM
-> To: Corey Minyard
-> Cc: Andrew Morton; openipmi-developer@lists.sourceforge.net; 
-> linux-kernel@vger.kernel.org
-> Subject: Re: [Openipmi-developer] modprobe ipmi_si hangs 
-> under 2.6.30-rc5
-> 
-> Corey Minyard <minyard@acm.org> writes:
-> 
-> > Ferenc Wagner wrote:
-> >
-> >> Just out of interest, how often does the driver wake up to check
-> >> the inteface?
-> >
-> > When idle, the driver wakes up every 10ms to check for something on
-> > the driver.
-> 
-> Wow, 100 times per second, that sure sounds gross for piping out SEL
-> entries!  Though it certainly doesn't matter much for our servers, but
-> hasn't it got the potential to heavily tax laptop batteries?  Or is
-> that why ipmi_si isn't loaded automatically by udev?
-> -- 
-> Thanks,
-> Feri.
-> 
-> --------------------------------------------------------------
-> ----------------
-> Register Now for Creativity and Technology (CaT), June 3rd, NYC. CaT
-> is a gathering of tech-side developers & brand creativity 
-> professionals. Meet
-> the minds behind Google Creative Lab, Visual Complexity, 
-> Processing, & 
-> iPhoneDevCamp asthey present alongside digital heavyweights 
-> like Barbarian
-> Group, R/GA, & Big Spaceship. http://www.creativitycat.com 
-> _______________________________________________
-> Openipmi-developer mailing list
-> Openipmi-developer@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/openipmi-developer
-> 
