@@ -1,41 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759417AbZE0FLC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759935AbZE0FLW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759417AbZE0FLC (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 01:11:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757018AbZE0FKy
+	id S1759935AbZE0FLW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 01:11:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757018AbZE0FLL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 01:10:54 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:50229 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756075AbZE0FKx (ORCPT
+	Wed, 27 May 2009 01:11:11 -0400
+Received: from vms173017pub.verizon.net ([206.46.173.17]:40445 "EHLO
+	vms173017pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756075AbZE0FLL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 01:10:53 -0400
-Date: Wed, 27 May 2009 15:10:49 +1000
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Neil Horman <nhorman@tuxdriver.com>
-Cc: Jarod Wilson <jarod@redhat.com>, linux-crypto@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] crypto: tcrypt: do not exit on success in fips mode
-Message-ID: <20090527051049.GB7474@gondor.apana.org.au>
-References: <200905111006.32675.jarod@redhat.com> <200905130937.33449.jarod@redhat.com> <20090513140329.GA17863@gondor.apana.org.au> <200905131240.11615.jarod@redhat.com> <20090513173219.GC16406@hmsreliant.think-freely.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090513173219.GC16406@hmsreliant.think-freely.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 27 May 2009 01:11:11 -0400
+Date: Wed, 27 May 2009 01:11:06 -0400 (EDT)
+From: Len Brown <lenb@kernel.org>
+X-X-Sender: lenb@localhost.localdomain
+To: Frans Pop <elendil@planet.nl>
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Zhang Rui <rui.zhang@intel.com>, Len Brown <len.brown@intel.com>
+Subject: Re: [PATCH] ACPI processor: remove spurious newline from warning
+ message
+In-reply-to: <200905221023.41843.elendil@planet.nl>
+Message-id: <alpine.LFD.2.00.0905270111030.19698@localhost.localdomain>
+References: <200905221023.41843.elendil@planet.nl>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 13, 2009 at 01:32:19PM -0400, Neil Horman wrote:
->
-> > Signed-off-by: Jarod Wilson <jarod@redhat.com>
-> > 
-> Acked-by: Neil Horman <nhorman@tuxdriver.com>
+applied
 
-Applied to cryptodev.  Thanks!
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+thanks,
+Len Brown, Intel Open Source Technology Center
+
