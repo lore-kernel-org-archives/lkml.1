@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761538AbZE0Rty@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761122AbZE0Rtj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761538AbZE0Rty (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 13:49:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763353AbZE0RqE
+	id S1761122AbZE0Rtj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 13:49:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763375AbZE0RqC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 13:46:04 -0400
-Received: from jalapeno.cc.columbia.edu ([128.59.29.5]:54689 "EHLO
+	Wed, 27 May 2009 13:46:02 -0400
+Received: from jalapeno.cc.columbia.edu ([128.59.29.5]:54670 "EHLO
 	jalapeno.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763401AbZE0Rp7 (ORCPT
+	with ESMTP id S1763448AbZE0Rp5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 13:45:59 -0400
+	Wed, 27 May 2009 13:45:57 -0400
 From: Oren Laadan <orenl@cs.columbia.edu>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
@@ -19,11 +19,11 @@ Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
        "H. Peter Anvin" <hpa@zytor.com>,
        Alexander Viro <viro@zeniv.linux.org.uk>,
        Pavel Emelyanov <xemul@openvz.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>, Dan Smith <danms@us.ibm.com>,
        Oren Laadan <orenl@cs.columbia.edu>
-Subject: [RFC v16][PATCH 26/43] splice: added support for pipe-to-pipe splice()
-Date: Wed, 27 May 2009 13:32:52 -0400
-Message-Id: <1243445589-32388-27-git-send-email-orenl@cs.columbia.edu>
+Subject: [RFC v16][PATCH 28/43] c/r: make ckpt_may_checkpoint_task() check each namespace individually
+Date: Wed, 27 May 2009 13:32:54 -0400
+Message-Id: <1243445589-32388-29-git-send-email-orenl@cs.columbia.edu>
 X-Mailer: git-send-email 1.6.0.1
 In-Reply-To: <1243445589-32388-1-git-send-email-orenl@cs.columbia.edu>
 References: <1243445589-32388-1-git-send-email-orenl@cs.columbia.edu>
@@ -32,306 +32,296 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch is a modified version of Max Kellerman patch that allows
-splice() between pipes (see http://patchwork/kernel/org/patch/21042).
-By refactoring link_pipe(), do_tee() and do_splice_pipes() shrink
-considerably. Below is Max's original description:
+From: Dan Smith <danms@us.ibm.com>
 
---
-This patch enables the splice() system call to copy buffers from one
-pipe to another.  This obvious and trivial use case for splice() was
-not supported until now.
-
-It reuses the functions link_ipipe_prep() and link_opipe_prep() from
-the tee() system call implementation.
---
-
+Signed-off-by: Dan Smith <danms@us.ibm.com>
 Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
 ---
- fs/splice.c |  203 ++++++++++++++++++++++++++++++++++++++++++++++++-----------
- 1 files changed, 166 insertions(+), 37 deletions(-)
+ checkpoint/checkpoint.c        |   20 ++++++--
+ checkpoint/objhash.c           |   28 +++++++++++
+ checkpoint/process.c           |  101 ++++++++++++++++++++++++++++++++++++++++
+ include/linux/checkpoint.h     |    4 ++
+ include/linux/checkpoint_hdr.h |    8 +++
+ 5 files changed, 157 insertions(+), 4 deletions(-)
 
-diff --git a/fs/splice.c b/fs/splice.c
-index 92dd63c..96e0d58 100644
---- a/fs/splice.c
-+++ b/fs/splice.c
-@@ -903,13 +903,95 @@ ssize_t generic_splice_sendpage(struct pipe_inode_info *pipe, struct file *out,
- EXPORT_SYMBOL(generic_splice_sendpage);
+diff --git a/checkpoint/checkpoint.c b/checkpoint/checkpoint.c
+index b70adf4..e66f82b 100644
+--- a/checkpoint/checkpoint.c
++++ b/checkpoint/checkpoint.c
+@@ -267,6 +267,8 @@ static int checkpoint_all_tasks(struct ckpt_ctx *ctx)
+ static int may_checkpoint_task(struct ckpt_ctx *ctx, struct task_struct *t)
+ {
+ 	struct task_struct *root = ctx->root_task;
++	struct nsproxy *nsproxy;
++	int ret = 0;
  
- /*
-+ * After the inode slimming patch, i_pipe/i_bdev/i_cdev share the same
-+ * location, so checking ->i_pipe is not enough to verify that this is a
-+ * pipe.
-+ */
-+static inline struct pipe_inode_info *pipe_info(struct inode *inode)
+ 	ckpt_debug("check %d\n", task_pid_nr_ns(t, ctx->root_nsproxy->pid_ns));
+ 
+@@ -306,11 +308,21 @@ static int may_checkpoint_task(struct ckpt_ctx *ctx, struct task_struct *t)
+ 		return -EINVAL;
+ 	}
+ 
+-	/* FIX: change this when namespaces are added */
+-	if (task_nsproxy(t) != ctx->root_nsproxy)
+-		return -EPERM;
++	rcu_read_lock();
++	nsproxy = task_nsproxy(t);
++	if (nsproxy->uts_ns != ctx->root_nsproxy->uts_ns)
++		ret = -EPERM;
++	if (nsproxy->ipc_ns != ctx->root_nsproxy->ipc_ns)
++		ret = -EPERM;
++	if (nsproxy->mnt_ns != ctx->root_nsproxy->mnt_ns)
++		ret = -EPERM;
++	if (nsproxy->pid_ns != ctx->root_nsproxy->pid_ns)
++		ret = -EPERM;
++	if (nsproxy->net_ns != ctx->root_nsproxy->net_ns)
++		ret = -EPERM;
++	rcu_read_unlock();
+ 
+-	return 0;
++	return ret;
+ }
+ 
+ #define CKPT_HDR_PIDS_CHUNK	256
+diff --git a/checkpoint/objhash.c b/checkpoint/objhash.c
+index e481911..56553ae 100644
+--- a/checkpoint/objhash.c
++++ b/checkpoint/objhash.c
+@@ -127,6 +127,22 @@ static int obj_mm_users(void *ptr)
+ 	return atomic_read(&((struct mm_struct *) ptr)->mm_users);
+ }
+ 
++static int obj_ns_grab(void *ptr)
 +{
-+	if (S_ISFIFO(inode->i_mode))
-+		return inode->i_pipe;
-+
-+	return NULL;
++	get_nsproxy((struct nsproxy *) ptr);
++	return 0;
 +}
 +
-+static int link_pipe_prep(struct pipe_inode_info *ipipe,
-+			  struct pipe_inode_info *opipe,
-+			  unsigned int flags);
-+static long do_link_pipe(struct pipe_inode_info *ipipe,
-+			 struct pipe_inode_info *opipe,
-+			 size_t len, unsigned int flags, int move);
-+
-+/**
-+* Splice pages from one pipe to another.
-+*
-+* @ipipe the input pipe
-+* @opipe the output pipe
-+* @len the maximum number of bytes to move
-+* @flags splice modifier flags
-+*/
-+static long do_splice_pipes(struct pipe_inode_info *ipipe,
-+			    struct pipe_inode_info *opipe,
-+			    size_t len, unsigned int flags)
++static void obj_ns_drop(void *ptr)
 +{
-+	int do_wakeup;
-+	long ret;
++	put_nsproxy((struct nsproxy *) ptr);
++}
 +
-+	if (ipipe == opipe)
-+		return -EINVAL;
++static int obj_ns_users(void *ptr)
++{
++	return atomic_read(&((struct nsproxy *) ptr)->count);
++}
 +
-+	ret = link_pipe_prep(ipipe, opipe, flags);
-+	if (ret < 0)
-+		return ret;
+ static struct ckpt_obj_ops ckpt_obj_ops[] = {
+ 	/* ignored object */
+ 	{
+@@ -174,6 +190,16 @@ static struct ckpt_obj_ops ckpt_obj_ops[] = {
+ 		.checkpoint = checkpoint_mm,
+ 		.restore = restore_mm,
+ 	},
++	/* ns object */
++	{
++		.obj_name = "NSPROXY",
++		.obj_type = CKPT_OBJ_NS,
++		.ref_drop = obj_ns_drop,
++		.ref_grab = obj_ns_grab,
++		.ref_users = obj_ns_users,
++		.checkpoint = checkpoint_ns,
++		.restore = restore_ns,
++	},
+ };
+ 
+ 
+@@ -396,6 +422,8 @@ int ckpt_obj_contained(struct ckpt_ctx *ctx)
+ 
+ 	/* account for ctx->file reference (if in the table already) */
+ 	ckpt_obj_users_inc(ctx, ctx->file, 1);
++	/* account for ctx->root_nsproxy reference (if in the table already) */
++	ckpt_obj_users_inc(ctx, ctx->root_nsproxy, 1);
+ 
+ 	hlist_for_each_entry(obj, node, &ctx->obj_hash->list, next) {
+ 		if (!obj->ops->ref_users)
+diff --git a/checkpoint/process.c b/checkpoint/process.c
+index 876be3e..fbe0d16 100644
+--- a/checkpoint/process.c
++++ b/checkpoint/process.c
+@@ -12,6 +12,7 @@
+ #define CKPT_DFLAG  CKPT_DSYS
+ 
+ #include <linux/sched.h>
++#include <linux/nsproxy.h>
+ #include <linux/posix-timers.h>
+ #include <linux/futex.h>
+ #include <linux/poll.h>
+@@ -49,6 +50,45 @@ static int checkpoint_task_struct(struct ckpt_ctx *ctx, struct task_struct *t)
+ 	return ckpt_write_string(ctx, t->comm, TASK_COMM_LEN);
+ }
+ 
 +
-+	/* both pipes are now locked */
++static int do_checkpoint_ns(struct ckpt_ctx *ctx, struct nsproxy *nsproxy)
++{
++	return 0;
++}
 +
-+	do_wakeup = ipipe->nrbufs;
-+	ret = do_link_pipe(ipipe, opipe, len, flags, 1);
-+	do_wakeup -= ipipe->nrbufs;
++int checkpoint_ns(struct ckpt_ctx *ctx, void *ptr)
++{
++	return do_checkpoint_ns(ctx, (struct nsproxy *) ptr);
++}
 +
-+	pipe_unlock(ipipe);
-+	pipe_unlock(opipe);
++static int checkpoint_task_ns(struct ckpt_ctx *ctx, struct task_struct *t)
++{
++	struct ckpt_hdr_task_ns *h;
++	struct nsproxy *nsproxy;
++	int ns_objref;
++	int ret;
 +
-+	if (do_wakeup) {
-+		/* at least one buffer was removed from the
-+		   input pipe: wake up potential writers */
-+		smp_mb();
-+		if (waitqueue_active(&ipipe->wait))
-+			wake_up_interruptible(&ipipe->wait);
-+		kill_fasync(&ipipe->fasync_writers, SIGIO, POLL_OUT);
-+	}
++	rcu_read_lock();
++	nsproxy = task_nsproxy(t);
++	get_nsproxy(nsproxy);
++	rcu_read_unlock();
 +
++	ns_objref = checkpoint_obj(ctx, nsproxy, CKPT_OBJ_NS);
++	put_nsproxy(nsproxy);
++
++	ckpt_debug("nsproxy: objref %d\n", ns_objref);
++	if (ns_objref < 0)
++		return ns_objref;
++
++	h = ckpt_hdr_get_type(ctx, sizeof(*h), CKPT_HDR_TASK_NS);
++	if (!h)
++		return -ENOMEM;
++	h->ns_objref = ns_objref;
++	ret = ckpt_write_obj(ctx, &h->h);
++	ckpt_hdr_put(ctx, h);
++	return ret;
++}
++
+ static int checkpoint_task_objs(struct ckpt_ctx *ctx, struct task_struct *t)
+ {
+ 	struct ckpt_hdr_task_objs *h;
+@@ -56,6 +96,18 @@ static int checkpoint_task_objs(struct ckpt_ctx *ctx, struct task_struct *t)
+ 	int mm_objref;
+ 	int ret;
+ 
 +	/*
-+	 * If we put data in the output pipe, wakeup any potential
-+	 * readers.
++	 * Shared objects may have dependencies among them: task->mm
++	 * depends on task->nsproxy (by ipc_ns). Therefore first save
++	 * the namespaces, and then the remaining shared objects.
++	 * During restart a task will already have its namespaces
++	 * restored when it gets to restore, e.g. its memory.
 +	 */
-+	if (ret > 0) {
-+		smp_mb();
-+		if (waitqueue_active(&opipe->wait))
-+			wake_up_interruptible(&opipe->wait);
-+		kill_fasync(&opipe->fasync_readers, SIGIO, POLL_IN);
-+	}
 +
-+	return ret;
-+}
-+
-+/*
-  * Attempt to initiate a splice from pipe to file.
-  */
- static long do_splice_from(struct pipe_inode_info *pipe, struct file *out,
- 			   loff_t *ppos, size_t len, unsigned int flags)
- {
-+	struct pipe_inode_info *opipe;
- 	int ret;
- 
-+	opipe = pipe_info(out->f_dentry->d_inode);
-+	if (opipe) {
-+		if (unlikely(!(out->f_mode & FMODE_WRITE)))
-+			return -EBADF;
-+		return do_splice_pipes(pipe, opipe, len, flags);
-+	}
-+
- 	if (unlikely(!out->f_op || !out->f_op->splice_write))
- 		return -EINVAL;
- 
-@@ -933,8 +1015,16 @@ static long do_splice_to(struct file *in, loff_t *ppos,
- 			 struct pipe_inode_info *pipe, size_t len,
- 			 unsigned int flags)
- {
-+	struct pipe_inode_info *ipipe;
- 	int ret;
- 
-+	ipipe = pipe_info(in->f_dentry->d_inode);
-+	if (ipipe) {
-+		if (unlikely(!(in->f_mode & FMODE_READ)))
-+			return -EBADF;
-+		return do_splice_pipes(ipipe, pipe, len, flags);
-+	}
-+
- 	if (unlikely(!in->f_op || !in->f_op->splice_read))
- 		return -EINVAL;
- 
-@@ -1113,19 +1203,6 @@ long do_splice_direct(struct file *in, loff_t *ppos, struct file *out,
- }
- 
- /*
-- * After the inode slimming patch, i_pipe/i_bdev/i_cdev share the same
-- * location, so checking ->i_pipe is not enough to verify that this is a
-- * pipe.
-- */
--static inline struct pipe_inode_info *pipe_info(struct inode *inode)
--{
--	if (S_ISFIFO(inode->i_mode))
--		return inode->i_pipe;
--
--	return NULL;
--}
--
--/*
-  * Determine where to splice to/from.
-  */
- static long do_splice(struct file *in, loff_t __user *off_in,
-@@ -1140,7 +1217,10 @@ static long do_splice(struct file *in, loff_t __user *off_in,
- 	if (pipe) {
- 		if (off_in)
- 			return -ESPIPE;
-+
- 		if (off_out) {
-+			if (pipe_info(out->f_path.dentry->d_inode))
-+				return -ESPIPE;
- 			if (out->f_op->llseek == no_llseek)
- 				return -EINVAL;
- 			if (copy_from_user(&offset, off_out, sizeof(loff_t)))
-@@ -1639,21 +1719,36 @@ static int link_pipe_prep(struct pipe_inode_info *ipipe,
- 	return 0;
- }
- 
--/*
-- * Link contents of ipipe to opipe.
-- */
--static int link_pipe(struct pipe_inode_info *ipipe,
--		     struct pipe_inode_info *opipe,
--		     size_t len, unsigned int flags)
-+/**
-+* Returns the nth pipe buffer after the current one.
-+*
-+* @i the buffer index, relative to the current one
-+*/
-+static inline struct pipe_buffer *
-+pipe_buffer_at(struct pipe_inode_info *pipe, unsigned i)
- {
--	struct pipe_buffer *ibuf, *obuf;
--	int ret, i = 0, nbuf;
-+	BUG_ON(i >= PIPE_BUFFERS);
- 
--	ret = link_pipe_prep(ipipe, opipe, flags);
--	if (ret < 0)
--		return ret;
-+	return pipe->bufs + ((pipe->curbuf + i) & (PIPE_BUFFERS - 1));
-+}
- 
--	/* pipes are now locked */
-+/**
-+ * do_link_pipe - copy or move (splice) contents of ipipe to opipe.
-+ * @ipipe: the input pipe
-+ * @opipe: the output pipe
-+ * @len: the maximum number of byte to copy/move
-+ * @flags: splice modifier flags
-+ * @move: indicates move operation (otherwise copy)
-+ *
-+ * expects both pipes to be locked
-+ */
-+static long do_link_pipe(struct pipe_inode_info *ipipe,
-+			struct pipe_inode_info *opipe,
-+			size_t len, unsigned int flags, int move)
-+{
-+	struct pipe_buffer *ibuf, *obuf;
-+	long ret = 0;
-+	int i = 0;
- 
- 	do {
- 		if (!opipe->readers) {
-@@ -1670,16 +1765,8 @@ static int link_pipe(struct pipe_inode_info *ipipe,
- 		if (i >= ipipe->nrbufs || opipe->nrbufs >= PIPE_BUFFERS)
- 			break;
- 
--		ibuf = ipipe->bufs + ((ipipe->curbuf + i) & (PIPE_BUFFERS - 1));
--		nbuf = (opipe->curbuf + opipe->nrbufs) & (PIPE_BUFFERS - 1);
--
--		/*
--		 * Get a reference to this pipe buffer,
--		 * so we can copy the contents over.
--		 */
--		ibuf->ops->get(ipipe, ibuf);
--
--		obuf = opipe->bufs + nbuf;
-+		ibuf = pipe_buffer_at(ipipe, i);
-+		obuf = pipe_buffer_at(opipe, opipe->nrbufs);
- 		*obuf = *ibuf;
- 
- 		/*
-@@ -1688,13 +1775,35 @@ static int link_pipe(struct pipe_inode_info *ipipe,
- 		 */
- 		obuf->flags &= ~PIPE_BUF_FLAG_GIFT;
- 
--		if (obuf->len > len)
-+		/* increase the reference count */
-+		obuf->ops->get(opipe, obuf);
-+
-+		/* partial or complete copy/move ? */
-+		if (obuf->len > len) {
- 			obuf->len = len;
-+			if (move) {
-+				/* remove portion from ibuf */
-+				ibuf->offset += len;
-+				ibuf->len -= len;
-+			}
-+		} else {
-+			if (move) {
-+				/* remove entirely from ibuf */
-+				ibuf->ops->release(ipipe, ibuf);
-+				ibuf->ops = NULL;
-+
-+				ipipe->curbuf = (ipipe->curbuf + 1) &
-+					(PIPE_BUFFERS - 1);
-+				ipipe->nrbufs--;
-+			} else {
-+				/* advance pointer in ibuf */
-+				i++;
-+			}
-+		}
- 
- 		opipe->nrbufs++;
- 		ret += obuf->len;
- 		len -= obuf->len;
--		i++;
- 	} while (len);
- 
- 	/*
-@@ -1704,6 +1813,26 @@ static int link_pipe(struct pipe_inode_info *ipipe,
- 	if (!ret && ipipe->waiting_writers && (flags & SPLICE_F_NONBLOCK))
- 		ret = -EAGAIN;
- 
-+	return ret;
-+}
-+
-+/*
-+ * Link contents of ipipe to opipe.
-+ */
-+long link_pipe(struct pipe_inode_info *ipipe,
-+	       struct pipe_inode_info *opipe,
-+	       size_t len, unsigned int flags)
-+{
-+	long ret;
-+
-+	ret = link_pipe_prep(ipipe, opipe, flags);
++	ret = checkpoint_task_ns(ctx, t);
 +	if (ret < 0)
 +		return ret;
 +
-+	/* pipes are now locked */
-+
-+	ret = do_link_pipe(ipipe, opipe, len, flags, 0);
-+
- 	pipe_unlock(ipipe);
- 	pipe_unlock(opipe);
+ 	files_objref = checkpoint_obj_file_table(ctx, t);
+ 	ckpt_debug("files: objref %d\n", files_objref);
+ 	if (files_objref < 0) {
+@@ -248,11 +300,60 @@ static int restore_task_struct(struct ckpt_ctx *ctx)
+ 	return ret;
+ }
  
++static struct nsproxy *do_restore_ns(struct ckpt_ctx *ctx)
++{
++	struct nsproxy *nsproxy;
++
++	nsproxy = task_nsproxy(current);
++	get_nsproxy(nsproxy);
++	return nsproxy;
++}
++
++void *restore_ns(struct ckpt_ctx *ctx)
++{
++	return (void *) do_restore_ns(ctx);
++}
++
++static int restore_task_ns(struct ckpt_ctx *ctx)
++{
++	struct ckpt_hdr_task_ns *h;
++	struct nsproxy *nsproxy;
++	int ret = 0;
++
++	h = ckpt_read_obj_type(ctx, sizeof(*h), CKPT_HDR_TASK_NS);
++	if (IS_ERR(h))
++		return PTR_ERR(h);
++
++	nsproxy = ckpt_obj_fetch(ctx, h->ns_objref, CKPT_OBJ_NS);
++	if (IS_ERR(nsproxy)) {
++		ret = PTR_ERR(nsproxy);
++		goto out;
++	}
++
++	if (nsproxy != task_nsproxy(current)) {
++		get_nsproxy(nsproxy);
++		switch_task_namespaces(current, nsproxy);
++	}
++ out:
++	ckpt_debug("nsproxy: ret %d (%p)\n", ret, task_nsproxy(current));
++	ckpt_hdr_put(ctx, h);
++	return ret;
++}
++
+ static int restore_task_objs(struct ckpt_ctx *ctx)
+ {
+ 	struct ckpt_hdr_task_objs *h;
+ 	int ret;
+ 
++	/*
++	 * Namespaces come first, because ->mm depends on ->nsproxy,
++	 * and because shared objects are restored before they are
++	 * referenced. See comment in checkpoint_task_objs.
++	 */
++	ret = restore_task_ns(ctx);
++	if (ret < 0)
++		return ret;
++
+ 	h = ckpt_read_obj_type(ctx, sizeof(*h), CKPT_HDR_TASK_OBJS);
+ 	if (IS_ERR(h))
+ 		return PTR_ERR(h);
+diff --git a/include/linux/checkpoint.h b/include/linux/checkpoint.h
+index 171e92e..a7125fc 100644
+--- a/include/linux/checkpoint.h
++++ b/include/linux/checkpoint.h
+@@ -77,6 +77,10 @@ extern int checkpoint_restart_block(struct ckpt_ctx *ctx,
+ 				    struct task_struct *t);
+ extern int restore_restart_block(struct ckpt_ctx *ctx);
+ 
++/* namespaces */
++extern int checkpoint_ns(struct ckpt_ctx *ctx, void *ptr);
++extern void *restore_ns(struct ckpt_ctx *ctx);
++
+ /* file table */
+ extern int checkpoint_obj_file_table(struct ckpt_ctx *ctx,
+ 				     struct task_struct *t);
+diff --git a/include/linux/checkpoint_hdr.h b/include/linux/checkpoint_hdr.h
+index 14654e8..da1ae79 100644
+--- a/include/linux/checkpoint_hdr.h
++++ b/include/linux/checkpoint_hdr.h
+@@ -48,6 +48,7 @@ enum {
+ 
+ 	CKPT_HDR_TREE = 101,
+ 	CKPT_HDR_TASK,
++	CKPT_HDR_TASK_NS,
+ 	CKPT_HDR_TASK_OBJS,
+ 	CKPT_HDR_RESTART_BLOCK,
+ 	CKPT_HDR_THREAD,
+@@ -90,6 +91,7 @@ enum obj_type {
+ 	CKPT_OBJ_FILE_TABLE,
+ 	CKPT_OBJ_FILE,
+ 	CKPT_OBJ_MM,
++	CKPT_OBJ_NS,
+ 	CKPT_OBJ_MAX
+ };
+ 
+@@ -152,6 +154,12 @@ struct ckpt_hdr_task {
+ 	__u32 task_comm_len;
+ } __attribute__((aligned(8)));
+ 
++/* namespaces */
++struct ckpt_hdr_task_ns {
++	struct ckpt_hdr h;
++	__s32 ns_objref;
++} __attribute__((aligned(8)));
++
+ /* task's shared resources */
+ struct ckpt_hdr_task_objs {
+ 	struct ckpt_hdr h;
 -- 
 1.6.0.4
 
