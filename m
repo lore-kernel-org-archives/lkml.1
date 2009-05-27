@@ -1,149 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763472AbZE0ODh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763682AbZE0OHp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763472AbZE0ODh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 10:03:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762887AbZE0OD3
+	id S1763682AbZE0OHp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 10:07:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758264AbZE0OHg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 10:03:29 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:39031 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761291AbZE0OD2 (ORCPT
+	Wed, 27 May 2009 10:07:36 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:46719 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752219AbZE0OHg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 10:03:28 -0400
-Date: Wed, 27 May 2009 08:03:28 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Tejun Heo <tj@kernel.org>
-Cc: Greg KH <greg@kroah.com>, Robert Hancock <hancockrwd@gmail.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-pci@vger.kernel.org,
-       Linux Kernel <linux-kernel@vger.kernel.org>, towerlexa@gmx.de,
-       Daniel Ritz <daniel.ritz@gmx.ch>,
-       Dominik Brodowski <linux@dominikbrodowski.net>,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>
-Subject: Re: [RFC PATCH] pccard: configure CLS on attach
-Message-ID: <20090527140328.GG5816@parisc-linux.org>
-References: <4A1BE904.8080302@kernel.org> <20090526142300.73d466d0@lxorguk.ukuu.org.uk> <4A1C7EF9.2030000@gmail.com> <4A1C8091.4050909@kernel.org> <4A1C86F5.1020603@jp.fujitsu.com> <4A1D40FD.5050102@kernel.org>
+	Wed, 27 May 2009 10:07:36 -0400
+Message-ID: <4A1D48FA.9080403@novell.com>
+Date: Wed, 27 May 2009 10:06:50 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A1D40FD.5050102@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: "Michael S. Tsirkin" <mst@redhat.com>
+CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com,
+       davidel@xmailserver.org, mtosatti@redhat.com
+Subject: Re: [KVM PATCH v10] kvm: add support for irqfd
+References: <20090520142234.22285.72274.stgit@dev.haskins.net> <20090527130447.GA11643@redhat.com>
+In-Reply-To: <20090527130447.GA11643@redhat.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig2FA59AF1A306024F019E5680"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 27, 2009 at 10:32:45PM +0900, Tejun Heo wrote:
-> THIS IS A RFC PATCH, SO NO SOB.  PLEASE DON'T APPLY YET.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig2FA59AF1A306024F019E5680
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-This breaks CONFIG_PPC64, fwiw.  We'll want to stub out
-pci_set_cacheline_size() for the PCI_DISABLE_MWI case too.
+Michael S. Tsirkin wrote:
+> On Wed, May 20, 2009 at 10:30:49AM -0400, Gregory Haskins wrote:
+>  =20
+>> +static int
+>> +kvm_assign_irqfd(struct kvm *kvm, int fd, int gsi)
+>> +{
+>> +	struct _irqfd *irqfd;
+>> +	struct file *file =3D NULL;
+>> +	int ret;
+>> +
+>> +	irqfd =3D kzalloc(sizeof(*irqfd), GFP_KERNEL);
+>> +	if (!irqfd)
+>> +		return -ENOMEM;
+>> +
+>> +	irqfd->kvm =3D kvm;
+>> +	irqfd->gsi =3D gsi;
+>> +	INIT_LIST_HEAD(&irqfd->list);
+>> +	INIT_WORK(&irqfd->work, irqfd_inject);
+>> +
+>> +	/*
+>> +	 * Embed the file* lifetime in the irqfd.
+>> +	 */
+>> +	file =3D fget(fd);
+>> +	if (IS_ERR(file)) {
+>> +		ret =3D PTR_ERR(file);
+>> +		goto fail;
+>> +	}
+>>    =20
+>
+> So we get a reference to a file, and unless the user is nice to us, it
+> will only be dropped when kvm char device file is closed?
+> I think this will deadlock if the fd in question is the open kvm char d=
+evice.
+>
+>
+>  =20
+Hmm...I hadn't considered this possibility, though I am not sure if it
+would cause a deadlock in the pattern you suggest.  It seems more like
+it would result in, at worst, an extra reference to itself (and thus a
+leak) rather than a deadlock...
 
-I don't know what PPC machines have Cardbus slots, presumably some
-Macs do.  I don't know whether firmware takes care of configuring the
-Cacheline Size register for Cardbus hotplug or not.  So we may want to
-include pci_set_cacheline_size() in the !MWI build, or not.  Ben, Paul?
+I digress.  In either case, perhaps I should s/fget/eventfd_fget to at
+least limit the type of fd to eventfd.  I was trying to be "slick" by
+not needing the eventfd_fget() exported, but I am going to need to
+export it later anyway for iosignalfd, so its probably a moot point.
 
-> towerlexa, can you please test this patch?
-> 
-> Cc: Daniel Ritz <daniel.ritz@gmx.ch>
-> Cc: Dominik Brodowski <linux@dominikbrodowski.net>
-> Cc: Greg KH <greg@kroah.com>
-> Cc: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-> Cc: towerlexa@gmx.de
-> ---
->  drivers/pci/pci.c        |    3 +--
->  drivers/pcmcia/cardbus.c |   23 +++++++++++++++--------
->  include/linux/pci.h      |    1 +
->  3 files changed, 17 insertions(+), 10 deletions(-)
-> 
-> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-> index 1a91bf9..eafbe01 100644
-> --- a/drivers/pci/pci.c
-> +++ b/drivers/pci/pci.c
-> @@ -1860,8 +1860,7 @@ u8 pci_cache_line_size = PCI_CACHE_LINE_BYTES / 4;
->   *
->   * RETURNS: An appropriate -ERRNO error value on error, or zero for success.
->   */
-> -static int
-> -pci_set_cacheline_size(struct pci_dev *dev)
-> +int pci_set_cacheline_size(struct pci_dev *dev)
->  {
->  	u8 cacheline_size;
->  
-> diff --git a/drivers/pcmcia/cardbus.c b/drivers/pcmcia/cardbus.c
-> index db77e1f..98789c0 100644
-> --- a/drivers/pcmcia/cardbus.c
-> +++ b/drivers/pcmcia/cardbus.c
-> @@ -184,26 +184,33 @@ fail:
->      
->  =====================================================================*/
->  
-> -/*
-> - * Since there is only one interrupt available to CardBus
-> - * devices, all devices downstream of this device must
-> - * be using this IRQ.
-> - */
-> -static void cardbus_assign_irqs(struct pci_bus *bus, int irq)
-> +static void cardbus_config_irq_and_cls(struct pci_bus *bus, int irq)
->  {
->  	struct pci_dev *dev;
->  
->  	list_for_each_entry(dev, &bus->devices, bus_list) {
->  		u8 irq_pin;
->  
-> +		/*
-> +		 * Since there is only one interrupt available to
-> +		 * CardBus devices, all devices downstream of this
-> +		 * device must be using this IRQ.
-> +		 */
->  		pci_read_config_byte(dev, PCI_INTERRUPT_PIN, &irq_pin);
->  		if (irq_pin) {
->  			dev->irq = irq;
->  			pci_write_config_byte(dev, PCI_INTERRUPT_LINE, dev->irq);
->  		}
->  
-> +		/*
-> +		 * Some controllers transfer very slowly with 0 CLS.
-> +		 * Configure it.  This may fail as CLS configuration
-> +		 * is mandatory only for MWI.
-> +		 */
-> +		pci_set_cacheline_size(dev);
-> +
->  		if (dev->subordinate)
-> -			cardbus_assign_irqs(dev->subordinate, irq);
-> +			cardbus_config_irq_and_cls(dev->subordinate, irq);
->  	}
->  }
->  
-> @@ -228,7 +235,7 @@ int __ref cb_alloc(struct pcmcia_socket * s)
->  	 */
->  	pci_bus_size_bridges(bus);
->  	pci_bus_assign_resources(bus);
-> -	cardbus_assign_irqs(bus, s->pci_irq);
-> +	cardbus_config_irq_and_cls(bus, s->pci_irq);
->  
->  	/* socket specific tune function */
->  	if (s->tune_bridge)
-> diff --git a/include/linux/pci.h b/include/linux/pci.h
-> index 72698d8..e1a1aa6 100644
-> --- a/include/linux/pci.h
-> +++ b/include/linux/pci.h
-> @@ -688,6 +688,7 @@ void pci_disable_device(struct pci_dev *dev);
->  void pci_set_master(struct pci_dev *dev);
->  void pci_clear_master(struct pci_dev *dev);
->  int pci_set_pcie_reset_state(struct pci_dev *dev, enum pcie_reset_state state);
-> +int pci_set_cacheline_size(struct pci_dev *dev);
->  #define HAVE_PCI_SET_MWI
->  int __must_check pci_set_mwi(struct pci_dev *dev);
->  int pci_try_set_mwi(struct pci_dev *dev);
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Thanks Michael,
+-Greg
 
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+
+--------------enig2FA59AF1A306024F019E5680
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iEYEARECAAYFAkodSP8ACgkQlOSOBdgZUxnNkQCfSHmNrXvFlRYectK6Gi18bfcW
+wfsAn0PHIjbc+TCx/5ifcmyYBn945fiB
+=++LK
+-----END PGP SIGNATURE-----
+
+--------------enig2FA59AF1A306024F019E5680--
