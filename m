@@ -1,72 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760701AbZE0LMx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761134AbZE0LNQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760701AbZE0LMx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 07:12:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759312AbZE0LL7
+	id S1761134AbZE0LNQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 07:13:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759545AbZE0LME
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 07:11:59 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:49375 "EHLO
+	Wed, 27 May 2009 07:12:04 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:49387 "EHLO
 	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758219AbZE0LL5 (ORCPT
+	with ESMTP id S1758364AbZE0LMB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 07:11:57 -0400
+	Wed, 27 May 2009 07:12:01 -0400
 From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 To: linux-kernel@vger.kernel.org
 Cc: linux-fsdevel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
        Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Date: Wed, 27 May 2009 16:05:11 +0300
-Message-Id: <20090527130511.4913.59300.sendpatchset@localhost.localdomain>
+Date: Wed, 27 May 2009 16:05:29 +0300
+Message-Id: <20090527130529.4913.69959.sendpatchset@localhost.localdomain>
 In-Reply-To: <20090527130503.4913.62042.sendpatchset@localhost.localdomain>
 References: <20090527130503.4913.62042.sendpatchset@localhost.localdomain>
-Subject: [PATCH 01/19] VFS: introduce helpers for manipulation s_dirty flag
-X-OriginalArrivalTime: 27 May 2009 11:11:10.0291 (UTC) FILETIME=[D6ED8230:01C9DEBB]
+Subject: [PATCH 04/19] EXOFS: do not manipulate s_dirt directly
+X-OriginalArrivalTime: 27 May 2009 11:11:31.0916 (UTC) FILETIME=[E3D138C0:01C9DEBB]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Subject: [PATCH] VFS: introduce helpers for manipulation s_dirty flag
+Subject: [PATCH] EXOFS: do not manipulate s_dirt directly
 
-This patch introduces 3 new VFS helpers: 'mark_sb_dirty()',
-'mark_sb_clean()', and 'sb_is_dirty()'. The helpers simply
-set 'sb->s_dirt' or test 'sb->s_dirt'. The plan is to make
-every FS use these helpers instead of manipulating
-'sb->s_dirt' directly. And the further plan is to stop the
-periodic write-back when there is no dirt.
-
-This patch is just a preparation. No functional changes yet.
+... use new VFS helpers instead.
 
 Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 Cc: Christoph Hellwig <hch@infradead.org>
 ---
- include/linux/fs.h |   13 +++++++++++++
- 1 files changed, 13 insertions(+), 0 deletions(-)
+ fs/exofs/inode.c |    2 +-
+ fs/exofs/super.c |    4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index 73242c3..437939c 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -1782,6 +1782,19 @@ extern int get_sb_pseudo(struct file_system_type *, char *,
- extern void simple_set_mnt(struct vfsmount *mnt, struct super_block *sb);
- int __put_super_and_need_restart(struct super_block *sb);
+diff --git a/fs/exofs/inode.c b/fs/exofs/inode.c
+index ba8d9fa..80d3d03 100644
+--- a/fs/exofs/inode.c
++++ b/fs/exofs/inode.c
+@@ -1066,7 +1066,7 @@ struct inode *exofs_new_inode(struct inode *dir, int mode)
  
-+static inline void mark_sb_dirty(struct super_block *sb)
-+{
-+	sb->s_dirt = 1;
-+}
-+static inline void mark_sb_clean(struct super_block *sb)
-+{
-+	sb->s_dirt = 0;
-+}
-+static inline int sb_is_dirty(struct super_block *sb)
-+{
-+	return sb->s_dirt;
-+}
-+
- /* Alas, no aliases. Too much hassle with bringing module.h everywhere */
- #define fops_get(fops) \
- 	(((fops) && try_module_get((fops)->owner) ? (fops) : NULL))
+ 	sbi = sb->s_fs_info;
+ 
+-	sb->s_dirt = 1;
++	mark_sb_dirty(sb);
+ 	inode->i_uid = current->cred->fsuid;
+ 	if (dir->i_mode & S_ISGID) {
+ 		inode->i_gid = dir->i_gid;
+diff --git a/fs/exofs/super.c b/fs/exofs/super.c
+index 49e16af..9cf9738 100644
+--- a/fs/exofs/super.c
++++ b/fs/exofs/super.c
+@@ -241,7 +241,7 @@ static void exofs_write_super(struct super_block *sb)
+ 		EXOFS_ERR("exofs_write_super: exofs_sync_op failed.\n");
+ 		goto out;
+ 	}
+-	sb->s_dirt = 0;
++	mark_sb_clean(sb);
+ 
+ out:
+ 	if (or)
+@@ -262,7 +262,7 @@ static void exofs_put_super(struct super_block *sb)
+ 
+ 	lock_kernel();
+ 
+-	if (sb->s_dirt)
++	if (is_sb_dirty(sb))
+ 		exofs_write_super(sb);
+ 
+ 	/* make sure there are no pending commands */
 -- 
 1.6.0.6
 
