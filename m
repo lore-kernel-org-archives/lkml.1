@@ -1,65 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764252AbZE0O7c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762995AbZE0PBR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764252AbZE0O7c (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 10:59:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762619AbZE0O7N
+	id S1762995AbZE0PBR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 11:01:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758179AbZE0PBG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 10:59:13 -0400
-Received: from cantor.suse.de ([195.135.220.2]:54156 "EHLO mx1.suse.de"
+	Wed, 27 May 2009 11:01:06 -0400
+Received: from www.tglx.de ([62.245.132.106]:50983 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761743AbZE0O7K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 10:59:10 -0400
-Date: Wed, 27 May 2009 16:59:11 +0200
-From: Jan Kara <jack@suse.cz>
-To: Theodore Tso <tytso@mit.edu>, Jan Kara <jack@suse.cz>,
-       LKML <linux-kernel@vger.kernel.org>, npiggin@suse.de,
-       linux-ext4@vger.kernel.org
-Subject: Re: [PATCH 0/11] Fix page_mkwrite() for blocksize < pagesize
-Message-ID: <20090527145911.GH16006@duck.suse.cz>
-References: <1243429268-3028-1-git-send-email-jack@suse.cz> <20090527142332.GB10842@mit.edu>
+	id S1758105AbZE0PBF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 11:01:05 -0400
+Date: Wed, 27 May 2009 17:00:44 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: LKML <linux-kernel@vger.kernel.org>
+cc: Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: [PATCH] tracing: annotate emit_log_char() notrace
+Message-ID: <alpine.LFD.2.00.0905271657340.3397@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090527142332.GB10842@mit.edu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 27-05-09 10:23:32, Theodore Tso wrote:
-> On Wed, May 27, 2009 at 03:00:57PM +0200, Jan Kara wrote:
-> > 
-> > The series is against 2.6.30-rc7. The first two patches are just
-> > small cleanup and should be merged separately (Ted should have the
-> > ext4 cleanup rebased on top of current ext4 tree). 
-> 
-> So I can take the cleanup (which will be different given the changes
-> that are ready to get merged once the merge window opens), but it
-  I sent you yesterday the version of the cleanup which should apply to the
-latest patch queue. I think you can merge it right away.
- In fact, this series should not depend on the cleanup in ext4 at all, I've
-just included it for completeness along with ext3 cleanup of the same
-problem (and the patch series depends on ext3 cleanup).
+printk calls emit_log_char() in a loop which is cluttering the trace
+buffer. Make it notrace.
 
-> looks like the the second ext4 patch can't go in until we get
-> agreement that changes to the VFS layer should go in, correct?  So
-> we'll have a merge order dependency here.
-  Yes, we have to agree on VFS changes before ext4 changes make sense.
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+---
+ kernel/printk.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-> (And this one will be the 2nd merge order dependency we have in the
-> ext4 tree, since I also have some patches in the unstable portion of
-> the tree which are waiting for some tracing patches to go in.)
-> 
-> OK, what I'll probably do is to merge the core VFS patch plus the 2nd
-> ext4 patch into the ext4 patch queue in the unstable portion of the
-> queue for testing purposes, but I won't actually push the VFS core
-> changes.  We can figure out later who actually pushes the ext4 patch
-> which utilizes the new VFS infrastructure.
-  Yes, that would be fine. Thanks. Luckily, the dependence is just one way
-(ext4 change has to go after the VFS patch) so it's just enough to merge
-that ext4 change some time after VFS changes go in.
-
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+Index: linux-2.6-tip/kernel/printk.c
+===================================================================
+--- linux-2.6-tip.orig/kernel/printk.c
++++ linux-2.6-tip/kernel/printk.c
+@@ -499,7 +499,7 @@ static void call_console_drivers(unsigne
+ 	_call_console_drivers(start_print, end, msg_level);
+ }
+ 
+-static void emit_log_char(char c)
++static void notrace emit_log_char(char c)
+ {
+ 	LOG_BUF(log_end) = c;
+ 	log_end++;
