@@ -1,47 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759817AbZE0RPe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759817AbZE0RUc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759817AbZE0RPe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 13:15:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760823AbZE0RPR
+	id S1759817AbZE0RUc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 13:20:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752491AbZE0RUY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 13:15:17 -0400
-Received: from zrtps0kp.nortel.com ([47.140.192.56]:40551 "EHLO
-	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760474AbZE0RPQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 13:15:16 -0400
-Message-ID: <4A1D7512.9080604@nortel.com>
-Date: Wed, 27 May 2009 11:14:58 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
+	Wed, 27 May 2009 13:20:24 -0400
+Received: from www.tglx.de ([62.245.132.106]:49784 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751835AbZE0RUY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 13:20:24 -0400
+Date: Wed, 27 May 2009 19:19:59 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Harald Welte <HaraldWelte@viatech.com>
+cc: "H. Peter Anvin" <hpa@zytor.com>, lkml@morethan.org,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: LOCK prefix on uni processor has its use (was Re: [BUG FIX] Make
+ x86_32 uni-processor Atomic ops, Atomic)
+In-Reply-To: <20090527170118.GC4024@prithivi.gnumonks.org>
+Message-ID: <alpine.LFD.2.00.0905271906490.3397@localhost.localdomain>
+References: <200905221139.26941.lkml@morethan.org> <200905221946.01808.lkml@morethan.org> <4A1748A9.1020306@zytor.com> <200905231304.55973.lkml@morethan.org> <4A188A48.5000208@zytor.com> <20090527170118.GC4024@prithivi.gnumonks.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: LKML <linux-kernel@vger.kernel.org>, Ulrich Drepper <drepper@redhat.com>,
-       Roland McGrath <roland@redhat.com>
-Subject: Re: linux missing support for _POSIX_THREAD_CPUTIME?
-References: <4A1D6E71.90602@nortel.com> <alpine.LFD.2.00.0905271855290.3397@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0905271855290.3397@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 27 May 2009 17:15:03.0272 (UTC) FILETIME=[AC660680:01C9DEEE]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner wrote:
-> On Wed, 27 May 2009, Chris Friesen wrote:
+On Wed, 27 May 2009, Harald Welte wrote:
+> Here are some statements from the CPU logic guys at VIA/Centaur:
 > 
-> That's more a question for the glibc folks. CC'ed.
+> * A read-modify-write sequence cannot be interupted.
+> * All X86 instructions except rep-strings are atomic wrt interrupts.
+> * The lock prefix has uses on a UP processor: It keeps DMA devices from
+>   interfering with a read-modify-write sequence
+...
 
-Actually, I'm looking at the kernel code here.  It looks like
-posix_cpu_clock_get() should be able to handle a per-task cpu clock for
-another thread within the same process.  However, it's only ever called
-by thread_cpu_clock_get(), which hardcodes a clock_id of THREAD_CLOCK,
-which corresponds to the current thread.
+> Now if I understand the issues correctly, it would mean that there is some
+> driver code that modifies a certain chunk of memory, while DMA of some
+> peripheral is also accessing that memory.  I suppose it would not have to be
+> the same actual address, but probably being within the same cache line is
+> already sufficient.
+> 
+> Now the question is: Is this a valid operation of a driver?  Should the driver
+> do such things, or is such a driver broken?  When would that occur?  I'm trying
+> to come up with a case, but typically you e.g. allocate some DMA buffer and
+> then don't touch it until the hardware has processed it.
 
-Similarly, invalid_clockid() will say that the clock_id is invalid if
-it's positive but greater than 15.  If my math is right, this means that
-any pid > 2 will result in invalid_clockid() failing.
+Right, that would be more than stupid, but even then it would not
+explain any breakage of the kernel. Such a driver would not be
+functional anyway if it relies on some read/write modify operations in
+an active DMA buffer. That would also explode on any other system as
+you have no control whether the access to that memory happens before
+or after the DMA operation.
 
-Chris
+Can you please ask them to clarify that DMA issue further ?
+
+Thanks,
+
+	tglx
