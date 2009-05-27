@@ -1,68 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762541AbZE0Mks@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762801AbZE0Mmk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762541AbZE0Mks (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 08:40:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752760AbZE0Mkk
+	id S1762801AbZE0Mmk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 08:42:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761876AbZE0Mmd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 08:40:40 -0400
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:43104 "EHLO e8.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751873AbZE0Mkk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 08:40:40 -0400
-Date: Wed, 27 May 2009 20:17:18 +0800
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Randy Dunlap <randy.dunlap@oracle.com>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH -tip] Documentation/accounting/getdelays.c intialize
-	the variable before using it
-Message-ID: <20090527121718.GD30062@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <1242796484.3260.12.camel@localhost.localdomain>
+	Wed, 27 May 2009 08:42:33 -0400
+Received: from keetweej.vanheusden.com ([80.126.110.251]:59796 "EHLO
+	keetweej.vanheusden.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761510AbZE0Mmc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 08:42:32 -0400
+X-Greylist: delayed 454 seconds by postgrey-1.27 at vger.kernel.org; Wed, 27 May 2009 08:42:32 EDT
+Date: Wed, 27 May 2009 14:35:00 +0200
+From: Folkert van Heusden <folkert@vanheusden.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Rodolfo Giometti <giometti@linux.it>, linux-kernel@vger.kernel.org,
+       dwmw2@infradead.org, davej@redhat.com, sam@ravnborg.org, greg@kroah.com,
+       randy.dunlap@oracle.com, kay.sievers@vrfy.org, hpa@zytor.com,
+       mingo@elte.hu, mtk.manpages@gmail.com, hch@infradead.org,
+       udovdh@xs4all.nl
+Subject: Re: [PATCH 1/1] LinuxPPS core support.
+Message-ID: <20090527123459.GI6788@vanheusden.com>
+References: <1242972753-22992-1-git-send-email-giometti@linux.it> <1242972753-22992-2-git-send-email-giometti@linux.it> <20090526163333.052026f6.akpm@linux-foundation.org> <20090527100836.48989bfc@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1242796484.3260.12.camel@localhost.localdomain>
+In-Reply-To: <20090527100836.48989bfc@lxorguk.ukuu.org.uk>
+Organization: www.unixexpert.nl
+X-Chameleon-Return-To: folkert@vanheusden.com
+X-Xfmail-Return-To: folkert@vanheusden.com
+X-Phonenumber: +31-6-41278122
+X-URL: http://www.vanheusden.com/
+X-PGP-KeyID: 1F28D8AE
+X-GPG-fingerprint: AC89 09CE 41F2 00B4 FCF2  B174 3019 0E8C 1F28 D8AE
+X-Key: http://pgp.surfnet.nl:11371/pks/lookup?op=get&search=0x1F28D8AE
+Read-Receipt-To: <folkert@vanheusden.com>
+Reply-By: Wed May 27 17:46:53 CEST 2009
+X-Message-Flag: www.unixexpert.nl
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Jaswinder Singh Rajput <jaswinder@kernel.org> [2009-05-20 10:44:44]:
+> I'm happy with this now certainly
 
-> 
-> May be in some cases cmd_type will be used uninitialized.
-> 
-> Also fixes compilation warning:
-> 
->    CC [M]  Documentation/DocBook/procfs_example.o
->   Documentation/accounting/getdelays.c: In function ???main???:
->   Documentation/accounting/getdelays.c:249: warning: ???cmd_type??? may be used uninitialized in this function
-> 
-> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> ---
->  Documentation/accounting/getdelays.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/Documentation/accounting/getdelays.c b/Documentation/accounting/getdelays.c
-> index 7ea2311..36aae3b 100644
-> --- a/Documentation/accounting/getdelays.c
-> +++ b/Documentation/accounting/getdelays.c
-> @@ -246,7 +246,7 @@ void print_ioacct(struct taskstats *t)
-> 
->  int main(int argc, char *argv[])
->  {
-> -	int c, rc, rep_len, aggr_len, len2, cmd_type;
-> +	int c, rc, rep_len, aggr_len, len2, cmd_type = TASKSTATS_CMD_ATTR_UNSPEC;
-
-Thanks. The fix seems correct
+Great to hear! So it will now be merged? For 2.6.31?
 
 
-Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+Thanks,
 
-I am away traveling with almost no time to check emails, hence I've
-been slow responding. Thanks for being patient. 
+Folkert van Heusden
 
 -- 
-	Balbir
+Ever wonder what is out there? Any alien races? Then please support
+the seti@home project: setiathome.ssl.berkeley.edu
+----------------------------------------------------------------------
+Phone: +31-6-41278122, PGP-key: 1F28D8AE, www.vanheusden.com
