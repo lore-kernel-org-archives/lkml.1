@@ -1,212 +1,228 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760636AbZE0HR5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758264AbZE0HSz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760636AbZE0HR5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 03:17:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756193AbZE0HQr
+	id S1758264AbZE0HSz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 03:18:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758765AbZE0HRF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 03:16:47 -0400
-Received: from hera.kernel.org ([140.211.167.34]:50138 "EHLO hera.kernel.org"
+	Wed, 27 May 2009 03:17:05 -0400
+Received: from claw.goop.org ([74.207.240.146]:41429 "EHLO claw.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756091AbZE0HQp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 03:16:45 -0400
-Date: Wed, 27 May 2009 07:16:03 GMT
-From: tip-bot for Arnaldo Carvalho de Melo <acme@redhat.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, acme@redhat.com,
-       hpa@zytor.com, mingo@redhat.com, jkacur@redhat.com,
-       a.p.zijlstra@chello.nl, efault@gmx.de, rostedt@goodmis.org,
-       mtosatti@redhat.com, tglx@linutronix.de, cjashfor@linux.vnet.ibm.com,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, jkacur@redhat.com, a.p.zijlstra@chello.nl,
-       efault@gmx.de, rostedt@goodmis.org, mtosatti@redhat.com,
-       tglx@linutronix.de, cjashfor@linux.vnet.ibm.com, mingo@elte.hu
-In-Reply-To: <20090526222057.GI4424@ghostprotocols.net>
-References: <20090526222057.GI4424@ghostprotocols.net>
-Subject: [tip:perfcounters/core] perf report: Use hex2long instead of sscanf
-Message-ID: <tip-d8d1656ee15d3085e0085a87e70f9093a0a102c5@git.kernel.org>
-Git-Commit-ID: d8d1656ee15d3085e0085a87e70f9093a0a102c5
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 27 May 2009 07:16:05 +0000 (UTC)
+	id S1754385AbZE0HRC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 03:17:02 -0400
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>, Greg KH <gregkh@suse.de>,
+       Jens Axboe <jens.axboe@oracle.com>, Chris Wright <chrisw@redhat.com>,
+       kurt.hackel@oracle.com, Andrew Morton <akpm@linux-foundation.org>,
+       Ky Srinivasan <ksrinivasan@novell.com>, Beulich <jbeulich@novell.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ian Campbell <ian.campbell@citrix.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Subject: [PATCH 09/16] xen: implement XENMEM_machphys_mapping
+Date: Wed, 27 May 2009 00:15:31 -0700
+Message-Id: <1243408538-21100-10-git-send-email-jeremy@goop.org>
+X-Mailer: git-send-email 1.6.0.6
+In-Reply-To: <1243408538-21100-1-git-send-email-jeremy@goop.org>
+References: <1243408538-21100-1-git-send-email-jeremy@goop.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  d8d1656ee15d3085e0085a87e70f9093a0a102c5
-Gitweb:     http://git.kernel.org/tip/d8d1656ee15d3085e0085a87e70f9093a0a102c5
-Author:     Arnaldo Carvalho de Melo <acme@redhat.com>
-AuthorDate: Tue, 26 May 2009 19:20:57 -0300
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 27 May 2009 09:10:35 +0200
+From: Ian Campbell <ian.campbell@citrix.com>
 
-perf report: Use hex2long instead of sscanf
+This hypercall allows Xen to specify a non-default location for the
+machine to physical mapping. This capability is used when running a 32
+bit domain 0 on a 64 bit hypervisor to shrink the hypervisor hole to
+exactly the size required.
 
-Before:
+[ Impact: add Xen hypercall definitions ]
 
-[acme@emilia ~]$ perf record -o perf_report.perf perf stat perf report > /dev/null
-
- Performance counter stats for 'perf':
-
-     245.414985  task clock ticks     (msecs)
-              6  context switches     (events)
-              6  CPU migrations       (events)
-           2108  pagefaults           (events)
-       37493013  CPU cycles           (events)  (scaled from 67.04%)
-       13576789  instructions         (events)  (scaled from 66.76%)
-          57931  cache references     (events)  (scaled from 21.96%)
-          12263  cache misses         (events)  (scaled from 21.98%)
-
- Wall-clock time elapsed:   246.575587 msecs
-
-[acme@emilia ~]$ perf report -i perf_report.perf | head
-12.15          perf [.] 0x000000000005432a /lib64/libc-2.5.so: _IO_vfscanf_internal
- 9.38          perf [k] 0xffffffff8101b1d2 intel_pmu_enable_all
- 8.53          perf [.] 0x00000000000056b8 /home/acme/git/linux-2.6-tip/Documentation/perf_counter/perf: dso__insert_symbol
- 6.61          perf [.] 0x00000000000057cb /home/acme/git/linux-2.6-tip/Documentation/perf_counter/perf: dso__find_symbol
- 5.33          perf [k] 0xffffffff811ce082 number
- 4.69          perf [.] 0x0000000000034829 /lib64/libc-2.5.so: ____strtoull_l_internal
- 4.48          perf [.] 0x0000000000006505 /home/acme/git/linux-2.6-tip/Documentation/perf_counter/perf: thread__symbol_incnew
- 3.41          perf [.] 0x000000000000fce6 /home/acme/git/linux-2.6-tip/Documentation/perf_counter/perf: rb_insert_color
- 3.20          perf [k] 0xffffffff811cfc01 vsnprintf
- 2.99          perf [k] 0xffffffff811ce5e8 format_decode
-
-After:
-
-[acme@emilia ~]$ perf record -o perf_report.perf perf stat perf report > /dev/null
-
- Performance counter stats for 'perf':
-
-     218.186805  task clock ticks     (msecs)
-              4  context switches     (events)
-              7  CPU migrations       (events)
-           2133  pagefaults           (events)
-       32735365  CPU cycles           (events)  (scaled from 67.04%)
-       11952309  instructions         (events)  (scaled from 66.26%)
-          50314  cache references     (events)  (scaled from 21.96%)
-          13228  cache misses         (events)  (scaled from 21.98%)
-
- Wall-clock time elapsed:   218.810451 msecs
-
-[acme@emilia ~]$ perf report -i perf_report.perf | head
-10.68          perf [.] 0x000000000000578d /home/acme/git/linux-2.6-tip/Documentation/perf_counter/perf: dso__find_symbol
- 9.62          perf [.] 0x00000000000065f7 /home/acme/git/linux-2.6-tip/Documentation/perf_counter/perf: thread__symbol_incnew
- 9.40          perf [.] 0x00000000000056b4 /home/acme/git/linux-2.6-tip/Documentation/perf_counter/perf: dso__insert_symbol
- 9.19          perf [k] 0xffffffff8101b1d2 intel_pmu_enable_all
- 5.13          perf [.] 0x0000000000005ec7 /home/acme/git/linux-2.6-tip/Documentation/perf_counter/perf: hex2long
- 4.49          perf [k] 0xffffffff81083808 kallsyms_expand_symbol
- 3.85          perf [k] 0xffffffff811ce2c1 number
- 3.63          perf [.] 0x0000000000005e81 /home/acme/git/linux-2.6-tip/Documentation/perf_counter/perf: hex
- 2.99          perf [.] 0x000000000000fd5b /home/acme/git/linux-2.6-tip/Documentation/perf_counter/perf: rb_insert_color
- 2.99          perf [k] 0xffffffff811cf251 string
-[acme@emilia ~]$
-
-[ Impact: optimization ]
-
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-Cc: Marcelo Tosatti <mtosatti@redhat.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: John Kacur <jkacur@redhat.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-LKML-Reference: <20090526222057.GI4424@ghostprotocols.net>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
+Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- Documentation/perf_counter/builtin-report.c |   63 +++++++++++++++++++++------
- 1 files changed, 50 insertions(+), 13 deletions(-)
+ arch/x86/include/asm/xen/interface.h    |    6 +++---
+ arch/x86/include/asm/xen/interface_32.h |    5 +++++
+ arch/x86/include/asm/xen/interface_64.h |   13 +------------
+ arch/x86/include/asm/xen/page.h         |    7 ++++---
+ arch/x86/xen/enlighten.c                |    7 +++++++
+ arch/x86/xen/mmu.c                      |   15 +++++++++++++++
+ include/xen/interface/memory.h          |   13 +++++++++++++
+ 7 files changed, 48 insertions(+), 18 deletions(-)
 
-diff --git a/Documentation/perf_counter/builtin-report.c b/Documentation/perf_counter/builtin-report.c
-index a4c6ffa..c517483 100644
---- a/Documentation/perf_counter/builtin-report.c
-+++ b/Documentation/perf_counter/builtin-report.c
-@@ -348,6 +348,39 @@ void dsos__fprintf(FILE *fp)
- 		dso__fprintf(pos, fp);
+diff --git a/arch/x86/include/asm/xen/interface.h b/arch/x86/include/asm/xen/interface.h
+index e8506c1..1c10c88 100644
+--- a/arch/x86/include/asm/xen/interface.h
++++ b/arch/x86/include/asm/xen/interface.h
+@@ -61,9 +61,9 @@ DEFINE_GUEST_HANDLE(void);
+ #define HYPERVISOR_VIRT_START mk_unsigned_long(__HYPERVISOR_VIRT_START)
+ #endif
+ 
+-#ifndef machine_to_phys_mapping
+-#define machine_to_phys_mapping ((unsigned long *)HYPERVISOR_VIRT_START)
+-#endif
++#define MACH2PHYS_VIRT_START  mk_unsigned_long(__MACH2PHYS_VIRT_START)
++#define MACH2PHYS_VIRT_END    mk_unsigned_long(__MACH2PHYS_VIRT_END)
++#define MACH2PHYS_NR_ENTRIES  ((MACH2PHYS_VIRT_END-MACH2PHYS_VIRT_START)>>__MACH2PHYS_SHIFT)
+ 
+ /* Maximum number of virtual CPUs in multi-processor guests. */
+ #define MAX_VIRT_CPUS 32
+diff --git a/arch/x86/include/asm/xen/interface_32.h b/arch/x86/include/asm/xen/interface_32.h
+index 42a7e00..8413688 100644
+--- a/arch/x86/include/asm/xen/interface_32.h
++++ b/arch/x86/include/asm/xen/interface_32.h
+@@ -32,6 +32,11 @@
+ /* And the trap vector is... */
+ #define TRAP_INSTR "int $0x82"
+ 
++#define __MACH2PHYS_VIRT_START 0xF5800000
++#define __MACH2PHYS_VIRT_END   0xF6800000
++
++#define __MACH2PHYS_SHIFT      2
++
+ /*
+  * Virtual addresses beyond this are not modifiable by guest OSes. The
+  * machine->physical mapping table starts at this address, read-only.
+diff --git a/arch/x86/include/asm/xen/interface_64.h b/arch/x86/include/asm/xen/interface_64.h
+index 100d266..839a481 100644
+--- a/arch/x86/include/asm/xen/interface_64.h
++++ b/arch/x86/include/asm/xen/interface_64.h
+@@ -39,18 +39,7 @@
+ #define __HYPERVISOR_VIRT_END   0xFFFF880000000000
+ #define __MACH2PHYS_VIRT_START  0xFFFF800000000000
+ #define __MACH2PHYS_VIRT_END    0xFFFF804000000000
+-
+-#ifndef HYPERVISOR_VIRT_START
+-#define HYPERVISOR_VIRT_START mk_unsigned_long(__HYPERVISOR_VIRT_START)
+-#define HYPERVISOR_VIRT_END   mk_unsigned_long(__HYPERVISOR_VIRT_END)
+-#endif
+-
+-#define MACH2PHYS_VIRT_START  mk_unsigned_long(__MACH2PHYS_VIRT_START)
+-#define MACH2PHYS_VIRT_END    mk_unsigned_long(__MACH2PHYS_VIRT_END)
+-#define MACH2PHYS_NR_ENTRIES  ((MACH2PHYS_VIRT_END-MACH2PHYS_VIRT_START)>>3)
+-#ifndef machine_to_phys_mapping
+-#define machine_to_phys_mapping ((unsigned long *)HYPERVISOR_VIRT_START)
+-#endif
++#define __MACH2PHYS_SHIFT       3
+ 
+ /*
+  * int HYPERVISOR_set_segment_base(unsigned int which, unsigned long base)
+diff --git a/arch/x86/include/asm/xen/page.h b/arch/x86/include/asm/xen/page.h
+index bf5f7d3..d5fb2e8 100644
+--- a/arch/x86/include/asm/xen/page.h
++++ b/arch/x86/include/asm/xen/page.h
+@@ -5,6 +5,7 @@
+ #include <linux/types.h>
+ #include <linux/spinlock.h>
+ #include <linux/pfn.h>
++#include <linux/mm.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/page.h>
+@@ -35,6 +36,8 @@ typedef struct xpaddr {
+ #define MAX_DOMAIN_PAGES						\
+     ((unsigned long)((u64)CONFIG_XEN_MAX_DOMAIN_MEMORY * 1024 * 1024 * 1024 / PAGE_SIZE))
+ 
++extern unsigned long *machine_to_phys_mapping;
++extern unsigned int   machine_to_phys_order;
+ 
+ extern unsigned long get_phys_to_machine(unsigned long pfn);
+ extern void set_phys_to_machine(unsigned long pfn, unsigned long mfn);
+@@ -62,10 +65,8 @@ static inline unsigned long mfn_to_pfn(unsigned long mfn)
+ 	if (xen_feature(XENFEAT_auto_translated_physmap))
+ 		return mfn;
+ 
+-#if 0
+ 	if (unlikely((mfn >> machine_to_phys_order) != 0))
+-		return max_mapnr;
+-#endif
++		return ~0;
+ 
+ 	pfn = 0;
+ 	/*
+diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
+index f15a555..339163f 100644
+--- a/arch/x86/xen/enlighten.c
++++ b/arch/x86/xen/enlighten.c
+@@ -65,6 +65,11 @@ DEFINE_PER_CPU(struct vcpu_info, xen_vcpu_info);
+ enum xen_domain_type xen_domain_type = XEN_NATIVE;
+ EXPORT_SYMBOL_GPL(xen_domain_type);
+ 
++unsigned long *machine_to_phys_mapping = (void *)MACH2PHYS_VIRT_START;
++EXPORT_SYMBOL(machine_to_phys_mapping);
++unsigned int   machine_to_phys_order;
++EXPORT_SYMBOL(machine_to_phys_order);
++
+ struct start_info *xen_start_info;
+ EXPORT_SYMBOL_GPL(xen_start_info);
+ 
+@@ -979,6 +984,8 @@ asmlinkage void __init xen_start_kernel(void)
+ 
+ 	xen_setup_features();
+ 
++	xen_setup_machphys_mapping();
++
+ 	/* Install Xen paravirt ops */
+ 	pv_info = xen_info;
+ 	pv_init_ops = xen_init_ops;
+diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
+index 48806c5..05cfd30 100644
+--- a/arch/x86/xen/mmu.c
++++ b/arch/x86/xen/mmu.c
+@@ -57,6 +57,7 @@
+ #include <xen/page.h>
+ #include <xen/interface/xen.h>
+ #include <xen/interface/version.h>
++#include <xen/interface/memory.h>
+ #include <xen/hvc-console.h>
+ 
+ #include "multicalls.h"
+@@ -1729,6 +1730,20 @@ static __init void xen_map_identity_early(pmd_t *pmd, unsigned long max_pfn)
+ 	set_page_prot(pmd, PAGE_KERNEL_RO);
  }
  
-+static int hex(char ch)
++void __init xen_setup_machphys_mapping(void)
 +{
-+	if ((ch >= '0') && (ch <= '9'))
-+		return ch - '0';
-+	if ((ch >= 'a') && (ch <= 'f'))
-+		return ch - 'a' + 10;
-+	if ((ch >= 'A') && (ch <= 'F'))
-+		return ch - 'A' + 10;
-+	return -1;
++	struct xen_machphys_mapping mapping;
++	unsigned long machine_to_phys_nr_ents;
++
++	if (HYPERVISOR_memory_op(XENMEM_machphys_mapping, &mapping) == 0) {
++		machine_to_phys_mapping = (unsigned long *)mapping.v_start;
++		machine_to_phys_nr_ents = mapping.max_mfn + 1;
++	} else {
++		machine_to_phys_nr_ents = MACH2PHYS_NR_ENTRIES;
++	}
++	machine_to_phys_order = fls(machine_to_phys_nr_ents - 1);
 +}
++
+ #ifdef CONFIG_X86_64
+ static void convert_pfn_mfn(void *v)
+ {
+diff --git a/include/xen/interface/memory.h b/include/xen/interface/memory.h
+index e6c6bcb..f548f7c 100644
+--- a/include/xen/interface/memory.h
++++ b/include/xen/interface/memory.h
+@@ -97,6 +97,19 @@ struct xen_machphys_mfn_list {
+ DEFINE_GUEST_HANDLE_STRUCT(xen_machphys_mfn_list);
+ 
+ /*
++ * Returns the location in virtual address space of the machine_to_phys
++ * mapping table. Architectures which do not have a m2p table, or which do not
++ * map it by default into guest address space, do not implement this command.
++ * arg == addr of xen_machphys_mapping_t.
++ */
++#define XENMEM_machphys_mapping     12
++struct xen_machphys_mapping {
++    unsigned long v_start, v_end; /* Start and end virtual addresses.   */
++    unsigned long max_mfn;        /* Maximum MFN that can be looked up. */
++};
++DEFINE_GUEST_HANDLE_STRUCT(xen_machphys_mapping_t);
 +
 +/*
-+ * While we find nice hex chars, build a long_val.
-+ * Return number of chars processed.
-+ */
-+int hex2long(char *ptr, unsigned long *long_val)
-+{
-+	const char *p = ptr;
-+	*long_val = 0;
-+
-+	while (*p) {
-+		const int hex_val = hex(*p);
-+
-+		if (hex_val < 0)
-+			break;
-+
-+		*long_val = (*long_val << 4) | hex_val;
-+		p++;
-+	}
-+
-+	return p - ptr;
-+}
-+
- static int load_kallsyms(void)
- {
- 	kernel_dso = dso__new("[kernel]");
-@@ -363,26 +396,30 @@ static int load_kallsyms(void)
- 	size_t n;
- 
- 	while (!feof(file)) {
--		unsigned long long start;
--		char c, symbf[4096];
--
--		if (getline(&line, &n, file) < 0)
-+		unsigned long start;
-+		int line_len = getline(&line, &n, file);
-+		if (line_len < 0)
- 			break;
- 
- 		if (!line)
- 			goto out_delete_dso;
- 
--		if (sscanf(line, "%llx %c %s", &start, &c, symbf) == 3) {
--			/*
--			 * Well fix up the end later, when we have all sorted.
--			 */
--			struct symbol *sym = symbol__new(start, 0xdead, symbf);
-+		line[--line_len] = '\0'; /* \n */
-+
-+		int len = hex2long(line, &start);
-+		
-+		len += 3; /* ' t ' */
-+		if (len >= line_len)
-+			continue;
-+		/*
-+		 * Well fix up the end later, when we have all sorted.
-+		 */
-+		struct symbol *sym = symbol__new(start, 0xdead, line + len);
- 
--			if (sym == NULL)
--				goto out_delete_dso;
-+		if (sym == NULL)
-+			goto out_delete_dso;
- 
--			dso__insert_symbol(kernel_dso, sym);
--		}
-+		dso__insert_symbol(kernel_dso, sym);
- 	}
- 
- 	/*
+  * Sets the GPFN at which a particular page appears in the specified guest's
+  * pseudophysical address space.
+  * arg == addr of xen_add_to_physmap_t.
+-- 
+1.6.0.6
+
