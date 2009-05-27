@@ -1,106 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762020AbZE0Vuh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759556AbZE0WCS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762020AbZE0Vuh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 17:50:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753365AbZE0Vu3
+	id S1759556AbZE0WCS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 18:02:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752433AbZE0WCH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 17:50:29 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:44785 "EHLO mx2.redhat.com"
+	Wed, 27 May 2009 18:02:07 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:47439 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751503AbZE0Vu2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 17:50:28 -0400
-Date: Wed, 27 May 2009 23:45:57 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Roland McGrath <roland@redhat.com>
-Cc: Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH 8/X] ptrace: introduce ptrace_tracer() helper
-Message-ID: <20090527214557.GB6770@redhat.com>
-References: <20090525000016.GA2239@redhat.com> <20090525215903.GA9113@redhat.com> <20090525223932.GA11508@redhat.com> <20090527024540.177FAFC36B@magilla.sf.frob.com>
+	id S1751514AbZE0WCG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 18:02:06 -0400
+Date: Thu, 28 May 2009 00:01:19 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>, Greg KH <gregkh@suse.de>,
+       Jens Axboe <jens.axboe@oracle.com>, Chris Wright <chrisw@redhat.com>,
+       kurt.hackel@oracle.com, Andrew Morton <akpm@linux-foundation.org>,
+       Ky Srinivasan <ksrinivasan@novell.com>, Beulich <jbeulich@novell.com>,
+       Avi Kivity <avi@redhat.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Subject: Re: [PATCH 17/17] xen: disable MSI
+Message-ID: <20090527220119.GA9555@elte.hu>
+References: <1243409850-21577-1-git-send-email-jeremy@goop.org> <1243409850-21577-18-git-send-email-jeremy@goop.org> <alpine.LFD.2.01.0905270829530.3435@localhost.localdomain> <20090527211828.GA6166@elte.hu> <alpine.LFD.2.01.0905271436140.3435@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090527024540.177FAFC36B@magilla.sf.frob.com>
+In-Reply-To: <alpine.LFD.2.01.0905271436140.3435@localhost.localdomain>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/26, Roland McGrath wrote:
->
-> > Introduce ptrace_tracer() (or suggest a better name) to simplify/cleanup
-> > the code which needs the tracer and checks task_ptrace(). From now nobody
-> > else uses ->pt_tracer except ptrace_link/ptrace_unlink.
->
-> There is nothing really wrong with this.  But I think that this stuff will
-> get sufficiently reworked again differently later on if it's converted to
-> use utrace that this incremental cleanup may not really help any.
 
-Yes, but currently this change really makes the code look better. Just look
-at this
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
--       if (task_ptrace(child) && child->ptrace_task->pt_tracer == current) {
-+       if (ptrace_tracer(child) == current) {
+> On Wed, 27 May 2009, Ingo Molnar wrote:
+> > 
+> > hm, i have to concur. Too often it ends up splitting attention 
+> > away from the title of the commit. I do reject (or fix up) bad 
+> > impact lines - will stop doing them altogether if you think 
+> > there's a net downside to them ...
+> 
+> I actually think that if there is a good reason for them, they can 
+> stay.
+> 
+> Just don't make it one of those "every commit that goes through me 
+> has to have one".
+> 
+> Pu another way: if they actually add value in highlighting the 
+> commits that _should_ stand out, then hey, by all means, keep such 
+> ones. I would not at all object if it was an issue of
+> 
+>  [ Impact: fix bugzilla entry 455123 ]
+> 
+> or
+> 
+>  [ Impact: fix user-triggerable oops ]
+> 
+> or something that actually matters, and that you _want_ to stand 
+> out, and that you may well _want_ to grep for.
+> 
+> It's when the whole series has them, and they don't add anything 
+> that isn't better said in the summary line, _that's_ what I 
+> dislike.
+> 
+> So to take the above bugzilla example: it really wouldn't be a 
+> good summary line (because the summary line should describe what 
+> the commit does, not point to some bugzilla entry), but at the 
+> same time it's clearly something that I do think we might want to 
+> automate the logs for.
+> 
+> IOW, that is something even I personally wouldn't mind adding to a 
+> commit, to help people like Rafael that track bugzilla. It makes 
+> sense as a special marker, even though it clearly _shoudln't_ be 
+> the summary. See?
+> 
+> Similarly, the "user-triggerable oops" might well be worth 
+> high-lighting in some manner. Now, the summary _might_ talk about 
+> it, but equally well the summary might be more specific in the 
+> actual implementation issue, and then perhaps the impact line is 
+> worth it.
+> 
+> But if all commits have them (at least for the x86-tip), then it's 
+> not a really highlight event any more, is it? At that point, 
+> anything it says is probably just as well described by the summary 
+> line - at least for any "regular" commits that aren't in some way 
+> worth the extra attention.
 
-change. But yes, these cosmetic changes will likely be reconsidered
-later. The same for s/task->ptrace/task_ptrace(task)/ changes.
+ok.
 
-> > Question. Note that ptrace_tracer() is equal to tracehook_tracer_task().
-> > But I do not understand the future plans for tracehook_tracer_task().
-> > Should we just use tracehook_tracer_task() ? If yes, how
-> > ptrace_reparented() can use this helper?
->
-> It seems likely that we will rework tracehook_tracer_task() later.
-> It has three kinds of callers:
->
-> 1. task_state() for "TracerPid:" line.
->    It remains to be seen if we want to make some hookified way that might
->    ever have a non-ptrace tracer supply the value here.  This was the main
->    original expectation of what tracehook_tracer_task() would do.
-> 2. check_mem_permission()
->    I've already suggested to you that I think we want to swallow this
->    use as part of the clean-up/replacement of ptrace_may_access().
-> 3. SELinux: selinux_bprm_set_creds(), selinux_setprocattr()
->    It makes sure that "PROCESS PTRACE" tracer->tracee avc checks can
->    inhibit the transition (exec/setprocattr call).
->
-> For each of these, we have yet to hash out whether we will only ever want a
-> cleaned-up ptrace support here, or if in a future generalized tracing setup
-> like utrace these should be hooks that some non-ptrace kind of tracer
-> facility could also supply.  Figuring any piece of all that out is way
-> beyond the simple data structure cleanup phase.  I don't think we want to
-> get into any of that quite yet.
+Beyond impact lines for bugfixes, there's one other 'bulk' impact 
+line that i find pretty important - the most boring and most 
+repetitive ones:
 
-So, I assume it is better to not use tracehook_tracer_task() and add
-another helper like this patch does.
+   Impact: cleanup
 
-> > +	parent = ptrace_tracer(tsk);
-> > +	if (likely(!parent))
-> >  		parent = tsk->real_parent;
->
-> This likely() doesn't buy much anyway, I'd just write the shorter:
->
-> 	parent = ptrace_tracer(task) ?: tsk->real_parent;
+Sometimes also in the form of:
 
-OK,
+   Impact: refactor code
 
-> >  static inline int may_ptrace_stop(void)
-> >  {
-> > -	if (!likely(task_ptrace(current)))
-> > +	struct task_struct *tracer = ptrace_tracer(current);
-> > +
-> > +	if (!likely(tracer))
-> >  		return 0;
->
-> Is there a particular rationale to checking ptrace_tracer() != NULL vs
-> task_ptrace() != 0?
+It signals a conscious "this is not intended to have direct side 
+effects" marker. It's mis-used sometimes - but the ones i add tend 
+to be very specific (and common) type of patches.
 
-No, except the code looks better, imho.
+Obviously for any buggy commit that designation will be patently 
+false: but then again every commit in the kernel claims and intends 
+to be bug free - still a significant proportion, 2-3% of all 
+upstream kernel commits are buggy ;-)
 
-> Or is it just that they should already be guaranteed
-> synonymous, and here you have use for the tracer pointer a few lines later?
+So later on it makes it easy to see how much of an known impact a 
+commit was supposed to have - and whether a badness/misbehavior was 
+intended or not. (It also makes it easier for me to chastise repeat 
+offenders who send 'cleanup' patches which are all but.)
 
-Yes.
+The 'cleanups which are not' tend to contain the most surprising 
+bugs (because those tend to be the most unexpected bugs - commits 
+marked known-dangerous tend not to surprise anyone if they break), 
+so i think it makes sense to delineate that category sharply, and 
+observe (and enforce) safe coding techniques for 
+cleanup/code-preparation patches.
 
-Oleg.
+That concept works great for us in arch/x86, we tend to be less and 
+less surprised about what kind of commits produce what kinds of 
+bugs.
 
+The impact-line quality of non-cleanup and non-bugfix patches tends 
+to be the poorest. And for them there's no surprise generally if 
+there's some unexpected impact.
+
+	Ingo
