@@ -1,46 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759556AbZE0VhK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760067AbZE0Vi7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759556AbZE0VhK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 17:37:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751857AbZE0Vg7
+	id S1760067AbZE0Vi7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 17:38:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755428AbZE0Vit
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 17:36:59 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:39234 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751514AbZE0Vg7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 17:36:59 -0400
-Date: Wed, 27 May 2009 23:32:22 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Roland McGrath <roland@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] ptrace: do_notify_parent_cldstop: fix the wrong
-	->nsproxy usage
-Message-ID: <20090527213222.GA6770@redhat.com>
-References: <20090525185502.GA20781@redhat.com> <20090526210514.C1C91FC2BD@magilla.sf.frob.com>
+	Wed, 27 May 2009 17:38:49 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:54880 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753736AbZE0Vis (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 17:38:48 -0400
+Date: Wed, 27 May 2009 17:38:50 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+cc: Kay Sievers <kay.sievers@vrfy.org>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       SCSI development list <linux-scsi@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Tejun Heo <tj@kernel.org>, Cornelia Huck <cornelia.huck@de.ibm.com>,
+       <linux-fsdevel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>
+Subject: Re: [PATCH 25/20] sysfs: Only support removing emtpy sysfs  directories.
+In-Reply-To: <m1hbz69zfd.fsf@fess.ebiederm.org>
+Message-ID: <Pine.LNX.4.44L0.0905271736460.2669-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090526210514.C1C91FC2BD@magilla.sf.frob.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/26, Roland McGrath wrote:
->
-> Acked-by: Roland McGrath <roland@redhat.com>
+On Wed, 27 May 2009, Eric W. Biederman wrote:
 
-I didn't remove this ack to remind Andrew about this patch ;)
+> Alan Stern <stern@rowland.harvard.edu> writes:
+> 
+> >
+> > As fas as I know, they can't.  Instead, they can cause the SCSI layer 
+> > to unregister a sysfs directory containing a child directory.  :-)
+> >
+> > Basically, a user program can delay removal of the child (i.e., the
+> > target) directory indefinitely, because currently the target isn't
+> > unregistered when all its children are removed -- it's unregistered
+> > when all its children are _released_.
+> 
+> Ok.  Is this opens of /dev/sda1 and the like that are being held open by
+> userspace that are potentially causing problems?
 
-> ptrace_notify, ptrace_signal,
+Yes, plus any other mechanism for preventing a struct device's refcount 
+from going to 0.
 
-Actually, ptrace_signal() is fine wrt pid_ns. task_pid_vnr(current->parent)
-returns 0 if the tracer is not seen from the tracee's namespace, this is
-correct. So, afaics only ptrace_notify() needs the (low priority) fix.
+> I think I have the fix to that...
 
-Oleg.
+The fix is to delete the target when its children are deleted, and not
+wait until the children are released.
+
+Alan Stern
 
