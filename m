@@ -1,112 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758137AbZE0CAk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757175AbZE0CHs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758137AbZE0CAk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 22:00:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755210AbZE0CA3
+	id S1757175AbZE0CHs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 22:07:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754067AbZE0CHk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 22:00:29 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:52213 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1755173AbZE0CA2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 22:00:28 -0400
-Message-ID: <4A1C9DFF.70708@cn.fujitsu.com>
-Date: Wed, 27 May 2009 09:57:19 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: paulmck@linux.vnet.ibm.com
-CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, mingo@elte.hu,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       davem@davemloft.net, dada1@cosmosbay.com, zbr@ioremap.net,
-       jeff.chua.linux@gmail.com, paulus@samba.org, jengelh@medozas.de,
-       r000n@r000n.net, benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
-Subject: Re: [PATCH RFC] v7 expedited "big hammer" RCU grace periods
-References: <20090522190525.GA13286@linux.vnet.ibm.com> <4A1A3C23.8090004@cn.fujitsu.com> <20090525164446.GD7168@linux.vnet.ibm.com> <4A1B3FFB.7090306@cn.fujitsu.com> <20090526012843.GF7168@linux.vnet.ibm.com> <20090526154625.GA8662@linux.vnet.ibm.com>
-In-Reply-To: <20090526154625.GA8662@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Tue, 26 May 2009 22:07:40 -0400
+Received: from cmpxchg.org ([85.214.51.133]:41305 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753988AbZE0CHk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 22:07:40 -0400
+Date: Wed, 27 May 2009 04:06:37 +0200
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC][PATCH 5/5] (experimental) chase and free cache only swap
+Message-ID: <20090527020637.GA9863@cmpxchg.org>
+References: <20090526121259.b91b3e9d.kamezawa.hiroyu@jp.fujitsu.com> <20090526121834.dd9a4193.kamezawa.hiroyu@jp.fujitsu.com> <20090526181359.GB2843@cmpxchg.org> <20090527090813.a0e436f8.kamezawa.hiroyu@jp.fujitsu.com> <20090527012658.GA9692@cmpxchg.org> <20090527103107.9c04eb55.kamezawa.hiroyu@jp.fujitsu.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090527103107.9c04eb55.kamezawa.hiroyu@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul E. McKenney wrote:
+On Wed, May 27, 2009 at 10:31:07AM +0900, KAMEZAWA Hiroyuki wrote:
+> On Wed, 27 May 2009 03:26:58 +0200
+> Johannes Weiner <hannes@cmpxchg.org> wrote:
 > 
-> I am concerned about the following sequence of events:
+> > On Wed, May 27, 2009 at 09:08:13AM +0900, KAMEZAWA Hiroyuki wrote:
+> > > On Tue, 26 May 2009 20:14:00 +0200
+> > > Johannes Weiner <hannes@cmpxchg.org> wrote:
+> > > 
+> > > > On Tue, May 26, 2009 at 12:18:34PM +0900, KAMEZAWA Hiroyuki wrote:
+> > > > > 
+> > > > > From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > > > > 
+> > > > > Just a trial/example patch.
+> > > > > I'd like to consider more. Better implementation idea is welcome.
+> > > > > 
+> > > > > When the system does swap-in/swap-out repeatedly, there are 
+> > > > > cache-only swaps in general.
+> > > > > Typically,
+> > > > >  - swapped out in past but on memory now while vm_swap_full() returns true
+> > > > > pages are cache-only swaps. (swap_map has no references.)
+> > > > > 
+> > > > > This cache-only swaps can be an obstacles for smooth page reclaiming.
+> > > > > Current implemantation is very naive, just scan & free.
+> > > > 
+> > > > I think we can just remove that vm_swap_full() check in do_swap_page()
+> > > > and try to remove the page from swap cache unconditionally.
+> > > > 
+> > > I'm not sure why reclaim swap entry only at write fault.
+> > 
+> > How do you come to that conclusion?  Do you mean the current code does
+> > that? 
+> yes.
 > 
-> o	synchronize_sched_expedited() disables preemption, thus blocking
-> 	offlining operations.
-> 
-> o	CPU 1 starts offlining CPU 0.  It acquires the CPU-hotplug lock,
-> 	and proceeds, and is now waiting for preemption to be enabled.
-> 
-> o	synchronize_sched_expedited() disables preemption, sees
-> 	that CPU 0 is online, so initializes and queues a request,
-> 	does a wake-up-process(), and finally does a preempt_enable().
-> 
-> o	CPU 0 is currently running a high-priority real-time process,
-> 	so the wakeup does not immediately happen.
-> 
-> o	The offlining process completes, including the kthread_stop()
-> 	to the migration task.
-> 
-> o	The migration task wakes up, sees kthread_should_stop(),
-> 	and so exits without checking its queue.
-> 
-> o	synchronize_sched_expedited() waits forever for CPU 0 to respond.
-> 
-> I suppose that one way to handle this would be to check for the CPU
-> going offline before doing the wait_for_completion(), but I am concerned
-> about races affecting this check as well.
-> 
-> Or is there something in the CPU-offline process that makes the above
-> sequence of events impossible?
-> 
-> 							Thanx, Paul
-> 
-> 
+> 2474         pte = mk_pte(page, vma->vm_page_prot);
+> 2475         if (write_access && reuse_swap_page(page)) {
+> 2476                 pte = maybe_mkwrite(pte_mkdirty(pte), vma);
+> 2477                 write_access = 0;
+> 2478         }
 
-I realized this, I wrote this:
-> 
-> The coupling of synchronize_sched_expedited() and migration_req
-> is largely increased:
-> 
-> 1) The offline cpu's per_cpu(rcu_migration_req, cpu) is handled.
->    See migration_call::CPU_DEAD
+Ahh.  But further down after installing the PTE, it does
 
-synchronize_sched_expedited() will not wait for CPU#0, because
-migration_call()::case CPU_DEAD wakes up the requestors.
+	swap_free(entry);
+	if (vm_swap_full() || (vma->vm_flags & VM_LOCKED) || PageMlocked(page))
+	        try_to_free_swap(page);
+	unlock_page(page);
 
-migration_call()
-{
-	...
-	case CPU_DEAD:
-	case CPU_DEAD_FROZEN:
-		...
-		/*
-		 * No need to migrate the tasks: it was best-effort if
-		 * they didn't take sched_hotcpu_mutex. Just wake up
-		 * the requestors.
-		 */
-		spin_lock_irq(&rq->lock);
-		while (!list_empty(&rq->migration_queue)) {
-			struct migration_req *req;
+You are right, it tries to reuse the page and free the swap slot for
+writes, but later it removes the swap reference from the pte and then
+tries to free the slot again, also for reads.
 
-			req = list_entry(rq->migration_queue.next,
-					 struct migration_req, list);
-			list_del_init(&req->list);
-			spin_unlock_irq(&rq->lock);
-			complete(&req->done);
-			spin_lock_irq(&rq->lock);
-		}
-		spin_unlock_irq(&rq->lock);
-		...
-	...
-}
-
-My approach depend on the requestors are waked up at any case.
-migration_call() does it for us but the coupling is largely
-increased.
-
-Lai
-
+My suggestion was to remove these checks in the second attempt and
+just try regardless of swap usage or mlock.  I just sent out a patch
+that does that.
