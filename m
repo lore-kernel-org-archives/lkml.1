@@ -1,68 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757834AbZE0Dkv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758946AbZE0Dlk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757834AbZE0Dkv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 23:40:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756890AbZE0Dko
+	id S1758946AbZE0Dlk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 23:41:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756659AbZE0Dlc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 23:40:44 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:40334 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755703AbZE0Dkn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 23:40:43 -0400
-Date: Wed, 27 May 2009 13:40:40 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: linux-next: mtd tree build failure
-Message-Id: <20090527134040.941b38a7.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__27_May_2009_13_40_40_+1000_TQwY8zmJIPAJJXU1"
+	Tue, 26 May 2009 23:41:32 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:65510 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1756291AbZE0Dlb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 23:41:31 -0400
+Message-ID: <4A1CB6B6.2070607@cn.fujitsu.com>
+Date: Wed, 27 May 2009 11:42:46 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>
+CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH 3/3 -v2] tracing/stat: do some cleanups
+References: <4A1CADBA.7000707@cn.fujitsu.com> <4A1CADE5.2090508@cn.fujitsu.com>
+In-Reply-To: <4A1CADE5.2090508@cn.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__27_May_2009_13_40_40_+1000_TQwY8zmJIPAJJXU1
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+- remove duplicate code in stat_seq_init()
+- update comments to reflect the change from stat list to stat rbtree
 
-Hi David,
+[ Impact: clean up ]
 
-Today's linux-next build (x86_64 allmodconfig) failed like this:
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+---
 
-drivers/mtd/maps/dilnetpc.c: In function 'init_dnpc':
-drivers/mtd/maps/dilnetpc.c:448: error: 'struct mtd_partition' has no membe=
-r named 'mtdp'
-drivers/mtd/maps/dilnetpc.c:449: error: 'struct mtd_partition' has no membe=
-r named 'mtdp'
-drivers/mtd/maps/dilnetpc.c:450: error: 'struct mtd_partition' has no membe=
-r named 'mtdp'
-drivers/mtd/maps/dilnetpc.c:451: error: 'struct mtd_partition' has no membe=
-r named 'mtdp'
+Please ignore the previous patch. I fixed compile errors but forgot
+to "git-add && git-commit --amend"
 
-Caused by commit b90cf6681f4f6263920616e7ca2fd09130e4143a ("[MTD] Remove
-option for add_mtd_partitions() to not register partitions.").  The
-comment in that commit even says that it will cause this breakage, so why
-hasn't this been fixed?
+---
+ kernel/trace/trace_stat.c |   54 +++++++++++++++++---------------------------
+ 1 files changed, 21 insertions(+), 33 deletions(-)
 
-I have used the mtd tree from next-20090526 for today. =20
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+diff --git a/kernel/trace/trace_stat.c b/kernel/trace/trace_stat.c
+index a80d947..e8b50f3 100644
+--- a/kernel/trace/trace_stat.c
++++ b/kernel/trace/trace_stat.c
+@@ -93,10 +93,15 @@ static void destroy_session(struct stat_session *session)
+ 
+ typedef int (*cmp_stat_t)(void *, void *);
+ 
+-static void
+-insert_stat(struct rb_root *root, struct stat_node *data, cmp_stat_t cmp)
++static int insert_stat(struct rb_root *root, void *stat, cmp_stat_t cmp)
+ {
+ 	struct rb_node **new = &(root->rb_node), *parent = NULL;
++	struct stat_node *data;
++
++	data = kzalloc(sizeof(*data), GFP_KERNEL);
++	if (!data)
++		return -ENOMEM;
++	data->stat = stat;
+ 
+ 	/*
+ 	 * Figure out where to put new node
+@@ -118,12 +123,13 @@ insert_stat(struct rb_root *root, struct stat_node *data, cmp_stat_t cmp)
+ 
+ 	rb_link_node(&data->node, parent, new);
+ 	rb_insert_color(&data->node, root);
++	return 0;
+ }
+ 
+ /*
+  * For tracers that don't provide a stat_cmp callback.
+- * This one will force an immediate insertion on tail of
+- * the list.
++ * This one will force an insertion as right-most node
++ * in the rbtree.
+  */
+ static int dummy_cmp(void *p1, void *p2)
+ {
+@@ -131,15 +137,14 @@ static int dummy_cmp(void *p1, void *p2)
+ }
+ 
+ /*
+- * Initialize the stat list at each trace_stat file opening.
++ * Initialize the stat rbtree at each trace_stat file opening.
+  * All of these copies and sorting are required on all opening
+  * since the stats could have changed between two file sessions.
+  */
+ static int stat_seq_init(struct stat_session *session)
+ {
+ 	struct tracer_stat *ts = session->ts;
+-	struct stat_node *new_entry;
+-	struct rb_root *root;
++	struct rb_root *root = &session->stat_root;
+ 	void *stat;
+ 	int ret = 0;
+ 	int i;
+@@ -154,23 +159,12 @@ static int stat_seq_init(struct stat_session *session)
+ 	if (!stat)
+ 		goto exit;
+ 
+-	/*
+-	 * The first entry. Actually this is the second, but the first
+-	 * one (the stat_list head) is pointless.
+-	 */
+-	new_entry = kzalloc(sizeof(*new_entry), GFP_KERNEL);
+-	if (!new_entry) {
+-		ret = -ENOMEM;
++	ret = insert_stat(root, stat, ts->stat_cmp);
++	if (ret)
+ 		goto exit;
+-	}
+-	root = &session->stat_root;
+-	insert_stat(root, new_entry, dummy_cmp);
+-
+-	new_entry->stat = stat;
+ 
+ 	/*
+-	 * Iterate over the tracer stat entries and store them in a sorted
+-	 * list.
++	 * Iterate over the tracer stat entries and store them in an rbtree.
+ 	 */
+ 	for (i = 1; ; i++) {
+ 		stat = ts->stat_next(stat, i);
+@@ -179,22 +173,16 @@ static int stat_seq_init(struct stat_session *session)
+ 		if (!stat)
+ 			break;
+ 
+-		new_entry = kzalloc(sizeof(*new_entry), GFP_KERNEL);
+-		if (!new_entry) {
+-			ret = -ENOMEM;
+-			goto exit_free_list;
+-		}
+-
+-		new_entry->stat = stat;
+-
+-		insert_stat(root, new_entry, ts->stat_cmp);
++		ret = insert_stat(root, stat, ts->stat_cmp);
++		if (ret)
++			goto exit_free_rbtree;
+ 	}
+ 
+ exit:
+ 	mutex_unlock(&session->stat_mutex);
+ 	return ret;
+ 
+-exit_free_list:
++exit_free_rbtree:
+ 	reset_stat_session(session);
+ 	mutex_unlock(&session->stat_mutex);
+ 	return ret;
+@@ -207,7 +195,7 @@ static void *stat_seq_start(struct seq_file *s, loff_t *pos)
+ 	struct rb_node *node;
+ 	int i;
+ 
+-	/* Prevent from tracer switch or stat_list modification */
++	/* Prevent from tracer switch or rbtree modification */
+ 	mutex_lock(&session->stat_mutex);
+ 
+ 	/* If we are in the beginning of the file, print the headers */
+@@ -285,7 +273,7 @@ static int tracing_stat_open(struct inode *inode, struct file *file)
+ }
+ 
+ /*
+- * Avoid consuming memory with our now useless list.
++ * Avoid consuming memory with our now useless rbtree.
+  */
+ static int tracing_stat_release(struct inode *i, struct file *f)
+ {
+-- 
+1.5.4.rc3
 
---Signature=_Wed__27_May_2009_13_40_40_+1000_TQwY8zmJIPAJJXU1
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkoctjgACgkQjjKRsyhoI8xrhwCeNQcOWe68eD43vFswmRpQv8kc
-64EAnAzF3i6fuDFGWD2c5inbD/vRYST5
-=DTfa
------END PGP SIGNATURE-----
-
---Signature=_Wed__27_May_2009_13_40_40_+1000_TQwY8zmJIPAJJXU1--
