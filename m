@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932292AbZE0Rrm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932180AbZE0Rr3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932292AbZE0Rrm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 13:47:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762271AbZE0Rod
+	id S932180AbZE0Rr3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 13:47:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762213AbZE0Rob
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 13:44:33 -0400
-Received: from jalapeno.cc.columbia.edu ([128.59.29.5]:54175 "EHLO
+	Wed, 27 May 2009 13:44:31 -0400
+Received: from jalapeno.cc.columbia.edu ([128.59.29.5]:54159 "EHLO
 	jalapeno.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761008AbZE0RoX (ORCPT
+	with ESMTP id S1761888AbZE0RoV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 13:44:23 -0400
+	Wed, 27 May 2009 13:44:21 -0400
 From: Oren Laadan <orenl@cs.columbia.edu>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
@@ -21,9 +21,9 @@ Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
        Pavel Emelyanov <xemul@openvz.org>,
        Alexey Dobriyan <adobriyan@gmail.com>,
        Oren Laadan <orenl@cs.columbia.edu>
-Subject: [RFC v16][PATCH 18/43] c/r: restore anonymous- and file-mapped- shared memory
-Date: Wed, 27 May 2009 13:32:44 -0400
-Message-Id: <1243445589-32388-19-git-send-email-orenl@cs.columbia.edu>
+Subject: [RFC v16][PATCH 31/43] deferqueue: generic queue to defer work
+Date: Wed, 27 May 2009 13:32:57 -0400
+Message-Id: <1243445589-32388-32-git-send-email-orenl@cs.columbia.edu>
 X-Mailer: git-send-email 1.6.0.1
 In-Reply-To: <1243445589-32388-1-git-send-email-orenl@cs.columbia.edu>
 References: <1243445589-32388-1-git-send-email-orenl@cs.columbia.edu>
@@ -32,324 +32,271 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The bulk of the work is in ckpt_read_vma(), which has been refactored:
-the part that create the suitable 'struct file *' for the mapping is
-now larger and moved to a separate function. What's left is to read
-the VMA description, get the file pointer, create the mapping, and
-proceed to read the contents in.
+Add a interface to postpone an action until the end of the entire
+checkpoint or restart operation. This is useful when during the
+scan of tasks an operation cannot be performed in place, to avoid
+the need for a second scan.
 
-Both anonymous shared VMAs that have been read earlier (as indicated
-by a look up to objhash) and file-mapped shared VMAs are skipped.
-Anonymous shared VMAs seen for the first time have their contents
-read in directly to the backing inode, as indexed by the page numbers
-(as opposed to virtual addresses).
+One use case is when restoring an ipc shared memory region that has
+been deleted (but is still attached), during restart it needs to be
+create, attached and then deleted. However, creation and attachment
+are performed in distinct locations, so deletion can not be performed
+on the spot. Instead, this work (delete) is deferred until later.
+(This example is in one of the following patches).
 
-Changelog[v14]:
-  - Introduce patch
+This interface allows chronic procrastination in the kernel:
+
+deferqueue_create(void):
+    Allocates and returns a new deferqueue.
+
+deferqueue_run(deferqueue):
+    Executes all the pending works in the queue. Returns the number
+    of works executed, or an error upon the first error reported by
+    a deferred work.
+
+deferqueue_add(deferqueue, data, size, func, dtor):
+    Enqueue a deferred work. @function is the callback function to
+    do the work, which will be called with @data as an argument.
+    @size tells the size of data. @dtor is a destructor callback
+    that is invoked for deferred works remaining in the queue when
+    the queue is destroyed. NOTE: for a given deferred work, @dtor
+    is _not_ called if @func was already called (regardless of the
+    return value of the latter).
+
+deferqueue_destroy(deferqueue):
+    Free the deferqueue and any queued items while invoking the
+    @dtor callback for each queued item.
+
+Why aren't we using the existing kernel workqueue mechanism?  We need
+to defer to work until the end of the operation: not earlier, since we
+need other things to be in place; not later, to not block waiting for
+it. However, the workqueue schedules the work for 'some time later'.
+Also, the kernel workqueue may run in any task context, but we require
+many times that an operation be run in the context of some specific
+restarting task (e.g., restoring IPC state of a certain ipc_ns).
+
+Instead, this mechanism is a simple way for the c/r operation as a
+whole, and later a task in particular, to defer some action until
+later (but not arbitrarily later) _in the restore_ operation.
 
 Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
 ---
- checkpoint/memory.c        |   66 ++++++++++++++++++++++++++++++++-----------
- include/linux/checkpoint.h |    6 ++++
- include/linux/mm.h         |    2 +
- mm/filemap.c               |   13 ++++++++-
- mm/shmem.c                 |   49 ++++++++++++++++++++++++++++++++
- 5 files changed, 118 insertions(+), 18 deletions(-)
+ checkpoint/Kconfig         |    5 ++
+ include/linux/deferqueue.h |   58 +++++++++++++++++++++++
+ kernel/Makefile            |    1 +
+ kernel/deferqueue.c        |  109 ++++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 173 insertions(+), 0 deletions(-)
 
-diff --git a/checkpoint/memory.c b/checkpoint/memory.c
-index 2b73abc..c163b76 100644
---- a/checkpoint/memory.c
-+++ b/checkpoint/memory.c
-@@ -785,13 +785,36 @@ static int restore_read_page(struct ckpt_ctx *ctx, struct page *page, void *p)
- 	return 0;
- }
+diff --git a/checkpoint/Kconfig b/checkpoint/Kconfig
+index 1761b0a..53ed6fa 100644
+--- a/checkpoint/Kconfig
++++ b/checkpoint/Kconfig
+@@ -2,9 +2,14 @@
+ # implemented the hooks for processor state etc. needed by the
+ # core checkpoint/restart code.
  
-+static struct page *bring_private_page(unsigned long addr)
++config DEFERQUEUE
++	bool
++	default n
++
+ config CHECKPOINT
+ 	bool "Enable checkpoint/restart (EXPERIMENTAL)"
+ 	depends on CHECKPOINT_SUPPORT && EXPERIMENTAL
++	select DEFERQUEUE
+ 	help
+ 	  Application checkpoint/restart is the ability to save the
+ 	  state of a running application so that it can later resume
+diff --git a/include/linux/deferqueue.h b/include/linux/deferqueue.h
+new file mode 100644
+index 0000000..2eb58cf
+--- /dev/null
++++ b/include/linux/deferqueue.h
+@@ -0,0 +1,58 @@
++/*
++ * deferqueue.h --- deferred work queue handling for Linux.
++ */
++
++#ifndef _LINUX_DEFERQUEUE_H
++#define _LINUX_DEFERQUEUE_H
++
++#include <linux/list.h>
++#include <linux/slab.h>
++#include <linux/spinlock.h>
++
++/*
++ * This interface allows chronic procrastination in the kernel:
++ *
++ * deferqueue_create(void):
++ *     Allocates and returns a new deferqueue.
++ *
++ * deferqueue_run(deferqueue):
++ *     Executes all the pending works in the queue. Returns the number
++ *     of works executed, or an error upon the first error reported by
++ *     a deferred work.
++ *
++ * deferqueue_add(deferqueue, data, size, func, dtor):
++ * 	Enqueue a deferred work. @function is the callback function to
++ *      do the work, which will be called with @data as an argument.
++ *      @size tells the size of data. @dtor is a destructor callback
++ *      that is invoked for deferred works remaining in the queue when
++ *      the queue is destroyed. NOTE: for a given deferred work, @dtor
++ *      is _not_ called if @func was already called (regardless of the
++ *      return value of the latter).
++ *
++ * deferqueue_destroy(deferqueue):
++ *      Free the deferqueue and any queued items while invoking the
++ *      @dtor callback for each queued item.
++ */
++
++
++typedef int (*deferqueue_func_t)(void *);
++
++struct deferqueue_entry {
++	deferqueue_func_t function;
++	deferqueue_func_t destructor;
++	struct list_head list;
++	char data[0];
++};
++
++struct deferqueue_head {
++	spinlock_t lock;
++	struct list_head list;
++};
++
++struct deferqueue_head *deferqueue_create(void);
++void deferqueue_destroy(struct deferqueue_head *head);
++int deferqueue_add(struct deferqueue_head *head, void *data, int size,
++		   deferqueue_func_t func, deferqueue_func_t dtor);
++int deferqueue_run(struct deferqueue_head *head);
++
++#endif
+diff --git a/kernel/Makefile b/kernel/Makefile
+index 4242366..6bc638d 100644
+--- a/kernel/Makefile
++++ b/kernel/Makefile
+@@ -22,6 +22,7 @@ CFLAGS_REMOVE_cgroup-debug.o = -pg
+ CFLAGS_REMOVE_sched_clock.o = -pg
+ endif
+ 
++obj-$(CONFIG_DEFERQUEUE) += deferqueue.o
+ obj-$(CONFIG_FREEZER) += freezer.o
+ obj-$(CONFIG_PROFILING) += profile.o
+ obj-$(CONFIG_SYSCTL_SYSCALL_CHECK) += sysctl_check.o
+diff --git a/kernel/deferqueue.c b/kernel/deferqueue.c
+new file mode 100644
+index 0000000..efd99d5
+--- /dev/null
++++ b/kernel/deferqueue.c
+@@ -0,0 +1,109 @@
++/*
++ *  Infrastructure to manage deferred work
++ *
++ *  This differs from a workqueue in that the work must be deferred
++ *  until specifically run by the caller.
++ *
++ *  As the only user currently is checkpoint/restart, which has
++ *  very simple usage, the locking is kept simple.  Adding rules
++ *  is protected by the head->lock.  But deferqueue_run() is only
++ *  called once, after all entries have been added.  So it is not
++ *  protected.  Similarly, _destroy is only called once when the
++ *  ckpt_ctx is releeased, so it is not locked or refcounted.  These
++ *  can of course be added if needed by other users.
++ *
++ *  Why not use workqueue ?  We need to defer work until the end of an
++ *  operation: not earlier, since we need other things to be in place;
++ *  not later, to not block waiting for it. However, the workqueue
++ *  schedules the work for 'some time later'. Also, workqueue may run
++ *  in any task context, but we require many times that an operation
++ *  be run in the context of some specific restarting task (e.g.,
++ *  restoring IPC state of a certain ipc_ns).
++ *
++ *  Instead, this mechanism is a simple way for the c/r operation as a
++ *  whole, and later a task in particular, to defer some action until
++ *  later (but not arbitrarily later) _in the restore_ operation.
++ *
++ *  Copyright (C) 2009 Oren Laadan
++ *
++ *  This file is subject to the terms and conditions of the GNU General Public
++ *  License.  See the file COPYING in the main directory of the Linux
++ *  distribution for more details.
++ *
++ */
++
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/deferqueue.h>
++
++struct deferqueue_head *deferqueue_create(void)
 +{
-+	struct page *page;
-+	int ret;
-+
-+	ret = get_user_pages(current, current->mm, addr, 1, 1, 1, &page, NULL);
-+	if (ret < 0)
-+		page = ERR_PTR(ret);
-+	return page;
-+}
-+
-+static struct page *bring_shared_page(unsigned long idx, struct inode *ino)
-+{
-+	struct page *page = NULL;
-+	int ret;
-+
-+	ret = shmem_getpage(ino, idx, &page, SGP_WRITE, NULL);
-+	if (ret < 0)
-+		return ERR_PTR(ret);
-+	if (page)
-+		unlock_page(page);
-+	return page;
-+}
-+
- /**
-  * read_pages_contents - read in data of pages in page-array chain
-  * @ctx - restart context
-  */
--static int read_pages_contents(struct ckpt_ctx *ctx)
-+static int read_pages_contents(struct ckpt_ctx *ctx, struct inode *inode)
- {
--	struct mm_struct *mm = current->mm;
- 	struct ckpt_pgarr *pgarr;
- 	unsigned long *vaddrs;
- 	char *buf;
-@@ -801,17 +824,22 @@ static int read_pages_contents(struct ckpt_ctx *ctx)
- 	if (!buf)
- 		return -ENOMEM;
- 
--	down_read(&mm->mmap_sem);
-+	down_read(&current->mm->mmap_sem);
- 	list_for_each_entry_reverse(pgarr, &ctx->pgarr_list, list) {
- 		vaddrs = pgarr->vaddrs;
- 		for (i = 0; i < pgarr->nr_used; i++) {
- 			struct page *page;
- 
- 			_ckpt_debug(CKPT_DPAGE, "got page %#lx\n", vaddrs[i]);
--			ret = get_user_pages(current, mm, vaddrs[i],
--					     1, 1, 1, &page, NULL);
--			if (ret < 0)
-+			if (inode)
-+				page = bring_shared_page(vaddrs[i], inode);
-+			else
-+				page = bring_private_page(vaddrs[i]);
-+
-+			if (IS_ERR(page)) {
-+				ret = PTR_ERR(page);
- 				goto out;
-+			}
- 
- 			ret = restore_read_page(ctx, page, buf);
- 			page_cache_release(page);
-@@ -822,14 +850,15 @@ static int read_pages_contents(struct ckpt_ctx *ctx)
- 	}
- 
-  out:
--	up_read(&mm->mmap_sem);
-+	up_read(&current->mm->mmap_sem);
- 	kfree(buf);
- 	return 0;
- }
- 
- /**
-- * restore_memory_contents - restore contents of a VMA with private memory
-+ * restore_memory_contents - restore contents of a memory region
-  * @ctx - restart context
-+ * @inode - backing inode
-  *
-  * Reads a header that specifies how many pages will follow, then reads
-  * a list of virtual addresses into ctx->pgarr_list page-array chain,
-@@ -837,7 +866,7 @@ static int read_pages_contents(struct ckpt_ctx *ctx)
-  * these steps until reaching a header specifying "0" pages, which marks
-  * the end of the contents.
-  */
--static int restore_memory_contents(struct ckpt_ctx *ctx)
-+int restore_memory_contents(struct ckpt_ctx *ctx, struct inode *inode)
- {
- 	struct ckpt_hdr_pgarr *h;
- 	unsigned long nr_pages;
-@@ -864,7 +893,7 @@ static int restore_memory_contents(struct ckpt_ctx *ctx)
- 		ret = read_pages_vaddrs(ctx, nr_pages);
- 		if (ret < 0)
- 			break;
--		ret = read_pages_contents(ctx);
-+		ret = read_pages_contents(ctx, inode);
- 		if (ret < 0)
- 			break;
- 		pgarr_reset_all(ctx);
-@@ -922,9 +951,9 @@ static unsigned long calc_map_flags_bits(unsigned long orig_vm_flags)
-  * @file - file to map (NULL for anonymous)
-  * @h - vma header data
-  */
--static unsigned long generic_vma_restore(struct mm_struct *mm,
--					 struct file *file,
--					 struct ckpt_hdr_vma *h)
-+unsigned long generic_vma_restore(struct mm_struct *mm,
-+				  struct file *file,
-+				  struct ckpt_hdr_vma *h)
- {
- 	unsigned long vm_size, vm_start, vm_flags, vm_prot, vm_pgoff;
- 	unsigned long addr;
-@@ -971,7 +1000,7 @@ int private_vma_restore(struct ckpt_ctx *ctx, struct mm_struct *mm,
- 	if (IS_ERR((void *) addr))
- 		return PTR_ERR((void *) addr);
- 
--	return restore_memory_contents(ctx);
-+	return restore_memory_contents(ctx, NULL);
- }
- 
- /**
-@@ -1031,16 +1060,19 @@ static struct restore_vma_ops restore_vma_ops[] = {
- 	{
- 		.vma_name = "ANON SHARED",
- 		.vma_type = CKPT_VMA_SHM_ANON,
-+		.restore = shmem_restore,
- 	},
- 	/* anonymous shared (skipped) */
- 	{
- 		.vma_name = "ANON SHARED (skip)",
- 		.vma_type = CKPT_VMA_SHM_ANON_SKIP,
-+		.restore = shmem_restore,
- 	},
- 	/* file-mapped shared */
- 	{
- 		.vma_name = "FILE SHARED",
- 		.vma_type = CKPT_VMA_SHM_FILE,
-+		.restore = filemap_restore,
- 	},
- };
- 
-@@ -1059,15 +1091,15 @@ static int restore_vma(struct ckpt_ctx *ctx, struct mm_struct *mm)
- 	if (IS_ERR(h))
- 		return PTR_ERR(h);
- 
--	ckpt_debug("vma %#lx-%#lx flags %#lx type %d vmaref %d\n",
-+	ckpt_debug("vma %#lx-%#lx flags %#lx type %d vmaref %d inoref %d\n",
- 		   (unsigned long) h->vm_start, (unsigned long) h->vm_end,
- 		   (unsigned long) h->vm_flags, (int) h->vma_type,
--		   (int) h->vma_objref);
-+		   (int) h->vma_objref, (int) h->ino_objref);
- 
- 	ret = -EINVAL;
- 	if (h->vm_end < h->vm_start)
- 		goto out;
--	if (h->vma_objref < 0)
-+	if (h->vma_objref < 0 || h->ino_objref < 0)
- 		goto out;
- 	if (h->vma_type >= CKPT_VMA_MAX)
- 		goto out;
-diff --git a/include/linux/checkpoint.h b/include/linux/checkpoint.h
-index 18b4941..169aa70 100644
---- a/include/linux/checkpoint.h
-+++ b/include/linux/checkpoint.h
-@@ -106,9 +106,15 @@ extern int restore_obj_mm(struct ckpt_ctx *ctx, int mm_objref);
- extern int checkpoint_mm(struct ckpt_ctx *ctx, void *ptr);
- extern void *restore_mm(struct ckpt_ctx *ctx);
- 
-+extern unsigned long generic_vma_restore(struct mm_struct *mm,
-+					 struct file *file,
-+					 struct ckpt_hdr_vma *h);
-+
- extern int private_vma_restore(struct ckpt_ctx *ctx, struct mm_struct *mm,
- 			       struct file *file, struct ckpt_hdr_vma *h);
- 
-+extern int restore_memory_contents(struct ckpt_ctx *ctx, struct inode *inode);
-+
- 
- #define CKPT_VMA_NOT_SUPPORTED						\
- 	(VM_IO | VM_HUGETLB | VM_NONLINEAR | VM_PFNMAP |		\
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index 53e916a..c8e8972 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -1203,6 +1203,8 @@ extern int filemap_restore(struct ckpt_ctx *ctx, struct mm_struct *mm,
- 			   struct ckpt_hdr_vma *hh);
- extern int special_mapping_restore(struct ckpt_ctx *ctx, struct mm_struct *mm,
- 				   struct ckpt_hdr_vma *hh);
-+extern int shmem_restore(struct ckpt_ctx *ctx, struct mm_struct *mm,
-+			 struct ckpt_hdr_vma *hh);
- #endif
- 
- /* readahead.c */
-diff --git a/mm/filemap.c b/mm/filemap.c
-index 0d28481..d669395 100644
---- a/mm/filemap.c
-+++ b/mm/filemap.c
-@@ -1691,17 +1691,28 @@ int filemap_restore(struct ckpt_ctx *ctx,
- 		    struct ckpt_hdr_vma *h)
- {
- 	struct file *file;
-+	unsigned long addr;
- 	int ret;
- 
- 	if (h->vma_type == CKPT_VMA_FILE &&
- 	    (h->vm_flags & (VM_SHARED | VM_MAYSHARE)))
- 		return -EINVAL;
-+	if (h->vma_type == CKPT_VMA_SHM_FILE &&
-+	    !(h->vm_flags & (VM_SHARED | VM_MAYSHARE)))
-+		return -EINVAL;
- 
- 	file = ckpt_obj_fetch(ctx, h->vma_objref, CKPT_OBJ_FILE);
- 	if (IS_ERR(file))
- 		return PTR_ERR(file);
- 
--	ret = private_vma_restore(ctx, mm, file, h);
-+	if (h->vma_type == CKPT_VMA_FILE) {
-+		/* private mapped file */
-+		ret = private_vma_restore(ctx, mm, file, h);
-+	} else {
-+		/* shared mapped file */
-+		addr = generic_vma_restore(mm, file, h);
-+		ret = (IS_ERR((void *) addr) ? PTR_ERR((void *) addr) : 0);
++	struct deferqueue_head *h = kmalloc(sizeof(*h), GFP_KERNEL);
++	if (h) {
++		spin_lock_init(&h->lock);
++		INIT_LIST_HEAD(&h->list);
 +	}
- 	return ret;
- }
- #endif /* CONFIG_CHECKPOINT */
-diff --git a/mm/shmem.c b/mm/shmem.c
-index d349c10..829eefa 100644
---- a/mm/shmem.c
-+++ b/mm/shmem.c
-@@ -2409,6 +2409,55 @@ static int shmem_checkpoint(struct ckpt_ctx *ctx, struct vm_area_struct *vma)
- 
- 	return shmem_vma_checkpoint(ctx, vma, vma_type, ino_objref);
- }
++	return h;
++}
 +
-+int shmem_restore(struct ckpt_ctx *ctx,
-+		  struct mm_struct *mm, struct ckpt_hdr_vma *h)
++void deferqueue_destroy(struct deferqueue_head *h)
 +{
-+	unsigned long addr;
-+	struct file *file;
-+	int ret = 0;
++	if (!list_empty(&h->list)) {
++		struct deferqueue_entry *dq, *n;
 +
-+	file = ckpt_obj_fetch(ctx, h->ino_objref, CKPT_OBJ_FILE);
-+	if (PTR_ERR(file) == -EINVAL)
-+		file = NULL;
-+	if (IS_ERR(file))
-+		return PTR_ERR(file);
++		pr_debug("%s: freeing non-empty queue\n", __func__);
++		list_for_each_entry_safe(dq, n, &h->list, list) {
++			dq->destructor(dq->data);
++			list_del(&dq->list);
++			kfree(dq);
++		}
++	}
++	kfree(h);
++}
 +
-+	/* if file is NULL, this is the premiere - create and insert */
-+	if (!file) {
-+		if (h->vma_type != CKPT_VMA_SHM_ANON)
-+			return -EINVAL;
-+		/*
-+		 * in theory could pass NULL to mmap and let it create
-+		 * the file. But, if 'shm_size != vm_end - vm_start',
-+		 * or if 'vm_pgoff != 0', then the vma reflects only a
-+		 * portion of the shm object and we need to "manually"
-+		 * create the full shm object.
-+		 */
-+		file = shmem_file_setup("/dev/zero", h->ino_size, h->vm_flags);
-+		if (IS_ERR(file))
-+			return PTR_ERR(file);
-+		ret = ckpt_obj_insert(ctx, file, h->ino_objref, CKPT_OBJ_FILE);
++int deferqueue_add(struct deferqueue_head *head, void *data, int size,
++		   deferqueue_func_t func, deferqueue_func_t dtor)
++{
++	struct deferqueue_entry *dq;
++
++	dq = kmalloc(sizeof(dq) + size, GFP_KERNEL);
++	if (!dq)
++		return -ENOMEM;
++
++	dq->function = func;
++	dq->destructor = dtor;
++	memcpy(dq->data, data, size);
++
++	pr_debug("%s: adding work %p func %p dtor %p\n",
++		 __func__, dq, func, dtor);
++	spin_lock(&head->lock);
++	list_add_tail(&head->list, &dq->list);
++	spin_unlock(&head->lock);
++	return 0;
++}
++
++/*
++ * deferqueue_run - perform all work in the work queue
++ * @head: deferqueue_head from which to run
++ *
++ * returns: number of works performed, or < 0 on error
++ */
++int deferqueue_run(struct deferqueue_head *head)
++{
++	struct deferqueue_entry *dq, *n;
++	int nr = 0;
++	int ret;
++
++	list_for_each_entry_safe(dq, n, &head->list, list) {
++		pr_debug("doing work %p function %p\n", dq, dq->function);
++		/* don't call destructor - function callback should do it */
++		ret = dq->function(dq->data);
 +		if (ret < 0)
-+			goto out;
-+	} else {
-+		if (h->vma_type != CKPT_VMA_SHM_ANON_SKIP)
-+			return -EINVAL;
-+		/* Already need fput() for the file above; keep path simple */
-+		get_file(file);
++			pr_debug("wq function failed %d\n", ret);
++		list_del(&dq->list);
++		kfree(dq);
++		nr++;
 +	}
 +
-+	addr = generic_vma_restore(mm, file, h);
-+	if (IS_ERR((void *) addr))
-+		return PTR_ERR((void *) addr);
-+
-+	if (h->vma_type == CKPT_VMA_SHM_ANON)
-+		ret = restore_memory_contents(ctx, file->f_dentry->d_inode);
-+ out:
-+	fput(file);
-+	return ret;
++	return nr;
 +}
-+
- #endif /* CONFIG_CHECKPOINT */
- 
- static void init_once(void *foo)
 -- 
 1.6.0.4
 
