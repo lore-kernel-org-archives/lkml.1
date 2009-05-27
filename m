@@ -1,52 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760660AbZE0GRv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760687AbZE0GSX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760660AbZE0GRv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 02:17:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760552AbZE0GR1
+	id S1760687AbZE0GSX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 02:18:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759796AbZE0GSP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 02:17:27 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:49776 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760535AbZE0GR0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 02:17:26 -0400
-Date: Wed, 27 May 2009 08:17:27 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Damien Wyart <damien.wyart@free.fr>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
-       akpm@linux-foundation.org, jack@suse.cz, yanmin_zhang@linux.intel.com,
-       richard@rsk.demon.co.uk
-Subject: Re: [PATCH 0/12] Per-bdi writeback flusher threads v7
-Message-ID: <20090527061727.GR11363@kernel.dk>
-References: <1243330430-9964-1-git-send-email-jens.axboe@oracle.com> <20090526152501.GA20968@localhost.localdomain> <20090526164117.GJ11363@kernel.dk> <20090526170845.GA3226@localhost.localdomain> <20090526204703.GM11363@kernel.dk> <20090526211119.GO11363@kernel.dk> <20090527052101.GA28517@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090527052101.GA28517@localhost.localdomain>
+	Wed, 27 May 2009 02:18:15 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:49764 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759757AbZE0GSO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 02:18:14 -0400
+Date: Wed, 27 May 2009 15:16:40 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Paul Menage <menage@google.com>, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.linux-foundation.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: [PATCH] cgroups: handle failure of cgroup_populate_dir() at 
+ mount/remount
+Message-Id: <20090527151640.52323b90.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <4A1CB266.8000400@cn.fujitsu.com>
+References: <4A16153C.2080004@cn.fujitsu.com>
+	<20090522172545.1e5e5f81.kamezawa.hiroyu@jp.fujitsu.com>
+	<6599ad830905261506x480f2167naf1034177bbc7036@mail.gmail.com>
+	<4A1C9253.3060108@cn.fujitsu.com>
+	<20090527103404.81d3c1a4.kamezawa.hiroyu@jp.fujitsu.com>
+	<4A1CB266.8000400@cn.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 27 2009, Damien Wyart wrote:
-> * Jens Axboe <jens.axboe@oracle.com> [2009-05-26 23:11]:
-> > > OK, I spotted the problem. If we fallback to the on-stack allocation in
-> > > bdi_writeback_all(), then we do the wait for the work completion with
-> > > the bdi_lock mutex held. This can deadlock with bdi_forker_task(), so if
-> > > we require that to be invoked to make progress (happens if a thread
-> > > needs to be restarted), then we have a deadlock on that mutex.
-> 
-> > > I'll cook up a fix for this, but probably not before the morning.
-> 
-> > Untested fix. I think it should work, but I haven't run it here yet.
-> 
-> Thanks for your feedback and explanations. Will not be able to test the
-> patch before the afternoon. Will then give feedback as soon as I can. Of
-> course, I can also test a new fix or series if you send one in the
-> morning, after your own testing.
+On Wed, 27 May 2009 11:24:22 +0800
+Li Zefan <lizf@cn.fujitsu.com> wrote:
 
-Just wait for the new series, I'll be posting it this morning. And
-thanks for your testing and report!
+> KAMEZAWA Hiroyuki wrote:
+> > On Wed, 27 May 2009 09:07:31 +0800
+> > Li Zefan <lizf@cn.fujitsu.com> wrote:
+> > 
+> >> Paul Menage wrote:
+> >>> On Fri, May 22, 2009 at 1:25 AM, KAMEZAWA Hiroyuki
+> >>> <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> >>>> Hm, shouldn't we allow "noprefix" to be effective only agaisnt cpuset ?
+> >>>> I think it's just for backward-compatibility of cpuset.
+> >>>> (I don't like the option at all.)
+> >>> Yes, exposing the "noprefix" option externally was one of the mistakes
+> >>> I made when developing cgroups.
+> >>>
+> >>> It seems to me really unlikely that anyone is using "noprefix" for
+> >> And "noprefix" is not documented in cgroups.txt, so I guess not
+> >> many people know this option. Even libcgroup doesn't handle it.
+> >>
+> >>> anything other than implicitly when mounting the "cpuset" filesystem.
+> >>> So I'd be inclined to just forbid it if we're mounting more than just
+> >>> the cpuset subsystem. A bit of a nasty abstraction violation, but it
+> >>> makes more sense overall. The only problem is that someone *might* be
+> >>> using it - do we have any way to determine how, and how big do they
+> >>> have to be before we care?
+> >>>
+> >> I think we can never know..
+> > 
+> > How about this method ?
+> > 
+> >  - add "noprefix" to "to-be-removed" list.
+> >  - add "WARNING: noprefix option will be removed in 2.6.32 (or 2.6.31)" now
+> >  - remove "noprefix" in 2.6.31-rc or later
+> > 
+> 
+> I don't see how we can remove noprefix while reserve the compatibility of
+> old cpuset..
+> 
+> As Paul Menage said, we can allow noprefix to be used only if we mount just
+> cpuset subsystem:
+> 
+I have no objection.
 
--- 
-Jens Axboe
+-Kame
+
+
+> (pseudo code)
+> 
+> diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+> --- a/kernel/cgroup.c
+> +++ b/kernel/cgroup.c
+> @@ -886,6 +886,11 @@ static int parse_cgroupfs_options(char *data,
+>                 }
+>         }
+> 
+> +
+> +       if (test_bit(ROOT_NOPREFIX, &opts->flags) &&
+> +           (opts->subsys_bits & ~cpuset_subsys_id) != 0)
+> +               return -EINVAL;
+> +
+>         /* We can't have an empty hierarchy */
+>         if (!opts->subsys_bits)
+>                 return -EINVAL;
+> 
+> 
 
