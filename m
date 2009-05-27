@@ -1,182 +1,277 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933074AbZE0SO5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933135AbZE0SPw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933074AbZE0SO5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 14:14:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763403AbZE0SN5
+	id S933135AbZE0SPw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 14:15:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764011AbZE0SN6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 14:13:57 -0400
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:42154 "EHLO
+	Wed, 27 May 2009 14:13:58 -0400
+Received: from smtp3.ultrahosting.com ([74.213.175.254]:35494 "EHLO
 	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760966AbZE0SNz (ORCPT
+	with ESMTP id S1761061AbZE0SNz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 27 May 2009 14:13:55 -0400
-X-Amavis-Alert: BAD HEADER, Duplicate header field: "Cc"
-Message-Id: <20090527180715.496502293@gentwo.org>
+X-Amavis-Alert: BAD HEADER, Header field occurs more than once: "Cc" occurs 4
+	times
+Message-Id: <20090527180716.187512073@gentwo.org>
 References: <20090527180635.008102701@gentwo.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 27 May 2009 13:47:00 -0400
+Date: Wed, 27 May 2009 13:47:01 -0400
 From: cl@linux-foundation.org
 To: linux-kernel@vger.kernel.org
-Cc: Tejun Heo <tj@kernel.org>, David Howells <dhowells@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
-       Eric Dumazet <dada1@cosmosbay.com>
+Cc: Tejun Heo <tj@kernel.org>, Dan Williams <dan.j.williams@intel.com>,
+       Eric Biederman <ebiederm@aristanetworks.com>,
+       Stephen Hemminger <shemminger@vyatta.com>,
+       Trond Myklebust <Trond.Myklebust@netapp.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       David L Stevens <dlstevens@us.ibm.com>
+Cc: mingo@elte.hu
+Cc: rusty@rustcorp.com.au
 Cc: davem@davemloft.net
-Subject: [my_cpu_ptr 2/5] Straight transformations
-Content-Disposition: inline; filename=my_cpu_ptr_straight_transforms
+Subject: [my_cpu_ptr 3/5] Elimninate get/put_cpu
+Content-Disposition: inline; filename=my_cpu_ptr_eliminate_get_put_cpu
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use my_cpu_ptr and __my_cpu_ptr in locations where straight
-transformations are possible because per_cpu_ptr is used with
-either smp_processor_id() or raw_smp_processor_id().
+There are cases where we can use my_cpu_ptr and as the result
+of using my_cpu_ptr we no longer need to determine the
+current executing cpu.
 
-Cc: David Howells <dhowells@redhat.com>
-Cc: Tejun Heo <tj@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Eric Dumazet <dada1@cosmosbay.com>
+In those places no get/put_cpu combination is needed anymore.
+The local cpu variable can be eliminated.
+
+Preemption still needs to be disabled and enabled since the
+modifications of the per cpu variables is not atomic. There may
+be multiple per cpu variables modified and those must all
+be from the same processor.
+
+Cc: Dan Williams <dan.j.williams@intel.com>
+Cc: Eric Biederman <ebiederm@aristanetworks.com>
+Cc: Stephen Hemminger <shemminger@vyatta.com>
+Cc: Trond Myklebust <Trond.Myklebust@netapp.com>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: David L Stevens <dlstevens@us.ibm.com>
 Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
 
 ---
- drivers/infiniband/hw/ehca/ehca_irq.c       |    3 +--
- drivers/net/chelsio/sge.c                   |    5 ++---
- drivers/net/loopback.c                      |    2 +-
- fs/ext4/mballoc.c                           |    2 +-
- include/net/neighbour.h                     |    2 +-
- include/net/netfilter/nf_conntrack.h        |    4 ++--
- include/net/netfilter/nf_conntrack_ecache.h |    2 +-
- include/net/snmp.h                          |    4 ++--
- 8 files changed, 11 insertions(+), 13 deletions(-)
+ drivers/dma/dmaengine.c |   34 +++++++++++++++-------------------
+ drivers/net/veth.c      |    7 +++----
+ fs/nfs/iostat.h         |   21 +++++++++------------
+ include/net/snmp.h      |   31 +++++++++++++++++--------------
+ 4 files changed, 44 insertions(+), 49 deletions(-)
 
-Index: linux-2.6/drivers/net/chelsio/sge.c
+Index: linux-2.6/drivers/dma/dmaengine.c
 ===================================================================
---- linux-2.6.orig/drivers/net/chelsio/sge.c	2009-05-27 11:39:44.000000000 -0500
-+++ linux-2.6/drivers/net/chelsio/sge.c	2009-05-27 11:40:25.000000000 -0500
-@@ -1378,7 +1378,7 @@ static void sge_rx(struct sge *sge, stru
- 	}
- 	__skb_pull(skb, sizeof(*p));
- 
--	st = per_cpu_ptr(sge->port_stats[p->iff], smp_processor_id());
-+	st = my_cpu_ptr(sge->port_stats[p->iff]);
- 
- 	skb->protocol = eth_type_trans(skb, adapter->port[p->iff].dev);
- 	if ((adapter->flags & RX_CSUM_ENABLED) && p->csum == 0xffff &&
-@@ -1780,8 +1780,7 @@ int t1_start_xmit(struct sk_buff *skb, s
+--- linux-2.6.orig/drivers/dma/dmaengine.c	2009-05-27 11:47:09.000000000 -0500
++++ linux-2.6/drivers/dma/dmaengine.c	2009-05-27 11:48:42.000000000 -0500
+@@ -327,11 +327,10 @@ arch_initcall(dma_channel_table_init);
+ struct dma_chan *dma_find_channel(enum dma_transaction_type tx_type)
  {
- 	struct adapter *adapter = dev->ml_priv;
- 	struct sge *sge = adapter->sge;
--	struct sge_port_stats *st = per_cpu_ptr(sge->port_stats[dev->if_port],
--						smp_processor_id());
-+	struct sge_port_stats *st = my_cpu_ptr(sge->port_stats[dev->if_port]);
- 	struct cpl_tx_pkt *cpl;
- 	struct sk_buff *orig_skb = skb;
- 	int ret;
-Index: linux-2.6/drivers/net/loopback.c
+ 	struct dma_chan *chan;
+-	int cpu;
+ 
+-	cpu = get_cpu();
+-	chan = per_cpu_ptr(channel_table[tx_type], cpu)->chan;
+-	put_cpu();
++	preempt_disable()
++	chan = my_cpu_ptr(channel_table[tx_type])->chan;
++	preempt_enable();
+ 
+ 	return chan;
+ }
+@@ -803,7 +802,6 @@ dma_async_memcpy_buf_to_buf(struct dma_c
+ 	struct dma_async_tx_descriptor *tx;
+ 	dma_addr_t dma_dest, dma_src;
+ 	dma_cookie_t cookie;
+-	int cpu;
+ 	unsigned long flags;
+ 
+ 	dma_src = dma_map_single(dev->dev, src, len, DMA_TO_DEVICE);
+@@ -822,10 +820,10 @@ dma_async_memcpy_buf_to_buf(struct dma_c
+ 	tx->callback = NULL;
+ 	cookie = tx->tx_submit(tx);
+ 
+-	cpu = get_cpu();
+-	per_cpu_ptr(chan->local, cpu)->bytes_transferred += len;
+-	per_cpu_ptr(chan->local, cpu)->memcpy_count++;
+-	put_cpu();
++	preempt_disable();
++	my_cpu_ptr(chan->local)->bytes_transferred += len;
++	my_cpu_ptr(chan->local)->memcpy_count++;
++	preempt_enable();
+ 
+ 	return cookie;
+ }
+@@ -852,7 +850,6 @@ dma_async_memcpy_buf_to_pg(struct dma_ch
+ 	struct dma_async_tx_descriptor *tx;
+ 	dma_addr_t dma_dest, dma_src;
+ 	dma_cookie_t cookie;
+-	int cpu;
+ 	unsigned long flags;
+ 
+ 	dma_src = dma_map_single(dev->dev, kdata, len, DMA_TO_DEVICE);
+@@ -869,10 +866,10 @@ dma_async_memcpy_buf_to_pg(struct dma_ch
+ 	tx->callback = NULL;
+ 	cookie = tx->tx_submit(tx);
+ 
+-	cpu = get_cpu();
+-	per_cpu_ptr(chan->local, cpu)->bytes_transferred += len;
+-	per_cpu_ptr(chan->local, cpu)->memcpy_count++;
+-	put_cpu();
++	preempt_disable();
++	my_cpu_ptr(chan->local)->bytes_transferred += len;
++	my_cpu_ptr(chan->local)->memcpy_count++;
++	preempt_enable();
+ 
+ 	return cookie;
+ }
+@@ -901,7 +898,6 @@ dma_async_memcpy_pg_to_pg(struct dma_cha
+ 	struct dma_async_tx_descriptor *tx;
+ 	dma_addr_t dma_dest, dma_src;
+ 	dma_cookie_t cookie;
+-	int cpu;
+ 	unsigned long flags;
+ 
+ 	dma_src = dma_map_page(dev->dev, src_pg, src_off, len, DMA_TO_DEVICE);
+@@ -919,10 +915,10 @@ dma_async_memcpy_pg_to_pg(struct dma_cha
+ 	tx->callback = NULL;
+ 	cookie = tx->tx_submit(tx);
+ 
+-	cpu = get_cpu();
+-	per_cpu_ptr(chan->local, cpu)->bytes_transferred += len;
+-	per_cpu_ptr(chan->local, cpu)->memcpy_count++;
+-	put_cpu();
++	preempt_disable();
++	my_cpu_ptr(chan->local)->bytes_transferred += len;
++	my_cpu_ptr(chan->local)->memcpy_count++;
++	preempt_disable();
+ 
+ 	return cookie;
+ }
+Index: linux-2.6/drivers/net/veth.c
 ===================================================================
---- linux-2.6.orig/drivers/net/loopback.c	2009-05-27 11:39:44.000000000 -0500
-+++ linux-2.6/drivers/net/loopback.c	2009-05-27 11:40:12.000000000 -0500
-@@ -78,7 +78,7 @@ static int loopback_xmit(struct sk_buff 
+--- linux-2.6.orig/drivers/net/veth.c	2009-05-27 11:47:09.000000000 -0500
++++ linux-2.6/drivers/net/veth.c	2009-05-27 11:48:42.000000000 -0500
+@@ -153,7 +153,7 @@ static int veth_xmit(struct sk_buff *skb
+ 	struct net_device *rcv = NULL;
+ 	struct veth_priv *priv, *rcv_priv;
+ 	struct veth_net_stats *stats, *rcv_stats;
+-	int length, cpu;
++	int length;
  
- 	/* it's OK to use per_cpu_ptr() because BHs are off */
- 	pcpu_lstats = dev->ml_priv;
--	lb_stats = per_cpu_ptr(pcpu_lstats, smp_processor_id());
-+	lb_stats = my_cpu_ptr(pcpu_lstats);
- 	lb_stats->bytes += skb->len;
- 	lb_stats->packets++;
+ 	skb_orphan(skb);
  
-Index: linux-2.6/fs/ext4/mballoc.c
+@@ -161,9 +161,8 @@ static int veth_xmit(struct sk_buff *skb
+ 	rcv = priv->peer;
+ 	rcv_priv = netdev_priv(rcv);
+ 
+-	cpu = smp_processor_id();
+-	stats = per_cpu_ptr(priv->stats, cpu);
+-	rcv_stats = per_cpu_ptr(rcv_priv->stats, cpu);
++	stats = my_cpu_ptr(priv->stats);
++	rcv_stats = my_cpu_ptr(rcv_priv->stats);
+ 
+ 	if (!(rcv->flags & IFF_UP))
+ 		goto tx_drop;
+Index: linux-2.6/fs/nfs/iostat.h
 ===================================================================
---- linux-2.6.orig/fs/ext4/mballoc.c	2009-05-27 11:39:44.000000000 -0500
-+++ linux-2.6/fs/ext4/mballoc.c	2009-05-27 11:40:12.000000000 -0500
-@@ -4210,7 +4210,7 @@ static void ext4_mb_group_or_file(struct
- 	 * per cpu locality group is to reduce the contention between block
- 	 * request from multiple CPUs.
- 	 */
--	ac->ac_lg = per_cpu_ptr(sbi->s_locality_groups, raw_smp_processor_id());
-+	ac->ac_lg = __my_cpu_ptr(sbi->s_locality_groups);
+--- linux-2.6.orig/fs/nfs/iostat.h	2009-05-27 11:47:09.000000000 -0500
++++ linux-2.6/fs/nfs/iostat.h	2009-05-27 11:48:42.000000000 -0500
+@@ -26,12 +26,11 @@ static inline void nfs_inc_server_stats(
+ 					enum nfs_stat_eventcounters stat)
+ {
+ 	struct nfs_iostats *iostats;
+-	int cpu;
  
- 	/* we're going to use group allocation */
- 	ac->ac_flags |= EXT4_MB_HINT_GROUP_ALLOC;
-Index: linux-2.6/include/net/neighbour.h
-===================================================================
---- linux-2.6.orig/include/net/neighbour.h	2009-05-27 11:39:44.000000000 -0500
-+++ linux-2.6/include/net/neighbour.h	2009-05-27 11:40:12.000000000 -0500
-@@ -92,7 +92,7 @@ struct neigh_statistics
- #define NEIGH_CACHE_STAT_INC(tbl, field)				\
- 	do {								\
- 		preempt_disable();					\
--		(per_cpu_ptr((tbl)->stats, smp_processor_id())->field)++; \
-+		(my_cpu_ptr((tbl)->stats)->field)++;			\
- 		preempt_enable();					\
- 	} while (0)
+-	cpu = get_cpu();
+-	iostats = per_cpu_ptr(server->io_stats, cpu);
++	preempt_disable();
++	iostats = my_cpu_ptr(server->io_stats);
+ 	iostats->events[stat]++;
+-	put_cpu_no_resched();
++	preempt_enable_no_resched();
+ }
  
-Index: linux-2.6/include/net/netfilter/nf_conntrack.h
-===================================================================
---- linux-2.6.orig/include/net/netfilter/nf_conntrack.h	2009-05-27 11:39:44.000000000 -0500
-+++ linux-2.6/include/net/netfilter/nf_conntrack.h	2009-05-27 11:40:12.000000000 -0500
-@@ -292,11 +292,11 @@ extern unsigned int nf_conntrack_htable_
- extern unsigned int nf_conntrack_max;
+ static inline void nfs_inc_stats(const struct inode *inode,
+@@ -45,12 +44,11 @@ static inline void nfs_add_server_stats(
+ 					unsigned long addend)
+ {
+ 	struct nfs_iostats *iostats;
+-	int cpu;
  
- #define NF_CT_STAT_INC(net, count)	\
--	(per_cpu_ptr((net)->ct.stat, raw_smp_processor_id())->count++)
-+	(__my_cpu_ptr((net)->ct.stat)->count++)
- #define NF_CT_STAT_INC_ATOMIC(net, count)		\
- do {							\
- 	local_bh_disable();				\
--	per_cpu_ptr((net)->ct.stat, raw_smp_processor_id())->count++;	\
-+	__my_cpu_ptr((net)->ct.stat)->count++;		\
- 	local_bh_enable();				\
- } while (0)
+-	cpu = get_cpu();
+-	iostats = per_cpu_ptr(server->io_stats, cpu);
++	preempt_disable();
++	iostats = my_cpu_ptr(server->io_stats);
+ 	iostats->bytes[stat] += addend;
+-	put_cpu_no_resched();
++	preempt_enable_no_resched();
+ }
  
-Index: linux-2.6/include/net/netfilter/nf_conntrack_ecache.h
-===================================================================
---- linux-2.6.orig/include/net/netfilter/nf_conntrack_ecache.h	2009-05-27 11:39:44.000000000 -0500
-+++ linux-2.6/include/net/netfilter/nf_conntrack_ecache.h	2009-05-27 11:40:12.000000000 -0500
-@@ -39,7 +39,7 @@ nf_conntrack_event_cache(enum ip_conntra
- 	struct nf_conntrack_ecache *ecache;
+ static inline void nfs_add_stats(const struct inode *inode,
+@@ -66,12 +64,11 @@ static inline void nfs_add_fscache_stats
+ 					 unsigned long addend)
+ {
+ 	struct nfs_iostats *iostats;
+-	int cpu;
  
- 	local_bh_disable();
--	ecache = per_cpu_ptr(net->ct.ecache, raw_smp_processor_id());
-+	ecache = __my_cpu_ptr(net->ct.ecache);
- 	if (ct != ecache->ct)
- 		__nf_ct_event_cache_init(ct);
- 	ecache->events |= event;
-Index: linux-2.6/drivers/infiniband/hw/ehca/ehca_irq.c
-===================================================================
---- linux-2.6.orig/drivers/infiniband/hw/ehca/ehca_irq.c	2009-05-27 11:40:23.000000000 -0500
-+++ linux-2.6/drivers/infiniband/hw/ehca/ehca_irq.c	2009-05-27 11:40:25.000000000 -0500
-@@ -827,8 +827,7 @@ static void __cpuinit take_over_work(str
- 		cq = list_entry(cct->cq_list.next, struct ehca_cq, entry);
+-	cpu = get_cpu();
+-	iostats = per_cpu_ptr(NFS_SERVER(inode)->io_stats, cpu);
++	preempt_disable();
++	iostats = my_cpu_ptr(NFS_SERVER(inode)->io_stats);
+ 	iostats->fscache[stat] += addend;
+-	put_cpu_no_resched();
++	preempt_enable_no_resched();
+ }
+ #endif
  
- 		list_del(&cq->entry);
--		__queue_comp_task(cq, per_cpu_ptr(pool->cpu_comp_tasks,
--						  smp_processor_id()));
-+		__queue_comp_task(cq, my_cpu_ptr(pool->cpu_comp_tasks));
- 	}
- 
- 	spin_unlock_irqrestore(&cct->task_lock, flags_cct);
 Index: linux-2.6/include/net/snmp.h
 ===================================================================
---- linux-2.6.orig/include/net/snmp.h	2009-05-27 11:40:23.000000000 -0500
-+++ linux-2.6/include/net/snmp.h	2009-05-27 11:40:25.000000000 -0500
-@@ -137,7 +137,7 @@ struct linux_xfrm_mib {
- #define SNMP_STAT_USRPTR(name)	(name[1])
- 
+--- linux-2.6.orig/include/net/snmp.h	2009-05-27 11:47:09.000000000 -0500
++++ linux-2.6/include/net/snmp.h	2009-05-27 11:48:42.000000000 -0500
+@@ -139,26 +139,29 @@ struct linux_xfrm_mib {
  #define SNMP_INC_STATS_BH(mib, field) 	\
--	(per_cpu_ptr(mib[0], raw_smp_processor_id())->mibs[field]++)
-+	(__my_cpu_ptr(mib[0])->mibs[field]++)
+ 	(__my_cpu_ptr(mib[0])->mibs[field]++)
  #define SNMP_INC_STATS_USER(mib, field) \
+-	do { \
+-		per_cpu_ptr(mib[1], get_cpu())->mibs[field]++; \
+-		put_cpu(); \
+-	} while (0)
++ 	do { \
++		preempt_disable();				\
++		my_cpu_ptr(mib[1])->mibs[field]++;		\
++		preempt_enable();				\
++  	} while (0)
+ #define SNMP_INC_STATS(mib, field) 	\
+-	do { \
+-		per_cpu_ptr(mib[!in_softirq()], get_cpu())->mibs[field]++; \
+-		put_cpu(); \
+-	} while (0)
++ 	do { \
++		preempt_disable();				\
++		my_cpu_ptr(mib[!in_softirq()])->mibs[field]++;	\
++		preempt_enable(); \
++ 	} while (0)
+ #define SNMP_DEC_STATS(mib, field) 	\
  	do { \
- 		per_cpu_ptr(mib[1], get_cpu())->mibs[field]++; \
-@@ -154,7 +154,7 @@ struct linux_xfrm_mib {
- 		put_cpu(); \
+-		per_cpu_ptr(mib[!in_softirq()], get_cpu())->mibs[field]--; \
+-		put_cpu(); \
++		preempt_disable();				\
++		my_cpu_ptr(mib[!in_softirq()])->mibs[field]--;	\
++		preempt_enable();				\
  	} while (0)
  #define SNMP_ADD_STATS_BH(mib, field, addend) 	\
--	(per_cpu_ptr(mib[0], raw_smp_processor_id())->mibs[field] += addend)
-+	(__my_cpu_ptr(mib[0])->mibs[field] += addend)
+ 	(__my_cpu_ptr(mib[0])->mibs[field] += addend)
  #define SNMP_ADD_STATS_USER(mib, field, addend) 	\
- 	do { \
- 		per_cpu_ptr(mib[1], get_cpu())->mibs[field] += addend; \
+-	do { \
+-		per_cpu_ptr(mib[1], get_cpu())->mibs[field] += addend; \
+-		put_cpu(); \
++ 	do { \
++		preempt_disable();				\
++		my_cpu_ptr(mib[1])->mibs[field] += addend;	\
++		preempt_enable();				\
+ 	} while (0)
+-
+ #endif
 
 -- 
