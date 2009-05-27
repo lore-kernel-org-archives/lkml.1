@@ -1,83 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759448AbZE0UJQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759891AbZE0UMk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759448AbZE0UJQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 16:09:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751934AbZE0UJA
+	id S1759891AbZE0UMk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 16:12:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755749AbZE0UMa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 16:09:00 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:41244 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751182AbZE0UJA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 16:09:00 -0400
-Date: Wed, 27 May 2009 22:04:19 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: paul@mad-scientist.net, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>
-Subject: Re: [2.6.27.24] Kernel coredump to a pipe is failing
-Message-ID: <20090527200419.GA1655@redhat.com>
-References: <1243355634.29250.331.camel@psmith-ubeta.netezza.com> <878wkjobbm.fsf@basil.nowhere.org> <20090527183109.GA30574@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090527183109.GA30574@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 27 May 2009 16:12:30 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:35897 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754583AbZE0UM3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 16:12:29 -0400
+From: Andi Kleen <andi@firstfloor.org>
+References: <200905271012.668777061@firstfloor.org>
+In-Reply-To: <200905271012.668777061@firstfloor.org>
+To: fengguang.wu@intel.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       fengguang.wu@intel.com
+Subject: [PATCH] [2/16] HWPOISON: Export poison flag in /proc/kpageflags
+Message-Id: <20090527201227.EAEC41D0286@basil.firstfloor.org>
+Date: Wed, 27 May 2009 22:12:27 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/27, Oleg Nesterov wrote:
->
-> On 05/26, Andi Kleen wrote:
-> >
-> > When a signal happens during core dump the core dump to a pipe
-> > can fail, because the write returns short, but the ELF core dumpers
-> > cannot handle that.
-> >
-> > There's no reason to handle signals during core dumping, so just
-> > block them all.
->
-> Actually, I think there is a strong reason to handle signals during
-> core dumping. The coredump can take a lot of time/resources, not good
-> it looks like unkillable procees to users.
->
-> Please look at
->
-> 	killable/interruptible coredumps
-> 	http://marc.info/?l=linux-kernel&m=121665710711931
->
-> at least, I think SIGKILL should terminate core dumping.
 
-Forgot to mention, and we have problems with OOM. Not only the coredumping
-task can't be killed (and it can populate the memory via get_user_pages).
-The coredump just disables OOM, if select_bad_process() sees the PF_EXITING
-task with ->mm == NULL it returns -1.
+From: Fengguang Wu <fengguang.wu@intel.com>
 
-> This all needs more discussion, but imho for now something like
-> Paul's patch http://marc.info/?l=linux-kernel&m=124340506200729
-> is the best workaround. Note that we have the same dump_write()
-> in binfmt_elf.c and binfmt_aout.c, perhaps it makes sense to
-> create coredump_file_write() helper in fs/exec.c.
+Export the new poison flag in /proc/kpageflags. Poisoned pages are moderately
+interesting even for administrators, so export them here. Also useful
+for debugging.
 
+AK: I extracted this out of a larger patch from Fengguang Wu.
 
-But I didn't notice Paul also reports the kernel panic:
+Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
-	page:ffffe20010d63d00 flags:0x8000000000000001 mapping:0000000000000000 mapcount:0 \
-	count:0 Trying to fix it up, but a reboot is needed
-	Backtrace:
-	Pid: 3346, comm: worker Tainted: P          2.6.27.24-worker #4
+---
+ fs/proc/page.c |    4 ++++
+ 1 file changed, 4 insertions(+)
 
-	Call Trace:
-	 [<ffffffff80284fd4>] bad_page+0x74/0xc0
-	 [<ffffffff80286168>] free_hot_cold_page+0x248/0x2f0
-	 [<ffffffff802f4096>] free_wr_note_data+0x56/0x70
-	 [<ffffffff802a95c6>] kfree+0x86/0x100
-	 [<ffffffff802f4096>] free_wr_note_data+0x56/0x70
-	 [<ffffffff802f0991>] elf_core_dump+0x611/0x1160
-
-At first glance, this looks like a bug outside of coredump.c,
-we are trying to free PG_locked page?
-
-Oleg.
-
+Index: linux/fs/proc/page.c
+===================================================================
+--- linux.orig/fs/proc/page.c	2009-05-27 21:13:54.000000000 +0200
++++ linux/fs/proc/page.c	2009-05-27 21:14:21.000000000 +0200
+@@ -79,6 +79,7 @@
+ #define KPF_WRITEBACK  8
+ #define KPF_RECLAIM    9
+ #define KPF_BUDDY     10
++#define KPF_HWPOISON  11
+ 
+ #define kpf_copy_bit(flags, dstpos, srcpos) (((flags >> srcpos) & 1) << dstpos)
+ 
+@@ -118,6 +119,9 @@
+ 			kpf_copy_bit(kflags, KPF_WRITEBACK, PG_writeback) |
+ 			kpf_copy_bit(kflags, KPF_RECLAIM, PG_reclaim) |
+ 			kpf_copy_bit(kflags, KPF_BUDDY, PG_buddy);
++#ifdef CONFIG_MEMORY_FAILURE
++		uflags |= kpf_copy_bit(kflags, KPF_HWPOISON, PG_hwpoison);
++#endif
+ 
+ 		if (put_user(uflags, out++)) {
+ 			ret = -EFAULT;
