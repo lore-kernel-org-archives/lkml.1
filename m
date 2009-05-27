@@ -1,47 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759830AbZE0Fdi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759782AbZE0Ffp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759830AbZE0Fdi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 01:33:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753049AbZE0Fda
+	id S1759782AbZE0Ffp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 01:35:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753049AbZE0Ffi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 01:33:30 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:45253 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752274AbZE0Fda (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 01:33:30 -0400
-From: Mike Frysinger <vapier@gentoo.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [git pull] Blackfin fixes for 2.6.30
-Date: Wed, 27 May 2009 01:33:30 -0400
-Message-Id: <1243402410-25008-1-git-send-email-vapier@gentoo.org>
-X-Mailer: git-send-email 1.6.3.1
+	Wed, 27 May 2009 01:35:38 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34971
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750936AbZE0Ffh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 01:35:37 -0400
+Date: Tue, 26 May 2009 22:35:36 -0700 (PDT)
+Message-Id: <20090526.223536.12323520.davem@davemloft.net>
+To: sam@ravnborg.org
+Cc: tj@kernel.org, sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 5/12]: sparc64: Refactor OBP cpu scanning code using an
+ iterator.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090409062924.GA14255@uranus.ravnborg.org>
+References: <20090408.223738.63750701.davem@davemloft.net>
+	<20090409062924.GA14255@uranus.ravnborg.org>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following changes since commit cd86a536c81e9300d984327517548ca0652eebf9:
-  Linus Torvalds (1):
-        Merge branch 'x86-fixes-for-linus' of git://git.kernel.org/.../tip/linux-2.6-tip
+From: Sam Ravnborg <sam@ravnborg.org>
+Date: Thu, 9 Apr 2009 08:29:24 +0200
 
-are available in the git repository at:
+> You never pass a "void *" as argument to this iterator.
+> It seems cleaner to use a long or even an int as this is closer
+> to the typical usage, and one can always pass a '0' when the
+> argument is not used.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/vapier/blackfin.git for-linus
+I've changed this to an 'int' while respinning this patch.
 
-Mike Frysinger (6):
-      Blackfin: hook up preadv/pwritev syscalls
-      MAINTAINERS: update Blackfin items
-      MAINTAINERS: drop (subscribers-only) markings on Blackfin lists
-      Blackfin: ignore generated vmlinux.lds
-      Blackfin: drop unneeded asm/.gitignore
-      Blackfin: fix strncmp.o build error
-
- MAINTAINERS                          |   18 +++++++++---------
- arch/blackfin/include/asm/.gitignore |    1 -
- arch/blackfin/include/asm/unistd.h   |    4 +++-
- arch/blackfin/kernel/.gitignore      |    1 +
- arch/blackfin/lib/strncmp.c          |    3 +--
- arch/blackfin/mach-common/entry.S    |    2 ++
- 6 files changed, 16 insertions(+), 13 deletions(-)
- delete mode 100644 arch/blackfin/include/asm/.gitignore
- create mode 100644 arch/blackfin/kernel/.gitignore
+Thanks!
