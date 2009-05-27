@@ -1,65 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933239AbZE0SQq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933322AbZE0SR1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933239AbZE0SQq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 14:16:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933143AbZE0SP4
+	id S933322AbZE0SR1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 14:17:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933210AbZE0SQh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 14:15:56 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:53257 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S933112AbZE0SPo (ORCPT
+	Wed, 27 May 2009 14:16:37 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:36827 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933197AbZE0SQf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 14:15:44 -0400
-Date: Wed, 27 May 2009 14:15:42 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-cc: Kay Sievers <kay.sievers@vrfy.org>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       SCSI development list <linux-scsi@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Tejun Heo <tj@kernel.org>, Cornelia Huck <cornelia.huck@de.ibm.com>,
-       <linux-fsdevel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@aristanetworks.com>
-Subject: Re: [PATCH 25/20] sysfs: Only support removing emtpy sysfs  directories.
-In-Reply-To: <m1ljoi1l5a.fsf@fess.ebiederm.org>
-Message-ID: <Pine.LNX.4.44L0.0905271410410.15690-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 27 May 2009 14:16:35 -0400
+Subject: Re: [PATCH 2/2] Dynamic Tick: Allow 32-bit machines to sleep for
+ more than 2.15 seconds
+From: john stultz <johnstul@us.ibm.com>
+To: Jon Hunter <jon-hunter@ti.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <4A1D52EB.8040107@ti.com>
+References: <4A1D52EB.8040107@ti.com>
+Content-Type: text/plain
+Date: Wed, 27 May 2009 11:16:16 -0700
+Message-Id: <1243448176.7440.12.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 May 2009, Eric W. Biederman wrote:
-
-> Alan Stern <stern@rowland.harvard.edu> writes:
+On Wed, 2009-05-27 at 09:49 -0500, Jon Hunter wrote:
+> In the dynamic tick code, "max_delta_ns" (member of the 
+> "clock_event_device" structure) represents the maximum sleep time that 
+> can occur between timer events in nanoseconds.
 > 
-> > On Wed, 27 May 2009, Kay Sievers wrote:
-> >
-> >> On Wed, May 27, 2009 at 01:49, James Bottomley
-> >> <James.Bottomley@hansenpartnership.com> wrote:
-> >> 
-> >> > OK ... perhaps we have to wait a little harder: try this; it waits until
-> >> > all the targets have disappeared from visibility via an event.
-> >> 
-> >> That seems to work fine here.
-> >
-> > It's good for a short-term fix.  For the longer term, I still think 
-> > it's a mistake to wait for the sdevs to be released before deleting the 
-> > target.  It gives user programs the ability to block the host-removal 
-> > thread indefinitely.
+> The variable, "max_delta_ns", is defined as an unsigned long which is a 
+> 32-bit integer for 32-bit machines and a 64-bit integer for 64-bit 
+> machines (if -m64 option is used for gcc). The value of max_delta_ns is 
+> set by calling the function "clockevent_delta2ns()" which returns a 
+> maximum value of LONG_MAX. For a 32-bit machine LONG_MAX is equal to 
+> 0x7fffffff and in nanoseconds this equates to ~2.15 seconds. Hence, the 
+> maximum sleep time for a 32-bit machine is ~2.15 seconds, where as for a 
+> 64-bit machine it will be many years.
 > 
-> How can user programs block removal indefinitely today?
+> This patch changes the type of max_delta_ns to be "unsigned long long" 
+> instead of "unsigned long" so that this variable is a 64-bit type for 
+> both 32-bit and 64-bit machines. It also changes the maximum value 
+> returned by clockevent_delta2ns() to LLONG_MAX. Hence this allows a 
+> 32-bit machine to sleep for longer than ~2.15 seconds. Please note that 
+> this patch changes "min_delta_ns" to be "unsigned long long" as well and 
+> although this is probably unnecessary, it makes the patch simpler.
+> 
+> Signed-off-by: Jon Hunter <jon-hunter@ti.com>
 
-As fas as I know, they can't.  Instead, they can cause the SCSI layer 
-to unregister a sysfs directory containing a child directory.  :-)
+Acked-by: John Stultz <johnstul@us.ibm.com>
 
-Basically, a user program can delay removal of the child (i.e., the
-target) directory indefinitely, because currently the target isn't
-unregistered when all its children are removed -- it's unregistered
-when all its children are _released_.
 
-Alan Stern
+> ---
+>   include/linux/clockchips.h |    6 +++---
+>   kernel/hrtimer.c           |    2 +-
+>   kernel/time/clockevents.c  |   10 +++++-----
+>   kernel/time/tick-oneshot.c |    2 +-
+>   kernel/time/timer_list.c   |    4 ++--
+>   5 files changed, 12 insertions(+), 12 deletions(-)
+> 
+> diff --git a/include/linux/clockchips.h b/include/linux/clockchips.h
+> index 3a1dbba..8154bc6 100644
+> --- a/include/linux/clockchips.h
+> +++ b/include/linux/clockchips.h
+> @@ -77,8 +77,8 @@ enum clock_event_nofitiers {
+>   struct clock_event_device {
+>   	const char		*name;
+>   	unsigned int		features;
+> -	unsigned long		max_delta_ns;
+> -	unsigned long		min_delta_ns;
+> +	unsigned long long	max_delta_ns;
+> +	unsigned long long	min_delta_ns;
+>   	unsigned long		mult;
+>   	int			shift;
+>   	int			rating;
+> @@ -116,7 +116,7 @@ static inline unsigned long div_sc(unsigned long 
+> ticks, unsigned long nsec,
+>   }
+> 
+>   /* Clock event layer functions */
+> -extern unsigned long clockevent_delta2ns(unsigned long latch,
+> +extern unsigned long long clockevent_delta2ns(unsigned long latch,
+>   					 struct clock_event_device *evt);
+>   extern void clockevents_register_device(struct clock_event_device *dev);
+> 
+> diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
+> index cb8a15c..5b1cdc4 100644
+> --- a/kernel/hrtimer.c
+> +++ b/kernel/hrtimer.c
+> @@ -1199,7 +1199,7 @@ hrtimer_interrupt_hanging(struct 
+> clock_event_device *dev,
+>   	force_clock_reprogram = 1;
+>   	dev->min_delta_ns = (unsigned long)try_time.tv64 * 3;
+>   	printk(KERN_WARNING "hrtimer: interrupt too slow, "
+> -		"forcing clock min delta to %lu ns\n", dev->min_delta_ns);
+> +		"forcing clock min delta to %llu ns\n", dev->min_delta_ns);
+>   }
+>   /*
+>    * High resolution timer interrupt
+> diff --git a/kernel/time/clockevents.c b/kernel/time/clockevents.c
+> index d13be21..3fa07b3 100644
+> --- a/kernel/time/clockevents.c
+> +++ b/kernel/time/clockevents.c
+> @@ -36,10 +36,10 @@ static DEFINE_SPINLOCK(clockevents_lock);
+>    *
+>    * Math helper, returns latch value converted to nanoseconds (bound 
+> checked)
+>    */
+> -unsigned long clockevent_delta2ns(unsigned long latch,
+> +unsigned long long clockevent_delta2ns(unsigned long latch,
+>   				  struct clock_event_device *evt)
+>   {
+> -	u64 clc = ((u64) latch << evt->shift);
+> +	unsigned long long clc = ((unsigned long long) latch << evt->shift);
+> 
+>   	if (unlikely(!evt->mult)) {
+>   		evt->mult = 1;
+> @@ -49,10 +49,10 @@ unsigned long clockevent_delta2ns(unsigned long latch,
+>   	do_div(clc, evt->mult);
+>   	if (clc < 1000)
+>   		clc = 1000;
+> -	if (clc > LONG_MAX)
+> -		clc = LONG_MAX;
+> +	if (clc > LLONG_MAX)
+> +		clc = LLONG_MAX;
+> 
+> -	return (unsigned long) clc;
+> +	return clc;
+>   }
+> 
+>   /**
+> diff --git a/kernel/time/tick-oneshot.c b/kernel/time/tick-oneshot.c
+> index 2e8de67..857087b 100644
+> --- a/kernel/time/tick-oneshot.c
+> +++ b/kernel/time/tick-oneshot.c
+> @@ -50,7 +50,7 @@ int tick_dev_program_event(struct clock_event_device 
+> *dev, ktime_t expires,
+>   				dev->min_delta_ns += dev->min_delta_ns >> 1;
+> 
+>   			printk(KERN_WARNING
+> -			       "CE: %s increasing min_delta_ns to %lu nsec\n",
+> +			       "CE: %s increasing min_delta_ns to %llu nsec\n",
+>   			       dev->name ? dev->name : "?",
+>   			       dev->min_delta_ns << 1);
+> 
+> diff --git a/kernel/time/timer_list.c b/kernel/time/timer_list.c
+> index a999b92..3bf30b4 100644
+> --- a/kernel/time/timer_list.c
+> +++ b/kernel/time/timer_list.c
+> @@ -204,8 +204,8 @@ print_tickdevice(struct seq_file *m, struct 
+> tick_device *td, int cpu)
+>   		return;
+>   	}
+>   	SEQ_printf(m, "%s\n", dev->name);
+> -	SEQ_printf(m, " max_delta_ns:   %lu\n", dev->max_delta_ns);
+> -	SEQ_printf(m, " min_delta_ns:   %lu\n", dev->min_delta_ns);
+> +	SEQ_printf(m, " max_delta_ns:   %llu\n", dev->max_delta_ns);
+> +	SEQ_printf(m, " min_delta_ns:   %llu\n", dev->min_delta_ns);
+>   	SEQ_printf(m, " mult:           %lu\n", dev->mult);
+>   	SEQ_printf(m, " shift:          %d\n", dev->shift);
+>   	SEQ_printf(m, " mode:           %d\n", dev->mode);
 
