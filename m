@@ -1,51 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757042AbZE0QN7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757960AbZE0QQU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757042AbZE0QN7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 12:13:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754197AbZE0QNv
+	id S1757960AbZE0QQU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 12:16:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755262AbZE0QQJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 12:13:51 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:2721 "EHLO
-	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751818AbZE0QNu (ORCPT
+	Wed, 27 May 2009 12:16:09 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:52079 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754197AbZE0QQH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 12:13:50 -0400
-Subject: Re: [PATCH 16/18] MAINTAINERS - Remove L:
- linux-kernel@vger.kernel.org from all but "THE REST"
-From: Joe Perches <joe@perches.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Paul Mundt <lethal@linux-sh.org>, Grant Likely <grant.likely@secretlab.ca>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20090526230022.015b579d.akpm@linux-foundation.org>
-References: <cover.1243131992.git.joe@perches.com>
-	 <9f55522f7ab56afcf16d936d06ab2f3a7e699ed5.1243131992.git.joe@perches.com>
-	 <fa686aa40905232018x5e6d1d1aofef790dee2e3bfae@mail.gmail.com>
-	 <1243135358.3560.1.camel@Joe-Laptop.home>
-	 <fa686aa40905232128x475ea76dh861bf4d0fd3e1aef@mail.gmail.com>
-	 <1243139947.3560.7.camel@Joe-Laptop.home>
-	 <fa686aa40905232151g5ed5bcc8t2f19d63ace2277e7@mail.gmail.com>
-	 <20090527013303.GB8979@linux-sh.org>
-	 <1243402718.27337.8.camel@Joe-Laptop.home>
-	 <20090527055005.GA9802@linux-sh.org>
-	 <20090526230022.015b579d.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 27 May 2009 09:12:40 -0700
-Message-Id: <1243440760.27337.18.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 27 May 2009 12:16:07 -0400
+Date: Wed, 27 May 2009 12:16:09 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+cc: Hannes Reinecke <hare@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
+       SCSI development list <linux-scsi@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Tejun Heo <tj@kernel.org>, Cornelia Huck <cornelia.huck@de.ibm.com>,
+       <linux-fsdevel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>
+Subject: Re: [PATCH 25/20] sysfs: Only support removing emtpy sysfs  directories.
+In-Reply-To: <1243440094.6067.10.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.44L0.0905271213040.15613-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-05-26 at 23:00 -0700, Andrew Morton wrote:
-> Most subsystem maintainers shed patches like a hobo does dandruff.  If
-> it is cc'ed to lkml then there is a decent chance that I will see it
-> and will un-lose it.
-> 
-> This happens probably 100 or more times per kernel release.
+On Wed, 27 May 2009, James Bottomley wrote:
 
-Andrew, you could also add yourself to "THE REST" section.
+> Hardly ... our current refcounting is on destruction (releases).  This
+> problem is an instance of visibility (the del calls) we need the
+> visibility teardown to work nicely.  We currently have no refcounting on
+> the visibility.  Even if we did (and we could add a ref on when the
+> underlying device del calls are done), what happens if the target needs
+> to become visible again.  Apparently the generic device infrastructure
+> can't accept doing an add on a previously del'd device.
 
+Definitely not.
+
+> The most obvious way of fixing this is to have a special case for
+> targets of dying hosts ... they could call del early on the
+> understanding that they're never getting new underlying devices.  That
+> would allow the wait to trigger on the last target del, which is what is
+> optimal.
+
+I don't understand all the subtle issues here.  In other contexts, the 
+solution would be to initialize a refcount to 1 when the target is 
+allocated, increment it when a device is added, and decrement it when a 
+device is removed or the host is removed.  When the refcount goes to 0, 
+the target is deleted.  Why wouldn't this kind of approach work?
+
+Alan Stern
 
