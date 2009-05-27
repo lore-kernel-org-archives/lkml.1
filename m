@@ -1,78 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756797AbZE0BXY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756709AbZE0BYo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756797AbZE0BXY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 21:23:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755403AbZE0BXJ
+	id S1756709AbZE0BYo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 21:24:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754445AbZE0BYg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 21:23:09 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:59632 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1754789AbZE0BXH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 21:23:07 -0400
-Message-ID: <4A1C9645.7010107@cn.fujitsu.com>
-Date: Wed, 27 May 2009 09:24:21 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: Ingo Molnar <mingo@elte.hu>, Jens Axboe <jens.axboe@oracle.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Tom Zanussi <tzanussi@gmail.com>, "Theodore Ts'o" <tytso@mit.edu>,
-       Steven Whitehouse <swhiteho@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Jeff Moyer <jmoyer@redhat.com>, Christoph Hellwig <hch@infradead.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v2 1/2] tracing/events: make __string() more general
-References: <4A1B6A2F.2040703@cn.fujitsu.com> <4A1B6A4C.3070407@cn.fujitsu.com> <alpine.DEB.2.00.0905261655120.26705@gandalf.stny.rr.com>
-In-Reply-To: <alpine.DEB.2.00.0905261655120.26705@gandalf.stny.rr.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 26 May 2009 21:24:36 -0400
+Received: from sh.osrg.net ([192.16.179.4]:52959 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752337AbZE0BYf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 21:24:35 -0400
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+To: mingo@elte.hu
+Cc: joerg.roedel@amd.com, fujita.tomonori@lab.ntt.co.jp,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH -tip 2/3] dma-debug: use sg_dma_len accessor
+Date: Wed, 27 May 2009 09:43:02 +0900
+Message-Id: <1243384983-3863-3-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+X-Mailer: git-send-email 1.6.0.6
+In-Reply-To: <1243384983-3863-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+References: <1243384983-3863-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Wed, 27 May 2009 10:24:25 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt wrote:
-> 
-> On Tue, 26 May 2009, Li Zefan wrote:
-> 
->> This changes __string(..., src) to __string(..., len), thus makes it more
->> general, and then block TRACE_EVENT() can use it.
->>
->> Also introduce __fetch_str(), which is used in TP_assign() and returns
->> the address of the string, while __get_str() is used in TP_print().
->>
->> [ Impact: TRACE_EVENT api change ]
-> 
-> What's the reason for the change?
-> 
-> Is it to handle NULL pointers? If so, lets change the ftrace.h to handle
-> it instead.
-> 
+debug_dma_map_sg() and debug_dma_unmap_sg() use length in struct
+scatterlist while debug_dma_sync_sg_for_cpu() and
+debug_dma_sync_sg_for_device() use dma_length. This causes bugs
+warnings on some IOMMU implementations since these values are not
+same; the length doesn't represent the dma length.
 
-No, not for this purpose.
+We always need to use sg_dma_len() accessor to get the dma length of a
+scatterlist entry.
 
-With __string(..., src), we need to have a source string, but sometimes no
-source string is available, and what we know is how big the string will be.
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+---
+ lib/dma-debug.c |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
 
-Take block trace events for example, I want to convert an unsigned char array
-into a string, after this patch, this can be done this way:
+diff --git a/lib/dma-debug.c b/lib/dma-debug.c
+index 64aaa96..df9e475 100644
+--- a/lib/dma-debug.c
++++ b/lib/dma-debug.c
+@@ -783,7 +783,7 @@ void debug_dma_map_sg(struct device *dev, struct scatterlist *sg,
+ 		entry->type           = dma_debug_sg;
+ 		entry->dev            = dev;
+ 		entry->paddr          = sg_phys(s);
+-		entry->size           = s->length;
++		entry->size           = sg_dma_len(s);
+ 		entry->dev_addr       = sg_dma_address(s);
+ 		entry->direction      = direction;
+ 		entry->sg_call_ents   = nents;
+@@ -791,7 +791,7 @@ void debug_dma_map_sg(struct device *dev, struct scatterlist *sg,
+ 
+ 		if (!PageHighMem(sg_page(s))) {
+ 			check_for_stack(dev, sg_virt(s));
+-			check_for_illegal_area(dev, sg_virt(s), s->length);
++			check_for_illegal_area(dev, sg_virt(s), sg_dma_len(s));
+ 		}
+ 
+ 		add_dma_entry(entry);
+@@ -817,7 +817,7 @@ void debug_dma_unmap_sg(struct device *dev, struct scatterlist *sglist,
+ 			.dev            = dev,
+ 			.paddr          = sg_phys(s),
+ 			.dev_addr       = sg_dma_address(s),
+-			.size           = s->length,
++			.size           = sg_dma_len(s),
+ 			.direction      = dir,
+ 			.sg_call_ents   = 0,
+ 		};
+@@ -940,7 +940,7 @@ void debug_dma_sync_sg_for_cpu(struct device *dev, struct scatterlist *sg,
+ 		return;
+ 
+ 	for_each_sg(sg, s, nelems, i) {
+-		check_sync(dev, sg_dma_address(s), s->dma_length, 0,
++		check_sync(dev, sg_dma_address(s), sg_dma_len(s), 0,
+ 			   direction, true);
+ 	}
+ }
+@@ -956,7 +956,7 @@ void debug_dma_sync_sg_for_device(struct device *dev, struct scatterlist *sg,
+ 		return;
+ 
+ 	for_each_sg(sg, s, nelems, i) {
+-		check_sync(dev, sg_dma_address(s), s->dma_length, 0,
++		check_sync(dev, sg_dma_address(s), sg_dma_len(s), 0,
+ 			   direction, false);
+ 	}
+ }
+-- 
+1.6.0.6
 
-TP_STRUCT_entry(
-	__string( cmd, rq->cmd_len * 3 )
-)
-
-TP_fast_assign(
-	construct_str( cmd )
-)
-
-TP_prink("%s\n", get_str(cmd))
-
-Seems Christoph also runs into this problem while doing his XFS tracing.
-(and NULL str ptr that I'm not suffering)
-
-> This is why I like the Impact line really be a "rational" line.
->  "TRACE_EVENT api change" is meaningless to me.
-> 
-
-So what should this impact be. :(
