@@ -1,95 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761133AbZE0Xna@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761222AbZE0Xnu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761133AbZE0Xna (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 19:43:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755611AbZE0XnW
+	id S1761222AbZE0Xnu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 19:43:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755611AbZE0Xnl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 19:43:22 -0400
-Received: from mail.crca.org.au ([67.207.131.56]:39090 "EHLO crca.org.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755481AbZE0XnV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 19:43:21 -0400
-X-Bogosity: Ham, spamicity=0.000000
-Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
-From: Nigel Cunningham <nigel@tuxonice.net>
-Reply-To: nigel@tuxonice.net
-To: Len Brown <lenb@kernel.org>
-Cc: Ray Lee <ray-lk@madrabbit.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org,
-       tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.LFD.2.00.0905271437530.4277@localhost.localdomain>
-References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
-	 <200905081611.41865.rjw@sisk.pl> <1241819569.19600.281.camel@nigel-laptop>
-	 <200905090046.21282.rjw@sisk.pl> <1241825408.19600.384.camel@nigel-laptop>
-	 <2c0942db0905081644l73a7a4f5i8af4677046797df@mail.gmail.com>
-	 <alpine.LFD.2.00.0905271437530.4277@localhost.localdomain>
-Content-Type: text/plain
-Date: Thu, 28 May 2009 09:43:45 +1000
-Message-Id: <1243467825.13930.134.camel@nigel-laptop>
+	Wed, 27 May 2009 19:43:41 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52568 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755481AbZE0Xnk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 19:43:40 -0400
+Date: Wed, 27 May 2009 16:43:05 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+Subject: Re: [PATCH] mark dma_sync_single and dma_sync_sg as deprecated
+Message-Id: <20090527164305.82b1c1ab.akpm@linux-foundation.org>
+In-Reply-To: <20090519125630Y.fujita.tomonori@lab.ntt.co.jp>
+References: <20090519125630Y.fujita.tomonori@lab.ntt.co.jp>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Len.
+On Tue, 19 May 2009 13:00:37 +0900
+FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
 
-On Wed, 2009-05-27 at 15:10 -0400, Len Brown wrote:
-> > Please stick at this.
+> dma_sync_single() and dma_sync_sg() have been described as "Backwards
+> compat, remove in 2.7.x" for a long time (since 2.6.5).
 > 
-> I agree with Ray, and could not have said it better.
+> This marks dma_sync_single() and dma_sync_sg() as deprecated so the
+> users get notified before removing them.
 > 
-> I will, however, reference prior art...
+> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> ---
+>  include/linux/dma-mapping.h |   17 ++++++++++++++---
+>  1 files changed, 14 insertions(+), 3 deletions(-)
 > 
-> Greg KH said the exact same thing in 2005
-> when he met with Nigel and Pavel in Ottawa.
-> 
-> >From Patrick Mochel's minutes, available here:
-> http://lwn.net/Articles/144193/
-> 
-> "Suspend2 and Software Suspend
-> 
-> There was agreement among the attendees that Nigel Cunningham's 
-> suspend-to-disk patches ("Suspend2") are stable and worthwhile to many 
-> users. It was suggested that he begin the process of merging his patches 
-> with Pavel Machek's in-kernel software suspend implementation. A lengthy 
-> discussion followed about strategies for doing so and the philosophy of 
-> gradual kernel development.
-> 
-> To briefly recap: Suspend2 is very robust and feature rich. Not only does 
-> it include a reliable process freezer, it has the ability to compress and 
-> encrypt the suspended image and includes a graphical status bar. Although 
-> it apparently does receive positive reviews from users, most kernel 
-> developers do not care about such eye candy. It was suggested and agreed 
-> that Nigel will split the patches (all 69 of them so far) into functional 
-> groups, and push them separately. We agreed that the process freezer 
-> patches would come first, which should also benefit the existing suspend 
-> implementation as well. Next will most likely be the new algorithmic core 
-> and eventually the plugin architecture and graphical features. It was 
-> heavily stressed that Nigel and Pavel must work together and that the more 
-> effort that is put in to making the patches smaller and simpler, the 
-> easier it will be to merge this work. "
-> 
-> While "suspend2" is now called "tux-on-ice", the same message
-> about how to merge upstream applies in 2009
-> just as much as it did in 2005.
-> 
-> Rafael's reference to ch10 in HPA's articulate 2008 OLS paper is apt
-> http://ols.fedoraproject.org/OLS/Reprints-2008/anvin-reprint.pdf
-> The involved parties must have common motivation to make forward progress.
-> 
-> The process should be to cherry-pick the out-of-tree implementation
-> to gradually improve the in-tree-implementation.  If we had started
-> that 4 years ago, we'd be done by now.  If we don't start it now,
-> we'll be having this same conversation again in 2013.
+> diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
+> index 8083b6a..197ddc4 100644
+> --- a/include/linux/dma-mapping.h
+> +++ b/include/linux/dma-mapping.h
+> @@ -107,9 +107,20 @@ static inline int is_buffer_dma_capable(u64 mask, dma_addr_t addr, size_t size)
+>  #include <asm-generic/dma-mapping-broken.h>
+>  #endif
+>  
+> -/* Backwards compat, remove in 2.7.x */
+> -#define dma_sync_single		dma_sync_single_for_cpu
+> -#define dma_sync_sg		dma_sync_sg_for_cpu
+> +/* for backwards compatibility, removed soon */
+> +static inline void __deprecated dma_sync_single(struct device *dev,
+> +						dma_addr_t addr, size_t size,
+> +						enum dma_data_direction dir)
+> +{
+> +	dma_sync_single_for_cpu(dev, addr, size, dir);
+> +}
+> +
+> +static inline void __deprecated dma_sync_sg(struct device *dev,
+> +					    struct scatterlist *sg, int nelems,
+> +					    enum dma_data_direction dir)
+> +{
+> +	dma_sync_sg_for_cpu(dev, sg, nelems, dir);
+> +}
+>  
+>  static inline u64 dma_get_mask(struct device *dev)
+>  {
 
-Thanks for the encouragement.
+I dunno.  There are still several callers to dma_sync_single() and
+dma_sync_sg() in various drivers and adding the warning will just
+irritate people.  It would be better to make an effort to convert those
+callsites before filling everyone's screens with yet more warnings.
 
-I'm seeking to do this with Rafael, and he's being really good to deal
-with.
-
-Regards,
-
-Nigel
+Most of the offenders are in USB, so let's optimistically cc those fine
+folks.
 
