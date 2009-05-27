@@ -1,58 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763895AbZE0Hhu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763849AbZE0Hhf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763895AbZE0Hhu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 03:37:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763417AbZE0Hd6
+	id S1763849AbZE0Hhf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 03:37:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763032AbZE0Hbf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 03:33:58 -0400
-Received: from mga06.intel.com ([134.134.136.21]:7158 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762359AbZE0Hd5 (ORCPT
+	Wed, 27 May 2009 03:31:35 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:53378 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763023AbZE0Hbe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 03:33:57 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,258,1241420400"; 
-   d="scan'208";a="415981564"
-Date: Wed, 27 May 2009 15:17:36 +0800
-From: Yong Wang <yong.y.wang@linux.intel.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org
-Subject: One question about perf_counter on IA
-Message-ID: <20090527071736.GA26774@ywang-moblin2.bj.intel.com>
-MIME-Version: 1.0
+	Wed, 27 May 2009 03:31:34 -0400
+Date: Wed, 27 May 2009 09:38:09 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       hpa@zytor.com, x86@kernel.org, Huang Ying <ying.huang@intel.com>,
+       Andi Kleen <ak@linux.intel.com>
+Subject: Re: [PATCH 03/31] x86: MCE: Fix EIPV behaviour with !PCC
+Message-ID: <20090527073809.GU846@one.firstfloor.org>
+References: <1243382073-29338-1-git-send-email-andi@firstfloor.org> <c63915cfa51e24394524ddaa66a6f2cb2fcfe66f.1243381848.git.ak@linux.intel.com> <c1d7bf910168f07efb50d98f901f41e289a87f1f.1243381848.git.ak@linux.intel.com> <6c6d1f8bbbd2312884dca5a5c75aa5f5a87dae4b.1243381848.git.ak@linux.intel.com> <4A1CC1E0.2030300@jp.fujitsu.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <4A1CC1E0.2030300@jp.fujitsu.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I noticed that the LVT error register is masked and then unmasked during
-perf_counter initialization on IA in arch/x86/kernel/cpu/perf_counter.c
+> We never reach there with tolerant == 0.
 
-void perf_counters_lapic_init(int nmi)
-{
-	u32 apic_val;
+Fair point. Ying do you remember which test case that fixed?
 
-	if (!x86_pmu_initialized())
-		return;
+> 
+> And you will remove this code in your 25/31.
 
-	/*
-	 * Enable the performance counter vector in the APIC LVT:
-	 */
-	apic_val = apic_read(APIC_LVTERR);
+I usually kept the earlier patches fixing the code before I remove it, just
+in case someone drops the later code.
 
-	apic_write(APIC_LVTERR, apic_val | APIC_LVT_MASKED);
-	if (nmi)
-		apic_write(APIC_LVTPC, APIC_DM_NMI);
-	else
-		apic_write(APIC_LVTPC, LOCAL_PERF_VECTOR);
-	apic_write(APIC_LVTERR, apic_val);
-}
+-Andi
 
-Why is this needed? Is this documented somewhere in the spec? I tried
-commenting out the masking and unmasking operations and I did not any
-error interrupt generated.
-
-Thanks
--Yong
+-- 
+ak@linux.intel.com -- Speaking for myself only.
