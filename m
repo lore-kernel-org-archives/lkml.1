@@ -1,108 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759298AbZE0C5r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759134AbZE0DDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759298AbZE0C5r (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 22:57:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756342AbZE0C5i
+	id S1759134AbZE0DDS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 23:03:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755797AbZE0DDH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 22:57:38 -0400
-Received: from mga14.intel.com ([143.182.124.37]:44111 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756099AbZE0C5i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 22:57:38 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,256,1241420400"; 
-   d="scan'208";a="147264484"
-Date: Wed, 27 May 2009 10:57:21 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>
-Subject: Re: [PATCH] readahead:add blk_run_backing_dev
-Message-ID: <20090527025721.GA11153@localhost>
-References: <6.0.0.20.2.20090521145005.06f81fe0@172.19.0.2> <20090522010538.GB6010@localhost> <6.0.0.20.2.20090522102551.0705aea0@172.19.0.2> <20090522023323.GA10864@localhost> <20090526164252.0741b392.akpm@linux-foundation.org> <6.0.0.20.2.20090527092105.076be238@172.19.0.2> <20090527020909.GB17658@localhost> <6.0.0.20.2.20090527110937.0770c420@172.19.0.2> <20090527023638.GA27079@localhost> <6.0.0.20.2.20090527114200.076aab00@172.19.0.2>
+	Tue, 26 May 2009 23:03:07 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:64718 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1755645AbZE0DDH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 23:03:07 -0400
+Message-ID: <4A1CADBA.7000707@cn.fujitsu.com>
+Date: Wed, 27 May 2009 11:04:26 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <6.0.0.20.2.20090527114200.076aab00@172.19.0.2>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>
+CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/3] tracing/stat: change dummpy_cmp() to return -1
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 27, 2009 at 10:47:47AM +0800, Hisashi Hifumi wrote:
-> 
-> At 11:36 09/05/27, Wu Fengguang wrote:
-> >On Wed, May 27, 2009 at 10:21:53AM +0800, Hisashi Hifumi wrote:
-> >>
-> >> At 11:09 09/05/27, Wu Fengguang wrote:
-> >> >On Wed, May 27, 2009 at 08:25:04AM +0800, Hisashi Hifumi wrote:
-> >> >>
-> >> >> At 08:42 09/05/27, Andrew Morton wrote:
-> >> >> >On Fri, 22 May 2009 10:33:23 +0800
-> >> >> >Wu Fengguang <fengguang.wu@intel.com> wrote:
-> >> >> >
-> >> >> >> > I tested above patch, and I got same performance number.
-> >> >> >> > I wonder why if (PageUptodate(page)) check is there...
-> >> >> >>
-> >> >> >> Thanks!  This is an interesting micro timing behavior that
-> >> >> >> demands some research work.  The above check is to confirm if it's
-> >> >> >> the PageUptodate() case that makes the difference. So why that case
-> >> >> >> happens so frequently so as to impact the performance? Will it also
-> >> >> >> happen in NFS?
-> >> >> >>
-> >> >> >> The problem is readahead IO pipeline is not running smoothly, which is
-> >> >> >> undesirable and not well understood for now.
-> >> >> >
-> >> >> >The patch causes a remarkably large performance increase.  A 9%
-> >> >> >reduction in time for a linear read? I'd be surprised if the workload
-> >> >>
-> >> >> Hi Andrew.
-> >> >> Yes, I tested this with dd.
-> >> >>
-> >> >> >even consumed 9% of a CPU, so where on earth has the kernel gone to?
-> >> >> >
-> >> >> >Have you been able to reproduce this in your testing?
-> >> >>
-> >> >> Yes, this test on my environment is reproducible.
-> >> >
-> >> >Hisashi, does your environment have some special configurations?
-> >>
-> >> Hi.
-> >> My testing environment is as follows:
-> >> Hardware: HP DL580
-> >> CPU:Xeon 3.2GHz *4 HT enabled
-> >> Memory:8GB
-> >> Storage: Dothill SANNet2 FC (7Disks RAID-0 Array)
-> >
-> >This is a big hardware RAID. What's the readahead size?
-> >
-> >The numbers look too small for a 7 disk RAID:
-> >
-> >        > #dd if=testdir/testfile of=/dev/null bs=16384
-> >        >
-> >        > -2.6.30-rc6
-> >        > 1048576+0 records in
-> >        > 1048576+0 records out
-> >        > 17179869184 bytes (17 GB) copied, 224.182 seconds, 76.6 MB/s
-> >        >
-> >        > -2.6.30-rc6-patched
-> >        > 1048576+0 records in
-> >        > 1048576+0 records out
-> >        > 17179869184 bytes (17 GB) copied, 206.465 seconds, 83.2 MB/s
-> >
-> >I'd suggest you to configure the array properly before coming back to
-> >measuring the impact of this patch.
-> 
-> 
-> I created 16GB file to this disk array, and mounted to testdir, dd to this directory.
+Currently the output of trace_stat/workqueues is totally reversed:
 
-I mean, you should get >300MB/s throughput with 7 disks, and you
-should seek ways to achieve that before testing out this patch :-)
+ # cat /debug/tracing/trace_stat/workqueues
+    ...
+    1       17       17      210       37   `-blk_unplug_work+0x0/0x57
+    1     3779     3779      181       11   |-cfq_kick_queue+0x0/0x2f
+    1     3796     3796                     kblockd/1:120
+    ...
 
-Thanks,
-Fengguang
+The correct output should be:
+
+    1     3796     3796                     kblockd/1:120
+    1     3779     3779      181       11   |-cfq_kick_queue+0x0/0x2f
+    1       17       17      210       37   `-blk_unplug_work+0x0/0x57
+
+It's caused by "tracing/stat: replace linked list by an rbtree for sorting"
+(53059c9b67a62a3dc8c80204d3da42b9267ea5a0).
+
+dummpy_cmp() should return -1, so rb_node will always be inserted as
+right-most node in the rbtree, thus we sort the output in ascending
+order.
+
+[ Impact: fix the output of trace_stat/workqueues ]
+
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+---
+ kernel/trace/trace_stat.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/kernel/trace/trace_stat.c b/kernel/trace/trace_stat.c
+index 2e849b5..8b7420a 100644
+--- a/kernel/trace/trace_stat.c
++++ b/kernel/trace/trace_stat.c
+@@ -127,7 +127,7 @@ insert_stat(struct rb_root *root, struct stat_node *data, cmp_stat_t cmp)
+  */
+ static int dummy_cmp(void *p1, void *p2)
+ {
+-	return 1;
++	return -1;
+ }
+ 
+ /*
+-- 
+1.5.4.rc3
+
 
