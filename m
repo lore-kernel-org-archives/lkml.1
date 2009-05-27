@@ -1,56 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762856AbZE0MsQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763101AbZE0Ms1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762856AbZE0MsQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 08:48:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751999AbZE0Mr7
+	id S1763101AbZE0Ms1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 08:48:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762819AbZE0MsM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 08:47:59 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:26645 "EHLO
-	IE1EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762139AbZE0Mr6 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 08:47:58 -0400
-X-BigFish: VPS-35(zz1432R98dR14ffO936eN1805Mzz1202hzzz32i6bh43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KKAZJE-03-EEK-01
-Date: Wed, 27 May 2009 14:47:38 +0200
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-CC: mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -tip 0/3] dma-debug fixes
-Message-ID: <20090527124738.GH3927@amd.com>
-References: <1243384983-3863-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+	Wed, 27 May 2009 08:48:12 -0400
+Received: from gate1.ipvision.dk ([94.127.49.2]:53931 "EHLO gate1.ipvision.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762856AbZE0MsL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 08:48:11 -0400
+X-Greylist: delayed 1259 seconds by postgrey-1.27 at vger.kernel.org; Wed, 27 May 2009 08:48:11 EDT
+To: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
+Cc: romieu@fr.zoreil.com (Francois Romieu), dave@thedillows.org (David Dillow),
+       linux-kernel@vger.kernel.org, edward_hsu@realtek.com.tw (Edward Hsu)
+Subject: Re: Realtek 8168D: no active link (2.6.29.2)
+References: <20090519213213.GA6377@electric-eye.fr.zoreil.com>
+	<200905251014.n4PAEi0k027544@mercury.physics.adelaide.edu.au>
+From: Benny Amorsen <benny+usenet@amorsen.dk>
+Date: Wed, 27 May 2009 14:27:04 +0200
+In-Reply-To: <200905251014.n4PAEi0k027544@mercury.physics.adelaide.edu.au> (Jonathan Woithe's message of "Mon\, 25 May 2009 19\:44\:44 +0930 \(CST\)")
+Message-ID: <m3octeu3xj.fsf@ursa.amorsen.dk>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-In-Reply-To: <1243384983-3863-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 27 May 2009 12:47:38.0785 (UTC) FILETIME=[51239910:01C9DEC9]
+Content-Type: text/plain; charset=us-ascii
+X-Spam-Score: -5.2 (-----)
+X-Spam-Report: ALL_TRUSTED=-3.3, AWL=1.166, BAYES_00=-3.099
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 27, 2009 at 09:43:00AM +0900, FUJITA Tomonori wrote:
-> None of them is critical (we get bogus warnings due to the bugs but
-> the bugs are in unpopular DMA mapping functions).
-> 
-> This patchset is against to tip/master.
+Jonathan Woithe <jwoithe@physics.adelaide.edu.au> writes:
 
-Acked-by: Joerg Roedel <joerg.roedel@amd.com>
+>   ethtool -s eth0 autoneg off speed 10
+>     - 10 Mbps speed set
+>
+>   ethtool -s eth0 autoneg off speed 100
+>     - 100 Mbps speed achieved
+>
+>   ethtool -s eth0 autoneg on speed 1000
+>     - 1000 Mbps speed attained
+>
+> The duplex setting might not be having an effect though since my switch's
+> FDx (full duplex) LED was extinguished for both the 10 and 100 Mbps cases
+> above.  Explicitly setting the duplex flag using
+>
+>   ethtool -s eth0 autoneg off speed 100 duplex full
+>
+> didn't make any difference - the FDx LED remained off.
 
-They all look good to me.
+You turned auto negotiation off, and you are surprised that the switch
+doesn't autonegotiate full duplex?
 
-Ingo, do you want to pick them up youself or should I include them into
-my dma-debug pull-request to you for 2.6.31?
 
-Joerg
-
--- 
-           | Advanced Micro Devices GmbH
- Operating | Karl-Hammerschmidt-Str. 34, 85609 Dornach bei München
- System    | 
- Research  | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
- Center    | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-           | Registergericht München, HRB Nr. 43632
+/Benny
 
