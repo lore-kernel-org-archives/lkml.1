@@ -1,56 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757701AbZE0BGS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757902AbZE0BH1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757701AbZE0BGS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 21:06:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755701AbZE0BGK
+	id S1757902AbZE0BH1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 21:07:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756127AbZE0BHQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 21:06:10 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:52711 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752494AbZE0BGK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 21:06:10 -0400
-Message-ID: <4A1C9253.3060108@cn.fujitsu.com>
-Date: Wed, 27 May 2009 09:07:31 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Tue, 26 May 2009 21:07:16 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:36714 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756105AbZE0BHP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 21:07:15 -0400
 MIME-Version: 1.0
-To: Paul Menage <menage@google.com>
-CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.linux-foundation.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: Re: [PATCH] cgroups: handle failure of cgroup_populate_dir() at 
- mount/remount
-References: <4A16153C.2080004@cn.fujitsu.com>	 <20090522172545.1e5e5f81.kamezawa.hiroyu@jp.fujitsu.com> <6599ad830905261506x480f2167naf1034177bbc7036@mail.gmail.com>
-In-Reply-To: <6599ad830905261506x480f2167naf1034177bbc7036@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@redhat.com>
+X-Fcc: ~/Mail/linus
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Pavel Emelyanov <xemul@openvz.org>,
+       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] ptrace: do_notify_parent_cldstop: fix the wrong
+	->nsproxy usage
+In-Reply-To: Oleg Nesterov's message of  Monday, 25 May 2009 21:39:32 +0200 <20090525193932.GA22261@redhat.com>
+References: <20090525185502.GA20781@redhat.com>
+	<20090525193932.GA22261@redhat.com>
+X-Antipastobozoticataclysm: Bariumenemanilow
+Message-Id: <20090527010612.0264FFC36B@magilla.sf.frob.com>
+Date: Tue, 26 May 2009 18:06:11 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Menage wrote:
-> On Fri, May 22, 2009 at 1:25 AM, KAMEZAWA Hiroyuki
-> <kamezawa.hiroyu@jp.fujitsu.com> wrote:
->> Hm, shouldn't we allow "noprefix" to be effective only agaisnt cpuset ?
->> I think it's just for backward-compatibility of cpuset.
->> (I don't like the option at all.)
-> 
-> Yes, exposing the "noprefix" option externally was one of the mistakes
-> I made when developing cgroups.
-> 
-> It seems to me really unlikely that anyone is using "noprefix" for
+> While this change is correct in any case (I hope), I wonder whether
+> we need another one:
+[...]
+> If the sub-thread is not traced, but ->group_leader is, perhaps it makes
+> more sense to notify the leader's tracer, not parent?
 
-And "noprefix" is not documented in cgroups.txt, so I guess not
-many people know this option. Even libcgroup doesn't handle it.
+I don't think so.
 
-> anything other than implicitly when mounting the "cpuset" filesystem.
-> So I'd be inclined to just forbid it if we're mounting more than just
-> the cpuset subsystem. A bit of a nasty abstraction violation, but it
-> makes more sense overall. The only problem is that someone *might* be
-> using it - do we have any way to determine how, and how big do they
-> have to be before we care?
-> 
+> Not that I think this is really important. Just curious about what was
+> the intent.
 
-I think we can never know..
+Here is how I would describe the intent (admittedly this logic is
+retrospective, not necessarily articulated as such when the code was
+written).  If the the triggering task is ptrace'd, this report is "for
+ptrace purposes"--even if it's the CLD_STOPPED case.  Otherwise, what's
+being reported is "the whole POSIX process is now stopped as per POSIX
+definitions".  The latter properly goes to the parent of the process,
+which is the group_leader->real_parent.
+
+
+Thanks,
+Roland
