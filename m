@@ -1,257 +1,212 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761181AbZE0HS3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760636AbZE0HR5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761181AbZE0HS3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 03:18:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756965AbZE0HQ4
+	id S1760636AbZE0HR5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 03:17:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756193AbZE0HQr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 03:16:56 -0400
-Received: from claw.goop.org ([74.207.240.146]:41409 "EHLO claw.goop.org"
+	Wed, 27 May 2009 03:16:47 -0400
+Received: from hera.kernel.org ([140.211.167.34]:50138 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759950AbZE0HQy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 03:16:54 -0400
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>, Greg KH <gregkh@suse.de>,
-       Jens Axboe <jens.axboe@oracle.com>, Chris Wright <chrisw@redhat.com>,
-       kurt.hackel@oracle.com, Andrew Morton <akpm@linux-foundation.org>,
-       Ky Srinivasan <ksrinivasan@novell.com>, Beulich <jbeulich@novell.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Stephen Tweedie <sct@redhat.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 05/16] xen mtrr: Add mtrr_ops support for Xen mtrr
-Date: Wed, 27 May 2009 00:15:27 -0700
-Message-Id: <1243408538-21100-6-git-send-email-jeremy@goop.org>
-X-Mailer: git-send-email 1.6.0.6
-In-Reply-To: <1243408538-21100-1-git-send-email-jeremy@goop.org>
-References: <1243408538-21100-1-git-send-email-jeremy@goop.org>
+	id S1756091AbZE0HQp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 03:16:45 -0400
+Date: Wed, 27 May 2009 07:16:03 GMT
+From: tip-bot for Arnaldo Carvalho de Melo <acme@redhat.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org, acme@redhat.com,
+       hpa@zytor.com, mingo@redhat.com, jkacur@redhat.com,
+       a.p.zijlstra@chello.nl, efault@gmx.de, rostedt@goodmis.org,
+       mtosatti@redhat.com, tglx@linutronix.de, cjashfor@linux.vnet.ibm.com,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com, paulus@samba.org,
+       linux-kernel@vger.kernel.org, jkacur@redhat.com, a.p.zijlstra@chello.nl,
+       efault@gmx.de, rostedt@goodmis.org, mtosatti@redhat.com,
+       tglx@linutronix.de, cjashfor@linux.vnet.ibm.com, mingo@elte.hu
+In-Reply-To: <20090526222057.GI4424@ghostprotocols.net>
+References: <20090526222057.GI4424@ghostprotocols.net>
+Subject: [tip:perfcounters/core] perf report: Use hex2long instead of sscanf
+Message-ID: <tip-d8d1656ee15d3085e0085a87e70f9093a0a102c5@git.kernel.org>
+Git-Commit-ID: d8d1656ee15d3085e0085a87e70f9093a0a102c5
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 27 May 2009 07:16:05 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stephen Tweedie <sct@redhat.com>
+Commit-ID:  d8d1656ee15d3085e0085a87e70f9093a0a102c5
+Gitweb:     http://git.kernel.org/tip/d8d1656ee15d3085e0085a87e70f9093a0a102c5
+Author:     Arnaldo Carvalho de Melo <acme@redhat.com>
+AuthorDate: Tue, 26 May 2009 19:20:57 -0300
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 27 May 2009 09:10:35 +0200
 
-Add a Xen mtrr type, and reorganise mtrr initialisation slightly to
-allow the mtrr driver to set up num_var_ranges (Xen needs to do this by
-querying the hypervisor itself.)
+perf report: Use hex2long instead of sscanf
 
-Only the boot path is handled for now: we set up a xen-specific mtrr_if
-and set up the mtrr tables based on hypervisor information, but we don't
-yet handle mtrr entry add/delete.
+Before:
 
-[ Impact: add basic MTRR support (enough to get started) ]
+[acme@emilia ~]$ perf record -o perf_report.perf perf stat perf report > /dev/null
 
-Signed-off-by: Stephen Tweedie <sct@redhat.com>
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+ Performance counter stats for 'perf':
+
+     245.414985  task clock ticks     (msecs)
+              6  context switches     (events)
+              6  CPU migrations       (events)
+           2108  pagefaults           (events)
+       37493013  CPU cycles           (events)  (scaled from 67.04%)
+       13576789  instructions         (events)  (scaled from 66.76%)
+          57931  cache references     (events)  (scaled from 21.96%)
+          12263  cache misses         (events)  (scaled from 21.98%)
+
+ Wall-clock time elapsed:   246.575587 msecs
+
+[acme@emilia ~]$ perf report -i perf_report.perf | head
+12.15          perf [.] 0x000000000005432a /lib64/libc-2.5.so: _IO_vfscanf_internal
+ 9.38          perf [k] 0xffffffff8101b1d2 intel_pmu_enable_all
+ 8.53          perf [.] 0x00000000000056b8 /home/acme/git/linux-2.6-tip/Documentation/perf_counter/perf: dso__insert_symbol
+ 6.61          perf [.] 0x00000000000057cb /home/acme/git/linux-2.6-tip/Documentation/perf_counter/perf: dso__find_symbol
+ 5.33          perf [k] 0xffffffff811ce082 number
+ 4.69          perf [.] 0x0000000000034829 /lib64/libc-2.5.so: ____strtoull_l_internal
+ 4.48          perf [.] 0x0000000000006505 /home/acme/git/linux-2.6-tip/Documentation/perf_counter/perf: thread__symbol_incnew
+ 3.41          perf [.] 0x000000000000fce6 /home/acme/git/linux-2.6-tip/Documentation/perf_counter/perf: rb_insert_color
+ 3.20          perf [k] 0xffffffff811cfc01 vsnprintf
+ 2.99          perf [k] 0xffffffff811ce5e8 format_decode
+
+After:
+
+[acme@emilia ~]$ perf record -o perf_report.perf perf stat perf report > /dev/null
+
+ Performance counter stats for 'perf':
+
+     218.186805  task clock ticks     (msecs)
+              4  context switches     (events)
+              7  CPU migrations       (events)
+           2133  pagefaults           (events)
+       32735365  CPU cycles           (events)  (scaled from 67.04%)
+       11952309  instructions         (events)  (scaled from 66.26%)
+          50314  cache references     (events)  (scaled from 21.96%)
+          13228  cache misses         (events)  (scaled from 21.98%)
+
+ Wall-clock time elapsed:   218.810451 msecs
+
+[acme@emilia ~]$ perf report -i perf_report.perf | head
+10.68          perf [.] 0x000000000000578d /home/acme/git/linux-2.6-tip/Documentation/perf_counter/perf: dso__find_symbol
+ 9.62          perf [.] 0x00000000000065f7 /home/acme/git/linux-2.6-tip/Documentation/perf_counter/perf: thread__symbol_incnew
+ 9.40          perf [.] 0x00000000000056b4 /home/acme/git/linux-2.6-tip/Documentation/perf_counter/perf: dso__insert_symbol
+ 9.19          perf [k] 0xffffffff8101b1d2 intel_pmu_enable_all
+ 5.13          perf [.] 0x0000000000005ec7 /home/acme/git/linux-2.6-tip/Documentation/perf_counter/perf: hex2long
+ 4.49          perf [k] 0xffffffff81083808 kallsyms_expand_symbol
+ 3.85          perf [k] 0xffffffff811ce2c1 number
+ 3.63          perf [.] 0x0000000000005e81 /home/acme/git/linux-2.6-tip/Documentation/perf_counter/perf: hex
+ 2.99          perf [.] 0x000000000000fd5b /home/acme/git/linux-2.6-tip/Documentation/perf_counter/perf: rb_insert_color
+ 2.99          perf [k] 0xffffffff811cf251 string
+[acme@emilia ~]$
+
+[ Impact: optimization ]
+
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
+Cc: Marcelo Tosatti <mtosatti@redhat.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: John Kacur <jkacur@redhat.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+LKML-Reference: <20090526222057.GI4424@ghostprotocols.net>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
 ---
- arch/x86/kernel/cpu/mtrr/Makefile  |    1 +
- arch/x86/kernel/cpu/mtrr/amd.c     |    1 +
- arch/x86/kernel/cpu/mtrr/centaur.c |    1 +
- arch/x86/kernel/cpu/mtrr/cyrix.c   |    1 +
- arch/x86/kernel/cpu/mtrr/generic.c |    1 +
- arch/x86/kernel/cpu/mtrr/main.c    |   11 +++++--
- arch/x86/kernel/cpu/mtrr/mtrr.h    |    5 +++
- arch/x86/kernel/cpu/mtrr/xen.c     |   56 ++++++++++++++++++++++++++++++++++++
- 8 files changed, 74 insertions(+), 3 deletions(-)
- create mode 100644 arch/x86/kernel/cpu/mtrr/xen.c
+ Documentation/perf_counter/builtin-report.c |   63 +++++++++++++++++++++------
+ 1 files changed, 50 insertions(+), 13 deletions(-)
 
-diff --git a/arch/x86/kernel/cpu/mtrr/Makefile b/arch/x86/kernel/cpu/mtrr/Makefile
-index f4361b5..404e458 100644
---- a/arch/x86/kernel/cpu/mtrr/Makefile
-+++ b/arch/x86/kernel/cpu/mtrr/Makefile
-@@ -1,3 +1,4 @@
- obj-y		:= main.o if.o generic.o state.o cleanup.o
- obj-$(CONFIG_X86_32) += amd.o cyrix.o centaur.o
-+obj-$(CONFIG_XEN_DOM0) += xen.o
- 
-diff --git a/arch/x86/kernel/cpu/mtrr/amd.c b/arch/x86/kernel/cpu/mtrr/amd.c
-index ee2331b..7bf23de 100644
---- a/arch/x86/kernel/cpu/mtrr/amd.c
-+++ b/arch/x86/kernel/cpu/mtrr/amd.c
-@@ -108,6 +108,7 @@ static struct mtrr_ops amd_mtrr_ops = {
- 	.get_free_region   = generic_get_free_region,
- 	.validate_add_page = amd_validate_add_page,
- 	.have_wrcomb       = positive_have_wrcomb,
-+	.num_var_ranges	   = common_num_var_ranges,
- };
- 
- int __init amd_init_mtrr(void)
-diff --git a/arch/x86/kernel/cpu/mtrr/centaur.c b/arch/x86/kernel/cpu/mtrr/centaur.c
-index cb9aa3a..7e3f74f 100644
---- a/arch/x86/kernel/cpu/mtrr/centaur.c
-+++ b/arch/x86/kernel/cpu/mtrr/centaur.c
-@@ -213,6 +213,7 @@ static struct mtrr_ops centaur_mtrr_ops = {
- 	.get_free_region   = centaur_get_free_region,
- 	.validate_add_page = centaur_validate_add_page,
- 	.have_wrcomb       = positive_have_wrcomb,
-+	.num_var_ranges	   = common_num_var_ranges,
- };
- 
- int __init centaur_init_mtrr(void)
-diff --git a/arch/x86/kernel/cpu/mtrr/cyrix.c b/arch/x86/kernel/cpu/mtrr/cyrix.c
-index ff14c32..c7bb5e3 100644
---- a/arch/x86/kernel/cpu/mtrr/cyrix.c
-+++ b/arch/x86/kernel/cpu/mtrr/cyrix.c
-@@ -263,6 +263,7 @@ static struct mtrr_ops cyrix_mtrr_ops = {
- 	.get_free_region   = cyrix_get_free_region,
- 	.validate_add_page = generic_validate_add_page,
- 	.have_wrcomb       = positive_have_wrcomb,
-+	.num_var_ranges	   = common_num_var_ranges,
- };
- 
- int __init cyrix_init_mtrr(void)
-diff --git a/arch/x86/kernel/cpu/mtrr/generic.c b/arch/x86/kernel/cpu/mtrr/generic.c
-index 0b776c0..c66dda1 100644
---- a/arch/x86/kernel/cpu/mtrr/generic.c
-+++ b/arch/x86/kernel/cpu/mtrr/generic.c
-@@ -722,4 +722,5 @@ struct mtrr_ops generic_mtrr_ops = {
- 	.set               = generic_set_mtrr,
- 	.validate_add_page = generic_validate_add_page,
- 	.have_wrcomb       = generic_have_wrcomb,
-+	.num_var_ranges	   = common_num_var_ranges,
- };
-diff --git a/arch/x86/kernel/cpu/mtrr/main.c b/arch/x86/kernel/cpu/mtrr/main.c
-index 03cda01..fd5ac04 100644
---- a/arch/x86/kernel/cpu/mtrr/main.c
-+++ b/arch/x86/kernel/cpu/mtrr/main.c
-@@ -99,7 +99,7 @@ static int have_wrcomb(void)
+diff --git a/Documentation/perf_counter/builtin-report.c b/Documentation/perf_counter/builtin-report.c
+index a4c6ffa..c517483 100644
+--- a/Documentation/perf_counter/builtin-report.c
++++ b/Documentation/perf_counter/builtin-report.c
+@@ -348,6 +348,39 @@ void dsos__fprintf(FILE *fp)
+ 		dso__fprintf(pos, fp);
  }
  
- /*  This function returns the number of variable MTRRs  */
--static void __init set_num_var_ranges(void)
-+int __init common_num_var_ranges(void)
- {
- 	unsigned long config = 0, dummy;
- 
-@@ -109,7 +109,7 @@ static void __init set_num_var_ranges(void)
- 		config = 2;
- 	else if (is_cpu(CYRIX) || is_cpu(CENTAUR))
- 		config = 8;
--	num_var_ranges = config & 0xff;
-+	return config & 0xff;
- }
- 
- static void __init init_table(void)
-@@ -622,12 +622,17 @@ int __initdata changed_by_mtrr_cleanup;
- void __init mtrr_bp_init(void)
- {
- 	u32 phys_addr;
++static int hex(char ch)
++{
++	if ((ch >= '0') && (ch <= '9'))
++		return ch - '0';
++	if ((ch >= 'a') && (ch <= 'f'))
++		return ch - 'a' + 10;
++	if ((ch >= 'A') && (ch <= 'F'))
++		return ch - 'A' + 10;
++	return -1;
++}
 +
- 	init_ifs();
- 
- 	phys_addr = 32;
- 
- 	if (cpu_has_mtrr) {
- 		mtrr_if = &generic_mtrr_ops;
-+#ifdef CONFIG_XEN_DOM0
-+		xen_init_mtrr();
-+#endif
++/*
++ * While we find nice hex chars, build a long_val.
++ * Return number of chars processed.
++ */
++int hex2long(char *ptr, unsigned long *long_val)
++{
++	const char *p = ptr;
++	*long_val = 0;
 +
- 		size_or_mask = 0xff000000;	/* 36 bits */
- 		size_and_mask = 0x00f00000;
- 		phys_addr = 36;
-@@ -685,7 +690,7 @@ void __init mtrr_bp_init(void)
++	while (*p) {
++		const int hex_val = hex(*p);
++
++		if (hex_val < 0)
++			break;
++
++		*long_val = (*long_val << 4) | hex_val;
++		p++;
++	}
++
++	return p - ptr;
++}
++
+ static int load_kallsyms(void)
+ {
+ 	kernel_dso = dso__new("[kernel]");
+@@ -363,26 +396,30 @@ static int load_kallsyms(void)
+ 	size_t n;
+ 
+ 	while (!feof(file)) {
+-		unsigned long long start;
+-		char c, symbf[4096];
+-
+-		if (getline(&line, &n, file) < 0)
++		unsigned long start;
++		int line_len = getline(&line, &n, file);
++		if (line_len < 0)
+ 			break;
+ 
+ 		if (!line)
+ 			goto out_delete_dso;
+ 
+-		if (sscanf(line, "%llx %c %s", &start, &c, symbf) == 3) {
+-			/*
+-			 * Well fix up the end later, when we have all sorted.
+-			 */
+-			struct symbol *sym = symbol__new(start, 0xdead, symbf);
++		line[--line_len] = '\0'; /* \n */
++
++		int len = hex2long(line, &start);
++		
++		len += 3; /* ' t ' */
++		if (len >= line_len)
++			continue;
++		/*
++		 * Well fix up the end later, when we have all sorted.
++		 */
++		struct symbol *sym = symbol__new(start, 0xdead, line + len);
+ 
+-			if (sym == NULL)
+-				goto out_delete_dso;
++		if (sym == NULL)
++			goto out_delete_dso;
+ 
+-			dso__insert_symbol(kernel_dso, sym);
+-		}
++		dso__insert_symbol(kernel_dso, sym);
  	}
  
- 	if (mtrr_if) {
--		set_num_var_ranges();
-+		num_var_ranges = mtrr_if->num_var_ranges();
- 		init_table();
- 		if (use_intel()) {
- 			get_mtrr_state();
-diff --git a/arch/x86/kernel/cpu/mtrr/mtrr.h b/arch/x86/kernel/cpu/mtrr/mtrr.h
-index 77f67f7..3502f6c 100644
---- a/arch/x86/kernel/cpu/mtrr/mtrr.h
-+++ b/arch/x86/kernel/cpu/mtrr/mtrr.h
-@@ -41,6 +41,8 @@ struct mtrr_ops {
- 	int	(*validate_add_page)(unsigned long base, unsigned long size,
- 				     unsigned int type);
- 	int	(*have_wrcomb)(void);
-+
-+	int	(*num_var_ranges)(void);
- };
- 
- extern int generic_get_free_region(unsigned long base, unsigned long size,
-@@ -52,6 +54,8 @@ extern struct mtrr_ops generic_mtrr_ops;
- 
- extern int positive_have_wrcomb(void);
- 
-+extern int __init common_num_var_ranges(void);
-+
- /* library functions for processor-specific routines */
- struct set_mtrr_context {
- 	unsigned long flags;
-@@ -89,6 +93,7 @@ void mtrr_wrmsr(unsigned, unsigned, unsigned);
- int amd_init_mtrr(void);
- int cyrix_init_mtrr(void);
- int centaur_init_mtrr(void);
-+void xen_init_mtrr(void);
- 
- extern int changed_by_mtrr_cleanup;
- extern int mtrr_cleanup(unsigned address_bits);
-diff --git a/arch/x86/kernel/cpu/mtrr/xen.c b/arch/x86/kernel/cpu/mtrr/xen.c
-new file mode 100644
-index 0000000..6760907
---- /dev/null
-+++ b/arch/x86/kernel/cpu/mtrr/xen.c
-@@ -0,0 +1,56 @@
-+#include <linux/init.h>
-+#include <linux/proc_fs.h>
-+#include <linux/ctype.h>
-+#include <linux/module.h>
-+#include <linux/seq_file.h>
-+#include <asm/uaccess.h>
-+#include <linux/mutex.h>
-+
-+#include <asm/mtrr.h>
-+#include "mtrr.h"
-+
-+#include <xen/interface/platform.h>
-+#include <asm/xen/hypervisor.h>
-+#include <asm/xen/hypercall.h>
-+
-+static int __init xen_num_var_ranges(void);
-+
-+/* DOM0 TODO: Need to fill in the remaining mtrr methods to have full
-+ * working userland mtrr support. */
-+static struct mtrr_ops xen_mtrr_ops = {
-+	.vendor            = X86_VENDOR_UNKNOWN,
-+	.get_free_region   = generic_get_free_region,
-+	.have_wrcomb       = positive_have_wrcomb,
-+	.use_intel_if	   = 0,
-+	.num_var_ranges	   = xen_num_var_ranges,
-+};
-+
-+static int __init xen_num_var_ranges(void)
-+{
-+	int ranges;
-+	struct xen_platform_op op;
-+
-+	for (ranges = 0; ; ranges++) {
-+		op.cmd = XENPF_read_memtype;
-+		op.u.read_memtype.reg = ranges;
-+		if (HYPERVISOR_dom0_op(&op) != 0)
-+			break;
-+	}
-+	return ranges;
-+}
-+
-+void __init xen_init_mtrr(void)
-+{
-+	struct cpuinfo_x86 *c = &boot_cpu_data;
-+
-+	if (!xen_initial_domain())
-+		return;
-+
-+	if ((!cpu_has(c, X86_FEATURE_MTRR)) &&
-+	    (!cpu_has(c, X86_FEATURE_K6_MTRR)) &&
-+	    (!cpu_has(c, X86_FEATURE_CYRIX_ARR)) &&
-+	    (!cpu_has(c, X86_FEATURE_CENTAUR_MCR)))
-+		return;
-+
-+	mtrr_if = &xen_mtrr_ops;
-+}
--- 
-1.6.0.6
-
+ 	/*
