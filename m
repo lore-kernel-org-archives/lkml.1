@@ -1,54 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758190AbZE0CNq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756758AbZE0CP0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758190AbZE0CNq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 22:13:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755364AbZE0CNh
+	id S1756758AbZE0CP0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 22:15:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754673AbZE0CPP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 22:13:37 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:34978 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751147AbZE0CNh (ORCPT
+	Tue, 26 May 2009 22:15:15 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:34692 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751147AbZE0CPO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 22:13:37 -0400
-Date: Tue, 26 May 2009 22:13:37 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       <linux-usb@vger.kernel.org>
-Subject: Re: Oops in usb-serial with keyspan adapter on current upstream
-In-Reply-To: <1243376885.17847.15.camel@pasglop>
-Message-ID: <Pine.LNX.4.44L0.0905262210350.21274-100000@netrider.rowland.org>
+	Tue, 26 May 2009 22:15:14 -0400
+Date: Tue, 26 May 2009 22:15:15 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Li Zefan <lizf@cn.fujitsu.com>
+cc: Ingo Molnar <mingo@elte.hu>, Jens Axboe <jens.axboe@oracle.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Tom Zanussi <tzanussi@gmail.com>, "Theodore Ts'o" <tytso@mit.edu>,
+       Steven Whitehouse <swhiteho@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Jeff Moyer <jmoyer@redhat.com>, Christoph Hellwig <hch@infradead.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v2 1/2] tracing/events: make __string() more general
+In-Reply-To: <4A1C9E70.8000609@cn.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.0905262202390.27902@gandalf.stny.rr.com>
+References: <4A1B6A2F.2040703@cn.fujitsu.com> <4A1B6A4C.3070407@cn.fujitsu.com> <alpine.DEB.2.00.0905261655120.26705@gandalf.stny.rr.com> <4A1C9645.7010107@cn.fujitsu.com> <alpine.DEB.2.00.0905262147470.27902@gandalf.stny.rr.com>
+ <4A1C9E70.8000609@cn.fujitsu.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 May 2009, Benjamin Herrenschmidt wrote:
 
-> On Tue, 2009-05-26 at 10:06 -0400, Alan Stern wrote:
-> > On Tue, 26 May 2009, Benjamin Herrenschmidt wrote:
+On Wed, 27 May 2009, Li Zefan wrote:
+> >>
+> >> With __string(..., src), we need to have a source string, but sometimes no
+> >> source string is available, and what we know is how big the string will be.
+> >>
+> >> Take block trace events for example, I want to convert an unsigned char array
+> >> into a string, after this patch, this can be done this way:
+> >>
+> >> TP_STRUCT_entry(
+> >> 	__string( cmd, rq->cmd_len * 3 )
+> >> )
+> >>
+> >> TP_fast_assign(
+> >> 	construct_str( cmd )
 > > 
-> > > Well, both our patches are bogus in the sense that they will leak
-> > > the stuff in the port structure.
+> > What does the construct_str do?
 > > 
-> > That's not true at all.  Take a look at the destroy_serial() routine.
 > 
-> Right... hrm. This is an horrible mess, I can't wait to see that
-> refcount going wrong and things trying to double free or leaking the
-> structure.
+> Ah, it's pseudo code.. Should be construct_str(__entry->cmd, rq),
+> this helper function convert rq->cmd (unsigned char[]) to a string of
+> hex dump.
 > 
-> Oh well, fix it the way your want, I don't care as long as it's fixed.
-> This driver is just plain horrible.
+> No source string is available, so I'm not calling assign_str() in
+> TP_fast_assign.
 
-I can't disagree with that.  :-)  The usb-serial design was a mess to 
-begin with, and it didn't get much better when the serial bus was 
-introduced.
+OK, I think I have a better understanding of what you are doing.
 
-I'm inclined to use my patch because it's shortest.  Can I add your 
-"Tested-by:"?
+But, I don't like changing the interface for string by adding that 
+"strlen" to all users. I find that very ugly.
 
-Alan Stern
+Could we instead perhaps add a __dynamic_array? That would take a length, 
+and append itself to after the strings?
+
+stage 1:
+
+#define __dynamic_array(item, len)	int __dyn_loc_##item;
+
+stage 2:
+
+#define __dynamic_array(item, len)	int item;
+
+stage 3:
+
+#define __get_dynamic_array(item)	\
+	((void *)__entry + __entry->__str_loc_##field
+
+stage 4:
+
+#define __dynamic_array(item, len)	\
+	__str_offsets.item = __str_size + \
+		offsetof(typeof(*entry), __str_data);	\
+	__str_size += len;
+
+
+And so on. You should be able to do something like this, and make it more 
+generic.
+
+-- Steve
 
