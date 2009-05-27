@@ -1,129 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762865AbZE0LQW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762905AbZE0LQj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762865AbZE0LQW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 07:16:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759166AbZE0LMh
+	id S1762905AbZE0LQj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 07:16:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760573AbZE0LMj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 07:12:37 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:54618 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760632AbZE0LMd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 07:12:33 -0400
-From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-To: linux-kernel@vger.kernel.org
-Cc: linux-fsdevel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
-       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Date: Wed, 27 May 2009 16:06:21 +0300
-Message-Id: <20090527130621.4913.55045.sendpatchset@localhost.localdomain>
-In-Reply-To: <20090527130503.4913.62042.sendpatchset@localhost.localdomain>
-References: <20090527130503.4913.62042.sendpatchset@localhost.localdomain>
-Subject: [PATCH 12/19] reiserfs: do not manipulate s_dirt directly
-X-OriginalArrivalTime: 27 May 2009 11:12:20.0513 (UTC) FILETIME=[00C88910:01C9DEBC]
-X-Nokia-AV: Clean
+	Wed, 27 May 2009 07:12:39 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:56166 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760398AbZE0LMa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 07:12:30 -0400
+From: Mel Gorman <mel@csn.ul.ie>
+To: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       stable@kernel.org, Linux Memory Management List <linux-mm@kvack.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, starlight@binnacle.cx,
+       Eric B Munson <ebmunson@us.ibm.com>, Adam Litke <agl@us.ibm.com>,
+       Andy Whitcroft <apw@canonical.com>, wli@movementarian.org
+Subject: [PATCH 1/2] x86: Ignore VM_LOCKED when determining if hugetlb-backed page tables can be shared or not
+Date: Wed, 27 May 2009 12:12:28 +0100
+Message-Id: <1243422749-6256-2-git-send-email-mel@csn.ul.ie>
+X-Mailer: git-send-email 1.5.6.5
+In-Reply-To: <1243422749-6256-1-git-send-email-mel@csn.ul.ie>
+References: <1243422749-6256-1-git-send-email-mel@csn.ul.ie>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Subject: [PATCH] reiserfs: do not manipulate s_dirt directly
+On x86 and x86-64, it is possible that page tables are shared beween shared
+mappings backed by hugetlbfs. As part of this, page_table_shareable() checks
+a pair of vma->vm_flags and they must match if they are to be shared. All
+VMA flags are taken into account, including VM_LOCKED.
 
-... use new VFS helpers instead.
+The problem is that VM_LOCKED is cleared on fork(). When a process with a
+shared memory segment forks() to exec() a helper, there will be shared VMAs
+with different flags. The impact is that the shared segment is sometimes
+considered shareable and other times not, depending on what process is
+checking.
 
-Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Cc: Christoph Hellwig <hch@infradead.org>
+What happens is that the segment page tables are being shared but the count is
+inaccurate depending on the ordering of events. As the page tables are freed
+with put_page(), bad pmd's are found when some of the children exit. The
+hugepage counters also get corrupted and the Total and Free count will
+no longer match even when all the hugepage-backed regions are freed. This
+requires a reboot of the machine to "fix".
+
+This patch addresses the problem by comparing all flags except VM_LOCKED when
+deciding if pagetables should be shared or not for hugetlbfs-backed mapping.
+
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+Acked-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
 ---
- fs/reiserfs/journal.c |    6 +++---
- fs/reiserfs/resize.c  |    2 +-
- fs/reiserfs/super.c   |   10 +++++-----
- 3 files changed, 9 insertions(+), 9 deletions(-)
+ arch/x86/mm/hugetlbpage.c |    6 +++++-
+ 1 files changed, 5 insertions(+), 1 deletions(-)
 
-diff --git a/fs/reiserfs/journal.c b/fs/reiserfs/journal.c
-index 77f5bb7..1d2fb0e 100644
---- a/fs/reiserfs/journal.c
-+++ b/fs/reiserfs/journal.c
-@@ -3259,7 +3259,7 @@ int journal_mark_dirty(struct reiserfs_transaction_handle *th,
- 			       th->t_trans_id, journal->j_trans_id);
- 	}
+diff --git a/arch/x86/mm/hugetlbpage.c b/arch/x86/mm/hugetlbpage.c
+index 8f307d9..f46c340 100644
+--- a/arch/x86/mm/hugetlbpage.c
++++ b/arch/x86/mm/hugetlbpage.c
+@@ -26,12 +26,16 @@ static unsigned long page_table_shareable(struct vm_area_struct *svma,
+ 	unsigned long sbase = saddr & PUD_MASK;
+ 	unsigned long s_end = sbase + PUD_SIZE;
  
--	sb->s_dirt = 1;
-+	mark_sb_dirty(sb);
- 
- 	prepared = test_clear_buffer_journal_prepared(bh);
- 	clear_buffer_journal_restore_dirty(bh);
-@@ -3554,7 +3554,7 @@ int reiserfs_flush_old_commits(struct super_block *sb)
- 			do_journal_end(&th, sb, 1, COMMIT_NOW | WAIT);
- 		}
- 	}
--	return sb->s_dirt;
-+	return sb_is_dirty(sb);
- }
- 
- /*
-@@ -3984,7 +3984,7 @@ static int do_journal_end(struct reiserfs_transaction_handle *th,
- 	 ** it tells us if we should continue with the journal_end, or just return
++	/* Allow segments to share if only one is marked locked */
++	unsigned long vm_flags = vma->vm_flags & ~VM_LOCKED;
++	unsigned long svm_flags = svma->vm_flags & ~VM_LOCKED;
++
+ 	/*
+ 	 * match the virtual addresses, permission and the alignment of the
+ 	 * page table page.
  	 */
- 	if (!check_journal_end(th, sb, nblocks, flags)) {
--		sb->s_dirt = 1;
-+		mark_sb_dirty(sb);
- 		wake_queued_writers(sb);
- 		reiserfs_async_progress_wait(sb);
- 		goto out;
-diff --git a/fs/reiserfs/resize.c b/fs/reiserfs/resize.c
-index 238e9d9..9157d38 100644
---- a/fs/reiserfs/resize.c
-+++ b/fs/reiserfs/resize.c
-@@ -202,7 +202,7 @@ int reiserfs_resize(struct super_block *s, unsigned long block_count_new)
- 					  (bmap_nr_new - bmap_nr)));
- 	PUT_SB_BLOCK_COUNT(s, block_count_new);
- 	PUT_SB_BMAP_NR(s, bmap_would_wrap(bmap_nr_new) ? : bmap_nr_new);
--	s->s_dirt = 1;
-+	mark_sb_dirty(s);
+ 	if (pmd_index(addr) != pmd_index(saddr) ||
+-	    vma->vm_flags != svma->vm_flags ||
++	    vm_flags != svm_flags ||
+ 	    sbase < svma->vm_start || svma->vm_end < s_end)
+ 		return 0;
  
- 	journal_mark_dirty(&th, s, SB_BUFFER_WITH_SB(s));
- 
-diff --git a/fs/reiserfs/super.c b/fs/reiserfs/super.c
-index 90dcb7b..f45c78f 100644
---- a/fs/reiserfs/super.c
-+++ b/fs/reiserfs/super.c
-@@ -70,8 +70,8 @@ static int reiserfs_sync_fs(struct super_block *s, int wait)
- 	if (!journal_begin(&th, s, 1))
- 		if (!journal_end_sync(&th, s, 1))
- 			reiserfs_flush_old_commits(s);
--	s->s_dirt = 0;	/* Even if it's not true.
--			 * We'll loop forever in sync_supers otherwise */
-+	mark_sb_clean(s); /* Even if it's not true.
-+			   * We'll loop forever in sync_supers otherwise */
- 	reiserfs_write_unlock(s);
- 	return 0;
- }
-@@ -97,7 +97,7 @@ static int reiserfs_freeze(struct super_block *s)
- 			journal_end_sync(&th, s, 1);
- 		}
- 	}
--	s->s_dirt = 0;
-+	mark_sb_clean(s);
- 	reiserfs_write_unlock(s);
- 	return 0;
- }
-@@ -467,7 +467,7 @@ static void reiserfs_put_super(struct super_block *s)
- 
- 	lock_kernel();
- 
--	if (s->s_dirt)
-+	if (sb_is_dirty(s))
- 		reiserfs_write_super(s);
- 
- 	/* change file system state to current state if it was mounted with read-write permissions */
-@@ -1309,7 +1309,7 @@ static int reiserfs_remount(struct super_block *s, int *mount_flags, char *arg)
- 	err = journal_end(&th, s, 10);
- 	if (err)
- 		goto out_err;
--	s->s_dirt = 0;
-+	mark_sb_clean(s);
- 
- 	if (!(*mount_flags & MS_RDONLY)) {
- 		finish_unfinished(s);
 -- 
-1.6.0.6
+1.5.6.5
 
