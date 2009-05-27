@@ -1,83 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761288AbZE0Q2r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761762AbZE0QcW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761288AbZE0Q2r (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 12:28:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757126AbZE0Q2k
+	id S1761762AbZE0QcW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 12:32:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759679AbZE0QcL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 12:28:40 -0400
-Received: from fg-out-1718.google.com ([72.14.220.156]:10589 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756448AbZE0Q2i (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 12:28:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=hklO5aokxzDH9msVJMzNMn+1FQZYU1etY4FfMb6QYXJ7xdpGPLliO1TNb8chWgn4m6
-         GI6hE1BLeQwSRD8FIfISE7mWl20lYmWFGiY/MEPAOGGAqlPVPZfwd+ouz9elEU3r1mbh
-         NA4KKjjM2k1OqXFd1orn38iWdPoS+I818fW5g=
-Date: Wed, 27 May 2009 20:28:40 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       torvalds@linux-foundation.org, xemul@parallels.com,
-       orenl@cs.columbia.edu, serue@us.ibm.com, dave@linux.vnet.ibm.com,
-       mingo@elte.hu
-Subject: Re: [PATCH 18/38] C/R: core stuff
-Message-ID: <20090527162840.GA30529@x200.localdomain>
-References: <1242968132-1044-1-git-send-email-adobriyan@gmail.com> <1242968132-1044-18-git-send-email-adobriyan@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1242968132-1044-18-git-send-email-adobriyan@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 27 May 2009 12:32:11 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:60305 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759158AbZE0QcK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 12:32:10 -0400
+Date: Thu, 28 May 2009 02:32:05 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Nico -telmich- Schottelius <nico-linux-next@schottelius.org>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: iwlwifi-BUGs: linux-next: Tree for May 27
+Message-Id: <20090528023205.e97e9812.sfr@canb.auug.org.au>
+In-Reply-To: <20090527115934.GB6790@ikn.schottelius.org>
+References: <20090527181536.4c453593.sfr@canb.auug.org.au>
+	<20090527115325.GA6790@ikn.schottelius.org>
+	<20090527115934.GB6790@ikn.schottelius.org>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__28_May_2009_02_32_05_+1000_RSgTNB+/=fv1XyEG"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 22, 2009 at 08:55:12AM +0400, Alexey Dobriyan wrote:
-> +static int task_struct_restorer(void *_tsk_ctx)
-> +{
-> +	struct task_struct_restore_context *tsk_ctx = _tsk_ctx;
-> +	struct kstate_image_task_struct *i = tsk_ctx->i;
-> +	struct kstate_context *ctx = tsk_ctx->ctx;
-> +	/* In the name of symmetry. */
-> +	struct task_struct *tsk = current, *real_parent;
-> +	int rv;
-> +
-> +	pr_debug("%s: ENTER tsk %p/%s\n", __func__, tsk, tsk->comm);
-> +
-> +	write_lock_irq(&tasklist_lock);
-> +	real_parent = ctx->init_tsk->nsproxy->pid_ns->child_reaper;
-> +	tsk->real_parent = tsk->parent = real_parent;
-> +	list_move_tail(&tsk->sibling, &tsk->real_parent->sibling);
-							 ^^^^^^^
-> +	write_unlock_irq(&tasklist_lock);
+--Signature=_Thu__28_May_2009_02_32_05_+1000_RSgTNB+/=fv1XyEG
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Eek, what a stupid bug here
+Hi Nico,
 
+On Wed, 27 May 2009 13:59:34 +0200 Nico -telmich- Schottelius <nico-linux-n=
+ext@schottelius.org> wrote:
+>
+> And is still not able to connect to any ap:
 
-commit 2c4b5f5d606a1892b702d95a0e4d29f207685381
-Author: Alexey Dobriyan <adobriyan@gmail.com>
-Date:   Wed May 27 20:21:59 2009 +0400
+What was the last kernel that would connect ok?
 
-    C/R: fix stupid bug in reparenting
-    
-    Child process should be added to ->children list of course
-    
-    Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-diff --git a/kernel/kstate/kstate-task.c b/kernel/kstate/kstate-task.c
-index 9ed5a19..6df7d25 100644
---- a/kernel/kstate/kstate-task.c
-+++ b/kernel/kstate/kstate-task.c
-@@ -490,7 +490,7 @@ static int task_struct_restorer(void *_tsk_ctx)
- 		real_parent = tmp->o_obj;
- 	}
- 	tsk->real_parent = tsk->parent = real_parent;
--	list_move_tail(&tsk->sibling, &tsk->real_parent->sibling);
-+	list_move_tail(&tsk->sibling, &tsk->real_parent->children);
- 	write_unlock_irq(&tasklist_lock);
- 
- 	rv = restore_mm(ctx, &i->ref_mm);
+--Signature=_Thu__28_May_2009_02_32_05_+1000_RSgTNB+/=fv1XyEG
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkodawUACgkQjjKRsyhoI8xmlQCfacQbeJOo/Z7N6GTXTQm1BQL3
+phwAn0SNOmIswxH60vmFk1lLuO6R7MbF
+=6DUh
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__28_May_2009_02_32_05_+1000_RSgTNB+/=fv1XyEG--
