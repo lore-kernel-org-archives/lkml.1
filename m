@@ -1,96 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756758AbZE0CP0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759195AbZE0CRw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756758AbZE0CP0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 22:15:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754673AbZE0CPP
+	id S1759195AbZE0CRw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 22:17:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756467AbZE0CRm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 22:15:15 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:34692 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751147AbZE0CPO (ORCPT
+	Tue, 26 May 2009 22:17:42 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:59168 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751147AbZE0CRm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 22:15:14 -0400
-Date: Tue, 26 May 2009 22:15:15 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Li Zefan <lizf@cn.fujitsu.com>
-cc: Ingo Molnar <mingo@elte.hu>, Jens Axboe <jens.axboe@oracle.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Tom Zanussi <tzanussi@gmail.com>, "Theodore Ts'o" <tytso@mit.edu>,
-       Steven Whitehouse <swhiteho@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Jeff Moyer <jmoyer@redhat.com>, Christoph Hellwig <hch@infradead.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v2 1/2] tracing/events: make __string() more general
-In-Reply-To: <4A1C9E70.8000609@cn.fujitsu.com>
-Message-ID: <alpine.DEB.2.00.0905262202390.27902@gandalf.stny.rr.com>
-References: <4A1B6A2F.2040703@cn.fujitsu.com> <4A1B6A4C.3070407@cn.fujitsu.com> <alpine.DEB.2.00.0905261655120.26705@gandalf.stny.rr.com> <4A1C9645.7010107@cn.fujitsu.com> <alpine.DEB.2.00.0905262147470.27902@gandalf.stny.rr.com>
- <4A1C9E70.8000609@cn.fujitsu.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 26 May 2009 22:17:42 -0400
+Date: Tue, 26 May 2009 22:17:41 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Kay Sievers <kay.sievers@vrfy.org>
+cc: James Bottomley <James.Bottomley@hansenpartnership.com>,
+       SCSI development list <linux-scsi@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Tejun Heo <tj@kernel.org>, Cornelia Huck <cornelia.huck@de.ibm.com>,
+       <linux-fsdevel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>
+Subject: Re: [PATCH 25/20] sysfs: Only support removing emtpy sysfs  directories.
+In-Reply-To: <ac3eb2510905261702n44c785a0hd0e59b5deb0fe903@mail.gmail.com>
+Message-ID: <Pine.LNX.4.44L0.0905262214370.21274-100000@netrider.rowland.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 27 May 2009, Kay Sievers wrote:
 
-On Wed, 27 May 2009, Li Zefan wrote:
-> >>
-> >> With __string(..., src), we need to have a source string, but sometimes no
-> >> source string is available, and what we know is how big the string will be.
-> >>
-> >> Take block trace events for example, I want to convert an unsigned char array
-> >> into a string, after this patch, this can be done this way:
-> >>
-> >> TP_STRUCT_entry(
-> >> 	__string( cmd, rq->cmd_len * 3 )
-> >> )
-> >>
-> >> TP_fast_assign(
-> >> 	construct_str( cmd )
-> > 
-> > What does the construct_str do?
-> > 
+> On Wed, May 27, 2009 at 01:49, James Bottomley
+> <James.Bottomley@hansenpartnership.com> wrote:
 > 
-> Ah, it's pseudo code.. Should be construct_str(__entry->cmd, rq),
-> this helper function convert rq->cmd (unsigned char[]) to a string of
-> hex dump.
+> > OK ... perhaps we have to wait a little harder: try this; it waits until
+> > all the targets have disappeared from visibility via an event.
 > 
-> No source string is available, so I'm not calling assign_str() in
-> TP_fast_assign.
+> That seems to work fine here.
 
-OK, I think I have a better understanding of what you are doing.
+It's good for a short-term fix.  For the longer term, I still think 
+it's a mistake to wait for the sdevs to be released before deleting the 
+target.  It gives user programs the ability to block the host-removal 
+thread indefinitely.
 
-But, I don't like changing the interface for string by adding that 
-"strlen" to all users. I find that very ugly.
-
-Could we instead perhaps add a __dynamic_array? That would take a length, 
-and append itself to after the strings?
-
-stage 1:
-
-#define __dynamic_array(item, len)	int __dyn_loc_##item;
-
-stage 2:
-
-#define __dynamic_array(item, len)	int item;
-
-stage 3:
-
-#define __get_dynamic_array(item)	\
-	((void *)__entry + __entry->__str_loc_##field
-
-stage 4:
-
-#define __dynamic_array(item, len)	\
-	__str_offsets.item = __str_size + \
-		offsetof(typeof(*entry), __str_data);	\
-	__str_size += len;
-
-
-And so on. You should be able to do something like this, and make it more 
-generic.
-
--- Steve
+Alan Stern
 
