@@ -1,254 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759678AbZE0Fte@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759808AbZE0Fua@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759678AbZE0Fte (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 01:49:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759341AbZE0FtX
+	id S1759808AbZE0Fua (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 01:50:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758991AbZE0FuW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 01:49:23 -0400
-Received: from smtp-102-tuesday.noc.nerim.net ([62.4.17.102]:61502 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752219AbZE0FtV (ORCPT
+	Wed, 27 May 2009 01:50:22 -0400
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:33632 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751228AbZE0FuW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 01:49:21 -0400
-Date: Wed, 27 May 2009 07:49:21 +0200
-From: Damien Wyart <damien.wyart@free.fr>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
-       akpm@linux-foundation.org, jack@suse.cz, yanmin_zhang@linux.intel.com,
-       richard@rsk.demon.co.uk
-Subject: Re: [PATCH 0/12] Per-bdi writeback flusher threads v7
-Message-ID: <20090527054921.GA4127@localhost.localdomain>
-References: <1243330430-9964-1-git-send-email-jens.axboe@oracle.com>
- <20090526152501.GA20968@localhost.localdomain>
- <20090526164117.GJ11363@kernel.dk>
- <20090526170845.GA3226@localhost.localdomain>
- <20090526204703.GM11363@kernel.dk>
- <20090526211119.GO11363@kernel.dk>
- <20090527052101.GA28517@localhost.localdomain>
+	Wed, 27 May 2009 01:50:22 -0400
+Date: Wed, 27 May 2009 14:50:06 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Joe Perches <joe@perches.com>
+Cc: Grant Likely <grant.likely@secretlab.ca>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 16/18] MAINTAINERS - Remove L: linux-kernel@vger.kernel.org from all but "THE REST"
+Message-ID: <20090527055005.GA9802@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Joe Perches <joe@perches.com>,
+	Grant Likely <grant.likely@secretlab.ca>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org
+References: <cover.1243131992.git.joe@perches.com> <9f55522f7ab56afcf16d936d06ab2f3a7e699ed5.1243131992.git.joe@perches.com> <fa686aa40905232018x5e6d1d1aofef790dee2e3bfae@mail.gmail.com> <1243135358.3560.1.camel@Joe-Laptop.home> <fa686aa40905232128x475ea76dh861bf4d0fd3e1aef@mail.gmail.com> <1243139947.3560.7.camel@Joe-Laptop.home> <fa686aa40905232151g5ed5bcc8t2f19d63ace2277e7@mail.gmail.com> <20090527013303.GB8979@linux-sh.org> <1243402718.27337.8.camel@Joe-Laptop.home>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="AhhlLboLdkugWU4S"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090527052101.GA28517@localhost.localdomain>
-User-Agent: Mutt/1.5.19 (2009-05-25)
+In-Reply-To: <1243402718.27337.8.camel@Joe-Laptop.home>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, May 26, 2009 at 10:38:38PM -0700, Joe Perches wrote:
+> On Wed, 2009-05-27 at 10:33 +0900, Paul Mundt wrote:
+> > On Sat, May 23, 2009 at 10:51:24PM -0600, Grant Likely wrote:
+> > > Do subsystem maintainers think so?  Unless they do (and tell others
+> > > so), I don't think it will actually happen.  Until that point, I don't
+> > > think the L:linux-kernel lines should be removed.
+> > > 
+> > Ultimately it should come to common sense. If you are only touching
+> > subsystem or architecture-specific code and it's unlikely anyone on l-k
+> > is going to care, or have much to add to it, then there really isn't a
+> > lot of point in mindlessly Cc-ing the list on every change.
+> 
+> And if you already know who or to what list you
+> want to submit a patch to, the MAINTAINERS entry
+> doesn't much matter.
+> 
+That's not true. If I have to hack something up in some random subsystem
+then I will often have to hunt for both the list address (if there is one
+at all!), as well as the folks looking after that code. Yes, I could
+blindly send it to a given list, but it's much more likely to fall
+through than sending it directly to the people who care.
 
---AhhlLboLdkugWU4S
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+MAINTAINERS is very useful for randomly looking up people and email
+addresses, especially if they aren't people you routinely interact with.
+It's also much faster to look through than remembering the proper
+incantation for a specific perl script ;-)
 
-> > > OK, I spotted the problem. If we fallback to the on-stack allocation in
-> > > bdi_writeback_all(), then we do the wait for the work completion with
-> > > the bdi_lock mutex held. This can deadlock with bdi_forker_task(), so if
-> > > we require that to be invoked to make progress (happens if a thread
-> > > needs to be restarted), then we have a deadlock on that mutex.
-
-> > > I'll cook up a fix for this, but probably not before the morning.
-
-> > Untested fix. I think it should work, but I haven't run it here yet.
-
-> Thanks for your feedback and explanations. Will not be able to test the
-> patch before the afternoon. Will then give feedback as soon as I can. Of
-> course, I can also test a new fix or series if you send one in the
-> morning, after your own testing.
-
-Just ran a quick test with your fix applied and ran into the same
-problem: manual sync stays in D state. I could capture SysRq-T, I am
-attaching part of the output (which was very big and continuously
-displaying).
-
-
-Hope this helps,
-
--- 
-Damien Wyart
-
---AhhlLboLdkugWU4S
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: attachment; filename="sysrq_t.gz"
-Content-Transfer-Encoding: quoted-printable
-
-=1F=8B=08=08#=D4=1CJ=00=03sysrq_t=00=ED]Is+9r=BE=FBW=F0>=D1=D1=D8=0B=D5=E1=
-=B0=0F=F6uN=E3=83#&&*PX$=86=B8=0DI=BD=C5=BF=DEH=00=B5=89=A4=94=D5C=F6[=BAt=
-=D0=AB'=12=89=A5=90_~=99=00=12=7F5_W=ACZ=91=EA7!=7Fcd=D5=1E=F7=AF=FE|=F6=AB=
-=17=7F=DC=F9=CDo=AB=FF2=9B=CD=EA=7F=8E=C6=FA=DF=FE=ED=AF=1F}y=F5=F7=7F=B7=
-=84=F3PI=F5=1F=FFX=FD=E7=EAd=9F=BD{=DD=F8=BF=90/=F2W=F2=85r=BC=08=1F=E4DD=
-=F3|<=AF=B7~=FFzn=8Ef=F7=04"9=8D2=BDD=CA=A4=84=13=9B=9Be=0Ek=DB=80=B4c=B3=
-=DE=9D=FD=F1=F8z8Gy=CCDy=9C`=E5)=CF-I=F2=0E=FB=CD=A6=E9=1BZ=9A	=02=15=08=F4=
-x=81=AA4=D0=ED=9B=D3=D7S=03rA=8C=AE@=0E=A5hA=81=D8:	j=92=8C=CFf=0D=CD!QJ=ED=
-=F0B=A8R}=F7>=9B=17_DHv[=C4=C6=9C=CE=AB=AD?=9D=CC=93_=1D=FD=C1=9B=B3w+=B1=
-=8219ak=8E=F5=8A<=B0qH=EDKs8z=BF=3D=9C=1Bh=C3=EB!=B6=A2u=B1=19.=A0=E5=D5=81=
-=E7=9E=9C=8F_=9B=F3>	j=92$=EA=04=CCK=87=7FG=81=9A=F0vTD=FD=C1=B0\=B4=A7=F4=
-=CF=F9`^7=B9gMx=DD=D9=F3z=BF+=C3=AC=D1=E2=A4'=AE=BC=ED=D2=B3=C6=EE=B7=DB$=
-=89C=FFd=8D=1Fz=D2=DA7=B2N_w=B6y=F1_A=1A=FF=15z=8B=94=C6<w=A4=CAZ=BC=8F=EF1=
-=F6=B69z=E3L=9B=10!7=0D;=F2=9C=19=C1s=D3^w=EB/=CD=E9=1CEm=9B=93=DF=B9=ED=E9=
-	^e=08=BF=82=AE=B4=D8=BErf9O=02=9F=FCywJj=1B=9C=81~=8A4=C1=D0H=C0=02e=F9=85=
-f=90:6a=7F=FCl=8E=0E=9AE,=CC0&=FE=F8f=11=17L=86=81MB=BC=9D=FFrn=FC'=BF=030=
-=A0=F0*=A9B=B7J=04=9E=01=D9n=E2=BBLR"@=1D=F7O=C7=F8=16:=A1m=1B=85Z=F4lc=C1=
-=B6=EDd=DC=C6pL=85=86&J=B4"|=9F/=94=D1=9A=EB=AC=05v=7FH=F8=F3z=F2G=C0u=80=
-=8D=80=ED=1E=AB+=E1|=92=B3=DE=1D^=CB=9B=1C=89=03=EBEq=D2=82&=9506=0F=96=FF=
-=E4=FC=A7=A4=98i=D0a=A4h=DD=AE=FE=9E=FE=FE=0F40=F2=BA=CE=F2=C2i=B7?=AF=C3=
-=D7=C6X=1B-=01=8C>=8C=98=C4=19=FF=D4=B4=BAR=97M#=BF=B3a^=1B=96Ah0=A9=02=B0G=
-=E3m=A1=88=B8=DF=CB(=ED=E1=D0+=85=A54=94=B0=CA=EAN=86=87y=DED3oMj=0Fe=80]=
-=08m|6=1B=F7=8Bqn=BF=FB=C5=D8=D5=DFVAYQkAV=F0=13=7F3=A2=AA=F8Dk=8DiXP\J=AA=
-=C9=8A=A4=1F=AD=B2=BC:=FE=A5=17l=89=A8*=A5=F3=03=B7^=0C=7F=E9=8Ack=E2$=16fQ=
-#T_%=A1Q=1C=AD=AC=92*=FFE=10=02=DF=A1=0Ej=EAK=85=10Z=EB5=C6X=E4
-Z=1D=0B+=1A<=EFkz=F7=A1
-=F9=A7=94=12=08=3D=9A=CF=8Cs?=8By=8D=18=D5n^`=1E=C1=C4f=0E=0B=C5=F7=A1=D7=
-=B5=F6Sz=3D=B0=D6d=19j=B4=19e=8E=EA=0C=E2=91=A7=1D=CC=D1g=86=95=18'=05=86.=
-=D0=CDb=860wa=E2=8F=DE~=CA&=9E=B1=90=E4=A1=99=1FsQw3=E5=7F=3D=EF=8F~=BB=FF=
-=E4=AF=92-=86=85=02=E6)!f=E04f=BD=EF=F0=C0=03=1E=04=F3M=A8V=84_g=E8=E0;D1=
-=A5U6=C1&=A9=D0=82=94=AA=F3=EB=B4=87=C8=18>=C7=B7`=CEJDI=A1J=92=F0=D6=FD=EE=
-=83OeU=13=91Dn=B7=E6=10=BB=F8=94=A5P=0D=A3=C5=D1=B64
-2J_=11=C4|5W=90e=B6=1B=F7$=EB=F0=B4=0F=01=B8=104=89I=B4=1EE=1BS=F8=ED=A7=D0=
-=DB=18=0Dv=CA=E0=1D=BF=EF=C6N=3D=B9=EDj=F8=F9=1B=80<=97=D6=8F=ECT=C5=F2g=98=
-=CE=05E=0D=95dl=A7d=B4A=1AlE'=B8=B7J=F9;=C1=AC"i=E5"=BA=92}qlMJ';E=C7vj=F4=
-=D0=CB=EDk=EAK=C5=FF=B66=9AN=9C=9D"N=D4 =8E=8B=D8=A5v=10=97>=F2Jw=0F=F6=1D=
-=CB=F5=10;=95F4{=CC=EB=E4=B8}=BA=A0=FA=D4=03=83=C2=CE=CC%&=B4=C4=84=A61!>/&=
-=F4=DD=FB=B2wW=99(=D1=D5l=90x!-=85;=B0=DA=C3<=0FN=8Cx=CB&v=3DEO=9A=C3=E9=A5=
-=05S=03=8E=1F=13x"T=19=E2=CB=84*=D2=92=1C=91=FCP=82=E5h=F7o=18=ADY5=F2=B7=
-=C3q=BF=ED=3D=EELa=B0=DA=C7=BCR%=0E=10=9B=D2=FC=F3=D5=BFFU6=EBMGmg=D0=C6=E8=
-9=B1=9B=A1=B0=F0M#a=91=D3:"=87=C6=0D=92Z=88=C084=C83#=BD=1E=1A=F6=F9=B8>=FB=
-=E6t=88=96=A7=F4=11=CDB`=E4=03=EFG=DE=F94=F60=BB=80=80`=BC=B3=AEE=8C=FAw<
-=C1=C8,=8F=E2~=F4=FF~=84=DD=92Be=A3=A0=B0=DE=1C=9A=FD=C1=03=97U)~=A6<=86=8C=
-d=EFT=08=9A=A7=C1vw=86=08=D3n=DF=F8/=87=F5=11=06=9E=82Z{4=8B=AC=88eY=96;d=
-=BB=C7R=B7=D0=96=F9.a=1B=A6=DA=ECO=A6q=89h=7FJs=08pX=A2=03=B2=F7!=C4=F6=F5p=
-rcB=0C=D4=CE	=3D=10=E2Z=CD#=C4\O=08=B1R4=92R=3D=08~7p=93=8Bck=AA=F5=8D=C0=
-=8Dd=95O=C45=8E=B5=A3=E3=C0M)=05=81=1BW=A3=D6jz)Y~=A5=AF=B3=DE=F1wb#=86=C0M=
-=F9y=08!N=FD,=C6=0E=D4=0CVm`R=B7=A0=F4=0C=ADb=DF[=ECFrW"=E6=CFf=E7=A2=A4=ED=
-v=E8[=A2=D2=C2=A1=F5DK)E=AF=B1>=11=E0.=0E$=00=FD=A9=9F=B3dw=CF%=B2=FB=A8=B0=
-9=BB=89O=9Bf =17=B6WaJ=ABy*=CC=F8X=85=0D=B7=C6K=E1=07=C1=1F=A80=14=C7=D6$n=
-=FB=B4L=B3=F4`=B9$=19>:=15N=A5=92
-k=86ywi=E9=A4.=9Eq=12=F7V=85=E9=F0=97 5=B5=F1=D7=F0Q=F7=97=87=A8pj=D8dM=E7t=
-6=C7=E296=BBS=A1(s=14=F1=0E=BA=1C=82=E8l=F7=CE=EC=F6=A7=8D=F7=87=8E=E6T=E8=
-=F9=CD=82)=0B=AD]=DF=C6=C2=8C=9A=C5z=A34=CE=A6=CBr=FD=CA;=C1=AF1=E5f=B5=A4G=
-=84I=FF=00[$=DA=15=BA=93	>=EEw=17=FAK)=1D=F4=97=EBY=FA=AB=B8=18=AF=9D0o=A4=
-=A4&=0C=82=DF=D7=DFT=1C[=93=BA=BAvrU=7F{=13=9CK=C1'=AAj1Fa=AE=FEFO=FA=8D=FE=
-=A6=BF,=FA=BB=E8=EF=03=F47=F8=B3}=DEF=F7=BB=D7_=96'=7F=AF=BFj.=85n=932=B1=
-=AC=BFY=99=88=19=04=0F=DA*M=CDZ>=A2=A4]qlM=8E\=B5=BF2Hp)s=05=FE=A2=82T=AA=
-=CC}=0C=85=EE=C4]=AAm=96"=DB=D1w.=EA=CE=BDT?=86=FE=E6=EE\=11=98]V=90GS=B8=
-=07=EB.=DE	=104=F9(F=9D=9C=06|=8C=FAn=EA=FC=80=E0=B4=F5C=0C=C3o=BC=05!=BC=
-=CDkh=F8Mg5=AFeq=D3w=AEi_Ok=7F:7O=F1=DB=D0I&I
-=1D=A1=1D=91{=84=BAYMB=E9=1B=E8H=9CT=DE6v=9B=D6=E4 0\=A3=B7=FF=D4T=D5=E4=AD=
- =88kzh=90=9F=B1^=ECm=B15=BE=8BD=9E^=A2=BB=B6=86=C8&OS]=A3c=E0=C4=D5%j=B43=
-=E7=F5'=DF=9C=B6=87=1Cu=8D=AA3=CC~=EE=D3=ABD=B7Q=B2=90wG=16)=A9=8D=A0E=10=
-=8A=92=F8=BE.;6=BF=C96=82;=EF=D8=ACMy=8B)=F8=EA=D2=F2=C5=10\=E6<=AD=ADU=D89=
-{=AF0=F5#6&TD3=DA=C5=87=9A=CD~=FF=92&k=0D=EA=E3=D0=16My=AFhY=B98=FA=B4=DC=
-=D7=A3*M=AAH-v=CE=C6=D1
-=C1=F5=E4=0D=06=EB=BC=07=1B=9Bw/=E2=C3=CB-=11=B2=C3=F8=839?=0F=BD=A3y9=05=
-=C5LJ=A8=BA.=11"X=8F=C9=D2=0CtN=80=95U=7F=F4=8E=CA{=EEuQ=C4=9A=DE=12=AE=9FL=
-7=8DTZ=0D=E3h=E4=BB=DF=1E=D6h=05=8D=1E=BD=FF2=8FTZ=84D#=FA}=98=FBv=1D=99=CF=
-=F9=FC=B5=F3=BCC=1Cx=05=F4=B4c=EE=8C=CD=F2=BC=B9=AC=DA=B1=E7=9D=FE=AD=12i.=
-=82G=9E7=E5=84=05=D5=C7=87=FB=E2=D8=9A=DCm=CF;=8E=0F=90f)u=A6=D1R=08B=86R=
-=A4x=14=B8=E0w=11=D75s=E4=08=08=A7=B9=7F=7F=D7=A2l=89	=18M=FC=3D=BBA`=FC2^=
-=9E=F7[X|=87=FD=BD=EB8=15`=1E4=F6=D9=ACa=AA=A7=F5=AF=1F4=10.*'IG=19=CD=93=
-=FF=14IZ8z=DF9=11l=86qa,=93O=E3\=8A=7F7=DD=DAe=E2RXALZ=C5s=93vMT=9D~7=97=81=
-=9E)=FC=FA=BA=F4=C2f;=00R6n}=B2MdU=80=96=00(=FC=1B=91=A0=D8?=A6=DDe=FF=C8=
-=CC=DEi=DFV}=EF=8A=0C=05=B8Tc=17e@=86=94oe=909"`=E3]=F1=D1F=9B=F7*=FE=83n=
-=DE=BB
-=D7j=02=D7=F5L=B8=16=B7=E1Z!=E0=1A=1B(=8D_U=D7=03-#=B8=F6F=90=F2=A0;=B8V=F7=
-=84k=FF1\=9BP-p=BD=C0=F5=02=D7=0B\?=00=AE=854f=0C=D7=9C=CC=83ke=C8u=B8.=82?=
-=80k(=8E=AD=A9=BD=BA=B5d=C2=AE=13=A1O4=DB=16=B8N=A5=EE=06=D7=81 =E0=9A-p=BD=
-=C0=F5=02=D7=0B\?=04=AE[?=81k:=93]=D3=9Bp=9D=04=7F=C4=AE)=1A=AE+=F6=CE=D1=
-=98=C2=AE=DB=12=0C=F1=9At=EC=9A=DD=15=AE1=EC=9A,p=BD=C0=F5=02=D7=0B\?=06=AE=
-=C5=04=AEg=9Dd=8Cp=A8o=C3=B5@=C05v=E3v=FCj=8D=80k[=E0=BA=EDc=D7=F5=1D=E1:=
-=FEF=C05]=E0z=81=EB=05=AE=17=B8~L0=C4N=E0=9A=CF=0C=86=B8=1B=B1=EB"=F8=83=04=
-)P=1C[S=F88v][2=D9=A4_J=C1&}O1=03=F4=1E\=97=7F=E9=BBp]=C5=AA=1F=04=D7=0B=B4=
-=2E=D0=BA@=EB=0F=05=AD=D3=C0=85=98=07=ADR=DF=86VD=E0=02=8Ack2=1F=EF=E2=A8H=
-=893=AB.=CE=9CJ=DD=8D	S=04=13n=C3=C2=84=17=B8^=E0z=81=EB=07=C0u-(=9B=C0=B5=
-=9C	=D7=F2F=E0=A2=08=FE=08=AE=B1)=98=E2W=15bY=B0=DBt=A7=BA=C0=85T=F7=0C\PD=
-=9C=B9j=17=B8^=E0z=81=EB=05=AE=EF=0F=D7=10K=98=B2=EBY=A7=1B=B9=14=E6:=BB=EE=
-=04=7F=00=D7P=1C[=93El=BA=EB=E3=CC=A4=C0u*u7=B8f=08v=AD=DC=02=D7=0B\/p=BD=
-=C0=F5#=D8=B5'=D3Mw=B3=92=C1D8$=B7=D8u=16=FCA=9C=19=8Ack=A2=EF=B0=EB\=13=B1=
--=B3=D3D=DC=A9T=8E3=A3=CE=E2v=08=B6=EAp=E8z>=A7w=E0=DA=EA?G=9C=F9;k=CE=82=
-=CF=0B>=FF=F0=F8|:=98=ED8=DF^=A6=99=A3d!L=C0=19=16Zq=CCQ=D8=B4=CE=A6.=E84=
-=15=A3=14<=1F=AD=03*=FC:=A0=BE=1E=AC=1E=12v=B4=A2=85=84=1D=13|N=A5=E2=17[oP=
-=AA~3Y=C8=D5=87=8B=BA=D3=C3=83=92=85,=A98=BEQ*=8Eo=97%=FA=8D;u=AFc=D0=AC=E6=
-=CAd=88=DE=EC=F7=87=D6=D8=97=E6=CB6u*	B7=89y=EB</=A6=E3S=F3l=8E=AE=E4=9B)=
-=E2=A8=83=BC L=A0=D3=940=1AL=86=ECf=B3=8F=F0=D6=B4=CF=8D=DFA=AA=85f=0D3J=A6=
-=8C=B9=D8=93=E3=CCG=A3m=FA=F6=E5=0C!=A5i,%=04=E6=E84=E6=9CH%r=F2=D5=F5=A1	=
-=EB=DD=FA=F4=DC=C4iyx=3D=B3=E4=ED=A5=8B=99=0C=DA=91%=A2um'.=F7=B5=F0=92=A4=
-=D2=D8\=04=B1Y\=F2N=CE=B4=87.=F3=00=B4=A1=12=BCu9mF=CA9=13gY=F2i=FFR=F2j=E3=
-=B3t=0B=EEJ=DEo=C8%=DE	I=03=84V=18=1F=B8=CFs=F4K=B4=BCk{j=9B=ED=DE=C1=15Jv=
-=FF
-=06=10=92=19U)=0B=18>=EF=C9O~=8B=1E=F3=CA=99.=89=CA=0B=C4!J=FE=F1=A453riw-=
-=B9=9E =9A=B7=F9
-=1B=F4\=BF=B7@=AA=E2=AC=CF=93=FEe=EB=B7=91=07=C5=D7=D9=C5]$@=0E:o=C6=DD=DB=
-=F6=BDf=E9=BEk"=15=CA$']=EE=DF=A8=96=F9=92=88(=A8=E6=F3=E8=F5=9D=12~=B3=E8}=
-=17=C4=B1=87=D7-=E4=802=BB=AFM=9BYCJ[=83=CF=FF=CB|=C9o=1F=DB=F4=F9=D0=A1=97=
-=90=80=CB"|=CB=8C:?g"=94=8F=BD=12Ifz%=FC"jt=DD+	R=B7=E4M
-=C3\=1C[=D3=8D=14=C2=83g=10+=F0=17=15=A4R=8FOaX=EA=CE=BD\R=18.~=D3=E27-~=D3=
-=8F=ED7=FD=EC=14=FEO=93V=11=A4=B9=FA=8A4p=EB=00"=F0DYQ>=10=E5=E9=05;)=9D=E2=
-=0F=7F=C3=CE=C2=DD=17=EE=FE=9Dr=F7=ED=F90=E6=EE=B1=97=82=D3=BA=BF=C1'=DA=89=
-=B4=A2Ps=D4=D5=CBR=886=1F=04=ED=D3=8FSV=19=E1=07=C1#=EE.=03QB=94=0B!k=DD=17=
-=C7=D6t=FD h_S=FA=AFR=F5=90=FA=BC/=15$=B7:H=E4=06=9D=E8=B9P=DD=97=19gR=CF=
-=BA=08=DF=B1=9ETb=F2=90Ku=0F=8F=E1=EEwA=82;=AD=D4=86=FA=D6Jm=E5=E7=AD=D4JQ=
-=AE=9F=3D=1C=F7p=DB=FAHTb=8EXA?=FD=E5=3Dv=E3=CD=EE=F5=D0k=AFM=ABk=A1=1D=B4=
-=97=B2=99=DA;=B9< =A4=DC=9F=A0=A2=9D=E0=91=F6=C6=8FX=D6^:h/2=05)|=F5z
-R*k.">^h=AF=1AJ=C5=07%gko.3=88=9Bh=AF=F3z=FA=F0x=ED=CD#=9A=E6=C0=B1m=D6=BB=
-=93=8F=FE=83=DDo=F6=BD=06=B7x_t=01=82?5=10$=9Fqd=C6=83=D0U=08=CC=8E=80=80=
-=CF=03=02M=C6f=1C=FA-=14W=83=E0=D1=CD=D4=94=B5=D1=AF=18>=EA=8Ack=FAh=E3=D6=
-=18`=12=1A=F5=A5f=D4=94=026=8C=8F=F6k=F5=E22"=88=D4K]{?=C8]=05=D5=92=BAU=A4=
-tN?=C6=8C=A7=A1=CD=F3=FC=EC=E1=C6=82scl=9A=EFac=9EN=3D=8DF_=84=90zZ=E0=A0=
-=90=DF=12=A3=02=B6
-=DE=99@=FB=C4iD=F2=A2bZ=0CL=BF=C2z=E3;=0DR=A9m5=DA=DF=FB=D7A=86jC=8A=9Bw=A3=
-ML=85Y=8Dz=84=C3=A0{'=12@'5=14T=9A=C0r=14=A5=E8=E4=E9=0F=02=08i<=9D=02=84=
-=9A=05=10U=C9 p=01=10=9D=E0)@=A4=E3=FC=DDG]qlM=E1=9Dc=AES=80hC=E53@=E4R3j=
-=BA=06=10E=DCU=80=C8=03=90=01=C2=EA=D2=B9=05 =16=80=F89=00=E2=EDU=BE=11 =E6=
-=05=02=AAr=B0=B2s%=E0=E6M=D0=18=D4U=BE=A58=B6=A6=EB=07+=83=94=AD=E1=01*`=9E=
-=B8=9AL\=89\*=DAuQ=E1]	=E5=84=EC=CB\w%=1C=DC=FC4y=C8=A5=BAf=3D=C4=95H=DD=CB=
-s m=D8=C97K=A7=F5=AC=C5=85X\=88=DF=EBB=B8	C`=F3b	U9=AAw=CD=85p=97=0C=A1=A2f=
-=F8=A8+=8E=AD=C9~=C8=10=FA=08#=A3=A20=84TjFMW]=88,=EE:CH=03=90=18=82#=A4tna=
-=08=0BC=F81=19=C2=E9y=FF=F9=9FS=86@=A7=0C=81=CDt!J=A6=9C=D1R=81h[?=08=FE=88=
-! 3=E5=C0W=CD{gy=EB=12l=9C$!=EBJ=C5=0FZ=A9(f%=BF=97=92=E5V=FAmM=DDC=F9=8Eu=
-=B6=CDK=05Z=19=F2P=86=B0=D8=E5=9F=C6.+=A9=A7=A1=BDt=11=C2=1C=BB=EC=AF=87=F6=
-:=C1S=BB\{2|=D4=15=C7=D6=14=D0=A1=BD=D6)=DB=D9=E5=A0=C5=9C=9A=AEz=EEY=DC=0D=
-=BB=EC=BB=D0=9E=85=BAS=E7=16=BB=BC=D8=E5=1F=D3.o=F6O=EB=DD=D8.S+=D4(=973=D7=
-lN=06;=B0{t|(0=C5=C9[)=06=C1=83=15=0E=C1D=D3(V=8A=F1=A8h=AA=EA=8Bck=E2=D7=
-=89=BB&2=A2=B7=06=CEl=B4U%Xo=08=19J=A5=10=1Cn=A3o=91+=DEv.u=852=A2xZ=BD04T=
-=B6|g=B0=DDbF=9F~=CF=12>=D4=DE=EFx=C9S=DC=AA4=1B=B1=F3=E8=1Ej=C7H=C5=CC=9Bf=
-=D0V=CCj=C7=BD=ED'#=DA=F2^=CB=A0Qp=8Bi:=BC;=E3N=E8=BB=E8=D8=93=DB=AEVc=1D{=
-=CB}=B5=82g=18E=EC=AA=97'S=1D=ABR=06u$=F7M=C5=B15]7=C2=96=06]=BB=8Ev=8A7=DC=
-7=97=02=EE=EB=98=C2=E0F/=E5&=F7=A5=C3=03T@=15=99=C4=EA=8C=F1=BEB=B0=ECo=C2}=
-=A9=AA9=CB=DB0=0F=EBCo=8B=D2=D6P=85=DE=F8=F5=00K=A4j=C3G=ED*;=F8=98=A5=E9=
-=E4 =FEv=F9=BA=AA=D8=A8{=B0=073=EDs=F4i=9F#~+=FB=9D=F6=14>b=A8=A8t=AA=1B=AA=
-=C8)v=FE=CB=B9=BB=C9=9D=A6K=BB=D1;=A2yP=AC=DB=93;=9AQBC=C0U=B6=E8=F9=C0I=AB=
-=DBa^66=91=1D{x=8D=C24L-6c=B3>=1F=EF=F9=1F=8D=FC=CC=81=FF=B9=12&=FC=EF=FE=
-=F84=C6=ED=846=A3=A3I\W=C0=93=00=BE=B1=8C=C5^=1EM=A2=EA=DA=D1$=A1=EB0=3D=9A=
-T=8Ackr=D7=8F&q=AFd=A4*=B9=02=7FQ=81=9By4=A9=13w	=D7=C3=D1=A4=FE;=17u=E7^.G=
-=93=96=A3IX=81?=F8=D1=A4=8D9=9DW=DB=E8=C0=9B'=BF:=FA=837g=EFVr=05#r=C2.=D7q=
-=C2\>g=D2=AE=CF=8D}=3D=9E=D2=A6?=C1=D3Qe=81&=B7=CBY=9A=E5,=CD=04L=98=91^=DF=
-:K=13=96=A34=8F=E2=AB=E0[=B5=F5=8D=BD=BC=92=CE=DB=CB{=C7=08=1F=0BUa=AA=9D!(=
-=8Am=CD=CEz=A0R=12=F0[=A21=93Q"=C8=80=DF=E7u=D70=93b=055=DA=E3=F89=8F=D3<=
-=B9=EDS=C4=E0X=BA=E3=9B=EC=0D=DFL=CF3=F8f=F5=E68=0D03R=8D=CF=A0=BC=BBF=86=
-=BDW=0D=BEz=F3^5=CBE=C8=9C=CF=85JL=D7=C8=BA{=D5=ACq=15=A6O=BD=B8=B7|=F3=C6E=
-=3Do=EAN=0F=ADClGY=12t=FD=11lNY5=C0=E7=A9=DBx=C4t=E2s=14=EF1~g|=8E=CD=E2s=
-=94KW=E7=F0=C9y=9Dh=D8=FE=E9=18=AD=9C=FF=14=81=E4/%=FB=12C{)=0B=AB=FB9X=1D=
-=F3=DC=91j=D8=95=17{=9B=E8=05=9C=EA=EF=9B6#=A9=93(=0B=05c"=15M=95=CBD=8A=A6=
-s=FDLc=97=E0=BFW=82=C7 =F7=89=19F=CD=AC=F7=1D)=F3)=D38z9=E2;=0EFB=081=C8=CB=
-=10=A2=94bf=08=F1~4=CAk=C3z=1AU=80\@s4=1A=81=EFC=A2=FE=EF=F4<YlI=AB=8C=BC=
-=1A-h=D6=D5*=AFk"=A9=CD4=9FP=DA=B5=976=1Bt=82? Q=D8|B=F0Uqc+=B2qD=E9=B2=01=
-=D1v=0B=3D=1D=89J=A5=80=ECH=E20=83=DD=13=A4=B4=93=A6=D6=E6=BD,=A7mp=9C=CB=
-=10+=D0=C2VZ=E5=07C=1F=B4=E3!=B5'{B>=BEy=DB=9C=D6O=87=88R=EB=1D=A0AJ=8B2#=
-=D0=FE=AF/lJ+=D4=10=8B>CsN=AF'h=11x-=E0$X=F4=AE=A5;m=A4=8BP4=CC=EF=FF=1E=DE=
-T7=BFk=95=9D=84=1A=95/=0BH=B8=18/=D8g=0E=DF=EA=F14=E9s=F6Z=16=9D4=B2=12=DA=
-=B5-=E7=BC/=8E=ADI]=DDH=97=E5r=D8;DEm5=EF>=F2C=A9=EE=CB=A8=9A=14o=03=E4=02=
-=8E=E2t+=EA=8Bi=ED=F3GJ=DAq=F8;=96=F2=DE=96=87=F0=90=C5=C4=DC=BD=CC=80=CA}=
-=11=9B=FD=FE%=F2=84=B3If8=CDp4=17J=BDK=D2r=AC&gB=04=C9)=1A=9D=EF=A0=A8=D1T/=
-=8DH=C7_@`I=A0A=E64=EA=1EjWi'2+h=DD:[=B8n=D1T=CE w=B1)=ADQ=3D![=9F=9B=FD=AE=
-i=93=98=C4=C5$=9A%B=83=EA=EB=0D=9A=C36c=83lq=F0=C0=A3=DB=87f=B3=DE=F97Mk=A1=
-=8B-=DAj=DE=A9i@SD=9E=99=89=9B@h=F9=0D?=E1=E8=E40=956=94=F6mJS)=A5=CB*PW=A5=
-u=17=83=A6b=95nK6=F8'=BF=F3=C7=B5=CD|=EC=04=B1=B2=BDKs=9D=C1=A0=99=19=83fK*=
-=AF$)=8B=89=02=BB=C8O=85v=AF=A3$=DF=AF=E6=0E=B2`=8A=81_S=E1;=D9=B2=D6=8C=F9=
-&=F4
-=E0@=A0=0DL=14=11=06kUd=98=C4V=FFX=1B=15=DF=FA/=FA72]8=9D=DA=A8r=E34r=C3K=
-=A5L=8F=DEi?=A6 5=E7=F6=8A=8D=BA=C1=C1=0C=9E=83=B5W=03Y=C9=BD=E3>tA4:=0Dd=
-=A5R=C0=C1j=8Fz=E5I=08=D7i	4=BE=B5=CA~=14=C8j#=8E=0F=A5=BA=87=87=D8=A8=D4=
-=CF=EC=93=1D=9C=01=B3=F2z=84 =ADJ =8E=CEJ=F7=D3n=1A=AFjB=E4=15t+=DBA=0Ch=89=
-=FD=96=C9=A6$=89=13j0	i=91:=80=18=99=96=83=D0Q=F6(=87=C9kr=C8,1=CC:=951=E5=
-=E5=FC\=9C=E8=14&Px=1F=DA:=A6=DE=88 =B3$=10=CEH=9E=D4=F9=EFM=96=D3<=FB=CD!-=
-AT=19'=FF=1FW=BA=C2=B2=FE=CD=00=00
---AhhlLboLdkugWU4S--
+Knowing where to look and knowing who to talk to are two different
+things. Most subsystem maintainers only interact with a small group of
+other subsystem maintainers on any sort of regular basis, while things
+like build errors in -next often send you scurrying one way or the other.
