@@ -1,196 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757259AbZE0W5y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757730AbZE0XFW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757259AbZE0W5y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 18:57:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752709AbZE0W5l
+	id S1757730AbZE0XFW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 19:05:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755784AbZE0XFK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 18:57:41 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:37284 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752340AbZE0W5k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 18:57:40 -0400
-Date: Thu, 28 May 2009 00:57:05 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, davem@davemloft.net, dada1@cosmosbay.com,
-       zbr@ioremap.net, jeff.chua.linux@gmail.com, paulus@samba.org,
-       laijs@cn.fujitsu.com, jengelh@medozas.de, r000n@r000n.net,
-       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
-Subject: Re: [PATCH RFC] v5 expedited "big hammer" RCU grace periods
-Message-ID: <20090527225705.GA2594@elte.hu>
-References: <20090518075630.GA10687@elte.hu> <20090518151421.GB6768@linux.vnet.ibm.com> <20090518154241.GA27047@elte.hu> <20090518160254.GD6768@linux.vnet.ibm.com> <20090519085825.GA9388@elte.hu> <20090519123316.GA7159@linux.vnet.ibm.com> <20090519124436.GA6238@elte.hu> <20090519161839.GA6750@linux.vnet.ibm.com> <20090520080924.GA6736@elte.hu> <20090520153023.GB6729@linux.vnet.ibm.com>
+	Wed, 27 May 2009 19:05:10 -0400
+Received: from mail-bw0-f222.google.com ([209.85.218.222]:49144 "EHLO
+	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755332AbZE0XFJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 19:05:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=gBDZ2kJERjJQ/hh5+5Oqtoeu0s0z8hnJE5ealr3eXCaOX5dsxbJVkKhSPlZwQR6VjW
+         mC2xWhrev9Be75zdVcpW5AgiusFL1BPga+gtfEewV/6SrF0Sdn0fQufw9v8bhbFDjS5j
+         Xwb2/K6c/srgm2Gt32XKVcuf0rHknXxiuS/pM=
+Date: Thu, 28 May 2009 01:05:07 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Zhaolei <zhaolei@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] ftrace: Don't convert function's local variable name
+	in macro
+Message-ID: <20090527230505.GG5982@nowhere>
+References: <4A1D41C2.2010903@cn.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090520153023.GB6729@linux.vnet.ibm.com>
+In-Reply-To: <4A1D41C2.2010903@cn.fujitsu.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
-
-> On Wed, May 20, 2009 at 10:09:24AM +0200, Ingo Molnar wrote:
-> > 
-> > * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
-> > 
-> > > On Tue, May 19, 2009 at 02:44:36PM +0200, Ingo Molnar wrote:
-> > > > 
-> > > > * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
-> > > > 
-> > > > > On Tue, May 19, 2009 at 10:58:25AM +0200, Ingo Molnar wrote:
-> > > > > > 
-> > > > > > * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
-> > > > > > 
-> > > > > > > On Mon, May 18, 2009 at 05:42:41PM +0200, Ingo Molnar wrote:
-> > > > > > > > 
-> > > > > > > > * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
-> > > > > > > > 
-> > > > > > > > > > i might be missing something fundamental here, but why not just 
-> > > > > > > > > > have per CPU helper threads, all on the same waitqueue, and wake 
-> > > > > > > > > > them up via a single wake_up() call? That would remove the SMP 
-> > > > > > > > > > cross call (wakeups do immediate cross-calls already).
-> > > > > > > > > 
-> > > > > > > > > My concern with this is that the cache misses accessing all the 
-> > > > > > > > > processes on this single waitqueue would be serialized, slowing 
-> > > > > > > > > things down. In contrast, the bitmask that smp_call_function() 
-> > > > > > > > > traverses delivers on the order of a thousand CPUs' worth of bits 
-> > > > > > > > > per cache miss.  I will give it a try, though.
-> > > > > > > > 
-> > > > > > > > At least if you go via the migration threads, you can queue up 
-> > > > > > > > requests to them locally. But there's going to be cachemisses 
-> > > > > > > > _anyway_, since you have to access them all from a single CPU, 
-> > > > > > > > and then they have to fetch details about what to do, and then 
-> > > > > > > > have to notify the originator about completion.
-> > > > > > > 
-> > > > > > > Ah, so you are suggesting that I use smp_call_function() to run 
-> > > > > > > code on each CPU that wakes up that CPU's migration thread?  I 
-> > > > > > > will take a look at this.
-> > > > > > 
-> > > > > > My suggestion was to queue up a dummy 'struct migration_req' up with 
-> > > > > > it (change migration_req::task == NULL to mean 'nothing') and simply 
-> > > > > > wake it up using wake_up_process().
-> > > > > 
-> > > > > OK.  I was thinking of just using wake_up_process() without the
-> > > > > migration_req structure, and unconditionally setting a per-CPU
-> > > > > variable from within migration_thread() just before the list_empty()
-> > > > > check.  In your approach we would need a NULL-pointer check just
-> > > > > before the call to __migrate_task().
-> > > > > 
-> > > > > > That will force a quiescent state, without the need for any extra 
-> > > > > > information, right?
-> > > > > 
-> > > > > Yep!
-> > > > > 
-> > > > > > This is what the scheduler code does, roughly:
-> > > > > > 
-> > > > > >                 wake_up_process(rq->migration_thread);
-> > > > > >                 wait_for_completion(&req.done);
-> > > > > > 
-> > > > > > and this will always have to perform well. The 'req' could be put 
-> > > > > > into PER_CPU, and a loop could be done like this:
-> > > > > > 
-> > > > > > 	for_each_online_cpu(cpu)
-> > > > > >                 wake_up_process(cpu_rq(cpu)->migration_thread);
-> > > > > > 
-> > > > > > 	for_each_online_cpu(cpu)
-> > > > > >                 wait_for_completion(&per_cpu(req, cpu).done);
-> > > > > > 
-> > > > > > hm?
-> > > > > 
-> > > > > My concern is the linear slowdown for large systems, but this 
-> > > > > should be OK for modest systems (a few 10s of CPUs).  However, I 
-> > > > > will try it out -- it does not need to be a long-term solution, 
-> > > > > after all.
-> > > > 
-> > > > I think there is going to be a linear slowdown no matter what - 
-> > > > because sending that many IPIs is going to be linear. (there are 
-> > > > no 'broadcast to all' IPIs anymore - on x86 we only have them if 
-> > > > all physical APIC IDs are 7 or smaller.)
-> > > 
-> > > With the current code, agreed.  One could imagine making an IPI 
-> > > tree, so that a given CPU IPIs (say) eight subordinates.  Making 
-> > > this work nice with CPU hotplug would be entertaining, to say the 
-> > > least.
-> > 
-> > Certainly! :-)
-> > 
-> > As a general note, unrelated to your patches: i think our 
-> > CPU-hotplug related complexity seems to be a bit too much. This is 
-> > really just a gut feeling - from having seen many patches that also 
-> > have hotplug notifiers.
-> > 
-> > I'm wondering whether this is because it's structured in a 
-> > suboptimal way, or because i'm (intuitively) under-estimating the 
-> > complexity of what it takes to express what happens when a CPU is 
-> > offlined and then onlined?
+On Wed, May 27, 2009 at 09:36:02PM +0800, Zhaolei wrote:
+> "call" is a argument of macro, but it is also used as a local variable name of
+> function in macro.
+> We should keep this local variable name static although it haven't cause
+> problem now.
 > 
-> I suppose that I could take this as a cue to reminisce about the 
-> old days in a past life with a different implementation of CPU 
-> online/offline, but life is just too short for that sort of thing.  
-> Not that guys my age let that stop them.  ;-)
+> [ Impact: cleanup, no functionality changed ]
+
+
+I'm applying it.
+
+Note, I'm also changing the impact line. This is more than a
+cleanup, it's a real fix to prevent from possible CPP side effects.
+
+So I'll put instead:
+
+[ Impact: prevent from accidental CPP substitution ]
+
+Thanks.
+
+
+
+> Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
+> ---
+>  include/trace/ftrace.h |   20 ++++++++++----------
+>  1 files changed, 10 insertions(+), 10 deletions(-)
 > 
-> And in that past life, exercising CPU online/offline usually 
-> exposed painful bugs in new code, so I cannot claim that the 
-> old-life approach to CPU hotplug was perfect.  Interestingly 
-> enough, running uniprocessor also exposed painful bugs more often 
-> than not.  Of course, the only way to run uniprocessor was to 
-> offline all but one of the CPUs, so you would hit the 
-> online/offline bugs before hitting the uniprocessor-only bugs.
+> diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
+> index edb02bc..6f1218e 100644
+> --- a/include/trace/ftrace.h
+> +++ b/include/trace/ftrace.h
+> @@ -375,19 +375,19 @@ static void ftrace_profile_##call(proto)				\
+>  	perf_tpcounter_event(event_##call.id);				\
+>  }									\
+>  									\
+> -static int ftrace_profile_enable_##call(struct ftrace_event_call *call) \
+> +static int ftrace_profile_enable_##call(struct ftrace_event_call *event_call) \
+>  {									\
+>  	int ret = 0;							\
+>  									\
+> -	if (!atomic_inc_return(&call->profile_count))			\
+> +	if (!atomic_inc_return(&event_call->profile_count))		\
+>  		ret = register_trace_##call(ftrace_profile_##call);	\
+>  									\
+>  	return ret;							\
+>  }									\
+>  									\
+> -static void ftrace_profile_disable_##call(struct ftrace_event_call *call) \
+> +static void ftrace_profile_disable_##call(struct ftrace_event_call *event_call)\
+>  {									\
+> -	if (atomic_add_negative(-1, &call->profile_count))		\
+> +	if (atomic_add_negative(-1, &event_call->profile_count))	\
+>  		unregister_trace_##call(ftrace_profile_##call);		\
+>  }
+>  
+> @@ -411,9 +411,9 @@ static void ftrace_profile_disable_##call(struct ftrace_event_call *call) \
+>  #define __array(type, item, len)
+>  
+>  #undef __string
+> -#define __string(item, src)						       \
+> -	__str_offsets.item = __str_size +				       \
+> -			     offsetof(typeof(*entry), __str_data);	       \
+> +#define __string(item, src)						\
+> +	__str_offsets.item = __str_size +				\
+> +			     offsetof(typeof(*entry), __str_data);	\
+>  	__str_size += strlen(src) + 1;
+>  
+>  #undef __assign_str
+> @@ -429,8 +429,8 @@ static struct ftrace_event_call event_##call;				\
+>  									\
+>  static void ftrace_raw_event_##call(proto)				\
+>  {									\
+> -	struct ftrace_str_offsets_##call __maybe_unused __str_offsets;  \
+> -	struct ftrace_event_call *call = &event_##call;			\
+> +	struct ftrace_str_offsets_##call __maybe_unused __str_offsets;	\
+> +	struct ftrace_event_call *event_call = &event_##call;		\
+>  	struct ring_buffer_event *event;				\
+>  	struct ftrace_raw_##call *entry;				\
+>  	unsigned long irq_flags;					\
+> @@ -451,7 +451,7 @@ static void ftrace_raw_event_##call(proto)				\
+>  									\
+>  	assign;								\
+>  									\
+> -	if (!filter_current_check_discard(call, entry, event))		\
+> +	if (!filter_current_check_discard(event_call, entry, event))	\
+>  		trace_nowake_buffer_unlock_commit(event, irq_flags, pc); \
+>  }									\
+>  									\
+> -- 
+> 1.5.5.3
 > 
-> The thing that worries me most about CPU hotplug in Linux is that 
-> there is no clear hierarchy of CPU function in the offline 
-> process, given that the offlining process invokes notifiers in the 
-> same order as does the onlining process.  Whether this is a real 
-> defect in the CPU hotplug design or is instead simply a symptom of 
-> my not yet being fully comfortable with the two-phase CPU-removal 
-> process is an interesting question to which I do not have an 
-> answer.
-
-I strongly believe it's the former.
-
-> Either way, the thought process is different.  In my old life, 
-> CPUs shed roles in the opposite order that they acquired them.  
-
-Yeah, that looks a whole lot more logical to do.
-
-> This meant that a given CPU was naturally guaranteed to be 
-> correctly taking interrupts for the entire time that it was 
-> capable of running user-level processes. Later in the offlining 
-> process, it would still take interrupts, but would be unable to 
-> run user processes.  Still later, it would no longer be taking 
-> interrupts, and would stop participating in RCU and in the global 
-> TLB-flush algorithm.  There was no need to stop the whole machine 
-> to make a given CPU go offline, in fact, most of the work was done 
-> by the CPU in question.
 > 
-> In the case of RCU, this meant that there was no need for 
-> double-checking for offlined CPUs, because CPUs could reliably 
-> indicate a quiescent state on their way out.
-> 
-> On the other hand, there was no equivalent of dynticks in the old 
-> days. And it is dynticks that is responsible for most of the 
-> complexity present in force_quiescent_state(), not CPU hotplug.
-> 
-> So I cannot hold up RCU as something that would be greatly 
-> simplified by changing the CPU hotplug design, much as I might 
-> like to.  ;-)
 
-We could probably remove a fair bit of dynticks complexity by 
-removing non-dynticks and removing non-hrtimer. People could still 
-force a 'periodic' interrupting mode (if they want, or if their hw 
-forces that), but that would be a plain periodic hrtimer firing off 
-all the time.
-
-	Ingo
