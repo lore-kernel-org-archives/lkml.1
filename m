@@ -1,52 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756762AbZE0Bm0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754961AbZE0Bq4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756762AbZE0Bm0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 21:42:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754385AbZE0BmT
+	id S1754961AbZE0Bq4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 21:46:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752563AbZE0Bqt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 21:42:19 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:49397 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753619AbZE0BmS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 21:42:18 -0400
-Message-ID: <4A1C9AC4.3090704@cn.fujitsu.com>
-Date: Wed, 27 May 2009 09:43:32 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Tue, 26 May 2009 21:46:49 -0400
+Received: from www262.sakura.ne.jp ([202.181.97.72]:60854 "EHLO
+	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751044AbZE0Bqs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 21:46:48 -0400
+Message-Id: <200905270146.n4R1kjes036867@www262.sakura.ne.jp>
+Subject: Re: [2.6.30-rcX] Some ftrace debug option is consuming memory?
+From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+To: rostedt@goodmis.org
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>
-CC: Ingo Molnar <mingo@elte.hu>, Jens Axboe <jens.axboe@oracle.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Tom Zanussi <tzanussi@gmail.com>, "Theodore Ts'o" <tytso@mit.edu>,
-       Steven Whitehouse <swhiteho@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Jeff Moyer <jmoyer@redhat.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v2 1/2] tracing/events: make __string() more general
-References: <4A1B6A2F.2040703@cn.fujitsu.com> <4A1B6A4C.3070407@cn.fujitsu.com> <20090526060232.GA10669@infradead.org>
-In-Reply-To: <20090526060232.GA10669@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Date: Wed, 27 May 2009 10:46:45 +0900
+References: <200905250533.n4P5XGx6042820@www262.sakura.ne.jp> <alpine.DEB.2.00.0905261518550.26705@gandalf.stny.rr.com>
+In-Reply-To: <alpine.DEB.2.00.0905261518550.26705@gandalf.stny.rr.com>
+Content-Type: text/plain; charset="ISO-2022-JP"
+X-Anti-Virus: K-Prox Anti-Virus Powered by Kaspersky, bases: 26052009 #2038151, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig wrote:
-> On Tue, May 26, 2009 at 12:04:28PM +0800, Li Zefan wrote:
->> This changes __string(..., src) to __string(..., len), thus makes it more
->> general, and then block TRACE_EVENT() can use it.
->>
->> Also introduce __fetch_str(), which is used in TP_assign() and returns
->> the address of the string, while __get_str() is used in TP_print().
+Steven Rostedt wrote:
+> > I was running a VM with 1024MB of RAM.
+> > 
+> > I changed it to 512MB of RAM, and now I'm experiencing out of memory error.
 > 
-> If you want to make it really generaly dealing with NULL string pointers
-> would be extremly helpful.  I ran into that limitation (and the length
-> one fixed here) when converting the XFS tracing over.
+> How many virtual CPUs do you have configured?
 > 
+I assigned 2 virtual CPUs.
+But this error occurs even with 1 virtual CPU.
 
-I'm not suffering from NULL str, so I'm not quite sure how you want __string()
-deal with it.
+> > 2.6.29.4 can boot with 512MB of RAM.
+> > 2.6.30-rc1 and later cannot boot with 512MB of RAM if some debug options are
+> > enabled.
+> 
+> Did 29.4 have tracing enabled and still worked?
+> 
+Yes.
+Config (with all tracing options enabled) is at http://I-love.SAKURA.ne.jp/tmp/config-2.6.29.4-ok
+Full log is at http://I-love.SAKURA.ne.jp/tmp/dmesg-2.6.29.4-ok-512MB.txt
 
 
+
+> > < # CONFIG_IRQSOFF_TRACER is not set
+> > < # CONFIG_SYSPROF_TRACER is not set
+> > < # CONFIG_SCHED_TRACER is not set
+> 
+> Can you also disable the above three and see if you still see problems?
+> 
+I disabled the above three.
+
+  # diff config-2.6.30-rc7-ng .config
+  4c4
+  < # Mon May 25 13:28:39 2009
+  ---
+  > # Wed May 27 10:11:09 2009
+  1528d1527
+  < CONFIG_TRACER_MAX_TRACE=y
+  1539,1541c1538,1540
+  < CONFIG_IRQSOFF_TRACER=y
+  < CONFIG_SYSPROF_TRACER=y
+  < CONFIG_SCHED_TRACER=y
+  ---
+  > # CONFIG_IRQSOFF_TRACER is not set
+  > # CONFIG_SYSPROF_TRACER is not set
+  > # CONFIG_SCHED_TRACER is not set
+
+But I'm still seeing the problem.
+Full log which cannot boot is at http://I-love.SAKURA.ne.jp/tmp/dmesg-2.6.30-rc7-ng-512MB.txt
+Full log which can boot is at http://I-love.SAKURA.ne.jp/tmp/dmesg-2.6.30-rc7-ng-1024MB.txt
+
+Regards.
