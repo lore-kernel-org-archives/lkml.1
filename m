@@ -1,156 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932369AbZE0SHp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932362AbZE0SIR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932369AbZE0SHp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 14:07:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761733AbZE0SHg
+	id S932362AbZE0SIR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 14:08:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762171AbZE0SH7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 14:07:36 -0400
-Received: from g4t0016.houston.hp.com ([15.201.24.19]:22666 "EHLO
-	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759913AbZE0SHf (ORCPT
+	Wed, 27 May 2009 14:07:59 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:53734 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1761933AbZE0SH6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 14:07:35 -0400
-Message-ID: <4A1D8161.2020009@hp.com>
-Date: Wed, 27 May 2009 14:07:29 -0400
-From: jim owens <jowens@hp.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	Wed, 27 May 2009 14:07:58 -0400
+Date: Wed, 27 May 2009 14:07:54 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+cc: Hannes Reinecke <hare@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
+       SCSI development list <linux-scsi@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Tejun Heo <tj@kernel.org>, Cornelia Huck <cornelia.huck@de.ibm.com>,
+       <linux-fsdevel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>
+Subject: Re: [PATCH 25/20] sysfs: Only support removing emtpy sysfs  directories.
+In-Reply-To: <1243444101.6067.24.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.44L0.0905271356090.15690-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Martin Knoblauch <knobi@knobisoft.de>
-CC: Matthew Wilcox <matthew@wil.cx>, Andrew Morton <akpm@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>, viro@ZenIV.linux.org.uk, rjw@sisk.pl,
-       linux-kernel@vger.kernel.org, tigran@aivazian.fsnet.co.uk,
-       Kay Sievers <kay.sievers@vrfy.org>, shemminger@vyatta.com,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       mike miller <mike.miller@hp.com>
-Subject: Re: Analyzed/Solved/Bisected: Booting 2.6.30-rc2-git7 very slow
-References: <1240977096.5478.3.camel@marge.simson.net> <20090429011755.c141c599.akpm@linux-foundation.org> <20090429120827.GI8633@ZenIV.linux.org.uk> <1241014725.15095.19.camel@marge.simson.net> <20090505154911.e0309a4f.akpm@linux-foundation.org> <1241585140.5196.28.camel@marge.simson.net> <957194.27869.qm@web32605.mail.mud.yahoo.com> <1241599065.18090.18.camel@marge.simson.net> <461911.6351.qm@web32603.mail.mud.yahoo.com> <20090526233102.b86e7f84.akpm@linux-foundation.org> <20090527112153.GE5816@parisc-linux.org> <840102.98312.qm@web32603.mail.mud.yahoo.com>
-In-Reply-To: <840102.98312.qm@web32603.mail.mud.yahoo.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Martin Knoblauch wrote:
-> ----- Original Message ----
-> 
->> From: Matthew Wilcox <matthew@wil.cx>
->> To: Andrew Morton <akpm@linux-foundation.org>
->> Cc: Martin Knoblauch <knobi@knobisoft.de>; Mike Galbraith <efault@gmx.de>; viro@ZenIV.linux.org.uk; rjw@sisk.pl; linux-kernel@vger.kernel.org; tigran@aivazian.fsnet.co.uks; Kay Sievers <kay.sievers@vrfy.org>; shemminger@vyatta.com; Jesse Barnes <jbarnes@virtuousgeek.org>
->> Sent: Wednesday, May 27, 2009 1:21:53 PM
->> Subject: Re: Analyzed/Solved/Bisected: Booting 2.6.30-rc2-git7 very slow
->>
->> On Tue, May 26, 2009 at 11:31:02PM -0700, Andrew Morton wrote:
->>> On Wed, 20 May 2009 03:22:28 -0700 (PDT) Martin Knoblauch 
->> wrote:
->>>> ----- Original Message ----
->>>>
->>>>> From: Mike Galbraith 
->>>>> To: Martin Knoblauch 
->>>>> Cc: Andrew Morton ; viro@ZenIV.linux.org.uk; 
->> rjw@sisk.pl; linux-kernel@vger.kernel.org; tigran@aivazian.fsnet.co.uk
->>>>> Sent: Wednesday, May 6, 2009 10:37:45 AM
->>>>> Subject: Re: Analyzed/Solved: Booting 2.6.30-rc2-git7 very slow
->>>>>
->>>>> On Wed, 2009-05-06 at 00:55 -0700, Martin Knoblauch wrote:
->>>>>
->>>>>>  just to bring this back to my problem :-)
->>>>> Good idea :-)
->>>>>
->>>>>>  Last week I reported that the "new" sysfs entry in /proc/mounts already 
->> comes 
->>>>> out of initrd. Does this ring a bell?
->>>>>> http://lkml.indiana.edu/hypermail/linux/kernel/0904.3/03048.html
->>>>> Nope, no bells.
->>>>>
->>>>> The only thing I can suggest is that you try a bisection.
->>>>>
->>>>>     -Mike
->>>>  OK, so I finally managed to bisect the issue down to the following commit. 
->> Not much that I can say about it. Someone else suggested that it might all be a 
->> question of timing. Might very well be. I will try it out on a system with a 
->> different SCSI/RAID controller. The failing system has an "Smart Array 6i" 
->> (cciss). "cciss", "ext3" and "jbd" are all modules coming from initrd.
->>>> |commit 1120f8b8169fb2cb51219d326892d963e762edb6
->>>> |Author: Stephen Hemminger 
->>>> |Date:   Thu Dec 18 09:17:16 2008 -0800
->>>> |
->>>> |    PCI: handle long delays in VPD access
->>>> |
->>>> |    Accessing the VPD area can take a long time.  The existing
->>>> |    VPD access code fails consistently on my hardware. There are comments
->>>> |
->>>> |    Change the access routines to:
->>>> |      * use a mutex rather than spinning with IRQ's disabled and lock held
->>>> |      * have a much longer timeout
->>>> |      * call cond_resched while spinning
->>>> |
->>>> |    Signed-off-by: Stephen Hemminger 
->>>> |    Reviewed-by: Matthew Wilcox 
->>>> |    Signed-off-by: Jesse Barnes 
->>>>
->>>
->> This is the first I've seen of this report ...
->>
->>> So afacit what's happening is that the above change caused one of your
->>> PCI devices to take a very long time to initialise, yes?  Was it the
->>> CCISS driver?
->>>
->>> If you add "printk.time=y" to the kernel boot command line then you'll
->>> get timestamped boot messages which will make it easier to determine
->>> where the time was consumed.  Adding `initcall_debug' to the boot line
->>> will help us delve further into the delay, assuming that the offending
->>> driver is build into vmlinux (which it might not be).
->> The two message logs posted show NTP starting up within a second of
->> each other.  What was the problem again?
->>
-> 
->  Just to recap. Starting with 2.6.29-rc1, /proc/mounts has two "sysfs" lines:
-> 
-> |none /sys sysfs rw,relatime 0 0
-> | /sys /sys sysfs rw,relatime 0 0
-> 
->  The first of them already comes out of initrd, which somehow means that the explicit umount in the initrd/init script seems to fail. This is observable on a HP/DL380G4 with a "SmartArray 6" controller (cciss driver).
-> 
->  As a result of the two lines, the hotplug/firmware script in my RHEL4.3 userspace failed to determine the "/sys" mountpoint, which in turn resulted in a 60 second timeout for each firmware load attempt, adding 6 minutes to the boot sequence (4 CPUs, 2 tg3s). I have since then just fixed the hotplug script to do "the right thing". Therefore you are not seeing a big difference in the two posted dmesg logs. The underlying issue remains.
-> 
->  In a next step I managed to bisect the appearance of the second "sysfs" line down to the following commit:
-> 
-> |commit 1120f8b8169fb2cb51219d326892d963e762edb6
-> |Author: Stephen Hemminger <shemminger@vyatta.com>
-> |Date:   Thu Dec 18 09:17:16 2008 -0800
-> |
-> |    PCI: handle long delays in VPD access
-> |
-> |    Accessing the VPD area can take a long time.  The existing
-> |    VPD access code fails consistently on my hardware. There are comments
-> |
-> |    Change the access routines to:
-> |      * use a mutex rather than spinning with IRQ's disabled and lock held
-> |      * have a much longer timeout
-> |      * call cond_resched while spinning
-> |
-> |    Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
-> |    Reviewed-by: Matthew Wilcox <willy@linux.intel.com>
-> |    Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
-> 
->  The commit itself may just show a problem/bug elsewhere. It definitely changes locking and timing around PCI.
-> 
->  Next, I tried to run an identically configured kernel on a different system (IBM/x3650 with aacraid). The problem was not observable. This now either points to CCISS, or leaves timing.
-> 
->  Finally, today I built the ccsii driver into the kernel. It was previously modularized and loaded from initrd. The second "sysfs" line went away. But does this make cciss guilty? It is now loaded about 2 seconds earlier in the boot sequence, which is a big change in timing I guess.
-> 
->  Enlighten me :-)
+On Wed, 27 May 2009, James Bottomley wrote:
 
-No idea what is going on, but since I saw your May 20 message,
-I have been trying to wake up someone whose day job it should
-be to care about dl380s and smartarrays. :)
+> By refcount, I mean count of underlying devices.
 
-If they don't react soon, I'll make this my own day job to
-try to reproduce it.  We will need hardware config details and
-firmware revs to start.
+Does that mean only registered devices, or does it include devices 
+which are unregistered but not yet released?
 
-So I would not close the bug just yet.
+> > >  The
+> > > problem you're complaining about is that the device ref on the target
+> > > may take a long time to release, so we can't key the del event on the
+> > > refcount going to zero, which is what we do today.
+> > 
+> > Maybe we should be talking about two separate refcounts: a normal 
+> > get_device/put_device kref counter for the target's lifetime, and a 
+> > visibility counter (one for each child device and one overall) which 
+> > keys the del event and must go to 0 before the host removal finishes.
+> 
+> Um, well, that's roughly how I said we'd have to fix all of this in the
+> email to hannes ... it would be much easier if we could make a del'd
+> device visible,
 
-jim
+I don't follow.  Why would you want to delete a target before the host
+is removed and then make it visible again later?  Because it doesn't
+have any underlying devices at the moment but may gain some later on?
+
+If that's the case, why not delete the target when there are no more
+registered devices beneath it and then create a new target structure
+when a new device appears?
+
+> but now we have to have different behaviours depending
+> on whether the host is going away or not.
+
+Yes, one does get the feeling that we're going around in circles...
+
+Okay.  So now I have made two proposals.  One is to delete targets and
+create new ones as needed.  The other is to keep a target hanging
+around, even if there are no underlying devices, until the host is
+removed.  This can be implemented easily by making the counter
+represent the number of registered devices plus one for the host.  
+
+Alan Stern
+
+P.S.: If the counter is made to refer to registered devices, as opposed
+to un-released devices, would there ever be a situation where you want
+to delete a target in a non-process context?
 
