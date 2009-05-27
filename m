@@ -1,181 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760411AbZE0Iyl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760599AbZE0I5A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760411AbZE0Iyl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 04:54:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755310AbZE0Iyd
+	id S1760599AbZE0I5A (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 04:57:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755310AbZE0I4x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 04:54:33 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:48997 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751790AbZE0Iyb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 04:54:31 -0400
-Message-ID: <4A1CFFC5.9070100@redhat.com>
-Date: Wed, 27 May 2009 11:54:29 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Gregory Haskins <ghaskins@novell.com>
-CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, davide@xmailserver.org,
-       mtosatti@redhat.com
-Subject: Re: [KVM PATCH v4 2/3] kvm: make io_bus interface more robust
-References: <20090526191010.20860.75372.stgit@dev.haskins.net> <20090526191534.20860.38511.stgit@dev.haskins.net>
-In-Reply-To: <20090526191534.20860.38511.stgit@dev.haskins.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 27 May 2009 04:56:53 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47889 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751790AbZE0I4w (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 04:56:52 -0400
+Date: Wed, 27 May 2009 01:56:47 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: paul@mad-scientist.net, linux-kernel@vger.kernel.org
+Subject: Re: [2.6.27.24] Kernel coredump to a pipe is failing
+Message-Id: <20090527015647.325b892f.akpm@linux-foundation.org>
+In-Reply-To: <20090527085237.GV846@one.firstfloor.org>
+References: <878wkjobbm.fsf@basil.nowhere.org>
+	<20090526160017.98fc62e4.akpm@linux-foundation.org>
+	<20090526231428.GK846@one.firstfloor.org>
+	<20090526162821.02e11d5b.akpm@linux-foundation.org>
+	<20090526234109.GL846@one.firstfloor.org>
+	<20090526164532.6c780234.akpm@linux-foundation.org>
+	<20090527001104.GN846@one.firstfloor.org>
+	<20090526172935.fad52c49.akpm@linux-foundation.org>
+	<20090527073136.GT846@one.firstfloor.org>
+	<20090527004525.1d70c134.akpm@linux-foundation.org>
+	<20090527085237.GV846@one.firstfloor.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gregory Haskins wrote:
-> Today kvm_io_bus_regsiter_dev() returns void and will internally BUG_ON if it
-> fails.  We want to create dynamic MMIO/PIO entries driven from userspace later
-> in the series, so we need to enhance the code to be more robust with the
-> following changes:
->
->    1) Add a return value to the registration function
->    2) Fix up all the callsites to check the return code, handle any
->       failures, and percolate the error up to the caller.
->    3) Refactor io_bus to allow "holes" in the array so device hotplug
->       can add/remove devices arbitrarily.
->    4) Add an unregister function
->
-> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
-> ---
->
->  arch/x86/kvm/i8254.c      |   34 ++++++++++++++++++++++---------
->  arch/x86/kvm/i8259.c      |    9 +++++++-
->  include/linux/kvm_host.h  |    8 +++++--
->  virt/kvm/coalesced_mmio.c |    8 ++++++-
->  virt/kvm/ioapic.c         |    9 ++++++--
->  virt/kvm/kvm_main.c       |   49 +++++++++++++++++++++++++++++++++++++++------
->  6 files changed, 92 insertions(+), 25 deletions(-)
->
-> diff --git a/arch/x86/kvm/i8254.c b/arch/x86/kvm/i8254.c
-> index 584e3d3..6cf84d4 100644
-> --- a/arch/x86/kvm/i8254.c
-> +++ b/arch/x86/kvm/i8254.c
-> @@ -564,36 +564,40 @@ struct kvm_pit *kvm_create_pit(struct kvm *kvm, u32 flags)
->  {
->  	struct kvm_pit *pit;
->  	struct kvm_kpit_state *pit_state;
-> +	int ret;
->  
->  	pit = kzalloc(sizeof(struct kvm_pit), GFP_KERNEL);
->  	if (!pit)
->  		return NULL;
->  
->  	pit->irq_source_id = kvm_request_irq_source_id(kvm);
-> -	if (pit->irq_source_id < 0) {
-> -		kfree(pit);
-> -		return NULL;
-> -	}
-> -
-> -	mutex_init(&pit->pit_state.lock);
-> -	mutex_lock(&pit->pit_state.lock);
-> -	spin_lock_init(&pit->pit_state.inject_lock);
-> +	if (pit->irq_source_id < 0)
-> +		goto fail;
->  
->  	/* Initialize PIO device */
->  	pit->dev.read = pit_ioport_read;
->  	pit->dev.write = pit_ioport_write;
->  	pit->dev.in_range = pit_in_range;
->  	pit->dev.private = pit;
-> -	kvm_io_bus_register_dev(&kvm->pio_bus, &pit->dev);
-> +	ret = kvm_io_bus_register_dev(&kvm->pio_bus, &pit->dev);
-> +	if (ret < 0)
-> +		goto fail;
->  
->  	if (flags & KVM_PIT_SPEAKER_DUMMY) {
->  		pit->speaker_dev.read = speaker_ioport_read;
->  		pit->speaker_dev.write = speaker_ioport_write;
->  		pit->speaker_dev.in_range = speaker_in_range;
->  		pit->speaker_dev.private = pit;
-> -		kvm_io_bus_register_dev(&kvm->pio_bus, &pit->speaker_dev);
-> +		ret = kvm_io_bus_register_dev(&kvm->pio_bus,
-> +					      &pit->speaker_dev);
-> +		if (ret < 0)
-> +			goto fail;
->  	}
->  
-> +	mutex_init(&pit->pit_state.lock);
-> +	mutex_lock(&pit->pit_state.lock);
-> +	spin_lock_init(&pit->pit_state.inject_lock);
-> +
->   
+On Wed, 27 May 2009 10:52:38 +0200 Andi Kleen <andi@firstfloor.org> wrote:
 
-You are registering the PIT before it is initialized.  That exposes a 
-race.  The original code also did that, but at least the pit lock was 
-held while this was done.
+> > Hey, don't look at me - blame Brian Kernighan or George Bush or
+> > someone.
+> 
+> Heh.
+> 
+> What I meant is: if it makes sense to retry the kernel should do that
+> on its own. It has better information about the circumstances anyways.
+> And it would make sense to put all such logic into a single place
+> instead of all programs.
+> 
+> If it doesn't we shouldn't try to force that to user space. That would be similar
+> to signal handling without SA_RESTART which I think nearly everyone agrees was one
+> of the worst APIs in Unix ever.
+> 
+> In most cases (e.g. out of memory) it likely doesn't make much sense to
+> retry anyways.
+> 
+> So short write always means error.
+> 
+> 
+> > > And the same applies to in-kernel users really.
+> > 
+> > We could delete a rather nice amount of tricky VFS code if we were to
+> > make this assumption.  But of course we daren't do that.
+> 
+> What do you mean?
 
->  	kvm->arch.vpit = pit;
->  	pit->kvm = kvm;
->  
-> @@ -613,6 +617,16 @@ struct kvm_pit *kvm_create_pit(struct kvm *kvm, u32 flags)
->  	kvm_register_irq_mask_notifier(kvm, 0, &pit->mask_notifier);
->  
->  	return pit;
-> +
-> +fail:
-> +	kvm_io_bus_unregister_dev(&kvm->pio_bus, &pit->speaker_dev);
->   
+There's code all over the VFS IO paths which correctly recognises,
+handles and propagates short reads and writes.
 
-There's an option now to avoid speaker_dev, so this needs to be conditional.
+Actually, by far the most common case here is that the short read/write
+will be followed by a -ENOSPC or -EFAULT or whatever, so forget I said
+that ;)
 
-> +	kvm_io_bus_unregister_dev(&kvm->pio_bus, &pit->dev);
-> +
-> +	if (pit->irq_source_id >= 0)
-> +		kvm_free_irq_source_id(kvm, pit->irq_source_id);
-> +
-> +	kfree(pit);
-> +	return NULL;
->  }
->  
-> @@ -52,7 +52,7 @@ extern struct kmem_cache *kvm_vcpu_cache;
->   * in one place.
->   */
->  struct kvm_io_bus {
-> -	int                   dev_count;
-> +	spinlock_t lock;
->  #define NR_IOBUS_DEVS 6
->  	struct kvm_io_device *devs[NR_IOBUS_DEVS];
->  };
-> @@ -61,8 +61,10 @@ void kvm_io_bus_init(struct kvm_io_bus *bus);
->  void kvm_io_bus_destroy(struct kvm_io_bus *bus);
->  struct kvm_io_device *kvm_io_bus_find_dev(struct kvm_io_bus *bus,
->  					  gpa_t addr, int len, int is_write);
-> -void kvm_io_bus_register_dev(struct kvm_io_bus *bus,
-> -			     struct kvm_io_device *dev);
-> +int kvm_io_bus_register_dev(struct kvm_io_bus *bus,
-> +			    struct kvm_io_device *dev);
-> +int kvm_io_bus_unregister_dev(struct kvm_io_bus *bus,
-> +			    struct kvm_io_device *dev);
->  
->   
+> > 
+> > And as long as we're attempting to correctly handle partial writes all
+> > over the kernel, it's a bit dopey to deliberately avoid doing this at one
+> > particular codesite.
+> > 
+> > I bet glibc handles partial writes...
+> 
+> I just spent some time nagivating through the glibc stdio me^wmaze 
+> and I don't see any retry loops.
 
-unregister() should return void.  There's really nothing you can do to 
-recover from a failure.
+Perhaps it's usually propagated back, dunno.
 
->  
-> @@ -2453,21 +2455,54 @@ struct kvm_io_device *kvm_io_bus_find_dev(struct kvm_io_bus *bus,
->  {
->  	int i;
->  
-> -	for (i = 0; i < bus->dev_count; i++) {
-> +	for (i = 0; i < NR_IOBUS_DEVS; i++) {
->  		struct kvm_io_device *pos = bus->devs[i];
->  
-> -		if (pos->in_range(pos, addr, len, is_write))
-> +		if (pos && pos->in_range(pos, addr, len, is_write))
->  			return pos;
->  	}
->   
+> Also even if it did there would be lots of other users
+> (google codesearch has >23 million hits for "write")
+> 
+> > > a lot of things start failing.
+> > 
+> > The kernel should only fail if it has no other option.
+> 
+> Typically short write means no other option.
 
-Let's keep dev_count, and just move things around on unregister.
-
- 
-
-
--- 
-error compiling committee.c: too many arguments to function
+typically != always.  It would certainly be peculiar behaviour and
+perhaps it was specified that way mainly on behalf of UART drivers and
+such, dunno.
 
