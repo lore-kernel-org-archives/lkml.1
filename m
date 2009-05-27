@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763159AbZE0HcM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761664AbZE0Hbn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763159AbZE0HcM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 03:32:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762330AbZE0H05
+	id S1761664AbZE0Hbn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 03:31:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762346AbZE0H0v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 03:26:57 -0400
-Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:46937 "EHLO
+	Wed, 27 May 2009 03:26:51 -0400
+Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:46928 "EHLO
 	monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762420AbZE0H04 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 03:26:56 -0400
+	id S1762351AbZE0H0u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 03:26:50 -0400
 From: Michal Simek <monstr@monstr.eu>
 To: linux-kernel@vger.kernel.org
 Cc: john.williams@petalogix.com, microblaze-uclinux@itee.uq.edu.au,
        michal.simek@petalogix.com, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 26/29] microblaze_mmu_v2: Elf update
-Date: Wed, 27 May 2009 08:47:51 +0200
-Message-Id: <1243406874-3917-27-git-send-email-monstr@monstr.eu>
+Subject: [PATCH 19/29] microblaze_mmu_v2: Add MMU related exceptions handling
+Date: Wed, 27 May 2009 08:47:44 +0200
+Message-Id: <1243406874-3917-20-git-send-email-monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <1243406874-3917-26-git-send-email-monstr@monstr.eu>
+In-Reply-To: <1243406874-3917-19-git-send-email-monstr@monstr.eu>
 References: <1243406874-3917-1-git-send-email-monstr@monstr.eu>
  <1243406874-3917-2-git-send-email-monstr@monstr.eu>
  <1243406874-3917-3-git-send-email-monstr@monstr.eu>
@@ -37,129 +37,109 @@ References: <1243406874-3917-1-git-send-email-monstr@monstr.eu>
  <1243406874-3917-17-git-send-email-monstr@monstr.eu>
  <1243406874-3917-18-git-send-email-monstr@monstr.eu>
  <1243406874-3917-19-git-send-email-monstr@monstr.eu>
- <1243406874-3917-20-git-send-email-monstr@monstr.eu>
- <1243406874-3917-21-git-send-email-monstr@monstr.eu>
- <1243406874-3917-22-git-send-email-monstr@monstr.eu>
- <1243406874-3917-23-git-send-email-monstr@monstr.eu>
- <1243406874-3917-24-git-send-email-monstr@monstr.eu>
- <1243406874-3917-25-git-send-email-monstr@monstr.eu>
- <1243406874-3917-26-git-send-email-monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/include/asm/elf.h |   93 +++++++++++++++++++++++++++++++++++++
- 1 files changed, 93 insertions(+), 0 deletions(-)
+ arch/microblaze/kernel/exceptions.c |   45 ++++++++++++++++++++++++++++------
+ 1 files changed, 37 insertions(+), 8 deletions(-)
 
-diff --git a/arch/microblaze/include/asm/elf.h b/arch/microblaze/include/asm/elf.h
-index 81337f2..f92fc0d 100644
---- a/arch/microblaze/include/asm/elf.h
-+++ b/arch/microblaze/include/asm/elf.h
-@@ -1,4 +1,6 @@
- /*
-+ * Copyright (C) 2008-2009 Michal Simek <monstr@monstr.eu>
-+ * Copyright (C) 2008-2009 PetaLogix
-  * Copyright (C) 2006 Atmark Techno, Inc.
-  *
-  * This file is subject to the terms and conditions of the GNU General Public
-@@ -27,4 +29,95 @@
-  */
- #define ELF_CLASS	ELFCLASS32
+diff --git a/arch/microblaze/kernel/exceptions.c b/arch/microblaze/kernel/exceptions.c
+index 4a8a406..0cb64a3 100644
+--- a/arch/microblaze/kernel/exceptions.c
++++ b/arch/microblaze/kernel/exceptions.c
+@@ -21,9 +21,9 @@
  
-+#ifndef __uClinux__
-+
-+/*
-+ * ELF register definitions..
-+ */
-+
-+#include <asm/ptrace.h>
-+#include <asm/byteorder.h>
-+
-+#ifndef ELF_GREG_T
-+#define ELF_GREG_T
-+typedef unsigned long elf_greg_t;
+ #include <asm/exceptions.h>
+ #include <asm/entry.h>		/* For KM CPU var */
+-#include <asm/uaccess.h>
+-#include <asm/errno.h>
+-#include <asm/ptrace.h>
++#include <linux/uaccess.h>
++#include <linux/errno.h>
++#include <linux/ptrace.h>
+ #include <asm/current.h>
+ 
+ #define MICROBLAZE_ILL_OPCODE_EXCEPTION	0x02
+@@ -31,7 +31,7 @@
+ #define MICROBLAZE_DBUS_EXCEPTION	0x04
+ #define MICROBLAZE_DIV_ZERO_EXCEPTION	0x05
+ #define MICROBLAZE_FPU_EXCEPTION	0x06
+-#define MICROBLAZE_PRIVILEG_EXCEPTION	0x07
++#define MICROBLAZE_PRIVILEGED_EXCEPTION	0x07
+ 
+ static DEFINE_SPINLOCK(die_lock);
+ 
+@@ -66,6 +66,11 @@ void _exception(int signr, struct pt_regs *regs, int code, unsigned long addr)
+ asmlinkage void full_exception(struct pt_regs *regs, unsigned int type,
+ 							int fsr, int addr)
+ {
++#ifdef CONFIG_MMU
++	int code;
++	addr = regs->pc;
 +#endif
 +
-+#ifndef ELF_NGREG
-+#define ELF_NGREG (sizeof(struct pt_regs) / sizeof(elf_greg_t))
+ #if 0
+ 	printk(KERN_WARNING "Exception %02x in %s mode, FSR=%08x PC=%08x ESR=%08x\n",
+ 			type, user_mode(regs) ? "user" : "kernel", fsr,
+@@ -74,7 +79,13 @@ asmlinkage void full_exception(struct pt_regs *regs, unsigned int type,
+ 
+ 	switch (type & 0x1F) {
+ 	case MICROBLAZE_ILL_OPCODE_EXCEPTION:
+-		_exception(SIGILL, regs, ILL_ILLOPC, addr);
++		if (user_mode(regs)) {
++			printk(KERN_WARNING "Illegal opcode exception in user mode.\n");
++			_exception(SIGILL, regs, ILL_ILLOPC, addr);
++			return;
++		}
++		printk(KERN_WARNING "Illegal opcode exception in kernel mode.\n");
++		die("opcode exception", regs, SIGBUS);
+ 		break;
+ 	case MICROBLAZE_IBUS_EXCEPTION:
+ 		if (user_mode(regs)) {
+@@ -95,11 +106,16 @@ asmlinkage void full_exception(struct pt_regs *regs, unsigned int type,
+ 		die("bus exception", regs, SIGBUS);
+ 		break;
+ 	case MICROBLAZE_DIV_ZERO_EXCEPTION:
+-		printk(KERN_WARNING "Divide by zero exception\n");
+-		_exception(SIGILL, regs, ILL_ILLOPC, addr);
++		if (user_mode(regs)) {
++			printk(KERN_WARNING "Divide by zero exception in user mode\n");
++			_exception(SIGILL, regs, ILL_ILLOPC, addr);
++			return;
++		}
++		printk(KERN_WARNING "Divide by zero exception in kernel mode.\n");
++		die("Divide by exception", regs, SIGBUS);
+ 		break;
+-
+ 	case MICROBLAZE_FPU_EXCEPTION:
++		printk(KERN_WARNING "FPU exception\n");
+ 		/* IEEE FP exception */
+ 		/* I removed fsr variable and use code var for storing fsr */
+ 		if (fsr & FSR_IO)
+@@ -115,7 +131,20 @@ asmlinkage void full_exception(struct pt_regs *regs, unsigned int type,
+ 		_exception(SIGFPE, regs, fsr, addr);
+ 		break;
+ 
++#ifdef CONFIG_MMU
++	case MICROBLAZE_PRIVILEGED_EXCEPTION:
++		printk(KERN_WARNING "Privileged exception\n");
++		/* "brk r0,r0" - used as debug breakpoint */
++		if (get_user(code, (unsigned long *)regs->pc) == 0
++			&& code == 0x980c0000) {
++			_exception(SIGTRAP, regs, TRAP_BRKPT, addr);
++		} else {
++			_exception(SIGILL, regs, ILL_PRVOPC, addr);
++		}
++		break;
 +#endif
-+
-+#ifndef ELF_GREGSET_T
-+#define ELF_GREGSET_T
-+typedef elf_greg_t elf_gregset_t[ELF_NGREG];
-+#endif
-+
-+#ifndef ELF_FPREGSET_T
-+#define ELF_FPREGSET_T
-+
-+/* TBD */
-+#define ELF_NFPREG	33	/* includes fsr */
-+typedef unsigned long elf_fpreg_t;
-+typedef elf_fpreg_t elf_fpregset_t[ELF_NFPREG];
-+
-+/* typedef struct user_fpu_struct elf_fpregset_t; */
-+#endif
-+
-+/* This is the location that an ET_DYN program is loaded if exec'ed.  Typical
-+ * use of this is to invoke "./ld.so someprog" to test out a new version of
-+ * the loader.  We need to make sure that it is out of the way of the program
-+ * that it will "exec", and that there is sufficient room for the brk.
-+ */
-+
-+#define ELF_ET_DYN_BASE         (0x08000000)
-+
-+#ifdef __LITTLE_ENDIAN__
-+#define ELF_DATA	ELFDATA2LSB
-+#else
-+#define ELF_DATA	ELFDATA2MSB
-+#endif
-+
-+#define USE_ELF_CORE_DUMP
-+#define ELF_EXEC_PAGESIZE	4096
-+
-+
-+#define ELF_CORE_COPY_REGS(_dest, _regs)			\
-+	memcpy((char *) &_dest, (char *) _regs,		\
-+	sizeof(struct pt_regs));
-+
-+/* This yields a mask that user programs can use to figure out what
-+ * instruction set this CPU supports.  This could be done in user space,
-+ * but it's not easy, and we've already done it here.
-+ */
-+#define ELF_HWCAP	(0)
-+
-+/* This yields a string that ld.so will use to load implementation
-+ * specific libraries for optimization.  This is more specific in
-+ * intent than poking at uname or /proc/cpuinfo.
-+
-+ * For the moment, we have only optimizations for the Intel generations,
-+ * but that could change...
-+ */
-+#define ELF_PLATFORM  (NULL)
-+
-+/* Added _f parameter. Is this definition correct: TBD */
-+#define ELF_PLAT_INIT(_r, _f)				\
-+do {							\
-+	_r->r1 =  _r->r1 =  _r->r2 =  _r->r3 =		\
-+	_r->r4 =  _r->r5 =  _r->r6 =  _r->r7 =		\
-+	_r->r8 =  _r->r9 =  _r->r10 = _r->r11 =		\
-+	_r->r12 = _r->r13 = _r->r14 = _r->r15 =		\
-+	_r->r16 = _r->r17 = _r->r18 = _r->r19 =		\
-+	_r->r20 = _r->r21 = _r->r22 = _r->r23 =		\
-+	_r->r24 = _r->r25 = _r->r26 = _r->r27 =		\
-+	_r->r28 = _r->r29 = _r->r30 = _r->r31 =		\
-+	0;						\
-+} while (0)
-+
-+#ifdef __KERNEL__
-+#define SET_PERSONALITY(ex) set_personality(PER_LINUX_32BIT)
-+#endif
-+
-+#endif /* __uClinux__ */
-+
- #endif /* _ASM_MICROBLAZE_ELF_H */
+ 	default:
++	/* FIXME what to do in unexpected exception */
+ 		printk(KERN_WARNING "Unexpected exception %02x "
+ 			"PC=%08x in %s mode\n", type, (unsigned int) addr,
+ 			kernel_mode(regs) ? "kernel" : "user");
 -- 
 1.5.5.1
 
