@@ -1,110 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763478AbZE0LSo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761539AbZE0LWA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763478AbZE0LSo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 07:18:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762199AbZE0LNw
+	id S1761539AbZE0LWA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 07:22:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756455AbZE0LVx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 07:13:52 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:49608 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762095AbZE0LNt (ORCPT
+	Wed, 27 May 2009 07:21:53 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:60585 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753644AbZE0LVw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 07:13:49 -0400
-From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-To: linux-kernel@vger.kernel.org
-Cc: linux-fsdevel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
-       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Date: Wed, 27 May 2009 16:06:59 +0300
-Message-Id: <20090527130659.4913.68260.sendpatchset@localhost.localdomain>
-In-Reply-To: <20090527130503.4913.62042.sendpatchset@localhost.localdomain>
-References: <20090527130503.4913.62042.sendpatchset@localhost.localdomain>
-Subject: [PATCH 18/19] write-back: introduce a helper function
-X-OriginalArrivalTime: 27 May 2009 11:13:01.0798 (UTC) FILETIME=[19642060:01C9DEBC]
-X-Nokia-AV: Clean
+	Wed, 27 May 2009 07:21:52 -0400
+Date: Wed, 27 May 2009 05:21:53 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Martin Knoblauch <knobi@knobisoft.de>, Mike Galbraith <efault@gmx.de>,
+       viro@ZenIV.linux.org.uk, rjw@sisk.pl, linux-kernel@vger.kernel.org,
+       tigran@aivazian.fsnet.co.uks, Kay Sievers <kay.sievers@vrfy.org>,
+       shemminger@vyatta.com, Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: Analyzed/Solved/Bisected: Booting 2.6.30-rc2-git7 very slow
+Message-ID: <20090527112153.GE5816@parisc-linux.org>
+References: <1240977096.5478.3.camel@marge.simson.net> <20090429011755.c141c599.akpm@linux-foundation.org> <20090429120827.GI8633@ZenIV.linux.org.uk> <1241014725.15095.19.camel@marge.simson.net> <20090505154911.e0309a4f.akpm@linux-foundation.org> <1241585140.5196.28.camel@marge.simson.net> <957194.27869.qm@web32605.mail.mud.yahoo.com> <1241599065.18090.18.camel@marge.simson.net> <461911.6351.qm@web32603.mail.mud.yahoo.com> <20090526233102.b86e7f84.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090526233102.b86e7f84.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Subject: [PATCH] write-back: introduce a helper function
+On Tue, May 26, 2009 at 11:31:02PM -0700, Andrew Morton wrote:
+> On Wed, 20 May 2009 03:22:28 -0700 (PDT) Martin Knoblauch <knobi@knobisoft.de> wrote:
+> 
+> > 
+> > ----- Original Message ----
+> > 
+> > > From: Mike Galbraith <efault@gmx.de>
+> > > To: Martin Knoblauch <knobi@knobisoft.de>
+> > > Cc: Andrew Morton <akpm@linux-foundation.org>; viro@ZenIV.linux.org.uk; rjw@sisk.pl; linux-kernel@vger.kernel.org; tigran@aivazian.fsnet.co.uk
+> > > Sent: Wednesday, May 6, 2009 10:37:45 AM
+> > > Subject: Re: Analyzed/Solved: Booting 2.6.30-rc2-git7 very slow
+> > > 
+> > > On Wed, 2009-05-06 at 00:55 -0700, Martin Knoblauch wrote:
+> > > 
+> > > >  just to bring this back to my problem :-)
+> > > 
+> > > Good idea :-)
+> > > 
+> > > >  Last week I reported that the "new" sysfs entry in /proc/mounts already comes 
+> > > out of initrd. Does this ring a bell?
+> > > > 
+> > > > http://lkml.indiana.edu/hypermail/linux/kernel/0904.3/03048.html
+> > > 
+> > > Nope, no bells.
+> > > 
+> > > The only thing I can suggest is that you try a bisection.
+> > > 
+> > >     -Mike
+> > 
+> >  OK, so I finally managed to bisect the issue down to the following commit. Not much that I can say about it. Someone else suggested that it might all be a question of timing. Might very well be. I will try it out on a system with a different SCSI/RAID controller. The failing system has an "Smart Array 6i" (cciss). "cciss", "ext3" and "jbd" are all modules coming from initrd.
+> > 
+> > |commit 1120f8b8169fb2cb51219d326892d963e762edb6
+> > |Author: Stephen Hemminger <shemminger@vyatta.com>
+> > |Date:   Thu Dec 18 09:17:16 2008 -0800
+> > |
+> > |    PCI: handle long delays in VPD access
+> > |
+> > |    Accessing the VPD area can take a long time.  The existing
+> > |    VPD access code fails consistently on my hardware. There are comments
+> > |
+> > |    Change the access routines to:
+> > |      * use a mutex rather than spinning with IRQ's disabled and lock held
+> > |      * have a much longer timeout
+> > |      * call cond_resched while spinning
+> > |
+> > |    Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
+> > |    Reviewed-by: Matthew Wilcox <willy@linux.intel.com>
+> > |    Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+> > 
+> 
+> <hello, any maintainers out there?>
 
-This patch is just a clean up and a preparation for the
-following periodic write-back optimization patches. It
-introduces a helper 'setup_wb_timer()' function which
-sets up the periodic write-back timer to the specified
-value, or to the default value. The code just looks
-neater with this helper.
+This is the first I've seen of this report ...
 
-Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Cc: Christoph Hellwig <hch@infradead.org>
----
- mm/page-writeback.c |   25 +++++++++++++++++++------
- 1 files changed, 19 insertions(+), 6 deletions(-)
+> So afacit what's happening is that the above change caused one of your
+> PCI devices to take a very long time to initialise, yes?  Was it the
+> CCISS driver?
+> 
+> If you add "printk.time=y" to the kernel boot command line then you'll
+> get timestamped boot messages which will make it easier to determine
+> where the time was consumed.  Adding `initcall_debug' to the boot line
+> will help us delve further into the delay, assuming that the offending
+> driver is build into vmlinux (which it might not be).
 
-diff --git a/mm/page-writeback.c b/mm/page-writeback.c
-index 30351f0..8a213a9 100644
---- a/mm/page-writeback.c
-+++ b/mm/page-writeback.c
-@@ -738,6 +738,21 @@ static DEFINE_TIMER(wb_timer, wb_timer_fn, 0, 0);
- static DEFINE_TIMER(laptop_mode_wb_timer, laptop_timer_fn, 0, 0);
- 
- /*
-+ * Setup the periodic write-back timer to expires at @expires jiffies. If
-+ * @expires is zero, the timer is set up to the default interval.
-+ */
-+static void setup_wb_timer(unsigned long expires)
-+{
-+	if (!expires) {
-+		/* Setup to the default wake-up period value */
-+		expires = jiffies;
-+		expires += msecs_to_jiffies(dirty_writeback_interval * 10);
-+	}
-+
-+	mod_timer(&wb_timer, expires);
-+}
-+
-+/*
-  * Periodic writeback of "old" data.
-  *
-  * Define "old": the first time one of an inode's pages is dirtied, we mark the
-@@ -792,7 +807,7 @@ static void wb_kupdate(unsigned long arg)
- 	if (time_before(next_jif, jiffies + HZ))
- 		next_jif = jiffies + HZ;
- 	if (dirty_writeback_interval)
--		mod_timer(&wb_timer, next_jif);
-+		setup_wb_timer(next_jif);
- }
- 
- /*
-@@ -803,8 +818,7 @@ int dirty_writeback_centisecs_handler(ctl_table *table, int write,
- {
- 	proc_dointvec(table, write, file, buffer, length, ppos);
- 	if (dirty_writeback_interval)
--		mod_timer(&wb_timer, jiffies +
--			msecs_to_jiffies(dirty_writeback_interval * 10));
-+		setup_wb_timer(0);
- 	else
- 		del_timer(&wb_timer);
- 	return 0;
-@@ -813,7 +827,7 @@ int dirty_writeback_centisecs_handler(ctl_table *table, int write,
- static void wb_timer_fn(unsigned long unused)
- {
- 	if (pdflush_operation(wb_kupdate, 0) < 0)
--		mod_timer(&wb_timer, jiffies + HZ); /* delay 1 second */
-+		setup_wb_timer( jiffies + HZ); /* delay 1 second */
- }
- 
- static void laptop_flush(unsigned long unused)
-@@ -906,8 +920,7 @@ void __init page_writeback_init(void)
- {
- 	int shift;
- 
--	mod_timer(&wb_timer,
--		  jiffies + msecs_to_jiffies(dirty_writeback_interval * 10));
-+	setup_wb_timer(0);
- 	writeback_set_ratelimit();
- 	register_cpu_notifier(&ratelimit_nb);
- 
+The two message logs posted show NTP starting up within a second of
+each other.  What was the problem again?
+
 -- 
-1.6.0.6
-
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
