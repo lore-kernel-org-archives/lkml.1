@@ -1,48 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934075AbZE0U0U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934088AbZE0U0l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934075AbZE0U0U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 16:26:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933242AbZE0UZz
+	id S934088AbZE0U0l (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 16:26:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764362AbZE0U02
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 16:25:55 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57318
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S934002AbZE0UZy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 16:25:54 -0400
-Date: Wed, 27 May 2009 13:25:53 -0700 (PDT)
-Message-Id: <20090527.132553.40558501.davem@davemloft.net>
-To: timur@freescale.com
-Cc: scottwood@freescale.com, rmk+lkml@arm.linux.org.uk, jacmet@sunsite.dk,
-       r.schwebel@pengutronix.de, devicetree-discuss@ozlabs.org,
-       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       yuan-bo.ye@motorola.com
-Subject: Re: [RFC] [PATCH] Device Tree on ARM platform
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <4A1D9A66.5020002@freescale.com>
-References: <20090527192909.GA32398@flint.arm.linux.org.uk>
-	<4A1D9A1E.80603@freescale.com>
-	<4A1D9A66.5020002@freescale.com>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Wed, 27 May 2009 16:26:28 -0400
+Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:58183 "EHLO
+	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763735AbZE0U01 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 16:26:27 -0400
+Date: Wed, 27 May 2009 22:26:22 +0200
+From: Pierre Ossman <pierre@ossman.eu>
+To: Nicolas Pitre <nico@cam.org>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] mvsdio: fix config failure with some high speed SDHC
+ cards
+Message-ID: <20090527222622.6539d92f@mjolnir.ossman.eu>
+In-Reply-To: <alpine.LFD.2.00.0905262231120.3906@xanadu.home>
+References: <alpine.LFD.2.00.0905262231120.3906@xanadu.home>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.ossman.eu-4583-1243455987-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Timur Tabi <timur@freescale.com>
-Date: Wed, 27 May 2009 14:54:14 -0500
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-> How does a Linux driver normally get a MAC address if it's not
-> passed via the device tree and it isn't already programmed in the
-> hardware?  Is there some file in /etc that stores these things?
+--=_freyr.ossman.eu-4583-1243455987-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-It depends.  Some devices have EEPROM's that store the permanently
-assigned MAC address, some have NVRAM for this, and yet other's put it
-into the PCI ROM.
+On Tue, 26 May 2009 22:35:34 -0400 (EDT)
+Nicolas Pitre <nico@cam.org> wrote:
 
-Some platforms that have real OF device trees often do not put the
-permanent MAC address into the EEPROM or NVRAM even if it is
-customary to do so on a particular device.  The MAC has to be
-obtained from the OF device tree.
+>    =20
+> Especially with Sandisk SDHC cards, the second SWITCH command was failing
+> with a timeout and the card was not recognized at all.  However if the
+> system was busy, or debugging was enabled, or a udelay(100) was inserted
+> before the second SWITCH command in the core code, then the timing was
+> so that the card started to work.
+>=20
+> This appears to be a problem with the host hardware.  With some unusual
+> block sizes, the data FIFO status doesn't indicate a "empty" state right
+> away when the data transfer is done.  Queuing another data transfer in
+> that condition results in a transfer timeout.
+>=20
+> The empty FIFO bit eventually get set by itself in less than 50 usecs
+> when it is not set right away. So let's just poll for that bit before
+> configuring the controller with a new data transfer.
+>=20
+> Signed-off-by: Nicolas Pitre <nico@marvell.com>
+>=20
+
+You seem to be having a lot of fun with this controller. :)
+
+Patch queued.
+
+Rgds
+--=20
+     -- Pierre Ossman
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
+
+--=_freyr.ossman.eu-4583-1243455987-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.11 (GNU/Linux)
+
+iEUEARECAAYFAkodofIACgkQ7b8eESbyJLircQCg/CFuVHaRMm7x2jjnftVOOKK2
+7RIAmIlMThszXHHKpG5XxCzV5vof1Yc=
+=B7nY
+-----END PGP SIGNATURE-----
+
+--=_freyr.ossman.eu-4583-1243455987-0001-2--
