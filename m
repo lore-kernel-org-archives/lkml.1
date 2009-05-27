@@ -1,92 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757235AbZE0P3w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932098AbZE0PeT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757235AbZE0P3w (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 11:29:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752030AbZE0P3o
+	id S932098AbZE0PeT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 11:34:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756091AbZE0PeK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 11:29:44 -0400
-Received: from cantor.suse.de ([195.135.220.2]:55029 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751999AbZE0P3n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 11:29:43 -0400
-Date: Wed, 27 May 2009 17:29:44 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jkosina@wotan.suse.de
-To: Alberto Bertogli <albertito@blitiri.com.ar>
-Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org, tytso@mit.edu,
-       jack@suse.cz, trivial@kernel.org
-Subject: Re: [PATCH] Fix minor typos in jbd2's journal.c
-In-Reply-To: <1242913187-4151-1-git-send-email-albertito@blitiri.com.ar>
-Message-ID: <alpine.LNX.2.00.0905271729280.13917@wotan.suse.de>
-References: <alpine.LNX.2.00.0905211043100.13917@wotan.suse.de> <1242913187-4151-1-git-send-email-albertito@blitiri.com.ar>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	Wed, 27 May 2009 11:34:10 -0400
+Received: from e23smtp03.au.ibm.com ([202.81.31.145]:32866 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755609AbZE0PeJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 11:34:09 -0400
+Date: Wed, 27 May 2009 21:03:58 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Jan Kara <jack@suse.cz>
+Cc: LKML <linux-kernel@vger.kernel.org>, npiggin@suse.de,
+       linux-ext4@vger.kernel.org
+Subject: Re: [PATCH 0/11] Fix page_mkwrite() for blocksize < pagesize
+Message-ID: <20090527153358.GA19989@skywalker>
+References: <1243429268-3028-1-git-send-email-jack@suse.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1243429268-3028-1-git-send-email-jack@suse.cz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 21 May 2009, Alberto Bertogli wrote:
+On Wed, May 27, 2009 at 03:00:57PM +0200, Jan Kara wrote:
+> 
+> patches below are an attempt to solve problems filesystems have with
+> page_mkwrite() when blocksize < pagesize (see the changelog of the third patch
+> for details).
+> 
+> The series is against 2.6.30-rc7. The first two patches are just small cleanup
+> and should be merged separately (Ted should have the ext4 cleanup rebased on
+> top of current ext4 tree). For ext3 the fix is done in two phases, in the first
+> we make it to correctly allocate space at page-fault time from page_mkwrite().
+> This has the disadvantage that under random mmaped writes, the file gets much
+> more fragmented and performance of e.g. Berkeley DB drops by ~20%. Therefore
+> in the second phase I've implemented delayed allocation for ext3 and blocks
+> are just reserved during page_mkwrite time and really allocated only during
+> writepage. This gets the performance back to original numbers for me.
+> 
+> The patches should be fairly complete and sustained quite some testing. OTOH
+> the area is kind of complex so please review them so that they can get merged.
+> Thanks.
 
-> Signed-off-by: Alberto Bertogli <albertito@blitiri.com.ar>
-> ---
-> 
-> On Thu, May 21, 2009 at 10:44:03AM +0200, Jiri Kosina wrote:
-> > > - * Two internal function, which provide abort to te jbd layer
-> > > + * Two internal function, which provide abort to the jbd layer
-> > 
-> > function*s*, while you are at it?
-> 
-> Fixed, thanks!
-> 		Alberto
-> 
-> 
->  fs/jbd2/journal.c |    8 ++++----
->  1 files changed, 4 insertions(+), 4 deletions(-)
-> 
-> diff --git a/fs/jbd2/journal.c b/fs/jbd2/journal.c
-> index 5814410..371a17e 100644
-> --- a/fs/jbd2/journal.c
-> +++ b/fs/jbd2/journal.c
-> @@ -1781,7 +1781,7 @@ int jbd2_journal_wipe(journal_t *journal, int write)
->   * Journal abort has very specific semantics, which we describe
->   * for journal abort.
->   *
-> - * Two internal function, which provide abort to te jbd layer
-> + * Two internal functions which provide abort to the jbd layer
->   * itself are here.
->   */
->  
-> @@ -1879,7 +1879,7 @@ void jbd2_journal_abort(journal_t *journal, int errno)
->   * int jbd2_journal_errno () - returns the journal's error state.
->   * @journal: journal to examine.
->   *
-> - * This is the errno numbet set with jbd2_journal_abort(), the last
-> + * This is the errno number set with jbd2_journal_abort(), the last
->   * time the journal was mounted - if the journal was stopped
->   * without calling abort this will be 0.
->   *
-> @@ -1903,7 +1903,7 @@ int jbd2_journal_errno(journal_t *journal)
->   * int jbd2_journal_clear_err () - clears the journal's error state
->   * @journal: journal to act on.
->   *
-> - * An error must be cleared or Acked to take a FS out of readonly
-> + * An error must be cleared or acked to take a FS out of readonly
->   * mode.
->   */
->  int jbd2_journal_clear_err(journal_t *journal)
-> @@ -1923,7 +1923,7 @@ int jbd2_journal_clear_err(journal_t *journal)
->   * void jbd2_journal_ack_err() - Ack journal err.
->   * @journal: journal to act on.
->   *
-> - * An error must be cleared or Acked to take a FS out of readonly
-> + * An error must be cleared or acked to take a FS out of readonly
->   * mode.
->   */
->  void jbd2_journal_ack_err(journal_t *journal)
+Can you move patch 7 and patch 11 as the last two patches. That would
+make sure we can push rest of the patches earlier. Rest of the patches
+are needed for ext4 to fix some of the bugs we are seeing. For eg:
+																	  http://bugzilla.kernel.org/show_bug.cgi?id=12624
+http://bugzilla.kernel.org/show_bug.cgi?id=13369
 
-Applied to trivial tree, thanks Alberto.
+I have few writepage patches also on top of your last series. Having
+patch 7 and patch 11 as last two patches make sure we can get the rest
+of the patches in ext4 patchqueue and get wider testing.
 
--- 
-Jiri Kosina
-SUSE Labs
+-aneesh
