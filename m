@@ -1,84 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759688AbZE0HEP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761022AbZE0HEk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759688AbZE0HEP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 03:04:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757659AbZE0HEA
+	id S1761022AbZE0HEk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 03:04:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758187AbZE0HEd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 03:04:00 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:38076 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755701AbZE0HEA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 03:04:00 -0400
-Date: Wed, 27 May 2009 09:10:35 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       hpa@zytor.com, x86@kernel.org, Andi Kleen <ak@linux.intel.com>
-Subject: Re: [PATCH 27/31] x86: MCE: Print header/footer only once for multiple MCEs
-Message-ID: <20090527071035.GQ846@one.firstfloor.org>
-References: <0f7e10122c48b7988b1676be5e7fc75f2c561215.1243381848.git.ak@linux.intel.com> <314f7c278aaaa41854bf4f0837a4ca6126160fc8.1243381848.git.ak@linux.intel.com> <ecbed09ba385129558d6341f6a48c64edaa164b4.1243381848.git.ak@linux.intel.com> <d9664a5ed1cdbfcd7888c7c7114619494114d4ab.1243381848.git.ak@linux.intel.com> <172ffa34ba8bc6a493e26f7e97fb7239f906b4e8.1243381848.git.ak@linux.intel.com> <e224e71ae8e2b578d4b4a0a079eea963445eaf91.1243381848.git.ak@linux.intel.com> <650bd32edc1814f1f792a07de9c5efebefc9c0b3.1243381848.git.ak@linux.intel.com> <b464e1eb871500ad8f4f6e5e5f6d394aec97e037.1243381848.git.ak@linux.intel.com> <2a7abea3d00cb5a1508d54b45bdb7a94fead46ee.1243381848.git.ak@linux.intel.com> <4A1CC228.9070404@jp.fujitsu.com>
+	Wed, 27 May 2009 03:04:33 -0400
+Received: from hera.kernel.org ([140.211.167.34]:37478 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757659AbZE0HEc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 03:04:32 -0400
+Subject: Re: [PATCH -tip] Documentation/accounting/getdelays.c intialize
+ the variable before using it
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Balbir Singh <balbir@in.ibm.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+In-Reply-To: <20090526235442.d793ac89.akpm@linux-foundation.org>
+References: <1242796484.3260.12.camel@localhost.localdomain>
+	 <20090526235442.d793ac89.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Wed, 27 May 2009 12:33:26 +0530
+Message-Id: <1243407806.12592.3.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A1CC228.9070404@jp.fujitsu.com>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 27, 2009 at 01:31:36PM +0900, Hidetoshi Seto wrote:
-> I suppose one possible benefit not to have it and do like this is that we
-> can suppress printing header if there is no log to print.
-> But on the other hand footer is always printed.
-
-If there's a machine check exception there's a hardware error, 
-so that message should be printed.
-
-This can happen for example in the "external agent" case.
-
-> >  #define PANIC_TIMEOUT 5 /* 5 seconds */
+On Tue, 2009-05-26 at 23:54 -0700, Andrew Morton wrote:
+> On Wed, 20 May 2009 10:44:44 +0530 Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
 > 
-> And if there is no log, do we still need to run mcelog?
-
-Not manually if it runs correctly, but the kernel doesn't know that in 
-advance. So in case someone picks it up from a console log
-it might be still needed.
-
-> >  	 * Make sure only one CPU runs in machine check panic
-> > @@ -240,7 +246,7 @@ static void mce_panic(char *msg, struct mce *final, char *exp)
-> >  		struct mce *m = &mcelog.entry[i];
-> >  		if ((m->status & MCI_STATUS_VAL) &&
-> >  			!(m->status & MCI_STATUS_UC))
-> > -			print_mce(m);
-> > +			print_mce(m, &first);
-> >  	}
-> >  	/* Now print uncorrected but with the final one last */
-> >  	for (i = 0; i < MCE_LOG_LEN; i++) {
-> > @@ -248,12 +254,13 @@ static void mce_panic(char *msg, struct mce *final, char *exp)
-> >  		if (!(m->status & MCI_STATUS_VAL))
-> >  			continue;
-> >  		if (!final || memcmp(m, final, sizeof(struct mce)))
-> > -			print_mce(m);
-> > +			print_mce(m, &first);
-> >  	}
-> >  	if (final)
-> > -		print_mce(final);
-> > +		print_mce(final, &first);
-> >  	if (cpu_missing)
-> >  		printk(KERN_EMERG "Some CPUs didn't answer in synchronization\n");
-> > +	print_mce_tail();
-> >  	if (exp)
-> >  		printk(KERN_EMERG "Machine check: %s\n", exp);
-> >  	if (mce_panic_timeout < panic_timeout)
+> > 
+> > May be in some cases cmd_type will be used uninitialized.
+> > 
+> > Also fixes compilation warning:
+> > 
+> >    CC [M]  Documentation/DocBook/procfs_example.o
+> >   Documentation/accounting/getdelays.c: In function ___main___:
+> >   Documentation/accounting/getdelays.c:249: warning: ___cmd_type___ may be used uninitialized in this function
+> > 
+> > Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> > ---
+> >  Documentation/accounting/getdelays.c |    2 +-
+> >  1 files changed, 1 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/Documentation/accounting/getdelays.c b/Documentation/accounting/getdelays.c
+> > index 7ea2311..36aae3b 100644
+> > --- a/Documentation/accounting/getdelays.c
+> > +++ b/Documentation/accounting/getdelays.c
+> > @@ -246,7 +246,7 @@ void print_ioacct(struct taskstats *t)
+> >  
+> >  int main(int argc, char *argv[])
+> >  {
+> > -	int c, rc, rep_len, aggr_len, len2, cmd_type;
+> > +	int c, rc, rep_len, aggr_len, len2, cmd_type = TASKSTATS_CMD_ATTR_UNSPEC;
+> >  	__u16 id;
+> >  	__u32 mypid;
+> >  
 > 
-> If mce_panic is only caller of mce_log_tail (and possible mce_log_head),
-> it would be better to use printk directly than having such sub-function.
+> >From my reading of the code there is no bug here - we'll only use
+> cmd_type if tid != 0, and cmd_type is always initialised when tid != 0.
+> 
+> But I suppose we should squish the warning anyway.
+> 
+> btw, whichever version of gcc you're using has apparently regressed -
+> my gcc-4.3.0 manages to work out what's happening.  Hence please prefer
+> to include the gcc version in the changelog.  And send a bug report at
+> the gcc guys if appropriate ;)
 
-The coding standard recommends to avoid too long functions, so I split it out.
+my gcc version is 4.3.2 20081105 (Red Hat 4.3.2-7) (GCC)
 
+But I heard from jejb that 4.3.3 fixed some of these warnings.
 
--Andi
+Thanks,
+--
+JSR
 
--- 
-ak@linux.intel.com -- Speaking for myself only.
