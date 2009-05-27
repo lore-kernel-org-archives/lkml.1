@@ -1,52 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763528AbZE0Nrr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763950AbZE0Nr6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763528AbZE0Nrr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 09:47:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761764AbZE0Nrj
+	id S1763950AbZE0Nr6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 09:47:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763209AbZE0Nrn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 09:47:39 -0400
-Received: from www.tglx.de ([62.245.132.106]:38468 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762816AbZE0Nrj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 09:47:39 -0400
-Date: Wed, 27 May 2009 15:46:45 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-cc: Anton Blanchard <anton@samba.org>, rostedt@goodmis.org, mingo@elte.hu,
-       tzanussi@gmail.com, jbaron@redhat.com, kosaki.motohiro@jp.fujitsu.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] tracing/events: Add timer and high res timer
- tracepoints
-In-Reply-To: <20090526180600.GA5969@nowhere>
-Message-ID: <alpine.LFD.2.00.0905271545230.3397@localhost.localdomain>
-References: <20090520101334.GA23442@kryten> <20090526042643.GB19728@kryten> <20090526180600.GA5969@nowhere>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 27 May 2009 09:47:43 -0400
+Received: from mail-bw0-f222.google.com ([209.85.218.222]:60242 "EHLO
+	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763424AbZE0Nrm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 09:47:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=a76qy1KQbf1UDIZL2rhditujPb/PXN/T1x/hLY2TUCmdmZtQ6KWh6+hN6j+kl287Fw
+         zbg/0eaEigjbE6CWxe2LMKGRwbqJ4PuW7tfSIyYZjZmCXGeDxrDLgX/82jR68CyZWDag
+         MzhGktqPS4hnBcMANc9XR53NKmA3e9CjTBVk4=
+Date: Wed, 27 May 2009 15:47:39 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Zhaolei <zhaolei@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] ftrace: Don't convert function's local variable name
+	in macro
+Message-ID: <20090527134738.GB5982@nowhere>
+References: <4A1D41C2.2010903@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A1D41C2.2010903@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 May 2009, Frederic Weisbecker wrote:
+On Wed, May 27, 2009 at 09:36:02PM +0800, Zhaolei wrote:
+> "call" is a argument of macro, but it is also used as a local variable name of
+> function in macro.
+> We should keep this local variable name static although it haven't cause
+> problem now.
+> 
+> [ Impact: cleanup, no functionality changed ]
+> 
+> Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
 
-> On Tue, May 26, 2009 at 02:26:43PM +1000, Anton Blanchard wrote:
-> > 
-> > Add tracepoints for timer and high res timer execution. We add entry and
-> > exit tracepoints so we can calculate timer latency.
-> 
-> 
-> Your work looks very similar to Xiao Guangrong's patches.
-> 
-> See:
-> 
-> ftrace: add tracepoint for timer
-> ftrace: add tracepoint for itimer
-> ftrace: add tracepoint for hrimer
-> 
-> I'm not sure which one should be picked between
-> his patches and yours.
 
-Actually we want a combination of both.
+Indeed, that can prevent unexpected things in the future.
 
-Thanks,
-	 tglx
+Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+
