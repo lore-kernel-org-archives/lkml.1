@@ -1,112 +1,312 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934011AbZE0UYm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933984AbZE0UZ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934011AbZE0UYm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 16:24:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763957AbZE0UYd
+	id S933984AbZE0UZ7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 16:25:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763908AbZE0UZq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 16:24:33 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:42167 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763893AbZE0UYc (ORCPT
+	Wed, 27 May 2009 16:25:46 -0400
+Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:21794 "EHLO
+	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758357AbZE0UZo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 16:24:32 -0400
-Date: Wed, 27 May 2009 22:24:27 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: x86@kernel.org, hpa@zytor.com, seto.hidetoshi@jp.fujitsu.com,
-       linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org
-Subject: Please pull mce3-improvements tree
-Message-ID: <20090527202427.GA8073@basil.nowhere.org>
-MIME-Version: 1.0
+	Wed, 27 May 2009 16:25:44 -0400
+Date: Wed, 27 May 2009 15:26:07 -0500
+From: scameron@beardog.cca.cpqcorp.net
+To: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       jens.axboe@kernel.dk, akpm@linux-foundation.org
+Cc: mikem@beardog.cca.cpqcorp.net, scameron@beardog.cca.cpqcorp.net
+Subject: [PATCH 1/2] cciss: Factor out core of sendcmd() for a more sane interface
+Message-ID: <20090527202607.GA29327@beardog.cca.cpqcorp.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-This is the x86 machine check improvements tree that I posted yesterday.
-I addressed the review comments and did some minor changes.  I'm
-not reposting everything as patches because the changes are quite
-minor.
+Factor out the core of sendcmd() to provide a simpler interface
+which exposes all the error information to the caller and make the
+original sendcmd use this new function.  Rationale: The SCSI error
+handling routines need to send commands with interrupts turned off,
+but they also need access to the full error information.
 
-This is all ready for merging now. Most of these patches
-are quite old and have been extensively reviewed.
+Signed-off-by: Stephen M. Cameron <scameron@beardog.cca.cpqcorp.net>
+---
 
-It is based on the mce3-32bitmerge tree that I offered earlier.
-
-Please merge this for 2.6.31
-
-Thanks,
--Andi
-
-The following changes since commit 4f56437b3a2b2a622685574d12dfce9e1fb846ae:
-  Andi Kleen (1):
-        x86: MCE: Add basic error injection infrastructure
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/ak/linux-mce-2.6.git mce3-improvements
-
-Andi Kleen (27):
-      x86: MCE: Synchronize core after machine check handling
-      x86: MCE: Use extended sysattrs for the check_interval attribute.
-      x86: MCE: Add machine check exception count in /proc/interrupts
-      x86: Fix panic with interrupts off (needed for MCE)
-      x86: MCE: Log corrected errors when panicing
-      x86: MCE: Remove unused mce_events variable
-      x86: MCE: Rename and align out2 label
-      x86: MCE: Implement bootstrapping for machine check wakeups
-      x86: MCE: Remove TSC print heuristic
-      x86: MCE: Drop BKL in mce_open
-      x86: MCE: Add table driven machine check grading
-      x86: MCE: Check early in exception handler if panic is needed
-      x86: MCE: Implement panic synchronization
-      x86: MCE: Switch x86 machine check handler to Monarch election. v2
-      x86: MCE: Store record length into memory struct mce anchor
-      x86: MCE: Default to panic timeout for machine checks v3
-      x86: MCE: Improve documentation
-      x86: MCE: Support more than 256 CPUs in struct mce
-      x86: MCE: Extend struct mce user interface with more information.
-      x86: MCE: Add MCE poll count to /proc/interrupts
-      x86: MCE: Don't print backtrace on machine checks with DEBUG_BUGVERBOSE
-      x86: MCE: Implement new status bits v2
-      x86: MCE: Print header/footer only once for multiple MCEs
-      x86: MCE: Make non Monarch panic message "Fatal machine check" too v2
-      x86: MCE: Rename mce_notify_user to mce_notify_irq
-      x86: MCE: Define MCE_VECTOR
-      x86: MCE: Support action-optional machine checks v2
-
-Huang Ying (2):
-      x86: MCE: Improve mce_get_rip v3
-      x86: MCE: Export MCE severities coverage via debugfs
-
-Thomas Gleixner (1):
-      x86: MCE: Remove mce_init unused argument
-
- Documentation/x86/x86_64/boot-options.txt |    8 +-
- Documentation/x86/x86_64/machinecheck     |    8 +-
- arch/x86/include/asm/entry_arch.h         |    1 +
- arch/x86/include/asm/hw_irq.h             |    2 +
- arch/x86/include/asm/irq_vectors.h        |   14 +-
- arch/x86/include/asm/mce.h                |   33 +-
- arch/x86/kernel/cpu/mcheck/Makefile       |    1 +
- arch/x86/kernel/cpu/mcheck/mce-inject.c   |   12 +-
- arch/x86/kernel/cpu/mcheck/mce-internal.h |   15 +
- arch/x86/kernel/cpu/mcheck/mce-severity.c |  218 ++++++++
- arch/x86/kernel/cpu/mcheck/mce.c          |  833 ++++++++++++++++++++++++-----
- arch/x86/kernel/cpu/mcheck/mce_intel_64.c |    2 +-
- arch/x86/kernel/entry_64.S                |    7 +
- arch/x86/kernel/irq.c                     |   14 +
- arch/x86/kernel/irqinit_32.c              |    3 +
- arch/x86/kernel/irqinit_64.c              |    7 +
- arch/x86/kernel/signal.c                  |    2 +-
- arch/x86/kernel/smp.c                     |   28 +-
- kernel/panic.c                            |    3 +-
- 19 files changed, 1048 insertions(+), 163 deletions(-)
- create mode 100644 arch/x86/kernel/cpu/mcheck/mce-internal.h
- create mode 100644 arch/x86/kernel/cpu/mcheck/mce-severity.c
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
+diff -puN drivers/block/cciss.c~cciss_sendcmd_cleanup drivers/block/cciss.c
+--- lx2630-6/drivers/block/cciss.c~cciss_sendcmd_cleanup	2009-05-27 12:47:16.000000000 -0500
++++ lx2630-6-scameron/drivers/block/cciss.c	2009-05-27 13:33:13.000000000 -0500
+@@ -2378,41 +2378,21 @@ static int add_sendcmd_reject(__u8 cmd,
+ 	return 0;
+ }
+ 
+-/*
+- * Send a command to the controller, and wait for it to complete.
+- * Only used at init time.
++/* Send command c to controller h and poll for it to complete.
++ * Turns interrupts off on the board.  Used at driver init time
++ * and during SCSI error recovery.
+  */
+-static int sendcmd(__u8 cmd, int ctlr, void *buff, size_t size, unsigned int use_unit_num,	/* 0: address the controller,
+-												   1: address logical volume log_unit,
+-												   2: periph device address is scsi3addr */
+-		   unsigned int log_unit,
+-		   __u8 page_code, unsigned char *scsi3addr, int cmd_type)
++static int sendcmd_core(ctlr_info_t *h, CommandList_struct *c)
+ {
+-	CommandList_struct *c;
+ 	int i;
+ 	unsigned long complete;
+-	ctlr_info_t *info_p = hba[ctlr];
++	int status = IO_ERROR;
+ 	u64bit buff_dma_handle;
+-	int status, done = 0;
+ 
+-	if ((c = cmd_alloc(info_p, 1)) == NULL) {
+-		printk(KERN_WARNING "cciss: unable to get memory");
+-		return IO_ERROR;
+-	}
+-	status = fill_cmd(c, cmd, ctlr, buff, size, use_unit_num,
+-			  log_unit, page_code, scsi3addr, cmd_type);
+-	if (status != IO_OK) {
+-		cmd_free(info_p, c, 1);
+-		return status;
+-	}
+-      resend_cmd1:
+-	/*
+-	 * Disable interrupt
+-	 */
+-#ifdef CCISS_DEBUG
+-	printk(KERN_DEBUG "cciss: turning intr off\n");
+-#endif				/* CCISS_DEBUG */
+-	info_p->access.set_intr_mask(info_p, CCISS_INTR_OFF);
++resend_cmd1:
++
++	/* Disable interrupt on the board. */
++	h->access.set_intr_mask(h, CCISS_INTR_OFF);
+ 
+ 	/* Make sure there is room in the command FIFO */
+ 	/* Actually it should be completely empty at this time */
+@@ -2420,21 +2400,15 @@ static int sendcmd(__u8 cmd, int ctlr, v
+ 	/* tape side of the driver. */
+ 	for (i = 200000; i > 0; i--) {
+ 		/* if fifo isn't full go */
+-		if (!(info_p->access.fifo_full(info_p))) {
+-
++		if (!(h->access.fifo_full(h)))
+ 			break;
+-		}
+ 		udelay(10);
+ 		printk(KERN_WARNING "cciss cciss%d: SendCmd FIFO full,"
+-		       " waiting!\n", ctlr);
++		       " waiting!\n", h->ctlr);
+ 	}
+-	/*
+-	 * Send the cmd
+-	 */
+-	info_p->access.submit_command(info_p, c);
+-	done = 0;
++	h->access.submit_command(h, c); /* Send the cmd */
+ 	do {
+-		complete = pollcomplete(ctlr);
++		complete = pollcomplete(h->ctlr);
+ 
+ #ifdef CCISS_DEBUG
+ 		printk(KERN_DEBUG "cciss: command completed\n");
+@@ -2443,97 +2417,116 @@ static int sendcmd(__u8 cmd, int ctlr, v
+ 		if (complete == 1) {
+ 			printk(KERN_WARNING
+ 			       "cciss cciss%d: SendCmd Timeout out, "
+-			       "No command list address returned!\n", ctlr);
++			       "No command list address returned!\n", h->ctlr);
+ 			status = IO_ERROR;
+-			done = 1;
+ 			break;
+ 		}
+ 
+-		/* This will need to change for direct lookup completions */
+-		if ((complete & CISS_ERROR_BIT)
+-		    && (complete & ~CISS_ERROR_BIT) == c->busaddr) {
+-			/* if data overrun or underun on Report command
+-			   ignore it
+-			 */
+-			if (((c->Request.CDB[0] == CISS_REPORT_LOG) ||
+-			     (c->Request.CDB[0] == CISS_REPORT_PHYS) ||
+-			     (c->Request.CDB[0] == CISS_INQUIRY)) &&
+-			    ((c->err_info->CommandStatus ==
+-			      CMD_DATA_OVERRUN) ||
+-			     (c->err_info->CommandStatus == CMD_DATA_UNDERRUN)
+-			    )) {
+-				complete = c->busaddr;
+-			} else {
+-				if (c->err_info->CommandStatus ==
+-				    CMD_UNSOLICITED_ABORT) {
+-					printk(KERN_WARNING "cciss%d: "
+-					       "unsolicited abort %p\n",
+-					       ctlr, c);
+-					if (c->retry_count < MAX_CMD_RETRIES) {
+-						printk(KERN_WARNING
+-						       "cciss%d: retrying %p\n",
+-						       ctlr, c);
+-						c->retry_count++;
+-						/* erase the old error */
+-						/* information */
+-						memset(c->err_info, 0,
+-						       sizeof
+-						       (ErrorInfo_struct));
+-						goto resend_cmd1;
+-					} else {
+-						printk(KERN_WARNING
+-						       "cciss%d: retried %p too "
+-						       "many times\n", ctlr, c);
+-						status = IO_ERROR;
+-						goto cleanup1;
+-					}
+-				} else if (c->err_info->CommandStatus ==
+-					   CMD_UNABORTABLE) {
+-					printk(KERN_WARNING
+-					       "cciss%d: command could not be aborted.\n",
+-					       ctlr);
+-					status = IO_ERROR;
+-					goto cleanup1;
+-				}
+-				printk(KERN_WARNING "ciss ciss%d: sendcmd"
+-				       " Error %x \n", ctlr,
+-				       c->err_info->CommandStatus);
+-				printk(KERN_WARNING "ciss ciss%d: sendcmd"
+-				       " offensive info\n"
+-				       "  size %x\n   num %x   value %x\n",
+-				       ctlr,
+-				       c->err_info->MoreErrInfo.Invalid_Cmd.
+-				       offense_size,
+-				       c->err_info->MoreErrInfo.Invalid_Cmd.
+-				       offense_num,
+-				       c->err_info->MoreErrInfo.Invalid_Cmd.
+-				       offense_value);
+-				status = IO_ERROR;
+-				goto cleanup1;
+-			}
++		/* If it's not the cmd we're looking for, save it for later */
++		if ((complete & ~CISS_ERROR_BIT) != c->busaddr) {
++			if (add_sendcmd_reject(c->Request.CDB[0],
++				h->ctlr, complete) != 0)
++				BUG(); /* we are hosed if we get here. */
++			continue;
++		}
++
++		/* It is our command.  If no error, we're done. */
++		if (!(complete & CISS_ERROR_BIT)) {
++			status = IO_OK;
++			break;
++		}
++
++		/* There is an error... */
++
++		/* if data overrun or underun on Report command ignore it */
++		if (((c->Request.CDB[0] == CISS_REPORT_LOG) ||
++		     (c->Request.CDB[0] == CISS_REPORT_PHYS) ||
++		     (c->Request.CDB[0] == CISS_INQUIRY)) &&
++			((c->err_info->CommandStatus == CMD_DATA_OVERRUN) ||
++			 (c->err_info->CommandStatus == CMD_DATA_UNDERRUN))) {
++			complete = c->busaddr;
++			status = IO_OK;
++			break;
+ 		}
+-		/* This will need changing for direct lookup completions */
+-		if (complete != c->busaddr) {
+-			if (add_sendcmd_reject(cmd, ctlr, complete) != 0) {
+-				BUG();	/* we are pretty much hosed if we get here. */
++
++		if (c->err_info->CommandStatus == CMD_UNSOLICITED_ABORT) {
++			printk(KERN_WARNING "cciss%d: unsolicited abort %p\n",
++				h->ctlr, c);
++			if (c->retry_count < MAX_CMD_RETRIES) {
++				printk(KERN_WARNING "cciss%d: retrying %p\n",
++				   h->ctlr, c);
++				c->retry_count++;
++				/* erase the old error information */
++				memset(c->err_info, 0, sizeof(c->err_info));
++				goto resend_cmd1;
+ 			}
+-			continue;
+-		} else
+-			done = 1;
+-	} while (!done);
++			printk(KERN_WARNING "cciss%d: retried %p too many "
++				"times\n", h->ctlr, c);
++			status = IO_ERROR;
++			goto cleanup1;
++		}
++
++		if (c->err_info->CommandStatus == CMD_UNABORTABLE) {
++			printk(KERN_WARNING "cciss%d: command could not be "
++				"aborted.\n", h->ctlr);
++			status = IO_ERROR;
++			goto cleanup1;
++		}
+ 
+-      cleanup1:
++		printk(KERN_WARNING "cciss%d: sendcmd error\n", h->ctlr);
++		printk(KERN_WARNING "cmd = 0x%02x, CommandStatus = 0x%02x\n",
++			c->Request.CDB[0], c->err_info->CommandStatus);
++		if (c->err_info->CommandStatus == CMD_TARGET_STATUS) {
++			printk(KERN_WARNING "Target status = 0x%02x\n",
++			c->err_info->ScsiStatus);
++			if (c->err_info->ScsiStatus == 2) /* chk cond */
++				printk(KERN_WARNING "Sense key = 0x%02x\n",
++					0xf & c->err_info->SenseInfo[2]);
++		}
++
++		status = IO_ERROR;
++		goto cleanup1;
++
++	} while (1);
++
++cleanup1:
+ 	/* unlock the data buffer from DMA */
+ 	buff_dma_handle.val32.lower = c->SG[0].Addr.lower;
+ 	buff_dma_handle.val32.upper = c->SG[0].Addr.upper;
+-	pci_unmap_single(info_p->pdev, (dma_addr_t) buff_dma_handle.val,
++	pci_unmap_single(h->pdev, (dma_addr_t) buff_dma_handle.val,
+ 			 c->SG[0].Len, PCI_DMA_BIDIRECTIONAL);
+ #ifdef CONFIG_CISS_SCSI_TAPE
+ 	/* if we saved some commands for later, process them now. */
+-	if (info_p->scsi_rejects.ncompletions > 0)
+-		do_cciss_intr(0, info_p);
++	if (h->scsi_rejects.ncompletions > 0)
++		do_cciss_intr(0, h);
+ #endif
+-	cmd_free(info_p, c, 1);
++	return status;
++}
++
++/*
++ * Send a command to the controller, and wait for it to complete.
++ * Used at init time, and during SCSI error recovery.
++ */
++static int sendcmd(__u8 cmd, int ctlr, void *buff, size_t size,
++	unsigned int use_unit_num,/* 0: address the controller,
++				     1: address logical volume log_unit,
++				     2: periph device address is scsi3addr */
++	unsigned int log_unit,
++	__u8 page_code, unsigned char *scsi3addr, int cmd_type)
++{
++	CommandList_struct *c;
++	int status;
++
++	c = cmd_alloc(hba[ctlr], 1);
++	if (!c) {
++		printk(KERN_WARNING "cciss: unable to get memory");
++		return IO_ERROR;
++	}
++	status = fill_cmd(c, cmd, ctlr, buff, size, use_unit_num,
++			  log_unit, page_code, scsi3addr, cmd_type);
++	if (status == IO_OK)
++		status = sendcmd_core(hba[ctlr], c);
++	cmd_free(hba[ctlr], c, 1);
+ 	return status;
+ }
+ 
+_
