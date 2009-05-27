@@ -1,89 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761258AbZE0Kes@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761139AbZE0KgZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761258AbZE0Kes (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 06:34:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756207AbZE0Kej
+	id S1761139AbZE0KgZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 06:36:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758333AbZE0KgP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 06:34:39 -0400
-Received: from hera.kernel.org ([140.211.167.34]:45265 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751568AbZE0Kei (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 06:34:38 -0400
-Date: Wed, 27 May 2009 10:33:36 GMT
-From: tip-bot for Mike Galbraith <efault@gmx.de>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
-       hpa@zytor.com, mingo@redhat.com, jkacur@redhat.com,
-       a.p.zijlstra@chello.nl, efault@gmx.de, mtosatti@redhat.com,
-       tglx@linutronix.de, cjashfor@linux.vnet.ibm.com, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, jkacur@redhat.com, a.p.zijlstra@chello.nl,
-       efault@gmx.de, mtosatti@redhat.com, tglx@linutronix.de,
-       cjashfor@linux.vnet.ibm.com, mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-Subject: [tip:perfcounters/core] perf record: Fix the profiling of existing pid or whole box
-Message-ID: <tip-ef65b2a0b3a2f82850144df6e6a7796f6d66da6b@git.kernel.org>
-Git-Commit-ID: ef65b2a0b3a2f82850144df6e6a7796f6d66da6b
-X-Mailer: tip-git-log-daemon
+	Wed, 27 May 2009 06:36:15 -0400
+Received: from mail-gx0-f166.google.com ([209.85.217.166]:61836 "EHLO
+	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756207AbZE0KgO convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 06:36:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=xBRLNggpP5wyghUBneOD8c3Xq68LBxhcC6kYSHcVet1M7gwiqYhmaZLV1mrrbYZNGA
+         HQ25juhA+r8h3Z1sTjPDzpsBkwgjAagaabJqRjaA8bTnDqCKkDAFVsAfaspXxbsRBWew
+         oH3ErpfxDkX4jUPZ+G4qhDs5ipltZdsOnX2PY=
 MIME-Version: 1.0
+In-Reply-To: <D7CCA83BB0796C49BC0BB53B6AB1208934920A@zch01exm21.fsl.freescale.net>
+References: <D7CCA83BB0796C49BC0BB53B6AB1208934920A@zch01exm21.fsl.freescale.net>
+Date: Wed, 27 May 2009 18:36:14 +0800
+X-Google-Sender-Auth: 96926e714120ca32
+Message-ID: <2a27d3730905270336n120f7652yad269858ff456c64@mail.gmail.com>
+Subject: Re: Net: ucc_geth ethernet driver optimization space
+From: Li Yang <leoli@freescale.com>
+To: Liu Dave-R63238 <DaveLiu@freescale.com>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org
 Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 27 May 2009 10:33:49 +0000 (UTC)
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  ef65b2a0b3a2f82850144df6e6a7796f6d66da6b
-Gitweb:     http://git.kernel.org/tip/ef65b2a0b3a2f82850144df6e6a7796f6d66da6b
-Author:     Mike Galbraith <efault@gmx.de>
-AuthorDate: Wed, 27 May 2009 10:10:51 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 27 May 2009 12:31:03 +0200
+On Wed, May 27, 2009 at 1:08 PM, Liu Dave-R63238 <DaveLiu@freescale.com> wrote:
+> Guys,
+>
+> The ucc_geth ethernet driver have dozens of strong sync read/write
+> operation, such as in_be32/16/8, out_be32/16/8.
+>
+> all of them is sync read/write, it is very expensive for performance.
+>
 
-perf record: Fix the profiling of existing pid or whole box
+Totally agree.  That's one of my concerns right from the beginning.
 
-Perf record bails if no command argument is provided, so you can't use
-naked -a or -p to profile a running task or the whole box.
+> For the critical patch, we can remove some unnecessary in_be(x),
+> out_be(x) with normal memory operation, and keep some necessary
+> memory barrier.
+>
+> eg: BD access in the interrupt handler and start_xmit.
+>
+> The BD operation only need the memory barrier between length/buffer
+> and status.
+>
+> struct buffer descriptor {
+>        u16 status;
+>        u16 length;
+>        u32 buffer;
+> } __attribute__ ((packed));
+>
+> struct buffer descriptor *BD;
+>
+> BD->length = xxxx;
+> BD->buffer = yyyy;
+> wmb();
+> BD->status = zzzz;
 
-Allow foreground profiling of an existing pid or the entire system.
+The BD can reside either in memory or memory mapped region, which
+makes the case more complex.
 
-[ Impact: fix command option handling bug ]
+MMIO accesses need to use IO accessors for the sparse checking.  We
+might make use of the __raw_*() accessors, but I'm not sure if it's
+suitable for non-PCI buses on powerpc.  And also we need to pay
+special attention to the problem described here:
+http://lwn.net/Articles/198988/
 
-Signed-off-by: Mike Galbraith <efault@gmx.de>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-Cc: Marcelo Tosatti <mtosatti@redhat.com>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: John Kacur <jkacur@redhat.com>
-LKML-Reference: <new-submission>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- Documentation/perf_counter/builtin-record.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/Documentation/perf_counter/builtin-record.c b/Documentation/perf_counter/builtin-record.c
-index 431077a..4a06866 100644
---- a/Documentation/perf_counter/builtin-record.c
-+++ b/Documentation/perf_counter/builtin-record.c
-@@ -354,7 +354,7 @@ static int __cmd_record(int argc, const char **argv)
- 	signal(SIGCHLD, sig_handler);
- 	signal(SIGINT, sig_handler);
- 
--	if (target_pid == -1) {
-+	if (target_pid == -1 && argc) {
- 		pid = fork();
- 		if (pid < 0)
- 			perror("failed to fork");
-@@ -430,7 +430,7 @@ int cmd_record(int argc, const char **argv, const char *prefix)
- 	create_events_help(events_help_msg);
- 
- 	argc = parse_options(argc, argv, options, record_usage, 0);
--	if (!argc)
-+	if (!argc && target_pid == -1 && !system_wide)
- 		usage_with_options(record_usage, options);
- 
- 	if (!nr_counters) {
+- Leo
