@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764029AbZE0RvU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932627AbZE0Rvg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764029AbZE0RvU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 13:51:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763532AbZE0RqN
+	id S932627AbZE0Rvg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 13:51:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761704AbZE0RqP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 13:46:13 -0400
-Received: from jalapeno.cc.columbia.edu ([128.59.29.5]:54715 "EHLO
+	Wed, 27 May 2009 13:46:15 -0400
+Received: from jalapeno.cc.columbia.edu ([128.59.29.5]:54716 "EHLO
 	jalapeno.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763480AbZE0RqD (ORCPT
+	with ESMTP id S1763461AbZE0RqD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 27 May 2009 13:46:03 -0400
 From: Oren Laadan <orenl@cs.columbia.edu>
@@ -21,9 +21,9 @@ Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
        Pavel Emelyanov <xemul@openvz.org>,
        Alexey Dobriyan <adobriyan@gmail.com>,
        Oren Laadan <orenl@cs.columbia.edu>
-Subject: [RFC v16][PATCH 24/43] c/r: detect resource leaks for whole-container checkpoint
-Date: Wed, 27 May 2009 13:32:50 -0400
-Message-Id: <1243445589-32388-25-git-send-email-orenl@cs.columbia.edu>
+Subject: [RFC v16][PATCH 19/43] c/r: external checkpoint of a task other than ourself
+Date: Wed, 27 May 2009 13:32:45 -0400
+Message-Id: <1243445589-32388-20-git-send-email-orenl@cs.columbia.edu>
 X-Mailer: git-send-email 1.6.0.1
 In-Reply-To: <1243445589-32388-1-git-send-email-orenl@cs.columbia.edu>
 References: <1243445589-32388-1-git-send-email-orenl@cs.columbia.edu>
@@ -32,255 +32,217 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a 'users' count to objhash items, and, for a !CHECKPOINT_SUBTREE
-checkpoint, return an error code if the actual objects' counts are
-higher, indicating leaks (references to the objects from a task not
-being checkpointed).  Of course, by this time most of the checkpoint
-image has been written out to disk, so this is purely advisory.  But
-then, it's probably naive to argue that anything more than an advisory
-'this went wrong' error code is useful.
+Now we can do "external" checkpoint, i.e. act on another task.
 
-The comparison of the objhash user counts to object refcounts as a
-basis for checking for leaks comes from Alexey's OpenVZ-based c/r
-patchset.
+sys_checkpoint() now looks up the target pid (in our namespace) and
+checkpoints that corresponding task. That task should be the root of
+a container, unless CHECKPOINT_SUBTREE flag is given.
+
+sys_restart() remains the same, as the restart is always done in the
+context of the restarting task.
+
+Changelog[v16]:
+  - Use CHECKPOINT_SUBTREE to allow subtree (partial container)
+
+Changelog[v14]:
+  - Refuse non-self checkpoint if target task isn't frozen
+
+Changelog[v12]:
+  - Replace obsolete ckpt_debug() with pr_debug()
+
+Changelog[v11]:
+  - Copy contents of 'init->fs->root' instead of pointing to them
+
+Changelog[v10]:
+  - Grab vfs root of container init, rather than current process
 
 Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
 ---
- checkpoint/checkpoint.c    |    8 ++++
- checkpoint/objhash.c       |   82 ++++++++++++++++++++++++++++++++++++++++++--
- include/linux/checkpoint.h |    1 +
- 3 files changed, 88 insertions(+), 3 deletions(-)
+ checkpoint/checkpoint.c          |   79 +++++++++++++++++++++++++++++++++++++-
+ checkpoint/restart.c             |    4 +-
+ checkpoint/sys.c                 |    6 +++
+ include/linux/checkpoint_types.h |    2 +
+ 4 files changed, 87 insertions(+), 4 deletions(-)
 
 diff --git a/checkpoint/checkpoint.c b/checkpoint/checkpoint.c
-index 92f219e..b70adf4 100644
+index a346b7e..086f2d9 100644
 --- a/checkpoint/checkpoint.c
 +++ b/checkpoint/checkpoint.c
-@@ -578,6 +578,14 @@ int do_checkpoint(struct ckpt_ctx *ctx, pid_t pid)
+@@ -12,6 +12,9 @@
+ #define CKPT_DFLAG  CKPT_DSYS
+ 
+ #include <linux/version.h>
++#include <linux/sched.h>
++#include <linux/freezer.h>
++#include <linux/ptrace.h>
+ #include <linux/time.h>
+ #include <linux/fs.h>
+ #include <linux/file.h>
+@@ -245,23 +248,95 @@ static int checkpoint_write_tail(struct ckpt_ctx *ctx)
+ 	return ret;
+ }
+ 
++static int may_checkpoint_task(struct ckpt_ctx *ctx, struct task_struct *t)
++{
++	if (t->state == TASK_DEAD) {
++		pr_warning("c/r: task %d is TASK_DEAD\n", task_pid_vnr(t));
++		return -EAGAIN;
++	}
++
++	if (!ptrace_may_access(t, PTRACE_MODE_READ)) {
++		__ckpt_write_err(ctx, "access to task %d (%s) denied",
++				 task_pid_vnr(t), t->comm);
++		return -EPERM;
++	}
++
++	/* verify that the task is frozen (unless self) */
++	if (t != current && !frozen(t)) {
++		__ckpt_write_err(ctx, "task %d (%s) is not frozen",
++				 task_pid_vnr(t), t->comm);
++		return -EBUSY;
++	}
++
++	/* FIX: add support for ptraced tasks */
++	if (task_ptrace(t)) {
++		__ckpt_write_err(ctx, "task %d (%s) is ptraced",
++				 task_pid_vnr(t), t->comm);
++		return -EBUSY;
++	}
++
++	return 0;
++}
++
++static int get_container(struct ckpt_ctx *ctx, pid_t pid)
++{
++	struct task_struct *task = NULL;
++	struct nsproxy *nsproxy = NULL;
++	int ret;
++
++	ctx->root_pid = pid;
++
++	read_lock(&tasklist_lock);
++	task = find_task_by_vpid(pid);
++	if (task)
++		get_task_struct(task);
++	read_unlock(&tasklist_lock);
++
++	if (!task)
++		return -ESRCH;
++
++	ret = may_checkpoint_task(ctx, task);
++	if (ret) {
++		ckpt_write_err(ctx, NULL);
++		put_task_struct(task);
++		return ret;
++	}
++
++	rcu_read_lock();
++	nsproxy = task_nsproxy(task);
++	get_nsproxy(nsproxy);
++	rcu_read_unlock();
++
++	ctx->root_task = task;
++	ctx->root_nsproxy = nsproxy;
++
++	return 0;
++}
++
+ /* setup checkpoint-specific parts of ctx */
+ static int init_checkpoint_ctx(struct ckpt_ctx *ctx, pid_t pid)
+ {
+ 	struct fs_struct *fs;
++	int ret;
+ 
+ 	ctx->root_pid = pid;
+ 
++	ret = get_container(ctx, pid);
++	if (ret < 0)
++		return ret;
++
+ 	/*
+ 	 * assume checkpointer is in container's root vfs
+ 	 * FIXME: this works for now, but will change with real containers
+ 	 */
+ 
+-	fs = current->fs;
++	task_lock(ctx->root_task);
++	fs = ctx->root_task->fs;
+ 	read_lock(&fs->lock);
+ 	ctx->fs_mnt = fs->root;
+ 	path_get(&ctx->fs_mnt);
+ 	read_unlock(&fs->lock);
++	task_unlock(ctx->root_task);
+ 
+ 	return 0;
+ }
+@@ -276,7 +351,7 @@ int do_checkpoint(struct ckpt_ctx *ctx, pid_t pid)
+ 	ret = checkpoint_write_header(ctx);
  	if (ret < 0)
  		goto out;
- 
-+	if (!(ctx->uflags & CHECKPOINT_SUBTREE)) {
-+		/* verify that all objects are contained (no leaks) */
-+		if (!ckpt_obj_contained(ctx)) {
-+			ret = -EBUSY;
-+			goto out;
-+		}
-+	}
-+
- 	/* on success, return (unique) checkpoint identifier */
- 	ctx->crid = atomic_inc_return(&ctx_count);
- 	ret = ctx->crid;
-diff --git a/checkpoint/objhash.c b/checkpoint/objhash.c
-index ff9388d..e481911 100644
---- a/checkpoint/objhash.c
-+++ b/checkpoint/objhash.c
-@@ -27,19 +27,23 @@ struct ckpt_obj_ops {
- 	enum obj_type obj_type;
- 	void (*ref_drop)(void *ptr);
- 	int (*ref_grab)(void *ptr);
-+	int (*ref_users)(void *ptr);
- 	int (*checkpoint)(struct ckpt_ctx *ctx, void *ptr);
- 	void *(*restore)(struct ckpt_ctx *ctx);
- };
- 
- struct ckpt_obj {
-+	int users;
- 	int objref;
- 	void *ptr;
- 	struct ckpt_obj_ops *ops;
- 	struct hlist_node hash;
-+	struct hlist_node next;
- };
- 
- struct ckpt_obj_hash {
- 	struct hlist_head *head;
-+	struct hlist_head list;
- 	int next_free_objref;
- };
- 
-@@ -53,7 +57,7 @@ void *restore_bad(struct ckpt_ctx *ctx)
- 	return ERR_PTR(-EINVAL);
+-	ret = checkpoint_task(ctx, current);
++	ret = checkpoint_task(ctx, ctx->root_task);
+ 	if (ret < 0)
+ 		goto out;
+ 	ret = checkpoint_write_tail(ctx);
+diff --git a/checkpoint/restart.c b/checkpoint/restart.c
+index d3d6c5e..ca33539 100644
+--- a/checkpoint/restart.c
++++ b/checkpoint/restart.c
+@@ -352,7 +352,7 @@ static int restore_read_tail(struct ckpt_ctx *ctx)
  }
  
--/* helper grab/drop functions: */
-+/* helper grab/drop/users functions */
- 
- static void obj_no_drop(void *ptr)
+ /* setup restart-specific parts of ctx */
+-static int init_restart_ctx(struct ckpt_ctx *ctx)
++static int init_restart_ctx(struct ckpt_ctx *ctx, pid_t pid)
  {
-@@ -86,6 +90,11 @@ static void obj_file_table_drop(void *ptr)
- 	put_files_struct((struct files_struct *) ptr);
- }
- 
-+static int obj_file_table_users(void *ptr)
-+{
-+	return atomic_read(&((struct files_struct *) ptr)->count);
-+}
-+
- static int obj_file_grab(void *ptr)
- {
- 	get_file((struct file *) ptr);
-@@ -97,6 +106,11 @@ static void obj_file_drop(void *ptr)
- 	fput((struct file *) ptr);
- }
- 
-+static int obj_file_users(void *ptr)
-+{
-+	return atomic_long_read(&((struct file *) ptr)->f_count);
-+}
-+
- static int obj_mm_grab(void *ptr)
- {
- 	atomic_inc(&((struct mm_struct *) ptr)->mm_users);
-@@ -108,6 +122,11 @@ static void obj_mm_drop(void *ptr)
- 	mmput((struct mm_struct *) ptr);
- }
- 
-+static int obj_mm_users(void *ptr)
-+{
-+	return atomic_read(&((struct mm_struct *) ptr)->mm_users);
-+}
-+
- static struct ckpt_obj_ops ckpt_obj_ops[] = {
- 	/* ignored object */
- 	{
-@@ -131,6 +150,7 @@ static struct ckpt_obj_ops ckpt_obj_ops[] = {
- 		.obj_type = CKPT_OBJ_FILE_TABLE,
- 		.ref_drop = obj_file_table_drop,
- 		.ref_grab = obj_file_table_grab,
-+		.ref_users = obj_file_table_users,
- 		.checkpoint = checkpoint_file_table,
- 		.restore = restore_file_table,
- 	},
-@@ -140,6 +160,7 @@ static struct ckpt_obj_ops ckpt_obj_ops[] = {
- 		.obj_type = CKPT_OBJ_FILE,
- 		.ref_drop = obj_file_drop,
- 		.ref_grab = obj_file_grab,
-+		.ref_users = obj_file_users,
- 		.checkpoint = checkpoint_file,
- 		.restore = restore_file,
- 	},
-@@ -149,6 +170,7 @@ static struct ckpt_obj_ops ckpt_obj_ops[] = {
- 		.obj_type = CKPT_OBJ_MM,
- 		.ref_drop = obj_mm_drop,
- 		.ref_grab = obj_mm_grab,
-+		.ref_users = obj_mm_users,
- 		.checkpoint = checkpoint_mm,
- 		.restore = restore_mm,
- 	},
-@@ -201,6 +223,7 @@ int ckpt_obj_hash_alloc(struct ckpt_ctx *ctx)
- 
- 	obj_hash->head = head;
- 	obj_hash->next_free_objref = 1;
-+	INIT_HLIST_HEAD(&obj_hash->list);
- 
- 	ctx->obj_hash = obj_hash;
  	return 0;
-@@ -259,6 +282,7 @@ static int obj_new(struct ckpt_ctx *ctx, void *ptr, int objref,
- 
- 	obj->ptr = ptr;
- 	obj->ops = ops;
-+	obj->users = 2;  /* extra reference that objhash itself takes */
- 
- 	if (objref) {
- 		/* use @obj->objref to index (restart) */
-@@ -271,10 +295,12 @@ static int obj_new(struct ckpt_ctx *ctx, void *ptr, int objref,
- 	}
- 
- 	ret = ops->ref_grab(obj->ptr);
--	if (ret < 0)
-+	if (ret < 0) {
- 		kfree(obj);
--	else
-+	} else {
- 		hlist_add_head(&obj->hash, &ctx->obj_hash->head[i]);
-+		hlist_add_head(&obj->next, &ctx->obj_hash->list);
-+	}
- 
- 	return (ret < 0 ? ret : obj->objref);
  }
-@@ -335,6 +361,7 @@ int ckpt_obj_lookup_add(struct ckpt_ctx *ctx, void *ptr,
- 		return -EINVAL;
- 	} else {
- 		objref = obj->objref;
-+		obj->users++;
- 		*first = 0;
- 	}
+@@ -361,7 +361,7 @@ int do_restart(struct ckpt_ctx *ctx, pid_t pid)
+ {
+ 	int ret;
  
-@@ -342,6 +369,54 @@ int ckpt_obj_lookup_add(struct ckpt_ctx *ctx, void *ptr,
- 	return objref;
+-	ret = init_restart_ctx(ctx);
++	ret = init_restart_ctx(ctx, pid);
+ 	if (ret < 0)
+ 		return ret;
+ 	ret = restore_read_header(ctx);
+diff --git a/checkpoint/sys.c b/checkpoint/sys.c
+index 7bf70e4..c809120 100644
+--- a/checkpoint/sys.c
++++ b/checkpoint/sys.c
+@@ -12,6 +12,7 @@
+ #define CKPT_DFLAG  CKPT_DSYS
+ 
+ #include <linux/sched.h>
++#include <linux/nsproxy.h>
+ #include <linux/kernel.h>
+ #include <linux/syscalls.h>
+ #include <linux/fs.h>
+@@ -173,6 +174,11 @@ static void ckpt_ctx_free(struct ckpt_ctx *ctx)
+ 	path_put(&ctx->fs_mnt);
+ 	ckpt_pgarr_free(ctx);
+ 
++	if (ctx->root_nsproxy)
++		put_nsproxy(ctx->root_nsproxy);
++	if (ctx->root_task)
++		put_task_struct(ctx->root_task);
++
+ 	kfree(ctx);
  }
  
-+/* increment the 'users' count of an object */
-+static void ckpt_obj_users_inc(struct ckpt_ctx *ctx, void *ptr, int increment)
-+{
-+	struct ckpt_obj *obj;
-+
-+	obj = obj_find_by_ptr(ctx, ptr);
-+	if (obj)
-+		obj->users += increment;
-+}
-+
-+/**
-+ * ckpt_obj_contained - test if shared objects are "contained" in checkpoint
-+ * @ctx: checkpoint
-+ *
-+ * Loops through all objects in the table and compares the number of
-+ * references accumulated during checkpoint, with the reference count
-+ * reported by the kernel.
-+ *
-+ * Return 1 if respective counts match for all objects, 0 otherwise.
-+ */
-+int ckpt_obj_contained(struct ckpt_ctx *ctx)
-+{
-+	struct ckpt_obj *obj;
-+	struct hlist_node *node;
-+
-+	/* account for ctx->file reference (if in the table already) */
-+	ckpt_obj_users_inc(ctx, ctx->file, 1);
-+
-+	hlist_for_each_entry(obj, node, &ctx->obj_hash->list, next) {
-+		if (!obj->ops->ref_users)
-+			continue;
-+		if (obj->ops->ref_users(obj->ptr) != obj->users) {
-+			ckpt_debug("usage leak: %s\n", obj->ops->obj_name);
-+			ckpt_write_err(ctx, "%s leak: users %d != c/r %d\n",
-+				       obj->ops->obj_name,
-+				       obj->ops->ref_users(obj->ptr),
-+				       obj->users);
-+			printk(KERN_NOTICE "c/r: %s users %d != count %d\n",
-+			       obj->ops->obj_name,
-+			       obj->ops->ref_users(obj->ptr),
-+			       obj->users);
-+			return 0;
-+		}
-+	}
-+
-+	return 1;
-+}
-+
- /**
-  * checkpoint_obj - if not already in hash, add object and checkpoint
-  * @ctx: checkpoint context
-@@ -371,6 +446,7 @@ int checkpoint_obj(struct ckpt_ctx *ctx, void *ptr, enum obj_type type)
- 	obj = obj_find_by_ptr(ctx, ptr);
- 	if (obj) {
- 		BUG_ON(obj->ops->obj_type != type);
-+		obj->users++;
- 		return obj->objref;
- 	}
+diff --git a/include/linux/checkpoint_types.h b/include/linux/checkpoint_types.h
+index a0ea5f6..4369f90 100644
+--- a/include/linux/checkpoint_types.h
++++ b/include/linux/checkpoint_types.h
+@@ -28,6 +28,8 @@ struct ckpt_ctx {
+ 	int crid;		/* unique checkpoint id */
  
-diff --git a/include/linux/checkpoint.h b/include/linux/checkpoint.h
-index e9efa34..171e92e 100644
---- a/include/linux/checkpoint.h
-+++ b/include/linux/checkpoint.h
-@@ -44,6 +44,7 @@ extern int ckpt_obj_hash_alloc(struct ckpt_ctx *ctx);
+ 	pid_t root_pid;		/* container identifier */
++	struct task_struct *root_task;	/* container root task */
++	struct nsproxy *root_nsproxy;	/* container root nsproxy */
  
- extern int restore_obj(struct ckpt_ctx *ctx, struct ckpt_hdr_objref *h);
- extern int checkpoint_obj(struct ckpt_ctx *ctx, void *ptr, enum obj_type type);
-+extern int ckpt_obj_contained(struct ckpt_ctx *ctx);
- extern void *ckpt_obj_fetch(struct ckpt_ctx *ctx, int objref,
- 			    enum obj_type type);
- extern int ckpt_obj_lookup_add(struct ckpt_ctx *ctx, void *ptr,
+ 	unsigned long kflags;	/* kerenl flags */
+ 	unsigned long uflags;	/* user flags */
 -- 
 1.6.0.4
 
