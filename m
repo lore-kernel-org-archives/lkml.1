@@ -1,77 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758676AbZE0Bss@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758820AbZE0BtX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758676AbZE0Bss (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 21:48:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758270AbZE0Bsj
+	id S1758820AbZE0BtX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 21:49:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757938AbZE0BtG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 21:48:39 -0400
-Received: from cmpxchg.org ([85.214.51.133]:43998 "EHLO cmpxchg.org"
+	Tue, 26 May 2009 21:49:06 -0400
+Received: from mail.windriver.com ([147.11.1.11]:58589 "EHLO mail.wrs.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757488AbZE0Bsi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 21:48:38 -0400
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Subject: [patch] mm: release swap slots for actively used pages
-Date: Wed, 27 May 2009 03:47:39 +0200
-Message-Id: <1243388859-9760-1-git-send-email-hannes@cmpxchg.org>
-X-Mailer: git-send-email 1.6.3
+	id S1757684AbZE0BtE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 21:49:04 -0400
+Subject: [PATCH] net/ucc_geth: allow to set mac address on running device
+From: Kevin Hao <kexin.hao@windriver.com>
+To: linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, leoli@freescale.com
+X-OriginalArrivalTime: 27 May 2009 01:39:44.0367 (UTC)
+ FILETIME=[02ECAFF0:01C9DE6C]
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Wed, 27 May 2009 09:48:56 +0800
+Message-Id: <1243388936.13410.4.camel@kevin>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-For anonymous pages activated by the reclaim scan or faulted from an
-evicted page table entry we should always try to free up swap space.
+Inspired by the patch for 8139too (bda6a15a).
 
-Both events indicate that the page is in active use and a possible
-change in the working set.  Thus removing the slot association from
-the page increases the chance of the page being placed near its new
-LRU buddies on the next eviction and helps keeping the amount of stale
-swap cache entries low.
+Currently we can't set mac address on a running ucc_geth device.
+But this is needed when you use this device as a bonding slave in
+bonding device in balance-alb mode. So add this feature for ucc_geth
+device.
 
-try_to_free_swap() inherently only succeeds when the last user of the
-swap slot vanishes so it is safe to use from places where that single
-mapping just brought the page back to life.
-
-Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Rik van Riel <riel@redhat.com>
-Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Signed-off-by: Kevin Hao <kexin.hao@windriver.com>
 ---
- mm/memory.c |    3 +--
- mm/vmscan.c |    2 +-
- 2 files changed, 2 insertions(+), 3 deletions(-)
+ drivers/net/ucc_geth.c |   33 ++++++++++++++++++++++++++++++++-
+ 1 files changed, 32 insertions(+), 1 deletions(-)
 
-diff --git a/mm/memory.c b/mm/memory.c
-index 8b4e40e..407ebf7 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -2671,8 +2671,7 @@ static int do_swap_page(struct mm_struct *mm, struct vm_area_struct *vma,
- 	mem_cgroup_commit_charge_swapin(page, ptr);
+diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
+index 9dd16c9..3c595d7 100644
+--- a/drivers/net/ucc_geth.c
++++ b/drivers/net/ucc_geth.c
+@@ -3339,6 +3339,37 @@ static void ucc_netpoll(struct net_device *dev)
+ }
+ #endif /* CONFIG_NET_POLL_CONTROLLER */
  
- 	swap_free(entry);
--	if (vm_swap_full() || (vma->vm_flags & VM_LOCKED) || PageMlocked(page))
--		try_to_free_swap(page);
-+	try_to_free_swap(page);
- 	unlock_page(page);
- 
- 	if (write_access) {
-diff --git a/mm/vmscan.c b/mm/vmscan.c
-index 621708f..2f0549d 100644
---- a/mm/vmscan.c
-+++ b/mm/vmscan.c
-@@ -788,7 +788,7 @@ cull_mlocked:
- 
- activate_locked:
- 		/* Not a candidate for swapping, so reclaim swap space. */
--		if (PageSwapCache(page) && vm_swap_full())
-+		if (PageSwapCache(page))
- 			try_to_free_swap(page);
- 		VM_BUG_ON(PageActive(page));
- 		SetPageActive(page);
++static int ucc_geth_set_mac_addr(struct net_device *dev, void *p)
++{
++	struct ucc_geth_private *ugeth = netdev_priv(dev);
++	struct sockaddr *addr = p;
++
++	if (!is_valid_ether_addr(addr->sa_data))
++		return -EADDRNOTAVAIL;
++
++	memcpy(dev->dev_addr, addr->sa_data, dev->addr_len);
++
++	/*
++	 * If device is not running, we will set mac addr register
++	 * when opening the device.
++	 */
++	if (!netif_running(dev))
++		return 0;
++
++	spin_lock_irq(&ugeth->lock);
++	init_mac_station_addr_regs(dev->dev_addr[0],
++				   dev->dev_addr[1],
++				   dev->dev_addr[2],
++				   dev->dev_addr[3],
++				   dev->dev_addr[4],
++				   dev->dev_addr[5],
++				   &ugeth->ug_regs->macstnaddr1,
++				   &ugeth->ug_regs->macstnaddr2);
++	spin_unlock_irq(&ugeth->lock);
++
++	return 0;
++}
++
+ /* Called when something needs to use the ethernet device */
+ /* Returns 0 for success. */
+ static int ucc_geth_open(struct net_device *dev)
+@@ -3515,7 +3546,7 @@ static const struct net_device_ops ucc_geth_netdev_ops = {
+ 	.ndo_stop		= ucc_geth_close,
+ 	.ndo_start_xmit		= ucc_geth_start_xmit,
+ 	.ndo_validate_addr	= eth_validate_addr,
+-	.ndo_set_mac_address	= eth_mac_addr,
++	.ndo_set_mac_address	= ucc_geth_set_mac_addr,
+ 	.ndo_change_mtu		= eth_change_mtu,
+ 	.ndo_set_multicast_list	= ucc_geth_set_multi,
+ 	.ndo_tx_timeout		= ucc_geth_timeout,
 -- 
-1.6.3
+1.6.0.4.771.gef3b3
 
