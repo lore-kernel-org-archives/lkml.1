@@ -1,179 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762796AbZE0LPt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762865AbZE0LQW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762796AbZE0LPt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 07:15:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760459AbZE0LMe
+	id S1762865AbZE0LQW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 07:16:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759166AbZE0LMh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 07:12:34 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:56180 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760465AbZE0LMb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 07:12:31 -0400
-From: Mel Gorman <mel@csn.ul.ie>
-To: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       stable@kernel.org, Linux Memory Management List <linux-mm@kvack.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, starlight@binnacle.cx,
-       Eric B Munson <ebmunson@us.ibm.com>, Adam Litke <agl@us.ibm.com>,
-       Andy Whitcroft <apw@canonical.com>, wli@movementarian.org
-Subject: [PATCH 2/2] mm: Account for MAP_SHARED mappings using VM_MAYSHARE and not VM_SHARED in hugetlbfs
-Date: Wed, 27 May 2009 12:12:29 +0100
-Message-Id: <1243422749-6256-3-git-send-email-mel@csn.ul.ie>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1243422749-6256-1-git-send-email-mel@csn.ul.ie>
-References: <1243422749-6256-1-git-send-email-mel@csn.ul.ie>
+	Wed, 27 May 2009 07:12:37 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:54618 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760632AbZE0LMd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 07:12:33 -0400
+From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+To: linux-kernel@vger.kernel.org
+Cc: linux-fsdevel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
+       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Date: Wed, 27 May 2009 16:06:21 +0300
+Message-Id: <20090527130621.4913.55045.sendpatchset@localhost.localdomain>
+In-Reply-To: <20090527130503.4913.62042.sendpatchset@localhost.localdomain>
+References: <20090527130503.4913.62042.sendpatchset@localhost.localdomain>
+Subject: [PATCH 12/19] reiserfs: do not manipulate s_dirt directly
+X-OriginalArrivalTime: 27 May 2009 11:12:20.0513 (UTC) FILETIME=[00C88910:01C9DEBC]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hugetlbfs reserves huge pages but does not fault them at mmap() time to ensure
-that future faults succeed. The reservation behaviour differs depending on
-whether the mapping was mapped MAP_SHARED or MAP_PRIVATE. For MAP_SHARED
-mappings, hugepages are reserved when mmap() is first called and are tracked
-based on information associated with the inode. Other processes mapping
-MAP_SHARED use the same reservation. MAP_PRIVATE track the reservations
-based on the VMA created as part of the mmap() operation. Each process
-mapping MAP_PRIVATE must make its own reservation.
+From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Subject: [PATCH] reiserfs: do not manipulate s_dirt directly
 
-hugetlbfs currently checks if a VMA is MAP_SHARED with the VM_SHARED flag and
-not VM_MAYSHARE.  For file-backed mappings, such as hugetlbfs, VM_SHARED is
-set only if the mapping is MAP_SHARED and the file was opened read-write. If a
-shared memory mapping was mapped shared-read-write for populating of data and
-mapped shared-read-only by other processes, then hugetlbfs would account for
-the mapping as if it was MAP_PRIVATE.  This causes processes to fail to map
-the file MAP_SHARED even though it should succeed as the reservation is there.
+... use new VFS helpers instead.
 
-This patch alters mm/hugetlb.c and replaces VM_SHARED with VM_MAYSHARE when
-the intent of the code was to check whether the VMA was mapped MAP_SHARED
-or MAP_PRIVATE.
-
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Cc: Christoph Hellwig <hch@infradead.org>
 ---
- mm/hugetlb.c |   26 +++++++++++++-------------
- 1 files changed, 13 insertions(+), 13 deletions(-)
+ fs/reiserfs/journal.c |    6 +++---
+ fs/reiserfs/resize.c  |    2 +-
+ fs/reiserfs/super.c   |   10 +++++-----
+ 3 files changed, 9 insertions(+), 9 deletions(-)
 
-diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-index 28c655b..e83ad2c 100644
---- a/mm/hugetlb.c
-+++ b/mm/hugetlb.c
-@@ -316,7 +316,7 @@ static void resv_map_release(struct kref *ref)
- static struct resv_map *vma_resv_map(struct vm_area_struct *vma)
- {
- 	VM_BUG_ON(!is_vm_hugetlb_page(vma));
--	if (!(vma->vm_flags & VM_SHARED))
-+	if (!(vma->vm_flags & VM_MAYSHARE))
- 		return (struct resv_map *)(get_vma_private_data(vma) &
- 							~HPAGE_RESV_MASK);
- 	return NULL;
-@@ -325,7 +325,7 @@ static struct resv_map *vma_resv_map(struct vm_area_struct *vma)
- static void set_vma_resv_map(struct vm_area_struct *vma, struct resv_map *map)
- {
- 	VM_BUG_ON(!is_vm_hugetlb_page(vma));
--	VM_BUG_ON(vma->vm_flags & VM_SHARED);
-+	VM_BUG_ON(vma->vm_flags & VM_MAYSHARE);
- 
- 	set_vma_private_data(vma, (get_vma_private_data(vma) &
- 				HPAGE_RESV_MASK) | (unsigned long)map);
-@@ -334,7 +334,7 @@ static void set_vma_resv_map(struct vm_area_struct *vma, struct resv_map *map)
- static void set_vma_resv_flags(struct vm_area_struct *vma, unsigned long flags)
- {
- 	VM_BUG_ON(!is_vm_hugetlb_page(vma));
--	VM_BUG_ON(vma->vm_flags & VM_SHARED);
-+	VM_BUG_ON(vma->vm_flags & VM_MAYSHARE);
- 
- 	set_vma_private_data(vma, get_vma_private_data(vma) | flags);
- }
-@@ -353,7 +353,7 @@ static void decrement_hugepage_resv_vma(struct hstate *h,
- 	if (vma->vm_flags & VM_NORESERVE)
- 		return;
- 
--	if (vma->vm_flags & VM_SHARED) {
-+	if (vma->vm_flags & VM_MAYSHARE) {
- 		/* Shared mappings always use reserves */
- 		h->resv_huge_pages--;
- 	} else if (is_vma_resv_set(vma, HPAGE_RESV_OWNER)) {
-@@ -369,14 +369,14 @@ static void decrement_hugepage_resv_vma(struct hstate *h,
- void reset_vma_resv_huge_pages(struct vm_area_struct *vma)
- {
- 	VM_BUG_ON(!is_vm_hugetlb_page(vma));
--	if (!(vma->vm_flags & VM_SHARED))
-+	if (!(vma->vm_flags & VM_MAYSHARE))
- 		vma->vm_private_data = (void *)0;
- }
- 
- /* Returns true if the VMA has associated reserve pages */
- static int vma_has_reserves(struct vm_area_struct *vma)
- {
--	if (vma->vm_flags & VM_SHARED)
-+	if (vma->vm_flags & VM_MAYSHARE)
- 		return 1;
- 	if (is_vma_resv_set(vma, HPAGE_RESV_OWNER))
- 		return 1;
-@@ -924,7 +924,7 @@ static long vma_needs_reservation(struct hstate *h,
- 	struct address_space *mapping = vma->vm_file->f_mapping;
- 	struct inode *inode = mapping->host;
- 
--	if (vma->vm_flags & VM_SHARED) {
-+	if (vma->vm_flags & VM_MAYSHARE) {
- 		pgoff_t idx = vma_hugecache_offset(h, vma, addr);
- 		return region_chg(&inode->i_mapping->private_list,
- 							idx, idx + 1);
-@@ -949,7 +949,7 @@ static void vma_commit_reservation(struct hstate *h,
- 	struct address_space *mapping = vma->vm_file->f_mapping;
- 	struct inode *inode = mapping->host;
- 
--	if (vma->vm_flags & VM_SHARED) {
-+	if (vma->vm_flags & VM_MAYSHARE) {
- 		pgoff_t idx = vma_hugecache_offset(h, vma, addr);
- 		region_add(&inode->i_mapping->private_list, idx, idx + 1);
- 
-@@ -1893,7 +1893,7 @@ retry_avoidcopy:
- 	 * at the time of fork() could consume its reserves on COW instead
- 	 * of the full address range.
- 	 */
--	if (!(vma->vm_flags & VM_SHARED) &&
-+	if (!(vma->vm_flags & VM_MAYSHARE) &&
- 			is_vma_resv_set(vma, HPAGE_RESV_OWNER) &&
- 			old_page != pagecache_page)
- 		outside_reserve = 1;
-@@ -2000,7 +2000,7 @@ retry:
- 		clear_huge_page(page, address, huge_page_size(h));
- 		__SetPageUptodate(page);
- 
--		if (vma->vm_flags & VM_SHARED) {
-+		if (vma->vm_flags & VM_MAYSHARE) {
- 			int err;
- 			struct inode *inode = mapping->host;
- 
-@@ -2104,7 +2104,7 @@ int hugetlb_fault(struct mm_struct *mm, struct vm_area_struct *vma,
- 			goto out_mutex;
- 		}
- 
--		if (!(vma->vm_flags & VM_SHARED))
-+		if (!(vma->vm_flags & VM_MAYSHARE))
- 			pagecache_page = hugetlbfs_pagecache_page(h,
- 								vma, address);
+diff --git a/fs/reiserfs/journal.c b/fs/reiserfs/journal.c
+index 77f5bb7..1d2fb0e 100644
+--- a/fs/reiserfs/journal.c
++++ b/fs/reiserfs/journal.c
+@@ -3259,7 +3259,7 @@ int journal_mark_dirty(struct reiserfs_transaction_handle *th,
+ 			       th->t_trans_id, journal->j_trans_id);
  	}
-@@ -2289,7 +2289,7 @@ int hugetlb_reserve_pages(struct inode *inode,
- 	 * to reserve the full area even if read-only as mprotect() may be
- 	 * called to make the mapping read-write. Assume !vma is a shm mapping
+ 
+-	sb->s_dirt = 1;
++	mark_sb_dirty(sb);
+ 
+ 	prepared = test_clear_buffer_journal_prepared(bh);
+ 	clear_buffer_journal_restore_dirty(bh);
+@@ -3554,7 +3554,7 @@ int reiserfs_flush_old_commits(struct super_block *sb)
+ 			do_journal_end(&th, sb, 1, COMMIT_NOW | WAIT);
+ 		}
+ 	}
+-	return sb->s_dirt;
++	return sb_is_dirty(sb);
+ }
+ 
+ /*
+@@ -3984,7 +3984,7 @@ static int do_journal_end(struct reiserfs_transaction_handle *th,
+ 	 ** it tells us if we should continue with the journal_end, or just return
  	 */
--	if (!vma || vma->vm_flags & VM_SHARED)
-+	if (!vma || vma->vm_flags & VM_MAYSHARE)
- 		chg = region_chg(&inode->i_mapping->private_list, from, to);
- 	else {
- 		struct resv_map *resv_map = resv_map_alloc();
-@@ -2330,7 +2330,7 @@ int hugetlb_reserve_pages(struct inode *inode,
- 	 * consumed reservations are stored in the map. Hence, nothing
- 	 * else has to be done for private mappings here
- 	 */
--	if (!vma || vma->vm_flags & VM_SHARED)
-+	if (!vma || vma->vm_flags & VM_MAYSHARE)
- 		region_add(&inode->i_mapping->private_list, from, to);
+ 	if (!check_journal_end(th, sb, nblocks, flags)) {
+-		sb->s_dirt = 1;
++		mark_sb_dirty(sb);
+ 		wake_queued_writers(sb);
+ 		reiserfs_async_progress_wait(sb);
+ 		goto out;
+diff --git a/fs/reiserfs/resize.c b/fs/reiserfs/resize.c
+index 238e9d9..9157d38 100644
+--- a/fs/reiserfs/resize.c
++++ b/fs/reiserfs/resize.c
+@@ -202,7 +202,7 @@ int reiserfs_resize(struct super_block *s, unsigned long block_count_new)
+ 					  (bmap_nr_new - bmap_nr)));
+ 	PUT_SB_BLOCK_COUNT(s, block_count_new);
+ 	PUT_SB_BMAP_NR(s, bmap_would_wrap(bmap_nr_new) ? : bmap_nr_new);
+-	s->s_dirt = 1;
++	mark_sb_dirty(s);
+ 
+ 	journal_mark_dirty(&th, s, SB_BUFFER_WITH_SB(s));
+ 
+diff --git a/fs/reiserfs/super.c b/fs/reiserfs/super.c
+index 90dcb7b..f45c78f 100644
+--- a/fs/reiserfs/super.c
++++ b/fs/reiserfs/super.c
+@@ -70,8 +70,8 @@ static int reiserfs_sync_fs(struct super_block *s, int wait)
+ 	if (!journal_begin(&th, s, 1))
+ 		if (!journal_end_sync(&th, s, 1))
+ 			reiserfs_flush_old_commits(s);
+-	s->s_dirt = 0;	/* Even if it's not true.
+-			 * We'll loop forever in sync_supers otherwise */
++	mark_sb_clean(s); /* Even if it's not true.
++			   * We'll loop forever in sync_supers otherwise */
+ 	reiserfs_write_unlock(s);
  	return 0;
  }
+@@ -97,7 +97,7 @@ static int reiserfs_freeze(struct super_block *s)
+ 			journal_end_sync(&th, s, 1);
+ 		}
+ 	}
+-	s->s_dirt = 0;
++	mark_sb_clean(s);
+ 	reiserfs_write_unlock(s);
+ 	return 0;
+ }
+@@ -467,7 +467,7 @@ static void reiserfs_put_super(struct super_block *s)
+ 
+ 	lock_kernel();
+ 
+-	if (s->s_dirt)
++	if (sb_is_dirty(s))
+ 		reiserfs_write_super(s);
+ 
+ 	/* change file system state to current state if it was mounted with read-write permissions */
+@@ -1309,7 +1309,7 @@ static int reiserfs_remount(struct super_block *s, int *mount_flags, char *arg)
+ 	err = journal_end(&th, s, 10);
+ 	if (err)
+ 		goto out_err;
+-	s->s_dirt = 0;
++	mark_sb_clean(s);
+ 
+ 	if (!(*mount_flags & MS_RDONLY)) {
+ 		finish_unfinished(s);
 -- 
-1.5.6.5
+1.6.0.6
 
