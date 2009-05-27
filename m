@@ -1,47 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762275AbZE1ACo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761461AbZE1AER@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762275AbZE1ACo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 20:02:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756478AbZE1ACg
+	id S1761461AbZE1AER (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 20:04:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755965AbZE1AEF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 20:02:36 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42604
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757093AbZE1ACe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 20:02:34 -0400
-Date: Wed, 27 May 2009 17:02:34 -0700 (PDT)
-Message-Id: <20090527.170234.69075052.davem@davemloft.net>
-To: scottwood@freescale.com
-Cc: r.schwebel@pengutronix.de, grant.likely@secretlab.ca,
-       devicetree-discuss@ozlabs.org, linux-kernel@vger.kernel.org,
-       linux-arm-kernel@lists.arm.linux.org.uk, yuan-bo.ye@motorola.com,
-       timur@freescale.com, rmk@arm.linux.org.uk
-Subject: Re: [RFC] [PATCH] Device Tree on ARM platform
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <4A1DD3A0.3010501@freescale.com>
-References: <fa686aa40905271335o1165419hda2334bef42aa3f@mail.gmail.com>
-	<20090527234801.GP6805@pengutronix.de>
-	<4A1DD3A0.3010501@freescale.com>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 27 May 2009 20:04:05 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:43861 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755545AbZE1AEE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 20:04:04 -0400
+Date: Thu, 28 May 2009 01:59:36 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Roland McGrath <roland@redhat.com>
+Cc: Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH 7/X] ptrace: mv task->parent ptrace_task->pt_tracer
+Message-ID: <20090527235936.GB12216@redhat.com>
+References: <20090525000016.GA2239@redhat.com> <20090525215903.GA9113@redhat.com> <20090527021131.4778BFC36B@magilla.sf.frob.com> <20090527224140.GC6770@redhat.com> <20090527230700.11F2DFC2BD@magilla.sf.frob.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090527230700.11F2DFC2BD@magilla.sf.frob.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Scott Wood <scottwood@freescale.com>
-Date: Wed, 27 May 2009 18:58:24 -0500
+On 05/27, Roland McGrath wrote:
+>
+> > 		if (!exit_code)
+> > 			child->exit_code = exit_code;
+>
+> The condition is wrong.  It's unconditional except in the "already killed"
+> case that ptrace_detach() is checking for.  It never depends on the value.
+> (You probably meant the inverse of this test.  But that's wrong too.
+> PTRACE_CONT,0 must clear the old signal and not deliver any signal.)
 
-> Because it's better to have a little platform specific code than a lot
-> of it?
+This is optimization. If exit_code == 0 we do not need to fixup
+->last_siginfo. Note that we have another "child->exit_code = exit_code"
+below in the slow path.
 
-Judging by some of the questions I see popping up over and over again,
-I suspect that many people resisting OF device trees lack much of an
-understanding of what they provide and can do.
+> > 		if (child->exit_code == exit_code)
+> > 			return;
+>
+> This makes no sense unless it's before setting it.
 
-Questions like "How do we determine attribute X of a given device" has
-an obvious answer if you understand device node properties and that
-you can encode arbitrary things into them to provide arbitrary bits of
-information on a per-device-instance basis.
+This also covers the "exit_code == 0" case. If exit_code = 0 we have
+already set child->exit_code, we can return.
+
+> > The disadvantage is, ptrace_notify() does not need this, we add the
+> > little pessimization...
+>
+> It can check for !child->last_siginfo before lock_task_sighand().
+
+ptrace_stop() always sets ->last_siginfo != NULL.
+
+> > And. This change adds another dependency with arches which implement
+> > their own resume.
+>
+> The current draft series is meant to assume arch issues are already dealt
+> with before this merges.  If we need to sequence this part of it later than
+> most of it, we can revisit that later before really preparing to merge it.
+>
+> > So. Do you think this cleanup should be done before/with this series
+> > or we can do it later?
+>
+> Whatever you think fits best.  Right now I just want to get the rough draft
+> of the series all the way to the end of the most substantive work.  Do that
+> however seems most efficacious now.  We can juggle the order again later to
+> ease the eventual merging.
+
+OK, lets do this change later ;)
+
+Oleg.
+
