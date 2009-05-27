@@ -1,81 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763422AbZE0NYW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763361AbZE0NdS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763422AbZE0NYW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 09:24:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760642AbZE0NYO
+	id S1763361AbZE0NdS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 09:33:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762184AbZE0NdI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 09:24:14 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:44087 "EHLO mx2.redhat.com"
+	Wed, 27 May 2009 09:33:08 -0400
+Received: from hera.kernel.org ([140.211.167.34]:53732 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760287AbZE0NYN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 09:24:13 -0400
-Message-ID: <4A1D3EEC.3050106@redhat.com>
-Date: Wed, 27 May 2009 09:23:56 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+	id S1761381AbZE0NdH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 09:33:07 -0400
+Message-ID: <4A1D40FD.5050102@kernel.org>
+Date: Wed, 27 May 2009 22:32:45 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tero.kristo@nokia.com, ext-eero.nurkkala@nokia.com,
-       venkatesh.pallipadi@intel.com, tglx@linutronix.de
-Subject: Re: [tip:timers/urgent] NOHZ: Properly feed cpufreq ondemand governor
-References: <12432346571351-git-send-email-ext-eero.nurkkala@nokia.com> <tip-cf1240033cc81216a18eec0ca71466f7fe4eeda8@git.kernel.org>
-In-Reply-To: <tip-cf1240033cc81216a18eec0ca71466f7fe4eeda8@git.kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Greg KH <greg@kroah.com>
+CC: Robert Hancock <hancockrwd@gmail.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-pci@vger.kernel.org, Linux Kernel <linux-kernel@vger.kernel.org>,
+       towerlexa@gmx.de, Daniel Ritz <daniel.ritz@gmx.ch>,
+       Dominik Brodowski <linux@dominikbrodowski.net>,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Subject: [RFC PATCH] pccard: configure CLS on attach
+References: <4A1BE904.8080302@kernel.org> <20090526142300.73d466d0@lxorguk.ukuu.org.uk> <4A1C7EF9.2030000@gmail.com> <4A1C8091.4050909@kernel.org> <4A1C86F5.1020603@jp.fujitsu.com>
+In-Reply-To: <4A1C86F5.1020603@jp.fujitsu.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 27 May 2009 13:32:48 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-tip-bot for Eero Nurkkala wrote:
-> Commit-ID:  cf1240033cc81216a18eec0ca71466f7fe4eeda8
-> Gitweb:     http://git.kernel.org/tip/cf1240033cc81216a18eec0ca71466f7fe4eeda8
-> Author:     Eero Nurkkala <ext-eero.nurkkala@nokia.com>
-> AuthorDate: Mon, 25 May 2009 09:57:37 +0300
-> Committer:  Thomas Gleixner <tglx@linutronix.de>
-> CommitDate: Wed, 27 May 2009 14:51:47 +0200
-> 
-> NOHZ: Properly feed cpufreq ondemand governor
-> 
-> A call from irq_exit() may occasionally pause the timing
-> info for cpufreq ondemand governor. This results in the
-> cpufreq ondemand governor to fail to calculate the
-> system load properly. Thus, relocate the checks for this
-> particular case to keep the governor always functional.
-> 
-> Signed-off-by: Eero Nurkkala <ext-eero.nurkkala@nokia.com>
-> Reported-by: Tero Kristo <tero.kristo@nokia.com>
-> Acked-by: Rik van Riel <riel@redhat.com>
-> Acked-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-> LKML-Reference: <12432346571351-git-send-email-ext-eero.nurkkala@nokia.com>
-> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> 
-> 
-> ---
->  kernel/time/tick-sched.c |   12 +++++++++---
->  1 files changed, 9 insertions(+), 3 deletions(-)
-> 
-> diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
-> index d3f1ef4..233b4e7 100644
-> --- a/kernel/time/tick-sched.c
-> +++ b/kernel/time/tick-sched.c
-> @@ -222,6 +222,15 @@ void tick_nohz_stop_sched_tick(int inidle)
->  
->  	cpu = smp_processor_id();
->  	ts = &per_cpu(tick_cpu_sched, cpu);
-> +
-> +	/*
-> +	 * Call to tick_nohz_start_idle stops the last_update_time from being
-> +	 * updated. Thus, it must not be called in the event we are called from
-> +	 * irq_exit() with the prior state different than idle.
-> +	 */
-> +	if (!inidle && !ts->inidle)
-> +		return;
+For non hotplug PCI devices, the system firmware usually configures
+CLS correctly.  For pccard devices system firmware can't do it and
+linux PCI layer doesn't do it either leaving it unconfigured.
+Unfortunately this leads to poor performanc for certain devices
+(sata_sil).  Unless MWI, which requires separate configuration, is to
+be used, CLS doesn't affect correctness, so the configuration should
+be harmless.
 
-Calling return without restoring the
-local_irq_save(flags) right above the
-line where you get the CPU number seems
-like a bad idea.
+Please note that some other PCI hotplug drivers (shpchp and pciehp)
+also configure CLS on hotplug.
 
--- 
-All rights reversed.
+THIS IS A RFC PATCH, SO NO SOB.  PLEASE DON'T APPLY YET.
+
+towerlexa, can you please test this patch?
+
+Cc: Daniel Ritz <daniel.ritz@gmx.ch>
+Cc: Dominik Brodowski <linux@dominikbrodowski.net>
+Cc: Greg KH <greg@kroah.com>
+Cc: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Cc: towerlexa@gmx.de
+---
+ drivers/pci/pci.c        |    3 +--
+ drivers/pcmcia/cardbus.c |   23 +++++++++++++++--------
+ include/linux/pci.h      |    1 +
+ 3 files changed, 17 insertions(+), 10 deletions(-)
+
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index 1a91bf9..eafbe01 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -1860,8 +1860,7 @@ u8 pci_cache_line_size = PCI_CACHE_LINE_BYTES / 4;
+  *
+  * RETURNS: An appropriate -ERRNO error value on error, or zero for success.
+  */
+-static int
+-pci_set_cacheline_size(struct pci_dev *dev)
++int pci_set_cacheline_size(struct pci_dev *dev)
+ {
+ 	u8 cacheline_size;
+ 
+diff --git a/drivers/pcmcia/cardbus.c b/drivers/pcmcia/cardbus.c
+index db77e1f..98789c0 100644
+--- a/drivers/pcmcia/cardbus.c
++++ b/drivers/pcmcia/cardbus.c
+@@ -184,26 +184,33 @@ fail:
+     
+ =====================================================================*/
+ 
+-/*
+- * Since there is only one interrupt available to CardBus
+- * devices, all devices downstream of this device must
+- * be using this IRQ.
+- */
+-static void cardbus_assign_irqs(struct pci_bus *bus, int irq)
++static void cardbus_config_irq_and_cls(struct pci_bus *bus, int irq)
+ {
+ 	struct pci_dev *dev;
+ 
+ 	list_for_each_entry(dev, &bus->devices, bus_list) {
+ 		u8 irq_pin;
+ 
++		/*
++		 * Since there is only one interrupt available to
++		 * CardBus devices, all devices downstream of this
++		 * device must be using this IRQ.
++		 */
+ 		pci_read_config_byte(dev, PCI_INTERRUPT_PIN, &irq_pin);
+ 		if (irq_pin) {
+ 			dev->irq = irq;
+ 			pci_write_config_byte(dev, PCI_INTERRUPT_LINE, dev->irq);
+ 		}
+ 
++		/*
++		 * Some controllers transfer very slowly with 0 CLS.
++		 * Configure it.  This may fail as CLS configuration
++		 * is mandatory only for MWI.
++		 */
++		pci_set_cacheline_size(dev);
++
+ 		if (dev->subordinate)
+-			cardbus_assign_irqs(dev->subordinate, irq);
++			cardbus_config_irq_and_cls(dev->subordinate, irq);
+ 	}
+ }
+ 
+@@ -228,7 +235,7 @@ int __ref cb_alloc(struct pcmcia_socket * s)
+ 	 */
+ 	pci_bus_size_bridges(bus);
+ 	pci_bus_assign_resources(bus);
+-	cardbus_assign_irqs(bus, s->pci_irq);
++	cardbus_config_irq_and_cls(bus, s->pci_irq);
+ 
+ 	/* socket specific tune function */
+ 	if (s->tune_bridge)
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index 72698d8..e1a1aa6 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -688,6 +688,7 @@ void pci_disable_device(struct pci_dev *dev);
+ void pci_set_master(struct pci_dev *dev);
+ void pci_clear_master(struct pci_dev *dev);
+ int pci_set_pcie_reset_state(struct pci_dev *dev, enum pcie_reset_state state);
++int pci_set_cacheline_size(struct pci_dev *dev);
+ #define HAVE_PCI_SET_MWI
+ int __must_check pci_set_mwi(struct pci_dev *dev);
+ int pci_try_set_mwi(struct pci_dev *dev);
