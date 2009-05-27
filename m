@@ -1,131 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759311AbZE0Dzk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758134AbZE0D7Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759311AbZE0Dzk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 23:55:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759067AbZE0DzY
+	id S1758134AbZE0D7Q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 23:59:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756297AbZE0D7D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 23:55:24 -0400
-Received: from mga03.intel.com ([143.182.124.21]:23193 "EHLO mga03.intel.com"
+	Tue, 26 May 2009 23:59:03 -0400
+Received: from sh.osrg.net ([192.16.179.4]:44985 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758952AbZE0DzV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 23:55:21 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,256,1241420400"; 
-   d="scan'208";a="147277843"
-Date: Wed, 27 May 2009 11:55:05 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>
-Subject: Re: [PATCH] readahead:add blk_run_backing_dev
-Message-ID: <20090527035505.GA16916@localhost>
-References: <20090520025123.GB8186@localhost> <6.0.0.20.2.20090521145005.06f81fe0@172.19.0.2> <20090522010538.GB6010@localhost> <6.0.0.20.2.20090522102551.0705aea0@172.19.0.2> <20090522023323.GA10864@localhost> <20090526164252.0741b392.akpm@linux-foundation.org> <6.0.0.20.2.20090527092105.076be238@172.19.0.2> <20090527020909.GB17658@localhost> <6.0.0.20.2.20090527110937.0770c420@172.19.0.2> <20090526193601.b825af5f.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090526193601.b825af5f.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1756476AbZE0D7C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 23:59:02 -0400
+Date: Wed, 27 May 2009 12:58:46 +0900
+To: arnd@arndb.de
+Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] asm-generic: add a dma-mapping.h file
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <200905261335.41643.arnd@arndb.de>
+References: <200905221705.54426.arnd@arndb.de>
+	<20090526122423S.fujita.tomonori@lab.ntt.co.jp>
+	<200905261335.41643.arnd@arndb.de>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20090527125801B.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Wed, 27 May 2009 12:58:47 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 27, 2009 at 10:36:01AM +0800, Andrew Morton wrote:
-> On Wed, 27 May 2009 11:21:53 +0900 Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp> wrote:
-> 
+On Tue, 26 May 2009 13:35:41 +0100
+Arnd Bergmann <arnd@arndb.de> wrote:
+
+> On Tuesday 26 May 2009, FUJITA Tomonori wrote:
+> > > dma_get_cache_alignment() is still less generic than
+> > > the other functions, as this is still architecture
+> > > specific. Should I leave that out as well then?
 > > 
-> > At 11:09 09/05/27, Wu Fengguang wrote:
-> > >On Wed, May 27, 2009 at 08:25:04AM +0800, Hisashi Hifumi wrote:
-> > >> 
-> > >> At 08:42 09/05/27, Andrew Morton wrote:
-> > >> >On Fri, 22 May 2009 10:33:23 +0800
-> > >> >Wu Fengguang <fengguang.wu@intel.com> wrote:
-> > >> >
-> > >> >> > I tested above patch, and I got same performance number.
-> > >> >> > I wonder why if (PageUptodate(page)) check is there...
-> > >> >> 
-> > >> >> Thanks!  This is an interesting micro timing behavior that
-> > >> >> demands some research work.  The above check is to confirm if it's
-> > >> >> the PageUptodate() case that makes the difference. So why that case
-> > >> >> happens so frequently so as to impact the performance? Will it also
-> > >> >> happen in NFS?
-> > >> >> 
-> > >> >> The problem is readahead IO pipeline is not running smoothly, which is
-> > >> >> undesirable and not well understood for now.
-> > >> >
-> > >> >The patch causes a remarkably large performance increase.  A 9%
-> > >> >reduction in time for a linear read? I'd be surprised if the workload
-> > >> 
-> > >> Hi Andrew.
-> > >> Yes, I tested this with dd.
-> > >> 
-> > >> >even consumed 9% of a CPU, so where on earth has the kernel gone to?
-> > >> >
-> > >> >Have you been able to reproduce this in your testing?
-> > >> 
-> > >> Yes, this test on my environment is reproducible.
-> > >
-> > >Hisashi, does your environment have some special configurations?
-> > 
-> > Hi.
-> > My testing environment is as follows:
-> > Hardware: HP DL580 
-> > CPU:Xeon 3.2GHz *4 HT enabled
-> > Memory:8GB
-> > Storage: Dothill SANNet2 FC (7Disks RAID-0 Array)
-> > 
-> > I did dd to this disk-array and got improved performance number.
-> > 
-> > I noticed that when a disk is just one HDD, performance improvement
-> > is very small.
+> > Yes, I think that only adding generic functions is a better
+> > approach. Overriding with #ifdef is really ugly.
 > > 
 > 
-> Ah.  So it's likely to be some strange interaction with the RAID setup.
+> Ok, will do.
+> 
+> [trimming Cc list a bit, as the subject has changed]
+> 
+> Could you be more specific as to why you think the #ifdef
+> in this file is ugly? I agree that we should always avoid
+> #ifdef in a device driver file or around the usage of an
+> API, but we use it everywhere when defining an optional
 
-The normal case is, if page N become uptodate at time T(N), then
-T(N) <= T(N+1) holds. But for RAID, the data arrival time depends on
-runtime status of individual disks, which breaks that formula. So
-in do_generic_file_read(), just after submitting the async readahead IO
-request, the current page may well be uptodate, so the page won't be locked,
-and the block device won't be implicitly unplugged:
-
-               if (PageReadahead(page))
-                        page_cache_async_readahead()
-                if (!PageUptodate(page))
-                                goto page_not_up_to_date;
-                //...
-page_not_up_to_date:
-                lock_page_killable(page);
+Seems that people think regard #ifdef in *.c bad, I think.
 
 
-Therefore explicit unplugging can help, so
+> API, e.g.
+> 
+> #ifdef CONFIG_DMA_API_DEBUG
+> extern void dma_debug_add_bus(struct bus_type *bus);
+> #else
+> static inline void dma_debug_add_bus(struct bus_type *bus)
+> {
+> {
+> #endif
 
-        Acked-by: Wu Fengguang <fengguang.wu@intel.com> 
+This example is inappropriate; a different way to use #ifdef.
 
-The only question is, shall we avoid the double unplug by doing this?
+This just ensures that dma_debug_add_bus() is available even if
+CONFIG_DMA_API_DEBUG is disabled.
 
----
- mm/readahead.c |   10 ++++++++++
- 1 file changed, 10 insertions(+)
+It's completely different from a way how you use #ifdef.
 
---- linux.orig/mm/readahead.c
-+++ linux/mm/readahead.c
-@@ -490,5 +490,15 @@ page_cache_async_readahead(struct addres
- 
- 	/* do read-ahead */
- 	ondemand_readahead(mapping, ra, filp, true, offset, req_size);
-+
-+	/*
-+	 * Normally the current page is !uptodate and lock_page() will be
-+	 * immediately called to implicitly unplug the device. However this
-+	 * is not always true for RAID conifgurations, where data arrives
-+	 * not strictly in their submission order. In this case we need to
-+	 * explicitly kick off the IO.
-+	 */
-+	if (PageUptodate(page))
-+		blk_run_backing_dev(mapping->backing_dev_info, NULL);
- }
- EXPORT_SYMBOL_GPL(page_cache_async_readahead);
+
+> #ifndef clear_user_highpage
+> static inline void clear_user_highpage(struct page *page, unsigned long vaddr)
+> {
+> 	void *addr = kmap_atomic(page, KM_USER0);
+> 	clear_user_page(addr, vaddr, page);
+> 	kunmap_atomic(addr, KM_USER0);
+> }
+> #endif
+
+#define clear_user_highpage(page,vaddr)		\
+	 __cpu_clear_user_highpage(page, vaddr)
+
+Personally, I don't fancy this style but it's a matter of taste, I
+guess.
+
+
+> This has always made a lot of sense to me when you are defining
+> something that you want to become a No-op in certain configurations
+> or that only needs special handling in a few cases. IIRC, Linus
+> has stated that he prefers the second of the two styles above when
+> you have the choice, which is why I started out that way, while
+> for the dma_debug stuff, the CONFIG_ symbol clearly makes sense.
+> 
+> 	Arnd <><
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
