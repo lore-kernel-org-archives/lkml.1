@@ -1,94 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932537AbZE0UVh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764109AbZE0UWU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932537AbZE0UVh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 16:21:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932296AbZE0UVL
+	id S1764109AbZE0UWU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 16:22:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757876AbZE0UWE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 16:21:11 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:46004 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762852AbZE0UVK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 16:21:10 -0400
-Date: Wed, 27 May 2009 22:21:09 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: x86@kernel.org, hpa@zytor.com, seto.hidetoshi@jp.fujitsu.com,
-       linux-kernel@vger.kernel.org
-Subject: Please pull MCE 32bit merge tree
-Message-ID: <20090527202109.GA8008@basil.nowhere.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Wed, 27 May 2009 16:22:04 -0400
+Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:53755 "EHLO
+	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761578AbZE0UWC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 16:22:02 -0400
+Date: Wed, 27 May 2009 22:21:58 +0200
+From: Pierre Ossman <pierre@ossman.eu>
+To: Philipp Zabel <philipp.zabel@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Ian Molton <spyro@f2s.com>,
+       Philipp Zabel <philipp.zabel@gmail.com>
+Subject: Re: [PATCH 5/5] mmc: tmio_mmc: move probe function into __init
+ section
+Message-ID: <20090527222158.5f734a90@mjolnir.ossman.eu>
+In-Reply-To: <1243279681-4233-6-git-send-email-philipp.zabel@gmail.com>
+References: <1243279681-4233-1-git-send-email-philipp.zabel@gmail.com>
+	<1243279681-4233-6-git-send-email-philipp.zabel@gmail.com>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.ossman.eu-4545-1243455722-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-Please pull the mce3-32bitmerge tree that enables the 64bit machine
-check code on 32bit x86 too, as earlier discussed.
-It also includes the machine check injector because I needed that
-for testing.
+--=_freyr.ossman.eu-4545-1243455722-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-It is based on the mce3 tree I offered earlier.
+On Mon, 25 May 2009 21:28:01 +0200
+Philipp Zabel <philipp.zabel@gmail.com> wrote:
 
-This is the patch kit I posted yesterday. There were some reviews, but
-no negative comments.
+> As MFD cells are not hotpluggable, this should be safe to do.
+>=20
+> Signed-off-by: Philipp Zabel <philipp.zabel@gmail.com>
+> Cc: Pierre Ossman <pierre@ossman.eu>
+> Cc: Ian Molton <spyro@f2s.com>
+> ---
 
-This should be merged for 2.6.31
+You can still bind/unbind the driver though, so I don't think this is
+inherently safe.
 
-Thanks,
--Andi
+Rgds
+--=20
+     -- Pierre Ossman
 
-The following changes since commit 509116152e7c09ed2e0e8b2dae241b89d9d0e699:
-  Ingo Molnar (1):
-        x86, mce: print number of MCE banks
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
 
-are available in the git repository at:
+--=_freyr.ossman.eu-4545-1243455722-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/ak/linux-mce-2.6.git mce3-32bitmerge
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.11 (GNU/Linux)
 
-Andi Kleen (17):
-      x86: MCE: Initial steps to make 64bit mce code 32bit clean
-      x86: MCE: Implement the PPro bank 0 quirk in the 64bit machine check code
-      x86: MCE: Port K7 bank 0 quirk to 64bit mce code
-      x86: MCE: Use a call vector to call the 64bit mce handler
-      x86: MCE: Rename 64bit mce_dont_init to mce_disabled
-      x86: MCE: Move mce_disabled option into common 64bit/64bit code
-      x86: MCE: Remove machine check handler idle notify on 64bit
-      x86: MCE: Remove oops_begin() use in 64bit machine check
-      x86: MCE: Remove unused stop/restart_mce on 32bit
-      x86: MCE: Use 64bit machine check code on 32bit
-      x86: MCE: Deprecate old 32bit machine check code
-      x86: MCE: Enable MCE_INTEL for 32bit new MCE
-      x86: MCE: Enable MCE_AMD for 32bit NEW_MCE
-      x86: MCE: Document new 32bit mcelog requirement in Documentation/Changes
-      Export add_timer_on for modules
-      x86: MCE: Add MSR read wrappers for easier error injection
-      x86: MCE: Add basic error injection infrastructure
+iEYEARECAAYFAkodoOkACgkQ7b8eESbyJLgOZwCeIEySU3wwJ/qNYCzaOesu/+5A
+YKAAn2DlYtnsWwk62iFoYhAV6YdhuQZg
+=XWDB
+-----END PGP SIGNATURE-----
 
- Documentation/Changes                      |   15 ++
- Documentation/feature-removal-schedule.txt |   10 +
- arch/x86/Kconfig                           |   45 +++++-
- arch/x86/include/asm/entry_arch.h          |    6 +-
- arch/x86/include/asm/hardirq.h             |    2 +-
- arch/x86/include/asm/irq_vectors.h         |    5 +-
- arch/x86/include/asm/mce.h                 |    7 +-
- arch/x86/kernel/apic/apic.c                |    4 +-
- arch/x86/kernel/apic/nmi.c                 |    2 +-
- arch/x86/kernel/cpu/mcheck/Makefile        |    4 +-
- arch/x86/kernel/cpu/mcheck/mce-inject.c    |  126 +++++++++++++
- arch/x86/kernel/cpu/mcheck/mce.c           |  265 +++++++++++++++++-----------
- arch/x86/kernel/cpu/mcheck/mce.h           |   19 ++-
- arch/x86/kernel/cpu/mcheck/p5.c            |    5 +
- arch/x86/kernel/cpu/mcheck/threshold.c     |    2 +-
- arch/x86/kernel/entry_64.S                 |    4 +-
- arch/x86/kernel/irq.c                      |    4 +-
- arch/x86/kernel/irqinit_32.c               |    6 +-
- arch/x86/kernel/signal.c                   |    4 +-
- arch/x86/kernel/traps.c                    |    6 +-
- kernel/timer.c                             |    1 +
- 21 files changed, 412 insertions(+), 130 deletions(-)
- create mode 100644 arch/x86/kernel/cpu/mcheck/mce-inject.c
--- 
-ak@linux.intel.com -- Speaking for myself only.
+--=_freyr.ossman.eu-4545-1243455722-0001-2--
