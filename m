@@ -1,93 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760382AbZE0RKl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759187AbZE0RMv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760382AbZE0RKl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 13:10:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755545AbZE0RKe
+	id S1759187AbZE0RMv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 13:12:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751974AbZE0RMo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 13:10:34 -0400
-Received: from mx-out.daemonmail.net ([216.104.160.38]:43301 "EHLO
-	mx-out.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754764AbZE0RKd (ORCPT
+	Wed, 27 May 2009 13:12:44 -0400
+Received: from tx2ehsobe004.messaging.microsoft.com ([65.55.88.14]:49602 "EHLO
+	TX2EHSOBE007.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751182AbZE0RMn convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 13:10:33 -0400
-From: "Michael S. Zick" <lkml@morethan.org>
-Reply-To: lkml@morethan.org
-To: Harald Welte <HaraldWelte@viatech.com>
-Subject: Re: LOCK prefix on uni processor has its use (was Re: [BUG FIX] Make x86_32 uni-processor Atomic ops, Atomic)
-Date: Wed, 27 May 2009 12:10:29 -0500
-User-Agent: KMail/1.9.9
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-References: <200905221139.26941.lkml@morethan.org> <4A188A48.5000208@zytor.com> <20090527170118.GC4024@prithivi.gnumonks.org>
-In-Reply-To: <20090527170118.GC4024@prithivi.gnumonks.org>
+	Wed, 27 May 2009 13:12:43 -0400
+X-BigFish: VPS-26(zz1432R98dR148cM1805Mzz1202hzzz32i6bh6di43j)
+X-FB-SS: 13,
+X-WSS-ID: 0KKBBSR-02-7IB-01
+Date: Wed, 27 May 2009 19:12:31 +0200
+From: Borislav Petkov <borislav.petkov@amd.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Doug Thompson <dougthompson@xmission.com>
+Subject: Re: linux-next: edac-amd tree build warning
+Message-ID: <20090527171231.GA31292@aftab>
+References: <20090527170119.c1d6b221.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Disposition: inline
-Message-Id: <200905271210.32698.lkml@morethan.org>
+In-Reply-To: <20090527170119.c1d6b221.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-OriginalArrivalTime: 27 May 2009 17:12:33.0688 (UTC) FILETIME=[533D5180:01C9DEEE]
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed May 27 2009, Harald Welte wrote:
-> Hi hpa and others,
-> 
-> On Sat, May 23, 2009 at 04:44:08PM -0700, H. Peter Anvin wrote:
->  
-> > It looks like there might be a problem with the C7-M ... Michael reports
-> > that if he sets LOCK_PREFIX to "lock;" it works, but that shouldn't be
-> > necessary for a uniprocessor.
-> 
-> It seems, they are neccessary.
-> 
-> Here are some statements from the CPU logic guys at VIA/Centaur:
-> 
-> * A read-modify-write sequence cannot be interupted.
-> * All X86 instructions except rep-strings are atomic wrt interrupts.
-> * The lock prefix has uses on a UP processor: It keeps DMA devices from
->   interfering with a read-modify-write sequence
-> 
-> Furthermore, they have done some experimentation in the past, making the
-> CPU simply ignore the LOCK prefix on uni-processor (running a certain popular
-> proprietary operating system): It doesn't work, presumably of the abovementioned
-> DMA related conflict.
-> 
-> Also, the engineers believe that it is only a matter of time until different
-> CPU/chipset combination would expose the same bug.  Since the in-order
-> single-retire C7-M is more vulnerable than out-of-order, multiple-retire CPU's,
-> they are not surprised that the issue shows first on the C7-M.
-> 
-> The recommendation from the CPU engineers, unsurprisingly, thus is to put the
-> LOCK prefixes back where they were.
-> 
-> Hope this helps you.
-> 
-> Now if I understand the issues correctly, it would mean that there is some
-> driver code that modifies a certain chunk of memory, while DMA of some
-> peripheral is also accessing that memory.  I suppose it would not have to be
-> the same actual address, but probably being within the same cache line is
-> already sufficient.
->
+Hi Stephen,
 
-I am also testing with the pci cache line size hard-coded to be the same size
-as the processor cache line size (a WAFG for now) - -
-
-It is too soon (only an 1 1/2 hours) to be a significant finding - -
-but if this was set to twice the physical line length, it would be only
-flushing every other line - which I think would show up *real* fast.  ;)
-
-I am noticing some "dropped buffers and/or dropped packets" in my streaming
-music - - but that is not conclusive of anything other than hd-audio may
-be using the wrong cache stride also.  ;)
-
-Mike 
-> Now the question is: Is this a valid operation of a driver?  Should the driver
-> do such things, or is such a driver broken?  When would that occur?  I'm trying
-> to come up with a case, but typically you e.g. allocate some DMA buffer and
-> then don't touch it until the hardware has processed it.
+On Wed, May 27, 2009 at 05:01:19PM +1000, Stephen Rothwell wrote:
+> Today's linux-next build (x86_64 allmodconfig) produced this warning:
 > 
-> Regards,
+> drivers/edac/amd64_edac.c: In function 'f10_get_base_addr_offset':
+> drivers/edac/amd64_edac.c:1466: warning: suggest parentheses around operand of '!' or change '&' to '&&' or '!' to '~'
+> 
+> Introduced by commit c266e41c0ca15d5df65e42d07608fbfb51ff32e3
+> ("amd64_edac: add F10h-and-later methods-p2").
 
+Thanks for catching that. Fixed and rebased on latest Linus' tree.
+
+-- 
+Regards/Gruss,
+Boris.
+
+Operating | Advanced Micro Devices GmbH
+  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
+ Research | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
+  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+  (OSRC)  | Registergericht München, HRB Nr. 43632
 
