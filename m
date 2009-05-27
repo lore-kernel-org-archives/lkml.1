@@ -1,65 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760446AbZE0Glb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760586AbZE0GpQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760446AbZE0Glb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 02:41:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759694AbZE0GlY
+	id S1760586AbZE0GpQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 02:45:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759081AbZE0GpF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 02:41:24 -0400
-Received: from gate.crashing.org ([63.228.1.57]:58016 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759558AbZE0GlX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 02:41:23 -0400
-Subject: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Wed, 27 May 2009 16:40:53 +1000
-Message-Id: <1243406453.17847.185.camel@pasglop>
+	Wed, 27 May 2009 02:45:05 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:51303 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758601AbZE0GpD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 02:45:03 -0400
+Date: Wed, 27 May 2009 15:43:27 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
+       "hannes@cmpxchg.org" <hannes@cmpxchg.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC][PATCH] memcg: fix swap account (26/May)[0/5]
+Message-Id: <20090527154327.0926fc23.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090526121259.b91b3e9d.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090526121259.b91b3e9d.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus
+On Tue, 26 May 2009 12:12:59 +0900
+KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 
-And here's the rest of the fixes I was talking about. Hopefully that
-should bring back all non-coherent DMA platforms into proper working
-conditions. It's a bit invasive so late in the process but it's been
-reasonably well tested for a few days.
+> [1/5] change interface of swap_duplicate()/swap_free()
+>     Adds an function swapcache_prepare() and swapcache_free().
+> 
+> [2/5] add SWAP_HAS_CACHE flag to swap_map
+>     Add SWAP_HAS_CACHE flag to swap_map array for knowing an information that
+>     "there is an only swap cache and swap has no reference" 
+>     without calling find_get_page().
+> 
+> [3/5] Count the number of swap-cache-only swaps
+>     After repeating swap-in/out, there are tons of cache-only swaps.
+>    (via a mapped swapcache under vm_swap_full()==false)
+>     This patch counts the number of entry and show it in debug information.
+>    (for example, sysrq-m)
+> 
+> [4/5] fix memcg's swap accounting.
+>     change the memcg's swap accounting logic to see # of references to swap.
+> 
+> [5/5] experimental garbage collection for cache-only swaps.
+>     reclaim swap enty which is not used.
+> 
 
-The following changes since commit cd86a536c81e9300d984327517548ca0652eebf9:
-  Linus Torvalds (1):
-        Merge branch 'x86-fixes-for-linus' of git://git.kernel.org/.../tip/linux-2.6-tip
+Thank you for all reviews. I'll repost when new mmotm comes. 
+maybe
+[1/5] ... nochage
+[2/5] ... fix the bug Nishimura-san pointed out
+[3/5] ... drop
+[4/5] ... no change
+[5/5] ... will use direct reclaim in get_swap_page().
 
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
-
-Benjamin Herrenschmidt (4):
-      Revert "powerpc: Rework dma-noncoherent to use generic vmalloc layer"
-      powerpc: Move dma-noncoherent.c from arch/powerpc/lib to arch/powerpc/mm
-      powerpc: Minor cleanups of kernel virt address space definitions
-      powerpc: Fix up dma_alloc_coherent() on platforms without cache coherency.
-
- arch/powerpc/Kconfig                     |   12 +
- arch/powerpc/include/asm/dma-mapping.h   |    6 +-
- arch/powerpc/include/asm/fixmap.h        |    4 +-
- arch/powerpc/include/asm/pgtable-ppc32.h |   26 ++-
- arch/powerpc/kernel/dma.c                |    2 +-
- arch/powerpc/lib/Makefile                |    1 -
- arch/powerpc/lib/dma-noncoherent.c       |  237 ------------------
- arch/powerpc/mm/Makefile                 |    1 +
- arch/powerpc/mm/dma-noncoherent.c        |  400 ++++++++++++++++++++++++++++++
- arch/powerpc/mm/init_32.c                |    8 +-
- arch/powerpc/mm/mem.c                    |   17 ++
- arch/powerpc/mm/pgtable_32.c             |    2 -
- 12 files changed, 463 insertions(+), 253 deletions(-)
- delete mode 100644 arch/powerpc/lib/dma-noncoherent.c
- create mode 100644 arch/powerpc/mm/dma-noncoherent.c
-
+Thanks,
+-Kame
 
