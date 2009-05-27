@@ -1,49 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759136AbZE0Q4u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758936AbZE0RAW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759136AbZE0Q4u (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 12:56:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751211AbZE0Q4n
+	id S1758936AbZE0RAW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 13:00:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754764AbZE0RAK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 12:56:43 -0400
-Received: from www.tglx.de ([62.245.132.106]:34932 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750984AbZE0Q4n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 12:56:43 -0400
-Date: Wed, 27 May 2009 18:56:15 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Chris Friesen <cfriesen@nortel.com>
-cc: LKML <linux-kernel@vger.kernel.org>, Ulrich Drepper <drepper@redhat.com>,
-       Roland McGrath <roland@redhat.com>
-Subject: Re: linux missing support for _POSIX_THREAD_CPUTIME?
-In-Reply-To: <4A1D6E71.90602@nortel.com>
-Message-ID: <alpine.LFD.2.00.0905271855290.3397@localhost.localdomain>
-References: <4A1D6E71.90602@nortel.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 27 May 2009 13:00:10 -0400
+Received: from zcars04e.nortel.com ([47.129.242.56]:40403 "EHLO
+	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754550AbZE0RAJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 13:00:09 -0400
+Message-ID: <4A1D7193.1040600@nortel.com>
+Date: Wed, 27 May 2009 11:00:03 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: tglx@linutronix.de
+CC: linux-kernel@vger.kernel.org
+Subject: Re: linux missing support for _POSIX_THREAD_CPUTIME ?
+References: <4A1D6E71.90602@nortel.com>
+In-Reply-To: <4A1D6E71.90602@nortel.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 27 May 2009 17:00:07.0788 (UTC) FILETIME=[96A602C0:01C9DEEC]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 May 2009, Chris Friesen wrote:
+Chris Friesen wrote:
 
-That's more a question for the glibc folks. CC'ed.
-
-> Hi all,
-> 
-> POSIX defines optional support for clock ID values obtained by invoking
-> pthread_getcpuclockid().  When passed to clock_gettime(), this allows
-> the caller to request the CPU-time clock of an arbitrary thread within
-> the same process as the caller.
-> 
 > It appears that linux doesn't support this functionality--is that
 > correct?  Is there any plan to enable this?
-> 
-> Is there any current way to obtain the runtime of a particular thread
-> without knowing its tid (since the thread_id to tid mapping is known
-> only to glibc)?
-> 
-> Thanks,
-> 
-> Chris
-> 
+
+In particular, it seems to fail the invalid_clockid() test.  Is that
+function expecting the clock ID to be negative for this case?
+
+Thanks,
+
+Chris
