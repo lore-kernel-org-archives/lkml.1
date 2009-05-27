@@ -1,61 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760902AbZE0G7T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760930AbZE0G7b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760902AbZE0G7T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 02:59:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759028AbZE0G7K
+	id S1760930AbZE0G7b (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 02:59:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760862AbZE0G7P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 02:59:10 -0400
-Received: from casper.infradead.org ([85.118.1.10]:32881 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751040AbZE0G7J (ORCPT
+	Wed, 27 May 2009 02:59:15 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:49430 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760832AbZE0G7O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 02:59:09 -0400
-Subject: Re: [PATCH] sched: Support current clocksource handling in
- fallback sched_clock().
-From: Peter Zijlstra <peterz@infradead.org>
-To: john stultz <johnstul@us.ibm.com>
-Cc: Linus Walleij <linus.ml.walleij@gmail.com>,
-       Paul Mundt <lethal@linux-sh.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Victor <linux@maxim.org.za>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-sh@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       John Stultz <johnstul@linux.vnet.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <1243378835.3275.30.camel@localhost>
-References: <20090526061532.GD9188@linux-sh.org>
-	 <63386a3d0905260731m655bfee3q82a6f52d71fa3cef@mail.gmail.com>
-	 <1243348681.23657.14.camel@twins>  <1243369423.3275.5.camel@localhost>
-	 <1243369815.6600.2.camel@laptop>  <1243370439.3275.13.camel@localhost>
-	 <1243371309.6600.8.camel@laptop>  <1243378835.3275.30.camel@localhost>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Wed, 27 May 2009 08:58:46 +0200
-Message-Id: <1243407526.23657.37.camel@twins>
+	Wed, 27 May 2009 02:59:14 -0400
+Date: Wed, 27 May 2009 09:05:47 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       hpa@zytor.com, x86@kernel.org, Andi Kleen <ak@linux.intel.com>
+Subject: Re: [PATCH 06/31] x86: Fix panic with interrupts off (needed for MCE)
+Message-ID: <20090527070547.GP846@one.firstfloor.org>
+References: <1243382073-29338-1-git-send-email-andi@firstfloor.org> <c63915cfa51e24394524ddaa66a6f2cb2fcfe66f.1243381848.git.ak@linux.intel.com> <c1d7bf910168f07efb50d98f901f41e289a87f1f.1243381848.git.ak@linux.intel.com> <6c6d1f8bbbd2312884dca5a5c75aa5f5a87dae4b.1243381848.git.ak@linux.intel.com> <1623cd9a1c77d35fc2044d72c4bfa1246e67a1c0.1243381848.git.ak@linux.intel.com> <723b3fe4e35063b123cee9658c24267287eeac07.1243381848.git.ak@linux.intel.com> <0301db6d6dabb8bcfaffe76a907a5036646c207d.1243381848.git.ak@linux.intel.com> <4A1CC1EB.3030303@jp.fujitsu.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A1CC1EB.3030303@jp.fujitsu.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-05-26 at 16:00 -0700, john stultz wrote:
-
-> Sure, I guess what I'm trying to pull out here is that should we try to
-> create some OK_FOR_SCHED_CLOCK flag for clocksources, and then we try to
-> make this generic so other arches can add that flag and be done, what is
-> the guidance we want to give to arch maintainers for setting that flag?
+> #ifdef CONFIG_X86_64
+> #define UV_BAU_MESSAGE			0xec
+> #endif
 > 
-> 1) Has to be very very fast. Can we put a number on this? 50ns to read?
+> Isn't it?
 
-I'd express it in cpu cycles, but not sure, the very fastest the arch
-has :-) Just tell people this is in their scheduling hot-path and they
-might understand.
+No, it's not, the ifdef is not needed. I see no point at all in adding 
+that ifdef. It would only help if 32bit wanted to add a vector
+on its own here which is totally unlikely.
 
-> 2) How long does it have to be monotonic for? 
+-Andi
 
-Forever? (per cpu)
-
-> Is it ok if it wraps every few seconds?
-
-No, if it wraps it needs to wrap on u64.
-
+-- 
+ak@linux.intel.com -- Speaking for myself only.
