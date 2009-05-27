@@ -1,94 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763434AbZE0LSc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763251AbZE0LRo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763434AbZE0LSc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 07:18:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762136AbZE0LNt
+	id S1763251AbZE0LRo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 07:17:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760502AbZE0LNO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 07:13:49 -0400
-Received: from casper.infradead.org ([85.118.1.10]:35518 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762038AbZE0LNr (ORCPT
+	Wed, 27 May 2009 07:13:14 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:54728 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761261AbZE0LNM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 07:13:47 -0400
-Subject: Re: [PATCH 04/11] writeback: switch to per-bdi threads for
- flushing data
-From: Peter Zijlstra <peterz@infradead.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
-       akpm@linux-foundation.org, jack@suse.cz, yanmin_zhang@linux.intel.com,
-       richard@rsk.demon.co.uk, damien.wyart@free.fr
-In-Reply-To: <1243417312-7444-5-git-send-email-jens.axboe@oracle.com>
-References: <1243417312-7444-1-git-send-email-jens.axboe@oracle.com>
-	 <1243417312-7444-5-git-send-email-jens.axboe@oracle.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Wed, 27 May 2009 13:11:53 +0200
-Message-Id: <1243422713.23657.53.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Wed, 27 May 2009 07:13:12 -0400
+From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+To: linux-kernel@vger.kernel.org
+Cc: linux-fsdevel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
+       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Date: Wed, 27 May 2009 16:06:53 +0300
+Message-Id: <20090527130653.4913.89984.sendpatchset@localhost.localdomain>
+In-Reply-To: <20090527130503.4913.62042.sendpatchset@localhost.localdomain>
+References: <20090527130503.4913.62042.sendpatchset@localhost.localdomain>
+Subject: [PATCH 17/19] VFS: use sb_is_dirty helper
+X-OriginalArrivalTime: 27 May 2009 11:12:52.0775 (UTC) FILETIME=[14035370:01C9DEBC]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-05-27 at 11:41 +0200, Jens Axboe wrote:
+From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Subject: [PATCH] VFS: use sb_is_dirty helper
 
-> +	if (writeback_acquire(bdi)) {
-> +		bdi->wb_arg.nr_pages = nr_pages;
-> +		bdi->wb_arg.sb = sb;
-> +		bdi->wb_arg.sync_mode = sync_mode;
-> +		/*
-> +		 * make above store seen before the task is woken
-> +		 */
-> +		smp_mb();
-> +		wake_up(&bdi->wait);
-> +	}
+... instead of checking 's_dirt' directly. This is just
+a little cleaner and more consistent. We have only 3
+VFS helpers which access 's_dirt' now.
 
-wake_up() implies a wmb() when we indeed to a wakeup, is that
-sufficient?
+Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Cc: Christoph Hellwig <hch@infradead.org>
+---
+ fs/super.c |    4 ++--
+ fs/sync.c  |    4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-> +int bdi_writeback_task(struct backing_dev_info *bdi)
-> +{
-> +	while (!kthread_should_stop()) {
-> +		unsigned long wait_jiffies;
-> +		DEFINE_WAIT(wait);
-> +
-> +		prepare_to_wait(&bdi->wait, &wait, TASK_INTERRUPTIBLE);
-> +		wait_jiffies = msecs_to_jiffies(dirty_writeback_interval * 10);
-> +		schedule_timeout(wait_jiffies);
-> +		try_to_freeze();
-> +
-> +		/*
-> +		 * We get here in two cases:
-> +		 *
-> +		 *  schedule_timeout() returned because the dirty writeback
-> +		 *  interval has elapsed. If that happens, we will be able
-> +		 *  to acquire the writeback lock and will proceed to do
-> +		 *  kupdated style writeout.
-> +		 *
-> +		 *  Someone called bdi_start_writeback(), which will acquire
-> +		 *  the writeback lock. This means our writeback_acquire()
-> +		 *  below will fail and we call into bdi_pdflush() for
-> +		 *  pdflush style writeout.
-> +		 *
-> +		 */
-> +		if (writeback_acquire(bdi))
-> +			bdi_kupdated(bdi);
-> +		else
-> +			bdi_pdflush(bdi);
-> +
-> +		writeback_release(bdi);
-> +		finish_wait(&bdi->wait, &wait);
-> +	}
-> +
-> +	return 0;
-> +}
-
-the unpaired writeback_release() wrt writeback_acquire() looks odd.
-
-Also the prepare/finish wait bits seem oddly out of place. Are there
-really multiple waiters on bdi->wait? The above wake_up() seems to
-suggest not, since it directly modifies bdi state instead of queueing
-work.
-
+diff --git a/fs/super.c b/fs/super.c
+index 2ea1586..ef9a24a 100644
+--- a/fs/super.c
++++ b/fs/super.c
+@@ -415,12 +415,12 @@ void sync_supers(void)
+ 	spin_lock(&sb_lock);
+ restart:
+ 	list_for_each_entry(sb, &super_blocks, s_list) {
+-		if (sb->s_op->write_super && sb->s_dirt) {
++		if (sb->s_op->write_super && sb_is_dirty(sb)) {
+ 			sb->s_count++;
+ 			spin_unlock(&sb_lock);
+ 
+ 			down_read(&sb->s_umount);
+-			if (sb->s_root && sb->s_dirt)
++			if (sb->s_root && sb_is_dirty(sb))
+ 				sb->s_op->write_super(sb);
+ 			up_read(&sb->s_umount);
+ 
+diff --git a/fs/sync.c b/fs/sync.c
+index e9d56f6..12f36d7 100644
+--- a/fs/sync.c
++++ b/fs/sync.c
+@@ -33,7 +33,7 @@ static int __sync_filesystem(struct super_block *sb, int wait)
+ 	else
+ 		sync_quota_sb(sb, -1);
+ 	sync_inodes_sb(sb, wait);
+-	if (sb->s_dirt && sb->s_op->write_super)
++	if (sb_is_dirty(sb) && sb->s_op->write_super)
+ 		sb->s_op->write_super(sb);
+ 	if (sb->s_op->sync_fs)
+ 		sb->s_op->sync_fs(sb, wait);
+@@ -162,7 +162,7 @@ int file_fsync(struct file *filp, struct dentry *dentry, int datasync)
+ 
+ 	/* sync the superblock to buffers */
+ 	sb = inode->i_sb;
+-	if (sb->s_dirt && sb->s_op->write_super)
++	if (sb_is_dirty(sb) && sb->s_op->write_super)
+ 		sb->s_op->write_super(sb);
+ 
+ 	/* .. finally sync the buffers to disk */
+-- 
+1.6.0.6
 
