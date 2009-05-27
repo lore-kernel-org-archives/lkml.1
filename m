@@ -1,70 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933373AbZE0ST5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932801AbZE0SVr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933373AbZE0ST5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 14:19:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932564AbZE0STr
+	id S932801AbZE0SVr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 14:21:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759997AbZE0SVg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 14:19:47 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:2932 "EHLO
-	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933138AbZE0STq (ORCPT
+	Wed, 27 May 2009 14:21:36 -0400
+Received: from casper.infradead.org ([85.118.1.10]:52030 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755747AbZE0SVf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 14:19:46 -0400
-Subject: [PATCH] MAINTAINERS: Add Paul McKenney to RCU and RCUTORTURE
-From: Joe Perches <joe@perches.com>
-To: paulmck@linux.vnet.ibm.com
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Josh Triplett <josh@freedesktop.org>,
-       Dipankar Sarma <dipankar@in.ibm.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <20090526234241.GD7006@linux.vnet.ibm.com>
-References: <cover.1243131992.git.joe@perches.com>
-	 <9f55522f7ab56afcf16d936d06ab2f3a7e699ed5.1243131992.git.joe@perches.com>
-	 <20090526234241.GD7006@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Wed, 27 May 2009 11:18:36 -0700
-Message-Id: <1243448316.27337.28.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 27 May 2009 14:21:35 -0400
+Message-Id: <20090527182101.041817692@chello.nl>
+References: <20090527182021.231666503@chello.nl>
+User-Agent: quilt/0.46-1
+Date: Wed, 27 May 2009 20:20:26 +0200
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Paul Mackerras <paulus@samba.org>,
+       Corey Ashford <cjashfor@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       John Kacur <jkacur@redhat.com>, Mike Galbraith <efault@gmx.de>
+Subject: [PATCH 5/7] pref_counter: tools: report: --sort option
+Content-Disposition: inline; filename=perf_counter-tools-report-sort4.patch
+X-Bad-Reply: References but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-05-26 at 16:42 -0700, Paul E. McKenney wrote:
-> Hmmm...  Given that you are removing LKML from RCU and rcutorture,
-> could you please add me?  If someone misses "THE REST", I very likely
-> won't see their bug/issue/question.
-> 
-> P:	Paul E. McKenney
-> M:	paulmck@linux.vnet.ibm.com
+option parsing for dynamic sorting
 
-Signed-off-by: Joe Perches <joe@perches.com>
+LKML-Reference: <new-submission>
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- MAINTAINERS |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+ Documentation/perf_counter/builtin-report.c |   43 ++++++++++++++++++++++++++--
+ 1 file changed, 41 insertions(+), 2 deletions(-)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index ab45488..0426b39 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -4630,6 +4630,8 @@ F:	drivers/net/wireless/ray*
- RCUTORTURE MODULE
- P:	Josh Triplett
- M:	josh@freedesktop.org
-+P:	Paul E. McKenney
-+M:	paulmck@linux.vnet.ibm.com
- S:	Maintained
- F:	Documentation/RCU/torture.txt
- F:	kernel/rcutorture.c
-@@ -4656,6 +4658,8 @@ F:	net/rds/
- READ-COPY UPDATE (RCU)
- P:	Dipankar Sarma
- M:	dipankar@in.ibm.com
-+P:	Paul E. McKenney
-+M:	paulmck@linux.vnet.ibm.com
- W:	http://www.rdrop.com/users/paulmck/rclock/
- S:	Supported
- F:	Documentation/RCU/rcu.txt
+Index: linux-2.6/Documentation/perf_counter/builtin-report.c
+===================================================================
+--- linux-2.6.orig/Documentation/perf_counter/builtin-report.c
++++ linux-2.6/Documentation/perf_counter/builtin-report.c
+@@ -20,6 +20,7 @@
+ 
+ static char		const *input_name = "perf.data";
+ static char		*vmlinux = NULL;
++static char		*sort_order = "pid,symbol";
+ static int		input;
+ static int		show_mask = SHOW_KERNEL | SHOW_USER | SHOW_HV;
+ 
+@@ -770,12 +771,49 @@ static struct sort_entry sort_sym = {
+ 	.print	= sort__sym_print,
+ };
+ 
++struct sort_dimension {
++	char *name;
++	struct sort_entry *entry;
++	int taken;
++};
++
++static struct sort_dimension sort_dimensions[] = {
++	{ .name = "pid",	.entry = &sort_thread,	},
++	{ .name = "symbol",	.entry = &sort_sym,	},
++};
++
+ static LIST_HEAD(hist_entry__sort_list);
+ 
++static int sort_dimension__add(char *tok)
++{
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(sort_dimensions); i++) {
++		struct sort_dimension *sd = &sort_dimensions[i];
++
++		if (sd->taken)
++			continue;
++
++		if (strcmp(tok, sd->name))
++			continue;
++
++		list_add_tail(&sd->entry->list, &hist_entry__sort_list);
++		sd->taken = 1;
++		return 0;
++	}
++
++	return -ESRCH;
++}
++
+ static void setup_sorting(void)
+ {
+-	list_add_tail(&sort_thread.list, &hist_entry__sort_list);
+-	list_add_tail(&sort_sym.list, &hist_entry__sort_list);
++	char *tmp, *tok, *str = strdup(sort_order);
++
++	for (tok = strtok_r(str, ", ", &tmp);
++			tok; tok = strtok_r(NULL, ", ", &tmp))
++		sort_dimension__add(tok);
++
++	free(str);
+ }
+ 
+ static int64_t
+@@ -1137,6 +1175,7 @@ static const struct option options[] = {
+ 	OPT_BOOLEAN('D', "dump-raw-trace", &dump_trace,
+ 		    "dump raw trace in ASCII"),
+ 	OPT_STRING('k', "vmlinux", &vmlinux, "file", "vmlinux pathname"),
++	OPT_STRING('s', "sort", &sort_order, "foo", "bar"),
+ 	OPT_END()
+ };
+ 
 
+-- 
 
