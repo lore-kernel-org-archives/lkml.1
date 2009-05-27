@@ -1,49 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761458AbZE0Jsb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761341AbZE0JuW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761458AbZE0Jsb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 05:48:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759281AbZE0JsV
+	id S1761341AbZE0JuW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 05:50:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759733AbZE0JuK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 05:48:21 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:53272 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759153AbZE0JsU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 05:48:20 -0400
-Date: Wed, 27 May 2009 10:49:13 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Andries E. Brouwer" <Andries.Brouwer@cwi.nl>
-Cc: Frans Pop <elendil@planet.nl>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] ide: add "ignore_hpa" module parameter
-Message-ID: <20090527104913.644e6970@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090526180821.GB13276@ub>
-References: <200905252344.11826.bzolnier@gmail.com>
-	<200905260106.13705.elendil@planet.nl>
-	<200905261423.40117.bzolnier@gmail.com>
-	<200905261453.22428.elendil@planet.nl>
-	<20090526140132.19e8bc13@lxorguk.ukuu.org.uk>
-	<20090526180821.GB13276@ub>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 27 May 2009 05:50:10 -0400
+Received: from relay2.sgi.com ([192.48.179.30]:46189 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756839AbZE0JuI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 05:50:08 -0400
+Date: Wed, 27 May 2009 04:50:06 -0500
+From: Robin Holt <holt@sgi.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Robin Holt <holt@sgi.com>, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
+       Wu Fengguang <fengguang.wu@intel.com>
+Subject: Re: [PATCH v3] zone_reclaim is always 0 by default
+Message-ID: <20090527095006.GE29447@sgi.com>
+References: <20090524214554.084F.A69D9226@jp.fujitsu.com> <20090525114135.GD29447@sgi.com> <20090527164549.68B4.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090527164549.68B4.A69D9226@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Probably I am missing some context, but the above seems to be
-> a false statement. The PC partition format does give you
-> start and size, and no filesystem knowledge is needed to
-> find out where a partition ends.
+On Wed, May 27, 2009 at 05:06:18PM +0900, KOSAKI Motohiro wrote:
+> your last patch is one of considerable thing. but it has one weakness.
+> in general "ifdef x86" is wrong idea. almost minor architecture don't
+> have sufficient tester. the difference against x86 often makes bug.
+> Then, unnecessary difference is hated by much people.
 
-I am indeed in error. The PC DOS format is indeed fine. I was
-remembering from the magneto-opticals and the problem there was you
-couldn't tell the size because there were two conflicting standards for
-partition encoding.
+Let me start by saying I can barely understand this entire email.
+I appreciate that english is a second language for you and you are
+doing a service to the linux community with your contributions despite
+the language barrier.  I commend you for your efforts.  I do ask that if
+there was more information contained in your email than I am replying too,
+please reword it so I may understand.
 
-So that means a distro can detect some of the cases which is even better
-and makes a sysfs interface even more useful.
+IIRC, my last patch made it an arch header option to set zone_reclaim_mode
+to any value it desired while leaving the default as 1.  The only arch
+that changed the default was x86 (both 32 and 64 bit).  That seems the
+least disruptive to existing users.
 
-Alan
+> So, I think we have two selectable choice.
+> 
+> 1. remove zone_reclaim default setting completely (this patch)
+> 2. Only PowerPC and IA64 have default zone_reclaim_mode settings,
+>    other architecture always use zone_reclaim_mode=0.
+
+Looks like 2 is the inverse of my patch.  That is fine as well.  The only
+reason I formed the patch with the default of 1 and override on x86 is
+it was one less line of change and one less file.
+
+Thanks,
+Robin
