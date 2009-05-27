@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763573AbZE0NCI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763536AbZE0NBv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763573AbZE0NCI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 09:02:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762762AbZE0NBR
+	id S1763536AbZE0NBv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 09:01:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763415AbZE0NBO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 09:01:17 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:47973 "EHLO mx2.suse.de"
+	Wed, 27 May 2009 09:01:14 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:47970 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763071AbZE0NBJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 09:01:09 -0400
+	id S1762534AbZE0NBI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 09:01:08 -0400
 From: Jan Kara <jack@suse.cz>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: npiggin@suse.de, linux-ext4@vger.kernel.org, Jan Kara <jack@suse.cz>
-Subject: [PATCH 08/11] vfs: Unmap underlying metadata of new data buffers only when buffer is mapped
-Date: Wed, 27 May 2009 15:01:05 +0200
-Message-Id: <1243429268-3028-9-git-send-email-jack@suse.cz>
+Subject: [PATCH 01/11] ext3: Get rid of extenddisksize parameter of ext3_get_blocks_handle()
+Date: Wed, 27 May 2009 15:00:58 +0200
+Message-Id: <1243429268-3028-2-git-send-email-jack@suse.cz>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <1243429268-3028-1-git-send-email-jack@suse.cz>
 References: <1243429268-3028-1-git-send-email-jack@suse.cz>
@@ -22,54 +22,92 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When we do delayed allocation of some buffer, we want to signal to VFS that
-the buffer is new (set buffer_new) so that it properly zeros out everything.
-But we don't have the buffer mapped yet so we cannot really unmap underlying
-metadata in this state. Make VFS avoid doing unmapping of metadata when the
-buffer is not yet mapped.
+Get rid of extenddisksize parameter of ext3_get_blocks_handle(). This seems to
+be a relict from some old days and setting disksize in this function does not
+make much sence. Currently it was set only by ext3_getblk().  Since the
+parameter has some effect only if create == 1, it is easy to check that the
+three callers which end up calling ext3_getblk() with create == 1 (ext3_append,
+ext3_quota_write, ext3_mkdir) do the right thing and set disksize themselves.
 
 Signed-off-by: Jan Kara <jack@suse.cz>
 ---
- fs/buffer.c |   12 +++++++-----
- 1 files changed, 7 insertions(+), 5 deletions(-)
+ fs/ext3/dir.c           |    3 +--
+ fs/ext3/inode.c         |   13 +++----------
+ include/linux/ext3_fs.h |    2 +-
+ 3 files changed, 5 insertions(+), 13 deletions(-)
 
-diff --git a/fs/buffer.c b/fs/buffer.c
-index ddfcade..3d0bced 100644
---- a/fs/buffer.c
-+++ b/fs/buffer.c
-@@ -1683,8 +1683,9 @@ static int __block_write_full_page(struct inode *inode, struct page *page,
- 			if (buffer_new(bh)) {
- 				/* blockdev mappings never come here */
- 				clear_buffer_new(bh);
--				unmap_underlying_metadata(bh->b_bdev,
--							bh->b_blocknr);
-+				if (buffer_mapped(bh))
-+					unmap_underlying_metadata(bh->b_bdev,
-+						bh->b_blocknr);
- 			}
- 		}
- 		bh = bh->b_this_page;
-@@ -1869,8 +1870,9 @@ static int __block_prepare_write(struct inode *inode, struct page *page,
- 			if (err)
- 				break;
- 			if (buffer_new(bh)) {
--				unmap_underlying_metadata(bh->b_bdev,
--							bh->b_blocknr);
-+				if (buffer_mapped(bh))
-+					unmap_underlying_metadata(bh->b_bdev,
-+						bh->b_blocknr);
- 				if (PageUptodate(page)) {
- 					clear_buffer_new(bh);
- 					set_buffer_uptodate(bh);
-@@ -2683,7 +2685,7 @@ int nobh_write_begin(struct file *file, struct address_space *mapping,
- 			goto failed;
- 		if (!buffer_mapped(bh))
- 			is_mapped_to_disk = 0;
--		if (buffer_new(bh))
-+		if (buffer_new(bh) && buffer_mapped(bh))
- 			unmap_underlying_metadata(bh->b_bdev, bh->b_blocknr);
- 		if (PageUptodate(page)) {
- 			set_buffer_uptodate(bh);
+diff --git a/fs/ext3/dir.c b/fs/ext3/dir.c
+index 3d724a9..373fa90 100644
+--- a/fs/ext3/dir.c
++++ b/fs/ext3/dir.c
+@@ -130,8 +130,7 @@ static int ext3_readdir(struct file * filp,
+ 		struct buffer_head *bh = NULL;
+ 
+ 		map_bh.b_state = 0;
+-		err = ext3_get_blocks_handle(NULL, inode, blk, 1,
+-						&map_bh, 0, 0);
++		err = ext3_get_blocks_handle(NULL, inode, blk, 1, &map_bh, 0);
+ 		if (err > 0) {
+ 			pgoff_t index = map_bh.b_blocknr >>
+ 					(PAGE_CACHE_SHIFT - inode->i_blkbits);
+diff --git a/fs/ext3/inode.c b/fs/ext3/inode.c
+index fcfa243..60f0feb 100644
+--- a/fs/ext3/inode.c
++++ b/fs/ext3/inode.c
+@@ -788,7 +788,7 @@ err_out:
+ int ext3_get_blocks_handle(handle_t *handle, struct inode *inode,
+ 		sector_t iblock, unsigned long maxblocks,
+ 		struct buffer_head *bh_result,
+-		int create, int extend_disksize)
++		int create)
+ {
+ 	int err = -EIO;
+ 	int offsets[4];
+@@ -911,13 +911,6 @@ int ext3_get_blocks_handle(handle_t *handle, struct inode *inode,
+ 	if (!err)
+ 		err = ext3_splice_branch(handle, inode, iblock,
+ 					partial, indirect_blks, count);
+-	/*
+-	 * i_disksize growing is protected by truncate_mutex.  Don't forget to
+-	 * protect it if you're about to implement concurrent
+-	 * ext3_get_block() -bzzz
+-	*/
+-	if (!err && extend_disksize && inode->i_size > ei->i_disksize)
+-		ei->i_disksize = inode->i_size;
+ 	mutex_unlock(&ei->truncate_mutex);
+ 	if (err)
+ 		goto cleanup;
+@@ -972,7 +965,7 @@ static int ext3_get_block(struct inode *inode, sector_t iblock,
+ 	}
+ 
+ 	ret = ext3_get_blocks_handle(handle, inode, iblock,
+-					max_blocks, bh_result, create, 0);
++					max_blocks, bh_result, create);
+ 	if (ret > 0) {
+ 		bh_result->b_size = (ret << inode->i_blkbits);
+ 		ret = 0;
+@@ -1005,7 +998,7 @@ struct buffer_head *ext3_getblk(handle_t *handle, struct inode *inode,
+ 	dummy.b_blocknr = -1000;
+ 	buffer_trace_init(&dummy.b_history);
+ 	err = ext3_get_blocks_handle(handle, inode, block, 1,
+-					&dummy, create, 1);
++					&dummy, create);
+ 	/*
+ 	 * ext3_get_blocks_handle() returns number of blocks
+ 	 * mapped. 0 in case of a HOLE.
+diff --git a/include/linux/ext3_fs.h b/include/linux/ext3_fs.h
+index 634a5e5..7499b36 100644
+--- a/include/linux/ext3_fs.h
++++ b/include/linux/ext3_fs.h
+@@ -874,7 +874,7 @@ struct buffer_head * ext3_getblk (handle_t *, struct inode *, long, int, int *);
+ struct buffer_head * ext3_bread (handle_t *, struct inode *, int, int, int *);
+ int ext3_get_blocks_handle(handle_t *handle, struct inode *inode,
+ 	sector_t iblock, unsigned long maxblocks, struct buffer_head *bh_result,
+-	int create, int extend_disksize);
++	int create);
+ 
+ extern struct inode *ext3_iget(struct super_block *, unsigned long);
+ extern int  ext3_write_inode (struct inode *, int);
 -- 
 1.6.0.2
 
