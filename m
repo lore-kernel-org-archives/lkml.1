@@ -1,130 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757730AbZE0XFW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759176AbZE0XKP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757730AbZE0XFW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 19:05:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755784AbZE0XFK
+	id S1759176AbZE0XKP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 19:10:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756311AbZE0XKE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 19:05:10 -0400
-Received: from mail-bw0-f222.google.com ([209.85.218.222]:49144 "EHLO
-	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755332AbZE0XFJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 19:05:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=gBDZ2kJERjJQ/hh5+5Oqtoeu0s0z8hnJE5ealr3eXCaOX5dsxbJVkKhSPlZwQR6VjW
-         mC2xWhrev9Be75zdVcpW5AgiusFL1BPga+gtfEewV/6SrF0Sdn0fQufw9v8bhbFDjS5j
-         Xwb2/K6c/srgm2Gt32XKVcuf0rHknXxiuS/pM=
-Date: Thu, 28 May 2009 01:05:07 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Zhaolei <zhaolei@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] ftrace: Don't convert function's local variable name
-	in macro
-Message-ID: <20090527230505.GG5982@nowhere>
-References: <4A1D41C2.2010903@cn.fujitsu.com>
+	Wed, 27 May 2009 19:10:04 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:57912 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756289AbZE0XKD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 19:10:03 -0400
+Date: Thu, 28 May 2009 01:05:23 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Roland McGrath <roland@redhat.com>
+Cc: Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: ptrace && task->exit_code
+Message-ID: <20090527230523.GA10032@redhat.com>
+References: <20090525000016.GA2239@redhat.com> <20090525215903.GA9113@redhat.com> <20090527021131.4778BFC36B@magilla.sf.frob.com> <20090527224140.GC6770@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A1D41C2.2010903@cn.fujitsu.com>
+In-Reply-To: <20090527224140.GC6770@redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 27, 2009 at 09:36:02PM +0800, Zhaolei wrote:
-> "call" is a argument of macro, but it is also used as a local variable name of
-> function in macro.
-> We should keep this local variable name static although it haven't cause
-> problem now.
-> 
-> [ Impact: cleanup, no functionality changed ]
+I didn't realize this until yesterday, but perhaps it makes sense
+to decouple ptrace && task_struct->exit_code?
 
+If not - do not read further.
 
-I'm applying it.
+This is not completely trivial, needs another short series.
 
-Note, I'm also changing the impact line. This is more than a
-cleanup, it's a real fix to prevent from possible CPP side effects.
+And. I spent a lot of time, but I can't see how to solve the problems
+with TASK_STOPPED tasks if we do this change.
 
-So I'll put instead:
+For the moment, forget that ->exit_code is used by do_exit/etc. Suppose
+we just move task->exit_code into ptrace_task->xxx.
 
-[ Impact: prevent from accidental CPP substitution ]
+Now. The never traced task (->ptrace_task == NULL) stops and sleeps in
+TASK_STOPPED.
 
-Thanks.
+The tracer attaches, and then ptrace_check_attach() changes its ->state
+to TASK_TRACED. But what should we do to ensure do_wait() will succeed
+later?
 
+Currently wait_task_stopped(ptrace => 1) needs ->exit_code != 0. Perhaps
+we can change ptrace_check_attach() to set ptrace_task->xxx if it is zero.
 
+But can't we just change wait_task_stopped() to return success when
+ptrace == T regardless of ->exit_code == 0 ? I guess, the answer is
+"we can break things".
 
-> Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
-> ---
->  include/trace/ftrace.h |   20 ++++++++++----------
->  1 files changed, 10 insertions(+), 10 deletions(-)
-> 
-> diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
-> index edb02bc..6f1218e 100644
-> --- a/include/trace/ftrace.h
-> +++ b/include/trace/ftrace.h
-> @@ -375,19 +375,19 @@ static void ftrace_profile_##call(proto)				\
->  	perf_tpcounter_event(event_##call.id);				\
->  }									\
->  									\
-> -static int ftrace_profile_enable_##call(struct ftrace_event_call *call) \
-> +static int ftrace_profile_enable_##call(struct ftrace_event_call *event_call) \
->  {									\
->  	int ret = 0;							\
->  									\
-> -	if (!atomic_inc_return(&call->profile_count))			\
-> +	if (!atomic_inc_return(&event_call->profile_count))		\
->  		ret = register_trace_##call(ftrace_profile_##call);	\
->  									\
->  	return ret;							\
->  }									\
->  									\
-> -static void ftrace_profile_disable_##call(struct ftrace_event_call *call) \
-> +static void ftrace_profile_disable_##call(struct ftrace_event_call *event_call)\
->  {									\
-> -	if (atomic_add_negative(-1, &call->profile_count))		\
-> +	if (atomic_add_negative(-1, &event_call->profile_count))	\
->  		unregister_trace_##call(ftrace_profile_##call);		\
->  }
->  
-> @@ -411,9 +411,9 @@ static void ftrace_profile_disable_##call(struct ftrace_event_call *call) \
->  #define __array(type, item, len)
->  
->  #undef __string
-> -#define __string(item, src)						       \
-> -	__str_offsets.item = __str_size +				       \
-> -			     offsetof(typeof(*entry), __str_data);	       \
-> +#define __string(item, src)						\
-> +	__str_offsets.item = __str_size +				\
-> +			     offsetof(typeof(*entry), __str_data);	\
->  	__str_size += strlen(src) + 1;
->  
->  #undef __assign_str
-> @@ -429,8 +429,8 @@ static struct ftrace_event_call event_##call;				\
->  									\
->  static void ftrace_raw_event_##call(proto)				\
->  {									\
-> -	struct ftrace_str_offsets_##call __maybe_unused __str_offsets;  \
-> -	struct ftrace_event_call *call = &event_##call;			\
-> +	struct ftrace_str_offsets_##call __maybe_unused __str_offsets;	\
-> +	struct ftrace_event_call *event_call = &event_##call;		\
->  	struct ring_buffer_event *event;				\
->  	struct ftrace_raw_##call *entry;				\
->  	unsigned long irq_flags;					\
-> @@ -451,7 +451,7 @@ static void ftrace_raw_event_##call(proto)				\
->  									\
->  	assign;								\
->  									\
-> -	if (!filter_current_check_discard(call, entry, event))		\
-> +	if (!filter_current_check_discard(event_call, entry, event))	\
->  		trace_nowake_buffer_unlock_commit(event, irq_flags, pc); \
->  }									\
->  									\
-> -- 
-> 1.5.5.3
-> 
-> 
+What do you think?
+
+Oleg.
 
