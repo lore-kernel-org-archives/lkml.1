@@ -1,164 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762830AbZE0UHn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759448AbZE0UJQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762830AbZE0UHn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 16:07:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755737AbZE0UHd
+	id S1759448AbZE0UJQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 16:09:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751934AbZE0UJA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 16:07:33 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:58750 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752550AbZE0UHc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 16:07:32 -0400
-Message-ID: <4A1D9D7B.9080507@novell.com>
-Date: Wed, 27 May 2009 16:07:23 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
+	Wed, 27 May 2009 16:09:00 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:41244 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751182AbZE0UJA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 16:09:00 -0400
+Date: Wed, 27 May 2009 22:04:19 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: paul@mad-scientist.net, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>
+Subject: Re: [2.6.27.24] Kernel coredump to a pipe is failing
+Message-ID: <20090527200419.GA1655@redhat.com>
+References: <1243355634.29250.331.camel@psmith-ubeta.netezza.com> <878wkjobbm.fsf@basil.nowhere.org> <20090527183109.GA30574@redhat.com>
 MIME-Version: 1.0
-To: "Michael S. Tsirkin" <mst@redhat.com>
-CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com,
-       davidel@xmailserver.org, mtosatti@redhat.com
-Subject: Re: [KVM PATCH v10] kvm: add support for irqfd
-References: <20090520142234.22285.72274.stgit@dev.haskins.net> <20090527130447.GA11643@redhat.com> <4A1D48FA.9080403@novell.com> <20090527184106.GA18463@redhat.com>
-In-Reply-To: <20090527184106.GA18463@redhat.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigAD9230FFEC2448A30BD4813D"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090527183109.GA30574@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigAD9230FFEC2448A30BD4813D
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-Michael S. Tsirkin wrote:
-> On Wed, May 27, 2009 at 10:06:50AM -0400, Gregory Haskins wrote:
->  =20
->> Michael S. Tsirkin wrote:
->>    =20
->>> On Wed, May 20, 2009 at 10:30:49AM -0400, Gregory Haskins wrote:
->>>  =20
->>>      =20
->>>> +static int
->>>> +kvm_assign_irqfd(struct kvm *kvm, int fd, int gsi)
->>>> +{
->>>> +	struct _irqfd *irqfd;
->>>> +	struct file *file =3D NULL;
->>>> +	int ret;
->>>> +
->>>> +	irqfd =3D kzalloc(sizeof(*irqfd), GFP_KERNEL);
->>>> +	if (!irqfd)
->>>> +		return -ENOMEM;
->>>> +
->>>> +	irqfd->kvm =3D kvm;
->>>> +	irqfd->gsi =3D gsi;
->>>> +	INIT_LIST_HEAD(&irqfd->list);
->>>> +	INIT_WORK(&irqfd->work, irqfd_inject);
->>>> +
->>>> +	/*
->>>> +	 * Embed the file* lifetime in the irqfd.
->>>> +	 */
->>>> +	file =3D fget(fd);
->>>> +	if (IS_ERR(file)) {
->>>> +		ret =3D PTR_ERR(file);
->>>> +		goto fail;
->>>> +	}
->>>>    =20
->>>>        =20
->>> So we get a reference to a file, and unless the user is nice to us, i=
-t
->>> will only be dropped when kvm char device file is closed?
->>> I think this will deadlock if the fd in question is the open kvm char=
- device.
->>>
->>>
->>>  =20
->>>      =20
->> Hmm...I hadn't considered this possibility, though I am not sure if it=
-
->> would cause a deadlock in the pattern you suggest.  It seems more like=
-
->> it would result in, at worst, an extra reference to itself (and thus a=
-
->> leak) rather than a deadlock...
->>
->> I digress.  In either case, perhaps I should s/fget/eventfd_fget to at=
-
->> least limit the type of fd to eventfd.  I was trying to be "slick" by
->> not needing the eventfd_fget() exported, but I am going to need to
->> export it later anyway for iosignalfd, so its probably a moot point.
->>
->> Thanks Michael,
->> -Greg
->>
->>    =20
+On 05/27, Oleg Nesterov wrote:
 >
-> This only works as long as eventfd does not do fget on some fd as well.=
-
-> Which it does not do now, and may never do - but we create a fragile
-> system this way.
+> On 05/26, Andi Kleen wrote:
+> >
+> > When a signal happens during core dump the core dump to a pipe
+> > can fail, because the write returns short, but the ELF core dumpers
+> > cannot handle that.
+> >
+> > There's no reason to handle signals during core dumping, so just
+> > block them all.
 >
-> I think it's really wrong, fundamentally, to keep a reference to a
-> file until another file is closed, unless you are code under fs/.
-> We will get nasty circular references sooner or later.
->  =20
+> Actually, I think there is a strong reason to handle signals during
+> core dumping. The coredump can take a lot of time/resources, not good
+> it looks like unkillable procees to users.
+>
+> Please look at
+>
+> 	killable/interruptible coredumps
+> 	http://marc.info/?l=linux-kernel&m=121665710711931
+>
+> at least, I think SIGKILL should terminate core dumping.
 
-Hmm.. I understand your concern, but I respectfully disagree.
+Forgot to mention, and we have problems with OOM. Not only the coredumping
+task can't be killed (and it can populate the memory via get_user_pages).
+The coredump just disables OOM, if select_bad_process() sees the PF_EXITING
+task with ->mm == NULL it returns -1.
 
-One object referencing another is a natural expression, regardless of
-what type they may be.  The fact is that introducing the concept of
-irqfd creates a relationship between an eventfd instance and a kvm
-instance whether we like it or not, and this relationship needs to be
-managed.  It is therefore IMO perfectly natural to express that
-relationship with a reference count, and I do not currently see anything
-wrong or even particularly fragile about how I've currently done this.=20
-I'm sure there are other ways, however.  Do you have a particular
-suggestion in mind?
-
-> Isn't the real reason we use fd to be able to support the same interfac=
-e
-> on top of both kvm and lguest?
->  =20
-
-Actually, the reason why we use an fd is to decouple the
-interrupt-producing end-point from the KVM core.  Ignoring eventfd in
-specific for a moment, one convenient way to do that is with an fd
-because it provides a nice, already written/tested handle-to-pointer
-translation, and a polymorphic interface (e.g. f_ops).  Choosing to use
-eventfd flavored fd's buys us additional advantages in terms of
-leveraging already tested f_ops code, and compatibility with an
-interface that is designed-for/used-by other established subsystems for
-signaling.
-> And if so, wouldn't some kind of bus be a better solution?
->  =20
-
-Ultimately I aim to implement a bus (vbus, specifically) in terms of
-irqfd (and iosignalfd, for that matter).  However, the eventfd
-interfaces are general purpose and can be used in other areas as well
-(for instance, virtio-pci, or the shared-mem driver recently
-discussed).  I realize this is probably not the point you were making
-here, but fyi.
-
-Regards,
--Greg
+> This all needs more discussion, but imho for now something like
+> Paul's patch http://marc.info/?l=linux-kernel&m=124340506200729
+> is the best workaround. Note that we have the same dump_write()
+> in binfmt_elf.c and binfmt_aout.c, perhaps it makes sense to
+> create coredump_file_write() helper in fs/exec.c.
 
 
+But I didn't notice Paul also reports the kernel panic:
 
---------------enigAD9230FFEC2448A30BD4813D
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+	page:ffffe20010d63d00 flags:0x8000000000000001 mapping:0000000000000000 mapcount:0 \
+	count:0 Trying to fix it up, but a reboot is needed
+	Backtrace:
+	Pid: 3346, comm: worker Tainted: P          2.6.27.24-worker #4
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+	Call Trace:
+	 [<ffffffff80284fd4>] bad_page+0x74/0xc0
+	 [<ffffffff80286168>] free_hot_cold_page+0x248/0x2f0
+	 [<ffffffff802f4096>] free_wr_note_data+0x56/0x70
+	 [<ffffffff802a95c6>] kfree+0x86/0x100
+	 [<ffffffff802f4096>] free_wr_note_data+0x56/0x70
+	 [<ffffffff802f0991>] elf_core_dump+0x611/0x1160
 
-iEYEARECAAYFAkodnX4ACgkQlOSOBdgZUxkA2wCfe2mAJKS2NPptmZ/bZHRhjBWA
-fIQAn3BLt3tmnEUaLYnijCdo3VhURUGj
-=q4UO
------END PGP SIGNATURE-----
+At first glance, this looks like a bug outside of coredump.c,
+we are trying to free PG_locked page?
 
---------------enigAD9230FFEC2448A30BD4813D--
+Oleg.
+
