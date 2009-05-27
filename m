@@ -1,75 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758840AbZE0RZU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760824AbZE0RZ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758840AbZE0RZU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 13:25:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756468AbZE0RZJ
+	id S1760824AbZE0RZ6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 13:25:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756789AbZE0RZt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 13:25:09 -0400
-Received: from mx-out.daemonmail.net ([216.104.160.38]:43614 "EHLO
-	mx-out.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756772AbZE0RZI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 13:25:08 -0400
-From: "Michael S. Zick" <lkml@morethan.org>
-Reply-To: lkml@morethan.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: LOCK prefix on uni processor has its use (was Re: [BUG FIX] Make x86_32 uni-processor Atomic ops, Atomic)
-Date: Wed, 27 May 2009 12:25:03 -0500
-User-Agent: KMail/1.9.9
-Cc: Harald Welte <HaraldWelte@viatech.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-References: <200905221139.26941.lkml@morethan.org> <20090527170118.GC4024@prithivi.gnumonks.org> <alpine.LFD.2.00.0905271906490.3397@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0905271906490.3397@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Wed, 27 May 2009 13:25:49 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:37188 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756021AbZE0RZs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 13:25:48 -0400
+Subject: Re: [KVM PATCH v4 3/3] kvm: add iosignalfd support
+From: Mark McLoughlin <markmc@redhat.com>
+Reply-To: Mark McLoughlin <markmc@redhat.com>
+To: Avi Kivity <avi@redhat.com>
+Cc: Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Davide Libenzi <davidel@xmailserver.org>,
+       mtosatti@redhat.com
+In-Reply-To: <4A1D2DD8.2050709@redhat.com>
+References: <20090526191010.20860.75372.stgit@dev.haskins.net>
+	 <20090526191539.20860.1385.stgit@dev.haskins.net>
+	 <4A1D01F8.8080508@redhat.com> <4A1D285C.9050008@novell.com>
+	 <4A1D2DD8.2050709@redhat.com>
+Content-Type: text/plain
+Date: Wed, 27 May 2009 17:25:44 +0000
+Message-Id: <1243445144.16318.15.camel@blaa>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905271225.07842.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed May 27 2009, Thomas Gleixner wrote:
-> On Wed, 27 May 2009, Harald Welte wrote:
-> > Here are some statements from the CPU logic guys at VIA/Centaur:
-> > 
-> > * A read-modify-write sequence cannot be interupted.
-> > * All X86 instructions except rep-strings are atomic wrt interrupts.
-> > * The lock prefix has uses on a UP processor: It keeps DMA devices from
-> >   interfering with a read-modify-write sequence
-> ...
-> 
-> > Now if I understand the issues correctly, it would mean that there is some
-> > driver code that modifies a certain chunk of memory, while DMA of some
-> > peripheral is also accessing that memory.  I suppose it would not have to be
-> > the same actual address, but probably being within the same cache line is
-> > already sufficient.
-> > 
-> > Now the question is: Is this a valid operation of a driver?  Should the driver
-> > do such things, or is such a driver broken?  When would that occur?  I'm trying
-> > to come up with a case, but typically you e.g. allocate some DMA buffer and
-> > then don't touch it until the hardware has processed it.
-> 
-> Right, that would be more than stupid, but even then it would not
-> explain any breakage of the kernel. Such a driver would not be
-> functional anyway if it relies on some read/write modify operations in
-> an active DMA buffer. That would also explode on any other system as
-> you have no control whether the access to that memory happens before
-> or after the DMA operation.
-> 
+On Wed, 2009-05-27 at 15:11 +0300, Avi Kivity wrote:
 
-IFF your DMA buffer is cache-line aligned and doesn't have an immediately
-adjacent spin-lock (or some such thing) sharing the cache-line.
+> Multiple cookies on the same address are required by virtio.  You can't 
+> mux since the data doesn't go anywhere.
+> 
+> Virtio can survive by checking all rings on a notify, and we can later 
+> add a mechanism that has a distinct address for each ring, but let's see 
+> if we can cope with multiple cookies.  Mark?
 
-Mike
-> Can you please ask them to clarify that DMA issue further ?
-> 
-> Thanks,
-> 
-> 	tglx
-> 
-> 
+Trying to catch up, but you're talking about replacing virtio-pci
+QUEUE_NOTIFY handling with iosignalfd ?
 
+For a perfect replacement, what you really need is to be able to
+register multiple cookies per address range, but only have them trigger
+if the written data matches a provided value.
+
+If the data is lost, virtio has no way of knowing which queue is being
+notified, so we either end up with per-device, rather than per-queue,
+notifications (probably not too bad for net, at least) or a different
+notify address per queue (limiting the number of queues per device).
+
+Cheers,
+Mark.
 
