@@ -1,51 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759128AbZE0VGg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757947AbZE0VHt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759128AbZE0VGg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 17:06:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758254AbZE0VGW
+	id S1757947AbZE0VHt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 17:07:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755842AbZE0VHj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 17:06:22 -0400
-Received: from mail-in-13.arcor-online.net ([151.189.21.53]:56105 "EHLO
-	mail-in-13.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756165AbZE0VGV (ORCPT
+	Wed, 27 May 2009 17:07:39 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50295 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755289AbZE0VHi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 17:06:21 -0400
-X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-07.arcor-online.net B3FFC3CA3FC
-Subject: [PATCH] MAINTAINERS: Change email address for Thomas Dahlmann
-From: Thomas Dahlmann <dahlmann.thomas@arcor.de>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Wed, 27 May 2009 23:06:21 +0200
-Message-Id: <1243458381.7412.31.camel@pc>
+	Wed, 27 May 2009 17:07:38 -0400
+Date: Wed, 27 May 2009 14:06:41 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: damien.wyart@free.fr, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, chris.mason@oracle.com,
+       david@fromorbit.com, hch@infradead.org, jack@suse.cz,
+       yanmin_zhang@linux.intel.com, richard@rsk.demon.co.uk
+Subject: Re: [PATCH 0/12] Per-bdi writeback flusher threads v7
+Message-Id: <20090527140641.71ecaf8c.akpm@linux-foundation.org>
+In-Reply-To: <20090527150546.GM11363@kernel.dk>
+References: <1243330430-9964-1-git-send-email-jens.axboe@oracle.com>
+	<20090526152501.GA20968@localhost.localdomain>
+	<20090526164117.GJ11363@kernel.dk>
+	<20090526170845.GA3226@localhost.localdomain>
+	<20090526204703.GM11363@kernel.dk>
+	<20090526211119.GO11363@kernel.dk>
+	<20090527052101.GA28517@localhost.localdomain>
+	<20090527054921.GA4127@localhost.localdomain>
+	<20090527092052.GV11363@kernel.dk>
+	<20090527131555.GA3277@localhost.localdomain>
+	<20090527150546.GM11363@kernel.dk>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Thomas <dahlmann.thomas@arcor.de>
+On Wed, 27 May 2009 17:05:47 +0200
+Jens Axboe <jens.axboe@oracle.com> wrote:
 
----
- MAINTAINERS |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+> I ran testing with artificial
+> bdi_work allocation failures to verify the oom path
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 77cbfb1..5b3e2aa 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -434,7 +434,7 @@ F:	arch/alpha/
- 
- AMD GEODE CS5536 USB DEVICE CONTROLLER DRIVER
- P:	Thomas Dahlmann
--M:	thomas.dahlmann@amd.com
-+M:	dahlmann.thomas@arcor.de
- L:	linux-geode@lists.infradead.org (moderated for non-subscribers)
- S:	Supported
- F:	drivers/usb/gadget/amd5536udc.*
--- 
-1.5.6.3
+I bet you didn't use lib/fault-inject.c :(
 
-
+For tricky pieces of core kernel like this, there's a good case for
+including and permanently maintaining fault injection testing
+capabilities.
 
