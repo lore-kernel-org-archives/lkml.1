@@ -1,86 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932544AbZE0SGa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932369AbZE0SHp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932544AbZE0SGa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 14:06:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761384AbZE0SGW
+	id S932369AbZE0SHp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 14:07:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761733AbZE0SHg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 14:06:22 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:44603 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761061AbZE0SGV (ORCPT
+	Wed, 27 May 2009 14:07:36 -0400
+Received: from g4t0016.houston.hp.com ([15.201.24.19]:22666 "EHLO
+	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759913AbZE0SHf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 14:06:21 -0400
-Date: Wed, 27 May 2009 18:56:09 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Scott Wood <scottwood@freescale.com>
-Cc: Peter Korsgaard <jacmet@sunsite.dk>,
-       Robert Schwebel <r.schwebel@pengutronix.de>,
-       devicetree-discuss <devicetree-discuss@ozlabs.org>,
-       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       Janboe Ye <yuan-bo.ye@motorola.com>, Timur Tabi <timur@freescale.com>
-Subject: Re: [RFC] [PATCH] Device Tree on ARM platform
-Message-ID: <20090527175609.GB31861@flint.arm.linux.org.uk>
-References: <1243408083.13460.14.camel@debian-nb> <fa686aa40905270727m31250984tf12249fc87179ce9@mail.gmail.com> <ed82fe3e0905270739k38018c87ka11f62c5977e45fb@mail.gmail.com> <20090527150527.GK6805@pengutronix.de> <87vdnm8sec.fsf@macbook.be.48ers.dk> <4A1D6901.2090508@freescale.com>
+	Wed, 27 May 2009 14:07:35 -0400
+Message-ID: <4A1D8161.2020009@hp.com>
+Date: Wed, 27 May 2009 14:07:29 -0400
+From: jim owens <jowens@hp.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A1D6901.2090508@freescale.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Martin Knoblauch <knobi@knobisoft.de>
+CC: Matthew Wilcox <matthew@wil.cx>, Andrew Morton <akpm@linux-foundation.org>,
+       Mike Galbraith <efault@gmx.de>, viro@ZenIV.linux.org.uk, rjw@sisk.pl,
+       linux-kernel@vger.kernel.org, tigran@aivazian.fsnet.co.uk,
+       Kay Sievers <kay.sievers@vrfy.org>, shemminger@vyatta.com,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       mike miller <mike.miller@hp.com>
+Subject: Re: Analyzed/Solved/Bisected: Booting 2.6.30-rc2-git7 very slow
+References: <1240977096.5478.3.camel@marge.simson.net> <20090429011755.c141c599.akpm@linux-foundation.org> <20090429120827.GI8633@ZenIV.linux.org.uk> <1241014725.15095.19.camel@marge.simson.net> <20090505154911.e0309a4f.akpm@linux-foundation.org> <1241585140.5196.28.camel@marge.simson.net> <957194.27869.qm@web32605.mail.mud.yahoo.com> <1241599065.18090.18.camel@marge.simson.net> <461911.6351.qm@web32603.mail.mud.yahoo.com> <20090526233102.b86e7f84.akpm@linux-foundation.org> <20090527112153.GE5816@parisc-linux.org> <840102.98312.qm@web32603.mail.mud.yahoo.com>
+In-Reply-To: <840102.98312.qm@web32603.mail.mud.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 27, 2009 at 11:23:29AM -0500, Scott Wood wrote:
-> That removes the ability to use the device tree to pass information from  
-> the bootloader, such as MAC addresses and clock frequencies.  On the  
-> u-boot list, you'll find people trying such hacks (which were rightly  
-> NACKed) as passing the information in the device's volatile registers  
-> (which the Linux driver must then not reset) to deal with ARM Linux's  
-> lack of this ability.
+Martin Knoblauch wrote:
+> ----- Original Message ----
+> 
+>> From: Matthew Wilcox <matthew@wil.cx>
+>> To: Andrew Morton <akpm@linux-foundation.org>
+>> Cc: Martin Knoblauch <knobi@knobisoft.de>; Mike Galbraith <efault@gmx.de>; viro@ZenIV.linux.org.uk; rjw@sisk.pl; linux-kernel@vger.kernel.org; tigran@aivazian.fsnet.co.uks; Kay Sievers <kay.sievers@vrfy.org>; shemminger@vyatta.com; Jesse Barnes <jbarnes@virtuousgeek.org>
+>> Sent: Wednesday, May 27, 2009 1:21:53 PM
+>> Subject: Re: Analyzed/Solved/Bisected: Booting 2.6.30-rc2-git7 very slow
+>>
+>> On Tue, May 26, 2009 at 11:31:02PM -0700, Andrew Morton wrote:
+>>> On Wed, 20 May 2009 03:22:28 -0700 (PDT) Martin Knoblauch 
+>> wrote:
+>>>> ----- Original Message ----
+>>>>
+>>>>> From: Mike Galbraith 
+>>>>> To: Martin Knoblauch 
+>>>>> Cc: Andrew Morton ; viro@ZenIV.linux.org.uk; 
+>> rjw@sisk.pl; linux-kernel@vger.kernel.org; tigran@aivazian.fsnet.co.uk
+>>>>> Sent: Wednesday, May 6, 2009 10:37:45 AM
+>>>>> Subject: Re: Analyzed/Solved: Booting 2.6.30-rc2-git7 very slow
+>>>>>
+>>>>> On Wed, 2009-05-06 at 00:55 -0700, Martin Knoblauch wrote:
+>>>>>
+>>>>>>  just to bring this back to my problem :-)
+>>>>> Good idea :-)
+>>>>>
+>>>>>>  Last week I reported that the "new" sysfs entry in /proc/mounts already 
+>> comes 
+>>>>> out of initrd. Does this ring a bell?
+>>>>>> http://lkml.indiana.edu/hypermail/linux/kernel/0904.3/03048.html
+>>>>> Nope, no bells.
+>>>>>
+>>>>> The only thing I can suggest is that you try a bisection.
+>>>>>
+>>>>>     -Mike
+>>>>  OK, so I finally managed to bisect the issue down to the following commit. 
+>> Not much that I can say about it. Someone else suggested that it might all be a 
+>> question of timing. Might very well be. I will try it out on a system with a 
+>> different SCSI/RAID controller. The failing system has an "Smart Array 6i" 
+>> (cciss). "cciss", "ext3" and "jbd" are all modules coming from initrd.
+>>>> |commit 1120f8b8169fb2cb51219d326892d963e762edb6
+>>>> |Author: Stephen Hemminger 
+>>>> |Date:   Thu Dec 18 09:17:16 2008 -0800
+>>>> |
+>>>> |    PCI: handle long delays in VPD access
+>>>> |
+>>>> |    Accessing the VPD area can take a long time.  The existing
+>>>> |    VPD access code fails consistently on my hardware. There are comments
+>>>> |
+>>>> |    Change the access routines to:
+>>>> |      * use a mutex rather than spinning with IRQ's disabled and lock held
+>>>> |      * have a much longer timeout
+>>>> |      * call cond_resched while spinning
+>>>> |
+>>>> |    Signed-off-by: Stephen Hemminger 
+>>>> |    Reviewed-by: Matthew Wilcox 
+>>>> |    Signed-off-by: Jesse Barnes 
+>>>>
+>>>
+>> This is the first I've seen of this report ...
+>>
+>>> So afacit what's happening is that the above change caused one of your
+>>> PCI devices to take a very long time to initialise, yes?  Was it the
+>>> CCISS driver?
+>>>
+>>> If you add "printk.time=y" to the kernel boot command line then you'll
+>>> get timestamped boot messages which will make it easier to determine
+>>> where the time was consumed.  Adding `initcall_debug' to the boot line
+>>> will help us delve further into the delay, assuming that the offending
+>>> driver is build into vmlinux (which it might not be).
+>> The two message logs posted show NTP starting up within a second of
+>> each other.  What was the problem again?
+>>
+> 
+>  Just to recap. Starting with 2.6.29-rc1, /proc/mounts has two "sysfs" lines:
+> 
+> |none /sys sysfs rw,relatime 0 0
+> | /sys /sys sysfs rw,relatime 0 0
+> 
+>  The first of them already comes out of initrd, which somehow means that the explicit umount in the initrd/init script seems to fail. This is observable on a HP/DL380G4 with a "SmartArray 6" controller (cciss driver).
+> 
+>  As a result of the two lines, the hotplug/firmware script in my RHEL4.3 userspace failed to determine the "/sys" mountpoint, which in turn resulted in a 60 second timeout for each firmware load attempt, adding 6 minutes to the boot sequence (4 CPUs, 2 tg3s). I have since then just fixed the hotplug script to do "the right thing". Therefore you are not seeing a big difference in the two posted dmesg logs. The underlying issue remains.
+> 
+>  In a next step I managed to bisect the appearance of the second "sysfs" line down to the following commit:
+> 
+> |commit 1120f8b8169fb2cb51219d326892d963e762edb6
+> |Author: Stephen Hemminger <shemminger@vyatta.com>
+> |Date:   Thu Dec 18 09:17:16 2008 -0800
+> |
+> |    PCI: handle long delays in VPD access
+> |
+> |    Accessing the VPD area can take a long time.  The existing
+> |    VPD access code fails consistently on my hardware. There are comments
+> |
+> |    Change the access routines to:
+> |      * use a mutex rather than spinning with IRQ's disabled and lock held
+> |      * have a much longer timeout
+> |      * call cond_resched while spinning
+> |
+> |    Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
+> |    Reviewed-by: Matthew Wilcox <willy@linux.intel.com>
+> |    Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+> 
+>  The commit itself may just show a problem/bug elsewhere. It definitely changes locking and timing around PCI.
+> 
+>  Next, I tried to run an identically configured kernel on a different system (IBM/x3650 with aacraid). The problem was not observable. This now either points to CCISS, or leaves timing.
+> 
+>  Finally, today I built the ccsii driver into the kernel. It was previously modularized and loaded from initrd. The second "sysfs" line went away. But does this make cciss guilty? It is now loaded about 2 seconds earlier in the boot sequence, which is a big change in timing I guess.
+> 
+>  Enlighten me :-)
 
-No one has brought that up on the ARM mailing lists - so does this issue
-really exist?  All of the stuff I see on the ARM lists seems to be well
-behaved and following our existing model - even vendor stuff (supplied
-to me under NDA) seems to generally get this kind of stuff right.
+No idea what is going on, but since I saw your May 20 message,
+I have been trying to wake up someone whose day job it should
+be to care about dl380s and smartarrays. :)
 
-Basically, what I'm saying is that I have seen no evidence to support
-the argument you're making, but I'm not saying you're wrong or that it
-doesn't happen.
+If they don't react soon, I'll make this my own day job to
+try to reproduce it.  We will need hardware config details and
+firmware revs to start.
 
->>  Robert> - The oftree layering is fundamentally broken. We already
->>  Robert> have a sane abstraction for arbitrary hardware in the kernel:
->>  Robert> platform devices.  Why not instanciate platform devices from
->>  Robert> a generic oftree core?
->
-> You can, if you want.  But you'll need extra glue code that understands  
-> the individual bindings.  IMHO that logic is usually better off in the  
-> driver itself, but if you really need platform code to involve itself in  
-> some way (such as providing callbacks), then exceptions can be made.
+So I would not close the bug just yet.
 
-No it is not.  Device drivers are best written to support devices, and
-the platform specific code should not be anywhere near them.  Platform
-specific code to handle oddities of platforms should be totally separate
-from the device driver itself.
+jim
 
-For example, see the mess that is cs89x0, which isn't a platform driver
-(or any kind of driver model driver).  It's full of individual platform
-specific hacks to make it work on platforms X, Y and Z.  The same was
-true of the smc91x driver (which is a platform driver but wasn't done
-in a generic way.)  smc91x was very quickly becoming a big problem to
-maintain and use because of all the platform specific junk being shoe-
-horned into the driver.  smc91x eventually got fixed.  cs89x0 hasn't.
-
-smc91x is a prime example of the kind of information drivers need - base
-address and irq are very much insufficient to describe how this device is
-connected.  There's much more information required to specify this device
-fully, and throwing it into the driver doesn't work.  We've been there
-and proven that point.
-
-So, repeat this mantra: device drivers should contain no platform specifics.
-Platform specifics should be separated from the driver and implemented by
-platform support code.
-
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
