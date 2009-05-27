@@ -1,55 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756153AbZE0A4T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756630AbZE0A6i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756153AbZE0A4T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 20:56:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754906AbZE0A4L
+	id S1756630AbZE0A6i (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 20:58:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752316AbZE0A6b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 20:56:11 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46716 "EHLO mx1.redhat.com"
+	Tue, 26 May 2009 20:58:31 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:46090 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754454AbZE0A4L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 20:56:11 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Oleg Nesterov <oleg@redhat.com>
-X-Fcc: ~/Mail/linus
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] ptrace: do_notify_parent_cldstop: fix the wrong
-	->nsproxy usage
-In-Reply-To: Oleg Nesterov's message of  Tuesday, 26 May 2009 23:33:47 +0200 <20090526213346.GA7073@redhat.com>
-References: <20090525185502.GA20781@redhat.com>
-	<20090526210514.C1C91FC2BD@magilla.sf.frob.com>
-	<20090526213346.GA7073@redhat.com>
-X-Windows: the first fully modular software disaster.
-Message-Id: <20090527005527.B50B7FC36B@magilla.sf.frob.com>
-Date: Tue, 26 May 2009 17:55:27 -0700 (PDT)
+	id S1751229AbZE0A6a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 20:58:30 -0400
+Date: Wed, 27 May 2009 10:58:15 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: linux-next: failed to fetch osd tree
+Message-Id: <20090527105815.95bb2a29.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__27_May_2009_10_58_15_+1000_B9.vDmWJSAO7Xafl"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Yes. Perhaps it would be nice to add a helper,
+--Signature=_Wed__27_May_2009_10_58_15_+1000_B9.vDmWJSAO7Xafl
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I agree.
+Hi Boaz,
 
-> > sys_kill, do_tkill all look wrong to me.
-> 
-> They should be fine, note the
-> 
-> 	if (from_ancestor_ns)
-> 		q->info.si_pid = 0;
-> 
-> in __send_signal(). If we send the signal "down" to the sub-namespace,
-> si_pid == 0 is correct. And, unlike do_notify_parent/ptrace_notify/etc
-> kill/tkill can't send the signal "up".
+I got this error trying to fetch the osd tree this morning:
 
-Ah, right.  I knew there was something around this I was forgetting.
+git.open-osd.org[0: 67.152.220.82]: errno=3DConnection timed out
+fatal: unable to connect a socket (Connection timed out)
 
+I will use the tree I fetched yesterday.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Thanks,
-Roland
+--Signature=_Wed__27_May_2009_10_58_15_+1000_B9.vDmWJSAO7Xafl
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkockCcACgkQjjKRsyhoI8xKtACfYhkFNTwswoIt5Fs7WsgeLdV0
+skEAn0SRusc0WjOrY/PR/YjYSvgaGe8U
+=0XhA
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__27_May_2009_10_58_15_+1000_B9.vDmWJSAO7Xafl--
