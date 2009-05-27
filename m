@@ -1,137 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758388AbZE0Unp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758280AbZE0UoA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758388AbZE0Unp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 16:43:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756318AbZE0Unc
+	id S1758280AbZE0UoA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 16:44:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757332AbZE0Une
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 16:43:32 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:50119 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755271AbZE0Unb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 16:43:34 -0400
+Received: from yw-out-2324.google.com ([74.125.46.30]:55159 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754471AbZE0Unb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 27 May 2009 16:43:31 -0400
-Date: Wed, 27 May 2009 23:43:24 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com,
-       davidel@xmailserver.org, mtosatti@redhat.com
-Subject: Re: [KVM PATCH v10] kvm: add support for irqfd
-Message-ID: <20090527204324.GA22915@redhat.com>
-References: <20090520142234.22285.72274.stgit@dev.haskins.net> <20090527130447.GA11643@redhat.com> <4A1D48FA.9080403@novell.com> <20090527184106.GA18463@redhat.com> <4A1D9D7B.9080507@novell.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A1D9D7B.9080507@novell.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20090527175609.GB31861@flint.arm.linux.org.uk>
+References: <1243408083.13460.14.camel@debian-nb> <fa686aa40905270727m31250984tf12249fc87179ce9@mail.gmail.com> 
+	<ed82fe3e0905270739k38018c87ka11f62c5977e45fb@mail.gmail.com> 
+	<20090527150527.GK6805@pengutronix.de> <87vdnm8sec.fsf@macbook.be.48ers.dk> 
+	<4A1D6901.2090508@freescale.com> <20090527175609.GB31861@flint.arm.linux.org.uk>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Wed, 27 May 2009 14:43:12 -0600
+Message-ID: <fa686aa40905271343l66841a03k8985ab29008ca72a@mail.gmail.com>
+Subject: Re: [RFC] [PATCH] Device Tree on ARM platform
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Cc: Scott Wood <scottwood@freescale.com>, Peter Korsgaard <jacmet@sunsite.dk>,
+       Robert Schwebel <r.schwebel@pengutronix.de>,
+       devicetree-discuss <devicetree-discuss@ozlabs.org>,
+       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       Janboe Ye <yuan-bo.ye@motorola.com>, Timur Tabi <timur@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 27, 2009 at 04:07:23PM -0400, Gregory Haskins wrote:
-> Michael S. Tsirkin wrote:
-> > On Wed, May 27, 2009 at 10:06:50AM -0400, Gregory Haskins wrote:
-> >   
-> >> Michael S. Tsirkin wrote:
-> >>     
-> >>> On Wed, May 20, 2009 at 10:30:49AM -0400, Gregory Haskins wrote:
-> >>>   
-> >>>       
-> >>>> +static int
-> >>>> +kvm_assign_irqfd(struct kvm *kvm, int fd, int gsi)
-> >>>> +{
-> >>>> +	struct _irqfd *irqfd;
-> >>>> +	struct file *file = NULL;
-> >>>> +	int ret;
-> >>>> +
-> >>>> +	irqfd = kzalloc(sizeof(*irqfd), GFP_KERNEL);
-> >>>> +	if (!irqfd)
-> >>>> +		return -ENOMEM;
-> >>>> +
-> >>>> +	irqfd->kvm = kvm;
-> >>>> +	irqfd->gsi = gsi;
-> >>>> +	INIT_LIST_HEAD(&irqfd->list);
-> >>>> +	INIT_WORK(&irqfd->work, irqfd_inject);
-> >>>> +
-> >>>> +	/*
-> >>>> +	 * Embed the file* lifetime in the irqfd.
-> >>>> +	 */
-> >>>> +	file = fget(fd);
-> >>>> +	if (IS_ERR(file)) {
-> >>>> +		ret = PTR_ERR(file);
-> >>>> +		goto fail;
-> >>>> +	}
-> >>>>     
-> >>>>         
-> >>> So we get a reference to a file, and unless the user is nice to us, it
-> >>> will only be dropped when kvm char device file is closed?
-> >>> I think this will deadlock if the fd in question is the open kvm char device.
-> >>>
-> >>>
-> >>>   
-> >>>       
-> >> Hmm...I hadn't considered this possibility, though I am not sure if it
-> >> would cause a deadlock in the pattern you suggest.  It seems more like
-> >> it would result in, at worst, an extra reference to itself (and thus a
-> >> leak) rather than a deadlock...
-> >>
-> >> I digress.  In either case, perhaps I should s/fget/eventfd_fget to at
-> >> least limit the type of fd to eventfd.  I was trying to be "slick" by
-> >> not needing the eventfd_fget() exported, but I am going to need to
-> >> export it later anyway for iosignalfd, so its probably a moot point.
-> >>
-> >> Thanks Michael,
-> >> -Greg
-> >>
-> >>     
-> >
-> > This only works as long as eventfd does not do fget on some fd as well.
-> > Which it does not do now, and may never do - but we create a fragile
-> > system this way.
-> >
-> > I think it's really wrong, fundamentally, to keep a reference to a
-> > file until another file is closed, unless you are code under fs/.
-> > We will get nasty circular references sooner or later.
-> >   
-> 
-> Hmm.. I understand your concern, but I respectfully disagree.
-> 
-> One object referencing another is a natural expression, regardless of
-> what type they may be.  The fact is that introducing the concept of
-> irqfd creates a relationship between an eventfd instance and a kvm
-> instance whether we like it or not, and this relationship needs to be
-> managed.  It is therefore IMO perfectly natural to express that
-> relationship with a reference count, and I do not currently see anything
-> wrong or even particularly fragile about how I've currently done this. 
-> I'm sure there are other ways, however.  Do you have a particular
-> suggestion in mind?
+On Wed, May 27, 2009 at 11:56 AM, Russell King
+<rmk+lkml@arm.linux.org.uk> wrote:
+> So, repeat this mantra: device drivers should contain no platform specifics.
+> Platform specifics should be separated from the driver and implemented by
+> platform support code.
 
-Yes. I'll try to post a patch soon.
+/me suspects we are having a violent agreement on this point.
 
-> > Isn't the real reason we use fd to be able to support the same interface
-> > on top of both kvm and lguest?
-> >   
-> 
-> Actually, the reason why we use an fd is to decouple the
-> interrupt-producing end-point from the KVM core.  Ignoring eventfd in
-> specific for a moment, one convenient way to do that is with an fd
-> because it provides a nice, already written/tested handle-to-pointer
-> translation, and a polymorphic interface (e.g. f_ops).  Choosing to use
-> eventfd flavored fd's buys us additional advantages in terms of
-> leveraging already tested f_ops code, and compatibility with an
-> interface that is designed-for/used-by other established subsystems for
-> signaling.
-> > And if so, wouldn't some kind of bus be a better solution?
-> >   
-> 
-> Ultimately I aim to implement a bus (vbus, specifically) in terms of
-> irqfd (and iosignalfd, for that matter).  However, the eventfd
-> interfaces are general purpose and can be used in other areas as well
-> (for instance, virtio-pci, or the shared-mem driver recently
-> discussed).  I realize this is probably not the point you were making
-> here, but fyi.
-> 
-> Regards,
-> -Greg
-> 
-> 
+g.
 
-
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
