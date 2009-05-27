@@ -1,58 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760711AbZE0Uyy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757362AbZE0U4k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760711AbZE0Uyy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 16:54:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757776AbZE0Uyb
+	id S1757362AbZE0U4k (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 16:56:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755520AbZE0U4Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 16:54:31 -0400
-Received: from mail-gx0-f166.google.com ([209.85.217.166]:61222 "EHLO
-	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751170AbZE0Uya convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 16:54:30 -0400
+	Wed, 27 May 2009 16:56:24 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:60228 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752433AbZE0U4X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 16:56:23 -0400
+Date: Wed, 27 May 2009 22:56:22 +0200
+From: Karel Zak <kzak@redhat.com>
+To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       util-linux-ng@vger.kernel.org
+Subject: [ANNOUNCE] util-linux-ng v2.15.1-rc1
+Message-ID: <20090527205621.GH11402@nb.net.home>
 MIME-Version: 1.0
-In-Reply-To: <20090527201951.GF30039@game.jcrosoft.org>
-References: <ed82fe3e0905270739k38018c87ka11f62c5977e45fb@mail.gmail.com> 
-	<87vdnm8sec.fsf@macbook.be.48ers.dk> <4A1D6901.2090508@freescale.com> 
-	<20090527175609.GB31861@flint.arm.linux.org.uk> <4A1D8FBA.6040802@freescale.com> 
-	<9e4733910905271213k7f4b93e7i7e6f2af24d85f@mail.gmail.com> 
-	<20090527192116.GA31110@n2100.arm.linux.org.uk> <20090527193927.GD30039@game.jcrosoft.org> 
-	<fa686aa40905271322x2f62c3dcs355374b30b4db3ca@mail.gmail.com> 
-	<20090527201951.GF30039@game.jcrosoft.org>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Wed, 27 May 2009 14:54:10 -0600
-Message-ID: <fa686aa40905271354y50b9583cp9f53c35354edc285@mail.gmail.com>
-Subject: Re: [RFC] [PATCH] Device Tree on ARM platform
-To: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       devicetree-discuss <devicetree-discuss@ozlabs.org>,
-       linux-kernel@vger.kernel.org, Timur Tabi <timur@freescale.com>,
-       Jon Smirl <jonsmirl@gmail.com>, Scott Wood <scottwood@freescale.com>,
-       Janboe Ye <yuan-bo.ye@motorola.com>,
-       linux-arm-kernel@lists.arm.linux.org.uk
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 27, 2009 at 2:19 PM, Jean-Christophe PLAGNIOL-VILLARD
-<plagnioj@jcrosoft.com> wrote:
->> One option that has been suggested (more than once) is to make the
->> adapter code an of_platform_driver which translates the device tree
->> data and then registers the appropriate platform_devices.  This neatly
->> solves the problem, but I don't like the overhead involved in
->> registering 2 struct devices with the kernel for every device node in
->> the device tree.
-> but simplify the dev and maintaining is also an important goal.
->
-> Have to duplicated ressource handling via ifdef in every drivers is also an
-> overhead which need to be avoided
 
-agreed.  I don't have a best of both worlds answer here.
+The first util-linux-ng 2.15.1 release candidate is available at
 
-g.
+   ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/
+
+Feedback and bug reports, as always, are welcomed.
+
+	Karel
+
+
+Util-linux-ng 2.15.1 Release Notes
+==================================
+
+Changes since v2.15
+-------------------
+
+ For more details see ChangeLog files at:
+ ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/v2.15/
+
+build-sys:
+   - add UTIL_{SET,RESTORE}_FLAGS  [Karel Zak]
+   - fix "make -C" bug  [Karel Zak]
+   - fix blkid detection in configure.ac  [Karel Zak]
+   - fix blkid.h include for old e2fsprogs  [Karel Zak]
+cal:
+   - Highlight today even when month or year specified  [Rajeev V. Pillai]
+   - uClibc has langinfo.h but not _NL_TIME_WEEK_1STDAY.  [Tom Prince]
+chrt:
+   - don't assume SCHED_BATCH and SCHED_IDLE exist  [Aurelien Jarno]
+docs:
+   - update AUTHORS file  [Karel Zak]
+fdisk:
+   - (and cfdisk) fix to be consistent about maximum heads  [Chris Webb]
+libblkid:
+   - fix reiserfs name  [Karel Zak]
+   - update man page  [Karel Zak]
+   - blkid_do_safeprobe() has to be tolerant to RAIDs  [Karel Zak]
+   - cleanup debug messages and return codes in blkid_do_probe()  [Karel Zak]
+   - fix "hangs forever with partition type mdraid"  [Karel Zak]
+   - make libuuid optional  [Karel Zak]
+losetup:
+   - handle symlinks in /dev/loop/  [Mike Frysinger]
+lscpu:
+   - fix cpuid code on x86/PIC  [Mike Frysinger]
+mount:
+   - fix undefined reference to `security_get_initial_context'  [Karel Zak]
+po:
+   - merge changes  [Karel Zak]
+   - update vi.po (from translationproject.org)  [Clytie Siddall]
+tests:
+   - add mdraid libblkid test  [Karel Zak]
+   - don't run some mount tests for non-root users  [Karel Zak]
+   - fix reiserfs test  [Karel Zak]
+   - fix script that creates lscpu dumps  [Karel Zak]
+   - move lscpu /proc and /sys dumps to tarballs  [Karel Zak]
+   - remove broken Xen dumps for lscpu  [Karel Zak]
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+ Karel Zak  <kzak@redhat.com>
