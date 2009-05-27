@@ -1,130 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758369AbZE0VZy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760317AbZE0V0X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758369AbZE0VZy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 17:25:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752621AbZE0VZq
+	id S1760317AbZE0V0X (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 17:26:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755025AbZE0V0O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 17:25:46 -0400
-Received: from hera.kernel.org ([140.211.167.34]:37805 "EHLO hera.kernel.org"
+	Wed, 27 May 2009 17:26:14 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:60551 "EHLO e1.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752350AbZE0VZo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 17:25:44 -0400
-Date: Wed, 27 May 2009 21:25:08 GMT
-From: tip-bot for Ingo Molnar <mingo@elte.hu>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
-       hpa@zytor.com, mingo@redhat.com, jkacur@redhat.com,
-       a.p.zijlstra@chello.nl, efault@gmx.de, mtosatti@redhat.com,
-       tglx@linutronix.de, cjashfor@linux.vnet.ibm.com, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, jkacur@redhat.com, a.p.zijlstra@chello.nl,
-       efault@gmx.de, mtosatti@redhat.com, tglx@linutronix.de,
-       cjashfor@linux.vnet.ibm.com, mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-Subject: [tip:perfcounters/core] pref_counter: tools: report: Robustify in case of weird events
-Message-ID: <tip-55717314c4e3a5180a54228a2f97e50f3496de4c@git.kernel.org>
-Git-Commit-ID: 55717314c4e3a5180a54228a2f97e50f3496de4c
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 27 May 2009 21:25:10 +0000 (UTC)
+	id S1754809AbZE0V0N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 17:26:13 -0400
+Subject: Re: [PATCH v2] integrity: nfsd imbalance bug fix
+From: Mimi Zohar <zohar@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, hooanon05@yahoo.co.jp,
+       "J. Bruce Fields" <bfields@fieldses.org>,
+       James Morris <jmorris@namei.org>,
+       David Safford <safford@watson.ibm.com>, linux-nfs@vger.kernel.org,
+       Mimi Zohar <zohar@us.ibm.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>
+In-Reply-To: <20090527140915.26efc70b.akpm@linux-foundation.org>
+References: <1243431112-7388-1-git-send-email-zohar@linux.vnet.ibm.com>
+	 <20090527140915.26efc70b.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Wed, 27 May 2009 17:26:13 -0400
+Message-Id: <1243459573.3408.9.camel@dyn9002018117.watson.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  55717314c4e3a5180a54228a2f97e50f3496de4c
-Gitweb:     http://git.kernel.org/tip/55717314c4e3a5180a54228a2f97e50f3496de4c
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Wed, 27 May 2009 22:13:17 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 27 May 2009 22:19:58 +0200
+On Wed, 2009-05-27 at 14:09 -0700, Andrew Morton wrote:
 
-pref_counter: tools: report: Robustify in case of weird events
+> I have a note here that Hugh had some significant issues with the
+> previous version of this patch.
+> 
+> Were these problems addressed?  If so, how?
+> 
+> Thanks.
 
-This error condition:
+With some reservation, he acked "[PATCH 2/3] integrity: move
+ima_counts_get", but I'm not aware of his having any problems with this
+patch. 
 
-  aldebaran:~/linux/linux/Documentation/perf_counter> perf report
-  dso__load_sym: cannot get elf header.
-  failed to open: /etc/ld.so.cache
-  problem processing PERF_EVENT_MMAP, bailing out
+This patch was updated based on a comment from J.Bruce Fields.
 
-caused the profile to be very short - as the error was at the beginning
-of the file and we bailed out completely.
+Mimi Zohar
 
-Be more permissive and consider the event broken instead.
-
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-Cc: Marcelo Tosatti <mtosatti@redhat.com>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: John Kacur <jkacur@redhat.com>
-LKML-Reference: <new-submission>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- Documentation/perf_counter/builtin-report.c |   17 ++++++++---------
- 1 files changed, 8 insertions(+), 9 deletions(-)
-
-diff --git a/Documentation/perf_counter/builtin-report.c b/Documentation/perf_counter/builtin-report.c
-index 6df95c2..5993c12 100644
---- a/Documentation/perf_counter/builtin-report.c
-+++ b/Documentation/perf_counter/builtin-report.c
-@@ -1117,9 +1117,9 @@ more:
- 		}
- 
- 		if (thread == NULL) {
--			fprintf(stderr, "problem processing %d event, bailing out\n",
-+			fprintf(stderr, "problem processing %d event, skipping it.\n",
- 				event->header.type);
--			goto done;
-+			goto broken_event;
- 		}
- 
- 		if (event->header.misc & PERF_EVENT_MISC_KERNEL) {
-@@ -1149,8 +1149,8 @@ more:
- 
- 			if (hist_entry__add(thread, map, dso, sym, ip, level)) {
- 				fprintf(stderr,
--		"problem incrementing symbol count, bailing out\n");
--				goto done;
-+		"problem incrementing symbol count, skipping event\n");
-+				goto broken_event;
- 			}
- 		}
- 		total++;
-@@ -1169,8 +1169,8 @@ more:
- 				event->mmap.filename);
- 		}
- 		if (thread == NULL || map == NULL) {
--			fprintf(stderr, "problem processing PERF_EVENT_MMAP, bailing out\n");
--			goto done;
-+			fprintf(stderr, "problem processing PERF_EVENT_MMAP, skipping event.\n");
-+			goto broken_event;
- 		}
- 		thread__insert_map(thread, map);
- 		total_mmap++;
-@@ -1187,8 +1187,8 @@ more:
- 		}
- 		if (thread == NULL ||
- 		    thread__set_comm(thread, event->comm.comm)) {
--			fprintf(stderr, "problem processing PERF_EVENT_COMM, bailing out\n");
--			goto done;
-+			fprintf(stderr, "problem processing PERF_EVENT_COMM, skipping event.\n");
-+			goto broken_event;
- 		}
- 		total_comm++;
- 		break;
-@@ -1221,7 +1221,6 @@ broken_event:
- 		goto more;
- 
- 	rc = EXIT_SUCCESS;
--done:
- 	close(input);
- 
- 	if (dump_trace) {
