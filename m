@@ -1,59 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761762AbZE0TTu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756008AbZE0TZH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761762AbZE0TTu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 15:19:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760636AbZE0TTn
+	id S1756008AbZE0TZH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 15:25:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753691AbZE0TY4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 15:19:43 -0400
-Received: from vms173005pub.verizon.net ([206.46.173.5]:29068 "EHLO
-	vms173005pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758822AbZE0TTm (ORCPT
+	Wed, 27 May 2009 15:24:56 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:44589 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751548AbZE0TYz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 15:19:42 -0400
-Date: Wed, 27 May 2009 14:26:37 -0400 (EDT)
-From: Len Brown <lenb@kernel.org>
-X-X-Sender: lenb@localhost.localdomain
-To: Nigel Cunningham <nigel@tuxonice.net>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@lists.linux-foundation.org,
-       tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org
-Subject: Re: [linux-pm] [TuxOnIce-devel] [RFC] TuxOnIce
-In-reply-to: <1243382551.13930.109.camel@nigel-laptop>
-Message-id: <alpine.LFD.2.00.0905271411570.4277@localhost.localdomain>
-References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
- <200905260039.43626.rjw@sisk.pl> <1243298374.16743.161.camel@nigel-laptop>
- <200905270027.41898.rjw@sisk.pl> <1243382551.13930.109.camel@nigel-laptop>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 27 May 2009 15:24:55 -0400
+Date: Wed, 27 May 2009 20:21:16 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Jon Smirl <jonsmirl@gmail.com>
+Cc: Scott Wood <scottwood@freescale.com>, Peter Korsgaard <jacmet@sunsite.dk>,
+       Robert Schwebel <r.schwebel@pengutronix.de>,
+       devicetree-discuss <devicetree-discuss@ozlabs.org>,
+       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       Janboe Ye <yuan-bo.ye@motorola.com>, Timur Tabi <timur@freescale.com>
+Subject: Re: [RFC] [PATCH] Device Tree on ARM platform
+Message-ID: <20090527192116.GA31110@n2100.arm.linux.org.uk>
+References: <1243408083.13460.14.camel@debian-nb> <fa686aa40905270727m31250984tf12249fc87179ce9@mail.gmail.com> <ed82fe3e0905270739k38018c87ka11f62c5977e45fb@mail.gmail.com> <20090527150527.GK6805@pengutronix.de> <87vdnm8sec.fsf@macbook.be.48ers.dk> <4A1D6901.2090508@freescale.com> <20090527175609.GB31861@flint.arm.linux.org.uk> <4A1D8FBA.6040802@freescale.com> <9e4733910905271213k7f4b93e7i7e6f2af24d85f@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <9e4733910905271213k7f4b93e7i7e6f2af24d85f@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > The possibilities I see are:
-> > > 
-> > > 1) Assume we can't know exactly how much but can allow a ball-park
-> > > figure (current method)
-> > > 2) Implement a means by which components that might allocate memory can
-> > > tell us how much they might allocate (currently used internally by
-> > > tuxonice - part of the modular design). I'd love to see this for the
-> > > drivers' suspend code.
-> > 
-> > The drivers' suspend code is too late, we need to know that before the drivers'
-> > suspend callbacks are run.
+On Wed, May 27, 2009 at 03:13:55PM -0400, Jon Smirl wrote:
+> On Wed, May 27, 2009 at 3:08 PM, Scott Wood <scottwood@freescale.com> wrote:
+> > I'm not talking about platform specific code, I'm talking about code to
+> > retrieve information about a device from the device tree.  There would not
+> > be separate instances of this for "platforms X, Y and Z", just one
+> > of_platform binding in each driver.  It's no different than having a
+> > platform bus binding, except in the data structures used.
+> >
+> > But to restate, having external glue to create platform devices from the
+> > device tree is fine if that's what you want to do.  We used to do that, but
+> > it was a pain compared to keeping everything in one place.  Your experience
+> > may differ.
 > 
-> Yeah, sorry for not being clear enough. I meant I'd like to see a new
-> function in the API that lets us enquire early on as to how much memory
-> will be needed. That said, I like the idea of just asking them to
-> allocate memory earlier better.
+> Could 'struct platform_device' and 'struct of_platform_device" be
+> unified into a single structure? It's personal preference whether the
+> internal representation of the hardware is done via a device tree or
+> snippets of platform code, but do we need to have to different device
+> types?
 
-The more we require of driver writers, the more likely it is that
-they'll get it wrong and we will fail.
+That's a damned good question - platform devices have been around since
+the dawn of the device model, so the real question which needs to be
+asked is: what was the reason that of_platform_device created rather
+than unifying it with the already provided platform_device ?
 
-I believe it must remain a fundamental design goal that
-the correctness burden on driver writers be as small as possible.
-
-Of couse if optional hooks are availalble for an unusual driver that has
-special requirements, that is fine, as long as unusual really is unusual.
-
-thanks,
-Len Brown, Intel Open Source Technology Center
+BTW, I can find no such struct "of_platform_device" in include/linux.
+Is it specific to each and every OF implementation?
