@@ -1,74 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760964AbZE0VjW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761110AbZE0Vjh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760964AbZE0VjW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 17:39:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756730AbZE0VjE
+	id S1761110AbZE0Vjh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 17:39:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760682AbZE0VjI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 17:39:04 -0400
-Received: from zelda.netsplit.com ([87.194.19.211]:36634 "EHLO
-	zelda.netsplit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755428AbZE0VjC (ORCPT
+	Wed, 27 May 2009 17:39:08 -0400
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:34754 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759200AbZE0VjG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 17:39:02 -0400
-Subject: Re: [PATCH] kbuild: generate modules.builtin
-From: Scott James Remnant <scott@ubuntu.com>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Michal Marek <mmarek@suse.cz>, Sam Ravnborg <sam@ravnborg.org>,
-       linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <ac3eb2510905271426m7ef228aq2c86940ee8a727bb@mail.gmail.com>
-References: <20090526152540.GA28341@sepie.suse.cz>
-	 <ac3eb2510905271426m7ef228aq2c86940ee8a727bb@mail.gmail.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-B2W1YLK0KHOXM7snRpRs"
-Date: Wed, 27 May 2009 23:38:49 +0200
-Message-Id: <1243460329.7913.1.camel@wing-commander>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Wed, 27 May 2009 17:39:06 -0400
+Date: Wed, 27 May 2009 22:38:45 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Cc: Robert Schwebel <r.schwebel@pengutronix.de>,
+       Timur Tabi <timur@freescale.com>, Janboe Ye <yuan-bo.ye@motorola.com>,
+       devicetree-discuss <devicetree-discuss@ozlabs.org>,
+       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       rmk@arm.linux.org.uk
+Message-ID: <20090527213841.GB5591@sirena.org.uk>
+References: <1243408083.13460.14.camel@debian-nb> <fa686aa40905270727m31250984tf12249fc87179ce9@mail.gmail.com> <ed82fe3e0905270739k38018c87ka11f62c5977e45fb@mail.gmail.com> <20090527150527.GK6805@pengutronix.de> <20090527163223.GE1970@sirena.org.uk> <fa686aa40905271342v5bc51665tb9b5d92950a43b82@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <fa686aa40905271342v5bc51665tb9b5d92950a43b82@mail.gmail.com>
+X-Cookie: You now have Asian Flu.
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 82.41.28.43
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+Subject: Re: [RFC] [PATCH] Device Tree on ARM platform
+X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
+X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, May 27, 2009 at 02:42:13PM -0600, Grant Likely wrote:
+> On Wed, May 27, 2009 at 10:32 AM, Mark Brown
 
---=-B2W1YLK0KHOXM7snRpRs
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> > The handling of platform data is my main concern as someone working
+> > primarily on platform independant drivers - function pointers are a
+> > particular problem but the possibility of having to write code to
+> > handle both OF and non-OF systems to cater for systems using both
+> > approaches is also a concern for me.
 
-On Wed, 2009-05-27 at 23:26 +0200, Kay Sievers wrote:
+> Having a hook function which generates a pdata structure from a device
+> node on a per driver basis is a common approach.  Essentially, the
+> hook becomes an addon to the driver which doesn't impact the driver as
+> a whole.  i2c and SPI device tend to take this approach.
 
-> On Tue, May 26, 2009 at 17:25, Michal Marek <mmarek@suse.cz> wrote:
-> > To make it easier for tools like mkinitrd to detect whether a needed
-> > module is missing or whether it is compiled into the kernel, install a
-> > modules.builtin file listing all modules built into the kernel. This is
-> > done by generating an alternate config file with all tristate =3Dy opti=
-ons
-> > set to =3DY and reading the makefiles with this config included. The bu=
-ilt
-> > in modules then appear in obj-Y.
->=20
-> That looks very useful.
->=20
-> We like to have that for modprobe not to throw an error if a "module"
-> is already in the kernel, because it is compiled in. Only modules with
-> parameters show up in /sys/modules/ and they are already handled fine.
->=20
-Agree, this helps us support both distro kernels with some built-ins and
-modular kernels.
+Yes, this is what I mean about doing it twice - you have to have the
+regular platform data structure plus another function to map the
+OpenFirmware data into it.  The fact that quite a few of the devices I
+deal with want function pointers as platform data doesn't help here.
 
-Scott
---=20
-Scott James Remnant
-scott@ubuntu.com
+> > This worries me too, my experiences with OF device tree handling for
+> > ASoC have been pretty negative - but then audio is one of the worst
+> > cases for handling within the device tree.
 
---=-B2W1YLK0KHOXM7snRpRs
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+> First steps are hard.  I2C and SPI work had similar groans and pains,
+> and ASoC is considerably more complex.  In the end the stuff in
+> drivers/of/* was added to handle the creation of i2c, spi and phy
+> devices from data in the device tree.  It is a mechanism which seems
+> to be working well.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Instantiating the devices is a solved problem - with the current code
+you can load the drivers for all the various parts of the audio
+subsystem via the standard device model with everything appearing on
+whatever bus it normally should.  The only exception to that is AC97
+(because it's a bit special and needs some general TLC).  Some more work
+is needed on the core to fully take advantage of what this bought us but
+as far as loading and initialising device drivers goes you should be
+there already.
 
-iEYEABECAAYFAkodsukACgkQSnQiFMl4yK5loACfZRmDZ8lTtxSAZLL7iBxLEfGH
-/hwAn1g6bkuv2+enlMkdRb938kY6env3
-=hbwn
------END PGP SIGNATURE-----
-
---=-B2W1YLK0KHOXM7snRpRs--
-
+What's a really crippling problem for what people seem to want to do
+with the device tree right now is expressing the clocking trees and
+requirements for a non-trivial audio subsystem.  The current clock API
+is quite a way off being able to cope with this at runtime and without
+that the benefits of trying to put the data into device trees are
+questionable - a plaform independant representation of this data most
+likely needs us to be able to automatically configure the clock tree
+based on a description of the interconnects and their constraints.
