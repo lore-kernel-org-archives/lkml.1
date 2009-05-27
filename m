@@ -1,150 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933355AbZE0SRq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933229AbZE0STI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933355AbZE0SRq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 14:17:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933206AbZE0SQx
+	id S933229AbZE0STI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 14:19:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761582AbZE0SS4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 14:16:53 -0400
-Received: from jalapeno.cc.columbia.edu ([128.59.29.5]:61215 "EHLO
-	jalapeno.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933240AbZE0SQv (ORCPT
+	Wed, 27 May 2009 14:18:56 -0400
+Received: from smtp3.ultrahosting.com ([74.213.175.254]:47122 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1761538AbZE0SSz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 14:16:51 -0400
-From: Oren Laadan <orenl@cs.columbia.edu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       linux-api@vger.kernel.org, Serge Hallyn <serue@us.ibm.com>,
-       Dave Hansen <dave@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Alexander Viro <viro@zeniv.linux.org.uk>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Oren Laadan <orenl@cs.columbia.edu>
-Subject: [RFC v16][PATCH 08/43] c/r: introduce '->checkpoint()' method in 'struct file_operations'
-Date: Wed, 27 May 2009 13:32:34 -0400
-Message-Id: <1243445589-32388-9-git-send-email-orenl@cs.columbia.edu>
-X-Mailer: git-send-email 1.6.0.1
-In-Reply-To: <1243445589-32388-1-git-send-email-orenl@cs.columbia.edu>
-References: <1243445589-32388-1-git-send-email-orenl@cs.columbia.edu>
-X-No-Spam-Score: Local
+	Wed, 27 May 2009 14:18:55 -0400
+X-Amavis-Alert: BAD HEADER, Header field occurs more than once: "Cc" occurs 4
+	times
+Message-Id: <20090527180716.456986138@gentwo.org>
+References: <20090527180635.008102701@gentwo.org>
+User-Agent: quilt/0.46-1
+Date: Wed, 27 May 2009 13:47:02 -0400
+From: cl@linux-foundation.org
+To: linux-kernel@vger.kernel.org
+Cc: Tejun Heo <tj@kernel.org>, Christoph Hellwig <hch@lst.de>,
+       Olaf Weber <olaf@sgi.com>
+Cc: mingo@elte.hu
+Cc: rusty@rustcorp.com.au
+Cc: davem@davemloft.net
+Subject: [my_cpu_ptr 4/5] sda_icsb_modify_counters() does not need a "cpu" variable
+Content-Disposition: inline; filename=my_cpu_ptr_xfs
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-While we assume all normal files and directories can be checkpointed,
-there are, as usual in the VFS, specialized places that will always
-need an ability to override these defaults. Although we could do this
-completely in the checkpoint code, that would bitrot quickly.
+The xfs_icsb_modify_counters() function no longer needs the cpu variable
+if we use my_cpu_ptr() and we can get rid of get/put_cpu().
 
-This adds a new 'file_operations' function for checkpointing a file.
-It is assumed that there should be a dirt-simple way to make something
-(un)checkpointable that fits in with current code.
+Cc: Christoph Hellwig <hch@lst.de>
+Cc: Olaf Weber <olaf@sgi.com>
+Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
 
-As you can see in the ext[234] patches down the road, all that we have
-to do to make something simple be supported is add a single "generic"
-f_op entry.
-
-Also introduce vfs_fcntl() so that it can be called from restart (see
-patch adding restart of files).
-
-Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
 ---
- fs/fcntl.c                       |   21 +++++++++++++--------
- include/linux/checkpoint_types.h |    2 ++
- include/linux/fs.h               |    6 ++++++
- 3 files changed, 21 insertions(+), 8 deletions(-)
+ fs/xfs/xfs_mount.c |   12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/fs/fcntl.c b/fs/fcntl.c
-index 1ad7031..17020a9 100644
---- a/fs/fcntl.c
-+++ b/fs/fcntl.c
-@@ -337,6 +337,18 @@ static long do_fcntl(int fd, unsigned int cmd, unsigned long arg,
- 	return err;
- }
+Index: linux-2.6/fs/xfs/xfs_mount.c
+===================================================================
+--- linux-2.6.orig/fs/xfs/xfs_mount.c	2009-05-27 11:54:37.000000000 -0500
++++ linux-2.6/fs/xfs/xfs_mount.c	2009-05-27 11:55:10.000000000 -0500
+@@ -2320,12 +2320,12 @@ xfs_icsb_modify_counters(
+ {
+ 	xfs_icsb_cnts_t	*icsbp;
+ 	long long	lcounter;	/* long counter for 64 bit fields */
+-	int		cpu, ret = 0;
++	int		ret = 0;
  
-+int vfs_fcntl(int fd, unsigned int cmd, unsigned long arg, struct file *filp)
-+{
-+	int err;
-+
-+	err = security_file_fcntl(filp, cmd, arg);
-+	if (err)
-+		goto out;
-+	err = do_fcntl(fd, cmd, arg, filp);
-+ out:
-+	return err;
-+}
-+
- SYSCALL_DEFINE3(fcntl, unsigned int, fd, unsigned int, cmd, unsigned long, arg)
- {	
- 	struct file *filp;
-@@ -346,14 +358,7 @@ SYSCALL_DEFINE3(fcntl, unsigned int, fd, unsigned int, cmd, unsigned long, arg)
- 	if (!filp)
- 		goto out;
+ 	might_sleep();
+ again:
+-	cpu = get_cpu();
+-	icsbp = (xfs_icsb_cnts_t *)per_cpu_ptr(mp->m_sb_cnts, cpu);
++	preempt_disable();
++	icsbp = (xfs_icsb_cnts_t *)my_cpu_ptr(mp->m_sb_cnts);
  
--	err = security_file_fcntl(filp, cmd, arg);
--	if (err) {
--		fput(filp);
--		return err;
--	}
--
--	err = do_fcntl(fd, cmd, arg, filp);
--
-+	err = vfs_fcntl(fd, cmd, arg, filp);
-  	fput(filp);
- out:
- 	return err;
-diff --git a/include/linux/checkpoint_types.h b/include/linux/checkpoint_types.h
-index c1032fa..9c14034 100644
---- a/include/linux/checkpoint_types.h
-+++ b/include/linux/checkpoint_types.h
-@@ -15,6 +15,8 @@
+ 	/*
+ 	 * if the counter is disabled, go to slow path
+@@ -2369,11 +2369,11 @@ again:
+ 		break;
+ 	}
+ 	xfs_icsb_unlock_cntr(icsbp);
+-	put_cpu();
++	preempt_enable();
+ 	return 0;
  
- #ifdef __KERNEL__
+ slow_path:
+-	put_cpu();
++	preempt_enable();
  
-+#include <linux/sched.h>
-+
- struct ckpt_ctx {
- 	int crid;		/* unique checkpoint id */
+ 	/*
+ 	 * serialise with a mutex so we don't burn lots of cpu on
+@@ -2421,7 +2421,7 @@ slow_path:
  
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index 9c4348a..60d9229 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -8,6 +8,7 @@
+ balance_counter:
+ 	xfs_icsb_unlock_cntr(icsbp);
+-	put_cpu();
++	preempt_enable();
  
- #include <linux/limits.h>
- #include <linux/ioctl.h>
-+#include <linux/checkpoint_types.h>
- 
- /*
-  * It's silly to have NR_OPEN bigger than NR_FILE, but you can change
-@@ -1082,6 +1083,8 @@ struct file_lock {
- 
- #include <linux/fcntl.h>
- 
-+extern int vfs_fcntl(int fd, unsigned cmd, unsigned long arg, struct file *fp);
-+
- extern void send_sigio(struct fown_struct *fown, int fd, int band);
- 
- /* fs/sync.c */
-@@ -1508,6 +1511,7 @@ struct file_operations {
- 	ssize_t (*splice_write)(struct pipe_inode_info *, struct file *, loff_t *, size_t, unsigned int);
- 	ssize_t (*splice_read)(struct file *, loff_t *, struct pipe_inode_info *, size_t, unsigned int);
- 	int (*setlease)(struct file *, long, struct file_lock **);
-+	int (*checkpoint)(struct ckpt_ctx *, struct file *);
- };
- 
- struct inode_operations {
-@@ -2306,6 +2310,8 @@ void inode_sub_bytes(struct inode *inode, loff_t bytes);
- loff_t inode_get_bytes(struct inode *inode);
- void inode_set_bytes(struct inode *inode, loff_t bytes);
- 
-+#define generic_file_checkpoint NULL
-+
- extern int vfs_readdir(struct file *, filldir_t, void *);
- 
- extern int vfs_stat(char __user *, struct kstat *);
+ 	/*
+ 	 * We may have multiple threads here if multiple per-cpu
+
 -- 
-1.6.0.4
-
