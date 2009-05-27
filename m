@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762190AbZE0HZt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762139AbZE0HZe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762190AbZE0HZt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 03:25:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762109AbZE0HY6
+	id S1762139AbZE0HZe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 03:25:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762030AbZE0HYu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 03:24:58 -0400
-Received: from claw.goop.org ([74.207.240.146]:33555 "EHLO claw.goop.org"
+	Wed, 27 May 2009 03:24:50 -0400
+Received: from claw.goop.org ([74.207.240.146]:33539 "EHLO claw.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762094AbZE0HY4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 03:24:56 -0400
+	id S1762047AbZE0HYt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 03:24:49 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: the arch/x86 maintainers <x86@kernel.org>,
@@ -22,9 +22,9 @@ Cc: the arch/x86 maintainers <x86@kernel.org>,
        Jesse Barnes <jbarnes@virtuousgeek.org>,
        Alex Nixon <alex.nixon@citrix.com>,
        Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 02/10] xen: Allow unprivileged Xen domains to create iomap pages
-Date: Wed, 27 May 2009 00:24:34 -0700
-Message-Id: <1243409082-21349-3-git-send-email-jeremy@goop.org>
+Subject: [PATCH 03/10] Xen: Rename the balloon lock
+Date: Wed, 27 May 2009 00:24:35 -0700
+Message-Id: <1243409082-21349-4-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
 In-Reply-To: <1243409082-21349-1-git-send-email-jeremy@goop.org>
 References: <1243409082-21349-1-git-send-email-jeremy@goop.org>
@@ -34,85 +34,118 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Alex Nixon <alex.nixon@citrix.com>
 
-PV DomU domains are allowed to map hardware MFNs for PCI passthrough,
-but are not generally allowed to map raw machine pages.  In particular,
-various pieces of code try to map DMI and ACPI tables in the ISA ROM
-range.  We disallow _PAGE_IOMAP for those mappings, so that they are
-redirected to a set of local zeroed pages we reserve for that purpose.
+* xen_create_contiguous_region needs access to the balloon lock to
+  ensure memory doesn't change under its feet, so expose the balloon
+  lock
+* Change the name of the lock to xen_reservation_lock, to imply it's
+  now less-specific usage.
 
-[ Impact: prevent passthrough of ISA space, as we only allow PCI ]
+[ Impact: cleanup ]
 
 Signed-off-by: Alex Nixon <alex.nixon@citrix.com>
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- arch/x86/xen/enlighten.c |    6 +++---
- arch/x86/xen/mmu.c       |   18 +++++++++++++++---
- 2 files changed, 18 insertions(+), 6 deletions(-)
+ arch/x86/xen/mmu.c             |    7 +++++++
+ drivers/xen/balloon.c          |   15 ++++-----------
+ include/xen/interface/memory.h |    8 ++++++++
+ 3 files changed, 19 insertions(+), 11 deletions(-)
 
-diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
-index 12e4d9c..adb4fe0 100644
---- a/arch/x86/xen/enlighten.c
-+++ b/arch/x86/xen/enlighten.c
-@@ -1051,11 +1051,11 @@ asmlinkage void __init xen_start_kernel(void)
- 
- 	/* Prevent unwanted bits from being set in PTEs. */
- 	__supported_pte_mask &= ~_PAGE_GLOBAL;
--	if (xen_initial_domain())
--		__supported_pte_mask |= _PAGE_IOMAP;
--	else
-+	if (!xen_initial_domain())
- 		__supported_pte_mask &= ~(_PAGE_PWT | _PAGE_PCD);
- 
-+	__supported_pte_mask |= _PAGE_IOMAP;
-+
- #ifdef CONFIG_X86_64
- 	/* Work out if we support NX */
- 	check_efer();
 diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
-index 331e52d..370e1b8 100644
+index 370e1b8..9cee943 100644
 --- a/arch/x86/xen/mmu.c
 +++ b/arch/x86/xen/mmu.c
-@@ -49,6 +49,7 @@
- #include <asm/mmu_context.h>
- #include <asm/setup.h>
- #include <asm/paravirt.h>
-+#include <asm/e820.h>
- #include <asm/linkage.h>
+@@ -67,6 +67,13 @@
  
- #include <asm/xen/hypercall.h>
-@@ -378,7 +379,7 @@ static bool xen_page_pinned(void *ptr)
+ #define MMU_UPDATE_HISTO	30
  
- static bool xen_iomap_pte(pte_t pte)
- {
--	return xen_initial_domain() && (pte_flags(pte) & _PAGE_IOMAP);
-+	return pte_flags(pte) & _PAGE_IOMAP;
- }
- 
- static void xen_set_iomap_pte(pte_t *ptep, pte_t pteval)
-@@ -580,10 +581,21 @@ PV_CALLEE_SAVE_REGS_THUNK(xen_pgd_val);
- 
- pte_t xen_make_pte(pteval_t pte)
- {
--	if (unlikely(xen_initial_domain() && (pte & _PAGE_IOMAP)))
-+	phys_addr_t addr = (pte & PTE_PFN_MASK);
++/*
++ * Protects atomic reservation decrease/increase against concurrent increases.
++ * Also protects non-atomic updates of current_pages and driver_pages, and
++ * balloon lists.
++ */
++DEFINE_SPINLOCK(xen_reservation_lock);
 +
-+	/*
-+	 * Unprivileged domains are allowed to do IOMAPpings for
-+	 * PCI passthrough, but not map ISA space.  The ISA
-+	 * mappings are just dummy local mappings to keep other
-+	 * parts of the kernel happy.
-+	 */
-+	if (unlikely(pte & _PAGE_IOMAP) &&
-+	    (xen_initial_domain() || addr >= ISA_END_ADDRESS)) {
- 		pte = iomap_pte(pte);
--	else
-+	} else {
-+		pte &= ~_PAGE_IOMAP;
- 		pte = pte_pfn_to_mfn(pte);
-+	}
+ #ifdef CONFIG_XEN_DEBUG_FS
  
- 	return native_make_pte(pte);
+ static struct {
+diff --git a/drivers/xen/balloon.c b/drivers/xen/balloon.c
+index f5bbd9e..46a8b39 100644
+--- a/drivers/xen/balloon.c
++++ b/drivers/xen/balloon.c
+@@ -84,13 +84,6 @@ static struct sys_device balloon_sysdev;
+ 
+ static int register_balloon(struct sys_device *sysdev);
+ 
+-/*
+- * Protects atomic reservation decrease/increase against concurrent increases.
+- * Also protects non-atomic updates of current_pages and driver_pages, and
+- * balloon lists.
+- */
+-static DEFINE_SPINLOCK(balloon_lock);
+-
+ static struct balloon_stats balloon_stats;
+ 
+ /* We increase/decrease in batches which fit in a page */
+@@ -209,7 +202,7 @@ static int increase_reservation(unsigned long nr_pages)
+ 	if (nr_pages > ARRAY_SIZE(frame_list))
+ 		nr_pages = ARRAY_SIZE(frame_list);
+ 
+-	spin_lock_irqsave(&balloon_lock, flags);
++	spin_lock_irqsave(&xen_reservation_lock, flags);
+ 
+ 	page = balloon_first_page();
+ 	for (i = 0; i < nr_pages; i++) {
+@@ -267,7 +260,7 @@ static int increase_reservation(unsigned long nr_pages)
+ 	totalram_pages = balloon_stats.current_pages;
+ 
+  out:
+-	spin_unlock_irqrestore(&balloon_lock, flags);
++	spin_unlock_irqrestore(&xen_reservation_lock, flags);
+ 
+ 	return 0;
  }
+@@ -312,7 +305,7 @@ static int decrease_reservation(unsigned long nr_pages)
+ 	kmap_flush_unused();
+ 	flush_tlb_all();
+ 
+-	spin_lock_irqsave(&balloon_lock, flags);
++	spin_lock_irqsave(&xen_reservation_lock, flags);
+ 
+ 	/* No more mappings: invalidate P2M and add to balloon. */
+ 	for (i = 0; i < nr_pages; i++) {
+@@ -329,7 +322,7 @@ static int decrease_reservation(unsigned long nr_pages)
+ 	balloon_stats.current_pages -= nr_pages;
+ 	totalram_pages = balloon_stats.current_pages;
+ 
+-	spin_unlock_irqrestore(&balloon_lock, flags);
++	spin_unlock_irqrestore(&xen_reservation_lock, flags);
+ 
+ 	return need_sleep;
+ }
+diff --git a/include/xen/interface/memory.h b/include/xen/interface/memory.h
+index f548f7c..9ddf473 100644
+--- a/include/xen/interface/memory.h
++++ b/include/xen/interface/memory.h
+@@ -9,6 +9,8 @@
+ #ifndef __XEN_PUBLIC_MEMORY_H__
+ #define __XEN_PUBLIC_MEMORY_H__
+ 
++#include <linux/spinlock.h>
++
+ /*
+  * Increase or decrease the specified domain's memory reservation. Returns a
+  * -ve errcode on failure, or the # extents successfully allocated or freed.
+@@ -184,4 +186,10 @@ DEFINE_GUEST_HANDLE_STRUCT(xen_memory_map);
+  */
+ #define XENMEM_machine_memory_map   10
+ 
++/*
++ * Prevent the balloon driver from changing the memory reservation
++ * during a driver critical region.
++ */
++extern spinlock_t xen_reservation_lock;
++
+ #endif /* __XEN_PUBLIC_MEMORY_H__ */
 -- 
 1.6.0.6
 
