@@ -1,93 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759163AbZE0BuE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758842AbZE0Btu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759163AbZE0BuE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 21:50:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758564AbZE0Btn
+	id S1758842AbZE0Btu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 21:49:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758229AbZE0Btl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 21:49:43 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:43084 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757652AbZE0Btk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 May 2009 21:49:41 -0400
+Received: from mail.windriver.com ([147.11.1.11]:58660 "EHLO mail.wrs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757460AbZE0Btk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 26 May 2009 21:49:40 -0400
-Date: Tue, 26 May 2009 21:49:40 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Li Zefan <lizf@cn.fujitsu.com>
-cc: Ingo Molnar <mingo@elte.hu>, Jens Axboe <jens.axboe@oracle.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Tom Zanussi <tzanussi@gmail.com>, "Theodore Ts'o" <tytso@mit.edu>,
-       Steven Whitehouse <swhiteho@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Jeff Moyer <jmoyer@redhat.com>, Christoph Hellwig <hch@infradead.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v2 1/2] tracing/events: make __string() more general
-In-Reply-To: <4A1C9645.7010107@cn.fujitsu.com>
-Message-ID: <alpine.DEB.2.00.0905262147470.27902@gandalf.stny.rr.com>
-References: <4A1B6A2F.2040703@cn.fujitsu.com> <4A1B6A4C.3070407@cn.fujitsu.com> <alpine.DEB.2.00.0905261655120.26705@gandalf.stny.rr.com> <4A1C9645.7010107@cn.fujitsu.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: Xiaotian Feng <Xiaotian.Feng@windriver.com>
+To: galak@kernel.crashing.org, davem@davemloft.net, netdev@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH net] gianfar: fix babbling rx error event bug
+Date: Wed, 27 May 2009 09:52:36 +0800
+Message-Id: <1243389156-1668-1-git-send-email-Xiaotian.Feng@windriver.com>
+X-Mailer: git-send-email 1.5.5.1
+X-OriginalArrivalTime: 27 May 2009 01:49:30.0677 (UTC) FILETIME=[60647E50:01C9DE6D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Gianfar interrupt handler uses IEVENT_ERR_MASK to check and handle errors.
+Babbling RX error (IEVENT_BABR) should be included in IEVENT_ERROR_MASK.
+Otherwise if BABR is raised, it never gets handled nor cleared, and an
+interrupt storm results. This has been observed to happen on sending a
+burst of ethernet frames to a gianfar based board.
 
-On Wed, 27 May 2009, Li Zefan wrote:
+Signed-off-by: Xiaotian Feng <xiaotian.feng@windriver.com>
+---
+ drivers/net/gianfar.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-> Steven Rostedt wrote:
-> > 
-> > On Tue, 26 May 2009, Li Zefan wrote:
-> > 
-> >> This changes __string(..., src) to __string(..., len), thus makes it more
-> >> general, and then block TRACE_EVENT() can use it.
-> >>
-> >> Also introduce __fetch_str(), which is used in TP_assign() and returns
-> >> the address of the string, while __get_str() is used in TP_print().
-> >>
-> >> [ Impact: TRACE_EVENT api change ]
-> > 
-> > What's the reason for the change?
-> > 
-> > Is it to handle NULL pointers? If so, lets change the ftrace.h to handle
-> > it instead.
-> > 
-> 
-> No, not for this purpose.
-> 
-> With __string(..., src), we need to have a source string, but sometimes no
-> source string is available, and what we know is how big the string will be.
-> 
-> Take block trace events for example, I want to convert an unsigned char array
-> into a string, after this patch, this can be done this way:
-> 
-> TP_STRUCT_entry(
-> 	__string( cmd, rq->cmd_len * 3 )
-> )
-> 
-> TP_fast_assign(
-> 	construct_str( cmd )
-
-What does the construct_str do?
-
-
-> )
-> 
-> TP_prink("%s\n", get_str(cmd))
-> 
-> Seems Christoph also runs into this problem while doing his XFS tracing.
-> (and NULL str ptr that I'm not suffering)
-> 
-> > This is why I like the Impact line really be a "rational" line.
-> >  "TRACE_EVENT api change" is meaningless to me.
-> > 
-> 
-> So what should this impact be. :(
-
-That's the point. I don't know the purpose of the patch except that it 
-changes the API. But changing the API is the means to the end. I'm still 
-confused by what the end is.
-
--- Steve
+diff --git a/drivers/net/gianfar.h b/drivers/net/gianfar.h
+index 0642d52..cf35296 100644
+--- a/drivers/net/gianfar.h
++++ b/drivers/net/gianfar.h
+@@ -259,7 +259,7 @@ extern const char gfar_driver_version[];
+ (IEVENT_RXC | IEVENT_BSY | IEVENT_EBERR | IEVENT_MSRO | \
+  IEVENT_BABT | IEVENT_TXC | IEVENT_TXE | IEVENT_LC \
+  | IEVENT_CRL | IEVENT_XFUN | IEVENT_DPE | IEVENT_PERR \
+- | IEVENT_MAG)
++ | IEVENT_MAG | IEVENT_BABR)
+ 
+ #define IMASK_INIT_CLEAR	0x00000000
+ #define IMASK_BABR              0x80000000
+-- 
+1.5.5.1
 
