@@ -1,139 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763361AbZE0NdS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763550AbZE0Ndc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763361AbZE0NdS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 09:33:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762184AbZE0NdI
+	id S1763550AbZE0Ndc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 09:33:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762683AbZE0NdU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 09:33:08 -0400
-Received: from hera.kernel.org ([140.211.167.34]:53732 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761381AbZE0NdH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 09:33:07 -0400
-Message-ID: <4A1D40FD.5050102@kernel.org>
-Date: Wed, 27 May 2009 22:32:45 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: Robert Hancock <hancockrwd@gmail.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       linux-pci@vger.kernel.org, Linux Kernel <linux-kernel@vger.kernel.org>,
-       towerlexa@gmx.de, Daniel Ritz <daniel.ritz@gmx.ch>,
-       Dominik Brodowski <linux@dominikbrodowski.net>,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-Subject: [RFC PATCH] pccard: configure CLS on attach
-References: <4A1BE904.8080302@kernel.org> <20090526142300.73d466d0@lxorguk.ukuu.org.uk> <4A1C7EF9.2030000@gmail.com> <4A1C8091.4050909@kernel.org> <4A1C86F5.1020603@jp.fujitsu.com>
-In-Reply-To: <4A1C86F5.1020603@jp.fujitsu.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 27 May 2009 13:32:48 +0000 (UTC)
+	Wed, 27 May 2009 09:33:20 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:39425 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763344AbZE0NdT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 09:33:19 -0400
+From: Mimi Zohar <zohar@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>, hooanon05@yahoo.co.jp,
+       "J. Bruce Fields" <bfields@fieldses.org>,
+       Hugh Dickins <hugh@veritas.com>, James Morris <jmorris@namei.org>,
+       David Safford <safford@watson.ibm.com>, linux-nfs@vger.kernel.org,
+       Mimi Zohar <zohar@us.ibm.com>
+Subject: [PATCH v2] integrity: nfsd imbalance bug fix
+Date: Wed, 27 May 2009 09:31:52 -0400
+Message-Id: <1243431112-7388-1-git-send-email-zohar@linux.vnet.ibm.com>
+X-Mailer: git-send-email 1.6.0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-For non hotplug PCI devices, the system firmware usually configures
-CLS correctly.  For pccard devices system firmware can't do it and
-linux PCI layer doesn't do it either leaving it unconfigured.
-Unfortunately this leads to poor performanc for certain devices
-(sata_sil).  Unless MWI, which requires separate configuration, is to
-be used, CLS doesn't affect correctness, so the configuration should
-be harmless.
+An nfsd exported file is opened/closed by the kernel causing the
+integrity imbalance message.
 
-Please note that some other PCI hotplug drivers (shpchp and pciehp)
-also configure CLS on hotplug.
+Before a file is opened, there normally is permission checking, which
+is done in inode_permission().  However, as integrity checking requires
+a dentry and mount point, which is not available in inode_permission(),
+the integrity (permission) checking must be called separately.
 
-THIS IS A RFC PATCH, SO NO SOB.  PLEASE DON'T APPLY YET.
+In order to detect any missing integrity checking calls, we keep track
+of file open/closes.  ima_path_check() increments these counts and
+does the integrity (permission) checking. As a result, the number of
+calls to ima_path_check()/ima_file_free() should be balanced.  An extra
+call to fput(), indicates the file could have been accessed without first
+calling ima_path_check().
 
-towerlexa, can you please test this patch?
+In nfsv3 permission checking is done once, followed by multiple reads,
+which do an open/close for each read.  The integrity (permission) checking
+call should be in nfsd_permission() after the inode_permission() call, but
+as there is no correlation between the number of permission checking and
+open calls, the integrity checking call should not increment the counters,
+but defer it to when the file is actually opened.
 
-Cc: Daniel Ritz <daniel.ritz@gmx.ch>
-Cc: Dominik Brodowski <linux@dominikbrodowski.net>
-Cc: Greg KH <greg@kroah.com>
-Cc: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-Cc: towerlexa@gmx.de
+This patch adds:
+- integrity (permission) checking for nfsd exported files in nfsd_permission().
+- a call to increment counts for files opened by nfsd.
+
+This patch has been updated to return the nfs error types.
+
+Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
 ---
- drivers/pci/pci.c        |    3 +--
- drivers/pcmcia/cardbus.c |   23 +++++++++++++++--------
- include/linux/pci.h      |    1 +
- 3 files changed, 17 insertions(+), 10 deletions(-)
+ fs/nfsd/vfs.c |   14 ++++++++++++++
+ 1 files changed, 14 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index 1a91bf9..eafbe01 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -1860,8 +1860,7 @@ u8 pci_cache_line_size = PCI_CACHE_LINE_BYTES / 4;
-  *
-  * RETURNS: An appropriate -ERRNO error value on error, or zero for success.
-  */
--static int
--pci_set_cacheline_size(struct pci_dev *dev)
-+int pci_set_cacheline_size(struct pci_dev *dev)
+diff --git a/fs/nfsd/vfs.c b/fs/nfsd/vfs.c
+index 6c68ffd..81ff0f4 100644
+--- a/fs/nfsd/vfs.c
++++ b/fs/nfsd/vfs.c
+@@ -55,6 +55,7 @@
+ #include <linux/security.h>
+ #endif /* CONFIG_NFSD_V4 */
+ #include <linux/jhash.h>
++#include <linux/ima.h>
+ 
+ #include <asm/uaccess.h>
+ 
+@@ -735,6 +736,8 @@ nfsd_open(struct svc_rqst *rqstp, struct svc_fh *fhp, int type,
+ 			    flags, cred);
+ 	if (IS_ERR(*filp))
+ 		host_err = PTR_ERR(*filp);
++	else
++		ima_counts_get(*filp);
+ out_nfserr:
+ 	err = nfserrno(host_err);
+ out:
+@@ -2024,6 +2027,7 @@ nfsd_permission(struct svc_rqst *rqstp, struct svc_export *exp,
+ 					struct dentry *dentry, int acc)
  {
- 	u8 cacheline_size;
+ 	struct inode	*inode = dentry->d_inode;
++	struct path	path;
+ 	int		err;
  
-diff --git a/drivers/pcmcia/cardbus.c b/drivers/pcmcia/cardbus.c
-index db77e1f..98789c0 100644
---- a/drivers/pcmcia/cardbus.c
-+++ b/drivers/pcmcia/cardbus.c
-@@ -184,26 +184,33 @@ fail:
-     
- =====================================================================*/
+ 	if (acc == NFSD_MAY_NOP)
+@@ -2096,7 +2100,17 @@ nfsd_permission(struct svc_rqst *rqstp, struct svc_export *exp,
+ 	if (err == -EACCES && S_ISREG(inode->i_mode) &&
+ 	    acc == (NFSD_MAY_READ | NFSD_MAY_OWNER_OVERRIDE))
+ 		err = inode_permission(inode, MAY_EXEC);
++	if (err)
++		goto nfsd_out;
  
--/*
-- * Since there is only one interrupt available to CardBus
-- * devices, all devices downstream of this device must
-- * be using this IRQ.
-- */
--static void cardbus_assign_irqs(struct pci_bus *bus, int irq)
-+static void cardbus_config_irq_and_cls(struct pci_bus *bus, int irq)
- {
- 	struct pci_dev *dev;
- 
- 	list_for_each_entry(dev, &bus->devices, bus_list) {
- 		u8 irq_pin;
- 
-+		/*
-+		 * Since there is only one interrupt available to
-+		 * CardBus devices, all devices downstream of this
-+		 * device must be using this IRQ.
-+		 */
- 		pci_read_config_byte(dev, PCI_INTERRUPT_PIN, &irq_pin);
- 		if (irq_pin) {
- 			dev->irq = irq;
- 			pci_write_config_byte(dev, PCI_INTERRUPT_LINE, dev->irq);
- 		}
- 
-+		/*
-+		 * Some controllers transfer very slowly with 0 CLS.
-+		 * Configure it.  This may fail as CLS configuration
-+		 * is mandatory only for MWI.
-+		 */
-+		pci_set_cacheline_size(dev);
-+
- 		if (dev->subordinate)
--			cardbus_assign_irqs(dev->subordinate, irq);
-+			cardbus_config_irq_and_cls(dev->subordinate, irq);
- 	}
++	/* Do integrity (permission) checking now, but defer incrementing
++	 * IMA counts to the actual file open.
++	 */
++	path.mnt = exp->ex_path.mnt;
++	path.dentry = dentry;
++	err = ima_path_check(&path, acc & (MAY_READ | MAY_WRITE | MAY_EXEC),
++			     IMA_COUNT_LEAVE);
++nfsd_out:
+ 	return err? nfserrno(err) : 0;
  }
  
-@@ -228,7 +235,7 @@ int __ref cb_alloc(struct pcmcia_socket * s)
- 	 */
- 	pci_bus_size_bridges(bus);
- 	pci_bus_assign_resources(bus);
--	cardbus_assign_irqs(bus, s->pci_irq);
-+	cardbus_config_irq_and_cls(bus, s->pci_irq);
- 
- 	/* socket specific tune function */
- 	if (s->tune_bridge)
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 72698d8..e1a1aa6 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -688,6 +688,7 @@ void pci_disable_device(struct pci_dev *dev);
- void pci_set_master(struct pci_dev *dev);
- void pci_clear_master(struct pci_dev *dev);
- int pci_set_pcie_reset_state(struct pci_dev *dev, enum pcie_reset_state state);
-+int pci_set_cacheline_size(struct pci_dev *dev);
- #define HAVE_PCI_SET_MWI
- int __must_check pci_set_mwi(struct pci_dev *dev);
- int pci_try_set_mwi(struct pci_dev *dev);
+-- 
+1.6.0.6
+
