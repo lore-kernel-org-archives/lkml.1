@@ -1,100 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761169AbZE0UUb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932435AbZE0UVS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761169AbZE0UUb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 16:20:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758357AbZE0UUX
+	id S932435AbZE0UVS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 16:21:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758578AbZE0UU7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 16:20:23 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:37308 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754583AbZE0UUW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 16:20:22 -0400
-Subject: Re: [PATCH 1/2] Dynamic Tick: Prevent clocksource wrapping during
- idle
-From: john stultz <johnstul@us.ibm.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Jon Hunter <jon-hunter@ti.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <alpine.LFD.2.00.0905271731070.3397@localhost.localdomain>
-References: <4A1D52E3.3040204@ti.com>
-	 <alpine.LFD.2.00.0905271731070.3397@localhost.localdomain>
-Content-Type: text/plain
-Date: Wed, 27 May 2009 13:20:15 -0700
-Message-Id: <1243455615.7440.17.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Wed, 27 May 2009 16:20:59 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:38478 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1758357AbZE0UU5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 16:20:57 -0400
+Date: Wed, 27 May 2009 16:20:57 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: David <david@unsolicited.net>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>, <linux-media@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       <dbrownell@users.sourceforge.net>, <leonidv11@gmail.com>,
+       Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: USB/DVB - Old Technotrend TT-connect S-2400 regression tracked
+  down
+In-Reply-To: <4A1D89B3.2020400@unsolicited.net>
+Message-ID: <Pine.LNX.4.44L0.0905271619090.2653-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-05-27 at 18:01 +0200, Thomas Gleixner wrote:
-> On Wed, 27 May 2009, Jon Hunter wrote:
-> > + */
-> > +s64 timekeeping_max_deferment(void)
-> > +{
-> > +	s64 max_nsecs;
-> > +	u64 max_cycles;
-> > +
-> > +	/*
-> > +	 * Calculate the maximum number of cycles that we can pass to the
-> > +	 * cyc2ns function without overflowing a 64-bit signed result. The
-> > +	 * maximum number of cycles is equal to ULLONG_MAX/clock->mult which
-> > +	 * is equivalent to the below.
-> > +	 * max_cycles < (2^63)/clock->mult
-> > +	 * max_cycles < 2^(log2((2^63)/clock->mult))
-> > +	 * max_cycles < 2^(log2(2^63) - log2(clock->mult))
-> > +	 * max_cycles < 2^(63 - log2(clock->mult))
-> > +	 * max_cycles < 1 << (63 - log2(clock->mult))
-> > +	 * Please note that we add 1 to the result of the log2 to account for
-> > +	 * any rounding errors, ensure the above inequality is satisfied and
-> > +	 * no overflow will occur.
-> > +	 */
-> > +	max_cycles = 1ULL << (63 - (ilog2(clock->mult) + 1));
-> > +
-> > +	/*
-> > +	 * The actual maximum number of cycles we can defer the clocksource is
-> > +	 * determined by the minimum of max_cycles and clock->mask.
-> > +	 */
-> > +	max_cycles = min(max_cycles, clock->mask);
-> > +	max_nsecs = cyc2ns(clock, max_cycles);
+On Wed, 27 May 2009, David wrote:
+
+> Sorry for the delay, your patch reached me just after I turned in last
+> night.
 > 
->   Why do you want to recalculate the whole stuff over and over ?
+> It looks good to me. dmesg is how I'd expect, and I've attached the usb
+> trace which looks pretty similar to when the original patch was reverted.
 > 
->   That computation can be done when the clock source is initialized or
->   any fundamental change of the clock parameters happens.
+> I'll test some more with some other peripherals & check that they work ok.
 > 
->   Stick that value into the clocksource struct and just read it out.
+> Thanks a lot!
 
-Sigh. 
+I'm not done yet.  That patch seemed a bit unsafe, so I revised it.  
+This version is a lot more careful about modifying data structures 
+while they are still in use by the hardware.
 
-I was hoping to avoid hanging another bit of junk off of the clocksource
-struct. 
+If it works okay for you, I'll submit it.
 
-But I guess we could compute that value on registration and keep it
-around. Changes to mult could effect things, but should be well within
-the 6% safety net we give ourselves.
+Alan Stern
 
 
-> > +	/*
-> > +	 * To ensure that the clocksource does not wrap whilst we are idle,
-> > +	 * limit the time the clocksource can be deferred by 6.25%. Please
-> > +	 * note a margin of 6.25% is used because this can be computed with
-> > +	 * a shift, versus say 5% which would require division.
-> > +	 */
-> > +	max_nsecs = max_nsecs - (max_nsecs >> 4);
-> > +
-> > +	if (max_nsecs < 0)
-> > +		max_nsecs = 0;
-> 
->   How does "max_nsecs = max_nsecs - (max_nsecs >> 4)" ever become
->   negative ?
-
-Fair point. Now we've limited the overflow case, we shouldn't trip
-negative values. 
-
-thanks
--john
-
+Index: usb-2.6/drivers/usb/host/ehci-q.c
+===================================================================
+--- usb-2.6.orig/drivers/usb/host/ehci-q.c
++++ usb-2.6/drivers/usb/host/ehci-q.c
+@@ -93,22 +93,6 @@ qh_update (struct ehci_hcd *ehci, struct
+ 	qh->hw_qtd_next = QTD_NEXT(ehci, qtd->qtd_dma);
+ 	qh->hw_alt_next = EHCI_LIST_END(ehci);
+ 
+-	/* Except for control endpoints, we make hardware maintain data
+-	 * toggle (like OHCI) ... here (re)initialize the toggle in the QH,
+-	 * and set the pseudo-toggle in udev. Only usb_clear_halt() will
+-	 * ever clear it.
+-	 */
+-	if (!(qh->hw_info1 & cpu_to_hc32(ehci, 1 << 14))) {
+-		unsigned	is_out, epnum;
+-
+-		is_out = !(qtd->hw_token & cpu_to_hc32(ehci, 1 << 8));
+-		epnum = (hc32_to_cpup(ehci, &qh->hw_info1) >> 8) & 0x0f;
+-		if (unlikely (!usb_gettoggle (qh->dev, epnum, is_out))) {
+-			qh->hw_token &= ~cpu_to_hc32(ehci, QTD_TOGGLE);
+-			usb_settoggle (qh->dev, epnum, is_out, 1);
+-		}
+-	}
+-
+ 	/* HC must see latest qtd and qh data before we clear ACTIVE+HALT */
+ 	wmb ();
+ 	qh->hw_token &= cpu_to_hc32(ehci, QTD_TOGGLE | QTD_STS_PING);
+@@ -893,7 +877,6 @@ done:
+ 	qh->qh_state = QH_STATE_IDLE;
+ 	qh->hw_info1 = cpu_to_hc32(ehci, info1);
+ 	qh->hw_info2 = cpu_to_hc32(ehci, info2);
+-	usb_settoggle (urb->dev, usb_pipeendpoint (urb->pipe), !is_input, 1);
+ 	qh_refresh (ehci, qh);
+ 	return qh;
+ }
+@@ -928,7 +911,7 @@ static void qh_link_async (struct ehci_h
+ 		}
+ 	}
+ 
+-	/* clear halt and/or toggle; and maybe recover from silicon quirk */
++	/* clear halt and maybe recover from silicon quirk */
+ 	if (qh->qh_state == QH_STATE_IDLE)
+ 		qh_refresh (ehci, qh);
+ 
+Index: usb-2.6/drivers/usb/host/ehci-pci.c
+===================================================================
+--- usb-2.6.orig/drivers/usb/host/ehci-pci.c
++++ usb-2.6/drivers/usb/host/ehci-pci.c
+@@ -388,6 +388,7 @@ static const struct hc_driver ehci_pci_h
+ 	.urb_enqueue =		ehci_urb_enqueue,
+ 	.urb_dequeue =		ehci_urb_dequeue,
+ 	.endpoint_disable =	ehci_endpoint_disable,
++	.endpoint_reset =	ehci_endpoint_reset,
+ 
+ 	/*
+ 	 * scheduling support
+Index: usb-2.6/drivers/usb/host/ehci-hcd.c
+===================================================================
+--- usb-2.6.orig/drivers/usb/host/ehci-hcd.c
++++ usb-2.6/drivers/usb/host/ehci-hcd.c
+@@ -1026,6 +1026,51 @@ done:
+ 	return;
+ }
+ 
++static void
++ehci_endpoint_reset(struct usb_hcd *hcd, struct usb_host_endpoint *ep)
++{
++	struct ehci_hcd		*ehci = hcd_to_ehci(hcd);
++	struct ehci_qh		*qh;
++	int			eptype = usb_endpoint_type(&ep->desc);
++
++	if (eptype != USB_ENDPOINT_XFER_BULK && eptype != USB_ENDPOINT_XFER_INT)
++		return;
++
++ rescan:
++	spin_lock_irq(&ehci->lock);
++	qh = ep->hcpriv;
++
++	/* For Bulk and Interrupt endpoints we maintain the toggle state
++	 * in the hardware; the toggle bits in udev aren't used at all.
++	 * When an endpoint is reset by usb_clear_halt() we must reset
++	 * the toggle bit in the QH.
++	 */
++	if (qh) {
++		if (!list_empty(&qh->qtd_list)) {
++			WARN_ONCE(1, "clear_halt for a busy endpoint\n");
++		} else if (qh->qh_state == QH_STATE_IDLE) {
++			qh->hw_token &= ~cpu_to_hc32(ehci, QTD_TOGGLE);
++		} else {
++			/* It's not safe to write into the overlay area
++			 * while the QH is active.  Unlink it first and
++			 * wait for the unlink to complete.
++			 */
++			if (qh->qh_state == QH_STATE_LINKED) {
++				if (eptype == USB_ENDPOINT_XFER_BULK) {
++					unlink_async(ehci, qh);
++				} else {
++					intr_deschedule(ehci, qh);
++					(void) qh_schedule(ehci, qh);
++				}
++			}
++			spin_unlock_irq(&ehci->lock);
++			schedule_timeout_uninterruptible(1);
++			goto rescan;
++		}
++	}
++	spin_unlock_irq(&ehci->lock);
++}
++
+ static int ehci_get_frame (struct usb_hcd *hcd)
+ {
+ 	struct ehci_hcd		*ehci = hcd_to_ehci (hcd);
 
