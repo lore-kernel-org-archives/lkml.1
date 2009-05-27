@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761073AbZE0HSR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760989AbZE0HSn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761073AbZE0HSR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 03:18:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756543AbZE0HQs
+	id S1760989AbZE0HSn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 03:18:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757574AbZE0HQ7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 03:16:48 -0400
-Received: from claw.goop.org ([74.207.240.146]:41400 "EHLO claw.goop.org"
+	Wed, 27 May 2009 03:16:59 -0400
+Received: from claw.goop.org ([74.207.240.146]:41417 "EHLO claw.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757206AbZE0HQr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 03:16:47 -0400
+	id S1759432AbZE0HQ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 03:16:58 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: the arch/x86 maintainers <x86@kernel.org>,
@@ -20,9 +20,9 @@ Cc: the arch/x86 maintainers <x86@kernel.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Ian Campbell <ian.campbell@citrix.com>,
        Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 06/16] xen: disable PAT
-Date: Wed, 27 May 2009 00:15:28 -0700
-Message-Id: <1243408538-21100-7-git-send-email-jeremy@goop.org>
+Subject: [PATCH 08/16] xen/dom0: Use host E820 map
+Date: Wed, 27 May 2009 00:15:30 -0700
+Message-Id: <1243408538-21100-9-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
 In-Reply-To: <1243408538-21100-1-git-send-email-jeremy@goop.org>
 References: <1243408538-21100-1-git-send-email-jeremy@goop.org>
@@ -32,85 +32,130 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Ian Campbell <ian.campbell@citrix.com>
 
-Xen imposes a particular PAT layout on all paravirtual guests which
-does not match the layout Linux would like to use.
+Unlike the non-paravirt Xen port we do not have distinct psuedo-physical
+and I/O memory resource-spaces and therefore resources in the two
+can clash. Fix this by registering a memory map which matches the
+underlying I/O map. Currently this wastes the memory in the reserved
+regions. Eventually we should remap this memory to the end of the
+address space.
 
-Force PAT to be disabled until this is resolved.
-
-[ Impact: disable PAT under Xen, due to incompatible configurations ]
+[ Impact: synthesize virtual E820 using real one as template ]
 
 Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- arch/x86/include/asm/pat.h |    5 +++++
- arch/x86/mm/pat.c          |    7 +------
- arch/x86/xen/enlighten.c   |    3 +++
- 3 files changed, 9 insertions(+), 6 deletions(-)
+ arch/x86/xen/setup.c           |   45 +++++++++++++++++++++++++++++++++++++--
+ include/xen/interface/memory.h |   29 +++++++++++++++++++++++++
+ 2 files changed, 71 insertions(+), 3 deletions(-)
 
-diff --git a/arch/x86/include/asm/pat.h b/arch/x86/include/asm/pat.h
-index 7af14e5..fe7be93 100644
---- a/arch/x86/include/asm/pat.h
-+++ b/arch/x86/include/asm/pat.h
-@@ -6,8 +6,13 @@
+diff --git a/arch/x86/xen/setup.c b/arch/x86/xen/setup.c
+index dc55171..805ae53 100644
+--- a/arch/x86/xen/setup.c
++++ b/arch/x86/xen/setup.c
+@@ -19,6 +19,7 @@
  
- #ifdef CONFIG_X86_PAT
- extern int pat_enabled;
-+extern void pat_disable(const char *reason);
- #else
- static const int pat_enabled;
-+static inline void pat_disable(const char *reason)
-+{
-+	(void)reason;
-+}
- #endif
+ #include <xen/page.h>
+ #include <xen/interface/callback.h>
++#include <xen/interface/memory.h>
+ #include <xen/interface/physdev.h>
+ #include <xen/features.h>
  
- extern void pat_init(void);
-diff --git a/arch/x86/mm/pat.c b/arch/x86/mm/pat.c
-index e6718bb..5ba8d88 100644
---- a/arch/x86/mm/pat.c
-+++ b/arch/x86/mm/pat.c
-@@ -31,7 +31,7 @@
- #ifdef CONFIG_X86_PAT
- int __read_mostly pat_enabled = 1;
- 
--static inline void pat_disable(const char *reason)
-+void pat_disable(const char *reason)
+@@ -36,16 +37,54 @@ extern void xen_syscall32_target(void);
+ /**
+  * machine_specific_memory_setup - Hook for machine specific memory setup.
+  **/
+-
+ char * __init xen_memory_setup(void)
  {
- 	pat_enabled = 0;
- 	printk(KERN_INFO "%s\n", reason);
-@@ -43,11 +43,6 @@ static int __init nopat(char *str)
- 	return 0;
- }
- early_param("nopat", nopat);
--#else
--static inline void pat_disable(const char *reason)
--{
--	(void)reason;
--}
- #endif
+ 	unsigned long max_pfn = xen_start_info->nr_pages;
++	unsigned long long mem_end;
++	int rc;
++	struct xen_memory_map memmap;
++	/*
++	 * This is rather large for a stack variable but this early in
++	 * the boot process we know we have plenty slack space.
++	 */
++	struct e820entry map[E820MAX];
++	int op = xen_initial_domain() ?
++		XENMEM_machine_memory_map :
++		XENMEM_memory_map;
++	int i;
  
- 
-diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
-index 50580fc..89f47da 100644
---- a/arch/x86/xen/enlighten.c
-+++ b/arch/x86/xen/enlighten.c
-@@ -51,6 +51,7 @@
- #include <asm/pgtable.h>
- #include <asm/tlbflush.h>
- #include <asm/reboot.h>
-+#include <asm/pat.h>
- 
- #include "xen-ops.h"
- #include "mmu.h"
-@@ -1085,6 +1086,8 @@ asmlinkage void __init xen_start_kernel(void)
- 		add_preferred_console("hvc", 0, NULL);
- 	}
- 
-+	pat_disable("PAT disabled on Xen");
+ 	max_pfn = min(MAX_DOMAIN_PAGES, max_pfn);
++	mem_end = PFN_PHYS((u64)max_pfn);
 +
- 	xen_raw_console_write("about to get started...\n");
++	memmap.nr_entries = E820MAX;
++	set_xen_guest_handle(memmap.buffer, map);
++
++	rc = HYPERVISOR_memory_op(op, &memmap);
++	if (rc == -ENOSYS) {
++		memmap.nr_entries = 1;
++		map[0].addr = 0ULL;
++		map[0].size = mem_end;
++		/* 8MB slack (to balance backend allocations). */
++		map[0].size += 8ULL << 20;
++		map[0].type = E820_RAM;
++		rc = 0;
++	}
++	BUG_ON(rc);
  
- 	/* Start the world */
+ 	e820.nr_map = 0;
+-
+-	e820_add_region(0, PFN_PHYS((u64)max_pfn), E820_RAM);
++	for (i = 0; i < memmap.nr_entries; i++) {
++		unsigned long long end = map[i].addr + map[i].size;
++		if (map[i].type == E820_RAM) {
++			if (map[i].addr > mem_end)
++				continue;
++			if (end > mem_end) {
++				/* Truncate region to max_mem. */
++				map[i].size -= end - mem_end;
++			}
++		}
++		if (map[i].size > 0)
++			e820_add_region(map[i].addr, map[i].size, map[i].type);
++	}
+ 
+ 	/*
+ 	 * Even though this is normal, usable memory under Xen, reserve
+diff --git a/include/xen/interface/memory.h b/include/xen/interface/memory.h
+index af36ead..e6c6bcb 100644
+--- a/include/xen/interface/memory.h
++++ b/include/xen/interface/memory.h
+@@ -142,4 +142,33 @@ struct xen_translate_gpfn_list {
+ };
+ DEFINE_GUEST_HANDLE_STRUCT(xen_translate_gpfn_list);
+ 
++/*
++ * Returns the pseudo-physical memory map as it was when the domain
++ * was started (specified by XENMEM_set_memory_map).
++ * arg == addr of struct xen_memory_map.
++ */
++#define XENMEM_memory_map           9
++struct xen_memory_map {
++    /*
++     * On call the number of entries which can be stored in buffer. On
++     * return the number of entries which have been stored in
++     * buffer.
++     */
++    unsigned int nr_entries;
++
++    /*
++     * Entries in the buffer are in the same format as returned by the
++     * BIOS INT 0x15 EAX=0xE820 call.
++     */
++    GUEST_HANDLE(void) buffer;
++};
++DEFINE_GUEST_HANDLE_STRUCT(xen_memory_map);
++
++/*
++ * Returns the real physical memory map. Passes the same structure as
++ * XENMEM_memory_map.
++ * arg == addr of struct xen_memory_map.
++ */
++#define XENMEM_machine_memory_map   10
++
+ #endif /* __XEN_PUBLIC_MEMORY_H__ */
 -- 
 1.6.0.6
 
