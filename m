@@ -1,89 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758701AbZE0RGl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760091AbZE0RIc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758701AbZE0RGl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 13:06:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754550AbZE0RGd
+	id S1760091AbZE0RIc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 13:08:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756708AbZE0RIW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 13:06:33 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:59417 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750984AbZE0RGc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 13:06:32 -0400
-Date: Wed, 27 May 2009 13:06:48 -0400
-From: Josef Bacik <josef@redhat.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: Josef Bacik <josef@redhat.com>, Jan Kara <jack@suse.cz>,
-       LKML <linux-kernel@vger.kernel.org>, npiggin@suse.de,
-       linux-ext4@vger.kernel.org
-Subject: Re: [PATCH 03/11] vfs: Add better VFS support for page_mkwrite
-	when blocksize < pagesize
-Message-ID: <20090527170648.GF14035@dhcp231-156.rdu.redhat.com>
-References: <1243429268-3028-1-git-send-email-jack@suse.cz> <1243429268-3028-4-git-send-email-jack@suse.cz> <20090527160005.GA14035@dhcp231-156.rdu.redhat.com> <20090527164504.GC19989@skywalker>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090527164504.GC19989@skywalker>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Wed, 27 May 2009 13:08:22 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:48741 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756117AbZE0RIW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 13:08:22 -0400
+Subject: Re: [PATCH 25/20] sysfs: Only support removing emtpy sysfs 
+	directories.
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Hannes Reinecke <hare@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
+       SCSI development list <linux-scsi@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Tejun Heo <tj@kernel.org>, Cornelia Huck <cornelia.huck@de.ibm.com>,
+       linux-fsdevel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>
+In-Reply-To: <Pine.LNX.4.44L0.0905271255340.15613-100000@iolanthe.rowland.org>
+References: <Pine.LNX.4.44L0.0905271255340.15613-100000@iolanthe.rowland.org>
+Content-Type: text/plain
+Date: Wed, 27 May 2009 17:08:21 +0000
+Message-Id: <1243444101.6067.24.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 27, 2009 at 10:15:04PM +0530, Aneesh Kumar K.V wrote:
-> On Wed, May 27, 2009 at 12:00:06PM -0400, Josef Bacik wrote:
-> > On Wed, May 27, 2009 at 03:01:00PM +0200, Jan Kara wrote:
-> .....
-> ....
+On Wed, 2009-05-27 at 13:01 -0400, Alan Stern wrote:
+> On Wed, 27 May 2009, James Bottomley wrote:
 > 
-> > >  		if (offset > inode->i_sb->s_maxbytes)
-> > >  			goto out_big;
-> > > -		i_size_write(inode, offset);
-> > > +		do_extend_i_size(inode, offset, 0);
-> > >  	} else {
-> > >  		struct address_space *mapping = inode->i_mapping;
-> > >
+> > > I don't understand all the subtle issues here.  In other contexts, the 
+> > > solution would be to initialize a refcount to 1 when the target is 
+> > > allocated, increment it when a device is added, and decrement it when a 
+> > > device is removed or the host is removed.  When the refcount goes to 0, 
+> > > the target is deleted.  Why wouldn't this kind of approach work?
 > > 
-> > Sorry if I'm being a bit dense, I'm just kind of confused.  In the case you
-> > outlined, we only allocate one block, as we should, but then the truncate
-> > extends i_size so that when writepage() comes along, its valid to write the
-> > whole page out, except we didn't allocate blocks for the whole page sine
-> > blocksize < pagesize.
+> > Um, well that's exactly how it works (modulo the fact that there are
+> > parts of the lifecycle where the ref count is zero, like scanning).
 > 
-> We can't do block allocation in writepage because we can't handler
-> ENOSPC during writepage. So the patch attempt to make sure we do
-> all block allocation in the process context. For mmap we should
-> do it in page_mkwrite and for write in write_begin.
-> 
+> Why does that happen?  It's reasonable that there should be times 
+> during scanning when the target doesn't have any children, but the 
+> refcount should still be positive.
 
-Right, I get that part, its the next part that confused me.
+By refcount, I mean count of underlying devices.
 
-> > 
-> > But if we didn't extend i_size, writepage would only have written the block's
-> > worth of data correct?  If thats the case, why don't we just make it so that
-> > happens in this case as well? 
+> >  The
+> > problem you're complaining about is that the device ref on the target
+> > may take a long time to release, so we can't key the del event on the
+> > refcount going to zero, which is what we do today.
 > 
-> That is what is done in the patch i posted
-> http://article.gmane.org/gmane.comp.file-systems.ext4/13468
-> 
-> But that is not just enough. We also need to make sure we get a
-> page_fault when we try to write at another offset via mmap address so
-> that we can do block allocation via page_mkwrite. To do that all code
-> path that extend i_size should mark the page write protect.
-> 
+> Maybe we should be talking about two separate refcounts: a normal 
+> get_device/put_device kref counter for the target's lifetime, and a 
+> visibility counter (one for each child device and one overall) which 
+> keys the del event and must go to 0 before the host removal finishes.
 
-Thank you, this is where I was confused.  I didn't think about the fact that
-we'd not hit page_mkwrite() on that page anymore even though we would need to
-allocate more blocks to actually write out the entire page.
-> 
-> >Technically only one part of the page is dirty,
-> > so we just need to write that out, not the whole thing.  I assume there is a way
-> > to do this, since it presumably happens in the case where i_size < page size.
-> > If thats not possible then I guess this way is a good answer, it just seems
-> > overly complicated to me.
-> 
-> 
-> __block_write_full_page already does that. It looks at the last_block
-> 
+Um, well, that's roughly how I said we'd have to fix all of this in the
+email to hannes ... it would be much easier if we could make a del'd
+device visible, but now we have to have different behaviours depending
+on whether the host is going away or not.
 
-Gotcha.  Thanks for explaining this to me,
+James
 
-Josef
+
