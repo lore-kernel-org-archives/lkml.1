@@ -1,165 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932435AbZE0UVS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932537AbZE0UVh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932435AbZE0UVS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 16:21:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758578AbZE0UU7
+	id S932537AbZE0UVh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 16:21:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932296AbZE0UVL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 16:20:59 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:38478 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1758357AbZE0UU5 (ORCPT
+	Wed, 27 May 2009 16:21:11 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:46004 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762852AbZE0UVK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 16:20:57 -0400
-Date: Wed, 27 May 2009 16:20:57 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: David <david@unsolicited.net>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>, <linux-media@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       <dbrownell@users.sourceforge.net>, <leonidv11@gmail.com>,
-       Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: USB/DVB - Old Technotrend TT-connect S-2400 regression tracked
-  down
-In-Reply-To: <4A1D89B3.2020400@unsolicited.net>
-Message-ID: <Pine.LNX.4.44L0.0905271619090.2653-100000@iolanthe.rowland.org>
+	Wed, 27 May 2009 16:21:10 -0400
+Date: Wed, 27 May 2009 22:21:09 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: x86@kernel.org, hpa@zytor.com, seto.hidetoshi@jp.fujitsu.com,
+       linux-kernel@vger.kernel.org
+Subject: Please pull MCE 32bit merge tree
+Message-ID: <20090527202109.GA8008@basil.nowhere.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 May 2009, David wrote:
 
-> Sorry for the delay, your patch reached me just after I turned in last
-> night.
-> 
-> It looks good to me. dmesg is how I'd expect, and I've attached the usb
-> trace which looks pretty similar to when the original patch was reverted.
-> 
-> I'll test some more with some other peripherals & check that they work ok.
-> 
-> Thanks a lot!
+Please pull the mce3-32bitmerge tree that enables the 64bit machine
+check code on 32bit x86 too, as earlier discussed.
+It also includes the machine check injector because I needed that
+for testing.
 
-I'm not done yet.  That patch seemed a bit unsafe, so I revised it.  
-This version is a lot more careful about modifying data structures 
-while they are still in use by the hardware.
+It is based on the mce3 tree I offered earlier.
 
-If it works okay for you, I'll submit it.
+This is the patch kit I posted yesterday. There were some reviews, but
+no negative comments.
 
-Alan Stern
+This should be merged for 2.6.31
 
+Thanks,
+-Andi
 
-Index: usb-2.6/drivers/usb/host/ehci-q.c
-===================================================================
---- usb-2.6.orig/drivers/usb/host/ehci-q.c
-+++ usb-2.6/drivers/usb/host/ehci-q.c
-@@ -93,22 +93,6 @@ qh_update (struct ehci_hcd *ehci, struct
- 	qh->hw_qtd_next = QTD_NEXT(ehci, qtd->qtd_dma);
- 	qh->hw_alt_next = EHCI_LIST_END(ehci);
- 
--	/* Except for control endpoints, we make hardware maintain data
--	 * toggle (like OHCI) ... here (re)initialize the toggle in the QH,
--	 * and set the pseudo-toggle in udev. Only usb_clear_halt() will
--	 * ever clear it.
--	 */
--	if (!(qh->hw_info1 & cpu_to_hc32(ehci, 1 << 14))) {
--		unsigned	is_out, epnum;
--
--		is_out = !(qtd->hw_token & cpu_to_hc32(ehci, 1 << 8));
--		epnum = (hc32_to_cpup(ehci, &qh->hw_info1) >> 8) & 0x0f;
--		if (unlikely (!usb_gettoggle (qh->dev, epnum, is_out))) {
--			qh->hw_token &= ~cpu_to_hc32(ehci, QTD_TOGGLE);
--			usb_settoggle (qh->dev, epnum, is_out, 1);
--		}
--	}
--
- 	/* HC must see latest qtd and qh data before we clear ACTIVE+HALT */
- 	wmb ();
- 	qh->hw_token &= cpu_to_hc32(ehci, QTD_TOGGLE | QTD_STS_PING);
-@@ -893,7 +877,6 @@ done:
- 	qh->qh_state = QH_STATE_IDLE;
- 	qh->hw_info1 = cpu_to_hc32(ehci, info1);
- 	qh->hw_info2 = cpu_to_hc32(ehci, info2);
--	usb_settoggle (urb->dev, usb_pipeendpoint (urb->pipe), !is_input, 1);
- 	qh_refresh (ehci, qh);
- 	return qh;
- }
-@@ -928,7 +911,7 @@ static void qh_link_async (struct ehci_h
- 		}
- 	}
- 
--	/* clear halt and/or toggle; and maybe recover from silicon quirk */
-+	/* clear halt and maybe recover from silicon quirk */
- 	if (qh->qh_state == QH_STATE_IDLE)
- 		qh_refresh (ehci, qh);
- 
-Index: usb-2.6/drivers/usb/host/ehci-pci.c
-===================================================================
---- usb-2.6.orig/drivers/usb/host/ehci-pci.c
-+++ usb-2.6/drivers/usb/host/ehci-pci.c
-@@ -388,6 +388,7 @@ static const struct hc_driver ehci_pci_h
- 	.urb_enqueue =		ehci_urb_enqueue,
- 	.urb_dequeue =		ehci_urb_dequeue,
- 	.endpoint_disable =	ehci_endpoint_disable,
-+	.endpoint_reset =	ehci_endpoint_reset,
- 
- 	/*
- 	 * scheduling support
-Index: usb-2.6/drivers/usb/host/ehci-hcd.c
-===================================================================
---- usb-2.6.orig/drivers/usb/host/ehci-hcd.c
-+++ usb-2.6/drivers/usb/host/ehci-hcd.c
-@@ -1026,6 +1026,51 @@ done:
- 	return;
- }
- 
-+static void
-+ehci_endpoint_reset(struct usb_hcd *hcd, struct usb_host_endpoint *ep)
-+{
-+	struct ehci_hcd		*ehci = hcd_to_ehci(hcd);
-+	struct ehci_qh		*qh;
-+	int			eptype = usb_endpoint_type(&ep->desc);
-+
-+	if (eptype != USB_ENDPOINT_XFER_BULK && eptype != USB_ENDPOINT_XFER_INT)
-+		return;
-+
-+ rescan:
-+	spin_lock_irq(&ehci->lock);
-+	qh = ep->hcpriv;
-+
-+	/* For Bulk and Interrupt endpoints we maintain the toggle state
-+	 * in the hardware; the toggle bits in udev aren't used at all.
-+	 * When an endpoint is reset by usb_clear_halt() we must reset
-+	 * the toggle bit in the QH.
-+	 */
-+	if (qh) {
-+		if (!list_empty(&qh->qtd_list)) {
-+			WARN_ONCE(1, "clear_halt for a busy endpoint\n");
-+		} else if (qh->qh_state == QH_STATE_IDLE) {
-+			qh->hw_token &= ~cpu_to_hc32(ehci, QTD_TOGGLE);
-+		} else {
-+			/* It's not safe to write into the overlay area
-+			 * while the QH is active.  Unlink it first and
-+			 * wait for the unlink to complete.
-+			 */
-+			if (qh->qh_state == QH_STATE_LINKED) {
-+				if (eptype == USB_ENDPOINT_XFER_BULK) {
-+					unlink_async(ehci, qh);
-+				} else {
-+					intr_deschedule(ehci, qh);
-+					(void) qh_schedule(ehci, qh);
-+				}
-+			}
-+			spin_unlock_irq(&ehci->lock);
-+			schedule_timeout_uninterruptible(1);
-+			goto rescan;
-+		}
-+	}
-+	spin_unlock_irq(&ehci->lock);
-+}
-+
- static int ehci_get_frame (struct usb_hcd *hcd)
- {
- 	struct ehci_hcd		*ehci = hcd_to_ehci (hcd);
+The following changes since commit 509116152e7c09ed2e0e8b2dae241b89d9d0e699:
+  Ingo Molnar (1):
+        x86, mce: print number of MCE banks
 
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/ak/linux-mce-2.6.git mce3-32bitmerge
+
+Andi Kleen (17):
+      x86: MCE: Initial steps to make 64bit mce code 32bit clean
+      x86: MCE: Implement the PPro bank 0 quirk in the 64bit machine check code
+      x86: MCE: Port K7 bank 0 quirk to 64bit mce code
+      x86: MCE: Use a call vector to call the 64bit mce handler
+      x86: MCE: Rename 64bit mce_dont_init to mce_disabled
+      x86: MCE: Move mce_disabled option into common 64bit/64bit code
+      x86: MCE: Remove machine check handler idle notify on 64bit
+      x86: MCE: Remove oops_begin() use in 64bit machine check
+      x86: MCE: Remove unused stop/restart_mce on 32bit
+      x86: MCE: Use 64bit machine check code on 32bit
+      x86: MCE: Deprecate old 32bit machine check code
+      x86: MCE: Enable MCE_INTEL for 32bit new MCE
+      x86: MCE: Enable MCE_AMD for 32bit NEW_MCE
+      x86: MCE: Document new 32bit mcelog requirement in Documentation/Changes
+      Export add_timer_on for modules
+      x86: MCE: Add MSR read wrappers for easier error injection
+      x86: MCE: Add basic error injection infrastructure
+
+ Documentation/Changes                      |   15 ++
+ Documentation/feature-removal-schedule.txt |   10 +
+ arch/x86/Kconfig                           |   45 +++++-
+ arch/x86/include/asm/entry_arch.h          |    6 +-
+ arch/x86/include/asm/hardirq.h             |    2 +-
+ arch/x86/include/asm/irq_vectors.h         |    5 +-
+ arch/x86/include/asm/mce.h                 |    7 +-
+ arch/x86/kernel/apic/apic.c                |    4 +-
+ arch/x86/kernel/apic/nmi.c                 |    2 +-
+ arch/x86/kernel/cpu/mcheck/Makefile        |    4 +-
+ arch/x86/kernel/cpu/mcheck/mce-inject.c    |  126 +++++++++++++
+ arch/x86/kernel/cpu/mcheck/mce.c           |  265 +++++++++++++++++-----------
+ arch/x86/kernel/cpu/mcheck/mce.h           |   19 ++-
+ arch/x86/kernel/cpu/mcheck/p5.c            |    5 +
+ arch/x86/kernel/cpu/mcheck/threshold.c     |    2 +-
+ arch/x86/kernel/entry_64.S                 |    4 +-
+ arch/x86/kernel/irq.c                      |    4 +-
+ arch/x86/kernel/irqinit_32.c               |    6 +-
+ arch/x86/kernel/signal.c                   |    4 +-
+ arch/x86/kernel/traps.c                    |    6 +-
+ kernel/timer.c                             |    1 +
+ 21 files changed, 412 insertions(+), 130 deletions(-)
+ create mode 100644 arch/x86/kernel/cpu/mcheck/mce-inject.c
+-- 
+ak@linux.intel.com -- Speaking for myself only.
