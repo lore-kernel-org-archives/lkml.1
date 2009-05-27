@@ -1,180 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758200AbZE0Wkp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757934AbZE0Wk5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758200AbZE0Wkp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 18:40:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755125AbZE0Wkg
+	id S1757934AbZE0Wk5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 18:40:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758325AbZE0Wkm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 18:40:36 -0400
-Received: from mga09.intel.com ([134.134.136.24]:17679 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751734AbZE0Wkf convert rfc822-to-8bit (ORCPT
+	Wed, 27 May 2009 18:40:42 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42567 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757461AbZE0Wkl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 18:40:35 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,261,1241420400"; 
-   d="scan'208";a="519419633"
-From: "Yu, Fenghua" <fenghua.yu@intel.com>
-To: "'Andrew Morton'" <akpm@linux-foundation.org>
-CC: "'David Woodhouse'" <dwmw2@infradead.org>, "'Ingo Molnar'" <mingo@elte.hu>,
-       "'LKML'" <linux-kernel@vger.kernel.org>,
-       "'IOMMU'" <iommu@lists.linux-foundation.org>
-Date: Wed, 27 May 2009 15:40:35 -0700
-Subject: RE: [PATCH] Time out for possible dead loops during queued
- invalidation wait
-Thread-Topic: [PATCH] Time out for possible dead loops during queued
- invalidation wait
-Thread-Index: Acnej0mMFWZekcN+QQ6I8UwIakdskgAjDY2g
-Message-ID: <A6AD88C3F2289247BE726C37303E1EB8AF9331CE@orsmsx505.amr.corp.intel.com>
-References: <20090327212241.234500000@intel.com>
-	<20090327212321.070229000@intel.com>
-	<20090416001957.GA1527@linux-os.sc.intel.com>
-	<1240135508.3589.75.camel@macbook.infradead.org>
-	<A6AD88C3F2289247BE726C37303E1EB8A4DF7DB1@orsmsx505.amr.corp.intel.com>
-	<20090520174259.GA10646@linux-os.sc.intel.com>
- <20090526225146.2faeeb05.akpm@linux-foundation.org>
-In-Reply-To: <20090526225146.2faeeb05.akpm@linux-foundation.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	Wed, 27 May 2009 18:40:41 -0400
+Date: Wed, 27 May 2009 15:40:01 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: orenl@cs.columbia.edu, serge@hallyn.com, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org, xemul@parallels.com
+Subject: Re: [PATCH 18/38] C/R: core stuff
+Message-Id: <20090527154001.86a5abff.akpm@linux-foundation.org>
+In-Reply-To: <20090527221753.GB8321@x200.localdomain>
+References: <1242968132-1044-1-git-send-email-adobriyan@gmail.com>
+	<1242968132-1044-18-git-send-email-adobriyan@gmail.com>
+	<20090526131644.GA20920@hallyn.com>
+	<20090526193503.GB11909@x200.localdomain>
+	<4A1DA8FB.3000306@cs.columbia.edu>
+	<20090527221753.GB8321@x200.localdomain>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>
->> Subject: [PATCH] Time out for possible dead loops during queued
->invalidation wait
->
->nits:
->
->Please ensure that each patch title identifies the subsystem which is
->being altered.  Because someone who reads this title has no clue what
->part of the kernel is affected unless they dive in and read the actual
->patch.  Suitable title prefixes for this one would be "dmar: " or
->"drivers/pci/dmar.c: ".
->
->The usual term for a timeout is "timeout", not "time out".
->
->The term "dead loop" is unclear.  The reader might think that it refers
->to a never-executed loop, as in "dead code".  A better term is
->"infinite loop".
->
->So I ended up with the title
->
->	"drivers/pci/dmar.c: timeout for possible infinite loops during
->queued invalidation wait"
->
->Welcome to my life :(
->
->> Two loops in qi_submit_sync() do not have time out. If hardware can not
->finish
->> the queued invalidation for some reason, the loops could end up in dead
->loops
->> without any hint for what is going on. I add time out for the loops and
->report
->> warning when time out happens.
->>
->> Signed-off-by: Fenghua Yu <fenghua.yu@intel.com>
->
->ok...
->
->>  dmar.c |   12 ++++++++++++
->>  1 files changed, 12 insertions(+)
->>
->> diff --git a/drivers/pci/dmar.c b/drivers/pci/dmar.c
->> index fa3a113..95baacd 100644
->> --- a/drivers/pci/dmar.c
->> +++ b/drivers/pci/dmar.c
->> @@ -637,6 +637,7 @@ int qi_submit_sync(struct qi_desc *desc, struct
->intel_iommu *iommu)
->>  	struct qi_desc *hw, wait_desc;
->>  	int wait_index, index;
->>  	unsigned long flags;
->> +	cycles_t start_time;
+On Thu, 28 May 2009 02:17:53 +0400
+Alexey Dobriyan <adobriyan@gmail.com> wrote:
 
->It seems strange to me that the driver chose to implement a ten second
->timeout using such a high resolution thing as cycles_t.  Why not use
->plain old jiffies?  The advantages are:
->
->- jiffies can be read very efficiently
->
->- there's more kernel support for manipulating jiffies-based values.
->
->For example,
+> > 1) Whether or not allow c/r of sub-container (partial hierarchy)
+> > 
+> > 2) Creation of restarting process hierarchy in kernel or in userspace
+> > 
+> > As for #1, you are the _only_ one who advocates restricting c/r to
+> > a full container only. I guess you have your reasons, but I'm unsure
+> > what they may be.
+> 
+> The reason is that checkpointing half-frozen, half-live container is
+> essentially equivalent to live container which adds much complexity
+> to code fundamentally preventing kernel from taking coherent snapshot.
+> 
+> In such situations kernel will do its job badly.
+> 
+> Manpage will be filled with strings like "if $FOO is shared then $BAR is
+> not guaranteed".
+> 
+> What to do if user simply doesn't know if container is bounded?
+> Checkpoint and to hell with consequences?
+> 
+> If two tasks share mm_struct you can't even detect that pages you dump
+> aren't filled with garbage meanwhile from second task.
+> 
+> If two tasks share mm_struct, other task can issue AIO indefinitely
+> preventing from taking even coherent filesystem snapshot.
+> 
+> That's why I raise this issue again to hear from people what they think
+> and these people shouldn't be containers and C/R people, because the
+> latter already made up their minds.
+> 
+> This is super-important issue to get right from the beginning.
 
-I'll use time_after() and jiffies in the updated patch. The get_cycles() approach is being used in other places in iommu code. I'll change them too.
+<pipes up>
 
->
->>  	if (!qi)
->>  		return 0;
->> @@ -644,8 +645,13 @@ int qi_submit_sync(struct qi_desc *desc, struct
->intel_iommu *iommu)
->>  	hw = qi->desc;
->>
->>  	spin_lock_irqsave(&qi->q_lock, flags);
->> +	start_time = get_cycles();
->>  	while (qi->free_cnt < 3) {
->>  		spin_unlock_irqrestore(&qi->q_lock, flags);
->> +		if (DMAR_OPERATION_TIMEOUT < (get_cycles() - start_time)) {
->
->if we were using jiffies, this nasty thing could just use time_after().
->
->But that's all outside the scope of your patch.
->
->
->I'd find it more readable if the above were coded as
->
->	if (get_cycles() - start_time >= DMAR_OPERATION_TIMEOUT)
->
->but maybe that's just me.
->
->> +			WARN(1, "No space in invalidation queue.\n");
->> +			return -ENOSPC;
->
->ENOSPC means "your disk filled up".  I think it makes no sense to use
->that error code in this context, even though it kinda sounds the same.
->
+yeah, checkpointing a partial hierarchy at this stage sounds like
+overreach.  Get full-container working usably first, think about
+sub-containers in version 2.
 
-Which error code is better? Is EAGAIN ok?
-
->> +		}
->>  		cpu_relax();
->>  		spin_lock_irqsave(&qi->q_lock, flags);
->>  	}
->> @@ -675,6 +681,7 @@ int qi_submit_sync(struct qi_desc *desc, struct
->intel_iommu *iommu)
->>  	 */
->>  	writel(qi->free_head << 4, iommu->reg + DMAR_IQT_REG);
->>
->> +	start_time = get_cycles();
->>  	while (qi->desc_status[wait_index] != QI_DONE) {
->>  		/*
->>  		 * We will leave the interrupts disabled, to prevent interrupt
->> @@ -687,6 +694,11 @@ int qi_submit_sync(struct qi_desc *desc, struct
->intel_iommu *iommu)
->>  		if (rc)
->>  			goto out;
->>
->> +		if (DMAR_OPERATION_TIMEOUT < (get_cycles() - start_time)) {
->> +			WARN(1, "Queued invalidation can not complete.\n");
->> +			goto out;
->
->As `rc' now contains zero, this will cause the function to incorrectly
->return the "success" code, even though it is known that it did not
->succeed.
->
->> +		}
->> +
->>  		spin_unlock(&qi->q_lock);
->>  		cpu_relax();
->>  		spin_lock(&qi->q_lock);
-
-I'll change this code.
-
-Thanks.
-
--Fenghua
+<pipes down again>
