@@ -1,163 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761622AbZE0Ha2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762992AbZE0Hbb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761622AbZE0Ha2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 03:30:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762217AbZE0H0X
+	id S1762992AbZE0Hbb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 03:31:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762333AbZE0H0p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 03:26:23 -0400
-Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:46916 "EHLO
+	Wed, 27 May 2009 03:26:45 -0400
+Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:46925 "EHLO
 	monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762246AbZE0H0W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 03:26:22 -0400
+	id S1762291AbZE0H0o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 03:26:44 -0400
 From: Michal Simek <monstr@monstr.eu>
 To: linux-kernel@vger.kernel.org
 Cc: john.williams@petalogix.com, microblaze-uclinux@itee.uq.edu.au,
        michal.simek@petalogix.com, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 04/29] microblaze_mmu_v2: TLB low level code
-Date: Wed, 27 May 2009 08:47:29 +0200
-Message-Id: <1243406874-3917-5-git-send-email-monstr@monstr.eu>
+Subject: [PATCH 27/29] microblaze_mmu_v2: stat.h MMU update
+Date: Wed, 27 May 2009 08:47:52 +0200
+Message-Id: <1243406874-3917-28-git-send-email-monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <1243406874-3917-4-git-send-email-monstr@monstr.eu>
+In-Reply-To: <1243406874-3917-27-git-send-email-monstr@monstr.eu>
 References: <1243406874-3917-1-git-send-email-monstr@monstr.eu>
  <1243406874-3917-2-git-send-email-monstr@monstr.eu>
  <1243406874-3917-3-git-send-email-monstr@monstr.eu>
  <1243406874-3917-4-git-send-email-monstr@monstr.eu>
+ <1243406874-3917-5-git-send-email-monstr@monstr.eu>
+ <1243406874-3917-6-git-send-email-monstr@monstr.eu>
+ <1243406874-3917-7-git-send-email-monstr@monstr.eu>
+ <1243406874-3917-8-git-send-email-monstr@monstr.eu>
+ <1243406874-3917-9-git-send-email-monstr@monstr.eu>
+ <1243406874-3917-10-git-send-email-monstr@monstr.eu>
+ <1243406874-3917-11-git-send-email-monstr@monstr.eu>
+ <1243406874-3917-12-git-send-email-monstr@monstr.eu>
+ <1243406874-3917-13-git-send-email-monstr@monstr.eu>
+ <1243406874-3917-14-git-send-email-monstr@monstr.eu>
+ <1243406874-3917-15-git-send-email-monstr@monstr.eu>
+ <1243406874-3917-16-git-send-email-monstr@monstr.eu>
+ <1243406874-3917-17-git-send-email-monstr@monstr.eu>
+ <1243406874-3917-18-git-send-email-monstr@monstr.eu>
+ <1243406874-3917-19-git-send-email-monstr@monstr.eu>
+ <1243406874-3917-20-git-send-email-monstr@monstr.eu>
+ <1243406874-3917-21-git-send-email-monstr@monstr.eu>
+ <1243406874-3917-22-git-send-email-monstr@monstr.eu>
+ <1243406874-3917-23-git-send-email-monstr@monstr.eu>
+ <1243406874-3917-24-git-send-email-monstr@monstr.eu>
+ <1243406874-3917-25-git-send-email-monstr@monstr.eu>
+ <1243406874-3917-26-git-send-email-monstr@monstr.eu>
+ <1243406874-3917-27-git-send-email-monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/kernel/misc.S |  120 +++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 120 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/kernel/misc.S
+ arch/microblaze/include/asm/stat.h |   77 +++++++++++++++++-------------------
+ 1 files changed, 36 insertions(+), 41 deletions(-)
 
-diff --git a/arch/microblaze/kernel/misc.S b/arch/microblaze/kernel/misc.S
-new file mode 100644
-index 0000000..d623efc
---- /dev/null
-+++ b/arch/microblaze/kernel/misc.S
-@@ -0,0 +1,120 @@
-+/*
-+ * Miscellaneous low-level MMU functions.
-+ *
-+ * Copyright (C) 2008-2009 Michal Simek <monstr@monstr.eu>
-+ * Copyright (C) 2008-2009 PetaLogix
-+ * Copyright (C) 2007 Xilinx, Inc.  All rights reserved.
-+ *
-+ * Derived from arch/ppc/kernel/misc.S
-+ *
-+ * This file is subject to the terms and conditions of the GNU General
-+ * Public License. See the file COPYING in the main directory of this
-+ * archive for more details.
-+ */
+diff --git a/arch/microblaze/include/asm/stat.h b/arch/microblaze/include/asm/stat.h
+index 5f18b8a..a15f775 100644
+--- a/arch/microblaze/include/asm/stat.h
++++ b/arch/microblaze/include/asm/stat.h
+@@ -16,58 +16,53 @@
+ 
+ #include <linux/posix_types.h>
+ 
++#define STAT_HAVE_NSEC 1
 +
-+#include <linux/linkage.h>
-+#include <linux/sys.h>
-+#include <asm/unistd.h>
-+#include <linux/errno.h>
-+#include <asm/mmu.h>
-+#include <asm/page.h>
+ struct stat {
+-	unsigned int	st_dev;
++	unsigned long	st_dev;
+ 	unsigned long	st_ino;
+ 	unsigned int	st_mode;
+ 	unsigned int	st_nlink;
+ 	unsigned int	st_uid;
+ 	unsigned int	st_gid;
+-	unsigned int	st_rdev;
+-	unsigned long	st_size;
+-	unsigned long	st_blksize;
+-	unsigned long	st_blocks;
+-	unsigned long	st_atime;
+-	unsigned long	__unused1; /* unsigned long  st_atime_nsec */
+-	unsigned long	st_mtime;
+-	unsigned long	__unused2; /* unsigned long  st_mtime_nsec */
+-	unsigned long	st_ctime;
+-	unsigned long	__unused3; /* unsigned long  st_ctime_nsec */
++	unsigned long	st_rdev;
++	unsigned long	__pad1;
++	long		st_size;
++	int		st_blksize;
++	int		__pad2;
++	long		st_blocks;
++	int		st_atime;
++	unsigned int	st_atime_nsec;
++	int		st_mtime;
++	unsigned int	st_mtime_nsec;
++	int		st_ctime;
++	unsigned int	st_ctime_nsec;
+ 	unsigned long	__unused4;
+ 	unsigned long	__unused5;
+ };
+ 
+ struct stat64 {
+-	unsigned long long	st_dev;
+-	unsigned long	__unused1;
+-
+-	unsigned long long	st_ino;
+-
+-	unsigned int	st_mode;
+-	unsigned int	st_nlink;
+-
+-	unsigned int	st_uid;
+-	unsigned int	st_gid;
+-
+-	unsigned long long	st_rdev;
+-	unsigned long	__unused3;
+-
+-	long long	st_size;
+-	unsigned long	st_blksize;
+-
+-	unsigned long	st_blocks; /* No. of 512-byte blocks allocated */
+-	unsigned long	__unused4; /* future possible st_blocks high bits */
+-
+-	unsigned long	st_atime;
+-	unsigned long	st_atime_nsec;
+-
+-	unsigned long	st_mtime;
+-	unsigned long	st_mtime_nsec;
+-
+-	unsigned long	st_ctime;
+-	unsigned long	st_ctime_nsec;
+-
+-	unsigned long	__unused8;
++	unsigned long long	st_dev;		/* Device.  */
++	unsigned long long	st_ino;		/* File serial number.  */
++	unsigned int		st_mode;	/* File mode.  */
++	unsigned int		st_nlink;	/* Link count.  */
++	unsigned int		st_uid;		/* User ID of the file's owner.  */
++	unsigned int		st_gid;		/* Group ID of the file's group. */
++	unsigned long long	st_rdev;	/* Device number, if device.  */
++	unsigned long long	__pad1;
++	long long		st_size;	/* Size of file, in bytes.  */
++	int			st_blksize;	/* Optimal block size for I/O.  */
++	int			__pad2;
++	long long		st_blocks;	/* Number 512-byte blocks allocated. */
++	int			st_atime;	/* Time of last access.  */
++	unsigned int		st_atime_nsec;
++	int			st_mtime;	/* Time of last modification.  */
++	unsigned int		st_mtime_nsec;
++	int			st_ctime;	/* Time of last status change.  */
++	unsigned int		st_ctime_nsec;
++	unsigned int		__unused4;
++	unsigned int		__unused5;
+ };
+ 
+ #endif /* _ASM_MICROBLAZE_STAT_H */
 +
-+	.text
-+/*
-+ * Flush MMU TLB
-+ *
-+ * We avoid flushing the pinned 0, 1 and possibly 2 entries.
-+ */
-+.globl _tlbia;
-+.align 4;
-+_tlbia:
-+	addik	r12, r0, 63 /* flush all entries (63 - 3) */
-+	/* isync */
-+_tlbia_1:
-+	mts	rtlbx, r12
-+	nop
-+	mts	rtlbhi, r0 /* flush: ensure V is clear */
-+	nop
-+	addik	r11, r12, -2
-+	bneid	r11, _tlbia_1 /* loop for all entries */
-+	addik	r12, r12, -1
-+	/* sync */
-+	rtsd	r15, 8
-+	nop
-+
-+/*
-+ * Flush MMU TLB for a particular address (in r5)
-+ */
-+.globl _tlbie;
-+.align 4;
-+_tlbie:
-+	mts	rtlbsx, r5 /* look up the address in TLB */
-+	nop
-+	mfs	r12, rtlbx /* Retrieve index */
-+	nop
-+	blti	r12, _tlbie_1 /* Check if found */
-+	mts	rtlbhi, r0 /* flush: ensure V is clear */
-+	nop
-+_tlbie_1:
-+	rtsd	r15, 8
-+	nop
-+
-+/*
-+ * Allocate TLB entry for early console
-+ */
-+.globl early_console_reg_tlb_alloc;
-+.align 4;
-+early_console_reg_tlb_alloc:
-+	/*
-+	 * Load a TLB entry for the UART, so that microblaze_progress() can use
-+	 * the UARTs nice and early.  We use a 4k real==virtual mapping.
-+	 */
-+	ori	r4, r0, 2
-+	mts	rtlbx, r4 /* TLB slot 2 */
-+
-+	or	r4,r5,r0
-+	andi	r4,r4,0xfffff000
-+	ori	r4,r4,(TLB_WR|TLB_I|TLB_M|TLB_G)
-+
-+	andi	r5,r5,0xfffff000
-+	ori	r5,r5,(TLB_VALID | TLB_PAGESZ(PAGESZ_4K))
-+
-+	mts	rtlblo,r4 /* Load the data portion of the entry */
-+	nop
-+	mts	rtlbhi,r5 /* Load the tag portion of the entry */
-+	nop
-+	rtsd	r15, 8
-+	nop
-+
-+/*
-+ * Copy a whole page (4096 bytes).
-+ */
-+#define COPY_16_BYTES		\
-+	lwi	r7, r6, 0;	\
-+	lwi	r8, r6, 4;	\
-+	lwi	r9, r6, 8;	\
-+	lwi	r10, r6, 12;	\
-+	swi	r7, r5, 0;	\
-+	swi	r8, r5, 4;	\
-+	swi	r9, r5, 8;	\
-+	swi	r10, r5, 12
-+
-+
-+/* FIXME DCACHE_LINE_BYTES (CONFIG_XILINX_MICROBLAZE0_DCACHE_LINE_LEN * 4)*/
-+#define DCACHE_LINE_BYTES (4 * 4)
-+
-+.globl copy_page;
-+.align 4;
-+copy_page:
-+	ori	r11, r0, (PAGE_SIZE/DCACHE_LINE_BYTES) - 1
-+_copy_page_loop:
-+	COPY_16_BYTES
-+#if DCACHE_LINE_BYTES >= 32
-+	COPY_16_BYTES
-+#endif
-+	addik	r6, r6, DCACHE_LINE_BYTES
-+	addik	r5, r5, DCACHE_LINE_BYTES
-+	bneid	r11, _copy_page_loop
-+	addik	r11, r11, -1
-+	rtsd	r15, 8
-+	nop
 -- 
 1.5.5.1
 
