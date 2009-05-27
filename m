@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763647AbZE0NC0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763900AbZE0NDM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763647AbZE0NC0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 09:02:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762931AbZE0NBU
+	id S1763900AbZE0NDM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 09:03:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760392AbZE0NB0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 09:01:20 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:47971 "EHLO mx2.suse.de"
+	Wed, 27 May 2009 09:01:26 -0400
+Received: from cantor.suse.de ([195.135.220.2]:49588 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762789AbZE0NBJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 09:01:09 -0400
+	id S1763313AbZE0NBL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 09:01:11 -0400
 From: Jan Kara <jack@suse.cz>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: npiggin@suse.de, linux-ext4@vger.kernel.org, Jan Kara <jack@suse.cz>
-Subject: [PATCH 05/11] ext4: Make sure blocks are properly allocated under mmaped page even when blocksize < pagesize
-Date: Wed, 27 May 2009 15:01:02 +0200
-Message-Id: <1243429268-3028-6-git-send-email-jack@suse.cz>
+Subject: [PATCH 09/11] fs: Don't clear dirty bits in block_write_full_page()
+Date: Wed, 27 May 2009 15:01:06 +0200
+Message-Id: <1243429268-3028-10-git-send-email-jack@suse.cz>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <1243429268-3028-1-git-send-email-jack@suse.cz>
 References: <1243429268-3028-1-git-send-email-jack@suse.cz>
@@ -22,135 +22,114 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In a situation like:
-  truncate(f, 1024);
-  a = mmap(f, 0, 4096);
-  a[0] = 'a';
-  truncate(f, 4096);
+If getblock() fails in block_write_full_page(), we don't want to clear
+dirty bits on buffers. Actually, we even want to redirty the page. This
+way we just won't silently discard users data (written e.g. through mmap)
+in case of ENOSPC, EDQUOT, EIO or other write error (which may be just
+transient e.g. because we have to commit a transaction to free up some space).
+The downside of this approach is that if the error is persistent we have this
+page pinned in memory forever and if there are lots of such pages, we can bring
+the machine OOM.
 
-we end up with a dirty page which does not have all blocks allocated /
-reserved.  Fix the problem by using new VFS infrastructure.
+We also don't want to clear dirty bits from buffers above i_size because that
+is a generally a bussiness of invalidatepage where filesystem might want to do
+some additional work. If we clear dirty bits already in block_write_full_page,
+memory reclaim can reap the page before invalidatepage is called on the page
+and thus confusing the filesystem.
 
 Signed-off-by: Jan Kara <jack@suse.cz>
 ---
- fs/ext4/extents.c |    2 +-
- fs/ext4/inode.c   |   20 ++++++++++++++++++--
- 2 files changed, 19 insertions(+), 3 deletions(-)
+ fs/buffer.c |   40 +++++++++++++++++-----------------------
+ 1 files changed, 17 insertions(+), 23 deletions(-)
 
-diff --git a/fs/ext4/extents.c b/fs/ext4/extents.c
-index 6b0eeaf..ef587f7 100644
---- a/fs/ext4/extents.c
-+++ b/fs/ext4/extents.c
-@@ -3082,7 +3082,7 @@ static void ext4_falloc_update_inode(struct inode *inode,
+diff --git a/fs/buffer.c b/fs/buffer.c
+index 3d0bced..6d18739 100644
+--- a/fs/buffer.c
++++ b/fs/buffer.c
+@@ -1662,19 +1662,14 @@ static int __block_write_full_page(struct inode *inode, struct page *page,
+ 	 * handle any aliases from the underlying blockdev's mapping.
  	 */
- 	if (!(mode & FALLOC_FL_KEEP_SIZE)) {
- 		if (new_size > i_size_read(inode))
--			i_size_write(inode, new_size);
-+			block_extend_i_size(inode, new_size, 0);
- 		if (new_size > EXT4_I(inode)->i_disksize)
- 			ext4_update_i_disksize(inode, new_size);
- 	}
-diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
-index 7fcceb0..6547788 100644
---- a/fs/ext4/inode.c
-+++ b/fs/ext4/inode.c
-@@ -1436,7 +1436,7 @@ static int ext4_write_begin(struct file *file, struct address_space *mapping,
-  	index = pos >> PAGE_CACHE_SHIFT;
- 	from = pos & (PAGE_CACHE_SIZE - 1);
- 	to = from + len;
--
-+	block_lock_hole_extend(inode, pos);
- retry:
- 	handle = ext4_journal_start(inode, needed_blocks);
- 	if (IS_ERR(handle)) {
-@@ -1480,6 +1480,8 @@ retry:
- 	if (ret == -ENOSPC && ext4_should_retry_alloc(inode->i_sb, &retries))
- 		goto retry;
- out:
-+	if (ret)
-+		block_unlock_hole_extend(inode);
- 	return ret;
- }
+ 	do {
+-		if (block > last_block) {
+-			/*
+-			 * mapped buffers outside i_size will occur, because
+-			 * this page can be outside i_size when there is a
+-			 * truncate in progress.
+-			 */
+-			/*
+-			 * The buffer was zeroed by block_write_full_page()
+-			 */
+-			clear_buffer_dirty(bh);
+-			set_buffer_uptodate(bh);
+-		} else if ((!buffer_mapped(bh) || buffer_delay(bh)) &&
+-			   buffer_dirty(bh)) {
++		/*
++		 * Mapped buffers outside i_size will occur, because
++		 * this page can be outside i_size when there is a
++		 * truncate in progress.
++		 */
++		if (block <= last_block &&
++		    (!buffer_mapped(bh) || buffer_delay(bh)) &&
++		    buffer_dirty(bh)) {
+ 			WARN_ON(bh->b_size != blocksize);
+ 			err = get_block(inode, block, bh, 1);
+ 			if (err)
+@@ -1692,9 +1687,10 @@ static int __block_write_full_page(struct inode *inode, struct page *page,
+ 		block++;
+ 	} while (bh != head);
  
-@@ -1622,6 +1624,7 @@ static int ext4_journalled_write_end(struct file *file,
- 	if (!ret)
- 		ret = ret2;
- 	page_cache_release(page);
-+	block_unlock_hole_extend(inode);
- 
- 	return ret ? ret : copied;
- }
-@@ -2733,6 +2736,7 @@ static int ext4_da_write_begin(struct file *file, struct address_space *mapping,
- 		   "dev %s ino %lu pos %llu len %u flags %u",
- 		   inode->i_sb->s_id, inode->i_ino,
- 		   (unsigned long long) pos, len, flags);
-+	block_lock_hole_extend(inode, pos);
- retry:
- 	/*
- 	 * With delayed allocation, we don't log the i_disksize update
-@@ -2775,6 +2779,8 @@ retry:
- 	if (ret == -ENOSPC && ext4_should_retry_alloc(inode->i_sb, &retries))
- 		goto retry;
- out:
-+	if (ret)
-+		block_unlock_hole_extend(inode);
- 	return ret;
- }
- 
-@@ -3323,7 +3329,7 @@ static ssize_t ext4_direct_IO(int rw, struct kiocb *iocb,
- 			loff_t end = offset + ret;
- 			if (end > inode->i_size) {
- 				ei->i_disksize = end;
--				i_size_write(inode, end);
-+				block_extend_i_size(inode, offset, ret);
- 				/*
- 				 * We're going to return a positive `ret'
- 				 * here due to non-zero-length I/O, so there's
-@@ -3368,6 +3374,7 @@ static const struct address_space_operations ext4_ordered_aops = {
- 	.sync_page		= block_sync_page,
- 	.write_begin		= ext4_write_begin,
- 	.write_end		= ext4_ordered_write_end,
-+	.extend_i_size		= block_extend_i_size,
- 	.bmap			= ext4_bmap,
- 	.invalidatepage		= ext4_invalidatepage,
- 	.releasepage		= ext4_releasepage,
-@@ -3383,6 +3390,7 @@ static const struct address_space_operations ext4_writeback_aops = {
- 	.sync_page		= block_sync_page,
- 	.write_begin		= ext4_write_begin,
- 	.write_end		= ext4_writeback_write_end,
-+	.extend_i_size		= block_extend_i_size,
- 	.bmap			= ext4_bmap,
- 	.invalidatepage		= ext4_invalidatepage,
- 	.releasepage		= ext4_releasepage,
-@@ -3398,6 +3406,7 @@ static const struct address_space_operations ext4_journalled_aops = {
- 	.sync_page		= block_sync_page,
- 	.write_begin		= ext4_write_begin,
- 	.write_end		= ext4_journalled_write_end,
-+	.extend_i_size		= block_extend_i_size,
- 	.set_page_dirty		= ext4_journalled_set_page_dirty,
- 	.bmap			= ext4_bmap,
- 	.invalidatepage		= ext4_invalidatepage,
-@@ -3413,6 +3422,7 @@ static const struct address_space_operations ext4_da_aops = {
- 	.sync_page		= block_sync_page,
- 	.write_begin		= ext4_da_write_begin,
- 	.write_end		= ext4_da_write_end,
-+	.extend_i_size		= block_extend_i_size,
- 	.bmap			= ext4_bmap,
- 	.invalidatepage		= ext4_da_invalidatepage,
- 	.releasepage		= ext4_releasepage,
-@@ -5277,6 +5287,12 @@ int ext4_page_mkwrite(struct vm_area_struct *vma, struct vm_fault *vmf)
- 	struct address_space *mapping = inode->i_mapping;
++	block = (sector_t)page->index << (PAGE_CACHE_SHIFT - inode->i_blkbits);
+ 	do {
+-		if (!buffer_mapped(bh))
+-			continue;
++		if (!buffer_mapped(bh) || block > last_block)
++			goto next;
+ 		/*
+ 		 * If it's a fully non-blocking write attempt and we cannot
+ 		 * lock the buffer then redirty the page.  Note that this can
+@@ -1706,13 +1702,15 @@ static int __block_write_full_page(struct inode *inode, struct page *page,
+ 			lock_buffer(bh);
+ 		} else if (!trylock_buffer(bh)) {
+ 			redirty_page_for_writepage(wbc, page);
+-			continue;
++			goto next;
+ 		}
+ 		if (test_clear_buffer_dirty(bh)) {
+ 			mark_buffer_async_write_endio(bh, handler);
+ 		} else {
+ 			unlock_buffer(bh);
+ 		}
++next:
++		block++;
+ 	} while ((bh = bh->b_this_page) != head);
  
  	/*
-+	 * Wait for extending of i_size, after this moment, next truncate /
-+	 * write can create holes under us but they writeprotect our page so
-+	 * we'll be called again to fill the hole.
-+	 */
-+	block_wait_on_hole_extend(inode, page_offset(page));
-+	/*
- 	 * Get i_alloc_sem to stop truncates messing with the inode. We cannot
- 	 * get i_mutex because we are already holding mmap_sem.
+@@ -1753,9 +1751,11 @@ recover:
+ 	/*
+ 	 * ENOSPC, or some other error.  We may already have added some
+ 	 * blocks to the file, so we need to write these out to avoid
+-	 * exposing stale data.
++	 * exposing stale data. We redirty the page so that we don't
++	 * loose data we are unable to write.
+ 	 * The page is currently locked and not marked for writeback
  	 */
++	redirty_page_for_writepage(wbc, page);
+ 	bh = head;
+ 	/* Recovery: lock and submit the mapped buffers */
+ 	do {
+@@ -1763,12 +1763,6 @@ recover:
+ 		    !buffer_delay(bh)) {
+ 			lock_buffer(bh);
+ 			mark_buffer_async_write_endio(bh, handler);
+-		} else {
+-			/*
+-			 * The buffer may have been set dirty during
+-			 * attachment to a dirty page.
+-			 */
+-			clear_buffer_dirty(bh);
+ 		}
+ 	} while ((bh = bh->b_this_page) != head);
+ 	SetPageError(page);
 -- 
 1.6.0.2
 
