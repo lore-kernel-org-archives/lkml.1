@@ -1,198 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761880AbZE0U5o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758171AbZE0VDV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761880AbZE0U5o (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 16:57:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752388AbZE0U5f
+	id S1758171AbZE0VDV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 17:03:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751548AbZE0VDN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 16:57:35 -0400
-Received: from jalapeno.cc.columbia.edu ([128.59.29.5]:33666 "EHLO
-	jalapeno.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751481AbZE0U5e (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 16:57:34 -0400
-Message-ID: <4A1DA8FB.3000306@cs.columbia.edu>
-Date: Wed, 27 May 2009 16:56:27 -0400
-From: Oren Laadan <orenl@cs.columbia.edu>
-Organization: Columbia University
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Wed, 27 May 2009 17:03:13 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:37860 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751381AbZE0VDL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 17:03:11 -0400
+Date: Wed, 27 May 2009 14:03:12 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Joe Perches <joe@perches.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Josh Triplett <josh@freedesktop.org>,
+       Dipankar Sarma <dipankar@in.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] MAINTAINERS: Add Paul McKenney to RCU and RCUTORTURE
+Message-ID: <20090527210312.GG6729@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <cover.1243131992.git.joe@perches.com> <9f55522f7ab56afcf16d936d06ab2f3a7e699ed5.1243131992.git.joe@perches.com> <20090526234241.GD7006@linux.vnet.ibm.com> <1243448316.27337.28.camel@Joe-Laptop.home>
 MIME-Version: 1.0
-To: Alexey Dobriyan <adobriyan@gmail.com>
-CC: "Serge E. Hallyn" <serge@hallyn.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, containers@lists.linux-foundation.org,
-       xemul@parallels.com
-Subject: Re: [PATCH 18/38] C/R: core stuff
-References: <1242968132-1044-1-git-send-email-adobriyan@gmail.com>	<1242968132-1044-18-git-send-email-adobriyan@gmail.com>	<20090526131644.GA20920@hallyn.com> <20090526193503.GB11909@x200.localdomain>
-In-Reply-To: <20090526193503.GB11909@x200.localdomain>
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-No-Spam-Score: Local
+Content-Disposition: inline
+In-Reply-To: <1243448316.27337.28.camel@Joe-Laptop.home>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, May 27, 2009 at 11:18:36AM -0700, Joe Perches wrote:
+> On Tue, 2009-05-26 at 16:42 -0700, Paul E. McKenney wrote:
+> > Hmmm...  Given that you are removing LKML from RCU and rcutorture,
+> > could you please add me?  If someone misses "THE REST", I very likely
+> > won't see their bug/issue/question.
+> > 
+> > P:	Paul E. McKenney
+> > M:	paulmck@linux.vnet.ibm.com
 
+Acked-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-Alexey Dobriyan wrote:
-> On Tue, May 26, 2009 at 08:16:44AM -0500, Serge E. Hallyn wrote:
->> Quoting Alexey Dobriyan (adobriyan@gmail.com):
->>> Introduction
->>> ------------
->>> Checkpoint/restart (C/R from now) allows to dump group of processes to disk
->>> for various reasons like saving process state in case of box failure or
->>> restoration of group of processes on another or same machine later.
->>>
->>> Unlike, let's say, hypervisor C/R style which only needs to freeze guest kernel
->>> and dump more or less raw pages, proposed C/R doesn't require hypervisor.
->>> For that C/R code needs to know about all little and big intimate kernel details.
->>>
->>> The good thing is that not all details needs to be serialized and saved
->>> like, say, readahead state. The bad things is still quite a few things
->>> need to be.
->> Hi Alexey,
->>
->> the last time you posted this, I went through and tried to discern the
->> meaningful differences between yours and Oren's patchsets.  Then I sent some
->> patches to Oren to make his set configurable to act more like yours.  And Oren
->> took them!  But now you resend this patchset with no real changelog, no
->> acknowledgment that Oren's set even exists
+> Signed-off-by: Joe Perches <joe@perches.com>
+> ---
+>  MAINTAINERS |    4 ++++
+>  1 files changed, 4 insertions(+), 0 deletions(-)
 > 
-> Is this a requirement? Everybody following topic already knows about
-> Oren's patchset.
-
-Some people do ack other people's work. See for example patches #1
-and #24 in my recent post. You're welcome.
-
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index ab45488..0426b39 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -4630,6 +4630,8 @@ F:	drivers/net/wireless/ray*
+>  RCUTORTURE MODULE
+>  P:	Josh Triplett
+>  M:	josh@freedesktop.org
+> +P:	Paul E. McKenney
+> +M:	paulmck@linux.vnet.ibm.com
+>  S:	Maintained
+>  F:	Documentation/RCU/torture.txt
+>  F:	kernel/rcutorture.c
+> @@ -4656,6 +4658,8 @@ F:	net/rds/
+>  READ-COPY UPDATE (RCU)
+>  P:	Dipankar Sarma
+>  M:	dipankar@in.ibm.com
+> +P:	Paul E. McKenney
+> +M:	paulmck@linux.vnet.ibm.com
+>  W:	http://www.rdrop.com/users/paulmck/rclock/
+>  S:	Supported
+>  F:	Documentation/RCU/rcu.txt
 > 
->> - or is much farther along and pretty widely reviewed and tested (which is
->> only because he started earlier and, when we asked for your counterpatches
->> at an earlier stage, you would never reply) - or, most importantly, what
->> it is that you think your patchset does that his does not and cannot.
 > 
-> There are differences. And they're not small like you're trying to describe
-> but pretty big compared the scale of the problem.
-
-I've asked before, and I repeat now: can you enumerate these "big"
-scary differences that make it such a "big" problem ?
-
-So far, we identified two main "design" issues -
-
-1) Whether or not allow c/r of sub-container (partial hierarchy)
-
-2) Creation of restarting process hierarchy in kernel or in userspace
-
-As for #1, you are the _only_ one who advocates restricting c/r to
-a full container only. I guess you have your reasons, but I'm unsure
-what they may be.
-
-On the other hand, there has been a handful of use-cases and opinions
-in favor of allowing both capabilities to co-exist. Not the mention
-that nearly no additional code is necessary, on the contrary.
-
-As for #2, you didn't even bother to reply to the discussion that I
-had started about it. This decision is important to allow future
-flexibility of the mechanism, and to address the needs of several
-potential users, as seen in that discussion and others. Here, too,
-you are the _only_ one that advocates that direction.
-
-And the funniest thing -- *both* decisions can be *easily* overturned
-in my patchset. In fact, regarding #2 - either way can be easily done
-in it.
-
-So I wonder, what are the "big" issues that bother you so much ?
-"if there is a will, there is a way".
-
-> 
->> *Why* are you spending your time on this instead of helping with Oren's set?
-> 
-> Because we disagree with some core directions Oren chose.
-> ANK literally said: "I don't know how to dump live netns".
-
-Eh... and you have it all sorted out ?  (yeah, I do, but not in
-this patchset).
-
-> 
-> So, partly patchset was created so that absolutely nobody will tell us
-> to shut up and show the code.
-
-Oh well ... "the" code meaning "your" code I suppose.
-
-> 
-> The other part, is that I looked at Oren patchset, found quite a lot of
-> suspicious, broken and unclean places and decided that it'd be faster
-> to start from scratch because sending patches will overhaul like 85% of
-> the code.
-
-So you actually took the time to read and review. And then you spent
-even more time in .... calculating this number !  Feedback appreciated.
-
-If you looked closely you would have seen that we do address your
-concerns over time.
-
-> 
-> One example, is why CKPT_HDR_CPU and CKPT_RESTART_BLOCK exist at all?
-> Should objects in image be only what sharable objects are in kernel
-> (expect VMAs, pages and possibly file descriptors)? pt_regs don't exist
-> by themselves after all.
-
-A good reason to break it into small pieces is for ease of maintenance
-and debugging, as well as in the future easier transition between
-incompatible kernel versions. I think it's better than a few-pages-long
-single struct. And it encourages more naming of things.
-
-But ... I'm confused ... is this your "big" concern ?  Oh well, if
-that's what stands in your way, we could even rework that (~1.3% of
-the code ? I reckon...).
-
-> 
-> And since you guys showed that just idea of in-kernel checkpointing is not
-> rejected outright, it doesn't mean that you can drag every single idea too.
-> Because history shows, that once something (especially user-visible,
-> like restart syscall semantics) is in kernel it's nearly impossible
-> to cut it out, so it's very-very important to get it right from the very
-> beginning.
-> 
-
-Yes. Let's indeed talk about how to get it "right". Please do
-participate in the public discussions and efforts. Working together
-would be better for everyone.
-
-> Now here goes second version, with prefixes fixed (kstate_") like Ingo
-> suggested and so Linus could look at the code and with C/R code moved
-> close to usual code and with more checks added (which you should have
-> already!) to not restore null selector in %cs for example.
-
-It is far from perfect. In fact, it's even clearly commented as such,
-and exactly there.  It would have been helpful if you pointed that
-out in a review, or even - god forbid - sent a patch to improve it.
-
-But it works, and it lets people play with a more-than-a-toy
-implementation and provide us with important feedback. Oh, and by
-the way, it doesn't require that people use containers to try it out.
-Pretty handy, don't you think ?
-
-> 
->> The code really isn't all that different...
-> 
->> Maybe you just think that two independently written patchsets will expose
->> more gotchas that we'll need to catch, so you're continuing on this effort
->> under the expectation that eventualy we'll merge the two sets?
-> 
-> Well, it already exposes. Just print both, and watch for differences.
-> 
->> Honestly, I have great respect for your coding abilities.  And if 'voices
->> from on high' tell us to base upon your code, I'd be fine with that, I
->> have no real problems with what I see on yet another cursory look.  But
->> given the amount of collective time that's been spent developing, reviewing,
->> and testing Oren's set, it wouldn't make any sense to just jump.  So
->> I'd still just like to know how you see this proceeding.
-> 
-> Yes, please, someone decide on "checkpoint semi-live container" issue.
-
-Have you not yet read enough opinion of users that would like to see
-this capability ?  What would be enough to convince you ?  And really,
-why not ?
-
-Cheers,
-
-Oren.
-
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
