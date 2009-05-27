@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763473AbZE0Hek@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763443AbZE0He1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763473AbZE0Hek (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 03:34:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762471AbZE0H12
+	id S1763443AbZE0He1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 03:34:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762480AbZE0H10
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 03:27:28 -0400
+	Wed, 27 May 2009 03:27:26 -0400
 Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:46942 "EHLO
 	monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762455AbZE0H10 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 03:27:26 -0400
+	id S1762486AbZE0H1X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 03:27:23 -0400
 From: Michal Simek <monstr@monstr.eu>
 To: linux-kernel@vger.kernel.org
 Cc: john.williams@petalogix.com, microblaze-uclinux@itee.uq.edu.au,
        michal.simek@petalogix.com, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 11/29] microblaze_mmu_v2: pgalloc.h and page.h
-Date: Wed, 27 May 2009 08:47:36 +0200
-Message-Id: <1243406874-3917-12-git-send-email-monstr@monstr.eu>
+Subject: [PATCH 18/29] microblaze_mmu_v2: uaccess MMU update
+Date: Wed, 27 May 2009 08:47:43 +0200
+Message-Id: <1243406874-3917-19-git-send-email-monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <1243406874-3917-11-git-send-email-monstr@monstr.eu>
+In-Reply-To: <1243406874-3917-18-git-send-email-monstr@monstr.eu>
 References: <1243406874-3917-1-git-send-email-monstr@monstr.eu>
  <1243406874-3917-2-git-send-email-monstr@monstr.eu>
  <1243406874-3917-3-git-send-email-monstr@monstr.eu>
@@ -29,259 +29,28 @@ References: <1243406874-3917-1-git-send-email-monstr@monstr.eu>
  <1243406874-3917-9-git-send-email-monstr@monstr.eu>
  <1243406874-3917-10-git-send-email-monstr@monstr.eu>
  <1243406874-3917-11-git-send-email-monstr@monstr.eu>
+ <1243406874-3917-12-git-send-email-monstr@monstr.eu>
+ <1243406874-3917-13-git-send-email-monstr@monstr.eu>
+ <1243406874-3917-14-git-send-email-monstr@monstr.eu>
+ <1243406874-3917-15-git-send-email-monstr@monstr.eu>
+ <1243406874-3917-16-git-send-email-monstr@monstr.eu>
+ <1243406874-3917-17-git-send-email-monstr@monstr.eu>
+ <1243406874-3917-18-git-send-email-monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/include/asm/page.h    |  166 +++++++++++++++++++++--------
- arch/microblaze/include/asm/pgalloc.h |  191 +++++++++++++++++++++++++++++++++
- 2 files changed, 314 insertions(+), 43 deletions(-)
+ arch/microblaze/include/asm/uaccess.h |  298 +++++++++++++++++++++++++++------
+ arch/microblaze/lib/uaccess_old.S     |  135 +++++++++++++++
+ 2 files changed, 381 insertions(+), 52 deletions(-)
+ create mode 100644 arch/microblaze/lib/uaccess_old.S
 
-diff --git a/arch/microblaze/include/asm/page.h b/arch/microblaze/include/asm/page.h
-index 7238dcf..210e584 100644
---- a/arch/microblaze/include/asm/page.h
-+++ b/arch/microblaze/include/asm/page.h
-@@ -1,6 +1,8 @@
- /*
-- * Copyright (C) 2008 Michal Simek
-- * Copyright (C) 2008 PetaLogix
-+ * VM ops
-+ *
-+ * Copyright (C) 2008-2009 Michal Simek <monstr@monstr.eu>
-+ * Copyright (C) 2008-2009 PetaLogix
-  * Copyright (C) 2006 Atmark Techno, Inc.
-  * Changes for MMU support:
-  *    Copyright (C) 2007 Xilinx, Inc.  All rights reserved.
-@@ -15,14 +17,15 @@
- 
- #include <linux/pfn.h>
- #include <asm/setup.h>
-+#include <linux/const.h>
-+
-+#ifdef __KERNEL__
- 
- /* PAGE_SHIFT determines the page size */
- #define PAGE_SHIFT	(12)
--#define PAGE_SIZE	(1UL << PAGE_SHIFT)
-+#define PAGE_SIZE	(_AC(1, UL) << PAGE_SHIFT)
- #define PAGE_MASK	(~(PAGE_SIZE-1))
- 
--#ifdef __KERNEL__
--
- #ifndef __ASSEMBLY__
- 
- #define PAGE_UP(addr)	(((addr)+((PAGE_SIZE)-1))&(~((PAGE_SIZE)-1)))
-@@ -35,6 +38,7 @@
- /* align addr on a size boundary - adjust address up if needed */
- #define _ALIGN(addr, size)	_ALIGN_UP(addr, size)
- 
-+#ifndef CONFIG_MMU
- /*
-  * PAGE_OFFSET -- the first address of the first page of memory. When not
-  * using MMU this corresponds to the first free page in physical memory (aligned
-@@ -43,15 +47,44 @@
- extern unsigned int __page_offset;
- #define PAGE_OFFSET __page_offset
- 
--#define copy_page(to, from)			memcpy((to), (from), PAGE_SIZE)
--#define get_user_page(vaddr)			__get_free_page(GFP_KERNEL)
--#define free_user_page(page, addr)		free_page(addr)
-+#else /* CONFIG_MMU */
- 
--#define clear_page(pgaddr)			memset((pgaddr), 0, PAGE_SIZE)
-+/*
-+ * PAGE_OFFSET -- the first address of the first page of memory. With MMU
-+ * it is set to the kernel start address (aligned on a page boundary).
-+ *
-+ * CONFIG_KERNEL_START is defined in arch/microblaze/config.in and used
-+ * in arch/microblaze/Makefile.
-+ */
-+#define PAGE_OFFSET	CONFIG_KERNEL_START
- 
-+/*
-+ * MAP_NR -- given an address, calculate the index of the page struct which
-+ * points to the address's page.
-+ */
-+#define MAP_NR(addr) (((unsigned long)(addr) - PAGE_OFFSET) >> PAGE_SHIFT)
- 
--#define clear_user_page(pgaddr, vaddr, page)	memset((pgaddr), 0, PAGE_SIZE)
--#define copy_user_page(vto, vfrom, vaddr, topg) \
-+/*
-+ * The basic type of a PTE - 32 bit physical addressing.
-+ */
-+typedef unsigned long pte_basic_t;
-+#define PTE_SHIFT	(PAGE_SHIFT - 2)	/* 1024 ptes per page */
-+#define PTE_FMT		"%.8lx"
-+
-+#endif /* CONFIG_MMU */
-+
-+#  ifndef CONFIG_MMU
-+#  define copy_page(to, from)			memcpy((to), (from), PAGE_SIZE)
-+#  define get_user_page(vaddr)			__get_free_page(GFP_KERNEL)
-+#  define free_user_page(page, addr)		free_page(addr)
-+#  else /* CONFIG_MMU */
-+extern void copy_page(void *to, void *from);
-+#  endif /* CONFIG_MMU */
-+
-+# define clear_page(pgaddr)			memset((pgaddr), 0, PAGE_SIZE)
-+
-+# define clear_user_page(pgaddr, vaddr, page)	memset((pgaddr), 0, PAGE_SIZE)
-+# define copy_user_page(vto, vfrom, vaddr, topg) \
- 			memcpy((vto), (vfrom), PAGE_SIZE)
- 
- /*
-@@ -60,21 +93,32 @@ extern unsigned int __page_offset;
- typedef struct page *pgtable_t;
- typedef struct { unsigned long	pte; }		pte_t;
- typedef struct { unsigned long	pgprot; }	pgprot_t;
-+/* FIXME this can depend on linux kernel version */
-+#   ifdef CONFIG_MMU
-+typedef struct { unsigned long pmd; } pmd_t;
-+typedef struct { unsigned long pgd; } pgd_t;
-+#   else /* CONFIG_MMU */
- typedef struct { unsigned long	ste[64]; }	pmd_t;
- typedef struct { pmd_t		pue[1]; }	pud_t;
- typedef struct { pud_t		pge[1]; }	pgd_t;
-+#   endif /* CONFIG_MMU */
- 
-+# define pte_val(x)	((x).pte)
-+# define pgprot_val(x)	((x).pgprot)
- 
--#define pte_val(x)	((x).pte)
--#define pgprot_val(x)	((x).pgprot)
--#define pmd_val(x)	((x).ste[0])
--#define pud_val(x)	((x).pue[0])
--#define pgd_val(x)	((x).pge[0])
-+#   ifdef CONFIG_MMU
-+#   define pmd_val(x)      ((x).pmd)
-+#   define pgd_val(x)      ((x).pgd)
-+#   else  /* CONFIG_MMU */
-+#   define pmd_val(x)	((x).ste[0])
-+#   define pud_val(x)	((x).pue[0])
-+#   define pgd_val(x)	((x).pge[0])
-+#   endif  /* CONFIG_MMU */
- 
--#define __pte(x)	((pte_t) { (x) })
--#define __pmd(x)	((pmd_t) { (x) })
--#define __pgd(x)	((pgd_t) { (x) })
--#define __pgprot(x)	((pgprot_t) { (x) })
-+# define __pte(x)	((pte_t) { (x) })
-+# define __pmd(x)	((pmd_t) { (x) })
-+# define __pgd(x)	((pgd_t) { (x) })
-+# define __pgprot(x)	((pgprot_t) { (x) })
- 
- /**
-  * Conversions for virtual address, physical address, pfn, and struct
-@@ -94,44 +138,80 @@ extern unsigned long max_low_pfn;
- extern unsigned long min_low_pfn;
- extern unsigned long max_pfn;
- 
--#define __pa(vaddr)		((unsigned long) (vaddr))
--#define __va(paddr)		((void *) (paddr))
-+extern unsigned long memory_start;
-+extern unsigned long memory_end;
-+extern unsigned long memory_size;
- 
--#define phys_to_pfn(phys)	(PFN_DOWN(phys))
--#define pfn_to_phys(pfn)	(PFN_PHYS(pfn))
-+extern int page_is_ram(unsigned long pfn);
- 
--#define virt_to_pfn(vaddr)	(phys_to_pfn((__pa(vaddr))))
--#define pfn_to_virt(pfn)	__va(pfn_to_phys((pfn)))
-+# define phys_to_pfn(phys)	(PFN_DOWN(phys))
-+# define pfn_to_phys(pfn)	(PFN_PHYS(pfn))
- 
--#define virt_to_page(vaddr)	(pfn_to_page(virt_to_pfn(vaddr)))
--#define page_to_virt(page)	(pfn_to_virt(page_to_pfn(page)))
-+# define virt_to_pfn(vaddr)	(phys_to_pfn((__pa(vaddr))))
-+# define pfn_to_virt(pfn)	__va(pfn_to_phys((pfn)))
- 
--#define page_to_phys(page)	(pfn_to_phys(page_to_pfn(page)))
--#define page_to_bus(page)	(page_to_phys(page))
--#define phys_to_page(paddr)	(pfn_to_page(phys_to_pfn(paddr)))
-+#  ifdef CONFIG_MMU
-+#  define virt_to_page(kaddr) 	(mem_map +  MAP_NR(kaddr))
-+#  else /* CONFIG_MMU */
-+#  define virt_to_page(vaddr)	(pfn_to_page(virt_to_pfn(vaddr)))
-+#  define page_to_virt(page)	(pfn_to_virt(page_to_pfn(page)))
-+#  define page_to_phys(page)	(pfn_to_phys(page_to_pfn(page)))
-+#  define page_to_bus(page)	(page_to_phys(page))
-+#  define phys_to_page(paddr)	(pfn_to_page(phys_to_pfn(paddr)))
-+#  endif /* CONFIG_MMU */
- 
--extern unsigned int memory_start;
--extern unsigned int memory_end;
--extern unsigned int memory_size;
-+#  ifndef CONFIG_MMU
-+#  define pfn_valid(pfn)	((pfn) >= min_low_pfn && (pfn) <= max_mapnr)
-+#  define ARCH_PFN_OFFSET	(PAGE_OFFSET >> PAGE_SHIFT)
-+#  else /* CONFIG_MMU */
-+#  define ARCH_PFN_OFFSET	(memory_start >> PAGE_SHIFT)
-+#  define pfn_valid(pfn)	((pfn) < (max_mapnr + ARCH_PFN_OFFSET))
-+#  define VALID_PAGE(page) 	((page - mem_map) < max_mapnr)
-+#  endif /* CONFIG_MMU */
- 
--#define pfn_valid(pfn)		((pfn) >= min_low_pfn && (pfn) < max_mapnr)
-+# endif /* __ASSEMBLY__ */
- 
--#define ARCH_PFN_OFFSET		(PAGE_OFFSET >> PAGE_SHIFT)
-+#define	virt_addr_valid(vaddr)	(pfn_valid(virt_to_pfn(vaddr)))
- 
--#else
--#define tophys(rd, rs)	(addik rd, rs, 0)
--#define tovirt(rd, rs)	(addik rd, rs, 0)
--#endif /* __ASSEMBLY__ */
- 
--#define virt_addr_valid(vaddr)	(pfn_valid(virt_to_pfn(vaddr)))
-+#  ifndef CONFIG_MMU
-+#  define __pa(vaddr)	((unsigned long) (vaddr))
-+#  define __va(paddr)	((void *) (paddr))
-+#  else /* CONFIG_MMU */
-+#  define __pa(x)	__virt_to_phys((unsigned long)(x))
-+#  define __va(x)	((void *)__phys_to_virt((unsigned long)(x)))
-+#  endif /* CONFIG_MMU */
-+
- 
--/* Convert between virtual and physical address for MMU.  */
--/* Handle MicroBlaze processor with virtual memory.  */
-+/* Convert between virtual and physical address for MMU. */
-+/* Handle MicroBlaze processor with virtual memory. */
-+#ifndef CONFIG_MMU
- #define __virt_to_phys(addr)	addr
- #define __phys_to_virt(addr)	addr
-+#define tophys(rd, rs)	addik rd, rs, 0
-+#define tovirt(rd, rs)	addik rd, rs, 0
-+#else
-+#define __virt_to_phys(addr) \
-+	((addr) + CONFIG_KERNEL_BASE_ADDR - CONFIG_KERNEL_START)
-+#define __phys_to_virt(addr) \
-+	((addr) + CONFIG_KERNEL_START - CONFIG_KERNEL_BASE_ADDR)
-+#define tophys(rd, rs) \
-+	addik rd, rs, (CONFIG_KERNEL_BASE_ADDR - CONFIG_KERNEL_START)
-+#define tovirt(rd, rs) \
-+	addik rd, rs, (CONFIG_KERNEL_START - CONFIG_KERNEL_BASE_ADDR)
-+#endif /* CONFIG_MMU */
- 
- #define TOPHYS(addr)  __virt_to_phys(addr)
- 
-+#ifdef CONFIG_MMU
-+#ifdef CONFIG_CONTIGUOUS_PAGE_ALLOC
-+#define WANT_PAGE_VIRTUAL 1 /* page alloc 2 relies on this */
-+#endif
-+
-+#define VM_DATA_DEFAULT_FLAGS	(VM_READ | VM_WRITE | VM_EXEC | \
-+				 VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC)
-+#endif /* CONFIG_MMU */
-+
- #endif /* __KERNEL__ */
- 
- #include <asm-generic/memory_model.h>
-diff --git a/arch/microblaze/include/asm/pgalloc.h b/arch/microblaze/include/asm/pgalloc.h
-index 2a4b354..59a757e 100644
---- a/arch/microblaze/include/asm/pgalloc.h
-+++ b/arch/microblaze/include/asm/pgalloc.h
+diff --git a/arch/microblaze/include/asm/uaccess.h b/arch/microblaze/include/asm/uaccess.h
+index a4e171d..65adad6 100644
+--- a/arch/microblaze/include/asm/uaccess.h
++++ b/arch/microblaze/include/asm/uaccess.h
 @@ -1,4 +1,6 @@
  /*
 + * Copyright (C) 2008-2009 Michal Simek <monstr@monstr.eu>
@@ -289,202 +58,476 @@ index 2a4b354..59a757e 100644
   * Copyright (C) 2006 Atmark Techno, Inc.
   *
   * This file is subject to the terms and conditions of the GNU General Public
-@@ -9,6 +11,195 @@
- #ifndef _ASM_MICROBLAZE_PGALLOC_H
- #define _ASM_MICROBLAZE_PGALLOC_H
+@@ -26,6 +28,10 @@
+ #define VERIFY_READ	0
+ #define VERIFY_WRITE	1
  
-+#ifdef CONFIG_MMU
++#define __clear_user(addr, n)	(memset((void *)(addr), 0, (n)), 0)
 +
-+#include <linux/kernel.h>	/* For min/max macros */
-+#include <linux/highmem.h>
-+#include <asm/setup.h>
-+#include <asm/io.h>
-+#include <asm/page.h>
-+#include <asm/cache.h>
++#ifndef CONFIG_MMU
 +
-+#define PGDIR_ORDER	0
+ extern int ___range_ok(unsigned long addr, unsigned long size);
+ 
+ #define __range_ok(addr, size) \
+@@ -38,63 +44,64 @@ extern int ___range_ok(unsigned long addr, unsigned long size);
+ extern int bad_user_access_length(void);
+ 
+ /* FIXME this is function for optimalization -> memcpy */
+-#define __get_user(var, ptr)					\
+-	({							\
+-		int __gu_err = 0;				\
+-		switch (sizeof(*(ptr))) {			\
+-		case 1:						\
+-		case 2:						\
+-		case 4:						\
+-			(var) = *(ptr);				\
+-			break;					\
+-		case 8:						\
+-			memcpy((void *) &(var), (ptr), 8);	\
+-			break;					\
+-		default:					\
+-			(var) = 0;				\
+-			__gu_err = __get_user_bad();		\
+-			break;					\
+-		}						\
+-		__gu_err;					\
+-	})
++#define __get_user(var, ptr)				\
++({							\
++	int __gu_err = 0;				\
++	switch (sizeof(*(ptr))) {			\
++	case 1:						\
++	case 2:						\
++	case 4:						\
++		(var) = *(ptr);				\
++		break;					\
++	case 8:						\
++		memcpy((void *) &(var), (ptr), 8);	\
++		break;					\
++	default:					\
++		(var) = 0;				\
++		__gu_err = __get_user_bad();		\
++		break;					\
++	}						\
++	__gu_err;					\
++})
+ 
+ #define __get_user_bad()	(bad_user_access_length(), (-EFAULT))
+ 
++/* FIXME is not there defined __pu_val */
+ #define __put_user(var, ptr)					\
+-	({							\
+-		int __pu_err = 0;				\
+-		switch (sizeof(*(ptr))) {			\
+-		case 1:						\
+-		case 2:						\
+-		case 4:						\
+-			*(ptr) = (var);				\
+-			break;					\
+-		case 8: {					\
+-			typeof(*(ptr)) __pu_val = var;		\
+-			memcpy(ptr, &__pu_val, sizeof(__pu_val));\
+-			}					\
+-			break;					\
+-		default:					\
+-			__pu_err = __put_user_bad();		\
+-			break;					\
+-		}							\
+-		__pu_err;						\
+-	})
++({								\
++	int __pu_err = 0;					\
++	switch (sizeof(*(ptr))) {				\
++	case 1:							\
++	case 2:							\
++	case 4:							\
++		*(ptr) = (var);					\
++		break;						\
++	case 8: {						\
++		typeof(*(ptr)) __pu_val = (var);		\
++		memcpy(ptr, &__pu_val, sizeof(__pu_val));	\
++		}						\
++		break;						\
++	default:						\
++		__pu_err = __put_user_bad();			\
++		break;						\
++	}							\
++	__pu_err;						\
++})
+ 
+ #define __put_user_bad()	(bad_user_access_length(), (-EFAULT))
+ 
+-#define put_user(x, ptr)	__put_user(x, ptr)
+-#define get_user(x, ptr)	__get_user(x, ptr)
+-
+-#define copy_to_user(to, from, n)		(memcpy(to, from, n), 0)
+-#define copy_from_user(to, from, n)		(memcpy(to, from, n), 0)
++#define put_user(x, ptr)	__put_user((x), (ptr))
++#define get_user(x, ptr)	__get_user((x), (ptr))
+ 
+-#define __copy_to_user(to, from, n)		(copy_to_user(to, from, n))
+-#define __copy_from_user(to, from, n)		(copy_from_user(to, from, n))
+-#define __copy_to_user_inatomic(to, from, n)	(__copy_to_user(to, from, n))
+-#define __copy_from_user_inatomic(to, from, n)	(__copy_from_user(to, from, n))
++#define copy_to_user(to, from, n)	(memcpy((to), (from), (n)), 0)
++#define copy_from_user(to, from, n)	(memcpy((to), (from), (n)), 0)
+ 
+-#define __clear_user(addr, n)	(memset((void *)addr, 0, n), 0)
++#define __copy_to_user(to, from, n)	(copy_to_user((to), (from), (n)))
++#define __copy_from_user(to, from, n)	(copy_from_user((to), (from), (n)))
++#define __copy_to_user_inatomic(to, from, n) \
++			(__copy_to_user((to), (from), (n)))
++#define __copy_from_user_inatomic(to, from, n) \
++			(__copy_from_user((to), (from), (n)))
+ 
+ static inline unsigned long clear_user(void *addr, unsigned long size)
+ {
+@@ -103,13 +110,200 @@ static inline unsigned long clear_user(void *addr, unsigned long size)
+ 	return size;
+ }
+ 
+-/* Returns 0 if exception not found and fixup otherwise. */
++/* Returns 0 if exception not found and fixup otherwise.  */
+ extern unsigned long search_exception_table(unsigned long);
+ 
++extern long strncpy_from_user(char *dst, const char *src, long count);
++extern long strnlen_user(const char *src, long count);
++
++#else /* CONFIG_MMU */
 +
 +/*
-+ * This is handled very differently on MicroBlaze since out page tables
-+ * are all 0's and I want to be able to use these zero'd pages elsewhere
-+ * as well - it gives us quite a speedup.
-+ * -- Cort
++ * Address is valid if:
++ *  - "addr", "addr + size" and "size" are all below the limit
 + */
-+extern struct pgtable_cache_struct {
-+	unsigned long *pgd_cache;
-+	unsigned long *pte_cache;
-+	unsigned long pgtable_cache_sz;
-+} quicklists;
++#define access_ok(type, addr, size) \
++	(get_fs().seg > (((unsigned long)(addr)) | \
++		(size) | ((unsigned long)(addr) + (size))))
 +
-+#define pgd_quicklist		(quicklists.pgd_cache)
-+#define pmd_quicklist		((unsigned long *)0)
-+#define pte_quicklist		(quicklists.pte_cache)
-+#define pgtable_cache_size	(quicklists.pgtable_cache_sz)
-+
-+extern unsigned long *zero_cache; /* head linked list of pre-zero'd pages */
-+extern atomic_t zero_sz; /* # currently pre-zero'd pages */
-+extern atomic_t zeropage_hits; /* # zero'd pages request that we've done */
-+extern atomic_t zeropage_calls; /* # zero'd pages request that've been made */
-+extern atomic_t zerototal; /* # pages zero'd over time */
-+
-+#define zero_quicklist		(zero_cache)
-+#define zero_cache_sz	 	(zero_sz)
-+#define zero_cache_calls	(zeropage_calls)
-+#define zero_cache_hits		(zeropage_hits)
-+#define zero_cache_total	(zerototal)
++/* || printk("access_ok failed for %s at 0x%08lx (size %d), seg 0x%08x\n",
++ type?"WRITE":"READ",addr,size,get_fs().seg)) */
 +
 +/*
-+ * return a pre-zero'd page from the list,
-+ * return NULL if none available -- Cort
++ * All the __XXX versions macros/functions below do not perform
++ * access checking. It is assumed that the necessary checks have been
++ * already performed before the finction (macro) is called.
 + */
-+extern unsigned long get_zero_page_fast(void);
 +
-+extern void __bad_pte(pmd_t *pmd);
++#define get_user(x, ptr)						\
++({									\
++	access_ok(VERIFY_READ, (ptr), sizeof(*(ptr)))			\
++		? __get_user((x), (ptr)) : -EFAULT;			\
++})
 +
-+extern inline pgd_t *get_pgd_slow(void)
-+{
-+	pgd_t *ret;
++#define put_user(x, ptr)						\
++({									\
++	access_ok(VERIFY_WRITE, (ptr), sizeof(*(ptr)))			\
++		? __put_user((x), (ptr)) : -EFAULT;			\
++})
 +
-+	ret = (pgd_t *)__get_free_pages(GFP_KERNEL, PGDIR_ORDER);
-+	if (ret != NULL)
-+		clear_page(ret);
-+	return ret;
-+}
++#define __get_user(x, ptr)						\
++({									\
++	unsigned long __gu_val;						\
++	/*unsigned long __gu_ptr = (unsigned long)(ptr);*/		\
++	long __gu_err;							\
++	switch (sizeof(*(ptr))) {					\
++	case 1:								\
++		__get_user_asm("lbu", (ptr), __gu_val, __gu_err);	\
++		break;							\
++	case 2:								\
++		__get_user_asm("lhu", (ptr), __gu_val, __gu_err);	\
++		break;							\
++	case 4:								\
++		__get_user_asm("lw", (ptr), __gu_val, __gu_err);	\
++		break;							\
++	default:							\
++		__gu_val = 0; __gu_err = -EINVAL;			\
++	}								\
++	x = (__typeof__(*(ptr))) __gu_val;				\
++	__gu_err;							\
++})
 +
-+extern inline pgd_t *get_pgd_fast(void)
-+{
-+	unsigned long *ret;
++#define __get_user_asm(insn, __gu_ptr, __gu_val, __gu_err)		\
++({									\
++	__asm__ __volatile__ (						\
++			"1:"	insn	" %1, %2, r0;			\
++				addk	%0, r0, r0;			\
++			2:						\
++			.section .fixup,\"ax\";				\
++			3:	brid	2b;				\
++				addik	%0, r0, %3;			\
++			.previous;					\
++			.section __ex_table,\"a\";			\
++			.word	1b,3b;					\
++			.previous;"					\
++		: "=r"(__gu_err), "=r"(__gu_val)			\
++		: "r"(__gu_ptr), "i"(-EFAULT)				\
++	);								\
++})
 +
-+	ret = pgd_quicklist;
-+	if (ret != NULL) {
-+		pgd_quicklist = (unsigned long *)(*ret);
-+		ret[0] = 0;
-+		pgtable_cache_size--;
-+	} else
-+		ret = (unsigned long *)get_pgd_slow();
-+	return (pgd_t *)ret;
-+}
++#define __put_user(x, ptr)						\
++({									\
++	__typeof__(*(ptr)) __gu_val = x;				\
++	long __gu_err = 0;						\
++	switch (sizeof(__gu_val)) {					\
++	case 1:								\
++		__put_user_asm("sb", (ptr), __gu_val, __gu_err);	\
++		break;							\
++	case 2: 							\
++		__put_user_asm("sh", (ptr), __gu_val, __gu_err);	\
++		break;							\
++	case 4:								\
++		__put_user_asm("sw", (ptr), __gu_val, __gu_err);	\
++		break;							\
++	case 8:								\
++		__put_user_asm_8((ptr), __gu_val, __gu_err);		\
++		break;							\
++	default:							\
++		__gu_err = -EINVAL;					\
++	}								\
++	__gu_err;							\
++})
 +
-+extern inline void free_pgd_fast(pgd_t *pgd)
-+{
-+	*(unsigned long **)pgd = pgd_quicklist;
-+	pgd_quicklist = (unsigned long *) pgd;
-+	pgtable_cache_size++;
-+}
++#define __put_user_asm_8(__gu_ptr, __gu_val, __gu_err)	\
++({							\
++__asm__ __volatile__ ("	lwi	%0, %1, 0;		\
++		1:	swi	%0, %2, 0;		\
++			lwi	%0, %1, 4;		\
++		2:	swi	%0, %2, 4;		\
++			addk	%0,r0,r0;		\
++		3:					\
++		.section .fixup,\"ax\";			\
++		4:	brid	3b;			\
++			addik	%0, r0, %3;		\
++		.previous;				\
++		.section __ex_table,\"a\";		\
++		.word	1b,4b,2b,4b;			\
++		.previous;"				\
++	: "=&r"(__gu_err)				\
++	: "r"(&__gu_val),				\
++	"r"(__gu_ptr), "i"(-EFAULT)			\
++	);						\
++})
 +
-+extern inline void free_pgd_slow(pgd_t *pgd)
-+{
-+	free_page((unsigned long)pgd);
-+}
-+
-+#define pgd_free(mm, pgd)        free_pgd_fast(pgd)
-+#define pgd_alloc(mm)		get_pgd_fast()
-+
-+#define pmd_pgtable(pmd)	pmd_page(pmd)
++#define __put_user_asm(insn, __gu_ptr, __gu_val, __gu_err)	\
++({								\
++	__asm__ __volatile__ (					\
++			"1:"	insn	" %1, %2, r0;		\
++				addk	%0, r0, r0;		\
++			2:					\
++			.section .fixup,\"ax\";			\
++			3:	brid	2b;			\
++				addik	%0, r0, %3;		\
++			.previous;				\
++			.section __ex_table,\"a\";		\
++			.word	1b,3b;				\
++			.previous;"				\
++		: "=r"(__gu_err)				\
++		: "r"(__gu_val), "r"(__gu_ptr), "i"(-EFAULT)	\
++	);							\
++})
 +
 +/*
-+ * We don't have any real pmd's, and this code never triggers because
-+ * the pgd will always be present..
++ * Return: number of not copied bytes, i.e. 0 if OK or non-zero if fail.
 + */
-+#define pmd_alloc_one_fast(mm, address)	({ BUG(); ((pmd_t *)1); })
-+#define pmd_alloc_one(mm, address)	({ BUG(); ((pmd_t *)2); })
-+/* FIXME two definition - look below */
-+#define pmd_free(mm, x)			do { } while (0)
-+#define pgd_populate(mm, pmd, pte)	BUG()
-+
-+static inline pte_t *pte_alloc_one_kernel(struct mm_struct *mm,
-+		unsigned long address)
++static inline int clear_user(char *to, int size)
 +{
-+	pte_t *pte;
-+	extern int mem_init_done;
-+	extern void *early_get_page(void);
-+	if (mem_init_done) {
-+		pte = (pte_t *)__get_free_page(GFP_KERNEL |
-+					__GFP_REPEAT | __GFP_ZERO);
-+	} else {
-+		pte = (pte_t *)early_get_page();
-+		if (pte)
-+			clear_page(pte);
++	if (size && access_ok(VERIFY_WRITE, to, size)) {
++		__asm__ __volatile__ ("				\
++				1:				\
++					sb	r0, %2, r0;	\
++					addik	%0, %0, -1;	\
++					bneid	%0, 1b;		\
++					addik	%2, %2, 1;	\
++				2:				\
++				.section __ex_table,\"a\";	\
++				.word	1b,2b;			\
++				.section .text;"		\
++			: "=r"(size)				\
++			: "0"(size), "r"(to)
++		);
 +	}
-+	return pte;
++	return size;
 +}
 +
-+static inline struct page *pte_alloc_one(struct mm_struct *mm,
-+		unsigned long address)
-+{
-+	struct page *ptepage;
++extern unsigned long __copy_tofrom_user(void __user *to,
++		const void __user *from, unsigned long size);
 +
-+#ifdef CONFIG_HIGHPTE
-+	int flags = GFP_KERNEL | __GFP_HIGHMEM | __GFP_REPEAT;
-+#else
-+	int flags = GFP_KERNEL | __GFP_REPEAT;
-+#endif
++#define copy_to_user(to, from, n)					\
++	(access_ok(VERIFY_WRITE, (to), (n)) ?				\
++		__copy_tofrom_user((void __user *)(to),			\
++			(__force const void __user *)(from), (n))	\
++		: -EFAULT)
 +
-+	ptepage = alloc_pages(flags, 0);
-+	if (ptepage)
-+		clear_highpage(ptepage);
-+	return ptepage;
-+}
++#define __copy_to_user(to, from, n)	copy_to_user((to), (from), (n))
++#define __copy_to_user_inatomic(to, from, n)	copy_to_user((to), (from), (n))
 +
-+static inline pte_t *pte_alloc_one_fast(struct mm_struct *mm,
-+		unsigned long address)
-+{
-+	unsigned long *ret;
++#define copy_from_user(to, from, n)					\
++	(access_ok(VERIFY_READ, (from), (n)) ?				\
++		__copy_tofrom_user((__force void __user *)(to),		\
++			(void __user *)(from), (n))			\
++		: -EFAULT)
 +
-+	ret = pte_quicklist;
-+	if (ret != NULL) {
-+		pte_quicklist = (unsigned long *)(*ret);
-+		ret[0] = 0;
-+		pgtable_cache_size--;
-+	}
-+	return (pte_t *)ret;
-+}
++#define __copy_from_user(to, from, n)	copy_from_user((to), (from), (n))
++#define __copy_from_user_inatomic(to, from, n) \
++		copy_from_user((to), (from), (n))
 +
-+extern inline void pte_free_fast(pte_t *pte)
-+{
-+	*(unsigned long **)pte = pte_quicklist;
-+	pte_quicklist = (unsigned long *) pte;
-+	pgtable_cache_size++;
-+}
++extern int __strncpy_user(char *to, const char __user *from, int len);
++extern int __strnlen_user(const char __user *sstr, int len);
 +
-+extern inline void pte_free_kernel(struct mm_struct *mm, pte_t *pte)
-+{
-+	free_page((unsigned long)pte);
-+}
-+
-+extern inline void pte_free_slow(struct page *ptepage)
-+{
-+	__free_page(ptepage);
-+}
-+
-+extern inline void pte_free(struct mm_struct *mm, struct page *ptepage)
-+{
-+	__free_page(ptepage);
-+}
-+
-+#define __pte_free_tlb(tlb, pte)	pte_free((tlb)->mm, (pte))
-+
-+#define pmd_populate(mm, pmd, pte)	(pmd_val(*(pmd)) = page_address(pte))
-+
-+#define pmd_populate_kernel(mm, pmd, pte) \
-+		(pmd_val(*(pmd)) = (unsigned long) (pte))
-+
-+/*
-+ * We don't have any real pmd's, and this code never triggers because
-+ * the pgd will always be present..
-+ */
-+#define pmd_alloc_one(mm, address)	({ BUG(); ((pmd_t *)2); })
-+/*#define pmd_free(mm, x)			do { } while (0)*/
-+#define __pmd_free_tlb(tlb, x)		do { } while (0)
-+#define pgd_populate(mm, pmd, pte)	BUG()
-+
-+extern int do_check_pgt_cache(int, int);
-+
++#define strncpy_from_user(to, from, len)	\
++		(access_ok(VERIFY_READ, from, 1) ?	\
++			__strncpy_user(to, from, len) : -EFAULT)
++#define strnlen_user(str, len)	\
++		(access_ok(VERIFY_READ, str, 1) ? __strnlen_user(str, len) : 0)
+ 
+-extern long strncpy_from_user(char *dst, const char __user *src, long count);
+-extern long strnlen_user(const char __user *src, long count);
+-extern long __strncpy_from_user(char *dst, const char __user *src, long count);
 +#endif /* CONFIG_MMU */
-+
- #define check_pgt_cache()	do {} while (0)
  
- #endif /* _ASM_MICROBLAZE_PGALLOC_H */
+ /*
+  * The exception table consists of pairs of addresses: the first is the
+diff --git a/arch/microblaze/lib/uaccess_old.S b/arch/microblaze/lib/uaccess_old.S
+new file mode 100644
+index 0000000..67f991c
+--- /dev/null
++++ b/arch/microblaze/lib/uaccess_old.S
+@@ -0,0 +1,135 @@
++/*
++ * Copyright (C) 2009 Michal Simek <monstr@monstr.eu>
++ * Copyright (C) 2009 PetaLogix
++ * Copyright (C) 2007 LynuxWorks, Inc.
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License.  See the file "COPYING" in the main directory of this archive
++ * for more details.
++ */
++
++#include <linux/errno.h>
++#include <linux/linkage.h>
++
++/*
++ * int __strncpy_user(char *to, char *from, int len);
++ *
++ * Returns:
++ *  -EFAULT  for an exception
++ *  len      if we hit the buffer limit
++ *  bytes copied
++ */
++
++	.text
++.globl __strncpy_user;
++.align 4;
++__strncpy_user:
++
++	/*
++	 * r5 - to
++	 * r6 - from
++	 * r7 - len
++	 * r3 - temp count
++	 * r4 - temp val
++	 */
++	addik	r3,r7,0		/* temp_count = len */
++	beqi	r3,3f
++1:
++	lbu	r4,r6,r0
++	sb	r4,r5,r0
++
++	addik	r3,r3,-1
++	beqi	r3,2f		/* break on len */
++
++	addik	r5,r5,1
++	bneid	r4,1b
++	addik	r6,r6,1		/* delay slot */
++	addik	r3,r3,1		/* undo "temp_count--" */
++2:
++	rsubk	r3,r3,r7	/* temp_count = len - temp_count */
++3:
++	rtsd	r15,8
++	nop
++
++
++	.section	.fixup, "ax"
++	.align	2
++4:
++	brid	3b
++	addik	r3,r0, -EFAULT
++
++	.section	__ex_table, "a"
++	.word	1b,4b
++
++/*
++ * int __strnlen_user(char __user *str, int maxlen);
++ *
++ * Returns:
++ *  0 on error
++ *  maxlen + 1  if no NUL byte found within maxlen bytes
++ *  size of the string (including NUL byte)
++ */
++
++	.text
++.globl __strnlen_user;
++.align 4;
++__strnlen_user:
++	addik	r3,r6,0
++	beqi	r3,3f
++1:
++	lbu	r4,r5,r0
++	beqid	r4,2f		/* break on NUL */
++	addik	r3,r3,-1	/* delay slot */
++
++	bneid	r3,1b
++	addik	r5,r5,1		/* delay slot */
++
++	addik	r3,r3,-1	/* for break on len */
++2:
++	rsubk	r3,r3,r6
++3:
++	rtsd	r15,8
++	nop
++
++
++	.section	.fixup,"ax"
++4:
++	brid	3b
++	addk	r3,r0,r0
++
++	.section	__ex_table,"a"
++	.word	1b,4b
++
++/*
++ * int __copy_tofrom_user(char *to, char *from, int len)
++ * Return:
++ *   0 on success
++ *   number of not copied bytes on error
++ */
++	.text
++.globl __copy_tofrom_user;
++.align 4;
++__copy_tofrom_user:
++	/*
++	 * r5 - to
++	 * r6 - from
++	 * r7, r3 - count
++	 * r4 - tempval
++	 */
++	addik	r3,r7,0
++	beqi	r3,3f
++1:
++	lbu	r4,r6,r0
++	addik	r6,r6,1
++2:
++	sb	r4,r5,r0
++	addik	r3,r3,-1
++	bneid	r3,1b
++	addik	r5,r5,1		/* delay slot */
++3:
++	rtsd	r15,8
++	nop
++
++
++	.section	__ex_table,"a"
++	.word	1b,3b,2b,3b
 -- 
 1.5.5.1
 
