@@ -1,76 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758924AbZE0ISI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759123AbZE0IWs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758924AbZE0ISI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 04:18:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756410AbZE0IRz
+	id S1759123AbZE0IWs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 04:22:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755537AbZE0IWe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 04:17:55 -0400
-Received: from mail-fx0-f168.google.com ([209.85.220.168]:46319 "EHLO
-	mail-fx0-f168.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752030AbZE0IRx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 04:17:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=WRgTql/lyRVj96/ruXsgpz05J1IDvR7cvTQfPTKiR3txKtbWXftZ2xbBZPWXP8y2IQ
-         ZZX6+jAsmYg5mDsKElSO9FvhH6/Erib0Jx26ufTYEstL3FDRZQDbItsL6lAf52s1v7+R
-         5b/+y9nTc5ZLIWt++h+cb8KzxAxLW4jYhT9J0=
-Date: Wed, 27 May 2009 10:17:50 +0200
-From: Andrea Righi <righi.andrea@gmail.com>
-To: Ryo Tsuruta <ryov@valinux.co.jp>
-Cc: vgoyal@redhat.com, guijianfeng@cn.fujitsu.com, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, jens.axboe@oracle.com,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       agk@redhat.com, dm-devel@redhat.com, snitzer@redhat.com,
-       m-ikeda@ds.jp.nec.com, akpm@linux-foundation.org
-Subject: Re: [PATCH] io-controller: Add io group reference handling for
-	request
-Message-ID: <20090527081749.GA7237@linux>
-References: <20090518140114.GB27080@redhat.com> <20090518143921.GE3113@linux> <20090526.203424.39179999.ryov@valinux.co.jp> <20090527.155631.226800550.ryov@valinux.co.jp>
+	Wed, 27 May 2009 04:22:34 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:62390 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754932AbZE0IWc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 04:22:32 -0400
+Message-ID: <4A1CF77E.20003@cn.fujitsu.com>
+Date: Wed, 27 May 2009 16:19:10 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090527.155631.226800550.ryov@valinux.co.jp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH] tracing: create events only when configed
+References: <4A167307.7020905@cn.fujitsu.com> <alpine.DEB.2.00.0905261227470.26705@gandalf.stny.rr.com>
+In-Reply-To: <alpine.DEB.2.00.0905261227470.26705@gandalf.stny.rr.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 27, 2009 at 03:56:31PM +0900, Ryo Tsuruta wrote:
-> > I think that only putting the hook in try_to_unmap() doesn't work
-> > correctly, because IOs will be charged to reclaiming processes or
-> > kswapd. These IOs should be charged to processes which cause memory
-> > pressure.
+Steven Rostedt wrote:
+> On Fri, 22 May 2009, Lai Jiangshan wrote:
 > 
-> Consider the following case:
+>> There some unneeded events in debugfs/tracing/ftrace/ when the
+>> corresponding CONFIG_XXXX=n.
+>>
+>> And when CONFIG_ENABLE_EVENT_TRACING=n, various events
+>> are still created.
+>>
+>> Now when CONFIG_ENABLE_EVENT_TRACING=n, various events are
+>> not created, trace_export.c is compiled only for creating
+>> TRACEPOINTs.
+>>
+>> [Impact:] cleanup
 > 
->   (1) There are two processes Proc-A and Proc-B.
->   (2) Proc-A maps a large file into many pages by mmap() and writes
->       many data to the file.
->   (3) After (2), Proc-B try to get a page, but there are no available
->       pages because Proc-A has used them.
->   (4) kernel starts to reclaim pages, call try_to_unmap() to unmap
->       a page which is owned by Proc-A, then blkio_cgroup_set_owner()
->       sets Proc-B's ID on the page because the task's context is Proc-B.
->   (5) After (4), kernel writes the page out to a disk. This IO is
->       charged to Proc-B.
+> I have an issue with this patch. I purposely kept the 
+> debugfs/tracing/ftrace events there since you may have a binary buffer 
+> that you want to read that has those events but you are not running a 
+> kernel that enabled them. But I guess the counter arguement for that is 
+> then those events may not be the same offset as the kernel that ran it. 
+> OK, maybe it would be fine to disable the events if the kernel does not 
+> use them. 
+
+All these offset/format/id(except TRACE_EVENT's id) are constant
+when kernel built.
+
+Could we GENERATE all these info when kernel built?
+
+This info will be installed to system when we 'make modules_install',
+and this info will be put into kernel-XXXXX.rpm by distributions
+which enable ftrace.
+
+This will highly help for reading a binary buffer which events
+are not for current running kernel. (And this binary buffer is
+maybe extracted a vmcore.)
+
+> We should also put the same #ifdef's around the structs to make 
+> sure no other trace uses them.
+
+Maybe I miss something,  I have no idea around WHICH structs
+we should also put the same #ifdef's. ^_^
+
 > 
-> In the above case, I think that the IO should be charged to a Proc-A,
-> because the IO is caused by Proc-A's memory pressure. 
-> I think we should consider in the case without memory and swap
-> isolation.
+> Still seems a bit messy with all those ifdefs :-/
+> 
+> The second change with the CONFIG_ENABLE_EVENT_TRACER is something that we 
+> are having issue with the make scripts. We want EVENT_TRACE enabled 
+> anytime TRACING is enabled. We do _not_ want to disable it.
+> 
 
-mmmh.. even if they're strictly related I think we're mixing two
-different problems in this way: memory pressure control and IO control.
+Thank you for told me.
 
-It seems you're proposing something like the badness() for OOM
-conditions to charge swap IO depending on how bad is a cgroup in terms
-of memory consumption. I don't think this is the right way to proceed,
-also because we already have the memory and swap control.
+One other thing:
 
--Andrea
+config EVENT_TRACING
+	bool
+
+config TRACING
+	bool
+	select DEBUG_FS
+	select RING_BUFFER
+	select STACKTRACE if STACKTRACE_SUPPORT
+	select TRACEPOINTS
+	select NOP_TRACER
+	select BINARY_PRINTF
+	select EVENT_TRACING
+
+No other config slects EVENT_TRACING, it means TRACING and EVENT_TRACING are the same thing, can we covert all config EVENT_TRACING to config TRACING, and remove EVENT_TRACING? (or reverse)
+
+Lai
+
