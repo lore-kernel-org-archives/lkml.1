@@ -1,114 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932316AbZE0XgO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760651AbZE0Xhf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932316AbZE0XgO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 19:36:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760885AbZE0Xfe
+	id S1760651AbZE0Xhf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 19:37:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755835AbZE0Xh1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 19:35:34 -0400
-Received: from mail-bw0-f222.google.com ([209.85.218.222]:49543 "EHLO
-	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757880AbZE0Xfc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 19:35:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=ulUBE8sWnozXJxpXxgR+dJQEEwNuGQcvmPooib1SMgPJW98R1Q9kDsuzwdUDfRDD3W
-         9booIPFQImlsS82axCD7lAUwXqJs09sZY/zDmI7qm6q8PHGn4QWqiWlBb461g8DdovJh
-         x73uzxHh/FT6reS12pv0H3gffpGb69TVFtrps=
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>, Zhaolei <zhaolei@cn.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH 2/2] ftrace: don't convert function's local variable name in macro
-Date: Thu, 28 May 2009 01:35:27 +0200
-Message-Id: <1243467327-13194-3-git-send-email-fweisbec@gmail.com>
-X-Mailer: git-send-email 1.6.2.3
-In-Reply-To: <1243467327-13194-1-git-send-email-fweisbec@gmail.com>
-References: <1243467327-13194-1-git-send-email-fweisbec@gmail.com>
+	Wed, 27 May 2009 19:37:27 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:37245 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754435AbZE0Xh1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 19:37:27 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@redhat.com>
+X-Fcc: ~/Mail/linus
+Cc: Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH 7/X] ptrace: mv task->parent ptrace_task->pt_tracer
+In-Reply-To: Oleg Nesterov's message of  Thursday, 28 May 2009 00:41:40 +0200 <20090527224140.GC6770@redhat.com>
+References: <20090525000016.GA2239@redhat.com>
+	<20090525215903.GA9113@redhat.com>
+	<20090527021131.4778BFC36B@magilla.sf.frob.com>
+	<20090527224140.GC6770@redhat.com>
+X-Antipastobozoticataclysm: Bariumenemanilow
+Message-Id: <20090527230700.11F2DFC2BD@magilla.sf.frob.com>
+Date: Wed, 27 May 2009 16:07:00 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Zhaolei <zhaolei@cn.fujitsu.com>
+> 		if (!exit_code)
+> 			child->exit_code = exit_code;
 
-"call" is an argument of macro, but it is also used as a local
-variable name of function in macro.
-We should keep this local variable name distinct from any
-CPP macro parameter name if both are in the same macro scope,
-although it hasn't caused any problem yet.
+The condition is wrong.  It's unconditional except in the "already killed"
+case that ptrace_detach() is checking for.  It never depends on the value.
+(You probably meant the inverse of this test.  But that's wrong too.
+PTRACE_CONT,0 must clear the old signal and not deliver any signal.)
 
-[ Impact: robustify macro ]
+> 		if (child->exit_code == exit_code)
+> 			return;
 
-Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
-Acked-by: Steven Rostedt <rostedt@goodmis.org>
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
----
- include/trace/ftrace.h |   20 ++++++++++----------
- 1 files changed, 10 insertions(+), 10 deletions(-)
+This makes no sense unless it's before setting it.
 
-diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
-index 87fc227..b4ec83a 100644
---- a/include/trace/ftrace.h
-+++ b/include/trace/ftrace.h
-@@ -397,19 +397,19 @@ static void ftrace_profile_##call(proto)				\
- 	perf_tpcounter_event(event_##call.id);				\
- }									\
- 									\
--static int ftrace_profile_enable_##call(struct ftrace_event_call *call) \
-+static int ftrace_profile_enable_##call(struct ftrace_event_call *event_call) \
- {									\
- 	int ret = 0;							\
- 									\
--	if (!atomic_inc_return(&call->profile_count))			\
-+	if (!atomic_inc_return(&event_call->profile_count))		\
- 		ret = register_trace_##call(ftrace_profile_##call);	\
- 									\
- 	return ret;							\
- }									\
- 									\
--static void ftrace_profile_disable_##call(struct ftrace_event_call *call) \
-+static void ftrace_profile_disable_##call(struct ftrace_event_call *event_call)\
- {									\
--	if (atomic_add_negative(-1, &call->profile_count))		\
-+	if (atomic_add_negative(-1, &event_call->profile_count))	\
- 		unregister_trace_##call(ftrace_profile_##call);		\
- }
- 
-@@ -433,9 +433,9 @@ static void ftrace_profile_disable_##call(struct ftrace_event_call *call) \
- #define __array(type, item, len)
- 
- #undef __string
--#define __string(item, src)						       \
--	__str_offsets.item = __str_size +				       \
--			     offsetof(typeof(*entry), __str_data);	       \
-+#define __string(item, src)						\
-+	__str_offsets.item = __str_size +				\
-+			     offsetof(typeof(*entry), __str_data);	\
- 	__str_size += strlen(src) + 1;
- 
- #undef __assign_str
-@@ -451,8 +451,8 @@ static struct ftrace_event_call event_##call;				\
- 									\
- static void ftrace_raw_event_##call(proto)				\
- {									\
--	struct ftrace_str_offsets_##call __maybe_unused __str_offsets;  \
--	struct ftrace_event_call *call = &event_##call;			\
-+	struct ftrace_str_offsets_##call __maybe_unused __str_offsets;	\
-+	struct ftrace_event_call *event_call = &event_##call;		\
- 	struct ring_buffer_event *event;				\
- 	struct ftrace_raw_##call *entry;				\
- 	unsigned long irq_flags;					\
-@@ -473,7 +473,7 @@ static void ftrace_raw_event_##call(proto)				\
- 									\
- 	assign;								\
- 									\
--	if (!filter_current_check_discard(call, entry, event))		\
-+	if (!filter_current_check_discard(event_call, entry, event))	\
- 		trace_nowake_buffer_unlock_commit(event, irq_flags, pc); \
- }									\
- 									\
--- 
-1.6.2.3
+> 		if (lock_task_sighand(child, &flags)) {
+> 			siginfo_t *info = child->last_siginfo;
+[...]
+> And ptrace_resume/ptrace_detach should use ptrace_set_exit_code()
+> instead of child->exit_code = data.
 
+Right.
+
+> The disadvantage is, ptrace_notify() does not need this, we add the
+> little pessimization...
+
+It can check for !child->last_siginfo before lock_task_sighand().
+
+> And. This change adds another dependency with arches which implement
+> their own resume.
+
+The current draft series is meant to assume arch issues are already dealt
+with before this merges.  If we need to sequence this part of it later than
+most of it, we can revisit that later before really preparing to merge it.
+
+> So. Do you think this cleanup should be done before/with this series
+> or we can do it later?
+
+Whatever you think fits best.  Right now I just want to get the rough draft
+of the series all the way to the end of the most substantive work.  Do that
+however seems most efficacious now.  We can juggle the order again later to
+ease the eventual merging.
+
+
+Thanks,
+Roland
