@@ -1,132 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759795AbZE0Eb4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759328AbZE0EgW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759795AbZE0Eb4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 00:31:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759162AbZE0Ebq
+	id S1759328AbZE0EgW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 00:36:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750936AbZE0EgN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 00:31:46 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:44356 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751742AbZE0Ebp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 00:31:45 -0400
-Message-ID: <4A1CC228.9070404@jp.fujitsu.com>
-Date: Wed, 27 May 2009 13:31:36 +0900
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Wed, 27 May 2009 00:36:13 -0400
+Received: from mga03.intel.com ([143.182.124.21]:62452 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750695AbZE0EgM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 00:36:12 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,257,1241420400"; 
+   d="scan'208";a="147286048"
+Date: Wed, 27 May 2009 12:36:01 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>
+Subject: Re: [PATCH] readahead:add blk_run_backing_dev
+Message-ID: <20090527043601.GA26361@localhost>
+References: <20090526193601.b825af5f.akpm@linux-foundation.org> <20090527035505.GA16916@localhost> <20090527130358.689C.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: linux-kernel@vger.kernel.org, hpa@zytor.com, x86@kernel.org,
-       Andi Kleen <ak@linux.intel.com>
-Subject: Re: [PATCH 27/31] x86: MCE: Print header/footer only once for multiple
- MCEs
-References: <1243382073-29338-1-git-send-email-andi@firstfloor.org> <abfc8311c5aff38314860d82db449c6c62e9e34d.1243381848.git.ak@linux.intel.com> <b55d8c3d2842ee10f4b06f17cc2658f81b4f7b4e.1243381848.git.ak@linux.intel.com> <7efad2e5492abb8f94577a81c2ca397a968064d7.1243381848.git.ak@linux.intel.com> <0f7e10122c48b7988b1676be5e7fc75f2c561215.1243381848.git.ak@linux.intel.com> <314f7c278aaaa41854bf4f0837a4ca6126160fc8.1243381848.git.ak@linux.intel.com> <ecbed09ba385129558d6341f6a48c64edaa164b4.1243381848.git.ak@linux.intel.com> <d9664a5ed1cdbfcd7888c7c7114619494114d4ab.1243381848.git.ak@linux.intel.com> <172ffa34ba8bc6a493e26f7e97fb7239f906b4e8.1243381848.git.ak@linux.intel.com> <e224e71ae8e2b578d4b4a0a079eea963445eaf91.1243381848.git.ak@linux.intel.com> <650bd32edc1814f1f792a07de9c5efebefc9c0b3.1243381848.git.ak@linux.intel.com> <b464e1eb871500ad8f4f6e5e5f6d394aec97e037.1243381848.git.ak@linux.intel.com> <2a7abea3d00cb5a1508d54b45bdb7a94fead46ee.1243381848.git.ak@linux.intel.com
- >
-In-Reply-To: <2a7abea3d00cb5a1508d54b45bdb7a94fead46ee.1243381848.git.ak@linux.intel.com>
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090527130358.689C.A69D9226@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> From: Andi Kleen <ak@linux.intel.com>
+On Wed, May 27, 2009 at 12:06:12PM +0800, KOSAKI Motohiro wrote:
+> > > Ah.  So it's likely to be some strange interaction with the RAID setup.
+> > 
+> > The normal case is, if page N become uptodate at time T(N), then
+> > T(N) <= T(N+1) holds. But for RAID, the data arrival time depends on
+> > runtime status of individual disks, which breaks that formula. So
+> > in do_generic_file_read(), just after submitting the async readahead IO
+> > request, the current page may well be uptodate, so the page won't be locked,
+> > and the block device won't be implicitly unplugged:
 > 
-> When multiple MCEs are printed print the "HARDWARE ERROR" header
-> and "This is not a software error" footer only once. This
-> makes the output much more compact with many CPUs.
-> 
-> Signed-off-by: Andi Kleen <ak@linux.intel.com>
-> ---
->  arch/x86/kernel/cpu/mcheck/mce.c |   27 +++++++++++++++++----------
->  1 files changed, 17 insertions(+), 10 deletions(-)
-> 
-> diff --git a/arch/x86/kernel/cpu/mcheck/mce.c b/arch/x86/kernel/cpu/mcheck/mce.c
-> index 8c55c86..94dddc7 100644
-> --- a/arch/x86/kernel/cpu/mcheck/mce.c
-> +++ b/arch/x86/kernel/cpu/mcheck/mce.c
-> @@ -176,11 +176,13 @@ void mce_log(struct mce *mce)
->  	set_bit(0, &notify_user);
->  }
->  
-> -static void print_mce(struct mce *m)
-> +static void print_mce(struct mce *m, int *first)
->  {
-> -	printk(KERN_EMERG "\n"
-> -	       KERN_EMERG "HARDWARE ERROR\n"
-> -	       KERN_EMERG
-> +	if (*first) {
-> +		printk(KERN_EMERG "\n" KERN_EMERG "HARDWARE ERROR\n");
-> +		*first = 0;
-> +	}
-> +	printk(KERN_EMERG
->  	       "CPU %d: Machine Check Exception: %16Lx Bank %d: %016Lx\n",
->  	       m->extcpu, m->mcgstatus, m->bank, m->status);
->  	if (m->ip) {
+> Hifumi-san, Can you get blktrace data and confirm Wu's assumption?
 
-Why don't you have print_mce_head?
+To make the reasoning more obvious:
 
-I suppose one possible benefit not to have it and do like this is that we
-can suppress printing header if there is no log to print.
-But on the other hand footer is always printed.
+Assume we just submitted readahead IO request for pages N ~ N+M, then
+        T(N) <= T(N+1)
+        T(N) <= T(N+2)
+        T(N) <= T(N+3)
+        ...
+        T(N) <= T(N+M)   (M = readahead size)
+So if the reader is going to block on any page in the above chunk,
+it is going to first block on page N.
 
-> @@ -200,9 +202,12 @@ static void print_mce(struct mce *m)
->  	printk(KERN_EMERG "PROCESSOR %u:%x TIME %llu SOCKET %u APIC %x\n",
->  			m->cpuvendor, m->cpuid, m->time, m->socketid,
->  			m->apicid);
-> -	printk(KERN_EMERG "This is not a software problem!\n");
-> -	printk(KERN_EMERG "Run through mcelog --ascii to decode "
-> -	       "and contact your hardware vendor\n");
-> +}
-> +
-> +static void print_mce_tail(void)
-> +{
-> +	printk(KERN_EMERG "This is not a software problem!\n"
-> +	       KERN_EMERG "Run through mcelog --ascii to decode and contact your hardware vendor\n");
->  }
->  
->  #define PANIC_TIMEOUT 5 /* 5 seconds */
+With RAID (and NFS to some degree), there is no strict ordering,
+so the reader is more likely to block on some random pages.
 
-And if there is no log, do we still need to run mcelog?
-
-> @@ -225,6 +230,7 @@ static void wait_for_panic(void)
->  static void mce_panic(char *msg, struct mce *final, char *exp)
->  {
->  	int i;
-> +	int first = 1;
->  
->  	/*
->  	 * Make sure only one CPU runs in machine check panic
-> @@ -240,7 +246,7 @@ static void mce_panic(char *msg, struct mce *final, char *exp)
->  		struct mce *m = &mcelog.entry[i];
->  		if ((m->status & MCI_STATUS_VAL) &&
->  			!(m->status & MCI_STATUS_UC))
-> -			print_mce(m);
-> +			print_mce(m, &first);
->  	}
->  	/* Now print uncorrected but with the final one last */
->  	for (i = 0; i < MCE_LOG_LEN; i++) {
-> @@ -248,12 +254,13 @@ static void mce_panic(char *msg, struct mce *final, char *exp)
->  		if (!(m->status & MCI_STATUS_VAL))
->  			continue;
->  		if (!final || memcmp(m, final, sizeof(struct mce)))
-> -			print_mce(m);
-> +			print_mce(m, &first);
->  	}
->  	if (final)
-> -		print_mce(final);
-> +		print_mce(final, &first);
->  	if (cpu_missing)
->  		printk(KERN_EMERG "Some CPUs didn't answer in synchronization\n");
-> +	print_mce_tail();
->  	if (exp)
->  		printk(KERN_EMERG "Machine check: %s\n", exp);
->  	if (mce_panic_timeout < panic_timeout)
-
-If mce_panic is only caller of mce_log_tail (and possible mce_log_head),
-it would be better to use printk directly than having such sub-function.
-
+In the first case, the effective async_size = M, in the second case,
+the effective async_size <= M. The more async_size, the more degree of
+readahead pipeline, hence the more low level IO latencies are hidden
+to the application.
 
 Thanks,
-H.Seto
+Fengguang
 
+> 
+> > 
+> >                if (PageReadahead(page))
+> >                         page_cache_async_readahead()
+> >                 if (!PageUptodate(page))
+> >                                 goto page_not_up_to_date;
+> >                 //...
+> > page_not_up_to_date:
+> >                 lock_page_killable(page);
+> > 
+> > 
+> > Therefore explicit unplugging can help, so
+> > 
+> >         Acked-by: Wu Fengguang <fengguang.wu@intel.com> 
+> > 
+> > The only question is, shall we avoid the double unplug by doing this?
+> > 
+> > ---
+> >  mm/readahead.c |   10 ++++++++++
+> >  1 file changed, 10 insertions(+)
+> > 
+> > --- linux.orig/mm/readahead.c
+> > +++ linux/mm/readahead.c
+> > @@ -490,5 +490,15 @@ page_cache_async_readahead(struct addres
+> >  
+> >  	/* do read-ahead */
+> >  	ondemand_readahead(mapping, ra, filp, true, offset, req_size);
+> > +
+> > +	/*
+> > +	 * Normally the current page is !uptodate and lock_page() will be
+> > +	 * immediately called to implicitly unplug the device. However this
+> > +	 * is not always true for RAID conifgurations, where data arrives
+> > +	 * not strictly in their submission order. In this case we need to
+> > +	 * explicitly kick off the IO.
+> > +	 */
+> > +	if (PageUptodate(page))
+> > +		blk_run_backing_dev(mapping->backing_dev_info, NULL);
+> >  }
+> >  EXPORT_SYMBOL_GPL(page_cache_async_readahead);
+> 
+> 
