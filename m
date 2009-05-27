@@ -1,101 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762025AbZE0LYV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762559AbZE0LZa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762025AbZE0LYV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 07:24:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759191AbZE0LYM
+	id S1762559AbZE0LZa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 07:25:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757477AbZE0LZW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 07:24:12 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:33461 "EHLO kernel.dk"
+	Wed, 27 May 2009 07:25:22 -0400
+Received: from hera.kernel.org ([140.211.167.34]:46054 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757960AbZE0LYL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 07:24:11 -0400
-Date: Wed, 27 May 2009 13:24:12 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
-       akpm@linux-foundation.org, jack@suse.cz, yanmin_zhang@linux.intel.com,
-       richard@rsk.demon.co.uk, damien.wyart@free.fr
-Subject: Re: [PATCH 04/11] writeback: switch to per-bdi threads for
-	flushing data
-Message-ID: <20090527112412.GZ11363@kernel.dk>
-References: <1243417312-7444-1-git-send-email-jens.axboe@oracle.com> <1243417312-7444-5-git-send-email-jens.axboe@oracle.com> <1243422713.23657.53.camel@twins>
+	id S1756836AbZE0LZV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 07:25:21 -0400
+Date: Wed, 27 May 2009 11:24:34 GMT
+From: tip-bot for Ingo Molnar <mingo@elte.hu>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
+       hpa@zytor.com, mingo@redhat.com, jkacur@redhat.com,
+       a.p.zijlstra@chello.nl, penberg@cs.helsinki.fi, efault@gmx.de,
+       mtosatti@redhat.com, tglx@linutronix.de, cjashfor@linux.vnet.ibm.com,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, jkacur@redhat.com, penberg@cs.helsinki.fi,
+       a.p.zijlstra@chello.nl, efault@gmx.de, mtosatti@redhat.com,
+       tglx@linutronix.de, cjashfor@linux.vnet.ibm.com, mingo@elte.hu
+In-Reply-To: <new-submission>
+References: <new-submission>
+Subject: [tip:perfcounters/core] perf report: Remove <ctype.h> include
+Message-ID: <tip-d716fba49c7445ec87c3f045c59624fac03ee3f2@git.kernel.org>
+Git-Commit-ID: d716fba49c7445ec87c3f045c59624fac03ee3f2
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <1243422713.23657.53.camel@twins>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 27 May 2009 11:24:36 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 27 2009, Peter Zijlstra wrote:
-> On Wed, 2009-05-27 at 11:41 +0200, Jens Axboe wrote:
-> 
-> > +	if (writeback_acquire(bdi)) {
-> > +		bdi->wb_arg.nr_pages = nr_pages;
-> > +		bdi->wb_arg.sb = sb;
-> > +		bdi->wb_arg.sync_mode = sync_mode;
-> > +		/*
-> > +		 * make above store seen before the task is woken
-> > +		 */
-> > +		smp_mb();
-> > +		wake_up(&bdi->wait);
-> > +	}
-> 
-> wake_up() implies a wmb() when we indeed to a wakeup, is that
-> sufficient?
+Commit-ID:  d716fba49c7445ec87c3f045c59624fac03ee3f2
+Gitweb:     http://git.kernel.org/tip/d716fba49c7445ec87c3f045c59624fac03ee3f2
+Author:     Ingo Molnar <mingo@elte.hu>
+AuthorDate: Wed, 27 May 2009 13:19:59 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 27 May 2009 13:19:59 +0200
 
-That is sufficient. I'll kill it in the next revision, seeing as this is
-just an intermediate step, no harm done.
+perf report: Remove <ctype.h> include
 
-> > +int bdi_writeback_task(struct backing_dev_info *bdi)
-> > +{
-> > +	while (!kthread_should_stop()) {
-> > +		unsigned long wait_jiffies;
-> > +		DEFINE_WAIT(wait);
-> > +
-> > +		prepare_to_wait(&bdi->wait, &wait, TASK_INTERRUPTIBLE);
-> > +		wait_jiffies = msecs_to_jiffies(dirty_writeback_interval * 10);
-> > +		schedule_timeout(wait_jiffies);
-> > +		try_to_freeze();
-> > +
-> > +		/*
-> > +		 * We get here in two cases:
-> > +		 *
-> > +		 *  schedule_timeout() returned because the dirty writeback
-> > +		 *  interval has elapsed. If that happens, we will be able
-> > +		 *  to acquire the writeback lock and will proceed to do
-> > +		 *  kupdated style writeout.
-> > +		 *
-> > +		 *  Someone called bdi_start_writeback(), which will acquire
-> > +		 *  the writeback lock. This means our writeback_acquire()
-> > +		 *  below will fail and we call into bdi_pdflush() for
-> > +		 *  pdflush style writeout.
-> > +		 *
-> > +		 */
-> > +		if (writeback_acquire(bdi))
-> > +			bdi_kupdated(bdi);
-> > +		else
-> > +			bdi_pdflush(bdi);
-> > +
-> > +		writeback_release(bdi);
-> > +		finish_wait(&bdi->wait, &wait);
-> > +	}
-> > +
-> > +	return 0;
-> > +}
-> 
-> the unpaired writeback_release() wrt writeback_acquire() looks odd.
+Pekka reported build failure in builtin-report.c:
 
-Did you read the comment? :-)
+    CC builtin-report.o
+    In file included from builtin-report.c:7:
+    /usr/include/ctype.h:102: error: expected expression before token
 
-> Also the prepare/finish wait bits seem oddly out of place. Are there
-> really multiple waiters on bdi->wait? The above wake_up() seems to
-> suggest not, since it directly modifies bdi state instead of queueing
-> work.
+And observed:
 
-Intermediate step, further along it should be more clear.
+| Removing #include <ctype.h> from builtin-report.c makes the problem
+| go away. I am running Ubuntu 9.04 that has gcc 4.3.3 and libc 2.9.
 
--- 
-Jens Axboe
+Reported-by: Pekka J Enberg <penberg@cs.helsinki.fi>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
+Cc: Marcelo Tosatti <mtosatti@redhat.com>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: John Kacur <jkacur@redhat.com>
+LKML-Reference: <new-submission>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
+
+---
+ Documentation/perf_counter/builtin-report.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
+
+diff --git a/Documentation/perf_counter/builtin-report.c b/Documentation/perf_counter/builtin-report.c
+index 9aef7c5..6265bed 100644
+--- a/Documentation/perf_counter/builtin-report.c
++++ b/Documentation/perf_counter/builtin-report.c
+@@ -4,7 +4,6 @@
+ #include <libelf.h>
+ #include <gelf.h>
+ #include <elf.h>
+-#include <ctype.h>
+ 
+ #include "util/list.h"
+ #include "util/cache.h"
