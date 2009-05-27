@@ -1,87 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932823AbZE0SLg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763788AbZE0SMY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932823AbZE0SLg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 14:11:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762470AbZE0SL2
+	id S1763788AbZE0SMY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 14:12:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762632AbZE0SMQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 14:11:28 -0400
-Received: from jalapeno.cc.columbia.edu ([128.59.29.5]:60068 "EHLO
-	jalapeno.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760981AbZE0SL1 (ORCPT
+	Wed, 27 May 2009 14:12:16 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:40747 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762470AbZE0SMP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 14:11:27 -0400
-From: Oren Laadan <orenl@cs.columbia.edu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       linux-api@vger.kernel.org, Serge Hallyn <serue@us.ibm.com>,
-       Dave Hansen <dave@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Alexander Viro <viro@zeniv.linux.org.uk>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Oren Laadan <orenl@cs.columbia.edu>
-Subject: [RFC v16][PATCH 02/43] c/r: make file_pos_read/write() public
-Date: Wed, 27 May 2009 13:32:28 -0400
-Message-Id: <1243445589-32388-3-git-send-email-orenl@cs.columbia.edu>
-X-Mailer: git-send-email 1.6.0.1
-In-Reply-To: <1243445589-32388-1-git-send-email-orenl@cs.columbia.edu>
-References: <1243445589-32388-1-git-send-email-orenl@cs.columbia.edu>
-X-No-Spam-Score: Local
+	Wed, 27 May 2009 14:12:15 -0400
+Date: Wed, 27 May 2009 14:12:15 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Zhaolei <zhaolei@cn.fujitsu.com>
+cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] ftrace: Don't convert function's local variable name in
+ macro
+In-Reply-To: <4A1D41C2.2010903@cn.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.0905271411390.15653@gandalf.stny.rr.com>
+References: <4A1D41C2.2010903@cn.fujitsu.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-These two are used in the next patch when calling vfs_read/write()
 
-Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
----
- fs/read_write.c    |   10 ----------
- include/linux/fs.h |   10 ++++++++++
- 2 files changed, 10 insertions(+), 10 deletions(-)
 
-diff --git a/fs/read_write.c b/fs/read_write.c
-index 9d1e76b..ed63ea3 100644
---- a/fs/read_write.c
-+++ b/fs/read_write.c
-@@ -359,16 +359,6 @@ ssize_t vfs_write(struct file *file, const char __user *buf, size_t count, loff_
- 
- EXPORT_SYMBOL(vfs_write);
- 
--static inline loff_t file_pos_read(struct file *file)
--{
--	return file->f_pos;
--}
--
--static inline void file_pos_write(struct file *file, loff_t pos)
--{
--	file->f_pos = pos;
--}
--
- SYSCALL_DEFINE3(read, unsigned int, fd, char __user *, buf, size_t, count)
- {
- 	struct file *file;
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index 3b534e5..9c4348a 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -1546,6 +1546,16 @@ ssize_t rw_copy_check_uvector(int type, const struct iovec __user * uvector,
- 				struct iovec *fast_pointer,
- 				struct iovec **ret_pointer);
- 
-+static inline loff_t file_pos_read(struct file *file)
-+{
-+	return file->f_pos;
-+}
-+
-+static inline void file_pos_write(struct file *file, loff_t pos)
-+{
-+	file->f_pos = pos;
-+}
-+
- extern ssize_t vfs_read(struct file *, char __user *, size_t, loff_t *);
- extern ssize_t vfs_write(struct file *, const char __user *, size_t, loff_t *);
- extern ssize_t vfs_readv(struct file *, const struct iovec __user *,
--- 
-1.6.0.4
+On Wed, 27 May 2009, Zhaolei wrote:
 
+> "call" is a argument of macro, but it is also used as a local variable name of
+> function in macro.
+> We should keep this local variable name static although it haven't cause
+> problem now.
+> 
+> [ Impact: cleanup, no functionality changed ]
+> 
+> Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
+
+Acked-by: Steven Rostedt <rostedt@goodmis.org>
+
+-- Steve
+
+> ---
+>  include/trace/ftrace.h |   20 ++++++++++----------
+>  1 files changed, 10 insertions(+), 10 deletions(-)
+> 
+> diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
+> index edb02bc..6f1218e 100644
+> --- a/include/trace/ftrace.h
+> +++ b/include/trace/ftrace.h
+> @@ -375,19 +375,19 @@ static void ftrace_profile_##call(proto)				\
+>  	perf_tpcounter_event(event_##call.id);				\
+>  }									\
+>  									\
+> -static int ftrace_profile_enable_##call(struct ftrace_event_call *call) \
+> +static int ftrace_profile_enable_##call(struct ftrace_event_call *event_call) \
+>  {									\
+>  	int ret = 0;							\
+>  									\
+> -	if (!atomic_inc_return(&call->profile_count))			\
+> +	if (!atomic_inc_return(&event_call->profile_count))		\
+>  		ret = register_trace_##call(ftrace_profile_##call);	\
+>  									\
+>  	return ret;							\
+>  }									\
+>  									\
+> -static void ftrace_profile_disable_##call(struct ftrace_event_call *call) \
+> +static void ftrace_profile_disable_##call(struct ftrace_event_call *event_call)\
+>  {									\
+> -	if (atomic_add_negative(-1, &call->profile_count))		\
+> +	if (atomic_add_negative(-1, &event_call->profile_count))	\
+>  		unregister_trace_##call(ftrace_profile_##call);		\
+>  }
+>  
+> @@ -411,9 +411,9 @@ static void ftrace_profile_disable_##call(struct ftrace_event_call *call) \
+>  #define __array(type, item, len)
+>  
+>  #undef __string
+> -#define __string(item, src)						       \
+> -	__str_offsets.item = __str_size +				       \
+> -			     offsetof(typeof(*entry), __str_data);	       \
+> +#define __string(item, src)						\
+> +	__str_offsets.item = __str_size +				\
+> +			     offsetof(typeof(*entry), __str_data);	\
+>  	__str_size += strlen(src) + 1;
+>  
+>  #undef __assign_str
+> @@ -429,8 +429,8 @@ static struct ftrace_event_call event_##call;				\
+>  									\
+>  static void ftrace_raw_event_##call(proto)				\
+>  {									\
+> -	struct ftrace_str_offsets_##call __maybe_unused __str_offsets;  \
+> -	struct ftrace_event_call *call = &event_##call;			\
+> +	struct ftrace_str_offsets_##call __maybe_unused __str_offsets;	\
+> +	struct ftrace_event_call *event_call = &event_##call;		\
+>  	struct ring_buffer_event *event;				\
+>  	struct ftrace_raw_##call *entry;				\
+>  	unsigned long irq_flags;					\
+> @@ -451,7 +451,7 @@ static void ftrace_raw_event_##call(proto)				\
+>  									\
+>  	assign;								\
+>  									\
+> -	if (!filter_current_check_discard(call, entry, event))		\
+> +	if (!filter_current_check_discard(event_call, entry, event))	\
+>  		trace_nowake_buffer_unlock_commit(event, irq_flags, pc); \
+>  }									\
+>  									\
+> -- 
+> 1.5.5.3
+> 
+> 
+> 
