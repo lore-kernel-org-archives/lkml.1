@@ -1,79 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761222AbZE0Xnu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761682AbZE0XsR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761222AbZE0Xnu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 19:43:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755611AbZE0Xnl
+	id S1761682AbZE0XsR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 19:48:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760020AbZE0XsG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 19:43:41 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52568 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755481AbZE0Xnk (ORCPT
+	Wed, 27 May 2009 19:48:06 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:46295 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759689AbZE0XsF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 19:43:40 -0400
-Date: Wed, 27 May 2009 16:43:05 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-Subject: Re: [PATCH] mark dma_sync_single and dma_sync_sg as deprecated
-Message-Id: <20090527164305.82b1c1ab.akpm@linux-foundation.org>
-In-Reply-To: <20090519125630Y.fujita.tomonori@lab.ntt.co.jp>
-References: <20090519125630Y.fujita.tomonori@lab.ntt.co.jp>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 27 May 2009 19:48:05 -0400
+Date: Thu, 28 May 2009 01:48:01 +0200
+From: Robert Schwebel <r.schwebel@pengutronix.de>
+To: Grant Likely <grant.likely@secretlab.ca>
+Cc: Robert Schwebel <r.schwebel@pengutronix.de>,
+       Timur Tabi <timur@freescale.com>, Janboe Ye <yuan-bo.ye@motorola.com>,
+       devicetree-discuss <devicetree-discuss@ozlabs.org>,
+       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       rmk@arm.linux.org.uk
+Subject: Re: [RFC] [PATCH] Device Tree on ARM platform
+Message-ID: <20090527234801.GP6805@pengutronix.de>
+References: <1243408083.13460.14.camel@debian-nb> <fa686aa40905270727m31250984tf12249fc87179ce9@mail.gmail.com> <ed82fe3e0905270739k38018c87ka11f62c5977e45fb@mail.gmail.com> <20090527150527.GK6805@pengutronix.de> <fa686aa40905270839m375bbdacqb1acb1be0a2d2da0@mail.gmail.com> <20090527162000.GM6805@pengutronix.de> <fa686aa40905271335o1165419hda2334bef42aa3f@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <fa686aa40905271335o1165419hda2334bef42aa3f@mail.gmail.com>
+X-Sent-From: Pengutronix Entwicklungszentrum Nord - Hildesheim
+X-URL: http://www.pengutronix.de/
+X-IRC: #ptxdist @freenode
+X-Accept-Language: de,en
+X-Accept-Content-Type: text/plain
+X-Impressum: Pengutronix - Linux Solutions for Science and Industry
+	Handelsregister:  Amtsgericht Hildesheim, HRA 2686 Peiner Strasse
+	6-8, 31137 Hildesheim, Germany Phone: +49-5121-206917-0 |  Fax:
+	+49-5121-206917-5555 Inhaber: Dipl.-Ing. Robert Schwebel
+X-Message-Flag: See Message Headers for Impressum
+X-Uptime: 01:37:45 up 90 days,  9:19,  1 user,  load average: 0.74, 0.20,
+	0.07
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:219:66ff:fe5b:d0e3
+X-SA-Exim-Mail-From: rsc@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 19 May 2009 13:00:37 +0900
-FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+On Wed, May 27, 2009 at 02:35:11PM -0600, Grant Likely wrote:
+> > Unfortunately, it is an incomplete data structure regarding to what
+> > the kernel needs.
+>
+> I don't follow your argument. It's a data structure that uniquely
+> describes your hardware in a way which encourages the most code reuse
+> possible; but is still independent of kernel internal implementation.
+> ie. a FDT blob should be usable not just by Linux, but also by BSD or
+> any of the other OS options. It is not an attempt to eliminate
+> platform specific code; just to reduce it as much as possible. Weird,
+> harry, non-standard stuff probably still needs board specific code to
+> handle.
 
-> dma_sync_single() and dma_sync_sg() have been described as "Backwards
-> compat, remove in 2.7.x" for a long time (since 2.6.5).
-> 
-> This marks dma_sync_single() and dma_sync_sg() as deprecated so the
-> users get notified before removing them.
-> 
-> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> ---
->  include/linux/dma-mapping.h |   17 ++++++++++++++---
->  1 files changed, 14 insertions(+), 3 deletions(-)
-> 
-> diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
-> index 8083b6a..197ddc4 100644
-> --- a/include/linux/dma-mapping.h
-> +++ b/include/linux/dma-mapping.h
-> @@ -107,9 +107,20 @@ static inline int is_buffer_dma_capable(u64 mask, dma_addr_t addr, size_t size)
->  #include <asm-generic/dma-mapping-broken.h>
->  #endif
->  
-> -/* Backwards compat, remove in 2.7.x */
-> -#define dma_sync_single		dma_sync_single_for_cpu
-> -#define dma_sync_sg		dma_sync_sg_for_cpu
-> +/* for backwards compatibility, removed soon */
-> +static inline void __deprecated dma_sync_single(struct device *dev,
-> +						dma_addr_t addr, size_t size,
-> +						enum dma_data_direction dir)
-> +{
-> +	dma_sync_single_for_cpu(dev, addr, size, dir);
-> +}
-> +
-> +static inline void __deprecated dma_sync_sg(struct device *dev,
-> +					    struct scatterlist *sg, int nelems,
-> +					    enum dma_data_direction dir)
-> +{
-> +	dma_sync_sg_for_cpu(dev, sg, nelems, dir);
-> +}
->  
->  static inline u64 dma_get_mask(struct device *dev)
->  {
+The oftree by design wants to be a complete hardware description. As you
+mention above, there are cases where you *nevertheless* need ad-hoc
+information about things *not* encoded into the device tree.
 
-I dunno.  There are still several callers to dma_sync_single() and
-dma_sync_sg() in various drivers and adding the warning will just
-irritate people.  It would be better to make an effort to convert those
-callsites before filling everyone's screens with yet more warnings.
+This renders the whole concept ad absurdum. You need a machine number
+again - and if you need that: why not stay with the ARM model, define
+everything with platform data and avoid the whole thing?
 
-Most of the offenders are in USB, so let's optimistically cc those fine
-folks.
+Regarding the multi OS argument: I consider it impossible that people
+agree on all micro details of a hardware decision. Will it really be
+possible to get a common agreement about let's say Russell's SMSC
+example between all these people? Remember: if we forget (or don't agree
+on) one single aspect which a driver developer *needs*, he will have to
+work around it -> machine number land.
 
+My impression is that oftree only works in a perfect world. But we don't
+have one, so the fundamental design decision is broken.
+
+rsc
+-- 
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
