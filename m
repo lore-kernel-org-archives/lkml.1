@@ -1,117 +1,365 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756105AbZE0BA2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757435AbZE0BBZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756105AbZE0BA2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 May 2009 21:00:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752168AbZE0BAU
+	id S1757435AbZE0BBZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 May 2009 21:01:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753732AbZE0BBS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 May 2009 21:00:20 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:36215 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751229AbZE0BAT (ORCPT
+	Tue, 26 May 2009 21:01:18 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:35123 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752168AbZE0BBR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 May 2009 21:00:19 -0400
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Matheus Izvekov <mizvekov@gmail.com>, linux-kernel@vger.kernel.org
-References: <20090521202655.GA13944@izvekov>
-	<20090526165416.9078d218.akpm@linux-foundation.org>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Tue, 26 May 2009 18:00:12 -0700
-In-Reply-To: <20090526165416.9078d218.akpm@linux-foundation.org> (Andrew Morton's message of "Tue\, 26 May 2009 16\:54\:16 -0700")
-Message-ID: <m1zlczbbs3.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Tue, 26 May 2009 21:01:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=QN23p5RhY6iG0rkHL4DTwHnziZDWWZBvjtKl1R30SAb/DB1OcuRLu+29BTZ1lzHFZN
+         QistiDIHAlbaKag6rn56XkreCpj7y7xmfMFGUanc8Fz3iVtisfLZZ3LMsI7ZFTzISyB+
+         LcZ30Mk98Lrfyhz8Bg2aR7wdJM5pcS/p65J90=
+Date: Wed, 27 May 2009 03:01:15 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: "K.Prasad" <prasad@linux.vnet.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [Patch 01/12] Prepare the code for Hardware Breakpoint
+	interfaces
+Message-ID: <20090527010113.GJ5969@nowhere>
+References: <20090521095613.834622717@prasadkr_t60p.in.ibm.com> <20090521140033.GB13849@in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Rcpt-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, mizvekov@gmail.com
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Andrew Morton <akpm@linux-foundation.org>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -0.2 BAYES_40 BODY: Bayesian spam probability is 20 to 40%
-	*      [score: 0.3315]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
-Subject: Re: [BUG] parport issue on 2.6.29
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
+Content-Disposition: inline
+In-Reply-To: <20090521140033.GB13849@in.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> writes:
+On Thu, May 21, 2009 at 07:30:33PM +0530, K.Prasad wrote:
+> This patch introduces header files containing constants, structure definitions
+> and declaration of functions used by the hardware breakpoint interface code.
+> 
+> Original-patch-by: Alan Stern <stern@rowland.harvard.edu>
+> Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
+> Reviewed-by: Alan Stern <stern@rowland.harvard.edu>
+> ---
+>  arch/x86/include/asm/debugreg.h      |   29 +++++++
+>  arch/x86/include/asm/hw_breakpoint.h |   55 +++++++++++++
+>  arch/x86/include/asm/processor.h     |    8 +-
+>  include/asm-generic/hw_breakpoint.h  |  139 +++++++++++++++++++++++++++++++++++
+>  4 files changed, 227 insertions(+), 4 deletions(-)
+> 
+> Index: linux-2.6-tip.hbkpt/arch/x86/include/asm/debugreg.h
+> ===================================================================
+> --- linux-2.6-tip.hbkpt.orig/arch/x86/include/asm/debugreg.h
+> +++ linux-2.6-tip.hbkpt/arch/x86/include/asm/debugreg.h
+> @@ -18,6 +18,7 @@
+>  #define DR_TRAP1	(0x2)		/* db1 */
+>  #define DR_TRAP2	(0x4)		/* db2 */
+>  #define DR_TRAP3	(0x8)		/* db3 */
+> +#define DR_TRAP_BITS	(DR_TRAP0|DR_TRAP1|DR_TRAP2|DR_TRAP3)
+>  
+>  #define DR_STEP		(0x4000)	/* single-step */
+>  #define DR_SWITCH	(0x8000)	/* task switch */
+> @@ -49,6 +50,8 @@
+>  
+>  #define DR_LOCAL_ENABLE_SHIFT 0    /* Extra shift to the local enable bit */
+>  #define DR_GLOBAL_ENABLE_SHIFT 1   /* Extra shift to the global enable bit */
+> +#define DR_LOCAL_ENABLE (0x1)      /* Local enable for reg 0 */
+> +#define DR_GLOBAL_ENABLE (0x2)     /* Global enable for reg 0 */
+>  #define DR_ENABLE_SIZE 2           /* 2 enable bits per register */
+>  
+>  #define DR_LOCAL_ENABLE_MASK (0x55)  /* Set  local bits for all 4 regs */
+> @@ -67,4 +70,30 @@
+>  #define DR_LOCAL_SLOWDOWN (0x100)   /* Local slow the pipeline */
+>  #define DR_GLOBAL_SLOWDOWN (0x200)  /* Global slow the pipeline */
+>  
+> +/*
+> + * HW breakpoint additions
+> + */
+> +#ifdef __KERNEL__
+> +
+> +/* For process management */
+> +extern void flush_thread_hw_breakpoint(struct task_struct *tsk);
+> +extern int copy_thread_hw_breakpoint(struct task_struct *tsk,
+> +		struct task_struct *child, unsigned long clone_flags);
+> +
+> +/* For CPU management */
+> +extern void load_debug_registers(void);
+> +static inline void hw_breakpoint_disable(void)
+> +{
+> +	/* Zero the control register for HW Breakpoint */
+> +	set_debugreg(0UL, 7);
+> +
+> +	/* Zero-out the individual HW breakpoint address registers */
+> +	set_debugreg(0UL, 0);
+> +	set_debugreg(0UL, 1);
+> +	set_debugreg(0UL, 2);
+> +	set_debugreg(0UL, 3);
+> +}
+> +
+> +#endif	/* __KERNEL__ */
+> +
+>  #endif /* _ASM_X86_DEBUGREG_H */
+> Index: linux-2.6-tip.hbkpt/arch/x86/include/asm/hw_breakpoint.h
+> ===================================================================
+> --- /dev/null
+> +++ linux-2.6-tip.hbkpt/arch/x86/include/asm/hw_breakpoint.h
+> @@ -0,0 +1,55 @@
+> +#ifndef	_I386_HW_BREAKPOINT_H
+> +#define	_I386_HW_BREAKPOINT_H
+> +
+> +#ifdef	__KERNEL__
+> +#define	__ARCH_HW_BREAKPOINT_H
+> +
+> +struct arch_hw_breakpoint {
+> +	char		*name; /* Contains name of the symbol to set bkpt */
+> +	unsigned long	address;
+> +	u8		len;
+> +	u8		type;
+> +};
+> +
+> +#include <linux/kdebug.h>
+> +#include <asm-generic/hw_breakpoint.h>
+> +
+> +/* Available HW breakpoint length encodings */
+> +#define HW_BREAKPOINT_LEN_1		0x40
+> +#define HW_BREAKPOINT_LEN_2		0x44
+> +#define HW_BREAKPOINT_LEN_4		0x4c
+> +#define HW_BREAKPOINT_LEN_EXECUTE	0x40
+> +
+> +#ifdef CONFIG_X86_64
+> +#define HW_BREAKPOINT_LEN_8		0x48
+> +#endif
+> +
+> +/* Available HW breakpoint type encodings */
+> +
+> +/* trigger on instruction execute */
+> +#define HW_BREAKPOINT_EXECUTE	0x80
+> +/* trigger on memory write */
+> +#define HW_BREAKPOINT_WRITE	0x81
+> +/* trigger on memory read or write */
+> +#define HW_BREAKPOINT_RW	0x83
+> +
+> +/* Total number of available HW breakpoint registers */
+> +#define HBP_NUM 4
+> +
+> +extern struct hw_breakpoint *hbp_kernel[HBP_NUM];
+> +DECLARE_PER_CPU(struct hw_breakpoint*, this_hbp_kernel[HBP_NUM]);
+> +extern unsigned int hbp_user_refcount[HBP_NUM];
+> +
+> +extern void arch_install_thread_hw_breakpoint(struct task_struct *tsk);
+> +extern void arch_uninstall_thread_hw_breakpoint(void);
+> +extern int arch_check_va_in_userspace(unsigned long va, u8 hbp_len);
+> +extern int arch_validate_hwbkpt_settings(struct hw_breakpoint *bp,
+> +						struct task_struct *tsk);
+> +extern void arch_update_user_hw_breakpoint(int pos, struct task_struct *tsk);
+> +extern void arch_flush_thread_hw_breakpoint(struct task_struct *tsk);
+> +extern void arch_update_kernel_hw_breakpoint(void *);
+> +extern int hw_breakpoint_exceptions_notify(struct notifier_block *unused,
+> +				     unsigned long val, void *data);
+> +#endif	/* __KERNEL__ */
+> +#endif	/* _I386_HW_BREAKPOINT_H */
+> +
+> Index: linux-2.6-tip.hbkpt/arch/x86/include/asm/processor.h
+> ===================================================================
+> --- linux-2.6-tip.hbkpt.orig/arch/x86/include/asm/processor.h
+> +++ linux-2.6-tip.hbkpt/arch/x86/include/asm/processor.h
+> @@ -29,6 +29,7 @@ struct mm_struct;
+>  #include <linux/threads.h>
+>  #include <linux/init.h>
+>  
+> +#define HBP_NUM 4
+>  /*
+>   * Default implementation of macro that returns current
+>   * instruction pointer ("program counter").
+> @@ -433,12 +434,11 @@ struct thread_struct {
+>  #endif
+>  	unsigned long		gs;
+>  	/* Hardware debugging registers: */
+> -	unsigned long		debugreg0;
+> -	unsigned long		debugreg1;
+> -	unsigned long		debugreg2;
+> -	unsigned long		debugreg3;
+> +	unsigned long		debugreg[HBP_NUM];
 
-> On Thu, 21 May 2009 17:26:55 -0300
-> Matheus Izvekov <mizvekov@gmail.com> wrote:
->
->> This warning happens whenever a specific parallel port control app is run 
->> without a device attached to it. After the first timeout, the app hangs,
->> and needs SIGKILL to exit.
->> 
->> WARNING: at kernel/sysctl.c:2021 unregister_sysctl_table+0xa3/0x110()
->
-> I guess this is
->
-> void unregister_sysctl_table(struct ctl_table_header * header)
-> {
-> 	might_sleep();
->
-> 	if (header == NULL)
-> 		return;
->
-> 	spin_lock(&sysctl_lock);
-> 	start_unregistering(header);
-> 	if (!--header->parent->count) {
-> 		WARN_ON(1);
->
->> Hardware name:         
->> Modules linked in:
->> Pid: 12161, comm: x-killer.exe Not tainted 2.6.29.4 #14
->> Call Trace:
->> [<ffffffff8024c910>] warn_slowpath+0xd0/0x130
->> [<ffffffff80269859>] ? sched_clock_cpu+0xb9/0x190
->> [<ffffffff802484b4>] ? try_to_wake_up+0x174/0x330
->> [<ffffffff80268554>] ? up+0x34/0x50
->> [<ffffffff8024d1cd>] ? release_console_sem+0x1bd/0x210
->> [<ffffffff80aaa4d4>] ? printk+0x67/0x69
->> [<ffffffff80254ec3>] unregister_sysctl_table+0xa3/0x110
->> [<ffffffff806b3128>] parport_device_proc_unregister+0x28/0x40
->> [<ffffffff806b05f5>] parport_unregister_device+0x15/0x180
->> [<ffffffff806a0acc>] pp_release+0xbc/0x1f0
->> [<ffffffff802d3883>] __fput+0xc3/0x1e0
->> [<ffffffff802d39bd>] fput+0x1d/0x30
->> [<ffffffff802d0220>] filp_close+0x50/0x80
->> [<ffffffff8024ec74>] put_files_struct+0x84/0xe0
->> [<ffffffff8024ed1e>] exit_files+0x4e/0x60
->> [<ffffffff80250696>] do_exit+0x196/0x930
->> [<ffffffff80250e6e>] do_group_exit+0x3e/0xb0
->> [<ffffffff8025bda4>] get_signal_to_deliver+0x2a4/0x420
->> [<ffffffff8020b7aa>] do_notify_resume+0xba/0x900
->> [<ffffffff8023c16e>] ? __wake_up+0x4e/0x70
->> [<ffffffff8026c4a9>] ? getnstimeofday+0x59/0xe0
->> [<ffffffff80267a09>] ? ktime_get_ts+0x59/0x60
->> [<ffffffff80274314>] ? compat_sys_futex+0xb4/0x140
->> [<ffffffff8020c8b5>] int_signal+0x12/0x17
->> --[ end trace ff1bd583c825c0c5 ]---
->> pdev0: unregistered pardevice
->
-> <looks for explanatory code comments, gets disappointed>
->
-> Eric, can you please help decode the reason for this kernel warning?
 
-Looks like fallout from when Al changed the semantics of sysctl.  Requiring
-sysctl tables to hang off of empty parent directories.
 
-It looks the parent directory was already been unregistered by the
-time we are unregistered.
+Note that each patches must leave a buildable kernel, even
+if these patches are contained in a set logic.
 
-I'm not current enough on the parport code to have a better clue.
+I haven't tried yet, but I suspect this patch, if applied
+without the rest, will cause a build error.
 
-As far as sysctl goes that condition should be essentially harmless, wrong
-but harmless.
+There are still some sites that use the removed fields above.
 
-Eric
+A solution would be to temporarily fix these sites in this patch
+by using the new debugreg array interface. Even if you remove
+some of them in further patches in this series, for example
+by using the new load_debug_registers() helper, it will follow
+the logic step by step and leave a buildable kernel at each
+middle step.
+
+That implies to modify also some of the other patches of this
+series, but all of these changes should be trivial.
+
+Thanks,
+
+Frederic.
+
+
+
+>  	unsigned long		debugreg6;
+>  	unsigned long		debugreg7;
+> +	/* Hardware breakpoint info */
+> +	struct hw_breakpoint	*hbp[HBP_NUM];
+>  	/* Fault info: */
+>  	unsigned long		cr2;
+>  	unsigned long		trap_no;
+> Index: linux-2.6-tip.hbkpt/include/asm-generic/hw_breakpoint.h
+> ===================================================================
+> --- /dev/null
+> +++ linux-2.6-tip.hbkpt/include/asm-generic/hw_breakpoint.h
+> @@ -0,0 +1,139 @@
+> +#ifndef	_ASM_GENERIC_HW_BREAKPOINT_H
+> +#define	_ASM_GENERIC_HW_BREAKPOINT_H
+> +
+> +#ifndef __ARCH_HW_BREAKPOINT_H
+> +#error "Please don't include this file directly"
+> +#endif
+> +
+> +#ifdef	__KERNEL__
+> +#include <linux/list.h>
+> +#include <linux/types.h>
+> +#include <linux/kallsyms.h>
+> +
+> +/**
+> + * struct hw_breakpoint - unified kernel/user-space hardware breakpoint
+> + * @triggered: callback invoked after target address access
+> + * @info: arch-specific breakpoint info (address, length, and type)
+> + *
+> + * %hw_breakpoint structures are the kernel's way of representing
+> + * hardware breakpoints.  These are data breakpoints
+> + * (also known as "watchpoints", triggered on data access), and the breakpoint's
+> + * target address can be located in either kernel space or user space.
+> + *
+> + * The breakpoint's address, length, and type are highly
+> + * architecture-specific.  The values are encoded in the @info field; you
+> + * specify them when registering the breakpoint.  To examine the encoded
+> + * values use hw_breakpoint_get_{kaddress,uaddress,len,type}(), declared
+> + * below.
+> + *
+> + * The address is specified as a regular kernel pointer (for kernel-space
+> + * breakponts) or as an %__user pointer (for user-space breakpoints).
+> + * With register_user_hw_breakpoint(), the address must refer to a
+> + * location in user space.  The breakpoint will be active only while the
+> + * requested task is running.  Conversely with
+> + * register_kernel_hw_breakpoint(), the address must refer to a location
+> + * in kernel space, and the breakpoint will be active on all CPUs
+> + * regardless of the current task.
+> + *
+> + * The length is the breakpoint's extent in bytes, which is subject to
+> + * certain limitations.  include/asm/hw_breakpoint.h contains macros
+> + * defining the available lengths for a specific architecture.  Note that
+> + * the address's alignment must match the length.  The breakpoint will
+> + * catch accesses to any byte in the range from address to address +
+> + * (length - 1).
+> + *
+> + * The breakpoint's type indicates the sort of access that will cause it
+> + * to trigger.  Possible values may include:
+> + *
+> + * 	%HW_BREAKPOINT_RW (triggered on read or write access),
+> + * 	%HW_BREAKPOINT_WRITE (triggered on write access), and
+> + * 	%HW_BREAKPOINT_READ (triggered on read access).
+> + *
+> + * Appropriate macros are defined in include/asm/hw_breakpoint.h; not all
+> + * possibilities are available on all architectures.  Execute breakpoints
+> + * must have length equal to the special value %HW_BREAKPOINT_LEN_EXECUTE.
+> + *
+> + * When a breakpoint gets hit, the @triggered callback is
+> + * invoked in_interrupt with a pointer to the %hw_breakpoint structure and the
+> + * processor registers.
+> + * Data breakpoints occur after the memory access has taken place.
+> + * Breakpoints are disabled during execution @triggered, to avoid
+> + * recursive traps and allow unhindered access to breakpointed memory.
+> + *
+> + * This sample code sets a breakpoint on pid_max and registers a callback
+> + * function for writes to that variable.  Note that it is not portable
+> + * as written, because not all architectures support HW_BREAKPOINT_LEN_4.
+> + *
+> + * ----------------------------------------------------------------------
+> + *
+> + * #include <asm/hw_breakpoint.h>
+> + *
+> + * struct hw_breakpoint my_bp;
+> + *
+> + * static void my_triggered(struct hw_breakpoint *bp, struct pt_regs *regs)
+> + * {
+> + * 	printk(KERN_DEBUG "Inside triggered routine of breakpoint exception\n");
+> + * 	dump_stack();
+> + *  	.......<more debugging output>........
+> + * }
+> + *
+> + * static struct hw_breakpoint my_bp;
+> + *
+> + * static int init_module(void)
+> + * {
+> + *	..........<do anything>............
+> + *	my_bp.info.type = HW_BREAKPOINT_WRITE;
+> + *	my_bp.info.len = HW_BREAKPOINT_LEN_4;
+> + *
+> + *	my_bp.installed = (void *)my_bp_installed;
+> + *
+> + *	rc = register_kernel_hw_breakpoint(&my_bp);
+> + *	..........<do anything>............
+> + * }
+> + *
+> + * static void cleanup_module(void)
+> + * {
+> + *	..........<do anything>............
+> + *	unregister_kernel_hw_breakpoint(&my_bp);
+> + *	..........<do anything>............
+> + * }
+> + *
+> + * ----------------------------------------------------------------------
+> + */
+> +struct hw_breakpoint {
+> +	void (*triggered)(struct hw_breakpoint *, struct pt_regs *);
+> +	struct arch_hw_breakpoint info;
+> +};
+> +
+> +/*
+> + * len and type values are defined in include/asm/hw_breakpoint.h.
+> + * Available values vary according to the architecture.  On i386 the
+> + * possibilities are:
+> + *
+> + *	HW_BREAKPOINT_LEN_1
+> + *	HW_BREAKPOINT_LEN_2
+> + *	HW_BREAKPOINT_LEN_4
+> + *	HW_BREAKPOINT_RW
+> + *	HW_BREAKPOINT_READ
+> + *
+> + * On other architectures HW_BREAKPOINT_LEN_8 may be available, and the
+> + * 1-, 2-, and 4-byte lengths may be unavailable.  There also may be
+> + * HW_BREAKPOINT_WRITE.  You can use #ifdef to check at compile time.
+> + */
+> +
+> +extern int register_user_hw_breakpoint(struct task_struct *tsk,
+> +					struct hw_breakpoint *bp);
+> +extern int modify_user_hw_breakpoint(struct task_struct *tsk,
+> +					struct hw_breakpoint *bp);
+> +extern void unregister_user_hw_breakpoint(struct task_struct *tsk,
+> +						struct hw_breakpoint *bp);
+> +/*
+> + * Kernel breakpoints are not associated with any particular thread.
+> + */
+> +extern int register_kernel_hw_breakpoint(struct hw_breakpoint *bp);
+> +extern void unregister_kernel_hw_breakpoint(struct hw_breakpoint *bp);
+> +
+> +extern unsigned int hbp_kernel_pos;
+> +
+> +#endif	/* __KERNEL__ */
+> +#endif	/* _ASM_GENERIC_HW_BREAKPOINT_H */
+> 
+
