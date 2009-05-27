@@ -1,84 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763677AbZE0OiT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764134AbZE0Oi7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763677AbZE0OiT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 10:38:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760636AbZE0OiI
+	id S1764134AbZE0Oi7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 10:38:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762613AbZE0Oiw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 10:38:08 -0400
-Received: from mail-fx0-f168.google.com ([209.85.220.168]:51221 "EHLO
-	mail-fx0-f168.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761084AbZE0OiH convert rfc822-to-8bit (ORCPT
+	Wed, 27 May 2009 10:38:52 -0400
+Received: from postman.teamix.net ([194.150.191.120]:42755 "EHLO
+	rproxy.teamix.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760636AbZE0Oiv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 10:38:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=UyHxMzOiTkZFJNMcsriEWGVna8W+yeoWphgbZlDcrIaqXhoUIfO5BqXJRe4icMGMDE
-         WaKgcj3+hekdE9sEVm1lDfnxuEO1E1LUClFwNiJhkhD/hCVSCTAc9bzLCadplm5YRFin
-         TBJOp3urQ2ZqqP+7ilsOU0US/5+tiwqw2Js3Y=
+	Wed, 27 May 2009 10:38:51 -0400
+From: Martin Steigerwald <ms@teamix.de>
+Organization: team(ix) GmbH
+To: tuxonice-devel@lists.tuxonice.net
+Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
+Date: Wed, 27 May 2009 16:38:44 +0200
+User-Agent: KMail/1.9.9
+Cc: Oliver Neukum <oliver@neukum.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-pm@lists.linux-foundation.org, nigel@tuxonice.net,
+       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
+References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net> <200905260058.54482.rjw@sisk.pl> <200905260113.46440.oliver@neukum.org> (sfid-20090526_021237_792985_629AEF36)
+In-Reply-To: <200905260113.46440.oliver@neukum.org>
 MIME-Version: 1.0
-In-Reply-To: <20090527072643.GA15000@elte.hu>
-References: <20090527054317.GA31443@damson.getinternet.no>
-	 <20090527072643.GA15000@elte.hu>
-Date: Wed, 27 May 2009 16:38:07 +0200
-Message-ID: <19f34abd0905270738r41abc15byc464133d184c24f7@mail.gmail.com>
-Subject: Re: [GIT PULL] kmemcheck fixes for -tip
-From: Vegard Nossum <vegard.nossum@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: multipart/signed;
+  boundary="nextPart4710087.X9GrhZ40pD";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200905271638.50097.ms@teamix.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/5/27 Ingo Molnar <mingo@elte.hu>:
-[...]
+--nextPart4710087.X9GrhZ40pD
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> Pulled, thanks Vegard! There were a few conflicts with tip:master,
-> due to ongoing work in other areas:
+Am Dienstag, 26. Mai 2009 schrieb Oliver Neukum:
+> Am Dienstag, 26. Mai 2009 00:58:53 schrieb Rafael J. Wysocki:
+> > On Tuesday 26 May 2009, Oliver Neukum wrote:
+> > > No, I am afraid it is not. The average user has no clue. Even if that
+> > > is not the problem, the user never knows for sure he has encountered
+> > > the worst case.
+> >
+> > OK there, but surely it's better to have a sysfs attribute than a fixed
+> > value?
 >
->    Merge branch 'kmemcheck'
->
->    Conflicts:
->        include/linux/ring_buffer.h
->        init/do_mounts.c
->        kernel/trace/ring_buffer.c
->
-> I resolved them manually, you might want to double check them.
+> Why? The driver knows best. Tunables are generally the worst solution.
 
-Thanks. There seems to have been one interaction with this old commit
-from who knows what branch:
+I agree, but what about the not so ideal real-world? What about closed sour=
+ce=20
+drivers? Who is going to educate closed source driver writers to inform the=
+=20
+kernel about their memory requirements early enough? And how long will this=
+=20
+take?
 
-commit 899b5030558b8dc21a171e2e8129e0a93fb08860
-Author: Ingo Molnar <mingo@elte.hu>
-Date:   Tue Apr 29 16:31:50 2008 +0200
+I think at least as an interim measure it makes sense to have a sysfs value=
+=2E=20
+Or discourage closed-source drivers even more.
 
-    init: root mount fix
+I prefer open-source gfx drivers and don't need extra pages allowance, but=
+=20
+that might not hold true for everyone.
 
-    Needs changelog
+=2D-=20
+Martin Steigerwald - team(ix) GmbH - http://www.teamix.de
+gpg: 19E3 8D42 896F D004 08AC A0CA 1E10 C593 0399 AE90
 
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
-    Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+--nextPart4710087.X9GrhZ40pD
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-I think this commit can get chucked now, as I provided what I believe
-was the better workaround (to introduce a wrapper for getname() that
-takes GFP flags: commits 30066967f86f8b31fb7aef1f0a2214ae8d5a4b80 and
-1c4018089bc978fa1ec3fc69d220ba432b1f075b). But the code as it stands
-will work as it should.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-There's now also an indentation mismatch in
-include/linux/ring_buffer.h, line 16, in struct ring_buffer_event.
+iEYEABECAAYFAkodUHUACgkQHhDFkwOZrpDmlgCfV1MuUTij216v9Sf7c6Fw4HwB
+2oQAn02qnn09In43E/RCtqQcYFvF1FhV
+=gzej
+-----END PGP SIGNATURE-----
 
-Don't know how you'd prefer to solve these, if at all? Should I send
-patches against tip/master?
-
-
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+--nextPart4710087.X9GrhZ40pD--
