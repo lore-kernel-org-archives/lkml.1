@@ -1,62 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757581AbZE0Ukl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758150AbZE0Uk4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757581AbZE0Ukl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 16:40:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752900AbZE0Uk1
+	id S1758150AbZE0Uk4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 16:40:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757461AbZE0Ukj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 16:40:27 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:32789 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756395AbZE0UkZ (ORCPT
+	Wed, 27 May 2009 16:40:39 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:42143 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1757753AbZE0Ukh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 16:40:25 -0400
-Date: Wed, 27 May 2009 13:38:45 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Minchan Kim <minchan.kim@gmail.com>
-Cc: minchan.kim@gmail.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       mel@csn.ul.ie, kosaki.motohiro@jp.fujitsu.com, riel@redhat.com,
-       hannes@cmpxchg.org, y-goto@jp.fujitsu.com
-Subject: Re: [PATCH 1/3]  clean up functions related to pages_min V2
-Message-Id: <20090527133845.a26df9cb.akpm@linux-foundation.org>
-In-Reply-To: <20090527202955.2260a232.minchan.kim@barrios-desktop>
-References: <20090521092304.0eb3c4cb.minchan.kim@barrios-desktop>
-	<20090526222510.ad054b8a.akpm@linux-foundation.org>
-	<20090527202955.2260a232.minchan.kim@barrios-desktop>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 27 May 2009 16:40:37 -0400
+Date: Wed, 27 May 2009 16:40:38 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+cc: Hannes Reinecke <hare@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
+       SCSI development list <linux-scsi@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Tejun Heo <tj@kernel.org>, Cornelia Huck <cornelia.huck@de.ibm.com>,
+       <linux-fsdevel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>
+Subject: Re: [PATCH 25/20] sysfs: Only support removing emtpy sysfs  directories.
+In-Reply-To: <1243453463.6067.63.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.44L0.0905271625080.2653-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 May 2009 20:29:55 +0900
-Minchan Kim <minchan.kim@gmail.com> wrote:
+On Wed, 27 May 2009, James Bottomley wrote:
 
-> This patch change names of two functions. so It doesn't affect behavior. 
-> Now, setup_per_zone_pages_min changes low, high of zone as well as min.
-> So, a better name might have been setup_per_zone_wmarks.That's because
-> Mel changed zone->pages_[hig/low/min] to zone->watermark array.(434b5394fd85c212619306cda6bf087be737b35a)
+> On Wed, 2009-05-27 at 14:07 -0400, Alan Stern wrote:
+> > On Wed, 27 May 2009, James Bottomley wrote:
+> > 
+> > > By refcount, I mean count of underlying devices.
+> > 
+> > Does that mean only registered devices, or does it include devices 
+> > which are unregistered but not yet released?
 > 
+> All devices ... scsi_device has to has a target parent before its
+> usable.
 
-When quoting changeset IDs, please do it in the form
+I can't tell whether you understood my point.  After a scsi_device is
+unregistered but before it is released -- i.e., when its state is
+SDEV_DEL -- it _is_ essentially unusable.  So why wait until it is
+released to decrement the target's device counter?  Why not do the
+decrement in __scsi_remove_device()?
 
-  0594ad1a66381076f0fa06f5605ea5023f600586 ("mfd/pcf50633-gpio.c: add MODULE_LICENSE")
 
-There's a good reason for this, but I forget what it is.  Perhaps so
-that the same commit can be located if it has a different hash?  I
-expect that commits get a different hash when backported into -stable,
-for example.
+> > > Um, well, that's roughly how I said we'd have to fix all of this in the
+> > > email to hannes ... it would be much easier if we could make a del'd
+> > > device visible,
+> > 
+> > I don't follow.  Why would you want to delete a target before the host
+> > is removed and then make it visible again later?  Because it doesn't
+> > have any underlying devices at the moment but may gain some later on?
+> 
+> Perhaps I haven't made the problem clear enough.  You only want early
+> del if the host is going away, otherwise the target might be reused and
+> it can't be if you've called del on it.  So there needs to be an
+> integration into the host lifecycle in some form.
 
-I spend my life making changes like that to changelogs, but when I went
-to fix up your 434b5394fd85c212619306cda6bf087be737b35a, I was unable
-to locate any commit which has that hash.
+Yes, granted.  That integration doesn't have to be complicated.  
+Basically, you just decrement the counters in all the targets when
+setting a host's state to SHOST_DEL or SHOST_DEL_RECOVERY.  At that 
+point there's no reason to keep an unpopulated target around, right?
 
-<searches for a while>
+Up until that point, the counter's value should be one more than the
+number of underlying sdevs.  So if the counter decrements to 0 then
+there were no underlying sdevs and the target is deleted immediately;
+otherwise it is deleted when the last remaining sdev is deleted.
 
-Ah, you're referring to a -mmotm patch.  The hashes in -mmotm aren't
-useful because the tree gets regenerated each time.  So let's refer to
-that patch via just its title, "page allocator: replace the
-watermark-related union in struct zone with a watermark[] array".
-
+Alan Stern
 
