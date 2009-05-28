@@ -1,65 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756799AbZE1HCt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753731AbZE1HUn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756799AbZE1HCt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 03:02:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750983AbZE1HCl
+	id S1753731AbZE1HUn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 03:20:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751327AbZE1HUf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 03:02:41 -0400
-Received: from oblivion.subreption.com ([66.240.236.22]:45819 "EHLO
-	mail.subreption.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750964AbZE1HCk (ORCPT
+	Thu, 28 May 2009 03:20:35 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55855 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750964AbZE1HUf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 03:02:40 -0400
-Date: Thu, 28 May 2009 00:00:47 -0700
-From: "Larry H." <research@subreption.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Ingo Molnar <mingo@elte.hu>, Rik van Riel <riel@redhat.com>,
-       linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>,
-       linux-mm@kvack.org, Ingo Molnar <mingo@redhat.com>,
-       pageexec@freemail.hu
-Subject: Re: [patch 0/5] Support for sanitization flag in low-level page
-	allocator
-Message-ID: <20090528070047.GC29711@oblivion.subreption.com>
-References: <20090520183045.GB10547@oblivion.subreption.com> <4A15A8C7.2030505@redhat.com> <20090522073436.GA3612@elte.hu> <20090522113809.GB13971@oblivion.subreption.com> <20090523124944.GA23042@elte.hu> <4A187BDE.5070601@redhat.com> <20090527223421.GA9503@elte.hu> <20090528072702.796622b6@lxorguk.ukuu.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090528072702.796622b6@lxorguk.ukuu.org.uk>
-Organization: Subreption LLC
+	Thu, 28 May 2009 03:20:35 -0400
+Date: Thu, 28 May 2009 00:20:20 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, tony.luck@intel.com,
+       linux-ia64@vger.kernel.org, arnd@arndb.de, joerg.roedel@amd.com
+Subject: Re: [PATCH -tip v2 0/5] add common functions for struct dma_map_ops
+Message-Id: <20090528002020.8b68f085.akpm@linux-foundation.org>
+In-Reply-To: <1242359705-2117-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+References: <1242359705-2117-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07:27 Thu 28 May     , Alan Cox wrote:
-> > > As for being swapped out - I do not believe that kernel stacks can 
-> > > ever be swapped out in Linux.
-> > 
-> > yes, i referred to that as an undesirable option - because it slows 
-> > down pthread_create() quite substantially.
-> > 
-> > This needs before/after pthread_create() benchmark results.
+On Fri, 15 May 2009 12:55:00 +0900 FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+
+> We unified x86 and IA64's handling of multiple dma mapping operations
+> (struct dma_map_ops in linux/dma-mapping.h) so we can remove
+> duplication in their arch/include/asm/dma-mapping.h.
 > 
-> kernel stacks can end up places you don't expect on hypervisor based
-> systems.
+> This patchset adds include/asm-generic/dma-mapping-common.h that
+> provides some generic dma mapping function definitions for the users
+> of struct dma_map_ops. This enables us to remove about 100 lines. This
+> also enables us to easily add CONFIG_DMA_API_DEBUG support, which only
+> x86 supports for now. The 4th patch adds CONFIG_DMA_API_DEBUG support
+> to IA64 by adding only 8 lines.
 > 
-> In most respects the benchmarks are pretty irrelevant - wiping stuff has
-> a performance cost, but its the sort of thing you only want to do when
-> you have a security requirement that needs it. At that point the
-> performance is secondary.
+> This is against tip/master since tip has some changes to
+> arch/x86/include/asm/dma-mapping.h.
 > 
-> Alan
+> The changes since the first version are
+> 
+> - fixed a bug that dma_attrs is not passed properly (thanks to Arnd
+> Bergmann).
+> 
+> - used a new name, dma-mapping-common.h, instead of dma-mapping.h
+> (suggested by Arnd Bergmann).
+> 
+> - added Joerg's Acked-by
+> 
+> =
+>  arch/ia64/Kconfig                        |    1 +
+>  arch/ia64/include/asm/dma-mapping.h      |  110 ++----------------
+>  arch/x86/Kconfig                         |    1 +
+>  arch/x86/include/asm/dma-mapping.h       |  174 +---------------------------
+>  include/asm-generic/dma-mapping-common.h |  190 ++++++++++++++++++++++++++++++
+>  lib/dma-debug.c                          |   82 ++++++++------
+>  6 files changed, 252 insertions(+), 306 deletions(-)
 
-Right, besides I believe Ingo is confused about the nature of the patch.
-It looks like he believes it's about userland memory sanitization, when
-that isn't what is being done here.
+I'm hoping that a suitable merge scheme here would be for me to merge
+1/5 into mainline then to send 2/5 to Ingo and 3/5, 4/5 and 5/5 to Tony
+for merging.  Will that all compile and work?
 
-If he still believe this has anything to do with it directly, or can
-introduce a performance impact on pthread_create() (remember we are
-sanitizing on release only...), I'll be pleased to provide benchmark
-results that prove it wrong (or right, if it was the case).
-
-Any existent benchmark tests available that I can modify to suit our
-needs here, or I'll need to waste some time on writing them from scratch?
-
-	Larry
-
+Alternatively I can merge the lot, with suitable acking.
