@@ -1,144 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759525AbZE1TBp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764058AbZE1TCm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759525AbZE1TBp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 15:01:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763985AbZE1TBc
+	id S1764058AbZE1TCm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 15:02:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756189AbZE1TCf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 15:01:32 -0400
-Received: from g4t0016.houston.hp.com ([15.201.24.19]:47957 "EHLO
-	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763847AbZE1TBa convert rfc822-to-8bit (ORCPT
+	Thu, 28 May 2009 15:02:35 -0400
+Received: from rv-out-0506.google.com ([209.85.198.232]:48030 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755677AbZE1TCe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 15:01:30 -0400
-From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
-To: Martin Knoblauch <knobi@knobisoft.de>, "Owens, James" <JOwens@hp.com>
-CC: Matthew Wilcox <matthew@wil.cx>, Andrew Morton <akpm@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>,
-       "viro@ZenIV.linux.org.uk" <viro@ZenIV.linux.org.uk>,
-       "rjw@sisk.pl" <rjw@sisk.pl>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "tigran@aivazian.fsnet.co.uk" <tigran@aivazian.fsnet.co.uk>,
-       Kay Sievers <kay.sievers@vrfy.org>,
-       "shemminger@vyatta.com" <shemminger@vyatta.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Date: Thu, 28 May 2009 19:01:15 +0000
-Subject: RE: Analyzed/Solved/Bisected: Booting 2.6.30-rc2-git7 very slow
-Thread-Topic: Analyzed/Solved/Bisected: Booting 2.6.30-rc2-git7 very slow
-Thread-Index: AcnfcqfKZzo7C8/9ReWvopjSB/Vr9gAU9tFg
-Message-ID: <0F5B06BAB751E047AB5C87D1F77A7788694659AFB5@GVW0547EXC.americas.hpqcorp.net>
-References: <1240977096.5478.3.camel@marge.simson.net>
- <20090429011755.c141c599.akpm@linux-foundation.org>
- <20090429120827.GI8633@ZenIV.linux.org.uk>
- <1241014725.15095.19.camel@marge.simson.net>
- <20090505154911.e0309a4f.akpm@linux-foundation.org>
- <1241585140.5196.28.camel@marge.simson.net>
- <957194.27869.qm@web32605.mail.mud.yahoo.com>
- <1241599065.18090.18.camel@marge.simson.net>
- <461911.6351.qm@web32603.mail.mud.yahoo.com>
- <20090526233102.b86e7f84.akpm@linux-foundation.org>
- <20090527112153.GE5816@parisc-linux.org>
- <840102.98312.qm@web32603.mail.mud.yahoo.com> <4A1D8161.2020009@hp.com>
- <0F5B06BAB751E047AB5C87D1F77A7788694630B931@GVW0547EXC.americas.hpqcorp.net>
- <451378.60037.qm@web32606.mail.mud.yahoo.com>
-In-Reply-To: <451378.60037.qm@web32606.mail.mud.yahoo.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Thu, 28 May 2009 15:02:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=xZIIzAOIBbIMu+fxjCQ7DG571kLZWQRGaQjcKM6V94pMfg2oNt6dvxGS0ZvpFonClQ
+         S5XNpeLBCzyugN8hob1wUVM4ql83sd1cDcOTrEe5qGL3rDCG4rDtUaC+x9XqA8LKUPNB
+         A55Rr/XBGlhu5YEo/PwnmGUPaEoXQhVpBZsKw=
+Date: Thu, 28 May 2009 12:02:30 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-input@vger.kernel.org
+Subject: [git pull] Input updates for 2.6.30-rc7
+Message-ID: <20090528190230.GD18589@dtor-d630.eng.vmware.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 
+Hi Linus,
 
-> -----Original Message-----
-> From: Martin Knoblauch [mailto:knobi@knobisoft.de] 
-> Sent: Thursday, May 28, 2009 4:00 AM
-> To: Miller, Mike (OS Dev); Owens, James
-> Cc: Matthew Wilcox; Andrew Morton; Mike Galbraith; 
-> viro@ZenIV.linux.org.uk; rjw@sisk.pl; 
-> linux-kernel@vger.kernel.org; tigran@aivazian.fsnet.co.uk; 
-> Kay Sievers; shemminger@vyatta.com; Jesse Barnes
-> Subject: Re: Analyzed/Solved/Bisected: Booting 
-> 2.6.30-rc2-git7 very slow
-> 
-> ----- Original Message ----
-> 
-> > From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
-> > To: "Owens, James" <JOwens@hp.com>; Martin Knoblauch 
-> > <knobi@knobisoft.de>
-> > Cc: Matthew Wilcox <matthew@wil.cx>; Andrew Morton 
-> > <akpm@linux-foundation.org>; Mike Galbraith <efault@gmx.de>; 
-> > "viro@ZenIV.linux.org.uk" <viro@ZenIV.linux.org.uk>; "rjw@sisk.pl" 
-> > <rjw@sisk.pl>; "linux-kernel@vger.kernel.org" 
-> > <linux-kernel@vger.kernel.org>; "tigran@aivazian.fsnet.co.uk" 
-> > <tigran@aivazian.fsnet.co.uk>; Kay Sievers <kay.sievers@vrfy.org>; 
-> > "shemminger@vyatta.com" <shemminger@vyatta.com>; Jesse Barnes 
-> > <jbarnes@virtuousgeek.org>
-> > Sent: Wednesday, May 27, 2009 8:18:46 PM
-> > Subject: RE: Analyzed/Solved/Bisected: Booting 2.6.30-rc2-git7 very 
-> > slow
-> > 
-> > > > 
-> > > >  Finally, today I built the ccsii driver into the kernel. 
-> > > It was previously modularized and loaded from initrd. The second 
-> > > "sysfs" line went away. But does this make cciss guilty? 
-> It is now 
-> > > loaded about 2 seconds earlier in the boot sequence, 
-> which is a big 
-> > > change in timing I guess.
-> > > > 
-> > > >  Enlighten me :-)
-> > > 
-> > > No idea what is going on, but since I saw your May 20 message, I 
-> > > have been trying to wake up someone whose day job it should be to 
-> > > care about dl380s and smartarrays. :)
-> > 
-> > What? I know Martin has pinged me in the past, but I do not 
-> think it 
-> > was about this issue. If there's multiple sysfs entries for cciss I 
-> > can't explain that offhand. We do little to nothing for 
-> sysfs in the driver.
-> > Had something similiar happen recently where "/" changed to 
-> "!". Had 
-> > do to with our nested directory structure, /dev/cciss/name vs 
-> > /dev/name. But we did not make that change, either.
-> > 
-> Hi Mike, Jim
-> 
->  you are right. I never talked to you about this issue. 
-> Actually, I did not suspect CCISS or the DL380 in general to 
-> be involved before last week when I retested on the x3650 and 
-> the problem went away. Due to day-job and priorities I did 
-> not follow up.
+Please pull from:
 
-Martin,
-Same exact OS install? Are you sure all the userspace stuff is the same?
+	git://git.kernel.org/pub/scm/linux/kernel/git/dtor/input.git for-linus
+or
+	master.kernel.org:/pub/scm/linux/kernel/git/dtor/input.git for-linus
 
--- mikem
-> > 
-> > > 
-> > > If they don't react soon, I'll make this my own day job to try to 
-> > > reproduce it.  We will need hardware config details and firmware 
-> > > revs to start.
-> > > 
-> 
-> Dl380/G4
-> 2x3.4 GHz CPUs
-> 8 GB Memeory
-> 4x72 GB as RAID5 on SA6i controller
-> 
-> BIOS: P51 (07(19/2007)
-> ILO FW: 1.91
-> SA6i FW: 2.84
-> 
-> lspci output (-vvv and -xxx) appendend to prevent line wrapping.
-> 
-> 
-> Cheers
-> Martin
-> 
+to receive updates for the input subsystem. It contains couple small
+tweaks and an update to mutlitouch protocol and its documentation.
+
+Changelog:
+---------
+
+Dmitry Torokhov (1):
+      Input: libps2 - better handle bad scheduler decisions
+
+Henrik Rydberg (2):
+      Input: multitouch - add tracking ID to the protocol
+      Input: multitouch - augment event semantics documentation
+
+Manuel Traut (1):
+      Input: usb1400_ts - fix access to "device data" in resume function
+
+
+Diffstat:
+--------
+
+ Documentation/input/multi-touch-protocol.txt |  103 ++++++++++++++++++++------
+ drivers/input/input.c                        |    1 +
+ drivers/input/serio/libps2.c                 |    2 +-
+ drivers/input/touchscreen/ucb1400_ts.c       |    2 +-
+ include/linux/input.h                        |    1 +
+ 5 files changed, 83 insertions(+), 26 deletions(-)
+
+-- 
+Dmitry
+
