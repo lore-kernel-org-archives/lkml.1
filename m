@@ -1,66 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760348AbZE1J1u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762043AbZE1J2C@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760348AbZE1J1u (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 05:27:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755852AbZE1J1k
+	id S1762043AbZE1J2C (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 05:28:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761880AbZE1J1q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 05:27:40 -0400
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:60894 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751227AbZE1J1j (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 05:27:39 -0400
-Date: Thu, 28 May 2009 18:27:40 +0900 (JST)
-Message-Id: <20090528.182740.193697101.ryov@valinux.co.jp>
-To: vgoyal@redhat.com
-Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, fernando@oss.ntt.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
-       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
-       peterz@infradead.org
-Subject: Re: [PATCH 15/20] io-controller: map async requests to appropriate
- cgroup
-From: Ryo Tsuruta <ryov@valinux.co.jp>
-In-Reply-To: <1243377729-2176-16-git-send-email-vgoyal@redhat.com>
-References: <1243377729-2176-1-git-send-email-vgoyal@redhat.com>
-	<1243377729-2176-16-git-send-email-vgoyal@redhat.com>
-X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 28 May 2009 05:27:46 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:48796 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759115AbZE1J1n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 05:27:43 -0400
+Date: Thu, 28 May 2009 11:27:43 +0200
+From: Jan Kara <jack@suse.cz>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
+       akpm@linux-foundation.org, jack@suse.cz, yanmin_zhang@linux.intel.com,
+       richard@rsk.demon.co.uk, damien.wyart@free.fr
+Subject: Re: [PATCH 07/11] writeback: support > 1 flusher thread per bdi
+Message-ID: <20090528092743.GD29199@duck.suse.cz>
+References: <1243417312-7444-1-git-send-email-jens.axboe@oracle.com> <1243417312-7444-8-git-send-email-jens.axboe@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1243417312-7444-8-git-send-email-jens.axboe@oracle.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Vivek,
+On Wed 27-05-09 11:41:48, Jens Axboe wrote:
+> Build on the bdi_writeback support by allowing registration of
+> more than 1 flusher thread. File systems can call bdi_add_flusher_task(bdi)
+> to add more flusher threads to the device. If they do so, they must also
+> provide a super_operations function to return the suitable bdi_writeback
+> struct from any given inode.
+  Isn't this patch in fact doing two different things? Looking at the
+changes it implements more flusher threads per BDI as you write above but
+it also does all that sync-work handling which isn't quite trivial and
+seems to be a separate thing...
 
-> +#ifdef CONFIG_TRACK_ASYNC_CONTEXT
-> +	if (elv_bio_sync(bio)) {
-> +		/* sync io. Determine cgroup from submitting task context. */
-> +		cgroup = task_cgroup(current, io_subsys_id);
-> +		return cgroup;
-> +	}
+> +static struct bdi_work *bdi_alloc_work(struct super_block *sb, long nr_pages,
+> +				       enum writeback_sync_modes sync_mode)
+> +{
+> +	struct bdi_work *work;
 > +
-> +	/* Async io. Determine cgroup from with cgroup id stored in page */
-> +	bio_cgroup_id = get_blkio_cgroup_id(bio);
+> +	work = kmalloc(sizeof(*work), GFP_ATOMIC);
+  Why is this GFP_ATOMIC? Wouldn't GFP_NOFS be enough?
+But for now, GFP_ATOMIC may be fine since it excercises more the
+"allocation failed" path :).
+
+> +	if (work)
+> +		bdi_work_init(work, sb, nr_pages, sync_mode);
 > +
-> +	if (!bio_cgroup_id)
-> +		return NULL;
-> +
-> +	cgroup = blkio_cgroup_lookup(bio_cgroup_id);
-> +#else
-> +	cgroup = task_cgroup(current, io_subsys_id);
-> +#endif
-> +	return cgroup;
+> +	return work;
 > +}
+> +
+> +void bdi_start_writeback(struct backing_dev_info *bdi, struct super_block *sb,
+> +			 long nr_pages, enum writeback_sync_modes sync_mode)
+> +{
+> +	const bool must_wait = sync_mode == WB_SYNC_ALL;
+> +	struct bdi_work work_stack, *work = NULL;
+> +
+> +	if (!must_wait)
+> +		work = bdi_alloc_work(sb, nr_pages, sync_mode);
+> +
+> +	if (!work) {
+> +		work = &work_stack;
+> +		bdi_work_init_on_stack(work, sb, nr_pages, sync_mode);
+>  	}
+>  
+> -	wb_start_writeback(&bdi->wb, sb, nr_pages, sync_mode);
+> -	return 0;
+> +	bdi_queue_work(bdi, work);
+> +	bdi_start_work(bdi, work);
+> +
+> +	/*
+> +	 * If the sync mode is WB_SYNC_ALL, block waiting for the work to
+> +	 * complete. If not, we only need to wait for the work to be started,
+> +	 * if we allocated it on-stack. We use the same mechanism, if the
+> +	 * wait bit is set in the bdi_work struct, then threads will not
+> +	 * clear pending until after they are done.
+> +	 *
+> +	 * Note that work == &work_stack if must_wait is true, so we don't
+> +	 * need to do call_rcu() here ever, since the completion path will
+> +	 * have done that for us.
+> +	 */
+> +	if (must_wait || work == &work_stack) {
+> +		bdi_wait_on_work_clear(work);
+> +		if (work != &work_stack)
+> +			call_rcu(&work->rcu_head, bdi_work_free);
+> +	}
+>  }
+  Looking into this, it seems a bit complex with all that on_stack, sync /
+nosync thing. Wouldn't a simple refcounting scheme be more clear? Alloc /
+init_work_on_stack gets a reference from bdi_work, queue_work gets another
+reference passed later to flusher thread. We drop the reference when we
+leave bdi_start_writeback() and when flusher thread is done with the work.
+When refcount hits zero, work struct is freed (when work is on stack, we
+just never drop the last reference)...
 
-There is a case where a kernel thread (such as device-mapper drivers)
-submits a sync IO instead of a task which originates the IO. I think
-you should always use get_blkio_cgroup_id() to determine cgroup.
-
-Thanks,
-Ryo Tsuruta
+									Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
