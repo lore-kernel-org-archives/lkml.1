@@ -1,85 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757389AbZE1Out@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759952AbZE1Owp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757389AbZE1Out (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 10:50:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754624AbZE1Oul
+	id S1759952AbZE1Owp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 10:52:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755727AbZE1Owi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 10:50:41 -0400
-Received: from mga03.intel.com ([143.182.124.21]:26360 "EHLO mga03.intel.com"
+	Thu, 28 May 2009 10:52:38 -0400
+Received: from kroah.org ([198.145.64.141]:38790 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753421AbZE1Oul (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 10:50:41 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,265,1241420400"; 
-   d="scan'208";a="147930630"
-Date: Thu, 28 May 2009 22:50:21 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Nick Piggin <npiggin@suse.de>, "hugh@veritas.com" <hugh@veritas.com>,
-       "riel@redhat.com" <riel@redhat.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler
-	in the VM v3
-Message-ID: <20090528145021.GA5503@localhost>
-References: <200905271012.668777061@firstfloor.org> <20090527201239.C2C9C1D0294@basil.firstfloor.org> <20090528082616.GG6920@wotan.suse.de> <20090528093141.GD1065@one.firstfloor.org> <20090528120854.GJ6920@wotan.suse.de> <20090528134520.GH1065@one.firstfloor.org>
+	id S1755356AbZE1Owh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 10:52:37 -0400
+Date: Thu, 28 May 2009 07:49:01 -0700
+From: Greg KH <greg@kroah.com>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Jean Delvare <khali@linux-fr.org>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, stable <stable@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LM Sensors <lm-sensors@lm-sensors.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [stable] [lm-sensors] [PATCH-tip] x86: hwmon/k8temp.c Add
+	support for AMD 10H and 11H
+Message-ID: <20090528144901.GA7153@kroah.com>
+References: <4A165F67.3020005@assembler.cz> <1242981748.10642.3.camel@localhost.localdomain> <1242984648.16532.3.camel@localhost.localdomain> <4A182B61.5010503@assembler.cz> <1243339833.12303.2.camel@localhost.localdomain> <4A1C08C6.7060103@assembler.cz> <1243352672.31783.10.camel@localhost.localdomain> <1243511849.3669.5.camel@localhost.localdomain> <20090528142837.530ba070@hyperion.delvare> <1243520014.3143.11.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090528134520.GH1065@one.firstfloor.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1243520014.3143.11.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 28, 2009 at 09:45:20PM +0800, Andi Kleen wrote:
-> On Thu, May 28, 2009 at 02:08:54PM +0200, Nick Piggin wrote:
-
-[snip]
-
+On Thu, May 28, 2009 at 07:43:34PM +0530, Jaswinder Singh Rajput wrote:
+> On Thu, 2009-05-28 at 14:28 +0200, Jean Delvare wrote:
+> > On Thu, 28 May 2009 17:27:29 +0530, Jaswinder Singh Rajput wrote:
+> > > Hello Andrew, Greg and Ingo:
+> > > 
+> > > Do you think this patch should go to stable and latest git.
 > > 
-> > BTW. I don't know if you are checking for PG_writeback often enough?
-> > You can't remove a PG_writeback page from pagecache. The normal
-> > pattern is lock_page(page); wait_on_page_writeback(page); which I
+> > Definitely not to stable, it's not fixing any bug.
+> > 
 > 
-> So pages can be in writeback without being locked? I still
-> wasn't able to find such a case (in fact unless I'm misreading
-> the code badly the writeback bit is only used by NFS and a few  
-> obscure cases)
-
-Yes the writeback page is typically not locked. Only read IO requires
-to be exclusive. Read IO is in fact page *writer*, while writeback IO
-is page *reader* :-)
-
-The writeback bit is _widely_ used.  test_set_page_writeback() is
-directly used by NFS/AFS etc. But its main user is in fact
-set_page_writeback(), which is called in 26 places.
-
-> > think would be safest 
+> Ok, so you suggested this should go to latest git.
 > 
-> Okay. I'll just add it after the page lock.
-> 
-> > (then you never have to bother with the writeback bit again)
-> 
-> Until Fengguang does something fancy with it.
+> I proposed for stable because I was using AMD 11H from last 6 months and
+> I was missing temperature monitor badly because my earlier Laptop was
+> broken by overheating. So I thought if it goes to stable then users will
+> start getting benefit of it, but if you want that users should wait for
+> another 2 years. Then it is OK ;-)
 
-Yes I'm going to do it without wait_on_page_writeback().
+2 years?  The next kernel release will be out in 3 months, we have a
+very predictable release schedule.
 
-The reason truncate_inode_pages_range() has to wait on writeback page
-is to ensure data integrity. Otherwise if there comes two events:
-        truncate page A at offset X
-        populate page B at offset X
-If A and B are all writeback pages, then B can hit disk first and then
-be overwritten by A. Which corrupts the data at offset X from user's POV.
+thanks,
 
-But for hwpoison, there are no such worries. If A is poisoned, we do
-our best to isolate it as well as intercepting its IO. If the interception
-fails, it will trigger another machine check before hitting the disk.
-
-After all, poisoned A means the data at offset X is already corrupted.
-It doesn't matter if there comes another B page.
-
-Thanks,
-Fengguang
+greg k-h
