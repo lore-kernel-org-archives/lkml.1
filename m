@@ -1,171 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761063AbZE1JMB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761552AbZE1JOw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761063AbZE1JMB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 05:12:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756007AbZE1JLv
+	id S1761552AbZE1JOw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 05:14:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755520AbZE1JOp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 05:11:51 -0400
-Received: from mga03.intel.com ([143.182.124.21]:50973 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755961AbZE1JLu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 05:11:50 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,264,1241420400"; 
-   d="scan'208";a="147843420"
-Date: Thu, 28 May 2009 17:11:27 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>,
-       Taketoshi Sakuraba <taketoshi.sakuraba.hc@hitachi.com>
-Subject: Re: [PATCH] [4/16] HWPOISON: Add support for poison swap entries v2
-Message-ID: <20090528091127.GA13856@localhost>
-References: <200905271012.668777061@firstfloor.org> <20090527201230.19B1C1D0286@basil.firstfloor.org> <4A1E4F80.9090404@hitachi.com>
+	Thu, 28 May 2009 05:14:45 -0400
+Received: from web32604.mail.mud.yahoo.com ([68.142.207.231]:23478 "HELO
+	web32604.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755220AbZE1JOo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 05:14:44 -0400
+Message-ID: <170150.72851.qm@web32604.mail.mud.yahoo.com>
+X-YMail-OSG: ZuVRYtoVM1kxlgJAXzz4KMnQNTbOUcRVgHQ2.HgCHE95R.2FoLW9118SCta.3_UjJXbz7g3L_UgCcse5pYY7YpI5iC2akQbTJBbqDDEx8VPg0U7cXl89tRcOpj3SAwrOsL9ifXpFJ4CeVM1qgBJMA6rKMCIg3suzuS9hq1YSXTOhARKh19QZCn3Eowuqc1NyGEY3oHKAm58IznISWlxqyn0psmR8oYV1cKTi03Os5KJ_IOa1TLnynw1FLzaYo1o2YZjWhu20_hDuhPEVHuh7W6jy9JheVZox2znwPd.Y0k1PPA--
+X-RocketYMMF: knobi.rm
+X-Mailer: YahooMailRC/1277.43 YahooMailWebService/0.7.289.10
+References: <488605.71443.qm@web32605.mail.mud.yahoo.com> <20090527133125.c36381b5.akpm@linux-foundation.org> <ac3eb2510905271356n1b01f273jca1f7aa8fc65c78b@mail.gmail.com>
+Date: Thu, 28 May 2009 02:14:46 -0700 (PDT)
+From: Martin Knoblauch <knobi@knobisoft.de>
+Subject: Re: Analyzed/Solved/Bisected: Booting 2.6.30-rc2-git7 very slow
+To: Kay Sievers <kay.sievers@vrfy.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: efault@gmx.de, viro@zeniv.linux.org.uk, rjw@sisk.pl,
+       linux-kernel@vger.kernel.org, shemminger@vyatta.com,
+       jbarnes@virtuousgeek.org, matthew@wil.cx, mike.miller@hp.com
+In-Reply-To: <ac3eb2510905271356n1b01f273jca1f7aa8fc65c78b@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A1E4F80.9090404@hitachi.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 28, 2009 at 04:46:56PM +0800, Hidehiro Kawai wrote:
-> Andi Kleen wrote:
-> 
-> > CPU migration uses special swap entry types to trigger special actions on page
-> > faults. Extend this mechanism to also support poisoned swap entries, to trigger
-> > poison handling on page faults. This allows followon patches to prevent 
-> > processes from faulting in poisoned pages again.
-> > 
-> > v2: Fix overflow in MAX_SWAPFILES (Fengguang Wu)
-> > 
-> > Signed-off-by: Andi Kleen <ak@linux.intel.com>
-> > 
-> > ---
-> >  include/linux/swap.h    |   34 ++++++++++++++++++++++++++++------
-> >  include/linux/swapops.h |   38 ++++++++++++++++++++++++++++++++++++++
-> >  mm/swapfile.c           |    4 ++--
-> >  3 files changed, 68 insertions(+), 8 deletions(-)
-> > 
-> > Index: linux/include/linux/swap.h
-> > ===================================================================
-> > --- linux.orig/include/linux/swap.h	2009-05-27 21:13:54.000000000 +0200
-> > +++ linux/include/linux/swap.h	2009-05-27 21:14:21.000000000 +0200
-> > @@ -34,16 +34,38 @@
-> >   * the type/offset into the pte as 5/27 as well.
-> >   */
-> >  #define MAX_SWAPFILES_SHIFT	5
-> > -#ifndef CONFIG_MIGRATION
-> > -#define MAX_SWAPFILES		(1 << MAX_SWAPFILES_SHIFT)
-> > +
-> > +/*
-> > + * Use some of the swap files numbers for other purposes. This
-> > + * is a convenient way to hook into the VM to trigger special
-> > + * actions on faults.
-> > + */
-> > +
-> > +/*
-> > + * NUMA node memory migration support
-> > + */
-> > +#ifdef CONFIG_MIGRATION
-> > +#define SWP_MIGRATION_NUM 2
-> > +#define SWP_MIGRATION_READ	(MAX_SWAPFILES + SWP_HWPOISON_NUM + 1)
-> > +#define SWP_MIGRATION_WRITE	(MAX_SWAPFILES + SWP_HWPOISON_NUM + 2)
-> >  #else
-> > -/* Use last two entries for page migration swap entries */
-> > -#define MAX_SWAPFILES		((1 << MAX_SWAPFILES_SHIFT)-2)
-> > -#define SWP_MIGRATION_READ	MAX_SWAPFILES
-> > -#define SWP_MIGRATION_WRITE	(MAX_SWAPFILES + 1)
-> > +#define SWP_MIGRATION_NUM 0
-> >  #endif
-> >  
-> >  /*
-> > + * Handling of hardware poisoned pages with memory corruption.
-> > + */
-> > +#ifdef CONFIG_MEMORY_FAILURE
-> > +#define SWP_HWPOISON_NUM 1
-> > +#define SWP_HWPOISON		(MAX_SWAPFILES + 1)
-> > +#else
-> > +#define SWP_HWPOISON_NUM 0
-> > +#endif
-> > +
-> > +#define MAX_SWAPFILES \
-> > +	((1 << MAX_SWAPFILES_SHIFT) - SWP_MIGRATION_NUM - SWP_HWPOISON_NUM - 1)
-> 
-> I don't prefer this fix against the overflow issue.
-> For example, if both CONFIG_MIGRATION and CONFIG_MEMORY_FAILURE are
-> undefined, MAX_SWAPFILES is defined as 31.  But we should be able to
-> use up to 32 swap files/devices!
-> 
-> So instead, we should do:
-> 
-> #define SWP_MIGRATION_READ	(MAX_SWAPFILES + SWP_HWPOISON_NUM)
-> #define SWP_MIGRATION_WRITE	(MAX_SWAPFILES + SWP_HWPOISON_NUM + 1)
-> 
-> #define SWP_HWPOISON		MAX_SWAPFILES
-> 
-> #define MAX_SWAPFILES \
-> 	((1 << MAX_SWAPFILES_SHIFT) - SWP_MIGRATION_NUM - SWP_HWPOISON_NUM)
-> 
-> and:
-> 
-> static inline int non_swap_entry(swp_entry_t entry)
-> {
-> 	return swp_type(entry) >= MAX_SWAPFILES;
-> }
 
-Yes this is a better way to fix the overflow problem: when
-SWP_HWPOISON=32 and it is shifted by SWP_TYPE_SHIFT and then shift
-back, we get 0 (overflowed).
 
-Andi, this patch does what Hidehiro describes.
 
----
- include/linux/swap.h    |    8 ++++----
- include/linux/swapops.h |    2 +-
- 2 files changed, 5 insertions(+), 5 deletions(-)
+ ------------------------------------------------------
+Martin Knoblauch
+email: k n o b i AT knobisoft DOT de
+www:   http://www.knobisoft.de
 
---- linux.orig/include/linux/swap.h
-+++ linux/include/linux/swap.h
-@@ -46,8 +46,8 @@ static inline int current_is_kswapd(void
-  */
- #ifdef CONFIG_MIGRATION
- #define SWP_MIGRATION_NUM 2
--#define SWP_MIGRATION_READ	(MAX_SWAPFILES + SWP_HWPOISON_NUM + 1)
--#define SWP_MIGRATION_WRITE	(MAX_SWAPFILES + SWP_HWPOISON_NUM + 2)
-+#define SWP_MIGRATION_READ	(MAX_SWAPFILES + SWP_HWPOISON_NUM)
-+#define SWP_MIGRATION_WRITE	(MAX_SWAPFILES + SWP_HWPOISON_NUM + 1)
- #else
- #define SWP_MIGRATION_NUM 0
- #endif
-@@ -57,13 +57,13 @@ static inline int current_is_kswapd(void
-  */
- #ifdef CONFIG_MEMORY_FAILURE
- #define SWP_HWPOISON_NUM 1
--#define SWP_HWPOISON 		(MAX_SWAPFILES + 1)
-+#define SWP_HWPOISON 		MAX_SWAPFILES
- #else
- #define SWP_HWPOISON_NUM 0
- #endif
- 
- #define MAX_SWAPFILES \
--	((1 << MAX_SWAPFILES_SHIFT) - SWP_MIGRATION_NUM - SWP_HWPOISON_NUM - 1)
-+	((1 << MAX_SWAPFILES_SHIFT) - SWP_MIGRATION_NUM - SWP_HWPOISON_NUM)
- 
- /*
-  * Magic header for a swap area. The first part of the union is
---- linux.orig/include/linux/swapops.h
-+++ linux/include/linux/swapops.h
-@@ -161,7 +161,7 @@ static inline int is_hwpoison_entry(swp_
- #if defined(CONFIG_MEMORY_FAILURE) || defined(CONFIG_MIGRATION)
- static inline int non_swap_entry(swp_entry_t entry)
- {
--	return swp_type(entry) > MAX_SWAPFILES;
-+	return swp_type(entry) >= MAX_SWAPFILES;
- }
- #else
- static inline int non_swap_entry(swp_entry_t entry)
+
+
+----- Original Message ----
+> From: Kay Sievers <kay.sievers@vrfy.org>
+> To: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Martin Knoblauch <knobi@knobisoft.de>; efault@gmx.de; viro@zeniv.linux.org.uk; rjw@sisk.pl; linux-kernel@vger.kernel.org; shemminger@vyatta.com; jbarnes@virtuousgeek.org; matthew@wil.cx; mike.miller@hp.com
+> Sent: Wednesday, May 27, 2009 10:56:45 PM
+> Subject: Re: Analyzed/Solved/Bisected: Booting 2.6.30-rc2-git7 very slow
+> 
+> On Wed, May 27, 2009 at 22:31, Andrew Morton wrote:
+> > On Wed, 27 May 2009 04:25:57 -0700 (PDT)
+> > Martin Knoblauch wrote:
+> >
+> >>  FWIW, I compiled the CCISS driver into the kernel. This makes the second 
+> "/sys" line in /proc/mounts go away, dmesg attached. But does it prove anything? 
+> The initialization of the CCISS hardware now happens about 2 seconds earlier in 
+> the bootup sequence. Does this hint to a problem with CCISS, or just confirms 
+> that the whole issue is really timing dependent? Anyway, I add Mike to CC.
+> >>
+> >
+> > It seems that the PCI change caused timing changes which triggered a
+> > udev/sysfs/whatever problem, which manifests as the duplicated
+> > /proc/mounts entry to turn up.
+> >
+> > What we don't know (afaik) is why the kernel permitted two entries in
+> > /proc/mounts.  That might be a bug.
+> >
+> > It could be that if dual /proc/mounts problem gets fixed, everything
+> > works OK - by intent or by accident, the userspace startup scripts may
+> > then work acceptably.
+> >
+> > I think Al asked you a few questions around the behaviour of mount(8)
+> > and the mount syscall, so we could delve further into why /proc/mounts
+> > is getting mucked up.  Did you end up running those tests?
+> 
+
+ I do not recall any questions from Al. If he asked, I am pretty sure I answered :-)
+
+> I expect the duplicate comes from a left-over mount in initramfs which
+> isn't a duplicate in the sense of a bug in vfs or mount or anything. I
+> guess, it is just still mounted in the initial kernel rootfs, below
+> the root from the disk. It could be that a umount from initramfs did
+> go wrong because of a changed timing.
+> 
+
+ This is what I suspect as well. I know for sure that the first sysfs-line in /proc/mounts
+
+| none /sys sysfs rw 0 0
+
+is already there (2.6.29-rc1 and up) when entering startup-skripts. It is supposed to be unmounted before, but something seems to prevent it. I have idea how to capture debug output from the initrd/init script :-(
+
+Cheers
+Martin
+
