@@ -1,79 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761011AbZE1NSW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762821AbZE1NUi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761011AbZE1NSW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 09:18:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758021AbZE1NSP
+	id S1762821AbZE1NUi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 09:20:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758998AbZE1NUb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 09:18:15 -0400
-Received: from mail-pz0-f177.google.com ([209.85.222.177]:58801 "EHLO
-	mail-pz0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756455AbZE1NSO convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 09:18:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=eGnyhmah38pAE8MXuOZkvaqFsLceLm49JaWSPtO8juI8atnCRtfgtgLX3f63tY7RSt
-         Vrq/oTyrRkZFcFz1MEyhp9Z7WLGQiFOzPtv5a6B8Lh5eNfZXF+kXNOdbmKDcEDglcwnn
-         CKdcDkCefu4D3Z4G1kZTczlKdbniXJJE9NLEI=
+	Thu, 28 May 2009 09:20:31 -0400
+Received: from www.tglx.de ([62.245.132.106]:60179 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758300AbZE1NUa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 09:20:30 -0400
+Date: Thu, 28 May 2009 15:18:02 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Sascha Hauer <s.hauer@pengutronix.de>
+cc: Grant Likely <grant.likely@secretlab.ca>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Russell King <rmk+lkml@arm.linux.org.uk>,
+       devicetree-discuss <devicetree-discuss@ozlabs.org>,
+       linux-kernel@vger.kernel.org, Timur Tabi <timur@freescale.com>,
+       Scott Wood <scottwood@freescale.com>,
+       Janboe Ye <yuan-bo.ye@motorola.com>,
+       linux-arm-kernel@lists.arm.linux.org.uk
+Subject: Re: [RFC] [PATCH] Device Tree on ARM platform
+In-Reply-To: <20090528124307.GN22742@pengutronix.de>
+Message-ID: <alpine.LFD.2.00.0905281457170.3397@localhost.localdomain>
+References: <fa686aa40905270727m31250984tf12249fc87179ce9@mail.gmail.com> <ed82fe3e0905270739k38018c87ka11f62c5977e45fb@mail.gmail.com> <20090527150527.GK6805@pengutronix.de> <87vdnm8sec.fsf@macbook.be.48ers.dk> <4A1D6901.2090508@freescale.com>
+ <20090527175609.GB31861@flint.arm.linux.org.uk> <4A1D8FBA.6040802@freescale.com> <20090527192909.GA32398@flint.arm.linux.org.uk> <20090527205218.GA5591@sirena.org.uk> <fa686aa40905271405pc2f1738gc8dd139f61a0e27@mail.gmail.com>
+ <20090528124307.GN22742@pengutronix.de>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <20090515075229.11346.6710.sendpatchset@localhost.localdomain>
-References: <20090515075229.11346.6710.sendpatchset@localhost.localdomain>
-Date: Thu, 28 May 2009 21:18:16 +0800
-Message-ID: <3877989d0905280618idba1b35x72ecc222c5cf16a2@mail.gmail.com>
-Subject: Re: [Patch] kbuild: fix a compile warning
-From: Luming Yu <luming.yu@gmail.com>
-To: Amerigo Wang <amwang@redhat.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       Sam Ravnborg <sam@ravnborg.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 15, 2009 at 3:51 PM, Amerigo Wang <amwang@redhat.com> wrote:
->
-> I got this warning:
->
->  HOSTCC  scripts/basic/fixdep
-> scripts/basic/fixdep.c: In function 'traps':
-> scripts/basic/fixdep.c:377: warning: dereferencing type-punned pointer will break strict-aliasing rules
-> scripts/basic/fixdep.c:379: warning: dereferencing type-punned pointer will break strict-aliasing rules
+On Thu, 28 May 2009, Sascha Hauer wrote:
+> > There is the advantage of easy multiplatform support.  I regularly
+> > build a single kernel image which boots on all my MPC5200 boards, and
+> > on my MPC83xx boards.
+> 
+> That is not necessarily an advantage of a device tree. On ARM you can
+> also build a kernel which runs on 20+ PXA platforms at the same time.
+> (And I'm sure it can be done to even support say i.MX and PXA at the
+> same time, but this is another story)
 
+Well, you can run it on 20+ PXA platforms which have all their own
+machine number, but you have all the little details of each platform
+hardcoded into the kernel.
 
-these warnings can be supressed by adding a compile option -fno-strict-aliasing
+That does not help at all when your board has 5 variants just
+different in subtle details which can not be probed or enumerated by
+inspection. That's a common scenario in the embedded world.
 
+So you either have 5 board numbers and all the details harcoded again
+or you add some extra magic to deduce on which variant you are running
+on.
 
->
-> Patch below fixes it.
->
-> Signed-off-by: WANG Cong <amwang@redhat.com>
-> Cc: Sam Ravnborg <sam@ravnborg.org>
->
-> ---
-> diff --git a/scripts/basic/fixdep.c b/scripts/basic/fixdep.c
-> index 8912c0f..72c1520 100644
-> --- a/scripts/basic/fixdep.c
-> +++ b/scripts/basic/fixdep.c
-> @@ -373,10 +373,11 @@ void print_deps(void)
->  void traps(void)
->  {
->        static char test[] __attribute__((aligned(sizeof(int)))) = "CONF";
-> +       int *p = (int *)test;
->
-> -       if (*(int *)test != INT_CONF) {
-> +       if (*p != INT_CONF) {
->                fprintf(stderr, "fixdep: sizeof(int) != 4 or wrong endianess? %#x\n",
-> -                       *(int *)test);
-> +                       *p);
->                exit(2);
->        }
->  }
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+We have seen almost everything in the weirdness range from poking in
+some hardcoded FLASH cells over weird command line parsers up to a XML
+parser which were added to work around the limitations of the machine
+number model.
+
+With a device tree you can avoid that crap and provide a standardized
+interface for such cases.
+
+I'm not saying that the device tree will make all those problems go
+away magically, but it's orders of magnitudes better than what people
+do now.
+
+There is no need to force switch all of ARM to the device tree, but
+adding support for it would be a good move. Nobody wants to enforce it
+and both models can live happily side by side and we'll see which
+variant turns out to be the long term favourite solution.
+
+Thanks,
+
+	tglx
