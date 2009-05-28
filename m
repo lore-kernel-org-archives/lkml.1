@@ -1,114 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759935AbZE1CXs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757646AbZE1Ces@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759935AbZE1CXs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 22:23:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754150AbZE1CXl
+	id S1757646AbZE1Ces (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 22:34:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755310AbZE1Cek
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 22:23:41 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:56985 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753281AbZE1CXk (ORCPT
+	Wed, 27 May 2009 22:34:40 -0400
+Received: from vms173003pub.verizon.net ([206.46.173.3]:31915 "EHLO
+	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753365AbZE1Cej (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 22:23:40 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
-Subject: Re: [PATCH] readahead:add blk_run_backing_dev
-Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
-       Wu Fengguang <fengguang.wu@intel.com>,
+	Wed, 27 May 2009 22:34:39 -0400
+Date: Wed, 27 May 2009 22:34:38 -0400 (EDT)
+From: Len Brown <lenb@kernel.org>
+X-X-Sender: lenb@localhost.localdomain
+To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Shaohua Li <shaohua.li@intel.com>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>
-In-Reply-To: <6.0.0.20.2.20090528095927.06dfc1c8@172.19.0.2>
-References: <20090527043601.GA26361@localhost> <6.0.0.20.2.20090528095927.06dfc1c8@172.19.0.2>
-Message-Id: <20090528112247.F0E7.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Thu, 28 May 2009 11:23:39 +0900 (JST)
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       "menage@google.com" <menage@google.com>
+Subject: Re: [PATCH]cpuset: add new API to change cpuset top group's cpus
+In-reply-to: <20090519133725.GA16709@dirshya.in.ibm.com>
+Message-id: <alpine.LFD.2.00.0905272211510.25587@localhost.localdomain>
+References: <20090519073942.GA10864@sli10-desk.sh.intel.com>
+ <1242722454.26820.461.camel@twins>
+ <20090519084852.GA13682@sli10-desk.sh.intel.com>
+ <1242723364.26820.466.camel@twins> <1242729538.26820.497.camel@twins>
+ <20090519133725.GA16709@dirshya.in.ibm.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Hi Andrew.
-> Please merge following patch.
-> Thanks.
-> 
-> ---
-> 
-> I added blk_run_backing_dev on page_cache_async_readahead
-> so readahead I/O is unpluged to improve throughput on 
-> especially RAID environment. 
-> 
-> Following is the test result with dd.
-> 
-> #dd if=testdir/testfile of=/dev/null bs=16384
-> 
-> -2.6.30-rc6
-> 1048576+0 records in
-> 1048576+0 records out
-> 17179869184 bytes (17 GB) copied, 224.182 seconds, 76.6 MB/s
-> 
-> -2.6.30-rc6-patched
-> 1048576+0 records in
-> 1048576+0 records out
-> 17179869184 bytes (17 GB) copied, 206.465 seconds, 83.2 MB/s
-> 
-> My testing environment is as follows:
-> Hardware: HP DL580 
-> CPU:Xeon 3.2GHz *4 HT enabled
-> Memory:8GB
-> Storage: Dothill SANNet2 FC (7Disks RAID-0 Array)
-> 
-> The normal case is, if page N become uptodate at time T(N), then
-> T(N) <= T(N+1) holds. With RAID (and NFS to some degree), there 
-> is no strict ordering, the data arrival time depends on
-> runtime status of individual disks, which breaks that formula. So
-> in do_generic_file_read(), just after submitting the async readahead IO
-> request, the current page may well be uptodate, so the page won't be locked,
-> and the block device won't be implicitly unplugged:
+On Tue, 19 May 2009, Vaidyanathan Srinivasan wrote:
 
-Please attach blktrace analysis ;)
+> We tried similar approaches to create idle time for power savings, but
+> cpu hotplug interface seem to be a clean choice.  There could be
+> issues with the interface, we should fix it.  Is there any other
+> reason why cpuhotplug is 'ugly' other than its performance (speed)?
+> 
+> I have tried few load balancer hacks to evacuate cores but not a solid
+> design yet.  It has its advantages but still needs more work.
+> 
+> http://lkml.org/lkml/2009/5/13/173
 
+Thanks for the pointer.
+I agree with Andi, please avoid the term "throttling", since
+it has been used for ages to refer processor clock throttling --
+which is actually significantly less effective at saving
+energy than what you are trying to do.  (not the word "energy"
+here, where the word "power" is incorrectly used in the thread above)
 
-> 
->                if (PageReadahead(page))
->                         page_cache_async_readahead()
->                 if (!PageUptodate(page))
->                                 goto page_not_up_to_date;
->                 //...
-> page_not_up_to_date:
->                 lock_page_killable(page);
-> 
-> Therefore explicit unplugging can help.
-> 
-> Signed-off-by: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
-> Acked-by: Wu Fengguang <fengguang.wu@intel.com> 
-> 
-> 
->  mm/readahead.c |   10 ++++++++++
->  1 file changed, 10 insertions(+)
-> 
-> --- linux.orig/mm/readahead.c
-> +++ linux/mm/readahead.c
-> @@ -490,5 +490,15 @@ page_cache_async_readahead(struct addres
->  
->  	/* do read-ahead */
->  	ondemand_readahead(mapping, ra, filp, true, offset, req_size);
-> +
-> +	/*
-> +	* Normally the current page is !uptodate and lock_page() will be
-> +	* immediately called to implicitly unplug the device. However this
-> +	* is not always true for RAID conifgurations, where data arrives
-> +	* not strictly in their submission order. In this case we need to
-> +	* explicitly kick off the IO.
-> +	*/
-> +	if (PageUptodate(page))
-> +		blk_run_backing_dev(mapping->backing_dev_info, NULL);
->  }
->  EXPORT_SYMBOL_GPL(page_cache_async_readahead); 
-> 
+"core evacuation" is a better description, I agree, though I wonder
+why you don't simply call it "forced idling", since that is what
+you are trying to do.
 
+> > Furthermore, we should not want anything outside of that, either the cpu
+> > is there available for work, or its not -- halfway measures don't make
+> > sense.
+> > 
+> > Furthermore, we already have power aware scheduling which tries to
+> > aggregate idle time on cpu/core/packages so as to maximize the idle time
+> > power savings. Use it there.
+> 
+> Power aware scheduling can optimally accumulate idle times.  Framework
+> to create idle time to force idle cores is good and useful for power
+> savings.  Other than the speed of online/offline I do not know of any
+> other major issue for using cpu hotplug for this purpose.
 
+It sounds like you want to use this technique more often
+that I had in mind.  You are thinking of a warm rack, which
+may stay warm all day long.  I am thinking of a rack which
+has a theoretical power draw higher than the providioned
+electrical supply.  As there is a huge difference between
+actual and theoretical power draw, this saves many dollars.
 
+So what you're looking at is more frequent use than we need,
+and that is fine -- as long as you exhaust P-states first --
+since forcing cores to be idle has a more severe performance
+impact than running at a deeper P-state.
+
+I didn't see P-states addressed in your thread.
+
+> > > > Besides, a hot removed cpu will do a dead loop halt, which isn't power saving
+> > > > efficient. To make hot removed cpu enters deep C-state is in whish list for a
+> > > > long time, but still not available. The acpi_processor_idle is a module, and
+> > > > cpuidle governor potentially can't handle offline cpu.
+> > > 
+> > > Then fix that hot-unplug idle loop. I agree that the hlt thing is silly,
+> > > and I've no idea why its still there, seems like a much better candidate
+> > > for your efforts than this.
+> 
+> I agree with Peter.  We need to make cpu hotplug save power first and
+> later improve upon its performance.
+
+We do have a patch to fix the offline idle loop to save power.
+We can use hotplug in the short term until something better comes along.
+Yes, it will break cpusets, just like Shaohua's original patch broke them 
+-- and that will make using it inappropriate for some customers.
+
+While I think this mechanism is important, I don't think that a large %
+of customers will deploy it.  I think the ones that deploy it will do so
+to save money on electrical provisioning, not on pushing the limits
+of their air conditioner.  So I don't expect its performance requirement
+to be extremely severe.  I don't think it will justify tuning the
+performance of cpu-hotplug, which I don't think was ever intended
+to be in the performance path.
+
+-Len
