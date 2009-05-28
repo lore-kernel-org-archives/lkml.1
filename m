@@ -1,68 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761873AbZE1TEb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758906AbZE1TPO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761873AbZE1TEb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 15:04:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753195AbZE1TEX
+	id S1758906AbZE1TPO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 15:15:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756245AbZE1TPD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 15:04:23 -0400
-Received: from fifo99.com ([67.223.236.141]:36775 "EHLO fifo99.com"
+	Thu, 28 May 2009 15:15:03 -0400
+Received: from main.gmane.org ([80.91.229.2]:49489 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751164AbZE1TEX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 15:04:23 -0400
-Subject: Re: [PATCH] sched: Support current clocksource handling in
-	fallback sched_clock().
-From: Daniel Walker <dwalker@fifo99.com>
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linus Walleij <linus.ml.walleij@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Victor <linux@maxim.org.za>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-sh@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       John Stultz <johnstul@linux.vnet.ibm.com>
-In-Reply-To: <20090528182730.GA32767@linux-sh.org>
-References: <20090528124207.GA28830@linux-sh.org>
-	 <1243515570.6600.96.camel@laptop> <1243527218.28705.35.camel@desktop>
-	 <1243528329.6645.77.camel@laptop> <20090528164011.GA30104@linux-sh.org>
-	 <1243529547.28705.43.camel@desktop> <20090528165816.GA31688@linux-sh.org>
-	 <1243532324.28705.75.camel@desktop> <20090528175341.GA32118@linux-sh.org>
-	 <1243534252.28705.86.camel@desktop>  <20090528182730.GA32767@linux-sh.org>
-Content-Type: text/plain
-Date: Thu, 28 May 2009 12:04:23 -0700
-Message-Id: <1243537463.28705.94.camel@desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	id S1755677AbZE1TPB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 15:15:01 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Alexander Clouter <alex@digriz.org.uk>
+Subject: Re: [RFC] [PATCH] Device Tree on ARM platform
+Date: Thu, 28 May 2009 19:46:11 +0100
+Message-ID: <jo23f6-pss.ln1@woodchuck.wormnet.eu>
+References: <20090527175609.GB31861@flint.arm.linux.org.uk> <1243496236.3171.140.camel@pasglop> <20090528091513.GA14789@n2100.arm.linux.org.uk> <20090528.025739.16559619.davem@davemloft.net> <gvlvcs$ub5$1@ger.gmane.org> <fa686aa40905280713u2b3ef5fvbe3d58ccdb629b60@mail.gmail.com> <20090528165314.GA22449@n2100.arm.linux.org.uk>
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: woodchuck.wormnet.eu
+User-Agent: tin/1.9.3-20080506 ("Dalintober") (UNIX) (Linux/2.6.26-1-sparc64 (sparc64))
+Cc: devicetree-discuss@ozlabs.org, linux-arm-kernel@lists.arm.linux.org.uk
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-05-29 at 03:27 +0900, Paul Mundt wrote:
-
-> Ah, ok, I suppose I could have explained that better. There are a couple
-> of different considerations really. The timer blocks are often in
-> different clock and power domains, meaning that only certain ones can be
-> used for wakeups. These tend not to be ideal for general use, and so we
-> only switch to them when we have to.
+In gmane.linux.kernel Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
+> Just a request:
 > 
-> To make matters more convoluted, the availability of different timer
-> channels on different CPUs will depend on current pin state, and more
-> importantly, what sort of states we are able to achieve. It is not
-> uncommon to have some of the pins required by these channels locked down
-> by other drivers during regular operation, which we in turn need to
-> unload before the pin state can be reconfigured and the timer can
-> succeed, all which needs to happen before certain power state transitions
-> can take place. We implement dynamic pinmux for most of the SH CPUs
-> precisely to deal with these sorts of problems. In the case of some of
-> the microcontrollers that are timer heavy and low on pincount, it is not
-> uncommon to have upwards of 16 different functions per pin.
+> I'm not sure exactly who it is (I think it's Dmitry) but this sub-thread
+> has had the list of addresses to be sent copies totally managled to the
+> extent that some posts aren't making it even to my mailing list server
+> or my address.
+> 
+> Grant - I assume you added linux-arm-kernel back yourself for your
+> reply?
+> 
+> I think Dmitry uses gmane - maybe gmane only supports posting to one
+> list at a time?
+>
+I'll confess I am a GMANE weenie but I have been following up to all 
+threads; but I'm pretty sure the email CC's are getting lost.  I was 
+always part of the LKML and the ARM list; just to keep my part of the 
+thread going I became a member of 'devicetree'.
 
-I'm still a little confused how kernel modules fit in here.. Are you
-saying a user would unload some certain driver which has a pin locked
-down and prevents the clocksource from working. Then the user would load
-the clocksource module which would now function, and that all would have
-to happen in order to enter a certain power state?
+If you think the problem exists with me and I could be the problem, let 
+me know :)
 
-Daniel 
+Cheers
+
+-- 
+Alexander Clouter
+.sigmonster says: History books which contain no lies are extremely dull.
 
