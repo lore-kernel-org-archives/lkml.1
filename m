@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757645AbZE1LkT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756286AbZE1Lkm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757645AbZE1LkT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 07:40:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752937AbZE1LkI
+	id S1756286AbZE1Lkm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 07:40:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756667AbZE1LkO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 07:40:08 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:57780 "EHLO mx2.redhat.com"
+	Thu, 28 May 2009 07:40:14 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:57784 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751528AbZE1LkH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 07:40:07 -0400
-Date: Thu, 28 May 2009 13:35:40 +0200
+	id S1752634AbZE1LkI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 07:40:08 -0400
+Date: Thu, 28 May 2009 13:35:37 +0200
 From: Oleg Nesterov <oleg@redhat.com>
 To: Roland McGrath <roland@redhat.com>
 Cc: Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org
-Subject: [RFC PATCH 2/12 v2] ptrace: tracehooks: do not use task->ptrace
-	directly
-Message-ID: <20090528113540.GA18681@redhat.com>
+Subject: [RFC PATCH 1/12 v2] ptrace: ptrace_signal: fix the usage of
+	->parent
+Message-ID: <20090528113537.GA18678@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -25,65 +25,46 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-s/->ptrace/task_ptrace()/ in tracehook.h as a preparation for the future
-changes.
+This patch complicates the code to fix the pure theoretical problems.
+But since we are going to change this code, it is better to fix them
+anyway.
 
-Also, microoptimize tracehook_prepare_clone() for the common non-ptraced
-case.
+- If we are not traced any longer after ptrace_stop(), si_pid/si_uid
+  are not necessary right.
 
- include/linux/tracehook.h |   16 +++++++++-------
- 1 file changed, 9 insertions(+), 7 deletions(-)
+- It is not safe to dereference current->parent without tasklist or
+  RCU lock. The tracer can detach and exit. ->siglock can't prevent
+  this, and (in theory) local_irq_disable() doesn't imply RCU lock.
 
---- PTRACE/include/linux/tracehook.h~1_TRACEHOOK	2009-05-24 21:36:47.000000000 +0200
-+++ PTRACE/include/linux/tracehook.h	2009-05-24 21:48:40.000000000 +0200
-@@ -225,16 +225,18 @@ static inline void tracehook_report_exit
-  */
- static inline int tracehook_prepare_clone(unsigned clone_flags)
- {
--	if (clone_flags & CLONE_UNTRACED)
-+	unsigned int ptrace = task_ptrace(current);
+Hopefully this "signr != info->si_signo" code will go away eventually.
+
+Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+
+--- PTRACE/kernel/signal.c~PTRACE_SIGNAL	2009-05-28 04:12:02.000000000 +0200
++++ PTRACE/kernel/signal.c	2009-05-28 04:14:38.000000000 +0200
+@@ -1770,11 +1770,22 @@ static int ptrace_signal(int signr, sigi
+ 	   specific in the siginfo structure then it should
+ 	   have updated *info via PTRACE_SETSIGINFO.  */
+ 	if (signr != info->si_signo) {
++		struct task_struct *tracer;
 +
-+	if (likely(!ptrace) || (clone_flags & CLONE_UNTRACED))
- 		return 0;
+ 		info->si_signo = signr;
+ 		info->si_errno = 0;
+ 		info->si_code = SI_USER;
+-		info->si_pid = task_pid_vnr(current->parent);
+-		info->si_uid = task_uid(current->parent);
++
++		rcu_read_lock();
++		tracer = current->parent;
++		if (task_ptrace(current)) {
++			info->si_pid = task_pid_vnr(tracer);
++			info->si_uid = task_uid(tracer);
++		} else {
++			info->si_pid = 0;
++			info->si_uid = 0;
++		}
++		rcu_read_unlock();
+ 	}
  
- 	if (clone_flags & CLONE_VFORK) {
--		if (current->ptrace & PT_TRACE_VFORK)
-+		if (ptrace & PT_TRACE_VFORK)
- 			return PTRACE_EVENT_VFORK;
- 	} else if ((clone_flags & CSIGNAL) != SIGCHLD) {
--		if (current->ptrace & PT_TRACE_CLONE)
-+		if (ptrace & PT_TRACE_CLONE)
- 			return PTRACE_EVENT_CLONE;
--	} else if (current->ptrace & PT_TRACE_FORK)
-+	} else if (ptrace & PT_TRACE_FORK)
- 		return PTRACE_EVENT_FORK;
- 
- 	return 0;
-@@ -479,7 +481,7 @@ static inline int tracehook_get_signal(s
-  */
- static inline int tracehook_notify_jctl(int notify, int why)
- {
--	return notify || (current->ptrace & PT_PTRACED);
-+	return notify || task_ptrace(current);
- }
- 
- #define DEATH_REAP			-1
-@@ -503,7 +505,7 @@ static inline int tracehook_notify_death
- 					 void **death_cookie, int group_dead)
- {
- 	if (task_detached(task))
--		return task->ptrace ? SIGCHLD : DEATH_REAP;
-+		return task_ptrace(task) ? SIGCHLD : DEATH_REAP;
- 
- 	/*
- 	 * If something other than our normal parent is ptracing us, then
-@@ -513,7 +515,7 @@ static inline int tracehook_notify_death
- 	if (thread_group_empty(task) && !ptrace_reparented(task))
- 		return task->exit_signal;
- 
--	return task->ptrace ? SIGCHLD : DEATH_DELAYED_GROUP_LEADER;
-+	return task_ptrace(task) ? SIGCHLD : DEATH_DELAYED_GROUP_LEADER;
- }
- 
- /**
+ 	/* If the (new) signal is now blocked, requeue it.  */
 
