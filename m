@@ -1,99 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759954AbZE1BGp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757763AbZE1BK5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759954AbZE1BGp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 21:06:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755119AbZE1BGf
+	id S1757763AbZE1BK5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 21:10:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754736AbZE1BKq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 21:06:35 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:53780 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751189AbZE1BGe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 21:06:34 -0400
-Date: Thu, 28 May 2009 10:05:01 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
-       "hannes@cmpxchg.org" <hannes@cmpxchg.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH 2/5] add SWAP_HAS_CACHE flag to swap_map
-Message-Id: <20090528100501.ab26953f.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090528094157.5c39ac57.nishimura@mxp.nes.nec.co.jp>
-References: <20090526121259.b91b3e9d.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090526121547.ce866fe4.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090528094157.5c39ac57.nishimura@mxp.nes.nec.co.jp>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Wed, 27 May 2009 21:10:46 -0400
+Received: from sh.osrg.net ([192.16.179.4]:56485 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752550AbZE1BKp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 21:10:45 -0400
+Date: Thu, 28 May 2009 10:10:42 +0900
+To: netdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: [PATCH] net: replace dma_sync_single with dma_sync_single_for_cpu
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20090528100925H.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Thu, 28 May 2009 10:10:42 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 May 2009 09:41:57 +0900
-Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+This replaces dma_sync_single() with dma_sync_single_for_cpu() because
+dma_sync_single() is an obsolete API; include/linux/dma-mapping.h says:
 
-> > @@ -1969,17 +2017,33 @@ int swap_duplicate(swp_entry_t entry)
-> >  	offset = swp_offset(entry);
-> >  
-> >  	spin_lock(&swap_lock);
-> > -	if (offset < p->max && p->swap_map[offset]) {
-> > -		if (p->swap_map[offset] < SWAP_MAP_MAX - 1) {
-> > -			p->swap_map[offset]++;
-> > +
-> > +	if (unlikely(offset >= p->max))
-> > +		goto unlock_out;
-> > +
-> > +	count = swap_count(p->swap_map[offset]);
-> > +	has_cache = swap_has_cache(p->swap_map[offset]);
-> > +	if (cache) {
-> > +		/* set SWAP_HAS_CACHE if there is no cache and entry is used */
-> > +		if (!has_cache && count) {
-> Should we check !has_cache here ?
-I added !has_cache to return 0 in racy case.
+/* Backwards compat, remove in 2.7.x */
+#define dma_sync_single		dma_sync_single_for_cpu
+#define dma_sync_sg		dma_sync_sg_for_cpu
 
-> 
-> Concurrent read_swap_cache_async() might have set SWAP_HAS_CACHE, but not have added
-> a page to swap cache yet when find_get_page() was called.
-yes.
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+---
+ drivers/net/arm/ep93xx_eth.c |    4 ++--
+ drivers/net/arm/ixp4xx_eth.c |    4 ++--
+ drivers/net/mlx4/mr.c        |    7 ++++---
+ drivers/net/wan/ixp4xx_hss.c |    4 ++--
+ 4 files changed, 10 insertions(+), 9 deletions(-)
 
-> add_to_swap_cache() would handle the race of concurrent read_swap_cache_async(),
-> but considering more, swapcache_free() at the end of the loop might dangerous in this case...
-
-I can't catch what you mean.
-
-I think swapcache_prepare() returns 0 in racy case and no add_to_swap_cache() happens.
-wrong ?
-
-> So I think it should be like:
-> 
-> 	read_swap_cache_async()
-> 		:
-> 		valid = swapcache_prepare(entry);
-> 		if (!valid)
-> 			break;
-> 		if (valid == -EAGAIN);
-> 			continue;
-> 
-> to let the context that succeeded in swapcache_prepare() do add_to_swap_cache().
-> 
-
-What you reccomend is code like this ?
-
-==
-	ret = swapcache_prapare(entry);
-	if (ret == -ENOENT)
-		break;    /* unused swap entry */
-	if (ret == -EBUSY)
-		continue; /* to call find_get_page() again */
-==
-
--Kame
-
-
-
-
+diff --git a/drivers/net/arm/ep93xx_eth.c b/drivers/net/arm/ep93xx_eth.c
+index b72b3d6..fbf4645 100644
+--- a/drivers/net/arm/ep93xx_eth.c
++++ b/drivers/net/arm/ep93xx_eth.c
+@@ -253,7 +253,7 @@ static int ep93xx_rx(struct net_device *dev, int processed, int budget)
+ 		skb = dev_alloc_skb(length + 2);
+ 		if (likely(skb != NULL)) {
+ 			skb_reserve(skb, 2);
+-			dma_sync_single(NULL, ep->descs->rdesc[entry].buf_addr,
++			dma_sync_single_for_cpu(NULL, ep->descs->rdesc[entry].buf_addr,
+ 						length, DMA_FROM_DEVICE);
+ 			skb_copy_to_linear_data(skb, ep->rx_buf[entry], length);
+ 			skb_put(skb, length);
+@@ -331,7 +331,7 @@ static int ep93xx_xmit(struct sk_buff *skb, struct net_device *dev)
+ 	ep->descs->tdesc[entry].tdesc1 =
+ 		TDESC1_EOF | (entry << 16) | (skb->len & 0xfff);
+ 	skb_copy_and_csum_dev(skb, ep->tx_buf[entry]);
+-	dma_sync_single(NULL, ep->descs->tdesc[entry].buf_addr,
++	dma_sync_single_for_cpu(NULL, ep->descs->tdesc[entry].buf_addr,
+ 				skb->len, DMA_TO_DEVICE);
+ 	dev_kfree_skb(skb);
+ 
+diff --git a/drivers/net/arm/ixp4xx_eth.c b/drivers/net/arm/ixp4xx_eth.c
+index b6d1881..6d346be 100644
+--- a/drivers/net/arm/ixp4xx_eth.c
++++ b/drivers/net/arm/ixp4xx_eth.c
+@@ -562,8 +562,8 @@ static int eth_poll(struct napi_struct *napi, int budget)
+ 		dma_unmap_single(&dev->dev, desc->data - NET_IP_ALIGN,
+ 				 RX_BUFF_SIZE, DMA_FROM_DEVICE);
+ #else
+-		dma_sync_single(&dev->dev, desc->data - NET_IP_ALIGN,
+-				RX_BUFF_SIZE, DMA_FROM_DEVICE);
++		dma_sync_single_for_cpu(&dev->dev, desc->data - NET_IP_ALIGN,
++					RX_BUFF_SIZE, DMA_FROM_DEVICE);
+ 		memcpy_swab32((u32 *)skb->data, (u32 *)port->rx_buff_tab[n],
+ 			      ALIGN(NET_IP_ALIGN + desc->pkt_len, 4) / 4);
+ #endif
+diff --git a/drivers/net/mlx4/mr.c b/drivers/net/mlx4/mr.c
+index 0caf74c..0a46778 100644
+--- a/drivers/net/mlx4/mr.c
++++ b/drivers/net/mlx4/mr.c
+@@ -402,7 +402,8 @@ static int mlx4_write_mtt_chunk(struct mlx4_dev *dev, struct mlx4_mtt *mtt,
+ 	for (i = 0; i < npages; ++i)
+ 		mtts[i] = cpu_to_be64(page_list[i] | MLX4_MTT_FLAG_PRESENT);
+ 
+-	dma_sync_single(&dev->pdev->dev, dma_handle, npages * sizeof (u64), DMA_TO_DEVICE);
++	dma_sync_single_for_cpu(&dev->pdev->dev, dma_handle,
++				npages * sizeof (u64), DMA_TO_DEVICE);
+ 
+ 	return 0;
+ }
+@@ -549,8 +550,8 @@ int mlx4_map_phys_fmr(struct mlx4_dev *dev, struct mlx4_fmr *fmr, u64 *page_list
+ 	for (i = 0; i < npages; ++i)
+ 		fmr->mtts[i] = cpu_to_be64(page_list[i] | MLX4_MTT_FLAG_PRESENT);
+ 
+-	dma_sync_single(&dev->pdev->dev, fmr->dma_handle,
+-			npages * sizeof(u64), DMA_TO_DEVICE);
++	dma_sync_single_for_cpu(&dev->pdev->dev, fmr->dma_handle,
++				npages * sizeof(u64), DMA_TO_DEVICE);
+ 
+ 	fmr->mpt->key    = cpu_to_be32(key);
+ 	fmr->mpt->lkey   = cpu_to_be32(key);
+diff --git a/drivers/net/wan/ixp4xx_hss.c b/drivers/net/wan/ixp4xx_hss.c
+index a6dc317..bb719b6 100644
+--- a/drivers/net/wan/ixp4xx_hss.c
++++ b/drivers/net/wan/ixp4xx_hss.c
+@@ -732,8 +732,8 @@ static int hss_hdlc_poll(struct napi_struct *napi, int budget)
+ 		dma_unmap_single(&dev->dev, desc->data,
+ 				 RX_SIZE, DMA_FROM_DEVICE);
+ #else
+-		dma_sync_single(&dev->dev, desc->data,
+-				RX_SIZE, DMA_FROM_DEVICE);
++		dma_sync_single_for_cpu(&dev->dev, desc->data,
++					RX_SIZE, DMA_FROM_DEVICE);
+ 		memcpy_swab32((u32 *)skb->data, (u32 *)port->rx_buff_tab[n],
+ 			      ALIGN(desc->pkt_len, 4) / 4);
+ #endif
+-- 
+1.6.0.6
 
