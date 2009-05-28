@@ -1,63 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762019AbZE1IhY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762413AbZE1Ihp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762019AbZE1IhY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 04:37:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754377AbZE1IhJ
+	id S1762413AbZE1Ihp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 04:37:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762060AbZE1IhS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 04:37:09 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50500 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753946AbZE1IhI (ORCPT
+	Thu, 28 May 2009 04:37:18 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:44604 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761329AbZE1IhQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 04:37:08 -0400
-Date: Thu, 28 May 2009 01:36:29 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Pierre Ossman <pierre@ossman.eu>
-Cc: dsaxena@plexity.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] MMC: Add 400ms to CAFE SD controller resume path
-Message-Id: <20090528013629.0173522b.akpm@linux-foundation.org>
-In-Reply-To: <20090522135150.7e0716d6@mjolnir.ossman.eu>
-References: <20090513200556.GA7882@plexity.net>
-	<20090522135150.7e0716d6@mjolnir.ossman.eu>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 28 May 2009 04:37:16 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 2/2] remove CONFIG_UNEVICTABLE_LRU definition from defconfig
+Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>, Johannes Weiner <hannes@cmpxchg.org>,
+       Andi Kleen <andi@firstfloor.org>, Minchan Kim <minchan.kim@gmail.com>,
+       David Woodhouse <dwmw2@infradead.org>, Matt Mackall <mpm@selenic.com>
+In-Reply-To: <20090528013146.6dd99aa0.akpm@linux-foundation.org>
+References: <20090514111519.9B5D.A69D9226@jp.fujitsu.com> <20090528013146.6dd99aa0.akpm@linux-foundation.org>
+Message-Id: <20090528173242.92E4.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Thu, 28 May 2009 17:37:12 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 22 May 2009 13:51:50 +0200 Pierre Ossman <pierre@ossman.eu> wrote:
-
-> On Wed, 13 May 2009 20:05:56 +0000
-> Deepak Saxena <dsaxena@plexity.net> wrote:
+> On Thu, 14 May 2009 11:15:49 +0900 (JST) KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 > 
+> > Subject: [PATCH] remove CONFIG_UNEVICTABLE_LRU definition from defconfig
 > > 
-> > The CAFE SD controller takes a long time to completely resume
-> > and w/o this patch, we do not redetect an existing card but
-> > instead detect it as a new one. Even with MMC_UNSAFE_RESUME
-> > enabled, this leads to the partition table on the device being
-> > wiped out.
-> >     
-> > See http://dev.laptop.org/ticket/6532 for gory details.
-
-hm, this sounds like a fairly serious problem, but the patch is nearly
-a year old.
-
-> > Signed-off-by: Deepak Saxena <dsaxena@laptop.org>
+> > Now, There isn't CONFIG_UNEVICTABLE_LRU. these line are unnecessary.
 > > 
+> > ...
+> >
+> >  196 files changed, 196 deletions(-)
 > 
-> Reading through that report, I don't believe you properly worked around
-> the bug. You only avoid bug 1339, but that's only mildly related.
+> Gad.
 > 
-> What this workaround does is to make sure that MMC_UNSAFE_RESUME
-> actually works. But if you change cards during suspend, the VFS bug
-> should reappear and you'll corrupt the partition table.
+> I don't know if this is worth bothering about really.  The dead Kconfig
+> option will slowly die a natural death as people refresh the defconfig
+> files.
 
-What do you think the VFS did wrong here?
+ok. I'll drop this patch. 
+Sorry, I did not have the experience that changed defconfig ;)
 
-> And as for 1339, has there been any more work done on why this problem
-> doesn't appear in OFW? I'd be a lot happier if we could make things
-> work without artificial delays.
 
 
