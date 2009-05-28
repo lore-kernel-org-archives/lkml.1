@@ -1,69 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756689AbZE1Koa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755375AbZE1Kxg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756689AbZE1Koa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 06:44:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753135AbZE1KoX
+	id S1755375AbZE1Kxg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 06:53:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751481AbZE1Kx1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 06:44:23 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:59493 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750983AbZE1KoW (ORCPT
+	Thu, 28 May 2009 06:53:27 -0400
+Received: from mx1.emlix.com ([193.175.82.87]:38579 "EHLO mx1.emlix.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751083AbZE1Kx0 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 06:44:22 -0400
-Date: Thu, 28 May 2009 12:51:03 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Nick Piggin <npiggin@suse.de>,
-       "hugh@veritas.com" <hugh@veritas.com>,
-       "riel@redhat.com" <riel@redhat.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler in the VM v3
-Message-ID: <20090528105103.GG1065@one.firstfloor.org>
-References: <200905271012.668777061@firstfloor.org> <20090527201239.C2C9C1D0294@basil.firstfloor.org> <20090528082616.GG6920@wotan.suse.de> <20090528095934.GA10678@localhost> <20090528101111.GE1065@one.firstfloor.org> <20090528103300.GA15133@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090528103300.GA15133@localhost>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 28 May 2009 06:53:26 -0400
+From: =?utf-8?q?Daniel=20Gl=C3=B6ckner?= <dg@emlix.com>
+To: David Brownell <dbrownell@users.sourceforge.net>
+Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+       =?utf-8?q?Daniel=20Gl=C3=B6ckner?= <dg@emlix.com>
+Subject: [PATCH] g_serial: append zlp when tx buffer becomes empty
+Date: Thu, 28 May 2009 12:53:24 +0200
+Message-Id: <1243508004-17898-1-git-send-email-dg@emlix.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+Organization: emlix gmbh, Goettingen, Germany
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 28, 2009 at 06:33:00PM +0800, Wu Fengguang wrote:
-> > > > You haven't waited on writeback here AFAIKS, and have you
-> > > > *really* verified it is safe to call delete_from_swap_cache?
-> > > 
-> > > Good catch. I'll soon submit patches for handling the under
-> > > read/write IO pages. In this patchset they are simply ignored.
-> > 
-> > Yes, we assume the IO device does something sensible with the poisoned
-> > cache lines and aborts. Later we can likely abort IO requests in a early
-> > stage on the Linux, but that's more advanced.
-> > 
-> > The question is if we need to wait on writeback for correctness? 
-> 
-> Not necessary. Because I'm going to add a me_writeback() handler.
+Some usb serial host drivers expect a short packet before they forward
+the data to the application. This is caused by them trying to read more
+than one packet at a time. So when the gadget sends an exact multiple
+of the maximum packet size, it should append a zero-length packet.
 
-Ok but without it. Let's assume me_writeback() is in the future.
+Signed-off-by: Daniel Glöckner <dg@emlix.com>
+---
+ drivers/usb/gadget/u_serial.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-I'm mainly interested in correctness (as in not crashing) of this
-version now.
-
-Also writeback seems to be only used by nfs/afs/nilfs2, not in
-the normal case, unless I'm misreading the code. 
-
-The nilfs2 case seems weird, I haven't completely read that.
-
-> Then the writeback pages simply won't reach here. And it won't
-> magically go into writeback state, since the page has been locked.
-
-But since we take the page lock they should not be in writeback anyways,
-no?
-
--Andi
-
+diff --git a/drivers/usb/gadget/u_serial.c b/drivers/usb/gadget/u_serial.c
+index 3df70e5..f121030 100644
+--- a/drivers/usb/gadget/u_serial.c
++++ b/drivers/usb/gadget/u_serial.c
+@@ -372,6 +372,7 @@ __acquires(&port->port_lock)
+ 
+ 		req->length = len;
+ 		list_del(&req->list);
++		req->zero = (gs_buf_data_avail(&port->port_write_buf) == 0);
+ 
+ 		pr_vdebug(PREFIX "%d: tx len=%d, 0x%02x 0x%02x 0x%02x ...\n",
+ 				port->port_num, len, *((u8 *)req->buf),
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+1.6.1.3
+
