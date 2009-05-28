@@ -1,53 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763988AbZE1UYc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764225AbZE1UYr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763988AbZE1UYc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 16:24:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756638AbZE1UYZ
+	id S1764225AbZE1UYr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 16:24:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761500AbZE1UYi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 16:24:25 -0400
-Received: from kroah.org ([198.145.64.141]:58285 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754857AbZE1UYY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 16:24:24 -0400
-Date: Thu, 28 May 2009 13:14:50 -0700
-From: Greg KH <greg@kroah.com>
-To: Ming Lei <tom.leiming@gmail.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] driver core : fix request_firmware_nowait
-Message-ID: <20090528201450.GA4043@kroah.com>
-References: <1243004787-5362-1-git-send-email-tom.leiming@gmail.com> <20090522161016.36ef6f15@lxorguk.ukuu.org.uk> <d82e647a0905220826p378f6bb4vac9150343b5c3622@mail.gmail.com>
-MIME-Version: 1.0
+	Thu, 28 May 2009 16:24:38 -0400
+Received: from g1t0027.austin.hp.com ([15.216.28.34]:14250 "EHLO
+	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761608AbZE1UYh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 16:24:37 -0400
+Date: Thu, 28 May 2009 15:24:59 -0500
+From: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>
+To: akpm@beardog.cca.cpqcorp.net, jens@beardog.cca.cpqcorp.net,
+       Andrew Patterson <andrew.patterson@hp.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       LKML-SCSI <linux-scsi@vger.kernel.org>
+Subject: Re: [PATCH v6] cciss: add cciss driver sysfs entries
+Message-ID: <20090528202459.GC4846@beardog.cca.cpqcorp.net>
+References: <20090413164524.17977.99322.stgit@bluto.andrew>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <d82e647a0905220826p378f6bb4vac9150343b5c3622@mail.gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <20090413164524.17977.99322.stgit@bluto.andrew>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 22, 2009 at 11:26:16PM +0800, Ming Lei wrote:
-> 2009/5/22 Alan Cox <alan@lxorguk.ukuu.org.uk>:
-> > On Fri, 22 May 2009 23:06:27 +0800
-> > tom.leiming@gmail.com wrote:
-> >
-> >> From: Ming Lei <tom.leiming@gmail.com>
-> >>
-> >> request_firmware_nowait declares it can be called in non-sleep contexts,
-> >> but kthead_run which is called by request_firmware_nowait may sleep.
-> >
-> > Does anyone actually need to call it in a non-sleeping context or can the
-> > documentation simply be fixed instead to avoid all the extra complexity ?
-> >
-> 
-> It seems no one calls it in a non-sleeping context now, but we can provide it
-> without much extra complexity, IMHO.  Also someone has complained it :
-> 
->       http://marc.info/?t=124022846400003&r=1&w=2
+On Mon, Apr 13, 2009 at 10:45:25AM -0600, Andrew Patterson wrote:
+This is version six of my patch to add sysfs entries to the cciss driver.
 
-That was 3 years ago :)
+Changelog:
 
-I say just fix the documentation.
+Version 3
+Got rid of /sys/class/cciss_* entries.  Now only show vendor, model, 
+rev, and unique_id at /sys/bus/pci/devices/ccissX/cXdY.  Where X is the
+controller nubmer and Y is the logical drive number.
+Fixed a double memcpy of the serial number.
+Documented new sysfs entries in 
+Documentation/ABI/testing/sysfs-bus-pci-devices-cciss
+Fixed tabs in Documentation/ABI/testing/sysfs-bus-pci-devices-cciss
+Removed unneeded device_attribute release functions
+Fixed pahole-reported holes.
 
-thanks,
+Version 4
+Moved cciss_sysfs.c into cciss.c
+Added cciss_bus_type to logical drive so we get /sys/bus/cciss/device/ccissX.
 
-greg k-h
+Version 5 
+Added cciss_bus_type to hba so we get /sys/bus/cciss/device/cYdZ.
+
+Version 6
+
+Use "sizeof() + 1" instead of "*LEN + 2" for *_show() routines.
+Added back in ABI docs.
+The following patch adds sysfs entries for the cciss driver. It adds
+vendor, model, rev, and unique_id under /sys/block/cciss!c#d#/device
+needed for RedHat BZ:
+
+   https://bugzilla.redhat.com/show_bug.cgi?id=484419
+
+This patch is based off os linus's 2.6 tree (2.6.30-rc1).
+
+ .../ABI/testing/sysfs-bus-pci-devices-cciss        |   33 ++
+ drivers/block/cciss.c                              |  267 ++++++++++++++++++++
+ drivers/block/cciss.h                              |   24 +-
+ 3 files changed, 314 insertions(+), 10 deletions(-)
+ create mode 100644 Documentation/ABI/testing/sysfs-bus-pci-devices-cciss
+
+
+-- 
+Andrew Patterson
