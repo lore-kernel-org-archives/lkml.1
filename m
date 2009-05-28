@@ -1,48 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762492AbZE1NI4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762732AbZE1NK2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762492AbZE1NI4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 09:08:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758341AbZE1NIt
+	id S1762732AbZE1NK2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 09:10:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757404AbZE1NKU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 09:08:49 -0400
-Received: from mail.edgeware.tv ([82.99.7.138]:45625 "EHLO mail.edgeware.tv"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757068AbZE1NIt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 09:08:49 -0400
-X-Greylist: delayed 582 seconds by postgrey-1.27 at vger.kernel.org; Thu, 28 May 2009 09:08:49 EDT
-From: "Fredrik Arnerup" <fredrik.arnerup@edgeware.tv>
-To: <linux-kernel@vger.kernel.org>
-Subject: IFF_LOWER_UP does not fit in ifr_flags
-Date: Thu, 28 May 2009 14:59:05 +0200
-Organization: Edgeware
-Message-ID: <89A39FC0957640879F8975880836CF91@edgeware.tv>
+	Thu, 28 May 2009 09:10:20 -0400
+Received: from e23smtp02.au.ibm.com ([202.81.31.144]:34375 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757068AbZE1NKT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 09:10:19 -0400
+Date: Thu, 28 May 2009 18:40:00 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Josef Bacik <josef@redhat.com>
+Cc: Jan Kara <jack@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
+       npiggin@suse.de, linux-ext4@vger.kernel.org
+Subject: Re: [PATCH 03/11] vfs: Add better VFS support for page_mkwrite when
+	blocksize < pagesize
+Message-ID: <20090528131000.GA7398@skywalker>
+References: <1243429268-3028-1-git-send-email-jack@suse.cz> <1243429268-3028-4-git-send-email-jack@suse.cz> <20090528130341.GC14315@dhcp231-156.rdu.redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 11
-Thread-Index: AcnflBSwIOlpowRbS/qlDCmcZZ9TWg==
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090528130341.GC14315@dhcp231-156.rdu.redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Documentation/networking/operstates.txt (and netdevice(7)) claims that
-the flags IFF_LOWER_UP, IFF_DORMANT and IFF_ECHO can be read from user space
-using ioctl() with SIOCGIFFLAGS. Looking in include/linux/if.h however,
-the flags are returned in a struct ifreq in the field ifr_flags which
-is declared as a short, while the flags are defined as:
+On Thu, May 28, 2009 at 09:03:41AM -0400, Josef Bacik wrote:
+> On Wed, May 27, 2009 at 03:01:00PM +0200, Jan Kara wrote:
+> >
+> 
+> Sorry, another possibly braindead question.  When we extend the i_size you make
+> it so that the page will be faulted the next time it's written to via
+> page_mkclean, which from what I can tell is done via pte_wrprotect.  The problem
+> with this is the next time we write to the page, we do pte_mkwrite, which makes
+> it so that we won't fault the next time we write, correct?  So if I were to do
+> 
+> ftruncate(fd, 0);
+> pwrite(fd, buf, 1024, 0);
+> map = mmap(NULL, 4096, PROT_WRITE, MAP_SHARED, fd, 0);
+> map[0] = 'a';
+> ftruncate(fd, 10000);
+> map[0] = 'b'; --> causes a page fault again
 
-#define IFF_LOWER_UP    0x10000         /* driver signals L1 up         */
-#define IFF_DORMANT     0x20000         /* driver signals dormant       */
-#define IFF_ECHO        0x40000         /* echo sent packets            */
 
-Those aren't shorts, are they? In net/core/dev.c dev_get_flags() returns
-an unsigned which is assigned to ifr_flags directly.
+This will do block allocation for the entire page within i_size. (ie multiple blocks)
+ext4_page_mkwrite have
 
-Looked at linux/kernel/git/stable/linux-2.6.29.y.git.
-CC me please.
+size = i_size_read(..)
+if (page->index == size >> PAGE_CACHE_SHIFT)
+	len = size & ~PAGE_CACHE_MASK;
+else
+	len = PAGE_CACHE_SIZE;
 
-/Fredrik Arnerup
-fredrik.arnerup@edgeware.tv
 
+> memset(map, 'a', 4096); --> wouldn't cause a pagefault
+> writepage at some point
+> 
+> We'd still be in the position that you are trying to solve, correct, since we
+> will have dirtied the rest of the page without calling mkwrite for the other
+> sections of it, which would result in unallocated blocks when we hit writepage.
+> Thanks,
+> 
+
+-aneesh
