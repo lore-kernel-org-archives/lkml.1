@@ -1,101 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758608AbZE1PER@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759194AbZE1PEe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758608AbZE1PER (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 11:04:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751760AbZE1PEH
+	id S1759194AbZE1PEe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 11:04:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757068AbZE1PEZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 11:04:07 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:64059 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751444AbZE1PEG (ORCPT
+	Thu, 28 May 2009 11:04:25 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:60772 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751760AbZE1PEX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 11:04:06 -0400
-Date: Thu, 28 May 2009 11:04:06 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
+	Thu, 28 May 2009 11:04:23 -0400
+Date: Thu, 28 May 2009 17:04:09 +0200
+From: Sascha Hauer <s.hauer@pengutronix.de>
 To: Thomas Gleixner <tglx@linutronix.de>
-cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] tracing: annotate emit_log_char() notrace
-In-Reply-To: <alpine.LFD.2.00.0905281646380.3397@localhost.localdomain>
-Message-ID: <alpine.DEB.2.00.0905281057490.905@gandalf.stny.rr.com>
-References: <alpine.LFD.2.00.0905271657340.3397@localhost.localdomain> <20090528141648.GA6018@nowhere> <alpine.LFD.2.00.0905281646380.3397@localhost.localdomain>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+Cc: Grant Likely <grant.likely@secretlab.ca>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Russell King <rmk+lkml@arm.linux.org.uk>,
+       devicetree-discuss <devicetree-discuss@ozlabs.org>,
+       linux-kernel@vger.kernel.org, Timur Tabi <timur@freescale.com>,
+       Scott Wood <scottwood@freescale.com>,
+       Janboe Ye <yuan-bo.ye@motorola.com>,
+       linux-arm-kernel@lists.arm.linux.org.uk
+Subject: Re: [RFC] [PATCH] Device Tree on ARM platform
+Message-ID: <20090528150409.GO22742@pengutronix.de>
+Mail-Followup-To: Thomas Gleixner <tglx@linutronix.de>,
+	Grant Likely <grant.likely@secretlab.ca>,
+	Mark Brown <broonie@opensource.wolfsonmicro.com>,
+	Russell King <rmk+lkml@arm.linux.org.uk>,
+	devicetree-discuss <devicetree-discuss@ozlabs.org>,
+	linux-kernel@vger.kernel.org, Timur Tabi <timur@freescale.com>,
+	Scott Wood <scottwood@freescale.com>,
+	Janboe Ye <yuan-bo.ye@motorola.com>,
+	linux-arm-kernel@lists.arm.linux.org.uk
+References: <20090527150527.GK6805@pengutronix.de> <87vdnm8sec.fsf@macbook.be.48ers.dk> <4A1D6901.2090508@freescale.com> <20090527175609.GB31861@flint.arm.linux.org.uk> <4A1D8FBA.6040802@freescale.com> <20090527192909.GA32398@flint.arm.linux.org.uk> <20090527205218.GA5591@sirena.org.uk> <fa686aa40905271405pc2f1738gc8dd139f61a0e27@mail.gmail.com> <20090528124307.GN22742@pengutronix.de> <alpine.LFD.2.00.0905281457170.3397@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0905281457170.3397@localhost.localdomain>
+X-Sent-From: Pengutronix Entwicklungszentrum Nord - Hildesheim
+X-URL: http://www.pengutronix.de/
+X-IRC: #ptxdist @freenode
+X-Accept-Language: de,en
+X-Accept-Content-Type: text/plain
+X-Impressum: Pengutronix - Linux Solutions for Science and Industry
+	Handelsregister:  Amtsgericht Hildesheim, HRA 2686 Peiner Strasse
+	6-8, 31137 Hildesheim, Germany Phone: +49-5121-206917-0 |  Fax:
+	+49-5121-206917-5555 Inhaber: Dipl.-Ing. Robert Schwebel
+X-Message-Flag: See Message Headers for Impressum
+X-Uptime: 16:32:31 up 17 days,  4:56, 32 users,  load average: 2.96, 3.89,
+	2.83
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: sha@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Thu, 28 May 2009, Thomas Gleixner wrote:
-
-> On Thu, 28 May 2009, Frederic Weisbecker wrote:
-> > On Wed, May 27, 2009 at 05:00:44PM +0200, Thomas Gleixner wrote:
-> > > printk calls emit_log_char() in a loop which is cluttering the trace
-> > > buffer. Make it notrace.
-> > > 
-> > > Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> > > ---
+On Thu, May 28, 2009 at 03:18:02PM +0200, Thomas Gleixner wrote:
+> On Thu, 28 May 2009, Sascha Hauer wrote:
+> > > There is the advantage of easy multiplatform support.  I regularly
+> > > build a single kernel image which boots on all my MPC5200 boards, and
+> > > on my MPC83xx boards.
 > > 
-> > 
-> > Does it produce that much annoying traces?
-> > I mean, printk() are usually rare events.
-> > 
-> > Do you have a particular debugging workflow that makes this
-> > function invasive in the trace?
-> > 
-> > May be it's because you are debugging using ftrace and other
-> > debugging options that use a lot of printk()
-> > In such case, it would indeed be good to apply this patch.
+> > That is not necessarily an advantage of a device tree. On ARM you can
+> > also build a kernel which runs on 20+ PXA platforms at the same time.
+> > (And I'm sure it can be done to even support say i.MX and PXA at the
+> > same time, but this is another story)
 > 
-> I noticed when I chased a boot up problem, half of the trace was full
-> of
+> Well, you can run it on 20+ PXA platforms which have all their own
+> machine number, but you have all the little details of each platform
+> hardcoded into the kernel.
 > 
->    0.540550: emit_log_char <-vprintk
->    0.540550: emit_log_char <-vprintk
->    ...
-> 
-> though there is another annoyance in the same code path:
-> 
->    0.540557: vgacon_set_cursor_size <-vgacon_cursor
->    0.540558: __rcu_read_lock <-__atomic_notifier_call_chain
->    0.540558: __rcu_read_unlock <-__atomic_notifier_call_chain
->    0.540558: __rcu_read_lock <-__atomic_notifier_call_chain
->    ...
-> 
-> It's actually the same number of times as we have emit_log_char()
-> there. __atomic_notifier_call_chain() itself is marked notrace but the
-> rcu calls inside are not. :(
-> 
-> IIRC the same happens with a serial console, but that can be worse as
-> you busy wait during the character output.
-> 
-> It'd be nice if we could inherit the notrace from the caller :)
-> 
+> That does not help at all when your board has 5 variants just
+> different in subtle details which can not be probed or enumerated by
+> inspection. That's a common scenario in the embedded world.
 
-I'd hate to make rcu_read_*lock be a notrace. I've done some debugging 
-with wanting to know where the rcu locks were taken.
+We normally hide these subtle details behind a baseboard= kernel
+parameter. I agree with you that it's far better to have a standardized
+way to specify this. For my taste the oftree is too bloated for this
+purpose.
 
-I'm sure there's lots of functions that people will want to add notrace 
-for. Really, the notrace on a function should only be there to prevent 
-crashes (functions used by the tracer or early boot up code for some 
-archs).
+> 
+> So you either have 5 board numbers and all the details harcoded again
+> or you add some extra magic to deduce on which variant you are running
+> on.
+> 
+> We have seen almost everything in the weirdness range from poking in
+> some hardcoded FLASH cells over weird command line parsers up to a XML
+> parser which were added to work around the limitations of the machine
+> number model.
+> 
+> With a device tree you can avoid that crap and provide a standardized
+> interface for such cases.
+> 
+> I'm not saying that the device tree will make all those problems go
+> away magically, but it's orders of magnitudes better than what people
+> do now.
+> 
+> There is no need to force switch all of ARM to the device tree, but
+> adding support for it would be a good move. Nobody wants to enforce it
+> and both models can live happily side by side and we'll see which
+> variant turns out to be the long term favourite solution.
 
-That said, there are times when you want to avoid tracing things on early 
-boot up. Thus, if someone adds to the kernel command line 
-"ftrace=function" you have no way to filter out these functions you don't 
-care about.
+Having it as an optional feature seems a good idea for the same reasons
+you mentioned. I just wonder how optional it can be once a board
+maintainer and a person sending patches disagree on whether to use oftree
+or not.
 
-What if I add a "ftrace_notrace=<function list>" kernel command line, that 
-has <function list> be a comma separated list of functions you want to go 
-into the "set_ftrace_notrace" on boot up? Would that satisfy you. Then you 
-can keep adding to the list dynamically every boot. And keep it there in a 
-grub file.
+Sascha
 
-This will also keep people from constantly asking for notrace annotations 
-just because they are annoyed by the functions that always fill up their 
-logs.
-
--- Steve
-
+-- 
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
