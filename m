@@ -1,46 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762377AbZE1Osn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757389AbZE1Out@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762377AbZE1Osn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 10:48:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753421AbZE1Osg
+	id S1757389AbZE1Out (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 10:50:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754624AbZE1Oul
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 10:48:36 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:64905 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751083AbZE1Osg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 10:48:36 -0400
-Date: Thu, 28 May 2009 10:48:35 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Thomas Gleixner <tglx@linutronix.de>
-cc: wuzhangjin@gmail.com, linux-mips@linux-mips.org,
-       LKML <linux-kernel@vger.kernel.org>, Ralf Baechle <ralf@linux-mips.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Nicholas Mc Guire <der.herr@hofr.at>, wuzj@lemote.com
-Subject: Re: [PATCH] mips-specific ftrace support
-In-Reply-To: <alpine.LFD.2.00.0905281644210.3397@localhost.localdomain>
-Message-ID: <alpine.DEB.2.00.0905281048130.24399@gandalf.stny.rr.com>
-References: <73465d64a9a6773936f5eab3735a69f651c13187.1243458732.git.wuzj@lemote.com> <alpine.DEB.2.00.0905280948410.27708@gandalf.stny.rr.com> <alpine.LFD.2.00.0905281644210.3397@localhost.localdomain>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 28 May 2009 10:50:41 -0400
+Received: from mga03.intel.com ([143.182.124.21]:26360 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753421AbZE1Oul (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 10:50:41 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,265,1241420400"; 
+   d="scan'208";a="147930630"
+Date: Thu, 28 May 2009 22:50:21 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Nick Piggin <npiggin@suse.de>, "hugh@veritas.com" <hugh@veritas.com>,
+       "riel@redhat.com" <riel@redhat.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler
+	in the VM v3
+Message-ID: <20090528145021.GA5503@localhost>
+References: <200905271012.668777061@firstfloor.org> <20090527201239.C2C9C1D0294@basil.firstfloor.org> <20090528082616.GG6920@wotan.suse.de> <20090528093141.GD1065@one.firstfloor.org> <20090528120854.GJ6920@wotan.suse.de> <20090528134520.GH1065@one.firstfloor.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090528134520.GH1065@one.firstfloor.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, May 28, 2009 at 09:45:20PM +0800, Andi Kleen wrote:
+> On Thu, May 28, 2009 at 02:08:54PM +0200, Nick Piggin wrote:
 
-On Thu, 28 May 2009, Thomas Gleixner wrote:
-> > >  include/linux/clocksource.h    |    4 +-
-> > >  kernel/sched_clock.c           |    2 +-
-> > >  kernel/trace/ring_buffer.c     |    3 +-
-> > >  kernel/trace/trace_clock.c     |    2 +-
-> > >  scripts/Makefile.build         |    1 +
-> > >  scripts/recordmcount.pl        |   31 +++-
+[snip]
+
+> > 
+> > BTW. I don't know if you are checking for PG_writeback often enough?
+> > You can't remove a PG_writeback page from pagecache. The normal
+> > pattern is lock_page(page); wait_on_page_writeback(page); which I
 > 
-> The changes to these generic files need to be separate as well.
+> So pages can be in writeback without being locked? I still
+> wasn't able to find such a case (in fact unless I'm misreading
+> the code badly the writeback bit is only used by NFS and a few  
+> obscure cases)
 
-Acked
+Yes the writeback page is typically not locked. Only read IO requires
+to be exclusive. Read IO is in fact page *writer*, while writeback IO
+is page *reader* :-)
 
--- Steve
+The writeback bit is _widely_ used.  test_set_page_writeback() is
+directly used by NFS/AFS etc. But its main user is in fact
+set_page_writeback(), which is called in 26 places.
 
+> > think would be safest 
+> 
+> Okay. I'll just add it after the page lock.
+> 
+> > (then you never have to bother with the writeback bit again)
+> 
+> Until Fengguang does something fancy with it.
+
+Yes I'm going to do it without wait_on_page_writeback().
+
+The reason truncate_inode_pages_range() has to wait on writeback page
+is to ensure data integrity. Otherwise if there comes two events:
+        truncate page A at offset X
+        populate page B at offset X
+If A and B are all writeback pages, then B can hit disk first and then
+be overwritten by A. Which corrupts the data at offset X from user's POV.
+
+But for hwpoison, there are no such worries. If A is poisoned, we do
+our best to isolate it as well as intercepting its IO. If the interception
+fails, it will trigger another machine check before hitting the disk.
+
+After all, poisoned A means the data at offset X is already corrupted.
+It doesn't matter if there comes another B page.
+
+Thanks,
+Fengguang
