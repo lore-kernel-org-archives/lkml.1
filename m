@@ -1,61 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762398AbZE1ORx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763199AbZE1OST@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762398AbZE1ORx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 10:17:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760535AbZE1ORn
+	id S1763199AbZE1OST (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 10:18:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757110AbZE1OSH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 10:17:43 -0400
-Received: from hera.kernel.org ([140.211.167.34]:56000 "EHLO hera.kernel.org"
+	Thu, 28 May 2009 10:18:07 -0400
+Received: from trinity.fluff.org ([89.16.178.74]:43567 "EHLO trinity.fluff.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757788AbZE1ORm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 10:17:42 -0400
-Subject: Re: [lm-sensors] [PATCH-tip] x86: hwmon/k8temp.c Add support for 
- AMD 10H and 11H
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
-       stable <stable@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       LM Sensors <lm-sensors@lm-sensors.org>
-In-Reply-To: <20090528142837.530ba070@hyperion.delvare>
-References: <1242979484.8796.7.camel@localhost.localdomain>
-	 <4A165F67.3020005@assembler.cz>
-	 <1242981748.10642.3.camel@localhost.localdomain>
-	 <1242984648.16532.3.camel@localhost.localdomain>
-	 <4A182B61.5010503@assembler.cz>
-	 <1243339833.12303.2.camel@localhost.localdomain>
-	 <4A1C08C6.7060103@assembler.cz>
-	 <1243352672.31783.10.camel@localhost.localdomain>
-	 <1243511849.3669.5.camel@localhost.localdomain>
-	 <20090528142837.530ba070@hyperion.delvare>
-Content-Type: text/plain
-Date: Thu, 28 May 2009 19:43:34 +0530
-Message-Id: <1243520014.3143.11.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	id S1755477AbZE1OSG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 10:18:06 -0400
+Date: Thu, 28 May 2009 15:17:43 +0100
+From: Ben Dooks <ben-linux@fluff.org>
+To: Jon Smirl <jonsmirl@gmail.com>
+Cc: Scott Wood <scottwood@freescale.com>,
+       Russell King <rmk+lkml@arm.linux.org.uk>,
+       Peter Korsgaard <jacmet@sunsite.dk>,
+       Robert Schwebel <r.schwebel@pengutronix.de>,
+       devicetree-discuss <devicetree-discuss@ozlabs.org>,
+       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       Janboe Ye <yuan-bo.ye@motorola.com>, Timur Tabi <timur@freescale.com>
+Subject: Re: [RFC] [PATCH] Device Tree on ARM platform
+Message-ID: <20090528141743.GA16199@trinity.fluff.org>
+References: <1243408083.13460.14.camel@debian-nb> <fa686aa40905270727m31250984tf12249fc87179ce9@mail.gmail.com> <ed82fe3e0905270739k38018c87ka11f62c5977e45fb@mail.gmail.com> <20090527150527.GK6805@pengutronix.de> <87vdnm8sec.fsf@macbook.be.48ers.dk> <4A1D6901.2090508@freescale.com> <20090527175609.GB31861@flint.arm.linux.org.uk> <4A1D8FBA.6040802@freescale.com> <9e4733910905271213k7f4b93e7i7e6f2af24d85f@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <9e4733910905271213k7f4b93e7i7e6f2af24d85f@mail.gmail.com>
+X-Disclaimer: These are my views alone.
+X-URL: http://www.fluff.org/
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: ben@trinity.fluff.org
+X-SA-Exim-Scanned: No (on trinity.fluff.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-05-28 at 14:28 +0200, Jean Delvare wrote:
-> On Thu, 28 May 2009 17:27:29 +0530, Jaswinder Singh Rajput wrote:
-> > Hello Andrew, Greg and Ingo:
-> > 
-> > Do you think this patch should go to stable and latest git.
+On Wed, May 27, 2009 at 03:13:55PM -0400, Jon Smirl wrote:
+> On Wed, May 27, 2009 at 3:08 PM, Scott Wood <scottwood@freescale.com> wrote:
+> > I'm not talking about platform specific code, I'm talking about code to
+> > retrieve information about a device from the device tree.  There would not
+> > be separate instances of this for "platforms X, Y and Z", just one
+> > of_platform binding in each driver.  It's no different than having a
+> > platform bus binding, except in the data structures used.
+> >
+> > But to restate, having external glue to create platform devices from the
+> > device tree is fine if that's what you want to do.  We used to do that, but
+> > it was a pain compared to keeping everything in one place.  Your experience
+> > may differ.
 > 
-> Definitely not to stable, it's not fixing any bug.
-> 
+> Could 'struct platform_device' and 'struct of_platform_device" be
+> unified into a single structure? It's personal preference whether the
+> internal representation of the hardware is done via a device tree or
+> snippets of platform code, but do we need to have to different device
+> types?
 
-Ok, so you suggested this should go to latest git.
+I was wondering what the pros/cons of having a system that takes a
+device tree and manufactures platform devices / etc from it? I think
+one of the cons is that if you change the platform device data, then
+you have not only the board definitions to change, but the of->platform
+code to modify as well...
 
-I proposed for stable because I was using AMD 11H from last 6 months and
-I was missing temperature monitor badly because my earlier Laptop was
-broken by overheating. So I thought if it goes to stable then users will
-start getting benefit of it, but if you want that users should wait for
-another 2 years. Then it is OK ;-)
+-- 
+Ben
 
-Thanks,
---
-JSR
+Q:      What's a light-year?
+A:      One-third less calories than a regular year.
 
