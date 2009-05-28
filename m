@@ -1,139 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753273AbZE1Wdo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753721AbZE1Wdy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753273AbZE1Wdo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 18:33:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750964AbZE1Wdg
+	id S1753721AbZE1Wdy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 18:33:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753080AbZE1Wdi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 18:33:36 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:57800 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751747AbZE1Wdf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 18:33:35 -0400
-Date: Thu, 28 May 2009 15:33:34 -0700
-From: Matt Helsley <matthltc@us.ibm.com>
-To: Oren Laadan <orenl@cs.columbia.edu>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>,
-       containers@lists.linux-foundation.org, akpm@linux-foundation.org,
-       xemul@parallels.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 18/38] C/R: core stuff
-Message-ID: <20090528223334.GB17402@us.ibm.com>
-References: <1242968132-1044-1-git-send-email-adobriyan@gmail.com> <1242968132-1044-18-git-send-email-adobriyan@gmail.com> <20090526131644.GA20920@hallyn.com> <20090526193503.GB11909@x200.localdomain> <4A1DA8FB.3000306@cs.columbia.edu> <20090527221753.GB8321@x200.localdomain> <4A1DC270.8080807@cs.columbia.edu> <20090528153322.GB18256@x200.localdomain> <4A1F0E29.2040506@cs.columbia.edu>
+	Thu, 28 May 2009 18:33:38 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:60804 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753169AbZE1Wdh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 18:33:37 -0400
+Date: Thu, 28 May 2009 18:33:30 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Jens Axboe <jens.axboe@oracle.com>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       npiggin@suse.de
+Cc: Divyesh Shah <dpshah@google.com>, Nauman Rafique <nauman@google.com>
+Subject: Query about anticipatory IO scheduler dynamic write batch size
+	updation logic
+Message-ID: <20090528223330.GC4335@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A1F0E29.2040506@cs.columbia.edu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 28, 2009 at 06:20:25PM -0400, Oren Laadan wrote:
-> 
-> 
-> Alexey Dobriyan wrote:
-> > On Wed, May 27, 2009 at 06:45:04PM -0400, Oren Laadan wrote:
-> >> Alexey Dobriyan wrote:
-> >>> On Wed, May 27, 2009 at 04:56:27PM -0400, Oren Laadan wrote:
-> >>>> Alexey Dobriyan wrote:
-> >>>>> On Tue, May 26, 2009 at 08:16:44AM -0500, Serge E. Hallyn wrote:
-> >>>>>> Quoting Alexey Dobriyan (adobriyan@gmail.com):
-> >>>>>>> Introduction
-> >>>>>>> ------------
-> >>>>>>> Checkpoint/restart (C/R from now) allows to dump group of processes to disk
-> >>>>>>> for various reasons like saving process state in case of box failure or
-> >>>>>>> restoration of group of processes on another or same machine later.
-> >>>>>>>
-> >>>>>>> Unlike, let's say, hypervisor C/R style which only needs to freeze guest kernel
-> >>>>>>> and dump more or less raw pages, proposed C/R doesn't require hypervisor.
-> >>>>>>> For that C/R code needs to know about all little and big intimate kernel details.
-> >>>>>>>
-> >>>>>>> The good thing is that not all details needs to be serialized and saved
-> >>>>>>> like, say, readahead state. The bad things is still quite a few things
-> >>>>>>> need to be.
-> >>>>>> Hi Alexey,
-> >>>>>>
-> >>>>>> the last time you posted this, I went through and tried to discern the
-> >>>>>> meaningful differences between yours and Oren's patchsets.  Then I sent some
-> >>>>>> patches to Oren to make his set configurable to act more like yours.  And Oren
-> >>>>>> took them!  But now you resend this patchset with no real changelog, no
-> >>>>>> acknowledgment that Oren's set even exists
-> >>>>> Is this a requirement? Everybody following topic already knows about
-> >>>>> Oren's patchset.
-> >>>> Some people do ack other people's work. See for example patches #1
-> >>>> and #24 in my recent post. You're welcome.
-> >>>>
-> >>>>>> - or is much farther along and pretty widely reviewed and tested (which is
-> >>>>>> only because he started earlier and, when we asked for your counterpatches
-> >>>>>> at an earlier stage, you would never reply) - or, most importantly, what
-> >>>>>> it is that you think your patchset does that his does not and cannot.
-> >>>>> There are differences. And they're not small like you're trying to describe
-> >>>>> but pretty big compared the scale of the problem.
-> >>>> I've asked before, and I repeat now: can you enumerate these "big"
-> >>>> scary differences that make it such a "big" problem ?
-> >>>>
-> >>>> So far, we identified two main "design" issues -
-> >>> Why in "? Yes, they are high-level design issues.
-> >>>
-> >> In quotes, because I argued further on that, although my patchset
-> >> takes a stand on both issues, it can be easily reverted _within_
-> >> that patchset. Moreover, I argue that they can co-exist.
-> >>
-> >>>> 1) Whether or not allow c/r of sub-container (partial hierarchy)
-> >>>>
-> >>>> 2) Creation of restarting process hierarchy in kernel or in userspace
-> >>>>
-> >>>> As for #1, you are the _only_ one who advocates restricting c/r to
-> >>>> a full container only. I guess you have your reasons, but I'm unsure
-> >>>> what they may be.
-> >>> The reason is that checkpointing half-frozen, half-live container is
-> >>> essentially equivalent to live container which adds much complexity
-> >>> to code fundamentally preventing kernel from taking coherent snapshot.
-> >>>
-> >>> In such situations kernel will do its job badly.
-> >> In such situation the kernel will do a bad job if the user is asking
-> >> for a bad job.
-> > 
-> > User doesn't even understand why we're discussing this issue so hard.
-> > 
-> >> Just like checkpointing without snapshotting the file system and expecting
-> >> it to always work.
-> > 
-> > This is different.
-> > 
-> > Kernel can't do anything about not-synced fs. Because nodoby is
-> > advocating that kernel should sync fs. Consequently, screwup in fs sync is
-> > clearly user failure. Any (yours, mine) in-kernel C/R has this failure mode,
-> > so we skip it and discuss what's left.
-> > 
-> > Now, kernel CAN do something about tasks and other data structures
-> > because it easily controls them.
-> > 
-> > Your procedure for checkpointing starts with "kill -STOP".
-> 
-> Wrong. It requires the processes to be frozen.
-> 
-> > To make anything reliable, you have to ban "kill -CONT" for the duration of
-> > checkpointing. Is this done BTW? I don't remember new flags added
-> > in task_struct. Or this is going to be skipped on grounds that it's
-> > user screwup (potentially oopsable).
-> > 
-> > That's why, OpenVZ relies on suspend-to-ram freezer solely, because userspace
-> > can't arbitrarily send suspend and freeze notifications. We only need to
-> > protect against untimely STR unfreeze which only adds code in C/R code
-> > not in task_struct.
-> 
-> Same principle for both patchsets:  tasks may *not* be permitted to
-> execute while being checkpointed.
-> 
-> For this I suggested a CHECKPOINTING freezer state: transition to/from
-> this state is done _only_ by sys_checkpoint(), so that checkpointed
-> processes cannot be unfrozen. Matt Helseley already posted a patch to
-> implement this.
+Hi Jens, Nick,
 
-In case it helps, here's the patch and some feedback Oren gave me:
+I am having a look at anticipatory dynamic write batch size updation logic
+and can't understand it. Hence thought it is easier to ask.
 
-https://lists.linux-foundation.org/pipermail/containers/2009-May/017586.html
+IIUC, update_write_batch(), calculates how much time a write batch has
+taken and if writes are taking more time than allocated batch size, then
+it decreases the number of writes to issue from the write batch and vice
+versa.
 
-Cheers,
-	-Matt Helsley
+Currently, update_write_batch() waits for first read request to finish,
+and then it comapres the current value of jiffies with "current_batch_expires".
+
+I got two questions here.
+
+- ad->current_batch_expires gets updated with the expiry time of next READ
+  batch in as_completed_request() before we call update_write_batch().
+
+  That means effectively we are making sure that as long as writes don't
+  consume more than (WRITE + READ) batch size, things are fine.  I am
+  guessing that this is not intentional and probably is the side affect
+  of following patch.
+
+	commit d585d0b9d73ed999cc7b8cf3cac4a5b01abb544e
+	Author: Divyesh Shah <dpshah@google.com>
+	Date:   Mon Jun 16 18:37:08 2008 +0200
+
+    	block: Fix the starving writes bug in the anticipatory IO scheduler
+
+
+- Why do we call update_write_batch() after completion of first read
+  request. Shoulnd't it be called after last write request has completed
+  from the write batch? Calling it after first read makes it unfair
+  beacuse next read might cause a big seek time and we will account that
+  into time taken by previous write batch?
+ 
+
+For the first issue, I wrote a quick crude test patch as follows.
+
+---
+ block/as-iosched.c |   12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
+
+Index: linux12/block/as-iosched.c
+===================================================================
+--- linux12.orig/block/as-iosched.c	2009-04-30 00:48:16.000000000 -0400
++++ linux12/block/as-iosched.c	2009-05-28 17:43:31.000000000 -0400
+@@ -103,6 +103,8 @@ struct as_data {
+ 	sector_t new_seek_mean;
+ 
+ 	unsigned long current_batch_expires;
++	unsigned long last_write_batch_expires; /* ideal expiry time of last
++						 * write batch */
+ 	unsigned long last_check_fifo[2];
+ 	int changed_batch;		/* 1: waiting for old batch to end */
+ 	int new_batch;			/* 1: waiting on first read complete */
+@@ -811,7 +813,7 @@ static void update_write_batch(struct as
+ 	unsigned long batch = ad->batch_expire[BLK_RW_ASYNC];
+ 	long write_time;
+ 
+-	write_time = (jiffies - ad->current_batch_expires) + batch;
++	write_time = (jiffies - ad->last_write_batch_expires) + batch;
+ 	if (write_time < 0)
+ 		write_time = 0;
+ 
+@@ -847,6 +849,14 @@ static void as_completed_request(struct 
+ 	}
+ 
+ 	if (ad->changed_batch && ad->nr_dispatched == 1) {
++		/*
++		 * If this was write batch finishing, store the expiry time
++		 * so that it can be used to update write batch size when
++		 * next read request finishes.
++		 */
++		if (ad->batch_data_dir == BLK_RW_SYNC)
++			ad->last_write_batch_expires =
++						ad->current_batch_expires;
+ 		ad->current_batch_expires = jiffies +
+ 					ad->batch_expire[ad->batch_data_dir];
+ 		kblockd_schedule_work(q, &ad->antic_work);
+
+
+I did a basic test with and without the patch.
+
+I am having a SATA disk and running a reader and a writer with anticipatory
+scheduler. I am reading a 2.1 G file and writting the same size file.
+Following is my test script.
+
+dd if=/mnt/sdb/testzerofile2 of=/dev/null &
+reader=$!
+echo "launched reader $reader"
+
+dd if=/dev/zero of=/mnt/sdb/testzerofile1 bs=4K count=524288 &
+writer=$!
+echo "launched writer $writer"
+
+wait $reader
+echo "reader finished"
+
+With current AS (2.6.30-rc4), writer finishes first and gets more
+bandwidth.
+
+Without patch
+=============
+
+First run
+=========
+2147483648 bytes (2.1 GB) copied, 49.1937 s, 43.7 MB/s
+2147483648 bytes (2.1 GB) copied, 54.8708 s, 39.1 MB/s
+reader finished
+
+Second run
+==========
+2147483648 bytes (2.1 GB) copied, 47.9976 s, 44.7 MB/s
+2147483648 bytes (2.1 GB) copied, 58.8639 s, 36.5 MB/s
+reader finished
+
+With-patch
+==========
+First run
+---------
+2147483648 bytes (2.1 GB) copied, 45.4351 s, 47.3 MB/s
+reader finished
+2147483648 bytes (2.1 GB) copied, 50.6594 s, 42.4 MB/s
+
+Second run
+----------
+2147483648 bytes (2.1 GB) copied, 45.8888 s, 46.8 MB/s
+reader finished
+2147483648 bytes (2.1 GB) copied, 51.1322 s, 42.0 MB/s
+
+
+Note that without patch, writer wins the race and with patch, reader wins
+the race. I am not sure what is the expected behavior from AS but I
+thought at least I will ask the question.
+
+Thanks
+Vivek
