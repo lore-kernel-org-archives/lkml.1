@@ -1,79 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755816AbZE1KNv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757763AbZE1KOH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755816AbZE1KNv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 06:13:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753594AbZE1KNn
+	id S1757763AbZE1KOH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 06:14:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756785AbZE1KNy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 06:13:43 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:50245 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751227AbZE1KNm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 06:13:42 -0400
-Date: Thu, 28 May 2009 12:13:40 +0200
-From: Robert Schwebel <r.schwebel@pengutronix.de>
-To: Wolfgang Denk <wd@denx.de>
-Cc: Grant Likely <grant.likely@secretlab.ca>,
-       Robert Schwebel <r.schwebel@pengutronix.de>,
-       Scott Wood <scottwood@freescale.com>,
-       devicetree-discuss <devicetree-discuss@ozlabs.org>,
-       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       Janboe Ye <yuan-bo.ye@motorola.com>, Timur Tabi <timur@freescale.com>,
-       rmk@arm.linux.org.uk
+	Thu, 28 May 2009 06:13:54 -0400
+Received: from gate.crashing.org ([63.228.1.57]:36854 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755760AbZE1KNw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 06:13:52 -0400
 Subject: Re: [RFC] [PATCH] Device Tree on ARM platform
-Message-ID: <20090528101339.GV6805@pengutronix.de>
-References: <ed82fe3e0905270739k38018c87ka11f62c5977e45fb@mail.gmail.com> <20090527150527.GK6805@pengutronix.de> <fa686aa40905270839m375bbdacqb1acb1be0a2d2da0@mail.gmail.com> <20090527162000.GM6805@pengutronix.de> <fa686aa40905271335o1165419hda2334bef42aa3f@mail.gmail.com> <20090527234801.GP6805@pengutronix.de> <4A1DD3A0.3010501@freescale.com> <20090528000707.GR6805@pengutronix.de> <fa686aa40905272029n32aa5f1ds86d07f0de4894815@mail.gmail.com> <20090528095126.99DB4832E416@gemini.denx.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20090528095126.99DB4832E416@gemini.denx.de>
-X-Sent-From: Pengutronix Entwicklungszentrum Nord - Hildesheim
-X-URL: http://www.pengutronix.de/
-X-IRC: #ptxdist @freenode
-X-Accept-Language: de,en
-X-Accept-Content-Type: text/plain
-X-Impressum: Pengutronix - Linux Solutions for Science and Industry
-	Handelsregister:  Amtsgericht Hildesheim, HRA 2686 Peiner Strasse
-	6-8, 31137 Hildesheim, Germany Phone: +49-5121-206917-0 |  Fax:
-	+49-5121-206917-5555 Inhaber: Dipl.-Ing. Robert Schwebel
-X-Message-Flag: See Message Headers for Impressum
-X-Uptime: 12:06:43 up 90 days, 19:48,  5 users,  load average: 0.03, 0.12,
-	0.06
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:219:66ff:fe5b:d0e3
-X-SA-Exim-Mail-From: rsc@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: David Miller <davem@davemloft.net>
+Cc: linux@arm.linux.org.uk, scottwood@freescale.com,
+       devicetree-discuss@ozlabs.org, linux-kernel@vger.kernel.org,
+       timur@freescale.com, yuan-bo.ye@motorola.com,
+       linux-arm-kernel@lists.arm.linux.org.uk
+In-Reply-To: <20090528.025739.16559619.davem@davemloft.net>
+References: <20090527175609.GB31861@flint.arm.linux.org.uk>
+	 <1243496236.3171.140.camel@pasglop>
+	 <20090528091513.GA14789@n2100.arm.linux.org.uk>
+	 <20090528.025739.16559619.davem@davemloft.net>
+Content-Type: text/plain
+Date: Thu, 28 May 2009 20:11:33 +1000
+Message-Id: <1243505493.5573.29.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 28, 2009 at 11:51:26AM +0200, Wolfgang Denk wrote:
-> True. From a commercial point of view this is a huge  problem  casued
-> by the device tree - custumers who used to oder a BSP from commercial
-> service providers (like Robert or me :-) now often find that all they
-> need  to  do is to tweak the device tree to get their system running.
-> Lost business. D*mn...  [Maybe this explains Robert's reluctance?]
+On Thu, 2009-05-28 at 02:57 -0700, David Miller wrote:
+> From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+> Date: Thu, 28 May 2009 10:15:13 +0100
+> 
+> > For example, how would an IrDA transceiver be expressed in OF?
+> 
+> As a child device node of the IRDA device, with associated
+> properties.
+> 
+> You can express _ANYTHING_ using the OF device tree.  It is
+> not even something to discuss, it's flexible enough.
 
-Wolfgang, you know me long enough to realize that this argument is
-*crap*.
+Well, that example is interesting because you may not want the
+transceiver to be a child of the UART :-) The tree hierachy is mostly
+about addressing, and addressing below a UART doesn't mean much.
 
-Talking about business cases, it has turned out to be extremely
-difficult to explain customers that the effort for the actual
-functionality is only a little percentage of the work necessary to do
-the oftree stuff right. The functionality has often worked after a few
-hours, and until all oftrees have been solved, it often takes weeks.
+So if the transceiver has a bunch of MMIO registers, it might be better
+off located elsewhere, and have the UART have a "fir-transceiver"
+property with a phandle to the actual device...
 
-In result, this has already led to customers concluding that
+But yes, I definitely agree, it's flexible enough for a lot of that
+stuff. Where things get tricky is to express "methods" rather than just
+relationships. This is where x86 loses big time with ACPI, Apple lost
+with their platform functions in OF properties, and appart from having a
+real OF implementation under the hood that is kept alive along with the
+kernel to call in, the tree doesn't provide a simple solution.
 
-- mainline is not worth the effort
-- linux is overkill and one should better use cortex-bare-metal
+However, it doesn't either invalidate existing solutions based on
+function pointers into the platform code... it might even make it nicer
+by naming those functions into some kind of directory where they can be
+registered by the platform code and "named" by a property in the node,
+though I tend to prefer the approach of having a property with a phandle
+to a node that is a pseudo-device ("power-control") or so, which has its
+own driver providing the methods.
 
-However, that is only our personal observation.
+The possibilities are endless. _BUT_ it does require some careful
+thinking to get things right. To that extent, I do agree with Russell
+that rather than a "violent" conversion, ARM should first try things out
+as an opt-in for a few platforms and see how it goes.
 
-rsc
--- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+Cheers,
+Ben.
+
+
