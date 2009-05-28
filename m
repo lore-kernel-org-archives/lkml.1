@@ -1,145 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759548AbZE1MYK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761821AbZE1MYe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759548AbZE1MYK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 08:24:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755458AbZE1MX5
+	id S1761821AbZE1MYe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 08:24:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755458AbZE1MY1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 08:23:57 -0400
-Received: from cantor.suse.de ([195.135.220.2]:58352 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754944AbZE1MX5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 08:23:57 -0400
-Date: Thu, 28 May 2009 14:23:57 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Andi Kleen <andi@firstfloor.org>, "hugh@veritas.com" <hugh@veritas.com>,
-       "riel@redhat.com" <riel@redhat.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler in the VM v3
-Message-ID: <20090528122357.GM6920@wotan.suse.de>
-References: <200905271012.668777061@firstfloor.org> <20090527201239.C2C9C1D0294@basil.firstfloor.org> <20090528082616.GG6920@wotan.suse.de> <20090528095934.GA10678@localhost>
+	Thu, 28 May 2009 08:24:27 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:59978 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753584AbZE1MY0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 08:24:26 -0400
+Subject: Re: [GIT PULL] scheduler fixes
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yinghai@kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jeff Garzik <jgarzik@pobox.com>, Alexander Viro <viro@ftp.linux.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, cl@linux-foundation.org,
+       mpm@selenic.com
+In-Reply-To: <20090528121222.GK6920@wotan.suse.de>
+References: <20090525051521.GC23032@elte.hu>
+	 <Pine.LNX.4.64.0905251142140.32568@melkki.cs.Helsinki.FI>
+	 <20090525112504.GB24071@wotan.suse.de>
+	 <84144f020905250437x585e66a2oc1124a4f1f43059d@mail.gmail.com>
+	 <20090525114127.GE24071@wotan.suse.de>
+	 <Pine.LNX.4.64.0905251443390.4115@melkki.cs.Helsinki.FI>
+	 <alpine.LFD.2.01.0905250930530.3435@localhost.localdomain>
+	 <4A1AE5CC.1000209@cs.helsinki.fi> <20090526073813.GE21496@wotan.suse.de>
+	 <1243512400.11533.33.camel@penberg-laptop>
+	 <20090528121222.GK6920@wotan.suse.de>
+Date: Thu, 28 May 2009 15:24:26 +0300
+Message-Id: <1243513466.11533.57.camel@penberg-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090528095934.GA10678@localhost>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 28, 2009 at 05:59:34PM +0800, Wu Fengguang wrote:
-> Hi Nick,
-> 
-> > > +     /*
-> > > +      * remove_from_page_cache assumes (mapping && !mapped)
-> > > +      */
-> > > +     if (page_mapping(p) && !page_mapped(p)) {
-> > > +             remove_from_page_cache(p);
-> > > +             page_cache_release(p);
-> > > +     }
-> > 
-> > remove_mapping would probably be a better idea. Otherwise you can
-> > probably introduce pagecache removal vs page fault races which
-> > will make the kernel bug.
-> 
-> We use remove_mapping() at first, then discovered that it made strong
-> assumption on page_count=2.
-> 
-> I guess it is safe from races since we are locking the page?
+On Thu, 2009-05-28 at 14:12 +0200, Nick Piggin wrote:
+> Oh right, I didn't actually look. An initcall should be fine, but
+> I wonder why it is crashing if you move it before vfs_caches_init_early?
+> Those just allocate inode and dentry hash tables...
 
-Yes it probably should (although you will lose get_user_pages data, but
-I guess that's the aim anyway).
-
-But I just don't like this one file having all that required knowledge
-(and few comments) of all the files in mm/. If you want to get rid
-of the page and don't care what it's count or dirtyness is, then
-truncate_inode_pages_range is the correct API to use.
-
-(or you could extract out some of it so you can call it directly on
-individual locked pages, if that helps).
-
-
-> > > +     }
-> > > +
-> > > +     me_pagecache_clean(p);
-> > > +
-> > > +     /*
-> > > +      * Did the earlier release work?
-> > > +      */
-> > > +     if (page_has_private(p) && !try_to_release_page(p, GFP_NOIO))
-> > > +             return FAILED;
-> > > +
-> > > +     return RECOVERED;
-> > > +}
-> > > +
-> > > +/*
-> > > + * Clean and dirty swap cache.
-> > > + */
-> > > +static int me_swapcache_dirty(struct page *p)
-> > > +{
-> > > +     ClearPageDirty(p);
-> > > +
-> > > +     if (!isolate_lru_page(p))
-> > > +             page_cache_release(p);
-> > > +
-> > > +     return DELAYED;
-> > > +}
-> > > +
-> > > +static int me_swapcache_clean(struct page *p)
-> > > +{
-> > > +     ClearPageUptodate(p);
-> > > +
-> > > +     if (!isolate_lru_page(p))
-> > > +             page_cache_release(p);
-> > > +
-> > > +     delete_from_swap_cache(p);
-> > > +
-> > > +     return RECOVERED;
-> > > +}
-> > 
-> > All these handlers are quite interesting in that they need to
-> > know about most of the mm. What are you trying to do in each
-> > of them would be a good idea to say, and probably they should
-> > rather go into their appropriate files instead of all here
-> > (eg. swapcache stuff should go in mm/swap_state for example).
-> 
-> Yup, they at least need more careful comments.
-> 
-> Dirty swap cache page is tricky to handle. The page could live both in page
-> cache and swap cache(ie. page is freshly swapped in). So it could be referenced
-> concurrently by 2 types of PTEs: one normal PTE and another swap PTE. We try to
-> handle them consistently by calling try_to_unmap(TTU_IGNORE_HWPOISON) to convert
-> the normal PTEs to swap PTEs, and then
->         - clear dirty bit to prevent IO
->         - remove from LRU
->         - but keep in the swap cache, so that when we return to it on
->           a later page fault, we know the application is accessing
->           corrupted data and shall be killed (we installed simple
->           interception code in do_swap_page to catch it).
-
-OK this is the point I was missing.
-
-Should all be commented and put into mm/swap_state.c (or somewhere that
-Hugh prefers).
- 
-
-> Clean swap cache pages can be directly isolated. A later page fault will bring
-> in the known good data from disk.
-
-OK, but why do you ClearPageUptodate if it is just to be deleted from
-swapcache anyway?
-
- 
-> > You haven't waited on writeback here AFAIKS, and have you
-> > *really* verified it is safe to call delete_from_swap_cache?
-> 
-> Good catch. I'll soon submit patches for handling the under
-> read/write IO pages. In this patchset they are simply ignored.
-
-Well that's quite important ;) I would suggest you just wait_on_page_writeback.
-It is simple and should work. _Unless_ you can show it is a big problem that
-needs equivalently big mes to fix ;)
+That's because we pass HASH_EARLY to alloc_large_system_hash(). Should
+be easy enough to fix, though.
 
