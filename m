@@ -1,516 +1,290 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764083AbZE1UVQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763916AbZE1UWJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764083AbZE1UVQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 16:21:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755852AbZE1UVD
+	id S1763916AbZE1UWJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 16:22:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758902AbZE1UV5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 16:21:03 -0400
-Received: from g4t0016.houston.hp.com ([15.201.24.19]:19622 "EHLO
-	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750966AbZE1UVA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 16:21:00 -0400
+	Thu, 28 May 2009 16:21:57 -0400
+Received: from bear.ext.ti.com ([192.94.94.41]:56055 "EHLO bear.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755852AbZE1UV4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 16:21:56 -0400
+Message-ID: <4A1EF244.5040108@ti.com>
 Date: Thu, 28 May 2009 15:21:24 -0500
-From: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Andrew Patterson <andrew.patterson@hp.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       LKML-SCSI <linux-scsi@vger.kernel.org>,
-       scameron@beardog.cca.cpqcorp.net
-Subject: Re: [PATCH v6] cciss: add cciss driver sysfs entries
-Message-ID: <20090528202124.GB4846@beardog.cca.cpqcorp.net>
-References: <20090413164524.17977.99322.stgit@bluto.andrew> <20090413164530.17977.32550.stgit@bluto.andrew>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090413164530.17977.32550.stgit@bluto.andrew>
-User-Agent: Mutt/1.5.9i
+From: Jon Hunter <jon-hunter@ti.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+MIME-Version: 1.0
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: john stultz <johnstul@us.ibm.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 1/2] Dynamic Tick: Prevent clocksource wrapping during
+ idle
+References: <4A1D52E3.3040204@ti.com>  <alpine.LFD.2.00.0905271731070.3397@localhost.localdomain> <1243455615.7440.17.camel@localhost.localdomain> <alpine.LFD.2.00.0905272229190.3397@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0905272229190.3397@localhost.localdomain>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Patch 1 of 1
 
-cciss: add cciss driver sysfs entries
+Thomas Gleixner wrote:
+> On Wed, 27 May 2009, john stultz wrote:
+>>>   Why do you want to recalculate the whole stuff over and over ?
+>>>
+>>>   That computation can be done when the clock source is initialized or
+>>>   any fundamental change of the clock parameters happens.
+>>>
+>>>   Stick that value into the clocksource struct and just read it out.
+>> Sigh. 
+>>
+>> I was hoping to avoid hanging another bit of junk off of the clocksource
+>> struct. 
+> 
+> Sure, but buying that 8 bytes with Einsteinian insanity is nuts.
 
-From: Andrew Patterson <andrew.patterson@hp.com>
+Ok, I have re-worked the patch to avoid computing the value over and 
+over and just use the original mult value to calculate the max 
+deferment. This patch calculates the value on registering the 
+clocksource and stores the value in the clocksource struct.
 
-This patch adds sysfs entries to the cciss driver needed for the
-dm/multipath tools. A file for vendor, model, rev, and unique_id is
-added for each logical drive under directory
-/sys/bus/pci/devices/<dev>/ccissX/cXdY. Where X = the controller (or
-host) number and Y is the logical drive number. A link from
-/sys/bus/pci/devices/<dev>/ccissX/cXdY/block:cciss!cXdY to
-/sys/block/cciss!cXdY/device is also created. A bus is created
-in /sys/bus/cciss.  A link is created from the pci ccissX entry to
-/sys/bus/cciss/devices/ccissX.
-Please consider this for inclusion.
+>> But I guess we could compute that value on registration and keep it
+>> around. Changes to mult could effect things, but should be well within
+>> the 6% safety net we give ourselves.
+> 
+> That was my thought as well, but even if we have to go to 12% it's way
+> better than doing repeated nonsense on the way to idle.
 
-Signed-off-by: Mike Miller <mike.miller@hp.com>
+For now I have modified the patch to go to 12.5% margin to be on the 
+safe side.
+
+Let me know your thoughts on the below.
+
+Cheers
+Jon
+
+The dynamic tick allows the kernel to sleep for periods longer than a 
+single tick. This patch prevents that the kernel from sleeping for a 
+period longer than the maximum time that the current clocksource can 
+count. This ensures that the kernel will not lose track of time. This 
+patch adds a function called "clocksource_max_deferment()" that 
+calculates the maximum time the kernel can sleep for a given clocksource 
+and function called "timekeeping_max_deferment()" that returns maximum 
+time the kernel can sleep for the current clocksource.
+
+Signed-off-by: Jon Hunter <jon-hunter@ti.com>
 ---
+  include/linux/clocksource.h |   46 
++++++++++++++++++++++++++++++++++++++++++++
+  include/linux/time.h        |    1 +
+  kernel/time/clocksource.c   |    3 ++
+  kernel/time/tick-sched.c    |   36 +++++++++++++++++++++++----------
+  kernel/time/timekeeping.c   |   11 ++++++++++
+  5 files changed, 86 insertions(+), 11 deletions(-)
 
-diff --git a/Documentation/ABI/testing/sysfs-bus-pci-devices-cciss b/Documentation/ABI/testing/sysfs-bus-pci-devices-cciss
-new file mode 100644
-index 0000000..0a92a7c
---- /dev/null
-+++ b/Documentation/ABI/testing/sysfs-bus-pci-devices-cciss
-@@ -0,0 +1,33 @@
-+Where:		/sys/bus/pci/devices/<dev>/ccissX/cXdY/model
-+Date:		March 2009
-+Kernel Version: 2.6.30
-+Contact:	iss_storagedev@hp.com
-+Description:	Displays the SCSI INQUIRY page 0 model for logical drive
-+		Y of controller X.
-+
-+Where:		/sys/bus/pci/devices/<dev>/ccissX/cXdY/rev
-+Date:		March 2009
-+Kernel Version: 2.6.30
-+Contact:	iss_storagedev@hp.com
-+Description:	Displays the SCSI INQUIRY page 0 revision for logical
-+		drive Y of controller X.
-+
-+Where:		/sys/bus/pci/devices/<dev>/ccissX/cXdY/unique_id
-+Date:		March 2009
-+Kernel Version: 2.6.30
-+Contact:	iss_storagedev@hp.com
-+Description:	Displays the SCSI INQUIRY page 83 serial number for logical
-+		drive Y of controller X.
-+
-+Where:		/sys/bus/pci/devices/<dev>/ccissX/cXdY/vendor
-+Date:		March 2009
-+Kernel Version: 2.6.30
-+Contact:	iss_storagedev@hp.com
-+Description:	Displays the SCSI INQUIRY page 0 vendor for logical drive
-+		Y of controller X.
-+
-+Where:		/sys/bus/pci/devices/<dev>/ccissX/cXdY/block:cciss!cXdY
-+Date:		March 2009
-+Kernel Version: 2.6.30
-+Contact:	iss_storagedev@hp.com
-+Description:	A symbolic link to /sys/block/cciss!cXdY
-diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
-index 0ef6f08..50e0909 100644
---- a/drivers/block/cciss.c
-+++ b/drivers/block/cciss.c
-@@ -437,6 +437,194 @@ static void __devinit cciss_procinit(int i)
- }
- #endif				/* CONFIG_PROC_FS */
- 
-+#define MAX_PRODUCT_NAME_LEN 19
-+
-+#define to_hba(n) container_of(n, struct ctlr_info, dev)
-+#define to_drv(n) container_of(n, drive_info_struct, dev)
-+
-+static struct device_type cciss_host_type = {
-+	.name		= "cciss_host",
-+};
-+
-+static ssize_t dev_show_unique_id(struct device *dev,
-+				 struct device_attribute *attr,
-+				 char *buf)
-+{
-+	drive_info_struct *drv = to_drv(dev);
-+	struct ctlr_info *h = to_hba(drv->dev.parent);
-+	__u8 sn[16];
-+	unsigned long flags;
-+	int ret = 0;
-+
-+	spin_lock_irqsave(CCISS_LOCK(h->ctlr), flags);
-+	if (h->busy_configuring)
-+		ret = -EBUSY;
-+	else
-+		memcpy(sn, drv->serial_no, sizeof(sn));
-+	spin_unlock_irqrestore(CCISS_LOCK(h->ctlr), flags);
-+
-+	if (ret)
-+		return ret;
-+	else
-+		return snprintf(buf, 16 * 2 + 2,
-+				"%02X%02X%02X%02X%02X%02X%02X%02X"
-+				"%02X%02X%02X%02X%02X%02X%02X%02X\n",
-+				sn[0], sn[1], sn[2], sn[3],
-+				sn[4], sn[5], sn[6], sn[7],
-+				sn[8], sn[9], sn[10], sn[11],
-+				sn[12], sn[13], sn[14], sn[15]);
-+}
-+DEVICE_ATTR(unique_id, S_IRUGO, dev_show_unique_id, NULL);
-+
-+static ssize_t dev_show_vendor(struct device *dev,
-+			       struct device_attribute *attr,
-+			       char *buf)
-+{
-+	drive_info_struct *drv = to_drv(dev);
-+	struct ctlr_info *h = to_hba(drv->dev.parent);
-+	char vendor[VENDOR_LEN + 1];
-+	unsigned long flags;
-+	int ret = 0;
-+
-+	spin_lock_irqsave(CCISS_LOCK(h->ctlr), flags);
-+	if (h->busy_configuring)
-+		ret = -EBUSY;
-+	else
-+		memcpy(vendor, drv->vendor, VENDOR_LEN + 1);
-+	spin_unlock_irqrestore(CCISS_LOCK(h->ctlr), flags);
-+
-+	if (ret)
-+		return ret;
-+	else
-+		return snprintf(buf, sizeof(vendor) + 1, "%s\n", drv->vendor);
-+}
-+DEVICE_ATTR(vendor, S_IRUGO, dev_show_vendor, NULL);
-+
-+static ssize_t dev_show_model(struct device *dev,
-+			      struct device_attribute *attr,
-+			      char *buf)
-+{
-+	drive_info_struct *drv = to_drv(dev);
-+	struct ctlr_info *h = to_hba(drv->dev.parent);
-+	char model[MODEL_LEN + 1];
-+	unsigned long flags;
-+	int ret = 0;
-+
-+	spin_lock_irqsave(CCISS_LOCK(h->ctlr), flags);
-+	if (h->busy_configuring)
-+		ret = -EBUSY;
-+	else
-+		memcpy(model, drv->model, MODEL_LEN + 1);
-+	spin_unlock_irqrestore(CCISS_LOCK(h->ctlr), flags);
-+
-+	if (ret)
-+		return ret;
-+	else
-+		return snprintf(buf, sizeof(model) + 1, "%s\n", drv->model);
-+}
-+DEVICE_ATTR(model, S_IRUGO, dev_show_model, NULL);
-+
-+static ssize_t dev_show_rev(struct device *dev,
-+			    struct device_attribute *attr,
-+			    char *buf)
-+{
-+	drive_info_struct *drv = to_drv(dev);
-+	struct ctlr_info *h = to_hba(drv->dev.parent);
-+	char rev[REV_LEN + 1];
-+	unsigned long flags;
-+	int ret = 0;
-+
-+	spin_lock_irqsave(CCISS_LOCK(h->ctlr), flags);
-+	if (h->busy_configuring)
-+		ret = -EBUSY;
-+	else
-+		memcpy(rev, drv->rev, REV_LEN + 1);
-+	spin_unlock_irqrestore(CCISS_LOCK(h->ctlr), flags);
-+
-+	if (ret)
-+		return ret;
-+	else
-+		return snprintf(buf, sizeof(rev) + 1, "%s\n", drv->rev);
-+}
-+DEVICE_ATTR(rev, S_IRUGO, dev_show_rev, NULL);
-+
-+static struct attribute *cciss_dev_attrs[] = {
-+	&dev_attr_unique_id.attr,
-+	&dev_attr_model.attr,
-+	&dev_attr_vendor.attr,
-+	&dev_attr_rev.attr,
-+	NULL
-+};
-+
-+static struct attribute_group cciss_dev_attr_group = {
-+	.attrs = cciss_dev_attrs,
-+};
-+
-+static struct attribute_group *cciss_dev_attr_groups[] = {
-+	&cciss_dev_attr_group,
-+	NULL
-+};
-+
-+static struct device_type cciss_dev_type = {
-+	.name		= "cciss_device",
-+	.groups		= cciss_dev_attr_groups,
-+};
-+
-+static struct bus_type cciss_bus_type = {
-+	.name		= "cciss",
-+};
-+
-+
-+/*
-+ * Initialize sysfs entry for each controller.  This sets up and registers
-+ * the 'cciss#' directory for each individual controller under
-+ * /sys/bus/pci/devices/<dev>/.
+diff --git a/include/linux/clocksource.h b/include/linux/clocksource.h
+index 5a40d14..b0d676e 100644
+--- a/include/linux/clocksource.h
++++ b/include/linux/clocksource.h
+@@ -151,6 +151,7 @@ extern u64 timecounter_cyc2time(struct timecounter *tc,
+   * @mult:		cycle to nanosecond multiplier (adjusted by NTP)
+   * @mult_orig:		cycle to nanosecond multiplier (unadjusted by NTP)
+   * @shift:		cycle to nanosecond divisor (power of two)
++ * @max_idle_ns:	max idle time permitted by the clocksource (nsecs)
+   * @flags:		flags describing special properties
+   * @vread:		vsyscall based read
+   * @resume:		resume function for the clocksource, if necessary
+@@ -171,6 +172,7 @@ struct clocksource {
+  	u32 mult;
+  	u32 mult_orig;
+  	u32 shift;
++	s64 max_idle_ns;
+  	unsigned long flags;
+  	cycle_t (*vread)(void);
+  	void (*resume)(void);
+@@ -322,6 +324,50 @@ static inline s64 cyc2ns(struct clocksource *cs, 
+cycle_t cycles)
+  }
+
+  /**
++ * clocksource_max_deferment - Returns max time the clocksource can be 
+deferred
++ * @cs:		Pointer to clocksource
++ *
 + */
-+static int cciss_create_hba_sysfs_entry(struct ctlr_info *h)
++static inline s64 clocksource_max_deferment(struct clocksource *cs)
 +{
-+	device_initialize(&h->dev);
-+	h->dev.type = &cciss_host_type;
-+	h->dev.bus = &cciss_bus_type;
-+	dev_set_name(&h->dev, "%s", h->devname);
-+	h->dev.parent = &h->pdev->dev;
++	s64 max_nsecs;
++	u64 max_cycles;
 +
-+	return device_add(&h->dev);
++	/*
++	 * Calculate the maximum number of cycles that we can pass to the
++	 * cyc2ns function without overflowing a 64-bit signed result. The
++	 * maximum number of cycles is equal to ULLONG_MAX/cs->mult which
++	 * is equivalent to the below.
++	 * max_cycles < (2^63)/cs->mult
++	 * max_cycles < 2^(log2((2^63)/cs->mult))
++	 * max_cycles < 2^(log2(2^63) - log2(cs->mult))
++	 * max_cycles < 2^(63 - log2(cs->mult))
++	 * max_cycles < 1 << (63 - log2(cs->mult))
++	 * Please note that we add 1 to the result of the log2 to account for
++	 * any rounding errors, ensure the above inequality is satisfied and
++	 * no overflow will occur.
++	 */
++	max_cycles = 1ULL << (63 - (ilog2(cs->mult) + 1));
++
++	/*
++	 * The actual maximum number of cycles we can defer the clocksource is
++	 * determined by the minimum of max_cycles and cs->mask.
++	 */
++	max_cycles = min(max_cycles, cs->mask);
++	max_nsecs = cyc2ns(cs, max_cycles);
++
++	/*
++	 * To ensure that the clocksource does not wrap whilst we are idle,
++	 * limit the time the clocksource can be deferred by 12.5%. Please
++	 * note a margin of 12.5% is used because this can be computed with
++	 * a shift, versus say 10% which would require division.
++	 */
++	max_nsecs = max_nsecs - (max_nsecs >> 5);
++
++	return max_nsecs;
 +}
 +
-+/*
-+ * Remove sysfs entries for an hba.
++/**
+   * clocksource_calculate_interval - Calculates a clocksource interval 
+struct
+   *
+   * @c:		Pointer to clocksource.
+diff --git a/include/linux/time.h b/include/linux/time.h
+index 242f624..090be07 100644
+--- a/include/linux/time.h
++++ b/include/linux/time.h
+@@ -130,6 +130,7 @@ extern void monotonic_to_bootbased(struct timespec *ts);
+
+  extern struct timespec timespec_trunc(struct timespec t, unsigned gran);
+  extern int timekeeping_valid_for_hres(void);
++extern s64 timekeeping_max_deferment(void);
+  extern void update_wall_time(void);
+  extern void update_xtime_cache(u64 nsec);
+
+diff --git a/kernel/time/clocksource.c b/kernel/time/clocksource.c
+index ecfd7b5..0d98dc2 100644
+--- a/kernel/time/clocksource.c
++++ b/kernel/time/clocksource.c
+@@ -405,6 +405,9 @@ int clocksource_register(struct clocksource *c)
+  	/* save mult_orig on registration */
+  	c->mult_orig = c->mult;
+
++	/* calculate max idle time permitted for this clocksource */
++	c->max_idle_ns = clocksource_max_deferment(c);
++
+  	spin_lock_irqsave(&clocksource_lock, flags);
+  	ret = clocksource_enqueue(c);
+  	if (!ret)
+diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
+index d3f1ef4..f0155ae 100644
+--- a/kernel/time/tick-sched.c
++++ b/kernel/time/tick-sched.c
+@@ -217,6 +217,7 @@ void tick_nohz_stop_sched_tick(int inidle)
+  	ktime_t last_update, expires, now;
+  	struct clock_event_device *dev = __get_cpu_var(tick_cpu_device).evtdev;
+  	int cpu;
++	s64 time_delta, max_time_delta;
+
+  	local_irq_save(flags);
+
+@@ -264,6 +265,7 @@ void tick_nohz_stop_sched_tick(int inidle)
+  		seq = read_seqbegin(&xtime_lock);
+  		last_update = last_jiffies_update;
+  		last_jiffies = jiffies;
++		max_time_delta = timekeeping_max_deferment();
+  	} while (read_seqretry(&xtime_lock, seq));
+
+  	/* Get the next timer wheel timer */
+@@ -283,11 +285,22 @@ void tick_nohz_stop_sched_tick(int inidle)
+  	if ((long)delta_jiffies >= 1) {
+
+  		/*
+-		* calculate the expiry time for the next timer wheel
+-		* timer
+-		*/
+-		expires = ktime_add_ns(last_update, tick_period.tv64 *
+-				   delta_jiffies);
++		 * Calculate the time delta for the next timer event.
++		 * If the time delta exceeds the maximum time delta
++		 * permitted by the current clocksource then adjust
++		 * the time delta accordingly to ensure the
++		 * clocksource does not wrap.
++		 */
++		time_delta = tick_period.tv64 * delta_jiffies;
++
++		if (time_delta > max_time_delta)
++			time_delta = max_time_delta;
++
++		/*
++		 * calculate the expiry time for the next timer wheel
++		 * timer
++		 */
++		expires = ktime_add_ns(last_update, time_delta);
+
+  		/*
+  		 * If this cpu is the one which updates jiffies, then
+@@ -300,7 +313,7 @@ void tick_nohz_stop_sched_tick(int inidle)
+  		if (cpu == tick_do_timer_cpu)
+  			tick_do_timer_cpu = TICK_DO_TIMER_NONE;
+
+-		if (delta_jiffies > 1)
++		if (time_delta > tick_period.tv64)
+  			cpumask_set_cpu(cpu, nohz_cpu_mask);
+
+  		/* Skip reprogram of event if its not changed */
+@@ -332,12 +345,13 @@ void tick_nohz_stop_sched_tick(int inidle)
+  		ts->idle_sleeps++;
+
+  		/*
+-		 * delta_jiffies >= NEXT_TIMER_MAX_DELTA signals that
+-		 * there is no timer pending or at least extremly far
+-		 * into the future (12 days for HZ=1000). In this case
+-		 * we simply stop the tick timer:
++		 * time_delta >= (tick_period.tv64 * NEXT_TIMER_MAX_DELTA)
++		 * signals that there is no timer pending or at least
++		 * extremely far into the future (12 days for HZ=1000).
++		 * In this case we simply stop the tick timer:
+  		 */
+-		if (unlikely(delta_jiffies >= NEXT_TIMER_MAX_DELTA)) {
++		if (unlikely(time_delta >=
++				(tick_period.tv64 * NEXT_TIMER_MAX_DELTA))) {
+  			ts->idle_expires.tv64 = KTIME_MAX;
+  			if (ts->nohz_mode == NOHZ_MODE_HIGHRES)
+  				hrtimer_cancel(&ts->sched_timer);
+diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
+index 687dff4..659cae3 100644
+--- a/kernel/time/timekeeping.c
++++ b/kernel/time/timekeeping.c
+@@ -271,6 +271,17 @@ int timekeeping_valid_for_hres(void)
+  }
+
+  /**
++ * timekeeping_max_deferment - Returns max time the clocksource can be 
+deferred
++ *
++ * IMPORTANT: Caller must observe xtime_lock via 
+read_seqbegin/read_seqretry
++ * to ensure that the clocksource does not change!
 + */
-+static void cciss_destroy_hba_sysfs_entry(struct ctlr_info *h)
++s64 timekeeping_max_deferment(void)
 +{
-+	device_del(&h->dev);
++	return clock->max_idle_ns;
 +}
 +
-+/*
-+ * Initialize sysfs for each logical drive.  This sets up and registers
-+ * the 'c#d#' directory for each individual logical drive under
-+ * /sys/bus/pci/devices/<dev/ccis#/. We also create a link from
-+ * /sys/block/cciss!c#d# to this entry.
-+ */
-+static int cciss_create_ld_sysfs_entry(struct ctlr_info *h,
-+				       drive_info_struct *drv,
-+				       int drv_index)
-+{
-+	device_initialize(&drv->dev);
-+	drv->dev.type = &cciss_dev_type;
-+	drv->dev.bus = &cciss_bus_type;
-+	dev_set_name(&drv->dev, "c%dd%d", h->ctlr, drv_index);
-+	drv->dev.parent = &h->dev;
-+	return device_add(&drv->dev);
-+}
-+
-+/*
-+ * Remove sysfs entries for a logical drive.
-+ */
-+static void cciss_destroy_ld_sysfs_entry(drive_info_struct *drv)
-+{
-+	device_del(&drv->dev);
-+}
-+
- /*
-  * For operations that cannot sleep, a command block is allocated at init,
-  * and managed by cmd_alloc() and cmd_free() using a simple bitmap to track
-@@ -1337,6 +1525,45 @@ static void cciss_softirq_done(struct request *rq)
- 	spin_unlock_irqrestore(&h->lock, flags);
- }
- 
-+/* This function gets the SCSI vendor, model, and revision of a logical drive
-+ * via the inquiry page 0.  Model, vendor, and rev are set to empty strings if
-+ * they cannot be read.
-+ */
-+static void cciss_get_device_descr(int ctlr, int logvol, int withirq,
-+				   char *vendor, char *model, char *rev)
-+{
-+	int rc;
-+	InquiryData_struct *inq_buf;
-+
-+	*vendor = '\0';
-+	*model = '\0';
-+	*rev = '\0';
-+
-+	inq_buf = kzalloc(sizeof(InquiryData_struct), GFP_KERNEL);
-+	if (!inq_buf)
-+		return;
-+
-+	if (withirq)
-+		rc = sendcmd_withirq(CISS_INQUIRY, ctlr, inq_buf,
-+				     sizeof(InquiryData_struct), 1, logvol,
-+				     0, TYPE_CMD);
-+	else
-+		rc = sendcmd(CISS_INQUIRY, ctlr, inq_buf,
-+			     sizeof(InquiryData_struct), 1, logvol, 0, NULL,
-+			     TYPE_CMD);
-+	if (rc == IO_OK) {
-+		memcpy(vendor, &inq_buf->data_byte[8], VENDOR_LEN);
-+		vendor[VENDOR_LEN] = '\0';
-+		memcpy(model, &inq_buf->data_byte[16], MODEL_LEN);
-+		model[MODEL_LEN] = '\0';
-+		memcpy(rev, &inq_buf->data_byte[32], REV_LEN);
-+		rev[REV_LEN] = '\0';
-+	}
-+
-+	kfree(inq_buf);
-+	return;
-+}
-+
- /* This function gets the serial number of a logical drive via
-  * inquiry page 0x83.  Serial no. is 16 bytes.  If the serial
-  * number cannot be had, for whatever reason, 16 bytes of 0xff
-@@ -1377,7 +1604,7 @@ static void cciss_add_disk(ctlr_info_t *h, struct gendisk *disk,
- 	disk->first_minor = drv_index << NWD_SHIFT;
- 	disk->fops = &cciss_fops;
- 	disk->private_data = &h->drv[drv_index];
--	disk->driverfs_dev = &h->pdev->dev;
-+	disk->driverfs_dev = &h->drv[drv_index].dev;
- 
- 	/* Set up queue information */
- 	blk_queue_bounce_limit(disk->queue, h->pdev->dma_mask);
-@@ -1468,6 +1695,8 @@ static void cciss_update_drive_info(int ctlr, int drv_index, int first_time)
- 	drvinfo->block_size = block_size;
- 	drvinfo->nr_blocks = total_size + 1;
- 
-+	cciss_get_device_descr(ctlr, drv_index, 1, drvinfo->vendor,
-+				drvinfo->model, drvinfo->rev);
- 	cciss_get_serial_no(ctlr, drv_index, 1, drvinfo->serial_no,
- 			sizeof(drvinfo->serial_no));
- 
-@@ -1517,6 +1746,9 @@ static void cciss_update_drive_info(int ctlr, int drv_index, int first_time)
- 	h->drv[drv_index].cylinders = drvinfo->cylinders;
- 	h->drv[drv_index].raid_level = drvinfo->raid_level;
- 	memcpy(h->drv[drv_index].serial_no, drvinfo->serial_no, 16);
-+	memcpy(h->drv[drv_index].vendor, drvinfo->vendor, VENDOR_LEN + 1);
-+	memcpy(h->drv[drv_index].model, drvinfo->model, MODEL_LEN + 1);
-+	memcpy(h->drv[drv_index].rev, drvinfo->rev, REV_LEN + 1);
- 
- 	++h->num_luns;
- 	disk = h->gendisk[drv_index];
-@@ -1591,6 +1823,8 @@ static int cciss_add_gendisk(ctlr_info_t *h, __u32 lunid, int controller_node)
- 		}
- 	}
- 	h->drv[drv_index].LunID = lunid;
-+	if (cciss_create_ld_sysfs_entry(h, &h->drv[drv_index], drv_index))
-+		goto err_free_disk;
- 
- 	/* Don't need to mark this busy because nobody */
- 	/* else knows about this disk yet to contend */
-@@ -1598,6 +1832,11 @@ static int cciss_add_gendisk(ctlr_info_t *h, __u32 lunid, int controller_node)
- 	h->drv[drv_index].busy_configuring = 0;
- 	wmb();
- 	return drv_index;
-+
-+err_free_disk:
-+	put_disk(h->gendisk[drv_index]);
-+	h->gendisk[drv_index] = NULL;
-+	return -1;
- }
- 
- /* This is for the special case of a controller which
-@@ -1718,6 +1957,7 @@ static int rebuild_lun_table(ctlr_info_t *h, int first_time)
- 			h->drv[i].busy_configuring = 1;
- 			spin_unlock_irqrestore(CCISS_LOCK(h->ctlr), flags);
- 			return_code = deregister_disk(h, i, 1);
-+			cciss_destroy_ld_sysfs_entry(&h->drv[i]);
- 			h->drv[i].busy_configuring = 0;
- 		}
- 	}
-@@ -3723,12 +3963,15 @@ static int __devinit cciss_init_one(struct pci_dev *pdev,
- 	INIT_HLIST_HEAD(&hba[i]->reqQ);
- 
- 	if (cciss_pci_init(hba[i], pdev) != 0)
--		goto clean1;
-+		goto clean0;
- 
- 	sprintf(hba[i]->devname, "cciss%d", i);
- 	hba[i]->ctlr = i;
- 	hba[i]->pdev = pdev;
- 
-+	if (cciss_create_hba_sysfs_entry(hba[i]))
-+		goto clean0;
-+
- 	/* configure PCI DMA stuff */
- 	if (!pci_set_dma_mask(pdev, DMA_BIT_MASK(64)))
- 		dac = 1;
-@@ -3872,6 +4115,8 @@ clean4:
- clean2:
- 	unregister_blkdev(hba[i]->major, hba[i]->devname);
- clean1:
-+	cciss_destroy_hba_sysfs_entry(hba[i]);
-+clean0:
- 	hba[i]->busy_initializing = 0;
- 	/* cleanup any queues that may have been initialized */
- 	for (j=0; j <= hba[i]->highest_lun; j++){
-@@ -3982,6 +4227,7 @@ static void __devexit cciss_remove_one(struct pci_dev *pdev)
- 	 */
- 	pci_release_regions(pdev);
- 	pci_set_drvdata(pdev, NULL);
-+	cciss_destroy_hba_sysfs_entry(hba[i]);
- 	free_hba(i);
- }
- 
-@@ -3999,6 +4245,8 @@ static struct pci_driver cciss_pci_driver = {
-  */
- static int __init cciss_init(void)
- {
-+	int err;
-+
- 	/*
- 	 * The hardware requires that commands are aligned on a 64-bit
- 	 * boundary. Given that we use pci_alloc_consistent() to allocate an
-@@ -4008,8 +4256,20 @@ static int __init cciss_init(void)
- 
- 	printk(KERN_INFO DRIVER_NAME "\n");
- 
-+	err = bus_register(&cciss_bus_type);
-+	if (err)
-+		return err;
-+
- 	/* Register for our PCI devices */
--	return pci_register_driver(&cciss_pci_driver);
-+	err = pci_register_driver(&cciss_pci_driver);
-+	if (err)
-+		goto err_bus_register;
-+
-+	return 0;
-+
-+err_bus_register:
-+	bus_unregister(&cciss_bus_type);
-+	return err;
- }
- 
- static void __exit cciss_cleanup(void)
-@@ -4026,6 +4286,7 @@ static void __exit cciss_cleanup(void)
- 		}
- 	}
- 	remove_proc_entry("driver/cciss", NULL);
-+	bus_unregister(&cciss_bus_type);
- }
- 
- static void fail_all_cmds(unsigned long ctlr)
-diff --git a/drivers/block/cciss.h b/drivers/block/cciss.h
-index 703e080..dd1926d 100644
---- a/drivers/block/cciss.h
-+++ b/drivers/block/cciss.h
-@@ -12,6 +12,10 @@
- #define IO_OK		0
- #define IO_ERROR	1
- 
-+#define VENDOR_LEN	8
-+#define MODEL_LEN	16
-+#define REV_LEN		4
-+
- struct ctlr_info;
- typedef struct ctlr_info ctlr_info_t;
- 
-@@ -34,13 +38,18 @@ typedef struct _drive_info_struct
- 	int 	cylinders;
- 	int	raid_level; /* set to -1 to indicate that
- 			     * the drive is not in use/configured
--			    */
--	int	busy_configuring; /*This is set when the drive is being removed
--				   *to prevent it from being opened or it's queue
--				   *from being started.
--				  */
--	__u8 serial_no[16]; /* from inquiry page 0x83, */
--			    /* not necc. null terminated. */
-+			     */
-+	int	busy_configuring; /* This is set when a drive is being removed
-+				   * to prevent it from being opened or it's
-+				   * queue from being started.
-+				   */
-+	struct	device dev;
-+	__u8 serial_no[16]; /* from inquiry page 0x83,
-+			     * not necc. null terminated.
-+			     */
-+	char vendor[VENDOR_LEN + 1]; /* SCSI vendor string */
-+	char model[MODEL_LEN + 1];   /* SCSI model string */
-+	char rev[REV_LEN + 1];       /* SCSI revision string */
- } drive_info_struct;
- 
- #ifdef CONFIG_CISS_SCSI_TAPE
-@@ -123,6 +132,7 @@ struct ctlr_info
- 	unsigned char alive;
- 	struct completion *rescan_wait;
- 	struct task_struct *cciss_scan_thread;
-+	struct device dev;
- };
- 
- /*  Defining the diffent access_menthods */
++/**
+   * read_persistent_clock -  Return time in seconds from the persistent 
+clock.
+   *
+   * Weak dummy function for arches that do not yet support it.
+-- 
+1.6.1
+
 
