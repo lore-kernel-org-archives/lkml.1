@@ -1,120 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758300AbZE1Kkc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756150AbZE1KlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758300AbZE1Kkc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 06:40:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752887AbZE1KkX
+	id S1756150AbZE1KlT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 06:41:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753584AbZE1KlL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 06:40:23 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:42003 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750983AbZE1KkW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 06:40:22 -0400
-Date: Thu, 28 May 2009 12:40:23 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Jan Kara <jack@suse.cz>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
-       akpm@linux-foundation.org, yanmin_zhang@linux.intel.com,
-       richard@rsk.demon.co.uk, damien.wyart@free.fr
-Subject: Re: [PATCH 07/11] writeback: support > 1 flusher thread per bdi
-Message-ID: <20090528104022.GZ11363@kernel.dk>
-References: <1243417312-7444-1-git-send-email-jens.axboe@oracle.com> <1243417312-7444-8-git-send-email-jens.axboe@oracle.com> <20090528092743.GD29199@duck.suse.cz>
+	Thu, 28 May 2009 06:41:11 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:55687 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754200AbZE1KlK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 06:41:10 -0400
+Date: Thu, 28 May 2009 11:34:21 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: David Miller <davem@davemloft.net>, scottwood@freescale.com,
+       devicetree-discuss@ozlabs.org, linux-kernel@vger.kernel.org,
+       timur@freescale.com, yuan-bo.ye@motorola.com,
+       linux-arm-kernel@lists.arm.linux.org.uk
+Subject: Re: [RFC] [PATCH] Device Tree on ARM platform
+Message-ID: <20090528103421.GC14789@n2100.arm.linux.org.uk>
+References: <20090527175609.GB31861@flint.arm.linux.org.uk> <1243496236.3171.140.camel@pasglop> <20090528091513.GA14789@n2100.arm.linux.org.uk> <20090528.025739.16559619.davem@davemloft.net> <1243505493.5573.29.camel@pasglop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090528092743.GD29199@duck.suse.cz>
+In-Reply-To: <1243505493.5573.29.camel@pasglop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 28 2009, Jan Kara wrote:
-> On Wed 27-05-09 11:41:48, Jens Axboe wrote:
-> > Build on the bdi_writeback support by allowing registration of
-> > more than 1 flusher thread. File systems can call bdi_add_flusher_task(bdi)
-> > to add more flusher threads to the device. If they do so, they must also
-> > provide a super_operations function to return the suitable bdi_writeback
-> > struct from any given inode.
->   Isn't this patch in fact doing two different things? Looking at the
-> changes it implements more flusher threads per BDI as you write above but
-> it also does all that sync-work handling which isn't quite trivial and
-> seems to be a separate thing...
+On Thu, May 28, 2009 at 08:11:33PM +1000, Benjamin Herrenschmidt wrote:
+> Well, that example is interesting because you may not want the
+> transceiver to be a child of the UART :-) The tree hierachy is mostly
+> about addressing, and addressing below a UART doesn't mean much.
+> 
+> So if the transceiver has a bunch of MMIO registers, it might be better
+> off located elsewhere, and have the UART have a "fir-transceiver"
+> property with a phandle to the actual device...
 
-Yes, but the separated work is a pre-requisite for multi thread support.
-But I guess it would clean it up as a patchset if I added that with the
-previous patch, that would save me from having to add the
-writeback_acquire()/release changes. But I still have to do those, so
-perhaps not... Unless you feel strongly about it, I'd prefer to leave it
-as-is.
+IrDA transceivers do not have MMIO registers.  Transceivers are an IR
+LED, an IR phototransitor and receiver circuitry.  They're typically
+9 pin devices with power, ground, transmit, receive and a bunch of
+control signals.
 
-> > +static struct bdi_work *bdi_alloc_work(struct super_block *sb, long nr_pages,
-> > +				       enum writeback_sync_modes sync_mode)
-> > +{
-> > +	struct bdi_work *work;
-> > +
-> > +	work = kmalloc(sizeof(*work), GFP_ATOMIC);
->   Why is this GFP_ATOMIC? Wouldn't GFP_NOFS be enough?
-> But for now, GFP_ATOMIC may be fine since it excercises more the
-> "allocation failed" path :).
+These control signals end up connected to some random GPIO pins or
+FPGA or some other device which has some free IO lines in the platform.
 
-GFP_NOFS/NOIO should be ok. I prefer GFP_ATOMIC since we never enter any
-reclaim, so better safe than sorry. We still have to handle failure
-either way, the rate of failure may be different though.
+These control signals need to be controlled with reference to the IrDA
+driver, sometimes with tight timing constraints (particularly when
+switching between SIR and FIR modes.)
 
-> > +	if (work)
-> > +		bdi_work_init(work, sb, nr_pages, sync_mode);
-> > +
-> > +	return work;
-> > +}
-> > +
-> > +void bdi_start_writeback(struct backing_dev_info *bdi, struct super_block *sb,
-> > +			 long nr_pages, enum writeback_sync_modes sync_mode)
-> > +{
-> > +	const bool must_wait = sync_mode == WB_SYNC_ALL;
-> > +	struct bdi_work work_stack, *work = NULL;
-> > +
-> > +	if (!must_wait)
-> > +		work = bdi_alloc_work(sb, nr_pages, sync_mode);
-> > +
-> > +	if (!work) {
-> > +		work = &work_stack;
-> > +		bdi_work_init_on_stack(work, sb, nr_pages, sync_mode);
-> >  	}
-> >  
-> > -	wb_start_writeback(&bdi->wb, sb, nr_pages, sync_mode);
-> > -	return 0;
-> > +	bdi_queue_work(bdi, work);
-> > +	bdi_start_work(bdi, work);
-> > +
-> > +	/*
-> > +	 * If the sync mode is WB_SYNC_ALL, block waiting for the work to
-> > +	 * complete. If not, we only need to wait for the work to be started,
-> > +	 * if we allocated it on-stack. We use the same mechanism, if the
-> > +	 * wait bit is set in the bdi_work struct, then threads will not
-> > +	 * clear pending until after they are done.
-> > +	 *
-> > +	 * Note that work == &work_stack if must_wait is true, so we don't
-> > +	 * need to do call_rcu() here ever, since the completion path will
-> > +	 * have done that for us.
-> > +	 */
-> > +	if (must_wait || work == &work_stack) {
-> > +		bdi_wait_on_work_clear(work);
-> > +		if (work != &work_stack)
-> > +			call_rcu(&work->rcu_head, bdi_work_free);
-> > +	}
-> >  }
->   Looking into this, it seems a bit complex with all that on_stack, sync /
-> nosync thing. Wouldn't a simple refcounting scheme be more clear? Alloc /
-> init_work_on_stack gets a reference from bdi_work, queue_work gets another
-> reference passed later to flusher thread. We drop the reference when we
-> leave bdi_start_writeback() and when flusher thread is done with the work.
-> When refcount hits zero, work struct is freed (when work is on stack, we
-> just never drop the last reference)...
+> But yes, I definitely agree, it's flexible enough for a lot of that
+> stuff. Where things get tricky is to express "methods" rather than just
+> relationships. This is where x86 loses big time with ACPI, Apple lost
+> with their platform functions in OF properties, and appart from having a
+> real OF implementation under the hood that is kept alive along with the
+> kernel to call in, the tree doesn't provide a simple solution.
+> 
+> However, it doesn't either invalidate existing solutions based on
+> function pointers into the platform code... it might even make it nicer
+> by naming those functions into some kind of directory where they can be
+> registered by the platform code and "named" by a property in the node,
+> though I tend to prefer the approach of having a property with a phandle
+> to a node that is a pseudo-device ("power-control") or so, which has its
+> own driver providing the methods.
 
-It wouldn't change the complexity of the stack vs non-stack at all,
-since you have to do the same checks for when it's safe to proceed. And
-having the single bit there with the hash bit wait queues makes that bit
-easier.
+The kind of reply I was hoping to get to my email was something more
+along these lines - an informed view giving an idea how some of these
+issues would be addressed with an OF device tree.
 
--- 
-Jens Axboe
+I can see how the named functions/directory would work - that seems to
+be relatively simple and straight forward.
 
+However, the pseudo-device approach I'm less clear about.  With a separate
+driver for the "power control" pseudo-device, how would you communicate
+the state information down to that driver?
+
+I am equating OF devices and drivers too much with the struct device and
+struct driver model, which sounds like it's not the best thing to do with
+OF.
