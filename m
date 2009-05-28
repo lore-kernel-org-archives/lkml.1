@@ -1,67 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757583AbZE1DFy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756386AbZE1DGK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757583AbZE1DFy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 23:05:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753726AbZE1DFp
+	id S1756386AbZE1DGK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 23:06:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754975AbZE1DFq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 23:05:45 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:39476 "EHLO bilbo.ozlabs.org"
+	Wed, 27 May 2009 23:05:46 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:39475 "EHLO bilbo.ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751734AbZE1DFp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751894AbZE1DFp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 27 May 2009 23:05:45 -0400
-Date: Thu, 28 May 2009 13:04:30 +1000
+Date: Thu, 28 May 2009 12:57:18 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Grant Likely <grant.likely@secretlab.ca>
-Cc: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>,
+To: Robert Schwebel <r.schwebel@pengutronix.de>
+Cc: Scott Wood <scottwood@freescale.com>,
        devicetree-discuss <devicetree-discuss@ozlabs.org>,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       Jon Smirl <jonsmirl@gmail.com>, Scott Wood <scottwood@freescale.com>,
-       Janboe Ye <yuan-bo.ye@motorola.com>, Timur Tabi <timur@freescale.com>
+       linux-kernel@vger.kernel.org, Timur Tabi <timur@freescale.com>,
+       Janboe Ye <yuan-bo.ye@motorola.com>,
+       linux-arm-kernel@lists.arm.linux.org.uk, rmk@arm.linux.org.uk
 Subject: Re: [RFC] [PATCH] Device Tree on ARM platform
-Message-ID: <20090528030430.GE1464@yookeroo.seuss>
-Mail-Followup-To: Grant Likely <grant.likely@secretlab.ca>,
-	Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>,
-	devicetree-discuss <devicetree-discuss@ozlabs.org>,
-	Russell King - ARM Linux <linux@arm.linux.org.uk>,
-	linux-kernel@vger.kernel.org,
-	linux-arm-kernel@lists.arm.linux.org.uk,
-	Jon Smirl <jonsmirl@gmail.com>,
+Message-ID: <20090528025718.GC1464@yookeroo.seuss>
+Mail-Followup-To: Robert Schwebel <r.schwebel@pengutronix.de>,
 	Scott Wood <scottwood@freescale.com>,
+	devicetree-discuss <devicetree-discuss@ozlabs.org>,
+	linux-kernel@vger.kernel.org, Timur Tabi <timur@freescale.com>,
 	Janboe Ye <yuan-bo.ye@motorola.com>,
-	Timur Tabi <timur@freescale.com>
-References: <87vdnm8sec.fsf@macbook.be.48ers.dk> <4A1D6901.2090508@freescale.com> <20090527175609.GB31861@flint.arm.linux.org.uk> <4A1D8FBA.6040802@freescale.com> <9e4733910905271213k7f4b93e7i7e6f2af24d85f@mail.gmail.com> <20090527192116.GA31110@n2100.arm.linux.org.uk> <20090527193927.GD30039@game.jcrosoft.org> <fa686aa40905271322x2f62c3dcs355374b30b4db3ca@mail.gmail.com> <20090527201951.GF30039@game.jcrosoft.org> <fa686aa40905271354y50b9583cp9f53c35354edc285@mail.gmail.com>
+	linux-arm-kernel@lists.arm.linux.org.uk, rmk@arm.linux.org.uk
+References: <1243408083.13460.14.camel@debian-nb> <fa686aa40905270727m31250984tf12249fc87179ce9@mail.gmail.com> <ed82fe3e0905270739k38018c87ka11f62c5977e45fb@mail.gmail.com> <20090527150527.GK6805@pengutronix.de> <fa686aa40905270839m375bbdacqb1acb1be0a2d2da0@mail.gmail.com> <20090527162000.GM6805@pengutronix.de> <fa686aa40905271335o1165419hda2334bef42aa3f@mail.gmail.com> <20090527234801.GP6805@pengutronix.de> <4A1DD3A0.3010501@freescale.com> <20090528000707.GR6805@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <fa686aa40905271354y50b9583cp9f53c35354edc285@mail.gmail.com>
+In-Reply-To: <20090528000707.GR6805@pengutronix.de>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 27, 2009 at 02:54:10PM -0600, Grant Likely wrote:
-> On Wed, May 27, 2009 at 2:19 PM, Jean-Christophe PLAGNIOL-VILLARD
-> <plagnioj@jcrosoft.com> wrote:
-> >> One option that has been suggested (more than once) is to make the
-> >> adapter code an of_platform_driver which translates the device tree
-> >> data and then registers the appropriate platform_devices.  This neatly
-> >> solves the problem, but I don't like the overhead involved in
-> >> registering 2 struct devices with the kernel for every device node in
-> >> the device tree.
-> > but simplify the dev and maintaining is also an important goal.
+On Thu, May 28, 2009 at 02:07:07AM +0200, Robert Schwebel wrote:
+> On Wed, May 27, 2009 at 06:58:24PM -0500, Scott Wood wrote:
+> > Robert Schwebel wrote:
+> >> The oftree by design wants to be a complete hardware description. As
+> >> you mention above, there are cases where you *nevertheless* need
+> >> ad-hoc information about things *not* encoded into the device tree.
+> >>
+> >> This renders the whole concept ad absurdum. You need a machine number
+> >> again - and if you need that: why not stay with the ARM model, define
+> >> everything with platform data and avoid the whole thing?
 > >
-> > Have to duplicated ressource handling via ifdef in every drivers is also an
-> > overhead which need to be avoided
+> > Because it's better to have a little platform specific code than a lot
+> > of it?
 > 
-> agreed.  I don't have a best of both worlds answer here.
+> Until now, oftree has created more problems than it has solved for us.
+> The idea works fine for well-known things like memory maps and
+> interrupts. It works badly for corner cases, and embedded land is full
+> of it. The effort to get the oftree stuff right is often more than a
+> magnitude of order higher than the effort for the actual functionality.
+> That should be an alarm sign that something is wrong.
 
-I do.  As intimated other places in this thread, I think the right
-approach is to register constructor functions that will be used during
-boot to traverse the OF devtree and instantiate platform devices (or
-other device types in some cases, e.g. i2c).  The driver will then
-bind to the platform device this created.
+It's true that going to a device tree model does take quite a bit of
+time and effort to get up to speed.  As Grant said, we've made quite a
+few errors along the way on powerpc, as people experimented with the
+unfamiliar idea.  Along the way a lot of people complained about how
+we were much better off without the device tree.
+
+However, I think nowadays, with most of the community at least roughly
+up to speed on device tree conventions, and the worst mistakes over, a
+lot of people who doubted the value of the device tree approach are
+coming around.
+
+Grant mentions the Xilinx devices as an example - they're interesting
+because of the fancy stuff they're doing, autogenerating the devtree
+from the FPGA configuration.  But to me the real indicator of the
+device tree's value is the handful of platforms for which support has
+been added with *only* a new dts - a single, fairly simple text file.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
