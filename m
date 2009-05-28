@@ -1,177 +1,997 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763107AbZE1Qmz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932071AbZE1QnP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763107AbZE1Qmz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 12:42:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763518AbZE1QmV
+	id S932071AbZE1QnP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 12:43:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763506AbZE1Qme
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 12:42:21 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:64406 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763164AbZE1QmU (ORCPT
+	Thu, 28 May 2009 12:42:34 -0400
+Received: from silver.sucs.swan.ac.uk ([137.44.10.1]:45356 "EHLO
+	silver.sucs.swan.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763571AbZE1Qmb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 12:42:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=uCppbeplNrplDmR7ZIYR7HKMP4/mIVJiJdzpqt88fRCm+B9xXTX5OzLdGsnqnpSr5q
-         20uUvddEU72Z2tAoNRjk9Zbp/s/Gyvqs0XjrpNetKKkmXnckQ5xIu6NRs0ihSX71qT/l
-         m7MB/mvO/e/5xN4zZkChD/bYNCVdNOBau5YA0=
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Zhaolei <zhaolei@cn.fujitsu.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH 3/3] tracing/stat: do some cleanups
-Date: Thu, 28 May 2009 18:42:10 +0200
-Message-Id: <1243528930-5318-4-git-send-email-fweisbec@gmail.com>
-X-Mailer: git-send-email 1.6.2.3
-In-Reply-To: <1243528930-5318-1-git-send-email-fweisbec@gmail.com>
-References: <1243528930-5318-1-git-send-email-fweisbec@gmail.com>
+	Thu, 28 May 2009 12:42:31 -0400
+Date: Thu, 28 May 2009 17:42:31 +0100
+From: Sitsofe Wheeler <sitsofe@yahoo.com>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: linux-kernel@vger.kernel.org,
+       Alan Jenkins <sourcejedi.lkml@googlemail.com>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, mingo@elte.hu
+Subject: Re: EeePC 900 trackpad often not detected at boot in 2.6.30-rc4
+Message-ID: <20090528164231.GA19324@sucs.org>
+References: <20090511072135.GA4682@sucs.org> <20090520024658.GD17649@dtor-d630.eng.vmware.com> <20090520054739.GA31552@sucs.org> <200905200025.20280.dmitry.torokhov@gmail.com> <20090526222049.GB27961@sucs.org> <20090528155401.GB18589@dtor-d630.eng.vmware.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090528155401.GB18589@dtor-d630.eng.vmware.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Li Zefan <lizf@cn.fujitsu.com>
+On Thu, May 28, 2009 at 08:54:01AM -0700, Dmitry Torokhov wrote:
+> On Tue, May 26, 2009 at 11:20:49PM +0100, Sitsofe Wheeler wrote:
+> > I only just saw your reply. After about 50 boots the following occurred:
+> > 
+> > [    3.136500] drivers/input/serio/i8042.c: d4 -> i8042 (command) [1964]
+> > [    3.137015] drivers/input/serio/i8042.c: f2 -> i8042 (parameter) [1964]
+> > [    3.140289] ALSA device list:
+> > [    3.140367]   #0: HDA Intel at 0xf7eb8000 irq 16
+> > [    3.140591] TCP cubic registered
+> > [    3.140666] NET: Registered protocol family 17
+> > [    3.140846] Using IPI Shortcut mode
+> > [    3.142878]   Magic number: 9:412:804
+> > [    3.143418] rtc_cmos 00:03: setting system clock to 2009-05-26 21:47:18 UTC (1243374438)
+> > [    3.149589] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [1977]
+> > [    3.151638] drivers/input/serio/i8042.c: 00 <- i8042 (interrupt, 1, 12) [1979]
+> > [    5.550332] libps2: BINGO!
+> > [    5.550425] drivers/input/serio/i8042.c: d4 -> i8042 (command) [4378]
+> > [    5.551011] drivers/input/serio/i8042.c: f6 -> i8042 (parameter) [4378]
+> > [    5.563688] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [4391]
+> > [    5.563736] drivers/input/serio/i8042.c: d4 -> i8042 (command) [4391]
+> > [    5.564673] drivers/input/serio/i8042.c: f3 -> i8042 (parameter) [4391]
+> > [    5.572824] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [4400]
+> > [    5.572863] drivers/input/serio/i8042.c: d4 -> i8042 (command) [4400]
+> > [    5.573811] drivers/input/serio/i8042.c: 0a -> i8042 (parameter) [4400]
+> > [    5.580823] ACPI: Battery Slot [BAT0] (battery present)
+> 
+> Was the mouse in working condition after that? I can't tell from the
+> dmesg since it is trimmed...
 
-- remove duplicate code in stat_seq_init()
-- update comments to reflect the change from stat list to stat rbtree
+Ah sorry. The mouse/trackpad interrupts (in /proc/interrupts) definitely
+rose (when it goes wrong they usually remain static on some value like
+15).
 
-[ Impact: clean up ]
+[    5.580823] ACPI: Battery Slot [BAT0] (battery present)
+[    5.581915] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [4409]
+[    5.583624] drivers/input/serio/i8042.c: d4 -> i8042 (command) [4411]
+[    5.584012] drivers/input/serio/i8042.c: e8 -> i8042 (parameter) [4411]
+[    5.593523] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [4421]
+[    5.593564] drivers/input/serio/i8042.c: d4 -> i8042 (command) [4421]
+[    5.594507] drivers/input/serio/i8042.c: 00 -> i8042 (parameter) [4421]
+[    5.602506] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [4430]
+[    5.602550] drivers/input/serio/i8042.c: d4 -> i8042 (command) [4430]
+[    5.603492] drivers/input/serio/i8042.c: f3 -> i8042 (parameter) [4430]
+[    5.611109] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [4439]
+[    8.279602] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7107]
+[    8.280010] drivers/input/serio/i8042.c: 14 -> i8042 (parameter) [7107]
+[    8.285383] ata2.00: CFA: ASUS-PHISON OB SSD, TST2.04P, max UDMA/66
+[    8.285472] ata2.00: 7880544 sectors, multi 0: LBA 
+[    8.285621] ata2.01: CFA: ASUS-PHISON SSD, TST2.04P, max UDMA/66
+[    8.285701] ata2.01: 31522176 sectors, multi 0: LBA 
+[    8.288418] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7116]
+[    8.288460] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7116]
+[    8.289407] drivers/input/serio/i8042.c: f3 -> i8042 (parameter) [7116]
+[    8.291928] ata2.00: configured for UDMA/66
+[    8.295308] ata2.01: configured for UDMA/66
+[    8.296437] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7124]
+[    8.296478] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7124]
+[    8.297091] drivers/input/serio/i8042.c: 3c -> i8042 (parameter) [7124]
+[    8.299214] scsi 1:0:0:0: Direct-Access     ATA      ASUS-PHISON OB S TST2 PQ: 0 ANSI: 5
+[    8.302230] scsi 1:0:1:0: Direct-Access     ATA      ASUS-PHISON SSD  TST2 PQ: 0 ANSI: 5
+[    8.304213] sd 1:0:0:0: [sda] 7880544 512-byte hardware sectors: (4.03 GB/3.75 GiB)
+[    8.304432] sd 1:0:0:0: [sda] Write Protect is off
+[    8.304511] sd 1:0:0:0: [sda] Mode Sense: 00 3a 00 00
+[    8.304608] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7132]
+[    8.304657] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7132]
+[    8.305017] drivers/input/serio/i8042.c: f3 -> i8042 (parameter) [7132]
+[    8.307863] sd 1:0:0:0: [sda] Write cache: disabled, read cache: enabled, doesn't support DPO or FUA
+[    8.309199]  sda: sda1 sda2 sda3 sda4
+[    8.312455] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7140]
+[    8.312772] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7140]
+[    8.313015] drivers/input/serio/i8042.c: 28 -> i8042 (parameter) [7140]
+[    8.315971] sd 1:0:1:0: [sdb] 31522176 512-byte hardware sectors: (16.1 GB/15.0 GiB)
+[    8.316214] sd 1:0:1:0: [sdb] Write Protect is off
+[    8.316295] sd 1:0:1:0: [sdb] Mode Sense: 00 3a 00 00
+[    8.316481] sd 1:0:1:0: [sdb] Write cache: disabled, read cache: enabled, doesn't support DPO or FUA
+[    8.317401]  sdb:<7>drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7146]
+[    8.318542] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7146]
+[    8.319017] drivers/input/serio/i8042.c: f3 -> i8042 (parameter) [7146]
+[    8.320059]  sdb1 sdb2
+[    8.324239] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7152]
+[    8.324296] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7152]
+[    8.325013] drivers/input/serio/i8042.c: 14 -> i8042 (parameter) [7152]
+[    8.327331] sd 1:0:1:0: [sdb] Attached SCSI disk
+[    8.328358] sd 1:0:0:0: [sda] Attached SCSI disk
+[    8.330890] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7158]
+[    8.330936] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7158]
+[    8.331879] drivers/input/serio/i8042.c: f3 -> i8042 (parameter) [7158]
+[    8.337653] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7165]
+[    8.337685] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7165]
+[    8.338644] drivers/input/serio/i8042.c: 14 -> i8042 (parameter) [7165]
+[    8.343847] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7171]
+[    8.343889] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7171]
+[    8.344835] drivers/input/serio/i8042.c: f3 -> i8042 (parameter) [7171]
+[    8.350955] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7178]
+[    8.350990] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7178]
+[    8.351943] drivers/input/serio/i8042.c: 3c -> i8042 (parameter) [7178]
+[    8.357597] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7185]
+[    8.357637] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7185]
+[    8.358585] drivers/input/serio/i8042.c: f3 -> i8042 (parameter) [7185]
+[    8.363545] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7191]
+[    8.363580] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7191]
+[    8.364533] drivers/input/serio/i8042.c: 28 -> i8042 (parameter) [7191]
+[    8.369722] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7197]
+[    8.369764] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7197]
+[    8.370710] drivers/input/serio/i8042.c: f3 -> i8042 (parameter) [7197]
+[    8.376883] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7204]
+[    8.376919] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7204]
+[    8.377872] drivers/input/serio/i8042.c: 14 -> i8042 (parameter) [7204]
+[    8.382835] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7210]
+[    8.382874] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7210]
+[    8.383823] drivers/input/serio/i8042.c: f3 -> i8042 (parameter) [7210]
+[    8.388817] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7216]
+[    8.388852] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7216]
+[    8.389805] drivers/input/serio/i8042.c: 14 -> i8042 (parameter) [7216]
+[    8.396216] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7224]
+[    8.396256] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7224]
+[    8.397204] drivers/input/serio/i8042.c: f2 -> i8042 (parameter) [7224]
+[    8.404210] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7232]
+[    8.405869] drivers/input/serio/i8042.c: 00 <- i8042 (interrupt, 1, 12) [7233]
+[    8.405909] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7233]
+[    8.406857] drivers/input/serio/i8042.c: e8 -> i8042 (parameter) [7233]
+[    8.411950] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7239]
+[    8.411986] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7239]
+[    8.412939] drivers/input/serio/i8042.c: 00 -> i8042 (parameter) [7239]
+[    8.418075] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7246]
+[    8.418115] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7246]
+[    8.419063] drivers/input/serio/i8042.c: e8 -> i8042 (parameter) [7246]
+[    8.424882] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7252]
+[    8.424917] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7252]
+[    8.425870] drivers/input/serio/i8042.c: 00 -> i8042 (parameter) [7252]
+[    8.432262] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7260]
+[    8.432302] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7260]
+[    8.433250] drivers/input/serio/i8042.c: e8 -> i8042 (parameter) [7260]
+[    8.438244] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7266]
+[    8.438279] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7266]
+[    8.439232] drivers/input/serio/i8042.c: 00 -> i8042 (parameter) [7266]
+[    8.445785] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7273]
+[    8.445825] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7273]
+[    8.446773] drivers/input/serio/i8042.c: e8 -> i8042 (parameter) [7273]
+[    8.451867] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7279]
+[    8.451902] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7279]
+[    8.452855] drivers/input/serio/i8042.c: 00 -> i8042 (parameter) [7279]
+[    8.458579] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7286]
+[    8.458618] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7286]
+[    8.459567] drivers/input/serio/i8042.c: e9 -> i8042 (parameter) [7286]
+[    8.472040] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7300]
+[    8.472921] drivers/input/serio/i8042.c: 01 <- i8042 (interrupt, 1, 12) [7300]
+[    8.474670] drivers/input/serio/i8042.c: 00 <- i8042 (interrupt, 1, 12) [7302]
+[    8.475917] drivers/input/serio/i8042.c: 14 <- i8042 (interrupt, 1, 12) [7303]
+[    8.475955] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7303]
+[    8.476906] drivers/input/serio/i8042.c: f6 -> i8042 (parameter) [7303]
+[    8.481662] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7309]
+[    8.481704] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7309]
+[    8.482651] drivers/input/serio/i8042.c: e8 -> i8042 (parameter) [7309]
+[    8.488489] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7316]
+[    8.488524] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7316]
+[    8.489477] drivers/input/serio/i8042.c: 03 -> i8042 (parameter) [7316]
+[    8.495592] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7323]
+[    8.495632] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7323]
+[    8.496580] drivers/input/serio/i8042.c: e6 -> i8042 (parameter) [7323]
+[    8.501736] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7329]
+[    8.501775] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7329]
+[    8.502724] drivers/input/serio/i8042.c: e6 -> i8042 (parameter) [7329]
+[    8.508398] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7336]
+[    8.508438] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7336]
+[    8.509386] drivers/input/serio/i8042.c: e6 -> i8042 (parameter) [7336]
+[    8.515174] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7343]
+[    8.515214] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7343]
+[    8.516163] drivers/input/serio/i8042.c: e9 -> i8042 (parameter) [7343]
+[    8.542021] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7370]
+[    8.542978] drivers/input/serio/i8042.c: 3c <- i8042 (interrupt, 1, 12) [7370]
+[    8.543892] drivers/input/serio/i8042.c: 03 <- i8042 (interrupt, 1, 12) [7371]
+[    8.544931] drivers/input/serio/i8042.c: c8 <- i8042 (interrupt, 1, 12) [7372]
+[    8.544969] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7372]
+[    8.545919] drivers/input/serio/i8042.c: e8 -> i8042 (parameter) [7372]
+[    8.551708] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7379]
+[    8.551743] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7379]
+[    8.552696] drivers/input/serio/i8042.c: 00 -> i8042 (parameter) [7379]
+[    8.557859] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7385]
+[    8.557899] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7385]
+[    8.558847] drivers/input/serio/i8042.c: e6 -> i8042 (parameter) [7385]
+[    8.564618] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7392]
+[    8.564658] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7392]
+[    8.565609] drivers/input/serio/i8042.c: e6 -> i8042 (parameter) [7392]
+[    8.571655] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7399]
+[    8.571695] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7399]
+[    8.572643] drivers/input/serio/i8042.c: e6 -> i8042 (parameter) [7399]
+[    8.577906] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7405]
+[    8.577946] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7405]
+[    8.578894] drivers/input/serio/i8042.c: e9 -> i8042 (parameter) [7405]
+[    8.590768] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7418]
+[    8.591794] drivers/input/serio/i8042.c: 3c <- i8042 (interrupt, 1, 12) [7419]
+[    8.592750] drivers/input/serio/i8042.c: 03 <- i8042 (interrupt, 1, 12) [7420]
+[    8.593652] drivers/input/serio/i8042.c: c8 <- i8042 (interrupt, 1, 12) [7421]
+[    8.593691] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7421]
+[    8.594640] drivers/input/serio/i8042.c: e6 -> i8042 (parameter) [7421]
+[    8.600722] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7428]
+[    8.600761] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7428]
+[    8.601709] drivers/input/serio/i8042.c: e8 -> i8042 (parameter) [7428]
+[    8.606699] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7434]
+[    8.606734] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7434]
+[    8.607687] drivers/input/serio/i8042.c: 00 -> i8042 (parameter) [7434]
+[    8.612505] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7440]
+[    8.612545] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7440]
+[    8.613493] drivers/input/serio/i8042.c: e8 -> i8042 (parameter) [7440]
+[    8.618940] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7446]
+[    8.618975] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7446]
+[    8.619928] drivers/input/serio/i8042.c: 03 -> i8042 (parameter) [7446]
+[    8.625809] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7453]
+[    8.625849] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7453]
+[    8.626797] drivers/input/serio/i8042.c: e8 -> i8042 (parameter) [7453]
+[    8.631695] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7459]
+[    8.631730] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7459]
+[    8.632683] drivers/input/serio/i8042.c: 02 -> i8042 (parameter) [7459]
+[    8.637281] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7465]
+[    8.637321] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7465]
+[    8.638270] drivers/input/serio/i8042.c: e8 -> i8042 (parameter) [7465]
+[    8.645108] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7473]
+[    8.645143] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7473]
+[    8.646095] drivers/input/serio/i8042.c: 01 -> i8042 (parameter) [7473]
+[    8.650935] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7478]
+[    8.650975] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7478]
+[    8.651923] drivers/input/serio/i8042.c: eb -> i8042 (parameter) [7478]
+[    8.657251] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7485]
+[    8.866171] Clocksource tsc unstable (delta = -439690950 ns)
+[    9.157203] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7985]
+[    9.158146] drivers/input/serio/i8042.c: e6 -> i8042 (parameter) [7985]
+[    9.162478] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7990]
+[    9.162519] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7990]
+[    9.163466] drivers/input/serio/i8042.c: e8 -> i8042 (parameter) [7990]
+[    9.168164] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7996]
+[    9.168199] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7996]
+[    9.169153] drivers/input/serio/i8042.c: 03 -> i8042 (parameter) [7996]
+[    9.173551] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [8001]
+[    9.173591] drivers/input/serio/i8042.c: d4 -> i8042 (command) [8001]
+[    9.174539] drivers/input/serio/i8042.c: e8 -> i8042 (parameter) [8001]
+[    9.180136] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [8008]
+[    9.180171] drivers/input/serio/i8042.c: d4 -> i8042 (command) [8008]
+[    9.181124] drivers/input/serio/i8042.c: 01 -> i8042 (parameter) [8008]
+[    9.186963] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [8014]
+[    9.187003] drivers/input/serio/i8042.c: d4 -> i8042 (command) [8014]
+[    9.187951] drivers/input/serio/i8042.c: e8 -> i8042 (parameter) [8014]
+[    9.193099] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [8021]
+[    9.193134] drivers/input/serio/i8042.c: d4 -> i8042 (command) [8021]
+[    9.194087] drivers/input/serio/i8042.c: 02 -> i8042 (parameter) [8021]
+[    9.199868] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [8027]
+[    9.199908] drivers/input/serio/i8042.c: d4 -> i8042 (command) [8027]
+[    9.200856] drivers/input/serio/i8042.c: e8 -> i8042 (parameter) [8027]
+[    9.206971] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [8034]
+[    9.207023] drivers/input/serio/i8042.c: d4 -> i8042 (command) [8035]
+[    9.208009] drivers/input/serio/i8042.c: 03 -> i8042 (parameter) [8035]
+[    9.213114] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [8041]
+[    9.213155] drivers/input/serio/i8042.c: d4 -> i8042 (command) [8041]
+[    9.214103] drivers/input/serio/i8042.c: eb -> i8042 (parameter) [8041]
+[    9.220130] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [8048]
+[    9.720209] drivers/input/serio/i8042.c: d4 -> i8042 (command) [8548]
+[    9.721157] drivers/input/serio/i8042.c: f6 -> i8042 (parameter) [8548]
+[    9.725561] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [8553]
+[    9.725604] drivers/input/serio/i8042.c: d4 -> i8042 (command) [8553]
+[    9.726548] drivers/input/serio/i8042.c: ff -> i8042 (parameter) [8553]
+[    9.733304] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [8561]
+[   10.117252] drivers/input/serio/i8042.c: aa <- i8042 (interrupt, 1, 12) [8945]
+[   10.118147] drivers/input/serio/i8042.c: 00 <- i8042 (interrupt, 1, 12) [8946]
+[   10.118186] drivers/input/serio/i8042.c: d4 -> i8042 (command) [8946]
+[   10.119136] drivers/input/serio/i8042.c: f3 -> i8042 (parameter) [8946]
+[   10.124352] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [8952]
+[   10.124387] drivers/input/serio/i8042.c: d4 -> i8042 (command) [8952]
+[   10.125340] drivers/input/serio/i8042.c: c8 -> i8042 (parameter) [8952]
+[   10.131084] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [8959]
+[   10.131124] drivers/input/serio/i8042.c: d4 -> i8042 (command) [8959]
+[   10.132071] drivers/input/serio/i8042.c: f3 -> i8042 (parameter) [8959]
+[   10.137833] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [8965]
+[   10.137868] drivers/input/serio/i8042.c: d4 -> i8042 (command) [8965]
+[   10.138821] drivers/input/serio/i8042.c: 64 -> i8042 (parameter) [8965]
+[   10.143831] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [8971]
+[   10.143872] drivers/input/serio/i8042.c: d4 -> i8042 (command) [8971]
+[   10.144819] drivers/input/serio/i8042.c: f3 -> i8042 (parameter) [8971]
+[   10.150627] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [8978]
+[   10.150661] drivers/input/serio/i8042.c: d4 -> i8042 (command) [8978]
+[   10.151615] drivers/input/serio/i8042.c: 50 -> i8042 (parameter) [8978]
+[   10.157595] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [8985]
+[   10.157635] drivers/input/serio/i8042.c: d4 -> i8042 (command) [8985]
+[   10.158584] drivers/input/serio/i8042.c: f2 -> i8042 (parameter) [8985]
+[   10.165075] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [8993]
+[   10.166768] drivers/input/serio/i8042.c: 03 <- i8042 (interrupt, 1, 12) [8994]
+[   10.166807] drivers/input/serio/i8042.c: d4 -> i8042 (command) [8994]
+[   10.167756] drivers/input/serio/i8042.c: f3 -> i8042 (parameter) [8994]
+[   10.172812] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [9000]
+[   10.172847] drivers/input/serio/i8042.c: d4 -> i8042 (command) [9000]
+[   10.173800] drivers/input/serio/i8042.c: c8 -> i8042 (parameter) [9000]
+[   10.178571] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [9006]
+[   10.178611] drivers/input/serio/i8042.c: d4 -> i8042 (command) [9006]
+[   10.179559] drivers/input/serio/i8042.c: f3 -> i8042 (parameter) [9006]
+[   10.184903] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [9012]
+[   10.184938] drivers/input/serio/i8042.c: d4 -> i8042 (command) [9012]
+[   10.185891] drivers/input/serio/i8042.c: c8 -> i8042 (parameter) [9012]
+[   10.191802] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [9019]
+[   10.191842] drivers/input/serio/i8042.c: d4 -> i8042 (command) [9019]
+[   10.192791] drivers/input/serio/i8042.c: f3 -> i8042 (parameter) [9019]
+[   10.197831] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [9025]
+[   10.197866] drivers/input/serio/i8042.c: d4 -> i8042 (command) [9025]
+[   10.198819] drivers/input/serio/i8042.c: 50 -> i8042 (parameter) [9025]
+[   10.204331] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [9032]
+[   10.204371] drivers/input/serio/i8042.c: d4 -> i8042 (command) [9032]
+[   10.205319] drivers/input/serio/i8042.c: f2 -> i8042 (parameter) [9032]
+[   10.213543] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [9041]
+[   10.215393] drivers/input/serio/i8042.c: 03 <- i8042 (interrupt, 1, 12) [9043]
+[   10.215433] drivers/input/serio/i8042.c: d4 -> i8042 (command) [9043]
+[   10.216381] drivers/input/serio/i8042.c: f3 -> i8042 (parameter) [9043]
+[   10.221278] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [9049]
+[   10.221314] drivers/input/serio/i8042.c: d4 -> i8042 (command) [9049]
+[   10.222267] drivers/input/serio/i8042.c: c8 -> i8042 (parameter) [9049]
+[   10.227415] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [9055]
+[   10.227455] drivers/input/serio/i8042.c: d4 -> i8042 (command) [9055]
+[   10.228403] drivers/input/serio/i8042.c: f3 -> i8042 (parameter) [9055]
+[   10.234027] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [9062]
+[   10.234062] drivers/input/serio/i8042.c: d4 -> i8042 (command) [9062]
+[   10.235015] drivers/input/serio/i8042.c: 64 -> i8042 (parameter) [9062]
+[   10.241172] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [9069]
+[   10.241212] drivers/input/serio/i8042.c: d4 -> i8042 (command) [9069]
+[   10.242160] drivers/input/serio/i8042.c: f3 -> i8042 (parameter) [9069]
+[   10.247035] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [9075]
+[   10.247070] drivers/input/serio/i8042.c: d4 -> i8042 (command) [9075]
+[   10.248023] drivers/input/serio/i8042.c: 50 -> i8042 (parameter) [9075]
+[   10.253574] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [9081]
+[   10.253614] drivers/input/serio/i8042.c: d4 -> i8042 (command) [9081]
+[   10.254562] drivers/input/serio/i8042.c: f2 -> i8042 (parameter) [9081]
+[   10.262071] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [9090]
+[   10.263034] drivers/input/serio/i8042.c: 03 <- i8042 (interrupt, 1, 12) [9091]
+[   10.263079] drivers/input/serio/i8042.c: d4 -> i8042 (command) [9091]
+[   10.264023] drivers/input/serio/i8042.c: f3 -> i8042 (parameter) [9091]
+[   10.269869] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [9097]
+[   10.269904] drivers/input/serio/i8042.c: d4 -> i8042 (command) [9097]
+[   10.270858] drivers/input/serio/i8042.c: 64 -> i8042 (parameter) [9097]
+[   10.275963] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [9103]
+[   10.276003] drivers/input/serio/i8042.c: d4 -> i8042 (command) [9103]
+[   10.276951] drivers/input/serio/i8042.c: e8 -> i8042 (parameter) [9103]
+[   10.281450] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [9109]
+[   10.281485] drivers/input/serio/i8042.c: d4 -> i8042 (command) [9109]
+[   10.282438] drivers/input/serio/i8042.c: 03 -> i8042 (parameter) [9109]
+[   10.288326] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [9116]
+[   10.288366] drivers/input/serio/i8042.c: d4 -> i8042 (command) [9116]
+[   10.289315] drivers/input/serio/i8042.c: e6 -> i8042 (parameter) [9116]
+[   10.295089] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [9123]
+[   10.296202] input: ImPS/2 Logitech Wheel Mouse as /devices/platform/i8042/serio1/input/input6
+[   10.297617] drivers/input/serio/i8042.c: d4 -> i8042 (command) [9125]
+[   10.298025] drivers/input/serio/i8042.c: f4 -> i8042 (parameter) [9125]
+[   10.304610] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [9132]
+[   10.308461] EXT2-fs warning (device sdb2): ext2_fill_super: mounting ext3 filesystem as ext2
+[   10.308861] VFS: Mounted root (ext2 filesystem) readonly on device 8:18.
+[   10.309167] Freeing unused kernel memory: 308k freed
+[   10.310250] Write protecting the kernel text: 3292k
+[   10.310329] Testing CPA: Reverting c0100000-c0437000
+[   10.310999] Testing CPA: write protecting again
+[   10.311899] Write protecting the kernel read-only data: 1108k
+[   10.311988] Testing CPA: undo c0437000-c054c000
+[   10.312289] Testing CPA: write protecting again
+[   17.225456] drivers/input/serio/i8042.c: 1c <- i8042 (interrupt, 0, 1) [16053]
+[   17.331924] drivers/input/serio/i8042.c: 9c <- i8042 (interrupt, 0, 1) [16159]
+[   19.238112] drivers/input/serio/i8042.c: 32 <- i8042 (interrupt, 0, 1) [18066]
+[   19.343637] drivers/input/serio/i8042.c: b2 <- i8042 (interrupt, 0, 1) [18171]
+[   19.394993] drivers/input/serio/i8042.c: 18 <- i8042 (interrupt, 0, 1) [18222]
+[   19.502001] drivers/input/serio/i8042.c: 98 <- i8042 (interrupt, 0, 1) [18329]
+[   19.504347] drivers/input/serio/i8042.c: 16 <- i8042 (interrupt, 0, 1) [18332]
+[   19.536200] drivers/input/serio/i8042.c: 96 <- i8042 (interrupt, 0, 1) [18364]
+[   19.649812] drivers/input/serio/i8042.c: 31 <- i8042 (interrupt, 0, 1) [18477]
+[   19.755012] drivers/input/serio/i8042.c: b1 <- i8042 (interrupt, 0, 1) [18583]
+[   19.758149] drivers/input/serio/i8042.c: 14 <- i8042 (interrupt, 0, 1) [18586]
+[   19.789323] drivers/input/serio/i8042.c: 94 <- i8042 (interrupt, 0, 1) [18617]
+[   19.842167] drivers/input/serio/i8042.c: 39 <- i8042 (interrupt, 0, 1) [18670]
+[   19.946351] drivers/input/serio/i8042.c: b9 <- i8042 (interrupt, 0, 1) [18774]
+[   20.008040] drivers/input/serio/i8042.c: 0c <- i8042 (interrupt, 0, 1) [18836]
+[   20.079172] drivers/input/serio/i8042.c: 8c <- i8042 (interrupt, 0, 1) [18907]
+[   20.206818] drivers/input/serio/i8042.c: 18 <- i8042 (interrupt, 0, 1) [19034]
+[   20.313982] drivers/input/serio/i8042.c: 39 <- i8042 (interrupt, 0, 1) [19141]
+[   20.349594] drivers/input/serio/i8042.c: 98 <- i8042 (interrupt, 0, 1) [19177]
+[   20.419278] drivers/input/serio/i8042.c: b9 <- i8042 (interrupt, 0, 1) [19247]
+[   20.534647] drivers/input/serio/i8042.c: 13 <- i8042 (interrupt, 0, 1) [19362]
+[   20.607233] drivers/input/serio/i8042.c: 18 <- i8042 (interrupt, 0, 1) [19435]
+[   20.677427] drivers/input/serio/i8042.c: 93 <- i8042 (interrupt, 0, 1) [19505]
+[   20.681973] drivers/input/serio/i8042.c: 98 <- i8042 (interrupt, 0, 1) [19509]
+[   21.310443] drivers/input/serio/i8042.c: 0e <- i8042 (interrupt, 0, 1) [20138]
+[   21.415829] drivers/input/serio/i8042.c: 8e <- i8042 (interrupt, 0, 1) [20243]
+[   21.439219] drivers/input/serio/i8042.c: 11 <- i8042 (interrupt, 0, 1) [20267]
+[   21.614121] drivers/input/serio/i8042.c: 91 <- i8042 (interrupt, 0, 1) [20442]
+[   21.632535] drivers/input/serio/i8042.c: 33 <- i8042 (interrupt, 0, 1) [20460]
+[   21.668755] drivers/input/serio/i8042.c: b3 <- i8042 (interrupt, 0, 1) [20496]
+[   21.942633] drivers/input/serio/i8042.c: 13 <- i8042 (interrupt, 0, 1) [20770]
+[   22.047535] drivers/input/serio/i8042.c: 12 <- i8042 (interrupt, 0, 1) [20875]
+[   22.120981] drivers/input/serio/i8042.c: 93 <- i8042 (interrupt, 0, 1) [20948]
+[   22.124031] drivers/input/serio/i8042.c: 32 <- i8042 (interrupt, 0, 1) [20952]
+[   22.189942] drivers/input/serio/i8042.c: 92 <- i8042 (interrupt, 0, 1) [21017]
+[   22.223958] drivers/input/serio/i8042.c: b2 <- i8042 (interrupt, 0, 1) [21051]
+[   22.259194] drivers/input/serio/i8042.c: 18 <- i8042 (interrupt, 0, 1) [21087]
+[   22.366230] drivers/input/serio/i8042.c: 98 <- i8042 (interrupt, 0, 1) [21194]
+[   22.371843] drivers/input/serio/i8042.c: 16 <- i8042 (interrupt, 0, 1) [21199]
+[   22.400535] drivers/input/serio/i8042.c: 96 <- i8042 (interrupt, 0, 1) [21228]
+[   22.511759] drivers/input/serio/i8042.c: 31 <- i8042 (interrupt, 0, 1) [21339]
+[   22.581367] drivers/input/serio/i8042.c: b1 <- i8042 (interrupt, 0, 1) [21409]
+[   22.583801] drivers/input/serio/i8042.c: 14 <- i8042 (interrupt, 0, 1) [21411]
+[   22.687121] drivers/input/serio/i8042.c: 94 <- i8042 (interrupt, 0, 1) [21515]
+[   22.690224] drivers/input/serio/i8042.c: 39 <- i8042 (interrupt, 0, 1) [21518]
+[   22.825635] drivers/input/serio/i8042.c: b9 <- i8042 (interrupt, 0, 1) [21653]
+[   22.830476] drivers/input/serio/i8042.c: 35 <- i8042 (interrupt, 0, 1) [21658]
+[   22.971283] drivers/input/serio/i8042.c: b5 <- i8042 (interrupt, 0, 1) [21799]
+[   23.251443] drivers/input/serio/i8042.c: 1c <- i8042 (interrupt, 0, 1) [22079]
+[   23.397222] drivers/input/serio/i8042.c: 9c <- i8042 (interrupt, 0, 1) [22225]
+[   23.532253] drivers/input/serio/i8042.c: 20 <- i8042 (interrupt, 0, 1) [22360]
+[   23.604038] drivers/input/serio/i8042.c: 32 <- i8042 (interrupt, 0, 1) [22432]
+[   23.640069] drivers/input/serio/i8042.c: a0 <- i8042 (interrupt, 0, 1) [22468]
+[   23.674456] drivers/input/serio/i8042.c: b2 <- i8042 (interrupt, 0, 1) [22502]
+[   23.735597] drivers/input/serio/i8042.c: 12 <- i8042 (interrupt, 0, 1) [22563]
+[   23.806201] drivers/input/serio/i8042.c: 1f <- i8042 (interrupt, 0, 1) [22634]
+[   23.842055] drivers/input/serio/i8042.c: 92 <- i8042 (interrupt, 0, 1) [22670]
+[   23.876296] drivers/input/serio/i8042.c: 22 <- i8042 (interrupt, 0, 1) [22704]
+[   23.913951] drivers/input/serio/i8042.c: 9f <- i8042 (interrupt, 0, 1) [22741]
+[   23.916508] drivers/input/serio/i8042.c: 39 <- i8042 (interrupt, 0, 1) [22744]
+[   23.948212] drivers/input/serio/i8042.c: a2 <- i8042 (interrupt, 0, 1) [22776]
+[   24.018672] drivers/input/serio/i8042.c: b9 <- i8042 (interrupt, 0, 1) [22846]
+[   24.170624] drivers/input/serio/i8042.c: 2a <- i8042 (interrupt, 0, 1) [22998]
+[   24.239925] drivers/input/serio/i8042.c: 34 <- i8042 (interrupt, 0, 1) [23067]
+[   24.360237] drivers/input/serio/i8042.c: 39 <- i8042 (interrupt, 0, 1) [23188]
+[   24.394819] drivers/input/serio/i8042.c: b4 <- i8042 (interrupt, 0, 1) [23222]
+[   24.430201] drivers/input/serio/i8042.c: b9 <- i8042 (interrupt, 0, 1) [23258]
+[   24.499290] drivers/input/serio/i8042.c: aa <- i8042 (interrupt, 0, 1) [23327]
+[   24.861185] drivers/input/serio/i8042.c: 20 <- i8042 (interrupt, 0, 1) [23689]
+[   24.969113] drivers/input/serio/i8042.c: a0 <- i8042 (interrupt, 0, 1) [23797]
+[   24.971412] drivers/input/serio/i8042.c: 32 <- i8042 (interrupt, 0, 1) [23799]
+[   25.038376] drivers/input/serio/i8042.c: b2 <- i8042 (interrupt, 0, 1) [23866]
+[   25.062833] drivers/input/serio/i8042.c: 12 <- i8042 (interrupt, 0, 1) [23890]
+[   25.132261] drivers/input/serio/i8042.c: 1f <- i8042 (interrupt, 0, 1) [23960]
+[   25.238931] drivers/input/serio/i8042.c: 92 <- i8042 (interrupt, 0, 1) [24066]
+[   25.243820] drivers/input/serio/i8042.c: 9f <- i8042 (interrupt, 0, 1) [24071]
+[   25.247061] drivers/input/serio/i8042.c: 22 <- i8042 (interrupt, 0, 1) [24075]
+[   25.272522] drivers/input/serio/i8042.c: a2 <- i8042 (interrupt, 0, 1) [24100]
+[   25.277455] drivers/input/serio/i8042.c: 34 <- i8042 (interrupt, 0, 1) [24105]
+[   25.346215] drivers/input/serio/i8042.c: b4 <- i8042 (interrupt, 0, 1) [24174]
+[   25.646119] drivers/input/serio/i8042.c: 0e <- i8042 (interrupt, 0, 1) [24474]
+[   25.718109] drivers/input/serio/i8042.c: 8e <- i8042 (interrupt, 0, 1) [24546]
+[   25.824246] drivers/input/serio/i8042.c: 1c <- i8042 (interrupt, 0, 1) [24652]
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
----
- kernel/trace/trace_stat.c |   54 +++++++++++++++++---------------------------
- 1 files changed, 21 insertions(+), 33 deletions(-)
+> > Another 50 boots later something similar happened:
+> > 
+> > [    1.386099] drivers/input/serio/i8042.c: d4 -> i8042 (command) [292]
+> > [    1.386888] drivers/input/serio/i8042.c: f2 -> i8042 (parameter) [292]
+> > [    1.395793] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [301]
+> > [    1.398353] drivers/input/serio/i8042.c: 00 <- i8042 (interrupt, 1, 12) [304]
+> > [    1.398768] drivers/input/serio/i8042.c: d4 -> i8042 (command) [304]
+> > [    1.399339] drivers/input/serio/i8042.c: f2 -> i8042 (parameter) [304]
+> > [    1.410073] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [316]
+> > [    1.411730] drivers/input/serio/i8042.c: 00 <- i8042 (interrupt, 1, 12) [317]
+> > [    3.061408] libps2: BINGO!
+> > [    3.061496] drivers/input/serio/i8042.c: d4 -> i8042 (command) [1967]
+> > [    3.062009] drivers/input/serio/i8042.c: f6 -> i8042 (parameter) [1967]
+> 
+> What happened with the mouse here?
 
-diff --git a/kernel/trace/trace_stat.c b/kernel/trace/trace_stat.c
-index a80d947..e8b50f3 100644
---- a/kernel/trace/trace_stat.c
-+++ b/kernel/trace/trace_stat.c
-@@ -93,10 +93,15 @@ static void destroy_session(struct stat_session *session)
- 
- typedef int (*cmp_stat_t)(void *, void *);
- 
--static void
--insert_stat(struct rb_root *root, struct stat_node *data, cmp_stat_t cmp)
-+static int insert_stat(struct rb_root *root, void *stat, cmp_stat_t cmp)
- {
- 	struct rb_node **new = &(root->rb_node), *parent = NULL;
-+	struct stat_node *data;
-+
-+	data = kzalloc(sizeof(*data), GFP_KERNEL);
-+	if (!data)
-+		return -ENOMEM;
-+	data->stat = stat;
- 
- 	/*
- 	 * Figure out where to put new node
-@@ -118,12 +123,13 @@ insert_stat(struct rb_root *root, struct stat_node *data, cmp_stat_t cmp)
- 
- 	rb_link_node(&data->node, parent, new);
- 	rb_insert_color(&data->node, root);
-+	return 0;
- }
- 
- /*
-  * For tracers that don't provide a stat_cmp callback.
-- * This one will force an immediate insertion on tail of
-- * the list.
-+ * This one will force an insertion as right-most node
-+ * in the rbtree.
-  */
- static int dummy_cmp(void *p1, void *p2)
- {
-@@ -131,15 +137,14 @@ static int dummy_cmp(void *p1, void *p2)
- }
- 
- /*
-- * Initialize the stat list at each trace_stat file opening.
-+ * Initialize the stat rbtree at each trace_stat file opening.
-  * All of these copies and sorting are required on all opening
-  * since the stats could have changed between two file sessions.
-  */
- static int stat_seq_init(struct stat_session *session)
- {
- 	struct tracer_stat *ts = session->ts;
--	struct stat_node *new_entry;
--	struct rb_root *root;
-+	struct rb_root *root = &session->stat_root;
- 	void *stat;
- 	int ret = 0;
- 	int i;
-@@ -154,23 +159,12 @@ static int stat_seq_init(struct stat_session *session)
- 	if (!stat)
- 		goto exit;
- 
--	/*
--	 * The first entry. Actually this is the second, but the first
--	 * one (the stat_list head) is pointless.
--	 */
--	new_entry = kzalloc(sizeof(*new_entry), GFP_KERNEL);
--	if (!new_entry) {
--		ret = -ENOMEM;
-+	ret = insert_stat(root, stat, ts->stat_cmp);
-+	if (ret)
- 		goto exit;
--	}
--	root = &session->stat_root;
--	insert_stat(root, new_entry, dummy_cmp);
--
--	new_entry->stat = stat;
- 
- 	/*
--	 * Iterate over the tracer stat entries and store them in a sorted
--	 * list.
-+	 * Iterate over the tracer stat entries and store them in an rbtree.
- 	 */
- 	for (i = 1; ; i++) {
- 		stat = ts->stat_next(stat, i);
-@@ -179,22 +173,16 @@ static int stat_seq_init(struct stat_session *session)
- 		if (!stat)
- 			break;
- 
--		new_entry = kzalloc(sizeof(*new_entry), GFP_KERNEL);
--		if (!new_entry) {
--			ret = -ENOMEM;
--			goto exit_free_list;
--		}
--
--		new_entry->stat = stat;
--
--		insert_stat(root, new_entry, ts->stat_cmp);
-+		ret = insert_stat(root, stat, ts->stat_cmp);
-+		if (ret)
-+			goto exit_free_rbtree;
- 	}
- 
- exit:
- 	mutex_unlock(&session->stat_mutex);
- 	return ret;
- 
--exit_free_list:
-+exit_free_rbtree:
- 	reset_stat_session(session);
- 	mutex_unlock(&session->stat_mutex);
- 	return ret;
-@@ -207,7 +195,7 @@ static void *stat_seq_start(struct seq_file *s, loff_t *pos)
- 	struct rb_node *node;
- 	int i;
- 
--	/* Prevent from tracer switch or stat_list modification */
-+	/* Prevent from tracer switch or rbtree modification */
- 	mutex_lock(&session->stat_mutex);
- 
- 	/* If we are in the beginning of the file, print the headers */
-@@ -285,7 +273,7 @@ static int tracing_stat_open(struct inode *inode, struct file *file)
- }
- 
- /*
-- * Avoid consuming memory with our now useless list.
-+ * Avoid consuming memory with our now useless rbtree.
-  */
- static int tracing_stat_release(struct inode *i, struct file *f)
- {
+Again I believe the mouse was working:
+
+[    3.061408] libps2: BINGO!
+[    3.061496] drivers/input/serio/i8042.c: d4 -> i8042 (command) [1967]
+[    3.062009] drivers/input/serio/i8042.c: f6 -> i8042 (parameter) [1967]
+[    3.062413] hda_codec: Unknown model for ALC662, trying auto-probe from BIOS...
+[    3.062528] autoconfig: line_outs=1 (0x14/0x0/0x0/0x0/0x0)
+[    3.062606]    speaker_outs=0 (0x0/0x0/0x0/0x0/0x0)
+[    3.062681]    hp_outs=1 (0x1b/0x0/0x0/0x0/0x0)
+[    3.062754]    mono: mono_out=0x0
+[    3.062825]    inputs: mic=0x18, fmic=0x19, line=0x0, fline=0x0, cd=0x0, aux=0x0
+[    3.066863] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [1972]
+[    3.067169] drivers/input/serio/i8042.c: d4 -> i8042 (command) [1973]
+[    3.068023] drivers/input/serio/i8042.c: f3 -> i8042 (parameter) [1973]
+[    3.070563] ALSA device list:
+[    3.070639]   #0: HDA Intel at 0xf7eb8000 irq 16
+[    3.070859] TCP cubic registered
+[    3.070936] NET: Registered protocol family 17
+[    3.071203] Using IPI Shortcut mode
+[    3.073280]   Magic number: 9:244:48
+[    3.073469] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [1979]
+[    3.073657] rtc_cmos 00:03: setting system clock to 2009-05-26 22:03:01 UTC (1243375381)
+[    3.073895] drivers/input/serio/i8042.c: d4 -> i8042 (command) [1979]
+[    3.074014] drivers/input/serio/i8042.c: 0a -> i8042 (parameter) [1979]
+[    3.081552] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [1987]
+[    3.081594] drivers/input/serio/i8042.c: d4 -> i8042 (command) [1987]
+[    3.082539] drivers/input/serio/i8042.c: e8 -> i8042 (parameter) [1987]
+[    3.089762] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [1995]
+[    3.089798] drivers/input/serio/i8042.c: d4 -> i8042 (command) [1995]
+[    3.090750] drivers/input/serio/i8042.c: 00 -> i8042 (parameter) [1995]
+[    3.098657] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [2004]
+[    3.098700] drivers/input/serio/i8042.c: d4 -> i8042 (command) [2004]
+[    3.099644] drivers/input/serio/i8042.c: f3 -> i8042 (parameter) [2004]
+[    3.107066] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [2013]
+[    4.924196] drivers/input/serio/i8042.c: 1f <- i8042 (interrupt, 0, 1) [3830]
+[    5.031672] drivers/input/serio/i8042.c: 23 <- i8042 (interrupt, 0, 1) [3937]
+[    5.067286] drivers/input/serio/i8042.c: 9f <- i8042 (interrupt, 0, 1) [3973]
+[    5.138368] drivers/input/serio/i8042.c: a3 <- i8042 (interrupt, 0, 1) [4044]
+[    5.141485] drivers/input/serio/i8042.c: 39 <- i8042 (interrupt, 0, 1) [4047]
+[    5.278109] drivers/input/serio/i8042.c: b9 <- i8042 (interrupt, 0, 1) [4184]
+[    5.699163] drivers/input/serio/i8042.c: d4 -> i8042 (command) [4605]
+[    5.700057] drivers/input/serio/i8042.c: 14 -> i8042 (parameter) [4605]
+[    5.708687] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [4614]
+[    5.708731] drivers/input/serio/i8042.c: d4 -> i8042 (command) [4614]
+[    5.709673] drivers/input/serio/i8042.c: f3 -> i8042 (parameter) [4614]
+[    5.716938] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [4622]
+[    5.716977] drivers/input/serio/i8042.c: d4 -> i8042 (command) [4622]
+[    5.717925] drivers/input/serio/i8042.c: 3c -> i8042 (parameter) [4622]
+[    5.725244] ACPI: Battery Slot [BAT0] (battery present)
+[    5.726461] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [4632]
+[    5.728076] drivers/input/serio/i8042.c: d4 -> i8042 (command) [4634]
+[    5.729014] drivers/input/serio/i8042.c: f3 -> i8042 (parameter) [4634]
+[    5.738035] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [4644]
+[    5.738077] drivers/input/serio/i8042.c: d4 -> i8042 (command) [4644]
+[    5.739020] drivers/input/serio/i8042.c: 28 -> i8042 (parameter) [4644]
+[    5.746357] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [4652]
+[    5.746401] drivers/input/serio/i8042.c: d4 -> i8042 (command) [4652]
+[    5.747344] drivers/input/serio/i8042.c: f3 -> i8042 (parameter) [4652]
+[    5.755067] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [4661]
+[    8.646894] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7552]
+[    8.647012] drivers/input/serio/i8042.c: 14 -> i8042 (parameter) [7552]
+[    8.652403] ata2.00: CFA: ASUS-PHISON OB SSD, TST2.04P, max UDMA/66
+[    8.652491] ata2.00: 7880544 sectors, multi 0: LBA 
+[    8.652641] ata2.01: CFA: ASUS-PHISON SSD, TST2.04P, max UDMA/66
+[    8.652721] ata2.01: 31522176 sectors, multi 0: LBA 
+[    8.656314] ata2.00: configured for UDMA/66
+[    8.656398] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7562]
+[    8.656715] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7562]
+[    8.657015] drivers/input/serio/i8042.c: f3 -> i8042 (parameter) [7562]
+[    8.659300] ata2.01: configured for UDMA/66
+[    8.660609] scsi 1:0:0:0: Direct-Access     ATA      ASUS-PHISON OB S TST2 PQ: 0 ANSI: 5
+[    8.663813] scsi 1:0:1:0: Direct-Access     ATA      ASUS-PHISON SSD  TST2 PQ: 0 ANSI: 5
+[    8.665518] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7571]
+[    8.665657] sd 1:0:0:0: [sda] 7880544 512-byte hardware sectors: (4.03 GB/3.75 GiB)
+[    8.665866] sd 1:0:0:0: [sda] Write Protect is off
+[    8.665944] sd 1:0:0:0: [sda] Mode Sense: 00 3a 00 00
+[    8.666219] sd 1:0:0:0: [sda] Write cache: disabled, read cache: enabled, doesn't support DPO or FUA
+[    8.667464]  sda:<7>drivers/input/serio/i8042.c: d4 -> i8042 (command) [7573]
+[    8.668017] drivers/input/serio/i8042.c: 14 -> i8042 (parameter) [7573]
+[    8.669637]  sda1 sda2 sda3 sda4
+[    8.673844] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7579]
+[    8.673922] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7579]
+[    8.674012] drivers/input/serio/i8042.c: f3 -> i8042 (parameter) [7579]
+[    8.676379] sd 1:0:1:0: [sdb] 31522176 512-byte hardware sectors: (16.1 GB/15.0 GiB)
+[    8.676595] sd 1:0:1:0: [sdb] Write Protect is off
+[    8.676673] sd 1:0:1:0: [sdb] Mode Sense: 00 3a 00 00
+[    8.676863] sd 1:0:1:0: [sdb] Write cache: disabled, read cache: enabled, doesn't support DPO or FUA
+[    8.677852]  sdb: sdb1 sdb2
+[    8.680688] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7586]
+[    8.680728] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7586]
+[    8.681021] drivers/input/serio/i8042.c: 3c -> i8042 (parameter) [7586]
+[    8.687758] sd 1:0:1:0: [sdb] Attached SCSI disk
+[    8.687963] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7593]
+[    8.688261] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7594]
+[    8.689016] drivers/input/serio/i8042.c: f3 -> i8042 (parameter) [7594]
+[    8.689815] sd 1:0:0:0: [sda] Attached SCSI disk
+[    8.694208] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7600]
+[    8.694246] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7600]
+[    8.695197] drivers/input/serio/i8042.c: 28 -> i8042 (parameter) [7600]
+[    8.700616] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7606]
+[    8.700660] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7606]
+[    8.701602] drivers/input/serio/i8042.c: f3 -> i8042 (parameter) [7606]
+[    8.707710] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7613]
+[    8.707745] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7613]
+[    8.708698] drivers/input/serio/i8042.c: 14 -> i8042 (parameter) [7613]
+[    8.713453] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7619]
+[    8.713493] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7619]
+[    8.714442] drivers/input/serio/i8042.c: f3 -> i8042 (parameter) [7619]
+[    8.720108] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7626]
+[    8.720143] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7626]
+[    8.721095] drivers/input/serio/i8042.c: 14 -> i8042 (parameter) [7626]
+[    8.726665] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7632]
+[    8.726705] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7632]
+[    8.727654] drivers/input/serio/i8042.c: f2 -> i8042 (parameter) [7632]
+[    8.734644] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7640]
+[    8.736310] drivers/input/serio/i8042.c: 00 <- i8042 (interrupt, 1, 12) [7642]
+[    8.736351] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7642]
+[    8.737299] drivers/input/serio/i8042.c: e8 -> i8042 (parameter) [7642]
+[    8.742385] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7648]
+[    8.742420] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7648]
+[    8.743373] drivers/input/serio/i8042.c: 00 -> i8042 (parameter) [7648]
+[    8.748202] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7654]
+[    8.748243] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7654]
+[    8.749190] drivers/input/serio/i8042.c: e8 -> i8042 (parameter) [7654]
+[    8.754518] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7660]
+[    8.754553] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7660]
+[    8.755506] drivers/input/serio/i8042.c: 00 -> i8042 (parameter) [7660]
+[    8.761352] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7667]
+[    8.761392] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7667]
+[    8.762341] drivers/input/serio/i8042.c: e8 -> i8042 (parameter) [7667]
+[    8.767146] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7673]
+[    8.767181] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7673]
+[    8.768135] drivers/input/serio/i8042.c: 00 -> i8042 (parameter) [7673]
+[    8.772952] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7678]
+[    8.772992] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7678]
+[    8.773940] drivers/input/serio/i8042.c: e8 -> i8042 (parameter) [7678]
+[    8.779790] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7685]
+[    8.779825] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7685]
+[    8.780778] drivers/input/serio/i8042.c: 00 -> i8042 (parameter) [7685]
+[    8.786567] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7692]
+[    8.786607] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7692]
+[    8.787555] drivers/input/serio/i8042.c: e9 -> i8042 (parameter) [7692]
+[    8.798305] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7704]
+[    8.800082] drivers/input/serio/i8042.c: 00 <- i8042 (interrupt, 1, 12) [7706]
+[    8.801084] drivers/input/serio/i8042.c: 00 <- i8042 (interrupt, 1, 12) [7707]
+[    8.802178] drivers/input/serio/i8042.c: 14 <- i8042 (interrupt, 1, 12) [7708]
+[    8.802216] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7708]
+[    8.803167] drivers/input/serio/i8042.c: f6 -> i8042 (parameter) [7708]
+[    8.808857] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7714]
+[    8.808897] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7714]
+[    8.809844] drivers/input/serio/i8042.c: e8 -> i8042 (parameter) [7714]
+[    8.815380] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7721]
+[    8.815414] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7721]
+[    8.816368] drivers/input/serio/i8042.c: 03 -> i8042 (parameter) [7721]
+[    8.821580] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7727]
+[    8.821620] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7727]
+[    8.822569] drivers/input/serio/i8042.c: e6 -> i8042 (parameter) [7727]
+[    8.828338] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7734]
+[    8.828378] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7734]
+[    8.829326] drivers/input/serio/i8042.c: e6 -> i8042 (parameter) [7734]
+[    8.835464] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7741]
+[    8.835504] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7741]
+[    8.836453] drivers/input/serio/i8042.c: e6 -> i8042 (parameter) [7741]
+[    8.841662] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7747]
+[    8.841702] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7747]
+[    8.842650] drivers/input/serio/i8042.c: e9 -> i8042 (parameter) [7747]
+[    8.854720] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7760]
+[    8.855677] drivers/input/serio/i8042.c: 3c <- i8042 (interrupt, 1, 12) [7761]
+[    8.856732] drivers/input/serio/i8042.c: 03 <- i8042 (interrupt, 1, 12) [7762]
+[    8.857775] drivers/input/serio/i8042.c: c8 <- i8042 (interrupt, 1, 12) [7763]
+[    8.857814] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7763]
+[    8.858764] drivers/input/serio/i8042.c: e8 -> i8042 (parameter) [7763]
+[    8.864868] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7770]
+[    8.864903] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7770]
+[    8.865856] drivers/input/serio/i8042.c: 00 -> i8042 (parameter) [7770]
+[    8.866453] Clocksource tsc unstable (delta = -140443267 ns)
+[    8.871026] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7777]
+[    8.871067] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7777]
+[    8.872015] drivers/input/serio/i8042.c: e6 -> i8042 (parameter) [7777]
+[    8.877815] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7783]
+[    8.877855] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7783]
+[    8.878803] drivers/input/serio/i8042.c: e6 -> i8042 (parameter) [7783]
+[    8.884903] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7790]
+[    8.884943] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7790]
+[    8.885892] drivers/input/serio/i8042.c: e6 -> i8042 (parameter) [7790]
+[    8.890785] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7796]
+[    8.890827] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7796]
+[    8.891774] drivers/input/serio/i8042.c: e9 -> i8042 (parameter) [7796]
+[    8.904071] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7810]
+[    8.905026] drivers/input/serio/i8042.c: 3c <- i8042 (interrupt, 1, 12) [7811]
+[    8.906018] drivers/input/serio/i8042.c: 03 <- i8042 (interrupt, 1, 12) [7812]
+[    8.907195] drivers/input/serio/i8042.c: c8 <- i8042 (interrupt, 1, 12) [7813]
+[    8.907234] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7813]
+[    8.908184] drivers/input/serio/i8042.c: e6 -> i8042 (parameter) [7813]
+[    8.914111] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7820]
+[    8.914151] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7820]
+[    8.915099] drivers/input/serio/i8042.c: e8 -> i8042 (parameter) [7820]
+[    8.920327] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7826]
+[    8.920362] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7826]
+[    8.921316] drivers/input/serio/i8042.c: 00 -> i8042 (parameter) [7826]
+[    8.926809] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7832]
+[    8.926848] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7832]
+[    8.927797] drivers/input/serio/i8042.c: e8 -> i8042 (parameter) [7832]
+[    8.933885] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7839]
+[    8.933920] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7839]
+[    8.934873] drivers/input/serio/i8042.c: 03 -> i8042 (parameter) [7839]
+[    8.940082] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7846]
+[    8.940122] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7846]
+[    8.941070] drivers/input/serio/i8042.c: e8 -> i8042 (parameter) [7846]
+[    8.946825] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7852]
+[    8.946861] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7852]
+[    8.947813] drivers/input/serio/i8042.c: 02 -> i8042 (parameter) [7852]
+[    8.953839] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7859]
+[    8.953879] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7859]
+[    8.954828] drivers/input/serio/i8042.c: e8 -> i8042 (parameter) [7859]
+[    8.959687] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7865]
+[    8.959722] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7865]
+[    8.960675] drivers/input/serio/i8042.c: 01 -> i8042 (parameter) [7865]
+[    8.966103] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7872]
+[    8.966143] drivers/input/serio/i8042.c: d4 -> i8042 (command) [7872]
+[    8.967091] drivers/input/serio/i8042.c: eb -> i8042 (parameter) [7872]
+[    8.973118] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [7879]
+[    9.473206] drivers/input/serio/i8042.c: d4 -> i8042 (command) [8379]
+[    9.473941] drivers/input/serio/i8042.c: e6 -> i8042 (parameter) [8379]
+[    9.478706] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [8384]
+[    9.478746] drivers/input/serio/i8042.c: d4 -> i8042 (command) [8384]
+[    9.479694] drivers/input/serio/i8042.c: e8 -> i8042 (parameter) [8384]
+[    9.485867] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [8391]
+[    9.485902] drivers/input/serio/i8042.c: d4 -> i8042 (command) [8391]
+[    9.486855] drivers/input/serio/i8042.c: 03 -> i8042 (parameter) [8391]
+[    9.491350] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [8397]
+[    9.491390] drivers/input/serio/i8042.c: d4 -> i8042 (command) [8397]
+[    9.492338] drivers/input/serio/i8042.c: e8 -> i8042 (parameter) [8397]
+[    9.497389] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [8403]
+[    9.497424] drivers/input/serio/i8042.c: d4 -> i8042 (command) [8403]
+[    9.498377] drivers/input/serio/i8042.c: 01 -> i8042 (parameter) [8403]
+[    9.503540] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [8409]
+[    9.503580] drivers/input/serio/i8042.c: d4 -> i8042 (command) [8409]
+[    9.504528] drivers/input/serio/i8042.c: e8 -> i8042 (parameter) [8409]
+[    9.510632] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [8416]
+[    9.510667] drivers/input/serio/i8042.c: d4 -> i8042 (command) [8416]
+[    9.511620] drivers/input/serio/i8042.c: 02 -> i8042 (parameter) [8416]
+[    9.516944] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [8422]
+[    9.516984] drivers/input/serio/i8042.c: d4 -> i8042 (command) [8422]
+[    9.517932] drivers/input/serio/i8042.c: e8 -> i8042 (parameter) [8422]
+[    9.523376] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [8429]
+[    9.523410] drivers/input/serio/i8042.c: d4 -> i8042 (command) [8429]
+[    9.524364] drivers/input/serio/i8042.c: 03 -> i8042 (parameter) [8429]
+[    9.532506] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [8438]
+[    9.532547] drivers/input/serio/i8042.c: d4 -> i8042 (command) [8438]
+[    9.533494] drivers/input/serio/i8042.c: eb -> i8042 (parameter) [8438]
+[    9.538450] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [8444]
+[   10.038203] drivers/input/serio/i8042.c: d4 -> i8042 (command) [8944]
+[   10.039154] drivers/input/serio/i8042.c: f6 -> i8042 (parameter) [8944]
+[   10.044867] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [8950]
+[   10.044909] drivers/input/serio/i8042.c: d4 -> i8042 (command) [8950]
+[   10.045855] drivers/input/serio/i8042.c: ff -> i8042 (parameter) [8950]
+[   10.051236] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [8957]
+[   10.435768] drivers/input/serio/i8042.c: aa <- i8042 (interrupt, 1, 12) [9341]
+[   10.436790] drivers/input/serio/i8042.c: 00 <- i8042 (interrupt, 1, 12) [9342]
+[   10.436830] drivers/input/serio/i8042.c: d4 -> i8042 (command) [9342]
+[   10.437778] drivers/input/serio/i8042.c: f3 -> i8042 (parameter) [9342]
+[   10.443852] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [9349]
+[   10.443887] drivers/input/serio/i8042.c: d4 -> i8042 (command) [9349]
+[   10.444839] drivers/input/serio/i8042.c: c8 -> i8042 (parameter) [9349]
+[   10.449868] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [9355]
+[   10.449908] drivers/input/serio/i8042.c: d4 -> i8042 (command) [9355]
+[   10.450856] drivers/input/serio/i8042.c: f3 -> i8042 (parameter) [9355]
+[   10.456733] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [9362]
+[   10.456768] drivers/input/serio/i8042.c: d4 -> i8042 (command) [9362]
+[   10.457721] drivers/input/serio/i8042.c: 64 -> i8042 (parameter) [9362]
+[   10.463836] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [9369]
+[   10.463876] drivers/input/serio/i8042.c: d4 -> i8042 (command) [9369]
+[   10.464825] drivers/input/serio/i8042.c: f3 -> i8042 (parameter) [9369]
+[   10.469695] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [9375]
+[   10.469730] drivers/input/serio/i8042.c: d4 -> i8042 (command) [9375]
+[   10.470684] drivers/input/serio/i8042.c: 50 -> i8042 (parameter) [9375]
+[   10.475582] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [9381]
+[   10.475622] drivers/input/serio/i8042.c: d4 -> i8042 (command) [9381]
+[   10.476570] drivers/input/serio/i8042.c: f2 -> i8042 (parameter) [9381]
+[   10.484021] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [9390]
+[   10.484963] drivers/input/serio/i8042.c: 03 <- i8042 (interrupt, 1, 12) [9390]
+[   10.485002] drivers/input/serio/i8042.c: d4 -> i8042 (command) [9390]
+[   10.485954] drivers/input/serio/i8042.c: f3 -> i8042 (parameter) [9390]
+[   10.491620] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [9397]
+[   10.491655] drivers/input/serio/i8042.c: d4 -> i8042 (command) [9397]
+[   10.492608] drivers/input/serio/i8042.c: c8 -> i8042 (parameter) [9397]
+[   10.498688] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [9404]
+[   10.498730] drivers/input/serio/i8042.c: d4 -> i8042 (command) [9404]
+[   10.499677] drivers/input/serio/i8042.c: f3 -> i8042 (parameter) [9404]
+[   10.504759] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [9410]
+[   10.504794] drivers/input/serio/i8042.c: d4 -> i8042 (command) [9410]
+[   10.505747] drivers/input/serio/i8042.c: c8 -> i8042 (parameter) [9410]
+[   10.511493] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [9417]
+[   10.511533] drivers/input/serio/i8042.c: d4 -> i8042 (command) [9417]
+[   10.512482] drivers/input/serio/i8042.c: f3 -> i8042 (parameter) [9417]
+[   10.520632] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [9426]
+[   10.520667] drivers/input/serio/i8042.c: d4 -> i8042 (command) [9426]
+[   10.521620] drivers/input/serio/i8042.c: 50 -> i8042 (parameter) [9426]
+[   10.526787] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [9432]
+[   10.526827] drivers/input/serio/i8042.c: d4 -> i8042 (command) [9432]
+[   10.527775] drivers/input/serio/i8042.c: f2 -> i8042 (parameter) [9432]
+[   10.535157] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [9441]
+[   10.536562] drivers/input/serio/i8042.c: 03 <- i8042 (interrupt, 1, 12) [9442]
+[   10.536602] drivers/input/serio/i8042.c: d4 -> i8042 (command) [9442]
+[   10.537551] drivers/input/serio/i8042.c: f3 -> i8042 (parameter) [9442]
+[   10.543043] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [9449]
+[   10.543078] drivers/input/serio/i8042.c: d4 -> i8042 (command) [9449]
+[   10.544032] drivers/input/serio/i8042.c: c8 -> i8042 (parameter) [9449]
+[   10.549912] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [9455]
+[   10.549952] drivers/input/serio/i8042.c: d4 -> i8042 (command) [9455]
+[   10.550901] drivers/input/serio/i8042.c: f3 -> i8042 (parameter) [9455]
+[   10.556371] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [9462]
+[   10.556406] drivers/input/serio/i8042.c: d4 -> i8042 (command) [9462]
+[   10.557359] drivers/input/serio/i8042.c: 64 -> i8042 (parameter) [9462]
+[   10.562821] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [9468]
+[   10.562861] drivers/input/serio/i8042.c: d4 -> i8042 (command) [9468]
+[   10.563810] drivers/input/serio/i8042.c: f3 -> i8042 (parameter) [9468]
+[   10.570021] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [9476]
+[   10.570055] drivers/input/serio/i8042.c: d4 -> i8042 (command) [9476]
+[   10.571009] drivers/input/serio/i8042.c: 50 -> i8042 (parameter) [9476]
+[   10.576237] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [9482]
+[   10.576277] drivers/input/serio/i8042.c: d4 -> i8042 (command) [9482]
+[   10.577225] drivers/input/serio/i8042.c: f2 -> i8042 (parameter) [9482]
+[   10.584796] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [9490]
+[   10.586012] drivers/input/serio/i8042.c: 03 <- i8042 (interrupt, 1, 12) [9492]
+[   10.586059] drivers/input/serio/i8042.c: d4 -> i8042 (command) [9492]
+[   10.587001] drivers/input/serio/i8042.c: f3 -> i8042 (parameter) [9492]
+[   10.592467] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [9498]
+[   10.592502] drivers/input/serio/i8042.c: d4 -> i8042 (command) [9498]
+[   10.593455] drivers/input/serio/i8042.c: 64 -> i8042 (parameter) [9498]
+[   10.599328] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [9505]
+[   10.599368] drivers/input/serio/i8042.c: d4 -> i8042 (command) [9505]
+[   10.600317] drivers/input/serio/i8042.c: e8 -> i8042 (parameter) [9505]
+[   10.605168] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [9511]
+[   10.605203] drivers/input/serio/i8042.c: d4 -> i8042 (command) [9511]
+[   10.606157] drivers/input/serio/i8042.c: 03 -> i8042 (parameter) [9511]
+[   10.611830] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [9517]
+[   10.611870] drivers/input/serio/i8042.c: d4 -> i8042 (command) [9517]
+[   10.612819] drivers/input/serio/i8042.c: e6 -> i8042 (parameter) [9517]
+[   10.619006] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [9524]
+[   10.620145] input: ImPS/2 Logitech Wheel Mouse as /devices/platform/i8042/serio1/input/input6
+[   10.621508] drivers/input/serio/i8042.c: d4 -> i8042 (command) [9527]
+[   10.622018] drivers/input/serio/i8042.c: f4 -> i8042 (parameter) [9527]
+[   10.627408] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [9533]
+[   10.631662] EXT2-fs warning (device sdb2): ext2_fill_super: mounting ext3 filesystem as ext2
+[   10.632102] VFS: Mounted root (ext2 filesystem) readonly on device 8:18.
+[   10.632378] Freeing unused kernel memory: 308k freed
+[   10.633446] Write protecting the kernel text: 3292k
+[   10.633526] Testing CPA: Reverting c0100000-c0437000
+[   10.634220] Testing CPA: write protecting again
+[   10.635119] Write protecting the kernel read-only data: 1108k
+[   10.635204] Testing CPA: undo c0437000-c054c000
+[   10.635481] Testing CPA: write protecting again
+[   12.188196] drivers/input/serio/i8042.c: 1f <- i8042 (interrupt, 0, 1) [11094]
+[   12.327635] drivers/input/serio/i8042.c: 9f <- i8042 (interrupt, 0, 1) [11233]
+[   12.643649] drivers/input/serio/i8042.c: 23 <- i8042 (interrupt, 0, 1) [11549]
+[   12.749611] drivers/input/serio/i8042.c: a3 <- i8042 (interrupt, 0, 1) [11655]
+[   13.132848] drivers/input/serio/i8042.c: 39 <- i8042 (interrupt, 0, 1) [12038]
+[   13.237882] drivers/input/serio/i8042.c: b9 <- i8042 (interrupt, 0, 1) [12143]
+[   13.319787] drivers/input/serio/i8042.c: 2e <- i8042 (interrupt, 0, 1) [12225]
+[   13.391347] drivers/input/serio/i8042.c: ae <- i8042 (interrupt, 0, 1) [12297]
+[   13.394821] drivers/input/serio/i8042.c: 23 <- i8042 (interrupt, 0, 1) [12300]
+[   13.461466] drivers/input/serio/i8042.c: a3 <- i8042 (interrupt, 0, 1) [12367]
+[   13.563487] drivers/input/serio/i8042.c: 2e <- i8042 (interrupt, 0, 1) [12469]
+[   13.566878] drivers/input/serio/i8042.c: 12 <- i8042 (interrupt, 0, 1) [12472]
+[   13.635323] drivers/input/serio/i8042.c: 92 <- i8042 (interrupt, 0, 1) [12541]
+[   13.637603] drivers/input/serio/i8042.c: 25 <- i8042 (interrupt, 0, 1) [12543]
+[   13.704240] drivers/input/serio/i8042.c: ae <- i8042 (interrupt, 0, 1) [12610]
+[   13.709100] drivers/input/serio/i8042.c: a5 <- i8042 (interrupt, 0, 1) [12615]
+[   13.906291] drivers/input/serio/i8042.c: 34 <- i8042 (interrupt, 0, 1) [12812]
+[   14.011946] drivers/input/serio/i8042.c: b4 <- i8042 (interrupt, 0, 1) [12917]
+[   14.226583] drivers/input/serio/i8042.c: 0e <- i8042 (interrupt, 0, 1) [13132]
+[   14.297462] drivers/input/serio/i8042.c: 8e <- i8042 (interrupt, 0, 1) [13203]
+[   14.375843] drivers/input/serio/i8042.c: 0e <- i8042 (interrupt, 0, 1) [13281]
+[   14.446792] drivers/input/serio/i8042.c: 8e <- i8042 (interrupt, 0, 1) [13352]
+[   14.523829] drivers/input/serio/i8042.c: 0e <- i8042 (interrupt, 0, 1) [13429]
+[   14.560487] drivers/input/serio/i8042.c: 8e <- i8042 (interrupt, 0, 1) [13466]
+[   14.657694] drivers/input/serio/i8042.c: 0e <- i8042 (interrupt, 0, 1) [13563]
+[   14.728493] drivers/input/serio/i8042.c: 8e <- i8042 (interrupt, 0, 1) [13634]
+[   14.739063] drivers/input/serio/i8042.c: 12 <- i8042 (interrupt, 0, 1) [13645]
+[   14.846292] drivers/input/serio/i8042.c: 2e <- i8042 (interrupt, 0, 1) [13752]
+[   14.882726] drivers/input/serio/i8042.c: 92 <- i8042 (interrupt, 0, 1) [13788]
+[   14.987558] drivers/input/serio/i8042.c: ae <- i8042 (interrupt, 0, 1) [13893]
+[   14.990675] drivers/input/serio/i8042.c: 25 <- i8042 (interrupt, 0, 1) [13896]
+[   15.021819] drivers/input/serio/i8042.c: a5 <- i8042 (interrupt, 0, 1) [13927]
+[   15.355523] drivers/input/serio/i8042.c: 34 <- i8042 (interrupt, 0, 1) [14261]
+[   15.465385] drivers/input/serio/i8042.c: b4 <- i8042 (interrupt, 0, 1) [14371]
+[   15.498041] drivers/input/serio/i8042.c: 1f <- i8042 (interrupt, 0, 1) [14404]
+[   15.567834] drivers/input/serio/i8042.c: 23 <- i8042 (interrupt, 0, 1) [14473]
+[   15.604956] drivers/input/serio/i8042.c: 9f <- i8042 (interrupt, 0, 1) [14510]
+[   15.639573] drivers/input/serio/i8042.c: a3 <- i8042 (interrupt, 0, 1) [14545]
+[   15.748871] drivers/input/serio/i8042.c: 1c <- i8042 (interrupt, 0, 1) [14654]
+[   15.854258] drivers/input/serio/i8042.c: 9c <- i8042 (interrupt, 0, 1) [14760]
+[   30.464293] CPA self-test:
+[   30.464553]  4k 4094 large 218 gb 0 x 4312[c0000000-f77fd000] miss 0
+[   30.490702]  4k 194558 large 32 gb 0 x 194590[c0000000-f77fd000] miss 0
+[   30.513196]  4k 194558 large 32 gb 0 x 194590[c0000000-f77fd000] miss 0
+[   30.513278] ok.
+[   35.949538] drivers/input/serio/i8042.c: 32 <- i8042 (interrupt, 0, 1) [34855]
+[   36.090492] drivers/input/serio/i8042.c: b2 <- i8042 (interrupt, 0, 1) [34996]
+[   36.121822] drivers/input/serio/i8042.c: 18 <- i8042 (interrupt, 0, 1) [35027]
+[   36.227327] drivers/input/serio/i8042.c: 16 <- i8042 (interrupt, 0, 1) [35133]
+[   36.263389] drivers/input/serio/i8042.c: 98 <- i8042 (interrupt, 0, 1) [35169]
+[   36.298006] drivers/input/serio/i8042.c: 96 <- i8042 (interrupt, 0, 1) [35203]
+[   36.401407] drivers/input/serio/i8042.c: 31 <- i8042 (interrupt, 0, 1) [35307]
+[   36.505293] drivers/input/serio/i8042.c: b1 <- i8042 (interrupt, 0, 1) [35411]
+[   36.524923] drivers/input/serio/i8042.c: 14 <- i8042 (interrupt, 0, 1) [35430]
+[   36.595737] drivers/input/serio/i8042.c: 94 <- i8042 (interrupt, 0, 1) [35501]
+[   36.599058] drivers/input/serio/i8042.c: 39 <- i8042 (interrupt, 0, 1) [35505]
+[   36.664789] drivers/input/serio/i8042.c: b9 <- i8042 (interrupt, 0, 1) [35570]
+[   36.797289] drivers/input/serio/i8042.c: 0c <- i8042 (interrupt, 0, 1) [35703]
+[   36.868687] drivers/input/serio/i8042.c: 8c <- i8042 (interrupt, 0, 1) [35774]
+[   37.043907] drivers/input/serio/i8042.c: 18 <- i8042 (interrupt, 0, 1) [35949]
+[   37.150169] drivers/input/serio/i8042.c: 98 <- i8042 (interrupt, 0, 1) [36056]
+[   37.155275] drivers/input/serio/i8042.c: 39 <- i8042 (interrupt, 0, 1) [36061]
+[   37.224559] drivers/input/serio/i8042.c: b9 <- i8042 (interrupt, 0, 1) [36130]
+[   37.494104] drivers/input/serio/i8042.c: 13 <- i8042 (interrupt, 0, 1) [36400]
+[   37.599137] drivers/input/serio/i8042.c: 12 <- i8042 (interrupt, 0, 1) [36505]
+[   37.669467] drivers/input/serio/i8042.c: 93 <- i8042 (interrupt, 0, 1) [36575]
+[   37.674181] drivers/input/serio/i8042.c: 92 <- i8042 (interrupt, 0, 1) [36580]
+[   38.017853] drivers/input/serio/i8042.c: e0 <- i8042 (interrupt, 0, 1) [36923]
+[   38.021166] drivers/input/serio/i8042.c: 53 <- i8042 (interrupt, 0, 1) [36927]
+[   38.086452] drivers/input/serio/i8042.c: e0 <- i8042 (interrupt, 0, 1) [36992]
+[   38.091453] drivers/input/serio/i8042.c: d3 <- i8042 (interrupt, 0, 1) [36997]
+[   38.144602] drivers/input/serio/i8042.c: 11 <- i8042 (interrupt, 0, 1) [37050]
+[   38.248491] drivers/input/serio/i8042.c: 91 <- i8042 (interrupt, 0, 1) [37154]
+[   38.440283] drivers/input/serio/i8042.c: 0e <- i8042 (interrupt, 0, 1) [37346]
+[   38.545716] drivers/input/serio/i8042.c: 8e <- i8042 (interrupt, 0, 1) [37451]
+[   38.608553] drivers/input/serio/i8042.c: 0e <- i8042 (interrupt, 0, 1) [37514]
+[   38.678780] drivers/input/serio/i8042.c: 8e <- i8042 (interrupt, 0, 1) [37584]
+[   38.757161] drivers/input/serio/i8042.c: 0e <- i8042 (interrupt, 0, 1) [37663]
+[   38.826764] drivers/input/serio/i8042.c: 8e <- i8042 (interrupt, 0, 1) [37732]
+[   38.896400] drivers/input/serio/i8042.c: 0e <- i8042 (interrupt, 0, 1) [37802]
+[   38.967683] drivers/input/serio/i8042.c: 8e <- i8042 (interrupt, 0, 1) [37873]
+[   39.043853] drivers/input/serio/i8042.c: 0e <- i8042 (interrupt, 0, 1) [37949]
+[   39.116533] drivers/input/serio/i8042.c: 8e <- i8042 (interrupt, 0, 1) [38022]
+[   39.184709] drivers/input/serio/i8042.c: 0e <- i8042 (interrupt, 0, 1) [38090]
+[   39.253024] drivers/input/serio/i8042.c: 8e <- i8042 (interrupt, 0, 1) [38159]
+[   39.502463] drivers/input/serio/i8042.c: 11 <- i8042 (interrupt, 0, 1) [38408]
+[   39.608091] drivers/input/serio/i8042.c: 91 <- i8042 (interrupt, 0, 1) [38514]
+[   39.744319] drivers/input/serio/i8042.c: 33 <- i8042 (interrupt, 0, 1) [38650]
+[   39.851472] drivers/input/serio/i8042.c: b3 <- i8042 (interrupt, 0, 1) [38757]
+[   40.209626] drivers/input/serio/i8042.c: 13 <- i8042 (interrupt, 0, 1) [39115]
+[   40.279983] drivers/input/serio/i8042.c: 12 <- i8042 (interrupt, 0, 1) [39185]
+[   40.353642] drivers/input/serio/i8042.c: 93 <- i8042 (interrupt, 0, 1) [39259]
+[   40.357036] drivers/input/serio/i8042.c: 32 <- i8042 (interrupt, 0, 1) [39263]
+[   40.387715] drivers/input/serio/i8042.c: 92 <- i8042 (interrupt, 0, 1) [39293]
+[   40.422306] drivers/input/serio/i8042.c: b2 <- i8042 (interrupt, 0, 1) [39328]
+[   40.427227] drivers/input/serio/i8042.c: 18 <- i8042 (interrupt, 0, 1) [39333]
+[   40.565918] drivers/input/serio/i8042.c: 98 <- i8042 (interrupt, 0, 1) [39471]
+[   40.571051] drivers/input/serio/i8042.c: 16 <- i8042 (interrupt, 0, 1) [39477]
+[   40.640407] drivers/input/serio/i8042.c: 96 <- i8042 (interrupt, 0, 1) [39546]
+[   40.794156] drivers/input/serio/i8042.c: 31 <- i8042 (interrupt, 0, 1) [39700]
+[   40.829212] drivers/input/serio/i8042.c: 14 <- i8042 (interrupt, 0, 1) [39735]
+[   40.864325] drivers/input/serio/i8042.c: b1 <- i8042 (interrupt, 0, 1) [39770]
+[   40.898938] drivers/input/serio/i8042.c: 94 <- i8042 (interrupt, 0, 1) [39804]
+[   41.048601] drivers/input/serio/i8042.c: 39 <- i8042 (interrupt, 0, 1) [39954]
+[   41.188948] drivers/input/serio/i8042.c: b9 <- i8042 (interrupt, 0, 1) [40094]
+[   41.219639] drivers/input/serio/i8042.c: 35 <- i8042 (interrupt, 0, 1) [40125]
+[   41.324328] drivers/input/serio/i8042.c: b5 <- i8042 (interrupt, 0, 1) [40230]
+[   41.475931] drivers/input/serio/i8042.c: 1c <- i8042 (interrupt, 0, 1) [40381]
+[   41.582890] drivers/input/serio/i8042.c: 9c <- i8042 (interrupt, 0, 1) [40488]
+[   41.772303] drivers/input/serio/i8042.c: 20 <- i8042 (interrupt, 0, 1) [40678]
+[   41.845954] drivers/input/serio/i8042.c: a0 <- i8042 (interrupt, 0, 1) [40751]
+[   41.849033] drivers/input/serio/i8042.c: 32 <- i8042 (interrupt, 0, 1) [40755]
+[   41.949754] drivers/input/serio/i8042.c: b2 <- i8042 (interrupt, 0, 1) [40855]
+[   41.955094] drivers/input/serio/i8042.c: 12 <- i8042 (interrupt, 0, 1) [40861]
+[   42.061068] drivers/input/serio/i8042.c: 92 <- i8042 (interrupt, 0, 1) [40967]
+[   42.063356] drivers/input/serio/i8042.c: 1f <- i8042 (interrupt, 0, 1) [40969]
+[   42.096016] drivers/input/serio/i8042.c: 22 <- i8042 (interrupt, 0, 1) [41002]
+[   42.132066] drivers/input/serio/i8042.c: 9f <- i8042 (interrupt, 0, 1) [41038]
+[   42.135237] drivers/input/serio/i8042.c: 39 <- i8042 (interrupt, 0, 1) [41041]
+[   42.166219] drivers/input/serio/i8042.c: a2 <- i8042 (interrupt, 0, 1) [41072]
+[   42.235642] drivers/input/serio/i8042.c: b9 <- i8042 (interrupt, 0, 1) [41141]
+[   42.525870] drivers/input/serio/i8042.c: 2a <- i8042 (interrupt, 0, 1) [41431]
+[   42.594553] drivers/input/serio/i8042.c: 34 <- i8042 (interrupt, 0, 1) [41500]
+[   42.666454] drivers/input/serio/i8042.c: 39 <- i8042 (interrupt, 0, 1) [41572]
+[   42.737222] drivers/input/serio/i8042.c: aa <- i8042 (interrupt, 0, 1) [41643]
+[   42.741987] drivers/input/serio/i8042.c: b4 <- i8042 (interrupt, 0, 1) [41647]
+[   42.771301] drivers/input/serio/i8042.c: b9 <- i8042 (interrupt, 0, 1) [41677]
+[   42.830865] drivers/input/serio/i8042.c: 20 <- i8042 (interrupt, 0, 1) [41736]
+[   42.900309] drivers/input/serio/i8042.c: a0 <- i8042 (interrupt, 0, 1) [41806]
+[   42.948884] drivers/input/serio/i8042.c: 32 <- i8042 (interrupt, 0, 1) [41854]
+[   43.018688] drivers/input/serio/i8042.c: b2 <- i8042 (interrupt, 0, 1) [41924]
+[   43.022351] drivers/input/serio/i8042.c: 12 <- i8042 (interrupt, 0, 1) [41928]
+[   43.122146] drivers/input/serio/i8042.c: 1f <- i8042 (interrupt, 0, 1) [42028]
+[   43.164755] drivers/input/serio/i8042.c: 92 <- i8042 (interrupt, 0, 1) [42070]
+[   43.168586] drivers/input/serio/i8042.c: 22 <- i8042 (interrupt, 0, 1) [42074]
+[   43.198055] drivers/input/serio/i8042.c: 9f <- i8042 (interrupt, 0, 1) [42104]
+[   43.267398] drivers/input/serio/i8042.c: a2 <- i8042 (interrupt, 0, 1) [42173]
+[   43.680592] drivers/input/serio/i8042.c: 03 <- i8042 (interrupt, 0, 1) [42586]
+[   43.788045] drivers/input/serio/i8042.c: 83 <- i8042 (interrupt, 0, 1) [42694]
+[   43.860993] drivers/input/serio/i8042.c: 1c <- i8042 (interrupt, 0, 1) [42766]
+
+In neither case did I go to X because having the debugging leads to huge
+logs in /var but I was rebooting until the following script started
+outputting BINGO!:
+
+#!/bin/sh
+mount /proc
+grep 12: /proc/interrupts
+dmesg | grep -i bingo
+
+On a normal boot there will be exactly 115 interrupts if the trackpad
+hasn't been touched but everything is OK just after booting. If there
+are less interrupts you know something has gone wrong...
+
 -- 
-1.6.2.3
-
+Sitsofe | http://sucs.org/~sits/
