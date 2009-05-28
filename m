@@ -1,72 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760581AbZE1IlB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759318AbZE1IpX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760581AbZE1IlB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 04:41:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751290AbZE1Iko
+	id S1759318AbZE1IpX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 04:45:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754823AbZE1IpF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 04:40:44 -0400
-Received: from gate1.ipvision.dk ([94.127.49.2]:48399 "EHLO gate1.ipvision.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751213AbZE1Ikn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 04:40:43 -0400
-Subject: Re: Realtek 8168D: no active link (2.6.29.2)
-From: Benny Amorsen <benny+usenet@amorsen.dk>
-To: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
-Cc: Francois Romieu <romieu@fr.zoreil.com>, David Dillow <dave@thedillows.org>,
-       linux-kernel@vger.kernel.org, Edward Hsu <edward_hsu@realtek.com.tw>
-In-Reply-To: <200905280009.n4S094jJ032395@turbo.physics.adelaide.edu.au>
-References: <200905280009.n4S094jJ032395@turbo.physics.adelaide.edu.au>
-Content-Type: text/plain
-Date: Thu, 28 May 2009 10:40:34 +0200
-Message-Id: <1243500034.25386.5.camel@ursa.amorsen.dk>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -3.8 (---)
-X-Spam-Report: ALL_TRUSTED=-3.3, AWL=-0.457
+	Thu, 28 May 2009 04:45:05 -0400
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:50541 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754058AbZE1IpB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 04:45:01 -0400
+Date: Thu, 28 May 2009 17:44:44 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Daniel Walker <dwalker@fifo99.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Linus Walleij <linus.ml.walleij@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Victor <linux@maxim.org.za>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-sh@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       John Stultz <johnstul@linux.vnet.ibm.com>
+Subject: Re: [PATCH] sched: Support current clocksource handling in fallback sched_clock().
+Message-ID: <20090528084444.GA26955@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Daniel Walker <dwalker@fifo99.com>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Linus Walleij <linus.ml.walleij@gmail.com>,
+	Ingo Molnar <mingo@elte.hu>, Andrew Victor <linux@maxim.org.za>,
+	Haavard Skinnemoen <hskinnemoen@atmel.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, linux-sh@vger.kernel.org,
+	linux-arm-kernel@lists.arm.linux.org.uk,
+	John Stultz <johnstul@linux.vnet.ibm.com>
+References: <20090526061532.GD9188@linux-sh.org> <63386a3d0905260731m655bfee3q82a6f52d71fa3cef@mail.gmail.com> <1243348681.23657.14.camel@twins> <alpine.LFD.2.00.0905262209160.1762@localhost.localdomain> <20090526230855.GA27218@linux-sh.org> <alpine.LFD.2.00.0905270140030.1762@localhost.localdomain> <20090527001543.GA8493@linux-sh.org> <1243441525.28705.19.camel@desktop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1243441525.28705.19.camel@desktop>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-tor, 28 05 2009 kl. 09:39 +0930, skrev Jonathan Woithe:
+On Wed, May 27, 2009 at 09:25:25AM -0700, Daniel Walker wrote:
+> On Wed, 2009-05-27 at 09:15 +0900, Paul Mundt wrote:
+> 
+> >  unsigned long long __attribute__((weak)) sched_clock(void)
+> >  {
+> > +	/*
+> > +	 * Use the current clocksource when it becomes available later in
+> > +	 * the boot process, and ensure that it is usable for sched_clock().
+> > +	 */
+> > +	if (clock && (clock->flags & CLOCK_SOURCE_USE_FOR_SCHED_CLOCK))
+> > +		return cyc2ns(clock, clocksource_read(clock));
+> > +
+> > +	/* Otherwise just fall back on jiffies */
+> >  	return (unsigned long long)(jiffies - INITIAL_JIFFIES)
+> 
+> Do we really need all this complexity in a fast path? the jiffies
+> clocksource is static and always ready. Could we instead remove the
+> usage of "clock" and create a new pointer called "sched_clocksource" and
+> initialize it to the jiffies clock, and allow the clocksource management
+> code to update that new pointer based on the
+> CLOCK_SOURCE_USE_FOR_SCHED_CLOCK flag when new clocksources are
+> registered/removed/marked unstable etc..
+> 
+> that would eliminate all the code in sched_clock except one line,
+> 
+> unsigned long long __attribute__((weak)) sched_clock(void)
+> {
+> 	return cyc2ns(sched_clocksource, clocksource_read(sched_clocksource));
+> }
+> 
+It would, but then what would that do to the sched_clock() value? It will
+reset once a CLOCK_SOURCE_USE_FOR_SCHED_CLOCK clocksource comes along,
+which basically means that sched_clock() then rolls back, which is worse
+than simply being delayed a bit. So even if we were to use a special
+sched_clocksource, it still could not be used until it was set up at
+registration time.
 
-> I'm not surprised one way or the other since I have no idea what to expect
-> when doing these tests on this card with the patches applied.  Given that
-> ethtool has a "duplex" option I naively thought that it controlled the
-> card's duplex setting.
+Now we could of course add a sched_clocksource assignment in
+select_clocksource(), but that's really no different than just testing
+'clock' as we do today. All it does is move the flag test in to a
+different path.
 
-It does. The card is set to full duplex when you force full duplex.
-
-> I interprete your comment to mean that duplex can't
-> be controlled like this and it requires autonegotiation in order to active
-> full duplex mode.  If that's the case then so be it - I'm only reporting
-> what I did and what effect it had on the card.
-
-No, you're reporting which effect it had on the SWITCH. The switch
-detected that autonegotiation failed, so it picked half duplex mode.
-Card full duplex, switch half duplex, recipe for disaster.
-
-> FYI, turning off autonegotiation was the only way I had of forcing the
-> card's speed.  If autoneg was left on the "speed 10" and "speed 100" options
-> made no difference - the card would always configure for 1000 Mbps.
-
-Correct. If you want to influence autonegotiation, you need to do
-something like:
-
-ethtool -s eth1 advertise 0x00F
-
-This allows 10Mbps and 100Mbps with half or full duplex, but nothing
-faster.
-
-> Furthermore, in order to attain 1000 Mbps it was necessary to turn autoneg
-> on - with it off, "speed 1000" would result in 100 Mbps only.  However, I
-> seem to recall reading somewhere that 1000 Mbps required autoneg so I'm not
-> all that surprised with that observation.
-
-That is correct.
-
-I can recommend man ethtool.
-
-
-/Benny
-
+So, I think the current v3 is still the best solution.
