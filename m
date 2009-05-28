@@ -1,156 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756850AbZE1XIe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753092AbZE1XPp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756850AbZE1XIe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 19:08:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754430AbZE1XDX
+	id S1753092AbZE1XPp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 19:15:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751514AbZE1XPi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 19:03:23 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:32869 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753369AbZE1XCW (ORCPT
+	Thu, 28 May 2009 19:15:38 -0400
+Received: from mx-out2.daemonmail.net ([216.104.160.39]:41573 "EHLO
+	mx-out2.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751109AbZE1XPh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 19:02:22 -0400
-From: "Eric W. Biederman" <ebiederm@xmission.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Cc: <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>,
-       Cornelia Huck <cornelia.huck@de.ibm.com>,
-       <linux-fsdevel@vger.kernel.org>, Kay Sievers <kay.sievers@vrfy.org>,
-       Greg KH <greg@kroah.com>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Eric W. Biederman" <ebiederm@aristanetworks.com>
-Date: Thu, 28 May 2009 16:00:51 -0700
-Message-Id: <1243551665-23596-10-git-send-email-ebiederm@xmission.com>
-X-Mailer: git-send-email 1.6.3.1.54.g99dd.dirty
-In-Reply-To: <m1zlcwltri.fsf_-_@fess.ebiederm.org>
-References: <m1zlcwltri.fsf_-_@fess.ebiederm.org>
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Rcpt-To: akpm@linux-foundation.org, gregkh@suse.de, linux-kernel@vger.kernel.org, tj@kernel.org, cornelia.huck@de.ibm.com, linux-fsdevel@vger.kernel.org, kay.sievers@vrfy.org, greg@kroah.com, ebiederm@xmission.com, ebiederm@aristanetworks.com
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Andrew Morton <akpm@linux-foundation.org>, Greg Kroah-Hartman
-	<gregkh@suse.de>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  1.5 XMNoVowels Alpha-numberic number with no vowels
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 T_TooManySym_01 4+ unique symbols in subject
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
-Subject: [PATCH 10/24] sysfs: Fix locking and factor out sysfs_sd_setattr
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
+	Thu, 28 May 2009 19:15:37 -0400
+From: "Michael S. Zick" <lkml@morethan.org>
+Reply-To: lkml@morethan.org
+To: Pavel Machek <pavel@ucw.cz>
+Subject: [Futex RFC] was Re: [BUG FIX] Make x86_32 uni-processor Atomic ops, Atomic
+Date: Thu, 28 May 2009 18:15:34 -0500
+User-Agent: KMail/1.9.9
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Harald Welte <HaraldWelte@viatech.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
+References: <200905221139.26941.lkml@morethan.org> <20090528203022.GB1290@ucw.cz> <200905281555.00245.lkml@morethan.org>
+In-Reply-To: <200905281555.00245.lkml@morethan.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200905281815.36728.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Eric W. Biederman <ebiederm@xmission.com>
+On Thu May 28 2009, Michael S. Zick wrote:
+> On Thu May 28 2009, Pavel Machek wrote:
+> > Hi!
+> > 
+> > > > @hpa - I still like your suggestion that it is only one (or a few)
+> > > > uses of atomic ops that is incorrect and in general atomic ops
+> > > > should compile away on uni-processor.
+> > > > 
+> > > 
+> > > Actually, the more I think about it the more I suspect there is a race
+> > > condition either in the chip set or in any VIA-specific drivers (if
+> > > there are any.)  Putting LOCKs in random places will slow the CPU down
+> > > significantly, so it might resolve the race condition without actually
+> > > solving the problem.
+> > 
+> > Which you can verify; replace lock with something slow (pushad,
+> > popad)? And see what happens.
+> > 
+> > (And if it never ever triggers on hp2133, you have strong clue that it
+> > may not be cpu-related, but bios-related or chipset related or something).
+> > 
+> > Some time ago I was trying to debug misterious hangs on some
+> > via/fic machines. 
+> > 
+> > We never figured out what was wrong, but we discovered many other bios
+> > bugs, and those were not being fixed; so debugging was
+> > hard/impossible. Unfortunately I no longer have access to that hw.
+> > 
+> 
+> Then I am not losing my mind here - *it is* a difficult problem.  ;)
+> 
+> > hp2133 did _not_ have that problem.
+> >
+> 
+> Today's build has been playing me music for over 8 hours on the
+> HP-2133 (C7M-CN896) but can't get past a couple of hours on the
+> (fic) Everex Cloudbook (C7M-CX700).
+> 
+> Also, the distro on the Cloudbook is using pulse-audio - the
+> distro on the HP is not.  So I am reviewing the recent bug
+> fixes to kernel/futex for something over-looked.  ;)
+> May be a wild goose chase, but I think pulse-audio uses futexes.
+> 
 
-Cleanly separate the work that is specific to setting the
-attributes of a sysfs_dirent from what is needed to update
-the attributes of a vfs inode.
+Please, somebody apply an experienced eye-ball to this;
+It does seem to make a difference, but tests have not run
+for very long yet.
 
-Additionally grab the sysfs_mutex to keep any nasties from
-surprising us when updating the sysfs_dirent.
+diff --git a/arch/x86/include/asm/futex.h b/arch/x86/include/asm/futex.h
+index 1f11ce4..da3c801 100644
+--- a/arch/x86/include/asm/futex.h
++++ b/arch/x86/include/asm/futex.h
+@@ -19,7 +19,8 @@
+                     "\t.previous\n"                            \
+                     _ASM_EXTABLE(1b, 3b)                       \
+                     : "=r" (oldval), "=r" (ret), "+m" (*uaddr) \
+-                    : "i" (-EFAULT), "0" (oparg), "1" (0))
++                    : "i" (-EFAULT), "0" (oparg), "1" (0)      \
++                    : "memory")
 
-Acked-by: Tejun Heo <tj@kernel.org>
-Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
----
- fs/sysfs/inode.c |   52 ++++++++++++++++++++++++++++++----------------------
- fs/sysfs/sysfs.h |    1 +
- 2 files changed, 31 insertions(+), 22 deletions(-)
+ #define __futex_atomic_op2(insn, ret, oldval, uaddr, oparg)    \
+        asm volatile("1:\tmovl  %2, %0\n"                       \
+@@ -35,7 +36,8 @@
+                     _ASM_EXTABLE(2b, 4b)                       \
+                     : "=&a" (oldval), "=&r" (ret),             \
+                       "+m" (*uaddr), "=&r" (tem)               \
+-                    : "r" (oparg), "i" (-EFAULT), "1" (0))
++                    : "r" (oparg), "i" (-EFAULT), "1" (0)      \
++                    : "memory")
 
-diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
-index 5020a1d..dd154cb 100644
---- a/fs/sysfs/inode.c
-+++ b/fs/sysfs/inode.c
-@@ -42,33 +42,12 @@ int __init sysfs_inode_init(void)
- 	return bdi_init(&sysfs_backing_dev_info);
- }
- 
--int sysfs_setattr(struct dentry * dentry, struct iattr * iattr)
-+int sysfs_sd_setattr(struct sysfs_dirent *sd, struct iattr * iattr)
- {
--	struct inode * inode = dentry->d_inode;
--	struct sysfs_dirent * sd = dentry->d_fsdata;
- 	struct iattr * sd_iattr;
- 	unsigned int ia_valid = iattr->ia_valid;
--	int error;
--
--	if (!sd)
--		return -EINVAL;
- 
- 	sd_iattr = sd->s_iattr;
--
--	error = inode_change_ok(inode, iattr);
--	if (error)
--		return error;
--
--	iattr->ia_valid &= ~ATTR_SIZE; /* ignore size changes */
--	if (iattr->ia_valid & ATTR_MODE) {
--		if (!in_group_p(inode->i_gid) && !capable(CAP_FSETID))
--			iattr->ia_mode &= ~S_ISGID;
--	}
--
--	error = inode_setattr(inode, iattr);
--	if (error)
--		return error;
--
- 	if (!sd_iattr && (ia_valid & ~ATTR_MODE)) {
- 		/* setting attributes for the first time, allocate now */
- 		sd_iattr = kzalloc(sizeof(struct iattr), GFP_KERNEL);
-@@ -103,6 +82,35 @@ int sysfs_setattr(struct dentry * dentry, struct iattr * iattr)
- 		sd_iattr->ia_ctime = iattr->ia_ctime;
- 	if (ia_valid & ATTR_MODE)
- 		sd_iattr->ia_mode = iattr->ia_mode;
-+	return 0;
-+}
-+
-+int sysfs_setattr(struct dentry * dentry, struct iattr * iattr)
-+{
-+	struct inode * inode = dentry->d_inode;
-+	struct sysfs_dirent * sd = dentry->d_fsdata;
-+	int error;
-+
-+	if (!sd)
-+		return -EINVAL;
-+
-+	error = inode_change_ok(inode, iattr);
-+	if (error)
-+		return error;
-+
-+	iattr->ia_valid &= ~ATTR_SIZE; /* ignore size changes */
-+	if (iattr->ia_valid & ATTR_MODE) {
-+		if (!in_group_p(inode->i_gid) && !capable(CAP_FSETID))
-+			iattr->ia_mode &= ~S_ISGID;
-+	}
-+
-+	error = inode_setattr(inode, iattr);
-+	if (error)
-+		return error;
-+
-+	mutex_lock(&sysfs_mutex);
-+	error = sysfs_sd_setattr(sd, iattr);
-+	mutex_unlock(&sysfs_mutex);
- 
- 	return error;
- }
-diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
-index abf05f4..043bb13 100644
---- a/fs/sysfs/sysfs.h
-+++ b/fs/sysfs/sysfs.h
-@@ -146,6 +146,7 @@ static inline void __sysfs_put(struct sysfs_dirent *sd)
-  */
- struct inode *sysfs_get_inode(struct sysfs_dirent *sd);
- void sysfs_delete_inode(struct inode *inode);
-+int sysfs_sd_setattr(struct sysfs_dirent *sd, struct iattr *iattr);
- int sysfs_setattr(struct dentry *dentry, struct iattr *iattr);
- int sysfs_hash_and_remove(struct sysfs_dirent *dir_sd, const char *name);
- int sysfs_inode_init(void);
--- 
-1.6.3.1.54.g99dd.dirty
+
+Mike
+> Thanks for the other hints.
+> 
+> Mike 
+> > Try forcing maximum throttling, then move mouse for like five
+> > seconds. If kbc dies, you have same buggy bios, and probably are
+> > debugging same problem....
+> > 								Pavel
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> 
+
 
