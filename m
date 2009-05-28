@@ -1,94 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763940AbZE1StR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763745AbZE1Su0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763940AbZE1StR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 14:49:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758592AbZE1StK
+	id S1763745AbZE1Su0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 14:50:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758592AbZE1SuP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 14:49:10 -0400
-Received: from main.gmane.org ([80.91.229.2]:46492 "EHLO ciao.gmane.org"
+	Thu, 28 May 2009 14:50:15 -0400
+Received: from r00tworld.com ([212.85.137.21]:42256 "EHLO r00tworld.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758310AbZE1StJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 14:49:09 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Florian Mickler <florian@mickler.org>
-Subject: Re: regression i915 / video driver
-Date: Thu, 28 May 2009 20:48:44 +0200
-Message-ID: <20090528204844.58bf12d6@schatten>
-References: <609771.46526.qm@web112217.mail.gq1.yahoo.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-Cc: intel-gfx@lists.freedesktop.org
-X-Gmane-NNTP-Posting-Host: f053210127.adsl.alicedsl.de
-In-Reply-To: <609771.46526.qm@web112217.mail.gq1.yahoo.com>
-X-Newsreader: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-pc-linux-gnu)
+	id S1754648AbZE1SuO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 14:50:14 -0400
+From: pageexec@freemail.hu
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>
+Date: Thu, 28 May 2009 20:48:54 +0200
+MIME-Version: 1.0
+Subject: Re: [patch 0/5] Support for sanitization flag in low-level page allocator
+Reply-to: pageexec@freemail.hu
+CC: Rik van Riel <riel@redhat.com>, "Larry H." <research@subreption.com>,
+       linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>,
+       linux-mm@kvack.org, Ingo Molnar <mingo@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Message-ID: <4A1EDC96.2322.EEEC13E@pageexec.freemail.hu>
+In-reply-to: <20090528090836.GB6715@elte.hu>
+References: <20090520183045.GB10547@oblivion.subreption.com>, <20090528072702.796622b6@lxorguk.ukuu.org.uk>, <20090528090836.GB6715@elte.hu>
+X-mailer: Pegasus Mail for Windows (4.50 PB1)
+Content-type: text/plain; charset=US-ASCII
+Content-transfer-encoding: 7BIT
+Content-description: Mail message body
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.12 (r00tworld.com [212.85.137.21]); Thu, 28 May 2009 20:48:32 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 May 2009 09:44:23 -0700 (PDT)
-We La <w.landgraf@yahoo.com> wrote:
+On 28 May 2009 at 11:08, Ingo Molnar wrote:
 
 > 
-> I inform that the problem with the i915 driver isnt yet resolved !!
+> * Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 > 
-> On the last kernel git's, at least on my ms wind 100 laptop, the
-> video driver don't load correctly, and correspondingly the i915
-> driver don't load at all, as explained before.   With exactly the
-> same system but booting with 2.6.29.4 (and all previous 2.6.29.X) the
-> problem dont exist and everything works correctly.
+> > > > As for being swapped out - I do not believe that kernel stacks can 
+> > > > ever be swapped out in Linux.
+> > > 
+> > > yes, i referred to that as an undesirable option - because it slows 
+> > > down pthread_create() quite substantially.
+> > > 
+> > > This needs before/after pthread_create() benchmark results.
+> > 
+> > kernel stacks can end up places you don't expect on hypervisor 
+> > based systems.
+> > 
+> > In most respects the benchmarks are pretty irrelevant - wiping 
+> > stuff has a performance cost, but its the sort of thing you only 
+> > want to do when you have a security requirement that needs it. At 
+> > that point the performance is secondary.
 > 
-> Werner LAndgraf
+> Bechmarks, of course, are not irrelevant _at all_.
 > 
-> SYS
-> 
-Hi!
+> So i'm asking for this "clear kernel stacks on freeing" aspect to be 
+> benchmarked thoroughly, as i expect it to have a negative impact - 
+> otherwise i'm NAK-ing this. Please Cc: me to measurements results.
 
-Do you have filled a bugzilla entry or have send previously messages to
-this list?
+last year while developing/debugging something else i also ran some kernel
+compilation tests and managed to dig out this one for you ('all' refers to
+all of PaX):
 
-It would be nice to include references to both such actions if they
-took place. As there are quite a number of messages coming through this
-list, it is likely, that your messages didn't get noticed before. 
+------------------------------------------------------------------------------------------
+make -j4 2.6.24-rc7-i386-pax compiling 2.6.24-rc7-i386-pax (all with SANITIZE, no PARAVIRT)
+565.63user 68.52system 5:25.52elapsed 194%CPU (0avgtext+0avgdata 0maxresident)k
+0inputs+0outputs (1major+12486066minor)pagefaults 0swaps
 
-[i searched through lkml for your mailadress and found some messages,
-which took me some time, but consider it a favour]:
- http://lkml.org/lkml/2009/5/1/215
- http://lkml.org/lkml/2009/4/30/731
+565.10user 68.28system 5:24.72elapsed 195%CPU (0avgtext+0avgdata 0maxresident)k
+0inputs+0outputs (0major+12485742minor)pagefaults 0swaps
+------------------------------------------------------------------------------------------
+make -j4 2.6.24-rc5-i386-pax compiling 2.6.24-rc5-i386-pax (all but SANITIZE, no PARAVIRT)
+559.74user 50.29system 5:12.79elapsed 195%CPU (0avgtext+0avgdata 0maxresident)k
+0inputs+0outputs (0major+12397482minor)pagefaults 0swaps
 
+561.41user 51.91system 5:14.55elapsed 194%CPU (0avgtext+0avgdata 0maxresident)k
+0inputs+0outputs (0major+12396877minor)pagefaults 0swaps
+------------------------------------------------------------------------------------------
 
-Please file a bug at http://bugzilla.kernel.org/ and classify it as
-a regression from 2.6.29. Also put all information available to you
-about this bug in there. 
-This makes it easy to reference it. 
-
-The second step would be to assume that nobody noticed your messages
-before and thus include all relevant information in each message,
-making it easy for somebody reading it to understand what it is about.
-(if you just have to quote a bugzilla bug number, of course, that's
-easy)
-
-The third step would probably be, to find someone to talk to. An email
-about i915 is likely to get more attention on
-intel-gfx@lists.freedesktop.org 
-
-And it would be kind of you to read
-http://www.kernel.org/pub/linux/docs/lkml/ . (spcifically the
-mailinglist 'rules'... )
-
-out of respect to others, so that they (I?) don't have to do
-unnecessary work. 
-
-Especially:
-1. If you are replying to a specific mail, plz include the relevant part
-of it you are replying to and 
-2. use your mail-clients reply-to-all button, so that the mail get's
-linked to the mail you are replying to. 
-
-Sincerely,
-Florian
-
-
+for the kernel times the overhead is about 68s vs. 51s, or 40% in this particular case.
+while i don't know where this workload (the kernel part) falls in the spectrum of real
+life workloads, it definitely shows that if you're kernel bound, you should think twice
+before using this in production (and there's the real-time latency issue too).
 
