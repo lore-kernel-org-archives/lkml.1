@@ -1,82 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757996AbZE1PYW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760864AbZE1P2b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757996AbZE1PYW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 11:24:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756667AbZE1PYG
+	id S1760864AbZE1P2b (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 11:28:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755514AbZE1P2Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 11:24:06 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:39188 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1758782AbZE1PYF (ORCPT
+	Thu, 28 May 2009 11:28:24 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:27666 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754966AbZE1P2X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 11:24:05 -0400
-Date: Thu, 28 May 2009 11:24:05 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-cc: Hannes Reinecke <hare@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
-       SCSI development list <linux-scsi@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Tejun Heo <tj@kernel.org>, Cornelia Huck <cornelia.huck@de.ibm.com>,
-       <linux-fsdevel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@aristanetworks.com>
-Subject: Re: [PATCH 25/20] sysfs: Only support removing emtpy sysfs  directories.
-In-Reply-To: <1243462960.6067.87.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.44L0.0905281105310.3037-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 28 May 2009 11:28:23 -0400
+Subject: Re: [PATCH 1/3] mtd/maps: uclinux: allow systems to override map
+ addr/size
+From: Artem Bityutskiy <dedekind@infradead.org>
+Reply-To: dedekind@infradead.org
+To: Mike Frysinger <vapier@gentoo.org>
+Cc: linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
+       Paul Mundt <lethal@linux-sh.org>, linux-mtd@lists.infradead.org,
+       uclinux-dev@uclinux.org, Greg Ungerer <gerg@uclinux.org>
+In-Reply-To: <1243380798-10089-1-git-send-email-vapier@gentoo.org>
+References: <20090526231902.GA6295@linux-sh.org>
+	 <1243380798-10089-1-git-send-email-vapier@gentoo.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 28 May 2009 18:26:27 +0300
+Message-Id: <1243524387.11172.64.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 28 May 2009 15:26:36.0711 (UTC) FILETIME=[B0995B70:01C9DFA8]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 May 2009, James Bottomley wrote:
+On Tue, 2009-05-26 at 19:33 -0400, Mike Frysinger wrote:
+> Due to a processor anomaly (05000263 to be exact), most Blackfin parts
+> cannot keep the embedded filesystem image directly after the kernel in
+> RAM.  Instead, the filesystem needs to be relocated to the end of memory.
+> As such, we need to tweak the map addr/size during boot for Blackfin
+> systems.  This can be done in any early arch/board init code.
+> 
+> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+> CC: Paul Mundt <lethal@linux-sh.org>
+> CC: Greg Ungerer <gerg@uclinux.org>
+> CC: uclinux-dev@uclinux.org
+> CC: linux-mtd@lists.infradead.org
+> ---
+>  drivers/mtd/maps/uclinux.c |   10 ++++++----
+>  1 files changed, 6 insertions(+), 4 deletions(-)
 
-> Right, and I think reap_ref can be seconded to count underlying device
-> visibility.
+I've added your patches to my tree.
 
-Exactly.  It should count the number of underlying devices that have 
-not yet been removed from visibility (this may include some which still 
-have to become visible), plus one if we want to keep the target hanging 
-around for a while with no visible children (while scanning it, for 
-example).
-
->  However, the piece that's missing, is the fact that all of
-> this has to be tied into the host state.  If the host is running, you
-> can't remove the target from visibility even if all its children are
-> invisible because it might get another visible child added.
-
-Are you sure about that?  It's not obvious at all to me.
-
-For example, suppose during scanning it turns out there are no LUNs at
-a particular target address.  Why should the empty target be retained?  
-You'd end up with unusable targets at all possible bus addresses.
-
-Besides, if a target is removed from visibility and then another child
-is added, the answer is simply to create a new target structure.  
-There's already code in scsi_alloc_target() to do this.
-
->  once it goes
-> into the cancel or del states, it can't acquire new children, so then
-> it's safe to make a target with no visible children invisible.
-
-If you grant my point above, targets don't need to be tied into the
-host state.  They can be removed from visibility whenever the reap_ref
-counter goes to 0.  This will happen naturally while the host is in 
-the CANCEL state, thanks to scsi_forget_host().
-
-There's another point to consider.  If you do accept my argument that 
-empty targets can be removed from visibility regardless of the host's 
-state, then this removal races with addition of a new child.  Since 
-removal involves calling device_del(), it can't be protected by the 
-host lock.  Instead we'd have to use a mutex to protect both target 
-addition and target removal.
-
-Since the host's scan_mutex already protects target addition, extending 
-its scope to encompass target removal (and perhaps sdev removal too) 
-seems natural.  Do you agree?
-
-Alan Stern
+-- 
+Best regards,
+Artem Bityutskiy (Битюцкий Артём)
 
