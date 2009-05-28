@@ -1,113 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763290AbZE1PFg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763283AbZE1PFt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763290AbZE1PFg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 11:05:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760610AbZE1PFE
+	id S1763283AbZE1PFt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 11:05:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761298AbZE1PFG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 11:05:04 -0400
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:60098 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751760AbZE1PFB (ORCPT
+	Thu, 28 May 2009 11:05:06 -0400
+Received: from mtagate1.de.ibm.com ([195.212.17.161]:56619 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756149AbZE1PFD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 11:05:01 -0400
-Message-Id: <20090528150502.044210490@de.ibm.com>
+	Thu, 28 May 2009 11:05:03 -0400
+Message-Id: <20090528150502.305840931@de.ibm.com>
 References: <20090528150447.152019714@de.ibm.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 28 May 2009 17:04:48 +0200
+Date: Thu, 28 May 2009 17:04:49 +0200
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: Rob van der Heij <rvdheij@gmail.com>,
        Heiko Carstens <heiko.carstens@de.ibm.com>, Ingo Molnar <mingo@elte.hu>,
        Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
        Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 1/2] idle profile hits with NOHZ
-Content-Disposition: inline; filename=profile-idle-tick.diff
+Subject: [patch 2/2] keep on ticking if oprofile is active
+Content-Disposition: inline; filename=profile-stop-nohz.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 
-On a NOHZ system the generic clock events code reports a maximum
-of 1 tick to the kernel profiler. If the system slept for more than
-a single tick or has not been woken by a timer interrupt the number
-of ticks reported will be incorrect. This skewes the percentages in
-the profile. A good place to report the profile ticks is in
-tick_nohz_restart_sched_tick. We calculate the number of ticks for
-the cpu accounting anyway. The only obstacle is that we need an
-instruction address for the profile ticks. In order to get one
-extend the tick_sched structure by an idle_pc field and set it in
-tick_nohz_stop_idle which is called from tick_check_idle.
-Note: this does not solve the same problem in oprofile.
+On a NOHZ system with oprofile enabled the timer tick should not be
+stopped when a cpu goes idle. Oprofile needs the pt_regs structure
+of the interrupt and allocates memory in the ring buffer for each
+sample. Current a maximum of 1 tick is accounted with oprofile if a
+cpu sleeps for a longer period of time. This does bad things to the
+percentages in the oprofile output. To postpone the oprofile tick to
+tick_nohz_restart_sched_tick analog to the in kernel profiler is not
+possible as there is no pt_regs structure in the context the
+tick_nohz_restart_sched_tick function is called and it is not a good
+idea to create hundreds of samples at once.
 
 Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 ---
 
- include/linux/tick.h     |    1 +
- kernel/time/tick-sched.c |   13 ++++++++-----
- 2 files changed, 9 insertions(+), 5 deletions(-)
+ drivers/oprofile/oprof.c |    3 +++
+ include/linux/tick.h     |    4 ++++
+ kernel/time/tick-sched.c |   26 +++++++++++++++++++++++++-
+ 3 files changed, 32 insertions(+), 1 deletion(-)
 
+Index: quilt-2.6/drivers/oprofile/oprof.c
+===================================================================
+--- quilt-2.6.orig/drivers/oprofile/oprof.c
++++ quilt-2.6/drivers/oprofile/oprof.c
+@@ -12,6 +12,7 @@
+ #include <linux/init.h>
+ #include <linux/oprofile.h>
+ #include <linux/moduleparam.h>
++#include <linux/tick.h>
+ #include <asm/mutex.h>
+ 
+ #include "oprof.h"
+@@ -103,6 +104,7 @@ int oprofile_start(void)
+ 	if (oprofile_started)
+ 		goto out;
+ 
++	tick_nohz_disable();
+ 	oprofile_reset_stats();
+ 
+ 	if ((err = oprofile_ops.start()))
+@@ -123,6 +125,7 @@ void oprofile_stop(void)
+ 		goto out;
+ 	oprofile_ops.stop();
+ 	oprofile_started = 0;
++	tick_nohz_enable();
+ 	/* wake up the daemon to read what remains */
+ 	wake_up_buffer_waiter();
+ out:
 Index: quilt-2.6/include/linux/tick.h
 ===================================================================
 --- quilt-2.6.orig/include/linux/tick.h
 +++ quilt-2.6/include/linux/tick.h
-@@ -64,6 +64,7 @@ struct tick_sched {
- 	unsigned long			last_jiffies;
- 	unsigned long			next_jiffies;
- 	ktime_t				idle_expires;
-+	unsigned long			idle_pc;
- };
+@@ -117,6 +117,8 @@ extern void tick_nohz_stop_sched_tick(in
+ extern void tick_nohz_restart_sched_tick(void);
+ extern ktime_t tick_nohz_get_sleep_length(void);
+ extern u64 get_cpu_idle_time_us(int cpu, u64 *last_update_time);
++extern void tick_nohz_enable(void);
++extern void tick_nohz_disable(void);
+ # else
+ static inline void tick_nohz_stop_sched_tick(int inidle) { }
+ static inline void tick_nohz_restart_sched_tick(void) { }
+@@ -127,6 +129,8 @@ static inline ktime_t tick_nohz_get_slee
+ 	return len;
+ }
+ static inline u64 get_cpu_idle_time_us(int cpu, u64 *unused) { return -1; }
++static inline void tick_nohz_enable(void) { }
++static inline void tick_nohz_disable(void) { }
+ # endif /* !NO_HZ */
  
- extern void __init tick_init(void);
+ #endif
 Index: quilt-2.6/kernel/time/tick-sched.c
 ===================================================================
 --- quilt-2.6.orig/kernel/time/tick-sched.c
 +++ quilt-2.6/kernel/time/tick-sched.c
-@@ -166,6 +166,7 @@ static void tick_nohz_stop_idle(int cpu)
- 		ts->idle_lastupdate = now;
- 		ts->idle_sleeptime = ktime_add(ts->idle_sleeptime, delta);
- 		ts->idle_active = 0;
-+		ts->idle_pc = profile_pc(get_irq_regs());
+@@ -124,6 +124,29 @@ static int __init setup_tick_nohz(char *
  
- 		sched_clock_idle_wakeup_event(0);
- 	}
-@@ -419,9 +420,7 @@ void tick_nohz_restart_sched_tick(void)
- {
- 	int cpu = smp_processor_id();
- 	struct tick_sched *ts = &per_cpu(tick_cpu_sched, cpu);
--#ifndef CONFIG_VIRT_CPU_ACCOUNTING
- 	unsigned long ticks;
--#endif
- 	ktime_t now;
+ __setup("nohz=", setup_tick_nohz);
  
- 	local_irq_disable();
-@@ -443,19 +442,23 @@ void tick_nohz_restart_sched_tick(void)
- 	tick_do_update_jiffies64(now);
- 	cpumask_clear_cpu(cpu, nohz_cpu_mask);
++/*
++ * NO HZ currently disabled ?
++ */
++static atomic_t tick_nohz_disable_counter = ATOMIC_INIT(0);
++
++void tick_nohz_enable(void)
++{
++	atomic_dec(&tick_nohz_disable_counter);
++}
++EXPORT_SYMBOL_GPL(tick_nohz_enable);
++
++static void __tick_nohz_disable(void *dummy)
++{
++}
++
++void tick_nohz_disable(void)
++{
++	if (atomic_inc_return(&tick_nohz_disable_counter) == 1)
++		/* Wake up all cpus to make them start ticking. */
++		smp_call_function(__tick_nohz_disable, NULL, 0);
++}
++EXPORT_SYMBOL_GPL(tick_nohz_disable);
++
+ /**
+  * tick_nohz_update_jiffies - update jiffies when idle was interrupted
+  *
+@@ -271,7 +294,8 @@ void tick_nohz_stop_sched_tick(int inidl
+ 	next_jiffies = get_next_timer_interrupt(last_jiffies);
+ 	delta_jiffies = next_jiffies - last_jiffies;
  
-+	ticks = jiffies - ts->idle_jiffies;
- #ifndef CONFIG_VIRT_CPU_ACCOUNTING
+-	if (rcu_needs_cpu(cpu) || printk_needs_cpu(cpu))
++	if (rcu_needs_cpu(cpu) || printk_needs_cpu(cpu) ||
++	    atomic_read(&tick_nohz_disable_counter) > 0)
+ 		delta_jiffies = 1;
  	/*
- 	 * We stopped the tick in idle. Update process times would miss the
- 	 * time we slept as update_process_times does only a 1 tick
- 	 * accounting. Enforce that this is accounted to idle !
--	 */
--	ticks = jiffies - ts->idle_jiffies;
--	/*
-+	 *
- 	 * We might be one off. Do not randomly account a huge number of ticks!
- 	 */
- 	if (ticks && ticks < LONG_MAX)
- 		account_idle_ticks(ticks);
- #endif
-+#ifdef CONFIG_PROFILING
-+	/* Create profile hits for all ticks we slept in idle. */
-+	if (ticks && ticks < LONG_MAX)
-+		profile_hits(CPU_PROFILING, (void *) ts->idle_pc, ticks);
-+#endif
- 
- 	touch_softlockup_watchdog();
- 	/*
+ 	 * Do not stop the tick, if we are only one off
 
 -- 
 blue skies,
