@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755630AbZE1XGb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755999AbZE1XGo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755630AbZE1XGb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 19:06:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754069AbZE1XC6
+	id S1755999AbZE1XGo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 19:06:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754289AbZE1XDB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 19:02:58 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:48892 "EHLO
+	Thu, 28 May 2009 19:03:01 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:48886 "EHLO
 	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753347AbZE1XCY (ORCPT
+	with ESMTP id S1753074AbZE1XCY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 28 May 2009 19:02:24 -0400
 From: "Eric W. Biederman" <ebiederm@xmission.com>
@@ -18,470 +18,395 @@ Cc: <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>,
        <linux-fsdevel@vger.kernel.org>, Kay Sievers <kay.sievers@vrfy.org>,
        Greg KH <greg@kroah.com>, "Eric W. Biederman" <ebiederm@xmission.com>,
        "Eric W. Biederman" <ebiederm@aristanetworks.com>
-Date: Thu, 28 May 2009 16:00:56 -0700
-Message-Id: <1243551665-23596-15-git-send-email-ebiederm@xmission.com>
+Date: Thu, 28 May 2009 16:00:57 -0700
+Message-Id: <1243551665-23596-16-git-send-email-ebiederm@xmission.com>
 X-Mailer: git-send-email 1.6.3.1.54.g99dd.dirty
 In-Reply-To: <m1zlcwltri.fsf_-_@fess.ebiederm.org>
 References: <m1zlcwltri.fsf_-_@fess.ebiederm.org>
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
 X-SA-Exim-Connect-IP: 76.21.114.89
 X-SA-Exim-Rcpt-To: akpm@linux-foundation.org, gregkh@suse.de, linux-kernel@vger.kernel.org, tj@kernel.org, cornelia.huck@de.ibm.com, linux-fsdevel@vger.kernel.org, kay.sievers@vrfy.org, greg@kroah.com, ebiederm@xmission.com, ebiederm@aristanetworks.com
 X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
 X-Spam-Combo: ;Andrew Morton <akpm@linux-foundation.org>, Greg Kroah-Hartman
 	<gregkh@suse.de>
 X-Spam-Relay-Country: 
 X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
 	*  1.5 XMNoVowels Alpha-numberic number with no vowels
 	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	*  0.0 BAYES_50 BODY: Bayesian spam probability is 40 to 60%
-	*      [score: 0.4759]
+	* -1.1 BAYES_05 BODY: Bayesian spam probability is 1 to 5%
+	*      [score: 0.0390]
 	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.4 FVGT_m_MULTI_ODD Contains multiple odd letter combinations
-	*  0.0 T_TooManySym_01 4+ unique symbols in subject
+	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
 	*  0.0 XM_SPF_Neutral SPF-Neutral
 	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
-Subject: [PATCH 15/24] sysfs: Kill sysfs_addrm_start and sysfs_addrm_finish
+Subject: [PATCH 16/24] sysfs: Propagate renames to the vfs on demand
 X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
+X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Eric W. Biederman <ebiederm@xmission.com>
 
-With lazy inode updates and dentry operations bringing everything
-into sync on demand there is no longer any need to immediately
-update the vfs or grab i_mutex to protect those updates as we
-make changes to sysfs.
+By teaching sysfs_revalidate to hide a dentry for
+a sysfs_dirent if the sysfs_dirent has been renamed,
+and by teaching sysfs_lookup to return the original
+dentry if the sysfs dirent has been renamed.  I can
+show the results of renames correctly without having to
+update the dcache during the directory rename.
 
-So stop updating the vfs inodes and move what remains of
-sysfs_addrm_start and sysfs_addrm_finsih (just barely more than taking
-the sysfs_mutex) into sysfs_add_one and sysfs_remove_one.
+This massively simplifies the rename logic allowing a lot
+of weird sysfs special cases to be removed along with
+a lot of now unnecesary helper code.
 
 Acked-by: Tejun Heo <tj@kernel.org>
 Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
 ---
- fs/sysfs/dir.c     |  188 +++++++---------------------------------------------
- fs/sysfs/file.c    |    6 +--
- fs/sysfs/inode.c   |   16 ++---
- fs/sysfs/symlink.c |    6 +--
- fs/sysfs/sysfs.h   |   17 +----
- 5 files changed, 32 insertions(+), 201 deletions(-)
+ fs/namei.c            |   22 -------
+ fs/sysfs/dir.c        |  156 ++++++++++---------------------------------------
+ fs/sysfs/inode.c      |   12 ----
+ fs/sysfs/sysfs.h      |    1 -
+ include/linux/namei.h |    1 -
+ 5 files changed, 32 insertions(+), 160 deletions(-)
 
+diff --git a/fs/namei.c b/fs/namei.c
+index 78f253c..69f559a 100644
+--- a/fs/namei.c
++++ b/fs/namei.c
+@@ -1260,28 +1260,6 @@ struct dentry *lookup_one_len(const char *name, struct dentry *base, int len)
+ 	return __lookup_hash(&this, base, NULL);
+ }
+ 
+-/**
+- * lookup_one_noperm - bad hack for sysfs
+- * @name:	pathname component to lookup
+- * @base:	base directory to lookup from
+- *
+- * This is a variant of lookup_one_len that doesn't perform any permission
+- * checks.   It's a horrible hack to work around the braindead sysfs
+- * architecture and should not be used anywhere else.
+- *
+- * DON'T USE THIS FUNCTION EVER, thanks.
+- */
+-struct dentry *lookup_one_noperm(const char *name, struct dentry *base)
+-{
+-	int err;
+-	struct qstr this;
+-
+-	err = __lookup_one_len(name, &this, base, strlen(name));
+-	if (err)
+-		return ERR_PTR(err);
+-	return __lookup_hash(&this, base, NULL);
+-}
+-
+ int user_path_at(int dfd, const char __user *name, unsigned flags,
+ 		 struct path *path)
+ {
 diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-index b75c938..0cf3fad 100644
+index 0cf3fad..efe8a01 100644
 --- a/fs/sysfs/dir.c
 +++ b/fs/sysfs/dir.c
-@@ -382,62 +382,6 @@ struct sysfs_dirent *sysfs_new_dirent(const char *name, umode_t mode, int type)
- 	return NULL;
+@@ -24,7 +24,6 @@
+ #include "sysfs.h"
+ 
+ DEFINE_MUTEX(sysfs_mutex);
+-DEFINE_MUTEX(sysfs_rename_mutex);
+ DEFINE_SPINLOCK(sysfs_assoc_lock);
+ 
+ static DEFINE_SPINLOCK(sysfs_ino_lock);
+@@ -84,46 +83,6 @@ static void sysfs_unlink_sibling(struct sysfs_dirent *sd)
  }
  
--static int sysfs_ilookup_test(struct inode *inode, void *arg)
--{
--	struct sysfs_dirent *sd = arg;
--	return inode->i_ino == sd->s_ino;
--}
--
--/**
-- *	sysfs_addrm_start - prepare for sysfs_dirent add/remove
-- *	@acxt: pointer to sysfs_addrm_cxt to be used
-- *	@parent_sd: parent sysfs_dirent
+ /**
+- *	sysfs_get_dentry - get dentry for the given sysfs_dirent
+- *	@sd: sysfs_dirent of interest
 - *
-- *	This function is called when the caller is about to add or
-- *	remove sysfs_dirent under @parent_sd.  This function acquires
-- *	sysfs_mutex, grabs inode for @parent_sd if available and lock
-- *	i_mutex of it.  @acxt is used to keep and pass context to
-- *	other addrm functions.
+- *	Get dentry for @sd.  Dentry is looked up if currently not
+- *	present.  This function descends from the root looking up
+- *	dentry for each step.
 - *
 - *	LOCKING:
-- *	Kernel thread context (may sleep).  sysfs_mutex is locked on
-- *	return.  i_mutex of parent inode is locked on return if
-- *	available.
+- *	mutex_lock(sysfs_rename_mutex)
+- *
+- *	RETURNS:
+- *	Pointer to found dentry on success, ERR_PTR() value on error.
 - */
--void sysfs_addrm_start(struct sysfs_addrm_cxt *acxt,
--		       struct sysfs_dirent *parent_sd)
+-struct dentry *sysfs_get_dentry(struct sysfs_dirent *sd)
 -{
--	struct inode *inode;
+-	struct dentry *dentry = dget(sysfs_sb->s_root);
 -
--	memset(acxt, 0, sizeof(*acxt));
--	acxt->parent_sd = parent_sd;
+-	while (dentry->d_fsdata != sd) {
+-		struct sysfs_dirent *cur;
+-		struct dentry *parent;
 -
--	/* Lookup parent inode.  inode initialization is protected by
--	 * sysfs_mutex, so inode existence can be determined by
--	 * looking up inode while holding sysfs_mutex.
--	 */
--	mutex_lock(&sysfs_mutex);
+-		/* find the first ancestor which hasn't been looked up */
+-		cur = sd;
+-		while (cur->s_parent != dentry->d_fsdata)
+-			cur = cur->s_parent;
 -
--	inode = ilookup5(sysfs_sb, parent_sd->s_ino, sysfs_ilookup_test,
--			 parent_sd);
--	if (inode) {
--		WARN_ON(inode->i_state & I_NEW);
+-		/* look it up */
+-		parent = dentry;
+-		mutex_lock(&parent->d_inode->i_mutex);
+-		dentry = lookup_one_noperm(cur->s_name, parent);
+-		mutex_unlock(&parent->d_inode->i_mutex);
+-		dput(parent);
 -
--		/* parent inode available */
--		acxt->parent_inode = inode;
--
--		/* sysfs_mutex is below i_mutex in lock hierarchy.
--		 * First, trylock i_mutex.  If fails, unlock
--		 * sysfs_mutex and lock them in order.
--		 */
--		if (!mutex_trylock(&inode->i_mutex)) {
--			mutex_unlock(&sysfs_mutex);
--			mutex_lock(&inode->i_mutex);
--			mutex_lock(&sysfs_mutex);
--		}
+-		if (IS_ERR(dentry))
+-			break;
 -	}
--}
--
- /**
-  *	sysfs_pathname - return full path to sysfs dirent
-  *	@sd: sysfs_dirent whose path we want
-@@ -460,161 +404,83 @@ static char *sysfs_pathname(struct sysfs_dirent *sd, char *path)
- 
- /**
-  *	sysfs_add_one - add sysfs_dirent to parent
-- *	@acxt: addrm context to use
-+ *	@parent_sd: directory to add @sd into
-  *	@sd: sysfs_dirent to be added
-  *
-- *	Get @acxt->parent_sd and set sd->s_parent to it and increment
-+ *	Get @parent_sd and set sd->s_parent to it and increment
-  *	nlink of parent inode if @sd is a directory and link into the
-  *	children list of the parent.
-  *
-- *	This function should be called between calls to
-- *	sysfs_addrm_start() and sysfs_addrm_finish() and should be
-- *	passed the same @acxt as passed to sysfs_addrm_start().
-- *
-  *	LOCKING:
-- *	Determined by sysfs_addrm_start().
-+ *	Kernel thread context (may sleep).  Grabs sysfs_mutex.
-  *
-  *	RETURNS:
-  *	0 on success, -EEXIST if entry with the given name already
-  *	exists.
-  */
--int sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
-+int sysfs_add_one(struct sysfs_dirent *parent_sd, struct sysfs_dirent *sd)
- {
- 	struct iattr *ps_iattr;
- 
--	if (sysfs_find_dirent(acxt->parent_sd, sd->s_name)) {
--		char *path = kzalloc(PATH_MAX, GFP_KERNEL);
-+	mutex_lock(&sysfs_mutex);
-+	if (sysfs_find_dirent(parent_sd, sd->s_name)) {
-+		char *path;
-+		mutex_unlock(&sysfs_mutex);
-+
-+		path = kzalloc(PATH_MAX, GFP_KERNEL);
- 		WARN(1, KERN_WARNING
- 		     "sysfs: cannot create duplicate filename '%s'\n",
- 		     (path == NULL) ? sd->s_name :
--		     strcat(strcat(sysfs_pathname(acxt->parent_sd, path), "/"),
-+		     strcat(strcat(sysfs_pathname(parent_sd, path), "/"),
- 		            sd->s_name));
- 		kfree(path);
- 		return -EEXIST;
- 	}
- 
--	sd->s_parent = sysfs_get(acxt->parent_sd);
--
--	if (sysfs_type(sd) == SYSFS_DIR && acxt->parent_inode)
--		inc_nlink(acxt->parent_inode);
--
--	acxt->cnt++;
--
-+	sd->s_parent = sysfs_get(parent_sd);
- 	sysfs_link_sibling(sd);
- 
- 	/* Update timestamps on the parent */
--	ps_iattr = acxt->parent_sd->s_iattr;
-+	ps_iattr = parent_sd->s_iattr;
- 	if (ps_iattr)
- 		ps_iattr->ia_ctime = ps_iattr->ia_mtime = CURRENT_TIME;
- 
-+	mutex_unlock(&sysfs_mutex);
- 	return 0;
- }
- 
- /**
-  *	sysfs_remove_one - remove sysfs_dirent from parent
-- *	@acxt: addrm context to use
-  *	@sd: sysfs_dirent to be removed
-  *
-  *	Mark @sd removed and drop nlink of parent inode if @sd is a
-  *	directory.  @sd is unlinked from the children list.
-  *
-- *	This function should be called between calls to
-- *	sysfs_addrm_start() and sysfs_addrm_finish() and should be
-- *	passed the same @acxt as passed to sysfs_addrm_start().
-- *
-  *	LOCKING:
-- *	Determined by sysfs_addrm_start().
-+ *	Kernel thread context (may sleep).  Grabs sysfs_mutex.
-  */
--void sysfs_remove_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
-+void sysfs_remove_one(struct sysfs_dirent *sd)
- {
- 	struct iattr *ps_iattr;
- 
- 	BUG_ON(sd->s_flags & SYSFS_FLAG_REMOVED);
- 
-+	mutex_lock(&sysfs_mutex);
-+
- 	sysfs_unlink_sibling(sd);
- 
- 	/* Update timestamps on the parent */
--	ps_iattr = acxt->parent_sd->s_iattr;
-+	ps_iattr = sd->s_parent->s_iattr;
- 	if (ps_iattr)
- 		ps_iattr->ia_ctime = ps_iattr->ia_mtime = CURRENT_TIME;
- 
- 	sd->s_flags |= SYSFS_FLAG_REMOVED;
--	sd->s_sibling = acxt->removed;
--	acxt->removed = sd;
--
--	if (sysfs_type(sd) == SYSFS_DIR && acxt->parent_inode)
--		drop_nlink(acxt->parent_inode);
--
--	acxt->cnt++;
+-	return dentry;
 -}
 -
 -/**
-- *	sysfs_dec_nlink - Decrement link count for the specified sysfs_dirent
-- *	@sd: target sysfs_dirent
-- *
-- *	Decrement nlink for @sd.  @sd must have been unlinked from its
-- *	parent on entry to this function such that it can't be looked
-- *	up anymore.
-- */
--static void sysfs_dec_nlink(struct sysfs_dirent *sd)
--{
--	struct inode *inode;
--
--	inode = ilookup(sysfs_sb, sd->s_ino);
--	if (!inode)
--		return;
--
--	/* adjust nlink and update timestamp */
--	mutex_lock(&inode->i_mutex);
--
--	inode->i_ctime = CURRENT_TIME;
--	drop_nlink(inode);
--	if (sysfs_type(sd) == SYSFS_DIR)
--		drop_nlink(inode);
--
--	mutex_unlock(&inode->i_mutex);
--
--	iput(inode);
--}
+  *	sysfs_get_active - get an active reference to sysfs_dirent
+  *	@sd: sysfs_dirent to get an active reference to
+  *
+@@ -311,6 +270,14 @@ static int sysfs_dentry_revalidate(struct dentry *dentry, struct nameidata *nd)
+ 	if (sd->s_flags & SYSFS_FLAG_REMOVED)
+ 		goto out_bad;
  
--/**
-- *	sysfs_addrm_finish - finish up sysfs_dirent add/remove
-- *	@acxt: addrm context to finish up
-- *
-- *	Finish up sysfs_dirent add/remove.  Resources acquired by
-- *	sysfs_addrm_start() are released and removed sysfs_dirents are
-- *	cleaned up.  Timestamps on the parent inode are updated.
-- *
-- *	LOCKING:
-- *	All mutexes acquired by sysfs_addrm_start() are released.
-- */
--void sysfs_addrm_finish(struct sysfs_addrm_cxt *acxt)
--{
--	/* release resources acquired by sysfs_addrm_start() */
++	/* The sysfs dirent has been moved? */
++	if (dentry->d_parent->d_fsdata != sd->s_parent)
++		goto out_bad;
++
++	/* The sysfs dirent has been renamed */
++	if (strcmp(dentry->d_name.name, sd->s_name) != 0)
++		goto out_bad;
++
  	mutex_unlock(&sysfs_mutex);
--	if (acxt->parent_inode) {
--		struct inode *inode = acxt->parent_inode;
- 
--		/* if added/removed, update timestamps on the parent */
--		if (acxt->cnt)
--			inode->i_ctime = inode->i_mtime = CURRENT_TIME;
--
--		mutex_unlock(&inode->i_mutex);
--		iput(inode);
--	}
--
--	/* kill removed sysfs_dirents */
--	while (acxt->removed) {
--		struct sysfs_dirent *sd = acxt->removed;
--
--		acxt->removed = sd->s_sibling;
--		sd->s_sibling = NULL;
--
--		sysfs_dec_nlink(sd);
--		sysfs_deactivate(sd);
--		unmap_bin_file(sd);
--		sysfs_put(sd);
--	}
-+	sysfs_deactivate(sd);
-+	unmap_bin_file(sd);
-+	sysfs_put(sd);
- }
- 
- /**
-@@ -673,7 +539,6 @@ static int create_dir(struct kobject *kobj, struct sysfs_dirent *parent_sd,
- 		      const char *name, struct sysfs_dirent **p_sd)
- {
- 	umode_t mode = S_IFDIR| S_IRWXU | S_IRUGO | S_IXUGO;
--	struct sysfs_addrm_cxt acxt;
- 	struct sysfs_dirent *sd;
- 	int rc;
- 
-@@ -684,10 +549,8 @@ static int create_dir(struct kobject *kobj, struct sysfs_dirent *parent_sd,
- 	sd->s_dir.kobj = kobj;
- 
- 	/* link in */
--	sysfs_addrm_start(&acxt, parent_sd);
--	rc = sysfs_add_one(&acxt, sd);
--	sysfs_addrm_finish(&acxt);
- 
-+	rc = sysfs_add_one(parent_sd, sd);
- 	if (rc == 0)
- 		*p_sd = sd;
- 	else
-@@ -787,9 +650,7 @@ static void remove_dir(struct sysfs_dirent *dir_sd)
- 		mutex_unlock(&sysfs_mutex);
+ out_valid:
+ 	return 1;
+@@ -318,6 +285,12 @@ out_bad:
+ 	/* Remove the dentry from the dcache hashes.
+ 	 * If this is a deleted dentry we use d_drop instead of d_delete
+ 	 * so sysfs doesn't need to cope with negative dentries.
++	 *
++	 * If this is a dentry that has simply been renamed we
++	 * use d_drop to remove it from the dcache lookup on its
++	 * old parent.  If this dentry persists later when a lookup
++	 * is performed at its new name the dentry will be readded
++	 * to the dcache hashes.
+ 	 */
+ 	is_dir = (sysfs_type(sd) == SYSFS_DIR);
+ 	mutex_unlock(&sysfs_mutex);
+@@ -613,10 +586,15 @@ static struct dentry * sysfs_lookup(struct inode *dir, struct dentry *dentry,
  	}
  
--	sysfs_addrm_start(&acxt, dir_sd->s_parent);
- 	sysfs_remove_one(&acxt, dir_sd);
--	sysfs_addrm_finish(&acxt);
- }
+ 	/* instantiate and hash dentry */
+-	dentry->d_op = &sysfs_dentry_ops;
+-	dentry->d_fsdata = sysfs_get(sd);
+-	d_instantiate(dentry, inode);
+-	d_rehash(dentry);
++	ret = d_find_alias(inode);
++	if (!ret) {
++		dentry->d_op = &sysfs_dentry_ops;
++		dentry->d_fsdata = sysfs_get(sd);
++		d_add(dentry, inode);
++	} else {
++		d_move(ret, dentry);
++		iput(inode);
++	}
  
- void sysfs_remove_subdir(struct sysfs_dirent *sd)
-@@ -818,14 +679,11 @@ static struct sysfs_dirent *get_dirent_to_remove(struct sysfs_dirent *dir_sd)
- 
- static void __sysfs_remove_dir(struct sysfs_dirent *dir_sd)
+  out_unlock:
+ 	mutex_unlock(&sysfs_mutex);
+@@ -713,62 +691,32 @@ void sysfs_remove_dir(struct kobject * kobj)
+ int sysfs_rename_dir(struct kobject * kobj, const char *new_name)
  {
--	struct sysfs_addrm_cxt acxt;
- 	struct sysfs_dirent *sd;
- 
- 	/* Remove children that we think are safe */
- 	while ((sd = get_dirent_to_remove(dir_sd))) {
--		sysfs_addrm_start(&acxt, sd->s_parent);
- 		sysfs_remove_one(&acxt, sd);
--		sysfs_addrm_finish(&acxt);
- 		sysfs_put(sd);
- 	}
- 
-diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
-index 31cfe1d..b512ce6 100644
---- a/fs/sysfs/file.c
-+++ b/fs/sysfs/file.c
-@@ -499,7 +499,6 @@ int sysfs_add_file_mode(struct sysfs_dirent *dir_sd,
- 			const struct attribute *attr, int type, mode_t amode)
- {
- 	umode_t mode = (amode & S_IALLUGO) | S_IFREG;
--	struct sysfs_addrm_cxt acxt;
- 	struct sysfs_dirent *sd;
- 	int rc;
- 
-@@ -508,10 +507,7 @@ int sysfs_add_file_mode(struct sysfs_dirent *dir_sd,
- 		return -ENOMEM;
- 	sd->s_attr.attr = (void *)attr;
- 
--	sysfs_addrm_start(&acxt, dir_sd);
--	rc = sysfs_add_one(&acxt, sd);
--	sysfs_addrm_finish(&acxt);
--
-+	rc = sysfs_add_one(dir_sd, sd);
- 	if (rc)
- 		sysfs_put(sd);
- 
-diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
-index 1b7ed3c..ad9a30d 100644
---- a/fs/sysfs/inode.c
-+++ b/fs/sysfs/inode.c
-@@ -263,23 +263,17 @@ void sysfs_delete_inode(struct inode *inode)
- 
- int sysfs_hash_and_remove(struct sysfs_dirent *dir_sd, const char *name)
- {
--	struct sysfs_addrm_cxt acxt;
- 	struct sysfs_dirent *sd;
- 
- 	if (!dir_sd)
- 		return -ENOENT;
- 
--	sysfs_addrm_start(&acxt, dir_sd);
--
--	sd = sysfs_find_dirent(dir_sd, name);
--	if (sd)
--		sysfs_remove_one(&acxt, sd);
--
--	sysfs_addrm_finish(&acxt);
--
--	if (sd)
-+	sd = sysfs_get_dirent(dir_sd, name);
-+	if (sd) {
-+		sysfs_remove_one(sd);
-+		sysfs_put(sd);
- 		return 0;
--	else
-+	} else
- 		return -ENOENT;
- }
- 
-diff --git a/fs/sysfs/symlink.c b/fs/sysfs/symlink.c
-index 05e4984..fc5fc86 100644
---- a/fs/sysfs/symlink.c
-+++ b/fs/sysfs/symlink.c
-@@ -31,7 +31,6 @@ int sysfs_create_link(struct kobject *kobj, struct kobject *target,
- 	struct sysfs_dirent *parent_sd = NULL;
- 	struct sysfs_dirent *target_sd = NULL;
- 	struct sysfs_dirent *sd = NULL;
--	struct sysfs_addrm_cxt acxt;
+ 	struct sysfs_dirent *sd = kobj->sd;
+-	struct dentry *parent = NULL;
+-	struct dentry *old_dentry = NULL, *new_dentry = NULL;
+ 	const char *dup_name = NULL;
  	int error;
  
- 	BUG_ON(!name);
-@@ -65,10 +64,7 @@ int sysfs_create_link(struct kobject *kobj, struct kobject *target,
- 	sd->s_symlink.target_sd = target_sd;
- 	target_sd = NULL;	/* reference is now owned by the symlink */
+-	mutex_lock(&sysfs_rename_mutex);
++	mutex_lock(&sysfs_mutex);
  
--	sysfs_addrm_start(&acxt, parent_sd);
--	error = sysfs_add_one(&acxt, sd);
--	sysfs_addrm_finish(&acxt);
+ 	error = 0;
+ 	if (strcmp(sd->s_name, new_name) == 0)
+ 		goto out;	/* nothing to rename */
+ 
+-	/* get the original dentry */
+-	old_dentry = sysfs_get_dentry(sd);
+-	if (IS_ERR(old_dentry)) {
+-		error = PTR_ERR(old_dentry);
+-		old_dentry = NULL;
+-		goto out;
+-	}
 -
-+	error = sysfs_add_one(parent_sd, sd);
- 	if (error)
- 		goto out_put;
+-	parent = old_dentry->d_parent;
+-
+-	/* lock parent and get dentry for new name */
+-	mutex_lock(&parent->d_inode->i_mutex);
+-	mutex_lock(&sysfs_mutex);
+-
+ 	error = -EEXIST;
+ 	if (sysfs_find_dirent(sd->s_parent, new_name))
+-		goto out_unlock;
+-
+-	error = -ENOMEM;
+-	new_dentry = d_alloc_name(parent, new_name);
+-	if (!new_dentry)
+-		goto out_unlock;
++		goto out;
  
-diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
-index f5b53cf..f17ebb8 100644
---- a/fs/sysfs/sysfs.h
-+++ b/fs/sysfs/sysfs.h
-@@ -77,16 +77,6 @@ static inline unsigned int sysfs_type(struct sysfs_dirent *sd)
+ 	/* rename sysfs_dirent */
+ 	error = -ENOMEM;
+ 	new_name = dup_name = kstrdup(new_name, GFP_KERNEL);
+ 	if (!new_name)
+-		goto out_unlock;
++		goto out;
+ 
+ 	dup_name = sd->s_name;
+ 	sd->s_name = new_name;
+ 
+-	/* rename */
+-	d_add(new_dentry, NULL);
+-	d_move(old_dentry, new_dentry);
+-
+ 	error = 0;
+- out_unlock:
++ out:
+ 	mutex_unlock(&sysfs_mutex);
+-	mutex_unlock(&parent->d_inode->i_mutex);
+ 	kfree(dup_name);
+-	dput(old_dentry);
+-	dput(new_dentry);
+- out:
+-	mutex_unlock(&sysfs_rename_mutex);
+ 	return error;
  }
  
- /*
-- * Context structure to be used while adding/removing nodes.
-- */
--struct sysfs_addrm_cxt {
--	struct sysfs_dirent	*parent_sd;
--	struct inode		*parent_inode;
--	struct sysfs_dirent	*removed;
--	int			cnt;
--};
+@@ -776,54 +724,20 @@ int sysfs_move_dir(struct kobject *kobj, struct kobject *new_parent_kobj)
+ {
+ 	struct sysfs_dirent *sd = kobj->sd;
+ 	struct sysfs_dirent *new_parent_sd;
+-	struct dentry *old_parent, *new_parent = NULL;
+-	struct dentry *old_dentry = NULL, *new_dentry = NULL;
+ 	int error;
+ 
+-	mutex_lock(&sysfs_rename_mutex);
+ 	BUG_ON(!sd->s_parent);
++
++	mutex_lock(&sysfs_mutex);
+ 	new_parent_sd = new_parent_kobj->sd ? new_parent_kobj->sd : &sysfs_root;
+ 
+ 	error = 0;
+ 	if (sd->s_parent == new_parent_sd)
+ 		goto out;	/* nothing to move */
+ 
+-	/* get dentries */
+-	old_dentry = sysfs_get_dentry(sd);
+-	if (IS_ERR(old_dentry)) {
+-		error = PTR_ERR(old_dentry);
+-		old_dentry = NULL;
+-		goto out;
+-	}
+-	old_parent = old_dentry->d_parent;
+-
+-	new_parent = sysfs_get_dentry(new_parent_sd);
+-	if (IS_ERR(new_parent)) {
+-		error = PTR_ERR(new_parent);
+-		new_parent = NULL;
+-		goto out;
+-	}
+-
+-again:
+-	mutex_lock(&old_parent->d_inode->i_mutex);
+-	if (!mutex_trylock(&new_parent->d_inode->i_mutex)) {
+-		mutex_unlock(&old_parent->d_inode->i_mutex);
+-		goto again;
+-	}
+-	mutex_lock(&sysfs_mutex);
+-
+ 	error = -EEXIST;
+ 	if (sysfs_find_dirent(new_parent_sd, sd->s_name))
+-		goto out_unlock;
+-
+-	error = -ENOMEM;
+-	new_dentry = d_alloc_name(new_parent, sd->s_name);
+-	if (!new_dentry)
+-		goto out_unlock;
+-
+-	error = 0;
+-	d_add(new_dentry, NULL);
+-	d_move(old_dentry, new_dentry);
++		goto out;
+ 
+ 	/* Remove from old parent's list and insert into new parent's list. */
+ 	sysfs_unlink_sibling(sd);
+@@ -832,15 +746,9 @@ again:
+ 	sd->s_parent = new_parent_sd;
+ 	sysfs_link_sibling(sd);
+ 
+- out_unlock:
++	error = 0;
++out:
+ 	mutex_unlock(&sysfs_mutex);
+-	mutex_unlock(&new_parent->d_inode->i_mutex);
+-	mutex_unlock(&old_parent->d_inode->i_mutex);
+- out:
+-	dput(new_parent);
+-	dput(old_dentry);
+-	dput(new_dentry);
+-	mutex_unlock(&sysfs_rename_mutex);
+ 	return error;
+ }
+ 
+diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
+index ad9a30d..a1917b5 100644
+--- a/fs/sysfs/inode.c
++++ b/fs/sysfs/inode.c
+@@ -132,17 +132,6 @@ static inline void set_inode_attr(struct inode * inode, struct iattr * iattr)
+ 	inode->i_ctime = iattr->ia_ctime;
+ }
+ 
 -
 -/*
-  * mount.c
-  */
- extern struct sysfs_dirent sysfs_root;
-@@ -106,11 +96,8 @@ extern const struct inode_operations sysfs_dir_inode_operations;
- struct dentry *sysfs_get_dentry(struct sysfs_dirent *sd);
- struct sysfs_dirent *sysfs_get_active_two(struct sysfs_dirent *sd);
- void sysfs_put_active_two(struct sysfs_dirent *sd);
--void sysfs_addrm_start(struct sysfs_addrm_cxt *acxt,
--		       struct sysfs_dirent *parent_sd);
--int sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd);
--void sysfs_remove_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd);
--void sysfs_addrm_finish(struct sysfs_addrm_cxt *acxt);
-+int sysfs_add_one(struct sysfs_dirent *parent_sd, struct sysfs_dirent *sd);
-+void sysfs_remove_one(struct sysfs_dirent *sd);
+- * sysfs has a different i_mutex lock order behavior for i_mutex than other
+- * filesystems; sysfs i_mutex is called in many places with subsystem locks
+- * held. At the same time, many of the VFS locking rules do not apply to
+- * sysfs at all (cross directory rename for example). To untangle this mess
+- * (which gives false positives in lockdep), we're giving sysfs inodes their
+- * own class for i_mutex.
+- */
+-static struct lock_class_key sysfs_inode_imutex_key;
+-
+ static int sysfs_count_nlink(struct sysfs_dirent *sd)
+ {
+ 	struct sysfs_dirent *child;
+@@ -190,7 +179,6 @@ static void sysfs_init_inode(struct sysfs_dirent *sd, struct inode *inode)
+ 	inode->i_mapping->a_ops = &sysfs_aops;
+ 	inode->i_mapping->backing_dev_info = &sysfs_backing_dev_info;
+ 	inode->i_op = &sysfs_inode_operations;
+-	lockdep_set_class(&inode->i_mutex, &sysfs_inode_imutex_key);
  
- struct sysfs_dirent *sysfs_find_dirent(struct sysfs_dirent *parent_sd,
- 				       const unsigned char *name);
+ 	set_default_inode_attr(inode, sd->s_mode);
+ 	sysfs_refresh_inode(sd, inode);
+diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
+index f17ebb8..2db952c 100644
+--- a/fs/sysfs/sysfs.h
++++ b/fs/sysfs/sysfs.h
+@@ -87,7 +87,6 @@ extern struct kmem_cache *sysfs_dir_cachep;
+  * dir.c
+  */
+ extern struct mutex sysfs_mutex;
+-extern struct mutex sysfs_rename_mutex;
+ extern spinlock_t sysfs_assoc_lock;
+ 
+ extern const struct file_operations sysfs_dir_operations;
+diff --git a/include/linux/namei.h b/include/linux/namei.h
+index fc2e035..758ecfb 100644
+--- a/include/linux/namei.h
++++ b/include/linux/namei.h
+@@ -76,7 +76,6 @@ extern struct file *nameidata_to_filp(struct nameidata *nd, int flags);
+ extern void release_open_intent(struct nameidata *);
+ 
+ extern struct dentry *lookup_one_len(const char *, struct dentry *, int);
+-extern struct dentry *lookup_one_noperm(const char *, struct dentry *);
+ 
+ extern int follow_down(struct vfsmount **, struct dentry **);
+ extern int follow_up(struct vfsmount **, struct dentry **);
 -- 
 1.6.3.1.54.g99dd.dirty
 
