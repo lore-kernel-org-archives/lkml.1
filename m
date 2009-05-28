@@ -1,52 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764107AbZE1Ti7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763213AbZE1TlS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764107AbZE1Ti7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 15:38:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756861AbZE1Tiu
+	id S1763213AbZE1TlS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 15:41:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757899AbZE1TlE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 15:38:50 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:39364 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750907AbZE1Tiu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 15:38:50 -0400
-Date: Thu, 28 May 2009 15:38:22 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Theodore Tso <tytso@mit.edu>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Jan Kara <jack@suse.cz>, Jens Axboe <jens.axboe@oracle.com>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
-       akpm@linux-foundation.org, yanmin_zhang@linux.intel.com,
-       richard@rsk.demon.co.uk, damien.wyart@free.fr,
-       Alex Chiang <achiang@hp.com>,
-       "Eric W. Biederman" <ebiederm@aristanetworks.com>
-Subject: Re: [PATCH 0/11] Per-bdi writeback flusher threads v8
-Message-ID: <20090528193822.GA30982@infradead.org>
-References: <20090527144754.GD10842@mit.edu> <20090527175353.GE10842@mit.edu> <20090527175830.GF10842@mit.edu> <20090527181402.GP11363@kernel.dk> <20090527191524.GS11363@kernel.dk> <20090527194543.GT11363@kernel.dk> <20090528004959.GH26625@mit.edu> <20090528092803.GE29199@duck.suse.cz> <m1octdw8sv.fsf@fess.ebiederm.org> <20090528193246.GX26625@mit.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090528193246.GX26625@mit.edu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 28 May 2009 15:41:04 -0400
+Received: from fifo99.com ([67.223.236.141]:33669 "EHLO fifo99.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756861AbZE1TlD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 15:41:03 -0400
+Subject: Re: [PATCH] sched: Support current clocksource handling in
+	fallback sched_clock().
+From: Daniel Walker <dwalker@fifo99.com>
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linus Walleij <linus.ml.walleij@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Victor <linux@maxim.org.za>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-sh@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       John Stultz <johnstul@linux.vnet.ibm.com>
+In-Reply-To: <20090528193458.GA1122@linux-sh.org>
+References: <1243527218.28705.35.camel@desktop>
+	 <1243528329.6645.77.camel@laptop> <20090528164011.GA30104@linux-sh.org>
+	 <1243529547.28705.43.camel@desktop> <20090528165816.GA31688@linux-sh.org>
+	 <1243532324.28705.75.camel@desktop> <20090528175341.GA32118@linux-sh.org>
+	 <1243534252.28705.86.camel@desktop> <20090528182730.GA32767@linux-sh.org>
+	 <1243537463.28705.94.camel@desktop>  <20090528193458.GA1122@linux-sh.org>
+Content-Type: text/plain
+Date: Thu, 28 May 2009 12:41:03 -0700
+Message-Id: <1243539663.28705.99.camel@desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 28, 2009 at 03:32:46PM -0400, Theodore Tso wrote:
-> 
-> I'm pretty sure that after the first call to invalidate_inodes() in
-> fs/super.c's generic_shutdown_super(), we really don't need to hold
-> the BKL or the superblock lock (and let the filesystems' low-level
-> write_super(0 and put_super() take the lock if they really need it),
-> but we probably need to take a closer look at this to make sure it's
-> true for all filesystems.  (IIRC, I think Christoph was looking to
-> clean up lock_super(); at least with respect to the write_super call.
-> I don't know what his plans regarding the BKL and put_super(),
-> though.)
+On Fri, 2009-05-29 at 04:34 +0900, Paul Mundt wrote:
+> > I'm still a little confused how kernel modules fit in here.. Are you
+> > saying a user would unload some certain driver which has a pin locked
+> > down and prevents the clocksource from working. Then the user would load
+> > the clocksource module which would now function, and that all would have
+> > to happen in order to enter a certain power state?
+> > 
+> Yes.
 
-Both the BKL and lock_super are not held for ->put_super anymore in
-the vfs tree.  In fact in the vfs tree there are no callers of
-lock_super in the VFS anymore.
+I'm assuming this isn't a low power state, this would be something more
+like suspend or hibernate right?
+
+Daniel
 
