@@ -1,66 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756297AbZE1Jvh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755891AbZE1Jym@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756297AbZE1Jvh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 05:51:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752214AbZE1Jv3
+	id S1755891AbZE1Jym (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 05:54:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751934AbZE1Jyf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 05:51:29 -0400
-Received: from mail-out.m-online.net ([212.18.0.9]:34333 "EHLO
-	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751934AbZE1Jv2 (ORCPT
+	Thu, 28 May 2009 05:54:35 -0400
+Received: from mx1.auerswald.de ([212.185.163.234]:4914 "EHLO
+	mail.auerswald.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751481AbZE1Jye convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 05:51:28 -0400
-X-Auth-Info: AXiptBCCJmn2QUrZucSQjEuUxEehi5B9jU0bv0NvyMQ=
-To: Grant Likely <grant.likely@secretlab.ca>
-cc: Robert Schwebel <r.schwebel@pengutronix.de>,
-       Scott Wood <scottwood@freescale.com>,
-       devicetree-discuss <devicetree-discuss@ozlabs.org>,
-       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       Janboe Ye <yuan-bo.ye@motorola.com>, Timur Tabi <timur@freescale.com>,
-       rmk@arm.linux.org.uk
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: [RFC] [PATCH] Device Tree on ARM platform
-Mime-version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-In-reply-to: <fa686aa40905272029n32aa5f1ds86d07f0de4894815@mail.gmail.com>
-References: <1243408083.13460.14.camel@debian-nb> <fa686aa40905270727m31250984tf12249fc87179ce9@mail.gmail.com> <ed82fe3e0905270739k38018c87ka11f62c5977e45fb@mail.gmail.com> <20090527150527.GK6805@pengutronix.de> <fa686aa40905270839m375bbdacqb1acb1be0a2d2da0@mail.gmail.com> <20090527162000.GM6805@pengutronix.de> <fa686aa40905271335o1165419hda2334bef42aa3f@mail.gmail.com> <20090527234801.GP6805@pengutronix.de> <4A1DD3A0.3010501@freescale.com> <20090528000707.GR6805@pengutronix.de> <fa686aa40905272029n32aa5f1ds86d07f0de4894815@mail.gmail.com>
-Comments: In-reply-to Grant Likely <grant.likely@secretlab.ca>
-   message dated "Wed, 27 May 2009 21:29:26 -0600."
-Date: Thu, 28 May 2009 11:51:26 +0200
-Message-Id: <20090528095126.99DB4832E416@gemini.denx.de>
+	Thu, 28 May 2009 05:54:34 -0400
+From: Wolfgang =?iso-8859-1?q?M=FCes?= <wolfgang.mues@auerswald.de>
+Organization: Auerswald GmbH & Co. KG
+To: "Matt Fleming" <matt@console-pimps.org>
+Subject: Re: [PATCH] mmc_spi: do propper retry managment in the block layer - 3rd try
+Date: Thu, 28 May 2009 11:52:26 +0200
+User-Agent: KMail/1.9.10
+Cc: "Pierre Ossman" <pierre@ossman.eu>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "David Brownell" <dbrownell@users.sourceforge.net>,
+       "Mike Frysinger" <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org
+References: <20090528091924.GB1860@console-pimps.org>
+In-Reply-To: <20090528091924.GB1860@console-pimps.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200905281152.26191.wolfgang.mues@auerswald.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear Grant Likely,
+Matt,
 
-In message <fa686aa40905272029n32aa5f1ds86d07f0de4894815@mail.gmail.com> you wrote:
->
-> Personally, I attribute a lot of that in powerpc land to the fact that
-> we had no clue what we were doing when we started the process of
-> porting all powerpc platforms to use the device tree.  It was hard.
-> It was painful.  We didn't have much established convention to learn
-> from.  However, now that it is complete I would say that it has been a
-> net-win and it is now simpler to bring up new boards and SoCs than it
-> ever was before.
+Am Donnerstag, 28. Mai 2009 schrieb Matt Fleming:
+> When I said "report the correct error" I was objecting to using EILSEQ
+> as The One True Error Code based on the fact that a transmission error
+> may, or may not, have occurred.
 
-True. From a commercial point of view this is a huge  problem  casued
-by the device tree - custumers who used to oder a BSP from commercial
-service providers (like Robert or me :-) now often find that all they
-need  to  do is to tweak the device tree to get their system running.
-Lost business. D*mn...  [Maybe this explains Robert's reluctance?]
+Yes, and we have discussed the problem of error code interpretion based on 
+request types.
 
-But as stated before:  from the engineering point of view it's a real
-big win now.
+So, in block.c, if I get a -EIO (== erase error), I can handle this as 
+transmission error inside the read/write data function.
 
-Best regards,
+If there will be a (future) erase request function in block.c, I will handle 
+the same error code as erase error, not as transmission error. No big 
+problems here.
 
-Wolfgang Denk
+To mimic the same behaviour inside the driver, inside mmc_spi_response_get,
+I will have to code:
 
+	if (cmd->resp[0] != 0) {
+		if ((R1_SPI_PARAMETER | R1_SPI_ADDRESS)
+				& cmd->resp[0])
+// TODO: transmission error if parameter or address was not out of range.
+			value = -EFAULT; /* Bad address */
+		else if (R1_SPI_ILLEGAL_COMMAND & cmd->resp[0])
+// TODO: transmission error if mandatory command
+			value = -ENOSYS; /* Function not implemented */
+		else if (R1_SPI_COM_CRC & cmd->resp[0])
+			value = -EILSEQ; /* Illegal byte sequence */
+		else if ((R1_SPI_ERASE_SEQ | R1_SPI_ERASE_RESET)
+				& cmd->resp[0])
+// START
+			switch (cmd->opcode) {
+			case xxx: /* erase commands */
+			case yyy:
+				value = -EIO;    /* I/O error */
+				break;
+			default: /* non-erase commands */
+				value = -EILSEQ; /* Illegal byte sequence */
+				break;
+			}
+// STOP
+		/* else R1_SPI_IDLE, "it's resetting" */
+	}
+
+So somewhere I will need to have an error code filter based on the issued 
+command (class). Should this be in the driver(s)? Or should it be at the 
+location of the caller, in block.c?
+
+The advantages of putting it in block.c is that
+a) The command (class) is typically implicit given in the function, and no 
+need for a switch() statement.
+b) Only one handling for different drivers, not scattered through all(?) host 
+drivers.
+
+I must admit that I have difficulties to see a clear layering violation.
+There is no clear definition of which error codes should be reported to the 
+block layer. There is only a short list of codes with special meaning, but 
+not a full list of all used codes.
+
+And some drivers are reporting codes like ENOMEM etc...
+
+I see that Pierre wants to have a more smaller interface between drivers and 
+the upper layer, reporting only classes of errors, to have a more smaller and 
+cleaner code in the upper layer. But I think that this is a patch of its own, 
+and not in the context of the retry patch.
+
+regards
+ 
+i. A. Wolfgang Mües
 -- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Ever try. Ever fail. No matter. Try again. Fail again.  Fail  better.
-                                                        -- S. Beckett
+Auerswald GmbH & Co. KG
+Hardware Development
+Telefon: +49 (0)5306 9219 0
+Telefax: +49 (0)5306 9219 94 
+E-Mail: Wolfgang.Mues@Auerswald.de
+Web: http://www.auerswald.de
+ 
+--------------------------------------------------------------
+Auerswald GmbH & Co. KG, Vor den Grashöfen 1, 38162 Cremlingen
+Registriert beim AG Braunschweig HRA 13289
+p.h.G Auerswald Geschäftsführungsges. mbH
+Registriert beim AG Braunschweig HRB 7463
+Geschäftsführer: Dipl-Ing. Gerhard Auerswald
