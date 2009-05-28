@@ -1,171 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756902AbZE1LNL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757645AbZE1LkT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756902AbZE1LNL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 07:13:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754817AbZE1LM7
+	id S1757645AbZE1LkT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 07:40:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752937AbZE1LkI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 07:12:59 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:45891 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754505AbZE1LM6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 07:12:58 -0400
-Subject: Re: [PATCH v4] perf_counter: Fix race in attaching counters to
- tasks and exiting
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Corey Ashford <cjashfor@linux.vnet.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <18974.26663.618300.184845@cargo.ozlabs.ibm.com>
-References: <18974.26663.618300.184845@cargo.ozlabs.ibm.com>
-Content-Type: text/plain
-Date: Thu, 28 May 2009 13:12:50 +0200
-Message-Id: <1243509170.6600.36.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 28 May 2009 07:40:08 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:57780 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751528AbZE1LkH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 07:40:07 -0400
+Date: Thu, 28 May 2009 13:35:40 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Roland McGrath <roland@redhat.com>
+Cc: Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: [RFC PATCH 2/12 v2] ptrace: tracehooks: do not use task->ptrace
+	directly
+Message-ID: <20090528113540.GA18681@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Looks good, few nits below.
+s/->ptrace/task_ptrace()/ in tracehook.h as a preparation for the future
+changes.
 
-On Thu, 2009-05-28 at 20:32 +1000, Paul Mackerras wrote:
+Also, microoptimize tracehook_prepare_clone() for the common non-ptraced
+case.
 
-> +static void free_ctx(struct rcu_head *head)
-> +{
-> +	struct perf_counter_context *ctx;
-> +
-> +	ctx = container_of(head, struct perf_counter_context, rcu_head);
-> +	if (ctx->task)
-> +		put_task_struct(ctx->task);
-> +	kfree(ctx);
-> +}
+ include/linux/tracehook.h |   16 +++++++++-------
+ 1 file changed, 9 insertions(+), 7 deletions(-)
 
-The poor task will now have to wait for yet another RCU grace period,
-but yeah :-)
-
-> @@ -932,18 +950,39 @@ void perf_counter_task_sched_out(struct task_struct *task,
->  		return;
->  
->  	update_context_time(ctx);
-> +
-> +	rcu_read_lock();
-> +	parent = rcu_dereference(ctx->parent_ctx);
->  	next_ctx = next->perf_counter_ctxp;
-> +	if (parent && next_ctx &&
-> +	    rcu_dereference(next_ctx->parent_ctx) == parent) {
-> +		/*
-> +		 * Looks like the two contexts are clones, so we might be
-> +		 * able to optimize the context switch.  We lock both
-> +		 * contexts and check that they are clones under the
-> +		 * lock (including re-checking that neither has been
-> +		 * uncloned in the meantime).  It doesn't matter which
-> +		 * order we take the locks because no other cpu could
-> +		 * be trying to lock both of these tasks.
-> +		 */
-> +		spin_lock(&ctx->lock);
-> +		spin_lock(&next_ctx->lock);
-> +		if (context_equiv(ctx, next_ctx)) {
-> +			task->perf_counter_ctxp = next_ctx;
-> +			next->perf_counter_ctxp = ctx;
-> +			ctx->task = next;
-> +			next_ctx->task = task;
-> +			do_switch = 0;
-> +		}
-> +		spin_unlock(&next_ctx->lock);
-> +		spin_unlock(&ctx->lock);
->  	}
-> +	rcu_read_unlock();
-
-Looks good, although lockdep will complain, the proper annotation would
-be spin_lock_nested_lock(&ctx->lock, &rq->lock), but since we don't have
-access to the rq here, we should change the second spin_lock, to:
-
-  spin_lock_nested(&next_ctx->lock, SINGLE_DEPTH_NESTING);
-
-
-> @@ -1265,37 +1300,78 @@ static struct perf_counter_context *find_get_context(pid_t pid, int cpu)
->  	if (!task)
->  		return ERR_PTR(-ESRCH);
->  
-> +	/*
-> +	 * Can't attach counters to a dying task.
-> +	 */
-> +	err = -ESRCH;
-> +	if (task->flags & PF_EXITING)
-> +		goto errout;
-> +
->  	/* Reuse ptrace permission checks for now. */
-> +	err = -EACCES;
-> +	if (!ptrace_may_access(task, PTRACE_MODE_READ))
-> +		goto errout;
-> +
-> +	rcu_read_lock();
-> + retry:
-> +	ctx = rcu_dereference(task->perf_counter_ctxp);
-> +	if (ctx) {
-> +		/*
-> +		 * If this context is a clone of another, it might
-> +		 * get swapped for another underneath us by
-> +		 * perf_counter_task_sched_out, though the
-> +		 * rcu_read_lock() protects us from any context
-> +		 * getting freed.  Lock the context and check if it
-> +		 * got swapped before we could get the lock, and retry
-> +		 * if so.  If we locked the right context, then it
-> +		 * can't get swapped on us any more and we can
-> +		 * unclone it if necessary.
-> +		 * Once it's not a clone things will be stable.
-> +		 */
-> +		spin_lock(&ctx->lock);
-> +		if (ctx != rcu_dereference(task->perf_counter_ctxp)) {
-> +			spin_unlock(&ctx->lock);
-> +			goto retry;
-> +		}
-> +		parent_ctx = ctx->parent_ctx;
-> +		if (parent_ctx) {
-> +			put_ctx(parent_ctx);
-> +			ctx->parent_ctx = NULL;		/* no longer a clone */
-> +		}
-> +		++ctx->generation;
-> +		/*
-> +		 * Get an extra reference before dropping the lock so that
-> +		 * this context won't get freed if the task exits.
-> +		 */
-> +		get_ctx(ctx);
-> +		spin_unlock(&ctx->lock);
->  	}
-> +	rcu_read_unlock();
->  
->  	if (!ctx) {
->  		ctx = kmalloc(sizeof(struct perf_counter_context), GFP_KERNEL);
-> +		err = -ENOMEM;
-> +		if (!ctx)
-> +			goto errout;
->  		__perf_counter_init_context(ctx, task);
-> +		get_ctx(ctx);
-> +		if (cmpxchg(&task->perf_counter_ctxp, NULL, ctx)) {
->  			/*
->  			 * We raced with some other task; use
->  			 * the context they set.
->  			 */
->  			kfree(ctx);
-> +			goto retry;
-
-You jump into an rcu_read_lock() section there.
-
->  		}
-> +		get_task_struct(task);
->  	}
->  
-> +	put_task_struct(task);
->  	return ctx;
-> +
-> + errout:
-> +	put_task_struct(task);
-> +	return ERR_PTR(err);
->  }
->  
->  static void free_counter_rcu(struct rcu_head *head)
+--- PTRACE/include/linux/tracehook.h~1_TRACEHOOK	2009-05-24 21:36:47.000000000 +0200
++++ PTRACE/include/linux/tracehook.h	2009-05-24 21:48:40.000000000 +0200
+@@ -225,16 +225,18 @@ static inline void tracehook_report_exit
+  */
+ static inline int tracehook_prepare_clone(unsigned clone_flags)
+ {
+-	if (clone_flags & CLONE_UNTRACED)
++	unsigned int ptrace = task_ptrace(current);
++
++	if (likely(!ptrace) || (clone_flags & CLONE_UNTRACED))
+ 		return 0;
+ 
+ 	if (clone_flags & CLONE_VFORK) {
+-		if (current->ptrace & PT_TRACE_VFORK)
++		if (ptrace & PT_TRACE_VFORK)
+ 			return PTRACE_EVENT_VFORK;
+ 	} else if ((clone_flags & CSIGNAL) != SIGCHLD) {
+-		if (current->ptrace & PT_TRACE_CLONE)
++		if (ptrace & PT_TRACE_CLONE)
+ 			return PTRACE_EVENT_CLONE;
+-	} else if (current->ptrace & PT_TRACE_FORK)
++	} else if (ptrace & PT_TRACE_FORK)
+ 		return PTRACE_EVENT_FORK;
+ 
+ 	return 0;
+@@ -479,7 +481,7 @@ static inline int tracehook_get_signal(s
+  */
+ static inline int tracehook_notify_jctl(int notify, int why)
+ {
+-	return notify || (current->ptrace & PT_PTRACED);
++	return notify || task_ptrace(current);
+ }
+ 
+ #define DEATH_REAP			-1
+@@ -503,7 +505,7 @@ static inline int tracehook_notify_death
+ 					 void **death_cookie, int group_dead)
+ {
+ 	if (task_detached(task))
+-		return task->ptrace ? SIGCHLD : DEATH_REAP;
++		return task_ptrace(task) ? SIGCHLD : DEATH_REAP;
+ 
+ 	/*
+ 	 * If something other than our normal parent is ptracing us, then
+@@ -513,7 +515,7 @@ static inline int tracehook_notify_death
+ 	if (thread_group_empty(task) && !ptrace_reparented(task))
+ 		return task->exit_signal;
+ 
+-	return task->ptrace ? SIGCHLD : DEATH_DELAYED_GROUP_LEADER;
++	return task_ptrace(task) ? SIGCHLD : DEATH_DELAYED_GROUP_LEADER;
+ }
+ 
+ /**
 
