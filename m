@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756127AbZE1XHR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756113AbZE1XG4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756127AbZE1XHR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 19:07:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754260AbZE1XDG
+	id S1756113AbZE1XG4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 19:06:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754240AbZE1XDE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 19:03:06 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:32892 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753578AbZE1XCY (ORCPT
+	Thu, 28 May 2009 19:03:04 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:48872 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753629AbZE1XCY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 28 May 2009 19:02:24 -0400
 From: "Eric W. Biederman" <ebiederm@xmission.com>
@@ -18,16 +18,16 @@ Cc: <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>,
        <linux-fsdevel@vger.kernel.org>, Kay Sievers <kay.sievers@vrfy.org>,
        Greg KH <greg@kroah.com>, "Eric W. Biederman" <ebiederm@xmission.com>,
        "Eric W. Biederman" <ebiederm@aristanetworks.com>
-Date: Thu, 28 May 2009 16:00:58 -0700
-Message-Id: <1243551665-23596-17-git-send-email-ebiederm@xmission.com>
+Date: Thu, 28 May 2009 16:00:59 -0700
+Message-Id: <1243551665-23596-18-git-send-email-ebiederm@xmission.com>
 X-Mailer: git-send-email 1.6.3.1.54.g99dd.dirty
 In-Reply-To: <m1zlcwltri.fsf_-_@fess.ebiederm.org>
 References: <m1zlcwltri.fsf_-_@fess.ebiederm.org>
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
 X-SA-Exim-Connect-IP: 76.21.114.89
 X-SA-Exim-Rcpt-To: akpm@linux-foundation.org, gregkh@suse.de, linux-kernel@vger.kernel.org, tj@kernel.org, cornelia.huck@de.ibm.com, linux-fsdevel@vger.kernel.org, kay.sievers@vrfy.org, greg@kroah.com, ebiederm@xmission.com, ebiederm@aristanetworks.com
 X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
 X-Spam-Combo: ;Andrew Morton <akpm@linux-foundation.org>, Greg Kroah-Hartman
 	<gregkh@suse.de>
 X-Spam-Relay-Country: 
@@ -35,132 +35,99 @@ X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
 	*  1.5 XMNoVowels Alpha-numberic number with no vowels
 	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
 	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
+	*      [score: 0.0004]
 	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
+	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
 	*  0.0 T_TooManySym_01 4+ unique symbols in subject
 	*  0.0 XM_SPF_Neutral SPF-Neutral
 	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
-Subject: [PATCH 17/24] sysfs: Merge sysfs_rename_dir and sysfs_move_dir
+Subject: [PATCH 18/24] sysfs: Pass super_block to sysfs_get_inode
 X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
+X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Eric W. Biederman <ebiederm@xmission.com>
 
-These two functions do 90% of the same work and it doesn't significantly
-obfuscate the function to allow both the parent dir and the name to change
-at the same time.  So merge them together to simplify maintenance, and
-increase testing.
+Currently sysfs_get_inode magically returns an inode on
+sysfs_sb.  Make the super_block parameter explicit and
+the code becomes clearer.
 
 Acked-by: Tejun Heo <tj@kernel.org>
 Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
 ---
- fs/sysfs/dir.c |   66 +++++++++++++++++++++++--------------------------------
- 1 files changed, 28 insertions(+), 38 deletions(-)
+ fs/sysfs/dir.c   |    2 +-
+ fs/sysfs/inode.c |    5 +++--
+ fs/sysfs/mount.c |    2 +-
+ fs/sysfs/sysfs.h |    2 +-
+ 4 files changed, 6 insertions(+), 5 deletions(-)
 
 diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-index efe8a01..1f8fb9c 100644
+index 1f8fb9c..39c6944 100644
 --- a/fs/sysfs/dir.c
 +++ b/fs/sysfs/dir.c
-@@ -688,30 +688,42 @@ void sysfs_remove_dir(struct kobject * kobj)
- 	__sysfs_remove_dir(sd);
- }
+@@ -579,7 +579,7 @@ static struct dentry * sysfs_lookup(struct inode *dir, struct dentry *dentry,
+ 	}
  
--int sysfs_rename_dir(struct kobject * kobj, const char *new_name)
-+static int sysfs_mv_dir(struct sysfs_dirent *sd,
-+	struct sysfs_dirent *new_parent_sd, const char *new_name)
+ 	/* attach dentry and inode */
+-	inode = sysfs_get_inode(sd);
++	inode = sysfs_get_inode(dir->i_sb, sd);
+ 	if (!inode) {
+ 		ret = ERR_PTR(-ENOMEM);
+ 		goto out_unlock;
+diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
+index a1917b5..c725aeb 100644
+--- a/fs/sysfs/inode.c
++++ b/fs/sysfs/inode.c
+@@ -210,6 +210,7 @@ static void sysfs_init_inode(struct sysfs_dirent *sd, struct inode *inode)
+ 
+ /**
+  *	sysfs_get_inode - get inode for sysfs_dirent
++ *	@sb: super block
+  *	@sd: sysfs_dirent to allocate inode for
+  *
+  *	Get inode for @sd.  If such inode doesn't exist, a new inode
+@@ -222,11 +223,11 @@ static void sysfs_init_inode(struct sysfs_dirent *sd, struct inode *inode)
+  *	RETURNS:
+  *	Pointer to allocated inode on success, NULL on failure.
+  */
+-struct inode * sysfs_get_inode(struct sysfs_dirent *sd)
++struct inode * sysfs_get_inode(struct super_block *sb, struct sysfs_dirent *sd)
  {
--	struct sysfs_dirent *sd = kobj->sd;
- 	const char *dup_name = NULL;
- 	int error;
+ 	struct inode *inode;
  
+-	inode = iget_locked(sysfs_sb, sd->s_ino);
++	inode = iget_locked(sb, sd->s_ino);
+ 	if (inode && (inode->i_state & I_NEW))
+ 		sysfs_init_inode(sd, inode);
+ 
+diff --git a/fs/sysfs/mount.c b/fs/sysfs/mount.c
+index 4974995..89db07e 100644
+--- a/fs/sysfs/mount.c
++++ b/fs/sysfs/mount.c
+@@ -54,7 +54,7 @@ static int sysfs_fill_super(struct super_block *sb, void *data, int silent)
+ 
+ 	/* get root inode, initialize and unlock it */
  	mutex_lock(&sysfs_mutex);
- 
- 	error = 0;
--	if (strcmp(sd->s_name, new_name) == 0)
-+	if ((sd->s_parent == new_parent_sd) &&
-+	    (strcmp(sd->s_name, new_name) == 0))
- 		goto out;	/* nothing to rename */
- 
- 	error = -EEXIST;
--	if (sysfs_find_dirent(sd->s_parent, new_name))
-+	if (sysfs_find_dirent(new_parent_sd, new_name))
- 		goto out;
- 
- 	/* rename sysfs_dirent */
--	error = -ENOMEM;
--	new_name = dup_name = kstrdup(new_name, GFP_KERNEL);
--	if (!new_name)
--		goto out;
-+	if (strcmp(sd->s_name, new_name) != 0) {
-+		error = -ENOMEM;
-+		new_name = dup_name = kstrdup(new_name, GFP_KERNEL);
-+		if (!new_name)
-+			goto out;
-+
-+		dup_name = sd->s_name;
-+		sd->s_name = new_name;
-+	}
- 
--	dup_name = sd->s_name;
--	sd->s_name = new_name;
-+	/* Remove from old parent's list and insert into new parent's list. */
-+	if (sd->s_parent != new_parent_sd) {
-+		sysfs_unlink_sibling(sd);
-+		sysfs_get(new_parent_sd);
-+		sysfs_put(sd->s_parent);
-+		sd->s_parent = new_parent_sd;
-+		sysfs_link_sibling(sd);
-+	}
- 
- 	error = 0;
-  out:
-@@ -720,36 +732,14 @@ int sysfs_rename_dir(struct kobject * kobj, const char *new_name)
- 	return error;
- }
- 
--int sysfs_move_dir(struct kobject *kobj, struct kobject *new_parent_kobj)
-+int sysfs_rename_dir(struct kobject * kobj, const char *new_name)
- {
--	struct sysfs_dirent *sd = kobj->sd;
--	struct sysfs_dirent *new_parent_sd;
--	int error;
--
--	BUG_ON(!sd->s_parent);
--
--	mutex_lock(&sysfs_mutex);
--	new_parent_sd = new_parent_kobj->sd ? new_parent_kobj->sd : &sysfs_root;
--
--	error = 0;
--	if (sd->s_parent == new_parent_sd)
--		goto out;	/* nothing to move */
--
--	error = -EEXIST;
--	if (sysfs_find_dirent(new_parent_sd, sd->s_name))
--		goto out;
--
--	/* Remove from old parent's list and insert into new parent's list. */
--	sysfs_unlink_sibling(sd);
--	sysfs_get(new_parent_sd);
--	sysfs_put(sd->s_parent);
--	sd->s_parent = new_parent_sd;
--	sysfs_link_sibling(sd);
-+	return sysfs_mv_dir(kobj->sd, kobj->sd->s_parent, new_name);
-+}
- 
--	error = 0;
--out:
--	mutex_unlock(&sysfs_mutex);
--	return error;
-+int sysfs_move_dir(struct kobject *kobj, struct kobject *new_parent_kobj)
-+{
-+	return sysfs_mv_dir(kobj->sd, new_parent_kobj->sd, kobj->sd->s_name);
- }
- 
- /* Relationship between s_mode and the DT_xxx types */
+-	inode = sysfs_get_inode(&sysfs_root);
++	inode = sysfs_get_inode(sb, &sysfs_root);
+ 	mutex_unlock(&sysfs_mutex);
+ 	if (!inode) {
+ 		pr_debug("sysfs: could not get root inode\n");
+diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
+index 2db952c..cf21b06 100644
+--- a/fs/sysfs/sysfs.h
++++ b/fs/sysfs/sysfs.h
+@@ -130,7 +130,7 @@ static inline void __sysfs_put(struct sysfs_dirent *sd)
+ /*
+  * inode.c
+  */
+-struct inode *sysfs_get_inode(struct sysfs_dirent *sd);
++struct inode *sysfs_get_inode(struct super_block *sb, struct sysfs_dirent *sd);
+ void sysfs_delete_inode(struct inode *inode);
+ int sysfs_sd_setattr(struct sysfs_dirent *sd, struct iattr *iattr);
+ int sysfs_setattr(struct dentry *dentry, struct iattr *iattr);
 -- 
 1.6.3.1.54.g99dd.dirty
 
