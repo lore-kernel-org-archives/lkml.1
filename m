@@ -1,74 +1,287 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760693AbZE1Lzy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759685AbZE1L4N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760693AbZE1Lzy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 07:55:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757265AbZE1Lzp
+	id S1759685AbZE1L4N (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 07:56:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759256AbZE1Lzw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 07:55:45 -0400
-Received: from 42.mail-out.ovh.net ([213.251.189.42]:43854 "HELO
-	42.mail-out.ovh.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1757051AbZE1Lzp (ORCPT
+	Thu, 28 May 2009 07:55:52 -0400
+Received: from e28smtp06.in.ibm.com ([59.145.155.6]:59969 "EHLO
+	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760142AbZE1Lzu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 07:55:45 -0400
-Date: Thu, 28 May 2009 13:44:08 +0200
-From: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       devicetree-discuss <devicetree-discuss@ozlabs.org>,
-       linux-kernel@vger.kernel.org, Timur Tabi <timur@freescale.com>,
-       Scott Wood <scottwood@freescale.com>,
-       Janboe Ye <yuan-bo.ye@motorola.com>,
-       linux-arm-kernel@lists.arm.linux.org.uk
-Subject: Re: [RFC] [PATCH] Device Tree on ARM platform
-Message-ID: <20090528114408.GA11285@game.jcrosoft.org>
-References: <1243408083.13460.14.camel@debian-nb> <fa686aa40905270727m31250984tf12249fc87179ce9@mail.gmail.com> <ed82fe3e0905270739k38018c87ka11f62c5977e45fb@mail.gmail.com> <20090527150527.GK6805@pengutronix.de> <87vdnm8sec.fsf@macbook.be.48ers.dk> <4A1D6901.2090508@freescale.com> <20090527175609.GB31861@flint.arm.linux.org.uk> <1243496236.3171.140.camel@pasglop> <20090528091513.GA14789@n2100.arm.linux.org.uk>
+	Thu, 28 May 2009 07:55:50 -0400
+Date: Thu, 28 May 2009 17:25:46 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: David Gibson <dwg@au1.ibm.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Benjamin Herrenschmidt <benh@au1.ibm.com>, maneesh@linux.vnet.ibm.com,
+       Roland McGrath <roland@redhat.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>
+Subject: Re: [Patch 02/12] Introducing generic hardware breakpoint handler
+	interfaces
+Message-ID: <20090528115546.GA6107@in.ibm.com>
+Reply-To: prasad@linux.vnet.ibm.com
+References: <20090511114422.133566343@prasadkr_t60p.in.ibm.com> <20090511115240.GC25673@in.ibm.com> <20090528061517.GA3091@yookeroo.seuss>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090528091513.GA14789@n2100.arm.linux.org.uk>
+In-Reply-To: <20090528061517.GA3091@yookeroo.seuss>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Ovh-Tracer-Id: 8916564313744583603
-X-Ovh-Remote: 213.251.161.87 (ns32433.ovh.net)
-X-Ovh-Local: 213.186.33.20 (ns0.ovh.net)
-X-Spam-Check: DONE|H 0.5/N
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10:15 Thu 28 May     , Russell King - ARM Linux wrote:
-> On Thu, May 28, 2009 at 05:37:16PM +1000, Benjamin Herrenschmidt wrote:
-> > On Wed, 2009-05-27 at 18:56 +0100, Russell King wrote:
-> > > 
-> > > smc91x is a prime example of the kind of information drivers need - base
-> > > address and irq are very much insufficient to describe how this device is
-> > > connected.  There's much more information required to specify this device
-> > > fully, and throwing it into the driver doesn't work.  We've been there
-> > > and proven that point.
-> > 
-> > The device-tree is a very nice and convenient way to convey all the
-> > informations the driver need straight to the driver without any platform
-> > code in the middle :-)
+On Thu, May 28, 2009 at 04:15:18PM +1000, David Gibson wrote:
+> On Mon, May 11, 2009 at 05:22:40PM +0530, K.Prasad wrote:
+> > This patch introduces the generic Hardware Breakpoint interfaces for
+> > both user and kernel space requests.
 > 
-> I'm still uncertain whether that's actually a true statement.  For some
-> cases, of course it's true, but I have a nasty suspicion that we have
-> corner cases where OF won't cope well with.
+> [snip]
+> > Index: kernel/hw_breakpoint.c
+> > ===================================================================
+> > --- /dev/null
+> > +++ kernel/hw_breakpoint.c
+> > @@ -0,0 +1,367 @@
+> > +/*
+> > + * This program is free software; you can redistribute it and/or modify
+> > + * it under the terms of the GNU General Public License as published by
+> > + * the Free Software Foundation; either version 2 of the License, or
+> > + * (at your option) any later version.
+> > + *
+> > + * This program is distributed in the hope that it will be useful,
+> > + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> > + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> > + * GNU General Public License for more details.
+> > + *
+> > + * You should have received a copy of the GNU General Public License
+> > + * along with this program; if not, write to the Free Software
+> > + * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+> > + *
+> > + * Copyright (C) 2007 Alan Stern
+> > + * Copyright (C) IBM Corporation, 2009
+> > + */
+> > +
+> > +/*
+> > + * HW_breakpoint: a unified kernel/user-space hardware breakpoint facility,
+> > + * using the CPU's debug registers.
+> > + *
+> > + * This file contains the arch-independent routines.  It is not meant
+> > + * to be compiled as a standalone source file; rather it should be
+> > + * #include'd by the arch-specific implementation.
+> > + */
+> > +
+> > +#include <linux/irqflags.h>
+> > +#include <linux/kallsyms.h>
+> > +#include <linux/notifier.h>
+> > +#include <linux/kprobes.h>
+> > +#include <linux/kdebug.h>
+> > +#include <linux/kernel.h>
+> > +#include <linux/module.h>
+> > +#include <linux/percpu.h>
+> > +#include <linux/mutex.h>
+> > +#include <linux/sched.h>
+> > +#include <linux/init.h>
+> > +#include <linux/smp.h>
+> > +
+> > +#include <asm/hw_breakpoint.h>
+> > +#include <asm/processor.h>
+> > +
+> > +#ifdef CONFIG_X86
 > 
-> As I see it, if we were to convert to OF, we're boxing ourselves in to
-> a corner that would be extremely difficult to get out of.  We would
-> never be able to step back from OF.  Lets take an example.  If we were
-> to convert PXA to OF including all the PXA SoC drivers, and a board
-> configuration came along which required hacks to a driver.  Later on
-> we find that most platform authors are applying similar hacks because
-> their hardware is subtly different but those differences can't be
-> expressed via OF.  At this point, what do we do?  We can't say "well,
-> OF doesn't work well on this platform, we want to get rid of it" that
-> would be extremely difficult to impossible to do.
-One of the really nice ability is to allow to simplify AMP support
-by defining one device tree for each core where each kernel will use nealy the same
-kernel. As done by Kumar for the mpc8572ds.
+> That's a nasty #ifdef.  Surely this include should instead go in the
+> x86 version of hw_breakpoint.h.
+> 
 
-You can found here the boot procedure and kernel option
-http://git.denx.de/?p=u-boot/u-boot-arm.git;a=blob;f=doc/README.mpc8572ds;h=06dab596bea52ab8d8c2ba89d86f793cc4881ccb;hb=HEAD
+Agreed. I will make the change.
 
-Best Regards,
-J.
+> > +#include <asm/debugreg.h>
+> > +#endif
+> > +/*
+> > + * Spinlock that protects all (un)register operations over kernel/user-space
+> > + * breakpoint requests
+> > + */
+> > +DEFINE_SPINLOCK(hw_breakpoint_lock);
+> > +
+> > +/* Array of kernel-space breakpoint structures */
+> > +struct hw_breakpoint *hbp_kernel[HB_NUM];
+> > +
+> > +/*
+> > + * Per-processor copy of hbp_kernel[]. Used only when hbp_kernel is being
+> > + * modified but we need the older copy to handle any hbp exceptions. It will
+> > + * sync with hbp_kernel[] value after updation is done through IPIs.
+> > + */
+> > +DEFINE_PER_CPU(struct hw_breakpoint*, this_hbp_kernel[HB_NUM]);
+> 
+> Ok.. this seems to assume that all breakpoints are equal as far as
+> allocation goes - i.e. that the total number of breakpoints is the
+> only allocation limit.  That's apparently true for x86, but on
+> embedded powerpc (4xx), for example, we can have up to 2 data
+> breakpoints and up to 4 instruction breakpoints independent of each
+> other.
+> 
+
+True. But I hope that you see that the infrastructure is extensible.
+While the generic infrastructure has served the purposes of x86 and
+PPC64 well, one may want to 'grow' it when implementing breakpoints for
+4xx processors. Say, make hbp_kernel[] a 2-D array, one for each
+HBP_TYPE (say DAC and IAC) and hbp_kernel_pos into an array (of size
+HBP_TYPE).
+
+> > +/*
+> > + * Kernel breakpoints grow downwards, starting from HB_NUM
+> > + * 'hbp_kernel_pos' denotes lowest numbered breakpoint register occupied for
+> > + * kernel-space request. We will initialise it here and not in an __init
+> > + * routine because load_debug_registers(), which uses this variable can be
+> > + * called very early during CPU initialisation.
+> > + */
+> > +unsigned int hbp_kernel_pos = HB_NUM;
+> 
+> Likewise here.  For 44x we would need separate tables and separate
+> pointers for data and instruction breakpoints.
+> 
+> > +/*
+> > + * An array containing refcount of threads using a given bkpt register
+> > + * Accesses are synchronised by acquiring hw_breakpoint_lock
+> > + */
+> > +unsigned int hbp_user_refcount[HB_NUM];
+> > +
+> > +/*
+> > + * Install the debug register values for a new thread.
+> > + */
+> > +void switch_to_thread_hw_breakpoint(struct task_struct *tsk)
+> > +{
+> > +	/* Set the debug register */
+> > +	arch_install_thread_hw_breakpoint(tsk);
+> 
+> Um.. and the point of this wrapper which does nothing extra around the
+> arch-specific function would be...?
+> 
+> > +}
+> > +
+> > +/*
+> > + * Install the debug register values for just the kernel, no thread.
+> > + */
+> > +void switch_to_none_hw_breakpoint(void)
+> > +{
+> > +	arch_uninstall_thread_hw_breakpoint();
+> 
+> And again.
+> 
+
+These functions have hence been removed. You can find the latest
+patchset here: http://lkml.org/lkml/2009/5/21/143.
+
+> > +}
+> > +
+> > +/*
+> > + * Load the debug registers during startup of a CPU.
+> > + */
+> > +void load_debug_registers(void)
+> 
+> This name does not suggest a boot and/or cpu hotplug only function.
+> 
+
+I think the name aptly describes what the function achieves
+(irrespective of where it is employed). Let us know if you have better
+suggestions.
+
+> > +{
+> > +	unsigned long flags;
+> > +	struct task_struct *tsk = current;
+> > +
+> > +	spin_lock_bh(&hw_breakpoint_lock);
+> > +
+> > +	/* Prevent IPIs for new kernel breakpoint updates */
+> > +	local_irq_save(flags);
+> > +	arch_update_kernel_hw_breakpoint(NULL);
+> > +	local_irq_restore(flags);
+> > +
+> > +	if (test_tsk_thread_flag(tsk, TIF_DEBUG))
+> > +		switch_to_thread_hw_breakpoint(tsk);
+> > +
+> > +	spin_unlock_bh(&hw_breakpoint_lock);
+> > +}
+> > +
+> > +/*
+> > + * Erase all the hardware breakpoint info associated with a thread.
+> > + *
+> > + * If tsk != current then tsk must not be usable (for example, a
+> > + * child being cleaned up from a failed fork).
+> > + */
+> > +void flush_thread_hw_breakpoint(struct task_struct *tsk)
+> > +{
+> > +	int i;
+> > +	struct thread_struct *thread = &(tsk->thread);
+> > +
+> > +	spin_lock_bh(&hw_breakpoint_lock);
+> > +
+> > +	/* The thread no longer has any breakpoints associated with it */
+> > +	clear_tsk_thread_flag(tsk, TIF_DEBUG);
+> > +	for (i = 0; i < HB_NUM; i++) {
+> > +		if (thread->hbp[i]) {
+> > +			hbp_user_refcount[i]--;
+> > +			kfree(thread->hbp[i]);
+> > +			thread->hbp[i] = NULL;
+> > +		}
+> > +	}
+> > +
+> > +	arch_flush_thread_hw_breakpoint(tsk);
+> > +
+> > +	/* Actually uninstall the breakpoints if necessary */
+> > +	if (tsk == current)
+> > +		switch_to_none_hw_breakpoint();
+> > +	spin_unlock_bh(&hw_breakpoint_lock);
+> > +}
+> > +
+> > +/*
+> > + * Copy the hardware breakpoint info from a thread to its cloned
+> > child.
+> 
+> This comment contradicts what the code actually does.
+> 
+
+Agreed. Will change it.
+
+> > + */
+> > +int copy_thread_hw_breakpoint(struct task_struct *tsk,
+> > +		struct task_struct *child, unsigned long clone_flags)
+> > +{
+> > +	/*
+> > +	 * We will assume that breakpoint settings are not inherited
+> > +	 * and the child starts out with no debug registers set.
+> > +	 * But what about CLONE_PTRACE?
+> > +	 */
+> > +	clear_tsk_thread_flag(child, TIF_DEBUG);
+> > +
+> > +	/* We will call flush routine since the debugregs are not inherited */
+> > +	arch_flush_thread_hw_breakpoint(child);
+> 
+> > +
+> > +	return 0;
+> > +}
+> > +
+> > +int __register_user_hw_breakpoint(int pos, struct task_struct *tsk,
+> > +					struct hw_breakpoint *bp)
+> > +{
+> > +	struct thread_struct *thread = &(tsk->thread);
+> > +	int rc;
+> > +
+> > +	/* Do not overcommit. Fail if kernel has used the hbp registers */
+> > +	if (pos >= hbp_kernel_pos)
+> > +		return -ENOSPC;
+> 
+> Again, this is generic code making a non-portable assumption about how
+> breakpoints must be allocated.
+> 
+
+As explained before, this function and its kernel counterparts can be
+extended to accomodate newer processors which will be supported by this
+infrastructure.
+
+Thanks,
+K.Prasad
+
