@@ -1,166 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753721AbZE1Wdy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753406AbZE1WgL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753721AbZE1Wdy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 18:33:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753080AbZE1Wdi
+	id S1753406AbZE1WgL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 18:36:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751394AbZE1Wf6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 18:33:38 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:60804 "EHLO mx2.redhat.com"
+	Thu, 28 May 2009 18:35:58 -0400
+Received: from gate.crashing.org ([63.228.1.57]:47591 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753169AbZE1Wdh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 18:33:37 -0400
-Date: Thu, 28 May 2009 18:33:30 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Jens Axboe <jens.axboe@oracle.com>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       npiggin@suse.de
-Cc: Divyesh Shah <dpshah@google.com>, Nauman Rafique <nauman@google.com>
-Subject: Query about anticipatory IO scheduler dynamic write batch size
-	updation logic
-Message-ID: <20090528223330.GC4335@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1751084AbZE1Wf6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 18:35:58 -0400
+Subject: Re: [RFC] [PATCH] Device Tree on ARM platform
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: David Miller <davem@davemloft.net>, scottwood@freescale.com,
+       devicetree-discuss@ozlabs.org, linux-kernel@vger.kernel.org,
+       timur@freescale.com, yuan-bo.ye@motorola.com,
+       linux-arm-kernel@lists.arm.linux.org.uk
+In-Reply-To: <20090528103421.GC14789@n2100.arm.linux.org.uk>
+References: <20090527175609.GB31861@flint.arm.linux.org.uk>
+	 <1243496236.3171.140.camel@pasglop>
+	 <20090528091513.GA14789@n2100.arm.linux.org.uk>
+	 <20090528.025739.16559619.davem@davemloft.net>
+	 <1243505493.5573.29.camel@pasglop>
+	 <20090528103421.GC14789@n2100.arm.linux.org.uk>
+Content-Type: text/plain
+Date: Fri, 29 May 2009 08:33:29 +1000
+Message-Id: <1243550009.17903.19.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jens, Nick,
+On Thu, 2009-05-28 at 11:34 +0100, Russell King - ARM Linux wrote:
+> On Thu, May 28, 2009 at 08:11:33PM +1000, Benjamin Herrenschmidt wrote:
+> > Well, that example is interesting because you may not want the
+> > transceiver to be a child of the UART :-) The tree hierachy is mostly
+> > about addressing, and addressing below a UART doesn't mean much.
+> > 
+> > So if the transceiver has a bunch of MMIO registers, it might be better
+> > off located elsewhere, and have the UART have a "fir-transceiver"
+> > property with a phandle to the actual device...
+> 
+> IrDA transceivers do not have MMIO registers.  Transceivers are an IR
+> LED, an IR phototransitor andr receiver circuitry.  They're typically
+> 9 pin devices with power, ground, transmit, receive and a bunch of
+> control signals.
 
-I am having a look at anticipatory dynamic write batch size updation logic
-and can't understand it. Hence thought it is easier to ask.
+Right, I'm used to those transceivers. For some reason I read from your
+previous post that you had such a transceiver with registers. But it
+doesn't matter much, it's a valid example of how you can go "accross"
+the base hierarchy of the tree if needs be.
 
-IIUC, update_write_batch(), calculates how much time a write batch has
-taken and if writes are taking more time than allocated batch size, then
-it decreases the number of writes to issue from the write batch and vice
-versa.
+In the case of a simple transciever like the ones controlled by GPIOs or
+via bit banging on flow control lines, yes, it would probably be a child
+of the UART node, eventually with properties describing which GPIOs
+(via phandles to GPIO nodes for example) are used to configure it.
 
-Currently, update_write_batch() waits for first read request to finish,
-and then it comapres the current value of jiffies with "current_batch_expires".
+I think the -root- of the discussion at this stage is really the problem
+of providing those "methods" for power control, clock control, or other
+similar housekeeping things. I think the device-tree doesn't make things
+better or worse per se, and unless there's an actual live OF
+implementation underneath (in which case nodes do have methods you can
+call into via OF callbacks), then the device-tree doesn't provide an
+automatic way of solving that. But we can invent one :-)
 
-I got two questions here.
+> The kind of reply I was hoping to get to my email was something more
+> along these lines - an informed view giving an idea how some of these
+> issues would be addressed with an OF device tree.
+> 
+> I can see how the named functions/directory would work - that seems to
+> be relatively simple and straight forward.
 
-- ad->current_batch_expires gets updated with the expiry time of next READ
-  batch in as_completed_request() before we call update_write_batch().
+Right. It deviates a bit from the idea that the device-tree should be
+agnostic to the operating system and only represent the HW layout, but
+I'm no religious fanatic and I think it might be a very good compromise.
 
-  That means effectively we are making sure that as long as writes don't
-  consume more than (WRITE + READ) batch size, things are fine.  I am
-  guessing that this is not intentional and probably is the side affect
-  of following patch.
+In many case, sets of "standard" methods could be provided by the kernel
+that use properties in the target node as arguments. For example, things
+like "simple-enable-gpio" and "simple-reset-gpio" could be generically
+provided, using properties such as "enable-gpio" (phandle to a GPIO
+node), "enable-delay" (integer duration) etc... in the target node as
+"arguments". The platform can then register the more fancy onces it
+needs.
 
-	commit d585d0b9d73ed999cc7b8cf3cac4a5b01abb544e
-	Author: Divyesh Shah <dpshah@google.com>
-	Date:   Mon Jun 16 18:37:08 2008 +0200
+> However, the pseudo-device approach I'm less clear about.  With a separate
+> driver for the "power control" pseudo-device, how would you communicate
+> the state information down to that driver?
 
-    	block: Fix the starving writes bug in the anticipatory IO scheduler
+It depends. It doesn't have to be "pseudo" actually... in the case of
+backlight, one could have a node for backlight control and a real driver
+binding to it that just does backlight control. The linkage between that
+and the main LCD driver, if necessary, can be done via phandle links in
+the tree, and recovering the driver from the node (a bit tricky but
+doable).
 
+> I am equating OF devices and drivers too much with the struct device and
+> struct driver model, which sounds like it's not the best thing to do with
+> OF.
 
-- Why do we call update_write_batch() after completion of first read
-  request. Shoulnd't it be called after last write request has completed
-  from the write batch? Calling it after first read makes it unfair
-  beacuse next read might cause a big seek time and we will account that
-  into time taken by previous write batch?
- 
+Well, it depends really. Mostly we -do- end up with a struct device for
+a node ... but it's not necessarily always true.
 
-For the first issue, I wrote a quick crude test patch as follows.
-
----
- block/as-iosched.c |   12 +++++++++++-
- 1 file changed, 11 insertions(+), 1 deletion(-)
-
-Index: linux12/block/as-iosched.c
-===================================================================
---- linux12.orig/block/as-iosched.c	2009-04-30 00:48:16.000000000 -0400
-+++ linux12/block/as-iosched.c	2009-05-28 17:43:31.000000000 -0400
-@@ -103,6 +103,8 @@ struct as_data {
- 	sector_t new_seek_mean;
- 
- 	unsigned long current_batch_expires;
-+	unsigned long last_write_batch_expires; /* ideal expiry time of last
-+						 * write batch */
- 	unsigned long last_check_fifo[2];
- 	int changed_batch;		/* 1: waiting for old batch to end */
- 	int new_batch;			/* 1: waiting on first read complete */
-@@ -811,7 +813,7 @@ static void update_write_batch(struct as
- 	unsigned long batch = ad->batch_expire[BLK_RW_ASYNC];
- 	long write_time;
- 
--	write_time = (jiffies - ad->current_batch_expires) + batch;
-+	write_time = (jiffies - ad->last_write_batch_expires) + batch;
- 	if (write_time < 0)
- 		write_time = 0;
- 
-@@ -847,6 +849,14 @@ static void as_completed_request(struct 
- 	}
- 
- 	if (ad->changed_batch && ad->nr_dispatched == 1) {
-+		/*
-+		 * If this was write batch finishing, store the expiry time
-+		 * so that it can be used to update write batch size when
-+		 * next read request finishes.
-+		 */
-+		if (ad->batch_data_dir == BLK_RW_SYNC)
-+			ad->last_write_batch_expires =
-+						ad->current_batch_expires;
- 		ad->current_batch_expires = jiffies +
- 					ad->batch_expire[ad->batch_data_dir];
- 		kblockd_schedule_work(q, &ad->antic_work);
+Cheers,
+Ben.
 
 
-I did a basic test with and without the patch.
-
-I am having a SATA disk and running a reader and a writer with anticipatory
-scheduler. I am reading a 2.1 G file and writting the same size file.
-Following is my test script.
-
-dd if=/mnt/sdb/testzerofile2 of=/dev/null &
-reader=$!
-echo "launched reader $reader"
-
-dd if=/dev/zero of=/mnt/sdb/testzerofile1 bs=4K count=524288 &
-writer=$!
-echo "launched writer $writer"
-
-wait $reader
-echo "reader finished"
-
-With current AS (2.6.30-rc4), writer finishes first and gets more
-bandwidth.
-
-Without patch
-=============
-
-First run
-=========
-2147483648 bytes (2.1 GB) copied, 49.1937 s, 43.7 MB/s
-2147483648 bytes (2.1 GB) copied, 54.8708 s, 39.1 MB/s
-reader finished
-
-Second run
-==========
-2147483648 bytes (2.1 GB) copied, 47.9976 s, 44.7 MB/s
-2147483648 bytes (2.1 GB) copied, 58.8639 s, 36.5 MB/s
-reader finished
-
-With-patch
-==========
-First run
----------
-2147483648 bytes (2.1 GB) copied, 45.4351 s, 47.3 MB/s
-reader finished
-2147483648 bytes (2.1 GB) copied, 50.6594 s, 42.4 MB/s
-
-Second run
-----------
-2147483648 bytes (2.1 GB) copied, 45.8888 s, 46.8 MB/s
-reader finished
-2147483648 bytes (2.1 GB) copied, 51.1322 s, 42.0 MB/s
-
-
-Note that without patch, writer wins the race and with patch, reader wins
-the race. I am not sure what is the expected behavior from AS but I
-thought at least I will ask the question.
-
-Thanks
-Vivek
