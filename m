@@ -1,183 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763771AbZE1Sep@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760557AbZE1SiU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763771AbZE1Sep (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 14:34:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754817AbZE1Seh
+	id S1760557AbZE1SiU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 14:38:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753195AbZE1SiM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 14:34:37 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:52465 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757345AbZE1Seg (ORCPT
+	Thu, 28 May 2009 14:38:12 -0400
+Received: from tomts16.bellnexxia.net ([209.226.175.4]:38798 "EHLO
+	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751039AbZE1SiM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 14:34:36 -0400
-Date: Thu, 28 May 2009 14:34:36 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: LKML <linux-kernel@vger.kernel.org>
-cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH][GIT PULL] ftrace: add kernel command line function
- filtering
-Message-ID: <alpine.DEB.2.00.0905281420590.11238@gandalf.stny.rr.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 28 May 2009 14:38:12 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AloJAAd1HkpMQW1W/2dsb2JhbACBT5cPtkSEDQU
+Date: Thu, 28 May 2009 14:38:11 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Jamie Lokier <jamie@shareable.org>,
+       Catalin Marinas <catalin.marinas@arm.com>,
+       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: Broken ARM atomic ops wrt memory barriers (was : [PATCH] Add
+	cmpxchg support for ARMv6+ systems)
+Message-ID: <20090528183811.GA26947@Krystal>
+References: <20090422171703.19555.83629.stgit@pc1117.cambridge.arm.com> <20090423141248.22193.10543.stgit@pc1117.cambridge.arm.com> <20090524131636.GB3159@n2100.arm.linux.org.uk> <20090524145633.GA14754@Krystal> <20090525132027.GA946@shareable.org> <20090525151724.GA14321@Krystal> <20090525161941.GA3667@n2100.arm.linux.org.uk> <20090526145950.GB26713@n2100.arm.linux.org.uk> <20090526153654.GA17096@Krystal> <20090528182008.GJ20736@n2100.arm.linux.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20090528182008.GJ20736@n2100.arm.linux.org.uk>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 14:37:09 up 89 days, 15:03,  5 users,  load average: 1.24, 0.52,
+	0.29
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Russell King - ARM Linux (linux@arm.linux.org.uk) wrote:
+> On Tue, May 26, 2009 at 11:36:54AM -0400, Mathieu Desnoyers wrote:
+> > The rest looks good.
+> 
+> Good, I've reverted the removal of "memory", and so I guess we're all
+> happy with the patch now.
 
-Ingo,
+Yes, you can add a
 
-Please pull the latest tip/tracing/ftrace tree, which can be found at:
+Reported-Reviewed-and-Acked-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-tip/tracing/ftrace
+if you feel like it.
 
+Thanks,
 
-Steven Rostedt (1):
-      ftrace: add kernel command line function filtering
+Mathieu
 
-----
- Documentation/kernel-parameters.txt |   17 ++++++++++++-
- kernel/trace/ftrace.c               |   42 +++++++++++++++++++++++++++++++++++
- 2 files changed, 57 insertions(+), 2 deletions(-)
----------------------------
-commit 3481535dc7351d3a45f67d8016bd78fc5c537628
-Author: Steven Rostedt <srostedt@redhat.com>
-Date:   Thu May 28 13:37:24 2009 -0400
-
-    ftrace: add kernel command line function filtering
-    
-    When using ftrace=function on the command line to trace functions
-    on boot up, one can not filter out functions that are commonly called.
-    
-    This patch adds two new ftrace command line commands.
-    
-      ftrace_notrace=function-list
-      ftrace_filter=function-list
-    
-    Where function-list is a comma separated list of functions to filter.
-    The ftrace_notrace will make the functions listed not be included
-    in the function tracing, and ftrace_filter will only trace the functions
-    listed.
-    
-    These two act the same as the debugfs/tracing/set_ftrace_notrace and
-    debugfs/tracing/set_ftrace_filter respectively.
-    
-    The simple glob expressions that are allowed by the filter files can also
-    be used by the command line interface.
-    
-    	ftrace_notrace=rcu*,*lock,*spin*
-    
-    Will not trace any function that starts with rcu, ends with lock, or has
-    the word spin in it.
-    
-    Note, if the self tests are enabled, they may interfere with the filtering
-    set by the command lines.
-    
-    [ Imact: allow filtering of function tracing at boot up ]
-    
-    Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 9243dd8..fcd3bfb 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -751,12 +751,25 @@ and is between 256 and 4096 characters. It is defined in the file
- 			ia64_pal_cache_flush instead of SAL_CACHE_FLUSH.
- 
- 	ftrace=[tracer]
--			[ftrace] will set and start the specified tracer
-+			[FTRACE] will set and start the specified tracer
- 			as early as possible in order to facilitate early
- 			boot debugging.
- 
- 	ftrace_dump_on_oops
--			[ftrace] will dump the trace buffers on oops.
-+			[FTRACE] will dump the trace buffers on oops.
-+
-+	ftrace_filter=[function-list]
-+			[FTRACE] Limit the functions traced by the function
-+			tracer at boot up. function-list is a comma separated
-+			list of functions. This list can be changed at run
-+			time by the set_ftrace_filter file in the debugfs
-+			tracing directory. 
-+
-+	ftrace_notrace=[function-list]
-+			[FTRACE] Do not trace the functions specified in
-+			function-list. This list can be changed at run time
-+			by the set_ftrace_notrace file in the debugfs
-+			tracing directory.
- 
- 	gamecon.map[2|3]=
- 			[HW,JOY] Multisystem joystick and NES/SNES/PSX pad
-diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-index 140699a..2074e5b 100644
---- a/kernel/trace/ftrace.c
-+++ b/kernel/trace/ftrace.c
-@@ -32,6 +32,7 @@
- #include <trace/events/sched.h>
- 
- #include <asm/ftrace.h>
-+#include <asm/setup.h>
- 
- #include "trace_output.h"
- #include "trace_stat.h"
-@@ -2369,6 +2370,45 @@ void ftrace_set_notrace(unsigned char *buf, int len, int reset)
- 	ftrace_set_regex(buf, len, reset, 0);
- }
- 
-+/*
-+ * command line interface to allow users to set filters on boot up.
-+ */
-+#define FTRACE_FILTER_SIZE		COMMAND_LINE_SIZE
-+static char ftrace_notrace_buf[FTRACE_FILTER_SIZE] __initdata;
-+static char ftrace_filter_buf[FTRACE_FILTER_SIZE] __initdata;
-+
-+static int __init set_ftrace_notrace(char *str)
-+{
-+	strncpy(ftrace_notrace_buf, str, FTRACE_FILTER_SIZE);
-+	return 1;
-+}
-+__setup("ftrace_notrace=", set_ftrace_notrace);
-+
-+static int __init set_ftrace_filter(char *str)
-+{
-+	strncpy(ftrace_filter_buf, str, FTRACE_FILTER_SIZE);
-+	return 1;
-+}
-+__setup("ftrace_filter=", set_ftrace_filter);
-+
-+static void __init set_ftrace_early_filter(char *buf, int enable)
-+{
-+	char *func;
-+
-+	while (buf) {
-+		func = strsep(&buf, ",");
-+		ftrace_set_regex(func, strlen(func), 0, enable);
-+	}
-+}
-+
-+static void __init set_ftrace_early_filters(void)
-+{
-+	if (ftrace_filter_buf[0])
-+		set_ftrace_early_filter(ftrace_filter_buf, 1);
-+	if (ftrace_notrace_buf[0])
-+		set_ftrace_early_filter(ftrace_notrace_buf, 0);
-+}
-+
- static int
- ftrace_regex_release(struct inode *inode, struct file *file, int enable)
- {
-@@ -2829,6 +2869,8 @@ void __init ftrace_init(void)
- 	if (ret)
- 		pr_warning("Failed to register trace ftrace module notifier\n");
- 
-+	set_ftrace_early_filters();
-+
- 	return;
-  failed:
- 	ftrace_disabled = 1;
-
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
