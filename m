@@ -1,53 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762572AbZE1M0R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759256AbZE1M3R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762572AbZE1M0R (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 08:26:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757161AbZE1M0G
+	id S1759256AbZE1M3R (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 08:29:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755242AbZE1M3F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 08:26:06 -0400
-Received: from cantor.suse.de ([195.135.220.2]:58465 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755653AbZE1M0F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 08:26:05 -0400
-Date: Thu, 28 May 2009 14:26:06 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Lee.Schermerhorn@hp.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       fengguang.wu@intel.com
-Subject: Re: [PATCH] [9/16] HWPOISON: Use bitmask/action code for try_to_unmap behaviour
-Message-ID: <20090528122606.GN6920@wotan.suse.de>
-References: <200905271012.668777061@firstfloor.org> <20090527201235.9475E1D0292@basil.firstfloor.org> <20090528072703.GF6920@wotan.suse.de> <20090528080319.GA1065@one.firstfloor.org> <20090528082818.GH6920@wotan.suse.de> <874ov5fvm6.fsf@basil.nowhere.org>
+	Thu, 28 May 2009 08:29:05 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:22043 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754150AbZE1M3E (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 08:29:04 -0400
+Date: Thu, 28 May 2009 14:28:37 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
+       stable <stable@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       LM Sensors <lm-sensors@lm-sensors.org>
+Subject: Re: [lm-sensors] [PATCH-tip] x86: hwmon/k8temp.c Add support for 
+ AMD 10H and 11H
+Message-ID: <20090528142837.530ba070@hyperion.delvare>
+In-Reply-To: <1243511849.3669.5.camel@localhost.localdomain>
+References: <1242979484.8796.7.camel@localhost.localdomain>
+	<4A165F67.3020005@assembler.cz>
+	<1242981748.10642.3.camel@localhost.localdomain>
+	<1242984648.16532.3.camel@localhost.localdomain>
+	<4A182B61.5010503@assembler.cz>
+	<1243339833.12303.2.camel@localhost.localdomain>
+	<4A1C08C6.7060103@assembler.cz>
+	<1243352672.31783.10.camel@localhost.localdomain>
+	<1243511849.3669.5.camel@localhost.localdomain>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-suse-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <874ov5fvm6.fsf@basil.nowhere.org>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 28, 2009 at 11:02:41AM +0200, Andi Kleen wrote:
-> Nick Piggin <npiggin@suse.de> writes:
+On Thu, 28 May 2009 17:27:29 +0530, Jaswinder Singh Rajput wrote:
+> Hello Andrew, Greg and Ingo:
 > 
-> > There are a set of "actions" which is what the callers are, then a
-> > set of modifiers. Just make it all modifiers and the callers can
-> > use things that are | together.
-> 
-> The actions are typically contradictory in some way, that is why
-> I made them "actions". The modifiers are all things that could
-> be made into flags in a straightforward way.
-> 
-> Probably it could be all turned into flags, but that would
-> make the patch much more intrusive for rmap.c than it currently is,
-> with some restructuring needed, which I didn't want to do.
+> Do you think this patch should go to stable and latest git.
 
-I don't think that's a problem. It's ugly as-is.
+Definitely not to stable, it's not fixing any bug.
 
- 
-> Hwpoison in general is designed to not be intrusive.
-
-Some cosmetic or code restructuring is the least intrusiveness that
-hwpoison is. It is very intrusive, not for lines added or changed,
-but for how it interacts with the mm.
-
+-- 
+Jean Delvare
