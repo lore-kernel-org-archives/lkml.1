@@ -1,77 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764269AbZE1U2T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764267AbZE1UaA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764269AbZE1U2T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 16:28:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759658AbZE1U2I
+	id S1764267AbZE1UaA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 16:30:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759910AbZE1U3w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 16:28:08 -0400
-Received: from mail.fieldses.org ([141.211.133.115]:42922 "EHLO
-	pickle.fieldses.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758720AbZE1U2H (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 16:28:07 -0400
-Date: Thu, 28 May 2009 16:28:03 -0400
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: Sven Geggus <lists@fuchsschwanzdomain.de>, linux-kernel@vger.kernel.org,
-       linux-nfs@vger.kernel.org
-Subject: Re: 2.6.29+ NFS-Server Problem "reconnect_path: npd != pd"
-Message-ID: <20090528202803.GF13860@fieldses.org>
-References: <20090521142026.GA5566@geggus.net> <1242924599.6687.1.camel@heimdal.trondhjem.org> <20090521165751.GA4428@geggus.net> <1242927133.6687.4.camel@heimdal.trondhjem.org> <gv4463$6fn$1@ultimate100.geggus.net> <1242929546.22947.11.camel@heimdal.trondhjem.org>
+	Thu, 28 May 2009 16:29:52 -0400
+Received: from www.tglx.de ([62.245.132.106]:39458 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759091AbZE1U3w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 16:29:52 -0400
+Date: Thu, 28 May 2009 22:29:38 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+cc: linux-kernel@vger.kernel.org, Rob van der Heij <rvdheij@gmail.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       john stultz <johnstul@us.ibm.com>
+Subject: Re: [patch 2/2] keep on ticking if oprofile is active
+In-Reply-To: <20090528150502.305840931@de.ibm.com>
+Message-ID: <alpine.LFD.2.00.0905282220400.3397@localhost.localdomain>
+References: <20090528150447.152019714@de.ibm.com> <20090528150502.305840931@de.ibm.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1242929546.22947.11.camel@heimdal.trondhjem.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 21, 2009 at 02:12:26PM -0400, Trond Myklebust wrote:
-> On Thu, 2009-05-21 at 17:48 +0000, Sven Geggus wrote:
-> > Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
-> > 
-> > > So what is the underlying filesystem that you are exporting, and what
-> > > does your /etc/exports file look like?
-> > 
-> > The underlying filesystem is xfs and /etc/exports (unchanged) is here:
-> > 
-> > --cut--
-> > # /etc/exports: the access control list for filesystems which may be exported
-> > #		to NFS clients.  See exports(5).
-> > /               192.168.3.2(rw,no_root_squash,async,subtree_check)
-> > /home/sven	192.168.3.2(rw,no_root_squash,async,subtree_check) 192.168.3.6(rw,no_root_squash,async,subtree_check) 192.168.3.8(rw,no_root_squash,async,subtree_check)
-> > /home/mp3	192.168.3.2(rw,no_root_squash,async,subtree_check) 192.168.3.6(rw,no_root_squash,async,subtree_check) 192.168.3.8(rw,no_root_squash,async,subtree_check)
-> > /home/sven/filme 192.168.3.7(ro,async,subtree_check)
-> > /home/kathi910	192.168.3.7(rw,no_root_squash,async,no_subtree_check)
-> > --cut--
-> > 
-> > 192.168.3.2 is the client which causes the error, I didn't notice the
-> > error on the other clients, but they are not used that often.
-> > 
-> > Especially 192.168.3.7 does seem to work.
-> > 
-> > Regards
-> > 
-> > Sven
-> > 
+On Thu, 28 May 2009, Martin Schwidefsky wrote:
+> From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 > 
-> Reforwarding the reply for the benefit of the NFS mailing list. Not
-> everyone reads lkml...
+> On a NOHZ system with oprofile enabled the timer tick should not be
+> stopped when a cpu goes idle. Oprofile needs the pt_regs structure
+> of the interrupt and allocates memory in the ring buffer for each
+> sample. Current a maximum of 1 tick is accounted with oprofile if a
+> cpu sleeps for a longer period of time. This does bad things to the
+> percentages in the oprofile output. To postpone the oprofile tick to
+> tick_nohz_restart_sched_tick analog to the in kernel profiler is not
+> possible as there is no pt_regs structure in the context the
+> tick_nohz_restart_sched_tick function is called and it is not a good
+> idea to create hundreds of samples at once.
 
-Original thread starts here:
+  Sigh. That's stupid.
 
-	http://marc.info/?l=linux-kernel&m=124291571326139&w=2
+  OTOH, thinking more about the patch itself it might be even useful
+  for things aside oprofile. Runtime switching from and to nohz mode
+  for debugging or evaluation purposes comes to my mind. That would
+  need some sysfs interface, but that's not too hard to do.
 
-I don't think this is a known bug.
+  So yeah, I think we should satisfy oprofile needs and utilize it further.
 
-Looks like you have subtree_check set on the "bad" export, and
-no_subtree_check set on the "good" export.  subtree_check can result in
-spurious stale errors when files are renamed, so it's possible this is
-by design.
+  Thanks,
 
-You say you get that message on 296.29.x but not 2.6.27.x.  And you say
-you also get stale filehandle errors.  I assume you didn't get the same
-stale filehandle errors on 2.6.27.x?
-
---b.
+	tglx
