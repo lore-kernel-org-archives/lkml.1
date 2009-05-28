@@ -1,86 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756689AbZE1JfL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756277AbZE1JgW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756689AbZE1JfL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 05:35:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752887AbZE1Je7
+	id S1756277AbZE1JgW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 05:36:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753546AbZE1JgJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 05:34:59 -0400
-Received: from casper.infradead.org ([85.118.1.10]:48410 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752168AbZE1Je6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 05:34:58 -0400
-Subject: Re: [PATCH] sched: Support current clocksource handling in
- fallback sched_clock().
-From: Peter Zijlstra <peterz@infradead.org>
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: Daniel Walker <dwalker@fifo99.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Linus Walleij <linus.ml.walleij@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Victor <linux@maxim.org.za>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-sh@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       John Stultz <johnstul@linux.vnet.ibm.com>
-In-Reply-To: <20090528091936.GA27545@linux-sh.org>
-References: <20090526061532.GD9188@linux-sh.org>
-	 <63386a3d0905260731m655bfee3q82a6f52d71fa3cef@mail.gmail.com>
-	 <1243348681.23657.14.camel@twins>
-	 <alpine.LFD.2.00.0905262209160.1762@localhost.localdomain>
-	 <20090526230855.GA27218@linux-sh.org>
-	 <alpine.LFD.2.00.0905270140030.1762@localhost.localdomain>
-	 <20090527001543.GA8493@linux-sh.org> <1243441525.28705.19.camel@desktop>
-	 <20090528091936.GA27545@linux-sh.org>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Thu, 28 May 2009 11:34:41 +0200
-Message-Id: <1243503281.23657.80.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Thu, 28 May 2009 05:36:09 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:36367 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752778AbZE1JgH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 05:36:07 -0400
+Date: Thu, 28 May 2009 11:36:08 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Jan Kara <jack@suse.cz>
+Cc: Theodore Tso <tytso@mit.edu>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, chris.mason@oracle.com,
+       david@fromorbit.com, hch@infradead.org, akpm@linux-foundation.org,
+       yanmin_zhang@linux.intel.com, richard@rsk.demon.co.uk,
+       damien.wyart@free.fr, Alex Chiang <achiang@hp.com>,
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>
+Subject: Re: [PATCH 0/11] Per-bdi writeback flusher threads v8
+Message-ID: <20090528093608.GX11363@kernel.dk>
+References: <1243417312-7444-1-git-send-email-jens.axboe@oracle.com> <20090527144754.GD10842@mit.edu> <20090527175353.GE10842@mit.edu> <20090527175830.GF10842@mit.edu> <20090527181402.GP11363@kernel.dk> <20090527191524.GS11363@kernel.dk> <20090527194543.GT11363@kernel.dk> <20090528004959.GH26625@mit.edu> <20090528092803.GE29199@duck.suse.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090528092803.GE29199@duck.suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-05-28 at 18:19 +0900, Paul Mundt wrote:
+On Thu, May 28 2009, Jan Kara wrote:
+> On Wed 27-05-09 20:49:59, Theodore Tso wrote:
+> > On Wed, May 27, 2009 at 09:45:43PM +0200, Jens Axboe wrote:
+> > > 
+> > > This one has been tested good, where good means that it boots and
+> > > functions normally at least. Whether it fixes your issue, that would be
+> > > interesting to know :-)
+> > > 
+> > 
+> > Unfortunately, it doesn't seem to have.  Here's a dmesg with the
+> > softlockup report and the sysrq-t output.  Unfortunately the dmesg
+> > file is too big for LKML, so I've compressed it so you can get the
+> > whole thing.
+>   Everybody waits for sys_sync() to complete and they never seem to be
+> woken up. Jens, wb_work_complete() seems a bit fishy - who does
+> wb_clear_work() in sync_mode == WB_SYNC_ALL which is on stack?
 
-> Ok, there were some ordering problems with the early platform code, but
-> I've played with this a bit more and got it to the point where this now
-> also works. I can live with this over the v3 version if people prefer
-> this approach instead.
-> 
-> --
+It is tricky, I looked through that several times. I think
+wb_work_complete() should do:
 
-> @@ -38,8 +39,7 @@
->   */
->  unsigned long long __attribute__((weak)) sched_clock(void)
->  {
-> -	return (unsigned long long)(jiffies - INITIAL_JIFFIES)
-> -					* (NSEC_PER_SEC / HZ);
-> +	return cyc2ns(sched_clocksource, clocksource_read(sched_clocksource));
->  }
->  
->  static __read_mostly int sched_clock_running;
+        if (!bdi_work_on_stack(work))
+                bdi_work_clear(work);
+        if (sync_mode == WB_SYNC_NONE || bdi_work_on_stack(work))
+                call_rcu(&work->rcu_head, bdi_work_free);
 
-> @@ -362,6 +363,9 @@ static struct clocksource *select_clocksource(void)
->  	if (next == curr_clocksource)
->  		return NULL;
->  
-> +	if (next->flags & CLOCK_SOURCE_USE_FOR_SCHED_CLOCK)
-> +		sched_clocksource = next;
-> +
->  	return next;
->  }
->  
+to have bdi_work_clear() called for the on-stack work. I'll double check
+this and roll out a new release, once tested. I haven't been able to
+reproduce Ted's problem yet, but perhaps my bdi_alloc() test failures
+haven't triggered for WB_SYNC_ALL yet.
 
-That's a single assignment, vs two reads on use. Should we be worried
-about the SMP race where we observe two different sched_clocksource
-pointers on read?
+> > There's also a lockdep warning which fsx triggered.
+>   The lockdep warning is definitely unrelated. It's really a possible
+> deadlock, although not quite probable. IMHO the problem is that
+> sysfs_mutex gets above mmap_sem due to code in sysfs_readdir which calls
+> filldir() which may cause page fault. At the same time it gets quite low
+> on the lock stack because filesystems call sysfs functions from their
+> internal functions (in this case ext4_put_super) holding quite some locks.
+> Adding a few CC's for this.
 
+Thanks, I didn't see any bdi related stuff in there either.
 
-I would suggest we write it as:
+-- 
+Jens Axboe
 
-u64 __weak sched_clock(void)
-{
-	struct clocksource *clock = ACCESS_ONCE(sched_clocksource);
-
-	return cyc2ns(clock, clocksource_read(clock));
-}
