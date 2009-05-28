@@ -1,60 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764719AbZE1Ugv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764525AbZE1UiQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764719AbZE1Ugv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 16:36:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764450AbZE1Ugb
+	id S1764525AbZE1UiQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 16:38:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762522AbZE1UiA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 16:36:31 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:37499 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764302AbZE1Uga (ORCPT
+	Thu, 28 May 2009 16:38:00 -0400
+Received: from smtpfb1-g21.free.fr ([212.27.42.9]:59233 "EHLO
+	smtpfb1-g21.free.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760788AbZE1UiA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 16:36:30 -0400
-Date: Thu, 28 May 2009 22:36:25 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Suresh B Siddha <suresh.b.siddha@intel.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
-       Gregory Haskins <gregory.haskins@gmail.com>,
-       Mike Galbraith <efault@gmx.de>, Thomas Gleixner <tglx@linutronix.de>,
-       Arun Bharadwaj <arun@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH v2 0/2] Saving power by cpu evacuation
-	sched_max_capacity_pct=n
-Message-ID: <20090528203625.GC11477@elf.ucw.cz>
-References: <20090513130541.21440.33364.stgit@drishya.in.ibm.com> <20090513143550.GU19296@one.firstfloor.org> <1242225402.26820.23.camel@twins> <20090513144659.GV19296@one.firstfloor.org> <1242226219.26820.26.camel@twins> <20090513150100.GW19296@one.firstfloor.org> <20090519204015.GE1362@ucw.cz> <20090522091457.GY7336@dirshya.in.ibm.com>
+	Thu, 28 May 2009 16:38:00 -0400
+To: pHilipp Zabel <philipp.zabel@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Liam Girdwood <lrg@slimlogic.co.uk>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Eric Miao <eric.miao@marvell.com>
+Subject: Re: [PATCH 1/3] regulator/max1586: support increased V3 voltage range
+References: <878wkibmv9.fsf@free.fr>
+	<1243487718-5423-2-git-send-email-philipp.zabel@gmail.com>
+	<87skip2gxu.fsf@free.fr>
+	<74d0deb30905281201k1eda2bcg39d2c1989533cbc8@mail.gmail.com>
+From: Robert Jarzmik <robert.jarzmik@free.fr>
+Date: Thu, 28 May 2009 22:36:46 +0200
+In-Reply-To: <74d0deb30905281201k1eda2bcg39d2c1989533cbc8@mail.gmail.com> (pHilipp Zabel's message of "Thu\, 28 May 2009 21\:01\:26 +0200")
+Message-ID: <87hbz52cdd.fsf@free.fr>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090522091457.GY7336@dirshya.in.ibm.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+pHilipp Zabel <philipp.zabel@gmail.com> writes:
 
-> > But I don't see why it is neccessary to evacuate cores for this. Why
-> > not just schedule special task that enters C3 instead of computing?
-> 
-> This is what essentially happens in the load balancer approach.  Not
-> scheduling on a particular core will run the scheduler's idle task
-> that will transition the core to lowest power state.  Pinning a user
-> space task and using special driver to hold the core in C3 state will
-> break scheduling fairness. At this point the application decides when
-> to give the core back to scheduler.
+> Wow, thanks. I literally sent a patch to that effect a few seconds
+> ago. Would you be ok with that one, too? I'd like not to lose too much
+> resolution in the v3_gain parameter.
+Yep. Acked it already.
 
-Why would it break scheduling fairness? You just schedule "realtime"
-task that does C3 instead of computation. The behaviour is very
-similar to "normal" realtime task. Why would it break scheduler?
+Cheers.
 
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+--
+Robert
