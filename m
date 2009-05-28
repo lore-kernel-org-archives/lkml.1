@@ -1,86 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763777AbZE1TBd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759525AbZE1TBp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763777AbZE1TBd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 15:01:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753195AbZE1TBZ
+	id S1759525AbZE1TBp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 15:01:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763985AbZE1TBc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 15:01:25 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:61275 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751164AbZE1TBZ convert rfc822-to-8bit (ORCPT
+	Thu, 28 May 2009 15:01:32 -0400
+Received: from g4t0016.houston.hp.com ([15.201.24.19]:47957 "EHLO
+	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763847AbZE1TBa convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 15:01:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=lNV8tgEhnBt+WTYWdh795abk6UvMAkKdxhaQsGN2ohUsR82GhaQ7xk3CULSU3aP6ib
-         kCOGn7On5IyoVVVvOa2Farc8agtlbv+c4uXJmHlOXFW124iazsfL3ViEZ95yMHYfUD4P
-         Q4X7sdR4iltilNY7UC0C3DeMAzq8JP5YEdGn4=
-MIME-Version: 1.0
-In-Reply-To: <87skip2gxu.fsf@free.fr>
-References: <878wkibmv9.fsf@free.fr>
-	 <1243487718-5423-2-git-send-email-philipp.zabel@gmail.com>
-	 <87skip2gxu.fsf@free.fr>
-Date: Thu, 28 May 2009 21:01:26 +0200
-Message-ID: <74d0deb30905281201k1eda2bcg39d2c1989533cbc8@mail.gmail.com>
-Subject: Re: [PATCH 1/3] regulator/max1586: support increased V3 voltage range
-From: pHilipp Zabel <philipp.zabel@gmail.com>
-To: Robert Jarzmik <robert.jarzmik@free.fr>
-Cc: linux-kernel@vger.kernel.org, Liam Girdwood <lrg@slimlogic.co.uk>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Eric Miao <eric.miao@marvell.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 28 May 2009 15:01:30 -0400
+From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
+To: Martin Knoblauch <knobi@knobisoft.de>, "Owens, James" <JOwens@hp.com>
+CC: Matthew Wilcox <matthew@wil.cx>, Andrew Morton <akpm@linux-foundation.org>,
+       Mike Galbraith <efault@gmx.de>,
+       "viro@ZenIV.linux.org.uk" <viro@ZenIV.linux.org.uk>,
+       "rjw@sisk.pl" <rjw@sisk.pl>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "tigran@aivazian.fsnet.co.uk" <tigran@aivazian.fsnet.co.uk>,
+       Kay Sievers <kay.sievers@vrfy.org>,
+       "shemminger@vyatta.com" <shemminger@vyatta.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Date: Thu, 28 May 2009 19:01:15 +0000
+Subject: RE: Analyzed/Solved/Bisected: Booting 2.6.30-rc2-git7 very slow
+Thread-Topic: Analyzed/Solved/Bisected: Booting 2.6.30-rc2-git7 very slow
+Thread-Index: AcnfcqfKZzo7C8/9ReWvopjSB/Vr9gAU9tFg
+Message-ID: <0F5B06BAB751E047AB5C87D1F77A7788694659AFB5@GVW0547EXC.americas.hpqcorp.net>
+References: <1240977096.5478.3.camel@marge.simson.net>
+ <20090429011755.c141c599.akpm@linux-foundation.org>
+ <20090429120827.GI8633@ZenIV.linux.org.uk>
+ <1241014725.15095.19.camel@marge.simson.net>
+ <20090505154911.e0309a4f.akpm@linux-foundation.org>
+ <1241585140.5196.28.camel@marge.simson.net>
+ <957194.27869.qm@web32605.mail.mud.yahoo.com>
+ <1241599065.18090.18.camel@marge.simson.net>
+ <461911.6351.qm@web32603.mail.mud.yahoo.com>
+ <20090526233102.b86e7f84.akpm@linux-foundation.org>
+ <20090527112153.GE5816@parisc-linux.org>
+ <840102.98312.qm@web32603.mail.mud.yahoo.com> <4A1D8161.2020009@hp.com>
+ <0F5B06BAB751E047AB5C87D1F77A7788694630B931@GVW0547EXC.americas.hpqcorp.net>
+ <451378.60037.qm@web32606.mail.mud.yahoo.com>
+In-Reply-To: <451378.60037.qm@web32606.mail.mud.yahoo.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 28, 2009 at 8:58 PM, Robert Jarzmik <robert.jarzmik@free.fr> wrote:
-> Philipp Zabel <philipp.zabel@gmail.com> writes:
->
-> <snip>
->> @@ -164,14 +184,25 @@ static int max1586_pmic_probe(struct i2c_client *client,
->>  {
->>       struct regulator_dev **rdev;
->>       struct max1586_platform_data *pdata = client->dev.platform_data;
->> -     int i, id, ret = 0;
->> +     struct max1586_data *max1586;
->> +     int i, id, ret = -ENOMEM;
->> +
->> +     max1586 = kzalloc(sizeof(struct max1586_data) +
->> +                     sizeof(struct regulator_dev *) * (MAX1586_V6 + 1),
->> +                     GFP_KERNEL);
->> +     if (!max1586)
->> +             goto out;
->>
->> -     rdev = kzalloc(sizeof(struct regulator_dev *) * (MAX1586_V6 + 1),
->> -                    GFP_KERNEL);
->> -     if (!rdev)
->> -             return -ENOMEM;
->> +     max1586->client = client;
->>
->> -     ret = -EINVAL;
->> +     if (!pdata->v3_gain) {
->> +             ret = -EINVAL;
->> +             goto out_unmap;
->> +     }
->
->> +     max1586->min_uV = MAX1586_V3_MIN_UV * pdata->v3_gain / 1000000;
->> +     max1586->max_uV = MAX1586_V3_MAX_UV * pdata->v3_gain / 1000000;
-> My last comment : you'll overflow an integer capacity here, and will get
-> min_uV=max_uV=0.
->
-> Please replace by :
->       max1586->min_uV = MAX1586_V3_MIN_UV / 1000 * (pdata->v3_gain / 1000);
->       max1586->max_uV = MAX1586_V3_MAX_UV / 1000 * (pdata->v3_gain / 1000);
->
-> And then add my :
-> Acked-by: Robert Jarzmik <robert.jarzmik@free.fr>
+ 
 
-Wow, thanks. I literally sent a patch to that effect a few seconds
-ago. Would you be ok with that one, too? I'd like not to lose too much
-resolution in the v3_gain parameter.
+> -----Original Message-----
+> From: Martin Knoblauch [mailto:knobi@knobisoft.de] 
+> Sent: Thursday, May 28, 2009 4:00 AM
+> To: Miller, Mike (OS Dev); Owens, James
+> Cc: Matthew Wilcox; Andrew Morton; Mike Galbraith; 
+> viro@ZenIV.linux.org.uk; rjw@sisk.pl; 
+> linux-kernel@vger.kernel.org; tigran@aivazian.fsnet.co.uk; 
+> Kay Sievers; shemminger@vyatta.com; Jesse Barnes
+> Subject: Re: Analyzed/Solved/Bisected: Booting 
+> 2.6.30-rc2-git7 very slow
+> 
+> ----- Original Message ----
+> 
+> > From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
+> > To: "Owens, James" <JOwens@hp.com>; Martin Knoblauch 
+> > <knobi@knobisoft.de>
+> > Cc: Matthew Wilcox <matthew@wil.cx>; Andrew Morton 
+> > <akpm@linux-foundation.org>; Mike Galbraith <efault@gmx.de>; 
+> > "viro@ZenIV.linux.org.uk" <viro@ZenIV.linux.org.uk>; "rjw@sisk.pl" 
+> > <rjw@sisk.pl>; "linux-kernel@vger.kernel.org" 
+> > <linux-kernel@vger.kernel.org>; "tigran@aivazian.fsnet.co.uk" 
+> > <tigran@aivazian.fsnet.co.uk>; Kay Sievers <kay.sievers@vrfy.org>; 
+> > "shemminger@vyatta.com" <shemminger@vyatta.com>; Jesse Barnes 
+> > <jbarnes@virtuousgeek.org>
+> > Sent: Wednesday, May 27, 2009 8:18:46 PM
+> > Subject: RE: Analyzed/Solved/Bisected: Booting 2.6.30-rc2-git7 very 
+> > slow
+> > 
+> > > > 
+> > > >  Finally, today I built the ccsii driver into the kernel. 
+> > > It was previously modularized and loaded from initrd. The second 
+> > > "sysfs" line went away. But does this make cciss guilty? 
+> It is now 
+> > > loaded about 2 seconds earlier in the boot sequence, 
+> which is a big 
+> > > change in timing I guess.
+> > > > 
+> > > >  Enlighten me :-)
+> > > 
+> > > No idea what is going on, but since I saw your May 20 message, I 
+> > > have been trying to wake up someone whose day job it should be to 
+> > > care about dl380s and smartarrays. :)
+> > 
+> > What? I know Martin has pinged me in the past, but I do not 
+> think it 
+> > was about this issue. If there's multiple sysfs entries for cciss I 
+> > can't explain that offhand. We do little to nothing for 
+> sysfs in the driver.
+> > Had something similiar happen recently where "/" changed to 
+> "!". Had 
+> > do to with our nested directory structure, /dev/cciss/name vs 
+> > /dev/name. But we did not make that change, either.
+> > 
+> Hi Mike, Jim
+> 
+>  you are right. I never talked to you about this issue. 
+> Actually, I did not suspect CCISS or the DL380 in general to 
+> be involved before last week when I retested on the x3650 and 
+> the problem went away. Due to day-job and priorities I did 
+> not follow up.
 
-regards
-Philipp
+Martin,
+Same exact OS install? Are you sure all the userspace stuff is the same?
+
+-- mikem
+> > 
+> > > 
+> > > If they don't react soon, I'll make this my own day job to try to 
+> > > reproduce it.  We will need hardware config details and firmware 
+> > > revs to start.
+> > > 
+> 
+> Dl380/G4
+> 2x3.4 GHz CPUs
+> 8 GB Memeory
+> 4x72 GB as RAID5 on SA6i controller
+> 
+> BIOS: P51 (07(19/2007)
+> ILO FW: 1.91
+> SA6i FW: 2.84
+> 
+> lspci output (-vvv and -xxx) appendend to prevent line wrapping.
+> 
+> 
+> Cheers
+> Martin
+> 
