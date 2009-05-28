@@ -1,84 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764353AbZE1UzR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764752AbZE1Uzj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764353AbZE1UzR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 16:55:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760788AbZE1UzC
+	id S1764752AbZE1Uzj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 16:55:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763653AbZE1UzZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 16:55:02 -0400
-Received: from mx-out.daemonmail.net ([216.104.160.38]:35324 "EHLO
-	mx-out.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763253AbZE1UzB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 16:55:01 -0400
-From: "Michael S. Zick" <lkml@morethan.org>
-Reply-To: lkml@morethan.org
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [BUG FIX] Make x86_32 uni-processor Atomic ops, Atomic
-Date: Thu, 28 May 2009 15:54:57 -0500
-User-Agent: KMail/1.9.9
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Harald Welte <HaraldWelte@viatech.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
-References: <200905221139.26941.lkml@morethan.org> <4A198B24.9040404@zytor.com> <20090528203022.GB1290@ucw.cz>
-In-Reply-To: <20090528203022.GB1290@ucw.cz>
+	Thu, 28 May 2009 16:55:25 -0400
+Received: from www.tglx.de ([62.245.132.106]:44352 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764108AbZE1UzY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 16:55:24 -0400
+Date: Thu, 28 May 2009 22:54:34 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Steven Rostedt <rostedt@goodmis.org>
+cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH][GIT PULL] ftrace: add kernel command line function
+ filtering
+In-Reply-To: <alpine.DEB.2.00.0905281420590.11238@gandalf.stny.rr.com>
+Message-ID: <alpine.LFD.2.00.0905282251590.3397@localhost.localdomain>
+References: <alpine.DEB.2.00.0905281420590.11238@gandalf.stny.rr.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905281555.00245.lkml@morethan.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu May 28 2009, Pavel Machek wrote:
-> Hi!
+On Thu, 28 May 2009, Steven Rostedt wrote:
+> ----
+>  Documentation/kernel-parameters.txt |   17 ++++++++++++-
+>  kernel/trace/ftrace.c               |   42 +++++++++++++++++++++++++++++++++++
+>  2 files changed, 57 insertions(+), 2 deletions(-)
+> ---------------------------
+> commit 3481535dc7351d3a45f67d8016bd78fc5c537628
+> Author: Steven Rostedt <srostedt@redhat.com>
+> Date:   Thu May 28 13:37:24 2009 -0400
 > 
-> > > @hpa - I still like your suggestion that it is only one (or a few)
-> > > uses of atomic ops that is incorrect and in general atomic ops
-> > > should compile away on uni-processor.
-> > > 
-> > 
-> > Actually, the more I think about it the more I suspect there is a race
-> > condition either in the chip set or in any VIA-specific drivers (if
-> > there are any.)  Putting LOCKs in random places will slow the CPU down
-> > significantly, so it might resolve the race condition without actually
-> > solving the problem.
-> 
-> Which you can verify; replace lock with something slow (pushad,
-> popad)? And see what happens.
-> 
-> (And if it never ever triggers on hp2133, you have strong clue that it
-> may not be cpu-related, but bios-related or chipset related or something).
-> 
-> Some time ago I was trying to debug misterious hangs on some
-> via/fic machines. 
-> 
-> We never figured out what was wrong, but we discovered many other bios
-> bugs, and those were not being fixed; so debugging was
-> hard/impossible. Unfortunately I no longer have access to that hw.
-> 
+>     ftrace: add kernel command line function filtering
+>     
+>     When using ftrace=function on the command line to trace functions
+>     on boot up, one can not filter out functions that are commonly called.
+>     
+>     This patch adds two new ftrace command line commands.
+>     
+>       ftrace_notrace=function-list
+>       ftrace_filter=function-list
+>     
+>     Where function-list is a comma separated list of functions to filter.
+>     The ftrace_notrace will make the functions listed not be included
+>     in the function tracing, and ftrace_filter will only trace the functions
+>     listed.
+>     
+>     These two act the same as the debugfs/tracing/set_ftrace_notrace and
+>     debugfs/tracing/set_ftrace_filter respectively.
+>     
+>     The simple glob expressions that are allowed by the filter files can also
+>     be used by the command line interface.
+>     
+>     	ftrace_notrace=rcu*,*lock,*spin*
+>     
+>     Will not trace any function that starts with rcu, ends with lock, or has
+>     the word spin in it.
 
-Then I am not losing my mind here - *it is* a difficult problem.  ;)
+ That's enough to filter out most of the annoyance during boot
+     
+>     Note, if the self tests are enabled, they may interfere with the filtering
+>     set by the command lines.
+>     
+>     [ Imact: allow filtering of function tracing at boot up ]
 
-> hp2133 did _not_ have that problem.
->
+ Is "Imact" an attempt to distract Linus ?
 
-Today's build has been playing me music for over 8 hours on the
-HP-2133 (C7M-CN896) but can't get past a couple of hours on the
-(fic) Everex Cloudbook (C7M-CX700).
+Thanks,
 
-Also, the distro on the Cloudbook is using pulse-audio - the
-distro on the HP is not.  So I am reviewing the recent bug
-fixes to kernel/futex for something over-looked.  ;)
-May be a wild goose chase, but I think pulse-audio uses futexes.
-
-Thanks for the other hints.
-
-Mike 
-> Try forcing maximum throttling, then move mouse for like five
-> seconds. If kbc dies, you have same buggy bios, and probably are
-> debugging same problem....
-> 								Pavel
-
-
+	tglx
