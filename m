@@ -1,69 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761395AbZE1Jge@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757161AbZE1JjA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761395AbZE1Jge (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 05:36:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755520AbZE1JgM
+	id S1757161AbZE1JjA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 05:39:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751114AbZE1Jiw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 05:36:12 -0400
-Received: from cantor.suse.de ([195.135.220.2]:53046 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754624AbZE1JgH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 05:36:07 -0400
-Date: Thu, 28 May 2009 11:36:01 +0200
-From: Jan Kara <jack@suse.cz>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: Jan Kara <jack@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
-       npiggin@suse.de, linux-ext4@vger.kernel.org
-Subject: Re: [PATCH 0/11] Fix page_mkwrite() for blocksize < pagesize
-Message-ID: <20090528093601.GF29199@duck.suse.cz>
-References: <1243429268-3028-1-git-send-email-jack@suse.cz> <20090527153358.GA19989@skywalker>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090527153358.GA19989@skywalker>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Thu, 28 May 2009 05:38:52 -0400
+Received: from mail-out.m-online.net ([212.18.0.10]:35755 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751554AbZE1Jiv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 05:38:51 -0400
+X-Auth-Info: Mt1tUG3kWlq1mxeKfOcgAE+fFD5cjySp09fcTjJjPm4=
+To: Robert Schwebel <r.schwebel@pengutronix.de>
+cc: Scott Wood <scottwood@freescale.com>,
+       Grant Likely <grant.likely@secretlab.ca>,
+       devicetree-discuss <devicetree-discuss@ozlabs.org>,
+       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       Janboe Ye <yuan-bo.ye@motorola.com>, Timur Tabi <timur@freescale.com>,
+       rmk@arm.linux.org.uk
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: [RFC] [PATCH] Device Tree on ARM platform
+Mime-version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+In-reply-to: <20090528000707.GR6805@pengutronix.de>
+References: <1243408083.13460.14.camel@debian-nb> <fa686aa40905270727m31250984tf12249fc87179ce9@mail.gmail.com> <ed82fe3e0905270739k38018c87ka11f62c5977e45fb@mail.gmail.com> <20090527150527.GK6805@pengutronix.de> <fa686aa40905270839m375bbdacqb1acb1be0a2d2da0@mail.gmail.com> <20090527162000.GM6805@pengutronix.de> <fa686aa40905271335o1165419hda2334bef42aa3f@mail.gmail.com> <20090527234801.GP6805@pengutronix.de> <4A1DD3A0.3010501@freescale.com> <20090528000707.GR6805@pengutronix.de>
+Comments: In-reply-to Robert Schwebel <r.schwebel@pengutronix.de>
+   message dated "Thu, 28 May 2009 02:07:07 +0200."
+Date: Thu, 28 May 2009 11:38:48 +0200
+Message-Id: <20090528093848.B048A832E416@gemini.denx.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  Hi,
+Dear Robert Schwebel,
 
-On Wed 27-05-09 21:03:58, Aneesh Kumar K.V wrote:
-> On Wed, May 27, 2009 at 03:00:57PM +0200, Jan Kara wrote:
-> > 
-> > patches below are an attempt to solve problems filesystems have with
-> > page_mkwrite() when blocksize < pagesize (see the changelog of the third patch
-> > for details).
-> > 
-> > The series is against 2.6.30-rc7. The first two patches are just small cleanup
-> > and should be merged separately (Ted should have the ext4 cleanup rebased on
-> > top of current ext4 tree). For ext3 the fix is done in two phases, in the first
-> > we make it to correctly allocate space at page-fault time from page_mkwrite().
-> > This has the disadvantage that under random mmaped writes, the file gets much
-> > more fragmented and performance of e.g. Berkeley DB drops by ~20%. Therefore
-> > in the second phase I've implemented delayed allocation for ext3 and blocks
-> > are just reserved during page_mkwrite time and really allocated only during
-> > writepage. This gets the performance back to original numbers for me.
-> > 
-> > The patches should be fairly complete and sustained quite some testing. OTOH
-> > the area is kind of complex so please review them so that they can get merged.
-> > Thanks.
-> 
-> Can you move patch 7 and patch 11 as the last two patches. That would
-> make sure we can push rest of the patches earlier. Rest of the patches
-> are needed for ext4 to fix some of the bugs we are seeing. For eg:
-> http://bugzilla.kernel.org/show_bug.cgi?id=12624
-> http://bugzilla.kernel.org/show_bug.cgi?id=13369
-  OK, I think I can just move patches 3 and 5 to the beginning. That's all
-that should be needed for ext4.
+In message <20090528000707.GR6805@pengutronix.de> you wrote:
+>
+> Until now, oftree has created more problems than it has solved for us.
+> The idea works fine for well-known things like memory maps and
+> interrupts. It works badly for corner cases, and embedded land is full
+> of it. The effort to get the oftree stuff right is often more than a
+> magnitude of order higher than the effort for the actual functionality.
 
-> I have few writepage patches also on top of your last series. Having
-> patch 7 and patch 11 as last two patches make sure we can get the rest
-> of the patches in ext4 patchqueue and get wider testing.
-  Good point. I think Ted did the right thing and took just patches 3 and 5
-to ext4 patch queue but I can reorder the patches for next time...
+Well, but isn't this also because the device tree dramatically
+reduced the amount of effort to get a new board supported? We have
+seen a number of cases where _only_ the device tree needed
+significant efforts to get a basic BSP running on a new board.
+Talking about ration of device tree efforts versus code writing
+efforts is somewhat irrelevant when you ignore that the total effort
+goes down. Sometimes significantly.
 
-									Honza
+> That should be an alarm sign that something is wrong.
+
+Maybe the interpretation of data?
+
+Best regards,
+
+Wolfgang Denk
+
 -- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+If programming was easy, they wouldn't need something as  complicated
+as a human being to do it, now would they?
+                       - L. Wall & R. L. Schwartz, _Programming Perl_
