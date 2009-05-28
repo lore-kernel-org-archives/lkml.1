@@ -1,69 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762443AbZE1AJc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932271AbZE1AKb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762443AbZE1AJc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 20:09:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757457AbZE1AJZ
+	id S932271AbZE1AKb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 20:10:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758284AbZE1AKX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 20:09:25 -0400
-Received: from adelphi.physics.adelaide.edu.au ([129.127.102.1]:53015 "EHLO
-	adelphi.physics.adelaide.edu.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755545AbZE1AJY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 20:09:24 -0400
-From: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
-Message-Id: <200905280009.n4S094jJ032395@turbo.physics.adelaide.edu.au>
-Subject: Re: Realtek 8168D: no active link (2.6.29.2)
-To: benny+usenet@amorsen.dk (Benny Amorsen)
-Date: Thu, 28 May 2009 09:39:04 +0930 (CST)
-Cc: jwoithe@physics.adelaide.edu.au (Jonathan Woithe),
-       romieu@fr.zoreil.com (Francois Romieu),
-       dave@thedillows.org (David Dillow), linux-kernel@vger.kernel.org,
-       edward_hsu@realtek.com.tw (Edward Hsu)
-In-Reply-To: <m3octeu3xj.fsf@ursa.amorsen.dk> from "Benny Amorsen" at May 27, 2009 02:27:04 PM
-X-Mailer: ELM [version 2.5 PL6]
+	Wed, 27 May 2009 20:10:23 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:55186 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757132AbZE1AKW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 20:10:22 -0400
+Date: Thu, 28 May 2009 02:05:07 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Roland McGrath <roland@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Pavel Emelyanov <xemul@openvz.org>,
+       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] ptrace: do_notify_parent_cldstop: fix the wrong
+	->nsproxy usage
+Message-ID: <20090528000507.GA13390@redhat.com>
+References: <20090525185502.GA20781@redhat.com> <20090526210514.C1C91FC2BD@magilla.sf.frob.com> <20090527213222.GA6770@redhat.com> <20090527222337.0507EFC36B@magilla.sf.frob.com> <20090527231248.GB10032@redhat.com> <20090527232617.2FE48FC2BD@magilla.sf.frob.com> <20090527234330.GA12216@redhat.com> <20090527235136.A44A4FC2BD@magilla.sf.frob.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20090527235136.A44A4FC2BD@magilla.sf.frob.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >   ethtool -s eth0 autoneg off speed 10
-> >     - 10 Mbps speed set
-> >
-> >   ethtool -s eth0 autoneg off speed 100
-> >     - 100 Mbps speed achieved
-> >
-> >   ethtool -s eth0 autoneg on speed 1000
-> >     - 1000 Mbps speed attained
-> >
-> > The duplex setting might not be having an effect though since my switch's
-> > FDx (full duplex) LED was extinguished for both the 10 and 100 Mbps cases
-> > above.  Explicitly setting the duplex flag using
-> >
-> >   ethtool -s eth0 autoneg off speed 100 duplex full
-> >
-> > didn't make any difference - the FDx LED remained off.
-> 
-> You turned auto negotiation off, and you are surprised that the switch
-> doesn't autonegotiate full duplex?
+On 05/27, Roland McGrath wrote:
+>
+> > Yes, but the (minor and low priority) problem is that .si_pid recorded
+> > in ->last_siginfo does not match the tracee's pid from the tracer pov
+> > (if they run in different namespaces).
+>
+> That is not a problem, it's how it's supposed to be.  That's what I was
+> just saying.  This is information about the values seen by the debugged
+> process.
 
-I'm not surprised one way or the other since I have no idea what to expect
-when doing these tests on this card with the patches applied.  Given that
-ethtool has a "duplex" option I naively thought that it controlled the
-card's duplex setting.  I interprete your comment to mean that duplex can't
-be controlled like this and it requires autonegotiation in order to active
-full duplex mode.  If that's the case then so be it - I'm only reporting
-what I did and what effect it had on the card.
+Ah, OK then.
 
-FYI, turning off autonegotiation was the only way I had of forcing the
-card's speed.  If autoneg was left on the "speed 10" and "speed 100" options
-made no difference - the card would always configure for 1000 Mbps.
+I misunderstood you.
 
-Furthermore, in order to attain 1000 Mbps it was necessary to turn autoneg
-on - with it off, "speed 1000" would result in 100 Mbps only.  However, I
-seem to recall reading somewhere that 1000 Mbps required autoneg so I'm not
-all that surprised with that observation.
+Oleg.
 
-Regards
-  jonathan
