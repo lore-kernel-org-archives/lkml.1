@@ -1,65 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763071AbZE1LvV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762958AbZE1Luz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763071AbZE1LvV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 07:51:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754150AbZE1LvF
+	id S1762958AbZE1Luz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 07:50:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755520AbZE1Lur
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 07:51:05 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:39645 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755520AbZE1LvE (ORCPT
+	Thu, 28 May 2009 07:50:47 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:57421 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754058AbZE1Luq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 07:51:04 -0400
-Date: Thu, 28 May 2009 12:50:42 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Rik van Riel <riel@redhat.com>, "Larry H." <research@subreption.com>,
-       linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>,
-       linux-mm@kvack.org, Ingo Molnar <mingo@redhat.com>,
-       pageexec@freemail.hu, Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [patch 0/5] Support for sanitization flag in low-level page
- allocator
-Message-ID: <20090528125042.28c2676f@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090528090836.GB6715@elte.hu>
-References: <20090520183045.GB10547@oblivion.subreption.com>
-	<4A15A8C7.2030505@redhat.com>
-	<20090522073436.GA3612@elte.hu>
-	<20090522113809.GB13971@oblivion.subreption.com>
-	<20090523124944.GA23042@elte.hu>
-	<4A187BDE.5070601@redhat.com>
-	<20090527223421.GA9503@elte.hu>
-	<20090528072702.796622b6@lxorguk.ukuu.org.uk>
-	<20090528090836.GB6715@elte.hu>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 28 May 2009 07:50:46 -0400
+Date: Thu, 28 May 2009 13:50:41 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Nigel Cunningham <nigel@tuxonice.net>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@lists.linux-foundation.org,
+       tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org
+Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
+Message-ID: <20090528115041.GB2159@elf.ucw.cz>
+References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net> <200905081611.41865.rjw@sisk.pl> <1241819569.19600.281.camel@nigel-laptop> <200905090046.21282.rjw@sisk.pl> <1241825408.19600.384.camel@nigel-laptop> <20090509135452.GE10859@elf.ucw.cz> <1243245214.16743.90.camel@nigel-laptop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1243245214.16743.90.camel@nigel-laptop>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > In most respects the benchmarks are pretty irrelevant - wiping 
-> > stuff has a performance cost, but its the sort of thing you only 
-> > want to do when you have a security requirement that needs it. At 
-> > that point the performance is secondary.
+On Mon 2009-05-25 19:53:34, Nigel Cunningham wrote:
+> Hi.
 > 
-> Bechmarks, of course, are not irrelevant _at all_.
+> On Sat, 2009-05-09 at 15:54 +0200, Pavel Machek wrote:
+> > > This is going to sound arrogant, but please don't take it that way: I
+> > > can't see any other way of putting it. I don't *think* my code is
+> > > better. It is better. swsusp has essentially stood still since Pavel
+> > > first forked the code and got it merged. Yes, you have done some
+> > > great
+> > 
+> > I don't think _I_ forked anything.
 > 
-> So i'm asking for this "clear kernel stacks on freeing" aspect to be 
-> benchmarked thoroughly, as i expect it to have a negative impact - 
-> otherwise i'm NAK-ing this. 
+> The conversation for May 2002 (around when you got it merged into
+> vanilla) is here:
+> 
+> https://sourceforge.net/mailarchive/forum.php?forum_name=swsusp-devel&max_rows=100&style=flat&viewmonth=200205
+> 
+> Not sure why Sourceforge wants you to log in to get at it.
 
-Ingo you are completely missing the point
+Not sure what to search for in 90+ emails.
 
-The performance cost of such a security action are NIL when the feature
-is disabled. So the performance cost in the general case is irrelevant.
+> > > new features (support for multiple swap partitions & files, for writing
+> > > to ordinary files, for mulithreaded I/O etc etc) making it more useful
+> > > and more reliable. There are some new features that have been put in
+> > > swsusp, but in just about every case (I think there might be an
+> > > exception or two), they're things TuxOnIce had for ages before. eg: SMP
+> > > support came with cpu hotplugging in 2.6.12 or so. TuxOnIce had SMP
+> > > support in 2.4.
+> > 
+> > You were moving faster because you did not have to move in small
+> > incremental steps, and you were allowed to add temporary hacks into
+> > the code. Is that surprising? Not to me.
+> 
+> No, I moved in small incremental steps too - and the odd big rework.
 
-If you need this kind of data wiping then the performance hit
-is basically irrelevant, the security comes first. You can NAK it all you
-like but it simply means that such users either have to apply patches or
-run something else.
-
-If it harmed general user performance you'd have a point - but its like
-SELinux you don't have to use it if you don't need the feature. Which it
-must be said is a lot better than much of the scheduler crud that has
-appeared over time which you can't make go away.
+...and sometimes you just added code that would not be acceptable in
+the mainline (graphical progress bar), only to fix that in few
+years. That allowed you to go faster, and that would not be allowed in
+the mainline.
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
