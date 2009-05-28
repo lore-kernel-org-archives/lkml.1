@@ -1,64 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932203AbZE1VVh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932292AbZE1VXQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932203AbZE1VVh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 17:21:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932078AbZE1VVa
+	id S932292AbZE1VXQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 17:23:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764091AbZE1VXI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 17:21:30 -0400
-Received: from mx-out2.daemonmail.net ([216.104.160.39]:56991 "EHLO
-	mx-out2.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932071AbZE1VV3 (ORCPT
+	Thu, 28 May 2009 17:23:08 -0400
+Received: from stargate.chelsio.com ([67.207.112.58]:10435 "EHLO
+	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763274AbZE1VXH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 17:21:29 -0400
-From: "Michael S. Zick" <lkml@morethan.org>
-Reply-To: lkml@morethan.org
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [BUG FIX] Make x86_32 uni-processor Atomic ops, Atomic
-Date: Thu, 28 May 2009 16:21:12 -0500
-User-Agent: KMail/1.9.9
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-References: <200905221139.26941.lkml@morethan.org> <200905281559.00652.lkml@morethan.org> <20090528211632.GH11477@elf.ucw.cz>
-In-Reply-To: <20090528211632.GH11477@elf.ucw.cz>
+	Thu, 28 May 2009 17:23:07 -0400
+From: Divy Le Ray <divy@chelsio.com>
+Subject: [PATCH 2.6.30 1/2] cxgb3: fix dma mapping regression
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       swise@opengridcomputing.com
+Date: Thu, 28 May 2009 14:23:02 -0700
+Message-ID: <20090528212302.28149.46684.stgit@speedy5>
+User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905281621.15543.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu May 28 2009, Pavel Machek wrote:
-> Hi!
-> 
-> > > > > I have seen some problems on via c7m based machines, where some 'smart
-> > > > > bios person' implemented EC access in AML (normally, it is accessed
-> > > > > from ec.c driver). Maybe you have similary bad bios?
-> > > > 
-> > > > How to tell or distingush?
-> > > > Did your looking at the dmidecode output show you that?
-> > > 
-> > > Disassemble DSDT, and if you see strange code duplicating kernel's
-> > > ec.c driver, you have similar problem... 
-> > 
-> > Someone did that but wasn't looking for "strange code" - just fixing
-> > some entry size errors.
-> > You can find the replacement DSDT here:
-> > http://forum.netbookuser.com/viewtopic.php?pid=6512#p6512
-> > 
-> > (Which I am not using, since it mostly cosmetic.)
-> 
-> Ok, it does not seem to have braindead EC implementation. The DSDT
-> does not look familiar, so it may be different issue. (Or it is same
-> issue and we were not able to debug it due to all the BIOS problems.)
-> 
+From: Divy Le Ray <divy@chelsio.com>
 
-Thanks for taking a look, 
-it would have meant nothing to me.
+Commit 5e68b772e6efd189d6aca76f6872fb75d51ace60
+  cxgb3: map entire Rx page, feed map+offset to Rx ring.
 
-Mike
-> 									Pavel
+introduced a regression on platforms defining DECLARE_PCI_UNMAP_ADDR()
+and related macros as no-ops.
 
+Rx descriptors are fed with the a page buffer bus address + page chunk offset.
+The page buffer bus address is set and retrieved through
+pci_unamp_addr_set(), pci_unmap_addr().
+These functions being meaningless on x86 (if CONFIG_DMA_API_DEBUG is not set).
+The HW ends up with a bogus bus address.
+
+This patch saves the page buffer bus address for all plaftorms.
+
+Signed-off-by: Divy Le Ray <divy@chelsio.com>
+---
+
+ drivers/net/cxgb3/adapter.h |    4 ++--
+ drivers/net/cxgb3/sge.c     |   11 +++++------
+ 2 files changed, 7 insertions(+), 8 deletions(-)
+
+
+diff --git a/drivers/net/cxgb3/adapter.h b/drivers/net/cxgb3/adapter.h
+index 714df2b..c888e97 100644
+--- a/drivers/net/cxgb3/adapter.h
++++ b/drivers/net/cxgb3/adapter.h
+@@ -85,8 +85,8 @@ struct fl_pg_chunk {
+ 	struct page *page;
+ 	void *va;
+ 	unsigned int offset;
+-	u64 *p_cnt;
+-	DECLARE_PCI_UNMAP_ADDR(mapping);
++	unsigned long *p_cnt;
++	dma_addr_t mapping;
+ };
+ 
+ struct rx_desc;
+diff --git a/drivers/net/cxgb3/sge.c b/drivers/net/cxgb3/sge.c
+index 26d3587..b3ee2bc 100644
+--- a/drivers/net/cxgb3/sge.c
++++ b/drivers/net/cxgb3/sge.c
+@@ -355,7 +355,7 @@ static void clear_rx_desc(struct pci_dev *pdev, const struct sge_fl *q,
+ 		(*d->pg_chunk.p_cnt)--;
+ 		if (!*d->pg_chunk.p_cnt)
+ 			pci_unmap_page(pdev,
+-				       pci_unmap_addr(&d->pg_chunk, mapping),
++				       d->pg_chunk.mapping,
+ 				       q->alloc_size, PCI_DMA_FROMDEVICE);
+ 
+ 		put_page(d->pg_chunk.page);
+@@ -454,7 +454,7 @@ static int alloc_pg_chunk(struct adapter *adapter, struct sge_fl *q,
+ 		q->pg_chunk.offset = 0;
+ 		mapping = pci_map_page(adapter->pdev, q->pg_chunk.page,
+ 				       0, q->alloc_size, PCI_DMA_FROMDEVICE);
+-		pci_unmap_addr_set(&q->pg_chunk, mapping, mapping);
++		q->pg_chunk.mapping = mapping;
+ 	}
+ 	sd->pg_chunk = q->pg_chunk;
+ 
+@@ -511,8 +511,7 @@ static int refill_fl(struct adapter *adap, struct sge_fl *q, int n, gfp_t gfp)
+ nomem:				q->alloc_failed++;
+ 				break;
+ 			}
+-			mapping = pci_unmap_addr(&sd->pg_chunk, mapping) +
+-						 sd->pg_chunk.offset;
++			mapping = sd->pg_chunk.mapping + sd->pg_chunk.offset;
+ 			pci_unmap_addr_set(sd, dma_addr, mapping);
+ 
+ 			add_one_rx_chunk(mapping, d, q->gen);
+@@ -881,7 +880,7 @@ recycle:
+ 	(*sd->pg_chunk.p_cnt)--;
+ 	if (!*sd->pg_chunk.p_cnt)
+ 		pci_unmap_page(adap->pdev,
+-			       pci_unmap_addr(&sd->pg_chunk, mapping),
++			       sd->pg_chunk.mapping,
+ 			       fl->alloc_size,
+ 			       PCI_DMA_FROMDEVICE);
+ 	if (!skb) {
+@@ -2096,7 +2095,7 @@ static void lro_add_page(struct adapter *adap, struct sge_qset *qs,
+ 	(*sd->pg_chunk.p_cnt)--;
+ 	if (!*sd->pg_chunk.p_cnt)
+ 		pci_unmap_page(adap->pdev,
+-			       pci_unmap_addr(&sd->pg_chunk, mapping),
++			       sd->pg_chunk.mapping,
+ 			       fl->alloc_size,
+ 			       PCI_DMA_FROMDEVICE);
+ 
 
