@@ -1,97 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760583AbZE1ApQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759211AbZE1Arw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760583AbZE1ApQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 20:45:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753863AbZE1ApF
+	id S1759211AbZE1Arw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 20:47:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755928AbZE1Aro
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 20:45:05 -0400
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:33280 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752567AbZE1ApE (ORCPT
+	Wed, 27 May 2009 20:47:44 -0400
+Received: from mga09.intel.com ([134.134.136.24]:11172 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752567AbZE1Aro convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 20:45:04 -0400
-Date: Thu, 28 May 2009 09:41:57 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
-       "hannes@cmpxchg.org" <hannes@cmpxchg.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [RFC][PATCH 2/5] add SWAP_HAS_CACHE flag to swap_map
-Message-Id: <20090528094157.5c39ac57.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <20090526121547.ce866fe4.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090526121259.b91b3e9d.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090526121547.ce866fe4.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: NEC Soft, Ltd.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 27 May 2009 20:47:44 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,262,1241420400"; 
+   d="scan'208";a="519451283"
+From: "Yu, Fenghua" <fenghua.yu@intel.com>
+To: "'Andrew Morton'" <akpm@linux-foundation.org>
+CC: "'dwmw2@infradead.org'" <dwmw2@infradead.org>,
+       "'mingo@elte.hu'" <mingo@elte.hu>,
+       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
+       "'iommu@lists.linux-foundation.org'" 
+	<iommu@lists.linux-foundation.org>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+Date: Wed, 27 May 2009 17:47:44 -0700
+Subject: RE: [PATCH] Time out for possible dead loops during queued
+ invalidation wait
+Thread-Topic: [PATCH] Time out for possible dead loops during queued
+ invalidation wait
+Thread-Index: AcnfJiGEN+4qCGtBSsK6MqK1TjnDkAABdW3Q
+Message-ID: <A6AD88C3F2289247BE726C37303E1EB8AF933388@orsmsx505.amr.corp.intel.com>
+References: <20090327212241.234500000@intel.com>
+	<20090327212321.070229000@intel.com>
+	<20090416001957.GA1527@linux-os.sc.intel.com>
+	<1240135508.3589.75.camel@macbook.infradead.org>
+	<A6AD88C3F2289247BE726C37303E1EB8A4DF7DB1@orsmsx505.amr.corp.intel.com>
+	<20090520174259.GA10646@linux-os.sc.intel.com>
+	<20090526225146.2faeeb05.akpm@linux-foundation.org>
+	<A6AD88C3F2289247BE726C37303E1EB8AF9331CE@orsmsx505.amr.corp.intel.com>
+	<20090527154816.23541b2a.akpm@linux-foundation.org>
+	<A6AD88C3F2289247BE726C37303E1EB8AF933281@orsmsx505.amr.corp.intel.com>
+ <20090527165117.8b768d00.akpm@linux-foundation.org>
+In-Reply-To: <20090527165117.8b768d00.akpm@linux-foundation.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> @@ -1969,17 +2017,33 @@ int swap_duplicate(swp_entry_t entry)
->  	offset = swp_offset(entry);
->  
->  	spin_lock(&swap_lock);
-> -	if (offset < p->max && p->swap_map[offset]) {
-> -		if (p->swap_map[offset] < SWAP_MAP_MAX - 1) {
-> -			p->swap_map[offset]++;
-> +
-> +	if (unlikely(offset >= p->max))
-> +		goto unlock_out;
-> +
-> +	count = swap_count(p->swap_map[offset]);
-> +	has_cache = swap_has_cache(p->swap_map[offset]);
-> +	if (cache) {
-> +		/* set SWAP_HAS_CACHE if there is no cache and entry is used */
-> +		if (!has_cache && count) {
-Should we check !has_cache here ?
+>> >> Which error code is better? Is EAGAIN ok?
+>> >
+>> >That depends on driver details - probably EIO would be suitable, dunno.
+>> >
+>> >But all the callers of qi_submit_sync() seem to just drop the error
+>> >code on the floor:
+>> >
+>> >	/* should never fail */
+>> >	qi_submit_sync(&desc, iommu);
+>> >
+>> >and may well cause a kernel crash as a result.
+>>
+>> Should the code go to kernel panic after timeout in qi_submit_sync()
+>loops? When timeout (10 seconds) in the loops, something in hardware could
+>be wrong.
+>>
+>
+>The most important thing to do when an error is detected is to protect
+>the user's data, perhaps by reliably halting the kernel.
+>
+>The second most important thing is to report what happened, so people
+>can fix things.
+>
+>The third most important thing is to attempt to recover from the error
+>so that the kernel continues to function.  This third requirement often
+>makes the second one more successful: a still-running kernel can report
+>things which a crashed kernel cannot.
+>
+>In this particualr case I'd suggest that the driver be converted to
+>correctly recognise errors, clean things up and propagate the errors
+>back in an orderly fashion, as usual.
+>
+>
+>otoh...  How likely is it that this timeout actually occurs?  If it's
+>only conceivable that this can happen when the hardware is busted then
+>I'd suggest that we not patch the kernel at all - the kernel really has
+>little chance of surviving broken silicon so why bother adding a little
+>bit of code here to handle a tiny subset of it?
+>
+>If the chip is indeed busted then afacit the kernel will get stuck in
+>an infinite loop.  That's OK, we can still diagnose those with NMI
+>watchdogs, sysrq-p handlers, etc.
 
-Concurrent read_swap_cache_async() might have set SWAP_HAS_CACHE, but not have added
-a page to swap cache yet when find_get_page() was called.
-add_to_swap_cache() would handle the race of concurrent read_swap_cache_async(),
-but considering more, swapcache_free() at the end of the loop might dangerous in this case...
-So I think it should be like:
+This timeout can occur either when the hardware is busted or when iommu kernel software or BIOS has a bug. The timeout detection with a suitable error code can help debug the hardware or software issues.
 
-	read_swap_cache_async()
-		:
-		valid = swapcache_prepare(entry);
-		if (!valid)
-			break;
-		if (valid == -EAGAIN);
-			continue;
+In some cases (e.g. interrupt migration in interrupt remapping), the timeout is not a blocking issue; it just impacts performance. If there is not the timeout detection, the cpu ends up in an infinite loop although system should be able to continue to run. But the timeout detection can dump warning info for user to debug and the system can continue to run.
 
-to let the context that succeeded in swapcache_prepare() do add_to_swap_cache().
+Seems I will also need to change the upper level callers to correctly handle the error code (EIO) generated by qi_submit_sync().
 
+Thanks.
 
-Thanks,
-Daisuke Nishimura.
-
-> +			p->swap_map[offset] = make_swap_count(count, 1);
-> +			result = 1;
-> +		}
-> +	} else if (count || has_cache) {
-> +		if (count < SWAP_MAP_MAX - 1) {
-> +			p->swap_map[offset] = make_swap_count(count + 1,
-> +							      has_cache);
->  			result = 1;
-> -		} else if (p->swap_map[offset] <= SWAP_MAP_MAX) {
-> +		} else if (count <= SWAP_MAP_MAX) {
->  			if (swap_overflow++ < 5)
-> -				printk(KERN_WARNING "swap_dup: swap entry overflow\n");
-> -			p->swap_map[offset] = SWAP_MAP_MAX;
-> +				printk(KERN_WARNING
-> +				       "swap_dup: swap entry overflow\n");
-> +			p->swap_map[offset] = make_swap_count(SWAP_MAP_MAX,
-> +							      has_cache);
->  			result = 1;
->  		}
->  	}
-> +unlock_out:
->  	spin_unlock(&swap_lock);
->  out:
->  	return result;
+-Fenghua
