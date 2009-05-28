@@ -1,78 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760610AbZE1QLb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763478AbZE1QNr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760610AbZE1QLb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 12:11:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755677AbZE1QLY
+	id S1763478AbZE1QNr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 12:13:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759075AbZE1QNk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 12:11:24 -0400
-Received: from monster.nessie.de ([84.200.20.120]:51239 "EHLO
-	monster.nessie.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751374AbZE1QLX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 12:11:23 -0400
-X-Greylist: delayed 543 seconds by postgrey-1.27 at vger.kernel.org; Thu, 28 May 2009 12:11:23 EDT
-From: Michael Roth <mroth@nessie.de>
-To: linux-kernel@vger.kernel.org
-Cc: torvalds@linux-foundation.org, Michael Roth <mroth@nessie.de>
-Subject: [PATCH] freezer: cleanup printk call sequences
-Date: Thu, 28 May 2009 18:02:21 +0200
-Message-Id: <1243526541-2436-1-git-send-email-mroth@nessie.de>
-X-Mailer: git-send-email 1.6.0.6
+	Thu, 28 May 2009 12:13:40 -0400
+Received: from fifo99.com ([67.223.236.141]:46208 "EHLO fifo99.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757452AbZE1QNj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 12:13:39 -0400
+Subject: Re: [PATCH] sched: Support current clocksource handling in
+	fallback sched_clock().
+From: Daniel Walker <dwalker@fifo99.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Paul Mundt <lethal@linux-sh.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Linus Walleij <linus.ml.walleij@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Victor <linux@maxim.org.za>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-sh@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       John Stultz <johnstul@linux.vnet.ibm.com>
+In-Reply-To: <1243515570.6600.96.camel@laptop>
+References: <1243348681.23657.14.camel@twins>
+	 <alpine.LFD.2.00.0905262209160.1762@localhost.localdomain>
+	 <20090526230855.GA27218@linux-sh.org>
+	 <alpine.LFD.2.00.0905270140030.1762@localhost.localdomain>
+	 <20090527001543.GA8493@linux-sh.org> <1243441525.28705.19.camel@desktop>
+	 <20090528091936.GA27545@linux-sh.org> <1243503281.23657.80.camel@twins>
+	 <20090528110902.GA27884@linux-sh.org>
+	 <alpine.LFD.2.00.0905281417500.3397@localhost.localdomain>
+	 <20090528124207.GA28830@linux-sh.org>  <1243515570.6600.96.camel@laptop>
+Content-Type: text/plain
+Date: Thu, 28 May 2009 09:13:38 -0700
+Message-Id: <1243527218.28705.35.camel@desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Correct and ease printk() interaction among freeze_processes()
-and try_to_freeze_tasks().
+On Thu, 2009-05-28 at 14:59 +0200, Peter Zijlstra wrote:
 
-Move printk("done") in thaw_processes() before schedule() to
-prevent implicit interferences from it.
+> 
+> 
+> CPU0                           CPU1
+> 
+> clock = ACCESS_ONCE(sched_clocksource);
+> 
+>                                unload module
+>                                  clocksource_unregister()
+>                                    sched_clocksource = jiffies
+>                                  unmap data/text
+> 
+> cyc2ns(clock, clocksource_read(clock)) <--- fireworks
+> 
+> 
 
-Signed-off-by: Michael Roth <mroth@nessie.de>
----
- kernel/power/process.c |   10 +++-------
- 1 files changed, 3 insertions(+), 7 deletions(-)
+Do any module based clocksources even exist right now?
+clocksource_unregister only seems to be used 3 times..
 
-diff --git a/kernel/power/process.c b/kernel/power/process.c
-index ca63401..f6bd3de 100644
---- a/kernel/power/process.c
-+++ b/kernel/power/process.c
-@@ -92,7 +92,7 @@ static int try_to_freeze_tasks(bool sig_only)
- 		} while_each_thread(g, p);
- 		read_unlock(&tasklist_lock);
- 	} else {
--		printk("(elapsed %d.%02d seconds) ", elapsed_csecs / 100,
-+		printk("(elapsed %d.%02d seconds) done.\n", elapsed_csecs / 100,
- 			elapsed_csecs % 100);
- 	}
- 
-@@ -110,16 +110,12 @@ int freeze_processes(void)
- 	error = try_to_freeze_tasks(true);
- 	if (error)
- 		goto Exit;
--	printk("done.\n");
- 
- 	printk("Freezing remaining freezable tasks ... ");
- 	error = try_to_freeze_tasks(false);
--	if (error)
--		goto Exit;
--	printk("done.");
-+
-  Exit:
- 	BUG_ON(in_atomic());
--	printk("\n");
- 	return error;
- }
- 
-@@ -148,7 +144,7 @@ void thaw_processes(void)
- 	printk("Restarting tasks ... ");
- 	thaw_tasks(true);
- 	thaw_tasks(false);
--	schedule();
- 	printk("done.\n");
-+	schedule();
- }
- 
--- 
-1.6.0.6
+Daniel
 
