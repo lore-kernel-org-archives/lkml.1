@@ -1,88 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764130AbZE1Tgd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764107AbZE1Ti7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764130AbZE1Tgd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 15:36:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756892AbZE1Tg0
+	id S1764107AbZE1Ti7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 15:38:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756861AbZE1Tiu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 15:36:26 -0400
-Received: from casper.infradead.org ([85.118.1.10]:46533 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756861AbZE1Tg0 (ORCPT
+	Thu, 28 May 2009 15:38:50 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:39364 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750907AbZE1Tiu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 15:36:26 -0400
-Subject: Re: [patch 0/5] Support for sanitization flag in low-level page
- allocator
-From: Peter Zijlstra <peterz@infradead.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, "Larry H." <research@subreption.com>,
-       Ingo Molnar <mingo@elte.hu>, Rik van Riel <riel@redhat.com>,
-       linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>,
-       linux-mm@kvack.org, Ingo Molnar <mingo@redhat.com>,
-       pageexec@freemail.hu
-In-Reply-To: <20090523085653.0ad217f8@infradead.org>
-References: <20090520183045.GB10547@oblivion.subreption.com>
-	 <4A15A8C7.2030505@redhat.com> <20090522073436.GA3612@elte.hu>
-	 <20090522113809.GB13971@oblivion.subreption.com>
-	 <20090522143914.2019dd47@lxorguk.ukuu.org.uk>
-	 <20090522180351.GC13971@oblivion.subreption.com>
-	 <20090522192158.28fe412e@lxorguk.ukuu.org.uk>
-	 <20090522234031.GH13971@oblivion.subreption.com>
-	 <20090523090910.3d6c2e85@lxorguk.ukuu.org.uk>
-	 <20090523085653.0ad217f8@infradead.org>
-Content-Type: text/plain
-Date: Thu, 28 May 2009 21:36:01 +0200
-Message-Id: <1243539361.6645.80.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 28 May 2009 15:38:50 -0400
+Date: Thu, 28 May 2009 15:38:22 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Theodore Tso <tytso@mit.edu>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       Jan Kara <jack@suse.cz>, Jens Axboe <jens.axboe@oracle.com>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
+       akpm@linux-foundation.org, yanmin_zhang@linux.intel.com,
+       richard@rsk.demon.co.uk, damien.wyart@free.fr,
+       Alex Chiang <achiang@hp.com>,
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>
+Subject: Re: [PATCH 0/11] Per-bdi writeback flusher threads v8
+Message-ID: <20090528193822.GA30982@infradead.org>
+References: <20090527144754.GD10842@mit.edu> <20090527175353.GE10842@mit.edu> <20090527175830.GF10842@mit.edu> <20090527181402.GP11363@kernel.dk> <20090527191524.GS11363@kernel.dk> <20090527194543.GT11363@kernel.dk> <20090528004959.GH26625@mit.edu> <20090528092803.GE29199@duck.suse.cz> <m1octdw8sv.fsf@fess.ebiederm.org> <20090528193246.GX26625@mit.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090528193246.GX26625@mit.edu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-05-23 at 08:56 -0700, Arjan van de Ven wrote:
-> On Sat, 23 May 2009 09:09:10 +0100
-> Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+On Thu, May 28, 2009 at 03:32:46PM -0400, Theodore Tso wrote:
 > 
-> > > Enabling SLAB poisoning by default will be a bad idea
-> > 
-> > Why ?
-> > 
-> > > I looked for unused/re-usable flags too, but found none. It's
-> > > interesting to see SLUB and SLOB have their own page flags. Did
-> > > anybody oppose those when they were proposed? 
-> > 
-> > Certainly they were looked at - but the memory allocator is right at
-> > the core of the system rather than an add on.
-> > 
-> > > > Ditto - which is why I'm coming from the position of an "if we
-> > > > free it clear it" option. If you need that kind of security the
-> > > > cost should be more than acceptable - especially with modern
-> > > > processors that can do cache bypass on the clears.
-> > > 
-> > > Are you proposing that we should simply remove the confidential
-> > > flags and just stick to the unconditional sanitization when the
-> > > boot option is enabled? If positive, it will make things more
-> > > simple and definitely is better than nothing. I would have (still)
-> > > preferred the other old approach to be merged, but whatever works
-> > > at this point.
-> > 
-> > I am because
-> > - its easy to merge
-> > - its non controversial
-> > - it meets the security good practice and means we don't miss any
-> >   alloc/free cases
-> > - it avoid providing flags to help a trojan identify "interesting"
-> > data to acquire
-> > - modern cpu memory clearing can be very cheap
-> 
-> ... and if we zero on free, we don't need to zero on allocate.
-> While this is a little controversial, it does mean that at least part of
-> the cost is just time-shifted, which means it'll not be TOO bad
-> hopefully...
+> I'm pretty sure that after the first call to invalidate_inodes() in
+> fs/super.c's generic_shutdown_super(), we really don't need to hold
+> the BKL or the superblock lock (and let the filesystems' low-level
+> write_super(0 and put_super() take the lock if they really need it),
+> but we probably need to take a closer look at this to make sure it's
+> true for all filesystems.  (IIRC, I think Christoph was looking to
+> clean up lock_super(); at least with respect to the write_super call.
+> I don't know what his plans regarding the BKL and put_super(),
+> though.)
 
-zero on allocate has the advantage of cache hotness, we're going to use
-the memory, why else allocate it.
-
-zero on free only causes extra cache evictions for no gain.
-
+Both the BKL and lock_super are not held for ->put_super anymore in
+the vfs tree.  In fact in the vfs tree there are no callers of
+lock_super in the VFS anymore.
 
