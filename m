@@ -1,39 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763445AbZE1PHH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758341AbZE1PJi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763445AbZE1PHH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 11:07:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763474AbZE1PGy
+	id S1758341AbZE1PJi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 11:09:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755773AbZE1PJc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 11:06:54 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:45622 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763312AbZE1PGx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 11:06:53 -0400
-To: pavel@ucw.cz
-CC: miklos@szeredi.hu, akpm@linux-foundation.org, niel.lambrechts@gmail.com,
-       linux-kernel@vger.kernel.org, gregkh@suse.de, rjw@sisk.pl
-In-reply-to: <20090528114527.GA2140@elf.ucw.cz> (message from Pavel Machek on
-	Thu, 28 May 2009 13:45:27 +0200)
-Subject: Re: 2.6.29.4: hibernation fails with large kernel trace
-References: <4A1C36FF.4080000@gmail.com> <20090527223241.c6fb2caf.akpm@linux-foundation.org> <E1M9ZJI-0003bh-HD@pomaz-ex.szeredi.hu> <20090528114527.GA2140@elf.ucw.cz>
-Message-Id: <E1M9hBl-0004dv-KT@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Thu, 28 May 2009 17:06:37 +0200
+	Thu, 28 May 2009 11:09:32 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:58049 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755545AbZE1PJb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 11:09:31 -0400
+From: Jarod Wilson <jarod@redhat.com>
+Organization: Red Hat, Inc.
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Subject: Re: [PATCH 2/2 -tip] drm/i915: intel_lvds.c fix section mismatch warning
+Date: Thu, 28 May 2009 11:00:20 -0400
+User-Agent: KMail/1.11.3 (Linux/2.6.29.3-140.fc11.x86_64; KDE/4.2.3; x86_64; ; )
+Cc: Ingo Molnar <mingo@elte.hu>, Eric Anholt <eric@anholt.net>, mjg@redhat.com,
+       Sam Ravnborg <sam@ravnborg.org>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <1242800768.3260.21.camel@localhost.localdomain> <1242800855.3260.23.camel@localhost.localdomain>
+In-Reply-To: <1242800855.3260.23.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200905281100.21386.jarod@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 May 2009, Pavel Machek wrote:
-> In the meantime, people should stop/restart fuse around
-> suspend/hibernation, I guess...
+On Wednesday 20 May 2009 02:27:35 Jaswinder Singh Rajput wrote:
+> 
+> intel_no_lvds[] does not require __initdata as it is used only by :
+> 
+>   void intel_lvds_init(struct drm_device *dev)
+> 
+> fixes section mismatch warning:
+> 
+>   WARNING: drivers/gpu/drm/i915/i915.o(.text+0xf3c5): Section mismatch in reference from the function intel_lvds_init() to the variable .init.data:intel_no_lvds
+>   The function intel_lvds_init() references
+>   the variable __initdata intel_no_lvds.
+>   This is often because intel_lvds_init lacks a __initdata
 
-Which is not possible if the filesystem is busy, and it _will_ be busy
-in all cases where we now see freeze failures.
+This would seem to suggest __initdata should be added to
+intel_lvds_init, rather than removed from intel_no_lvds...
 
-And just a reminder that this problem is not fuse specific: similar
-freeze failures can also happen for network filesystems routed over a
-tun/tap device (e.g. NFS over OpenVPN).
+But I suppose either one would work. Apologies for not
+catching the initial mismatch... :\
 
-Thanks,
-Miklos
+> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> ---
+>  drivers/gpu/drm/i915/intel_lvds.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/gpu/drm/i915/intel_lvds.c b/drivers/gpu/drm/i915/intel_lvds.c
+> index 439a865..5ffadf9 100644
+> --- a/drivers/gpu/drm/i915/intel_lvds.c
+> +++ b/drivers/gpu/drm/i915/intel_lvds.c
+> @@ -391,7 +391,7 @@ static int __init intel_no_lvds_dmi_callback(const struct dmi_system_id *id)
+>  }
+>  
+>  /* These systems claim to have LVDS, but really don't */
+> -static const struct dmi_system_id __initdata intel_no_lvds[] = {
+> +static const struct dmi_system_id intel_no_lvds[] = {
+>  	{
+>  		.callback = intel_no_lvds_dmi_callback,
+>  		.ident = "Apple Mac Mini (Core series)",
+
+
+-- 
+Jarod Wilson
+jarod@redhat.com
