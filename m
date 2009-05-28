@@ -1,70 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756705AbZE1KEl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755816AbZE1KNv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756705AbZE1KEl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 06:04:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753685AbZE1KEe
+	id S1755816AbZE1KNv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 06:13:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753594AbZE1KNn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 06:04:34 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:60970 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752887AbZE1KEd (ORCPT
+	Thu, 28 May 2009 06:13:43 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:50245 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751227AbZE1KNm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 06:04:33 -0400
-Date: Thu, 28 May 2009 12:11:11 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Nick Piggin <npiggin@suse.de>, Andi Kleen <andi@firstfloor.org>,
-       "hugh@veritas.com" <hugh@veritas.com>,
-       "riel@redhat.com" <riel@redhat.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler in the VM v3
-Message-ID: <20090528101111.GE1065@one.firstfloor.org>
-References: <200905271012.668777061@firstfloor.org> <20090527201239.C2C9C1D0294@basil.firstfloor.org> <20090528082616.GG6920@wotan.suse.de> <20090528095934.GA10678@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 28 May 2009 06:13:42 -0400
+Date: Thu, 28 May 2009 12:13:40 +0200
+From: Robert Schwebel <r.schwebel@pengutronix.de>
+To: Wolfgang Denk <wd@denx.de>
+Cc: Grant Likely <grant.likely@secretlab.ca>,
+       Robert Schwebel <r.schwebel@pengutronix.de>,
+       Scott Wood <scottwood@freescale.com>,
+       devicetree-discuss <devicetree-discuss@ozlabs.org>,
+       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       Janboe Ye <yuan-bo.ye@motorola.com>, Timur Tabi <timur@freescale.com>,
+       rmk@arm.linux.org.uk
+Subject: Re: [RFC] [PATCH] Device Tree on ARM platform
+Message-ID: <20090528101339.GV6805@pengutronix.de>
+References: <ed82fe3e0905270739k38018c87ka11f62c5977e45fb@mail.gmail.com> <20090527150527.GK6805@pengutronix.de> <fa686aa40905270839m375bbdacqb1acb1be0a2d2da0@mail.gmail.com> <20090527162000.GM6805@pengutronix.de> <fa686aa40905271335o1165419hda2334bef42aa3f@mail.gmail.com> <20090527234801.GP6805@pengutronix.de> <4A1DD3A0.3010501@freescale.com> <20090528000707.GR6805@pengutronix.de> <fa686aa40905272029n32aa5f1ds86d07f0de4894815@mail.gmail.com> <20090528095126.99DB4832E416@gemini.denx.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <20090528095934.GA10678@localhost>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20090528095126.99DB4832E416@gemini.denx.de>
+X-Sent-From: Pengutronix Entwicklungszentrum Nord - Hildesheim
+X-URL: http://www.pengutronix.de/
+X-IRC: #ptxdist @freenode
+X-Accept-Language: de,en
+X-Accept-Content-Type: text/plain
+X-Impressum: Pengutronix - Linux Solutions for Science and Industry
+	Handelsregister:  Amtsgericht Hildesheim, HRA 2686 Peiner Strasse
+	6-8, 31137 Hildesheim, Germany Phone: +49-5121-206917-0 |  Fax:
+	+49-5121-206917-5555 Inhaber: Dipl.-Ing. Robert Schwebel
+X-Message-Flag: See Message Headers for Impressum
+X-Uptime: 12:06:43 up 90 days, 19:48,  5 users,  load average: 0.03, 0.12,
+	0.06
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:219:66ff:fe5b:d0e3
+X-SA-Exim-Mail-From: rsc@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 28, 2009 at 05:59:34PM +0800, Wu Fengguang wrote:
-> Dirty swap cache page is tricky to handle. The page could live both in page
-> cache and swap cache(ie. page is freshly swapped in). So it could be referenced
-> concurrently by 2 types of PTEs: one normal PTE and another swap PTE. We try to
-> handle them consistently by calling try_to_unmap(TTU_IGNORE_HWPOISON) to convert
-> the normal PTEs to swap PTEs, and then
->         - clear dirty bit to prevent IO
->         - remove from LRU
->         - but keep in the swap cache, so that when we return to it on
->           a later page fault, we know the application is accessing
->           corrupted data and shall be killed (we installed simple
->           interception code in do_swap_page to catch it).
+On Thu, May 28, 2009 at 11:51:26AM +0200, Wolfgang Denk wrote:
+> True. From a commercial point of view this is a huge  problem  casued
+> by the device tree - custumers who used to oder a BSP from commercial
+> service providers (like Robert or me :-) now often find that all they
+> need  to  do is to tweak the device tree to get their system running.
+> Lost business. D*mn...  [Maybe this explains Robert's reluctance?]
 
-That's a good description. I'll add it as a comment to the code.
+Wolfgang, you know me long enough to realize that this argument is
+*crap*.
 
-> > You haven't waited on writeback here AFAIKS, and have you
-> > *really* verified it is safe to call delete_from_swap_cache?
-> 
-> Good catch. I'll soon submit patches for handling the under
-> read/write IO pages. In this patchset they are simply ignored.
+Talking about business cases, it has turned out to be extremely
+difficult to explain customers that the effort for the actual
+functionality is only a little percentage of the work necessary to do
+the oftree stuff right. The functionality has often worked after a few
+hours, and until all oftrees have been solved, it often takes weeks.
 
-Yes, we assume the IO device does something sensible with the poisoned
-cache lines and aborts. Later we can likely abort IO requests in a early
-stage on the Linux, but that's more advanced.
+In result, this has already led to customers concluding that
 
-The question is if we need to wait on writeback for correctness? 
+- mainline is not worth the effort
+- linux is overkill and one should better use cortex-bare-metal
 
-We still don't want to crash if we take a page away that is currently
-writebacked.
+However, that is only our personal observation.
 
-My original assumption was that taking the page lock would take
-care of that. Is that not true?
-
--Andi
+rsc
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
