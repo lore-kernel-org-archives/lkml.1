@@ -1,106 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759211AbZE1Arw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761516AbZE1AtY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759211AbZE1Arw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 20:47:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755928AbZE1Aro
+	id S1761516AbZE1AtY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 20:49:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752567AbZE1AtQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 20:47:44 -0400
-Received: from mga09.intel.com ([134.134.136.24]:11172 "EHLO mga09.intel.com"
+	Wed, 27 May 2009 20:49:16 -0400
+Received: from claw.goop.org ([74.207.240.146]:58012 "EHLO claw.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752567AbZE1Aro convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 20:47:44 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,262,1241420400"; 
-   d="scan'208";a="519451283"
-From: "Yu, Fenghua" <fenghua.yu@intel.com>
-To: "'Andrew Morton'" <akpm@linux-foundation.org>
-CC: "'dwmw2@infradead.org'" <dwmw2@infradead.org>,
-       "'mingo@elte.hu'" <mingo@elte.hu>,
-       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
-       "'iommu@lists.linux-foundation.org'" 
-	<iommu@lists.linux-foundation.org>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-Date: Wed, 27 May 2009 17:47:44 -0700
-Subject: RE: [PATCH] Time out for possible dead loops during queued
- invalidation wait
-Thread-Topic: [PATCH] Time out for possible dead loops during queued
- invalidation wait
-Thread-Index: AcnfJiGEN+4qCGtBSsK6MqK1TjnDkAABdW3Q
-Message-ID: <A6AD88C3F2289247BE726C37303E1EB8AF933388@orsmsx505.amr.corp.intel.com>
-References: <20090327212241.234500000@intel.com>
-	<20090327212321.070229000@intel.com>
-	<20090416001957.GA1527@linux-os.sc.intel.com>
-	<1240135508.3589.75.camel@macbook.infradead.org>
-	<A6AD88C3F2289247BE726C37303E1EB8A4DF7DB1@orsmsx505.amr.corp.intel.com>
-	<20090520174259.GA10646@linux-os.sc.intel.com>
-	<20090526225146.2faeeb05.akpm@linux-foundation.org>
-	<A6AD88C3F2289247BE726C37303E1EB8AF9331CE@orsmsx505.amr.corp.intel.com>
-	<20090527154816.23541b2a.akpm@linux-foundation.org>
-	<A6AD88C3F2289247BE726C37303E1EB8AF933281@orsmsx505.amr.corp.intel.com>
- <20090527165117.8b768d00.akpm@linux-foundation.org>
-In-Reply-To: <20090527165117.8b768d00.akpm@linux-foundation.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	id S1751862AbZE1AtQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 20:49:16 -0400
+Message-ID: <4A1DDF8B.6020000@goop.org>
+Date: Wed, 27 May 2009 17:49:15 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Dan Magenheimer <dan.magenheimer@oracle.com>, Avi Kivity <avi@redhat.com>,
+       George Dunlap <George.Dunlap@eu.citrix.com>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Keir Fraser <keir.fraser@eu.citrix.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [Xen-devel] Re: [GIT PULL] Xen APIC hooks (with io_apic_ops)
+References: <4A1C3453.6080402@redhat.com> <162f4c90-6431-4a2a-b337-6d7451d7b11e@default> <20090528001350.GD26820@elte.hu>
+In-Reply-To: <20090528001350.GD26820@elte.hu>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> >> Which error code is better? Is EAGAIN ok?
->> >
->> >That depends on driver details - probably EIO would be suitable, dunno.
->> >
->> >But all the callers of qi_submit_sync() seem to just drop the error
->> >code on the floor:
->> >
->> >	/* should never fail */
->> >	qi_submit_sync(&desc, iommu);
->> >
->> >and may well cause a kernel crash as a result.
->>
->> Should the code go to kernel panic after timeout in qi_submit_sync()
->loops? When timeout (10 seconds) in the loops, something in hardware could
->be wrong.
->>
+Ingo Molnar wrote:
+> I also find it pretty telling that you cut out the most important 
+> point of Avi's reply:
 >
->The most important thing to do when an error is detected is to protect
->the user's data, perhaps by reliably halting the kernel.
+>   
+>>> I think the Xen design has merit if it can truly make dom0 a 
+>>> guest -- that is, if it can survive dom0 failure.  Until then, 
+>>> you're just taking a large interdependent codebase and splitting 
+>>> it at some random point, but you don't get any stability or 
+>>> security in return.
+>>>       
 >
->The second most important thing is to report what happened, so people
->can fix things.
->
->The third most important thing is to attempt to recover from the error
->so that the kernel continues to function.  This third requirement often
->makes the second one more successful: a still-running kernel can report
->things which a crashed kernel cannot.
->
->In this particualr case I'd suggest that the driver be converted to
->correctly recognise errors, clean things up and propagate the errors
->back in an orderly fashion, as usual.
->
->
->otoh...  How likely is it that this timeout actually occurs?  If it's
->only conceivable that this can happen when the hardware is busted then
->I'd suggest that we not patch the kernel at all - the kernel really has
->little chance of surviving broken silicon so why bother adding a little
->bit of code here to handle a tiny subset of it?
->
->If the chip is indeed busted then afacit the kernel will get stuck in
->an infinite loop.  That's OK, we can still diagnose those with NMI
->watchdogs, sysrq-p handlers, etc.
+> that crucial question really has to be answered honestly and 
+> upfront.
 
-This timeout can occur either when the hardware is busted or when iommu kernel software or BIOS has a bug. The timeout detection with a suitable error code can help debug the hardware or software issues.
+Xen, the hypervisor itself, doesn't require any services from dom0. From 
+its perspective, dom0 is just another guest domain, though with enough 
+privileges to access hardware.  Dom0's job is to provide device access 
+to other less privileged domains.
 
-In some cases (e.g. interrupt migration in interrupt remapping), the timeout is not a blocking issue; it just impacts performance. If there is not the timeout detection, the cpu ends up in an infinite loop although system should be able to continue to run. But the timeout detection can dump warning info for user to debug and the system can continue to run.
+There is currently some system-wide information which is stored in a 
+usermode daemon in dom0. Recovering from its loss is hard, but there is 
+a prototype to pull that daemon out into its own special-purpose 
+domain.  At that point, dom0 can reboot without affecting any of the 
+other domains or Xen itself.
 
-Seems I will also need to change the upper level callers to correctly handle the error code (EIO) generated by qi_submit_sync().
+If dom0 goes away, the other domains will get a disconnect and 
+temporarily lose access to their devices, but they can cope with that.  
+ From their perspective, it would look like they'd just been 
+save/restored or migrated to another machine.  When dom0 comes back, 
+they'll reconnect and carry on.
 
-Thanks.
+The disaggregation of dom0's functions is something that the Xen 
+development community is actively perusing.
 
--Fenghua
+    J
