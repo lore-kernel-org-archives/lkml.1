@@ -1,301 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932084AbZE1JZP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760348AbZE1J1u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932084AbZE1JZP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 05:25:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754966AbZE1JZE
+	id S1760348AbZE1J1u (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 05:27:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755852AbZE1J1k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 05:25:04 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:39049 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753183AbZE1JZB (ORCPT
+	Thu, 28 May 2009 05:27:40 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:60894 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751227AbZE1J1j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 05:25:01 -0400
-Date: Thu, 28 May 2009 11:31:41 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Andi Kleen <andi@firstfloor.org>, hugh@veritas.com, riel@redhat.com,
-       akpm@linux-foundation.org, chris.mason@oracle.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       fengguang.wu@intel.com
-Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler in the VM v3
-Message-ID: <20090528093141.GD1065@one.firstfloor.org>
-References: <200905271012.668777061@firstfloor.org> <20090527201239.C2C9C1D0294@basil.firstfloor.org> <20090528082616.GG6920@wotan.suse.de>
+	Thu, 28 May 2009 05:27:39 -0400
+Date: Thu, 28 May 2009 18:27:40 +0900 (JST)
+Message-Id: <20090528.182740.193697101.ryov@valinux.co.jp>
+To: vgoyal@redhat.com
+Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
+       fchecconi@gmail.com, paolo.valente@unimore.it, fernando@oss.ntt.co.jp,
+       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
+       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
+       peterz@infradead.org
+Subject: Re: [PATCH 15/20] io-controller: map async requests to appropriate
+ cgroup
+From: Ryo Tsuruta <ryov@valinux.co.jp>
+In-Reply-To: <1243377729-2176-16-git-send-email-vgoyal@redhat.com>
+References: <1243377729-2176-1-git-send-email-vgoyal@redhat.com>
+	<1243377729-2176-16-git-send-email-vgoyal@redhat.com>
+X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090528082616.GG6920@wotan.suse.de>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 28, 2009 at 10:26:16AM +0200, Nick Piggin wrote:
+Hi Vivek,
 
-Thanks for the review.
+> +#ifdef CONFIG_TRACK_ASYNC_CONTEXT
+> +	if (elv_bio_sync(bio)) {
+> +		/* sync io. Determine cgroup from submitting task context. */
+> +		cgroup = task_cgroup(current, io_subsys_id);
+> +		return cgroup;
+> +	}
+> +
+> +	/* Async io. Determine cgroup from with cgroup id stored in page */
+> +	bio_cgroup_id = get_blkio_cgroup_id(bio);
+> +
+> +	if (!bio_cgroup_id)
+> +		return NULL;
+> +
+> +	cgroup = blkio_cgroup_lookup(bio_cgroup_id);
+> +#else
+> +	cgroup = task_cgroup(current, io_subsys_id);
+> +#endif
+> +	return cgroup;
+> +}
 
-> > + *
-> > + * Also there are some races possible while we get from the
-> > + * error detection to actually handle it.
-> > + */
-> > +
-> > +struct to_kill {
-> > +	struct list_head nd;
-> > +	struct task_struct *tsk;
-> > +	unsigned long addr;
-> > +};
-> 
-> It would be kinda nice to have a field in task_struct that is usable
-> say for anyone holding the tasklist lock for write. Then you could
+There is a case where a kernel thread (such as device-mapper drivers)
+submits a sync IO instead of a task which originates the IO. I think
+you should always use get_blkio_cgroup_id() to determine cgroup.
 
-I don't want to hold the tasklist lock for writing all the time, memory
-failure handling can sleep.
-
-> make a list with them. But I guess it isn't worthwhile unless there
-> are other users.
-
-It would need to be reserved for this, which definitely doesn't make
-worth it. Also I need the  address too, a list head alone wouldn't be enough.
-
-
-
-> > +			printk(KERN_ERR "MCE: Out of memory while machine check handling\n");
-> > +			return;
-> > +		}
-> > +	}
-> > +	tk->addr = page_address_in_vma(p, vma);
-> > +	if (tk->addr == -EFAULT) {
-> > +		printk(KERN_INFO "MCE: Failed to get address in VMA\n");
-> 
-> I don't know if this is very helpful message. I could legitimately happen and
-> nothing anybody can do about it...
-
-Can you suggest a better message?
-
-> 
-> > +		tk->addr = 0;
-> > +		fail = 1;
-> 
-> Fail doesn't seem to be used anywhere.
-
-Ah yes that was a remnant of a error checking scheme I discard later.
-I'll remove it thanks.
-
-> > +	list_add_tail(&tk->nd, to_kill);
-> > +}
-> > +
-> > +/*
-> > + * Kill the processes that have been collected earlier.
-> > + */
-> > +static void kill_procs_ao(struct list_head *to_kill, int doit, int trapno,
-> > +			  int fail, unsigned long pfn)
-> 
-> I guess "doit" etc is obvious once reading the code and caller, but maybe a
-> quick comment in the header to describe?
-
-Ok.
-
-> 
-> > +{
-> > +	struct to_kill *tk, *next;
-> > +
-> > +	list_for_each_entry_safe (tk, next, to_kill, nd) {
-> > +		if (doit) {
-> > +			/*
-> > +			 * In case something went wrong with munmaping
-> > +			 * make sure the process doesn't catch the
-> > +			 * signal and then access the memory. So reset
-> > +			 * the signal handlers
-> > +			 */
-> > +			if (fail)
-> > +				flush_signal_handlers(tk->tsk, 1);
-> 
-> Is this a legitimate thing to do? Is it racy? Why would you not send a
-> sigkill or something if you want them to die right now?
-
-That's a very unlikely case it could be probably just removed, when
-something during unmapping fails (mostly out of memory)
-
-It's more paranoia than real need.
-
-Yes SIGKILL would be probably better.
-
-> > + */
-> > +static void collect_procs_file(struct page *page, struct list_head *to_kill,
-> > +			      struct to_kill **tkc)
-> > +{
-> > +	struct vm_area_struct *vma;
-> > +	struct task_struct *tsk;
-> > +	struct prio_tree_iter iter;
-> > +	struct address_space *mapping = page_mapping(page);
-> > +
-> > +	read_lock(&tasklist_lock);
-> > +	spin_lock(&mapping->i_mmap_lock);
-> 
-> You have tasklist_lock(R) nesting outside i_mmap_lock, and inside anon_vma
-> lock. And anon_vma lock nests inside i_mmap_lock.
-> 
-> This seems fragile. If rwlocks ever become FIFO or tasklist_lock changes
-> type (maybe -rt kernels do it), then you could have a task holding
-> anon_vma lock and waiting for tasklist_lock, and another holding tasklist
-> lock and waiting for i_mmap_lock, and another holding i_mmap_lock and
-> waiting for anon_vma lock.
-
-So you're saying I should change the order?
-
-> 
-> I think nesting either inside or outside these locks consistently is less
-> fragile. Do we already have a dependency?... I don't know of one, but you
-> should document this in mm/rmap.c and mm/filemap.c.
-
-Ok.
-
-> > +	DELAYED,
-> > +	IGNORED,
-> > +	RECOVERED,
-> > +};
-> > +
-> > +static const char *action_name[] = {
-> > +	[FAILED] = "Failed",
-> > +	[DELAYED] = "Delayed",
-> > +	[IGNORED] = "Ignored",
-> 
-> How is delayed different to ignored (or failed, for that matter)?
-
-Part of it is documentation.
-
-DELAYED means it's handled somewhere else (e.g. in the case of free pages)
-
-> 
-> 
-> > +	[RECOVERED] = "Recovered",
-> 
-> And what does recovered mean? THe processes were killed and the page taken
-
-Not necessarily killed, it might have been a clean page or so.
-
-> out of circulation, but the machine is still in some unknown state of corruption
-> henceforth, right?
-
-It's in a known state of corruption -- there was this error on that page
-and otherwise it's fine (or at least no errors known at this point)
-The CPU generally tells you when it's in a unknown state and in this case this 
-code is not executed, but just panic directly.
-
-
-> > +
-> > +	/*
-> > +	 * remove_from_page_cache assumes (mapping && !mapped)
-> > +	 */
-> > +	if (page_mapping(p) && !page_mapped(p)) {
-> > +		remove_from_page_cache(p);
-> > +		page_cache_release(p);
-> > +	}
-> 
-> remove_mapping would probably be a better idea. Otherwise you can
-> probably introduce pagecache removal vs page fault races whi
-> will make the kernel bug.
-
-Can you be more specific about the problems?
-
-> > +			page_to_pfn(p));
-> > +	if (mapping) {
-> > +		/*
-> > +		 * Truncate does the same, but we're not quite the same
-> > +		 * as truncate. Needs more checking, but keep it for now.
-> > +		 */
-> 
-> What's different about truncate? It would be good to reuse as much as possible.
-
-Truncating removes the block on disk (we don't). Truncating shrinks
-the end of the file (we don't). It's more "temporal hole punch"
-Probably from the VM point of view it's very similar, but it's
-not the same.
-
-> 
-> 
-> > +		cancel_dirty_page(p, PAGE_CACHE_SIZE);
-> > +
-> > +		/*
-> > +		 * IO error will be reported by write(), fsync(), etc.
-> > +		 * who check the mapping.
-> > +		 */
-> > +		mapping_set_error(mapping, EIO);
-> 
-> Interesting. It's not *exactly* an IO error (well, not like one we're usually
-> used to).
-
-It's a new kind, but conceptually it's the same. Dirty IO data got corrupted.
-
-We actually had a lot of grief with the error reporting; a lot of
-code does "report error once then clear from mapping", which
-broke all the tests for that in the test suite. IMHO that's a shady
-area in the kernel.
-
-Right now these are "expected but incorrect failures" in the tester.
-
-
-> > +
-> > +	delete_from_swap_cache(p);
-> > +
-> > +	return RECOVERED;
-> > +}
-> 
-> All these handlers are quite interesting in that they need to
-> know about most of the mm. What are you trying to do in each
-> of them would be a good idea to say, and probably they should
-> rather go into their appropriate files instead of all here
-> (eg. swapcache stuff should go in mm/swap_state for example).
-
-Hmm. I think I would prefer to first merge before
-thinking about such things. But they could be moved at some 
-point.
-
-I suspect people first need to get more used to the idea of poisoned pages
-before we can force it to them directly like this.
-
-> 
-> You haven't waited on writeback here AFAIKS, and have you
-> *really* verified it is safe to call delete_from_swap_cache?
-
-Verified in what way? me and Fengguang went over the code.
-The original attempt at doing this was quite broken, but this
-one should be better (it's the third iteration or so)
-
-
-> > +
-> > +#define dirty		(1UL << PG_dirty)
-> > +#define swapcache	(1UL << PG_swapcache)
-> > +#define unevict		(1UL << PG_unevictable)
-> > +#define mlocked		(1UL << PG_mlocked)
-> > +#define writeback	(1UL << PG_writeback)
-> > +#define lru		(1UL << PG_lru)
-> > +#define swapbacked	(1UL << PG_swapbacked)
-> > +#define head		(1UL << PG_head)
-> > +#define tail		(1UL << PG_tail)
-> > +#define compound	(1UL << PG_compound)
-> > +#define slab		(1UL << PG_slab)
-> > +#define buddy		(1UL << PG_buddy)
-> > +#define reserved	(1UL << PG_reserved)
-> 
-> This looks like more work than just putting 1UL << (...) in each entry
-
-I had this originally, but it looked rather ugly.
-
-> in your table. Hmm, does this whole table thing even buy you much (versus a
-> much simpler switch statement?)
-
-I don't think the switch would be particularly simple. Also I like
-tables.
-
-> 
-> And seeing as you are doing a lot of checking for various page flags anyway,
-> (eg. in your prepare function). Just seems like needless complexity.
-
-Yes that grew over time unfortunately. Originally there was very little
-explicit flag checking.
-
-I still think the table is a good approach. 
-
--Andi
--- 
-ak@linux.intel.com -- Speaking for myself only.
+Thanks,
+Ryo Tsuruta
