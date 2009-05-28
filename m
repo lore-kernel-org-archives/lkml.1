@@ -1,129 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762038AbZE1GRR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759391AbZE1GZn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762038AbZE1GRR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 02:17:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758756AbZE1GRE
+	id S1759391AbZE1GZn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 02:25:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750907AbZE1GZg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 02:17:04 -0400
-Received: from cantor.suse.de ([195.135.220.2]:47017 "EHLO mx1.suse.de"
+	Thu, 28 May 2009 02:25:36 -0400
+Received: from comal.ext.ti.com ([198.47.26.152]:58146 "EHLO comal.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752978AbZE1GRC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 02:17:02 -0400
-Date: Thu, 28 May 2009 08:17:02 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [benchmark] 1% performance overhead of paravirt_ops on native kernels
-Message-ID: <20090528061702.GB6920@wotan.suse.de>
-References: <4A0B62F7.5030802@goop.org> <20090525091527.GA7535@elte.hu> <4A1C3805.7060404@goop.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A1C3805.7060404@goop.org>
-User-Agent: Mutt/1.5.9i
+	id S1750740AbZE1GZf convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 02:25:35 -0400
+From: "Shilimkar, Santosh" <santosh.shilimkar@ti.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>, Tony Lindgren <tony@atomide.com>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
+CC: "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Russell King <rmk@arm.linux.org.uk>
+Date: Thu, 28 May 2009 11:55:09 +0530
+Subject: RE: linux-next: manual merge of the omap tree with the arm tree
+Thread-Topic: linux-next: manual merge of the omap tree with the arm tree
+Thread-Index: AcnfTTwTKRg67OFcS8qxbBzvCOgNfgAD41XQ
+Message-ID: <EAF47CD23C76F840A9E7FCE10091EFAB02B4BE3927@dbde02.ent.ti.com>
+References: <20090528143138.2de9ad37.sfr@canb.auug.org.au>
+In-Reply-To: <20090528143138.2de9ad37.sfr@canb.auug.org.au>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 26, 2009 at 11:42:13AM -0700, Jeremy Fitzhardinge wrote:
-> Ingo Molnar wrote:
-> >I did more 'perf stat mmap-perf 1' measurements (bound to a single 
-> >core, running single thread - to exclude cross-CPU noise), which in 
-> >essence measures CONFIG_PARAVIRT=y overhead on native kernels:
-> >  
-> 
-> Thanks for taking the time to make these measurements.  You'll agree 
-> they're much better numbers than the last time you ran these tests?
-> 
-> > Performance counter stats for './mmap-perf':
-> >
-> >      [vanilla]  [PARAVIRT=y]
-> >
-> >    1230.805297   1242.828348  task clock ticks     (msecs)   + 0.97%
-> >     3602663413    3637329004  CPU cycles           (events)  + 0.96%
-> >     1927074043    1958330813  instructions         (events)  + 1.62%
-> >
-> >That's around 1% on really fast hardware (Core2 E6800 @ 2.93 GHz, 
-> >4MB L2 cache), i.e. still significant overhead. Distros generally 
-> >enable CONFIG_PARAVIRT, even though a large majority of users never 
-> >actually runs them as Xen guests.
-> >  
-> 
-> Did you do only a single run, or is this the result of multiple runs?  
-> If so, what was your procedure? How did you control for page 
-> placement/cache effects/other boot-to-boot variations?
-> 
-> Your numbers are not dissimilar to my measurements, but I also saw up to 
-> 1% performance improvement vs native from boot to boot (I saw up to 10% 
-> reduction of cache misses with pvops, possibly because of its 
-> de-inlining effects).
-> 
-> I also saw about 1% boot to boot variation with the non-pvops kernel.
-> 
-> While I think pvops does add *some* overhead, I think the absolute 
-> magnitude is swamped in the noise.  The best we can say is "somewhere 
-> under 1% on modern hardware".
-> 
-> >Are there plans to analyze and fix this overhead too, beyond the 
-> >paravirt-spinlocks overhead you analyzed? (Note that i had 
-> >CONFIG_PARAVIRT_SPINLOCKS disabled in this test.)
-> >
-> >I think only those users should get overhead who actually run such 
-> >kernels in a virtualized environment.
-> >
-> >I cannot cite a single other kernel feature that has so much 
-> >performance impact when runtime-disabled. For example, an often 
-> >cited bloat and overhead source is CONFIG_SECURITY=y.
-> >  
-> 
-> Your particular benchmark does many, many mmap/mprotect/munmap/mremap 
-> calls, and takes a lot of pagefaults.  That's going to hit the hot path 
-> with lots of pte updates and so on, but very few security hooks.  How 
-> does it compare with a more balanced workload?
-> 
-> >Its runtime overhead (same system, same workload) is:
-> >
-> >      [vanilla]  [SECURITY=y]
-> >
-> >    1219.652255   1230.805297  task clock ticks     (msecs)   + 0.91%
-> >     3574548461    3602663413  CPU cycles           (events)  + 0.78%
-> >     1915177924    1927074043  instructions         (events)  + 0.62%
-> >
-> >( With the difference that the distros that enable CONFIG_SECURITY=y
-> >  tend to install and use at least one security module by default. )
-> >
-> >So everyone who runs a CONFIG_PARAVIRT=y distro kernel has 1% of 
-> >overhead in this mmap-test workload - even if no Xen is used on that 
-> >box, ever.
-> >  
-> 
-> So you're saying that:
-> 
->    * CONFIG_SECURITY adding +0.91% to wallclock time is OK, but pvops
->      adding +0.97% is not,
->    * your test is sensitive enough to make 0.06% difference
->      significant, and
->    * this benchmark is representative enough of real workloads that its
->      results are overall meaningful?
 
-FWIW, we had to disable paravirt in our default SLES11 kernel.
-(admittedly this was before some of the recent improvements were
-made). But there are only so many 1% performance regressions you
-can introduce before customers won't upgrade (or vendors won't
-publish benchmarks with the new software).
+> -----Original Message-----
+> From: Stephen Rothwell [mailto:sfr@canb.auug.org.au] 
+> Sent: Thursday, May 28, 2009 10:02 AM
+> To: Tony Lindgren; linux-omap@vger.kernel.org
+> Cc: linux-next@vger.kernel.org; linux-kernel@vger.kernel.org; 
+> Russell King; Shilimkar, Santosh
+> Subject: linux-next: manual merge of the omap tree with the arm tree
+> 
+> Hi all,
+> 
+> Today's linux-next merge of the omap tree got a conflict in
+> arch/arm/Makefile between commit 
+> b4175b89921fefb2f352472fa6dccb0fc4fb37d9
+> ("[ARM] sort machine- and plat- by CONFIG* name") from the 
+> arm tree and
+> commit 68394eae0fc4e801fc2ae33055b24a9754669a7b ("ARM: OMAP4: 
+> Add support
+> for 4430 SDP") from the omap tree.
+> 
+> I fixed it up (see below) and can carry the fix as necessary.
+> -- 
+> Cheers,
+> Stephen Rothwell                    sfr@canb.auug.org.au
+> 
+> diff --cc arch/arm/Makefile
+> index e97c21b,676d10d..0000000
+> --- a/arch/arm/Makefile
+> +++ b/arch/arm/Makefile
+> @@@ -99,72 -99,65 +99,73 @@@ CHECKFLAGS	+= -D__arm_
+>   #Default value
+>   head-y		:= arch/arm/kernel/head$(MMUEXT).o 
+> arch/arm/kernel/init_task.o
+>   textofs-y	:= 0x00008000
+ - machine-$(CONFIG_ARCH_W90X900)    := w90x900
+>  +
+>  +# Machine directory name.  This list is sorted alphanumerically
+>  +# by CONFIG_* macro name.
+>  +machine-$(CONFIG_ARCH_AAEC2000)		:= aaec2000
+>  +machine-$(CONFIG_ARCH_AT91)		:= at91
+>  +machine-$(CONFIG_ARCH_CLPS711X)		:= clps711x
+>  +machine-$(CONFIG_ARCH_DAVINCI)		:= davinci
+>  +machine-$(CONFIG_ARCH_EBSA110)		:= ebsa110
+>  +machine-$(CONFIG_ARCH_EP93XX)		:= ep93xx
+>  +machine-$(CONFIG_ARCH_GEMINI)		:= gemini
+>  +machine-$(CONFIG_ARCH_H720X)		:= h720x
+>  +machine-$(CONFIG_ARCH_INTEGRATOR)	:= integrator
+>  +machine-$(CONFIG_ARCH_IOP13XX)		:= iop13xx
+>  +machine-$(CONFIG_ARCH_IOP32X)		:= iop32x
+>  +machine-$(CONFIG_ARCH_IOP33X)		:= iop33x
+>  +machine-$(CONFIG_ARCH_IXP2000)		:= ixp2000
+>  +machine-$(CONFIG_ARCH_IXP23XX)		:= ixp23xx
+>  +machine-$(CONFIG_ARCH_IXP4XX)		:= ixp4xx
+>  +machine-$(CONFIG_ARCH_KIRKWOOD)		:= kirkwood
+>  +machine-$(CONFIG_ARCH_KS8695)		:= ks8695
+>  +machine-$(CONFIG_ARCH_L7200)		:= l7200
+>  +machine-$(CONFIG_ARCH_LH7A40X)		:= lh7a40x
+>  +machine-$(CONFIG_ARCH_LOKI) 		:= loki
+>  +machine-$(CONFIG_ARCH_MMP)		:= mmp
+>  +machine-$(CONFIG_ARCH_MSM)		:= msm
+>  +machine-$(CONFIG_ARCH_MV78XX0)		:= mv78xx0
+>  +machine-$(CONFIG_ARCH_MX1)		:= mx1
+>  +machine-$(CONFIG_ARCH_MX2)		:= mx2
+>  +machine-$(CONFIG_ARCH_MX3)		:= mx3
+>  +machine-$(CONFIG_ARCH_NETX)		:= netx
+>  +machine-$(CONFIG_ARCH_NS9XXX)		:= ns9xxx
+>  +machine-$(CONFIG_ARCH_OMAP1)		:= omap1
+>  +machine-$(CONFIG_ARCH_OMAP2)		:= omap2
+>  +machine-$(CONFIG_ARCH_OMAP3)		:= omap2
+> ++machine-$(CONFIG_ARCH_OMAP4)		:= omap2
 
-But OTOH, almost any bit feature is going to cost performance. I don't
-think this is something new (as noted with CONFIG_SECURITY). It is
-just something people have to trade off and decide for themselves.
-If you make it configurable and keep performance as good as reasonably
-possible, then I don't think more can be asked.
+++ Is this really ok ?
 
-If performance overhead is too much and/or too few users can take
-advantage of a feature, then distros can always special-case it. I
-think may did for pae...
+>  +machine-$(CONFIG_ARCH_ORION5X)		:= orion5x
+>  +machine-$(CONFIG_ARCH_PNX4008)		:= pnx4008
+>  +machine-$(CONFIG_ARCH_PXA)		:= pxa
 
