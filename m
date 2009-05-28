@@ -1,51 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751534AbZE1E1j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751591AbZE1E15@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751534AbZE1E1j (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 00:27:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750951AbZE1E1b
+	id S1751591AbZE1E15 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 00:27:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751097AbZE1E1s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 00:27:31 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39804
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750919AbZE1E1b (ORCPT
+	Thu, 28 May 2009 00:27:48 -0400
+Received: from mailfilter7.ihug.co.nz ([203.109.136.7]:18560 "EHLO
+	mailfilter7.ihug.co.nz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751154AbZE1E1r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 00:27:31 -0400
-Date: Wed, 27 May 2009 21:27:30 -0700 (PDT)
-Message-Id: <20090527.212730.183576278.davem@davemloft.net>
-To: david@gibson.dropbear.id.au
-Cc: linux@arm.linux.org.uk, jonsmirl@gmail.com, devicetree-discuss@ozlabs.org,
-       linux-kernel@vger.kernel.org, timur@freescale.com,
-       scottwood@freescale.com, yuan-bo.ye@motorola.com,
-       linux-arm-kernel@lists.arm.linux.org.uk
-Subject: Re: [RFC] [PATCH] Device Tree on ARM platform
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090528025258.GB1464@yookeroo.seuss>
-References: <9e4733910905271213k7f4b93e7i7e6f2af24d85f@mail.gmail.com>
-	<20090527192116.GA31110@n2100.arm.linux.org.uk>
-	<20090528025258.GB1464@yookeroo.seuss>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 28 May 2009 00:27:47 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ao0lALCvHUop25ZU/2dsb2JhbACWeYIHB4VkEoFHrRmEDQU
+X-IronPort-AV: E=Sophos;i="4.41,263,1241352000"; 
+   d="scan'208";a="188447764"
+MIME-Version: 1.0
+Date: Thu, 28 May 2009 16:26:33 +1200
+From: CL <info@win.net>
+To: undisclosed-recipients:;
+Subject: (no subject)
+Organization: CL
+Reply-To: philherald03@9.cn
+Message-ID: <c046e6f3a31695b59d93567c7db840cf@ihug.co.nz>
+SenderIP: 41.219.150.84
+User-Agent: Vodafone Webmail/0.1
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Gibson <david@gibson.dropbear.id.au>
-Date: Thu, 28 May 2009 12:52:58 +1000
+ A lump sum of (£891,934.00 GBP)have been credited to your E-mail
+Address.Congrats...Confirm this receipt by contacting Mr Phil Herald.
++447031907814 on (philherald03@9.cn) your Name:___ Address:___ Age:___
+Sex:___ Occupation:___Tel/Fax:___Country
 
-> The of_platform bus model is conceptually completely broken, but in
-> practice only slightly broken for all common cases.
-
-The fact that every single SBUS and EBUS driver for sparc is now an
-of_platform driver, and the fact that as a further result joint
-SBUS/PCI drivers are now almost completely unified, speaks volumes to
-the fact that it is not broken.
-
-Yes, you'll have some non-shared probing code, one to fetch the
-resources from PCI/platform_device/whatever and one for of_device.
-
-But, I say big deal.
-
-The rest remains entirely unified, even the DMA calls are all the
-same in unified SBUS/EBUS/PCI device drivers.  It just works.
