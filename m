@@ -1,50 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757386AbZE1BPD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760963AbZE1BRb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757386AbZE1BPD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 21:15:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752550AbZE1BOy
+	id S1760963AbZE1BRb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 21:17:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755119AbZE1BRW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 21:14:54 -0400
-Received: from tundra.namei.org ([65.99.196.166]:42829 "EHLO tundra.namei.org"
+	Wed, 27 May 2009 21:17:22 -0400
+Received: from sh.osrg.net ([192.16.179.4]:60351 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751999AbZE1BOx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 21:14:53 -0400
-Date: Thu, 28 May 2009 11:12:42 +1000 (EST)
-From: James Morris <jmorris@namei.org>
-To: "Cihula, Joseph" <joseph.cihula@intel.com>
-cc: Joe Perches <joe@perches.com>, Theodore Tso <tytso@mit.edu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "arjan@linux.intel.com" <arjan@linux.intel.com>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "andi@firstfloor.org" <andi@firstfloor.org>,
-       "chrisw@sous-sol.org" <chrisw@sous-sol.org>,
-       "jbeulich@novell.com" <jbeulich@novell.com>,
-       "peterm@redhat.com" <peterm@redhat.com>,
-       "Wei, Gang" <gang.wei@intel.com>, "Wang, Shane" <shane.wang@intel.com>,
-       John Gilmore <gnu@toad.com>
-Subject: RE: [RFC v3][PATCH 2/2] intel_txt: Intel(R) TXT and tboot kernel
- support
-In-Reply-To: <4F65016F6CB04E49BFFA15D4F7B798D99B475314@orsmsx506.amr.corp.intel.com>
-Message-ID: <alpine.LRH.2.00.0905281100590.30090@tundra.namei.org>
-References: <4A03B9C3.9090607@intel.com> <20090512210154.GC23773@mit.edu>  <alpine.LRH.2.00.0905151006020.5527@tundra.namei.org>  <4F65016F6CB04E49BFFA15D4F7B798D99B4752F3@orsmsx506.amr.corp.intel.com> <1242352277.646.16.camel@Joe-Laptop.home>
- <4F65016F6CB04E49BFFA15D4F7B798D99B475314@orsmsx506.amr.corp.intel.com>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1752550AbZE1BRV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 21:17:21 -0400
+Date: Thu, 28 May 2009 10:16:50 +0900
+To: akpm@linux-foundation.org
+Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org
+Subject: Re: [PATCH] mark dma_sync_single and dma_sync_sg as deprecated
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20090527164305.82b1c1ab.akpm@linux-foundation.org>
+References: <20090519125630Y.fujita.tomonori@lab.ntt.co.jp>
+	<20090527164305.82b1c1ab.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20090528101702T.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Thu, 28 May 2009 10:16:50 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-FWIW,
+On Wed, 27 May 2009 16:43:05 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-There are some new slides from a talk by the InvisbleThings folk on this 
-topic which should help people understand some of the benefits and 
-pitfalls of this technology at a high level:
+> On Tue, 19 May 2009 13:00:37 +0900
+> FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+> 
+> > dma_sync_single() and dma_sync_sg() have been described as "Backwards
+> > compat, remove in 2.7.x" for a long time (since 2.6.5).
+> > 
+> > This marks dma_sync_single() and dma_sync_sg() as deprecated so the
+> > users get notified before removing them.
+> > 
+> > Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> > ---
+> >  include/linux/dma-mapping.h |   17 ++++++++++++++---
+> >  1 files changed, 14 insertions(+), 3 deletions(-)
+> > 
+> > diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
+> > index 8083b6a..197ddc4 100644
+> > --- a/include/linux/dma-mapping.h
+> > +++ b/include/linux/dma-mapping.h
+> > @@ -107,9 +107,20 @@ static inline int is_buffer_dma_capable(u64 mask, dma_addr_t addr, size_t size)
+> >  #include <asm-generic/dma-mapping-broken.h>
+> >  #endif
+> >  
+> > -/* Backwards compat, remove in 2.7.x */
+> > -#define dma_sync_single		dma_sync_single_for_cpu
+> > -#define dma_sync_sg		dma_sync_sg_for_cpu
+> > +/* for backwards compatibility, removed soon */
+> > +static inline void __deprecated dma_sync_single(struct device *dev,
+> > +						dma_addr_t addr, size_t size,
+> > +						enum dma_data_direction dir)
+> > +{
+> > +	dma_sync_single_for_cpu(dev, addr, size, dir);
+> > +}
+> > +
+> > +static inline void __deprecated dma_sync_sg(struct device *dev,
+> > +					    struct scatterlist *sg, int nelems,
+> > +					    enum dma_data_direction dir)
+> > +{
+> > +	dma_sync_sg_for_cpu(dev, sg, nelems, dir);
+> > +}
+> >  
+> >  static inline u64 dma_get_mask(struct device *dev)
+> >  {
+> 
+> I dunno.  There are still several callers to dma_sync_single() and
+> dma_sync_sg() in various drivers and adding the warning will just
+> irritate people.  It would be better to make an effort to convert those
+> callsites before filling everyone's screens with yet more warnings.
 
-http://theinvisiblethings.blogspot.com/2009/05/thoughts-about-trusted-computing.html
+Ok, I was too lazy. I tried to irritate people to fix them but yeah
+it's not a polite way. I've just sent patches to convert all those
+callsites.
 
 
--- 
-James Morris
-<jmorris@namei.org>
+> Most of the offenders are in USB, so let's optimistically cc those fine
+> folks.
+
+Actually, all the callsites in USB are wrapped with '#ifdef 0'. So
+they don't get any warnings due to this patch.
