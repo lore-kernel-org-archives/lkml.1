@@ -1,74 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764086AbZE1Tf0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764130AbZE1Tgd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764086AbZE1Tf0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 15:35:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757419AbZE1TfR
+	id S1764130AbZE1Tgd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 15:36:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756892AbZE1Tg0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 15:35:17 -0400
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:46896 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750907AbZE1TfQ (ORCPT
+	Thu, 28 May 2009 15:36:26 -0400
+Received: from casper.infradead.org ([85.118.1.10]:46533 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756861AbZE1Tg0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 15:35:16 -0400
-Date: Fri, 29 May 2009 04:34:58 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Daniel Walker <dwalker@fifo99.com>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linus Walleij <linus.ml.walleij@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Victor <linux@maxim.org.za>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-sh@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       John Stultz <johnstul@linux.vnet.ibm.com>
-Subject: Re: [PATCH] sched: Support current clocksource handling in fallback sched_clock().
-Message-ID: <20090528193458.GA1122@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Daniel Walker <dwalker@fifo99.com>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Linus Walleij <linus.ml.walleij@gmail.com>,
-	Ingo Molnar <mingo@elte.hu>, Andrew Victor <linux@maxim.org.za>,
-	Haavard Skinnemoen <hskinnemoen@atmel.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org, linux-sh@vger.kernel.org,
-	linux-arm-kernel@lists.arm.linux.org.uk,
-	John Stultz <johnstul@linux.vnet.ibm.com>
-References: <1243527218.28705.35.camel@desktop> <1243528329.6645.77.camel@laptop> <20090528164011.GA30104@linux-sh.org> <1243529547.28705.43.camel@desktop> <20090528165816.GA31688@linux-sh.org> <1243532324.28705.75.camel@desktop> <20090528175341.GA32118@linux-sh.org> <1243534252.28705.86.camel@desktop> <20090528182730.GA32767@linux-sh.org> <1243537463.28705.94.camel@desktop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1243537463.28705.94.camel@desktop>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 28 May 2009 15:36:26 -0400
+Subject: Re: [patch 0/5] Support for sanitization flag in low-level page
+ allocator
+From: Peter Zijlstra <peterz@infradead.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, "Larry H." <research@subreption.com>,
+       Ingo Molnar <mingo@elte.hu>, Rik van Riel <riel@redhat.com>,
+       linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>,
+       linux-mm@kvack.org, Ingo Molnar <mingo@redhat.com>,
+       pageexec@freemail.hu
+In-Reply-To: <20090523085653.0ad217f8@infradead.org>
+References: <20090520183045.GB10547@oblivion.subreption.com>
+	 <4A15A8C7.2030505@redhat.com> <20090522073436.GA3612@elte.hu>
+	 <20090522113809.GB13971@oblivion.subreption.com>
+	 <20090522143914.2019dd47@lxorguk.ukuu.org.uk>
+	 <20090522180351.GC13971@oblivion.subreption.com>
+	 <20090522192158.28fe412e@lxorguk.ukuu.org.uk>
+	 <20090522234031.GH13971@oblivion.subreption.com>
+	 <20090523090910.3d6c2e85@lxorguk.ukuu.org.uk>
+	 <20090523085653.0ad217f8@infradead.org>
+Content-Type: text/plain
+Date: Thu, 28 May 2009 21:36:01 +0200
+Message-Id: <1243539361.6645.80.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 28, 2009 at 12:04:23PM -0700, Daniel Walker wrote:
-> On Fri, 2009-05-29 at 03:27 +0900, Paul Mundt wrote:
+On Sat, 2009-05-23 at 08:56 -0700, Arjan van de Ven wrote:
+> On Sat, 23 May 2009 09:09:10 +0100
+> Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 > 
-> > Ah, ok, I suppose I could have explained that better. There are a couple
-> > of different considerations really. The timer blocks are often in
-> > different clock and power domains, meaning that only certain ones can be
-> > used for wakeups. These tend not to be ideal for general use, and so we
-> > only switch to them when we have to.
+> > > Enabling SLAB poisoning by default will be a bad idea
 > > 
-> > To make matters more convoluted, the availability of different timer
-> > channels on different CPUs will depend on current pin state, and more
-> > importantly, what sort of states we are able to achieve. It is not
-> > uncommon to have some of the pins required by these channels locked down
-> > by other drivers during regular operation, which we in turn need to
-> > unload before the pin state can be reconfigured and the timer can
-> > succeed, all which needs to happen before certain power state transitions
-> > can take place. We implement dynamic pinmux for most of the SH CPUs
-> > precisely to deal with these sorts of problems. In the case of some of
-> > the microcontrollers that are timer heavy and low on pincount, it is not
-> > uncommon to have upwards of 16 different functions per pin.
+> > Why ?
+> > 
+> > > I looked for unused/re-usable flags too, but found none. It's
+> > > interesting to see SLUB and SLOB have their own page flags. Did
+> > > anybody oppose those when they were proposed? 
+> > 
+> > Certainly they were looked at - but the memory allocator is right at
+> > the core of the system rather than an add on.
+> > 
+> > > > Ditto - which is why I'm coming from the position of an "if we
+> > > > free it clear it" option. If you need that kind of security the
+> > > > cost should be more than acceptable - especially with modern
+> > > > processors that can do cache bypass on the clears.
+> > > 
+> > > Are you proposing that we should simply remove the confidential
+> > > flags and just stick to the unconditional sanitization when the
+> > > boot option is enabled? If positive, it will make things more
+> > > simple and definitely is better than nothing. I would have (still)
+> > > preferred the other old approach to be merged, but whatever works
+> > > at this point.
+> > 
+> > I am because
+> > - its easy to merge
+> > - its non controversial
+> > - it meets the security good practice and means we don't miss any
+> >   alloc/free cases
+> > - it avoid providing flags to help a trojan identify "interesting"
+> > data to acquire
+> > - modern cpu memory clearing can be very cheap
 > 
-> I'm still a little confused how kernel modules fit in here.. Are you
-> saying a user would unload some certain driver which has a pin locked
-> down and prevents the clocksource from working. Then the user would load
-> the clocksource module which would now function, and that all would have
-> to happen in order to enter a certain power state?
-> 
-Yes.
+> ... and if we zero on free, we don't need to zero on allocate.
+> While this is a little controversial, it does mean that at least part of
+> the cost is just time-shifted, which means it'll not be TOO bad
+> hopefully...
+
+zero on allocate has the advantage of cache hotness, we're going to use
+the memory, why else allocate it.
+
+zero on free only causes extra cache evictions for no gain.
+
+
