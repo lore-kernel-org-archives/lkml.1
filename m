@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761785AbZE1Lrp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761036AbZE1Lsd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761785AbZE1Lrp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 07:47:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759866AbZE1Lqs
+	id S1761036AbZE1Lsd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 07:48:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761250AbZE1Lq5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 07:46:48 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:58675 "EHLO kernel.dk"
+	Thu, 28 May 2009 07:46:57 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:58727 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755514AbZE1Lqq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 07:46:46 -0400
+	id S1760096AbZE1Lqu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 07:46:50 -0400
 From: Jens Axboe <jens.axboe@oracle.com>
 To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org, tytso@mit.edu
 Cc: chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
        akpm@linux-foundation.org, jack@suse.cz, yanmin_zhang@linux.intel.com,
        richard@rsk.demon.co.uk, damien.wyart@free.fr,
        Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH 02/11] btrfs: properly register fs backing device
-Date: Thu, 28 May 2009 13:46:35 +0200
-Message-Id: <1243511204-2328-3-git-send-email-jens.axboe@oracle.com>
+Subject: [PATCH 09/11] writeback: add some debug inode list counters to bdi stats
+Date: Thu, 28 May 2009 13:46:42 +0200
+Message-Id: <1243511204-2328-10-git-send-email-jens.axboe@oracle.com>
 X-Mailer: git-send-email 1.6.3
 In-Reply-To: <1243511204-2328-1-git-send-email-jens.axboe@oracle.com>
 References: <1243511204-2328-1-git-send-email-jens.axboe@oracle.com>
@@ -25,72 +25,75 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-btrfs assigns this bdi to all inodes on that file system, so make
-sure it's registered. This isn't really important now, but will be
-when we put dirty inodes there. Even now, we miss the stats when the
-bdi isn't visible.
+Add some debug entries to be able to inspect the internal state of
+the writeback details.
 
-Also fixes failure to check bdi_init() return value, and bad inherit of
-->capabilities flags from the default bdi.
-
-Acked-by: Chris Mason <chris.mason@oracle.com>
 Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 ---
- fs/btrfs/disk-io.c |   23 ++++++++++++++++++-----
- 1 files changed, 18 insertions(+), 5 deletions(-)
+ mm/backing-dev.c |   38 ++++++++++++++++++++++++++++++++++----
+ 1 files changed, 34 insertions(+), 4 deletions(-)
 
-diff --git a/fs/btrfs/disk-io.c b/fs/btrfs/disk-io.c
-index 4b0ea0b..2dc19c9 100644
---- a/fs/btrfs/disk-io.c
-+++ b/fs/btrfs/disk-io.c
-@@ -1345,12 +1345,24 @@ static void btrfs_unplug_io_fn(struct backing_dev_info *bdi, struct page *page)
- 	free_extent_map(em);
- }
- 
-+/*
-+ * If this fails, caller must call bdi_destroy() to get rid of the
-+ * bdi again.
-+ */
- static int setup_bdi(struct btrfs_fs_info *info, struct backing_dev_info *bdi)
+diff --git a/mm/backing-dev.c b/mm/backing-dev.c
+index 8980f6f..b981118 100644
+--- a/mm/backing-dev.c
++++ b/mm/backing-dev.c
+@@ -50,9 +50,29 @@ static void bdi_debug_init(void)
+ static int bdi_debug_stats_show(struct seq_file *m, void *v)
  {
--	bdi_init(bdi);
-+	int err;
+ 	struct backing_dev_info *bdi = m->private;
++	struct bdi_writeback *wb;
+ 	unsigned long background_thresh;
+ 	unsigned long dirty_thresh;
+ 	unsigned long bdi_thresh;
++	unsigned long nr_dirty, nr_io, nr_more_io, nr_wb;
++	struct inode *inode;
 +
-+	bdi->capabilities = BDI_CAP_MAP_COPY;
-+	err = bdi_init(bdi);
-+	if (err)
-+		return err;
-+
-+	err = bdi_register(bdi, NULL, "btrfs");
-+	if (err)
-+		return err;
-+
- 	bdi->ra_pages	= default_backing_dev_info.ra_pages;
--	bdi->state		= 0;
--	bdi->capabilities	= default_backing_dev_info.capabilities;
- 	bdi->unplug_io_fn	= btrfs_unplug_io_fn;
- 	bdi->unplug_io_data	= info;
- 	bdi->congested_fn	= btrfs_congested_fn;
-@@ -1574,7 +1586,8 @@ struct btrfs_root *open_ctree(struct super_block *sb,
- 	fs_info->sb = sb;
- 	fs_info->max_extent = (u64)-1;
- 	fs_info->max_inline = 8192 * 1024;
--	setup_bdi(fs_info, &fs_info->bdi);
-+	if (setup_bdi(fs_info, &fs_info->bdi))
-+		goto fail_bdi;
- 	fs_info->btree_inode = new_inode(sb);
- 	fs_info->btree_inode->i_ino = 1;
- 	fs_info->btree_inode->i_nlink = 1;
-@@ -1931,8 +1944,8 @@ fail_iput:
++	/*
++	 * inode lock is enough here, the bdi->wb_list is protected by
++	 * RCU on the reader side
++	 */
++	nr_wb = nr_dirty = nr_io = nr_more_io = 0;
++	spin_lock(&inode_lock);
++	list_for_each_entry(wb, &bdi->wb_list, list) {
++		nr_wb++;
++		list_for_each_entry(inode, &wb->b_dirty, i_list)
++			nr_dirty++;
++		list_for_each_entry(inode, &wb->b_io, i_list)
++			nr_io++;
++		list_for_each_entry(inode, &wb->b_more_io, i_list)
++			nr_more_io++;
++	}
++	spin_unlock(&inode_lock);
  
- 	btrfs_close_devices(fs_info->fs_devices);
- 	btrfs_mapping_tree_free(&fs_info->mapping_tree);
-+fail_bdi:
- 	bdi_destroy(&fs_info->bdi);
--
- fail:
- 	kfree(extent_root);
- 	kfree(tree_root);
+ 	get_dirty_limits(&background_thresh, &dirty_thresh, &bdi_thresh, bdi);
+ 
+@@ -62,12 +82,22 @@ static int bdi_debug_stats_show(struct seq_file *m, void *v)
+ 		   "BdiReclaimable:   %8lu kB\n"
+ 		   "BdiDirtyThresh:   %8lu kB\n"
+ 		   "DirtyThresh:      %8lu kB\n"
+-		   "BackgroundThresh: %8lu kB\n",
++		   "BackgroundThresh: %8lu kB\n"
++		   "WriteBack threads:%8lu\n"
++		   "b_dirty:          %8lu\n"
++		   "b_io:             %8lu\n"
++		   "b_more_io:        %8lu\n"
++		   "bdi_list:         %8u\n"
++		   "state:            %8lx\n"
++		   "wb_mask:          %8lx\n"
++		   "wb_list:          %8u\n"
++		   "wb_cnt:           %8u\n",
+ 		   (unsigned long) K(bdi_stat(bdi, BDI_WRITEBACK)),
+ 		   (unsigned long) K(bdi_stat(bdi, BDI_RECLAIMABLE)),
+-		   K(bdi_thresh),
+-		   K(dirty_thresh),
+-		   K(background_thresh));
++		   K(bdi_thresh), K(dirty_thresh),
++		   K(background_thresh), nr_wb, nr_dirty, nr_io, nr_more_io,
++		   !list_empty(&bdi->bdi_list), bdi->state, bdi->wb_mask,
++		   !list_empty(&bdi->wb_list), bdi->wb_cnt);
+ #undef K
+ 
+ 	return 0;
 -- 
 1.6.3.rc0.1.gf800
 
