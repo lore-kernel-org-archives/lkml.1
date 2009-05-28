@@ -1,46 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756318AbZE1DT2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758931AbZE1DVd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756318AbZE1DT2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 23:19:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754331AbZE1DTV
+	id S1758931AbZE1DVd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 23:21:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754331AbZE1DV0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 23:19:21 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:33678 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754154AbZE1DTU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 23:19:20 -0400
+	Wed, 27 May 2009 23:21:26 -0400
+Received: from yw-out-2324.google.com ([74.125.46.31]:46002 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754154AbZE1DVZ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 23:21:25 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Oleg Nesterov <oleg@redhat.com>
-X-Fcc: ~/Mail/linus
-Cc: Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH 7/X] ptrace: mv task->parent ptrace_task->pt_tracer
-In-Reply-To: Oleg Nesterov's message of  Thursday, 28 May 2009 04:54:07 +0200 <20090528025407.GA22182@redhat.com>
-References: <20090525000016.GA2239@redhat.com>
-	<20090525215903.GA9113@redhat.com>
-	<20090527021131.4778BFC36B@magilla.sf.frob.com>
-	<20090527224140.GC6770@redhat.com>
-	<20090527230700.11F2DFC2BD@magilla.sf.frob.com>
-	<20090527235936.GB12216@redhat.com>
-	<20090528003256.86E4EFC2BD@magilla.sf.frob.com>
-	<20090528025407.GA22182@redhat.com>
-X-Zippy-Says: Where do your SOCKS go when you lose them in th' WASHER?
-Message-Id: <20090528031907.E179FFC2BD@magilla.sf.frob.com>
-Date: Wed, 27 May 2009 20:19:07 -0700 (PDT)
+In-Reply-To: <20090527235704.GQ6805@pengutronix.de>
+References: <ed82fe3e0905270739k38018c87ka11f62c5977e45fb@mail.gmail.com> 
+	<87vdnm8sec.fsf@macbook.be.48ers.dk> <4A1D6901.2090508@freescale.com> 
+	<20090527175609.GB31861@flint.arm.linux.org.uk> <4A1D8FBA.6040802@freescale.com> 
+	<9e4733910905271213k7f4b93e7i7e6f2af24d85f@mail.gmail.com> 
+	<20090527192116.GA31110@n2100.arm.linux.org.uk> <20090527193927.GD30039@game.jcrosoft.org> 
+	<fa686aa40905271322x2f62c3dcs355374b30b4db3ca@mail.gmail.com> 
+	<20090527235704.GQ6805@pengutronix.de>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Wed, 27 May 2009 21:21:07 -0600
+Message-ID: <fa686aa40905272021w18a148caqd2b73c4448da2b28@mail.gmail.com>
+Subject: Re: [RFC] [PATCH] Device Tree on ARM platform
+To: Robert Schwebel <r.schwebel@pengutronix.de>
+Cc: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>,
+       devicetree-discuss <devicetree-discuss@ozlabs.org>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       Jon Smirl <jonsmirl@gmail.com>, Scott Wood <scottwood@freescale.com>,
+       Janboe Ye <yuan-bo.ye@motorola.com>, Timur Tabi <timur@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If you're going to zero out fields in a corner case, I think you should
-zero si_code too so it's consistent with what collect_signal() produces
-when a signal is posted with OOM for the sigq allocation.  Modulo that nit,
-this is fine by me.  (It is likely nobody will ever see this path anyway,
-since we'll probably merge the clean-up that replaces it before any release
-that uses this series at all.)
+On Wed, May 27, 2009 at 5:57 PM, Robert Schwebel
+<r.schwebel@pengutronix.de> wrote:
+> On Wed, May 27, 2009 at 02:22:50PM -0600, Grant Likely wrote:
+>> 2) Driver binding mechanism:  device tree nodes usually have a
+>> "compatible" property which is a list of strings. The first string
+>> describes exactly what the device is (ie. "atmel,24c08") and an
+>> optional list of other devices which it is register interface
+>> backwards compatible with.
+>
+> This is a good example. The "exact" description above doesn't say
+> anything about some of the details the driver needs to know. Here is the
+> at24 driver:
+>
+> http://lxr.linux.no/linux+v2.6.29/include/linux/i2c/at24.h#L18
+>
+> Where do we get the page size & flags from?
 
+It is inherent in the value "atmel,24c08".  Because the exact device
+model is specified, the kernel can know what the page size and flags
+are for that device.  OTOH, if it is appropriate for the device, then
+the binding can be defined to include things like page size and flags
+encoded explicitly in additional properties.
 
-Thanks,
-Roland
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
