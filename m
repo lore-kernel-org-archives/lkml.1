@@ -1,52 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763586AbZE1SPX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763573AbZE1SQi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763586AbZE1SPX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 14:15:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756442AbZE1SPM
+	id S1763573AbZE1SQi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 14:16:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756538AbZE1SQb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 14:15:12 -0400
-Received: from qw-out-2122.google.com ([74.125.92.24]:43755 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756206AbZE1SPM (ORCPT
+	Thu, 28 May 2009 14:16:31 -0400
+Received: from mga01.intel.com ([192.55.52.88]:21138 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751966AbZE1SQb convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 14:15:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=M6yO1AoyV0ELqVOQKW25YJbzTtRqE8pih6t6AeWscDHXuy1f4h1eZVyQfbVDOZa5NF
-         tm246KvvZ7EUAXBk8jD5cP+/JoXD6fmbD58YqmW7GsI3eLxmQDGcE3ZwyEoYGt7gGfKF
-         zgV2l0hqBmADsrFRvIN8lz5a533P3bot2nUdM=
-Subject: Re: [PATCH v3] MFD: PCAP driver
-From: Daniel Ribeiro <drwyrm@gmail.com>
-To: Samuel Ortiz <sameo@linux.intel.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Harald Welte <laforge@gnumonks.org>,
-       Philipp Zabel <philipp.zabel@gmail.com>,
-       openezx-devel <openezx-devel@lists.openezx.org>
-In-Reply-To: <20090528174635.GA29797@sortiz.org>
-References: <1243399356.2263.46.camel@brutus>
-	 <20090528174635.GA29797@sortiz.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 28 May 2009 15:14:31 -0300
-Message-Id: <1243534472.5097.1.camel@brutus>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 8bit
+	Thu, 28 May 2009 14:16:31 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,266,1241420400"; 
+   d="scan'208";a="461239234"
+From: "Eaton, Thomas G" <thomas.g.eaton@intel.com>
+To: "dri-devel@lists.sourceforge.net" <dri-devel@lists.sourceforge.net>,
+       "airlied@linux.ie" <airlied@linux.ie>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Thu, 28 May 2009 12:16:23 -0600
+Subject: [PATCH] drm: add connector and encoder types for MIPI displays
+Thread-Topic: [PATCH] drm: add connector and encoder types for MIPI displays
+Thread-Index: AQHJ37124IY8CFmgGk6jI2xBuEkgf5Aru46g
+Message-ID: <4060059527C3A74384B5C4ED9D30CB99884CF09D@rrsmsx506.amr.corp.intel.com>
+References: <4060059527C3A74384B5C4ED9D30CB998833847C@rrsmsx506.amr.corp.intel.com>
+In-Reply-To: <4060059527C3A74384B5C4ED9D30CB998833847C@rrsmsx506.amr.corp.intel.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Qui, 2009-05-28 às 19:46 +0200, Samuel Ortiz escreveu:
-> Hi Daniel,
+Added connector and encoder types for MIPI displays.
 
-Hi! :)
+Signed-off-by: Thomas G Eaton <thomas.g.eaton@intel.com>
 
-> I'd actually prefer the void pointer to be a pcap_chip one.
-> Otherwise, the patch looks good to me.
+---
+diff -uprN -X drm-2.6.orig/Documentation/dontdiff drm-2.6.orig/drivers/gpu/drm/drm_crtc.c drm-2.6/drivers/gpu/drm/drm_crtc.c
+--- drm-2.6.orig/drivers/gpu/drm/drm_crtc.c     2009-05-28 10:17:02.000000000 -0700
++++ drm-2.6/drivers/gpu/drm/drm_crtc.c  2009-05-28 10:24:49.000000000 -0700
+@@ -146,6 +146,7 @@ static struct drm_conn_prop_enum_list dr
+        { DRM_MODE_CONNECTOR_DisplayPort, "DisplayPort", 0 },
+        { DRM_MODE_CONNECTOR_HDMIA, "HDMI Type A", 0 },
+        { DRM_MODE_CONNECTOR_HDMIB, "HDMI Type B", 0 },
++       { DRM_MODE_CONNECTOR_MIPI, "MIPI", 0 },
+ };
 
-Ok, will do. Thanks!
+ static struct drm_prop_enum_list drm_encoder_enum_list[] =
+@@ -154,6 +155,7 @@ static struct drm_prop_enum_list drm_enc
+        { DRM_MODE_ENCODER_TMDS, "TMDS" },
+        { DRM_MODE_ENCODER_LVDS, "LVDS" },
+        { DRM_MODE_ENCODER_TVDAC, "TV" },
++       { DRM_MODE_ENCODER_MIPI, "MIPI" },
+ };
 
--- 
-Daniel Ribeiro
+ char *drm_get_encoder_name(struct drm_encoder *encoder)
+diff -uprN -X drm-2.6.orig/Documentation/dontdiff drm-2.6.orig/include/drm/drm_mode.h drm-2.6/include/drm/drm_mode.h
+--- drm-2.6.orig/include/drm/drm_mode.h 2009-05-28 10:17:12.000000000 -0700
++++ drm-2.6/include/drm/drm_mode.h      2009-05-28 10:23:13.000000000 -0700
+@@ -121,6 +121,7 @@ struct drm_mode_crtc {
+ #define DRM_MODE_ENCODER_TMDS  2
+ #define DRM_MODE_ENCODER_LVDS  3
+ #define DRM_MODE_ENCODER_TVDAC 4
++#define DRM_MODE_ENCODER_MIPI  5
+
+ struct drm_mode_get_encoder {
+        __u32 encoder_id;
+@@ -155,6 +156,7 @@ struct drm_mode_get_encoder {
+ #define DRM_MODE_CONNECTOR_DisplayPort 10
+ #define DRM_MODE_CONNECTOR_HDMIA       11
+ #define DRM_MODE_CONNECTOR_HDMIB       12
++#define DRM_MODE_CONNECTOR_MIPI                13
+
+ struct drm_mode_get_connector {
 
