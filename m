@@ -1,71 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762413AbZE1OTj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761678AbZE1OV0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762413AbZE1OTj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 10:19:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762598AbZE1OTL
+	id S1761678AbZE1OV0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 10:21:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755416AbZE1OVS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 10:19:11 -0400
-Received: from tango.0pointer.de ([85.214.72.216]:34832 "EHLO
-	tango.0pointer.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760022AbZE1OTK (ORCPT
+	Thu, 28 May 2009 10:21:18 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:43624 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753174AbZE1OVS convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 10:19:10 -0400
-Date: Thu, 28 May 2009 16:14:33 +0200
-From: Lennart Poettering <mzxreary@0pointer.de>
-To: linux-kernel@vger.kernel.org
-Cc: mchehab@redhat.com
-Subject: [PATCH] V4L/pwc - use usb_interface as parent, not usb_device
-Message-ID: <20090528141433.GA16534@omega>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 28 May 2009 10:21:18 -0400
+Message-Id: <4A1EBA000200007800003197@vpn.id2.novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.0 
+Date: Thu, 28 May 2009 15:21:20 +0100
+From: "Jan Beulich" <JBeulich@novell.com>
+To: "Tejun Heo" <TeHeo@novell.com>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: percpu memory setup and num_possible_cpus() vs. nr_cpu_ids
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Organization: Red Hat, Inc.
-X-Campaign-1: ()  ASCII Ribbon Campaign
-X-Campaign-2: /  Against HTML Email & vCards - Against Microsoft Attachments
-User-Agent: Leviathan/19.8.0 [zh] (Cray 3; I; Solaris 4.711; Console)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The current code creates a sysfs device path where the video4linux
-device is child of the usb device itself instead of the interface it
-belongs to. That is evil and confuses udev.
+Tejun,
 
-This patch does basically the same thing as Kay's similar patch for the
-ov511 driver:
+this code of yours, as I learned the hard way during some Xen kernel work,
+assumes that cpu_possible_map is not sparse. While on native x86 this is
+certainly true, I wonder whether such a dependency should really exist in
+architecture neutral code. Below, for reference, the places I needed to
+change (4k allocator only). However, there are more instances of this in the
+other allocators - those seem more problematic, as they directly drive input
+to alloc_bootmem() (hence a lot of memory could be wasted, or allocation
+could even fail, with a very sparse cpu_possible_map if one would simply
+also use nr_cpu_ids here). In the remap (x86 - under the assumption that
+if this change gets made, it should also be made in x86 code, albeit not
+directly affected) allocator's case things may not be that bad, since the
+memory gets freed again at the end of setup_pcpu_remap().
 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=ce96d0a44a4f8d1bb3dc12b5e98cb688c1bc730d
+Thoughts?
 
-(A while back I sent this patch to Mauro, but it never appeared in any
-tree, so I am reposting this on lkml, in the hope someone will pick it
-up.)
+Jan
 
-Lennart
----
- drivers/media/video/pwc/pwc-if.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/media/video/pwc/pwc-if.c b/drivers/media/video/pwc/pwc-if.c
-index 7c542ca..92d4177 100644
---- a/drivers/media/video/pwc/pwc-if.c
-+++ b/drivers/media/video/pwc/pwc-if.c
-@@ -1783,7 +1783,7 @@ static int usb_pwc_probe(struct usb_interface *intf, const struct usb_device_id
- 		return -ENOMEM;
- 	}
- 	memcpy(pdev->vdev, &pwc_template, sizeof(pwc_template));
--	pdev->vdev->parent = &(udev->dev);
-+	pdev->vdev->parent = &intf->dev;
- 	strcpy(pdev->vdev->name, name);
- 	video_set_drvdata(pdev->vdev, pdev);
+--- head-2009-05-19.orig/arch/x86/kernel/setup_percpu.c	2009-05-19 09:55:40.000000000 +0200
++++ head-2009-05-19/arch/x86/kernel/setup_percpu.c	2009-05-27 11:12:46.000000000 +0200
+@@ -295,13 +295,14 @@ static ssize_t __init setup_pcpu_4k(size
+ 	pcpu4k_nr_static_pages = PFN_UP(static_size);
  
--- 
-1.6.2.2
+ 	/* unaligned allocations can't be freed, round up to page size */
+-	pages_size = PFN_ALIGN(pcpu4k_nr_static_pages * num_possible_cpus()
++	pages_size = PFN_ALIGN(pcpu4k_nr_static_pages * nr_cpu_ids
+ 			       * sizeof(pcpu4k_pages[0]));
+ 	pcpu4k_pages = alloc_bootmem(pages_size);
+ 
+ 	/* allocate and copy */
+ 	j = 0;
+-	for_each_possible_cpu(cpu)
++	for_each_possible_cpu(cpu) {
++		j = cpu * pcpu4k_nr_static_pages;
+ 		for (i = 0; i < pcpu4k_nr_static_pages; i++) {
+ 			void *ptr;
+ 
+@@ -312,6 +313,7 @@ static ssize_t __init setup_pcpu_4k(size
+ 			memcpy(ptr, __per_cpu_load + i * PAGE_SIZE, PAGE_SIZE);
+ 			pcpu4k_pages[j++] = virt_to_page(ptr);
+ 		}
++	}
+ 
+ 	/* we're ready, commit */
+ 	pr_info("PERCPU: Allocated %d 4k pages, static data %zu bytes\n",
+@@ -323,8 +325,11 @@ static ssize_t __init setup_pcpu_4k(size
+ 	goto out_free_ar;
+ 
+ enomem:
+-	while (--j >= 0)
++	while (--j >= 0) {
++		if (!pcpu4k_pages[j])
++			continue;
+ 		free_bootmem(__pa(page_address(pcpu4k_pages[j])), PAGE_SIZE);
++	}
+ 	ret = -ENOMEM;
+ out_free_ar:
+ 	free_bootmem(__pa(pcpu4k_pages), pages_size);
+--- head-2009-05-19.orig/mm/percpu.c	2009-04-21 10:18:29.000000000 +0200
++++ head-2009-05-19/mm/percpu.c	2009-05-27 11:34:01.000000000 +0200
+@@ -604,7 +604,7 @@ static void pcpu_free_area(struct pcpu_c
+ static void pcpu_unmap(struct pcpu_chunk *chunk, int page_start, int page_end,
+ 		       bool flush)
+ {
+-	unsigned int last = num_possible_cpus() - 1;
++	unsigned int last = nr_cpu_ids - 1;
+ 	unsigned int cpu;
+ 
+ 	/* unmap must not be done on immutable chunk */
+@@ -690,7 +690,7 @@ static void pcpu_depopulate_chunk(struct
+  */
+ static int pcpu_map(struct pcpu_chunk *chunk, int page_start, int page_end)
+ {
+-	unsigned int last = num_possible_cpus() - 1;
++	unsigned int last = nr_cpu_ids - 1;
+ 	unsigned int cpu;
+ 	int err;
+ 
+@@ -1115,9 +1115,9 @@ size_t __init pcpu_setup_first_chunk(pcp
+ 					PFN_UP(size_sum));
+ 
+ 	pcpu_unit_size = pcpu_unit_pages << PAGE_SHIFT;
+-	pcpu_chunk_size = num_possible_cpus() * pcpu_unit_size;
++	pcpu_chunk_size = nr_cpu_ids * pcpu_unit_size;
+ 	pcpu_chunk_struct_size = sizeof(struct pcpu_chunk)
+-		+ num_possible_cpus() * pcpu_unit_pages * sizeof(struct page *);
++		+ nr_cpu_ids * pcpu_unit_pages * sizeof(struct page *);
+ 
+ 	if (dyn_size < 0)
+ 		dyn_size = pcpu_unit_size - static_size - reserved_size;
 
 
-
-Lennart
-
--- 
-Lennart Poettering                        Red Hat, Inc.
-lennart [at] poettering [dot] net         ICQ# 11060553
-http://0pointer.net/lennart/           GnuPG 0x1A015CC4
