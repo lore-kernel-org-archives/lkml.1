@@ -1,77 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763476AbZE1PGy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763445AbZE1PHH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763476AbZE1PGy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 11:06:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751245AbZE1PGq
+	id S1763445AbZE1PHH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 11:07:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763474AbZE1PGy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 11:06:46 -0400
-Received: from mail-bw0-f222.google.com ([209.85.218.222]:62245 "EHLO
-	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756776AbZE1PGq (ORCPT
+	Thu, 28 May 2009 11:06:54 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:45622 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763312AbZE1PGx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 11:06:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=sJnf6FUEBqeV9IDGNsu4iPFgvXtiCt6w1Zd/pU0nP4Lj5Uy05zUORsj97j+H8Ecfiw
-         sJT+1jb0sS0S496XqEp2nVVvO1cqk78vdIG/NDoLAZB+zWwZy/hti8rdFczedmPPIiJs
-         v+dT2VN9bs2LNNn7qD+402eaq9EXYZjG0xmS8=
-Subject: Re: [RFC PATCH 0/4] V3 - Implementation of IR support using the
- input subsystem
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: Jon Smirl <jonsmirl@gmail.com>
-Cc: linux-kernel@vger.kernel.org, lirc-list@lists.sourceforge.net
-In-Reply-To: <20081006194032.15992.8393.stgit@terra>
-References: <20081006194032.15992.8393.stgit@terra>
-Content-Type: text/plain
-Date: Thu, 28 May 2009 18:06:41 +0300
-Message-Id: <1243523201.5254.59.camel@maxim-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 28 May 2009 11:06:53 -0400
+To: pavel@ucw.cz
+CC: miklos@szeredi.hu, akpm@linux-foundation.org, niel.lambrechts@gmail.com,
+       linux-kernel@vger.kernel.org, gregkh@suse.de, rjw@sisk.pl
+In-reply-to: <20090528114527.GA2140@elf.ucw.cz> (message from Pavel Machek on
+	Thu, 28 May 2009 13:45:27 +0200)
+Subject: Re: 2.6.29.4: hibernation fails with large kernel trace
+References: <4A1C36FF.4080000@gmail.com> <20090527223241.c6fb2caf.akpm@linux-foundation.org> <E1M9ZJI-0003bh-HD@pomaz-ex.szeredi.hu> <20090528114527.GA2140@elf.ucw.cz>
+Message-Id: <E1M9hBl-0004dv-KT@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 28 May 2009 17:06:37 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-10-06 at 15:43 -0400, Jon Smirl wrote:
-> Third pass at implementing evdev support for IR. The goal of in-kernel IR is to integrate IR events into the evdev input event queue and maintain ordering of events from all input devices.
-> 
-> New feature, raw mode. There are three sysfs attributes - ir_raw, ir_carrier, ir_xmitter. Read from ir_raw to get the raw timing data from the IR device. Set carrier and active xmitters and then copy raw data to ir_raw to send. These attributes may be better on a debug switch. You would use raw mode when decoding a new protocol. After you figure out the new protocol, write an in-kernel encoder/decoder for it.
-> 
-> What should the IR API look like? 
-> 
-> How are IR events mapped into keyboard events? Should they be mapped? Map them in the kernel or in user space? The maps are tiny, less than 1K per remote.  Sysfs can be used to load maps into the kernel driver. Make maps only for the common buttons and don't map unusual ones?
-> 
-> How should multiple remotes be handled? Split them out into individual input devices, or group them onto a single IR device? I can implement either.
-> 
-> The in-kernel code is tiny, about 20K including a driver.
-> 
-> >From last post...
-> Note that user space IR device drivers can use the existing support in evdev to inject events into the input queue.
-> 
-> Send and receive are implemented. Received IR messages are decoded and sent to user space as input messages. Send is done via an IOCTL on the input device.
-> 
-> Two drivers are supplied. mceusb2 implements send and receive support for the Microsoft USB IR dongle.
-> 
-> The GPT driver implements receive only support for a GPT pin - GPT is a GPIO with a timer attached.
-> 
-> Code is only lightly tested. Encoders and decoders have not been written for all protocols. 
-> Repeat is not handled for any protocol.
-> I'm looking for help. There are 15 more existing LIRC drivers.
+On Thu, 28 May 2009, Pavel Machek wrote:
+> In the meantime, people should stop/restart fuse around
+> suspend/hibernation, I guess...
 
-Any update on that?
+Which is not possible if the filesystem is busy, and it _will_ be busy
+in all cases where we now see freeze failures.
 
-I have a suggestion:
+And just a reminder that this problem is not fuse specific: similar
+freeze failures can also happen for network filesystems routed over a
+tun/tap device (e.g. NFS over OpenVPN).
 
-
-Instead of decoding protocols in kernel, why not to allow userspace to
-upload timing signatures as specified in lirc.conf ?
-
-As a example, what protocol this is:
-
-http://lirc.sourceforge.net/remotes/toshiba/CT-9922
-
-Best regards,
-	Maxim Levitsky
-
+Thanks,
+Miklos
