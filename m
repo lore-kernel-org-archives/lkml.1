@@ -1,176 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764172AbZE1Tlo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763556AbZE1Tp3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764172AbZE1Tlo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 15:41:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757899AbZE1Tlg
+	id S1763556AbZE1Tp3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 15:45:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755852AbZE1TpW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 15:41:36 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:11645 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763484AbZE1Tlf convert rfc822-to-8bit (ORCPT
+	Thu, 28 May 2009 15:45:22 -0400
+Received: from casper.infradead.org ([85.118.1.10]:60334 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754648AbZE1TpV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 15:41:35 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=h1MORbVaNnaxF/C+NSjfoqEFfhN+qNVu/bziVHnwqwe+7COf6pjI0VFZgC5xmq5ui
-	0CSOA0anD2BB8F6IpCPLQ==
-MIME-Version: 1.0
-In-Reply-To: <20090528160003.GA4335@redhat.com>
-References: <1243377729-2176-1-git-send-email-vgoyal@redhat.com>
-	 <1243377729-2176-3-git-send-email-vgoyal@redhat.com>
-	 <e98e18940905271353kc6890dbxa1ea63026c8faec1@mail.gmail.com>
-	 <20090528160003.GA4335@redhat.com>
-Date: Thu, 28 May 2009 12:41:27 -0700
-Message-ID: <e98e18940905281241v4aa24716j91f351a828af604a@mail.gmail.com>
-Subject: Re: [PATCH 02/20] io-controller: Common flat fair queuing code in 
-	elevaotor layer
-From: Nauman Rafique <nauman@google.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, jens.axboe@oracle.com, dpshah@google.com,
-       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
-       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
-       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
-       peterz@infradead.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
+	Thu, 28 May 2009 15:45:21 -0400
+Subject: Re: [patch 0/5] Support for sanitization flag in low-level page
+ allocator
+From: Peter Zijlstra <peterz@infradead.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Ingo Molnar <mingo@elte.hu>, Rik van Riel <riel@redhat.com>,
+       "Larry H." <research@subreption.com>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@osdl.org>, linux-mm@kvack.org,
+       Ingo Molnar <mingo@redhat.com>, pageexec@freemail.hu,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <20090528125042.28c2676f@lxorguk.ukuu.org.uk>
+References: <20090520183045.GB10547@oblivion.subreption.com>
+	 <4A15A8C7.2030505@redhat.com> <20090522073436.GA3612@elte.hu>
+	 <20090522113809.GB13971@oblivion.subreption.com>
+	 <20090523124944.GA23042@elte.hu> <4A187BDE.5070601@redhat.com>
+	 <20090527223421.GA9503@elte.hu>
+	 <20090528072702.796622b6@lxorguk.ukuu.org.uk>
+	 <20090528090836.GB6715@elte.hu>
+	 <20090528125042.28c2676f@lxorguk.ukuu.org.uk>
+Content-Type: text/plain
+Date: Thu, 28 May 2009 21:44:54 +0200
+Message-Id: <1243539894.6645.85.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 28, 2009 at 9:00 AM, Vivek Goyal <vgoyal@redhat.com> wrote:
-> On Wed, May 27, 2009 at 01:53:59PM -0700, Nauman Rafique wrote:
->
-> [..]
->> > +/**
->> > + * __bfq_lookup_next_entity - return the first eligible entity in @st.
->> > + * @st: the service tree.
->> > + *
->> > + * Update the virtual time in @st and return the first eligible entity
->> > + * it contains.
->> > + */
->> > +static struct io_entity *__bfq_lookup_next_entity(struct io_service_tree *st)
->> > +{
->> > +       struct io_entity *entity;
->> > +
->> > +       if (RB_EMPTY_ROOT(&st->active))
->> > +               return NULL;
->> > +
->> > +       bfq_update_vtime(st);
->>
->> Vivek, Paolo, Fabio,
->> Over here we call bfq_update_vtime(), and this function could have
->> been called even when we are just doing a lookup (and not an extract).
->> So vtime is updated while we are not really selecting the next queue
->> for service (for an example, see elv_preempt_queue()). This can result
->> in a call to update_vtime when only an entity with small weight (say
->> weight=1) is backlogged and another entity with bigger weight (say 10)
->> is getting serviced so it is not in the tree (we extract the entity
->> which is getting service). This results in a big vtime jump to the
->> start time of the entity with weight 1 (entity of weight 1 would have
->> big start times, as it has small weight). Now when another entity with
->> bigger weight (say 90) gets backlogged, it is assigned a new vtime
->> from service tree's vtime, causing it to get a big value. In the
->> meanwhile, iog for weight 10 keeps getting service for many quantums,
->> as it was continuously backlogged.
->>
->> The problem happens because we extract an entity (removing it from the
->> tree) while it is getting service, and do vtime jumps based on what is
->> still in the tree. I think we need to add an extra check on the vtime
->> of the entity in service, before we take a vtime jump.
->>
->> I have actually seen this happening when trying to debug on of my
->> tests. Please let me know what you think.
->>
->
-> Hi Nauman,
->
-> This sounds like a problem but apart from elv_preempt_queue(), in which path
-> do you see it?
->
-> Initially fabio posted the patches where preemption was allowed only if
-> the preempting queue is the next one to be served. To keep the behavior
-> same as CFQ, I have changed that logic and if we decide to preempt the
-> current queue (based on many checks like sync or async), I expire the
-> current queue and add the new queue to the front of the service tree so
-> that it is selected next. It does impact the fairness a bit but that's how
-> cfq does it today and concept of preemption with-in same prio class is
-> somewhat peculiar.
->
-> So in latest patches preemption path is covered. There does not seem to be
-> other paths where we do lookups while and active entity is being served.
-> For example, update_next_active() does not continue with lookup if there
-> is an active entity. So with this version of patch, you should not face
-> the issue.
->
-> In general, I think it is a good idea to fix it in update_vtime() so
-> that not to udpate vtime if there is an active entity and not rely on
-> caller who makes sure that update_vtime() is not called when there is
-> an active entity. Do you have a quick patch for that?
+On Thu, 2009-05-28 at 12:50 +0100, Alan Cox wrote:
+> The performance cost of such a security action are NIL when the feature
+> is disabled. So the performance cost in the general case is irrelevant.
 
-Adding this extra check in update_vtime() is tricky. If we don't
-update vtime, then its possible that lookup would return no entity,
-even though there are backlogged queues, as all backlogged entities
-might be not eligible (i.e have start times bigger than vtime).
-When an entity is currently under service, we don't know what would be
-the next entity really, as it could be the current entity under
-service, depending on the actual time slice used by under service
-entity.
+Not really, much of the code posted in this thread has the form:
 
-You are right that the lookup (without extract) was done only in
-preemption path. And with your latest changes, even that is removed.
-In this case, just having a BUG_ON() to ensure this does not happen
-should suffice.
+int sanitize_all_mem; /* note the lack of __read_mostly */
 
-commit dc54ad458b907db5523e8a088786014da8c4b3b2
-Author: Nauman Rafique <nauman@google.com>
-Date:   Thu May 28 12:27:00 2009 -0700
+void some_existing_function()
+{
+	if (sanitize_all_mem) { /* extra branch */
+		/* do stuff */
+	}
+}
 
-    Add a BUG_ON() that should fire when we can update vtime while just
-    doing a lookup for next entity (and not extraction).
+void sanitize_obj(void *obj)
+{
+	if (!sanitize_all_mem) /* extra branch */
+		return;
 
-diff --git a/block/elevator-fq.c b/block/elevator-fq.c
-index f1179aa..d512c1b 100644
---- a/block/elevator-fq.c
-+++ b/block/elevator-fq.c
-@@ -1036,8 +1036,11 @@ struct io_entity *bfq_lookup_next_entity(struct
-io_sched_data *sd,
-        /*
-         * One can check for which will be next selected entity without
-         * expiring the current one.
-+        * Also, we should not call lookup when an entity is active, as
-+        * we extract an active entity from tree, and doing lookup can result
-+        * in an erroneous vtime jump when active entity is extacted from tree.
-         */
--       BUG_ON(extract && sd->active_entity != NULL);
-+       BUG_ON(sd->active_entity != NULL);
-
-        for (i = 0; i < IO_IOPRIO_CLASSES; i++, st++) {
-                entity = __bfq_lookup_next_entity(st);
+	/* do stuff */
+}
 
 
-I have some concerns about the new preemption logic. We modify the
-start and finish time to make sure the entity gets selected next. So
-the entity which preempts others can eventually get more service than
-others (specially if it keeps preempting others). It seems that we can
-fix that by temporarily pushing the entity to the front, without
-modifying start/finish times. One way to do that is to add an extra
-flag to an entity. When the flag is set, we can ignore finish times
-and prefer the entity (in bfq_first_active_entity()). This has the
-advantage that since we are preserving start/finish times, over time,
-such an entity will be de-prioritized over others. In order to ensure
-that actually does happen, we can introduce a threshold (call it
-preempt_threshold). Then the entity with the flag set would jump to
-the front only if the difference between 'its finish time' and 'the
-finish time of other entities' is within this threshold. Let me know
-if it makes sense.
+void another_existing_function()
+{
+	sanitize_obj(obj); /* extra call */
+}
 
->
-> Thanks
-> Vivek
->
+That doesn't equal NIL, that equals extra function calls and branches.
+
