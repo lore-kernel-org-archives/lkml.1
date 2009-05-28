@@ -1,76 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760511AbZE1MPt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759444AbZE1MRw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760511AbZE1MPt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 08:15:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757645AbZE1MPm
+	id S1759444AbZE1MRw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 08:17:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755935AbZE1MRp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 08:15:42 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:53956 "EHLO mx2.suse.de"
+	Thu, 28 May 2009 08:17:45 -0400
+Received: from main.gmane.org ([80.91.229.2]:60506 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756747AbZE1MPl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 08:15:41 -0400
-Date: Thu, 28 May 2009 14:15:41 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Wu Fengguang <fengguang.wu@intel.com>,
-       "hugh@veritas.com" <hugh@veritas.com>,
-       "riel@redhat.com" <riel@redhat.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler in the VM v3
-Message-ID: <20090528121541.GL6920@wotan.suse.de>
-References: <200905271012.668777061@firstfloor.org> <20090527201239.C2C9C1D0294@basil.firstfloor.org> <20090528082616.GG6920@wotan.suse.de> <20090528095934.GA10678@localhost> <20090528101111.GE1065@one.firstfloor.org> <20090528103300.GA15133@localhost> <20090528105103.GG1065@one.firstfloor.org>
+	id S1754764AbZE1MRo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 08:17:44 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Subject: Re: [RFC] [PATCH] Device Tree on ARM platform
+Date: Thu, 28 May 2009 12:17:32 +0000 (UTC)
+Message-ID: <gvlvcs$ub5$1@ger.gmane.org>
+References: <20090527175609.GB31861@flint.arm.linux.org.uk>
+	<1243496236.3171.140.camel@pasglop>
+	<20090528091513.GA14789@n2100.arm.linux.org.uk>
+	<20090528.025739.16559619.davem@davemloft.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090528105103.GG1065@one.firstfloor.org>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: iap-pxy-mow1.siemens.ru
+User-Agent: Pan/0.132 (Waxed in Black)
+Cc: devicetree-discuss@ozlabs.org, linux-arm-kernel@lists.arm.linux.org.uk
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 28, 2009 at 12:51:03PM +0200, Andi Kleen wrote:
-> On Thu, May 28, 2009 at 06:33:00PM +0800, Wu Fengguang wrote:
-> > > > > You haven't waited on writeback here AFAIKS, and have you
-> > > > > *really* verified it is safe to call delete_from_swap_cache?
-> > > > 
-> > > > Good catch. I'll soon submit patches for handling the under
-> > > > read/write IO pages. In this patchset they are simply ignored.
-> > > 
-> > > Yes, we assume the IO device does something sensible with the poisoned
-> > > cache lines and aborts. Later we can likely abort IO requests in a early
-> > > stage on the Linux, but that's more advanced.
-> > > 
-> > > The question is if we need to wait on writeback for correctness? 
-> > 
-> > Not necessary. Because I'm going to add a me_writeback() handler.
-> 
-> Ok but without it. Let's assume me_writeback() is in the future.
+David Miller wrote:
 
-For correctness for what? You can't remove a page from swapcache or
-pagecache under writeback because then the mm thinks that location
-is not being used.
-
- 
-> I'm mainly interested in correctness (as in not crashing) of this
-> version now.
+> From: Russell King - ARM Linux
+> <linux@arm.linux.org.uk> Date: Thu, 28 May 2009
+> 10:15:13 +0100
 > 
-> Also writeback seems to be only used by nfs/afs/nilfs2, not in
-> the normal case, unless I'm misreading the code. 
-
-I don't follow. What writeback are you talking about?
-
+>> For example, how would an IrDA transceiver be expressed in OF?
 > 
-> The nilfs2 case seems weird, I haven't completely read that.
+> As a child device node of the IRDA device, with associated properties.
 > 
-> > Then the writeback pages simply won't reach here. And it won't
-> > magically go into writeback state, since the page has been locked.
-> 
-> But since we take the page lock they should not be in writeback anyways,
-> no?
+> You can express _ANYTHING_ using the OF device tree.  It is not even
+> something to discuss, it's flexible enough.
 
-No. PG_writeback was introduced so as to reduce page lock hold
-times (most of writeback runs without page lock held).
+Hmmm. How to express the following situation:
+On one of my platforms (sharp tosa) the backlight controller
+is separated into two parts: one sitting on SPI, one on the I2C.
+The tricky part is that the I2C part is only available when some
+of registers of SPI part are programmed in a specific way.
+
+-- 
+With best wishes
+Dmitry
+
 
