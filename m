@@ -1,70 +1,206 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763199AbZE1OST@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760824AbZE1OTN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763199AbZE1OST (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 10:18:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757110AbZE1OSH
+	id S1760824AbZE1OTN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 10:19:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755536AbZE1OS7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 10:18:07 -0400
-Received: from trinity.fluff.org ([89.16.178.74]:43567 "EHLO trinity.fluff.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755477AbZE1OSG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 10:18:06 -0400
-Date: Thu, 28 May 2009 15:17:43 +0100
-From: Ben Dooks <ben-linux@fluff.org>
-To: Jon Smirl <jonsmirl@gmail.com>
-Cc: Scott Wood <scottwood@freescale.com>,
-       Russell King <rmk+lkml@arm.linux.org.uk>,
-       Peter Korsgaard <jacmet@sunsite.dk>,
-       Robert Schwebel <r.schwebel@pengutronix.de>,
-       devicetree-discuss <devicetree-discuss@ozlabs.org>,
-       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       Janboe Ye <yuan-bo.ye@motorola.com>, Timur Tabi <timur@freescale.com>
-Subject: Re: [RFC] [PATCH] Device Tree on ARM platform
-Message-ID: <20090528141743.GA16199@trinity.fluff.org>
-References: <1243408083.13460.14.camel@debian-nb> <fa686aa40905270727m31250984tf12249fc87179ce9@mail.gmail.com> <ed82fe3e0905270739k38018c87ka11f62c5977e45fb@mail.gmail.com> <20090527150527.GK6805@pengutronix.de> <87vdnm8sec.fsf@macbook.be.48ers.dk> <4A1D6901.2090508@freescale.com> <20090527175609.GB31861@flint.arm.linux.org.uk> <4A1D8FBA.6040802@freescale.com> <9e4733910905271213k7f4b93e7i7e6f2af24d85f@mail.gmail.com>
+	Thu, 28 May 2009 10:18:59 -0400
+Received: from tango.0pointer.de ([85.214.72.216]:34826 "EHLO
+	tango.0pointer.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756538AbZE1OS6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 10:18:58 -0400
+Date: Thu, 28 May 2009 16:09:53 +0200
+From: Lennart Poettering <mzxreary@0pointer.de>
+To: linux-kernel@vger.kernel.org
+Cc: peterz@infradead.org
+Subject: [PATCH 3/3] scheduler: introduce SCHED_RESET_ON_FORK scheduling
+	policy flag
+Message-ID: <20090528140953.GA16470@omega>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <9e4733910905271213k7f4b93e7i7e6f2af24d85f@mail.gmail.com>
-X-Disclaimer: These are my views alone.
-X-URL: http://www.fluff.org/
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: ben@trinity.fluff.org
-X-SA-Exim-Scanned: No (on trinity.fluff.org); SAEximRunCond expanded to false
+Organization: Red Hat, Inc.
+X-Campaign-1: ()  ASCII Ribbon Campaign
+X-Campaign-2: /  Against HTML Email & vCards - Against Microsoft Attachments
+User-Agent: Leviathan/19.8.0 [zh] (Cray 3; I; Solaris 4.711; Console)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 27, 2009 at 03:13:55PM -0400, Jon Smirl wrote:
-> On Wed, May 27, 2009 at 3:08 PM, Scott Wood <scottwood@freescale.com> wrote:
-> > I'm not talking about platform specific code, I'm talking about code to
-> > retrieve information about a device from the device tree.  There would not
-> > be separate instances of this for "platforms X, Y and Z", just one
-> > of_platform binding in each driver.  It's no different than having a
-> > platform bus binding, except in the data structures used.
-> >
-> > But to restate, having external glue to create platform devices from the
-> > device tree is fine if that's what you want to do.  We used to do that, but
-> > it was a pain compared to keeping everything in one place.  Your experience
-> > may differ.
-> 
-> Could 'struct platform_device' and 'struct of_platform_device" be
-> unified into a single structure? It's personal preference whether the
-> internal representation of the hardware is done via a device tree or
-> snippets of platform code, but do we need to have to different device
-> types?
+This patch introduces a new flag SCHED_RESET_ON_FORK which can be passed
+to the kernel via sched_setscheduler(), ORed in the policy parameter. If
+set this will make sure that when the process forks a) the scheduling
+priority is reset to DEFAULT_PRIO if it was higher and b) the scheduling
+policy is reset to SCHED_NORMAL if it was either SCHED_FIFO or SCHED_RR.
 
-I was wondering what the pros/cons of having a system that takes a
-device tree and manufactures platform devices / etc from it? I think
-one of the cons is that if you change the platform device data, then
-you have not only the board definitions to change, but the of->platform
-code to modify as well...
+Why have this?
+
+Currently, if a process is real-time scheduled this will 'leak' to all
+its child processes. For security reasons it is often (always?) a good
+idea to make sure that if a process acquires RT scheduling this is
+confined to this process and only this process. More specifically this
+makes the per-process resource limit RLIMIT_RTTIME useful for security
+purposes, because it makes it impossible to use a fork bomb to
+circumvent the per-process RLIMIT_RTTIME accounting.
+
+This feature is also useful for tools like 'renice' which can then
+change the nice level of a process without having this spill to all its
+child processes.
+
+Why expose this via sched_setscheduler() and not other syscalls such as
+prctl() or sched_setparam()?
+
+prctl() does not take a pid parameter. Due to that it would be
+impossible to modify this flag for other processes than the current one.
+
+The struct passed to sched_setparam() can unfortunately not be extended
+without breaking compatibility, since sched_setparam() lacks a size
+parameter.
+
+How to use this from userspace? In your RT program simply replace this:
+
+  sched_setscheduler(pid, SCHED_FIFO, &param);
+
+by this:
+
+  sched_setscheduler(pid, SCHED_FIFO|SCHED_RESET_ON_FORK, &param);
+
+This current patch compiles but is not otherwise tested. For now, I am
+sending this primarily as a request for comments. So please, I'd love to
+hear your comments!
+
+Lennart
+---
+ include/linux/sched.h |    4 ++++
+ kernel/sched.c        |   43 ++++++++++++++++++++++++++++++++++---------
+ 2 files changed, 38 insertions(+), 9 deletions(-)
+
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index b4c38bc..c28c81b 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -38,6 +38,8 @@
+ #define SCHED_BATCH		3
+ /* SCHED_ISO: reserved but not implemented yet */
+ #define SCHED_IDLE		5
++/* Can be ORed in to make sure the process is reverted back to SCHED_NORMAL on fork */
++#define SCHED_RESET_ON_FORK     0x40000000
+ 
+ #ifdef __KERNEL__
+ 
+@@ -1429,6 +1431,8 @@ struct task_struct {
+ 	/* state flags for use by tracers */
+ 	unsigned long trace;
+ #endif
++	/* Revert to default priority/policy when forking */
++	int sched_reset_on_fork;
+ };
+ 
+ /* Future-safe accessor for struct task_struct's cpus_allowed. */
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 26efa47..35a63ff 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -2529,9 +2529,19 @@ void sched_fork(struct task_struct *p, int clone_flags)
+ 	set_task_cpu(p, cpu);
+ 
+ 	/*
+-	 * Make sure we do not leak PI boosting priority to the child:
++	 * Revert to default priority/policy on fork if requested. Make sure we
++	 * do not leak PI boosting priority to the child.
+ 	 */
+-	p->prio = current->normal_prio;
++	if (current->sched_reset_on_fork &&
++			(p->policy == SCHED_FIFO || p->policy == SCHED_RR))
++		p->policy = SCHED_NORMAL;
++
++	if (current->sched_reset_on_fork &&
++			(current->normal_prio < DEFAULT_PRIO))
++		p->prio = DEFAULT_PRIO;
++	else
++		p->prio = current->normal_prio;
++
+ 	if (!rt_prio(p->prio))
+ 		p->sched_class = &fair_sched_class;
+ 
+@@ -5807,17 +5817,25 @@ static int __sched_setscheduler(struct task_struct *p, int policy,
+ 	unsigned long flags;
+ 	const struct sched_class *prev_class = p->sched_class;
+ 	struct rq *rq;
++	int reset_on_fork = 0;
+ 
+ 	/* may grab non-irq protected spin_locks */
+ 	BUG_ON(in_interrupt());
+ recheck:
+ 	/* double check policy once rq lock held */
+-	if (policy < 0)
++	if (policy < 0) {
+ 		policy = oldpolicy = p->policy;
+-	else if (policy != SCHED_FIFO && policy != SCHED_RR &&
+-			policy != SCHED_NORMAL && policy != SCHED_BATCH &&
+-			policy != SCHED_IDLE)
+-		return -EINVAL;
++		reset_on_fork = p->sched_reset_on_fork;
++	} else {
++		reset_on_fork = !!(policy & SCHED_RESET_ON_FORK);
++		policy &= ~SCHED_RESET_ON_FORK;
++
++		if (policy != SCHED_FIFO && policy != SCHED_RR &&
++				policy != SCHED_NORMAL && policy != SCHED_BATCH &&
++				policy != SCHED_IDLE)
++			return -EINVAL;
++	}
++
+ 	/*
+ 	 * Valid priorities for SCHED_FIFO and SCHED_RR are
+ 	 * 1..MAX_USER_RT_PRIO-1, valid priority for SCHED_NORMAL,
+@@ -5861,6 +5879,10 @@ recheck:
+ 		/* can't change other user's priorities */
+ 		if (!check_same_owner(p))
+ 			return -EPERM;
++
++		/* normal users shall not reset the sched_reset_on_fork flag */
++		if (p->sched_reset_on_fork && !reset_on_fork)
++			return -EPERM;
+ 	}
+ 
+ 	if (user) {
+@@ -5904,6 +5926,8 @@ recheck:
+ 	if (running)
+ 		p->sched_class->put_prev_task(rq, p);
+ 
++	p->sched_reset_on_fork = reset_on_fork;
++
+ 	oldprio = p->prio;
+ 	__setscheduler(rq, p, policy, param->sched_priority);
+ 
+@@ -6020,14 +6044,15 @@ SYSCALL_DEFINE1(sched_getscheduler, pid_t, pid)
+ 	if (p) {
+ 		retval = security_task_getscheduler(p);
+ 		if (!retval)
+-			retval = p->policy;
++			retval = p->policy
++				| (p->sched_reset_on_fork ? SCHED_RESET_ON_FORK : 0);
+ 	}
+ 	read_unlock(&tasklist_lock);
+ 	return retval;
+ }
+ 
+ /**
+- * sys_sched_getscheduler - get the RT priority of a thread
++ * sys_sched_getparam - get the RT priority of a thread
+  * @pid: the pid in question.
+  * @param: structure containing the RT priority.
+  */
+-- 
+1.6.2.2
+
+
+
+Lennart
 
 -- 
-Ben
-
-Q:      What's a light-year?
-A:      One-third less calories than a regular year.
-
+Lennart Poettering                        Red Hat, Inc.
+lennart [at] poettering [dot] net         ICQ# 11060553
+http://0pointer.net/lennart/           GnuPG 0x1A015CC4
