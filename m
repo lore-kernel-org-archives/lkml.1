@@ -1,53 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932088AbZE1N3X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760751AbZE1N3f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932088AbZE1N3X (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 09:29:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756236AbZE1N3Q
+	id S1760751AbZE1N3f (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 09:29:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758769AbZE1N31
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 09:29:16 -0400
-Received: from mx-out.daemonmail.net ([216.104.160.38]:44936 "EHLO
-	mx-out.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756575AbZE1N3Q (ORCPT
+	Thu, 28 May 2009 09:29:27 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:53964 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932109AbZE1N3Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 09:29:16 -0400
-From: "Michael S. Zick" <lkml@morethan.org>
-Reply-To: lkml@morethan.org
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [BUG FIX] Make x86_32 uni-processor Atomic ops, Atomic
-Date: Thu, 28 May 2009 08:29:13 -0500
-User-Agent: KMail/1.9.9
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-References: <200905221139.26941.lkml@morethan.org> <200905221721.08495.lkml@morethan.org> <20090528124853.GC1421@ucw.cz>
-In-Reply-To: <20090528124853.GC1421@ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Thu, 28 May 2009 09:29:25 -0400
+Subject: [PATCH] init: call vfs_caches_init_early() later in the boot
+ sequence
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: mingo@elte.hu
+Cc: cl@linux-foundation.com, torvals@linux-foundation.org, mpm@selenic.com,
+       npiggin@suse.de, yinghai@kernel.org, linux-kernel@vger.kernel.org
+Date: Thu, 28 May 2009 16:29:25 +0300
+Message-Id: <1243517365.11533.65.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905280829.15672.lkml@morethan.org>
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu May 28 2009, Pavel Machek wrote:
-> Hi!
-> 
-> > The observation that executing an unnecessary 'lock' opcode in some
-> > cases slows down the machine is not felt by myself to be significant 
-> > to duplicating my observations.  Note: I have been wrong before.
-> > 
-> > This is as informative as I can make the message.
-> > 
-> > PS: *not* a single machine failure, tested on five machines, owned
-> > by four different people, two brands, with different use histories.
-> 
-> I have seen some problems on via c7m based machines, where some 'smart
-> bios person' implemented EC access in AML (normally, it is accessed
-> from ec.c driver). Maybe you have similary bad bios?
-> 
+From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-How to tell or distingush?
-Did your looking at the dmidecode output show you that?
+There's no need to call vfs_caches_init_early() before kmem_cache_init(). All
+we have to do is make sure we don't attempt to use the bootmem allocator after
+we've called mem_init().
 
-Mike
+Cc: Christoph Lameter <cl@linux-foundation.com>
+Cc: Linus Torvalds <torvals@linux-foundation.org>
+Cc: Matt Mackall <mpm@selenic.com>
+Cc: Nick Piggin <npiggin@suse.de>
+Cc: Yinghai Lu <yinghai@kernel.org>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+ fs/dcache.c |    2 +-
+ fs/inode.c  |    2 +-
+ init/main.c |    2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/fs/dcache.c b/fs/dcache.c
+index ee60ce4..6c48ba1 100644
+--- a/fs/dcache.c
++++ b/fs/dcache.c
+@@ -2255,7 +2255,7 @@ static void __init dcache_init_early(void)
+ 					sizeof(struct hlist_head),
+ 					dhash_entries,
+ 					13,
+-					HASH_EARLY,
++					0,
+ 					&d_hash_shift,
+ 					&d_hash_mask,
+ 					0);
+diff --git a/fs/inode.c b/fs/inode.c
+index 0571983..92379c8 100644
+--- a/fs/inode.c
++++ b/fs/inode.c
+@@ -1487,7 +1487,7 @@ void __init inode_init_early(void)
+ 					sizeof(struct hlist_head),
+ 					ihash_entries,
+ 					14,
+-					HASH_EARLY,
++					0,
+ 					&i_hash_shift,
+ 					&i_hash_mask,
+ 					0);
+diff --git a/init/main.c b/init/main.c
+index 5a19578..f6bd51f 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -588,7 +588,6 @@ asmlinkage void __init start_kernel(void)
+ 	 * kmem_cache_init()
+ 	 */
+ 	pidhash_init();
+-	vfs_caches_init_early();
+ 	/*
+ 	 * Set up kernel memory allocators
+ 	 */
+@@ -658,6 +657,7 @@ asmlinkage void __init start_kernel(void)
+ 		initrd_start = 0;
+ 	}
+ #endif
++	vfs_caches_init_early();
+ 	cpuset_init_early();
+ 	page_cgroup_init();
+ 	enable_debug_pagealloc();
+-- 
+1.6.0.4
+
+
+
