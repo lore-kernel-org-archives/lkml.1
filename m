@@ -1,55 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760140AbZE1MVV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761427AbZE1MXU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760140AbZE1MVV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 08:21:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757351AbZE1MVO
+	id S1761427AbZE1MXU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 08:23:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757964AbZE1MXL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 08:21:14 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:54071 "EHLO mx2.suse.de"
+	Thu, 28 May 2009 08:23:11 -0400
+Received: from www.tglx.de ([62.245.132.106]:38262 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756927AbZE1MVO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 08:21:14 -0400
-Subject: Re: [PATCH] Introduce a boolean "single_bit_set" function.
-From: Petr Tesarik <ptesarik@suse.cz>
-To: "Robert P. J. Day" <rpjday@crashcourse.ca>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>
-In-Reply-To: <alpine.LFD.2.00.0904231339080.13089@localhost.localdomain>
-References: <alpine.LFD.2.00.0904231339080.13089@localhost.localdomain>
-Content-Type: text/plain; charset="UTF-8"
-Organization: SUSE LINUX
-Date: Thu, 28 May 2009 14:21:14 +0200
-Message-Id: <1243513274.3170.1.camel@nathan.suse.cz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 8bit
+	id S1755035AbZE1MXK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 08:23:10 -0400
+Date: Thu, 28 May 2009 14:22:17 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Paul Mundt <lethal@linux-sh.org>
+cc: Peter Zijlstra <peterz@infradead.org>, Daniel Walker <dwalker@fifo99.com>,
+       Linus Walleij <linus.ml.walleij@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Victor <linux@maxim.org.za>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-sh@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       John Stultz <johnstul@linux.vnet.ibm.com>
+Subject: Re: [PATCH] sched: Support current clocksource handling in fallback
+ sched_clock().
+In-Reply-To: <20090528110902.GA27884@linux-sh.org>
+Message-ID: <alpine.LFD.2.00.0905281417500.3397@localhost.localdomain>
+References: <20090526061532.GD9188@linux-sh.org> <63386a3d0905260731m655bfee3q82a6f52d71fa3cef@mail.gmail.com> <1243348681.23657.14.camel@twins> <alpine.LFD.2.00.0905262209160.1762@localhost.localdomain> <20090526230855.GA27218@linux-sh.org>
+ <alpine.LFD.2.00.0905270140030.1762@localhost.localdomain> <20090527001543.GA8493@linux-sh.org> <1243441525.28705.19.camel@desktop> <20090528091936.GA27545@linux-sh.org> <1243503281.23657.80.camel@twins> <20090528110902.GA27884@linux-sh.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert P. J. Day píše v Čt 23. 04. 2009 v 13:43 -0400: 
-> A boolean single_bit_set() routine would simplify the numerous
-> constructs of the form (((n & (n - 1)) == 0)) when testing for
-> single-bitness.
-> 
-> Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
-> 
-> ---
-> 
-> This is similar to the current is_power_of_2() routine defined in
-> include/linux/log2.h, which is mathematically identical but,
-> semantically, should be defined independently just so the code is more
-> readable.
-> 
-> I'm open to an alternative function name.
+On Thu, 28 May 2009, Paul Mundt wrote:
+> @@ -437,10 +441,19 @@ void clocksource_unregister(struct clocksource *cs)
+>  	unsigned long flags;
+>  
+>  	spin_lock_irqsave(&clocksource_lock, flags);
+> +
+> +	if (sched_clocksource == cs) {
+> +		printk(KERN_WARNING "Refusing to unregister "
+> +		       "scheduler clocksource %s", cs->name);
 
-ispow2() ?
+  Hmm, isn't that dangerous ? The clocksource might be in a module or
+  in kmalloced memory which is going to be freed.
 
-Because what it really does is to check that a value is a power of two,
-doesn'it.
+Thanks,
 
-Regards,
-Petr Tesarik
-
-P.S. aka I want my bikeshed mathematical!
-
+	tglx
