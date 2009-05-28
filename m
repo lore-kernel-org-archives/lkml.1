@@ -1,103 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762474AbZE1Bgu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762816AbZE1Bh7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762474AbZE1Bgu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 21:36:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761238AbZE1Bg1
+	id S1762816AbZE1Bh7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 21:37:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758514AbZE1Bhr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 21:36:27 -0400
-Received: from rv-out-0506.google.com ([209.85.198.234]:60703 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760494AbZE1BgY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 21:36:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
-         :organization:date:message-id:mime-version:x-mailer
-         :content-transfer-encoding;
-        b=CYQFCLBj9JYcyV1Jv/JmIn1ETXkO97g/aPVcU/Mr+4iO0FBr7nUiHNYo1Pjkr3IP49
-         cuzCJ0qEPBVVPJDvwPhQZiOT2P+BYY297NvQHlJsrgJg/+9Z1y8ochTyy/vTouzsowiT
-         X82AlT78MREbyp92kn7fYYSQPbUQPKyawYTy4=
-Subject: [RESEND] [PATCH 2/2 V3] sched: fix typo in sched-rt-group.txt file
-From: GeunSik Lim <leemgs1@gmail.com>
-Reply-To: leemgs1@gmail.com
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-rt-users <linux-rt-users@vger.kernel.org>,
-       tglx <tglx@linutronix.de>, williams <williams@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-In-Reply-To: <1242884360.31161.77.camel@centos51>
-References: <1242884360.31161.77.camel@centos51>
-Content-Type: text/plain
-Organization: Private
-Date: Thu, 28 May 2009 10:36:14 +0900
-Message-Id: <1243474574.14685.38.camel@centos51>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
-Content-Transfer-Encoding: 7bit
+	Wed, 27 May 2009 21:37:47 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:38977 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758021AbZE1Bhq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 21:37:46 -0400
+Date: Wed, 27 May 2009 17:37:21 -0700
+From: Greg KH <gregkh@suse.de>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Greg KH <greg@kroah.com>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Tejun Heo <tj@kernel.org>, Cornelia Huck <cornelia.huck@de.ibm.com>,
+       linux-fsdevel@vger.kernel.org, Benjamin Thery <benjamin.thery@bull.net>,
+       Daniel Lezcano <dlezcano@fr.ibm.com>,
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>
+Subject: Re: [PATCH 01/20] sysfs: Implement sysfs_rename_link
+Message-ID: <20090528003721.GB2720@suse.de>
+References: <m1bppofm9k.fsf@fess.ebiederm.org> <1242865694-2100-1-git-send-email-ebiederm@xmission.com> <20090528001418.GA2499@kroah.com> <ac3eb2510905271730j59af10d6h58d955625324f206@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ac3eb2510905271730j59af10d6h58d955625324f206@mail.gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, May 28, 2009 at 02:30:15AM +0200, Kay Sievers wrote:
+> On Thu, May 28, 2009 at 02:14, Greg KH <greg@kroah.com> wrote:
+> >
+> > So, there's been a lot of talk in this thread.
+> >
+> > Eric, do you have an updated set of patches for me to try out?
+> 
+> I think we should get a version of the patch in that removes all files
+> in a directory on cleanup, but warn if a subdirectory is still there.
+> James has a patch to fix the one issue we've seen so far with existing
+> child directories.
+> 
+> After that, we should work on fixing the users that leave files
+> behind, and can possibly stop cleaning up files, if we want to.
 
+That would be good.
 
+But note that we always "allowed" such things to happen, so odds are
+there are lots of places in the kernel that took advantage of this.  If
+we make it a rule, people will complain.
 
->From c2e8f308730c87010d50a72f80ede6b7f308497e Mon Sep 17 00:00:00 2001
-From: GeunSik,Lim <leemgs1@gmail.com>
-Date: Thu, 28 May 2009 09:59:46 +0900
-Subject: [PATCH 2/2] sched: fix typo in sched-rt-group.txt file
+> > Or are there still problems, like the "fry the ext3 boot partition" that
+> > Kay found?
+> 
+> That is unrelated to Eric's patches, They just added the dump, which I
+> tried to trigger. It's not entirely clear what caused the filesytem
+> damage, but I was definitely able to reproduce the unclean shutdown
+> without any of Eric's sysfs patches.
 
-Fix typo about static priority's range.
+Ok.
 
-    Kernel Space                     User Space
-    ===============================================================
-      0(high) to  98(low)     user RT priority 99(high) to 1(low)
-                              with SCHED_RR or SCHED_FIFO
-    ---------------------------------------------------------------
-     99                       sched_priority is not used in scheduling
-                              decisions(it must be specified as 0)
-    ---------------------------------------------------------------
-    100(high) to 139(low)     user nice -20(high) to 19(low)
-    ---------------------------------------------------------------
-    140                       idle task priority
-    ---------------------------------------------------------------
-    * ref) http://www.kernel.org/doc/man-pages/online/pages/man2/sched_setscheduler.2.html
+But I think Eric had some updates to some of the patches along the way,
+so a whole new respin would be good to ensure I get the correct ones.
 
-    Signed-off-by: GeunSik Lim <geunsik.lim@samsung.com>
-    Reviewed-by: Ingo Molnar <mingo@elte.hu>
-    CC: Steven Rostedt <rostedt@goodmis.org>
----
- Documentation/scheduler/sched-rt-group.txt |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Eric?
 
-diff --git a/Documentation/scheduler/sched-rt-group.txt b/Documentation/scheduler/sched-rt-group.txt
-index 5ba4d3f..1537146 100644
---- a/Documentation/scheduler/sched-rt-group.txt
-+++ b/Documentation/scheduler/sched-rt-group.txt
-@@ -169,7 +169,7 @@ get their allocated time.
- 
- Implementing SCHED_EDF might take a while to complete. Priority Inheritance is
- the biggest challenge as the current linux PI infrastructure is geared towards
--the limited static priority levels 0-139. With deadline scheduling you need to
-+the limited static priority levels 0-99. With deadline scheduling you need to
- do deadline inheritance (since priority is inversely proportional to the
- deadline delta (deadline - now).
- 
--- 
-1.6.3.1
+thanks,
 
-
-
------------------------------------------------
-To unsubscribe from this list: send the line "unsubscribe linux-***" 
-in the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
-
-GeunSik Lim (  S A M S U N G     E L E C T R O N I C S  )
-e-Mail  :1) geunsik.lim@samsung.com
-         2) leemgs@gmail.com , leemgs1@gmail.com
-HomePage: http://blog.naver.com/invain/
------------------------------------------------
-
+greg k-h
