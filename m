@@ -1,57 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753502AbZE1XXu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753200AbZE1XYK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753502AbZE1XXu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 19:23:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751483AbZE1XXl
+	id S1753200AbZE1XYK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 19:24:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751483AbZE1XX5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 19:23:41 -0400
-Received: from mail-bw0-f222.google.com ([209.85.218.222]:34895 "EHLO
-	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751897AbZE1XXl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 19:23:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=lwdR2dMyGXN1G7IribBhTPLApd9R/8RppNp0K6hne+MJ63ix9wPHtXQmQDJJ4eJL3D
-         uTrKjSnGbzqqRhUTvbXpzuEwOReM2RXDnjSO9v3qNN2NWboNyLgIW3Ea/3I9ysCkNHLt
-         031dMl/ob65E30uO8QmMDcPYmY0xRy0KZQoNA=
-Subject: Re: [RFC PATCH 1/4] Changes to core input subsystem to allow send
- and receive of IR messages. Encode and decode state machines are provided
- for common IR porotocols such as Sony, JVC, NEC, Philips, etc.
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: Jon Smirl <jonsmirl@gmail.com>
-Cc: linux-kernel@vger.kernel.org, lirc-list@lists.sourceforge.net
-In-Reply-To: <20081006194308.15992.98682.stgit@terra>
-References: <20081006194032.15992.8393.stgit@terra>
-	 <20081006194308.15992.98682.stgit@terra>
-Content-Type: text/plain
-Date: Fri, 29 May 2009 02:23:24 +0300
-Message-Id: <1243553004.26735.4.camel@maxim-laptop>
+	Thu, 28 May 2009 19:23:57 -0400
+Received: from sh.osrg.net ([192.16.179.4]:39699 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752158AbZE1XX4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 19:23:56 -0400
+Date: Fri, 29 May 2009 08:23:51 +0900
+To: rdreier@cisco.com
+Cc: fujita.tomonori@lab.ntt.co.jp, rolandd@cisco.com,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH] IB/mthca: replace dma_sync_single with
+ dma_sync_single_for_cpu
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <adaeiu86fde.fsf@cisco.com>
+References: <20090528100943L.fujita.tomonori@lab.ntt.co.jp>
+	<adaeiu86fde.fsf@cisco.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20090529082417G.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Fri, 29 May 2009 08:23:52 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-10-06 at 15:43 -0400, Jon Smirl wrote:
-> Received IR messages generate event in the input queue.
-> IR messages are sent using an input IOCTL.
+On Thu, 28 May 2009 15:18:21 -0700
+Roland Dreier <rdreier@cisco.com> wrote:
 
-Another question.
+>  > This replaces dma_sync_single() with dma_sync_single_for_cpu() because
+>  > dma_sync_single() is an obsolete API; include/linux/dma-mapping.h says:
+>  > 
+>  > /* Backwards compat, remove in 2.7.x */
+> 
+> Thanks for pointing this out... however I think sync_single_for_cpu
+> looks wrong in these cases -- I think there should be a pair of
+> sync_single_for_cpu/sync_single_for_device around this stuff.
 
-So input device sends its events as a special event type?
-This would mean that none of current drivers will be able to pick these
-events.
+Yeah, possibly. I just convert it without looking at the code. As you
+know, the patch will not change anything. If dma_sync_single_for_cpu
+doesn't work here, the driver is already broken.
 
 
-I think that input device should have better configuration support, like
-generic way to set a keymap (raw->keycode) for a device, and the IR
-timing can be set too.
-And send normal keypreses.
+> I'll take a closer look in the next day or too.
 
-Regards,
-	Maxim Levitsky
-
+Cool, thanks!
