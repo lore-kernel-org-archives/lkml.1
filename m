@@ -1,69 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764363AbZE1VFP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763940AbZE1VGj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764363AbZE1VFP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 17:05:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760865AbZE1VFA
+	id S1763940AbZE1VGj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 17:06:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755852AbZE1VGb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 17:05:00 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:56658 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1758511AbZE1VE7 (ORCPT
+	Thu, 28 May 2009 17:06:31 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:41663 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755133AbZE1VGa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 17:04:59 -0400
-Date: Thu, 28 May 2009 17:04:59 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-cc: Hannes Reinecke <hare@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
-       SCSI development list <linux-scsi@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Tejun Heo <tj@kernel.org>, Cornelia Huck <cornelia.huck@de.ibm.com>,
-       <linux-fsdevel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@aristanetworks.com>
-Subject: Re: [PATCH 25/20] sysfs: Only support removing emtpy sysfs  directories.
-In-Reply-To: <1243541439.2830.21.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.44L0.0905281656590.4059-100000@iolanthe.rowland.org>
+	Thu, 28 May 2009 17:06:30 -0400
+Message-ID: <4A1EFCC2.80805@linux.vnet.ibm.com>
+Date: Thu, 28 May 2009 14:06:10 -0700
+From: Corey Ashford <cjashfor@linux.vnet.ibm.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: eranian@gmail.com, Thomas Gleixner <tglx@linutronix.de>,
+       Philip Mucci <mucci@eecs.utk.edu>, LKML <linux-kernel@vger.kernel.org>,
+       Andi Kleen <andi@firstfloor.org>, Paul Mackerras <paulus@samba.org>,
+       Maynard Johnson <mpjohn@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       perfmon2-devel <perfmon2-devel@lists.sourceforge.net>
+Subject: Re: [perfmon2] comments on Performance Counters for Linux (PCL)
+References: <7c86c4470905280758y6d359823h2a7517dfecb115e6@mail.gmail.com> <1243527919.6645.75.camel@laptop>
+In-Reply-To: <1243527919.6645.75.camel@laptop>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 May 2009, James Bottomley wrote:
+Just a few comments below on some excerpts from this very good discussion.
 
-> > How so?  Why not unlink the target from the host's list when the 
-> > device_del() call returns?  A new target can be created any time after 
-> > that, since the old one is now completely invisible.
+Peter Zijlstra wrote:
+> On Thu, 2009-05-28 at 16:58 +0200, stephane eranian wrote:
+>>      - uint64_t irq_period
+>>
+>>        IRQ is an x86 related name. Why not use smpl_period instead?
 > 
-> The answer to that one is several emails back: we need the target in the
-> host list for the lifetime of the devices ... it's alterable, but even
-> more auditing.
+> don't really care, but IRQ seems used throughout linux, we could name
+> the thing interrupt or sample period.
 
-I don't recall you mentioning that the target had to be linked into the 
-host's list for the lifetime of the devices; I thought you said merely 
-that the target had to _exist_ for the lifetime of the devices.
+I agree with Stephane, the name irq_period struck me as somewhat strange for 
+what it does.  sample_period would be much better.
 
-Does it really need to be linked, or is existence of the structure 
-sufficient?
-
-Likewise, after a device is removed from visibility, does it need to 
-remain linked into the host's and target's lists?
-
-> > P.S.: Does scsi_target_reap() really ever get called in non-process
-> > context?  I couldn't find any place where that might happen.
 > 
-> From the device release, which is done by last put, which could be I/O
-> context.
+>>      - uint32_t record_type
+>>
+>>        This field is a bitmask. I believe 32-bit is too small to accommodate
+>>        future record formats.
+> 
+> It currently controls 8 aspects of the overflow entry, do you really
+> forsee the need for more than 32?
 
-But scsi_target_reap() isn't called directly from the device release.  
-It's called from scsi_device_dev_release_usercontext().
+record_type is probably not the best name for this either.  Maybe 
+"record_layout" or "sample_layout" or "sample_format" (to go along with read_format)
 
-And besides, in the patch I'm working on it isn't called from either of 
-those places -- it's called from __scsi_remove_device().  So I'll go 
-ahead and get rid of scsi_target_reap_usercontext().
 
-Alan Stern
+>>        I would assume that on the read() side, counts are accumulated as
+>>        64-bit integers. But if it is the case, then it seems there is an
+>>        asymmetry between period and counts.
+>>
+>>        Given that your API is high level, I don't think tools should have to
+>>        worry about the actual width of a counter. This is especially true
+>>        because they don't know which counters the event is going to go into
+>>        and if I recall correctly, on some PMU models, different counters can
+>>        have different width (Power, I think).
+>>
+>>        It is rather convenient for tools to always manipulate counters as
+>>        64-bit integers. You should provide a consistent view between counts
+>>        and periods.
+> 
+> So you're suggesting to artificually strech periods by say composing a
+> single overflow from smaller ones, ignoring the intermediate overflow
+> events?
+> 
+> That sounds doable, again, patch welcome.
+
+I definitely agree with Stephane's point on this one.  I had assumed that long 
+irq_periods (longer than the width of the counter) would be synthesized as you 
+suggest.  If this is not the case, PCL should be changed so that it does,  -or- 
+at a minimum, the user should get an error back stating that the period is too 
+long for the hardware counter.
+
+>>  4/ Grouping
+>>
+>>        By design, an event can only be part of one group at a time. Events in
+>>        a group are guaranteed to be active on the PMU at the same time. That
+>>        means a group cannot have more events than there are available counters
+>>        on the PMU. Tools may want to know the number of counters available in
+>>        order to group their events accordingly, such that reliable ratios
+>>        could be computed. It seems the only way to know this is by trial and
+>>        error. This is not practical.
+> 
+> Got a proposal to ammend this?
+
+I think counters in a group are guaranteed to be active at the same time iff the 
+pinned bit is set for that group, right?
+
+I don't get the problem with reliable ratios here.  If each counter has its own 
+time values, time enabled vs. time on counter, reliable ratios should always be 
+available.
+
+> 
+>>  5/ Multiplexing and scaling
+>>
+>>        The PMU can be shared by multiple programs each controlling a variable
+>>        number of events. Multiplexing occurs by default unless pinned is
+>>        requested. The exclusive option only guarantees the group does not
+>>        share the PMU with other groups while it is active, at least this is
+>>        my understanding.
+> 
+> We have pinned and exclusive. pinned means always on the PMU, exclusive
+> means when on the PMU no-one else can be.
+
+The use of the exclusive bit has been unclear to me.  Let's say I have 4 
+hardware counters, and two groups of two events each.  As long as there's no 
+interference from one group to the other, is there a reason I'd want the 
+"exclusive" bit on?
+
+Is it used only in the case where the kernel would otherwise not be able to 
+schedule both groups onto counters at the same time and you want to ensure that 
+your group doesn't get preempted by another group waiting to get onto the PMU?
+
+>> III/ Requests
+>>   2/ Sampling period randomization
+>>
+>>        It is our experience (on Itanium, for instance), that for certain
+>>        sampling measurements, it is beneficial to randomize the sampling
+>>        period a bit. This is in particular the case when sampling on an
+>>        event that happens very frequently and which is not related to
+>>        timing, e.g., branch_instructions_retired. Randomization helps mitigate
+>>        the bias. You do not need anything sophisticated.. But when you are using
+>>        a kernel-level sampling buffer, you need to have to kernel randomize.
+>>        Randomization needs to be supported per event.
+> 
+> Corey raised this a while back, I asked what kind of parameters were
+> needed and if a specific (p)RNG was specified.
+> 
+> Is something with an (avg,std) good enough? Do you have an
+> implementation that I can borrow, or even better a patch? :-)
+
+For how it's done in perfmon2, take a look at Section 3.4.2 (page 74) of 
+http://www.hpl.hp.com/techreports/2004/HPL-2004-200R1.pdf
+
+- Corey
+
+Corey Ashford
+Software Engineer
+IBM Linux Technology Center, Linux Toolchain
+cjashfor@us.ibm.com
 
