@@ -1,83 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761583AbZE1IBl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761419AbZE1ICd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761583AbZE1IBl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 04:01:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756667AbZE1IBd
+	id S1761419AbZE1ICd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 04:02:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756667AbZE1ICK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 04:01:33 -0400
-Received: from smtp.wellnetcz.com ([212.24.148.102]:34442 "EHLO
+	Thu, 28 May 2009 04:02:10 -0400
+Received: from smtp.wellnetcz.com ([212.24.148.102]:34446 "EHLO
 	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759318AbZE1IBc (ORCPT
+	with ESMTP id S1751965AbZE1ICH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 04:01:32 -0400
+	Thu, 28 May 2009 04:02:07 -0400
 From: Jiri Slaby <jirislaby@gmail.com>
 To: mingo@elte.hu
 Cc: x86@kernel.org, linux-kernel@vger.kernel.org,
-       Jiri Slaby <jirislaby@gmail.com>, Ingo Molnar <mingo@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH 1/3] x86: apic, restore irqs on fail paths
-Date: Thu, 28 May 2009 09:54:47 +0200
-Message-Id: <1243497289-18591-1-git-send-email-jirislaby@gmail.com>
+       Jiri Slaby <jirislaby@gmail.com>, Tom Zanussi <tzanussi@gmail.com>
+Subject: [PATCH 3/3] trace: events_filter, fix lock imbalances
+Date: Thu, 28 May 2009 09:54:49 +0200
+Message-Id: <1243497289-18591-3-git-send-email-jirislaby@gmail.com>
 X-Mailer: git-send-email 1.6.3
+In-Reply-To: <1243497289-18591-1-git-send-email-jirislaby@gmail.com>
+References: <1243497289-18591-1-git-send-email-jirislaby@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-lapic_resume forgets to restore interrupts on fail paths.
-Fix that.
+apply_event_filter and apply_subsystem_event_filter omits an unlock
+on one fail path each. Fix that.
 
 Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: H. Peter Anvin <hpa@zytor.com>
+Cc: Tom Zanussi <tzanussi@gmail.com>
 ---
- arch/x86/kernel/apic/apic.c |   11 ++++++-----
- 1 files changed, 6 insertions(+), 5 deletions(-)
+ kernel/trace/trace_events_filter.c |   16 ++++++++++------
+ 1 files changed, 10 insertions(+), 6 deletions(-)
 
-diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
-index 07cffc1..fc65544 100644
---- a/arch/x86/kernel/apic/apic.c
-+++ b/arch/x86/kernel/apic/apic.c
-@@ -2029,7 +2029,7 @@ static int lapic_resume(struct sys_device *dev)
- 	unsigned int l, h;
- 	unsigned long flags;
- 	int maxlvt;
--	int ret;
-+	int ret = 0;
- 	struct IO_APIC_route_entry **ioapic_entries = NULL;
- 
- 	if (!apic_pm_state.active)
-@@ -2040,14 +2040,15 @@ static int lapic_resume(struct sys_device *dev)
- 		ioapic_entries = alloc_ioapic_entries();
- 		if (!ioapic_entries) {
- 			WARN(1, "Alloc ioapic_entries in lapic resume failed.");
--			return -ENOMEM;
-+			ret = -ENOMEM;
-+			goto restore;
- 		}
- 
- 		ret = save_IO_APIC_setup(ioapic_entries);
- 		if (ret) {
- 			WARN(1, "Saving IO-APIC state failed: %d\n", ret);
- 			free_ioapic_entries(ioapic_entries);
--			return ret;
-+			goto restore;
- 		}
- 
- 		mask_IO_APIC_setup(ioapic_entries);
-@@ -2099,10 +2100,10 @@ static int lapic_resume(struct sys_device *dev)
- 		restore_IO_APIC_setup(ioapic_entries);
- 		free_ioapic_entries(ioapic_entries);
+diff --git a/kernel/trace/trace_events_filter.c b/kernel/trace/trace_events_filter.c
+index 85ad6a8..e35094a 100644
+--- a/kernel/trace/trace_events_filter.c
++++ b/kernel/trace/trace_events_filter.c
+@@ -1080,8 +1080,10 @@ int apply_event_filter(struct ftrace_event_call *call, char *filter_string)
  	}
+ 
+ 	ps = kzalloc(sizeof(*ps), GFP_KERNEL);
+-	if (!ps)
+-		return -ENOMEM;
++	if (!ps) {
++		err = -ENOMEM;
++		goto unlock;
++	}
+ 
+ 	filter_disable_preds(call);
+ 	replace_filter_string(call->filter, filter_string);
+@@ -1101,7 +1103,7 @@ out:
+ 	filter_opstack_clear(ps);
+ 	postfix_clear(ps);
+ 	kfree(ps);
 -
-+restore:
- 	local_irq_restore(flags);
++unlock:
+ 	mutex_unlock(&filter_mutex);
  
--	return 0;
-+	return ret;
- }
+ 	return err;
+@@ -1124,8 +1126,10 @@ int apply_subsystem_event_filter(struct event_subsystem *system,
+ 	}
  
- /*
+ 	ps = kzalloc(sizeof(*ps), GFP_KERNEL);
+-	if (!ps)
+-		return -ENOMEM;
++	if (!ps) {
++		err = -ENOMEM;
++		goto unlock;
++	}
+ 
+ 	filter_free_subsystem_preds(system);
+ 	replace_filter_string(system->filter, filter_string);
+@@ -1145,7 +1149,7 @@ out:
+ 	filter_opstack_clear(ps);
+ 	postfix_clear(ps);
+ 	kfree(ps);
+-
++unlock:
+ 	mutex_unlock(&filter_mutex);
+ 
+ 	return err;
 -- 
 1.6.3
 
