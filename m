@@ -1,68 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757161AbZE1JjA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755996AbZE1Jon@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757161AbZE1JjA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 05:39:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751114AbZE1Jiw
+	id S1755996AbZE1Jon (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 05:44:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754091AbZE1Jof
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 05:38:52 -0400
-Received: from mail-out.m-online.net ([212.18.0.10]:35755 "EHLO
-	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751554AbZE1Jiv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 05:38:51 -0400
-X-Auth-Info: Mt1tUG3kWlq1mxeKfOcgAE+fFD5cjySp09fcTjJjPm4=
-To: Robert Schwebel <r.schwebel@pengutronix.de>
-cc: Scott Wood <scottwood@freescale.com>,
-       Grant Likely <grant.likely@secretlab.ca>,
-       devicetree-discuss <devicetree-discuss@ozlabs.org>,
-       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       Janboe Ye <yuan-bo.ye@motorola.com>, Timur Tabi <timur@freescale.com>,
-       rmk@arm.linux.org.uk
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: [RFC] [PATCH] Device Tree on ARM platform
-Mime-version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-In-reply-to: <20090528000707.GR6805@pengutronix.de>
-References: <1243408083.13460.14.camel@debian-nb> <fa686aa40905270727m31250984tf12249fc87179ce9@mail.gmail.com> <ed82fe3e0905270739k38018c87ka11f62c5977e45fb@mail.gmail.com> <20090527150527.GK6805@pengutronix.de> <fa686aa40905270839m375bbdacqb1acb1be0a2d2da0@mail.gmail.com> <20090527162000.GM6805@pengutronix.de> <fa686aa40905271335o1165419hda2334bef42aa3f@mail.gmail.com> <20090527234801.GP6805@pengutronix.de> <4A1DD3A0.3010501@freescale.com> <20090528000707.GR6805@pengutronix.de>
-Comments: In-reply-to Robert Schwebel <r.schwebel@pengutronix.de>
-   message dated "Thu, 28 May 2009 02:07:07 +0200."
-Date: Thu, 28 May 2009 11:38:48 +0200
-Message-Id: <20090528093848.B048A832E416@gemini.denx.de>
+	Thu, 28 May 2009 05:44:35 -0400
+Received: from cantor.suse.de ([195.135.220.2]:53284 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753691AbZE1Joe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 05:44:34 -0400
+Date: Thu, 28 May 2009 11:44:34 +0200
+From: Jan Kara <jack@suse.cz>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: Jan Kara <jack@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
+       npiggin@suse.de, linux-ext4@vger.kernel.org
+Subject: Re: [PATCH 08/11] vfs: Unmap underlying metadata of new data
+	buffers only when buffer is mapped
+Message-ID: <20090528094434.GG29199@duck.suse.cz>
+References: <1243429268-3028-1-git-send-email-jack@suse.cz> <1243429268-3028-9-git-send-email-jack@suse.cz> <20090527153559.GB19989@skywalker>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090527153559.GB19989@skywalker>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear Robert Schwebel,
+On Wed 27-05-09 21:05:59, Aneesh Kumar K.V wrote:
+> On Wed, May 27, 2009 at 03:01:05PM +0200, Jan Kara wrote:
+> > When we do delayed allocation of some buffer, we want to signal to VFS that
+> > the buffer is new (set buffer_new) so that it properly zeros out everything.
+> > But we don't have the buffer mapped yet so we cannot really unmap underlying
+> > metadata in this state. Make VFS avoid doing unmapping of metadata when the
+> > buffer is not yet mapped.
+> > 
+...
+> > @@ -2683,7 +2685,7 @@ int nobh_write_begin(struct file *file, struct address_space *mapping,
+> >  			goto failed;
+> >  		if (!buffer_mapped(bh))
+> >  			is_mapped_to_disk = 0;
+> > -		if (buffer_new(bh))
+> > +		if (buffer_new(bh) && buffer_mapped(bh))
+> >  			unmap_underlying_metadata(bh->b_bdev, bh->b_blocknr);
+> >  		if (PageUptodate(page)) {
+> >  			set_buffer_uptodate(bh);
+> 
+> Both xfs and ext4 return mapped delay buffer_head when we do a get_block
+> with delayed allocation in write_begin phase.
+  Yeah, I knew about ext4 doing this. Thanks for pointing this out. I
+wanted to trigger a separate discussion about this and similar problems -
+the current state of buffer bits is quite messy (I think Ted complained
+about this as well recently) and we should somehow clean it up.
+  In this particular case: What's the point in returning the buffer mapped?
+It does not make any sence logically (block *does not* have any physical
+location assigned) and technically you have to map it to some fake block
+and later remap it correctly when you do block allocation. So maybe I'm
+missing some good reason but from what I can see, it just does not make
+sence...
 
-In message <20090528000707.GR6805@pengutronix.de> you wrote:
->
-> Until now, oftree has created more problems than it has solved for us.
-> The idea works fine for well-known things like memory maps and
-> interrupts. It works badly for corner cases, and embedded land is full
-> of it. The effort to get the oftree stuff right is often more than a
-> magnitude of order higher than the effort for the actual functionality.
-
-Well, but isn't this also because the device tree dramatically
-reduced the amount of effort to get a new board supported? We have
-seen a number of cases where _only_ the device tree needed
-significant efforts to get a basic BSP running on a new board.
-Talking about ration of device tree efforts versus code writing
-efforts is somewhat irrelevant when you ignore that the total effort
-goes down. Sometimes significantly.
-
-> That should be an alarm sign that something is wrong.
-
-Maybe the interpretation of data?
-
-Best regards,
-
-Wolfgang Denk
-
+									Honza
 -- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-If programming was easy, they wouldn't need something as  complicated
-as a human being to do it, now would they?
-                       - L. Wall & R. L. Schwartz, _Programming Perl_
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
