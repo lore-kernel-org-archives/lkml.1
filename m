@@ -1,106 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751985AbZE1WEV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752665AbZE1WQ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751985AbZE1WEV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 18:04:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751308AbZE1WEN
+	id S1752665AbZE1WQ7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 18:16:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751068AbZE1WQw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 18:04:13 -0400
-Received: from hera.kernel.org ([140.211.167.34]:50876 "EHLO hera.kernel.org"
+	Thu, 28 May 2009 18:16:52 -0400
+Received: from www.tglx.de ([62.245.132.106]:39182 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751053AbZE1WEN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 18:04:13 -0400
-Date: Thu, 28 May 2009 22:03:34 GMT
-From: tip-bot for Mike Galbraith <efault@gmx.de>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-Subject: [tip:perfcounters/core] perf_counter tools: Document '--' option parsing terminator
-Message-ID: <tip-9e09675366695405412b709e91709c1ce2925c90@git.kernel.org>
-Git-Commit-ID: 9e09675366695405412b709e91709c1ce2925c90
-X-Mailer: tip-git-log-daemon
+	id S1751011AbZE1WQv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 18:16:51 -0400
+Date: Fri, 29 May 2009 00:16:41 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Jon Hunter <jon-hunter@ti.com>
+cc: john stultz <johnstul@us.ibm.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 1/2] Dynamic Tick: Prevent clocksource wrapping during
+ idle
+In-Reply-To: <4A1EFDBD.8040007@ti.com>
+Message-ID: <alpine.LFD.2.00.0905282330510.3397@localhost.localdomain>
+References: <4A1D52E3.3040204@ti.com>  <alpine.LFD.2.00.0905271731070.3397@localhost.localdomain> <1243455615.7440.17.camel@localhost.localdomain> <alpine.LFD.2.00.0905272229190.3397@localhost.localdomain> <4A1EF244.5040108@ti.com>
+ <alpine.LFD.2.00.0905282231500.3397@localhost.localdomain> <4A1EFDBD.8040007@ti.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 28 May 2009 22:03:35 +0000 (UTC)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  9e09675366695405412b709e91709c1ce2925c90
-Gitweb:     http://git.kernel.org/tip/9e09675366695405412b709e91709c1ce2925c90
-Author:     Mike Galbraith <efault@gmx.de>
-AuthorDate: Thu, 28 May 2009 16:25:34 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 29 May 2009 00:02:33 +0200
+On Thu, 28 May 2009, Jon Hunter wrote:
+ 
+> Thomas Gleixner wrote:
+> >   Please make this a real function. There is no reason to stick this
+> >   into a header file. The only user is clocksource.c anyway, so please
+> >   put it there as a static function and let the compiler decide what
+> >   to do with it.
+> 
+> No problem. Please see below. Let me know if this is ok and there is anything
+> else.
 
-perf_counter tools: Document '--' option parsing terminator
+  Looks good now.
+ 
+>  /**
+> + * timekeeping_max_deferment - Returns max time the clocksource can be
+> deferred
+> + *
+> + * IMPORTANT: Caller must observe xtime_lock via read_seqbegin/read_seqretry
+> + * to ensure that the clocksource does not change!
+> + */
 
-Signed-off-by: Mike Galbraith <efault@gmx.de>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <new-submission>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+  Just nitpicking here. For the intended use case this is irrelevant.
+  
+  On UP this is called from an irq disabled section, so nothing is
+  going to change the clock source.
 
+  On SMP it does not matter if CPU A goes to sleep with the old clock
+  source and CPU B changes the clock source while A is idle. When B
+  goes idle it will take the change into account.
 
----
- .../perf_counter/Documentation/perf-record.txt     |    1 +
- .../perf_counter/Documentation/perf-stat.txt       |    1 +
- Documentation/perf_counter/builtin-record.c        |    3 ++-
- Documentation/perf_counter/builtin-stat.c          |    1 +
- 4 files changed, 5 insertions(+), 1 deletions(-)
+  But that leads me to an interesting observation:
 
-diff --git a/Documentation/perf_counter/Documentation/perf-record.txt b/Documentation/perf_counter/Documentation/perf-record.txt
-index 353db1b..a93d2ec 100644
---- a/Documentation/perf_counter/Documentation/perf-record.txt
-+++ b/Documentation/perf_counter/Documentation/perf-record.txt
-@@ -9,6 +9,7 @@ SYNOPSIS
- --------
- [verse]
- 'perf record' [-e <EVENT> | --event=EVENT] [-l] [-a] <command>
-+'perf record' [-e <EVENT> | --event=EVENT] [-l] [-a] -- <command> [<options>]
- 
- DESCRIPTION
- -----------
-diff --git a/Documentation/perf_counter/Documentation/perf-stat.txt b/Documentation/perf_counter/Documentation/perf-stat.txt
-index 7fcab27..828c59f 100644
---- a/Documentation/perf_counter/Documentation/perf-stat.txt
-+++ b/Documentation/perf_counter/Documentation/perf-stat.txt
-@@ -9,6 +9,7 @@ SYNOPSIS
- --------
- [verse]
- 'perf stat' [-e <EVENT> | --event=EVENT] [-l] [-a] <command>
-+'perf stat' [-e <EVENT> | --event=EVENT] [-l] [-a] -- <command> [<options>]
- 
- DESCRIPTION
- -----------
-diff --git a/Documentation/perf_counter/builtin-record.c b/Documentation/perf_counter/builtin-record.c
-index 4a06866..23d1224 100644
---- a/Documentation/perf_counter/builtin-record.c
-+++ b/Documentation/perf_counter/builtin-record.c
-@@ -397,7 +397,8 @@ static int __cmd_record(int argc, const char **argv)
- }
- 
- static const char * const record_usage[] = {
--	"perf record [<options>] <command>",
-+	"perf record [<options>] [<command>]",
-+	"perf record [<options>] -- <command> [<options>]",
- 	NULL
- };
- 
-diff --git a/Documentation/perf_counter/builtin-stat.c b/Documentation/perf_counter/builtin-stat.c
-index ce661e2..ac14086 100644
---- a/Documentation/perf_counter/builtin-stat.c
-+++ b/Documentation/perf_counter/builtin-stat.c
-@@ -212,6 +212,7 @@ static void skip_signal(int signo)
- 
- static const char * const stat_usage[] = {
- 	"perf stat [<options>] <command>",
-+	"perf stat [<options>] -- <command> [<options>]",
- 	NULL
- };
- 
+  On SMP we really should only care for the CPU which has the do_timer
+  duty assigned. All other CPUs can sleep as long as they want. When
+  that CPU goes idle and drops the do_timer duty it needs to look at
+  max_deferement, but the others can sleep as long as they want.
+
+  So the rule would be:
+
+  if (cpu == tick_do_timer_cpu || tick_do_timer_cpu == TICK_DO_TIMER_NONE)
+     check_max_deferment();
+  else
+     sleep_as_long_as_you_want;
+
+  Could you add that perhaps ?
+
+> +s64 timekeeping_max_deferment(void)
+> +{
+> +	return clock->max_idle_ns;
+> +}
+> +
+
+Thanks for your patience,
+
+	tglx
