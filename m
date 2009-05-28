@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759451AbZE1Llh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760018AbZE1LmE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759451AbZE1Llh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 07:41:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755301AbZE1Lka
+	id S1760018AbZE1LmE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 07:42:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755125AbZE1Lkd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 07:40:30 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:57803 "EHLO mx2.redhat.com"
+	Thu, 28 May 2009 07:40:33 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:57805 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758194AbZE1Lk1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1758201AbZE1Lk1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 28 May 2009 07:40:27 -0400
-Date: Thu, 28 May 2009 13:35:47 +0200
+Date: Thu, 28 May 2009 13:35:43 +0200
 From: Oleg Nesterov <oleg@redhat.com>
 To: Roland McGrath <roland@redhat.com>
 Cc: Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org
-Subject: [RFC PATCH 5/12 v2] ptrace: kill the now unneeded args from
-	tracehook_finish_clone() path
-Message-ID: <20090528113547.GA18699@redhat.com>
+Subject: [RFC PATCH 3/12 v2] ptrace: avoid using task->ptrace when possible
+	in ptrace.{c,h}
+Message-ID: <20090528113543.GA18688@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -25,81 +25,162 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With the previous change tracehook_finish_clone() and ptrace_init_task()
-do not need any arguments except "child", remove them.
+Do some s/->ptrace/task_ptrace()/ changes in ptrace.{c,h} as a preparation
+for the future changes.
 
- include/linux/ptrace.h    |    7 +++----
- include/linux/tracehook.h |   10 +++-------
- kernel/fork.c             |    2 +-
- 3 files changed, 7 insertions(+), 12 deletions(-)
+Change ptrace_setoptions() to access ->ptrace only once.
 
---- PTRACE/include/linux/ptrace.h~4_FORK_TRACE	2009-05-28 07:26:35.000000000 +0200
-+++ PTRACE/include/linux/ptrace.h	2009-05-28 08:19:16.000000000 +0200
-@@ -162,20 +162,19 @@ static inline int ptrace_event(int mask,
- /**
-  * ptrace_init_task - initialize ptrace state for a new child
-  * @child:		new child task
-- * @ptrace:		true if child should be ptrace'd by parent's tracer
-  *
-  * This is called immediately after adding @child to its parent's children
-- * list.  @ptrace is false in the normal case, and true to ptrace @child.
-+ * list.
-  *
-  * Called with current's siglock and write_lock_irq(&tasklist_lock) held.
-  */
--static inline void ptrace_init_task(struct task_struct *child, bool ptrace)
-+static inline void ptrace_init_task(struct task_struct *child)
+ include/linux/ptrace.h |   31 ++++++++++++++++---------------
+ kernel/ptrace.c        |   28 +++++++++++++++-------------
+ 2 files changed, 31 insertions(+), 28 deletions(-)
+
+--- PTRACE/include/linux/ptrace.h~2_PTRACE	2009-05-24 21:36:37.000000000 +0200
++++ PTRACE/include/linux/ptrace.h	2009-05-28 06:26:19.000000000 +0200
+@@ -106,15 +106,27 @@ static inline int ptrace_reparented(stru
  {
- 	INIT_LIST_HEAD(&child->ptrace_entry);
- 	INIT_LIST_HEAD(&child->ptraced);
- 	child->parent = child->real_parent;
- 	child->ptrace = 0;
--	if (unlikely(ptrace)) {
-+	if (unlikely(child->ptrace_ctx)) {
- 		child->ptrace = current->ptrace;
- 		ptrace_link(child, current->parent);
- 	}
---- PTRACE/include/linux/tracehook.h~4_FORK_TRACE	2009-05-28 07:39:21.000000000 +0200
-+++ PTRACE/include/linux/tracehook.h	2009-05-28 08:19:16.000000000 +0200
-@@ -219,7 +219,7 @@ static inline void tracehook_report_exit
-  * @clone_flags:	%CLONE_* flags from clone/fork/vfork system call
-  *
-  * This is called before a new user task is to be cloned.
-- * Its return value will be passed to tracehook_finish_clone().
-+ * Its return value will be passed to tracehook_init_task().
-  *
-  * Called with no locks held.
-  */
-@@ -279,18 +279,14 @@ static inline void tracehook_free_task(s
- /**
-  * tracehook_finish_clone - new child created and being attached
-  * @child:		new child task
-- * @clone_flags:	%CLONE_* flags from clone/fork/vfork system call
-- * @trace:		return value from tracehook_prepare_clone()
-  *
-  * This is called immediately after adding @child to its parent's children list.
-- * The @trace value is that returned by tracehook_prepare_clone().
-  *
-  * Called with current's siglock and write_lock_irq(&tasklist_lock) held.
-  */
--static inline void tracehook_finish_clone(struct task_struct *child,
--					  unsigned long clone_flags, int trace)
-+static inline void tracehook_finish_clone(struct task_struct *child)
+ 	return child->real_parent != child->parent;
+ }
++
++/**
++ * task_ptrace - return %PT_* flags that apply to a task
++ * @task:	pointer to &task_struct in question
++ *
++ * Returns the %PT_* flags that apply to @task.
++ */
++static inline int task_ptrace(struct task_struct *task)
++{
++	return task->ptrace;
++}
++
+ static inline void ptrace_link(struct task_struct *child,
+ 			       struct task_struct *new_parent)
  {
--	ptrace_init_task(child, (clone_flags & CLONE_PTRACE) || trace);
-+	ptrace_init_task(child);
+-	if (unlikely(child->ptrace))
++	if (unlikely(task_ptrace(child)))
+ 		__ptrace_link(child, new_parent);
+ }
+ static inline void ptrace_unlink(struct task_struct *child)
+ {
+-	if (unlikely(child->ptrace))
++	if (unlikely(task_ptrace(child)))
+ 		__ptrace_unlink(child);
  }
  
+@@ -122,19 +134,8 @@ int generic_ptrace_peekdata(struct task_
+ int generic_ptrace_pokedata(struct task_struct *tsk, long addr, long data);
+ 
  /**
---- PTRACE/kernel/fork.c~4_FORK_TRACE	2009-05-28 07:26:35.000000000 +0200
-+++ PTRACE/kernel/fork.c	2009-05-28 08:19:16.000000000 +0200
-@@ -1247,7 +1247,7 @@ static struct task_struct *copy_process(
+- * task_ptrace - return %PT_* flags that apply to a task
+- * @task:	pointer to &task_struct in question
+- *
+- * Returns the %PT_* flags that apply to @task.
+- */
+-static inline int task_ptrace(struct task_struct *task)
+-{
+-	return task->ptrace;
+-}
+-
+-/**
+  * ptrace_event - possibly stop for a ptrace event notification
+- * @mask:	%PT_* bit to check in @current->ptrace
++ * @mask:	%PT_* bit to check in task_ptrace(@current)
+  * @event:	%PTRACE_EVENT_* value to report if @mask is set
+  * @message:	value for %PTRACE_GETEVENTMSG to return
+  *
+@@ -147,7 +148,7 @@ static inline int task_ptrace(struct tas
+  */
+ static inline int ptrace_event(int mask, int event, unsigned long message)
+ {
+-	if (mask && likely(!(current->ptrace & mask)))
++	if (mask && likely(!(task_ptrace(current) & mask)))
+ 		return 0;
+ 	current->ptrace_message = message;
+ 	ptrace_notify((event << 8) | SIGTRAP);
+--- PTRACE/kernel/ptrace.c~2_PTRACE	2009-05-24 21:36:37.000000000 +0200
++++ PTRACE/kernel/ptrace.c	2009-05-28 06:26:19.000000000 +0200
+@@ -79,7 +79,7 @@ static void ptrace_untrace(struct task_s
+  */
+ void __ptrace_unlink(struct task_struct *child)
+ {
+-	BUG_ON(!child->ptrace);
++	BUG_ON(!task_ptrace(child));
  
- 	if (likely(p->pid)) {
- 		list_add_tail(&p->sibling, &p->real_parent->children);
--		tracehook_finish_clone(p, clone_flags, trace);
-+		tracehook_finish_clone(p);
+ 	child->ptrace = 0;
+ 	child->parent = child->real_parent;
+@@ -105,7 +105,7 @@ int ptrace_check_attach(struct task_stru
+ 	 * be changed by us so it's not changing right after this.
+ 	 */
+ 	read_lock(&tasklist_lock);
+-	if ((child->ptrace & PT_PTRACED) && child->parent == current) {
++	if (task_ptrace(child) && child->parent == current) {
+ 		ret = 0;
+ 		/*
+ 		 * child->sighand can't be NULL, release_task()
+@@ -203,7 +203,7 @@ int ptrace_attach(struct task_struct *ta
+ 	retval = -EPERM;
+ 	if (unlikely(task->exit_state))
+ 		goto unlock_tasklist;
+-	if (task->ptrace)
++	if (task_ptrace(task))
+ 		goto unlock_tasklist;
  
- 		if (thread_group_leader(p)) {
- 			if (clone_flags & CLONE_NEWPID)
+ 	task->ptrace = PT_PTRACED;
+@@ -234,7 +234,7 @@ int ptrace_traceme(void)
+ 
+ 	write_lock_irq(&tasklist_lock);
+ 	/* Are we already being traced? */
+-	if (!current->ptrace) {
++	if (!task_ptrace(current)) {
+ 		ret = security_ptrace_traceme(current->parent);
+ 		/*
+ 		 * Check PF_EXITING to ensure ->real_parent has not passed
+@@ -315,7 +315,7 @@ int ptrace_detach(struct task_struct *ch
+ 	 * This child can be already killed. Make sure de_thread() or
+ 	 * our sub-thread doing do_wait() didn't do release_task() yet.
+ 	 */
+-	if (child->ptrace) {
++	if (task_ptrace(child)) {
+ 		child->exit_code = data;
+ 		dead = __ptrace_detach(current, child);
+ 	}
+@@ -402,29 +402,31 @@ int ptrace_writedata(struct task_struct 
+ 
+ static int ptrace_setoptions(struct task_struct *child, long data)
+ {
+-	child->ptrace &= ~PT_TRACE_MASK;
++	unsigned int new_flags = 0;
+ 
+ 	if (data & PTRACE_O_TRACESYSGOOD)
+-		child->ptrace |= PT_TRACESYSGOOD;
++		new_flags |= PT_TRACESYSGOOD;
+ 
+ 	if (data & PTRACE_O_TRACEFORK)
+-		child->ptrace |= PT_TRACE_FORK;
++		new_flags |= PT_TRACE_FORK;
+ 
+ 	if (data & PTRACE_O_TRACEVFORK)
+-		child->ptrace |= PT_TRACE_VFORK;
++		new_flags |= PT_TRACE_VFORK;
+ 
+ 	if (data & PTRACE_O_TRACECLONE)
+-		child->ptrace |= PT_TRACE_CLONE;
++		new_flags |= PT_TRACE_CLONE;
+ 
+ 	if (data & PTRACE_O_TRACEEXEC)
+-		child->ptrace |= PT_TRACE_EXEC;
++		new_flags |= PT_TRACE_EXEC;
+ 
+ 	if (data & PTRACE_O_TRACEVFORKDONE)
+-		child->ptrace |= PT_TRACE_VFORK_DONE;
++		new_flags |= PT_TRACE_VFORK_DONE;
+ 
+ 	if (data & PTRACE_O_TRACEEXIT)
+-		child->ptrace |= PT_TRACE_EXIT;
++		new_flags |= PT_TRACE_EXIT;
+ 
++	child->ptrace &= ~PT_TRACE_MASK;
++	child->ptrace |= new_flags;
+ 	return (data & ~PTRACE_O_MASK) ? -EINVAL : 0;
+ }
+ 
 
