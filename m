@@ -1,95 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762794AbZE1IwT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760953AbZE1IzU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762794AbZE1IwT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 04:52:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759462AbZE1IwE
+	id S1760953AbZE1IzU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 04:55:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756316AbZE1IzI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 04:52:04 -0400
-Received: from ms01.sssup.it ([193.205.80.99]:57903 "EHLO sssup.it"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758619AbZE1IwB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 04:52:01 -0400
-Date: Thu, 28 May 2009 10:52:07 +0200
-From: Fabio Checconi <fchecconi@gmail.com>
-To: Nauman Rafique <nauman@google.com>
-Cc: Vivek Goyal <vgoyal@redhat.com>, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org, dm-devel@redhat.com,
-       jens.axboe@oracle.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
-       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
-       peterz@infradead.org
-Subject: Re: [PATCH 02/20] io-controller: Common flat fair queuing code in elevaotor layer
-Message-ID: <20090528085207.GA18909@gandalf.sssup.it>
-References: <1243377729-2176-1-git-send-email-vgoyal@redhat.com> <1243377729-2176-3-git-send-email-vgoyal@redhat.com> <e98e18940905271353kc6890dbxa1ea63026c8faec1@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 28 May 2009 04:55:08 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:40420 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752578AbZE1IzG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 04:55:06 -0400
+Date: Thu, 28 May 2009 09:55:04 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>, stable@kernel.org,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, starlight@binnacle.cx,
+       Eric B Munson <ebmunson@us.ibm.com>, Adam Litke <agl@us.ibm.com>,
+       Andy Whitcroft <apw@canonical.com>, wli@movementarian.org
+Subject: Re: [PATCH 1/2] x86: Ignore VM_LOCKED when determining if
+	hugetlb-backed page tables can be shared or not
+Message-ID: <20090528085503.GB10334@csn.ul.ie>
+References: <1243422749-6256-1-git-send-email-mel@csn.ul.ie> <1243422749-6256-2-git-send-email-mel@csn.ul.ie> <20090527231803.GA30002@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <e98e18940905271353kc6890dbxa1ea63026c8faec1@mail.gmail.com>
-User-Agent: Mutt/1.4.2.3i
+In-Reply-To: <20090527231803.GA30002@elte.hu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From: Nauman Rafique <nauman@google.com>
-> Date: Wed, May 27, 2009 01:53:59PM -0700
->
-> On Tue, May 26, 2009 at 3:41 PM, Vivek Goyal <vgoyal@redhat.com> wrote:
-> > This is common fair queuing code in elevator layer. This is controlled by
-...
-> > +/**
-> > + * __bfq_lookup_next_entity - return the first eligible entity in @st.
-> > + * @st: the service tree.
-> > + *
-> > + * Update the virtual time in @st and return the first eligible entity
-> > + * it contains.
-> > + */
-> > +static struct io_entity *__bfq_lookup_next_entity(struct io_service_tree *st)
-> > +{
-> > +	struct io_entity *entity;
-> > +
-> > +	if (RB_EMPTY_ROOT(&st->active))
-> > +		return NULL;
-> > +
-> > +	bfq_update_vtime(st);
+On Thu, May 28, 2009 at 01:18:03AM +0200, Ingo Molnar wrote:
 > 
-> Vivek, Paolo, Fabio,
-> Over here we call bfq_update_vtime(), and this function could have
-> been called even when we are just doing a lookup (and not an extract).
-> So vtime is updated while we are not really selecting the next queue
-> for service (for an example, see elv_preempt_queue()). This can result
-> in a call to update_vtime when only an entity with small weight (say
-> weight=1) is backlogged and another entity with bigger weight (say 10)
-> is getting serviced so it is not in the tree (we extract the entity
-> which is getting service). This results in a big vtime jump to the
-> start time of the entity with weight 1 (entity of weight 1 would have
-> big start times, as it has small weight). Now when another entity with
-> bigger weight (say 90) gets backlogged, it is assigned a new vtime
-> from service tree's vtime, causing it to get a big value. In the
-> meanwhile, iog for weight 10 keeps getting service for many quantums,
-> as it was continuously backlogged.
+> * Mel Gorman <mel@csn.ul.ie> wrote:
 > 
-> The problem happens because we extract an entity (removing it from the
-> tree) while it is getting service, and do vtime jumps based on what is
-> still in the tree. I think we need to add an extra check on the vtime
-> of the entity in service, before we take a vtime jump.
+> > On x86 and x86-64, it is possible that page tables are shared 
+> > beween shared mappings backed by hugetlbfs. As part of this, 
+> > page_table_shareable() checks a pair of vma->vm_flags and they 
+> > must match if they are to be shared. All VMA flags are taken into 
+> > account, including VM_LOCKED.
+> > 
+> > The problem is that VM_LOCKED is cleared on fork(). When a process 
+> > with a shared memory segment forks() to exec() a helper, there 
+> > will be shared VMAs with different flags. The impact is that the 
+> > shared segment is sometimes considered shareable and other times 
+> > not, depending on what process is checking.
+> > 
+> > What happens is that the segment page tables are being shared but 
+> > the count is inaccurate depending on the ordering of events. As 
+> > the page tables are freed with put_page(), bad pmd's are found 
+> > when some of the children exit. The hugepage counters also get 
+> > corrupted and the Total and Free count will no longer match even 
+> > when all the hugepage-backed regions are freed. This requires a 
+> > reboot of the machine to "fix".
+> > 
+> > This patch addresses the problem by comparing all flags except 
+> > VM_LOCKED when deciding if pagetables should be shared or not for 
+> > hugetlbfs-backed mapping.
+> > 
+> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> > Acked-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+> > ---
+> >  arch/x86/mm/hugetlbpage.c |    6 +++++-
+> >  1 files changed, 5 insertions(+), 1 deletions(-)
 > 
-> I have actually seen this happening when trying to debug on of my
-> tests. Please let me know what you think.
+> i suspect it would be best to do this due -mm, due to the (larger) 
+> mm/hugetlb.c cross section, right?
 > 
 
-IIRC this behavior is not coming from bfq, as the original code
-called __bfq_lookup_next_entity() without extraction only if there
-was no entity under service (in bfq_update_next_active() it checked
-for sd->active_entity != NULL).
+I'm happy with that approach. Almost all hugetlbfs-related patches have
+gone through -mm to date AFAIK even when they have been arch specific
+like this.
 
-I've not looked at the details of what changed, thus I don't know
-why the old behavior cannot be maintained, but the virtual time jump
-should be avoided in this case (and it is not specified by the wf2q+
-algorithm).
+Thanks
 
-[ sorry for the excessive trimming, but due to some charset problems
-  the quotations were unreadable ]
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
