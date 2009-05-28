@@ -1,28 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764353AbZE1UeK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764315AbZE1Uf3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764353AbZE1UeK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 16:34:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757899AbZE1Ud5
+	id S1764315AbZE1Uf3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 16:35:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758354AbZE1UfU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 16:33:57 -0400
-Received: from e38.co.us.ibm.com ([32.97.110.159]:49516 "EHLO
-	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753588AbZE1Ud5 (ORCPT
+	Thu, 28 May 2009 16:35:20 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:58148 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757899AbZE1UfT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 16:33:57 -0400
-Subject: Re: [tip:timers/ntp] ntp: adjust SHIFT_PLL to improve NTP
- convergence
-From: John Stultz <johnstul@us.ibm.com>
-To: mingo@redhat.com, hpa@zytor.com, riel@redhat.com,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       tglx@linutronix.de, mingo@elte.hu
-Cc: linux-tip-commits@vger.kernel.org, Miroslav Lichvar <mlichvar@redhat.com>
-In-Reply-To: <tip-22cfbbfd9f67b67fe073010f51cb71d3632387d5@git.kernel.org>
-References: <200905051956.n45JuVo9025575@imap1.linux-foundation.org>
-	 <tip-22cfbbfd9f67b67fe073010f51cb71d3632387d5@git.kernel.org>
+	Thu, 28 May 2009 16:35:19 -0400
+Subject: Re: [PATCH 0/11] Per-bdi writeback flusher threads v9
+From: Peter Zijlstra <peterz@infradead.org>
+To: Artem Bityutskiy <dedekind1@gmail.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, tytso@mit.edu, chris.mason@oracle.com,
+       david@fromorbit.com, hch@infradead.org, akpm@linux-foundation.org,
+       jack@suse.cz, yanmin_zhang@linux.intel.com, richard@rsk.demon.co.uk,
+       damien.wyart@free.fr
+In-Reply-To: <4A1E9D8B.8020908@gmail.com>
+References: <1243511204-2328-1-git-send-email-jens.axboe@oracle.com>
+	 <4A1E9D0B.4090402@gmail.com>  <4A1E9D8B.8020908@gmail.com>
 Content-Type: text/plain
-Date: Thu, 28 May 2009 13:33:37 -0700
-Message-Id: <1243542817.29511.523.camel@jstultz-laptop>
+Date: Thu, 28 May 2009 22:35:08 +0200
+Message-Id: <1243542908.6645.104.camel@laptop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
@@ -30,55 +31,20 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-05-06 at 09:46 +0000, tip-bot for john stultz wrote:
-> Commit-ID:  22cfbbfd9f67b67fe073010f51cb71d3632387d5
-> Gitweb:     http://git.kernel.org/tip/22cfbbfd9f67b67fe073010f51cb71d3632387d5
-> Author:     john stultz <johnstul@us.ibm.com>
-> AuthorDate: Wed, 6 May 2009 11:43:57 +0200
-> Committer:  Ingo Molnar <mingo@elte.hu>
-> CommitDate: Wed, 6 May 2009 11:44:02 +0200
+On Thu, 2009-05-28 at 17:19 +0300, Artem Bityutskiy wrote:
+> Artem Bityutskiy wrote:
+> > question is - should it? 'bdi_register()' a block device,
+> > but we do not have one.
 > 
-> ntp: adjust SHIFT_PLL to improve NTP convergence
-> 
-> The conversion to the ntpv4 reference model
-> f19923937321244e7dc334767eb4b67e0e3d5c74 ("ntp: convert to the NTP4
-> reference model") in 2.6.19 added nanosecond resolution the adjtimex
-> interface, but also changed the "stiffness" of the frequency adjustments,
-> causing NTP convergence time to greatly increase.
-> 
-> SHIFT_PLL, which reduces the stiffness of the freq adjustments, was
-> designed to be inversely linked to HZ, and the reference value of 4 was
-> designed for Unix systems using HZ=100.  However Linux's clock steering
-> code mostly independent of HZ.
-> 
-> So this patch reduces the SHIFT_PLL value from 4 to 2, which causes NTPd
-> behavior to match kernels prior to 2.6.19, greatly reducing convergence
-> times, and improving close synchronization through environmental thermal
-> changes.
-> 
-> The patch also changes some l's to L's in nearby code to avoid misreading
-> 50l as 501.
-> 
-> [ Impact: tweak NTP algorithm for faster convergence ]
+> Sorry, wanted to say: 'bdi_register()' registers a block
+> device.
 
-Hey Ingo,
-	So I've been speaking with Miroslav (cc'ed) who maintains the RH ntpd
-packages, and he's concerned that this patch takes us out of NTP's
-expected behavior, which may cause problems when dealing with non-linux
-systems using NTP.
+BDI stands for backing device info and is not related to block devices
+other than that block devices can also be (ok, always are) backing
+devices.
 
-We're both still trying to pin down exactly what NTP's expected behavior
-should be with respect to convergence time, and there may be fixes to
-the ntpd userland component that may resolve the slow convergence times
-users are experiencing that the SHIFT_PLL change was trying to fix.
+If you want to do writeback, you need a backing device to write to. The
+BDI is the device abstraction for writeback.
 
-So in the interest of keeping the kernel's adjtimex() interface behavior
-stable, I'd like to put a hold on this patch until Miroslav and I have
-come to agreement about how to best resolve the issue.
-
-So again, please don't push this when 2.6.31 opens.
-
-thanks
--john
 
 
