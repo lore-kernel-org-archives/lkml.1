@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754954AbZE1XFD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755241AbZE1XEt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754954AbZE1XFD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 19:05:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754113AbZE1XCm
+	id S1755241AbZE1XEt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 19:04:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754026AbZE1XCk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 19:02:42 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:48879 "EHLO
+	Thu, 28 May 2009 19:02:40 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:48900 "EHLO
 	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752459AbZE1XCY (ORCPT
+	with ESMTP id S1753706AbZE1XCY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 28 May 2009 19:02:24 -0400
 From: "Eric W. Biederman" <ebiederm@xmission.com>
@@ -18,16 +18,16 @@ Cc: <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>,
        <linux-fsdevel@vger.kernel.org>, Kay Sievers <kay.sievers@vrfy.org>,
        Greg KH <greg@kroah.com>, "Eric W. Biederman" <ebiederm@xmission.com>,
        "Eric W. Biederman" <ebiederm@aristanetworks.com>
-Date: Thu, 28 May 2009 16:01:00 -0700
-Message-Id: <1243551665-23596-19-git-send-email-ebiederm@xmission.com>
+Date: Thu, 28 May 2009 16:01:01 -0700
+Message-Id: <1243551665-23596-20-git-send-email-ebiederm@xmission.com>
 X-Mailer: git-send-email 1.6.3.1.54.g99dd.dirty
 In-Reply-To: <m1zlcwltri.fsf_-_@fess.ebiederm.org>
 References: <m1zlcwltri.fsf_-_@fess.ebiederm.org>
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
 X-SA-Exim-Connect-IP: 76.21.114.89
 X-SA-Exim-Rcpt-To: akpm@linux-foundation.org, gregkh@suse.de, linux-kernel@vger.kernel.org, tj@kernel.org, cornelia.huck@de.ibm.com, linux-fsdevel@vger.kernel.org, kay.sievers@vrfy.org, greg@kroah.com, ebiederm@xmission.com, ebiederm@aristanetworks.com
 X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
 X-Spam-Combo: ;Andrew Morton <akpm@linux-foundation.org>, Greg Kroah-Hartman
 	<gregkh@suse.de>
 X-Spam-Relay-Country: 
@@ -35,64 +35,80 @@ X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
 	*  1.5 XMNoVowels Alpha-numberic number with no vowels
 	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
 	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0015]
+	*      [score: 0.0000]
 	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
+	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
 	*  0.0 T_TooManySym_01 4+ unique symbols in subject
 	*  0.0 XM_SPF_Neutral SPF-Neutral
-	*  0.0 T_TooManySym_02 5+ unique symbols in subject
 	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
-Subject: [PATCH 19/24] sysfs: Kill unused sysfs_sb variable.
+Subject: [PATCH 20/24] sysfs: Normalize error handling in sysfs_fill_inode
 X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
+X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Eric W. Biederman <ebiederm@xmission.com>
 
-Now that there are no more users we can remove
-the sysfs_sb variable.
+Use a single error exit path instead of doing whatever
+is the required cleanup at each point we find the error.
+Ultimately this should make the code more maintainable.
 
 Acked-by: Tejun Heo <tj@kernel.org>
 Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
 ---
- fs/sysfs/mount.c |    2 --
- fs/sysfs/sysfs.h |    1 -
- 2 files changed, 0 insertions(+), 3 deletions(-)
+ fs/sysfs/mount.c |   16 +++++++++++-----
+ 1 files changed, 11 insertions(+), 5 deletions(-)
 
 diff --git a/fs/sysfs/mount.c b/fs/sysfs/mount.c
-index 89db07e..0cb1088 100644
+index 0cb1088..1dd023a 100644
 --- a/fs/sysfs/mount.c
 +++ b/fs/sysfs/mount.c
-@@ -23,7 +23,6 @@
+@@ -41,8 +41,9 @@ struct sysfs_dirent sysfs_root = {
  
+ static int sysfs_fill_super(struct super_block *sb, void *data, int silent)
+ {
+-	struct inode *inode;
+-	struct dentry *root;
++	struct inode *inode = NULL;
++	struct dentry *root = NULL;
++	int error;
  
- static struct vfsmount *sysfs_mount;
--struct super_block * sysfs_sb = NULL;
- struct kmem_cache *sysfs_dir_cachep;
- 
- static const struct super_operations sysfs_ops = {
-@@ -50,7 +49,6 @@ static int sysfs_fill_super(struct super_block *sb, void *data, int silent)
- 	sb->s_magic = SYSFS_MAGIC;
- 	sb->s_op = &sysfs_ops;
+ 	sb->s_blocksize = PAGE_CACHE_SIZE;
+ 	sb->s_blocksize_bits = PAGE_CACHE_SHIFT;
+@@ -51,24 +52,29 @@ static int sysfs_fill_super(struct super_block *sb, void *data, int silent)
  	sb->s_time_gran = 1;
--	sysfs_sb = sb;
  
  	/* get root inode, initialize and unlock it */
++	error = -ENOMEM;
  	mutex_lock(&sysfs_mutex);
-diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
-index cf21b06..5dd8168 100644
---- a/fs/sysfs/sysfs.h
-+++ b/fs/sysfs/sysfs.h
-@@ -80,7 +80,6 @@ static inline unsigned int sysfs_type(struct sysfs_dirent *sd)
-  * mount.c
-  */
- extern struct sysfs_dirent sysfs_root;
--extern struct super_block *sysfs_sb;
- extern struct kmem_cache *sysfs_dir_cachep;
+ 	inode = sysfs_get_inode(sb, &sysfs_root);
+ 	mutex_unlock(&sysfs_mutex);
+ 	if (!inode) {
+ 		pr_debug("sysfs: could not get root inode\n");
+-		return -ENOMEM;
++		goto err_out;
+ 	}
  
- /*
+ 	/* instantiate and link root dentry */
++	error = -ENOMEM;
+ 	root = d_alloc_root(inode);
+ 	if (!root) {
+ 		pr_debug("%s: could not get root dentry!\n",__func__);
+-		iput(inode);
+-		return -ENOMEM;
++		goto err_out;
+ 	}
+ 	root->d_fsdata = &sysfs_root;
+ 	sb->s_root = root;
+ 	return 0;
++err_out:
++	dput(root);
++	iput(inode);
++	return error;
+ }
+ 
+ static int sysfs_get_sb(struct file_system_type *fs_type,
 -- 
 1.6.3.1.54.g99dd.dirty
 
