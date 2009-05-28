@@ -1,36 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763768AbZE1SVH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762125AbZE1SV4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763768AbZE1SVH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 14:21:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757042AbZE1SU5
+	id S1762125AbZE1SV4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 14:21:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758678AbZE1SVq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 14:20:57 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:39813 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756538AbZE1SU4 (ORCPT
+	Thu, 28 May 2009 14:21:46 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:34589 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756562AbZE1SVp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 14:20:56 -0400
-Date: Thu, 28 May 2009 19:20:08 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Jamie Lokier <jamie@shareable.org>,
-       Catalin Marinas <catalin.marinas@arm.com>,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: Broken ARM atomic ops wrt memory barriers (was : [PATCH] Add
-	cmpxchg support for ARMv6+ systems)
-Message-ID: <20090528182008.GJ20736@n2100.arm.linux.org.uk>
-References: <20090422171703.19555.83629.stgit@pc1117.cambridge.arm.com> <20090423141248.22193.10543.stgit@pc1117.cambridge.arm.com> <20090524131636.GB3159@n2100.arm.linux.org.uk> <20090524145633.GA14754@Krystal> <20090525132027.GA946@shareable.org> <20090525151724.GA14321@Krystal> <20090525161941.GA3667@n2100.arm.linux.org.uk> <20090526145950.GB26713@n2100.arm.linux.org.uk> <20090526153654.GA17096@Krystal>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090526153654.GA17096@Krystal>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 28 May 2009 14:21:45 -0400
+Subject: Re: [PATCH 25/20] sysfs: Only support removing emtpy sysfs 
+	directories.
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Hannes Reinecke <hare@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
+       SCSI development list <linux-scsi@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Tejun Heo <tj@kernel.org>, Cornelia Huck <cornelia.huck@de.ibm.com>,
+       linux-fsdevel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>
+In-Reply-To: <Pine.LNX.4.44L0.0905281105310.3037-100000@iolanthe.rowland.org>
+References: <Pine.LNX.4.44L0.0905281105310.3037-100000@iolanthe.rowland.org>
+Content-Type: text/plain
+Date: Thu, 28 May 2009 18:21:44 +0000
+Message-Id: <1243534904.2830.13.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 26, 2009 at 11:36:54AM -0400, Mathieu Desnoyers wrote:
-> The rest looks good.
+On Thu, 2009-05-28 at 11:24 -0400, Alan Stern wrote:
+> On Wed, 27 May 2009, James Bottomley wrote:
+> 
+> > Right, and I think reap_ref can be seconded to count underlying device
+> > visibility.
+> 
+> Exactly.  It should count the number of underlying devices that have 
+> not yet been removed from visibility (this may include some which still 
+> have to become visible), plus one if we want to keep the target hanging 
+> around for a while with no visible children (while scanning it, for 
+> example).
+> 
+> >  However, the piece that's missing, is the fact that all of
+> > this has to be tied into the host state.  If the host is running, you
+> > can't remove the target from visibility even if all its children are
+> > invisible because it might get another visible child added.
+> 
+> Are you sure about that?  It's not obvious at all to me.
 
-Good, I've reverted the removal of "memory", and so I guess we're all
-happy with the patch now.
+Yes ... otherwise you have to elongate the DEL interval from a few ms to
+potentially anything.  That would allow locking a target in a dying
+state and prevent any new LUNs being added.
+
+> For example, suppose during scanning it turns out there are no LUNs at
+> a particular target address.  Why should the empty target be retained?  
+> You'd end up with unusable targets at all possible bus addresses.
+> 
+> Besides, if a target is removed from visibility and then another child
+> is added, the answer is simply to create a new target structure.  
+> There's already code in scsi_alloc_target() to do this.
+
+As I've said several times, this could be done, but we'd have to audit
+the code paths to make sure we allow for multiple same targets in the
+list.
+
+> >  once it goes
+> > into the cancel or del states, it can't acquire new children, so then
+> > it's safe to make a target with no visible children invisible.
+> 
+> If you grant my point above, targets don't need to be tied into the
+> host state.  They can be removed from visibility whenever the reap_ref
+> counter goes to 0.  This will happen naturally while the host is in 
+> the CANCEL state, thanks to scsi_forget_host().
+> 
+> There's another point to consider.  If you do accept my argument that 
+> empty targets can be removed from visibility regardless of the host's 
+> state, then this removal races with addition of a new child.  Since 
+> removal involves calling device_del(), it can't be protected by the 
+> host lock.  Instead we'd have to use a mutex to protect both target 
+> addition and target removal.
+
+No, this is state model 101 ... you alter the state inside the lock and
+call del outside of it.  Technically you're lying about the state for
+the few us it takes to run out of the lock and del the target, but
+there's a papal indulgence for that.
+
+> Since the host's scan_mutex already protects target addition, extending 
+> its scope to encompass target removal (and perhaps sdev removal too) 
+> seems natural.  Do you agree?
+
+James
+
+
