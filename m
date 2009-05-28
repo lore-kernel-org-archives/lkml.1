@@ -1,73 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759784AbZE1PtT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762202AbZE1PyS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759784AbZE1PtT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 11:49:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756082AbZE1PtM
+	id S1762202AbZE1PyS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 11:54:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754554AbZE1PyI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 11:49:12 -0400
-Received: from hawking.rebel.net.au ([203.20.69.83]:47225 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754945AbZE1PtL (ORCPT
+	Thu, 28 May 2009 11:54:08 -0400
+Received: from rv-out-0506.google.com ([209.85.198.232]:38556 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752488AbZE1PyH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 11:49:11 -0400
-Message-ID: <4A1EB272.3050902@davidnewall.com>
-Date: Fri, 29 May 2009 01:19:06 +0930
-From: David Newall <davidn@davidnewall.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	Thu, 28 May 2009 11:54:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Rt50XEF8ncX028t5y3BjVOCuHY6eeKyt41DqbAFXOzMJjWPAAwmEsqsG3i7l39i65m
+         AzUWh3G0IQQPay4J0yfhZ/uWwuo0em5Tvss6Z+5lEhAd7HpeXyIpyY5DnAl8dPUrxN+r
+         2s93jMCaXS9ELu7qJH8GL1vG16FI3B0kU3daY=
+Date: Thu, 28 May 2009 08:54:01 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Sitsofe Wheeler <sitsofe@yahoo.com>
+Cc: linux-kernel@vger.kernel.org,
+       Alan Jenkins <sourcejedi.lkml@googlemail.com>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, mingo@elte.hu
+Subject: Re: EeePC 900 trackpad often not detected at boot in 2.6.30-rc4
+Message-ID: <20090528155401.GB18589@dtor-d630.eng.vmware.com>
+References: <20090511072135.GA4682@sucs.org> <20090520024658.GD17649@dtor-d630.eng.vmware.com> <20090520054739.GA31552@sucs.org> <200905200025.20280.dmitry.torokhov@gmail.com> <20090526222049.GB27961@sucs.org>
 MIME-Version: 1.0
-To: Olaf Kirch <okir@suse.de>
-CC: linux-kernel@vger.kernel.org, mingo@redhat.com,
-       Andreas Gruenbacher <agruen@suse.de>
-Subject: Re: CFS Performance Issues
-References: <200905281502.22487.okir@suse.de>
-In-Reply-To: <200905281502.22487.okir@suse.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090526222049.GB27961@sucs.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Olaf Kirch wrote:
-> As you probably know, we've been chasing a variety of performance issues
-> ...
-> I see this:
->
-> ./slice 16
->     avg slice:  1.12 utime: 216263.187500
-> ...
-> Any insight you can offer here is greatly appreciated!
->   
+On Tue, May 26, 2009 at 11:20:49PM +0100, Sitsofe Wheeler wrote:
+> On Wed, May 20, 2009 at 12:25:19AM -0700, Dmitry Torokhov wrote:
+> >
+> > On Tuesday 19 May 2009 22:47:39 Sitsofe Wheeler wrote:
+> >
+> > > This one could be tough to test unless there is a way of forcing the
+> > > awkward scheduling...
+> > 
+> > Umm.... you could try sticking
+> > 
+> > 	if (timeout == 0)
+> > 		printk(KERN_INFO "libps2: BINGO!\n");
+> > 
+> > 
+> > into the body of "if (psmouse->cmdcnt ...)" statement that was modified
+> > by the patch I sent and see if it gets activated. If your mouse still
+> > works with this message in the logs then the patch is working.
+> 
+> I only just saw your reply. After about 50 boots the following occurred:
+> 
+> [    3.136500] drivers/input/serio/i8042.c: d4 -> i8042 (command) [1964]
+> [    3.137015] drivers/input/serio/i8042.c: f2 -> i8042 (parameter) [1964]
+> [    3.140289] ALSA device list:
+> [    3.140367]   #0: HDA Intel at 0xf7eb8000 irq 16
+> [    3.140591] TCP cubic registered
+> [    3.140666] NET: Registered protocol family 17
+> [    3.140846] Using IPI Shortcut mode
+> [    3.142878]   Magic number: 9:412:804
+> [    3.143418] rtc_cmos 00:03: setting system clock to 2009-05-26 21:47:18 UTC (1243374438)
+> [    3.149589] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [1977]
+> [    3.151638] drivers/input/serio/i8042.c: 00 <- i8042 (interrupt, 1, 12) [1979]
+> [    5.550332] libps2: BINGO!
+> [    5.550425] drivers/input/serio/i8042.c: d4 -> i8042 (command) [4378]
+> [    5.551011] drivers/input/serio/i8042.c: f6 -> i8042 (parameter) [4378]
+> [    5.563688] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [4391]
+> [    5.563736] drivers/input/serio/i8042.c: d4 -> i8042 (command) [4391]
+> [    5.564673] drivers/input/serio/i8042.c: f3 -> i8042 (parameter) [4391]
+> [    5.572824] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [4400]
+> [    5.572863] drivers/input/serio/i8042.c: d4 -> i8042 (command) [4400]
+> [    5.573811] drivers/input/serio/i8042.c: 0a -> i8042 (parameter) [4400]
+> [    5.580823] ACPI: Battery Slot [BAT0] (battery present)
+> 
 
-About that: avg slice is in nsec, not msec (the old, off-by-one-million
-bug), and utime, also an average, is in usec.
+Was the mouse in working condition after that? I can't tell from the
+dmesg since it is trimmed...
 
-The first result indicates 1.12 nsec per context switch,  193 context
-switches and 346% CPU utilisation.  You must have at least four CPU
-cores.  Here's your table, extended* per this interpretation:
+> Another 50 boots later something similar happened:
+> 
+> [    1.386099] drivers/input/serio/i8042.c: d4 -> i8042 (command) [292]
+> [    1.386888] drivers/input/serio/i8042.c: f2 -> i8042 (parameter) [292]
+> [    1.395793] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [301]
+> [    1.398353] drivers/input/serio/i8042.c: 00 <- i8042 (interrupt, 1, 12) [304]
+> [    1.398768] drivers/input/serio/i8042.c: d4 -> i8042 (command) [304]
+> [    1.399339] drivers/input/serio/i8042.c: f2 -> i8042 (parameter) [304]
+> [    1.410073] drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 1, 12) [316]
+> [    1.411730] drivers/input/serio/i8042.c: 00 <- i8042 (interrupt, 1, 12) [317]
+> [    3.061408] libps2: BINGO!
+> [    3.061496] drivers/input/serio/i8042.c: d4 -> i8042 (command) [1967]
+> [    3.062009] drivers/input/serio/i8042.c: f6 -> i8042 (parameter) [1967]
 
-./slice 16
-    avg slice:  1.12 utime: 216263.187500:  1.12 nsec/csw,  193 csw, 346 CPU%
-    avg slice:  0.25 utime: 125507.687500:  0.25 nsec/csw,  502 csw, 200 CPU%
-    avg slice:  0.31 utime: 125257.937500:  0.31 nsec/csw,  404 csw, 200 CPU%
-    avg slice:  0.31 utime: 125507.812500:  0.31 nsec/csw,  404 csw, 200 CPU%
-    avg slice:  0.12 utime: 124507.875000:  0.12 nsec/csw, 1037 csw, 199 CPU%
-    avg slice:  0.38 utime: 124757.687500:  0.38 nsec/csw,  328 csw, 199 CPU%
-    avg slice:  0.31 utime: 125508.000000:  0.31 nsec/csw,  404 csw, 200 CPU%
-    avg slice:  0.44 utime: 125757.750000:  0.44 nsec/csw,  285 csw, 201 CPU%
-    avg slice:  2.00 utime: 128258.000000:  2.00 nsec/csw,   64 csw, 205 CPU%
- ------ here I turned off new_fair_sleepers ----
-    avg slice: 10.25 utime: 137008.500000: 10.25 nsec/csw,   13 csw, 219 CPU%
-    avg slice:  9.31 utime: 139008.875000:  9.31 nsec/csw,   14 csw, 222 CPU%
-    avg slice: 10.50 utime: 141508.687500: 10.50 nsec/csw,   13 csw, 226 CPU%
-    avg slice:  9.44 utime: 139258.750000:  9.44 nsec/csw,   14 csw, 222 CPU%
-    avg slice: 10.31 utime: 140008.687500: 10.31 nsec/csw,   13 csw, 224 CPU%
-    avg slice:  9.19 utime: 139008.625000:  9.19 nsec/csw,   15 csw, 222 CPU%
-    avg slice: 10.00 utime: 137258.625000: 10.00 nsec/csw,   13 csw, 219 CPU%
-    avg slice: 10.06 utime: 135258.562500: 10.06 nsec/csw,   13 csw, 216 CPU%
-    avg slice:  9.62 utime: 138758.562500:  9.62 nsec/csw,   14 csw, 222 CPU%
+What happened with the mouse here?
 
-
-You don't seem to be getting good CPU utilisation.
-
-*awk '{printf "%s: %5.2f nsec/csw, %4d csw, %3d CPU%%\n", $0, $3, $5/$3/1000, $5*16/10000}'
-
+-- 
+Dmitry
