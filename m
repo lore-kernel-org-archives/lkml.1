@@ -1,173 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760068AbZE1Dkg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759447AbZE1DpJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760068AbZE1Dkg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 23:40:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756065AbZE1Dk2
+	id S1759447AbZE1DpJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 23:45:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755967AbZE1Do6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 23:40:28 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:39758 "EHLO smtps.tip.net.au"
+	Wed, 27 May 2009 23:44:58 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:53740 "EHLO bilbo.ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753946AbZE1Dk1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 23:40:27 -0400
-Date: Thu, 28 May 2009 13:40:18 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Arun R Bharadwaj <arun@linux.vnet.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>
-Subject: linux-next: manual merge of the timers tree with the sched tree
-Message-Id: <20090528134018.2aebb49f.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1754196AbZE1Do6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 May 2009 23:44:58 -0400
+Date: Thu, 28 May 2009 13:25:57 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Russell King <rmk+lkml@arm.linux.org.uk>,
+       devicetree-discuss <devicetree-discuss@ozlabs.org>,
+       linux-kernel@vger.kernel.org, Timur Tabi <timur@freescale.com>,
+       Scott Wood <scottwood@freescale.com>,
+       Janboe Ye <yuan-bo.ye@motorola.com>,
+       linux-arm-kernel@lists.arm.linux.org.uk
+Subject: Re: [RFC] [PATCH] Device Tree on ARM platform
+Message-ID: <20090528032557.GF1464@yookeroo.seuss>
+Mail-Followup-To: Mark Brown <broonie@opensource.wolfsonmicro.com>,
+	Russell King <rmk+lkml@arm.linux.org.uk>,
+	devicetree-discuss <devicetree-discuss@ozlabs.org>,
+	linux-kernel@vger.kernel.org, Timur Tabi <timur@freescale.com>,
+	Scott Wood <scottwood@freescale.com>,
+	Janboe Ye <yuan-bo.ye@motorola.com>,
+	linux-arm-kernel@lists.arm.linux.org.uk
+References: <1243408083.13460.14.camel@debian-nb> <fa686aa40905270727m31250984tf12249fc87179ce9@mail.gmail.com> <ed82fe3e0905270739k38018c87ka11f62c5977e45fb@mail.gmail.com> <20090527150527.GK6805@pengutronix.de> <87vdnm8sec.fsf@macbook.be.48ers.dk> <4A1D6901.2090508@freescale.com> <20090527175609.GB31861@flint.arm.linux.org.uk> <4A1D8FBA.6040802@freescale.com> <20090527192909.GA32398@flint.arm.linux.org.uk> <20090527205218.GA5591@sirena.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090527205218.GA5591@sirena.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Wed, May 27, 2009 at 09:52:23PM +0100, Mark Brown wrote:
+> On Wed, May 27, 2009 at 08:29:10PM +0100, Russell King wrote:
+> > On Wed, May 27, 2009 at 02:08:42PM -0500, Scott Wood wrote:
+> 
+> > > I'm not talking about platform specific code, I'm talking about code to  
+> > > retrieve information about a device from the device tree.  There would  
+> > > not be separate instances of this for "platforms X, Y and Z", just one  
+> > > of_platform binding in each driver.  It's no different than having a  
+> > > platform bus binding, except in the data structures used.
+> 
+> > I really don't see what OF buys us then, apart from additional dependencies
+> > that have to be correct for the kernel to work.  I can only see disadvantages
+> > if all OF is, is a way to pass some file to the kernel to (effectively) tell
+> > it which drivers to use.
+> 
+> The main selling points of the device tree AFAICT are that some
+> platforms have to use it it anyway due to the native OS and firmware for
+> the platform use it, the possibility of using the same device tree with
+> more than one OS (modulo unrepresentable holes) and the fact that some
+> people find it more convenient to use than straight data tables
+> (personally I find the two approaches to be much of a muchness there).
+> Perhaps I'm missing something, though?
 
-Today's linux-next merge of the timers tree got a conflict in
-kernel/sched.c between commit f711f6090a81cbd396b63de90f415d33f563af9b
-("sched: Nominate idle load balancer from a semi-idle package") from the
-sched tree and commit eea08f32adb3f97553d49a4f79a119833036000a ("timers:
-Logic to move non pinned timers") from the timers tree.
+The tree structure as opposed to plain data tables is not a trivial
+difference.  It makes it much, much more convenient to describe
+complex device layouts unambiguously than flat tables.  It's not
+perfect but it's about three shit loads better than flat data tables
+(powerpc embedded went through that stage too, on the way to device
+trees and it sucked mightily).
 
-Just overlapping additions.  I fixed it up (see below) and can carry the
-fix as necessary.
 -- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-diff --cc kernel/sched.c
-index 39a24b0,ff23723..0000000
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@@ -4296,121 -4244,11 +4296,126 @@@ static struct 
-  	.load_balancer = ATOMIC_INIT(-1),
-  };
-  
- +#if defined(CONFIG_SCHED_MC) || defined(CONFIG_SCHED_SMT)
- +/**
- + * lowest_flag_domain - Return lowest sched_domain containing flag.
- + * @cpu:	The cpu whose lowest level of sched domain is to
- + *		be returned.
- + * @flag:	The flag to check for the lowest sched_domain
- + *		for the given cpu.
- + *
- + * Returns the lowest sched_domain of a cpu which contains the given flag.
- + */
- +static inline struct sched_domain *lowest_flag_domain(int cpu, int flag)
- +{
- +	struct sched_domain *sd;
- +
- +	for_each_domain(cpu, sd)
- +		if (sd && (sd->flags & flag))
- +			break;
- +
- +	return sd;
- +}
- +
- +/**
- + * for_each_flag_domain - Iterates over sched_domains containing the flag.
- + * @cpu:	The cpu whose domains we're iterating over.
- + * @sd:		variable holding the value of the power_savings_sd
- + *		for cpu.
- + * @flag:	The flag to filter the sched_domains to be iterated.
- + *
- + * Iterates over all the scheduler domains for a given cpu that has the 'flag'
- + * set, starting from the lowest sched_domain to the highest.
- + */
- +#define for_each_flag_domain(cpu, sd, flag) \
- +	for (sd = lowest_flag_domain(cpu, flag); \
- +		(sd && (sd->flags & flag)); sd = sd->parent)
- +
- +/**
- + * is_semi_idle_group - Checks if the given sched_group is semi-idle.
- + * @ilb_group:	group to be checked for semi-idleness
- + *
- + * Returns:	1 if the group is semi-idle. 0 otherwise.
- + *
- + * We define a sched_group to be semi idle if it has atleast one idle-CPU
- + * and atleast one non-idle CPU. This helper function checks if the given
- + * sched_group is semi-idle or not.
- + */
- +static inline int is_semi_idle_group(struct sched_group *ilb_group)
- +{
- +	cpumask_and(nohz.ilb_grp_nohz_mask, nohz.cpu_mask,
- +					sched_group_cpus(ilb_group));
- +
- +	/*
- +	 * A sched_group is semi-idle when it has atleast one busy cpu
- +	 * and atleast one idle cpu.
- +	 */
- +	if (cpumask_empty(nohz.ilb_grp_nohz_mask))
- +		return 0;
- +
- +	if (cpumask_equal(nohz.ilb_grp_nohz_mask, sched_group_cpus(ilb_group)))
- +		return 0;
- +
- +	return 1;
- +}
- +/**
- + * find_new_ilb - Finds the optimum idle load balancer for nomination.
- + * @cpu:	The cpu which is nominating a new idle_load_balancer.
- + *
- + * Returns:	Returns the id of the idle load balancer if it exists,
- + *		Else, returns >= nr_cpu_ids.
- + *
- + * This algorithm picks the idle load balancer such that it belongs to a
- + * semi-idle powersavings sched_domain. The idea is to try and avoid
- + * completely idle packages/cores just for the purpose of idle load balancing
- + * when there are other idle cpu's which are better suited for that job.
- + */
- +static int find_new_ilb(int cpu)
- +{
- +	struct sched_domain *sd;
- +	struct sched_group *ilb_group;
- +
- +	/*
- +	 * Have idle load balancer selection from semi-idle packages only
- +	 * when power-aware load balancing is enabled
- +	 */
- +	if (!(sched_smt_power_savings || sched_mc_power_savings))
- +		goto out_done;
- +
- +	/*
- +	 * Optimize for the case when we have no idle CPUs or only one
- +	 * idle CPU. Don't walk the sched_domain hierarchy in such cases
- +	 */
- +	if (cpumask_weight(nohz.cpu_mask) < 2)
- +		goto out_done;
- +
- +	for_each_flag_domain(cpu, sd, SD_POWERSAVINGS_BALANCE) {
- +		ilb_group = sd->groups;
- +
- +		do {
- +			if (is_semi_idle_group(ilb_group))
- +				return cpumask_first(nohz.ilb_grp_nohz_mask);
- +
- +			ilb_group = ilb_group->next;
- +
- +		} while (ilb_group != sd->groups);
- +	}
- +
- +out_done:
- +	return cpumask_first(nohz.cpu_mask);
- +}
- +#else /*  (CONFIG_SCHED_MC || CONFIG_SCHED_SMT) */
- +static inline int find_new_ilb(int call_cpu)
- +{
- +	return cpumask_first(nohz.cpu_mask);
- +}
- +#endif
- +
-+ int get_nohz_load_balancer(void)
-+ {
-+ 	return atomic_read(&nohz.load_balancer);
-+ }
-+ 
-  /*
-   * This routine will try to nominate the ilb (idle load balancing)
-   * owner among the cpus whose ticks are stopped. ilb owner will do the idle
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
