@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753020AbZE1V7e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752795AbZE1V7X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753020AbZE1V7e (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 17:59:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752637AbZE1V7W
+	id S1752795AbZE1V7X (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 17:59:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751336AbZE1V7J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 17:59:22 -0400
-Received: from hera.kernel.org ([140.211.167.34]:43645 "EHLO hera.kernel.org"
+	Thu, 28 May 2009 17:59:09 -0400
+Received: from hera.kernel.org ([140.211.167.34]:43635 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752546AbZE1V7U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 17:59:20 -0400
-Date: Thu, 28 May 2009 21:58:41 GMT
+	id S1751515AbZE1V7H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 17:59:07 -0400
+Date: Thu, 28 May 2009 21:58:30 GMT
 From: tip-bot for Arnaldo Carvalho de Melo <acme@redhat.com>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, paulus@samba.org, acme@redhat.com,
@@ -18,457 +18,194 @@ Cc: linux-kernel@vger.kernel.org, paulus@samba.org, acme@redhat.com,
 Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com, paulus@samba.org,
        linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, efault@gmx.de,
        rostedt@goodmis.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20090528175541.GG4747@ghostprotocols.net>
-References: <20090528175541.GG4747@ghostprotocols.net>
-Subject: [tip:perfcounters/core] perf_counter tools: Convert builtin-top to use libperf symbol routines
-Message-ID: <tip-de04687f868bf98e4ef644af91ed85a3bc212ce8@git.kernel.org>
-Git-Commit-ID: de04687f868bf98e4ef644af91ed85a3bc212ce8
+In-Reply-To: <20090528175526.GF4747@ghostprotocols.net>
+References: <20090528175526.GF4747@ghostprotocols.net>
+Subject: [tip:perfcounters/core] perf_counter tools: Optionally pass a symbol filter to the dso load routines
+Message-ID: <tip-69ee69f63c82e63d9c6c6081d12673af4933c51e@git.kernel.org>
+Git-Commit-ID: 69ee69f63c82e63d9c6c6081d12673af4933c51e
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 28 May 2009 21:58:42 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 28 May 2009 21:58:30 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  de04687f868bf98e4ef644af91ed85a3bc212ce8
-Gitweb:     http://git.kernel.org/tip/de04687f868bf98e4ef644af91ed85a3bc212ce8
+Commit-ID:  69ee69f63c82e63d9c6c6081d12673af4933c51e
+Gitweb:     http://git.kernel.org/tip/69ee69f63c82e63d9c6c6081d12673af4933c51e
 Author:     Arnaldo Carvalho de Melo <acme@redhat.com>
-AuthorDate: Thu, 28 May 2009 14:55:41 -0300
+AuthorDate: Thu, 28 May 2009 14:55:26 -0300
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 28 May 2009 23:25:45 +0200
+CommitDate: Thu, 28 May 2009 23:25:44 +0200
 
-perf_counter tools: Convert builtin-top to use libperf symbol routines
+perf_counter tools: Optionally pass a symbol filter to the dso load routines
 
-Now both perf top and report use the same routines.
+Will be used by perf top.
 
 Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
 Cc: Paul Mackerras <paulus@samba.org>
 Cc: Mike Galbraith <efault@gmx.de>
 Cc: Steven Rostedt <rostedt@goodmis.org>
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <20090528175541.GG4747@ghostprotocols.net>
+LKML-Reference: <20090528175526.GF4747@ghostprotocols.net>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- Documentation/perf_counter/builtin-top.c |  303 ++++++++++++------------------
- 1 files changed, 117 insertions(+), 186 deletions(-)
+ Documentation/perf_counter/builtin-report.c |    4 +-
+ Documentation/perf_counter/util/symbol.c    |   34 ++++++++++++++++----------
+ Documentation/perf_counter/util/symbol.h    |    7 ++++-
+ 3 files changed, 28 insertions(+), 17 deletions(-)
 
-diff --git a/Documentation/perf_counter/builtin-top.c b/Documentation/perf_counter/builtin-top.c
-index a890872..52ba9f4 100644
---- a/Documentation/perf_counter/builtin-top.c
-+++ b/Documentation/perf_counter/builtin-top.c
-@@ -44,8 +44,9 @@
+diff --git a/Documentation/perf_counter/builtin-report.c b/Documentation/perf_counter/builtin-report.c
+index 4e9f2bc..412d524 100644
+--- a/Documentation/perf_counter/builtin-report.c
++++ b/Documentation/perf_counter/builtin-report.c
+@@ -87,7 +87,7 @@ static struct dso *dsos__findnew(const char *name)
+ 		if (!dso)
+ 			goto out_delete_dso;
  
- #include "perf.h"
- #include "builtin.h"
-+#include "util/symbol.h"
- #include "util/util.h"
--#include "util/util.h"
-+#include "util/rbtree.h"
- #include "util/parse-options.h"
- #include "util/parse-events.h"
+-		nr = dso__load(dso);
++		nr = dso__load(dso, NULL);
+ 		if (nr < 0) {
+ 			fprintf(stderr, "Failed to open: %s\n", name);
+ 			goto out_delete_dso;
+@@ -124,7 +124,7 @@ static int load_kernel(void)
+ 	if (!kernel_dso)
+ 		return -1;
  
-@@ -125,19 +126,21 @@ static uint64_t			min_ip;
- static uint64_t			max_ip = -1ll;
+-	err = dso__load_kernel(kernel_dso, vmlinux);
++	err = dso__load_kernel(kernel_dso, vmlinux, NULL);
+ 	if (err) {
+ 		dso__delete(kernel_dso);
+ 		kernel_dso = NULL;
+diff --git a/Documentation/perf_counter/util/symbol.c b/Documentation/perf_counter/util/symbol.c
+index 504ac31..4728121 100644
+--- a/Documentation/perf_counter/util/symbol.c
++++ b/Documentation/perf_counter/util/symbol.c
+@@ -155,7 +155,7 @@ static int hex2long(char *ptr, unsigned long *long_val)
+ 	return p - ptr;
+ }
  
- struct sym_entry {
--	unsigned long long	addr;
--	char			*sym;
-+	struct rb_node		rb_node;
-+	struct list_head	node;
- 	unsigned long		count[MAX_COUNTERS];
- 	int			skip;
+-static int dso__load_kallsyms(struct dso *self)
++static int dso__load_kallsyms(struct dso *self, symbol_filter_t filter)
+ {
+ 	struct rb_node *nd, *prevnd;
+ 	char *line = NULL;
+@@ -201,7 +201,10 @@ static int dso__load_kallsyms(struct dso *self)
+ 		if (sym == NULL)
+ 			goto out_delete_line;
+ 
+-		dso__insert_symbol(self, sym);
++		if (filter && filter(self, sym))
++			symbol__delete(sym, self->sym_priv_size);
++		else
++			dso__insert_symbol(self, sym);
+ 	}
+ 
+ 	/*
+@@ -286,7 +289,8 @@ static Elf_Scn *elf_section_by_name(Elf *elf, GElf_Ehdr *ep,
+ 	return sec;
+ }
+ 
+-static int dso__load_sym(struct dso *self, int fd, const char *name)
++static int dso__load_sym(struct dso *self, int fd, const char *name,
++			 symbol_filter_t filter)
+ {
+ 	Elf_Data *symstrs;
+ 	uint32_t nr_syms;
+@@ -352,9 +356,12 @@ static int dso__load_sym(struct dso *self, int fd, const char *name)
+ 		if (!f)
+ 			goto out_elf_end;
+ 
+-		dso__insert_symbol(self, f);
+-
+-		nr++;
++		if (filter && filter(self, f))
++			symbol__delete(f, self->sym_priv_size);
++		else {
++			dso__insert_symbol(self, f);
++			nr++;
++		}
+ 	}
+ 
+ 	err = nr;
+@@ -364,7 +371,7 @@ out_close:
+ 	return err;
+ }
+ 
+-int dso__load(struct dso *self)
++int dso__load(struct dso *self, symbol_filter_t filter)
+ {
+ 	int size = strlen(self->name) + sizeof("/usr/lib/debug%s.debug");
+ 	char *name = malloc(size);
+@@ -396,7 +403,7 @@ more:
+ 		fd = open(name, O_RDONLY);
+ 	} while (fd < 0);
+ 
+-	ret = dso__load_sym(self, fd, name);
++	ret = dso__load_sym(self, fd, name, filter);
+ 	close(fd);
+ 
+ 	/*
+@@ -410,28 +417,29 @@ out:
+ 	return ret;
+ }
+ 
+-static int dso__load_vmlinux(struct dso *self, const char *vmlinux)
++static int dso__load_vmlinux(struct dso *self, const char *vmlinux,
++			     symbol_filter_t filter)
+ {
+ 	int err, fd = open(vmlinux, O_RDONLY);
+ 
+ 	if (fd < 0)
+ 		return -1;
+ 
+-	err = dso__load_sym(self, fd, vmlinux);
++	err = dso__load_sym(self, fd, vmlinux, filter);
+ 	close(fd);
+ 
+ 	return err;
+ }
+ 
+-int dso__load_kernel(struct dso *self, const char *vmlinux)
++int dso__load_kernel(struct dso *self, const char *vmlinux, symbol_filter_t filter)
+ {
+ 	int err = -1;
+ 
+ 	if (vmlinux)
+-		err = dso__load_vmlinux(self, vmlinux);
++		err = dso__load_vmlinux(self, vmlinux, filter);
+ 
+ 	if (err)
+-		err = dso__load_kallsyms(self);
++		err = dso__load_kallsyms(self, filter);
+ 
+ 	return err;
+ }
+diff --git a/Documentation/perf_counter/util/symbol.h b/Documentation/perf_counter/util/symbol.h
+index db2fdf9..b0299bc 100644
+--- a/Documentation/perf_counter/util/symbol.h
++++ b/Documentation/perf_counter/util/symbol.h
+@@ -19,6 +19,8 @@ struct dso {
+ 	char		 name[0];
  };
  
--#define MAX_SYMS		100000
--
--static int sym_table_count;
--
- struct sym_entry		*sym_filter_entry;
- 
--static struct sym_entry		sym_table[MAX_SYMS];
-+struct dso *kernel_dso;
++typedef int (*symbol_filter_t)(struct dso *self, struct symbol *sym);
 +
-+/*
-+ * Symbols will be added here in record_ip and will get out
-+ * after decayed.
-+ */
-+static LIST_HEAD(active_symbols);
+ struct dso *dso__new(const char *name, unsigned int sym_priv_size);
+ void dso__delete(struct dso *self);
  
- /*
-  * Ordering weight: count-1 * count-2 * ... / count-n
-@@ -157,42 +160,60 @@ static double sym_weight(const struct sym_entry *sym)
- 	return weight;
- }
+@@ -29,8 +31,9 @@ static inline void *dso__sym_priv(struct dso *self, struct symbol *sym)
  
--static int compare(const void *__sym1, const void *__sym2)
--{
--	const struct sym_entry *sym1 = __sym1, *sym2 = __sym2;
--
--	return sym_weight(sym1) < sym_weight(sym2);
--}
--
- static long			events;
- static long			userspace_events;
- static const char		CONSOLE_CLEAR[] = "[H[2J";
+ struct symbol *dso__find_symbol(struct dso *self, uint64_t ip);
  
--static struct sym_entry		tmp[MAX_SYMS];
-+static void list_insert_active_sym(struct sym_entry *syme)
-+{
-+	list_add(&syme->node, &active_symbols);
-+}
-+
-+static void rb_insert_active_sym(struct rb_root *tree, struct sym_entry *se)
-+{
-+	struct rb_node **p = &tree->rb_node;
-+	struct rb_node *parent = NULL;
-+	struct sym_entry *iter;
-+
-+	while (*p != NULL) {
-+		parent = *p;
-+		iter = rb_entry(parent, struct sym_entry, rb_node);
-+
-+		if (sym_weight(se) > sym_weight(iter))
-+			p = &(*p)->rb_left;
-+		else
-+			p = &(*p)->rb_right;
-+	}
-+
-+	rb_link_node(&se->rb_node, parent, p);
-+	rb_insert_color(&se->rb_node, tree);
-+}
+-int dso__load_kernel(struct dso *self, const char *vmlinux);
+-int dso__load(struct dso *self);
++int dso__load_kernel(struct dso *self, const char *vmlinux,
++		     symbol_filter_t filter);
++int dso__load(struct dso *self, symbol_filter_t filter);
  
- static void print_sym_table(void)
- {
--	int i, j, active_count, printed;
-+	int printed, j;
- 	int counter;
- 	float events_per_sec = events/delay_secs;
- 	float kevents_per_sec = (events-userspace_events)/delay_secs;
- 	float sum_kevents = 0.0;
-+	struct sym_entry *syme, *n;
-+	struct rb_root tmp = RB_ROOT;
-+	struct rb_node *nd;
+ size_t dso__fprintf(struct dso *self, FILE *fp);
  
- 	events = userspace_events = 0;
- 
--	/* Iterate over symbol table and copy/tally/decay active symbols. */
--	for (i = 0, active_count = 0; i < sym_table_count; i++) {
--		if (sym_table[i].count[0]) {
--			tmp[active_count++] = sym_table[i];
--			sum_kevents += sym_table[i].count[0];
-+	/* Sort the active symbols */
-+	list_for_each_entry_safe(syme, n, &active_symbols, node) {
-+		if (syme->count[0] != 0) {
-+			rb_insert_active_sym(&tmp, syme);
-+			sum_kevents += syme->count[0];
- 
- 			for (j = 0; j < nr_counters; j++)
--				sym_table[i].count[j] = zero ? 0 : sym_table[i].count[j] * 7 / 8;
--		}
-+				syme->count[j] = zero ? 0 : syme->count[j] * 7 / 8;
-+		} else
-+			list_del_init(&syme->node);
- 	}
- 
--	qsort(tmp, active_count + 1, sizeof(tmp[0]), compare);
--
- 	write(1, CONSOLE_CLEAR, strlen(CONSOLE_CLEAR));
- 
- 	printf(
-@@ -238,23 +259,25 @@ static void print_sym_table(void)
- 	       	       "  ______     ______   _____   ________________   _______________\n\n"
- 	);
- 
--	for (i = 0, printed = 0; i < active_count; i++) {
-+	for (nd = rb_first(&tmp); nd; nd = rb_next(nd)) {
-+		struct sym_entry *syme = rb_entry(nd, struct sym_entry, rb_node);
-+		struct symbol *sym = (struct symbol *)(syme + 1);
- 		float pcnt;
- 
--		if (++printed > 18 || tmp[i].count[0] < count_filter)
-+		if (++printed > 18 || syme->count[0] < count_filter)
- 			break;
- 
--		pcnt = 100.0 - (100.0*((sum_kevents-tmp[i].count[0])/sum_kevents));
-+		pcnt = 100.0 - (100.0 * ((sum_kevents - syme->count[0]) /
-+					 sum_kevents));
- 
- 		if (nr_counters == 1)
- 			printf("%19.2f - %4.1f%% - %016llx : %s\n",
--				sym_weight(tmp + i),
--				pcnt, tmp[i].addr, tmp[i].sym);
-+				sym_weight(syme),
-+				pcnt, sym->start, sym->name);
- 		else
- 			printf("%8.1f %10ld - %4.1f%% - %016llx : %s\n",
--				sym_weight(tmp + i),
--				tmp[i].count[0],
--				pcnt, tmp[i].addr, tmp[i].sym);
-+				sym_weight(syme), syme->count[0],
-+				pcnt, sym->start, sym->name);
- 	}
- 
- 	{
-@@ -277,146 +300,85 @@ static void *display_thread(void *arg)
- 	return NULL;
- }
- 
--static int read_symbol(FILE *in, struct sym_entry *s)
-+static int symbol_filter(struct dso *self, struct symbol *sym)
- {
--	static int filter_match = 0;
--	char *sym, stype;
--	char str[500];
--	int rc, pos;
--
--	rc = fscanf(in, "%llx %c %499s", &s->addr, &stype, str);
--	if (rc == EOF)
--		return -1;
--
--	assert(rc == 3);
--
--	/* skip until end of line: */
--	pos = strlen(str);
--	do {
--		rc = fgetc(in);
--		if (rc == '\n' || rc == EOF || pos >= 499)
--			break;
--		str[pos] = rc;
--		pos++;
--	} while (1);
--	str[pos] = 0;
--
--	sym = str;
--
--	/* Filter out known duplicates and non-text symbols. */
--	if (!strcmp(sym, "_text"))
--		return 1;
--	if (!min_ip && !strcmp(sym, "_stext"))
--		return 1;
--	if (!strcmp(sym, "_etext") || !strcmp(sym, "_sinittext"))
--		return 1;
--	if (stype != 'T' && stype != 't')
--		return 1;
--	if (!strncmp("init_module", sym, 11) || !strncmp("cleanup_module", sym, 14))
--		return 1;
--	if (strstr(sym, "_text_start") || strstr(sym, "_text_end"))
-+	static int filter_match;
-+	struct sym_entry *syme;
-+	const char *name = sym->name;
-+
-+	if (!strcmp(name, "_text") ||
-+	    !strcmp(name, "_etext") ||
-+	    !strcmp(name, "_sinittext") ||
-+	    !strncmp("init_module", name, 11) ||
-+	    !strncmp("cleanup_module", name, 14) ||
-+	    strstr(name, "_text_start") ||
-+	    strstr(name, "_text_end"))
- 		return 1;
- 
--	s->sym = malloc(strlen(str)+1);
--	assert(s->sym);
--
--	strcpy((char *)s->sym, str);
--	s->skip = 0;
--
-+	syme = dso__sym_priv(self, sym);
- 	/* Tag events to be skipped. */
--	if (!strcmp("default_idle", s->sym) || !strcmp("cpu_idle", s->sym))
--		s->skip = 1;
--	else if (!strcmp("enter_idle", s->sym) || !strcmp("exit_idle", s->sym))
--		s->skip = 1;
--	else if (!strcmp("mwait_idle", s->sym))
--		s->skip = 1;
-+	if (!strcmp("default_idle", name) ||
-+	    !strcmp("cpu_idle", name) ||
-+	    !strcmp("enter_idle", name) ||
-+	    !strcmp("exit_idle", name) ||
-+	    !strcmp("mwait_idle", name))
-+		syme->skip = 1;
- 
- 	if (filter_match == 1) {
--		filter_end = s->addr;
-+		filter_end = sym->start;
- 		filter_match = -1;
- 		if (filter_end - filter_start > 10000) {
--			printf("hm, too large filter symbol <%s> - skipping.\n",
-+			fprintf(stderr,
-+				"hm, too large filter symbol <%s> - skipping.\n",
- 				sym_filter);
--			printf("symbol filter start: %016lx\n", filter_start);
--			printf("                end: %016lx\n", filter_end);
-+			fprintf(stderr, "symbol filter start: %016lx\n",
-+				filter_start);
-+			fprintf(stderr, "                end: %016lx\n",
-+				filter_end);
- 			filter_end = filter_start = 0;
- 			sym_filter = NULL;
- 			sleep(1);
- 		}
- 	}
--	if (filter_match == 0 && sym_filter && !strcmp(s->sym, sym_filter)) {
-+
-+	if (filter_match == 0 && sym_filter && !strcmp(name, sym_filter)) {
- 		filter_match = 1;
--		filter_start = s->addr;
-+		filter_start = sym->start;
- 	}
- 
-+
- 	return 0;
- }
- 
--static int compare_addr(const void *__sym1, const void *__sym2)
-+static int parse_symbols(void)
- {
--	const struct sym_entry *sym1 = __sym1, *sym2 = __sym2;
-+	struct rb_node *node;
-+	struct symbol  *sym;
- 
--	return sym1->addr > sym2->addr;
--}
--
--static void sort_symbol_table(void)
--{
--	int i, dups;
--
--	do {
--		qsort(sym_table, sym_table_count, sizeof(sym_table[0]), compare_addr);
--		for (i = 0, dups = 0; i < sym_table_count; i++) {
--			if (sym_table[i].addr == sym_table[i+1].addr) {
--				sym_table[i+1].addr = -1ll;
--				dups++;
--			}
--		}
--		sym_table_count -= dups;
--	} while(dups);
--}
--
--static void parse_symbols(void)
--{
--	struct sym_entry *last;
-+	kernel_dso = dso__new("[kernel]", sizeof(struct sym_entry));
-+	if (kernel_dso == NULL)
-+		return -1;
- 
--	FILE *kallsyms = fopen("/proc/kallsyms", "r");
-+	if (dso__load_kernel(kernel_dso, NULL, symbol_filter) != 0)
-+		goto out_delete_dso;
- 
--	if (!kallsyms) {
--		printf("Could not open /proc/kallsyms - no CONFIG_KALLSYMS_ALL=y?\n");
--		exit(-1);
--	}
-+	node = rb_first(&kernel_dso->syms);
-+	sym = rb_entry(node, struct symbol, rb_node);
-+	min_ip = sym->start;
- 
--	while (!feof(kallsyms)) {
--		if (read_symbol(kallsyms, &sym_table[sym_table_count]) == 0) {
--			sym_table_count++;
--			assert(sym_table_count <= MAX_SYMS);
--		}
--	}
-+	node = rb_last(&kernel_dso->syms);
-+	sym = rb_entry(node, struct symbol, rb_node);
-+	max_ip = sym->start;
- 
--	sort_symbol_table();
--	min_ip = sym_table[0].addr;
--	max_ip = sym_table[sym_table_count-1].addr;
--	last = sym_table + sym_table_count++;
-+	if (dump_symtab)
-+		dso__fprintf(kernel_dso, stdout);
- 
--	last->addr = -1ll;
--	last->sym = "<end>";
--
--	if (filter_end) {
--		int count;
--		for (count=0; count < sym_table_count; count ++) {
--			if (!strcmp(sym_table[count].sym, sym_filter)) {
--				sym_filter_entry = &sym_table[count];
--				break;
--			}
--		}
--	}
--	if (dump_symtab) {
--		int i;
-+	return 0;
- 
--		for (i = 0; i < sym_table_count; i++)
--			fprintf(stderr, "%llx %s\n",
--				sym_table[i].addr, sym_table[i].sym);
--	}
-+out_delete_dso:
-+	dso__delete(kernel_dso);
-+	kernel_dso = NULL;
-+	return -1;
- }
- 
- #define TRACE_COUNT     3
-@@ -426,51 +388,20 @@ static void parse_symbols(void)
-  */
- static void record_ip(uint64_t ip, int counter)
- {
--	int left_idx, middle_idx, right_idx, idx;
--	unsigned long left, middle, right;
--
--	left_idx = 0;
--	right_idx = sym_table_count-1;
--	assert(ip <= max_ip && ip >= min_ip);
--
--	while (left_idx + 1 < right_idx) {
--		middle_idx = (left_idx + right_idx) / 2;
-+	struct symbol *sym = dso__find_symbol(kernel_dso, ip);
- 
--		left   = sym_table[  left_idx].addr;
--		middle = sym_table[middle_idx].addr;
--		right  = sym_table[ right_idx].addr;
-+	if (sym != NULL) {
-+		struct sym_entry *syme = dso__sym_priv(kernel_dso, sym);
- 
--		if (!(left <= middle && middle <= right)) {
--			printf("%016lx...\n%016lx...\n%016lx\n", left, middle, right);
--			printf("%d %d %d\n", left_idx, middle_idx, right_idx);
-+		if (!syme->skip) {
-+			syme->count[counter]++;
-+			if (list_empty(&syme->node) || !syme->node.next)
-+				list_insert_active_sym(syme);
-+			return;
- 		}
--		assert(left <= middle && middle <= right);
--		if (!(left <= ip && ip <= right)) {
--			printf(" left: %016lx\n", left);
--			printf("   ip: %016lx\n", (unsigned long)ip);
--			printf("right: %016lx\n", right);
--		}
--		assert(left <= ip && ip <= right);
--		/*
--		 * [ left .... target .... middle .... right ]
--		 *   => right := middle
--		 */
--		if (ip < middle) {
--			right_idx = middle_idx;
--			continue;
--		}
--		/*
--		 * [ left .... middle ... target ... right ]
--		 *   => left := middle
--		 */
--		left_idx = middle_idx;
- 	}
- 
--	idx = left_idx;
--
--	if (!sym_table[idx].skip)
--		sym_table[idx].count[counter]++;
--	else events--;
-+	events--;
- }
- 
- static void process_event(uint64_t ip, int counter)
