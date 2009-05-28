@@ -1,82 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754950AbZE1IgM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762019AbZE1IhY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754950AbZE1IgM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 04:36:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756569AbZE1IgA
+	id S1762019AbZE1IhY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 04:37:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754377AbZE1IhJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 04:36:00 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45728 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754058AbZE1If7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 04:35:59 -0400
-Date: Thu, 28 May 2009 10:35:48 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Paul Mackerras <paulus@samba.org>
-Cc: mingo@redhat.com, hpa@zytor.com, acme@redhat.com,
-       linux-kernel@vger.kernel.org, jkacur@redhat.com, a.p.zijlstra@chello.nl,
-       efault@gmx.de, rostedt@goodmis.org, mtosatti@redhat.com,
-       tglx@linutronix.de, cjashfor@linux.vnet.ibm.com,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:perfcounters/core] perf_counter tools: Introduce stricter
-	C code checking
-Message-ID: <20090528083548.GB7530@elte.hu>
-References: <20090526222155.GJ4424@ghostprotocols.net> <tip-16f762a2ac5ecf8a11f6f0332e46cc3459220da5@git.kernel.org> <18974.2897.822557.905261@drongo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <18974.2897.822557.905261@drongo.ozlabs.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 28 May 2009 04:37:09 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50500 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753946AbZE1IhI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 04:37:08 -0400
+Date: Thu, 28 May 2009 01:36:29 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Pierre Ossman <pierre@ossman.eu>
+Cc: dsaxena@plexity.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] MMC: Add 400ms to CAFE SD controller resume path
+Message-Id: <20090528013629.0173522b.akpm@linux-foundation.org>
+In-Reply-To: <20090522135150.7e0716d6@mjolnir.ossman.eu>
+References: <20090513200556.GA7882@plexity.net>
+	<20090522135150.7e0716d6@mjolnir.ossman.eu>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 22 May 2009 13:51:50 +0200 Pierre Ossman <pierre@ossman.eu> wrote:
 
-* Paul Mackerras <paulus@samba.org> wrote:
-
-> tip-bot for Ingo Molnar writes:
+> On Wed, 13 May 2009 20:05:56 +0000
+> Deepak Saxena <dsaxena@plexity.net> wrote:
 > 
-> > perf_counter tools: Introduce stricter C code checking
 > > 
-> > Tighten up our C code requirements:
+> > The CAFE SD controller takes a long time to completely resume
+> > and w/o this patch, we do not redetect an existing card but
+> > instead detect it as a new one. Even with MMC_UNSAFE_RESUME
+> > enabled, this leads to the partition table on the device being
+> > wiped out.
+> >     
+> > See http://dev.laptop.org/ticket/6532 for gory details.
+
+hm, this sounds like a fairly serious problem, but the patch is nearly
+a year old.
+
+> > Signed-off-by: Deepak Saxena <dsaxena@laptop.org>
 > > 
-> >  - disallow warnings
 > 
-> This causes failures when I compile it as a 64-bit executable on
-> powerpc:
+> Reading through that report, I don't believe you properly worked around
+> the bug. You only avoid bug 1339, but that's only mildly related.
 > 
->     CC builtin-record.o
-> builtin-record.c: In function 'pid_synthesize_mmap_events':
-> builtin-record.c:241: warning: format '%llx' expects type 'long long unsigned int *', but argument 3 has type '__u64 *'
-> builtin-record.c:241: warning: format '%llx' expects type 'long long unsigned int *', but argument 4 has type '__u64 *'
-> builtin-record.c:241: warning: format '%llx' expects type 'long long unsigned int *', but argument 9 has type '__u64 *'
-> 
-> This is because u64 is an unsigned long in userspace for a 64-bit 
-> build, not unsigned long long.  I'm not sure how best to solve 
-> this problem.
+> What this workaround does is to make sure that MMC_UNSAFE_RESUME
+> actually works. But if you change cards during suspend, the VFS bug
+> should reappear and you'll corrupt the partition table.
 
-We could perhaps use __u64 consistently? (can we?)
+What do you think the VFS did wrong here?
 
-> If I compile it as a 32-bit executable, it doesn't generate warnings,
-> but when I try to run "perf top" (this is on a 64-bit kernel, of
-> course, since 32-bit powerpc kernels don't currently support
-> perf_counters), I get:
-> 
-> # perf top
->  left: 0000000000000000
->    ip: 00000000000891a4
-> right: 00000000ffffffff
-> KernelTop refresh period: 2 seconds
-> perf: builtin-top.c:453: record_ip: Assertion `left <= ip && ip <= right' failed.
-> Aborted
+> And as for 1339, has there been any more work done on why this problem
+> doesn't appear in OFW? I'd be a lot happier if we could make things
+> work without artificial delays.
 
-mind trying a 'git bisect run' session - which commit broke things 
-for you? Or is this related to the type problems?
 
-	Ingo
