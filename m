@@ -1,78 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763579AbZE1Svx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763274AbZE1S5Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763579AbZE1Svx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 14:51:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758715AbZE1Svq
+	id S1763274AbZE1S5Y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 14:57:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754658AbZE1S5R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 14:51:46 -0400
-Received: from 69-30-77-85.dq1sn.easystreet.com ([69.30.77.85]:48668 "EHLO
-	kingsolver.anholt.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758592AbZE1Svp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 14:51:45 -0400
-Subject: [GIT PULL] drm-intel fixes for 2.6.30-rc7
-From: Eric Anholt <eric@anholt.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: lkml <linux-kernel@vger.kernel.org>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-JbgR4b+5K9HW0rKLZlFA"
-Date: Thu, 28 May 2009 11:50:13 -0700
-Message-Id: <1243536613.4976.2.camel@gaiman.anholt.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1.1 
+	Thu, 28 May 2009 14:57:17 -0400
+Received: from r00tworld.com ([212.85.137.21]:53149 "EHLO r00tworld.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753195AbZE1S5Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 14:57:16 -0400
+From: pageexec@freemail.hu
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>
+Date: Thu, 28 May 2009 20:56:55 +0200
+MIME-Version: 1.0
+Subject: Re: [patch 0/5] Support for sanitization flag in low-level page allocator
+Reply-to: pageexec@freemail.hu
+CC: Rik van Riel <riel@redhat.com>, "Larry H." <research@subreption.com>,
+       linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>,
+       linux-mm@kvack.org, Ingo Molnar <mingo@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Message-ID: <4A1EDE77.32340.EF6193F@pageexec.freemail.hu>
+X-mailer: Pegasus Mail for Windows (4.50 PB1)
+Content-type: text/plain; charset=US-ASCII
+Content-transfer-encoding: 7BIT
+Content-description: Mail message body
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.12 (r00tworld.com [212.85.137.21]); Thu, 28 May 2009 20:56:32 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 28 May 2009 at 20:48, Alan Cox , Ingo Molnar wrote:
 
---=-JbgR4b+5K9HW0rKLZlFA
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+> last year while developing/debugging something else i also ran some kernel
+> compilation tests and managed to dig out this one for you ('all' refers to
+> all of PaX):
+> 
+> ------------------------------------------------------------------------------------------
+> make -j4 2.6.24-rc7-i386-pax compiling 2.6.24-rc7-i386-pax (all with SANITIZE, no PARAVIRT)
 
-The following changes since commit cd86a536c81e9300d984327517548ca0652eebf9=
-:
-  Linus Torvalds (1):
-        Merge branch 'x86-fixes-for-linus' of git://git.kernel.org/.../tip/=
-linux-2.6-tip
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/anholt/drm-intel drm-intel-=
-next
-
-Volume of fixes is down, but importance is way up.  Fixes 3D rendering
-correctness, stability, and performance on 8xx machines.  Fixes 2D and
-3D rendering and stability on 865.  Fixes rendering and stability on all
-hardware in the presence of swapping.
-
-Eric Anholt (2):
-      drm/i915: Fix tiling pitch handling on 8xx.
-      drm/i915: Apply a big hammer to 865 GEM object CPU cache flushing.
-
-Kristian H=C3=B8gsberg (1):
-      i915: Set object to gtt domain when faulting it back in
-
- drivers/gpu/drm/i915/i915_gem.c        |   23 +++++++++++++++++++++--
- drivers/gpu/drm/i915/i915_gem_tiling.c |   14 +++++++++++---
- drivers/gpu/drm/i915/i915_reg.h        |    3 ++-
- 3 files changed, 34 insertions(+), 6 deletions(-)
-
---=20
-Eric Anholt
-eric@anholt.net                         eric.anholt@intel.com
-
-
-
---=-JbgR4b+5K9HW0rKLZlFA
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkoe3OIACgkQHUdvYGzw6vclWACfY6P++snSk9MqaEP0fwoAc/yx
-KokAnjNBsPYhyi07aLyDar4tsgclPp6J
-=7dUx
------END PGP SIGNATURE-----
-
---=-JbgR4b+5K9HW0rKLZlFA--
+addendum: i just checked and that version didn't omit GPF_ZERO handling therefore
+the current version should have better performance, at least on this kind of workload
+where lots of anonymous userland pages are instantiated.
 
