@@ -1,94 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762862AbZE1I6h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756972AbZE1I6y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762862AbZE1I6h (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 04:58:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756972AbZE1I6a
+	id S1756972AbZE1I6y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 04:58:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759222AbZE1I6l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 04:58:30 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60874 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756340AbZE1I62 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 04:58:28 -0400
-Date: Thu, 28 May 2009 10:58:10 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       tony.luck@intel.com, linux-ia64@vger.kernel.org, arnd@arndb.de,
-       joerg.roedel@amd.com
-Subject: Re: [PATCH -tip v2 0/5] add common functions for struct dma_map_ops
-Message-ID: <20090528085810.GA24335@elte.hu>
-References: <1242359705-2117-1-git-send-email-fujita.tomonori@lab.ntt.co.jp> <20090528002020.8b68f085.akpm@linux-foundation.org> <20090528163853Q.fujita.tomonori@lab.ntt.co.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090528163853Q.fujita.tomonori@lab.ntt.co.jp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 28 May 2009 04:58:41 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52019 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1762880AbZE1I6j (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 04:58:39 -0400
+Date: Thu, 28 May 2009 01:58:16 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Thomas Lange <lange@jc-embedded.com>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       "Darrick J. Wong" <djwong@us.ibm.com>
+Subject: Re: aic94xx driver very slow / low writing speed on sata-discs
+Message-Id: <20090528015816.8c561ece.akpm@linux-foundation.org>
+In-Reply-To: <4A082DA1.9090805@jc-embedded.com>
+References: <4A082DA1.9090805@jc-embedded.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 11 May 2009 15:52:33 +0200 Thomas Lange <lange@jc-embedded.com> wrote:
 
-* FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+> Hi all,
+> 
+> this is my second post to LKML regarding the issue with aic94xx driver.
+> In the meantime I have some additional information to share:
+> We did some more testing and found out that partitions on the discs 
+> attached to the controller sometimes are not recognized during boot.
+> That leads to the problem that they cannot be mounted at all.
+> I would be happy to get some hints on the issue
+> as well as provide some of my spare time and our company's hardware to 
+> do some testing.
+> 
+> Here is the description of my first observation of the problem:
+> We have a couple of supermicro servers in our company that have adaptec
+> aic94xx onboard, and there is the following issue that
+> the aic94xx writing speed is very slow for sata disks connected.
+> writing speed 5-6MB/s
+> (tested with dd if=/dev/zero of=/dev/partition on aic9410w)
+> reading speed: above 70MB/s
+> (tested with dd if=/dev/partition of=/dev/zero on aic9410w)
+> Another observation is that the LED showing disc activity
+> continuously glows as soon as the driver has been loaded and that it
+> does not stop to glow from then on. Also the hard disks connected to the
+> aic9410w are not recognized every time after booting the system. In most
+> cases a second boot resolves the issue.
+> With other operating sytem there is no such problem i.e. hardware itself 
+> is okay.
+> 
+> I send relevant output information of the aic94xx driver attached with this
+> mail. Please CC answers to this post to me (langeATjc-embedded.com) as 
+> I'm not
+> in the kernel-list.
 
-> Thanks for picking up the patchset,
-> 
-> On Thu, 28 May 2009 00:20:20 -0700
-> Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > On Fri, 15 May 2009 12:55:00 +0900 FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
-> > 
-> > > We unified x86 and IA64's handling of multiple dma mapping operations
-> > > (struct dma_map_ops in linux/dma-mapping.h) so we can remove
-> > > duplication in their arch/include/asm/dma-mapping.h.
-> > > 
-> > > This patchset adds include/asm-generic/dma-mapping-common.h that
-> > > provides some generic dma mapping function definitions for the users
-> > > of struct dma_map_ops. This enables us to remove about 100 lines. This
-> > > also enables us to easily add CONFIG_DMA_API_DEBUG support, which only
-> > > x86 supports for now. The 4th patch adds CONFIG_DMA_API_DEBUG support
-> > > to IA64 by adding only 8 lines.
-> > > 
-> > > This is against tip/master since tip has some changes to
-> > > arch/x86/include/asm/dma-mapping.h.
-> > > 
-> > > The changes since the first version are
-> > > 
-> > > - fixed a bug that dma_attrs is not passed properly (thanks to Arnd
-> > > Bergmann).
-> > > 
-> > > - used a new name, dma-mapping-common.h, instead of dma-mapping.h
-> > > (suggested by Arnd Bergmann).
-> > > 
-> > > - added Joerg's Acked-by
-> > > 
-> > > =
-> > >  arch/ia64/Kconfig                        |    1 +
-> > >  arch/ia64/include/asm/dma-mapping.h      |  110 ++----------------
-> > >  arch/x86/Kconfig                         |    1 +
-> > >  arch/x86/include/asm/dma-mapping.h       |  174 +---------------------------
-> > >  include/asm-generic/dma-mapping-common.h |  190 ++++++++++++++++++++++++++++++
-> > >  lib/dma-debug.c                          |   82 ++++++++------
-> > >  6 files changed, 252 insertions(+), 306 deletions(-)
-> > 
-> > I'm hoping that a suitable merge scheme here would be for me to merge
-> > 1/5 into mainline then to send 2/5 to Ingo and 3/5, 4/5 and 5/5 to Tony
-> > for merging.  Will that all compile and work?
-> 
-> Yes, it works. The X86 patch (2/5) and the IA64 patches (3/5, 4/5, and
-> 5/5) can be merged independently. Both depends on the first patch (1/5).
-> 
-> 
-> > Alternatively I can merge the lot, with suitable acking.
-> 
-> It would be easier, I think.
+I don't know what to do about this, sorry.  That driver is basically
+unmaintained.
 
-Yeah, that's certainly fine with me. No sense pulling these apart.
+Looking through the boot messages, this:
 
-	Ingo
+> sas: DONE DISCOVERY on port 1, pid:1712, result:0
+> sas: sas_form_port: phy0 belongs to port0 already(1)!
+> sas: sas_form_port: phy1 belongs to port1 already(1)!
+
+is the only thing which stands out to me.  And according to google,
+you're basically the only person who ever saw it come out.
+
+ooh, that code has a maintainer.  Darrick, does the above look like
+something which could make the driver run all slowly?
+
+Thanks.
