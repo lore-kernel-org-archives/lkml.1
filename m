@@ -1,108 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761239AbZE1BmG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762579AbZE1BqU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761239AbZE1BmG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 21:42:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756891AbZE1Blz
+	id S1762579AbZE1BqU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 21:46:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758276AbZE1BqM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 21:41:55 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:50800 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756255AbZE1Blz (ORCPT
+	Wed, 27 May 2009 21:46:12 -0400
+Received: from mailfilter6.ihug.co.nz ([203.109.136.6]:29500 "EHLO
+	mailfilter6.ihug.co.nz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757827AbZE1BqM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 21:41:55 -0400
-Date: Thu, 28 May 2009 10:40:13 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: nishimura@mxp.nes.nec.co.jp, "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
-       "hannes@cmpxchg.org" <hannes@cmpxchg.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH 2/5] add SWAP_HAS_CACHE flag to swap_map
-Message-Id: <20090528104013.e410235e.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <20090528100501.ab26953f.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090526121259.b91b3e9d.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090526121547.ce866fe4.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090528094157.5c39ac57.nishimura@mxp.nes.nec.co.jp>
-	<20090528100501.ab26953f.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: NEC Soft, Ltd.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 27 May 2009 21:46:12 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AnkfAP6JHUop25ZU/2dsb2JhbACBL5VIggcHhWQSgUasRYQNBQ
+X-IronPort-AV: E=Sophos;i="4.41,262,1241352000"; 
+   d="scan'208";a="100401758"
+MIME-Version: 1.0
+Date: Thu, 28 May 2009 13:44:59 +1200
+From: Cgnlwin <info@win.org>
+To: undisclosed-recipients:;
+Subject: (no subject)
+Message-ID: <b89c41f778f276760e59ad4d2d4c5274@ihug.co.nz>
+SenderIP: 41.219.150.84
+User-Agent: Vodafone Webmail/0.1
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 May 2009 10:05:01 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> On Thu, 28 May 2009 09:41:57 +0900
-> Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
-> 
-> > > @@ -1969,17 +2017,33 @@ int swap_duplicate(swp_entry_t entry)
-> > >  	offset = swp_offset(entry);
-> > >  
-> > >  	spin_lock(&swap_lock);
-> > > -	if (offset < p->max && p->swap_map[offset]) {
-> > > -		if (p->swap_map[offset] < SWAP_MAP_MAX - 1) {
-> > > -			p->swap_map[offset]++;
-> > > +
-> > > +	if (unlikely(offset >= p->max))
-> > > +		goto unlock_out;
-> > > +
-> > > +	count = swap_count(p->swap_map[offset]);
-> > > +	has_cache = swap_has_cache(p->swap_map[offset]);
-> > > +	if (cache) {
-> > > +		/* set SWAP_HAS_CACHE if there is no cache and entry is used */
-> > > +		if (!has_cache && count) {
-> > Should we check !has_cache here ?
-> I added !has_cache to return 0 in racy case.
-> 
-> > 
-> > Concurrent read_swap_cache_async() might have set SWAP_HAS_CACHE, but not have added
-> > a page to swap cache yet when find_get_page() was called.
-> yes.
-> 
-> > add_to_swap_cache() would handle the race of concurrent read_swap_cache_async(),
-> > but considering more, swapcache_free() at the end of the loop might dangerous in this case...
-> 
-> I can't catch what you mean.
-> 
-> I think swapcache_prepare() returns 0 in racy case and no add_to_swap_cache() happens.
-> wrong ?
-> 
-Ah, you're right in this version of your patch.
-I said the case if we changed swapcache_prepare() simply not to return 0 in
-SWAP_HAS_CACHE case.
-
-> > So I think it should be like:
-> > 
-> > 	read_swap_cache_async()
-> > 		:
-> > 		valid = swapcache_prepare(entry);
-> > 		if (!valid)
-> > 			break;
-> > 		if (valid == -EAGAIN);
-> > 			continue;
-> > 
-> > to let the context that succeeded in swapcache_prepare() do add_to_swap_cache().
-> > 
-> 
-> What you reccomend is code like this ?
-> 
-> ==
-> 	ret = swapcache_prapare(entry);
-> 	if (ret == -ENOENT)
-> 		break;    /* unused swap entry */
-> 	if (ret == -EBUSY)
-> 		continue; /* to call find_get_page() again */
-> ==
-> 
-Yes.
-By current version of your patch, read_swap_cache_async() might return NULL
-if concurrent read_swap_cache_async() exists. It is different from current behavior.
-And this means swapin_readahead() might fail(it calls read_swap_cache_async()
-twice, though) and can cause oom, right ?
+Get back to us for a lump sum pay out of £891,934.00 GBP. Provide Your
+Name:___ Address:___ Age:___ Sex:___ Occupation:___
+Tel/Fax:___Country.Email claim_max22@9.cn )TEL (+4470359 60751 OR +4470359
+60749 )for claims immediately.
 
 
-Thanks,
-Daisuke Nishimura.
