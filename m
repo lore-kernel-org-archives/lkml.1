@@ -1,70 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760221AbZE1GlD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762399AbZE1GlY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760221AbZE1GlD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 02:41:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752309AbZE1Gkx
+	id S1762399AbZE1GlY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 02:41:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753731AbZE1Gky
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 02:40:53 -0400
-Received: from comal.ext.ti.com ([198.47.26.152]:58643 "EHLO comal.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751966AbZE1Gkw convert rfc822-to-8bit (ORCPT
+	Thu, 28 May 2009 02:40:54 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41122 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752076AbZE1Gkw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 28 May 2009 02:40:52 -0400
-From: "Shilimkar, Santosh" <santosh.shilimkar@ti.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: Tony Lindgren <tony@atomide.com>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Russell King <rmk@arm.linux.org.uk>
-Date: Thu, 28 May 2009 12:10:33 +0530
-Subject: RE: linux-next: manual merge of the omap tree with the arm tree
-Thread-Topic: linux-next: manual merge of the omap tree with the arm tree
-Thread-Index: AcnfXnTPQgaOCSspQe+SE5zxOvYxsAAAKKAA
-Message-ID: <EAF47CD23C76F840A9E7FCE10091EFAB02B4BE3967@dbde02.ent.ti.com>
-References: <20090528143138.2de9ad37.sfr@canb.auug.org.au>
-	<EAF47CD23C76F840A9E7FCE10091EFAB02B4BE3927@dbde02.ent.ti.com>
- <20090528163453.641e5ea3.sfr@canb.auug.org.au>
-In-Reply-To: <20090528163453.641e5ea3.sfr@canb.auug.org.au>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+Date: Wed, 27 May 2009 23:38:07 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Roland Dreier <rdreier@cisco.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>, Greg KH <gregkh@suse.de>,
+       Jens Axboe <jens.axboe@oracle.com>, Chris Wright <chrisw@redhat.com>,
+       kurt.hackel@oracle.com, Ky Srinivasan <ksrinivasan@novell.com>,
+       Beulich <jbeulich@novell.com>, Avi Kivity <avi@redhat.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Subject: Re: [PATCH 17/17] xen: disable MSI
+Message-Id: <20090527233807.e7e39e97.akpm@linux-foundation.org>
+In-Reply-To: <20090528072844.4c1db656@lxorguk.ukuu.org.uk>
+References: <1243409850-21577-1-git-send-email-jeremy@goop.org>
+	<1243409850-21577-18-git-send-email-jeremy@goop.org>
+	<alpine.LFD.2.01.0905270829530.3435@localhost.localdomain>
+	<20090527211828.GA6166@elte.hu>
+	<alpine.LFD.2.01.0905271436140.3435@localhost.localdomain>
+	<adavdnm5hkx.fsf@cisco.com>
+	<20090528072844.4c1db656@lxorguk.ukuu.org.uk>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 28 May 2009 07:28:44 +0100 Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-> -----Original Message-----
-> From: Stephen Rothwell [mailto:sfr@canb.auug.org.au] 
-> Sent: Thursday, May 28, 2009 12:05 PM
-> To: Shilimkar, Santosh
-> Cc: Tony Lindgren; linux-omap@vger.kernel.org; 
-> linux-next@vger.kernel.org; linux-kernel@vger.kernel.org; Russell King
-> Subject: Re: linux-next: manual merge of the omap tree with 
-> the arm tree
-> 
-> Hi,
-> 
-> On Thu, 28 May 2009 11:55:09 +0530 "Shilimkar, Santosh" 
-> <santosh.shilimkar@ti.com> wrote:
-> >
-> > >  +machine-$(CONFIG_ARCH_OMAP2)		:= omap2
-> > >  +machine-$(CONFIG_ARCH_OMAP3)		:= omap2
-> > > ++machine-$(CONFIG_ARCH_OMAP4)		:= omap2
+> > I could see adding a tag along the lines of tested-by, reported-by,
+> > reviewed-by, etc.  Maybe something like
 > > 
-> > ++ Is this really ok ?
+> >     Closes-bug: <URL>
 > 
-> Yeah, this is a diff of a git merge.  The ++ just means it 
-> was added on
-> neither side of the merge - I modified the change from the omap tree
-> slightly to fit in better with the cleanups from the arm tree.
-Ok. Thanks !!
+> That would be useful and speed up closing bugs from changelogs. Right now
+> thats a grep and human task.
 
-Regards,
-Santosh
- 
+Yup.  I presently use "Addresses: <url>" in the changelog.
+
+y:/usr/src/git26> git-log | grep '^    Addresses.*bugzilla' | wc -l
+36
+
+Formalising that a bit more would be good.
+
+Not all patches literally "close" a bugzilla report though.  Sometimes
+there's related info in bugzilla but the bug remains.  But
+"closes-bug:" is close enough.
+
