@@ -1,57 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764427AbZE1Uci@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764353AbZE1UeK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764427AbZE1Uci (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 16:32:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760910AbZE1Ucb
+	id S1764353AbZE1UeK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 16:34:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757899AbZE1Ud5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 16:32:31 -0400
-Received: from nerdhammel.gnuher.de ([88.198.0.170]:58150 "EHLO
-	nerdhammel.gnuher.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759476AbZE1Uca (ORCPT
+	Thu, 28 May 2009 16:33:57 -0400
+Received: from e38.co.us.ibm.com ([32.97.110.159]:49516 "EHLO
+	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753588AbZE1Ud5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 16:32:30 -0400
-Date: Thu, 28 May 2009 22:32:28 +0200
-From: Sven Geggus <lists@fuchsschwanzdomain.de>
-To: "J. Bruce Fields" <bfields@fieldses.org>
-Cc: Trond Myklebust <trond.myklebust@fys.uio.no>, linux-kernel@vger.kernel.org,
-       linux-nfs@vger.kernel.org
-Subject: Re: 2.6.29+ NFS-Server Problem "reconnect_path: npd != pd"
-Message-ID: <20090528203228.GA6056@geggus.net>
-References: <20090521142026.GA5566@geggus.net> <1242924599.6687.1.camel@heimdal.trondhjem.org> <20090521165751.GA4428@geggus.net> <1242927133.6687.4.camel@heimdal.trondhjem.org> <gv4463$6fn$1@ultimate100.geggus.net> <1242929546.22947.11.camel@heimdal.trondhjem.org> <20090528202803.GF13860@fieldses.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090528202803.GF13860@fieldses.org>
-X-MimeOLE: Produced By Exchange Microsoft V6.6.6
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 28 May 2009 16:33:57 -0400
+Subject: Re: [tip:timers/ntp] ntp: adjust SHIFT_PLL to improve NTP
+ convergence
+From: John Stultz <johnstul@us.ibm.com>
+To: mingo@redhat.com, hpa@zytor.com, riel@redhat.com,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       tglx@linutronix.de, mingo@elte.hu
+Cc: linux-tip-commits@vger.kernel.org, Miroslav Lichvar <mlichvar@redhat.com>
+In-Reply-To: <tip-22cfbbfd9f67b67fe073010f51cb71d3632387d5@git.kernel.org>
+References: <200905051956.n45JuVo9025575@imap1.linux-foundation.org>
+	 <tip-22cfbbfd9f67b67fe073010f51cb71d3632387d5@git.kernel.org>
+Content-Type: text/plain
+Date: Thu, 28 May 2009 13:33:37 -0700
+Message-Id: <1243542817.29511.523.camel@jstultz-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-J. Bruce Fields schrieb am Donnerstag, den 28. Mai um 22:28 Uhr:
-
-> Looks like you have subtree_check set on the "bad" export, and
-> no_subtree_check set on the "good" export.  subtree_check can result in
-> spurious stale errors when files are renamed, so it's possible this is
-> by design.
+On Wed, 2009-05-06 at 09:46 +0000, tip-bot for john stultz wrote:
+> Commit-ID:  22cfbbfd9f67b67fe073010f51cb71d3632387d5
+> Gitweb:     http://git.kernel.org/tip/22cfbbfd9f67b67fe073010f51cb71d3632387d5
+> Author:     john stultz <johnstul@us.ibm.com>
+> AuthorDate: Wed, 6 May 2009 11:43:57 +0200
+> Committer:  Ingo Molnar <mingo@elte.hu>
+> CommitDate: Wed, 6 May 2009 11:44:02 +0200
 > 
-> You say you get that message on 296.29.x but not 2.6.27.x.
+> ntp: adjust SHIFT_PLL to improve NTP convergence
+> 
+> The conversion to the ntpv4 reference model
+> f19923937321244e7dc334767eb4b67e0e3d5c74 ("ntp: convert to the NTP4
+> reference model") in 2.6.19 added nanosecond resolution the adjtimex
+> interface, but also changed the "stiffness" of the frequency adjustments,
+> causing NTP convergence time to greatly increase.
+> 
+> SHIFT_PLL, which reduces the stiffness of the freq adjustments, was
+> designed to be inversely linked to HZ, and the reference value of 4 was
+> designed for Unix systems using HZ=100.  However Linux's clock steering
+> code mostly independent of HZ.
+> 
+> So this patch reduces the SHIFT_PLL value from 4 to 2, which causes NTPd
+> behavior to match kernels prior to 2.6.19, greatly reducing convergence
+> times, and improving close synchronization through environmental thermal
+> changes.
+> 
+> The patch also changes some l's to L's in nearby code to avoid misreading
+> 50l as 501.
+> 
+> [ Impact: tweak NTP algorithm for faster convergence ]
 
-Exactly! http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=527517
-may refer the same bug.
+Hey Ingo,
+	So I've been speaking with Miroslav (cc'ed) who maintains the RH ntpd
+packages, and he's concerned that this patch takes us out of NTP's
+expected behavior, which may cause problems when dealing with non-linux
+systems using NTP.
 
-> And you say you also get stale filehandle errors.
+We're both still trying to pin down exactly what NTP's expected behavior
+should be with respect to convergence time, and there may be fixes to
+the ntpd userland component that may resolve the slow convergence times
+users are experiencing that the SHIFT_PLL change was trying to fix.
 
-Only on 2.6.29.x. Everything works fine qwith the older Kernel.
+So in the interest of keeping the kernel's adjtimex() interface behavior
+stable, I'd like to put a hold on this patch until Miroslav and I have
+come to agreement about how to best resolve the issue.
 
->  I assume you didn't get the same stale filehandle errors on 2.6.27.x?
+So again, please don't push this when 2.6.31 opens.
 
-No errors on the older Kernel.
+thanks
+-john
 
-Sven
 
--- 
-"In my opinion MS is a lot better at making money than it is at making good
-operating systems" (Linus Torvalds, August 1997)
-
-/me is giggls@ircnet, http://sven.gegg.us/ on the Web
