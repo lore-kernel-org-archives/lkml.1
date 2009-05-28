@@ -1,154 +1,265 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763940AbZE1VGj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763916AbZE1VKt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763940AbZE1VGj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 17:06:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755852AbZE1VGb
+	id S1763916AbZE1VKt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 17:10:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756881AbZE1VKm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 17:06:31 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:41663 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755133AbZE1VGa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 17:06:30 -0400
-Message-ID: <4A1EFCC2.80805@linux.vnet.ibm.com>
-Date: Thu, 28 May 2009 14:06:10 -0700
-From: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Thu, 28 May 2009 17:10:42 -0400
+Received: from bear.ext.ti.com ([192.94.94.41]:58377 "EHLO bear.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756524AbZE1VKm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 17:10:42 -0400
+Message-ID: <4A1EFDBD.8040007@ti.com>
+Date: Thu, 28 May 2009 16:10:21 -0500
+From: Jon Hunter <jon-hunter@ti.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
 MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: eranian@gmail.com, Thomas Gleixner <tglx@linutronix.de>,
-       Philip Mucci <mucci@eecs.utk.edu>, LKML <linux-kernel@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>, Paul Mackerras <paulus@samba.org>,
-       Maynard Johnson <mpjohn@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       perfmon2-devel <perfmon2-devel@lists.sourceforge.net>
-Subject: Re: [perfmon2] comments on Performance Counters for Linux (PCL)
-References: <7c86c4470905280758y6d359823h2a7517dfecb115e6@mail.gmail.com> <1243527919.6645.75.camel@laptop>
-In-Reply-To: <1243527919.6645.75.camel@laptop>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: john stultz <johnstul@us.ibm.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 1/2] Dynamic Tick: Prevent clocksource wrapping during
+ idle
+References: <4A1D52E3.3040204@ti.com>  <alpine.LFD.2.00.0905271731070.3397@localhost.localdomain> <1243455615.7440.17.camel@localhost.localdomain> <alpine.LFD.2.00.0905272229190.3397@localhost.localdomain> <4A1EF244.5040108@ti.com> <alpine.LFD.2.00.0905282231500.3397@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0905282231500.3397@localhost.localdomain>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Just a few comments below on some excerpts from this very good discussion.
 
-Peter Zijlstra wrote:
-> On Thu, 2009-05-28 at 16:58 +0200, stephane eranian wrote:
->>      - uint64_t irq_period
->>
->>        IRQ is an x86 related name. Why not use smpl_period instead?
-> 
-> don't really care, but IRQ seems used throughout linux, we could name
-> the thing interrupt or sample period.
+Thomas Gleixner wrote:
+>   Please make this a real function. There is no reason to stick this
+>   into a header file. The only user is clocksource.c anyway, so please
+>   put it there as a static function and let the compiler decide what
+>   to do with it.
 
-I agree with Stephane, the name irq_period struck me as somewhat strange for 
-what it does.  sample_period would be much better.
+No problem. Please see below. Let me know if this is ok and there is 
+anything else.
 
-> 
->>      - uint32_t record_type
->>
->>        This field is a bitmask. I believe 32-bit is too small to accommodate
->>        future record formats.
-> 
-> It currently controls 8 aspects of the overflow entry, do you really
-> forsee the need for more than 32?
+Cheers
+Jon
 
-record_type is probably not the best name for this either.  Maybe 
-"record_layout" or "sample_layout" or "sample_format" (to go along with read_format)
+The dynamic tick allows the kernel to sleep for periods longer
+than a single tick. This patch prevents that the kernel from
+sleeping for a period longer than the maximum time that the
+current clocksource can count. This ensures that the kernel will
+not lose track of time. This patch adds a function called
+"clocksource_max_deferment()" that calculates the maximum time the
+kernel can sleep for a given clocksource and function called
+"timekeeping_max_deferment()" that returns maximum time the kernel
+can sleep for the current clocksource.
 
+Signed-off-by: Jon Hunter <jon-hunter@ti.com>
+---
+  include/linux/clocksource.h |    2 +
+  include/linux/time.h        |    1 +
+  kernel/time/clocksource.c   |   47 
++++++++++++++++++++++++++++++++++++++++++++
+  kernel/time/tick-sched.c    |   36 ++++++++++++++++++++++----------
+  kernel/time/timekeeping.c   |   11 ++++++++++
+  5 files changed, 86 insertions(+), 11 deletions(-)
 
->>        I would assume that on the read() side, counts are accumulated as
->>        64-bit integers. But if it is the case, then it seems there is an
->>        asymmetry between period and counts.
->>
->>        Given that your API is high level, I don't think tools should have to
->>        worry about the actual width of a counter. This is especially true
->>        because they don't know which counters the event is going to go into
->>        and if I recall correctly, on some PMU models, different counters can
->>        have different width (Power, I think).
->>
->>        It is rather convenient for tools to always manipulate counters as
->>        64-bit integers. You should provide a consistent view between counts
->>        and periods.
-> 
-> So you're suggesting to artificually strech periods by say composing a
-> single overflow from smaller ones, ignoring the intermediate overflow
-> events?
-> 
-> That sounds doable, again, patch welcome.
+diff --git a/include/linux/clocksource.h b/include/linux/clocksource.h
+index 5a40d14..465af22 100644
+--- a/include/linux/clocksource.h
++++ b/include/linux/clocksource.h
+@@ -151,6 +151,7 @@ extern u64 timecounter_cyc2time(struct timecounter *tc,
+   * @mult:		cycle to nanosecond multiplier (adjusted by NTP)
+   * @mult_orig:		cycle to nanosecond multiplier (unadjusted by NTP)
+   * @shift:		cycle to nanosecond divisor (power of two)
++ * @max_idle_ns:	max idle time permitted by the clocksource (nsecs)
+   * @flags:		flags describing special properties
+   * @vread:		vsyscall based read
+   * @resume:		resume function for the clocksource, if necessary
+@@ -171,6 +172,7 @@ struct clocksource {
+  	u32 mult;
+  	u32 mult_orig;
+  	u32 shift;
++	s64 max_idle_ns;
+  	unsigned long flags;
+  	cycle_t (*vread)(void);
+  	void (*resume)(void);
+diff --git a/include/linux/time.h b/include/linux/time.h
+index 242f624..090be07 100644
+--- a/include/linux/time.h
++++ b/include/linux/time.h
+@@ -130,6 +130,7 @@ extern void monotonic_to_bootbased(struct timespec *ts);
 
-I definitely agree with Stephane's point on this one.  I had assumed that long 
-irq_periods (longer than the width of the counter) would be synthesized as you 
-suggest.  If this is not the case, PCL should be changed so that it does,  -or- 
-at a minimum, the user should get an error back stating that the period is too 
-long for the hardware counter.
+  extern struct timespec timespec_trunc(struct timespec t, unsigned gran);
+  extern int timekeeping_valid_for_hres(void);
++extern s64 timekeeping_max_deferment(void);
+  extern void update_wall_time(void);
+  extern void update_xtime_cache(u64 nsec);
 
->>  4/ Grouping
->>
->>        By design, an event can only be part of one group at a time. Events in
->>        a group are guaranteed to be active on the PMU at the same time. That
->>        means a group cannot have more events than there are available counters
->>        on the PMU. Tools may want to know the number of counters available in
->>        order to group their events accordingly, such that reliable ratios
->>        could be computed. It seems the only way to know this is by trial and
->>        error. This is not practical.
-> 
-> Got a proposal to ammend this?
+diff --git a/kernel/time/clocksource.c b/kernel/time/clocksource.c
+index ecfd7b5..18d2b9f 100644
+--- a/kernel/time/clocksource.c
++++ b/kernel/time/clocksource.c
+@@ -321,6 +321,50 @@ void clocksource_touch_watchdog(void)
+  }
 
-I think counters in a group are guaranteed to be active at the same time iff the 
-pinned bit is set for that group, right?
+  /**
++ * clocksource_max_deferment - Returns max time the clocksource can be 
+deferred
++ * @cs:         Pointer to clocksource
++ *
++ */
++static s64 clocksource_max_deferment(struct clocksource *cs)
++{
++	s64 max_nsecs;
++	u64 max_cycles;
++
++	/*
++	 * Calculate the maximum number of cycles that we can pass to the
++	 * cyc2ns function without overflowing a 64-bit signed result. The
++	 * maximum number of cycles is equal to ULLONG_MAX/cs->mult which
++	 * is equivalent to the below.
++	 * max_cycles < (2^63)/cs->mult
++	 * max_cycles < 2^(log2((2^63)/cs->mult))
++	 * max_cycles < 2^(log2(2^63) - log2(cs->mult))
++	 * max_cycles < 2^(63 - log2(cs->mult))
++	 * max_cycles < 1 << (63 - log2(cs->mult))
++	 * Please note that we add 1 to the result of the log2 to account for
++	 * any rounding errors, ensure the above inequality is satisfied and
++	 * no overflow will occur.
++	 */
++	max_cycles = 1ULL << (63 - (ilog2(cs->mult) + 1));
++
++	/*
++	 * The actual maximum number of cycles we can defer the clocksource is
++	 * determined by the minimum of max_cycles and cs->mask.
++	 */
++	max_cycles = min(max_cycles, cs->mask);
++	max_nsecs = cyc2ns(cs, max_cycles);
++
++	/*
++	 * To ensure that the clocksource does not wrap whilst we are idle,
++	 * limit the time the clocksource can be deferred by 12.5%. Please
++	 * note a margin of 12.5% is used because this can be computed with
++	 * a shift, versus say 10% which would require division.
++	 */
++	max_nsecs = max_nsecs - (max_nsecs >> 5);
++
++	return max_nsecs;
++}
++
++/**
+   * clocksource_get_next - Returns the selected clocksource
+   *
+   */
+@@ -405,6 +449,9 @@ int clocksource_register(struct clocksource *c)
+  	/* save mult_orig on registration */
+  	c->mult_orig = c->mult;
 
-I don't get the problem with reliable ratios here.  If each counter has its own 
-time values, time enabled vs. time on counter, reliable ratios should always be 
-available.
++	/* calculate max idle time permitted for this clocksource */
++	c->max_idle_ns = clocksource_max_deferment(c);
++
+  	spin_lock_irqsave(&clocksource_lock, flags);
+  	ret = clocksource_enqueue(c);
+  	if (!ret)
+diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
+index d3f1ef4..f0155ae 100644
+--- a/kernel/time/tick-sched.c
++++ b/kernel/time/tick-sched.c
+@@ -217,6 +217,7 @@ void tick_nohz_stop_sched_tick(int inidle)
+  	ktime_t last_update, expires, now;
+  	struct clock_event_device *dev = __get_cpu_var(tick_cpu_device).evtdev;
+  	int cpu;
++	s64 time_delta, max_time_delta;
 
-> 
->>  5/ Multiplexing and scaling
->>
->>        The PMU can be shared by multiple programs each controlling a variable
->>        number of events. Multiplexing occurs by default unless pinned is
->>        requested. The exclusive option only guarantees the group does not
->>        share the PMU with other groups while it is active, at least this is
->>        my understanding.
-> 
-> We have pinned and exclusive. pinned means always on the PMU, exclusive
-> means when on the PMU no-one else can be.
+  	local_irq_save(flags);
 
-The use of the exclusive bit has been unclear to me.  Let's say I have 4 
-hardware counters, and two groups of two events each.  As long as there's no 
-interference from one group to the other, is there a reason I'd want the 
-"exclusive" bit on?
+@@ -264,6 +265,7 @@ void tick_nohz_stop_sched_tick(int inidle)
+  		seq = read_seqbegin(&xtime_lock);
+  		last_update = last_jiffies_update;
+  		last_jiffies = jiffies;
++		max_time_delta = timekeeping_max_deferment();
+  	} while (read_seqretry(&xtime_lock, seq));
 
-Is it used only in the case where the kernel would otherwise not be able to 
-schedule both groups onto counters at the same time and you want to ensure that 
-your group doesn't get preempted by another group waiting to get onto the PMU?
+  	/* Get the next timer wheel timer */
+@@ -283,11 +285,22 @@ void tick_nohz_stop_sched_tick(int inidle)
+  	if ((long)delta_jiffies >= 1) {
 
->> III/ Requests
->>   2/ Sampling period randomization
->>
->>        It is our experience (on Itanium, for instance), that for certain
->>        sampling measurements, it is beneficial to randomize the sampling
->>        period a bit. This is in particular the case when sampling on an
->>        event that happens very frequently and which is not related to
->>        timing, e.g., branch_instructions_retired. Randomization helps mitigate
->>        the bias. You do not need anything sophisticated.. But when you are using
->>        a kernel-level sampling buffer, you need to have to kernel randomize.
->>        Randomization needs to be supported per event.
-> 
-> Corey raised this a while back, I asked what kind of parameters were
-> needed and if a specific (p)RNG was specified.
-> 
-> Is something with an (avg,std) good enough? Do you have an
-> implementation that I can borrow, or even better a patch? :-)
+  		/*
+-		* calculate the expiry time for the next timer wheel
+-		* timer
+-		*/
+-		expires = ktime_add_ns(last_update, tick_period.tv64 *
+-				   delta_jiffies);
++		 * Calculate the time delta for the next timer event.
++		 * If the time delta exceeds the maximum time delta
++		 * permitted by the current clocksource then adjust
++		 * the time delta accordingly to ensure the
++		 * clocksource does not wrap.
++		 */
++		time_delta = tick_period.tv64 * delta_jiffies;
++
++		if (time_delta > max_time_delta)
++			time_delta = max_time_delta;
++
++		/*
++		 * calculate the expiry time for the next timer wheel
++		 * timer
++		 */
++		expires = ktime_add_ns(last_update, time_delta);
 
-For how it's done in perfmon2, take a look at Section 3.4.2 (page 74) of 
-http://www.hpl.hp.com/techreports/2004/HPL-2004-200R1.pdf
+  		/*
+  		 * If this cpu is the one which updates jiffies, then
+@@ -300,7 +313,7 @@ void tick_nohz_stop_sched_tick(int inidle)
+  		if (cpu == tick_do_timer_cpu)
+  			tick_do_timer_cpu = TICK_DO_TIMER_NONE;
 
-- Corey
+-		if (delta_jiffies > 1)
++		if (time_delta > tick_period.tv64)
+  			cpumask_set_cpu(cpu, nohz_cpu_mask);
 
-Corey Ashford
-Software Engineer
-IBM Linux Technology Center, Linux Toolchain
-cjashfor@us.ibm.com
+  		/* Skip reprogram of event if its not changed */
+@@ -332,12 +345,13 @@ void tick_nohz_stop_sched_tick(int inidle)
+  		ts->idle_sleeps++;
+
+  		/*
+-		 * delta_jiffies >= NEXT_TIMER_MAX_DELTA signals that
+-		 * there is no timer pending or at least extremly far
+-		 * into the future (12 days for HZ=1000). In this case
+-		 * we simply stop the tick timer:
++		 * time_delta >= (tick_period.tv64 * NEXT_TIMER_MAX_DELTA)
++		 * signals that there is no timer pending or at least
++		 * extremely far into the future (12 days for HZ=1000).
++		 * In this case we simply stop the tick timer:
+  		 */
+-		if (unlikely(delta_jiffies >= NEXT_TIMER_MAX_DELTA)) {
++		if (unlikely(time_delta >=
++				(tick_period.tv64 * NEXT_TIMER_MAX_DELTA))) {
+  			ts->idle_expires.tv64 = KTIME_MAX;
+  			if (ts->nohz_mode == NOHZ_MODE_HIGHRES)
+  				hrtimer_cancel(&ts->sched_timer);
+diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
+index 687dff4..659cae3 100644
+--- a/kernel/time/timekeeping.c
++++ b/kernel/time/timekeeping.c
+@@ -271,6 +271,17 @@ int timekeeping_valid_for_hres(void)
+  }
+
+  /**
++ * timekeeping_max_deferment - Returns max time the clocksource can be 
+deferred
++ *
++ * IMPORTANT: Caller must observe xtime_lock via 
+read_seqbegin/read_seqretry
++ * to ensure that the clocksource does not change!
++ */
++s64 timekeeping_max_deferment(void)
++{
++	return clock->max_idle_ns;
++}
++
++/**
+   * read_persistent_clock -  Return time in seconds from the persistent 
+clock.
+   *
+   * Weak dummy function for arches that do not yet support it.
+-- 
+1.6.1
 
