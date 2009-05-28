@@ -1,72 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762038AbZE1Fs7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762311AbZE1Ftb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762038AbZE1Fs7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 01:48:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756723AbZE1Fsw
+	id S1762311AbZE1Ftb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 01:49:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757904AbZE1FtU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 01:48:52 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:50133 "EHLO bilbo.ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756430AbZE1Fsv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 01:48:51 -0400
-Date: Thu, 28 May 2009 15:47:14 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: David Miller <davem@davemloft.net>
-Cc: linux@arm.linux.org.uk, jonsmirl@gmail.com, devicetree-discuss@ozlabs.org,
-       linux-kernel@vger.kernel.org, timur@freescale.com,
-       scottwood@freescale.com, yuan-bo.ye@motorola.com,
-       linux-arm-kernel@lists.arm.linux.org.uk
-Subject: Re: [RFC] [PATCH] Device Tree on ARM platform
-Message-ID: <20090528054714.GM1464@yookeroo.seuss>
-Mail-Followup-To: David Miller <davem@davemloft.net>,
-	linux@arm.linux.org.uk, jonsmirl@gmail.com,
-	devicetree-discuss@ozlabs.org, linux-kernel@vger.kernel.org,
-	timur@freescale.com, scottwood@freescale.com,
-	yuan-bo.ye@motorola.com, linux-arm-kernel@lists.arm.linux.org.uk
-References: <20090528025258.GB1464@yookeroo.seuss> <20090527.212730.183576278.davem@davemloft.net> <20090528044732.GK1464@yookeroo.seuss> <20090527.223147.94364683.davem@davemloft.net>
+	Thu, 28 May 2009 01:49:20 -0400
+Received: from sous-sol.org ([216.99.217.87]:40562 "EHLO sequoia.sous-sol.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757878AbZE1FtT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 01:49:19 -0400
+Date: Wed, 27 May 2009 22:49:04 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: avi@redhat.com, chrisw@sous-sol.org, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [KVM PATCH v2 2/3] kvm: cleanup io_device code
+Message-ID: <20090528054904.GK20823@sequoia.sous-sol.org>
+References: <20090527213535.24324.62362.stgit@dev.haskins.net> <20090527213744.24324.82745.stgit@dev.haskins.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090527.223147.94364683.davem@davemloft.net>
+In-Reply-To: <20090527213744.24324.82745.stgit@dev.haskins.net>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 27, 2009 at 10:31:47PM -0700, David Miller wrote:
-> From: David Gibson <david@gibson.dropbear.id.au>
-> Date: Thu, 28 May 2009 14:47:32 +1000
-> 
-> > The conceptual problem becomes apparent when you consider things like
-> > i2c.  The devtree is the obvious source to discover what i2c device
-> > are present, but they need to be instantiated as i2c devices on the
-> > i2c bus, not of platform devices.
-> 
-> Sure, but there is no reason there can't be an of_platform driver
-> for those i2c devices.  And such instantiated devices get propagated
-> either instantly to the parent, or later when the parent controller
-> probes.
+* Gregory Haskins (ghaskins@novell.com) wrote:
+> We modernize the io_device code so that we use container_of() instead of
+> dev->private, and move the vtable to a separate ops structure
+> (theoretically allows better caching for multiple instances of the same
+> ops structure)
 
-Right, but the point is the bus info is trying to do two things here -
-one is to supply stuff that's actually common to the bus interface,
-the other is the probing logic.  That's usually connected to the bus
-interface, but in the case of non-probeable basses on a system with a
-devtree, that's no longer the case.  As soon as the bus has some
-common logic that's really related to the bus interface regardless of
-platform, then you start losing to use of_platform instead of a
-specific bus structure because you have to duplicate that -
-essentially having both OF and non-OF variants of however many busses
-we need.
+Looks like a nice cleanup.  Couple minor nits.
 
-I think its saner instead to have the device model stuff only
-represent stuff that's actually related to the bus interface, and
-separately instantiate things into those busses from an OF tree
-traversal.  I think this can be made as convenient as the current
-setup for OF systems, though obviously I'll have to get around to
-actually implementing it to be sure.
+> +static struct kvm_io_device_ops pit_dev_ops = {
+> +	.read     = pit_ioport_read,
+> +	.write    = pit_ioport_write,
+> +	.in_range = pit_in_range,
+> +};
+> +
+> +static struct kvm_io_device_ops speaker_dev_ops = {
+> +	.read     = speaker_ioport_read,
+> +	.write    = speaker_ioport_write,
+> +	.in_range = speaker_in_range,
+> +};
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+kvm_io_device_ops instances could be made const.
+
+> --- a/arch/x86/kvm/x86.c
+> +++ b/arch/x86/kvm/x86.c
+> @@ -2227,7 +2227,7 @@ static struct kvm_io_device *vcpu_find_pervcpu_dev(struct kvm_vcpu *vcpu,
+>  
+>  	if (vcpu->arch.apic) {
+>  		dev = &vcpu->arch.apic->dev;
+> -		if (dev->in_range(dev, addr, len, is_write))
+> +		if (dev->ops->in_range(dev, addr, len, is_write))
+>  			return dev;
+
+> --- a/virt/kvm/iodev.h
+> +++ b/virt/kvm/iodev.h
+> @@ -18,7 +18,9 @@
+>  
+>  #include <linux/kvm_types.h>
+>  
+> -struct kvm_io_device {
+> +struct kvm_io_device;
+> +
+> +struct kvm_io_device_ops {
+>  	void (*read)(struct kvm_io_device *this,
+>  		     gpa_t addr,
+>  		     int len,
+> @@ -30,16 +32,25 @@ struct kvm_io_device {
+>  	int (*in_range)(struct kvm_io_device *this, gpa_t addr, int len,
+>  			int is_write);
+>  	void (*destructor)(struct kvm_io_device *this);
+> +};
+> +
+>  
+> -	void             *private;
+> +struct kvm_io_device {
+> +	struct kvm_io_device_ops *ops;
+>  };
+
+Did you plan to extend kvm_io_device struct?
+
+> +static inline void kvm_iodevice_init(struct kvm_io_device *dev,
+> +				     struct kvm_io_device_ops *ops)
+> +{
+> +	dev->ops = ops;
+> +}
+
+And similarly, did you have a plan to do more with kvm_iodevice_init()?
+Otherwise looking a bit like overkill to me.
+
+> --- a/virt/kvm/kvm_main.c
+> +++ b/virt/kvm/kvm_main.c
+> @@ -2456,7 +2456,7 @@ struct kvm_io_device *kvm_io_bus_find_dev(struct kvm_io_bus *bus,
+>  	for (i = 0; i < bus->dev_count; i++) {
+>  		struct kvm_io_device *pos = bus->devs[i];
+>  
+> -		if (pos->in_range(pos, addr, len, is_write))
+> +		if (kvm_iodevice_inrange(pos, addr, len, is_write))
+>  			return pos;
+>  	}
+
+You converted this to the helper but not vcpu_find_pervcpu_dev() (not
+convinced it actually helps readability, but consistency is good).  BTW,
+while there, s/kvm_iodevice_inrange/kvm_iodevice_in_range/ would be nice.
+
+thanks,
+-chris
