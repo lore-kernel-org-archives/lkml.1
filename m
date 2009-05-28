@@ -1,60 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762109AbZE1FvX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760438AbZE1GDN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762109AbZE1FvX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 01:51:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750915AbZE1FvR
+	id S1760438AbZE1GDN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 02:03:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754331AbZE1GC4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 01:51:17 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56727 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750833AbZE1FvQ (ORCPT
+	Thu, 28 May 2009 02:02:56 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:32530 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750870AbZE1GCz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 01:51:16 -0400
-Date: Wed, 27 May 2009 22:51:06 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Alexander Beregalov <a.beregalov@gmail.com>
-Cc: linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [PATCH 2/2] serial: 8250_gsc: fix printk format warning
-Message-Id: <20090527225106.10fc9cc6.akpm@linux-foundation.org>
-In-Reply-To: <1242652291-1868-1-git-send-email-a.beregalov@gmail.com>
-References: <1242652291-1868-1-git-send-email-a.beregalov@gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 28 May 2009 02:02:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=TFyPXPsEE8BMxDrvns221Wyv/r0Bsm/hoIL5TH7pYKwngEmA+XGCAoi8JMFsMtPU6Q
+         tg4XXCucKbxFevzrSXSEZRNmg+RaM+3h8d0Xf8MHOV9sQ3aK6Vnyd4V0EH6QtoVVKpzb
+         SrEAbAt3F9F+kOlS5eXgazXRCR8cJ/Gz4ejbQ=
+Message-ID: <4A1E28E6.2090807@gmail.com>
+Date: Thu, 28 May 2009 08:02:14 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1pre) Gecko/20090525 SUSE/3.0b2-10.1 Thunderbird/3.0b3pre
+MIME-Version: 1.0
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+CC: mchehab@redhat.com, linux-media@vger.kernel.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH] vino: replace dma_sync_single with dma_sync_single_for_cpu
+References: <20090528100938I.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20090528100938I.fujita.tomonori@lab.ntt.co.jp>
+X-Enigmail-Version: 0.96a
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 18 May 2009 17:11:31 +0400 Alexander Beregalov <a.beregalov@gmail.com> wrote:
-
-> Fix this build warning:
-> drivers/serial/8250_gsc.c:44: warning: format '%lx' expects type
-> 'long unsigned int', but argument 2 has type 'resource_size_t'
+On 05/28/2009 03:10 AM, FUJITA Tomonori wrote:
+> This replaces dma_sync_single() with dma_sync_single_for_cpu() because
+> dma_sync_single() is an obsolete API; include/linux/dma-mapping.h says:
 > 
-
-The patch does more than fix a "warning".  It fixes an actual error. 
-The caller will prepare a 64-bit argument and the callee will print
-only 32 bits of it.
-
+> /* Backwards compat, remove in 2.7.x */
+> #define dma_sync_single		dma_sync_single_for_cpu
+> #define dma_sync_sg		dma_sync_sg_for_cpu
+> 
+> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 > ---
->  drivers/serial/8250_gsc.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+>  drivers/media/video/vino.c |    6 +++---
+>  1 files changed, 3 insertions(+), 3 deletions(-)
 > 
-> diff --git a/drivers/serial/8250_gsc.c b/drivers/serial/8250_gsc.c
-> index 418b4fe..a7b02a5 100644
-> --- a/drivers/serial/8250_gsc.c
-> +++ b/drivers/serial/8250_gsc.c
-> @@ -41,7 +41,7 @@ static int __init serial_init_chip(struct parisc_device *dev)
->  			printk(KERN_INFO
->  				"Serial: device 0x%lx not configured.\n"
->  				"Enable support for Wax, Lasi, Asp or Dino.\n",
-> -				dev->hpa.start);
-> +				(unsigned long)dev->hpa.start);
+> diff --git a/drivers/media/video/vino.c b/drivers/media/video/vino.c
+> index 43e0998..97b082f 100644
+> --- a/drivers/media/video/vino.c
+> +++ b/drivers/media/video/vino.c
+> @@ -868,9 +868,9 @@ static void vino_sync_buffer(struct vino_framebuffer *fb)
+>  	dprintk("vino_sync_buffer():\n");
+>  
+>  	for (i = 0; i < fb->desc_table.page_count; i++)
+> -		dma_sync_single(NULL,
+> -				fb->desc_table.dma_cpu[VINO_PAGE_RATIO * i],
+> -				PAGE_SIZE, DMA_FROM_DEVICE);
+> +		dma_sync_single_for_cpu(NULL,
+> +					fb->desc_table.dma_cpu[VINO_PAGE_RATIO * i],
+> +					PAGE_SIZE, DMA_FROM_DEVICE);
 
-Nope.  hpa.start can be u32 or u64.  We need to cast that to the wider
-type so that it will correctly print in all circumstances.
+Shouldn't be there sync_for_device in vino_dma_setup (or somewhere)
+then? If I understand the API correctly this won't (and didn't) work on
+some platforms.
 
-So I changed both patches to print with %ll and to cast to
-unsigned long long.
+The same for other drivers who don't free the buffer after the sync but
+recycle it instead.
