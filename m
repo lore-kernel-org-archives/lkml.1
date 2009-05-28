@@ -1,150 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763283AbZE1PFt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763476AbZE1PGy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763283AbZE1PFt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 11:05:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761298AbZE1PFG
+	id S1763476AbZE1PGy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 11:06:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751245AbZE1PGq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 11:05:06 -0400
-Received: from mtagate1.de.ibm.com ([195.212.17.161]:56619 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756149AbZE1PFD (ORCPT
+	Thu, 28 May 2009 11:06:46 -0400
+Received: from mail-bw0-f222.google.com ([209.85.218.222]:62245 "EHLO
+	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756776AbZE1PGq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 11:05:03 -0400
-Message-Id: <20090528150502.305840931@de.ibm.com>
-References: <20090528150447.152019714@de.ibm.com>
-User-Agent: quilt/0.46-1
-Date: Thu, 28 May 2009 17:04:49 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: Rob van der Heij <rvdheij@gmail.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 2/2] keep on ticking if oprofile is active
-Content-Disposition: inline; filename=profile-stop-nohz.diff
+	Thu, 28 May 2009 11:06:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=sJnf6FUEBqeV9IDGNsu4iPFgvXtiCt6w1Zd/pU0nP4Lj5Uy05zUORsj97j+H8Ecfiw
+         sJT+1jb0sS0S496XqEp2nVVvO1cqk78vdIG/NDoLAZB+zWwZy/hti8rdFczedmPPIiJs
+         v+dT2VN9bs2LNNn7qD+402eaq9EXYZjG0xmS8=
+Subject: Re: [RFC PATCH 0/4] V3 - Implementation of IR support using the
+ input subsystem
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: Jon Smirl <jonsmirl@gmail.com>
+Cc: linux-kernel@vger.kernel.org, lirc-list@lists.sourceforge.net
+In-Reply-To: <20081006194032.15992.8393.stgit@terra>
+References: <20081006194032.15992.8393.stgit@terra>
+Content-Type: text/plain
+Date: Thu, 28 May 2009 18:06:41 +0300
+Message-Id: <1243523201.5254.59.camel@maxim-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+On Mon, 2008-10-06 at 15:43 -0400, Jon Smirl wrote:
+> Third pass at implementing evdev support for IR. The goal of in-kernel IR is to integrate IR events into the evdev input event queue and maintain ordering of events from all input devices.
+> 
+> New feature, raw mode. There are three sysfs attributes - ir_raw, ir_carrier, ir_xmitter. Read from ir_raw to get the raw timing data from the IR device. Set carrier and active xmitters and then copy raw data to ir_raw to send. These attributes may be better on a debug switch. You would use raw mode when decoding a new protocol. After you figure out the new protocol, write an in-kernel encoder/decoder for it.
+> 
+> What should the IR API look like? 
+> 
+> How are IR events mapped into keyboard events? Should they be mapped? Map them in the kernel or in user space? The maps are tiny, less than 1K per remote.  Sysfs can be used to load maps into the kernel driver. Make maps only for the common buttons and don't map unusual ones?
+> 
+> How should multiple remotes be handled? Split them out into individual input devices, or group them onto a single IR device? I can implement either.
+> 
+> The in-kernel code is tiny, about 20K including a driver.
+> 
+> >From last post...
+> Note that user space IR device drivers can use the existing support in evdev to inject events into the input queue.
+> 
+> Send and receive are implemented. Received IR messages are decoded and sent to user space as input messages. Send is done via an IOCTL on the input device.
+> 
+> Two drivers are supplied. mceusb2 implements send and receive support for the Microsoft USB IR dongle.
+> 
+> The GPT driver implements receive only support for a GPT pin - GPT is a GPIO with a timer attached.
+> 
+> Code is only lightly tested. Encoders and decoders have not been written for all protocols. 
+> Repeat is not handled for any protocol.
+> I'm looking for help. There are 15 more existing LIRC drivers.
 
-On a NOHZ system with oprofile enabled the timer tick should not be
-stopped when a cpu goes idle. Oprofile needs the pt_regs structure
-of the interrupt and allocates memory in the ring buffer for each
-sample. Current a maximum of 1 tick is accounted with oprofile if a
-cpu sleeps for a longer period of time. This does bad things to the
-percentages in the oprofile output. To postpone the oprofile tick to
-tick_nohz_restart_sched_tick analog to the in kernel profiler is not
-possible as there is no pt_regs structure in the context the
-tick_nohz_restart_sched_tick function is called and it is not a good
-idea to create hundreds of samples at once.
+Any update on that?
 
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
----
+I have a suggestion:
 
- drivers/oprofile/oprof.c |    3 +++
- include/linux/tick.h     |    4 ++++
- kernel/time/tick-sched.c |   26 +++++++++++++++++++++++++-
- 3 files changed, 32 insertions(+), 1 deletion(-)
 
-Index: quilt-2.6/drivers/oprofile/oprof.c
-===================================================================
---- quilt-2.6.orig/drivers/oprofile/oprof.c
-+++ quilt-2.6/drivers/oprofile/oprof.c
-@@ -12,6 +12,7 @@
- #include <linux/init.h>
- #include <linux/oprofile.h>
- #include <linux/moduleparam.h>
-+#include <linux/tick.h>
- #include <asm/mutex.h>
- 
- #include "oprof.h"
-@@ -103,6 +104,7 @@ int oprofile_start(void)
- 	if (oprofile_started)
- 		goto out;
- 
-+	tick_nohz_disable();
- 	oprofile_reset_stats();
- 
- 	if ((err = oprofile_ops.start()))
-@@ -123,6 +125,7 @@ void oprofile_stop(void)
- 		goto out;
- 	oprofile_ops.stop();
- 	oprofile_started = 0;
-+	tick_nohz_enable();
- 	/* wake up the daemon to read what remains */
- 	wake_up_buffer_waiter();
- out:
-Index: quilt-2.6/include/linux/tick.h
-===================================================================
---- quilt-2.6.orig/include/linux/tick.h
-+++ quilt-2.6/include/linux/tick.h
-@@ -117,6 +117,8 @@ extern void tick_nohz_stop_sched_tick(in
- extern void tick_nohz_restart_sched_tick(void);
- extern ktime_t tick_nohz_get_sleep_length(void);
- extern u64 get_cpu_idle_time_us(int cpu, u64 *last_update_time);
-+extern void tick_nohz_enable(void);
-+extern void tick_nohz_disable(void);
- # else
- static inline void tick_nohz_stop_sched_tick(int inidle) { }
- static inline void tick_nohz_restart_sched_tick(void) { }
-@@ -127,6 +129,8 @@ static inline ktime_t tick_nohz_get_slee
- 	return len;
- }
- static inline u64 get_cpu_idle_time_us(int cpu, u64 *unused) { return -1; }
-+static inline void tick_nohz_enable(void) { }
-+static inline void tick_nohz_disable(void) { }
- # endif /* !NO_HZ */
- 
- #endif
-Index: quilt-2.6/kernel/time/tick-sched.c
-===================================================================
---- quilt-2.6.orig/kernel/time/tick-sched.c
-+++ quilt-2.6/kernel/time/tick-sched.c
-@@ -124,6 +124,29 @@ static int __init setup_tick_nohz(char *
- 
- __setup("nohz=", setup_tick_nohz);
- 
-+/*
-+ * NO HZ currently disabled ?
-+ */
-+static atomic_t tick_nohz_disable_counter = ATOMIC_INIT(0);
-+
-+void tick_nohz_enable(void)
-+{
-+	atomic_dec(&tick_nohz_disable_counter);
-+}
-+EXPORT_SYMBOL_GPL(tick_nohz_enable);
-+
-+static void __tick_nohz_disable(void *dummy)
-+{
-+}
-+
-+void tick_nohz_disable(void)
-+{
-+	if (atomic_inc_return(&tick_nohz_disable_counter) == 1)
-+		/* Wake up all cpus to make them start ticking. */
-+		smp_call_function(__tick_nohz_disable, NULL, 0);
-+}
-+EXPORT_SYMBOL_GPL(tick_nohz_disable);
-+
- /**
-  * tick_nohz_update_jiffies - update jiffies when idle was interrupted
-  *
-@@ -271,7 +294,8 @@ void tick_nohz_stop_sched_tick(int inidl
- 	next_jiffies = get_next_timer_interrupt(last_jiffies);
- 	delta_jiffies = next_jiffies - last_jiffies;
- 
--	if (rcu_needs_cpu(cpu) || printk_needs_cpu(cpu))
-+	if (rcu_needs_cpu(cpu) || printk_needs_cpu(cpu) ||
-+	    atomic_read(&tick_nohz_disable_counter) > 0)
- 		delta_jiffies = 1;
- 	/*
- 	 * Do not stop the tick, if we are only one off
+Instead of decoding protocols in kernel, why not to allow userspace to
+upload timing signatures as specified in lirc.conf ?
 
--- 
-blue skies,
-   Martin.
+As a example, what protocol this is:
 
-"Reality continues to ruin my life." - Calvin.
+http://lirc.sourceforge.net/remotes/toshiba/CT-9922
+
+Best regards,
+	Maxim Levitsky
 
