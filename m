@@ -1,45 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752700AbZE1XsR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752546AbZE1Xwq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752700AbZE1XsR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 19:48:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752459AbZE1XsI
+	id S1752546AbZE1Xwq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 19:52:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751901AbZE1Xwj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 19:48:08 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34614 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752310AbZE1XsH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 19:48:07 -0400
-Date: Thu, 28 May 2009 16:47:20 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Borislav Petkov <borislav.petkov@amd.com>
-Cc: greg@kroah.com, mingo@elte.hu, norsk5@yahoo.com, tglx@linutronix.de,
-       hpa@zytor.com, mchehab@redhat.com, aris@redhat.com, edt@aei.ca,
-       linux-kernel@vger.kernel.org, randy.dunlap@oracle.com,
-       borislav.petkov@amd.com
-Subject: Re: [PATCH 0/4] amd64_edac: misc fixes
-Message-Id: <20090528164720.0af5752b.akpm@linux-foundation.org>
-In-Reply-To: <1242845037-1029-1-git-send-email-borislav.petkov@amd.com>
-References: <1242845037-1029-1-git-send-email-borislav.petkov@amd.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 28 May 2009 19:52:39 -0400
+Received: from kroah.org ([198.145.64.141]:59041 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751308AbZE1Xwi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 19:52:38 -0400
+From: Greg Kroah-Hartman <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 1/2] sysfs: file.c: use create_singlethread_workqueue()
+Date: Thu, 28 May 2009 16:49:02 -0700
+Message-Id: <1243554543-11117-1-git-send-email-gregkh@suse.de>
+X-Mailer: git-send-email 1.6.3.1
+In-Reply-To: <20090528234155.GA10930@kroah.com>
+References: <20090528234155.GA10930@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 May 2009 20:43:53 +0200
-Borislav Petkov <borislav.petkov@amd.com> wrote:
+From: Andrew Morton <akpm@linux-foundation.org>
 
-> here are some minor fixlets which came up lately. I'm sending them
-> separately as an offset from the rest of the patchset since nothing has
-> changed there. For details, see
-> 
-> git://git.kernel.org/pub/scm/linux/kernel/git/bp/bp.git for-next
+We don't need a kernel thread per CPU for this application.
 
-My linux-next x86_64 allmodconfig fails to build drivers/edac/amd64_edac.o:
+Acked-by: Alex Chiang <achiang@hp.com>
+Cc: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ fs/sysfs/file.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-{standard input}: Assembler messages:
-{standard input}:3026: Error: no such instruction: `popcnt %eax,%ecx'
+diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
+index b1606e0..561a9c0 100644
+--- a/fs/sysfs/file.c
++++ b/fs/sysfs/file.c
+@@ -723,7 +723,7 @@ int sysfs_schedule_callback(struct kobject *kobj, void (*func)(void *),
+ 	mutex_unlock(&sysfs_workq_mutex);
+ 
+ 	if (sysfs_workqueue == NULL) {
+-		sysfs_workqueue = create_workqueue("sysfsd");
++		sysfs_workqueue = create_singlethread_workqueue("sysfsd");
+ 		if (sysfs_workqueue == NULL) {
+ 			module_put(owner);
+ 			return -ENOMEM;
+-- 
+1.6.3
 
