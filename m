@@ -1,62 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755035AbZE1LA2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755501AbZE1LEV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755035AbZE1LA2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 07:00:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752214AbZE1LAR
+	id S1755501AbZE1LEV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 07:04:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751521AbZE1LEN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 07:00:17 -0400
-Received: from mx1.emlix.com ([193.175.82.87]:49329 "EHLO mx1.emlix.com"
+	Thu, 28 May 2009 07:04:13 -0400
+Received: from mga03.intel.com ([143.182.124.21]:39978 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753546AbZE1LAQ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 07:00:16 -0400
-From: =?utf-8?q?Daniel=20Gl=C3=B6ckner?= <dg@emlix.com>
-To: Darius Augulis <augulis.darius@gmail.com>,
-       David Brownell <dbrownell@users.sourceforge.net>
-Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
-       =?utf-8?q?Daniel=20Gl=C3=B6ckner?= <dg@emlix.com>
-Subject: [PATCH] imx_udc: don't queue more data when zlp is to be sent
-Date: Thu, 28 May 2009 13:00:14 +0200
-Message-Id: <1243508414-18084-1-git-send-email-dg@emlix.com>
+	id S1751173AbZE1LEN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 07:04:13 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,264,1241420400"; 
+   d="scan'208";a="147867087"
+Date: Thu, 28 May 2009 19:03:36 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Nick Piggin <npiggin@suse.de>, "hugh@veritas.com" <hugh@veritas.com>,
+       "riel@redhat.com" <riel@redhat.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler
+	in the VM v3
+Message-ID: <20090528110336.GA15489@localhost>
+References: <200905271012.668777061@firstfloor.org> <20090527201239.C2C9C1D0294@basil.firstfloor.org> <20090528082616.GG6920@wotan.suse.de> <20090528095934.GA10678@localhost> <20090528101111.GE1065@one.firstfloor.org> <20090528103300.GA15133@localhost> <20090528105103.GG1065@one.firstfloor.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-Organization: emlix gmbh, Goettingen, Germany
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090528105103.GG1065@one.firstfloor.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When a zero-length packet has been requested and another packet is
-written into the fifo, the MX1 tends to send the first byte of the
-previous packet instead of the first byte of the current packet.
-The CRC is adjusted accordingly so that this packet is _not_
-discarded by the host.
+On Thu, May 28, 2009 at 06:51:03PM +0800, Andi Kleen wrote:
+> On Thu, May 28, 2009 at 06:33:00PM +0800, Wu Fengguang wrote:
+> > > > > You haven't waited on writeback here AFAIKS, and have you
+> > > > > *really* verified it is safe to call delete_from_swap_cache?
+> > > > 
+> > > > Good catch. I'll soon submit patches for handling the under
+> > > > read/write IO pages. In this patchset they are simply ignored.
+> > > 
+> > > Yes, we assume the IO device does something sensible with the poisoned
+> > > cache lines and aborts. Later we can likely abort IO requests in a early
+> > > stage on the Linux, but that's more advanced.
+> > > 
+> > > The question is if we need to wait on writeback for correctness? 
+> > 
+> > Not necessary. Because I'm going to add a me_writeback() handler.
+> 
+> Ok but without it. Let's assume me_writeback() is in the future.
+> 
+> I'm mainly interested in correctness (as in not crashing) of this
+> version now.
 
-Waiting for the ZLPS bit to clear avoids these bad packets.
+OK. But I suspect it doesn't matter whether to wait on the writeback
+page in the sense of "don't crash".
 
-Signed-off-by: Daniel Glöckner <dg@emlix.com>
----
- drivers/usb/gadget/imx_udc.c |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
+> Also writeback seems to be only used by nfs/afs/nilfs2, not in
+> the normal case, unless I'm misreading the code. 
+> 
+> The nilfs2 case seems weird, I haven't completely read that.
 
-diff --git a/drivers/usb/gadget/imx_udc.c b/drivers/usb/gadget/imx_udc.c
-index ff7658e..642cceb 100644
---- a/drivers/usb/gadget/imx_udc.c
-+++ b/drivers/usb/gadget/imx_udc.c
-@@ -415,6 +415,13 @@ static int write_packet(struct imx_ep_struct *imx_ep, struct imx_request *req)
- 	u8	*buf;
- 	int	length, count, temp;
- 
-+	if (unlikely(__raw_readl(imx_ep->imx_usb->base +
-+				 USB_EP_STAT(EP_NO(imx_ep))) & EPSTAT_ZLPS)) {
-+		D_TRX(imx_ep->imx_usb->dev, "<%s> zlp still queued in EP %s\n",
-+			__func__, imx_ep->ep.name);
-+		return -1;
-+	}
-+
- 	buf = req->req.buf + req->req.actual;
- 	prefetch(buf);
- 
--- 
-1.6.1.3
+I'll take a look at that :)
 
+> > Then the writeback pages simply won't reach here. And it won't
+> > magically go into writeback state, since the page has been locked.
+> 
+> But since we take the page lock they should not be in writeback anyways,
+> no?
+
+No, writeback pages are normally not locked. But the dirty => writeback
+transition is locked.
+
+Thanks,
+Fengguang
