@@ -1,126 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932336AbZE1ALp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759788AbZE1AOy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932336AbZE1ALp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 May 2009 20:11:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759788AbZE1ALi
+	id S1759788AbZE1AOy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 May 2009 20:14:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755119AbZE1AOp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 May 2009 20:11:38 -0400
-Received: from mail-qy0-f190.google.com ([209.85.221.190]:39530 "EHLO
-	mail-qy0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758284AbZE1ALh convert rfc822-to-8bit (ORCPT
+	Wed, 27 May 2009 20:14:45 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40883 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754129AbZE1AOn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 May 2009 20:11:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=iwsENtOxE29/uHpQ1G7jSwNzPLkrr4EXrCLJ1SMPuVOeDvTVFsdzqaykid4hp56nIE
-         cJjK9XtVaZnJJ17DcSxwaSdGXAwIT1AnHu3dNW86A2Akb4J3t0C9gBLc6HqIrs7XfRad
-         9lISAN9WhEtQmoUyCxYAA9dCLhWqZP4u8/2/E=
-MIME-Version: 1.0
-In-Reply-To: <fa686aa40905271405pc2f1738gc8dd139f61a0e27@mail.gmail.com>
-References: <1243408083.13460.14.camel@debian-nb>
-	 <ed82fe3e0905270739k38018c87ka11f62c5977e45fb@mail.gmail.com>
-	 <20090527150527.GK6805@pengutronix.de>
-	 <87vdnm8sec.fsf@macbook.be.48ers.dk> <4A1D6901.2090508@freescale.com>
-	 <20090527175609.GB31861@flint.arm.linux.org.uk>
-	 <4A1D8FBA.6040802@freescale.com>
-	 <20090527192909.GA32398@flint.arm.linux.org.uk>
-	 <20090527205218.GA5591@sirena.org.uk>
-	 <fa686aa40905271405pc2f1738gc8dd139f61a0e27@mail.gmail.com>
-Date: Wed, 27 May 2009 20:11:37 -0400
-Message-ID: <9e4733910905271711r6aca8308y5e3b9b8d3be25ee@mail.gmail.com>
-Subject: Re: [RFC] [PATCH] Device Tree on ARM platform
-From: Jon Smirl <jonsmirl@gmail.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Russell King <rmk+lkml@arm.linux.org.uk>,
-       devicetree-discuss <devicetree-discuss@ozlabs.org>,
-       linux-kernel@vger.kernel.org, Timur Tabi <timur@freescale.com>,
-       Scott Wood <scottwood@freescale.com>,
-       Janboe Ye <yuan-bo.ye@motorola.com>,
-       linux-arm-kernel@lists.arm.linux.org.uk
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Wed, 27 May 2009 20:14:43 -0400
+Date: Wed, 27 May 2009 17:14:14 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Niel Lambrechts <niel.lambrechts@gmail.com>
+Cc: linux-kernel@vger.kernel.org, eric@anholt.net, jbarnes@virtuousgeek.org,
+       linux-acpi@vger.kernel.org
+Subject: Re: 2.6.30-rc6: i915: Xserver crash - oops after rmmod
+Message-Id: <20090527171414.108710cf.akpm@linux-foundation.org>
+In-Reply-To: <4A11B52E.7080808@gmail.com>
+References: <4A11B52E.7080808@gmail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 27, 2009 at 5:05 PM, Grant Likely <grant.likely@secretlab.ca> wrote:
-> On Wed, May 27, 2009 at 2:52 PM, Mark Brown
-> <broonie@opensource.wolfsonmicro.com> wrote:
->> On Wed, May 27, 2009 at 08:29:10PM +0100, Russell King wrote:
->>> On Wed, May 27, 2009 at 02:08:42PM -0500, Scott Wood wrote:
->>
->>> > I'm not talking about platform specific code, I'm talking about code to
->>> > retrieve information about a device from the device tree.  There would
->>> > not be separate instances of this for "platforms X, Y and Z", just one
->>> > of_platform binding in each driver.  It's no different than having a
->>> > platform bus binding, except in the data structures used.
->>
->>> I really don't see what OF buys us then, apart from additional dependencies
->>> that have to be correct for the kernel to work.  I can only see disadvantages
->>> if all OF is, is a way to pass some file to the kernel to (effectively) tell
->>> it which drivers to use.
->>
->> The main selling points of the device tree AFAICT are that some
->> platforms have to use it it anyway due to the native OS and firmware for
->> the platform use it, the possibility of using the same device tree with
->> more than one OS (modulo unrepresentable holes) and the fact that some
->> people find it more convenient to use than straight data tables
->> (personally I find the two approaches to be much of a muchness there).
->> Perhaps I'm missing something, though?
->
-> Here are some that I've find useful:
->
-> There is the advantage that it decouples the machine description from
-> the kernel code, which in turn seems to encourage code reuse.  There
-> has been a significant decrease in the amount of platform specific
-> code in powerpc since the switch to FDT booting.
+On Mon, 18 May 2009 21:21:18 +0200
+Niel Lambrechts <niel.lambrechts@gmail.com> wrote:
 
-I agree with this. I have observed the same thing.
+> Hi,
 
->
-> There is the advantage of easy multiplatform support.  I regularly
-> build a single kernel image which boots on all my MPC5200 boards, and
-> on my MPC83xx boards.  Because the machine description is a separate
-> image blob, and not hard compiled into the kernel, the kernel doesn't
-> have to be explicitly told what boards it may possibly be booted on
-> (other than turning on the appropriate drivers; handled with modules,
-> just like on x86).  It may not be much of an advantage for current
-> deployed systems, but it is a huge win during development and
-> testing....
+Huge response, huh?
 
-I am routinely booting four different mpc5200 systems off from the
-same NFS tree and the same kernel image. These four mpc5200 system
-have quite different capabilities. There are different audio codecs,
-PCI/no-PCI, ATA/no-ATA, SD cards, RAM, flash (some 8b others 16b),
-they don't even have the console on the same serial port. I build a
-single kernel and test it on all four of these systems. The device
-tree customizes each kernel at boot time to support the right
-hardware.
+> I use s2disk on a daily basis, and I recently tried to switch to UXA in 
+> xorg.conf in anticipation of KMS, for my Lenovo W500 with the integrated 
+> Intel card active:
+> 00:02.0 VGA compatible controller: Intel Corporation Mobile 4 Series 
+> Chipset Integrated Graphics Controller (rev 07)
+> 
+> Resuming worked just fine the last couple of days using UXA but I 
+> admittedly frequently update Mesa/Xorg/git kernel.
+> 
+> Tonight the X server crashed on resume and I was placed back at the KDM 
+> prompt. I thought "$%^&$ the one time I actually had real applications 
+> open! I am switching back to EXA!", so I changed AccelMethod back to 
+> "exa" and decided to unload all i915 modules - i915, drm, and video.
+> 
+> The latter unexpectedly returned "Killed", although none of these 
+> modules showed any 'used by' count.
+> 
+> I then did 'init 5' upon which I had a black screen, and decided to 
+> reboot. I then noticed that the following OOPS occurred prior to the 
+> reboot, likely the result of my "rmmod drm" or "rmmod output".
+> 
+> May 18 19:35:56 linux-7vph kernel: Restarting tasks ... done.
+> May 18 19:36:07 linux-7vph kdm[2882]: X server for display :0 terminated 
+> unexpectedly
+> May 18 19:36:18 linux-7vph bonobo-activation-server (niella-10440): 
+> could not associate with desktop session: Failed to connect to socket 
+> /tmp/dbus-snlESQlAbp: Connection refused
+> May 18 19:36:32 linux-7vph kernel: [drm:gm45_get_vblank_counter] *ERROR* 
+> trying to get vblank count for disabled pipe 0
+> May 18 19:37:01 linux-7vph kernel: [drm:gm45_get_vblank_counter] *ERROR* 
+> trying to get vblank count for disabled pipe 0
+> May 18 19:37:03 linux-7vph init: Switching to runlevel: 3
+> May 18 19:37:34 linux-7vph kernel: mtrr: MTRR 4 not used
+> May 18 19:37:34 linux-7vph kernel: [drm] Module unloaded
+> May 18 19:37:47 linux-7vph kernel: BUG: unable to handle kernel NULL 
+> pointer dereference at 00000010
+> May 18 19:37:47 linux-7vph kernel: IP: [<c02fbbef>] klist_put+0x12/0x6f
+> May 18 19:37:47 linux-7vph kernel: *pde = 00000000
+> May 18 19:37:47 linux-7vph kernel: Oops: 0000 [#1] SMP
+> May 18 19:37:47 linux-7vph kernel: last sysfs file: 
+> /sys/devices/pci0000:00/0000:00:1c.1/0000:03:00.0/rfkill/rfkill1/state
+> May 18 19:37:47 linux-7vph kernel: Modules linked in: usbhid hid tun 
+> i2c_algo_bit af_packet ip6t_LOG xt_tcpudp xt_pkttype ipt_LOG xt_limit 
+> snd_pcm_oss snd_mixer_oss snd_seq binfmt_misc ip6t_REJECT 
+> nf_conntrack_ipv6 ip6table_raw xt_NOTRACK ipt_REJECT xt_state 
+> cpufreq_conservative cpufreq_userspace iptable_raw cpufreq_powersave 
+> iptable_filter acpi_cpufreq speedstep_lib ip6table_mangle 
+> nf_conntrack_netbios_ns nf_conntrack_ipv4 nf_conntrack nf_defrag_ipv4 
+> ip_tables ip6table_filter ip6_tables x_tables ipv6 microcode fuse loop 
+> dm_mod snd_usb_audio snd_usb_lib snd_rawmidi snd_seq_device arc4 ecb 
+> iwlagn iwlcore thinkpad_acpi rfkill led_class snd_hda_codec_conexant 
+> video(-) mac80211 ohci1394 battery ac output nvram ieee1394 rtc_cmos 
+> snd_hda_intel wmi snd_hda_codec rtc_core button snd_hwdep snd_pcm 
+> snd_timer snd i2c_i801 soundcore iTCO_wdt snd_page_alloc 
+> iTCO_vendor_support intel_agp cfg80211 rtc_lib e1000e i2c_core agpgart 
+> sr_mod cdrom joydev sg ehci_hcd uhci_hcd sd_mod usbcore ext4 jbd2 crc16 
+> edd ext3 mbcache jbd fan ahci l
+> May 18 19:37:47 linux-7vph kernel: ibata scsi_mod thermal processor 
+> [last unloaded: drm]
+> May 18 19:37:47 linux-7vph kernel:
+> May 18 19:37:47 linux-7vph kernel: Pid: 10594, comm: rmmod Not tainted 
+> (2.6.30-rc6-pae #47) 40622XG
+> May 18 19:37:47 linux-7vph kernel: EIP: 0060:[<c02fbbef>] EFLAGS: 
+> 00010246 CPU: 1
+> May 18 19:37:47 linux-7vph kernel: EIP is at klist_put+0x12/0x6f
+> May 18 19:37:47 linux-7vph kernel: EAX: f5c281f8 EBX: 00000001 ECX: 
+> 00000004 EDX: 00000001
+> May 18 19:37:47 linux-7vph kernel: ESI: 00000000 EDI: f5c281f8 EBP: 
+> f44adef0 ESP: f44adedc
+> May 18 19:37:47 linux-7vph kernel:  DS: 007b ES: 007b FS: 00d8 GS: 0033 
+> SS: 0068
+> May 18 19:37:47 linux-7vph kernel: Process rmmod (pid: 10594, 
+> ti=f44ac000 task=f5c7f0b0 task.ti=f44ac000)
+> May 18 19:37:47 linux-7vph kernel: Stack:
+> May 18 19:37:47 linux-7vph kernel:  c0134d30 00000000 00000002 00000000 
+> c04297b4 f44adef8 c02fbc77 f44adf18
+> May 18 19:37:47 linux-7vph kernel:  c02fbd7b c04376d0 c04376d0 f5c281f8 
+> f5c7f0b0 00000000 f85e08c0 f44adf2c
+> May 18 19:37:47 linux-7vph kernel:  c026d83e 00000000 f85e08c0 00000000 
+> f44adf3c c026e6e1 f85e0980 bf994ca0
+> May 18 19:37:47 linux-7vph kernel: Call Trace:
+> May 18 19:37:47 linux-7vph kernel:  [<c0134d30>] ? insert_work+0x78/0x81
+> May 18 19:37:47 linux-7vph kernel:  [<c02fbc77>] ? klist_del+0xd/0xf
+> May 18 19:37:47 linux-7vph kernel:  [<c02fbd7b>] ? klist_remove+0x58/0x81
+> May 18 19:37:47 linux-7vph kernel:  [<c026d83e>] ? 
+> bus_remove_driver+0x5c/0x89
+> May 18 19:37:47 linux-7vph kernel:  [<c026e6e1>] ? 
+> driver_unregister+0x2a/0x2e
+> May 18 19:37:47 linux-7vph kernel:  [<c0226253>] ? 
+> acpi_bus_unregister_driver+0xd/0xf
+> May 18 19:37:47 linux-7vph kernel:  [<f85de371>] ? 
+> cleanup_module+0xd/0x25 [video]
+> May 18 19:37:47 linux-7vph kernel:  [<c01477d5>] ? 
+> sys_delete_module+0x18a/0x1e3
+> May 18 19:37:47 linux-7vph kernel:  [<c017b9be>] ? remove_vma+0x46/0x4c
+> May 18 19:37:47 linux-7vph kernel:  [<c017c5d2>] ? do_munmap+0x20a/0x225
+> May 18 19:37:47 linux-7vph kernel:  [<c01029d4>] ? 
+> sysenter_do_call+0x12/0x28
+> May 18 19:37:47 linux-7vph kernel: Code: 90 83 7d f0 00 74 09 85 ff 74 
+> 05 89 f8 ff 55 f0 8b 46 04 5a 5b 5e 5f 5d c3 55 89 e5 57 89 c7 56 53 89 
+> d3 83 ec 08 8b 30 83 e6 fe <8b> 46 10 89 45 f0 89 f0 e8 0b f4 00 00 84 
+> db 74 17 f6 07 01 74
+> May 18 19:37:47 linux-7vph kernel: EIP: [<c02fbbef>] klist_put+0x12/0x6f 
+> SS:ESP 0068:f44adedc
+> May 18 19:37:47 linux-7vph kernel: CR2: 0000000000000010
+> May 18 19:37:47 linux-7vph kernel: ---[ end trace c76e3f0980caa485 ]---
+> May 18 19:38:41 linux-7vph sudo:   niella : TTY=tty2 ; PWD=/home/niella 
+> ; USER=root ; COMMAND=/sbin/reboot
+> 
 
-We want to use this capability in the field. A single update can
-services multiple versions of the hardware.
+The wordwrapping makes this painful to read.
 
-> That being said, I've been told that Motorola has shipped phones with
-> FDT support in the kernel for exactly the reason of booting a single
-> kernel image on multiple versions of the device.
->
-> g.
->
-> --
-> Grant Likely, B.Sc., P.Eng.
-> Secret Lab Technologies Ltd.
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+rmmod crashed under drivers/acpi/video.c:acpi_video_exit()'s call to
+acpi_bus_unregister_driver().  So it might be an acpi-related bug.
 
+If it's reproducible at all, please raise a (non-wordwrapped!) report
+against acpi at bugzilla.kernel.org, thanks.
 
-
--- 
-Jon Smirl
-jonsmirl@gmail.com
