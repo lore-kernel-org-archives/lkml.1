@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760018AbZE1LmE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760271AbZE1LmZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760018AbZE1LmE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 07:42:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755125AbZE1Lkd
+	id S1760271AbZE1LmZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 07:42:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755762AbZE1Lkf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 07:40:33 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:57805 "EHLO mx2.redhat.com"
+	Thu, 28 May 2009 07:40:35 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:57809 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758201AbZE1Lk1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 07:40:27 -0400
-Date: Thu, 28 May 2009 13:35:43 +0200
+	id S1755545AbZE1Lkc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 07:40:32 -0400
+Date: Thu, 28 May 2009 13:35:54 +0200
 From: Oleg Nesterov <oleg@redhat.com>
 To: Roland McGrath <roland@redhat.com>
 Cc: Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org
-Subject: [RFC PATCH 3/12 v2] ptrace: avoid using task->ptrace when possible
-	in ptrace.{c,h}
-Message-ID: <20090528113543.GA18688@redhat.com>
+Subject: [RFC PATCH 8/12 v2] ptrace: mv task->parent ptrace_ctx->tracer
+Message-ID: <20090528113554.GA18712@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -25,162 +24,247 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Do some s/->ptrace/task_ptrace()/ changes in ptrace.{c,h} as a preparation
-for the future changes.
+Move task_struct->parent into ptrace_ctx->tracer and change the users
+accordingly.
 
-Change ptrace_setoptions() to access ->ptrace only once.
+The next patch will add the helper to simplify/cleanup the usage of
+->tracer.
 
- include/linux/ptrace.h |   31 ++++++++++++++++---------------
- kernel/ptrace.c        |   28 +++++++++++++++-------------
- 2 files changed, 31 insertions(+), 28 deletions(-)
+ include/linux/sched.h     |    8 +-------
+ include/linux/init_task.h |    1 -
+ include/linux/ptrace.h    |   18 ++++++++++--------
+ include/linux/tracehook.h |    4 ++--
+ kernel/ptrace.c           |    8 ++++----
+ kernel/exit.c             |    6 +-----
+ kernel/signal.c           |   20 +++++++++++++-------
+ 7 files changed, 31 insertions(+), 34 deletions(-)
 
---- PTRACE/include/linux/ptrace.h~2_PTRACE	2009-05-24 21:36:37.000000000 +0200
-+++ PTRACE/include/linux/ptrace.h	2009-05-28 06:26:19.000000000 +0200
-@@ -106,15 +106,27 @@ static inline int ptrace_reparented(stru
- {
- 	return child->real_parent != child->parent;
- }
-+
-+/**
-+ * task_ptrace - return %PT_* flags that apply to a task
-+ * @task:	pointer to &task_struct in question
-+ *
-+ * Returns the %PT_* flags that apply to @task.
-+ */
-+static inline int task_ptrace(struct task_struct *task)
-+{
-+	return task->ptrace;
-+}
-+
- static inline void ptrace_link(struct task_struct *child,
- 			       struct task_struct *new_parent)
- {
--	if (unlikely(child->ptrace))
-+	if (unlikely(task_ptrace(child)))
- 		__ptrace_link(child, new_parent);
- }
- static inline void ptrace_unlink(struct task_struct *child)
- {
--	if (unlikely(child->ptrace))
-+	if (unlikely(task_ptrace(child)))
- 		__ptrace_unlink(child);
- }
+--- PTRACE/include/linux/sched.h~7_MV_PARENT	2009-05-28 08:23:13.000000000 +0200
++++ PTRACE/include/linux/sched.h	2009-05-28 08:41:11.000000000 +0200
+@@ -1186,13 +1186,7 @@ struct task_struct {
+ 	/* Canary value for the -fstack-protector gcc feature */
+ 	unsigned long stack_canary;
  
-@@ -122,19 +134,8 @@ int generic_ptrace_peekdata(struct task_
- int generic_ptrace_pokedata(struct task_struct *tsk, long addr, long data);
+-	/* 
+-	 * pointers to (original) parent process, youngest child, younger sibling,
+-	 * older sibling, respectively.  (p->father can be replaced with 
+-	 * p->real_parent->pid)
+-	 */
+-	struct task_struct *real_parent; /* real parent process */
+-	struct task_struct *parent; /* recipient of SIGCHLD, wait4() reports */
++	struct task_struct *real_parent; /* parent process */
+ 	/*
+ 	 * children/sibling forms the list of my natural children
+ 	 */
+--- PTRACE/include/linux/init_task.h~7_MV_PARENT	2009-05-28 04:12:02.000000000 +0200
++++ PTRACE/include/linux/init_task.h	2009-05-28 08:41:11.000000000 +0200
+@@ -139,7 +139,6 @@ extern struct cred init_cred;
+ 	.ptraced	= LIST_HEAD_INIT(tsk.ptraced),			\
+ 	.ptrace_entry	= LIST_HEAD_INIT(tsk.ptrace_entry),		\
+ 	.real_parent	= &tsk,						\
+-	.parent		= &tsk,						\
+ 	.children	= LIST_HEAD_INIT(tsk.children),			\
+ 	.sibling	= LIST_HEAD_INIT(tsk.sibling),			\
+ 	.group_leader	= &tsk,						\
+--- PTRACE/include/linux/ptrace.h~7_MV_PARENT	2009-05-28 08:35:41.000000000 +0200
++++ PTRACE/include/linux/ptrace.h	2009-05-28 08:41:11.000000000 +0200
+@@ -76,7 +76,8 @@
+ #include <linux/sched.h>		/* For struct task_struct.  */
  
- /**
-- * task_ptrace - return %PT_* flags that apply to a task
-- * @task:	pointer to &task_struct in question
-- *
-- * Returns the %PT_* flags that apply to @task.
-- */
--static inline int task_ptrace(struct task_struct *task)
+ struct ptrace_context {
+-	unsigned long	flags;
++	unsigned long		flags;
++	struct task_struct	*tracer;
+ };
+ 
+ extern int alloc_ptrace_context(struct task_struct *child);
+@@ -103,11 +104,6 @@ extern int __ptrace_may_access(struct ta
+ /* Returns true on success, false on denial. */
+ extern bool ptrace_may_access(struct task_struct *task, unsigned int mode);
+ 
+-static inline int ptrace_reparented(struct task_struct *child)
 -{
--	return task->ptrace;
+-	return child->real_parent != child->parent;
 -}
 -
--/**
-  * ptrace_event - possibly stop for a ptrace event notification
-- * @mask:	%PT_* bit to check in @current->ptrace
-+ * @mask:	%PT_* bit to check in task_ptrace(@current)
-  * @event:	%PTRACE_EVENT_* value to report if @mask is set
-  * @message:	value for %PTRACE_GETEVENTMSG to return
-  *
-@@ -147,7 +148,7 @@ static inline int task_ptrace(struct tas
-  */
- static inline int ptrace_event(int mask, int event, unsigned long message)
- {
--	if (mask && likely(!(current->ptrace & mask)))
-+	if (mask && likely(!(task_ptrace(current) & mask)))
- 		return 0;
- 	current->ptrace_message = message;
- 	ptrace_notify((event << 8) | SIGTRAP);
---- PTRACE/kernel/ptrace.c~2_PTRACE	2009-05-24 21:36:37.000000000 +0200
-+++ PTRACE/kernel/ptrace.c	2009-05-28 06:26:19.000000000 +0200
-@@ -79,7 +79,7 @@ static void ptrace_untrace(struct task_s
-  */
- void __ptrace_unlink(struct task_struct *child)
- {
--	BUG_ON(!child->ptrace);
-+	BUG_ON(!task_ptrace(child));
+ /**
+  * task_ptrace - return %PT_* flags that apply to a task
+  * @task:	pointer to &task_struct in question
+@@ -123,6 +119,12 @@ static inline int task_ptrace(struct tas
+ 		task->ptrace_ctx->flags : 0;
+ }
  
- 	child->ptrace = 0;
- 	child->parent = child->real_parent;
-@@ -105,7 +105,7 @@ int ptrace_check_attach(struct task_stru
++static inline int ptrace_reparented(struct task_struct *child)
++{
++	return unlikely(task_ptrace(child)) &&
++		child->ptrace_ctx->tracer != child->real_parent;
++}
++
+ static inline void ptrace_unlink(struct task_struct *child)
+ {
+ 	if (unlikely(task_ptrace(child)))
+@@ -167,10 +169,10 @@ static inline void ptrace_init_task(stru
+ {
+ 	INIT_LIST_HEAD(&child->ptrace_entry);
+ 	INIT_LIST_HEAD(&child->ptraced);
+-	child->parent = child->real_parent;
+ 
+ 	if (unlikely(child->ptrace_ctx) && task_ptrace(current))
+-		ptrace_link(child, task_ptrace(current), current->parent);
++		ptrace_link(child, task_ptrace(current),
++				current->ptrace_ctx->tracer);
+ }
+ 
+ /**
+--- PTRACE/include/linux/tracehook.h~7_MV_PARENT	2009-05-28 08:19:16.000000000 +0200
++++ PTRACE/include/linux/tracehook.h	2009-05-28 08:41:11.000000000 +0200
+@@ -171,8 +171,8 @@ static inline int tracehook_unsafe_exec(
+  */
+ static inline struct task_struct *tracehook_tracer_task(struct task_struct *tsk)
+ {
+-	if (task_ptrace(tsk) & PT_PTRACED)
+-		return rcu_dereference(tsk->parent);
++	if (tsk->ptrace_ctx)
++		return rcu_dereference(tsk->ptrace_ctx->tracer);
+ 	return NULL;
+ }
+ 
+--- PTRACE/kernel/ptrace.c~7_MV_PARENT	2009-05-28 08:35:41.000000000 +0200
++++ PTRACE/kernel/ptrace.c	2009-05-28 08:41:11.000000000 +0200
+@@ -47,7 +47,7 @@ void ptrace_link(struct task_struct *chi
+ 
+ 	BUG_ON(!list_empty(&child->ptrace_entry));
+ 	list_add(&child->ptrace_entry, &tracer->ptraced);
+-	child->parent = tracer;
++	child->ptrace_ctx->tracer = tracer;
+ }
+ 
+ /*
+@@ -85,7 +85,7 @@ void __ptrace_unlink(struct task_struct 
+ 	BUG_ON(!task_ptrace(child));
+ 
+ 	child->ptrace_ctx->flags = 0;
+-	child->parent = child->real_parent;
++	child->ptrace_ctx->tracer = NULL;
+ 	list_del_init(&child->ptrace_entry);
+ 
+ 	arch_ptrace_untrace(child);
+@@ -108,7 +108,7 @@ int ptrace_check_attach(struct task_stru
  	 * be changed by us so it's not changing right after this.
  	 */
  	read_lock(&tasklist_lock);
--	if ((child->ptrace & PT_PTRACED) && child->parent == current) {
-+	if (task_ptrace(child) && child->parent == current) {
+-	if (task_ptrace(child) && child->parent == current) {
++	if (task_ptrace(child) && child->ptrace_ctx->tracer == current) {
  		ret = 0;
  		/*
  		 * child->sighand can't be NULL, release_task()
-@@ -203,7 +203,7 @@ int ptrace_attach(struct task_struct *ta
- 	retval = -EPERM;
- 	if (unlikely(task->exit_state))
- 		goto unlock_tasklist;
--	if (task->ptrace)
-+	if (task_ptrace(task))
- 		goto unlock_tasklist;
- 
- 	task->ptrace = PT_PTRACED;
-@@ -234,7 +234,7 @@ int ptrace_traceme(void)
- 
+@@ -268,7 +268,7 @@ int ptrace_traceme(void)
  	write_lock_irq(&tasklist_lock);
  	/* Are we already being traced? */
--	if (!current->ptrace) {
-+	if (!task_ptrace(current)) {
- 		ret = security_ptrace_traceme(current->parent);
+ 	if (!task_ptrace(current)) {
+-		ret = security_ptrace_traceme(current->parent);
++		ret = security_ptrace_traceme(current->real_parent);
  		/*
  		 * Check PF_EXITING to ensure ->real_parent has not passed
-@@ -315,7 +315,7 @@ int ptrace_detach(struct task_struct *ch
- 	 * This child can be already killed. Make sure de_thread() or
- 	 * our sub-thread doing do_wait() didn't do release_task() yet.
- 	 */
--	if (child->ptrace) {
-+	if (task_ptrace(child)) {
- 		child->exit_code = data;
- 		dead = __ptrace_detach(current, child);
+ 		 * exit_ptrace(). Otherwise we don't report the error but
+--- PTRACE/kernel/exit.c~7_MV_PARENT	2009-05-28 04:12:02.000000000 +0200
++++ PTRACE/kernel/exit.c	2009-05-28 08:41:11.000000000 +0200
+@@ -336,7 +336,7 @@ static void reparent_to_kthreadd(void)
+ 
+ 	ptrace_unlink(current);
+ 	/* Reparent to init */
+-	current->real_parent = current->parent = kthreadd_task;
++	current->real_parent = kthreadd_task;
+ 	list_move_tail(&current->sibling, &current->real_parent->children);
+ 
+ 	/* Set the exit signal to SIGCHLD so we signal init on exit */
+@@ -780,10 +780,6 @@ static void forget_original_parent(struc
+ 
+ 	list_for_each_entry_safe(p, n, &father->children, sibling) {
+ 		p->real_parent = reaper;
+-		if (p->parent == father) {
+-			BUG_ON(task_ptrace(p));
+-			p->parent = p->real_parent;
+-		}
+ 		reparent_thread(father, p, &dead_children);
  	}
-@@ -402,29 +402,31 @@ int ptrace_writedata(struct task_struct 
- 
- static int ptrace_setoptions(struct task_struct *child, long data)
+ 	write_unlock_irq(&tasklist_lock);
+--- PTRACE/kernel/signal.c~7_MV_PARENT	2009-05-28 04:14:38.000000000 +0200
++++ PTRACE/kernel/signal.c	2009-05-28 08:43:12.000000000 +0200
+@@ -1399,6 +1399,7 @@ int do_notify_parent(struct task_struct 
  {
--	child->ptrace &= ~PT_TRACE_MASK;
-+	unsigned int new_flags = 0;
+ 	struct siginfo info;
+ 	unsigned long flags;
++	struct task_struct *parent;
+ 	struct sighand_struct *psig;
+ 	int ret = sig;
  
- 	if (data & PTRACE_O_TRACESYSGOOD)
--		child->ptrace |= PT_TRACESYSGOOD;
-+		new_flags |= PT_TRACESYSGOOD;
+@@ -1410,6 +1411,11 @@ int do_notify_parent(struct task_struct 
+ 	BUG_ON(!task_ptrace(tsk) &&
+ 	       (tsk->group_leader != tsk || !thread_group_empty(tsk)));
  
- 	if (data & PTRACE_O_TRACEFORK)
--		child->ptrace |= PT_TRACE_FORK;
-+		new_flags |= PT_TRACE_FORK;
++	if (task_ptrace(tsk))
++		parent = tsk->ptrace_ctx->tracer;
++	else
++		parent = tsk->real_parent;
++
+ 	info.si_signo = sig;
+ 	info.si_errno = 0;
+ 	/*
+@@ -1425,7 +1431,7 @@ int do_notify_parent(struct task_struct 
+ 	 * correct to rely on this
+ 	 */
+ 	rcu_read_lock();
+-	info.si_pid = task_pid_nr_ns(tsk, tsk->parent->nsproxy->pid_ns);
++	info.si_pid = task_pid_nr_ns(tsk, parent->nsproxy->pid_ns);
+ 	info.si_uid = __task_cred(tsk)->uid;
+ 	rcu_read_unlock();
  
- 	if (data & PTRACE_O_TRACEVFORK)
--		child->ptrace |= PT_TRACE_VFORK;
-+		new_flags |= PT_TRACE_VFORK;
+@@ -1444,7 +1450,7 @@ int do_notify_parent(struct task_struct 
+ 		info.si_status = tsk->exit_code >> 8;
+ 	}
  
- 	if (data & PTRACE_O_TRACECLONE)
--		child->ptrace |= PT_TRACE_CLONE;
-+		new_flags |= PT_TRACE_CLONE;
+-	psig = tsk->parent->sighand;
++	psig = parent->sighand;
+ 	spin_lock_irqsave(&psig->siglock, flags);
+ 	if (!task_ptrace(tsk) && sig == SIGCHLD &&
+ 	    (psig->action[SIGCHLD-1].sa.sa_handler == SIG_IGN ||
+@@ -1469,8 +1475,8 @@ int do_notify_parent(struct task_struct 
+ 			sig = -1;
+ 	}
+ 	if (valid_signal(sig) && sig > 0)
+-		__group_send_sig_info(sig, &info, tsk->parent);
+-	__wake_up_parent(tsk, tsk->parent);
++		__group_send_sig_info(sig, &info, parent);
++	__wake_up_parent(tsk, parent);
+ 	spin_unlock_irqrestore(&psig->siglock, flags);
  
- 	if (data & PTRACE_O_TRACEEXEC)
--		child->ptrace |= PT_TRACE_EXEC;
-+		new_flags |= PT_TRACE_EXEC;
+ 	return ret;
+@@ -1484,7 +1490,7 @@ static void do_notify_parent_cldstop(str
+ 	struct sighand_struct *sighand;
  
- 	if (data & PTRACE_O_TRACEVFORKDONE)
--		child->ptrace |= PT_TRACE_VFORK_DONE;
-+		new_flags |= PT_TRACE_VFORK_DONE;
+ 	if (task_ptrace(tsk))
+-		parent = tsk->parent;
++		parent = tsk->ptrace_ctx->tracer;
+ 	else {
+ 		tsk = tsk->group_leader;
+ 		parent = tsk->real_parent;
+@@ -1544,7 +1550,7 @@ static inline int may_ptrace_stop(void)
+ 	 * is safe to enter schedule().
+ 	 */
+ 	if (unlikely(current->mm->core_state) &&
+-	    unlikely(current->mm == current->parent->mm))
++	    unlikely(current->mm == current->ptrace_ctx->tracer->mm))
+ 		return 0;
  
- 	if (data & PTRACE_O_TRACEEXIT)
--		child->ptrace |= PT_TRACE_EXIT;
-+		new_flags |= PT_TRACE_EXIT;
+ 	return 1;
+@@ -1777,7 +1783,7 @@ static int ptrace_signal(int signr, sigi
+ 		info->si_code = SI_USER;
  
-+	child->ptrace &= ~PT_TRACE_MASK;
-+	child->ptrace |= new_flags;
- 	return (data & ~PTRACE_O_MASK) ? -EINVAL : 0;
- }
- 
+ 		rcu_read_lock();
+-		tracer = current->parent;
++		tracer = current->ptrace_ctx->tracer;
+ 		if (task_ptrace(current)) {
+ 			info->si_pid = task_pid_vnr(tracer);
+ 			info->si_uid = task_uid(tracer);
 
