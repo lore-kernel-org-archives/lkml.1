@@ -1,83 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756978AbZE1KdZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758198AbZE1KeB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756978AbZE1KdZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 06:33:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754083AbZE1KdS
+	id S1758198AbZE1KeB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 06:34:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754583AbZE1Kdy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 06:33:18 -0400
-Received: from mga03.intel.com ([143.182.124.21]:17013 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752835AbZE1KdR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 06:33:17 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,264,1241420400"; 
-   d="scan'208";a="147860818"
-Date: Thu, 28 May 2009 18:33:00 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Nick Piggin <npiggin@suse.de>, "hugh@veritas.com" <hugh@veritas.com>,
-       "riel@redhat.com" <riel@redhat.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler
-	in the VM v3
-Message-ID: <20090528103300.GA15133@localhost>
-References: <200905271012.668777061@firstfloor.org> <20090527201239.C2C9C1D0294@basil.firstfloor.org> <20090528082616.GG6920@wotan.suse.de> <20090528095934.GA10678@localhost> <20090528101111.GE1065@one.firstfloor.org>
+	Thu, 28 May 2009 06:33:54 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:36896 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754083AbZE1Kdx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 06:33:53 -0400
+Date: Thu, 28 May 2009 12:33:35 +0200
+From: Robert Schwebel <r.schwebel@pengutronix.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: David Miller <davem@davemloft.net>, devicetree-discuss@ozlabs.org,
+       linux@arm.linux.org.uk, linux-kernel@vger.kernel.org,
+       linux-arm-kernel@lists.arm.linux.org.uk, scottwood@freescale.com,
+       yuan-bo.ye@motorola.com, timur@freescale.com
+Subject: Re: [RFC] [PATCH] Device Tree on ARM platform
+Message-ID: <20090528103335.GW6805@pengutronix.de>
+References: <20090527175609.GB31861@flint.arm.linux.org.uk> <1243496236.3171.140.camel@pasglop> <20090528091513.GA14789@n2100.arm.linux.org.uk> <20090528.025739.16559619.davem@davemloft.net> <1243505493.5573.29.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <20090528101111.GE1065@one.firstfloor.org>
+In-Reply-To: <1243505493.5573.29.camel@pasglop>
+X-Sent-From: Pengutronix Entwicklungszentrum Nord - Hildesheim
+X-URL: http://www.pengutronix.de/
+X-IRC: #ptxdist @freenode
+X-Accept-Language: de,en
+X-Accept-Content-Type: text/plain
+X-Impressum: Pengutronix - Linux Solutions for Science and Industry
+	Handelsregister:  Amtsgericht Hildesheim, HRA 2686 Peiner Strasse
+	6-8, 31137 Hildesheim, Germany Phone: +49-5121-206917-0 |  Fax:
+	+49-5121-206917-5555 Inhaber: Dipl.-Ing. Robert Schwebel
+X-Message-Flag: See Message Headers for Impressum
+X-Uptime: 12:23:13 up 90 days, 20:05,  6 users,  load average: 0.04, 0.03,
+	0.00
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:219:66ff:fe5b:d0e3
+X-SA-Exim-Mail-From: rsc@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 28, 2009 at 06:11:11PM +0800, Andi Kleen wrote:
-> On Thu, May 28, 2009 at 05:59:34PM +0800, Wu Fengguang wrote:
-> > Dirty swap cache page is tricky to handle. The page could live both in page
-> > cache and swap cache(ie. page is freshly swapped in). So it could be referenced
-> > concurrently by 2 types of PTEs: one normal PTE and another swap PTE. We try to
-> > handle them consistently by calling try_to_unmap(TTU_IGNORE_HWPOISON) to convert
-> > the normal PTEs to swap PTEs, and then
-> >         - clear dirty bit to prevent IO
-> >         - remove from LRU
-> >         - but keep in the swap cache, so that when we return to it on
-> >           a later page fault, we know the application is accessing
-> >           corrupted data and shall be killed (we installed simple
-> >           interception code in do_swap_page to catch it).
-> 
-> That's a good description. I'll add it as a comment to the code.
+On Thu, May 28, 2009 at 08:11:33PM +1000, Benjamin Herrenschmidt wrote:
+> The possibilities are endless. _BUT_ it does require some careful
+> thinking to get things right. To that extent, I do agree with Russell
+> that rather than a "violent" conversion, ARM should first try things out
+> as an opt-in for a few platforms and see how it goes.
 
-OK, thanks.
+I think that the overall discussion goes into a very good direction.
 
-> > > You haven't waited on writeback here AFAIKS, and have you
-> > > *really* verified it is safe to call delete_from_swap_cache?
-> > 
-> > Good catch. I'll soon submit patches for handling the under
-> > read/write IO pages. In this patchset they are simply ignored.
-> 
-> Yes, we assume the IO device does something sensible with the poisoned
-> cache lines and aborts. Later we can likely abort IO requests in a early
-> stage on the Linux, but that's more advanced.
-> 
-> The question is if we need to wait on writeback for correctness? 
+The level of agreement is not as low as it might look like, I agree with
+most of what David Gibson, benh and rmk have said so far; the problems
+we've seen have been well identified. In the end it's probably a matter
+of finding enough time to actually implement for example a prototype for
+PXA.
 
-Not necessary. Because I'm going to add a me_writeback() handler.
-
-Then the writeback pages simply won't reach here. And it won't
-magically go into writeback state, since the page has been locked.
-
-Thanks,
-Fengguang
-
-> We still don't want to crash if we take a page away that is currently
-> writebacked.
-> 
-> My original assumption was that taking the page lock would take
-> care of that. Is that not true?
-> 
-> -Andi
-> -- 
-> ak@linux.intel.com -- Speaking for myself only.
+rsc
+-- 
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
