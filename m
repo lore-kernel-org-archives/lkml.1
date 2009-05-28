@@ -1,108 +1,301 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760808AbZE1JWP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932084AbZE1JZP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760808AbZE1JWP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 05:22:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753183AbZE1JWA
+	id S932084AbZE1JZP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 05:25:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754966AbZE1JZE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 05:22:00 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:53529 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751936AbZE1JV7 (ORCPT
+	Thu, 28 May 2009 05:25:04 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:39049 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753183AbZE1JZB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 05:21:59 -0400
-Date: Thu, 28 May 2009 10:15:13 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Scott Wood <scottwood@freescale.com>,
-       devicetree-discuss <devicetree-discuss@ozlabs.org>,
-       linux-kernel@vger.kernel.org, Timur Tabi <timur@freescale.com>,
-       Janboe Ye <yuan-bo.ye@motorola.com>,
-       linux-arm-kernel@lists.arm.linux.org.uk
-Subject: Re: [RFC] [PATCH] Device Tree on ARM platform
-Message-ID: <20090528091513.GA14789@n2100.arm.linux.org.uk>
-References: <1243408083.13460.14.camel@debian-nb> <fa686aa40905270727m31250984tf12249fc87179ce9@mail.gmail.com> <ed82fe3e0905270739k38018c87ka11f62c5977e45fb@mail.gmail.com> <20090527150527.GK6805@pengutronix.de> <87vdnm8sec.fsf@macbook.be.48ers.dk> <4A1D6901.2090508@freescale.com> <20090527175609.GB31861@flint.arm.linux.org.uk> <1243496236.3171.140.camel@pasglop>
-MIME-Version: 1.0
+	Thu, 28 May 2009 05:25:01 -0400
+Date: Thu, 28 May 2009 11:31:41 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Andi Kleen <andi@firstfloor.org>, hugh@veritas.com, riel@redhat.com,
+       akpm@linux-foundation.org, chris.mason@oracle.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       fengguang.wu@intel.com
+Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler in the VM v3
+Message-ID: <20090528093141.GD1065@one.firstfloor.org>
+References: <200905271012.668777061@firstfloor.org> <20090527201239.C2C9C1D0294@basil.firstfloor.org> <20090528082616.GG6920@wotan.suse.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1243496236.3171.140.camel@pasglop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090528082616.GG6920@wotan.suse.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 28, 2009 at 05:37:16PM +1000, Benjamin Herrenschmidt wrote:
-> On Wed, 2009-05-27 at 18:56 +0100, Russell King wrote:
-> > 
-> > smc91x is a prime example of the kind of information drivers need - base
-> > address and irq are very much insufficient to describe how this device is
-> > connected.  There's much more information required to specify this device
-> > fully, and throwing it into the driver doesn't work.  We've been there
-> > and proven that point.
+On Thu, May 28, 2009 at 10:26:16AM +0200, Nick Piggin wrote:
+
+Thanks for the review.
+
+> > + *
+> > + * Also there are some races possible while we get from the
+> > + * error detection to actually handle it.
+> > + */
+> > +
+> > +struct to_kill {
+> > +	struct list_head nd;
+> > +	struct task_struct *tsk;
+> > +	unsigned long addr;
+> > +};
 > 
-> The device-tree is a very nice and convenient way to convey all the
-> informations the driver need straight to the driver without any platform
-> code in the middle :-)
+> It would be kinda nice to have a field in task_struct that is usable
+> say for anyone holding the tasklist lock for write. Then you could
 
-I'm still uncertain whether that's actually a true statement.  For some
-cases, of course it's true, but I have a nasty suspicion that we have
-corner cases where OF won't cope well with.
+I don't want to hold the tasklist lock for writing all the time, memory
+failure handling can sleep.
 
-As I see it, if we were to convert to OF, we're boxing ourselves in to
-a corner that would be extremely difficult to get out of.  We would
-never be able to step back from OF.  Lets take an example.  If we were
-to convert PXA to OF including all the PXA SoC drivers, and a board
-configuration came along which required hacks to a driver.  Later on
-we find that most platform authors are applying similar hacks because
-their hardware is subtly different but those differences can't be
-expressed via OF.  At this point, what do we do?  We can't say "well,
-OF doesn't work well on this platform, we want to get rid of it" that
-would be extremely difficult to impossible to do.
+> make a list with them. But I guess it isn't worthwhile unless there
+> are other users.
+
+It would need to be reserved for this, which definitely doesn't make
+worth it. Also I need the  address too, a list head alone wouldn't be enough.
 
 
-For example, how would an IrDA transceiver be expressed in OF?
 
-Obviously it would have to start off with some sort of UART definition
-for SIR, with a separate (and sometimes unrelated in terms of register
-space and SoC pin configuration) FIR unit.  Whether FIR is used or not
-is platform specific.  So far so good, I don't see a problem yet.
+> > +			printk(KERN_ERR "MCE: Out of memory while machine check handling\n");
+> > +			return;
+> > +		}
+> > +	}
+> > +	tk->addr = page_address_in_vma(p, vma);
+> > +	if (tk->addr == -EFAULT) {
+> > +		printk(KERN_INFO "MCE: Failed to get address in VMA\n");
+> 
+> I don't know if this is very helpful message. I could legitimately happen and
+> nothing anybody can do about it...
 
-We then have one or two GPIOs doing some function - eg, one GPIO might
-be a simple power on/off while the other controls FIR or SIR mode in
-the transceiver itself.  Or the two lines might be a bit combination
-which selects 'off', 'on + sir', 'on + fir' modes depending on the
-transceiver used.  In the case of one GPIO it might be the mode select
-or it might be the power control.
+Can you suggest a better message?
 
-I suspect this can be expressed by having some sort of OF table specifying
-several gpios & their value for each combination of power & mode...
-except some platforms have special control registers in FPGAs which do
-not appear as GPIOs... so how are those expressed?  We have function
-pointers back into platform code to cope with this at present.
+> 
+> > +		tk->addr = 0;
+> > +		fail = 1;
+> 
+> Fail doesn't seem to be used anywhere.
+
+Ah yes that was a remnant of a error checking scheme I discard later.
+I'll remove it thanks.
+
+> > +	list_add_tail(&tk->nd, to_kill);
+> > +}
+> > +
+> > +/*
+> > + * Kill the processes that have been collected earlier.
+> > + */
+> > +static void kill_procs_ao(struct list_head *to_kill, int doit, int trapno,
+> > +			  int fail, unsigned long pfn)
+> 
+> I guess "doit" etc is obvious once reading the code and caller, but maybe a
+> quick comment in the header to describe?
+
+Ok.
+
+> 
+> > +{
+> > +	struct to_kill *tk, *next;
+> > +
+> > +	list_for_each_entry_safe (tk, next, to_kill, nd) {
+> > +		if (doit) {
+> > +			/*
+> > +			 * In case something went wrong with munmaping
+> > +			 * make sure the process doesn't catch the
+> > +			 * signal and then access the memory. So reset
+> > +			 * the signal handlers
+> > +			 */
+> > +			if (fail)
+> > +				flush_signal_handlers(tk->tsk, 1);
+> 
+> Is this a legitimate thing to do? Is it racy? Why would you not send a
+> sigkill or something if you want them to die right now?
+
+That's a very unlikely case it could be probably just removed, when
+something during unmapping fails (mostly out of memory)
+
+It's more paranoia than real need.
+
+Yes SIGKILL would be probably better.
+
+> > + */
+> > +static void collect_procs_file(struct page *page, struct list_head *to_kill,
+> > +			      struct to_kill **tkc)
+> > +{
+> > +	struct vm_area_struct *vma;
+> > +	struct task_struct *tsk;
+> > +	struct prio_tree_iter iter;
+> > +	struct address_space *mapping = page_mapping(page);
+> > +
+> > +	read_lock(&tasklist_lock);
+> > +	spin_lock(&mapping->i_mmap_lock);
+> 
+> You have tasklist_lock(R) nesting outside i_mmap_lock, and inside anon_vma
+> lock. And anon_vma lock nests inside i_mmap_lock.
+> 
+> This seems fragile. If rwlocks ever become FIFO or tasklist_lock changes
+> type (maybe -rt kernels do it), then you could have a task holding
+> anon_vma lock and waiting for tasklist_lock, and another holding tasklist
+> lock and waiting for i_mmap_lock, and another holding i_mmap_lock and
+> waiting for anon_vma lock.
+
+So you're saying I should change the order?
+
+> 
+> I think nesting either inside or outside these locks consistently is less
+> fragile. Do we already have a dependency?... I don't know of one, but you
+> should document this in mm/rmap.c and mm/filemap.c.
+
+Ok.
+
+> > +	DELAYED,
+> > +	IGNORED,
+> > +	RECOVERED,
+> > +};
+> > +
+> > +static const char *action_name[] = {
+> > +	[FAILED] = "Failed",
+> > +	[DELAYED] = "Delayed",
+> > +	[IGNORED] = "Ignored",
+> 
+> How is delayed different to ignored (or failed, for that matter)?
+
+Part of it is documentation.
+
+DELAYED means it's handled somewhere else (e.g. in the case of free pages)
+
+> 
+> 
+> > +	[RECOVERED] = "Recovered",
+> 
+> And what does recovered mean? THe processes were killed and the page taken
+
+Not necessarily killed, it might have been a clean page or so.
+
+> out of circulation, but the machine is still in some unknown state of corruption
+> henceforth, right?
+
+It's in a known state of corruption -- there was this error on that page
+and otherwise it's fine (or at least no errors known at this point)
+The CPU generally tells you when it's in a unknown state and in this case this 
+code is not executed, but just panic directly.
 
 
-Another example - LCD displays.  Some platforms need a certain sequence
-of GPIO activations with delays between when powering up and down the
-LCD display.  Currently we express this in the platform support file and
-pass a function pointer into the LCD Driver.  Can this be expressed with
-OF?
+> > +
+> > +	/*
+> > +	 * remove_from_page_cache assumes (mapping && !mapped)
+> > +	 */
+> > +	if (page_mapping(p) && !page_mapped(p)) {
+> > +		remove_from_page_cache(p);
+> > +		page_cache_release(p);
+> > +	}
+> 
+> remove_mapping would probably be a better idea. Otherwise you can
+> probably introduce pagecache removal vs page fault races whi
+> will make the kernel bug.
+
+Can you be more specific about the problems?
+
+> > +			page_to_pfn(p));
+> > +	if (mapping) {
+> > +		/*
+> > +		 * Truncate does the same, but we're not quite the same
+> > +		 * as truncate. Needs more checking, but keep it for now.
+> > +		 */
+> 
+> What's different about truncate? It would be good to reuse as much as possible.
+
+Truncating removes the block on disk (we don't). Truncating shrinks
+the end of the file (we don't). It's more "temporal hole punch"
+Probably from the VM point of view it's very similar, but it's
+not the same.
+
+> 
+> 
+> > +		cancel_dirty_page(p, PAGE_CACHE_SIZE);
+> > +
+> > +		/*
+> > +		 * IO error will be reported by write(), fsync(), etc.
+> > +		 * who check the mapping.
+> > +		 */
+> > +		mapping_set_error(mapping, EIO);
+> 
+> Interesting. It's not *exactly* an IO error (well, not like one we're usually
+> used to).
+
+It's a new kind, but conceptually it's the same. Dirty IO data got corrupted.
+
+We actually had a lot of grief with the error reporting; a lot of
+code does "report error once then clear from mapping", which
+broke all the tests for that in the test suite. IMHO that's a shady
+area in the kernel.
+
+Right now these are "expected but incorrect failures" in the tester.
 
 
-Another example - backlights.  Some platforms need to twiddle a GPIO
-at a certain point in the brightness scale and reset the PWM, and they
-currently do this via an (optional) function pointer in the generic PWM
-backlight driver.  Can this be expressed with OF?
+> > +
+> > +	delete_from_swap_cache(p);
+> > +
+> > +	return RECOVERED;
+> > +}
+> 
+> All these handlers are quite interesting in that they need to
+> know about most of the mm. What are you trying to do in each
+> of them would be a good idea to say, and probably they should
+> rather go into their appropriate files instead of all here
+> (eg. swapcache stuff should go in mm/swap_state for example).
+
+Hmm. I think I would prefer to first merge before
+thinking about such things. But they could be moved at some 
+point.
+
+I suspect people first need to get more used to the idea of poisoned pages
+before we can force it to them directly like this.
+
+> 
+> You haven't waited on writeback here AFAIKS, and have you
+> *really* verified it is safe to call delete_from_swap_cache?
+
+Verified in what way? me and Fengguang went over the code.
+The original attempt at doing this was quite broken, but this
+one should be better (it's the third iteration or so)
 
 
-That's just a few examples of areas where we haven't been able to describe
-platforms using pure data-based descriptions, and they're all things that
-we don't want to stuff into the individual drivers (doing so involves lots
-of ifdefs and namespace pollution - we saw that in 2.4 kernels.)
+> > +
+> > +#define dirty		(1UL << PG_dirty)
+> > +#define swapcache	(1UL << PG_swapcache)
+> > +#define unevict		(1UL << PG_unevictable)
+> > +#define mlocked		(1UL << PG_mlocked)
+> > +#define writeback	(1UL << PG_writeback)
+> > +#define lru		(1UL << PG_lru)
+> > +#define swapbacked	(1UL << PG_swapbacked)
+> > +#define head		(1UL << PG_head)
+> > +#define tail		(1UL << PG_tail)
+> > +#define compound	(1UL << PG_compound)
+> > +#define slab		(1UL << PG_slab)
+> > +#define buddy		(1UL << PG_buddy)
+> > +#define reserved	(1UL << PG_reserved)
+> 
+> This looks like more work than just putting 1UL << (...) in each entry
 
-In order for me to be convinced that OF is not going to cause us grief,
-I'd like to see a range of platforms converted to OF to check that we're
-not going to find any unexpected problems - eg, a load of PXA platforms,
-particularly those with the above kinds of problems.
+I had this originally, but it looked rather ugly.
 
-And no, Dave Miller saying "I've been using this for 15 years on Sparc"
-"Three architectures are using it" isn't going to convince me.  The proof
-is in the code, not the waffle.
+> in your table. Hmm, does this whole table thing even buy you much (versus a
+> much simpler switch statement?)
+
+I don't think the switch would be particularly simple. Also I like
+tables.
+
+> 
+> And seeing as you are doing a lot of checking for various page flags anyway,
+> (eg. in your prepare function). Just seems like needless complexity.
+
+Yes that grew over time unfortunately. Originally there was very little
+explicit flag checking.
+
+I still think the table is a good approach. 
+
+-Andi
+-- 
+ak@linux.intel.com -- Speaking for myself only.
