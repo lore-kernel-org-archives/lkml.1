@@ -1,66 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759691AbZE1Lpl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761290AbZE1Lpw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759691AbZE1Lpl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 07:45:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754764AbZE1Lpd
+	id S1761290AbZE1Lpw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 07:45:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756797AbZE1Lpg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 07:45:33 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:50958 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754091AbZE1Lpc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 07:45:32 -0400
-Date: Thu, 28 May 2009 13:45:27 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: akpm@linux-foundation.org, niel.lambrechts@gmail.com,
-       linux-kernel@vger.kernel.org, gregkh@suse.de, rjw@sisk.pl
-Subject: Re: 2.6.29.4: hibernation fails with large kernel trace
-Message-ID: <20090528114527.GA2140@elf.ucw.cz>
-References: <4A1C36FF.4080000@gmail.com> <20090527223241.c6fb2caf.akpm@linux-foundation.org> <E1M9ZJI-0003bh-HD@pomaz-ex.szeredi.hu>
+	Thu, 28 May 2009 07:45:36 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:53731 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759118AbZE1Lpf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 07:45:35 -0400
+Date: Thu, 28 May 2009 13:41:00 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Roland McGrath <roland@redhat.com>
+Cc: Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH 11/12 v2] ptrace: mv task_struct->ptrace_message
+	ptrace_ctx->message
+Message-ID: <20090528114100.GA18744@redhat.com>
+References: <20090528113601.GA18725@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <E1M9ZJI-0003bh-HD@pomaz-ex.szeredi.hu>
-X-Warning: Reading this can be dangerous to your mental health.
+In-Reply-To: <20090528113601.GA18725@redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On 05/28, Oleg Nesterov wrote:
+>
+> ptrace_event() can use current->ptrace_ctx safely. If mask == 0 and we do
+> not check task_ptrace() we are called from tracehook_report_clone_complete(),
+> in this case trace == T means current was traced when it called do_fork().
 
-> > The process "fuser" is stuck down in the fuse code awaiting a response
-> > or something.  I'd suspect that this is the cause of the freezing
-> > failure:
-> 
-> Yup, the 'gvfs-fuse-daemon' process is already in the refrigerator, so
-> it cannot complete the request from the 'fuser' process.
-> 
-> The solution is simple, really: just allow the 'fuser' task to freeze
-> despite the fact that it's inside a syscall.  There's the small detail
-> of actually implementing this, without breaking everything else...
-> 
-> What complicates the above is that we need to enable freezing not just
-> inside fuse callbacks, but in the VFS as well.  E.g. sys_rename()
-> sleeping on i_mutex needs to be freezable as well, otherwise another
-> thread that is already frozen and holding that i_mutex will block that
-> rename.
-> 
-> So,
-> 
-> a) we need some sort of mechanism to selectively disable freezing only
->    for those syscalls which might (directly) touch hardware state.  It
->    _hopefully_ should be enough to do so with read, write and ioctl,
-> 
-> b) we need to re-enable freezing for these in fuse.
-> 
-> That's the theory.  I promised a prototype some time ago but haven't
-> yet got around to doing it.
+Perhaps it is better to optimize out "mask != 0" check in ptrace_event().
+This special !mask case is only needed for _report_clone(), we can use
+mask == PT_PTRACED instead.
 
-In the meantime, people should stop/restart fuse around
-suspend/hibernation, I guess...
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Oleg.
+
+--- PTRACE/include/linux/ptrace.h~10_HOOK_COMPLETE	2009-05-28 11:19:33.000000000 +0200
++++ PTRACE/include/linux/ptrace.h	2009-05-28 11:49:29.000000000 +0200
+@@ -157,7 +157,7 @@ int generic_ptrace_pokedata(struct task_
+  */
+ static inline int ptrace_event(int mask, int event, unsigned long message)
+ {
+-	if (mask && likely(!(task_ptrace(current) & mask)))
++	if (likely(!(task_ptrace(current) & mask)))
+ 		return 0;
+ 	current->ptrace_message = message;
+ 	ptrace_notify((event << 8) | SIGTRAP);
+--- PTRACE/include/linux/tracehook.h~10_HOOK_COMPLETE	2009-05-28 08:41:11.000000000 +0200
++++ PTRACE/include/linux/tracehook.h	2009-05-28 11:50:14.000000000 +0200
+@@ -344,7 +344,7 @@ static inline void tracehook_report_clon
+ 						   struct task_struct *child)
+ {
+ 	if (unlikely(trace))
+-		ptrace_event(0, trace, pid);
++		ptrace_event(PT_PTRACED, trace, pid);
+ }
+ 
+ /**
+
