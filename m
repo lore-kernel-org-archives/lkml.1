@@ -1,94 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759338AbZE1Mdn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759446AbZE1Mku@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759338AbZE1Mdn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 08:33:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755686AbZE1Mdg
+	id S1759446AbZE1Mku (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 08:40:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756276AbZE1Mkm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 08:33:36 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:57284 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754764AbZE1Mdf (ORCPT
+	Thu, 28 May 2009 08:40:42 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:58537 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755839AbZE1Mkl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 08:33:35 -0400
-Date: Thu, 28 May 2009 08:32:07 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Petr Tesarik <ptesarik@suse.cz>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH] Introduce a boolean "single_bit_set" function.
-In-Reply-To: <1243513274.3170.1.camel@nathan.suse.cz>
-Message-ID: <alpine.LFD.2.00.0905280830150.31093@localhost.localdomain>
-References: <alpine.LFD.2.00.0904231339080.13089@localhost.localdomain> <1243513274.3170.1.camel@nathan.suse.cz>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-1177527336-1243513929=:31093"
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+	Thu, 28 May 2009 08:40:41 -0400
+Subject: Re: [PATCH] sched: Support current clocksource handling in
+ fallback sched_clock().
+From: Peter Zijlstra <peterz@infradead.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Paul Mundt <lethal@linux-sh.org>, Daniel Walker <dwalker@fifo99.com>,
+       Linus Walleij <linus.ml.walleij@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Victor <linux@maxim.org.za>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-sh@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       John Stultz <johnstul@linux.vnet.ibm.com>
+In-Reply-To: <alpine.LFD.2.00.0905281417500.3397@localhost.localdomain>
+References: <20090526061532.GD9188@linux-sh.org>
+	 <63386a3d0905260731m655bfee3q82a6f52d71fa3cef@mail.gmail.com>
+	 <1243348681.23657.14.camel@twins>
+	 <alpine.LFD.2.00.0905262209160.1762@localhost.localdomain>
+	 <20090526230855.GA27218@linux-sh.org>
+	 <alpine.LFD.2.00.0905270140030.1762@localhost.localdomain>
+	 <20090527001543.GA8493@linux-sh.org> <1243441525.28705.19.camel@desktop>
+	 <20090528091936.GA27545@linux-sh.org> <1243503281.23657.80.camel@twins>
+	 <20090528110902.GA27884@linux-sh.org>
+	 <alpine.LFD.2.00.0905281417500.3397@localhost.localdomain>
+Content-Type: text/plain
+Date: Thu, 28 May 2009 14:40:16 +0200
+Message-Id: <1243514416.6600.74.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Thu, 2009-05-28 at 14:22 +0200, Thomas Gleixner wrote:
+> On Thu, 28 May 2009, Paul Mundt wrote:
+> > @@ -437,10 +441,19 @@ void clocksource_unregister(struct clocksource *cs)
+> >  	unsigned long flags;
+> >  
+> >  	spin_lock_irqsave(&clocksource_lock, flags);
+> > +
+> > +	if (sched_clocksource == cs) {
+> > +		printk(KERN_WARNING "Refusing to unregister "
+> > +		       "scheduler clocksource %s", cs->name);
+> 
+>   Hmm, isn't that dangerous ? The clocksource might be in a module or
+>   in kmalloced memory which is going to be freed.
 
---8323328-1177527336-1243513929=:31093
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+One could play dirty tricks with 'leaking' module ref counts and such so
+as to avoid that. The alternative is making sched_clock() look something
+like:
 
-On Thu, 28 May 2009, Petr Tesarik wrote:
+u64 __weak sched_clock(void)
+{
+  struct clocksource *clock;
+  u64 time;
 
-> Robert P. J. Day p=C3=AD=C5=A1e v =C4=8Ct 23. 04. 2009 v 13:43 -0400:
-> > A boolean single_bit_set() routine would simplify the numerous
-> > constructs of the form (((n & (n - 1)) =3D=3D 0)) when testing for
-> > single-bitness.
-> >
-> > Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
-> >
-> > ---
-> >
-> > This is similar to the current is_power_of_2() routine defined in
-> > include/linux/log2.h, which is mathematically identical but,
-> > semantically, should be defined independently just so the code is more
-> > readable.
-> >
-> > I'm open to an alternative function name.
->
-> ispow2() ?
->
-> Because what it really does is to check that a value is a power of two,
-> doesn'it.
+  rcu_read_lock();
+  clock = rcu_dereference(sched_clocksource);
+  time = cyc2ns(clock, read_clocksource(clock));
+  rcu_read_unlock;
 
-  by the way, a search for places in the code that are candidates for
-this kind of rewriting can be seen at one of my wiki kernel cleanup
-pages:
+  return time;
+}
 
-  http://www.crashcourse.ca/wiki/index.php/The_style_script
+and make the module unload do a sync_rcu -- but this might be a little
+overkill
 
-scroll down, you'll see a section entitled "Testing for power of 2 or
-a single bit set".  lots of potential for clarification if people
-think it's worth it.
-
-rday
---
-
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-Robert P. J. Day                               Waterloo, Ontario, CANADA
-
-        Linux Consulting, Training and Annoying Kernel Pedantry.
-
-Web page:                                          http://crashcourse.ca
-Linked In:                             http://www.linkedin.com/in/rpjday
-Twitter:                                       http://twitter.com/rpjday
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---8323328-1177527336-1243513929=:31093--
