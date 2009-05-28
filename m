@@ -1,50 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761427AbZE1MXU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759548AbZE1MYK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761427AbZE1MXU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 08:23:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757964AbZE1MXL
+	id S1759548AbZE1MYK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 08:24:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755458AbZE1MX5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 08:23:11 -0400
-Received: from www.tglx.de ([62.245.132.106]:38262 "EHLO www.tglx.de"
+	Thu, 28 May 2009 08:23:57 -0400
+Received: from cantor.suse.de ([195.135.220.2]:58352 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755035AbZE1MXK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 08:23:10 -0400
-Date: Thu, 28 May 2009 14:22:17 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Paul Mundt <lethal@linux-sh.org>
-cc: Peter Zijlstra <peterz@infradead.org>, Daniel Walker <dwalker@fifo99.com>,
-       Linus Walleij <linus.ml.walleij@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Victor <linux@maxim.org.za>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-sh@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       John Stultz <johnstul@linux.vnet.ibm.com>
-Subject: Re: [PATCH] sched: Support current clocksource handling in fallback
- sched_clock().
-In-Reply-To: <20090528110902.GA27884@linux-sh.org>
-Message-ID: <alpine.LFD.2.00.0905281417500.3397@localhost.localdomain>
-References: <20090526061532.GD9188@linux-sh.org> <63386a3d0905260731m655bfee3q82a6f52d71fa3cef@mail.gmail.com> <1243348681.23657.14.camel@twins> <alpine.LFD.2.00.0905262209160.1762@localhost.localdomain> <20090526230855.GA27218@linux-sh.org>
- <alpine.LFD.2.00.0905270140030.1762@localhost.localdomain> <20090527001543.GA8493@linux-sh.org> <1243441525.28705.19.camel@desktop> <20090528091936.GA27545@linux-sh.org> <1243503281.23657.80.camel@twins> <20090528110902.GA27884@linux-sh.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1754944AbZE1MX5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 08:23:57 -0400
+Date: Thu, 28 May 2009 14:23:57 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Andi Kleen <andi@firstfloor.org>, "hugh@veritas.com" <hugh@veritas.com>,
+       "riel@redhat.com" <riel@redhat.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler in the VM v3
+Message-ID: <20090528122357.GM6920@wotan.suse.de>
+References: <200905271012.668777061@firstfloor.org> <20090527201239.C2C9C1D0294@basil.firstfloor.org> <20090528082616.GG6920@wotan.suse.de> <20090528095934.GA10678@localhost>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090528095934.GA10678@localhost>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 May 2009, Paul Mundt wrote:
-> @@ -437,10 +441,19 @@ void clocksource_unregister(struct clocksource *cs)
->  	unsigned long flags;
->  
->  	spin_lock_irqsave(&clocksource_lock, flags);
-> +
-> +	if (sched_clocksource == cs) {
-> +		printk(KERN_WARNING "Refusing to unregister "
-> +		       "scheduler clocksource %s", cs->name);
+On Thu, May 28, 2009 at 05:59:34PM +0800, Wu Fengguang wrote:
+> Hi Nick,
+> 
+> > > +     /*
+> > > +      * remove_from_page_cache assumes (mapping && !mapped)
+> > > +      */
+> > > +     if (page_mapping(p) && !page_mapped(p)) {
+> > > +             remove_from_page_cache(p);
+> > > +             page_cache_release(p);
+> > > +     }
+> > 
+> > remove_mapping would probably be a better idea. Otherwise you can
+> > probably introduce pagecache removal vs page fault races which
+> > will make the kernel bug.
+> 
+> We use remove_mapping() at first, then discovered that it made strong
+> assumption on page_count=2.
+> 
+> I guess it is safe from races since we are locking the page?
 
-  Hmm, isn't that dangerous ? The clocksource might be in a module or
-  in kmalloced memory which is going to be freed.
+Yes it probably should (although you will lose get_user_pages data, but
+I guess that's the aim anyway).
 
-Thanks,
+But I just don't like this one file having all that required knowledge
+(and few comments) of all the files in mm/. If you want to get rid
+of the page and don't care what it's count or dirtyness is, then
+truncate_inode_pages_range is the correct API to use.
 
-	tglx
+(or you could extract out some of it so you can call it directly on
+individual locked pages, if that helps).
+
+
+> > > +     }
+> > > +
+> > > +     me_pagecache_clean(p);
+> > > +
+> > > +     /*
+> > > +      * Did the earlier release work?
+> > > +      */
+> > > +     if (page_has_private(p) && !try_to_release_page(p, GFP_NOIO))
+> > > +             return FAILED;
+> > > +
+> > > +     return RECOVERED;
+> > > +}
+> > > +
+> > > +/*
+> > > + * Clean and dirty swap cache.
+> > > + */
+> > > +static int me_swapcache_dirty(struct page *p)
+> > > +{
+> > > +     ClearPageDirty(p);
+> > > +
+> > > +     if (!isolate_lru_page(p))
+> > > +             page_cache_release(p);
+> > > +
+> > > +     return DELAYED;
+> > > +}
+> > > +
+> > > +static int me_swapcache_clean(struct page *p)
+> > > +{
+> > > +     ClearPageUptodate(p);
+> > > +
+> > > +     if (!isolate_lru_page(p))
+> > > +             page_cache_release(p);
+> > > +
+> > > +     delete_from_swap_cache(p);
+> > > +
+> > > +     return RECOVERED;
+> > > +}
+> > 
+> > All these handlers are quite interesting in that they need to
+> > know about most of the mm. What are you trying to do in each
+> > of them would be a good idea to say, and probably they should
+> > rather go into their appropriate files instead of all here
+> > (eg. swapcache stuff should go in mm/swap_state for example).
+> 
+> Yup, they at least need more careful comments.
+> 
+> Dirty swap cache page is tricky to handle. The page could live both in page
+> cache and swap cache(ie. page is freshly swapped in). So it could be referenced
+> concurrently by 2 types of PTEs: one normal PTE and another swap PTE. We try to
+> handle them consistently by calling try_to_unmap(TTU_IGNORE_HWPOISON) to convert
+> the normal PTEs to swap PTEs, and then
+>         - clear dirty bit to prevent IO
+>         - remove from LRU
+>         - but keep in the swap cache, so that when we return to it on
+>           a later page fault, we know the application is accessing
+>           corrupted data and shall be killed (we installed simple
+>           interception code in do_swap_page to catch it).
+
+OK this is the point I was missing.
+
+Should all be commented and put into mm/swap_state.c (or somewhere that
+Hugh prefers).
+ 
+
+> Clean swap cache pages can be directly isolated. A later page fault will bring
+> in the known good data from disk.
+
+OK, but why do you ClearPageUptodate if it is just to be deleted from
+swapcache anyway?
+
+ 
+> > You haven't waited on writeback here AFAIKS, and have you
+> > *really* verified it is safe to call delete_from_swap_cache?
+> 
+> Good catch. I'll soon submit patches for handling the under
+> read/write IO pages. In this patchset they are simply ignored.
+
+Well that's quite important ;) I would suggest you just wait_on_page_writeback.
+It is simple and should work. _Unless_ you can show it is a big problem that
+needs equivalently big mes to fix ;)
+
