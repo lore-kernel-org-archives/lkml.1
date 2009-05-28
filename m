@@ -1,63 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763519AbZE1RCD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763519AbZE1RGS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763519AbZE1RCD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 13:02:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759234AbZE1RBy
+	id S1763519AbZE1RGS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 13:06:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751322AbZE1RGJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 13:01:54 -0400
-Received: from www.tglx.de ([62.245.132.106]:54619 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759028AbZE1RBx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 13:01:53 -0400
-Date: Thu, 28 May 2009 19:00:30 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Daniel Walker <dwalker@fifo99.com>
-cc: Paul Mundt <lethal@linux-sh.org>, Peter Zijlstra <peterz@infradead.org>,
-       Linus Walleij <linus.ml.walleij@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Victor <linux@maxim.org.za>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-sh@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       John Stultz <johnstul@linux.vnet.ibm.com>
-Subject: Re: [PATCH] sched: Support current clocksource handling in fallback
- sched_clock().
-In-Reply-To: <1243529547.28705.43.camel@desktop>
-Message-ID: <alpine.LFD.2.00.0905281857420.3397@localhost.localdomain>
-References: <20090527001543.GA8493@linux-sh.org>  <1243441525.28705.19.camel@desktop> <20090528091936.GA27545@linux-sh.org>  <1243503281.23657.80.camel@twins> <20090528110902.GA27884@linux-sh.org>  <alpine.LFD.2.00.0905281417500.3397@localhost.localdomain>
-  <20090528124207.GA28830@linux-sh.org> <1243515570.6600.96.camel@laptop>  <1243527218.28705.35.camel@desktop> <1243528329.6645.77.camel@laptop>  <20090528164011.GA30104@linux-sh.org> <1243529547.28705.43.camel@desktop>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 28 May 2009 13:06:09 -0400
+Received: from yx-out-2324.google.com ([74.125.44.28]:8849 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750732AbZE1RGJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 13:06:09 -0400
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <20090528165314.GA22449@n2100.arm.linux.org.uk>
+References: <20090527175609.GB31861@flint.arm.linux.org.uk> 
+	<1243496236.3171.140.camel@pasglop> <20090528091513.GA14789@n2100.arm.linux.org.uk> 
+	<20090528.025739.16559619.davem@davemloft.net> <gvlvcs$ub5$1@ger.gmane.org> 
+	<fa686aa40905280713u2b3ef5fvbe3d58ccdb629b60@mail.gmail.com> 
+	<20090528165314.GA22449@n2100.arm.linux.org.uk>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Thu, 28 May 2009 11:05:50 -0600
+Message-ID: <fa686aa40905281005q672f963dud3cab8aceefeeef7@mail.gmail.com>
+Subject: Re: [RFC] [PATCH] Device Tree on ARM platform
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
+       linux-kernel@vger.kernel.org, devicetree-discuss@ozlabs.org,
+       linux-arm-kernel@lists.arm.linux.org.uk
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 May 2009, Daniel Walker wrote:
-> > > > Do any module based clocksources even exist right now?
-> > > > clocksource_unregister only seems to be used 3 times..
-> > > 
-> > > Good point, it appears its not even exported.
-> > > 
-> > > Thomas mentioned modules, I assumed.
-> > > 
-> > The drivers/clocksource/ drivers in theory could be modular anyways.
-> > Handling this transition properly is at least one less barrier to modular
-> > clocksources, so I think it's progress regardless. I don't remember what
-> > all of the other issues were though, John probably remembers.
-> 
-> I don't think it's an important case to consider right now ..
-> clocksources are usually so integral to the system putting one in a
-> module seems counterintuitive. 
+On Thu, May 28, 2009 at 10:53 AM, Russell King - ARM Linux
+<linux@arm.linux.org.uk> wrote:
+> Just a request:
+>
+> I'm not sure exactly who it is (I think it's Dmitry) but this sub-thread
+> has had the list of addresses to be sent copies totally managled to the
+> extent that some posts aren't making it even to my mailing list server
+> or my address.
+>
+> Grant - I assume you added linux-arm-kernel back yourself for your
+> reply?
 
-That does not matter at all. If we have an unregister call then we
-have to be prepared for 
+No, I didn't muck with the cc: list at all.  I've been blindly
+clicking "reply-to-all".
 
-     - the memory which contained the clocksource is freed 
-     - the underlying hardware is going away. 
+It sounds like you've received my reply to dmitry's email, but not
+dmitry's email, correct?
 
-It does not matter at all if that happens in a compiled in or in a
-modular driver.
+All of the emails from Dmitry I see here on my end include both
+linux-kernel and linux-arm-kernel in the cc: list.
 
-Thanks,
+g.
 
-	tglx
+> I think Dmitry uses gmane - maybe gmane only supports posting to one
+> list at a time?
+>
+
+
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
