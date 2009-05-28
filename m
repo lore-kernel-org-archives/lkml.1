@@ -1,88 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762824AbZE1JJt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761063AbZE1JMB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762824AbZE1JJt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 05:09:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759468AbZE1JJj
+	id S1761063AbZE1JMB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 05:12:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756007AbZE1JLv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 05:09:39 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:46976 "EHLO mx2.redhat.com"
+	Thu, 28 May 2009 05:11:51 -0400
+Received: from mga03.intel.com ([143.182.124.21]:50973 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759079AbZE1JJh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 05:09:37 -0400
-Subject: Re: [KVM PATCH v4 3/3] kvm: add iosignalfd support
-From: Mark McLoughlin <markmc@redhat.com>
-Reply-To: Mark McLoughlin <markmc@redhat.com>
-To: Gregory Haskins <gregory.haskins@gmail.com>
-Cc: Gregory Haskins <ghaskins@novell.com>, Avi Kivity <avi@redhat.com>,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Davide Libenzi <davidel@xmailserver.org>, mtosatti@redhat.com
-In-Reply-To: <4A1DA653.4050109@gmail.com>
-References: <20090526191010.20860.75372.stgit@dev.haskins.net>
-	 <20090526191539.20860.1385.stgit@dev.haskins.net>
-	 <4A1D01F8.8080508@redhat.com> <4A1D285C.9050008@novell.com>
-	 <4A1D2DD8.2050709@redhat.com> <1243445144.16318.15.camel@blaa>
-	 <4A1D7AFD.40004@novell.com> <1243446484.4852.13.camel@blaa>
-	 <4A1DA653.4050109@gmail.com>
-Content-Type: text/plain
-Date: Thu, 28 May 2009 10:09:30 +0100
-Message-Id: <1243501772.4046.36.camel@blaa>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	id S1755961AbZE1JLu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 05:11:50 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,264,1241420400"; 
+   d="scan'208";a="147843420"
+Date: Thu, 28 May 2009 17:11:27 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>,
+       Taketoshi Sakuraba <taketoshi.sakuraba.hc@hitachi.com>
+Subject: Re: [PATCH] [4/16] HWPOISON: Add support for poison swap entries v2
+Message-ID: <20090528091127.GA13856@localhost>
+References: <200905271012.668777061@firstfloor.org> <20090527201230.19B1C1D0286@basil.firstfloor.org> <4A1E4F80.9090404@hitachi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A1E4F80.9090404@hitachi.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-05-27 at 16:45 -0400, Gregory Haskins wrote:
-> Mark McLoughlin wrote:
-> > The virtio ABI is fixed, so we couldn't e.g. have the guest use a cookie
-> > to identify a queue - it's just going to continue using a per-device
-> > queue number. 
+On Thu, May 28, 2009 at 04:46:56PM +0800, Hidehiro Kawai wrote:
+> Andi Kleen wrote:
 > 
-> Actually, I was originally thinking this would be exposed as a virtio
-> FEATURE bit anyway, so there were no backwards-compat constraints.  That
-> said, we can possibly make it work in a backwards compat way, too. 
-> IIRC, today virtio does a PIO cycle to a specific register with the
-> queue-id when it wants to signal guest->host, right?  What is the width
-> of the write?
-
-It's a 16-bit write.
-
-/* A 16-bit r/w queue notifier */
-#define VIRTIO_PCI_QUEUE_NOTIFY         16
-
-> > So, if the cookie was also the trigger, we'd need an
-> > eventfd per device.
-> >   
+> > CPU migration uses special swap entry types to trigger special actions on page
+> > faults. Extend this mechanism to also support poisoned swap entries, to trigger
+> > poison handling on page faults. This allows followon patches to prevent 
+> > processes from faulting in poisoned pages again.
+> > 
+> > v2: Fix overflow in MAX_SWAPFILES (Fengguang Wu)
+> > 
+> > Signed-off-by: Andi Kleen <ak@linux.intel.com>
+> > 
+> > ---
+> >  include/linux/swap.h    |   34 ++++++++++++++++++++++++++++------
+> >  include/linux/swapops.h |   38 ++++++++++++++++++++++++++++++++++++++
+> >  mm/swapfile.c           |    4 ++--
+> >  3 files changed, 68 insertions(+), 8 deletions(-)
+> > 
+> > Index: linux/include/linux/swap.h
+> > ===================================================================
+> > --- linux.orig/include/linux/swap.h	2009-05-27 21:13:54.000000000 +0200
+> > +++ linux/include/linux/swap.h	2009-05-27 21:14:21.000000000 +0200
+> > @@ -34,16 +34,38 @@
+> >   * the type/offset into the pte as 5/27 as well.
+> >   */
+> >  #define MAX_SWAPFILES_SHIFT	5
+> > -#ifndef CONFIG_MIGRATION
+> > -#define MAX_SWAPFILES		(1 << MAX_SWAPFILES_SHIFT)
+> > +
+> > +/*
+> > + * Use some of the swap files numbers for other purposes. This
+> > + * is a convenient way to hook into the VM to trigger special
+> > + * actions on faults.
+> > + */
+> > +
+> > +/*
+> > + * NUMA node memory migration support
+> > + */
+> > +#ifdef CONFIG_MIGRATION
+> > +#define SWP_MIGRATION_NUM 2
+> > +#define SWP_MIGRATION_READ	(MAX_SWAPFILES + SWP_HWPOISON_NUM + 1)
+> > +#define SWP_MIGRATION_WRITE	(MAX_SWAPFILES + SWP_HWPOISON_NUM + 2)
+> >  #else
+> > -/* Use last two entries for page migration swap entries */
+> > -#define MAX_SWAPFILES		((1 << MAX_SWAPFILES_SHIFT)-2)
+> > -#define SWP_MIGRATION_READ	MAX_SWAPFILES
+> > -#define SWP_MIGRATION_WRITE	(MAX_SWAPFILES + 1)
+> > +#define SWP_MIGRATION_NUM 0
+> >  #endif
+> >  
+> >  /*
+> > + * Handling of hardware poisoned pages with memory corruption.
+> > + */
+> > +#ifdef CONFIG_MEMORY_FAILURE
+> > +#define SWP_HWPOISON_NUM 1
+> > +#define SWP_HWPOISON		(MAX_SWAPFILES + 1)
+> > +#else
+> > +#define SWP_HWPOISON_NUM 0
+> > +#endif
+> > +
+> > +#define MAX_SWAPFILES \
+> > +	((1 << MAX_SWAPFILES_SHIFT) - SWP_MIGRATION_NUM - SWP_HWPOISON_NUM - 1)
 > 
-> I'm having trouble parsing this one.  The cookie namespace is controlled
-> by the userspace component that owns the corresponding IO address, so
-> there's no reason you can't make "queue-id = 0" use cookie = 0, or
-> whatever.  That said, I still think a separation of the cookie and
-> trigger as suggested above is a good idea, so its probably moot to
-> discuss this point further.
+> I don't prefer this fix against the overflow issue.
+> For example, if both CONFIG_MIGRATION and CONFIG_MEMORY_FAILURE are
+> undefined, MAX_SWAPFILES is defined as 31.  But we should be able to
+> use up to 32 swap files/devices!
+> 
+> So instead, we should do:
+> 
+> #define SWP_MIGRATION_READ	(MAX_SWAPFILES + SWP_HWPOISON_NUM)
+> #define SWP_MIGRATION_WRITE	(MAX_SWAPFILES + SWP_HWPOISON_NUM + 1)
+> 
+> #define SWP_HWPOISON		MAX_SWAPFILES
+> 
+> #define MAX_SWAPFILES \
+> 	((1 << MAX_SWAPFILES_SHIFT) - SWP_MIGRATION_NUM - SWP_HWPOISON_NUM)
+> 
+> and:
+> 
+> static inline int non_swap_entry(swp_entry_t entry)
+> {
+> 	return swp_type(entry) >= MAX_SWAPFILES;
+> }
 
-Ah, my mistake - I thought the cookie was returned to userspace when the
-eventfd was signalled, but no ... userspace only gets an event counter
-value and the cookie is used during de-assignment to distinguish between
-iosignalfds.
+Yes this is a better way to fix the overflow problem: when
+SWP_HWPOISON=32 and it is shifted by SWP_TYPE_SHIFT and then shift
+back, we get 0 (overflowed).
 
-Okay, so suppose you do assign multiple times at a given address -
-you're presumably going to use a different eventfd for each assignment?
-If so, can't we match using both the address and eventfd at
-de-assignment and drop the cookie from the interface altogether?
+Andi, this patch does what Hidehiro describes.
 
-i.e. to replace the virtio queue notify with this, we'd:
+---
+ include/linux/swap.h    |    8 ++++----
+ include/linux/swapops.h |    2 +-
+ 2 files changed, 5 insertions(+), 5 deletions(-)
 
-  1) create an eventfd per queue
-
-  2) assign each of those eventfds to the QUEUE_NOTIFY address
-
-  3) have only one of the eventfds be triggered, depending on what 
-     value is written by the guest
-
-  4) de-assign using the address/eventfd pair to distinguish between 
-     assignments
-
-Cheers,
-Mark.
-
+--- linux.orig/include/linux/swap.h
++++ linux/include/linux/swap.h
+@@ -46,8 +46,8 @@ static inline int current_is_kswapd(void
+  */
+ #ifdef CONFIG_MIGRATION
+ #define SWP_MIGRATION_NUM 2
+-#define SWP_MIGRATION_READ	(MAX_SWAPFILES + SWP_HWPOISON_NUM + 1)
+-#define SWP_MIGRATION_WRITE	(MAX_SWAPFILES + SWP_HWPOISON_NUM + 2)
++#define SWP_MIGRATION_READ	(MAX_SWAPFILES + SWP_HWPOISON_NUM)
++#define SWP_MIGRATION_WRITE	(MAX_SWAPFILES + SWP_HWPOISON_NUM + 1)
+ #else
+ #define SWP_MIGRATION_NUM 0
+ #endif
+@@ -57,13 +57,13 @@ static inline int current_is_kswapd(void
+  */
+ #ifdef CONFIG_MEMORY_FAILURE
+ #define SWP_HWPOISON_NUM 1
+-#define SWP_HWPOISON 		(MAX_SWAPFILES + 1)
++#define SWP_HWPOISON 		MAX_SWAPFILES
+ #else
+ #define SWP_HWPOISON_NUM 0
+ #endif
+ 
+ #define MAX_SWAPFILES \
+-	((1 << MAX_SWAPFILES_SHIFT) - SWP_MIGRATION_NUM - SWP_HWPOISON_NUM - 1)
++	((1 << MAX_SWAPFILES_SHIFT) - SWP_MIGRATION_NUM - SWP_HWPOISON_NUM)
+ 
+ /*
+  * Magic header for a swap area. The first part of the union is
+--- linux.orig/include/linux/swapops.h
++++ linux/include/linux/swapops.h
+@@ -161,7 +161,7 @@ static inline int is_hwpoison_entry(swp_
+ #if defined(CONFIG_MEMORY_FAILURE) || defined(CONFIG_MIGRATION)
+ static inline int non_swap_entry(swp_entry_t entry)
+ {
+-	return swp_type(entry) > MAX_SWAPFILES;
++	return swp_type(entry) >= MAX_SWAPFILES;
+ }
+ #else
+ static inline int non_swap_entry(swp_entry_t entry)
