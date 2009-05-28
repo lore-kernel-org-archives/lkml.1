@@ -1,149 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763573AbZE1Q6j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759028AbZE1Q6u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763573AbZE1Q6j (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 12:58:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755302AbZE1Q6a
+	id S1759028AbZE1Q6u (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 12:58:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763018AbZE1Q6f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 12:58:30 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:34913 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751322AbZE1Q63 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 12:58:29 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Jan Scholz <scholz@fias.uni-frankfurt.de>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>
-Subject: Re: [regression, bisected] adb trackpad disappears after suspend to ram
-Date: Thu, 28 May 2009 18:58:36 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc6-rjw; KDE/4.2.3; x86_64; ; )
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Adrian Bunk <bunk@kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <878wkl6vce.fsf@scholz.fias.uni-frankfurt.de> <87prdt3bgb.fsf@scholz.fias.uni-frankfurt.de>
-In-Reply-To: <87prdt3bgb.fsf@scholz.fias.uni-frankfurt.de>
+	Thu, 28 May 2009 12:58:35 -0400
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:54699 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763487AbZE1Q6e (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 12:58:34 -0400
+Date: Fri, 29 May 2009 01:58:16 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Daniel Walker <dwalker@fifo99.com>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linus Walleij <linus.ml.walleij@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Victor <linux@maxim.org.za>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-sh@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       John Stultz <johnstul@linux.vnet.ibm.com>
+Subject: Re: [PATCH] sched: Support current clocksource handling in fallback sched_clock().
+Message-ID: <20090528165816.GA31688@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Daniel Walker <dwalker@fifo99.com>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Linus Walleij <linus.ml.walleij@gmail.com>,
+	Ingo Molnar <mingo@elte.hu>, Andrew Victor <linux@maxim.org.za>,
+	Haavard Skinnemoen <hskinnemoen@atmel.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, linux-sh@vger.kernel.org,
+	linux-arm-kernel@lists.arm.linux.org.uk,
+	John Stultz <johnstul@linux.vnet.ibm.com>
+References: <20090528091936.GA27545@linux-sh.org> <1243503281.23657.80.camel@twins> <20090528110902.GA27884@linux-sh.org> <alpine.LFD.2.00.0905281417500.3397@localhost.localdomain> <20090528124207.GA28830@linux-sh.org> <1243515570.6600.96.camel@laptop> <1243527218.28705.35.camel@desktop> <1243528329.6645.77.camel@laptop> <20090528164011.GA30104@linux-sh.org> <1243529547.28705.43.camel@desktop>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200905281858.37729.rjw@sisk.pl>
+In-Reply-To: <1243529547.28705.43.camel@desktop>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 28 May 2009, Jan Scholz wrote:
-> Jan Scholz <scholz@fias.uni-frankfurt.de> writes:
+On Thu, May 28, 2009 at 09:52:27AM -0700, Daniel Walker wrote:
+> On Fri, 2009-05-29 at 01:40 +0900, Paul Mundt wrote:
+> > On Thu, May 28, 2009 at 06:32:09PM +0200, Peter Zijlstra wrote:
+> > > On Thu, 2009-05-28 at 09:13 -0700, Daniel Walker wrote:
+> > > > On Thu, 2009-05-28 at 14:59 +0200, Peter Zijlstra wrote:
+> > > > > CPU0                           CPU1
+> > > > > 
+> > > > > clock = ACCESS_ONCE(sched_clocksource);
+> > > > > 
+> > > > >                                unload module
+> > > > >                                  clocksource_unregister()
+> > > > >                                    sched_clocksource = jiffies
+> > > > >                                  unmap data/text
+> > > > > 
+> > > > > cyc2ns(clock, clocksource_read(clock)) <--- fireworks
+> > > > > 
+> > > > > 
+> > > > 
+> > > > Do any module based clocksources even exist right now?
+> > > > clocksource_unregister only seems to be used 3 times..
+> > > 
+> > > Good point, it appears its not even exported.
+> > > 
+> > > Thomas mentioned modules, I assumed.
+> > > 
+> > The drivers/clocksource/ drivers in theory could be modular anyways.
+> > Handling this transition properly is at least one less barrier to modular
+> > clocksources, so I think it's progress regardless. I don't remember what
+> > all of the other issues were though, John probably remembers.
 > 
-> > Hi,
-> >
-> > On my PowerBook6,5 (iBook G4) the trackpad does not show up on the
-> > adb-bus after resuming from suspend to ram. This happens in roughly 50%
-> > of the resume cycles.
-> > Affected kernel versions: v2.6.30_rc1 through _rc7
+> I don't think it's an important case to consider right now ..
+> clocksources are usually so integral to the system putting one in a
+> module seems counterintuitive. 
 > 
-> I bisected the regression and found the first bad commit to be:
-> 2ed8d2b3a81bdbb0418301628ccdb008ac9f40b7
-> "PM: Rework handling of interrupts during suspend-resume"
+I would not have mentioned it if it weren't something we already had use
+cases for. For the SH timers alone we have 3 that can be used as
+clocksources in any combination, excluding the differences in timer
+channels per block. These tend to have different implications for
+performance, power management, etc.
 
-Thanks for bisecting.
-
-We are too late in the cycle to revert this commit and it really is needed to
-fix a more serious issue.  Nevertheless knowing that it caused the problem to
-appear on your system is also important.
-
-Ben, do you have an idea what may be going on here?  Does __disable_irq() mask
-the interrupt on this platform?
-
-> To those of you I cc'ed: sorry for the noise, but you were the ones that
-> get_maintainers.pl spit out when asking for *adb*-files.
-> 
-> In addition to the diff of the lshal output I posted before, here is the
-> diff in the output of lsadb:
-> 
-> --- lsadb-ok.out	2009-05-28 08:53:09.000000000 +0200
-> +++ lsadb-notouchpad.out	2009-05-28 08:55:59.000000000 +0200
-> @@ -1,35 +1,24 @@
->  
->  Devices connected to the ADB-Bus: (PMU: 12)
->  
->    D R  raw data                  decoded data
->  -------------------------------------------------------------------------------------
->    2.3: [62 c4]                   Encode Device
->                                   Apple Macintosh PowerBook G3 Keyboard (ISO layout)
->                                   Exceptional Event enabled
->                                   Service Request enabled
->      2: [ff ff]                   Qualifier: (not all must be supported)
->                                    Fn-key   Delete   Caps-Lock   Reset      Control 
->                                    Shift    Option   Apple       Num-Lock   Scroll-Lock 
->                                    Scroll-Lock-LED   Caps-Lock-LED   Num-Lock-LED 
->      1: [05 01]                   Special keys need Fn Key
->      0: 
->  
-> -  3.3: [23 04]                   Relative-Position Device
-> -                                 Extended Mouse Protokoll 
-> -                                 Exceptional Event disabled
-> -                                 Service Request enabled
-> -    2: [08 48 03 00 00 00 00 00]
-> -    1: [74 70 61 64 01 90 03 04] Mouse type:   tpad
-> -                                 resolution:   400 dpi
-> -                                 Device class: Trackpad
-> -                                 buttons:      4
-> -    0: 
-> -
->    7.3: [67 1f]                   Misc. Device
->                                   Powerbook G3 (Pismo) Button Device 
->                                   Exceptional Event enabled
->                                   Service Request enabled
->      2: 
->      1: 
->      0:  
-> 
-> >
-> > Here is a diff of the output of lshal before and after the trackpad vanished:
-> >
-> > --- lshal-ok.out	2009-05-25 17:00:28.000000000 +0200
-> > +++ lshal-notouchpad.out	2009-05-25 17:04:42.000000000 +0200
-> > @@ -1,5 +1,5 @@
-> >  
-> > -Dumping 81 device(s) from the Global Device List:
-> > +Dumping 80 device(s) from the Global Device List:
-> >  -------------------------------------------------
-> >  udi = '/org/freedesktop/Hal/devices/computer'
-> >    info.addons = {'hald-addon-cpufreq'} (string list)
-> > @@ -95,21 +95,6 @@
-> >    linux.subsystem = 'input'  (string)
-> >    linux.sysfs_path = '/sys/devices/virtual/input/input4/event4'  (string)
-> >  
-> > -udi = '/org/freedesktop/Hal/devices/computer_logicaldev_input_2'
-> > -  info.capabilities = {'input', 'input.mouse'} (string list)
-> > -  info.category = 'input'  (string)
-> > -  info.parent = '/org/freedesktop/Hal/devices/computer'  (string)
-> > -  info.product = 'ADB mouse'  (string)
-> > -  info.subsystem = 'input'  (string)
-> > -  info.udi = '/org/freedesktop/Hal/devices/computer_logicaldev_input_2'  (string)
-> > -  input.device = '/dev/input/event3'  (string)
-> > -  input.product = 'ADB mouse'  (string)
-> > -  input.x11_driver = 'evdev'  (string)
-> > -  linux.device_file = '/dev/input/event3'  (string)
-> > -  linux.hotplug_type = 2  (0x2)  (int)
-> > -  linux.subsystem = 'input'  (string)
-> > -  linux.sysfs_path = '/sys/devices/virtual/input/input3/event3'  (string)
-> > -
-> >  udi = '/org/freedesktop/Hal/devices/computer_logicaldev_input_1'
-> >    info.addons.singleton = {'hald-addon-input'} (string list)
-> >    info.capabilities = {'input', 'input.keys', 'button'} (string list)
-> > @@ -1820,6 +1805,6 @@
-> >    pci.vendor_id = 4203  (0x106b)  (int)
-> >  
-> >  
-> > -Dumped 81 device(s) from the Global Device List.
-> > +Dumped 80 device(s) from the Global Device List.
-> >  ------------------------------------------------
-> >
-> > Please let me know if you need more info.
-
-I'd like to see a boot log, preferably containing a suspend-resume in which
-the problem was reproduced.
-
-Best,
-Rafael
+The only reason they are not modular today is because more work needs to
+be done to handle clocksources going away, or at least there was the last
+time we tried it.
