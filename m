@@ -1,74 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757609AbZE2J4I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757686AbZE2KeV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757609AbZE2J4I (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 05:56:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753593AbZE2Jz5
+	id S1757686AbZE2KeV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 06:34:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756767AbZE2KeF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 05:55:57 -0400
-Received: from www.tglx.de ([62.245.132.106]:44586 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752673AbZE2Jz4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 05:55:56 -0400
-Date: Fri, 29 May 2009 11:55:30 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Zhaolei <zhaolei@cn.fujitsu.com>
-cc: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>, mingo@elte.hu,
-       LKML <linux-kernel@vger.kernel.org>, kosaki.motohiro@jp.fujitsu.com,
-       Steven Rostedt <rostedt@goodmis.org>, fweisbec@gmail.com
-Subject: Re: Re: [PATCH 1/3] ftrace: add tracepoint for timer
-In-Reply-To: <4A1F41C5.7000803@cn.fujitsu.com>
-Message-ID: <alpine.LFD.2.00.0905290935030.3397@localhost.localdomain>
-References: <4A167615.7050208@cn.fujitsu.com> <alpine.LFD.2.00.0905262334030.1762@localhost.localdomain> <4A1CED66.7030805@cn.fujitsu.com> <alpine.LFD.2.00.0905271202260.3397@localhost.localdomain> <4A1F41C5.7000803@cn.fujitsu.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 29 May 2009 06:34:05 -0400
+Received: from va3ehsobe004.messaging.microsoft.com ([216.32.180.14]:16809
+	"EHLO VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753979AbZE2KeE convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 May 2009 06:34:04 -0400
+X-SpamScore: -17
+X-BigFish: VPS-17(zz1432R98dR1805M873fnzz1202hzzz32i6bh17ch6di61h)
+X-Spam-TCS-SCL: 0:0
+X-FB-SS: 5,
+X-WSS-ID: 0KKEIO8-01-4U0-01
+Date: Fri, 29 May 2009 12:33:29 +0200
+From: Borislav Petkov <borislav.petkov@amd.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: greg@kroah.com, mingo@elte.hu, norsk5@yahoo.com, tglx@linutronix.de,
+       hpa@zytor.com, mchehab@redhat.com, aris@redhat.com, edt@aei.ca,
+       linux-kernel@vger.kernel.org, randy.dunlap@oracle.com
+Subject: Re: [PATCH 0/4] amd64_edac: misc fixes
+Message-ID: <20090529103329.GB23530@aftab>
+References: <1242845037-1029-1-git-send-email-borislav.petkov@amd.com> <20090528164720.0af5752b.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+In-Reply-To: <20090528164720.0af5752b.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-OriginalArrivalTime: 29 May 2009 10:33:30.0496 (UTC) FILETIME=[E8CFA800:01C9E048]
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 29 May 2009, Zhaolei wrote:
-> But, for trace_timer_start() in __mod_timer(), we need to put it after
-> timer->* changed.
+Hi,
 
-Why ?
+On Thu, May 28, 2009 at 04:47:20PM -0700, Andrew Morton wrote:
+> On Wed, 20 May 2009 20:43:53 +0200
+> Borislav Petkov <borislav.petkov@amd.com> wrote:
+> 
+> > here are some minor fixlets which came up lately. I'm sending them
+> > separately as an offset from the rest of the patchset since nothing has
+> > changed there. For details, see
+> > 
+> > git://git.kernel.org/pub/scm/linux/kernel/git/bp/bp.git for-next
+> 
+> My linux-next x86_64 allmodconfig fails to build drivers/edac/amd64_edac.o:
+> 
+> {standard input}: Assembler messages:
+> {standard input}:3026: Error: no such instruction: `popcnt %eax,%ecx'
 
->> +	TP_fast_assign(
->> +		__entry->timer		= timer;
->> +		__entry->function	= timer->function;
->> +		__entry->expires	= timer->expires;
->> +		__entry->cpu		= cpu;
+I guess this is a rather old(er) toolchain you got there. What do
 
-Again, neither timer nor function nor expires will change when the
-timer is added, right ?
+as --version
+gcc --version
 
-The only unknown at this point is cpu. See below.
+say?
 
-> Nevertheless, it don't means we need separate trace_timer_start() and
-> debug_timer_activate(), because we can put move debug_timer_activate() below,
-> as:
-> -	debug_timer_activate(timer);
-> 	...
->  	timer->expires = expires;
->  	internal_add_timer(base, timer);
-> +	debug_timer_activate(timer);
+-- 
+Regards/Gruss,
+Boris.
 
-No, you can not call it with the base->lock held.
+Operating | Advanced Micro Devices GmbH
+  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
+ Research | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
+  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+  (OSRC)  | Registergericht München, HRB Nr. 43632
 
-> +	trace_timer_start(timer, smp_processor_id());
-
-Also using smp_processor_id() here is wrong. We do not necessarily add
-the timer to the current CPUs timer wheel. See the code which selects
-the timer base. So this information is rather useless, because the
-tracer knows anyway  on which CPU we are running.
-
-Unfortunately we do not have an easy way to figure out to which CPU
-the base belongs (except if it's the base of the current CPU). There
-is not much we can do about that. But OTOH, this is not a problem
-because we see when the timer expires on which CPU it was enqueued. So
-scrapping the cpu entry in the trace completely is not a big loss.
-
-The same applies to hrtimers as well.
-
-Thanks,
-
-	tglx
