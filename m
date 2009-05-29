@@ -1,76 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758338AbZE2Iqj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758518AbZE2Iqu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758338AbZE2Iqj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 04:46:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757472AbZE2Io2
+	id S1758518AbZE2Iqu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 04:46:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758230AbZE2Iq3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 04:44:28 -0400
-Received: from hera.kernel.org ([140.211.167.34]:59565 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757479AbZE2Io0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 04:44:26 -0400
-Subject: Re: [PATCH] KVM: add localversion to avoid confusion and conflicts
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Christian =?ISO-8859-1?Q?Borntr=E4ger?= <borntraeger@de.ibm.com>
-Cc: Avi Kivity <avi@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>, KVM list <kvm@vger.kernel.org>
-In-Reply-To: <200905290948.34482.borntraeger@de.ibm.com>
-References: <1243581494.3212.1.camel@localhost.localdomain>
-	 <200905290948.34482.borntraeger@de.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 29 May 2009 14:13:46 +0530
-Message-Id: <1243586626.4379.15.camel@localhost.localdomain>
+	Fri, 29 May 2009 04:46:29 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:60519 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758079AbZE2Iq1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 May 2009 04:46:27 -0400
+Date: Fri, 29 May 2009 10:53:09 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Andi Kleen <andi@firstfloor.org>, eranian@gmail.com,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Robert Richter <robert.richter@amd.com>,
+       Paul Mackerras <paulus@samba.org>, Maynard Johnson <mpjohn@us.ibm.com>,
+       Carl Love <cel@us.ibm.com>, Corey J Ashford <cjashfor@us.ibm.com>,
+       Philip Mucci <mucci@eecs.utk.edu>, Dan Terpstra <terpstra@eecs.utk.edu>,
+       perfmon2-devel <perfmon2-devel@lists.sourceforge.net>
+Subject: Re: comments on Performance Counters for Linux (PCL)
+Message-ID: <20090529085309.GP1065@one.firstfloor.org>
+References: <7c86c4470905280758y6d359823h2a7517dfecb115e6@mail.gmail.com> <1243527919.6645.75.camel@laptop> <20090529065104.GO1065@one.firstfloor.org> <1243585158.23657.175.camel@twins>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1243585158.23657.175.camel@twins>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-05-29 at 09:48 +0200, Christian Bornträger wrote:
-> Am Freitag 29 Mai 2009 09:18:14 schrieb Jaswinder Singh Rajput:
-> > Adding localversion avoids confusion in kernel images :
-> >
-> > like Linux version 2.6.30-rc7 does not tell whether it is linus or kvm
-> > kernel.
-> >
-> > By adding localversion it tells :
-> >
-> > Linux version 2.6.30-rc7-kvm , any doubt ;-)
-> > I am inspired by Ingo's -tip, I am sure Ingo will tell more advantages,
-> > if these are not enough :-)
-> [...]
-> > diff --git a/localversion-kvm b/localversion-kvm
-> > new file mode 100644
-> > index 0000000..d969ff0
-> > --- /dev/null
-> > +++ b/localversion-kvm
-> > @@ -0,0 +1 @@
-> > +-kvm
-> 
-> NAK from my side. If you need a distinction, there is always 
-> CONFIG_LOCALVERSION_AUTO. If you need this kind of prefix, there is always  
-> CONFIG_LOCALVERSION.
-> 
+> You're talking about VT stuff, right? 
 
-Here is NAK for your NAK from my side.
+Yes.
 
-This patch is only for KVM tree and not for linus tree.
+> Does that virtualize the PMU too?
 
-Lets assume 100 developers are working on kvm tree and they use kvm tree
-on 2 PCs. So count becomes 200.
+A hypervisor can in software, but another common case is a global profiler on 
+the host to be able to profile all guests too. e.g. xenoprofile is able to do 
+that.
 
-Like in my case I have dozen of kernel trees so I keep on swapping
-config between kernels. And I also need to test config from various
-users. So this count is countless.
-I think this is the biggest point for adding localversion in -tip.
-It seems Ingo is busy in perfcounter stuff otherwise he will explain you
-more advantages.
+If you want a full system picture with virtualization that's pretty much 
+required.
 
-In the least case, Can you differentiate between 1 and 200 ?
+For that you need a concept of more priviledge levels (host user, host sys,
+guest user, guest sys)
 
-So by adding this patch we can save lot of developer's time.
+> Happen to have more details? If they really run in user context their
+> priv level would be the same right, otherwise they run in something
+> weird, not quite user not quite kernel. Now that might be the case, but
+> I'm utterly ignorant on itanic.
 
---
-JSR
+See Documentation/ia64/fsys.txt
 
+-Andi
+-- 
+ak@linux.intel.com -- Speaking for myself only.
