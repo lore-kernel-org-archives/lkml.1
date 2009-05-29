@@ -1,105 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761369AbZE2O6t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760153AbZE2PCp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761369AbZE2O6t (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 10:58:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759633AbZE2O6l
+	id S1760153AbZE2PCp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 11:02:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757651AbZE2PCi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 10:58:41 -0400
-Received: from mail-px0-f123.google.com ([209.85.216.123]:60916 "EHLO
-	mail-px0-f123.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756489AbZE2O6k (ORCPT
+	Fri, 29 May 2009 11:02:38 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:61090 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757618AbZE2PCh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 10:58:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=PTaSt5FpqGy0PdpyK4kBfmMxV0ps2LGj+xrkx90wD4rmKD7z7VOUuLlNSWgdt3Xa6t
-         CdPf2iPVwA5MDbN2sV/r83WCUlLexDGCh7bb4ppTlBzjKaJ6qOg/ckphB/fDNk8BBCo0
-         7oniY/mq36VptrG62Z6F6EiAKoyXoJnSZ1USo=
-From: wuzhangjin@gmail.com
-To: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
-Cc: Wu Zhangjin <wuzj@lemote.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Ralf Baechle <ralf@linux-mips.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Nicholas Mc Guire <der.herr@hofr.at>
-Subject: [PATCH v2 0/6] mips-specific ftrace support
-Date: Fri, 29 May 2009 22:58:08 +0800
-Message-Id: <cover.1243604390.git.wuzj@lemote.com>
-X-Mailer: git-send-email 1.6.3.1
+	Fri, 29 May 2009 11:02:37 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [PATCH 3/4] [MTD] compat_ioctl cleanup
+Date: Fri, 29 May 2009 16:02:36 +0100
+User-Agent: KMail/1.11.90 (Linux/2.6.30-5-generic; KDE/4.2.85; x86_64; ; )
+Cc: Kevin Cernekee <kpc.mtd@gmail.com>,
+       Adrian Hunter <adrian.hunter@nokia.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Linux MTD <linux-mtd@lists.infradead.org>
+References: <a95a62fe0904082253i119f8660y6a73835a163394f5@mail.gmail.com> <1243609086.19886.179.camel@macbook.infradead.org>
+In-Reply-To: <1243609086.19886.179.camel@macbook.infradead.org>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200905291602.37190.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19kQca/f+yp1xlv5SkHO6MFwb61dptGGqBGDkZ
+ IOQabrf60jYSXR/kskOdFgr7RrRTx4ceAqoWJQM6Ch5/KtMlm1
+ /TJIkxXRcN0SsdByN5RvqEc2DY+NzTT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Wu Zhangjin <wuzj@lemote.com>
+On Friday 29 May 2009, David Woodhouse wrote:
+> On Wed, 2009-04-08 at 22:53 -0700, Kevin Cernekee wrote:
+> > 
+> > +static long mtd_compat_ioctl(struct file *file, unsigned int cmd,
+> > +       unsigned long arg)
+> > +{
+> > +       struct mtd_file_info *mfi = file->private_data;
+> > +       struct mtd_info *mtd = mfi->mtd;
+> > +       void __user *argp = (void __user *)arg;
+> 
+> Shouldn't that be 'argp = compat_ptr(arg)' ?
 
-ftrace is a mcount based kernel tracing tool/framework, which is originally
-from RT_PREEMPT(http://rt.wiki.kernel.org).
+Yes, that's right. I missed this when I looked at the patches.
 
-ftrace is short for function tracer, this is its original name, but now, it
-becomes a kernel tracing framework, lots of kernel tracers are built on it,
-such as irqoff tracer, wakeup tracer and so forth.  these tracers are
-arch-independent(?), but some of them are arch-dependent, such as the original
-ftrace: function tracer, and dynamic function tracer, function graph tracer,
-and also, system call tracer.
-
-here is the mips porting of these four arch-dependent tracers, it will enable
-the following new kernel config options in linux-mips system.
-
-kernel hacking --->
-           Tracers -->
-                [*] Kernel Function Tracer
-                [*]   Kernel Function Graph Tracer
-                ...
-                [*] Trace syscalls
-                                ...
-                [*] enable/disable ftrace tracepoints dynamically
-
-in reality, because the timestamp getting function are arch-dependent, lots of
-the tracers are arch-dependent. the arch-dependent part is that: sched_clock.
-the original sched_clock in mips is jiffes based, only give 10ms precision in
-1000HZ, which is not enough for ftrace. to get high-precise timestamp, we must
-implement a new native_sched_clock via reading the MIPS clock counter, but
-since it is only 32bit long, so, overflow should be handled carefully.
-
-this -v2 patch series is based on the -v1 patch series and incorporates the
-feedback from Steven Rostedt and Thomas Gleixner.
-
-read the following document, and play with it:
-        Documentation/trace/ftrace.txt
-
-Wu Zhangjin (6):
-  mips static function tracer support
-  mips dynamic function tracer support
-  add an endian argument to scripts/recordmcount.pl
-  mips function graph tracer support
-  mips specific clock function to get precise timestamp
-  mips specific system call tracer
-
- arch/mips/Kconfig                   |    7 +
- arch/mips/Makefile                  |    2 +
- arch/mips/include/asm/ftrace.h      |   35 ++++-
- arch/mips/include/asm/ptrace.h      |    2 +
- arch/mips/include/asm/reg.h         |    5 +
- arch/mips/include/asm/syscall.h     |   84 +++++++++
- arch/mips/include/asm/thread_info.h |    5 +-
- arch/mips/kernel/Makefile           |   12 ++
- arch/mips/kernel/csrc-r4k.c         |    2 +-
- arch/mips/kernel/entry.S            |    2 +-
- arch/mips/kernel/ftrace.c           |  350 +++++++++++++++++++++++++++++++++++
- arch/mips/kernel/ftrace_clock.c     |   71 +++++++
- arch/mips/kernel/mcount.S           |  185 ++++++++++++++++++
- arch/mips/kernel/mips_ksyms.c       |    5 +
- arch/mips/kernel/ptrace.c           |   14 ++-
- arch/mips/kernel/scall64-o32.S      |    2 +-
- arch/mips/kernel/vmlinux.lds.S      |    1 +
- kernel/trace/trace_clock.c          |    2 +-
- scripts/Makefile.build              |    1 +
- scripts/recordmcount.pl             |   32 +++-
- 20 files changed, 805 insertions(+), 14 deletions(-)
- create mode 100644 arch/mips/include/asm/syscall.h
- create mode 100644 arch/mips/kernel/ftrace.c
- create mode 100644 arch/mips/kernel/ftrace_clock.c
- create mode 100644 arch/mips/kernel/mcount.S
-
+	Arnd <><
