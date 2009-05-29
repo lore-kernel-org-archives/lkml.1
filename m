@@ -1,16 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758037AbZE2Ipn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758094AbZE2Ipz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758037AbZE2Ipn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 04:45:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757224AbZE2IoN
+	id S1758094AbZE2Ipz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 04:45:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757294AbZE2IoQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 04:44:13 -0400
-Received: from smtp.citrix.com ([66.165.176.89]:56015 "EHLO SMTP.CITRIX.COM"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756830AbZE2IoM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 04:44:12 -0400
+	Fri, 29 May 2009 04:44:16 -0400
+Received: from smtp02.citrix.com ([66.165.176.63]:41310 "EHLO
+	SMTP02.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757159AbZE2IoO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 May 2009 04:44:14 -0400
 X-IronPort-AV: E=Sophos;i="4.41,270,1241409600"; 
-   d="scan'208";a="4461768"
+   d="scan'208";a="53001179"
 From: Ian Campbell <ian.campbell@citrix.com>
 To: <linux-kernel@vger.kernel.org>
 CC: Ian Campbell <ian.campbell@citrix.com>,
@@ -21,9 +22,9 @@ CC: Ian Campbell <ian.campbell@citrix.com>,
        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
        Kumar Gala <galak@kernel.crashing.org>, <x86@kernel.org>,
        <linux-ia64@vger.kernel.org>, <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 6/9] swiotlb: use dma_to_phys and phys_to_dma
-Date: Fri, 29 May 2009 09:44:00 +0100
-Message-ID: <1243586643-5554-7-git-send-email-ian.campbell@citrix.com>
+Subject: [PATCH 7/9] swiotlb: use dma_map_range
+Date: Fri, 29 May 2009 09:44:01 +0100
+Message-ID: <1243586643-5554-8-git-send-email-ian.campbell@citrix.com>
 X-Mailer: git-send-email 1.5.6.5
 In-Reply-To: <1243586643-5554-1-git-send-email-ian.campbell@citrix.com>
 References: <1243586643-5554-1-git-send-email-ian.campbell@citrix.com>
@@ -33,8 +34,9 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-These new architecture-specific interfaces subsume the existing __weak
-function hooks.
+This replaces usages of address_needs_mapping, range_needs_mapping and
+is_buffer_dma_capable and the __weak architecture hooks to those
+functions with a more flexible single function.
 
 Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
 Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
@@ -50,76 +52,170 @@ Cc: x86@kernel.org
 Cc: linux-ia64@vger.kernel.org
 Cc: linuxppc-dev@ozlabs.org
 ---
- include/linux/swiotlb.h |    5 -----
- lib/swiotlb.c           |   18 ++++--------------
- 2 files changed, 4 insertions(+), 19 deletions(-)
+ include/linux/dma-mapping.h |    5 ----
+ lib/swiotlb.c               |   57 +++++++++++++------------------------------
+ 2 files changed, 17 insertions(+), 45 deletions(-)
 
-diff --git a/include/linux/swiotlb.h b/include/linux/swiotlb.h
-index cb1a663..954feec 100644
---- a/include/linux/swiotlb.h
-+++ b/include/linux/swiotlb.h
-@@ -27,11 +27,6 @@ swiotlb_init(void);
- extern void *swiotlb_alloc_boot(size_t bytes, unsigned long nslabs);
- extern void *swiotlb_alloc(unsigned order, unsigned long nslabs);
+diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
+index 8083b6a..85dafa1 100644
+--- a/include/linux/dma-mapping.h
++++ b/include/linux/dma-mapping.h
+@@ -96,11 +96,6 @@ static inline int is_device_dma_capable(struct device *dev)
+ 	return dev->dma_mask != NULL && *dev->dma_mask != DMA_MASK_NONE;
+ }
  
--extern dma_addr_t swiotlb_phys_to_bus(struct device *hwdev,
--				      phys_addr_t address);
--extern phys_addr_t swiotlb_bus_to_phys(struct device *hwdev,
--				       dma_addr_t address);
+-static inline int is_buffer_dma_capable(u64 mask, dma_addr_t addr, size_t size)
+-{
+-	return addr + size <= mask;
+-}
 -
- extern int swiotlb_arch_range_needs_mapping(phys_addr_t paddr, size_t size);
- 
- extern void
+ #ifdef CONFIG_HAS_DMA
+ #include <asm/dma-mapping.h>
+ #else
 diff --git a/lib/swiotlb.c b/lib/swiotlb.c
-index bffe6d7..baa1991 100644
+index baa1991..e332342 100644
 --- a/lib/swiotlb.c
 +++ b/lib/swiotlb.c
-@@ -124,25 +124,15 @@ void * __weak swiotlb_alloc(unsigned order, unsigned long nslabs)
- 	return (void *)__get_free_pages(GFP_DMA | __GFP_NOWARN, order);
+@@ -135,17 +135,6 @@ void * __weak swiotlb_bus_to_virt(struct device *hwdev, dma_addr_t address)
+ 	return phys_to_virt(dma_to_phys(hwdev, address));
  }
  
--dma_addr_t __weak swiotlb_phys_to_bus(struct device *hwdev, phys_addr_t paddr)
+-int __weak swiotlb_arch_address_needs_mapping(struct device *hwdev,
+-					       dma_addr_t addr, size_t size)
 -{
--	return paddr;
+-	return !is_buffer_dma_capable(dma_get_mask(hwdev), addr, size);
 -}
 -
--phys_addr_t __weak swiotlb_bus_to_phys(struct device *hwdev, dma_addr_t baddr)
+-int __weak swiotlb_arch_range_needs_mapping(phys_addr_t paddr, size_t size)
 -{
--	return baddr;
+-	return 0;
 -}
 -
- static dma_addr_t swiotlb_virt_to_bus(struct device *hwdev,
- 				      volatile void *address)
+ static void swiotlb_print_info(unsigned long bytes)
  {
--	return swiotlb_phys_to_bus(hwdev, virt_to_phys(address));
-+	return phys_to_dma(hwdev, virt_to_phys(address));
+ 	phys_addr_t pstart, pend;
+@@ -305,17 +294,6 @@ cleanup1:
+ 	return -ENOMEM;
  }
  
- void * __weak swiotlb_bus_to_virt(struct device *hwdev, dma_addr_t address)
+-static inline int
+-address_needs_mapping(struct device *hwdev, dma_addr_t addr, size_t size)
+-{
+-	return swiotlb_arch_address_needs_mapping(hwdev, addr, size);
+-}
+-
+-static inline int range_needs_mapping(phys_addr_t paddr, size_t size)
+-{
+-	return swiotlb_force || swiotlb_arch_range_needs_mapping(paddr, size);
+-}
+-
+ static int is_swiotlb_buffer(char *addr)
  {
--	return phys_to_virt(swiotlb_bus_to_phys(hwdev, address));
-+	return phys_to_virt(dma_to_phys(hwdev, address));
- }
+ 	return addr >= io_tlb_start && addr < io_tlb_end;
+@@ -542,7 +520,7 @@ void *
+ swiotlb_alloc_coherent(struct device *hwdev, size_t size,
+ 		       dma_addr_t *dma_handle, gfp_t flags)
+ {
+-	dma_addr_t dev_addr;
++	phys_addr_t phys;
+ 	void *ret;
+ 	int order = get_order(size);
+ 	u64 dma_mask = DMA_BIT_MASK(32);
+@@ -551,9 +529,8 @@ swiotlb_alloc_coherent(struct device *hwdev, size_t size,
+ 		dma_mask = hwdev->coherent_dma_mask;
  
- int __weak swiotlb_arch_address_needs_mapping(struct device *hwdev,
-@@ -646,7 +636,7 @@ dma_addr_t swiotlb_map_page(struct device *dev, struct page *page,
+ 	ret = (void *)__get_free_pages(flags, order);
+-	if (ret &&
+-	    !is_buffer_dma_capable(dma_mask, swiotlb_virt_to_bus(hwdev, ret),
+-				   size)) {
++	if (ret && !dma_map_range(hwdev, dma_mask, virt_to_phys(ret),
++				  size, dma_handle)) {
+ 		/*
+ 		 * The allocated memory isn't reachable by the device.
+ 		 */
+@@ -572,19 +549,18 @@ swiotlb_alloc_coherent(struct device *hwdev, size_t size,
+ 	}
+ 
+ 	memset(ret, 0, size);
+-	dev_addr = swiotlb_virt_to_bus(hwdev, ret);
++	phys = virt_to_phys(ret);
+ 
+ 	/* Confirm address can be DMA'd by device */
+-	if (!is_buffer_dma_capable(dma_mask, dev_addr, size)) {
+-		printk("hwdev DMA mask = 0x%016Lx, dev_addr = 0x%016Lx\n",
++	if (!dma_map_range(hwdev, dma_mask, phys, size, dma_handle)) {
++		printk("hwdev DMA mask = 0x%016Lx, physical addr = 0x%016Lx\n",
+ 		       (unsigned long long)dma_mask,
+-		       (unsigned long long)dev_addr);
++		       (unsigned long long)phys);
+ 
+ 		/* DMA_TO_DEVICE to avoid memcpy in unmap_single */
+ 		do_unmap_single(hwdev, ret, size, DMA_TO_DEVICE);
+ 		return NULL;
+ 	}
+-	*dma_handle = dev_addr;
+ 	return ret;
+ }
+ EXPORT_SYMBOL(swiotlb_alloc_coherent);
+@@ -636,7 +612,7 @@ dma_addr_t swiotlb_map_page(struct device *dev, struct page *page,
  			    struct dma_attrs *attrs)
  {
  	phys_addr_t phys = page_to_phys(page) + offset;
--	dma_addr_t dev_addr = swiotlb_phys_to_bus(dev, phys);
-+	dma_addr_t dev_addr = phys_to_dma(dev, phys);
+-	dma_addr_t dev_addr = phys_to_dma(dev, phys);
++	dma_addr_t dev_addr;
  	void *map;
  
  	BUG_ON(dir == DMA_NONE);
-@@ -817,7 +807,7 @@ swiotlb_map_sg_attrs(struct device *hwdev, struct scatterlist *sgl, int nelems,
+@@ -645,8 +621,8 @@ dma_addr_t swiotlb_map_page(struct device *dev, struct page *page,
+ 	 * we can safely return the device addr and not worry about bounce
+ 	 * buffering it.
+ 	 */
+-	if (!address_needs_mapping(dev, dev_addr, size) &&
+-	    !range_needs_mapping(phys, size))
++	if (dma_map_range(dev, dma_get_mask(dev), phys, size, &dev_addr) &&
++	    !swiotlb_force)
+ 		return dev_addr;
+ 
+ 	/*
+@@ -658,12 +634,12 @@ dma_addr_t swiotlb_map_page(struct device *dev, struct page *page,
+ 		map = io_tlb_overflow_buffer;
+ 	}
+ 
+-	dev_addr = swiotlb_virt_to_bus(dev, map);
++	phys = virt_to_phys(map);
+ 
+ 	/*
+ 	 * Ensure that the address returned is DMA'ble
+ 	 */
+-	if (address_needs_mapping(dev, dev_addr, size))
++	if (!dma_map_range(dev, dma_get_mask(dev), phys, size, &dev_addr))
+ 		panic("map_single: bounce buffer is not DMA'ble");
+ 
+ 	return dev_addr;
+@@ -807,10 +783,10 @@ swiotlb_map_sg_attrs(struct device *hwdev, struct scatterlist *sgl, int nelems,
  
  	for_each_sg(sgl, sg, nelems, i) {
  		phys_addr_t paddr = sg_phys(sg);
--		dma_addr_t dev_addr = swiotlb_phys_to_bus(hwdev, paddr);
-+		dma_addr_t dev_addr = phys_to_dma(hwdev, paddr);
+-		dma_addr_t dev_addr = phys_to_dma(hwdev, paddr);
++		dma_addr_t uninitialized_var(dev_addr);
  
- 		if (range_needs_mapping(paddr, sg->length) ||
- 		    address_needs_mapping(hwdev, dev_addr, sg->length)) {
+-		if (range_needs_mapping(paddr, sg->length) ||
+-		    address_needs_mapping(hwdev, dev_addr, sg->length)) {
++		if (!dma_map_range(hwdev, dma_get_mask(hwdev), dev_addr, sg->length, &dev_addr) ||
++		    swiotlb_force) {
+ 			void *map = map_single(hwdev, sg_phys(sg),
+ 					       sg->length, dir);
+ 			if (!map) {
+@@ -822,7 +798,8 @@ swiotlb_map_sg_attrs(struct device *hwdev, struct scatterlist *sgl, int nelems,
+ 				sgl[0].dma_length = 0;
+ 				return 0;
+ 			}
+-			sg->dma_address = swiotlb_virt_to_bus(hwdev, map);
++			paddr = virt_to_phys(map);
++			sg->dma_address = phys_to_dma(hwdev, paddr);
+ 		} else
+ 			sg->dma_address = dev_addr;
+ 		sg->dma_length = sg->length;
 -- 
 1.5.6.5
 
