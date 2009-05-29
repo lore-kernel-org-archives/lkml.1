@@ -1,51 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753847AbZE2V3v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754620AbZE2Vbf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753847AbZE2V3v (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 17:29:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752313AbZE2V3n
+	id S1754620AbZE2Vbf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 17:31:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752486AbZE2Vb1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 17:29:43 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59076
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752142AbZE2V3n convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 17:29:43 -0400
-Date: Fri, 29 May 2009 14:29:42 -0700 (PDT)
-Message-Id: <20090529.142942.136882164.davem@davemloft.net>
-To: pasik@iki.fi
-Cc: george.dunlap@eu.citrix.com, jeremy@goop.org, mingo@elte.hu,
-       dan.magenheimer@oracle.com, avi@redhat.com,
-       xen-devel@lists.xensource.com, x86@kernel.org,
-       linux-kernel@vger.kernel.org, Keir.Fraser@eu.citrix.com,
-       torvalds@linux-foundation.org, gregkh@suse.de, kurt.hackel@oracle.com,
-       Ian.Pratt@eu.citrix.com, xen-users@lists.xensource.com,
-       ksrinivasan@novell.com, EAnderson@novell.com, wimcoekaerts@wimmekes.net,
-       stephen.spector@citrix.com, jens.axboe@oracle.com, npiggin@suse.de
-Subject: Re: Xen is a feature
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090529141439.GT24960@edu.joroinen.fi>
-References: <20090528.210559.137121893.davem@davemloft.net>
-	<4A1FCE8E.2060604@eu.citrix.com>
-	<20090529141439.GT24960@edu.joroinen.fi>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+	Fri, 29 May 2009 17:31:27 -0400
+Received: from claw.goop.org ([74.207.240.146]:33283 "EHLO claw.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752313AbZE2Vb1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 May 2009 17:31:27 -0400
+Message-ID: <4A20542A.8020407@goop.org>
+Date: Fri, 29 May 2009 14:31:22 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Andi Kleen <andi@firstfloor.org>
+CC: George Dunlap <george.dunlap@eu.citrix.com>,
+       "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
+       Keir Fraser <Keir.Fraser@eu.citrix.com>,
+       "x86@kernel.org" <x86@kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [Xen-devel] Re: Xen is a feature
+References: <162f4c90-6431-4a2a-b337-6d7451d7b11e@default>	<20090528001350.GD26820@elte.hu> <4A1F302E.8030501@goop.org>	<20090528.210559.137121893.davem@davemloft.net>	<4A1FCE8E.2060604@eu.citrix.com> <87tz33ep1b.fsf@basil.nowhere.org>
+In-Reply-To: <87tz33ep1b.fsf@basil.nowhere.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Pasi Kärkkäinen <pasik@iki.fi>
-Date: Fri, 29 May 2009 17:14:39 +0300
+Andi Kleen wrote:
+> George Dunlap <george.dunlap@eu.citrix.com> writes:
+>
+> cc list from hell trimmed. 
+>
+>   
+>> allowing Linux to run as dom0 *is* improving Linux.  The lack of dom0
+>> support is at this moment making life more difficult for a huge number
+>> of Linux users who use Xen, including Mozilla, Debian, and Amazon.
+>> Adding dom0 support would make Linux even more useful to a wide
+>> variety of people not using Xen at the moment.
+>>     
+>
+> Perhaps one way to address this problem would be to make the Dom0
+> interface less intrusive for the host OS?
+>   
 
-> We really need Xen dom0 support in mainline Linux.
+I'm certainly not deaf to criticism along those lines, and I'm looking 
+at ways of cleaning up/decoupling those interactions.
 
-Whether we want a feature is seperate from making sure it's
-implementation is up to snuff and doesn't suck.
+But my frustration arises from the fact that there's been a total stall 
+on merging any of the pieces, even the ones which are either 
+uncontroversial, or purely xen-internal changes.
 
-But the concentration of the talk seems to be on wanting the feature,
-and that's only half the story.
-
-I'm getting sick of hearing over and over how many people use Xen,
-that point has been made succintly so let's move on ok?
-
+    J
