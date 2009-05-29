@@ -1,44 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762539AbZE2Tsn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761831AbZE2TtF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762539AbZE2Tsn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 15:48:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755329AbZE2Tse
+	id S1761831AbZE2TtF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 15:49:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761040AbZE2Tsx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 15:48:34 -0400
-Received: from hera.kernel.org ([140.211.167.34]:49072 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752899AbZE2Tsd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 15:48:33 -0400
-Message-ID: <4A203BFD.7040000@kernel.org>
+	Fri, 29 May 2009 15:48:53 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36422 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760499AbZE2Tsx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 May 2009 15:48:53 -0400
 Date: Fri, 29 May 2009 12:48:13 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Pascal Terjan <pterjan@mandriva.com>
-CC: linux-kernel@vger.kernel.org, stable <stable@kernel.org>
-Subject: Re: Stable regression 2.6.29.3 vs 2.6.29.2
-References: <1243625720.4426.0.camel@plop>
-In-Reply-To: <1243625720.4426.0.camel@plop>
-Content-Type: text/plain; charset=ISO-8859-1
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>
+Cc: jens.axboe@oracle.com, andrew.patterson@hp.com,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       scameron@beardog.cca.cpqcorp.net
+Subject: Re: [PATCH v6] cciss: add cciss driver sysfs entries
+Message-Id: <20090529124813.689b7667.akpm@linux-foundation.org>
+In-Reply-To: <20090528202124.GB4846@beardog.cca.cpqcorp.net>
+References: <20090413164524.17977.99322.stgit@bluto.andrew>
+	<20090413164530.17977.32550.stgit@bluto.andrew>
+	<20090528202124.GB4846@beardog.cca.cpqcorp.net>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pascal Terjan wrote:
-> (Resending because of wrong To:, sorry for the duplicate)
-> 
-> We have a machine here where hard disk is no longer detected at boot
-> time with 2.6.29.3 (it happens only on kernels with HIGHMEM4G + PAE and
-> not on the same one with HIGHMEM64G). 
-> 
-> Motherboard is ECS PF22 Extreme
-> 
-> bisect blames this commit:
-> 
-> http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.29.y.git;a=commit;h=3b442bfc78d351343fa539c63afde75d7b134316
-> 
+On Thu, 28 May 2009 15:21:24 -0500
+"Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net> wrote:
 
-boot log with debug please.
+> From: Andrew Patterson <andrew.patterson@hp.com>
+> 
+> This patch adds sysfs entries to the cciss driver needed for the
+> dm/multipath tools. A file for vendor, model, rev, and unique_id is
+> added for each logical drive under directory
+> /sys/bus/pci/devices/<dev>/ccissX/cXdY. Where X = the controller (or
+> host) number and Y is the logical drive number. A link from
+> /sys/bus/pci/devices/<dev>/ccissX/cXdY/block:cciss!cXdY to
+> /sys/block/cciss!cXdY/device is also created. A bus is created
+> in /sys/bus/cciss.  A link is created from the pci ccissX entry to
+> /sys/bus/cciss/devices/ccissX.
+> Please consider this for inclusion.
+> 
+> Signed-off-by: Mike Miller <mike.miller@hp.com>
 
-YH
+Did Andrew's signed-off-by: get lost?
