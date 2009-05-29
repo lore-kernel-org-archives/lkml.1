@@ -1,58 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755951AbZE2B1h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755630AbZE2Bcb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755951AbZE2B1h (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 21:27:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754810AbZE2B1W
+	id S1755630AbZE2Bcb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 21:32:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751983AbZE2BcY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 21:27:22 -0400
-Received: from ozlabs.org ([203.10.76.45]:47282 "EHLO ozlabs.org"
+	Thu, 28 May 2009 21:32:24 -0400
+Received: from cantor.suse.de ([195.135.220.2]:52224 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752612AbZE2B1U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 21:27:20 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: [my_cpu_ptr 1/5] Introduce my_cpu_ptr()
-Date: Fri, 29 May 2009 10:57:15 +0930
-User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
-Cc: linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>,
-       David Howells <dhowells@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Eric Dumazet <dada1@cosmosbay.com>, davem@davemloft.net
-References: <20090527180635.008102701@gentwo.org> <200905281316.01923.rusty@rustcorp.com.au> <alpine.DEB.1.10.0905281153280.22354@gentwo.org>
-In-Reply-To: <alpine.DEB.1.10.0905281153280.22354@gentwo.org>
+	id S1751078AbZE2BcX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 21:32:23 -0400
+Date: Thu, 28 May 2009 18:27:48 -0700
+From: Greg KH <gregkh@suse.de>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Dan Magenheimer <dan.magenheimer@oracle.com>,
+       Avi Kivity <avi@redhat.com>,
+       George Dunlap <George.Dunlap@eu.citrix.com>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Keir Fraser <keir.fraser@eu.citrix.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Kurt C. Hackel" <kurt.hackel@oracle.com>,
+       Ian Pratt <Ian.Pratt@citrix.com>, xen-users@lists.xensource.com,
+       Ky Srinivasan <ksrinivasan@novell.com>,
+       Eric Anderson <EAnderson@novell.com>,
+       Wim Coekaerts <wimcoekaerts@wimmekes.net>,
+       Stephen Spector <stephen.spector@citrix.com>,
+       Jens Axboe <jens.axboe@oracle.com>, Nick Piggin <npiggin@suse.de>
+Subject: Re: Xen is a feature
+Message-ID: <20090529012748.GA12067@suse.de>
+References: <4A1C3453.6080402@redhat.com> <162f4c90-6431-4a2a-b337-6d7451d7b11e@default> <20090528001350.GD26820@elte.hu> <4A1F302E.8030501@goop.org>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200905291057.16286.rusty@rustcorp.com.au>
+In-Reply-To: <4A1F302E.8030501@goop.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 29 May 2009 01:29:31 am Christoph Lameter wrote:
-> On Thu, 28 May 2009, Rusty Russell wrote:
-> > On Thu, 28 May 2009 03:16:59 am cl@linux-foundation.org wrote:
-> > > my_cpu_ptr(xx) = per_cpu_ptr(xx, smp_processor_id).
-> >
-> > I had this implemented earlier as as get_cpu_ptr()/__get_cpu_ptr(), to
-> > match get_cpu_var() / __get_cpu_var().
->
-> Have not seen it but it would be a bit confusing since
-> we already have get_cpu* which must be paired with put_cpu*
-> because of the refcount taking (get_cpu_var and get_cpu).
-> get_cpu_ptr() would not have to be paired.
+On Thu, May 28, 2009 at 05:45:34PM -0700, Jeremy Fitzhardinge wrote:
+> Mozilla and Debian are hosted on Xen systems.
 
-To clarify, get_cpu_ptr() would be paired with put_cpu_ptr().  __get_cpu_ptr() 
-would be the "raw" one:
+A tiny data point about these domains.  They are hosted by osuosl.org,
+which uses xen systems running with the current dom0 patch set.  Because
+those patches are out-of-tree, they have a hard time updating kernel
+versions, and generally lag kernel.org releases by a lot, which is not
+always a good thing.
 
-#define get_cpu_ptr(xx) per_cpu_ptr(xx, get_cpu())
-#define __get_cpu_ptr(xx) per_cpu_ptr(xx, smp_processor_id())
+So getting the dom0 patches into mainline will make their lives much
+easier, and more secure.
 
-> Better use a different name.
->
-> 	my_cpu_ptr came from my_cpu_offset:
+thanks,
 
-Yep, but that's not as widely exposed as get_cpu & get_cpu_var.
-
-Cheers,
-Rusty.
+greg k-h
