@@ -1,69 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756836AbZE2IoU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757261AbZE2Iod@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756836AbZE2IoU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 04:44:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756656AbZE2IoI
+	id S1757261AbZE2Iod (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 04:44:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756754AbZE2IoJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 04:44:08 -0400
-Received: from smtp.citrix.com ([66.165.176.89]:7951 "EHLO SMTP.CITRIX.COM"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756433AbZE2IoG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 May 2009 04:44:09 -0400
+Received: from smtp02.citrix.com ([66.165.176.63]:60514 "EHLO
+	SMTP02.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756495AbZE2IoG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 29 May 2009 04:44:06 -0400
 X-IronPort-AV: E=Sophos;i="4.41,270,1241409600"; 
-   d="scan'208";a="4461765"
+   d="scan'208";a="53001165"
 From: Ian Campbell <ian.campbell@citrix.com>
 To: <linux-kernel@vger.kernel.org>
 CC: Ian Campbell <ian.campbell@citrix.com>,
-       Becky Bruce <beckyb@kernel.crashing.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
        FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Greg KH <gregkh@suse.de>, Ingo Molnar <mingo@elte.hu>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Kumar Gala <galak@kernel.crashing.org>, Olaf Kirch <okir@suse.de>,
-       Tony Luck <tony.luck@intel.com>, <linux-ia64@vger.kernel.org>,
-       <linuxppc-dev@ozlabs.org>, <x86@kernel.org>
-Subject: 
-Date: Fri, 29 May 2009 09:43:54 +0100
-Message-ID: <1243586643-5554-1-git-send-email-ian.campbell@citrix.com>
+       Ingo Molnar <mingo@elte.hu>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Tony Luck <tony.luck@intel.com>, <linux-ia64@vger.kernel.org>
+Subject: [PATCH 1/9] ia64: introduce arch-specific dma-mapping interfaces
+Date: Fri, 29 May 2009 09:43:55 +0100
+Message-ID: <1243586643-5554-2-git-send-email-ian.campbell@citrix.com>
 X-Mailer: git-send-email 1.5.6.5
-swiotlb: Introduce architecture-specific APIs to replace __weak functions
+In-Reply-To: <1243586643-5554-1-git-send-email-ian.campbell@citrix.com>
+References: <1243586643-5554-1-git-send-email-ian.campbell@citrix.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This series:
-* removes the swiotlb_(arch_)_phys_to_bus and bus_to_phys __weak
-  hooks, replacing them with an architecture-specific phys_to_dma and
-  dma_to_phys interface. These are used by both PowerPC and Xen to
-  provide the correct mapping from physical to DMA addresses.
-* removes the swiotlb_address_needs_mapping and
-  swiotlb_range_needs_mapping __weak functions as well as
-  is_buffer_dma_capable (which should never have been a generic
-  function). All three are replaced by a single architecture-specific
-  interface which meets the needs of both PowerPC and Xen.
-* removes the swiotlb_virt_to_bus __weak function and replaces it with
-  a CONFIG_HIGHMEM compatible version when high memory is in use. This
-  is needed for 32 bit PowerPC swiotlb support.
+dma_map_range is intended to replace usage of both
+swiotlb_arch_range_needs_mapping and
+swiotlb_arch_address_needs_mapping as __weak functions as well as
+replacing is_buffer_dma_capable.
 
-I think these new interfaces are cleaner than the existing __weak
-functions and isolate the swiotlb code from architecture internals.
-
-This series does not contain any Xen or PowerPC specific changes, those
-will follow in separate postings. The complete patchset has been boot
-tested under Xen and native-x86 and compiled for IA64 and PowerPC
+phys_to_dma and dma_to_phys are intended to replace
+swiotlb_phys_to_bus and swiotlb_bus_to_phys.  I choose to use dma
+rather than bus since a) it matches the parameters and b) avoids
+confusion on x86 with the existing (but deprecated) virt_to_bus
+function which relates to ISA device DMA.
 
 Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
-Cc: Becky Bruce <beckyb@kernel.crashing.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: Greg KH <gregkh@suse.de>
 Cc: Ingo Molnar <mingo@elte.hu>
 Cc: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Kumar Gala <galak@kernel.crashing.org>
-Cc: Olaf Kirch <okir@suse.de>
 Cc: Tony Luck <tony.luck@intel.com>
 Cc: linux-ia64@vger.kernel.org
-Cc: linuxppc-dev@ozlabs.org
-Cc: x86@kernel.org
+---
+ arch/ia64/include/asm/dma-mapping.h |   23 +++++++++++++++++++++++
+ 1 files changed, 23 insertions(+), 0 deletions(-)
+
+diff --git a/arch/ia64/include/asm/dma-mapping.h b/arch/ia64/include/asm/dma-mapping.h
+index 36c0009..7250e1a 100644
+--- a/arch/ia64/include/asm/dma-mapping.h
++++ b/arch/ia64/include/asm/dma-mapping.h
+@@ -174,4 +174,27 @@ dma_cache_sync (struct device *dev, void *vaddr, size_t size,
+ 
+ #define dma_is_consistent(d, h)	(1)	/* all we do is coherent memory... */
+ 
++static inline dma_addr_t phys_to_dma(struct device *hwdev, phys_addr_t paddr)
++{
++        return paddr;
++}
++
++static inline phys_addr_t dma_to_phys(struct device *hwdev, dma_addr_t daddr)
++{
++        return daddr;
++}
++
++static inline bool dma_map_range(struct device *dev, u64 mask,
++				       phys_addr_t addr, size_t size,
++				       dma_addr_t *dma_addr_p)
++{
++	dma_addr_t dma_addr = phys_to_dma(dev, addr);
++
++	if (dma_addr + size > mask)
++		return false;
++
++	*dma_addr_p = dma_addr;
++	return true;
++}
++
+ #endif /* _ASM_IA64_DMA_MAPPING_H */
+-- 
+1.5.6.5
+
