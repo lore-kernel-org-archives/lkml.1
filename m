@@ -1,63 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754248AbZE2Azh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754327AbZE2A5V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754248AbZE2Azh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 20:55:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752183AbZE2Aza
+	id S1754327AbZE2A5V (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 20:57:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751901AbZE2A5O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 20:55:30 -0400
-Received: from gate.crashing.org ([63.228.1.57]:58440 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751901AbZE2Az3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 20:55:29 -0400
-Subject: Re: [RFC] [PATCH] Device Tree on ARM platform
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Sascha Hauer <s.hauer@pengutronix.de>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Grant Likely <grant.likely@secretlab.ca>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Russell King <rmk+lkml@arm.linux.org.uk>,
-       devicetree-discuss <devicetree-discuss@ozlabs.org>,
-       linux-kernel@vger.kernel.org, Timur Tabi <timur@freescale.com>,
-       Scott Wood <scottwood@freescale.com>,
-       Janboe Ye <yuan-bo.ye@motorola.com>,
-       linux-arm-kernel@lists.arm.linux.org.uk
-In-Reply-To: <20090528150409.GO22742@pengutronix.de>
-References: <20090527150527.GK6805@pengutronix.de>
-	 <87vdnm8sec.fsf@macbook.be.48ers.dk> <4A1D6901.2090508@freescale.com>
-	 <20090527175609.GB31861@flint.arm.linux.org.uk>
-	 <4A1D8FBA.6040802@freescale.com>
-	 <20090527192909.GA32398@flint.arm.linux.org.uk>
-	 <20090527205218.GA5591@sirena.org.uk>
-	 <fa686aa40905271405pc2f1738gc8dd139f61a0e27@mail.gmail.com>
-	 <20090528124307.GN22742@pengutronix.de>
-	 <alpine.LFD.2.00.0905281457170.3397@localhost.localdomain>
-	 <20090528150409.GO22742@pengutronix.de>
-Content-Type: text/plain
-Date: Fri, 29 May 2009 10:51:14 +1000
-Message-Id: <1243558274.17903.21.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 28 May 2009 20:57:14 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:61814 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751078AbZE2A5N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 20:57:13 -0400
+Message-ID: <31D61E75D41F40578C8AFC0B0C6FCA11@zhaoleiwin>
+From: "Zhaolei" <zhaolei@cn.fujitsu.com>
+To: "Frederic Weisbecker" <fweisbec@gmail.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>
+Cc: "Xiao Guangrong" <xiaoguangrong@cn.fujitsu.com>,
+       "Anton Blanchard" <anton@samba.org>, <rostedt@goodmis.org>,
+       <mingo@elte.hu>, <tzanussi@gmail.com>, <jbaron@redhat.com>,
+       <kosaki.motohiro@jp.fujitsu.com>, <linux-kernel@vger.kernel.org>
+References: <20090520101334.GA23442@kryten> <20090526042643.GB19728@kryten> <20090526180600.GA5969@nowhere> <4A1D07C8.6010002@cn.fujitsu.com> <alpine.LFD.2.00.0905271619360.3397@localhost.localdomain> <20090527144822.GC5982@nowhere>
+Subject: Re: [PATCH] tracing/events: Add timer and high res timertracepoints
+Date: Fri, 29 May 2009 08:55:31 +0800
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.5512
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n4T0vR7M013836
 
-On Thu, 2009-05-28 at 17:04 +0200, Sascha Hauer wrote:
+* From: "Frederic Weisbecker" <fweisbec@gmail.com>
+> On Wed, May 27, 2009 at 04:22:28PM +0200, Thomas Gleixner wrote:
+>> On Wed, 27 May 2009, Xiao Guangrong wrote:
+>> > In fact, Anton Blanchard's is different from my patch.
+>> > My patch is used for trace timer lifecycle(init/start/expire/cancel), and his
+>> > patch is mostly used for trace the execution time of timer function.
+>> 
+>> Right, but they should be combined into one set.
 > 
-> We normally hide these subtle details behind a baseboard= kernel
-> parameter. I agree with you that it's far better to have a
-> standardized
-> way to specify this. For my taste the oftree is too bloated for this
-> purpose.
+> 
+> Ok.
+> 
+> 
+>> Frederic, can you please pick up Anton's patch right away so Xiao can
+>> work on top of it and add the init/start/cancel instrumentation.
+>> 
+>> Thanks,
+>> 
+>> tglx
+> 
+> 
+> Sure. I've applied it on
+> git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git tracing/timer
+> 
+> Xiao can work on top of it.
+> This is a branch made against tip:/tracing/core
 
-Define "bloated" ?
+Hello, Frederic
 
-We got a lot of push back on powerpc initially with this exact same
-argument "too bloated" but that was never backed up with facts and
-numbers, and I would mostly say that nobody makes it anymore now
-that it's there and people use it.
+We'll rebase our patch on it.
 
-Cheers,
-Ben.
+Thanks
+Zhaolei
 
-
+> 
+> Frederic.
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+>ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
