@@ -1,79 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756587AbZE2XO5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756736AbZE2X0s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756587AbZE2XO5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 19:14:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753677AbZE2XOs
+	id S1756736AbZE2X0s (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 19:26:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754072AbZE2X0l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 19:14:48 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:37020 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752354AbZE2XOr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 19:14:47 -0400
-Subject: Re: [PATCH] ath5k: added initial RFKILL support
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Tobias Doerffel <tobias.doerffel@gmail.com>
-Cc: Bob Copeland <me@bobcopeland.com>, Jiri Slaby <jirislaby@gmail.com>,
-       ath5k-devel@venema.h4ckr.net, mickflemm@gmail.com,
-       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <200905300033.12204.tobias.doerffel@gmail.com>
-References: <1242850139-25438-1-git-send-email-jirislaby@gmail.com>
-	 <200905260124.03287.tobias.doerffel@gmail.com>
-	 <1243294366.29222.10.camel@johannes.local>
-	 <200905300033.12204.tobias.doerffel@gmail.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-GVi3sAu+qdZspZuck9qG"
-Date: Sat, 30 May 2009 01:14:30 +0200
-Message-Id: <1243638870.13863.1.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1.1 
+	Fri, 29 May 2009 19:26:41 -0400
+Received: from claw.goop.org ([74.207.240.146]:47775 "EHLO claw.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753980AbZE2X0k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 May 2009 19:26:40 -0400
+Message-ID: <4A206F2F.2040700@goop.org>
+Date: Fri, 29 May 2009 16:26:39 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: "Nakajima, Jun" <jun.nakajima@intel.com>
+CC: Andi Kleen <andi@firstfloor.org>,
+       George Dunlap <george.dunlap@eu.citrix.com>,
+       "x86@kernel.org" <x86@kernel.org>,
+       "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
+       Keir Fraser <Keir.Fraser@eu.citrix.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, "Jiang, Yunhong" <yunhong.jiang@intel.com>
+Subject: Re: [Xen-devel] Re: Xen is a feature
+References: <162f4c90-6431-4a2a-b337-6d7451d7b11e@default>	<20090528001350.GD26820@elte.hu> <4A1F302E.8030501@goop.org>	<20090528.210559.137121893.davem@davemloft.net>	<4A1FCE8E.2060604@eu.citrix.com> <87tz33ep1b.fsf@basil.nowhere.org> <0B53E02A2965CE4F9ADB38B34501A3A188156C9C@orsmsx505.amr.corp.intel.com>
+In-Reply-To: <0B53E02A2965CE4F9ADB38B34501A3A188156C9C@orsmsx505.amr.corp.intel.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Nakajima, Jun wrote:
+> I think we still need some (or all?) of additional dom0 PV ops even for HVM (Hardware-based VM) dom0. Hardware-based virtualization can significantly clean up the CPU-related PV ops (including some for local APIC), but they have nothing to do with dom0.
+>
+> Some hooks in the host could be removed by reusing the HVM-specific code with modifications to the virtualization logic, but I think people need to tell which specific ones are intrusive, to be fair.
+>   
 
---=-GVi3sAu+qdZspZuck9qG
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+I think two things will significantly clean up the dom0 apic patches:
 
-On Sat, 2009-05-30 at 00:33 +0200, Tobias Doerffel wrote:
+    One is to adjust the LAPIC and IOAPIC probing code so that it
+    behaves correctly if the APIC cpuid flag is clear.  That would
+    remove a lot of the init-time ad-hoc Xen changes I made.
 
-> > Could you try to work against v11
-> > of my rfkill patch, or better even against the cfg80211 rfkill instead?
-> I didn't look at both of them yet. However I think we first should try to=
- get=20
-> current rfkill support into mainline as fast as possible. Improvements an=
-d=20
-> adaptations to reworked rfkill framework can follow.
+    The other is to implement Ingo's suggestion of a proper ioapic
+    driver layer.  I think that would not only resolve the low-level
+    IO-APIC register access issue, but probably clean up a lot of the
+    vector allocation/handling, and make a clear path for MSI support. 
+    With luck it will also clean up things like x2apic support
 
-No other comments from me -- but since the v11 of the rfkill rewrite
-will certainly hit the tree before your patch (it's almost in) you
-_will_ have to work against it. I'll also try to make the cfg80211
-rfkill hit the tree very soon for reasons I'll explain elsewhere -- you
-would be better off working against that because then your rfkill code
-is very very very simple and doesn't need to do much at all.
+I'm planning on putting some time into investigating these next week.
 
-johannes
+Once we've nailed down the details of how to make PAT work for PV guests 
+on the Xen side, we should be able to implement that fairly easily in 
+Linux with no core x86 changes.
 
---=-GVi3sAu+qdZspZuck9qG
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+I really don't think emulating MTRR register writes is the right way to 
+implement Xen MTRR support, given that a much more semantically 
+appropriate interface already exists, but we can do that if nothing else 
+gets merged.
 
------BEGIN PGP SIGNATURE-----
+IanC is restructuring the swiotlb changes in a way that I hope will be 
+acceptable to all.
 
-iQIcBAABAgAGBQJKIGxTAAoJEODzc/N7+QmajhUP/RvPIxcrxrKmDxKiHuLMhGlo
-n9j158LT9golqaDamkl1Qg5sP83M6plQk3dLp87dT63qzb82uQYzN660CpsGHREE
-Y0BGzOFt0Fb61vjRhUJrL4yu0Hi6WnyCDeDntXTXiw8tfR/WYy+7v4lGu5ia0BnX
-n5LBfAddcbdp00eBDpLMVuSr4RbYrOTPfrTLn3UaptEu/Ol03sBF/VgNOqrErgBa
-laUcoF37bNoBq3Mkb4LpJ6eq3uYKUOR+LSnqeE66vNpNhyqEMR5r4uYI6KqTS8CF
-WYd08WK9zIapq5JFULv01+ta+iWj/sxGY1yqFY0v1KUVu8nCs4nlmY3waBn/yoqh
-xTW7gaaCbXTOSJGAzJSfZKxXt0MTPbklAefQ7B7X8HT2Sjrxg2Q87tfZXpvvm+4F
-3yM9mlp6cBtONzj5/MTi+tKXINVbaegDMjyMxgJdB7owwDm7syO1FvhQ4VPvo42Z
-pBLY9rkOTZ0wd2y23zC/msRUlLvaR4fMt8bdyfEmbh2P72CerIijBcCypZccoMIt
-0eXWe8mrs3rCOZHc7w0lrDQ7y38PTtAmkhTjxBuyFmfYOgICmeqhLl8lbah3b7kf
-l3xiTNUONzjnsr/Mf7h8mhY2iipv8NaJrJ261mdDL9D7PfH+gRQdRKEPx8EAduVV
-kAvhDieG+W7OHQH75f8N
-=2o9a
------END PGP SIGNATURE-----
+At that point, I think we really will have resolved all the high-level 
+concerns expressed about the overall architecture of the patches, and 
+maybe we can finally see some progress.
 
---=-GVi3sAu+qdZspZuck9qG--
-
+    J
