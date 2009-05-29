@@ -1,98 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755028AbZE2WSE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754946AbZE2Wd2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755028AbZE2WSE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 18:18:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752838AbZE2WRz
+	id S1754946AbZE2Wd2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 18:33:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753213AbZE2WdQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 18:17:55 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:49998 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752142AbZE2WRz (ORCPT
+	Fri, 29 May 2009 18:33:16 -0400
+Received: from jessica.hrz.tu-chemnitz.de ([134.109.132.47]:53191 "EHLO
+	jessica.hrz.tu-chemnitz.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753086AbZE2WdP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 18:17:55 -0400
-Date: Sat, 30 May 2009 00:24:44 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Andi Kleen <andi@firstfloor.org>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       fengguang.wu@intel.com
-Subject: Re: [PATCH] [0/16] HWPOISON: Intro
-Message-ID: <20090529222444.GG1065@one.firstfloor.org>
-References: <200905291135.124267638@firstfloor.org> <20090529225202.0c61a4b3@lxorguk.ukuu.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090529225202.0c61a4b3@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 29 May 2009 18:33:15 -0400
+From: Tobias Doerffel <tobias.doerffel@gmail.com>
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [PATCH] ath5k: added initial RFKILL support
+Date: Sat, 30 May 2009 00:33:07 +0200
+User-Agent: KMail/1.11.90 (Linux/2.6.30-rc7; KDE/4.2.85; i686; ; )
+Cc: Bob Copeland <me@bobcopeland.com>, Jiri Slaby <jirislaby@gmail.com>,
+       ath5k-devel@venema.h4ckr.net, mickflemm@gmail.com,
+       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <1242850139-25438-1-git-send-email-jirislaby@gmail.com> <200905260124.03287.tobias.doerffel@gmail.com> <1243294366.29222.10.camel@johannes.local>
+In-Reply-To: <1243294366.29222.10.camel@johannes.local>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart1459946.JtoeU42TSx";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200905300033.12204.tobias.doerffel@gmail.com>
+X-Spam-Score: -1.4 (-)
+X-Spam-Report: --- Start der SpamAssassin 3.2.5 Textanalyse (-1.4 Punkte)
+	Fragen an/questions to:  Postmaster TU Chemnitz <postmaster@tu-chemnitz.de>
+	-1.4 ALL_TRUSTED            Nachricht wurde nur ueber vertrauenswuerdige Rechner
+	weitergeleitet
+	--- Ende der SpamAssassin Textanalyse
+X-Scan-Signature: e12d97d61532ad8cf10729288984e4c0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 29, 2009 at 10:52:02PM +0100, Alan Cox wrote:
-> On Fri, 29 May 2009 23:35:25 +0200 (CEST)
-> Andi Kleen <andi@firstfloor.org> wrote:
-> 
-> > 
-> > Another version of the hwpoison patchkit. I addressed 
-> > all feedback, except:
-> > I didn't move the handlers into other files for now, prefer
-> > to keep things together for now
-> > I'm keeping an own pagepoison bit because I think that's 
-> > cleaner than any other hacks.
-> > 
-> > Andrew, please put it into mm for .31 track.
-> 
-> Andrew please put it on the "Andi needs to justify his pageflags" non-path
-> 
-> I'm with Rik on this - we may have a few pageflags handy now but being
-> slack with them for an obscure feature that can be done other ways and
-> isn't performance critical is just lazy and bad planning for the long
-> term.
+--nextPart1459946.JtoeU42TSx
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: quoted-printable
 
-There's still plenty of space. Especially on 64bit it's an absolute
-non problem.
+Hi,
 
-On 32bit the shortage of page flags was really
-artificial because there were some caches put into ->flags, but 
-these are largely obsolete to my understanding:
-- discontigmem is gone (which cached the node)
-- non vmap sparsemem is used a few times, but not on large systems
-where you have a lot of zones, so you are ok with only having a few bits
-for that
-- if we really run out of bits on the sparsemem mapping it's easy
-enough to do another small hash table for this, similar to the discontig
-hash tables.
+Am Dienstag, 26. Mai 2009 01:32:46 schrieb Johannes Berg:
+> On Tue, 2009-05-26 at 01:24 +0200, Tobias Doerffel wrote:
+> > +       err =3D rfkill_register(sc->rf_kill.rfkill);
+> > +       if (err) {
+> > +               sc->rf_kill.rfkill =3D NULL;
+> > +               return -1;
+> > +       }
+>
+> Missing rfkill_free, and why -EPERM?
+Thanks for this remark. I fixed the code and will post an updated patch soo=
+n.
 
-Also Christoph L. redid the dynamic allocation, so the boundaries
-are now dynamically growing/shrinking. This means that if an architecture
-doesn't use poison it doesn't use the bit.
+Any other comments on the patch? If not, any chance to get it merged into=20
+wireless-testing branch?
 
+> Could you try to work against v11
+> of my rfkill patch, or better even against the cfg80211 rfkill instead?
+I didn't look at both of them yet. However I think we first should try to g=
+et=20
+current rfkill support into mainline as fast as possible. Improvements and=
+=20
+adaptations to reworked rfkill framework can follow.
 
-> Andi - "I'm doing it my way so nyahh, put it into .31" doesn't fly. If
-> you want it in .31 convince Rik and me and others that its a good use of
-> a pageflag.
+Regards,
 
-Sorry, you guys also didn't do a very good job explaining why 
-it is that big a problem to take a page flag. Yes I know it's popular
-folklore, but as far as I understand most of the reasons to be so
-stingy on them have disappeared over time anyways (but the folklore
-staid for some reason)
+Toby
 
-Anyways here's my pitch:
+--nextPart1459946.JtoeU42TSx
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-It's a straight forward concept expressable as a page flag. Lots
-of places need to check for it (we expect there will be more users
-in the future). Also even crash dumps should check for it, so
-it's important to have a clean interface.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-Also it's an optional flag, if there's still an architecture
-around which needs special caches in ->flags then it's unlikely
-it will turn it on.
+iEYEABECAAYFAkogYqQACgkQHsjdpw2OaadN3gCgmnp8YkuYbmoDpD+o3x73WjkM
+jUEAn3ldLHI0oFAtuWuFXFmEKZG61aUX
+=plLt
+-----END PGP SIGNATURE-----
 
-Also what's the alternative? Are you suggesting we should do huffman
-encoding on flags or something? That seemed just too ugly, especially to solve 
-a non problem.
-
--Andi
--- 
-ak@linux.intel.com -- Speaking for myself only.
+--nextPart1459946.JtoeU42TSx--
