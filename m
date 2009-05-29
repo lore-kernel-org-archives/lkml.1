@@ -1,46 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755460AbZE2WRA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755028AbZE2WSE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755460AbZE2WRA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 18:17:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753031AbZE2WQv
+	id S1755028AbZE2WSE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 18:18:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752838AbZE2WRz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 18:16:51 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47149
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752838AbZE2WQv (ORCPT
+	Fri, 29 May 2009 18:17:55 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:49998 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752142AbZE2WRz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 18:16:51 -0400
-Date: Fri, 29 May 2009 15:16:51 -0700 (PDT)
-Message-Id: <20090529.151651.59612837.davem@davemloft.net>
-To: linville@tuxdriver.com
-Cc: linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: pull request: wireless-2.6 2009-05-29
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090529132858.GA3520@tuxdriver.com>
-References: <20090529132858.GA3520@tuxdriver.com>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Fri, 29 May 2009 18:17:55 -0400
+Date: Sat, 30 May 2009 00:24:44 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Andi Kleen <andi@firstfloor.org>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       fengguang.wu@intel.com
+Subject: Re: [PATCH] [0/16] HWPOISON: Intro
+Message-ID: <20090529222444.GG1065@one.firstfloor.org>
+References: <200905291135.124267638@firstfloor.org> <20090529225202.0c61a4b3@lxorguk.ukuu.org.uk>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090529225202.0c61a4b3@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "John W. Linville" <linville@tuxdriver.com>
-Date: Fri, 29 May 2009 15:28:59 +0200
-
-> Here are a couple of fixes that would be nice to have for 2.6.30 --
-> nothing very controversial.  Each has a bugzilla.kernel.org entry listed
-> in the changelog.
+On Fri, May 29, 2009 at 10:52:02PM +0100, Alan Cox wrote:
+> On Fri, 29 May 2009 23:35:25 +0200 (CEST)
+> Andi Kleen <andi@firstfloor.org> wrote:
 > 
-> Please let me know if there are problems!
+> > 
+> > Another version of the hwpoison patchkit. I addressed 
+> > all feedback, except:
+> > I didn't move the handlers into other files for now, prefer
+> > to keep things together for now
+> > I'm keeping an own pagepoison bit because I think that's 
+> > cleaner than any other hacks.
+> > 
+> > Andrew, please put it into mm for .31 track.
+> 
+> Andrew please put it on the "Andi needs to justify his pageflags" non-path
+> 
+> I'm with Rik on this - we may have a few pageflags handy now but being
+> slack with them for an obscure feature that can be done other ways and
+> isn't performance critical is just lazy and bad planning for the long
+> term.
 
-I know you're away and not at %100 but please do always CC:
-netdev for your pull requests so that the attached patch gets
-reviewed by networking folks and more importantly logged at:
+There's still plenty of space. Especially on 64bit it's an absolute
+non problem.
 
-	http://patchwork.ozlabs.org/project/netdev/list/
+On 32bit the shortage of page flags was really
+artificial because there were some caches put into ->flags, but 
+these are largely obsolete to my understanding:
+- discontigmem is gone (which cached the node)
+- non vmap sparsemem is used a few times, but not on large systems
+where you have a lot of zones, so you are ok with only having a few bits
+for that
+- if we really run out of bits on the sparsemem mapping it's easy
+enough to do another small hash table for this, similar to the discontig
+hash tables.
 
-so that I can track it properly.
+Also Christoph L. redid the dynamic allocation, so the boundaries
+are now dynamically growing/shrinking. This means that if an architecture
+doesn't use poison it doesn't use the bit.
 
-Thanks.
+
+> Andi - "I'm doing it my way so nyahh, put it into .31" doesn't fly. If
+> you want it in .31 convince Rik and me and others that its a good use of
+> a pageflag.
+
+Sorry, you guys also didn't do a very good job explaining why 
+it is that big a problem to take a page flag. Yes I know it's popular
+folklore, but as far as I understand most of the reasons to be so
+stingy on them have disappeared over time anyways (but the folklore
+staid for some reason)
+
+Anyways here's my pitch:
+
+It's a straight forward concept expressable as a page flag. Lots
+of places need to check for it (we expect there will be more users
+in the future). Also even crash dumps should check for it, so
+it's important to have a clean interface.
+
+Also it's an optional flag, if there's still an architecture
+around which needs special caches in ->flags then it's unlikely
+it will turn it on.
+
+Also what's the alternative? Are you suggesting we should do huffman
+encoding on flags or something? That seemed just too ugly, especially to solve 
+a non problem.
+
+-Andi
+-- 
+ak@linux.intel.com -- Speaking for myself only.
