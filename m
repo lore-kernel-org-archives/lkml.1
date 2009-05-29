@@ -1,316 +1,373 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761784AbZE2To1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762061AbZE2TrQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761784AbZE2To1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 15:44:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752277AbZE2ToU
+	id S1762061AbZE2TrQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 15:47:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752142AbZE2TrB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 15:44:20 -0400
-Received: from arroyo.ext.ti.com ([192.94.94.40]:46710 "EHLO arroyo.ext.ti.com"
+	Fri, 29 May 2009 15:47:01 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:42740 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752142AbZE2ToT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 15:44:19 -0400
-Message-ID: <4A203AFC.3030804@ti.com>
-Date: Fri, 29 May 2009 14:43:56 -0500
-From: Jon Hunter <jon-hunter@ti.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	id S1751329AbZE2TrA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 May 2009 15:47:00 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pascal Terjan <pterjan@mandriva.com>
+Subject: Re: Stable regression 2.6.29.3 vs 2.6.29.2
+Date: Fri, 29 May 2009 21:47:04 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc6-rjw; KDE/4.2.3; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, stable <stable@kernel.org>,
+       Yinghai Lu <yinghai@kernel.org>, Greg KH <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <1243625720.4426.0.camel@plop>
+In-Reply-To: <1243625720.4426.0.camel@plop>
 MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: john stultz <johnstul@us.ibm.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 1/2] Dynamic Tick: Prevent clocksource wrapping during
- idle
-References: <4A1D52E3.3040204@ti.com>  <alpine.LFD.2.00.0905271731070.3397@localhost.localdomain> <1243455615.7440.17.camel@localhost.localdomain> <alpine.LFD.2.00.0905272229190.3397@localhost.localdomain> <4A1EF244.5040108@ti.com> <alpine.LFD.2.00.0905282231500.3397@localhost.localdomain> <4A1EFDBD.8040007@ti.com> <alpine.LFD.2.00.0905282330510.3397@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0905282330510.3397@localhost.localdomain>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Content-Type: Text/Plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200905292147.05395.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Thomas Gleixner wrote:
-> On Thu, 28 May 2009, Jon Hunter wrote:
->>  /**
->> + * timekeeping_max_deferment - Returns max time the clocksource can be
->> deferred
->> + *
->> + * IMPORTANT: Caller must observe xtime_lock via read_seqbegin/read_seqretry
->> + * to ensure that the clocksource does not change!
->> + */
+On Friday 29 May 2009, Pascal Terjan wrote:
+> (Resending because of wrong To:, sorry for the duplicate)
 > 
->   Just nitpicking here. For the intended use case this is irrelevant.
->   
->   On UP this is called from an irq disabled section, so nothing is
->   going to change the clock source.
+> We have a machine here where hard disk is no longer detected at boot
+> time with 2.6.29.3 (it happens only on kernels with HIGHMEM4G + PAE and
+> not on the same one with HIGHMEM64G). 
+>
+> Motherboard is ECS PF22 Extreme
 > 
->   On SMP it does not matter if CPU A goes to sleep with the old clock
->   source and CPU B changes the clock source while A is idle. When B
->   goes idle it will take the change into account.
-
-Ok, understood. Let me know if you would like me to remove the comment 
-above. I wanted to make sure that if someone was to use this function 
-else where (can't think of why right now) that they would not over look 
-this.
-
->   But that leads me to an interesting observation:
+> bisect blames this commit:
 > 
->   On SMP we really should only care for the CPU which has the do_timer
->   duty assigned. All other CPUs can sleep as long as they want. When
->   that CPU goes idle and drops the do_timer duty it needs to look at
->   max_deferement, but the others can sleep as long as they want.
+> http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.29.y.git;a=commit;h=3b442bfc78d351343fa539c63afde75d7b134316
+
+Would it be possible to check if the current mainline works correctly?
+
+Rafael
+ 
+
+> lspci -vvv:
 > 
->   So the rule would be:
+> 00:00.0 Host bridge: Intel Corporation 82955X Memory Controller Hub (rev
+> 81)
+> 	Subsystem: Elitegroup Computer Systems Device 1b75
+> 	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
+> Stepping- SERR- FastB2B- DisINTx-
+> 	Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- <TAbort-
+> <MAbort+ >SERR- <PERR- INTx-
+> 	Latency: 0
+> 	Capabilities: <access denied>
 > 
->   if (cpu == tick_do_timer_cpu || tick_do_timer_cpu == TICK_DO_TIMER_NONE)
->      check_max_deferment();
->   else
->      sleep_as_long_as_you_want;
+> 00:01.0 PCI bridge: Intel Corporation 82955X PCI Express Root Port (rev
+> 81) (prog-if 00 [Normal decode])
+> 	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
+> Stepping- SERR+ FastB2B- DisINTx+
+> 	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort-
+> <MAbort- >SERR- <PERR- INTx-
+> 	Latency: 0, Cache Line Size: 32 bytes
+> 	Bus: primary=00, secondary=01, subordinate=01, sec-latency=0
+> 	I/O behind bridge: 00009000-00009fff
+> 	Memory behind bridge: f7e00000-fdefffff
+> 	Prefetchable memory behind bridge: 00000000aff00000-00000000efefffff
+> 	Secondary status: 66MHz- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort-
+> <MAbort- <SERR- <PERR-
+> 	BridgeCtl: Parity- SERR+ NoISA- VGA+ MAbort- >Reset- FastB2B-
+> 		PriDiscTmr- SecDiscTmr- DiscTmrStat- DiscTmrSERREn-
+> 	Capabilities: <access denied>
+> 	Kernel driver in use: pcieport-driver
+> 	Kernel modules: shpchp
 > 
->   Could you add that perhaps ?
-
-Absolutely. Please see below and let me know if this is ok.
-
-> Thanks for your patience,
-
-No problem. Thanks for the feedback.
-
-Cheers
-Jon
-
-The dynamic tick allows the kernel to sleep for periods longer
-than a single tick. This patch prevents that the kernel from
-sleeping for a period longer than the maximum time that the
-current clocksource can count. This ensures that the kernel will
-not lose track of time. This patch adds a function called
-"clocksource_max_deferment()" that calculates the maximum time the
-kernel can sleep for a given clocksource and function called
-"timekeeping_max_deferment()" that returns maximum time the kernel
-can sleep for the current clocksource.
-
-Signed-off-by: Jon Hunter <jon-hunter@ti.com>
----
-  include/linux/clocksource.h |    2 +
-  include/linux/time.h        |    1 +
-  kernel/time/clocksource.c   |   47 
-+++++++++++++++++++++++++++++++++++++++++++
-  kernel/time/tick-sched.c    |   47 
-++++++++++++++++++++++++++++++++----------
-  kernel/time/timekeeping.c   |   11 ++++++++++
-  5 files changed, 97 insertions(+), 11 deletions(-)
-
-diff --git a/include/linux/clocksource.h b/include/linux/clocksource.h
-index 5a40d14..465af22 100644
---- a/include/linux/clocksource.h
-+++ b/include/linux/clocksource.h
-@@ -151,6 +151,7 @@ extern u64 timecounter_cyc2time(struct timecounter *tc,
-   * @mult:		cycle to nanosecond multiplier (adjusted by NTP)
-   * @mult_orig:		cycle to nanosecond multiplier (unadjusted by NTP)
-   * @shift:		cycle to nanosecond divisor (power of two)
-+ * @max_idle_ns:	max idle time permitted by the clocksource (nsecs)
-   * @flags:		flags describing special properties
-   * @vread:		vsyscall based read
-   * @resume:		resume function for the clocksource, if necessary
-@@ -171,6 +172,7 @@ struct clocksource {
-  	u32 mult;
-  	u32 mult_orig;
-  	u32 shift;
-+	s64 max_idle_ns;
-  	unsigned long flags;
-  	cycle_t (*vread)(void);
-  	void (*resume)(void);
-diff --git a/include/linux/time.h b/include/linux/time.h
-index 242f624..090be07 100644
---- a/include/linux/time.h
-+++ b/include/linux/time.h
-@@ -130,6 +130,7 @@ extern void monotonic_to_bootbased(struct timespec *ts);
-
-  extern struct timespec timespec_trunc(struct timespec t, unsigned gran);
-  extern int timekeeping_valid_for_hres(void);
-+extern s64 timekeeping_max_deferment(void);
-  extern void update_wall_time(void);
-  extern void update_xtime_cache(u64 nsec);
-
-diff --git a/kernel/time/clocksource.c b/kernel/time/clocksource.c
-index ecfd7b5..18d2b9f 100644
---- a/kernel/time/clocksource.c
-+++ b/kernel/time/clocksource.c
-@@ -321,6 +321,50 @@ void clocksource_touch_watchdog(void)
-  }
-
-  /**
-+ * clocksource_max_deferment - Returns max time the clocksource can be 
-deferred
-+ * @cs:         Pointer to clocksource
-+ *
-+ */
-+static s64 clocksource_max_deferment(struct clocksource *cs)
-+{
-+	s64 max_nsecs;
-+	u64 max_cycles;
-+
-+	/*
-+	 * Calculate the maximum number of cycles that we can pass to the
-+	 * cyc2ns function without overflowing a 64-bit signed result. The
-+	 * maximum number of cycles is equal to ULLONG_MAX/cs->mult which
-+	 * is equivalent to the below.
-+	 * max_cycles < (2^63)/cs->mult
-+	 * max_cycles < 2^(log2((2^63)/cs->mult))
-+	 * max_cycles < 2^(log2(2^63) - log2(cs->mult))
-+	 * max_cycles < 2^(63 - log2(cs->mult))
-+	 * max_cycles < 1 << (63 - log2(cs->mult))
-+	 * Please note that we add 1 to the result of the log2 to account for
-+	 * any rounding errors, ensure the above inequality is satisfied and
-+	 * no overflow will occur.
-+	 */
-+	max_cycles = 1ULL << (63 - (ilog2(cs->mult) + 1));
-+
-+	/*
-+	 * The actual maximum number of cycles we can defer the clocksource is
-+	 * determined by the minimum of max_cycles and cs->mask.
-+	 */
-+	max_cycles = min(max_cycles, cs->mask);
-+	max_nsecs = cyc2ns(cs, max_cycles);
-+
-+	/*
-+	 * To ensure that the clocksource does not wrap whilst we are idle,
-+	 * limit the time the clocksource can be deferred by 12.5%. Please
-+	 * note a margin of 12.5% is used because this can be computed with
-+	 * a shift, versus say 10% which would require division.
-+	 */
-+	max_nsecs = max_nsecs - (max_nsecs >> 5);
-+
-+	return max_nsecs;
-+}
-+
-+/**
-   * clocksource_get_next - Returns the selected clocksource
-   *
-   */
-@@ -405,6 +449,9 @@ int clocksource_register(struct clocksource *c)
-  	/* save mult_orig on registration */
-  	c->mult_orig = c->mult;
-
-+	/* calculate max idle time permitted for this clocksource */
-+	c->max_idle_ns = clocksource_max_deferment(c);
-+
-  	spin_lock_irqsave(&clocksource_lock, flags);
-  	ret = clocksource_enqueue(c);
-  	if (!ret)
-diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
-index d3f1ef4..318cf8a 100644
---- a/kernel/time/tick-sched.c
-+++ b/kernel/time/tick-sched.c
-@@ -217,6 +217,7 @@ void tick_nohz_stop_sched_tick(int inidle)
-  	ktime_t last_update, expires, now;
-  	struct clock_event_device *dev = __get_cpu_var(tick_cpu_device).evtdev;
-  	int cpu;
-+	s64 time_delta, max_time_delta;
-
-  	local_irq_save(flags);
-
-@@ -264,6 +265,18 @@ void tick_nohz_stop_sched_tick(int inidle)
-  		seq = read_seqbegin(&xtime_lock);
-  		last_update = last_jiffies_update;
-  		last_jiffies = jiffies;
-+
-+		/*
-+		 * On SMP we really should only care for the CPU which
-+		 * has the do_timer duty assigned. All other CPUs can
-+		 * sleep as long as they want.
-+		 */
-+		if (cpu == tick_do_timer_cpu ||
-+				tick_do_timer_cpu == TICK_DO_TIMER_NONE)
-+			max_time_delta = timekeeping_max_deferment();
-+		else
-+			max_time_delta = KTIME_MAX;
-+
-  	} while (read_seqretry(&xtime_lock, seq));
-
-  	/* Get the next timer wheel timer */
-@@ -283,11 +296,22 @@ void tick_nohz_stop_sched_tick(int inidle)
-  	if ((long)delta_jiffies >= 1) {
-
-  		/*
--		* calculate the expiry time for the next timer wheel
--		* timer
--		*/
--		expires = ktime_add_ns(last_update, tick_period.tv64 *
--				   delta_jiffies);
-+		 * Calculate the time delta for the next timer event.
-+		 * If the time delta exceeds the maximum time delta
-+		 * permitted by the current clocksource then adjust
-+		 * the time delta accordingly to ensure the
-+		 * clocksource does not wrap.
-+		 */
-+		time_delta = tick_period.tv64 * delta_jiffies;
-+
-+		if (time_delta > max_time_delta)
-+			time_delta = max_time_delta;
-+
-+		/*
-+		 * calculate the expiry time for the next timer wheel
-+		 * timer
-+		 */
-+		expires = ktime_add_ns(last_update, time_delta);
-
-  		/*
-  		 * If this cpu is the one which updates jiffies, then
-@@ -300,7 +324,7 @@ void tick_nohz_stop_sched_tick(int inidle)
-  		if (cpu == tick_do_timer_cpu)
-  			tick_do_timer_cpu = TICK_DO_TIMER_NONE;
-
--		if (delta_jiffies > 1)
-+		if (time_delta > tick_period.tv64)
-  			cpumask_set_cpu(cpu, nohz_cpu_mask);
-
-  		/* Skip reprogram of event if its not changed */
-@@ -332,12 +356,13 @@ void tick_nohz_stop_sched_tick(int inidle)
-  		ts->idle_sleeps++;
-
-  		/*
--		 * delta_jiffies >= NEXT_TIMER_MAX_DELTA signals that
--		 * there is no timer pending or at least extremly far
--		 * into the future (12 days for HZ=1000). In this case
--		 * we simply stop the tick timer:
-+		 * time_delta >= (tick_period.tv64 * NEXT_TIMER_MAX_DELTA)
-+		 * signals that there is no timer pending or at least
-+		 * extremely far into the future (12 days for HZ=1000).
-+		 * In this case we simply stop the tick timer:
-  		 */
--		if (unlikely(delta_jiffies >= NEXT_TIMER_MAX_DELTA)) {
-+		if (unlikely(time_delta >=
-+				(tick_period.tv64 * NEXT_TIMER_MAX_DELTA))) {
-  			ts->idle_expires.tv64 = KTIME_MAX;
-  			if (ts->nohz_mode == NOHZ_MODE_HIGHRES)
-  				hrtimer_cancel(&ts->sched_timer);
-diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
-index 687dff4..659cae3 100644
---- a/kernel/time/timekeeping.c
-+++ b/kernel/time/timekeeping.c
-@@ -271,6 +271,17 @@ int timekeeping_valid_for_hres(void)
-  }
-
-  /**
-+ * timekeeping_max_deferment - Returns max time the clocksource can be 
-deferred
-+ *
-+ * IMPORTANT: Caller must observe xtime_lock via 
-read_seqbegin/read_seqretry
-+ * to ensure that the clocksource does not change!
-+ */
-+s64 timekeeping_max_deferment(void)
-+{
-+	return clock->max_idle_ns;
-+}
-+
-+/**
-   * read_persistent_clock -  Return time in seconds from the persistent 
-clock.
-   *
-   * Weak dummy function for arches that do not yet support it.
--- 
-1.6.1
-
-
-
+> 00:1b.0 Audio device: Intel Corporation 82801G (ICH7 Family) High
+> Definition Audio Controller (rev 01)
+> 	Subsystem: Elitegroup Computer Systems Device 1b75
+> 	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
+> Stepping- SERR- FastB2B- DisINTx-
+> 	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort-
+> <MAbort- >SERR- <PERR- INTx-
+> 	Latency: 0, Cache Line Size: 32 bytes
+> 	Interrupt: pin A routed to IRQ 16
+> 	Region 0: Memory at febf8000 (64-bit, non-prefetchable) [size=16K]
+> 	Capabilities: <access denied>
+> 	Kernel driver in use: HDA Intel
+> 	Kernel modules: snd-hda-intel
+> 
+> 00:1c.0 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI Express
+> Port 1 (rev 01) (prog-if 00 [Normal decode])
+> 	Control: I/O- Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
+> Stepping- SERR+ FastB2B- DisINTx+
+> 	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort-
+> <MAbort- >SERR- <PERR- INTx-
+> 	Latency: 0, Cache Line Size: 32 bytes
+> 	Bus: primary=00, secondary=02, subordinate=02, sec-latency=0
+> 	I/O behind bridge: 0000f000-00000fff
+> 	Memory behind bridge: fff00000-000fffff
+> 	Prefetchable memory behind bridge: 00000000fff00000-00000000000fffff
+> 	Secondary status: 66MHz- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort-
+> <MAbort+ <SERR- <PERR-
+> 	BridgeCtl: Parity- SERR+ NoISA+ VGA- MAbort- >Reset- FastB2B-
+> 		PriDiscTmr- SecDiscTmr- DiscTmrStat- DiscTmrSERREn-
+> 	Capabilities: <access denied>
+> 	Kernel driver in use: pcieport-driver
+> 	Kernel modules: shpchp
+> 
+> 00:1c.4 PCI bridge: Intel Corporation 82801GR/GH/GHM (ICH7 Family) PCI
+> Express Port 5 (rev 01) (prog-if 00 [Normal decode])
+> 	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
+> Stepping- SERR+ FastB2B- DisINTx+
+> 	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort-
+> <MAbort- >SERR- <PERR- INTx-
+> 	Latency: 0, Cache Line Size: 32 bytes
+> 	Bus: primary=00, secondary=03, subordinate=03, sec-latency=0
+> 	I/O behind bridge: 0000a000-0000afff
+> 	Memory behind bridge: fdf00000-fe7fffff
+> 	Prefetchable memory behind bridge: 00000000fff00000-00000000000fffff
+> 	Secondary status: 66MHz- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort-
+> <MAbort- <SERR- <PERR-
+> 	BridgeCtl: Parity- SERR+ NoISA+ VGA- MAbort- >Reset- FastB2B-
+> 		PriDiscTmr- SecDiscTmr- DiscTmrStat- DiscTmrSERREn-
+> 	Capabilities: <access denied>
+> 	Kernel driver in use: pcieport-driver
+> 	Kernel modules: shpchp
+> 
+> 00:1c.5 PCI bridge: Intel Corporation 82801GR/GH/GHM (ICH7 Family) PCI
+> Express Port 6 (rev 01) (prog-if 00 [Normal decode])
+> 	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
+> Stepping- SERR+ FastB2B- DisINTx+
+> 	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort-
+> <MAbort- >SERR- <PERR- INTx-
+> 	Latency: 0, Cache Line Size: 32 bytes
+> 	Bus: primary=00, secondary=04, subordinate=04, sec-latency=0
+> 	I/O behind bridge: 0000b000-0000bfff
+> 	Memory behind bridge: fe800000-fe9fffff
+> 	Prefetchable memory behind bridge: 00000000fff00000-00000000000fffff
+> 	Secondary status: 66MHz- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort-
+> <MAbort- <SERR- <PERR-
+> 	BridgeCtl: Parity- SERR+ NoISA+ VGA- MAbort- >Reset- FastB2B-
+> 		PriDiscTmr- SecDiscTmr- DiscTmrStat- DiscTmrSERREn-
+> 	Capabilities: <access denied>
+> 	Kernel driver in use: pcieport-driver
+> 	Kernel modules: shpchp
+> 
+> 00:1d.0 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI
+> Controller #1 (rev 01) (prog-if 00 [UHCI])
+> 	Subsystem: Elitegroup Computer Systems Device 1b75
+> 	Control: I/O+ Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
+> Stepping- SERR- FastB2B- DisINTx-
+> 	Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort-
+> <TAbort- <MAbort- >SERR- <PERR- INTx-
+> 	Latency: 0
+> 	Interrupt: pin A routed to IRQ 23
+> 	Region 4: I/O ports at e080 [size=32]
+> 	Kernel driver in use: uhci_hcd
+> 	Kernel modules: uhci-hcd
+> 
+> 00:1d.1 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI
+> Controller #2 (rev 01) (prog-if 00 [UHCI])
+> 	Subsystem: Elitegroup Computer Systems Device 1b75
+> 	Control: I/O+ Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
+> Stepping- SERR- FastB2B- DisINTx-
+> 	Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort-
+> <TAbort- <MAbort- >SERR- <PERR- INTx-
+> 	Latency: 0
+> 	Interrupt: pin B routed to IRQ 19
+> 	Region 4: I/O ports at e000 [size=32]
+> 	Kernel driver in use: uhci_hcd
+> 	Kernel modules: uhci-hcd
+> 
+> 00:1d.2 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI
+> Controller #3 (rev 01) (prog-if 00 [UHCI])
+> 	Subsystem: Elitegroup Computer Systems Device 1b75
+> 	Control: I/O+ Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
+> Stepping- SERR- FastB2B- DisINTx-
+> 	Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort-
+> <TAbort- <MAbort- >SERR- <PERR- INTx-
+> 	Latency: 0
+> 	Interrupt: pin C routed to IRQ 18
+> 	Region 4: I/O ports at dc00 [size=32]
+> 	Kernel driver in use: uhci_hcd
+> 	Kernel modules: uhci-hcd
+> 
+> 00:1d.3 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI
+> Controller #4 (rev 01) (prog-if 00 [UHCI])
+> 	Subsystem: Elitegroup Computer Systems Device 1b75
+> 	Control: I/O+ Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
+> Stepping- SERR- FastB2B- DisINTx-
+> 	Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort-
+> <TAbort- <MAbort- >SERR- <PERR- INTx-
+> 	Latency: 0
+> 	Interrupt: pin D routed to IRQ 16
+> 	Region 4: I/O ports at d880 [size=32]
+> 	Kernel driver in use: uhci_hcd
+> 	Kernel modules: uhci-hcd
+> 
+> 00:1d.7 USB Controller: Intel Corporation 82801G (ICH7 Family) USB2 EHCI
+> Controller (rev 01) (prog-if 20 [EHCI])
+> 	Subsystem: Elitegroup Computer Systems Device 1b75
+> 	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
+> Stepping- SERR- FastB2B- DisINTx-
+> 	Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort-
+> <TAbort- <MAbort- >SERR- <PERR- INTx-
+> 	Latency: 0
+> 	Interrupt: pin A routed to IRQ 23
+> 	Region 0: Memory at febff800 (32-bit, non-prefetchable) [size=1K]
+> 	Capabilities: <access denied>
+> 	Kernel driver in use: ehci_hcd
+> 	Kernel modules: ehci-hcd
+> 
+> 00:1e.0 PCI bridge: Intel Corporation 82801 PCI Bridge (rev e1) (prog-if
+> 01 [Subtractive decode])
+> 	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
+> Stepping- SERR+ FastB2B- DisINTx-
+> 	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort-
+> <MAbort- >SERR- <PERR- INTx-
+> 	Latency: 0
+> 	Bus: primary=00, secondary=05, subordinate=05, sec-latency=32
+> 	I/O behind bridge: 0000c000-0000cfff
+> 	Memory behind bridge: fea00000-feafffff
+> 	Prefetchable memory behind bridge: 0000000030000000-00000000300fffff
+> 	Secondary status: 66MHz- FastB2B+ ParErr- DEVSEL=medium >TAbort-
+> <TAbort- <MAbort+ <SERR- <PERR-
+> 	BridgeCtl: Parity- SERR+ NoISA+ VGA- MAbort- >Reset- FastB2B-
+> 		PriDiscTmr- SecDiscTmr- DiscTmrStat- DiscTmrSERREn-
+> 	Capabilities: <access denied>
+> 
+> 00:1f.0 ISA bridge: Intel Corporation 82801GB/GR (ICH7 Family) LPC
+> Interface Bridge (rev 01)
+> 	Subsystem: Elitegroup Computer Systems Device 1b75
+> 	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
+> Stepping- SERR- FastB2B- DisINTx-
+> 	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort-
+> <TAbort- <MAbort- >SERR- <PERR- INTx-
+> 	Latency: 0
+> 	Capabilities: <access denied>
+> 	Kernel modules: iTCO_wdt, intel-rng
+> 
+> 00:1f.1 IDE interface: Intel Corporation 82801G (ICH7 Family) IDE
+> Controller (rev 01) (prog-if 8a [Master SecP PriP])
+> 	Subsystem: Elitegroup Computer Systems Device 1b75
+> 	Control: I/O+ Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
+> Stepping- SERR- FastB2B- DisINTx-
+> 	Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort-
+> <TAbort- <MAbort- >SERR- <PERR- INTx-
+> 	Latency: 0
+> 	Interrupt: pin A routed to IRQ 18
+> 	Region 0: I/O ports at 01f0 [size=8]
+> 	Region 1: I/O ports at 03f4 [size=1]
+> 	Region 2: I/O ports at 0170 [size=8]
+> 	Region 3: I/O ports at 0374 [size=1]
+> 	Region 4: I/O ports at ffa0 [size=16]
+> 	Kernel driver in use: ata_piix
+> 	Kernel modules: ata_piix, piix
+> 
+> 00:1f.2 SATA controller: Intel Corporation 82801GR/GH (ICH7 Family) SATA
+> AHCI Controller (rev 01) (prog-if 01 [AHCI 1.0])
+> 	Subsystem: Elitegroup Computer Systems Device 1b75
+> 	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
+> Stepping- SERR- FastB2B- DisINTx+
+> 	Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort-
+> <TAbort- <MAbort- >SERR- <PERR- INTx-
+> 	Latency: 0
+> 	Interrupt: pin B routed to IRQ 28
+> 	Region 0: I/O ports at ec00 [size=8]
+> 	Region 1: I/O ports at e880 [size=4]
+> 	Region 2: I/O ports at e800 [size=8]
+> 	Region 3: I/O ports at e480 [size=4]
+> 	Region 4: I/O ports at e400 [size=32]
+> 	Region 5: Memory at febffc00 (32-bit, non-prefetchable) [size=1K]
+> 	Capabilities: <access denied>
+> 	Kernel driver in use: ahci
+> 	Kernel modules: ahci
+> 
+> 00:1f.3 SMBus: Intel Corporation 82801G (ICH7 Family) SMBus Controller
+> (rev 01)
+> 	Subsystem: Elitegroup Computer Systems Device 1b75
+> 	Control: I/O+ Mem- BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr-
+> Stepping- SERR- FastB2B- DisINTx-
+> 	Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort-
+> <TAbort- <MAbort- >SERR- <PERR- INTx-
+> 	Interrupt: pin B routed to IRQ 19
+> 	Region 4: I/O ports at 0400 [size=32]
+> 	Kernel driver in use: i801_smbus
+> 	Kernel modules: i2c-i801
+> 
+> 01:00.0 VGA compatible controller: nVidia Corporation GeForce 9500 GT
+> (rev a1) (prog-if 00 [VGA controller])
+> 	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
+> Stepping- SERR- FastB2B- DisINTx-
+> 	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort-
+> <MAbort- >SERR- <PERR- INTx-
+> 	Latency: 0, Cache Line Size: 32 bytes
+> 	Interrupt: pin A routed to IRQ 10
+> 	Region 0: Memory at fc000000 (32-bit, non-prefetchable) [size=16M]
+> 	Region 1: Memory at c0000000 (64-bit, prefetchable) [size=512M]
+> 	Region 3: Memory at fa000000 (64-bit, non-prefetchable) [size=32M]
+> 	Region 5: I/O ports at 9c00 [size=128]
+> 	Expansion ROM at fde80000 [disabled] [size=512K]
+> 	Capabilities: <access denied>
+> 	Kernel modules: nvidiafb
+> 
+> 03:00.0 Ethernet controller: Intel Corporation 82573V Gigabit Ethernet
+> Controller (Copper) (rev 03)
+> 	Subsystem: Intel Corporation Device 0000
+> 	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
+> Stepping- SERR- FastB2B- DisINTx+
+> 	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort-
+> <MAbort- >SERR- <PERR- INTx-
+> 	Latency: 0, Cache Line Size: 64 bytes
+> 	Interrupt: pin A routed to IRQ 29
+> 	Region 0: Memory at fe7e0000 (32-bit, non-prefetchable) [size=128K]
+> 	Region 1: Memory at fe000000 (32-bit, non-prefetchable) [size=4M]
+> 	Region 2: I/O ports at ac00 [size=32]
+> 	Capabilities: <access denied>
+> 	Kernel driver in use: e1000e
+> 	Kernel modules: e1000e
+> 
+> 04:00.0 RAID bus controller: Silicon Image, Inc. SiI 3132 Serial ATA
+> Raid II Controller (rev 01)
+> 	Subsystem: Elitegroup Computer Systems Device 5308
+> 	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
+> Stepping- SERR- FastB2B- DisINTx-
+> 	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort-
+> <MAbort- >SERR- <PERR- INTx-
+> 	Latency: 0, Cache Line Size: 32 bytes
+> 	Interrupt: pin A routed to IRQ 17
+> 	Region 0: Memory at fe9ffc00 (64-bit, non-prefetchable) [size=128]
+> 	Region 2: Memory at fe9f8000 (64-bit, non-prefetchable) [size=16K]
+> 	Region 4: I/O ports at bc00 [size=128]
+> 	Expansion ROM at fe900000 [disabled] [size=512K]
+> 	Capabilities: <access denied>
+> 	Kernel driver in use: sata_sil24
+> 	Kernel modules: sata_sil24
+> 
+> 05:04.0 FireWire (IEEE 1394): VIA Technologies, Inc. VT6306 Fire II IEEE
+> 1394 OHCI Link Layer Controller (rev 80) (prog-if 10 [OHCI])
+> 	Subsystem: VIA Technologies, Inc. VT6306 Fire II IEEE 1394 OHCI Link
+> Layer Controller
+> 	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop- ParErr-
+> Stepping- SERR- FastB2B- DisINTx-
+> 	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort-
+> <TAbort- <MAbort- >SERR- <PERR- INTx-
+> 	Latency: 64 (8000ns max), Cache Line Size: 32 bytes
+> 	Interrupt: pin A routed to IRQ 22
+> 	Region 0: Memory at feaff800 (32-bit, non-prefetchable) [size=2K]
+> 	Region 1: I/O ports at cc00 [size=128]
+> 	Capabilities: <access denied>
+> 	Kernel driver in use: ohci1394
+> 	Kernel modules: ohci1394
+> 
+> 05:05.0 Ethernet controller: Realtek Semiconductor Co., Ltd. RTL-8169
+> Gigabit Ethernet (rev 10)
+> 	Subsystem: Elitegroup Computer Systems Device 1853
+> 	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop- ParErr-
+> Stepping- SERR- FastB2B- DisINTx-
+> 	Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort-
+> <TAbort- <MAbort- >SERR- <PERR- INTx-
+> 	Latency: 64 (8000ns min, 16000ns max), Cache Line Size: 32 bytes
+> 	Interrupt: pin A routed to IRQ 21
+> 	Region 0: I/O ports at c800 [size=256]
+> 	Region 1: Memory at feaff400 (32-bit, non-prefetchable) [size=256]
+> 	Expansion ROM at 30000000 [disabled] [size=128K]
+> 	Capabilities: <access denied>
+> 	Kernel driver in use: r8169
+> 	Kernel modules: r8169
