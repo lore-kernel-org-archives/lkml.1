@@ -1,182 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762876AbZE2RRx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762513AbZE2RUF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762876AbZE2RRx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 13:17:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762057AbZE2RR1
+	id S1762513AbZE2RUF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 13:20:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756537AbZE2RTz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 13:17:27 -0400
-Received: from hera.kernel.org ([140.211.167.34]:57561 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761656AbZE2RRZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 13:17:25 -0400
-Date: Fri, 29 May 2009 17:16:43 GMT
-From: tip-bot for Arnaldo Carvalho de Melo <acme@redhat.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, acme@redhat.com,
-       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
-       rostedt@goodmis.org, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, efault@gmx.de,
-       rostedt@goodmis.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20090529164859.GN4747@ghostprotocols.net>
-References: <20090529164859.GN4747@ghostprotocols.net>
-Subject: [tip:perfcounters/core] perf_counter tools: Shorten the DSO names using cwd
-Message-ID: <tip-b78c07d45a7e71be7b5c5d7486f922355ccf23a8@git.kernel.org>
-Git-Commit-ID: b78c07d45a7e71be7b5c5d7486f922355ccf23a8
-X-Mailer: tip-git-log-daemon
+	Fri, 29 May 2009 13:19:55 -0400
+Received: from complete.lackof.org ([198.49.126.79]:55324 "EHLO
+	complete.lackof.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754225AbZE2RTy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 May 2009 13:19:54 -0400
+Date: Fri, 29 May 2009 11:19:56 -0600
+From: Grant Grundler <grundler@parisc-linux.org>
+To: Yu Zhao <yu.zhao@intel.com>
+Cc: jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org,
+       marc.c.dionne@gmail.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] PCI: use fixed-up device class when configuring device
+Message-ID: <20090529171956.GE28355@lackof.org>
+References: <1243441505-5477-1-git-send-email-yu.zhao@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 29 May 2009 17:16:44 +0000 (UTC)
+In-Reply-To: <1243441505-5477-1-git-send-email-yu.zhao@intel.com>
+X-Home-Page: http://www.parisc-linux.org/
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  b78c07d45a7e71be7b5c5d7486f922355ccf23a8
-Gitweb:     http://git.kernel.org/tip/b78c07d45a7e71be7b5c5d7486f922355ccf23a8
-Author:     Arnaldo Carvalho de Melo <acme@redhat.com>
-AuthorDate: Fri, 29 May 2009 13:48:59 -0300
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 29 May 2009 19:14:08 +0200
+On Thu, May 28, 2009 at 12:25:05AM +0800, Yu Zhao wrote:
+> The device class may be changed after the early fixup. Need to
+> re-read the class value from pci_dev when configuring the device.
+> Otherwise some devices such as JMicron SATA controller won't work.
 
-perf_counter tools: Shorten the DSO names using cwd
+I looked at pci_setup_device() and was thinking pci_fixup_device()
+should be called before pci_cfg_space_size() and thus avoid having
+to setup local "class" variable twice. pci_cfg_space_size() only
+seems to care if the device is a PCI_CLASS_BRIDGE_HOST (or not).
 
-[acme@emilia linux-2.6-tip]$ pwd
-/home/acme/git/linux-2.6-tip
+But dev->class has to be set up in any case and the current order
+makes more sense to me.
 
-Before (still available using -P/--full-paths)
+Reviewed-by: Grant Grundler <grundler@parisc-linux.org>
 
-[acme@emilia linux-2.6-tip]$ perf report -P | head -10
-    11.48%             perf: 7454 [kernel]: clear_page_c
-     4.89%             perf: 7454 [kernel]: vsnprintf
-     4.61%             perf: 7454 /home/acme/git/linux-2.6-tip/Documentation/perf_counter/perf: dso__find_symbol
-     4.09%             perf: 7454 [kernel]: number
-     4.06%             perf: 7454 /home/acme/git/linux-2.6-tip/Documentation/perf_counter/perf: dso__fprintf
-     4.00%             perf: 7454 /home/acme/git/linux-2.6-tip/Documentation/perf_counter/perf: symbol_filter
+thanks,
+grant
 
-New default:
-
-[acme@emilia linux-2.6-tip]$ perf report | head -10
-    11.48%             perf: 7454 [kernel]: clear_page_c
-     4.89%             perf: 7454 [kernel]: vsnprintf
-     4.61%             perf: 7454 ./Documentation/perf_counter/perf: dso__find_symbol
-     4.09%             perf: 7454 [kernel]: number
-     4.06%             perf: 7454 ./Documentation/perf_counter/perf: dso__fprintf
-     4.00%             perf: 7454 ./Documentation/perf_counter/perf: symbol_filter
-
-Suggested-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-LKML-Reference: <20090529164859.GN4747@ghostprotocols.net>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- Documentation/perf_counter/builtin-report.c |   41 +++++++++++++++++++++++++--
- 1 files changed, 38 insertions(+), 3 deletions(-)
-
-diff --git a/Documentation/perf_counter/builtin-report.c b/Documentation/perf_counter/builtin-report.c
-index 412d524..4705679 100644
---- a/Documentation/perf_counter/builtin-report.c
-+++ b/Documentation/perf_counter/builtin-report.c
-@@ -23,6 +23,7 @@ static int		show_mask = SHOW_KERNEL | SHOW_USER | SHOW_HV;
- 
- static int		dump_trace = 0;
- static int		verbose;
-+static int		full_paths;
- 
- static unsigned long	page_size;
- static unsigned long	mmap_window = 32;
-@@ -134,6 +135,16 @@ static int load_kernel(void)
- 	return err;
- }
- 
-+static int strcommon(const char *pathname, const char *cwd, int cwdlen)
-+{
-+	int n = 0;
-+
-+	while (pathname[n] == cwd[n] && n < cwdlen)
-+		++n;
-+
-+	return n;
-+}
-+
- struct map {
- 	struct list_head node;
- 	uint64_t	 start;
-@@ -142,16 +153,28 @@ struct map {
- 	struct dso	 *dso;
- };
- 
--static struct map *map__new(struct mmap_event *event)
-+static struct map *map__new(struct mmap_event *event, char *cwd, int cwdlen)
- {
- 	struct map *self = malloc(sizeof(*self));
- 
- 	if (self != NULL) {
-+		const char *filename = event->filename;
-+		char newfilename[PATH_MAX];
-+
-+		if (cwd) {
-+			int n = strcommon(filename, cwd, cwdlen);
-+			if (n == cwdlen) {
-+				snprintf(newfilename, sizeof(newfilename),
-+					 ".%s", filename + n);
-+				filename = newfilename;
-+			}
-+		}
-+
- 		self->start = event->start;
- 		self->end   = event->start + event->len;
- 		self->pgoff = event->pgoff;
- 
--		self->dso = dsos__findnew(event->filename);
-+		self->dso = dsos__findnew(filename);
- 		if (self->dso == NULL)
- 			goto out_delete;
- 	}
-@@ -598,6 +621,8 @@ static int __cmd_report(void)
- 	int ret, rc = EXIT_FAILURE;
- 	uint32_t size;
- 	unsigned long total = 0, total_mmap = 0, total_comm = 0, total_unknown = 0;
-+	char cwd[PATH_MAX], *cwdp = cwd;
-+	int cwdlen;
- 
- 	input = open(input_name, O_RDONLY);
- 	if (input < 0) {
-@@ -621,6 +646,14 @@ static int __cmd_report(void)
- 		return EXIT_FAILURE;
- 	}
- 
-+	if (!full_paths) {
-+		if (getcwd(cwd, sizeof(cwd)) == NULL) {
-+			perror("failed to get the current directory");
-+			return EXIT_FAILURE;
-+		}
-+		cwdlen = strlen(cwd);
-+	} else
-+		cwdp = NULL;
- remap:
- 	buf = (char *)mmap(NULL, page_size * mmap_window, PROT_READ,
- 			   MAP_SHARED, input, offset);
-@@ -710,7 +743,7 @@ more:
- 	} else switch (event->header.type) {
- 	case PERF_EVENT_MMAP: {
- 		struct thread *thread = threads__findnew(event->mmap.pid);
--		struct map *map = map__new(&event->mmap);
-+		struct map *map = map__new(&event->mmap, cwdp, cwdlen);
- 
- 		if (dump_trace) {
- 			fprintf(stderr, "%p [%p]: PERF_EVENT_MMAP: [%p(%p) @ %p]: %s\n",
-@@ -809,6 +842,8 @@ static const struct option options[] = {
- 	OPT_STRING('k', "vmlinux", &vmlinux, "file", "vmlinux pathname"),
- 	OPT_STRING('s', "sort", &sort_order, "key[,key2...]",
- 		   "sort by key(s): pid, comm, dso, symbol. Default: pid,symbol"),
-+	OPT_BOOLEAN('P', "full-paths", &full_paths,
-+		    "Don't shorten the pathnames taking into account the cwd"),
- 	OPT_END()
- };
- 
+> Tested-by: Marc Dionne <marc.c.dionne@gmail.com>
+> Signed-off-by: Yu Zhao <yu.zhao@intel.com>
+> ---
+>  drivers/pci/probe.c |    2 ++
+>  1 files changed, 2 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+> index e3c3e08..f1ae247 100644
+> --- a/drivers/pci/probe.c
+> +++ b/drivers/pci/probe.c
+> @@ -745,6 +745,8 @@ int pci_setup_device(struct pci_dev *dev)
+>  
+>  	/* Early fixups, before probing the BARs */
+>  	pci_fixup_device(pci_fixup_early, dev);
+> +	/* device class may be changed after fixup */
+> +	class = dev->class >> 8;
+>  
+>  	switch (dev->hdr_type) {		    /* header type */
+>  	case PCI_HEADER_TYPE_NORMAL:		    /* standard header */
+> -- 
+> 1.6.1
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
