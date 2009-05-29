@@ -1,137 +1,210 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757808AbZE2JBS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758594AbZE2JBh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757808AbZE2JBS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 05:01:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754065AbZE2JBI
+	id S1758594AbZE2JBh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 05:01:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757713AbZE2JB1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 05:01:08 -0400
-Received: from hera.kernel.org ([140.211.167.34]:59572 "EHLO hera.kernel.org"
+	Fri, 29 May 2009 05:01:27 -0400
+Received: from hera.kernel.org ([140.211.167.34]:59592 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753754AbZE2JBF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 05:01:05 -0400
-Date: Fri, 29 May 2009 09:00:34 GMT
-From: tip-bot for Yong Wang <yong.y.wang@linux.intel.com>
+	id S1757337AbZE2JBZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 May 2009 05:01:25 -0400
+Date: Fri, 29 May 2009 09:00:45 GMT
+From: tip-bot for Ingo Molnar <mingo@elte.hu>
 To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       yong.y.wang@linux.intel.com, yong.y.wang@intel.com, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       yong.y.wang@linux.intel.com, yong.y.wang@intel.com, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <20090529052835.GA13657@ywang-moblin2.bj.intel.com>
-References: <20090529052835.GA13657@ywang-moblin2.bj.intel.com>
-Subject: [tip:perfcounters/core] perf_counter/x86: Always use NMI for performance-monitoring interrupt
-Message-ID: <tip-c323d95fa4dbe0b6bf6d59e24a0b7db067dd08a7@git.kernel.org>
-Git-Commit-ID: c323d95fa4dbe0b6bf6d59e24a0b7db067dd08a7
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
+       hpa@zytor.com, mingo@redhat.com, jkacur@redhat.com,
+       a.p.zijlstra@chello.nl, efault@gmx.de, mtosatti@redhat.com,
+       tglx@linutronix.de, cjashfor@linux.vnet.ibm.com, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, jkacur@redhat.com, a.p.zijlstra@chello.nl,
+       efault@gmx.de, mtosatti@redhat.com, tglx@linutronix.de,
+       cjashfor@linux.vnet.ibm.com, mingo@elte.hu
+In-Reply-To: <new-submission>
+References: <new-submission>
+Subject: [tip:perfcounters/core] perf_counter tools: Clean up builtin-stat.c's do_perfstat()
+Message-ID: <tip-c04f5e5d7b523f90ee3cdd70a68c4002aaecd3fa@git.kernel.org>
+Git-Commit-ID: c04f5e5d7b523f90ee3cdd70a68c4002aaecd3fa
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 29 May 2009 09:00:35 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 29 May 2009 09:00:47 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  c323d95fa4dbe0b6bf6d59e24a0b7db067dd08a7
-Gitweb:     http://git.kernel.org/tip/c323d95fa4dbe0b6bf6d59e24a0b7db067dd08a7
-Author:     Yong Wang <yong.y.wang@linux.intel.com>
-AuthorDate: Fri, 29 May 2009 13:28:35 +0800
+Commit-ID:  c04f5e5d7b523f90ee3cdd70a68c4002aaecd3fa
+Gitweb:     http://git.kernel.org/tip/c04f5e5d7b523f90ee3cdd70a68c4002aaecd3fa
+Author:     Ingo Molnar <mingo@elte.hu>
+AuthorDate: Fri, 29 May 2009 09:10:54 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 29 May 2009 09:04:58 +0200
+CommitDate: Fri, 29 May 2009 09:11:49 +0200
 
-perf_counter/x86: Always use NMI for performance-monitoring interrupt
+perf_counter tools: Clean up builtin-stat.c's do_perfstat()
 
-Always use NMI for performance-monitoring interrupt as there could be
-racy situations if we switch between irq and nmi mode frequently.
+[ Impact: cleanup ]
 
-Signed-off-by: Yong Wang <yong.y.wang@intel.com>
-LKML-Reference: <20090529052835.GA13657@ywang-moblin2.bj.intel.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
+Cc: Marcelo Tosatti <mtosatti@redhat.com>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: John Kacur <jkacur@redhat.com>
+LKML-Reference: <new-submission>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- arch/x86/include/asm/perf_counter.h |    4 ++--
- arch/x86/kernel/apic/apic.c         |    2 +-
- arch/x86/kernel/cpu/perf_counter.c  |   19 +++++--------------
- 3 files changed, 8 insertions(+), 17 deletions(-)
+ Documentation/perf_counter/builtin-stat.c |  116 +++++++++++++++++------------
+ 1 files changed, 67 insertions(+), 49 deletions(-)
 
-diff --git a/arch/x86/include/asm/perf_counter.h b/arch/x86/include/asm/perf_counter.h
-index d08dd52..876ed97 100644
---- a/arch/x86/include/asm/perf_counter.h
-+++ b/arch/x86/include/asm/perf_counter.h
-@@ -91,10 +91,10 @@ extern void set_perf_counter_pending(void);
- 
- #ifdef CONFIG_PERF_COUNTERS
- extern void init_hw_perf_counters(void);
--extern void perf_counters_lapic_init(int nmi);
-+extern void perf_counters_lapic_init(void);
- #else
- static inline void init_hw_perf_counters(void)		{ }
--static inline void perf_counters_lapic_init(int nmi)	{ }
-+static inline void perf_counters_lapic_init(void)	{ }
- #endif
- 
- #endif /* _ASM_X86_PERF_COUNTER_H */
-diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
-index 89b63b5..60df2ef 100644
---- a/arch/x86/kernel/apic/apic.c
-+++ b/arch/x86/kernel/apic/apic.c
-@@ -1135,7 +1135,7 @@ void __cpuinit setup_local_APIC(void)
- 		apic_write(APIC_ESR, 0);
+diff --git a/Documentation/perf_counter/builtin-stat.c b/Documentation/perf_counter/builtin-stat.c
+index ac14086..6a29361 100644
+--- a/Documentation/perf_counter/builtin-stat.c
++++ b/Documentation/perf_counter/builtin-stat.c
+@@ -109,11 +109,75 @@ static void create_perfstat_counter(int counter)
  	}
- #endif
--	perf_counters_lapic_init(0);
-+	perf_counters_lapic_init();
- 
- 	preempt_disable();
- 
-diff --git a/arch/x86/kernel/cpu/perf_counter.c b/arch/x86/kernel/cpu/perf_counter.c
-index 2eeaa99..316b0c9 100644
---- a/arch/x86/kernel/cpu/perf_counter.c
-+++ b/arch/x86/kernel/cpu/perf_counter.c
-@@ -604,7 +604,7 @@ try_generic:
- 		hwc->counter_base = x86_pmu.perfctr;
- 	}
- 
--	perf_counters_lapic_init(hwc->nmi);
-+	perf_counters_lapic_init();
- 
- 	x86_pmu.disable(hwc, idx);
- 
-@@ -863,24 +863,15 @@ void set_perf_counter_pending(void)
- 	apic->send_IPI_self(LOCAL_PENDING_VECTOR);
  }
  
--void perf_counters_lapic_init(int nmi)
-+void perf_counters_lapic_init(void)
++/*
++ * Does the counter have nsecs as a unit?
++ */
++static inline int nsec_counter(int counter)
++{
++	if (event_id[counter] == EID(PERF_TYPE_SOFTWARE, PERF_COUNT_CPU_CLOCK))
++		return 1;
++	if (event_id[counter] == EID(PERF_TYPE_SOFTWARE, PERF_COUNT_TASK_CLOCK))
++		return 1;
++
++	return 0;
++}
++
++/*
++ * Print out the results of a single counter:
++ */
++static void print_counter(int counter)
++{
++	__u64 count[3], single_count[3];
++	ssize_t res;
++	int cpu, nv;
++	int scaled;
++
++	count[0] = count[1] = count[2] = 0;
++	nv = scale ? 3 : 1;
++	for (cpu = 0; cpu < nr_cpus; cpu ++) {
++		res = read(fd[cpu][counter], single_count, nv * sizeof(__u64));
++		assert(res == nv * sizeof(__u64));
++
++		count[0] += single_count[0];
++		if (scale) {
++			count[1] += single_count[1];
++			count[2] += single_count[2];
++		}
++	}
++
++	scaled = 0;
++	if (scale) {
++		if (count[2] == 0) {
++			fprintf(stderr, " %14s  %-20s\n",
++				"<not counted>", event_name(counter));
++			return;
++		}
++		if (count[2] < count[1]) {
++			scaled = 1;
++			count[0] = (unsigned long long)
++				((double)count[0] * count[1] / count[2] + 0.5);
++		}
++	}
++
++	if (nsec_counter(counter)) {
++		double msecs = (double)count[0] / 1000000;
++
++		fprintf(stderr, " %14.6f  %-20s (msecs)",
++			msecs, event_name(counter));
++	} else {
++		fprintf(stderr, " %14Ld  %-20s (events)",
++			count[0], event_name(counter));
++	}
++	if (scaled)
++		fprintf(stderr, "  (scaled from %.2f%%)",
++			(double) count[2] / count[1] * 100);
++	fprintf(stderr, "\n");
++}
++
+ static int do_perfstat(int argc, const char **argv)
  {
--	u32 apic_val;
+ 	unsigned long long t0, t1;
+ 	int counter;
+-	ssize_t res;
+ 	int status;
+ 	int pid;
+ 
+@@ -149,55 +213,10 @@ static int do_perfstat(int argc, const char **argv)
+ 		argv[0]);
+ 	fprintf(stderr, "\n");
+ 
+-	for (counter = 0; counter < nr_counters; counter++) {
+-		int cpu, nv;
+-		__u64 count[3], single_count[3];
+-		int scaled;
 -
- 	if (!x86_pmu_initialized())
- 		return;
- 
- 	/*
--	 * Enable the performance counter vector in the APIC LVT:
-+	 * Always use NMI for PMU
- 	 */
--	apic_val = apic_read(APIC_LVTERR);
+-		count[0] = count[1] = count[2] = 0;
+-		nv = scale ? 3 : 1;
+-		for (cpu = 0; cpu < nr_cpus; cpu ++) {
+-			res = read(fd[cpu][counter],
+-				   single_count, nv * sizeof(__u64));
+-			assert(res == nv * sizeof(__u64));
 -
--	apic_write(APIC_LVTERR, apic_val | APIC_LVT_MASKED);
--	if (nmi)
--		apic_write(APIC_LVTPC, APIC_DM_NMI);
--	else
--		apic_write(APIC_LVTPC, LOCAL_PERF_VECTOR);
--	apic_write(APIC_LVTERR, apic_val);
-+	apic_write(APIC_LVTPC, APIC_DM_NMI);
- }
+-			count[0] += single_count[0];
+-			if (scale) {
+-				count[1] += single_count[1];
+-				count[2] += single_count[2];
+-			}
+-		}
+-
+-		scaled = 0;
+-		if (scale) {
+-			if (count[2] == 0) {
+-				fprintf(stderr, " %14s  %-20s\n",
+-					"<not counted>", event_name(counter));
+-				continue;
+-			}
+-			if (count[2] < count[1]) {
+-				scaled = 1;
+-				count[0] = (unsigned long long)
+-					((double)count[0] * count[1] / count[2] + 0.5);
+-			}
+-		}
+-
+-		if (event_id[counter] == EID(PERF_TYPE_SOFTWARE, PERF_COUNT_CPU_CLOCK) ||
+-		    event_id[counter] == EID(PERF_TYPE_SOFTWARE, PERF_COUNT_TASK_CLOCK)) {
++	for (counter = 0; counter < nr_counters; counter++)
++		print_counter(counter);
  
- static int __kprobes
-@@ -1054,7 +1045,7 @@ void __init init_hw_perf_counters(void)
+-			double msecs = (double)count[0] / 1000000;
  
- 	pr_info("... counter mask:    %016Lx\n", perf_counter_mask);
+-			fprintf(stderr, " %14.6f  %-20s (msecs)",
+-				msecs, event_name(counter));
+-		} else {
+-			fprintf(stderr, " %14Ld  %-20s (events)",
+-				count[0], event_name(counter));
+-		}
+-		if (scaled)
+-			fprintf(stderr, "  (scaled from %.2f%%)",
+-				(double) count[2] / count[1] * 100);
+-		fprintf(stderr, "\n");
+-	}
+ 	fprintf(stderr, "\n");
+ 	fprintf(stderr, " Wall-clock time elapsed: %12.6f msecs\n",
+ 			(double)(t1-t0)/1e6);
+@@ -212,7 +231,6 @@ static void skip_signal(int signo)
  
--	perf_counters_lapic_init(0);
-+	perf_counters_lapic_init();
- 	register_die_notifier(&perf_counter_nmi_notifier);
- }
+ static const char * const stat_usage[] = {
+ 	"perf stat [<options>] <command>",
+-	"perf stat [<options>] -- <command> [<options>]",
+ 	NULL
+ };
  
