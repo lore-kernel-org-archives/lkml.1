@@ -1,112 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760664AbZE2Opc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760464AbZE2OrU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760664AbZE2Opc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 10:45:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758079AbZE2OpY
+	id S1760464AbZE2OrU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 10:47:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758215AbZE2OrN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 10:45:24 -0400
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:43934 "EHLO e7.ny.us.ibm.com"
+	Fri, 29 May 2009 10:47:13 -0400
+Received: from edu.joroinen.fi ([194.89.68.130]:35285 "EHLO edu.joroinen.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754821AbZE2OpX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 10:45:23 -0400
-Subject: Re: [perfmon2] comments on Performance Counters for Linux (PCL)
-From: Carl Love <cel@us.ibm.com>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Philip Mucci <mucci@eecs.utk.edu>, LKML <linux-kernel@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>, Paul Mackerras <paulus@samba.org>,
-       Maynard Johnson <mpjohn@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, eranian@gmail.com,
-       perfmon2-devel <perfmon2-devel@lists.sourceforge.net>
-In-Reply-To: <alpine.LRH.2.00.0905291020200.21748@vixen.sonytel.be>
-References: <7c86c4470905280758y6d359823h2a7517dfecb115e6@mail.gmail.com>
-	 <1243527919.6645.75.camel@laptop>	<4A1EFCC2.80805@linux.vnet.ibm.com>
-	 <20090528213532.GA8589@elte.hu>
-	 <18975.7470.792842.173625@cargo.ozlabs.ibm.com>
-	 <20090529071914.GB3157@elte.hu>
-	 <alpine.LRH.2.00.0905291020200.21748@vixen.sonytel.be>
-Content-Type: text/plain; charset=utf-8
-Date: Fri, 29 May 2009 07:42:39 -0700
-Message-Id: <1243608160.6534.46.camel@carll-linux-desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 8bit
+	id S1758603AbZE2OrM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 May 2009 10:47:12 -0400
+X-Greylist: delayed 1951 seconds by postgrey-1.27 at vger.kernel.org; Fri, 29 May 2009 10:47:11 EDT
+Date: Fri, 29 May 2009 17:14:39 +0300
+From: Pasi =?iso-8859-1?Q?K=E4rkk=E4inen?= <pasik@iki.fi>
+To: George Dunlap <george.dunlap@eu.citrix.com>
+Cc: David Miller <davem@davemloft.net>, "jeremy@goop.org" <jeremy@goop.org>,
+       "mingo@elte.hu" <mingo@elte.hu>,
+       Dan Magenheimer <dan.magenheimer@oracle.com>,
+       "avi@redhat.com" <avi@redhat.com>,
+       "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
+       "x86@kernel.org" <x86@kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Keir Fraser <Keir.Fraser@eu.citrix.com>,
+       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
+       "gregkh@suse.de" <gregkh@suse.de>,
+       "kurt.hackel@oracle.com" <kurt.hackel@oracle.com>,
+       Ian Pratt <Ian.Pratt@eu.citrix.com>,
+       "xen-users@lists.xensource.com" <xen-users@lists.xensource.com>,
+       ksrinivasan <ksrinivasan@novell.com>,
+       "EAnderson@novell.com" <EAnderson@novell.com>,
+       "wimcoekaerts@wimmekes.net" <wimcoekaerts@wimmekes.net>,
+       Stephen Spector <stephen.spector@citrix.com>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       "npiggin@suse.de" <npiggin@suse.de>
+Subject: Re: Xen is a feature
+Message-ID: <20090529141439.GT24960@edu.joroinen.fi>
+References: <162f4c90-6431-4a2a-b337-6d7451d7b11e@default> <20090528001350.GD26820@elte.hu> <4A1F302E.8030501@goop.org> <20090528.210559.137121893.davem@davemloft.net> <4A1FCE8E.2060604@eu.citrix.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A1FCE8E.2060604@eu.citrix.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, May 29, 2009 at 01:01:18PM +0100, George Dunlap wrote:
+> David Miller wrote:
+> >I don't see Ingo's comments, whether I agree with them or not, as
+> >an implication of Xen being niche.  Rather I see his comments as
+> >an opposition to how Xen is implemented.
+> >  
+> It's in his definition of "improving Linux".  Jeremy is saying that 
+> allowing Linux to run as dom0 *is* improving Linux.  The lack of dom0 
+> support is at this moment making life more difficult for a huge number 
+> of Linux users who use Xen, including Mozilla, Debian, and Amazon.    
+> Adding dom0 support would make Linux even more useful to a wide variety 
+> of people not using Xen at the moment. 
+> 
 
-On Fri, 2009-05-29 at 10:21 +0200, Geert Uytterhoeven wrote:
-> On Fri, 29 May 2009, Ingo Molnar wrote:
-> > * Paul Mackerras <paulus@samba.org> wrote:
-> > > Ingo Molnar writes:
-> > > > * Corey Ashford <cjashfor@linux.vnet.ibm.com> wrote:
-> > > > >> So you're suggesting to artificually strech periods by say 
-> > > > >> composing a single overflow from smaller ones, ignoring the 
-> > > > >> intermediate overflow events?
-> > > > >>
-> > > > >> That sounds doable, again, patch welcome.
-> > > > >
-> > > > > I definitely agree with Stephane's point on this one.  I had 
-> > > > > assumed that long irq_periods (longer than the width of the 
-> > > > > counter) would be synthesized as you suggest.  If this is not the 
-> > > > > case, PCL should be changed so that it does, -or- at a minimum, 
-> > > > > the user should get an error back stating that the period is too 
-> > > > > long for the hardware counter.
-> > > > 
-> > > > this looks somewhat academic - at least on x86, even the fastest 
-> > > > events (say cycles) with a 32 bit overflow means one event per 
-> > > > second on 4GB. That's not a significant event count in practice. 
-> > > > What's the minimum width we are talking about on Power?
-> > > 
-> > > 32 bits, but since the top bit is effectively a level-sensitive 
-> > > interrupt request, the maximum period in hardware is 2^31 counts.
-> > > 
-> > > However, I already support 64-bit interrupt periods (well, 63-bit 
-> > > actually) on powerpc by only calling perf_counter_overflow() when 
-> > > counter->hw.period_left becomes <= 0, and arranging to set the 
-> > > hardware counter to 0 if counter->hw.period_left is >= 0x80000000. 
-> > > It's a tiny amount of code to handle it, really.
-> > 
-> > No argument about that - just wanted to know whether there's any 
-> > real practical effect beyond the nitpicking factor ;-)
-> 
-> I never really dived into this stuff, but ISTR there are some 16-bit counters
-> on CELL? Is that correct?
+Like stated already earlier, there is a huge amount of Xen in use all around
+the globe for server/datacenter virtualization. Personally I know many Xen 
+installations in production, but not a single KVM installation (I'm sure those 
+exist aswell, but personally I haven't seen those).
 
-FYI, the counters on CELL are configurable.  You can have up to eight 16
-bit count counters or you can combine counters i and i=1 (where
-i=0,2,4,6) into 32 bit counters.  This allows you to have some 16 and
-some 32 bit counters at the same time.  
+At the moment it's pretty painful for the distro developers to ship dom0
+enabled kernels (most of the distros do ship or are waiting for upstream
+dom0 enabled kernel), and also for many advanced users who build their custom Xen
+based solutions.. 
 
-> 
-> With kind regards,
-> 
-> Geert Uytterhoeven
-> Software Architect
-> Techsoft Centre
-> 
-> Technology and Software Centre Europe
-> The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-> 
-> Phone:    +32 (0)2 700 8453
-> Fax:      +32 (0)2 700 8622
-> E-mail:   Geert.Uytterhoeven@sonycom.com
-> Internet: http://www.sony-europe.com/
-> 
-> A division of Sony Europe (Belgium) N.V.
-> VAT BE 0413.825.160 · RPR Brussels
-> Fortis · BIC GEBABEBB · IBAN BE41293037680010
-> 
-> ------------------------------------------------------------------------------
-> Register Now for Creativity and Technology (CaT), June 3rd, NYC. CaT 
-> is a gathering of tech-side developers & brand creativity professionals. Meet
-> the minds behind Google Creative Lab, Visual Complexity, Processing, & 
-> iPhoneDevCamp as they present alongside digital heavyweights like Barbarian 
-> Group, R/GA, & Big Spaceship. http://p.sf.net/sfu/creativitycat-com 
-> _______________________________________________
-> perfmon2-devel mailing list
-> perfmon2-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/perfmon2-devel
+The current situation is not good for anyone. We really need Xen dom0
+support in mainline Linux.
 
+Just my 2 eurocents.
+
+-- Pasi
