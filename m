@@ -1,146 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756203AbZE2V4A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754480AbZE2WLK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756203AbZE2V4A (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 17:56:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752104AbZE2Vzx
+	id S1754480AbZE2WLK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 18:11:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752684AbZE2WK5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 17:55:53 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44044 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751708AbZE2Vzx (ORCPT
+	Fri, 29 May 2009 18:10:57 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:49038 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752194AbZE2WK4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 17:55:53 -0400
-Date: Fri, 29 May 2009 14:55:10 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: kamezawa.hiroyu@jp.fujitsu.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, nishimura@mxp.nes.nec.co.jp,
-       balbir@linux.vnet.ibm.com, hugh.dickins@tiscali.co.uk,
-       hannes@cmpxchg.org
-Subject: Re: [PATCH 3/4] reuse unused swap entry if necessary
-Message-Id: <20090529145510.b4ff541e.akpm@linux-foundation.org>
-In-Reply-To: <20090528142047.3069543b.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090528135455.0c83bedc.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090528142047.3069543b.kamezawa.hiroyu@jp.fujitsu.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 29 May 2009 18:10:56 -0400
+Date: Sat, 30 May 2009 08:10:55 +1000
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Jarod Wilson <jarod@redhat.com>
+Cc: linux-crypto@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Neil Horman <nhorman@tuxdriver.com>
+Subject: Re: [RFC PATCH] crypto: add buffer overflow checks to testmgr
+Message-ID: <20090529221055.GA17957@gondor.apana.org.au>
+References: <200905291132.55848.jarod@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200905291132.55848.jarod@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 May 2009 14:20:47 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-
-> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+On Fri, May 29, 2009 at 11:32:54AM -0400, Jarod Wilson wrote:
+> At present, its entirely possible to add a test vector to testmgr with
+> an input longer than a page in length w/o specifying a .np option, and
+> overflow the page of memory allocated to {a,}xbuf[0], silently
+> corrupting memory. I know, because I've accidentally done it. :)
 > 
-> Now, we can know a swap entry is just used as SwapCache via swap_map,
-> without looking up swap cache.
+> While this doesn't currently happen in practice w/the existing code,
+> due to all !np vectors being less than a 4k page in length (and the
+> page allocation loop often returns contiguous pages anyway), explicit
+> checks or a way to remove the 4k limit would be a good idea.
 > 
-> Then, we have a chance to reuse swap-cache-only swap entries in
-> get_swap_pages().
+> A few ways to fix and/or work around this:
 > 
-> This patch tries to free swap-cache-only swap entries if swap is
-> not enough.
-> Note: We hit following path when swap_cluster code cannot find
-> a free cluster. Then, vm_swap_full() is not only condition to allow
-> the kernel to reclaim unused swap.
+> 1) allocate some larger guaranteed contiguous buffers using
+> __get_free_pages() or kmalloc and use them in the !np case
 > 
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> ---
->  mm/swapfile.c |   39 +++++++++++++++++++++++++++++++++++++++
->  1 file changed, 39 insertions(+)
+> 2) catch the > PAGE_SIZE && !np case and then do things similar to how
+> they are done in the np case
 > 
-> Index: new-trial-swapcount2/mm/swapfile.c
-> ===================================================================
-> --- new-trial-swapcount2.orig/mm/swapfile.c
-> +++ new-trial-swapcount2/mm/swapfile.c
-> @@ -73,6 +73,25 @@ static inline unsigned short make_swap_c
->  	return ret;
->  }
->  
-> +static int
-> +try_to_reuse_swap(struct swap_info_struct *si, unsigned long offset)
-> +{
-> +	int type = si - swap_info;
-> +	swp_entry_t entry = swp_entry(type, offset);
-> +	struct page *page;
-> +	int ret = 0;
-> +
-> +	page = find_get_page(&swapper_space, entry.val);
-> +	if (!page)
-> +		return 0;
-> +	if (trylock_page(page)) {
-> +		ret = try_to_free_swap(page);
-> +		unlock_page(page);
-> +	}
-> +	page_cache_release(page);
-> +	return ret;
-> +}
+> 3) catch the > PAGE_SIZE && !np case and simply exit with an error
+> 
+> Since there currently aren't any test vectors that are actually larger
+> than a page and not tagged np, option 1 seems like a waste of memory
+> and option 2 sounds like unnecessary complexity, so I'd offer up
+> option 3 as the most viable alternative right now.
+> 
+> Signed-off-by: Jarod Wilson <jarod@redhat.com>
 
-This function could do with some comments explaining what it does, and
-why.  Also describing the semantics of its return value.
-
-afacit it's misnamed.  It doesn't 'reuse' anything.  It in fact tries
-to release a swap entry so that (presumably) its _caller_ can reuse the
-swap slot.
-
-The missing comment should also explain why this function is forced to
-use the nasty trylock_page().
-
-Why _is_ this function forced to use the nasty trylock_page()?
-
->  /*
->   * We need this because the bdev->unplug_fn can sleep and we cannot
->   * hold swap_lock while calling the unplug_fn. And swap_lock
-> @@ -294,6 +313,18 @@ checks:
->  		goto no_page;
->  	if (offset > si->highest_bit)
->  		scan_base = offset = si->lowest_bit;
-> +
-> +	/* reuse swap entry of cache-only swap if not busy. */
-> +	if (vm_swap_full() && si->swap_map[offset] == SWAP_HAS_CACHE) {
-> +		int ret;
-> +		spin_unlock(&swap_lock);
-> +		ret = try_to_reuse_swap(si, offset);
-> +		spin_lock(&swap_lock);
-> +		if (ret)
-> +			goto checks; /* we released swap_lock. retry. */
-> +		goto scan; /* In some racy case */
-> +	}
-
-So..  what prevents an infinite (or long) busy loop here?  It appears
-that if try_to_reuse_swap() returned non-zero, it will have cleared
-si->swap_map[offset], so we don't rerun try_to_reuse_swap().  Yes?
-
-`ret' is a poor choice of identifier.  It is usually used to hold the
-value which this function will be returning.  Ditto `retval'.  But that
-is not this variable's role in this case.  Perhaps a better name would
-be slot_was_freed or something.
-
->  	if (si->swap_map[offset])
->  		goto scan;
->  
-> @@ -375,6 +406,10 @@ scan:
->  			spin_lock(&swap_lock);
->  			goto checks;
->  		}
-> +		if (vm_swap_full() && si->swap_map[offset] == SWAP_HAS_CACHE) {
-> +			spin_lock(&swap_lock);
-> +			goto checks;
-> +		}
->  		if (unlikely(--latency_ration < 0)) {
->  			cond_resched();
->  			latency_ration = LATENCY_LIMIT;
-> @@ -386,6 +421,10 @@ scan:
->  			spin_lock(&swap_lock);
->  			goto checks;
->  		}
-> +		if (vm_swap_full() && si->swap_map[offset] == SWAP_HAS_CACHE) {
-> +			spin_lock(&swap_lock);
-> +			goto checks;
-> +		}
->  		if (unlikely(--latency_ration < 0)) {
->  			cond_resched();
->  			latency_ration = LATENCY_LIMIT;
+I just posted exactly the same thing yesterday :)
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
