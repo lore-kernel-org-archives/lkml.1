@@ -1,75 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759766AbZE2Q5S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758517AbZE2RHw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759766AbZE2Q5S (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 12:57:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755515AbZE2Q5L
+	id S1758517AbZE2RHw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 13:07:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756126AbZE2RHn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 12:57:11 -0400
-Received: from ms01.sssup.it ([193.205.80.99]:39409 "EHLO sssup.it"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754611AbZE2Q5K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 12:57:10 -0400
-Date: Fri, 29 May 2009 18:57:16 +0200
-From: Fabio Checconi <fchecconi@gmail.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Nauman Rafique <nauman@google.com>, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org, dm-devel@redhat.com,
-       jens.axboe@oracle.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
-       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
-       peterz@infradead.org
-Subject: Re: [PATCH 02/20] io-controller: Common flat fair queuing code in elevaotor layer
-Message-ID: <20090529165716.GB18141@gandalf.sssup.it>
-References: <1243377729-2176-1-git-send-email-vgoyal@redhat.com> <1243377729-2176-3-git-send-email-vgoyal@redhat.com> <e98e18940905271353kc6890dbxa1ea63026c8faec1@mail.gmail.com> <20090528160003.GA4335@redhat.com> <e98e18940905281241v4aa24716j91f351a828af604a@mail.gmail.com> <20090529160610.GC26962@redhat.com>
-Mime-Version: 1.0
+	Fri, 29 May 2009 13:07:43 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:46308 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752239AbZE2RHm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 May 2009 13:07:42 -0400
+Date: Fri, 29 May 2009 19:07:43 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "tytso@mit.edu" <tytso@mit.edu>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       "david@fromorbit.com" <david@fromorbit.com>,
+       "hch@infradead.org" <hch@infradead.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "jack@suse.cz" <jack@suse.cz>,
+       "yanmin_zhang@linux.intel.com" <yanmin_zhang@linux.intel.com>,
+       "richard@rsk.demon.co.uk" <richard@rsk.demon.co.uk>,
+       "damien.wyart@free.fr" <damien.wyart@free.fr>
+Subject: Re: [PATCH 0/11] Per-bdi writeback flusher threads v9
+Message-ID: <20090529170742.GI11363@kernel.dk>
+References: <1243511204-2328-1-git-send-email-jens.axboe@oracle.com> <4A1E9D0B.4090402@gmail.com> <4A1E9D8B.8020908@gmail.com> <1243542908.6645.104.camel@laptop> <4A20011E.7020900@nokia.com> <20090529155046.GH11363@kernel.dk> <4A20072B.7050807@nokia.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090529160610.GC26962@redhat.com>
-User-Agent: Mutt/1.4.2.3i
+In-Reply-To: <4A20072B.7050807@nokia.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From: Vivek Goyal <vgoyal@redhat.com>
-> Date: Fri, May 29, 2009 12:06:10PM -0400
+On Fri, May 29 2009, Artem Bityutskiy wrote:
+> Jens Axboe wrote:
+>>> diff --git a/fs/ubifs/super.c b/fs/ubifs/super.c
+>>> index 2349e2c..d1ac967 100644
+>>> --- a/fs/ubifs/super.c
+>>> +++ b/fs/ubifs/super.c
+>>> @@ -1929,6 +1929,9 @@ static int ubifs_fill_super(struct super_block *sb, void *data, int silent)
+>>> 	err  = bdi_init(&c->bdi);
+>>> 	if (err)
+>>> 		goto out_close;
+>>> +	err = bdi_register(&c->bdi, NULL, "ubifs");
+>>> +	if (err)
+>>> +		goto out_close;
+>>
+>> Not quite right, you need to call bdi_destroy() if you have done the
+>> init.
 >
-> On Thu, May 28, 2009 at 12:41:27PM -0700, Nauman Rafique wrote:
-...
-> > I have some concerns about the new preemption logic.
-> 
-> Actually we need a more proper definition of in-class preemption. Across
-> class preemption means that RT class always gets to run first.
-> 
-> What does in-class preemption mean? If I look at the current CFQ code,
-> it does look like that preempting process will gain share. It is always
-> added to the front of the tree with "rb_key=0" and that means, this new
-> queue will get fresh time slice (even if it got time slice very recently).
-> 
-> Currently I have just tried to make the behavior same as CFQ to reduce
-> the possiblility of regressions. That's a different thing that we can
-> discuss what should be the exact behavior in case of in-class preemption
-> and first it needs to be fixed in CFQ, if current behavior is an issue.
-> 
-> On the other hand, I am not sure if previous bfq preemption logic was
-> working. We were checking if the new request belonged to the queue which
-> will be served next, then preempt the existing queue. While looking
-> for the next queue, I think we did not consider the current active
-> entity (as it was not on the tree). So after expiry of the current
-> queue, it might get selected next if it has not got its share. So there
-> was no point in preempting the queue. If queue already got its share, then
-> anyway the next queue will be selected next and there is no point in
-> preempting the current queue.
-> 
+> Right, bdi_destroy() is already there for long time.
+> I'm confused.
+>
+>> I committed this one this morning:
+>>
+>> http://git.kernel.dk/?p=linux-2.6-block.git;a=commit;h=570a2fe1df85741988ad0ca22aa406744436e281
+>
+> Hmm, it is the same as my patch, but you do
+> +       err = bdi_register(&c->bdi);
+> while I do
+> +	err = bdi_register(&c->bdi, NULL, "ubifs");
 
-BFQ had no preemption logic, as far as I know; it simply was not
-preemptive, and the guarantees it provided took that into account.
+Oops, that's my bad. If you combine the two, we should have a working
+patch :-)
 
-I don't know what is the best way to introduce a CFQ-like preemption logic
-into the wf2q+ code; for sure anything that does not schedule according
-to the algorithm's timestamps is a good candidate to break the guarantees
-the scheduler can provide, making it an extremely complex way to get
-the same worst-case delays of a (much simpler) round-robin scheduler.
+>> But feel free to commit/submit to the ubifs tree directly, then it'll
+>> disappear from my tree once it is merged.
+>
+> Yeah, I think it can go via my tree. I'd merge it at
+> 2.6.31 window. This change does not depend on your
+> work anyway.
+
+Right, I'll just carry the fixup patches meanwhile as well, but wont
+upstream them.
+
+-- 
+Jens Axboe
+
