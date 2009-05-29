@@ -1,131 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761106AbZE2Pd6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760807AbZE2Peo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761106AbZE2Pd6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 11:33:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758835AbZE2Pdu
+	id S1760807AbZE2Peo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 11:34:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758835AbZE2Peh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 11:33:50 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:54200 "EHLO mx2.redhat.com"
+	Fri, 29 May 2009 11:34:37 -0400
+Received: from drewtech.com ([66.36.241.150]:38436 "EHLO server.drewtech.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758603AbZE2Pdt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 11:33:49 -0400
-From: Jarod Wilson <jarod@redhat.com>
-Organization: Red Hat, Inc.
-To: linux-crypto@vger.kernel.org
-Subject: [RFC PATCH] crypto: add buffer overflow checks to testmgr
-Date: Fri, 29 May 2009 11:32:54 -0400
-User-Agent: KMail/1.11.3 (Linux/2.6.29.3-140.fc11.x86_64; KDE/4.2.3; x86_64; ; )
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Neil Horman <nhorman@tuxdriver.com>
+	id S1757618AbZE2Peg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 May 2009 11:34:36 -0400
+X-Greylist: delayed 398 seconds by postgrey-1.27 at vger.kernel.org; Fri, 29 May 2009 11:34:36 EDT
+Message-ID: <4A1FFEFB.6050104@drewtech.com>
+Date: Fri, 29 May 2009 11:27:55 -0400
+From: Joey Oravec <joravec@drewtech.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
+To: Rob Emanuele <poorarm@shoreis.com>
+CC: nicolas.ferre@atmel.com, linux-arm-kernel@lists.arm.linux.org.uk,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] New AT91 MCI Driver that supports both MCI slots used
+ at the 	same time
+References: <c8284b5b0905281440hd2e4993re3d0d8c590713fa0@mail.gmail.com>
+In-Reply-To: <c8284b5b0905281440hd2e4993re3d0d8c590713fa0@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905291132.55848.jarod@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At present, its entirely possible to add a test vector to testmgr with
-an input longer than a page in length w/o specifying a .np option, and
-overflow the page of memory allocated to {a,}xbuf[0], silently
-corrupting memory. I know, because I've accidentally done it. :)
+Rob Emanuele wrote:
+> This patch creates a new AT91 Multimedia Card Interface (MCI) driver
+> that supports using both MCI slots at the same time.  I'm looking for
+> others to test this patch on other boards within the same family of
+> chips.
+>
+> This driver is a port the Atmel AVR32 MCI driver which uses similar silicon.
+>   
+I made all necessary adjustments to test this on my at91sam9261. 
+Unfortunately it didn't want to initialize my card so I wasn't able to 
+try some of the failures that I experience with the existing driver. I 
+sent you a private email with the logs.
 
-While this doesn't currently happen in practice w/the existing code,
-due to all !np vectors being less than a 4k page in length (and the
-page allocation loop often returns contiguous pages anyway), explicit
-checks or a way to remove the 4k limit would be a good idea.
+> +config MMC_AT91GEN2
+> +	tristate "Atmel AT91 Multimedia Card Interface support 2nd gen"
+> +	depends on ARCH_AT91
+> +	help
+>   
+On linux-arm-kernel I've detailed a lot of problems involving 
+WRITE_MULTIPLE_BLOCK using the at91 mmc/sd controller. In the end you 
+might need to exclude certain processors or else have a gigantic 
+warning. You can talk to me offline for details on my testing.
 
-A few ways to fix and/or work around this:
+> +struct at91_mmc_slot_pdata {
+> +        unsigned int            bus_width;
+> +        int                     detect_pin;
+> +        int                     wp_pin;
+> +        int                     vcc_pin;
+> +};
+>   
+Notice in 2.6.29 that at91_mci and most other structures call it 
+"det_pin" rather than "detect_pin"
 
-1) allocate some larger guaranteed contiguous buffers using
-__get_free_pages() or kmalloc and use them in the !np case
+> +	if (host->need_reset) {
+> +		at91_mci_write(host, AT91_MCI_CR, AT91_MCI_SWRST);
+> +		at91_mci_write(host, AT91_MCI_CR, AT91_MCI_MCIEN);
+> +		at91_mci_write(host, AT91_MCI_MR, host->mode_reg);
+> +		host->need_reset = false;
+> +	}
+>   
+In my experience some at91s need a reset after every single command, 
+otherwise bad things happen. I think the need_reset logic is too 
+conservative in this driver.
 
-2) catch the > PAGE_SIZE && !np case and then do things similar to how
-they are done in the np case
+> +		/*
+> +		 * WRPROOF and RDPROOF prevent overruns/underruns by
+> +		 * stopping the clock when the FIFO is full/empty.
+> +		 * This state is not expected to last for long.
+> +		 */
+> +		host->mode_reg = (AT91_MCI_CLKDIV & clkdiv) | AT91_MCI_WRPROOF
+> +					| AT91_MCI_RDPROOF;
+>   
+These registers are not in all at91 chips especially the at91sam9261.
 
-3) catch the > PAGE_SIZE && !np case and simply exit with an error
+> +	if (pdata->slot[0].bus_width) {
+> +		ret = at91mci_init_slot(host, &pdata->slot[0],
+> +				AT91_MCI_SDCSEL & 0x0, 0);
+> +		if (!ret)
+> +			nr_slots++;
+> +	}
+> +	if (pdata->slot[1].bus_width) {
+> +		ret = at91mci_init_slot(host, &pdata->slot[1],
+> +				AT91_MCI_SDCSEL & 0x1, 1);
+> +		if (!ret)
+> +			nr_slots++;
+> +	}
+> +
+> +	if (!nr_slots)
+> +		goto err_init_slot;
+>   
+The original pdata had "wire4" which worked (but defaulted to 1-wire) as 
+default uninitialized. With this new variable it's easy to register 
+mmc_slot_pdata with bus_width set to zero. The difference bit me when 
+testing and at least deserves a printk if not a change.
 
-Since there currently aren't any test vectors that are actually larger
-than a page and not tagged np, option 1 seems like a waste of memory
-and option 2 sounds like unnecessary complexity, so I'd offer up
-option 3 as the most viable alternative right now.
-
-Signed-off-by: Jarod Wilson <jarod@redhat.com>
-
----
- crypto/testmgr.c |   34 ++++++++++++++++++++++++++++++++++
- 1 files changed, 34 insertions(+), 0 deletions(-)
-
-diff --git a/crypto/testmgr.c b/crypto/testmgr.c
-index 376ea88..9483a2b 100644
---- a/crypto/testmgr.c
-+++ b/crypto/testmgr.c
-@@ -185,6 +185,13 @@ static int test_hash(struct crypto_ahash *tfm, struct hash_testvec *template,
- 
- 		hash_buff = xbuf[0];
- 
-+		if (template[i].psize > PAGE_SIZE) {
-+			printk(KERN_ERR "alg: hash: psize %u larger than "
-+			       "contiguous buffer space\n", template[i].psize);
-+			ret = -EOVERFLOW;
-+			goto out;
-+		}
-+
- 		memcpy(hash_buff, template[i].plaintext, template[i].psize);
- 		sg_init_one(&sg[0], hash_buff, template[i].psize);
- 
-@@ -357,6 +364,16 @@ static int test_aead(struct crypto_aead *tfm, int enc,
- 			input = xbuf[0];
- 			assoc = axbuf[0];
- 
-+			if (template[i].ilen > PAGE_SIZE ||
-+			    template[i].alen > PAGE_SIZE) {
-+				printk(KERN_ERR "alg: aead: input larger than "
-+				       "contiguous buffer space (ilen: %u, "
-+				       "alen: %u)\n",
-+				       template[i].ilen, template[i].alen);
-+				ret = -EOVERFLOW;
-+				goto out;
-+			}
-+
- 			memcpy(input, template[i].input, template[i].ilen);
- 			memcpy(assoc, template[i].assoc, template[i].alen);
- 			if (template[i].iv)
-@@ -651,6 +668,14 @@ static int test_cipher(struct crypto_cipher *tfm, int enc,
- 		j++;
- 
- 		data = xbuf[0];
-+
-+		if (template[i].ilen > PAGE_SIZE) {
-+			printk(KERN_ERR "alg: cipher: ilen %u larger than "
-+			       "contiguous buffer space\n", template[i].ilen);
-+			ret = -EOVERFLOW;
-+			goto out;
-+		}
-+
- 		memcpy(data, template[i].input, template[i].ilen);
- 
- 		crypto_cipher_clear_flags(tfm, ~0);
-@@ -742,6 +767,15 @@ static int test_skcipher(struct crypto_ablkcipher *tfm, int enc,
- 			j++;
- 
- 			data = xbuf[0];
-+
-+			if (template[i].ilen > PAGE_SIZE) {
-+				printk(KERN_ERR "alg: skcipher: ilen %u larger "
-+				       "than contiguous buffer space\n",
-+				       template[i].ilen);
-+				ret = -EOVERFLOW;
-+				goto out;
-+			}
-+
- 			memcpy(data, template[i].input, template[i].ilen);
- 
- 			crypto_ablkcipher_clear_flags(tfm, ~0);
-
--- 
-Jarod Wilson
-jarod@redhat.com
+-joey
