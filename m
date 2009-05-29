@@ -1,35 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759033AbZE2L3w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758516AbZE2Lsv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759033AbZE2L3w (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 07:29:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758128AbZE2L3l
+	id S1758516AbZE2Lsv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 07:48:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758099AbZE2Lso
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 07:29:41 -0400
-Received: from tomts37.bellnexxia.net ([209.226.175.94]:50592 "EHLO
-	tomts37-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756300AbZE2L3k convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 07:29:40 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AqOaANtjH0rR4q/5/2dsb2JhbACLQYJmki+kMYpJg3gF
-X-Mailer: Openwave WebEngine, version 2.8.11 (webedge20-101-194-20030622)
-X-Originating-IP: [41.219.137.100]
-From: Jenifer <bwmfg@bellnet.ca>
-Reply-To: elizabethmayer01@btinternet.com
-To: <info@lotto.org>
-Subject: Bonanza!!
-Date: Fri, 29 May 2009 7:29:32 -0400
+	Fri, 29 May 2009 07:48:44 -0400
+Received: from mx03.syneticon.net ([78.111.66.105]:54414 "EHLO
+	mx03.syneticon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757841AbZE2Lsn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 May 2009 07:48:43 -0400
+Message-ID: <4A1FCBAB.2030100@wpkg.org>
+Date: Fri, 29 May 2009 13:48:59 +0200
+From: Tomasz Chmielewski <mangoo@wpkg.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090319)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Message-Id: <20090529112940.MYOS1685.tomts37-srv.bellnexxia.net@toip36-bus.srvr.bell.ca>
+To: LKML <linux-kernel@vger.kernel.org>
+CC: gregkh@suse.de, jeremy@goop.org, davem@davemloft.net, jaswinder@kernel.org
+Subject: Re: Xen is a feature
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-You have just been awarded,£920.000.00 GBP in the Online,send us your
-Names........
-Address......
-Country......
-Sex/Tel......
+Greg KH wrote:
+
+> On Thu, May 28, 2009 at 05:45:34PM -0700, Jeremy Fitzhardinge wrote:
+>> Mozilla and Debian are hosted on Xen systems.
+> 
+> A tiny data point about these domains.  They are hosted by osuosl.org,
+> which uses xen systems running with the current dom0 patch set.  Because
+> those patches are out-of-tree, they have a hard time updating kernel
+> versions, and generally lag kernel.org releases by a lot, which is not
+> always a good thing.
+> 
+> So getting the dom0 patches into mainline will make their lives much
+> easier, and more secure.
+
+I know at least a couple of mid-sized hosting companies migrating all or 
+part of their infrastructure off Linux/Xen to a proprietary solution, 
+because of this very reason (problems with keeping dom0 kernel up to 
+date, problems with deploying it on new machines etc.).
+
+-- 
+Tomasz Chmielewski
+http://wpkg.org
 
