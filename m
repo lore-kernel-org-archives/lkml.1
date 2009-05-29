@@ -1,112 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755300AbZE2BPN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755394AbZE2BPq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755300AbZE2BPN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 21:15:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752459AbZE2BPH
+	id S1755394AbZE2BPq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 21:15:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753831AbZE2BPi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 21:15:07 -0400
-Received: from mail-qy0-f190.google.com ([209.85.221.190]:58401 "EHLO
-	mail-qy0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751983AbZE2BPG convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 21:15:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=hqgA/ds0qwfnXZH2u+iHLoWUi9emaS8UucZvg/KqR3/W+TIwRE3iNdoC6G3B/p2deZ
-         gTtYfZnW7hxwRLJwH7tlPC0VgD9TAVKaYi7M4oqSQhYpr6ESL7LWN+DDGY7cJgrVueQE
-         9nt0y+YCbRc5ZqKxUIr0CvUHXU0ET17NyvYMw=
+	Thu, 28 May 2009 21:15:38 -0400
+Received: from hera.kernel.org ([140.211.167.34]:49738 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753300AbZE2BPh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 21:15:37 -0400
+Message-ID: <4A1F3724.8050103@kernel.org>
+Date: Thu, 28 May 2009 18:15:16 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-In-Reply-To: <1243553004.26735.4.camel@maxim-laptop>
-References: <20081006194032.15992.8393.stgit@terra>
-	 <20081006194308.15992.98682.stgit@terra>
-	 <1243553004.26735.4.camel@maxim-laptop>
-Date: Thu, 28 May 2009 21:15:05 -0400
-Message-ID: <9e4733910905281815g376489c2ka11ffd43aac5221@mail.gmail.com>
-Subject: Re: [RFC PATCH 1/4] Changes to core input subsystem to allow send and 
-	receive of IR messages. Encode and decode state machines are provided for 
-	common IR porotocols such as Sony, JVC, NEC, Philips, etc.
-From: Jon Smirl <jonsmirl@gmail.com>
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Cc: linux-kernel@vger.kernel.org, lirc-list@lists.sourceforge.net
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+CC: mingo@elte.hu, Christoph Lameter <cl@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, mpm@selenic.com,
+       npiggin@suse.de, linux-kernel@vger.kernel.org
+Subject: [PATCH] slab: remove bootmem calling
+References: <1243517365.11533.65.camel@penberg-laptop>
+In-Reply-To: <1243517365.11533.65.camel@penberg-laptop>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 28, 2009 at 7:23 PM, Maxim Levitsky <maximlevitsky@gmail.com> wrote:
-> On Mon, 2008-10-06 at 15:43 -0400, Jon Smirl wrote:
->> Received IR messages generate event in the input queue.
->> IR messages are sent using an input IOCTL.
->
-> Another question.
->
-> So input device sends its events as a special event type?
-> This would mean that none of current drivers will be able to pick these
-> events.
+mem_init/kmem_cache_init is moved up
 
-There is a later version of this patch set that uses configfs to map
-IR events into keystrokes on the /dev/input device. I have later
-additions to the code that haven't been posted. They fix issues with
-calling configfs at interrupt time.
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+---
+ mm/page_cgroup.c |   12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
 
--------------------------------------------
-
-I posted V4 of my in-kernel IR system to LKML.  It supports mapping
-from IR events to key strokes now.
-http://lkml.org/lkml/2008/11/5/233
-
-To do the mapping it uses configfs (part of the kernel).  The main
-directory is remotes. You use a shell script to build mappings between
-the IR event and key stroke.
-
-mkdir /config/remotes/sony
- -- this creates a new evdev device
-mkdir remotes/sony/one
-echo 7 >remotes/sony/one/procotol
-echo 264 >remotes/sony/one/command
-echo 2 >remotes/sony/one/keycode
-
-This transforms a button push of 1 on my remote into a key stroke for KEY_1
-
- *   configfs root
- *   --remotes
- *   ----specific remote
- *   ------keymap
- *   --------protocol
- *   --------device
- *   --------command
- *   --------keycode
- *   ------repeat keymaps
- *   --------....
- *   ----another remote
- *   ------more keymaps
-
-You can map the 1 button from multiple remote to KEY_1 if you want. Or
-you can use a single remote to create multiple virtual keyboards.
-
-I'm always looking for help with this code. I've implemented support
-for my embedded GPIO based receiver and Microsoft MCEUSB. I'd really
-like to see IR added to existing Linux input family of keyboards,
-mice, joystick, tablet, touchscreen and gameport.
+Index: linux-2.6/mm/page_cgroup.c
+===================================================================
+--- linux-2.6.orig/mm/page_cgroup.c
++++ linux-2.6/mm/page_cgroup.c
+@@ -47,6 +47,8 @@ static int __init alloc_node_page_cgroup
+ 	struct page_cgroup *base, *pc;
+ 	unsigned long table_size;
+ 	unsigned long start_pfn, nr_pages, index;
++	struct page *page;
++	unsigned int order;
+ 
+ 	start_pfn = NODE_DATA(nid)->node_start_pfn;
+ 	nr_pages = NODE_DATA(nid)->node_spanned_pages;
+@@ -55,11 +57,13 @@ static int __init alloc_node_page_cgroup
+ 		return 0;
+ 
+ 	table_size = sizeof(struct page_cgroup) * nr_pages;
+-
+-	base = __alloc_bootmem_node_nopanic(NODE_DATA(nid),
+-			table_size, PAGE_SIZE, __pa(MAX_DMA_ADDRESS));
+-	if (!base)
++	order = get_order(table_size);
++	page = alloc_pages_node(nid, GFP_NOWAIT | __GFP_ZERO, order);
++	if (!page)
++		page = alloc_pages_node(-1, GFP_NOWAIT | __GFP_ZERO, order);
++	if (!page)
+ 		return -ENOMEM;
++	base = page_address(page);
+ 	for (index = 0; index < nr_pages; index++) {
+ 		pc = base + index;
+ 		__init_page_cgroup(pc, start_pfn + index);
 
 
->
->
-> I think that input device should have better configuration support, like
-> generic way to set a keymap (raw->keycode) for a device, and the IR
-> timing can be set too.
-> And send normal keypreses.
->
-> Regards,
->        Maxim Levitsky
->
->
-
-
-
--- 
-Jon Smirl
-jonsmirl@gmail.com
