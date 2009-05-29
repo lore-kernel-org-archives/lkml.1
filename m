@@ -1,138 +1,236 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755676AbZE2CGQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755994AbZE2CGu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755676AbZE2CGQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 22:06:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751253AbZE2CGF
+	id S1755994AbZE2CGu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 22:06:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751732AbZE2CGm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 22:06:05 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:38616 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751011AbZE2CGE (ORCPT
+	Thu, 28 May 2009 22:06:42 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:63025 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751253AbZE2CGl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 22:06:04 -0400
-Date: Fri, 29 May 2009 11:04:30 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [BUG?] pipe close v.s. poll() can cause hang.
-Message-Id: <20090529110430.e962dd9f.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 28 May 2009 22:06:41 -0400
+Date: Thu, 28 May 2009 22:06:42 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: wuzhangjin@gmail.com
+cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org,
+       Wu Zhangjin <wuzj@lemote.com>, Ralf Baechle <ralf@linux-mips.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Nicholas Mc Guire <der.herr@hofr.at>
+Subject: Re: [PATCH v1 4/5] mips specific clock function to get precise
+ timestamp
+In-Reply-To: <d44adaf39284074c93a8dba0209da5b31d0d3c49.1243543471.git.wuzj@lemote.com>
+Message-ID: <alpine.DEB.2.00.0905282204060.11238@gandalf.stny.rr.com>
+References: <cover.1243543471.git.wuzj@lemote.com> <d44adaf39284074c93a8dba0209da5b31d0d3c49.1243543471.git.wuzj@lemote.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Hi, a user reporetd following issue.
-==
-  1. Assume there are 2 threads. Thread-A and Thread-B.
-  2. Thread-A creats pipe() => fd-for-read and fd-for-write are created.
-  3-a. Thread-A close fd-fow-write.
-  3-b. Thread-B wait for fd-for-read via poll().
-  4. Thread-A close fd-for-read.
-  5. thread-B's poll() cannot be waken up by event "4", sometimes.
-==
-It seems 3-a and 3-b occurs in racy condition.
+On Fri, 29 May 2009, wuzhangjin@gmail.com wrote:
 
-IIUC, following code
-==
- 638 static int
- 639 pipe_release(struct inode *inode, int decr, int decw)
- 640 {
- 641         struct pipe_inode_info *pipe;
- 642 
- 643         mutex_lock(&inode->i_mutex);
- 644         pipe = inode->i_pipe;
- 645         pipe->readers -= decr;
- 646         pipe->writers -= decw;
- 647 
- 648         if (!pipe->readers && !pipe->writers) {
- 649                 free_pipe_info(inode);
- 650         } else {
- 651                 wake_up_interruptible_sync(&pipe->wait);
- 652                 kill_fasync(&pipe->fasync_readers, SIGIO, POLL_IN);
- 653                 kill_fasync(&pipe->fasync_writers, SIGIO, POLL_OUT);
- 654         }
- 655         mutex_unlock(&inode->i_mutex);
- 656 
- 657         return 0;
- 658 }
-==
-Doesn't call any wake_up() if readers==0 && writers==0 even if
-there is a poll() waiter.
+> From: Wu Zhangjin <wuzj@lemote.com>
+> 
+> by default, ring_buffer_time_stamp calling sched_clock(jiffies-based)
+> function to get timestamp, in x86, there is a tsc(64bit) based
+> sched_clock, but in mips, the 'tsc'(clock counter) is only 32bit long,
+> which will easily rollover, and there is no precise sched_clock in mips,
+> we need to get one ourselves.
+> 
+> to avoid invading the whole linux-mips, i do not want to implement a
+> tsc-based native_sched_clock like x86 does. because, there is a need to
+> handling rollover of the only 32-bit long 'tsc' of mips, which will need
+> extra overhead. in reality, i have tried to implement one(just like the
+> ring_buffer_time_stamp here does), but make the kernel hangs when
+> booting, i am not sure why it not work.
+> 
+> herein, i just implement a mips-specific ring_buffer_time_stamp in
+> arch/mips/kernel/ftrace.c via adding  __attribute__((weak)) before
+> ring_buffer_time_stamp(...) {} in kernel/trace/ring_buffer.c and do
+> something in arch/mips/kernel/ftrace.c like this:
+> 
+> u64  ring_buffer_time_stamp \
+>        __attribute__((alias("native_ring_buffer_time_stamp")));
+> 
+> and, as the same, there is also a need to implement a mips-specific
+> trace_clock_local based on the above ring_buffer_timep_stamp, this clock
+> function is called in function graph tracer to get calltime & rettime of
+> a function.
+> 
+> and what about the trace_clock and trace_clock_global function, should
+> we also implement a mips-secific one? i am not sure.
+> 
+> Signed-off-by: Wu Zhangjin <wuzj@lemote.com>
+> ---
+>  arch/mips/kernel/Makefile       |    2 +
+>  arch/mips/kernel/csrc-r4k.c     |    2 +-
+>  arch/mips/kernel/ftrace_clock.c |   77 +++++++++++++++++++++++++++++++++++++++
+>  kernel/trace/ring_buffer.c      |    3 +-
+>  kernel/trace/trace_clock.c      |    2 +-
+>  5 files changed, 83 insertions(+), 3 deletions(-)
+>  create mode 100644 arch/mips/kernel/ftrace_clock.c
+> 
+> diff --git a/arch/mips/kernel/Makefile b/arch/mips/kernel/Makefile
+> index 6b1a8a5..5dec76f 100644
+> --- a/arch/mips/kernel/Makefile
+> +++ b/arch/mips/kernel/Makefile
+> @@ -12,6 +12,7 @@ ifdef CONFIG_FUNCTION_TRACER
+>  # Do not profile debug and lowlevel utilities
+>  CFLAGS_REMOVE_mcount.o = -pg
+>  CFLAGS_REMOVE_ftrace.o = -pg
+> +CFLAGS_REMOVE_ftrace_clock.o = -pg
+>  CFLAGS_REMOVE_early_printk.o = -pg
+>  endif
+>  
+> @@ -33,6 +34,7 @@ obj-$(CONFIG_MODULES)		+= mips_ksyms.o module.o
+>  
+>  obj-$(CONFIG_FUNCTION_TRACER)	+= mcount.o
+>  obj-$(CONFIG_FUNCTION_TRACER)	+= ftrace.o
+> +obj-$(CONFIG_NOP_TRACER)	+= ftrace_clock.o
+>  
+>  obj-$(CONFIG_CPU_LOONGSON2)	+= r4k_fpu.o r4k_switch.o
+>  obj-$(CONFIG_CPU_MIPS32)	+= r4k_fpu.o r4k_switch.o
+> diff --git a/arch/mips/kernel/csrc-r4k.c b/arch/mips/kernel/csrc-r4k.c
+> index e95a3cd..3da1c7a 100644
+> --- a/arch/mips/kernel/csrc-r4k.c
+> +++ b/arch/mips/kernel/csrc-r4k.c
+> @@ -10,7 +10,7 @@
+>  
+>  #include <asm/time.h>
+>  
+> -static cycle_t c0_hpt_read(struct clocksource *cs)
+> +static cycle_t notrace c0_hpt_read(struct clocksource *cs)
+>  {
+>  	return read_c0_count();
+>  }
+> diff --git a/arch/mips/kernel/ftrace_clock.c b/arch/mips/kernel/ftrace_clock.c
+> new file mode 100644
+> index 0000000..2f3b05a
+> --- /dev/null
+> +++ b/arch/mips/kernel/ftrace_clock.c
+> @@ -0,0 +1,77 @@
+> +/*
+> + * This file is subject to the terms and conditions of the GNU General Public
+> + * License.  See the file "COPYING" in the main directory of this archive for
+> + * more details.
+> + *
+> + * Copyright (C) 2009 DSLab, Lanzhou University, China
+> + * Author: Wu Zhangjin <wuzj@lemote.com>
+> + */
+> +
+> +#include <linux/types.h>
+> +#include <linux/sched.h>
+> +#include <linux/jiffies.h>
+> +#include <linux/clocksource.h>
+> +#include <linux/ring_buffer.h>
+> +
+> +/* Up this if you want to test the TIME_EXTENTS and normalization */
+> +#ifndef DEBUG_SHIFT
+> +#define DEBUG_SHIFT 0
+> +#endif
+> +
+> +/* mips-specific ring_buffer_time_stamp implementation,
+> + * the original one is defined in kernel/trace/ring_buffer.c
+> + */
+> +
+> +u64 native_ring_buffer_time_stamp(struct ring_buffer *buffer, int cpu)
+> +{
+> +	u64 current_cycles;
+> +	static unsigned long old_jiffies;
+> +	static u64 time, old_cycles;
+> +
+> +	preempt_disable_notrace();
+> +    /* update timestamp to avoid missing the timer interrupt */
+> +	if (time_before(jiffies, old_jiffies)) {
+> +		old_jiffies = jiffies;
+> +		time = sched_clock();
+> +		old_cycles = clock->cycle_last;
+> +	}
+> +	current_cycles = clock->read(clock);
+> +
+> +	time = (time + cyc2ns(clock, (current_cycles - old_cycles)
+> +				& clock->mask)) << DEBUG_SHIFT;
+> +
+> +	old_cycles = current_cycles;
+> +	preempt_enable_no_resched_notrace();
+> +
+> +	return time;
+> +}
+> +
+> +u64 ring_buffer_time_stamp(struct ring_buffer *buffer, int cpu)
+> +		__attribute__((alias("native_ring_buffer_time_stamp")));
+> +
+> +/*
+> + * native_trace_clock_local(): the simplest and least coherent tracing clock.
+> + *
+> + * Useful for tracing that does not cross to other CPUs nor
+> + * does it go through idle events.
+> + */
+> +u64 native_trace_clock_local(void)
+> +{
+> +	unsigned long flags;
+> +	u64 clock;
+> +
+> +	/*
+> +	 * sched_clock() is an architecture implemented, fast, scalable,
+> +	 * lockless clock. It is not guaranteed to be coherent across
+> +	 * CPUs, nor across CPU idle events.
+> +	 */
+> +	raw_local_irq_save(flags);
+> +	clock = ring_buffer_time_stamp(NULL, raw_smp_processor_id());
+> +	raw_local_irq_restore(flags);
+> +
+> +	return clock;
+> +}
+> +
+> +u64 trace_clock_local(void)
+> +		__attribute__((alias("native_trace_clock_local")));
+> +
+> diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
+> index 960cbf4..717bd8e 100644
+> --- a/kernel/trace/ring_buffer.c
+> +++ b/kernel/trace/ring_buffer.c
+> @@ -420,7 +420,8 @@ struct ring_buffer_iter {
+>  /* Up this if you want to test the TIME_EXTENTS and normalization */
+>  #define DEBUG_SHIFT 0
+>  
+> -u64 ring_buffer_time_stamp(struct ring_buffer *buffer, int cpu)
+> +u64 __attribute__((weak)) ring_buffer_time_stamp(struct ring_buffer *buffer,
+> +				int cpu)
+>  {
 
-Eeasy test program is below. hang_thread() will hang soon on SMP.
-This behavior seems to be from very old age...
+Note, you want to look at what is in tip:
 
-strace of sample program is below.
-==
-[pid 21616] pipe([3, 4])                = 0
-[pid 21616] futex(0x600cc0, FUTEX_WAKE_PRIVATE, 2147483647 <unfinished ...>
-[pid 21617] <... futex resumed> )       = 0
-[pid 21616] <... futex resumed> )       = 1
-[pid 21617] write(2, "!"..., 1!)         = 1
-[pid 21616] close(4 <unfinished ...>
-[pid 21617] poll([{fd=3, events=POLLIN}], 1, -1 <unfinished ...>
-[pid 21616] <... close resumed> )       = 0
-[pid 21616] close(3)                    = 0
-[pid 21616] write(2, "@"..., 1@)         = 1
-[pid 21616] pipe([3, 4])                = 0
-==
-Thread-A as pid 21616
-Thread-B as pid 21617 
+http://people.redhat.com/~mingo/tip.git/README
 
-fd=3 is reused but Thread-B just waits.
+The latest ftrace code is there. I changed the ring_buffer_time_stamp to 
+use an individule buffer clock, that defaults to trace_clock_local.
+Then only the trace_clock_local needs to be weak.
+
+-- Steve
 
 
-Thanks,
--Kame
-==
-#include <stdio.h>
-#include <pthread.h>
-#include <poll.h>
-#include <unistd.h>
-#include <pthread.h>
-#include <errno.h>
-
-int fds[2];
-pthread_barrier_t barrier;
-
-void *hang_thread(void*data)
-{
-        struct pollfd pollfds;
-        int ret;
-        char buf[32];
-
-        while (1) {
-                pthread_barrier_wait(&barrier);
-                fprintf(stderr, "!");
-                pollfds.fd = fds[0];
-                pollfds.events = POLLIN;
-                ret = poll(&pollfds, 1, -1);
-
-                if (pollfds.revents & POLLIN) {
-                        ret = read(fds[0], buf, sizeof(buf));
-                }
-        }
-}
-
-int main(int argc, char *argv[])
-{
-        pthread_t thread;
-        char buf[20];
-
-        pthread_barrier_init(&barrier, NULL, 2);
-        pthread_create(&thread, NULL, hang_thread, NULL);
-
-        while (1) {
-                pipe(fds);
-                pthread_barrier_wait(&barrier);
-                close(fds[1]);
-                close(fds[0]);
-                fprintf(stderr, "@");
-        }
-}
-
-
+>  	u64 time;
+>  
+> diff --git a/kernel/trace/trace_clock.c b/kernel/trace/trace_clock.c
+> index b588fd8..78c98c8 100644
+> --- a/kernel/trace/trace_clock.c
+> +++ b/kernel/trace/trace_clock.c
+> @@ -26,7 +26,7 @@
+>   * Useful for tracing that does not cross to other CPUs nor
+>   * does it go through idle events.
+>   */
+> -u64 notrace trace_clock_local(void)
+> +u64 __attribute__((weak)) notrace trace_clock_local(void)
+>  {
+>  	unsigned long flags;
+>  	u64 clock;
+> -- 
+> 1.6.0.4
+> 
+> 
