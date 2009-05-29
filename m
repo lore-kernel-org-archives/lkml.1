@@ -1,46 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759418AbZE2Sa1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761715AbZE2Sen@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759418AbZE2Sa1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 14:30:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753224AbZE2SaU
+	id S1761715AbZE2Sen (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 14:34:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752810AbZE2Sec
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 14:30:20 -0400
-Received: from outbound-mail-304.bluehost.com ([67.222.53.250]:53293 "HELO
-	outbound-mail-304.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752915AbZE2SaT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 14:30:19 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Subject:Message-ID:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=U0LQPhqyUFZhPrrOCbSrnF8iVqbuctUrf1mOkJRu/ivHMI5YkYIaXjKOJCZvsu+fJWHEAtigMrObYYycIHsizNMXo6w7vpKgleVXNCvzcDOrj8HSr8Q6EWnyuZBjU6yq;
-Date: Fri, 29 May 2009 11:30:10 -0700
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [git pull] PCI fix
-Message-ID: <20090529113010.07bfd717@jbarnes-x200>
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 80.67.104.110 authed with jbarnes@virtuousgeek.org}
+	Fri, 29 May 2009 14:34:32 -0400
+Received: from mail.windriver.com ([147.11.1.11]:64741 "EHLO mail.wrs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751363AbZE2Seb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 May 2009 14:34:31 -0400
+From: Jason Wessel <jason.wessel@windriver.com>
+To: greg@kroah.com
+Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+Subject: [PATCH 0/2] more usb sysrq improvements
+Date: Fri, 29 May 2009 13:34:15 -0500
+Message-Id: <1243622057-17671-1-git-send-email-jason.wessel@windriver.com>
+X-Mailer: git-send-email 1.6.3.1.9.g95405b
+X-OriginalArrivalTime: 29 May 2009 18:36:23.0968 (UTC) FILETIME=[5E58A200:01C9E08C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please consider pulling the PCI fixes from
-git://git.kernel.org/pub/scm/linux/kernel/git/jbarnes/pci-2.6 for-linus
-
-Includes an oops fix for the acpiphp module when both physical and
-logical hotplug are used.  There should be another one on its way from
-Len via the ACPI tree.
+This patch series is to add sysrq support for the pl2303 usb device
+and to stop sysrq processing on non-console usb serial ports.
 
 Thanks,
-Jesse
+Jason.
 
-Alex Chiang (1):
-      PCI Hotplug: acpiphp: don't store a pci_dev in acpiphp_func
 
- drivers/pci/hotplug/acpiphp.h      |    1 -
- drivers/pci/hotplug/acpiphp_glue.c |   63 +++++++++++++++---------------------
- 2 files changed, 26 insertions(+), 38 deletions(-)
+The short log and git info is below, which is against the 2.6.30
+development tree with the previous 4 accepted usb patches in the
+gregkh queue.
+
+The following changes since commit a425a638c858fd10370b573bde81df3ba500e271:
+are available in the git repository at:
+
+git://git.kernel.org/pub/scm/linux/kernel/git/jwessel/linux-2.6-kgdb.git for_gregkh_2
+
+Jason Wessel (2):
+      pl2303 usb_serial: implement sysrq handling on break
+      usb_serial: only allow sysrq on a console port
+
+ drivers/usb/serial/generic.c |    2 +-
+ drivers/usb/serial/pl2303.c  |    5 ++++-
+ 2 files changed, 5 insertions(+), 2 deletions(-)
