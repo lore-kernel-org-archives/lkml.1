@@ -1,75 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753907AbZE2CAQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755460AbZE2CAh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753907AbZE2CAQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 22:00:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752471AbZE2CAF
+	id S1755460AbZE2CAh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 22:00:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754357AbZE2CAR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 22:00:05 -0400
-Received: from mx-out2.daemonmail.net ([216.104.160.39]:38677 "EHLO
-	mx-out2.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751011AbZE2CAE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 22:00:04 -0400
-From: "Michael S. Zick" <lkml@morethan.org>
-Reply-To: lkml@morethan.org
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [Futex RFC] was Re: [BUG FIX] Make x86_32 uni-processor Atomic ops, Atomic
-Date: Thu, 28 May 2009 21:00:01 -0500
-User-Agent: KMail/1.9.9
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Harald Welte <HaraldWelte@viatech.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
-References: <200905221139.26941.lkml@morethan.org> <200905281555.00245.lkml@morethan.org> <200905281815.36728.lkml@morethan.org>
-In-Reply-To: <200905281815.36728.lkml@morethan.org>
+	Thu, 28 May 2009 22:00:17 -0400
+Received: from rs35.luxsci.com ([66.216.127.90]:43930 "EHLO rs35.luxsci.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754004AbZE2CAP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 22:00:15 -0400
+Message-ID: <4A1F4189.8060702@firmworks.com>
+Date: Fri, 29 May 2009 09:59:37 +0800
+From: Mitch Bradley <wmb@firmworks.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Grant Likely <grant.likely@secretlab.ca>,
+       Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
+       devicetree-discuss@ozlabs.org, linux-kernel@vger.kernel.org,
+       linux-arm-kernel@lists.arm.linux.org.uk
+Subject: Re: [RFC] [PATCH] Device Tree on ARM platform
+References: <20090527175609.GB31861@flint.arm.linux.org.uk>	<1243496236.3171.140.camel@pasglop>	<20090528091513.GA14789@n2100.arm.linux.org.uk>	<20090528.025739.16559619.davem@davemloft.net>	<gvlvcs$ub5$1@ger.gmane.org>	<fa686aa40905280713u2b3ef5fvbe3d58ccdb629b60@mail.gmail.com>	<1243549318.17903.9.camel@pasglop> <20090529013908.GA7831@yookeroo.seuss>
+In-Reply-To: <20090529013908.GA7831@yookeroo.seuss>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905282100.03577.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu May 28 2009, Michael S. Zick wrote:
-> 
-> Please, somebody apply an experienced eye-ball to this;
-> It does seem to make a difference, but tests have not run
-> for very long yet.
-> 
-> diff --git a/arch/x86/include/asm/futex.h b/arch/x86/include/asm/futex.h
-> index 1f11ce4..da3c801 100644
-> --- a/arch/x86/include/asm/futex.h
-> +++ b/arch/x86/include/asm/futex.h
-> @@ -19,7 +19,8 @@
->                      "\t.previous\n"                            \
->                      _ASM_EXTABLE(1b, 3b)                       \
->                      : "=r" (oldval), "=r" (ret), "+m" (*uaddr) \
-> -                    : "i" (-EFAULT), "0" (oparg), "1" (0))
-> +                    : "i" (-EFAULT), "0" (oparg), "1" (0)      \
-> +                    : "memory")
-> 
->  #define __futex_atomic_op2(insn, ret, oldval, uaddr, oparg)    \
->         asm volatile("1:\tmovl  %2, %0\n"                       \
-> @@ -35,7 +36,8 @@
->                      _ASM_EXTABLE(2b, 4b)                       \
->                      : "=&a" (oldval), "=&r" (ret),             \
->                        "+m" (*uaddr), "=&r" (tem)               \
-> -                    : "r" (oparg), "i" (-EFAULT), "1" (0))
-> +                    : "r" (oparg), "i" (-EFAULT), "1" (0)      \
-> +                    : "memory")
-> 
-> 
-> Mike
+I have an embeddable FCode interpreter that could be built into a 
+kernel.  Perhaps it's time to resurrect that.  The total size is on the 
+order of 50K with debugging tools included; probably more like 35K if 
+stripped down to just the essentials.
 
-Without the above annotations: C7-M/CX700 uptime while running 
-pulse-audio: 1 1/2 hrs.
-
-With the above annotations: C7-M/CX700 uptime, same test setup,
-maximum unknown, test terminated after 3 hours.
-
-On the C7-M/CN896 - maximum unknown, test terminated after 12 hrs.
-
-Sample build to be available tomorrow.
-
-Mike
