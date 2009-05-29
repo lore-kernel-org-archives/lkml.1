@@ -1,43 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754986AbZE2GXC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755300AbZE2G1F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754986AbZE2GXC (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 02:23:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752815AbZE2GWy
+	id S1755300AbZE2G1F (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 02:27:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753878AbZE2G04
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 02:22:54 -0400
-Received: from smtp2-g21.free.fr ([212.27.42.2]:60605 "EHLO smtp2-g21.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752429AbZE2GWx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 02:22:53 -0400
-To: Philipp Zabel <philipp.zabel@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Liam Girdwood <lrg@slimlogic.co.uk>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Eric Miao <eric.miao@marvell.com>
-Subject: Re: [PATCH 4/5] pxa/mioa701: add V3 gain configuration for Maxim 1586 voltage regulator
-References: <878wkibmv9.fsf@free.fr>
-	<1243487718-5423-3-git-send-email-philipp.zabel@gmail.com>
-From: Robert Jarzmik <robert.jarzmik@free.fr>
-Date: Fri, 29 May 2009 08:22:44 +0200
-In-Reply-To: <1243487718-5423-3-git-send-email-philipp.zabel@gmail.com> (Philipp Zabel's message of "Thu\, 28 May 2009 07\:15\:17 +0200")
-Message-ID: <87fxeov363.fsf@free.fr>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.3 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 29 May 2009 02:26:56 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:15184 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753454AbZE2G0z convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 May 2009 02:26:55 -0400
+Message-Id: <4A1F9C4F020000780000337B@vpn.id2.novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.0 
+Date: Fri, 29 May 2009 07:26:55 +0100
+From: "Jan Beulich" <JBeulich@novell.com>
+To: "Tejun Heo" <TeHeo@novell.com>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: Re: percpu memory setup and num_possible_cpus() vs. nr_cpu_ids
+References: <4A1EBA000200007800003197@vpn.id2.novell.com>
+ <4A1F2E6E.6030105@novell.com>
+In-Reply-To: <4A1F2E6E.6030105@novell.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Philipp Zabel <philipp.zabel@gmail.com> writes:
-
-> Maxim 1586 V3 gain can be configured by external resistors
-> (R24, R25) connected to the FB3 pin. To avoid accidental
-> overvoltage, it now requires this gain to be configured
-> explicitly.
+>>> Tejun Heo <teheo@novell.com> 29.05.09 02:38 >>>
+>There's other related larger issue.  It looks like possible but
+>offline configuration can be quite common with virtualization and
+>allocating for all possible cpus on boot can waste problematic amount
+>of space, so the plan is to allocate only for online cpus on boot and
+>allocate the rest as cpus come online.  This will require audit of
+>percpu users and probably a new cpumask representing cpus which have
+>ever been up.
 >
-> Signed-off-by: Philipp Zabel <philipp.zabel@gmail.com>
-Acked-by: Robert Jarzmik <robert.jarzmik@free.fr>
+>The issue you're describing should be solved when the above is
+>implemented, right?
 
-Cheers.
+Yes, I think so.
 
---
-Robert
+Jan
+
