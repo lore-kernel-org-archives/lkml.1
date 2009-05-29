@@ -1,54 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754829AbZE2VcL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753719AbZE2Vc6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754829AbZE2VcL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 17:32:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753717AbZE2Vb4
+	id S1753719AbZE2Vc6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 17:32:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753838AbZE2Vcv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 17:31:56 -0400
-Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:16428 "EHLO
-	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753403AbZE2Vbz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 17:31:55 -0400
-Date: Fri, 29 May 2009 16:32:18 -0500
-From: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: jens.axboe@oracle.com, andrew.patterson@hp.com,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       scameron@beardog.cca.cpqcorp.net
-Subject: Re: [PATCH v6] cciss: add cciss driver sysfs entries
-Message-ID: <20090529213218.GA20102@beardog.cca.cpqcorp.net>
-References: <20090413164524.17977.99322.stgit@bluto.andrew> <20090413164530.17977.32550.stgit@bluto.andrew> <20090528202124.GB4846@beardog.cca.cpqcorp.net> <20090529124813.689b7667.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 29 May 2009 17:32:51 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:43118 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753717AbZE2Vcv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 May 2009 17:32:51 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pascal Terjan <pterjan@mandriva.com>
+Subject: Re: Stable regression 2.6.29.3 vs 2.6.29.2
+Date: Fri, 29 May 2009 23:32:56 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc6-rjw; KDE/4.2.3; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, stable <stable@kernel.org>,
+       Yinghai Lu <yinghai@kernel.org>, Greg KH <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <1243625720.4426.0.camel@plop> <200905292147.05395.rjw@sisk.pl> <e8ca35370905291254o759dc18x8a6b318228c8ba4e@mail.gmail.com>
+In-Reply-To: <e8ca35370905291254o759dc18x8a6b318228c8ba4e@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090529124813.689b7667.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.9i
+Message-Id: <200905292332.57700.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 29, 2009 at 12:48:13PM -0700, Andrew Morton wrote:
-> On Thu, 28 May 2009 15:21:24 -0500
-> "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net> wrote:
+On Friday 29 May 2009, Pascal Terjan wrote:
+> 2009/5/29 Rafael J. Wysocki <rjw@sisk.pl>:
+> > On Friday 29 May 2009, Pascal Terjan wrote:
+> >> (Resending because of wrong To:, sorry for the duplicate)
+> >>
+> >> We have a machine here where hard disk is no longer detected at boot
+> >> time with 2.6.29.3 (it happens only on kernels with HIGHMEM4G + PAE and
+> >> not on the same one with HIGHMEM64G).
+> >>
+> >> Motherboard is ECS PF22 Extreme
+> >>
+> >> bisect blames this commit:
+> >>
+> >> http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.29.y.git;a=commit;h=3b442bfc78d351343fa539c63afde75d7b134316
+> >
+> > Would it be possible to check if the current mainline works correctly?
+> >
 > 
-> > From: Andrew Patterson <andrew.patterson@hp.com>
-> > 
-> > This patch adds sysfs entries to the cciss driver needed for the
-> > dm/multipath tools. A file for vendor, model, rev, and unique_id is
-> > added for each logical drive under directory
-> > /sys/bus/pci/devices/<dev>/ccissX/cXdY. Where X = the controller (or
-> > host) number and Y is the logical drive number. A link from
-> > /sys/bus/pci/devices/<dev>/ccissX/cXdY/block:cciss!cXdY to
-> > /sys/block/cciss!cXdY/device is also created. A bus is created
-> > in /sys/bus/cciss.  A link is created from the pci ccissX entry to
-> > /sys/bus/cciss/devices/ccissX.
-> > Please consider this for inclusion.
-> > 
-> > Signed-off-by: Mike Miller <mike.miller@hp.com>
-> 
-> Did Andrew's signed-off-by: get lost?
+> I'll do that on Tuesday (the machine is in the office)
 
-No, I converted it into the From: field. Another screw up, I guess.
+Great, thanks.
 
-mikem
+Rafael
