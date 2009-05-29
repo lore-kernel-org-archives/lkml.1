@@ -1,31 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751273AbZE2EGR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752534AbZE2ELR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751273AbZE2EGR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 00:06:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750816AbZE2EGB
+	id S1752534AbZE2ELR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 00:11:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751121AbZE2ELF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 00:06:01 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47090
+	Fri, 29 May 2009 00:11:05 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37837
 	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750798AbZE2EGA (ORCPT
+	by vger.kernel.org with ESMTP id S1751024AbZE2ELD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 00:06:00 -0400
-Date: Thu, 28 May 2009 21:05:59 -0700 (PDT)
-Message-Id: <20090528.210559.137121893.davem@davemloft.net>
-To: jeremy@goop.org
-Cc: mingo@elte.hu, dan.magenheimer@oracle.com, avi@redhat.com,
-       George.Dunlap@eu.citrix.com, xen-devel@lists.xensource.com,
-       x86@kernel.org, linux-kernel@vger.kernel.org, keir.fraser@eu.citrix.com,
-       torvalds@linux-foundation.org, gregkh@suse.de, kurt.hackel@oracle.com,
-       Ian.Pratt@citrix.com, xen-users@lists.xensource.com,
-       ksrinivasan@novell.com, EAnderson@novell.com, wimcoekaerts@wimmekes.net,
-       stephen.spector@citrix.com, jens.axboe@oracle.com, npiggin@suse.de
-Subject: Re: Xen is a feature
+	Fri, 29 May 2009 00:11:03 -0400
+Date: Thu, 28 May 2009 21:11:03 -0700 (PDT)
+Message-Id: <20090528.211103.226720983.davem@davemloft.net>
+To: benh@kernel.crashing.org
+Cc: wmb@firmworks.com, grant.likely@secretlab.ca, dbaryshkov@gmail.com,
+       devicetree-discuss@ozlabs.org, linux-kernel@vger.kernel.org,
+       linux-arm-kernel@lists.arm.linux.org.uk
+Subject: Re: [RFC] [PATCH] Device Tree on ARM platform
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <4A1F302E.8030501@goop.org>
-References: <162f4c90-6431-4a2a-b337-6d7451d7b11e@default>
-	<20090528001350.GD26820@elte.hu>
-	<4A1F302E.8030501@goop.org>
+In-Reply-To: <1243569136.17903.27.camel@pasglop>
+References: <20090529013908.GA7831@yookeroo.seuss>
+	<4A1F4189.8060702@firmworks.com>
+	<1243569136.17903.27.camel@pasglop>
 X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -34,27 +30,16 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-Date: Thu, 28 May 2009 17:45:34 -0700
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Fri, 29 May 2009 13:52:16 +1000
 
-> Ingo Molnar wrote:
->> Xen changes - especially dom0 - are overwhelmingly not about improving
->> Linux, but about having some special hook and extra treatment in
->> random places - and that's really bad.
->>   
-> 
-> You've made this argument a few times now, and I take exception to it.
-> 
-> It seems to be predicated on the idea that Xen has some kind of niche
-> usage, with barely more users than Voyager.  Or that it is a parasite
-> sitting on the side of Linux, being a pure drain.
+> But it comes with some drawbacks too... too often, this stuff will
+> replace good documentation, the scripts provided by the FW will be
+> busted in subtle ways that the kernel will have to work around, and thus
+> it can be used as a way to avoid documenting or open sourcing things and
+> obfuscating operations.
 
-I don't see Ingo's comments, whether I agree with them or not, as
-an implication of Xen being niche.  Rather I see his comments as
-an opposition to how Xen is implemented.
+We'll have all of the down sides of ACPI if we start doing stuff
+like this.
 
-> We're taking your technical critiques very seriously, of course, and I
-> appreciate any constructive comment.  But your baseline position of
-> animosity towards Xen is unreasonable, unfair and unnecessary.
-
-I don't see any animosity at all in what Ingo has said.
+Keep FCODE execution in the firmware itself, thanks.
