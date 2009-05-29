@@ -1,112 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762311AbZE2QG1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762322AbZE2QGi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762311AbZE2QG1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 12:06:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760341AbZE2QGT
+	id S1762322AbZE2QGi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 12:06:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762571AbZE2QGX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 12:06:19 -0400
-Received: from mail-px0-f123.google.com ([209.85.216.123]:48241 "EHLO
-	mail-px0-f123.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760223AbZE2QGT (ORCPT
+	Fri, 29 May 2009 12:06:23 -0400
+Received: from rcsinet11.oracle.com ([148.87.113.123]:47798 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762327AbZE2QGW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 12:06:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
-         :organization:date:message-id:mime-version:x-mailer
-         :content-transfer-encoding;
-        b=OwbyrvpEb0L9JpQpW5ttPB+szLt1eINn9NCCcu5lweDhYmQtNXIg2qzkAusGMh99T3
-         r6J+AG4AwTJFotqLNbxGGxbwOyEG9v65MWmP9KcBH1ApQ5RBZWFndK9JjI4E1ToRgtQu
-         12ADafKeZF3HqWoHiF4QR0ym+nEKAkDV3Alcw=
-Subject: Re: [PATCH v2 2/6] mips dynamic function tracer support
-From: Wu Zhangjin <wuzhangjin@gmail.com>
-Reply-To: wuzhangjin@gmail.com
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org,
-       Ralf Baechle <ralf@linux-mips.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Nicholas Mc Guire <der.herr@hofr.at>
-In-Reply-To: <alpine.DEB.2.00.0905291122260.31247@gandalf.stny.rr.com>
-References: <cover.1243604390.git.wuzj@lemote.com>
-	 <a00a91f6fc79b7d20b5b2193086e879dcafded46.1243604390.git.wuzj@lemote.com>
-	 <alpine.DEB.2.00.0905291122260.31247@gandalf.stny.rr.com>
-Content-Type: text/plain
-Organization: DSLab, Lanzhou University, China
-Date: Sat, 30 May 2009 00:06:06 +0800
-Message-Id: <1243613166.18071.1.camel@falcon>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Fri, 29 May 2009 12:06:22 -0400
+Message-ID: <4A20089F.9050409@oracle.com>
+Date: Fri, 29 May 2009 09:09:03 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: akpm@linux-foundation.org
+CC: linux-kernel@vger.kernel.org, Eric Piel <eric.piel@tremplin-utc.net>
+Subject: [PATCH -mmotm] lis3: uses input polldev functions
+References: <200905290052.n4T0q4Eo005253@imap1.linux-foundation.org>
+In-Reply-To: <200905290052.n4T0q4Eo005253@imap1.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Source-IP: abhmt002.oracle.com [141.146.116.11]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A01020A.4A2007F2.0041:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-05-29 at 11:24 -0400, Steven Rostedt wrote:
-> On Fri, 29 May 2009, wuzhangjin@gmail.com wrote:
-> > diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
-> > index 409596e..a5d2ace 100755
-> > --- a/scripts/recordmcount.pl
-> > +++ b/scripts/recordmcount.pl
-> > @@ -213,6 +213,17 @@ if ($arch eq "x86_64") {
-> >      if ($is_module eq "0") {
-> >          $cc .= " -mconstant-gp";
-> >      }
-> > +
-> > +} elsif ($arch eq "mips") {
-> > +	$mcount_regex = "^\\s*([0-9a-fA-F]+):.*\\s_mcount\$";
-> > +	$ld .= " -melf".$bits."btsmip";
-> > +
-> > +	$cc .= " -mno-abicalls -fno-pic ";
-> > +
-> > +    if ($bits == 64) {
-> > +		$type = ".dword";
-> > +    }
-> > +
-> >  } else {
-> >      die "Arch $arch is not supported with CONFIG_FTRACE_MCOUNT_RECORD";
-> >  }
-> > @@ -441,12 +452,12 @@ if ($#converts >= 0) {
-> >      #
-> >      # Step 5: set up each local function as a global
-> >      #
-> > -    `$objcopy $globallist $inputfile $globalobj`;
-> > +    `$objcopy $globallist $inputfile $globalobj 2>&1 >/dev/null`;
-> >  
-> >      #
-> >      # Step 6: Link the global version to our list.
-> >      #
-> > -    `$ld -r $globalobj $mcount_o -o $globalmix`;
-> > +    `$ld -r $globalobj $mcount_o -o $globalmix 2>&1 >/dev/null`;
-> 
-> We still need to find out why these are giving errors. I don't like the 
-> idea of hiding errors that might be useful. The better way is to change 
-> the code to avoid having any warnings or errors.
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-get it :-)
-I'm tuning it currently. 
+This driver uses input-polldev (library) functions, so it needs
+to select that kconfig symbol so that it builds without errors.
 
-thanks!
-Wu Zhangjin
-> 
-> -- Steve
-> 
-> 
-> >  
-> >      #
-> >      # Step 7: Convert the local functions back into local symbols
-> > @@ -454,7 +465,7 @@ if ($#converts >= 0) {
-> >      `$objcopy $locallist $globalmix $inputfile`;
-> >  
-> >      # Remove the temp files
-> > -    `$rm $globalobj $globalmix`;
-> > +    `$rm $globalobj $globalmix 2>&1 >/dev/null`;
-> >  
-> >  } else {
-> >  
-> > -- 
-> > 1.6.0.4
-> > 
-> > 
+drivers/built-in.o: In function `lis3lv02d_joystick_disable':
+(.text+0x19d9d0): undefined reference to `input_unregister_polled_device'
+drivers/built-in.o: In function `lis3lv02d_joystick_enable':
+(.text+0x19d9fc): undefined reference to `input_allocate_polled_device'
+drivers/built-in.o: In function `lis3lv02d_joystick_enable':
+(.text+0x19daaf): undefined reference to `input_register_polled_device'
+drivers/built-in.o: In function `lis3lv02d_joystick_enable':
+(.text+0x19dabf): undefined reference to `input_free_polled_device'
 
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Eric Piel <eric.piel@tremplin-utc.net>
+---
+ drivers/hwmon/Kconfig |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- mmotm-2009-0528-1748.orig/drivers/hwmon/Kconfig
++++ mmotm-2009-0528-1748/drivers/hwmon/Kconfig
+@@ -950,6 +950,7 @@ config SENSORS_HDAPS
+ config SENSORS_LIS3LV02D
+ 	tristate "STMicroeletronics LIS3LV02Dx three-axis digital accelerometer"
+ 	depends on ACPI && INPUT
++	select INPUT_POLLDEV
+ 	select NEW_LEDS
+ 	select LEDS_CLASS
+ 	default n
+
+
+-- 
+~Randy
+LPC 2009, Sept. 23-25, Portland, Oregon
+http://linuxplumbersconf.org/2009/
