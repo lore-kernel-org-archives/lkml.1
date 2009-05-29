@@ -1,315 +1,382 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754397AbZE1XxX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753049AbZE2AAz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754397AbZE1XxX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 19:53:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753454AbZE1Xwx
+	id S1753049AbZE2AAz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 20:00:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751658AbZE2AAq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 19:52:53 -0400
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:51618 "EHLO e9.ny.us.ibm.com"
+	Thu, 28 May 2009 20:00:46 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:54027 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754093AbZE1Xwt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 19:52:49 -0400
-Date: Thu, 28 May 2009 16:52:49 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Lai Jiangshan <laijs@cn.fujitsu.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, netfilter-devel@vger.kernel.org, mingo@elte.hu,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       davem@davemloft.net, dada1@cosmosbay.com, zbr@ioremap.net,
-       jeff.chua.linux@gmail.com, paulus@samba.org, jengelh@medozas.de,
-       r000n@r000n.net, benh@kernel.crashing.org
-Subject: Re: [PATCH RFC] v7 expedited "big hammer" RCU grace periods
-Message-ID: <20090528235249.GD6757@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <4A1A3C23.8090004@cn.fujitsu.com> <20090525164446.GD7168@linux.vnet.ibm.com> <4A1B3FFB.7090306@cn.fujitsu.com> <20090526012843.GF7168@linux.vnet.ibm.com> <20090526154625.GA8662@linux.vnet.ibm.com> <20090526164129.GA19443@Krystal> <20090526181352.GA7006@linux.vnet.ibm.com> <20090527014725.GD29692@Krystal> <20090527042749.GC6882@linux.vnet.ibm.com> <20090527144554.GB16459@Krystal>
+	id S1751783AbZE2AAp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 20:00:45 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+Subject: [PATCH -tip v8 6/7] tracing: ftrace dynamic ftrace_event_call support
+To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Cc: systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       Tom Zanussi <tzanussi@gmail.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Date: Thu, 28 May 2009 20:03:51 -0400
+Message-ID: <20090529000350.17532.18182.stgit@localhost.localdomain>
+In-Reply-To: <20090529000326.17532.70868.stgit@localhost.localdomain>
+References: <20090529000326.17532.70868.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090527144554.GB16459@Krystal>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 27, 2009 at 10:45:54AM -0400, Mathieu Desnoyers wrote:
-> * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > On Tue, May 26, 2009 at 09:47:26PM -0400, Mathieu Desnoyers wrote:
-> > > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > > > On Tue, May 26, 2009 at 12:41:29PM -0400, Mathieu Desnoyers wrote:
-> > > > > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > > > > > On Mon, May 25, 2009 at 06:28:43PM -0700, Paul E. McKenney wrote:
-> > > > > > > On Tue, May 26, 2009 at 09:03:55AM +0800, Lai Jiangshan wrote:
-> > > > > > > > Paul E. McKenney wrote:
-> > > > > > > > > 
-> > > > > > > > > Good point -- I should at the very least add a comment to
-> > > > > > > > > synchronize_sched_expedited() stating that it cannot be called holding
-> > > > > > > > > any lock that is acquired in a CPU hotplug notifier.  If this restriction
-> > > > > > > > > causes any problems, then your approach seems like a promising fix.
-> > > > > > > > 
-> > > > > > > > Reviewed-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-> > > > > > > 
-> > > > > > > Thank you very much for your review and comments!!!
-> > > > > > > 
-> > > > > > > > >> The coupling of synchronize_sched_expedited() and migration_req
-> > > > > > > > >> is largely increased:
-> > > > > > > > >>
-> > > > > > > > >> 1) The offline cpu's per_cpu(rcu_migration_req, cpu) is handled.
-> > > > > > > > >>    See migration_call::CPU_DEAD
-> > > > > > > > > 
-> > > > > > > > > Good.  ;-)
-> > > > > > > > > 
-> > > > > > > > >> 2) migration_call() is the highest priority of cpu notifiers,
-> > > > > > > > >>    So even any other cpu notifier calls synchronize_sched_expedited(),
-> > > > > > > > >>    It'll not cause DEADLOCK.
-> > > > > > > > > 
-> > > > > > > > > You mean if using your preempt_disable() approach, right?  Unless I am
-> > > > > > > > > missing something, the current get_online_cpus() approach would deadlock
-> > > > > > > > > in this case.
-> > > > > > > > 
-> > > > > > > > Yes, I mean if using my preempt_disable() approach. The current
-> > > > > > > > get_online_cpus() approach would NOT deadlock in this case also,
-> > > > > > > > we can require get_online_cpus() in cpu notifiers.
-> > > > > > > 
-> > > > > > > I have added the comment for the time being, but should people need to
-> > > > > > > use this in CPU-hotplug notifiers, then again your preempt_disable()
-> > > > > > > approach looks to be a promising fix.
-> > > > > > 
-> > > > > > I looked more closely at your preempt_disable() suggestion, which you
-> > > > > > presented earlier as follows:
-> > > > > > 
-> > > > > > > I think we can reuse req->dest_cpu and remove get_online_cpus().
-> > > > > > > (and use preempt_disable() and for_each_possible_cpu())
-> > > > > > > 
-> > > > > > > req->dest_cpu = -2 means @req is not queued
-> > > > > > > req->dest_cpu = -1 means @req is queued
-> > > > > > > 
-> > > > > > > a little like this code:
-> > > > > > > 
-> > > > > > > 	mutex_lock(&rcu_sched_expedited_mutex);
-> > > > > > > 	for_each_possible_cpu(cpu) {
-> > > > > > > 		preempt_disable()
-> > > > > > > 		if (cpu is not online)
-> > > > > > > 			just set req->dest_cpu to -2;
-> > > > > > > 		else
-> > > > > > > 			init and queue req, and wake_up_process().
-> > > > > > > 		preempt_enable()
-> > > > > > > 	}
-> > > > > > > 	for_each_possible_cpu(cpu) {
-> > > > > > > 		if (req is queued)
-> > > > > > > 			wait_for_completion().
-> > > > > > > 	}
-> > > > > > > 	mutex_unlock(&rcu_sched_expedited_mutex);
-> > > > > > 
-> > > > > > I am concerned about the following sequence of events:
-> > > > > > 
-> > > > > > o	synchronize_sched_expedited() disables preemption, thus blocking
-> > > > > > 	offlining operations.
-> > > > > > 
-> > > > > > o	CPU 1 starts offlining CPU 0.  It acquires the CPU-hotplug lock,
-> > > > > > 	and proceeds, and is now waiting for preemption to be enabled.
-> > > > > > 
-> > > > > > o	synchronize_sched_expedited() disables preemption, sees
-> > > > > > 	that CPU 0 is online, so initializes and queues a request,
-> > > > > > 	does a wake-up-process(), and finally does a preempt_enable().
-> > > > > > 
-> > > > > > o	CPU 0 is currently running a high-priority real-time process,
-> > > > > > 	so the wakeup does not immediately happen.
-> > > > > > 
-> > > > > > o	The offlining process completes, including the kthread_stop()
-> > > > > > 	to the migration task.
-> > > > > > 
-> > > > > > o	The migration task wakes up, sees kthread_should_stop(),
-> > > > > > 	and so exits without checking its queue.
-> > > > > > 
-> > > > > > o	synchronize_sched_expedited() waits forever for CPU 0 to respond.
-> > > > > > 
-> > > > > > I suppose that one way to handle this would be to check for the CPU
-> > > > > > going offline before doing the wait_for_completion(), but I am concerned
-> > > > > > about races affecting this check as well.
-> > > > > > 
-> > > > > > Or is there something in the CPU-offline process that makes the above
-> > > > > > sequence of events impossible?
-> > > > > > 
-> > > > > 
-> > > > > I think you are right, there is a problem there. The simple fact that
-> > > > > this needs to disable preemption to protect against cpu hotplug seems a
-> > > > > bit strange. If I may propose an alternate solution, which assumes that
-> > > > > threads pinned to a CPU are migrated to a different CPU when a CPU goes
-> > > > > offline (and will therefore execute anyway), and that a CPU brought
-> > > > > online after the first iteration on online cpus was already quiescent
-> > > > > (hopefully my assumptions are right). Preemption is left enabled during
-> > > > > all the critical section.
-> > > > > 
-> > > > > It looks a lot like Lai's approach, except that I use a cpumask (I
-> > > > > thought it looked cleaner and typically involves less operations than
-> > > > > looping on each possible cpu). I also don't disable preemption and
-> > > > > assume that cpu hotplug can happen at any point during this critical
-> > > > > section.
-> > > > > 
-> > > > > Something along the lines of :
-> > > > > 
-> > > > > static DECLARE_BITMAP(cpu_wait_expedited_bits, CONFIG_NR_CPUS);
-> > > > > const struct cpumask *const cpu_wait_expedited_mask =
-> > > > > 			to_cpumask(cpu_wait_expedited_bits);
-> > > > > 
-> > > > > 	mutex_lock(&rcu_sched_expedited_mutex);
-> > > > > 	cpumask_clear(cpu_wait_expedited_mask);
-> > > > > 	for_each_online_cpu(cpu) {
-> > > > > 		init and queue cpu req, and wake_up_process().
-> > > > > 		cpumask_set_cpu(cpu, cpu_wait_expedited_mask);
-> > > > > 	}
-> > > > > 	for_each_cpu_mask(cpu, cpu_wait_expedited_mask) {
-> > > > > 		wait_for_completion(cpu req);
-> > > > > 	}
-> > > > > 	mutex_unlock(&rcu_sched_expedited_mutex);
-> > > > > 
-> > > > > There is one concern with this approach : if a CPU is hotunplugged and
-> > > > > hotplugged during the critical section, I think the scheduler would
-> > > > > migrate the thread to a different CPU (upon hotunplug) and let the
-> > > > > thread run on this other CPU. If the target CPU is hotplugged again,
-> > > > > this would mean the thread would have run on a different CPU than the
-> > > > > target. I think we can argue that a CPU going offline and online again
-> > > > > will meet quiescent state requirements, so this should not be a problem.
-> > > > 
-> > > > Having the task runnable on some other CPU is very scary to me.  If the
-> > > > CPU comes back online, and synchronize_sched_expedited() manages to
-> > > > run before the task gets migrated back onto that CPU, then the grace
-> > > > period could be ended too soon.
-> > > > 
-> > > 
-> > > Well, the idea is that we want all in-flight preempt off sections (as
-> > > seen at the beginning of synchronize_sched_expedited()) to be over
-> > > before we consider the grace period as ended, right ?
-> > > 
-> > > Let's say we read the cpu online mask at a given time (potentially non
-> > > atomically, we don't really care).
-> > > 
-> > > If, at any point in time while we read the cpu online mask, a CPU
-> > > appears to be offline, this means that it cannot hold any in-flight
-> > > preempt off section.
-> > > 
-> > > Even if that specific CPU comes back online after this moment, and
-> > > starts scheduling threads again, these threads cannot ever possibly be
-> > > in-flight in the old grace period.
-> > > 
-> > > Therefore, my argument is that for rcu_sched (classic rcu), a CPU going
-> > > back online while we wait for quiescent state cannot possibly ever start
-> > > running a thread in the previous grace period.
-> > > 
-> > > My second argument is that if a CPU is hotunplugging while we wait for
-> > > QS, either :
-> > > 
-> > > - It lets the completion thread run before it goes offline. That's fine
-> > > - It goes offline and the completion thread is migrated to another CPU.
-> > >   This will just make synchronize_sched_expedited() wait for one more
-> > >   completion that will execute on the CPU the thread has migrated to.
-> > >   Again, we don't care.
-> > > - It goes offline/online/offline/online/... : We go back to my first
-> > >   argument, which states that if a CPU is out of the cpu online mask at
-> > >   any given time after we started the synchronize_sched_expedited()
-> > >   execution, it cannot possibly hold an in-flight preempt off section
-> > >   belonging to the old GP.
-> > > 
-> > > Or am I missing something ?
-> > 
-> > I am worried (perhaps unnecessarily) about the CPU coming online,
-> > its kthread still running on some other CPU, someone doing a
-> > synchronize_sched_expedited(), which then might possibly complete before
-> > the kthread migrates back where it belongs.  If the newly onlined CPU is
-> > in an extended RCU read-side critical section, we might end the expedited
-> > grace period too soon.
-> > 
-> > My turn.  Am I missing something?  ;-)
-> > 
-> 
-> If the completion kthreads only live within the boundary of the 
-> rcu_sched_expedited_mutex critical section, we never face this problem.
-> 
-> Therefore, all kthreads created for a given expedited grace period
-> should be waited for before the rcu_sched_expedited_mutex is released.
+Add dynamic ftrace_event_call support to ftrace. Trace engines can adds new
+ftrace_event_call to ftrace on the fly. Each operator functions of the call
+takes a ftrace_event_call data structure as an argument, because these
+functions may be shared among several ftrace_event_calls.
 
-True, but the overhead of creating (say) 100 kthreads is not so consistent
-with the "expedited" in synchronize_sched_expedited().
+Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Tom Zanussi <tzanussi@gmail.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+---
 
-> Here, I don't know the specific behavior of the threads you are willing
-> to use, but I see two possibilities when facing cpu hotplug :
-> 
-> - Either those threads are always active in the system, _really_ tied to
->   a CPU and the hotunplug event kills them and sends their completion.
->   (this is I think what Lai described)
+ include/linux/ftrace_event.h |   13 ++++++----
+ include/trace/ftrace.h       |   22 +++++++++--------
+ kernel/trace/trace_events.c  |   54 +++++++++++++++++++++++++++++-------------
+ kernel/trace/trace_export.c  |   27 ++++++++++-----------
+ 4 files changed, 69 insertions(+), 47 deletions(-)
 
-Yep.  And this is what v7 of the patch did.  Lai would like me to get
-rid of the get_online_cpus(), replacing it with preempt_disable().
-Which I find to be incredibly scary, given the possibility of the
-kthread somehow executing on some other CPU, thus breaking RCU.
+diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
+index bbf40f6..e25f3a4 100644
+--- a/include/linux/ftrace_event.h
++++ b/include/linux/ftrace_event.h
+@@ -108,12 +108,13 @@ struct ftrace_event_call {
+ 	struct dentry		*dir;
+ 	struct trace_event	*event;
+ 	int			enabled;
+-	int			(*regfunc)(void);
+-	void			(*unregfunc)(void);
++	int			(*regfunc)(struct ftrace_event_call *);
++	void			(*unregfunc)(struct ftrace_event_call *);
+ 	int			id;
+-	int			(*raw_init)(void);
+-	int			(*show_format)(struct trace_seq *s);
+-	int			(*define_fields)(void);
++	int			(*raw_init)(struct ftrace_event_call *);
++	int			(*show_format)(struct ftrace_event_call *,
++					       struct trace_seq *);
++	int			(*define_fields)(struct ftrace_event_call *);
+ 	struct list_head	fields;
+ 	int			filter_active;
+ 	void			*filter;
+@@ -138,6 +139,8 @@ extern int filter_current_check_discard(struct ftrace_event_call *call,
+ 
+ extern int trace_define_field(struct ftrace_event_call *call, char *type,
+ 			      char *name, int offset, int size, int is_signed);
++extern int trace_add_event_call(struct ftrace_event_call *call);
++extern void trace_remove_event_call(struct ftrace_event_call *call);
+ 
+ #define is_signed_type(type)	(((type)(-1)) < 0)
+ 
+diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
+index b4ec83a..de3ee7c 100644
+--- a/include/trace/ftrace.h
++++ b/include/trace/ftrace.h
+@@ -229,7 +229,8 @@ ftrace_raw_output_##call(struct trace_iterator *iter, int flags)	\
+ #undef TRACE_EVENT
+ #define TRACE_EVENT(call, proto, args, tstruct, func, print)		\
+ static int								\
+-ftrace_format_##call(struct trace_seq *s)				\
++ftrace_format_##call(struct ftrace_event_call *event_call,		\
++		     struct trace_seq *s)				\
+ {									\
+ 	struct ftrace_raw_##call field __attribute__((unused));		\
+ 	int ret = 0;							\
+@@ -269,10 +270,9 @@ ftrace_format_##call(struct trace_seq *s)				\
+ #undef TRACE_EVENT
+ #define TRACE_EVENT(call, proto, args, tstruct, func, print)		\
+ int									\
+-ftrace_define_fields_##call(void)					\
++ftrace_define_fields_##call(struct ftrace_event_call *event_call)	\
+ {									\
+ 	struct ftrace_raw_##call field;					\
+-	struct ftrace_event_call *event_call = &event_##call;		\
+ 	int ret;							\
+ 									\
+ 	__common_field(int, type, 1);					\
+@@ -298,7 +298,7 @@ ftrace_define_fields_##call(void)					\
+  *	event_trace_printk(_RET_IP_, "<call>: " <fmt>);
+  * }
+  *
+- * static int ftrace_reg_event_<call>(void)
++ * static int ftrace_reg_event_<call>(struct ftrace_event_call *dummy)
+  * {
+  *	int ret;
+  *
+@@ -309,7 +309,7 @@ ftrace_define_fields_##call(void)					\
+  *	return ret;
+  * }
+  *
+- * static void ftrace_unreg_event_<call>(void)
++ * static void ftrace_unreg_event_<call>(struct ftrace_event_call *dummy)
+  * {
+  *	unregister_trace_<call>(ftrace_event_<call>);
+  * }
+@@ -342,7 +342,7 @@ ftrace_define_fields_##call(void)					\
+  *	trace_current_buffer_unlock_commit(event, irq_flags, pc);
+  * }
+  *
+- * static int ftrace_raw_reg_event_<call>(void)
++ * static int ftrace_raw_reg_event_<call>(struct ftrace_event_call *dummy)
+  * {
+  *	int ret;
+  *
+@@ -353,7 +353,7 @@ ftrace_define_fields_##call(void)					\
+  *	return ret;
+  * }
+  *
+- * static void ftrace_unreg_event_<call>(void)
++ * static void ftrace_unreg_event_<call>(struct ftrace_event_call *dummy)
+  * {
+  *	unregister_trace_<call>(ftrace_raw_event_<call>);
+  * }
+@@ -362,7 +362,7 @@ ftrace_define_fields_##call(void)					\
+  *	.trace			= ftrace_raw_output_<call>, <-- stage 2
+  * };
+  *
+- * static int ftrace_raw_init_event_<call>(void)
++ * static int ftrace_raw_init_event_<call>(struct ftrace_event_call *dummy)
+  * {
+  *	int id;
+  *
+@@ -477,7 +477,7 @@ static void ftrace_raw_event_##call(proto)				\
+ 		trace_nowake_buffer_unlock_commit(event, irq_flags, pc); \
+ }									\
+ 									\
+-static int ftrace_raw_reg_event_##call(void)				\
++static int ftrace_raw_reg_event_##call(struct ftrace_event_call *dummy)	\
+ {									\
+ 	int ret;							\
+ 									\
+@@ -488,7 +488,7 @@ static int ftrace_raw_reg_event_##call(void)				\
+ 	return ret;							\
+ }									\
+ 									\
+-static void ftrace_raw_unreg_event_##call(void)				\
++static void ftrace_raw_unreg_event_##call(struct ftrace_event_call *dummy)\
+ {									\
+ 	unregister_trace_##call(ftrace_raw_event_##call);		\
+ }									\
+@@ -497,7 +497,7 @@ static struct trace_event ftrace_event_type_##call = {			\
+ 	.trace			= ftrace_raw_output_##call,		\
+ };									\
+ 									\
+-static int ftrace_raw_init_event_##call(void)				\
++static int ftrace_raw_init_event_##call(struct ftrace_event_call *dummy)\
+ {									\
+ 	int id;								\
+ 									\
+diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
+index 6c81f9c..5d0a324 100644
+--- a/kernel/trace/trace_events.c
++++ b/kernel/trace/trace_events.c
+@@ -60,9 +60,7 @@ err:
+ }
+ EXPORT_SYMBOL_GPL(trace_define_field);
+ 
+-#ifdef CONFIG_MODULES
+-
+-static void trace_destroy_fields(struct ftrace_event_call *call)
++void trace_destroy_fields(struct ftrace_event_call *call)
+ {
+ 	struct ftrace_event_field *field, *next;
+ 
+@@ -74,8 +72,6 @@ static void trace_destroy_fields(struct ftrace_event_call *call)
+ 	}
+ }
+ 
+-#endif /* CONFIG_MODULES */
+-
+ static void ftrace_event_enable_disable(struct ftrace_event_call *call,
+ 					int enable)
+ {
+@@ -84,14 +80,14 @@ static void ftrace_event_enable_disable(struct ftrace_event_call *call,
+ 		if (call->enabled) {
+ 			call->enabled = 0;
+ 			tracing_stop_cmdline_record();
+-			call->unregfunc();
++			call->unregfunc(call);
+ 		}
+ 		break;
+ 	case 1:
+ 		if (!call->enabled) {
+ 			call->enabled = 1;
+ 			tracing_start_cmdline_record();
+-			call->regfunc();
++			call->regfunc(call);
+ 		}
+ 		break;
+ 	}
+@@ -558,7 +554,7 @@ event_format_read(struct file *filp, char __user *ubuf, size_t cnt,
+ 	trace_seq_printf(s, "format:\n");
+ 	trace_write_header(s);
+ 
+-	r = call->show_format(s);
++	r = call->show_format(call, s);
+ 	if (!r) {
+ 		/*
+ 		 * ug!  The format output is bigger than a PAGE!!
+@@ -905,7 +901,7 @@ event_create_dir(struct ftrace_event_call *call, struct dentry *d_events,
+ 		d_events = event_subsystem_dir(call->system, d_events);
+ 
+ 	if (call->raw_init) {
+-		ret = call->raw_init();
++		ret = call->raw_init(call);
+ 		if (ret < 0) {
+ 			pr_warning("Could not initialize trace point"
+ 				   " events/%s\n", call->name);
+@@ -929,7 +925,7 @@ event_create_dir(struct ftrace_event_call *call, struct dentry *d_events,
+ 					  id);
+ 
+ 	if (call->define_fields) {
+-		ret = call->define_fields();
++		ret = call->define_fields(call);
+ 		if (ret < 0) {
+ 			pr_warning("Could not initialize trace point"
+ 				   " events/%s\n", call->name);
+@@ -949,6 +945,36 @@ event_create_dir(struct ftrace_event_call *call, struct dentry *d_events,
+ 	return 0;
+ }
+ 
++/* Add an additional event_call dynamically */
++int trace_add_event_call(struct ftrace_event_call *call)
++{
++	struct dentry *d_events;
++
++	if (!call->name)
++		return -EINVAL;
++
++	d_events = event_trace_events_dir();
++	if (!d_events)
++		return -ENOENT;
++
++	list_add(&call->list, &ftrace_events);
++	return event_create_dir(call, d_events, &ftrace_event_id_fops,
++				&ftrace_enable_fops, &ftrace_event_filter_fops,
++				&ftrace_event_format_fops);
++}
++
++/* Remove an event_call */
++void trace_remove_event_call(struct ftrace_event_call *event_call)
++{
++	ftrace_event_enable_disable(event_call, 0);
++	if (event_call->event)
++		unregister_ftrace_event(event_call->event);
++	debugfs_remove_recursive(event_call->dir);
++	list_del(&event_call->list);
++	trace_destroy_fields(event_call);
++	destroy_preds(event_call);
++}
++
+ #define for_each_event(event, start, end)			\
+ 	for (event = start;					\
+ 	     (unsigned long)event < (unsigned long)end;		\
+@@ -1053,13 +1079,7 @@ static void trace_module_remove_events(struct module *mod)
+ 	list_for_each_entry_safe(call, p, &ftrace_events, list) {
+ 		if (call->mod == mod) {
+ 			found = true;
+-			ftrace_event_enable_disable(call, 0);
+-			if (call->event)
+-				unregister_ftrace_event(call->event);
+-			debugfs_remove_recursive(call->dir);
+-			list_del(&call->list);
+-			trace_destroy_fields(call);
+-			destroy_preds(call);
++			trace_remove_event_call(call);
+ 		}
+ 	}
+ 
+diff --git a/kernel/trace/trace_export.c b/kernel/trace/trace_export.c
+index d06cf89..7cee79d 100644
+--- a/kernel/trace/trace_export.c
++++ b/kernel/trace/trace_export.c
+@@ -60,7 +60,7 @@ extern void __bad_type_size(void);
+ #undef TRACE_EVENT_FORMAT
+ #define TRACE_EVENT_FORMAT(call, proto, args, fmt, tstruct, tpfmt)	\
+ static int								\
+-ftrace_format_##call(struct trace_seq *s)				\
++ftrace_format_##call(struct ftrace_event_call *dummy, struct trace_seq *s)\
+ {									\
+ 	struct args field;						\
+ 	int ret;							\
+@@ -76,7 +76,7 @@ ftrace_format_##call(struct trace_seq *s)				\
+ #define TRACE_EVENT_FORMAT_NOFILTER(call, proto, args, fmt, tstruct,	\
+ 				    tpfmt)				\
+ static int								\
+-ftrace_format_##call(struct trace_seq *s)				\
++ftrace_format_##call(struct ftrace_event_call *dummy, struct trace_seq *s)\
+ {									\
+ 	struct args field;						\
+ 	int ret;							\
+@@ -115,10 +115,16 @@ ftrace_format_##call(struct trace_seq *s)				\
+ #define TRACE_FIELD_SPECIAL(type_item, item, len, cmd)	\
+ 	cmd;
+ 
++static int ftrace_raw_init_event(struct ftrace_event_call *event_call)
++{
++	INIT_LIST_HEAD(&event_call->fields);
++	init_preds(event_call);
++	return 0;
++}
++
+ #undef TRACE_EVENT_FORMAT
+ #define TRACE_EVENT_FORMAT(call, proto, args, fmt, tstruct, tpfmt)	\
+-int ftrace_define_fields_##call(void);					\
+-static int ftrace_raw_init_event_##call(void);				\
++int ftrace_define_fields_##call(struct ftrace_event_call *c);		\
+ 									\
+ struct ftrace_event_call __used						\
+ __attribute__((__aligned__(4)))						\
+@@ -126,16 +132,10 @@ __attribute__((section("_ftrace_events"))) event_##call = {		\
+ 	.name			= #call,				\
+ 	.id			= proto,				\
+ 	.system			= __stringify(TRACE_SYSTEM),		\
+-	.raw_init		= ftrace_raw_init_event_##call,		\
++	.raw_init		= ftrace_raw_init_event,		\
+ 	.show_format		= ftrace_format_##call,			\
+ 	.define_fields		= ftrace_define_fields_##call,		\
+-};									\
+-static int ftrace_raw_init_event_##call(void)				\
+-{									\
+-	INIT_LIST_HEAD(&event_##call.fields);				\
+-	init_preds(&event_##call);					\
+-	return 0;							\
+-}									\
++};
+ 
+ #undef TRACE_EVENT_FORMAT_NOFILTER
+ #define TRACE_EVENT_FORMAT_NOFILTER(call, proto, args, fmt, tstruct,	\
+@@ -182,9 +182,8 @@ __attribute__((section("_ftrace_events"))) event_##call = {		\
+ #undef TRACE_EVENT_FORMAT
+ #define TRACE_EVENT_FORMAT(call, proto, args, fmt, tstruct, tpfmt)	\
+ int									\
+-ftrace_define_fields_##call(void)					\
++ftrace_define_fields_##call(struct ftrace_event_call *event_call)	\
+ {									\
+-	struct ftrace_event_call *event_call = &event_##call;		\
+ 	struct args field;						\
+ 	int ret;							\
+ 									\
 
-But see my next reply to Lai.
 
-> - Or we create them while holding the rcu_sched_expedited_mutex, pin
->   them to a CPU. They are less strictly bound to a CPU and get migrated
->   to a different CPU upon hotunplug. Note that their life-span is
->   limited to the rcu_sched_expedited_mutex section, because we expect
->   them to die after completion. This implies a thread creation overhead.
+-- 
+Masami Hiramatsu
 
-And the thread-creation/destruction overhead is fatal, I believe.
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
 
-> Hopefully one of the solutions I describe above match the current
-> implementation. :)
-
-#1.  ;-)
-
-							Thanx, Paul
-
-> Mathieu
-> 
-> 
-> 
-> > 						Thanx, Paul
-> > 
-> > > Mathieu
-> > > 
-> > > 
-> > > > All of this is intended to make synchronize_sched_expedited() be able to
-> > > > run in a CPU hotplug notifier.  Do we have an example where someone
-> > > > really wants to do this?  If not, I am really starting to like v7 of
-> > > > the patch.  ;-)
-> > > > 
-> > > > If someone really does need to run synchronize_sched_expedited() from a
-> > > > CPU hotplug notifier, perhaps a simpler approach is to have something
-> > > > like a try_get_online_cpus(), and just invoke synchronize_sched() upon
-> > > > failure:
-> > > > 
-> > > > 	void synchronize_sched_expedited(void)
-> > > > 	{
-> > > > 		int cpu;
-> > > > 		unsigned long flags;
-> > > > 		struct rq *rq;
-> > > > 		struct migration_req *req;
-> > > > 
-> > > > 		mutex_lock(&rcu_sched_expedited_mutex);
-> > > > 		if (!try_get_online_cpus()) {
-> > > > 			synchronize_sched();
-> > > > 			return;
-> > > > 		}
-> > > > 
-> > > > 		/* rest of synchronize_sched_expedited()... */
-> > > > 
-> > > > But I would want to see a real need for this beforehand.
-> > > > 
-> > > > 							Thanx, Paul
-> > > 
-> > > -- 
-> > > Mathieu Desnoyers
-> > > OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
-> > > --
-> > > To unsubscribe from this list: send the line "unsubscribe netfilter-devel" in
-> > > the body of a message to majordomo@vger.kernel.org
-> > > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-> -- 
-> Mathieu Desnoyers
-> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
-> --
-> To unsubscribe from this list: send the line "unsubscribe netfilter-devel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+e-mail: mhiramat@redhat.com
