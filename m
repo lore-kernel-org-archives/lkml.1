@@ -1,85 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756854AbZE2I7f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757808AbZE2JBS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756854AbZE2I7f (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 04:59:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756300AbZE2I71
+	id S1757808AbZE2JBS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 05:01:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754065AbZE2JBI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 04:59:27 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47743 "EHLO mx2.mail.elte.hu"
+	Fri, 29 May 2009 05:01:08 -0400
+Received: from hera.kernel.org ([140.211.167.34]:59572 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756433AbZE2I7Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 04:59:25 -0400
-Date: Fri, 29 May 2009 10:59:16 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH RFC] perf_counter: Don't swap contexts containing
-	locked mutex
-Message-ID: <20090529085916.GA21461@elte.hu>
-References: <18975.31580.520676.619896@drongo.ozlabs.ibm.com> <1243584388.23657.156.camel@twins> <1243584793.23657.168.camel@twins> <1243585721.23657.177.camel@twins>
+	id S1753754AbZE2JBF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 May 2009 05:01:05 -0400
+Date: Fri, 29 May 2009 09:00:34 GMT
+From: tip-bot for Yong Wang <yong.y.wang@linux.intel.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       yong.y.wang@linux.intel.com, yong.y.wang@intel.com, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       yong.y.wang@linux.intel.com, yong.y.wang@intel.com, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <20090529052835.GA13657@ywang-moblin2.bj.intel.com>
+References: <20090529052835.GA13657@ywang-moblin2.bj.intel.com>
+Subject: [tip:perfcounters/core] perf_counter/x86: Always use NMI for performance-monitoring interrupt
+Message-ID: <tip-c323d95fa4dbe0b6bf6d59e24a0b7db067dd08a7@git.kernel.org>
+Git-Commit-ID: c323d95fa4dbe0b6bf6d59e24a0b7db067dd08a7
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <1243585721.23657.177.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 29 May 2009 09:00:35 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  c323d95fa4dbe0b6bf6d59e24a0b7db067dd08a7
+Gitweb:     http://git.kernel.org/tip/c323d95fa4dbe0b6bf6d59e24a0b7db067dd08a7
+Author:     Yong Wang <yong.y.wang@linux.intel.com>
+AuthorDate: Fri, 29 May 2009 13:28:35 +0800
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Fri, 29 May 2009 09:04:58 +0200
 
-* Peter Zijlstra <peterz@infradead.org> wrote:
+perf_counter/x86: Always use NMI for performance-monitoring interrupt
 
-> On Fri, 2009-05-29 at 10:13 +0200, Peter Zijlstra wrote:
-> > On Fri, 2009-05-29 at 10:06 +0200, Peter Zijlstra wrote:
-> > 
-> > > static struct perf_counter_ctx *pin_ctx(struct perf_counter *counter, u64 *old_gen)
-> > > {
-> > > 	struct perf_counter_context *ctx;
-> > > 	unsigned long flags;
-> > > 
-> > > 	rcu_read_lock();
-> > > retry:
-> > > 	ctx = rcu_dereference(counter->ctx);
-> > > 	spin_lock_irqsave(&ctx->lock, flags);
-> > > 	if (ctx != rcu_dereference(counter->ctx))
-> > > 		goto retry;
-> > > 
-> > > 	*old_gen = ctx->generation;
-> > > 	ctx->generation = ~0ULL;
-> > > 	spin_unlock_irqrestore(&ctx->lock, flags);
-> > > 	rcu_read_unlock();
-> > > 
-> > > 	return ctx;
-> > > }
-> > > 
-> > > static void unpin_ctx(struct perf_counter_ctx *ctx, u64 old_gen)
-> > > {
-> > > 	unsigned long flags;
-> > > 
-> > > 	spin_lock_irqsave(&ctx->lock, flags);
-> > > 	ctx->generation = old_gen;
-> > > 	spin_unlock_irqrestore(&ctx->lock, flags);
-> > > }
-> > 
-> > OK, I think I got this wrong, counter->ctx isn't the problem.
-> > task->perf_counter_ctx is.
-> > 
-> > Still would be nice to write it in the above form. I'll go over the code
-> > again to see who else might want it.
-> 
-> OK, I went over the code, and your patch does indeed cover the few 
-> spots we need. It was just my brain going haywire and auditing the 
-> wrong pattern.
+Always use NMI for performance-monitoring interrupt as there could be
+racy situations if we switch between irq and nmi mode frequently.
 
-ok - i'll try this with my 'perf stat make -j' workload that quickly 
-locks up on a Nehalem. (bug introduced by the context switch 
-optimizations)
+Signed-off-by: Yong Wang <yong.y.wang@intel.com>
+LKML-Reference: <20090529052835.GA13657@ywang-moblin2.bj.intel.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-	Ingo
+
+---
+ arch/x86/include/asm/perf_counter.h |    4 ++--
+ arch/x86/kernel/apic/apic.c         |    2 +-
+ arch/x86/kernel/cpu/perf_counter.c  |   19 +++++--------------
+ 3 files changed, 8 insertions(+), 17 deletions(-)
+
+diff --git a/arch/x86/include/asm/perf_counter.h b/arch/x86/include/asm/perf_counter.h
+index d08dd52..876ed97 100644
+--- a/arch/x86/include/asm/perf_counter.h
++++ b/arch/x86/include/asm/perf_counter.h
+@@ -91,10 +91,10 @@ extern void set_perf_counter_pending(void);
+ 
+ #ifdef CONFIG_PERF_COUNTERS
+ extern void init_hw_perf_counters(void);
+-extern void perf_counters_lapic_init(int nmi);
++extern void perf_counters_lapic_init(void);
+ #else
+ static inline void init_hw_perf_counters(void)		{ }
+-static inline void perf_counters_lapic_init(int nmi)	{ }
++static inline void perf_counters_lapic_init(void)	{ }
+ #endif
+ 
+ #endif /* _ASM_X86_PERF_COUNTER_H */
+diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
+index 89b63b5..60df2ef 100644
+--- a/arch/x86/kernel/apic/apic.c
++++ b/arch/x86/kernel/apic/apic.c
+@@ -1135,7 +1135,7 @@ void __cpuinit setup_local_APIC(void)
+ 		apic_write(APIC_ESR, 0);
+ 	}
+ #endif
+-	perf_counters_lapic_init(0);
++	perf_counters_lapic_init();
+ 
+ 	preempt_disable();
+ 
+diff --git a/arch/x86/kernel/cpu/perf_counter.c b/arch/x86/kernel/cpu/perf_counter.c
+index 2eeaa99..316b0c9 100644
+--- a/arch/x86/kernel/cpu/perf_counter.c
++++ b/arch/x86/kernel/cpu/perf_counter.c
+@@ -604,7 +604,7 @@ try_generic:
+ 		hwc->counter_base = x86_pmu.perfctr;
+ 	}
+ 
+-	perf_counters_lapic_init(hwc->nmi);
++	perf_counters_lapic_init();
+ 
+ 	x86_pmu.disable(hwc, idx);
+ 
+@@ -863,24 +863,15 @@ void set_perf_counter_pending(void)
+ 	apic->send_IPI_self(LOCAL_PENDING_VECTOR);
+ }
+ 
+-void perf_counters_lapic_init(int nmi)
++void perf_counters_lapic_init(void)
+ {
+-	u32 apic_val;
+-
+ 	if (!x86_pmu_initialized())
+ 		return;
+ 
+ 	/*
+-	 * Enable the performance counter vector in the APIC LVT:
++	 * Always use NMI for PMU
+ 	 */
+-	apic_val = apic_read(APIC_LVTERR);
+-
+-	apic_write(APIC_LVTERR, apic_val | APIC_LVT_MASKED);
+-	if (nmi)
+-		apic_write(APIC_LVTPC, APIC_DM_NMI);
+-	else
+-		apic_write(APIC_LVTPC, LOCAL_PERF_VECTOR);
+-	apic_write(APIC_LVTERR, apic_val);
++	apic_write(APIC_LVTPC, APIC_DM_NMI);
+ }
+ 
+ static int __kprobes
+@@ -1054,7 +1045,7 @@ void __init init_hw_perf_counters(void)
+ 
+ 	pr_info("... counter mask:    %016Lx\n", perf_counter_mask);
+ 
+-	perf_counters_lapic_init(0);
++	perf_counters_lapic_init();
+ 	register_die_notifier(&perf_counter_nmi_notifier);
+ }
+ 
