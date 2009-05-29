@@ -1,76 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758889AbZE2JHp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756888AbZE2JNj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758889AbZE2JHp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 05:07:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758823AbZE2JH0
+	id S1756888AbZE2JNj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 05:13:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756531AbZE2JNc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 05:07:26 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:33291 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758842AbZE2JHY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 05:07:24 -0400
-Subject: Re: [PATCH] slab: remove bootmem calling
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: mingo@elte.hu, Christoph Lameter <cl@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, mpm@selenic.com,
-       npiggin@suse.de, linux-kernel@vger.kernel.org
-In-Reply-To: <4A1F37DD.5030800@kernel.org>
-References: <1243517365.11533.65.camel@penberg-laptop>
-	 <4A1F3724.8050103@kernel.org>  <4A1F37DD.5030800@kernel.org>
-Date: Fri, 29 May 2009 12:07:24 +0300
-Message-Id: <1243588044.15371.10.camel@penberg-laptop>
+	Fri, 29 May 2009 05:13:32 -0400
+Received: from gate.crashing.org ([63.228.1.57]:60362 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756300AbZE2JNb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 May 2009 05:13:31 -0400
+Subject: Re: [RFC] [PATCH] Device Tree on ARM platform
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Sascha Hauer <s.hauer@pengutronix.de>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Grant Likely <grant.likely@secretlab.ca>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Russell King <rmk+lkml@arm.linux.org.uk>,
+       devicetree-discuss <devicetree-discuss@ozlabs.org>,
+       linux-kernel@vger.kernel.org, Timur Tabi <timur@freescale.com>,
+       Scott Wood <scottwood@freescale.com>,
+       Janboe Ye <yuan-bo.ye@motorola.com>,
+       linux-arm-kernel@lists.arm.linux.org.uk
+In-Reply-To: <20090529075238.GC24565@pengutronix.de>
+References: <4A1D6901.2090508@freescale.com>
+	 <20090527175609.GB31861@flint.arm.linux.org.uk>
+	 <4A1D8FBA.6040802@freescale.com>
+	 <20090527192909.GA32398@flint.arm.linux.org.uk>
+	 <20090527205218.GA5591@sirena.org.uk>
+	 <fa686aa40905271405pc2f1738gc8dd139f61a0e27@mail.gmail.com>
+	 <20090528124307.GN22742@pengutronix.de>
+	 <alpine.LFD.2.00.0905281457170.3397@localhost.localdomain>
+	 <20090528150409.GO22742@pengutronix.de> <1243558274.17903.21.camel@pasglop>
+	 <20090529075238.GC24565@pengutronix.de>
+Content-Type: text/plain
+Date: Fri, 29 May 2009 19:08:00 +1000
+Message-Id: <1243588080.17903.52.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-05-28 at 18:18 -0700, Yinghai Lu wrote:
-> Yinghai Lu wrote:
-> > mem_init/kmem_cache_init is moved up
-> > 
-> > Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> > ---
-> >  mm/page_cgroup.c |   12 ++++++++----
-> >  1 file changed, 8 insertions(+), 4 deletions(-)
-> > 
-> > Index: linux-2.6/mm/page_cgroup.c
-> > ===================================================================
-> > --- linux-2.6.orig/mm/page_cgroup.c
-> > +++ linux-2.6/mm/page_cgroup.c
-> > @@ -47,6 +47,8 @@ static int __init alloc_node_page_cgroup
-> >  	struct page_cgroup *base, *pc;
-> >  	unsigned long table_size;
-> >  	unsigned long start_pfn, nr_pages, index;
-> > +	struct page *page;
-> > +	unsigned int order;
-> >  
-> >  	start_pfn = NODE_DATA(nid)->node_start_pfn;
-> >  	nr_pages = NODE_DATA(nid)->node_spanned_pages;
-> > @@ -55,11 +57,13 @@ static int __init alloc_node_page_cgroup
-> >  		return 0;
-> >  
-> >  	table_size = sizeof(struct page_cgroup) * nr_pages;
-> > -
-> > -	base = __alloc_bootmem_node_nopanic(NODE_DATA(nid),
-> > -			table_size, PAGE_SIZE, __pa(MAX_DMA_ADDRESS));
-> > -	if (!base)
-> > +	order = get_order(table_size);
-> > +	page = alloc_pages_node(nid, GFP_NOWAIT | __GFP_ZERO, order);
-> > +	if (!page)
-> > +		page = alloc_pages_node(-1, GFP_NOWAIT | __GFP_ZERO, order);
-> > +	if (!page)
-> >  		return -ENOMEM;
-> > +	base = page_address(page);
+On Fri, 2009-05-29 at 09:52 +0200, Sascha Hauer wrote:
 > 
-> any good way to replace __alloc_bootmem_node that could take alignment?
+> I don't mean bloated in terms of kbytes but bloated in terms of complex
+> code used to parse the device tree. I more than once put information in
+> the device tree and wondered where this information got lost on the way
+> to the driver where I wanted to use it. Back on ARM I was very happy to
+> just have a simple board file which is easier for me to understand and
+> maintain.
+> Of course this can be solved with /me learning more about the device
+> tree, that's why I said 'for my taste'.
 
-Not that I am aware of. Where do you need that? This one looks ok to me
-as page allocator obviously returns PAGE_SIZE aligned chunks.
+Well, the code to walk it is trivial since once 'expanded' we reproduce
+the tree structure with pointers.
 
-			Pekka
+Now, the problem indeed is how do you get to your node from a driver,
+and that's where we are making things easy on powerpc by sticking the
+node pointer in the struct device itself.
+
+Of course that needs to be populated properly. We have code in PCI to do
+it that would need to be ported over for PCI stuff (but I recommend
+waiting a bit as this code is currently different on ppc32 and ppc64, a
+bit messy, and Kumar is currently working on cleaning that up and
+unifying it), and when device are discovered and instanciated from the
+DT in the first place, then this is naturally populated.
+
+So I don't think this is a big issue, and the amount of code involved is
+relatively small and self contained.
+
+Cheers,
+Ben.
+
 
