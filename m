@@ -1,110 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755865AbZE2Vfw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756641AbZE2Vg0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755865AbZE2Vfw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 17:35:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753409AbZE2Vfb
+	id S1756641AbZE2Vg0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 17:36:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755381AbZE2Vfm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 17:35:31 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:60547 "EHLO
+	Fri, 29 May 2009 17:35:42 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:60558 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752874AbZE2Vfa (ORCPT
+	with ESMTP id S1754747AbZE2Vfk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 17:35:30 -0400
+	Fri, 29 May 2009 17:35:40 -0400
 From: Andi Kleen <andi@firstfloor.org>
-Message-Id: <200905291135.124267638@firstfloor.org>
+References: <200905291135.124267638@firstfloor.org>
+In-Reply-To: <200905291135.124267638@firstfloor.org>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
        linux-mm@kvack.org, fengguang.wu@intel.com
-Subject: [PATCH] [0/16] HWPOISON: Intro
-Date: Fri, 29 May 2009 23:35:25 +0200 (CEST)
+Subject: [PATCH] [4/16] HWPOISON: Add support for poison swap entries v2
+Message-Id: <20090529213529.9BEC71D0286@basil.firstfloor.org>
+Date: Fri, 29 May 2009 23:35:29 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Another version of the hwpoison patchkit. I addressed 
-all feedback, except:
-I didn't move the handlers into other files for now, prefer
-to keep things together for now
-I'm keeping an own pagepoison bit because I think that's 
-cleaner than any other hacks.
+Memory migration uses special swap entry types to trigger special actions on 
+page faults. Extend this mechanism to also support poisoned swap entries, to 
+trigger poison handling on page faults. This allows follow-on patches to 
+prevent processes from faulting in poisoned pages again.
 
-Andrew, please put it into mm for .31 track.
+v2: Fix overflow in MAX_SWAPFILES (Fengguang Wu)
+v3: Better overflow fix (Hidehiro Kawai)
 
-The patchkit is also available in
-git://git.kernel.org/pub/scm/linux/kernel/git/ak/linux-mce-2.6.git hwpoison
-
-Thanks,
--Andi
+Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
 ---
+ include/linux/swap.h    |   34 ++++++++++++++++++++++++++++------
+ include/linux/swapops.h |   38 ++++++++++++++++++++++++++++++++++++++
+ mm/swapfile.c           |    4 ++--
+ 3 files changed, 68 insertions(+), 8 deletions(-)
 
-Upcoming Intel CPUs have support for recovering from some memory errors
-(``MCA recovery''). This requires the OS to declare a page "poisoned", 
-kill the processes associated with it and avoid using it in the future. 
-
-This patchkit implements the necessary infrastructure in the VM.
-
-To quote the overview comment:
-
- * High level machine check handler. Handles pages reported by the
- * hardware as being corrupted usually due to a 2bit ECC memory or cache
- * failure.
- *
- * This focusses on pages detected as corrupted in the background.
- * When the current CPU tries to consume corruption the currently
- * running process can just be killed directly instead. This implies
- * that if the error cannot be handled for some reason it's safe to
- * just ignore it because no corruption has been consumed yet. Instead
- * when that happens another machine check will happen.
- *
- * Handles page cache pages in various states. The tricky part
- * here is that we can access any page asynchronous to other VM
- * users, because memory failures could happen anytime and anywhere,
- * possibly violating some of their assumptions. This is why this code
- * has to be extremely careful. Generally it tries to use normal locking
- * rules, as in get the standard locks, even if that means the
- * error handling takes potentially a long time.
- *
- * Some of the operations here are somewhat inefficient and have non
- * linear algorithmic complexity, because the data structures have not
- * been optimized for this case. This is in particular the case
- * for the mapping from a vma to a process. Since this case is expected
- * to be rare we hope we can get away with this.
-
-The code consists of a the high level handler in mm/memory-failure.c, 
-a new page poison bit and various checks in the VM to handle poisoned
-pages.
-
-The main target right now is KVM guests, but it works for all kinds
-of applications.
-
-For the KVM use there was need for a new signal type so that
-KVM can inject the machine check into the guest with the proper
-address. This in theory allows other applications to handle
-memory failures too. The expection is that near all applications
-won't do that, but some very specialized ones might. 
-
-This is not fully complete yet, in particular there are still ways
-to access poison through various ways (crash dump, /proc/kcore etc.)
-that need to be plugged too.
-
-Also undoubtedly the high level handler still has bugs and cases
-it cannot recover from. For example nonlinear mappings deadlock right now
-and a few other cases lose references. Huge pages are not supported
-yet. Any additional testing, reviewing etc. welcome. 
-
-The patch series requires the earlier x86 MCE feature series for the x86
-specific action optional part. The code can be tested without the x86 specific
-part using the injector, this only requires to enable the Kconfig entry
-manually in some Kconfig file (by default it is implicitely enabled
-by the architecture)
-
-v2: Lots of smaller changes in the series based on review feedback.
-Rename Poison to HWPoison after akpm's request.
-A new pfn based injector based on feedback.
-A lot of improvements mostly from Fengguang Wu
-See comments in the individual patches.
-v3: Various updates, see changelogs in individual patches.
-
-
--Andi
+Index: linux/include/linux/swap.h
+===================================================================
+--- linux.orig/include/linux/swap.h	2009-05-29 23:32:10.000000000 +0200
++++ linux/include/linux/swap.h	2009-05-29 23:32:10.000000000 +0200
+@@ -34,16 +34,38 @@
+  * the type/offset into the pte as 5/27 as well.
+  */
+ #define MAX_SWAPFILES_SHIFT	5
+-#ifndef CONFIG_MIGRATION
+-#define MAX_SWAPFILES		(1 << MAX_SWAPFILES_SHIFT)
++
++/*
++ * Use some of the swap files numbers for other purposes. This
++ * is a convenient way to hook into the VM to trigger special
++ * actions on faults.
++ */
++
++/*
++ * NUMA node memory migration support
++ */
++#ifdef CONFIG_MIGRATION
++#define SWP_MIGRATION_NUM 2
++#define SWP_MIGRATION_READ	(MAX_SWAPFILES + SWP_HWPOISON_NUM)
++#define SWP_MIGRATION_WRITE	(MAX_SWAPFILES + SWP_HWPOISON_NUM + 1)
+ #else
+-/* Use last two entries for page migration swap entries */
+-#define MAX_SWAPFILES		((1 << MAX_SWAPFILES_SHIFT)-2)
+-#define SWP_MIGRATION_READ	MAX_SWAPFILES
+-#define SWP_MIGRATION_WRITE	(MAX_SWAPFILES + 1)
++#define SWP_MIGRATION_NUM 0
+ #endif
+ 
+ /*
++ * Handling of hardware poisoned pages with memory corruption.
++ */
++#ifdef CONFIG_MEMORY_FAILURE
++#define SWP_HWPOISON_NUM 1
++#define SWP_HWPOISON		MAX_SWAPFILES
++#else
++#define SWP_HWPOISON_NUM 0
++#endif
++
++#define MAX_SWAPFILES \
++	((1 << MAX_SWAPFILES_SHIFT) - SWP_MIGRATION_NUM - SWP_HWPOISON_NUM)
++
++/*
+  * Magic header for a swap area. The first part of the union is
+  * what the swap magic looks like for the old (limited to 128MB)
+  * swap area format, the second part of the union adds - in the
+Index: linux/include/linux/swapops.h
+===================================================================
+--- linux.orig/include/linux/swapops.h	2009-05-29 23:32:10.000000000 +0200
++++ linux/include/linux/swapops.h	2009-05-29 23:32:10.000000000 +0200
+@@ -131,3 +131,41 @@
+ 
+ #endif
+ 
++#ifdef CONFIG_MEMORY_FAILURE
++/*
++ * Support for hardware poisoned pages
++ */
++static inline swp_entry_t make_hwpoison_entry(struct page *page)
++{
++	BUG_ON(!PageLocked(page));
++	return swp_entry(SWP_HWPOISON, page_to_pfn(page));
++}
++
++static inline int is_hwpoison_entry(swp_entry_t entry)
++{
++	return swp_type(entry) == SWP_HWPOISON;
++}
++#else
++
++static inline swp_entry_t make_hwpoison_entry(struct page *page)
++{
++	return swp_entry(0, 0);
++}
++
++static inline int is_hwpoison_entry(swp_entry_t swp)
++{
++	return 0;
++}
++#endif
++
++#if defined(CONFIG_MEMORY_FAILURE) || defined(CONFIG_MIGRATION)
++static inline int non_swap_entry(swp_entry_t entry)
++{
++	return swp_type(entry) >= MAX_SWAPFILES;
++}
++#else
++static inline int non_swap_entry(swp_entry_t entry)
++{
++	return 0;
++}
++#endif
+Index: linux/mm/swapfile.c
+===================================================================
+--- linux.orig/mm/swapfile.c	2009-05-29 23:32:10.000000000 +0200
++++ linux/mm/swapfile.c	2009-05-29 23:32:10.000000000 +0200
+@@ -579,7 +579,7 @@
+ 	struct swap_info_struct *p;
+ 	struct page *page = NULL;
+ 
+-	if (is_migration_entry(entry))
++	if (non_swap_entry(entry))
+ 		return 1;
+ 
+ 	p = swap_info_get(entry);
+@@ -1949,7 +1949,7 @@
+ 	unsigned long offset, type;
+ 	int result = 0;
+ 
+-	if (is_migration_entry(entry))
++	if (non_swap_entry(entry))
+ 		return 1;
+ 
+ 	type = swp_type(entry);
