@@ -1,178 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759232AbZE2Sto@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761362AbZE2Sus@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759232AbZE2Sto (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 14:49:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752054AbZE2Stg
+	id S1761362AbZE2Sus (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 14:50:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752039AbZE2Sul
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 14:49:36 -0400
-Received: from wa4ehsobe005.messaging.microsoft.com ([216.32.181.15]:15118
-	"EHLO WA4EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751789AbZE2Stg (ORCPT
+	Fri, 29 May 2009 14:50:41 -0400
+Received: from wa4ehsobe004.messaging.microsoft.com ([216.32.181.14]:46947
+	"EHLO WA4EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751789AbZE2Suk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 14:49:36 -0400
-X-BigFish: VPS-3(zz655Nzz1202hzzz32i6bh17ch43j62h)
+	Fri, 29 May 2009 14:50:40 -0400
+X-BigFish: VPS1(zzzz1202hzzz32i6bh17ch62h)
 X-Spam-TCS-SCL: 1:0
 X-FB-SS: 5,
-X-WSS-ID: 0KKF5M7-01-EYD-01
-Date: Fri, 29 May 2009 20:48:15 +0200
+X-WSS-ID: 0KKF5O1-01-EZC-01
+Date: Fri, 29 May 2009 20:49:43 +0200
 From: Andreas Herrmann <andreas.herrmann3@amd.com>
 To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
        Thomas Gleixner <tglx@linutronix.de>
 CC: linux-kernel@vger.kernel.org
-Subject: [PATCH 2/3] x86: add topology detection for AMD multi-node
-	processors
-Message-ID: <20090529184815.GF23770@alberich.amd.com>
+Subject: [PATCH 3/3] x86: cacheinfo: fixup L3 cache information for AMD
+	multi-node processors
+Message-ID: <20090529184943.GG23770@alberich.amd.com>
 References: <20090529184023.GD23770@alberich.amd.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
 In-Reply-To: <20090529184023.GD23770@alberich.amd.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 29 May 2009 18:48:57.0477 (UTC) FILETIME=[1F78FB50:01C9E08E]
+X-OriginalArrivalTime: 29 May 2009 18:50:25.0775 (UTC) FILETIME=[541A2FF0:01C9E08E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This adapts CPU topology detection for AMD Magny-Cours.
-
-Here is example output from two cores on same package but different
-internal cpu_nodes:
-
-/sys/devices/system/cpu/cpu5:
-  physical_package_id        : 0
-  core_id                    : 5
-  thread_siblings            : 00000020
-  thread_siblings_list       : 5
-  cpu_node_id                : 0
-  cpu_node_siblings          : 0000003f
-  cpu_node_siblings_list     : 0-5
-  core_siblings              : 00000fff
-  core_siblings_list         : 0-11
-/sys/devices/system/cpu/cpu6:
-  physical_package_id        : 0
-  core_id                    : 0
-  thread_siblings            : 00000040
-  thread_siblings_list       : 6
-  cpu_node_id                : 1
-  cpu_node_siblings          : 00000fc0
-  cpu_node_siblings_list     : 6-11
-  core_siblings              : 00000fff
-  core_siblings_list         : 0-11
+L3 cache size, associativity and shared_cpu information need to be
+adapted to show information for an internal node instead of the
+entire physical package.
 
 Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
 ---
- arch/x86/include/asm/cpufeature.h |    1 +
- arch/x86/kernel/cpu/amd.c         |   63 +++++++++++++++++++++++++++++++++++++
- 2 files changed, 64 insertions(+), 0 deletions(-)
+ arch/x86/kernel/cpu/intel_cacheinfo.c |   22 +++++++++++++++++-----
+ 1 files changed, 17 insertions(+), 5 deletions(-)
 
-diff --git a/arch/x86/include/asm/cpufeature.h b/arch/x86/include/asm/cpufeature.h
-index 13cc6a5..7abe596 100644
---- a/arch/x86/include/asm/cpufeature.h
-+++ b/arch/x86/include/asm/cpufeature.h
-@@ -94,6 +94,7 @@
- #define X86_FEATURE_TSC_RELIABLE (3*32+23) /* TSC is known to be reliable */
- #define X86_FEATURE_NONSTOP_TSC	(3*32+24) /* TSC does not stop in C states */
- #define X86_FEATURE_CLFLUSH_MONITOR (3*32+25) /* "" clflush reqd with monitor */
-+#define X86_FEATURE_AMD_DCM     (3*32+26) /* multi-node processor */
+diff --git a/arch/x86/kernel/cpu/intel_cacheinfo.c b/arch/x86/kernel/cpu/intel_cacheinfo.c
+index 789efe2..dbafe2b 100644
+--- a/arch/x86/kernel/cpu/intel_cacheinfo.c
++++ b/arch/x86/kernel/cpu/intel_cacheinfo.c
+@@ -241,7 +241,7 @@ amd_cpuid4(int leaf, union _cpuid4_leaf_eax *eax,
+ 	case 0:
+ 		if (!l1->val)
+ 			return;
+-		assoc = l1->assoc;
++		assoc = assocs[l1->assoc];
+ 		line_size = l1->line_size;
+ 		lines_per_tag = l1->lines_per_tag;
+ 		size_in_kb = l1->size_in_kb;
+@@ -249,7 +249,7 @@ amd_cpuid4(int leaf, union _cpuid4_leaf_eax *eax,
+ 	case 2:
+ 		if (!l2.val)
+ 			return;
+-		assoc = l2.assoc;
++		assoc = assocs[l2.assoc];
+ 		line_size = l2.line_size;
+ 		lines_per_tag = l2.lines_per_tag;
+ 		/* cpu_data has errata corrections for K7 applied */
+@@ -258,10 +258,14 @@ amd_cpuid4(int leaf, union _cpuid4_leaf_eax *eax,
+ 	case 3:
+ 		if (!l3.val)
+ 			return;
+-		assoc = l3.assoc;
++		assoc = assocs[l3.assoc];
+ 		line_size = l3.line_size;
+ 		lines_per_tag = l3.lines_per_tag;
+ 		size_in_kb = l3.size_encoded * 512;
++		if (boot_cpu_has(X86_FEATURE_AMD_DCM)) {
++			size_in_kb = size_in_kb >> 1;
++			assoc = assoc >> 1;
++		}
+ 		break;
+ 	default:
+ 		return;
+@@ -278,10 +282,10 @@ amd_cpuid4(int leaf, union _cpuid4_leaf_eax *eax,
+ 	eax->split.num_cores_on_die = current_cpu_data.x86_max_cores - 1;
  
- /* Intel-defined CPU features, CPUID level 0x00000001 (ecx), word 4 */
- #define X86_FEATURE_XMM3	(4*32+ 0) /* "pni" SSE-3 */
-diff --git a/arch/x86/kernel/cpu/amd.c b/arch/x86/kernel/cpu/amd.c
-index 728b375..53ac4b5 100644
---- a/arch/x86/kernel/cpu/amd.c
-+++ b/arch/x86/kernel/cpu/amd.c
-@@ -6,6 +6,7 @@
- #include <asm/processor.h>
- #include <asm/apic.h>
- #include <asm/cpu.h>
-+#include <asm/pci-direct.h>
  
- #ifdef CONFIG_X86_64
- # include <asm/numa_64.h>
-@@ -250,6 +251,58 @@ static int __cpuinit nearby_node(int apicid)
- #endif
- 
- /*
-+ * Fixup core topology information for AMD multi-node processors.
-+ * Assumption 1: Number of cores in each internal node is the same.
-+ * Assumption 2: Mixed systems with both single-node and dual-node
-+ *               processors are not supported.
-+ */
-+static void __cpuinit amd_fixup_dcm(struct cpuinfo_x86 *c)
-+{
+-	if (assoc == 0xf)
++	if (assoc == 0xffff)
+ 		eax->split.is_fully_associative = 1;
+ 	ebx->split.coherency_line_size = line_size - 1;
+-	ebx->split.ways_of_associativity = assocs[assoc] - 1;
++	ebx->split.ways_of_associativity = assoc - 1;
+ 	ebx->split.physical_line_partition = lines_per_tag - 1;
+ 	ecx->split.number_of_sets = (size_in_kb * 1024) / line_size /
+ 		(ebx->split.ways_of_associativity + 1) - 1;
+@@ -598,7 +602,15 @@ static void __cpuinit get_cpu_leaves(void *_retval)
+ 				cache_remove_shared_cpu_map(cpu, i);
+ 			break;
+ 		}
 +#ifdef CONFIG_MULTI_NODE_CPU
-+	u32 t, cpn;
-+	u8 n;
-+
-+	/* fixup topology information only once for a core */
-+	if (cpu_has(c, X86_FEATURE_AMD_DCM))
-+		return;
-+
-+	/* check for multi-node processor on boot cpu */
-+	t = read_pci_config(0, 24, 3, 0xe8);
-+	if (!(t & (1 << 29)))
-+		return;
-+
-+	set_cpu_cap(c, X86_FEATURE_AMD_DCM);
-+
-+	/* cores per node: each internal node has half the number of cores */
-+	cpn = c->x86_max_cores >> 1;
-+
-+	/* even-numbered NB_id of this dual-node processor */
-+	n = c->phys_proc_id << 1;
-+
-+	/*
-+	 * determine internal node id and assign cores fifty-fifty to
-+	 * each node of the dual-node processor
-+	 */
-+	t = read_pci_config(0, 24 + n, 3, 0xe8);
-+	n = (t>>30) & 0x3;
-+	if (n == 0) {
-+		if (c->cpu_core_id < cpn)
-+			c->cpu_node_id = 0;
++		if (boot_cpu_has(X86_FEATURE_AMD_DCM))
++			cpumask_copy(to_cpumask(this_leaf->shared_cpu_map),
++				     topology_cpu_node_cpumask(cpu));
 +		else
-+			c->cpu_node_id = 1;
-+	} else {
-+		if (c->cpu_core_id < cpn)
-+			c->cpu_node_id = 1;
-+		else
-+			c->cpu_node_id = 0;
-+	}
-+
-+	 /* fixup core id to be in range from 0 to cpn */
-+	c->cpu_core_id = c->cpu_core_id % cpn;
++			cache_shared_cpu_map_setup(cpu, j);
++#else
+ 		cache_shared_cpu_map_setup(cpu, j);
 +#endif
-+}
-+
-+/*
-  * On a AMD dual core setup the lower bits of the APIC id distingush the cores.
-  * Assumes number of cores is a power of two.
-  */
-@@ -264,6 +317,9 @@ static void __cpuinit amd_detect_cmp(struct cpuinfo_x86 *c)
- 	c->cpu_core_id = c->initial_apicid & ((1 << bits)-1);
- 	/* Convert the initial APIC ID into the socket ID */
- 	c->phys_proc_id = c->initial_apicid >> bits;
-+	/* fixup topology information on multi-node processors */
-+	if ((c->x86 == 0x10) && (c->x86_model == 9))
-+		amd_fixup_dcm(c);
- #endif
+ 	}
  }
  
-@@ -274,7 +330,14 @@ static void __cpuinit srat_detect_node(struct cpuinfo_x86 *c)
- 	int node;
- 	unsigned apicid = cpu_has_apic ? hard_smp_processor_id() : c->apicid;
- 
-+#ifdef CONFIG_MULTI_NODE_CPU
-+	if (cpu_has(c, X86_FEATURE_AMD_DCM))
-+		node = (c->phys_proc_id << 1) + c->cpu_node_id;
-+	else
-+		node = c->phys_proc_id;
-+#else
- 	node = c->phys_proc_id;
-+#endif
- 	if (apicid_to_node[apicid] != NUMA_NO_NODE)
- 		node = apicid_to_node[apicid];
- 	if (!node_online(node)) {
 -- 
 1.6.3.1
 
