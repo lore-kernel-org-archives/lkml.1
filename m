@@ -1,31 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757926AbZE2KuV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757977AbZE2Kxq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757926AbZE2KuV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 06:50:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756140AbZE2KuK
+	id S1757977AbZE2Kxq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 06:53:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755676AbZE2Kxi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 06:50:10 -0400
-Received: from mail-bw0-f222.google.com ([209.85.218.222]:44430 "EHLO
+	Fri, 29 May 2009 06:53:38 -0400
+Received: from mail-bw0-f222.google.com ([209.85.218.222]:58053 "EHLO
 	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755961AbZE2KuJ convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1755511AbZE2Kxi convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 06:50:09 -0400
+	Fri, 29 May 2009 06:53:38 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=googlemail.com; s=gamma;
         h=mime-version:reply-to:in-reply-to:references:date:message-id
          :subject:from:to:cc:content-type:content-transfer-encoding;
-        b=yErm9hu49XPmGb84PtiqTlNTNXgRxP2qez1ODnvf+EXxSnUo4nUmqXyl9OdrxTb+Dl
-         z+OcAlYeBX8FvEQt17Mw2teDdtXn/dG9bwx1JqCWElsqNOFjSgiVHv1bwVJ+OBollLTM
-         nkOoMfbrCjCfcJ1E0yEtCrEra43jQfcVazAPM=
+        b=o3o6Ip1Nt/mylgszLHsVl1H0fu1qH4+bisutZaBhkzXSAqYWwChROWgUPHjz+1kfxW
+         7rNI5Kxs+zbUJXYcemgd3tN0M4xrgFZ+3VVsIyJ7VU5yH5La3CaCCBg7+xkpv9Vxe38S
+         h57endn+poooD8OE4fyeJlPQCMzWnHEG2O8f8=
 MIME-Version: 1.0
 Reply-To: eranian@gmail.com
-In-Reply-To: <18975.7470.792842.173625@cargo.ozlabs.ibm.com>
+In-Reply-To: <7c86c4470905290350m754b7144te1e5ac21f3a87ff0@mail.gmail.com>
 References: <7c86c4470905280758y6d359823h2a7517dfecb115e6@mail.gmail.com>
 	 <1243527919.6645.75.camel@laptop> <4A1EFCC2.80805@linux.vnet.ibm.com>
 	 <20090528213532.GA8589@elte.hu>
 	 <18975.7470.792842.173625@cargo.ozlabs.ibm.com>
-Date: Fri, 29 May 2009 12:50:10 +0200
-Message-ID: <7c86c4470905290350m754b7144te1e5ac21f3a87ff0@mail.gmail.com>
+	 <7c86c4470905290350m754b7144te1e5ac21f3a87ff0@mail.gmail.com>
+Date: Fri, 29 May 2009 12:53:39 +0200
+Message-ID: <7c86c4470905290353k5a215f3buf140a17456067932@mail.gmail.com>
 Subject: Re: [perfmon2] comments on Performance Counters for Linux (PCL)
 From: stephane eranian <eranian@googlemail.com>
 To: Paul Mackerras <paulus@samba.org>
@@ -42,47 +43,50 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Fri, May 29, 2009 at 1:24 AM, Paul Mackerras <paulus@samba.org> wrote:
-> Ingo Molnar writes:
+On Fri, May 29, 2009 at 12:50 PM, stephane eranian
+<eranian@googlemail.com> wrote:
+> Hi,
 >
->> * Corey Ashford <cjashfor@linux.vnet.ibm.com> wrote:
->> >> So you're suggesting to artificually strech periods by say
->> >> composing a single overflow from smaller ones, ignoring the
->> >> intermediate overflow events?
->> >>
->> >> That sounds doable, again, patch welcome.
->> >
->> > I definitely agree with Stephane's point on this one.  I had
->> > assumed that long irq_periods (longer than the width of the
->> > counter) would be synthesized as you suggest.  If this is not the
->> > case, PCL should be changed so that it does, -or- at a minimum,
->> > the user should get an error back stating that the period is too
->> > long for the hardware counter.
+> On Fri, May 29, 2009 at 1:24 AM, Paul Mackerras <paulus@samba.org> wrote:
+>> Ingo Molnar writes:
 >>
->> this looks somewhat academic - at least on x86, even the fastest
->> events (say cycles) with a 32 bit overflow means one event per
->> second on 4GB. That's not a significant event count in practice.
->> What's the minimum width we are talking about on Power?
+>>> * Corey Ashford <cjashfor@linux.vnet.ibm.com> wrote:
+>>> >> So you're suggesting to artificually strech periods by say
+>>> >> composing a single overflow from smaller ones, ignoring the
+>>> >> intermediate overflow events?
+>>> >>
+>>> >> That sounds doable, again, patch welcome.
+>>> >
+>>> > I definitely agree with Stephane's point on this one.  I had
+>>> > assumed that long irq_periods (longer than the width of the
+>>> > counter) would be synthesized as you suggest.  If this is not the
+>>> > case, PCL should be changed so that it does, -or- at a minimum,
+>>> > the user should get an error back stating that the period is too
+>>> > long for the hardware counter.
+>>>
+>>> this looks somewhat academic - at least on x86, even the fastest
+>>> events (say cycles) with a 32 bit overflow means one event per
+>>> second on 4GB. That's not a significant event count in practice.
+>>> What's the minimum width we are talking about on Power?
+>>
+>> 32 bits, but since the top bit is effectively a level-sensitive
+>> interrupt request, the maximum period in hardware is 2^31 counts.
+>>
+> This is exactly the same on Intel X86: 31 bits.
+> AMD is different.
 >
-> 32 bits, but since the top bit is effectively a level-sensitive
-> interrupt request, the maximum period in hardware is 2^31 counts.
+> Unfortunately, the Intel document is very obscure about this restriction.
 >
-This is exactly the same on Intel X86: 31 bits.
-AMD is different.
+> Let's take Core. 40-bit wide counters. If you read with RDPMC
+> you get 40-bit worth of data, same with RDMSR.
+>
+> If you write with WRMSR, you can only modify the bottom 32
+> bits. But bit 31 is the sign bit. Bit 32-39 are sign extension
+> of bit 31.
+>
+Let me rephrase this a bit. You can actually modify all bits
+with WRMSR. but the sign extension determines the value
+of bits 32-39 based on bit 31.
 
-Unfortunately, the Intel document is very obscure about this restriction.
-
-Let's take Core. 40-bit wide counters. If you read with RDPMC
-you get 40-bit worth of data, same with RDMSR.
-
-If you write with WRMSR, you can only modify the bottom 32
-bits. But bit 31 is the sign bit. Bit 32-39 are sign extension
-of bit 31.
-
-To trigger an overflow, bit 31 must be set, i.e., interrupt is triggered
-when 40 bits transition back to 0.
-
-Therefore your actual degree of freedom for the sampling period
-is 31 bits.
+Forgot to mention that since Penryn, if you try to set bits 40-63
+with WRMSR, you get a fault.
