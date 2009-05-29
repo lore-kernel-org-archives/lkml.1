@@ -1,154 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756198AbZE2TwG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761831AbZE2TyU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756198AbZE2TwG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 15:52:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752773AbZE2Tv4
+	id S1761831AbZE2TyU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 15:54:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753960AbZE2TyN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 15:51:56 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:24364 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752142AbZE2Tvz (ORCPT
+	Fri, 29 May 2009 15:54:13 -0400
+Received: from mail-bw0-f222.google.com ([209.85.218.222]:58424 "EHLO
+	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753153AbZE2TyM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 15:51:55 -0400
+	Fri, 29 May 2009 15:54:12 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
-         :organization:date:message-id:mime-version:x-mailer
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
          :content-transfer-encoding;
-        b=anGpooyAyBJ1MrOyL3f6YmmIxAuDHggHTrCnPDmNF+iQzp8mujO9QHW5045tC13K66
-         xyCtVEI1cubFLOaxsmbbtwQUCLPccccx04/zii7FVVQsE5oTTqglaSKg/3Q9rZLmjx3A
-         G8zVurIYPLSjEHOqNeQkf+5yx9p2GePot0pQE=
-Subject: Re: [loongson-PATCH-v1 16/27] Add Siliconmotion 712 framebuffer
- driver
-From: Wu Zhangjin <wuzhangjin@gmail.com>
-Reply-To: wuzhangjin@gmail.com
-To: Simon Braunschmidt <sb@emlix.com>, boyod.yang@siliconmotion.com.cn,
-       gewang@siliconmotion.com
-Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
-In-Reply-To: <4A1FE338.5010802@emlix.com>
-References: <cover.1242855716.git.wuzhangjin@gmail.com>
-	 <ad533255eec0400e4fed72671c0865472dd68d02.1242855716.git.wuzhangjin@gmail.com>
-	 <4A1FE338.5010802@emlix.com>
-Content-Type: text/plain
-Organization: DSLab, Lanzhou University, China
-Date: Sat, 30 May 2009 03:51:50 +0800
-Message-Id: <1243626710.18071.78.camel@falcon>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+        b=gInsIThEwTAV7RCZCPOj+5hOcflF471FhDxoI7mbjTlg8Wla1DDwxrOIxExh2YnmiQ
+         OmC1lJsqasWg2BRFEoYKa4YfFlcvkOZJWVkn732yHuroekq6CeTpgfgBmOzJTG+s5b6n
+         Gle9ey+xadUPRHJYd+RkRhhVf31Xr9QiW1aC8=
+MIME-Version: 1.0
+In-Reply-To: <200905292147.05395.rjw@sisk.pl>
+References: <1243625720.4426.0.camel@plop> <200905292147.05395.rjw@sisk.pl>
+Date: Fri, 29 May 2009 21:54:13 +0200
+X-Google-Sender-Auth: 9a65ca54fa164a4b
+Message-ID: <e8ca35370905291254o759dc18x8a6b318228c8ba4e@mail.gmail.com>
+Subject: Re: Stable regression 2.6.29.3 vs 2.6.29.2
+From: Pascal Terjan <pterjan@mandriva.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-kernel@vger.kernel.org, stable <stable@kernel.org>,
+       Yinghai Lu <yinghai@kernel.org>, Greg KH <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, 
+2009/5/29 Rafael J. Wysocki <rjw@sisk.pl>:
+> On Friday 29 May 2009, Pascal Terjan wrote:
+>> (Resending because of wrong To:, sorry for the duplicate)
+>>
+>> We have a machine here where hard disk is no longer detected at boot
+>> time with 2.6.29.3 (it happens only on kernels with HIGHMEM4G + PAE and
+>> not on the same one with HIGHMEM64G).
+>>
+>> Motherboard is ECS PF22 Extreme
+>>
+>> bisect blames this commit:
+>>
+>> http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.29.y.git;a=commit;h=3b442bfc78d351343fa539c63afde75d7b134316
+>
+> Would it be possible to check if the current mainline works correctly?
+>
 
-On Fri, 2009-05-29 at 15:29 +0200, Simon Braunschmidt wrote:
-> Hi Wu Zhangjin
-> 
-> I applied your patch cleanly and run it on a i486SX (little endian) 
-> embedded computing board.
-
-thanks very much for testing it in a non-mips platform!
-
-> This provides a huge performance benefit compared to vesa framebuffer, 
-> so thanks a lot for the contribution.
-> 
-
-the thanks should goes to the original authors from Silicon Motion
-Technology Corp. including Ge Wang and Boyod.Yang. I just cleaned it up.
-
-> I tested it in both the library-accelerated (cfb...) and hardware 
-> accelerated codepaths, with no problems. Tested with qt-embedded 4.5.1.
-> 
-> As i have seen lots of functionality are guarded by
-> #ifdef __BIG_ENDIAN
-> 
-> Is there a way to setup a different mode than 1024x600 on 
-> kernel-commandline or from userspace, e.g. with fbset?
-> 
-
-seems we can change it in userspace, i have changed it to 800X480 in a
-7inch yeeloong2f laptop in the "control center" of KDE desktop.
-
-or perhaps you can configure it in the Xorg.conf directly.
-
-> What I currently do is
-> picking appropriate values form the table VGAMode in smtcfb.h and 
-> hardcoding them.
-> 
-> I tried 800x600x16bit@60hz, which worked also, but 1024x768x24bit@60hz 
-> left me with a corrupted display output (distored colors, missing 
-> regions), i did not check further wheter it also crashed.
-> 
-
-I will try to check it, but in reality, I'm not familiar with it, so
-maybe very hard and slow to check it. I will forward this E-mail to the
-original authors, hope they can give some help.
-
-> I dont know wheter i am subscribed and this will make it through to lkml 
-> and linux-mips, feel free to cite me if you want.
-> 
-> Also if you want you may add my
-> 
-> Tested-by: Simon Braunschmidt <sbraun@emlix.com>
-> 
-
-added.
-
-> 
-> see also attached a patch for the debug messages
-> 
-> 
-
-Applied.
-
-thanks!
-Wu Zhangjin
-> 
->  From addec9a5a27512621c538a2f799e31e07720cb9c Mon Sep 17 00:00:00 2001
-> From: Simon Braunschmidt <sbraun@emlix.com>
-> Date: Fri, 29 May 2009 15:03:51 +0200
-> Subject: [PATCH] [video] fix debug messages in smtcfb
-> 
-> when defining #DEBUG
-> ---
->   drivers/video/smi/smtcfb.c |    6 ++++--
->   1 files changed, 4 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/video/smi/smtcfb.c b/drivers/video/smi/smtcfb.c
-> index 33ce878..ebc6371 100644
-> --- a/drivers/video/smi/smtcfb.c
-> +++ b/drivers/video/smi/smtcfb.c
-> @@ -44,6 +44,8 @@
->   #include "smtcfb.h"
->   #include "smtc2d.h"
-> 
-> +#define DEBUG
-> +
->   #ifdef DEBUG
->   #define smdbg(format, arg...)  printk(KERN_DEBUG format , ## arg)
->   #else
-> @@ -1087,7 +1089,7 @@ static int __init sm712be_setup(char *options)
->          sm712be_flag = 0;
->          if (!options || !*options) {
->                  retval = 1;
-> -               smdbg("\n No sm712be parameter\n", __LINE__);
-> +               smdbg("\n No sm712be parameter\n");
->          }
->          if (!retval && strstr(options, "enable"))
->                  sm712be_flag = 1;
-> @@ -1113,7 +1115,7 @@ static int __init sm712vga_setup(char *options)
-> 
->          if (!options || !*options) {
->                  retval = 1;
-> -               smdbg("\n No vga parameter\n", __LINE__);
-> +               smdbg("\n No vga parameter\n");
->          }
-> 
->          screen_info.lfb_width = 0;
-> --
-> 1.6.3.rc0.1.gf800
-> 
-> 
-> 
-
+I'll do that on Tuesday (the machine is in the office)
