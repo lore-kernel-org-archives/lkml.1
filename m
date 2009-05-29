@@ -1,72 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754962AbZE2XJd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756587AbZE2XO5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754962AbZE2XJd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 19:09:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752612AbZE2XJ0
+	id S1756587AbZE2XO5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 19:14:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753677AbZE2XOs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 19:09:26 -0400
-Received: from mga14.intel.com ([143.182.124.37]:23744 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750811AbZE2XJZ convert rfc822-to-8bit (ORCPT
+	Fri, 29 May 2009 19:14:48 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:37020 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752354AbZE2XOr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 19:09:25 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,273,1241420400"; 
-   d="scan'208";a="148542126"
-From: "Nakajima, Jun" <jun.nakajima@intel.com>
-To: Andi Kleen <andi@firstfloor.org>,
-       George Dunlap <george.dunlap@eu.citrix.com>
-CC: "jeremy@goop.org" <jeremy@goop.org>,
-       "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
-       Keir Fraser <Keir.Fraser@eu.citrix.com>,
-       "x86@kernel.org" <x86@kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Fri, 29 May 2009 16:09:19 -0700
-Subject: RE: [Xen-devel] Re: Xen is a feature
-Thread-Topic: [Xen-devel] Re: Xen is a feature
-Thread-Index: AcngjC2kxLe7hGyOR8ylpz+T2aRv1QAF3gmQ
-Message-ID: <0B53E02A2965CE4F9ADB38B34501A3A188156C9C@orsmsx505.amr.corp.intel.com>
-References: <162f4c90-6431-4a2a-b337-6d7451d7b11e@default>
-	<20090528001350.GD26820@elte.hu> <4A1F302E.8030501@goop.org>
-	<20090528.210559.137121893.davem@davemloft.net>
-	<4A1FCE8E.2060604@eu.citrix.com> <87tz33ep1b.fsf@basil.nowhere.org>
-In-Reply-To: <87tz33ep1b.fsf@basil.nowhere.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	Fri, 29 May 2009 19:14:47 -0400
+Subject: Re: [PATCH] ath5k: added initial RFKILL support
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Tobias Doerffel <tobias.doerffel@gmail.com>
+Cc: Bob Copeland <me@bobcopeland.com>, Jiri Slaby <jirislaby@gmail.com>,
+       ath5k-devel@venema.h4ckr.net, mickflemm@gmail.com,
+       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <200905300033.12204.tobias.doerffel@gmail.com>
+References: <1242850139-25438-1-git-send-email-jirislaby@gmail.com>
+	 <200905260124.03287.tobias.doerffel@gmail.com>
+	 <1243294366.29222.10.camel@johannes.local>
+	 <200905300033.12204.tobias.doerffel@gmail.com>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-GVi3sAu+qdZspZuck9qG"
+Date: Sat, 30 May 2009 01:14:30 +0200
+Message-Id: <1243638870.13863.1.camel@johannes.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/29/2009 11:34:40 AM, Andi Kleen wrote:
-> George Dunlap <george.dunlap@eu.citrix.com> writes:
->
-> cc list from hell trimmed.
->
-> > allowing Linux to run as dom0 *is* improving Linux.  The lack of
-> > dom0 support is at this moment making life more difficult for a huge
-> > number of Linux users who use Xen, including Mozilla, Debian, and Amazon.
-> > Adding dom0 support would make Linux even more useful to a wide
-> > variety of people not using Xen at the moment.
->
-> Perhaps one way to address this problem would be to make the Dom0
-> interface less intrusive for the host OS?
->
-> Maybe impression last time I looked was that there was huge potential
-> of improvement in this area. For example the PAT issue recently
-> discussed was completely unnecessary.  Or if you added a "VT/SVM only"
-> Dom0 mode I'm sure the interface would be significantly cleaner too.
-> If you can come up with a slim clean interface the chances for actual
-> integration would be likely much higher.
 
-I think we still need some (or all?) of additional dom0 PV ops even for HVM (Hardware-based VM) dom0. Hardware-based virtualization can significantly clean up the CPU-related PV ops (including some for local APIC), but they have nothing to do with dom0.
+--=-GVi3sAu+qdZspZuck9qG
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Some hooks in the host could be removed by reusing the HVM-specific code with modifications to the virtualization logic, but I think people need to tell which specific ones are intrusive, to be fair.
+On Sat, 2009-05-30 at 00:33 +0200, Tobias Doerffel wrote:
 
-             .
-Jun Nakajima | Intel Open Source Technology Center
+> > Could you try to work against v11
+> > of my rfkill patch, or better even against the cfg80211 rfkill instead?
+> I didn't look at both of them yet. However I think we first should try to=
+ get=20
+> current rfkill support into mainline as fast as possible. Improvements an=
+d=20
+> adaptations to reworked rfkill framework can follow.
+
+No other comments from me -- but since the v11 of the rfkill rewrite
+will certainly hit the tree before your patch (it's almost in) you
+_will_ have to work against it. I'll also try to make the cfg80211
+rfkill hit the tree very soon for reasons I'll explain elsewhere -- you
+would be better off working against that because then your rfkill code
+is very very very simple and doesn't need to do much at all.
+
+johannes
+
+--=-GVi3sAu+qdZspZuck9qG
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAABAgAGBQJKIGxTAAoJEODzc/N7+QmajhUP/RvPIxcrxrKmDxKiHuLMhGlo
+n9j158LT9golqaDamkl1Qg5sP83M6plQk3dLp87dT63qzb82uQYzN660CpsGHREE
+Y0BGzOFt0Fb61vjRhUJrL4yu0Hi6WnyCDeDntXTXiw8tfR/WYy+7v4lGu5ia0BnX
+n5LBfAddcbdp00eBDpLMVuSr4RbYrOTPfrTLn3UaptEu/Ol03sBF/VgNOqrErgBa
+laUcoF37bNoBq3Mkb4LpJ6eq3uYKUOR+LSnqeE66vNpNhyqEMR5r4uYI6KqTS8CF
+WYd08WK9zIapq5JFULv01+ta+iWj/sxGY1yqFY0v1KUVu8nCs4nlmY3waBn/yoqh
+xTW7gaaCbXTOSJGAzJSfZKxXt0MTPbklAefQ7B7X8HT2Sjrxg2Q87tfZXpvvm+4F
+3yM9mlp6cBtONzj5/MTi+tKXINVbaegDMjyMxgJdB7owwDm7syO1FvhQ4VPvo42Z
+pBLY9rkOTZ0wd2y23zC/msRUlLvaR4fMt8bdyfEmbh2P72CerIijBcCypZccoMIt
+0eXWe8mrs3rCOZHc7w0lrDQ7y38PTtAmkhTjxBuyFmfYOgICmeqhLl8lbah3b7kf
+l3xiTNUONzjnsr/Mf7h8mhY2iipv8NaJrJ261mdDL9D7PfH+gRQdRKEPx8EAduVV
+kAvhDieG+W7OHQH75f8N
+=2o9a
+-----END PGP SIGNATURE-----
+
+--=-GVi3sAu+qdZspZuck9qG--
+
