@@ -1,41 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758131AbZE2LNn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758614AbZE2LP5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758131AbZE2LNn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 07:13:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756496AbZE2LNg
+	id S1758614AbZE2LP5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 07:15:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753991AbZE2LPt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 07:13:36 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:51582 "EHLO bilbo.ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756140AbZE2LNf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 07:13:35 -0400
+	Fri, 29 May 2009 07:15:49 -0400
+Received: from tomts52-srv.bellnexxia.net ([209.226.175.177]:38271 "EHLO
+	tomts52-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757763AbZE2LPt convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 May 2009 07:15:49 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AqOaACBgH0rR4q/5/2dsb2JhbACLQYJmki+kEYpKg3gF
+X-Mailer: Openwave WebEngine, version 2.8.11 (webedge20-101-194-20030622)
+X-Originating-IP: [41.219.137.100]
+From: =?ISO-8859-1?B?qUlyaXNo?= Alert <bwmfg@bellnet.ca>
+Reply-To: wills.spencer@btinternet.com
+To: <Info@I-W-A.net>
+Subject: Irish....Winner
+Date: Fri, 29 May 2009 7:15:42 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18975.50009.814331.113052@cargo.ozlabs.ibm.com>
-Date: Fri, 29 May 2009 21:13:29 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH RFC] perf_counter: Don't swap contexts containing
-	locked mutex
-In-Reply-To: <20090529091608.GA15278@elte.hu>
-References: <18975.31580.520676.619896@drongo.ozlabs.ibm.com>
-	<1243584388.23657.156.camel@twins>
-	<1243584793.23657.168.camel@twins>
-	<1243585721.23657.177.camel@twins>
-	<20090529085916.GA21461@elte.hu>
-	<20090529091608.GA15278@elte.hu>
-X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Message-Id: <20090529111550.XYSB1565.tomts52-srv.bellnexxia.net@toip37-bus.srvr.bell.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar writes:
+You have just been awarded,£1,350,000 GBP in the Online,send us your
+Names........
+Address......
+Country......
+Sex/Tel......
 
-> looping in the remove-context retry loop.
-
-Ah! We need to reload task inside the loop.  And possibly in other
-places.
-
-Paul.
