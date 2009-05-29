@@ -1,63 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760705AbZE2PZR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761106AbZE2Pd6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760705AbZE2PZR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 11:25:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759542AbZE2PZG
+	id S1761106AbZE2Pd6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 11:33:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758835AbZE2Pdu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 11:25:06 -0400
-Received: from mga02.intel.com ([134.134.136.20]:30294 "EHLO mga02.intel.com"
+	Fri, 29 May 2009 11:33:50 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:54200 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759210AbZE2PZF convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 11:25:05 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,272,1241420400"; 
-   d="scan'208";a="519917423"
-From: "Eaton, Thomas G" <thomas.g.eaton@intel.com>
-To: Daniel Stone <daniel@fooishbar.org>
-CC: "dri-devel@lists.sourceforge.net" <dri-devel@lists.sourceforge.net>,
-       "airlied@linux.ie" <airlied@linux.ie>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Fri, 29 May 2009 09:25:05 -0600
-Subject: RE: [PATCH] drm: add connector and encoder types for MIPI displays
-Thread-Topic: [PATCH] drm: add connector and encoder types for MIPI displays
-Thread-Index: Acnf/OYZnDXeSOhQSY6aDTZ/LeaC5wAcROgw
-Message-ID: <4060059527C3A74384B5C4ED9D30CB99884CF75F@rrsmsx506.amr.corp.intel.com>
-References: <4060059527C3A74384B5C4ED9D30CB998833847C@rrsmsx506.amr.corp.intel.com>
- <4060059527C3A74384B5C4ED9D30CB99884CF09D@rrsmsx506.amr.corp.intel.com>
- <20090529012526.GB22818@fooishbar.org>
-In-Reply-To: <20090529012526.GB22818@fooishbar.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	id S1758603AbZE2Pdt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 May 2009 11:33:49 -0400
+From: Jarod Wilson <jarod@redhat.com>
+Organization: Red Hat, Inc.
+To: linux-crypto@vger.kernel.org
+Subject: [RFC PATCH] crypto: add buffer overflow checks to testmgr
+Date: Fri, 29 May 2009 11:32:54 -0400
+User-Agent: KMail/1.11.3 (Linux/2.6.29.3-140.fc11.x86_64; KDE/4.2.3; x86_64; ; )
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Neil Horman <nhorman@tuxdriver.com>
 MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200905291132.55848.jarod@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Based on the descriptions of encoder and connector, MIPI has different hardware for both the encoder and the connector than LVDS.  If it is unnecessary to present encoder and connector type information to userspace, then I agree that it could be simplified.  However, with the current implementation, I think it would be misleading to refer to all internal panels as having the same encoder and connector types unless they did in fact share the same hardware encoders and connectors.  
+At present, its entirely possible to add a test vector to testmgr with
+an input longer than a page in length w/o specifying a .np option, and
+overflow the page of memory allocated to {a,}xbuf[0], silently
+corrupting memory. I know, because I've accidentally done it. :)
 
-Cheers,
--Gideon 
+While this doesn't currently happen in practice w/the existing code,
+due to all !np vectors being less than a 4k page in length (and the
+page allocation loop often returns contiguous pages anyway), explicit
+checks or a way to remove the 4k limit would be a good idea.
 
------Original Message-----
-From: Daniel Stone [mailto:daniel@fooishbar.org] 
-Sent: Thursday, May 28, 2009 6:25 PM
-To: Eaton, Thomas G
-Cc: dri-devel@lists.sourceforge.net; airlied@linux.ie; linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] drm: add connector and encoder types for MIPI displays
+A few ways to fix and/or work around this:
 
-On Thu, May 28, 2009 at 12:16:23PM -0600, Eaton, Thomas G wrote:
-> Added connector and encoder types for MIPI displays.
-> 
-> Signed-off-by: Thomas G Eaton <thomas.g.eaton@intel.com>
+1) allocate some larger guaranteed contiguous buffers using
+__get_free_pages() or kmalloc and use them in the !np case
 
-I wonder if this is all really necessary to present to userspace, or if
-MIPI/LVDS/et al should just fall under 'internally-connected panel'?
+2) catch the > PAGE_SIZE && !np case and then do things similar to how
+they are done in the np case
 
-Cheers,
-Daniel
+3) catch the > PAGE_SIZE && !np case and simply exit with an error
+
+Since there currently aren't any test vectors that are actually larger
+than a page and not tagged np, option 1 seems like a waste of memory
+and option 2 sounds like unnecessary complexity, so I'd offer up
+option 3 as the most viable alternative right now.
+
+Signed-off-by: Jarod Wilson <jarod@redhat.com>
+
+---
+ crypto/testmgr.c |   34 ++++++++++++++++++++++++++++++++++
+ 1 files changed, 34 insertions(+), 0 deletions(-)
+
+diff --git a/crypto/testmgr.c b/crypto/testmgr.c
+index 376ea88..9483a2b 100644
+--- a/crypto/testmgr.c
++++ b/crypto/testmgr.c
+@@ -185,6 +185,13 @@ static int test_hash(struct crypto_ahash *tfm, struct hash_testvec *template,
+ 
+ 		hash_buff = xbuf[0];
+ 
++		if (template[i].psize > PAGE_SIZE) {
++			printk(KERN_ERR "alg: hash: psize %u larger than "
++			       "contiguous buffer space\n", template[i].psize);
++			ret = -EOVERFLOW;
++			goto out;
++		}
++
+ 		memcpy(hash_buff, template[i].plaintext, template[i].psize);
+ 		sg_init_one(&sg[0], hash_buff, template[i].psize);
+ 
+@@ -357,6 +364,16 @@ static int test_aead(struct crypto_aead *tfm, int enc,
+ 			input = xbuf[0];
+ 			assoc = axbuf[0];
+ 
++			if (template[i].ilen > PAGE_SIZE ||
++			    template[i].alen > PAGE_SIZE) {
++				printk(KERN_ERR "alg: aead: input larger than "
++				       "contiguous buffer space (ilen: %u, "
++				       "alen: %u)\n",
++				       template[i].ilen, template[i].alen);
++				ret = -EOVERFLOW;
++				goto out;
++			}
++
+ 			memcpy(input, template[i].input, template[i].ilen);
+ 			memcpy(assoc, template[i].assoc, template[i].alen);
+ 			if (template[i].iv)
+@@ -651,6 +668,14 @@ static int test_cipher(struct crypto_cipher *tfm, int enc,
+ 		j++;
+ 
+ 		data = xbuf[0];
++
++		if (template[i].ilen > PAGE_SIZE) {
++			printk(KERN_ERR "alg: cipher: ilen %u larger than "
++			       "contiguous buffer space\n", template[i].ilen);
++			ret = -EOVERFLOW;
++			goto out;
++		}
++
+ 		memcpy(data, template[i].input, template[i].ilen);
+ 
+ 		crypto_cipher_clear_flags(tfm, ~0);
+@@ -742,6 +767,15 @@ static int test_skcipher(struct crypto_ablkcipher *tfm, int enc,
+ 			j++;
+ 
+ 			data = xbuf[0];
++
++			if (template[i].ilen > PAGE_SIZE) {
++				printk(KERN_ERR "alg: skcipher: ilen %u larger "
++				       "than contiguous buffer space\n",
++				       template[i].ilen);
++				ret = -EOVERFLOW;
++				goto out;
++			}
++
+ 			memcpy(data, template[i].input, template[i].ilen);
+ 
+ 			crypto_ablkcipher_clear_flags(tfm, ~0);
+
+-- 
+Jarod Wilson
+jarod@redhat.com
