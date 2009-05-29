@@ -1,77 +1,182 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762738AbZE2RSN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762876AbZE2RRx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762738AbZE2RSN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 13:18:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762277AbZE2RR3
+	id S1762876AbZE2RRx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 13:17:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762057AbZE2RR1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 13:17:29 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:51665 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762031AbZE2RR1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 29 May 2009 13:17:27 -0400
-To: Tejun Heo <tj@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       Cornelia Huck <cornelia.huck@de.ibm.com>, linux-fsdevel@vger.kernel.org,
-       Kay Sievers <kay.sievers@vrfy.org>, Greg KH <greg@kroah.com>,
-       "Eric W. Biederman" <ebiederm@aristanetworks.com>
-References: <m1zlcwltri.fsf_-_@fess.ebiederm.org>
-	<1243551665-23596-22-git-send-email-ebiederm@xmission.com>
-	<4A1FA7F4.9000708@kernel.org>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Fri, 29 May 2009 10:17:23 -0700
-In-Reply-To: <4A1FA7F4.9000708@kernel.org> (Tejun Heo's message of "Fri\, 29 May 2009 18\:16\:36 +0900")
-Message-ID: <m1iqjjbzh8.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+Received: from hera.kernel.org ([140.211.167.34]:57561 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761656AbZE2RRZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 May 2009 13:17:25 -0400
+Date: Fri, 29 May 2009 17:16:43 GMT
+From: tip-bot for Arnaldo Carvalho de Melo <acme@redhat.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org, acme@redhat.com,
+       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
+       rostedt@goodmis.org, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com, paulus@samba.org,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, efault@gmx.de,
+       rostedt@goodmis.org, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <20090529164859.GN4747@ghostprotocols.net>
+References: <20090529164859.GN4747@ghostprotocols.net>
+Subject: [tip:perfcounters/core] perf_counter tools: Shorten the DSO names using cwd
+Message-ID: <tip-b78c07d45a7e71be7b5c5d7486f922355ccf23a8@git.kernel.org>
+Git-Commit-ID: b78c07d45a7e71be7b5c5d7486f922355ccf23a8
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Rcpt-To: tj@kernel.org, ebiederm@aristanetworks.com, greg@kroah.com, kay.sievers@vrfy.org, linux-fsdevel@vger.kernel.org, cornelia.huck@de.ibm.com, linux-kernel@vger.kernel.org, gregkh@suse.de, akpm@linux-foundation.org
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Tejun Heo <tj@kernel.org>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  1.5 XMNoVowels Alpha-numberic number with no vowels
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 T_TooManySym_01 4+ unique symbols in subject
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
-Subject: Re: [PATCH 22/24] sysfs: Make sysfs_rename_link atomic
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 29 May 2009 17:16:44 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo <tj@kernel.org> writes:
+Commit-ID:  b78c07d45a7e71be7b5c5d7486f922355ccf23a8
+Gitweb:     http://git.kernel.org/tip/b78c07d45a7e71be7b5c5d7486f922355ccf23a8
+Author:     Arnaldo Carvalho de Melo <acme@redhat.com>
+AuthorDate: Fri, 29 May 2009 13:48:59 -0300
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Fri, 29 May 2009 19:14:08 +0200
 
-> Eric W. Biederman wrote:
->> From: Eric W. Biederman <ebiederm@xmission.com>
->> 
->> Use the existing sysfs_rename to make sysfs_rename_link an atomic
->> operation that does less work.  While I am at add additional sanity
->> checking to ensure it is a symlink I am renaming.
->> 
->> Acked-by: Kay Sievers <kay.sievers@vrfy.org>
->> Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
->
-> It would be really nice to merge or group this together with the first
-> three patches.  Other than that,
+perf_counter tools: Shorten the DSO names using cwd
 
-Perfection is the enemy of the good on that one.  That just convolutes
-things unnecessarily, makes the patches harder to review, and requires
-additional testing.
+[acme@emilia linux-2.6-tip]$ pwd
+/home/acme/git/linux-2.6-tip
 
-I much prefer to work in a tree without rewinding.
+Before (still available using -P/--full-paths)
 
-> Acked-by: Tejun Heo <tj@kernel.org>
->
-> -- 
-> tejun
+[acme@emilia linux-2.6-tip]$ perf report -P | head -10
+    11.48%             perf: 7454 [kernel]: clear_page_c
+     4.89%             perf: 7454 [kernel]: vsnprintf
+     4.61%             perf: 7454 /home/acme/git/linux-2.6-tip/Documentation/perf_counter/perf: dso__find_symbol
+     4.09%             perf: 7454 [kernel]: number
+     4.06%             perf: 7454 /home/acme/git/linux-2.6-tip/Documentation/perf_counter/perf: dso__fprintf
+     4.00%             perf: 7454 /home/acme/git/linux-2.6-tip/Documentation/perf_counter/perf: symbol_filter
+
+New default:
+
+[acme@emilia linux-2.6-tip]$ perf report | head -10
+    11.48%             perf: 7454 [kernel]: clear_page_c
+     4.89%             perf: 7454 [kernel]: vsnprintf
+     4.61%             perf: 7454 ./Documentation/perf_counter/perf: dso__find_symbol
+     4.09%             perf: 7454 [kernel]: number
+     4.06%             perf: 7454 ./Documentation/perf_counter/perf: dso__fprintf
+     4.00%             perf: 7454 ./Documentation/perf_counter/perf: symbol_filter
+
+Suggested-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+LKML-Reference: <20090529164859.GN4747@ghostprotocols.net>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ Documentation/perf_counter/builtin-report.c |   41 +++++++++++++++++++++++++--
+ 1 files changed, 38 insertions(+), 3 deletions(-)
+
+diff --git a/Documentation/perf_counter/builtin-report.c b/Documentation/perf_counter/builtin-report.c
+index 412d524..4705679 100644
+--- a/Documentation/perf_counter/builtin-report.c
++++ b/Documentation/perf_counter/builtin-report.c
+@@ -23,6 +23,7 @@ static int		show_mask = SHOW_KERNEL | SHOW_USER | SHOW_HV;
+ 
+ static int		dump_trace = 0;
+ static int		verbose;
++static int		full_paths;
+ 
+ static unsigned long	page_size;
+ static unsigned long	mmap_window = 32;
+@@ -134,6 +135,16 @@ static int load_kernel(void)
+ 	return err;
+ }
+ 
++static int strcommon(const char *pathname, const char *cwd, int cwdlen)
++{
++	int n = 0;
++
++	while (pathname[n] == cwd[n] && n < cwdlen)
++		++n;
++
++	return n;
++}
++
+ struct map {
+ 	struct list_head node;
+ 	uint64_t	 start;
+@@ -142,16 +153,28 @@ struct map {
+ 	struct dso	 *dso;
+ };
+ 
+-static struct map *map__new(struct mmap_event *event)
++static struct map *map__new(struct mmap_event *event, char *cwd, int cwdlen)
+ {
+ 	struct map *self = malloc(sizeof(*self));
+ 
+ 	if (self != NULL) {
++		const char *filename = event->filename;
++		char newfilename[PATH_MAX];
++
++		if (cwd) {
++			int n = strcommon(filename, cwd, cwdlen);
++			if (n == cwdlen) {
++				snprintf(newfilename, sizeof(newfilename),
++					 ".%s", filename + n);
++				filename = newfilename;
++			}
++		}
++
+ 		self->start = event->start;
+ 		self->end   = event->start + event->len;
+ 		self->pgoff = event->pgoff;
+ 
+-		self->dso = dsos__findnew(event->filename);
++		self->dso = dsos__findnew(filename);
+ 		if (self->dso == NULL)
+ 			goto out_delete;
+ 	}
+@@ -598,6 +621,8 @@ static int __cmd_report(void)
+ 	int ret, rc = EXIT_FAILURE;
+ 	uint32_t size;
+ 	unsigned long total = 0, total_mmap = 0, total_comm = 0, total_unknown = 0;
++	char cwd[PATH_MAX], *cwdp = cwd;
++	int cwdlen;
+ 
+ 	input = open(input_name, O_RDONLY);
+ 	if (input < 0) {
+@@ -621,6 +646,14 @@ static int __cmd_report(void)
+ 		return EXIT_FAILURE;
+ 	}
+ 
++	if (!full_paths) {
++		if (getcwd(cwd, sizeof(cwd)) == NULL) {
++			perror("failed to get the current directory");
++			return EXIT_FAILURE;
++		}
++		cwdlen = strlen(cwd);
++	} else
++		cwdp = NULL;
+ remap:
+ 	buf = (char *)mmap(NULL, page_size * mmap_window, PROT_READ,
+ 			   MAP_SHARED, input, offset);
+@@ -710,7 +743,7 @@ more:
+ 	} else switch (event->header.type) {
+ 	case PERF_EVENT_MMAP: {
+ 		struct thread *thread = threads__findnew(event->mmap.pid);
+-		struct map *map = map__new(&event->mmap);
++		struct map *map = map__new(&event->mmap, cwdp, cwdlen);
+ 
+ 		if (dump_trace) {
+ 			fprintf(stderr, "%p [%p]: PERF_EVENT_MMAP: [%p(%p) @ %p]: %s\n",
+@@ -809,6 +842,8 @@ static const struct option options[] = {
+ 	OPT_STRING('k', "vmlinux", &vmlinux, "file", "vmlinux pathname"),
+ 	OPT_STRING('s', "sort", &sort_order, "key[,key2...]",
+ 		   "sort by key(s): pid, comm, dso, symbol. Default: pid,symbol"),
++	OPT_BOOLEAN('P', "full-paths", &full_paths,
++		    "Don't shorten the pathnames taking into account the cwd"),
+ 	OPT_END()
+ };
+ 
