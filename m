@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754370AbZE2BLS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753074AbZE2BM5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754370AbZE2BLS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 21:11:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752104AbZE2BLJ
+	id S1753074AbZE2BM5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 21:12:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751983AbZE2BMu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 21:11:09 -0400
-Received: from hera.kernel.org ([140.211.167.34]:42923 "EHLO hera.kernel.org"
+	Thu, 28 May 2009 21:12:50 -0400
+Received: from hera.kernel.org ([140.211.167.34]:49636 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751078AbZE2BLI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 21:11:08 -0400
-Message-ID: <4A1F35ED.4000405@kernel.org>
-Date: Thu, 28 May 2009 18:10:05 -0700
+	id S1751011AbZE2BMt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 21:12:49 -0400
+Message-ID: <4A1F367F.6080509@kernel.org>
+Date: Thu, 28 May 2009 18:12:31 -0700
 From: Yinghai Lu <yinghai@kernel.org>
 User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
 To: Pekka Enberg <penberg@cs.helsinki.fi>
 CC: mingo@elte.hu, cl@linux-foundation.com, torvals@linux-foundation.org,
        mpm@selenic.com, npiggin@suse.de, linux-kernel@vger.kernel.org
-Subject: Subject: [PATCH] slab: remove bootmem calling
+Subject: [PATCH] slab: remove bootmem calling
 References: <1243517365.11533.65.camel@penberg-laptop>
 In-Reply-To: <1243517365.11533.65.camel@penberg-laptop>
 Content-Type: text/plain; charset=ISO-8859-1
@@ -64,3 +64,4 @@ Index: linux-2.6/mm/page_cgroup.c
  	for (index = 0; index < nr_pages; index++) {
  		pc = base + index;
  		__init_page_cgroup(pc, start_pfn + index);
+
