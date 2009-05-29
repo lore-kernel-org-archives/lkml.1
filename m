@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764928AbZE2U1R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764884AbZE2U0z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764928AbZE2U1R (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 16:27:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763615AbZE2UVF
+	id S1764884AbZE2U0z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 16:26:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932102AbZE2UVC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 16:21:05 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:45215 "EHLO
+	Fri, 29 May 2009 16:21:02 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:45222 "EHLO
 	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763110AbZE2UT4 (ORCPT
+	with ESMTP id S1763415AbZE2UT4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 29 May 2009 16:19:56 -0400
 From: "Eric W. Biederman" <ebiederm@xmission.com>
@@ -18,12 +18,12 @@ Cc: <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>,
        <linux-fsdevel@vger.kernel.org>, Kay Sievers <kay.sievers@vrfy.org>,
        Greg KH <greg@kroah.com>, "Eric W. Biederman" <ebiederm@xmission.com>,
        "Eric W. Biederman" <ebiederm@aristanetworks.com>
-Date: Fri, 29 May 2009 13:19:26 -0700
-Message-Id: <1243628376-22905-16-git-send-email-ebiederm@xmission.com>
+Date: Fri, 29 May 2009 13:19:32 -0700
+Message-Id: <1243628376-22905-22-git-send-email-ebiederm@xmission.com>
 X-Mailer: git-send-email 1.6.3.1.54.g99dd.dirty
 In-Reply-To: <m1r5y73bok.fsf_-_@fess.ebiederm.org>
 References: <m1r5y73bok.fsf_-_@fess.ebiederm.org>
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
 X-SA-Exim-Connect-IP: 76.21.114.89
 X-SA-Exim-Rcpt-To: akpm@linux-foundation.org, gregkh@suse.de, linux-kernel@vger.kernel.org, tj@kernel.org, cornelia.huck@de.ibm.com, linux-fsdevel@vger.kernel.org, kay.sievers@vrfy.org, greg@kroah.com, ebiederm@xmission.com, ebiederm@aristanetworks.com
 X-SA-Exim-Mail-From: ebiederm@xmission.com
@@ -40,79 +40,75 @@ X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
 	*      [sa04 1397; Body=2 Fuz1=2 Fuz2=2]
 	*  0.0 T_TooManySym_01 4+ unique symbols in subject
 	*  0.0 XM_SPF_Neutral SPF-Neutral
-	*  0.0 T_TooManySym_02 5+ unique symbols in subject
 	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
-Subject: [PATCH 16/26] sysfs: In sysfs_chmod_file lazily propagate the mode change.
+Subject: [PATCH 22/26] sysfs: Normalize error handling in sysfs_fill_inode
 X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
+X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Eric W. Biederman <ebiederm@xmission.com>
 
-Now that sysfs_getattr and sysfs_permission refresh the vfs
-inode there is no need to immediatly push the mode change
-into the vfs cache.  Reducing the amount of work needed and
-simplifying the locking.
+Use a single error exit path instead of doing whatever
+is the required cleanup at each point we find the error.
+Ultimately this should make the code more maintainable.
 
 Acked-by: Tejun Heo <tj@kernel.org>
 Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
 ---
- fs/sysfs/file.c |   31 ++++++++-----------------------
- 1 files changed, 8 insertions(+), 23 deletions(-)
+ fs/sysfs/mount.c |   16 +++++++++++-----
+ 1 files changed, 11 insertions(+), 5 deletions(-)
 
-diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
-index 0786b41..31cfe1d 100644
---- a/fs/sysfs/file.c
-+++ b/fs/sysfs/file.c
-@@ -577,38 +577,23 @@ EXPORT_SYMBOL_GPL(sysfs_add_file_to_group);
-  */
- int sysfs_chmod_file(struct kobject *kobj, struct attribute *attr, mode_t mode)
+diff --git a/fs/sysfs/mount.c b/fs/sysfs/mount.c
+index 0cb1088..1dd023a 100644
+--- a/fs/sysfs/mount.c
++++ b/fs/sysfs/mount.c
+@@ -41,8 +41,9 @@ struct sysfs_dirent sysfs_root = {
+ 
+ static int sysfs_fill_super(struct super_block *sb, void *data, int silent)
  {
--	struct sysfs_dirent *victim_sd = NULL;
--	struct dentry *victim = NULL;
--	struct inode * inode;
-+	struct sysfs_dirent *sd;
- 	struct iattr newattrs;
- 	int rc;
+-	struct inode *inode;
+-	struct dentry *root;
++	struct inode *inode = NULL;
++	struct dentry *root = NULL;
++	int error;
  
--	rc = -ENOENT;
--	victim_sd = sysfs_get_dirent(kobj->sd, attr->name);
--	if (!victim_sd)
--		goto out;
-+	mutex_lock(&sysfs_mutex);
+ 	sb->s_blocksize = PAGE_CACHE_SIZE;
+ 	sb->s_blocksize_bits = PAGE_CACHE_SHIFT;
+@@ -51,24 +52,29 @@ static int sysfs_fill_super(struct super_block *sb, void *data, int silent)
+ 	sb->s_time_gran = 1;
  
--	mutex_lock(&sysfs_rename_mutex);
--	victim = sysfs_get_dentry(victim_sd);
--	mutex_unlock(&sysfs_rename_mutex);
--	if (IS_ERR(victim)) {
--		rc = PTR_ERR(victim);
--		victim = NULL;
-+	rc = -ENOENT;
-+	sd = sysfs_find_dirent(kobj->sd, attr->name);
-+	if (!sd)
- 		goto out;
--	}
--
--	inode = victim->d_inode;
+ 	/* get root inode, initialize and unlock it */
++	error = -ENOMEM;
+ 	mutex_lock(&sysfs_mutex);
+ 	inode = sysfs_get_inode(sb, &sysfs_root);
+ 	mutex_unlock(&sysfs_mutex);
+ 	if (!inode) {
+ 		pr_debug("sysfs: could not get root inode\n");
+-		return -ENOMEM;
++		goto err_out;
+ 	}
  
--	mutex_lock(&inode->i_mutex);
--
--	newattrs.ia_mode = (mode & S_IALLUGO) | (inode->i_mode & ~S_IALLUGO);
-+	newattrs.ia_mode = (mode & S_IALLUGO) | (sd->s_mode & ~S_IALLUGO);
- 	newattrs.ia_valid = ATTR_MODE;
--	rc = sysfs_setattr(victim, &newattrs);
-+	rc = sysfs_sd_setattr(sd, &newattrs);
- 
--	mutex_unlock(&inode->i_mutex);
-  out:
--	dput(victim);
--	sysfs_put(victim_sd);
-+	mutex_unlock(&sysfs_mutex);
- 	return rc;
+ 	/* instantiate and link root dentry */
++	error = -ENOMEM;
+ 	root = d_alloc_root(inode);
+ 	if (!root) {
+ 		pr_debug("%s: could not get root dentry!\n",__func__);
+-		iput(inode);
+-		return -ENOMEM;
++		goto err_out;
+ 	}
+ 	root->d_fsdata = &sysfs_root;
+ 	sb->s_root = root;
+ 	return 0;
++err_out:
++	dput(root);
++	iput(inode);
++	return error;
  }
- EXPORT_SYMBOL_GPL(sysfs_chmod_file);
+ 
+ static int sysfs_get_sb(struct file_system_type *fs_type,
 -- 
 1.6.3.1.54.g99dd.dirty
 
