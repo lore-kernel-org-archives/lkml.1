@@ -1,70 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754192AbZE2VWS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753847AbZE2V3v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754192AbZE2VWS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 17:22:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752853AbZE2VWD
+	id S1753847AbZE2V3v (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 17:29:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752313AbZE2V3n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 17:22:03 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:48118 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752313AbZE2VWD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 17:22:03 -0400
-Date: Fri, 29 May 2009 23:17:34 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Lai Jiangshan <laijs@cn.fujitsu.com>, rusty@rustcorp.com.au, mingo@elte.hu,
-       paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 1/2] cpuhotplug: use rw_semaphore for cpu_hotplug
-Message-ID: <20090529211734.GA13868@redhat.com>
-References: <4A1F9CEA.1070705@cn.fujitsu.com> <20090529132328.99e7cae3.akpm@linux-foundation.org> <20090529210748.GA13449@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090529210748.GA13449@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 29 May 2009 17:29:43 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59076
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752142AbZE2V3n convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 May 2009 17:29:43 -0400
+Date: Fri, 29 May 2009 14:29:42 -0700 (PDT)
+Message-Id: <20090529.142942.136882164.davem@davemloft.net>
+To: pasik@iki.fi
+Cc: george.dunlap@eu.citrix.com, jeremy@goop.org, mingo@elte.hu,
+       dan.magenheimer@oracle.com, avi@redhat.com,
+       xen-devel@lists.xensource.com, x86@kernel.org,
+       linux-kernel@vger.kernel.org, Keir.Fraser@eu.citrix.com,
+       torvalds@linux-foundation.org, gregkh@suse.de, kurt.hackel@oracle.com,
+       Ian.Pratt@eu.citrix.com, xen-users@lists.xensource.com,
+       ksrinivasan@novell.com, EAnderson@novell.com, wimcoekaerts@wimmekes.net,
+       stephen.spector@citrix.com, jens.axboe@oracle.com, npiggin@suse.de
+Subject: Re: Xen is a feature
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090529141439.GT24960@edu.joroinen.fi>
+References: <20090528.210559.137121893.davem@davemloft.net>
+	<4A1FCE8E.2060604@eu.citrix.com>
+	<20090529141439.GT24960@edu.joroinen.fi>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/29, Oleg Nesterov wrote:
->
-> On 05/29, Andrew Morton wrote:
-> >
-> > On Fri, 29 May 2009 16:29:30 +0800
-> > Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
-> >
-> > >
-> > > Current get_online_cpus()/put_online_cpus() re-implement
-> > > a rw_semaphore,
-> > > so it is converted to a real rw_semaphore in this fix.
-> > > It simplifies codes, and is good for read.
-> >
-> > >  static struct {
-> > > -	struct task_struct *active_writer;
-> > > -	struct mutex lock; /* Synchronizes accesses to refcount, */
-> > >  	/*
-> > > -	 * Also blocks the new readers during
-> > > -	 * an ongoing cpu hotplug operation.
-> > > +	 * active_writer makes get_online_cpus()/put_online_cpus() are allowd
-> > > +	 * to be nested in cpu_hotplug_begin()/cpu_hotplug_done().
-> > > +	 *
-> > > +	 * Thus, get_online_cpus()/put_online_cpus() can be called in
-> > > +	 * CPU notifiers.
-> > >  	 */
-> > > -	int refcount;
-> > > +	struct task_struct *active_writer;
-> > > +	struct rw_semaphore rwlock;
-> > >  } cpu_hotplug;
->
-> But, afaics, down_write() blocks new readers.
->
-> This means that with this patch get_online_cpus() is not recursive, no?
+From: Pasi Kärkkäinen <pasik@iki.fi>
+Date: Fri, 29 May 2009 17:14:39 +0300
 
-And please note that the current code drops mutex when get_online_cpus()
-succeeds. With your patch (if I read it correctly) the code under get_()
-runs with cpu_hotplug->rwlock held for reading. I'm afraid this creates
-the new possibilities for deadlocks.
+> We really need Xen dom0 support in mainline Linux.
 
-Oleg.
+Whether we want a feature is seperate from making sure it's
+implementation is up to snuff and doesn't suck.
+
+But the concentration of the talk seems to be on wanting the feature,
+and that's only half the story.
+
+I'm getting sick of hearing over and over how many people use Xen,
+that point has been made succintly so let's move on ok?
 
