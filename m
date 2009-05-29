@@ -1,113 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757207AbZE2IkO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756836AbZE2IoU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757207AbZE2IkO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 04:40:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757178AbZE2Ijv
+	id S1756836AbZE2IoU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 04:44:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756656AbZE2IoI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 04:39:51 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:63848 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1757217AbZE2Ijt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 04:39:49 -0400
-Message-ID: <4A1F9FAC.6020506@cn.fujitsu.com>
-Date: Fri, 29 May 2009 16:41:16 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Fri, 29 May 2009 04:44:08 -0400
+Received: from smtp.citrix.com ([66.165.176.89]:7951 "EHLO SMTP.CITRIX.COM"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756433AbZE2IoG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 May 2009 04:44:06 -0400
+X-IronPort-AV: E=Sophos;i="4.41,270,1241409600"; 
+   d="scan'208";a="4461765"
+From: Ian Campbell <ian.campbell@citrix.com>
+To: <linux-kernel@vger.kernel.org>
+CC: Ian Campbell <ian.campbell@citrix.com>,
+       Becky Bruce <beckyb@kernel.crashing.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Greg KH <gregkh@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Kumar Gala <galak@kernel.crashing.org>, Olaf Kirch <okir@suse.de>,
+       Tony Luck <tony.luck@intel.com>, <linux-ia64@vger.kernel.org>,
+       <linuxppc-dev@ozlabs.org>, <x86@kernel.org>
+Subject: 
+Date: Fri, 29 May 2009 09:43:54 +0100
+Message-ID: <1243586643-5554-1-git-send-email-ian.campbell@citrix.com>
+X-Mailer: git-send-email 1.5.6.5
+swiotlb: Introduce architecture-specific APIs to replace __weak functions
 MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-CC: Tom Zanussi <tzanussi@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2/2] tracing/filters: use strcmp() instead of strncmp()
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trace filter is not working normally:
+This series:
+* removes the swiotlb_(arch_)_phys_to_bus and bus_to_phys __weak
+  hooks, replacing them with an architecture-specific phys_to_dma and
+  dma_to_phys interface. These are used by both PowerPC and Xen to
+  provide the correct mapping from physical to DMA addresses.
+* removes the swiotlb_address_needs_mapping and
+  swiotlb_range_needs_mapping __weak functions as well as
+  is_buffer_dma_capable (which should never have been a generic
+  function). All three are replaced by a single architecture-specific
+  interface which meets the needs of both PowerPC and Xen.
+* removes the swiotlb_virt_to_bus __weak function and replaces it with
+  a CONFIG_HIGHMEM compatible version when high memory is in use. This
+  is needed for 32 bit PowerPC swiotlb support.
 
-  # echo 'name == et' > tracing/events/irq/irq_handler_entry/filter
-  # echo 1 > tracing/events/irq/irq_handler_entry/enable
-  # cat trace_pipe
-      <idle>-0     [001]  1363.423175: irq_handler_entry: irq=18 handler=eth0
-      <idle>-0     [001]  1363.934528: irq_handler_entry: irq=18 handler=eth0
-      ...
+I think these new interfaces are cleaner than the existing __weak
+functions and isolate the swiotlb code from architecture internals.
 
-It's because we pass to trace_define_field() the information of
-__str_loc_##item, but not the actual string, so pred->str_len == field->size
-== sizeof(unsigned short), thus it always compare at most 2 bytes when
-filtering on __string() field.
+This series does not contain any Xen or PowerPC specific changes, those
+will follow in separate postings. The complete patchset has been boot
+tested under Xen and native-x86 and compiled for IA64 and PowerPC
 
-Since __string() is dynamic size, we are not able to set field->size to
-string length. Thus this patch uses strcmp() instead of strncmp().
-
-[ Impact: make filter facility working normally for __string() field ]
-
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
----
- kernel/trace/trace.h               |    1 -
- kernel/trace/trace_events_filter.c |    7 ++-----
- 2 files changed, 2 insertions(+), 6 deletions(-)
-
-diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index 6e735d4..ec8970b 100644
---- a/kernel/trace/trace.h
-+++ b/kernel/trace/trace.h
-@@ -758,7 +758,6 @@ struct filter_pred {
- 	filter_pred_fn_t fn;
- 	u64 val;
- 	char str_val[MAX_FILTER_STR_VAL];
--	int str_len;
- 	char *field_name;
- 	int offset;
- 	int not;
-diff --git a/kernel/trace/trace_events_filter.c b/kernel/trace/trace_events_filter.c
-index a854eed..8362586 100644
---- a/kernel/trace/trace_events_filter.c
-+++ b/kernel/trace/trace_events_filter.c
-@@ -158,7 +158,7 @@ static int filter_pred_string(struct filter_pred *pred, void *event,
- 	char *addr = (char *)(event + pred->offset);
- 	int cmp, match;
- 
--	cmp = strncmp(addr, pred->str_val, pred->str_len);
-+	cmp = strcmp(addr, pred->str_val);
- 
- 	match = (!cmp) ^ pred->not;
- 
-@@ -182,7 +182,7 @@ static int filter_pred_strloc(struct filter_pred *pred, void *event,
- 	char *addr = (char *)(event + str_loc);
- 	int cmp, match;
- 
--	cmp = strncmp(addr, pred->str_val, pred->str_len);
-+	cmp = strcmp(addr, pred->str_val);
- 
- 	match = (!cmp) ^ pred->not;
- 
-@@ -341,7 +341,6 @@ static void filter_clear_pred(struct filter_pred *pred)
- {
- 	kfree(pred->field_name);
- 	pred->field_name = NULL;
--	pred->str_len = 0;
- }
- 
- static int filter_set_pred(struct filter_pred *dest,
-@@ -576,7 +575,6 @@ static int filter_add_pred(struct filter_parse_state *ps,
- 			fn = filter_pred_string;
- 		else
- 			fn = filter_pred_strloc;
--		pred->str_len = field->size;
- 		if (pred->op == OP_NE)
- 			pred->not = 1;
- 		return filter_add_pred_fn(ps, call, pred, fn);
-@@ -957,7 +955,6 @@ static struct filter_pred *create_pred(int op, char *operand1, char *operand2)
- 	}
- 
- 	strcpy(pred->str_val, operand2);
--	pred->str_len = strlen(operand2);
- 
- 	pred->op = op;
- 
--- 
-1.5.4.rc3
-
+Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
+Cc: Becky Bruce <beckyb@kernel.crashing.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: Greg KH <gregkh@suse.de>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Kumar Gala <galak@kernel.crashing.org>
+Cc: Olaf Kirch <okir@suse.de>
+Cc: Tony Luck <tony.luck@intel.com>
+Cc: linux-ia64@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org
+Cc: x86@kernel.org
