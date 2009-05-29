@@ -1,46 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756197AbZE2Vwm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756203AbZE2V4A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756197AbZE2Vwm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 17:52:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752442AbZE2Vwe
+	id S1756203AbZE2V4A (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 17:56:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752104AbZE2Vzx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 17:52:34 -0400
-Received: from ns.penguin.cz ([84.21.108.25]:40812 "EHLO ns.penguin.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751907AbZE2Vwd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 17:52:33 -0400
-X-Greylist: delayed 1324 seconds by postgrey-1.27 at vger.kernel.org; Fri, 29 May 2009 17:52:33 EDT
-Subject: Re: unbreak suspend on zaurus on 2.6.30-rc6
-From: Stanislav Brabec <utx@penguin.cz>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: kernel list <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       Cyril Hrubis <metan@ucw.cz>
-In-Reply-To: <20090529105619.GA24187@elf.ucw.cz>
-References: <20090529105619.GA24187@elf.ucw.cz>
-Content-Type: text/plain
-Date: Fri, 29 May 2009 23:30:29 +0200
-Message-Id: <1243632629.9207.5.camel@utx.utx.cz>
+	Fri, 29 May 2009 17:55:53 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44044 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751708AbZE2Vzx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 May 2009 17:55:53 -0400
+Date: Fri, 29 May 2009 14:55:10 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: kamezawa.hiroyu@jp.fujitsu.com, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, nishimura@mxp.nes.nec.co.jp,
+       balbir@linux.vnet.ibm.com, hugh.dickins@tiscali.co.uk,
+       hannes@cmpxchg.org
+Subject: Re: [PATCH 3/4] reuse unused swap entry if necessary
+Message-Id: <20090529145510.b4ff541e.akpm@linux-foundation.org>
+In-Reply-To: <20090528142047.3069543b.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090528135455.0c83bedc.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090528142047.3069543b.kamezawa.hiroyu@jp.fujitsu.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
+On Thu, 28 May 2009 14:20:47 +0900
+KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 
-> This is hacky patch to unbreak suspend on -rc6; perhaps it will be
-> useful to someone.
+> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> 
+> Now, we can know a swap entry is just used as SwapCache via swap_map,
+> without looking up swap cache.
+> 
+> Then, we have a chance to reuse swap-cache-only swap entries in
+> get_swap_pages().
+> 
+> This patch tries to free swap-cache-only swap entries if swap is
+> not enough.
+> Note: We hit following path when swap_cluster code cannot find
+> a free cluster. Then, vm_swap_full() is not only condition to allow
+> the kernel to reclaim unused swap.
+> 
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> ---
+>  mm/swapfile.c |   39 +++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 39 insertions(+)
+> 
+> Index: new-trial-swapcount2/mm/swapfile.c
+> ===================================================================
+> --- new-trial-swapcount2.orig/mm/swapfile.c
+> +++ new-trial-swapcount2/mm/swapfile.c
+> @@ -73,6 +73,25 @@ static inline unsigned short make_swap_c
+>  	return ret;
+>  }
+>  
+> +static int
+> +try_to_reuse_swap(struct swap_info_struct *si, unsigned long offset)
+> +{
+> +	int type = si - swap_info;
+> +	swp_entry_t entry = swp_entry(type, offset);
+> +	struct page *page;
+> +	int ret = 0;
+> +
+> +	page = find_get_page(&swapper_space, entry.val);
+> +	if (!page)
+> +		return 0;
+> +	if (trylock_page(page)) {
+> +		ret = try_to_free_swap(page);
+> +		unlock_page(page);
+> +	}
+> +	page_cache_release(page);
+> +	return ret;
+> +}
 
-Thanks for the patch. I tried rc7 yesterday with same problem.
+This function could do with some comments explaining what it does, and
+why.  Also describing the semantics of its return value.
 
-Your patch makes resume working again. Serial console does not work
-after resume, inserting or removing charger causes resume, and syslog is
-a bit noisy now.
+afacit it's misnamed.  It doesn't 'reuse' anything.  It in fact tries
+to release a swap entry so that (presumably) its _caller_ can reuse the
+swap slot.
 
+The missing comment should also explain why this function is forced to
+use the nasty trylock_page().
 
-________________________________________________________________________
-Stanislav Brabec
-http://www.penguin.cz/~utx/zaurus
+Why _is_ this function forced to use the nasty trylock_page()?
 
+>  /*
+>   * We need this because the bdev->unplug_fn can sleep and we cannot
+>   * hold swap_lock while calling the unplug_fn. And swap_lock
+> @@ -294,6 +313,18 @@ checks:
+>  		goto no_page;
+>  	if (offset > si->highest_bit)
+>  		scan_base = offset = si->lowest_bit;
+> +
+> +	/* reuse swap entry of cache-only swap if not busy. */
+> +	if (vm_swap_full() && si->swap_map[offset] == SWAP_HAS_CACHE) {
+> +		int ret;
+> +		spin_unlock(&swap_lock);
+> +		ret = try_to_reuse_swap(si, offset);
+> +		spin_lock(&swap_lock);
+> +		if (ret)
+> +			goto checks; /* we released swap_lock. retry. */
+> +		goto scan; /* In some racy case */
+> +	}
+
+So..  what prevents an infinite (or long) busy loop here?  It appears
+that if try_to_reuse_swap() returned non-zero, it will have cleared
+si->swap_map[offset], so we don't rerun try_to_reuse_swap().  Yes?
+
+`ret' is a poor choice of identifier.  It is usually used to hold the
+value which this function will be returning.  Ditto `retval'.  But that
+is not this variable's role in this case.  Perhaps a better name would
+be slot_was_freed or something.
+
+>  	if (si->swap_map[offset])
+>  		goto scan;
+>  
+> @@ -375,6 +406,10 @@ scan:
+>  			spin_lock(&swap_lock);
+>  			goto checks;
+>  		}
+> +		if (vm_swap_full() && si->swap_map[offset] == SWAP_HAS_CACHE) {
+> +			spin_lock(&swap_lock);
+> +			goto checks;
+> +		}
+>  		if (unlikely(--latency_ration < 0)) {
+>  			cond_resched();
+>  			latency_ration = LATENCY_LIMIT;
+> @@ -386,6 +421,10 @@ scan:
+>  			spin_lock(&swap_lock);
+>  			goto checks;
+>  		}
+> +		if (vm_swap_full() && si->swap_map[offset] == SWAP_HAS_CACHE) {
+> +			spin_lock(&swap_lock);
+> +			goto checks;
+> +		}
+>  		if (unlikely(--latency_ration < 0)) {
+>  			cond_resched();
+>  			latency_ration = LATENCY_LIMIT;
