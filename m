@@ -1,45 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757247AbZE2JaK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757820AbZE2Jbd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757247AbZE2JaK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 05:30:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756423AbZE2J36
+	id S1757820AbZE2Jbd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 05:31:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757161AbZE2Jb0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 05:29:58 -0400
-Received: from mtagate8.de.ibm.com ([195.212.29.157]:47785 "EHLO
-	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756250AbZE2J35 (ORCPT
+	Fri, 29 May 2009 05:31:26 -0400
+Received: from silver.sucs.swan.ac.uk ([137.44.10.1]:59530 "EHLO
+	silver.sucs.swan.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756116AbZE2Jb0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 05:29:57 -0400
-From: Christian =?utf-8?q?Borntr=C3=A4ger?= <borntraeger@de.ibm.com>
-Organization: IBM
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Subject: Re: [PATCH] KVM: add localversion to avoid confusion and conflicts
-Date: Fri, 29 May 2009 11:29:29 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc6-self-00072-g279e677-dirty; KDE/4.2.2; i686; ; )
-Cc: Avi Kivity <avi@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>, KVM list <kvm@vger.kernel.org>
-References: <1243581494.3212.1.camel@localhost.localdomain> <200905290948.34482.borntraeger@de.ibm.com> <1243586626.4379.15.camel@localhost.localdomain>
-In-Reply-To: <1243586626.4379.15.camel@localhost.localdomain>
+	Fri, 29 May 2009 05:31:26 -0400
+Date: Fri, 29 May 2009 10:31:26 +0100
+From: Sitsofe Wheeler <sitsofe@yahoo.com>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: linux-kernel@vger.kernel.org,
+       Alan Jenkins <sourcejedi.lkml@googlemail.com>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, mingo@elte.hu
+Subject: Re: EeePC 900 trackpad often not detected at boot in 2.6.30-rc4
+Message-ID: <20090529093126.GA30979@sucs.org>
+References: <20090511072135.GA4682@sucs.org> <20090520024658.GD17649@dtor-d630.eng.vmware.com> <20090520054739.GA31552@sucs.org> <200905200025.20280.dmitry.torokhov@gmail.com> <20090526222049.GB27961@sucs.org> <20090528155401.GB18589@dtor-d630.eng.vmware.com> <20090528164231.GA19324@sucs.org> <20090528164942.GC18589@dtor-d630.eng.vmware.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200905291129.30296.borntraeger@de.ibm.com>
+In-Reply-To: <20090528164942.GC18589@dtor-d630.eng.vmware.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Freitag 29 Mai 2009 10:43:46 schrieb Jaswinder Singh Rajput:
-> > > Adding localversion avoids confusion in kernel images :
-> > NAK from my side. If you need a distinction, there is always
-> Here is NAK for your NAK from my side.
-> This patch is only for KVM tree and not for linus tree.
+On Thu, May 28, 2009 at 09:49:43AM -0700, Dmitry Torokhov wrote:
+> On Thu, May 28, 2009 at 05:42:31PM +0100, Sitsofe Wheeler wrote:
+> > On a normal boot there will be exactly 115 interrupts if the trackpad
+> > hasn't been touched but everything is OK just after booting. If there
+> > are less interrupts you know something has gone wrong...
+> > 
+> 
+> OK, I guess I will be pushin this to Linus then... Thank you for
+> testing.
 
-I know that this is for the kvm tree.
-I personally dont like to have a forced localversion in my kernel trees - it 
-might break my tooling. 
-Anyway, If it really makes your life better I can live with these localversion 
-files and adopt my tooling.
+Should I be trying to get you some extra logs (I saw and replied to
+Ingo's mail)?  If no one else has this problem is this just a symptom of
+a bigger problem (i.e. broken scheduling or unstated assumptions)?
 
-
+-- 
+Sitsofe | http://sucs.org/~sits/
