@@ -1,77 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755676AbZE2ADI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754590AbZE2AI6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755676AbZE2ADI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 20:03:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754949AbZE2ABy
+	id S1754590AbZE2AI6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 20:08:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752104AbZE2AIt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 20:01:54 -0400
-Received: from mail-gx0-f166.google.com ([209.85.217.166]:52422 "EHLO
-	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754856AbZE2ABu convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 20:01:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=VBKYwp5p7jPl+gIWzJXa8leLTLLjO1Rtkt8L/O4n/HZD65VTCUViLJZHX/pHxXHAtB
-         AdMCilxGmdSWO+vjG+jXGf/6Wj9kns/Ozl70Lo6FIDGRLvijO3nS58Iiao6NyfC5ge+3
-         KSYGn30FapWntOKPovr1OSbCCmmtaO9L3DX0Q=
+	Thu, 28 May 2009 20:08:49 -0400
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:53586 "EHLO e9.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751772AbZE2AIs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 20:08:48 -0400
+Date: Thu, 28 May 2009 17:08:48 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, mingo@elte.hu,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       davem@davemloft.net, dada1@cosmosbay.com, zbr@ioremap.net,
+       jeff.chua.linux@gmail.com, paulus@samba.org, jengelh@medozas.de,
+       r000n@r000n.net, benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
+Subject: Re: [PATCH RFC] v7 expedited "big hammer" RCU grace periods
+Message-ID: <20090529000848.GE6757@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090522190525.GA13286@linux.vnet.ibm.com> <4A1A3C23.8090004@cn.fujitsu.com> <20090525164446.GD7168@linux.vnet.ibm.com> <4A1B3FFB.7090306@cn.fujitsu.com> <20090526012843.GF7168@linux.vnet.ibm.com> <20090526154625.GA8662@linux.vnet.ibm.com> <4A1C9DFF.70708@cn.fujitsu.com> <20090527043001.GD6882@linux.vnet.ibm.com> <4A1CD17F.1000208@cn.fujitsu.com>
 MIME-Version: 1.0
-In-Reply-To: <E1LerUo-0000NE-Q3@mailer.emlix.com>
-References: <E1LerUo-0000NE-Q3@mailer.emlix.com>
-Date: Fri, 29 May 2009 10:01:51 +1000
-X-Google-Sender-Auth: 92f2c65c32d6f3ec
-Message-ID: <9e6f3dfd0905281701y6141e5d2xbbfb37e495cba8d9@mail.gmail.com>
-Subject: Re: [patch -v2] flat: fix data sections alignment
-From: John Williams <jwilliams@itee.uq.edu.au>
-To: Johannes Weiner <jw@emlix.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Howells <dhowells@redhat.com>,
-       Russell King <rmk@arm.linux.org.uk>, Bryan Wu <cooloney@kernel.org>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Paul Mundt <lethal@linux-sh.org>, Greg Ungerer <gerg@uclinux.org>,
-       linux-kernel@vger.kernel.org, michal.simek@petalogix.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A1CD17F.1000208@cn.fujitsu.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, May 27, 2009 at 01:37:03PM +0800, Lai Jiangshan wrote:
+> Paul E. McKenney wrote:
+> > OK, good point!  I do need to think about this.
+> > 
+> > In the meantime, where do you see a need to run
+> > synchronize_sched_expedited() from within a hotplug CPU notifier?
+> > 
+> > 						Thanx, Paul
+> > 
+> 
+> I don't worry about synchronize_sched_expedited() called
+> from within a hotplug CPU notifier:
+> 
+> 1st synchronize_sched_expedited() is newly, nobody calls it before current.
+> 2nd get_online_cpus() will not cause DEADLOCK in CPU notifier:
+> 	get_online_cpus() finds itself owns the cpu_hotplug.lock, it will
+> 	not take it again.
+> 
+> I worry DEADLOCK like this:(ABBA DEADLOCK)
 
-On Wed, Mar 4, 2009 at 11:51 PM, Johannes Weiner <jw@emlix.com> wrote:
-> From: Oskar Schirmer <os@emlix.com>
->
-> The flat loader uses an architecture's flat_stack_align() to align the
-> stack but assumes word-alignment is enough for the data sections.
->
-> However, on the Xtensa S6000 we have registers up to 128bit width
-> which can be used from userspace and therefor need userspace stack and
-> data-section alignment of at least this size.
->
-> This patch drops flat_stack_align() and uses the same alignment that
-> is required for slab caches, ARCH_SLAB_MINALIGN, or wordsize if it's
-> not defined by the architecture.
->
-> It also fixes m32r which was obviously kaput, aligning an
-> uninitialized stack entry instead of the stack pointer.
->
+Good point -- you had in fact mentioned this earlier.
 
-> ---
->  arch/arm/include/asm/flat.h      |    3 ---
->  arch/blackfin/include/asm/flat.h |    1 -
->  arch/h8300/include/asm/flat.h    |    1 -
->  arch/m68k/include/asm/flat.h     |    1 -
->  arch/sh/include/asm/flat.h       |    1 -
->  fs/binfmt_flat.c                 |   37 ++++++++++++++++++++++---------------
->  include/asm-m32r/flat.h          |    1 -
->  7 files changed, 22 insertions(+), 23 deletions(-)
+> > get_online_cpus() is a large lock, a lot's of lock in kernel is required
+> > after cpu_hotplug.lock.
+> > 
+> > _cpu_down()
+> > 	cpu_hotplug_begin()
+> > 		mutex_lock(&cpu_hotplug.lock)
+> > 	__raw_notifier_call_chain(CPU_DOWN_PREPARE)
+> > 		Lock a-kernel-lock.
+> > 
+> > It means when we have held a-kernel-lock, we can not call
+> > synchronize_sched_expedited(). get_online_cpus() narrows
+> > synchronize_sched_expedited()'s usages.
+> 
+> One thread calls _cpu_down() which do "mutex_lock(&cpu_hotplug.lock)"
+> and then do "Lock a-kernel-lock", other thread calls
+> synchronize_sched_expedited() with a-kernel-lock held,
+> ABBA DEADLOCK would happen:
+> 
+> thread 1                            |        thread 2
+> _cpu_down()                         |    Lock a-kernel-lock. 
+>   mutex_lock(&cpu_hotplug.lock)     |    synchronize_sched_expedited()
+> ------------------------------------------------------------------------
+>   Lock a-kernel-lock.(wait thread2) |       mutex_lock(&cpu_hotplug.lock)
+>                                             (wait thread 1)
+> 
+> 
+> cpuset_lock() is an example of a-kernel-lock as described before.
+> cpuset_lock() is required in CPU notifier.
+> 
+> But some work in cpuset need get_online_cpus().
+> (cpuset_lock() and then get_online_cpus(), we can
+> not release cpuset_lock() temporarily)
+> 
+> The fix is putting this work done in workqueue.
+> (get_online_cpus() and then cpuset_lock());
 
-Can you please cross-check this patch for MicroBlaze as well, we are
-another active nommu architecture.
+But there is another way.
 
-Thanks,
+Continue to use the migration kthreads, given that they already exist,
+already are created and destroyed by CPU hotplug operations, and given
+that they run as maximal priority.
 
-John
+My main concern with moving from get_online_cpus() to preempt_disable()
+has been the thought that somehow, sometime, in some future release
+of Linux, it will be possible for the migration threads to execute
+on the wrong CPU, perhaps only occasionally and perhaps only for
+very short time periods.  If this were to happen, there would be the
+possibility that the grace period would end too soon, which would be
+silently fatal.  My fingers simply refused to code something with this
+potential vulnerability.
+
+But it is easy to insert a check into migration_thread() to see if it
+is running on the wrong CPU.  If it is, I can do a WARN_ONCE() and also
+set a state variable to tell synchronize_sched_expedited() to invoke
+sychronize_sched(), thus avoiding messing up RCU.  On the next call
+to synchronize_sched_expedited(), it would again try relying on the
+migration threads.
+
+I am putting together yet another patch, but constructed along these
+lines, and will let you know how it turns out.
+
+							Thanx, Paul
