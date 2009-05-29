@@ -1,74 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762513AbZE2RUF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762636AbZE2RVw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762513AbZE2RUF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 13:20:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756537AbZE2RTz
+	id S1762636AbZE2RVw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 13:21:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754225AbZE2RVp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 13:19:55 -0400
-Received: from complete.lackof.org ([198.49.126.79]:55324 "EHLO
-	complete.lackof.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754225AbZE2RTy (ORCPT
+	Fri, 29 May 2009 13:21:45 -0400
+Received: from fg-out-1718.google.com ([72.14.220.154]:58845 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752794AbZE2RVo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 13:19:54 -0400
-Date: Fri, 29 May 2009 11:19:56 -0600
-From: Grant Grundler <grundler@parisc-linux.org>
-To: Yu Zhao <yu.zhao@intel.com>
-Cc: jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org,
-       marc.c.dionne@gmail.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] PCI: use fixed-up device class when configuring device
-Message-ID: <20090529171956.GE28355@lackof.org>
-References: <1243441505-5477-1-git-send-email-yu.zhao@intel.com>
+	Fri, 29 May 2009 13:21:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=rGnaDfI54hjfvjnc2tUYgcBf3SWnnvCrfJZmsw1tOQXibg/aZ+3kD3R1vMG7KBD1RE
+         +caLhHfH/FZWaHe8NmZc0z2wa4kdMN8xkf3SCDs+8LypSnVk8UCJMoQose+RpgQ51ioy
+         CtStqbKUX0rnJ48kZ9AO36nQJp6juAr/hgops=
+Date: Fri, 29 May 2009 21:21:38 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: mingo@elte.hu, x86@kernel.org, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH 1/3] x86: apic, restore irqs on fail paths
+Message-ID: <20090529172138.GC5176@lenovo>
+References: <1243497289-18591-1-git-send-email-jirislaby@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1243441505-5477-1-git-send-email-yu.zhao@intel.com>
-X-Home-Page: http://www.parisc-linux.org/
+In-Reply-To: <1243497289-18591-1-git-send-email-jirislaby@gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 28, 2009 at 12:25:05AM +0800, Yu Zhao wrote:
-> The device class may be changed after the early fixup. Need to
-> re-read the class value from pci_dev when configuring the device.
-> Otherwise some devices such as JMicron SATA controller won't work.
+[Jiri Slaby - Thu, May 28, 2009 at 09:54:47AM +0200]
+|
+| lapic_resume forgets to restore interrupts on fail paths.
+| Fix that.
 
-I looked at pci_setup_device() and was thinking pci_fixup_device()
-should be called before pci_cfg_space_size() and thus avoid having
-to setup local "class" variable twice. pci_cfg_space_size() only
-seems to care if the device is a PCI_CLASS_BRIDGE_HOST (or not).
+Good catch, Jiri!
 
-But dev->class has to be set up in any case and the current order
-makes more sense to me.
+Acked-by: Cyrill Gorcunov <gorcunov@openvz.org>
 
-Reviewed-by: Grant Grundler <grundler@parisc-linux.org>
+Though I really doubt if the system will be functional after such a fail :)
+But it's definitely better then having it irq-locked.
 
-thanks,
-grant
+Yinghai CC'ed just to be sure.
 
-> Tested-by: Marc Dionne <marc.c.dionne@gmail.com>
-> Signed-off-by: Yu Zhao <yu.zhao@intel.com>
-> ---
->  drivers/pci/probe.c |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-> index e3c3e08..f1ae247 100644
-> --- a/drivers/pci/probe.c
-> +++ b/drivers/pci/probe.c
-> @@ -745,6 +745,8 @@ int pci_setup_device(struct pci_dev *dev)
->  
->  	/* Early fixups, before probing the BARs */
->  	pci_fixup_device(pci_fixup_early, dev);
-> +	/* device class may be changed after fixup */
-> +	class = dev->class >> 8;
->  
->  	switch (dev->hdr_type) {		    /* header type */
->  	case PCI_HEADER_TYPE_NORMAL:		    /* standard header */
-> -- 
-> 1.6.1
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+| 
+| Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+| Cc: Ingo Molnar <mingo@redhat.com>
+| Cc: Thomas Gleixner <tglx@linutronix.de>
+| Cc: H. Peter Anvin <hpa@zytor.com>
+| ---
+|  arch/x86/kernel/apic/apic.c |   11 ++++++-----
+|  1 files changed, 6 insertions(+), 5 deletions(-)
+| 
+| diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
+| index 07cffc1..fc65544 100644
+| --- a/arch/x86/kernel/apic/apic.c
+| +++ b/arch/x86/kernel/apic/apic.c
+| @@ -2029,7 +2029,7 @@ static int lapic_resume(struct sys_device *dev)
+|  	unsigned int l, h;
+|  	unsigned long flags;
+|  	int maxlvt;
+| -	int ret;
+| +	int ret = 0;
+|  	struct IO_APIC_route_entry **ioapic_entries = NULL;
+|  
+|  	if (!apic_pm_state.active)
+| @@ -2040,14 +2040,15 @@ static int lapic_resume(struct sys_device *dev)
+|  		ioapic_entries = alloc_ioapic_entries();
+|  		if (!ioapic_entries) {
+|  			WARN(1, "Alloc ioapic_entries in lapic resume failed.");
+| -			return -ENOMEM;
+| +			ret = -ENOMEM;
+| +			goto restore;
+|  		}
+|  
+|  		ret = save_IO_APIC_setup(ioapic_entries);
+|  		if (ret) {
+|  			WARN(1, "Saving IO-APIC state failed: %d\n", ret);
+|  			free_ioapic_entries(ioapic_entries);
+| -			return ret;
+| +			goto restore;
+|  		}
+|  
+|  		mask_IO_APIC_setup(ioapic_entries);
+| @@ -2099,10 +2100,10 @@ static int lapic_resume(struct sys_device *dev)
+|  		restore_IO_APIC_setup(ioapic_entries);
+|  		free_ioapic_entries(ioapic_entries);
+|  	}
+| -
+| +restore:
+|  	local_irq_restore(flags);
+|  
+| -	return 0;
+| +	return ret;
+|  }
+|  
+|  /*
+| -- 
+| 1.6.3
+| 
+| 
+	-- Cyrill
