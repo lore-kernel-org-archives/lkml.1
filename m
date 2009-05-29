@@ -1,84 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757272AbZE2Xf1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756937AbZE2Xv3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757272AbZE2Xf1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 19:35:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752354AbZE2XfR
+	id S1756937AbZE2Xv3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 19:51:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753691AbZE2XvV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 19:35:17 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:43354 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751825AbZE2XfQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 19:35:16 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Kim Kyuwon <q1.kim@samsung.com>
-Subject: Re: [PATCH] PM: suspend_device_irqs(): don't disable wakeup IRQs
-Date: Sat, 30 May 2009 01:35:05 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc6-rjw; KDE/4.2.3; x86_64; ; )
-Cc: Kim Kyuwon <chammoru@gmail.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Kyungmin Park <kyungmin.park@samsung.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Kevin Hilman <khilman@deeprootsystems.com>
-References: <1241483224-7113-1-git-send-email-khilman@deeprootsystems.com> <200905232214.57186.rjw@sisk.pl> <4A1A4297.50809@samsung.com>
-In-Reply-To: <4A1A4297.50809@samsung.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905300135.07103.rjw@sisk.pl>
+	Fri, 29 May 2009 19:51:21 -0400
+Received: from jack.hrz.tu-chemnitz.de ([134.109.132.46]:52399 "EHLO
+	jack.hrz.tu-chemnitz.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753377AbZE2XvV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 May 2009 19:51:21 -0400
+X-Greylist: delayed 2364 seconds by postgrey-1.27 at vger.kernel.org; Fri, 29 May 2009 19:51:20 EDT
+From: Tobias Doerffel <tobias.doerffel@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Tobias Doerffel <tobias.doerffel@gmail.com>
+Subject: [PATCH] x86: add specific support for Intel Atom architecture
+Date: Sat, 30 May 2009 01:11:39 +0200
+Message-Id: <1243638699-15194-1-git-send-email-tobias.doerffel@gmail.com>
+X-Mailer: git-send-email 1.6.3.1
+X-Spam-Score: -1.4 (-)
+X-Spam-Report: --- Start der SpamAssassin 3.2.5 Textanalyse (-1.4 Punkte)
+	Fragen an/questions to:  Postmaster TU Chemnitz <postmaster@tu-chemnitz.de>
+	-1.4 ALL_TRUSTED            Nachricht wurde nur ueber vertrauenswuerdige Rechner
+	weitergeleitet
+	--- Ende der SpamAssassin Textanalyse
+X-Scan-Signature: 3610d579dd28009a7f55c56a8782bfc5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 25 May 2009, Kim Kyuwon wrote:
-> Rafael J. Wysocki wrote:
-> > On Saturday 23 May 2009, Kim Kyuwon wrote:
-> >> On Sat, May 23, 2009 at 7:29 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> >>> On Saturday 23 May 2009, Kim Kyuwon wrote:
-> > [--snip--]
-> >>>> You changed the really important part of Linux, which may affect most
-> >>>> processor architectures. I think you should be careful. If some of
-> >>>> architectures can't take care of it (they can implement
-> >>>> disable_irq_wake correctly in H/W level, will you revert your changes?
-> >>> No, the changes are not going to be reverted.  In fact things should have been
-> >>> done like this already much earlier.
-> >>>
-> >>> Now, do you have any particular example of a problem related to these changes
-> >>> or is it only a theoretical issue?
-> >> I'd CCing you when I'm sending a mail for this particular example of a example.
-> >> http://markmail.org/thread/fvt7d62arofon5xx
-> > 
-> > Well, as I said above, reverting the changes that introduced
-> > [suspend|resume]_device_irqs() is not an option, becuase it was the only sane
-> > way to achieve the goal they were added for.  So, we need to fix the wake-up
-> > problem on your platform with the assumption that
-> > [suspend|resume]_device_irqs() are going to stay.
-> > 
-> > For starters, would it be possible to teach the 'disable' hook of your
-> > platform's interrupt controller not to mask the IRQs that have both
-> > IRQ_WAKEUP and IRQ_SUSPENDED set?  That apparently would work around the
-> > wake-up interrupts problem.
-> 
-> Thank you for considering this issue and spending your time. In order to 
-> make your idea work, we need to add a dummy 'set_wake' hook which 
-> returns always zero. Anyway, IMO, I think your idea is good to work 
-> around this problem. But Kevin Hilman(OMAP PM Maintainer) would make 
-> final decision.
-> 
-> Buy the way, how can you handle the problem that a few interrupt are 
-> discarded in a small window? I can be sure they are discarded, because I 
-> have debugged defects which generate in sleep/resume state hundreds of 
-> times on ARM Processors(PXA310, S3C6410, OMAP3430). Wake-up interrupts 
-> are generated as soon as arch_suspend_enable_irqs() invoked.
+This adds another option when selecting CPU family so the kernel can
+be optimized for Intel Atom CPUs. If GCC supports tuning options for
+Intel Atom they will be used.
+---
+ arch/x86/Kconfig.cpu          |   17 +++++++++++++----
+ arch/x86/Makefile             |    2 ++
+ arch/x86/Makefile_32.cpu      |    2 ++
+ arch/x86/include/asm/module.h |    2 ++
+ 4 files changed, 19 insertions(+), 4 deletions(-)
 
-Sorry for the delayed response.
+diff --git a/arch/x86/Kconfig.cpu b/arch/x86/Kconfig.cpu
+index 8130334..f88a7f6 100644
+--- a/arch/x86/Kconfig.cpu
++++ b/arch/x86/Kconfig.cpu
+@@ -262,6 +262,15 @@ config MCORE2
+ 	  family in /proc/cpuinfo. Newer ones have 6 and older ones 15
+ 	  (not a typo)
+ 
++config MATOM
++	bool "Intel Atom"
++	---help---
++
++	  Select this for Intel Atom platform. Intel Atom CPUs have an in-order
++	  pipelining architecture and thus can benefit from in-order optimized
++	  code. Use a recent GCC with specific Intel Atom support in order to
++	  fully benefit from selecting this option.
++
+ config GENERIC_CPU
+ 	bool "Generic-x86-64"
+ 	depends on X86_64
+@@ -310,7 +319,7 @@ config X86_L1_CACHE_SHIFT
+ 	default "7" if MPENTIUM4 || MPSC
+ 	default "4" if X86_ELAN || M486 || M386 || MGEODEGX1
+ 	default "5" if MWINCHIP3D || MWINCHIPC6 || MCRUSOE || MEFFICEON || MCYRIXIII || MK6 || MPENTIUMIII || MPENTIUMII || M686 || M586MMX || M586TSC || M586 || MVIAC3_2 || MGEODE_LX
+-	default "6" if MK7 || MK8 || MPENTIUMM || MCORE2 || MVIAC7 || X86_GENERIC || GENERIC_CPU
++	default "6" if MK7 || MK8 || MPENTIUMM || MCORE2 || MATOM || MVIAC7 || X86_GENERIC || GENERIC_CPU
+ 
+ config X86_XADD
+ 	def_bool y
+@@ -359,7 +368,7 @@ config X86_INTEL_USERCOPY
+ 
+ config X86_USE_PPRO_CHECKSUM
+ 	def_bool y
+-	depends on MWINCHIP3D || MWINCHIPC6 || MCYRIXIII || MK7 || MK6 || MPENTIUM4 || MPENTIUMM || MPENTIUMIII || MPENTIUMII || M686 || MK8 || MVIAC3_2 || MEFFICEON || MGEODE_LX || MCORE2
++	depends on MWINCHIP3D || MWINCHIPC6 || MCYRIXIII || MK7 || MK6 || MPENTIUM4 || MPENTIUMM || MPENTIUMIII || MPENTIUMII || M686 || MK8 || MVIAC3_2 || MEFFICEON || MGEODE_LX || MCORE2 || MATOM
+ 
+ config X86_USE_3DNOW
+ 	def_bool y
+@@ -387,7 +396,7 @@ config X86_P6_NOP
+ 
+ config X86_TSC
+ 	def_bool y
+-	depends on ((MWINCHIP3D || MCRUSOE || MEFFICEON || MCYRIXIII || MK7 || MK6 || MPENTIUM4 || MPENTIUMM || MPENTIUMIII || MPENTIUMII || M686 || M586MMX || M586TSC || MK8 || MVIAC3_2 || MVIAC7 || MGEODEGX1 || MGEODE_LX || MCORE2) && !X86_NUMAQ) || X86_64
++	depends on ((MWINCHIP3D || MCRUSOE || MEFFICEON || MCYRIXIII || MK7 || MK6 || MPENTIUM4 || MPENTIUMM || MPENTIUMIII || MPENTIUMII || M686 || M586MMX || M586TSC || MK8 || MVIAC3_2 || MVIAC7 || MGEODEGX1 || MGEODE_LX || MCORE2 || MATOM) && !X86_NUMAQ) || X86_64
+ 
+ config X86_CMPXCHG64
+ 	def_bool y
+@@ -397,7 +406,7 @@ config X86_CMPXCHG64
+ # generates cmov.
+ config X86_CMOV
+ 	def_bool y
+-	depends on (MK8 || MK7 || MCORE2 || MPENTIUM4 || MPENTIUMM || MPENTIUMIII || MPENTIUMII || M686 || MVIAC3_2 || MVIAC7 || MCRUSOE || MEFFICEON || X86_64)
++	depends on (MK8 || MK7 || MCORE2 || MPENTIUM4 || MPENTIUMM || MPENTIUMIII || MPENTIUMII || M686 || MVIAC3_2 || MVIAC7 || MCRUSOE || MEFFICEON || X86_64 || MATOM)
+ 
+ config X86_MINIMUM_CPU_FAMILY
+ 	int
+diff --git a/arch/x86/Makefile b/arch/x86/Makefile
+index 8c86b72..c989eec 100644
+--- a/arch/x86/Makefile
++++ b/arch/x86/Makefile
+@@ -57,6 +57,8 @@ else
+ 
+         cflags-$(CONFIG_MCORE2) += \
+                 $(call cc-option,-march=core2,$(call cc-option,-mtune=generic))
++	cflags-$(CONFIG_MATOM) += $(call cc-option,-march=atom) \
++		$(call cc-option,-mtune=atom,$(call cc-option,-mtune=generic))
+         cflags-$(CONFIG_GENERIC_CPU) += $(call cc-option,-mtune=generic)
+         KBUILD_CFLAGS += $(cflags-y)
+ 
+diff --git a/arch/x86/Makefile_32.cpu b/arch/x86/Makefile_32.cpu
+index 80177ec..30e9a26 100644
+--- a/arch/x86/Makefile_32.cpu
++++ b/arch/x86/Makefile_32.cpu
+@@ -33,6 +33,8 @@ cflags-$(CONFIG_MCYRIXIII)	+= $(call cc-option,-march=c3,-march=i486) $(align)-f
+ cflags-$(CONFIG_MVIAC3_2)	+= $(call cc-option,-march=c3-2,-march=i686)
+ cflags-$(CONFIG_MVIAC7)		+= -march=i686
+ cflags-$(CONFIG_MCORE2)		+= -march=i686 $(call tune,core2)
++cflags-$(CONFIG_MATOM)		+= $(call cc-option,-march=atom,$(call cc-option,-march=core2,-march=i686)) \
++	$(call cc-option,-mtune=atom,$(call cc-option,-mtune=generic))
+ 
+ # AMD Elan support
+ cflags-$(CONFIG_X86_ELAN)	+= -march=i486
+diff --git a/arch/x86/include/asm/module.h b/arch/x86/include/asm/module.h
+index 47d6274..e959c4a 100644
+--- a/arch/x86/include/asm/module.h
++++ b/arch/x86/include/asm/module.h
+@@ -28,6 +28,8 @@ struct mod_arch_specific {};
+ #define MODULE_PROC_FAMILY "586MMX "
+ #elif defined CONFIG_MCORE2
+ #define MODULE_PROC_FAMILY "CORE2 "
++#elif defined CONFIG_MATOM
++#define MODULE_PROC_FAMILY "ATOM "
+ #elif defined CONFIG_M686
+ #define MODULE_PROC_FAMILY "686 "
+ #elif defined CONFIG_MPENTIUMII
+-- 
+1.6.3.1
 
-If the wake-up interrupts are not masked, they will be delivered to the drivers
-as soon as arch_suspend_enable_irqs() has run.  So, if the drivers are able to
-handle them at this point (ie. before resume_device_irqs() is called), they
-won't be lost.  The only problem I see is that the drivers may expect their
-->resume_noirq() callbacks to be executed first.
-
-Thanks,
-Rafael
