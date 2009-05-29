@@ -1,61 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762752AbZE2Qfu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762750AbZE2Qhe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762752AbZE2Qfu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 12:35:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758795AbZE2Qfn
+	id S1762750AbZE2Qhe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 12:37:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758795AbZE2Qh1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 12:35:43 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:37760 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758091AbZE2Qfm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 12:35:42 -0400
-Date: Fri, 29 May 2009 12:35:43 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: GeunSik Lim <leemgs1@gmail.com>
-cc: Greg KH <greg@kroah.com>, linux-kernel <linux-kernel@vger.kernel.org>,
-       trivial@kernel.org, balagi@justmail.de, bgamari@gmail.com,
-       Ingo Molnar <mingo@elte.hu>, inaky.perez-gonzalez@intel.com
-Subject: Re: [RFC V2 PATCH]debugfs:Fix terminology inconsistency of dir name
- to mount debugfs filesystem.
-In-Reply-To: <alpine.DEB.2.00.0905291217470.31247@gandalf.stny.rr.com>
-Message-ID: <alpine.DEB.2.00.0905291234460.31247@gandalf.stny.rr.com>
-References: <1243315163.14685.17.camel@centos51> <1243613134.20635.14.camel@centos51> <alpine.DEB.2.00.0905291217470.31247@gandalf.stny.rr.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Fri, 29 May 2009 12:37:27 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:46314 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752471AbZE2Qh1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 May 2009 12:37:27 -0400
+Message-ID: <4A200F40.9050703@redhat.com>
+Date: Fri, 29 May 2009 12:37:20 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andi Kleen <andi@firstfloor.org>
+CC: fengguang.wu@intel.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH] [2/16] HWPOISON: Export poison flag in /proc/kpageflags
+References: <200905271012.668777061@firstfloor.org> <20090527201227.EAEC41D0286@basil.firstfloor.org>
+In-Reply-To: <20090527201227.EAEC41D0286@basil.firstfloor.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andi Kleen wrote:
+> From: Fengguang Wu <fengguang.wu@intel.com>
+> 
+> Export the new poison flag in /proc/kpageflags. Poisoned pages are moderately
+> interesting even for administrators, so export them here. Also useful
+> for debugging.
+> 
+> AK: I extracted this out of a larger patch from Fengguang Wu.
+> 
+> Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
-On Fri, 29 May 2009, Steven Rostedt wrote:
-> ===
-> When debugfs is configured into the kernel (which selecting any ftrace 
-> option will do) the directory /sys/kernel/debug will be created. To mount 
-> this directory, you can add to your /etc/fstab file:
-> 
->   debugfs	/debug		debugfs	defaults	0	0
-> 
-> Or you can mount it at run time with:
-> 
->   mount -t debugfs nodev /sys/kernel/debug
-> 
-> For quicker access to that directory you may want to make a soft link to 
-> it:
-> 
->  ln -s /sys/kernel/debug /debug
-> 
-> Any selected ftrace option will also create a directory called tracing 
-> within the debugfs. The rest of the document will assume that you are in 
-> the ftrace directory (cd /sys/kernel/debugfs) and will only concentrate
+OK, this could be a good reason for the use of the PG_poisoned page
+flag in patch 1/16.
 
-s,/sys/kernel/debugfs,/sys/kernel/debug/tracing,
+Acked-by: Rik van Riel <riel@redhat.com>
 
-> on the files within that directory and not distract from the content with 
-> the extended "/sys/kernel/debug/tracing" path name.
-> ===
-
--- Steve
-
+-- 
+All rights reversed.
