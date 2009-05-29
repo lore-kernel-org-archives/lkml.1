@@ -1,159 +1,217 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757016AbZE2IdM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756667AbZE2Iiy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757016AbZE2IdM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 04:33:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756265AbZE2Ict
+	id S1756667AbZE2Iiy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 04:38:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756376AbZE2Iiq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 04:32:49 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:58916 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751827AbZE2Icr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 04:32:47 -0400
-Message-ID: <4A1F9CEA.1070705@cn.fujitsu.com>
-Date: Fri, 29 May 2009 16:29:30 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Fri, 29 May 2009 04:38:46 -0400
+Received: from tango.0pointer.de ([85.214.72.216]:42113 "EHLO
+	tango.0pointer.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755922AbZE2Iip (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 May 2009 04:38:45 -0400
+Date: Fri, 29 May 2009 10:38:40 +0200
+From: Lennart Poettering <mzxreary@0pointer.de>
+To: linux-kernel@vger.kernel.org
+Cc: peterz@infradead.org
+Subject: [PATCH] scheduler: introduce SCHED_RESET_ON_FORK scheduling policy
+	flag, Second try
+Message-ID: <20090529083840.GA15516@omega>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/2] cpuhotplug: use rw_semaphore for cpu_hotplug
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Organization: Red Hat, Inc.
+X-Campaign-1: ()  ASCII Ribbon Campaign
+X-Campaign-2: /  Against HTML Email & vCards - Against Microsoft Attachments
+User-Agent: Leviathan/19.8.0 [zh] (Cray 3; I; Solaris 4.711; Console)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+(Nobody commented so far, but here's an updated version of the
+patch. Basically the only change is that the SCHED_RESET_ON_FORK flag
+is now reset on fork()).)
 
-Current get_online_cpus()/put_online_cpus() re-implement
-a rw_semaphore, so it is converted to a real rw_semaphore in this fix.
-It simplifies codes, and is good for read.
+This patch introduces a new flag SCHED_RESET_ON_FORK which can be passed
+to the kernel via sched_setscheduler(), ORed in the policy parameter. If
+set this will make sure that when the process forks a) the scheduling
+priority is reset to DEFAULT_PRIO if it was higher and b) the scheduling
+policy is reset to SCHED_NORMAL if it was either SCHED_FIFO or SCHED_RR.
 
-And misc fix:
-1) Add comments for cpu_hotplug.active_writer.
-2) The theoretical disadvantage described in cpu_hotplug_begin()'s
-   comments is no longer existed when we use rw_semaphore,
-   so this part of comments was removed.
+Why have this?
 
-[Impact: improve get_online_cpus()/put_online_cpus() ]
+Currently, if a process is real-time scheduled this will 'leak' to all
+its child processes. For security reasons it is often (always?) a good
+idea to make sure that if a process acquires RT scheduling this is
+confined to this process and only this process. More specifically this
+makes the per-process resource limit RLIMIT_RTTIME useful for security
+purposes, because it makes it impossible to use a fork bomb to
+circumvent the per-process RLIMIT_RTTIME accounting.
 
-Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+This feature is also useful for tools like 'renice' which can then
+change the nice level of a process without having this spill to all its
+child processes.
+
+Why expose this via sched_setscheduler() and not other syscalls such as
+prctl() or sched_setparam()?
+
+prctl() does not take a pid parameter. Due to that it would be
+impossible to modify this flag for other processes than the current one.
+
+The struct passed to sched_setparam() can unfortunately not be extended
+without breaking compatibility, since sched_setparam() lacks a size
+parameter.
+
+How to use this from userspace? In your RT program simply replace this:
+
+  sched_setscheduler(pid, SCHED_FIFO, &param);
+
+by this:
+
+  sched_setscheduler(pid, SCHED_FIFO|SCHED_RESET_ON_FORK, &param);
+
+This current patch compiles but is not otherwise tested. For now, I am
+sending this primarily as a request for comments. So please, I'd love to
+hear your comments!
+
+Lennart
 ---
-diff --git a/kernel/cpu.c b/kernel/cpu.c
-index 395b697..62198ec 100644
---- a/kernel/cpu.c
-+++ b/kernel/cpu.c
-@@ -14,6 +14,7 @@
- #include <linux/kthread.h>
- #include <linux/stop_machine.h>
- #include <linux/mutex.h>
-+#include <linux/rwsem.h>
+ include/linux/sched.h |    4 ++++
+ kernel/sched.c        |   47 ++++++++++++++++++++++++++++++++++++++---------
+ 2 files changed, 42 insertions(+), 9 deletions(-)
+
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index b4c38bc..395ebc4 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -38,6 +38,8 @@
+ #define SCHED_BATCH		3
+ /* SCHED_ISO: reserved but not implemented yet */
+ #define SCHED_IDLE		5
++/* Can be ORed in to make sure the process is reverted back to SCHED_NORMAL on fork */
++#define SCHED_RESET_ON_FORK     0x40000000
  
- #ifdef CONFIG_SMP
- /* Serializes the updates to cpu_online_mask, cpu_present_mask */
-@@ -27,20 +28,21 @@ static __cpuinitdata RAW_NOTIFIER_HEAD(cpu_chain);
- static int cpu_hotplug_disabled;
+ #ifdef __KERNEL__
  
- static struct {
--	struct task_struct *active_writer;
--	struct mutex lock; /* Synchronizes accesses to refcount, */
+@@ -1429,6 +1431,8 @@ struct task_struct {
+ 	/* state flags for use by tracers */
+ 	unsigned long trace;
+ #endif
++	/* Revert to default priority/policy when forking */
++	unsigned sched_reset_on_fork:1;
+ };
+ 
+ /* Future-safe accessor for struct task_struct's cpus_allowed. */
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 26efa47..2a2eb07 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -2529,12 +2529,26 @@ void sched_fork(struct task_struct *p, int clone_flags)
+ 	set_task_cpu(p, cpu);
+ 
  	/*
--	 * Also blocks the new readers during
--	 * an ongoing cpu hotplug operation.
-+	 * active_writer makes get_online_cpus()/put_online_cpus() are allowd
-+	 * to be nested in cpu_hotplug_begin()/cpu_hotplug_done().
-+	 *
-+	 * Thus, get_online_cpus()/put_online_cpus() can be called in
-+	 * CPU notifiers.
+-	 * Make sure we do not leak PI boosting priority to the child:
++	 * Revert to default priority/policy on fork if requested. Make sure we
++	 * do not leak PI boosting priority to the child.
  	 */
--	int refcount;
-+	struct task_struct *active_writer;
-+	struct rw_semaphore rwlock;
- } cpu_hotplug;
+-	p->prio = current->normal_prio;
++	if (current->sched_reset_on_fork &&
++			(p->policy == SCHED_FIFO || p->policy == SCHED_RR))
++		p->policy = SCHED_NORMAL;
++
++	if (current->sched_reset_on_fork &&
++			(current->normal_prio < DEFAULT_PRIO))
++		p->prio = DEFAULT_PRIO;
++	else
++		p->prio = current->normal_prio;
++
+ 	if (!rt_prio(p->prio))
+ 		p->sched_class = &fair_sched_class;
  
- void __init cpu_hotplug_init(void)
- {
- 	cpu_hotplug.active_writer = NULL;
--	mutex_init(&cpu_hotplug.lock);
--	cpu_hotplug.refcount = 0;
-+	init_rwsem(&cpu_hotplug.rwlock);
++	/* We don't need the reset flag anymore after the fork. It has
++	 * fulfilled its duty. */
++	p->sched_reset_on_fork = 0;
++
+ #if defined(CONFIG_SCHEDSTATS) || defined(CONFIG_TASK_DELAY_ACCT)
+ 	if (likely(sched_info_on()))
+ 		memset(&p->sched_info, 0, sizeof(p->sched_info));
+@@ -5807,17 +5821,25 @@ static int __sched_setscheduler(struct task_struct *p, int policy,
+ 	unsigned long flags;
+ 	const struct sched_class *prev_class = p->sched_class;
+ 	struct rq *rq;
++	int reset_on_fork;
+ 
+ 	/* may grab non-irq protected spin_locks */
+ 	BUG_ON(in_interrupt());
+ recheck:
+ 	/* double check policy once rq lock held */
+-	if (policy < 0)
++	if (policy < 0) {
++		reset_on_fork = p->sched_reset_on_fork;
+ 		policy = oldpolicy = p->policy;
+-	else if (policy != SCHED_FIFO && policy != SCHED_RR &&
+-			policy != SCHED_NORMAL && policy != SCHED_BATCH &&
+-			policy != SCHED_IDLE)
+-		return -EINVAL;
++	} else {
++		reset_on_fork = !!(policy & SCHED_RESET_ON_FORK);
++		policy &= ~SCHED_RESET_ON_FORK;
++
++		if (policy != SCHED_FIFO && policy != SCHED_RR &&
++				policy != SCHED_NORMAL && policy != SCHED_BATCH &&
++				policy != SCHED_IDLE)
++			return -EINVAL;
++	}
++
+ 	/*
+ 	 * Valid priorities for SCHED_FIFO and SCHED_RR are
+ 	 * 1..MAX_USER_RT_PRIO-1, valid priority for SCHED_NORMAL,
+@@ -5861,6 +5883,10 @@ recheck:
+ 		/* can't change other user's priorities */
+ 		if (!check_same_owner(p))
+ 			return -EPERM;
++
++		/* normal users shall not reset the sched_reset_on_fork flag */
++		if (p->sched_reset_on_fork && !reset_on_fork)
++			return -EPERM;
+ 	}
+ 
+ 	if (user) {
+@@ -5904,6 +5930,8 @@ recheck:
+ 	if (running)
+ 		p->sched_class->put_prev_task(rq, p);
+ 
++	p->sched_reset_on_fork = reset_on_fork;
++
+ 	oldprio = p->prio;
+ 	__setscheduler(rq, p, policy, param->sched_priority);
+ 
+@@ -6020,14 +6048,15 @@ SYSCALL_DEFINE1(sched_getscheduler, pid_t, pid)
+ 	if (p) {
+ 		retval = security_task_getscheduler(p);
+ 		if (!retval)
+-			retval = p->policy;
++			retval = p->policy
++				| (p->sched_reset_on_fork ? SCHED_RESET_ON_FORK : 0);
+ 	}
+ 	read_unlock(&tasklist_lock);
+ 	return retval;
  }
  
- #ifdef CONFIG_HOTPLUG_CPU
-@@ -50,9 +52,7 @@ void get_online_cpus(void)
- 	might_sleep();
- 	if (cpu_hotplug.active_writer == current)
- 		return;
--	mutex_lock(&cpu_hotplug.lock);
--	cpu_hotplug.refcount++;
--	mutex_unlock(&cpu_hotplug.lock);
-+	down_read(&cpu_hotplug.rwlock);
- 
- }
- EXPORT_SYMBOL_GPL(get_online_cpus);
-@@ -61,10 +61,7 @@ void put_online_cpus(void)
- {
- 	if (cpu_hotplug.active_writer == current)
- 		return;
--	mutex_lock(&cpu_hotplug.lock);
--	if (!--cpu_hotplug.refcount && unlikely(cpu_hotplug.active_writer))
--		wake_up_process(cpu_hotplug.active_writer);
--	mutex_unlock(&cpu_hotplug.lock);
-+	up_read(&cpu_hotplug.rwlock);
- 
- }
- EXPORT_SYMBOL_GPL(put_online_cpus);
-@@ -86,45 +83,25 @@ void cpu_maps_update_done(void)
- }
- 
- /*
-- * This ensures that the hotplug operation can begin only when the
-- * refcount goes to zero.
-+ * This ensures that the hotplug operation can begin only when
-+ * there is no reader.
-  *
-  * Note that during a cpu-hotplug operation, the new readers, if any,
-- * will be blocked by the cpu_hotplug.lock
-+ * will be blocked by the cpu_hotplug.rwlock
-  *
-  * Since cpu_hotplug_begin() is always called after invoking
-  * cpu_maps_update_begin(), we can be sure that only one writer is active.
-- *
-- * Note that theoretically, there is a possibility of a livelock:
-- * - Refcount goes to zero, last reader wakes up the sleeping
-- *   writer.
-- * - Last reader unlocks the cpu_hotplug.lock.
-- * - A new reader arrives at this moment, bumps up the refcount.
-- * - The writer acquires the cpu_hotplug.lock finds the refcount
-- *   non zero and goes to sleep again.
-- *
-- * However, this is very difficult to achieve in practice since
-- * get_online_cpus() not an api which is called all that often.
-- *
+ /**
+- * sys_sched_getscheduler - get the RT priority of a thread
++ * sys_sched_getparam - get the RT priority of a thread
+  * @pid: the pid in question.
+  * @param: structure containing the RT priority.
   */
- static void cpu_hotplug_begin(void)
- {
-+	down_write(&cpu_hotplug.rwlock);
- 	cpu_hotplug.active_writer = current;
--
--	for (;;) {
--		mutex_lock(&cpu_hotplug.lock);
--		if (likely(!cpu_hotplug.refcount))
--			break;
--		__set_current_state(TASK_UNINTERRUPTIBLE);
--		mutex_unlock(&cpu_hotplug.lock);
--		schedule();
--	}
- }
- 
- static void cpu_hotplug_done(void)
- {
- 	cpu_hotplug.active_writer = NULL;
--	mutex_unlock(&cpu_hotplug.lock);
-+	up_write(&cpu_hotplug.rwlock);
- }
- /* Need to know about CPUs going up/down? */
- int __ref register_cpu_notifier(struct notifier_block *nb)
+-- 
+1.6.2.2
 
 
+
+Lennart
+
+-- 
+Lennart Poettering                        Red Hat, Inc.
+lennart [at] poettering [dot] net         ICQ# 11060553
+http://0pointer.net/lennart/           GnuPG 0x1A015CC4
