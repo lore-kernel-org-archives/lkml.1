@@ -1,105 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756818AbZE2ITy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756737AbZE2IVr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756818AbZE2ITy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 04:19:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756311AbZE2ITr
+	id S1756737AbZE2IVr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 04:21:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755510AbZE2IVe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 04:19:47 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:60443 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755123AbZE2ITp (ORCPT
+	Fri, 29 May 2009 04:21:34 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:57054 "EHLO
+	pophost.sonytel.be" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754383AbZE2IVd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 04:19:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:from:to:cc:subject:date:message-id:x-mailer;
-        b=RZ+8+FV5QVpn3RlvCow95q47qFK5Ea5gmTTFrg3QPMjee0lP6BlxUXepPWc78nhHY/
-         HZyH0/R5UmsHQbW/A/ps7hUuNb1P/wId0uM8x3GQYBsU47Xmd8VP3Wiyew4pxu8KXmVc
-         LjFBNp1WYgk5LPr+Hjix8z5CQVLArkti4Dcqo=
-From: Gerard Lledo <gerard.lledo@gmail.com>
-To: kernel-janitors@vger.kernel.org
-Cc: dwmw2@infradead.org, linux-mtd@lists.infradead.org,
-       linux-kernel@vger.kernel.org, Gerard Lledo <gerard.lledo@gmail.com>
-Subject: [PATCH] [JFFS2] Move jffs2_gcd_mtd threads to the new kthread API
-Date: Fri, 29 May 2009 11:19:41 +0300
-Message-Id: <1243585181-2997-1-git-send-email-gerard.lledo@gmail.com>
-X-Mailer: git-send-email 1.5.6.5
+	Fri, 29 May 2009 04:21:33 -0400
+Date: Fri, 29 May 2009 10:21:30 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Paul Mackerras <paulus@samba.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Philip Mucci <mucci@eecs.utk.edu>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, Maynard Johnson <mpjohn@us.ibm.com>,
+       eranian@gmail.com, Thomas Gleixner <tglx@linutronix.de>,
+       perfmon2-devel <perfmon2-devel@lists.sourceforge.net>
+Subject: Re: [perfmon2] comments on Performance Counters for Linux (PCL)
+In-Reply-To: <20090529071914.GB3157@elte.hu>
+Message-ID: <alpine.LRH.2.00.0905291020200.21748@vixen.sonytel.be>
+References: <7c86c4470905280758y6d359823h2a7517dfecb115e6@mail.gmail.com> <1243527919.6645.75.camel@laptop> <4A1EFCC2.80805@linux.vnet.ibm.com> <20090528213532.GA8589@elte.hu> <18975.7470.792842.173625@cargo.ozlabs.ibm.com> <20090529071914.GB3157@elte.hu>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-kernel_thread() is being depracated.  This patch moves the jffs2 garbage
-collecting thread to the new kthread API with the minimal impact.
+On Fri, 29 May 2009, Ingo Molnar wrote:
+> * Paul Mackerras <paulus@samba.org> wrote:
+> > Ingo Molnar writes:
+> > > * Corey Ashford <cjashfor@linux.vnet.ibm.com> wrote:
+> > > >> So you're suggesting to artificually strech periods by say 
+> > > >> composing a single overflow from smaller ones, ignoring the 
+> > > >> intermediate overflow events?
+> > > >>
+> > > >> That sounds doable, again, patch welcome.
+> > > >
+> > > > I definitely agree with Stephane's point on this one.  I had 
+> > > > assumed that long irq_periods (longer than the width of the 
+> > > > counter) would be synthesized as you suggest.  If this is not the 
+> > > > case, PCL should be changed so that it does, -or- at a minimum, 
+> > > > the user should get an error back stating that the period is too 
+> > > > long for the hardware counter.
+> > > 
+> > > this looks somewhat academic - at least on x86, even the fastest 
+> > > events (say cycles) with a 32 bit overflow means one event per 
+> > > second on 4GB. That's not a significant event count in practice. 
+> > > What's the minimum width we are talking about on Power?
+> > 
+> > 32 bits, but since the top bit is effectively a level-sensitive 
+> > interrupt request, the maximum period in hardware is 2^31 counts.
+> > 
+> > However, I already support 64-bit interrupt periods (well, 63-bit 
+> > actually) on powerpc by only calling perf_counter_overflow() when 
+> > counter->hw.period_left becomes <= 0, and arranging to set the 
+> > hardware counter to 0 if counter->hw.period_left is >= 0x80000000. 
+> > It's a tiny amount of code to handle it, really.
+> 
+> No argument about that - just wanted to know whether there's any 
+> real practical effect beyond the nitpicking factor ;-)
 
-Signed-off-by: Gerard Lledo <gerard.lledo@gmail.com>
----
- fs/jffs2/background.c |   22 ++++++++++++++--------
- 1 files changed, 14 insertions(+), 8 deletions(-)
+I never really dived into this stuff, but ISTR there are some 16-bit counters
+on CELL? Is that correct?
 
-diff --git a/fs/jffs2/background.c b/fs/jffs2/background.c
-index e958010..077fa65 100644
---- a/fs/jffs2/background.c
-+++ b/fs/jffs2/background.c
-@@ -15,6 +15,7 @@
- #include <linux/completion.h>
- #include <linux/sched.h>
- #include <linux/freezer.h>
-+#include <linux/kthread.h>
- #include "nodelist.h"
- 
- 
-@@ -31,7 +32,7 @@ void jffs2_garbage_collect_trigger(struct jffs2_sb_info *c)
- /* This must only ever be called when no GC thread is currently running */
- int jffs2_start_garbage_collect_thread(struct jffs2_sb_info *c)
- {
--	pid_t pid;
-+	struct task_struct *tsk;
- 	int ret = 0;
- 
- 	BUG_ON(c->gc_task);
-@@ -39,15 +40,16 @@ int jffs2_start_garbage_collect_thread(struct jffs2_sb_info *c)
- 	init_completion(&c->gc_thread_start);
- 	init_completion(&c->gc_thread_exit);
- 
--	pid = kernel_thread(jffs2_garbage_collect_thread, c, CLONE_FS|CLONE_FILES);
--	if (pid < 0) {
--		printk(KERN_WARNING "fork failed for JFFS2 garbage collect thread: %d\n", -pid);
-+	tsk = kthread_create(jffs2_garbage_collect_thread, c, "jffs2_gcd_mtd%d", c->mtd->index);
-+	if (IS_ERR(tsk)) {
-+		printk(KERN_WARNING "fork failed for JFFS2 garbage collect thread: %ld\n", -PTR_ERR(tsk));
- 		complete(&c->gc_thread_exit);
--		ret = pid;
-+		ret = PTR_ERR(tsk);
- 	} else {
--		/* Wait for it... */
--		D1(printk(KERN_DEBUG "JFFS2: Garbage collect thread is pid %d\n", pid));
-+		D1(printk(KERN_DEBUG "JFFS2: Garbage collect thread is pid %d\n", tsk->pid));
-+		wake_up_process(tsk);
- 		wait_for_completion(&c->gc_thread_start);
-+		ret = tsk->pid;
- 	}
- 
- 	return ret;
-@@ -71,7 +73,6 @@ static int jffs2_garbage_collect_thread(void *_c)
- {
- 	struct jffs2_sb_info *c = _c;
- 
--	daemonize("jffs2_gcd_mtd%d", c->mtd->index);
- 	allow_signal(SIGKILL);
- 	allow_signal(SIGSTOP);
- 	allow_signal(SIGCONT);
-@@ -107,6 +108,11 @@ static int jffs2_garbage_collect_thread(void *_c)
- 		 * the GC thread get there first. */
- 		schedule_timeout_interruptible(msecs_to_jiffies(50));
- 
-+		if (kthread_should_stop()) {
-+			D1(printk(KERN_DEBUG "jffs2_garbage_collect_thread():  kthread_stop() called.\n"));
-+			goto die;
-+		}
-+
- 		/* Put_super will send a SIGKILL and then wait on the sem.
- 		 */
- 		while (signal_pending(current) || freezing(current)) {
--- 
-1.5.6.5
+With kind regards,
 
+Geert Uytterhoeven
+Software Architect
+Techsoft Centre
+
+Technology and Software Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
