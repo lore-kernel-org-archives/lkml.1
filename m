@@ -1,88 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757980AbZE2VhT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757803AbZE2Vg7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757980AbZE2VhT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 17:37:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754747AbZE2Vfo
+	id S1757803AbZE2Vg7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 17:36:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755525AbZE2Vfo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Fri, 29 May 2009 17:35:44 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:60558 "EHLO
+Received: from one.firstfloor.org ([213.235.205.2]:60559 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755337AbZE2Vfm (ORCPT
+	with ESMTP id S1755327AbZE2Vfl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 17:35:42 -0400
+	Fri, 29 May 2009 17:35:41 -0400
 From: Andi Kleen <andi@firstfloor.org>
 References: <200905291135.124267638@firstfloor.org>
 In-Reply-To: <200905291135.124267638@firstfloor.org>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
        linux-mm@kvack.org, fengguang.wu@intel.com
-Subject: [PATCH] [8/16] HWPOISON: x86: Add VM_FAULT_HWPOISON handling to x86 page fault handler
-Message-Id: <20090529213533.E1AE91D0286@basil.firstfloor.org>
-Date: Fri, 29 May 2009 23:35:33 +0200 (CEST)
+Subject: [PATCH] [5/16] HWPOISON: Add new SIGBUS error codes for hardware poison signals
+Message-Id: <20090529213530.BAC851D028F@basil.firstfloor.org>
+Date: Fri, 29 May 2009 23:35:30 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Add VM_FAULT_HWPOISON handling to the x86 page fault handler. This is 
-very similar to VM_FAULT_OOM, the only difference is that a different
-si_code is passed to user space and the new addr_lsb field is initialized.
+Add new SIGBUS codes for reporting machine checks as signals. When 
+the hardware detects an uncorrected ECC error it can trigger these
+signals.
+
+This is needed for telling KVM's qemu about machine checks that happen to
+guests, so that it can inject them, but might be also useful for other programs.
+I find it useful in my test programs.
+
+This patch merely defines the new types.
+
+- Define two new si_codes for SIGBUS.  BUS_MCEERR_AO and BUS_MCEERR_AR
+* BUS_MCEERR_AO is for "Action Optional" machine checks, which means that some
+corruption has been detected in the background, but nothing has been consumed
+so far. The program can ignore those if it wants (but most programs would
+already get killed)
+* BUS_MCEERR_AR is for "Action Required" machine checks. This happens
+when corrupted data is consumed or the application ran into an area
+which has been known to be corrupted earlier. These require immediate
+action and cannot just returned to. Most programs would kill themselves.
+- They report the address of the corruption in the user address space
+in si_addr.
+- Define a new si_addr_lsb field that reports the extent of the corruption
+to user space. That's currently always a (small) page. The user application
+cannot tell where in this page the corruption happened.
+
+AK: I plan to write a man page update before anyone asks.
 
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
 ---
- arch/x86/mm/fault.c |   18 ++++++++++++++----
- 1 file changed, 14 insertions(+), 4 deletions(-)
+ include/asm-generic/siginfo.h |    8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
-Index: linux/arch/x86/mm/fault.c
+Index: linux/include/asm-generic/siginfo.h
 ===================================================================
---- linux.orig/arch/x86/mm/fault.c	2009-05-29 23:32:09.000000000 +0200
-+++ linux/arch/x86/mm/fault.c	2009-05-29 23:32:10.000000000 +0200
-@@ -189,6 +189,7 @@
- 	info.si_errno	= 0;
- 	info.si_code	= si_code;
- 	info.si_addr	= (void __user *)address;
-+	info.si_addr_lsb = si_code == BUS_MCEERR_AR ? PAGE_SHIFT : 0;
+--- linux.orig/include/asm-generic/siginfo.h	2009-05-29 23:32:10.000000000 +0200
++++ linux/include/asm-generic/siginfo.h	2009-05-29 23:32:10.000000000 +0200
+@@ -82,6 +82,7 @@
+ #ifdef __ARCH_SI_TRAPNO
+ 			int _trapno;	/* TRAP # which caused the signal */
+ #endif
++			short _addr_lsb; /* LSB of the reported address */
+ 		} _sigfault;
  
- 	force_sig_info(si_signo, &info, tsk);
- }
-@@ -827,10 +828,12 @@
- }
+ 		/* SIGPOLL */
+@@ -112,6 +113,7 @@
+ #ifdef __ARCH_SI_TRAPNO
+ #define si_trapno	_sifields._sigfault._trapno
+ #endif
++#define si_addr_lsb	_sifields._sigfault._addr_lsb
+ #define si_band		_sifields._sigpoll._band
+ #define si_fd		_sifields._sigpoll._fd
  
- static void
--do_sigbus(struct pt_regs *regs, unsigned long error_code, unsigned long address)
-+do_sigbus(struct pt_regs *regs, unsigned long error_code, unsigned long address,
-+	  unsigned int fault)
- {
- 	struct task_struct *tsk = current;
- 	struct mm_struct *mm = tsk->mm;
-+	int code = BUS_ADRERR;
+@@ -192,7 +194,11 @@
+ #define BUS_ADRALN	(__SI_FAULT|1)	/* invalid address alignment */
+ #define BUS_ADRERR	(__SI_FAULT|2)	/* non-existant physical address */
+ #define BUS_OBJERR	(__SI_FAULT|3)	/* object specific hardware error */
+-#define NSIGBUS		3
++/* hardware memory error consumed on a machine check: action required */
++#define BUS_MCEERR_AR	(__SI_FAULT|4)
++/* hardware memory error detected in process but not consumed: action optional*/
++#define BUS_MCEERR_AO	(__SI_FAULT|5)
++#define NSIGBUS		5
  
- 	up_read(&mm->mmap_sem);
- 
-@@ -846,7 +849,14 @@
- 	tsk->thread.error_code	= error_code;
- 	tsk->thread.trap_no	= 14;
- 
--	force_sig_info_fault(SIGBUS, BUS_ADRERR, address, tsk);
-+#ifdef CONFIG_MEMORY_FAILURE
-+	if (fault & VM_FAULT_HWPOISON) {
-+		printk(KERN_ERR "MCE: Killing %s:%d due to hardware memory corruption\n",
-+			tsk->comm, tsk->pid);
-+		code = BUS_MCEERR_AR;
-+	}
-+#endif
-+	force_sig_info_fault(SIGBUS, code, address, tsk);
- }
- 
- static noinline void
-@@ -856,8 +866,8 @@
- 	if (fault & VM_FAULT_OOM) {
- 		out_of_memory(regs, error_code, address);
- 	} else {
--		if (fault & VM_FAULT_SIGBUS)
--			do_sigbus(regs, error_code, address);
-+		if (fault & (VM_FAULT_SIGBUS|VM_FAULT_HWPOISON))
-+			do_sigbus(regs, error_code, address, fault);
- 		else
- 			BUG();
- 	}
+ /*
+  * SIGTRAP si_codes
