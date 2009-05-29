@@ -1,80 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754603AbZE2GBf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753697AbZE2GGM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754603AbZE2GBf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 02:01:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752275AbZE2GB0
+	id S1753697AbZE2GGM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 02:06:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752696AbZE2GF7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 02:01:26 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:34205 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751637AbZE2GB0 (ORCPT
+	Fri, 29 May 2009 02:05:59 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:4287 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752362AbZE2GF7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 02:01:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Ng7dHOxViAMi+SLzKkuAUGlrIstyJF13LJBk42Puau3MDDeJHNb2PPIEYgzKPgdB8p
-         yqMIO8eGD+vcf1kZZvFU7uMhPejZSvVcw8/BK3cneympe0OFEka9Aw4/NTvrJj/qp95a
-         v3QnrsqF8e4GTijWMjZGb9klNq92ZDCjb9h5Q=
-Date: Fri, 29 May 2009 10:01:31 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Oren Laadan <orenl@cs.columbia.edu>
-Cc: "Serge E. Hallyn" <serge@hallyn.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, containers@lists.linux-foundation.org,
-       xemul@parallels.com
-Subject: Re: [PATCH 18/38] C/R: core stuff
-Message-ID: <20090529060131.GA5504@x200.localdomain>
-References: <1242968132-1044-1-git-send-email-adobriyan@gmail.com> <1242968132-1044-18-git-send-email-adobriyan@gmail.com> <20090526131644.GA20920@hallyn.com> <20090526193503.GB11909@x200.localdomain> <4A1DA8FB.3000306@cs.columbia.edu> <20090527221753.GB8321@x200.localdomain> <4A1DC270.8080807@cs.columbia.edu> <20090528153322.GB18256@x200.localdomain> <4A1F0E29.2040506@cs.columbia.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A1F0E29.2040506@cs.columbia.edu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 29 May 2009 02:05:59 -0400
+Date: Fri, 29 May 2009 08:05:47 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Greg KH <greg@kroah.com>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, stable <stable@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LM Sensors <lm-sensors@lm-sensors.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH-tip] x86: hwmon/k8temp.c Add  support for AMD 10H and
+ 11H
+Message-ID: <20090529080547.38ecfed8@hyperion.delvare>
+In-Reply-To: <1243575735.3159.7.camel@localhost.localdomain>
+References: <4A165F67.3020005@assembler.cz>
+	<1242981748.10642.3.camel@localhost.localdomain>
+	<1242984648.16532.3.camel@localhost.localdomain>
+	<4A182B61.5010503@assembler.cz>
+	<1243339833.12303.2.camel@localhost.localdomain>
+	<4A1C08C6.7060103@assembler.cz>
+	<1243352672.31783.10.camel@localhost.localdomain>
+	<1243511849.3669.5.camel@localhost.localdomain>
+	<20090528142837.530ba070@hyperion.delvare>
+	<1243520014.3143.11.camel@localhost.localdomain>
+	<20090528144901.GA7153@kroah.com>
+	<1243575735.3159.7.camel@localhost.localdomain>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 28, 2009 at 06:20:25PM -0400, Oren Laadan wrote:
-> Alexey Dobriyan wrote:
-> > Price in loose case is strictly bigger than price in strict case
-> > because set of loose states is strict superset of set of strict cases.
+On Fri, 29 May 2009 11:12:15 +0530, Jaswinder Singh Rajput wrote:
+> Hi Greg,
 > 
-> The code to enforce full-container approach is a *superset* of the
-> code without this requirement.
+> On Thu, 2009-05-28 at 07:49 -0700, Greg KH wrote:
+> > On Thu, May 28, 2009 at 07:43:34PM +0530, Jaswinder Singh Rajput wrote:
+> > > I proposed for stable because I was using AMD 11H from last 6 months and
+> > > I was missing temperature monitor badly because my earlier Laptop was
+> > > broken by overheating. So I thought if it goes to stable then users will
+> > > start getting benefit of it, but if you want that users should wait for
+> > > another 2 years. Then it is OK ;-)
+> > 
+> > 2 years?  The next kernel release will be out in 3 months, we have a
+> > very predictable release schedule.
 > 
-> If you can checkpoint a full container, surely you can checkpoint a
-> sub-hierarchy of processes.
+> I am sorry for being unclear. I meant for linux distros. Even one of the
+> most active Fedora 10 is using vmlinuz-2.6.27.24-170.2.68.fc10.x86_64 is
+> almost 7 months behind the linus git. And another linux distro are still
+> using 2.6.22 or so which are almost 2 years behind linus git.
 
-No!
+Distributions are free to backport any patch they like to their kernel
+tree, at any time.
 
-To checkpoint uts_ns reliably, in strict case, one doesn't even need
-uts_sem.
-
-In loose case, one needs uts_sem.
-
-	static int dump_uts_ns(struct kstate_context *ctx, struct kstate_object *obj)
-	{
-		struct uts_namespace *uts_ns = obj->o_obj;
-		struct kstate_image_uts_ns *i;
-		int rv;
-	
-		i = kstate_prepare_image(KSTATE_OBJ_UTS_NS, sizeof(*i));
-		if (!i)
-			return -ENOMEM;
-	
-		if (ctx->dump_live)
-			down_read(&uts_sem);
-		strncpy(i->sysname, (const char *)uts_ns->name.sysname, 64);
-		strncpy(i->nodename, (const char *)uts_ns->name.nodename, 64);
-		strncpy(i->release, (const char *)uts_ns->name.release, 64);
-		strncpy(i->version, (const char *)uts_ns->name.version, 64);
-		strncpy(i->machine, (const char *)uts_ns->name.machine, 64);
-		strncpy(i->domainname, (const char *)uts_ns->name.domainname, 64);
-		if (ctx->dump_live)
-			up_read(&uts_sem);
-
-		rv = kstate_write_image(ctx, i, sizeof(*i), obj);
-		kfree(i);
-		return rv;
-	}
+-- 
+Jean Delvare
