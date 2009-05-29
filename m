@@ -1,92 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757977AbZE2Kxq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757529AbZE2K5Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757977AbZE2Kxq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 06:53:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755676AbZE2Kxi
+	id S1757529AbZE2K5Q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 06:57:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755096AbZE2K5F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 06:53:38 -0400
-Received: from mail-bw0-f222.google.com ([209.85.218.222]:58053 "EHLO
-	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755511AbZE2Kxi convert rfc822-to-8bit (ORCPT
+	Fri, 29 May 2009 06:57:05 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:43978 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753991AbZE2K5E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 06:53:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:reply-to:in-reply-to:references:date:message-id
-         :subject:from:to:cc:content-type:content-transfer-encoding;
-        b=o3o6Ip1Nt/mylgszLHsVl1H0fu1qH4+bisutZaBhkzXSAqYWwChROWgUPHjz+1kfxW
-         7rNI5Kxs+zbUJXYcemgd3tN0M4xrgFZ+3VVsIyJ7VU5yH5La3CaCCBg7+xkpv9Vxe38S
-         h57endn+poooD8OE4fyeJlPQCMzWnHEG2O8f8=
+	Fri, 29 May 2009 06:57:04 -0400
+Date: Fri, 29 May 2009 12:56:19 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: kernel list <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>
+Cc: Cyril Hrubis <metan@ucw.cz>
+Subject: unbreak suspend on zaurus on 2.6.30-rc6
+Message-ID: <20090529105619.GA24187@elf.ucw.cz>
 MIME-Version: 1.0
-Reply-To: eranian@gmail.com
-In-Reply-To: <7c86c4470905290350m754b7144te1e5ac21f3a87ff0@mail.gmail.com>
-References: <7c86c4470905280758y6d359823h2a7517dfecb115e6@mail.gmail.com>
-	 <1243527919.6645.75.camel@laptop> <4A1EFCC2.80805@linux.vnet.ibm.com>
-	 <20090528213532.GA8589@elte.hu>
-	 <18975.7470.792842.173625@cargo.ozlabs.ibm.com>
-	 <7c86c4470905290350m754b7144te1e5ac21f3a87ff0@mail.gmail.com>
-Date: Fri, 29 May 2009 12:53:39 +0200
-Message-ID: <7c86c4470905290353k5a215f3buf140a17456067932@mail.gmail.com>
-Subject: Re: [perfmon2] comments on Performance Counters for Linux (PCL)
-From: stephane eranian <eranian@googlemail.com>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Corey Ashford <cjashfor@linux.vnet.ibm.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>, Philip Mucci <mucci@eecs.utk.edu>,
-       LKML <linux-kernel@vger.kernel.org>, Andi Kleen <andi@firstfloor.org>,
-       Maynard Johnson <mpjohn@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       perfmon2-devel <perfmon2-devel@lists.sourceforge.net>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 29, 2009 at 12:50 PM, stephane eranian
-<eranian@googlemail.com> wrote:
-> Hi,
->
-> On Fri, May 29, 2009 at 1:24 AM, Paul Mackerras <paulus@samba.org> wrote:
->> Ingo Molnar writes:
->>
->>> * Corey Ashford <cjashfor@linux.vnet.ibm.com> wrote:
->>> >> So you're suggesting to artificually strech periods by say
->>> >> composing a single overflow from smaller ones, ignoring the
->>> >> intermediate overflow events?
->>> >>
->>> >> That sounds doable, again, patch welcome.
->>> >
->>> > I definitely agree with Stephane's point on this one.  I had
->>> > assumed that long irq_periods (longer than the width of the
->>> > counter) would be synthesized as you suggest.  If this is not the
->>> > case, PCL should be changed so that it does, -or- at a minimum,
->>> > the user should get an error back stating that the period is too
->>> > long for the hardware counter.
->>>
->>> this looks somewhat academic - at least on x86, even the fastest
->>> events (say cycles) with a 32 bit overflow means one event per
->>> second on 4GB. That's not a significant event count in practice.
->>> What's the minimum width we are talking about on Power?
->>
->> 32 bits, but since the top bit is effectively a level-sensitive
->> interrupt request, the maximum period in hardware is 2^31 counts.
->>
-> This is exactly the same on Intel X86: 31 bits.
-> AMD is different.
->
-> Unfortunately, the Intel document is very obscure about this restriction.
->
-> Let's take Core. 40-bit wide counters. If you read with RDPMC
-> you get 40-bit worth of data, same with RDMSR.
->
-> If you write with WRMSR, you can only modify the bottom 32
-> bits. But bit 31 is the sign bit. Bit 32-39 are sign extension
-> of bit 31.
->
-Let me rephrase this a bit. You can actually modify all bits
-with WRMSR. but the sign extension determines the value
-of bits 32-39 based on bit 31.
+Hi!
 
-Forgot to mention that since Penryn, if you try to set bits 40-63
-with WRMSR, you get a fault.
+This is hacky patch to unbreak suspend on -rc6; perhaps it will be
+useful to someone.
+
+								Pavel
+
+--- clean-rc6/arch/arm/common/sharpsl_pm.c	2009-05-29 01:10:31.000000000 +0200
++++ linux-rc6/arch/arm/common/sharpsl_pm.c	2009-05-28 23:28:30.000000000 +0200
+@@ -12,7 +12,7 @@
+  *
+  */
+ 
+-#undef DEBUG
++#define DEBUG
+ 
+ #include <linux/module.h>
+ #include <linux/timer.h>
+@@ -546,6 +546,9 @@
+ 
+ static int corgi_enter_suspend(unsigned long alarm_time, unsigned int alarm_enable, suspend_state_t state)
+ {
++
++  return 0;
++
+ 	if (!sharpsl_pm.machinfo->should_wakeup(!(sharpsl_pm.flags & SHARPSL_ALARM_ACTIVE) && alarm_enable) )
+ 	{
+ 		if (!(sharpsl_pm.flags & SHARPSL_ALARM_ACTIVE)) {
+@@ -553,7 +556,7 @@
+ 			corgi_goto_sleep(alarm_time, alarm_enable, state);
+ 			return 1;
+ 		}
+-		if(sharpsl_off_charge_battery()) {
++		if (sharpsl_off_charge_battery()) {
+ 			dev_dbg(sharpsl_pm.dev, "Charging. Suspend...\n");
+ 			corgi_goto_sleep(alarm_time, alarm_enable, state);
+ 			return 1;
+diff -ur clean-rc6/arch/arm/mach-pxa/pm.c linux-rc6/arch/arm/mach-pxa/pm.c
+--- clean-rc6/arch/arm/mach-pxa/pm.c	2009-05-29 01:11:02.000000000 +0200
++++ linux-rc6/arch/arm/mach-pxa/pm.c	2009-05-28 23:29:54.000000000 +0200
+@@ -15,11 +15,14 @@
+ #include <linux/suspend.h>
+ #include <linux/errno.h>
+ 
++#include <mach/spitz.h>
+ #include <mach/pm.h>
+ 
+ struct pxa_cpu_pm_fns *pxa_cpu_pm_fns;
+ static unsigned long *sleep_save;
+ 
++extern  int pxa27x_cpu_pm_prepare(void);
++
+ int pxa_pm_enter(suspend_state_t state)
+ {
+ 	unsigned long sleep_save_checksum = 0, checksum = 0;
+@@ -39,15 +42,21 @@
+ 			sleep_save_checksum += sleep_save[i];
+ 	}
+ 
++	pxa27x_cpu_pm_prepare();
++	//	PSPR = virt_to_phys(pxa_cpu_resume);
++
+ 	/* *** go zzz *** */
+ 	pxa_cpu_pm_fns->enter(state);
+ 	cpu_init();
+ 
++	gpio_set_value(SPITZ_GPIO_LED_ORANGE, 1);
++
++
+ 	if (state != PM_SUSPEND_STANDBY) {
+ 		/* after sleeping, validate the checksum */
+ 		for (i = 0; i < pxa_cpu_pm_fns->save_count - 1; i++)
+ 			checksum += sleep_save[i];
+-
++#if 0
+ 		/* if invalid, display message and wait for a hardware reset */
+ 		if (checksum != sleep_save_checksum) {
+ 
+@@ -56,6 +65,7 @@
+ 			while (1)
+ 				pxa_cpu_pm_fns->enter(state);
+ 		}
++#endif
+ 		pxa_cpu_pm_fns->restore(sleep_save);
+ 	}
+ 
+diff -ur clean-rc6/arch/arm/mach-pxa/pxa27x.c linux-rc6/arch/arm/mach-pxa/pxa27x.c
+--- clean-rc6/arch/arm/mach-pxa/pxa27x.c	2009-05-29 01:11:02.000000000 +0200
++++ linux-rc6/arch/arm/mach-pxa/pxa27x.c	2009-05-28 23:28:30.000000000 +0200
+@@ -264,7 +264,7 @@
+ 	return state == PM_SUSPEND_MEM || state == PM_SUSPEND_STANDBY;
+ }
+ 
+-static int pxa27x_cpu_pm_prepare(void)
++ int pxa27x_cpu_pm_prepare(void)
+ {
+ 	/* set resume return address */
+ 	PSPR = virt_to_phys(pxa_cpu_resume);
+diff -ur clean-rc6/arch/arm/mach-pxa/spitz_pm.c linux-rc6/arch/arm/mach-pxa/spitz_pm.c
+--- clean-rc6/arch/arm/mach-pxa/spitz_pm.c	2009-05-29 01:11:02.000000000 +0200
++++ linux-rc6/arch/arm/mach-pxa/spitz_pm.c	2009-05-28 23:28:30.000000000 +0200
+@@ -124,6 +124,7 @@
+ 	int is_resume = 0;
+ 	int acin = sharpsl_pm.machinfo->read_devdata(SHARPSL_STATUS_ACIN);
+ 
++#if 0
+ 	if (spitz_last_ac_status != acin) {
+ 		if (acin) {
+ 			/* charge on */
+@@ -141,6 +142,8 @@
+ 		return 0;
+ 	}
+ 
++#endif
++
+ 	if (PEDR & GPIO_bit(SPITZ_GPIO_KEY_INT))
+ 		is_resume |= GPIO_bit(SPITZ_GPIO_KEY_INT);
+ 
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
