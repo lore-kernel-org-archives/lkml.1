@@ -1,111 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759810AbZE2N3p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759990AbZE2Nak@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759810AbZE2N3p (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 09:29:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757425AbZE2N3i
+	id S1759990AbZE2Nak (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 09:30:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757425AbZE2Nac
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 09:29:38 -0400
-Received: from mx1.emlix.com ([193.175.82.87]:36188 "EHLO mx1.emlix.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756785AbZE2N3h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 09:29:37 -0400
-Message-ID: <4A1FE338.5010802@emlix.com>
-Date: Fri, 29 May 2009 15:29:28 +0200
-From: Simon Braunschmidt <sb@emlix.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090409)
+	Fri, 29 May 2009 09:30:32 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:50175 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756948AbZE2Nab (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 May 2009 09:30:31 -0400
+Date: Fri, 29 May 2009 15:28:59 +0200
+From: "John W. Linville" <linville@tuxdriver.com>
+To: davem@davemloft.net
+Cc: linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: pull request: wireless-2.6 2009-05-29
+Message-ID: <20090529132858.GA3520@tuxdriver.com>
 MIME-Version: 1.0
-To: wuzhangjin@gmail.com
-CC: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
-Subject: Re: [loongson-PATCH-v1 16/27] Add Siliconmotion 712 framebuffer driver
-References: <cover.1242855716.git.wuzhangjin@gmail.com> <ad533255eec0400e4fed72671c0865472dd68d02.1242855716.git.wuzhangjin@gmail.com>
-In-Reply-To: <ad533255eec0400e4fed72671c0865472dd68d02.1242855716.git.wuzhangjin@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Organization: emlix gmbh, Goettingen, Germany
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Wu Zhangjin
+Dave,
 
-I applied your patch cleanly and run it on a i486SX (little endian) 
-embedded computing board.
+Here are a couple of fixes that would be nice to have for 2.6.30 --
+nothing very controversial.  Each has a bugzilla.kernel.org entry listed
+in the changelog.
 
-This provides a huge performance benefit compared to vesa framebuffer, 
-so thanks a lot for the contribution.
+Please let me know if there are problems!
 
-I tested it in both the library-accelerated (cfb...) and hardware 
-accelerated codepaths, with no problems. Tested with qt-embedded 4.5.1.
+Thanks,
 
-As i have seen lots of functionality are guarded by
-#ifdef __BIG_ENDIAN
+John
 
-Is there a way to setup a different mode than 1024x600 on 
-kernel-commandline or from userspace, e.g. with fbset?
-
-What I currently do is
-picking appropriate values form the table VGAMode in smtcfb.h and 
-hardcoding them.
-
-I tried 800x600x16bit@60hz, which worked also, but 1024x768x24bit@60hz 
-left me with a corrupted display output (distored colors, missing 
-regions), i did not check further wheter it also crashed.
-
-I dont know wheter i am subscribed and this will make it through to lkml 
-and linux-mips, feel free to cite me if you want.
-
-Also if you want you may add my
-
-Tested-by: Simon Braunschmidt <sbraun@emlix.com>
-
-
-see also attached a patch for the debug messages
-
-
-
- From addec9a5a27512621c538a2f799e31e07720cb9c Mon Sep 17 00:00:00 2001
-From: Simon Braunschmidt <sbraun@emlix.com>
-Date: Fri, 29 May 2009 15:03:51 +0200
-Subject: [PATCH] [video] fix debug messages in smtcfb
-
-when defining #DEBUG
 ---
-  drivers/video/smi/smtcfb.c |    6 ++++--
-  1 files changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/smi/smtcfb.c b/drivers/video/smi/smtcfb.c
-index 33ce878..ebc6371 100644
---- a/drivers/video/smi/smtcfb.c
-+++ b/drivers/video/smi/smtcfb.c
-@@ -44,6 +44,8 @@
-  #include "smtcfb.h"
-  #include "smtc2d.h"
+Individual patches are available here:
 
-+#define DEBUG
+	http://www.kernel.org/pub/linux/kernel/people/linville/wireless-2.6/
+
+---
+
+The following changes since commit 4d3383d0adb6d1047fb9ee3edd9dc05e4d2184f0:
+  David S. Miller (1):
+        Merge branch 'master' of git://git.kernel.org/.../kaber/nf-2.6
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-2.6.git master
+
+John W. Linville (2):
+      at76c50x-usb: avoid mutex deadlock in at76_dwork_hw_scan
+      rtl8187: add USB ID for Linksys WUSB54GC-EU v2 USB wifi dongle
+
+ drivers/net/wireless/Kconfig               |    1 +
+ drivers/net/wireless/at76c50x-usb.c        |   12 ++++++------
+ drivers/net/wireless/rtl818x/rtl8187_dev.c |    2 ++
+ 3 files changed, 9 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/net/wireless/Kconfig b/drivers/net/wireless/Kconfig
+index 8a08235..3d94e7d 100644
+--- a/drivers/net/wireless/Kconfig
++++ b/drivers/net/wireless/Kconfig
+@@ -430,6 +430,7 @@ config RTL8187
+ 	  ASUS P5B Deluxe
+ 	  Toshiba Satellite Pro series of laptops
+ 	  Asus Wireless Link
++	  Linksys WUSB54GC-EU
+ 
+ 	  Thanks to Realtek for their support!
+ 
+diff --git a/drivers/net/wireless/at76c50x-usb.c b/drivers/net/wireless/at76c50x-usb.c
+index 744f4f4..8d93ca4 100644
+--- a/drivers/net/wireless/at76c50x-usb.c
++++ b/drivers/net/wireless/at76c50x-usb.c
+@@ -1873,18 +1873,18 @@ static void at76_dwork_hw_scan(struct work_struct *work)
+ 	if (ret != CMD_STATUS_COMPLETE) {
+ 		queue_delayed_work(priv->hw->workqueue, &priv->dwork_hw_scan,
+ 				   SCAN_POLL_INTERVAL);
+-		goto exit;
++		mutex_unlock(&priv->mtx);
++		return;
+ 	}
+ 
+-	ieee80211_scan_completed(priv->hw, false);
+-
+ 	if (is_valid_ether_addr(priv->bssid))
+ 		at76_join(priv);
+ 
+-	ieee80211_wake_queues(priv->hw);
+-
+-exit:
+ 	mutex_unlock(&priv->mtx);
 +
-  #ifdef DEBUG
-  #define smdbg(format, arg...)  printk(KERN_DEBUG format , ## arg)
-  #else
-@@ -1087,7 +1089,7 @@ static int __init sm712be_setup(char *options)
-         sm712be_flag = 0;
-         if (!options || !*options) {
-                 retval = 1;
--               smdbg("\n No sm712be parameter\n", __LINE__);
-+               smdbg("\n No sm712be parameter\n");
-         }
-         if (!retval && strstr(options, "enable"))
-                 sm712be_flag = 1;
-@@ -1113,7 +1115,7 @@ static int __init sm712vga_setup(char *options)
-
-         if (!options || !*options) {
-                 retval = 1;
--               smdbg("\n No vga parameter\n", __LINE__);
-+               smdbg("\n No vga parameter\n");
-         }
-
-         screen_info.lfb_width = 0;
---
-1.6.3.rc0.1.gf800
-
-
-
++	ieee80211_scan_completed(priv->hw, false);
++
++	ieee80211_wake_queues(priv->hw);
+ }
+ 
+ static int at76_hw_scan(struct ieee80211_hw *hw,
+diff --git a/drivers/net/wireless/rtl818x/rtl8187_dev.c b/drivers/net/wireless/rtl818x/rtl8187_dev.c
+index bac6cfb..d51ba0a 100644
+--- a/drivers/net/wireless/rtl818x/rtl8187_dev.c
++++ b/drivers/net/wireless/rtl818x/rtl8187_dev.c
+@@ -71,6 +71,8 @@ static struct usb_device_id rtl8187_table[] __devinitdata = {
+ 	{USB_DEVICE(0x18E8, 0x6232), .driver_info = DEVICE_RTL8187},
+ 	/* AirLive */
+ 	{USB_DEVICE(0x1b75, 0x8187), .driver_info = DEVICE_RTL8187},
++	/* Linksys */
++	{USB_DEVICE(0x1737, 0x0073), .driver_info = DEVICE_RTL8187B},
+ 	{}
+ };
+ 
+-- 
+John W. Linville		Someday the world will need a hero, and you
+linville@tuxdriver.com			might be all we have.  Be ready.
