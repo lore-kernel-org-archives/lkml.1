@@ -1,80 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753590AbZE2D6q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751273AbZE2EGR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753590AbZE2D6q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 23:58:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751023AbZE2D6j
+	id S1751273AbZE2EGR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 00:06:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750816AbZE2EGB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 23:58:39 -0400
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:43764 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751021AbZE2D6i (ORCPT
+	Fri, 29 May 2009 00:06:01 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47090
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750798AbZE2EGA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 23:58:38 -0400
-Date: Fri, 29 May 2009 12:58:20 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: John Williams <jwilliams@itee.uq.edu.au>
-Cc: Johannes Weiner <jw@emlix.com>, Andrew Morton <akpm@linux-foundation.org>,
-       David Howells <dhowells@redhat.com>,
-       Russell King <rmk@arm.linux.org.uk>, Bryan Wu <cooloney@kernel.org>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Greg Ungerer <gerg@uclinux.org>, linux-kernel@vger.kernel.org,
-       michal.simek@petalogix.com
-Subject: Re: [patch -v2] flat: fix data sections alignment
-Message-ID: <20090529035820.GC1122@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	John Williams <jwilliams@itee.uq.edu.au>,
-	Johannes Weiner <jw@emlix.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	David Howells <dhowells@redhat.com>,
-	Russell King <rmk@arm.linux.org.uk>, Bryan Wu <cooloney@kernel.org>,
-	Geert Uytterhoeven <geert@linux-m68k.org>,
-	Greg Ungerer <gerg@uclinux.org>, linux-kernel@vger.kernel.org,
-	michal.simek@petalogix.com
-References: <E1LerUo-0000NE-Q3@mailer.emlix.com> <9e6f3dfd0905281701y6141e5d2xbbfb37e495cba8d9@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <9e6f3dfd0905281701y6141e5d2xbbfb37e495cba8d9@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 29 May 2009 00:06:00 -0400
+Date: Thu, 28 May 2009 21:05:59 -0700 (PDT)
+Message-Id: <20090528.210559.137121893.davem@davemloft.net>
+To: jeremy@goop.org
+Cc: mingo@elte.hu, dan.magenheimer@oracle.com, avi@redhat.com,
+       George.Dunlap@eu.citrix.com, xen-devel@lists.xensource.com,
+       x86@kernel.org, linux-kernel@vger.kernel.org, keir.fraser@eu.citrix.com,
+       torvalds@linux-foundation.org, gregkh@suse.de, kurt.hackel@oracle.com,
+       Ian.Pratt@citrix.com, xen-users@lists.xensource.com,
+       ksrinivasan@novell.com, EAnderson@novell.com, wimcoekaerts@wimmekes.net,
+       stephen.spector@citrix.com, jens.axboe@oracle.com, npiggin@suse.de
+Subject: Re: Xen is a feature
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <4A1F302E.8030501@goop.org>
+References: <162f4c90-6431-4a2a-b337-6d7451d7b11e@default>
+	<20090528001350.GD26820@elte.hu>
+	<4A1F302E.8030501@goop.org>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 29, 2009 at 10:01:51AM +1000, John Williams wrote:
-> Hi,
-> 
-> On Wed, Mar 4, 2009 at 11:51 PM, Johannes Weiner <jw@emlix.com> wrote:
-> > From: Oskar Schirmer <os@emlix.com>
-> >
-> > The flat loader uses an architecture's flat_stack_align() to align the
-> > stack but assumes word-alignment is enough for the data sections.
-> >
-> > However, on the Xtensa S6000 we have registers up to 128bit width
-> > which can be used from userspace and therefor need userspace stack and
-> > data-section alignment of at least this size.
-> >
-> > This patch drops flat_stack_align() and uses the same alignment that
-> > is required for slab caches, ARCH_SLAB_MINALIGN, or wordsize if it's
-> > not defined by the architecture.
-> >
-> > It also fixes m32r which was obviously kaput, aligning an
-> > uninitialized stack entry instead of the stack pointer.
-> >
-> 
-> > ---
-> > ?arch/arm/include/asm/flat.h ? ? ?| ? ?3 ---
-> > ?arch/blackfin/include/asm/flat.h | ? ?1 -
-> > ?arch/h8300/include/asm/flat.h ? ?| ? ?1 -
-> > ?arch/m68k/include/asm/flat.h ? ? | ? ?1 -
-> > ?arch/sh/include/asm/flat.h ? ? ? | ? ?1 -
-> > ?fs/binfmt_flat.c ? ? ? ? ? ? ? ? | ? 37 ++++++++++++++++++++++---------------
-> > ?include/asm-m32r/flat.h ? ? ? ? ?| ? ?1 -
-> > ?7 files changed, 22 insertions(+), 23 deletions(-)
-> 
-> Can you please cross-check this patch for MicroBlaze as well, we are
-> another active nommu architecture.
-> 
-I already did, see http://lkml.org/lkml/2009/5/27/753
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+Date: Thu, 28 May 2009 17:45:34 -0700
 
-You just need to kill off your flat_stack_align(), as it doesn't do
-anything presently it is harmless one way or the other.
+> Ingo Molnar wrote:
+>> Xen changes - especially dom0 - are overwhelmingly not about improving
+>> Linux, but about having some special hook and extra treatment in
+>> random places - and that's really bad.
+>>   
+> 
+> You've made this argument a few times now, and I take exception to it.
+> 
+> It seems to be predicated on the idea that Xen has some kind of niche
+> usage, with barely more users than Voyager.  Or that it is a parasite
+> sitting on the side of Linux, being a pure drain.
+
+I don't see Ingo's comments, whether I agree with them or not, as
+an implication of Xen being niche.  Rather I see his comments as
+an opposition to how Xen is implemented.
+
+> We're taking your technical critiques very seriously, of course, and I
+> appreciate any constructive comment.  But your baseline position of
+> animosity towards Xen is unreasonable, unfair and unnecessary.
+
+I don't see any animosity at all in what Ingo has said.
