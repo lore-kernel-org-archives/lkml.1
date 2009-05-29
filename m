@@ -1,85 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758141AbZE2IqO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758338AbZE2Iqj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758141AbZE2IqO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 04:46:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757107AbZE2IoR
+	id S1758338AbZE2Iqj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 04:46:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757472AbZE2Io2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 04:44:17 -0400
-Received: from smtp.citrix.com ([66.165.176.89]:56015 "EHLO SMTP.CITRIX.COM"
+	Fri, 29 May 2009 04:44:28 -0400
+Received: from hera.kernel.org ([140.211.167.34]:59565 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756855AbZE2IoP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 04:44:15 -0400
-X-IronPort-AV: E=Sophos;i="4.41,270,1241409600"; 
-   d="scan'208";a="4461769"
-From: Ian Campbell <ian.campbell@citrix.com>
-To: <linux-kernel@vger.kernel.org>
-CC: Ian Campbell <ian.campbell@citrix.com>,
-       Becky Bruce <beckyb@kernel.crashing.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Kumar Gala <galak@kernel.crashing.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Ingo Molnar <mingo@elte.hu>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 8/9] swiotlb: support HIGHMEM in swiotlb_bus_to_virt
-Date: Fri, 29 May 2009 09:44:02 +0100
-Message-ID: <1243586643-5554-9-git-send-email-ian.campbell@citrix.com>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1243586643-5554-1-git-send-email-ian.campbell@citrix.com>
-References: <1243586643-5554-1-git-send-email-ian.campbell@citrix.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+	id S1757479AbZE2Io0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 May 2009 04:44:26 -0400
+Subject: Re: [PATCH] KVM: add localversion to avoid confusion and conflicts
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Christian =?ISO-8859-1?Q?Borntr=E4ger?= <borntraeger@de.ibm.com>
+Cc: Avi Kivity <avi@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>, KVM list <kvm@vger.kernel.org>
+In-Reply-To: <200905290948.34482.borntraeger@de.ibm.com>
+References: <1243581494.3212.1.camel@localhost.localdomain>
+	 <200905290948.34482.borntraeger@de.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 29 May 2009 14:13:46 +0530
+Message-Id: <1243586626.4379.15.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rather than supplying a __weak hook which architectures which support
-highmem can overide simply provide a version of swiotlb_bus_to_virt
-which works with high memory. Make it conditional since it is a more
-expensive variant than the non-highmem version.
+On Fri, 2009-05-29 at 09:48 +0200, Christian Bornträger wrote:
+> Am Freitag 29 Mai 2009 09:18:14 schrieb Jaswinder Singh Rajput:
+> > Adding localversion avoids confusion in kernel images :
+> >
+> > like Linux version 2.6.30-rc7 does not tell whether it is linus or kvm
+> > kernel.
+> >
+> > By adding localversion it tells :
+> >
+> > Linux version 2.6.30-rc7-kvm , any doubt ;-)
+> > I am inspired by Ingo's -tip, I am sure Ingo will tell more advantages,
+> > if these are not enough :-)
+> [...]
+> > diff --git a/localversion-kvm b/localversion-kvm
+> > new file mode 100644
+> > index 0000000..d969ff0
+> > --- /dev/null
+> > +++ b/localversion-kvm
+> > @@ -0,0 +1 @@
+> > +-kvm
+> 
+> NAK from my side. If you need a distinction, there is always 
+> CONFIG_LOCALVERSION_AUTO. If you need this kind of prefix, there is always  
+> CONFIG_LOCALVERSION.
+> 
 
-Acutal function contents taken from the PowerPC swiotlb patchset by
-Becky Bruce.
+Here is NAK for your NAK from my side.
 
-Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
-Cc: Becky Bruce <beckyb@kernel.crashing.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Kumar Gala <galak@kernel.crashing.org>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: linuxppc-dev@ozlabs.org
----
- lib/swiotlb.c |   14 +++++++++++++-
- 1 files changed, 13 insertions(+), 1 deletions(-)
+This patch is only for KVM tree and not for linus tree.
 
-diff --git a/lib/swiotlb.c b/lib/swiotlb.c
-index e332342..c50a5ed 100644
---- a/lib/swiotlb.c
-+++ b/lib/swiotlb.c
-@@ -130,10 +130,22 @@ static dma_addr_t swiotlb_virt_to_bus(struct device *hwdev,
- 	return phys_to_dma(hwdev, virt_to_phys(address));
- }
- 
--void * __weak swiotlb_bus_to_virt(struct device *hwdev, dma_addr_t address)
-+#ifdef CONFIG_HIGHMEM
-+static void * swiotlb_bus_to_virt(struct device *hwdev, dma_addr_t address)
-+{
-+	unsigned long pfn = PFN_DOWN(dma_to_phys(hwdev, addr));
-+	void *pageaddr = page_address(pfn_to_page(pfn));
-+
-+	if (pageaddr != NULL)
-+		return pageaddr + (addr % PAGE_SIZE);
-+	return NULL;
-+}
-+#else
-+static void * swiotlb_bus_to_virt(struct device *hwdev, dma_addr_t address)
- {
- 	return phys_to_virt(dma_to_phys(hwdev, address));
- }
-+#endif
- 
- static void swiotlb_print_info(unsigned long bytes)
- {
--- 
-1.5.6.5
+Lets assume 100 developers are working on kvm tree and they use kvm tree
+on 2 PCs. So count becomes 200.
+
+Like in my case I have dozen of kernel trees so I keep on swapping
+config between kernels. And I also need to test config from various
+users. So this count is countless.
+I think this is the biggest point for adding localversion in -tip.
+It seems Ingo is busy in perfcounter stuff otherwise he will explain you
+more advantages.
+
+In the least case, Can you differentiate between 1 and 200 ?
+
+So by adding this patch we can save lot of developer's time.
+
+--
+JSR
 
