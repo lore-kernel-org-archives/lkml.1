@@ -1,205 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761998AbZE2QI7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762601AbZE2QJ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761998AbZE2QI7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 12:08:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755899AbZE2QIv
+	id S1762601AbZE2QJ2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 12:09:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760776AbZE2QJS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 12:08:51 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:50993 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753483AbZE2QIu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 12:08:50 -0400
-Date: Fri, 29 May 2009 12:06:10 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Nauman Rafique <nauman@google.com>
-Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, jens.axboe@oracle.com, dpshah@google.com,
-       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
-       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
-       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
-       peterz@infradead.org
-Subject: Re: [PATCH 02/20] io-controller: Common flat fair queuing code in
-	elevaotor layer
-Message-ID: <20090529160610.GC26962@redhat.com>
-References: <1243377729-2176-1-git-send-email-vgoyal@redhat.com> <1243377729-2176-3-git-send-email-vgoyal@redhat.com> <e98e18940905271353kc6890dbxa1ea63026c8faec1@mail.gmail.com> <20090528160003.GA4335@redhat.com> <e98e18940905281241v4aa24716j91f351a828af604a@mail.gmail.com>
+	Fri, 29 May 2009 12:09:18 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:22595 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760031AbZE2QJR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 May 2009 12:09:17 -0400
+Message-ID: <4A200846.5050109@gmail.com>
+Date: Fri, 29 May 2009 19:07:34 +0300
+From: Artem Bityutskiy <dedekind1@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <e98e18940905281241v4aa24716j91f351a828af604a@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org, tytso@mit.edu,
+       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
+       akpm@linux-foundation.org, jack@suse.cz, yanmin_zhang@linux.intel.com,
+       richard@rsk.demon.co.uk, damien.wyart@free.fr
+Subject: Re: [PATCH 0/11] Per-bdi writeback flusher threads v9
+References: <1243511204-2328-1-git-send-email-jens.axboe@oracle.com>
+In-Reply-To: <1243511204-2328-1-git-send-email-jens.axboe@oracle.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 29 May 2009 16:07:36.0782 (UTC) FILETIME=[955426E0:01C9E077]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 28, 2009 at 12:41:27PM -0700, Nauman Rafique wrote:
-> On Thu, May 28, 2009 at 9:00 AM, Vivek Goyal <vgoyal@redhat.com> wrote:
-> > On Wed, May 27, 2009 at 01:53:59PM -0700, Nauman Rafique wrote:
-> >
-> > [..]
-> >> > +/**
-> >> > + * __bfq_lookup_next_entity - return the first eligible entity in @st.
-> >> > + * @st: the service tree.
-> >> > + *
-> >> > + * Update the virtual time in @st and return the first eligible entity
-> >> > + * it contains.
-> >> > + */
-> >> > +static struct io_entity *__bfq_lookup_next_entity(struct io_service_tree *st)
-> >> > +{
-> >> > +       struct io_entity *entity;
-> >> > +
-> >> > +       if (RB_EMPTY_ROOT(&st->active))
-> >> > +               return NULL;
-> >> > +
-> >> > +       bfq_update_vtime(st);
-> >>
-> >> Vivek, Paolo, Fabio,
-> >> Over here we call bfq_update_vtime(), and this function could have
-> >> been called even when we are just doing a lookup (and not an extract).
-> >> So vtime is updated while we are not really selecting the next queue
-> >> for service (for an example, see elv_preempt_queue()). This can result
-> >> in a call to update_vtime when only an entity with small weight (say
-> >> weight=1) is backlogged and another entity with bigger weight (say 10)
-> >> is getting serviced so it is not in the tree (we extract the entity
-> >> which is getting service). This results in a big vtime jump to the
-> >> start time of the entity with weight 1 (entity of weight 1 would have
-> >> big start times, as it has small weight). Now when another entity with
-> >> bigger weight (say 90) gets backlogged, it is assigned a new vtime
-> >> from service tree's vtime, causing it to get a big value. In the
-> >> meanwhile, iog for weight 10 keeps getting service for many quantums,
-> >> as it was continuously backlogged.
-> >>
-> >> The problem happens because we extract an entity (removing it from the
-> >> tree) while it is getting service, and do vtime jumps based on what is
-> >> still in the tree. I think we need to add an extra check on the vtime
-> >> of the entity in service, before we take a vtime jump.
-> >>
-> >> I have actually seen this happening when trying to debug on of my
-> >> tests. Please let me know what you think.
-> >>
-> >
-> > Hi Nauman,
-> >
-> > This sounds like a problem but apart from elv_preempt_queue(), in which path
-> > do you see it?
-> >
-> > Initially fabio posted the patches where preemption was allowed only if
-> > the preempting queue is the next one to be served. To keep the behavior
-> > same as CFQ, I have changed that logic and if we decide to preempt the
-> > current queue (based on many checks like sync or async), I expire the
-> > current queue and add the new queue to the front of the service tree so
-> > that it is selected next. It does impact the fairness a bit but that's how
-> > cfq does it today and concept of preemption with-in same prio class is
-> > somewhat peculiar.
-> >
-> > So in latest patches preemption path is covered. There does not seem to be
-> > other paths where we do lookups while and active entity is being served.
-> > For example, update_next_active() does not continue with lookup if there
-> > is an active entity. So with this version of patch, you should not face
-> > the issue.
-> >
-> > In general, I think it is a good idea to fix it in update_vtime() so
-> > that not to udpate vtime if there is an active entity and not rely on
-> > caller who makes sure that update_vtime() is not called when there is
-> > an active entity. Do you have a quick patch for that?
+Jens Axboe wrote:
+> Hi,
 > 
-> Adding this extra check in update_vtime() is tricky. If we don't
-> update vtime, then its possible that lookup would return no entity,
-> even though there are backlogged queues, as all backlogged entities
-> might be not eligible (i.e have start times bigger than vtime).
-> When an entity is currently under service, we don't know what would be
-> the next entity really, as it could be the current entity under
-> service, depending on the actual time slice used by under service
-> entity.
+> Here's the 9th version of the writeback patches. Changes since v8:
 > 
-> You are right that the lookup (without extract) was done only in
-> preemption path. And with your latest changes, even that is removed.
-> In this case, just having a BUG_ON() to ensure this does not happen
-> should suffice.
+> - Fix a bdi_work on-stack allocation hang. I hope this fixes Ted's
+>   issue.
+> - Get rid of the explicit wait queues, we can just use wake_up_process()
+>   since it's just for that one task.
+> - Add separate "sync_supers" thread that makes sure that the dirty
+>   super blocks get written. We cannot safely do this from bdi_forker_task(),
+>   as that risks deadlocking on ->s_umount. Artem, I implemented this
+>   by doing the wake ups from a timer so that it would be easier for you
+>   to just deactivate the timer when there are no super blocks.
 > 
-> commit dc54ad458b907db5523e8a088786014da8c4b3b2
-> Author: Nauman Rafique <nauman@google.com>
-> Date:   Thu May 28 12:27:00 2009 -0700
+> For ease of patching, I've put the full diff here:
 > 
->     Add a BUG_ON() that should fire when we can update vtime while just
->     doing a lookup for next entity (and not extraction).
+>   http://kernel.dk/writeback-v9.patch
 > 
-> diff --git a/block/elevator-fq.c b/block/elevator-fq.c
-> index f1179aa..d512c1b 100644
-> --- a/block/elevator-fq.c
-> +++ b/block/elevator-fq.c
-> @@ -1036,8 +1036,11 @@ struct io_entity *bfq_lookup_next_entity(struct
-> io_sched_data *sd,
->         /*
->          * One can check for which will be next selected entity without
->          * expiring the current one.
-> +        * Also, we should not call lookup when an entity is active, as
-> +        * we extract an active entity from tree, and doing lookup can result
-> +        * in an erroneous vtime jump when active entity is extacted from tree.
->          */
-> -       BUG_ON(extract && sd->active_entity != NULL);
-> +       BUG_ON(sd->active_entity != NULL);
+> and also stored this in a writeback-v9 branch that will not change,
+> you can pull that into Linus tree from here:
+> 
+>   git://git.kernel.dk/linux-2.6-block.git writeback-v9
 
-I think this should be good. I had added this "extract" in the past, because
-preemption logic could do lookup which an entity was active.
+I'm working with the above branch. Got the following twice.
+Not sure what triggers this, probably if I do nothing and
+cpufreq starts doing its magic, this is triggered.
 
-> 
->         for (i = 0; i < IO_IOPRIO_CLASSES; i++, st++) {
->                 entity = __bfq_lookup_next_entity(st);
-> 
-> 
-> I have some concerns about the new preemption logic.
+And I'm not sure it has something to do with your changes,
+it is just that I saw this only with your tree. Please,
+ignore if this is not relevant.
 
-Actually we need a more proper definition of in-class preemption. Across
-class preemption means that RT class always gets to run first.
+=======================================================
+ scaling: [ INFO: possible circular locking dependency detected ]
+2.6.30-rc7-block-2.6 #1                                          
+-------------------------------------------------------          
+K99cpuspeed/9923 is trying to acquire lock:                      
+ (&(&dbs_info->work)->work){+.+...}, at: [<ffffffff81051155>] __cancel_work_timer+0xd9/0x21d
 
-What does in-class preemption mean? If I look at the current CFQ code,
-it does look like that preempting process will gain share. It is always
-added to the front of the tree with "rb_key=0" and that means, this new
-queue will get fresh time slice (even if it got time slice very recently).
+but task is already holding lock:
+ (dbs_mutex){+.+.+.}, at: [<ffffffffa0073aa8>] cpufreq_governor_dbs+0x23c/0x2cc [cpufreq_ondemand]
 
-Currently I have just tried to make the behavior same as CFQ to reduce
-the possiblility of regressions. That's a different thing that we can
-discuss what should be the exact behavior in case of in-class preemption
-and first it needs to be fixed in CFQ, if current behavior is an issue.
+which lock already depends on the new lock.
 
-On the other hand, I am not sure if previous bfq preemption logic was
-working. We were checking if the new request belonged to the queue which
-will be served next, then preempt the existing queue. While looking
-for the next queue, I think we did not consider the current active
-entity (as it was not on the tree). So after expiry of the current
-queue, it might get selected next if it has not got its share. So there
-was no point in preempting the queue. If queue already got its share, then
-anyway the next queue will be selected next and there is no point in
-preempting the current queue.
 
-I am not sure why reads should preempt writes in CFQ. We are already giving
-preference to reads by giving these bigger time slice as compared to
-writes and that should take care of read being preferred over writes?
- 
-Thanks
-Vivek
-  
-> We modify the
-> start and finish time to make sure the entity gets selected next. So
-> the entity which preempts others can eventually get more service than
-> others (specially if it keeps preempting others). It seems that we can
-> fix that by temporarily pushing the entity to the front, without
-> modifying start/finish times. One way to do that is to add an extra
-> flag to an entity. When the flag is set, we can ignore finish times
-> and prefer the entity (in bfq_first_active_entity()). This has the
-> advantage that since we are preserving start/finish times, over time,
-> such an entity will be de-prioritized over others. In order to ensure
-> that actually does happen, we can introduce a threshold (call it
-> preempt_threshold). Then the entity with the flag set would jump to
-> the front only if the difference between 'its finish time' and 'the
-> finish time of other entities' is within this threshold. Let me know
-> if it makes sense.
-> 
-> >
-> > Thanks
-> > Vivek
-> >
+the existing dependency chain (in reverse order) is:
+
+-> #2 (dbs_mutex){+.+.+.}:
+       [<ffffffff81063529>] __lock_acquire+0xa63/0xbeb
+       [<ffffffff8106379f>] lock_acquire+0xee/0x112   
+       [<ffffffff812f4eb0>] __mutex_lock_common+0x5a/0x419
+       [<ffffffff812f5309>] mutex_lock_nested+0x30/0x35   
+       [<ffffffffa00738f2>] cpufreq_governor_dbs+0x86/0x2cc [cpufreq_ondemand]
+       [<ffffffff8125eaa4>] __cpufreq_governor+0x84/0xc2                      
+       [<ffffffff8125ecae>] __cpufreq_set_policy+0x195/0x211                  
+       [<ffffffff8125f6fb>] store_scaling_governor+0x1e7/0x223                
+       [<ffffffff8126038f>] store+0x5f/0x83                                   
+       [<ffffffff81125107>] sysfs_write_file+0xe4/0x119                       
+       [<ffffffff810d24ae>] vfs_write+0xab/0x105                              
+       [<ffffffff810d25cc>] sys_write+0x47/0x70                               
+       [<ffffffff8100bc2b>] system_call_fastpath+0x16/0x1b                    
+       [<ffffffffffffffff>] 0xffffffffffffffff                                
+
+-> #1 (&per_cpu(cpu_policy_rwsem, cpu)){+++++.}:
+       [<ffffffff81063529>] __lock_acquire+0xa63/0xbeb
+       [<ffffffff8106379f>] lock_acquire+0xee/0x112   
+       [<ffffffff812f5561>] down_write+0x3d/0x49      
+       [<ffffffff8125fc31>] lock_policy_rwsem_write+0x48/0x78
+       [<ffffffffa007364c>] do_dbs_timer+0x5f/0x27f [cpufreq_ondemand]
+       [<ffffffff81050869>] worker_thread+0x24b/0x367                 
+       [<ffffffff810547c1>] kthread+0x56/0x83                         
+       [<ffffffff8100cd3a>] child_rip+0xa/0x20                        
+       [<ffffffffffffffff>] 0xffffffffffffffff                        
+
+-> #0 (&(&dbs_info->work)->work){+.+...}:
+       [<ffffffff8106341d>] __lock_acquire+0x957/0xbeb
+       [<ffffffff8106379f>] lock_acquire+0xee/0x112   
+       [<ffffffff81051189>] __cancel_work_timer+0x10d/0x21d
+       [<ffffffff810512a6>] cancel_delayed_work_sync+0xd/0xf
+       [<ffffffffa0073abb>] cpufreq_governor_dbs+0x24f/0x2cc [cpufreq_ondemand]
+       [<ffffffff8125eaa4>] __cpufreq_governor+0x84/0xc2                       
+       [<ffffffff8125ec98>] __cpufreq_set_policy+0x17f/0x211                   
+       [<ffffffff8125f6fb>] store_scaling_governor+0x1e7/0x223                 
+       [<ffffffff8126038f>] store+0x5f/0x83                                    
+       [<ffffffff81125107>] sysfs_write_file+0xe4/0x119                        
+       [<ffffffff810d24ae>] vfs_write+0xab/0x105                               
+       [<ffffffff810d25cc>] sys_write+0x47/0x70                                
+       [<ffffffff8100bc2b>] system_call_fastpath+0x16/0x1b                     
+       [<ffffffffffffffff>] 0xffffffffffffffff                                 
+
+other info that might help us debug this:
+
+3 locks held by K99cpuspeed/9923:
+ #0:  (&buffer->mutex){+.+.+.}, at: [<ffffffff8112505b>] sysfs_write_file+0x38/0x119
+ #1:  (&per_cpu(cpu_policy_rwsem, cpu)){+++++.}, at: [<ffffffff8125fc31>] lock_policy_rwsem_write+0x48/0x78
+ #2:  (dbs_mutex){+.+.+.}, at: [<ffffffffa0073aa8>] cpufreq_governor_dbs+0x23c/0x2cc [cpufreq_ondemand]
+
+stack backtrace:
+Pid: 9923, comm: K99cpuspeed Not tainted 2.6.30-rc7-block-2.6 #1
+Call Trace:
+ [<ffffffff81062750>] print_circular_bug_tail+0x71/0x7c
+ [<ffffffff8106341d>] __lock_acquire+0x957/0xbeb
+ [<ffffffff8106379f>] lock_acquire+0xee/0x112
+ [<ffffffff81051155>] ? __cancel_work_timer+0xd9/0x21d
+ [<ffffffff81051189>] __cancel_work_timer+0x10d/0x21d
+ [<ffffffff81051155>] ? __cancel_work_timer+0xd9/0x21d
+ [<ffffffff812f5218>] ? __mutex_lock_common+0x3c2/0x419
+ [<ffffffffa0073aa8>] ? cpufreq_governor_dbs+0x23c/0x2cc [cpufreq_ondemand]
+ [<ffffffff81061e66>] ? mark_held_locks+0x4d/0x6b
+ [<ffffffffa0073aa8>] ? cpufreq_governor_dbs+0x23c/0x2cc [cpufreq_ondemand]
+ [<ffffffff810512a6>] cancel_delayed_work_sync+0xd/0xf
+ [<ffffffffa0073abb>] cpufreq_governor_dbs+0x24f/0x2cc [cpufreq_ondemand]
+ [<ffffffff810580f1>] ? up_read+0x26/0x2b
+ [<ffffffff8125eaa4>] __cpufreq_governor+0x84/0xc2
+ [<ffffffff8125ec98>] __cpufreq_set_policy+0x17f/0x211
+ [<ffffffff8125f6fb>] store_scaling_governor+0x1e7/0x223
+ [<ffffffff812604dc>] ? handle_update+0x0/0x33
+ [<ffffffff812f5569>] ? down_write+0x45/0x49
+ [<ffffffff8126038f>] store+0x5f/0x83
+ [<ffffffff81125107>] sysfs_write_file+0xe4/0x119
+ [<ffffffff810d24ae>] vfs_write+0xab/0x105
+ [<ffffffff810d25cc>] sys_write+0x47/0x70
+ [<ffffffff8100bc2b>] system_call_fastpath+0x16/0x1b
+
