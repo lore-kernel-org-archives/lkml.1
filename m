@@ -1,154 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760752AbZE2Rop@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760560AbZE2SK0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760752AbZE2Rop (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 13:44:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753629AbZE2Roi
+	id S1760560AbZE2SK0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 14:10:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753349AbZE2SKO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 13:44:38 -0400
-Received: from mail-px0-f123.google.com ([209.85.216.123]:60428 "EHLO
-	mail-px0-f123.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753254AbZE2Roh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 13:44:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
-         :organization:date:message-id:mime-version:x-mailer
-         :content-transfer-encoding;
-        b=Ms51esXs3hPL6Be9yXAPh2CDk4CX7j2P5Dx/DuvWNDupJBtPC5o6xIljeEHnP8/ohi
-         2WyZ61WQ+TiKzSokgYc3HRH2RNr3PsoGPbny9Hmdnv2SExRQWGjDSUeoPN6+etCvW/Pa
-         PiOd+JWzXPbpV6OG6l9uuu+585bYvEPxXXdA8=
-Subject: Re: [PATCH v2 2/6] mips dynamic function tracer support
-From: Wu Zhangjin <wuzhangjin@gmail.com>
-Reply-To: wuzhangjin@gmail.com
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org,
-       Ralf Baechle <ralf@linux-mips.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Nicholas Mc Guire <der.herr@hofr.at>
-In-Reply-To: <alpine.DEB.2.00.0905291122260.31247@gandalf.stny.rr.com>
-References: <cover.1243604390.git.wuzj@lemote.com>
-	 <a00a91f6fc79b7d20b5b2193086e879dcafded46.1243604390.git.wuzj@lemote.com>
-	 <alpine.DEB.2.00.0905291122260.31247@gandalf.stny.rr.com>
-Content-Type: text/plain
-Organization: DSLab, Lanzhou University, China
-Date: Sat, 30 May 2009 01:22:03 +0800
-Message-Id: <1243617723.18071.18.camel@falcon>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Fri, 29 May 2009 14:10:14 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:42446 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752727AbZE2SKN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 May 2009 14:10:13 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jan Scholz <scholz@fias.uni-frankfurt.de>
+Subject: Re: [regression, bisected] adb trackpad disappears after suspend to ram
+Date: Fri, 29 May 2009 20:10:09 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc6-rjw; KDE/4.2.3; x86_64; ; )
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Adrian Bunk <bunk@kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <878wkl6vce.fsf@scholz.fias.uni-frankfurt.de> <1243549422.17903.10.camel@pasglop> <87tz34n97p.fsf@scholz.fias.uni-frankfurt.de>
+In-Reply-To: <87tz34n97p.fsf@scholz.fias.uni-frankfurt.de>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200905292010.10615.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-05-29 at 11:24 -0400, Steven Rostedt wrote:
-> On Fri, 29 May 2009, wuzhangjin@gmail.com wrote:
-> > diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
-> > index 409596e..a5d2ace 100755
-> > --- a/scripts/recordmcount.pl
-> > +++ b/scripts/recordmcount.pl
-> > @@ -213,6 +213,17 @@ if ($arch eq "x86_64") {
-> >      if ($is_module eq "0") {
-> >          $cc .= " -mconstant-gp";
-> >      }
-> > +
-> > +} elsif ($arch eq "mips") {
-> > +	$mcount_regex = "^\\s*([0-9a-fA-F]+):.*\\s_mcount\$";
-> > +	$ld .= " -melf".$bits."btsmip";
-> > +
-> > +	$cc .= " -mno-abicalls -fno-pic ";
-> > +
-> > +    if ($bits == 64) {
-> > +		$type = ".dword";
-> > +    }
-> > +
-> >  } else {
-> >      die "Arch $arch is not supported with CONFIG_FTRACE_MCOUNT_RECORD";
-> >  }
-> > @@ -441,12 +452,12 @@ if ($#converts >= 0) {
-> >      #
-> >      # Step 5: set up each local function as a global
-> >      #
-> > -    `$objcopy $globallist $inputfile $globalobj`;
-> > +    `$objcopy $globallist $inputfile $globalobj 2>&1 >/dev/null`;
-> >  
-> >      #
-> >      # Step 6: Link the global version to our list.
-> >      #
-> > -    `$ld -r $globalobj $mcount_o -o $globalmix`;
-> > +    `$ld -r $globalobj $mcount_o -o $globalmix 2>&1 >/dev/null`;
+On Friday 29 May 2009, Jan Scholz wrote:
+> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 > 
-> We still need to find out why these are giving errors. I don't like the 
-> idea of hiding errors that might be useful. The better way is to change 
-> the code to avoid having any warnings or errors.
+> >> We are too late in the cycle to revert this commit and it really is needed to
+> >> fix a more serious issue.  Nevertheless knowing that it caused the problem to
+> >> appear on your system is also important.
+> >> 
+> >> Ben, do you have an idea what may be going on here?  Does __disable_irq() mask
+> >> the interrupt on this platform?
+> >
+> > I suppose so :-) I'll have to check what's going on, it's not
+> > immediately clear to me.
+> >
+> > Cheers,
+> > Ben.
+> >
+> >> 
+> >> I'd like to see a boot log, preferably containing a suspend-resume in which
+> >> the problem was reproduced.
 > 
+> Here is a log from booting, through several suspend cycles, until the
+> trackpad disappeared. The first few suspends were done while X was
+> running but from the console. As you can tell from lines like
+>    May 28 23:51:26 [kernel] adb devices: [2]: 2 c4 [3]: 3 1 [7]: 7 1f
+> the trackpad was still present. The last suspend was done from within X,
+> here the trackpad did not make it.
+>    May 28 23:58:09 [kernel] adb devices: [2]: 2 c4 [7]: 7 1f
+> However, there have been cases, although not in this log, were the
+> trackpad has been alive even when suspending from within X.
 
-ooh, there is really a bug in scripts/recordmcount.pl, just fixed it.
+This means the problem is probably timing-related.
 
-warnings like this(only in mips/64bit):
+Can you please try to comment out suspend_device_irqs() and
+resume_device_irqs()  in drivers/base/power/main.c and see if that changes
+anything?  It's not entirely safe (well, that's why the calls are there after
+all), but hopefully the box won't hang during this test.
 
- CC      fs/proc/devices.o
-mipsel-linux-gnu-objcopy: 'fs/proc/.tmp_gl_devices.o': No such file
-mipsel-linux-gnu-ld: fs/proc/.tmp_gl_devices.o: No such file: No such
-file or directory
-rm: cannot remove `fs/proc/.tmp_gl_devices.o': No such file or directory
-rm: cannot remove `fs/proc/.tmp_mx_devices.o': No such file or directory
-
-so i checked the source code and let it print something:
-
-     #
-     # Step 5: set up each local function as a global
-     #
-+    print "$objcopy $globallist $inputfile $globalobj\n";
-     `$objcopy $globallist $inputfile $globalobj`;
-
-something like this is printed:
-
-mipsel-linux-gnu-objcopy  --globalize-symbol $L12
-arch/mips/kernel/irq_cpu.o arch/mips/kernel/.tmp_gl_irq_cpu.o
-mipsel-linux-gnu-objcopy: 'arch/mips/kernel/.tmp_gl_irq_cpu.o': No such
-file
-mipsel-linux-gnu-ld: arch/mips/kernel/.tmp_gl_irq_cpu.o: No such file:
-No such file or directory
-rm: cannot remove `arch/mips/kernel/.tmp_gl_irq_cpu.o': No such file or
-directory
-rm: cannot remove `arch/mips/kernel/.tmp_mx_irq_cpu.o': No such file or
-directory
-
-
-did you see the symbol: $L12, which should be quoted, otherwise, it will
-be interpreted as the value of a variable L12(the whole $L12 should be a
-string), this $L12 will be an empty string. so, the whole command
-becomes:
-
-mipsel-linux-gnu-objcopy --globalize-symbol arch/mips/kernel/irq_cpu.o
-arch/mips/kernel/.tmp_gl_irq_cpu.o
-
-the last string .../.tmp_gl_irq_cpu.o becomes the input file, but it's
-not there, that is the warning.
-
-fix it like this:
-
-diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
-index 59ea43a..907110e 100755
---- a/scripts/recordmcount.pl
-+++ b/scripts/recordmcount.pl
-@@ -451,8 +451,8 @@ if ($#converts >= 0) {
-     my $locallist = "";
- 
-     foreach my $con (@converts) {
--       $globallist .= " --globalize-symbol $con";
--       $locallist .= " --localize-symbol $con";
-+       $globallist .= " --globalize-symbol \"$con\"";
-+       $locallist .= " --localize-symbol \"$con\"";
-     }
- 
-     my $globalobj = $dirname . "/.tmp_gl_" . $filename;
-
-I will add this as the third patch, is it okay?
-
-Best Wishes,
---- Wu Zhangjin
-
+Best,
+Rafael
