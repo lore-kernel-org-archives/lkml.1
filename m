@@ -1,72 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755498AbZE2GvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755548AbZE2Gz0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755498AbZE2GvT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 02:51:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752889AbZE2GvM
+	id S1755548AbZE2Gz0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 02:55:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752919AbZE2GzR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 02:51:12 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48651
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752583AbZE2GvL (ORCPT
+	Fri, 29 May 2009 02:55:17 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:54796 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752696AbZE2GzP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 02:51:11 -0400
-Date: Thu, 28 May 2009 23:51:10 -0700 (PDT)
-Message-Id: <20090528.235110.44572184.davem@davemloft.net>
-To: jaswinder@kernel.org
-Cc: jeremy@goop.org, mingo@elte.hu, dan.magenheimer@oracle.com, avi@redhat.com,
-       George.Dunlap@eu.citrix.com, xen-devel@lists.xensource.com,
-       x86@kernel.org, linux-kernel@vger.kernel.org, keir.fraser@eu.citrix.com,
-       torvalds@linux-foundation.org, gregkh@suse.de, kurt.hackel@oracle.com,
-       Ian.Pratt@citrix.com, xen-users@lists.xensource.com,
-       ksrinivasan@novell.com, EAnderson@novell.com, wimcoekaerts@wimmekes.net,
-       stephen.spector@citrix.com, jens.axboe@oracle.com, npiggin@suse.de
-Subject: Re: Xen is a feature
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1243579052.3159.32.camel@localhost.localdomain>
-References: <4A1F302E.8030501@goop.org>
-	<20090528.210559.137121893.davem@davemloft.net>
-	<1243579052.3159.32.camel@localhost.localdomain>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Fri, 29 May 2009 02:55:15 -0400
+Date: Fri, 29 May 2009 15:53:42 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
+       "hannes@cmpxchg.org" <hannes@cmpxchg.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/4] add swap cache interface for swap reference v2
+ (updated)
+Message-Id: <20090529155342.7fcead51.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090529150525.cbbb4be1.nishimura@mxp.nes.nec.co.jp>
+References: <20090528135455.0c83bedc.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090528141049.cc45a116.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090529132153.3a72f2c3.nishimura@mxp.nes.nec.co.jp>
+	<20090529140832.1f4b288b.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090529143758.4c3db3eb.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090529150525.cbbb4be1.nishimura@mxp.nes.nec.co.jp>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Date: Fri, 29 May 2009 12:07:32 +0530
+On Fri, 29 May 2009 15:05:25 +0900
+Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
 
-> Hi Dave,
+> On Fri, 29 May 2009 14:37:58 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > On Fri, 29 May 2009 14:08:32 +0900
+> > KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > > > IIUC, swap_free() at the end of shmem_writepage() should also be changed to swapcache_free().
+> > > > 
+> > > Hmm!. Oh, yes. shmem_writepage()'s error path. Thank you. It will be fixed.
+> > > 
+> > here. 
+> > 
+> Looks good to me.
 > 
-> On Thu, 2009-05-28 at 21:05 -0700, David Miller wrote:
->> From: Jeremy Fitzhardinge <jeremy@goop.org>
->> Date: Thu, 28 May 2009 17:45:34 -0700
->> 
->> > Ingo Molnar wrote:
->> >> Xen changes - especially dom0 - are overwhelmingly not about improving
->> >> Linux, but about having some special hook and extra treatment in
->> >> random places - and that's really bad.
->> >>   
->> > 
->> > You've made this argument a few times now, and I take exception to it.
->> > 
->> > It seems to be predicated on the idea that Xen has some kind of niche
->> > usage, with barely more users than Voyager.  Or that it is a parasite
->> > sitting on the side of Linux, being a pure drain.
->> 
->> I don't see Ingo's comments, whether I agree with them or not, as
->> an implication of Xen being niche.  Rather I see his comments as
->> an opposition to how Xen is implemented.
->> 
+> 	Reviewed-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
 > 
-> You can see Ingo's comments and whole thread under subject :
 > 
-> Re: [Xen-devel] Re: [GIT PULL] Xen APIC hooks (with io_apic_ops)
+> BTW, I'm now testing(with swap-in/out and swap-on/off) [2/4] of this patch set.
+> I think this patch set would work well, but it's a big change to swap,
+> so we should test them very carefully.
 > 
-> http://lkml.org/lkml/2009/5/27/758
+Indeed. 
 
-Jeremy is specifically commenting on Ingo's quoted "argument".
-And that "argument" is what he takes "exception to".
+BTW, even we ignores memcg, they are necessary change for us. ([2/4] and [3/4])
 
-And that's the scope of what I'm commenting on too.
+IIUC, I remember a NEC man had a story like below.
+
+1. create 2 cpusets. A and B.
+2. At first, tons of swaps are created by "A".
+3. After size of applications in A shrinks, pages swapped out by "A" is now on-memory.
+4. When running program in B, B can't use enough swaps because "A" uses tons of
+   cache-only swaps.
+
+Why swap_entries are not reclaimed in "4" is because cpuset divides the LRU.
+
+I think patch [3/4] can be a sliver bullet to this problem.
+
+Thanks,
+-Kame
+
