@@ -1,116 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761362AbZE2Sus@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762742AbZE2SzY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761362AbZE2Sus (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 14:50:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752039AbZE2Sul
+	id S1762742AbZE2SzY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 14:55:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751907AbZE2SzM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 14:50:41 -0400
-Received: from wa4ehsobe004.messaging.microsoft.com ([216.32.181.14]:46947
-	"EHLO WA4EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751789AbZE2Suk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 14:50:40 -0400
-X-BigFish: VPS1(zzzz1202hzzz32i6bh17ch62h)
-X-Spam-TCS-SCL: 1:0
-X-FB-SS: 5,
-X-WSS-ID: 0KKF5O1-01-EZC-01
-Date: Fri, 29 May 2009 20:49:43 +0200
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-CC: linux-kernel@vger.kernel.org
-Subject: [PATCH 3/3] x86: cacheinfo: fixup L3 cache information for AMD
-	multi-node processors
-Message-ID: <20090529184943.GG23770@alberich.amd.com>
-References: <20090529184023.GD23770@alberich.amd.com>
+	Fri, 29 May 2009 14:55:12 -0400
+Received: from hera.kernel.org ([140.211.167.34]:57257 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751363AbZE2SzL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 May 2009 14:55:11 -0400
+Date: Fri, 29 May 2009 18:54:32 GMT
+From: tip-bot for Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       seto.hidetoshi@jp.fujitsu.com, ak@linux.intel.com, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       seto.hidetoshi@jp.fujitsu.com, ak@linux.intel.com, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <49CB3F38.7090703@jp.fujitsu.com>
+References: <49CB3F38.7090703@jp.fujitsu.com>
+Subject: [tip:x86/mce3] x86, mce: Cleanup param parser
+Message-ID: <tip-13503fa9137d9708d52214e9506c671dbf2fbdce@git.kernel.org>
+Git-Commit-ID: 13503fa9137d9708d52214e9506c671dbf2fbdce
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20090529184023.GD23770@alberich.amd.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 29 May 2009 18:50:25.0775 (UTC) FILETIME=[541A2FF0:01C9E08E]
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 29 May 2009 18:54:33 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-L3 cache size, associativity and shared_cpu information need to be
-adapted to show information for an internal node instead of the
-entire physical package.
+Commit-ID:  13503fa9137d9708d52214e9506c671dbf2fbdce
+Gitweb:     http://git.kernel.org/tip/13503fa9137d9708d52214e9506c671dbf2fbdce
+Author:     Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+AuthorDate: Thu, 26 Mar 2009 17:39:20 +0900
+Committer:  H. Peter Anvin <hpa@zytor.com>
+CommitDate: Thu, 28 May 2009 09:24:09 -0700
 
-Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+x86, mce: Cleanup param parser
+
+- Fix the comment formatting.
+
+- The error path does not return 0, and printk lacks level and "\n".
+
+- Move __setup("nomce") next to mcheck_disable().
+
+- Improve readability etc.
+
+[ Impact: cleanup ]
+
+Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Acked-by: Andi Kleen <ak@linux.intel.com>
+LKML-Reference: <49CB3F38.7090703@jp.fujitsu.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+
+
 ---
- arch/x86/kernel/cpu/intel_cacheinfo.c |   22 +++++++++++++++++-----
- 1 files changed, 17 insertions(+), 5 deletions(-)
+ arch/x86/kernel/cpu/mcheck/mce_64.c |   24 ++++++++++++++----------
+ 1 files changed, 14 insertions(+), 10 deletions(-)
 
-diff --git a/arch/x86/kernel/cpu/intel_cacheinfo.c b/arch/x86/kernel/cpu/intel_cacheinfo.c
-index 789efe2..dbafe2b 100644
---- a/arch/x86/kernel/cpu/intel_cacheinfo.c
-+++ b/arch/x86/kernel/cpu/intel_cacheinfo.c
-@@ -241,7 +241,7 @@ amd_cpuid4(int leaf, union _cpuid4_leaf_eax *eax,
- 	case 0:
- 		if (!l1->val)
- 			return;
--		assoc = l1->assoc;
-+		assoc = assocs[l1->assoc];
- 		line_size = l1->line_size;
- 		lines_per_tag = l1->lines_per_tag;
- 		size_in_kb = l1->size_in_kb;
-@@ -249,7 +249,7 @@ amd_cpuid4(int leaf, union _cpuid4_leaf_eax *eax,
- 	case 2:
- 		if (!l2.val)
- 			return;
--		assoc = l2.assoc;
-+		assoc = assocs[l2.assoc];
- 		line_size = l2.line_size;
- 		lines_per_tag = l2.lines_per_tag;
- 		/* cpu_data has errata corrections for K7 applied */
-@@ -258,10 +258,14 @@ amd_cpuid4(int leaf, union _cpuid4_leaf_eax *eax,
- 	case 3:
- 		if (!l3.val)
- 			return;
--		assoc = l3.assoc;
-+		assoc = assocs[l3.assoc];
- 		line_size = l3.line_size;
- 		lines_per_tag = l3.lines_per_tag;
- 		size_in_kb = l3.size_encoded * 512;
-+		if (boot_cpu_has(X86_FEATURE_AMD_DCM)) {
-+			size_in_kb = size_in_kb >> 1;
-+			assoc = assoc >> 1;
-+		}
- 		break;
- 	default:
- 		return;
-@@ -278,10 +282,10 @@ amd_cpuid4(int leaf, union _cpuid4_leaf_eax *eax,
- 	eax->split.num_cores_on_die = current_cpu_data.x86_max_cores - 1;
- 
- 
--	if (assoc == 0xf)
-+	if (assoc == 0xffff)
- 		eax->split.is_fully_associative = 1;
- 	ebx->split.coherency_line_size = line_size - 1;
--	ebx->split.ways_of_associativity = assocs[assoc] - 1;
-+	ebx->split.ways_of_associativity = assoc - 1;
- 	ebx->split.physical_line_partition = lines_per_tag - 1;
- 	ecx->split.number_of_sets = (size_in_kb * 1024) / line_size /
- 		(ebx->split.ways_of_associativity + 1) - 1;
-@@ -598,7 +602,15 @@ static void __cpuinit get_cpu_leaves(void *_retval)
- 				cache_remove_shared_cpu_map(cpu, i);
- 			break;
- 		}
-+#ifdef CONFIG_MULTI_NODE_CPU
-+		if (boot_cpu_has(X86_FEATURE_AMD_DCM))
-+			cpumask_copy(to_cpumask(this_leaf->shared_cpu_map),
-+				     topology_cpu_node_cpumask(cpu));
-+		else
-+			cache_shared_cpu_map_setup(cpu, j);
-+#else
- 		cache_shared_cpu_map_setup(cpu, j);
-+#endif
- 	}
+diff --git a/arch/x86/kernel/cpu/mcheck/mce_64.c b/arch/x86/kernel/cpu/mcheck/mce_64.c
+index 6fb0b35..77effb5 100644
+--- a/arch/x86/kernel/cpu/mcheck/mce_64.c
++++ b/arch/x86/kernel/cpu/mcheck/mce_64.c
+@@ -839,25 +839,29 @@ static int __init mcheck_disable(char *str)
+ 	mce_dont_init = 1;
+ 	return 1;
  }
++__setup("nomce", mcheck_disable);
  
--- 
-1.6.3.1
-
-
-
+-/* mce=off disables machine check.
+-   mce=TOLERANCELEVEL (number, see above)
+-   mce=bootlog Log MCEs from before booting. Disabled by default on AMD.
+-   mce=nobootlog Don't log MCEs from before booting. */
++/*
++ * mce=off disables machine check
++ * mce=TOLERANCELEVEL (number, see above)
++ * mce=bootlog Log MCEs from before booting. Disabled by default on AMD.
++ * mce=nobootlog Don't log MCEs from before booting.
++ */
+ static int __init mcheck_enable(char *str)
+ {
+ 	if (!strcmp(str, "off"))
+ 		mce_dont_init = 1;
+-	else if (!strcmp(str, "bootlog") || !strcmp(str,"nobootlog"))
+-		mce_bootlog = str[0] == 'b';
++	else if (!strcmp(str, "bootlog") || !strcmp(str, "nobootlog"))
++		mce_bootlog = (str[0] == 'b');
+ 	else if (isdigit(str[0]))
+ 		get_option(&str, &tolerant);
+-	else
+-		printk("mce= argument %s ignored. Please use /sys", str);
++	else {
++		printk(KERN_INFO "mce= argument %s ignored. Please use /sys\n",
++		       str);
++		return 0;
++	}
+ 	return 1;
+ }
+-
+-__setup("nomce", mcheck_disable);
+ __setup("mce=", mcheck_enable);
+ 
+ /*
