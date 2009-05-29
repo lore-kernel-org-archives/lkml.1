@@ -1,163 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756623AbZE2Qtf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757578AbZE2Qwg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756623AbZE2Qtf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 12:49:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753784AbZE2Qt1
+	id S1757578AbZE2Qwg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 12:52:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753853AbZE2Qw1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 12:49:27 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:59685 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753059AbZE2Qt0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 12:49:26 -0400
-Date: Fri, 29 May 2009 13:48:59 -0300
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
-       Mike Galbraith <efault@gmx.de>, Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH tip 1/1] perf_counter tools: Shorten the DSO names using cwd
-Message-ID: <20090529164859.GN4747@ghostprotocols.net>
+	Fri, 29 May 2009 12:52:27 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:59267 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752552AbZE2QwZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 May 2009 12:52:25 -0400
+To: Tejun Heo <tj@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       Cornelia Huck <cornelia.huck@de.ibm.com>, linux-fsdevel@vger.kernel.org,
+       Kay Sievers <kay.sievers@vrfy.org>, Greg KH <greg@kroah.com>,
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>
+References: <m1zlcwltri.fsf_-_@fess.ebiederm.org>
+	<1243551665-23596-4-git-send-email-ebiederm@xmission.com>
+	<4A1FA777.3040200@kernel.org>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Fri, 29 May 2009 09:52:16 -0700
+In-Reply-To: <4A1FA777.3040200@kernel.org> (Tejun Heo's message of "Fri\, 29 May 2009 18\:14\:31 +0900")
+Message-ID: <m1zlcvdf7j.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Url: http://oops.ghostprotocols.net:81/blog
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Rcpt-To: tj@kernel.org, ebiederm@aristanetworks.com, greg@kroah.com, kay.sievers@vrfy.org, linux-fsdevel@vger.kernel.org, cornelia.huck@de.ibm.com, linux-kernel@vger.kernel.org, gregkh@suse.de, akpm@linux-foundation.org
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Tejun Heo <tj@kernel.org>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  1.5 XMNoVowels Alpha-numberic number with no vowels
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -1.1 BAYES_05 BODY: Bayesian spam probability is 1 to 5%
+	*      [score: 0.0447]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.5 XM_Body_Dirty_Words Contains a dirty word
+	*  0.0 T_TooManySym_01 4+ unique symbols in subject
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
+Subject: Re: [PATCH 04/24] sysfs: Normalize removing sysfs directories.
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-commit c33188d6cca8616c5bb9e1bbf95bc88cc3c1fa9c
-Author: Arnaldo Carvalho de Melo <acme@redhat.com>
-Date:   Fri May 29 13:43:08 2009 -0300
+Tejun Heo <tj@kernel.org> writes:
 
-    perf_counter tools: Shorten the DSO names using cwd
-    
-    [acme@emilia linux-2.6-tip]$ pwd
-    /home/acme/git/linux-2.6-tip
-    
-    Before (still available using -P/--full-paths)
-    
-    [acme@emilia linux-2.6-tip]$ perf report -P | head -10
-        11.48%             perf: 7454 [kernel]: clear_page_c
-         4.89%             perf: 7454 [kernel]: vsnprintf
-         4.61%             perf: 7454 /home/acme/git/linux-2.6-tip/Documentation/perf_counter/perf: dso__find_symbol
-         4.09%             perf: 7454 [kernel]: number
-         4.06%             perf: 7454 /home/acme/git/linux-2.6-tip/Documentation/perf_counter/perf: dso__fprintf
-         4.00%             perf: 7454 /home/acme/git/linux-2.6-tip/Documentation/perf_counter/perf: symbol_filter
-    
-    New default:
-    
-    [acme@emilia linux-2.6-tip]$ perf report | head -10
-        11.48%             perf: 7454 [kernel]: clear_page_c
-         4.89%             perf: 7454 [kernel]: vsnprintf
-         4.61%             perf: 7454 ./Documentation/perf_counter/perf: dso__find_symbol
-         4.09%             perf: 7454 [kernel]: number
-         4.06%             perf: 7454 ./Documentation/perf_counter/perf: dso__fprintf
-         4.00%             perf: 7454 ./Documentation/perf_counter/perf: symbol_filter
-    
-    Suggested-by: Ingo Molnar <mingo@elte.hu>
-    Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+> Hello,
+>
+> Eric W. Biederman wrote:
+>> @@ -732,12 +732,28 @@ const struct inode_operations sysfs_dir_inode_operations = {
+>>  	.setattr	= sysfs_setattr,
+>>  };
+>>  
+>> -static void remove_dir(struct sysfs_dirent *sd)
+>> +static void remove_dir(struct sysfs_dirent *dir_sd)
+>>  {
+>>  	struct sysfs_addrm_cxt acxt;
+>>  
+>> -	sysfs_addrm_start(&acxt, sd->s_parent);
+>> -	sysfs_remove_one(&acxt, sd);
+>> +	pr_debug("sysfs %s: removing dir\n", dir_sd->s_name);
+>> +
+>> +	/* Removing non-empty directories is not valid complain! */
+> 						     ^^^
+> 						  missing . or ,
+>
+>> +static struct sysfs_dirent *get_dirent_to_remove(struct sysfs_dirent *dir_sd)
+>> +{
+>> +	struct sysfs_dirent *sd;
+>> +
+>> +	mutex_lock(&sysfs_mutex);
+>> +	for (sd = dir_sd->s_dir.children; sd; sd = sd->s_sibling) {
+>> +		/* Directories might be owned by someone else
+>> +		 * making recursive directory removal unsafe.
+>> +		 */
+>> +		if (sysfs_type(sd) == SYSFS_DIR)
+>> +			continue;
+>> +		break;
+>> +	}
+>> +	sysfs_get(sd);
+>> +	mutex_unlock(&sysfs_mutex);
+>> +
+>> +	return sd;
+>> +}
+>>  
+>>  static void __sysfs_remove_dir(struct sysfs_dirent *dir_sd)
+>>  {
+>>  	struct sysfs_addrm_cxt acxt;
+>> -	struct sysfs_dirent **pos;
+>> -
+>> -	if (!dir_sd)
+>> -		return;
+>> -
+>> -	pr_debug("sysfs %s: removing dir\n", dir_sd->s_name);
+>> -	sysfs_addrm_start(&acxt, dir_sd);
+>> -	pos = &dir_sd->s_dir.children;
+>> -	while (*pos) {
+>> -		struct sysfs_dirent *sd = *pos;
+>> +	struct sysfs_dirent *sd;
+>>  
+>> -		if (sysfs_type(sd) != SYSFS_DIR)
+>> -			sysfs_remove_one(&acxt, sd);
+>> -		else
+>> -			pos = &(*pos)->s_sibling;
+>> +	/* Remove children that we think are safe */
+>> +	while ((sd = get_dirent_to_remove(dir_sd))) {
+>> +		sysfs_addrm_start(&acxt, sd->s_parent);
+>> +		sysfs_remove_one(&acxt, sd);
+>> +		sysfs_addrm_finish(&acxt);
+>> +		sysfs_put(sd);
+>>  	}
+>> -	sysfs_addrm_finish(&acxt);
+>
+> Ummm... Null @dir_sd handling is being removed, which could be fine
+> but please do it in a separate patch or at least mention it in the
+> patch description.
 
-diff --git a/Documentation/perf_counter/builtin-report.c b/Documentation/perf_counter/builtin-report.c
-index 412d524..4705679 100644
---- a/Documentation/perf_counter/builtin-report.c
-+++ b/Documentation/perf_counter/builtin-report.c
-@@ -23,6 +23,7 @@ static int		show_mask = SHOW_KERNEL | SHOW_USER | SHOW_HV;
- 
- static int		dump_trace = 0;
- static int		verbose;
-+static int		full_paths;
- 
- static unsigned long	page_size;
- static unsigned long	mmap_window = 32;
-@@ -134,6 +135,16 @@ static int load_kernel(void)
- 	return err;
- }
- 
-+static int strcommon(const char *pathname, const char *cwd, int cwdlen)
-+{
-+	int n = 0;
-+
-+	while (pathname[n] == cwd[n] && n < cwdlen)
-+		++n;
-+
-+	return n;
-+}
-+
- struct map {
- 	struct list_head node;
- 	uint64_t	 start;
-@@ -142,16 +153,28 @@ struct map {
- 	struct dso	 *dso;
- };
- 
--static struct map *map__new(struct mmap_event *event)
-+static struct map *map__new(struct mmap_event *event, char *cwd, int cwdlen)
- {
- 	struct map *self = malloc(sizeof(*self));
- 
- 	if (self != NULL) {
-+		const char *filename = event->filename;
-+		char newfilename[PATH_MAX];
-+
-+		if (cwd) {
-+			int n = strcommon(filename, cwd, cwdlen);
-+			if (n == cwdlen) {
-+				snprintf(newfilename, sizeof(newfilename),
-+					 ".%s", filename + n);
-+				filename = newfilename;
-+			}
-+		}
-+
- 		self->start = event->start;
- 		self->end   = event->start + event->len;
- 		self->pgoff = event->pgoff;
- 
--		self->dso = dsos__findnew(event->filename);
-+		self->dso = dsos__findnew(filename);
- 		if (self->dso == NULL)
- 			goto out_delete;
- 	}
-@@ -598,6 +621,8 @@ static int __cmd_report(void)
- 	int ret, rc = EXIT_FAILURE;
- 	uint32_t size;
- 	unsigned long total = 0, total_mmap = 0, total_comm = 0, total_unknown = 0;
-+	char cwd[PATH_MAX], *cwdp = cwd;
-+	int cwdlen;
- 
- 	input = open(input_name, O_RDONLY);
- 	if (input < 0) {
-@@ -621,6 +646,14 @@ static int __cmd_report(void)
- 		return EXIT_FAILURE;
- 	}
- 
-+	if (!full_paths) {
-+		if (getcwd(cwd, sizeof(cwd)) == NULL) {
-+			perror("failed to get the current directory");
-+			return EXIT_FAILURE;
-+		}
-+		cwdlen = strlen(cwd);
-+	} else
-+		cwdp = NULL;
- remap:
- 	buf = (char *)mmap(NULL, page_size * mmap_window, PROT_READ,
- 			   MAP_SHARED, input, offset);
-@@ -710,7 +743,7 @@ more:
- 	} else switch (event->header.type) {
- 	case PERF_EVENT_MMAP: {
- 		struct thread *thread = threads__findnew(event->mmap.pid);
--		struct map *map = map__new(&event->mmap);
-+		struct map *map = map__new(&event->mmap, cwdp, cwdlen);
- 
- 		if (dump_trace) {
- 			fprintf(stderr, "%p [%p]: PERF_EVENT_MMAP: [%p(%p) @ %p]: %s\n",
-@@ -809,6 +842,8 @@ static const struct option options[] = {
- 	OPT_STRING('k', "vmlinux", &vmlinux, "file", "vmlinux pathname"),
- 	OPT_STRING('s', "sort", &sort_order, "key[,key2...]",
- 		   "sort by key(s): pid, comm, dso, symbol. Default: pid,symbol"),
-+	OPT_BOOLEAN('P', "full-paths", &full_paths,
-+		    "Don't shorten the pathnames taking into account the cwd"),
- 	OPT_END()
- };
- 
+Agreed.  That should be documented.  I took a look and it appears we
+are completely protected by the kobj->state_in_sysfs flag.
+
+  Also, I'm quite uncomfortable with these things
+> being done in non-atomic manner.  It can be made to work but things
+> like this can lead to subtle race conditions and with the kind of
+> layering we put on top of sysfs (kobject, driver model, driver
+> midlayers and so on), it isn't all that easy to verify what's going
+> on, so NACK for this one.
+
+Total nonsense.
+
+Mucking about with sysfs after we start deleting a directory is a bug.
+At worst my change makes a buggy race slightly less deterministic.
+
+I am not ready to consider keeping the current unnecessary atomic
+removal step.  That unnecessary atomicity makes the following patches
+more difficult, and requires a lot of unnecessary retesting.
+
+What do you think the extra unnecessary atomicity helps protect?
+
+Eric
