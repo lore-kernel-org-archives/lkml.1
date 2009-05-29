@@ -1,110 +1,182 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932310AbZE2U2b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932358AbZE2U3C@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932310AbZE2U2b (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 16:28:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932110AbZE2UVS
+	id S932358AbZE2U3C (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 16:29:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764418AbZE2UY3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 16:21:18 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:41794 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763410AbZE2UTy (ORCPT
+	Fri, 29 May 2009 16:24:29 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59340 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1764471AbZE2UY2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 16:19:54 -0400
-From: "Eric W. Biederman" <ebiederm@xmission.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Cc: <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>,
-       Cornelia Huck <cornelia.huck@de.ibm.com>,
-       <linux-fsdevel@vger.kernel.org>, Kay Sievers <kay.sievers@vrfy.org>,
-       Greg KH <greg@kroah.com>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Eric W. Biederman" <ebiederm@aristanetworks.com>
-Date: Fri, 29 May 2009 13:19:23 -0700
-Message-Id: <1243628376-22905-13-git-send-email-ebiederm@xmission.com>
-X-Mailer: git-send-email 1.6.3.1.54.g99dd.dirty
-In-Reply-To: <m1r5y73bok.fsf_-_@fess.ebiederm.org>
-References: <m1r5y73bok.fsf_-_@fess.ebiederm.org>
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Rcpt-To: akpm@linux-foundation.org, gregkh@suse.de, linux-kernel@vger.kernel.org, tj@kernel.org, cornelia.huck@de.ibm.com, linux-fsdevel@vger.kernel.org, kay.sievers@vrfy.org, greg@kroah.com, ebiederm@xmission.com, ebiederm@aristanetworks.com
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa03 1397; Body=2 Fuz1=2 Fuz2=2 
-X-Spam-Combo: ;Andrew Morton <akpm@linux-foundation.org>, Greg Kroah-Hartman
-	<gregkh@suse.de>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  1.5 XMNoVowels Alpha-numberic number with no vowels
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa03 1397; Body=2 Fuz1=2 Fuz2=2]
-	*  0.4 FVGT_m_MULTI_ODD Contains multiple odd letter combinations
-	*  0.0 T_TooManySym_01 4+ unique symbols in subject
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-	*  0.0 T_TooManySym_02 5+ unique symbols in subject
-	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
-Subject: [PATCH 13/26] sysfs: Update s_iattr on link and unlink.
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
+	Fri, 29 May 2009 16:24:28 -0400
+Date: Fri, 29 May 2009 13:23:28 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: rusty@rustcorp.com.au, mingo@elte.hu, paulmck@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@tv-sign.ru>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 1/2] cpuhotplug: use rw_semaphore for cpu_hotplug
+Message-Id: <20090529132328.99e7cae3.akpm@linux-foundation.org>
+In-Reply-To: <4A1F9CEA.1070705@cn.fujitsu.com>
+References: <4A1F9CEA.1070705@cn.fujitsu.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Eric W. Biederman <ebiederm@xmission.com>
+On Fri, 29 May 2009 16:29:30 +0800
+Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
 
-Currently sysfs updates the timestamps on the vfs directory
-inode when we create or remove a directory entry but doesn't
-update the cached copy on the sysfs_dirent, fix that oversight.
+> 
+> Current get_online_cpus()/put_online_cpus() re-implement
+> a rw_semaphore,
 
-Acked-by: Tejun Heo <tj@kernel.org>
-Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
----
- fs/sysfs/dir.c |   14 ++++++++++++++
- 1 files changed, 14 insertions(+), 0 deletions(-)
+It does appear that way.
 
-diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-index e0bf3a5..c6472d8 100644
---- a/fs/sysfs/dir.c
-+++ b/fs/sysfs/dir.c
-@@ -480,6 +480,8 @@ static char *sysfs_pathname(struct sysfs_dirent *sd, char *path)
-  */
- int sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
- {
-+	struct iattr *ps_iattr;
-+
- 	if (sysfs_find_dirent(acxt->parent_sd, sd->s_name)) {
- 		char *path = kzalloc(PATH_MAX, GFP_KERNEL);
- 		WARN(1, KERN_WARNING
-@@ -500,6 +502,11 @@ int sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
- 
- 	sysfs_link_sibling(sd);
- 
-+	/* Update timestamps on the parent */
-+	ps_iattr = acxt->parent_sd->s_iattr;
-+	if (ps_iattr)
-+		ps_iattr->ia_ctime = ps_iattr->ia_mtime = CURRENT_TIME;
-+
- 	return 0;
- }
- 
-@@ -520,10 +527,17 @@ int sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
-  */
- void sysfs_remove_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
- {
-+	struct iattr *ps_iattr;
-+
- 	BUG_ON(sd->s_flags & SYSFS_FLAG_REMOVED);
- 
- 	sysfs_unlink_sibling(sd);
- 
-+	/* Update timestamps on the parent */
-+	ps_iattr = acxt->parent_sd->s_iattr;
-+	if (ps_iattr)
-+		ps_iattr->ia_ctime = ps_iattr->ia_mtime = CURRENT_TIME;
-+
- 	sd->s_flags |= SYSFS_FLAG_REMOVED;
- 	sd->s_sibling = acxt->removed;
- 	acxt->removed = sd;
--- 
-1.6.3.1.54.g99dd.dirty
+> so it is converted to a real rw_semaphore in this fix.
+> It simplifies codes, and is good for read.
+
+It'd be a nice cleanup if it works.
+
+> And misc fix:
+> 1) Add comments for cpu_hotplug.active_writer.
+> 2) The theoretical disadvantage described in cpu_hotplug_begin()'s
+>    comments is no longer existed when we use rw_semaphore,
+>    so this part of comments was removed.
+> 
+> [Impact: improve get_online_cpus()/put_online_cpus() ]
+
+Unfortunately this code has been a large source of tricky problems.  I
+bet that something nasty goes wrong if we change it :(
+
+> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+> ---
+> diff --git a/kernel/cpu.c b/kernel/cpu.c
+> index 395b697..62198ec 100644
+> --- a/kernel/cpu.c
+> +++ b/kernel/cpu.c
+> @@ -14,6 +14,7 @@
+>  #include <linux/kthread.h>
+>  #include <linux/stop_machine.h>
+>  #include <linux/mutex.h>
+> +#include <linux/rwsem.h>
+>  
+>  #ifdef CONFIG_SMP
+>  /* Serializes the updates to cpu_online_mask, cpu_present_mask */
+> @@ -27,20 +28,21 @@ static __cpuinitdata RAW_NOTIFIER_HEAD(cpu_chain);
+>  static int cpu_hotplug_disabled;
+>  
+>  static struct {
+> -	struct task_struct *active_writer;
+> -	struct mutex lock; /* Synchronizes accesses to refcount, */
+>  	/*
+> -	 * Also blocks the new readers during
+> -	 * an ongoing cpu hotplug operation.
+> +	 * active_writer makes get_online_cpus()/put_online_cpus() are allowd
+> +	 * to be nested in cpu_hotplug_begin()/cpu_hotplug_done().
+> +	 *
+> +	 * Thus, get_online_cpus()/put_online_cpus() can be called in
+> +	 * CPU notifiers.
+>  	 */
+> -	int refcount;
+> +	struct task_struct *active_writer;
+> +	struct rw_semaphore rwlock;
+>  } cpu_hotplug;
+>  
+>  void __init cpu_hotplug_init(void)
+>  {
+>  	cpu_hotplug.active_writer = NULL;
+> -	mutex_init(&cpu_hotplug.lock);
+> -	cpu_hotplug.refcount = 0;
+> +	init_rwsem(&cpu_hotplug.rwlock);
+>  }
+>  
+>  #ifdef CONFIG_HOTPLUG_CPU
+> @@ -50,9 +52,7 @@ void get_online_cpus(void)
+>  	might_sleep();
+>  	if (cpu_hotplug.active_writer == current)
+>  		return;
+> -	mutex_lock(&cpu_hotplug.lock);
+> -	cpu_hotplug.refcount++;
+> -	mutex_unlock(&cpu_hotplug.lock);
+> +	down_read(&cpu_hotplug.rwlock);
+>  
+>  }
+>  EXPORT_SYMBOL_GPL(get_online_cpus);
+> @@ -61,10 +61,7 @@ void put_online_cpus(void)
+>  {
+>  	if (cpu_hotplug.active_writer == current)
+>  		return;
+> -	mutex_lock(&cpu_hotplug.lock);
+> -	if (!--cpu_hotplug.refcount && unlikely(cpu_hotplug.active_writer))
+> -		wake_up_process(cpu_hotplug.active_writer);
+> -	mutex_unlock(&cpu_hotplug.lock);
+> +	up_read(&cpu_hotplug.rwlock);
+>  
+>  }
+>  EXPORT_SYMBOL_GPL(put_online_cpus);
+> @@ -86,45 +83,25 @@ void cpu_maps_update_done(void)
+>  }
+>  
+>  /*
+> - * This ensures that the hotplug operation can begin only when the
+> - * refcount goes to zero.
+> + * This ensures that the hotplug operation can begin only when
+> + * there is no reader.
+>   *
+>   * Note that during a cpu-hotplug operation, the new readers, if any,
+> - * will be blocked by the cpu_hotplug.lock
+> + * will be blocked by the cpu_hotplug.rwlock
+>   *
+>   * Since cpu_hotplug_begin() is always called after invoking
+>   * cpu_maps_update_begin(), we can be sure that only one writer is active.
+> - *
+> - * Note that theoretically, there is a possibility of a livelock:
+> - * - Refcount goes to zero, last reader wakes up the sleeping
+> - *   writer.
+> - * - Last reader unlocks the cpu_hotplug.lock.
+> - * - A new reader arrives at this moment, bumps up the refcount.
+> - * - The writer acquires the cpu_hotplug.lock finds the refcount
+> - *   non zero and goes to sleep again.
+> - *
+> - * However, this is very difficult to achieve in practice since
+> - * get_online_cpus() not an api which is called all that often.
+> - *
+>   */
+>  static void cpu_hotplug_begin(void)
+>  {
+> +	down_write(&cpu_hotplug.rwlock);
+>  	cpu_hotplug.active_writer = current;
+> -
+> -	for (;;) {
+> -		mutex_lock(&cpu_hotplug.lock);
+> -		if (likely(!cpu_hotplug.refcount))
+> -			break;
+> -		__set_current_state(TASK_UNINTERRUPTIBLE);
+> -		mutex_unlock(&cpu_hotplug.lock);
+> -		schedule();
+> -	}
+>  }
+>  
+>  static void cpu_hotplug_done(void)
+>  {
+>  	cpu_hotplug.active_writer = NULL;
+> -	mutex_unlock(&cpu_hotplug.lock);
+> +	up_write(&cpu_hotplug.rwlock);
+>  }
+>  /* Need to know about CPUs going up/down? */
+>  int __ref register_cpu_notifier(struct notifier_block *nb)
+> 
+
+There are about 25 trees in linux-next which think they own
+kernel/cpu.c and unfortunately one of them changed that file in a
+relatively significant manner.  That patch ("cpuhotplug: remove
+cpu_hotplug_init()") was writen by, err, you.
+
+I could fix things up but it would be more effective were you to do
+this, please.
 
