@@ -1,79 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761409AbZE2Npl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759880AbZE2Nt3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761409AbZE2Npl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 09:45:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760630AbZE2Nnp
+	id S1759880AbZE2Nt3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 09:49:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752454AbZE2NtV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 09:43:45 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:40113 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760681AbZE2Nno (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 09:43:44 -0400
-From: Jarod Wilson <jarod@redhat.com>
-Organization: Red Hat, Inc.
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Subject: Re: [PATCH 2/2 -tip] drm/i915: intel_lvds.c fix section mismatch warning
-Date: Fri, 29 May 2009 09:34:12 -0400
-User-Agent: KMail/1.11.3 (Linux/2.6.29.3-140.fc11.x86_64; KDE/4.2.3; x86_64; ; )
-Cc: Len Brown <lenb@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
-       Dave Airlie <airlied@linux.ie>, drm list <dri-devel@lists.sf.net>,
-       Ingo Molnar <mingo@elte.hu>, Eric Anholt <eric@anholt.net>,
-       mjg@redhat.com, Sam Ravnborg <sam@ravnborg.org>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-References: <1242800768.3260.21.camel@localhost.localdomain> <200905281100.21386.jarod@redhat.com> <1243577795.3159.27.camel@localhost.localdomain>
-In-Reply-To: <1243577795.3159.27.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
+	Fri, 29 May 2009 09:49:21 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:36863 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750915AbZE2NtV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 May 2009 09:49:21 -0400
+Subject: Re: [PATCH RFC] perf_counter: Don't swap contexts containing
+ locked mutex
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <peterz@infradead.org>, Mike Galbraith <efault@gmx.de>,
+       Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <20090529123504.GA32299@elte.hu>
+References: <18975.31580.520676.619896@drongo.ozlabs.ibm.com>
+	 <1243584388.23657.156.camel@twins> <1243584793.23657.168.camel@twins>
+	 <1243585721.23657.177.camel@twins> <20090529085916.GA21461@elte.hu>
+	 <20090529091608.GA15278@elte.hu>  <20090529123504.GA32299@elte.hu>
+Date: Fri, 29 May 2009 16:49:21 +0300
+Message-Id: <1243604961.28651.2.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905290934.14675.jarod@redhat.com>
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 29 May 2009 02:16:35 Jaswinder Singh Rajput wrote:
-> On Thu, 2009-05-28 at 11:00 -0400, Jarod Wilson wrote:
-> > On Wednesday 20 May 2009 02:27:35 Jaswinder Singh Rajput wrote:
-> > > 
-> > > intel_no_lvds[] does not require __initdata as it is used only by :
-> > > 
-> > >   void intel_lvds_init(struct drm_device *dev)
-> > > 
-> > > fixes section mismatch warning:
-> > > 
-> > >   WARNING: drivers/gpu/drm/i915/i915.o(.text+0xf3c5): Section mismatch in reference from the function intel_lvds_init() to the variable .init.data:intel_no_lvds
-> > >   The function intel_lvds_init() references
-> > >   the variable __initdata intel_no_lvds.
-> > >   This is often because intel_lvds_init lacks a __initdata
+Hi Ingo,
+
+On Fri, 2009-05-29 at 14:35 +0200, Ingo Molnar wrote:
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > try the latest Git repo (i tried 95110d7) and do this:
 > > 
-> > This would seem to suggest __initdata should be added to
-> > intel_lvds_init, rather than removed from intel_no_lvds...
+> >   make clean
+> >   perf stat -- make -j
 > > 
+> > that locks up for me, very quickly, with permanently stuck tasks:
+> > 
+> >    PID USER      PR  NI  VIRT  RES  SHR S  %CPU %MEM   TIME    COMMAND        
+> >  10748 mingo     20   0     0    0    0 R 100.4  0.0   0:06.44 chmod         
+> >  10756 mingo     20   0     0    0    0 R 100.4  0.0   0:06.43 touch         
+> > 
+> > looping in the remove-context retry loop.
 > 
-> The complete statement is :
+> ok, after muchos debugging and tracing this turned out to be the 
+> perf_counter_task_exit() in kernel/fork.c, in the fork() failure 
+> path. That zapped the task ctx in cpuctx and caused the next 
+> schedule (which is rare) to not schedule the real context out. Then, 
+> when the task was scheduled back in again later, we scheduled in 
+> already active counters. Much mayhem followed and the lockup was a 
+> common incarnation of that. I pushed out a couple of fixes for this.
 > 
-> WARNING: drivers/gpu/drm/i915/i915.o(.text+0xf3c5): Section mismatch in reference from the function intel_lvds_init() to the variable .init.data:intel_no_lvds
-> The function intel_lvds_init() references
-> the variable __initdata intel_no_lvds.
-> This is often because intel_lvds_init lacks a __initdata 
-> annotation or the annotation of intel_no_lvds is wrong.
+> Pekka, the symptoms appear to match your 'stuck Xorg while make -j' 
+> symptoms pretty accurately - so if you try latest perfcounters/core 
+> it might solve some of those problems as well.
 
-Ah, yeah, I'd have kept my mouth shut if the last line were there the
-first time, or at least looked at the code more to understand why you
-went this direction. ;)
+Yup, works much better here. Thanks!
 
-> I am not sure where this patch should go.
-> 
-> So I am also mailing to Andrew and Dave, it they find this useful then
-> they can add in their tree.
+Tested-by: Pekka Enberg <penberg@cs.helsinki.fi>
 
-Dave is on vacation a bit longer, iirc. Not entirely sure where else
-this might go either. I'm sure *someone* will pick it up sooner or
-later... In any case, thanks for the fix for my flub.
+			Pekka
 
-Acked-by: Jarod Wilson <jarod@redhat.com>
-
--- 
-Jarod Wilson
-jarod@redhat.com
