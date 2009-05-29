@@ -1,100 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756377AbZE2Hym@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756253AbZE2H6g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756377AbZE2Hym (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 03:54:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753907AbZE2Hyf
+	id S1756253AbZE2H6g (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 03:58:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755311AbZE2H6Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 03:54:35 -0400
-Received: from mail-px0-f123.google.com ([209.85.216.123]:51873 "EHLO
-	mail-px0-f123.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752225AbZE2Hye (ORCPT
+	Fri, 29 May 2009 03:58:25 -0400
+Received: from stargate.chelsio.com ([67.207.112.58]:18219 "EHLO
+	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753862AbZE2H6Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 03:54:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:from:date:message-id:subject:to:cc:content-type
-         :content-transfer-encoding;
-        b=uqHnbVvAHW+H7W2KNFOaXA84hu296wzr7nWKVm0qcM6f9gD5V2MlFyoTcQSDj2KkAj
-         plLQVne15su6smvwL925EL+nuH2ESZGNrjAJw9OSecOCrnaNuTlwKGqo/9wN4I09FUGJ
-         76qPJ+acX0uA0MuGvspw2KLPbkfV2s8ilIvww=
+	Fri, 29 May 2009 03:58:24 -0400
+From: Divy Le Ray <divy@chelsio.com>
+Subject: [PATCH net-next 1/2] cxgb3: move away from LLTX
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       swise@opengridcomputing.com
+Date: Fri, 29 May 2009 00:58:24 -0700
+Message-ID: <20090529075823.30669.28885.stgit@speedy5>
+User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
-From: Pranith Kumar <bobby.prani@gmail.com>
-Date: Fri, 29 May 2009 13:24:16 +0530
-Message-ID: <430c80e90905290054n7416802cq7128394db5de036d@mail.gmail.com>
-Subject: [TRIVIAL][PATCH 1/1] Fix warning in staging/otus/ioctl.c
-To: Greg KH <greg@kroah.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Greg,
+From: Divy Le Ray <divy@chelsio.com>
 
-This patch fixes the following warning
+cxgb3 no longer advertizes LLTX.
 
-drivers/staging/otus/ioctl.c: In function `usbdrv_wpa_ioctl':
-drivers/staging/otus/ioctl.c:2269: warning: ISO C90 forbids mixed
-declarations and code
-drivers/staging/otus/ioctl.c: In function `usbdrv_ioctl':
-drivers/staging/otus/ioctl.c:2448: warning: ISO C90 forbids mixed
-declarations and code
+Signed-off-by: Divy Le Ray <divy@chelsio.com>
+---
 
-Thanks,
--- 
-Pranith.
+ drivers/net/cxgb3/cxgb3_main.c |    1 -
+ drivers/net/cxgb3/sge.c        |   18 +++++++-----------
+ 2 files changed, 7 insertions(+), 12 deletions(-)
 
-Signed-off-by: D Pranith Kumar <bobby.prani@gmail.com>
 
-diff --git a/drivers/staging/otus/ioctl.c b/drivers/staging/otus/ioctl.c
-index ce04218..26bd999 100644
---- a/drivers/staging/otus/ioctl.c
-+++ b/drivers/staging/otus/ioctl.c
-@@ -2045,6 +2045,7 @@ int usbdrv_wpa_ioctl(struct net_device *dev,
-struct athr_wlan_param *zdparm)
-        struct zsKeyInfo keyInfo;
-        struct usbdrv_private *macp = dev->ml_priv;
-        u16_t vapId = 0;
-+    int ii;
+diff --git a/drivers/net/cxgb3/cxgb3_main.c b/drivers/net/cxgb3/cxgb3_main.c
+index 0b87fee..1fe4b07 100644
+--- a/drivers/net/cxgb3/cxgb3_main.c
++++ b/drivers/net/cxgb3/cxgb3_main.c
+@@ -3059,7 +3059,6 @@ static int __devinit init_one(struct pci_dev *pdev,
+ 		netdev->mem_start = mmio_start;
+ 		netdev->mem_end = mmio_start + mmio_len - 1;
+ 		netdev->features |= NETIF_F_SG | NETIF_F_IP_CSUM | NETIF_F_TSO;
+-		netdev->features |= NETIF_F_LLTX;
+ 		netdev->features |= NETIF_F_GRO;
+ 		if (pci_using_dac)
+ 			netdev->features |= NETIF_F_HIGHDMA;
+diff --git a/drivers/net/cxgb3/sge.c b/drivers/net/cxgb3/sge.c
+index 73d569e..0b97882 100644
+--- a/drivers/net/cxgb3/sge.c
++++ b/drivers/net/cxgb3/sge.c
+@@ -1241,7 +1241,6 @@ int t3_eth_xmit(struct sk_buff *skb, struct net_device *dev)
+ 	q = &qs->txq[TXQ_ETH];
+ 	txq = netdev_get_tx_queue(dev, qidx);
+ 
+-	spin_lock(&q->lock);
+ 	reclaim_completed_tx(adap, q, TX_RECLAIM_CHUNK);
+ 
+ 	credits = q->size - q->in_use;
+@@ -1252,7 +1251,6 @@ int t3_eth_xmit(struct sk_buff *skb, struct net_device *dev)
+ 		dev_err(&adap->pdev->dev,
+ 			"%s: Tx ring %u full while queue awake!\n",
+ 			dev->name, q->cntxt_id & 7);
+-		spin_unlock(&q->lock);
+ 		return NETDEV_TX_BUSY;
+ 	}
+ 
+@@ -1286,9 +1284,6 @@ int t3_eth_xmit(struct sk_buff *skb, struct net_device *dev)
+ 	if (vlan_tx_tag_present(skb) && pi->vlan_grp)
+ 		qs->port_stats[SGE_PSTAT_VLANINS]++;
+ 
+-	dev->trans_start = jiffies;
+-	spin_unlock(&q->lock);
+-
+ 	/*
+ 	 * We do not use Tx completion interrupts to free DMAd Tx packets.
+ 	 * This is good for performamce but means that we rely on new Tx
+@@ -2858,11 +2853,12 @@ static void sge_timer_tx(unsigned long data)
+ 	unsigned int tbd[SGE_TXQ_PER_SET] = {0, 0};
+ 	unsigned long next_period;
+ 
+-	if (spin_trylock(&qs->txq[TXQ_ETH].lock)) {
+-		tbd[TXQ_ETH] = reclaim_completed_tx(adap, &qs->txq[TXQ_ETH],
+-						    TX_RECLAIM_TIMER_CHUNK);
+-		spin_unlock(&qs->txq[TXQ_ETH].lock);
++	if (__netif_tx_trylock(qs->tx_q)) {
++                tbd[TXQ_ETH] = reclaim_completed_tx(adap, &qs->txq[TXQ_ETH],
++                                                     TX_RECLAIM_TIMER_CHUNK);
++		__netif_tx_unlock(qs->tx_q);
+ 	}
++
+ 	if (spin_trylock(&qs->txq[TXQ_OFLD].lock)) {
+ 		tbd[TXQ_OFLD] = reclaim_completed_tx(adap, &qs->txq[TXQ_OFLD],
+ 						     TX_RECLAIM_TIMER_CHUNK);
+@@ -2870,8 +2866,8 @@ static void sge_timer_tx(unsigned long data)
+ 	}
+ 
+ 	next_period = TX_RECLAIM_PERIOD >>
+-		      (max(tbd[TXQ_ETH], tbd[TXQ_OFLD]) /
+-		       TX_RECLAIM_TIMER_CHUNK);
++                      (max(tbd[TXQ_ETH], tbd[TXQ_OFLD]) /
++                      TX_RECLAIM_TIMER_CHUNK);
+ 	mod_timer(&qs->tx_reclaim_timer, jiffies + next_period);
+ }
+ 
 
-        /* zmw_get_wlan_dev(dev); */
-
-@@ -2168,7 +2169,6 @@ int usbdrv_wpa_ioctl(struct net_device *dev,
-struct athr_wlan_param *zdparm)
-                /* DUMP key context */
-                /* #ifdef WPA_DEBUG */
-                if (keyInfo.keyLength > 0) {
--                       int ii;
-                        printk(KERN_WARNING
-                                                "Otus: Key Context:\n");
-                        for (ii = 0; ii < keyInfo.keyLength; ) {
-@@ -2266,7 +2266,6 @@ int usbdrv_wpa_ioctl(struct net_device *dev,
-struct athr_wlan_param *zdparm)
-                /* zfiWlanSetWpaIe(dev, zdparm->u.generic_elem.data,
-                * zdparm->u.generic_elem.len);
-                */
--               int ii;
-                u8_t len = zdparm->u.generic_elem.len;
-                u8_t *wpaie = (u8_t *)zdparm->u.generic_elem.data;
-
-@@ -2401,7 +2400,7 @@ int usbdrv_ioctl(struct net_device *dev, struct
-ifreq *ifr, int cmd)
-        struct athr_wlan_param zdparm;
-        struct usbdrv_private *macp = dev->ml_priv;
-
--       int err = 0;
-+       int err = 0, val = 0;
-        int changed = 0;
-
-        /* regp = macp->regp; */
-@@ -2445,7 +2444,7 @@ int usbdrv_ioctl(struct net_device *dev, struct
-ifreq *ifr, int cmd)
-                        err = -EPERM;
-                        break;
-                }
--               int val = *((int *) wrq->u.name);
-+               val = *((int *) wrq->u.name);
-                if ((val < 0) || (val > 2)) {
-                        err = -EINVAL;
-                        break;
