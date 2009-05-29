@@ -1,57 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754620AbZE2Vbf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754829AbZE2VcL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754620AbZE2Vbf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 17:31:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752486AbZE2Vb1
+	id S1754829AbZE2VcL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 17:32:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753717AbZE2Vb4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 17:31:27 -0400
-Received: from claw.goop.org ([74.207.240.146]:33283 "EHLO claw.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752313AbZE2Vb1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 17:31:27 -0400
-Message-ID: <4A20542A.8020407@goop.org>
-Date: Fri, 29 May 2009 14:31:22 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: George Dunlap <george.dunlap@eu.citrix.com>,
-       "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
-       Keir Fraser <Keir.Fraser@eu.citrix.com>,
-       "x86@kernel.org" <x86@kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [Xen-devel] Re: Xen is a feature
-References: <162f4c90-6431-4a2a-b337-6d7451d7b11e@default>	<20090528001350.GD26820@elte.hu> <4A1F302E.8030501@goop.org>	<20090528.210559.137121893.davem@davemloft.net>	<4A1FCE8E.2060604@eu.citrix.com> <87tz33ep1b.fsf@basil.nowhere.org>
-In-Reply-To: <87tz33ep1b.fsf@basil.nowhere.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 29 May 2009 17:31:56 -0400
+Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:16428 "EHLO
+	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753403AbZE2Vbz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 May 2009 17:31:55 -0400
+Date: Fri, 29 May 2009 16:32:18 -0500
+From: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: jens.axboe@oracle.com, andrew.patterson@hp.com,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       scameron@beardog.cca.cpqcorp.net
+Subject: Re: [PATCH v6] cciss: add cciss driver sysfs entries
+Message-ID: <20090529213218.GA20102@beardog.cca.cpqcorp.net>
+References: <20090413164524.17977.99322.stgit@bluto.andrew> <20090413164530.17977.32550.stgit@bluto.andrew> <20090528202124.GB4846@beardog.cca.cpqcorp.net> <20090529124813.689b7667.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090529124813.689b7667.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> George Dunlap <george.dunlap@eu.citrix.com> writes:
->
-> cc list from hell trimmed. 
->
->   
->> allowing Linux to run as dom0 *is* improving Linux.  The lack of dom0
->> support is at this moment making life more difficult for a huge number
->> of Linux users who use Xen, including Mozilla, Debian, and Amazon.
->> Adding dom0 support would make Linux even more useful to a wide
->> variety of people not using Xen at the moment.
->>     
->
-> Perhaps one way to address this problem would be to make the Dom0
-> interface less intrusive for the host OS?
->   
+On Fri, May 29, 2009 at 12:48:13PM -0700, Andrew Morton wrote:
+> On Thu, 28 May 2009 15:21:24 -0500
+> "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net> wrote:
+> 
+> > From: Andrew Patterson <andrew.patterson@hp.com>
+> > 
+> > This patch adds sysfs entries to the cciss driver needed for the
+> > dm/multipath tools. A file for vendor, model, rev, and unique_id is
+> > added for each logical drive under directory
+> > /sys/bus/pci/devices/<dev>/ccissX/cXdY. Where X = the controller (or
+> > host) number and Y is the logical drive number. A link from
+> > /sys/bus/pci/devices/<dev>/ccissX/cXdY/block:cciss!cXdY to
+> > /sys/block/cciss!cXdY/device is also created. A bus is created
+> > in /sys/bus/cciss.  A link is created from the pci ccissX entry to
+> > /sys/bus/cciss/devices/ccissX.
+> > Please consider this for inclusion.
+> > 
+> > Signed-off-by: Mike Miller <mike.miller@hp.com>
+> 
+> Did Andrew's signed-off-by: get lost?
 
-I'm certainly not deaf to criticism along those lines, and I'm looking 
-at ways of cleaning up/decoupling those interactions.
+No, I converted it into the From: field. Another screw up, I guess.
 
-But my frustration arises from the fact that there's been a total stall 
-on merging any of the pieces, even the ones which are either 
-uncontroversial, or purely xen-internal changes.
-
-    J
+mikem
