@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755151AbZE2ACM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753312AbZE2ABh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755151AbZE2ACM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 20:02:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754767AbZE2ABW
+	id S1753312AbZE2ABh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 20:01:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751901AbZE2ABA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 20:01:22 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:54065 "EHLO mx2.redhat.com"
+	Thu, 28 May 2009 20:01:00 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:54047 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754638AbZE2ABR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 20:01:17 -0400
+	id S1754592AbZE2AAz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 20:00:55 -0400
 From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH -tip v8 4/7] kprobes: cleanup fix_riprel() using insn decoder
-	on x86
+Subject: [PATCH -tip v8 5/7] x86: add pt_regs register and stack access APIs
 To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
        lkml <linux-kernel@vger.kernel.org>
 Cc: systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
        DLE <dle-develop@lists.sourceforge.net>,
        Masami Hiramatsu <mhiramat@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
        Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Jim Keniston <jkenisto@us.ibm.com>, Ingo Molnar <mingo@elte.hu>
-Date: Thu, 28 May 2009 20:03:45 -0400
-Message-ID: <20090529000345.17532.81401.stgit@localhost.localdomain>
+       Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       Roland McGrath <roland@redhat.com>
+Date: Thu, 28 May 2009 20:03:47 -0400
+Message-ID: <20090529000347.17532.34038.stgit@localhost.localdomain>
 In-Reply-To: <20090529000326.17532.70868.stgit@localhost.localdomain>
 References: <20090529000326.17532.70868.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.3
@@ -31,165 +32,194 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cleanup fix_riprel() in arch/x86/kernel/kprobes.c by using x86 instruction
-decoder.
+Add following APIs for accessing registers and stack entries from pt_regs.
+
+- query_register_offset(const char *name)
+   Query the offset of "name" register.
+
+- query_register_name(unsigned offset)
+   Query the name of register by its offset.
+
+- get_register(struct pt_regs *regs, unsigned offset)
+   Get the value of a register by its offset.
+
+- within_kernel_stack(struct pt_regs *regs, unsigned long addr)
+   Check the address is in the kernel stack.
+
+- get_kernel_stack_nth(struct pt_regs *reg, unsigned nth)
+   Get Nth entry of the kernel stack. (N >= 0)
+
+- get_argument_nth(struct pt_regs *reg, unsigned nth)
+   Get Nth argument at function call. (N >= 0)
 
 Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
 Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Cc: Jim Keniston <jkenisto@us.ibm.com>
 Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Roland McGrath <roland@redhat.com>
 ---
 
- arch/x86/kernel/kprobes.c |  128 ++++++++-------------------------------------
- 1 files changed, 23 insertions(+), 105 deletions(-)
+ arch/x86/include/asm/ptrace.h |   67 +++++++++++++++++++++++++++++++++++++++++
+ arch/x86/kernel/ptrace.c      |   60 +++++++++++++++++++++++++++++++++++++
+ 2 files changed, 127 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/kernel/kprobes.c b/arch/x86/kernel/kprobes.c
-index 41d524f..ebac470 100644
---- a/arch/x86/kernel/kprobes.c
-+++ b/arch/x86/kernel/kprobes.c
-@@ -108,50 +108,6 @@ static const u32 twobyte_is_boostable[256 / 32] = {
- 	/*      -----------------------------------------------         */
- 	/*      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f          */
- };
--static const u32 onebyte_has_modrm[256 / 32] = {
--	/*      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f          */
--	/*      -----------------------------------------------         */
--	W(0x00, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0) | /* 00 */
--	W(0x10, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0) , /* 10 */
--	W(0x20, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0) | /* 20 */
--	W(0x30, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0) , /* 30 */
--	W(0x40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) | /* 40 */
--	W(0x50, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) , /* 50 */
--	W(0x60, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0) | /* 60 */
--	W(0x70, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) , /* 70 */
--	W(0x80, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) | /* 80 */
--	W(0x90, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) , /* 90 */
--	W(0xa0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) | /* a0 */
--	W(0xb0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) , /* b0 */
--	W(0xc0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0) | /* c0 */
--	W(0xd0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1) , /* d0 */
--	W(0xe0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) | /* e0 */
--	W(0xf0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1)   /* f0 */
--	/*      -----------------------------------------------         */
--	/*      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f          */
--};
--static const u32 twobyte_has_modrm[256 / 32] = {
--	/*      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f          */
--	/*      -----------------------------------------------         */
--	W(0x00, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1) | /* 0f */
--	W(0x10, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0) , /* 1f */
--	W(0x20, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1) | /* 2f */
--	W(0x30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) , /* 3f */
--	W(0x40, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) | /* 4f */
--	W(0x50, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) , /* 5f */
--	W(0x60, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) | /* 6f */
--	W(0x70, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1) , /* 7f */
--	W(0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) | /* 8f */
--	W(0x90, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) , /* 9f */
--	W(0xa0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1) | /* af */
--	W(0xb0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1) , /* bf */
--	W(0xc0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0) | /* cf */
--	W(0xd0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) , /* df */
--	W(0xe0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) | /* ef */
--	W(0xf0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0)   /* ff */
--	/*      -----------------------------------------------         */
--	/*      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f          */
--};
- #undef W
+diff --git a/arch/x86/include/asm/ptrace.h b/arch/x86/include/asm/ptrace.h
+index 0f0d908..577d625 100644
+--- a/arch/x86/include/asm/ptrace.h
++++ b/arch/x86/include/asm/ptrace.h
+@@ -7,6 +7,7 @@
  
- struct kretprobe_blackpoint kretprobe_blacklist[] = {
-@@ -344,68 +300,30 @@ static int __kprobes is_IF_modifier(kprobe_opcode_t *insn)
- static void __kprobes fix_riprel(struct kprobe *p)
- {
- #ifdef CONFIG_X86_64
--	u8 *insn = p->ainsn.insn;
--	s64 disp;
--	int need_modrm;
--
--	/* Skip legacy instruction prefixes.  */
--	while (1) {
--		switch (*insn) {
--		case 0x66:
--		case 0x67:
--		case 0x2e:
--		case 0x3e:
--		case 0x26:
--		case 0x64:
--		case 0x65:
--		case 0x36:
--		case 0xf0:
--		case 0xf3:
--		case 0xf2:
--			++insn;
--			continue;
--		}
--		break;
--	}
-+	struct insn insn;
-+	kernel_insn_init(&insn, p->ainsn.insn);
- 
--	/* Skip REX instruction prefix.  */
--	if (is_REX_prefix(insn))
--		++insn;
--
--	if (*insn == 0x0f) {
--		/* Two-byte opcode.  */
--		++insn;
--		need_modrm = test_bit(*insn,
--				      (unsigned long *)twobyte_has_modrm);
--	} else
--		/* One-byte opcode.  */
--		need_modrm = test_bit(*insn,
--				      (unsigned long *)onebyte_has_modrm);
--
--	if (need_modrm) {
--		u8 modrm = *++insn;
--		if ((modrm & 0xc7) == 0x05) {
--			/* %rip+disp32 addressing mode */
--			/* Displacement follows ModRM byte.  */
--			++insn;
--			/*
--			 * The copied instruction uses the %rip-relative
--			 * addressing mode.  Adjust the displacement for the
--			 * difference between the original location of this
--			 * instruction and the location of the copy that will
--			 * actually be run.  The tricky bit here is making sure
--			 * that the sign extension happens correctly in this
--			 * calculation, since we need a signed 32-bit result to
--			 * be sign-extended to 64 bits when it's added to the
--			 * %rip value and yield the same 64-bit result that the
--			 * sign-extension of the original signed 32-bit
--			 * displacement would have given.
--			 */
--			disp = (u8 *) p->addr + *((s32 *) insn) -
--			       (u8 *) p->ainsn.insn;
--			BUG_ON((s64) (s32) disp != disp); /* Sanity check.  */
--			*(s32 *)insn = (s32) disp;
--		}
-+	if (insn_rip_relative(&insn)) {
-+		s64 newdisp;
-+		u8 *disp;
-+		insn_get_displacement(&insn);
-+		/*
-+		 * The copied instruction uses the %rip-relative addressing
-+		 * mode.  Adjust the displacement for the difference between
-+		 * the original location of this instruction and the location
-+		 * of the copy that will actually be run.  The tricky bit here
-+		 * is making sure that the sign extension happens correctly in
-+		 * this calculation, since we need a signed 32-bit result to
-+		 * be sign-extended to 64 bits when it's added to the %rip
-+		 * value and yield the same 64-bit result that the sign-
-+		 * extension of the original signed 32-bit displacement would
-+		 * have given.
-+		 */
-+		newdisp = (u8 *) p->addr + (s64) insn.displacement.value -
-+			  (u8 *) p->ainsn.insn;
-+		BUG_ON((s64) (s32) newdisp != newdisp); /* Sanity check.  */
-+		disp = (u8 *) p->ainsn.insn + INSN_DISPLACEMENT_OFFS(&insn);
-+		*(s32 *) disp = (s32) newdisp;
- 	}
+ #ifdef __KERNEL__
+ #include <asm/segment.h>
++#include <asm/page_types.h>
  #endif
+ 
+ #ifndef __ASSEMBLY__
+@@ -216,6 +217,72 @@ static inline unsigned long user_stack_pointer(struct pt_regs *regs)
+ 	return regs->sp;
  }
+ 
++/* Query offset/name of register from its name/offset */
++extern int query_register_offset(const char *name);
++extern const char *query_register_name(unsigned offset);
++#define MAX_REG_OFFSET (offsetof(struct pt_regs, ss))
++
++/* Get register value from its offset */
++static inline unsigned long get_register(struct pt_regs *regs, unsigned offset)
++{
++	if (unlikely(offset > MAX_REG_OFFSET))
++		return 0;
++	return *(unsigned long *)((unsigned long)regs + offset);
++}
++
++/* Check the address in the stack */
++static inline int within_kernel_stack(struct pt_regs *regs, unsigned long addr)
++{
++	return ((addr & ~(THREAD_SIZE - 1))  ==
++		(kernel_stack_pointer(regs) & ~(THREAD_SIZE - 1)));
++}
++
++/* Get Nth entry of the stack */
++static inline unsigned long get_kernel_stack_nth(struct pt_regs *regs,
++						 unsigned n)
++{
++	unsigned long *addr = (unsigned long *)kernel_stack_pointer(regs);
++	addr += n;
++	if (within_kernel_stack(regs, (unsigned long)addr))
++		return *addr;
++	else
++		return 0;
++}
++
++/* Get Nth argument at function call */
++static inline unsigned long get_argument_nth(struct pt_regs *regs, unsigned n)
++{
++#ifdef CONFIG_X86_32
++#define NR_REGPARMS 3
++	if (n < NR_REGPARMS) {
++		switch (n) {
++		case 0: return regs->ax;
++		case 1: return regs->dx;
++		case 2: return regs->cx;
++		}
++		return 0;
++#else /* CONFIG_X86_64 */
++#define NR_REGPARMS 6
++	if (n < NR_REGPARMS) {
++		switch (n) {
++		case 0: return regs->di;
++		case 1: return regs->si;
++		case 2: return regs->dx;
++		case 3: return regs->cx;
++		case 4: return regs->r8;
++		case 5: return regs->r9;
++		}
++		return 0;
++#endif
++	} else {
++		/*
++		 * The typical case: arg n is on the stack.
++		 * (Note: stack[0] = return address, so skip it)
++		 */
++		return get_kernel_stack_nth(regs, 1 + n - NR_REGPARMS);
++	}
++}
++
+ /*
+  * These are defined as per linux/ptrace.h, which see.
+  */
+diff --git a/arch/x86/kernel/ptrace.c b/arch/x86/kernel/ptrace.c
+index 09ecbde..00eb9d7 100644
+--- a/arch/x86/kernel/ptrace.c
++++ b/arch/x86/kernel/ptrace.c
+@@ -48,6 +48,66 @@ enum x86_regset {
+ 	REGSET_IOPERM32,
+ };
+ 
++struct pt_regs_offset {
++	const char *name;
++	int offset;
++};
++
++#define REG_OFFSET(r) offsetof(struct pt_regs, r)
++#define REG_OFFSET_NAME(r) {.name = #r, .offset = REG_OFFSET(r)}
++#define REG_OFFSET_END {.name = NULL, .offset = 0}
++
++static const struct pt_regs_offset regoffset_table[] = {
++#ifdef CONFIG_X86_64
++	REG_OFFSET_NAME(r15),
++	REG_OFFSET_NAME(r14),
++	REG_OFFSET_NAME(r13),
++	REG_OFFSET_NAME(r12),
++	REG_OFFSET_NAME(r11),
++	REG_OFFSET_NAME(r10),
++	REG_OFFSET_NAME(r9),
++	REG_OFFSET_NAME(r8),
++#endif
++	REG_OFFSET_NAME(bx),
++	REG_OFFSET_NAME(cx),
++	REG_OFFSET_NAME(dx),
++	REG_OFFSET_NAME(si),
++	REG_OFFSET_NAME(di),
++	REG_OFFSET_NAME(bp),
++	REG_OFFSET_NAME(ax),
++#ifdef CONFIG_X86_32
++	REG_OFFSET_NAME(ds),
++	REG_OFFSET_NAME(es),
++	REG_OFFSET_NAME(fs),
++	REG_OFFSET_NAME(gs),
++#endif
++	REG_OFFSET_NAME(orig_ax),
++	REG_OFFSET_NAME(ip),
++	REG_OFFSET_NAME(cs),
++	REG_OFFSET_NAME(flags),
++	REG_OFFSET_NAME(sp),
++	REG_OFFSET_NAME(ss),
++	REG_OFFSET_END,
++};
++
++int query_register_offset(const char *name)
++{
++	const struct pt_regs_offset *roff;
++	for (roff = regoffset_table; roff->name != NULL; roff++)
++		if (!strcmp(roff->name, name))
++			return roff->offset;
++	return -EINVAL;
++}
++
++const char *query_register_name(unsigned offset)
++{
++	const struct pt_regs_offset *roff;
++	for (roff = regoffset_table; roff->name != NULL; roff++)
++		if (roff->offset == offset)
++			return roff->name;
++	return NULL;
++}
++
+ /*
+  * does not yet catch signals sent when the child dies.
+  * in exit.c or in signal.c.
 
 
 -- 
