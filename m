@@ -1,85 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755711AbZE2Gsp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755498AbZE2GvT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755711AbZE2Gsp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 02:48:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751866AbZE2Gsi
+	id S1755498AbZE2GvT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 02:51:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752889AbZE2GvM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 02:48:38 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:54494 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751832AbZE2Gsh (ORCPT
+	Fri, 29 May 2009 02:51:12 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48651
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752583AbZE2GvL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 02:48:37 -0400
-Date: Fri, 29 May 2009 15:47:01 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Christoph Pleger <Christoph.Pleger@cs.tu-dortmund.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Maximum size of a swap partition
-Message-Id: <20090529154701.8edf2deb.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090529083054.d0cb6622.Christoph.Pleger@cs.tu-dortmund.de>
-References: <20090528093117.87b190ed.Christoph.Pleger@cs.tu-dortmund.de>
-	<20090529083054.d0cb6622.Christoph.Pleger@cs.tu-dortmund.de>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Fri, 29 May 2009 02:51:11 -0400
+Date: Thu, 28 May 2009 23:51:10 -0700 (PDT)
+Message-Id: <20090528.235110.44572184.davem@davemloft.net>
+To: jaswinder@kernel.org
+Cc: jeremy@goop.org, mingo@elte.hu, dan.magenheimer@oracle.com, avi@redhat.com,
+       George.Dunlap@eu.citrix.com, xen-devel@lists.xensource.com,
+       x86@kernel.org, linux-kernel@vger.kernel.org, keir.fraser@eu.citrix.com,
+       torvalds@linux-foundation.org, gregkh@suse.de, kurt.hackel@oracle.com,
+       Ian.Pratt@citrix.com, xen-users@lists.xensource.com,
+       ksrinivasan@novell.com, EAnderson@novell.com, wimcoekaerts@wimmekes.net,
+       stephen.spector@citrix.com, jens.axboe@oracle.com, npiggin@suse.de
+Subject: Re: Xen is a feature
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1243579052.3159.32.camel@localhost.localdomain>
+References: <4A1F302E.8030501@goop.org>
+	<20090528.210559.137121893.davem@davemloft.net>
+	<1243579052.3159.32.camel@localhost.localdomain>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 29 May 2009 08:30:54 +0200
-Christoph Pleger <Christoph.Pleger@cs.tu-dortmund.de> wrote:
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Date: Fri, 29 May 2009 12:07:32 +0530
 
-> Hello,
+> Hi Dave,
 > 
-> > what is the maximum size of a swap partition with Kernel 2.6.26 on an
-> > x86 and on an x86_64 machine? Some people say that it is 2GB on x86,
-> > but that seems not to be true any more.
+> On Thu, 2009-05-28 at 21:05 -0700, David Miller wrote:
+>> From: Jeremy Fitzhardinge <jeremy@goop.org>
+>> Date: Thu, 28 May 2009 17:45:34 -0700
+>> 
+>> > Ingo Molnar wrote:
+>> >> Xen changes - especially dom0 - are overwhelmingly not about improving
+>> >> Linux, but about having some special hook and extra treatment in
+>> >> random places - and that's really bad.
+>> >>   
+>> > 
+>> > You've made this argument a few times now, and I take exception to it.
+>> > 
+>> > It seems to be predicated on the idea that Xen has some kind of niche
+>> > usage, with barely more users than Voyager.  Or that it is a parasite
+>> > sitting on the side of Linux, being a pure drain.
+>> 
+>> I don't see Ingo's comments, whether I agree with them or not, as
+>> an implication of Xen being niche.  Rather I see his comments as
+>> an opposition to how Xen is implemented.
+>> 
 > 
-> Is here, in the mailing list where the power of kernel knowledge
-> resides, really no one able to answer that question within one day?
+> You can see Ingo's comments and whole thread under subject :
 > 
-Mailing list is not a place where a kind man reads all e-mails every day.
+> Re: [Xen-devel] Re: [GIT PULL] Xen APIC hooks (with io_apic_ops)
+> 
+> http://lkml.org/lkml/2009/5/27/758
 
-At first, start from man. man mkswap says.
-==
-      The maximum useful size of a swap area depends on the architecture  and
-       the  kernel  version.  It is roughly 2GiB on i386, PPC, m68k, ARM, 1GiB
-       on sparc, 512MiB on mips, 128GiB on alpha and 3TiB on sparc64. For ker-
-       nels after 2.3.3 there is no such limitation.
-==
- For kernels after 2.3.3 there is no such limitation.
+Jeremy is specifically commenting on Ingo's quoted "argument".
+And that "argument" is what he takes "exception to".
 
->From code,
-==
-union swap_header {
-        struct {
-                char reserved[PAGE_SIZE - 10];
-                char magic[10];                 /* SWAP-SPACE or SWAPSPACE2 */
-        } magic;
-        struct {
-                char            bootbits[1024]; /* Space for disklabel etc. */
-                __u32           version;
-                __u32           last_page;
-                __u32           nr_badpages;
-                unsigned char   sws_uuid[16];
-                unsigned char   sws_volume[16];
-                __u32           padding[117];
-                __u32           badpages[1];
-        } info;
-};
-==
-
-last_page represents the size of a swap partition.
-
-Then, 
-  UINT_MAX * PAZE_SIZE = 16Tbytes ? is a limitation for a swap device.
-  you can use 30 swap devices now.
-
-I'm not sure whether there are other limitations. But maybe enough big.
-
-Bye,
--Kame
-
-
+And that's the scope of what I'm commenting on too.
