@@ -1,49 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755834AbZE2Go2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755711AbZE2Gsp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755834AbZE2Go2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 02:44:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753878AbZE2GoU
+	id S1755711AbZE2Gsp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 02:48:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751866AbZE2Gsi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 02:44:20 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:51253 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753848AbZE2GoU (ORCPT
+	Fri, 29 May 2009 02:48:38 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:54494 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751832AbZE2Gsh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 02:44:20 -0400
-Date: Fri, 29 May 2009 08:51:04 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: eranian@gmail.com, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       Robert Richter <robert.richter@amd.com>,
-       Paul Mackerras <paulus@samba.org>, Andi Kleen <andi@firstfloor.org>,
-       Maynard Johnson <mpjohn@us.ibm.com>, Carl Love <cel@us.ibm.com>,
-       Corey J Ashford <cjashfor@us.ibm.com>,
-       Philip Mucci <mucci@eecs.utk.edu>, Dan Terpstra <terpstra@eecs.utk.edu>,
-       perfmon2-devel <perfmon2-devel@lists.sourceforge.net>
-Subject: Re: comments on Performance Counters for Linux (PCL)
-Message-ID: <20090529065104.GO1065@one.firstfloor.org>
-References: <7c86c4470905280758y6d359823h2a7517dfecb115e6@mail.gmail.com> <1243527919.6645.75.camel@laptop>
+	Fri, 29 May 2009 02:48:37 -0400
+Date: Fri, 29 May 2009 15:47:01 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Christoph Pleger <Christoph.Pleger@cs.tu-dortmund.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Maximum size of a swap partition
+Message-Id: <20090529154701.8edf2deb.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090529083054.d0cb6622.Christoph.Pleger@cs.tu-dortmund.de>
+References: <20090528093117.87b190ed.Christoph.Pleger@cs.tu-dortmund.de>
+	<20090529083054.d0cb6622.Christoph.Pleger@cs.tu-dortmund.de>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1243527919.6645.75.camel@laptop>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >        Take Itanium, it has 4 priv levels and the PMU counters can monitor at
-> >        any priv levels or combination thereof?
+On Fri, 29 May 2009 08:30:54 +0200
+Christoph Pleger <Christoph.Pleger@cs.tu-dortmund.de> wrote:
+
+> Hello,
 > 
-> x86 has more priv rings too, but linux only uses 2, kernel (ring 0) and
-> user (ring 2 iirc). Does ia64 expose more than 2 priv levels in linux?
+> > what is the maximum size of a swap partition with Kernel 2.6.26 on an
+> > x86 and on an x86_64 machine? Some people say that it is 2GB on x86,
+> > but that seems not to be true any more.
+> 
+> Is here, in the mailing list where the power of kernel knowledge
+> resides, really no one able to answer that question within one day?
+> 
+Mailing list is not a place where a kind man reads all e-mails every day.
 
-In a hardware virtualized environment x86 Linux uses at least four.
+At first, start from man. man mkswap says.
+==
+      The maximum useful size of a swap area depends on the architecture  and
+       the  kernel  version.  It is roughly 2GiB on i386, PPC, m68k, ARM, 1GiB
+       on sparc, 512MiB on mips, 128GiB on alpha and 3TiB on sparc64. For ker-
+       nels after 2.3.3 there is no such limitation.
+==
+ For kernels after 2.3.3 there is no such limitation.
 
-And yes ia64 also exposes more I believe, e.g. it has the fancy
-"system calls that run in user context"
+>From code,
+==
+union swap_header {
+        struct {
+                char reserved[PAGE_SIZE - 10];
+                char magic[10];                 /* SWAP-SPACE or SWAPSPACE2 */
+        } magic;
+        struct {
+                char            bootbits[1024]; /* Space for disklabel etc. */
+                __u32           version;
+                __u32           last_page;
+                __u32           nr_badpages;
+                unsigned char   sws_uuid[16];
+                unsigned char   sws_volume[16];
+                __u32           padding[117];
+                __u32           badpages[1];
+        } info;
+};
+==
 
--Andi
+last_page represents the size of a swap partition.
+
+Then, 
+  UINT_MAX * PAZE_SIZE = 16Tbytes ? is a limitation for a swap device.
+  you can use 30 swap devices now.
+
+I'm not sure whether there are other limitations. But maybe enough big.
+
+Bye,
+-Kame
+
 
