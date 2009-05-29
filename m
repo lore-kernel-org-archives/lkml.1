@@ -1,49 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753208AbZE2VJ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753687AbZE2VNA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753208AbZE2VJ1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 17:09:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751406AbZE2VJU
+	id S1753687AbZE2VNA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 17:13:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752486AbZE2VMx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 17:09:20 -0400
-Received: from claw.goop.org ([74.207.240.146]:35349 "EHLO claw.goop.org"
+	Fri, 29 May 2009 17:12:53 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:55411 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750811AbZE2VJT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 17:09:19 -0400
-Message-ID: <4A204EFC.501@goop.org>
-Date: Fri, 29 May 2009 14:09:16 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	id S1752399AbZE2VMw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 May 2009 17:12:52 -0400
+Date: Fri, 29 May 2009 23:07:48 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Lai Jiangshan <laijs@cn.fujitsu.com>, rusty@rustcorp.com.au, mingo@elte.hu,
+       paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 1/2] cpuhotplug: use rw_semaphore for cpu_hotplug
+Message-ID: <20090529210748.GA13449@redhat.com>
+References: <4A1F9CEA.1070705@cn.fujitsu.com> <20090529132328.99e7cae3.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Ian Campbell <ian.campbell@citrix.com>
-CC: linux-kernel@vger.kernel.org,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Olaf Kirch <okir@suse.de>, Greg KH <gregkh@suse.de>,
-       Tony Luck <tony.luck@intel.com>,
-       Becky Bruce <beckyb@kernel.crashing.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Kumar Gala <galak@kernel.crashing.org>, x86@kernel.org,
-       linux-ia64@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 6/9] swiotlb: use dma_to_phys and phys_to_dma
-References: <1243586643-5554-1-git-send-email-ian.campbell@citrix.com> <1243586643-5554-7-git-send-email-ian.campbell@citrix.com>
-In-Reply-To: <1243586643-5554-7-git-send-email-ian.campbell@citrix.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090529132328.99e7cae3.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ian Campbell wrote:
-> static dma_addr_t swiotlb_virt_to_bus(struct device *hwdev,
->  				      volatile void *address)
->  {
-> -	return swiotlb_phys_to_bus(hwdev, virt_to_phys(address));
-> +	return phys_to_dma(hwdev, virt_to_phys(address));
->  }
->  
->  void * __weak swiotlb_bus_to_virt(struct device *hwdev, dma_addr_t address)
->   
+On 05/29, Andrew Morton wrote:
+>
+> On Fri, 29 May 2009 16:29:30 +0800
+> Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
+>
+> >
+> > Current get_online_cpus()/put_online_cpus() re-implement
+> > a rw_semaphore,
+> > so it is converted to a real rw_semaphore in this fix.
+> > It simplifies codes, and is good for read.
+>
+> >  static struct {
+> > -	struct task_struct *active_writer;
+> > -	struct mutex lock; /* Synchronizes accesses to refcount, */
+> >  	/*
+> > -	 * Also blocks the new readers during
+> > -	 * an ongoing cpu hotplug operation.
+> > +	 * active_writer makes get_online_cpus()/put_online_cpus() are allowd
+> > +	 * to be nested in cpu_hotplug_begin()/cpu_hotplug_done().
+> > +	 *
+> > +	 * Thus, get_online_cpus()/put_online_cpus() can be called in
+> > +	 * CPU notifiers.
+> >  	 */
+> > -	int refcount;
+> > +	struct task_struct *active_writer;
+> > +	struct rw_semaphore rwlock;
+> >  } cpu_hotplug;
 
-Does this need to be weak too?
+But, afaics, down_write() blocks new readers.
 
-    J
+This means that with this patch get_online_cpus() is not recursive, no?
+
+Oleg.
+
