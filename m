@@ -1,24 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754626AbZE2GbB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755500AbZE2Gfe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754626AbZE2GbB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 02:31:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753125AbZE2Gay
+	id S1755500AbZE2Gfe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 02:35:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752824AbZE2Gf0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 02:30:54 -0400
-Received: from waldorf.cs.uni-dortmund.de ([129.217.4.42]:59141 "EHLO
-	waldorf.cs.uni-dortmund.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751827AbZE2Gay (ORCPT
+	Fri, 29 May 2009 02:35:26 -0400
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:42175 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751827AbZE2Gf0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 02:30:54 -0400
-Date: Fri, 29 May 2009 08:30:54 +0200
-From: Christoph Pleger <Christoph.Pleger@cs.tu-dortmund.de>
-To: linux-kernel@vger.kernel.org
-Subject: Re: Maximum size of a swap partition
-Message-Id: <20090529083054.d0cb6622.Christoph.Pleger@cs.tu-dortmund.de>
-In-Reply-To: <20090528093117.87b190ed.Christoph.Pleger@cs.tu-dortmund.de>
-References: <20090528093117.87b190ed.Christoph.Pleger@cs.tu-dortmund.de>
-Organization: Technische Universitaet Dortmund
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.6.10; sparc-sun-solaris2.10)
+	Fri, 29 May 2009 02:35:26 -0400
+Date: Fri, 29 May 2009 15:05:25 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
+       "hannes@cmpxchg.org" <hannes@cmpxchg.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Subject: Re: [PATCH 1/4] add swap cache interface for swap reference v2
+ (updated)
+Message-Id: <20090529150525.cbbb4be1.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <20090529143758.4c3db3eb.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090528135455.0c83bedc.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090528141049.cc45a116.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090529132153.3a72f2c3.nishimura@mxp.nes.nec.co.jp>
+	<20090529140832.1f4b288b.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090529143758.4c3db3eb.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: NEC Soft, Ltd.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -26,14 +38,194 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Fri, 29 May 2009 14:37:58 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> On Fri, 29 May 2009 14:08:32 +0900
+> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > > IIUC, swap_free() at the end of shmem_writepage() should also be changed to swapcache_free().
+> > > 
+> > Hmm!. Oh, yes. shmem_writepage()'s error path. Thank you. It will be fixed.
+> > 
+> here. 
+> 
+Looks good to me.
 
-> what is the maximum size of a swap partition with Kernel 2.6.26 on an
-> x86 and on an x86_64 machine? Some people say that it is 2GB on x86,
-> but that seems not to be true any more.
+	Reviewed-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
 
-Is here, in the mailing list where the power of kernel knowledge
-resides, really no one able to answer that question within one day?
 
-Regards
-  Christoph
+BTW, I'm now testing(with swap-in/out and swap-on/off) [2/4] of this patch set.
+I think this patch set would work well, but it's a big change to swap,
+so we should test them very carefully.
+
+Thanks,
+Daisuke Nishimura.
+
+> ==
+> 
+> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> 
+> In following patch, usage of swap cache will be recorded into swap_map.
+> This patch is for necessary interface changes to do that.
+> 
+> 2 interfaces:
+>   - swapcache_prepare()
+>   - swapcache_free()
+> is added for allocating/freeing refcnt from swap-cache to existing
+> swap entries. But implementation itself is not changed under this patch.
+> At adding swapcache_free(), memcg's hook code is moved under swapcache_free().
+> This is better than using scattered hooks.
+> 
+> Changelog: v1->v2
+>  - fixed shmem_writepage() error path.
+> 
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> ---
+>  include/linux/swap.h |    7 +++++++
+>  mm/shmem.c           |    2 +-
+>  mm/swap_state.c      |   11 +++++------
+>  mm/swapfile.c        |   19 +++++++++++++++++++
+>  mm/vmscan.c          |    3 +--
+>  5 files changed, 33 insertions(+), 9 deletions(-)
+> 
+> Index: mmotm-2.6.30-May28/include/linux/swap.h
+> ===================================================================
+> --- mmotm-2.6.30-May28.orig/include/linux/swap.h
+> +++ mmotm-2.6.30-May28/include/linux/swap.h
+> @@ -282,8 +282,10 @@ extern void si_swapinfo(struct sysinfo *
+>  extern swp_entry_t get_swap_page(void);
+>  extern swp_entry_t get_swap_page_of_type(int);
+>  extern int swap_duplicate(swp_entry_t);
+> +extern int swapcache_prepare(swp_entry_t);
+>  extern int valid_swaphandles(swp_entry_t, unsigned long *);
+>  extern void swap_free(swp_entry_t);
+> +extern void swapcache_free(swp_entry_t, struct page *page);
+>  extern int free_swap_and_cache(swp_entry_t);
+>  extern int swap_type_of(dev_t, sector_t, struct block_device **);
+>  extern unsigned int count_swap_pages(int, int);
+> @@ -352,11 +354,16 @@ static inline void show_swap_cache_info(
+>  
+>  #define free_swap_and_cache(swp)	is_migration_entry(swp)
+>  #define swap_duplicate(swp)		is_migration_entry(swp)
+> +#define swapcache_prepare(swp)		is_migration_entry(swp)
+>  
+>  static inline void swap_free(swp_entry_t swp)
+>  {
+>  }
+>  
+> +static inline void swapcache_free(swp_entry_t swp, struct page *page)
+> +{
+> +}
+> +
+>  static inline struct page *swapin_readahead(swp_entry_t swp, gfp_t gfp_mask,
+>  			struct vm_area_struct *vma, unsigned long addr)
+>  {
+> Index: mmotm-2.6.30-May28/mm/swap_state.c
+> ===================================================================
+> --- mmotm-2.6.30-May28.orig/mm/swap_state.c
+> +++ mmotm-2.6.30-May28/mm/swap_state.c
+> @@ -162,11 +162,11 @@ int add_to_swap(struct page *page)
+>  			return 1;
+>  		case -EEXIST:
+>  			/* Raced with "speculative" read_swap_cache_async */
+> -			swap_free(entry);
+> +			swapcache_free(entry, NULL);
+>  			continue;
+>  		default:
+>  			/* -ENOMEM radix-tree allocation failure */
+> -			swap_free(entry);
+> +			swapcache_free(entry, NULL);
+>  			return 0;
+>  		}
+>  	}
+> @@ -188,8 +188,7 @@ void delete_from_swap_cache(struct page 
+>  	__delete_from_swap_cache(page);
+>  	spin_unlock_irq(&swapper_space.tree_lock);
+>  
+> -	mem_cgroup_uncharge_swapcache(page, entry);
+> -	swap_free(entry);
+> +	swapcache_free(entry, page);
+>  	page_cache_release(page);
+>  }
+>  
+> @@ -293,7 +292,7 @@ struct page *read_swap_cache_async(swp_e
+>  		/*
+>  		 * Swap entry may have been freed since our caller observed it.
+>  		 */
+> -		if (!swap_duplicate(entry))
+> +		if (!swapcache_prepare(entry))
+>  			break;
+>  
+>  		/*
+> @@ -317,7 +316,7 @@ struct page *read_swap_cache_async(swp_e
+>  		}
+>  		ClearPageSwapBacked(new_page);
+>  		__clear_page_locked(new_page);
+> -		swap_free(entry);
+> +		swapcache_free(entry, NULL);
+>  	} while (err != -ENOMEM);
+>  
+>  	if (new_page)
+> Index: mmotm-2.6.30-May28/mm/swapfile.c
+> ===================================================================
+> --- mmotm-2.6.30-May28.orig/mm/swapfile.c
+> +++ mmotm-2.6.30-May28/mm/swapfile.c
+> @@ -510,6 +510,16 @@ void swap_free(swp_entry_t entry)
+>  }
+>  
+>  /*
+> + * Called after dropping swapcache to decrease refcnt to swap entries.
+> + */
+> +void swapcache_free(swp_entry_t entry, struct page *page)
+> +{
+> +	if (page)
+> +		mem_cgroup_uncharge_swapcache(page, entry);
+> +	return swap_free(entry);
+> +}
+> +
+> +/*
+>   * How many references to page are currently swapped out?
+>   */
+>  static inline int page_swapcount(struct page *page)
+> @@ -1979,6 +1989,15 @@ bad_file:
+>  	goto out;
+>  }
+>  
+> +/*
+> + * Called when allocating swap cache for exising swap entry,
+> + */
+> +int swapcache_prepare(swp_entry_t entry)
+> +{
+> +	return swap_duplicate(entry);
+> +}
+> +
+> +
+>  struct swap_info_struct *
+>  get_swap_info_struct(unsigned type)
+>  {
+> Index: mmotm-2.6.30-May28/mm/vmscan.c
+> ===================================================================
+> --- mmotm-2.6.30-May28.orig/mm/vmscan.c
+> +++ mmotm-2.6.30-May28/mm/vmscan.c
+> @@ -477,8 +477,7 @@ static int __remove_mapping(struct addre
+>  		swp_entry_t swap = { .val = page_private(page) };
+>  		__delete_from_swap_cache(page);
+>  		spin_unlock_irq(&mapping->tree_lock);
+> -		mem_cgroup_uncharge_swapcache(page, swap);
+> -		swap_free(swap);
+> +		swapcache_free(swap, page);
+>  	} else {
+>  		__remove_from_page_cache(page);
+>  		spin_unlock_irq(&mapping->tree_lock);
+> Index: mmotm-2.6.30-May28/mm/shmem.c
+> ===================================================================
+> --- mmotm-2.6.30-May28.orig/mm/shmem.c
+> +++ mmotm-2.6.30-May28/mm/shmem.c
+> @@ -1097,7 +1097,7 @@ static int shmem_writepage(struct page *
+>  	shmem_swp_unmap(entry);
+>  unlock:
+>  	spin_unlock(&info->lock);
+> -	swap_free(swap);
+> +	swapcache_free(swap, NULL);
+>  redirty:
+>  	set_page_dirty(page);
+>  	if (wbc->for_reclaim)
+> 
