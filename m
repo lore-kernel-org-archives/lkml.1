@@ -1,113 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757578AbZE2JP1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757834AbZE2JQY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757578AbZE2JP1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 05:15:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756475AbZE2JPQ
+	id S1757834AbZE2JQY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 05:16:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756475AbZE2JQR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 05:15:16 -0400
-Received: from hera.kernel.org ([140.211.167.34]:33377 "EHLO hera.kernel.org"
+	Fri, 29 May 2009 05:16:17 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:50403 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755922AbZE2JPP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 05:15:15 -0400
-Message-ID: <4A1FA777.3040200@kernel.org>
-Date: Fri, 29 May 2009 18:14:31 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1751047AbZE2JQQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 May 2009 05:16:16 -0400
+Date: Fri, 29 May 2009 11:16:08 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH RFC] perf_counter: Don't swap contexts containing
+	locked mutex
+Message-ID: <20090529091608.GA15278@elte.hu>
+References: <18975.31580.520676.619896@drongo.ozlabs.ibm.com> <1243584388.23657.156.camel@twins> <1243584793.23657.168.camel@twins> <1243585721.23657.177.camel@twins> <20090529085916.GA21461@elte.hu>
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       Cornelia Huck <cornelia.huck@de.ibm.com>, linux-fsdevel@vger.kernel.org,
-       Kay Sievers <kay.sievers@vrfy.org>, Greg KH <greg@kroah.com>,
-       "Eric W. Biederman" <ebiederm@aristanetworks.com>
-Subject: Re: [PATCH 04/24] sysfs: Normalize removing sysfs directories.
-References: <m1zlcwltri.fsf_-_@fess.ebiederm.org> <1243551665-23596-4-git-send-email-ebiederm@xmission.com>
-In-Reply-To: <1243551665-23596-4-git-send-email-ebiederm@xmission.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 29 May 2009 09:14:34 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090529085916.GA21461@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
 
-Eric W. Biederman wrote:
-> @@ -732,12 +732,28 @@ const struct inode_operations sysfs_dir_inode_operations = {
->  	.setattr	= sysfs_setattr,
->  };
->  
-> -static void remove_dir(struct sysfs_dirent *sd)
-> +static void remove_dir(struct sysfs_dirent *dir_sd)
->  {
->  	struct sysfs_addrm_cxt acxt;
->  
-> -	sysfs_addrm_start(&acxt, sd->s_parent);
-> -	sysfs_remove_one(&acxt, sd);
-> +	pr_debug("sysfs %s: removing dir\n", dir_sd->s_name);
-> +
-> +	/* Removing non-empty directories is not valid complain! */
-						     ^^^
-						  missing . or ,
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-> +static struct sysfs_dirent *get_dirent_to_remove(struct sysfs_dirent *dir_sd)
-> +{
-> +	struct sysfs_dirent *sd;
-> +
-> +	mutex_lock(&sysfs_mutex);
-> +	for (sd = dir_sd->s_dir.children; sd; sd = sd->s_sibling) {
-> +		/* Directories might be owned by someone else
-> +		 * making recursive directory removal unsafe.
-> +		 */
-> +		if (sysfs_type(sd) == SYSFS_DIR)
-> +			continue;
-> +		break;
-> +	}
-> +	sysfs_get(sd);
-> +	mutex_unlock(&sysfs_mutex);
-> +
-> +	return sd;
-> +}
->  
->  static void __sysfs_remove_dir(struct sysfs_dirent *dir_sd)
->  {
->  	struct sysfs_addrm_cxt acxt;
-> -	struct sysfs_dirent **pos;
-> -
-> -	if (!dir_sd)
-> -		return;
-> -
-> -	pr_debug("sysfs %s: removing dir\n", dir_sd->s_name);
-> -	sysfs_addrm_start(&acxt, dir_sd);
-> -	pos = &dir_sd->s_dir.children;
-> -	while (*pos) {
-> -		struct sysfs_dirent *sd = *pos;
-> +	struct sysfs_dirent *sd;
->  
-> -		if (sysfs_type(sd) != SYSFS_DIR)
-> -			sysfs_remove_one(&acxt, sd);
-> -		else
-> -			pos = &(*pos)->s_sibling;
-> +	/* Remove children that we think are safe */
-> +	while ((sd = get_dirent_to_remove(dir_sd))) {
-> +		sysfs_addrm_start(&acxt, sd->s_parent);
-> +		sysfs_remove_one(&acxt, sd);
-> +		sysfs_addrm_finish(&acxt);
-> +		sysfs_put(sd);
->  	}
-> -	sysfs_addrm_finish(&acxt);
+> 
+> * Peter Zijlstra <peterz@infradead.org> wrote:
+> 
+> > On Fri, 2009-05-29 at 10:13 +0200, Peter Zijlstra wrote:
+> > > On Fri, 2009-05-29 at 10:06 +0200, Peter Zijlstra wrote:
+> > > 
+> > > > static struct perf_counter_ctx *pin_ctx(struct perf_counter *counter, u64 *old_gen)
+> > > > {
+> > > > 	struct perf_counter_context *ctx;
+> > > > 	unsigned long flags;
+> > > > 
+> > > > 	rcu_read_lock();
+> > > > retry:
+> > > > 	ctx = rcu_dereference(counter->ctx);
+> > > > 	spin_lock_irqsave(&ctx->lock, flags);
+> > > > 	if (ctx != rcu_dereference(counter->ctx))
+> > > > 		goto retry;
+> > > > 
+> > > > 	*old_gen = ctx->generation;
+> > > > 	ctx->generation = ~0ULL;
+> > > > 	spin_unlock_irqrestore(&ctx->lock, flags);
+> > > > 	rcu_read_unlock();
+> > > > 
+> > > > 	return ctx;
+> > > > }
+> > > > 
+> > > > static void unpin_ctx(struct perf_counter_ctx *ctx, u64 old_gen)
+> > > > {
+> > > > 	unsigned long flags;
+> > > > 
+> > > > 	spin_lock_irqsave(&ctx->lock, flags);
+> > > > 	ctx->generation = old_gen;
+> > > > 	spin_unlock_irqrestore(&ctx->lock, flags);
+> > > > }
+> > > 
+> > > OK, I think I got this wrong, counter->ctx isn't the problem.
+> > > task->perf_counter_ctx is.
+> > > 
+> > > Still would be nice to write it in the above form. I'll go over the code
+> > > again to see who else might want it.
+> > 
+> > OK, I went over the code, and your patch does indeed cover the few 
+> > spots we need. It was just my brain going haywire and auditing the 
+> > wrong pattern.
+> 
+> ok - i'll try this with my 'perf stat make -j' workload that 
+> quickly locks up on a Nehalem. (bug introduced by the context 
+> switch optimizations)
 
-Ummm... Null @dir_sd handling is being removed, which could be fine
-but please do it in a separate patch or at least mention it in the
-patch description.  Also, I'm quite uncomfortable with these things
-being done in non-atomic manner.  It can be made to work but things
-like this can lead to subtle race conditions and with the kind of
-layering we put on top of sysfs (kobject, driver model, driver
-midlayers and so on), it isn't all that easy to verify what's going
-on, so NACK for this one.
+nope, that still hangs the box.
 
-Thanks.
+try the latest Git repo (i tried 95110d7) and do this:
 
--- 
-tejun
+  make clean
+  perf stat -- make -j
+
+that locks up for me, very quickly, with permanently stuck tasks:
+
+   PID USER      PR  NI  VIRT  RES  SHR S  %CPU %MEM   TIME    COMMAND        
+ 10748 mingo     20   0     0    0    0 R 100.4  0.0   0:06.44 chmod         
+ 10756 mingo     20   0     0    0    0 R 100.4  0.0   0:06.43 touch         
+
+looping in the remove-context retry loop.
+
+	Ingo
