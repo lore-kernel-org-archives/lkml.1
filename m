@@ -1,120 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759990AbZE2Nak@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759848AbZE2Nco@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759990AbZE2Nak (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 09:30:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757425AbZE2Nac
+	id S1759848AbZE2Nco (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 09:32:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758291AbZE2Nch
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 09:30:32 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:50175 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756948AbZE2Nab (ORCPT
+	Fri, 29 May 2009 09:32:37 -0400
+Received: from viefep11-int.chello.at ([62.179.121.31]:17624 "EHLO
+	viefep11-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757677AbZE2Ncg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 09:30:31 -0400
-Date: Fri, 29 May 2009 15:28:59 +0200
-From: "John W. Linville" <linville@tuxdriver.com>
-To: davem@davemloft.net
-Cc: linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: pull request: wireless-2.6 2009-05-29
-Message-ID: <20090529132858.GA3520@tuxdriver.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 29 May 2009 09:32:36 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [PATCH 2/2] UBIFS: start using hrtimers
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>, linux-fsdevel@vger.kernel.org,
+       Steven Rostedt <srostedt@redhat.com>,
+       Arjan van de Ven <arjan@linux.intel.com>
+In-Reply-To: <20090529150944.8912.95076.sendpatchset@localhost.localdomain>
+References: <20090529150929.8912.33879.sendpatchset@localhost.localdomain>
+	 <20090529150944.8912.95076.sendpatchset@localhost.localdomain>
+Content-Type: text/plain
+Date: Fri, 29 May 2009 15:32:37 +0200
+Message-Id: <1243603957.23657.217.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave,
+On Fri, 2009-05-29 at 18:09 +0300, Artem Bityutskiy wrote:
+> From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+> Subject: [PATCH 2/2] UBIFS: start using hrtimers
+> 
+> UBIFS uses timers for write-buffer write-back. It is not
+> crucial for us to write-back exactly on time. We are fine
+> to write-back a little earlier or later. And this means
+> we may optimize UBIFS timer so that it could be groped
+> with a close timer event, so that the CPU would not be
+> waken up just to do the write back. This is optimization
+> to lessen power consumption, which is important in
+> embedded devices UBIFS is used for.
+> 
+> hrtimers have a nice feature: they are effectively range
+> timers, and we may defind the soft and hard limits for
+> it. Standard timers do not have these feature. They may
+> only be made deferrable, but this means there is effectively
+> no hard limit. So, we will better use hrtimers.
+> 
+> Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+> ---
 
-Here are a couple of fixes that would be nice to have for 2.6.30 --
-nothing very controversial.  Each has a bugzilla.kernel.org entry listed
-in the changelog.
+Seems sane enough from a hrtimer POV, but isn't this already
+functionality that the VFS/pdflush provide?
 
-Please let me know if there are problems!
-
-Thanks,
-
-John
-
----
-
-Individual patches are available here:
-
-	http://www.kernel.org/pub/linux/kernel/people/linville/wireless-2.6/
-
----
-
-The following changes since commit 4d3383d0adb6d1047fb9ee3edd9dc05e4d2184f0:
-  David S. Miller (1):
-        Merge branch 'master' of git://git.kernel.org/.../kaber/nf-2.6
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-2.6.git master
-
-John W. Linville (2):
-      at76c50x-usb: avoid mutex deadlock in at76_dwork_hw_scan
-      rtl8187: add USB ID for Linksys WUSB54GC-EU v2 USB wifi dongle
-
- drivers/net/wireless/Kconfig               |    1 +
- drivers/net/wireless/at76c50x-usb.c        |   12 ++++++------
- drivers/net/wireless/rtl818x/rtl8187_dev.c |    2 ++
- 3 files changed, 9 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/net/wireless/Kconfig b/drivers/net/wireless/Kconfig
-index 8a08235..3d94e7d 100644
---- a/drivers/net/wireless/Kconfig
-+++ b/drivers/net/wireless/Kconfig
-@@ -430,6 +430,7 @@ config RTL8187
- 	  ASUS P5B Deluxe
- 	  Toshiba Satellite Pro series of laptops
- 	  Asus Wireless Link
-+	  Linksys WUSB54GC-EU
- 
- 	  Thanks to Realtek for their support!
- 
-diff --git a/drivers/net/wireless/at76c50x-usb.c b/drivers/net/wireless/at76c50x-usb.c
-index 744f4f4..8d93ca4 100644
---- a/drivers/net/wireless/at76c50x-usb.c
-+++ b/drivers/net/wireless/at76c50x-usb.c
-@@ -1873,18 +1873,18 @@ static void at76_dwork_hw_scan(struct work_struct *work)
- 	if (ret != CMD_STATUS_COMPLETE) {
- 		queue_delayed_work(priv->hw->workqueue, &priv->dwork_hw_scan,
- 				   SCAN_POLL_INTERVAL);
--		goto exit;
-+		mutex_unlock(&priv->mtx);
-+		return;
- 	}
- 
--	ieee80211_scan_completed(priv->hw, false);
--
- 	if (is_valid_ether_addr(priv->bssid))
- 		at76_join(priv);
- 
--	ieee80211_wake_queues(priv->hw);
--
--exit:
- 	mutex_unlock(&priv->mtx);
-+
-+	ieee80211_scan_completed(priv->hw, false);
-+
-+	ieee80211_wake_queues(priv->hw);
- }
- 
- static int at76_hw_scan(struct ieee80211_hw *hw,
-diff --git a/drivers/net/wireless/rtl818x/rtl8187_dev.c b/drivers/net/wireless/rtl818x/rtl8187_dev.c
-index bac6cfb..d51ba0a 100644
---- a/drivers/net/wireless/rtl818x/rtl8187_dev.c
-+++ b/drivers/net/wireless/rtl818x/rtl8187_dev.c
-@@ -71,6 +71,8 @@ static struct usb_device_id rtl8187_table[] __devinitdata = {
- 	{USB_DEVICE(0x18E8, 0x6232), .driver_info = DEVICE_RTL8187},
- 	/* AirLive */
- 	{USB_DEVICE(0x1b75, 0x8187), .driver_info = DEVICE_RTL8187},
-+	/* Linksys */
-+	{USB_DEVICE(0x1737, 0x0073), .driver_info = DEVICE_RTL8187B},
- 	{}
- };
- 
--- 
-John W. Linville		Someday the world will need a hero, and you
-linville@tuxdriver.com			might be all we have.  Be ready.
