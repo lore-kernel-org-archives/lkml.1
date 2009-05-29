@@ -1,98 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759998AbZE2OjT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760864AbZE2Ojs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759998AbZE2OjT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 10:39:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759485AbZE2OjH
+	id S1760864AbZE2Ojs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 10:39:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760075AbZE2Ojk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 10:39:07 -0400
-Received: from va3ehsobe005.messaging.microsoft.com ([216.32.180.15]:35918
-	"EHLO VA3EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1759056AbZE2OjG convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 10:39:06 -0400
-X-SpamScore: -30
-X-BigFish: VPS-30(zz542N1432R14ffO1805M9371Pzz1202hzzz2dh6bh17dh17ch95n61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-SS: 5,
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-Class: urn:content-classes:message
+	Fri, 29 May 2009 10:39:40 -0400
+Received: from rv-out-0506.google.com ([209.85.198.227]:23692 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759564AbZE2Ojj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 May 2009 10:39:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=Bz4UGic8oszx/SDuLxOOBdxwuqyKtLMP6/K12dqWLZbKnR4bfVEsokLMdVKvnMxUcN
+         GJf0alZz/xTHBbn8tJ00uPW0jwQaazLUCOIpSeBj2G0cTniUDpQCI8cb7hFQTyLXj+l3
+         0VDAL5TOYoVKED9WL5y2F7LbyLpg6e4HSY4wE=
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Sitsofe Wheeler <sitsofe@yahoo.com>
+Subject: Re: EeePC 900 trackpad often not detected at boot in 2.6.30-rc4
+Date: Fri, 29 May 2009 07:39:33 -0700
+User-Agent: KMail/1.11.3 (Linux/2.6.30-rc6; KDE/4.2.3; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org,
+       Alan Jenkins <sourcejedi.lkml@googlemail.com>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, mingo@elte.hu
+References: <20090511072135.GA4682@sucs.org> <20090528164942.GC18589@dtor-d630.eng.vmware.com> <20090529093126.GA30979@sucs.org>
+In-Reply-To: <20090529093126.GA30979@sucs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [microblaze-uclinux] Microblaze MMU v2
-Date: Fri, 29 May 2009 08:39:04 -0600
-In-Reply-To: <1243406874-3917-1-git-send-email-monstr@monstr.eu>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [microblaze-uclinux] Microblaze MMU v2
-Thread-Index: AcnemQWPXoG3CSMRRZqjK0Jz7IrSuwB0eRFA
-References: <1243406874-3917-1-git-send-email-monstr@monstr.eu>
-From: John Linn <John.Linn@xilinx.com>
-To: <microblaze-uclinux@itee.uq.edu.au>, <linux-kernel@vger.kernel.org>
-CC: <john.williams@petalogix.com>, <michal.simek@petalogix.com>
-X-OriginalArrivalTime: 29 May 2009 14:39:05.0664 (UTC) FILETIME=[37A7DC00:01C9E06B]
-Message-ID: <20090529143906.570B082804F@mail59-va3.bigfish.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200905290739.34414.dmitry.torokhov@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Acked-by: John Linn <john.linn@xilinx.com>
+On Friday 29 May 2009 02:31:26 Sitsofe Wheeler wrote:
+> On Thu, May 28, 2009 at 09:49:43AM -0700, Dmitry Torokhov wrote:
+> > On Thu, May 28, 2009 at 05:42:31PM +0100, Sitsofe Wheeler wrote:
+> > > On a normal boot there will be exactly 115 interrupts if the trackpad
+> > > hasn't been touched but everything is OK just after booting. If there
+> > > are less interrupts you know something has gone wrong...
+> >
+> > OK, I guess I will be pushin this to Linus then... Thank you for
+> > testing.
+>
+> Should I be trying to get you some extra logs (I saw and replied to
+> Ingo's mail)?  If no one else has this problem is this just a symptom of
+> a bigger problem (i.e. broken scheduling or unstated assumptions)?
 
-Looks like great progress,
-John
+Not to me but I'd guess to Ingo/scheduler guys... my patch is just a
+work-around; I think it would be great to figure out why the thread
+is not woken up until so much later. Such delays could have an adverse
+effects not only on input devices but elsewhere as well.  
 
-> -----Original Message-----
-> From: owner-microblaze-uclinux@lists.itee.uq.edu.au
-[mailto:owner-microblaze-
-> uclinux@lists.itee.uq.edu.au] On Behalf Of Michal Simek
-> Sent: Wednesday, May 27, 2009 12:47 AM
-> To: linux-kernel@vger.kernel.org
-> Cc: john.williams@petalogix.com; microblaze-uclinux@itee.uq.edu.au;
-michal.simek@petalogix.com
-> Subject: [microblaze-uclinux] Microblaze MMU v2
-> 
-> Hi All,
-> 
-> This is bunch of patches for Microblaze MMU kernel support version 2.
-> There is one problem(not functional) with uaccess.h which I know about
-and I would like
-> to fix it till rc2 with Arnd's new generic patches which I hope will
-be there.
-> 
-> All changes are available at
-git://git.monstr.eu/linux-2.6-microblaze.git
-> next branch.
-> 
-> Version 1 is available at mmu_v1 branch.
-> 
-> Changes in version 2.
-> I added all reported problems - mmu_v1 branch contains separate
-commits for that
-> I fixed problems with stat.h and fcntl.h - there are prepared for Arnd
-generic version.
-> 
-> Thanks for your time and review.
-> 
-> I believe that this is the last version for review in LKML.
-> 
-> Thanks for your ACK,
-> Michal
-> 
-> 
-> 
-> 
-> 
-> 
-> ___________________________
-> microblaze-uclinux mailing list
-> microblaze-uclinux@itee.uq.edu.au
-> Project Home Page :
-http://www.itee.uq.edu.au/~jwilliams/mblaze-uclinux
-> Mailing List Archive :
-http://www.itee.uq.edu.au/~listarch/microblaze-uclinux/
-> 
-
-
-This email and any attachments are intended for the sole use of the named recipient(s) and contain(s) confidential information that may be proprietary, privileged or copyrighted under applicable law. If you are not the intended recipient, do not read, copy, or forward this email message or any attachments. Delete this email message and any attachments immediately.
-
-
+-- 
+Dmitry
