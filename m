@@ -1,50 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757814AbZE2Vih@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759958AbZE2VjE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757814AbZE2Vih (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 17:38:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755487AbZE2Vfw
+	id S1759958AbZE2VjE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 17:39:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755938AbZE2Vfy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 17:35:52 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:60585 "EHLO
+	Fri, 29 May 2009 17:35:54 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:60596 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755462AbZE2Vfv (ORCPT
+	with ESMTP id S1755728AbZE2Vfw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 17:35:51 -0400
+	Fri, 29 May 2009 17:35:52 -0400
 From: Andi Kleen <andi@firstfloor.org>
 References: <200905291135.124267638@firstfloor.org>
 In-Reply-To: <200905291135.124267638@firstfloor.org>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
        linux-mm@kvack.org, fengguang.wu@intel.com
-Subject: [PATCH] [11/16] HWPOISON: Handle poisoned pages in set_page_dirty()
-Message-Id: <20090529213537.2D2951D0294@basil.firstfloor.org>
-Date: Fri, 29 May 2009 23:35:37 +0200 (CEST)
+Subject: [PATCH] [16/16] HWPOISON: Add simple debugfs interface to inject hwpoison on arbitary PFNs
+Message-Id: <20090529213542.B07F61D0292@basil.firstfloor.org>
+Date: Fri, 29 May 2009 23:35:42 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Bail out early in set_page_dirty for poisoned pages. We don't want any
-of the dirty accounting done or file system write back started, because
-the page will be just thrown away.
+Useful for some testing scenarios, although specific testing is often
+done better through MADV_POISON
+
+This can be done with the x86 level MCE injector too, but this interface
+allows it to do independently from low level x86 changes.
+
+Open issues: 
+
+Should be disabled for cgroups.
 
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
 ---
- mm/page-writeback.c |    4 ++++
- 1 file changed, 4 insertions(+)
+ mm/Kconfig           |    4 ++++
+ mm/Makefile          |    1 +
+ mm/hwpoison-inject.c |   41 +++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 46 insertions(+)
 
-Index: linux/mm/page-writeback.c
+Index: linux/mm/hwpoison-inject.c
 ===================================================================
---- linux.orig/mm/page-writeback.c	2009-05-29 23:32:08.000000000 +0200
-+++ linux/mm/page-writeback.c	2009-05-29 23:32:10.000000000 +0200
-@@ -1277,6 +1277,10 @@
- {
- 	struct address_space *mapping = page_mapping(page);
- 
-+	if (unlikely(PageHWPoison(page))) {
-+		SetPageDirty(page);
-+		return 0;
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux/mm/hwpoison-inject.c	2009-05-29 23:32:11.000000000 +0200
+@@ -0,0 +1,41 @@
++/* Inject a hwpoison memory failure on a arbitary pfn */
++#include <linux/module.h>
++#include <linux/debugfs.h>
++#include <linux/kernel.h>
++#include <linux/mm.h>
++
++static struct dentry *hwpoison_dir, *corrupt_pfn;
++
++static int hwpoison_inject(void *data, u64 val)
++{
++	if (!capable(CAP_SYS_ADMIN))
++		return -EPERM;
++	printk(KERN_INFO "Injecting memory failure at pfn %Lx\n", val);
++	memory_failure(val, 18);
++	return 0;
++}
++
++DEFINE_SIMPLE_ATTRIBUTE(hwpoison_fops, NULL, hwpoison_inject, "%lli\n");
++
++static void pfn_inject_exit(void)
++{
++	if (hwpoison_dir)
++		debugfs_remove_recursive(hwpoison_dir);
++}
++
++static int pfn_inject_init(void)
++{
++	hwpoison_dir = debugfs_create_dir("hwpoison", NULL);
++	if (hwpoison_dir == NULL)
++		return -ENOMEM;
++	corrupt_pfn = debugfs_create_file("corrupt-pfn", 0600, hwpoison_dir,
++					  NULL, &hwpoison_fops);
++	if (corrupt_pfn == NULL) {
++		pfn_inject_exit();
++		return -ENOMEM;
 +	}
- 	if (likely(mapping)) {
- 		int (*spd)(struct page *) = mapping->a_ops->set_page_dirty;
- #ifdef CONFIG_BLOCK
++	return 0;
++}
++
++module_init(pfn_inject_init);
++module_exit(pfn_inject_exit);
+Index: linux/mm/Kconfig
+===================================================================
+--- linux.orig/mm/Kconfig	2009-05-29 23:32:11.000000000 +0200
++++ linux/mm/Kconfig	2009-05-29 23:32:11.000000000 +0200
+@@ -231,6 +231,10 @@
+ 	default y
+ 	depends on MMU
+ 
++config HWPOISON_INJECT
++	tristate "Poison pages injector"
++	depends on MEMORY_FAILURE && DEBUG_KERNEL
++
+ config NOMMU_INITIAL_TRIM_EXCESS
+ 	int "Turn on mmap() excess space trimming before booting"
+ 	depends on !MMU
+Index: linux/mm/Makefile
+===================================================================
+--- linux.orig/mm/Makefile	2009-05-29 23:32:11.000000000 +0200
++++ linux/mm/Makefile	2009-05-29 23:32:11.000000000 +0200
+@@ -39,3 +39,4 @@
+ obj-$(CONFIG_QUICKLIST) += quicklist.o
+ obj-$(CONFIG_CGROUP_MEM_RES_CTLR) += memcontrol.o page_cgroup.o
+ obj-$(CONFIG_MEMORY_FAILURE) += memory-failure.o
++obj-$(CONFIG_HWPOISON_INJECT) += hwpoison-inject.o
