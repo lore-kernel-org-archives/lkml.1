@@ -1,95 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759070AbZE2TGT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761040AbZE2TLP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759070AbZE2TGT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 15:06:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756298AbZE2TGK
+	id S1761040AbZE2TLP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 15:11:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752228AbZE2TLA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 15:06:10 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:52040 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752600AbZE2TGJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 15:06:09 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=iA+rdw0CFOi46fbpmnrxaEgSRhltFmgz7l3F+GmsuZPRAEccjECJJlNGq3TCq0Gnx
-	FKz7cs2wCAamxFgfRDNsA==
+	Fri, 29 May 2009 15:11:00 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:44161 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751402AbZE2TK7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 May 2009 15:10:59 -0400
+Date: Fri, 29 May 2009 21:06:27 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Roland McGrath <roland@redhat.com>
+Cc: Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, jan.kratochvil@redhat.com,
+       Denys Vlasenko <dvlasenk@redhat.com>
+Subject: Re: ptrace && task->exit_code
+Message-ID: <20090529190627.GA7017@redhat.com>
+References: <20090525000016.GA2239@redhat.com> <20090525215903.GA9113@redhat.com> <20090527021131.4778BFC36B@magilla.sf.frob.com> <20090527224140.GC6770@redhat.com> <20090527230523.GA10032@redhat.com> <20090527232141.8B24DFC2BD@magilla.sf.frob.com>
 MIME-Version: 1.0
-In-Reply-To: <20090529165716.GB18141@gandalf.sssup.it>
-References: <1243377729-2176-1-git-send-email-vgoyal@redhat.com>
-	 <1243377729-2176-3-git-send-email-vgoyal@redhat.com>
-	 <e98e18940905271353kc6890dbxa1ea63026c8faec1@mail.gmail.com>
-	 <20090528160003.GA4335@redhat.com>
-	 <e98e18940905281241v4aa24716j91f351a828af604a@mail.gmail.com>
-	 <20090529160610.GC26962@redhat.com>
-	 <20090529165716.GB18141@gandalf.sssup.it>
-Date: Fri, 29 May 2009 12:06:03 -0700
-Message-ID: <e98e18940905291206p2e05bc5cxf499479270e34074@mail.gmail.com>
-Subject: Re: [PATCH 02/20] io-controller: Common flat fair queuing code in 
-	elevaotor layer
-From: Nauman Rafique <nauman@google.com>
-To: Fabio Checconi <fchecconi@gmail.com>
-Cc: Vivek Goyal <vgoyal@redhat.com>, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org, dm-devel@redhat.com,
-       jens.axboe@oracle.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
-       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
-       peterz@infradead.org, Chad Talbott <ctalbott@google.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-System-Of-Record: true
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090527232141.8B24DFC2BD@magilla.sf.frob.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 29, 2009 at 9:57 AM, Fabio Checconi <fchecconi@gmail.com> wrote:
->> From: Vivek Goyal <vgoyal@redhat.com>
->> Date: Fri, May 29, 2009 12:06:10PM -0400
->>
->> On Thu, May 28, 2009 at 12:41:27PM -0700, Nauman Rafique wrote:
-> ...
->> > I have some concerns about the new preemption logic.
->>
->> Actually we need a more proper definition of in-class preemption. Across
->> class preemption means that RT class always gets to run first.
->>
->> What does in-class preemption mean? If I look at the current CFQ code,
->> it does look like that preempting process will gain share. It is always
->> added to the front of the tree with "rb_key=0" and that means, this new
->> queue will get fresh time slice (even if it got time slice very recently).
->>
->> Currently I have just tried to make the behavior same as CFQ to reduce
->> the possiblility of regressions. That's a different thing that we can
->> discuss what should be the exact behavior in case of in-class preemption
->> and first it needs to be fixed in CFQ, if current behavior is an issue.
->>
->> On the other hand, I am not sure if previous bfq preemption logic was
->> working. We were checking if the new request belonged to the queue which
->> will be served next, then preempt the existing queue. While looking
->> for the next queue, I think we did not consider the current active
->> entity (as it was not on the tree). So after expiry of the current
->> queue, it might get selected next if it has not got its share. So there
->> was no point in preempting the queue. If queue already got its share, then
->> anyway the next queue will be selected next and there is no point in
->> preempting the current queue.
->>
+On 05/27, Roland McGrath wrote:
 >
-> BFQ had no preemption logic, as far as I know; it simply was not
-> preemptive, and the guarantees it provided took that into account.
+> > I didn't realize this until yesterday, but perhaps it makes sense
+> > to decouple ptrace && task_struct->exit_code?
 >
-> I don't know what is the best way to introduce a CFQ-like preemption logic
-> into the wf2q+ code; for sure anything that does not schedule according
-> to the algorithm's timestamps is a good candidate to break the guarantees
-> the scheduler can provide, making it an extremely complex way to get
-> the same worst-case delays of a (much simpler) round-robin scheduler.
+> I've long thought this was an attractive idea.  But it seems to have lots
+> of complications at least as long as ptrace-wait shares so much code with
+> normal wait.  I'd figured this might be one of the last things we clean up
+> after ptrace is disentangled from core data structures in most every other
+> way.
 >
+> > This is not completely trivial, needs another short series.
+>
+> I suspect it is more hassle than benefit to do this now.
+> I don't think it is the right priority.
+>
+> > And. I spent a lot of time, but I can't see how to solve the problems
+> > with TASK_STOPPED tasks if we do this change.
+>
+> I bet the complications of this all will be substantially different after
+> we change the ptrace locking.  So let's not worry about it yet.
 
-What you guys think of my suggestion of handling preemption?
-Basically, we don't modify the start/finish tags, so overall the
-fairness properties should not be broken. But in short term, we still
-allow preemption and let one queue jump another.
+I just can't stop thinking of it ;)
+
+Perhaps I missed something, but except the problem above this does not
+look too hard. How about something like this:
+
+	--- a/kernel/ptrace.c
+	+++ b/kernel/ptrace.c
+	@@ -228,7 +228,11 @@ int ptrace_attach(struct task_struct *task)
+	 
+		__ptrace_link(task, current);
+	 
+	-	send_sig_info(SIGSTOP, SEND_SIG_FORCED, task);
+	+	spin_lock(task->signal->siglock);
+	+	if (task_is_stopped(task) && !task->exit_code)
+	+		task->exit_code = SIGSTOP;
+	+	specific_send_sig_info(SIGSTOP, SEND_SIG_FORCED, task);
+	+	spin_unlock(task->signal->siglock);
+	 bad:
+		write_unlock_irqrestore(&tasklist_lock, flags);
+		task_unlock(task);
+
+?
+
+If we attach, and the task is already stopped, this really means
+it was traced and untraced. We can set ->exit_code = SIGSTOP to
+ensure do_wait() will succeed.
+
+This also relates to attach-wait-on-stopped test-case, I cc'ed
+Jan and Denys.
+
+Note also that after
+
+	do_wait: fix waiting for the group stop with the dead leader
+	commit: 90bc8d8b1a38f1ab131a2399a202e1889db95de8
+
+we can't confuse task->real_parent waiting for jctl stop.
+
+What do you think?
+
+Oleg.
+
