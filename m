@@ -1,59 +1,217 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754225AbZE2FMV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752187AbZE2Fjp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754225AbZE2FMV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 01:12:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752696AbZE2FL7
+	id S1752187AbZE2Fjp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 01:39:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751646AbZE2Fjh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 01:11:59 -0400
-Received: from yx-out-2324.google.com ([74.125.44.29]:56055 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753957AbZE2FL5 (ORCPT
+	Fri, 29 May 2009 01:39:37 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:47947 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751607AbZE2Fjg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 01:11:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=GRBjLHC5s8So9CK8ySmGCC8jjUvZgTxegSQiAAAZECQ9DpQOy5Of96ugv6LHmpYNfP
-         1muEbFy0LOca8gBePM4QvRdgRC/VKo04NV0YweXZnuCxJvnaSs78sVPqa1mMmyttBXRD
-         TyTvpH+KMDh6cO0kL1DLNLvHjC4M71ZuwxKCw=
-MIME-Version: 1.0
-In-Reply-To: <20090529035820.GC1122@linux-sh.org>
-References: <E1LerUo-0000NE-Q3@mailer.emlix.com>
-	 <9e6f3dfd0905281701y6141e5d2xbbfb37e495cba8d9@mail.gmail.com>
-	 <20090529035820.GC1122@linux-sh.org>
-Date: Fri, 29 May 2009 15:11:58 +1000
-X-Google-Sender-Auth: c012bb9c52765a6c
-Message-ID: <9e6f3dfd0905282211r34de8bd6iaa284d235a3ed979@mail.gmail.com>
-Subject: Re: [patch -v2] flat: fix data sections alignment
-From: John Williams <jwilliams@itee.uq.edu.au>
-To: Paul Mundt <lethal@linux-sh.org>, John Williams <jwilliams@itee.uq.edu.au>,
-       Johannes Weiner <jw@emlix.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Howells <dhowells@redhat.com>,
-       Russell King <rmk@arm.linux.org.uk>, Bryan Wu <cooloney@kernel.org>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Greg Ungerer <gerg@uclinux.org>, linux-kernel@vger.kernel.org,
-       michal.simek@petalogix.com
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 29 May 2009 01:39:36 -0400
+Date: Fri, 29 May 2009 14:37:58 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
+       "hannes@cmpxchg.org" <hannes@cmpxchg.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Subject: [PATCH 1/4] add swap cache interface for swap reference v2
+ (updated)
+Message-Id: <20090529143758.4c3db3eb.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090529140832.1f4b288b.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090528135455.0c83bedc.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090528141049.cc45a116.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090529132153.3a72f2c3.nishimura@mxp.nes.nec.co.jp>
+	<20090529140832.1f4b288b.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 29, 2009 at 1:58 PM, Paul Mundt <lethal@linux-sh.org> wrote:
-> On Fri, May 29, 2009 at 10:01:51AM +1000, John Williams wrote:
+On Fri, 29 May 2009 14:08:32 +0900
+KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > IIUC, swap_free() at the end of shmem_writepage() should also be changed to swapcache_free().
+> > 
+> Hmm!. Oh, yes. shmem_writepage()'s error path. Thank you. It will be fixed.
+> 
+here. 
 
->> Can you please cross-check this patch for MicroBlaze as well, we are
->> another active nommu architecture.
->>
-> I already did, see http://lkml.org/lkml/2009/5/27/753
->
-> You just need to kill off your flat_stack_align(), as it doesn't do
-> anything presently it is harmless one way or the other.
+==
 
-Great, thanks.  This one hit my microblaze filter which is why I only
-popped up so late in the discussion!
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-John
+In following patch, usage of swap cache will be recorded into swap_map.
+This patch is for necessary interface changes to do that.
+
+2 interfaces:
+  - swapcache_prepare()
+  - swapcache_free()
+is added for allocating/freeing refcnt from swap-cache to existing
+swap entries. But implementation itself is not changed under this patch.
+At adding swapcache_free(), memcg's hook code is moved under swapcache_free().
+This is better than using scattered hooks.
+
+Changelog: v1->v2
+ - fixed shmem_writepage() error path.
+
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+---
+ include/linux/swap.h |    7 +++++++
+ mm/shmem.c           |    2 +-
+ mm/swap_state.c      |   11 +++++------
+ mm/swapfile.c        |   19 +++++++++++++++++++
+ mm/vmscan.c          |    3 +--
+ 5 files changed, 33 insertions(+), 9 deletions(-)
+
+Index: mmotm-2.6.30-May28/include/linux/swap.h
+===================================================================
+--- mmotm-2.6.30-May28.orig/include/linux/swap.h
++++ mmotm-2.6.30-May28/include/linux/swap.h
+@@ -282,8 +282,10 @@ extern void si_swapinfo(struct sysinfo *
+ extern swp_entry_t get_swap_page(void);
+ extern swp_entry_t get_swap_page_of_type(int);
+ extern int swap_duplicate(swp_entry_t);
++extern int swapcache_prepare(swp_entry_t);
+ extern int valid_swaphandles(swp_entry_t, unsigned long *);
+ extern void swap_free(swp_entry_t);
++extern void swapcache_free(swp_entry_t, struct page *page);
+ extern int free_swap_and_cache(swp_entry_t);
+ extern int swap_type_of(dev_t, sector_t, struct block_device **);
+ extern unsigned int count_swap_pages(int, int);
+@@ -352,11 +354,16 @@ static inline void show_swap_cache_info(
+ 
+ #define free_swap_and_cache(swp)	is_migration_entry(swp)
+ #define swap_duplicate(swp)		is_migration_entry(swp)
++#define swapcache_prepare(swp)		is_migration_entry(swp)
+ 
+ static inline void swap_free(swp_entry_t swp)
+ {
+ }
+ 
++static inline void swapcache_free(swp_entry_t swp, struct page *page)
++{
++}
++
+ static inline struct page *swapin_readahead(swp_entry_t swp, gfp_t gfp_mask,
+ 			struct vm_area_struct *vma, unsigned long addr)
+ {
+Index: mmotm-2.6.30-May28/mm/swap_state.c
+===================================================================
+--- mmotm-2.6.30-May28.orig/mm/swap_state.c
++++ mmotm-2.6.30-May28/mm/swap_state.c
+@@ -162,11 +162,11 @@ int add_to_swap(struct page *page)
+ 			return 1;
+ 		case -EEXIST:
+ 			/* Raced with "speculative" read_swap_cache_async */
+-			swap_free(entry);
++			swapcache_free(entry, NULL);
+ 			continue;
+ 		default:
+ 			/* -ENOMEM radix-tree allocation failure */
+-			swap_free(entry);
++			swapcache_free(entry, NULL);
+ 			return 0;
+ 		}
+ 	}
+@@ -188,8 +188,7 @@ void delete_from_swap_cache(struct page 
+ 	__delete_from_swap_cache(page);
+ 	spin_unlock_irq(&swapper_space.tree_lock);
+ 
+-	mem_cgroup_uncharge_swapcache(page, entry);
+-	swap_free(entry);
++	swapcache_free(entry, page);
+ 	page_cache_release(page);
+ }
+ 
+@@ -293,7 +292,7 @@ struct page *read_swap_cache_async(swp_e
+ 		/*
+ 		 * Swap entry may have been freed since our caller observed it.
+ 		 */
+-		if (!swap_duplicate(entry))
++		if (!swapcache_prepare(entry))
+ 			break;
+ 
+ 		/*
+@@ -317,7 +316,7 @@ struct page *read_swap_cache_async(swp_e
+ 		}
+ 		ClearPageSwapBacked(new_page);
+ 		__clear_page_locked(new_page);
+-		swap_free(entry);
++		swapcache_free(entry, NULL);
+ 	} while (err != -ENOMEM);
+ 
+ 	if (new_page)
+Index: mmotm-2.6.30-May28/mm/swapfile.c
+===================================================================
+--- mmotm-2.6.30-May28.orig/mm/swapfile.c
++++ mmotm-2.6.30-May28/mm/swapfile.c
+@@ -510,6 +510,16 @@ void swap_free(swp_entry_t entry)
+ }
+ 
+ /*
++ * Called after dropping swapcache to decrease refcnt to swap entries.
++ */
++void swapcache_free(swp_entry_t entry, struct page *page)
++{
++	if (page)
++		mem_cgroup_uncharge_swapcache(page, entry);
++	return swap_free(entry);
++}
++
++/*
+  * How many references to page are currently swapped out?
+  */
+ static inline int page_swapcount(struct page *page)
+@@ -1979,6 +1989,15 @@ bad_file:
+ 	goto out;
+ }
+ 
++/*
++ * Called when allocating swap cache for exising swap entry,
++ */
++int swapcache_prepare(swp_entry_t entry)
++{
++	return swap_duplicate(entry);
++}
++
++
+ struct swap_info_struct *
+ get_swap_info_struct(unsigned type)
+ {
+Index: mmotm-2.6.30-May28/mm/vmscan.c
+===================================================================
+--- mmotm-2.6.30-May28.orig/mm/vmscan.c
++++ mmotm-2.6.30-May28/mm/vmscan.c
+@@ -477,8 +477,7 @@ static int __remove_mapping(struct addre
+ 		swp_entry_t swap = { .val = page_private(page) };
+ 		__delete_from_swap_cache(page);
+ 		spin_unlock_irq(&mapping->tree_lock);
+-		mem_cgroup_uncharge_swapcache(page, swap);
+-		swap_free(swap);
++		swapcache_free(swap, page);
+ 	} else {
+ 		__remove_from_page_cache(page);
+ 		spin_unlock_irq(&mapping->tree_lock);
+Index: mmotm-2.6.30-May28/mm/shmem.c
+===================================================================
+--- mmotm-2.6.30-May28.orig/mm/shmem.c
++++ mmotm-2.6.30-May28/mm/shmem.c
+@@ -1097,7 +1097,7 @@ static int shmem_writepage(struct page *
+ 	shmem_swp_unmap(entry);
+ unlock:
+ 	spin_unlock(&info->lock);
+-	swap_free(swap);
++	swapcache_free(swap, NULL);
+ redirty:
+ 	set_page_dirty(page);
+ 	if (wbc->for_reclaim)
+
