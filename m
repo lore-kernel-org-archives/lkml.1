@@ -1,117 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754590AbZE2AI6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752978AbZE2Anz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754590AbZE2AI6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 May 2009 20:08:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752104AbZE2AIt
+	id S1752978AbZE2Anz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 May 2009 20:43:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751394AbZE2Anr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 May 2009 20:08:49 -0400
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:53586 "EHLO e9.ny.us.ibm.com"
+	Thu, 28 May 2009 20:43:47 -0400
+Received: from cantor.suse.de ([195.135.220.2]:51427 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751772AbZE2AIs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 May 2009 20:08:48 -0400
-Date: Thu, 28 May 2009 17:08:48 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, mingo@elte.hu,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       davem@davemloft.net, dada1@cosmosbay.com, zbr@ioremap.net,
-       jeff.chua.linux@gmail.com, paulus@samba.org, jengelh@medozas.de,
-       r000n@r000n.net, benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
-Subject: Re: [PATCH RFC] v7 expedited "big hammer" RCU grace periods
-Message-ID: <20090529000848.GE6757@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090522190525.GA13286@linux.vnet.ibm.com> <4A1A3C23.8090004@cn.fujitsu.com> <20090525164446.GD7168@linux.vnet.ibm.com> <4A1B3FFB.7090306@cn.fujitsu.com> <20090526012843.GF7168@linux.vnet.ibm.com> <20090526154625.GA8662@linux.vnet.ibm.com> <4A1C9DFF.70708@cn.fujitsu.com> <20090527043001.GD6882@linux.vnet.ibm.com> <4A1CD17F.1000208@cn.fujitsu.com>
+	id S1751308AbZE2Anr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 May 2009 20:43:47 -0400
+Message-ID: <4A1F2E6E.6030105@novell.com>
+Date: Fri, 29 May 2009 09:38:06 +0900
+From: Tejun Heo <teheo@novell.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A1CD17F.1000208@cn.fujitsu.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Jan Beulich <JBeulich@novell.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: percpu memory setup and num_possible_cpus() vs. nr_cpu_ids
+References: <4A1EBA000200007800003197@vpn.id2.novell.com>
+In-Reply-To: <4A1EBA000200007800003197@vpn.id2.novell.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 27, 2009 at 01:37:03PM +0800, Lai Jiangshan wrote:
-> Paul E. McKenney wrote:
-> > OK, good point!  I do need to think about this.
-> > 
-> > In the meantime, where do you see a need to run
-> > synchronize_sched_expedited() from within a hotplug CPU notifier?
-> > 
-> > 						Thanx, Paul
-> > 
-> 
-> I don't worry about synchronize_sched_expedited() called
-> from within a hotplug CPU notifier:
-> 
-> 1st synchronize_sched_expedited() is newly, nobody calls it before current.
-> 2nd get_online_cpus() will not cause DEADLOCK in CPU notifier:
-> 	get_online_cpus() finds itself owns the cpu_hotplug.lock, it will
-> 	not take it again.
-> 
-> I worry DEADLOCK like this:(ABBA DEADLOCK)
+Hello, Jan.
 
-Good point -- you had in fact mentioned this earlier.
-
-> > get_online_cpus() is a large lock, a lot's of lock in kernel is required
-> > after cpu_hotplug.lock.
-> > 
-> > _cpu_down()
-> > 	cpu_hotplug_begin()
-> > 		mutex_lock(&cpu_hotplug.lock)
-> > 	__raw_notifier_call_chain(CPU_DOWN_PREPARE)
-> > 		Lock a-kernel-lock.
-> > 
-> > It means when we have held a-kernel-lock, we can not call
-> > synchronize_sched_expedited(). get_online_cpus() narrows
-> > synchronize_sched_expedited()'s usages.
+Jan Beulich wrote:
+> Tejun,
 > 
-> One thread calls _cpu_down() which do "mutex_lock(&cpu_hotplug.lock)"
-> and then do "Lock a-kernel-lock", other thread calls
-> synchronize_sched_expedited() with a-kernel-lock held,
-> ABBA DEADLOCK would happen:
-> 
-> thread 1                            |        thread 2
-> _cpu_down()                         |    Lock a-kernel-lock. 
->   mutex_lock(&cpu_hotplug.lock)     |    synchronize_sched_expedited()
-> ------------------------------------------------------------------------
->   Lock a-kernel-lock.(wait thread2) |       mutex_lock(&cpu_hotplug.lock)
->                                             (wait thread 1)
-> 
-> 
-> cpuset_lock() is an example of a-kernel-lock as described before.
-> cpuset_lock() is required in CPU notifier.
-> 
-> But some work in cpuset need get_online_cpus().
-> (cpuset_lock() and then get_online_cpus(), we can
-> not release cpuset_lock() temporarily)
-> 
-> The fix is putting this work done in workqueue.
-> (get_online_cpus() and then cpuset_lock());
+> this code of yours, as I learned the hard way during some Xen kernel work,
+> assumes that cpu_possible_map is not sparse. While on native x86 this is
+> certainly true, I wonder whether such a dependency should really exist in
+> architecture neutral code. Below, for reference, the places I needed to
+> change (4k allocator only). However, there are more instances of this in the
+> other allocators - those seem more problematic, as they directly drive input
+> to alloc_bootmem() (hence a lot of memory could be wasted, or allocation
+> could even fail, with a very sparse cpu_possible_map if one would simply
+> also use nr_cpu_ids here). In the remap (x86 - under the assumption that
+> if this change gets made, it should also be made in x86 code, albeit not
+> directly affected) allocator's case things may not be that bad, since the
+> memory gets freed again at the end of setup_pcpu_remap().
 
-But there is another way.
+There's other related larger issue.  It looks like possible but
+offline configuration can be quite common with virtualization and
+allocating for all possible cpus on boot can waste problematic amount
+of space, so the plan is to allocate only for online cpus on boot and
+allocate the rest as cpus come online.  This will require audit of
+percpu users and probably a new cpumask representing cpus which have
+ever been up.
 
-Continue to use the migration kthreads, given that they already exist,
-already are created and destroyed by CPU hotplug operations, and given
-that they run as maximal priority.
+The issue you're describing should be solved when the above is
+implemented, right?
 
-My main concern with moving from get_online_cpus() to preempt_disable()
-has been the thought that somehow, sometime, in some future release
-of Linux, it will be possible for the migration threads to execute
-on the wrong CPU, perhaps only occasionally and perhaps only for
-very short time periods.  If this were to happen, there would be the
-possibility that the grace period would end too soon, which would be
-silently fatal.  My fingers simply refused to code something with this
-potential vulnerability.
+Thanks.
 
-But it is easy to insert a check into migration_thread() to see if it
-is running on the wrong CPU.  If it is, I can do a WARN_ONCE() and also
-set a state variable to tell synchronize_sched_expedited() to invoke
-sychronize_sched(), thus avoiding messing up RCU.  On the next call
-to synchronize_sched_expedited(), it would again try relying on the
-migration threads.
-
-I am putting together yet another patch, but constructed along these
-lines, and will let you know how it turns out.
-
-							Thanx, Paul
+-- 
+tejun
