@@ -1,87 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754946AbZE2Wd2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755019AbZE2Wwv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754946AbZE2Wd2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 18:33:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753213AbZE2WdQ
+	id S1755019AbZE2Wwv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 18:52:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752974AbZE2Wwj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 18:33:16 -0400
-Received: from jessica.hrz.tu-chemnitz.de ([134.109.132.47]:53191 "EHLO
-	jessica.hrz.tu-chemnitz.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753086AbZE2WdP (ORCPT
+	Fri, 29 May 2009 18:52:39 -0400
+Received: from stargate.chelsio.com ([67.207.112.58]:1126 "EHLO
+	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752075AbZE2Wwi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 18:33:15 -0400
-From: Tobias Doerffel <tobias.doerffel@gmail.com>
-To: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [PATCH] ath5k: added initial RFKILL support
-Date: Sat, 30 May 2009 00:33:07 +0200
-User-Agent: KMail/1.11.90 (Linux/2.6.30-rc7; KDE/4.2.85; i686; ; )
-Cc: Bob Copeland <me@bobcopeland.com>, Jiri Slaby <jirislaby@gmail.com>,
-       ath5k-devel@venema.h4ckr.net, mickflemm@gmail.com,
-       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <1242850139-25438-1-git-send-email-jirislaby@gmail.com> <200905260124.03287.tobias.doerffel@gmail.com> <1243294366.29222.10.camel@johannes.local>
-In-Reply-To: <1243294366.29222.10.camel@johannes.local>
+	Fri, 29 May 2009 18:52:38 -0400
+From: Divy Le Ray <divy@chelsio.com>
+Subject: [PATCH net-next 1/3] cxgb3: move away from LLTX
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       swise@opengridcomputing.com
+Date: Fri, 29 May 2009 15:52:38 -0700
+Message-ID: <20090529225236.27382.32365.stgit@speedy5>
+User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1459946.JtoeU42TSx";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200905300033.12204.tobias.doerffel@gmail.com>
-X-Spam-Score: -1.4 (-)
-X-Spam-Report: --- Start der SpamAssassin 3.2.5 Textanalyse (-1.4 Punkte)
-	Fragen an/questions to:  Postmaster TU Chemnitz <postmaster@tu-chemnitz.de>
-	-1.4 ALL_TRUSTED            Nachricht wurde nur ueber vertrauenswuerdige Rechner
-	weitergeleitet
-	--- Ende der SpamAssassin Textanalyse
-X-Scan-Signature: e12d97d61532ad8cf10729288984e4c0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1459946.JtoeU42TSx
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: quoted-printable
+From: Divy Le Ray <divy@chelsio.com>
 
-Hi,
+cxgb3 no longer advertizes LLTX.
 
-Am Dienstag, 26. Mai 2009 01:32:46 schrieb Johannes Berg:
-> On Tue, 2009-05-26 at 01:24 +0200, Tobias Doerffel wrote:
-> > +       err =3D rfkill_register(sc->rf_kill.rfkill);
-> > +       if (err) {
-> > +               sc->rf_kill.rfkill =3D NULL;
-> > +               return -1;
-> > +       }
->
-> Missing rfkill_free, and why -EPERM?
-Thanks for this remark. I fixed the code and will post an updated patch soo=
-n.
+Signed-off-by: Divy Le Ray <divy@chelsio.com>
+---
 
-Any other comments on the patch? If not, any chance to get it merged into=20
-wireless-testing branch?
+ drivers/net/cxgb3/cxgb3_main.c |    1 -
+ drivers/net/cxgb3/sge.c        |   17 +++++++----------
+ 2 files changed, 7 insertions(+), 11 deletions(-)
 
-> Could you try to work against v11
-> of my rfkill patch, or better even against the cfg80211 rfkill instead?
-I didn't look at both of them yet. However I think we first should try to g=
-et=20
-current rfkill support into mainline as fast as possible. Improvements and=
-=20
-adaptations to reworked rfkill framework can follow.
 
-Regards,
+diff --git a/drivers/net/cxgb3/cxgb3_main.c b/drivers/net/cxgb3/cxgb3_main.c
+index 0b87fee..1fe4b07 100644
+--- a/drivers/net/cxgb3/cxgb3_main.c
++++ b/drivers/net/cxgb3/cxgb3_main.c
+@@ -3059,7 +3059,6 @@ static int __devinit init_one(struct pci_dev *pdev,
+ 		netdev->mem_start = mmio_start;
+ 		netdev->mem_end = mmio_start + mmio_len - 1;
+ 		netdev->features |= NETIF_F_SG | NETIF_F_IP_CSUM | NETIF_F_TSO;
+-		netdev->features |= NETIF_F_LLTX;
+ 		netdev->features |= NETIF_F_GRO;
+ 		if (pci_using_dac)
+ 			netdev->features |= NETIF_F_HIGHDMA;
+diff --git a/drivers/net/cxgb3/sge.c b/drivers/net/cxgb3/sge.c
+index 49e64af..0b97882 100644
+--- a/drivers/net/cxgb3/sge.c
++++ b/drivers/net/cxgb3/sge.c
+@@ -1241,7 +1241,6 @@ int t3_eth_xmit(struct sk_buff *skb, struct net_device *dev)
+ 	q = &qs->txq[TXQ_ETH];
+ 	txq = netdev_get_tx_queue(dev, qidx);
+ 
+-	spin_lock(&q->lock);
+ 	reclaim_completed_tx(adap, q, TX_RECLAIM_CHUNK);
+ 
+ 	credits = q->size - q->in_use;
+@@ -1252,7 +1251,6 @@ int t3_eth_xmit(struct sk_buff *skb, struct net_device *dev)
+ 		dev_err(&adap->pdev->dev,
+ 			"%s: Tx ring %u full while queue awake!\n",
+ 			dev->name, q->cntxt_id & 7);
+-		spin_unlock(&q->lock);
+ 		return NETDEV_TX_BUSY;
+ 	}
+ 
+@@ -1286,8 +1284,6 @@ int t3_eth_xmit(struct sk_buff *skb, struct net_device *dev)
+ 	if (vlan_tx_tag_present(skb) && pi->vlan_grp)
+ 		qs->port_stats[SGE_PSTAT_VLANINS]++;
+ 
+-	spin_unlock(&q->lock);
+-
+ 	/*
+ 	 * We do not use Tx completion interrupts to free DMAd Tx packets.
+ 	 * This is good for performamce but means that we rely on new Tx
+@@ -2857,11 +2853,12 @@ static void sge_timer_tx(unsigned long data)
+ 	unsigned int tbd[SGE_TXQ_PER_SET] = {0, 0};
+ 	unsigned long next_period;
+ 
+-	if (spin_trylock(&qs->txq[TXQ_ETH].lock)) {
+-		tbd[TXQ_ETH] = reclaim_completed_tx(adap, &qs->txq[TXQ_ETH],
+-						    TX_RECLAIM_TIMER_CHUNK);
+-		spin_unlock(&qs->txq[TXQ_ETH].lock);
++	if (__netif_tx_trylock(qs->tx_q)) {
++                tbd[TXQ_ETH] = reclaim_completed_tx(adap, &qs->txq[TXQ_ETH],
++                                                     TX_RECLAIM_TIMER_CHUNK);
++		__netif_tx_unlock(qs->tx_q);
+ 	}
++
+ 	if (spin_trylock(&qs->txq[TXQ_OFLD].lock)) {
+ 		tbd[TXQ_OFLD] = reclaim_completed_tx(adap, &qs->txq[TXQ_OFLD],
+ 						     TX_RECLAIM_TIMER_CHUNK);
+@@ -2869,8 +2866,8 @@ static void sge_timer_tx(unsigned long data)
+ 	}
+ 
+ 	next_period = TX_RECLAIM_PERIOD >>
+-		      (max(tbd[TXQ_ETH], tbd[TXQ_OFLD]) /
+-		       TX_RECLAIM_TIMER_CHUNK);
++                      (max(tbd[TXQ_ETH], tbd[TXQ_OFLD]) /
++                      TX_RECLAIM_TIMER_CHUNK);
+ 	mod_timer(&qs->tx_reclaim_timer, jiffies + next_period);
+ }
+ 
 
-Toby
-
---nextPart1459946.JtoeU42TSx
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkogYqQACgkQHsjdpw2OaadN3gCgmnp8YkuYbmoDpD+o3x73WjkM
-jUEAn3ldLHI0oFAtuWuFXFmEKZG61aUX
-=plLt
------END PGP SIGNATURE-----
-
---nextPart1459946.JtoeU42TSx--
