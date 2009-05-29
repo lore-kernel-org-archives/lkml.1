@@ -1,76 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756888AbZE2JNj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757578AbZE2JP1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756888AbZE2JNj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 05:13:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756531AbZE2JNc
+	id S1757578AbZE2JP1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 05:15:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756475AbZE2JPQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 05:13:32 -0400
-Received: from gate.crashing.org ([63.228.1.57]:60362 "EHLO gate.crashing.org"
+	Fri, 29 May 2009 05:15:16 -0400
+Received: from hera.kernel.org ([140.211.167.34]:33377 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756300AbZE2JNb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 05:13:31 -0400
-Subject: Re: [RFC] [PATCH] Device Tree on ARM platform
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Sascha Hauer <s.hauer@pengutronix.de>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Grant Likely <grant.likely@secretlab.ca>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Russell King <rmk+lkml@arm.linux.org.uk>,
-       devicetree-discuss <devicetree-discuss@ozlabs.org>,
-       linux-kernel@vger.kernel.org, Timur Tabi <timur@freescale.com>,
-       Scott Wood <scottwood@freescale.com>,
-       Janboe Ye <yuan-bo.ye@motorola.com>,
-       linux-arm-kernel@lists.arm.linux.org.uk
-In-Reply-To: <20090529075238.GC24565@pengutronix.de>
-References: <4A1D6901.2090508@freescale.com>
-	 <20090527175609.GB31861@flint.arm.linux.org.uk>
-	 <4A1D8FBA.6040802@freescale.com>
-	 <20090527192909.GA32398@flint.arm.linux.org.uk>
-	 <20090527205218.GA5591@sirena.org.uk>
-	 <fa686aa40905271405pc2f1738gc8dd139f61a0e27@mail.gmail.com>
-	 <20090528124307.GN22742@pengutronix.de>
-	 <alpine.LFD.2.00.0905281457170.3397@localhost.localdomain>
-	 <20090528150409.GO22742@pengutronix.de> <1243558274.17903.21.camel@pasglop>
-	 <20090529075238.GC24565@pengutronix.de>
-Content-Type: text/plain
-Date: Fri, 29 May 2009 19:08:00 +1000
-Message-Id: <1243588080.17903.52.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	id S1755922AbZE2JPP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 May 2009 05:15:15 -0400
+Message-ID: <4A1FA777.3040200@kernel.org>
+Date: Fri, 29 May 2009 18:14:31 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       Cornelia Huck <cornelia.huck@de.ibm.com>, linux-fsdevel@vger.kernel.org,
+       Kay Sievers <kay.sievers@vrfy.org>, Greg KH <greg@kroah.com>,
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>
+Subject: Re: [PATCH 04/24] sysfs: Normalize removing sysfs directories.
+References: <m1zlcwltri.fsf_-_@fess.ebiederm.org> <1243551665-23596-4-git-send-email-ebiederm@xmission.com>
+In-Reply-To: <1243551665-23596-4-git-send-email-ebiederm@xmission.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 29 May 2009 09:14:34 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-05-29 at 09:52 +0200, Sascha Hauer wrote:
-> 
-> I don't mean bloated in terms of kbytes but bloated in terms of complex
-> code used to parse the device tree. I more than once put information in
-> the device tree and wondered where this information got lost on the way
-> to the driver where I wanted to use it. Back on ARM I was very happy to
-> just have a simple board file which is easier for me to understand and
-> maintain.
-> Of course this can be solved with /me learning more about the device
-> tree, that's why I said 'for my taste'.
+Hello,
 
-Well, the code to walk it is trivial since once 'expanded' we reproduce
-the tree structure with pointers.
+Eric W. Biederman wrote:
+> @@ -732,12 +732,28 @@ const struct inode_operations sysfs_dir_inode_operations = {
+>  	.setattr	= sysfs_setattr,
+>  };
+>  
+> -static void remove_dir(struct sysfs_dirent *sd)
+> +static void remove_dir(struct sysfs_dirent *dir_sd)
+>  {
+>  	struct sysfs_addrm_cxt acxt;
+>  
+> -	sysfs_addrm_start(&acxt, sd->s_parent);
+> -	sysfs_remove_one(&acxt, sd);
+> +	pr_debug("sysfs %s: removing dir\n", dir_sd->s_name);
+> +
+> +	/* Removing non-empty directories is not valid complain! */
+						     ^^^
+						  missing . or ,
 
-Now, the problem indeed is how do you get to your node from a driver,
-and that's where we are making things easy on powerpc by sticking the
-node pointer in the struct device itself.
+> +static struct sysfs_dirent *get_dirent_to_remove(struct sysfs_dirent *dir_sd)
+> +{
+> +	struct sysfs_dirent *sd;
+> +
+> +	mutex_lock(&sysfs_mutex);
+> +	for (sd = dir_sd->s_dir.children; sd; sd = sd->s_sibling) {
+> +		/* Directories might be owned by someone else
+> +		 * making recursive directory removal unsafe.
+> +		 */
+> +		if (sysfs_type(sd) == SYSFS_DIR)
+> +			continue;
+> +		break;
+> +	}
+> +	sysfs_get(sd);
+> +	mutex_unlock(&sysfs_mutex);
+> +
+> +	return sd;
+> +}
+>  
+>  static void __sysfs_remove_dir(struct sysfs_dirent *dir_sd)
+>  {
+>  	struct sysfs_addrm_cxt acxt;
+> -	struct sysfs_dirent **pos;
+> -
+> -	if (!dir_sd)
+> -		return;
+> -
+> -	pr_debug("sysfs %s: removing dir\n", dir_sd->s_name);
+> -	sysfs_addrm_start(&acxt, dir_sd);
+> -	pos = &dir_sd->s_dir.children;
+> -	while (*pos) {
+> -		struct sysfs_dirent *sd = *pos;
+> +	struct sysfs_dirent *sd;
+>  
+> -		if (sysfs_type(sd) != SYSFS_DIR)
+> -			sysfs_remove_one(&acxt, sd);
+> -		else
+> -			pos = &(*pos)->s_sibling;
+> +	/* Remove children that we think are safe */
+> +	while ((sd = get_dirent_to_remove(dir_sd))) {
+> +		sysfs_addrm_start(&acxt, sd->s_parent);
+> +		sysfs_remove_one(&acxt, sd);
+> +		sysfs_addrm_finish(&acxt);
+> +		sysfs_put(sd);
+>  	}
+> -	sysfs_addrm_finish(&acxt);
 
-Of course that needs to be populated properly. We have code in PCI to do
-it that would need to be ported over for PCI stuff (but I recommend
-waiting a bit as this code is currently different on ppc32 and ppc64, a
-bit messy, and Kumar is currently working on cleaning that up and
-unifying it), and when device are discovered and instanciated from the
-DT in the first place, then this is naturally populated.
+Ummm... Null @dir_sd handling is being removed, which could be fine
+but please do it in a separate patch or at least mention it in the
+patch description.  Also, I'm quite uncomfortable with these things
+being done in non-atomic manner.  It can be made to work but things
+like this can lead to subtle race conditions and with the kind of
+layering we put on top of sysfs (kobject, driver model, driver
+midlayers and so on), it isn't all that easy to verify what's going
+on, so NACK for this one.
 
-So I don't think this is a big issue, and the amount of code involved is
-relatively small and self contained.
+Thanks.
 
-Cheers,
-Ben.
-
-
+-- 
+tejun
