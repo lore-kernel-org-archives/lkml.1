@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759833AbZE3WoZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760024AbZE3Wos@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759833AbZE3WoZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 18:44:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759307AbZE3WnP
+	id S1760024AbZE3Wos (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 18:44:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759302AbZE3WnU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 18:43:15 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:48873 "EHLO mx2.redhat.com"
+	Sat, 30 May 2009 18:43:20 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:48875 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756627AbZE3WnN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 18:43:13 -0400
-Date: Sun, 31 May 2009 00:38:37 +0200
+	id S1759049AbZE3WnR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 May 2009 18:43:17 -0400
+Date: Sun, 31 May 2009 00:38:30 +0200
 From: Oleg Nesterov <oleg@redhat.com>
 To: Roland McGrath <roland@redhat.com>
 Cc: Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org
-Subject: [RFC PATCH 07/12 v3] ptrace: change __ptrace_link() to set
-	->flags, rename to ptrace_link()
-Message-ID: <20090530223837.GA30504@redhat.com>
+Subject: [RFC PATCH 04/12 v3] ptrace: introduce the empty "struct
+	ptrace_context"
+Message-ID: <20090530223830.GA30491@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -25,107 +25,171 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Every caller of __ptrace_link() must set ->flags, move this code into
-this helper and rename it to ptrace_link().
+Suggested by Roland.
 
-Note that we do not pass PT_PTRACED, it is always set by ptrace_link().
+Introduce the new "struct ptrace_context" and add the pointer to task_struct.
+The next patches will move all ptrace-related fields from task_struct into
+this struct. From now, if the task was ever ptraced it has ->ptrace_ctx
+!= NULL. Freed by free_task() along with task_struct itself.
+
+With utrace based ptrace we can move this struct into utrace_engine->data.
 
 Signed-off-by: Oleg Nesterov <oleg@redhat.com>
 ---
 
- include/linux/ptrace.h |   11 +++++------
- kernel/ptrace.c        |   25 +++++++++++--------------
- 2 files changed, 16 insertions(+), 20 deletions(-)
+ include/linux/sched.h     |    1 +
+ include/linux/ptrace.h    |    4 ++++
+ include/linux/tracehook.h |   34 ++++++++++++++++++++++++++++++++++
+ kernel/fork.c             |    5 +++++
+ kernel/ptrace.c           |   37 ++++++++++++++++++++++++++++++++++++-
+ 5 files changed, 80 insertions(+), 1 deletion(-)
 
---- PTRACE/include/linux/ptrace.h~07_PTRACE_LINK	2009-05-30 23:28:49.000000000 +0200
-+++ PTRACE/include/linux/ptrace.h	2009-05-30 23:31:18.000000000 +0200
-@@ -91,8 +91,8 @@ extern void ptrace_disable(struct task_s
- extern int ptrace_check_attach(struct task_struct *task, int kill);
- extern int ptrace_request(struct task_struct *child, long request, long addr, long data);
- extern void ptrace_notify(int exit_code);
--extern void __ptrace_link(struct task_struct *child,
--			  struct task_struct *new_parent);
-+extern void ptrace_link(struct task_struct *child, unsigned int flags,
-+			struct task_struct *tracer);
- extern void __ptrace_unlink(struct task_struct *child);
- extern void exit_ptrace(struct task_struct *tracer);
- extern void ptrace_fork(struct task_struct *task, unsigned long clone_flags);
-@@ -168,10 +168,9 @@ static inline void ptrace_init_task(stru
- 	INIT_LIST_HEAD(&child->ptrace_entry);
- 	INIT_LIST_HEAD(&child->ptraced);
- 	child->parent = child->real_parent;
--	if (unlikely(child->ptrace_ctx) && task_ptrace(current)) {
--		child->ptrace_ctx->flags = task_ptrace(current);
--		__ptrace_link(child, current->parent);
--	}
+--- PTRACE/include/linux/sched.h~04_STRUCT	2009-05-30 21:18:38.000000000 +0200
++++ PTRACE/include/linux/sched.h	2009-05-30 22:48:10.000000000 +0200
+@@ -1201,6 +1201,7 @@ struct task_struct {
+ 	struct list_head sibling;	/* linkage in my parent's children list */
+ 	struct task_struct *group_leader;	/* threadgroup leader */
+ 
++	struct ptrace_context *ptrace_ctx;
+ 	/*
+ 	 * ptraced is the list of tasks this task is using ptrace on.
+ 	 * This includes both natural children and PTRACE_ATTACH targets.
+--- PTRACE/include/linux/ptrace.h~04_STRUCT	2009-05-30 22:44:41.000000000 +0200
++++ PTRACE/include/linux/ptrace.h	2009-05-30 22:48:10.000000000 +0200
+@@ -79,6 +79,10 @@
+ #include <linux/compiler.h>		/* For unlikely.  */
+ #include <linux/sched.h>		/* For struct task_struct.  */
+ 
++struct ptrace_context {
++};
 +
-+	if (unlikely(child->ptrace_ctx) && task_ptrace(current))
-+		ptrace_link(child, task_ptrace(current), current->parent);
++extern int alloc_ptrace_context(struct task_struct *child);
+ 
+ extern long arch_ptrace(struct task_struct *child, long request, long addr, long data);
+ extern int ptrace_traceme(void);
+--- PTRACE/include/linux/tracehook.h~04_STRUCT	2009-05-30 22:41:45.000000000 +0200
++++ PTRACE/include/linux/tracehook.h	2009-05-30 22:48:10.000000000 +0200
+@@ -243,6 +243,40 @@ static inline int tracehook_prepare_clon
  }
  
  /**
---- PTRACE/kernel/ptrace.c~07_PTRACE_LINK	2009-05-30 23:28:49.000000000 +0200
-+++ PTRACE/kernel/ptrace.c	2009-05-30 23:31:18.000000000 +0200
-@@ -40,11 +40,14 @@ void ptrace_fork(struct task_struct *chi
-  *
-  * Must be called with the tasklist lock write-held.
-  */
--void __ptrace_link(struct task_struct *child, struct task_struct *new_parent)
-+void ptrace_link(struct task_struct *child, unsigned int flags,
-+			struct task_struct *tracer)
- {
-+	child->ptrace_ctx->flags = flags | PT_PTRACED;
++ * tracehook_init_task - initialize the new task
++ * @task:		the task to initialize
++ * @clone_flags:	%CLONE_* flags from clone/fork/vfork system call
++ * @trace:		return value from tracehook_prepare_clone()
++ *
++ * This is called immediately after dup_task_struct().
++ * It must clear/reset any tracing state so that tracehook_free_task()
++ * will work safely if the task creation fails.  If the task creation
++ * succeeds, a tracehook_finish_clone() call will follow with locks
++ * held, before @task starts or is accessible to anyone else.
++ *
++ * Called with no locks held.
++ */
++static inline int tracehook_init_task(struct task_struct *task,
++					unsigned long clone_flags, int trace)
++{
++	task->ptrace_ctx = NULL;
++	if (unlikely((clone_flags & CLONE_PTRACE) || trace))
++		return alloc_ptrace_context(task);
++	return 0;
++}
 +
- 	BUG_ON(!list_empty(&child->ptrace_entry));
--	list_add(&child->ptrace_entry, &new_parent->ptraced);
--	child->parent = new_parent;
-+	list_add(&child->ptrace_entry, &tracer->ptraced);
-+	child->parent = tracer;
++/**
++ * tracehook_free_task - task is about to be freed
++ * @task:		task that will be freed
++ *
++ * May be called from any context.
++ */
++static inline void tracehook_free_task(struct task_struct *task)
++{
++	kfree(task->ptrace_ctx);
++}
++
++/**
+  * tracehook_finish_clone - new child created and being attached
+  * @child:		new child task
+  * @clone_flags:	%CLONE_* flags from clone/fork/vfork system call
+--- PTRACE/kernel/fork.c~04_STRUCT	2009-05-30 21:18:38.000000000 +0200
++++ PTRACE/kernel/fork.c	2009-05-30 22:48:10.000000000 +0200
+@@ -143,6 +143,7 @@ void free_task(struct task_struct *tsk)
+ 	free_thread_info(tsk->stack);
+ 	rt_mutex_debug_task_free(tsk);
+ 	ftrace_graph_exit_task(tsk);
++	tracehook_free_task(tsk);
+ 	free_task_struct(tsk);
+ }
+ EXPORT_SYMBOL(free_task);
+@@ -982,6 +983,10 @@ static struct task_struct *copy_process(
+ 	if (!p)
+ 		goto fork_out;
+ 
++	retval = tracehook_init_task(p, clone_flags, trace);
++	if (retval)
++		goto bad_fork_free;
++
+ 	rt_mutex_init_task(p);
+ 
+ #ifdef CONFIG_PROVE_LOCKING
+--- PTRACE/kernel/ptrace.c~04_STRUCT	2009-05-30 22:44:41.000000000 +0200
++++ PTRACE/kernel/ptrace.c	2009-05-30 22:57:15.000000000 +0200
+@@ -174,6 +174,33 @@ bool ptrace_may_access(struct task_struc
+ 	return !err;
  }
  
- /*
-@@ -203,7 +206,7 @@ int alloc_ptrace_context(struct task_str
- 
++/*
++ * Check the task has ->ptrace_ctx or alloc the new one. Called
++ * from preemptible context when we are going to attach to this task.
++ * Once allocated, ->ptrace_ctx is never freed until free_task().
++ */
++int alloc_ptrace_context(struct task_struct *tsk)
++{
++	struct ptrace_context *ptrace_ctx;
++
++	if (tsk->ptrace_ctx)
++		return 0;
++
++	ptrace_ctx = kzalloc(sizeof(*ptrace_ctx), GFP_KERNEL);
++	if (unlikely(!ptrace_ctx))
++		return -ENOMEM;
++
++	task_lock(tsk);
++	if (likely(!tsk->ptrace_ctx)) {
++		tsk->ptrace_ctx = ptrace_ctx;
++		ptrace_ctx = NULL;
++	}
++	task_unlock(tsk);
++	kfree(ptrace_ctx);
++
++	return 0;
++}
++
  int ptrace_attach(struct task_struct *task)
  {
--	int retval;
-+	int retval, flags;
+ 	int retval;
+@@ -199,6 +226,10 @@ int ptrace_attach(struct task_struct *ta
+ 	if (retval)
+ 		goto unlock_creds;
  
- 	audit_ptrace(task);
- 
-@@ -237,11 +240,8 @@ int ptrace_attach(struct task_struct *ta
- 	if (task_ptrace(task))
- 		goto unlock_tasklist;
- 
--	task->ptrace_ctx->flags = PT_PTRACED;
--	if (capable(CAP_SYS_PTRACE))
--		task->ptrace_ctx->flags |= PT_PTRACE_CAP;
--
--	__ptrace_link(task, current);
-+	flags = capable(CAP_SYS_PTRACE) ? PT_PTRACE_CAP : 0;
-+	ptrace_link(task, flags, current);
- 	send_sig_info(SIGSTOP, SEND_SIG_FORCED, task);
- 
- 	retval = 0;
-@@ -256,7 +256,6 @@ out:
- /**
-  * ptrace_traceme  --  helper for PTRACE_TRACEME
-  *
-- * Performs checks and sets PT_PTRACED.
-  * Should be used by all ptrace implementations for PTRACE_TRACEME.
++	retval = alloc_ptrace_context(task);
++	if (unlikely(retval))
++		goto unlock_creds;
++
+ 	write_lock_irq(&tasklist_lock);
+ 	retval = -EPERM;
+ 	if (unlikely(task->exit_state))
+@@ -230,8 +261,12 @@ out:
   */
  int ptrace_traceme(void)
-@@ -276,10 +275,8 @@ int ptrace_traceme(void)
- 		 * exit_ptrace(). Otherwise we don't report the error but
- 		 * pretend ->real_parent untraces us right after return.
- 		 */
--		if (!ret && !(current->real_parent->flags & PF_EXITING)) {
--			current->ptrace_ctx->flags = PT_PTRACED;
--			__ptrace_link(current, current->real_parent);
--		}
-+		if (!ret && !(current->real_parent->flags & PF_EXITING))
-+			ptrace_link(current, 0, current->real_parent);
- 	}
- 	write_unlock_irq(&tasklist_lock);
+ {
+-	int ret = -EPERM;
++	int ret = alloc_ptrace_context(current);
  
++	if (unlikely(ret))
++		return ret;
++
++	ret = -EPERM;
+ 	write_lock_irq(&tasklist_lock);
+ 	/* Are we already being traced? */
+ 	if (!task_ptrace(current)) {
 
