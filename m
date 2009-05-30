@@ -1,53 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932634AbZE3QgA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932745AbZE3QjP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932634AbZE3QgA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 12:36:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932110AbZE3Qfx
+	id S932745AbZE3QjP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 12:39:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932413AbZE3QjL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 12:35:53 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:33367 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757756AbZE3Qfw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 12:35:52 -0400
-Date: Sat, 30 May 2009 18:38:07 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, jkacur@redhat.com, a.p.zijlstra@chello.nl,
-       efault@gmx.de, mtosatti@redhat.com, tglx@linutronix.de,
-       cjashfor@linux.vnet.ibm.com, linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:perfcounters/core] perf_counter tools: Generate per command manpages (and pdf/html, etc.)
-Message-ID: <20090530163807.GA13025@uranus.ravnborg.org>
-References: <tip-c1c2365acf8c044f749c0fe1ea236497e8d1718e@git.kernel.org> <20090530134601.GA12088@uranus.ravnborg.org> <20090530144712.GB31326@elte.hu>
-Mime-Version: 1.0
+	Sat, 30 May 2009 12:39:11 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:44250 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932179AbZE3QjK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 May 2009 12:39:10 -0400
+Date: Sat, 30 May 2009 18:39:07 +0200
+From: Jiri Pirko <jpirko@redhat.com>
+To: dbrownell@users.sourceforge.net
+Cc: spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: [PATCH] spi: fix spi_write_then_read() comment
+Message-ID: <20090530163906.GB3427@psychotron.englab.brq.redhat.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090530144712.GB31326@elte.hu>
-User-Agent: Mutt/1.4.2.1i
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > 
-> > > Import Git's nice .txt => {man/html/pdf} generation machinery.
-> > > 
-> 
-> The .txt files were already present, so the patch is largely the 
-> infrastructure patch. The fixes to .txt files were minimal.
+[PATCH] spi: fix spi_write_then_read() comment
 
-We do not copy Git's .txt => {man/html/pdf} support only to
-support perfcounters.
-Either perfcounters use the infrastructure already present
-or it establish a parallel infrastrucutre we can start
-to migrate over to.
+Spotted a tiny mislead. I guess buffer need not be dma-safe, not rx data length.
 
-In an area where there is so little interest shown as in
-documentation generation we do not want to have two different
-ways to generate man pages, html etc.
+Signed-off-by: Jiri Pirko <jpirko@redhat.com>
 
-IMO the ascii doc support from git is superior to what we have
-today so I am all for replacing the current stuff.
-But then we should do is properly and not as some perfconuter only stuff.
-
-	Sam
+diff --git a/drivers/spi/spi.c b/drivers/spi/spi.c
+index 8eba98c..85a46c7 100644
+--- a/drivers/spi/spi.c
++++ b/drivers/spi/spi.c
+@@ -636,8 +636,8 @@ static u8	*buf;
+  * @spi: device with which data will be exchanged
+  * @txbuf: data to be written (need not be dma-safe)
+  * @n_tx: size of txbuf, in bytes
+- * @rxbuf: buffer into which data will be read
+- * @n_rx: size of rxbuf, in bytes (need not be dma-safe)
++ * @rxbuf: buffer into which data will be read (need not be dma-safe)
++ * @n_rx: size of rxbuf, in bytes
+  * Context: can sleep
+  *
+  * This performs a half duplex MicroWire style transaction with the
