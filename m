@@ -1,80 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932530AbZE3Ork@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932657AbZE3OsZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932530AbZE3Ork (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 10:47:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758744AbZE3Orc
+	id S932657AbZE3OsZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 10:48:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760016AbZE3OsS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 10:47:32 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49754 "EHLO mx3.mail.elte.hu"
+	Sat, 30 May 2009 10:48:18 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:49065 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758119AbZE3Orc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 10:47:32 -0400
-Date: Sat, 30 May 2009 16:47:12 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, jkacur@redhat.com, a.p.zijlstra@chello.nl,
-       efault@gmx.de, mtosatti@redhat.com, tglx@linutronix.de,
-       cjashfor@linux.vnet.ibm.com, linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:perfcounters/core] perf_counter tools: Generate per
-	command manpages (and pdf/html, etc.)
-Message-ID: <20090530144712.GB31326@elte.hu>
-References: <tip-c1c2365acf8c044f749c0fe1ea236497e8d1718e@git.kernel.org> <20090530134601.GA12088@uranus.ravnborg.org>
+	id S1758744AbZE3OsQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 May 2009 10:48:16 -0400
+Message-ID: <4A214753.8080005@redhat.com>
+Date: Sat, 30 May 2009 10:48:51 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090530134601.GA12088@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Christoph Hellwig <hch@infradead.org>
+CC: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Roland McGrath <roland@redhat.com>, linux-arch@vger.kernel.org
+Subject: Re: [PATCH -tip v8 5/7] x86: add pt_regs register and stack access
+ APIs
+References: <20090529000326.17532.70868.stgit@localhost.localdomain> <20090529000347.17532.34038.stgit@localhost.localdomain> <20090530081303.GB15755@infradead.org>
+In-Reply-To: <20090530081303.GB15755@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Christoph,
 
-* Sam Ravnborg <sam@ravnborg.org> wrote:
+Thank you for review.
 
-> On Sat, May 30, 2009 at 01:00:33PM +0000, tip-bot for Ingo Molnar wrote:
-> > Commit-ID:  c1c2365acf8c044f749c0fe1ea236497e8d1718e
-> > Gitweb:     http://git.kernel.org/tip/c1c2365acf8c044f749c0fe1ea236497e8d1718e
-> > Author:     Ingo Molnar <mingo@elte.hu>
-> > AuthorDate: Sat, 30 May 2009 12:38:51 +0200
-> > Committer:  Ingo Molnar <mingo@elte.hu>
-> > CommitDate: Sat, 30 May 2009 13:52:44 +0200
-> > 
-> > perf_counter tools: Generate per command manpages (and pdf/html, etc.)
-> > 
-> > Import Git's nice .txt => {man/html/pdf} generation machinery.
-> > 
-> > Fix various errors in the Documentation/perf*.txt description as well.
-> > 
-> > Also fix a bug in builtin-help: we'd map 'perf help top' to 'perftop'
-> > if only the 'perf' binary is in the default PATH - confusing the manpage
-> > logic. I dont fully understand why Git did it this way - but i suppose
-> > it's a migration artifact from their migration from standalone git-xyz
-> > commands to 'git xyz' commands. The perf tools were always using the
-> > modern form so it's not an issue there.
+Christoph Hellwig wrote:
+> You might want to run this past linux-arch to make sure this is suitable
+> for other architectures.
+
+Frankly, I'm not sure about linux-arch, could you explain it?
+Anyway, I'm interested in that idea.
+
+>> --- a/arch/x86/include/asm/ptrace.h
+>> +++ b/arch/x86/include/asm/ptrace.h
+>> @@ -7,6 +7,7 @@
+>>  
+>>  #ifdef __KERNEL__
+>>  #include <asm/segment.h>
+>> +#include <asm/page_types.h>
+>>  #endif
 > 
-> Can we please have this patch split in at least a infrastructire 
-> and a content part.
+> I really wonder if we should split asm/ptrace.h into one file
+> just defining pt_regs both for userspace and the kernel, and one with
+> all kinds of register access helpers and maybe another one for the
+> ptrace architecture interface.
 
-> This makes it easier to review - and also makes it much more clear 
-> what is needed to be added when adding new documentation following 
-> this format.
+Agreed, pt_regs is used more broadly than ptrace itself in kernel.
 
-The .txt files were already present, so the patch is largely the 
-infrastructure patch. The fixes to .txt files were minimal.
+> Unforuntately we would have to keep the ptrace.h name for the one
+> carrying pt_regs as it's exposed to userland.
 
-> I would also suggest to copy Randy Dunlap on patches touching 
-> generic parts like this in Documentation.
+Perhaps, we should split pt_regs from ptrace.h, like as ptrace-regs.h.
 
-Sure - if Randy shows interest in perfcounters bits i can Cc: him. 
-Note, it isnt touching generic parts of Documentation/. It's 
-touching the Documentation/perf_counter/ tools only.
+>> +static inline unsigned long get_register(struct pt_regs *regs, unsigned offset)
+>> +{
+> 
+> I woner if all these names aren't a bit generic.  Shoud we maybe add a
+> regs_ prefix to make it clear it operates on a pt_regs register set?
 
-	Ingo
+Indeed.
+
+> Also some kerneldoc documentation for all these helpers would be nice.
+
+Sure.
+
+>> +/* Get Nth argument at function call */
+>> +static inline unsigned long get_argument_nth(struct pt_regs *regs, unsigned n)
+>> +{
+>> +#ifdef CONFIG_X86_32
+>> +#define NR_REGPARMS 3
+> 
+> I think completely separate version for 32 vs 64 bit for this one would
+> be cleaner.
+
+Agreed,
+
+> 
+>> +	if (n < NR_REGPARMS) {
+>> +		switch (n) {
+>> +		case 0: return regs->ax;
+>> +		case 1: return regs->dx;
+>> +		case 2: return regs->cx;
+>> +		}
+> 
+> Normal kernel style would be
+> 
+> 		switch (n) {
+> 		case 0:
+> 			return regs->ax;
+> 		case 1:
+> 			return regs->dx;
+> 		case 2:
+> 			return regs->cx;
+> 		}
+
+Oops, thanks,
+
+> 
+>> +#define REG_OFFSET(r) offsetof(struct pt_regs, r)
+>> +#define REG_OFFSET_NAME(r) {.name = #r, .offset = REG_OFFSET(r)}
+>> +#define REG_OFFSET_END {.name = NULL, .offset = 0}
+> 
+> At least the REG_OFFSET macro seems superflous to me.
+> 
+
+Exactly.
+
+Thank you again!
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
