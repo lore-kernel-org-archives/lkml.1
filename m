@@ -1,67 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760931AbZE3Qrl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760782AbZE3RDE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760931AbZE3Qrl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 12:47:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752270AbZE3Qrd
+	id S1760782AbZE3RDE (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 13:03:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760159AbZE3RCy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 12:47:33 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:48814 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752113AbZE3Qrc convert rfc822-to-8bit (ORCPT
+	Sat, 30 May 2009 13:02:54 -0400
+Received: from oblivion.subreption.com ([66.240.236.22]:35860 "EHLO
+	mail.subreption.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760134AbZE3RCx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 12:47:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=rmsbOYZK+pdJwkPJ46a6fY7n7IcoTQQjsfz9c9VDz2ZZAebS681ZFcbIENgJHeGDH5
-         XIDhIF/eY8zlWLnHwfXZBsxtZwLXAH8+AULCFdlm1rVHlncJIDsugLUSLc4Zmwy1ddLA
-         321U/YoiMOGYNcjJxImRnzpkvwNiujz5WPf58=
-From: Diego Calleja <diegocg@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Performance regressions in 2.6.30-rc7?
-Date: Sat, 30 May 2009 18:51:47 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc4-00187-gb4348f3; KDE/4.2.2; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org
-References: <200905282249.28592.diegocg@gmail.com> <20090529210718.bef7a9c1.akpm@linux-foundation.org>
-In-Reply-To: <20090529210718.bef7a9c1.akpm@linux-foundation.org>
+	Sat, 30 May 2009 13:02:53 -0400
+Date: Sat, 30 May 2009 10:00:31 -0700
+From: "Larry H." <research@subreption.com>
+To: Rik van Riel <riel@redhat.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       pageexec@freemail.hu, Arjan van de Ven <arjan@infradead.org>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@osdl.org>, linux-mm@kvack.org,
+       Ingo Molnar <mingo@redhat.com>
+Subject: Re: [patch 0/5] Support for sanitization flag in low-level page
+	allocator
+Message-ID: <20090530170031.GD6535@oblivion.subreption.com>
+References: <20090522073436.GA3612@elte.hu> <20090530054856.GG29711@oblivion.subreption.com> <1243679973.6645.131.camel@laptop> <4A211BA8.8585.17B52182@pageexec.freemail.hu> <1243689707.6645.134.camel@laptop> <20090530153023.45600fd2@lxorguk.ukuu.org.uk> <1243694737.6645.142.camel@laptop> <4A214752.7000303@redhat.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200905301851.47708.diegocg@gmail.com>
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+In-Reply-To: <4A214752.7000303@redhat.com>
+Organization: Subreption LLC
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sábado 30 Mayo 2009 06:07:18 Andrew Morton escribió:
-> Those regressions are huge.  They appear to be on compute-intensive
-> workloads too.
-> 
-> I wonder if some expensive debugging option turned itself on or
-> something silly like that.
+Alright, I wrote some small programs to test the data remanence on
+memory. It works in a really simple way and functionality is provided by
+three different tools:
 
-They use the vanilla kernels that ubuntu ship with their own configs,
-so they shouldn't be using any expensive debugging option.
+	scanleak.c
+	Scans physical memory (using /dev/mem) looking for the
+	ulonglong pattern. Filtered /dev/mem access breaks this, so
+	disable it temporarily in your kernel to use it.
 
-I've run myself two of those tests (I've not tested gnupg as I'm
-allergic to it). I can't reproduce any regression with 7zip, I'm however
-able to reproduce the regression in tiobench write latency, using 32
-threads and 64 MB block size (--threads 32 --block 65536). I used ext4
-(phoronix uses ext3).
+	secretleak.c
+	Writes the ulonglong pattern to memory (takes two arguments, a size
+	in MB, and a number of seconds to delay after free).
 
+	zeromem.c
+	Zeroes all or given MBs of memory (allocating blocks of 100M which
+	are contiguous). If no argument is given, it allocates more
+	blocks to ensure we can zero past the used memory (might hit
+	swap). This can be used to simulate memory workload.
 
-Random Writes
-                              File  Blk   Num                   Avg      Maximum      Lat%     Lat%    CPU
-Identifier                    Size  Size  Thr   Rate  (CPU%)  Latency    Latency      >2s      >10s    Eff
----------------------------- ------ ----- ---  ------ ------ --------- -----------  -------- -------- -----
-2.6.29                        2000  65536  32   24.16 107.2%     0.051        0.21   0.00000  0.00000    23
+I've done the following test (x86 vm, 600M RAM, 2.6.29.4):
 
-Random Writes
-                              File  Blk   Num                   Avg      Maximum      Lat%     Lat%    CPU
-Identifier                    Size  Size  Thr   Rate  (CPU%)  Latency    Latency      >2s      >10s    Eff
----------------------------- ------ ----- ---  ------ ------ --------- -----------  -------- -------- -----
-2.6.30-rc7-00149-g3218911     2000  65536  32   23.06 178.4%     0.711      164.72   0.00000  0.00000    13
+	1. ./secretleak 600 1
+
+Will allocate 629145600 bytes (600M).
+Zeroing buffer at 0x926bb008... Done.
+Writing pattern to 0x926bb008 (402A25246B61654C)... Done.
+Freeing buffer at 0x926bb008... Done.
+Sleeping for 1 seconds...
+
+	2. (2 minutes afterwards) ./zeromem 700
+
+Zeroing 734003200 bytes of memory
+Zeroing block at 0xb1b01008 (104857600 bytes, 102400 kB)
+Zeroing block at 0xab700008 (104857600 bytes, 102400 kB)
+Zeroing block at 0xa52ff008 (104857600 bytes, 102400 kB)
+Zeroing block at 0x9eefe008 (104857600 bytes, 102400 kB)
+Zeroing block at 0x98afd008 (104857600 bytes, 102400 kB)
+Zeroing block at 0x926fc008 (104857600 bytes, 102400 kB)
+Zeroing block at 0x8c2fb008 (104857600 bytes, 102400 kB)
+Freeing block at 0xb1b01008.
+Freeing block at 0xab700008.
+Freeing block at 0xa52ff008.
+Freeing block at 0x9eefe008.
+Freeing block at 0x98afd008.
+Freeing block at 0x926fc008.
+Freeing block at 0x8c2fb008.
+
+	3. Immediately afterwards, sudo ./scanleak | grep Found | wc -l
+	   Reports 142 occurrences.
+
+	4. Re-issue ./zeromem 700
+
+	5. Re-scan memory, only three occurrences:
+
+Scanning 617398272 bytes of memory from /dev/mem...
+ Found pattern at 0x70d41e8 (402A25246B61654C)
+ Found pattern at 0xf5931f8 (402A25246B61654C)
+ Found pattern at 0xf5e11e8 (402A25246B61654C)
+
+The scanning is PAGE_SIZE aligned, and only one occurrence is considered
+per page (otherwise the output would be hideous in kernels without
+sanitization).
+
+Those three occurrences will stay there indefinitely... like the PaX
+team said, the remanence is proportional to the size of the allocations
+and data itself. The more data allocated, the more time it takes for
+that memory to be requested back by some other user (kernel or non
+kernel). An even more simple test would be to load a file with vim or
+nano, which contains a large (of hundred of megabytes magnitude) amount
+of text patterns (a md5 hash works), and monitor RAM to see how long it
+stays there after you have closed the editor. While most of it will
+slowly disappear, at least there will some gaps that will remain for a
+long time, possibly days, even under irregular high workloads.
+
+I'm compiling a kernel with my current patches and will report back with
+the results of these tools on that one. It will be 2.6.29.4 as well.
+
+I'll make the sources of the tools available somewhere. Because of
+corporate policy It might be wiser to find a place where I can make
+this stuff available for longer time periods. Does anyone know the
+process to request space under pub/linux/kernel/people/?
+
+	Larry
+
 
