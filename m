@@ -1,165 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759802AbZE3S5D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757686AbZE3TJD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759802AbZE3S5D (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 14:57:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756167AbZE3S4y
+	id S1757686AbZE3TJD (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 15:09:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756178AbZE3TIy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 14:56:54 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:37740 "EHLO mx2.redhat.com"
+	Sat, 30 May 2009 15:08:54 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:47245 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755445AbZE3S4y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 14:56:54 -0400
-Date: Sat, 30 May 2009 20:52:12 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Roland McGrath <roland@redhat.com>
-Cc: Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: PATCH? tracehook_report_clone: fix false positives
-Message-ID: <20090530185212.GA10677@redhat.com>
-References: <20090528113601.GA18725@redhat.com> <20090528114100.GA18744@redhat.com> <20090528212418.2F605FC2BD@magilla.sf.frob.com> <20090529122411.GC19812@redhat.com>
+	id S1756167AbZE3TIx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 May 2009 15:08:53 -0400
+Date: Sat, 30 May 2009 21:08:28 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Larry H." <research@subreption.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@osdl.org>, linux-mm@kvack.org,
+       Ingo Molnar <mingo@redhat.com>, pageexec@freemail.hu,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [patch 0/5] Support for sanitization flag in low-level page
+	allocator
+Message-ID: <20090530190828.GA31199@elte.hu>
+References: <20090528090836.GB6715@elte.hu> <20090528125042.28c2676f@lxorguk.ukuu.org.uk> <84144f020905300035g1d5461f9n9863d4dcdb6adac0@mail.gmail.com> <20090530075033.GL29711@oblivion.subreption.com> <4A20E601.9070405@cs.helsinki.fi> <20090530082048.GM29711@oblivion.subreption.com> <20090530173428.GA20013@elte.hu> <20090530180333.GH6535@oblivion.subreption.com> <20090530182113.GA25237@elte.hu> <20090530184534.GJ6535@oblivion.subreption.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090529122411.GC19812@redhat.com>
+In-Reply-To: <20090530184534.GJ6535@oblivion.subreption.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/29, Oleg Nesterov wrote:
->
-> I wonder if can kill "int trace" in do_fork/copy_process. Looks like we
-> can...
 
-Hmm. In fact, I think "int trace" is not always right.
+* Larry H. <research@subreption.com> wrote:
 
-tracehook_report_clone:
+> On 20:21 Sat 30 May     , Ingo Molnar wrote:
+> > SLOB is a rarely used (and high overhead) allocator. But the right 
+> > answer there: fix kzalloc().
+> 
+> If it's rarely used and nobody cares, why nobody has removed it yet?
+> Sames like the very same argument Peter and you used at some point
+> against these patches. Later in your response here you state the same
+> for kzfree. Interesting.
+> 
+> > if kzfree() is broken then a number of places in the kernel that 
+> > currently rely on it are potentially broken as well.
+> 
+> Indeed, but it was sitting there unused up to 2.6.29.4. Apparently only
+> -30-rc2 introduces users of the patch. Someone didn't do his homework
+> signing off the patch without testing it properly.
+> 
+> > So as far as i'm concerned, your patchset is best expressed in the 
+> > following form: Cryto, WEP and other sensitive places should be 
+> > updated to use kzfree() to free keys.
+> > 
+> > This can be done unconditionally (without any Kconfig flag), as it's 
+> > all in slow-paths - and because there's a real security value in 
+> > sanitizing buffers that held sensitive keys, when they are freed.
+> 
+> And the tty buffers, and the audit buffers, and the crypto block 
+> alg contexts, and the generic algorithm contexts, and the input 
+> buffers contexts, and ... alright, I get the picture!
 
-	if (unlikely(trace) || unlikely(clone_flags & CLONE_PTRACE)) {
-		/*
-		 * The child starts up with an immediate SIGSTOP.
-		 */
-		sigaddset(&child->pending.signal, SIGSTOP);
-		set_tsk_thread_flag(child, TIF_SIGPENDING);
-	}
+Correct. Those are all either slowpaths or low-bandwidth paths. 
 
-Firtsly, I don't understand CLONE_PTRACE check. Suppose that untraced
-task does clone(CLONE_PTRACE). In that case we create the untraced
-child (this is correct) but still we send SIGSTOP.
+It's much better to help security in general for the cases where it 
+can be done unconditionally - than to provide an option (that 
+everyone really disables because it just tries to do too much) and 
+_claim_ that we are more secure.
 
-I do not really know if this bug or not, but this doesn't look right.
-At least this should be commented, imho. And, looking at 2.6.26, I think
-the behaviour was different before tracehooks.
+> > Regarding a whole-sale 'clear everything on free' approach - 
+> > that's both pointless security wise (sensitive information can 
+> > still leak indefinitely [if you disagree i can provide an 
+> > example]) and has a very high cost so it's not acceptable to 
+> > normal Linux distros.
+> 
+> Go ahead, I want to see your example.
 
-So, I assume this is bug for now.
+Long-lived tasks that touched any crypto path (or other sensitive 
+data in the kernel) and leaked it to the kernel stack can possibly 
+keep sensitive information there indefinitely (especially if that 
+information got there in an accidentally deep stack context) - up 
+until the task exits. That information will outlive the freeing and 
+sanitizing of the original sensitive data.
 
-But even the "trace != 0" check is not right, it can be false positive.
-Suppose that PT_TRACE_FORK task P forks, tracehook_finish_clone() does
-ptrace_link(). Then, the tracer exits and untraces both P and its new
-child. In that case, I don't think it is right to send SIGSTOP.
+I gave a real example of how sensitive information (traces of 
+previous execution) can survive on the kernel stack, via a real 
+stack dump, in the previous mail i wrote.
 
-Afaics, we can fix these problems (and kill "trace" arg):
+> I don't even know why I'm still wasting my time replying to you, 
+> it's clearly hopeless to try to get you off your egotistical, red 
+> herring argument fueled attitude, which is likely a burden beyond 
+> this list for you and everyone around, sadly.
 
-	static inline void tracehook_report_clone(struct pt_regs *regs,
-						  unsigned long clone_flags,
-						  pid_t pid, struct task_struct *child)
-	{
-		if (unlikely(task_ptrace(child)) {
-			/*
-			 * The child starts up with an immediate SIGSTOP.
-			 */
-			sigaddset(&child->pending.signal, SIGSTOP);
-			set_tsk_thread_flag(child, TIF_SIGPENDING);
-		}
-	}
+Huh?
 
-Is task_ptrace() check racy? Yes. But a) this race is harmless and
-b) the current code is equally racy.
+> > > Honestly your proposed approach seems a little weak.
+> > 
+> > Unconditional honesty is definitely welcome ;-)
+> 
+> When it's people's security at stake, if your reasoning and logic 
+> is flawed, I have the moral obligation to tell you.
+> 
+> I'm here to make the kernel more secure, not to deal with your 
+> inability to work with others without continuous conflicts and 
+> attempts to fall into ridicule, that backfire at you in the end.
+> 
+> > Freeing keys is an utter slow-path (if not then the clearing is 
+> > the least of our performance worries), so any clearing cost is 
+> > in the noise. Furthermore, kzfree() is an existing facility 
+> > already in use. If it's reused by your patches that brings 
+> > further advantages: kzfree(), if it has any bugs, will be fixed. 
+> > While if you add a parallel facility kzfree() stays broken.
+> 
+> Have you benchmarked the addition of these changes? I would like 
+> to see benchmarks done for these (crypto api included), since you 
+> are proposing them.
 
-We have multiple scenarious, but for example, suppose that untraced task
-does clone(CLONE_PTRACE), do_fork() returns the new untraced child. This
-child C is already visible to user-space, so it is possible that another
-tracer has already attached to C, or ptrace_attach() is in progress.
+You have it the wrong way around. _You_ have the burden of proof 
+here really, you are trying to get patches into the upstream kernel. 
+I'm not obliged to do your homework for you. I might be wrong, and 
+you can prove me wrong.
 
-However, afaics in this case we are fine. We do not care if we race with
-another tracer. Because this tracer will send or has alredy sent SIGSTOP
-anyway. And given that wake_up_new_task() was not called yet, we should
-not worry about untrace. The child can be untraced (if tracer exits) in
-parallel, but the pending SIGSTOP won't go away in any case.
+> > So your examples about real or suspected kzfree() breakages only 
+> > strengthen the point that your patches should be using it. 
+> > Keeping a rarely used kernel facility (like kzfree) correct is 
+> > hard - splintering it by creating a parallel facility is 
+> > actively harmful for that reason.
+> 
+> Fallacy ad hitlerum delivered. Impressive.
 
+In what way is it a fallacy? It is a valid technical argument: more 
+use of an existing facility is better than an overlapping parallel 
+facility. It is a pretty much axiomatic argument.
 
-So, I am going to send the patch below. But this leads to another question:
-should not we move these sigaddset() + set_tsk_thread_flag() into
-ptrace_init_task() ?
-
-I don't thinks this makes sense for 2.6.30, we need another check. But
-with ->ptrace_ctx patches we can do
-
-	static inline void ptrace_init_task(struct task_struct *child)
-	{
-		INIT_LIST_HEAD(&child->ptraced);
-
-		if (unlikely(child->ptrace_ctx) && ptrace_tracer(current)) {
-			ptrace_link(child, task_ptrace(current),
-					ptrace_tracer(current));
-			sigaddset(&child->pending.signal, SIGSTOP);
-			set_tsk_thread_flag(child, TIF_SIGPENDING);
-		}
-	}
-
-This way we optimize the fork() path a little bit, and it becomes more
-clear. Yes, utrace-ptrace will likely change this code further anyway
-and move the code from _init() to _report_clone() back, but in this case
-I guess the whole tracehook_finish_clone() will go away, so this change
-looks right anyway to me.
-
-Oleg.
-
---- a/include/linux/tracehook.h
-+++ b/include/linux/tracehook.h
-@@ -259,14 +259,12 @@ static inline void tracehook_finish_clon
- 
- /**
-  * tracehook_report_clone - in parent, new child is about to start running
-- * @trace:		return value from tracehook_prepare_clone()
-  * @regs:		parent's user register state
-  * @clone_flags:	flags from parent's system call
-  * @pid:		new child's PID in the parent's namespace
-  * @child:		new child task
-  *
-- * Called after a child is set up, but before it has been started
-- * running.  @trace is the value returned by tracehook_prepare_clone().
-+ * Called after a child is set up, but before it has been started running.
-  * This is not a good place to block, because the child has not started
-  * yet.  Suspend the child here if desired, and then block in
-  * tracehook_report_clone_complete().  This must prevent the child from
-@@ -276,13 +274,14 @@ static inline void tracehook_finish_clon
-  *
-  * Called with no locks held, but the child cannot run until this returns.
-  */
--static inline void tracehook_report_clone(int trace, struct pt_regs *regs,
-+static inline void tracehook_report_clone(struct pt_regs *regs,
- 					  unsigned long clone_flags,
- 					  pid_t pid, struct task_struct *child)
- {
--	if (unlikely(trace) || unlikely(clone_flags & CLONE_PTRACE)) {
-+	if (unlikely(task_ptrace(child))) {
- 		/*
--		 * The child starts up with an immediate SIGSTOP.
-+		 * It doesn't matter who attached/attaching to this
-+		 * task, the pending SIGSTOP is right in any case.
- 		 */
- 		sigaddset(&child->pending.signal, SIGSTOP);
- 		set_tsk_thread_flag(child, TIF_SIGPENDING);
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -1409,7 +1409,7 @@ long do_fork(unsigned long clone_flags,
- 		}
- 
- 		audit_finish_fork(p);
--		tracehook_report_clone(trace, regs, clone_flags, nr, p);
-+		tracehook_report_clone(regs, clone_flags, nr, p);
- 
- 		/*
- 		 * We set PF_STARTING at creation in case tracing wants to
-
+	Ingo
