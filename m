@@ -1,69 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763510AbZE3SIK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932783AbZE3SLi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763510AbZE3SIK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 14:08:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761234AbZE3SH4
+	id S932783AbZE3SLi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 14:11:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760986AbZE3SLa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 14:07:56 -0400
-Received: from wf-out-1314.google.com ([209.85.200.172]:47808 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760767AbZE3SHz convert rfc822-to-8bit (ORCPT
+	Sat, 30 May 2009 14:11:30 -0400
+Received: from oblivion.subreption.com ([66.240.236.22]:47190 "EHLO
+	mail.subreption.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760767AbZE3SLa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 14:07:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=m2lLFOkDFyVLpGZgyCVSLUO+k9jcrrIGxnxRMU7R/bm+P+r5WLhPksN16oAX3irfaE
-         4X30gWVHSeilEI8nJIAGqXcEo1gFbLOExL6HWkaJIz1VNldxy3EPDwzzb0nTxLUukaXl
-         33XmVNo2m0PJiqBCBQJ0gOv1aUO63ixEuozjw=
+	Sat, 30 May 2009 14:11:30 -0400
+Date: Sat, 30 May 2009 11:09:08 -0700
+From: "Larry H." <research@subreption.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@osdl.org>, linux-mm@kvack.org,
+       Ingo Molnar <mingo@redhat.com>, pageexec@freemail.hu,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [patch 0/5] Support for sanitization flag in low-level page
+	allocator
+Message-ID: <20090530180908.GI6535@oblivion.subreption.com>
+References: <4A187BDE.5070601@redhat.com> <20090527223421.GA9503@elte.hu> <20090528072702.796622b6@lxorguk.ukuu.org.uk> <20090528090836.GB6715@elte.hu> <20090528125042.28c2676f@lxorguk.ukuu.org.uk> <84144f020905300035g1d5461f9n9863d4dcdb6adac0@mail.gmail.com> <20090530075033.GL29711@oblivion.subreption.com> <4A20E6CF.8070003@cs.helsinki.fi> <20090530090513.GO29711@oblivion.subreption.com> <20090530174644.GC20013@elte.hu>
 MIME-Version: 1.0
-In-Reply-To: <20090530134132.GA5969@nowhere>
-References: <1242496922-6330-1-git-send-email-fweisbec@gmail.com>
-	 <1242496922-6330-2-git-send-email-fweisbec@gmail.com>
-	 <9b1675090905292005p2b53de7dy9e36f84368d76f01@mail.gmail.com>
-	 <20090530032253.GA5999@nowhere>
-	 <9b1675090905292123l7c3de4b6w897e153d60e5a469@mail.gmail.com>
-	 <20090530134132.GA5969@nowhere>
-Date: Sat, 30 May 2009 12:07:57 -0600
-Message-ID: <9b1675090905301107t4884caccn937b0ccfd100d6aa@mail.gmail.com>
-Subject: Re: [PATCH 1/2] kill-the-bkl/reiserfs: acquire the inode mutex safely
-From: "Trenton D. Adams" <trenton.d.adams@gmail.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Al Viro <viro@zeniv.linux.org.uk>,
-       Reiserfs <reiserfs-devel@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, Jeff Mahoney <jeffm@suse.com>,
-       Chris Mason <chris.mason@oracle.com>, Ingo Molnar <mingo@elte.hu>,
-       Alexander Beregalov <a.beregalov@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090530174644.GC20013@elte.hu>
+Organization: Subreption LLC
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 30, 2009 at 7:41 AM, Frederic Weisbecker <fweisbec@gmail.com> wrote:
-> On Fri, May 29, 2009 at 10:23:44PM -0600, Trenton D. Adams wrote:
->>
->> I was trying to imply that the patch might fix the problem I saw, not
->> that it was the cause.  I only though that because it mentioned a
->> potential deadlock, and it seems like that is what the problem I saw
->> was.
->
->
-> Ah ok. No it's part of a tree which reworks the reiserfs locking scheme
-> by removing the old one based on the legacy and obsolete bkl (big kernel
-> lock). In this tree I had to fix several deadlocks or at least unsafe
-> lock states because the bkl is converted into a mutex and some new lock
-> dependencies were borned after that. But these issues had nothing
-> to deal with upstream problems.
->
-> BTW, would you be interested in giving a try with this reiserfs bkl
-> removal tree? I really lack testing and feedbacks from users.
+On 19:46 Sat 30 May     , Ingo Molnar wrote:
+> btw., i find this is rather hillarious: you thought it was me 
+> writing the reply and you answered Pekka's arguments with contempt 
+> and hand-waving.
+> 
+> Now that you realized that it's the SLAB maintainer you replied to, 
+> whom you cannot just hand-wave away, you apologize not for the 
+> bogosity of your argument and not for the concept - but you 
+> apologize for _thinking it was the wrong person_.
+> 
+> That is a rather dishonest style of discussion.
 
-Well, the problem is that I only use reiserfs on my usb stick at the
-moment.  So, the amount of testing I could do would be minimal at the
-moment.  However, if I change my local filesystems to reiserfs, I will
-remember to check back here for your patch.
+The hilarious thing is that I was being sarcastic. For a second It
+seemed this attitude was about to come closer to yours, hence the joke.
+I guess you aren't a fan of John Cleese as much as I am.
 
-Thanks.
+I wouldn't confuse Pekka with you from a mile away ;>
+
+	Larry
