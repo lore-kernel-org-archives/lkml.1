@@ -1,54 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756282AbZE3Ije@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754560AbZE3Ilc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756282AbZE3Ije (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 04:39:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751574AbZE3Ij1
+	id S1754560AbZE3Ilc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 04:41:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751574AbZE3IlX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 04:39:27 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:53559 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751518AbZE3Ij0 (ORCPT
+	Sat, 30 May 2009 04:41:23 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59752 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751518AbZE3IlX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 04:39:26 -0400
-Message-ID: <4A20EFB7.5050808@cs.helsinki.fi>
-Date: Sat, 30 May 2009 11:35:03 +0300
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Ingo Molnar <mingo@elte.hu>, Rik van Riel <riel@redhat.com>,
-       "Larry H." <research@subreption.com>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@osdl.org>, linux-mm@kvack.org,
-       Ingo Molnar <mingo@redhat.com>, pageexec@freemail.hu,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [patch 0/5] Support for sanitization flag in low-level page 
- allocator
-References: <20090520183045.GB10547@oblivion.subreption.com>	<4A15A8C7.2030505@redhat.com>	<20090522073436.GA3612@elte.hu>	<20090522113809.GB13971@oblivion.subreption.com>	<20090523124944.GA23042@elte.hu>	<4A187BDE.5070601@redhat.com>	<20090527223421.GA9503@elte.hu>	<20090528072702.796622b6@lxorguk.ukuu.org.uk>	<20090528090836.GB6715@elte.hu>	<20090528125042.28c2676f@lxorguk.ukuu.org.uk>	<84144f020905300035g1d5461f9n9863d4dcdb6adac0@mail.gmail.com> <20090530093147.02d5ed76@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090530093147.02d5ed76@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sat, 30 May 2009 04:41:23 -0400
+Date: Sat, 30 May 2009 01:40:07 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Borislav Petkov <petkovbb@googlemail.com>
+Cc: Borislav Petkov <borislav.petkov@amd.com>, greg@kroah.com, mingo@elte.hu,
+       norsk5@yahoo.com, tglx@linutronix.de, hpa@zytor.com, mchehab@redhat.com,
+       aris@redhat.com, edt@aei.ca, linux-kernel@vger.kernel.org,
+       randy.dunlap@oracle.com
+Subject: Re: [PATCH 0/4] amd64_edac: misc fixes
+Message-Id: <20090530014007.3c1e22d5.akpm@linux-foundation.org>
+In-Reply-To: <20090530081954.GA21954@liondog.tnic>
+References: <1242845037-1029-1-git-send-email-borislav.petkov@amd.com>
+	<20090528164720.0af5752b.akpm@linux-foundation.org>
+	<20090529103329.GB23530@aftab>
+	<20090529130115.a44efaee.akpm@linux-foundation.org>
+	<20090530081954.GA21954@liondog.tnic>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alan,
+On Sat, 30 May 2009 10:19:54 +0200 Borislav Petkov <petkovbb@googlemail.com> wrote:
 
-Alan Cox wrote:
-> The problem is that most sensitive data is user space anyway.
-> GFP_SENSITIVE or kzfree mean you have to get it right in the kernel and
-> you don't fix things like stack copies of sensitive data - its a quick
-> hack which doesn't meet goot security programming practice -it defaults
-> to insecure which is the wrong way around. Not saying its not a bad idea
-> to kzfree a few keys and things *but* it's not real security.
-> 
-> If you want to do real security you have a sysfs or build flag that turns
-> on clearing every page on free. Yes it costs performance (a lot less
-> nowdays with cache bypassing stores) but for the category of user who
-> wants to be sure nothing escapes it does the job while kzfree would be
-> like trying to plug leaks in a sieve.
+> Also, I've been thinking about how the old(er)
+> toolchain problem can be addressed and one fairly doable thing would be
+> if I'd query the gas version in the kernel Makefile and define popcnt
+> dependent on it and for older assemblers simply slap in the opcode and
+> fixate the operands in an inline assembly so that it works.
 
-Yup, your suggestion would make one simple patch, for sure. I wonder if 
-anyone is actually prepared to enable the thing at run-time, though, 
-which is why I suggested doing the "critical" kzfree() ones unconditionally.
+We've done that before.  BUG() is one case (for other reasons), I think.
 
-			Pekka
+But if we have the code in there which uese the literal opcode, there's
+no need to query gas or to add the conditional.
+
+Is popcnt supported on all CPUs?
