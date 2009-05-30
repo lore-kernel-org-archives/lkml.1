@@ -1,143 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757686AbZE3TJD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760439AbZE3TQQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757686AbZE3TJD (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 15:09:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756178AbZE3TIy
+	id S1760439AbZE3TQQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 15:16:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756466AbZE3TQA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 15:08:54 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47245 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756167AbZE3TIx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 15:08:53 -0400
-Date: Sat, 30 May 2009 21:08:28 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Larry H." <research@subreption.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@osdl.org>, linux-mm@kvack.org,
-       Ingo Molnar <mingo@redhat.com>, pageexec@freemail.hu,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [patch 0/5] Support for sanitization flag in low-level page
-	allocator
-Message-ID: <20090530190828.GA31199@elte.hu>
-References: <20090528090836.GB6715@elte.hu> <20090528125042.28c2676f@lxorguk.ukuu.org.uk> <84144f020905300035g1d5461f9n9863d4dcdb6adac0@mail.gmail.com> <20090530075033.GL29711@oblivion.subreption.com> <4A20E601.9070405@cs.helsinki.fi> <20090530082048.GM29711@oblivion.subreption.com> <20090530173428.GA20013@elte.hu> <20090530180333.GH6535@oblivion.subreption.com> <20090530182113.GA25237@elte.hu> <20090530184534.GJ6535@oblivion.subreption.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090530184534.GJ6535@oblivion.subreption.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Sat, 30 May 2009 15:16:00 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:41836 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753189AbZE3TQA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 May 2009 15:16:00 -0400
+Subject: Re: SCHED_EDF infos
+From: Peter Zijlstra <peterz@infradead.org>
+To: Henrik Austad <henrik@austad.us>
+Cc: GeunSik Lim <leemgs1@gmail.com>, finarfin@dreamos.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20090508091052.GA10429@januz.myftp.org>
+References: <164c92d827cbee86ba2c5621716309e6@localhost>
+	 <200904300939.31754.henrik@austad.us>
+	 <49b7c2350905071935kbd2aa22v9d39cf41c537c24b@mail.gmail.com>
+	 <20090508091052.GA10429@januz.myftp.org>
+Content-Type: text/plain
+Date: Sat, 30 May 2009 21:15:57 +0200
+Message-Id: <1243710957.6645.157.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Larry H. <research@subreption.com> wrote:
-
-> On 20:21 Sat 30 May     , Ingo Molnar wrote:
-> > SLOB is a rarely used (and high overhead) allocator. But the right 
-> > answer there: fix kzalloc().
+On Fri, 2009-05-08 at 11:10 +0200, Henrik Austad wrote:
+> > In fact, I also  don't have perfect know how to solve PI in Multicore.
+> > [...]
+> > > deadline inversion will be a problem, in fact, whatever you chooose to 
+> > > be the 'key' for picking tasks (priority, niceness, deadlines, wind 
+> > > direction, <whatever>), you can pretty much take that and add a 
+> > > -inversion after it. :)
 > 
-> If it's rarely used and nobody cares, why nobody has removed it yet?
-> Sames like the very same argument Peter and you used at some point
-> against these patches. Later in your response here you state the same
-> for kzfree. Interesting.
-> 
-> > if kzfree() is broken then a number of places in the kernel that 
-> > currently rely on it are potentially broken as well.
-> 
-> Indeed, but it was sitting there unused up to 2.6.29.4. Apparently only
-> -30-rc2 introduces users of the patch. Someone didn't do his homework
-> signing off the patch without testing it properly.
-> 
-> > So as far as i'm concerned, your patchset is best expressed in the 
-> > following form: Cryto, WEP and other sensitive places should be 
-> > updated to use kzfree() to free keys.
-> > 
-> > This can be done unconditionally (without any Kconfig flag), as it's 
-> > all in slow-paths - and because there's a real security value in 
-> > sanitizing buffers that held sensitive keys, when they are freed.
-> 
-> And the tty buffers, and the audit buffers, and the crypto block 
-> alg contexts, and the generic algorithm contexts, and the input 
-> buffers contexts, and ... alright, I get the picture!
+> No, PI is going to be deadly no matter what you do.
 
-Correct. Those are all either slowpaths or low-bandwidth paths. 
+Right, we would need to extend the Priority Inheritance Protocol to
+include everything the regular scheduling functions operate on.
 
-It's much better to help security in general for the cases where it 
-can be done unconditionally - than to provide an option (that 
-everyone really disables because it just tries to do too much) and 
-_claim_ that we are more secure.
+That is, we can reduce scheduling to a single order operator that orders
+all the available tasks, such that t_n < t_n+1.
 
-> > Regarding a whole-sale 'clear everything on free' approach - 
-> > that's both pointless security wise (sensitive information can 
-> > still leak indefinitely [if you disagree i can provide an 
-> > example]) and has a very high cost so it's not acceptable to 
-> > normal Linux distros.
-> 
-> Go ahead, I want to see your example.
+For pure EDF that would be a comparison on deadlines (and available
+bandwidth), for FIFO on static priority and for CFS something based on
+the virtual runtimes of the involved tasks. For the combined set of
+these scheduling classes the comparator uses the class hierarchy to
+order between them.
 
-Long-lived tasks that touched any crypto path (or other sensitive 
-data in the kernel) and leaked it to the kernel stack can possibly 
-keep sensitive information there indefinitely (especially if that 
-information got there in an accidentally deep stack context) - up 
-until the task exits. That information will outlive the freeing and 
-sanitizing of the original sensitive data.
+Lets call the full set of data that is used to determine this order a
+task's key.
 
-I gave a real example of how sensitive information (traces of 
-previous execution) can survive on the kernel stack, via a real 
-stack dump, in the previous mail i wrote.
+If we then substitute this key for the static priority of the classic
+PIP and use this generic comparison operator, it can be extended to
+cover arbitrary complex scheduling functions.
 
-> I don't even know why I'm still wasting my time replying to you, 
-> it's clearly hopeless to try to get you off your egotistical, red 
-> herring argument fueled attitude, which is likely a burden beyond 
-> this list for you and everyone around, sadly.
 
-Huh?
+This is a bit like the Proxy Execution Protocol, where we leave the
+blocked task in the runqueue, but run another task in its stead. The key
+point is that it donates the full task state as relevant to the
+scheduling function, or even more directly, it uses the scheduler
+itself, to solve the Priority Inversion.
 
-> > > Honestly your proposed approach seems a little weak.
-> > 
-> > Unconditional honesty is definitely welcome ;-)
-> 
-> When it's people's security at stake, if your reasoning and logic 
-> is flawed, I have the moral obligation to tell you.
-> 
-> I'm here to make the kernel more secure, not to deal with your 
-> inability to work with others without continuous conflicts and 
-> attempts to fall into ridicule, that backfire at you in the end.
-> 
-> > Freeing keys is an utter slow-path (if not then the clearing is 
-> > the least of our performance worries), so any clearing cost is 
-> > in the noise. Furthermore, kzfree() is an existing facility 
-> > already in use. If it's reused by your patches that brings 
-> > further advantages: kzfree(), if it has any bugs, will be fixed. 
-> > While if you add a parallel facility kzfree() stays broken.
-> 
-> Have you benchmarked the addition of these changes? I would like 
-> to see benchmarks done for these (crypto api included), since you 
-> are proposing them.
 
-You have it the wrong way around. _You_ have the burden of proof 
-here really, you are trying to get patches into the upstream kernel. 
-I'm not obliged to do your homework for you. I might be wrong, and 
-you can prove me wrong.
 
-> > So your examples about real or suspected kzfree() breakages only 
-> > strengthen the point that your patches should be using it. 
-> > Keeping a rarely used kernel facility (like kzfree) correct is 
-> > hard - splintering it by creating a parallel facility is 
-> > actively harmful for that reason.
-> 
-> Fallacy ad hitlerum delivered. Impressive.
-
-In what way is it a fallacy? It is a valid technical argument: more 
-use of an existing facility is better than an overlapping parallel 
-facility. It is a pretty much axiomatic argument.
-
-	Ingo
