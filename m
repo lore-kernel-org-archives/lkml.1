@@ -1,74 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761155AbZE3Ktc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761391AbZE3Kt5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761155AbZE3Ktc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 06:49:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760346AbZE3KtX
+	id S1761391AbZE3Kt5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 06:49:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758022AbZE3Kts
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 06:49:23 -0400
-Received: from e23smtp01.au.ibm.com ([202.81.31.143]:41959 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761038AbZE3KtV (ORCPT
+	Sat, 30 May 2009 06:49:48 -0400
+Received: from e23smtp09.au.ibm.com ([202.81.31.142]:41623 "EHLO
+	e23smtp09.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757581AbZE3Ktr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 06:49:21 -0400
-Date: Sat, 30 May 2009 16:19:12 +0530
+	Sat, 30 May 2009 06:49:47 -0400
+Date: Sat, 30 May 2009 16:19:39 +0530
 From: "K.Prasad" <prasad@linux.vnet.ibm.com>
 To: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Ingo Molnar <mingo@elte.hu>, Alan Stern <stern@rowland.harvard.edu>,
        "K.Prasad" <prasad@linux.vnet.ibm.com>
-Subject: [Patch 02/12] Introducing generic hardware breakpoint handler
-	interfaces
-Message-ID: <20090530104912.GC9512@in.ibm.com>
+Subject: [Patch 03/12] x86 architecture implementation of Hardware
+	Breakpoint interfaces
+Message-ID: <20090530104939.GD9512@in.ibm.com>
 References: <20090530103857.715014561@prasadkr_t60p.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename=generic_hwbkpt_02
+Content-Disposition: inline; filename=arch_x86_hwbkpt_03
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch introduces the generic Hardware Breakpoint interfaces for both user
-and kernel space requests.
+This patch introduces the arch-specific implementation of hw_breakpoint.c
+inside x86 specific directories. They contain functions which help validate and
+serve requests for using Hardware Breakpoint registers on x86 processors.
 
 Original-patch-by: Alan Stern <stern@rowland.harvard.edu>
 Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
 Reviewed-by: Alan Stern <stern@rowland.harvard.edu>
 ---
- arch/Kconfig           |    4 
- kernel/Makefile        |    1 
- kernel/hw_breakpoint.c |  378 +++++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 383 insertions(+)
+ arch/x86/Kconfig                |    1 
+ arch/x86/kernel/Makefile        |    2 
+ arch/x86/kernel/hw_breakpoint.c |  382 ++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 384 insertions(+), 1 deletion(-)
 
-Index: linux-2.6-tip.hbkpt/arch/Kconfig
+Index: linux-2.6-tip.hbkpt/arch/x86/Kconfig
 ===================================================================
---- linux-2.6-tip.hbkpt.orig/arch/Kconfig
-+++ linux-2.6-tip.hbkpt/arch/Kconfig
-@@ -112,3 +112,7 @@ config HAVE_DMA_API_DEBUG
+--- linux-2.6-tip.hbkpt.orig/arch/x86/Kconfig
++++ linux-2.6-tip.hbkpt/arch/x86/Kconfig
+@@ -47,6 +47,7 @@ config X86
+ 	select HAVE_KERNEL_BZIP2
+ 	select HAVE_KERNEL_LZMA
+ 	select HAVE_ARCH_KMEMCHECK
++	select HAVE_HW_BREAKPOINT
  
- config HAVE_DEFAULT_NO_SPIN_MUTEXES
- 	bool
-+
-+config HAVE_HW_BREAKPOINT
-+	bool
-+
-Index: linux-2.6-tip.hbkpt/kernel/Makefile
+ config OUTPUT_FORMAT
+ 	string
+Index: linux-2.6-tip.hbkpt/arch/x86/kernel/Makefile
 ===================================================================
---- linux-2.6-tip.hbkpt.orig/kernel/Makefile
-+++ linux-2.6-tip.hbkpt/kernel/Makefile
-@@ -97,6 +97,7 @@ obj-$(CONFIG_X86_DS) += trace/
- obj-$(CONFIG_SMP) += sched_cpupri.o
- obj-$(CONFIG_SLOW_WORK) += slow-work.o
- obj-$(CONFIG_PERF_COUNTERS) += perf_counter.o
-+obj-$(CONFIG_HAVE_HW_BREAKPOINT) += hw_breakpoint.o
+--- linux-2.6-tip.hbkpt.orig/arch/x86/kernel/Makefile
++++ linux-2.6-tip.hbkpt/arch/x86/kernel/Makefile
+@@ -36,7 +36,7 @@ obj-$(CONFIG_X86_64)	+= sys_x86_64.o x86
+ obj-$(CONFIG_X86_64)	+= syscall_64.o vsyscall_64.o
+ obj-y			+= bootflag.o e820.o
+ obj-y			+= pci-dma.o quirks.o i8237.o topology.o kdebugfs.o
+-obj-y			+= alternative.o i8253.o pci-nommu.o
++obj-y			+= alternative.o i8253.o pci-nommu.o hw_breakpoint.o
+ obj-y			+= tsc.o io_delay.o rtc.o
  
- ifneq ($(CONFIG_SCHED_OMIT_FRAME_POINTER),y)
- # According to Alan Modra <alan@linuxcare.com.au>, the -fno-omit-frame-pointer is
-Index: linux-2.6-tip.hbkpt/kernel/hw_breakpoint.c
+ obj-$(CONFIG_X86_TRAMPOLINE)	+= trampoline.o
+Index: linux-2.6-tip.hbkpt/arch/x86/kernel/hw_breakpoint.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6-tip.hbkpt/kernel/hw_breakpoint.c
-@@ -0,0 +1,378 @@
++++ linux-2.6-tip.hbkpt/arch/x86/kernel/hw_breakpoint.c
+@@ -0,0 +1,382 @@
 +/*
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
@@ -85,366 +87,370 @@ Index: linux-2.6-tip.hbkpt/kernel/hw_breakpoint.c
 + * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 + *
 + * Copyright (C) 2007 Alan Stern
-+ * Copyright (C) IBM Corporation, 2009
++ * Copyright (C) 2009 IBM Corporation
 + */
 +
 +/*
 + * HW_breakpoint: a unified kernel/user-space hardware breakpoint facility,
 + * using the CPU's debug registers.
-+ * This file contains the arch-independent routines.
 + */
 +
 +#include <linux/irqflags.h>
-+#include <linux/kallsyms.h>
 +#include <linux/notifier.h>
++#include <linux/kallsyms.h>
 +#include <linux/kprobes.h>
++#include <linux/percpu.h>
 +#include <linux/kdebug.h>
 +#include <linux/kernel.h>
 +#include <linux/module.h>
-+#include <linux/percpu.h>
 +#include <linux/sched.h>
 +#include <linux/init.h>
 +#include <linux/smp.h>
 +
 +#include <asm/hw_breakpoint.h>
 +#include <asm/processor.h>
-+
-+#ifdef CONFIG_X86
 +#include <asm/debugreg.h>
-+#endif
-+/*
-+ * Spinlock that protects all (un)register operations over kernel/user-space
-+ * breakpoint requests
-+ */
-+static DEFINE_SPINLOCK(hw_breakpoint_lock);
 +
-+/* Array of kernel-space breakpoint structures */
-+struct hw_breakpoint *hbp_kernel[HBP_NUM];
++/* Unmasked kernel DR7 value */
++static unsigned long kdr7;
 +
 +/*
-+ * Per-processor copy of hbp_kernel[]. Used only when hbp_kernel is being
-+ * modified but we need the older copy to handle any hbp exceptions. It will
-+ * sync with hbp_kernel[] value after updation is done through IPIs.
++ * Masks for the bits corresponding to registers DR0 - DR3 in DR7 register.
++ * Used to clear and verify the status of bits corresponding to DR0 - DR3
 + */
-+DEFINE_PER_CPU(struct hw_breakpoint*, this_hbp_kernel[HBP_NUM]);
++static const unsigned long	dr7_masks[HBP_NUM] = {
++	0x000f0003,	/* LEN0, R/W0, G0, L0 */
++	0x00f0000c,	/* LEN1, R/W1, G1, L1 */
++	0x0f000030,	/* LEN2, R/W2, G2, L2 */
++	0xf00000c0	/* LEN3, R/W3, G3, L3 */
++};
++
 +
 +/*
-+ * Kernel breakpoints grow downwards, starting from HBP_NUM
-+ * 'hbp_kernel_pos' denotes lowest numbered breakpoint register occupied for
-+ * kernel-space request. We will initialise it here and not in an __init
-+ * routine because load_debug_registers(), which uses this variable can be
-+ * called very early during CPU initialisation.
++ * Encode the length, type, Exact, and Enable bits for a particular breakpoint
++ * as stored in debug register 7.
 + */
-+unsigned int hbp_kernel_pos = HBP_NUM;
-+
-+/*
-+ * An array containing refcount of threads using a given bkpt register
-+ * Accesses are synchronised by acquiring hw_breakpoint_lock
-+ */
-+unsigned int hbp_user_refcount[HBP_NUM];
-+
-+/*
-+ * Load the debug registers during startup of a CPU.
-+ */
-+void load_debug_registers(void)
++static unsigned long encode_dr7(int drnum, unsigned len, unsigned type)
 +{
-+	unsigned long flags;
-+	struct task_struct *tsk = current;
++	unsigned long temp;
 +
-+	spin_lock_bh(&hw_breakpoint_lock);
++	temp = (len | type) & 0xf;
++	temp <<= (DR_CONTROL_SHIFT + drnum * DR_CONTROL_SIZE);
++	temp |= (DR_GLOBAL_ENABLE << (drnum * DR_ENABLE_SIZE)) |
++				DR_GLOBAL_SLOWDOWN;
++	return temp;
++}
 +
-+	/* Prevent IPIs for new kernel breakpoint updates */
-+	local_irq_save(flags);
-+	arch_update_kernel_hw_breakpoint(NULL);
-+	local_irq_restore(flags);
++void arch_update_kernel_hw_breakpoint(void *unused)
++{
++	struct hw_breakpoint *bp;
++	int i, cpu = get_cpu();
++	unsigned long temp_kdr7 = 0;
 +
-+	if (test_tsk_thread_flag(tsk, TIF_DEBUG))
-+		arch_install_thread_hw_breakpoint(tsk);
++	/* Don't allow debug exceptions while we update the registers */
++	set_debugreg(0UL, 7);
 +
-+	spin_unlock_bh(&hw_breakpoint_lock);
++	for (i = hbp_kernel_pos; i < HBP_NUM; i++) {
++		per_cpu(this_hbp_kernel[i], cpu) = bp = hbp_kernel[i];
++		if (bp) {
++			temp_kdr7 |= encode_dr7(i, bp->info.len, bp->info.type);
++			set_debugreg(bp->info.address, i);
++		}
++	}
++
++	/* No need to set DR6. Update the debug registers with kernel-space
++	 * breakpoint values from kdr7 and user-space requests from the
++	 * current process
++	 */
++	kdr7 = temp_kdr7;
++	set_debugreg(kdr7 | current->thread.debugreg7, 7);
++	put_cpu_no_resched();
 +}
 +
 +/*
-+ * Erase all the hardware breakpoint info associated with a thread.
-+ *
-+ * If tsk != current then tsk must not be usable (for example, a
-+ * child being cleaned up from a failed fork).
++ * Install the thread breakpoints in their debug registers.
 + */
-+void flush_thread_hw_breakpoint(struct task_struct *tsk)
++void arch_install_thread_hw_breakpoint(struct task_struct *tsk)
++{
++	struct thread_struct *thread = &(tsk->thread);
++
++	switch (hbp_kernel_pos) {
++	case 4:
++		set_debugreg(thread->debugreg[3], 3);
++	case 3:
++		set_debugreg(thread->debugreg[2], 2);
++	case 2:
++		set_debugreg(thread->debugreg[1], 1);
++	case 1:
++		set_debugreg(thread->debugreg[0], 0);
++	default:
++		break;
++	}
++
++	/* No need to set DR6 */
++	set_debugreg((kdr7 | thread->debugreg7), 7);
++}
++
++/*
++ * Install the debug register values for just the kernel, no thread.
++ */
++void arch_uninstall_thread_hw_breakpoint()
++{
++	/* Clear the user-space portion of debugreg7 by setting only kdr7 */
++	set_debugreg(kdr7, 7);
++
++}
++
++static int get_hbp_len(u8 hbp_len)
++{
++	unsigned int len_in_bytes = 0;
++
++	switch (hbp_len) {
++	case HW_BREAKPOINT_LEN_1:
++		len_in_bytes = 1;
++		break;
++	case HW_BREAKPOINT_LEN_2:
++		len_in_bytes = 2;
++		break;
++	case HW_BREAKPOINT_LEN_4:
++		len_in_bytes = 4;
++		break;
++#ifdef CONFIG_X86_64
++	case HW_BREAKPOINT_LEN_8:
++		len_in_bytes = 8;
++		break;
++#endif
++	}
++	return len_in_bytes;
++}
++
++/*
++ * Check for virtual address in user space.
++ */
++int arch_check_va_in_userspace(unsigned long va, u8 hbp_len)
++{
++	unsigned int len;
++
++	len = get_hbp_len(hbp_len);
++
++	return (va <= TASK_SIZE - len);
++}
++
++/*
++ * Check for virtual address in kernel space.
++ */
++int arch_check_va_in_kernelspace(unsigned long va, u8 hbp_len)
++{
++	unsigned int len;
++
++	len = get_hbp_len(hbp_len);
++
++	return (va >= TASK_SIZE) && ((va + len - 1) >= TASK_SIZE);
++}
++
++/*
++ * Store a breakpoint's encoded address, length, and type.
++ */
++static int arch_store_info(struct hw_breakpoint *bp, struct task_struct *tsk)
++{
++	/*
++	 * User-space requests will always have the address field populated
++	 * Symbol names from user-space are rejected
++	 */
++	if (tsk && bp->info.name)
++		return -EINVAL;
++	/*
++	 * For kernel-addresses, either the address or symbol name can be
++	 * specified.
++	 */
++	if (bp->info.name)
++		bp->info.address = (unsigned long)
++					kallsyms_lookup_name(bp->info.name);
++	if (bp->info.address)
++		return 0;
++	return -EINVAL;
++}
++
++/*
++ * Validate the arch-specific HW Breakpoint register settings
++ */
++int arch_validate_hwbkpt_settings(struct hw_breakpoint *bp,
++						struct task_struct *tsk)
++{
++	unsigned int align;
++	int ret = -EINVAL;
++
++	switch (bp->info.type) {
++	/*
++	 * Ptrace-refactoring code
++	 * For now, we'll allow instruction breakpoint only for user-space
++	 * addresses
++	 */
++	case HW_BREAKPOINT_EXECUTE:
++		if ((!arch_check_va_in_userspace(bp->info.address,
++							bp->info.len)) &&
++			bp->info.len != HW_BREAKPOINT_LEN_EXECUTE)
++			return ret;
++		break;
++	case HW_BREAKPOINT_WRITE:
++		break;
++	case HW_BREAKPOINT_RW:
++		break;
++	default:
++		return ret;
++	}
++
++	switch (bp->info.len) {
++	case HW_BREAKPOINT_LEN_1:
++		align = 0;
++		break;
++	case HW_BREAKPOINT_LEN_2:
++		align = 1;
++		break;
++	case HW_BREAKPOINT_LEN_4:
++		align = 3;
++		break;
++#ifdef CONFIG_X86_64
++	case HW_BREAKPOINT_LEN_8:
++		align = 7;
++		break;
++#endif
++	default:
++		return ret;
++	}
++
++	if (bp->triggered)
++		ret = arch_store_info(bp, tsk);
++
++	if (ret < 0)
++		return ret;
++	/*
++	 * Check that the low-order bits of the address are appropriate
++	 * for the alignment implied by len.
++	 */
++	if (bp->info.address & align)
++		return -EINVAL;
++
++	/* Check that the virtual address is in the proper range */
++	if (tsk) {
++		if (!arch_check_va_in_userspace(bp->info.address, bp->info.len))
++			return -EFAULT;
++	} else {
++		if (!arch_check_va_in_kernelspace(bp->info.address,
++								bp->info.len))
++			return -EFAULT;
++	}
++	return 0;
++}
++
++void arch_update_user_hw_breakpoint(int pos, struct task_struct *tsk)
++{
++	struct thread_struct *thread = &(tsk->thread);
++	struct hw_breakpoint *bp = thread->hbp[pos];
++
++	thread->debugreg7 &= ~dr7_masks[pos];
++	if (bp) {
++		thread->debugreg[pos] = bp->info.address;
++		thread->debugreg7 |= encode_dr7(pos, bp->info.len,
++							bp->info.type);
++	} else
++		thread->debugreg[pos] = 0;
++}
++
++void arch_flush_thread_hw_breakpoint(struct task_struct *tsk)
 +{
 +	int i;
 +	struct thread_struct *thread = &(tsk->thread);
 +
-+	spin_lock_bh(&hw_breakpoint_lock);
++	thread->debugreg7 = 0;
++	for (i = 0; i < HBP_NUM; i++)
++		thread->debugreg[i] = 0;
++}
 +
-+	/* The thread no longer has any breakpoints associated with it */
-+	clear_tsk_thread_flag(tsk, TIF_DEBUG);
-+	for (i = 0; i < HBP_NUM; i++) {
-+		if (thread->hbp[i]) {
-+			hbp_user_refcount[i]--;
-+			kfree(thread->hbp[i]);
-+			thread->hbp[i] = NULL;
-+		}
-+	}
++/*
++ * Handle debug exception notifications.
++ *
++ * Return value is either NOTIFY_STOP or NOTIFY_DONE as explained below.
++ *
++ * NOTIFY_DONE returned if one of the following conditions is true.
++ * i) When the causative address is from user-space and the exception
++ * is a valid one, i.e. not triggered as a result of lazy debug register
++ * switching
++ * ii) When there are more bits than trap<n> set in DR6 register (such
++ * as BD, BS or BT) indicating that more than one debug condition is
++ * met and requires some more action in do_debug().
++ *
++ * NOTIFY_STOP returned for all other cases
++ *
++ */
++int __kprobes hw_breakpoint_handler(struct die_args *args)
++{
++	int i, cpu, rc = NOTIFY_STOP;
++	struct hw_breakpoint *bp;
++	/* The DR6 value is stored in args->err */
++	unsigned long dr7, dr6 = args->err;
 +
-+	arch_flush_thread_hw_breakpoint(tsk);
++	/* Do an early return if no trap bits are set in DR6 */
++	if ((dr6 & DR_TRAP_BITS) == 0)
++		return NOTIFY_DONE;
 +
-+	/* Actually uninstall the breakpoints if necessary */
-+	if (tsk == current)
++	/* Lazy debug register switching */
++	if (!test_tsk_thread_flag(current, TIF_DEBUG))
 +		arch_uninstall_thread_hw_breakpoint();
-+	spin_unlock_bh(&hw_breakpoint_lock);
-+}
 +
-+/*
-+ * Copy the hardware breakpoint info from a thread to its cloned child.
-+ */
-+int copy_thread_hw_breakpoint(struct task_struct *tsk,
-+		struct task_struct *child, unsigned long clone_flags)
-+{
++	get_debugreg(dr7, 7);
++	/* Disable breakpoints during exception handling */
++	set_debugreg(0UL, 7);
 +	/*
-+	 * We will assume that breakpoint settings are not inherited
-+	 * and the child starts out with no debug registers set.
-+	 * But what about CLONE_PTRACE?
++	 * Assert that local interrupts are disabled
++	 * Reset the DRn bits in the virtualized register value.
++	 * The ptrace trigger routine will add in whatever is needed.
 +	 */
-+	clear_tsk_thread_flag(child, TIF_DEBUG);
++	current->thread.debugreg6 &= ~DR_TRAP_BITS;
++	cpu = get_cpu();
 +
-+	/* We will call flush routine since the debugregs are not inherited */
-+	arch_flush_thread_hw_breakpoint(child);
++	/* Handle all the breakpoints that were triggered */
++	for (i = 0; i < HBP_NUM; ++i) {
++		if (likely(!(dr6 & (DR_TRAP0 << i))))
++			continue;
++		/*
++		 * Find the corresponding hw_breakpoint structure and
++		 * invoke its triggered callback.
++		 */
++		if (i >= hbp_kernel_pos)
++			bp = per_cpu(this_hbp_kernel[i], cpu);
++		else {
++			bp = current->thread.hbp[i];
++			if (bp)
++				rc = NOTIFY_DONE;
++		}
++		/*
++		 * bp can be NULL due to lazy debug register switching
++		 * or due to the delay between updates of hbp_kernel_pos
++		 * and this_hbp_kernel.
++		 */
++		if (!bp)
++			continue;
 +
-+	return 0;
-+}
++		(bp->triggered)(bp, args->regs);
++	}
++	if (dr6 & (~DR_TRAP_BITS))
++		rc = NOTIFY_DONE;
 +
-+static int __register_user_hw_breakpoint(int pos, struct task_struct *tsk,
-+					struct hw_breakpoint *bp)
-+{
-+	struct thread_struct *thread = &(tsk->thread);
-+	int rc;
-+
-+	/* Do not overcommit. Fail if kernel has used the hbp registers */
-+	if (pos >= hbp_kernel_pos)
-+		return -ENOSPC;
-+
-+	rc = arch_validate_hwbkpt_settings(bp, tsk);
-+	if (rc)
-+		return rc;
-+
-+	thread->hbp[pos] = bp;
-+	hbp_user_refcount[pos]++;
-+
-+	arch_update_user_hw_breakpoint(pos, tsk);
-+	/*
-+	 * Does it need to be installed right now?
-+	 * Otherwise it will get installed the next time tsk runs
-+	 */
-+	if (tsk == current)
-+		arch_install_thread_hw_breakpoint(tsk);
-+
++	set_debugreg(dr7, 7);
++	put_cpu_no_resched();
 +	return rc;
 +}
 +
 +/*
-+ * Modify the address of a hbp register already in use by the task
-+ * Do not invoke this in-lieu of a __unregister_user_hw_breakpoint()
++ * Handle debug exception notifications.
 + */
-+static int __modify_user_hw_breakpoint(int pos, struct task_struct *tsk,
-+					struct hw_breakpoint *bp)
++int __kprobes hw_breakpoint_exceptions_notify(
++		struct notifier_block *unused, unsigned long val, void *data)
 +{
-+	struct thread_struct *thread = &(tsk->thread);
++	if (val != DIE_DEBUG)
++		return NOTIFY_DONE;
 +
-+	if ((pos >= hbp_kernel_pos) || (arch_validate_hwbkpt_settings(bp, tsk)))
-+		return -EINVAL;
-+
-+	if (thread->hbp[pos] == NULL)
-+		return -EINVAL;
-+
-+	thread->hbp[pos] = bp;
-+	/*
-+	 * 'pos' must be that of a hbp register already used by 'tsk'
-+	 * Otherwise arch_modify_user_hw_breakpoint() will fail
-+	 */
-+	arch_update_user_hw_breakpoint(pos, tsk);
-+
-+	if (tsk == current)
-+		arch_install_thread_hw_breakpoint(tsk);
-+
-+	return 0;
++	return hw_breakpoint_handler(data);
 +}
-+
-+static void __unregister_user_hw_breakpoint(int pos, struct task_struct *tsk)
-+{
-+	hbp_user_refcount[pos]--;
-+	tsk->thread.hbp[pos] = NULL;
-+
-+	arch_update_user_hw_breakpoint(pos, tsk);
-+
-+	if (tsk == current)
-+		arch_install_thread_hw_breakpoint(tsk);
-+}
-+
-+/**
-+ * register_user_hw_breakpoint - register a hardware breakpoint for user space
-+ * @tsk: pointer to 'task_struct' of the process to which the address belongs
-+ * @bp: the breakpoint structure to register
-+ *
-+ * @bp.info->name or @bp.info->address, @bp.info->len, @bp.info->type and
-+ * @bp->triggered must be set properly before invocation
-+ *
-+ */
-+int register_user_hw_breakpoint(struct task_struct *tsk,
-+					struct hw_breakpoint *bp)
-+{
-+	struct thread_struct *thread = &(tsk->thread);
-+	int i, rc = -ENOSPC;
-+
-+	spin_lock_bh(&hw_breakpoint_lock);
-+
-+	for (i = 0; i < hbp_kernel_pos; i++) {
-+		if (!thread->hbp[i]) {
-+			rc = __register_user_hw_breakpoint(i, tsk, bp);
-+			break;
-+		}
-+	}
-+	if (!rc)
-+		set_tsk_thread_flag(tsk, TIF_DEBUG);
-+
-+	spin_unlock_bh(&hw_breakpoint_lock);
-+	return rc;
-+}
-+EXPORT_SYMBOL_GPL(register_user_hw_breakpoint);
-+
-+/**
-+ * modify_user_hw_breakpoint - modify a user-space hardware breakpoint
-+ * @tsk: pointer to 'task_struct' of the process to which the address belongs
-+ * @bp: the breakpoint structure to unregister
-+ *
-+ */
-+int modify_user_hw_breakpoint(struct task_struct *tsk, struct hw_breakpoint *bp)
-+{
-+	struct thread_struct *thread = &(tsk->thread);
-+	int i, ret = -ENOENT;
-+
-+	spin_lock_bh(&hw_breakpoint_lock);
-+	for (i = 0; i < hbp_kernel_pos; i++) {
-+		if (bp == thread->hbp[i]) {
-+			ret = __modify_user_hw_breakpoint(i, tsk, bp);
-+			break;
-+		}
-+	}
-+	spin_unlock_bh(&hw_breakpoint_lock);
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(modify_user_hw_breakpoint);
-+
-+/**
-+ * unregister_user_hw_breakpoint - unregister a user-space hardware breakpoint
-+ * @tsk: pointer to 'task_struct' of the process to which the address belongs
-+ * @bp: the breakpoint structure to unregister
-+ *
-+ */
-+void unregister_user_hw_breakpoint(struct task_struct *tsk,
-+						struct hw_breakpoint *bp)
-+{
-+	struct thread_struct *thread = &(tsk->thread);
-+	int i, pos = -1, hbp_counter = 0;
-+
-+	spin_lock_bh(&hw_breakpoint_lock);
-+	for (i = 0; i < hbp_kernel_pos; i++) {
-+		if (thread->hbp[i])
-+			hbp_counter++;
-+		if (bp == thread->hbp[i])
-+			pos = i;
-+	}
-+	if (pos >= 0) {
-+		__unregister_user_hw_breakpoint(pos, tsk);
-+		hbp_counter--;
-+	}
-+	if (!hbp_counter)
-+		clear_tsk_thread_flag(tsk, TIF_DEBUG);
-+
-+	spin_unlock_bh(&hw_breakpoint_lock);
-+}
-+EXPORT_SYMBOL_GPL(unregister_user_hw_breakpoint);
-+
-+/**
-+ * register_kernel_hw_breakpoint - register a hardware breakpoint for kernel space
-+ * @bp: the breakpoint structure to register
-+ *
-+ * @bp.info->name or @bp.info->address, @bp.info->len, @bp.info->type and
-+ * @bp->triggered must be set properly before invocation
-+ *
-+ */
-+int register_kernel_hw_breakpoint(struct hw_breakpoint *bp)
-+{
-+	int rc;
-+
-+	rc = arch_validate_hwbkpt_settings(bp, NULL);
-+	if (rc)
-+		return rc;
-+
-+	spin_lock_bh(&hw_breakpoint_lock);
-+
-+	rc = -ENOSPC;
-+	/* Check if we are over-committing */
-+	if ((hbp_kernel_pos > 0) && (!hbp_user_refcount[hbp_kernel_pos-1])) {
-+		hbp_kernel_pos--;
-+		hbp_kernel[hbp_kernel_pos] = bp;
-+		on_each_cpu(arch_update_kernel_hw_breakpoint, NULL, 1);
-+		rc = 0;
-+	}
-+
-+	spin_unlock_bh(&hw_breakpoint_lock);
-+	return rc;
-+}
-+EXPORT_SYMBOL_GPL(register_kernel_hw_breakpoint);
-+
-+/**
-+ * unregister_kernel_hw_breakpoint - unregister a HW breakpoint for kernel space
-+ * @bp: the breakpoint structure to unregister
-+ *
-+ * Uninstalls and unregisters @bp.
-+ */
-+void unregister_kernel_hw_breakpoint(struct hw_breakpoint *bp)
-+{
-+	int i, j;
-+
-+	spin_lock_bh(&hw_breakpoint_lock);
-+
-+	/* Find the 'bp' in our list of breakpoints for kernel */
-+	for (i = hbp_kernel_pos; i < HBP_NUM; i++)
-+		if (bp == hbp_kernel[i])
-+			break;
-+
-+	/* Check if we did not find a match for 'bp'. If so return early */
-+	if (i == HBP_NUM) {
-+		spin_unlock_bh(&hw_breakpoint_lock);
-+		return;
-+	}
-+
-+	/*
-+	 * We'll shift the breakpoints one-level above to compact if
-+	 * unregistration creates a hole
-+	 */
-+	for (j = i; j > hbp_kernel_pos; j--)
-+		hbp_kernel[j] = hbp_kernel[j-1];
-+
-+	hbp_kernel[hbp_kernel_pos] = NULL;
-+	on_each_cpu(arch_update_kernel_hw_breakpoint, NULL, 1);
-+	hbp_kernel_pos++;
-+
-+	spin_unlock_bh(&hw_breakpoint_lock);
-+}
-+EXPORT_SYMBOL_GPL(unregister_kernel_hw_breakpoint);
-+
-+static struct notifier_block hw_breakpoint_exceptions_nb = {
-+	.notifier_call = hw_breakpoint_exceptions_notify,
-+	/* we need to be notified first */
-+	.priority = 0x7fffffff
-+};
-+
-+static int __init init_hw_breakpoint(void)
-+{
-+	return register_die_notifier(&hw_breakpoint_exceptions_nb);
-+}
-+
-+core_initcall(init_hw_breakpoint);
 
