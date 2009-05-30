@@ -1,99 +1,194 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763435AbZE3Sdd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762824AbZE3Sh2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763435AbZE3Sdd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 14:33:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760868AbZE3SdY
+	id S1762824AbZE3Sh2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 14:37:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762150AbZE3ShO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 14:33:24 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45202 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760829AbZE3SdY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 14:33:24 -0400
-Date: Sat, 30 May 2009 20:32:57 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Larry H." <research@subreption.com>
-Cc: Rik van Riel <riel@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, pageexec@freemail.hu,
-       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@osdl.org>, linux-mm@kvack.org,
-       Ingo Molnar <mingo@redhat.com>
-Subject: Re: [patch 0/5] Support for sanitization flag in low-level page
-	allocator
-Message-ID: <20090530183257.GB25237@elte.hu>
-References: <20090522073436.GA3612@elte.hu> <20090530054856.GG29711@oblivion.subreption.com> <1243679973.6645.131.camel@laptop> <4A211BA8.8585.17B52182@pageexec.freemail.hu> <1243689707.6645.134.camel@laptop> <20090530153023.45600fd2@lxorguk.ukuu.org.uk> <1243694737.6645.142.camel@laptop> <4A214752.7000303@redhat.com> <20090530170031.GD6535@oblivion.subreption.com> <20090530172515.GE6535@oblivion.subreption.com>
+	Sat, 30 May 2009 14:37:14 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:37764 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761914AbZE3ShN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 May 2009 14:37:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=EVtjaLnknbvlV+b0F6SoqC1D+YOVN6oHDkhScwRwGgQd34+EbKRs0Ynhk/OyxPUjko
+         c7InlgHgcEpxcUfE1DZ8Dv0QqEJ99bSdVGhZ4DQsW9sVi2Se2lKkH/hs2cT+SLfytTT8
+         uG21QSvBByHh/RJOcTEjM1/Lbt/GdF9kQ9+NQ=
+Date: Sat, 30 May 2009 20:37:10 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: "K.Prasad" <prasad@linux.vnet.ibm.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [Patch 05/12] Use wrapper routines around debug registers in
+	processor related functions
+Message-ID: <20090530183709.GA8739@nowhere>
+References: <20090530103857.715014561@prasadkr_t60p.in.ibm.com> <20090530105129.GF9512@in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090530172515.GE6535@oblivion.subreption.com>
+In-Reply-To: <20090530105129.GF9512@in.ibm.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Larry H. <research@subreption.com> wrote:
-
-> Done. I just tested with different 'leak' sizes on a kernel 
-> patched with the latest memory sanitization patch and the 
-> kfree/kmem_cache_free one:
+On Sat, May 30, 2009 at 04:21:29PM +0530, K.Prasad wrote:
+> This patch enables the use of wrapper routines to access the debug/breakpoint
+> registers.
 > 
-> 	10M	- no occurrences with immediate scanmem
-> 	40M	- no occurrences with immediate scanmem
-> 	80M	- no occurrences with immediate scanmem
-> 	160M	- no occurrences with immediate scanmem
-> 	250M	- no occurrences with immediate scanmem
-> 	300M	- no occurrences with immediate scanmem
-> 	500M	- no occurrences with immediate scanmem
-> 	600M	- with immediate zeromem 600 and scanmem afterwards,
-> 		 no occurrences.
+> Original-patch-by: Alan Stern <stern@rowland.harvard.edu>
+> Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
+> Reviewed-by: Alan Stern <stern@rowland.harvard.edu>
+> ---
+>  arch/x86/kernel/smpboot.c |    3 +++
+>  arch/x86/power/cpu_32.c   |   16 +++-------------
+>  arch/x86/power/cpu_64.c   |   15 +++------------
+>  3 files changed, 9 insertions(+), 25 deletions(-)
+> 
+> Index: linux-2.6-tip.hbkpt/arch/x86/kernel/smpboot.c
+> ===================================================================
+> --- linux-2.6-tip.hbkpt.orig/arch/x86/kernel/smpboot.c
+> +++ linux-2.6-tip.hbkpt/arch/x86/kernel/smpboot.c
+> @@ -63,6 +63,7 @@
+>  #include <asm/apic.h>
+>  #include <asm/setup.h>
+>  #include <asm/uv/uv.h>
+> +#include <asm/debugreg.h>
+>  #include <linux/mc146818rtc.h>
+>  
+>  #include <asm/smpboot_hooks.h>
+> @@ -326,6 +327,7 @@ notrace static void __cpuinit start_seco
+>  	setup_secondary_clock();
+>  
+>  	wmb();
+> +	load_debug_registers();
+>  	cpu_idle();
+>  }
+>  
+> @@ -1252,6 +1254,7 @@ void cpu_disable_common(void)
+>  	remove_cpu_from_maps(cpu);
+>  	unlock_vector_lock();
+>  	fixup_irqs();
+> +	hw_breakpoint_disable();
+>  }
+>  
+>  int native_cpu_disable(void)
+> Index: linux-2.6-tip.hbkpt/arch/x86/power/cpu_32.c
+> ===================================================================
+> --- linux-2.6-tip.hbkpt.orig/arch/x86/power/cpu_32.c
+> +++ linux-2.6-tip.hbkpt/arch/x86/power/cpu_32.c
+> @@ -13,6 +13,7 @@
+>  #include <asm/mce.h>
+>  #include <asm/xcr.h>
+>  #include <asm/suspend.h>
+> +#include <asm/debugreg.h>
+>  
+>  static struct saved_context saved_context;
+>  
+> @@ -48,6 +49,7 @@ static void __save_processor_state(struc
+>  	ctxt->cr2 = read_cr2();
+>  	ctxt->cr3 = read_cr3();
+>  	ctxt->cr4 = read_cr4_safe();
+> +	hw_breakpoint_disable();
+>  }
+>  
+>  /* Needed by apm.c */
+> @@ -80,19 +82,7 @@ static void fix_processor_context(void)
+>  	load_TR_desc();				/* This does ltr */
+>  	load_LDT(&current->active_mm->context);	/* This does lldt */
+>  
+> -	/*
+> -	 * Now maybe reload the debug registers
+> -	 */
+> -	if (current->thread.debugreg7) {
+> -		set_debugreg(current->thread.debugreg0, 0);
+> -		set_debugreg(current->thread.debugreg1, 1);
+> -		set_debugreg(current->thread.debugreg2, 2);
+> -		set_debugreg(current->thread.debugreg3, 3);
+> -		/* no 4 and 5 */
+> -		set_debugreg(current->thread.debugreg6, 6);
+> -		set_debugreg(current->thread.debugreg7, 7);
+> -	}
+> -
+> +	load_debug_registers();
 
-Is the sensitive data (or portions/transformations of it) copied to 
-the kernel stack and used there?
 
-If not then this isnt a complete/sufficient/fair test of how 
-sensitive data like crypto keys gets used by the kernel.
+This part is breaking the things in the middle.
 
-In reality sensitive data, if it's relied upon by the kernel, can 
-(and does) make it to the kernel stack. We see it happen every day 
-with function return values. Let me quote the example i mentioned 
-earlier today:
+I think the conversion from thread.debugreg0/1/2/3 to an
+array should be done completely early, when you add the headers.
 
-[   96.138788]  [<ffffffff810ab62e>] perf_counter_exit_task+0x10e/0x3f3
-[   96.145464]  [<ffffffff8104cf46>] do_exit+0x2e7/0x722
-[   96.150837]  [<ffffffff810630cf>] ? up_read+0x9/0xb
-[   96.156036]  [<ffffffff8151cc0b>] ? do_page_fault+0x27d/0x2a5
-[   96.162141]  [<ffffffff8104d3f4>] do_group_exit+0x73/0xa0
-[   96.167860]  [<ffffffff8104d433>] sys_exit_group+0x12/0x16
-[   96.173665]  [<ffffffff8100bb2b>] system_call_fastpath+0x16/0x1b
+The problem is that your patchset iterates through those two versions
+of virtual debug registers, and those two version can't be carried
+well while keeping the good granularity of your patchset.
 
-This is a real stackdump and the 'ffffffff8151cc0b' 64-bit word is 
-actually a leftover from a previous system entry. ( And this is at 
-the bottom of the stack that gets cleared all the time - the top of 
-the kernel stack is a lot more more persistent in practice and 
-crypto calls tend to have a healthy stack footprint. )
+You are dropping the old version of virtual debug registers from
+cpu management in favour of the new version which uses the array through
+wrappers, whereas the thread code still deals with the old version.
 
-Similarly, other sensitive data can be leaked via the kernel stack 
-too.
+The result, which I haven't tried, is likely to break the things
+if I don't apply further patches of this series.
 
-So IMO the GFP_SENSITIVE facility (beyond being a technical misnomer 
-- it should be something like GFP_NON_PERSISTENT instead) actually 
-results in subtly _worse_ security in the end: because people (and 
-organizations) 'think' that their keys are safe against information 
-leaks via this space, while they are not.
+Of course it will build, but the breakpoints won't work anymore
+with cpu hotplug or suspend because the threads management still
+uses the old version of registers.
 
-The kernel stack can be freed, be reused by something else partially 
-and then written out to disk (say as part of hibernation) where it's 
-recoverable from the disk image.
+I can't apply this patchset if it induces a know regression in
+the middle otherwise bisection will become impossible.
 
-Furthermore, there's no guarantee at all that a task wont stay 
-around for a long time - with sensitive data still on its kernel 
-stack.
+I think you need to convert all sites from
+thread->debugregX to thread->debugreg[X] early in
+the first patch. It will also bring your patchset into
+a better logic of progression changes.
 
-	Ingo
+Thanks,
+Frederic.
+
+
+
+>  }
+>  
+>  static void __restore_processor_state(struct saved_context *ctxt)
+> Index: linux-2.6-tip.hbkpt/arch/x86/power/cpu_64.c
+> ===================================================================
+> --- linux-2.6-tip.hbkpt.orig/arch/x86/power/cpu_64.c
+> +++ linux-2.6-tip.hbkpt/arch/x86/power/cpu_64.c
+> @@ -16,6 +16,7 @@
+>  #include <asm/mtrr.h>
+>  #include <asm/xcr.h>
+>  #include <asm/suspend.h>
+> +#include <asm/debugreg.h>
+>  
+>  static void fix_processor_context(void);
+>  
+> @@ -71,6 +72,7 @@ static void __save_processor_state(struc
+>  	ctxt->cr3 = read_cr3();
+>  	ctxt->cr4 = read_cr4();
+>  	ctxt->cr8 = read_cr8();
+> +	hw_breakpoint_disable();
+>  }
+>  
+>  void save_processor_state(void)
+> @@ -159,16 +161,5 @@ static void fix_processor_context(void)
+>  	load_TR_desc();				/* This does ltr */
+>  	load_LDT(&current->active_mm->context);	/* This does lldt */
+>  
+> -	/*
+> -	 * Now maybe reload the debug registers
+> -	 */
+> -	if (current->thread.debugreg7){
+> -                loaddebug(&current->thread, 0);
+> -                loaddebug(&current->thread, 1);
+> -                loaddebug(&current->thread, 2);
+> -                loaddebug(&current->thread, 3);
+> -                /* no 4 and 5 */
+> -                loaddebug(&current->thread, 6);
+> -                loaddebug(&current->thread, 7);
+> -	}
+> +	load_debug_registers();
+>  }
+> 
+
