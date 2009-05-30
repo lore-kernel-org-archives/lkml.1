@@ -1,109 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761385AbZE3NhA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932079AbZE3NlH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761385AbZE3NhA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 09:37:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758744AbZE3Ngw
+	id S932079AbZE3NlH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 09:41:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754631AbZE3Nk5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 09:36:52 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:42355 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757527AbZE3Ngw (ORCPT
+	Sat, 30 May 2009 09:40:57 -0400
+Received: from lutt.itea.ntnu.no ([129.241.18.234]:47974 "EHLO
+	lutt.itea.ntnu.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751645AbZE3Nk4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 09:36:52 -0400
-Date: Sat, 30 May 2009 09:36:51 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
+	Sat, 30 May 2009 09:40:56 -0400
+X-Greylist: delayed 304 seconds by postgrey-1.27 at vger.kernel.org; Sat, 30 May 2009 09:40:56 EDT
+Date: Sat, 30 May 2009 15:34:41 +0200
+From: Henrik Austad <henrik@austad.us>
 To: GeunSik Lim <leemgs1@gmail.com>
-cc: Greg KH <greg@kroah.com>, linux-kernel <linux-kernel@vger.kernel.org>,
-       trivial@kernel.org, balagi@justmail.de, bgamari@gmail.com,
-       Ingo Molnar <mingo@elte.hu>, inaky.perez-gonzalez@intel.com
-Subject: Re: [RFC V2 PATCH]debugfs:Fix terminology inconsistency of dir name
-  to mount debugfs filesystem.
-In-Reply-To: <49b7c2350905300238k5f6259fne30ad94f8fbf7e20@mail.gmail.com>
-Message-ID: <alpine.DEB.2.00.0905300935570.14994@gandalf.stny.rr.com>
-References: <1243315163.14685.17.camel@centos51>  <1243613134.20635.14.camel@centos51>  <alpine.DEB.2.00.0905291240150.31247@gandalf.stny.rr.com>  <49b7c2350905291843i402b7161xf05fdb87eb77f73f@mail.gmail.com>  <alpine.DEB.2.00.0905292204280.14994@gandalf.stny.rr.com>
- <49b7c2350905300238k5f6259fne30ad94f8fbf7e20@mail.gmail.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+Cc: finarfin@dreamos.org, linux-kernel@vger.kernel.org
+Subject: Re: SCHED_EDF infos
+Message-ID: <20090530133441.GA11337@alecto.austad.us>
+References: <164c92d827cbee86ba2c5621716309e6@localhost> <200904300939.31754.henrik@austad.us> <49b7c2350905071935kbd2aa22v9d39cf41c537c24b@mail.gmail.com> <20090508091052.GA10429@januz.myftp.org> <49b7c2350905300438n6195de93la53bee3a309f71d@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-857149259-1243690611=:14994"
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <49b7c2350905300438n6195de93la53bee3a309f71d@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Sat, May 30, 2009 at 08:38:29PM +0900, GeunSik Lim wrote:
+> On Fri, May 8, 2009 at 6:10 PM, Henrik Austad <henrik@austad.us> wrote:
+> >> [..]
+> >> I think so.
+> >> How can we approach  EDF implementation like Pfair as a generic solution
+> >> for Multicore in Linux?
+> >
+> > I am working on an implementation now, and I hope to be able to release a
+> > prototype by the end of next week. I think we can continue the discussion
+> > then based on that.
+> Hi Henrik,
 
---8323328-857149259-1243690611=:14994
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Hi!
 
+btw, that 'end of next week'.. *sigh*
 
-On Sat, 30 May 2009, GeunSik Lim wrote:
-> > Here's the function I use:
-> >
-> > #define _STR(x) x
-> > #define STR(x) _STR(x)
-> > #define MAX_PATH 256
-> >
-> > const char *find_debugfs(void)
-> > {
-> > =C2=A0 =C2=A0 =C2=A0 =C2=A0static char debugfs[MAX_PATH+1];
-> > =C2=A0 =C2=A0 =C2=A0 =C2=A0static int debugfs_found;
-> > =C2=A0 =C2=A0 =C2=A0 =C2=A0char type[100];
-> > =C2=A0 =C2=A0 =C2=A0 =C2=A0FILE *fp;
-> >
-> > =C2=A0 =C2=A0 =C2=A0 =C2=A0if (debugfs_found)
-> > =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0return debugfs;
-> >
-> >
-> > =C2=A0 =C2=A0 =C2=A0 =C2=A0if ((fp =3D fopen("/proc/mounts","r")) =3D=
-=3D NULL) {
-> > =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0perror("/proc/mo=
-unts");
-> > =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0return NULL;
-> > =C2=A0 =C2=A0 =C2=A0 =C2=A0}
-> >
-> > =C2=A0 =C2=A0 =C2=A0 =C2=A0while (fscanf(fp, "%*s %"
-> > =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0STR(MAX_PATH)
-> > =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0"s %99s %*s %*d %*d\n",
-> > =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0debugfs, type) =3D=3D 2) {
-> > =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0if (strcmp(type,=
- "debugfs") =3D=3D 0)
-> > =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 =C2=A0break;
-> > =C2=A0 =C2=A0 =C2=A0 =C2=A0}
-> > =C2=A0 =C2=A0 =C2=A0 =C2=A0fclose(fp);
-> >
-> > =C2=A0 =C2=A0 =C2=A0 =C2=A0if (strcmp(type, "debugfs") !=3D 0) {
-> > =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0fprintf(stderr, =
-"debugfs not mounted");
-> > =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0return NULL;
-> > =C2=A0 =C2=A0 =C2=A0 =C2=A0}
-> >
-> > =C2=A0 =C2=A0 =C2=A0 =C2=A0debugfs_found =3D 1;
-> >
-> > =C2=A0 =C2=A0 =C2=A0 =C2=A0return debugfs;
-> > }
-> >
-> > This might be a good idea to show it. This is the most robust since it
-> > does not hard code the debugfs directory.
-> Yes, I think so. I have one opinion in the above find_debugfs() function.
-> Default directory  is "/sys/kernel/debug/tracing" in ftrace.txt file
-> as you mentioned.
-> I will append  below code for "***/tracing/" directory name.
->=20
->          int size;
->          [...]
->          size =3D MAX_PATH - strlen(debugfs);
->          strncat(debugfs, "/tracing/", size);
->          return debugfs;
+> Can you share EDF that you implemented with P-fair for Multicore environments?
+> Especially, I wonder How do you keep posix compatibility with EDF scheduler.
 
-Heh, I usually have another function to add the /tracing part. But sure,=20
-we could do that too.
+Well, what exactly do you mean by posix compatibility? What I'm doing, is adding 
+another scheduling class on top of sched_rt so that sched_pfair will be polled 
+before any other class. I was not aware that POSIX had an EDF standard?
 
--- Steve
+> For example,
+> sched_setscheduler(2), sched_getscheduler(2),
+> sched_get_priority_max(2), sched_get_priority_min(2),
+> sched_getaffinity(2), sched_setaffinity(2),
+> sched_getparam(2), sched_setparam(2),
+> setpriority(2), getpriority(2),
+> sched_yield(2), sched_rr_get_interval(2)
 
---8323328-857149259-1243690611=:14994--
+I introduce 3 new syscalls for modifying the tasks. 
+
+ sched_pfair_update()
+ - change an existing task into a pfair task, set attributes, calculate subjob 
+   values etc
+
+ sched_pfair_release()
+ - release the task, i.e. enable it to run on a CPU.
+
+ sched_pfair_reweigh()
+ - change the attributes of the task. In a lot of ways, this is very similar to 
+   pfair_update, but it introduces some problems when trying to reweigh a task 
+   that is running, or if the new values lead to over-utilization of the system.
+
+At the moment, this is only for my own convenice, but I have tried to modify as 
+little of the existing code as possible to avoid merge conflicts etc. So, none 
+of the existing syscalls have been modified in any way.
+
+I'm a bit unsure as to what your question actually is, perhaps you could 
+elaborate a bit about what you're concered about?
+
+henrik
