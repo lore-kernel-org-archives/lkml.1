@@ -1,40 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759387AbZE3KhE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758596AbZE3KkB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759387AbZE3KhE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 06:37:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754274AbZE3Kg4
+	id S1758596AbZE3KkB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 06:40:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753791AbZE3Kjy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 06:36:56 -0400
-Received: from mail.mnementh.co.uk ([173.45.232.4]:56418 "EHLO mnementh.co.uk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753791AbZE3Kg4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 06:36:56 -0400
-Message-ID: <4A210C3F.1070408@f2s.com>
-Date: Sat, 30 May 2009 11:36:47 +0100
-From: Ian molton <spyro@f2s.com>
-Reply-To: ian@mnementh.co.uk
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
-MIME-Version: 1.0
-To: pHilipp Zabel <philipp.zabel@gmail.com>
-CC: linux-kernel@vger.kernel.org, Pierre Ossman <pierre@ossman.eu>
-Subject: Re: [PATCH 2/5] mmc: tmio_mmc: add bus_shift support
-References: <1243279681-4233-1-git-send-email-philipp.zabel@gmail.com>	 <1243279681-4233-3-git-send-email-philipp.zabel@gmail.com> <74d0deb30905261316hd100bbdr96e5e544eed94c2e@mail.gmail.com>
-In-Reply-To: <74d0deb30905261316hd100bbdr96e5e544eed94c2e@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sat, 30 May 2009 06:39:54 -0400
+Received: from casper.infradead.org ([85.118.1.10]:56372 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753895AbZE3Kjx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 May 2009 06:39:53 -0400
+Subject: Re: [patch 0/5] Support for sanitization flag in low-level page
+ allocator
+From: Peter Zijlstra <peterz@infradead.org>
+To: "Larry H." <research@subreption.com>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@osdl.org>, linux-mm@kvack.org,
+       Ingo Molnar <mingo@redhat.com>, pageexec@freemail.hu
+In-Reply-To: <20090530054856.GG29711@oblivion.subreption.com>
+References: <20090522073436.GA3612@elte.hu>
+	 <20090522113809.GB13971@oblivion.subreption.com>
+	 <20090522143914.2019dd47@lxorguk.ukuu.org.uk>
+	 <20090522180351.GC13971@oblivion.subreption.com>
+	 <20090522192158.28fe412e@lxorguk.ukuu.org.uk>
+	 <20090522234031.GH13971@oblivion.subreption.com>
+	 <20090523090910.3d6c2e85@lxorguk.ukuu.org.uk>
+	 <20090523085653.0ad217f8@infradead.org> <1243539361.6645.80.camel@laptop>
+	 <20090529073217.08eb20e1@infradead.org>
+	 <20090530054856.GG29711@oblivion.subreption.com>
+Content-Type: text/plain
+Date: Sat, 30 May 2009 12:39:33 +0200
+Message-Id: <1243679973.6645.131.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-pHilipp Zabel wrote:
-> On Mon, May 25, 2009 at 9:27 PM, Philipp Zabel <philipp.zabel@gmail.com> wrote:
->> Some ASIC3 devices in the wild are connected with the address bus shifted
->> by one line, so that its 16-bit registers appear 32-bit aligned in host
->> memory space.
+On Fri, 2009-05-29 at 22:48 -0700, Larry H. wrote:
+> On 07:32 Fri 29 May     , Arjan van de Ven wrote:
+> > On Thu, 28 May 2009 21:36:01 +0200
+> > Peter Zijlstra <peterz@infradead.org> wrote:
+> > 
+> > > > ... and if we zero on free, we don't need to zero on allocate.
+> > > > While this is a little controversial, it does mean that at least
+> > > > part of the cost is just time-shifted, which means it'll not be TOO
+> > > > bad hopefully...
+> > > 
+> > > zero on allocate has the advantage of cache hotness, we're going to
+> > > use the memory, why else allocate it.
 > 
-> This patch has to be amended:
+> Because zero on allocate kills the very purpose of this patch and it has
+> obvious security implications. Like races (in information leak
+> scenarios, that is). What happens in-between the release of the page and
+> the new allocation that yields the same page? What happens if no further
+> allocations happen in a while (that can return the old page again)?
+> That's the idea.
 
-I have to assume that this works - I have no asic3 hardware, and bus 
-shift is zero on TMIO hardware, so this didnt cause issues.
+I don't get it, these are in-kernel data leaks, you need to be able to
+run kernel code to exploit these, if someone can run kernel code, you've
+lost anyhow.
 
-This modification acked too.
+Why waste time on this?
+
+> > So if you zero on free, the next allocation will reuse the zeroed page.
+> > And due to LIFO that is not too far out "often", which makes it likely
+> > the page is still in L2 cache.
+> 
+> Thanks for pointing this out clearly, Arjan.
+
+Thing is, the time between allocation and use is typically orders of
+magnitude less than between free and use. 
+
+
+Really, get a life, go fix real bugs. Don't make our kernel slower for
+wanking rights.
+
