@@ -1,70 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756390AbZE3BMh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757536AbZE3BOT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756390AbZE3BMh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 21:12:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755394AbZE3BM3
+	id S1757536AbZE3BOT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 21:14:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754354AbZE3BOJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 21:12:29 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:51563 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754773AbZE3BM3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 21:12:29 -0400
-Message-ID: <4A2087EF.8000709@redhat.com>
-Date: Fri, 29 May 2009 21:12:15 -0400
-From: Jarod Wilson <jarod@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Herbert Xu <herbert@gondor.apana.org.au>
-CC: linux-crypto@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Neil Horman <nhorman@tuxdriver.com>
-Subject: Re: [RFC PATCH] crypto: add buffer overflow checks to testmgr
-References: <200905291132.55848.jarod@redhat.com> <20090529221055.GA17957@gondor.apana.org.au>
-In-Reply-To: <20090529221055.GA17957@gondor.apana.org.au>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 29 May 2009 21:14:09 -0400
+Received: from vms173003pub.verizon.net ([206.46.173.3]:40279 "EHLO
+	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754280AbZE3BOI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 May 2009 21:14:08 -0400
+Date: Fri, 29 May 2009 21:13:52 -0400 (EDT)
+From: Len Brown <lenb@kernel.org>
+X-X-Sender: lenb@localhost.localdomain
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Woody Suwalski <woodys@xandros.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Zorael <zorael@gmail.com>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [i915] Kernel does not compile when set to use i915 kernel
+ mode-setting per default (CONFIG_DRM_I915_KMS=y)
+In-reply-to: <4A1475D5.6080602@oracle.com>
+Message-id: <alpine.LFD.2.00.0905292113150.4293@localhost.localdomain>
+References: <fcd863fc0905181109h372e5967t9d179b820a62132d@mail.gmail.com>
+ <4A1464C9.9030603@xandros.com> <4A1475D5.6080602@oracle.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/29/2009 06:10 PM, Herbert Xu wrote:
-> On Fri, May 29, 2009 at 11:32:54AM -0400, Jarod Wilson wrote:
->> At present, its entirely possible to add a test vector to testmgr with
->> an input longer than a page in length w/o specifying a .np option, and
->> overflow the page of memory allocated to {a,}xbuf[0], silently
->> corrupting memory. I know, because I've accidentally done it. :)
->>
->> While this doesn't currently happen in practice w/the existing code,
->> due to all !np vectors being less than a 4k page in length (and the
->> page allocation loop often returns contiguous pages anyway), explicit
->> checks or a way to remove the 4k limit would be a good idea.
->>
->> A few ways to fix and/or work around this:
->>
->> 1) allocate some larger guaranteed contiguous buffers using
->> __get_free_pages() or kmalloc and use them in the !np case
->>
->> 2) catch the > PAGE_SIZE && !np case and then do things similar to how
->> they are done in the np case
->>
->> 3) catch the > PAGE_SIZE && !np case and simply exit with an error
->>
->> Since there currently aren't any test vectors that are actually larger
->> than a page and not tagged np, option 1 seems like a waste of memory
->> and option 2 sounds like unnecessary complexity, so I'd offer up
->> option 3 as the most viable alternative right now.
->>
->> Signed-off-by: Jarod Wilson <jarod@redhat.com>
-> 
-> I just posted exactly the same thing yesterday :)
+From: Len Brown <len.brown@intel.com>
+Subject: [PATCH] ACPI, i915: build fix (v2)
 
-Oh, haha, serves me right for not looking first... Your variant seems to
-be a bit more complete too, as I didn't look at any of the possible cases
-where there might be overflows when using scatterlists. Cool, worksforme!
+drivers/built-in.o: In function `intel_opregion_init':
+(.text+0x9d540): undefined reference to `acpi_video_register'
 
-Thanks much,
+v2: move under DRM_I915 from DRM_I915_KMS
 
+Signed-off-by: Len Brown <len.brown@intel.com>
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+as applied.
+thanks,
+-Len
+
+ drivers/gpu/drm/Kconfig |   14 +++++++-------
+ 1 files changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/gpu/drm/Kconfig b/drivers/gpu/drm/Kconfig
+index 4cd35d8..f5d46e7 100644
+--- a/drivers/gpu/drm/Kconfig
++++ b/drivers/gpu/drm/Kconfig
+@@ -67,12 +67,18 @@ config DRM_I830
+ 	  will load the correct one.
+ 
+ config DRM_I915
++	tristate "i915 driver"
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+ 	select FB
+ 	select FRAMEBUFFER_CONSOLE if !EMBEDDED
+-	tristate "i915 driver"
++	# i915 depends on ACPI_VIDEO when ACPI is enabled
++	# but for select to work, need to select ACPI_VIDEO's dependencies, ick
++	select VIDEO_OUTPUT_CONTROL if ACPI
++	select BACKLIGHT_CLASS_DEVICE if ACPI
++	select INPUT if ACPI
++	select ACPI_VIDEO if ACPI
+ 	help
+ 	  Choose this option if you have a system that has Intel 830M, 845G,
+ 	  852GM, 855GM 865G or 915G integrated graphics.  If M is selected, the
+@@ -84,12 +90,6 @@ config DRM_I915
+ config DRM_I915_KMS
+ 	bool "Enable modesetting on intel by default"
+ 	depends on DRM_I915
+-	# i915 KMS depends on ACPI_VIDEO when ACPI is enabled
+-	# but for select to work, need to select ACPI_VIDEO's dependencies, ick
+-	select VIDEO_OUTPUT_CONTROL if ACPI
+-	select BACKLIGHT_CLASS_DEVICE if ACPI
+-	select INPUT if ACPI
+-	select ACPI_VIDEO if ACPI
+ 	help
+ 	  Choose this option if you want kernel modesetting enabled by default,
+ 	  and you have a new enough userspace to support this. Running old
 -- 
-Jarod Wilson
-jarod@redhat.com
+1.6.3.1.175.g3be7e
+
 
