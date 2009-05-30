@@ -1,55 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752946AbZE3HMr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755239AbZE3HUm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752946AbZE3HMr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 03:12:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751181AbZE3HMi
+	id S1755239AbZE3HUm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 03:20:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751429AbZE3HUe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 03:12:38 -0400
-Received: from mail-fx0-f168.google.com ([209.85.220.168]:34472 "EHLO
-	mail-fx0-f168.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751167AbZE3HMi convert rfc822-to-8bit (ORCPT
+	Sat, 30 May 2009 03:20:34 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:49802 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751181AbZE3HUd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 03:12:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=hJrkl6Jy3Q1fHdxlPQw2g4UoYQRIQu7N/KfLQ19pbfIe9Mg2OAFPKLE22cyu9OjDEM
-         fvOIbApUxToLb+0tOuvlKKpgiNjHpY+TXMtxytPWDgnxCtFKC5oDXYs1y4UstZHXXsW1
-         j3Q6T8vDqLEF7L9DYVWSXJlPvGu3JECQLnTnY=
+	Sat, 30 May 2009 03:20:33 -0400
+Date: Sat, 30 May 2009 15:20:30 +0800
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
+       "hannes@cmpxchg.org" <hannes@cmpxchg.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Subject: Re: [PATCH 4/4] memcg: fix swap accounting
+Message-ID: <20090530072030.GG24073@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090528135455.0c83bedc.kamezawa.hiroyu@jp.fujitsu.com> <20090528142156.efa97a37.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-In-Reply-To: <20090529155859.2cf20823.akpm@linux-foundation.org>
-References: <20090520183045.GB10547@oblivion.subreption.com>
-	 <1242852158.6582.231.camel@laptop>
-	 <20090520212413.GF10756@oblivion.subreption.com>
-	 <20090529155859.2cf20823.akpm@linux-foundation.org>
-Date: Sat, 30 May 2009 10:12:38 +0300
-X-Google-Sender-Auth: 3da1dc2b9edf9be3
-Message-ID: <84144f020905300012h6ca92605ve8fdcbaba39ac054@mail.gmail.com>
-Subject: Re: [patch 0/5] Support for sanitization flag in low-level page 
-	allocator
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Larry H." <research@subreption.com>, peterz@infradead.org,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       linux-mm@kvack.org, mingo@redhat.com, pageexec@freemail.hu
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090528142156.efa97a37.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-05-28 14:21:56]:
 
-On Sat, May 30, 2009 at 1:58 AM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
->  But how to do that?  Particular callsites don't get to alter
->  kfree()'s behaviour.  So they'd need to use a new kfree_sensitive().
->  Which is just syntactic sugar around the code whihc we presently
->  implement.
+> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> 
+> This patch fixes mis-accounting of swap usage in memcg.
+> 
+> In current implementation, memcg's swap account is uncharged only when
+> swap is completely freed. But there are several cases where swap
+> cannot be freed cleanly. For handling that, this patch changes that
+> memcg uncharges swap account when swap has no references other than cache.
+> 
+> By this, memcg's swap entry accounting can be fully synchronous with
+> the application's behavior.
+> This patch also changes memcg's hooks for swap-out.
+>
 
-Unless I am missing something here, we already have kfree_sensitive(),
-we just call it kzfree().
+Looks good, so for count == 0, we directly free the and uncharge, for
+the others we use retry_to_use_swap(). cool!
 
-                                 Pekka
+
+Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+ 
+ 
+-- 
+	Balbir
