@@ -1,32 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759521AbZE3Lgc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762139AbZE3Lhi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759521AbZE3Lgc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 07:36:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757581AbZE3LgX
+	id S1762139AbZE3Lhi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 07:37:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757626AbZE3Lhc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 07:36:23 -0400
-Received: from mail.mnementh.co.uk ([173.45.232.4]:42210 "EHLO mnementh.co.uk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756594AbZE3LgX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 07:36:23 -0400
-Message-ID: <4A211A2E.7090301@f2s.com>
-Date: Sat, 30 May 2009 12:36:14 +0100
-From: Ian molton <spyro@f2s.com>
-Reply-To: ian@mnementh.co.uk
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Sat, 30 May 2009 07:37:32 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:58490 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753639AbZE3Lhb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 May 2009 07:37:31 -0400
+Date: Sat, 30 May 2009 13:37:24 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Michael Shields <mshields@google.com>, rdunlap@xenotime.net,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
+       trivial@kernel.org
+Subject: Re: [PATCH] Doc fix: ext2 can only have 32,000 subdirs, not 32,768.
+Message-ID: <20090530113724.GA1444@ucw.cz>
+References: <63a2e74f0905181213r54a2d8b2tb7dcecd177d474c2@mail.gmail.com> <20090527172045.f33b0b49.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Philipp Zabel <philipp.zabel@gmail.com>
-CC: linux-kernel@vger.kernel.org, Pierre Ossman <pierre@ossman.eu>
-Subject: Re: [PATCH 5/5] mmc: tmio_mmc: move probe function into __init section
-References: <1243279681-4233-1-git-send-email-philipp.zabel@gmail.com> <1243279681-4233-6-git-send-email-philipp.zabel@gmail.com>
-In-Reply-To: <1243279681-4233-6-git-send-email-philipp.zabel@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090527172045.f33b0b49.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Philipp Zabel wrote:
-> As MFD cells are not hotpluggable, this should be safe to do.
+On Wed 2009-05-27 17:20:45, Andrew Morton wrote:
+> On Mon, 18 May 2009 12:13:51 -0700
+> Michael Shields <mshields@google.com> wrote:
+> 
+> > ext2.txt says that dirs can have 32,768 subdirs, but the actual value
+> > of EXT2_LINK_MAX is 32000.
+> > ext3 is the same, but the doc does not mention it. __One of ext4's
+> > features is to "fix 32000 subdirectory limit".
+> > 
+> > --- linux-2.6.29.3/Documentation/filesystems/ext2.txt.orig 2009-05-08
+> > 15:47:21.000000000 -0700
+> > +++ linux-2.6.29.3/Documentation/filesystems/ext2.txt 2009-05-18
+> > 12:03:58.000000000 -0700
+> > @@ -322,7 +322,7 @@ an upper limit on the block size imposed
+> > __so 8kB blocks are only allowed on Alpha systems (and other architectures
+> > __which support larger pages).
+> > 
+> > -There is an upper limit of 32768 subdirectories in a single directory.
+> > +There is an upper limit of 32000 subdirectories in a single directory.
+> > 
+> > __There is a "soft" upper limit of about 10-15k files in a single directory
+> > __with the current linear linked-list directory implementation. __This limit
+> > --
 
-NAK, as per others comments.
+Maybe it would be better to increase EXT2_LINK_MAX to fit the docs?
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
