@@ -1,131 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932657AbZE3OsZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932609AbZE3Oti@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932657AbZE3OsZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 10:48:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760016AbZE3OsS
+	id S932609AbZE3Oti (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 10:49:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758943AbZE3Otb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 10:48:18 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:49065 "EHLO mx2.redhat.com"
+	Sat, 30 May 2009 10:49:31 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:49118 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758744AbZE3OsQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 10:48:16 -0400
-Message-ID: <4A214753.8080005@redhat.com>
-Date: Sat, 30 May 2009 10:48:51 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	id S1758119AbZE3Ota (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 May 2009 10:49:30 -0400
+Message-ID: <4A214752.7000303@redhat.com>
+Date: Sat, 30 May 2009 10:48:50 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
 MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>
-CC: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Roland McGrath <roland@redhat.com>, linux-arch@vger.kernel.org
-Subject: Re: [PATCH -tip v8 5/7] x86: add pt_regs register and stack access
- APIs
-References: <20090529000326.17532.70868.stgit@localhost.localdomain> <20090529000347.17532.34038.stgit@localhost.localdomain> <20090530081303.GB15755@infradead.org>
-In-Reply-To: <20090530081303.GB15755@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, pageexec@freemail.hu,
+       "Larry H." <research@subreption.com>,
+       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>,
+       linux-mm@kvack.org, Ingo Molnar <mingo@redhat.com>
+Subject: Re: [patch 0/5] Support for sanitization flag in low-level page allocator
+References: <20090522073436.GA3612@elte.hu>	 <20090530054856.GG29711@oblivion.subreption.com>	 <1243679973.6645.131.camel@laptop>	 <4A211BA8.8585.17B52182@pageexec.freemail.hu>	 <1243689707.6645.134.camel@laptop>	 <20090530153023.45600fd2@lxorguk.ukuu.org.uk> <1243694737.6645.142.camel@laptop>
+In-Reply-To: <1243694737.6645.142.camel@laptop>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Christoph,
-
-Thank you for review.
-
-Christoph Hellwig wrote:
-> You might want to run this past linux-arch to make sure this is suitable
-> for other architectures.
-
-Frankly, I'm not sure about linux-arch, could you explain it?
-Anyway, I'm interested in that idea.
-
->> --- a/arch/x86/include/asm/ptrace.h
->> +++ b/arch/x86/include/asm/ptrace.h
->> @@ -7,6 +7,7 @@
->>  
->>  #ifdef __KERNEL__
->>  #include <asm/segment.h>
->> +#include <asm/page_types.h>
->>  #endif
+Peter Zijlstra wrote:
+> On Sat, 2009-05-30 at 15:30 +0100, Alan Cox wrote:
+>>> Right, so the whole point is to minimize the impact of actual bugs,
+>>> right? So why not focus on fixing those actual bugs? Can we create tools
+>>> to help us find such bugs faster? We use sparse for a lot of static
+>>> checking, we create things like lockdep and kmemcheck to dynamically
+>>> find trouble.
+>>>
+>>> Can we instead of working around a problem, fix the actual problem?
+>> Why do cars have crashworthiness and seatbelts ? Why not fix the actual
+>> problem (driving errors) ? I mean lets face it they make the vehicle
+>> heavier, less fuel efficient, less fun and more annoying to use.
 > 
-> I really wonder if we should split asm/ptrace.h into one file
-> just defining pt_regs both for userspace and the kernel, and one with
-> all kinds of register access helpers and maybe another one for the
-> ptrace architecture interface.
-
-Agreed, pt_regs is used more broadly than ptrace itself in kernel.
-
-> Unforuntately we would have to keep the ptrace.h name for the one
-> carrying pt_regs as it's exposed to userland.
-
-Perhaps, we should split pt_regs from ptrace.h, like as ptrace-regs.h.
-
->> +static inline unsigned long get_register(struct pt_regs *regs, unsigned offset)
->> +{
+> We can't find every crash bug either, yet we still ship the kernel and
+> people actually use it too.
 > 
-> I woner if all these names aren't a bit generic.  Shoud we maybe add a
-> regs_ prefix to make it clear it operates on a pt_regs register set?
+> What makes these security bugs so much more important than all the other
+> ones?
 
-Indeed.
-
-> Also some kerneldoc documentation for all these helpers would be nice.
-
-Sure.
-
->> +/* Get Nth argument at function call */
->> +static inline unsigned long get_argument_nth(struct pt_regs *regs, unsigned n)
->> +{
->> +#ifdef CONFIG_X86_32
->> +#define NR_REGPARMS 3
-> 
-> I think completely separate version for 32 vs 64 bit for this one would
-> be cleaner.
-
-Agreed,
-
-> 
->> +	if (n < NR_REGPARMS) {
->> +		switch (n) {
->> +		case 0: return regs->ax;
->> +		case 1: return regs->dx;
->> +		case 2: return regs->cx;
->> +		}
-> 
-> Normal kernel style would be
-> 
-> 		switch (n) {
-> 		case 0:
-> 			return regs->ax;
-> 		case 1:
-> 			return regs->dx;
-> 		case 2:
-> 			return regs->cx;
-> 		}
-
-Oops, thanks,
-
-> 
->> +#define REG_OFFSET(r) offsetof(struct pt_regs, r)
->> +#define REG_OFFSET_NAME(r) {.name = #r, .offset = REG_OFFSET(r)}
->> +#define REG_OFFSET_END {.name = NULL, .offset = 0}
-> 
-> At least the REG_OFFSET macro seems superflous to me.
-> 
-
-Exactly.
-
-Thank you again!
+The fact that we can do something about them.
 
 -- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+All rights reversed.
