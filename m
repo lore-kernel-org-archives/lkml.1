@@ -1,70 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755349AbZE3XD7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757514AbZE3XEX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755349AbZE3XD7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 19:03:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753579AbZE3XDw
+	id S1757514AbZE3XEX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 19:04:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756138AbZE3XEO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 19:03:52 -0400
-Received: from luminismail.carleton.ca ([134.117.2.27]:43456 "EHLO
-	luminismail.carleton.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752504AbZE3XDv (ORCPT
+	Sat, 30 May 2009 19:04:14 -0400
+Received: from ey-out-2122.google.com ([74.125.78.25]:23907 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753579AbZE3XEM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 19:03:51 -0400
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: text/plain; charset=utf-8
-Message-id: <4A21BB4F.9000000@superonline.com>
-Date: Sat, 30 May 2009 19:03:43 -0400
-From: "M. Vefa Bicakci" <bicave@superonline.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Sat, 30 May 2009 19:04:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=bhZQRD+pFkw6eLkjcrj9gaRdeuy/MkR4pO0mtoM2PpkURk+v8kDE25q6nEOokXVDQm
+         kf3hL46e7ihxVM62YppPv1iwx/yrLc4/sOWaXCgf670V0mXjxclt4DovNeE51Pcvo2ng
+         fglNuBVAzKXcO5zuMELoOBTwKV/IsNAfUuILw=
+Date: Sun, 31 May 2009 01:04:10 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Takashi Iwai <tiwai@suse.de>
-Subject: Re: [Bug #13377] Microphone no longer works on Toshiba Satellite A100
-References: <4to6E2myxvG.A.muC.aIbIKB@chimera>
- <LEcEO2518_I.A.kbD.vIbIKB@chimera>
-In-reply-to: <LEcEO2518_I.A.kbD.vIbIKB@chimera>
+       Harald Dunkel <harald.dunkel@t-online.de>,
+       Jeff Mahoney <jeffm@suse.com>
+Subject: Re: [Bug #13374] reiserfs blocked for more than 120secs
+Message-ID: <20090530230408.GC8739@nowhere>
+References: <4to6E2myxvG.A.muC.aIbIKB@chimera> <LEcEO2518_I.A.MgD.wIbIKB@chimera>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <LEcEO2518_I.A.MgD.wIbIKB@chimera>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
+On Sat, May 30, 2009 at 09:37:36PM +0200, Rafael J. Wysocki wrote:
 > This message has been generated automatically as a part of a report
 > of recent regressions.
 > 
 > The following bug entry is on the current list of known regressions
 > from 2.6.29.  Please verify if it still should be listed and let me know
 > (either way).
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13374
+> Subject		: reiserfs blocked for more than 120secs
+> Submitter	: Harald Dunkel <harald.dunkel@t-online.de>
+> Date		: 2009-05-23 8:52 (8 days old)
+> References	: http://marc.info/?l=linux-kernel&m=124306880410811&w=4
+> 
+> 
 
-Hello,
 
-I am sorry for responding to your e-mail late. Takashi Iwai identified
-the cause of this problem and provided a patch. I tested the patch and
-confirmed that it solves the problem. The patch was integrated into
-mainline with the following commit:
+Trenton D. Adams has reported something very similar for -rc3:
 
-=== 8< ===
-commit 461c6c3a0a23a8fac1a4b636e93ff5dfe599a241
-Author: Takashi Iwai <tiwai@suse.de>
-Date:   Mon May 25 08:06:02 2009 +0200
+http://lkml.org/lkml/2009/5/29/389
 
-    ALSA: hda - Add missing check of pin vref 50 and others in Realtek codecs
-    
-    Some Realtek codecs like ALC861 seem to support only VREF50 while the
-    current driver assumes it's only VREF80.  Check other VREF bits to set
-    the correct value.
-    
-    Signed-off-by: Takashi Iwai <tiwai@suse.de>
-=== >8 ===
+Someone holds the j_commit_mutex but never release it...
 
-Regards,
+(Adding Jeff Mahoney in cc )
 
-M. Vefa Bicakci
-
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13377
-> Subject		: Microphone no longer works on Toshiba Satellite A100
-> Submitter	: M. Vefa Bicakci <bicave@superonline.com>
-> Date		: 2009-05-24 15:49 (7 days old)
-> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=23f0c048ba59ad5c2f3fd85ed98360b631dbf6f8
-> References	: http://marc.info/?l=linux-kernel&m=124318383910011&w=4
