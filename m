@@ -1,17 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761573AbZE3W4a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761822AbZE3W4y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761573AbZE3W4a (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 18:56:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757230AbZE3Wx6
+	id S1761822AbZE3W4y (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 18:56:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757067AbZE3WyA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 18:53:58 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:46775 "EHLO ogre.sisk.pl"
+	Sat, 30 May 2009 18:54:00 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:46771 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758670AbZE3Wxy convert rfc822-to-8bit (ORCPT
+	id S1757939AbZE3Wx4 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 18:53:54 -0400
+	Sat, 30 May 2009 18:53:56 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Matt Carlson" <mcarlson@broadcom.com>, "Nikolay" <dobrev666@gmail.com>
+       "FUJITA Tomonori" <fujita.tomonori@lab.ntt.co.jp>,
+       "Grant Grundler" <grundler@google.com>, "" <optimusgd@gmail.com>
 References: <THxQaUP0K2D.A.QkF.UVbIKB@chimera>
 In-Reply-To: <THxQaUP0K2D.A.QkF.UVbIKB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,8 +20,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <PkPeJtNB3KO.A.GOH.mWbIKB@chimera>
-Subject: [Bug #12971] "tg3 transmit timed out" when transmitting at high bitrate
+Message-ID: <PkPeJtNB3KO.A.WJH.YWbIKB@chimera>
+Subject: [Bug #13001] PCI-DMA: Out of IOMMU space
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Sat, 30 May 2009 21:55:34 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -35,10 +36,10 @@ introduced between 2.6.28 and 2.6.29.  Please verify if it still should
 be listed and let me know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12971
-Subject		: "tg3 transmit timed out" when transmitting at high bitrate
-Submitter	: Nikolay <dobrev666@gmail.com>
-Date		: 2009-03-29 18:02 (63 days old)
-Handled-By	: Matt Carlson <mcarlson@broadcom.com>
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13001
+Subject		: PCI-DMA: Out of IOMMU space
+Submitter	:  <optimusgd@gmail.com>
+Date		: 2009-04-03 09:30 (58 days old)
+References	: http://lkml.org/lkml/2009/4/28/133
 
 
