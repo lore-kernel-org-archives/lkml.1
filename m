@@ -1,76 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763584AbZE3Uck@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763596AbZE3Ukr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763584AbZE3Uck (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 16:32:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755006AbZE3Ucb
+	id S1763596AbZE3Ukr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 16:40:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755462AbZE3Ukj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 16:32:31 -0400
-Received: from mx-out2.daemonmail.net ([216.104.160.39]:52970 "EHLO
-	mx-out2.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753899AbZE3Ucb (ORCPT
+	Sat, 30 May 2009 16:40:39 -0400
+Received: from bene2.itea.ntnu.no ([129.241.56.57]:55919 "EHLO
+	bene2.itea.ntnu.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755006AbZE3Uki (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 16:32:31 -0400
-From: "Michael S. Zick" <lkml@morethan.org>
-Reply-To: lkml@morethan.org
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [GIT PULL] x86 fixes for 2.6.30-rc8
-Date: Sat, 30 May 2009 15:32:28 -0500
-User-Agent: KMail/1.9.9
-Cc: Pavel Machek <pavel@ucw.cz>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       "Thomas Gleixner <tglx@linutronix.de> Suresh Siddha" 
-	<suresh.siddha@intel.com>,
-       Tejun Heo <tj@kernel.org>,
-       Venkatesh Pallapadi <venkatesh.pallapadi@intel.com>,
-       Zhang Rui <rui.zhang@intel.com>
-References: <200905252003.n4PK3sFi014919@voreg.hos.anvin.org> <200905300713.23741.lkml@morethan.org> <4A2187BF.1070205@zytor.com>
-In-Reply-To: <4A2187BF.1070205@zytor.com>
+	Sat, 30 May 2009 16:40:38 -0400
+Date: Sat, 30 May 2009 22:40:38 +0200
+From: Henrik Austad <henrik@austad.us>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: GeunSik Lim <leemgs1@gmail.com>, finarfin@dreamos.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: SCHED_EDF infos
+Message-ID: <20090530204038.GA20875@alecto.austad.us>
+References: <164c92d827cbee86ba2c5621716309e6@localhost> <200904300939.31754.henrik@austad.us> <49b7c2350905071935kbd2aa22v9d39cf41c537c24b@mail.gmail.com> <20090508091052.GA10429@januz.myftp.org> <1243710957.6645.157.camel@laptop>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200905301532.30450.lkml@morethan.org>
+In-Reply-To: <1243710957.6645.157.camel@laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat May 30 2009, H. Peter Anvin wrote:
-> Michael S. Zick wrote:
-> > On Sat May 30 2009, Pavel Machek wrote:
-> >> Hi!
-> >>
-> >>> --- a/Documentation/kernel-parameters.txt
-> >>> +++ b/Documentation/kernel-parameters.txt
-> >>> @@ -1535,6 +1535,10 @@ and is between 256 and 4096 characters. It is defined in the file
-> >>>  			register save and restore. The kernel will only save
-> >>>  			legacy floating-point registers on task switch.
-> >>>  
-> >>> +	noxsave		[BUGS=X86] Disables x86 extended register state save
-> >>> +			and restore using xsave. The kernel will fallback to
-> >>> +			enabling legacy floating-point and sse state.
-> >>> +
-> >> Does that mean apps using sse8 will see their registers corrupted if
-> >> this option is used? Or are new registers sets always added in a way
-> >> that kernel has to enable them first?
+On Sat, May 30, 2009 at 09:15:57PM +0200, Peter Zijlstra wrote:
+> On Fri, 2009-05-08 at 11:10 +0200, Henrik Austad wrote:
+> > > In fact, I also  don't have perfect know how to solve PI in Multicore.
+> > > [...]
+> > > > deadline inversion will be a problem, in fact, whatever you chooose to 
+> > > > be the 'key' for picking tasks (priority, niceness, deadlines, wind 
+> > > > direction, <whatever>), you can pretty much take that and add a 
+> > > > -inversion after it. :)
+> > 
+> > No, PI is going to be deadly no matter what you do.
 > 
-> New register sets always require enabling.
+> Right, we would need to extend the Priority Inheritance Protocol to
+> include everything the regular scheduling functions operate on.
 > 
-> > Has this change been tested on the processors that have independent ftp&sse
-> > units, without the shared registers?  Such as the VIA C7-M?
+> That is, we can reduce scheduling to a single order operator that orders
+> all the available tasks, such that t_n < t_n+1.
 > 
-> x87 and SSE are always separate.  Whether or not register sets are
-> separate is an architectural issue, and isn't subject to variation
-> across CPUs.
+> For pure EDF that would be a comparison on deadlines (and available
+> bandwidth), for FIFO on static priority and for CFS something based on
+> the virtual runtimes of the involved tasks. For the combined set of
+> these scheduling classes the comparator uses the class hierarchy to
+> order between them.
 > 
+> Lets call the full set of data that is used to determine this order a
+> task's key.
+> 
+> If we then substitute this key for the static priority of the classic
+> PIP and use this generic comparison operator, it can be extended to
+> cover arbitrary complex scheduling functions.
 
-In this case they are but I am glad to hear that Intel and VIA Tech.
-are working this closely together.  It simplifies the support issues.
+I think you can do this in pick_next_task, actually.
 
-Mike
-> 	-hpa
-> 
+I wonder, will it be enough to add a single task_struct *blocker to task_struct? 
 
+Then you will end up with a list (or tree of tasks) all ending in a single task 
+that holds the required resource. Say task A,B,C,D and E holds some critical 
+resource, then you can end up with (awful ascii-art to starboard!):
+
+   A -> B -> E
+             ^
+             |
+        C -> D
+
+So, whenever A-D is being scheduled, E will be picked by pick_next_task as it 
+detects that it is blocked, so it follows the blocker untill it finds an 
+unblocked task. That task  must then be the holder of the resource.
+
+Now, the 'only' thing that needs to be done, is to let the kernel update the 
+blocker with the correct task, and detect the moment it releases the resource.
+
+Or am I missing some crazy racecondition here?
+
+> This is a bit like the Proxy Execution Protocol, where we leave the
+> blocked task in the runqueue, but run another task in its stead. The key
+> point is that it donates the full task state as relevant to the
+> scheduling function, or even more directly, it uses the scheduler
+> itself, to solve the Priority Inversion.
+
+come to think of it, this should be doable in pfair. Basically, the task can be 
+picked as you suggest, and it would not interfere with *any* other tasks other 
+than the task it blocks. And, if you do it recursively, for each task it blocks 
+(that depend on the resource or the release of another blocked task), it will 
+gradually consume more and more of the timeslices. So you will not get unbounded 
+execution for non-pfair tasks.
 
