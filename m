@@ -1,51 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758343AbZE3Ilm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759023AbZE3Inz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758343AbZE3Ilm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 04:41:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755672AbZE3Il1
+	id S1759023AbZE3Inz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 04:43:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752661AbZE3Ins
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 04:41:27 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:40535 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753051AbZE3IlY (ORCPT
+	Sat, 30 May 2009 04:43:48 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46065 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751531AbZE3Ins (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 04:41:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject:references
-         :in-reply-to:content-type:content-transfer-encoding;
-        b=r7DkrNi+RAryh4e5oQZqkX7dY9RJ05HMG6adT+LmKJT/+KLsPJe1EvUJmi7aVOwi3J
-         c/TRmXxO+XEdTPdHr910oK36limQQ3Sdn/zRQnlvU/e2/HaJjAnwUQ1rLt+ShguEt6m1
-         LHnyNXQMWFM4OQq3jSvq7Zd/Mgi3ONOmjiCos=
-Message-ID: <4A20F130.8010903@gmail.com>
-Date: Sat, 30 May 2009 10:41:20 +0200
-From: Niel Lambrechts <niel.lambrechts@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090310)
-MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "linux.kernel" <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.30-rc7: Reported regressions 2.6.28 -> 2.6.29
-References: <cFumJ-4vi-3@gated-at.bofh.it>
-In-Reply-To: <cFumJ-4vi-3@gated-at.bofh.it>
-Content-Type: text/plain; charset=UTF-8
+	Sat, 30 May 2009 04:43:48 -0400
+Date: Sat, 30 May 2009 01:43:11 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       vvscore@gmail.com
+Subject: Re: [PATCH] 8250: Fix oops from setserial
+Message-Id: <20090530014311.93577673.akpm@linux-foundation.org>
+In-Reply-To: <20090530092557.57578dd5@lxorguk.ukuu.org.uk>
+References: <20090528130132.19582.65165.stgit@t61.ukuu.org.uk>
+	<20090529205429.c9c73b19.akpm@linux-foundation.org>
+	<20090530092557.57578dd5@lxorguk.ukuu.org.uk>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> This message contains a list of some regressions introduced between 2.6.28 and
-> 2.6.29, for which there are no fixes in the mainline I know of.  If any of them
-> have been fixed already, please let me know.
-<snip>
-> Please let me know if there are any Bugzilla entries that should be added to
-> the list in there.
+On Sat, 30 May 2009 09:25:57 +0100 Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-Hi Rafael,
+> > 
+> > >  static void set_io_from_upio(struct uart_port *p)
+> > >  {
+> > > +	struct uart_8250_port *up = (struct uart_8250_port *)p;
+> > 
+> > container_of() is nicer, IMO.  It's clearer, and doesn't require that
+> > the uart_port be the fist member.
+> 
+> See the rest of the driver - it was written that way years ago and this
+> is just following the existing design.
 
-Can you please add http://bugzilla.kernel.org/show_bug.cgi?id=13017
+Sure, huge numbers of drivers use the cast.
 
-This relates to resume issues that lead to EXT4 file-system errors, with symptoms being ATA bus errors.
-
-Regards,
-Miel
+But I've never seen past sinnings as being a reason to continue sinning. 
+Doing new code the right way doesn't result in worse code, and reduces
+the chances of someone copying and pasting the wrong way.
