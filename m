@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760242AbZE3WpV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760190AbZE3WpB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760242AbZE3WpV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 18:45:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759330AbZE3WnW
+	id S1760190AbZE3WpB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 18:45:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759328AbZE3WnV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 18:43:22 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:48877 "EHLO mx2.redhat.com"
+	Sat, 30 May 2009 18:43:21 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:48876 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759147AbZE3WnT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 18:43:19 -0400
-Date: Sun, 31 May 2009 00:38:45 +0200
+	id S1759309AbZE3WnS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 May 2009 18:43:18 -0400
+Date: Sun, 31 May 2009 00:38:28 +0200
 From: Oleg Nesterov <oleg@redhat.com>
 To: Roland McGrath <roland@redhat.com>
 Cc: Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org
-Subject: [RFC PATCH 11/12 v3] ptrace: mv task_struct->ptrace_message
-	ptrace_ctx->message
-Message-ID: <20090530223845.GA30524@redhat.com>
+Subject: [RFC PATCH 03/12 v3] ptrace: avoid using task->ptrace when
+	possible in ptrace.{c,h}
+Message-ID: <20090530223828.GA30488@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -25,69 +25,165 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move task_struct->ptrace_message into ptrace_ctx->message.
+Do some s/->ptrace/task_ptrace()/ changes in ptrace.{c,h} as a preparation
+for the future changes.
 
-ptrace_event() can use current->ptrace_ctx safely. If mask == 0 and we do
-not check task_ptrace() we are called from tracehook_report_clone_complete(),
-in this case trace == T means current was traced when it called do_fork().
+Change ptrace_setoptions() to access ->ptrace only once.
 
 Signed-off-by: Oleg Nesterov <oleg@redhat.com>
 ---
 
- include/linux/sched.h  |    1 -
- include/linux/ptrace.h |    3 ++-
- kernel/ptrace.c        |    6 ++++--
- 3 files changed, 6 insertions(+), 4 deletions(-)
+ include/linux/ptrace.h |   31 ++++++++++++++++---------------
+ kernel/ptrace.c        |   28 +++++++++++++++-------------
+ 2 files changed, 31 insertions(+), 28 deletions(-)
 
---- PTRACE/include/linux/sched.h~11_MESSAGE	2009-05-30 23:55:58.000000000 +0200
-+++ PTRACE/include/linux/sched.h	2009-05-30 23:58:55.000000000 +0200
-@@ -1347,7 +1347,6 @@ struct task_struct {
- 
- 	struct io_context *io_context;
- 
--	unsigned long ptrace_message;
- 	struct task_io_accounting ioac;
- #if defined(CONFIG_TASK_XACCT)
- 	u64 acct_rss_mem1;	/* accumulated rss usage */
---- PTRACE/include/linux/ptrace.h~11_MESSAGE	2009-05-30 23:55:58.000000000 +0200
-+++ PTRACE/include/linux/ptrace.h	2009-05-30 23:58:55.000000000 +0200
-@@ -79,6 +79,7 @@ struct ptrace_context {
- 	unsigned long		flags;
- 	struct task_struct	*tracer;
- 	struct siginfo		*infop;
-+	unsigned long		message;
- };
- 
- extern int alloc_ptrace_context(struct task_struct *child);
-@@ -159,7 +160,7 @@ static inline int ptrace_event(int mask,
+--- PTRACE/include/linux/ptrace.h~03_PTRACE	2009-05-30 21:18:38.000000000 +0200
++++ PTRACE/include/linux/ptrace.h	2009-05-30 22:44:41.000000000 +0200
+@@ -106,15 +106,27 @@ static inline int ptrace_reparented(stru
  {
- 	if (mask && likely(!(task_ptrace(current) & mask)))
- 		return 0;
--	current->ptrace_message = message;
-+	current->ptrace_ctx->message = message;
- 	ptrace_notify((event << 8) | SIGTRAP);
- 	return 1;
+ 	return child->real_parent != child->parent;
  }
---- PTRACE/kernel/ptrace.c~11_MESSAGE	2009-05-30 23:55:58.000000000 +0200
-+++ PTRACE/kernel/ptrace.c	2009-05-30 23:58:55.000000000 +0200
-@@ -569,7 +569,8 @@ int ptrace_request(struct task_struct *c
- 		ret = ptrace_setoptions(child->ptrace_ctx, data);
- 		break;
- 	case PTRACE_GETEVENTMSG:
--		ret = put_user(child->ptrace_message, (unsigned long __user *) data);
-+		ret = put_user(child->ptrace_ctx->message,
-+				(unsigned long __user *) data);
- 		break;
++
++/**
++ * task_ptrace - return %PT_* flags that apply to a task
++ * @task:	pointer to &task_struct in question
++ *
++ * Returns the %PT_* flags that apply to @task.
++ */
++static inline int task_ptrace(struct task_struct *task)
++{
++	return task->ptrace;
++}
++
+ static inline void ptrace_link(struct task_struct *child,
+ 			       struct task_struct *new_parent)
+ {
+-	if (unlikely(child->ptrace))
++	if (unlikely(task_ptrace(child)))
+ 		__ptrace_link(child, new_parent);
+ }
+ static inline void ptrace_unlink(struct task_struct *child)
+ {
+-	if (unlikely(child->ptrace))
++	if (unlikely(task_ptrace(child)))
+ 		__ptrace_unlink(child);
+ }
  
- 	case PTRACE_GETSIGINFO:
-@@ -729,7 +730,8 @@ int compat_ptrace_request(struct task_st
- 		break;
+@@ -122,19 +134,8 @@ int generic_ptrace_peekdata(struct task_
+ int generic_ptrace_pokedata(struct task_struct *tsk, long addr, long data);
  
- 	case PTRACE_GETEVENTMSG:
--		ret = put_user((compat_ulong_t) child->ptrace_message, datap);
-+		ret = put_user((compat_ulong_t) child->ptrace_ctx->message,
-+				datap);
- 		break;
+ /**
+- * task_ptrace - return %PT_* flags that apply to a task
+- * @task:	pointer to &task_struct in question
+- *
+- * Returns the %PT_* flags that apply to @task.
+- */
+-static inline int task_ptrace(struct task_struct *task)
+-{
+-	return task->ptrace;
+-}
+-
+-/**
+  * ptrace_event - possibly stop for a ptrace event notification
+- * @mask:	%PT_* bit to check in @current->ptrace
++ * @mask:	%PT_* bit to check in task_ptrace(@current)
+  * @event:	%PTRACE_EVENT_* value to report if @mask is set
+  * @message:	value for %PTRACE_GETEVENTMSG to return
+  *
+@@ -147,7 +148,7 @@ static inline int task_ptrace(struct tas
+  */
+ static inline int ptrace_event(int mask, int event, unsigned long message)
+ {
+-	if (mask && likely(!(current->ptrace & mask)))
++	if (mask && likely(!(task_ptrace(current) & mask)))
+ 		return 0;
+ 	current->ptrace_message = message;
+ 	ptrace_notify((event << 8) | SIGTRAP);
+--- PTRACE/kernel/ptrace.c~03_PTRACE	2009-05-30 21:18:38.000000000 +0200
++++ PTRACE/kernel/ptrace.c	2009-05-30 22:44:41.000000000 +0200
+@@ -79,7 +79,7 @@ static void ptrace_untrace(struct task_s
+  */
+ void __ptrace_unlink(struct task_struct *child)
+ {
+-	BUG_ON(!child->ptrace);
++	BUG_ON(!task_ptrace(child));
  
- 	case PTRACE_GETSIGINFO:
+ 	child->ptrace = 0;
+ 	child->parent = child->real_parent;
+@@ -105,7 +105,7 @@ int ptrace_check_attach(struct task_stru
+ 	 * be changed by us so it's not changing right after this.
+ 	 */
+ 	read_lock(&tasklist_lock);
+-	if ((child->ptrace & PT_PTRACED) && child->parent == current) {
++	if (task_ptrace(child) && child->parent == current) {
+ 		ret = 0;
+ 		/*
+ 		 * child->sighand can't be NULL, release_task()
+@@ -203,7 +203,7 @@ int ptrace_attach(struct task_struct *ta
+ 	retval = -EPERM;
+ 	if (unlikely(task->exit_state))
+ 		goto unlock_tasklist;
+-	if (task->ptrace)
++	if (task_ptrace(task))
+ 		goto unlock_tasklist;
+ 
+ 	task->ptrace = PT_PTRACED;
+@@ -234,7 +234,7 @@ int ptrace_traceme(void)
+ 
+ 	write_lock_irq(&tasklist_lock);
+ 	/* Are we already being traced? */
+-	if (!current->ptrace) {
++	if (!task_ptrace(current)) {
+ 		ret = security_ptrace_traceme(current->parent);
+ 		/*
+ 		 * Check PF_EXITING to ensure ->real_parent has not passed
+@@ -315,7 +315,7 @@ int ptrace_detach(struct task_struct *ch
+ 	 * This child can be already killed. Make sure de_thread() or
+ 	 * our sub-thread doing do_wait() didn't do release_task() yet.
+ 	 */
+-	if (child->ptrace) {
++	if (task_ptrace(child)) {
+ 		child->exit_code = data;
+ 		dead = __ptrace_detach(current, child);
+ 	}
+@@ -402,29 +402,31 @@ int ptrace_writedata(struct task_struct 
+ 
+ static int ptrace_setoptions(struct task_struct *child, long data)
+ {
+-	child->ptrace &= ~PT_TRACE_MASK;
++	unsigned int new_flags = 0;
+ 
+ 	if (data & PTRACE_O_TRACESYSGOOD)
+-		child->ptrace |= PT_TRACESYSGOOD;
++		new_flags |= PT_TRACESYSGOOD;
+ 
+ 	if (data & PTRACE_O_TRACEFORK)
+-		child->ptrace |= PT_TRACE_FORK;
++		new_flags |= PT_TRACE_FORK;
+ 
+ 	if (data & PTRACE_O_TRACEVFORK)
+-		child->ptrace |= PT_TRACE_VFORK;
++		new_flags |= PT_TRACE_VFORK;
+ 
+ 	if (data & PTRACE_O_TRACECLONE)
+-		child->ptrace |= PT_TRACE_CLONE;
++		new_flags |= PT_TRACE_CLONE;
+ 
+ 	if (data & PTRACE_O_TRACEEXEC)
+-		child->ptrace |= PT_TRACE_EXEC;
++		new_flags |= PT_TRACE_EXEC;
+ 
+ 	if (data & PTRACE_O_TRACEVFORKDONE)
+-		child->ptrace |= PT_TRACE_VFORK_DONE;
++		new_flags |= PT_TRACE_VFORK_DONE;
+ 
+ 	if (data & PTRACE_O_TRACEEXIT)
+-		child->ptrace |= PT_TRACE_EXIT;
++		new_flags |= PT_TRACE_EXIT;
+ 
++	child->ptrace &= ~PT_TRACE_MASK;
++	child->ptrace |= new_flags;
+ 	return (data & ~PTRACE_O_MASK) ? -EINVAL : 0;
+ }
+ 
 
