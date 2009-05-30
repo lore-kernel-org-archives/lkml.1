@@ -1,567 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932548AbZE3PRx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932399AbZE3P0Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932548AbZE3PRx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 11:17:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759176AbZE3PRp
+	id S932399AbZE3P0Z (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 11:26:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759052AbZE3P0Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 11:17:45 -0400
-Received: from yx-out-2324.google.com ([74.125.44.30]:38404 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759052AbZE3PRo convert rfc822-to-8bit (ORCPT
+	Sat, 30 May 2009 11:26:16 -0400
+Received: from mail-fx0-f168.google.com ([209.85.220.168]:60901 "EHLO
+	mail-fx0-f168.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751971AbZE3P0P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 11:17:44 -0400
+	Sat, 30 May 2009 11:26:15 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=sddxhZYKzZLsmk23tAnnpuiWnxX+7qJdBtsaU9Z0FTpeLyQlx7xUAqcRnO+FeoSRsS
-         9chlzI25BfRvkNf2XF2Hqx6dPgE3UGzd+qtvFMiUldE6SmWN1k1zFkWb+Meo3DEKxeHR
-         SEiGChA956d8stSCY+HnZn1I104pYtaH0WPM8=
+        d=googlemail.com; s=gamma;
+        h=mime-version:reply-to:in-reply-to:references:date:message-id
+         :subject:from:to:cc:content-type:content-transfer-encoding;
+        b=eu4xxaMCp2IfuE00CXCuY4rVAFDyBCcBh5C7VDwwNCaC2lII/ReMWe6lAyOogXYIOO
+         igPhPLCvPf7GhWCQi5diingHn4m0wRKo6yMus4hslgaheXZz5nBBmcJODV0MiTzE+yo1
+         5kxlTfiDPwqy0t3XrflfjZWvIwVTlhwawTdV4=
 MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.2.00.0905300939450.14994@gandalf.stny.rr.com>
-References: <1243315163.14685.17.camel@centos51>
-	 <1243613134.20635.14.camel@centos51>
-	 <alpine.DEB.2.00.0905291240150.31247@gandalf.stny.rr.com>
-	 <49b7c2350905291843i402b7161xf05fdb87eb77f73f@mail.gmail.com>
-	 <alpine.DEB.2.00.0905292204280.14994@gandalf.stny.rr.com>
-	 <49b7c2350905300238k5f6259fne30ad94f8fbf7e20@mail.gmail.com>
-	 <49b7c2350905300421q7c1c9110ke99e25eec051f94c@mail.gmail.com>
-	 <alpine.DEB.2.00.0905300939450.14994@gandalf.stny.rr.com>
-Date: Sun, 31 May 2009 00:17:45 +0900
-Message-ID: <49b7c2350905300817s6d14cd2dy87cb93cf7d7774b@mail.gmail.com>
-Subject: Re: [RFC V2 PATCH]debugfs:Fix terminology inconsistency of dir name 
-	to mount debugfs filesystem.
-From: GeunSik Lim <leemgs1@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Greg KH <greg@kroah.com>, linux-kernel <linux-kernel@vger.kernel.org>,
-       trivial@kernel.org, balagi@justmail.de, bgamari@gmail.com,
-       Ingo Molnar <mingo@elte.hu>, inaky.perez-gonzalez@intel.com
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Reply-To: alan-jenkins@tuffmail.co.uk
+In-Reply-To: <1243638870.13863.1.camel@johannes.local>
+References: <1242850139-25438-1-git-send-email-jirislaby@gmail.com>
+	 <200905260124.03287.tobias.doerffel@gmail.com>
+	 <1243294366.29222.10.camel@johannes.local>
+	 <200905300033.12204.tobias.doerffel@gmail.com>
+	 <1243638870.13863.1.camel@johannes.local>
+Date: Sat, 30 May 2009 16:26:13 +0100
+Message-ID: <9b2b86520905300826q3eeab9cdjf575d98c7aca9ad2@mail.gmail.com>
+Subject: Re: [ath5k-devel] [PATCH] ath5k: added initial RFKILL support
+From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: Tobias Doerffel <tobias.doerffel@gmail.com>,
+       Jiri Slaby <jirislaby@gmail.com>, ath5k-devel@venema.h4ckr.net,
+       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 30, 2009 at 10:44 PM, Steven Rostedt <rostedt@goodmis.org> wrote:
-> You need to make two functions. One to find the debugfs and one to add the
-> file. The "debugfs_found" will make the function return just the first
-> file_name every time. Something like this: (remove the file_name from
-> find_debugfs).
+On 5/30/09, Johannes Berg <johannes@sipsolutions.net> wrote:
+> On Sat, 2009-05-30 at 00:33 +0200, Tobias Doerffel wrote:
 >
-> const char *tracing_file(const char *file_name)
-> {
->        static char trace_file[MAX_PATH+1];
+>> > Could you try to work against v11
+>> > of my rfkill patch, or better even against the cfg80211 rfkill instead?
+>> I didn't look at both of them yet. However I think we first should try to
+>> get
+>> current rfkill support into mainline as fast as possible. Improvements and
+>>
+>> adaptations to reworked rfkill framework can follow.
 >
->        snprintf(trace_file, MAX_PATH, "%s/%s", find_debugfs(), file_name);
+> No other comments from me -- but since the v11 of the rfkill rewrite
+> will certainly hit the tree before your patch (it's almost in) you
+> _will_ have to work against it. I'll also try to make the cfg80211
+> rfkill hit the tree very soon for reasons I'll explain elsewhere -- you
+> would be better off working against that because then your rfkill code
+> is very very very simple and doesn't need to do much at all.
 >
->        return trace_file;
-> }
->
-> The above is not thread safe, but is OK for non threaded programs.
-Thanks.
-I modified pseudo code using tracing_file function that you sent.
-
-* ftrace.txt info after modification.
----
-diff --git a/Documentation/trace/ftrace.txt b/Documentation/trace/ftrace.txt
-index fd9a3e6..05f8378 100644
---- a/Documentation/trace/ftrace.txt
-+++ b/Documentation/trace/ftrace.txt
-@@ -7,7 +7,6 @@ Copyright 2008 Red Hat Inc.
-                (dual licensed under the GPL v2)
- Reviewers:   Elias Oltmanns, Randy Dunlap, Andrew Morton,
- 	     John Kacur, and David Teigland.
--
- Written for: 2.6.28-rc2
-
- Introduction
-@@ -33,13 +32,26 @@ The File System
- Ftrace uses the debugfs file system to hold the control files as
- well as the files to display output.
-
--To mount the debugfs system:
-+When debugfs is configured into the kernel (which selecting any ftrace
-+option will do) the directory /sys/kernel/debug will be created. To mount
-+this directory, you can add to your /etc/fstab file:
-+
-+ debugfs       /sys/kernel/debug          debugfs defaults        0       0
-+
-+Or you can mount it at run time with:
-+
-+ mount -t debugfs nodev /sys/kernel/debug
-
--  # mkdir /debug
--  # mount -t debugfs nodev /debug
-+For quicker access to that directory you may want to make a soft link to
-+it:
-
--( Note: it is more common to mount at /sys/kernel/debug, but for
--  simplicity this document will use /debug)
-+ ln -s /sys/kernel/debug /debug
-+
-+Any selected ftrace option will also create a directory called tracing
-+within the debugfs. The rest of the document will assume that you are in
-+the ftrace directory (cd /sys/kernel/debug/tracing) and will only concentrate
-+on the files within that directory and not distract from the content with
-+the extended "/sys/kernel/debug/tracing" path name.
-
- That's it! (assuming that you have ftrace configured into your kernel)
-
-@@ -389,18 +401,18 @@ trace_options
- The trace_options file is used to control what gets printed in
- the trace output. To see what is available, simply cat the file:
-
--  cat /debug/tracing/trace_options
-+  cat trace_options
-   print-parent nosym-offset nosym-addr noverbose noraw nohex nobin \
-   noblock nostacktrace nosched-tree nouserstacktrace nosym-userobj
-
- To disable one of the options, echo in the option prepended with
- "no".
-
--  echo noprint-parent > /debug/tracing/trace_options
-+  echo noprint-parent > trace_options
-
- To enable an option, leave off the "no".
-
--  echo sym-offset > /debug/tracing/trace_options
-+  echo sym-offset > trace_options
-
- Here are the available options:
-
-@@ -476,11 +488,11 @@ sched_switch
- This tracer simply records schedule switches. Here is an example
- of how to use it.
-
-- # echo sched_switch > /debug/tracing/current_tracer
-- # echo 1 > /debug/tracing/tracing_enabled
-+ # echo sched_switch > current_tracer
-+ # echo 1 > tracing_enabled
-  # sleep 1
-- # echo 0 > /debug/tracing/tracing_enabled
-- # cat /debug/tracing/trace
-+ # echo 0 > tracing_enabled
-+ # cat trace
-
- # tracer: sched_switch
- #
-@@ -574,13 +586,13 @@ new trace is saved.
- To reset the maximum, echo 0 into tracing_max_latency. Here is
- an example:
-
-- # echo irqsoff > /debug/tracing/current_tracer
-- # echo 0 > /debug/tracing/tracing_max_latency
-- # echo 1 > /debug/tracing/tracing_enabled
-+ # echo irqsoff > current_tracer
-+ # echo 0 > tracing_max_latency
-+ # echo 1 > tracing_enabled
-  # ls -ltr
-  [...]
-- # echo 0 > /debug/tracing/tracing_enabled
-- # cat /debug/tracing/latency_trace
-+ # echo 0 > tracing_enabled
-+ # cat latency_trace
- # tracer: irqsoff
- #
- irqsoff latency trace v1.1.5 on 2.6.26
-@@ -681,13 +693,13 @@ Like the irqsoff tracer, it records the maximum
-latency for
- which preemption was disabled. The control of preemptoff tracer
- is much like the irqsoff tracer.
-
-- # echo preemptoff > /debug/tracing/current_tracer
-- # echo 0 > /debug/tracing/tracing_max_latency
-- # echo 1 > /debug/tracing/tracing_enabled
-+ # echo preemptoff > current_tracer
-+ # echo 0 > tracing_max_latency
-+ # echo 1 > tracing_enabled
-  # ls -ltr
-  [...]
-- # echo 0 > /debug/tracing/tracing_enabled
-- # cat /debug/tracing/latency_trace
-+ # echo 0 > tracing_enabled
-+ # cat latency_trace
- # tracer: preemptoff
- #
- preemptoff latency trace v1.1.5 on 2.6.26-rc8
-@@ -828,13 +840,13 @@ tracer.
- Again, using this trace is much like the irqsoff and preemptoff
- tracers.
-
-- # echo preemptirqsoff > /debug/tracing/current_tracer
-- # echo 0 > /debug/tracing/tracing_max_latency
-- # echo 1 > /debug/tracing/tracing_enabled
-+ # echo preemptirqsoff > current_tracer
-+ # echo 0 > tracing_max_latency
-+ # echo 1 > tracing_enabled
-  # ls -ltr
-  [...]
-- # echo 0 > /debug/tracing/tracing_enabled
-- # cat /debug/tracing/latency_trace
-+ # echo 0 > tracing_enabled
-+ # cat latency_trace
- # tracer: preemptirqsoff
- #
- preemptirqsoff latency trace v1.1.5 on 2.6.26-rc8
-@@ -990,12 +1002,12 @@ slightly differently than we did with the
-previous tracers.
- Instead of performing an 'ls', we will run 'sleep 1' under
- 'chrt' which changes the priority of the task.
-
-- # echo wakeup > /debug/tracing/current_tracer
-- # echo 0 > /debug/tracing/tracing_max_latency
-- # echo 1 > /debug/tracing/tracing_enabled
-+ # echo wakeup > current_tracer
-+ # echo 0 > tracing_max_latency
-+ # echo 1 > tracing_enabled
-  # chrt -f 5 sleep 1
-- # echo 0 > /debug/tracing/tracing_enabled
-- # cat /debug/tracing/latency_trace
-+ # echo 0 > tracing_enabled
-+ # cat latency_trace
- # tracer: wakeup
- #
- wakeup latency trace v1.1.5 on 2.6.26-rc8
-@@ -1105,11 +1117,11 @@ can be done from the debug file system. Make sure the
- ftrace_enabled is set; otherwise this tracer is a nop.
-
-  # sysctl kernel.ftrace_enabled=1
-- # echo function > /debug/tracing/current_tracer
-- # echo 1 > /debug/tracing/tracing_enabled
-+ # echo function > current_tracer
-+ # echo 1 > tracing_enabled
-  # usleep 1
-- # echo 0 > /debug/tracing/tracing_enabled
-- # cat /debug/tracing/trace
-+ # echo 0 > tracing_enabled
-+ # cat trace
- # tracer: function
- #
- #           TASK-PID   CPU#    TIMESTAMP  FUNCTION
-@@ -1146,7 +1158,7 @@ int trace_fd;
- [...]
- int main(int argc, char *argv[]) {
- 	[...]
--	trace_fd = open("/debug/tracing/tracing_enabled", O_WRONLY);
-+	trace_fd = open(tracing_file("tracing_enabled"), O_WRONLY);
- 	[...]
- 	if (condition_hit()) {
- 		write(trace_fd, "0", 1);
-@@ -1154,26 +1166,20 @@ int main(int argc, char *argv[]) {
- 	[...]
- }
-
--Note: Here we hard coded the path name. The debugfs mount is not
--guaranteed to be at /debug (and is more commonly at
--/sys/kernel/debug). For simple one time traces, the above is
--sufficent. For anything else, a search through /proc/mounts may
--be needed to find where the debugfs file-system is mounted.
--
-
- Single thread tracing
- ---------------------
-
--By writing into /debug/tracing/set_ftrace_pid you can trace a
-+By writing into set_ftrace_pid you can trace a
- single thread. For example:
-
--# cat /debug/tracing/set_ftrace_pid
-+# cat set_ftrace_pid
- no pid
--# echo 3111 > /debug/tracing/set_ftrace_pid
--# cat /debug/tracing/set_ftrace_pid
-+# echo 3111 > set_ftrace_pid
-+# cat set_ftrace_pid
- 3111
--# echo function > /debug/tracing/current_tracer
--# cat /debug/tracing/trace | head
-+# echo function > current_tracer
-+# cat trace | head
-  # tracer: function
-  #
-  #           TASK-PID    CPU#    TIMESTAMP  FUNCTION
-@@ -1184,8 +1190,8 @@ no pid
-      yum-updatesd-3111  [003]  1637.254683: lock_hrtimer_base
-<-hrtimer_try_to_cancel
-      yum-updatesd-3111  [003]  1637.254685: fget_light <-do_sys_poll
-      yum-updatesd-3111  [003]  1637.254686: pipe_poll <-do_sys_poll
--# echo -1 > /debug/tracing/set_ftrace_pid
--# cat /debug/tracing/trace |head
-+# echo -1 > set_ftrace_pid
-+# cat trace |head
-  # tracer: function
-  #
-  #           TASK-PID    CPU#    TIMESTAMP  FUNCTION
-@@ -1207,6 +1213,51 @@ something like this simple program:
- #include <fcntl.h>
- #include <unistd.h>
-
-+#define _STR(x) #x
-+#define STR(x) _STR(x)
-+#define MAX_PATH 256
-+
-+const char *find_debugfs(void)
-+{
-+       static char debugfs[MAX_PATH+1];
-+       static int debugfs_found;
-+       char type[100];
-+       FILE *fp;
-+
-+       if (debugfs_found)
-+               return debugfs;
-+
-+       if ((fp = fopen("/proc/mounts","r")) == NULL) {
-+               perror("/proc/mounts");
-+               return NULL;
-+       }
-+
-+       while (fscanf(fp, "%*s %"
-+                     STR(MAX_PATH)
-+                     "s %99s %*s %*d %*d\n",
-+                     debugfs, type) == 2) {
-+               if (strcmp(type, "debugfs") == 0)
-+                       break;
-+       }
-+       fclose(fp);
-+
-+       if (strcmp(type, "debugfs") != 0) {
-+               fprintf(stderr, "debugfs not mounted");
-+               return NULL;
-+       }
-+
-+       debugfs_found = 1;
-+
-+       return debugfs;
-+}
-+
-+const char *tracing_file(const char *file_name)
-+{
-+       static char trace_file[MAX_PATH+1];
-+       snprintf(trace_file, MAX_PATH, "%s/%s", find_debugfs(), file_name);
-+       return trace_file;
-+}
-+
- int main (int argc, char **argv)
- {
-         if (argc < 1)
-@@ -1217,12 +1268,12 @@ int main (int argc, char **argv)
-                 char line[64];
-                 int s;
-
--                ffd = open("/debug/tracing/current_tracer", O_WRONLY);
-+                ffd = open(tracing_file("current_tracer"), O_WRONLY);
-                 if (ffd < 0)
-                         exit(-1);
-                 write(ffd, "nop", 3);
-
--                fd = open("/debug/tracing/set_ftrace_pid", O_WRONLY);
-+                fd = open(tracing_file("set_ftrace_pid"), O_WRONLY);
-                 s = sprintf(line, "%d\n", getpid());
-                 write(fd, line, s);
-
-@@ -1374,22 +1425,22 @@ want, depending on your needs.
-   tracing_cpu_mask file) or you might sometimes see unordered
-   function calls while cpu tracing switch.
-
--	hide: echo nofuncgraph-cpu > /debug/tracing/trace_options
--	show: echo funcgraph-cpu > /debug/tracing/trace_options
-+	hide: echo nofuncgraph-cpu > trace_options
-+	show: echo funcgraph-cpu > trace_options
-
- - The duration (function's time of execution) is displayed on
-   the closing bracket line of a function or on the same line
-   than the current function in case of a leaf one. It is default
-   enabled.
-
--	hide: echo nofuncgraph-duration > /debug/tracing/trace_options
--	show: echo funcgraph-duration > /debug/tracing/trace_options
-+	hide: echo nofuncgraph-duration > trace_options
-+	show: echo funcgraph-duration > trace_options
-
- - The overhead field precedes the duration field in case of
-   reached duration thresholds.
-
--	hide: echo nofuncgraph-overhead > /debug/tracing/trace_options
--	show: echo funcgraph-overhead > /debug/tracing/trace_options
-+	hide: echo nofuncgraph-overhead > trace_options
-+	show: echo funcgraph-overhead > trace_options
- 	depends on: funcgraph-duration
-
-   ie:
-@@ -1418,8 +1469,8 @@ want, depending on your needs.
- - The task/pid field displays the thread cmdline and pid which
-   executed the function. It is default disabled.
-
--	hide: echo nofuncgraph-proc > /debug/tracing/trace_options
--	show: echo funcgraph-proc > /debug/tracing/trace_options
-+	hide: echo nofuncgraph-proc > trace_options
-+	show: echo funcgraph-proc > trace_options
-
-   ie:
-
-@@ -1442,8 +1493,8 @@ want, depending on your needs.
-   system clock since it started. A snapshot of this time is
-   given on each entry/exit of functions
-
--	hide: echo nofuncgraph-abstime > /debug/tracing/trace_options
--	show: echo funcgraph-abstime > /debug/tracing/trace_options
-+	hide: echo nofuncgraph-abstime > trace_options
-+	show: echo funcgraph-abstime > trace_options
-
-   ie:
-
-@@ -1540,7 +1591,7 @@ listed in:
-
-    available_filter_functions
-
-- # cat /debug/tracing/available_filter_functions
-+ # cat available_filter_functions
- put_prev_task_idle
- kmem_cache_create
- pick_next_task_rt
-@@ -1552,12 +1603,12 @@ mutex_lock
- If I am only interested in sys_nanosleep and hrtimer_interrupt:
-
-  # echo sys_nanosleep hrtimer_interrupt \
--		> /debug/tracing/set_ftrace_filter
-- # echo ftrace > /debug/tracing/current_tracer
-- # echo 1 > /debug/tracing/tracing_enabled
-+		> set_ftrace_filter
-+ # echo ftrace > current_tracer
-+ # echo 1 > tracing_enabled
-  # usleep 1
-- # echo 0 > /debug/tracing/tracing_enabled
-- # cat /debug/tracing/trace
-+ # echo 0 > tracing_enabled
-+ # cat trace
- # tracer: ftrace
- #
- #           TASK-PID   CPU#    TIMESTAMP  FUNCTION
-@@ -1568,7 +1619,7 @@ If I am only interested in sys_nanosleep and
-hrtimer_interrupt:
-
- To see which functions are being traced, you can cat the file:
-
-- # cat /debug/tracing/set_ftrace_filter
-+ # cat set_ftrace_filter
- hrtimer_interrupt
- sys_nanosleep
-
-@@ -1588,7 +1639,7 @@ Note: It is better to use quotes to enclose the
-wild cards,
-       otherwise the shell may expand the parameters into names
-       of files in the local directory.
-
-- # echo 'hrtimer_*' > /debug/tracing/set_ftrace_filter
-+ # echo 'hrtimer_*' > set_ftrace_filter
-
- Produces:
-
-@@ -1609,7 +1660,7 @@ Produces:
-
- Notice that we lost the sys_nanosleep.
-
-- # cat /debug/tracing/set_ftrace_filter
-+ # cat set_ftrace_filter
- hrtimer_run_queues
- hrtimer_run_pending
- hrtimer_init
-@@ -1635,17 +1686,17 @@ To append to the filters, use '>>'
- To clear out a filter so that all functions will be recorded
- again:
-
-- # echo > /debug/tracing/set_ftrace_filter
-- # cat /debug/tracing/set_ftrace_filter
-+ # echo > set_ftrace_filter
-+ # cat set_ftrace_filter
-  #
-
- Again, now we want to append.
-
-- # echo sys_nanosleep > /debug/tracing/set_ftrace_filter
-- # cat /debug/tracing/set_ftrace_filter
-+ # echo sys_nanosleep > set_ftrace_filter
-+ # cat set_ftrace_filter
- sys_nanosleep
-- # echo 'hrtimer_*' >> /debug/tracing/set_ftrace_filter
-- # cat /debug/tracing/set_ftrace_filter
-+ # echo 'hrtimer_*' >> set_ftrace_filter
-+ # cat set_ftrace_filter
- hrtimer_run_queues
- hrtimer_run_pending
- hrtimer_init
-@@ -1668,7 +1719,7 @@ hrtimer_init_sleeper
- The set_ftrace_notrace prevents those functions from being
- traced.
-
-- # echo '*preempt*' '*lock*' > /debug/tracing/set_ftrace_notrace
-+ # echo '*preempt*' '*lock*' > set_ftrace_notrace
-
- Produces:
-
-@@ -1758,13 +1809,13 @@ the effect on the tracing is different. Every read from
- trace_pipe is consumed. This means that subsequent reads will be
- different. The trace is live.
-
-- # echo function > /debug/tracing/current_tracer
-- # cat /debug/tracing/trace_pipe > /tmp/trace.out &
-+ # echo function > current_tracer
-+ # cat trace_pipe > /tmp/trace.out &
- [1] 4153
-- # echo 1 > /debug/tracing/tracing_enabled
-+ # echo 1 > tracing_enabled
-  # usleep 1
-- # echo 0 > /debug/tracing/tracing_enabled
-- # cat /debug/tracing/trace
-+ # echo 0 > tracing_enabled
-+ # cat trace
- # tracer: function
- #
- #           TASK-PID   CPU#    TIMESTAMP  FUNCTION
-@@ -1800,7 +1851,7 @@ number listed is the number of entries that can
-be recorded per
- CPU. To know the full size, multiply the number of possible CPUS
- with the number of entries.
-
-- # cat /debug/tracing/buffer_size_kb
-+ # cat buffer_size_kb
- 1408 (units kilobytes)
-
- Note, to modify this, you must have tracing completely disabled.
-@@ -1808,18 +1859,18 @@ To do that, echo "nop" into the current_tracer. If the
- current_tracer is not set to "nop", an EINVAL error will be
- returned.
-
-- # echo nop > /debug/tracing/current_tracer
-- # echo 10000 > /debug/tracing/buffer_size_kb
-- # cat /debug/tracing/buffer_size_kb
-+ # echo nop > current_tracer
-+ # echo 10000 > buffer_size_kb
-+ # cat buffer_size_kb
- 10000 (units kilobytes)
-
- The number of pages which will be allocated is limited to a
- percentage of available memory. Allocating too much will produce
- an error.
-
-- # echo 1000000000000 > /debug/tracing/buffer_size_kb
-+ # echo 1000000000000 > buffer_size_kb
- -bash: echo: write error: Cannot allocate memory
-- # cat /debug/tracing/buffer_size_kb
-+ # cat buffer_size_kb
- 85
-
----
-
-
--- 
-Regards,
-GeunSik Lim ( SAMSUNG ELECTRONICS)
-Blog : http://blog.naver.com/invain/
-e-Mail: geunsik.lim@samsung.com
-           leemgs@gmail.com , leemgs1@gmail.com
---
-To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
+> johannes
+
+Btw, I believe the new rfkill core behaviour should avoid the concern
+I raised about the EeePC.
+
+Reminder: the eeepc-laptop implements platform rfkill on the original
+model(s) by hotplugging the entire ath5k device.  If you boot with it
+in the blocked state, the old rfkill core would "lock in" that state
+as the default.  If you then hotplug the ath5k device _and it comes up
+with an rfkill device of it's own_, my concern is that the new rfkill
+device would be initialized to a blocked state.  It would be
+impossible to enable the wireless.
+
+The new core removes this idea of a separate "default" state, so it
+can't have this problem.
+
+Regards
+Alan
