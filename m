@@ -1,49 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754560AbZE3Ilc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758343AbZE3Ilm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754560AbZE3Ilc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 04:41:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751574AbZE3IlX
+	id S1758343AbZE3Ilm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 04:41:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755672AbZE3Il1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 04:41:23 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59752 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751518AbZE3IlX (ORCPT
+	Sat, 30 May 2009 04:41:27 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:40535 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753051AbZE3IlY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 04:41:23 -0400
-Date: Sat, 30 May 2009 01:40:07 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Borislav Petkov <petkovbb@googlemail.com>
-Cc: Borislav Petkov <borislav.petkov@amd.com>, greg@kroah.com, mingo@elte.hu,
-       norsk5@yahoo.com, tglx@linutronix.de, hpa@zytor.com, mchehab@redhat.com,
-       aris@redhat.com, edt@aei.ca, linux-kernel@vger.kernel.org,
-       randy.dunlap@oracle.com
-Subject: Re: [PATCH 0/4] amd64_edac: misc fixes
-Message-Id: <20090530014007.3c1e22d5.akpm@linux-foundation.org>
-In-Reply-To: <20090530081954.GA21954@liondog.tnic>
-References: <1242845037-1029-1-git-send-email-borislav.petkov@amd.com>
-	<20090528164720.0af5752b.akpm@linux-foundation.org>
-	<20090529103329.GB23530@aftab>
-	<20090529130115.a44efaee.akpm@linux-foundation.org>
-	<20090530081954.GA21954@liondog.tnic>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 30 May 2009 04:41:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject:references
+         :in-reply-to:content-type:content-transfer-encoding;
+        b=r7DkrNi+RAryh4e5oQZqkX7dY9RJ05HMG6adT+LmKJT/+KLsPJe1EvUJmi7aVOwi3J
+         c/TRmXxO+XEdTPdHr910oK36limQQ3Sdn/zRQnlvU/e2/HaJjAnwUQ1rLt+ShguEt6m1
+         LHnyNXQMWFM4OQq3jSvq7Zd/Mgi3ONOmjiCos=
+Message-ID: <4A20F130.8010903@gmail.com>
+Date: Sat, 30 May 2009 10:41:20 +0200
+From: Niel Lambrechts <niel.lambrechts@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090310)
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "linux.kernel" <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.30-rc7: Reported regressions 2.6.28 -> 2.6.29
+References: <cFumJ-4vi-3@gated-at.bofh.it>
+In-Reply-To: <cFumJ-4vi-3@gated-at.bofh.it>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 30 May 2009 10:19:54 +0200 Borislav Petkov <petkovbb@googlemail.com> wrote:
+Rafael J. Wysocki wrote:
+> This message contains a list of some regressions introduced between 2.6.28 and
+> 2.6.29, for which there are no fixes in the mainline I know of.  If any of them
+> have been fixed already, please let me know.
+<snip>
+> Please let me know if there are any Bugzilla entries that should be added to
+> the list in there.
 
-> Also, I've been thinking about how the old(er)
-> toolchain problem can be addressed and one fairly doable thing would be
-> if I'd query the gas version in the kernel Makefile and define popcnt
-> dependent on it and for older assemblers simply slap in the opcode and
-> fixate the operands in an inline assembly so that it works.
+Hi Rafael,
 
-We've done that before.  BUG() is one case (for other reasons), I think.
+Can you please add http://bugzilla.kernel.org/show_bug.cgi?id=13017
 
-But if we have the code in there which uese the literal opcode, there's
-no need to query gas or to add the conditional.
+This relates to resume issues that lead to EXT4 file-system errors, with symptoms being ATA bus errors.
 
-Is popcnt supported on all CPUs?
+Regards,
+Miel
