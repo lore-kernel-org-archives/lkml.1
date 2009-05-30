@@ -1,46 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932745AbZE3QjP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760931AbZE3Qrl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932745AbZE3QjP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 12:39:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932413AbZE3QjL
+	id S1760931AbZE3Qrl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 12:47:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752270AbZE3Qrd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 12:39:11 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:44250 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932179AbZE3QjK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 12:39:10 -0400
-Date: Sat, 30 May 2009 18:39:07 +0200
-From: Jiri Pirko <jpirko@redhat.com>
-To: dbrownell@users.sourceforge.net
-Cc: spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: [PATCH] spi: fix spi_write_then_read() comment
-Message-ID: <20090530163906.GB3427@psychotron.englab.brq.redhat.com>
+	Sat, 30 May 2009 12:47:33 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:48814 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752113AbZE3Qrc convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 May 2009 12:47:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=rmsbOYZK+pdJwkPJ46a6fY7n7IcoTQQjsfz9c9VDz2ZZAebS681ZFcbIENgJHeGDH5
+         XIDhIF/eY8zlWLnHwfXZBsxtZwLXAH8+AULCFdlm1rVHlncJIDsugLUSLc4Zmwy1ddLA
+         321U/YoiMOGYNcjJxImRnzpkvwNiujz5WPf58=
+From: Diego Calleja <diegocg@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Performance regressions in 2.6.30-rc7?
+Date: Sat, 30 May 2009 18:51:47 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc4-00187-gb4348f3; KDE/4.2.2; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org
+References: <200905282249.28592.diegocg@gmail.com> <20090529210718.bef7a9c1.akpm@linux-foundation.org>
+In-Reply-To: <20090529210718.bef7a9c1.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200905301851.47708.diegocg@gmail.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH] spi: fix spi_write_then_read() comment
+On Sábado 30 Mayo 2009 06:07:18 Andrew Morton escribió:
+> Those regressions are huge.  They appear to be on compute-intensive
+> workloads too.
+> 
+> I wonder if some expensive debugging option turned itself on or
+> something silly like that.
 
-Spotted a tiny mislead. I guess buffer need not be dma-safe, not rx data length.
+They use the vanilla kernels that ubuntu ship with their own configs,
+so they shouldn't be using any expensive debugging option.
 
-Signed-off-by: Jiri Pirko <jpirko@redhat.com>
+I've run myself two of those tests (I've not tested gnupg as I'm
+allergic to it). I can't reproduce any regression with 7zip, I'm however
+able to reproduce the regression in tiobench write latency, using 32
+threads and 64 MB block size (--threads 32 --block 65536). I used ext4
+(phoronix uses ext3).
 
-diff --git a/drivers/spi/spi.c b/drivers/spi/spi.c
-index 8eba98c..85a46c7 100644
---- a/drivers/spi/spi.c
-+++ b/drivers/spi/spi.c
-@@ -636,8 +636,8 @@ static u8	*buf;
-  * @spi: device with which data will be exchanged
-  * @txbuf: data to be written (need not be dma-safe)
-  * @n_tx: size of txbuf, in bytes
-- * @rxbuf: buffer into which data will be read
-- * @n_rx: size of rxbuf, in bytes (need not be dma-safe)
-+ * @rxbuf: buffer into which data will be read (need not be dma-safe)
-+ * @n_rx: size of rxbuf, in bytes
-  * Context: can sleep
-  *
-  * This performs a half duplex MicroWire style transaction with the
+
+Random Writes
+                              File  Blk   Num                   Avg      Maximum      Lat%     Lat%    CPU
+Identifier                    Size  Size  Thr   Rate  (CPU%)  Latency    Latency      >2s      >10s    Eff
+---------------------------- ------ ----- ---  ------ ------ --------- -----------  -------- -------- -----
+2.6.29                        2000  65536  32   24.16 107.2%     0.051        0.21   0.00000  0.00000    23
+
+Random Writes
+                              File  Blk   Num                   Avg      Maximum      Lat%     Lat%    CPU
+Identifier                    Size  Size  Thr   Rate  (CPU%)  Latency    Latency      >2s      >10s    Eff
+---------------------------- ------ ----- ---  ------ ------ --------- -----------  -------- -------- -----
+2.6.30-rc7-00149-g3218911     2000  65536  32   23.06 178.4%     0.711      164.72   0.00000  0.00000    13
+
