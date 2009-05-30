@@ -1,70 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761204AbZE3OqY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932555AbZE3Oqu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761204AbZE3OqY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 10:46:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759213AbZE3OqQ
+	id S932555AbZE3Oqu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 10:46:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759213AbZE3Oqn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 10:46:16 -0400
-Received: from casper.infradead.org ([85.118.1.10]:32777 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758119AbZE3OqQ (ORCPT
+	Sat, 30 May 2009 10:46:43 -0400
+Received: from yx-out-2324.google.com ([74.125.44.29]:33283 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758907AbZE3Oqm convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 10:46:16 -0400
-Subject: Re: [patch 0/5] Support for sanitization flag in low-level page
- allocator
-From: Peter Zijlstra <peterz@infradead.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: pageexec@freemail.hu, "Larry H." <research@subreption.com>,
-       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@osdl.org>, linux-mm@kvack.org,
-       Ingo Molnar <mingo@redhat.com>
-In-Reply-To: <20090530153023.45600fd2@lxorguk.ukuu.org.uk>
-References: <20090522073436.GA3612@elte.hu>
-	 <20090530054856.GG29711@oblivion.subreption.com>
-	 <1243679973.6645.131.camel@laptop>
-	 <4A211BA8.8585.17B52182@pageexec.freemail.hu>
-	 <1243689707.6645.134.camel@laptop>
-	 <20090530153023.45600fd2@lxorguk.ukuu.org.uk>
-Content-Type: text/plain
-Date: Sat, 30 May 2009 16:45:37 +0200
-Message-Id: <1243694737.6645.142.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Sat, 30 May 2009 10:46:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=hxipwrmchd4xD60mUZENdHwyRCXXN9KaMgzKrFECn45xaRTedRBIcw5NFQ4WxyFz7m
+         qTTKEte4anxmVUP0rqIrW/LG2zASAreRXtc0pH6lDohr1jSZtwWkQ7Y061fZFJSNgAQS
+         bLO2Jtk6Ve1f/lAlhObjtKJ5V0LtIamRnoZUI=
+MIME-Version: 1.0
+In-Reply-To: <20090530133441.GA11337@alecto.austad.us>
+References: <164c92d827cbee86ba2c5621716309e6@localhost>
+	 <200904300939.31754.henrik@austad.us>
+	 <49b7c2350905071935kbd2aa22v9d39cf41c537c24b@mail.gmail.com>
+	 <20090508091052.GA10429@januz.myftp.org>
+	 <49b7c2350905300438n6195de93la53bee3a309f71d@mail.gmail.com>
+	 <20090530133441.GA11337@alecto.austad.us>
+Date: Sat, 30 May 2009 23:46:43 +0900
+Message-ID: <49b7c2350905300746v38d6597eu82b7fcc99813080f@mail.gmail.com>
+Subject: Re: SCHED_EDF infos
+From: GeunSik Lim <leemgs1@gmail.com>
+To: Henrik Austad <henrik@austad.us>
+Cc: finarfin@dreamos.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-05-30 at 15:30 +0100, Alan Cox wrote:
-> > Right, so the whole point is to minimize the impact of actual bugs,
-> > right? So why not focus on fixing those actual bugs? Can we create tools
-> > to help us find such bugs faster? We use sparse for a lot of static
-> > checking, we create things like lockdep and kmemcheck to dynamically
-> > find trouble.
-> > 
-> > Can we instead of working around a problem, fix the actual problem?
-> 
-> Why do cars have crashworthiness and seatbelts ? Why not fix the actual
-> problem (driving errors) ? I mean lets face it they make the vehicle
-> heavier, less fuel efficient, less fun and more annoying to use.
+On Sat, May 30, 2009 at 10:34 PM, Henrik Austad <henrik@austad.us> wrote:
+>> Can you share EDF that you implemented with P-fair for Multicore environments?
+>> Especially, I wonder How do you keep posix compatibility with EDF scheduler.
+>
+> Well, what exactly do you mean by posix compatibility? What I'm doing, is adding
+This means that We can use  realtime programming for EDF effectiveness with
+current system call interface without new system call interface.
 
-We can't find every crash bug either, yet we still ship the kernel and
-people actually use it too.
+> another scheduling class on top of sched_rt so that sched_pfair will be polled
+> before any other class. I was not aware that POSIX had an EDF standard?
+POSIX describes common real-time specification  without EDF, RMS ,
+Resource Reservation, etc.
+Belows is the Linux Standard Base (LSB) specifications for Linux Distributions.
+http://www.linuxfoundation.org/en/Specifications
+>
+>> For example,
+>> sched_setscheduler(2), sched_getscheduler(2),
+>> sched_get_priority_max(2), sched_get_priority_min(2),
+>> sched_getaffinity(2), sched_setaffinity(2),
+>> sched_getparam(2), sched_setparam(2),
+>> setpriority(2), getpriority(2),
+>> sched_yield(2), sched_rr_get_interval(2)
+>
+> I introduce 3 new syscalls for modifying the tasks.
+>
+>  sched_pfair_update()
+>  - change an existing task into a pfair task, set attributes, calculate subjob
+>   values etc
+>
+>  sched_pfair_release()
+>  - release the task, i.e. enable it to run on a CPU.
+>
+>  sched_pfair_reweigh()
+>  - change the attributes of the task. In a lot of ways, this is very similar to
+>   pfair_update, but it introduces some problems when trying to reweigh a task
+>   that is running, or if the new values lead to over-utilization of the system.
+When we try to userspace realtime programming, How can we insert  systemcall api
+with posix compatibility.
+Um... In general, we use
+sched_setscheduler    (struct task_struct *p, int policy,  struct
+sched_param *param) api.
 
-What makes these security bugs so much more important than all the other
-ones?
+If we will make  EDF related u/s rt programming, How do we have to
+insert deadline of tasks
+for EDF performance?
+sched_setscheduler_EDF(struct task_struct *p, int policy, period-time
+, runtime)
+or
 
-As to the kernel not knowing what might or might not be secure, that's
-right, userspace proglet should take their bit of responsibility as
-well, we can't fix this in the kernel alone.
+struct sched_param {
+       int sched_priority;
+      <timespec edf-period-time>;
+      <timespec edf-runtiome>;
+};
 
-As long as that openoffice or firefox instance keeps running, there's
-nothing in the world the kernel can do to make it more secure.
+I am not sue...
 
-If you really write documents that sekrit you simply shouldn't be using
-such software but use an editor that is written by people as paranoid as
-seems to be advocated here.
+>
+> At the moment, this is only for my own convenice, but I have tried to modify as
+> little of the existing code as possible to avoid merge conflicts etc. So, none
+> of the existing syscalls have been modified in any way.
+>
+> I'm a bit unsure as to what your question actually is, perhaps you could
+> elaborate a bit about what you're concered about?
+>
+> henrik
+>
 
 
 
+-- 
+Regards,
+GeunSik Lim ( SAMSUNG ELECTRONICS)
+Blog : http://blog.naver.com/invain/
+e-Mail: geunsik.lim@samsung.com
+           leemgs@gmail.com , leemgs1@gmail.com
+--
+To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
