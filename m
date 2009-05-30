@@ -1,74 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759572AbZE3Wnv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758855AbZE3Wmr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759572AbZE3Wnv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 18:43:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759298AbZE3WnE
+	id S1758855AbZE3Wmr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 18:42:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756092AbZE3WhX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 18:43:04 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:48867 "EHLO mx2.redhat.com"
+	Sat, 30 May 2009 18:37:23 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:46575 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759220AbZE3WnD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 18:43:03 -0400
-Date: Sun, 31 May 2009 00:38:20 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Roland McGrath <roland@redhat.com>
-Cc: Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: [RFC PATCH 00/12 v3] ptrace: introduce task_struct->ptrace_cxt
-Message-ID: <20090530223820.GA30474@redhat.com>
+	id S1756081AbZE3WhV convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 May 2009 18:37:21 -0400
+Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
+       "Jan Scholz" <scholz@fias.uni-frankfurt.de>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+References: <4to6E2myxvG.A.muC.aIbIKB@chimera>
+In-Reply-To: <4to6E2myxvG.A.muC.aIbIKB@chimera>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Message-ID: <LEcEO2518_I.A.C9C.gIbIKB@chimera>
+Subject: [Bug #13407] adb trackpad disappears after suspend to ram
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Date: Sat, 30 May 2009 21:37:38 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Changes:
+This message has been generated automatically as a part of a report
+of recent regressions.
 
-	04/12:	move kfree() outside of task_lock() in alloc_ptrace_context().
-		But I misread your sugesstion:
-
-			>       task_lock(tsk);
-			>       if (likely(!tsk->ptrace_ctx)) {
-			>               tsk->ptrace_ctx = ptrace_ctx;
-			>               task_unlock(tsk);
-			>               return 0;
-			>       }
-			>
-			>       task_unlock(tsk);
-			>       kfree(ptrace_ctx);
-
-		Just can't do that. I hate multiple unlocks very much. So it
-		becomes:
-
-			task_lock(tsk);
-			if (likely(!tsk->ptrace_ctx)) {
-				tsk->ptrace_ctx = ptrace_ctx;
-				ptrace_ctx = NULL;
-			}
-			task_unlock(tsk);
-			kfree(ptrace_ctx);
-
-		kfree(NULL) is specially allowed.
+The following bug entry is on the current list of known regressions
+from 2.6.29.  Please verify if it still should be listed and let me know
+(either way).
 
 
-	05/12:	Add the comment about tracehook_init_task to ptrace_init_task().
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13407
+Subject		: adb trackpad disappears after suspend to ram
+Submitter	: Jan Scholz <scholz@fias.uni-frankfurt.de>
+Date		: 2009-05-28 7:59 (3 days old)
+First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=2ed8d2b3a81bdbb0418301628ccdb008ac9f40b7
+References	: http://marc.info/?l=linux-kernel&m=124349762314976&w=4
+Handled-By	: Rafael J. Wysocki <rjw@sisk.pl>
 
-		I didn't change the original comment, but imho it is confusing.
-		"immediately after adding @child to its parent's children list"
-		does not matter. What does matter, is that it is called before
-		this child is visible to the user-space and thus the unconditional
-		ptrace_link() is safe: nobody could attach before us.
-
-
-	08/12:	No changes, but I think it better to change format_mca_init_stack()
-		right now. Imho it has nothing to do with tracehooks and it is the
-		last user of ->parent (except perhaps there are some in arch/ code
-		which should be tracehookfied).
-
-
-	09/12:	Remove the stale "pt_" from the changelog.
-
-Oleg.
 
