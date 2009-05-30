@@ -1,226 +1,568 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759432AbZE3LSr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760102AbZE3LWE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759432AbZE3LSr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 07:18:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756438AbZE3LSk
+	id S1760102AbZE3LWE (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 07:22:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756567AbZE3LVz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 07:18:40 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41582 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755829AbZE3LSj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 07:18:39 -0400
-Date: Sat, 30 May 2009 13:18:19 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Olaf Kirch <okir@suse.de>, Peter Zijlstra <peterz@infradead.org>,
-       Mike Galbraith <efault@gmx.de>
-Cc: linux-kernel@vger.kernel.org, mingo@redhat.com,
-       Andreas Gruenbacher <agruen@suse.de>, Mike Galbraith <efault@gmx.de>
-Subject: Re: CFS Performance Issues
-Message-ID: <20090530111819.GD16913@elte.hu>
-References: <200905281502.22487.okir@suse.de> <1243542678.6645.101.camel@laptop>
+	Sat, 30 May 2009 07:21:55 -0400
+Received: from yx-out-2324.google.com ([74.125.44.29]:62296 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755829AbZE3LVy convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 May 2009 07:21:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=jirlOFdqgeWC1rPxGob1h8Sxfh193e1KaEwlaO/R82buFrifxxAvZT2/K32mhjWAVw
+         IZ2J7+M6eUKuzR69NjQ4UPt3NkWF40uhrTtSykSes68egCHzJg5ex24ksdhGTNMgzjWQ
+         gVBKHgRVayL6omlfgSrv7ILBzHSgZFfw/HJ9w=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1243542678.6645.101.camel@laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <49b7c2350905300238k5f6259fne30ad94f8fbf7e20@mail.gmail.com>
+References: <1243315163.14685.17.camel@centos51>
+	 <1243613134.20635.14.camel@centos51>
+	 <alpine.DEB.2.00.0905291240150.31247@gandalf.stny.rr.com>
+	 <49b7c2350905291843i402b7161xf05fdb87eb77f73f@mail.gmail.com>
+	 <alpine.DEB.2.00.0905292204280.14994@gandalf.stny.rr.com>
+	 <49b7c2350905300238k5f6259fne30ad94f8fbf7e20@mail.gmail.com>
+Date: Sat, 30 May 2009 20:21:55 +0900
+Message-ID: <49b7c2350905300421q7c1c9110ke99e25eec051f94c@mail.gmail.com>
+Subject: Re: [RFC V2 PATCH]debugfs:Fix terminology inconsistency of dir name 
+	to mount debugfs filesystem.
+From: GeunSik Lim <leemgs1@gmail.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Greg KH <greg@kroah.com>, linux-kernel <linux-kernel@vger.kernel.org>,
+       trivial@kernel.org, balagi@justmail.de, bgamari@gmail.com,
+       Ingo Molnar <mingo@elte.hu>, inaky.perez-gonzalez@intel.com
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, May 30, 2009 at 6:38 PM, GeunSik Lim <leemgs1@gmail.com> wrote:
+>> Also, since I'm the most picky about this, you may want to remove the
+>> ftrace files from the patch and move it to another patch. That way the
+> I am not think that you are the most picky about this. I like your advice and
+> review about my proposal for consensus.
+>> owners of the other files can ack them and get those changes in. When we
+>> have something for ftrace, I'll give my ack. But lets not hold up the
+>> other changes because of me ;-)
+>>
+> Don't care. Hope it helps. ;-)
+> I will modify  ftrace files from the patch according to your advice.
 
-* Peter Zijlstra <peterz@infradead.org> wrote:
+I updated ftrace related contents according to  Steven's help like belows.
+If I misunderstood wrongly, Please correct me.
+Thanks.
 
-> On Thu, 2009-05-28 at 15:02 +0200, Olaf Kirch wrote:
-> > Hi Ingo,
-> > 
-> > As you probably know, we've been chasing a variety of 
-> > performance issues on our SLE11 kernel, and one of the suspects 
-> > has been CFS for quite a while. The benchmarks that pointed to 
-> > CFS include AIM7, dbench, and a few others, but the picture has 
-> > been a bit hazy as to what is really the problem here.
-> > 
-> > Now IBM recently told us they had played around with some 
-> > scheduler tunables and found that by turning off 
-> > NEW_FAIR_SCHEDULERS, they could make the regression on a compute 
-> > benchmark go away completely. We're currently working on 
-> > rerunning other benchmarks with NEW_FAIR_SLEEPERS turned off to 
-> > see whether it has an impact on these as well.
-> > 
-> > Of course, the first question we asked ourselves was, how can 
-> > NEW_FAIR_SLEEPERS affect a benchmark that rarely sleeps, or not 
-> > at all?
-> > 
-> > The answer was, it's not affecting the benchmark processes, but 
-> > some noise going on in the background. When I was first able to 
-> > reproduce this on my work station, it was knotify4 running in 
-> > the background - using hardly any CPU, but getting woken up 
-> > ~1000 times a second. Don't ask me what it's doing :-)
-> > 
-> > So I sat down and reproduced this; the most recent iteration of 
-> > the test program is courtesy of Andreas Gruenbacher (see below).
-> > 
-> > This program spawns a number of processes that just spin in a 
-> > loop. It also spawns a single process that wakes up 1000 times a 
-> > second. Every second, it computes the average time slice per 
-> > process (utime / number of involuntary context switches), and 
-> > prints out the overall average time slice and average utime.
-> > 
-> > While running this program, you can conveniently enable or 
-> > disable fair sleepers. When I do this on my test machine (no 
-> > desktop in the background this time :-) I see this:
-> > 
-> > ../slice 16
-> >     avg slice:  1.12 utime: 216263.187500
-> >     avg slice:  0.25 utime: 125507.687500
-> >     avg slice:  0.31 utime: 125257.937500
-> >     avg slice:  0.31 utime: 125507.812500
-> >     avg slice:  0.12 utime: 124507.875000
-> >     avg slice:  0.38 utime: 124757.687500
-> >     avg slice:  0.31 utime: 125508.000000
-> >     avg slice:  0.44 utime: 125757.750000
-> >     avg slice:  2.00 utime: 128258.000000
-> >  ------ here I turned off new_fair_sleepers ----
-> >     avg slice: 10.25 utime: 137008.500000
-> >     avg slice:  9.31 utime: 139008.875000
-> >     avg slice: 10.50 utime: 141508.687500
-> >     avg slice:  9.44 utime: 139258.750000
-> >     avg slice: 10.31 utime: 140008.687500
-> >     avg slice:  9.19 utime: 139008.625000
-> >     avg slice: 10.00 utime: 137258.625000
-> >     avg slice: 10.06 utime: 135258.562500
-> >     avg slice:  9.62 utime: 138758.562500
-> > 
-> > As you can see, the average time slice is *extremely* low with 
-> > new fair sleepers enabled. Turning it off, we get ~10ms time 
-> > slices, and a performance that is roughly 10% higher. It looks 
-> > like this kind of "silly time slice syndrome" is what is really 
-> > eating performance here.
-> > 
-> > After staring at place_entity for a while, and by watching the 
-> > process' vruntime for a while, I think what's happening is this.
-> > 
-> > With fair sleepers turned off, a process that just got woken up 
-> > will get the vruntime of the process that's leftmost in the 
-> > rbtree, and will thus be placed to the right of the current 
-> > task.
-> > 
-> > However, with fair_sleepers enabled, a newly woken up process 
-> > will retain its old vruntime as long as it's less than 
-> > sched_latency in the past, and thus it will be placed to the 
-> > very left in the rbtree. Since a task that is mostly sleeping 
-> > will never accrue vruntime at the same rate a cpu-bound task 
-> > does, it will always preempt any running task almost immediately 
-> > after it's scheduled.
-> > 
-> > Does this make sense?
-> 
-> Yep, you got it right.
-> 
-> > Any insight you can offer here is greatly appreciated!
-> 
-> There's a class of applications and benchmarks that rather likes 
-> this behaviour, particularly those that favour timely delivery of 
-> signals and other wakeup driven thingies.
+* About ftrace.txt file/
+---
+diff --git a/Documentation/trace/ftrace.txt b/Documentation/trace/ftrace.txt
+index fd9a3e6..caaf5d9 100644
+--- a/Documentation/trace/ftrace.txt
++++ b/Documentation/trace/ftrace.txt
+@@ -7,7 +7,6 @@ Copyright 2008 Red Hat Inc.
+                (dual licensed under the GPL v2)
+ Reviewers:   Elias Oltmanns, Randy Dunlap, Andrew Morton,
+ 	     John Kacur, and David Teigland.
+-
+ Written for: 2.6.28-rc2
 
-Yes.
+ Introduction
+@@ -33,13 +32,26 @@ The File System
+ Ftrace uses the debugfs file system to hold the control files as
+ well as the files to display output.
 
-Firstly, thanks Olaf for measuring and analyzing this so carefully. 
->From your description i get the impression that you are trying to 
-maximize throughput for benchmarks - AIM9 and dbench live and die on 
-the ability to batch the workload.
+-To mount the debugfs system:
++When debugfs is configured into the kernel (which selecting any ftrace
++option will do) the directory /sys/kernel/debug will be created. To mount
++this directory, you can add to your /etc/fstab file:
++
++ debugfs       /sys/kernel/debug          debugfs defaults        0       0
++
++Or you can mount it at run time with:
++
++ mount -t debugfs nodev /sys/kernel/debug
++
++For quicker access to that directory you may want to make a soft link to
++it:
 
-If that is indeed the goal, could you try your measurement with 
-SCHED_BATCH enabled for all relevant (server and client) tasks? 
-SCHED_BATCH is a hint to the scheduler that the workload does not 
-care about wakeup latecy. Do you still get the new-fair-sleepers 
-sensitivity in that case?
+-  # mkdir /debug
+-  # mount -t debugfs nodev /debug
++ ln -s /sys/kernel/debug /debug
 
-The easiest way to se SCHED_BATCH is to do this in a shell:
+-( Note: it is more common to mount at /sys/kernel/debug, but for
+-  simplicity this document will use /debug)
++Any selected ftrace option will also create a directory called tracing
++within the debugfs. The rest of the document will assume that you are in
++the ftrace directory (cd /sys/kernel/debug/tracing) and will only concentrate
++on the files within that directory and not distract from the content with
++the extended "/sys/kernel/debug/tracing" path name.
 
-  schedtool -B $$
+ That's it! (assuming that you have ftrace configured into your kernel)
 
-and then restart all server tasks ('service mysqld restart' for 
-example) and start the benchmark - all child tasks will have 
-SCHED_BATCH set.
+@@ -389,18 +401,18 @@ trace_options
+ The trace_options file is used to control what gets printed in
+ the trace output. To see what is available, simply cat the file:
 
-<plug>
+-  cat /debug/tracing/trace_options
++  cat trace_options
+   print-parent nosym-offset nosym-addr noverbose noraw nohex nobin \
+   noblock nostacktrace nosched-tree nouserstacktrace nosym-userobj
 
-Also, analysis of such problems can generally be done faster and 
-more accuately (and the results are more convincing) if you use 
-perfcounters. It's very easy to set it up, as long as you have Core2 
-(or later) Intel CPUs or AMD CPUs. Pull this tree:
+ To disable one of the options, echo in the option prepended with
+ "no".
 
-git pull \
- git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git \
-  perfcounters/core
+-  echo noprint-parent > /debug/tracing/trace_options
++  echo noprint-parent > trace_options
 
-No configuration needed - build it (accept the defaults), and boot 
-it and do:
+ To enable an option, leave off the "no".
 
-  cd Documentation/perf_counter/
-  make -j
+-  echo sym-offset > /debug/tracing/trace_options
++  echo sym-offset > trace_options
 
-and you are set. You can try:
+ Here are the available options:
 
-  ./perf stat -a sleep 10
+@@ -476,11 +488,11 @@ sched_switch
+ This tracer simply records schedule switches. Here is an example
+ of how to use it.
 
-to get a 10 seconds snapshot of what's going on in the system:
+- # echo sched_switch > /debug/tracing/current_tracer
+- # echo 1 > /debug/tracing/tracing_enabled
++ # echo sched_switch > current_tracer
++ # echo 1 > tracing_enabled
+  # sleep 1
+- # echo 0 > /debug/tracing/tracing_enabled
+- # cat /debug/tracing/trace
++ # echo 0 > tracing_enabled
++ # cat trace
 
- aldebaran:~> perf stat -a sleep 10
+ # tracer: sched_switch
+ #
+@@ -574,13 +586,13 @@ new trace is saved.
+ To reset the maximum, echo 0 into tracing_max_latency. Here is
+ an example:
 
- Performance counter stats for 'sleep':
+- # echo irqsoff > /debug/tracing/current_tracer
+- # echo 0 > /debug/tracing/tracing_max_latency
+- # echo 1 > /debug/tracing/tracing_enabled
++ # echo irqsoff > current_tracer
++ # echo 0 > tracing_max_latency
++ # echo 1 > tracing_enabled
+  # ls -ltr
+  [...]
+- # echo 0 > /debug/tracing/tracing_enabled
+- # cat /debug/tracing/latency_trace
++ # echo 0 > tracing_enabled
++ # cat latency_trace
+ # tracer: irqsoff
+ #
+ irqsoff latency trace v1.1.5 on 2.6.26
+@@ -681,13 +693,13 @@ Like the irqsoff tracer, it records the maximum
+latency for
+ which preemption was disabled. The control of preemptoff tracer
+ is much like the irqsoff tracer.
 
-  159827.019426  task clock ticks     (msecs)
-           1274  context switches     #        0.000 M/sec
-             78  CPU migrations       #        0.000 M/sec
-           7777  pagefaults           #        0.000 M/sec
-     2236492601  CPU cycles           #       13.993 M/sec
-     1908732654  instructions         #       11.942 M/sec
-        5059857  cache references     #        0.032 M/sec
-         503188  cache misses         #        0.003 M/sec
+- # echo preemptoff > /debug/tracing/current_tracer
+- # echo 0 > /debug/tracing/tracing_max_latency
+- # echo 1 > /debug/tracing/tracing_enabled
++ # echo preemptoff > current_tracer
++ # echo 0 > tracing_max_latency
++ # echo 1 > tracing_enabled
+  # ls -ltr
+  [...]
+- # echo 0 > /debug/tracing/tracing_enabled
+- # cat /debug/tracing/latency_trace
++ # echo 0 > tracing_enabled
++ # cat latency_trace
+ # tracer: preemptoff
+ #
+ preemptoff latency trace v1.1.5 on 2.6.26-rc8
+@@ -828,13 +840,13 @@ tracer.
+ Again, using this trace is much like the irqsoff and preemptoff
+ tracers.
 
- Wall-clock time elapsed: 10008.471596 msecs
+- # echo preemptirqsoff > /debug/tracing/current_tracer
+- # echo 0 > /debug/tracing/tracing_max_latency
+- # echo 1 > /debug/tracing/tracing_enabled
++ # echo preemptirqsoff > current_tracer
++ # echo 0 > tracing_max_latency
++ # echo 1 > tracing_enabled
+  # ls -ltr
+  [...]
+- # echo 0 > /debug/tracing/tracing_enabled
+- # cat /debug/tracing/latency_trace
++ # echo 0 > tracing_enabled
++ # cat latency_trace
+ # tracer: preemptirqsoff
+ #
+ preemptirqsoff latency trace v1.1.5 on 2.6.26-rc8
+@@ -990,12 +1002,12 @@ slightly differently than we did with the
+previous tracers.
+ Instead of performing an 'ls', we will run 'sleep 1' under
+ 'chrt' which changes the priority of the task.
 
-You can also do 'perf stat dbench 10' type of measurements to only 
-measure that particular workload. In particular the context switch 
-rate, the cache-miss rate and the ratio between task-clock-ticks and 
-wall-clock-time (efficiency parallelization) can be pretty telling 
-about how 'healthy' a benchmark is - and how various tunables (such 
-as new-fair-sleepers) affect it.
+- # echo wakeup > /debug/tracing/current_tracer
+- # echo 0 > /debug/tracing/tracing_max_latency
+- # echo 1 > /debug/tracing/tracing_enabled
++ # echo wakeup > current_tracer
++ # echo 0 > tracing_max_latency
++ # echo 1 > tracing_enabled
+  # chrt -f 5 sleep 1
+- # echo 0 > /debug/tracing/tracing_enabled
+- # cat /debug/tracing/latency_trace
++ # echo 0 > tracing_enabled
++ # cat latency_trace
+ # tracer: wakeup
+ #
+ wakeup latency trace v1.1.5 on 2.6.26-rc8
+@@ -1105,11 +1117,11 @@ can be done from the debug file system. Make sure the
+ ftrace_enabled is set; otherwise this tracer is a nop.
 
-Say 'hackbench 20' gives this output on my a testbox:
+  # sysctl kernel.ftrace_enabled=1
+- # echo function > /debug/tracing/current_tracer
+- # echo 1 > /debug/tracing/tracing_enabled
++ # echo function > current_tracer
++ # echo 1 > tracing_enabled
+  # usleep 1
+- # echo 0 > /debug/tracing/tracing_enabled
+- # cat /debug/tracing/trace
++ # echo 0 > tracing_enabled
++ # cat trace
+ # tracer: function
+ #
+ #           TASK-PID   CPU#    TIMESTAMP  FUNCTION
+@@ -1146,7 +1158,7 @@ int trace_fd;
+ [...]
+ int main(int argc, char *argv[]) {
+ 	[...]
+-	trace_fd = open("/debug/tracing/tracing_enabled", O_WRONLY);
++	trace_fd = open(find_debugfs("tracing_enabled"), O_WRONLY);
+ 	[...]
+ 	if (condition_hit()) {
+ 		write(trace_fd, "0", 1);
+@@ -1154,26 +1166,20 @@ int main(int argc, char *argv[]) {
+ 	[...]
+ }
 
- aldebaran:~> perf stat ./hackbench 20
- Time: 0.882
+-Note: Here we hard coded the path name. The debugfs mount is not
+-guaranteed to be at /debug (and is more commonly at
+-/sys/kernel/debug). For simple one time traces, the above is
+-sufficent. For anything else, a search through /proc/mounts may
+-be needed to find where the debugfs file-system is mounted.
+-
 
- Performance counter stats for './hackbench':
+ Single thread tracing
+ ---------------------
 
-   12117.839049  task clock ticks     (msecs)
-          63444  context switches     #        0.005 M/sec
-           6972  CPU migrations       #        0.001 M/sec
-          35356  pagefaults           #        0.003 M/sec
-    34561571429  CPU cycles           #     2852.123 M/sec
-    26980655850  instructions         #     2226.524 M/sec
-      115693364  cache references     #        9.547 M/sec
-       57710692  cache misses         #        4.762 M/sec
+-By writing into /debug/tracing/set_ftrace_pid you can trace a
++By writing into set_ftrace_pid you can trace a
+ single thread. For example:
 
- Wall-clock time elapsed:   996.284274 msecs
+-# cat /debug/tracing/set_ftrace_pid
++# cat set_ftrace_pid
+ no pid
+-# echo 3111 > /debug/tracing/set_ftrace_pid
+-# cat /debug/tracing/set_ftrace_pid
++# echo 3111 > set_ftrace_pid
++# cat set_ftrace_pid
+ 3111
+-# echo function > /debug/tracing/current_tracer
+-# cat /debug/tracing/trace | head
++# echo function > current_tracer
++# cat trace | head
+  # tracer: function
+  #
+  #           TASK-PID    CPU#    TIMESTAMP  FUNCTION
+@@ -1184,8 +1190,8 @@ no pid
+      yum-updatesd-3111  [003]  1637.254683: lock_hrtimer_base
+<-hrtimer_try_to_cancel
+      yum-updatesd-3111  [003]  1637.254685: fget_light <-do_sys_poll
+      yum-updatesd-3111  [003]  1637.254686: pipe_poll <-do_sys_poll
+-# echo -1 > /debug/tracing/set_ftrace_pid
+-# cat /debug/tracing/trace |head
++# echo -1 > set_ftrace_pid
++# cat trace |head
+  # tracer: function
+  #
+  #           TASK-PID    CPU#    TIMESTAMP  FUNCTION
+@@ -1202,11 +1208,57 @@ something like this simple program:
 
-This is a 2.8 GHz CPU, and the cycles/sec value of 2.852 shows that 
-the workload is running at max CPU speed. 2.2 billion instructions 
-per second is OK-ish. Cache-miss rate is a bit high - but that's not 
-unexpected: hackbench 20 runs 400 tasks in parallel.
+ #include <stdio.h>
+ #include <stdlib.h>
++#include <string.h>
+ #include <sys/types.h>
+ #include <sys/stat.h>
+ #include <fcntl.h>
+ #include <unistd.h>
 
-perf stat results become even more interesting when they are 
-compared. You might want to give it a try.
++#define _STR(x) #x
++#define STR(x) _STR(x)
++#define MAX_PATH 256
++
++const char *find_debugfs(char *file_name)
++{
++       static char debugfs[MAX_PATH+1];
++       static int debugfs_found;
++       char type[100];
++       FILE *fp;
++       int size;
++
++       if (debugfs_found)
++               return debugfs;
++
++       if ((fp = fopen("/proc/mounts","r")) == NULL) {
++               perror("/proc/mounts");
++               return NULL;
++       }
++
++       while (fscanf(fp, "%*s %"
++                     STR(MAX_PATH)
++                     "s %99s %*s %*d %*d\n",
++                     debugfs, type) == 2) {
++               if (strcmp(type, "debugfs") == 0)
++                       break;
++       }
++       fclose(fp);
++
++       if (strcmp(type, "debugfs") != 0) {
++               fprintf(stderr, "debugfs not mounted");
++               return NULL;
++       }
++
++       debugfs_found = 1;
++
++       size = MAX_PATH - strlen(debugfs);
++       strncat(debugfs, "/tracing/", size);
++
++       size = MAX_PATH - strlen(debugfs);
++       strncat(debugfs, file_name, size);
++
++       return debugfs;
++}
++
+ int main (int argc, char **argv)
+ {
+         if (argc < 1)
+@@ -1217,12 +1269,12 @@ int main (int argc, char **argv)
+                 char line[64];
+                 int s;
 
-Thanks,
+-                ffd = open("/debug/tracing/current_tracer", O_WRONLY);
++                ffd = open(find_debugfs("current_tracer"), O_WRONLY);
+                 if (ffd < 0)
+                         exit(-1);
+                 write(ffd, "nop", 3);
 
-	Ingo
+-                fd = open("/debug/tracing/set_ftrace_pid", O_WRONLY);
++                fd = open(find_debugfs("set_ftrace_pid"), O_WRONLY);
+                 s = sprintf(line, "%d\n", getpid());
+                 write(fd, line, s);
+
+@@ -1374,22 +1426,22 @@ want, depending on your needs.
+   tracing_cpu_mask file) or you might sometimes see unordered
+   function calls while cpu tracing switch.
+
+-	hide: echo nofuncgraph-cpu > /debug/tracing/trace_options
+-	show: echo funcgraph-cpu > /debug/tracing/trace_options
++	hide: echo nofuncgraph-cpu > trace_options
++	show: echo funcgraph-cpu > trace_options
+
+ - The duration (function's time of execution) is displayed on
+   the closing bracket line of a function or on the same line
+   than the current function in case of a leaf one. It is default
+   enabled.
+
+-	hide: echo nofuncgraph-duration > /debug/tracing/trace_options
+-	show: echo funcgraph-duration > /debug/tracing/trace_options
++	hide: echo nofuncgraph-duration > trace_options
++	show: echo funcgraph-duration > trace_options
+
+ - The overhead field precedes the duration field in case of
+   reached duration thresholds.
+
+-	hide: echo nofuncgraph-overhead > /debug/tracing/trace_options
+-	show: echo funcgraph-overhead > /debug/tracing/trace_options
++	hide: echo nofuncgraph-overhead > trace_options
++	show: echo funcgraph-overhead > trace_options
+ 	depends on: funcgraph-duration
+
+   ie:
+@@ -1418,8 +1470,8 @@ want, depending on your needs.
+ - The task/pid field displays the thread cmdline and pid which
+   executed the function. It is default disabled.
+
+-	hide: echo nofuncgraph-proc > /debug/tracing/trace_options
+-	show: echo funcgraph-proc > /debug/tracing/trace_options
++	hide: echo nofuncgraph-proc > trace_options
++	show: echo funcgraph-proc > trace_options
+
+   ie:
+
+@@ -1442,8 +1494,8 @@ want, depending on your needs.
+   system clock since it started. A snapshot of this time is
+   given on each entry/exit of functions
+
+-	hide: echo nofuncgraph-abstime > /debug/tracing/trace_options
+-	show: echo funcgraph-abstime > /debug/tracing/trace_options
++	hide: echo nofuncgraph-abstime > trace_options
++	show: echo funcgraph-abstime > trace_options
+
+   ie:
+
+@@ -1540,7 +1592,7 @@ listed in:
+
+    available_filter_functions
+
+- # cat /debug/tracing/available_filter_functions
++ # cat available_filter_functions
+ put_prev_task_idle
+ kmem_cache_create
+ pick_next_task_rt
+@@ -1552,12 +1604,12 @@ mutex_lock
+ If I am only interested in sys_nanosleep and hrtimer_interrupt:
+
+  # echo sys_nanosleep hrtimer_interrupt \
+-		> /debug/tracing/set_ftrace_filter
+- # echo ftrace > /debug/tracing/current_tracer
+- # echo 1 > /debug/tracing/tracing_enabled
++		> set_ftrace_filter
++ # echo ftrace > current_tracer
++ # echo 1 > tracing_enabled
+  # usleep 1
+- # echo 0 > /debug/tracing/tracing_enabled
+- # cat /debug/tracing/trace
++ # echo 0 > tracing_enabled
++ # cat trace
+ # tracer: ftrace
+ #
+ #           TASK-PID   CPU#    TIMESTAMP  FUNCTION
+@@ -1568,7 +1620,7 @@ If I am only interested in sys_nanosleep and
+hrtimer_interrupt:
+
+ To see which functions are being traced, you can cat the file:
+
+- # cat /debug/tracing/set_ftrace_filter
++ # cat set_ftrace_filter
+ hrtimer_interrupt
+ sys_nanosleep
+
+@@ -1588,7 +1640,7 @@ Note: It is better to use quotes to enclose the
+wild cards,
+       otherwise the shell may expand the parameters into names
+       of files in the local directory.
+
+- # echo 'hrtimer_*' > /debug/tracing/set_ftrace_filter
++ # echo 'hrtimer_*' > set_ftrace_filter
+
+ Produces:
+
+@@ -1609,7 +1661,7 @@ Produces:
+
+ Notice that we lost the sys_nanosleep.
+
+- # cat /debug/tracing/set_ftrace_filter
++ # cat set_ftrace_filter
+ hrtimer_run_queues
+ hrtimer_run_pending
+ hrtimer_init
+@@ -1635,17 +1687,17 @@ To append to the filters, use '>>'
+ To clear out a filter so that all functions will be recorded
+ again:
+
+- # echo > /debug/tracing/set_ftrace_filter
+- # cat /debug/tracing/set_ftrace_filter
++ # echo > set_ftrace_filter
++ # cat set_ftrace_filter
+  #
+
+ Again, now we want to append.
+
+- # echo sys_nanosleep > /debug/tracing/set_ftrace_filter
+- # cat /debug/tracing/set_ftrace_filter
++ # echo sys_nanosleep > set_ftrace_filter
++ # cat set_ftrace_filter
+ sys_nanosleep
+- # echo 'hrtimer_*' >> /debug/tracing/set_ftrace_filter
+- # cat /debug/tracing/set_ftrace_filter
++ # echo 'hrtimer_*' >> set_ftrace_filter
++ # cat set_ftrace_filter
+ hrtimer_run_queues
+ hrtimer_run_pending
+ hrtimer_init
+@@ -1668,7 +1720,7 @@ hrtimer_init_sleeper
+ The set_ftrace_notrace prevents those functions from being
+ traced.
+
+- # echo '*preempt*' '*lock*' > /debug/tracing/set_ftrace_notrace
++ # echo '*preempt*' '*lock*' > set_ftrace_notrace
+
+ Produces:
+
+@@ -1758,13 +1810,13 @@ the effect on the tracing is different. Every read from
+ trace_pipe is consumed. This means that subsequent reads will be
+ different. The trace is live.
+
+- # echo function > /debug/tracing/current_tracer
+- # cat /debug/tracing/trace_pipe > /tmp/trace.out &
++ # echo function > current_tracer
++ # cat trace_pipe > /tmp/trace.out &
+ [1] 4153
+- # echo 1 > /debug/tracing/tracing_enabled
++ # echo 1 > tracing_enabled
+  # usleep 1
+- # echo 0 > /debug/tracing/tracing_enabled
+- # cat /debug/tracing/trace
++ # echo 0 > tracing_enabled
++ # cat trace
+ # tracer: function
+ #
+ #           TASK-PID   CPU#    TIMESTAMP  FUNCTION
+@@ -1800,7 +1852,7 @@ number listed is the number of entries that can
+be recorded per
+ CPU. To know the full size, multiply the number of possible CPUS
+ with the number of entries.
+
+- # cat /debug/tracing/buffer_size_kb
++ # cat buffer_size_kb
+ 1408 (units kilobytes)
+
+ Note, to modify this, you must have tracing completely disabled.
+@@ -1808,18 +1860,18 @@ To do that, echo "nop" into the current_tracer. If the
+ current_tracer is not set to "nop", an EINVAL error will be
+ returned.
+
+- # echo nop > /debug/tracing/current_tracer
+- # echo 10000 > /debug/tracing/buffer_size_kb
+- # cat /debug/tracing/buffer_size_kb
++ # echo nop > current_tracer
++ # echo 10000 > buffer_size_kb
++ # cat buffer_size_kb
+ 10000 (units kilobytes)
+
+ The number of pages which will be allocated is limited to a
+ percentage of available memory. Allocating too much will produce
+ an error.
+
+- # echo 1000000000000 > /debug/tracing/buffer_size_kb
++ # echo 1000000000000 > buffer_size_kb
+ -bash: echo: write error: Cannot allocate memory
+- # cat /debug/tracing/buffer_size_kb
++ # cat buffer_size_kb
+ 85
+
+---
+
+
+
+Regards,
+GeunSik Lim ( SAMSUNG ELECTRONICS)
+Blog : http://blog.naver.com/invain/
+e-Mail: geunsik.lim@samsung.com
+           leemgs@gmail.com , leemgs1@gmail.com
+
+To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
