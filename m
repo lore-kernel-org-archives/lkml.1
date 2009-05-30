@@ -1,45 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759170AbZE3Wm7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759437AbZE3Wnj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759170AbZE3Wm7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 18:42:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756095AbZE3WhY
+	id S1759437AbZE3Wnj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 18:43:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759185AbZE3Wm5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 18:37:24 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:46576 "EHLO ogre.sisk.pl"
+	Sat, 30 May 2009 18:42:57 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:48855 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756044AbZE3WhW convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 18:37:22 -0400
-Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Diego Calleja" <diegocg@gmail.com>
-References: <4to6E2myxvG.A.muC.aIbIKB@chimera>
-In-Reply-To: <4to6E2myxvG.A.muC.aIbIKB@chimera>
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+	id S1759224AbZE3Wm4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 May 2009 18:42:56 -0400
+Date: Sun, 31 May 2009 00:38:24 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Roland McGrath <roland@redhat.com>
+Cc: Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: [RFC PATCH 01/12 v3] ptrace: ptrace_signal: fix the usage of
+	->parent
+Message-ID: <20090530223824.GA30478@redhat.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Message-ID: <LEcEO2518_I.A.V0C.eIbIKB@chimera>
-Subject: [Bug #13408] Performance regression in 2.6.30-rc7
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sat, 30 May 2009 21:37:38 +0200 (CEST)
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This message has been generated automatically as a part of a report
-of recent regressions.
+This patch complicates the code to fix the pure theoretical problems.
+But since we are going to change this code, it is better to fix them
+anyway.
 
-The following bug entry is on the current list of known regressions
-from 2.6.29.  Please verify if it still should be listed and let me know
-(either way).
+- If we are not traced any longer after ptrace_stop(), si_pid/si_uid
+  are not necessary right.
 
+- It is not safe to dereference current->parent without tasklist or
+  RCU lock. The tracer can detach and exit. ->siglock can't prevent
+  this, and (in theory) local_irq_disable() doesn't imply RCU lock.
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13408
-Subject		: Performance regression in 2.6.30-rc7
-Submitter	: Diego Calleja <diegocg@gmail.com>
-Date		: 2009-05-30 18:51 (1 days old)
-References	: http://lkml.org/lkml/2009/5/30/146
+Hopefully this "signr != info->si_signo" code will go away eventually.
 
+Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+---
+
+ kernel/signal.c |   15 +++++++++++++--
+ 1 file changed, 13 insertions(+), 2 deletions(-)
+
+--- PTRACE/kernel/signal.c~01_PTRACE_SIGNAL	2009-05-30 21:30:04.000000000 +0200
++++ PTRACE/kernel/signal.c	2009-05-30 21:52:00.000000000 +0200
+@@ -1770,11 +1770,22 @@ static int ptrace_signal(int signr, sigi
+ 	   specific in the siginfo structure then it should
+ 	   have updated *info via PTRACE_SETSIGINFO.  */
+ 	if (signr != info->si_signo) {
++		struct task_struct *tracer;
++
+ 		info->si_signo = signr;
+ 		info->si_errno = 0;
+ 		info->si_code = SI_USER;
+-		info->si_pid = task_pid_vnr(current->parent);
+-		info->si_uid = task_uid(current->parent);
++
++		rcu_read_lock();
++		tracer = current->parent;
++		if (task_ptrace(current)) {
++			info->si_pid = task_pid_vnr(tracer);
++			info->si_uid = task_uid(tracer);
++		} else {
++			info->si_pid = 0;
++			info->si_uid = 0;
++		}
++		rcu_read_unlock();
+ 	}
+ 
+ 	/* If the (new) signal is now blocked, requeue it.  */
 
