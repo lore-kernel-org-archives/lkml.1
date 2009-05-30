@@ -1,139 +1,567 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932371AbZE3PQO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932548AbZE3PRx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932371AbZE3PQO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 11:16:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759087AbZE3PQA
+	id S932548AbZE3PRx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 11:17:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759176AbZE3PRp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 11:16:00 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:53647 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758744AbZE3PP6 (ORCPT
+	Sat, 30 May 2009 11:17:45 -0400
+Received: from yx-out-2324.google.com ([74.125.44.30]:38404 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759052AbZE3PRo convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 11:15:58 -0400
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       Cornelia Huck <cornelia.huck@de.ibm.com>, linux-fsdevel@vger.kernel.org,
-       Kay Sievers <kay.sievers@vrfy.org>, Greg KH <greg@kroah.com>,
-       "Eric W. Biederman" <ebiederm@aristanetworks.com>
-References: <m1zlcwltri.fsf_-_@fess.ebiederm.org>
-	<1243551665-23596-4-git-send-email-ebiederm@xmission.com>
-	<4A1FA777.3040200@kernel.org> <m1zlcvdf7j.fsf@fess.ebiederm.org>
-	<4A210DEF.2030203@kernel.org> <m1d49qoi1o.fsf@fess.ebiederm.org>
-	<1243693199.5223.5.camel@mulgrave.int.hansenpartnership.com>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Sat, 30 May 2009 08:15:53 -0700
-In-Reply-To: <1243693199.5223.5.camel@mulgrave.int.hansenpartnership.com> (James Bottomley's message of "Sat\, 30 May 2009 14\:19\:59 +0000")
-Message-ID: <m1bppaei52.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Sat, 30 May 2009 11:17:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=sddxhZYKzZLsmk23tAnnpuiWnxX+7qJdBtsaU9Z0FTpeLyQlx7xUAqcRnO+FeoSRsS
+         9chlzI25BfRvkNf2XF2Hqx6dPgE3UGzd+qtvFMiUldE6SmWN1k1zFkWb+Meo3DEKxeHR
+         SEiGChA956d8stSCY+HnZn1I104pYtaH0WPM8=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Rcpt-To: James.Bottomley@HansenPartnership.com, ebiederm@aristanetworks.com, greg@kroah.com, kay.sievers@vrfy.org, linux-fsdevel@vger.kernel.org, cornelia.huck@de.ibm.com, linux-kernel@vger.kernel.org, gregkh@suse.de, akpm@linux-foundation.org, tj@kernel.org
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;James Bottomley <James.Bottomley@HansenPartnership.com>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  1.5 XMNoVowels Alpha-numberic number with no vowels
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 T_TooManySym_01 4+ unique symbols in subject
-	*  0.1 XMSolicitRefs_0 Weightloss drug
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
-Subject: Re: [PATCH 04/24] sysfs: Normalize removing sysfs directories.
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
+In-Reply-To: <alpine.DEB.2.00.0905300939450.14994@gandalf.stny.rr.com>
+References: <1243315163.14685.17.camel@centos51>
+	 <1243613134.20635.14.camel@centos51>
+	 <alpine.DEB.2.00.0905291240150.31247@gandalf.stny.rr.com>
+	 <49b7c2350905291843i402b7161xf05fdb87eb77f73f@mail.gmail.com>
+	 <alpine.DEB.2.00.0905292204280.14994@gandalf.stny.rr.com>
+	 <49b7c2350905300238k5f6259fne30ad94f8fbf7e20@mail.gmail.com>
+	 <49b7c2350905300421q7c1c9110ke99e25eec051f94c@mail.gmail.com>
+	 <alpine.DEB.2.00.0905300939450.14994@gandalf.stny.rr.com>
+Date: Sun, 31 May 2009 00:17:45 +0900
+Message-ID: <49b7c2350905300817s6d14cd2dy87cb93cf7d7774b@mail.gmail.com>
+Subject: Re: [RFC V2 PATCH]debugfs:Fix terminology inconsistency of dir name 
+	to mount debugfs filesystem.
+From: GeunSik Lim <leemgs1@gmail.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Greg KH <greg@kroah.com>, linux-kernel <linux-kernel@vger.kernel.org>,
+       trivial@kernel.org, balagi@justmail.de, bgamari@gmail.com,
+       Ingo Molnar <mingo@elte.hu>, inaky.perez-gonzalez@intel.com
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley <James.Bottomley@HansenPartnership.com> writes:
-
-> On Sat, 2009-05-30 at 06:07 -0700, Eric W. Biederman wrote:
->> Tejun Heo <tj@kernel.org> writes:
->> 
->> > Eric W. Biederman wrote:
->> >>   Also, I'm quite uncomfortable with these things
->> >>> being done in non-atomic manner.  It can be made to work but things
->> >>> like this can lead to subtle race conditions and with the kind of
->> >>> layering we put on top of sysfs (kobject, driver model, driver
->> >>> midlayers and so on), it isn't all that easy to verify what's going
->> >>> on, so NACK for this one.
->> >> 
->> >> Total nonsense.
->> >> 
->> >> Mucking about with sysfs after we start deleting a directory is a bug.
->> >> At worst my change makes a buggy race slightly less deterministic.
->> >> 
->> >> I am not ready to consider keeping the current unnecessary atomic
->> >> removal step.  That unnecessary atomicity makes the following patches
->> >> more difficult, and requires a lot of unnecessary retesting.
->> >> 
->> >> What do you think the extra unnecessary atomicity helps protect?
->> >
->> > It's just not a clean API.  When people are trying to code things way
->> > up in the stack, they aren't likely to look up the code to see what
->> > assumptions are being made especially when the stack is deep and
->> > complex and sysfs is near the bottom of the tall stack.  IMHO
->> > implementing the usually expected semantics at this depth is worth
->> > every effort.  It's just good implementation style which might look
->> > like wasted effort but will harden the stack in the long run.  Plus,
->> > it's not like making it atomic is difficult or anything.
->> 
->> I guess we are going to have to disagree on this one.
->> 
->> My take is simply that a correct user has to wait until no one else
->> can find the kobject before calling kobject_del.  At which point
->> races are impossible, and it doesn't matter if sysfs_mutex is held
->> across the entire operation.
+On Sat, May 30, 2009 at 10:44 PM, Steven Rostedt <rostedt@goodmis.org> wrote:
+> You need to make two functions. One to find the debugfs and one to add the
+> file. The "debugfs_found" will make the function return just the first
+> file_name every time. Something like this: (remove the file_name from
+> find_debugfs).
 >
-> I'm afraid this one isn't a valid assumption.  If you look in SCSI,
-> you'll see we do get objects after they've been removed from visibility.
-> We use it as part of the state model for how our objects work (objects
-> removed from visibility are dying, but we still need them to be findable
-> (and gettable).
+> const char *tracing_file(const char *file_name)
+> {
+>        static char trace_file[MAX_PATH+1];
+>
+>        snprintf(trace_file, MAX_PATH, "%s/%s", find_debugfs(), file_name);
+>
+>        return trace_file;
+> }
+>
+> The above is not thread safe, but is OK for non threaded programs.
+Thanks.
+I modified pseudo code using tracing_file function that you sent.
 
-I was not precise enough.  It appears I overlooked the fact that
-kobject_del is not always called from kobject_put by way of
-kobject_release.
+* ftrace.txt info after modification.
+---
+diff --git a/Documentation/trace/ftrace.txt b/Documentation/trace/ftrace.txt
+index fd9a3e6..05f8378 100644
+--- a/Documentation/trace/ftrace.txt
++++ b/Documentation/trace/ftrace.txt
+@@ -7,7 +7,6 @@ Copyright 2008 Red Hat Inc.
+                (dual licensed under the GPL v2)
+ Reviewers:   Elias Oltmanns, Randy Dunlap, Andrew Morton,
+ 	     John Kacur, and David Teigland.
+-
+ Written for: 2.6.28-rc2
 
-Strictly the requirement is that after kobject_del we don't add,
-remove or otherwise manipulate sysfs attributes.  That is we don't
-call any of:
+ Introduction
+@@ -33,13 +32,26 @@ The File System
+ Ftrace uses the debugfs file system to hold the control files as
+ well as the files to display output.
 
-sysfs_add_file
-sysfs_create_file
-sysfs_create_bin_file
-sysfs_remove_file
-sysfs_remove_bin_file
-sysfs_create_link
-sysfs_remove_link
-sysfs_create_group
-sysfs_remove_group
-sysfs_create_subdir
-sysfs_remove_subdir
+-To mount the debugfs system:
++When debugfs is configured into the kernel (which selecting any ftrace
++option will do) the directory /sys/kernel/debug will be created. To mount
++this directory, you can add to your /etc/fstab file:
++
++ debugfs       /sys/kernel/debug          debugfs defaults        0       0
++
++Or you can mount it at run time with:
++
++ mount -t debugfs nodev /sys/kernel/debug
+
+-  # mkdir /debug
+-  # mount -t debugfs nodev /debug
++For quicker access to that directory you may want to make a soft link to
++it:
+
+-( Note: it is more common to mount at /sys/kernel/debug, but for
+-  simplicity this document will use /debug)
++ ln -s /sys/kernel/debug /debug
++
++Any selected ftrace option will also create a directory called tracing
++within the debugfs. The rest of the document will assume that you are in
++the ftrace directory (cd /sys/kernel/debug/tracing) and will only concentrate
++on the files within that directory and not distract from the content with
++the extended "/sys/kernel/debug/tracing" path name.
+
+ That's it! (assuming that you have ftrace configured into your kernel)
+
+@@ -389,18 +401,18 @@ trace_options
+ The trace_options file is used to control what gets printed in
+ the trace output. To see what is available, simply cat the file:
+
+-  cat /debug/tracing/trace_options
++  cat trace_options
+   print-parent nosym-offset nosym-addr noverbose noraw nohex nobin \
+   noblock nostacktrace nosched-tree nouserstacktrace nosym-userobj
+
+ To disable one of the options, echo in the option prepended with
+ "no".
+
+-  echo noprint-parent > /debug/tracing/trace_options
++  echo noprint-parent > trace_options
+
+ To enable an option, leave off the "no".
+
+-  echo sym-offset > /debug/tracing/trace_options
++  echo sym-offset > trace_options
+
+ Here are the available options:
+
+@@ -476,11 +488,11 @@ sched_switch
+ This tracer simply records schedule switches. Here is an example
+ of how to use it.
+
+- # echo sched_switch > /debug/tracing/current_tracer
+- # echo 1 > /debug/tracing/tracing_enabled
++ # echo sched_switch > current_tracer
++ # echo 1 > tracing_enabled
+  # sleep 1
+- # echo 0 > /debug/tracing/tracing_enabled
+- # cat /debug/tracing/trace
++ # echo 0 > tracing_enabled
++ # cat trace
+
+ # tracer: sched_switch
+ #
+@@ -574,13 +586,13 @@ new trace is saved.
+ To reset the maximum, echo 0 into tracing_max_latency. Here is
+ an example:
+
+- # echo irqsoff > /debug/tracing/current_tracer
+- # echo 0 > /debug/tracing/tracing_max_latency
+- # echo 1 > /debug/tracing/tracing_enabled
++ # echo irqsoff > current_tracer
++ # echo 0 > tracing_max_latency
++ # echo 1 > tracing_enabled
+  # ls -ltr
+  [...]
+- # echo 0 > /debug/tracing/tracing_enabled
+- # cat /debug/tracing/latency_trace
++ # echo 0 > tracing_enabled
++ # cat latency_trace
+ # tracer: irqsoff
+ #
+ irqsoff latency trace v1.1.5 on 2.6.26
+@@ -681,13 +693,13 @@ Like the irqsoff tracer, it records the maximum
+latency for
+ which preemption was disabled. The control of preemptoff tracer
+ is much like the irqsoff tracer.
+
+- # echo preemptoff > /debug/tracing/current_tracer
+- # echo 0 > /debug/tracing/tracing_max_latency
+- # echo 1 > /debug/tracing/tracing_enabled
++ # echo preemptoff > current_tracer
++ # echo 0 > tracing_max_latency
++ # echo 1 > tracing_enabled
+  # ls -ltr
+  [...]
+- # echo 0 > /debug/tracing/tracing_enabled
+- # cat /debug/tracing/latency_trace
++ # echo 0 > tracing_enabled
++ # cat latency_trace
+ # tracer: preemptoff
+ #
+ preemptoff latency trace v1.1.5 on 2.6.26-rc8
+@@ -828,13 +840,13 @@ tracer.
+ Again, using this trace is much like the irqsoff and preemptoff
+ tracers.
+
+- # echo preemptirqsoff > /debug/tracing/current_tracer
+- # echo 0 > /debug/tracing/tracing_max_latency
+- # echo 1 > /debug/tracing/tracing_enabled
++ # echo preemptirqsoff > current_tracer
++ # echo 0 > tracing_max_latency
++ # echo 1 > tracing_enabled
+  # ls -ltr
+  [...]
+- # echo 0 > /debug/tracing/tracing_enabled
+- # cat /debug/tracing/latency_trace
++ # echo 0 > tracing_enabled
++ # cat latency_trace
+ # tracer: preemptirqsoff
+ #
+ preemptirqsoff latency trace v1.1.5 on 2.6.26-rc8
+@@ -990,12 +1002,12 @@ slightly differently than we did with the
+previous tracers.
+ Instead of performing an 'ls', we will run 'sleep 1' under
+ 'chrt' which changes the priority of the task.
+
+- # echo wakeup > /debug/tracing/current_tracer
+- # echo 0 > /debug/tracing/tracing_max_latency
+- # echo 1 > /debug/tracing/tracing_enabled
++ # echo wakeup > current_tracer
++ # echo 0 > tracing_max_latency
++ # echo 1 > tracing_enabled
+  # chrt -f 5 sleep 1
+- # echo 0 > /debug/tracing/tracing_enabled
+- # cat /debug/tracing/latency_trace
++ # echo 0 > tracing_enabled
++ # cat latency_trace
+ # tracer: wakeup
+ #
+ wakeup latency trace v1.1.5 on 2.6.26-rc8
+@@ -1105,11 +1117,11 @@ can be done from the debug file system. Make sure the
+ ftrace_enabled is set; otherwise this tracer is a nop.
+
+  # sysctl kernel.ftrace_enabled=1
+- # echo function > /debug/tracing/current_tracer
+- # echo 1 > /debug/tracing/tracing_enabled
++ # echo function > current_tracer
++ # echo 1 > tracing_enabled
+  # usleep 1
+- # echo 0 > /debug/tracing/tracing_enabled
+- # cat /debug/tracing/trace
++ # echo 0 > tracing_enabled
++ # cat trace
+ # tracer: function
+ #
+ #           TASK-PID   CPU#    TIMESTAMP  FUNCTION
+@@ -1146,7 +1158,7 @@ int trace_fd;
+ [...]
+ int main(int argc, char *argv[]) {
+ 	[...]
+-	trace_fd = open("/debug/tracing/tracing_enabled", O_WRONLY);
++	trace_fd = open(tracing_file("tracing_enabled"), O_WRONLY);
+ 	[...]
+ 	if (condition_hit()) {
+ 		write(trace_fd, "0", 1);
+@@ -1154,26 +1166,20 @@ int main(int argc, char *argv[]) {
+ 	[...]
+ }
+
+-Note: Here we hard coded the path name. The debugfs mount is not
+-guaranteed to be at /debug (and is more commonly at
+-/sys/kernel/debug). For simple one time traces, the above is
+-sufficent. For anything else, a search through /proc/mounts may
+-be needed to find where the debugfs file-system is mounted.
+-
+
+ Single thread tracing
+ ---------------------
+
+-By writing into /debug/tracing/set_ftrace_pid you can trace a
++By writing into set_ftrace_pid you can trace a
+ single thread. For example:
+
+-# cat /debug/tracing/set_ftrace_pid
++# cat set_ftrace_pid
+ no pid
+-# echo 3111 > /debug/tracing/set_ftrace_pid
+-# cat /debug/tracing/set_ftrace_pid
++# echo 3111 > set_ftrace_pid
++# cat set_ftrace_pid
+ 3111
+-# echo function > /debug/tracing/current_tracer
+-# cat /debug/tracing/trace | head
++# echo function > current_tracer
++# cat trace | head
+  # tracer: function
+  #
+  #           TASK-PID    CPU#    TIMESTAMP  FUNCTION
+@@ -1184,8 +1190,8 @@ no pid
+      yum-updatesd-3111  [003]  1637.254683: lock_hrtimer_base
+<-hrtimer_try_to_cancel
+      yum-updatesd-3111  [003]  1637.254685: fget_light <-do_sys_poll
+      yum-updatesd-3111  [003]  1637.254686: pipe_poll <-do_sys_poll
+-# echo -1 > /debug/tracing/set_ftrace_pid
+-# cat /debug/tracing/trace |head
++# echo -1 > set_ftrace_pid
++# cat trace |head
+  # tracer: function
+  #
+  #           TASK-PID    CPU#    TIMESTAMP  FUNCTION
+@@ -1207,6 +1213,51 @@ something like this simple program:
+ #include <fcntl.h>
+ #include <unistd.h>
+
++#define _STR(x) #x
++#define STR(x) _STR(x)
++#define MAX_PATH 256
++
++const char *find_debugfs(void)
++{
++       static char debugfs[MAX_PATH+1];
++       static int debugfs_found;
++       char type[100];
++       FILE *fp;
++
++       if (debugfs_found)
++               return debugfs;
++
++       if ((fp = fopen("/proc/mounts","r")) == NULL) {
++               perror("/proc/mounts");
++               return NULL;
++       }
++
++       while (fscanf(fp, "%*s %"
++                     STR(MAX_PATH)
++                     "s %99s %*s %*d %*d\n",
++                     debugfs, type) == 2) {
++               if (strcmp(type, "debugfs") == 0)
++                       break;
++       }
++       fclose(fp);
++
++       if (strcmp(type, "debugfs") != 0) {
++               fprintf(stderr, "debugfs not mounted");
++               return NULL;
++       }
++
++       debugfs_found = 1;
++
++       return debugfs;
++}
++
++const char *tracing_file(const char *file_name)
++{
++       static char trace_file[MAX_PATH+1];
++       snprintf(trace_file, MAX_PATH, "%s/%s", find_debugfs(), file_name);
++       return trace_file;
++}
++
+ int main (int argc, char **argv)
+ {
+         if (argc < 1)
+@@ -1217,12 +1268,12 @@ int main (int argc, char **argv)
+                 char line[64];
+                 int s;
+
+-                ffd = open("/debug/tracing/current_tracer", O_WRONLY);
++                ffd = open(tracing_file("current_tracer"), O_WRONLY);
+                 if (ffd < 0)
+                         exit(-1);
+                 write(ffd, "nop", 3);
+
+-                fd = open("/debug/tracing/set_ftrace_pid", O_WRONLY);
++                fd = open(tracing_file("set_ftrace_pid"), O_WRONLY);
+                 s = sprintf(line, "%d\n", getpid());
+                 write(fd, line, s);
+
+@@ -1374,22 +1425,22 @@ want, depending on your needs.
+   tracing_cpu_mask file) or you might sometimes see unordered
+   function calls while cpu tracing switch.
+
+-	hide: echo nofuncgraph-cpu > /debug/tracing/trace_options
+-	show: echo funcgraph-cpu > /debug/tracing/trace_options
++	hide: echo nofuncgraph-cpu > trace_options
++	show: echo funcgraph-cpu > trace_options
+
+ - The duration (function's time of execution) is displayed on
+   the closing bracket line of a function or on the same line
+   than the current function in case of a leaf one. It is default
+   enabled.
+
+-	hide: echo nofuncgraph-duration > /debug/tracing/trace_options
+-	show: echo funcgraph-duration > /debug/tracing/trace_options
++	hide: echo nofuncgraph-duration > trace_options
++	show: echo funcgraph-duration > trace_options
+
+ - The overhead field precedes the duration field in case of
+   reached duration thresholds.
+
+-	hide: echo nofuncgraph-overhead > /debug/tracing/trace_options
+-	show: echo funcgraph-overhead > /debug/tracing/trace_options
++	hide: echo nofuncgraph-overhead > trace_options
++	show: echo funcgraph-overhead > trace_options
+ 	depends on: funcgraph-duration
+
+   ie:
+@@ -1418,8 +1469,8 @@ want, depending on your needs.
+ - The task/pid field displays the thread cmdline and pid which
+   executed the function. It is default disabled.
+
+-	hide: echo nofuncgraph-proc > /debug/tracing/trace_options
+-	show: echo funcgraph-proc > /debug/tracing/trace_options
++	hide: echo nofuncgraph-proc > trace_options
++	show: echo funcgraph-proc > trace_options
+
+   ie:
+
+@@ -1442,8 +1493,8 @@ want, depending on your needs.
+   system clock since it started. A snapshot of this time is
+   given on each entry/exit of functions
+
+-	hide: echo nofuncgraph-abstime > /debug/tracing/trace_options
+-	show: echo funcgraph-abstime > /debug/tracing/trace_options
++	hide: echo nofuncgraph-abstime > trace_options
++	show: echo funcgraph-abstime > trace_options
+
+   ie:
+
+@@ -1540,7 +1591,7 @@ listed in:
+
+    available_filter_functions
+
+- # cat /debug/tracing/available_filter_functions
++ # cat available_filter_functions
+ put_prev_task_idle
+ kmem_cache_create
+ pick_next_task_rt
+@@ -1552,12 +1603,12 @@ mutex_lock
+ If I am only interested in sys_nanosleep and hrtimer_interrupt:
+
+  # echo sys_nanosleep hrtimer_interrupt \
+-		> /debug/tracing/set_ftrace_filter
+- # echo ftrace > /debug/tracing/current_tracer
+- # echo 1 > /debug/tracing/tracing_enabled
++		> set_ftrace_filter
++ # echo ftrace > current_tracer
++ # echo 1 > tracing_enabled
+  # usleep 1
+- # echo 0 > /debug/tracing/tracing_enabled
+- # cat /debug/tracing/trace
++ # echo 0 > tracing_enabled
++ # cat trace
+ # tracer: ftrace
+ #
+ #           TASK-PID   CPU#    TIMESTAMP  FUNCTION
+@@ -1568,7 +1619,7 @@ If I am only interested in sys_nanosleep and
+hrtimer_interrupt:
+
+ To see which functions are being traced, you can cat the file:
+
+- # cat /debug/tracing/set_ftrace_filter
++ # cat set_ftrace_filter
+ hrtimer_interrupt
+ sys_nanosleep
+
+@@ -1588,7 +1639,7 @@ Note: It is better to use quotes to enclose the
+wild cards,
+       otherwise the shell may expand the parameters into names
+       of files in the local directory.
+
+- # echo 'hrtimer_*' > /debug/tracing/set_ftrace_filter
++ # echo 'hrtimer_*' > set_ftrace_filter
+
+ Produces:
+
+@@ -1609,7 +1660,7 @@ Produces:
+
+ Notice that we lost the sys_nanosleep.
+
+- # cat /debug/tracing/set_ftrace_filter
++ # cat set_ftrace_filter
+ hrtimer_run_queues
+ hrtimer_run_pending
+ hrtimer_init
+@@ -1635,17 +1686,17 @@ To append to the filters, use '>>'
+ To clear out a filter so that all functions will be recorded
+ again:
+
+- # echo > /debug/tracing/set_ftrace_filter
+- # cat /debug/tracing/set_ftrace_filter
++ # echo > set_ftrace_filter
++ # cat set_ftrace_filter
+  #
+
+ Again, now we want to append.
+
+- # echo sys_nanosleep > /debug/tracing/set_ftrace_filter
+- # cat /debug/tracing/set_ftrace_filter
++ # echo sys_nanosleep > set_ftrace_filter
++ # cat set_ftrace_filter
+ sys_nanosleep
+- # echo 'hrtimer_*' >> /debug/tracing/set_ftrace_filter
+- # cat /debug/tracing/set_ftrace_filter
++ # echo 'hrtimer_*' >> set_ftrace_filter
++ # cat set_ftrace_filter
+ hrtimer_run_queues
+ hrtimer_run_pending
+ hrtimer_init
+@@ -1668,7 +1719,7 @@ hrtimer_init_sleeper
+ The set_ftrace_notrace prevents those functions from being
+ traced.
+
+- # echo '*preempt*' '*lock*' > /debug/tracing/set_ftrace_notrace
++ # echo '*preempt*' '*lock*' > set_ftrace_notrace
+
+ Produces:
+
+@@ -1758,13 +1809,13 @@ the effect on the tracing is different. Every read from
+ trace_pipe is consumed. This means that subsequent reads will be
+ different. The trace is live.
+
+- # echo function > /debug/tracing/current_tracer
+- # cat /debug/tracing/trace_pipe > /tmp/trace.out &
++ # echo function > current_tracer
++ # cat trace_pipe > /tmp/trace.out &
+ [1] 4153
+- # echo 1 > /debug/tracing/tracing_enabled
++ # echo 1 > tracing_enabled
+  # usleep 1
+- # echo 0 > /debug/tracing/tracing_enabled
+- # cat /debug/tracing/trace
++ # echo 0 > tracing_enabled
++ # cat trace
+ # tracer: function
+ #
+ #           TASK-PID   CPU#    TIMESTAMP  FUNCTION
+@@ -1800,7 +1851,7 @@ number listed is the number of entries that can
+be recorded per
+ CPU. To know the full size, multiply the number of possible CPUS
+ with the number of entries.
+
+- # cat /debug/tracing/buffer_size_kb
++ # cat buffer_size_kb
+ 1408 (units kilobytes)
+
+ Note, to modify this, you must have tracing completely disabled.
+@@ -1808,18 +1859,18 @@ To do that, echo "nop" into the current_tracer. If the
+ current_tracer is not set to "nop", an EINVAL error will be
+ returned.
+
+- # echo nop > /debug/tracing/current_tracer
+- # echo 10000 > /debug/tracing/buffer_size_kb
+- # cat /debug/tracing/buffer_size_kb
++ # echo nop > current_tracer
++ # echo 10000 > buffer_size_kb
++ # cat buffer_size_kb
+ 10000 (units kilobytes)
+
+ The number of pages which will be allocated is limited to a
+ percentage of available memory. Allocating too much will produce
+ an error.
+
+- # echo 1000000000000 > /debug/tracing/buffer_size_kb
++ # echo 1000000000000 > buffer_size_kb
+ -bash: echo: write error: Cannot allocate memory
+- # cat /debug/tracing/buffer_size_kb
++ # cat buffer_size_kb
+ 85
+
+---
 
 
-Those all either oops or BUG today if you try it.  So I can't see how
-a subsystem could depend on those working.
-
-Also there is sysfs_remove_dir (on a subdirectory) aka kobject_del on
-a child object after kobject_del on the parent object.
-
-As best I can tell that only works by fluke today.
-
-> Now, this could be altered as part of an object lifetime rewrite of SCSI
-> (and I suspect a few other subsystems) but it's certainly an open
-> question of whether the pain is worth the gain.
-
-I won't tell you that sysfs, the kobject layer, or the device layer
-are the best thing since sliced bread.  I'm just trying to simplify
-the code and get the bugs out.
-
-Eric
+-- 
+Regards,
+GeunSik Lim ( SAMSUNG ELECTRONICS)
+Blog : http://blog.naver.com/invain/
+e-Mail: geunsik.lim@samsung.com
+           leemgs@gmail.com , leemgs1@gmail.com
+--
+To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
