@@ -1,70 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759891AbZE3KbW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759823AbZE3Kbq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759891AbZE3KbW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 06:31:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755464AbZE3KbP
+	id S1759823AbZE3Kbq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 06:31:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755803AbZE3Kbj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 06:31:15 -0400
-Received: from mail-bw0-f222.google.com ([209.85.218.222]:51678 "EHLO
-	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754274AbZE3KbO (ORCPT
+	Sat, 30 May 2009 06:31:39 -0400
+Received: from casper.infradead.org ([85.118.1.10]:35990 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755464AbZE3Kbi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 06:31:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent;
-        b=laXmlucTjeHtMw2WAG6tQPteufXjLRVj89hE3jOUz7dfXYjwSGD5TnVHPSj7L6kTP2
-         zTwoXk8G7zWdBpJexaXF17eLWTUEpYKZ6IyB6asRmzTCPWx3mhPd1+XJhKK6QNz9vezO
-         vL3a7WRL3DeYkjiMjuN6N+ud78dr9GMgZSah0=
-Date: Sat, 30 May 2009 12:31:11 +0200
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Borislav Petkov <petkovbb@googlemail.com>,
-       Borislav Petkov <borislav.petkov@amd.com>, greg@kroah.com,
-       mingo@elte.hu, norsk5@yahoo.com, tglx@linutronix.de, hpa@zytor.com,
-       mchehab@redhat.com, aris@redhat.com, edt@aei.ca,
-       linux-kernel@vger.kernel.org, randy.dunlap@oracle.com
-Subject: Re: [PATCH 0/4] amd64_edac: misc fixes
-Message-ID: <20090530103111.GA22825@liondog.tnic>
-Mail-Followup-To: Borislav Petkov <petkovbb@gmail.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Borislav Petkov <petkovbb@googlemail.com>,
-	Borislav Petkov <borislav.petkov@amd.com>, greg@kroah.com,
-	mingo@elte.hu, norsk5@yahoo.com, tglx@linutronix.de, hpa@zytor.com,
-	mchehab@redhat.com, aris@redhat.com, edt@aei.ca,
-	linux-kernel@vger.kernel.org, randy.dunlap@oracle.com
-References: <1242845037-1029-1-git-send-email-borislav.petkov@amd.com> <20090528164720.0af5752b.akpm@linux-foundation.org> <20090529103329.GB23530@aftab> <20090529130115.a44efaee.akpm@linux-foundation.org> <20090530081954.GA21954@liondog.tnic> <20090530014007.3c1e22d5.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20090530014007.3c1e22d5.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sat, 30 May 2009 06:31:38 -0400
+Subject: Re: [PATCH tip 1/1] perf_counter tools: Add locking to perf top
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Mike Galbraith <efault@gmx.de>,
+       Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090529203322.GS4747@ghostprotocols.net>
+References: <20090529200307.GR4747@ghostprotocols.net>
+	 <1243628537.6645.106.camel@laptop>
+	 <20090529203322.GS4747@ghostprotocols.net>
+Content-Type: text/plain
+Date: Sat, 30 May 2009 12:31:26 +0200
+Message-Id: <1243679486.6645.125.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 30, 2009 at 01:40:07AM -0700, Andrew Morton wrote:
-> On Sat, 30 May 2009 10:19:54 +0200 Borislav Petkov <petkovbb@googlemail.com> wrote:
+On Fri, 2009-05-29 at 17:33 -0300, Arnaldo Carvalho de Melo wrote:
+> Em Fri, May 29, 2009 at 10:22:17PM +0200, Peter Zijlstra escreveu:
+> > On Fri, 2009-05-29 at 17:03 -0300, Arnaldo Carvalho de Melo wrote:
+> > >         /* Sort the active symbols */
+> > > -       list_for_each_entry_safe(syme, n, &active_symbols, node) {
+> > > -               if (syme->count[0] != 0) {
+> > > +       pthread_mutex_lock(&active_symbols_lock);
+> > > +       syme = list_entry(active_symbols.next, struct sym_entry, node);
+> > > +       pthread_mutex_unlock(&active_symbols_lock);
+> > > +
+> > > +       list_for_each_entry_safe_from(syme, n, &active_symbols, node) {
+> > > +               syme->snap_count = syme->count[0];
+> > > +               if (syme->snap_count != 0) {
+> > > +                       syme->weight = sym_weight(syme);
+> > 
+> > That looks wrong, you basically do a fancy cast while holding the lock,
+> > then you overwrite the variable doing a list iteration without holding
+> > the lock.
+> > 
+> > If list_add and list_del are under a lock, the iteration should be too.
 > 
-> > Also, I've been thinking about how the old(er)
-> > toolchain problem can be addressed and one fairly doable thing would be
-> > if I'd query the gas version in the kernel Makefile and define popcnt
-> > dependent on it and for older assemblers simply slap in the opcode and
-> > fixate the operands in an inline assembly so that it works.
+> Look closer :)
 > 
-> We've done that before.  BUG() is one case (for other reasons), I think.
+> 1) List insertion is only done at the head and by the other thread, thus
+> the lock above. The other thread will only mess with the above
+> syme->node.prev when inserting a new head, never with .next.
 > 
-> But if we have the code in there which uese the literal opcode, there's
-> no need to query gas or to add the conditional.
+> 2) List deletion is only done after taking the lock, and on the above
+> thread.
+> 
+> Only problem probably is to access syme->count[0], that on some
+> architectures may not be atomic.
 
-Right, we can do that too. Stay tuned.
+If you want to do that, you need to use the rcu list primitives,
+otherwise insertion vs iteration isn't safe. Memory barriers and
+ordering still matter in userspace.
 
-> Is popcnt supported on all CPUs?
+And whichever way you turn that list_entry() under mutex, that's utter
+rubbish, it doesn't protect anything.
 
-All >= Fam10h.
+As it stands, this code is more broken than it was before for the simple
+reason that it might fool people into believing its ok.
 
--- 
-Regards/Gruss,
-    Boris.
