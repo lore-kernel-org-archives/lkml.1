@@ -1,55 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760551AbZE3LgL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759521AbZE3Lgc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760551AbZE3LgL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 07:36:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757581AbZE3Lf6
+	id S1759521AbZE3Lgc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 07:36:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757581AbZE3LgX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 07:35:58 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:47071 "EHLO e2.ny.us.ibm.com"
+	Sat, 30 May 2009 07:36:23 -0400
+Received: from mail.mnementh.co.uk ([173.45.232.4]:42210 "EHLO mnementh.co.uk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753639AbZE3Lf5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 07:35:57 -0400
-Date: Sat, 30 May 2009 19:35:54 +0800
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
-       "hannes@cmpxchg.org" <hannes@cmpxchg.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: [PATCH 2/4] modify swap_map and add SWAP_HAS_CACHE flag.
-Message-ID: <20090530113554.GN24073@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090528135455.0c83bedc.kamezawa.hiroyu@jp.fujitsu.com> <20090528141900.c93fe1d5.kamezawa.hiroyu@jp.fujitsu.com> <20090530061008.GE24073@balbir.in.ibm.com> <c22c9214cc3a6fcf2224fa556f5558b1.squirrel@webmail-b.css.fujitsu.com>
+	id S1756594AbZE3LgX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 May 2009 07:36:23 -0400
+Message-ID: <4A211A2E.7090301@f2s.com>
+Date: Sat, 30 May 2009 12:36:14 +0100
+From: Ian molton <spyro@f2s.com>
+Reply-To: ian@mnementh.co.uk
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <c22c9214cc3a6fcf2224fa556f5558b1.squirrel@webmail-b.css.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Philipp Zabel <philipp.zabel@gmail.com>
+CC: linux-kernel@vger.kernel.org, Pierre Ossman <pierre@ossman.eu>
+Subject: Re: [PATCH 5/5] mmc: tmio_mmc: move probe function into __init section
+References: <1243279681-4233-1-git-send-email-philipp.zabel@gmail.com> <1243279681-4233-6-git-send-email-philipp.zabel@gmail.com>
+In-Reply-To: <1243279681-4233-6-git-send-email-philipp.zabel@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-05-30 20:16:51]:
+Philipp Zabel wrote:
+> As MFD cells are not hotpluggable, this should be safe to do.
 
-> Balbir Singh wrote:
-> >>  #define SWAP_CLUSTER_MAX 32
-> >>
-> >> -#define SWAP_MAP_MAX	0x7fff
-> >> -#define SWAP_MAP_BAD	0x8000
-> >> -
-> >> +#define SWAP_MAP_MAX	0x7ffe
-> >> +#define SWAP_MAP_BAD	0x7fff
-> >> +#define SWAP_HAS_CACHE  0x8000		/* There is a swap cache of entry. */
-> >
-> > Why count, can't we use swp->flags?
-> >
-> 
-> Hmm ? swap_map just only a "unsiged short" value per entry..sorry,
-> I can't catch what you mention to.
-
-Sorry for the noise, the count is directly contained in swap_map[].
-
--- 
-	Balbir
+NAK, as per others comments.
