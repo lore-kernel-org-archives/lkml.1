@@ -1,95 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757064AbZE3DFj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756951AbZE3DGR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757064AbZE3DFj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 23:05:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752967AbZE3DFb
+	id S1756951AbZE3DGR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 23:06:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753314AbZE3DGG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 23:05:31 -0400
-Received: from mail-pz0-f177.google.com ([209.85.222.177]:62618 "EHLO
-	mail-pz0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752558AbZE3DFa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 23:05:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=VNEPz0Vk1V5qw9k/9ebNJ/pdHUtdZTncyMSy9Ox7ov55bWKzrezxf2DOy6ehKlwKCn
-         5YbQ0ex9r2g82mBOHMQzLAV7capFkgDcK2YQU7o82wtkplH8Wr9f1yqGx0KDVFy8CKGb
-         HyiCBCEuvZynhBd0IRRANw2YMG91fgdwrJnqI=
+	Fri, 29 May 2009 23:06:06 -0400
+Received: from tomts33.bellnexxia.net ([209.226.175.107]:34416 "EHLO
+	tomts33-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752967AbZE3DGF convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 May 2009 23:06:05 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AruaALM/IErR4q+G/2dsb2JhbACBL4oSgmaSLqRoikqDeAU
+X-Mailer: Openwave WebEngine, version 2.8.11 (webedge20-101-194-20030622)
+X-Originating-IP: [41.219.137.100]
+From: Amanda <ganonqueautoservice@bellnet.ca>
+Reply-To: johncarrick12@btinternet.com
+To: <info@lotto.org>
+Subject: Bonanza
+Date: Fri, 29 May 2009 23:06:03 -0400
 MIME-Version: 1.0
-In-Reply-To: <1242496922-6330-2-git-send-email-fweisbec@gmail.com>
-References: <1242496922-6330-1-git-send-email-fweisbec@gmail.com>
-	 <1242496922-6330-2-git-send-email-fweisbec@gmail.com>
-Date: Fri, 29 May 2009 21:05:31 -0600
-Message-ID: <9b1675090905292005p2b53de7dy9e36f84368d76f01@mail.gmail.com>
-Subject: Re: [PATCH 1/2] kill-the-bkl/reiserfs: acquire the inode mutex safely
-From: "Trenton D. Adams" <trenton.d.adams@gmail.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Al Viro <viro@zeniv.linux.org.uk>,
-       Reiserfs <reiserfs-devel@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, Jeff Mahoney <jeffm@suse.com>,
-       Chris Mason <chris.mason@oracle.com>, Ingo Molnar <mingo@elte.hu>,
-       Alexander Beregalov <a.beregalov@gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
+Message-Id: <20090530030605.PMVR1792.tomts33-srv.bellnexxia.net@toip35-bus.srvr.bell.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 16, 2009 at 12:02 PM, Frederic Weisbecker
-<fweisbec@gmail.com> wrote:
-> While searching a pathname, an inode mutex can be acquired
-> in do_lookup() which calls reiserfs_lookup() which in turn
-> acquires the write lock.
->
-> On the other side reiserfs_fill_super() can acquire the write_lock
-> and then call reiserfs_lookup_privroot() which can acquire an
-> inode mutex (the root of the mount point).
->
-> So we theoretically risk an AB - BA lock inversion that could lead
-> to a deadlock.
->
-> As for other lock dependencies found since the bkl to mutex
-> conversion, the fix is to use reiserfs_mutex_lock_safe() which
-> drops the lock dependency to the write lock.
->
+You have just been awarded, £950.000.00  GBP in the LG Online,send us your
+Names........
+Address......
+Country......
+Sex/Tel......
 
-I'm curious, did this get applied, and is it related to the following?
- I was having these in 2.6.30-rc3.  I am now on 2.6.30-rc7 as of
-today.  I haven't seen them today.  But then again, I only seen this
-happen one time.
-
-May 27 01:56:12 tdamac INFO: task pdflush:15370 blocked for more than
-120 seconds.
-May 27 01:56:12 tdamac "echo 0 >
-/proc/sys/kernel/hung_task_timeout_secs" disables this message.
-May 27 01:56:12 tdamac pdflush       D ffff8800518a0000     0 15370      2
-May 27 01:56:12 tdamac ffff880025023b50 0000000000000046
-0000000025023a90 000000000000d7a0
-May 27 01:56:12 tdamac 0000000000004000 0000000000011440
-000000000000ca78 ffff880045e71568
-May 27 01:56:12 tdamac ffff880045e7156c ffff8800518a0000
-ffff880067f54230 ffff8800518a0380
-May 27 01:56:12 tdamac Call Trace:
-May 27 01:56:12 tdamac [<ffffffff80687d1b>] ? __mutex_lock_slowpath+0xe2/0x124
-May 27 01:56:12 tdamac [<ffffffff80687d13>] __mutex_lock_slowpath+0xda/0x124
-May 27 01:56:12 tdamac [<ffffffff8068809e>] mutex_lock+0x1e/0x36
-May 27 01:56:12 tdamac [<ffffffff803087ae>] flush_commit_list+0x150/0x689
-May 27 01:56:12 tdamac [<ffffffff8022f8e5>] ? __wake_up+0x43/0x50
-May 27 01:56:12 tdamac [<ffffffff8030ad8a>] do_journal_end+0xb4a/0xd6c
-May 27 01:56:12 tdamac [<ffffffff8023053d>] ? dequeue_entity+0x1b/0x1df
-May 27 01:56:12 tdamac [<ffffffff8030b020>] journal_end_sync+0x74/0x7d
-May 27 01:56:12 tdamac [<ffffffff802fd2fd>] reiserfs_sync_fs+0x41/0x67
-May 27 01:56:12 tdamac [<ffffffff80688091>] ? mutex_lock+0x11/0x36
-May 27 01:56:12 tdamac [<ffffffff802fd331>] reiserfs_write_super+0xe/0x10
-May 27 01:56:12 tdamac [<ffffffff802a532a>] sync_supers+0x61/0xa6
-May 27 01:56:12 tdamac [<ffffffff8027e140>] wb_kupdate+0x32/0x128
-May 27 01:56:12 tdamac [<ffffffff8027ee7c>] pdflush+0x140/0x21f
-May 27 01:56:12 tdamac [<ffffffff8027e10e>] ? wb_kupdate+0x0/0x128
-May 27 01:56:12 tdamac [<ffffffff8027ed3c>] ? pdflush+0x0/0x21f
-May 27 01:56:12 tdamac [<ffffffff8024fb26>] kthread+0x56/0x83
-May 27 01:56:12 tdamac [<ffffffff8020beba>] child_rip+0xa/0x20
-May 27 01:56:12 tdamac [<ffffffff8024fad0>] ? kthread+0x0/0x83
-May 27 01:56:12 tdamac [<ffffffff8020beb0>] ? child_rip+0x0/0x20
