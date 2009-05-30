@@ -1,96 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760718AbZE3NIH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763235AbZE3NPX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760718AbZE3NIH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 09:08:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757956AbZE3NHz
+	id S1763235AbZE3NPX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 09:15:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756766AbZE3NPM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 09:07:55 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:53373 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757873AbZE3NHy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 09:07:54 -0400
-To: Tejun Heo <tj@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       Cornelia Huck <cornelia.huck@de.ibm.com>, linux-fsdevel@vger.kernel.org,
-       Kay Sievers <kay.sievers@vrfy.org>, Greg KH <greg@kroah.com>,
-       "Eric W. Biederman" <ebiederm@aristanetworks.com>
-References: <m1zlcwltri.fsf_-_@fess.ebiederm.org>
-	<1243551665-23596-4-git-send-email-ebiederm@xmission.com>
-	<4A1FA777.3040200@kernel.org> <m1zlcvdf7j.fsf@fess.ebiederm.org>
-	<4A210DEF.2030203@kernel.org>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Sat, 30 May 2009 06:07:47 -0700
-In-Reply-To: <4A210DEF.2030203@kernel.org> (Tejun Heo's message of "Sat\, 30 May 2009 19\:43\:59 +0900")
-Message-ID: <m1d49qoi1o.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Sat, 30 May 2009 09:15:12 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:49298 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756594AbZE3NPL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 May 2009 09:15:11 -0400
+Message-ID: <4A213181.5080201@redhat.com>
+Date: Sat, 30 May 2009 09:15:45 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Rcpt-To: tj@kernel.org, ebiederm@aristanetworks.com, greg@kroah.com, kay.sievers@vrfy.org, linux-fsdevel@vger.kernel.org, cornelia.huck@de.ibm.com, linux-kernel@vger.kernel.org, gregkh@suse.de, akpm@linux-foundation.org
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Tejun Heo <tj@kernel.org>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  1.5 XMNoVowels Alpha-numberic number with no vowels
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 T_TooManySym_01 4+ unique symbols in subject
-	*  0.1 XMSolicitRefs_0 Weightloss drug
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
-Subject: Re: [PATCH 04/24] sysfs: Normalize removing sysfs directories.
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Christoph Hellwig <hch@infradead.org>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Tom Zanussi <tzanussi@gmail.com>
+Subject: Re: [PATCH -tip v8 7/7] tracing: add kprobe-based event tracer
+References: <20090529000326.17532.70868.stgit@localhost.localdomain> <20090529000353.17532.71995.stgit@localhost.localdomain> <alpine.DEB.2.00.0905300009230.14994@gandalf.stny.rr.com>
+In-Reply-To: <alpine.DEB.2.00.0905300009230.14994@gandalf.stny.rr.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo <tj@kernel.org> writes:
+Steven Rostedt wrote:
+> 
+> 
+> On Thu, 28 May 2009, Masami Hiramatsu wrote:
+> 
+>> +#undef SHOW_FIELD
+>> +#define SHOW_FIELD(type, item, name)					\
+>> +	do {								\
+>> +		ret = trace_seq_printf(s, "\tfield: " #type " %s;\t"	\
+>> +				"offset:%u;tsize:%u;\n", name,		\
+>> +				(unsigned)offsetof(typeof(field), item),\
+>> +				(unsigned)sizeof(type));		\
+>> +		if (!ret)						\
+>> +			return 0;					\
+>> +	} while (0)
+>> +
+>> +static int __probe_event_show_format(struct ftrace_event_call *event_call,
+>> +				     struct trace_seq *s, const char *fmt,
+>> +				     const char *arg)
+>> +{
+>> +	struct kprobe_trace_entry field __attribute__((unused));
+> 
+> You use kprobe_trace_entry for both kprobe and kretprobe.
 
-> Eric W. Biederman wrote:
->>   Also, I'm quite uncomfortable with these things
->>> being done in non-atomic manner.  It can be made to work but things
->>> like this can lead to subtle race conditions and with the kind of
->>> layering we put on top of sysfs (kobject, driver model, driver
->>> midlayers and so on), it isn't all that easy to verify what's going
->>> on, so NACK for this one.
->> 
->> Total nonsense.
->> 
->> Mucking about with sysfs after we start deleting a directory is a bug.
->> At worst my change makes a buggy race slightly less deterministic.
->> 
->> I am not ready to consider keeping the current unnecessary atomic
->> removal step.  That unnecessary atomicity makes the following patches
->> more difficult, and requires a lot of unnecessary retesting.
->> 
->> What do you think the extra unnecessary atomicity helps protect?
->
-> It's just not a clean API.  When people are trying to code things way
-> up in the stack, they aren't likely to look up the code to see what
-> assumptions are being made especially when the stack is deep and
-> complex and sysfs is near the bottom of the tall stack.  IMHO
-> implementing the usually expected semantics at this depth is worth
-> every effort.  It's just good implementation style which might look
-> like wasted effort but will harden the stack in the long run.  Plus,
-> it's not like making it atomic is difficult or anything.
+Ah, right. I'll fix that.
 
-I guess we are going to have to disagree on this one.
+Thank you for reviewing!
 
-My take is simply that a correct user has to wait until no one else
-can find the kobject before calling kobject_del.  At which point
-races are impossible, and it doesn't matter if sysfs_mutex is held
-across the entire operation.
+> 
+>> +	int ret, i;
+>> +	char buf[MAX_ARGSTR_LEN + 1];
+>> +	struct trace_probe *tp = container_of(event_call,
+>> +					      struct trace_probe, call);
+>> +
+>> +	/* Show fields */
+>> +	for (i = 0; i < tp->nr_args; i++) {
+>> +		sprintf(buf, "arg%d", i);
+>> +		SHOW_FIELD(unsigned long, args[i], buf);
+>> +	}
+>> +	trace_seq_puts(s, "\n");
+>> +
+>> +	/* Show aliases */
+>> +	for (i = 0; i < tp->nr_args; i++) {
+>> +		if (trace_arg_string(buf, MAX_ARGSTR_LEN, &tp->args[i]))
+>> +			return 0;
+>> +		if (!trace_seq_printf(s, "\talias: %s;\toriginal: arg%d;\n",
+>> +				      buf, i))
+>> +			return 0;
+>> +	}
+>> +	/* Show format */
+>> +	if (!trace_seq_printf(s, "\nprint fmt: \"%s", fmt))
+>> +		return 0;
+>> +
+>> +	for (i = 0; i < tp->nr_args; i++)
+>> +		if (!trace_seq_puts(s, " 0x%lx"))
+>> +			return 0;
+>> +
+>> +	if (!trace_seq_printf(s, "\", %s", arg))
+>> +		return 0;
+>> +
+>> +	for (i = 0; i < tp->nr_args; i++)
+>> +		if (!trace_seq_printf(s, ", arg%d", i))
+>> +			return 0;
+>> +
+>> +	return trace_seq_puts(s, "\n");
+>> +}
+>> +
+>> +static int kprobe_event_show_format(struct ftrace_event_call *call,
+>> +				    struct trace_seq *s)
+>> +{
+>> +	struct kprobe_trace_entry field __attribute__((unused));
+>> +	int ret;
+>> +
+>> +	SHOW_FIELD(unsigned long, ip, "ip");
+>> +	SHOW_FIELD(int, nargs, "nargs");
+>> +
+>> +	return __probe_event_show_format(call, s, "%lx:", "ip");
+>> +}
+>> +
+>> +static int kretprobe_event_show_format(struct ftrace_event_call *call,
+>> +				       struct trace_seq *s)
+>> +{
+>> +	struct kretprobe_trace_entry field __attribute__((unused));
+>> +	int ret;
+>> +
+>> +	SHOW_FIELD(unsigned long, func, "func");
+>> +	SHOW_FIELD(unsigned long, ret_ip, "ret_ip");
+>> +	SHOW_FIELD(int, nargs, "nargs");
+>> +
+>> +	return __probe_event_show_format(call, s, "%lx <- %lx:",
+>> +					  "func, ret_ip");
+>> +}
+> 
+> Thus we end up with:
+> 
+> format:
+> 	field:unsigned short common_type;	offset:0;	size:2;
+> 	field:unsigned char common_flags;	offset:2;	size:1;
+> 	field:unsigned char common_preempt_count;	offset:3;	
+> size:1;
+> 	field:int common_pid;	offset:4;	size:4;
+> 	field:int common_tgid;	offset:8;	size:4;
+> 
+> 	field: unsigned long func;	offset:16;tsize:8;
+> 	field: unsigned long ret_ip;	offset:24;tsize:8;
+> 	field: int nargs;	offset:32;tsize:4;
+> 	field: unsigned long arg0;	offset:32;tsize:8;
+> 	field: unsigned long arg1;	offset:40;tsize:8;
+> 	field: unsigned long arg2;	offset:48;tsize:8;
+> 	field: unsigned long arg3;	offset:56;tsize:8;
+> 
+> Notice that nargs and arg0 are both at offest 32.
+> 
+> -- Steve
+> 
 
+-- 
+Masami Hiramatsu
 
-For the long term I still intend to kill __sysfs_remove_dir.  Just
-not in this patch series.
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
 
-Eric
+e-mail: mhiramat@redhat.com
+
