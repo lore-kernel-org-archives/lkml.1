@@ -1,70 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760439AbZE3TQQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762688AbZE3TRa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760439AbZE3TQQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 15:16:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756466AbZE3TQA
+	id S1762688AbZE3TRa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 15:17:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757537AbZE3TRW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 15:16:00 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:41836 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753189AbZE3TQA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 15:16:00 -0400
-Subject: Re: SCHED_EDF infos
-From: Peter Zijlstra <peterz@infradead.org>
-To: Henrik Austad <henrik@austad.us>
-Cc: GeunSik Lim <leemgs1@gmail.com>, finarfin@dreamos.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20090508091052.GA10429@januz.myftp.org>
-References: <164c92d827cbee86ba2c5621716309e6@localhost>
-	 <200904300939.31754.henrik@austad.us>
-	 <49b7c2350905071935kbd2aa22v9d39cf41c537c24b@mail.gmail.com>
-	 <20090508091052.GA10429@januz.myftp.org>
-Content-Type: text/plain
-Date: Sat, 30 May 2009 21:15:57 +0200
-Message-Id: <1243710957.6645.157.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Sat, 30 May 2009 15:17:22 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:60915 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756466AbZE3TRW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 May 2009 15:17:22 -0400
+Date: Sat, 30 May 2009 21:16:29 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Carl Love <cel@us.ibm.com>
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Philip Mucci <mucci@eecs.utk.edu>, LKML <linux-kernel@vger.kernel.org>,
+       Andi Kleen <andi@firstfloor.org>, Paul Mackerras <paulus@samba.org>,
+       Maynard Johnson <mpjohn@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>, eranian@gmail.com,
+       perfmon2-devel <perfmon2-devel@lists.sourceforge.net>
+Subject: Re: [perfmon2] comments on Performance Counters for Linux (PCL)
+Message-ID: <20090530191629.GA3105@elte.hu>
+References: <7c86c4470905280758y6d359823h2a7517dfecb115e6@mail.gmail.com> <1243527919.6645.75.camel@laptop> <4A1EFCC2.80805@linux.vnet.ibm.com> <20090528213532.GA8589@elte.hu> <18975.7470.792842.173625@cargo.ozlabs.ibm.com> <20090529071914.GB3157@elte.hu> <alpine.LRH.2.00.0905291020200.21748@vixen.sonytel.be> <1243608160.6534.46.camel@carll-linux-desktop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1243608160.6534.46.camel@carll-linux-desktop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-05-08 at 11:10 +0200, Henrik Austad wrote:
-> > In fact, I also  don't have perfect know how to solve PI in Multicore.
-> > [...]
-> > > deadline inversion will be a problem, in fact, whatever you chooose to 
-> > > be the 'key' for picking tasks (priority, niceness, deadlines, wind 
-> > > direction, <whatever>), you can pretty much take that and add a 
-> > > -inversion after it. :)
+
+* Carl Love <cel@us.ibm.com> wrote:
+
 > 
-> No, PI is going to be deadly no matter what you do.
+> On Fri, 2009-05-29 at 10:21 +0200, Geert Uytterhoeven wrote:
+> > On Fri, 29 May 2009, Ingo Molnar wrote:
+> > > * Paul Mackerras <paulus@samba.org> wrote:
+> > > > Ingo Molnar writes:
+> > > > > * Corey Ashford <cjashfor@linux.vnet.ibm.com> wrote:
+> > > > > >> So you're suggesting to artificually strech periods by say 
+> > > > > >> composing a single overflow from smaller ones, ignoring the 
+> > > > > >> intermediate overflow events?
+> > > > > >>
+> > > > > >> That sounds doable, again, patch welcome.
+> > > > > >
+> > > > > > I definitely agree with Stephane's point on this one.  I had 
+> > > > > > assumed that long irq_periods (longer than the width of the 
+> > > > > > counter) would be synthesized as you suggest.  If this is not the 
+> > > > > > case, PCL should be changed so that it does, -or- at a minimum, 
+> > > > > > the user should get an error back stating that the period is too 
+> > > > > > long for the hardware counter.
+> > > > > 
+> > > > > this looks somewhat academic - at least on x86, even the fastest 
+> > > > > events (say cycles) with a 32 bit overflow means one event per 
+> > > > > second on 4GB. That's not a significant event count in practice. 
+> > > > > What's the minimum width we are talking about on Power?
+> > > > 
+> > > > 32 bits, but since the top bit is effectively a level-sensitive 
+> > > > interrupt request, the maximum period in hardware is 2^31 counts.
+> > > > 
+> > > > However, I already support 64-bit interrupt periods (well, 63-bit 
+> > > > actually) on powerpc by only calling perf_counter_overflow() when 
+> > > > counter->hw.period_left becomes <= 0, and arranging to set the 
+> > > > hardware counter to 0 if counter->hw.period_left is >= 0x80000000. 
+> > > > It's a tiny amount of code to handle it, really.
+> > > 
+> > > No argument about that - just wanted to know whether there's any 
+> > > real practical effect beyond the nitpicking factor ;-)
+> > 
+> > I never really dived into this stuff, but ISTR there are some 16-bit counters
+> > on CELL? Is that correct?
+> 
+> FYI, the counters on CELL are configurable.  You can have up to 
+> eight 16 bit count counters or you can combine counters i and i=1 
+> (where i=0,2,4,6) into 32 bit counters.  This allows you to have 
+> some 16 and some 32 bit counters at the same time.
 
-Right, we would need to extend the Priority Inheritance Protocol to
-include everything the regular scheduling functions operate on.
+If 16-bit counters are exposed then this can be solved like the 
+PowerPC perfcounters code does it: by not propagating 'early' IRQs 
+back to the generic layer but continuing it until the real threshold 
+has been reached.
 
-That is, we can reduce scheduling to a single order operator that orders
-all the available tasks, such that t_n < t_n+1.
-
-For pure EDF that would be a comparison on deadlines (and available
-bandwidth), for FIFO on static priority and for CFS something based on
-the virtual runtimes of the involved tasks. For the combined set of
-these scheduling classes the comparator uses the class hierarchy to
-order between them.
-
-Lets call the full set of data that is used to determine this order a
-task's key.
-
-If we then substitute this key for the static priority of the classic
-PIP and use this generic comparison operator, it can be extended to
-cover arbitrary complex scheduling functions.
-
-
-This is a bit like the Proxy Execution Protocol, where we leave the
-blocked task in the runqueue, but run another task in its stead. The key
-point is that it donates the full task state as relevant to the
-scheduling function, or even more directly, it uses the scheduler
-itself, to solve the Priority Inversion.
-
-
-
+	Ingo
