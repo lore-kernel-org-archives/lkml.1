@@ -1,83 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759380AbZE3J5Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756103AbZE3J74@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759380AbZE3J5Z (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 05:57:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753707AbZE3J5R
+	id S1756103AbZE3J74 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 05:59:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753707AbZE3J7t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 05:57:17 -0400
-Received: from gate.crashing.org ([63.228.1.57]:34672 "EHLO gate.crashing.org"
+	Sat, 30 May 2009 05:59:49 -0400
+Received: from mail.mnementh.co.uk ([173.45.232.4]:49344 "EHLO mnementh.co.uk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753427AbZE3J5R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 05:57:17 -0400
-Subject: Re: [RFC] [PATCH] Device Tree on ARM platform
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Grant Likely <grant.likely@secretlab.ca>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>, timur@freescale.com,
-       devicetree-discuss@ozlabs.org, linux-kernel@vger.kernel.org,
-       linux-arm-kernel@lists.arm.linux.org.uk, scottwood@freescale.com,
-       yuan-bo.ye@motorola.com, David Miller <davem@davemloft.net>,
-       rmk@arm.linux.org.uk
-In-Reply-To: <20090529123411.GB14650@rakim.wolfsonmicro.main>
-References: <20090527234801.GP6805@pengutronix.de>
-	 <4A1DD3A0.3010501@freescale.com> <20090528000707.GR6805@pengutronix.de>
-	 <20090527.171525.204909140.davem@davemloft.net>
-	 <20090528103745.GA19523@sirena.org.uk>
-	 <fa686aa40905281532l76996593ocdc36760eb468e04@mail.gmail.com>
-	 <20090529123411.GB14650@rakim.wolfsonmicro.main>
-Content-Type: text/plain
-Date: Sat, 30 May 2009 19:52:46 +1000
-Message-Id: <1243677166.440.12.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	id S1753427AbZE3J7s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 May 2009 05:59:48 -0400
+Message-ID: <4A210389.80101@f2s.com>
+Date: Sat, 30 May 2009 10:59:37 +0100
+From: Ian molton <spyro@f2s.com>
+Reply-To: ian@mnementh.co.uk
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+MIME-Version: 1.0
+To: Philipp Zabel <philipp.zabel@gmail.com>
+CC: linux-kernel@vger.kernel.org, Samuel Ortiz <sameo@openedhand.com>,
+       Pierre Ossman <pierre@ossman.eu>
+Subject: Re: [PATCH 1/5] MFD,mmc: tmio_mmc: make HCLK configurable
+References: <1243279681-4233-1-git-send-email-philipp.zabel@gmail.com> <1243279681-4233-2-git-send-email-philipp.zabel@gmail.com>
+In-Reply-To: <1243279681-4233-2-git-send-email-philipp.zabel@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-> Sure.  My only big concern with it is that it compeltely sidesteps
-> clocking decisions so there's a lot of codecs it's not going to be
-> immediately useful with and I don't have a clear idea how it could be
-> extended to be so.  Most other things look like they can be added on
-> fairly easily when required.
+Acked-by: Ian Molton <spyro@f2s.com>
 
-Regarding clocks ...
+However I'd like to see the clk API  weaned of its CPU spcific 
+dependencies so that it can be used for this purpose instead.
 
-Paulus and I had a discussion the other day and he mentioned a very good
-idea to represent the clock net in the device-tree.
+I consider ASIC3 support in this driver more important and this change 
+is pretty noninvasive. Converting to the clk api in future shouldnt be 
+any harder with this patch (actually slightly easier).
 
-Basically, do it just like the interrupts.
-
-IE. A device would have a "clocks" property that contain a certain
-amount of cells representing a clock source in a clock provider, itself
-identified by a "clock-parent" property (default to the actual node
-parent). Clock providers would have a #clock-cells to provide the number
-of cells a in the "clocks" property for each clock source.
-
-Actually, we could be a little bit smarter since clocks are more messy
-than interrupts, and define "clocks" to be a serie of clock-parent
-phandle and clock id within that parent. The clock id size is still
-represented by the #clock-cells of the clock parent, but we avoid the
-pitfall of the interrupt routing that makes it hard to connect to
-multiple different PICs.
-
-That would provide the routing, without actual values or capabilities of
-each clock, that's orthogonal. But that would allow driver to easily
-find their clock "provider" and we could thus provide some simple
-infrastructure to register drivers or handlers to perform actions on
-those clocks, such as refcounting users, etc...
-
-It may also be useful to define properties in the clock controllers
-themselves mapping clock IDs to actual frequencies or things like that
-but I'm only half convinced here. IE. Let's start by defining the
--wiring- and leave the -values- (on,off, slewing, freq adjustement,
-spreading) to an API between drivers and clock providers for now.
-
-Maybe later with experience with can find good ways to extend the
-device-tree representiation to provide actual clock settings and/or
-tables.
-
-Cheers,
-Ben.
+Philipp Zabel wrote:
+> The Toshiba parts all have a 24 MHz HCLK, but HTC ASIC3 has a 24.576 MHz HCLK
+> and AMD Imageon w228x's HCLK is 80 MHz. With this patch, the MFD driver
+> provides the HCLK frequency to tmio_mmc via mfd_cell->driver_data.
+> 
+> Signed-off-by: Philipp Zabel <philipp.zabel@gmail.com>
+> Cc: Samuel Ortiz <sameo@openedhand.com>
+> Cc: Pierre Ossman <pierre@ossman.eu>
 
 
