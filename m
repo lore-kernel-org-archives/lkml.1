@@ -1,144 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751973AbZE3ELd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752525AbZE3EXw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751973AbZE3ELd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 00:11:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751151AbZE3EL0
+	id S1752525AbZE3EXw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 00:23:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751080AbZE3EXo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 00:11:26 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:64139 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750859AbZE3EL0 (ORCPT
+	Sat, 30 May 2009 00:23:44 -0400
+Received: from mail-px0-f123.google.com ([209.85.216.123]:49103 "EHLO
+	mail-px0-f123.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750841AbZE3EXn convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 00:11:26 -0400
-Date: Sat, 30 May 2009 00:11:26 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Masami Hiramatsu <mhiramat@redhat.com>
-cc: Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Christoph Hellwig <hch@infradead.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Tom Zanussi <tzanussi@gmail.com>
-Subject: Re: [PATCH -tip v8 7/7] tracing: add kprobe-based event tracer
-In-Reply-To: <20090529000353.17532.71995.stgit@localhost.localdomain>
-Message-ID: <alpine.DEB.2.00.0905300009230.14994@gandalf.stny.rr.com>
-References: <20090529000326.17532.70868.stgit@localhost.localdomain> <20090529000353.17532.71995.stgit@localhost.localdomain>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Sat, 30 May 2009 00:23:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=PYZeA3S03DclNLn2OV8fIdzQ5o2vH6uz5qZ3ZjKdyOePqwEggvyUjTajRkwycF89BF
+         BrbSfnjAkFLn9whP9hhwDheXSwGZLGZaA8traGDgxA7k/bspxIoHmK9W5VIEmD0NGBWX
+         hr/PyXv9v1kN9t9kMYQBKc01IoyJ4g5o04DFE=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <20090530032253.GA5999@nowhere>
+References: <1242496922-6330-1-git-send-email-fweisbec@gmail.com>
+	 <1242496922-6330-2-git-send-email-fweisbec@gmail.com>
+	 <9b1675090905292005p2b53de7dy9e36f84368d76f01@mail.gmail.com>
+	 <20090530032253.GA5999@nowhere>
+Date: Fri, 29 May 2009 22:23:44 -0600
+Message-ID: <9b1675090905292123l7c3de4b6w897e153d60e5a469@mail.gmail.com>
+Subject: Re: [PATCH 1/2] kill-the-bkl/reiserfs: acquire the inode mutex safely
+From: "Trenton D. Adams" <trenton.d.adams@gmail.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Al Viro <viro@zeniv.linux.org.uk>,
+       Reiserfs <reiserfs-devel@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, Jeff Mahoney <jeffm@suse.com>,
+       Chris Mason <chris.mason@oracle.com>, Ingo Molnar <mingo@elte.hu>,
+       Alexander Beregalov <a.beregalov@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, May 29, 2009 at 9:22 PM, Frederic Weisbecker <fweisbec@gmail.com> wrote:
+> On Fri, May 29, 2009 at 09:05:31PM -0600, Trenton D. Adams wrote:
+>> On Sat, May 16, 2009 at 12:02 PM, Frederic Weisbecker
+>> <fweisbec@gmail.com> wrote:
+>> > While searching a pathname, an inode mutex can be acquired
+>> > in do_lookup() which calls reiserfs_lookup() which in turn
+>> > acquires the write lock.
+>> >
+>> > On the other side reiserfs_fill_super() can acquire the write_lock
+>> > and then call reiserfs_lookup_privroot() which can acquire an
+>> > inode mutex (the root of the mount point).
+>> >
+>> > So we theoretically risk an AB - BA lock inversion that could lead
+>> > to a deadlock.
+>> >
+>> > As for other lock dependencies found since the bkl to mutex
+>> > conversion, the fix is to use reiserfs_mutex_lock_safe() which
+>> > drops the lock dependency to the write lock.
+>> >
+>>
+>> I'm curious, did this get applied, and is it related to the following?
+>>  I was having these in 2.6.30-rc3.  I am now on 2.6.30-rc7 as of
+>> today.  I haven't seen them today.  But then again, I only seen this
+>> happen one time.
+>
+>
+> Hi,
+>
+> No, may be it will come for 2.6.31 but for now it is not merged so
+> it's not related.
+>
+> If you see such warning anymore, don't hesitate to tell about
+> it!
+>
+> Thanks!
+>
 
-
-
-On Thu, 28 May 2009, Masami Hiramatsu wrote:
-
-> +#undef SHOW_FIELD
-> +#define SHOW_FIELD(type, item, name)					\
-> +	do {								\
-> +		ret = trace_seq_printf(s, "\tfield: " #type " %s;\t"	\
-> +				"offset:%u;tsize:%u;\n", name,		\
-> +				(unsigned)offsetof(typeof(field), item),\
-> +				(unsigned)sizeof(type));		\
-> +		if (!ret)						\
-> +			return 0;					\
-> +	} while (0)
-> +
-> +static int __probe_event_show_format(struct ftrace_event_call *event_call,
-> +				     struct trace_seq *s, const char *fmt,
-> +				     const char *arg)
-> +{
-> +	struct kprobe_trace_entry field __attribute__((unused));
-
-You use kprobe_trace_entry for both kprobe and kretprobe.
-
-> +	int ret, i;
-> +	char buf[MAX_ARGSTR_LEN + 1];
-> +	struct trace_probe *tp = container_of(event_call,
-> +					      struct trace_probe, call);
-> +
-> +	/* Show fields */
-> +	for (i = 0; i < tp->nr_args; i++) {
-> +		sprintf(buf, "arg%d", i);
-> +		SHOW_FIELD(unsigned long, args[i], buf);
-> +	}
-> +	trace_seq_puts(s, "\n");
-> +
-> +	/* Show aliases */
-> +	for (i = 0; i < tp->nr_args; i++) {
-> +		if (trace_arg_string(buf, MAX_ARGSTR_LEN, &tp->args[i]))
-> +			return 0;
-> +		if (!trace_seq_printf(s, "\talias: %s;\toriginal: arg%d;\n",
-> +				      buf, i))
-> +			return 0;
-> +	}
-> +	/* Show format */
-> +	if (!trace_seq_printf(s, "\nprint fmt: \"%s", fmt))
-> +		return 0;
-> +
-> +	for (i = 0; i < tp->nr_args; i++)
-> +		if (!trace_seq_puts(s, " 0x%lx"))
-> +			return 0;
-> +
-> +	if (!trace_seq_printf(s, "\", %s", arg))
-> +		return 0;
-> +
-> +	for (i = 0; i < tp->nr_args; i++)
-> +		if (!trace_seq_printf(s, ", arg%d", i))
-> +			return 0;
-> +
-> +	return trace_seq_puts(s, "\n");
-> +}
-> +
-> +static int kprobe_event_show_format(struct ftrace_event_call *call,
-> +				    struct trace_seq *s)
-> +{
-> +	struct kprobe_trace_entry field __attribute__((unused));
-> +	int ret;
-> +
-> +	SHOW_FIELD(unsigned long, ip, "ip");
-> +	SHOW_FIELD(int, nargs, "nargs");
-> +
-> +	return __probe_event_show_format(call, s, "%lx:", "ip");
-> +}
-> +
-> +static int kretprobe_event_show_format(struct ftrace_event_call *call,
-> +				       struct trace_seq *s)
-> +{
-> +	struct kretprobe_trace_entry field __attribute__((unused));
-> +	int ret;
-> +
-> +	SHOW_FIELD(unsigned long, func, "func");
-> +	SHOW_FIELD(unsigned long, ret_ip, "ret_ip");
-> +	SHOW_FIELD(int, nargs, "nargs");
-> +
-> +	return __probe_event_show_format(call, s, "%lx <- %lx:",
-> +					  "func, ret_ip");
-> +}
-
-Thus we end up with:
-
-format:
-	field:unsigned short common_type;	offset:0;	size:2;
-	field:unsigned char common_flags;	offset:2;	size:1;
-	field:unsigned char common_preempt_count;	offset:3;	
-size:1;
-	field:int common_pid;	offset:4;	size:4;
-	field:int common_tgid;	offset:8;	size:4;
-
-	field: unsigned long func;	offset:16;tsize:8;
-	field: unsigned long ret_ip;	offset:24;tsize:8;
-	field: int nargs;	offset:32;tsize:4;
-	field: unsigned long arg0;	offset:32;tsize:8;
-	field: unsigned long arg1;	offset:40;tsize:8;
-	field: unsigned long arg2;	offset:48;tsize:8;
-	field: unsigned long arg3;	offset:56;tsize:8;
-
-Notice that nargs and arg0 are both at offest 32.
-
--- Steve
-
+I was trying to imply that the patch might fix the problem I saw, not
+that it was the cause.  I only though that because it mentioned a
+potential deadlock, and it seems like that is what the problem I saw
+was.
