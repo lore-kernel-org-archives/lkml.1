@@ -1,61 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755743AbZE3G1N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753502AbZE3Ga2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755743AbZE3G1N (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 02:27:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751937AbZE3G1A
+	id S1753502AbZE3Ga2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 02:30:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751928AbZE3GaU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 02:27:00 -0400
-Received: from qw-out-2122.google.com ([74.125.92.26]:31438 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751580AbZE3G1A convert rfc822-to-8bit (ORCPT
+	Sat, 30 May 2009 02:30:20 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:51903 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751580AbZE3GaU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 02:27:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=Ktjh8BFourDZVYjuBKJfIqXsnQbX0F3eugu0/3a7odhfjkrAaIHBurza9xeZaifPAq
-         UvhIyghp9VtJ0W634eudbSm2/st6kcrtLDFKot9Iv2+ptv1mhQxD/jbM730ctxyQyI+I
-         YaHttnc+F6gnOIzDzkJvxymoKn9GLeMbcHUKY=
-MIME-Version: 1.0
-Date: Sat, 30 May 2009 14:27:01 +0800
-Message-ID: <30c949580905292327s1f3b8e32n3f7d7e3a15908c58@mail.gmail.com>
-Subject: memory free question?
-From: Bill Xie <bill790@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Sat, 30 May 2009 02:30:20 -0400
+Date: Sat, 30 May 2009 08:37:10 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Andi Kleen <andi@firstfloor.org>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       fengguang.wu@intel.com
+Subject: More thoughts about hwpoison and pageflags compression
+Message-ID: <20090530063710.GI1065@one.firstfloor.org>
+References: <200905291135.124267638@firstfloor.org> <20090529225202.0c61a4b3@lxorguk.ukuu.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090529225202.0c61a4b3@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-My harware is a mips-achitecture hand-hold device runs 2.6.24.3 and
-qt.  when an application program  opened a 3.2M pdf file, the memory
-was consuming continually, finally the "oom-killer" things happened,
-but the memory the application occupied can not be freed.
 
-cat /proc/meminfo
-MemTotal:        60288 kB
-MemFree:          5100 kB
-Buffers:             8 kB
-Cached:          25600 kB
-SwapCached:          0 kB
-Active:          21836 kB
-Inactive:        15448 kB
-SwapTotal:           0 kB
-SwapFree:            0 kB
-Dirty:               0 kB
-Writeback:           0 kB
-AnonPages:       11740 kB
-Mapped:           1668 kB
-Slab:             2532 kB
-SReclaimable:      308 kB
-SUnreclaim:       2224 kB
-PageTables:        164 kB
-NFS_Unstable:        0 kB
-Bounce:              0 kB
-CommitLimit:     30144 kB
-Committed_AS:    15656 kB
-VmallocTotal:  1048404 kB
-VmallocUsed:      9700 kB
-VmallocChunk:  1038704 kB
+I thought a bit more about Alan's proposal of page flags compression
+for poisoned pages. I actually found more problems with it :-)
+(in addition to the points I wrote up in my earlier email on the topic)
+
+Just wanted to write them up:
+
+First some basics about hwpoison. 
+
+- HwPoisioning can come in at any time and at any state of the page. 
+- There can be multiple hwpoison events coming in for the same page in a short time window.
+This can happen for example when the hardware detects errors on different cache lines of a page, 
+which can happen in some DIMM breakage scenarios.
+The HwPoison bit serves as a synchronization point for this, it's essentially a lock
+for the hwpoison code (although no spinlock)
+- HwPoison is high level code should only use portable primitives.
+
+Alan proposed to use reserved|writeback to express hwpoisioning instead
+of an own bit.
+
+- Now the first problem is that we don't have a portable primitive to set
+multiple bits atomically. cmpxchg() can be only used in architecture specific
+code. So it wouldn't be atomic in its locking function.
+
+That means that all multiple bit variants are problematic, or at least
+would need a new global atomic primitive.
+
+- Then you can actually have a page in writeback and poisoned. That is
+we can't stop writeback (we might at some point in the future), so the order
+the code works right now is:
+
+set page poisoned
+bail out if was already poisioned
+do some other stuff
+lock the page
+wait for page writeback
+	(which just polls on the bit to clear)
+
+Now the obvious problem is of course, if we used writeback|reserved, how
+would it it do the poison locking while the the page is still in writeback?
+The encoding would not be unique.
+
+If we don't do that we would risk multiple memory_failures() on the same
+page, which has various issues.
+
+So at least writeback|reserved doesn't work.
+
+- Could we in theory find another weird bit combination that's truly impossible today
+?
+Probably, but it would be very hard to verify that this can truly never happen.
+
+- Then I don't like it due to the fragility against other software bugs. Unless someone 
+blasts 0xffs over the struct page (in which case treating it poisoned is probably a 
+good thing anyways) then a separate bit is fairly robust against software bugs. 
+Right now "impossible combinations" are used as a indication that something is wrong u
+with the page, to catch broken software.
+
+If we gave meaning to previously impossible combinations then this robustness
+would be less. So a separate bit is generally more robust and doesn't take
+this away from the other code.
+
+So using a separate bit is a sensible choice imho.
+
+Hope this helps,
+
+-Andi
+
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
