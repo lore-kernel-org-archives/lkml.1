@@ -1,117 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932504AbZE3PEp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932373AbZE3PIJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932504AbZE3PEp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 11:04:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759213AbZE3PEi
+	id S932373AbZE3PIJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 11:08:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759451AbZE3PH5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 11:04:38 -0400
-Received: from bene2.itea.ntnu.no ([129.241.56.57]:35734 "EHLO
-	bene2.itea.ntnu.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758907AbZE3PEh (ORCPT
+	Sat, 30 May 2009 11:07:57 -0400
+Received: from mail-gx0-f214.google.com ([209.85.217.214]:41741 "EHLO
+	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759236AbZE3PH4 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 11:04:37 -0400
-X-Greylist: delayed 5395 seconds by postgrey-1.27 at vger.kernel.org; Sat, 30 May 2009 11:04:37 EDT
-Date: Sat, 30 May 2009 17:04:38 +0200
-From: Henrik Austad <henrik@austad.us>
-To: GeunSik Lim <leemgs1@gmail.com>
-Cc: finarfin@dreamos.org, linux-kernel@vger.kernel.org
-Subject: Re: SCHED_EDF infos
-Message-ID: <20090530150438.GB11337@alecto.austad.us>
-References: <164c92d827cbee86ba2c5621716309e6@localhost> <200904300939.31754.henrik@austad.us> <49b7c2350905071935kbd2aa22v9d39cf41c537c24b@mail.gmail.com> <20090508091052.GA10429@januz.myftp.org> <49b7c2350905300438n6195de93la53bee3a309f71d@mail.gmail.com> <20090530133441.GA11337@alecto.austad.us> <49b7c2350905300746v38d6597eu82b7fcc99813080f@mail.gmail.com>
+	Sat, 30 May 2009 11:07:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:from:date
+         :x-google-sender-auth:message-id:subject:to:cc:content-type
+         :content-transfer-encoding;
+        b=F6sI6dFjwPi9KlRCa26r3eJJoADIOGFhXQTPdpV4JaXMAKKt5iRxYAH6WJIN2GLD59
+         UrqklnFWADw5a0GwO3pDBQFsRUGRG88UtdFd1I/qj/mI2QK/QjsALdBcpA35rd/0U8HJ
+         ajcLeE4vFbYNBV03wVSMetz17ZMVvAybhaVMg=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <49b7c2350905300746v38d6597eu82b7fcc99813080f@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090530082048.GM29711@oblivion.subreption.com>
+References: <20090522113809.GB13971@oblivion.subreption.com> 
+	<4A187BDE.5070601@redhat.com> <20090527223421.GA9503@elte.hu> 
+	<20090528072702.796622b6@lxorguk.ukuu.org.uk> <20090528090836.GB6715@elte.hu> 
+	<20090528125042.28c2676f@lxorguk.ukuu.org.uk> <84144f020905300035g1d5461f9n9863d4dcdb6adac0@mail.gmail.com> 
+	<20090530075033.GL29711@oblivion.subreption.com> <4A20E601.9070405@cs.helsinki.fi> 
+	<20090530082048.GM29711@oblivion.subreption.com>
+From: Ray Lee <ray-lk@madrabbit.org>
+Date: Sat, 30 May 2009 08:05:17 -0700
+X-Google-Sender-Auth: 811ef9016753ebca
+Message-ID: <2c0942db0905300805h4cd3f8eew32a0b7f5bd50e7be@mail.gmail.com>
+Subject: Re: [patch 0/5] Support for sanitization flag in low-level page 
+	allocator
+To: "Larry H." <research@subreption.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ingo Molnar <mingo@elte.hu>, Rik van Riel <riel@redhat.com>,
+       linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>,
+       linux-mm@kvack.org, Ingo Molnar <mingo@redhat.com>,
+       pageexec@freemail.hu, Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 30, 2009 at 11:46:43PM +0900, GeunSik Lim wrote:
-> On Sat, May 30, 2009 at 10:34 PM, Henrik Austad <henrik@austad.us> wrote:
-> >> Can you share EDF that you implemented with P-fair for Multicore environments?
-> >> Especially, I wonder How do you keep posix compatibility with EDF scheduler.
-> >
-> > Well, what exactly do you mean by posix compatibility? What I'm doing, is adding
+On Sat, May 30, 2009 at 1:20 AM, Larry H. <research@subreption.com> wrote:
+> On 10:53 Sat 30 May Â  Â  , Pekka Enberg wrote:
+>>> That's hopeless, and kzfree is broken. Like I said in my earlier reply,
+>>> please test that yourself to see the results. Whoever wrote that ignored
+>>> how SLAB/SLUB work and if kzfree had been used somewhere in the kernel
+>>> before, it should have been noticed long time ago.
+>>
+>> An open-coded version of kzfree was being used in the kernel:
+>>
+>> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=00fcf2cb6f6bb421851c3ba062c0a36760ea6e53
+>>
+>> Can we now get to the part where you explain how it's broken because I
+>> obviously "ignored how SLAB/SLUB works"?
+>
+> You can find the answer in the code of sanitize_obj, within my kfree
+> patch. Besides, it would have taken less time for you to write a simple
+> module that kmallocs and kzfrees a buffer, than writing these two
+> emails.
 
-> This means that We can use  realtime programming for EDF effectiveness with
-> current system call interface without new system call interface.
+How about, for the third time, just sharing that information with the
+whole rest of us reading along? Do you really think it's useful for
+dozens of us to go do that test, when you already obviously *have*,
+and could just share the information?
 
-Well, as I said, at the moment I'm at the 'making it work'-stage, so adding 
-features to the existing syscalls is not really something I'm prepared to do :-)
-
-> > another scheduling class on top of sched_rt so that sched_pfair will be polled
-> > before any other class. I was not aware that POSIX had an EDF standard?
-
-> POSIX describes common real-time specification  without EDF, RMS ,
-> Resource Reservation, etc.
-> Belows is the Linux Standard Base (LSB) specifications for Linux Distributions.
-> http://www.linuxfoundation.org/en/Specifications
-
-Hoh, that was a lot of 'requried reading' :-s I'll try to have a look at it 
-soon.
-
-> >> For example,
-> >> sched_setscheduler(2), sched_getscheduler(2),
-> >> sched_get_priority_max(2), sched_get_priority_min(2),
-> >> sched_getaffinity(2), sched_setaffinity(2),
-> >> sched_getparam(2), sched_setparam(2),
-> >> setpriority(2), getpriority(2),
-> >> sched_yield(2), sched_rr_get_interval(2)
-> >
-> > I introduce 3 new syscalls for modifying the tasks.
-> >
-> >  sched_pfair_update()
-> >  - change an existing task into a pfair task, set attributes, calculate subjob
-> >   values etc
-> >
-> >  sched_pfair_release()
-> >  - release the task, i.e. enable it to run on a CPU.
-> >
-> >  sched_pfair_reweigh()
-> >  - change the attributes of the task. In a lot of ways, this is very similar to
-> >   pfair_update, but it introduces some problems when trying to reweigh a task
-> >   that is running, or if the new values lead to over-utilization of the system.
-
-> When we try to userspace realtime programming, How can we insert  systemcall api
-> with posix compatibility.
-
-At the moment, I've created a new sched-param struct:
-
-struct sched_pfair_params {
-        u64 period_ns;
-        u64 wcet_ns;
-        u64 deadline_ns;
-        u64 release_ns;
-        u8 periodic:1;
-};
-
-so I can add this via a single variable to the syscalls.
-
-> Um... In general, we use
-> sched_setscheduler    (struct task_struct *p, int policy,  struct
-> sched_param *param) api.
-
-yes, I know, but I *really* didn't want to meddle with the exisint interface, so 
-atm, I've just added my own syscalls.
-
-> If we will make  EDF related u/s rt programming, How do we have to
-> insert deadline of tasks
-> for EDF performance?
-> sched_setscheduler_EDF(struct task_struct *p, int policy, period-time
-> , runtime)
-> or
-> 
-> struct sched_param {
->        int sched_priority;
->       <timespec edf-period-time>;
->       <timespec edf-runtiome>;
-> };
-
-Could be, I guess this is up for debate. Having a dedicated structure for this 
-is not good, but I hope my reason above can explain why it is like this at the 
-moment.
-
-
-henrik
+Please, act like a member of the community and share what you know. If
+you're unwilling to do so, that's a huge argument in favor of ignoring
+your code, no matter how good or right it might be.
