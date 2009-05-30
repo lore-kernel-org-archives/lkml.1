@@ -1,194 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762824AbZE3Sh2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763468AbZE3SsK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762824AbZE3Sh2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 14:37:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762150AbZE3ShO
+	id S1763468AbZE3SsK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 14:48:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761131AbZE3Sr5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 14:37:14 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:37764 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761914AbZE3ShN (ORCPT
+	Sat, 30 May 2009 14:47:57 -0400
+Received: from oblivion.subreption.com ([66.240.236.22]:38131 "EHLO
+	mail.subreption.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760986AbZE3Sr5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 14:37:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=EVtjaLnknbvlV+b0F6SoqC1D+YOVN6oHDkhScwRwGgQd34+EbKRs0Ynhk/OyxPUjko
-         c7InlgHgcEpxcUfE1DZ8Dv0QqEJ99bSdVGhZ4DQsW9sVi2Se2lKkH/hs2cT+SLfytTT8
-         uG21QSvBByHh/RJOcTEjM1/Lbt/GdF9kQ9+NQ=
-Date: Sat, 30 May 2009 20:37:10 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: "K.Prasad" <prasad@linux.vnet.ibm.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [Patch 05/12] Use wrapper routines around debug registers in
-	processor related functions
-Message-ID: <20090530183709.GA8739@nowhere>
-References: <20090530103857.715014561@prasadkr_t60p.in.ibm.com> <20090530105129.GF9512@in.ibm.com>
+	Sat, 30 May 2009 14:47:57 -0400
+Date: Sat, 30 May 2009 11:45:34 -0700
+From: "Larry H." <research@subreption.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@osdl.org>, linux-mm@kvack.org,
+       Ingo Molnar <mingo@redhat.com>, pageexec@freemail.hu,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [patch 0/5] Support for sanitization flag in low-level page
+	allocator
+Message-ID: <20090530184534.GJ6535@oblivion.subreption.com>
+References: <20090528072702.796622b6@lxorguk.ukuu.org.uk> <20090528090836.GB6715@elte.hu> <20090528125042.28c2676f@lxorguk.ukuu.org.uk> <84144f020905300035g1d5461f9n9863d4dcdb6adac0@mail.gmail.com> <20090530075033.GL29711@oblivion.subreption.com> <4A20E601.9070405@cs.helsinki.fi> <20090530082048.GM29711@oblivion.subreption.com> <20090530173428.GA20013@elte.hu> <20090530180333.GH6535@oblivion.subreption.com> <20090530182113.GA25237@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090530105129.GF9512@in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090530182113.GA25237@elte.hu>
+Organization: Subreption LLC
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 30, 2009 at 04:21:29PM +0530, K.Prasad wrote:
-> This patch enables the use of wrapper routines to access the debug/breakpoint
-> registers.
+On 20:21 Sat 30 May     , Ingo Molnar wrote:
+> SLOB is a rarely used (and high overhead) allocator. But the right 
+> answer there: fix kzalloc().
+
+If it's rarely used and nobody cares, why nobody has removed it yet?
+Sames like the very same argument Peter and you used at some point
+against these patches. Later in your response here you state the same
+for kzfree. Interesting.
+
+> if kzfree() is broken then a number of places in the kernel that 
+> currently rely on it are potentially broken as well.
+
+Indeed, but it was sitting there unused up to 2.6.29.4. Apparently only
+-30-rc2 introduces users of the patch. Someone didn't do his homework
+signing off the patch without testing it properly.
+
+> So as far as i'm concerned, your patchset is best expressed in the 
+> following form: Cryto, WEP and other sensitive places should be 
+> updated to use kzfree() to free keys.
 > 
-> Original-patch-by: Alan Stern <stern@rowland.harvard.edu>
-> Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
-> Reviewed-by: Alan Stern <stern@rowland.harvard.edu>
-> ---
->  arch/x86/kernel/smpboot.c |    3 +++
->  arch/x86/power/cpu_32.c   |   16 +++-------------
->  arch/x86/power/cpu_64.c   |   15 +++------------
->  3 files changed, 9 insertions(+), 25 deletions(-)
+> This can be done unconditionally (without any Kconfig flag), as it's 
+> all in slow-paths - and because there's a real security value in 
+> sanitizing buffers that held sensitive keys, when they are freed.
+
+And the tty buffers, and the audit buffers, and the crypto block alg
+contexts, and the generic algorithm contexts, and the input buffers
+contexts, and ... alright, I get the picture!
+
+> Regarding a whole-sale 'clear everything on free' approach - that's 
+> both pointless security wise (sensitive information can still leak 
+> indefinitely [if you disagree i can provide an example]) and has a 
+> very high cost so it's not acceptable to normal Linux distros.
+
+Go ahead, I want to see your example.
+
+I don't even know why I'm still wasting my time replying to you, it's
+clearly hopeless to try to get you off your egotistical, red herring
+argument fueled attitude, which is likely a burden beyond this list for
+you and everyone around, sadly.
+
+> > Honestly your proposed approach seems a little weak.
 > 
-> Index: linux-2.6-tip.hbkpt/arch/x86/kernel/smpboot.c
-> ===================================================================
-> --- linux-2.6-tip.hbkpt.orig/arch/x86/kernel/smpboot.c
-> +++ linux-2.6-tip.hbkpt/arch/x86/kernel/smpboot.c
-> @@ -63,6 +63,7 @@
->  #include <asm/apic.h>
->  #include <asm/setup.h>
->  #include <asm/uv/uv.h>
-> +#include <asm/debugreg.h>
->  #include <linux/mc146818rtc.h>
->  
->  #include <asm/smpboot_hooks.h>
-> @@ -326,6 +327,7 @@ notrace static void __cpuinit start_seco
->  	setup_secondary_clock();
->  
->  	wmb();
-> +	load_debug_registers();
->  	cpu_idle();
->  }
->  
-> @@ -1252,6 +1254,7 @@ void cpu_disable_common(void)
->  	remove_cpu_from_maps(cpu);
->  	unlock_vector_lock();
->  	fixup_irqs();
-> +	hw_breakpoint_disable();
->  }
->  
->  int native_cpu_disable(void)
-> Index: linux-2.6-tip.hbkpt/arch/x86/power/cpu_32.c
-> ===================================================================
-> --- linux-2.6-tip.hbkpt.orig/arch/x86/power/cpu_32.c
-> +++ linux-2.6-tip.hbkpt/arch/x86/power/cpu_32.c
-> @@ -13,6 +13,7 @@
->  #include <asm/mce.h>
->  #include <asm/xcr.h>
->  #include <asm/suspend.h>
-> +#include <asm/debugreg.h>
->  
->  static struct saved_context saved_context;
->  
-> @@ -48,6 +49,7 @@ static void __save_processor_state(struc
->  	ctxt->cr2 = read_cr2();
->  	ctxt->cr3 = read_cr3();
->  	ctxt->cr4 = read_cr4_safe();
-> +	hw_breakpoint_disable();
->  }
->  
->  /* Needed by apm.c */
-> @@ -80,19 +82,7 @@ static void fix_processor_context(void)
->  	load_TR_desc();				/* This does ltr */
->  	load_LDT(&current->active_mm->context);	/* This does lldt */
->  
-> -	/*
-> -	 * Now maybe reload the debug registers
-> -	 */
-> -	if (current->thread.debugreg7) {
-> -		set_debugreg(current->thread.debugreg0, 0);
-> -		set_debugreg(current->thread.debugreg1, 1);
-> -		set_debugreg(current->thread.debugreg2, 2);
-> -		set_debugreg(current->thread.debugreg3, 3);
-> -		/* no 4 and 5 */
-> -		set_debugreg(current->thread.debugreg6, 6);
-> -		set_debugreg(current->thread.debugreg7, 7);
-> -	}
-> -
-> +	load_debug_registers();
+> Unconditional honesty is definitely welcome ;-)
 
+When it's people's security at stake, if your reasoning and logic is
+flawed, I have the moral obligation to tell you.
 
-This part is breaking the things in the middle.
+I'm here to make the kernel more secure, not to deal with your inability
+to work with others without continuous conflicts and attempts to fall
+into ridicule, that backfire at you in the end.
 
-I think the conversion from thread.debugreg0/1/2/3 to an
-array should be done completely early, when you add the headers.
+> Freeing keys is an utter slow-path (if not then the clearing is the 
+> least of our performance worries), so any clearing cost is in the 
+> noise. Furthermore, kzfree() is an existing facility already in use. 
+> If it's reused by your patches that brings further advantages: 
+> kzfree(), if it has any bugs, will be fixed. While if you add a 
+> parallel facility kzfree() stays broken.
 
-The problem is that your patchset iterates through those two versions
-of virtual debug registers, and those two version can't be carried
-well while keeping the good granularity of your patchset.
+Have you benchmarked the addition of these changes? I would like to see
+benchmarks done for these (crypto api included), since you are proposing
+them.
 
-You are dropping the old version of virtual debug registers from
-cpu management in favour of the new version which uses the array through
-wrappers, whereas the thread code still deals with the old version.
+> So your examples about real or suspected kzfree() breakages only 
+> strengthen the point that your patches should be using it. Keeping a 
+> rarely used kernel facility (like kzfree) correct is hard - 
+> splintering it by creating a parallel facility is actively harmful 
+> for that reason.
 
-The result, which I haven't tried, is likely to break the things
-if I don't apply further patches of this series.
+Fallacy ad hitlerum delivered. Impressive.
 
-Of course it will build, but the breakpoints won't work anymore
-with cpu hotplug or suspend because the threads management still
-uses the old version of registers.
-
-I can't apply this patchset if it induces a know regression in
-the middle otherwise bisection will become impossible.
-
-I think you need to convert all sites from
-thread->debugregX to thread->debugreg[X] early in
-the first patch. It will also bring your patchset into
-a better logic of progression changes.
-
-Thanks,
-Frederic.
-
-
-
->  }
->  
->  static void __restore_processor_state(struct saved_context *ctxt)
-> Index: linux-2.6-tip.hbkpt/arch/x86/power/cpu_64.c
-> ===================================================================
-> --- linux-2.6-tip.hbkpt.orig/arch/x86/power/cpu_64.c
-> +++ linux-2.6-tip.hbkpt/arch/x86/power/cpu_64.c
-> @@ -16,6 +16,7 @@
->  #include <asm/mtrr.h>
->  #include <asm/xcr.h>
->  #include <asm/suspend.h>
-> +#include <asm/debugreg.h>
->  
->  static void fix_processor_context(void);
->  
-> @@ -71,6 +72,7 @@ static void __save_processor_state(struc
->  	ctxt->cr3 = read_cr3();
->  	ctxt->cr4 = read_cr4();
->  	ctxt->cr8 = read_cr8();
-> +	hw_breakpoint_disable();
->  }
->  
->  void save_processor_state(void)
-> @@ -159,16 +161,5 @@ static void fix_processor_context(void)
->  	load_TR_desc();				/* This does ltr */
->  	load_LDT(&current->active_mm->context);	/* This does lldt */
->  
-> -	/*
-> -	 * Now maybe reload the debug registers
-> -	 */
-> -	if (current->thread.debugreg7){
-> -                loaddebug(&current->thread, 0);
-> -                loaddebug(&current->thread, 1);
-> -                loaddebug(&current->thread, 2);
-> -                loaddebug(&current->thread, 3);
-> -                /* no 4 and 5 */
-> -                loaddebug(&current->thread, 6);
-> -                loaddebug(&current->thread, 7);
-> -	}
-> +	load_debug_registers();
->  }
-> 
-
+	Larry
