@@ -1,126 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932274AbZE3NoU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932377AbZE3Nwt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932274AbZE3NoU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 09:44:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932190AbZE3NoL
+	id S932377AbZE3Nwt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 09:52:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758124AbZE3Nwk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 09:44:11 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:35030 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932180AbZE3NoJ (ORCPT
+	Sat, 30 May 2009 09:52:40 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:33260 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753767AbZE3Nwj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 09:44:09 -0400
-Date: Sat, 30 May 2009 09:44:10 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: GeunSik Lim <leemgs1@gmail.com>
-cc: Greg KH <greg@kroah.com>, linux-kernel <linux-kernel@vger.kernel.org>,
-       trivial@kernel.org, balagi@justmail.de, bgamari@gmail.com,
-       Ingo Molnar <mingo@elte.hu>, inaky.perez-gonzalez@intel.com
-Subject: Re: [RFC V2 PATCH]debugfs:Fix terminology inconsistency of dir name
-  to mount debugfs filesystem.
-In-Reply-To: <49b7c2350905300421q7c1c9110ke99e25eec051f94c@mail.gmail.com>
-Message-ID: <alpine.DEB.2.00.0905300939450.14994@gandalf.stny.rr.com>
-References: <1243315163.14685.17.camel@centos51>  <1243613134.20635.14.camel@centos51>  <alpine.DEB.2.00.0905291240150.31247@gandalf.stny.rr.com>  <49b7c2350905291843i402b7161xf05fdb87eb77f73f@mail.gmail.com>  <alpine.DEB.2.00.0905292204280.14994@gandalf.stny.rr.com>
-  <49b7c2350905300238k5f6259fne30ad94f8fbf7e20@mail.gmail.com> <49b7c2350905300421q7c1c9110ke99e25eec051f94c@mail.gmail.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Sat, 30 May 2009 09:52:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=DU7ruj4+j460zyjrmTtORlnpS82L+Vavfc5oObgc8d+guMGzRbzCJMHLVBCRFXsreL
+         elpspFn1EbkuxhyRwo2wpXjr9zMdUYynzwwqjsjLMf3s0icInnymzrOtoCgkW7/r0yMR
+         dSkbWIPF1/gbuSvQacE/sJ7yoTxokd9NToMJo=
+Date: Sat, 30 May 2009 15:52:37 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Tom Zanussi <tzanussi@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/2] tracing/filters: use strcmp() instead of strncmp()
+Message-ID: <20090530135236.GB5969@nowhere>
+References: <4A1F9FAC.6020506@cn.fujitsu.com> <c62985530905290651id2435bfx7f57ec561fe366e3@mail.gmail.com> <4A20F71F.6030703@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4A20F71F.6030703@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Sat, 30 May 2009, GeunSik Lim wrote:
-> @@ -1202,11 +1208,57 @@ something like this simple program:
+On Sat, May 30, 2009 at 05:06:39PM +0800, Li Zefan wrote:
+> Frédéric Weisbecker wrote:
+> > 2009/5/29 Li Zefan <lizf@cn.fujitsu.com>:
+> >> Trace filter is not working normally:
+> >>
+> >>  # echo 'name == et' > tracing/events/irq/irq_handler_entry/filter
+> >>  # echo 1 > tracing/events/irq/irq_handler_entry/enable
+> >>  # cat trace_pipe
+> >>      <idle>-0     [001]  1363.423175: irq_handler_entry: irq=18 handler=eth0
+> >>      <idle>-0     [001]  1363.934528: irq_handler_entry: irq=18 handler=eth0
+> >>      ...
+> >>
+> >> It's because we pass to trace_define_field() the information of
+> >> __str_loc_##item, but not the actual string, so pred->str_len == field->size
+> >> == sizeof(unsigned short), thus it always compare at most 2 bytes when
+> >> filtering on __string() field.
+> > 
+> > 
+> > Weird, I was about sure I set the size of each string() to FILTER_MAX_STRING (or
+> > something like that).
+> > 
+> > Anyway this patch looks good but it does more than just fixing the
+> > issue, it removes
+> > the string len boundary security we had with strncmp() for every
+> > string (static and
+> > dynamic size).
+> > 
+> > The potential side effect that comes along this patch would disappear if
+> > you just turn strncmp into strcmp only in filter_pred_strloc().
+> > 
+> > If you do that also for fixed size strings, then it should be done in
+> > a second patch,
+> > although I guess turning anything here into strcmp is fine because the
+> > strings given
+> > by the user are always limited in their size. But we never know...
+> > 
 > 
->  #include <stdio.h>
->  #include <stdlib.h>
-> +#include <string.h>
->  #include <sys/types.h>
->  #include <sys/stat.h>
->  #include <fcntl.h>
->  #include <unistd.h>
+> I don't think there's any security issue. It's irrelevant how big the user-input
+> strings are. The point is those strings are guaranteed to be NULL-terminated.
+> Am I missing something?
 > 
-> +#define _STR(x) #x
-> +#define STR(x) _STR(x)
-> +#define MAX_PATH 256
-> +
-> +const char *find_debugfs(char *file_name)
-> +{
-> +       static char debugfs[MAX_PATH+1];
-> +       static int debugfs_found;
-> +       char type[100];
-> +       FILE *fp;
-> +       int size;
-> +
-> +       if (debugfs_found)
-> +               return debugfs;
-> +
-> +       if ((fp = fopen("/proc/mounts","r")) == NULL) {
-> +               perror("/proc/mounts");
-> +               return NULL;
-> +       }
-> +
-> +       while (fscanf(fp, "%*s %"
-> +                     STR(MAX_PATH)
-> +                     "s %99s %*s %*d %*d\n",
-> +                     debugfs, type) == 2) {
-> +               if (strcmp(type, "debugfs") == 0)
-> +                       break;
-> +       }
-> +       fclose(fp);
-> +
-> +       if (strcmp(type, "debugfs") != 0) {
-> +               fprintf(stderr, "debugfs not mounted");
-> +               return NULL;
-> +       }
-> +
-> +       debugfs_found = 1;
-> +
-> +       size = MAX_PATH - strlen(debugfs);
-> +       strncat(debugfs, "/tracing/", size);
-> +
-> +       size = MAX_PATH - strlen(debugfs);
-> +       strncat(debugfs, file_name, size);
+> And I don't think it's necessary to make 2 patches that each patch converts
+> one strncmp to strcmp. But maybe it's better to improve this changelog?
 
-You need to make two functions. One to find the debugfs and one to add the 
-file. The "debugfs_found" will make the function return just the first 
-file_name every time. Something like this: (remove the file_name from 
-find_debugfs).
 
-const char *tracing_file(const char *file_name)
-{
-	static char trace_file[MAX_PATH+1];
+Hmm, you must be right, indeed they seem to be guaranted beeing NULL-terminated
+strings.
 
-	snprintf(trace_file, MAX_PATH, "%s/%s", find_debugfs(), file_name);
+But at least improve your changelog to explain why your solution is
+safe.
 
-	return trace_file;
-}
+Thanks,
+Frederic.
 
-The above is not thread safe, but is OK for non threaded programs.
+ 
+> > 
+> > Thanks,
+> > Frederic.
+> > 
+> > 
+> >> Since __string() is dynamic size, we are not able to set field->size to
+> >> string length. Thus this patch uses strcmp() instead of strncmp().
+> >>
+> >> [ Impact: make filter facility working normally for __string() field ]
+> >>
+> >> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> >> ---
 
--- Steve
-
-> +
-> +       return debugfs;
-> +}
-> +
->  int main (int argc, char **argv)
->  {
->          if (argc < 1)
-> @@ -1217,12 +1269,12 @@ int main (int argc, char **argv)
->                  char line[64];
->                  int s;
-> 
-> -                ffd = open("/debug/tracing/current_tracer", O_WRONLY);
-> +                ffd = open(find_debugfs("current_tracer"), O_WRONLY);
->                  if (ffd < 0)
->                          exit(-1);
->                  write(ffd, "nop", 3);
-> 
-> -                fd = open("/debug/tracing/set_ftrace_pid", O_WRONLY);
-> +                fd = open(find_debugfs("set_ftrace_pid"), O_WRONLY);
->                  s = sprintf(line, "%d\n", getpid());
->                  write(fd, line, s);
-> 
