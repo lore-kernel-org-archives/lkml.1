@@ -1,75 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932324AbZE3Nz5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932246AbZE3OAX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932324AbZE3Nz5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 09:55:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754682AbZE3Nzt
+	id S932246AbZE3OAX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 10:00:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758308AbZE3OAK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 09:55:49 -0400
-Received: from r00tworld.com ([212.85.137.21]:44946 "EHLO r00tworld.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753767AbZE3Nzt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 09:55:49 -0400
-From: pageexec@freemail.hu
-To: Peter Zijlstra <peterz@infradead.org>
-Date: Sat, 30 May 2009 15:54:48 +0200
+	Sat, 30 May 2009 10:00:10 -0400
+Received: from mail-bw0-f222.google.com ([209.85.218.222]:62463 "EHLO
+	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751645AbZE3OAJ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 May 2009 10:00:09 -0400
 MIME-Version: 1.0
-Subject: Re: [patch 0/5] Support for sanitization flag in low-level page allocator
-Reply-to: pageexec@freemail.hu
-CC: "Larry H." <research@subreption.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
-       Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@osdl.org>, linux-mm@kvack.org,
-       Ingo Molnar <mingo@redhat.com>
-Message-ID: <4A213AA8.18076.182E39C1@pageexec.freemail.hu>
-In-reply-to: <1243689707.6645.134.camel@laptop>
-References: <20090522073436.GA3612@elte.hu>, <4A211BA8.8585.17B52182@pageexec.freemail.hu>, <1243689707.6645.134.camel@laptop>
-X-mailer: Pegasus Mail for Windows (4.50 PB1)
-Content-type: text/plain; charset=US-ASCII
-Content-transfer-encoding: 7BIT
-Content-description: Mail message body
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.12 (r00tworld.com [212.85.137.21]); Sat, 30 May 2009 15:54:12 +0200 (CEST)
+In-Reply-To: <m1d49qoi1o.fsf@fess.ebiederm.org>
+References: <m1zlcwltri.fsf_-_@fess.ebiederm.org> <1243551665-23596-4-git-send-email-ebiederm@xmission.com> 
+	<4A1FA777.3040200@kernel.org> <m1zlcvdf7j.fsf@fess.ebiederm.org> 
+	<4A210DEF.2030203@kernel.org> <m1d49qoi1o.fsf@fess.ebiederm.org>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Sat, 30 May 2009 15:59:55 +0200
+Message-ID: <ac3eb2510905300659p829b723hbbae72b49265d3ff@mail.gmail.com>
+Subject: Re: [PATCH 04/24] sysfs: Normalize removing sysfs directories.
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       Cornelia Huck <cornelia.huck@de.ibm.com>, linux-fsdevel@vger.kernel.org,
+       Greg KH <greg@kroah.com>,
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 30 May 2009 at 15:21, Peter Zijlstra wrote:
+On Sat, May 30, 2009 at 15:07, Eric W. Biederman <ebiederm@xmission.com> wrote:
 
-> On Sat, 2009-05-30 at 13:42 +0200, pageexec@freemail.hu wrote:
-> > > Why waste time on this?
-> > 
-> > e.g., when userland executes a syscall, it 'can run kernel code'. if that kernel
-> > code (note: already exists, isn't provided by the attacker) gives unintended
-> > kernel memory back to userland, there is a problem. that problem is addressed
-> > in part by early sanitizing of freed data.
-> 
-> Right, so the whole point is to minimize the impact of actual bugs,
-> right?
+> My take is simply that a correct user has to wait until no one else
+> can find the kobject before calling kobject_del.  At which point
+> races are impossible, and it doesn't matter if sysfs_mutex is held
+> across the entire operation.
 
-correct. this approach is the manifestation of a particular philosophy
-in computer security where instead of finding all bugs, we minimize or,
-at times, eliminate their bad sideeffects. non-executable pages, ASLR,
-etc are all about this. see below why.
+We have circular references between kobjects in some "advanced" users.
+We can not break the circle without calling _del() on one of the
+objects involved, but at that time all of the objects are still
+referenced by another object. Only a _del() will break the circle, and
+result in a release of the objects involved. Not sure how that would
+behave with this change?
 
-> So why not focus on fixing those actual bugs? Can we create tools
-> to help us find such bugs faster? We use sparse for a lot of static
-> checking, we create things like lockdep and kmemcheck to dynamically
-> find trouble.
-> 
-> Can we instead of working around a problem, fix the actual problem?
-
-finding all use-after-free bugs is not possible, as far as i know. the
-fundamental problem is that you'd have to find bugs with arbitrary read
-sideeffects (which is just as hard a problem as finding bugs with arbitrary
-write sideeffects which you'd also have to solve). if you solve these
-problems, you'll have solved the most important bug class in computer
-security that many decades of academic/industrial/etc research failed at.
-
-since there's no (practical and theoretical) solution in sight for finding
-and eliminating such memory handling bugs, we're left with tackling a less
-ambitious goal of at least reducing their sideeffects to acceptable levels.
-
-of course there'll be always instances and subclasses of bugs that we can
-find by manual or automated inspection, but that only shows that the rest
-can only by handled by 'working around the problem'.
-
+Thanks,
+Kay
