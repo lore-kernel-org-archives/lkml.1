@@ -1,47 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762824AbZE3LqS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762953AbZE3Lqm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762824AbZE3LqS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 07:46:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758232AbZE3LqH
+	id S1762953AbZE3Lqm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 07:46:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761119AbZE3Lqd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 07:46:07 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:59624 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757864AbZE3LqF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 07:46:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=RaRwnIseoAUSjG47SO5/10UC46KTJDcgRElSvhPHaOVQMo5fF774xS6xxTswj5jz1q
-         ZMhvgkBuqp4Nprol38qcvSPPOlmOYL9nUs5d80q9lAEU9zXUprDE6Gnnmt7+ePbrqTEm
-         q+fcwO11uXaausc33EP1ufzhdFeWY+TRHHtjU=
+	Sat, 30 May 2009 07:46:33 -0400
+Received: from hera.kernel.org ([140.211.167.34]:47908 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760978AbZE3Lqc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 May 2009 07:46:32 -0400
+Date: Sat, 30 May 2009 11:45:36 GMT
+From: tip-bot for Ingo Molnar <mingo@elte.hu>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
+       hpa@zytor.com, mingo@redhat.com, jkacur@redhat.com,
+       a.p.zijlstra@chello.nl, efault@gmx.de, mtosatti@redhat.com,
+       tglx@linutronix.de, cjashfor@linux.vnet.ibm.com, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, jkacur@redhat.com, a.p.zijlstra@chello.nl,
+       efault@gmx.de, mtosatti@redhat.com, tglx@linutronix.de,
+       cjashfor@linux.vnet.ibm.com, mingo@elte.hu
+In-Reply-To: <new-submission>
+References: <new-submission>
+Subject: [tip:perfcounters/core] perf_counter tools: Print 'CPU utilization factor' in builtin-stat
+Message-ID: <tip-d7c29318c2daa96d64b7312afd8283488c1cb29f@git.kernel.org>
+Git-Commit-ID: d7c29318c2daa96d64b7312afd8283488c1cb29f
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-In-Reply-To: <4A2109C7.5080009@f2s.com>
-References: <1243279681-4233-1-git-send-email-philipp.zabel@gmail.com>
-	 <1243279681-4233-3-git-send-email-philipp.zabel@gmail.com>
-	 <4A2109C7.5080009@f2s.com>
-Date: Sat, 30 May 2009 13:46:06 +0200
-Message-ID: <74d0deb30905300446k606289cctc56efe68fdc7193d@mail.gmail.com>
-Subject: Re: [PATCH 2/5] mmc: tmio_mmc: add bus_shift support
-From: pHilipp Zabel <philipp.zabel@gmail.com>
-To: ian@mnementh.co.uk
-Cc: linux-kernel@vger.kernel.org, Pierre Ossman <pierre@ossman.eu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 30 May 2009 11:45:48 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 30, 2009 at 12:26 PM, Ian molton <spyro@f2s.com> wrote:
-> Acked-by: Ian Molton <ian@mnementh.co.uk>
->
-> Works fine on the e-series machines, however checkpatch has a few warnings
-> about overlength lines. I dont think they are a problem, but its not my call
-> - Pierre?
+Commit-ID:  d7c29318c2daa96d64b7312afd8283488c1cb29f
+Gitweb:     http://git.kernel.org/tip/d7c29318c2daa96d64b7312afd8283488c1cb29f
+Author:     Ingo Molnar <mingo@elte.hu>
+AuthorDate: Sat, 30 May 2009 12:38:51 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Sat, 30 May 2009 12:41:12 +0200
 
-Yes, if you prefer I'll resend with those lines broken up.
+perf_counter tools: Print 'CPU utilization factor' in builtin-stat
 
-regards
-Philipp
+Before:
+
+ Performance counter stats for '/home/mingo/hackbench':
+
+    5728.862689  task clock ticks     (msecs)
+          34426  context switches     #        0.006 M/sec
+           3835  CPU migrations       #        0.001 M/sec
+          18158  pagefaults           #        0.003 M/sec
+    16218109156  CPU cycles           #     2830.947 M/sec
+    13519616840  instructions         #     2359.913 M/sec
+       55941661  cache references     #        9.765 M/sec
+       23554938  cache misses         #        4.112 M/sec
+
+ Wall-clock time elapsed:   528.886980 msecs
+
+After:
+
+ Performance counter stats for '/home/mingo/hackbench':
+
+    5845.443541  task clock ticks     #      11.886 CPU utilization factor
+          38289  context switches     #       0.007 M/sec
+           4208  CPU migrations       #       0.001 M/sec
+          17755  pagefaults           #       0.003 M/sec
+    16664668576  CPU cycles           #    2850.882 M/sec
+    13468113991  instructions         #    2304.036 M/sec
+       57445468  cache references     #       9.827 M/sec
+       26896502  cache misses         #       4.601 M/sec
+
+ Wall-clock time elapsed:   491.802357 msecs
+
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
+Cc: Marcelo Tosatti <mtosatti@redhat.com>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: John Kacur <jkacur@redhat.com>
+LKML-Reference: <new-submission>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ Documentation/perf_counter/builtin-stat.c |   13 +++++++++++--
+ 1 files changed, 11 insertions(+), 2 deletions(-)
+
+diff --git a/Documentation/perf_counter/builtin-stat.c b/Documentation/perf_counter/builtin-stat.c
+index ef7e0e1..5886791 100644
+--- a/Documentation/perf_counter/builtin-stat.c
++++ b/Documentation/perf_counter/builtin-stat.c
+@@ -75,6 +75,7 @@ static __u64			event_res[MAX_COUNTERS][3];
+ static __u64			event_scaled[MAX_COUNTERS];
+ 
+ static __u64			runtime_nsecs;
++static __u64			walltime_nsecs;
+ 
+ static void create_perfstat_counter(int counter)
+ {
+@@ -194,13 +195,19 @@ static void print_counter(int counter)
+ 	if (nsec_counter(counter)) {
+ 		double msecs = (double)count[0] / 1000000;
+ 
+-		fprintf(stderr, " %14.6f  %-20s (msecs)",
++		fprintf(stderr, " %14.6f  %-20s",
+ 			msecs, event_name(counter));
++		if (event_id[counter] ==
++				EID(PERF_TYPE_SOFTWARE, PERF_COUNT_TASK_CLOCK)) {
++
++			fprintf(stderr, " # %11.3f CPU utilization factor",
++				(double)count[0] / (double)walltime_nsecs);
++		}
+ 	} else {
+ 		fprintf(stderr, " %14Ld  %-20s",
+ 			count[0], event_name(counter));
+ 		if (runtime_nsecs)
+-			fprintf(stderr, " # %12.3f M/sec",
++			fprintf(stderr, " # %11.3f M/sec",
+ 				(double)count[0]/runtime_nsecs*1000.0);
+ 	}
+ 	if (scaled)
+@@ -241,6 +248,8 @@ static int do_perfstat(int argc, const char **argv)
+ 	prctl(PR_TASK_PERF_COUNTERS_DISABLE);
+ 	t1 = rdclock();
+ 
++	walltime_nsecs = t1 - t0;
++
+ 	fflush(stdout);
+ 
+ 	fprintf(stderr, "\n");
