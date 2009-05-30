@@ -1,59 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762139AbZE3Lhi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762102AbZE3Lig@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762139AbZE3Lhi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 07:37:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757626AbZE3Lhc
+	id S1762102AbZE3Lig (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 07:38:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757626AbZE3Li3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 07:37:32 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:58490 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753639AbZE3Lhb (ORCPT
+	Sat, 30 May 2009 07:38:29 -0400
+Received: from yw-out-2324.google.com ([74.125.46.28]:1767 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753639AbZE3Li2 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 07:37:31 -0400
-Date: Sat, 30 May 2009 13:37:24 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Michael Shields <mshields@google.com>, rdunlap@xenotime.net,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       trivial@kernel.org
-Subject: Re: [PATCH] Doc fix: ext2 can only have 32,000 subdirs, not 32,768.
-Message-ID: <20090530113724.GA1444@ucw.cz>
-References: <63a2e74f0905181213r54a2d8b2tb7dcecd177d474c2@mail.gmail.com> <20090527172045.f33b0b49.akpm@linux-foundation.org>
+	Sat, 30 May 2009 07:38:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=IIaGpFt69+gGpuNVECHmmWJ1FEw/lPd6gzLqgaIsfztsvN+ynnk8Aw3qM8ISMKTQQp
+         q1D8UHfu/2lUbqLjZYOJ7v9xXMC1w2j2Io4HEpbzoSBVZwuwgnztAjTqu8TVJJ/hGuQ7
+         Zh9htSuSAwqLZMX2R5wpRVkSPvo64sbfs0Kj8=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090527172045.f33b0b49.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090508091052.GA10429@januz.myftp.org>
+References: <164c92d827cbee86ba2c5621716309e6@localhost>
+	 <200904300939.31754.henrik@austad.us>
+	 <49b7c2350905071935kbd2aa22v9d39cf41c537c24b@mail.gmail.com>
+	 <20090508091052.GA10429@januz.myftp.org>
+Date: Sat, 30 May 2009 20:38:29 +0900
+Message-ID: <49b7c2350905300438n6195de93la53bee3a309f71d@mail.gmail.com>
+Subject: Re: SCHED_EDF infos
+From: GeunSik Lim <leemgs1@gmail.com>
+To: Henrik Austad <henrik@austad.us>
+Cc: finarfin@dreamos.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2009-05-27 17:20:45, Andrew Morton wrote:
-> On Mon, 18 May 2009 12:13:51 -0700
-> Michael Shields <mshields@google.com> wrote:
-> 
-> > ext2.txt says that dirs can have 32,768 subdirs, but the actual value
-> > of EXT2_LINK_MAX is 32000.
-> > ext3 is the same, but the doc does not mention it. __One of ext4's
-> > features is to "fix 32000 subdirectory limit".
-> > 
-> > --- linux-2.6.29.3/Documentation/filesystems/ext2.txt.orig 2009-05-08
-> > 15:47:21.000000000 -0700
-> > +++ linux-2.6.29.3/Documentation/filesystems/ext2.txt 2009-05-18
-> > 12:03:58.000000000 -0700
-> > @@ -322,7 +322,7 @@ an upper limit on the block size imposed
-> > __so 8kB blocks are only allowed on Alpha systems (and other architectures
-> > __which support larger pages).
-> > 
-> > -There is an upper limit of 32768 subdirectories in a single directory.
-> > +There is an upper limit of 32000 subdirectories in a single directory.
-> > 
-> > __There is a "soft" upper limit of about 10-15k files in a single directory
-> > __with the current linear linked-list directory implementation. __This limit
-> > --
+On Fri, May 8, 2009 at 6:10 PM, Henrik Austad <henrik@austad.us> wrote:
+>> [..]
+>> I think so.
+>> How can we approach  EDF implementation like Pfair as a generic solution
+>> for Multicore in Linux?
+>
+> I am working on an implementation now, and I hope to be able to release a
+> prototype by the end of next week. I think we can continue the discussion
+> then based on that.
+Hi Henrik,
+Can you share EDF that you implemented with P-fair for Multicore environments?
+Especially, I wonder How do you keep posix compatibility with EDF scheduler.
 
-Maybe it would be better to increase EXT2_LINK_MAX to fit the docs?
+For example,
+sched_setscheduler(2), sched_getscheduler(2),
+sched_get_priority_max(2), sched_get_priority_min(2),
+sched_getaffinity(2), sched_setaffinity(2),
+sched_getparam(2), sched_setparam(2),
+setpriority(2), getpriority(2),
+sched_yield(2), sched_rr_get_interval(2)
+
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Regards,
+GeunSik Lim ( SAMSUNG ELECTRONICS)
+Blog : http://blog.naver.com/invain/
+e-Mail: geunsik.lim@samsung.com
+           leemgs@gmail.com , leemgs1@gmail.com
+--
+To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
