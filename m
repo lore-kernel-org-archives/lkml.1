@@ -1,49 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763234AbZE3LrY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762262AbZE3LwS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763234AbZE3LrY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 07:47:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757864AbZE3LrR
+	id S1762262AbZE3LwS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 07:52:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758219AbZE3LwI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 07:47:17 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:43002 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756567AbZE3LrQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 07:47:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=qVuGCizPYoB6a3Q1Laz4hlSYMJt16HmR5KvqffpWr4v/lszfeDS6TX51OQANBo9MNJ
-         wrzoHN7jWYS1qtF98AHlwCrp9khbSlguMgQKXJZjqZ1tZEk93uhG4yea1xaUVwmHTYKZ
-         Ma3kTcU0htY0C1U7MKTOPuTi5CXrP4uJdkdt8=
+	Sat, 30 May 2009 07:52:08 -0400
+Received: from hera.kernel.org ([140.211.167.34]:40949 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753854AbZE3LwH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 May 2009 07:52:07 -0400
+Date: Sat, 30 May 2009 11:51:31 GMT
+From: tip-bot for Ingo Molnar <mingo@elte.hu>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
+       hpa@zytor.com, mingo@redhat.com, jkacur@redhat.com,
+       a.p.zijlstra@chello.nl, efault@gmx.de, mtosatti@redhat.com,
+       tglx@linutronix.de, cjashfor@linux.vnet.ibm.com, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, jkacur@redhat.com, a.p.zijlstra@chello.nl,
+       efault@gmx.de, mtosatti@redhat.com, tglx@linutronix.de,
+       cjashfor@linux.vnet.ibm.com, mingo@elte.hu
+In-Reply-To: <new-submission>
+References: <new-submission>
+Subject: [tip:perfcounters/core] perf_counter tools: Fix 'make install'
+Message-ID: <tip-7fbd55449aafb86d3237b5d1a26fb4dab2aa2c76@git.kernel.org>
+Git-Commit-ID: 7fbd55449aafb86d3237b5d1a26fb4dab2aa2c76
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-In-Reply-To: <4A211A2E.7090301@f2s.com>
-References: <1243279681-4233-1-git-send-email-philipp.zabel@gmail.com>
-	 <1243279681-4233-6-git-send-email-philipp.zabel@gmail.com>
-	 <4A211A2E.7090301@f2s.com>
-Date: Sat, 30 May 2009 13:47:16 +0200
-Message-ID: <74d0deb30905300447u7b73c5b8r3a3406fa0ea3cff9@mail.gmail.com>
-Subject: Re: [PATCH 5/5] mmc: tmio_mmc: move probe function into __init 
-	section
-From: pHilipp Zabel <philipp.zabel@gmail.com>
-To: ian@mnementh.co.uk
-Cc: linux-kernel@vger.kernel.org, Pierre Ossman <pierre@ossman.eu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 30 May 2009 11:51:32 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 30, 2009 at 1:36 PM, Ian molton <spyro@f2s.com> wrote:
-> Philipp Zabel wrote:
->>
->> As MFD cells are not hotpluggable, this should be safe to do.
->
-> NAK, as per others comments.
+Commit-ID:  7fbd55449aafb86d3237b5d1a26fb4dab2aa2c76
+Gitweb:     http://git.kernel.org/tip/7fbd55449aafb86d3237b5d1a26fb4dab2aa2c76
+Author:     Ingo Molnar <mingo@elte.hu>
+AuthorDate: Sat, 30 May 2009 12:38:51 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Sat, 30 May 2009 12:45:29 +0200
 
-Ok, dropped. I use mmc as rootfs right now, so I couldn't test that
-(unbinding wreaks havoc either way).
+perf_counter tools: Fix 'make install'
 
-regards
-Philipp
+'make install' didnt install perf itself - which needs a special
+rule to be copied to bindir.
+
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
+Cc: Marcelo Tosatti <mtosatti@redhat.com>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: John Kacur <jkacur@redhat.com>
+LKML-Reference: <new-submission>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ Documentation/perf_counter/Makefile |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/Documentation/perf_counter/Makefile b/Documentation/perf_counter/Makefile
+index bd29a5c..8f72584 100644
+--- a/Documentation/perf_counter/Makefile
++++ b/Documentation/perf_counter/Makefile
+@@ -776,6 +776,7 @@ install: all
+ 	$(INSTALL) -d -m 755 '$(DESTDIR_SQ)$(bindir_SQ)'
+ 	$(INSTALL) -d -m 755 '$(DESTDIR_SQ)$(perfexec_instdir_SQ)'
+ 	$(INSTALL) $(ALL_PROGRAMS) '$(DESTDIR_SQ)$(perfexec_instdir_SQ)'
++	$(INSTALL) perf$X '$(DESTDIR_SQ)$(bindir_SQ)'
+ ifneq (,$X)
+ 	$(foreach p,$(patsubst %$X,%,$(filter %$X,$(ALL_PROGRAMS) $(BUILT_INS) perf$X)), $(RM) '$(DESTDIR_SQ)$(perfexec_instdir_SQ)/$p';)
+ endif
