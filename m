@@ -1,64 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757514AbZE3XEX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756670AbZE3XK5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757514AbZE3XEX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 19:04:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756138AbZE3XEO
+	id S1756670AbZE3XK5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 19:10:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752169AbZE3XKt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 19:04:14 -0400
-Received: from ey-out-2122.google.com ([74.125.78.25]:23907 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753579AbZE3XEM (ORCPT
+	Sat, 30 May 2009 19:10:49 -0400
+Received: from mail11.tpgi.com.au ([203.12.160.161]:39579 "EHLO
+	mail11.tpgi.com.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753062AbZE3XKs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 19:04:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=bhZQRD+pFkw6eLkjcrj9gaRdeuy/MkR4pO0mtoM2PpkURk+v8kDE25q6nEOokXVDQm
-         kf3hL46e7ihxVM62YppPv1iwx/yrLc4/sOWaXCgf670V0mXjxclt4DovNeE51Pcvo2ng
-         fglNuBVAzKXcO5zuMELoOBTwKV/IsNAfUuILw=
-Date: Sun, 31 May 2009 01:04:10 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
+	Sat, 30 May 2009 19:10:48 -0400
+X-TPG-Junk-Status: Message not scanned
+X-TPG-Antivirus: Passed
+X-TPG-Abuse: host=adsl.samad.com.au; ip=60.241.248.86; date=Sun, 31 May 2009 09:10:22 +1000
+Date: Sun, 31 May 2009 09:10:18 +1000
+From: Alex Samad <alex@samad.com.au>
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Harald Dunkel <harald.dunkel@t-online.de>,
-       Jeff Mahoney <jeffm@suse.com>
-Subject: Re: [Bug #13374] reiserfs blocked for more than 120secs
-Message-ID: <20090530230408.GC8739@nowhere>
-References: <4to6E2myxvG.A.muC.aIbIKB@chimera> <LEcEO2518_I.A.MgD.wIbIKB@chimera>
+       Dave Chinner <david@fromorbit.com>
+Subject: Re: [Bug #13375] Kernel crash with 2.6.29 + nfs + xfs (radix-tree)
+Message-ID: <20090530231018.GA29992@samad.com.au>
+References: <THxQaUP0K2D.A.QkF.UVbIKB@chimera> <PkPeJtNB3KO.A._pF.ZVbIKB@chimera>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="+QahgC5+KEYLbs62"
 Content-Disposition: inline
-In-Reply-To: <LEcEO2518_I.A.MgD.wIbIKB@chimera>
+In-Reply-To: <PkPeJtNB3KO.A._pF.ZVbIKB@chimera>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 30, 2009 at 09:37:36PM +0200, Rafael J. Wysocki wrote:
+
+--+QahgC5+KEYLbs62
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi
+
+as far as I know it is still a problem
+
+Alex
+
+
+On Sat, May 30, 2009 at 09:55:40PM +0200, Rafael J. Wysocki wrote:
 > This message has been generated automatically as a part of a report
-> of recent regressions.
-> 
+> of regressions introduced between 2.6.28 and 2.6.29.
+>=20
 > The following bug entry is on the current list of known regressions
-> from 2.6.29.  Please verify if it still should be listed and let me know
-> (either way).
-> 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13374
-> Subject		: reiserfs blocked for more than 120secs
-> Submitter	: Harald Dunkel <harald.dunkel@t-online.de>
-> Date		: 2009-05-23 8:52 (8 days old)
-> References	: http://marc.info/?l=linux-kernel&m=124306880410811&w=4
-> 
-> 
+> introduced between 2.6.28 and 2.6.29.  Please verify if it still should
+> be listed and let me know (either way).
+>=20
+>=20
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=3D13375
+> Subject		: Kernel crash with 2.6.29 + nfs + xfs (radix-tree)
+> Submitter	: Alex Samad <alex@samad.com.au>
+> Date		: 2009-05-20 0:37 (11 days old)
+> References	: http://marc.info/?l=3Dlinux-kernel&m=3D124278675503699&w=3D4
+>=20
+>=20
+>=20
 
 
-Trenton D. Adams has reported something very similar for -rc3:
+--+QahgC5+KEYLbs62
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-http://lkml.org/lkml/2009/5/29/389
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-Someone holds the j_commit_mutex but never release it...
+iEYEARECAAYFAkohvNcACgkQkZz88chpJ2PlaACgwxeL4sp+tS2JlX7QNcgOf//Y
+SoAAn193bonpHDlT15xLBYk5yNADnuBH
+=iDuG
+-----END PGP SIGNATURE-----
 
-(Adding Jeff Mahoney in cc )
-
+--+QahgC5+KEYLbs62--
