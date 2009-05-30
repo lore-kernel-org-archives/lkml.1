@@ -1,68 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932354AbZE3Nnx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932274AbZE3NoU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932354AbZE3Nnx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 09:43:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759135AbZE3Nnr
+	id S932274AbZE3NoU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 09:44:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932190AbZE3NoL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 09:43:47 -0400
-Received: from pfepa.post.tele.dk ([195.41.46.235]:37088 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758746AbZE3Nnq (ORCPT
+	Sat, 30 May 2009 09:44:11 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:35030 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932180AbZE3NoJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 09:43:46 -0400
-Date: Sat, 30 May 2009 15:46:01 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, jkacur@redhat.com, a.p.zijlstra@chello.nl,
-       efault@gmx.de, mtosatti@redhat.com, tglx@linutronix.de,
-       cjashfor@linux.vnet.ibm.com, mingo@elte.hu
-Cc: linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:perfcounters/core] perf_counter tools: Generate per command manpages (and pdf/html, etc.)
-Message-ID: <20090530134601.GA12088@uranus.ravnborg.org>
-References: <tip-c1c2365acf8c044f749c0fe1ea236497e8d1718e@git.kernel.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <tip-c1c2365acf8c044f749c0fe1ea236497e8d1718e@git.kernel.org>
-User-Agent: Mutt/1.4.2.1i
+	Sat, 30 May 2009 09:44:09 -0400
+Date: Sat, 30 May 2009 09:44:10 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: GeunSik Lim <leemgs1@gmail.com>
+cc: Greg KH <greg@kroah.com>, linux-kernel <linux-kernel@vger.kernel.org>,
+       trivial@kernel.org, balagi@justmail.de, bgamari@gmail.com,
+       Ingo Molnar <mingo@elte.hu>, inaky.perez-gonzalez@intel.com
+Subject: Re: [RFC V2 PATCH]debugfs:Fix terminology inconsistency of dir name
+  to mount debugfs filesystem.
+In-Reply-To: <49b7c2350905300421q7c1c9110ke99e25eec051f94c@mail.gmail.com>
+Message-ID: <alpine.DEB.2.00.0905300939450.14994@gandalf.stny.rr.com>
+References: <1243315163.14685.17.camel@centos51>  <1243613134.20635.14.camel@centos51>  <alpine.DEB.2.00.0905291240150.31247@gandalf.stny.rr.com>  <49b7c2350905291843i402b7161xf05fdb87eb77f73f@mail.gmail.com>  <alpine.DEB.2.00.0905292204280.14994@gandalf.stny.rr.com>
+  <49b7c2350905300238k5f6259fne30ad94f8fbf7e20@mail.gmail.com> <49b7c2350905300421q7c1c9110ke99e25eec051f94c@mail.gmail.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 30, 2009 at 01:00:33PM +0000, tip-bot for Ingo Molnar wrote:
-> Commit-ID:  c1c2365acf8c044f749c0fe1ea236497e8d1718e
-> Gitweb:     http://git.kernel.org/tip/c1c2365acf8c044f749c0fe1ea236497e8d1718e
-> Author:     Ingo Molnar <mingo@elte.hu>
-> AuthorDate: Sat, 30 May 2009 12:38:51 +0200
-> Committer:  Ingo Molnar <mingo@elte.hu>
-> CommitDate: Sat, 30 May 2009 13:52:44 +0200
+
+On Sat, 30 May 2009, GeunSik Lim wrote:
+> @@ -1202,11 +1208,57 @@ something like this simple program:
 > 
-> perf_counter tools: Generate per command manpages (and pdf/html, etc.)
+>  #include <stdio.h>
+>  #include <stdlib.h>
+> +#include <string.h>
+>  #include <sys/types.h>
+>  #include <sys/stat.h>
+>  #include <fcntl.h>
+>  #include <unistd.h>
 > 
-> Import Git's nice .txt => {man/html/pdf} generation machinery.
+> +#define _STR(x) #x
+> +#define STR(x) _STR(x)
+> +#define MAX_PATH 256
+> +
+> +const char *find_debugfs(char *file_name)
+> +{
+> +       static char debugfs[MAX_PATH+1];
+> +       static int debugfs_found;
+> +       char type[100];
+> +       FILE *fp;
+> +       int size;
+> +
+> +       if (debugfs_found)
+> +               return debugfs;
+> +
+> +       if ((fp = fopen("/proc/mounts","r")) == NULL) {
+> +               perror("/proc/mounts");
+> +               return NULL;
+> +       }
+> +
+> +       while (fscanf(fp, "%*s %"
+> +                     STR(MAX_PATH)
+> +                     "s %99s %*s %*d %*d\n",
+> +                     debugfs, type) == 2) {
+> +               if (strcmp(type, "debugfs") == 0)
+> +                       break;
+> +       }
+> +       fclose(fp);
+> +
+> +       if (strcmp(type, "debugfs") != 0) {
+> +               fprintf(stderr, "debugfs not mounted");
+> +               return NULL;
+> +       }
+> +
+> +       debugfs_found = 1;
+> +
+> +       size = MAX_PATH - strlen(debugfs);
+> +       strncat(debugfs, "/tracing/", size);
+> +
+> +       size = MAX_PATH - strlen(debugfs);
+> +       strncat(debugfs, file_name, size);
+
+You need to make two functions. One to find the debugfs and one to add the 
+file. The "debugfs_found" will make the function return just the first 
+file_name every time. Something like this: (remove the file_name from 
+find_debugfs).
+
+const char *tracing_file(const char *file_name)
+{
+	static char trace_file[MAX_PATH+1];
+
+	snprintf(trace_file, MAX_PATH, "%s/%s", find_debugfs(), file_name);
+
+	return trace_file;
+}
+
+The above is not thread safe, but is OK for non threaded programs.
+
+-- Steve
+
+> +
+> +       return debugfs;
+> +}
+> +
+>  int main (int argc, char **argv)
+>  {
+>          if (argc < 1)
+> @@ -1217,12 +1269,12 @@ int main (int argc, char **argv)
+>                  char line[64];
+>                  int s;
 > 
-> Fix various errors in the Documentation/perf*.txt description as well.
+> -                ffd = open("/debug/tracing/current_tracer", O_WRONLY);
+> +                ffd = open(find_debugfs("current_tracer"), O_WRONLY);
+>                  if (ffd < 0)
+>                          exit(-1);
+>                  write(ffd, "nop", 3);
 > 
-> Also fix a bug in builtin-help: we'd map 'perf help top' to 'perftop'
-> if only the 'perf' binary is in the default PATH - confusing the manpage
-> logic. I dont fully understand why Git did it this way - but i suppose
-> it's a migration artifact from their migration from standalone git-xyz
-> commands to 'git xyz' commands. The perf tools were always using the
-> modern form so it's not an issue there.
-
-Can we please have this patch split in at least a infrastructire and
-a content part.
-This makes it easier to review - and also makes it
-much more clear what is needed to be added when adding new
-documentation following this format.
-
-I would also suggest to copy Randy Dunlap on patches
-touching generic parts like this in Documentation.
-
-I will try to review this when the splitup has heppend.
-
-[I may have been copied on stuff earlier but I has been
-and is almost off-line atm].
-
-Thanks,
-	Sam
+> -                fd = open("/debug/tracing/set_ftrace_pid", O_WRONLY);
+> +                fd = open(find_debugfs("set_ftrace_pid"), O_WRONLY);
+>                  s = sprintf(line, "%d\n", getpid());
+>                  write(fd, line, s);
+> 
