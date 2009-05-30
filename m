@@ -1,102 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763505AbZE3SGd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763510AbZE3SIK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763505AbZE3SGd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 14:06:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932720AbZE3SGF
+	id S1763510AbZE3SIK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 14:08:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761234AbZE3SH4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 14:06:05 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:54081 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762801AbZE3SGB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 14:06:01 -0400
-Date: Sat, 30 May 2009 20:05:40 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Larry H." <research@subreption.com>
-Cc: linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>,
-       linux-mm@kvack.org, Ingo Molnar <mingo@redhat.com>,
-       pageexec@freemail.hu, linux-crypto@vger.kernel.org,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [patch 5/5] Apply the PG_sensitive flag to the CryptoAPI
-	subsystem
-Message-ID: <20090530180540.GE20013@elte.hu>
-References: <20090520190519.GE10756@oblivion.subreption.com>
+	Sat, 30 May 2009 14:07:56 -0400
+Received: from wf-out-1314.google.com ([209.85.200.172]:47808 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760767AbZE3SHz convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 May 2009 14:07:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=m2lLFOkDFyVLpGZgyCVSLUO+k9jcrrIGxnxRMU7R/bm+P+r5WLhPksN16oAX3irfaE
+         4X30gWVHSeilEI8nJIAGqXcEo1gFbLOExL6HWkaJIz1VNldxy3EPDwzzb0nTxLUukaXl
+         33XmVNo2m0PJiqBCBQJ0gOv1aUO63ixEuozjw=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090520190519.GE10756@oblivion.subreption.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090530134132.GA5969@nowhere>
+References: <1242496922-6330-1-git-send-email-fweisbec@gmail.com>
+	 <1242496922-6330-2-git-send-email-fweisbec@gmail.com>
+	 <9b1675090905292005p2b53de7dy9e36f84368d76f01@mail.gmail.com>
+	 <20090530032253.GA5999@nowhere>
+	 <9b1675090905292123l7c3de4b6w897e153d60e5a469@mail.gmail.com>
+	 <20090530134132.GA5969@nowhere>
+Date: Sat, 30 May 2009 12:07:57 -0600
+Message-ID: <9b1675090905301107t4884caccn937b0ccfd100d6aa@mail.gmail.com>
+Subject: Re: [PATCH 1/2] kill-the-bkl/reiserfs: acquire the inode mutex safely
+From: "Trenton D. Adams" <trenton.d.adams@gmail.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Al Viro <viro@zeniv.linux.org.uk>,
+       Reiserfs <reiserfs-devel@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, Jeff Mahoney <jeffm@suse.com>,
+       Chris Mason <chris.mason@oracle.com>, Ingo Molnar <mingo@elte.hu>,
+       Alexander Beregalov <a.beregalov@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, May 30, 2009 at 7:41 AM, Frederic Weisbecker <fweisbec@gmail.com> wrote:
+> On Fri, May 29, 2009 at 10:23:44PM -0600, Trenton D. Adams wrote:
+>>
+>> I was trying to imply that the patch might fix the problem I saw, not
+>> that it was the cause.  I only though that because it mentioned a
+>> potential deadlock, and it seems like that is what the problem I saw
+>> was.
+>
+>
+> Ah ok. No it's part of a tree which reworks the reiserfs locking scheme
+> by removing the old one based on the legacy and obsolete bkl (big kernel
+> lock). In this tree I had to fix several deadlocks or at least unsafe
+> lock states because the bkl is converted into a mutex and some new lock
+> dependencies were borned after that. But these issues had nothing
+> to deal with upstream problems.
+>
+> BTW, would you be interested in giving a try with this reiserfs bkl
+> removal tree? I really lack testing and feedbacks from users.
 
-* Larry H. <research@subreption.com> wrote:
+Well, the problem is that I only use reiserfs on my usb stick at the
+moment.  So, the amount of testing I could do would be minimal at the
+moment.  However, if I change my local filesystems to reiserfs, I will
+remember to check back here for your patch.
 
-> This patch deploys the use of the PG_sensitive page allocator flag 
-> within the CryptoAPI subsystem, in all relevant locations where 
-> algorithm and key contexts are allocated.
-> 
-> Some calls to memset for zeroing the buffers have been removed to 
-> avoid duplication of the sanitizing process, since this is already 
-> taken care of by the allocator during page freeing.
-> 
-> The only noticeable impact on performance might be in the 
-> blkcipher modifications, although this is likely negligible and 
-> balanced with the security benefits of this patch in the long 
-> term.
-
-I think there's a rather significant omission here: there's no 
-discussion about on-kernel-stack information leaking out.
-
-If a thread that does a crypto call happens to leave sensitive 
-on-stack data (this can happen easily as stack variables are not 
-cleared on return), or if a future variant or modification of a 
-crypto algorithm leaves such information around - then there's 
-nothing that keeps that data from potentially leaking out.
-
-This is not academic and it happens all the time: only look at 
-various crash dumps on lkml. For example this crash shows such 
-leaked information:
-
-[   96.138788]  [<ffffffff810ab62e>] perf_counter_exit_task+0x10e/0x3f3
-[   96.145464]  [<ffffffff8104cf46>] do_exit+0x2e7/0x722
-[   96.150837]  [<ffffffff810630cf>] ? up_read+0x9/0xb
-[   96.156036]  [<ffffffff8151cc0b>] ? do_page_fault+0x27d/0x2a5
-[   96.162141]  [<ffffffff8104d3f4>] do_group_exit+0x73/0xa0
-[   96.167860]  [<ffffffff8104d433>] sys_exit_group+0x12/0x16
-[   96.173665]  [<ffffffff8100bb2b>] system_call_fastpath+0x16/0x1b
-
-The 'ffffffff8151cc0b' 64-bit word is actually a leftover from a 
-previous system context. ( And this is at the bottom of the stack 
-that gets cleared all the time - the top of the kernel stack is a 
-lot more more persistent in practice and crypto calls tend to have a 
-healthy stack footprint. )
-
-So IMO the GFP_SENSITIVE facility (beyond being misnomer - it should 
-be something like GFP_NON_PERSISTENT instead) actually results in 
-_worse_ security in the end: because people (and organizations) 
-'think' that their keys are safe against information leaks via this 
-space, while they are not. The kernel stack can be freed, be reused 
-by something else partially and then written out to disk (say as 
-part of hibernation) where it's recoverable from the disk image.
-
-So this whole facility probably only makes sense if all kernel 
-stacks that handle sensitive data are zeroed on free. But i havent 
-seen any kernel thread stack clearing functionality in this 
-patch-set - is it an intentional omission? (or have i missed some 
-aspect of the patch-set)
-
-Also, there's no discussion about long-lived threads keeping 
-sensitive information in there kernel stack indefinitely.
-
-Thanks,
-
-	Ingo
+Thanks.
