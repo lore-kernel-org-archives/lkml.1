@@ -1,59 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755239AbZE3HUm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753614AbZE3HVS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755239AbZE3HUm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 03:20:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751429AbZE3HUe
+	id S1753614AbZE3HVS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 03:21:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751429AbZE3HVI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 03:20:34 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:49802 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751181AbZE3HUd (ORCPT
+	Sat, 30 May 2009 03:21:08 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:54178 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751181AbZE3HVH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 03:20:33 -0400
-Date: Sat, 30 May 2009 15:20:30 +0800
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
-       "hannes@cmpxchg.org" <hannes@cmpxchg.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: [PATCH 4/4] memcg: fix swap accounting
-Message-ID: <20090530072030.GG24073@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090528135455.0c83bedc.kamezawa.hiroyu@jp.fujitsu.com> <20090528142156.efa97a37.kamezawa.hiroyu@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Sat, 30 May 2009 03:21:07 -0400
+Date: Sat, 30 May 2009 09:27:58 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andi Kleen <andi@firstfloor.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       fengguang.wu@intel.com
+Subject: Re: More thoughts about hwpoison and pageflags compression
+Message-ID: <20090530072758.GL1065@one.firstfloor.org>
+References: <200905291135.124267638@firstfloor.org> <20090529225202.0c61a4b3@lxorguk.ukuu.org.uk> <20090530063710.GI1065@one.firstfloor.org> <20090529235302.ccf58d88.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090528142156.efa97a37.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090529235302.ccf58d88.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-05-28 14:21:56]:
-
-> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+On Fri, May 29, 2009 at 11:53:02PM -0700, Andrew Morton wrote:
+> On Sat, 30 May 2009 08:37:10 +0200 Andi Kleen <andi@firstfloor.org> wrote:
 > 
-> This patch fixes mis-accounting of swap usage in memcg.
+> > So using a separate bit is a sensible choice imho.
 > 
-> In current implementation, memcg's swap account is uncharged only when
-> swap is completely freed. But there are several cases where swap
-> cannot be freed cleanly. For handling that, this patch changes that
-> memcg uncharges swap account when swap has no references other than cache.
-> 
-> By this, memcg's swap entry accounting can be fully synchronous with
-> the application's behavior.
-> This patch also changes memcg's hooks for swap-out.
->
+> Could you make the feature 64-bit-only and use one of bits 32-63?
 
-Looks good, so for count == 0, we directly free the and uncharge, for
-the others we use retry_to_use_swap(). cool!
+We could, but these systems can run 32bit kernels too (although
+it's probably not a good idea). Ok it would be probably possible
+to make it 64bit only, but I would prefer to not do that.
 
+Also even 32bit has still flags free and even if we run out there's an easy 
+path to free more (see my earlier writeup)
 
-Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+So I don't see the pressing need to conserve every bit on 32bit.
+
+> Did you consider making the poison tag external to the pageframe?  Some
+> hash(page*) into a bitmap or something?  If suitably designed, such
+> infrastructure could perhaps be reused to reclaim some existing page
+> flags.  Dave Hansen had such a patch a few years back.  Or maybe it
+> was Andy Whitcroft.
+
+I considered it at some point, but it would have complicated the code
+and I preferred to keep it simple. The poison handler should be relatively
+straight forward and do its work quickly otherwise it might not isolate
+the page before it's actually used.
  
- 
+-Andi
 -- 
-	Balbir
+ak@linux.intel.com -- Speaking for myself only.
