@@ -1,163 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754381AbZE3GK0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755743AbZE3G1N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754381AbZE3GK0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 02:10:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752285AbZE3GKO
+	id S1755743AbZE3G1N (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 02:27:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751937AbZE3G1A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 02:10:14 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:33524 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752120AbZE3GKM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 02:10:12 -0400
-Date: Sat, 30 May 2009 14:10:08 +0800
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
-       "hannes@cmpxchg.org" <hannes@cmpxchg.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: [PATCH 2/4] modify swap_map and add SWAP_HAS_CACHE flag.
-Message-ID: <20090530061008.GE24073@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090528135455.0c83bedc.kamezawa.hiroyu@jp.fujitsu.com> <20090528141900.c93fe1d5.kamezawa.hiroyu@jp.fujitsu.com>
+	Sat, 30 May 2009 02:27:00 -0400
+Received: from qw-out-2122.google.com ([74.125.92.26]:31438 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751580AbZE3G1A convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 May 2009 02:27:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=Ktjh8BFourDZVYjuBKJfIqXsnQbX0F3eugu0/3a7odhfjkrAaIHBurza9xeZaifPAq
+         UvhIyghp9VtJ0W634eudbSm2/st6kcrtLDFKot9Iv2+ptv1mhQxD/jbM730ctxyQyI+I
+         YaHttnc+F6gnOIzDzkJvxymoKn9GLeMbcHUKY=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20090528141900.c93fe1d5.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Date: Sat, 30 May 2009 14:27:01 +0800
+Message-ID: <30c949580905292327s1f3b8e32n3f7d7e3a15908c58@mail.gmail.com>
+Subject: memory free question?
+From: Bill Xie <bill790@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-05-28 14:19:00]:
+My harware is a mips-achitecture hand-hold device runs 2.6.24.3 and
+qt.  when an application program  opened a 3.2M pdf file, the memory
+was consuming continually, finally the "oom-killer" things happened,
+but the memory the application occupied can not be freed.
 
-> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> 
-> This is a part of patches for fixing memcg's swap account leak. But, IMHO,
-> not a bad patch even if no memcg.
-> 
-> Now, reference to swap is counted by swap_map[], an array of unsigned short.
-> There are 2 kinds of references to swap.
->  - reference from swap entry
->  - reference from swap cache
-> Then, 
->  - If there is swap cache && swap's refcnt is 1, there is only swap cache.
->   (*) swapcount(entry) == 1 && find_get_page(swapper_space, entry) != NULL
-> 
-> This counting logic have worked well for a long time. But considering that
-> we cannot know there is a _real_ reference or not by swap_map[], current usage
-> of counter is not very good.
-> 
-> This patch adds a flag SWAP_HAS_CACHE and recored information that a swap entry
-> has a cache or not. This will remove -1 magic used in swapfile.c and be a help
-> to avoid unnecessary find_get_page().
-> 
-> Changelog: v1->v2
->  - fixed swapcache_prepare()'s return code.
->  - changed swap_duplicate() be void function.
->  - fixed racy case in swapoff().
-> 
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> ---
->  include/linux/swap.h |   14 ++-
->  mm/swap_state.c      |    5 +
->  mm/swapfile.c        |  203 ++++++++++++++++++++++++++++++++++++---------------
->  3 files changed, 160 insertions(+), 62 deletions(-)
-> 
-> Index: new-trial-swapcount2/include/linux/swap.h
-> ===================================================================
-> --- new-trial-swapcount2.orig/include/linux/swap.h
-> +++ new-trial-swapcount2/include/linux/swap.h
-> @@ -129,9 +129,10 @@ enum {
-> 
->  #define SWAP_CLUSTER_MAX 32
-> 
-> -#define SWAP_MAP_MAX	0x7fff
-> -#define SWAP_MAP_BAD	0x8000
-> -
-> +#define SWAP_MAP_MAX	0x7ffe
-> +#define SWAP_MAP_BAD	0x7fff
-> +#define SWAP_HAS_CACHE  0x8000		/* There is a swap cache of entry. */
-
-Why count, can't we use swp->flags?
-
-> +#define SWAP_COUNT_MASK (~SWAP_HAS_CACHE)
->  /*
->   * The in-memory structure used to track swap areas.
->   */
-> @@ -300,7 +301,7 @@ extern long total_swap_pages;
->  extern void si_swapinfo(struct sysinfo *);
->  extern swp_entry_t get_swap_page(void);
->  extern swp_entry_t get_swap_page_of_type(int);
-> -extern int swap_duplicate(swp_entry_t);
-> +extern void swap_duplicate(swp_entry_t);
->  extern int swapcache_prepare(swp_entry_t);
->  extern int valid_swaphandles(swp_entry_t, unsigned long *);
->  extern void swap_free(swp_entry_t);
-> @@ -372,9 +373,12 @@ static inline void show_swap_cache_info(
->  }
-> 
->  #define free_swap_and_cache(swp)	is_migration_entry(swp)
-> -#define swap_duplicate(swp)		is_migration_entry(swp)
->  #define swapcache_prepare(swp)		is_migration_entry(swp)
-> 
-> +static inline void swap_duplicate(swp_entry_t swp)
-> +{
-> +}
-> +
->  static inline void swap_free(swp_entry_t swp)
->  {
->  }
-> Index: new-trial-swapcount2/mm/swapfile.c
-> ===================================================================
-> --- new-trial-swapcount2.orig/mm/swapfile.c
-> +++ new-trial-swapcount2/mm/swapfile.c
-> @@ -53,6 +53,26 @@ static struct swap_info_struct swap_info
-> 
->  static DEFINE_MUTEX(swapon_mutex);
-> 
-> +/* For reference count accounting in swap_map */
-> +static inline int swap_count(unsigned short ent)
-> +{
-> +	return ent & SWAP_COUNT_MASK;
-> +}
-> +
-> +static inline int swap_has_cache(unsigned short ent)
-> +{
-> +	return ent & SWAP_HAS_CACHE;
-> +}
-> +
-> +static inline unsigned short make_swap_count(int count, int has_cache)
-> +{
-> +	unsigned short ret = count;
-> +
-> +	if (has_cache)
-> +		return SWAP_HAS_CACHE | ret;
-> +	return ret;
-> +}
-
-make_swap_count() does not make too much sense in terms of the name
-for the function. Should it be called generate_swap_count or
-assign_swap_count_info?
-
-> +
->  /*
->   * We need this because the bdev->unplug_fn can sleep and we cannot
->   * hold swap_lock while calling the unplug_fn. And swap_lock
-> @@ -167,7 +187,8 @@ static int wait_for_discard(void *word)
->  #define SWAPFILE_CLUSTER	256
->  #define LATENCY_LIMIT		256
-> 
-> -static inline unsigned long scan_swap_map(struct swap_info_struct *si)
-> +static inline unsigned long scan_swap_map(struct swap_info_struct *si,
-> +					  int cache)
-
-Can we please use bool for readability or even better an enum?
-
-Looks good at first glance otherwise. I think distinguishing between
-the counts is good, but also complex. Overall the patch is useful.
-
--- 
-	Balbir
+cat /proc/meminfo
+MemTotal:        60288 kB
+MemFree:          5100 kB
+Buffers:             8 kB
+Cached:          25600 kB
+SwapCached:          0 kB
+Active:          21836 kB
+Inactive:        15448 kB
+SwapTotal:           0 kB
+SwapFree:            0 kB
+Dirty:               0 kB
+Writeback:           0 kB
+AnonPages:       11740 kB
+Mapped:           1668 kB
+Slab:             2532 kB
+SReclaimable:      308 kB
+SUnreclaim:       2224 kB
+PageTables:        164 kB
+NFS_Unstable:        0 kB
+Bounce:              0 kB
+CommitLimit:     30144 kB
+Committed_AS:    15656 kB
+VmallocTotal:  1048404 kB
+VmallocUsed:      9700 kB
+VmallocChunk:  1038704 kB
