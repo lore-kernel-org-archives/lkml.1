@@ -1,124 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754355AbZE3IUR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756528AbZE3IXS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754355AbZE3IUR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 04:20:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751419AbZE3IUB
+	id S1756528AbZE3IXS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 04:23:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751419AbZE3IXI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 04:20:01 -0400
-Received: from mail-bw0-f222.google.com ([209.85.218.222]:36338 "EHLO
-	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752318AbZE3IT5 (ORCPT
+	Sat, 30 May 2009 04:23:08 -0400
+Received: from oblivion.subreption.com ([66.240.236.22]:48427 "EHLO
+	mail.subreption.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751409AbZE3IXG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 04:19:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent;
-        b=M2JqON5PN7aB+aeSsI+wYGDjr8PwyqpTKpjJsJ+cSnDQUY05TW9PBMC2xfQ86+D/dy
-         uqw3YDhFFmJhhBMzHae0eQAymHiB+ooinLbMd7Akw+TuZ/hsNMlkBj0RBr5MYSTNwLIz
-         nKIVb9aSTEAuTbSgaseNurtGt/vvR6g2bZz8g=
-Date: Sat, 30 May 2009 10:19:54 +0200
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Borislav Petkov <borislav.petkov@amd.com>, greg@kroah.com, mingo@elte.hu,
-       norsk5@yahoo.com, tglx@linutronix.de, hpa@zytor.com, mchehab@redhat.com,
-       aris@redhat.com, edt@aei.ca, linux-kernel@vger.kernel.org,
-       randy.dunlap@oracle.com
-Subject: Re: [PATCH 0/4] amd64_edac: misc fixes
-Message-ID: <20090530081954.GA21954@liondog.tnic>
-Mail-Followup-To: Borislav Petkov <petkovbb@gmail.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Borislav Petkov <borislav.petkov@amd.com>, greg@kroah.com,
-	mingo@elte.hu, norsk5@yahoo.com, tglx@linutronix.de, hpa@zytor.com,
-	mchehab@redhat.com, aris@redhat.com, edt@aei.ca,
-	linux-kernel@vger.kernel.org, randy.dunlap@oracle.com
-References: <1242845037-1029-1-git-send-email-borislav.petkov@amd.com> <20090528164720.0af5752b.akpm@linux-foundation.org> <20090529103329.GB23530@aftab> <20090529130115.a44efaee.akpm@linux-foundation.org>
+	Sat, 30 May 2009 04:23:06 -0400
+Date: Sat, 30 May 2009 01:20:48 -0700
+From: "Larry H." <research@subreption.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@osdl.org>, linux-mm@kvack.org,
+       Ingo Molnar <mingo@redhat.com>, pageexec@freemail.hu,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [patch 0/5] Support for sanitization flag in low-level page
+	allocator
+Message-ID: <20090530082048.GM29711@oblivion.subreption.com>
+References: <20090522113809.GB13971@oblivion.subreption.com> <20090523124944.GA23042@elte.hu> <4A187BDE.5070601@redhat.com> <20090527223421.GA9503@elte.hu> <20090528072702.796622b6@lxorguk.ukuu.org.uk> <20090528090836.GB6715@elte.hu> <20090528125042.28c2676f@lxorguk.ukuu.org.uk> <84144f020905300035g1d5461f9n9863d4dcdb6adac0@mail.gmail.com> <20090530075033.GL29711@oblivion.subreption.com> <4A20E601.9070405@cs.helsinki.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090529130115.a44efaee.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <4A20E601.9070405@cs.helsinki.fi>
+Organization: Subreption LLC
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 29, 2009 at 01:01:15PM -0700, Andrew Morton wrote:
-> gcc-4.0.2, gas-2.16.1
+On 10:53 Sat 30 May     , Pekka Enberg wrote:
+>> That's hopeless, and kzfree is broken. Like I said in my earlier reply,
+>> please test that yourself to see the results. Whoever wrote that ignored
+>> how SLAB/SLUB work and if kzfree had been used somewhere in the kernel
+>> before, it should have been noticed long time ago.
+>
+> An open-coded version of kzfree was being used in the kernel:
+>
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=00fcf2cb6f6bb421851c3ba062c0a36760ea6e53
+>
+> Can we now get to the part where you explain how it's broken because I 
+> obviously "ignored how SLAB/SLUB works"?
 
-yep, just as I thought. binutils got the Fam10h support around July 2006
-and yours are from June 2005.
+You can find the answer in the code of sanitize_obj, within my kfree
+patch. Besides, it would have taken less time for you to write a simple
+module that kmallocs and kzfrees a buffer, than writing these two
+emails.
 
-> Here's your sent-off-list patch (please don't do that):
+Consider the inuse, size, objsize and offset members of a kmem_cache
+structure, for further hints. Test the module on a system with SLUB,
+though the issue should replicate over SLAB too. And don't dare test it
+on SLOB and its wonderful ksize, or even look at the freelist pointer
+management within SLUB.
 
-Ups, sorry. This wasn't meant to be a patch but only to show the
-functional change. I'll integrate it as such in the patchset and rebase
-the whole thing next week.
+;)
 
-> diff -puN drivers/edac/amd64_edac.c~edac-build-fix drivers/edac/amd64_edac.c
-> --- a/drivers/edac/amd64_edac.c~edac-build-fix
-> +++ a/drivers/edac/amd64_edac.c
-> @@ -1419,7 +1419,7 @@ static u32 f10_determine_channel(struct 
->  		if (dct_sel_interleave_addr(pvt) == 0)
->  			cs = sys_addr >> 6 & 1;
->  		else if ((dct_sel_interleave_addr(pvt) >> 1) & 1) {
-> -			temp = popcnt((u32) ((sys_addr >> 16) & 0x1F)) % 2;
-> +			temp = hweight_long((u32) ((sys_addr >> 16) & 0x1F)) % 2;
->  
->  			if (dct_sel_interleave_addr(pvt) & 1)
->  				cs = (sys_addr >> 9 & 1) ^ temp;
-> diff -puN drivers/edac/amd64_edac.h~edac-build-fix drivers/edac/amd64_edac.h
-> --- a/drivers/edac/amd64_edac.h~edac-build-fix
-> +++ a/drivers/edac/amd64_edac.h
-> @@ -443,19 +443,6 @@ enum {
->  #define K8_MSR_MC4STAT			0x0411
->  #define K8_MSR_MC4ADDR			0x0412
->  
-> -/*
-> - * popcnt - count the set bits in a bit vector.
-> - * @vec - bit vector
-> - *
-> - * This instruction is supported only on F10h and later CPUs.
-> - */
-> -#define popcnt(x)						\
-> -({								\
-> -	typeof(x) __ret;					\
-> -	__asm__("popcnt %1, %0" : "=r" (__ret) : "r" (x));	\
-> -	__ret;							\
-> -})
-> -
->  /* AMD sets the first MC device at device ID 0x18. */
->  static inline int get_mc_node_id_from_pdev(struct pci_dev *pdev)
->  {
-> _
-> 
-> That'll work.
-> 
-> A suitable way to solve all this would be to arrange for x86's hweight()
-> to use the popcnt instruction, where that makes sense.
+I'm about to recommend Andrew to take a look at this too:
+http://marc.info/?l=linux-mm&m=124301548814293&w=2
 
-That's funny, actually we _have_ _been_ experimenting here with
-replacing hweight with popcnt and there's only a minor speedup. We
-originally thought it might be a good idea to do the Hamming weight
-calculation in hardware, especially when this is used in hot paths like
-the scheduler but the bitmask counting is not being done enough times
-to actually notice any significant improvement. Besides, the hweight_*
-thingies are quite fast the way they are.
-
-But sure, I could dig out my patchset and rediff it for review - it is
-pretty small, actually. Also, I've been thinking about how the old(er)
-toolchain problem can be addressed and one fairly doable thing would be
-if I'd query the gas version in the kernel Makefile and define popcnt
-dependent on it and for older assemblers simply slap in the opcode and
-fixate the operands in an inline assembly so that it works.
-
-Possible issues with that would be if someone uses a different toolchain
-but do we support that at all? I'm guessing distro-patched bintuils
-won't be a problem since even if they introduced popcnt support earlier,
-the opcode would still be correct.
-
-Opinions? Comments?
-
--- 
-Regards/Gruss,
-    Boris.
+	Larry
