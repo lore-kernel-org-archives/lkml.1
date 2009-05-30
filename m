@@ -1,70 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762102AbZE3Lig@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760746AbZE3Lky@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762102AbZE3Lig (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 07:38:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757626AbZE3Li3
+	id S1760746AbZE3Lky (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 07:40:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757463AbZE3Lkr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 07:38:29 -0400
-Received: from yw-out-2324.google.com ([74.125.46.28]:1767 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753639AbZE3Li2 convert rfc822-to-8bit (ORCPT
+	Sat, 30 May 2009 07:40:47 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:34232 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753639AbZE3Lkr convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 07:38:28 -0400
+	Sat, 30 May 2009 07:40:47 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
          :cc:content-type:content-transfer-encoding;
-        b=IIaGpFt69+gGpuNVECHmmWJ1FEw/lPd6gzLqgaIsfztsvN+ynnk8Aw3qM8ISMKTQQp
-         q1D8UHfu/2lUbqLjZYOJ7v9xXMC1w2j2Io4HEpbzoSBVZwuwgnztAjTqu8TVJJ/hGuQ7
-         Zh9htSuSAwqLZMX2R5wpRVkSPvo64sbfs0Kj8=
+        b=d8ZyoYTlxM8/KBCye3bZwlIul7oopmWZoT+mqnHseWnOjbnxvfc3zcLmcOZVCnLSUJ
+         +5KpypTqGRrGlG/ET039TG4XebNi7nKuS1O8N/tIVtgLAUIZh1SzuModTwGWMUiX0XKZ
+         NzDs+08VrJ2E4fg15VvvqNU0XddV8mIz4ImJc=
 MIME-Version: 1.0
-In-Reply-To: <20090508091052.GA10429@januz.myftp.org>
-References: <164c92d827cbee86ba2c5621716309e6@localhost>
-	 <200904300939.31754.henrik@austad.us>
-	 <49b7c2350905071935kbd2aa22v9d39cf41c537c24b@mail.gmail.com>
-	 <20090508091052.GA10429@januz.myftp.org>
-Date: Sat, 30 May 2009 20:38:29 +0900
-Message-ID: <49b7c2350905300438n6195de93la53bee3a309f71d@mail.gmail.com>
-Subject: Re: SCHED_EDF infos
-From: GeunSik Lim <leemgs1@gmail.com>
-To: Henrik Austad <henrik@austad.us>
-Cc: finarfin@dreamos.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <4A210389.80101@f2s.com>
+References: <1243279681-4233-1-git-send-email-philipp.zabel@gmail.com>
+	 <1243279681-4233-2-git-send-email-philipp.zabel@gmail.com>
+	 <4A210389.80101@f2s.com>
+Date: Sat, 30 May 2009 13:40:47 +0200
+Message-ID: <74d0deb30905300440g18f525afkdae2cc3913c70b0f@mail.gmail.com>
+Subject: Re: [PATCH 1/5] MFD,mmc: tmio_mmc: make HCLK configurable
+From: pHilipp Zabel <philipp.zabel@gmail.com>
+To: ian@mnementh.co.uk
+Cc: linux-kernel@vger.kernel.org, Samuel Ortiz <sameo@openedhand.com>,
+       Pierre Ossman <pierre@ossman.eu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 8, 2009 at 6:10 PM, Henrik Austad <henrik@austad.us> wrote:
->> [..]
->> I think so.
->> How can we approach Â EDF implementation like Pfair as a generic solution
->> for Multicore in Linux?
+On Sat, May 30, 2009 at 11:59 AM, Ian molton <spyro@f2s.com> wrote:
 >
-> I am working on an implementation now, and I hope to be able to release a
-> prototype by the end of next week. I think we can continue the discussion
-> then based on that.
-Hi Henrik,
-Can you share EDF that you implemented with P-fair for Multicore environments?
-Especially, I wonder How do you keep posix compatibility with EDF scheduler.
+> Acked-by: Ian Molton <spyro@f2s.com>
 
-For example,
-sched_setscheduler(2), sched_getscheduler(2),
-sched_get_priority_max(2), sched_get_priority_min(2),
-sched_getaffinity(2), sched_setaffinity(2),
-sched_getparam(2), sched_setparam(2),
-setpriority(2), getpriority(2),
-sched_yield(2), sched_rr_get_interval(2)
+Thanks.
 
+> However I'd like to see the clk API  weaned of its CPU spcific dependencies
+> so that it can be used for this purpose instead.
 
--- 
-Regards,
-GeunSik Lim ( SAMSUNG ELECTRONICS)
-Blog : http://blog.naver.com/invain/
-e-Mail: geunsik.lim@samsung.com
-           leemgs@gmail.com , leemgs1@gmail.com
---
-To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
+Yes, I'm right with you on that.
+
+> I consider ASIC3 support in this driver more important and this change is
+> pretty noninvasive. Converting to the clk api in future shouldnt be any
+> harder with this patch (actually slightly easier).
+
+I'll try to add ASIC3 clock support in a way that it'll be easy to
+convert to a architecture-independent struct clk in the future.
+
+regards
+Philipp
+
+> Philipp Zabel wrote:
+>>
+>> The Toshiba parts all have a 24 MHz HCLK, but HTC ASIC3 has a 24.576 MHz
+>> HCLK
+>> and AMD Imageon w228x's HCLK is 80 MHz. With this patch, the MFD driver
+>> provides the HCLK frequency to tmio_mmc via mfd_cell->driver_data.
+>>
+>> Signed-off-by: Philipp Zabel <philipp.zabel@gmail.com>
+>> Cc: Samuel Ortiz <sameo@openedhand.com>
+>> Cc: Pierre Ossman <pierre@ossman.eu>
