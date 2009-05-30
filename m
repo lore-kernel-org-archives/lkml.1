@@ -1,73 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759187AbZE3FV1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757247AbZE3FvV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759187AbZE3FV1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 01:21:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754007AbZE3FVS
+	id S1757247AbZE3FvV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 01:51:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751365AbZE3FvN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 01:21:18 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:45996 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750886AbZE3FVR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 01:21:17 -0400
-Date: Sat, 30 May 2009 13:21:13 +0800
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
-       "hannes@cmpxchg.org" <hannes@cmpxchg.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/4] add swap cache interface for swap reference v2
-	(updated)
-Message-ID: <20090530052113.GD24073@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090528135455.0c83bedc.kamezawa.hiroyu@jp.fujitsu.com> <20090528141049.cc45a116.kamezawa.hiroyu@jp.fujitsu.com> <20090529132153.3a72f2c3.nishimura@mxp.nes.nec.co.jp> <20090529140832.1f4b288b.kamezawa.hiroyu@jp.fujitsu.com> <20090529143758.4c3db3eb.kamezawa.hiroyu@jp.fujitsu.com>
+	Sat, 30 May 2009 01:51:13 -0400
+Received: from oblivion.subreption.com ([66.240.236.22]:34280 "EHLO
+	mail.subreption.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751224AbZE3FvM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 May 2009 01:51:12 -0400
+Date: Fri, 29 May 2009 22:48:56 -0700
+From: "Larry H." <research@subreption.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ingo Molnar <mingo@elte.hu>, Rik van Riel <riel@redhat.com>,
+       linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>,
+       linux-mm@kvack.org, Ingo Molnar <mingo@redhat.com>,
+       pageexec@freemail.hu
+Subject: Re: [patch 0/5] Support for sanitization flag in low-level page
+	allocator
+Message-ID: <20090530054856.GG29711@oblivion.subreption.com>
+References: <20090522073436.GA3612@elte.hu> <20090522113809.GB13971@oblivion.subreption.com> <20090522143914.2019dd47@lxorguk.ukuu.org.uk> <20090522180351.GC13971@oblivion.subreption.com> <20090522192158.28fe412e@lxorguk.ukuu.org.uk> <20090522234031.GH13971@oblivion.subreption.com> <20090523090910.3d6c2e85@lxorguk.ukuu.org.uk> <20090523085653.0ad217f8@infradead.org> <1243539361.6645.80.camel@laptop> <20090529073217.08eb20e1@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090529143758.4c3db3eb.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090529073217.08eb20e1@infradead.org>
+Organization: Subreption LLC
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-05-29 14:37:58]:
-
-> On Fri, 29 May 2009 14:08:32 +0900
-> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> > > IIUC, swap_free() at the end of shmem_writepage() should also be changed to swapcache_free().
-> > > 
-> > Hmm!. Oh, yes. shmem_writepage()'s error path. Thank you. It will be fixed.
+On 07:32 Fri 29 May     , Arjan van de Ven wrote:
+> On Thu, 28 May 2009 21:36:01 +0200
+> Peter Zijlstra <peterz@infradead.org> wrote:
+> 
+> > > ... and if we zero on free, we don't need to zero on allocate.
+> > > While this is a little controversial, it does mean that at least
+> > > part of the cost is just time-shifted, which means it'll not be TOO
+> > > bad hopefully...
 > > 
-> here. 
-> 
-> ==
-> 
-> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> 
-> In following patch, usage of swap cache will be recorded into swap_map.
-> This patch is for necessary interface changes to do that.
-> 
-> 2 interfaces:
->   - swapcache_prepare()
->   - swapcache_free()
-> is added for allocating/freeing refcnt from swap-cache to existing
-> swap entries. But implementation itself is not changed under this patch.
-> At adding swapcache_free(), memcg's hook code is moved under swapcache_free().
-> This is better than using scattered hooks.
-> 
-> Changelog: v1->v2
->  - fixed shmem_writepage() error path.
-> 
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > zero on allocate has the advantage of cache hotness, we're going to
+> > use the memory, why else allocate it.
 
+Because zero on allocate kills the very purpose of this patch and it has
+obvious security implications. Like races (in information leak
+scenarios, that is). What happens in-between the release of the page and
+the new allocation that yields the same page? What happens if no further
+allocations happen in a while (that can return the old page again)?
+That's the idea.
 
-Looks good to me so far
+> that is why I said it's controversial.
+> 
+> BUT if you zero on free anyway...
+> 
+> And I don't think it's as big a deal as you make it.
+> Why?
+> 
+> We recycle pages in LIFO order. And L2 caches are big.
+> 
+> So if you zero on free, the next allocation will reuse the zeroed page.
+> And due to LIFO that is not too far out "often", which makes it likely
+> the page is still in L2 cache.
 
-Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
- 
+Thanks for pointing this out clearly, Arjan.
 
+> The other thing is that zero-on-allocate puts the WHOLE page in L1,
+> while you can study how much of that page is actually used on average,
+> and it'll be a percentage lower than 100%.
+> In fact, if it IS 100%, you shouldn't have put it in L1 because the app
+> does that anyway. If it is not 100% you just blew a chunk of your L1
+> for no value.
+> 
+> Don't get me wrong, I'm not arguing that zero-on-free is better, I'm
+> just trying to point out that the "advantage" of zero-on-allocate isn't
+> nearly as big as people sometimes think it is...
 
--- 
-	Balbir
+Performance-wise, I agree with you here. Security-wise, I assure
+you that clearing on allocation time is most certainly hopeless.
+
+If there's further room for improvement in the patch, and something can
+be optimized, I will do my best with it. I won't be able to provide any
+updates until Sunday, likely. I'll do a kernbench, if someone has
+further benchmarks to suggest, please let me know.
+
+	Larry
+
