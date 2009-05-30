@@ -1,83 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932079AbZE3NlH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932246AbZE3Nln@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932079AbZE3NlH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 09:41:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754631AbZE3Nk5
+	id S932246AbZE3Nln (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 09:41:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758673AbZE3Nlh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 09:40:57 -0400
-Received: from lutt.itea.ntnu.no ([129.241.18.234]:47974 "EHLO
-	lutt.itea.ntnu.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751645AbZE3Nk4 (ORCPT
+	Sat, 30 May 2009 09:41:37 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:48211 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751645AbZE3Nlg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 09:40:56 -0400
-X-Greylist: delayed 304 seconds by postgrey-1.27 at vger.kernel.org; Sat, 30 May 2009 09:40:56 EDT
-Date: Sat, 30 May 2009 15:34:41 +0200
-From: Henrik Austad <henrik@austad.us>
-To: GeunSik Lim <leemgs1@gmail.com>
-Cc: finarfin@dreamos.org, linux-kernel@vger.kernel.org
-Subject: Re: SCHED_EDF infos
-Message-ID: <20090530133441.GA11337@alecto.austad.us>
-References: <164c92d827cbee86ba2c5621716309e6@localhost> <200904300939.31754.henrik@austad.us> <49b7c2350905071935kbd2aa22v9d39cf41c537c24b@mail.gmail.com> <20090508091052.GA10429@januz.myftp.org> <49b7c2350905300438n6195de93la53bee3a309f71d@mail.gmail.com>
+	Sat, 30 May 2009 09:41:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=iIfSrCmNNLr2Yoi1WsPfAP934YjfDFxJk5JDhHA+XqLBbFvSnUhOXLyKImf5ITKLT0
+         UgvBSWUzD1D+9DpXH+QzKn28OhBbO4iso1FU/D7eUQgvJCZEmuiKup6abWQS5EFK4VCW
+         WMTxNkdFcIK51kfgstLAQRp1QP38yAZf1ZXkY=
+Date: Sat, 30 May 2009 15:41:33 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: "Trenton D. Adams" <trenton.d.adams@gmail.com>
+Cc: Al Viro <viro@zeniv.linux.org.uk>,
+       Reiserfs <reiserfs-devel@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, Jeff Mahoney <jeffm@suse.com>,
+       Chris Mason <chris.mason@oracle.com>, Ingo Molnar <mingo@elte.hu>,
+       Alexander Beregalov <a.beregalov@gmail.com>
+Subject: Re: [PATCH 1/2] kill-the-bkl/reiserfs: acquire the inode mutex
+	safely
+Message-ID: <20090530134132.GA5969@nowhere>
+References: <1242496922-6330-1-git-send-email-fweisbec@gmail.com> <1242496922-6330-2-git-send-email-fweisbec@gmail.com> <9b1675090905292005p2b53de7dy9e36f84368d76f01@mail.gmail.com> <20090530032253.GA5999@nowhere> <9b1675090905292123l7c3de4b6w897e153d60e5a469@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <49b7c2350905300438n6195de93la53bee3a309f71d@mail.gmail.com>
+In-Reply-To: <9b1675090905292123l7c3de4b6w897e153d60e5a469@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 30, 2009 at 08:38:29PM +0900, GeunSik Lim wrote:
-> On Fri, May 8, 2009 at 6:10 PM, Henrik Austad <henrik@austad.us> wrote:
-> >> [..]
-> >> I think so.
-> >> How can we approach  EDF implementation like Pfair as a generic solution
-> >> for Multicore in Linux?
+On Fri, May 29, 2009 at 10:23:44PM -0600, Trenton D. Adams wrote:
+> On Fri, May 29, 2009 at 9:22 PM, Frederic Weisbecker <fweisbec@gmail.com> wrote:
+> > On Fri, May 29, 2009 at 09:05:31PM -0600, Trenton D. Adams wrote:
+> >> On Sat, May 16, 2009 at 12:02 PM, Frederic Weisbecker
+> >> <fweisbec@gmail.com> wrote:
+> >> > While searching a pathname, an inode mutex can be acquired
+> >> > in do_lookup() which calls reiserfs_lookup() which in turn
+> >> > acquires the write lock.
+> >> >
+> >> > On the other side reiserfs_fill_super() can acquire the write_lock
+> >> > and then call reiserfs_lookup_privroot() which can acquire an
+> >> > inode mutex (the root of the mount point).
+> >> >
+> >> > So we theoretically risk an AB - BA lock inversion that could lead
+> >> > to a deadlock.
+> >> >
+> >> > As for other lock dependencies found since the bkl to mutex
+> >> > conversion, the fix is to use reiserfs_mutex_lock_safe() which
+> >> > drops the lock dependency to the write lock.
+> >> >
+> >>
+> >> I'm curious, did this get applied, and is it related to the following?
+> >>  I was having these in 2.6.30-rc3.  I am now on 2.6.30-rc7 as of
+> >> today.  I haven't seen them today.  But then again, I only seen this
+> >> happen one time.
 > >
-> > I am working on an implementation now, and I hope to be able to release a
-> > prototype by the end of next week. I think we can continue the discussion
-> > then based on that.
-> Hi Henrik,
+> >
+> > Hi,
+> >
+> > No, may be it will come for 2.6.31 but for now it is not merged so
+> > it's not related.
+> >
+> > If you see such warning anymore, don't hesitate to tell about
+> > it!
+> >
+> > Thanks!
+> >
+> 
+> I was trying to imply that the patch might fix the problem I saw, not
+> that it was the cause.  I only though that because it mentioned a
+> potential deadlock, and it seems like that is what the problem I saw
+> was.
 
-Hi!
 
-btw, that 'end of next week'.. *sigh*
+Ah ok. No it's part of a tree which reworks the reiserfs locking scheme
+by removing the old one based on the legacy and obsolete bkl (big kernel
+lock). In this tree I had to fix several deadlocks or at least unsafe
+lock states because the bkl is converted into a mutex and some new lock
+dependencies were borned after that. But these issues had nothing
+to deal with upstream problems.
 
-> Can you share EDF that you implemented with P-fair for Multicore environments?
-> Especially, I wonder How do you keep posix compatibility with EDF scheduler.
+BTW, would you be interested in giving a try with this reiserfs bkl
+removal tree? I really lack testing and feedbacks from users.
 
-Well, what exactly do you mean by posix compatibility? What I'm doing, is adding 
-another scheduling class on top of sched_rt so that sched_pfair will be polled 
-before any other class. I was not aware that POSIX had an EDF standard?
+Thanks!
 
-> For example,
-> sched_setscheduler(2), sched_getscheduler(2),
-> sched_get_priority_max(2), sched_get_priority_min(2),
-> sched_getaffinity(2), sched_setaffinity(2),
-> sched_getparam(2), sched_setparam(2),
-> setpriority(2), getpriority(2),
-> sched_yield(2), sched_rr_get_interval(2)
+Frederic.
 
-I introduce 3 new syscalls for modifying the tasks. 
-
- sched_pfair_update()
- - change an existing task into a pfair task, set attributes, calculate subjob 
-   values etc
-
- sched_pfair_release()
- - release the task, i.e. enable it to run on a CPU.
-
- sched_pfair_reweigh()
- - change the attributes of the task. In a lot of ways, this is very similar to 
-   pfair_update, but it introduces some problems when trying to reweigh a task 
-   that is running, or if the new values lead to over-utilization of the system.
-
-At the moment, this is only for my own convenice, but I have tried to modify as 
-little of the existing code as possible to avoid merge conflicts etc. So, none 
-of the existing syscalls have been modified in any way.
-
-I'm a bit unsure as to what your question actually is, perhaps you could 
-elaborate a bit about what you're concered about?
-
-henrik
