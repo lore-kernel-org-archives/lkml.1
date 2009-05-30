@@ -1,18 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756131AbZE3Wh5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755399AbZE3Wid@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756131AbZE3Wh5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 18:37:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755203AbZE3Wfz
+	id S1755399AbZE3Wid (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 18:38:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755193AbZE3Wf6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 18:35:55 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:46489 "EHLO ogre.sisk.pl"
+	Sat, 30 May 2009 18:35:58 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:46494 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755214AbZE3Wfv convert rfc822-to-8bit (ORCPT
+	id S1755256AbZE3Wfx convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 18:35:51 -0400
+	Sat, 30 May 2009 18:35:53 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Johannes Berg" <johannes@sipsolutions.net>,
-       "Larry Finger" <Larry.Finger@lwfinger.net>
+       "Sergey Senozhatsky" <sergey.senozhatsky@mail.by>
 References: <4to6E2myxvG.A.muC.aIbIKB@chimera>
 In-Reply-To: <4to6E2myxvG.A.muC.aIbIKB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -20,10 +19,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <LEcEO2518_I.A.zTE.aJbIKB@chimera>
-Subject: [Bug #13319] Page allocation failures with b43 and p54usb
+Message-ID: <LEcEO2518_I.A.EhE.fJbIKB@chimera>
+Subject: [Bug #13313] vm86old oops
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sat, 30 May 2009 21:37:32 +0200 (CEST)
+Date: Sat, 30 May 2009 21:37:31 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -36,11 +35,9 @@ from 2.6.29.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13319
-Subject		: Page allocation failures with b43 and p54usb
-Submitter	: Larry Finger <Larry.Finger@lwfinger.net>
-Date		: 2009-04-29 21:01 (32 days old)
-References	: http://marc.info/?l=linux-kernel&m=124103897101088&w=4
-Handled-By	: Johannes Berg <johannes@sipsolutions.net>
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13313
+Subject		: vm86old oops
+Submitter	: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
+Date		: 2009-05-14 21:53 (17 days old)
 
 
