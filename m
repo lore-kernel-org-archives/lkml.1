@@ -1,94 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762688AbZE3TRa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763475AbZE3TXf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762688AbZE3TRa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 15:17:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757537AbZE3TRW
+	id S1763475AbZE3TXf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 15:23:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757537AbZE3TX0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 15:17:22 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60915 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756466AbZE3TRW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 15:17:22 -0400
-Date: Sat, 30 May 2009 21:16:29 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Carl Love <cel@us.ibm.com>
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Philip Mucci <mucci@eecs.utk.edu>, LKML <linux-kernel@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>, Paul Mackerras <paulus@samba.org>,
-       Maynard Johnson <mpjohn@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, eranian@gmail.com,
-       perfmon2-devel <perfmon2-devel@lists.sourceforge.net>
-Subject: Re: [perfmon2] comments on Performance Counters for Linux (PCL)
-Message-ID: <20090530191629.GA3105@elte.hu>
-References: <7c86c4470905280758y6d359823h2a7517dfecb115e6@mail.gmail.com> <1243527919.6645.75.camel@laptop> <4A1EFCC2.80805@linux.vnet.ibm.com> <20090528213532.GA8589@elte.hu> <18975.7470.792842.173625@cargo.ozlabs.ibm.com> <20090529071914.GB3157@elte.hu> <alpine.LRH.2.00.0905291020200.21748@vixen.sonytel.be> <1243608160.6534.46.camel@carll-linux-desktop>
+	Sat, 30 May 2009 15:23:26 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:39655 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757450AbZE3TX0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 May 2009 15:23:26 -0400
+Message-ID: <4A218761.5080607@zytor.com>
+Date: Sat, 30 May 2009 12:22:09 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1243608160.6534.46.camel@carll-linux-desktop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Borislav Petkov <petkovbb@googlemail.com>,
+       Borislav Petkov <borislav.petkov@amd.com>, greg@kroah.com,
+       mingo@elte.hu, norsk5@yahoo.com, tglx@linutronix.de, mchehab@redhat.com,
+       aris@redhat.com, edt@aei.ca, linux-kernel@vger.kernel.org,
+       randy.dunlap@oracle.com
+Subject: Re: [PATCH 0/4] amd64_edac: misc fixes
+References: <1242845037-1029-1-git-send-email-borislav.petkov@amd.com>	<20090528164720.0af5752b.akpm@linux-foundation.org>	<20090529103329.GB23530@aftab>	<20090529130115.a44efaee.akpm@linux-foundation.org>	<20090530081954.GA21954@liondog.tnic> <20090530014007.3c1e22d5.akpm@linux-foundation.org>
+In-Reply-To: <20090530014007.3c1e22d5.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Carl Love <cel@us.ibm.com> wrote:
-
+Andrew Morton wrote:
+> On Sat, 30 May 2009 10:19:54 +0200 Borislav Petkov <petkovbb@googlemail.com> wrote:
 > 
-> On Fri, 2009-05-29 at 10:21 +0200, Geert Uytterhoeven wrote:
-> > On Fri, 29 May 2009, Ingo Molnar wrote:
-> > > * Paul Mackerras <paulus@samba.org> wrote:
-> > > > Ingo Molnar writes:
-> > > > > * Corey Ashford <cjashfor@linux.vnet.ibm.com> wrote:
-> > > > > >> So you're suggesting to artificually strech periods by say 
-> > > > > >> composing a single overflow from smaller ones, ignoring the 
-> > > > > >> intermediate overflow events?
-> > > > > >>
-> > > > > >> That sounds doable, again, patch welcome.
-> > > > > >
-> > > > > > I definitely agree with Stephane's point on this one.  I had 
-> > > > > > assumed that long irq_periods (longer than the width of the 
-> > > > > > counter) would be synthesized as you suggest.  If this is not the 
-> > > > > > case, PCL should be changed so that it does, -or- at a minimum, 
-> > > > > > the user should get an error back stating that the period is too 
-> > > > > > long for the hardware counter.
-> > > > > 
-> > > > > this looks somewhat academic - at least on x86, even the fastest 
-> > > > > events (say cycles) with a 32 bit overflow means one event per 
-> > > > > second on 4GB. That's not a significant event count in practice. 
-> > > > > What's the minimum width we are talking about on Power?
-> > > > 
-> > > > 32 bits, but since the top bit is effectively a level-sensitive 
-> > > > interrupt request, the maximum period in hardware is 2^31 counts.
-> > > > 
-> > > > However, I already support 64-bit interrupt periods (well, 63-bit 
-> > > > actually) on powerpc by only calling perf_counter_overflow() when 
-> > > > counter->hw.period_left becomes <= 0, and arranging to set the 
-> > > > hardware counter to 0 if counter->hw.period_left is >= 0x80000000. 
-> > > > It's a tiny amount of code to handle it, really.
-> > > 
-> > > No argument about that - just wanted to know whether there's any 
-> > > real practical effect beyond the nitpicking factor ;-)
-> > 
-> > I never really dived into this stuff, but ISTR there are some 16-bit counters
-> > on CELL? Is that correct?
+>> Also, I've been thinking about how the old(er)
+>> toolchain problem can be addressed and one fairly doable thing would be
+>> if I'd query the gas version in the kernel Makefile and define popcnt
+>> dependent on it and for older assemblers simply slap in the opcode and
+>> fixate the operands in an inline assembly so that it works.
 > 
-> FYI, the counters on CELL are configurable.  You can have up to 
-> eight 16 bit count counters or you can combine counters i and i=1 
-> (where i=0,2,4,6) into 32 bit counters.  This allows you to have 
-> some 16 and some 32 bit counters at the same time.
+> We've done that before.  BUG() is one case (for other reasons), I think.
+> 
+> But if we have the code in there which uese the literal opcode, there's
+> no need to query gas or to add the conditional.
+> 
+> Is popcnt supported on all CPUs?
 
-If 16-bit counters are exposed then this can be solved like the 
-PowerPC perfcounters code does it: by not propagating 'early' IRQs 
-back to the generic layer but continuing it until the real threshold 
-has been reached.
+Obviously not, since it's a relatively new opcode.  However, it is
+supported by both Intel and AMD with the opcode F3 0F B8 /r.
 
-	Ingo
+The "/r" is the real problem ... it means one can't just mimic it with
+hard-coding .byte directives without fixing the arguments (which means a
+performance hit.)  Furthermore, the 0F B8 opcode is JMPE, which doesn't
+take the same arguments either.
+
+We have these kinds of toolchain issues regularly.
+
+	-hpa
+
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
