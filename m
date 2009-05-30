@@ -1,84 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763320AbZE3SGV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763505AbZE3SGd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763320AbZE3SGV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 14:06:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763235AbZE3SF4
+	id S1763505AbZE3SGd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 14:06:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932720AbZE3SGF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 14:05:56 -0400
-Received: from oblivion.subreption.com ([66.240.236.22]:36423 "EHLO
-	mail.subreption.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762801AbZE3SFz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 14:05:55 -0400
-Date: Sat, 30 May 2009 11:03:33 -0700
-From: "Larry H." <research@subreption.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@osdl.org>, linux-mm@kvack.org,
-       Ingo Molnar <mingo@redhat.com>, pageexec@freemail.hu,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [patch 0/5] Support for sanitization flag in low-level page
-	allocator
-Message-ID: <20090530180333.GH6535@oblivion.subreption.com>
-References: <4A187BDE.5070601@redhat.com> <20090527223421.GA9503@elte.hu> <20090528072702.796622b6@lxorguk.ukuu.org.uk> <20090528090836.GB6715@elte.hu> <20090528125042.28c2676f@lxorguk.ukuu.org.uk> <84144f020905300035g1d5461f9n9863d4dcdb6adac0@mail.gmail.com> <20090530075033.GL29711@oblivion.subreption.com> <4A20E601.9070405@cs.helsinki.fi> <20090530082048.GM29711@oblivion.subreption.com> <20090530173428.GA20013@elte.hu>
+	Sat, 30 May 2009 14:06:05 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:54081 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762801AbZE3SGB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 May 2009 14:06:01 -0400
+Date: Sat, 30 May 2009 20:05:40 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Larry H." <research@subreption.com>
+Cc: linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>,
+       linux-mm@kvack.org, Ingo Molnar <mingo@redhat.com>,
+       pageexec@freemail.hu, linux-crypto@vger.kernel.org,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [patch 5/5] Apply the PG_sensitive flag to the CryptoAPI
+	subsystem
+Message-ID: <20090530180540.GE20013@elte.hu>
+References: <20090520190519.GE10756@oblivion.subreption.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090530173428.GA20013@elte.hu>
-Organization: Subreption LLC
+In-Reply-To: <20090520190519.GE10756@oblivion.subreption.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 19:34 Sat 30 May     , Ingo Molnar wrote:
-> You need to provide a more sufficient and more constructive answer 
-> than that, if you propose upstream patches that impact the SLAB 
-> subsystem.
 
-Impact? If you mean introducing changes, definitely. If the word has
-negative connotations in this context, definitely not ;)
+* Larry H. <research@subreption.com> wrote:
 
-> FYI Pekka is one of the SLAB subsystem maintainers so you need to 
-> convince him that your patches are the right approach. Trying to 
-> teach Pekka about SLAB internals in a condescending tone will only 
-> cause your patches to be ignored.
+> This patch deploys the use of the PG_sensitive page allocator flag 
+> within the CryptoAPI subsystem, in all relevant locations where 
+> algorithm and key contexts are allocated.
+> 
+> Some calls to memset for zeroing the buffers have been removed to 
+> avoid duplication of the sanitizing process, since this is already 
+> taken care of by the allocator during page freeing.
+> 
+> The only noticeable impact on performance might be in the 
+> blkcipher modifications, although this is likely negligible and 
+> balanced with the security benefits of this patch in the long 
+> term.
 
-I've never tried to teach you anything but security matters, so far.
-And I've been quite unsuccessful at it, apparently. That said, please
-let me explain why kzfree was broken (as of 2.6.29.4, I've been told
-30-rc2 already has users of it).
+I think there's a rather significant omission here: there's no 
+discussion about on-kernel-stack information leaking out.
 
-The first issue is that SLOB has a broken ksize, which won't take into
-consideration compound pages AFAIK. To fix this you will need to
-introduce some changes in the way the slob_page structure is handled,
-and add real size tracking to it. You will find these problems if you
-try to implement a reliable kmem_ptr_validate for SLOB, too.
+If a thread that does a crypto call happens to leave sensitive 
+on-stack data (this can happen easily as stack variables are not 
+cleared on return), or if a future variant or modification of a 
+crypto algorithm leaves such information around - then there's 
+nothing that keeps that data from potentially leaking out.
 
-The second is that I've experienced issues with kzfree on 2.6.29.4, in
-which something (apparently the freelist pointer) is overwritten and
-leads to a NULL pointer deference in the next allocation in the affected
-cache. I didn't fully analyze what was broken, besides that for
-sanitizing the objects on kfree I needed to rely on the inuse size and
-not the one reported by ksize, if I wanted to avoid hitting that
-trailing meta-data.
+This is not academic and it happens all the time: only look at 
+various crash dumps on lkml. For example this crash shows such 
+leaked information:
 
-I just noticed Johannes Weiner's patch from February 16.
+[   96.138788]  [<ffffffff810ab62e>] perf_counter_exit_task+0x10e/0x3f3
+[   96.145464]  [<ffffffff8104cf46>] do_exit+0x2e7/0x722
+[   96.150837]  [<ffffffff810630cf>] ? up_read+0x9/0xb
+[   96.156036]  [<ffffffff8151cc0b>] ? do_page_fault+0x27d/0x2a5
+[   96.162141]  [<ffffffff8104d3f4>] do_group_exit+0x73/0xa0
+[   96.167860]  [<ffffffff8104d433>] sys_exit_group+0x12/0x16
+[   96.173665]  [<ffffffff8100bb2b>] system_call_fastpath+0x16/0x1b
 
-BTW, talking about branches and call depth, you are proposing using
-kzfree() which involves further test and call branches (including those
-inside the specific ksize implementation of the allocator being used)
-and it duplicates the check for ZERO_SIZE_PTR/NULL too. The function is
-so simple that it should be a static inline declared in slab.h. It also
-lacks any validation checks as performed in kfree (besides the zero
-size/null ptr one).
+The 'ffffffff8151cc0b' 64-bit word is actually a leftover from a 
+previous system context. ( And this is at the bottom of the stack 
+that gets cleared all the time - the top of the kernel stack is a 
+lot more more persistent in practice and crypto calls tend to have a 
+healthy stack footprint. )
 
-Also, users of unconditional sanitization would see unnecessary
-duplication of the clearing, causing a real performance hit (which would
-be almost non existent otherwise). That will make kzfree unsuitable for
-most hot spots like the crypto api and the mac80211 wep code.
+So IMO the GFP_SENSITIVE facility (beyond being misnomer - it should 
+be something like GFP_NON_PERSISTENT instead) actually results in 
+_worse_ security in the end: because people (and organizations) 
+'think' that their keys are safe against information leaks via this 
+space, while they are not. The kernel stack can be freed, be reused 
+by something else partially and then written out to disk (say as 
+part of hibernation) where it's recoverable from the disk image.
 
-Honestly your proposed approach seems a little weak.
+So this whole facility probably only makes sense if all kernel 
+stacks that handle sensitive data are zeroed on free. But i havent 
+seen any kernel thread stack clearing functionality in this 
+patch-set - is it an intentional omission? (or have i missed some 
+aspect of the patch-set)
 
-	Larry
+Also, there's no discussion about long-lived threads keeping 
+sensitive information in there kernel stack indefinitely.
 
+Thanks,
+
+	Ingo
