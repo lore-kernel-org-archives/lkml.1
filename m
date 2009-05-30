@@ -1,180 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758154AbZE3Bxt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757814AbZE3CUH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758154AbZE3Bxt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 May 2009 21:53:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752683AbZE3Bxl
+	id S1757814AbZE3CUH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 May 2009 22:20:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752911AbZE3CT5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 May 2009 21:53:41 -0400
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:54853 "EHLO e9.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752544AbZE3Bxk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 May 2009 21:53:40 -0400
-Date: Fri, 29 May 2009 18:53:42 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>, ego@in.ibm.com
-Subject: Re: [PATCH 1/2] cpuhotplug: use rw_semaphore for cpu_hotplug
-Message-ID: <20090530015342.GA21502@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <4A1F9CEA.1070705@cn.fujitsu.com>
+	Fri, 29 May 2009 22:19:57 -0400
+Received: from mail-bw0-f222.google.com ([209.85.218.222]:36873 "EHLO
+	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752194AbZE3CT5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 May 2009 22:19:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=KPxuxiKtKjB+IZ1hT3di2xTvFu8sfL89yd1prQehotx6PbFqDGDqXruzYu81G0qnrh
+         EYa3hOdd4xGkijblnMIGUQlHc9wI9zRz+aR8N18pT4eDVTfH+qUgIKbWzl7owM/o/r6p
+         Y3tnFFx1Q9wwivebTYqSNl3MdhTlt2zd2y9f0=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A1F9CEA.1070705@cn.fujitsu.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <4A1F302E.8030501@goop.org>
+References: <4A1C3453.6080402@redhat.com>
+	 <162f4c90-6431-4a2a-b337-6d7451d7b11e@default>
+	 <20090528001350.GD26820@elte.hu> <4A1F302E.8030501@goop.org>
+Date: Sat, 30 May 2009 03:19:56 +0100
+X-Google-Sender-Auth: 548e29caa8d240a6
+Message-ID: <b4057d410905291919t635290f6ia1e1a792a7ac4dfa@mail.gmail.com>
+Subject: Re: [Xen-devel] Xen is a feature
+From: Andy Burns <xen.lists@burns.me.uk>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Nick Piggin <npiggin@suse.de>,
+       Dan Magenheimer <dan.magenheimer@oracle.com>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Wim Coekaerts <wimcoekaerts@wimmekes.net>,
+       Ian Pratt <Ian.Pratt@citrix.com>,
+       Stephen Spector <stephen.spector@citrix.com>,
+       George Dunlap <George.Dunlap@eu.citrix.com>,
+       "Kurt C. Hackel" <kurt.hackel@oracle.com>,
+       "the arch/x86 maintainers" <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       xen-users@lists.xensource.com, Avi Kivity <avi@redhat.com>,
+       Eric Anderson <EAnderson@novell.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Ky Srinivasan <ksrinivasan@novell.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <gregkh@suse.de>, Keir Fraser <keir.fraser@eu.citrix.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 29, 2009 at 04:29:30PM +0800, Lai Jiangshan wrote:
-> 
-> Current get_online_cpus()/put_online_cpus() re-implement
-> a rw_semaphore, so it is converted to a real rw_semaphore in this fix.
-> It simplifies codes, and is good for read.
-> 
-> And misc fix:
-> 1) Add comments for cpu_hotplug.active_writer.
-> 2) The theoretical disadvantage described in cpu_hotplug_begin()'s
->    comments is no longer existed when we use rw_semaphore,
->    so this part of comments was removed.
-> 
-> [Impact: improve get_online_cpus()/put_online_cpus() ]
+2009/5/29 Jeremy Fitzhardinge <jeremy@goop.org>:
 
-Actually, it turns out that for my purposes it is only necessary to check:
+> Ingo Molnar wrote:
+>>
+>> Xen changes - especially dom0 - are overwhelmingly not about improving
+>> Linux, but about having some special hook and extra treatment in random
+>> places - and that's really bad.
+>>
+>
+> You've made this argument a few times now, and I take exception to it.
+>
+> There are at least 500k servers
+> running Xen in commercial user sites (and untold numbers of smaller sites
+> and personal users), running millions of virtual guest domains.
+> To them, improved Xen support *is* "improving Linux".
 
-	cpu_hotplug.active_writer != NULL
+Well said. I use xen both personally and in my business as a dozen or
+so of those unseen millions of domUs, I've bitten my tongue for months
+while watching xen developers jump through the hoops in order to get
+pv_ops dom0 into the mainstream, only to be knocked back or left until
+the next merge window and the next and the next.
 
-The only time that it is unsafe to invoke get_online_cpus() is when
-in a notifier, and in that case the value of cpu_hotplug.active_writer
-is stable.  There could be false positives, but these are harmless, as
-the fallback is simply synchronize_sched().
+Sure there were "the bad old days" of xen's history, but having been
+asked the go the pv_ops route, I feel it is not just failing to
+improve linux by keeping dom0 out of mainstream, but actually hurting
+users and trapping them on ancient kernels which are missing newer
+hardware support.
 
-Even this is only needed should the deadlock scenario you pointed out
-arise in practice.
-
-As Oleg noted, there are some "interesting" constraints on
-get_online_cpus().  Adding Gautham Shenoy to CC for his views.
-
-							Thanx, Paul
-
-> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-> ---
-> diff --git a/kernel/cpu.c b/kernel/cpu.c
-> index 395b697..62198ec 100644
-> --- a/kernel/cpu.c
-> +++ b/kernel/cpu.c
-> @@ -14,6 +14,7 @@
->  #include <linux/kthread.h>
->  #include <linux/stop_machine.h>
->  #include <linux/mutex.h>
-> +#include <linux/rwsem.h>
-> 
->  #ifdef CONFIG_SMP
->  /* Serializes the updates to cpu_online_mask, cpu_present_mask */
-> @@ -27,20 +28,21 @@ static __cpuinitdata RAW_NOTIFIER_HEAD(cpu_chain);
->  static int cpu_hotplug_disabled;
-> 
->  static struct {
-> -	struct task_struct *active_writer;
-> -	struct mutex lock; /* Synchronizes accesses to refcount, */
->  	/*
-> -	 * Also blocks the new readers during
-> -	 * an ongoing cpu hotplug operation.
-> +	 * active_writer makes get_online_cpus()/put_online_cpus() are allowd
-> +	 * to be nested in cpu_hotplug_begin()/cpu_hotplug_done().
-> +	 *
-> +	 * Thus, get_online_cpus()/put_online_cpus() can be called in
-> +	 * CPU notifiers.
->  	 */
-> -	int refcount;
-> +	struct task_struct *active_writer;
-> +	struct rw_semaphore rwlock;
->  } cpu_hotplug;
-> 
->  void __init cpu_hotplug_init(void)
->  {
->  	cpu_hotplug.active_writer = NULL;
-> -	mutex_init(&cpu_hotplug.lock);
-> -	cpu_hotplug.refcount = 0;
-> +	init_rwsem(&cpu_hotplug.rwlock);
->  }
-> 
->  #ifdef CONFIG_HOTPLUG_CPU
-> @@ -50,9 +52,7 @@ void get_online_cpus(void)
->  	might_sleep();
->  	if (cpu_hotplug.active_writer == current)
->  		return;
-> -	mutex_lock(&cpu_hotplug.lock);
-> -	cpu_hotplug.refcount++;
-> -	mutex_unlock(&cpu_hotplug.lock);
-> +	down_read(&cpu_hotplug.rwlock);
-> 
->  }
->  EXPORT_SYMBOL_GPL(get_online_cpus);
-> @@ -61,10 +61,7 @@ void put_online_cpus(void)
->  {
->  	if (cpu_hotplug.active_writer == current)
->  		return;
-> -	mutex_lock(&cpu_hotplug.lock);
-> -	if (!--cpu_hotplug.refcount && unlikely(cpu_hotplug.active_writer))
-> -		wake_up_process(cpu_hotplug.active_writer);
-> -	mutex_unlock(&cpu_hotplug.lock);
-> +	up_read(&cpu_hotplug.rwlock);
-> 
->  }
->  EXPORT_SYMBOL_GPL(put_online_cpus);
-> @@ -86,45 +83,25 @@ void cpu_maps_update_done(void)
->  }
-> 
->  /*
-> - * This ensures that the hotplug operation can begin only when the
-> - * refcount goes to zero.
-> + * This ensures that the hotplug operation can begin only when
-> + * there is no reader.
->   *
->   * Note that during a cpu-hotplug operation, the new readers, if any,
-> - * will be blocked by the cpu_hotplug.lock
-> + * will be blocked by the cpu_hotplug.rwlock
->   *
->   * Since cpu_hotplug_begin() is always called after invoking
->   * cpu_maps_update_begin(), we can be sure that only one writer is active.
-> - *
-> - * Note that theoretically, there is a possibility of a livelock:
-> - * - Refcount goes to zero, last reader wakes up the sleeping
-> - *   writer.
-> - * - Last reader unlocks the cpu_hotplug.lock.
-> - * - A new reader arrives at this moment, bumps up the refcount.
-> - * - The writer acquires the cpu_hotplug.lock finds the refcount
-> - *   non zero and goes to sleep again.
-> - *
-> - * However, this is very difficult to achieve in practice since
-> - * get_online_cpus() not an api which is called all that often.
-> - *
->   */
->  static void cpu_hotplug_begin(void)
->  {
-> +	down_write(&cpu_hotplug.rwlock);
->  	cpu_hotplug.active_writer = current;
-> -
-> -	for (;;) {
-> -		mutex_lock(&cpu_hotplug.lock);
-> -		if (likely(!cpu_hotplug.refcount))
-> -			break;
-> -		__set_current_state(TASK_UNINTERRUPTIBLE);
-> -		mutex_unlock(&cpu_hotplug.lock);
-> -		schedule();
-> -	}
->  }
-> 
->  static void cpu_hotplug_done(void)
->  {
->  	cpu_hotplug.active_writer = NULL;
-> -	mutex_unlock(&cpu_hotplug.lock);
-> +	up_write(&cpu_hotplug.rwlock);
->  }
->  /* Need to know about CPUs going up/down? */
->  int __ref register_cpu_notifier(struct notifier_block *nb)
-> 
-> 
+Sure, I wouldn't like to see any old rubbish merged into the kernel,
+but I'm amazed at Jeremy's patience over this.
