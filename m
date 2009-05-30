@@ -1,67 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760275AbZE3KqM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760592AbZE3Kry@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760275AbZE3KqM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 06:46:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759071AbZE3Kp7
+	id S1760592AbZE3Kry (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 06:47:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756438AbZE3Krr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 06:45:59 -0400
-Received: from oblivion.subreption.com ([66.240.236.22]:38550 "EHLO
-	mail.subreption.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758470AbZE3Kp6 (ORCPT
+	Sat, 30 May 2009 06:47:47 -0400
+Received: from e23smtp09.au.ibm.com ([202.81.31.142]:41518 "EHLO
+	e23smtp09.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755276AbZE3Krq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 06:45:58 -0400
-Date: Sat, 30 May 2009 03:43:39 -0700
-From: "Larry H." <research@subreption.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
-       Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@osdl.org>, linux-mm@kvack.org,
-       Ingo Molnar <mingo@redhat.com>, pageexec@freemail.hu
-Subject: Re: [patch 0/5] Support for sanitization flag in low-level page
-	allocator
-Message-ID: <20090530104339.GA6535@oblivion.subreption.com>
-References: <20090522143914.2019dd47@lxorguk.ukuu.org.uk> <20090522180351.GC13971@oblivion.subreption.com> <20090522192158.28fe412e@lxorguk.ukuu.org.uk> <20090522234031.GH13971@oblivion.subreption.com> <20090523090910.3d6c2e85@lxorguk.ukuu.org.uk> <20090523085653.0ad217f8@infradead.org> <1243539361.6645.80.camel@laptop> <20090529073217.08eb20e1@infradead.org> <20090530054856.GG29711@oblivion.subreption.com> <1243679973.6645.131.camel@laptop>
+	Sat, 30 May 2009 06:47:46 -0400
+Date: Sat, 30 May 2009 16:17:40 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Alan Stern <stern@rowland.harvard.edu>
+Subject: [Patch 00/12] Hardware Breakpoint interfaces
+Message-ID: <20090530104739.GA9512@in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1243679973.6645.131.camel@laptop>
-Organization: Subreption LLC
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12:39 Sat 30 May     , Peter Zijlstra wrote:
-> > Because zero on allocate kills the very purpose of this patch and it has
-> > obvious security implications. Like races (in information leak
-> > scenarios, that is). What happens in-between the release of the page and
-> > the new allocation that yields the same page? What happens if no further
-> > allocations happen in a while (that can return the old page again)?
-> > That's the idea.
-> 
-> I don't get it, these are in-kernel data leaks, you need to be able to
-> run kernel code to exploit these, if someone can run kernel code, you've
-> lost anyhow.
-> 
-> Why waste time on this?
+Hi Frederic,
+	Please find a new iteration of the patchset that includes the following
+changes over the previous version posted here: http://lkml.org/lkml/2009/5/21/143.
 
-If there were any hesitations about your lack of understanding in
-security matters, you just cleared them all with the above statements.
+Changelog
+----------
 
-> > > So if you zero on free, the next allocation will reuse the zeroed page.
-> > > And due to LIFO that is not too far out "often", which makes it likely
-> > > the page is still in L2 cache.
-> > 
-> > Thanks for pointing this out clearly, Arjan.
-> 
-> Thing is, the time between allocation and use is typically orders of
-> magnitude less than between free and use. 
-> 
-> 
-> Really, get a life, go fix real bugs. Don't make our kernel slower for
-> wanking rights.
+- Includes a minor change in Patch 8/12 that renames a variable from 'temp'
+  to 'bp_info'.
 
-This is exactly the positive attitude, sound and mature response I was
-expecting from you. Thank you.
+- Updated comment in __switch_to() function to reflect the new method used
+  to detect lazy debug register switching (Patch 6/12).
 
-	Larry
+- Moved the patch that removes 'debugreg<n>' members from 'struct thread_struct'
+  to Patch 8/12 in order to enable compilation of the kernel tree after
+  application of every patch in the patchset.
+
+Kindly integrate the patchset into -tip tree. They are based on commit
+0a834a9c61bb279327c50300e43ebb6de7e1e0d7 of the same tree.
+
+Thanks,
+K.Prasad
+
