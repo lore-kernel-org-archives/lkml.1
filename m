@@ -1,20 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758362AbZE3Wlm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758037AbZE3WlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758362AbZE3Wlm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 18:41:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755607AbZE3Wgp
+	id S1758037AbZE3WlT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 18:41:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755691AbZE3Wgm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 18:36:45 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:46540 "EHLO ogre.sisk.pl"
+	Sat, 30 May 2009 18:36:42 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:46529 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755656AbZE3Wgg convert rfc822-to-8bit (ORCPT
+	id S1755566AbZE3Wge convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 18:36:36 -0400
+	Sat, 30 May 2009 18:36:34 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Alejandro Riveira" <ariveira@gmail.com>,
-       "Chris Wright" <chrisw@sous-sol.org>,
-       "Johannes Berg" <johannes@sipsolutions.net>,
-       "John W. Linville" <linville@tuxdriver.com>
+       "Harald Dunkel" <harald.dunkel@t-online.de>
 References: <4to6E2myxvG.A.muC.aIbIKB@chimera>
 In-Reply-To: <4to6E2myxvG.A.muC.aIbIKB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -22,10 +19,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <LEcEO2518_I.A.9zD.8IbIKB@chimera>
-Subject: [Bug #13362] [mac80211 ] Wifi Network Slownes Bisected
+Message-ID: <LEcEO2518_I.A.MgD.wIbIKB@chimera>
+Subject: [Bug #13374] reiserfs blocked for more than 120secs
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sat, 30 May 2009 21:37:34 +0200 (CEST)
+Date: Sat, 30 May 2009 21:37:36 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -38,9 +35,10 @@ from 2.6.29.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13362
-Subject		: [mac80211 ] Wifi Network Slownes Bisected
-Submitter	: Alejandro Riveira <ariveira@gmail.com>
-Date		: 2009-05-22 13:32 (9 days old)
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13374
+Subject		: reiserfs blocked for more than 120secs
+Submitter	: Harald Dunkel <harald.dunkel@t-online.de>
+Date		: 2009-05-23 8:52 (8 days old)
+References	: http://marc.info/?l=linux-kernel&m=124306880410811&w=4
 
 
