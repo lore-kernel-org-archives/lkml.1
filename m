@@ -1,161 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760153AbZE3LAs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759544AbZE3LLt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760153AbZE3LAs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 07:00:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755803AbZE3LAl
+	id S1759544AbZE3LLt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 07:11:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755829AbZE3LLk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 07:00:41 -0400
-Received: from e28smtp08.in.ibm.com ([59.145.155.8]:48128 "EHLO
-	e28smtp08.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754855AbZE3LAl (ORCPT
+	Sat, 30 May 2009 07:11:40 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:59424 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755672AbZE3LLj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 07:00:41 -0400
-Date: Sat, 30 May 2009 16:30:33 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
-Cc: David Gibson <dwg@au1.ibm.com>, Alan Stern <stern@rowland.harvard.edu>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@au1.ibm.com>, maneesh@linux.vnet.ibm.com,
-       Roland McGrath <roland@redhat.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>
-Subject: Re: [Patch 06/12] Use the new wrapper routines to access debug
-	registers in process/thread code
-Message-ID: <20090530110033.GA9275@in.ibm.com>
-Reply-To: prasad@linux.vnet.ibm.com
-References: <20090511114422.133566343@prasadkr_t60p.in.ibm.com> <20090511115344.GG25673@in.ibm.com> <20090528064238.GC3091@yookeroo.seuss> <20090529090146.GA5353@in.ibm.com> <20090529104901.GA5997@nowhere> <20090529135236.GA3465@in.ibm.com> <c62985530905290707y7a44a824p30f0857b31129b4@mail.gmail.com>
+	Sat, 30 May 2009 07:11:39 -0400
+Message-ID: <f391c30e66dc962826031b5ffa8ab44e.squirrel@webmail-b.css.fujitsu.com>
+In-Reply-To: <20090529145510.b4ff541e.akpm@linux-foundation.org>
+References: <20090528135455.0c83bedc.kamezawa.hiroyu@jp.fujitsu.com>
+    <20090528142047.3069543b.kamezawa.hiroyu@jp.fujitsu.com>
+    <20090529145510.b4ff541e.akpm@linux-foundation.org>
+Date: Sat, 30 May 2009 20:11:35 +0900 (JST)
+Subject: Re: [PATCH 3/4] reuse unused swap entry if necessary
+From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, nishimura@mxp.nes.nec.co.jp,
+       balbir@linux.vnet.ibm.com, hugh.dickins@tiscali.co.uk,
+       hannes@cmpxchg.org
+User-Agent: SquirrelMail/1.4.16
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
+Content-Type: text/plain;charset=iso-2022-jp
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <c62985530905290707y7a44a824p30f0857b31129b4@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 29, 2009 at 04:07:07PM +0200, Frédéric Weisbecker wrote:
-> 2009/5/29 K.Prasad <prasad@linux.vnet.ibm.com>:
-> > On Fri, May 29, 2009 at 12:49:03PM +0200, Frederic Weisbecker wrote:
-> >> On Fri, May 29, 2009 at 02:31:46PM +0530, K.Prasad wrote:
-> >> > On Thu, May 28, 2009 at 04:42:38PM +1000, David Gibson wrote:
-> >> > > On Mon, May 11, 2009 at 05:23:44PM +0530, K.Prasad wrote:
-> >> > > > From: Alan Stern <stern@rowland.harvard.edu>
-> >> > > >
-> >> > > > This patch enables the use of abstract debug registers in
-> >> > > > process-handling routines.
-> >> > >
-> >> > > [snip]
-> >> > > >
-> >> > > > +       p->thread.io_bitmap_ptr = NULL;
-> >> > >
-> >> > > Why is manipulating the io_bitmap_ptr relevant to debug register
-> >> > > handling?
-> >> >
-> >> > I *re-read* the patch but was unable to find how this change had sneaked
-> >> > in. It shouldn't be there although it is harmless.
-> >>
-> >>
-> >> When I reviewed this patch, I also ended stucked on it.
-> >> But actually I guess I found the sense, this is only for
-> >> convenience.
-> >>
-> >> Look at the current copy_thread() in arch/x86/kernel/process32.c
-> >>
-> >> If p->thread.io_bitmap_ptr fails to be duplicated, we set
-> >> p->thread.io_bitmap_max = 0 and return -ENOMEM
-> >>
-> >> Now look at the patch.
-> >> If we fail to copy the hardware thread virtual registers we
-> >> want to exit with io_bitmap_ptr = NULL
-> >> If we fail to copy the io_bitmap, we want to free the breakpoint
-> >> and exit.
-> >> If we fail further, we want to free breakpoints and io_bitmap_ptr
-> >>
-> >> The out section then tries to:
-> >>
-> >> -free the breakpoints
-> >> -free p->thread.io_bitmap_ptr
-> >>
-> >>
-> >> So it's important to set io_bitmap_ptr to NULL so that
-> >> we know whether we have to release it or not.
-> >>
-> >>
-> >
-> > aah...yes. It tricked me! It is needed to bring the desired
-> > error-return behaviour of copy_thread(). Please ignore this patch (the
-> > updation of the comments can be brought in through a separate
-> > enhancement patch...see below).
-> 
-> 
-> Ok.
-> 
-> 
-> >> > Hi Frederic,
-> >> >     I am attaching a new version of this patch 06/12 that:
-> >> >
-> >> > - removes the line that assigns NULL to "p->thread.io_bitmap_ptr"
-> >>
-> >>
-> >> Dangerous. Unless p->thread.io_bitmap_ptr is already zeroed out
-> >> at this stage?
-> >>
-> >>
-> >> > - Updates the comment in __switch_to() function which was stale (was
-> >> >   relevant when 'last_debugged_task' was used to detect lazy debug
-> >> >   register switching).
-> >> >
-> >> > Kindly integrate this version in lieu of the older version sent here:
-> >> > http://lkml.org/lkml/2009/5/21/149.
-> >>
-> >>
-> >> Ok. Well it would be nice if you resend the whole series actually :)
-> >> Do you have another fix pending?
-> >>
-> >> Thanks!
-> >>
-> >
-> > In the process of responding to David Gibson's comments I agreed to
-> > a few minor/cosmetic changes - say like updation of comments, renaming
-> > functions or variables, etc.
-> >
-> > Given that the patchset is on the verge of integration into -tip tree, I
-> > would prefer them to be done through a separate patch (on -tip) for
-> > enhancement. Kindly let me know what you think about proceeding this
-> > way.
-> 
-> 
-> Well, indeed it would be easier for you to start iterating with a merged base.
-> But I would prefer to pull-request the patchset to Ingo once the pending fixes
-> are sent.
-> 
-> So to start the integration of this, I can apply the current patches in my tree,
-> based on tracing/core. And once you have the minor fixes addressing David's
-> comments, I also apply them and send the whole to Ingo.
-> 
-> Ok?
-> But still could you resend me the whole patchset you have, including
-> the fixes already posted, so that I don't mess up through several versions.
-> 
-> And I guess I could apply them very soon.
-> 
-> Thanks.
+Andrew Morton wrote:
+> On Thu, 28 May 2009 14:20:47 +0900
+> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+>
+>> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+>>
+>> Now, we can know a swap entry is just used as SwapCache via swap_map,
+>> without looking up swap cache.
+>>
+>> Then, we have a chance to reuse swap-cache-only swap entries in
+>> get_swap_pages().
+>>
+>> This patch tries to free swap-cache-only swap entries if swap is
+>> not enough.
+>> Note: We hit following path when swap_cluster code cannot find
+>> a free cluster. Then, vm_swap_full() is not only condition to allow
+>> the kernel to reclaim unused swap.
+>>
+>> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+>> ---
+>>  mm/swapfile.c |   39 +++++++++++++++++++++++++++++++++++++++
+>>  1 file changed, 39 insertions(+)
+>>
+>> Index: new-trial-swapcount2/mm/swapfile.c
+>> ===================================================================
+>> --- new-trial-swapcount2.orig/mm/swapfile.c
+>> +++ new-trial-swapcount2/mm/swapfile.c
+>> @@ -73,6 +73,25 @@ static inline unsigned short make_swap_c
+>>  	return ret;
+>>  }
+>>
+>> +static int
+>> +try_to_reuse_swap(struct swap_info_struct *si, unsigned long offset)
+>> +{
+>> +	int type = si - swap_info;
+>> +	swp_entry_t entry = swp_entry(type, offset);
+>> +	struct page *page;
+>> +	int ret = 0;
+>> +
+>> +	page = find_get_page(&swapper_space, entry.val);
+>> +	if (!page)
+>> +		return 0;
+>> +	if (trylock_page(page)) {
+>> +		ret = try_to_free_swap(page);
+>> +		unlock_page(page);
+>> +	}
+>> +	page_cache_release(page);
+>> +	return ret;
+>> +}
+>
+> This function could do with some comments explaining what it does, and
+> why.  Also describing the semantics of its return value.
+>
+Ah, there are no comments ...
+
+> afacit it's misnamed.  It doesn't 'reuse' anything.  It in fact tries
+> to release a swap entry so that (presumably) its _caller_ can reuse the
+> swap slot.
+>
+yes.
+
+> The missing comment should also explain why this function is forced to
+> use the nasty trylock_page().
+>
+> Why _is_ this function forced to use the nasty trylock_page()?
+>
+Because get_swap_page() is called by vmscan.c and when this is called
+the caller hold page_lock() on a page. IIUC, nesting lock_page()
+without trylock is not good here.
+
+I'll explain this in the next post.
+
+
+>>  /*
+>>   * We need this because the bdev->unplug_fn can sleep and we cannot
+>>   * hold swap_lock while calling the unplug_fn. And swap_lock
+>> @@ -294,6 +313,18 @@ checks:
+>>  		goto no_page;
+>>  	if (offset > si->highest_bit)
+>>  		scan_base = offset = si->lowest_bit;
+>> +
+>> +	/* reuse swap entry of cache-only swap if not busy. */
+>> +	if (vm_swap_full() && si->swap_map[offset] == SWAP_HAS_CACHE) {
+>> +		int ret;
+>> +		spin_unlock(&swap_lock);
+>> +		ret = try_to_reuse_swap(si, offset);
+>> +		spin_lock(&swap_lock);
+>> +		if (ret)
+>> +			goto checks; /* we released swap_lock. retry. */
+>> +		goto scan; /* In some racy case */
+>> +	}
+>
+> So..  what prevents an infinite (or long) busy loop here?  It appears
+> that if try_to_reuse_swap() returned non-zero, it will have cleared
+> si->swap_map[offset], so we don't rerun try_to_reuse_swap().  Yes?
+>
+yes.
+
+> `ret' is a poor choice of identifier.  It is usually used to hold the
+> value which this function will be returning.  Ditto `retval'.  But that
+> is not this variable's role in this case.  Perhaps a better name would
+> be slot_was_freed or something.
+>
+Sure, I'll modifty this patch to be more clear one.
+Thank you for review!
+
+-Kame
+
+
+>>  	if (si->swap_map[offset])
+>>  		goto scan;
+>>
+>> @@ -375,6 +406,10 @@ scan:
+>>  			spin_lock(&swap_lock);
+>>  			goto checks;
+>>  		}
+>> +		if (vm_swap_full() && si->swap_map[offset] == SWAP_HAS_CACHE) {
+>> +			spin_lock(&swap_lock);
+>> +			goto checks;
+>> +		}
+>>  		if (unlikely(--latency_ration < 0)) {
+>>  			cond_resched();
+>>  			latency_ration = LATENCY_LIMIT;
+>> @@ -386,6 +421,10 @@ scan:
+>>  			spin_lock(&swap_lock);
+>>  			goto checks;
+>>  		}
+>> +		if (vm_swap_full() && si->swap_map[offset] == SWAP_HAS_CACHE) {
+>> +			spin_lock(&swap_lock);
+>> +			goto checks;
+>> +		}
+>>  		if (unlikely(--latency_ration < 0)) {
+>>  			cond_resched();
+>>  			latency_ration = LATENCY_LIMIT;
 >
 
-Hi Frederic,
-	I have re-sent the patchset which includes some of the changes
-that were made on them since their previous posting.
 
-Please find the new patchset addressed to you starting here:
-http://lkml.org/lkml/2009/5/30/67.
-
-I would like to bring in some of the enhancements I agreed to David,
-through a separate patchset after its integration into -tip tree. Just
-as you mentioned above, it should be much easier to test once there's
-a merged base.
-
-Thanks,
-K.Prasad
- 
