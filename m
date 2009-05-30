@@ -1,323 +1,450 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760786AbZE3KtI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761155AbZE3Ktc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760786AbZE3KtI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 06:49:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759987AbZE3Ks4
+	id S1761155AbZE3Ktc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 06:49:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760346AbZE3KtX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 06:48:56 -0400
-Received: from e23smtp01.au.ibm.com ([202.81.31.143]:41921 "EHLO
+	Sat, 30 May 2009 06:49:23 -0400
+Received: from e23smtp01.au.ibm.com ([202.81.31.143]:41959 "EHLO
 	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757581AbZE3Ksy (ORCPT
+	with ESMTP id S1761038AbZE3KtV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 06:48:54 -0400
-Date: Sat, 30 May 2009 16:18:47 +0530
+	Sat, 30 May 2009 06:49:21 -0400
+Date: Sat, 30 May 2009 16:19:12 +0530
 From: "K.Prasad" <prasad@linux.vnet.ibm.com>
 To: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Ingo Molnar <mingo@elte.hu>, Alan Stern <stern@rowland.harvard.edu>,
        "K.Prasad" <prasad@linux.vnet.ibm.com>
-Subject: [Patch 01/12] Prepare the code for Hardware Breakpoint interfaces
-Message-ID: <20090530104847.GB9512@in.ibm.com>
+Subject: [Patch 02/12] Introducing generic hardware breakpoint handler
+	interfaces
+Message-ID: <20090530104912.GC9512@in.ibm.com>
 References: <20090530103857.715014561@prasadkr_t60p.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename=definitions_to_prepare_for_hwbkpt_01
+Content-Disposition: inline; filename=generic_hwbkpt_02
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch introduces header files containing constants, structure definitions
-and declaration of functions used by the hardware breakpoint interface code.
+This patch introduces the generic Hardware Breakpoint interfaces for both user
+and kernel space requests.
 
 Original-patch-by: Alan Stern <stern@rowland.harvard.edu>
 Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
 Reviewed-by: Alan Stern <stern@rowland.harvard.edu>
 ---
- arch/x86/include/asm/debugreg.h      |   29 +++++++
- arch/x86/include/asm/hw_breakpoint.h |   55 +++++++++++++
- arch/x86/include/asm/processor.h     |    4 +
- include/asm-generic/hw_breakpoint.h  |  139 +++++++++++++++++++++++++++++++++++
- 4 files changed, 227 insertions(+)
+ arch/Kconfig           |    4 
+ kernel/Makefile        |    1 
+ kernel/hw_breakpoint.c |  378 +++++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 383 insertions(+)
 
-Index: linux-2.6-tip.hbkpt/arch/x86/include/asm/debugreg.h
+Index: linux-2.6-tip.hbkpt/arch/Kconfig
 ===================================================================
---- linux-2.6-tip.hbkpt.orig/arch/x86/include/asm/debugreg.h
-+++ linux-2.6-tip.hbkpt/arch/x86/include/asm/debugreg.h
-@@ -18,6 +18,7 @@
- #define DR_TRAP1	(0x2)		/* db1 */
- #define DR_TRAP2	(0x4)		/* db2 */
- #define DR_TRAP3	(0x8)		/* db3 */
-+#define DR_TRAP_BITS	(DR_TRAP0|DR_TRAP1|DR_TRAP2|DR_TRAP3)
+--- linux-2.6-tip.hbkpt.orig/arch/Kconfig
++++ linux-2.6-tip.hbkpt/arch/Kconfig
+@@ -112,3 +112,7 @@ config HAVE_DMA_API_DEBUG
  
- #define DR_STEP		(0x4000)	/* single-step */
- #define DR_SWITCH	(0x8000)	/* task switch */
-@@ -49,6 +50,8 @@
+ config HAVE_DEFAULT_NO_SPIN_MUTEXES
+ 	bool
++
++config HAVE_HW_BREAKPOINT
++	bool
++
+Index: linux-2.6-tip.hbkpt/kernel/Makefile
+===================================================================
+--- linux-2.6-tip.hbkpt.orig/kernel/Makefile
++++ linux-2.6-tip.hbkpt/kernel/Makefile
+@@ -97,6 +97,7 @@ obj-$(CONFIG_X86_DS) += trace/
+ obj-$(CONFIG_SMP) += sched_cpupri.o
+ obj-$(CONFIG_SLOW_WORK) += slow-work.o
+ obj-$(CONFIG_PERF_COUNTERS) += perf_counter.o
++obj-$(CONFIG_HAVE_HW_BREAKPOINT) += hw_breakpoint.o
  
- #define DR_LOCAL_ENABLE_SHIFT 0    /* Extra shift to the local enable bit */
- #define DR_GLOBAL_ENABLE_SHIFT 1   /* Extra shift to the global enable bit */
-+#define DR_LOCAL_ENABLE (0x1)      /* Local enable for reg 0 */
-+#define DR_GLOBAL_ENABLE (0x2)     /* Global enable for reg 0 */
- #define DR_ENABLE_SIZE 2           /* 2 enable bits per register */
- 
- #define DR_LOCAL_ENABLE_MASK (0x55)  /* Set  local bits for all 4 regs */
-@@ -67,4 +70,30 @@
- #define DR_LOCAL_SLOWDOWN (0x100)   /* Local slow the pipeline */
- #define DR_GLOBAL_SLOWDOWN (0x200)  /* Global slow the pipeline */
- 
+ ifneq ($(CONFIG_SCHED_OMIT_FRAME_POINTER),y)
+ # According to Alan Modra <alan@linuxcare.com.au>, the -fno-omit-frame-pointer is
+Index: linux-2.6-tip.hbkpt/kernel/hw_breakpoint.c
+===================================================================
+--- /dev/null
++++ linux-2.6-tip.hbkpt/kernel/hw_breakpoint.c
+@@ -0,0 +1,378 @@
 +/*
-+ * HW breakpoint additions
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
++ *
++ * Copyright (C) 2007 Alan Stern
++ * Copyright (C) IBM Corporation, 2009
 + */
-+#ifdef __KERNEL__
 +
-+/* For process management */
-+extern void flush_thread_hw_breakpoint(struct task_struct *tsk);
-+extern int copy_thread_hw_breakpoint(struct task_struct *tsk,
-+		struct task_struct *child, unsigned long clone_flags);
++/*
++ * HW_breakpoint: a unified kernel/user-space hardware breakpoint facility,
++ * using the CPU's debug registers.
++ * This file contains the arch-independent routines.
++ */
 +
-+/* For CPU management */
-+extern void load_debug_registers(void);
-+static inline void hw_breakpoint_disable(void)
++#include <linux/irqflags.h>
++#include <linux/kallsyms.h>
++#include <linux/notifier.h>
++#include <linux/kprobes.h>
++#include <linux/kdebug.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/percpu.h>
++#include <linux/sched.h>
++#include <linux/init.h>
++#include <linux/smp.h>
++
++#include <asm/hw_breakpoint.h>
++#include <asm/processor.h>
++
++#ifdef CONFIG_X86
++#include <asm/debugreg.h>
++#endif
++/*
++ * Spinlock that protects all (un)register operations over kernel/user-space
++ * breakpoint requests
++ */
++static DEFINE_SPINLOCK(hw_breakpoint_lock);
++
++/* Array of kernel-space breakpoint structures */
++struct hw_breakpoint *hbp_kernel[HBP_NUM];
++
++/*
++ * Per-processor copy of hbp_kernel[]. Used only when hbp_kernel is being
++ * modified but we need the older copy to handle any hbp exceptions. It will
++ * sync with hbp_kernel[] value after updation is done through IPIs.
++ */
++DEFINE_PER_CPU(struct hw_breakpoint*, this_hbp_kernel[HBP_NUM]);
++
++/*
++ * Kernel breakpoints grow downwards, starting from HBP_NUM
++ * 'hbp_kernel_pos' denotes lowest numbered breakpoint register occupied for
++ * kernel-space request. We will initialise it here and not in an __init
++ * routine because load_debug_registers(), which uses this variable can be
++ * called very early during CPU initialisation.
++ */
++unsigned int hbp_kernel_pos = HBP_NUM;
++
++/*
++ * An array containing refcount of threads using a given bkpt register
++ * Accesses are synchronised by acquiring hw_breakpoint_lock
++ */
++unsigned int hbp_user_refcount[HBP_NUM];
++
++/*
++ * Load the debug registers during startup of a CPU.
++ */
++void load_debug_registers(void)
 +{
-+	/* Zero the control register for HW Breakpoint */
-+	set_debugreg(0UL, 7);
++	unsigned long flags;
++	struct task_struct *tsk = current;
 +
-+	/* Zero-out the individual HW breakpoint address registers */
-+	set_debugreg(0UL, 0);
-+	set_debugreg(0UL, 1);
-+	set_debugreg(0UL, 2);
-+	set_debugreg(0UL, 3);
++	spin_lock_bh(&hw_breakpoint_lock);
++
++	/* Prevent IPIs for new kernel breakpoint updates */
++	local_irq_save(flags);
++	arch_update_kernel_hw_breakpoint(NULL);
++	local_irq_restore(flags);
++
++	if (test_tsk_thread_flag(tsk, TIF_DEBUG))
++		arch_install_thread_hw_breakpoint(tsk);
++
++	spin_unlock_bh(&hw_breakpoint_lock);
 +}
 +
-+#endif	/* __KERNEL__ */
++/*
++ * Erase all the hardware breakpoint info associated with a thread.
++ *
++ * If tsk != current then tsk must not be usable (for example, a
++ * child being cleaned up from a failed fork).
++ */
++void flush_thread_hw_breakpoint(struct task_struct *tsk)
++{
++	int i;
++	struct thread_struct *thread = &(tsk->thread);
 +
- #endif /* _ASM_X86_DEBUGREG_H */
-Index: linux-2.6-tip.hbkpt/arch/x86/include/asm/hw_breakpoint.h
-===================================================================
---- /dev/null
-+++ linux-2.6-tip.hbkpt/arch/x86/include/asm/hw_breakpoint.h
-@@ -0,0 +1,55 @@
-+#ifndef	_I386_HW_BREAKPOINT_H
-+#define	_I386_HW_BREAKPOINT_H
++	spin_lock_bh(&hw_breakpoint_lock);
 +
-+#ifdef	__KERNEL__
-+#define	__ARCH_HW_BREAKPOINT_H
++	/* The thread no longer has any breakpoints associated with it */
++	clear_tsk_thread_flag(tsk, TIF_DEBUG);
++	for (i = 0; i < HBP_NUM; i++) {
++		if (thread->hbp[i]) {
++			hbp_user_refcount[i]--;
++			kfree(thread->hbp[i]);
++			thread->hbp[i] = NULL;
++		}
++	}
 +
-+struct arch_hw_breakpoint {
-+	char		*name; /* Contains name of the symbol to set bkpt */
-+	unsigned long	address;
-+	u8		len;
-+	u8		type;
-+};
++	arch_flush_thread_hw_breakpoint(tsk);
 +
-+#include <linux/kdebug.h>
-+#include <asm-generic/hw_breakpoint.h>
++	/* Actually uninstall the breakpoints if necessary */
++	if (tsk == current)
++		arch_uninstall_thread_hw_breakpoint();
++	spin_unlock_bh(&hw_breakpoint_lock);
++}
 +
-+/* Available HW breakpoint length encodings */
-+#define HW_BREAKPOINT_LEN_1		0x40
-+#define HW_BREAKPOINT_LEN_2		0x44
-+#define HW_BREAKPOINT_LEN_4		0x4c
-+#define HW_BREAKPOINT_LEN_EXECUTE	0x40
++/*
++ * Copy the hardware breakpoint info from a thread to its cloned child.
++ */
++int copy_thread_hw_breakpoint(struct task_struct *tsk,
++		struct task_struct *child, unsigned long clone_flags)
++{
++	/*
++	 * We will assume that breakpoint settings are not inherited
++	 * and the child starts out with no debug registers set.
++	 * But what about CLONE_PTRACE?
++	 */
++	clear_tsk_thread_flag(child, TIF_DEBUG);
 +
-+#ifdef CONFIG_X86_64
-+#define HW_BREAKPOINT_LEN_8		0x48
-+#endif
++	/* We will call flush routine since the debugregs are not inherited */
++	arch_flush_thread_hw_breakpoint(child);
 +
-+/* Available HW breakpoint type encodings */
++	return 0;
++}
 +
-+/* trigger on instruction execute */
-+#define HW_BREAKPOINT_EXECUTE	0x80
-+/* trigger on memory write */
-+#define HW_BREAKPOINT_WRITE	0x81
-+/* trigger on memory read or write */
-+#define HW_BREAKPOINT_RW	0x83
++static int __register_user_hw_breakpoint(int pos, struct task_struct *tsk,
++					struct hw_breakpoint *bp)
++{
++	struct thread_struct *thread = &(tsk->thread);
++	int rc;
 +
-+/* Total number of available HW breakpoint registers */
-+#define HBP_NUM 4
++	/* Do not overcommit. Fail if kernel has used the hbp registers */
++	if (pos >= hbp_kernel_pos)
++		return -ENOSPC;
 +
-+extern struct hw_breakpoint *hbp_kernel[HBP_NUM];
-+DECLARE_PER_CPU(struct hw_breakpoint*, this_hbp_kernel[HBP_NUM]);
-+extern unsigned int hbp_user_refcount[HBP_NUM];
++	rc = arch_validate_hwbkpt_settings(bp, tsk);
++	if (rc)
++		return rc;
 +
-+extern void arch_install_thread_hw_breakpoint(struct task_struct *tsk);
-+extern void arch_uninstall_thread_hw_breakpoint(void);
-+extern int arch_check_va_in_userspace(unsigned long va, u8 hbp_len);
-+extern int arch_validate_hwbkpt_settings(struct hw_breakpoint *bp,
-+						struct task_struct *tsk);
-+extern void arch_update_user_hw_breakpoint(int pos, struct task_struct *tsk);
-+extern void arch_flush_thread_hw_breakpoint(struct task_struct *tsk);
-+extern void arch_update_kernel_hw_breakpoint(void *);
-+extern int hw_breakpoint_exceptions_notify(struct notifier_block *unused,
-+				     unsigned long val, void *data);
-+#endif	/* __KERNEL__ */
-+#endif	/* _I386_HW_BREAKPOINT_H */
++	thread->hbp[pos] = bp;
++	hbp_user_refcount[pos]++;
 +
-Index: linux-2.6-tip.hbkpt/arch/x86/include/asm/processor.h
-===================================================================
---- linux-2.6-tip.hbkpt.orig/arch/x86/include/asm/processor.h
-+++ linux-2.6-tip.hbkpt/arch/x86/include/asm/processor.h
-@@ -29,6 +29,7 @@ struct mm_struct;
- #include <linux/threads.h>
- #include <linux/init.h>
- 
-+#define HBP_NUM 4
- /*
-  * Default implementation of macro that returns current
-  * instruction pointer ("program counter").
-@@ -437,8 +438,11 @@ struct thread_struct {
- 	unsigned long		debugreg1;
- 	unsigned long		debugreg2;
- 	unsigned long		debugreg3;
-+	unsigned long		debugreg[HBP_NUM];
- 	unsigned long		debugreg6;
- 	unsigned long		debugreg7;
-+	/* Hardware breakpoint info */
-+	struct hw_breakpoint	*hbp[HBP_NUM];
- 	/* Fault info: */
- 	unsigned long		cr2;
- 	unsigned long		trap_no;
-Index: linux-2.6-tip.hbkpt/include/asm-generic/hw_breakpoint.h
-===================================================================
---- /dev/null
-+++ linux-2.6-tip.hbkpt/include/asm-generic/hw_breakpoint.h
-@@ -0,0 +1,139 @@
-+#ifndef	_ASM_GENERIC_HW_BREAKPOINT_H
-+#define	_ASM_GENERIC_HW_BREAKPOINT_H
++	arch_update_user_hw_breakpoint(pos, tsk);
++	/*
++	 * Does it need to be installed right now?
++	 * Otherwise it will get installed the next time tsk runs
++	 */
++	if (tsk == current)
++		arch_install_thread_hw_breakpoint(tsk);
 +
-+#ifndef __ARCH_HW_BREAKPOINT_H
-+#error "Please don't include this file directly"
-+#endif
++	return rc;
++}
 +
-+#ifdef	__KERNEL__
-+#include <linux/list.h>
-+#include <linux/types.h>
-+#include <linux/kallsyms.h>
++/*
++ * Modify the address of a hbp register already in use by the task
++ * Do not invoke this in-lieu of a __unregister_user_hw_breakpoint()
++ */
++static int __modify_user_hw_breakpoint(int pos, struct task_struct *tsk,
++					struct hw_breakpoint *bp)
++{
++	struct thread_struct *thread = &(tsk->thread);
++
++	if ((pos >= hbp_kernel_pos) || (arch_validate_hwbkpt_settings(bp, tsk)))
++		return -EINVAL;
++
++	if (thread->hbp[pos] == NULL)
++		return -EINVAL;
++
++	thread->hbp[pos] = bp;
++	/*
++	 * 'pos' must be that of a hbp register already used by 'tsk'
++	 * Otherwise arch_modify_user_hw_breakpoint() will fail
++	 */
++	arch_update_user_hw_breakpoint(pos, tsk);
++
++	if (tsk == current)
++		arch_install_thread_hw_breakpoint(tsk);
++
++	return 0;
++}
++
++static void __unregister_user_hw_breakpoint(int pos, struct task_struct *tsk)
++{
++	hbp_user_refcount[pos]--;
++	tsk->thread.hbp[pos] = NULL;
++
++	arch_update_user_hw_breakpoint(pos, tsk);
++
++	if (tsk == current)
++		arch_install_thread_hw_breakpoint(tsk);
++}
 +
 +/**
-+ * struct hw_breakpoint - unified kernel/user-space hardware breakpoint
-+ * @triggered: callback invoked after target address access
-+ * @info: arch-specific breakpoint info (address, length, and type)
++ * register_user_hw_breakpoint - register a hardware breakpoint for user space
++ * @tsk: pointer to 'task_struct' of the process to which the address belongs
++ * @bp: the breakpoint structure to register
 + *
-+ * %hw_breakpoint structures are the kernel's way of representing
-+ * hardware breakpoints.  These are data breakpoints
-+ * (also known as "watchpoints", triggered on data access), and the breakpoint's
-+ * target address can be located in either kernel space or user space.
++ * @bp.info->name or @bp.info->address, @bp.info->len, @bp.info->type and
++ * @bp->triggered must be set properly before invocation
 + *
-+ * The breakpoint's address, length, and type are highly
-+ * architecture-specific.  The values are encoded in the @info field; you
-+ * specify them when registering the breakpoint.  To examine the encoded
-+ * values use hw_breakpoint_get_{kaddress,uaddress,len,type}(), declared
-+ * below.
-+ *
-+ * The address is specified as a regular kernel pointer (for kernel-space
-+ * breakponts) or as an %__user pointer (for user-space breakpoints).
-+ * With register_user_hw_breakpoint(), the address must refer to a
-+ * location in user space.  The breakpoint will be active only while the
-+ * requested task is running.  Conversely with
-+ * register_kernel_hw_breakpoint(), the address must refer to a location
-+ * in kernel space, and the breakpoint will be active on all CPUs
-+ * regardless of the current task.
-+ *
-+ * The length is the breakpoint's extent in bytes, which is subject to
-+ * certain limitations.  include/asm/hw_breakpoint.h contains macros
-+ * defining the available lengths for a specific architecture.  Note that
-+ * the address's alignment must match the length.  The breakpoint will
-+ * catch accesses to any byte in the range from address to address +
-+ * (length - 1).
-+ *
-+ * The breakpoint's type indicates the sort of access that will cause it
-+ * to trigger.  Possible values may include:
-+ *
-+ * 	%HW_BREAKPOINT_RW (triggered on read or write access),
-+ * 	%HW_BREAKPOINT_WRITE (triggered on write access), and
-+ * 	%HW_BREAKPOINT_READ (triggered on read access).
-+ *
-+ * Appropriate macros are defined in include/asm/hw_breakpoint.h; not all
-+ * possibilities are available on all architectures.  Execute breakpoints
-+ * must have length equal to the special value %HW_BREAKPOINT_LEN_EXECUTE.
-+ *
-+ * When a breakpoint gets hit, the @triggered callback is
-+ * invoked in_interrupt with a pointer to the %hw_breakpoint structure and the
-+ * processor registers.
-+ * Data breakpoints occur after the memory access has taken place.
-+ * Breakpoints are disabled during execution @triggered, to avoid
-+ * recursive traps and allow unhindered access to breakpointed memory.
-+ *
-+ * This sample code sets a breakpoint on pid_max and registers a callback
-+ * function for writes to that variable.  Note that it is not portable
-+ * as written, because not all architectures support HW_BREAKPOINT_LEN_4.
-+ *
-+ * ----------------------------------------------------------------------
-+ *
-+ * #include <asm/hw_breakpoint.h>
-+ *
-+ * struct hw_breakpoint my_bp;
-+ *
-+ * static void my_triggered(struct hw_breakpoint *bp, struct pt_regs *regs)
-+ * {
-+ * 	printk(KERN_DEBUG "Inside triggered routine of breakpoint exception\n");
-+ * 	dump_stack();
-+ *  	.......<more debugging output>........
-+ * }
-+ *
-+ * static struct hw_breakpoint my_bp;
-+ *
-+ * static int init_module(void)
-+ * {
-+ *	..........<do anything>............
-+ *	my_bp.info.type = HW_BREAKPOINT_WRITE;
-+ *	my_bp.info.len = HW_BREAKPOINT_LEN_4;
-+ *
-+ *	my_bp.installed = (void *)my_bp_installed;
-+ *
-+ *	rc = register_kernel_hw_breakpoint(&my_bp);
-+ *	..........<do anything>............
-+ * }
-+ *
-+ * static void cleanup_module(void)
-+ * {
-+ *	..........<do anything>............
-+ *	unregister_kernel_hw_breakpoint(&my_bp);
-+ *	..........<do anything>............
-+ * }
-+ *
-+ * ----------------------------------------------------------------------
 + */
-+struct hw_breakpoint {
-+	void (*triggered)(struct hw_breakpoint *, struct pt_regs *);
-+	struct arch_hw_breakpoint info;
++int register_user_hw_breakpoint(struct task_struct *tsk,
++					struct hw_breakpoint *bp)
++{
++	struct thread_struct *thread = &(tsk->thread);
++	int i, rc = -ENOSPC;
++
++	spin_lock_bh(&hw_breakpoint_lock);
++
++	for (i = 0; i < hbp_kernel_pos; i++) {
++		if (!thread->hbp[i]) {
++			rc = __register_user_hw_breakpoint(i, tsk, bp);
++			break;
++		}
++	}
++	if (!rc)
++		set_tsk_thread_flag(tsk, TIF_DEBUG);
++
++	spin_unlock_bh(&hw_breakpoint_lock);
++	return rc;
++}
++EXPORT_SYMBOL_GPL(register_user_hw_breakpoint);
++
++/**
++ * modify_user_hw_breakpoint - modify a user-space hardware breakpoint
++ * @tsk: pointer to 'task_struct' of the process to which the address belongs
++ * @bp: the breakpoint structure to unregister
++ *
++ */
++int modify_user_hw_breakpoint(struct task_struct *tsk, struct hw_breakpoint *bp)
++{
++	struct thread_struct *thread = &(tsk->thread);
++	int i, ret = -ENOENT;
++
++	spin_lock_bh(&hw_breakpoint_lock);
++	for (i = 0; i < hbp_kernel_pos; i++) {
++		if (bp == thread->hbp[i]) {
++			ret = __modify_user_hw_breakpoint(i, tsk, bp);
++			break;
++		}
++	}
++	spin_unlock_bh(&hw_breakpoint_lock);
++	return ret;
++}
++EXPORT_SYMBOL_GPL(modify_user_hw_breakpoint);
++
++/**
++ * unregister_user_hw_breakpoint - unregister a user-space hardware breakpoint
++ * @tsk: pointer to 'task_struct' of the process to which the address belongs
++ * @bp: the breakpoint structure to unregister
++ *
++ */
++void unregister_user_hw_breakpoint(struct task_struct *tsk,
++						struct hw_breakpoint *bp)
++{
++	struct thread_struct *thread = &(tsk->thread);
++	int i, pos = -1, hbp_counter = 0;
++
++	spin_lock_bh(&hw_breakpoint_lock);
++	for (i = 0; i < hbp_kernel_pos; i++) {
++		if (thread->hbp[i])
++			hbp_counter++;
++		if (bp == thread->hbp[i])
++			pos = i;
++	}
++	if (pos >= 0) {
++		__unregister_user_hw_breakpoint(pos, tsk);
++		hbp_counter--;
++	}
++	if (!hbp_counter)
++		clear_tsk_thread_flag(tsk, TIF_DEBUG);
++
++	spin_unlock_bh(&hw_breakpoint_lock);
++}
++EXPORT_SYMBOL_GPL(unregister_user_hw_breakpoint);
++
++/**
++ * register_kernel_hw_breakpoint - register a hardware breakpoint for kernel space
++ * @bp: the breakpoint structure to register
++ *
++ * @bp.info->name or @bp.info->address, @bp.info->len, @bp.info->type and
++ * @bp->triggered must be set properly before invocation
++ *
++ */
++int register_kernel_hw_breakpoint(struct hw_breakpoint *bp)
++{
++	int rc;
++
++	rc = arch_validate_hwbkpt_settings(bp, NULL);
++	if (rc)
++		return rc;
++
++	spin_lock_bh(&hw_breakpoint_lock);
++
++	rc = -ENOSPC;
++	/* Check if we are over-committing */
++	if ((hbp_kernel_pos > 0) && (!hbp_user_refcount[hbp_kernel_pos-1])) {
++		hbp_kernel_pos--;
++		hbp_kernel[hbp_kernel_pos] = bp;
++		on_each_cpu(arch_update_kernel_hw_breakpoint, NULL, 1);
++		rc = 0;
++	}
++
++	spin_unlock_bh(&hw_breakpoint_lock);
++	return rc;
++}
++EXPORT_SYMBOL_GPL(register_kernel_hw_breakpoint);
++
++/**
++ * unregister_kernel_hw_breakpoint - unregister a HW breakpoint for kernel space
++ * @bp: the breakpoint structure to unregister
++ *
++ * Uninstalls and unregisters @bp.
++ */
++void unregister_kernel_hw_breakpoint(struct hw_breakpoint *bp)
++{
++	int i, j;
++
++	spin_lock_bh(&hw_breakpoint_lock);
++
++	/* Find the 'bp' in our list of breakpoints for kernel */
++	for (i = hbp_kernel_pos; i < HBP_NUM; i++)
++		if (bp == hbp_kernel[i])
++			break;
++
++	/* Check if we did not find a match for 'bp'. If so return early */
++	if (i == HBP_NUM) {
++		spin_unlock_bh(&hw_breakpoint_lock);
++		return;
++	}
++
++	/*
++	 * We'll shift the breakpoints one-level above to compact if
++	 * unregistration creates a hole
++	 */
++	for (j = i; j > hbp_kernel_pos; j--)
++		hbp_kernel[j] = hbp_kernel[j-1];
++
++	hbp_kernel[hbp_kernel_pos] = NULL;
++	on_each_cpu(arch_update_kernel_hw_breakpoint, NULL, 1);
++	hbp_kernel_pos++;
++
++	spin_unlock_bh(&hw_breakpoint_lock);
++}
++EXPORT_SYMBOL_GPL(unregister_kernel_hw_breakpoint);
++
++static struct notifier_block hw_breakpoint_exceptions_nb = {
++	.notifier_call = hw_breakpoint_exceptions_notify,
++	/* we need to be notified first */
++	.priority = 0x7fffffff
 +};
 +
-+/*
-+ * len and type values are defined in include/asm/hw_breakpoint.h.
-+ * Available values vary according to the architecture.  On i386 the
-+ * possibilities are:
-+ *
-+ *	HW_BREAKPOINT_LEN_1
-+ *	HW_BREAKPOINT_LEN_2
-+ *	HW_BREAKPOINT_LEN_4
-+ *	HW_BREAKPOINT_RW
-+ *	HW_BREAKPOINT_READ
-+ *
-+ * On other architectures HW_BREAKPOINT_LEN_8 may be available, and the
-+ * 1-, 2-, and 4-byte lengths may be unavailable.  There also may be
-+ * HW_BREAKPOINT_WRITE.  You can use #ifdef to check at compile time.
-+ */
++static int __init init_hw_breakpoint(void)
++{
++	return register_die_notifier(&hw_breakpoint_exceptions_nb);
++}
 +
-+extern int register_user_hw_breakpoint(struct task_struct *tsk,
-+					struct hw_breakpoint *bp);
-+extern int modify_user_hw_breakpoint(struct task_struct *tsk,
-+					struct hw_breakpoint *bp);
-+extern void unregister_user_hw_breakpoint(struct task_struct *tsk,
-+						struct hw_breakpoint *bp);
-+/*
-+ * Kernel breakpoints are not associated with any particular thread.
-+ */
-+extern int register_kernel_hw_breakpoint(struct hw_breakpoint *bp);
-+extern void unregister_kernel_hw_breakpoint(struct hw_breakpoint *bp);
-+
-+extern unsigned int hbp_kernel_pos;
-+
-+#endif	/* __KERNEL__ */
-+#endif	/* _ASM_GENERIC_HW_BREAKPOINT_H */
++core_initcall(init_hw_breakpoint);
 
