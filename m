@@ -1,72 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752342AbZE3WP0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753798AbZE3WQU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752342AbZE3WP0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 18:15:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752015AbZE3WPP
+	id S1753798AbZE3WQU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 18:16:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752037AbZE3WQO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 18:15:15 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:48737 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751933AbZE3WPO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 18:15:14 -0400
-Date: Sun, 31 May 2009 00:14:44 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: "Larry H." <research@subreption.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@osdl.org>, linux-mm@kvack.org,
-       Ingo Molnar <mingo@redhat.com>, pageexec@freemail.hu,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Matt Mackall <mpm@selenic.com>
-Subject: Re: [patch 0/5] Support for sanitization flag in low-level page
-	allocator
-Message-ID: <20090530221444.GB23204@elte.hu>
-References: <20090528072702.796622b6@lxorguk.ukuu.org.uk> <20090528090836.GB6715@elte.hu> <20090528125042.28c2676f@lxorguk.ukuu.org.uk> <84144f020905300035g1d5461f9n9863d4dcdb6adac0@mail.gmail.com> <20090530075033.GL29711@oblivion.subreption.com> <4A20E601.9070405@cs.helsinki.fi> <20090530082048.GM29711@oblivion.subreption.com> <20090530173428.GA20013@elte.hu> <20090530180333.GH6535@oblivion.subreption.com> <84144f020905301322g7bbdd42cpe1391c619ffda044@mail.gmail.com>
+	Sat, 30 May 2009 18:16:14 -0400
+Received: from cs20.apochromatic.org ([204.152.189.161]:60580 "EHLO
+	cs20.apochromatic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752015AbZE3WQN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 May 2009 18:16:13 -0400
+Date: Sat, 30 May 2009 23:16:13 +0100
+From: Matt Fleming <matt@console-pimps.org>
+To: Wolfgang =?iso-8859-1?Q?M=FCes?= <wolfgang.mues@auerswald.de>
+Cc: Pierre Ossman <pierre@ossman.eu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Mike Frysinger <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] mmc_spi: do propper retry managment in the block layer
+	- 3rd try
+Message-ID: <20090530221613.GA642@console-pimps.org>
+References: <20090528091924.GB1860@console-pimps.org> <200905281152.26191.wolfgang.mues@auerswald.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <84144f020905301322g7bbdd42cpe1391c619ffda044@mail.gmail.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200905281152.26191.wolfgang.mues@auerswald.de>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Pekka Enberg <penberg@cs.helsinki.fi> wrote:
-
-> Hi Larry,
+On Thu, May 28, 2009 at 11:52:26AM +0200, Wolfgang Mües wrote:
 > 
-> On Sat, May 30, 2009 at 9:03 PM, Larry H. <research@subreption.com> wrote:
-> > The first issue is that SLOB has a broken ksize, which won't take into
-> > consideration compound pages AFAIK. To fix this you will need to
-> > introduce some changes in the way the slob_page structure is handled,
-> > and add real size tracking to it. You will find these problems if you
-> > try to implement a reliable kmem_ptr_validate for SLOB, too.
+> So somewhere I will need to have an error code filter based on the issued 
+> command (class). Should this be in the driver(s)? Or should it be at the 
+> location of the caller, in block.c?
 > 
-> Does this mean that kzfree() isn't broken for SLAB/SLUB? Maybe I 
-> read your emails wrong but you seemed to imply that.
 
-Yep, he definitely wrote that:
+It should be in the function/file that makes the most sense.
 
-    http://lkml.org/lkml/2009/5/30/30
+> The advantages of putting it in block.c is that
+> a) The command (class) is typically implicit given in the function, and no 
+> need for a switch() statement.
+> b) Only one handling for different drivers, not scattered through all(?) host 
+> drivers.
+> 
 
- [...]
- |
- | That's hopeless, and kzfree is broken. Like I said in my earlier 
- | reply, please test that yourself to see the results. Whoever 
- | wrote that ignored how SLAB/SLUB work and if kzfree had been used 
- | somewhere in the kernel before, it should have been noticed long 
- | time ago.
- |
- [...]
+You know what, I was going to say that only block transaction stuff is
+in block.c, but that's not true, there's loads of MMC protocol
+knowledge in there too. I don't think there's a better place than
+mmc/drivers/card/block.c, currently.
 
-Very puzzling claims i have to say.
+I would expect all this error handling and intimate knowledge of the
+MMC/SD protocol to be in drivers/mmc/core, but that's not the
+case. Which just seems strange to me.
 
-	Ingo
+> I must admit that I have difficulties to see a clear layering violation.
+> There is no clear definition of which error codes should be reported to the 
+> block layer. There is only a short list of codes with special meaning, but 
+> not a full list of all used codes.
+> 
+> And some drivers are reporting codes like ENOMEM etc...
+> 
+> I see that Pierre wants to have a more smaller interface between drivers and 
+> the upper layer, reporting only classes of errors, to have a more smaller and 
+> cleaner code in the upper layer. But I think that this is a patch of its own, 
+> and not in the context of the retry patch.
+> 
+
+I agree. That could be a separate patch.
