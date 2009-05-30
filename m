@@ -1,109 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753522AbZE3HfI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753289AbZE3HgB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753522AbZE3HfI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 03:35:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750939AbZE3He5
+	id S1753289AbZE3HgB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 03:36:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750939AbZE3Hfy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 03:34:57 -0400
-Received: from qw-out-2122.google.com ([74.125.92.27]:15018 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750787AbZE3He5 convert rfc822-to-8bit (ORCPT
+	Sat, 30 May 2009 03:35:54 -0400
+Received: from mail-fx0-f168.google.com ([209.85.220.168]:34490 "EHLO
+	mail-fx0-f168.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750787AbZE3Hfx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 03:34:57 -0400
+	Sat, 30 May 2009 03:35:53 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=Y98XF1Y7j7Xa5tY6XqyqHQJt+8wORC6+rEoRqnl/GnKQ/9CuJzCihJPgwqcfJatWtV
-         qszgBCKFo/gkJN2igk1uXtT3BAhdW+kIymP0rD2b6mQuKpn/jOXgPuYxCTlJOAazI1Gq
-         rccRGJLqcaWVnz4ujCRPHgJsc+njuK96D3wTQ=
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=RwRAVXmH1vR5nWD4eGqt3i+xZ+36+/j/OoqL6/S4cx7ll8Q10fJXiPrsVjPo2FRSaY
+         cJeN3+IPtq3pBncmGtl3o47HyxTpBcjnkgb5E1r+Ti9INDPdf1R8liW2Y5I5fpjzJsAk
+         sZwSBrymI90NWCoLeO/DzMMcl8Vi8skQbtQvI=
 MIME-Version: 1.0
-In-Reply-To: <200905300135.07103.rjw@sisk.pl>
-References: <1241483224-7113-1-git-send-email-khilman@deeprootsystems.com> 
-	<200905232214.57186.rjw@sisk.pl> <4A1A4297.50809@samsung.com> 
-	<200905300135.07103.rjw@sisk.pl>
-From: Kim Kyuwon <chammoru@gmail.com>
-Date: Sat, 30 May 2009 16:34:38 +0900
-Message-ID: <4d34a0a70905300034q1dee8febl60b5213082e3a5d1@mail.gmail.com>
-Subject: Re: [PATCH] PM: suspend_device_irqs(): don't disable wakeup IRQs
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Kim Kyuwon <q1.kim@samsung.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Kyungmin Park <kyungmin.park@samsung.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Kevin Hilman <khilman@deeprootsystems.com>
+In-Reply-To: <20090528125042.28c2676f@lxorguk.ukuu.org.uk>
+References: <20090520183045.GB10547@oblivion.subreption.com>
+	 <4A15A8C7.2030505@redhat.com> <20090522073436.GA3612@elte.hu>
+	 <20090522113809.GB13971@oblivion.subreption.com>
+	 <20090523124944.GA23042@elte.hu> <4A187BDE.5070601@redhat.com>
+	 <20090527223421.GA9503@elte.hu>
+	 <20090528072702.796622b6@lxorguk.ukuu.org.uk>
+	 <20090528090836.GB6715@elte.hu>
+	 <20090528125042.28c2676f@lxorguk.ukuu.org.uk>
+Date: Sat, 30 May 2009 10:35:53 +0300
+X-Google-Sender-Auth: dc38e18dec5377e2
+Message-ID: <84144f020905300035g1d5461f9n9863d4dcdb6adac0@mail.gmail.com>
+Subject: Re: [patch 0/5] Support for sanitization flag in low-level page 
+	allocator
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Ingo Molnar <mingo@elte.hu>, Rik van Riel <riel@redhat.com>,
+       "Larry H." <research@subreption.com>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@osdl.org>, linux-mm@kvack.org,
+       Ingo Molnar <mingo@redhat.com>, pageexec@freemail.hu,
+       Linus Torvalds <torvalds@linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 30, 2009 at 8:35 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Monday 25 May 2009, Kim Kyuwon wrote:
->> Rafael J. Wysocki wrote:
->> > On Saturday 23 May 2009, Kim Kyuwon wrote:
->> >> On Sat, May 23, 2009 at 7:29 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->> >>> On Saturday 23 May 2009, Kim Kyuwon wrote:
->> > [--snip--]
->> >>>> You changed the really important part of Linux, which may affect most
->> >>>> processor architectures. I think you should be careful. If some of
->> >>>> architectures can't take care of it (they can implement
->> >>>> disable_irq_wake correctly in H/W level, will you revert your changes?
->> >>> No, the changes are not going to be reverted.  In fact things should have been
->> >>> done like this already much earlier.
->> >>>
->> >>> Now, do you have any particular example of a problem related to these changes
->> >>> or is it only a theoretical issue?
->> >> I'd CCing you when I'm sending a mail for this particular example of a example.
->> >> http://markmail.org/thread/fvt7d62arofon5xx
->> >
->> > Well, as I said above, reverting the changes that introduced
->> > [suspend|resume]_device_irqs() is not an option, becuase it was the only sane
->> > way to achieve the goal they were added for.  So, we need to fix the wake-up
->> > problem on your platform with the assumption that
->> > [suspend|resume]_device_irqs() are going to stay.
->> >
->> > For starters, would it be possible to teach the 'disable' hook of your
->> > platform's interrupt controller not to mask the IRQs that have both
->> > IRQ_WAKEUP and IRQ_SUSPENDED set?  That apparently would work around the
->> > wake-up interrupts problem.
->>
->> Thank you for considering this issue and spending your time. In order to
->> make your idea work, we need to add a dummy 'set_wake' hook which
->> returns always zero. Anyway, IMO, I think your idea is good to work
->> around this problem. But Kevin Hilman(OMAP PM Maintainer) would make
->> final decision.
->>
->> Buy the way, how can you handle the problem that a few interrupt are
->> discarded in a small window? I can be sure they are discarded, because I
->> have debugged defects which generate in sleep/resume state hundreds of
->> times on ARM Processors(PXA310, S3C6410, OMAP3430). Wake-up interrupts
->> are generated as soon as arch_suspend_enable_irqs() invoked.
+Hi Alan,
+
+On Thu, May 28, 2009 at 2:50 PM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> The performance cost of such a security action are NIL when the feature
+> is disabled. So the performance cost in the general case is irrelevant.
 >
-> Sorry for the delayed response.
+> If you need this kind of data wiping then the performance hit
+> is basically irrelevant, the security comes first. You can NAK it all you
+> like but it simply means that such users either have to apply patches or
+> run something else.
 >
-> If the wake-up interrupts are not masked, they will be delivered to the drivers
-> as soon as arch_suspend_enable_irqs() has run.  So, if the drivers are able to
-> handle them at this point (ie. before resume_device_irqs() is called), they
-> won't be lost.
+> If it harmed general user performance you'd have a point - but its like
+> SELinux you don't have to use it if you don't need the feature. Which it
+> must be said is a lot better than much of the scheduler crud that has
+> appeared over time which you can't make go away.
 
-Thank you for your response!
+The GFP_SENSITIVE flag looks like a big hammer that we don't really
+need IMHO. It seems to me that most of the actual call-sites (crypto
+code, wireless keys, etc.) should probably just use kzfree()
+unconditionally to make sure we don't leak sensitive data. I did not
+look too closely but I don't think any of the sensitive kfree() calls
+are in fastpaths so the performance impact is negligible.
 
-Your suspend_device_irqs() disables all IRQs(except timer IRQ) while
-entering suspend. i.e. Before invoking resume_device_irqs() or
-resume_noirq callback, all IRQs(except timer IRQ) is in IRQ_DISABLED
-status. Right?
-But if an IRQ is in  IRQ_DISABLED status, its interrupt handler can be
-invoked. (As you know, all IRQs with IRQ_DISABLE are not handled in
-handle_level_irq function). Thus, even if the wake-up interrupts are
-not masked, the drivers are not able to handle interrupts, because the
-interrupt handler can't be invoked due to IRQ_DISABLED set by
-suspend_device_irqs().
-
-> The only problem I see is that the drivers may expect their
-> ->resume_noirq() callbacks to be executed first.
-
-resume_noirq() callbacks are also invoked after arch_suspend_enable_irqs().
-
-Regards,
-Kyuwon
+                                Pekka
