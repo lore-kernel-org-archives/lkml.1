@@ -1,17 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757241AbZE3Wjl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754104AbZE3WkN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757241AbZE3Wjl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 18:39:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755506AbZE3Wgb
+	id S1754104AbZE3WkN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 18:40:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755685AbZE3Wgh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 18:36:31 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:46518 "EHLO ogre.sisk.pl"
+	Sat, 30 May 2009 18:36:37 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:46531 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755546AbZE3Wga convert rfc822-to-8bit (ORCPT
+	id S1755587AbZE3Wge convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 18:36:30 -0400
+	Sat, 30 May 2009 18:36:34 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Tomas Janousek" <tomi@nomi.cz>
+       "Alan Stern" <stern@rowland.harvard.edu>,
+       "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
+       "USB" <linux-usb@vger.kernel.org>
 References: <4to6E2myxvG.A.muC.aIbIKB@chimera>
 In-Reply-To: <4to6E2myxvG.A.muC.aIbIKB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,10 +21,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <LEcEO2518_I.A.D_D.IJbIKB@chimera>
-Subject: [Bug #13337] [post 2.6.29 regression] hang during suspend of b44/b43 modules
+Message-ID: <LEcEO2518_I.A.xsD.1IbIKB@chimera>
+Subject: [Bug #13372] Oops in usb-serial with keyspan adapter
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sat, 30 May 2009 21:37:33 +0200 (CEST)
+Date: Sat, 30 May 2009 21:37:35 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -35,9 +37,12 @@ from 2.6.29.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13337
-Subject		: [post 2.6.29 regression] hang during suspend of b44/b43 modules
-Submitter	: Tomas Janousek <tomi@nomi.cz>
-Date		: 2009-05-18 10:59 (13 days old)
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13372
+Subject		: Oops in usb-serial with keyspan adapter
+Submitter	: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date		: 2009-05-18 0:07 (13 days old)
+References	: http://marc.info/?l=linux-kernel&m=124260532924736&w=4
+Handled-By	: Alan Stern <stern@rowland.harvard.edu>
+Patch		: http://patchwork.kernel.org/patch/26603/
 
 
