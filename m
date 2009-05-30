@@ -1,83 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755963AbZE3JF3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755404AbZE3JHn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755963AbZE3JF3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 05:05:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752988AbZE3JFV
+	id S1755404AbZE3JHn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 05:07:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752988AbZE3JHg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 05:05:21 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:54390 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751625AbZE3JFU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 05:05:20 -0400
-Message-ID: <4A20F71F.6030703@cn.fujitsu.com>
-Date: Sat, 30 May 2009 17:06:39 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Sat, 30 May 2009 05:07:36 -0400
+Received: from oblivion.subreption.com ([66.240.236.22]:46605 "EHLO
+	mail.subreption.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751625AbZE3JHf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 May 2009 05:07:35 -0400
+Date: Sat, 30 May 2009 02:05:13 -0700
+From: "Larry H." <research@subreption.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@osdl.org>, linux-mm@kvack.org,
+       Ingo Molnar <mingo@redhat.com>, pageexec@freemail.hu,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [patch 0/5] Support for sanitization flag in low-level page
+	allocator
+Message-ID: <20090530090513.GO29711@oblivion.subreption.com>
+References: <20090522113809.GB13971@oblivion.subreption.com> <20090523124944.GA23042@elte.hu> <4A187BDE.5070601@redhat.com> <20090527223421.GA9503@elte.hu> <20090528072702.796622b6@lxorguk.ukuu.org.uk> <20090528090836.GB6715@elte.hu> <20090528125042.28c2676f@lxorguk.ukuu.org.uk> <84144f020905300035g1d5461f9n9863d4dcdb6adac0@mail.gmail.com> <20090530075033.GL29711@oblivion.subreption.com> <4A20E6CF.8070003@cs.helsinki.fi>
 MIME-Version: 1.0
-To: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
-CC: Steven Rostedt <rostedt@goodmis.org>, Tom Zanussi <tzanussi@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2] tracing/filters: use strcmp() instead of strncmp()
-References: <4A1F9FAC.6020506@cn.fujitsu.com> <c62985530905290651id2435bfx7f57ec561fe366e3@mail.gmail.com>
-In-Reply-To: <c62985530905290651id2435bfx7f57ec561fe366e3@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A20E6CF.8070003@cs.helsinki.fi>
+Organization: Subreption LLC
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frédéric Weisbecker wrote:
-> 2009/5/29 Li Zefan <lizf@cn.fujitsu.com>:
->> Trace filter is not working normally:
->>
->>  # echo 'name == et' > tracing/events/irq/irq_handler_entry/filter
->>  # echo 1 > tracing/events/irq/irq_handler_entry/enable
->>  # cat trace_pipe
->>      <idle>-0     [001]  1363.423175: irq_handler_entry: irq=18 handler=eth0
->>      <idle>-0     [001]  1363.934528: irq_handler_entry: irq=18 handler=eth0
->>      ...
->>
->> It's because we pass to trace_define_field() the information of
->> __str_loc_##item, but not the actual string, so pred->str_len == field->size
->> == sizeof(unsigned short), thus it always compare at most 2 bytes when
->> filtering on __string() field.
-> 
-> 
-> Weird, I was about sure I set the size of each string() to FILTER_MAX_STRING (or
-> something like that).
-> 
-> Anyway this patch looks good but it does more than just fixing the
-> issue, it removes
-> the string len boundary security we had with strncmp() for every
-> string (static and
-> dynamic size).
-> 
-> The potential side effect that comes along this patch would disappear if
-> you just turn strncmp into strcmp only in filter_pred_strloc().
-> 
-> If you do that also for fixed size strings, then it should be done in
-> a second patch,
-> although I guess turning anything here into strcmp is fine because the
-> strings given
-> by the user are always limited in their size. But we never know...
-> 
+On 10:57 Sat 30 May     , Pekka Enberg wrote:
+> Larry H. wrote:
+>> Furthermore, selective clearing doesn't solve the roots of the problem.
+>> It's just adding bandages to a wound which never stops bleeding. I
+>> proposed an initial page flag because we could use it later for
+>> unconditional page clearing doing a one line change in a header file.
+>> I see a lot of speculation on what works and what doesn't, but
+>> there isn't much on the practical side of things, yet. I provided test
+>> results that proved some of the comments wrong, and I've referenced
+>> literature which shows the reasoning behind all this. What else can I do
+>> to make you understand you are missing the point here?
+>
+> Hey, if you want to add a CONFIG_ZERO_ALL_MEMORY_PARANOIA thing that can be 
+> disabled, go for it! But you have to find someone else to take the merge 
+> the SLAB bits because, quite frankly, I am not convinced it's worth it. And 
+> the hand waving you're doing here isn't really helping your case, sorry.
 
-I don't think there's any security issue. It's irrelevant how big the user-input
-strings are. The point is those strings are guaranteed to be NULL-terminated.
-Am I missing something?
+For a second I thought it was Ingo who was writing this e-mail.
+Apologies about the confusion.
 
-And I don't think it's necessary to make 2 patches that each patch converts
-one strncmp to strcmp. But maybe it's better to improve this changelog?
+What was the technical explanation and reasoning behind your remarks,
+again?
 
-> 
-> Thanks,
-> Frederic.
-> 
-> 
->> Since __string() is dynamic size, we are not able to set field->size to
->> string length. Thus this patch uses strcmp() instead of strncmp().
->>
->> [ Impact: make filter facility working normally for __string() field ]
->>
->> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
->> ---
+	Larry
