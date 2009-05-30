@@ -1,138 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932584AbZE3PvW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932618AbZE3QEk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932584AbZE3PvW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 11:51:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759595AbZE3PvN
+	id S932618AbZE3QEk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 12:04:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759595AbZE3QEc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 11:51:13 -0400
-Received: from bedivere.hansenpartnership.com ([66.63.167.143]:59968 "EHLO
-	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759012AbZE3PvM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 11:51:12 -0400
-Subject: Re: [PATCH 04/24] sysfs: Normalize removing sysfs directories.
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       Cornelia Huck <cornelia.huck@de.ibm.com>, linux-fsdevel@vger.kernel.org,
-       Kay Sievers <kay.sievers@vrfy.org>, Greg KH <greg@kroah.com>,
-       "Eric W. Biederman" <ebiederm@aristanetworks.com>
-In-Reply-To: <m1bppaei52.fsf@fess.ebiederm.org>
-References: <m1zlcwltri.fsf_-_@fess.ebiederm.org>
-	 <1243551665-23596-4-git-send-email-ebiederm@xmission.com>
-	 <4A1FA777.3040200@kernel.org> <m1zlcvdf7j.fsf@fess.ebiederm.org>
-	 <4A210DEF.2030203@kernel.org> <m1d49qoi1o.fsf@fess.ebiederm.org>
-	 <1243693199.5223.5.camel@mulgrave.int.hansenpartnership.com>
-	 <m1bppaei52.fsf@fess.ebiederm.org>
-Content-Type: text/plain
-Date: Sat, 30 May 2009 15:51:07 +0000
-Message-Id: <1243698667.5223.12.camel@mulgrave.int.hansenpartnership.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
+	Sat, 30 May 2009 12:04:32 -0400
+Received: from mail.atlantis.sk ([80.94.52.35]:58976 "EHLO mail.atlantis.sk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759539AbZE3QEc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 May 2009 12:04:32 -0400
+From: Ondrej Zary <linux@rainbow-software.org>
+To: "linux-kernel" <linux-kernel@vger.kernel.org>, mingo@elte.hu
+Subject: [PATCH] Fix floppy hibernation
+Date: Sat, 30 May 2009 18:04:25 +0200
+User-Agent: KMail/1.9.10
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200905301804.26762.linux@rainbow-software.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-05-30 at 08:15 -0700, Eric W. Biederman wrote:
-> James Bottomley <James.Bottomley@HansenPartnership.com> writes:
-> 
-> > On Sat, 2009-05-30 at 06:07 -0700, Eric W. Biederman wrote:
-> >> Tejun Heo <tj@kernel.org> writes:
-> >> 
-> >> > Eric W. Biederman wrote:
-> >> >>   Also, I'm quite uncomfortable with these things
-> >> >>> being done in non-atomic manner.  It can be made to work but things
-> >> >>> like this can lead to subtle race conditions and with the kind of
-> >> >>> layering we put on top of sysfs (kobject, driver model, driver
-> >> >>> midlayers and so on), it isn't all that easy to verify what's going
-> >> >>> on, so NACK for this one.
-> >> >> 
-> >> >> Total nonsense.
-> >> >> 
-> >> >> Mucking about with sysfs after we start deleting a directory is a bug.
-> >> >> At worst my change makes a buggy race slightly less deterministic.
-> >> >> 
-> >> >> I am not ready to consider keeping the current unnecessary atomic
-> >> >> removal step.  That unnecessary atomicity makes the following patches
-> >> >> more difficult, and requires a lot of unnecessary retesting.
-> >> >> 
-> >> >> What do you think the extra unnecessary atomicity helps protect?
-> >> >
-> >> > It's just not a clean API.  When people are trying to code things way
-> >> > up in the stack, they aren't likely to look up the code to see what
-> >> > assumptions are being made especially when the stack is deep and
-> >> > complex and sysfs is near the bottom of the tall stack.  IMHO
-> >> > implementing the usually expected semantics at this depth is worth
-> >> > every effort.  It's just good implementation style which might look
-> >> > like wasted effort but will harden the stack in the long run.  Plus,
-> >> > it's not like making it atomic is difficult or anything.
-> >> 
-> >> I guess we are going to have to disagree on this one.
-> >> 
-> >> My take is simply that a correct user has to wait until no one else
-> >> can find the kobject before calling kobject_del.  At which point
-> >> races are impossible, and it doesn't matter if sysfs_mutex is held
-> >> across the entire operation.
-> >
-> > I'm afraid this one isn't a valid assumption.  If you look in SCSI,
-> > you'll see we do get objects after they've been removed from visibility.
-> > We use it as part of the state model for how our objects work (objects
-> > removed from visibility are dying, but we still need them to be findable
-> > (and gettable).
-> 
-> I was not precise enough.  It appears I overlooked the fact that
-> kobject_del is not always called from kobject_put by way of
-> kobject_release.
+Hello,
+floppy driver was always missing hibernation support. After resume, floppy did
+not work (until a couple of disk reinserts and retries), producing errors like
+this:
+end_request: I/O error, dev fd0, sector 0
 
-OK ... just so you understand, I'm thinking about the device model
-rather than kobjects.  device_del() can't be called from release methods
-because they're often called from interrupt context and the mutex
-requirements in device_del() mean it needs user context.
-
-> Strictly the requirement is that after kobject_del we don't add,
-> remove or otherwise manipulate sysfs attributes.  That is we don't
-> call any of:
-> 
-> sysfs_add_file
-> sysfs_create_file
-> sysfs_create_bin_file
-> sysfs_remove_file
-> sysfs_remove_bin_file
-> sysfs_create_link
-> sysfs_remove_link
-> sysfs_create_group
-> sysfs_remove_group
-> sysfs_create_subdir
-> sysfs_remove_subdir
-> 
-> 
-> Those all either oops or BUG today if you try it.  So I can't see how
-> a subsystem could depend on those working.
-
-It doesn't; you've altered your requirement.  We can fully buy into this
-new relaxed one.
-
-> Also there is sysfs_remove_dir (on a subdirectory) aka kobject_del on
-> a child object after kobject_del on the parent object.
-> 
-> As best I can tell that only works by fluke today.
-
-Yes, that's an artifact of the fact that the reference counted lifecycle
-is on release ... del just happens at a certain point in it.  We don't
-hold any counters that tell us what the visibility of our children are,
-so it's possible to make a parent invisible by calling del simply
-because you don't know.
-
-> > Now, this could be altered as part of an object lifetime rewrite of SCSI
-> > (and I suspect a few other subsystems) but it's certainly an open
-> > question of whether the pain is worth the gain.
-> 
-> I won't tell you that sysfs, the kobject layer, or the device layer
-> are the best thing since sliced bread.  I'm just trying to simplify
-> the code and get the bugs out.
-
-James
+Ingo Molnar tried to fix it in 2006: http://lkml.org/lkml/2006/11/12/92
 
 
+
+
+Based on Ingo Molnar's patch from 2006, this makes the floppy work after
+resume from hibernation, at least on my machine.
+
+
+Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
+
+--- linux-2.6.29.4-orig/drivers/block/floppy.c	2009-05-30 14:38:29.000000000 +0200
++++ linux/drivers/block/floppy.c	2009-05-30 17:50:32.000000000 +0200
+@@ -4148,6 +4148,24 @@
+ {
+ }
+ 
++static int floppy_resume(struct platform_device *dev)
++{
++	int i;
++
++	for (i = 0; i < N_FDC; i++)
++		if (FDCS->address != -1)
++			user_reset_fdc(-1, FD_RESET_ALWAYS, 0);
++
++	return 0;
++}
++
++static struct platform_driver floppy_driver = {
++	.resume = floppy_resume,
++	.driver = {
++		.name = "floppy",
++	},
++};
++
+ static struct platform_device floppy_device[N_DRIVE];
+ 
+ static struct kobject *floppy_find(dev_t dev, int *part, void *data)
+@@ -4196,10 +4214,14 @@
+ 	if (err)
+ 		goto out_put_disk;
+ 
++	err = platform_driver_register(&floppy_driver);
++	if (err)
++		goto out_unreg_blkdev;
++
+ 	floppy_queue = blk_init_queue(do_fd_request, &floppy_lock);
+ 	if (!floppy_queue) {
+ 		err = -ENOMEM;
+-		goto out_unreg_blkdev;
++		goto out_unreg_driver;
+ 	}
+ 	blk_queue_max_sectors(floppy_queue, 64);
+ 
+@@ -4346,6 +4368,8 @@
+ out_unreg_region:
+ 	blk_unregister_region(MKDEV(FLOPPY_MAJOR, 0), 256);
+ 	blk_cleanup_queue(floppy_queue);
++out_unreg_driver:
++	platform_driver_unregister(&floppy_driver);
+ out_unreg_blkdev:
+ 	unregister_blkdev(FLOPPY_MAJOR, "fd");
+ out_put_disk:
+@@ -4566,6 +4590,7 @@
+ 
+ 	blk_unregister_region(MKDEV(FLOPPY_MAJOR, 0), 256);
+ 	unregister_blkdev(FLOPPY_MAJOR, "fd");
++	platform_driver_unregister(&floppy_driver);
+ 
+ 	for (drive = 0; drive < N_DRIVE; drive++) {
+ 		del_timer_sync(&motor_off_timer[drive]);
+
+
+-- 
+Ondrej Zary
