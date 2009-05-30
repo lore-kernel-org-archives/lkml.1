@@ -1,106 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932377AbZE3Nwt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932324AbZE3Nz5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932377AbZE3Nwt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 09:52:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758124AbZE3Nwk
+	id S932324AbZE3Nz5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 09:55:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754682AbZE3Nzt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 09:52:40 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:33260 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753767AbZE3Nwj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 09:52:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=DU7ruj4+j460zyjrmTtORlnpS82L+Vavfc5oObgc8d+guMGzRbzCJMHLVBCRFXsreL
-         elpspFn1EbkuxhyRwo2wpXjr9zMdUYynzwwqjsjLMf3s0icInnymzrOtoCgkW7/r0yMR
-         dSkbWIPF1/gbuSvQacE/sJ7yoTxokd9NToMJo=
-Date: Sat, 30 May 2009 15:52:37 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Tom Zanussi <tzanussi@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2] tracing/filters: use strcmp() instead of strncmp()
-Message-ID: <20090530135236.GB5969@nowhere>
-References: <4A1F9FAC.6020506@cn.fujitsu.com> <c62985530905290651id2435bfx7f57ec561fe366e3@mail.gmail.com> <4A20F71F.6030703@cn.fujitsu.com>
+	Sat, 30 May 2009 09:55:49 -0400
+Received: from r00tworld.com ([212.85.137.21]:44946 "EHLO r00tworld.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753767AbZE3Nzt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 May 2009 09:55:49 -0400
+From: pageexec@freemail.hu
+To: Peter Zijlstra <peterz@infradead.org>
+Date: Sat, 30 May 2009 15:54:48 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4A20F71F.6030703@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Subject: Re: [patch 0/5] Support for sanitization flag in low-level page allocator
+Reply-to: pageexec@freemail.hu
+CC: "Larry H." <research@subreption.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@osdl.org>, linux-mm@kvack.org,
+       Ingo Molnar <mingo@redhat.com>
+Message-ID: <4A213AA8.18076.182E39C1@pageexec.freemail.hu>
+In-reply-to: <1243689707.6645.134.camel@laptop>
+References: <20090522073436.GA3612@elte.hu>, <4A211BA8.8585.17B52182@pageexec.freemail.hu>, <1243689707.6645.134.camel@laptop>
+X-mailer: Pegasus Mail for Windows (4.50 PB1)
+Content-type: text/plain; charset=US-ASCII
+Content-transfer-encoding: 7BIT
+Content-description: Mail message body
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.12 (r00tworld.com [212.85.137.21]); Sat, 30 May 2009 15:54:12 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 30, 2009 at 05:06:39PM +0800, Li Zefan wrote:
-> Frédéric Weisbecker wrote:
-> > 2009/5/29 Li Zefan <lizf@cn.fujitsu.com>:
-> >> Trace filter is not working normally:
-> >>
-> >>  # echo 'name == et' > tracing/events/irq/irq_handler_entry/filter
-> >>  # echo 1 > tracing/events/irq/irq_handler_entry/enable
-> >>  # cat trace_pipe
-> >>      <idle>-0     [001]  1363.423175: irq_handler_entry: irq=18 handler=eth0
-> >>      <idle>-0     [001]  1363.934528: irq_handler_entry: irq=18 handler=eth0
-> >>      ...
-> >>
-> >> It's because we pass to trace_define_field() the information of
-> >> __str_loc_##item, but not the actual string, so pred->str_len == field->size
-> >> == sizeof(unsigned short), thus it always compare at most 2 bytes when
-> >> filtering on __string() field.
+On 30 May 2009 at 15:21, Peter Zijlstra wrote:
+
+> On Sat, 2009-05-30 at 13:42 +0200, pageexec@freemail.hu wrote:
+> > > Why waste time on this?
 > > 
-> > 
-> > Weird, I was about sure I set the size of each string() to FILTER_MAX_STRING (or
-> > something like that).
-> > 
-> > Anyway this patch looks good but it does more than just fixing the
-> > issue, it removes
-> > the string len boundary security we had with strncmp() for every
-> > string (static and
-> > dynamic size).
-> > 
-> > The potential side effect that comes along this patch would disappear if
-> > you just turn strncmp into strcmp only in filter_pred_strloc().
-> > 
-> > If you do that also for fixed size strings, then it should be done in
-> > a second patch,
-> > although I guess turning anything here into strcmp is fine because the
-> > strings given
-> > by the user are always limited in their size. But we never know...
-> > 
+> > e.g., when userland executes a syscall, it 'can run kernel code'. if that kernel
+> > code (note: already exists, isn't provided by the attacker) gives unintended
+> > kernel memory back to userland, there is a problem. that problem is addressed
+> > in part by early sanitizing of freed data.
 > 
-> I don't think there's any security issue. It's irrelevant how big the user-input
-> strings are. The point is those strings are guaranteed to be NULL-terminated.
-> Am I missing something?
+> Right, so the whole point is to minimize the impact of actual bugs,
+> right?
+
+correct. this approach is the manifestation of a particular philosophy
+in computer security where instead of finding all bugs, we minimize or,
+at times, eliminate their bad sideeffects. non-executable pages, ASLR,
+etc are all about this. see below why.
+
+> So why not focus on fixing those actual bugs? Can we create tools
+> to help us find such bugs faster? We use sparse for a lot of static
+> checking, we create things like lockdep and kmemcheck to dynamically
+> find trouble.
 > 
-> And I don't think it's necessary to make 2 patches that each patch converts
-> one strncmp to strcmp. But maybe it's better to improve this changelog?
+> Can we instead of working around a problem, fix the actual problem?
 
+finding all use-after-free bugs is not possible, as far as i know. the
+fundamental problem is that you'd have to find bugs with arbitrary read
+sideeffects (which is just as hard a problem as finding bugs with arbitrary
+write sideeffects which you'd also have to solve). if you solve these
+problems, you'll have solved the most important bug class in computer
+security that many decades of academic/industrial/etc research failed at.
 
-Hmm, you must be right, indeed they seem to be guaranted beeing NULL-terminated
-strings.
+since there's no (practical and theoretical) solution in sight for finding
+and eliminating such memory handling bugs, we're left with tackling a less
+ambitious goal of at least reducing their sideeffects to acceptable levels.
 
-But at least improve your changelog to explain why your solution is
-safe.
-
-Thanks,
-Frederic.
-
- 
-> > 
-> > Thanks,
-> > Frederic.
-> > 
-> > 
-> >> Since __string() is dynamic size, we are not able to set field->size to
-> >> string length. Thus this patch uses strcmp() instead of strncmp().
-> >>
-> >> [ Impact: make filter facility working normally for __string() field ]
-> >>
-> >> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> >> ---
+of course there'll be always instances and subclasses of bugs that we can
+find by manual or automated inspection, but that only shows that the rest
+can only by handled by 'working around the problem'.
 
