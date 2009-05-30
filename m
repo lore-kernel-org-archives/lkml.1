@@ -1,87 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763427AbZE3STe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932683AbZE3SVq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763427AbZE3STe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 14:19:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760986AbZE3STZ
+	id S932683AbZE3SVq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 14:21:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760986AbZE3SVj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 14:19:25 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:33612 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753529AbZE3STY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 14:19:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:user-agent:cc:mime-version:content-disposition:date
-         :message-id:content-type:content-transfer-encoding;
-        b=jsgWuny3w2cAW9mnKFvUuKpLNMK3BA6sQqYahDxPgRNlQz+A2hhgt6d2I6lA4avoHZ
-         YjKB39+Y1z+s705dyhZyrSAwY3u5/c8kou8MZPDALypD7/6Lq2aqfvUzqKdxOYYEqGTb
-         e4WHEVB+ZaoPy1FdwHj0GZEGu2dMYpPQ47mbI=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [git pull] IDE fix
-User-Agent: KMail/1.9.9
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
+	Sat, 30 May 2009 14:21:39 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:54651 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753577AbZE3SVi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 May 2009 14:21:38 -0400
+Date: Sat, 30 May 2009 20:21:13 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Larry H." <research@subreption.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@osdl.org>, linux-mm@kvack.org,
+       Ingo Molnar <mingo@redhat.com>, pageexec@freemail.hu,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [patch 0/5] Support for sanitization flag in low-level page
+	allocator
+Message-ID: <20090530182113.GA25237@elte.hu>
+References: <20090527223421.GA9503@elte.hu> <20090528072702.796622b6@lxorguk.ukuu.org.uk> <20090528090836.GB6715@elte.hu> <20090528125042.28c2676f@lxorguk.ukuu.org.uk> <84144f020905300035g1d5461f9n9863d4dcdb6adac0@mail.gmail.com> <20090530075033.GL29711@oblivion.subreption.com> <4A20E601.9070405@cs.helsinki.fi> <20090530082048.GM29711@oblivion.subreption.com> <20090530173428.GA20013@elte.hu> <20090530180333.GH6535@oblivion.subreption.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Date: Sat, 30 May 2009 20:24:05 +0200
-Message-Id: <200905302024.05719.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20090530180333.GH6535@oblivion.subreption.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Fix LBA48 and CACHE FLUSH commands support on Netcell ATA RAID
-(2.6.28 regression).
+* Larry H. <research@subreption.com> wrote:
 
-[ pata_netcell needs a similar change if anyone is interested ]
+> On 19:34 Sat 30 May     , Ingo Molnar wrote:
+> > You need to provide a more sufficient and more constructive answer 
+> > than that, if you propose upstream patches that impact the SLAB 
+> > subsystem.
+> 
+> Impact? If you mean introducing changes, definitely. If the word 
+> has negative connotations in this context, definitely not ;)
 
+i mean its most obvious meaning: if you change the SLAB subsystem, 
+it goes via Pekka. Also, changes to the page allocator impact the 
+SLAB subsystem too (which is the most common front-end to the page 
+allocator) so he has a say there too obviously ...
 
-Linus, please pull from 'for-linus' branch of:
+> > FYI Pekka is one of the SLAB subsystem maintainers so you need 
+> > to convince him that your patches are the right approach. Trying 
+> > to teach Pekka about SLAB internals in a condescending tone will 
+> > only cause your patches to be ignored.
+> 
+> I've never tried to teach you anything but security matters, so 
+> far. And I've been quite unsuccessful at it, apparently. That 
+> said, please let me explain why kzfree was broken (as of 2.6.29.4, 
+> I've been told 30-rc2 already has users of it).
+> 
+> The first issue is that SLOB has a broken ksize, which won't take 
+> into consideration compound pages AFAIK. To fix this you will need 
+> to introduce some changes in the way the slob_page structure is 
+> handled, and add real size tracking to it. You will find these 
+> problems if you try to implement a reliable kmem_ptr_validate for 
+> SLOB, too.
 
-master.kernel.org:/pub/scm/linux/kernel/git/bart/ide-2.6.git for-linus
+SLOB is a rarely used (and high overhead) allocator. But the right 
+answer there: fix kzalloc().
 
-to receive the following updates:
+> The second is that I've experienced issues with kzfree on 
+> 2.6.29.4, in which something (apparently the freelist pointer) is 
+> overwritten and leads to a NULL pointer deference in the next 
+> allocation in the affected cache. I didn't fully analyze what was 
+> broken, besides that for sanitizing the objects on kfree I needed 
+> to rely on the inuse size and not the one reported by ksize, if I 
+> wanted to avoid hitting that trailing meta-data.
+> 
+> I just noticed Johannes Weiner's patch from February 16.
 
- drivers/ide/ide-pci-generic.c |   11 +++++++++++
- 1 files changed, 11 insertions(+), 0 deletions(-)
+if kzfree() is broken then a number of places in the kernel that 
+currently rely on it are potentially broken as well.
 
+So as far as i'm concerned, your patchset is best expressed in the 
+following form: Cryto, WEP and other sensitive places should be 
+updated to use kzfree() to free keys.
 
-Bartlomiej Zolnierkiewicz (1):
-      ide_pci_generic: add quirk for Netcell ATA RAID
+This can be done unconditionally (without any Kconfig flag), as it's 
+all in slow-paths - and because there's a real security value in 
+sanitizing buffers that held sensitive keys, when they are freed.
 
+Regarding a whole-sale 'clear everything on free' approach - that's 
+both pointless security wise (sensitive information can still leak 
+indefinitely [if you disagree i can provide an example]) and has a 
+very high cost so it's not acceptable to normal Linux distros.
 
-diff --git a/drivers/ide/ide-pci-generic.c b/drivers/ide/ide-pci-generic.c
-index 61111fd..39d4e01 100644
---- a/drivers/ide/ide-pci-generic.c
-+++ b/drivers/ide/ide-pci-generic.c
-@@ -33,6 +33,16 @@ static int ide_generic_all;		/* Set to claim all devices */
- module_param_named(all_generic_ide, ide_generic_all, bool, 0444);
- MODULE_PARM_DESC(all_generic_ide, "IDE generic will claim all unknown PCI IDE storage controllers.");
- 
-+static void netcell_quirkproc(ide_drive_t *drive)
-+{
-+	/* mark words 85-87 as valid */
-+	drive->id[ATA_ID_CSF_DEFAULT] |= 0x4000;
-+}
-+
-+static const struct ide_port_ops netcell_port_ops = {
-+	.quirkproc		= netcell_quirkproc,
-+};
-+
- #define DECLARE_GENERIC_PCI_DEV(extra_flags) \
- 	{ \
- 		.name		= DRV_NAME, \
-@@ -74,6 +84,7 @@ static const struct ide_port_info generic_chipsets[] __devinitdata = {
- 
- 	{	/* 6: Revolution */
- 		.name		= DRV_NAME,
-+		.port_ops	= &netcell_port_ops,
- 		.host_flags	= IDE_HFLAG_CLEAR_SIMPLEX |
- 				  IDE_HFLAG_TRUST_BIOS_FOR_DMA |
- 				  IDE_HFLAG_OFF_BOARD,
+> BTW, talking about branches and call depth, you are proposing 
+> using kzfree() which involves further test and call branches 
+> (including those inside the specific ksize implementation of the 
+> allocator being used) and it duplicates the check for 
+> ZERO_SIZE_PTR/NULL too. The function is so simple that it should 
+> be a static inline declared in slab.h. It also lacks any 
+> validation checks as performed in kfree (besides the zero 
+> size/null ptr one).
+> 
+> Also, users of unconditional sanitization would see unnecessary 
+> duplication of the clearing, causing a real performance hit (which 
+> would be almost non existent otherwise). That will make kzfree 
+> unsuitable for most hot spots like the crypto api and the mac80211 
+> wep code.
+> 
+> Honestly your proposed approach seems a little weak.
+
+Unconditional honesty is definitely welcome ;-)
+
+Freeing keys is an utter slow-path (if not then the clearing is the 
+least of our performance worries), so any clearing cost is in the 
+noise. Furthermore, kzfree() is an existing facility already in use. 
+If it's reused by your patches that brings further advantages: 
+kzfree(), if it has any bugs, will be fixed. While if you add a 
+parallel facility kzfree() stays broken.
+
+So your examples about real or suspected kzfree() breakages only 
+strengthen the point that your patches should be using it. Keeping a 
+rarely used kernel facility (like kzfree) correct is hard - 
+splintering it by creating a parallel facility is actively harmful 
+for that reason.
+
+	Ingo
