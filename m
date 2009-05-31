@@ -1,30 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756775AbZEaGns@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756806AbZEaGoH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756775AbZEaGns (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 May 2009 02:43:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753242AbZEaGnk
+	id S1756806AbZEaGoH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 May 2009 02:44:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756004AbZEaGnz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 May 2009 02:43:40 -0400
-Received: from mga01.intel.com ([192.55.52.88]:47195 "EHLO mga01.intel.com"
+	Sun, 31 May 2009 02:43:55 -0400
+Received: from mga02.intel.com ([134.134.136.20]:34081 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752912AbZEaGnj convert rfc822-to-8bit (ORCPT
+	id S1754259AbZEaGny convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 May 2009 02:43:39 -0400
+	Sun, 31 May 2009 02:43:54 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.41,278,1241420400"; 
-   d="scan'208,223";a="695118053"
+   d="scan'208,223";a="417224601"
 From: "Xu, Dongxiao" <dongxiao.xu@intel.com>
 To: "greg@kroah.com" <greg@kroah.com>
 CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
        "Nashif, Anas" <anas.nashif@intel.com>,
        "Obara, Marcin" <marcin.obara@intel.com>
-Date: Sun, 31 May 2009 14:43:39 +0800
-Subject: [Patch 02/08] Staging: heci - fix wrong order of device_lock and
- file_lock
-Thread-Topic: [Patch 02/08] Staging: heci - fix wrong order of device_lock
- and file_lock
-Thread-Index: AcnhuyGeYeJ8QpOARyyzz5Ms+h5smw==
-Message-ID: <EADF0A36011179459010BDF5142A457501C9BF2AE0@pdsmsx502.ccr.corp.intel.com>
+Date: Sun, 31 May 2009 14:43:55 +0800
+Subject: [Patch 06/08] Staging: heci - fix setting h_is bit in h_csr register
+Thread-Topic: [Patch 06/08] Staging: heci - fix setting h_is bit in h_csr
+ register
+Thread-Index: AcnhuyrMPf6zb6L3TBy7N1C7hrjaCA==
+Message-ID: <EADF0A36011179459010BDF5142A457501C9BF2AE4@pdsmsx502.ccr.corp.intel.com>
 Accept-Language: en-US
 Content-Language: en-US
 X-MS-Has-Attach: 
@@ -37,50 +36,139 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 5c4db44364f204d168d2bbb70310728a54aabcd7 Mon Sep 17 00:00:00 2001
+>From 88efd711b8209047054126e1d89254b0a6cfb5d4 Mon Sep 17 00:00:00 2001
 From: Dongxiao Xu <dongxiao.xu@intel.com>
-Date: Sun, 31 May 2009 22:44:09 +0800
-Subject: [PATCH] heci: fix wrong order of device_lock and file_lock
+Date: Sun, 31 May 2009 22:46:34 +0800
+Subject: [PATCH] heci: fix setting h_is bit in h_csr register.
 
-When the two locks are nested, the code should always first acquire file_lock,
-and then acquire device_lock in order not to generate dead-lock race.
+Host software could issue interrupts to ME firmware, using H_IG bit. While
+Setting H_IG bit, host software should preserve all the other bits in H_CSR
+unchanged. In the original function which sets H_CSR register, they first read
+the register, then set some bits, and write the whole 32bits back to the
+register. And that the special behavior of H_IS (write-one-to-zero) causes problem.
+This patch fixes the issue in the following ways:
+
+ - Modify heci_set_csr_register() function so that it doesn't change H_IS bit.
+ - Add interface heci_csr_clear_his() to clear H_IS bit. This function is called
+   after H_IS checking (dev->host_hw_state & H_IS == H_IS).
+ - In original heci_csr_disable_interrupts() function, it not only clears H_IE
+   bit, sometimes it also clears H_IS bit. This patch separates the two parts.
+ - Avoid calling write_heci_register() function to set H_CSR register directly,
+   and instead using heci_set_csr_register() function
 
 Signed-off-by: Dongxiao Xu <dongxiao.xu@intel.com>
 ---
- drivers/staging/heci/io_heci.c |    7 +++++--
- 1 files changed, 5 insertions(+), 2 deletions(-)
+ drivers/staging/heci/heci_init.c      |    4 ++--
+ drivers/staging/heci/heci_interface.c |   17 +++++++++++++++--
+ drivers/staging/heci/heci_interface.h |    1 +
+ drivers/staging/heci/interrupt.c      |    6 ++++++
+ 4 files changed, 24 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/staging/heci/io_heci.c b/drivers/staging/heci/io_heci.c
-index ff6d294..26882a2 100644
---- a/drivers/staging/heci/io_heci.c
-+++ b/drivers/staging/heci/io_heci.c
-@@ -277,14 +277,16 @@ int heci_ioctl_connect_client(struct iamt_heci_device *dev, int if_num,
- 		}
- 		goto end;
+diff --git a/drivers/staging/heci/heci_init.c b/drivers/staging/heci/heci_init.c
+index 06ea196..427f55d 100644
+--- a/drivers/staging/heci/heci_init.c
++++ b/drivers/staging/heci/heci_init.c
+@@ -249,7 +249,7 @@ int heci_hw_init(struct iamt_heci_device *dev)
+ 
+ 	if ((dev->host_hw_state & H_IS) == H_IS) {
+ 		/* acknowledge interrupt and stop interupts */
+-		heci_set_csr_register(dev);
++		heci_csr_clear_his(dev);
  	}
-+	spin_unlock_bh(&dev->device_lock);
+ 	dev->recvd_msg = 0;
+ 	DBG("reset in start the heci device.\n");
+@@ -354,7 +354,7 @@ void heci_reset(struct iamt_heci_device *dev, int interrupts)
+ 	dev->host_hw_state &= ~H_RST;
+ 	dev->host_hw_state |= H_IG;
+ 
+-	write_heci_register(dev, H_CSR, dev->host_hw_state);
++	heci_set_csr_register(dev);
+ 
+ 	DBG("currently saved host_hw_state = 0x%08x.\n",
+ 	    dev->host_hw_state);
+diff --git a/drivers/staging/heci/heci_interface.c b/drivers/staging/heci/heci_interface.c
+index c5f51a7..03e1df1 100644
+--- a/drivers/staging/heci/heci_interface.c
++++ b/drivers/staging/heci/heci_interface.c
+@@ -44,12 +44,15 @@
+ 
+ 
+ /**
+- * heci_set_csr_register - write H_CSR register to the heci device
++ * heci_set_csr_register - write H_CSR register to the heci device,
++ * and ignore the H_IS bit for it is write-one-to-zero.
+  *
+  * @dev: device object for our driver
+  */
+ void heci_set_csr_register(struct iamt_heci_device *dev)
+ {
++	if ((dev->host_hw_state & H_IS) == H_IS)
++		dev->host_hw_state &= ~H_IS;
+ 	write_heci_register(dev, H_CSR, dev->host_hw_state);
+ 	dev->host_hw_state = read_heci_register(dev, H_CSR);
+ }
+@@ -76,6 +79,16 @@ void heci_csr_disable_interrupts(struct iamt_heci_device *dev)
+ 	heci_set_csr_register(dev);
+ }
+ 
++/**
++ * heci_csr_clear_his - clear H_IS bit in H_CSR
++ *
++ * @dev: device object for our driver
++ */
++void heci_csr_clear_his(struct iamt_heci_device *dev)
++{
++	write_heci_register(dev, H_CSR, dev->host_hw_state);
++	dev->host_hw_state = read_heci_register(dev, H_CSR);
++}
+ 
+ /**
+  * _host_get_filled_slots - get number of device filled buffer slots
+@@ -185,7 +198,7 @@ int heci_write_message(struct iamt_heci_device *dev,
+ 	}
+ 
+ 	dev->host_hw_state |= H_IG;
+-	write_heci_register(dev, H_CSR, dev->host_hw_state);
++	heci_set_csr_register(dev);
+ 	dev->me_hw_state = read_heci_register(dev, ME_CSR_HA);
+ 	if ((dev->me_hw_state & ME_RDY_HRA) != ME_RDY_HRA)
+ 		return 0;
+diff --git a/drivers/staging/heci/heci_interface.h b/drivers/staging/heci/heci_interface.h
+index 37336eb..aff7f80 100644
+--- a/drivers/staging/heci/heci_interface.h
++++ b/drivers/staging/heci/heci_interface.h
+@@ -134,6 +134,7 @@ enum client_disconnect_status_types{
+ void heci_set_csr_register(struct iamt_heci_device *dev);
+ void heci_csr_enable_interrupts(struct iamt_heci_device *dev);
+ void heci_csr_disable_interrupts(struct iamt_heci_device *dev);
++void heci_csr_clear_his(struct iamt_heci_device *dev);
+ 
+ void heci_read_slots(struct iamt_heci_device *dev,
+ 		     unsigned char *buffer, unsigned long buffer_length);
+diff --git a/drivers/staging/heci/interrupt.c b/drivers/staging/heci/interrupt.c
+index b7ce73b..3a510ed 100644
+--- a/drivers/staging/heci/interrupt.c
++++ b/drivers/staging/heci/interrupt.c
+@@ -92,6 +92,9 @@ irqreturn_t heci_isr_interrupt(int irq, void *dev_id)
+ 	/* disable interrupts */
+ 	heci_csr_disable_interrupts(dev);
+ 
++	/* clear H_IS bit in H_CSR */
++	heci_csr_clear_his(dev);
 +
- 	spin_lock(&file_ext->file_lock);
-+	spin_lock_bh(&dev->device_lock);
- 	if (file_ext->state != HECI_FILE_CONNECTING) {
- 		rets = -ENODEV;
--		spin_unlock(&file_ext->file_lock);
- 		spin_unlock_bh(&dev->device_lock);
-+		spin_unlock(&file_ext->file_lock);
- 		goto end;
- 	}
--	spin_unlock(&file_ext->file_lock);
- 	/* prepare the output buffer */
- 	client = (struct heci_client *) res_msg.data;
- 	client->max_msg_length = dev->me_clients[i].props.max_msg_length;
-@@ -312,6 +314,7 @@ int heci_ioctl_connect_client(struct iamt_heci_device *dev, int if_num,
- 			      &dev->ctrl_wr_list.heci_cb.cb_list);
- 	}
- 	spin_unlock_bh(&dev->device_lock);
-+	spin_unlock(&file_ext->file_lock);
- 	err = wait_event_timeout(dev->wait_recvd_msg,
- 			(HECI_FILE_CONNECTED == file_ext->state
- 			 || HECI_FILE_DISCONNECTED == file_ext->state),
+ 	/*
+ 	 * Our device interrupted, schedule work the heci_bh_handler
+ 	 * to handle the interrupt processing. This needs to be a
+@@ -251,6 +254,9 @@ end:
+ 		/* acknowledge interrupt and disable interrupts */
+ 		heci_csr_disable_interrupts(dev);
+ 
++		/* clear H_IS bit in H_CSR */
++		heci_csr_clear_his(dev);
++
+ 		PREPARE_WORK(&dev->work, heci_bh_handler);
+ 		DBG("schedule work the heci_bh_handler.\n");
+ 		rets = schedule_work(&dev->work);
 -- 
 1.6.0.rc1
 
