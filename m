@@ -1,154 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758738AbZEaOfM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758202AbZEaOel@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758738AbZEaOfM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 May 2009 10:35:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757838AbZEaOeY
+	id S1758202AbZEaOel (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 May 2009 10:34:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756481AbZEaOeK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 May 2009 10:34:24 -0400
+	Sun, 31 May 2009 10:34:10 -0400
 Received: from mail-ew0-f176.google.com ([209.85.219.176]:49478 "EHLO
 	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757655AbZEaOeV (ORCPT
+	with ESMTP id S1756572AbZEaOeH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 May 2009 10:34:21 -0400
+	Sun, 31 May 2009 10:34:07 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=JN1iG5qRVIUkX06alHfOdQRYsrqMtqtXsocNTz61ZwV/wZKym7+yqz3s0atPrnhele
-         49MO2cq6Lr+HZsrWLMFR59bYOA0X3iM5E0A3LvpPulad4TQVM2i/+WVplolySAg+w5go
-         TgVte3cNFB5qbPOAhTUMDts+KyLulqrleku+Y=
+        b=UokgjYPwgTrhZmnIT02d9j/+kB8sjdISePXDgTG7cpkNgdO6EOggQv69+ivLBiH2qd
+         uqiYBwD/JReBG6CZn8VSLqxXJGK8LM8MzfxNcO8tHW5K6/NPPA5l809g6+uO54dCTCmk
+         2AAtzzvpkpcOFkMveNE9ONJx9c4yWuD6SQEsw=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        "Andries E. Brouwer" <Andries.Brouwer@cwi.nl>,
        linux-kernel@vger.kernel.org, Robert Hancock <hancockrwd@gmail.com>,
        Al Viro <viro@zeniv.linux.org.uk>, Frans Pop <elendil@planet.nl>
-Date: Sun, 31 May 2009 16:39:39 +0200
-Message-Id: <20090531143939.7164.82399.sendpatchset@localhost.localdomain>
+Date: Sun, 31 May 2009 16:39:24 +0200
+Message-Id: <20090531143924.7164.25770.sendpatchset@localhost.localdomain>
 In-Reply-To: <20090531143911.7164.26834.sendpatchset@localhost.localdomain>
 References: <20090531143911.7164.26834.sendpatchset@localhost.localdomain>
-Subject: [PATCH 4/4] ide: preserve Host Protected Area by default
+Subject: [PATCH 2/4] partitions: add ->set_capacity block device method
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] ide: preserve Host Protected Area by default
+Subject: [PATCH] partitions: add ->set_capacity block device method
 
->From the perspective of most users of recent systems, disabling Host
-Protected Area (HPA) can break vendor RAID formats, GPT partitions and
-risks corrupting firmware or overwriting vendor system recovery tools.
+* Add ->set_capacity block device method and use it in rescan_partitions()
+  to attempt enabling native capacity of the device upon detecting the
+  partition which exceeds device capacity.
 
-Unfortunately the original (kernels < 2.6.30) behavior (unconditionally
-disabling HPA and using full disk capacity) was introduced at the time
-when the main use of HPA was to make the drive look small enough for the
-BIOS to allow the system to boot with large capacity drives.
+* Add GENHD_FL_NATIVE_CAPACITY flag to try limit attempts of enabling
+  native capacity during partition scan.
 
-Thus to allow the maximum compatibility with the existing setups (using
-HPA and partitioned with HPA disabled) we automatically disable HPA if
-any partitions overlapping HPA are detected.  Additionally HPA can also
-be disabled using the "nohpa" module parameter (i.e. "ide_core.nohpa=0.0"
-to disable HPA on /dev/hda).
-
-While at it:
-- remove stale "idebus=" entry from Documentation/kernel-parameters.txt
+Together with the consecutive patch implementing ->set_capacity method in
+ide-gd device driver this allows automatic disabling of Host Protected Area
+(HPA) if any partitions overlapping HPA are detected.
 
 Cc: Robert Hancock <hancockrwd@gmail.com>
 Cc: Frans Pop <elendil@planet.nl>
 Cc: "Andries E. Brouwer" <Andries.Brouwer@cwi.nl>
 Cc: Al Viro <viro@zeniv.linux.org.uk>
-[patch description was based on input from Alan Cox and Frans Pop]
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- Documentation/ide/ide.txt           |    2 ++
- Documentation/kernel-parameters.txt |    7 ++-----
- drivers/ide/ide-disk.c              |    3 +++
- drivers/ide/ide.c                   |   10 ++++++++++
- include/linux/ide.h                 |    2 ++
- 5 files changed, 19 insertions(+), 5 deletions(-)
+ fs/partitions/check.c  |   43 ++++++++++++++++++++++++++++++++-----------
+ include/linux/blkdev.h |    2 ++
+ include/linux/genhd.h  |    1 +
+ 3 files changed, 35 insertions(+), 11 deletions(-)
 
-Index: b/Documentation/ide/ide.txt
+Index: b/fs/partitions/check.c
 ===================================================================
---- a/Documentation/ide/ide.txt
-+++ b/Documentation/ide/ide.txt
-@@ -216,6 +216,8 @@ Other kernel parameters for ide_core are
+--- a/fs/partitions/check.c
++++ b/fs/partitions/check.c
+@@ -556,28 +556,49 @@ int rescan_partitions(struct gendisk *di
  
- * "noflush=[interface_number.device_number]" to disable flush requests
- 
-+* "nohpa=[interface_number.device_number]" to disable Host Protected Area
+ 	/* add partitions */
+ 	for (p = 1; p < state->limit; p++) {
+-		sector_t size = state->parts[p].size;
+-		sector_t from = state->parts[p].from;
++		sector_t size, from;
++try_scan:
++		size = state->parts[p].size;
+ 		if (!size)
+ 			continue;
 +
- * "noprobe=[interface_number.device_number]" to skip probing
- 
- * "nowerr=[interface_number.device_number]" to ignore the WRERR_STAT bit
-Index: b/Documentation/kernel-parameters.txt
-===================================================================
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -872,11 +872,8 @@ and is between 256 and 4096 characters. 
- 
- 	ide-core.nodma=	[HW] (E)IDE subsystem
- 			Format: =0.0 to prevent dma on hda, =0.1 hdb =1.0 hdc
--			.vlb_clock .pci_clock .noflush .noprobe .nowerr .cdrom
--			.chs .ignore_cable are additional options
--			See Documentation/ide/ide.txt.
--
--	idebus=		[HW] (E)IDE subsystem - VLB/PCI bus speed
-+			.vlb_clock .pci_clock .noflush .nohpa .noprobe .nowerr
-+			.cdrom .chs .ignore_cable are additional options
- 			See Documentation/ide/ide.txt.
- 
- 	ide-pci-generic.all-generic-ide [HW] (E)IDE subsystem
-Index: b/drivers/ide/ide-disk.c
-===================================================================
---- a/drivers/ide/ide-disk.c
-+++ b/drivers/ide/ide-disk.c
-@@ -332,6 +332,9 @@ static void idedisk_check_hpa(ide_drive_
- 			 capacity, sectors_to_MB(capacity),
- 			 set_max, sectors_to_MB(set_max));
- 
-+	if ((drive->dev_flags & IDE_DFLAG_NOHPA) == 0)
-+		return;
++		from = state->parts[p].from;
+ 		if (from >= get_capacity(disk)) {
+ 			printk(KERN_WARNING
+ 			       "%s: p%d ignored, start %llu is behind the end of the disk\n",
+ 			       disk->disk_name, p, (unsigned long long) from);
+ 			continue;
+ 		}
 +
- 	set_max = idedisk_set_max_address(drive, set_max, lba48);
- 
- 	if (set_max) {
-Index: b/drivers/ide/ide.c
-===================================================================
---- a/drivers/ide/ide.c
-+++ b/drivers/ide/ide.c
-@@ -211,6 +211,11 @@ static unsigned int ide_noflush;
- module_param_call(noflush, ide_set_dev_param_mask, NULL, &ide_noflush, 0);
- MODULE_PARM_DESC(noflush, "disable flush requests for a device");
- 
-+static unsigned int ide_nohpa;
+ 		if (from + size > get_capacity(disk)) {
+-			/*
+-			 * we can not ignore partitions of broken tables
+-			 * created by for example camera firmware, but we
+-			 * limit them to the end of the disk to avoid
+-			 * creating invalid block devices
+-			 */
++			struct block_device_operations *bdops = disk->fops;
++			unsigned long long capacity;
 +
-+module_param_call(nohpa, ide_set_dev_param_mask, NULL, &ide_nohpa, 0);
-+MODULE_PARM_DESC(nohpa, "disable Host Protected Area for a device");
+ 			printk(KERN_WARNING
+-			       "%s: p%d size %llu exceeds device capacity, "
+-			       "limited to end of disk\n",
++			       "%s: p%d size %llu exceeds device capacity, ",
+ 			       disk->disk_name, p, (unsigned long long) size);
+-			size = get_capacity(disk) - from;
 +
- static unsigned int ide_noprobe;
- 
- module_param_call(noprobe, ide_set_dev_param_mask, NULL, &ide_noprobe, 0);
-@@ -281,6 +286,11 @@ static void ide_dev_apply_params(ide_dri
- 				 drive->name);
- 		drive->dev_flags |= IDE_DFLAG_NOFLUSH;
- 	}
-+	if (ide_nohpa & (1 << i)) {
-+		printk(KERN_INFO "ide: disabling Host Protected Area for %s\n",
-+				 drive->name);
-+		drive->dev_flags |= IDE_DFLAG_NOHPA;
-+	}
- 	if (ide_noprobe & (1 << i)) {
- 		printk(KERN_INFO "ide: skipping probe for %s\n", drive->name);
- 		drive->dev_flags |= IDE_DFLAG_NOPROBE;
-Index: b/include/linux/ide.h
++			if (bdops->set_capacity &&
++			    (disk->flags & GENHD_FL_NATIVE_CAPACITY) == 0) {
++				printk(KERN_CONT "enabling native capacity\n");
++				capacity = bdops->set_capacity(disk, ~0ULL);
++				disk->flags |= GENHD_FL_NATIVE_CAPACITY;
++				if (capacity > get_capacity(disk)) {
++					set_capacity(disk, capacity);
++					check_disk_size_change(disk, bdev);
++					bdev->bd_invalidated = 0;
++				}
++				goto try_scan;
++			} else {
++				/*
++				 * we can not ignore partitions of broken tables
++				 * created by for example camera firmware, but
++				 * we limit them to the end of the disk to avoid
++				 * creating invalid block devices
++				 */
++				printk(KERN_CONT "limited to end of disk\n");
++				size = get_capacity(disk) - from;
++			}
+ 		}
+ 		part = add_partition(disk, p, from, size,
+ 				     state->parts[p].flags);
+Index: b/include/linux/blkdev.h
 ===================================================================
---- a/include/linux/ide.h
-+++ b/include/linux/ide.h
-@@ -459,6 +459,8 @@ enum {
- 	IDE_DFLAG_NICE1			= (1 << 5),
- 	/* device is physically present */
- 	IDE_DFLAG_PRESENT		= (1 << 6),
-+	/* disable Host Protected Area */
-+	IDE_DFLAG_NOHPA			= (1 << 7),
- 	/* id read from device (synthetic if not set) */
- 	IDE_DFLAG_ID_READ		= (1 << 8),
- 	IDE_DFLAG_NOPROBE		= (1 << 9),
+--- a/include/linux/blkdev.h
++++ b/include/linux/blkdev.h
+@@ -1221,6 +1221,8 @@ struct block_device_operations {
+ 	int (*direct_access) (struct block_device *, sector_t,
+ 						void **, unsigned long *);
+ 	int (*media_changed) (struct gendisk *);
++	unsigned long long (*set_capacity) (struct gendisk *,
++						unsigned long long);
+ 	int (*revalidate_disk) (struct gendisk *);
+ 	int (*getgeo)(struct block_device *, struct hd_geometry *);
+ 	struct module *owner;
+Index: b/include/linux/genhd.h
+===================================================================
+--- a/include/linux/genhd.h
++++ b/include/linux/genhd.h
+@@ -114,6 +114,7 @@ struct hd_struct {
+ #define GENHD_FL_UP				16
+ #define GENHD_FL_SUPPRESS_PARTITION_INFO	32
+ #define GENHD_FL_EXT_DEVT			64 /* allow extended devt */
++#define GENHD_FL_NATIVE_CAPACITY		128
+ 
+ #define BLK_SCSI_MAX_CMDS	(256)
+ #define BLK_SCSI_CMD_PER_LONG	(BLK_SCSI_MAX_CMDS / (sizeof(long) * 8))
