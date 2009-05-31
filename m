@@ -1,46 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756452AbZEaGex@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756775AbZEaGns@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756452AbZEaGex (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 May 2009 02:34:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752186AbZEaGep
+	id S1756775AbZEaGns (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 May 2009 02:43:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753242AbZEaGnk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 May 2009 02:34:45 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:45804 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751190AbZEaGeo (ORCPT
+	Sun, 31 May 2009 02:43:40 -0400
+Received: from mga01.intel.com ([192.55.52.88]:47195 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752912AbZEaGnj convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 May 2009 02:34:44 -0400
-Message-ID: <4A2223FE.3000309@cs.helsinki.fi>
-Date: Sun, 31 May 2009 09:30:22 +0300
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
+	Sun, 31 May 2009 02:43:39 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,278,1241420400"; 
+   d="scan'208,223";a="695118053"
+From: "Xu, Dongxiao" <dongxiao.xu@intel.com>
+To: "greg@kroah.com" <greg@kroah.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Nashif, Anas" <anas.nashif@intel.com>,
+       "Obara, Marcin" <marcin.obara@intel.com>
+Date: Sun, 31 May 2009 14:43:39 +0800
+Subject: [Patch 02/08] Staging: heci - fix wrong order of device_lock and
+ file_lock
+Thread-Topic: [Patch 02/08] Staging: heci - fix wrong order of device_lock
+ and file_lock
+Thread-Index: AcnhuyGeYeJ8QpOARyyzz5Ms+h5smw==
+Message-ID: <EADF0A36011179459010BDF5142A457501C9BF2AE0@pdsmsx502.ccr.corp.intel.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-To: "Larry H." <research@subreption.com>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Rik van Riel <riel@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@osdl.org>, linux-mm@kvack.org,
-       Ingo Molnar <mingo@redhat.com>, pageexec@freemail.hu,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [patch 0/5] Support for sanitization flag in low-level page	allocator
-References: <20090530082048.GM29711@oblivion.subreption.com> <20090530173428.GA20013@elte.hu> <20090530180333.GH6535@oblivion.subreption.com> <20090530182113.GA25237@elte.hu> <20090530184534.GJ6535@oblivion.subreption.com> <20090530190828.GA31199@elte.hu> <4A21999E.5050606@redhat.com> <84144f020905301353y2f8c232na4c5f9dfb740eec4@mail.gmail.com> <20090530213311.GM6535@oblivion.subreption.com> <20090531001318.093e3665@lxorguk.ukuu.org.uk> <20090530231813.GP6535@oblivion.subreption.com>
-In-Reply-To: <20090530231813.GP6535@oblivion.subreption.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Larry H. wrote:
-> OK, I'm going to squeeze some time and provide patches that perform the
-> same my original page bit ones did, but using kzfree. Behold code like
-> in the tty buffer management, which uses the page allocator directly for
-> allocations greater than PAGE_SIZE in length. That needs special
-> treatment, and is exactly the reason I've proposed unconditional
-> sanitization since the original patches were rejected.
+>From 5c4db44364f204d168d2bbb70310728a54aabcd7 Mon Sep 17 00:00:00 2001
+From: Dongxiao Xu <dongxiao.xu@intel.com>
+Date: Sun, 31 May 2009 22:44:09 +0800
+Subject: [PATCH] heci: fix wrong order of device_lock and file_lock
 
-You might want to also do the patch Alan suggested for the security 
-conscious people. That is, do a memset() in every page free and wrap 
-that under CONFIG_SECURITY_PARANOIA or something. There's no reason the 
-kzfree() patches and that can't co-exist.
+When the two locks are nested, the code should always first acquire file_lock,
+and then acquire device_lock in order not to generate dead-lock race.
 
-			Pekka
+Signed-off-by: Dongxiao Xu <dongxiao.xu@intel.com>
+---
+ drivers/staging/heci/io_heci.c |    7 +++++--
+ 1 files changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/staging/heci/io_heci.c b/drivers/staging/heci/io_heci.c
+index ff6d294..26882a2 100644
+--- a/drivers/staging/heci/io_heci.c
++++ b/drivers/staging/heci/io_heci.c
+@@ -277,14 +277,16 @@ int heci_ioctl_connect_client(struct iamt_heci_device *dev, int if_num,
+ 		}
+ 		goto end;
+ 	}
++	spin_unlock_bh(&dev->device_lock);
++
+ 	spin_lock(&file_ext->file_lock);
++	spin_lock_bh(&dev->device_lock);
+ 	if (file_ext->state != HECI_FILE_CONNECTING) {
+ 		rets = -ENODEV;
+-		spin_unlock(&file_ext->file_lock);
+ 		spin_unlock_bh(&dev->device_lock);
++		spin_unlock(&file_ext->file_lock);
+ 		goto end;
+ 	}
+-	spin_unlock(&file_ext->file_lock);
+ 	/* prepare the output buffer */
+ 	client = (struct heci_client *) res_msg.data;
+ 	client->max_msg_length = dev->me_clients[i].props.max_msg_length;
+@@ -312,6 +314,7 @@ int heci_ioctl_connect_client(struct iamt_heci_device *dev, int if_num,
+ 			      &dev->ctrl_wr_list.heci_cb.cb_list);
+ 	}
+ 	spin_unlock_bh(&dev->device_lock);
++	spin_unlock(&file_ext->file_lock);
+ 	err = wait_event_timeout(dev->wait_recvd_msg,
+ 			(HECI_FILE_CONNECTED == file_ext->state
+ 			 || HECI_FILE_DISCONNECTED == file_ext->state),
+-- 
+1.6.0.rc1
+
