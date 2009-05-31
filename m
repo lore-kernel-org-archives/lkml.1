@@ -1,94 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753956AbZEaVOG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754025AbZEaVSi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753956AbZEaVOG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 May 2009 17:14:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753114AbZEaVN4
+	id S1754025AbZEaVSi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 May 2009 17:18:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752273AbZEaVSb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 May 2009 17:13:56 -0400
-Received: from [78.184.112.199] ([78.184.112.199]:4340 "HELO
-	tanidik_birisi.local" rhost-flags-FAIL-FAIL-FAIL-FAIL)
-	by vger.kernel.org with SMTP id S1752917AbZEaVNz convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 May 2009 17:13:55 -0400
-Reply-To: faydalitaslar@gmail.com
-Message-ID: <f9ad3a34b4a2c0e63edae1702a5b7909@gmail.com>
-From: "=?iso-8859-9?B?RkFZREFMSSBUQd5MQVI=?=" <faydalitaslar@gmail.com>
-To: <linux-kernel@vger.kernel.org>
-Subject: =?iso-8859-9?B?3t1GQUxJIFRB3kxBUkxBIFRFREFW3Q==?=
-Date: Mon, 1 Jun 2009 00:12:23 +0300
+	Sun, 31 May 2009 17:18:31 -0400
+Received: from cpsmtpm-eml104.kpnxchange.com ([195.121.3.8]:51749 "EHLO
+	CPSMTPM-EML104.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752061AbZEaVSa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 May 2009 17:18:30 -0400
+From: Frans Pop <elendil@planet.nl>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Bug #13389] Warning 'Invalid throttling state, reset' gets displayed when it should not be
+Date: Sun, 31 May 2009 23:18:30 +0200
+User-Agent: KMail/1.9.9
+References: <4to6E2myxvG.A.muC.aIbIKB@chimera> <LEcEO2518_I.A.6LD.pIbIKB@chimera>
+In-Reply-To: <LEcEO2518_I.A.6LD.pIbIKB@chimera>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-9"
-Content-Transfer-Encoding: 8BIT
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200905312318.31318.elendil@planet.nl>
+X-OriginalArrivalTime: 31 May 2009 21:18:31.0821 (UTC) FILETIME=[596CB3D0:01C9E235]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ÝLK OLUÞUMLARI SIRASINDA, GÖRDÜÐÜ BASINÇ VE ÝÇERÝSÝNDE BULUNAN MÝNERALLER SAYESÝNDE, 
-TAÞLARIN KAZANMIÞ OLDUÐU KENDÝLERÝNE HAS ENERJÝLERÝ VAR. 
-BU ENERJÝ ÝLE SÜREKLÝ TÝTREÞÝM HALÝNDELER VE BULUNDUKLARI ALANA BU ENERJÝYÝ, FARKLI ÖLÇÜLERDE YAYARLAR. 
-YAYDIKLARI ENERJÝLERLE DE ÝNSANLAR, ÞÝFA BULURLAR. 
+On Saturday 30 May 2009, Rafael J. Wysocki wrote:
+> The following bug entry is on the current list of known regressions
+> from 2.6.29.  Please verify if it still should be listed and let me
+> know (either way).
+>
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13389
+> Subject	: Warning 'Invalid throttling state, reset' gets displayed
+>		  when it should not be
+> Submitter	: Frans Pop <elendil@planet.nl> 
+> Date		: 2009-05-26 15:24 (5 days old)
 
-faydali@faydalitaslar.com 
-MAIL ADRESÝMÝZE
-ADINIZI, SOYADINIZI, BURCUNUZU, DOÐUM TARÝHÝNÝZÝ (GÜN-AY-YIL) DOÐUM YERÝNÝZÝ (ASLEN NERELÝ OLDUÐUNUZU) VARSA RAHATSIZLIÐINIZI VE FAYDALI  TAÞLARI NE ÝÇÝN DÜÞÜNDÜÐÜNÜZÜ BÝZE YAZIN.
-HANGÝ TAÞLARIN SÝZÝN ÝÇÝN UYGUN OLDUÐUNU, TESPÝT EDELÝM. 
+Still valid. I've just added possible patches in bugzilla.
 
-www.faydalitaslar.com 
-(SÝTEMÝZDEN ÝNCELEYEBÝLECEÐÝNÝZ)
-TAÞLARLA TEDAVÝ EDÝLEBÝLEN BAZI RAHATSIZLIKLAR:
-UYKU GELMEMESÝ
-YATAKTA UYKU KAÇMASI
-GECE UYKUDAN UYANMA
-SABAH ERKEN UYANAMAMA
-KABUS GÖRME
-UYANINCA YORGUN KALKMA
-HALSÝZLÝK
-KONSANTRASYON EKSÝKLÝÐÝ
-ÝÞE ODAKLANAMAMA
-DALGINLIK
-DÝSÝPLÝN EKSÝKLÝÐÝ
-DEPRESYON
-TÝK
-OBURLUK
-KOLESTEROL
-YÜKSEK TANSÝYON
-DÜÞÜK TANSÝYON
-MÝÝGREN
-SEBEPSÝZ BAÞAÐRILARI
-CÝNSEL ÝSTEKSÝZLÝK
-AÞIRI CÝNSELLÝÐE DÜÞKÜNLÜK
-BAÞ DÖNMESÝ
-TOPLUMDAN UZAKLAÞMAK ARZUSU
-TOPLUM ÝÇÝ UYUMSUZLUK
-ÝÞ HAYATINDA BAÞARISIZLIK
-HAYATIN BÝR ANLAM TAÞIMAMASI
-YILDIZI DÜÞÜK OLMAK
-NAZARA ÇOK GELMEK
-GUATR
-TROÝD BEZLERÝ
-BOYUN TUTULMASI
-BULANTI
-POZÝTÝF ENERJÝ KAYBI
-CEP TELEFON VE BÝLGÝSAYARDAN YAYILAN RADYASYON ETKÝLERÝ
-KARAR VERMEDE ZORLUK & KARARSIZLIK
-SAPLANTILI DÜÞÜNCELER
-ÖZGÜVEN EKSÝKLÝÐÝ
-ANLAMSIZ ENDÝÞE VE KORKULAR
-SÝNÜZÜT
-ZORLUKLARA KARÞI MÜCADELE EDEMEME
-TOPLUM ÝÇÝNDE KONUÞAMAMA
-SABIRSIZLIK
-HEDEF KOYAMAMA
-HAYAL KURAMAMAK
-AÞIRI HEYECAN
-SEDEF HASTALIÐI
-TERK EDÝLMÝÞLÝK ACISI
-MANEVÝ ZAYIFLIK HÝSSÝ
-
-SAYGILARIMIZLA
-FAYDALI TAÞLAR EKÝBÝ
-www.faydalitaslar.com
-
-
-
+Cheers,
+FJP
