@@ -1,55 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756616AbZEaPa1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756226AbZEaQH1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756616AbZEaPa1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 May 2009 11:30:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755567AbZEaPaR
+	id S1756226AbZEaQH1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 May 2009 12:07:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755896AbZEaQHQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 May 2009 11:30:17 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:34517 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753664AbZEaPaQ (ORCPT
+	Sun, 31 May 2009 12:07:16 -0400
+Received: from smtp.wellnetcz.com ([212.24.148.102]:59834 "EHLO
+	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755492AbZEaQHP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 May 2009 11:30:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=DrQOmzdozb3d89FkC33DuO2awtGa6qyaj7suwGRM/FACLZkAxkcIbr4waAlTH/q8kJ
-         OQuzsGWdLYFrppIe3TR/V4lJZDGe3/Ij/Yf8eA94N8DzkK1SZrLPcKJmaXXnWHdgW/fe
-         xnqw+cESERM78DDuePnO453cfz7lsgZa/nl9M=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: "Andries E. Brouwer" <Andries.Brouwer@cwi.nl>
-Subject: Re: [PATCH 0/4] partitions/ide: improve Host Protected Area handling
-Date: Sun, 31 May 2009 17:34:54 +0200
-User-Agent: KMail/1.11.3 (Linux/2.6.30-rc7-next-20090529-06589-g7701864-dirty; KDE/4.2.3; i686; ; )
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Robert Hancock <hancockrwd@gmail.com>,
-       Al Viro <viro@zeniv.linux.org.uk>, Frans Pop <elendil@planet.nl>
-References: <20090531143911.7164.26834.sendpatchset@localhost.localdomain> <20090531152403.GA26987@ub>
-In-Reply-To: <20090531152403.GA26987@ub>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905311735.01244.bzolnier@gmail.com>
+	Sun, 31 May 2009 12:07:15 -0400
+From: Jiri Slaby <jirislaby@gmail.com>
+To: sam@ravnborg.org
+Cc: linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: [PATCH 1/1] scripts: allow docproc invocation from external
+Date: Sun, 31 May 2009 18:05:34 +0200
+Message-Id: <1243785934-13936-1-git-send-email-jirislaby@gmail.com>
+X-Mailer: git-send-email 1.6.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 31 May 2009 17:24:03 Andries E. Brouwer wrote:
-> On Sun, May 31, 2009 at 04:39:11PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> 
-> [HPA stuff deleted]
-> 
-> Hi Bartlomiej,
-> 
-> Apart from HPA one also has DCO, which functions rather similarly.
-> (I have not checked whether the current kernel knows anything about DCO.)
-> Have you thought about DCO?
-> Probably the kernel should by default not touch any such setting.
-> Maybe it should be reported?
-> A user space utility might change this setting - thus a disk can change size.
+- getcwd returns path without a slash at the end, add the slash
+- add KBUILD_SRC env support, so that we can specify path for
+  kernel (to know where scripts/kernel-doc resides) and SRCTREE
+  (for searching files referenced in .tmpl) separately
 
-We leave DCO handling entirely to user-space currently.
+[v2]
+- use KBUILD_SRC instead of a newly introduced environment variable
+
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ scripts/basic/docproc.c |   13 +++++++++----
+ 1 files changed, 9 insertions(+), 4 deletions(-)
+
+diff --git a/scripts/basic/docproc.c b/scripts/basic/docproc.c
+index 35bdc68..4c9523e 100644
+--- a/scripts/basic/docproc.c
++++ b/scripts/basic/docproc.c
+@@ -69,7 +69,7 @@ FILELINE * docsection;
+ #define NOFUNCTION    "-nofunction"
+ #define NODOCSECTIONS "-no-doc-sections"
+ 
+-char *srctree;
++static char *srctree, *kernsrctree;
+ 
+ void usage (void)
+ {
+@@ -77,7 +77,8 @@ void usage (void)
+ 	fprintf(stderr, "Input is read from file.tmpl. Output is sent to stdout\n");
+ 	fprintf(stderr, "doc: frontend when generating kernel documentation\n");
+ 	fprintf(stderr, "depend: generate list of files referenced within file\n");
+-	fprintf(stderr, "Environment variable SRCTREE: absolute path to kernel source tree.\n");
++	fprintf(stderr, "Environment variable SRCTREE: absolute path to sources.\n");
++	fprintf(stderr, "                     KBUILD_SRC: absolute path to kernel source tree.\n");
+ }
+ 
+ /*
+@@ -96,8 +97,8 @@ void exec_kernel_doc(char **svec)
+ 			exit(1);
+ 		case  0:
+ 			memset(real_filename, 0, sizeof(real_filename));
+-			strncat(real_filename, srctree, PATH_MAX);
+-			strncat(real_filename, KERNELDOCPATH KERNELDOC,
++			strncat(real_filename, kernsrctree, PATH_MAX);
++			strncat(real_filename, "/" KERNELDOCPATH KERNELDOC,
+ 					PATH_MAX - strlen(real_filename));
+ 			execvp(real_filename, svec);
+ 			fprintf(stderr, "exec ");
+@@ -178,6 +179,7 @@ void find_export_symbols(char * filename)
+ 		char real_filename[PATH_MAX + 1];
+ 		memset(real_filename, 0, sizeof(real_filename));
+ 		strncat(real_filename, srctree, PATH_MAX);
++		strncat(real_filename, "/", PATH_MAX - strlen(real_filename));
+ 		strncat(real_filename, filename,
+ 				PATH_MAX - strlen(real_filename));
+ 		sym = add_new_file(filename);
+@@ -382,6 +384,9 @@ int main(int argc, char *argv[])
+ 	srctree = getenv("SRCTREE");
+ 	if (!srctree)
+ 		srctree = getcwd(NULL, 0);
++	kernsrctree = getenv("KBUILD_SRC");
++	if (!kernsrctree)
++		kernsrctree = srctree;
+ 	if (argc != 3) {
+ 		usage();
+ 		exit(1);
+-- 
+1.6.3
+
