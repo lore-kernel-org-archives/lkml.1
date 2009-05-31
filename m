@@ -1,142 +1,215 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758919AbZEaOuI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759173AbZEaOu3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758919AbZEaOuI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 May 2009 10:50:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758444AbZEaOtv
+	id S1759173AbZEaOu3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 May 2009 10:50:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758376AbZEaOt7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 May 2009 10:49:51 -0400
-Received: from wf-out-1314.google.com ([209.85.200.172]:17323 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758573AbZEaOtu (ORCPT
+	Sun, 31 May 2009 10:49:59 -0400
+Received: from mail-pz0-f177.google.com ([209.85.222.177]:64422 "EHLO
+	mail-pz0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758918AbZEaOt6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 May 2009 10:49:50 -0400
+	Sun, 31 May 2009 10:49:58 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=UqTpLOWidMyBJfyzPdDkuWtCxd6lxmmwxcVL/nvmG2vSNm41Ah7sOX5QXGcZBHgiBy
-         Qhf/cxc0FZwUFae65DTr2dVvcjrASu7aI/1BBE7OcigbI+zEF+6PkOrWnF6uixZ4DE9E
-         /IaV0+Gjfg+0qizai7pPStO2OkbXBu7B5zjRg=
+        b=mxkFjLsy8ZPtjk1j10LtnJO/0vr2rMURSzxsG9Fv1pqmlFMVfC63CRtRgNqqTH/GGQ
+         AEQlQNJG8JleaOvj/JKDmR+ODToLBx2fogSFGaHtMdN1GYaLAcfe52tD7DwddRAv3sIn
+         IX5y2liDyxexBg8HJSjrFetxCVR8yF2fyUlb8=
 From: tom.leiming@gmail.com
 To: mingo@elte.hu
 Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
        a.p.zijlstra@chello.nl, Ming Lei <tom.leiming@gmail.com>
-Subject: [PATCH 2/8] kernel:lockdep: introduce match function to BFS
-Date: Sun, 31 May 2009 22:49:19 +0800
-Message-Id: <1243781365-26814-3-git-send-email-tom.leiming@gmail.com>
+Subject: [PATCH 3/8] kernel:lockdep:implement check_noncircular() by BFS
+Date: Sun, 31 May 2009 22:49:20 +0800
+Message-Id: <1243781365-26814-4-git-send-email-tom.leiming@gmail.com>
 X-Mailer: git-send-email 1.6.0.GIT
-In-Reply-To: <1243781365-26814-2-git-send-email-tom.leiming@gmail.com>
+In-Reply-To: <1243781365-26814-3-git-send-email-tom.leiming@gmail.com>
 References: <yes>
  <1243781365-26814-1-git-send-email-tom.leiming@gmail.com>
  <1243781365-26814-2-git-send-email-tom.leiming@gmail.com>
+ <1243781365-26814-3-git-send-email-tom.leiming@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Ming Lei <tom.leiming@gmail.com>
 
-1,introduce match() to BFS in order to make it usable to
-match different pattern;
-
-2,also rename some functions to make them more suitable.
+This patch uses BFS to implement check_noncircular() and
+prints the generated shortest circle if exists.
 
 Signed-off-by: Ming Lei <tom.leiming@gmail.com>
 ---
- kernel/lockdep.c |   43 ++++++++++++++++++++++++++-----------------
- 1 files changed, 26 insertions(+), 17 deletions(-)
+ kernel/lockdep.c |   89 ++++++++++++++++++++++-------------------------------
+ 1 files changed, 37 insertions(+), 52 deletions(-)
 
 diff --git a/kernel/lockdep.c b/kernel/lockdep.c
-index 5dcca26..ce6d09e 100644
+index ce6d09e..f740088 100644
 --- a/kernel/lockdep.c
 +++ b/kernel/lockdep.c
-@@ -900,17 +900,18 @@ static int add_lock_to_list(struct lock_class *class, struct lock_class *this,
- unsigned long bfs_accessed[BITS_TO_LONGS(MAX_LOCKDEP_ENTRIES)];
- static struct circular_queue  lock_cq;
+@@ -985,12 +985,7 @@ static inline int __bfs_backward(struct lock_list *src_entry,
+  * Recursive, forwards-direction lock-dependency checking, used for
+  * both noncyclic checking and for hardirq-unsafe/softirq-unsafe
+  * checking.
+- *
+- * (to keep the stackframe of the recursive functions small we
+- *  use these global variables, and we also mark various helper
+- *  functions as noinline.)
+  */
+-static struct held_lock *check_source, *check_target;
  
--static int __search_shortest_path(struct lock_list *source_entry,
--				struct lock_class *target,
--				struct lock_list **target_entry,
--				int forward)
-+static int __bfs(struct lock_list *source_entry,
-+			void *data,
-+			int (*match)(struct lock_list *entry, void *data),
-+			struct lock_list **target_entry,
-+			int forward)
+ /*
+  * Print a dependency chain entry (this is only done when a deadlock
+@@ -1014,7 +1009,9 @@ print_circular_bug_entry(struct lock_list *target, unsigned int depth)
+  * header first:
+  */
+ static noinline int
+-print_circular_bug_header(struct lock_list *entry, unsigned int depth)
++print_circular_bug_header(struct lock_list *entry, unsigned int depth,
++			struct held_lock *check_src,
++			struct held_lock *check_tgt)
  {
- 	struct lock_list *entry;
- 	struct list_head *head;
- 	struct circular_queue *cq = &lock_cq;
- 	int ret = 1;
+ 	struct task_struct *curr = current;
  
--	if (source_entry->class == target) {
-+	if (match(source_entry, data)) {
- 		*target_entry = source_entry;
- 		ret = 0;
- 		goto exit;
-@@ -945,7 +946,7 @@ static int __search_shortest_path(struct lock_list *source_entry,
- 		list_for_each_entry(entry, head, entry) {
- 			if (!lock_accessed(entry)) {
- 				mark_lock_accessed(entry, lock);
--				if (entry->class == target) {
-+				if (match(entry, data)) {
- 					*target_entry = entry;
- 					ret = 0;
- 					goto exit;
-@@ -962,19 +963,21 @@ exit:
- 	return ret;
+@@ -1027,9 +1024,9 @@ print_circular_bug_header(struct lock_list *entry, unsigned int depth)
+ 	printk(  "-------------------------------------------------------\n");
+ 	printk("%s/%d is trying to acquire lock:\n",
+ 		curr->comm, task_pid_nr(curr));
+-	print_lock(check_source);
++	print_lock(check_src);
+ 	printk("\nbut task is already holding lock:\n");
+-	print_lock(check_target);
++	print_lock(check_tgt);
+ 	printk("\nwhich lock already depends on the new lock.\n\n");
+ 	printk("\nthe existing dependency chain (in reverse order) is:\n");
+ 
+@@ -1043,36 +1040,24 @@ static inline int class_equal(struct lock_list *entry, void *data)
+ 	return entry->class == data;
  }
  
--static inline int __search_forward_shortest_path(struct lock_list *src_entry,
--				struct lock_class *target,
--				struct lock_list **target_entry)
-+static inline int __bfs_forward(struct lock_list *src_entry,
-+			void *data,
-+			int (*match)(struct lock_list *entry, void *data),
-+			struct lock_list **target_entry)
+-static noinline int print_circular_bug(void)
++static noinline int print_circular_bug(struct lock_list *this,
++				struct lock_list *target,
++				struct held_lock *check_src,
++				struct held_lock *check_tgt)
  {
--	return __search_shortest_path(src_entry, target, target_entry, 1);
-+	return __bfs(src_entry, data, match, target_entry, 1);
+ 	struct task_struct *curr = current;
+-	struct lock_list this;
+-	struct lock_list *target;
+ 	struct lock_list *parent;
+-	int result;
+ 	unsigned long depth;
  
- }
+ 	if (!debug_locks_off_graph_unlock() || debug_locks_silent)
+ 		return 0;
  
--static inline int __search_backward_shortest_path(struct lock_list *src_entry,
--				struct lock_class *target,
--				struct lock_list **target_entry)
-+static inline int __bfs_backward(struct lock_list *src_entry,
-+			void *data,
-+			int (*match)(struct lock_list *entry, void *data),
-+			struct lock_list **target_entry)
- {
--	return __search_shortest_path(src_entry, target, target_entry, 0);
-+	return __bfs(src_entry, data, match, target_entry, 0);
+-	this.class = hlock_class(check_source);
+-	this.parent = NULL;
+-	if (!save_trace(&this.trace))
++	if (!save_trace(&this->trace))
+ 		return 0;
  
- }
+-	result = __bfs_forward(&this,
+-			hlock_class(check_target),
+-			class_equal,
+-			&target);
+-	if (result) {
+-		printk("\n%s:search shortest path failed:%d\n", __func__,
+-			result);
+-		return 0;
+-	}
+-
+ 	depth = get_lock_depth(target);
  
-@@ -1035,6 +1038,11 @@ print_circular_bug_header(struct lock_list *entry, unsigned int depth)
+-	print_circular_bug_header(target, depth);
++	print_circular_bug_header(target, depth, check_src, check_tgt);
+ 
+ 	parent = get_lock_parent(target);
+ 
+@@ -1090,6 +1075,16 @@ static noinline int print_circular_bug(void)
  	return 0;
  }
  
-+static inline int class_equal(struct lock_list *entry, void *data)
++static int noinline print_bfs_bug(int ret)
 +{
-+	return entry->class == data;
++	if (!debug_locks_off_graph_unlock())
++		return 0;
++
++	WARN(1, "lockdep bfs error:%d\n", ret);
++
++	return 0;
 +}
 +
- static noinline int print_circular_bug(void)
- {
- 	struct task_struct *curr = current;
-@@ -1052,9 +1060,10 @@ static noinline int print_circular_bug(void)
- 	if (!save_trace(&this.trace))
- 		return 0;
+ #define RECURSION_LIMIT 40
  
--	result = __search_forward_shortest_path(&this,
--						hlock_class(check_target),
--						&target);
-+	result = __bfs_forward(&this,
-+			hlock_class(check_target),
-+			class_equal,
-+			&target);
- 	if (result) {
- 		printk("\n%s:search shortest path failed:%d\n", __func__,
- 			result);
+ static int noinline print_infinite_recursion_bug(void)
+@@ -1168,31 +1163,17 @@ unsigned long lockdep_count_backward_deps(struct lock_class *class)
+  * lead to <target>. Print an error and return 0 if it does.
+  */
+ static noinline int
+-check_noncircular(struct lock_class *source, unsigned int depth)
++check_noncircular(struct lock_list *root, struct lock_class *target,
++		struct lock_list **target_entry)
+ {
+-	struct lock_list *entry;
++	int result;
+ 
+-	if (lockdep_dependency_visit(source, depth))
+-		return 1;
++	debug_atomic_inc(&nr_cyclic_checks);
+ 
+-	debug_atomic_inc(&nr_cyclic_check_recursions);
+-	if (depth > max_recursion_depth)
+-		max_recursion_depth = depth;
+-	if (depth >= RECURSION_LIMIT)
+-		return print_infinite_recursion_bug();
+-	/*
+-	 * Check this lock's dependency list:
+-	 */
+-	list_for_each_entry(entry, &source->locks_after, entry) {
+-		if (entry->class == hlock_class(check_target))
+-			return 2;
+-		debug_atomic_inc(&nr_cyclic_checks);
+-		if (check_noncircular(entry->class, depth+1) == 2)
+-			return 2;
+-	}
+-	return 1;
+-}
++	result = __bfs_forward(root, target, class_equal, target_entry);
+ 
++	return result;
++}
+ 
+ #if defined(CONFIG_TRACE_IRQFLAGS) && defined(CONFIG_PROVE_LOCKING)
+ /*
+@@ -1586,6 +1567,8 @@ check_prev_add(struct task_struct *curr, struct held_lock *prev,
+ {
+ 	struct lock_list *entry;
+ 	int ret;
++	struct lock_list this;
++	struct lock_list *uninitialized_var(target_entry);
+ 
+ 	/*
+ 	 * Prove that the new <prev> -> <next> dependency would not
+@@ -1596,11 +1579,13 @@ check_prev_add(struct task_struct *curr, struct held_lock *prev,
+ 	 * We are using global variables to control the recursion, to
+ 	 * keep the stackframe size of the recursive functions low:
+ 	 */
+-	check_source = next;
+-	check_target = prev;
+-
+-	if (check_noncircular(hlock_class(next), 0) == 2)
+-		return print_circular_bug();
++	this.class = hlock_class(next);
++	this.parent = NULL;
++	ret = check_noncircular(&this, hlock_class(prev), &target_entry);
++	if (unlikely(!ret))
++		return print_circular_bug(&this, target_entry, next, prev);
++	else if (unlikely(ret < 0))
++		return print_bfs_bug(ret);
+ 
+ 	if (!check_prev_add_irq(curr, prev, next))
+ 		return 0;
 -- 
 1.6.0.GIT
 
