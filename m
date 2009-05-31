@@ -1,103 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755675AbZEaOVW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755781AbZEaOeJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755675AbZEaOVW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 May 2009 10:21:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755116AbZEaOVL
+	id S1755781AbZEaOeJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 May 2009 10:34:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755002AbZEaOd4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 May 2009 10:21:11 -0400
-Received: from ey-out-2122.google.com ([74.125.78.24]:13058 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754793AbZEaOVK (ORCPT
+	Sun, 31 May 2009 10:33:56 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:49478 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752507AbZEaOdz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 May 2009 10:21:10 -0400
+	Sun, 31 May 2009 10:33:55 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=iZxtf9GzpFp2tMngbOI4YFlAVV4lJ/BukH3JA/NgZk7YK9ylz6SDloOW2WS2e6oIYO
-         shJk4Io3EU/p+kJUlyBUMCh6Ol22zY2Dkm7oJHujb8DxEkdDz9Kq8PjGb51JIofDPNnI
-         fFCnqc5CfMarisFbrvdbnId+9P/YlTOrg9TuQ=
-Date: Sun, 31 May 2009 16:21:08 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] tracing/events: fix a typo in __string() format output
-Message-ID: <20090531142107.GB6013@nowhere>
-References: <4A1F558B.2050705@cn.fujitsu.com> <4A221C7F.70403@cn.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A221C7F.70403@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+        h=from:to:cc:date:message-id:subject;
+        b=GAcU1JURIvPtotD/9MIG2en6B6XGW3PXiBOq8bFuM9TtUoPHtCXWDZiXtdz0h3dgCe
+         7Nc2ZgnZkwp5Qh6+3wOAkv14ARqza7KrgfW6faGwvSBk3bzNpzdFY85wRlDS0XG/+HUr
+         BJFXeALYr4ZKoAhaQZgcnvlSKSIlltKY/RT3g=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-ide@vger.kernel.org
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       "Andries E. Brouwer" <Andries.Brouwer@cwi.nl>,
+       linux-kernel@vger.kernel.org, Robert Hancock <hancockrwd@gmail.com>,
+       Al Viro <viro@zeniv.linux.org.uk>, Frans Pop <elendil@planet.nl>
+Date: Sun, 31 May 2009 16:39:11 +0200
+Message-Id: <20090531143911.7164.26834.sendpatchset@localhost.localdomain>
+Subject: [PATCH 0/4] partitions/ide: improve Host Protected Area handling
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 31, 2009 at 01:58:23PM +0800, Li Zefan wrote:
-> ping..
-> 
-> Could someone apply this patch? I have a patchset, that
-> introduces __dynamic_array(), based on this fix.
 
-I've applied it on
-git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git tracing/core
+Hi,
 
-Since we have doubts on the strncmp -> strcmp conversion for static
-string arrays. Do you think you could cut your strcmp patch in two parts:
+Since from the perspective of most users of recent systems, disabling
+Host Protected Area (HPA) can break vendor RAID formats, GPT partitions
+and risks corrupting firmware or overwriting vendor system recovery tools
+this patchset makes the IDE subsystem preserve HPA by default.
 
-1) fix strncmp use in __string() filters (which drops strncmp for dyn strings)
-2) convert static string comparison to use strcmp()
+Unfortunately the original (kernels < 2.6.30) behavior (unconditionally
+disabling HPA and using full disk capacity) was introduced at the time
+when the main use of HPA was to make the drive look small enough for the
+BIOS to allow the system to boot with large capacity drives.
 
-So that I can integrate the fix from 1) and submit it to Ingo with
-the fix for __str_loc format I just applied.
+Thus to allow the maximum compatibility with the existing setups (using
+HPA and partitioned with HPA disabled) we automatically disable HPA if
+any partitions overlapping HPA are detected.  Additionally HPA can also
+be disabled using the "nohpa" module parameter (i.e. "ide_core.nohpa=0.0"
+to disable HPA on /dev/hda).
 
-And then we can review 2) more carefully.
+I tested it with artificially created HPA (using 'hdparm -N p', kudos to
+Mark Lord for that) and it worked as expected:
 
-Thanks,
-Frederic.
+	hda: Host Protected Area detected.
+		current capacity is 117210000 sectors (60011 MB)
+		native  capacity is 117210240 sectors (60011 MB)
+	hda: 117210000 sectors (60011 MB) w/7884KiB Cache, CHS=16383/255/63
+	hda: cache flushes supported
+	 hda: hda1 hda2 hda3 hda4 < hda5 hda6 >
+	hda: p6 size 44869482 exceeds device capacity, enabling native capacity
+	hda: detected capacity change from 60011520000 to 60011642880
 
- 
-> Or I will include this fix in the patchset.
-> 
-> Li Zefan wrote:
-> > It should be '\t'. Also remove the space before "__str_loc".
-> > 
-> > Before:
-> >  # cat tracing/events/irq/irq_handler_entry/format
-> >         ...
-> >         field:int irq;  offset:12;      size:4;
-> >         field: __str_loc name;  offset:16;tsize:2;
-> >         ...
-> > 
-> > After:
-> >  # cat tracing/events/irq/irq_handler_entry/format
-> > 	...
-> >         field:int irq;  offset:12;      size:4;
-> >         field:__str_loc name;   offset:16;      size:2;
-> > 	...
-> > 
-> > [ Impact: fix the output of __string field in format file ]
-> > 
-> > Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> > ---
-> >  include/trace/ftrace.h |    4 ++--
-> >  1 files changed, 2 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
-> > index edb02bc..006af4c 100644
-> > --- a/include/trace/ftrace.h
-> > +++ b/include/trace/ftrace.h
-> > @@ -187,8 +187,8 @@ ftrace_raw_output_##call(struct trace_iterator *iter, int flags)	\
-> >  
-> >  #undef __string
-> >  #define __string(item, src)						       \
-> > -	ret = trace_seq_printf(s, "\tfield: __str_loc " #item ";\t"	       \
-> > -			       "offset:%u;tsize:%u;\n",			       \
-> > +	ret = trace_seq_printf(s, "\tfield:__str_loc " #item ";\t"	       \
-> > +			       "offset:%u;\tsize:%u;\n",		       \
-> >  			       (unsigned int)offsetof(typeof(field),	       \
-> >  					__str_loc_##item),		       \
-> >  			       (unsigned int)sizeof(field.__str_loc_##item));  \
-> 
 
+Thanks to Robert Hancock, Frans Pop and Andries E. Brouwer for input/ideas on
+previous (now obsoleted) HPA patches.
+
+[ Robert, it seems possible to use ->set_capacity block device method also in
+  libata to improving HPA handling and fix previously discussed compatibility
+  issue. ]
+
+
+patches:
+ #01: warn about the partition exceeding device capacity in rescan_partions()
+
+ #02: add ->set_capacity method to struct block_device_operations and use it
+      in rescan_partitions() to enable native device capacity if any partition
+      exceeding device capacity is detected
+
+ #03: implement ->set_capacity method in ide-gd device driver to handle HPA
+
+ #04: change the original kernel behavior and preserve HPA by default
+
+ For easier testing the combined patch against 2.6.30-rc7 is available here:
+
+	http://www.kernel.org/pub/linux/kernel/people/bart/hpa-2.6.30-rc7.patch
+
+
+diffstat:
+ Documentation/ide/ide.txt           |    2 +
+ Documentation/kernel-parameters.txt |    7 +-----
+ drivers/ide/ide-disk.c              |   22 ++++++++++++++++++
+ drivers/ide/ide-gd.c                |   14 ++++++++++++
+ drivers/ide/ide.c                   |   10 ++++++++
+ fs/partitions/check.c               |   42 +++++++++++++++++++++++++++---------
+ include/linux/blkdev.h              |    2 +
+ include/linux/genhd.h               |    1 
+ include/linux/ide.h                 |    6 +++--
+ 9 files changed, 88 insertions(+), 18 deletions(-)
