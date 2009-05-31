@@ -1,57 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755511AbZEaNMy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755010AbZEaN3M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755511AbZEaNMy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 May 2009 09:12:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753736AbZEaNMp
+	id S1755010AbZEaN3M (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 May 2009 09:29:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754674AbZEaN27
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 May 2009 09:12:45 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:49443 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753382AbZEaNMp (ORCPT
+	Sun, 31 May 2009 09:28:59 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:46143 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754621AbZEaN26 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 May 2009 09:12:45 -0400
-Date: Sun, 31 May 2009 23:12:38 +1000
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>
-Subject: Re: Crypto Update for 2.6.30
-Message-ID: <20090531131238.GA678@gondor.apana.org.au>
-References: <20081225001724.GA2813@gondor.apana.org.au> <20081225002020.GA2912@gondor.apana.org.au> <20090324044932.GA18245@gondor.apana.org.au> <20090402061413.GA28925@gondor.apana.org.au> <20090517222818.GA14969@gondor.apana.org.au>
+	Sun, 31 May 2009 09:28:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=V10xEV5hkb8Re2qStjYF26NnORsVyOxI4CSsPJOi/GYm3qFhC8/ja3JNyj+7mSBloQ
+         NpUfCeACUm7QtjTamgzfrqnsmy3ZmTdZOg0mA4vQ5JF8GSLcxL8uZWRPmD/GfvsCl0ae
+         /chPzNXR4+HXzm7YqA4+/NYeR3TC++iITL3H8=
+Date: Sun, 31 May 2009 15:28:56 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Tom Zanussi <tzanussi@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/2] tracing/filters: use strcmp() instead of strncmp()
+Message-ID: <20090531132853.GA6013@nowhere>
+References: <4A1F9FAC.6020506@cn.fujitsu.com> <c62985530905290651id2435bfx7f57ec561fe366e3@mail.gmail.com> <4A20F71F.6030703@cn.fujitsu.com> <20090530135236.GB5969@nowhere> <4A223F7E.3090203@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20090517222818.GA14969@gondor.apana.org.au>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4A223F7E.3090203@cn.fujitsu.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus:
+On Sun, May 31, 2009 at 04:27:42PM +0800, Li Zefan wrote:
+> Frederic Weisbecker wrote:
+> > On Sat, May 30, 2009 at 05:06:39PM +0800, Li Zefan wrote:
+> >> Frédéric Weisbecker wrote:
+> >>> 2009/5/29 Li Zefan <lizf@cn.fujitsu.com>:
+> >>>> Trace filter is not working normally:
+> >>>>
+> >>>>  # echo 'name == et' > tracing/events/irq/irq_handler_entry/filter
+> >>>>  # echo 1 > tracing/events/irq/irq_handler_entry/enable
+> >>>>  # cat trace_pipe
+> >>>>      <idle>-0     [001]  1363.423175: irq_handler_entry: irq=18 handler=eth0
+> >>>>      <idle>-0     [001]  1363.934528: irq_handler_entry: irq=18 handler=eth0
+> >>>>      ...
+> >>>>
+> >>>> It's because we pass to trace_define_field() the information of
+> >>>> __str_loc_##item, but not the actual string, so pred->str_len == field->size
+> >>>> == sizeof(unsigned short), thus it always compare at most 2 bytes when
+> >>>> filtering on __string() field.
+> >>>
+> >>> Weird, I was about sure I set the size of each string() to FILTER_MAX_STRING (or
+> >>> something like that).
+> >>>
+> >>> Anyway this patch looks good but it does more than just fixing the
+> >>> issue, it removes
+> >>> the string len boundary security we had with strncmp() for every
+> >>> string (static and
+> >>> dynamic size).
+> >>>
+> >>> The potential side effect that comes along this patch would disappear if
+> >>> you just turn strncmp into strcmp only in filter_pred_strloc().
+> >>>
+> >>> If you do that also for fixed size strings, then it should be done in
+> >>> a second patch,
+> >>> although I guess turning anything here into strcmp is fine because the
+> >>> strings given
+> >>> by the user are always limited in their size. But we never know...
+> >>>
+> >> I don't think there's any security issue. It's irrelevant how big the user-input
+> >> strings are. The point is those strings are guaranteed to be NULL-terminated.
+> >> Am I missing something?
+> >>
+> >> And I don't think it's necessary to make 2 patches that each patch converts
+> >> one strncmp to strcmp. But maybe it's better to improve this changelog?
+> > 
+> > Hmm, you must be right, indeed they seem to be guaranted beeing NULL-terminated
+> > strings.
+> > 
+> 
+> Sorry, I was wrong. :(
+> 
+> Though the user-input strings are guaranted to be NULL-terminated, strings
+> generated by TRACE_EVENT might not.
+> 
+> We define static strings this way:
+> 	TP_struct(
+> 		__array(char, foo, LEN)
+> 	)
+> But foo is not necessarily a string, though I doubt someone will use it
+> as non-string char array.
 
-This push fixes a regression that triggers with SLAB debugging on,
-where the new ahash code fails to handle sg entries that cross page
-boundaries which are generated by kmalloc.
+
+Yeah, but the user defined comparison operand is NULL terminated.
+So the strcmp will stop at this boundary.
+
+
  
-Please pull from
+> Dynamic string is fine, because assign_str() makes it NULL-terminated.
+> 
+> So we can use strcmp() for dynamic strings, but we'd better use strncmp() for
+> static string.
+> 
+> 
 
-git://git.kernel.org/pub/scm/linux/kernel/git/herbert/crypto-2.6.git
-
-or
-
-master.kernel.org:/pub/scm/linux/kernel/git/herbert/crypto-2.6.git
-
-
-Herbert Xu (1):
-      crypto: hash - Fix handling of sg entry that crosses page boundary
-
- crypto/ahash.c |    7 ++++---
- 1 files changed, 4 insertions(+), 3 deletions(-)
- 
-Thanks,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
