@@ -1,49 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754897AbZEaBam@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754990AbZEaBhk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754897AbZEaBam (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 21:30:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754113AbZEaBae
+	id S1754990AbZEaBhk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 21:37:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754007AbZEaBhc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 21:30:34 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:47992 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754148AbZEaBae (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 21:30:34 -0400
-Date: Sun, 31 May 2009 11:30:22 +1000
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Atsushi Nemoto <anemo@mba.ocn.ne.jp>, linux-mips@linux-mips.org,
-       ralf@linux-mips.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] hwrng: Add TX4939 RNG driver
-Message-ID: <20090531013022.GA27930@gondor.apana.org.au>
-References: <1243350141-883-1-git-send-email-anemo@mba.ocn.ne.jp> <20090529162907.9cb1bba2.akpm@linux-foundation.org>
+	Sat, 30 May 2009 21:37:32 -0400
+Received: from mail.windriver.com ([147.11.1.11]:35944 "EHLO mail.wrs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753469AbZEaBhb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 May 2009 21:37:31 -0400
+Message-ID: <4A21DE75.7010202@windriver.com>
+Date: Sun, 31 May 2009 09:33:41 +0800
+From: Harry Ciao <qingtao.cao@windriver.com>
+Reply-To: qingtao.cao@windriver.com
+Organization: Wind River, CDC
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090529162907.9cb1bba2.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: norsk5@yahoo.com, linux-kernel@vger.kernel.org,
+       bluesmoke-devel@lists.sourceforge.net
+Subject: Re: [v1 PATCH 0/2] EDAC: AMD8111 & AMD8131 Kconfig fixup
+References: <1242358006-28339-1-git-send-email-qingtao.cao@windriver.com> <20090528004433.4051e83d.akpm@linux-foundation.org>
+In-Reply-To: <20090528004433.4051e83d.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 31 May 2009 01:33:09.0647 (UTC) FILETIME=[C14E31F0:01C9E18F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 29, 2009 at 04:29:07PM -0700, Andrew Morton wrote:
+Andrew Morton wrote:
+> On Fri, 15 May 2009 11:26:44 +0800 Harry Ciao <qingtao.cao@windriver.com> wrote:
 >
-> > +static u64 read_rng(void __iomem *base, unsigned int offset)
-> > +{
-> > +	/* Caller must disable interrupts */
-> > +	return ____raw_readq(base + offset);
-> > +}
-> 
-> What is the reasoning behind the local_irq_disable() requirement?
-> 
-> Because I'm wondering whether this is safe on SMP?
+>   
+>> These are two minor fixups for the AMD8111 and AMD8131 EDAC drivers.
+>> The direct reference to device.bus_id should be replaced by dev_name().
+>>
+>> Add their missing Makefile entires and introduce machine dependency to 
+>> their Kconfig options in order to avoid the allmodconfig failure, which
+>> I have no better idea to avoid although these chips are not specific to
+>> Maple.
+>>     
+>
+> OK, thanks.
+>
+> Do you think these fixes are safe and desirable for 2.6.30?  (I do).
+>
+>   
+Hi Andrew,
 
-Yes I'd like to see this fixed before adding this patch.
+Yes I think so too, I have tested these patches and they work well.
 
-Thanks,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Thanks!
+
+Harry
