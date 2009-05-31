@@ -1,46 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759365AbZEaOxk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757644AbZEaPDV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759365AbZEaOxk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 May 2009 10:53:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756203AbZEaOxc
+	id S1757644AbZEaPDV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 May 2009 11:03:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753946AbZEaPDI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 May 2009 10:53:32 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:31131 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755781AbZEaOxb (ORCPT
+	Sun, 31 May 2009 11:03:08 -0400
+Received: from casper.infradead.org ([85.118.1.10]:38029 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753827AbZEaPDH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 May 2009 10:53:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :x-enigmail-version:content-type:content-transfer-encoding;
-        b=t0mHAWACtGw+9PUOyBkgspvz7Mh0fYu7xOqYZpWtOtcezGsrxAEAWP1AKP9VjkgSzT
-         U5MP9mh6cOeuFOpZdFMfHwZzmNIVL7IUtGWlIe6DPjTGoYB68vxXwAdQjZ6+m9k+FP7p
-         zANa9lznSXEsuG3tvfjlfCkPxNyEqb9ohWIw8=
-Message-ID: <4A229998.6070808@gmail.com>
-Date: Sun, 31 May 2009 16:52:08 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1pre) Gecko/20090525 SUSE/3.0b2-10.1 Thunderbird/3.0b3pre
-MIME-Version: 1.0
-To: Borislav Petkov <petkovbb@gmail.com>
-CC: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: broken ide-tape
-X-Enigmail-Version: 0.96a
-Content-Type: text/plain; charset=ISO-8859-2
+	Sun, 31 May 2009 11:03:07 -0400
+Date: Sun, 31 May 2009 08:03:04 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       "Larry H." <research@subreption.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@osdl.org>, linux-mm@kvack.org,
+       Ingo Molnar <mingo@redhat.com>, pageexec@freemail.hu
+Subject: Re: [patch 0/5] Support for sanitization flag in low-level page
+ allocator
+Message-ID: <20090531080304.6e195c14@infradead.org>
+In-Reply-To: <20090531073826.567d1dc3@infradead.org>
+References: <20090522073436.GA3612@elte.hu>
+	<20090522113809.GB13971@oblivion.subreption.com>
+	<20090522143914.2019dd47@lxorguk.ukuu.org.uk>
+	<20090522180351.GC13971@oblivion.subreption.com>
+	<20090522192158.28fe412e@lxorguk.ukuu.org.uk>
+	<20090522234031.GH13971@oblivion.subreption.com>
+	<20090523090910.3d6c2e85@lxorguk.ukuu.org.uk>
+	<20090523085653.0ad217f8@infradead.org>
+	<1243539361.6645.80.camel@laptop>
+	<20090529073217.08eb20e1@infradead.org>
+	<20090530054856.GG29711@oblivion.subreption.com>
+	<1243679973.6645.131.camel@laptop>
+	<20090531073826.567d1dc3@infradead.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sun, 31 May 2009 07:38:26 -0700
+Arjan van de Ven <arjan@infradead.org> wrote:
 
-ide-tape is broken since commit 346331f82823682fb5c2df6e827db25d95cc2e92
-(ide-tape: remove atomic test/set macros for packet commands)
-from Apr 18 2008.
+> > 
+> > 
+> > Really, get a life, go fix real bugs. Don't make our kernel slower 
+> 
+> the "make it slower" is an assumption on your part.
+> I'm not convinced. Would like to see data!
+> 
 
-The commit introduced flags which are defined as (1 << nr) and uses them
-in {clear,set,test}_bit. And hence it must oops on each do_request.
 
-Is it worth fixing (something like ilog2 added to each bit operation) or
-is a complete removal of the driver better "fix"?
+btw if the performance difference is basically a wash (as I'm
+suspecting), then we SHOULD do zero-on-free, just out of general
+principles. 
+
+Ingo mentioned the kernel stack, and that's a good point, we ought
+to have a way to zero the rest of the stack inside the kernel, at
+which point you could do things like providing a command line option
+(or sysctl?) to call that from the munmap codepath or so...
+(after all there you do a tlb flush and other expensive things as well)
