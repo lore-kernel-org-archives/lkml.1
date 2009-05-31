@@ -1,69 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759037AbZEaQRw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759401AbZEaQTi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759037AbZEaQRw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 May 2009 12:17:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757605AbZEaQRo
+	id S1759401AbZEaQTi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 May 2009 12:19:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756603AbZEaQTa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 May 2009 12:17:44 -0400
-Received: from mail-fx0-f168.google.com ([209.85.220.168]:59163 "EHLO
-	mail-fx0-f168.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756698AbZEaQRn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 May 2009 12:17:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent;
-        b=Rds8DTkn8ZMurg2szV6y7KaYTtZTetZE7ettVywvffmHlQ8LQ6DnZyqcCdkA2yzo/T
-         FuG8BQlDin/lfEaox0CYsLGGNe1ZWudxH0JwLkBkBIv5LdudWkofNPvfET49f+IQL5ET
-         LkZYom/3YO9kMLGViVfyZhB9uZbOgjqA92XwE=
-Date: Sun, 31 May 2009 18:17:41 +0200
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: broken ide-tape
-Message-ID: <20090531161740.GA7975@liondog.tnic>
-Mail-Followup-To: Borislav Petkov <petkovbb@gmail.com>,
-	Jiri Slaby <jirislaby@gmail.com>,
-	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-	linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-References: <4A229998.6070808@gmail.com>
+	Sun, 31 May 2009 12:19:30 -0400
+Received: from h5.dl5rb.org.uk ([81.2.74.5]:47051 "EHLO h5.dl5rb.org.uk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759175AbZEaQT2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 May 2009 12:19:28 -0400
+Date: Sun, 31 May 2009 17:18:42 +0100
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Atsushi Nemoto <anemo@mba.ocn.ne.jp>, linux-mips@linux-mips.org,
+       linux-kernel@vger.kernel.org, Herbert Xu <herbert@gondor.apana.org.au>
+Subject: Re: [PATCH] hwrng: Add TX4939 RNG driver
+Message-ID: <20090531161842.GB30640@linux-mips.org>
+References: <1243350141-883-1-git-send-email-anemo@mba.ocn.ne.jp> <20090529162907.9cb1bba2.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A229998.6070808@gmail.com>
+In-Reply-To: <20090529162907.9cb1bba2.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 31, 2009 at 04:52:08PM +0200, Jiri Slaby wrote:
-> Hi,
+On Fri, May 29, 2009 at 04:29:07PM -0700, Andrew Morton wrote:
+
+> > +static u64 read_rng(void __iomem *base, unsigned int offset)
+> > +{
+> > +	/* Caller must disable interrupts */
+> > +	return ____raw_readq(base + offset);
+> > +}
 > 
-> ide-tape is broken since commit 346331f82823682fb5c2df6e827db25d95cc2e92
-> (ide-tape: remove atomic test/set macros for packet commands)
-> from Apr 18 2008.
+> What is the reasoning behind the local_irq_disable() requirement?
 > 
-> The commit introduced flags which are defined as (1 << nr) and uses them
-> in {clear,set,test}_bit. And hence it must oops on each do_request.
+> Because I'm wondering whether this is safe on SMP?
 
-/me ducks behind the couch.
+The problem are interrupts, not SMP.  readq is reading a 64-bit register
+using a 64-bit load.  On a 32-bit kernel however interrupts or any
+other processor exception would clobber the upper 32-bit of the processor
+register so interrupts need to be disabled.  The "normal" readq
+functions disable interrupts as necessary on a platform.  This code does
+multiple read accesses so for efficiency sake it relies on the caller
+handling interrupts explicitly.
 
-Ouch, that _is_ dumb, sorry. This is because we wanted to keep the
-atomic ops for the pipeline handling (which got removed) and use
-simple flags for the rest. And so the flags got mixed up and the mess
-unleashed...
+Also this platform does not do SMP.
 
-> Is it worth fixing (something like ilog2 added to each bit operation) or
-> is a complete removal of the driver better "fix"?
-
-Actually, the driver needs to be reaudited and fixed properly - we still
-have some users left. I'm looking into it.
-
-Thanks for catching that.
-
--- 
-Regards/Gruss,
-    Boris.
+  Ralf
