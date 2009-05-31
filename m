@@ -1,59 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757851AbZEaJAg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758009AbZEaJLr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757851AbZEaJAg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 May 2009 05:00:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757419AbZEaJA1
+	id S1758009AbZEaJLr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 May 2009 05:11:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753724AbZEaJLh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 May 2009 05:00:27 -0400
-Received: from pearlgates.net ([83.163.47.93]:39714 "EHLO mail.pearlgates.net"
+	Sun, 31 May 2009 05:11:37 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:42754 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757410AbZEaJA0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 May 2009 05:00:26 -0400
-X-Greylist: delayed 478 seconds by postgrey-1.27 at vger.kernel.org; Sun, 31 May 2009 05:00:26 EDT
-Date: Sun, 31 May 2009 10:52:27 +0200
-From: Angel <angel@pearlgates.net>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "DRI" <dri-devel@lists.sourceforge.net>,
-       "Jos van der Ende" <seraph@xs4all.nl>,
-       "venkatesh.pallipadi@intel.com" <venkatesh.pallipadi@intel.com>
-Subject: Re: [Bug #12947] r128: system hangs when X is started with DRI
- enabled
-Message-Id: <20090531105227.178e5397.angel@pearlgates.net>
-In-Reply-To: <PkPeJtNB3KO.A.CSH.sWbIKB@chimera>
-References: <THxQaUP0K2D.A.QkF.UVbIKB@chimera>
-	<PkPeJtNB3KO.A.CSH.sWbIKB@chimera>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.14.7; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1752991AbZEaJLg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 May 2009 05:11:36 -0400
+Message-ID: <4A2249C5.5000809@redhat.com>
+Date: Sun, 31 May 2009 12:11:33 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Gregory Haskins <ghaskins@novell.com>
+CC: Mark McLoughlin <markmc@redhat.com>,
+       Gregory Haskins <gregory.haskins@gmail.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Davide Libenzi <davidel@xmailserver.org>,
+       mtosatti@redhat.com
+Subject: Re: [KVM PATCH v4 3/3] kvm: add iosignalfd support
+References: <20090526191010.20860.75372.stgit@dev.haskins.net>	 <20090526191539.20860.1385.stgit@dev.haskins.net>	 <4A1D01F8.8080508@redhat.com> <4A1D285C.9050008@novell.com>	 <4A1D2DD8.2050709@redhat.com> <1243445144.16318.15.camel@blaa>	 <4A1D7AFD.40004@novell.com> <1243446484.4852.13.camel@blaa>	 <4A1DA653.4050109@gmail.com> <1243501772.4046.36.camel@blaa> <4A1E7FA0.8060300@novell.com>
+In-Reply-To: <4A1E7FA0.8060300@novell.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 30 May 2009 21:55:34 +0200 (CEST)
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+Gregory Haskins wrote:
+> This is closer to how the original series worked, but Avi asked for a
+> data-match token and thus the cookie was born.  I think the rationale is
+> that we can't predict whether the same eventfd will be registered more
+> than once, and thus we need a way to further qualify it.  However, to
+> your point, I cannot think of a valid use case for having the same fd
+> registered to the same address more than once, so perhaps your fd/addr
+> tuple is sufficient and we can drop the cookie (or, really, rename it to
+> "trigger" ;)
+>
+> Avi?
+>   
 
-> This message has been generated automatically as a part of a report
-> of regressions introduced between 2.6.28 and 2.6.29.
-> 
-> The following bug entry is on the current list of known regressions
-> introduced between 2.6.28 and 2.6.29.  Please verify if it still should
-> be listed and let me know (either way).
-> 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12947
-> Subject		: r128: system hangs when X is started with DRI enabled
-> Submitter	: Jos van der Ende <seraph@xs4all.nl>
-> Date		: 2009-03-26 16:14 (66 days old)
+This is just how virtio works.  To kick ring N of device X, it writes N 
+to a port specific to X.
 
+If we lose N, then we don't know which ring was kicked and have to check 
+them all.
 
-We've found a working bug fix for 2.6.29 which I expect will be included in the next bug fix release. However, 2.6.30-rc[1-7] (which already includes this fix) introduced a new problem which we're still working on.
+May we can rename cookie to data_match to make it explicit.  If the data 
+doesn't match, the eventfd isn't kicked.
 
-The bug fix in question is this one:
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=42beefc00
-
+(Mark, same as we have arbitrary ring->MSI mappings (allowing one MSI to 
+notify multiple rings), perhaps we should have the same capability for 
+the other direction?  So the guest could kick mulitple rings with one 
+write, or just one ring, according to personal preference.
 
 -- 
-Angel <angel@pearlgates.net>
+error compiling committee.c: too many arguments to function
+
