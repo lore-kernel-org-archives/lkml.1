@@ -1,45 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758794AbZEaPY3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759007AbZEaP1R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758794AbZEaPY3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 May 2009 11:24:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753785AbZEaPYT
+	id S1759007AbZEaP1R (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 May 2009 11:27:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755679AbZEaP1F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 May 2009 11:24:19 -0400
-Received: from hera.cwi.nl ([192.16.191.8]:35737 "EHLO hera.cwi.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753112AbZEaPYT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 May 2009 11:24:19 -0400
-Date: Sun, 31 May 2009 17:24:03 +0200
-From: "Andries E. Brouwer" <Andries.Brouwer@cwi.nl>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, "Andries E. Brouwer" <Andries.Brouwer@cwi.nl>,
-       linux-kernel@vger.kernel.org, Robert Hancock <hancockrwd@gmail.com>,
-       Al Viro <viro@zeniv.linux.org.uk>, Frans Pop <elendil@planet.nl>
-Subject: Re: [PATCH 0/4] partitions/ide: improve Host Protected Area
-	handling
-Message-ID: <20090531152403.GA26987@ub>
-References: <20090531143911.7164.26834.sendpatchset@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090531143911.7164.26834.sendpatchset@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 31 May 2009 11:27:05 -0400
+Received: from smtp.wellnetcz.com ([212.24.148.102]:55030 "EHLO
+	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755130AbZEaP1E (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 May 2009 11:27:04 -0400
+From: Jiri Slaby <jirislaby@gmail.com>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>
+Subject: [PATCH 1/1] rapidio: fix kerneldoc for rio_mem_ops
+Date: Sun, 31 May 2009 17:25:38 +0200
+Message-Id: <1243783538-18770-1-git-send-email-jirislaby@gmail.com>
+X-Mailer: git-send-email 1.6.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 31, 2009 at 04:39:11PM +0200, Bartlomiej Zolnierkiewicz wrote:
+Add structure name to the kerneldoc comment, so that we won't get
+a kdoc error:
+Error(include/linux/rio.h:336): cannot understand prototype: 'struct rio_mem_ops '
 
-[HPA stuff deleted]
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+---
+ include/linux/rio.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Hi Bartlomiej,
-
-Apart from HPA one also has DCO, which functions rather similarly.
-(I have not checked whether the current kernel knows anything about DCO.)
-Have you thought about DCO?
-Probably the kernel should by default not touch any such setting.
-Maybe it should be reported?
-A user space utility might change this setting - thus a disk can change size.
-
-Andries
+diff --git a/include/linux/rio.h b/include/linux/rio.h
+index dd61538..9710506 100644
+--- a/include/linux/rio.h
++++ b/include/linux/rio.h
+@@ -327,7 +327,7 @@ extern struct resource rio_resource;
+ #define release_rio_region(start, n) __release_region(&rio_resource, (start), (n))
+ 
+ /**
+- * Struct for RIO memory definition.
++ * struct rio_mem_ops - struct for RIO memory definition.
+  * @map_inb: The function for mapping inbound memory window.
+  * @map_outb: The function for mapping outbound memory window.
+  * @unmap_inb: The function for unmapping inbound memory window.
+-- 
+1.6.3
 
