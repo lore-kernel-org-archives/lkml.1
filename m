@@ -1,55 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758347AbZEaKur@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758151AbZEaKx4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758347AbZEaKur (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 May 2009 06:50:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757358AbZEaKui
+	id S1758151AbZEaKx4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 May 2009 06:53:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757358AbZEaKxt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 May 2009 06:50:38 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:57442 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757173AbZEaKuh (ORCPT
+	Sun, 31 May 2009 06:53:49 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:48473 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757281AbZEaKxs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 May 2009 06:50:37 -0400
-Date: Sun, 31 May 2009 13:50:38 +0300 (EEST)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: linux-kernel@vger.kernel.org
-cc: alan@lxorguk.ukuu.org.uk, cl@linux-foundation.org, mpm@selenic.com,
-       npiggin@suse.de
-Subject: [PATCH] slab: document kzfree() zeroing behavior
-Message-ID: <Pine.LNX.4.64.0905311349160.17837@melkki.cs.Helsinki.FI>
-Mime-Version: 1.0
+	Sun, 31 May 2009 06:53:48 -0400
+Date: Sun, 31 May 2009 11:52:42 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Sascha Hauer <s.hauer@pengutronix.de>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Grant Likely <grant.likely@secretlab.ca>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       devicetree-discuss <devicetree-discuss@ozlabs.org>,
+       linux-kernel@vger.kernel.org, Timur Tabi <timur@freescale.com>,
+       Scott Wood <scottwood@freescale.com>,
+       Janboe Ye <yuan-bo.ye@motorola.com>,
+       linux-arm-kernel@lists.arm.linux.org.uk
+Subject: Re: [RFC] [PATCH] Device Tree on ARM platform
+Message-ID: <20090531105242.GE18650@n2100.arm.linux.org.uk>
+References: <4A1D6901.2090508@freescale.com> <20090527175609.GB31861@flint.arm.linux.org.uk> <4A1D8FBA.6040802@freescale.com> <20090527192909.GA32398@flint.arm.linux.org.uk> <20090527205218.GA5591@sirena.org.uk> <fa686aa40905271405pc2f1738gc8dd139f61a0e27@mail.gmail.com> <20090528124307.GN22742@pengutronix.de> <alpine.LFD.2.00.0905281457170.3397@localhost.localdomain> <20090528150409.GO22742@pengutronix.de> <1243558274.17903.21.camel@pasglop>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <1243558274.17903.21.camel@pasglop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Pekka Enberg <penberg@cs.helsinki.fi>
+On Fri, May 29, 2009 at 10:51:14AM +1000, Benjamin Herrenschmidt wrote:
+> On Thu, 2009-05-28 at 17:04 +0200, Sascha Hauer wrote:
+> > 
+> > We normally hide these subtle details behind a baseboard= kernel
+> > parameter. I agree with you that it's far better to have a
+> > standardized
+> > way to specify this. For my taste the oftree is too bloated for this
+> > purpose.
+> 
+> Define "bloated" ?
+> 
+> We got a lot of push back on powerpc initially with this exact same
+> argument "too bloated" but that was never backed up with facts and
+> numbers, and I would mostly say that nobody makes it anymore now
+> that it's there and people use it.
 
-As suggested by Alan Cox, document the fact that kzfree() can zero out a great
-deal more memory than the what the user requested from kmalloc().
+It really depends how you look at it.
 
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
----
- mm/util.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+If you look at the amount of supporting code required for one platform
+on ARM, it's typically fairly small - mostly just declaration of data
+structures (platform devices, platform device data), and possibly a few
+small functions to handle the quirkyness of the platform.  That's of the
+order of a few K of data and code combined - that's on average about 4K.
+Add in the SoC platform device declaration code, and maybe add another
+10K.
 
-diff --git a/mm/util.c b/mm/util.c
-index 55bef16..e79572b 100644
---- a/mm/util.c
-+++ b/mm/util.c
-@@ -166,6 +166,10 @@ EXPORT_SYMBOL(krealloc);
-  *
-  * The memory of the object @p points to is zeroed before freed.
-  * If @p is %NULL, kzfree() does nothing.
-+ *
-+ * Note: this function zeroes the whole allocated buffer which can be a good
-+ * deal bigger than the requested buffer size passed to kmalloc(). So be
-+ * careful when using this function in performance sensitive code.
-  */
- void kzfree(const void *p)
- {
--- 
-1.6.0.6
+So, about 14K of code and data.
 
+The OF support code in drivers/of is about 3K.  The code posted at the
+start of this thread I suspect will be about 4K or so, which gives us a
+running total of maybe 7K.
+
+What's now missing is conversion of drivers and the like to be DT
+compatible, or creation of the platform devices to translate DT into
+platform devices and their associated platform device data.  Plus
+some way to handle the platforms quirks, which as discussed would be
+hard to represent in DT.
+
+So I suspect it's actually marginal whether DT turns out to be larger
+than our current approach.  So I agree with BenH - I don't think there's
+an argument to be made about 'bloat' here.
+
+What /does/ concern me is what I percieve as the need to separate the
+platform quirks from the description of the platform - so rather than
+having a single file describing the entire platform (eg,
+arch/arm/mach-pxa/lubbock.c) we would need:
+
+- a file to create the DT information
+- a separate .c file in the kernel containing code to handle the
+  platforms quirks, or a bunch of new DT drivers to do the same
+- ensure both DT and quirks are properly in-sync.
+
+But... we need to see how Grant gets on with his PXA trial before we
+can properly assess this.
