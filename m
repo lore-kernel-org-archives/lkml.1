@@ -1,111 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755010AbZEaN3M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756768AbZEaNnY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755010AbZEaN3M (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 May 2009 09:29:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754674AbZEaN27
+	id S1756768AbZEaNnY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 May 2009 09:43:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753893AbZEaNnO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 May 2009 09:28:59 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:46143 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754621AbZEaN26 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 May 2009 09:28:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=V10xEV5hkb8Re2qStjYF26NnORsVyOxI4CSsPJOi/GYm3qFhC8/ja3JNyj+7mSBloQ
-         NpUfCeACUm7QtjTamgzfrqnsmy3ZmTdZOg0mA4vQ5JF8GSLcxL8uZWRPmD/GfvsCl0ae
-         /chPzNXR4+HXzm7YqA4+/NYeR3TC++iITL3H8=
-Date: Sun, 31 May 2009 15:28:56 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Tom Zanussi <tzanussi@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2] tracing/filters: use strcmp() instead of strncmp()
-Message-ID: <20090531132853.GA6013@nowhere>
-References: <4A1F9FAC.6020506@cn.fujitsu.com> <c62985530905290651id2435bfx7f57ec561fe366e3@mail.gmail.com> <4A20F71F.6030703@cn.fujitsu.com> <20090530135236.GB5969@nowhere> <4A223F7E.3090203@cn.fujitsu.com>
+	Sun, 31 May 2009 09:43:14 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:35691 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751086AbZEaNnN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 May 2009 09:43:13 -0400
+Message-ID: <4A228988.4060909@redhat.com>
+Date: Sun, 31 May 2009 09:43:36 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4A223F7E.3090203@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Christoph Hellwig <hch@infradead.org>
+CC: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       lkml <linux-kernel@vger.kernel.org>, Avi Kivity <avi@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, Jim Keniston <jkenisto@us.ibm.com>,
+       "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Przemys??awPawe??czyk <przemyslaw@pawelczyk.it>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Tom Zanussi <tzanussi@gmail.com>,
+       systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
+       DLE <dle-develop@lists.sourceforge.net>
+Subject: Re: [PATCH -tip v8 0/7] tracing: kprobe-based event tracer and x86
+ instruction decoder
+References: <20090529000326.17532.70868.stgit@localhost.localdomain> <20090530080503.GA15755@infradead.org>
+In-Reply-To: <20090530080503.GA15755@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 31, 2009 at 04:27:42PM +0800, Li Zefan wrote:
-> Frederic Weisbecker wrote:
-> > On Sat, May 30, 2009 at 05:06:39PM +0800, Li Zefan wrote:
-> >> Frédéric Weisbecker wrote:
-> >>> 2009/5/29 Li Zefan <lizf@cn.fujitsu.com>:
-> >>>> Trace filter is not working normally:
-> >>>>
-> >>>>  # echo 'name == et' > tracing/events/irq/irq_handler_entry/filter
-> >>>>  # echo 1 > tracing/events/irq/irq_handler_entry/enable
-> >>>>  # cat trace_pipe
-> >>>>      <idle>-0     [001]  1363.423175: irq_handler_entry: irq=18 handler=eth0
-> >>>>      <idle>-0     [001]  1363.934528: irq_handler_entry: irq=18 handler=eth0
-> >>>>      ...
-> >>>>
-> >>>> It's because we pass to trace_define_field() the information of
-> >>>> __str_loc_##item, but not the actual string, so pred->str_len == field->size
-> >>>> == sizeof(unsigned short), thus it always compare at most 2 bytes when
-> >>>> filtering on __string() field.
-> >>>
-> >>> Weird, I was about sure I set the size of each string() to FILTER_MAX_STRING (or
-> >>> something like that).
-> >>>
-> >>> Anyway this patch looks good but it does more than just fixing the
-> >>> issue, it removes
-> >>> the string len boundary security we had with strncmp() for every
-> >>> string (static and
-> >>> dynamic size).
-> >>>
-> >>> The potential side effect that comes along this patch would disappear if
-> >>> you just turn strncmp into strcmp only in filter_pred_strloc().
-> >>>
-> >>> If you do that also for fixed size strings, then it should be done in
-> >>> a second patch,
-> >>> although I guess turning anything here into strcmp is fine because the
-> >>> strings given
-> >>> by the user are always limited in their size. But we never know...
-> >>>
-> >> I don't think there's any security issue. It's irrelevant how big the user-input
-> >> strings are. The point is those strings are guaranteed to be NULL-terminated.
-> >> Am I missing something?
-> >>
-> >> And I don't think it's necessary to make 2 patches that each patch converts
-> >> one strncmp to strcmp. But maybe it's better to improve this changelog?
-> > 
-> > Hmm, you must be right, indeed they seem to be guaranted beeing NULL-terminated
-> > strings.
-> > 
-> 
-> Sorry, I was wrong. :(
-> 
-> Though the user-input strings are guaranted to be NULL-terminated, strings
-> generated by TRACE_EVENT might not.
-> 
-> We define static strings this way:
-> 	TP_struct(
-> 		__array(char, foo, LEN)
-> 	)
-> But foo is not necessarily a string, though I doubt someone will use it
-> as non-string char array.
+Christoph Hellwig wrote:
+> Small question to start with: What's your (or Hitachi s/Red Hat's) use case
+> for this?  It's obviously really cool technology, but I fear without
+> some good user space side to make it easy to use it will most likely
+> bit-rot which would be sad.
+
+Good question,
+Frankly to say, this was started just for the in-kernel user of kprobes.
+However, now I think this can be used for some ideas,
+- Quick debugging (checking variables, execution path, etc.) in asm level.
+  (elfutils might help us to make it source level debugging)
+- Prototyping new tracepoints.
+- Stress test of kprobes to find functions which should be __kprobes.
+- Vehicle of tracing facilities which will be ported from systemtap runtime.
+- As Frank said, we can make systemtap to control this for simple scripts.
+
+Even now, it's not hard to use systemtap for finding variables in
+stack/registers. Key options are -v and -p2,
+
+e.g.
+$ stap -v -p2 -e 'probe kernel.statement("*@fs/open.c:1024")\
+ {printf("%d", $files)}'
+
+Then, you'll get below output,
+------
+# functions
+_dwarf_tvar_get_files_0:long ()
+%{{
+  {
+    uint64_t addr;
+    { // DWARF expression: 0x5c
+    { uint64_t value = fetch_register (12);addr = value; }
+    }
+    THIS->__retvalue = addr;
+  }
+  goto out;
+if (0) goto deref_fault;
+deref_fault:
+  goto out;
+}
+/* pure */%}
+# probes
+kernel.statement("fd_install@/home/mhiramat/ksrc/linux-2.6-tip/fs/open.c:1024")
+ /* pc=_stext+0xd1f72 */ /* <- kernel.statement("*@fs/open.c:1024") */
+printf("%d", _dwarf_tvar_get_files_0())
+------
+
+This shows that 'fs/open.c:1024' is located at _stext+0xd1f72, and
+'files' is mapped to %r12 (note, pt_regs mapping is different from
+dwarf register mapping.) So, below command adds probe at
+fs/open.c:1024 and trace 'files' variable :-)
+
+$ echo p _stext+0xd1f72 %r12 > /debug/tracing/kprobe_events
 
 
-Yeah, but the user defined comparison operand is NULL terminated.
-So the strcmp will stop at this boundary.
+Thank you,
 
+-- 
+Masami Hiramatsu
 
- 
-> Dynamic string is fine, because assign_str() makes it NULL-terminated.
-> 
-> So we can use strcmp() for dynamic strings, but we'd better use strncmp() for
-> static string.
-> 
-> 
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
 
