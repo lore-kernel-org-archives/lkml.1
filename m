@@ -1,35 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757996AbZEaKNA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758145AbZEaKPZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757996AbZEaKNA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 May 2009 06:13:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755292AbZEaKMx
+	id S1758145AbZEaKPZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 May 2009 06:15:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756161AbZEaKPM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 May 2009 06:12:53 -0400
-Received: from zakalwe.fi ([80.83.5.154]:59799 "EHLO zakalwe.fi"
+	Sun, 31 May 2009 06:15:12 -0400
+Received: from r00tworld.com ([212.85.137.21]:38763 "EHLO r00tworld.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754587AbZEaKMx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 May 2009 06:12:53 -0400
-X-Greylist: delayed 1893 seconds by postgrey-1.27 at vger.kernel.org; Sun, 31 May 2009 06:12:53 EDT
-Date: Sun, 31 May 2009 12:41:20 +0300
-From: Heikki Orsila <shdl@zakalwe.fi>
-To: "Gao, Yunpeng" <yunpeng.gao@intel.com>
-Cc: Greg KH <greg@kroah.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: First submission of stand alone NAND driver target to staging
-Message-ID: <20090531094120.GD11543@zakalwe.fi>
-References: <38D9F46DFF92C54980D2F2C1E8EE313001A44B9A11@pdsmsx503.ccr.corp.intel.com>
+	id S1756047AbZEaKPL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 May 2009 06:15:11 -0400
+From: pageexec@freemail.hu
+To: "Larry H." <research@subreption.com>, Ingo Molnar <mingo@elte.hu>
+Date: Sun, 31 May 2009 12:14:31 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <38D9F46DFF92C54980D2F2C1E8EE313001A44B9A11@pdsmsx503.ccr.corp.intel.com>
-User-Agent: Mutt/1.5.11
+Subject: Re: [patch 5/5] Apply the PG_sensitive flag to the CryptoAPI subsystem
+Reply-to: pageexec@freemail.hu
+CC: linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>,
+       linux-mm@kvack.org, Ingo Molnar <mingo@redhat.com>,
+       linux-crypto@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Message-ID: <4A225887.21178.1C8AE762@pageexec.freemail.hu>
+In-reply-to: <20090530180540.GE20013@elte.hu>
+References: <20090520190519.GE10756@oblivion.subreption.com>, <20090530180540.GE20013@elte.hu>
+X-mailer: Pegasus Mail for Windows (4.50 PB1)
+Content-type: text/plain; charset=US-ASCII
+Content-transfer-encoding: 7BIT
+Content-description: Mail message body
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.12 (r00tworld.com [212.85.137.21]); Sun, 31 May 2009 12:13:46 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 31, 2009 at 05:29:16PM +0800, Gao, Yunpeng wrote:
-> + * Copyright (c) 2009, Intel Corporation and its suppliers.
+On 30 May 2009 at 20:05, Ingo Molnar wrote:
 
-What is this? Are you not going to name the copyright holders?
+> I think there's a rather significant omission here: there's no 
+> discussion about on-kernel-stack information leaking out.
+> 
+> If a thread that does a crypto call happens to leave sensitive 
+> on-stack data (this can happen easily as stack variables are not 
+> cleared on return), or if a future variant or modification of a 
+> crypto algorithm leaves such information around - then there's 
+> nothing that keeps that data from potentially leaking out.
+> 
+> This is not academic and it happens all the time: only look at 
+> various crash dumps on lkml. For example this crash shows such 
+> leaked information:
+> 
+> [   96.138788]  [<ffffffff810ab62e>] perf_counter_exit_task+0x10e/0x3f3
+> [   96.145464]  [<ffffffff8104cf46>] do_exit+0x2e7/0x722
+> [   96.150837]  [<ffffffff810630cf>] ? up_read+0x9/0xb
+> [   96.156036]  [<ffffffff8151cc0b>] ? do_page_fault+0x27d/0x2a5
+> [   96.162141]  [<ffffffff8104d3f4>] do_group_exit+0x73/0xa0
+> [   96.167860]  [<ffffffff8104d433>] sys_exit_group+0x12/0x16
+> [   96.173665]  [<ffffffff8100bb2b>] system_call_fastpath+0x16/0x1b
+> 
+> The 'ffffffff8151cc0b' 64-bit word is actually a leftover from a 
+> previous system context. ( And this is at the bottom of the stack 
+> that gets cleared all the time - the top of the kernel stack is a 
+> lot more more persistent in practice and crypto calls tend to have a 
+> healthy stack footprint. )
+> 
+> So IMO the GFP_SENSITIVE facility (beyond being misnomer - it should 
+> be something like GFP_NON_PERSISTENT instead) actually results in 
+> _worse_ security in the end: because people (and organizations) 
+> 'think' that their keys are safe against information leaks via this 
+> space, while they are not. The kernel stack can be freed, be reused 
+> by something else partially and then written out to disk (say as 
+> part of hibernation) where it's recoverable from the disk image.
+> 
+> So this whole facility probably only makes sense if all kernel 
+> stacks that handle sensitive data are zeroed on free. But i havent 
+> seen any kernel thread stack clearing functionality in this 
+> patch-set - is it an intentional omission? (or have i missed some 
+> aspect of the patch-set)
 
-Heikki
+i think you missed the fact that the page flag based approach had been
+abandoned already in favour of unconditional page sanitizing on free
+(modulo a kernel boot option). the other approach of doing the sanitizing
+on a smaller allocation base (kfree, etc) is orthogonal to this one since
+they address the lifetime problem at different levels (i'm just making it
+clear since you brought up a freed kernel stack ending up in a hibernation
+image and leaving data there, that obviously won't happen as the freed
+kernel stack pages will be sanitized on free).
+
+now as for kernel stacks. first of all, the original idea of sanitization
+was meant to address userland secrets staying around for too long, little
+if any of that is long-lived on kernel stacks.
+
+kernel data lifetime got affected by virtue of doing the sanitization at
+the lowest possible level of the page allocator (which was in turn favoured
+over the page flag and strict 'userland data only' sanitization due to its
+simplicity, a few lines of code literally). so consider that as a fortunate
+sideeffect.
+
+with that said, there's certainly room for evolution, both in addressing
+more kind of data (it's not only the kernel stack you mention but also the
+userland stack whose unused pages can be taken back for example) and/or
+reducing lifetime further. i personally never bothered with any of that
+because the original request/goal was already addressed.
+
+> Also, there's no discussion about long-lived threads keeping 
+> sensitive information in there kernel stack indefinitely.
+
+kernel stack clearing isn't hard to do, just do it on every syscall exit
+and in the infinite loop for kernel threads.
+
