@@ -1,74 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753795AbZEaFOt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754176AbZEaFUd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753795AbZEaFOt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 May 2009 01:14:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752095AbZEaFOk
+	id S1754176AbZEaFUd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 May 2009 01:20:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752093AbZEaFUX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 May 2009 01:14:40 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:44574 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752014AbZEaFOi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 May 2009 01:14:38 -0400
-Message-ID: <4A221280.1050406@redhat.com>
-Date: Sun, 31 May 2009 13:15:44 +0800
-From: Amerigo Wang <amwang@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090319)
-MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, jdike@addtoit.com, mingo@elte.hu,
-       sparclinux@vger.kernel.org, linux-ia64@vger.kernel.org
-Subject: Re: [Patch 4/4] module: trim exception table in module_free()
-References: <20090526083717.5050.32719.sendpatchset@localhost.localdomain> <200905271453.51914.rusty@rustcorp.com.au> <4A1CEFC3.2010309@redhat.com> <200905281625.24974.rusty@rustcorp.com.au>
-In-Reply-To: <200905281625.24974.rusty@rustcorp.com.au>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Sun, 31 May 2009 01:20:23 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:35886 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751892AbZEaFUW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 May 2009 01:20:22 -0400
+Subject: Re: [PATCH 1/3] isdn: rename capi_ctr_reseted() to capi_ctr_down()
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Tilman Schmidt <tilman@imap.cc>
+Cc: davem@davemloft.net, Karsten Keil <karsten-keil@t-online.de>,
+       isdn4linux@listserv.isdn4linux.de, i4ldeveloper@listserv.isdn4linux.de,
+       Netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090531-patch-01.tilman@imap.cc>
+References: <20090531-patch-00.tilman@imap.cc>
+	 <20090531-patch-01.tilman@imap.cc>
+Content-Type: text/plain
+Date: Sun, 31 May 2009 07:19:41 +0200
+Message-Id: <1243747181.3523.36.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell wrote:
-> On Wed, 27 May 2009 05:16:11 pm Amerigo Wang wrote:
->   
->> Rusty Russell wrote:
->>     
->>> __ex_table ends up with two entries:
->>>
->>> Contents of section __ex_table:
->>>  0000 0c000000 00000000 0e000000 00000000  ................
->>>  0010 10000000 0a000000 12000000 0a000000  ................
->>>
->>> The first is for the __put_user in .text (extable_not_init()) and the
->>> second is for the one in .init.text (init()).
->>>
->>> Depending on how the module gets allocated, the one referring to
->>> .init.text may be first or last.
->>>       
->> Hmm, how about the following? :-)
->>
->> struct exception_table_entry *p = mod->extable;
->>
->> for (;p <= mod->extable+mod->num_exentries; p++ )
->>          if (with_in_module_init(p->insn, mod))
->>                    trim_it(p);
->>     
->
-> More like this:
->
-> void trim_init_extable(struct module *m)
-> {
-> 	/* Since entries are sorted, init entries are at the start... */
-> 	while (m->num_exentries && within_module_init(m->extable[0].insn)) {
-> 		m->extable++;
-> 		m->num_exentries--;
-> 	}
->
-> 	/* ... or the end. */
-> 	while (m->num_exentries && within_module_init(m->extable[m->num_exentries-1].insn))
-> 		m->num_exentries--;
-> }
->   
+Hi Tilman,
 
-Great! Thank you!
-But does this works on all arch? Or only except sparc32?
+> Change the name of the Kernel CAPI exported function capi_ctr_reseted()
+> to something representing its purpose better.
+> 
+> Impact: function renamed, no functional change
+> Signed-off-by: Tilman Schmidt <tilman@imap.cc>
+> ---
+>  Documentation/isdn/INTERFACE.CAPI |    4 ++--
+>  drivers/isdn/capi/kcapi.c         |    8 ++++----
+>  drivers/isdn/hardware/avm/b1.c    |    2 +-
+>  drivers/isdn/hardware/avm/b1dma.c |    2 +-
+>  drivers/isdn/hardware/avm/c4.c    |    4 ++--
+>  drivers/isdn/hardware/avm/t1isa.c |    2 +-
+>  drivers/isdn/hysdn/hycapi.c       |    4 ++--
+>  include/linux/isdn/capilli.h      |    2 +-
+>  net/bluetooth/cmtp/capi.c         |    2 +-
+>  9 files changed, 15 insertions(+), 15 deletions(-)
+
+for the Bluetooth part:
+
+Acked-by: Marcel Holtmann <marcel@holtmann.org>
+
+Regards
+
+Marcel
+
 
