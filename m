@@ -1,56 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754990AbZEaBhk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754417AbZEaB6Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754990AbZEaBhk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 21:37:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754007AbZEaBhc
+	id S1754417AbZEaB6Q (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 21:58:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751409AbZEaB6E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 21:37:32 -0400
-Received: from mail.windriver.com ([147.11.1.11]:35944 "EHLO mail.wrs.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753469AbZEaBhb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 21:37:31 -0400
-Message-ID: <4A21DE75.7010202@windriver.com>
-Date: Sun, 31 May 2009 09:33:41 +0800
-From: Harry Ciao <qingtao.cao@windriver.com>
-Reply-To: qingtao.cao@windriver.com
-Organization: Wind River, CDC
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+	Sat, 30 May 2009 21:58:04 -0400
+Received: from oblivion.subreption.com ([66.240.236.22]:58887 "EHLO
+	mail.subreption.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751392AbZEaB6D (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 May 2009 21:58:03 -0400
+Date: Sat, 30 May 2009 18:55:37 -0700
+From: "Larry H." <research@subreption.com>
+To: linux-kernel@vger.kernel.org
+Cc: linux-mm@kvack.org, Rik van Riel <riel@redhat.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Linus Torvalds <torvalds@osdl.org>
+Subject: [PATCH] Use kzfree in tty buffer management to enforce data
+	sanitization
+Message-ID: <20090531015537.GA8941@oblivion.subreption.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: norsk5@yahoo.com, linux-kernel@vger.kernel.org,
-       bluesmoke-devel@lists.sourceforge.net
-Subject: Re: [v1 PATCH 0/2] EDAC: AMD8111 & AMD8131 Kconfig fixup
-References: <1242358006-28339-1-git-send-email-qingtao.cao@windriver.com> <20090528004433.4051e83d.akpm@linux-foundation.org>
-In-Reply-To: <20090528004433.4051e83d.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 31 May 2009 01:33:09.0647 (UTC) FILETIME=[C14E31F0:01C9E18F]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Organization: Subreption LLC
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Fri, 15 May 2009 11:26:44 +0800 Harry Ciao <qingtao.cao@windriver.com> wrote:
->
->   
->> These are two minor fixups for the AMD8111 and AMD8131 EDAC drivers.
->> The direct reference to device.bus_id should be replaced by dev_name().
->>
->> Add their missing Makefile entires and introduce machine dependency to 
->> their Kconfig options in order to avoid the allmodconfig failure, which
->> I have no better idea to avoid although these chips are not specific to
->> Maple.
->>     
->
-> OK, thanks.
->
-> Do you think these fixes are safe and desirable for 2.6.30?  (I do).
->
->   
-Hi Andrew,
+[PATCH] Use kzfree in tty buffer management to enforce data sanitization
 
-Yes I think so too, I have tested these patches and they work well.
+This patch replaces the kfree() calls within the tty buffer management API
+with kzfree(), to enforce sanitization of the buffer contents.
 
-Thanks!
+It also takes care of handling buffers larger than PAGE_SIZE, which are
+allocated via the page allocator directly.
 
-Harry
+This prevents such information from persisting on memory, potentially
+leaking sensitive data like access credentials, or being leaked to other
+kernel users after re-allocation of the memory by the LIFO allocators.
+
+This patch doesn't affect fastpaths.
+
+Signed-off-by: Larry Highsmith <research@subreption.com>
+
+Index: linux-2.6/drivers/char/tty_audit.c
+===================================================================
+--- linux-2.6.orig/drivers/char/tty_audit.c
++++ linux-2.6/drivers/char/tty_audit.c
+@@ -54,10 +54,12 @@ err:
+ static void tty_audit_buf_free(struct tty_audit_buf *buf)
+ {
+ 	WARN_ON(buf->valid != 0);
+-	if (PAGE_SIZE != N_TTY_BUF_SIZE)
+-		kfree(buf->data);
+-	else
++	if (PAGE_SIZE != N_TTY_BUF_SIZE) {
++		kzfree(buf->data);
++	} else {
++		memset(buf->data, 0, PAGE_SIZE);
+ 		free_page((unsigned long)buf->data);
++	}
+ 	kfree(buf);
+ }
+ 
