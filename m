@@ -1,45 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757070AbZEaPO3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758794AbZEaPY3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757070AbZEaPO3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 May 2009 11:14:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754609AbZEaPOV
+	id S1758794AbZEaPY3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 May 2009 11:24:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753785AbZEaPYT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 May 2009 11:14:21 -0400
-Received: from fifo99.com ([67.223.236.141]:54369 "EHLO fifo99.com"
+	Sun, 31 May 2009 11:24:19 -0400
+Received: from hera.cwi.nl ([192.16.191.8]:35737 "EHLO hera.cwi.nl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752617AbZEaPOV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 May 2009 11:14:21 -0400
-Subject: Re: [PATCH 4/8] kernel:lockdep:implement find_usage_*wards by BFS
-From: Daniel Walker <dwalker@fifo99.com>
-To: tom.leiming@gmail.com
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       a.p.zijlstra@chello.nl
-In-Reply-To: <1243781365-26814-5-git-send-email-tom.leiming@gmail.com>
-References: <yes> <1243781365-26814-1-git-send-email-tom.leiming@gmail.com>
-	 <1243781365-26814-2-git-send-email-tom.leiming@gmail.com>
-	 <1243781365-26814-3-git-send-email-tom.leiming@gmail.com>
-	 <1243781365-26814-4-git-send-email-tom.leiming@gmail.com>
-	 <1243781365-26814-5-git-send-email-tom.leiming@gmail.com>
-Content-Type: text/plain
-Date: Sun, 31 May 2009 08:14:21 -0700
-Message-Id: <1243782861.6592.415.camel@desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	id S1753112AbZEaPYT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 May 2009 11:24:19 -0400
+Date: Sun, 31 May 2009 17:24:03 +0200
+From: "Andries E. Brouwer" <Andries.Brouwer@cwi.nl>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, "Andries E. Brouwer" <Andries.Brouwer@cwi.nl>,
+       linux-kernel@vger.kernel.org, Robert Hancock <hancockrwd@gmail.com>,
+       Al Viro <viro@zeniv.linux.org.uk>, Frans Pop <elendil@planet.nl>
+Subject: Re: [PATCH 0/4] partitions/ide: improve Host Protected Area
+	handling
+Message-ID: <20090531152403.GA26987@ub>
+References: <20090531143911.7164.26834.sendpatchset@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090531143911.7164.26834.sendpatchset@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-05-31 at 22:49 +0800, tom.leiming@gmail.com wrote:
-> -static inline int __bfs_forward(struct lock_list *src_entry,
-> +static inline int __bfs_forwards(struct lock_list *src_entry,
+On Sun, May 31, 2009 at 04:39:11PM +0200, Bartlomiej Zolnierkiewicz wrote:
 
-Your patchset seems a bit young still .. For instance, adding an "s" in
-the above line, that's just flux that really shouldn't be there.. I was
-reviewing your patches but I stopped because it just looks like you need
-to organize them better. I wonder for one, if they bisect or if they
-pass checkpatch .. Your code also seems to have a lot of other little
-cleanup type issues..
+[HPA stuff deleted]
 
-Daniel
+Hi Bartlomiej,
+
+Apart from HPA one also has DCO, which functions rather similarly.
+(I have not checked whether the current kernel knows anything about DCO.)
+Have you thought about DCO?
+Probably the kernel should by default not touch any such setting.
+Maybe it should be reported?
+A user space utility might change this setting - thus a disk can change size.
+
+Andries
 
