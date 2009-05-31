@@ -1,67 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759793AbZEaRCG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756801AbZEaRGU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759793AbZEaRCG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 May 2009 13:02:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757200AbZEaRB4
+	id S1756801AbZEaRGU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 May 2009 13:06:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753620AbZEaRGK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 May 2009 13:01:56 -0400
-Received: from waste.org ([66.93.16.53]:35708 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754750AbZEaRB4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 May 2009 13:01:56 -0400
-Subject: Re: [PATCH] TXx9: Add TX4939 RNG support
-From: Matt Mackall <mpm@selenic.com>
-To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Cc: linux-mips@linux-mips.org, ralf@linux-mips.org,
-       linux-kernel@vger.kernel.org, herbert@gondor.apana.org.au
-In-Reply-To: <20090601.015755.21367568.anemo@mba.ocn.ne.jp>
-References: <1243350141-883-2-git-send-email-anemo@mba.ocn.ne.jp>
-	 <20090601.015755.21367568.anemo@mba.ocn.ne.jp>
-Content-Type: text/plain
-Date: Sun, 31 May 2009 12:01:29 -0500
-Message-Id: <1243789289.22069.25.camel@calx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1.1 
-Content-Transfer-Encoding: 7bit
+	Sun, 31 May 2009 13:06:10 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37749 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753389AbZEaRGK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 May 2009 13:06:10 -0400
+Date: Sun, 31 May 2009 10:05:36 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       "Larry H." <research@subreption.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Rik van Riel <riel@redhat.com>
+Subject: Re: [PATCH] Use kzfree in tty buffer management to enforce data 
+ sanitization
+In-Reply-To: <20090531112630.2c7f4f1d@lxorguk.ukuu.org.uk>
+Message-ID: <alpine.LFD.2.01.0905311002010.3435@localhost.localdomain>
+References: <20090531015537.GA8941@oblivion.subreption.com> <alpine.LFD.2.01.0905301902530.3435@localhost.localdomain> <84144f020905302324r5e342f2dlfd711241ecfc8374@mail.gmail.com> <20090531112630.2c7f4f1d@lxorguk.ukuu.org.uk>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=ISO-8859-14
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-06-01 at 01:57 +0900, Atsushi Nemoto wrote:
-> : This is a reply for comments from Matt Mackall via mm-commit mail.
-> 
-> On Fri, 29 May 2009 19:21:22 -0500, Matt Mackall <mpm@selenic.com> wrote:
-> > > +++ a/arch/mips/txx9/generic/setup_tx4939.c
-> > > @@ -494,6 +494,24 @@ void __init tx4939_aclc_init(void)
-> > >  			       TXX9_IRQ_BASE + TX4939_IR_ACLC, 1, 0, 1);
-> > >  }
-> > >  
-> > > +#define TX4939_RNG_REG	((TX4939_CRYPTO_REG & 0xfffffffffULL) + 0xb0)
+
+
+On Sun, 31 May 2009, Alan Cox wrote:
+
+> > >        memset(buf->data, 0, N_TTY_BUF_SIZE);
+> > >        if (PAGE_SIZE != N_TTY_BUF_SIZE)
+> > >                kfree(...)
+> > >        else
+> > >                free_page(...)
+> > >
+> > >
+> > > but quite frankly, I'm not convinced about these patches at all.
 > > 
-> > This isn't the best place for this define?
+> > I wonder why the tty code has that N_TTY_BUF_SIZE special casing in
+> > the first place? I think we can probably just get rid of it and thus
+> > we can use kzfree() here if we want to.
 > 
-> Well, I can move it to include/asm/txx9/tx4939.h.
-> 
-> > > +++ a/arch/mips/txx9/rbtx4939/setup.c
-> > > @@ -501,6 +501,7 @@ static void __init rbtx4939_device_init(
-> > >  	tx4939_dmac_init(0, 2);
-> > >  	tx4939_aclc_init();
-> > >  	platform_device_register_simple("txx9aclc-generic", -1, NULL, 0);
-> > > +	tx4939_rng_init();
-> > >  }
-> > >  
-> > >  static void __init rbtx4939_setup(void)
-> > 
-> > Not clear to me how this works when this is a module?
-> 
-> This patch add a registration of a platform device for RNG to vmlinux.
-> And the other patch add a driver module for the RNG.  This strategy is
-> fairly common for SoCs or embedded platforms.
+> Some platforms with very large page sizes override the use of page based
+> allocators (eg older ARM would go around allocating 32K). The normal path
+> is 4K or 8K page sized buffers.
 
-If your driver is built as a module (which your patch allows), the above
-won't work, right?
+I think Pekka meant the other way around - why don't we always just use 
+kmalloc(N_TTY_BUF_SIZE)/kfree(), and drop the whole conditional "use page 
+allocator" entirely?
 
--- 
-http://selenic.com : development and support for Mercurial and Linux
+I suspect the "use page allocator" is historical - ie the tty layer 
+originally always did that, and then when people wanted to suppotr smaller 
+areas than one page, they added the special case. I have this dim memory 
+of the _original_ kmalloc not handling page-sized allocations well (due to 
+embedded size/pointer overheads), but I think all current allocators are 
+perfectly happy to allocate PAGE_SIZE buffers without slop.
 
+If I'm right, then we could just use kmalloc/kfree unconditionally. Pekka?
 
+			Linus
