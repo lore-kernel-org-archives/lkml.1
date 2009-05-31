@@ -1,50 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758664AbZEaK0B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758719AbZEaK3A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758664AbZEaK0B (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 May 2009 06:26:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758246AbZEaKZu
+	id S1758719AbZEaK3A (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 May 2009 06:29:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752616AbZEaK2w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 May 2009 06:25:50 -0400
-Received: from 219-87-157-169.static.tfn.net.tw ([219.87.157.169]:59201 "EHLO
-	mswedge2.sunplus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758178AbZEaKZs (ORCPT
+	Sun, 31 May 2009 06:28:52 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:42673 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751330AbZEaK2w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 May 2009 06:25:48 -0400
-X-Greylist: delayed 1300 seconds by postgrey-1.27 at vger.kernel.org; Sun, 31 May 2009 06:25:48 EDT
-In-Reply-To: <200905141044.56426.arnd@arndb.de>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Kyle McMartin <kyle@mcmartin.ca>, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
-       Thomas Gleixner <tglx@linutronix.de>, torvalds@linux-foundation.org
+	Sun, 31 May 2009 06:28:52 -0400
+Message-ID: <4A225ADD.5070605@cs.helsinki.fi>
+Date: Sun, 31 May 2009 13:24:29 +0300
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
 MIME-Version: 1.0
-Subject: Re: [PATCH 0/14] score - New architecure port to SunplusCT S+CORE
-X-Mailer: Lotus Notes Release 6.5 September 26, 2003
-Message-ID: <OFFD33A4F9.B19BF27B-ON482575C7.0036D2B4-482575C7.00373F30@sunplusct.com>
-From: liqin.chen@sunplusct.com
-Date: Sun, 31 May 2009 17:59:27 +0800
-X-MIMETrack: Serialize by Router on ctmail01/SunplusCT(Release 7.0.3FP1|February 24, 2008) at 2009/05/31 ?? 05:59:28,
-	Serialize complete at 2009/05/31 ?? 05:59:28
-Content-Type: text/plain; charset="US-ASCII"
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Rik van Riel <riel@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       "Larry H." <research@subreption.com>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@osdl.org>, linux-mm@kvack.org,
+       Ingo Molnar <mingo@redhat.com>, pageexec@freemail.hu,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [patch 0/5] Support for sanitization flag in low-level page 
+ allocator
+References: <20090528090836.GB6715@elte.hu>	<20090530082048.GM29711@oblivion.subreption.com>	<20090530173428.GA20013@elte.hu>	<20090530180333.GH6535@oblivion.subreption.com>	<20090530182113.GA25237@elte.hu>	<20090530184534.GJ6535@oblivion.subreption.com>	<20090530190828.GA31199@elte.hu>	<4A21999E.5050606@redhat.com>	<84144f020905301353y2f8c232na4c5f9dfb740eec4@mail.gmail.com>	<20090531001052.40ac57d2@lxorguk.ukuu.org.uk>	<84144f020905302314w12c4c7f8jc8241e36c847f53e@mail.gmail.com> <20090531112440.50cbc4fd@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090531112440.50cbc4fd@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Arnd,
+Hi Alan,
 
-> Have you had a chance to look at the asm-generic header files I posted
-> a few times?
+On Sun, May 31, 2009 at 2:10 AM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+>>> #2 Using kzfree() to clear specific bits of memory (and I question the
+>>> kzfree implementation as it seems ksize can return numbers much much
+>>> bigger than the allocated space you need to clear - correct but oversize)
+>>> or using other flags. I'd favour kzfree personally (and fixing it to work
+>>> properly)
+>> Well, yes, that's what kzfree() needs to do given the current API. I
+>> am not sure why you think it's a problem, though. Adding a size
+>> argument to the function will make it more error prone.
+
+Alan Cox wrote:
+> Definitely - am I right however that 
 > 
-> ...
-> Please tell me if you find problems in the generic header files during
-> the conversion.
+> 	x = kzalloc(size, flags)
+> 	blah
+> 	kzfree(x)
 > 
+> can memset a good deal more memory (still safely) than "size" to zero ?
 
-I can't clone the linux/kernel/git/arnd/asm-generic.git repository, 
-and have not test score arch code until now.
+Yes because we actually _allocate_ more than requested the 'size' and 
+the generic allocator has no way of knowing whether how much of the 
+allocated region was actually used by the caller.
 
-In addition, next time I send the patches mail should base on
-linux/kernel/git/arnd/asm-generic.git or
-linux/kernel/git/sfr/linux-next.git?
+Alan Cox wrote:
+> That has performance relevance if so and it ought to at least be
+> documented.
 
-Liqin
+Makes sense.
 
+		Pekka
