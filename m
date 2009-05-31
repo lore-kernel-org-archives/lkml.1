@@ -1,57 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758881AbZEaQMb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759037AbZEaQRw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758881AbZEaQMb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 May 2009 12:12:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756203AbZEaQMX
+	id S1759037AbZEaQRw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 May 2009 12:17:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757605AbZEaQRo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 May 2009 12:12:23 -0400
-Received: from silver.sucs.swan.ac.uk ([137.44.10.1]:42890 "EHLO
-	silver.sucs.swan.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755896AbZEaQMX (ORCPT
+	Sun, 31 May 2009 12:17:44 -0400
+Received: from mail-fx0-f168.google.com ([209.85.220.168]:59163 "EHLO
+	mail-fx0-f168.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756698AbZEaQRn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 May 2009 12:12:23 -0400
-Date: Sun, 31 May 2009 17:12:23 +0100
-From: Sitsofe Wheeler <sitsofe@yahoo.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Dave Airlie <airlied@redhat.com>, DRI <dri-devel@lists.sourceforge.net>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Michel =?iso-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-Subject: Re: [Bug #12765] i915 VT switch with AIGLX causes X lock up
-Message-ID: <20090531161222.GA4204@sucs.org>
-References: <THxQaUP0K2D.A.QkF.UVbIKB@chimera> <PkPeJtNB3KO.A.TsH.wXbIKB@chimera>
+	Sun, 31 May 2009 12:17:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :user-agent;
+        b=Rds8DTkn8ZMurg2szV6y7KaYTtZTetZE7ettVywvffmHlQ8LQ6DnZyqcCdkA2yzo/T
+         FuG8BQlDin/lfEaox0CYsLGGNe1ZWudxH0JwLkBkBIv5LdudWkofNPvfET49f+IQL5ET
+         LkZYom/3YO9kMLGViVfyZhB9uZbOgjqA92XwE=
+Date: Sun, 31 May 2009 18:17:41 +0200
+From: Borislav Petkov <petkovbb@googlemail.com>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: broken ide-tape
+Message-ID: <20090531161740.GA7975@liondog.tnic>
+Mail-Followup-To: Borislav Petkov <petkovbb@gmail.com>,
+	Jiri Slaby <jirislaby@gmail.com>,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+	linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+References: <4A229998.6070808@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <PkPeJtNB3KO.A.TsH.wXbIKB@chimera>
+In-Reply-To: <4A229998.6070808@gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 30, 2009 at 09:55:33PM +0200, Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of regressions introduced between 2.6.28 and 2.6.29.
+On Sun, May 31, 2009 at 04:52:08PM +0200, Jiri Slaby wrote:
+> Hi,
 > 
-> The following bug entry is on the current list of known regressions
-> introduced between 2.6.28 and 2.6.29.  Please verify if it still should
-> be listed and let me know (either way).
+> ide-tape is broken since commit 346331f82823682fb5c2df6e827db25d95cc2e92
+> (ide-tape: remove atomic test/set macros for packet commands)
+> from Apr 18 2008.
 > 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12765
-> Subject		: i915 VT switch with AIGLX causes X lock up
-> Submitter	: Sitsofe Wheeler <sitsofe@yahoo.com>
-> Date		: 2009-02-21 15:38 (99 days old)
-> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=14d200c5e5bd19219d930bbb9a5a22758c8f5bec
-> References	: http://marc.info/?l=linux-kernel&m=123523074304955&w=4
-> 		  http://lkml.org/lkml/2009/4/27/317
-> Handled-By	: Jesse Barnes <jbarnes@virtuousgeek.org>
-> Patch		: http://patchwork.kernel.org/patch/20197/
+> The commit introduced flags which are defined as (1 << nr) and uses them
+> in {clear,set,test}_bit. And hence it must oops on each do_request.
 
-Still here in 2.6.30-rc7-00149-g3218911. I have to admit that I thought
-commit 9b6fe313bfce27d4a261257da70196be0ac2bef5 might fix it but that
-doesn't appear to have been the case...
+/me ducks behind the couch.
+
+Ouch, that _is_ dumb, sorry. This is because we wanted to keep the
+atomic ops for the pipeline handling (which got removed) and use
+simple flags for the rest. And so the flags got mixed up and the mess
+unleashed...
+
+> Is it worth fixing (something like ilog2 added to each bit operation) or
+> is a complete removal of the driver better "fix"?
+
+Actually, the driver needs to be reaudited and fixed properly - we still
+have some users left. I'm looking into it.
+
+Thanks for catching that.
 
 -- 
-Sitsofe | http://sucs.org/~sits/
+Regards/Gruss,
+    Boris.
