@@ -1,93 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757410AbZEaI0f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757410AbZEaIjR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757410AbZEaI0f (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 May 2009 04:26:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757045AbZEaI0X
+	id S1757410AbZEaIjR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 May 2009 04:39:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757240AbZEaIjD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 May 2009 04:26:23 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:62217 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1756807AbZEaI0T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 May 2009 04:26:19 -0400
-Message-ID: <4A223F7E.3090203@cn.fujitsu.com>
-Date: Sun, 31 May 2009 16:27:42 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Sun, 31 May 2009 04:39:03 -0400
+Received: from qw-out-2122.google.com ([74.125.92.25]:5507 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757045AbZEaIjB convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 May 2009 04:39:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=B9PLeoeJQTQ5zdz+uqmyulBUfjTEnlrh1pDwCTy8Jt/EwTupHTGEIARLXXFCwIO5Rw
+         GSQCv/Ea1F3gbvsjegtDE4SXx9aAvnWJWn2Eg+DdgK/kFI47UhwQBD22lDowbz1rFyuF
+         pG5XC7tsS29UQJfDpC4J3iRQfOPYConVKYcjE=
 MIME-Version: 1.0
-To: Frederic Weisbecker <fweisbec@gmail.com>
-CC: Steven Rostedt <rostedt@goodmis.org>, Tom Zanussi <tzanussi@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2] tracing/filters: use strcmp() instead of strncmp()
-References: <4A1F9FAC.6020506@cn.fujitsu.com> <c62985530905290651id2435bfx7f57ec561fe366e3@mail.gmail.com> <4A20F71F.6030703@cn.fujitsu.com> <20090530135236.GB5969@nowhere>
-In-Reply-To: <20090530135236.GB5969@nowhere>
+In-Reply-To: <1faf47660905310128t45f1ea32ge5e1cba82ddca972@mail.gmail.com>
+References: <1faf47660905310128t45f1ea32ge5e1cba82ddca972@mail.gmail.com>
+Date: Sun, 31 May 2009 01:39:01 -0700
+Message-ID: <1faf47660905310139y7203bba7w39f4a5330b148f0@mail.gmail.com>
+Subject: Fwd: BUG: Documentation/lguest/lguest.c bad paths for includes cause 
+	make to fail
+From: "Charles 'Mack' Rhinelander" <mrhinelander@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@osdl.org>, lguest@ozlabs.org
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frederic Weisbecker wrote:
-> On Sat, May 30, 2009 at 05:06:39PM +0800, Li Zefan wrote:
->> Frédéric Weisbecker wrote:
->>> 2009/5/29 Li Zefan <lizf@cn.fujitsu.com>:
->>>> Trace filter is not working normally:
->>>>
->>>>  # echo 'name == et' > tracing/events/irq/irq_handler_entry/filter
->>>>  # echo 1 > tracing/events/irq/irq_handler_entry/enable
->>>>  # cat trace_pipe
->>>>      <idle>-0     [001]  1363.423175: irq_handler_entry: irq=18 handler=eth0
->>>>      <idle>-0     [001]  1363.934528: irq_handler_entry: irq=18 handler=eth0
->>>>      ...
->>>>
->>>> It's because we pass to trace_define_field() the information of
->>>> __str_loc_##item, but not the actual string, so pred->str_len == field->size
->>>> == sizeof(unsigned short), thus it always compare at most 2 bytes when
->>>> filtering on __string() field.
->>>
->>> Weird, I was about sure I set the size of each string() to FILTER_MAX_STRING (or
->>> something like that).
->>>
->>> Anyway this patch looks good but it does more than just fixing the
->>> issue, it removes
->>> the string len boundary security we had with strncmp() for every
->>> string (static and
->>> dynamic size).
->>>
->>> The potential side effect that comes along this patch would disappear if
->>> you just turn strncmp into strcmp only in filter_pred_strloc().
->>>
->>> If you do that also for fixed size strings, then it should be done in
->>> a second patch,
->>> although I guess turning anything here into strcmp is fine because the
->>> strings given
->>> by the user are always limited in their size. But we never know...
->>>
->> I don't think there's any security issue. It's irrelevant how big the user-input
->> strings are. The point is those strings are guaranteed to be NULL-terminated.
->> Am I missing something?
->>
->> And I don't think it's necessary to make 2 patches that each patch converts
->> one strncmp to strcmp. But maybe it's better to improve this changelog?
-> 
-> Hmm, you must be right, indeed they seem to be guaranted beeing NULL-terminated
-> strings.
-> 
-
-Sorry, I was wrong. :(
-
-Though the user-input strings are guaranted to be NULL-terminated, strings
-generated by TRACE_EVENT might not.
-
-We define static strings this way:
-	TP_struct(
-		__array(char, foo, LEN)
-	)
-But foo is not necessarily a string, though I doubt someone will use it
-as non-string char array.
-
-Dynamic string is fine, because assign_str() makes it NULL-terminated.
-
-So we can use strcmp() for dynamic strings, but we'd better use strncmp() for
-static string.
+---------- Forwarded message ----------
+From: Charles 'Mack' Rhinelander <mrhinelander@gmail.com>
+Date: Sun, May 31, 2009 at 1:28 AM
+Subject: BUG: Documentation/lguest/lguest.c bad paths for includes
+cause make to fail
+To: mm-commits@vger.kernel.org, kraai@ftbfs.org,
+rusty@rustcorp.com.au, Andi Kleen <ak@suse.de>, Thomas Gleixner
+<tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
 
 
+2.6.28-rc2-mm1 make fails at Documentation/lguest/lguest.c  Two
+includes have bad paths: line 34 #include <zlib.h> (maybe should be
+linux/zlib.h?), and line 47 #include "asm-x86/bootparam.h"
+
+Are incorrect paths related to this recent gitignore of lguest.c (see
+first cut below)?
+
+asm-x86 has no bootparam.h; is this related to 2007 mm-commit list
+concerning "allow asm-x86 to be included from userspace?" (see second
+cut below)
+
+---BEGIN CUT ABOUT gitignore OF lguest.c---
+
+Gitweb:     http://git.kernel.org/linus/9536c26b31ae34ba6371a1b8f406028e9756f913
+Commit:     9536c26b31ae34ba6371a1b8f406028e9756f913
+Parent:     84a139a985300901dfad99bd93c7345d180af860
+Author:     Matt Kraai <kraai@ftbfs.org>
+AuthorDate: Thu Apr 16 23:46:20 2009 -0700
+Committer:  Rusty Russell <rusty@rustcorp.com.au>
+CommitDate: Sun Apr 19 23:14:02 2009 +0930
+
+   lguest: tell git to ignore Documentation/lguest/lguest
+
+   This is the example lguest launcher binary.
+
+   Signed-off-by: Matt Kraai <kraai@ftbfs.org>
+   Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+---
+ Documentation/lguest/.gitignore |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/Documentation/lguest/.gitignore b/Documentation/lguest/.gitignore
+---END CUT---
+
+---BEGIN CUT ABOUT allow x86 bootparam include from userspace---
+List:       linux-mm-commits
+Subject:    - make-asm-x86-bootparamh-includable-from-userspace.patch
+removed from -mm tree
+From:       akpm () linux-foundation ! org
+Date:       2007-10-18 6:05:37
+
+The patch titled
+    Make asm-x86/bootparam.h includable from userspace
+has been removed from the -mm tree.  Its filename was
+    make-asm-x86-bootparamh-includable-from-userspace.patch
+
+This patch was dropped because because of rejects
+
+------------------------------------------------------
+Subject: Make asm-x86/bootparam.h includable from userspace
+From: Rusty Russell <rusty@rustcorp.com.au>
+
+To actually write a bootloader (or, say, the lguest launcher) currently
+requires duplication of these structures.  Making them includeable from
+userspace is much nicer.
+
+We merge the common userspace-required definitions of e820_32/64.h into e820.h
+for export.
+
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Andi Kleen <ak@suse.de>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org
+---END CUT---
