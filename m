@@ -1,120 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757804AbZEaQp1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759552AbZEaQtc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757804AbZEaQp1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 May 2009 12:45:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756698AbZEaQpU
+	id S1759552AbZEaQtc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 May 2009 12:49:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756096AbZEaQtZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 May 2009 12:45:20 -0400
-Received: from mba.ocn.ne.jp ([122.1.235.107]:65170 "EHLO smtp.mba.ocn.ne.jp"
+	Sun, 31 May 2009 12:49:25 -0400
+Received: from dspnet.fr.eu.org ([213.186.44.138]:2302 "EHLO dspnet.fr.eu.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756607AbZEaQpT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 May 2009 12:45:19 -0400
-Date: Mon, 01 Jun 2009 01:45:17 +0900 (JST)
-Message-Id: <20090601.014517.169682203.anemo@mba.ocn.ne.jp>
-To: akpm@linux-foundation.org
-Cc: linux-mips@linux-mips.org, ralf@linux-mips.org,
-       linux-kernel@vger.kernel.org, herbert@gondor.apana.org.au,
-       mpm@selenic.com
-Subject: Re: [PATCH] hwrng: Add TX4939 RNG driver
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-In-Reply-To: <20090529162907.9cb1bba2.akpm@linux-foundation.org>
-References: <1243350141-883-1-git-send-email-anemo@mba.ocn.ne.jp>
-	<20090529162907.9cb1bba2.akpm@linux-foundation.org>
-X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
-X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
-X-Mailer: Mew version 5.2 on Emacs 22.2 / Mule 5.0 (SAKAKI)
+	id S1751248AbZEaQtZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 May 2009 12:49:25 -0400
+Date: Sun, 31 May 2009 18:49:25 +0200
+From: Olivier Galibert <galibert@pobox.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: paul@mad-scientist.net, linux-kernel@vger.kernel.org, stable@kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, Oleg Nesterov <oleg@redhat.com>,
+       Roland McGrath <roland@redhat.com>
+Subject: Re: [PATCH] coredump: Retry writes where appropriate
+Message-ID: <20090531164925.GA22309@dspnet.fr.eu.org>
+Mail-Followup-To: Olivier Galibert <galibert@pobox.com>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>, paul@mad-scientist.net,
+	linux-kernel@vger.kernel.org, stable@kernel.org,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Andi Kleen <andi@firstfloor.org>, Oleg Nesterov <oleg@redhat.com>,
+	Roland McGrath <roland@redhat.com>
+References: <1243748019.7369.319.camel@homebase.localnet> <20090531111851.07eb1df3@lxorguk.ukuu.org.uk> <20090531140354.GA92675@dspnet.fr.eu.org> <20090531173144.0a552386@lxorguk.ukuu.org.uk>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090531173144.0a552386@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 29 May 2009 16:29:07 -0700, Andrew Morton <akpm@linux-foundation.org> wrote:
-> I assume that the MIPS patch "[PATCH] TXx9: Add TX4939 RNG support"
-> depends upon this patch?
-
-To build kernel or driver, no dependencies.  To use this device
-actually, both patches are needed.
-
-> > +static u64 read_rng(void __iomem *base, unsigned int offset)
-> > +{
-> > +	/* Caller must disable interrupts */
-> > +	return ____raw_readq(base + offset);
-> > +}
+On Sun, May 31, 2009 at 05:31:44PM +0100, Alan Cox wrote:
+> O> Perhaps removing the "|| r == -EINTR" part would make both of you
+> > happy?  He gets the reliability on pipes, you keep the interrupt on
+> > signals.
 > 
-> What is the reasoning behind the local_irq_disable() requirement?
-> 
-> Because I'm wondering whether this is safe on SMP?
+> How does that improve things.
 
-As Ralf replied, These local_irq_disable stuff are just for 64-bit
-access on 32-bit kernel.  Maybe something like this is preferred?
+I can very well misunderstand the code, but if you dump to a pipe,
+what you can write() in one call is limited to the pipe buffer
+capacity, isn't it?  Something like 16 pages iirc.  So you get a short
+write and nothing there seems to call write again.
 
-static void ____raw_io_start(void)
-{
-#ifndef CONFIG_64BIT
-	/* some comments... */
-	local_irq_enable();
-#endif
-}
+I've also had short writes on normal filesystems (nfs at least,
+reiserfs and ext3 too I seem to remember, but it was a 2.6.20-era
+kernel) for writes bigger than 2G.  So I'm not sure a dump of a 2G+
+process would actually work.
 
-static void ____raw_io_end(void)
-{
-#ifndef CONFIG_64BIT
-	/* see above */
-	local_irq_disable();
-#endif
-}
 
-For SMP concurrent access, these rountines are protected by mutex in
-rng-core.  Also this SoC does not support SMP.  There should be no
-problem here.
+> There is a second problem anyway. Suppose something is causing a
+> continual stream of signal events - what guarantees it makes progress ?
 
-> > +	for (i = 0; i < 20; i++) {
-...
-> > +		udelay(1);
-> > +	}
-> > +	return rngdev->data_avail;
-> > +}
-> 
-> The mysterious udelay() needs a comment, because there is no way in
-> which the reader can otherwise work out why it is there.
+Can a signal end up in anything else than EINTR?
 
-Well, this comments can be applied most RNG drivers ;)
 
-Anyway, I will add some comment here.  I take this loop (20 loops with
-udelay) from other drivers and changed to udelay(1) because the
-datasheed states "90 bus clock cycles by default" for generation
-(typically 450ns for this SoC).
+> The only source of signals during a dump should be external ones. Far
+> better would be to set some kind of defined signal mask during the dump
+> (say SIGPIPE, SIGINT, SIGQUIT) ? I agree with Paul's patch in the sense
+> we don't want spurious SIGIO events or similar spoiling a dump.
 
-> > +static int tx4939_rng_data_read(struct hwrng *rng, u32 *buffer)
-> > +{
-> > +	struct tx4939_rng *rngdev = container_of(rng, struct tx4939_rng, rng);
-> > +
-> > +	rngdev->data_avail--;
-> > +	*buffer = *((u32 *)&rngdev->databuf + rngdev->data_avail);
-> > +	return sizeof(u32);
-> > +}
-> 
-> Concurrent callers can corrupt rngdev->data_avail ?
+But Paul's patch is not just about signals, it's about EAGAIN and
+short writes too.
 
-This is protected by rng_mutex in rng-core.
+  OG.
 
-> > +	/* Start RNG */
-> > +	write_rng(TX4939_RNG_RCSR_ST, rngdev->base, TX4939_RNG_RCSR);
-> > +	local_irq_enable();
-> > +	/* drop first two results */
-> 
-> The comment doesn't provide the reason for doing this?
-
->From the datasheet:
-
-	The quality of the random numbers generated immediately after
-	reset can be insufficient.  Therefore, do not use random
-	numbers obtained from the first and second generations; use
-	the ones from the third or subsequent generation.
-
-I will put this comment in the driver.
-
----
-Atsushi Nemoto
