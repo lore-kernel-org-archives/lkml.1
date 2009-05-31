@@ -1,46 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757480AbZEaRJl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759524AbZEaRST@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757480AbZEaRJl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 May 2009 13:09:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754900AbZEaRJd
+	id S1759524AbZEaRST (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 May 2009 13:18:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754271AbZEaRSJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 May 2009 13:09:33 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:54357 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753771AbZEaRJd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 May 2009 13:09:33 -0400
-Date: Sun, 31 May 2009 18:10:20 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       "Larry H." <research@subreption.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Rik van Riel <riel@redhat.com>
-Subject: Re: [PATCH] Use kzfree in tty buffer management to enforce data 
- sanitization
-Message-ID: <20090531181020.05fb89d5@lxorguk.ukuu.org.uk>
-In-Reply-To: <alpine.LFD.2.01.0905311002010.3435@localhost.localdomain>
-References: <20090531015537.GA8941@oblivion.subreption.com>
-	<alpine.LFD.2.01.0905301902530.3435@localhost.localdomain>
-	<84144f020905302324r5e342f2dlfd711241ecfc8374@mail.gmail.com>
-	<20090531112630.2c7f4f1d@lxorguk.ukuu.org.uk>
-	<alpine.LFD.2.01.0905311002010.3435@localhost.localdomain>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+	Sun, 31 May 2009 13:18:09 -0400
+Received: from mba.ocn.ne.jp ([122.1.235.107]:57099 "EHLO smtp.mba.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754122AbZEaRSI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 May 2009 13:18:08 -0400
+Date: Mon, 01 Jun 2009 02:18:07 +0900 (JST)
+Message-Id: <20090601.021807.250571902.anemo@mba.ocn.ne.jp>
+To: mpm@selenic.com
+Cc: akpm@linux-foundation.org, linux-mips@linux-mips.org, ralf@linux-mips.org,
+       linux-kernel@vger.kernel.org, herbert@gondor.apana.org.au
+Subject: Re: [PATCH] hwrng: Add TX4939 RNG driver
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+In-Reply-To: <1243789210.22069.23.camel@calx>
+References: <20090529162907.9cb1bba2.akpm@linux-foundation.org>
+	<20090601.014517.169682203.anemo@mba.ocn.ne.jp>
+	<1243789210.22069.23.camel@calx>
+X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
+X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
+X-Mailer: Mew version 5.2 on Emacs 22.2 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I think Pekka meant the other way around - why don't we always just use 
-> kmalloc(N_TTY_BUF_SIZE)/kfree(), and drop the whole conditional "use page 
-> allocator" entirely?
+On Sun, 31 May 2009 12:00:09 -0500, Matt Mackall <mpm@selenic.com> wrote:
+> > >From the datasheet:
+> > 
+> > 	The quality of the random numbers generated immediately after
+> > 	reset can be insufficient.  Therefore, do not use random
+> > 	numbers obtained from the first and second generations; use
+> > 	the ones from the third or subsequent generation.
+> 
+> Does the datasheet say anything about -how- the random numbers are
+> produced? Most physical sources that I'm aware of don't have this sort
+> of issue. But some pseudo-RNGs do. So this looks a little worrisome.
 
-We certainly can nowdays - the old allocator used to allocate 8K for 4K
-and a bit of memory and its many years single we acquired slab so yes it
-can go.
+Nothing for "how".  If a RNG was actually a pseudo-RNG, does anything
+a driver should do?  Any future plan to select one RNG from multiple
+sources based on randomness grade?
 
-> If I'm right, then we could just use kmalloc/kfree unconditionally. Pekka?
-
-Added to the tty queue will do that tomorrow
+---
+Atsushi Nemoto
