@@ -1,59 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752915AbZEaT2H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753045AbZEaUEW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752915AbZEaT2H (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 May 2009 15:28:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752491AbZEaT14
+	id S1753045AbZEaUEW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 May 2009 16:04:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752715AbZEaUEN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 May 2009 15:27:56 -0400
-Received: from mail-bw0-f222.google.com ([209.85.218.222]:39049 "EHLO
-	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752216AbZEaT1z convert rfc822-to-8bit (ORCPT
+	Sun, 31 May 2009 16:04:13 -0400
+Received: from cpsmtpm-eml104.kpnxchange.com ([195.121.3.8]:56969 "EHLO
+	CPSMTPM-EML104.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752638AbZEaUEM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 May 2009 15:27:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=XWWhT2QIJ76g7A6mS0zbRB7UZQe9lLGYe7yUBiPHtihsDtThUWlKVXoD+UjGAjSI2K
-         zgY8qIRAUS6vVuHOI8k2hmuly5sawZfa1fp5CLeDAkHFT0dEhShorGhAP40FbtDgxg8g
-         r7xNiUxqy/B5sJi9+C0MRYOHioPePUOSbGkV4=
+	Sun, 31 May 2009 16:04:12 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: Re: [PATCH 0/4] partitions/ide: improve Host Protected Area handling
+Date: Sun, 31 May 2009 22:04:11 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-ide@vger.kernel.org, "Andries E. Brouwer" <Andries.Brouwer@cwi.nl>,
+       linux-kernel@vger.kernel.org, Robert Hancock <hancockrwd@gmail.com>,
+       Al Viro <viro@zeniv.linux.org.uk>
+References: <20090531143911.7164.26834.sendpatchset@localhost.localdomain>
+In-Reply-To: <20090531143911.7164.26834.sendpatchset@localhost.localdomain>
 MIME-Version: 1.0
-In-Reply-To: <20090531080434.GA16463@jasper.tkos.co.il>
-References: <1243338914-7811-1-git-send-email-baruch@tkos.co.il>
-	 <63386a3d0905271416u4b2cee48k40c12e91e1796f83@mail.gmail.com>
-	 <20090531080434.GA16463@jasper.tkos.co.il>
-Date: Sun, 31 May 2009 21:27:56 +0200
-Message-ID: <63386a3d0905311227v5bb5c278r306e8ae429e77691@mail.gmail.com>
-Subject: Re: [spi-devel-general] [PATCH] spi: driver for the Synopsys 
-	DesignWare SPI controller
-From: Linus Walleij <linus.ml.walleij@gmail.com>
-To: gregkh@suse.de, Baruch Siach <baruch@tkos.co.il>
-Cc: spi-devel-general@lists.sourceforge.net,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200905312204.12549.elendil@planet.nl>
+X-OriginalArrivalTime: 31 May 2009 20:04:13.0183 (UTC) FILETIME=[F7DE88F0:01C9E22A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/5/31 Baruch Siach <baruch@tkos.co.il>:
+On Sunday 31 May 2009, Bartlomiej Zolnierkiewicz wrote:
+> Since from the perspective of most users of recent systems, disabling
+> Host Protected Area (HPA) can break vendor RAID formats, GPT partitions
+> and risks corrupting firmware or overwriting vendor system recovery
+> tools this patchset makes the IDE subsystem preserve HPA by default.
 
->> > +       r = platform_get_resource(dev, IORESOURCE_MEM, 0);
->> > +       if (r == NULL) {
->> > +               ret = -ENODEV;
->>
->> -ENOENT
->
-> A quick search in the drivers tree showed no -ENOENT in this situation. Of the
-> 10 first results of grep -ENODEV is the most popular as follows:
-[The other: 3x -EINVAL one -ENXIO]
+Kudos! I have to leave a real review of the patches to others more 
+qualified than me, but where the previous patch set raised all sorts of 
+questions for me, this just looks logical.
 
-Wowsers! And I felt -ENOENT was so intuitive, well if I'm going against
-common practice, no good. So let's ask the maintainer of the platform bus
-what shall be returned in this situation:
+I conclude the following from reading the patches:
+- a HPA is always at the end of a disk, correct?
+- the only case where a user should notice a change after switching
+  to 2.6.30 is if he has a partition that starts on or after the
+  start of the HPA: such a partition will be ignored (with warning
+  in dmesg); I guess that is reasonable as at least it will prevent
+  "broken" partitions and is probably relatively uncommon.
 
-Greg (or some other wise person from linux-kernel) what would you return if
-platform_get_resource() returns NULL for an expected resource?
+Thanks for your continued work on this Bart.
 
-Linus Walleij
+Cheers,
+FJP
