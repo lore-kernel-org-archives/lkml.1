@@ -1,64 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758783AbZEaOv3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759365AbZEaOxk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758783AbZEaOv3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 May 2009 10:51:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759277AbZEaOug
+	id S1759365AbZEaOxk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 May 2009 10:53:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756203AbZEaOxc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 May 2009 10:50:36 -0400
-Received: from wf-out-1314.google.com ([209.85.200.171]:14831 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759272AbZEaOuf (ORCPT
+	Sun, 31 May 2009 10:53:32 -0400
+Received: from fg-out-1718.google.com ([72.14.220.153]:31131 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755781AbZEaOxb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 May 2009 10:50:35 -0400
+	Sun, 31 May 2009 10:53:31 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=jfqEBbOPaCk6jGAFK3vLwKPymW0Hv1JwGSxztWJnwPvlzU1P8Zwt/opT1fyolC2i3t
-         1qZ35FUJvuDLc4kKWlwv4iVHRwMXhlpfnJ/TxQNypVTyinPK69yaBVmocPye8VpytKGI
-         lwSXofovgRyMCj7er4Hex9pm3Ey0GUiut/Xyc=
-From: tom.leiming@gmail.com
-To: mingo@elte.hu
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       a.p.zijlstra@chello.nl, Ming Lei <tom.leiming@gmail.com>
-Subject: [PATCH 7/8] kernel:lockdep: update memory usage introduced by BFS
-Date: Sun, 31 May 2009 22:49:24 +0800
-Message-Id: <1243781365-26814-8-git-send-email-tom.leiming@gmail.com>
-X-Mailer: git-send-email 1.6.0.GIT
-In-Reply-To: <1243781365-26814-7-git-send-email-tom.leiming@gmail.com>
-References: <yes>
- <1243781365-26814-1-git-send-email-tom.leiming@gmail.com>
- <1243781365-26814-2-git-send-email-tom.leiming@gmail.com>
- <1243781365-26814-3-git-send-email-tom.leiming@gmail.com>
- <1243781365-26814-4-git-send-email-tom.leiming@gmail.com>
- <1243781365-26814-5-git-send-email-tom.leiming@gmail.com>
- <1243781365-26814-6-git-send-email-tom.leiming@gmail.com>
- <1243781365-26814-7-git-send-email-tom.leiming@gmail.com>
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :x-enigmail-version:content-type:content-transfer-encoding;
+        b=t0mHAWACtGw+9PUOyBkgspvz7Mh0fYu7xOqYZpWtOtcezGsrxAEAWP1AKP9VjkgSzT
+         U5MP9mh6cOeuFOpZdFMfHwZzmNIVL7IUtGWlIe6DPjTGoYB68vxXwAdQjZ6+m9k+FP7p
+         zANa9lznSXEsuG3tvfjlfCkPxNyEqb9ohWIw8=
+Message-ID: <4A229998.6070808@gmail.com>
+Date: Sun, 31 May 2009 16:52:08 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1pre) Gecko/20090525 SUSE/3.0b2-10.1 Thunderbird/3.0b3pre
+MIME-Version: 1.0
+To: Borislav Petkov <petkovbb@gmail.com>
+CC: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: broken ide-tape
+X-Enigmail-Version: 0.96a
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ming Lei <tom.leiming@gmail.com>
+Hi,
 
+ide-tape is broken since commit 346331f82823682fb5c2df6e827db25d95cc2e92
+(ide-tape: remove atomic test/set macros for packet commands)
+from Apr 18 2008.
 
-Signed-off-by: Ming Lei <tom.leiming@gmail.com>
----
- kernel/lockdep.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+The commit introduced flags which are defined as (1 << nr) and uses them
+in {clear,set,test}_bit. And hence it must oops on each do_request.
 
-diff --git a/kernel/lockdep.c b/kernel/lockdep.c
-index 6e31e4b..faa39cb 100644
---- a/kernel/lockdep.c
-+++ b/kernel/lockdep.c
-@@ -3429,7 +3429,8 @@ void __init lockdep_info(void)
- 		sizeof(struct list_head) * CLASSHASH_SIZE +
- 		sizeof(struct lock_list) * MAX_LOCKDEP_ENTRIES +
- 		sizeof(struct lock_chain) * MAX_LOCKDEP_CHAINS +
--		sizeof(struct list_head) * CHAINHASH_SIZE) / 1024);
-+		sizeof(struct list_head) * CHAINHASH_SIZE) / 1024 +
-+		sizeof(struct circular_queue) + sizeof(bfs_accessed));
- 
- 	printk(" per task-struct memory footprint: %lu bytes\n",
- 		sizeof(struct held_lock) * MAX_LOCK_DEPTH);
--- 
-1.6.0.GIT
-
+Is it worth fixing (something like ilog2 added to each bit operation) or
+is a complete removal of the driver better "fix"?
