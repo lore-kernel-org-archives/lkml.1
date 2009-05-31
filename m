@@ -1,47 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754025AbZEaVSi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753323AbZEaVy3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754025AbZEaVSi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 May 2009 17:18:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752273AbZEaVSb
+	id S1753323AbZEaVy3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 May 2009 17:54:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752054AbZEaVyV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 May 2009 17:18:31 -0400
-Received: from cpsmtpm-eml104.kpnxchange.com ([195.121.3.8]:51749 "EHLO
-	CPSMTPM-EML104.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752061AbZEaVSa (ORCPT
+	Sun, 31 May 2009 17:54:21 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:3553 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751595AbZEaVyU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 May 2009 17:18:30 -0400
-From: Frans Pop <elendil@planet.nl>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Bug #13389] Warning 'Invalid throttling state, reset' gets displayed when it should not be
-Date: Sun, 31 May 2009 23:18:30 +0200
-User-Agent: KMail/1.9.9
-References: <4to6E2myxvG.A.muC.aIbIKB@chimera> <LEcEO2518_I.A.6LD.pIbIKB@chimera>
-In-Reply-To: <LEcEO2518_I.A.6LD.pIbIKB@chimera>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
+	Sun, 31 May 2009 17:54:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=X/Et/by8lQJYnDJht8FxRcOfCEBLYnJDdK0sSWTg3ZriLjiorBt1UIJz0897wVUcKc
+         GD+nw4fLrkOveYi4gqP8c2fosffXcHGS8xzuEGnc8+t23DSl1mMYzem9p4njLW9saUP2
+         o4Z2rJyXQy+DQmTRLmd6Qwjj9qvsaBriOcBnc=
+Date: Mon, 1 Jun 2009 01:54:27 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Matt Helsley <matthltc@us.ibm.com>, xemul@parallels.com,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       dave@linux.vnet.ibm.com, mingo@elte.hu, torvalds@linux-foundation.org
+Subject: Re: [PATCH 14/38] Remove struct mm_struct::exe_file et al
+Message-ID: <20090531215427.GA29534@x200.localdomain>
+References: <20090526113618.GJ28083@us.ibm.com> <20090526162415.fb9cefef.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200905312318.31318.elendil@planet.nl>
-X-OriginalArrivalTime: 31 May 2009 21:18:31.0821 (UTC) FILETIME=[596CB3D0:01C9E235]
+In-Reply-To: <20090526162415.fb9cefef.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 30 May 2009, Rafael J. Wysocki wrote:
-> The following bug entry is on the current list of known regressions
-> from 2.6.29.  Please verify if it still should be listed and let me
-> know (either way).
->
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13389
-> Subject	: Warning 'Invalid throttling state, reset' gets displayed
->		  when it should not be
-> Submitter	: Frans Pop <elendil@planet.nl> 
-> Date		: 2009-05-26 15:24 (5 days old)
+On Tue, May 26, 2009 at 04:24:15PM -0700, Andrew Morton wrote:
+> On Tue, 26 May 2009 04:36:18 -0700
+> Matt Helsley <matthltc@us.ibm.com> wrote:
+> 
+> > I don't see any mention in the changelog of the point brought up by Ingo:
+> > 
+> > http://lkml.org/lkml/2009/4/10/105
+> 
+> Nor of Eric's comments.
+> 
+> Alexey, pleeeze don't do this.  We (read: I) heavily depend upon patch
+> submitters to keep track of outstanding issues and review comments,
+> etc.
+> 
+> If the patch submitter simply blows these things off then it devolves
+> to me having to keep track of each patch's issue list as well as the
+> patch itself.  My workload goes up by a factor of N and the error rate
+> goes up by N^2 :(
 
-Still valid. I've just added possible patches in bugzilla.
+grmbh..
 
-Cheers,
-FJP
+"Security" and "holding ->mmap_sem" were answered and dismissed.
+
+You can't do readlink(2) on /proc/*/exe if you can't ptrace task.
+So no new possible holes are created.
+
+->mmap_sem was held since /proc/*/exe was added and nobody cared.
+And, again, you can't readlink _any_ /proc/*/exe.
+
+Patch simply restores code to year-back state.
+
+I'll send removal and readddition of "struct path" as separate things
+next time.
+
+
+And BTW, there is something unnatural when executable path is attached
+to mm_struct(!) not task_struct, so yet another argument to ->exe_file
+removal.
