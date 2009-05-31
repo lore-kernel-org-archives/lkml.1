@@ -1,48 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759007AbZEaP1R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756616AbZEaPa1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759007AbZEaP1R (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 May 2009 11:27:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755679AbZEaP1F
+	id S1756616AbZEaPa1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 May 2009 11:30:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755567AbZEaPaR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 May 2009 11:27:05 -0400
-Received: from smtp.wellnetcz.com ([212.24.148.102]:55030 "EHLO
-	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755130AbZEaP1E (ORCPT
+	Sun, 31 May 2009 11:30:17 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:34517 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753664AbZEaPaQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 May 2009 11:27:04 -0400
-From: Jiri Slaby <jirislaby@gmail.com>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>
-Subject: [PATCH 1/1] rapidio: fix kerneldoc for rio_mem_ops
-Date: Sun, 31 May 2009 17:25:38 +0200
-Message-Id: <1243783538-18770-1-git-send-email-jirislaby@gmail.com>
-X-Mailer: git-send-email 1.6.3
+	Sun, 31 May 2009 11:30:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=DrQOmzdozb3d89FkC33DuO2awtGa6qyaj7suwGRM/FACLZkAxkcIbr4waAlTH/q8kJ
+         OQuzsGWdLYFrppIe3TR/V4lJZDGe3/Ij/Yf8eA94N8DzkK1SZrLPcKJmaXXnWHdgW/fe
+         xnqw+cESERM78DDuePnO453cfz7lsgZa/nl9M=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: "Andries E. Brouwer" <Andries.Brouwer@cwi.nl>
+Subject: Re: [PATCH 0/4] partitions/ide: improve Host Protected Area handling
+Date: Sun, 31 May 2009 17:34:54 +0200
+User-Agent: KMail/1.11.3 (Linux/2.6.30-rc7-next-20090529-06589-g7701864-dirty; KDE/4.2.3; i686; ; )
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Robert Hancock <hancockrwd@gmail.com>,
+       Al Viro <viro@zeniv.linux.org.uk>, Frans Pop <elendil@planet.nl>
+References: <20090531143911.7164.26834.sendpatchset@localhost.localdomain> <20090531152403.GA26987@ub>
+In-Reply-To: <20090531152403.GA26987@ub>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200905311735.01244.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add structure name to the kerneldoc comment, so that we won't get
-a kdoc error:
-Error(include/linux/rio.h:336): cannot understand prototype: 'struct rio_mem_ops '
+On Sunday 31 May 2009 17:24:03 Andries E. Brouwer wrote:
+> On Sun, May 31, 2009 at 04:39:11PM +0200, Bartlomiej Zolnierkiewicz wrote:
+> 
+> [HPA stuff deleted]
+> 
+> Hi Bartlomiej,
+> 
+> Apart from HPA one also has DCO, which functions rather similarly.
+> (I have not checked whether the current kernel knows anything about DCO.)
+> Have you thought about DCO?
+> Probably the kernel should by default not touch any such setting.
+> Maybe it should be reported?
+> A user space utility might change this setting - thus a disk can change size.
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
----
- include/linux/rio.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/include/linux/rio.h b/include/linux/rio.h
-index dd61538..9710506 100644
---- a/include/linux/rio.h
-+++ b/include/linux/rio.h
-@@ -327,7 +327,7 @@ extern struct resource rio_resource;
- #define release_rio_region(start, n) __release_region(&rio_resource, (start), (n))
- 
- /**
-- * Struct for RIO memory definition.
-+ * struct rio_mem_ops - struct for RIO memory definition.
-  * @map_inb: The function for mapping inbound memory window.
-  * @map_outb: The function for mapping outbound memory window.
-  * @unmap_inb: The function for unmapping inbound memory window.
--- 
-1.6.3
-
+We leave DCO handling entirely to user-space currently.
