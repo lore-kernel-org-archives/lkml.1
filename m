@@ -1,268 +1,319 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755781AbZEaOu5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759315AbZEaOuq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755781AbZEaOu5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 May 2009 10:50:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759161AbZEaOuS
+	id S1759315AbZEaOuq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 May 2009 10:50:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758966AbZEaOuJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 May 2009 10:50:18 -0400
-Received: from mail-px0-f123.google.com ([209.85.216.123]:45632 "EHLO
-	mail-px0-f123.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759174AbZEaOuR (ORCPT
+	Sun, 31 May 2009 10:50:09 -0400
+Received: from mail-pz0-f177.google.com ([209.85.222.177]:64422 "EHLO
+	mail-pz0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758900AbZEaOuH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 May 2009 10:50:17 -0400
+	Sun, 31 May 2009 10:50:07 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=lndAAIfkqWnHx8EV8tQfgrFVEyb0Qs2J4zwSXzX5jL5/pQ1/GMZeTFjwn++behFWe7
-         PSJnl7xIhEiZ6KQIbsWZvia0Oobag8GQiF7fBoJ9gJ+NuFfpvpp3tptCd5cdjg+qpAB1
-         qPerFaeaCf/lWhmCYXlu4+mEcxIVdI1XSii7w=
+        b=lw1kQV5wKpZxb1DCjtmxaJMrOyGXjyQMfQczGhysLtH0dMLuMGc1D66+kOYVmdEuME
+         +MWlaVZIEcBY3Zc8PSZ7dV9Ev0AkZrAqOe2zRZCwkU1JvdfV99wXFnO4spUHmLApSPpG
+         mQDrSlVzcnwF6jcEDjSlnaaLmpIjuxCQ6LPW8=
 From: tom.leiming@gmail.com
 To: mingo@elte.hu
 Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
        a.p.zijlstra@chello.nl, Ming Lei <tom.leiming@gmail.com>
-Subject: [PATCH 5/8] kernel:lockdep:introduce print_shortest_lock_dependencies
-Date: Sun, 31 May 2009 22:49:22 +0800
-Message-Id: <1243781365-26814-6-git-send-email-tom.leiming@gmail.com>
+Subject: [PATCH 4/8] kernel:lockdep:implement find_usage_*wards by BFS
+Date: Sun, 31 May 2009 22:49:21 +0800
+Message-Id: <1243781365-26814-5-git-send-email-tom.leiming@gmail.com>
 X-Mailer: git-send-email 1.6.0.GIT
-In-Reply-To: <1243781365-26814-5-git-send-email-tom.leiming@gmail.com>
+In-Reply-To: <1243781365-26814-4-git-send-email-tom.leiming@gmail.com>
 References: <yes>
  <1243781365-26814-1-git-send-email-tom.leiming@gmail.com>
  <1243781365-26814-2-git-send-email-tom.leiming@gmail.com>
  <1243781365-26814-3-git-send-email-tom.leiming@gmail.com>
  <1243781365-26814-4-git-send-email-tom.leiming@gmail.com>
- <1243781365-26814-5-git-send-email-tom.leiming@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Ming Lei <tom.leiming@gmail.com>
 
-Since the shortest lock dependencies' path may be obtained by BFS,
-we print the shortest one by print_shortest_lock_dependencies().
+This patch uses BFS to implement find_usage_*wards(),which
+was originally writen by DFS.
 
 Signed-off-by: Ming Lei <tom.leiming@gmail.com>
 ---
- kernel/lockdep.c           |   93 +++++++++++++++++++++++++++++++------------
- kernel/lockdep_internals.h |    4 +-
- 2 files changed, 69 insertions(+), 28 deletions(-)
+ kernel/lockdep.c |  180 ++++++++++++++++++++++--------------------------------
+ 1 files changed, 72 insertions(+), 108 deletions(-)
 
 diff --git a/kernel/lockdep.c b/kernel/lockdep.c
-index 94b2f1f..d839994 100644
+index f740088..94b2f1f 100644
 --- a/kernel/lockdep.c
 +++ b/kernel/lockdep.c
-@@ -576,6 +576,36 @@ static void print_lock_class_header(struct lock_class *class, int depth)
+@@ -963,7 +963,7 @@ exit:
+ 	return ret;
  }
  
- /*
-+ * printk the shortest lock dependencies from @start to @end in reverse order:
-+ */
-+static void __used
-+print_shortest_lock_dependencies(struct lock_list *leaf,
-+				struct lock_list *root)
-+{
-+	struct lock_list *entry = leaf;
-+	int depth;
-+
-+	/*compute depth from generated tree by BFS*/
-+	depth = get_lock_depth(leaf);
-+
-+	do {
-+		print_lock_class_header(entry->class, depth);
-+		printk("%*s ... acquired at:\n", depth, "");
-+		print_stack_trace(&entry->trace, 2);
-+		printk("\n");
-+
-+		if (depth == 0 && (entry != root)) {
-+			printk("lockdep:%s bad BFS generated tree\n", __func__);
-+			break;
-+		}
-+
-+		entry = get_lock_parent(entry);
-+		depth--;
-+	} while (entry && (depth >= 0));
-+
-+	return;
-+}
-+/*
-  * printk all lock dependencies starting at <entry>:
-  */
- static void __used
-@@ -992,7 +1022,7 @@ static inline int __bfs_backwards(struct lock_list *src_entry,
-  * has been detected):
-  */
- static noinline int
--print_circular_bug_entry(struct lock_list *target, unsigned int depth)
-+print_circular_bug_entry(struct lock_list *target, int depth)
- {
- 	if (debug_locks_silent)
- 		return 0;
-@@ -1047,7 +1077,7 @@ static noinline int print_circular_bug(struct lock_list *this,
- {
- 	struct task_struct *curr = current;
- 	struct lock_list *parent;
--	unsigned long depth;
-+	int depth;
+-static inline int __bfs_forward(struct lock_list *src_entry,
++static inline int __bfs_forwards(struct lock_list *src_entry,
+ 			void *data,
+ 			int (*match)(struct lock_list *entry, void *data),
+ 			struct lock_list **target_entry)
+@@ -972,7 +972,7 @@ static inline int __bfs_forward(struct lock_list *src_entry,
  
- 	if (!debug_locks_off_graph_unlock() || debug_locks_silent)
- 		return 0;
-@@ -1169,7 +1199,6 @@ check_noncircular(struct lock_list *root, struct lock_class *target,
+ }
+ 
+-static inline int __bfs_backward(struct lock_list *src_entry,
++static inline int __bfs_backwards(struct lock_list *src_entry,
+ 			void *data,
+ 			int (*match)(struct lock_list *entry, void *data),
+ 			struct lock_list **target_entry)
+@@ -1085,18 +1085,6 @@ static int noinline print_bfs_bug(int ret)
+ 	return 0;
+ }
+ 
+-#define RECURSION_LIMIT 40
+-
+-static int noinline print_infinite_recursion_bug(void)
+-{
+-	if (!debug_locks_off_graph_unlock())
+-		return 0;
+-
+-	WARN_ON(1);
+-
+-	return 0;
+-}
+-
+ unsigned long __lockdep_count_forward_deps(struct lock_class *class,
+ 					   unsigned int depth)
+ {
+@@ -1170,7 +1158,7 @@ check_noncircular(struct lock_list *root, struct lock_class *target,
+ 
+ 	debug_atomic_inc(&nr_cyclic_checks);
+ 
+-	result = __bfs_forward(root, target, class_equal, target_entry);
++	result = __bfs_forwards(root, target, class_equal, target_entry);
+ 
+ 	return result;
+ }
+@@ -1181,101 +1169,70 @@ check_noncircular(struct lock_list *root, struct lock_class *target,
   * proving that two subgraphs can be connected by a new dependency
   * without creating any illegal irq-safe -> irq-unsafe lock dependency.
   */
--static struct lock_class *forwards_match, *backwards_match;
+-static enum lock_usage_bit find_usage_bit;
+ static struct lock_class *forwards_match, *backwards_match;
  
++
++#define   BFS_PROCESS_RET(ret)	do { \
++					if (ret < 0) \
++						return print_bfs_bug(ret); \
++					if (ret == 1) \
++						return 1; \
++				} while (0)
++
++static inline int usage_match(struct lock_list *entry, void *bit)
++{
++	return entry->class->usage_mask & (1 << (enum lock_usage_bit)bit);
++}
++
++
++
+ /*
+  * Find a node in the forwards-direction dependency sub-graph starting
+- * at <source> that matches <find_usage_bit>.
++ * at @root->class that matches @bit.
+  *
+- * Return 2 if such a node exists in the subgraph, and put that node
+- * into <forwards_match>.
++ * Return 0 if such a node exists in the subgraph, and put that node
++ * into *@target_entry.
+  *
+- * Return 1 otherwise and keep <forwards_match> unchanged.
+- * Return 0 on error.
++ * Return 1 otherwise and keep *@target_entry unchanged.
++ * Return <0 on error.
+  */
+-static noinline int
+-find_usage_forwards(struct lock_class *source, unsigned int depth)
++static int
++find_usage_forwards(struct lock_list *root, enum lock_usage_bit bit,
++			struct lock_list **target_entry)
+ {
+-	struct lock_list *entry;
+-	int ret;
+-
+-	if (lockdep_dependency_visit(source, depth))
+-		return 1;
+-
+-	if (depth > max_recursion_depth)
+-		max_recursion_depth = depth;
+-	if (depth >= RECURSION_LIMIT)
+-		return print_infinite_recursion_bug();
++	int result;
  
- #define   BFS_PROCESS_RET(ret)	do { \
-@@ -1235,6 +1264,10 @@ find_usage_backwards(struct lock_list *root, enum lock_usage_bit bit,
+ 	debug_atomic_inc(&nr_find_usage_forwards_checks);
+-	if (source->usage_mask & (1 << find_usage_bit)) {
+-		forwards_match = source;
+-		return 2;
+-	}
  
+-	/*
+-	 * Check this lock's dependency list:
+-	 */
+-	list_for_each_entry(entry, &source->locks_after, entry) {
+-		debug_atomic_inc(&nr_find_usage_forwards_recursions);
+-		ret = find_usage_forwards(entry->class, depth+1);
+-		if (ret == 2 || ret == 0)
+-			return ret;
+-	}
+-	return 1;
++	result = __bfs_forwards(root, (void *)bit, usage_match, target_entry);
++
++	return result;
+ }
+ 
+ /*
+  * Find a node in the backwards-direction dependency sub-graph starting
+- * at <source> that matches <find_usage_bit>.
++ * at @root->class that matches @bit.
+  *
+- * Return 2 if such a node exists in the subgraph, and put that node
+- * into <backwards_match>.
++ * Return 0 if such a node exists in the subgraph, and put that node
++ * into *@target_entry.
+  *
+- * Return 1 otherwise and keep <backwards_match> unchanged.
+- * Return 0 on error.
++ * Return 1 otherwise and keep *@target_entry unchanged.
++ * Return <0 on error.
+  */
+-static noinline int
+-find_usage_backwards(struct lock_class *source, unsigned int depth)
++static int
++find_usage_backwards(struct lock_list *root, enum lock_usage_bit bit,
++			struct lock_list **target_entry)
+ {
+-	struct lock_list *entry;
+-	int ret;
+-
+-	if (lockdep_dependency_visit(source, depth))
+-		return 1;
+-
+-	if (!__raw_spin_is_locked(&lockdep_lock))
+-		return DEBUG_LOCKS_WARN_ON(1);
+-
+-	if (depth > max_recursion_depth)
+-		max_recursion_depth = depth;
+-	if (depth >= RECURSION_LIMIT)
+-		return print_infinite_recursion_bug();
++	int result;
+ 
+ 	debug_atomic_inc(&nr_find_usage_backwards_checks);
+-	if (source->usage_mask & (1 << find_usage_bit)) {
+-		backwards_match = source;
+-		return 2;
+-	}
+ 
+-	if (!source && debug_locks_off_graph_unlock()) {
+-		WARN_ON(1);
+-		return 0;
+-	}
++	result = __bfs_backwards(root, (void *)bit, usage_match, target_entry);
+ 
+-	/*
+-	 * Check this lock's dependency list:
+-	 */
+-	list_for_each_entry(entry, &source->locks_before, entry) {
+-		debug_atomic_inc(&nr_find_usage_backwards_recursions);
+-		ret = find_usage_backwards(entry->class, depth+1);
+-		if (ret == 2 || ret == 0)
+-			return ret;
+-	}
+-	return 1;
++	return result;
+ }
+ 
++
  static int
  print_bad_irq_dependency(struct task_struct *curr,
-+			 struct lock_list *prev_root,
-+			 struct lock_list *next_root,
-+			 struct lock_list *backwards_entry,
-+			 struct lock_list *forwards_entry,
  			 struct held_lock *prev,
- 			 struct held_lock *next,
- 			 enum lock_usage_bit bit1,
-@@ -1267,26 +1300,32 @@ print_bad_irq_dependency(struct task_struct *curr,
- 
- 	printk("\nbut this new dependency connects a %s-irq-safe lock:\n",
- 		irqclass);
--	print_lock_name(backwards_match);
-+	print_lock_name(backwards_entry->class);
- 	printk("\n... which became %s-irq-safe at:\n", irqclass);
- 
--	print_stack_trace(backwards_match->usage_traces + bit1, 1);
-+	print_stack_trace(backwards_entry->class->usage_traces + bit1, 1);
- 
- 	printk("\nto a %s-irq-unsafe lock:\n", irqclass);
--	print_lock_name(forwards_match);
-+	print_lock_name(forwards_entry->class);
- 	printk("\n... which became %s-irq-unsafe at:\n", irqclass);
- 	printk("...");
- 
--	print_stack_trace(forwards_match->usage_traces + bit2, 1);
-+	print_stack_trace(forwards_entry->class->usage_traces + bit2, 1);
- 
- 	printk("\nother info that might help us debug this:\n\n");
- 	lockdep_print_held_locks(curr);
- 
--	printk("\nthe %s-irq-safe lock's dependencies:\n", irqclass);
--	print_lock_dependencies(backwards_match, 0);
-+	printk("\nthe dependencies between %s-irq-safe lock", irqclass);
-+	printk(" and the holding lock:\n");
-+	if (!save_trace(&prev_root->trace))
-+		return 0;
-+	print_shortest_lock_dependencies(backwards_entry, prev_root);
- 
--	printk("\nthe %s-irq-unsafe lock's dependencies:\n", irqclass);
--	print_lock_dependencies(forwards_match, 0);
-+	printk("\nthe dependencies between the lock to be acquired");
-+	printk(" and %s-irq-unsafe lock:\n", irqclass);
-+	if (!save_trace(&next_root->trace))
-+		return 0;
-+	print_shortest_lock_dependencies(forwards_entry, next_root);
- 
- 	printk("\nstack backtrace:\n");
- 	dump_stack();
-@@ -1300,22 +1339,24 @@ check_usage(struct task_struct *curr, struct held_lock *prev,
+@@ -1343,18 +1300,21 @@ check_usage(struct task_struct *curr, struct held_lock *prev,
  	    enum lock_usage_bit bit_forwards, const char *irqclass)
  {
  	int ret;
--	struct lock_list this;
-+	struct lock_list this, that;
- 	struct lock_list *uninitialized_var(target_entry);
-+	struct lock_list *uninitialized_var(target_entry1);
++	struct lock_list this;
++	struct lock_list *uninitialized_var(target_entry);
++
++	this.parent = NULL;
++
++	this.class = hlock_class(prev);
++	ret = find_usage_backwards(&this, bit_backwards, &target_entry);
++	BFS_PROCESS_RET(ret);
++	backwards_match = target_entry->class;
++
++	this.class = hlock_class(next);
++	ret = find_usage_forwards(&this, bit_forwards, &target_entry);
++	BFS_PROCESS_RET(ret);
++	forwards_match = target_entry->class;
  
- 	this.parent = NULL;
- 
- 	this.class = hlock_class(prev);
- 	ret = find_usage_backwards(&this, bit_backwards, &target_entry);
- 	BFS_PROCESS_RET(ret);
--	backwards_match = target_entry->class;
- 
--	this.class = hlock_class(next);
--	ret = find_usage_forwards(&this, bit_forwards, &target_entry);
-+	that.parent = NULL;
-+	that.class = hlock_class(next);
-+	ret = find_usage_forwards(&that, bit_forwards, &target_entry1);
- 	BFS_PROCESS_RET(ret);
--	forwards_match = target_entry->class;
- 
--	return print_bad_irq_dependency(curr, prev, next,
-+	return print_bad_irq_dependency(curr, &this, &that,
-+			target_entry, target_entry1,
-+			prev, next,
+-	find_usage_bit = bit_backwards;
+-	/* fills in <backwards_match> */
+-	ret = find_usage_backwards(hlock_class(prev), 0);
+-	if (!ret || ret == 1)
+-		return ret;
+-
+-	find_usage_bit = bit_forwards;
+-	ret = find_usage_forwards(hlock_class(next), 0);
+-	if (!ret || ret == 1)
+-		return ret;
+-	/* ret == 2 */
+ 	return print_bad_irq_dependency(curr, prev, next,
  			bit_backwards, bit_forwards, irqclass);
  }
- 
-@@ -1944,7 +1985,8 @@ static int mark_lock(struct task_struct *curr, struct held_lock *this,
-  * print irq inversion bug:
-  */
- static int
--print_irq_inversion_bug(struct task_struct *curr, struct lock_class *other,
-+print_irq_inversion_bug(struct task_struct *curr,
-+			struct lock_list *root, struct lock_list *other,
- 			struct held_lock *this, int forwards,
- 			const char *irqclass)
+@@ -2029,14 +1989,16 @@ check_usage_forwards(struct task_struct *curr, struct held_lock *this,
+ 		     enum lock_usage_bit bit, const char *irqclass)
  {
-@@ -1962,17 +2004,16 @@ print_irq_inversion_bug(struct task_struct *curr, struct lock_class *other,
- 		printk("but this lock took another, %s-unsafe lock in the past:\n", irqclass);
- 	else
- 		printk("but this lock was taken by another, %s-safe lock in the past:\n", irqclass);
--	print_lock_name(other);
-+	print_lock_name(other->class);
- 	printk("\n\nand interrupts could create inverse lock ordering between them.\n\n");
+ 	int ret;
++	struct lock_list root;
++	struct lock_list *uninitialized_var(target_entry);
  
- 	printk("\nother info that might help us debug this:\n");
- 	lockdep_print_held_locks(curr);
+-	find_usage_bit = bit;
+-	/* fills in <forwards_match> */
+-	ret = find_usage_forwards(hlock_class(this), 0);
+-	if (!ret || ret == 1)
+-		return ret;
++	root.parent = NULL;
++	root.class = hlock_class(this);
++	ret = find_usage_forwards(&root, bit, &target_entry);
++	BFS_PROCESS_RET(ret);
  
--	printk("\nthe first lock's dependencies:\n");
--	print_lock_dependencies(hlock_class(this), 0);
--
--	printk("\nthe second lock's dependencies:\n");
--	print_lock_dependencies(other, 0);
-+	printk("\nthe shortest dependencies between 2nd lock and 1st lock:\n");
-+	if (!save_trace(&root->trace))
-+		return 0;
-+	print_shortest_lock_dependencies(other, root);
- 
- 	printk("\nstack backtrace:\n");
- 	dump_stack();
-@@ -1997,7 +2038,7 @@ check_usage_forwards(struct task_struct *curr, struct held_lock *this,
- 	ret = find_usage_forwards(&root, bit, &target_entry);
- 	BFS_PROCESS_RET(ret);
- 
--	return print_irq_inversion_bug(curr, target_entry->class,
-+	return print_irq_inversion_bug(curr, &root, target_entry,
- 					this, 1, irqclass);
+-	return print_irq_inversion_bug(curr, forwards_match, this, 1, irqclass);
++	return print_irq_inversion_bug(curr, target_entry->class,
++					this, 1, irqclass);
  }
  
-@@ -2018,7 +2059,7 @@ check_usage_backwards(struct task_struct *curr, struct held_lock *this,
- 	ret = find_usage_backwards(&root, bit, &target_entry);
- 	BFS_PROCESS_RET(ret);
- 
--	return print_irq_inversion_bug(curr, target_entry->class,
-+	return print_irq_inversion_bug(curr, &root, target_entry,
- 					this, 1, irqclass);
- }
- 
-diff --git a/kernel/lockdep_internals.h b/kernel/lockdep_internals.h
-index c2f6594..b115aaa 100644
---- a/kernel/lockdep_internals.h
-+++ b/kernel/lockdep_internals.h
-@@ -219,9 +219,9 @@ static inline struct lock_list *get_lock_parent(struct lock_list *child)
- 	return child->parent;
- }
- 
--static inline unsigned long get_lock_depth(struct lock_list *child)
-+static inline int get_lock_depth(struct lock_list *child)
+ /*
+@@ -2048,14 +2010,16 @@ check_usage_backwards(struct task_struct *curr, struct held_lock *this,
+ 		      enum lock_usage_bit bit, const char *irqclass)
  {
--	unsigned long depth = 0;
-+	int depth = 0;
- 	struct lock_list *parent;
+ 	int ret;
++	struct lock_list root;
++	struct lock_list *uninitialized_var(target_entry);
  
- 	while ((parent = get_lock_parent(child))) {
+-	find_usage_bit = bit;
+-	/* fills in <backwards_match> */
+-	ret = find_usage_backwards(hlock_class(this), 0);
+-	if (!ret || ret == 1)
+-		return ret;
++	root.parent = NULL;
++	root.class = hlock_class(this);
++	ret = find_usage_backwards(&root, bit, &target_entry);
++	BFS_PROCESS_RET(ret);
+ 
+-	return print_irq_inversion_bug(curr, backwards_match, this, 0, irqclass);
++	return print_irq_inversion_bug(curr, target_entry->class,
++					this, 1, irqclass);
+ }
+ 
+ void print_irqtrace_events(struct task_struct *curr)
 -- 
 1.6.0.GIT
 
