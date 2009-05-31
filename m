@@ -1,55 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755099AbZE3Xyc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754707AbZEaAOv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755099AbZE3Xyc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 May 2009 19:54:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752534AbZE3XyZ
+	id S1754707AbZEaAOv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 May 2009 20:14:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753249AbZEaAOm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 May 2009 19:54:25 -0400
-Received: from [213.58.128.207] ([213.58.128.207]:36034 "EHLO
-	ftp.linux-mips.org" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1752519AbZE3XyY (ORCPT
+	Sat, 30 May 2009 20:14:42 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41899 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753130AbZEaAOl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 May 2009 19:54:24 -0400
-Date: Sun, 31 May 2009 00:54:26 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Marc Zyngier <maz@wild-wind.fr.eu.org>
-cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] eisa.ids: Add Network Peripherals FDDI boards
-Message-ID: <alpine.LFD.1.10.0905310041200.15490@ftp.linux-mips.org>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 30 May 2009 20:14:41 -0400
+Date: Sat, 30 May 2009 17:13:26 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Michael Shields <mshields@google.com>, rdunlap@xenotime.net,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
+       trivial@kernel.org
+Subject: Re: [PATCH] Doc fix: ext2 can only have 32,000 subdirs, not 32,768.
+Message-Id: <20090530171326.1381aa2d.akpm@linux-foundation.org>
+In-Reply-To: <20090530113724.GA1444@ucw.cz>
+References: <63a2e74f0905181213r54a2d8b2tb7dcecd177d474c2@mail.gmail.com>
+	<20090527172045.f33b0b49.akpm@linux-foundation.org>
+	<20090530113724.GA1444@ucw.cz>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- Add EISA IDs for Network Peripherals FDDI boards.  Descriptions taken 
-from the respective EISA configuration files.
+On Sat, 30 May 2009 13:37:24 +0200 Pavel Machek <pavel@ucw.cz> wrote:
 
-Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
----
- It's unlikely we'll ever support these cards, the problem being the lack 
-of documentation.  Assuming the policy for the EISA ID database is the 
-same as for PCI I'm sending these entries for the sake of completeness.
+> On Wed 2009-05-27 17:20:45, Andrew Morton wrote:
+> > On Mon, 18 May 2009 12:13:51 -0700
+> > Michael Shields <mshields@google.com> wrote:
+> > 
+> > > ext2.txt says that dirs can have 32,768 subdirs, but the actual value
+> > > of EXT2_LINK_MAX is 32000.
+> > > ext3 is the same, but the doc does not mention it. __One of ext4's
+> > > features is to "fix 32000 subdirectory limit".
+> > > 
+> > > --- linux-2.6.29.3/Documentation/filesystems/ext2.txt.orig 2009-05-08
+> > > 15:47:21.000000000 -0700
+> > > +++ linux-2.6.29.3/Documentation/filesystems/ext2.txt 2009-05-18
+> > > 12:03:58.000000000 -0700
+> > > @@ -322,7 +322,7 @@ an upper limit on the block size imposed
+> > > __so 8kB blocks are only allowed on Alpha systems (and other architectures
+> > > __which support larger pages).
+> > > 
+> > > -There is an upper limit of 32768 subdirectories in a single directory.
+> > > +There is an upper limit of 32000 subdirectories in a single directory.
+> > > 
+> > > __There is a "soft" upper limit of about 10-15k files in a single directory
+> > > __with the current linear linked-list directory implementation. __This limit
+> > > --
+> 
+> Maybe it would be better to increase EXT2_LINK_MAX to fit the docs?
+> 
 
- Please apply.
+Could be.  afacit filesystems which are created under such a driver
+will still mount and work OK with older drivers.
 
-  Maciej
+I have this vague memory that there was a reason for the 32000 thing.
 
-patch-mips-2.6.27-rc8-20081004-npi-eisa-0
-Index: linux-mips-2.6.27-rc8-20081004-dolch/drivers/eisa/eisa.ids
-===================================================================
---- linux-mips-2.6.27-rc8-20081004-dolch.orig/drivers/eisa/eisa.ids
-+++ linux-mips-2.6.27-rc8-20081004-dolch/drivers/eisa/eisa.ids
-@@ -1140,6 +1140,11 @@ NON0301 "c't Universale Graphic Adapter"
- NON0401 "c't Universal Ethernet Adapter"
- NON0501 "c't Universal 16-Bit Sound Adapter"
- NON0601 "c't Universal 8-Bit Adapter"
-+NPI0120 "Network Peripherals NP-EISA-1 FDDI Interface"
-+NPI0221 "Network Peripherals NP-EISA-2 FDDI Interface"
-+NPI0223 "Network Peripherals NP-EISA-2E Enhanced FDDI Interface"
-+NPI0301 "Network Peripherals NP-EISA-3 FDDI Interface"
-+NPI0303 "Network Peripherals NP-EISA-3E Enhanced FDDI Interface"
- NSS0011 "Newport Systems Solutions WNIC Adapter"
- NVL0701 "Novell NE3200 Bus Master Ethernet"
- NVL0702 "Novell NE3200T Bus Master Ethernet"
