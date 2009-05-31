@@ -1,74 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753547AbZEaVME@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753956AbZEaVOG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753547AbZEaVME (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 May 2009 17:12:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752217AbZEaVLy
+	id S1753956AbZEaVOG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 May 2009 17:14:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753114AbZEaVN4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 May 2009 17:11:54 -0400
-Received: from fmmailgate05.web.de ([217.72.192.243]:52724 "EHLO
-	fmmailgate05.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752057AbZEaVLy convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 May 2009 17:11:54 -0400
-Date: Sun, 31 May 2009 23:11:54 +0200
-Message-Id: <744614391@web.de>
+	Sun, 31 May 2009 17:13:56 -0400
+Received: from [78.184.112.199] ([78.184.112.199]:4340 "HELO
+	tanidik_birisi.local" rhost-flags-FAIL-FAIL-FAIL-FAIL)
+	by vger.kernel.org with SMTP id S1752917AbZEaVNz convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 May 2009 17:13:55 -0400
+Reply-To: faydalitaslar@gmail.com
+Message-ID: <f9ad3a34b4a2c0e63edae1702a5b7909@gmail.com>
+From: "=?iso-8859-9?B?RkFZREFMSSBUQd5MQVI=?=" <faydalitaslar@gmail.com>
+To: <linux-kernel@vger.kernel.org>
+Subject: =?iso-8859-9?B?3t1GQUxJIFRB3kxBUkxBIFRFREFW3Q==?=
+Date: Mon, 1 Jun 2009 00:12:23 +0300
 MIME-Version: 1.0
-From: devzero@web.de
-To: linux-kernel@vger.kernel.org
-Subject: Re: Xen is a feature
-Organization: http://freemail.web.de/
-X-Provags-Id: V01U2FsdGVkX1/23DRUwwPQmIii/aTyaD5BBTYo92YrKiZSrqE329EsP43j5
- d6rtpP1UtgIeInNSElfo61/ch5AMvuPQZA2fV66lml2vAF1gyY=
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain;
+	charset="iso-8859-9"
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-can we have dom0 support in mainline please?
+ÝLK OLUÞUMLARI SIRASINDA, GÖRDÜÐÜ BASINÇ VE ÝÇERÝSÝNDE BULUNAN MÝNERALLER SAYESÝNDE, 
+TAÞLARIN KAZANMIÞ OLDUÐU KENDÝLERÝNE HAS ENERJÝLERÝ VAR. 
+BU ENERJÝ ÝLE SÜREKLÝ TÝTREÞÝM HALÝNDELER VE BULUNDUKLARI ALANA BU ENERJÝYÝ, FARKLI ÖLÇÜLERDE YAYARLAR. 
+YAYDIKLARI ENERJÝLERLE DE ÝNSANLAR, ÞÝFA BULURLAR. 
 
-NOW!
+faydali@faydalitaslar.com 
+MAIL ADRESÝMÝZE
+ADINIZI, SOYADINIZI, BURCUNUZU, DOÐUM TARÝHÝNÝZÝ (GÜN-AY-YIL) DOÐUM YERÝNÝZÝ (ASLEN NERELÝ OLDUÐUNUZU) VARSA RAHATSIZLIÐINIZI VE FAYDALI  TAÞLARI NE ÝÇÝN DÜÞÜNDÜÐÜNÜZÜ BÝZE YAZIN.
+HANGÝ TAÞLARIN SÝZÝN ÝÇÝN UYGUN OLDUÐUNU, TESPÝT EDELÝM. 
 
-i`m really curious that companies spending millions on xen and even so mainline merge still remains such a neverending story.
+www.faydalitaslar.com 
+(SÝTEMÝZDEN ÝNCELEYEBÝLECEÐÝNÝZ)
+TAÞLARLA TEDAVÝ EDÝLEBÝLEN BAZI RAHATSIZLIKLAR:
+UYKU GELMEMESÝ
+YATAKTA UYKU KAÇMASI
+GECE UYKUDAN UYANMA
+SABAH ERKEN UYANAMAMA
+KABUS GÖRME
+UYANINCA YORGUN KALKMA
+HALSÝZLÝK
+KONSANTRASYON EKSÝKLÝÐÝ
+ÝÞE ODAKLANAMAMA
+DALGINLIK
+DÝSÝPLÝN EKSÝKLÝÐÝ
+DEPRESYON
+TÝK
+OBURLUK
+KOLESTEROL
+YÜKSEK TANSÝYON
+DÜÞÜK TANSÝYON
+MÝÝGREN
+SEBEPSÝZ BAÞAÐRILARI
+CÝNSEL ÝSTEKSÝZLÝK
+AÞIRI CÝNSELLÝÐE DÜÞKÜNLÜK
+BAÞ DÖNMESÝ
+TOPLUMDAN UZAKLAÞMAK ARZUSU
+TOPLUM ÝÇÝ UYUMSUZLUK
+ÝÞ HAYATINDA BAÞARISIZLIK
+HAYATIN BÝR ANLAM TAÞIMAMASI
+YILDIZI DÜÞÜK OLMAK
+NAZARA ÇOK GELMEK
+GUATR
+TROÝD BEZLERÝ
+BOYUN TUTULMASI
+BULANTI
+POZÝTÝF ENERJÝ KAYBI
+CEP TELEFON VE BÝLGÝSAYARDAN YAYILAN RADYASYON ETKÝLERÝ
+KARAR VERMEDE ZORLUK & KARARSIZLIK
+SAPLANTILI DÜÞÜNCELER
+ÖZGÜVEN EKSÝKLÝÐÝ
+ANLAMSIZ ENDÝÞE VE KORKULAR
+SÝNÜZÜT
+ZORLUKLARA KARÞI MÜCADELE EDEMEME
+TOPLUM ÝÇÝNDE KONUÞAMAMA
+SABIRSIZLIK
+HEDEF KOYAMAMA
+HAYAL KURAMAMAK
+AÞIRI HEYECAN
+SEDEF HASTALIÐI
+TERK EDÝLMÝÞLÝK ACISI
+MANEVÝ ZAYIFLIK HÝSSÝ
 
- 
+SAYGILARIMIZLA
+FAYDALI TAÞLAR EKÝBÝ
+www.faydalitaslar.com
 
 
-
-
-List:       linux-kernel
-Subject:    Re: Xen is a feature
-From:       Tomasz Chmielewski <mangoo () wpkg ! org>
-Date:       2009-05-29 11:48:59
-Message-ID: 4A1FCBAB.2030100 () wpkg ! org
-[Download message RAW]
-
-Greg KH wrote:
-
-> On Thu, May 28, 2009 at 05:45:34PM -0700, Jeremy Fitzhardinge wrote:
->> Mozilla and Debian are hosted on Xen systems.
-> 
-> A tiny data point about these domains.  They are hosted by osuosl.org,
-> which uses xen systems running with the current dom0 patch set.  Because
-> those patches are out-of-tree, they have a hard time updating kernel
-> versions, and generally lag kernel.org releases by a lot, which is not
-> always a good thing.
-> 
-> So getting the dom0 patches into mainline will make their lives much
-> easier, and more secure.
-
-I know at least a couple of mid-sized hosting companies migrating all or 
-part of their infrastructure off Linux/Xen to a proprietary solution, 
-because of this very reason (problems with keeping dom0 kernel up to 
-date, problems with deploying it on new machines etc.).
-
--- 
-Tomasz Chmielewski
-http://wpkg.org
-
-
-
-_______________________________________________________________________
-Nur bis 31.05.: WEB.DE FreeDSL Komplettanschluss mit DSL 6.000 Flatrate
-und Telefonanschluss für 17,95 Euro/mtl.! http://produkte.web.de/go/02/
 
