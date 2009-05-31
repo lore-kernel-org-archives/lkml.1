@@ -1,100 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753300AbZEaMPM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754793AbZEaMRF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753300AbZEaMPM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 May 2009 08:15:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752614AbZEaMPA
+	id S1754793AbZEaMRF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 May 2009 08:17:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752103AbZEaMQ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 May 2009 08:15:00 -0400
-Received: from oblivion.subreption.com ([66.240.236.22]:54364 "EHLO
-	mail.subreption.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752270AbZEaMPA (ORCPT
+	Sun, 31 May 2009 08:16:56 -0400
+Received: from mail-bw0-f222.google.com ([209.85.218.222]:42519 "EHLO
+	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751347AbZEaMQz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 May 2009 08:15:00 -0400
-Date: Sun, 31 May 2009 05:16:36 -0700
-From: "Larry H." <research@subreption.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Rik van Riel <riel@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+	Sun, 31 May 2009 08:16:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=diw4q0YxH15UJmK+p70YKhWvbbqVqe+/BmJLoLYHoXGHYWuKQsQlEPmRvn/pKiiS/U
+         ySgb0qoQx96e0MkenqxUSSGmGbofBuk9q/QQryb0BCqOA7EKpt0g2kTJ+I6Wsx8by30w
+         ve4Ii088OTRWoTDN12NNhRXOzg/0jTixTWX2M=
+MIME-Version: 1.0
+In-Reply-To: <20090531115828.GB10598@oblivion.subreption.com>
+References: <20090530082048.GM29711@oblivion.subreption.com>
+	 <20090530180333.GH6535@oblivion.subreption.com>
+	 <20090530182113.GA25237@elte.hu>
+	 <20090530184534.GJ6535@oblivion.subreption.com>
+	 <20090530190828.GA31199@elte.hu> <4A21999E.5050606@redhat.com>
+	 <84144f020905301353y2f8c232na4c5f9dfb740eec4@mail.gmail.com>
+	 <20090530213311.GM6535@oblivion.subreption.com>
+	 <84144f020905310017o3c2b8c52s7d62187cf794e854@mail.gmail.com>
+	 <20090531115828.GB10598@oblivion.subreption.com>
+Date: Sun, 31 May 2009 15:16:55 +0300
+X-Google-Sender-Auth: 74acc061ef39dd2c
+Message-ID: <84144f020905310516x692bd870vfbbfc1e734e57326@mail.gmail.com>
+Subject: Re: [patch 0/5] Support for sanitization flag in low-level page 
+	allocator
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: "Larry H." <research@subreption.com>
+Cc: Rik van Riel <riel@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
        Linus Torvalds <torvalds@osdl.org>, linux-mm@kvack.org,
        Ingo Molnar <mingo@redhat.com>, pageexec@freemail.hu,
        Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [patch 0/5] Support for sanitization flag in low-level page
-	allocator
-Message-ID: <20090531121636.GC10598@oblivion.subreption.com>
-References: <20090530082048.GM29711@oblivion.subreption.com> <20090530173428.GA20013@elte.hu> <20090530180333.GH6535@oblivion.subreption.com> <20090530182113.GA25237@elte.hu> <20090530184534.GJ6535@oblivion.subreption.com> <20090530190828.GA31199@elte.hu> <4A21999E.5050606@redhat.com> <84144f020905301353y2f8c232na4c5f9dfb740eec4@mail.gmail.com> <20090531001052.40ac57d2@lxorguk.ukuu.org.uk> <84144f020905302314w12c4c7f8jc8241e36c847f53e@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <84144f020905302314w12c4c7f8jc8241e36c847f53e@mail.gmail.com>
-Organization: Subreption LLC
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09:14 Sun 31 May     , Pekka Enberg wrote:
-> Hi Alan,
-> 
-> On Sun, May 31, 2009 at 2:10 AM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> >> It's pretty damn obvious that Larry's patches have a much bigger
-> >> performance impact than using kzfree() for selected parts of the
-> >> kernel. So yes, I do expect him to benchmark and demonstrate that
-> >> kzfree() has _performance problems_ before we can look into merging
-> >> his patches.
-> >
-> > We seem to be muddling up multiple things here which is not helpful.
-> 
-> Yup.
-> 
-> On Sun, May 31, 2009 at 2:10 AM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> > There are three things going on
-> >
-> > #1 Is ksize() buggy ?
-> 
-> No, there's nothing wrong with ksize() I am aware of. Yes, Larry has
-> been saying it is but hasn't provided any evidence so far.
+On Sun, May 31, 2009 at 2:58 PM, Larry H. <research@subreption.com> wrote:
+> Thanks for coming to the conclusion that unconditional memory
+> sanitization is the correct approach.
+>
+> I thought this had been stated numerous times before in this thread. Are
+> you serious about your responses or you are just clowning around? It's
+> amusing, I give you that much.
 
-Excuse me, do you have an attention or reading disorder? Compound pages
-and SLOB anyone? Duplication of test branches for pointer validation?
+So is this the same Larry that was able to have a productive and civil
+discussion on #mm on IRC where he wanted me to ACK his patches? Or did
+his evil identical twin take over the keyboard?
 
-What are you trying to accomplish by claiming I've never provided
-information which I sent to a public channel (this list)? You realize
-someone who really cares can just navigate through the cesspool of
-messages this thread became, and see the ones where I'm actually trying
-to explain the situation to you?
+But anyway, enough is enough, and I really am not interested in this
+discussion. I wish you the best of luck getting your patches merged. I
+suspect you're gonna need it.
 
-It's amusing that at the expense of your egos, kernel security is ten years
-lagging behind for Linux. And it's all to your (and well known others') credit.
-Congratulations, and thank you for keeping it that way.
-
-> On Sun, May 31, 2009 at 2:10 AM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> > #2 Using kzfree() to clear specific bits of memory (and I question the
-> > kzfree implementation as it seems ksize can return numbers much much
-> > bigger than the allocated space you need to clear - correct but oversize)
-> > or using other flags. I'd favour kzfree personally (and fixing it to work
-> > properly)
-> 
-> Well, yes, that's what kzfree() needs to do given the current API. I
-> am not sure why you think it's a problem, though. Adding a size
-> argument to the function will make it more error prone.
-
-ksize is not designed to be used extensively at all. It's not the
-intention of that API.
-
-You should be implementing kzfree_skb and so forth. Just make sure the
-definitions stay in header files I can ifdef 0 away when I patch my
-kernel at the commodity of my own home, and use a solution which isn't
-broken (or PaX itself). Removing all these calls will be quite a burden.
-
-> On Sun, May 31, 2009 at 2:10 AM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> > #3 People wanting to be able to select for more security *irrespective*
-> > of performance cost. Which is no different to SELinux for example.
-> 
-> Yeah, as I said before, I really don't have any objections to this. I
-> just think nobody is going to enable it so memset() or kzfree() in
-> relevant places is probably a good idea.
-
-Fallacy man cometh! Let's assume everyone has the same exact lacking and
-irresponsible security requirements you have, and try to make it look
-like it's the real world. I know you are not alone there.
-
-	Larry
+                                 Pekka
