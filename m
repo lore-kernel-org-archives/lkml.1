@@ -1,75 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754995AbZFASkn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753341AbZFASlY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754995AbZFASkn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 14:40:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752045AbZFASkh
+	id S1753341AbZFASlY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 14:41:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752738AbZFASlR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 14:40:37 -0400
-Received: from mta.netezza.com ([12.148.248.132]:63714 "EHLO netezza.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751480AbZFASkg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 14:40:36 -0400
-Subject: Re: [PATCH] coredump: Retry writes where appropriate
-From: Paul Smith <paul@mad-scientist.net>
-Reply-To: paul@mad-scientist.net
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Oleg Nesterov <oleg@redhat.com>, linux-kernel@vger.kernel.org,
-       stable@kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, Roland McGrath <roland@redhat.com>
-In-Reply-To: <20090601184934.1fc54411@lxorguk.ukuu.org.uk>
-References: <1243748019.7369.319.camel@homebase.localnet>
-	 <20090531111851.07eb1df3@lxorguk.ukuu.org.uk>
-	 <20090601161234.GA10486@redhat.com>
-	 <1243877766.8547.38.camel@psmith-ubeta.netezza.com>
-	 <20090601184934.1fc54411@lxorguk.ukuu.org.uk>
-Content-Type: text/plain
-Organization: GNU's Not Unix!
-Date: Mon, 01 Jun 2009 14:39:04 -0400
-Message-Id: <1243881544.8547.66.camel@psmith-ubeta.netezza.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Mon, 1 Jun 2009 14:41:17 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:60660 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751964AbZFASlQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 14:41:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=Wdrrp3tItqd6vJQuWWU3Ns8VufuCkOH/xxiXY/zEglD2ohMNME76ijUjYl845TTfDO
+         tMtrnNvwaCJgIknkZdJVjeZMZatuNKF4xPaoH+AyPxM9fRAQ3VoEOdqNVcKUb3wUyi1P
+         h5vtn4e2cWUp5QZMrL1rDk6i8nGtT6qJqZs/A=
+MIME-Version: 1.0
+Date: Mon, 1 Jun 2009 20:41:16 +0200
+Message-ID: <d32c60160906011141y22299f2cwd3df46f6e26cf33d@mail.gmail.com>
+Subject: [PATCH] Update security bugs policy in Documentation/SecurityBugs
+From: Linus Turdvals <turdvals@gmail.com>
+To: linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org
+Cc: rdunlap@xenotime.net, security@kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 01 Jun 2009 18:39:04.0410 (UTC) FILETIME=[3D3763A0:01C9E2E8]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-06-01 at 18:49 +0100, Alan Cox wrote:
-> > On the other hand, IMO all other signals, including SIGINT and SIGQUIT,
-> > should be ignored during core dumping.  Allowing SIGKILL gives a method
-> > for getting rid of core dumps in the relatively rare situation where
-> > people want/need to do so, and I don't see any real benefit to adding
-> > more signals to the list of things you can't do if you want robust
-> > cores.  Isn't one enough?
-> 
-> I also want usability. SIGINT/SIGQUIT are never sent except by user
-> requests to terminate a process so they can safely be allowed. If the
-> alternatives are the status quo or SIGKILL only then I'd favour the
-> status quo particularly having experienced the alternatives on some old
-> Unix systems.
+This patch updates the security bugs handling policy in
+Documentation/SecurityBugs, to match with the current practices
+and philosophy of the Linux kernel security team.
 
-SIGINT/SIGQUIT are sent all the time in situations where the user might
-not want the core dump to be canceled.  This is what I meant by "wanted
-to actually interrupt the core"; it implies the user knows that a core
-is being dumped and explicitly decides they do not want to have that
-happen in this situation and takes some affirmative action to stop it.
+Please apply to avoid the masturbating monkeys in the security
+circus from reporting misleading bugs with no security impact
+whatsoever.
 
-If a program seems to be unresponsive the user could ^C, without
-realizing that it was really dumping core.  Now when they are asked to
-produce the core so the problem can be debugged, they can't do it.  Or,
-a worker process might appear unresponsive due to a core being dumped
-and the parent would decide to shoot it with SIGINT based on various
-timeouts etc.  Again we have no core available.
+Signed-off-by: Linus Turdvalds <turdvals@gmail.com>
 
-If the user has problems with coredumps there are all sorts of ways to
-manage that.  You can disable core dumps altogether via ulimit.  You can
-set core_pattern to dump to a fully-qualified pathname on faster media
-instead of whatever working directory you're using.
+--- tricky/Documentation/SecurityBugs
++++ honest/Documentation/SecurityBugs
+@@ -1,7 +1,20 @@
+ Linux kernel developers take security very seriously.  As such, we'd
+ like to know when a security bug is found so that it can be fixed and
+-disclosed as quickly as possible.  Please report security bugs to the
+-Linux kernel security team.
++disclosed as quickly as possible.
++
++Unfortunately, since we do not believe in security bugs, your report
++could be classified as a reliability or performance problem. In such
++cases we will still fix the issue, but no specific disclosure will
++follow. Shall the reporter feel tempted to find references to said
++fix, he will require substantial amounts of time to walk through
++the commit logs in the affected git tree.
++
++Please report security bugs to the Linux kernel security team. We
++will provide the information to select members of the vendor-sec
++mailing list and Red Hat employees. The Linux kernel security team
++does not take any responsibility if said information is leaked or
++made available to third-parties through insecure communication
++channels.
 
-Or, with this change, you can kill -9 the PID that's dumping core.
+ 1) Contact
 
-These things seem to me to provide a lot of usability features.
+@@ -11,28 +24,46 @@ who will help verify the bug report and
+ It is possible that the security team will bring in extra help from
+ area maintainers to understand and fix the security vulnerability.
 
-On the other hand there's no way to ensure full, reliable core dumps
-with today's behavior.
++The Linux kernel security team does not have a PGP public key at
++the moment, since information wants to be free.
++
+ As it is with any bug, the more information provided the easier it
+ will be to diagnose and fix.  Please review the procedure outlined in
+ REPORTING-BUGS if you are unclear about what information is helpful.
+ Any exploit code is very helpful and will not be released without
+ consent from the reporter unless it has already been made public.
++Please do not send us binary-only exploit code, because we have no
++idea about how to unpack it.
 
+ 2) Disclosure
+
+ The goal of the Linux kernel security team is to work with the
+ bug submitter to bug resolution as well as disclosure.  We prefer
+-to fully disclose the bug as soon as possible.  It is reasonable to
++to _not_ disclose the bug as soon as possible.  It is reasonable to
+ delay disclosure when the bug or the fix is not yet fully understood,
+-the solution is not well-tested or for vendor coordination.  However, we
+-expect these delays to be short, measurable in days, not weeks or months.
++the solution is not well-tested, for vendor coordination or any other
++reason the team finds compelling, without any explanation required.
++However, we expect these delays to be short, measurable in days,
++not weeks or months. Please note that the vulnerability window might be
++measurable in years if the issue went unnoticed for such amounts of time.
+ A disclosure date is negotiated by the security team working with the
+ bug submitter as well as vendors.  However, the kernel security team
+-holds the final say when setting a disclosure date.  The timeframe for
++holds the final say when setting a disclosure date. Once you report a
++security bug to the team, you lose all rights to the process and who
++will manage or have access to the information. The timeframe for
+ disclosure is from immediate (esp. if it's already publically known)
+ to a few weeks.  As a basic default policy, we expect report date to
+-disclosure date to be on the order of 7 days.
++disclosure date to be on the order of 30 days.
+
+ 3) Non-disclosure agreements
+
+ The Linux kernel security team is not a formal body and therefore unable
+ to enter any non-disclosure agreements.
++
++4) Enforcement of these terms
++
++The Linux kernel security team can absolutely ignore the terms herein,
++without explanations required. This document does not provide legally
++enforceable terms by any means, nor necessarily expresses the practices
++and philosophy of the current security team.
++
