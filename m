@@ -1,31 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758666AbZFARRs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757220AbZFARSB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758666AbZFARRs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 13:17:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755548AbZFARRW
+	id S1757220AbZFARSB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 13:18:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756513AbZFARRX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 13:17:22 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:61974 "EHLO
+	Mon, 1 Jun 2009 13:17:23 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:47405 "EHLO
 	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756934AbZFARRV (ORCPT
+	with ESMTP id S1755792AbZFARRW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 13:17:21 -0400
+	Mon, 1 Jun 2009 13:17:22 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=rfRc3FOtCRx+SO566ZAkJWKPPZsqF/L4SHofVlnJYFcpu36MAymu9pJgpqp3SPU3Il
-         5OdJGnaUeQjNvoebIHwXqH0AE6rybRmhROpn0yqdToPDlmYOB2OtfAUvuXd6jP0YtY48
-         C6Ld9xF39FRO7fQcF5G2GVzEPiKsH3Z9TSDb8=
+        b=f1+SleW0nVdkmJoJhzQ3pUZ345/HhofS6nidZ8QIqkJDMllXcItFNcx5mIY4O/7nvz
+         WqtZQvZnS3cezxDIQnK34BBzmE0uEs0NKVCiCk+NyZX5of/lQWDe/zVbg3INVdZex4S1
+         tkQgWgGrN/xdKm6gNw3JsJi5Xhxts48Xq8+9c=
 From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>, Zhaolei <zhaolei@cn.fujitsu.com>,
-       Oleg Nesterov <oleg@redhat.com>, Anton Blanchard <anton@samba.org>,
+Cc: LKML <linux-kernel@vger.kernel.org>, Anton Blanchard <anton@samba.org>,
+       Oleg Nesterov <oleg@redhat.com>, Zhao Lei <zhaolei@cn.fujitsu.com>,
        Steven Rostedt <rostedt@goodmis.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH 1/5] tracing/workqueue: get rid of searching last executed worklet in probe_worklet_complete()
-Date: Mon,  1 Jun 2009 19:17:13 +0200
-Message-Id: <1243876637-6616-2-git-send-email-fweisbec@gmail.com>
+Subject: [PATCH 2/5] tracing/events: use %pf in workqueue trace events
+Date: Mon,  1 Jun 2009 19:17:14 +0200
+Message-Id: <1243876637-6616-3-git-send-email-fweisbec@gmail.com>
 X-Mailer: git-send-email 1.6.2.3
 In-Reply-To: <1243876637-6616-1-git-send-email-fweisbec@gmail.com>
 References: <1243876637-6616-1-git-send-email-fweisbec@gmail.com>
@@ -33,119 +33,76 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Zhaolei <zhaolei@cn.fujitsu.com>
+From: Anton Blanchard <anton@samba.org>
 
-We don't need to search the worklet which was latest executed
-inside the workqueue's worklet list.
+Using %pf instead of %pF supresses printing of the function offset
+which will always be 0.
 
-Instead, we can use a pointer in cpu_workqueue_stats to remember
-which worklet was last executed.
+[ Impact: cleanup workqueue events traces output ]
 
-Thanks Oleg for pointing it out.
-
-Changelog:
-v1->v2: Oleg pointed out that if searching executed workfunc_stats failed
-in probe_worklet_execute(), for example, workfunc_stats's memory allocation
-failed previously, cpu_workqueue_stats->last_workfunc is not set to correct
-value, and it will cause wrong accessing in probe_worklet_complete().
-This problem is fixed in v2.
-
-[ Impact: make worklet tracing faster ]
-
-Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
-Reported-by: Oleg Nesterov <oleg@redhat.com>
-Acked-by: Oleg Nesterov <oleg@redhat.com>
+Signed-off-by: Anton Blanchard <anton@samba.org>
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 ---
- kernel/trace/trace_workqueue.c |   39 ++++++++++++++++-----------------------
- 1 files changed, 16 insertions(+), 23 deletions(-)
+ Documentation/trace/workqueue.txt |    6 +++---
+ include/trace/events/workqueue.h  |    8 ++++----
+ 2 files changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/kernel/trace/trace_workqueue.c b/kernel/trace/trace_workqueue.c
-index c67be60..740de3b 100644
---- a/kernel/trace/trace_workqueue.c
-+++ b/kernel/trace/trace_workqueue.c
-@@ -25,13 +25,6 @@ struct workfunc_stats {
- 	unsigned int			inserted;
- 	unsigned int			executed;
+diff --git a/Documentation/trace/workqueue.txt b/Documentation/trace/workqueue.txt
+index 4019a8a..c446b28 100644
+--- a/Documentation/trace/workqueue.txt
++++ b/Documentation/trace/workqueue.txt
+@@ -107,8 +107,8 @@ worklet_cancel  worklet_enqueue   worklet_execute          workqueue_destruction
+  # TASK-PID    CPU#    TIMESTAMP  FUNCTION
+  #   | |       |          |         |
  
--	/*
--	 * save latest work_struct's pointer to use as identifier in
--	 * probe_worklet_complete, because we can't use work_struct->...
--	 * after worklet got executed
--	 */
--	void				*work;
--
- 	/* save execution time temporarily for calculate executed time */
- 	u64				start_time;
- 	u64				max_executed_time;
-@@ -46,10 +39,17 @@ struct cpu_workqueue_stats {
- 	/* Protected by cpu workqueue lock */
- 	unsigned int		inserted;
- 	unsigned int		executed;
-+
- 	/* list of struct workfunc_stats in this workqueue */
- 	struct list_head	workfunclist;
+-<...>-5627  [000]  4597.858645: worklet_enqueue: thread=ata/0:508 func=ata_pio_task+0x0/0x280 cpu=0
+-<...>-508   [000]  4597.858660: worklet_execute: thread=ata/0:508 work=ffff88007e9e67b8 func=ata_pio_task+0x0/0x280
++<...>-5627  [000]  4597.858645: worklet_enqueue: thread=ata/0:508 func=ata_pio_task cpu=0
++<...>-508   [000]  4597.858660: worklet_execute: thread=ata/0:508 work=ffff88007e9e67b8 func=ata_pio_task
+ <...>-508   [000]  4597.858684: worklet_complete: thread=ata/0:508 work=ffff88007e9e67b8
+-<...>-2437  [000]  4597.861259: worklet_cancel: func=ata_pio_task+0x0/0x280
++<...>-2437  [000]  4597.861259: worklet_cancel: func=ata_pio_task
+ [...]
+diff --git a/include/trace/events/workqueue.h b/include/trace/events/workqueue.h
+index 49608c7..6cb7833 100644
+--- a/include/trace/events/workqueue.h
++++ b/include/trace/events/workqueue.h
+@@ -32,7 +32,7 @@ TRACE_EVENT(worklet_enqueue,
+ 		__entry->cpu		= cpu;
+ 	),
  
- 	/*
-+	 * pointer to last executed worklet's workfunc_stats in this workqueue,
-+	 * used by probe_worklet_complete()
-+	 */
-+	struct workfunc_stats *last_workfunc;
-+
-+	/*
- 	 * the task maybe destroyed when we read stat file
- 	 * we define it to void * because we only use it as a identifier
- 	 */
-@@ -163,9 +163,10 @@ found_wq:
- 		if (wfnode->func == work->func) {
- 			wfnode->executed++;
- 			wfnode->start_time = trace_clock_global();
--			wfnode->work = work;
-+			node->last_workfunc = wfnode;
- 			goto found_wf;
- 		}
-+	node->last_workfunc = NULL;
- 	pr_debug("trace_workqueue: worklet not found\n");
- 	goto end;
+-	TP_printk("thread=%s:%d func=%pF cpu=%d", __entry->thread_comm,
++	TP_printk("thread=%s:%d func=%pf cpu=%d", __entry->thread_comm,
+ 		__entry->thread_pid, __entry->func, __entry->cpu)
+ );
  
-@@ -180,7 +181,7 @@ probe_worklet_complete(struct task_struct *wq_thread, void *work)
- {
- 	int cpu = cpumask_first(&wq_thread->cpus_allowed);
- 	struct cpu_workqueue_stats *node;
--	struct workfunc_stats *wfnode;
-+	u64 executed_time;
- 	unsigned long flags;
+@@ -63,7 +63,7 @@ TRACE_EVENT(worklet_enqueue_delayed,
+ 		__entry->delay		= delay;
+ 	),
  
- 	spin_lock_irqsave(&workqueue_cpu_stat(cpu)->lock, flags);
-@@ -192,22 +193,14 @@ probe_worklet_complete(struct task_struct *wq_thread, void *work)
- 	goto end;
+-	TP_printk("thread=%s:%d func=%pF cpu=%d delay=%lu",
++	TP_printk("thread=%s:%d func=%pf cpu=%d delay=%lu",
+ 		__entry->thread_comm, __entry->thread_pid, __entry->func,
+ 		__entry->cpu, __entry->delay)
+ );
+@@ -88,7 +88,7 @@ TRACE_EVENT(worklet_execute,
+ 		__entry->func		= work->func;
+ 	),
  
- found_wq:
--	list_for_each_entry(wfnode, &node->workfunclist, list) {
--		u64 executed_time;
-+	if (!node->last_workfunc)
-+		goto end;
+-	TP_printk("thread=%s:%d work=%p func=%pF", __entry->thread_comm,
++	TP_printk("thread=%s:%d work=%p func=%pf", __entry->thread_comm,
+ 		__entry->thread_pid, __entry->work, __entry->func)
+ );
  
--		if (wfnode->work != work)
--			continue;
-+	executed_time = trace_clock_global() - node->last_workfunc->start_time;
-+	node->last_workfunc->total_time += executed_time;
-+	if (executed_time > node->last_workfunc->max_executed_time)
-+		node->last_workfunc->max_executed_time = executed_time;
+@@ -128,7 +128,7 @@ TRACE_EVENT(worklet_cancel,
+ 		__entry->func	= work->func;
+ 	),
  
--		executed_time = trace_clock_global() - wfnode->start_time;
--		wfnode->total_time += executed_time;
--		if (executed_time > wfnode->max_executed_time)
--			wfnode->max_executed_time = executed_time;
--		goto found_wf;
--	}
--	pr_debug("trace_workqueue: worklet not found\n");
--	goto end;
--
--found_wf:
- end:
- 	spin_unlock_irqrestore(&workqueue_cpu_stat(cpu)->lock, flags);
- }
+-	TP_printk("func=%pF", __entry->func)
++	TP_printk("func=%pf", __entry->func)
+ );
+ 
+ /* Trace the creation of one workqueue thread on a cpu */
 -- 
 1.6.2.3
 
