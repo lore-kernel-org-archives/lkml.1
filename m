@@ -1,56 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755319AbZFAQWQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754107AbZFAQaV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755319AbZFAQWQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 12:22:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753686AbZFAQV6
+	id S1754107AbZFAQaV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 12:30:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752677AbZFAQaK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 12:21:58 -0400
-Received: from mail-fx0-f168.google.com ([209.85.220.168]:37531 "EHLO
-	mail-fx0-f168.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753713AbZFAQV4 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 12:21:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=Ji17hP7gkKjcfZltTG6nXneVQzgTBl1uEx3iF5UsZXw2CA/WGhsHI0n43z/SoMhpD9
-         IV81GQkvK+xM8pCSMjaBdGv7ygW6yS/NcjSx+dQ9OXeTPJq4BmUG4GYxr/h6sxecooIl
-         Q5h/80dMa9jLnQeYt0f8U3jrc3utw2MNN8haA=
+	Mon, 1 Jun 2009 12:30:10 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:41764 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751718AbZFAQaJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 12:30:09 -0400
+Date: Mon, 1 Jun 2009 12:29:55 -0400
+From: Dave Jones <davej@redhat.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: fishy code in arch/x86/kernel/tsc.c:time_cpufreq_notifier()
+Message-ID: <20090601162955.GA15237@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+	linux-kernel@vger.kernel.org
+References: <20090601142104.GA15907@infradead.org>
 MIME-Version: 1.0
-In-Reply-To: <1243868091-5315-11-git-send-email-dbaryshkov@gmail.com>
-References: <1243868091-5315-1-git-send-email-dbaryshkov@gmail.com> 
-	<1243868091-5315-3-git-send-email-dbaryshkov@gmail.com> <1243868091-5315-4-git-send-email-dbaryshkov@gmail.com> 
-	<1243868091-5315-5-git-send-email-dbaryshkov@gmail.com> <1243868091-5315-6-git-send-email-dbaryshkov@gmail.com> 
-	<1243868091-5315-7-git-send-email-dbaryshkov@gmail.com> <1243868091-5315-8-git-send-email-dbaryshkov@gmail.com> 
-	<1243868091-5315-9-git-send-email-dbaryshkov@gmail.com> <1243868091-5315-10-git-send-email-dbaryshkov@gmail.com> 
-	<1243868091-5315-11-git-send-email-dbaryshkov@gmail.com>
-From: =?ISO-8859-1?Q?G=E1bor_Stefanik?= <netrolller.3d@gmail.com>
-Date: Mon, 1 Jun 2009 18:21:37 +0200
-Message-ID: <69e28c910906010921r56cf7017gc858cb7ba819c385@mail.gmail.com>
-Subject: Re: [PATCH 10/10] ieee802154: add at86rf230/rf231 spi driver
-To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-wireless@vger.kernel.org, slapin@ossfans.org,
-       maxim.osipov@siemens.com, dmitry.baryshkov@siemens.com,
-       oliver.fendt@siemens.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090601142104.GA15907@infradead.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 1, 2009 at 4:54 PM, Dmitry Eremin-Solenikov
-<dbaryshkov@gmail.com> wrote:
-> Add a driver handling AT86RF230/RF231 line of chips. Only basic
-> features are currently implemented (no extended mode operation, etc.)
-> Also the RF230 chip is not really supported yet.
->
-> Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-> Signed-off-by: Sergey Lapin <slapin@ossfans.org>
-> ---
->  drivers/ieee802154/Kconfig     |    5 +
->  drivers/ieee802154/Makefile    |    1 +
->  drivers/ieee802154/at86rf230.c |  971 ++++++++++++++++++++++++++++++++++++++++
+On Mon, Jun 01, 2009 at 10:21:04AM -0400, Christoph Hellwig wrote:
+ > Just notice the following error from gcc 4.4:
+ > 
+ > arch/x86/kernel/tsc.c: In function 'time_cpufreq_notifier':
+ > arch/x86/kernel/tsc.c:634: warning: 'dummy' may be used uninitialized in this function
+ > 
+ > where we do have CONFIG_SMP set, freq->flags & CPUFREQ_CONST_LOOPS is
+ > true and ref_freq is false.
+ > 
+ > Can that case actually happen?
+ 
+I think you're right, though the circumstances for hitting it are really
+low. Nearly all SMP capable cpufreq drivers set CPUFREQ_CONST_LOOPS.
+powernow-k8 is really the only exception. The older CPUs were typically
+only ever UP. (powernow-k7 never supported SMP for eg)
 
-Shouldn't this go into drivers/net/ieee802154 instead?
+It's probably worth fixing.
+
+I think the patch below is closer to the actual intent, with the bonus
+of being a lot more readable.
+
+Sanity check?
+
+	Dave
+
+Fix possible uninitialized use of dummy, by just removing it,
+and making the setting of lpj more obvious.
+
+Signed-off-by: Dave Jones <davej@redhat.com>
+
+diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
+index d57de05..78c54ea 100644
+--- a/arch/x86/kernel/tsc.c
++++ b/arch/x86/kernel/tsc.c
+@@ -631,17 +631,15 @@ static int time_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
+ 				void *data)
+ {
+ 	struct cpufreq_freqs *freq = data;
+-	unsigned long *lpj, dummy;
++	unsigned long *lpj;
+ 
+ 	if (cpu_has(&cpu_data(freq->cpu), X86_FEATURE_CONSTANT_TSC))
+ 		return 0;
+ 
+-	lpj = &dummy;
+-	if (!(freq->flags & CPUFREQ_CONST_LOOPS))
++	lpj = &boot_cpu_data.loops_per_jiffy;
+ #ifdef CONFIG_SMP
++	if (!(freq->flags & CPUFREQ_CONST_LOOPS))
+ 		lpj = &cpu_data(freq->cpu).loops_per_jiffy;
+-#else
+-	lpj = &boot_cpu_data.loops_per_jiffy;
+ #endif
+ 
+ 	if (!ref_freq) {
+
