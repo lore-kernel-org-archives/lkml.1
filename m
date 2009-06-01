@@ -1,67 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755607AbZFAVXY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753270AbZFAVbx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755607AbZFAVXY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 17:23:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751364AbZFAVXP
+	id S1753270AbZFAVbx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 17:31:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751033AbZFAVbp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 17:23:15 -0400
-Received: from waste.org ([66.93.16.53]:37289 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751052AbZFAVXP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 17:23:15 -0400
-Subject: Re: [PATCH] update kernel's scripts/bloat-o-meter from busybox
-From: Matt Mackall <mpm@selenic.com>
-To: Robin Getz <rgetz@blackfin.uclinux.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>,
-       Bernhard Reutner-Fischer <rep.dot.nop@gmail.com>,
-       Denis Vlasenko <vda.linux@googlemail.com>,
-       Rob Landley <rob@landley.net>, linux-kernel@vger.kernel.org,
-       Mike Frysinger <vapier@gentoo.org>
-In-Reply-To: <200906011657.20251.rgetz@blackfin.uclinux.org>
-References: <200906011526.01108.rgetz@blackfin.uclinux.org>
-	 <1243885732.22069.112.camel@calx>
-	 <200906011657.20251.rgetz@blackfin.uclinux.org>
-Content-Type: text/plain
-Date: Mon, 01 Jun 2009 16:17:20 -0500
-Message-Id: <1243891040.22069.117.camel@calx>
+	Mon, 1 Jun 2009 17:31:45 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:45307 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750819AbZFAVbp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 17:31:45 -0400
+Date: Mon, 1 Jun 2009 22:32:15 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Greg KH <greg@kroah.com>, Al Viro <viro@ftp.linux.org.uk>,
+       Pavel Roskin <proski@gnu.org>, Aaditya.Rai@atheros.com,
+       Prem.Kumar@atheros.com, Stephen.Chen@atheros.com,
+       Rahul.Sridhar@atheros.com, Allen.Tsai@atheros.com
+Subject: Re: EXPORT_SYMBOL_GPL recursive for shim and/or wrappers
+Message-ID: <20090601223215.7a81c875@lxorguk.ukuu.org.uk>
+In-Reply-To: <43e72e890906011241u24b82cc3gc06bf7be4f43075e@mail.gmail.com>
+References: <43e72e890906011241u24b82cc3gc06bf7be4f43075e@mail.gmail.com>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-06-01 at 16:57 -0400, Robin Getz wrote:
-> On Mon 1 Jun 2009 15:48, Matt Mackall pondered:
-> > On Mon, 2009-06-01 at 15:26 -0400, Robin Getz wrote:
-> > > From: "Rob Landley" <rob@landley.net>
-> > > From: "Denis Vlasenko" <vda.linux@googlemail.com>
-> > > From: "Bernhard Reutner-Fischer" <rep.dot.nop@gmail.com>
-> > > 
-> > > Since bloat-o-meter was added to the kernel's source tree, it has
-> > > received little attention - either it works really well - or no
-> > > one uses it. I suspect the first :)
-> > > 
-> > > However - some folks who have been using it more (mainly as part 
-> > > of busybox) have been poking at it more often - and the output is
-> > > a little more friendly  now.
-> > > 
-> > > http://git.busybox.net/busybox/log/scripts/bloat-o-meter
-> > > 
-> > > I think Rob had been sending early patches both places, but
-> > > somewhere along the line things never made it to lkml.
-> > 
-> > I probably dropped them on the ground during a busy spell.
-> 
-> Sorry - I didn't mean to sound like I was trying to blame anyone. 
+On Mon, 1 Jun 2009 12:41:58 -0700
+"Luis R. Rodriguez" <mcgrof@gmail.com> wrote:
 
-And I'm just making sure Rob doesn't feel blamed. He did send me
-patches, and they didn't go anywhere.
+> The intention behind EXPORT_SYMBOL_GPL seems clear to me -- prevent
+> proprietary drivers from using GPL-only symbols. 
 
-I can do a round of make-it-idiomatic-python after we get this merged,
-that'll probably be more efficient than me picking nits.
-
--- 
-http://selenic.com : development and support for Mercurial and Linux
-
-
+It's a guide as to what symbols are most definitely internal interfaces.
+Nobody but a lawyer (or more accurately a court of law I guess) can tell
+you what is or isn't a derivative work. It can be that without using _GPL
+symbols, and I would imagine there may even be cases the reverse might be
+true.
