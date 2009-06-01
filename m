@@ -1,105 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753549AbZFAOTo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753994AbZFAOVQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753549AbZFAOTo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 10:19:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751279AbZFAOTi
+	id S1753994AbZFAOVQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 10:21:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751114AbZFAOVD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 10:19:38 -0400
-Received: from smtprelay04.ispgateway.de ([80.67.31.38]:59215 "EHLO
-	smtprelay04.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750965AbZFAOTh (ORCPT
+	Mon, 1 Jun 2009 10:21:03 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:45152 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751248AbZFAOVD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 10:19:37 -0400
-References: <1240913055.29860.14.camel@maxim-laptop> <cone.1240949852.549814.7466.1000@mentalhome> <1240950704.3781.12.camel@maxim-laptop> <cone.1241299309.265715.3948.1000@mentalhome> <20090503184617.GA3555@liondog.tnic> <cone.1241648222.299676.7476.1000@mentalhome> <20090509171432.GA31126@liondog.tnic> <cone.1242065107.695268.13534.1000@onepiie> <20090512060231.GB26286@liondog.tnic> <cone.1242669880.118150.4276.1000@deskpiie> <20090524192219.GA30285@liondog.tnic>
-Message-ID: <cone.1243865541.882421.4368.1000@deskpiie>
-X-Mailer: http://www.courier-mta.org/cone/
-From: Peter Feuerer <peter@piie.net>
-To: Borislav Petkov <petkovbb@googlemail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, lenb@kernel.org,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [PATCH] Acer Aspire One Fan Control
-Date: Mon, 01 Jun 2009 16:12:21 +0200
-Mime-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="US-ASCII"
+	Mon, 1 Jun 2009 10:21:03 -0400
+Date: Mon, 1 Jun 2009 10:21:04 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org
+Subject: fishy code in arch/x86/kernel/tsc.c:time_cpufreq_notifier()
+Message-ID: <20090601142104.GA15907@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-X-Df-Sender: 404094
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Boris,
+Just notice the following error from gcc 4.4:
 
-thanks again for all you helpful comments. A new patch will follow shortly.
+arch/x86/kernel/tsc.c: In function 'time_cpufreq_notifier':
+arch/x86/kernel/tsc.c:634: warning: 'dummy' may be used uninitialized in this function
 
-Borislav Petkov writes:
+dummy is only used in the following way in this function:
 
-> Ok, minor nitpicks below but it starting to shape up quite ok. You could
-> send it for inclusion upstream.
+	lpj = &dummy;
 
-How exactly do I send the patch for inclusion?
+and then dummy might be overriden in the following odd way:
 
->> +/* acer ec functions */
->> +static int acerhdf_get_temp(void)
->> +{
->> +	u8 temp;
->> +	/* read temperature */
->> +	if (!ec_read(bios_settings[bios_version].tempreg, &temp)) {
->> +		if (verbose)
-> 
-> you need to check the error status here before printing the temperature
-> since it might be invalid if the ec_read has failed:
-> 
-> 	u8 temp;
-> 	int err;
-> 
-> 	err = ec_read(bios_settings[bios_version].tempreg, &temp);
-> 
-> 	if (err)
-> 		return ACERHDF_ERROR;
-> 
-> 	if (verbose)
-> 		acerhdf_notice("temp %d\n", temp);
-> 
-> 	return temp;
-> }
-> 
+	if (!(freq->flags & CPUFREQ_CONST_LOOPS))
+#ifdef CONFIG_SMP
+		lpj = &cpu_data(freq->cpu).loops_per_jiffy;
+#else
+	lpj = &boot_cpu_data.loops_per_jiffy;
+#endif
 
-The printf was already omitted when ec_read fails the way I wrote it, wasn't 
-it? - Only if ec_read returns 0, the printf is launched and the temperature 
-is returned.
+and then is used in
 
->> +			acerhdf_notice("temp %d\n", temp);
->> +		return temp;
->> +	}
->> +	return ACERHDF_ERROR;
->> +}
->> +
->> +
->> +		if (verbose)
->> +			acerhdf_error("read state: %d expected state: %d\n",
->> +					old_state, fanstate);
->> +
->> +		acerhdf_change_fanstate(ACERHDF_FAN_AUTO);
->> +		disable_kernelmode = 1;
->> +	}
->> +
->> +	if (state == 0) {
->> +		/* turn fan off only if below fanoff temperature */
->> +		if ((old_state == ACERHDF_FAN_AUTO) &&
->> +				(acerhdf_get_temp() < fanoff))
-> 
-> it might be cool to tell the user why you're not turning off the fan.
-> 
-> 		if (verbose)
-> 			acerhdf_notice("Not turning off fan due to current temp "
-> 				       "exceeding fanoff value\n");
-> 
+	if (!ref_freq) {
+		ref_freq = freq->old;
+		loops_per_jiffy_ref = *lpj;
+		tsc_khz_ref = tsc_khz;
+	}
 
-Hm.. I think it should be clear that the fan is turned off, as soon as the 
-temperature is below the fanoff temperature. In my opinion printing this 
-message would be a case for a "verbose==2" verbose mode :)
+to me that looks like it can indeed be used unitialized for the case
+where we do have CONFIG_SMP set, freq->flags & CPUFREQ_CONST_LOOPS is
+true and ref_freq is false.
 
-kind regards,
---peter
+Can that case actually happen?
