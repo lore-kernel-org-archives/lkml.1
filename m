@@ -1,64 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755585AbZFAIhz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754271AbZFAIkO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755585AbZFAIhz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 04:37:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751643AbZFAIhs
+	id S1754271AbZFAIkO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 04:40:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751891AbZFAIkD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 04:37:48 -0400
-Received: from main.gmane.org ([80.91.229.2]:36531 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750991AbZFAIhr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 04:37:47 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Subject: Re: [RFC] [PATCH] Device Tree on ARM platform
-Date: Mon, 1 Jun 2009 08:37:32 +0000 (UTC)
-Message-ID: <h0040c$t63$1@ger.gmane.org>
-References: <1243408083.13460.14.camel@debian-nb>
-	<20090530112221.GA1395@ucw.cz>
-	<f73f7ab80905301829j45723fd6j6e04904c8214e3b9@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: iap-pxy-mow1.siemens.ru
-User-Agent: Pan/0.132 (Waxed in Black)
-Cc: linux-arm-kernel@lists.arm.linux.org.uk
+	Mon, 1 Jun 2009 04:40:03 -0400
+Received: from mail-fx0-f168.google.com ([209.85.220.168]:34109 "EHLO
+	mail-fx0-f168.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751661AbZFAIkC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 04:40:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=B8sxpV0gyFgxVpMDlFOiPWT3MPudRZQgLbmZrogOVXLqG1VNmeLz9q/YVMORdrnseY
+         BeZ2sOFOjNxjs8zUXBcS1QfH5uZm2EDEafLxn6jEYU5oiv8DNp9FDKf0bJlfvy+Nrc/W
+         6m7pJnjWj+v90SiAec/3bsZ6X8d8ZLtAZzGX0=
+Message-ID: <4A2393DE.10300@gmail.com>
+Date: Mon, 01 Jun 2009 10:39:58 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1pre) Gecko/20090525 SUSE/3.0b2-10.1 Thunderbird/3.0b3pre
+MIME-Version: 1.0
+To: vibi_sreenivasan@cms.com
+CC: Mimi Zohar <zohar@us.ibm.com>, Kylene Hall <kylene@us.ibm.com>,
+       Serge Hallyn <serue@us.ibm.com>, Reiner Sailer <sailer@watson.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH]:RESEND : Return proper error value on failure of dentry_open
+References: <1243836708.2163.3.camel@system>  <4A238625.8060002@gmail.com> <1243844849.2327.27.camel@system>
+In-Reply-To: <1243844849.2327.27.camel@system>
+X-Enigmail-Version: 0.96a
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kyle Moffett wrote:
+On 06/01/2009 10:27 AM, vibi sreenivasan wrote:
+> --- a/security/integrity/ima/ima_main.c
+> +++ b/security/integrity/ima/ima_main.c
+> @@ -201,10 +201,10 @@ int ima_path_check(struct path *path, int mask)
+>  	}
+>  out:
+>  	mutex_unlock(&iint->mutex);
+> -	if (file)
+> +	if (!IS_ERR(file))
+>  		fput(file);
 
-> On Sat, May 30, 2009 at 7:22 AM, Pavel Machek <pavel@ucw.cz> wrote:
->>> diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig index
->>> f430e15..b0ee851 100644
->>> --- a/arch/arm/Kconfig
->>> +++ b/arch/arm/Kconfig
->>> @@ -158,6 +158,17 @@ config ARCH_MTD_XIP
->>>  config GENERIC_HARDIRQS_NO__DO_IRQ
->>>       def_bool y
->>>
->>> +config OF
->>> +        def_bool y
->>> +
->>> +config PROC_DEVICETREE
->>> +        bool "Support for device tree in /proc"
->>
->> It certainly should not be in /proc.
-> 
-> There is unfortunately a relatively large legacy base of existing tools
+No, IS_ERR won't catch NULL and there is 'file = NULL' on the
+dentry_open fail path. I still think 'if (file)' is proper condition.
 
-And the keyword is *legacy* IMO. We have had legacy things like /proc/acpi,
-/proc/ide etc. for years. However one by one they are being dropped and
-replaced with more vivid interfaces. IMO one shouldn't hang around legacy
-things for years. Just define and implement the replacement and delcare
-that legacy interface will fade out and will be removed in a year or two.
-
-
-
-With best wishes
-Dmitry
-
-
+What bug did you hit?
