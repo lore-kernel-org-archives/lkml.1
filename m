@@ -1,46 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753713AbZFAAgU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754030AbZFAAi5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753713AbZFAAgU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 May 2009 20:36:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752850AbZFAAgG
+	id S1754030AbZFAAi5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 May 2009 20:38:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752668AbZFAAiu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 May 2009 20:36:06 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45168 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752782AbZFAAgF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 May 2009 20:36:05 -0400
-Date: Sun, 31 May 2009 17:36:04 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [RESEND] [PATCH] readahead:add blk_run_backing_dev
-Message-Id: <20090531173604.8cbad7f2.akpm@linux-foundation.org>
-In-Reply-To: <6.0.0.20.2.20090529142527.071669e0@172.19.0.2>
-References: <6.0.0.20.2.20090529142527.071669e0@172.19.0.2>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 31 May 2009 20:38:50 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:50988 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752477AbZFAAiu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 May 2009 20:38:50 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@redhat.com>
+X-Fcc: ~/Mail/linus
+Cc: Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH 00/12 v3] ptrace: introduce task_struct->ptrace_cxt
+In-Reply-To: Oleg Nesterov's message of  Sunday, 31 May 2009 00:38:20 +0200 <20090530223820.GA30474@redhat.com>
+References: <20090530223820.GA30474@redhat.com>
+X-Windows: all the problems and twice the bugs.
+Message-Id: <20090601003833.8CB68FC3C7@magilla.sf.frob.com>
+Date: Sun, 31 May 2009 17:38:33 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 29 May 2009 14:35:55 +0900 Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp> wrote:
+All looks good to me!
 
-> I added blk_run_backing_dev on page_cache_async_readahead
-> so readahead I/O is unpluged to improve throughput on 
-> especially RAID environment. 
+Updated in the rebased-to-current(2.6.30) series at:
+	http://userweb.kernel.org/~frob/ptrace-revamp/
+or	git://git.kernel.org/pub/scm/linux/kernel/git/frob/linux-2.6-roland.git
+	branch ptrace/revamp (rebased branch, not for pulling)
 
-I skipped the last version of this because KOSAKI Motohiro
-<kosaki.motohiro@jp.fujitsu.com> said "Please attach blktrace analysis ;)".
 
-I'm not sure why he asked for that, but he's a smart chap and
-presumably had his reasons.
-
-If you think that such an analysis is unneeded, or isn't worth the time
-to generate then please tell us that.  But please don't just ignore the
-request!
-
-Thanks.
-
+Thanks,
+Roland
