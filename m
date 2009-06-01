@@ -1,65 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757879AbZFAL7T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757983AbZFAMAq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757879AbZFAL7T (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 07:59:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756263AbZFAL7M
+	id S1757983AbZFAMAq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 08:00:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756190AbZFAMAi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 07:59:12 -0400
-Received: from ey-out-2122.google.com ([74.125.78.27]:29743 "EHLO
+	Mon, 1 Jun 2009 08:00:38 -0400
+Received: from ey-out-2122.google.com ([74.125.78.27]:18622 "EHLO
 	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754346AbZFAL7M (ORCPT
+	with ESMTP id S1755339AbZFAMAh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 07:59:12 -0400
+	Mon, 1 Jun 2009 08:00:37 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=sender:from:date:subject:mime-version:x-uid:x-length:to
          :content-type:content-transfer-encoding:content-disposition
          :message-id;
-        b=L2SNXTTlbq5VoD4ZEVMcFH8hR4tfRCvA2iykO0t1QlxkRYh1rtnNf5lwZ4jXyD/PqT
-         wPJ2vR4WRSbaRn2Fln/7gyKLSYwaKULQQNdc/hLncIFIxhj7kYuGiriWpqJag02NbGba
-         S92TCC1EG3gj5poXVDa/41PDC6ORFHb2iZoNI=
+        b=lXWunBX5l0KU3Fw4z8RFbGqNVrf4TMUJpy74egT53Vz+NoAFPpwPh1eFNZU516qZSG
+         P2DI4AE1r+1AEkvG78q6k0K3Evqbj4kdt+Nk/y9UvPSpUSk6XNTBuPVqYYC8EhC0X1Cc
+         cJ//CWgxrXymQ/tRUtuQYx0o7pOGEzIWR7xL4=
 From: Florian Fainelli <florian@openwrt.org>
-Date: Mon, 1 Jun 2009 13:59:08 +0200
-Subject: [PATCH 3/9] drivers: wire in vlynq bus support
+Date: Mon, 1 Jun 2009 14:00:35 +0200
+Subject: [PATCH 5/9] serial: add support for the TI AR7 internal UART
 MIME-Version: 1.0
-X-Length: 1589
-To: linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
-       akpm <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+X-Length: 2075
+To: linux-kernel@vger.kernel.org, akpm <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-serial@vger.kernel.org
 Content-Type: text/plain;
   charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200906011359.09622.florian@openwrt.org>
+Message-Id: <200906011400.35997.florian@openwrt.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch allows the VLYNQ bus support
-to be selected and compiled.
+This patch adds support for the TI AR7 internal UART.
 
 Signed-off-by: Florian Fainelli <florian@openwrt.org>
 ---
-diff --git a/drivers/Kconfig b/drivers/Kconfig
-index 00cf955..a442c8f 100644
---- a/drivers/Kconfig
-+++ b/drivers/Kconfig
-@@ -104,6 +104,8 @@ source "drivers/auxdisplay/Kconfig"
+diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
+index b4b3981..03376b0 100644
+--- a/drivers/serial/8250.c
++++ b/drivers/serial/8250.c
+@@ -286,6 +286,13 @@ static const struct serial8250_config uart_config[] = {
+ 		.fcr		= UART_FCR_ENABLE_FIFO | UART_FCR_R_TRIG_10,
+ 		.flags		= UART_CAP_FIFO,
+ 	},
++	[PORT_AR7] = {
++		.name		= "AR7",
++		.fifo_size	= 16,
++		.tx_loadsz	= 16,
++		.fcr		= UART_FCR_ENABLE_FIFO | UART_FCR_R_TRIG_00,
++		.flags		= UART_CAP_FIFO | UART_CAP_AFE,
++	},
+ };
  
- source "drivers/uio/Kconfig"
+ #if defined (CONFIG_SERIAL_8250_AU1X00)
+diff --git a/include/linux/serial_core.h b/include/linux/serial_core.h
+index 57a97e5..48766ea 100644
+--- a/include/linux/serial_core.h
++++ b/include/linux/serial_core.h
+@@ -41,7 +41,8 @@
+ #define PORT_XSCALE	15
+ #define PORT_RM9000	16	/* PMC-Sierra RM9xxx internal UART */
+ #define PORT_OCTEON	17	/* Cavium OCTEON internal UART */
+-#define PORT_MAX_8250	17	/* max port ID */
++#define PORT_AR7	18	/* Texas Instruments AR7 internal UART */
++#define PORT_MAX_8250	18	/* max port ID */
  
-+source "drivers/vlynq/Kconfig"
-+
- source "drivers/xen/Kconfig"
- 
- source "drivers/staging/Kconfig"
-diff --git a/drivers/Makefile b/drivers/Makefile
-index 1266ead..0d39303 100644
---- a/drivers/Makefile
-+++ b/drivers/Makefile
-@@ -105,5 +105,6 @@ obj-$(CONFIG_PPC_PS3)		+= ps3/
- obj-$(CONFIG_OF)		+= of/
- obj-$(CONFIG_SSB)		+= ssb/
- obj-$(CONFIG_VIRTIO)		+= virtio/
-+obj-$(CONFIG_VLYNQ)		+= vlynq/
- obj-$(CONFIG_STAGING)		+= staging/
- obj-y				+= platform/
+ /*
+  * ARM specific type numbers.  These are not currently guaranteed
