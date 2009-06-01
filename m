@@ -1,94 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755865AbZFAT0c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755911AbZFATaI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755865AbZFAT0c (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 15:26:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752517AbZFAT0Y
+	id S1755911AbZFATaI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 15:30:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752614AbZFAT36
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 15:26:24 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:35812 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751823AbZFAT0X (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 15:26:23 -0400
-Date: Mon, 1 Jun 2009 15:26:24 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: Christian =?iso-8859-1?Q?Borntr=E4ger?= <borntraeger@de.ibm.com>,
-       Avi Kivity <avi@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>, KVM list <kvm@vger.kernel.org>
-Subject: Re: [PATCH] KVM: add localversion to avoid confusion and conflicts
-Message-ID: <20090601192624.GA32428@goodmis.org>
-References: <1243581494.3212.1.camel@localhost.localdomain> <200905290948.34482.borntraeger@de.ibm.com> <1243586626.4379.15.camel@localhost.localdomain>
+	Mon, 1 Jun 2009 15:29:58 -0400
+Received: from h155.mvista.com ([63.81.120.155]:58572 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750985AbZFAT35 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 15:29:57 -0400
+Message-ID: <4A242C81.3080309@ru.mvista.com>
+Date: Mon, 01 Jun 2009 23:31:13 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1243586626.4379.15.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: jgarzik@pobox.com
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: Re: [PATCH 2/2 resend] libata-sff: avoid byte swapping in ata_sff_data_xfer()
+References: <200902152230.38271.sshtylyov@ru.mvista.com> <49DB199C.3040305@ru.mvista.com>
+In-Reply-To: <49DB199C.3040305@ru.mvista.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 29, 2009 at 02:13:46PM +0530, Jaswinder Singh Rajput wrote:
-> On Fri, 2009-05-29 at 09:48 +0200, Christian Bornträger wrote:
-> > Am Freitag 29 Mai 2009 09:18:14 schrieb Jaswinder Singh Rajput:
-> > > Adding localversion avoids confusion in kernel images :
-> > >
-> > > like Linux version 2.6.30-rc7 does not tell whether it is linus or kvm
-> > > kernel.
-> > >
-> > > By adding localversion it tells :
-> > >
-> > > Linux version 2.6.30-rc7-kvm , any doubt ;-)
-> > > I am inspired by Ingo's -tip, I am sure Ingo will tell more advantages,
-> > > if these are not enough :-)
-> > [...]
-> > > diff --git a/localversion-kvm b/localversion-kvm
-> > > new file mode 100644
-> > > index 0000000..d969ff0
-> > > --- /dev/null
-> > > +++ b/localversion-kvm
-> > > @@ -0,0 +1 @@
-> > > +-kvm
-> > 
-> > NAK from my side. If you need a distinction, there is always 
-> > CONFIG_LOCALVERSION_AUTO. If you need this kind of prefix, there is always  
-> > CONFIG_LOCALVERSION.
-> > 
-> 
-> Here is NAK for your NAK from my side.
+Hello, I wrote:
 
-And here is a NACK for your NACK of a NACK!
+>> Handling of the trailing byte in ata_sff_data_xfer() is suboptimal 
+>> bacause:
 
-> 
-> This patch is only for KVM tree and not for linus tree.
-> 
-> Lets assume 100 developers are working on kvm tree and they use kvm tree
-> on 2 PCs. So count becomes 200.
-> 
-> Like in my case I have dozen of kernel trees so I keep on swapping
-> config between kernels. And I also need to test config from various
-> users. So this count is countless.
-> I think this is the biggest point for adding localversion in -tip.
-> It seems Ingo is busy in perfcounter stuff otherwise he will explain you
-> more advantages.
-> 
-> In the least case, Can you differentiate between 1 and 200 ?
-> 
-> So by adding this patch we can save lot of developer's time.
+>> - it always initializes the padding buffer to 0 which is not really 
+>> needed in
+>>   both the read and write cases;
 
-No this patch wastes a lot of developers time. If we accept it, than any
-patch that is added after it will need to be rebased before going to
-Linus. Unless KVM is made up of a bunch of branches like tip is, this will become
-more of a hassle than a benefit.
+>> - it has to use memcpy() to transfer a single byte from/to the padding 
+>> buffer;
 
-Ingo's tip/master is based off of a bunch of branches. It is not recommended to
-develope against tip/master. I develop against tip/tracing/core, because that is
-what will get pulled by Linus. tip/master is created automatically from a bunch of
-branches and gets rebased all the time. One of those branches is tip, which supplies
-the localversion. Thus, if you use tip/master, you get the localversion file. But
-if you develop against one of the main branches that will eventually go to Linus,
-then you will not have that localversion file.
+>> - it uses io{read|write}16() accessors which swap bytes on the big 
+>> endian CPUs
+>>   and so have to additionally convert the data from/to the little 
+>> endian format
+>>   instead of using io{read|write}16_rep() accessors which are not 
+>> supposed to
+>>   change the byte ordering.
+>>
+>> Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 
--- Steve
+>   Jeff, have you forgotten about this one?
 
+    PING.
+
+MBR, Sergei
