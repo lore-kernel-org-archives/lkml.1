@@ -1,96 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757592AbZFARam@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757062AbZFARbg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757592AbZFARam (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 13:30:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751554AbZFARae
+	id S1757062AbZFARbg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 13:31:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752367AbZFARb3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 13:30:34 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:40343 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750842AbZFARad (ORCPT
+	Mon, 1 Jun 2009 13:31:29 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:61960 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750842AbZFARb2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 13:30:33 -0400
-Date: Mon, 1 Jun 2009 10:30:30 -0700
-From: Matt Helsley <matthltc@us.ibm.com>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Matt Helsley <matthltc@us.ibm.com>, xemul@parallels.com,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       dave@linux.vnet.ibm.com, mingo@elte.hu, torvalds@linux-foundation.org
-Subject: Re: [PATCH 14/38] Remove struct mm_struct::exe_file et al
-Message-ID: <20090601173030.GL9285@us.ibm.com>
-References: <20090526113618.GJ28083@us.ibm.com> <20090526162415.fb9cefef.akpm@linux-foundation.org> <20090531215427.GA29534@x200.localdomain>
+	Mon, 1 Jun 2009 13:31:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=OGT0+daJaWELDc/nhSVVx17AIYkmLH9UPxsy8aqUz4OXpcB6/J41uyNjBzhBu9Ay3B
+         UbOsv+odisA+FFi9R2q20bV+xxb/HwMlTCqfvrOdU1+dsxumn5JiCVNoDvvNk3yc2Cpw
+         oMUsEBRpFJcBxrayjQ7Zy9qLcn+ZmCIFOj8w0=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090531215427.GA29534@x200.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <4A2409C3.2000804@zytor.com>
+References: <1242845037-1029-1-git-send-email-borislav.petkov@amd.com>
+	 <20090528164720.0af5752b.akpm@linux-foundation.org>
+	 <20090529103329.GB23530@aftab>
+	 <20090529130115.a44efaee.akpm@linux-foundation.org>
+	 <20090530081954.GA21954@liondog.tnic>
+	 <20090530014007.3c1e22d5.akpm@linux-foundation.org>
+	 <4A218761.5080607@zytor.com> <20090601145326.GA28260@liondog.tnic>
+	 <4A2407D1.5050706@zytor.com> <4A2409C3.2000804@zytor.com>
+Date: Mon, 1 Jun 2009 10:31:29 -0700
+Message-ID: <6dc9ffc80906011031t3aa4a91br84e4d06df76b0065@mail.gmail.com>
+Subject: Re: [PATCH 0/4] amd64_edac: misc fixes
+From: "H.J. Lu" <hjl.tools@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Borislav Petkov <petkovbb@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Borislav Petkov <borislav.petkov@amd.com>, greg@kroah.com,
+       mingo@elte.hu, norsk5@yahoo.com, tglx@linutronix.de, mchehab@redhat.com,
+       aris@redhat.com, edt@aei.ca, linux-kernel@vger.kernel.org,
+       randy.dunlap@oracle.com, Sam Ravnborg <sam@ravnborg.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 01, 2009 at 01:54:27AM +0400, Alexey Dobriyan wrote:
-> On Tue, May 26, 2009 at 04:24:15PM -0700, Andrew Morton wrote:
-> > On Tue, 26 May 2009 04:36:18 -0700
-> > Matt Helsley <matthltc@us.ibm.com> wrote:
-> > 
-> > > I don't see any mention in the changelog of the point brought up by Ingo:
-> > > 
-> > > http://lkml.org/lkml/2009/4/10/105
-> > 
-> > Nor of Eric's comments.
-> > 
-> > Alexey, pleeeze don't do this.  We (read: I) heavily depend upon patch
-> > submitters to keep track of outstanding issues and review comments,
-> > etc.
-> > 
-> > If the patch submitter simply blows these things off then it devolves
-> > to me having to keep track of each patch's issue list as well as the
-> > patch itself.  My workload goes up by a factor of N and the error rate
-> > goes up by N^2 :(
-> 
-> grmbh..
-> 
-> "Security" and "holding ->mmap_sem" were answered and dismissed.
-> 
-> You can't do readlink(2) on /proc/*/exe if you can't ptrace task.
-> So no new possible holes are created.
+On Mon, Jun 1, 2009 at 10:02 AM, H. Peter Anvin <hpa@zytor.com> wrote:
+> H. Peter Anvin wrote:
+>>
+>> Yes, we would have to do something like that.
+>>
+>> However, if you're doing that you shouldn't use typeof() there...
+>> instead this should be turned into an inline function with explicit
+>> 64-bit types.
+>>
+>> It would be good if we could get Kbuild to export some kind of macro
+>> that we can use to test binutils version, so we can do something like:
+>>
+>> #if BINUTILS_VERSION >= KERNEL_VERSION(2,18,50)
+>> /* Do the right thing */
+>> #else
+>> /* Do the wrong thing */
+>> #endif
+>>
+>
+> The other option, and perhaps a better option, is to key it on the
+> version of gcc; then we can use the gcc intrinsics __builtin_popcount(),
+> __builtin_popcountl() and __builtin_popcountll(), which should produce
+> better code since gcc can schedule them appropriately.
+>
+> Probably also means passing -msse4.2 to gcc while hoping that that
+> doesn't enable any #TS-generating instructions (SSE 4.2 is mostly a
+> collection of integer instructions).
+>
+> (H.J., any comments?)
+>
 
-Yes, I messed up: you answered the security question.
+I don't think -msse4.2 will generate any SSE instructions unless you
+turn on the vectorizer.
 
-I still like that exe_file avoids the VMA walk with mmap_sem held. Holding
-mmap_sem seems like a bigger performance difference than adding a branch
-based on vm_flags in the VMA add/remove/split/merge code. Wouldn't vm_flags
-be cache-hot? If so the typical cost added is an && and the branch
-itself. Performance-related side effects of those are extra instruction fetches
-and, perhaps most of all, typical branch costs like pipeline stalls and
-flushes.
 
-I suspect you could avoid most of the hypothesized performance difference
-introduced by exe_file (if it's even measurable) by marking the branch
-unlikely(). I guess that flag is unlikely since it's only applied
-during exec by the kernel, the splits or removals of these areas are
-probably near-constant in number, and they usually take place shortly after
-exec anyway.
-
-Of course if branch prediction hardware is very good then it may be
-even better to leave these alone.
-
-> 
-> ->mmap_sem was held since /proc/*/exe was added and nobody cared.
-
-"nobody cared" isn't a good reason to put it back. That kind of argument just
-as easily supports exe_file: "I added code to the VMA paths and nobody cared."
-Of course now you care about these changes to the VMA paths and I care
-about holding mmap_sem...
-
-> And, again, you can't readlink _any_ /proc/*/exe.
-
-Yup. Sorry about that again.
-
-In summary: I think the performance benefits of this patch have yet to be
-established and really the only benefit I agree with is the nice reduction
-in code.
-
-Cheers,
-	-Matt Helsley
+-- 
+H.J.
