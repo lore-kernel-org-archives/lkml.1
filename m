@@ -1,202 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757884AbZFALuy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757238AbZFAL5T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757884AbZFALuy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 07:50:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756263AbZFALuq
+	id S1757238AbZFAL5T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 07:57:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756263AbZFAL5M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 07:50:46 -0400
-Received: from cantor.suse.de ([195.135.220.2]:43823 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755605AbZFALuq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 07:50:46 -0400
-Date: Mon, 1 Jun 2009 13:50:46 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Andi Kleen <andi@firstfloor.org>, "hugh@veritas.com" <hugh@veritas.com>,
-       "riel@redhat.com" <riel@redhat.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler in the VM v3
-Message-ID: <20090601115046.GE5018@wotan.suse.de>
-References: <200905271012.668777061@firstfloor.org> <20090527201239.C2C9C1D0294@basil.firstfloor.org> <20090528082616.GG6920@wotan.suse.de> <20090528095934.GA10678@localhost> <20090528122357.GM6920@wotan.suse.de> <20090528135428.GB16528@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 1 Jun 2009 07:57:12 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:48609 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755970AbZFAL5L (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 07:57:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:from:date:subject:mime-version:x-uid:x-length:to
+         :content-type:content-transfer-encoding:content-disposition
+         :message-id;
+        b=IDGWa0450o96NOM/9QnpH38usDfTS16RCctdMdFpPTkkzTa6sWGHIp+0UZhGmaHjSL
+         jofYC8pNV52Mam9AD94y1CacsXM2JiQraHJZvpskc7AJo3QK0IdY9sQbhs3/yoxe7dxI
+         j/rj3pi6c0vO7Rub6791327C66JwKAECI4xNU=
+From: Florian Fainelli <florian@openwrt.org>
+Date: Mon, 1 Jun 2009 13:57:09 +0200
+Subject: [PATCH 1/9] kernel: export sound/core/pcm_timer.c gcd implementation
+MIME-Version: 1.0
+X-Length: 2484
+To: linux-kernel@vger.kernel.org, Takashi Iwai <tiwai@suse.de>,
+       akpm <akpm@linux-foundation.org>, linux-mips@linux-mips.org,
+       Ralf Baechle <ralf@linux-mips.org>, Ingo Molnar <mingo@elte.hu>
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090528135428.GB16528@localhost>
-User-Agent: Mutt/1.5.9i
+Message-Id: <200906011357.09966.florian@openwrt.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 28, 2009 at 09:54:28PM +0800, Wu Fengguang wrote:
-> On Thu, May 28, 2009 at 08:23:57PM +0800, Nick Piggin wrote:
-> > On Thu, May 28, 2009 at 05:59:34PM +0800, Wu Fengguang wrote:
-> > > Hi Nick,
-> > > 
-> > > > > +     /*
-> > > > > +      * remove_from_page_cache assumes (mapping && !mapped)
-> > > > > +      */
-> > > > > +     if (page_mapping(p) && !page_mapped(p)) {
-> > > > > +             remove_from_page_cache(p);
-> > > > > +             page_cache_release(p);
-> > > > > +     }
-> > > > 
-> > > > remove_mapping would probably be a better idea. Otherwise you can
-> > > > probably introduce pagecache removal vs page fault races which
-> > > > will make the kernel bug.
-> > > 
-> > > We use remove_mapping() at first, then discovered that it made strong
-> > > assumption on page_count=2.
-> > > 
-> > > I guess it is safe from races since we are locking the page?
-> > 
-> > Yes it probably should (although you will lose get_user_pages data, but
-> > I guess that's the aim anyway).
-> 
-> Yes. We (and truncate) rely heavily on this logic:
-> 
->         retry:
->                 lock_page(page);
->                 if (page->mapping == NULL)
->                         goto retry;
->                 // do something on page
->                 unlock_page(page);
-> 
-> So that we can steal/isolate a page under its page lock.
-> 
-> The truncate code does wait on writeback page, but we would like to
-> isolate the page ASAP, so as to avoid someone to find it in the page
-> cache (or swap cache) and then access its content.
-> 
-> I see no obvious problems to isolate a writeback page from page cache
-> or swap cache. But also I'm not sure it won't break some assumption
-> in some corner of the kernel.
+This patch exports the gcd implementation from
+sound/core/pcm_timer.c into include/linux/kernel.h.
+AR7 uses it in its clock routines.
 
-The problem is that then you have lost synchronization in the
-pagecache. Nothing then prevents a new page from being put
-in there and trying to do IO to or from the same device as the
-currently running writeback.
-
+Signed-off-by: Florian Fainelli <florian@openwrt.org>
+---
+diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+index 883cd44..878a27a 100644
+--- a/include/linux/kernel.h
++++ b/include/linux/kernel.h
+@@ -147,6 +147,22 @@ extern int _cond_resched(void);
+ 		(__x < 0) ? -__x : __x;		\
+ 	})
  
-> > But I just don't like this one file having all that required knowledge
-> 
-> Yes that's a big problem.
-> 
-> One major complexity involves classify the page into different known
-> types, by testing page flags, page_mapping, page_mapped, etc. This
-> is not avoidable.
-
-No.
-
++/* Greatest common divisor */
++static inline unsigned long gcd(unsigned long a, unsigned long b)
++{
++        unsigned long r;
++        if (a < b) {
++                r = a;
++                a = b;
++                b = r;
++        }
++        while ((r = a % b) != 0) {
++                a = b;
++                b = r;
++        }
++        return b;
++}
++
+ #ifdef CONFIG_PROVE_LOCKING
+ void might_fault(void);
+ #else
+diff --git a/sound/core/pcm_timer.c b/sound/core/pcm_timer.c
+index ca8068b..e9dbf62 100644
+--- a/sound/core/pcm_timer.c
++++ b/sound/core/pcm_timer.c
+@@ -20,6 +20,7 @@
+  */
  
-> Another major complexity is on calling the isolation routines to
-> remove references from
->         - PTE
->         - page cache
->         - swap cache
->         - LRU list
-> They more or less made some assumptions on their operating environment
-> that we have to take care of.  Unfortunately these complexities are
-> also not easily resolvable.
-> 
-> > (and few comments) of all the files in mm/. If you want to get rid
-> 
-> I promise I'll add more comments :)
-
-OK, but they should still go in their relevant files. Or as best as
-possible. Right now it's just silly to have all this here when much
-of it could be moved out to filemap.c, swap_state.c, page_alloc.c, etc.
-
-
-> > of the page and don't care what it's count or dirtyness is, then
-> > truncate_inode_pages_range is the correct API to use.
-> >
-> > (or you could extract out some of it so you can call it directly on
-> > individual locked pages, if that helps).
->  
-> The patch to move over to truncate_complete_page() would like this.
-> It's not a big win indeed.
-
-No I don't mean to do this, but to move the truncate_inode_pages
-code for truncating a single, locked, page into another function
-in mm/truncate.c and then call that from here.
-
-> 
-> ---
->  mm/memory-failure.c |   14 ++++++--------
->  1 file changed, 6 insertions(+), 8 deletions(-)
-> 
-> --- sound-2.6.orig/mm/memory-failure.c
-> +++ sound-2.6/mm/memory-failure.c
-> @@ -327,20 +327,18 @@ static int me_pagecache_clean(struct pag
->  	if (!isolate_lru_page(p))
->  		page_cache_release(p);
->  
-> -	if (page_has_private(p))
-> -		do_invalidatepage(p, 0);
-> -	if (page_has_private(p) && !try_to_release_page(p, GFP_NOIO))
-> -		Dprintk(KERN_ERR "MCE %#lx: failed to release buffers\n",
-> -			page_to_pfn(p));
-> -
->  	/*
->  	 * remove_from_page_cache assumes (mapping && !mapped)
->  	 */
->  	if (page_mapping(p) && !page_mapped(p)) {
-> -		remove_from_page_cache(p);
-> -		page_cache_release(p);
-> +                ClearPageMlocked(p);
-> +                truncate_complete_page(p->mapping, p)
->  	}
->  
-> +	if (page_has_private(p) && !try_to_release_page(p, GFP_NOIO))
-> +		Dprintk(KERN_ERR "MCE %#lx: failed to release buffers\n",
-> +			page_to_pfn(p));
-> +
->  	return RECOVERED;
->  }
->  
-> 
-> > OK this is the point I was missing.
-> > 
-> > Should all be commented and put into mm/swap_state.c (or somewhere that
-> > Hugh prefers).
-> 
-> But I doubt Hugh will welcome moving that bits into swap*.c ;)
-
-Why not? If he has to look at it anyway, he probably rather looks
-at fewer files :)
-
+ #include <linux/time.h>
++#include <linux/kernel.h>
+ #include <sound/core.h>
+ #include <sound/pcm.h>
+ #include <sound/timer.h>
+@@ -28,22 +29,6 @@
+  *  Timer functions
+  */
  
-> > > Clean swap cache pages can be directly isolated. A later page fault will bring
-> > > in the known good data from disk.
-> > 
-> > OK, but why do you ClearPageUptodate if it is just to be deleted from
-> > swapcache anyway?
-> 
-> The ClearPageUptodate() is kind of a careless addition, in the hope
-> that it will stop some random readers. Need more investigations.
-
-OK. But it just muddies the waters in the meantime, so maybe take
-such things out until there is a case for them.
-
- 
-> > > > You haven't waited on writeback here AFAIKS, and have you
-> > > > *really* verified it is safe to call delete_from_swap_cache?
-> > > 
-> > > Good catch. I'll soon submit patches for handling the under
-> > > read/write IO pages. In this patchset they are simply ignored.
-> > 
-> > Well that's quite important ;) I would suggest you just wait_on_page_writeback.
-> > It is simple and should work. _Unless_ you can show it is a big problem that
-> > needs equivalently big mes to fix ;)
-> 
-> Yes we could do wait_on_page_writeback() if necessary. The downside is,
-> keeping writeback page in page cache opens a small time window for
-> some one to access the page.
-
-AFAIKS there already is such a window? You're doing lock_page and such.
-No, it seems rather insane to do something like this here that no other
-code in the mm ever does.
-
+-/* Greatest common divisor */
+-static unsigned long gcd(unsigned long a, unsigned long b)
+-{
+-	unsigned long r;
+-	if (a < b) {
+-		r = a;
+-		a = b;
+-		b = r;
+-	}
+-	while ((r = a % b) != 0) {
+-		a = b;
+-		b = r;
+-	}
+-	return b;
+-}
+-
+ void snd_pcm_timer_resolution_change(struct snd_pcm_substream *substream)
+ {
+ 	unsigned long rate, mult, fsize, l, post;
