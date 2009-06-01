@@ -1,46 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757287AbZFARRY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758415AbZFARRi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757287AbZFARRY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 13:17:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751670AbZFARRP
+	id S1758415AbZFARRi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 13:17:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755392AbZFARRV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 13:17:15 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:48844 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751356AbZFARRP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 13:17:15 -0400
-Date: Mon, 1 Jun 2009 19:11:19 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: paul@mad-scientist.net, linux-kernel@vger.kernel.org, stable@kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, Roland McGrath <roland@redhat.com>
-Subject: Re: [PATCH] coredump: Retry writes where appropriate
-Message-ID: <20090601171119.GA13970@redhat.com>
-References: <1243748019.7369.319.camel@homebase.localnet> <20090531111851.07eb1df3@lxorguk.ukuu.org.uk> <20090601161234.GA10486@redhat.com> <20090601174159.48acf3f5@lxorguk.ukuu.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090601174159.48acf3f5@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 1 Jun 2009 13:17:21 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:47405 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756124AbZFARRU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 13:17:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=U4rG3x6pQG4uROOkJJVgYzPPKTKMHY8mWEYQJbLC2vv2IJC1Sj+gLUY8pvgXW3dGb7
+         NwfSR/OnyT5+GzEm3AvckxBVyGHr5yB9WHy8wmULKDmhXXWKEhhS1QhY/mMIYJif8xRm
+         95qyCmAjRakU/i6X4269eO66wvpxF7eQSmgCU=
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Oleg Nesterov <oleg@redhat.com>, Zhao Lei <zhaolei@cn.fujitsu.com>,
+       Anton Blanchard <anton@samba.org>, Steven Rostedt <rostedt@goodmis.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 0/5] tracing/workqueue updates
+Date: Mon,  1 Jun 2009 19:17:12 +0200
+Message-Id: <1243876637-6616-1-git-send-email-fweisbec@gmail.com>
+X-Mailer: git-send-email 1.6.2.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/01, Alan Cox wrote:
->
-> > I think. As for other unhandled sig_fatal() signals, I am nor sure.
-> > I can make a patch, but first I need to know what this patch should do.
-> > Again, please look at:
->
-> If you are on the command line then SIGINT/SIGQUIT would be the obvious
-> ones for this ?
+Hi Ingo,
 
-Not sure I understand. Do you mean we should treat the tty signals
-specially ?
+The following patches are fixes and cleanup for the workqueue tracer.
 
-Personally, I don't think we should. If we decide that only SIGKILL
-interrupts the coredumping, then I think ^C should not interrupt.
+One of them makes the worklet search patch faster.
+Some of them fix and sanitize the histogram output and the others clean and
+standardize the code.
 
-Oleg.
+Thanks.
 
+The following changes since commit c5f0530c4bb2ec77a805cfcf23db09b3e5ab09d4:
+  Ingo Molnar (1):
+        Merge branch 'tracing/core' into tracing/workqueues
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git tracing/workqueue
+
+Anton Blanchard (2):
+      tracing/events: use %pf in workqueue trace events
+      tracing/events: rename worklet_execute to worklet_entry and worklet_complete to worklet_exit
+
+Zhaolei (3):
+      tracing/workqueue: get rid of searching last executed worklet in probe_worklet_complete()
+      tracing/workqueue: fix list header and function name format
+      tracing/workqueue: cleanup for trace_workqueue.c
+
+ Documentation/trace/workqueue.txt |   12 ++--
+ include/trace/events/workqueue.h  |    8 +-
+ kernel/trace/trace_workqueue.c    |  124 +++++++++++++++++-------------------
+ 3 files changed, 69 insertions(+), 75 deletions(-)
