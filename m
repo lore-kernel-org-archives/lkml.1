@@ -1,78 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758280AbZFANQ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758071AbZFAN1m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758280AbZFANQ7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 09:16:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757082AbZFANQw
+	id S1758071AbZFAN1m (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 09:27:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757043AbZFAN1e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 09:16:52 -0400
-Received: from moutng.kundenserver.de ([212.227.126.187]:64884 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756998AbZFANQv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 09:16:51 -0400
-Message-ID: <4A23D43B.3030900@online.de>
-Date: Mon, 01 Jun 2009 15:14:35 +0200
-From: Juergen Keidel <wizant.keidel@online.de>
-Reply-To: wizant.keidel@online.de
-Organization: WizAnt Software
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: p_gortmaker@yahoo.com, a.zummo@towertech.it, linux-kernel@vger.kernel.org
-Subject: RTC-driver kernel 2.6.xxx missing Symbols
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Provags-ID: V01U2FsdGVkX1/jdqQvpAozlNDcksPV1mBwjuFFzqeO+DTNKmn
- tGB9sRIm6876on4VJ0zoJs/gFunHFcSXqng5r8Ji9x4+eLxb0q
- WbM8/e6VGOcMD0FrLmC1YTNLflGzkiMyx+U2Kp+ULg=
+	Mon, 1 Jun 2009 09:27:34 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:62513 "EHLO smtp.wine.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753557AbZFAN1d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 09:27:33 -0400
+To: serue@us.ibm.com
+Cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] TOMOYO: Add garbage collector support. (v2)
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+References: <alpine.LRH.2.00.0905151146320.5937@tundra.namei.org>
+	<200905162107.HCE17153.HLSFMtOOFVFOJQ@I-love.SAKURA.ne.jp>
+	<200905250037.n4P0bFwe057503@www262.sakura.ne.jp>
+	<200905250039.n4P0dSIE058041@www262.sakura.ne.jp>
+	<200905250041.n4P0fVCT058575@www262.sakura.ne.jp>
+In-Reply-To: <200905250041.n4P0fVCT058575@www262.sakura.ne.jp>
+Message-Id: <200906012227.FDE64040.MVQLOStOHFOFFJ@I-love.SAKURA.ne.jp>
+X-Mailer: Winbiff [Version 2.51 PL2]
+X-Accept-Language: ja,en,zh
+Date: Mon, 1 Jun 2009 22:27:30 +0900
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-The actual kernel has a new reworked rtc driving system. before, I think
-2.6.5, the driver was rtc (rtc.c in drivers/char from  Paul Gortmaker,
-which exported the function rtc_control, rtc_register, rtc_unregister.
-These functions are very useful for drivers wich need acces to the rtc.
-The new rtc-system (rtc-cmos) is missing these functions.
-As I found out, some drivers especially within the sound area are using
-the functionality, so they won't load anymore!
-(sound/core/rtctimer.c)
-Is there a way around with the new system or is it planned to reactivate
-these functionality.
-Actually, I have to rmove rtc_cmos and load the old rtc, to get my
-drivers working.
-One of the Systems I'm running:
-Linux wizant1 2.6.27.21-0.1-pae #1 SMP 2009-03-31 14:50:44 +0200 i686
-i686 i386 GNU/Linux
- 
-Gnu C                  4.3
-Gnu make               3.81
-binutils               11.1
-2.19
-util-linux             scripts/ver_linux: line 23: fdformat: command not
-found
-mount                  support
-module-init-tools      found
-Linux C Library        2.9
-Dynamic linker (ldd)   2.9
-Procps                 3.2.7
-Kbd                    1.14.1
-Sh-utils               6.12
-udev                   128
-Modules Loaded         michael_mic arc4 ecb crypto_blkcipher
-ieee80211_crypt_tkip af_packet binfmt_misc snd_pcm_oss snd_mixer_oss
-snd_seq snd_seq_device ipv6 cpufreq_conservative cpufreq_userspace
-cpufreq_powersave acpi_cpufreq speedstep_lib fuse reiserfs ext2 loop
-dm_mod b44 video sdhci_pci ipw2200 output snd_intel8x0 snd_intel8x0m ssb
-yenta_socket ohci1394 snd_ac97_codec sdhci rsrc_nonstatic pcmcia
-ieee80211 ac97_bus ieee80211_crypt pcmcia_core mii mmc_core ieee1394
-battery button iTCO_wdt ac fglrx usbhid intel_agp snd_pcm
-iTCO_vendor_support snd_timer hid rtc_cmos snd soundcore agpgart
-rtc_core ff_memless i2c_i801 pcspkr rtc_lib snd_page_alloc sr_mod
-serio_raw joydev sg cdrom i2c_core sd_mod crc_t10dif ehci_hcd uhci_hcd
-usbcore edd ext3 mbcache jbd fan ide_pci_generic piix ide_core
-ata_generic ata_piix libata scsi_mod dock thermal processor thermal_sys
-hwmon
+Hello.
 
-Thank you
-    Jürgen Keidel
+Serge E. Hallyn wrote:
+> So yes, you might be able to get more review of your patch
+> if you split it up into:
+> 
+> 	1. move allocations outside of semaphore
+> 	2. add proper refcounting
+> 	3. get rid of ->is_deleted
+
+I'm ready to post part (1) and part (2).
+But I'm not sure whether part (3) is worth to implement or not.
+
+If we don't use is_deleted flag, we will need two "struct list_head"s,
+one is for readers and writers, the other is for GC.
+
+struct something {
+	struct {
+		struct list_head list;
+		atomic_t users;
+	} entry;
+	int data;
+	bool is_deleted;
+} *p;
+
+If we remove p from the list using list_del() (or list_del_rcu()) instead of
+setting p->is_deleted to true, we have to somehow remember the element pointed
+by p so that that element is reachable from the GC's list.
+We can't wait for p->entry.users to become 0 inside writer function (which is
+called only when modifying lists). Only GC function (which is called
+repeatedly) can check whether p->entry.users == 0 or not because the element
+pointed by p is long-lived. We need to remember the location of the element
+pointed by p .
+
+We can allocate memory when adding p to GC's list, but allocating memory at
+list_del() (or list_del_rcu()) time could fail. It is not a good thing that
+removing an element from the reader's list fails because of -ENOMEM. We already
+have a way (i.e. is_deleted flag) to avoid -ENOMEM.
+
+We can add another "struct list_head" to each element which is used by GC.
+But that approach consumes more memory than is_deleted flag.
+
+Regards.
