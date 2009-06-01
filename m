@@ -1,97 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758763AbZFAQ4x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757916AbZFAQ4m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758763AbZFAQ4x (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 12:56:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758577AbZFAQ4i
+	id S1757916AbZFAQ4m (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 12:56:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751653AbZFAQ4c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 12:56:38 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:53218 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758506AbZFAQ4h (ORCPT
+	Mon, 1 Jun 2009 12:56:32 -0400
+Received: from mho-02-ewr.mailhop.org ([204.13.248.72]:65522 "EHLO
+	mho-02-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752677AbZFAQ4b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 12:56:37 -0400
-Message-ID: <4A2407D1.5050706@zytor.com>
-Date: Mon, 01 Jun 2009 09:54:41 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Mon, 1 Jun 2009 12:56:31 -0400
+X-Mail-Handler: MailHop Outbound by DynDNS
+X-Originating-IP: 67.160.239.110
+X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
+X-MHO-User: U2FsdGVkX1/yKDLNiFjoiTdFCn1GhYFT
+Date: Mon, 1 Jun 2009 09:56:24 -0700
+From: Tony Lindgren <tony@atomide.com>
+To: Paul Walmsley <paul@pwsan.com>
+Cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
+       linux-omap@vger.kernel.org
+Subject: Re: [PATCH 00/10] OMAP clock/powerdomain/SDRC patches for
+	post-2.6.30
+Message-ID: <20090601165623.GB4825@atomide.com>
+References: <20090526220517.25381.75976.stgit@localhost.localdomain>
 MIME-Version: 1.0
-To: Borislav Petkov <petkovbb@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Borislav Petkov <borislav.petkov@amd.com>, greg@kroah.com,
-       mingo@elte.hu, norsk5@yahoo.com, tglx@linutronix.de, mchehab@redhat.com,
-       aris@redhat.com, edt@aei.ca, linux-kernel@vger.kernel.org,
-       randy.dunlap@oracle.com
-CC: Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH 0/4] amd64_edac: misc fixes
-References: <1242845037-1029-1-git-send-email-borislav.petkov@amd.com> <20090528164720.0af5752b.akpm@linux-foundation.org> <20090529103329.GB23530@aftab> <20090529130115.a44efaee.akpm@linux-foundation.org> <20090530081954.GA21954@liondog.tnic> <20090530014007.3c1e22d5.akpm@linux-foundation.org> <4A218761.5080607@zytor.com> <20090601145326.GA28260@liondog.tnic>
-In-Reply-To: <20090601145326.GA28260@liondog.tnic>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090526220517.25381.75976.stgit@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Borislav Petkov wrote:
+* Paul Walmsley <paul@pwsan.com> [090526 15:27]:
+> Hello Russell,
 > 
-> How about we pin the src/dst into a register:
-> 
-> #define popcnt_spelled(x)                                       \
-> ({                                                              \
->         typeof(x) __ret;                                        \
->         __asm__(".byte 0xf3\n\t.byte 0x48\n\t.byte 0x0f\n\t"    \
->                 ".byte 0xb8\n\t.byte 0xc0\n\t"                  \
->                 : "=a" (__ret)                                  \
->                 : "0" (x));                                     \
->         __ret;                                                  \
-> })
-> 
-> which generates
-> 
->   40055e:       48 8b 45 e8             mov    -0x18(%rbp),%rax
->   400562:       f3 48 0f b8 c0          popcnt %rax,%rax
->   400567:       48 89 45 f8             mov    %rax,-0x8(%rbp)
-> 
-> here.
-> 
+> here is the next set of OMAP clock patches for review for the
+> post-2.6.30 merge window.  They apply on top of the previous set
+> ("OMAP clock/SDRC patches on v2.6.30-rc5").  If you're happy with
+> these patches, Tony will queue them up into his for-next branch.
 
-Yes, we would have to do something like that.
+Looks like Russell now has all the omap for-next merged to his
+devel branch. Only this series is missing and the omap4 SMP patches.
 
-However, if you're doing that you shouldn't use typeof() there...
-instead this should be turned into an inline function with explicit
-64-bit types.
+Paul, can you please reply with the output from git request-pull 
+for Russell to pull these in too?
 
-It would be good if we could get Kbuild to export some kind of macro
-that we can use to test binutils version, so we can do something like:
+AFAIK, there should not be any need to rebase this series, it
+should merge clean from v2.6.30-rc7 to Russell's devel branch.
 
-#if BINUTILS_VERSION >= KERNEL_VERSION(2,18,50)
-/* Do the right thing */
-#else
-/* Do the wrong thing */
-#endif
+Regards,
 
-> For < 64bit operand sizes, the operands get zero-extended so that
-> garbage in the high 32/48 bits of %rax doesn't corrupt the result.
-> We might even want to do the movzwq explicitly so that some compiler
-> doesn't decide to take the version with the "0f b6" opcode which
-> zero-extends only the 16-/32-bit register. This way, you can popcnt even
-> single bytes although the popcnt implementation doesn't allow single
-> byte operands.
-> 
->   400572:       0f b7 45 f2             movzwl -0xe(%rbp),%eax
->   400579:       f3 48 0f b8 c0          popcnt %rax,%rax
->   40057e:       66 89 45 f6             mov    %ax,-0xa(%rbp)
+Tony
+
+
+ 
+> This series completes basic support for OMAP3 CORE DVFS.  A few other
+> minor bugs are fixed by the off-by-one patch and the GPIO debounce
+> clock patch.
 > 
 > 
-> So, in addition to popcnt itself, we have two movs added. This is still
-> less than the 30+ ops (+ function call overhead) that hweight* get
-> translated into. I'll redo my kernel build benchmarks tomorrow to get
-> some more recent numbers on the performance gain.
-
-With explicit types, the compiler should do the right thing.
-
-	-hpa
-
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+> regards,
+> 
+> - Paul
+> 
+> ---
+> 
+> Paul Walmsley (8):
+>       OMAP3 clock: GPIO de-bounce clocks don't affect module idle state
+>       OMAP3 SDRC: set FIXEDDELAY when disabling SDRC DLL
+>       OMAP3 SRAM: convert SRAM code to use macros rather than magic numbers
+>       OMAP3 SRAM: add more comments on the SRAM code
+>       OMAP3 clock/SDRC: program SDRC_MR register during SDRC clock change
+>       OMAP3 clock: add a short delay when lowering CORE clk rate
+>       OMAP3 clock: initialize SDRC timings at kernel start
+>       OMAP3 clock: remove wait for DPLL3 M2 clock to stabilize
+> 
+> Roel Kluin (1):
+>       OMAP2 clock/powerdomain: off by 1 error in loop timeout comparisons
+> 
+> Tero Kristo (1):
+>       OMAP3: Add support for DPLL3 divisor values higher than 2
+> 
+> 
+>  arch/arm/mach-omap2/clock.c            |    2 
+>  arch/arm/mach-omap2/clock34xx.c        |   42 ++++++++--
+>  arch/arm/mach-omap2/clock34xx.h        |   12 +--
+>  arch/arm/mach-omap2/io.c               |   38 +++++++++
+>  arch/arm/mach-omap2/powerdomain.c      |    2 
+>  arch/arm/mach-omap2/sram34xx.S         |  129 +++++++++++++++++++++-----------
+>  arch/arm/plat-omap/include/mach/sram.h |    6 +
+>  arch/arm/plat-omap/sram.c              |    8 +-
+>  8 files changed, 171 insertions(+), 68 deletions(-)
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-omap" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
