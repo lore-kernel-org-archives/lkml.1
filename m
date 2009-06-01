@@ -1,83 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755889AbZFAHqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754283AbZFAHvs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755889AbZFAHqT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 03:46:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755314AbZFAHqF
+	id S1754283AbZFAHvs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 03:51:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752632AbZFAHvk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 03:46:05 -0400
-Received: from mail-bw0-f222.google.com ([209.85.218.222]:45520 "EHLO
-	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755279AbZFAHqE (ORCPT
+	Mon, 1 Jun 2009 03:51:40 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:51723 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751998AbZFAHvj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 03:46:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=kp7mng3CFE4VEmF3le3G/tvT+kbaMIGgZCCHguwLyXI9aoryqvqeewjixtecsPtlFo
-         0DBQ9aiIUjg1YaHTYeIx3dE22YHSKYVxYmD2864CN/jW+ru+ZPH8tRDZY/q/wphaPWmi
-         Abpc3SjuQQvsJcR/9rgvKmzi6t+SLc+r6Vjtk=
+	Mon, 1 Jun 2009 03:51:39 -0400
+Date: Mon, 1 Jun 2009 08:51:14 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: arnd@arndb.de, linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+Subject: Re: [PATCH] asm-generic: add dma-mapping-linear.h
+Message-ID: <20090601075114.GA29107@flint.arm.linux.org.uk>
+Mail-Followup-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+	arnd@arndb.de, linux-kernel@vger.kernel.org,
+	linux-arch@vger.kernel.org
+References: <200905282104.55818.arnd@arndb.de> <20090601130319A.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
-In-Reply-To: <1243256510.26820.679.camel@twins>
-References: <63386a3d0905112337p2d426481o5f9bf9b9489cc57e@mail.gmail.com>
-	 <63386a3d0905231446h245bb4a9gec111f68a74a44e4@mail.gmail.com>
-	 <1243151839.26820.642.camel@twins>
-	 <63386a3d0905250513q6ca56eeepcf7bebe46c447fb4@mail.gmail.com>
-	 <1243256510.26820.679.camel@twins>
-Date: Mon, 1 Jun 2009 09:46:03 +0200
-Message-ID: <63386a3d0906010046k3b86d70av3e290fc26c2934f5@mail.gmail.com>
-Subject: Re: [PATCH] U300 sched_clock implementation
-From: Linus Walleij <linus.ml.walleij@gmail.com>
-To: Peter Zijlstra <peterz@infradead.org>,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu,
-       linux-arm-kernel@lists.arm.linux.org.uk
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090601130319A.fujita.tomonori@lab.ntt.co.jp>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/5/25 Peter Zijlstra <peterz@infradead.org>:
-> On Mon, 2009-05-25 at 14:13 +0200, Linus Walleij wrote:
->> 2009/5/24 Peter Zijlstra <peterz@infradead.org>:
->>
->> > On Sat, 2009-05-23 at 23:46 +0200, Linus Walleij wrote:
->> >
->> >> This overrides the global sched_clock() symbol in the Linux
->> >> scheduler with a local implementation which takes advantage of
->> >> the timesource in U300 giving a scheduling resolution of 1us. The
->> >> solution is the same as found in the OMAP2 core code.
->> >
->> > We assume sched_clock() to return time in ns (e-9) resolution.
->>
->> Yep okay and in this case:
->>
->> >> +       ret = (unsigned long long) u300_get_cycles();
->> >> +       ret = (ret * clocksource_u300_1mhz.mult_orig) >>
->> >> +               clocksource_u300_1mhz.shift;
->> >> +       return ret;
->>
->> (mult_orig >> shift) == 1000
->
-> Ah, ok -- missed that little detail ;-)
->
->> So for each cycle in cyclecount register we return 1000 * cycles
->> i.e 1000ns.
->>
->> If it looks nicer we can of course simply:
->> return (unsigned long long) u300_get_cycles * 1000;
->>
->> But the question here is whether this resolution is enough for
->> sched_clock() or if it is irrelevant to override sched_clock()
->> if it cannot schedule with better precision than 1000 ns.
->
-> No anything better than jiffies is good, 1us certainly is worth the
-> trouble.
+On Mon, Jun 01, 2009 at 01:02:42PM +0900, FUJITA Tomonori wrote:
+> Where can I find dma_coherent_dev?
+> 
+> I don't fancy this since this is architecture-specific stuff (not
+> generic things).
 
-Can I interpret this as Acked-by: Peter Zijlstra <peterz@infradead.org> ?
+It _is_ very architecture specific.  The coherent-ness of devices hardly
+depends on the device itself.  Eg, PCI devices on x86 are coherent, but
+on ARM they aren't.
 
-Russell wanted an indication from the scheduler people that it looked sane...
+> > +static inline void
+> > +dma_unmap_single(struct device *dev, dma_addr_t dma_addr, size_t size,
+> > +		 enum dma_data_direction direction)
+> > +{
+> > +	debug_dma_unmap_page(dev, dma_addr, size, direction, true);
 
-Yours,
-Linus Walleij
+Future ARMs will need to do something on unmaps.
+
+> > +static inline void
+> > +dma_sync_single_for_cpu(struct device *dev, dma_addr_t dma_handle, size_t size,
+> > +			enum dma_data_direction direction)
+> > +{
+> > +	debug_dma_sync_single_for_cpu(dev, dma_handle, size, direction);
+> > +}
+> > +
+> > +static inline void
+> > +dma_sync_single_range_for_cpu(struct device *dev, dma_addr_t dma_handle,
+> > +			      unsigned long offset, size_t size,
+> > +			      enum dma_data_direction direction)
+> > +{
+> > +	debug_dma_sync_single_range_for_cpu(dev, dma_handle,
+> > +					    offset, size, direction);
+> > +}
+> 
+> This looks wrong. You put dma_coherent_dev hook in sync_*_for_device
+> but why you don't need it sync_*_for_cpu. It's architecture
+> specific. Some need both, some need either, and some need nothing.
+
+If you're non-coherent, you need to implement the sync APIs.
+
+> > +static inline int
+> > +dma_mapping_error(struct device *dev, dma_addr_t dma_addr)
+> > +{
+> > +	return 0;
+
+So mappings never fail?
+
+> > +}
+> > +
+> > +/*
+> > + * Return whether the given device DMA address mask can be supported
+> > + * properly.  For example, if your device can only drive the low 24-bits
+> > + * during bus mastering, then you would pass 0x00ffffff as the mask
+> > + * to this function.
+> > + */
+> > +static inline int
+> > +dma_supported(struct device *dev, u64 mask)
+> > +{
+> > +	/*
+> > +	 * we fall back to GFP_DMA when the mask isn't all 1s,
+> > +	 * so we can't guarantee allocations that must be
+> > +	 * within a tighter range than GFP_DMA.
+> > +	 */
+> > +	if (mask < 0x00ffffff)
+> > +		return 0;
+> 
+> I think that this is pretty architecture specific.
+
+It is - it depends exactly on how you setup the DMA zone and whether
+all your RAM is DMA-able.
+
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
