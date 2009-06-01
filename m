@@ -1,127 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755687AbZFAW17@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754449AbZFAWfU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755687AbZFAW17 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 18:27:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752910AbZFAW1t
+	id S1754449AbZFAWfU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 18:35:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751330AbZFAWfM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 18:27:49 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51688 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752698AbZFAW1s (ORCPT
+	Mon, 1 Jun 2009 18:35:12 -0400
+Received: from fias.uni-frankfurt.de ([141.2.248.1]:47182 "EHLO
+	fias.uni-frankfurt.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750819AbZFAWfL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 18:27:48 -0400
-Date: Mon, 1 Jun 2009 15:25:53 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org, linux-mm@kvack.org,
-       linux-fsdevel@vger.kernel.org, hugh@veritas.com, tj@kernel.org,
-       adobriyan@gmail.com, torvalds@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, gregkh@suse.de, npiggin@suse.de,
-       hch@infradead.org, ebiederm@xmission.com, ebiederm@aristanetworks.com
-Subject: Re: [PATCH 01/23] mm: Introduce revoke_file_mappings.
-Message-Id: <20090601152553.b2de027a.akpm@linux-foundation.org>
-In-Reply-To: <1243893048-17031-1-git-send-email-ebiederm@xmission.com>
-References: <m1oct739xu.fsf@fess.ebiederm.org>
-	<1243893048-17031-1-git-send-email-ebiederm@xmission.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 1 Jun 2009 18:35:11 -0400
+From: Jan Scholz <scholz@fias.uni-frankfurt.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Jan Scholz <scholz@fias.uni-frankfurt.de>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Adrian Bunk <bunk@kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: [regression, bisected] adb trackpad disappears after suspend to ram
+References: <878wkl6vce.fsf@scholz.fias.uni-frankfurt.de>
+	<200905292010.10615.rjw@sisk.pl>
+	<87fxekxe3w.fsf@scholz.fias.uni-frankfurt.de>
+	<200906011836.15507.rjw@sisk.pl>
+Date: Tue, 02 Jun 2009 00:34:26 +0200
+In-Reply-To: <200906011836.15507.rjw@sisk.pl> (Rafael J. Wysocki's message of
+	"Mon, 1 Jun 2009 18:36:14 +0200")
+Message-ID: <877hzv8txp.fsf@scholz.fias.uni-frankfurt.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.94 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon,  1 Jun 2009 14:50:26 -0700
-"Eric W. Biederman" <ebiederm@xmission.com> wrote:
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
-> +static void revoke_vma(struct vm_area_struct *vma)
+> On Monday 01 June 2009, Jan Scholz wrote:
+>> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+>> 
+>> > On Friday 29 May 2009, Jan Scholz wrote:
+>> >> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+>> >> 
+>> >> >> We are too late in the cycle to revert this commit and it really is needed to
+>> >> >> fix a more serious issue.  Nevertheless knowing that it caused the problem to
+>> >> >> appear on your system is also important.
+>> >> >> 
+>> >> >> Ben, do you have an idea what may be going on here?  Does __disable_irq() mask
+>> >> >> the interrupt on this platform?
+>> >> >
+>> >> > I suppose so :-) I'll have to check what's going on, it's not
+>> >> > immediately clear to me.
+>> >> >
+>> >> > Cheers,
+>> >> > Ben.
+>> >> >
+>> >> >> 
+>> >> >> I'd like to see a boot log, preferably containing a suspend-resume in which
+>> >> >> the problem was reproduced.
+>> >> 
+>> >> Here is a log from booting, through several suspend cycles, until the
+>> >> trackpad disappeared. The first few suspends were done while X was
+>> >> running but from the console. As you can tell from lines like
+>> >>    May 28 23:51:26 [kernel] adb devices: [2]: 2 c4 [3]: 3 1 [7]: 7 1f
+>> >> the trackpad was still present. The last suspend was done from within X,
+>> >> here the trackpad did not make it.
+>> >>    May 28 23:58:09 [kernel] adb devices: [2]: 2 c4 [7]: 7 1f
+>> >> However, there have been cases, although not in this log, were the
+>> >> trackpad has been alive even when suspending from within X.
+>> >
+>> > This means the problem is probably timing-related.
+>> >
+>> > Can you please try to comment out suspend_device_irqs() and
+>> > resume_device_irqs()  in drivers/base/power/main.c and see if that changes
+>> > anything?  It's not entirely safe (well, that's why the calls are there after
+>> > all), but hopefully the box won't hang during this test.
+>> >
+>> 
+>> Tried that against v2.6.30-rc7 and it seems to fix the issue. I did ~10
+>> suspend-resume cycles from the console (which worked just like before)
+>> and ~20 cycles from within X and the trackpad is still alive.
+>
+> So, it seems we lose and interrupt during resume and that confuses the
+> ADB controller driver or something like this.  Do you use the keyboard or
+> the trackpad as a wake-up device?
 
-This looks odd.
+I do the wakeup by pressing keys on the keyboard. I'd try wakeup via the
+trackpad's button, but I have no idea how to activate that.
 
-> +{
-> +	struct file *file = vma->vm_file;
-> +	struct address_space *mapping = file->f_mapping;
-> +	unsigned long start_addr, end_addr, size;
-> +	struct mm_struct *mm;
-> +
-> +	start_addr = vma->vm_start;
-> +	end_addr = vma->vm_end;
+> Please additionally try to go back to the original code, put
+> 'sleepy_trackpad = 1' at the beginning of do_adb_reset_bus() in
+> drivers/macintosh/adb.c and see if the problem is reproducible with that.
 
-We take a copy of start_addr/end_addr (and this end_addr value is never used)
+Tried this, but it does not help.
 
-> +	/* Switch out the locks so I can maninuplate this under the mm sem.
-> +	 * Needed so I can call vm_ops->close.
-> +	 */
-> +	mm = vma->vm_mm;
-> +	atomic_inc(&mm->mm_users);
-> +	spin_unlock(&mapping->i_mmap_lock);
-> +
-> +	/* Block page faults and other code modifying the mm. */
-> +	down_write(&mm->mmap_sem);
-> +
-> +	/* Lookup a vma for my file address */
-> +	vma = find_vma(mm, start_addr);
+What I haven't noticed before is, that even if the trackpad already
+disappeared, an additional suspend-resume cycle from the console brought
+it back to life every time. Sometimes this worked from within X as well,
+just not with such a high probability as from the console.
+However, this is independent from 'sleepy_trackpad = 1'. 
 
-Then we look up a vma.  Is there reason to believe that this will
-differ from the incoming arg which we just overwrote?  Maybe the code
-is attempting to handle racing concurrent mmap/munmap activity?  If so,
-what are the implications of this?
-
-I _think_ that what the function is attempting to do is "unmap the vma
-which covers the address at vma->start_addr".  If so, why not just pass
-it that virtual address?
-
-Anyway, it's all a bit obscure and I do think that the semantics and
-behaviour should be carefully explained in a comment, no?
-
-> +	if (vma->vm_file != file)
-> +		goto out;
-
-This strengthens the theory that some sort of race-management is
-happening here.
-
-> +	start_addr = vma->vm_start;
-> +	end_addr   = vma->vm_end;
-> +	size	   = end_addr - start_addr;
-> +
-> +	/* Unlock the pages */
-> +	if (mm->locked_vm && (vma->vm_flags & VM_LOCKED)) {
-> +		mm->locked_vm -= vma_pages(vma);
-> +		vma->vm_flags &= ~VM_LOCKED;
-> +	}
-> +
-> +	/* Unmap the vma */
-> +	zap_page_range(vma, start_addr, size, NULL);
-> +
-> +	/* Unlink the vma from the file */
-> +	unlink_file_vma(vma);
-> +
-> +	/* Close the vma */
-> +	if (vma->vm_ops && vma->vm_ops->close)
-> +		vma->vm_ops->close(vma);
-> +	fput(vma->vm_file);
-> +	vma->vm_file = NULL;
-> +	if (vma->vm_flags & VM_EXECUTABLE)
-> +		removed_exe_file_vma(vma->vm_mm);
-> +
-> +	/* Repurpose the vma  */
-> +	vma->vm_private_data = NULL;
-> +	vma->vm_ops = &revoked_vm_ops;
-> +	vma->vm_flags &= ~(VM_NONLINEAR | VM_CAN_NONLINEAR);
-> +out:
-> +	up_write(&mm->mmap_sem);
-> +	spin_lock(&mapping->i_mmap_lock);
-> +}
-
-Also, I'm not a bit fan of the practice of overwriting the value of a
-formal argument, especially in a function which is this large and
-complex.  It makes the code harder to follow, because the one variable
-holds two conceptually different things within the span of the same
-function.  And it adds risk that someone will will later access a field
-of *vma and it will be the wrong vma.  Worse, the bug is only exposed
-under exeedingly rare conditions.
-
-So..  Use a new local, please.
-
-
+Best,
+   Jan
