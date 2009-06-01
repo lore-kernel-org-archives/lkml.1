@@ -1,294 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751731AbZFAEjt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751805AbZFAEme@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751731AbZFAEjt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 00:39:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750845AbZFAEjl
+	id S1751805AbZFAEme (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 00:42:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750920AbZFAEm0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 00:39:41 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:39199 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750785AbZFAEjk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 00:39:40 -0400
-Date: Mon, 1 Jun 2009 13:25:05 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: balbir@linux.vnet.ibm.com
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "menage@google.com" <menage@google.com>,
-       KOSAKI Motohiro <m-kosaki@ceres.dti.ne.jp>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [RFC] Low overhead patches for the memory cgroup controller
- (v2)
-Message-Id: <20090601132505.2fe9c870.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <20090517041543.GA5156@balbir.in.ibm.com>
-References: <b7dd123f0a15fff62150bc560747d7f0.squirrel@webmail-b.css.fujitsu.com>
-	<20090517041543.GA5156@balbir.in.ibm.com>
-Organization: NEC Soft, Ltd.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Mon, 1 Jun 2009 00:42:26 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:50663 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750785AbZFAEm0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 00:42:26 -0400
+Date: Mon, 1 Jun 2009 14:42:18 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Neil Brown <neilb@suse.de>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, raz ben yehuda <raziebe@gmail.com>,
+       "Martin K. Petersen" <martin.petersen@oracle.com>
+Subject: Re: linux-next: md tree build failure
+Message-Id: <20090601144218.26810ec8.sfr@canb.auug.org.au>
+In-Reply-To: <20090525061552.GH11363@kernel.dk>
+References: <20090525153346.758483fc.sfr@canb.auug.org.au>
+	<20090525061552.GH11363@kernel.dk>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__1_Jun_2009_14_42_18_+1000_P=l2AjSGjUIoIYFf"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm sorry for my very late reply.
+--Signature=_Mon__1_Jun_2009_14_42_18_+1000_P=l2AjSGjUIoIYFf
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I've been working on the stale swap cache problem for a long time as you know :)
+On Mon, 25 May 2009 08:15:52 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
+>
+> On Mon, May 25 2009, Stephen Rothwell wrote:
+> >=20
+> > Today's linux-next build (powerpc ppc64_defconfig) failed like this:
+> >=20
+> > drivers/md/raid0.c: In function 'create_strip_zones':
+> > drivers/md/raid0.c:243: error: 'struct request_queue' has no member nam=
+ed 'hardsect_size'
+> >=20
+> > Caused by commit e1defc4ff0cf57aca6c5e3ff99fa503f5943c1f1 ("block: Do
+> > away with the notion of hardsect_size") from the block tree interacting
+> > with commit 131e4477401ae76a9cbe8539e4b7819e04cfba36 ("md: raid0: chunk
+> > size check in raid0_run") from the md tree.
+>=20
+> Martin, this is starting to look like a disaster :-(
 
-On Sun, 17 May 2009 12:15:43 +0800, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-05-16 02:45:03]:
-> 
-> > I think set/clear flag here adds race condtion....because pc->flags is
-> > modfied by
-> >   pc->flags = pcg_dafault_flags[ctype] in commit_charge()
-> > you have to modify above lines to be
-> > 
-> >   SetPageCgroupCache(pc) or some..
-> >   ...
-> >   SetPageCgroupUsed(pc)
-> > 
-> > Then, you can use set_bit() without lock_page_cgroup().
-> > (Currently, pc->flags is modified only under lock_page_cgroup(), so,
-> >  non atomic code is used.)
-> >
-> 
-> Here is the next version of the patch
-> 
-> 
-> Feature: Remove the overhead associated with the root cgroup
-> 
-> From: Balbir Singh <balbir@linux.vnet.ibm.com>
-> 
-> This patch changes the memory cgroup and removes the overhead associated
-> with accounting all pages in the root cgroup. As a side-effect, we can
-> no longer set a memory hard limit in the root cgroup.
-> 
-I agree to this idea itself.
+So, is anything happening about these?  I still get these (and the dm)
+build failures.
 
-> A new flag is used to track page_cgroup associated with the root cgroup
-> pages. A new flag to track whether the page has been accounted or not
-> has been added as well. Flags are now set atomically for page_cgroup,
-> pcg_default_flags is now obsolete, but I've not removed it yet. It
-> provides some readability to help the code.
-> 
-> Tests:
-> 1. Tested lightly, previous versions showed good performance improvement 10%.
-> 
-You should test current version :)
-And I think you should test this patch under global memory pressure too
-to check whether it doesn't cause bug or under/over flow of something, etc.
-memcg's LRU handling about SwapCache is different from usual one.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-> NOTE:
-> I haven't got the time right now to run oprofile and get detailed test results,
-> since I am in the middle of travel.
-> 
-> Please review the code for functional correctness and if you can test
-> it even better. I would like to push this in, especially if the %
-> performance difference I am seeing is reproducible elsewhere as well.
-> 
-> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-> ---
-> 
->  include/linux/page_cgroup.h |   12 ++++++++++++
->  mm/memcontrol.c             |   42 ++++++++++++++++++++++++++++++++++++++----
->  mm/page_cgroup.c            |    1 -
->  3 files changed, 50 insertions(+), 5 deletions(-)
-> 
-> 
-> diff --git a/include/linux/page_cgroup.h b/include/linux/page_cgroup.h
-> index 7339c7b..ebdae9a 100644
-> --- a/include/linux/page_cgroup.h
-> +++ b/include/linux/page_cgroup.h
-> @@ -26,6 +26,8 @@ enum {
->  	PCG_LOCK,  /* page cgroup is locked */
->  	PCG_CACHE, /* charged as cache */
->  	PCG_USED, /* this object is in use. */
-> +	PCG_ROOT, /* page belongs to root cgroup */
-> +	PCG_ACCT, /* page has been accounted for */
->  };
->  
-Those new flags are protected by zone->lru_lock, right ?
-If so, please add some comments.
-And I'm not sure why you need 2 flags. Isn't PCG_ROOT enough for you ?
+--Signature=_Mon__1_Jun_2009_14_42_18_+1000_P=l2AjSGjUIoIYFf
+Content-Type: application/pgp-signature
 
->  #define TESTPCGFLAG(uname, lname)			\
-> @@ -42,9 +44,19 @@ static inline void ClearPageCgroup##uname(struct page_cgroup *pc)	\
->  
->  /* Cache flag is set only once (at allocation) */
->  TESTPCGFLAG(Cache, CACHE)
-> +SETPCGFLAG(Cache, CACHE)
->  
->  TESTPCGFLAG(Used, USED)
->  CLEARPCGFLAG(Used, USED)
-> +SETPCGFLAG(Used, USED)
-> +
-> +SETPCGFLAG(Root, ROOT)
-> +CLEARPCGFLAG(Root, ROOT)
-> +TESTPCGFLAG(Root, ROOT)
-> +
-> +SETPCGFLAG(Acct, ACCT)
-> +CLEARPCGFLAG(Acct, ACCT)
-> +TESTPCGFLAG(Acct, ACCT)
->  
->  static inline int page_cgroup_nid(struct page_cgroup *pc)
->  {
-> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-> index 9712ef7..35415fc 100644
-> --- a/mm/memcontrol.c
-> +++ b/mm/memcontrol.c
-> @@ -43,6 +43,7 @@
->  
->  struct cgroup_subsys mem_cgroup_subsys __read_mostly;
->  #define MEM_CGROUP_RECLAIM_RETRIES	5
-> +struct mem_cgroup *root_mem_cgroup __read_mostly;
->  
->  #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
->  /* Turned on only when memory cgroup is enabled && really_do_swap_account = 0 */
-> @@ -196,6 +197,10 @@ enum charge_type {
->  #define PCGF_CACHE	(1UL << PCG_CACHE)
->  #define PCGF_USED	(1UL << PCG_USED)
->  #define PCGF_LOCK	(1UL << PCG_LOCK)
-> +/* Not used, but added here for completeness */
-> +#define PCGF_ROOT	(1UL << PCG_ROOT)
-> +#define PCGF_ACCT	(1UL << PCG_ACCT)
-> +
->  static const unsigned long
->  pcg_default_flags[NR_CHARGE_TYPE] = {
->  	PCGF_CACHE | PCGF_USED | PCGF_LOCK, /* File Cache */
-> @@ -420,7 +425,7 @@ void mem_cgroup_del_lru_list(struct page *page, enum lru_list lru)
->  		return;
->  	pc = lookup_page_cgroup(page);
->  	/* can happen while we handle swapcache. */
-> -	if (list_empty(&pc->lru) || !pc->mem_cgroup)
-> +	if ((!PageCgroupAcct(pc) && list_empty(&pc->lru)) || !pc->mem_cgroup)
->  		return;
->  	/*
->  	 * We don't check PCG_USED bit. It's cleared when the "page" is finally
-> @@ -429,6 +434,9 @@ void mem_cgroup_del_lru_list(struct page *page, enum lru_list lru)
->  	mz = page_cgroup_zoneinfo(pc);
->  	mem = pc->mem_cgroup;
->  	MEM_CGROUP_ZSTAT(mz, lru) -= 1;
-> +	ClearPageCgroupAcct(pc);
-> +	if (PageCgroupRoot(pc))
-> +		return;
->  	list_del_init(&pc->lru);
->  	return;
->  }
-> @@ -452,8 +460,8 @@ void mem_cgroup_rotate_lru_list(struct page *page, enum lru_list lru)
->  	 * For making pc->mem_cgroup visible, insert smp_rmb() here.
->  	 */
->  	smp_rmb();
-> -	/* unused page is not rotated. */
-> -	if (!PageCgroupUsed(pc))
-> +	/* unused or root page is not rotated. */
-> +	if (!PageCgroupUsed(pc) || PageCgroupRoot(pc))
->  		return;
->  	mz = page_cgroup_zoneinfo(pc);
->  	list_move(&pc->lru, &mz->lists[lru]);
-> @@ -477,6 +485,9 @@ void mem_cgroup_add_lru_list(struct page *page, enum lru_list lru)
->  
->  	mz = page_cgroup_zoneinfo(pc);
->  	MEM_CGROUP_ZSTAT(mz, lru) += 1;
-> +	SetPageCgroupAcct(pc);
-> +	if (PageCgroupRoot(pc))
-> +		return;
->  	list_add(&pc->lru, &mz->lists[lru]);
->  }
->  
-> @@ -1114,9 +1125,24 @@ static void __mem_cgroup_commit_charge(struct mem_cgroup *mem,
->  		css_put(&mem->css);
->  		return;
->  	}
-> +
->  	pc->mem_cgroup = mem;
->  	smp_wmb();
-> -	pc->flags = pcg_default_flags[ctype];
-> +	switch (ctype) {
-> +	case MEM_CGROUP_CHARGE_TYPE_CACHE:
-> +	case MEM_CGROUP_CHARGE_TYPE_SHMEM:
-> +		SetPageCgroupCache(pc);
-> +		SetPageCgroupUsed(pc);
-> +		break;
-> +	case MEM_CGROUP_CHARGE_TYPE_MAPPED:
-> +		SetPageCgroupUsed(pc);
-> +		break;
-> +	default:
-> +		break;
-> +	}
-> +
-> +	if (mem == root_mem_cgroup)
-> +		SetPageCgroupRoot(pc);
->  
->  	mem_cgroup_charge_statistics(mem, pc, true);
->  
-Shouldn't we set PCG_LOCK ?
-unlock_page_cgroup() will be called after this.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-Moreover, IIUC, pc->flags is not cleared at page free/alloc, so if a page
-is reused, pc->flags has the old value.
-PCG_CACHE flag, at least, is used by the decision in mem_cgroup_charge_statistics().
+iEYEARECAAYFAkojXCoACgkQjjKRsyhoI8w+5ACfbbSBLbF5GX39Rzq2Zs9g5w6M
+U4kAnjEXlCc7YO617HlJsxWP02nbUlG1
+=2VAE
+-----END PGP SIGNATURE-----
 
-> @@ -1521,6 +1547,8 @@ __mem_cgroup_uncharge_common(struct page *page, enum charge_type ctype)
->  	mem_cgroup_charge_statistics(mem, pc, false);
->  
->  	ClearPageCgroupUsed(pc);
-> +	if (mem == root_mem_cgroup)
-> +		ClearPageCgroupRoot(pc);
->  	/*
->  	 * pc->mem_cgroup is not cleared here. It will be accessed when it's
->  	 * freed from LRU. This is safe because uncharged page is expected not
-> @@ -2038,6 +2066,10 @@ static int mem_cgroup_write(struct cgroup *cont, struct cftype *cft,
->  	name = MEMFILE_ATTR(cft->private);
->  	switch (name) {
->  	case RES_LIMIT:
-> +		if (memcg == root_mem_cgroup) { /* Can't set limit on root */
-> +			ret = -EINVAL;
-> +			break;
-> +		}
->  		/* This function does all necessary parse...reuse it */
->  		ret = res_counter_memparse_write_strategy(buffer, &val);
->  		if (ret)
-It's a nitpick, I prefer not to show *.limit_in_bytes if we cannot write to them.
-
-
-Thanks,
-Daisuke Nishimura.
-
-> @@ -2504,6 +2536,7 @@ mem_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cont)
->  	if (cont->parent == NULL) {
->  		enable_swap_cgroup();
->  		parent = NULL;
-> +		root_mem_cgroup = mem;
->  	} else {
->  		parent = mem_cgroup_from_cont(cont->parent);
->  		mem->use_hierarchy = parent->use_hierarchy;
-> @@ -2532,6 +2565,7 @@ mem_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cont)
->  	return &mem->css;
->  free_out:
->  	__mem_cgroup_free(mem);
-> +	root_mem_cgroup = NULL;
->  	return ERR_PTR(error);
->  }
->  
-> diff --git a/mm/page_cgroup.c b/mm/page_cgroup.c
-> index 09b73c5..6145ff6 100644
-> --- a/mm/page_cgroup.c
-> +++ b/mm/page_cgroup.c
-> @@ -276,7 +276,6 @@ void __meminit pgdat_page_cgroup_init(struct pglist_data *pgdat)
->  
->  #endif
->  
-> -
->  #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
->  
->  static DEFINE_MUTEX(swap_cgroup_mutex);
->  
-> 
-> -- 
-> 	Balbir
+--Signature=_Mon__1_Jun_2009_14_42_18_+1000_P=l2AjSGjUIoIYFf--
