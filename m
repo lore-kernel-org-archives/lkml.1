@@ -1,100 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757302AbZFAUUp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756112AbZFAUVj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757302AbZFAUUp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 16:20:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752491AbZFAUUi
+	id S1756112AbZFAUVj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 16:21:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753456AbZFAUVc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 16:20:38 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:38766 "EHLO mx2.redhat.com"
+	Mon, 1 Jun 2009 16:21:32 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:56022 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752486AbZFAUUh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 16:20:37 -0400
-Date: Mon, 1 Jun 2009 22:15:28 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH] ptrace: tracehook_report_clone: fix false positives
-Message-ID: <20090601201528.GA23437@redhat.com>
+	id S1752991AbZFAUVb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 16:21:31 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alex Samad <alex@samad.com.au>
+Subject: Re: [Bug #13375] Kernel crash with 2.6.29 + nfs + xfs (radix-tree)
+Date: Mon, 1 Jun 2009 22:21:38 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc6-rjw; KDE/4.2.3; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Dave Chinner <david@fromorbit.com>
+References: <THxQaUP0K2D.A.QkF.UVbIKB@chimera> <PkPeJtNB3KO.A._pF.ZVbIKB@chimera> <20090530231018.GA29992@samad.com.au>
+In-Reply-To: <20090530231018.GA29992@samad.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200906012221.38854.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(does not depend on other -mm patches, perhaps for 2.6.30)
+On Sunday 31 May 2009, Alex Samad wrote:
+> Hi
+> 
+> as far as I know it is still a problem
 
-The "trace || CLONE_PTRACE" check in tracehook_report_clone() is not right,
+Thanks for the update.
 
-- If the untraced task does clone(CLONE_PTRACE) the new child is not traced,
-  we must not queue SIGSTOP.
+Best,
+Rafael
 
-- If we forked the traced task, but the tracer exits and untraces both the
-  forking task and the new child (after copy_process() drops tasklist_lock),
-  we should not queue SIGSTOP too.
-
-Change the code to check task_ptrace() != 0 instead. This is still racy, but
-the race is harmless.
-
-We can race with another tracer attaching to this child, or the tracer can
-exit and detach in parallel. But giwen that we didn't do wake_up_new_task()
-yet, the child must have the pending SIGSTOP anyway.
-
-Signed-off-by: Oleg Nesterov <oleg@redhat.com>
-Acked-by: Roland McGrath <roland@redhat.com>
----
-
- include/linux/tracehook.h |   11 +++++------
- kernel/fork.c             |    2 +-
- 2 files changed, 6 insertions(+), 7 deletions(-)
-
---- PTRACE/include/linux/tracehook.h~REPORT_CLONE	2009-05-30 23:32:47.000000000 +0200
-+++ PTRACE/include/linux/tracehook.h	2009-06-01 20:51:34.000000000 +0200
-@@ -291,14 +291,12 @@ static inline void tracehook_finish_clon
  
- /**
-  * tracehook_report_clone - in parent, new child is about to start running
-- * @trace:		return value from tracehook_prepare_clone()
-  * @regs:		parent's user register state
-  * @clone_flags:	flags from parent's system call
-  * @pid:		new child's PID in the parent's namespace
-  * @child:		new child task
-  *
-- * Called after a child is set up, but before it has been started
-- * running.  @trace is the value returned by tracehook_prepare_clone().
-+ * Called after a child is set up, but before it has been started running.
-  * This is not a good place to block, because the child has not started
-  * yet.  Suspend the child here if desired, and then block in
-  * tracehook_report_clone_complete().  This must prevent the child from
-@@ -308,13 +306,14 @@ static inline void tracehook_finish_clon
-  *
-  * Called with no locks held, but the child cannot run until this returns.
-  */
--static inline void tracehook_report_clone(int trace, struct pt_regs *regs,
-+static inline void tracehook_report_clone(struct pt_regs *regs,
- 					  unsigned long clone_flags,
- 					  pid_t pid, struct task_struct *child)
- {
--	if (unlikely(trace) || unlikely(clone_flags & CLONE_PTRACE)) {
-+	if (unlikely(task_ptrace(child))) {
- 		/*
--		 * The child starts up with an immediate SIGSTOP.
-+		 * It doesn't matter who attached/attaching to this
-+		 * task, the pending SIGSTOP is right in any case.
- 		 */
- 		sigaddset(&child->pending.signal, SIGSTOP);
- 		set_tsk_thread_flag(child, TIF_SIGPENDING);
---- PTRACE/kernel/fork.c~REPORT_CLONE	2009-05-30 23:05:12.000000000 +0200
-+++ PTRACE/kernel/fork.c	2009-06-01 20:51:34.000000000 +0200
-@@ -1413,7 +1413,7 @@ long do_fork(unsigned long clone_flags,
- 		}
- 
- 		audit_finish_fork(p);
--		tracehook_report_clone(trace, regs, clone_flags, nr, p);
-+		tracehook_report_clone(regs, clone_flags, nr, p);
- 
- 		/*
- 		 * We set PF_STARTING at creation in case tracing wants to
-
+> On Sat, May 30, 2009 at 09:55:40PM +0200, Rafael J. Wysocki wrote:
+> > This message has been generated automatically as a part of a report
+> > of regressions introduced between 2.6.28 and 2.6.29.
+> > 
+> > The following bug entry is on the current list of known regressions
+> > introduced between 2.6.28 and 2.6.29.  Please verify if it still should
+> > be listed and let me know (either way).
+> > 
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13375
+> > Subject		: Kernel crash with 2.6.29 + nfs + xfs (radix-tree)
+> > Submitter	: Alex Samad <alex@samad.com.au>
+> > Date		: 2009-05-20 0:37 (11 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=124278675503699&w=4
