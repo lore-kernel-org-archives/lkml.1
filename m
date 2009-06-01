@@ -1,57 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754283AbZFAQqV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757895AbZFAQqc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754283AbZFAQqV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 12:46:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751964AbZFAQqM
+	id S1757895AbZFAQqc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 12:46:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754758AbZFAQqP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 12:46:12 -0400
-Received: from relay2.sgi.com ([192.48.179.30]:44127 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751661AbZFAQqM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 12:46:12 -0400
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Alex Samad <alex@samad.com.au>, Dave Chinner <david@fromorbit.com>,
-       xfs mailing list <xfs@oss.sgi.com>
-Message-Id: <36C1B891-5BC9-4149-AF22-58BC22AD7A3A@sgi.com>
-From: Felix Blyakher <felixb@sgi.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-In-Reply-To: <PkPeJtNB3KO.A._pF.ZVbIKB@chimera>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+	Mon, 1 Jun 2009 12:46:15 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:59599 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752774AbZFAQqO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 12:46:14 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: michal.simek@petalogix.com
+Subject: Re: [PATCH] asm-generic: add dma-mapping-linear.h
+Date: Mon, 1 Jun 2009 17:45:58 +0100
+User-Agent: KMail/1.11.90 (Linux/2.6.30-5-generic; KDE/4.2.85; x86_64; ; )
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       lethal@linux-sh.org, chris@zankel.net,
+       John Williams <john.williams@petalogix.com>
+References: <200905282104.55818.arnd@arndb.de> <200906011111.28521.arnd@arndb.de> <4A23D2C7.6070400@petalogix.com>
+In-Reply-To: <4A23D2C7.6070400@petalogix.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v926)
-Subject: Re: [Bug #13375] Kernel crash with 2.6.29 + nfs + xfs (radix-tree)
-Date: Mon, 1 Jun 2009 11:46:12 -0500
-References: <THxQaUP0K2D.A.QkF.UVbIKB@chimera> <PkPeJtNB3KO.A._pF.ZVbIKB@chimera>
-X-Mailer: Apple Mail (2.926)
+Message-Id: <200906011745.59793.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+mYFbeRz08gr0tcDXeMSxOBKpV/0Xp0yZJN9S
+ TNMT63Aj/SlZ8SG8QHHlMSR5ZxAXMMMGF5fHKQ6MpQhBmBKvzA
+ rYbRLSLPCWsWfBAdUFzJg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[cc'ing the xfs mailing list]
+On Monday 01 June 2009, Michal Simek wrote:
 
-On May 30, 2009, at 2:55 PM, Rafael J. Wysocki wrote:
+> Microblaze have it but it is not cleared(checked) and not in mainline -
+> I want to look at it when mmu is in mainline.
+> As I wrote before  you can use Microblaze as tested arch.
 
-> This message has been generated automatically as a part of a report
-> of regressions introduced between 2.6.28 and 2.6.29.
->
-> The following bug entry is on the current list of known regressions
-> introduced between 2.6.28 and 2.6.29.  Please verify if it still  
-> should
-> be listed and let me know (either way).
->
->
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13375
-> Subject		: Kernel crash with 2.6.29 + nfs + xfs (radix-tree)
-> Submitter	: Alex Samad <alex@samad.com.au>
-> Date		: 2009-05-20 0:37 (11 days old)
-> References	: http://marc.info/?l=linux-kernel&m=124278675503699&w=4
->
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux- 
-> kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Ok. It should become really easy once the asm-generic version is there.
+Do you know if all DMA capable devices on microblaze are coherent
+(or if all of them are noncoherent)?
 
+If it is indeed coherent, the below code should be enough, otherwise
+you need to add some cache flushes in the functions below.
+
+	Arnd <><
+
+---
+#ifndef _ASM_MICROBLAZE_DMA_MAPPING_H
+#define _ASM_MICROBLAZE_DMA_MAPPING_H
+
+static inline int
+__dma_coherent_dev(struct device *dev)
+{
+	return 1;
+}
+
+static inline void
+dma_cache_sync(struct device *dev, void *cpu_addr, size_t size,
+	       enum dma_data_direction direction)
+{
+}
+
+static inline int dma_get_cache_alignment(void)
+{
+	return 1 << L1_CACHE_SHIFT;
+}
+
+#include <asm-generic/dma-mapping-linear.h>
+
+#endif _ASM_MICROBLAZE_DMA_MAPPING_H
