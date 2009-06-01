@@ -1,64 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753131AbZFAAOK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753228AbZFAAQl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753131AbZFAAOK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 May 2009 20:14:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751823AbZFAAN6
+	id S1753228AbZFAAQl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 May 2009 20:16:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752187AbZFAAQe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 May 2009 20:13:58 -0400
-Received: from mail-px0-f123.google.com ([209.85.216.123]:46209 "EHLO
-	mail-px0-f123.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751783AbZFAAN6 (ORCPT
+	Sun, 31 May 2009 20:16:34 -0400
+Received: from 41-052.adsl.zetnet.co.uk ([194.247.41.52]:56038 "EHLO
+	mail.esperi.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751823AbZFAAQd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 May 2009 20:13:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=pGEHCGJNPrtXo8eHRO9LIYwPJQXASF/Iu6U+oVhuafFiv54GTIDw4hFuqy0f00uL3A
-         lcrGb6Pu1on0kn/A80ncNbGxY58lULHg6l/2XD9VMBRl4W7NtC3IpkhBAtQenmkYuEHQ
-         pWvT3gFcf152qafH+2Y8aZjjhX6ndmpxZ+eUo=
+	Sun, 31 May 2009 20:16:33 -0400
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, e1000-devel@lists.sourceforge.net,
+       netdev@vger.kernel.org
+Subject: Re: 2.6.30rc7: ksoftirqd CPU saturation (x86-64 only, not x86-32) (e1000e-related?)
+References: <87prdozxns.fsf@hades.wkstn.nix>
+	<20090531170350.1355b3f1.akpm@linux-foundation.org>
+From: Nix <nix@esperi.org.uk>
+Emacs: The Awakening
+Date: Mon, 01 Jun 2009 01:16:26 +0100
+In-Reply-To: <20090531170350.1355b3f1.akpm@linux-foundation.org> (Andrew Morton's message of "Sun, 31 May 2009 17:03:50 -0700")
+Message-ID: <87ljoczu3p.fsf@hades.wkstn.nix>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.5-b28 (linux)
 MIME-Version: 1.0
-In-Reply-To: <1243782861.6592.415.camel@desktop>
-References: <1243781365-26814-1-git-send-email-tom.leiming@gmail.com>
-	 <1243781365-26814-2-git-send-email-tom.leiming@gmail.com>
-	 <1243781365-26814-3-git-send-email-tom.leiming@gmail.com>
-	 <1243781365-26814-4-git-send-email-tom.leiming@gmail.com>
-	 <1243781365-26814-5-git-send-email-tom.leiming@gmail.com>
-	 <1243782861.6592.415.camel@desktop>
-Date: Mon, 1 Jun 2009 08:14:00 +0800
-Message-ID: <d82e647a0905311714k1d9634a6gc9d2924956e3e1dd@mail.gmail.com>
-Subject: Re: [PATCH 4/8] kernel:lockdep:implement find_usage_*wards by BFS
-From: Ming Lei <tom.leiming@gmail.com>
-To: Daniel Walker <dwalker@fifo99.com>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       a.p.zijlstra@chello.nl
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-DCC-CTc-dcc2-Metrics: hades 1031; Body=4 Fuz1=4 Fuz2=4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/5/31 Daniel Walker <dwalker@fifo99.com>:
-> On Sun, 2009-05-31 at 22:49 +0800, tom.leiming@gmail.com wrote:
->> -static inline int __bfs_forward(struct lock_list *src_entry,
->> +static inline int __bfs_forwards(struct lock_list *src_entry,
+On 1 Jun 2009, Andrew Morton said:
+
+> Let's cc netdev on this.
 >
-> Your patchset seems a bit young still .. For instance, adding an "s" in
-> the above line, that's just flux that really shouldn't be there.. I was
-> reviewing your patches but I stopped because it just looks like you need
-> to organize them better. I wonder for one, if they bisect or if they
-> pass checkpatch .. Your code also seems to have a lot of other little
+> Presumably it is a post-2.6.29 regression.
 
-Only No 3. patch has a checkpatch error, so we can continue to review them
-now,  can't we?
+I don't know: the earliest kernel this machine has ever run was
+2.6.30rc5, and this failing 2.6.30rc7 kernel is the first 64-bit kernel
+I've ever run on it. So currently I have one single data point.
 
-> cleanup type issues..
->
-> Daniel
->
->
+I plan to try out 2.6.29 (and back to 2.6.25 or thereabouts) tomorrow
+and see if it ever worked: if it did I'll bisect for it (rendered tricky
+by the out-of-tree e1000e driver, but doable: it would be easier if I
+had a clue where the e1000-devel git tree is, if anywhere, but I still
+have no idea despite considerable searching).
 
-
-
--- 
-Lei Ming
+It seems to go wrong instantly, so replication is trivial, and this
+system can compile a kernel in slightly under a minute, so it shouldn't
+take too long to complete the bisection.
