@@ -1,81 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753135AbZEaXvX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753323AbZFAACZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753135AbZEaXvX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 May 2009 19:51:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751469AbZEaXvQ
+	id S1753323AbZFAACZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 May 2009 20:02:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751783AbZFAACR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 May 2009 19:51:16 -0400
-Received: from rv-out-0506.google.com ([209.85.198.230]:60386 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751277AbZEaXvP (ORCPT
+	Sun, 31 May 2009 20:02:17 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35705 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751684AbZFAACQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 May 2009 19:51:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:reply-to:to:cc:content-type:organization:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=qW+OazXNoYMmKUdR2rK3bZ4b9AGVexYTA7PV9ebkSPuOtPgVz3nGYJpqvsJX3qUyS2
-         XPebc+1o3bKSQ7rFqdStGqnGFzHl//zc5WUQI7vSf8TlgVVFRGqQe8ohdpcUVe6miCAK
-         SmVXd0YRA51HSEKEUdUycBT62xSWdaGdjVyCo=
-Subject: [PATCH] ftrace:fix description of trace directory
-From: GeunSik Lim <leemgs1@gmail.com>
-Reply-To: leemgs1@gmail.com
-To: Jiri Kosina <trivial@kernel.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>
-Content-Type: text/plain
-Organization: Private
-Date: Mon, 01 Jun 2009 08:51:09 +0900
-Message-Id: <1243813869.20635.34.camel@centos51>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
-Content-Transfer-Encoding: 7bit
+	Sun, 31 May 2009 20:02:16 -0400
+Date: Sun, 31 May 2009 17:02:03 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Alexey Dobriyan <adobriyan@gmail.com>, Matt Helsley <matthltc@us.ibm.com>,
+       xemul@parallels.com, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, dave@linux.vnet.ibm.com, mingo@elte.hu
+Subject: Re: [PATCH 14/38] Remove struct mm_struct::exe_file et al
+In-Reply-To: <20090531165026.376a914c.akpm@linux-foundation.org>
+Message-ID: <alpine.LFD.2.01.0905311659350.3435@localhost.localdomain>
+References: <20090526113618.GJ28083@us.ibm.com> <20090526162415.fb9cefef.akpm@linux-foundation.org> <20090531215427.GA29534@x200.localdomain> <20090531151953.8f8b14b5.akpm@linux-foundation.org> <alpine.LFD.2.01.0905311613260.3435@localhost.localdomain>
+ <20090531165026.376a914c.akpm@linux-foundation.org>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-Hi Jiri Kosina,
+On Sun, 31 May 2009, Andrew Morton wrote:
+> 
+> It's arbitrary!  If we were to gain more performance benefit by
+> aggregating processes under, say, the fs_struct then that's the way the
+> kernel would have been implemented.
 
-This is trivial patch.
+What?
 
-Thanks.
+That's like saying that "if quarks were the size of soccer-balls, we'd all 
+be pink".
 
+It makes no sense.
 
-Subject: [PATCH] ftrace:fix description of trace directory
+When  you claim that it's arbitrary, you're totally ignoring reality, and 
+CPU design.
 
-Fix trace source directory from kernel/tracing/ to kernel/trace/.
-      Signed-off-by: GeunSik Lim <geunsik.lim@samsung.com>
+The fact is, TLB's are very fundamental to task switching. filesystems are 
+not. It's that simple. IOW, it's not at all arbitrary, it's a direct 
+result of how the world works. The "world" for the kernel is the reality 
+of CPU's, and in that reality, TLB switching is a huge factor.
 
----
- Documentation/trace/ftrace.txt |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+There is nothing arbitrary about it at all.
 
-diff --git a/Documentation/trace/ftrace.txt b/Documentation/trace/ftrace.txt
-index fd9a3e6..608770c 100644
---- a/Documentation/trace/ftrace.txt
-+++ b/Documentation/trace/ftrace.txt
-@@ -1825,4 +1825,4 @@ an error.
- -----------
- 
- More details can be found in the source code, in the
--kernel/tracing/*.c files.
-+kernel/trace/*.c files.
--- 
-1.6.3.1
-
-
-
------------------------------------------------
-To unsubscribe from this list: send the line "unsubscribe linux-***" 
-in the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
-
-GeunSik Lim (  S A M S U N G     E L E C T R O N I C S  )
-e-Mail  :1) geunsik.lim@samsung.com
-         2) leemgs@gmail.com , leemgs1@gmail.com
-HomePage: http://blog.naver.com/invain/
------------------------------------------------
-
+			Linus
