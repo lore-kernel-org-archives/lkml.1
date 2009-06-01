@@ -1,59 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757674AbZFAMBZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757513AbZFAMFp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757674AbZFAMBZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 08:01:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756827AbZFAMBR
+	id S1757513AbZFAMFp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 08:05:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752684AbZFAMFi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 08:01:17 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:39412 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756190AbZFAMBR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 08:01:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:from:date:subject:mime-version:x-uid:x-length:to
-         :content-type:content-transfer-encoding:content-disposition
-         :message-id;
-        b=EdT/msf7FNqbGFtuLScdDugrVBI6pbqS3cMW8cpXBQhpIdR33NJNwdFFygcH7TlRm/
-         0g4ejSSr/1gxy7xs93iHkzSZFXbSNQ9TsaFfyV12fqXi+EDKW7ROKiM3d1z0L/jljL5p
-         5lLp4HXko7ELCz75mT1NvGz44CciaA4JJF044=
-From: Florian Fainelli <florian@openwrt.org>
-Date: Mon, 1 Jun 2009 14:01:15 +0200
-Subject: [PATCH 6/9] serial: workaround TI AR7 silicon bug
-MIME-Version: 1.0
-X-Length: 1455
-To: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
-       akpm <akpm@linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Mon, 1 Jun 2009 08:05:38 -0400
+Received: from cantor.suse.de ([195.135.220.2]:44248 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752375AbZFAMFh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 08:05:37 -0400
+Date: Mon, 1 Jun 2009 14:05:38 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: hugh@veritas.com, riel@redhat.com, akpm@linux-foundation.org,
+       chris.mason@oracle.com, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, fengguang.wu@intel.com
+Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler in the VM v3
+Message-ID: <20090601120537.GF5018@wotan.suse.de>
+References: <200905271012.668777061@firstfloor.org> <20090527201239.C2C9C1D0294@basil.firstfloor.org> <20090528082616.GG6920@wotan.suse.de> <20090528093141.GD1065@one.firstfloor.org> <20090528120854.GJ6920@wotan.suse.de> <20090528134520.GH1065@one.firstfloor.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200906011401.15991.florian@openwrt.org>
+In-Reply-To: <20090528134520.GH1065@one.firstfloor.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch make the serial8250_console_putchar work
-on TI AR7 hardware which has a hardware bug clobbering
-serial characters resulting in an almost unusable
-kernel console.
+On Thu, May 28, 2009 at 03:45:20PM +0200, Andi Kleen wrote:
+> On Thu, May 28, 2009 at 02:08:54PM +0200, Nick Piggin wrote:
+> > Then the data can not have been consumed, by DMA or otherwise? What
+> 
+> When the data was consumed we get a different machine check
+> (or a different error if it was consumed by a IO device)
+> 
+> This code right now just handles the case of "CPU detected a page is broken
+> is wrong, but hasn't consumed it yet"
 
-Signed-off-by: Florian Fainelli <florian@openwrt.org>
----
-diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
-index 03376b0..16b5a7e 100644
---- a/drivers/serial/8250.c
-+++ b/drivers/serial/8250.c
-@@ -2694,7 +2694,11 @@ static void serial8250_console_putchar(struct uart_port *port, int ch)
- {
- 	struct uart_8250_port *up = (struct uart_8250_port *)port;
+OK. Out of curiosity, how often do you expect to see uncorrectable ECC
+errors?
+
  
-+#ifdef CONFIG_AR7
-+	wait_for_xmitr(up, BOTH_EMPTY);
-+#else
- 	wait_for_xmitr(up, UART_LSR_THRE);
-+#endif
- 	serial_out(up, UART_TX, ch);
- }
+> > about transient kernel references to the (pagecache/anonymous) page
+> > (such as, find_get_page for read(2), or get_user_pages callers).	
+> 
+> There are always races, after all the CPU could be just about 
+> right now to consume. If we lose the race there will be just
+> another machine check that stops the consumption of bad data.
+> The hardware takes care of that.
+> 
+> The code here doesn't try to be a 100% coverage of all
+> cases (that's obviously impossible), just to handle
+> common page types. I also originally had ideas for more handlers,
+> but found out how hard it is to test, so I burried a lot of fancy
+> ideas :-)
+> 
+> If there are left over references we complain at least.
+
+Well I don't know about that, because you'd probably have races
+between lookups and taking reference. But nevermind.
+
  
+> > > > > +	/*
+> > > > > +	 * remove_from_page_cache assumes (mapping && !mapped)
+> > > > > +	 */
+> > > > > +	if (page_mapping(p) && !page_mapped(p)) {
+> > > > > +		remove_from_page_cache(p);
+> > > > > +		page_cache_release(p);
+> > > > > +	}
+> > > > 
+> > > > remove_mapping would probably be a better idea. Otherwise you can
+> > > > probably introduce pagecache removal vs page fault races whi
+> > > > will make the kernel bug.
+> > > 
+> > > Can you be more specific about the problems?
+> > 
+> > Hmm, actually now that we hold the page lock over __do_fault (at least
+> > for pagecache pages), this may not be able to trigger the race I was
+> > thinking of (page becoming mapped). But I think still it is better
+> > to use remove_mapping which is the standard way to remove such a page.
+> 
+> I had this originally, but Fengguang redid it because there was
+> trouble with the reference count. remove_mapping always expects it to
+> be 2, which we cannot guarantee.
+
+OK, but it should still definitely use truncate code.
+
+> > > > > +	if (mapping) {
+> > > > > +		/*
+> > > > > +		 * Truncate does the same, but we're not quite the same
+> > > > > +		 * as truncate. Needs more checking, but keep it for now.
+> > > > > +		 */
+> > > > 
+> > > > What's different about truncate? It would be good to reuse as much as possible.
+> > > 
+> > > Truncating removes the block on disk (we don't). Truncating shrinks
+> > > the end of the file (we don't). It's more "temporal hole punch"
+> > > Probably from the VM point of view it's very similar, but it's
+> > > not the same.
+> > 
+> > Right, I just mean the pagecache side of the truncate. So you should
+> > use truncate_inode_pages_range here.
+> 
+> Why?  I remember I was trying to use that function very early on but
+> there was some problem.  For once it does its own locking which
+> would conflict with ours.
+
+Just extract the part where it has the page locked into a common
+function.
+
+
+> Also we already do a lot of the stuff it does (like unmapping).
+
+That's OK, it will not try to unmap again if it sees !page_mapped.
+ 
+
+> Is there anything concretely wrong with the current code?
+
+
+/*
+ * Truncate does the same, but we're not quite the same
+ * as truncate. Needs more checking, but keep it for now.
+ */
+
+I guess that it duplicates this tricky truncate code and also
+says it is different (but AFAIKS it is doing exactly the same
+thing).
+
+
+
+> > Well, the dirty data has never been corrupted before (ie. the data
+> > in pagecache has been OK). It was just unable to make it back to
+> > backing store. So a program could retry the write/fsync/etc or
+> > try to write the data somewhere else.
+> 
+> In theory it could, but in practice it is very unlikely it would.
+
+very unlikely to try rewriting the page again or taking evasive
+action to save the data somewhere else? I think that's a bold
+assumption.
+
+At the very least, having a prompt "IO error, check your hotplug
+device / network connection / etc and try again" I don't think
+sounds unreasonable at all.
+
+
+> > It kind of wants a new error code, but I can't imagine the difficulty
+> > in doing that...
+> 
+> I don't think it's a good idea to change programs for this normally,
+> most wouldn't anyways. Even kernel programmers have trouble with
+> memory suddenly going bad, for user space programmers it would
+> be pure voodoo.
+ 
+No, I mean as something to distinguish it between the  case of IO
+device going bad (in which case the userspace program has a number
+of things it might try to do). 
+
+
+> > Just seems overengineered. We could rewrite any if/switch statement like
+> > that (and actually the compiler probably will if it is beneficial).
+> 
+> The reason I like it is that it separates the functions cleanly,
+> without that there would be a dispatcher from hell. Yes it's a bit
+> ugly that there is a lot of manual bit checking around now too,
+> but as you go into all the corner cases originally clean code
+> always tends to get more ugly (and this is a really ugly problem)
+
+Well... it is just writing another dispatcher from hell in a
+different way really, isn't it? How is it so much better than
+a simple switch or if/elseif/else statement?
+
