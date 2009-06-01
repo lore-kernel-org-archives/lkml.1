@@ -1,58 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759090AbZFAUvZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759348AbZFAUvf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759090AbZFAUvZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 16:51:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756207AbZFAUvR
+	id S1759348AbZFAUvf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 16:51:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758867AbZFAUvU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 16:51:17 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47845 "EHLO mx1.redhat.com"
+	Mon, 1 Jun 2009 16:51:20 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:58768 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755917AbZFAUvR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 16:51:17 -0400
+	id S1758853AbZFAUvT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 16:51:19 -0400
+Date: Mon, 1 Jun 2009 17:50:57 -0300
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH tip 2/2] perf_counter tools: Add missing rb_erase in
+	dso__delete_symbols
+Message-ID: <20090601205057.GB7805@ghostprotocols.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Oleg Nesterov <oleg@redhat.com>
-X-Fcc: ~/Mail/linus
-Cc: Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: PATCH? tracehook_report_clone: fix false positives
-In-Reply-To: Oleg Nesterov's message of  Monday, 1 June 2009 22:07:23 +0200 <20090601200723.GA22204@redhat.com>
-References: <20090528113601.GA18725@redhat.com>
-	<20090528114100.GA18744@redhat.com>
-	<20090528212418.2F605FC2BD@magilla.sf.frob.com>
-	<20090529122411.GC19812@redhat.com>
-	<20090530185212.GA10677@redhat.com>
-	<20090601002226.480CEFC3C7@magilla.sf.frob.com>
-	<20090601200723.GA22204@redhat.com>
-X-Windows: there's got to be a better way.
-Message-Id: <20090601205056.16307FC3C7@magilla.sf.frob.com>
-Date: Mon,  1 Jun 2009 13:50:56 -0700 (PDT)
+Content-Disposition: inline
+X-Url: http://oops.ghostprotocols.net:81/blog
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Oh, I never thought about attach && SIGCONT interaction...
-> 
-> But, tracehook_report_clone() has the same problems?
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+---
+ Documentation/perf_counter/util/symbol.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-I don't follow.
+diff --git a/Documentation/perf_counter/util/symbol.c b/Documentation/perf_counter/util/symbol.c
+index 31e8fae..039931f 100644
+--- a/Documentation/perf_counter/util/symbol.c
++++ b/Documentation/perf_counter/util/symbol.c
+@@ -58,6 +58,7 @@ static void dso__delete_symbols(struct dso *self)
+ 	while (next) {
+ 		pos = rb_entry(next, struct symbol, rb_node);
+ 		next = rb_next(&pos->rb_node);
++		rb_erase(&pos->rb_node, &self->syms);
+ 		symbol__delete(pos, self->sym_priv_size);
+ 	}
+ }
+-- 
+1.6.0.6
 
-> And if we move sigaddset to ptrace_task_init(), we should not worry about
-> SIGCONT? Without CLONE_THREAD the new task is not visible to user-space yet.
-> Even if we clone a sub-thread, ptrace_init_task() runs under ->siglock.
-> If SIGCONT is already pending, copy_process() won't succeed.
-
-It could be pending and blocked.
-
-> Or do you mean something else?
-
-Sorry, I don't think I understood what your question was.
-I just pointed out that the element of PTRACE_ATTACH semantics
-that would be changed unintentionally if you just replaced its
-send_sig_info() call with ptrace_init_task() using sigaddset().
-
-
-Thanks,
-Roland
