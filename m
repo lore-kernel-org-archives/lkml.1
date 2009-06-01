@@ -1,51 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753793AbZFAVdS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752505AbZFAVec@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753793AbZFAVdS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 17:33:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752530AbZFAVcz
+	id S1752505AbZFAVec (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 17:34:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751211AbZFAVeY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 17:32:55 -0400
-Received: from mail-fx0-f168.google.com ([209.85.220.168]:33187 "EHLO
-	mail-fx0-f168.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752578AbZFAVcy (ORCPT
+	Mon, 1 Jun 2009 17:34:24 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:38370 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751033AbZFAVeY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 17:32:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=QTnfx6YuZDTQJsnZHvhIkYUenkHQ7QU24lnCQczyBnbCfdTdWBTap2IPTpKJwCI1Er
-         irPj2XDlF7WW+Nz6t4xkuSUW3j1qi8GmT+H/CaToC5QWlavUoTEOv7nmF6Bl4iy4ey+E
-         OhrgZ9AQ5LweDDyc+pGYPWB4t7vqmFGeCPUZw=
-From: Alexander Potashev <aspotashev@gmail.com>
-To: Jiri Kosina <trivial@kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Alexander Potashev <aspotashev@gmail.com>
-Subject: [PATCH] Use KERN_INFO instead of KERN_ERR for init message
-Date: Tue,  2 Jun 2009 01:33:01 +0400
-Message-Id: <1243891981-12118-1-git-send-email-aspotashev@gmail.com>
-X-Mailer: git-send-email 1.6.3.1
+	Mon, 1 Jun 2009 17:34:24 -0400
+Date: Mon, 1 Jun 2009 23:41:25 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Cc: Wu Fengguang <fengguang.wu@intel.com>, Nick Piggin <npiggin@suse.de>,
+       Andi Kleen <andi@firstfloor.org>, "riel@redhat.com" <riel@redhat.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler in the VM v3
+Message-ID: <20090601214125.GX1065@one.firstfloor.org>
+References: <200905271012.668777061@firstfloor.org> <20090527201239.C2C9C1D0294@basil.firstfloor.org> <20090528082616.GG6920@wotan.suse.de> <20090528095934.GA10678@localhost> <20090528122357.GM6920@wotan.suse.de> <20090528135428.GB16528@localhost> <20090601115046.GE5018@wotan.suse.de> <20090601140553.GA1979@localhost> <Pine.LNX.4.64.0906012138170.27344@sister.anvils>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0906012138170.27344@sister.anvils>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Alexander Potashev <aspotashev@gmail.com>
----
- drivers/dca/dca-core.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+> Maybe we should start out, as you have, with most of the hwpoison
+> code located in one file (rather like with migrate.c?); but hope
+> to refactor things and distribute it over time.
 
-diff --git a/drivers/dca/dca-core.c b/drivers/dca/dca-core.c
-index 25b743a..e7c0b9c 100644
---- a/drivers/dca/dca-core.c
-+++ b/drivers/dca/dca-core.c
-@@ -276,7 +276,7 @@ EXPORT_SYMBOL_GPL(dca_unregister_notify);
- 
- static int __init dca_init(void)
- {
--	printk(KERN_ERR "dca service started, version %s\n", DCA_VERSION);
-+	printk(KERN_INFO "dca service started, version %s\n", DCA_VERSION);
- 	return dca_sysfs_init();
- }
- 
+That's the plan.
+
+> 
+> How seriously does the hwpoison work interfere with the assumptions
+> in other sourcefiles?  If it's playing tricks liable to confuse
+
+I hope only minimally. It can come in at any time (that's the partly
+tricky part), but in general it tries to be very conservative and
+non intrusive and just calls code used elsewhere.
+
+-Andi
+
 -- 
-1.6.2.3
-
+ak@linux.intel.com -- Speaking for myself only.
