@@ -1,63 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756086AbZFAINL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756490AbZFAINm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756086AbZFAINL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 04:13:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754005AbZFAIM5
+	id S1756490AbZFAINm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 04:13:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756124AbZFAINe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 04:12:57 -0400
-Received: from mailgw3.cms.com ([202.75.200.223]:24514 "EHLO cms.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754365AbZFAIM5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 04:12:57 -0400
-X-Originating-IP: 172.19.23.105
-X-Auth-User: vibi_sreenivasan@cms.com
-X-Filename: C:\PROGRA~1\MailScan\in\SMT9698954395626.TMP
-Subject: Re: [PATCH]:Return proper error value on failure of dentry_open
-From: vibi sreenivasan <vibi_sreenivasan@cms.com>
-Reply-To: vibi_sreenivasan@cms.com
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Mimi Zohar <zohar@us.ibm.com>, Kylene Hall <kylene@us.ibm.com>,
-       Serge Hallyn <serue@us.ibm.com>, Reiner Sailer <sailer@watson.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <4A238625.8060002@gmail.com>
-References: <1243836708.2163.3.camel@system>  <4A238625.8060002@gmail.com>
-Content-Type: text/plain
-Organization: CMS
-Date: Mon, 01 Jun 2009 13:40:51 +0530
-Message-Id: <1243843851.2327.7.camel@system>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 (2.12.1-3.fc8)
-Content-Transfer-Encoding: 7bit
-X-Trained: 2
-X-MS-ContentScanSkipped: Mail Not From Internet
+	Mon, 1 Jun 2009 04:13:34 -0400
+Received: from web32604.mail.mud.yahoo.com ([68.142.207.231]:24373 "HELO
+	web32604.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755771AbZFAINd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 04:13:33 -0400
+Message-ID: <295883.87002.qm@web32604.mail.mud.yahoo.com>
+X-YMail-OSG: J1fX_pIVM1krhHM9xCCpIAnw6mtG9QvuAwfD7HrapYFjWqd8dpDDwPyuwco24x8EQB.OHPXMJTr5EvpsOY9U88SsSNL81uy_rGc.fV2HvHDJ8lDl0MmSAYHVjBQGHdArg7Req3IGQdAHJ.wOrF_XCpSun1uPzyq6OwQ.2HyMRbnM5slOkXUhPZntGvx47tpw9ENdzcFCspk5bGD8GVFnPnCnAvPlgjd6YUSrltsTlEBZD2zVK3X472oUF24URPPIqZNmaV.oQy6lUot23ftYiD1EeG9plCFjC.1dT9qHTAqzFC9W
+X-RocketYMMF: knobi.rm
+X-Mailer: YahooMailRC/1277.43 YahooMailWebService/0.7.289.10
+References: <THxQaUP0K2D.A.QkF.UVbIKB@chimera> <PkPeJtNB3KO.A.4QG.tVbIKB@chimera>
+Date: Mon, 1 Jun 2009 01:13:35 -0700 (PDT)
+From: Martin Knoblauch <spamtrap@knobisoft.de>
+Subject: Re: [Bug #13178] Booting very slow
+To: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Stephen Hemminger <shemminger@vyatta.com>
+In-Reply-To: <PkPeJtNB3KO.A.4QG.tVbIKB@chimera>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-hi,
-	thanks for pointing that out.
-> >  out:
-> >  	mutex_unlock(&iint->mutex);
-> > -	if (file)
-> > +	if (IS_ERR(file))
-> >  		fput(file);
-extremely sorry it was 
-	if(!IS_ERR(file))
-		fput(file);
-i will send that patch again
+----- Original Message ----
 
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+> Cc: Kernel Testers List <kernel-testers@vger.kernel.org>; Jesse Barnes <jbarnes@virtuousgeek.org>; Martin Knoblauch <spamtrap@knobisoft.de>; Stephen Hemminger <shemminger@vyatta.com>
+> Sent: Saturday, May 30, 2009 9:55:37 PM
+> Subject: [Bug #13178] Booting very slow
 > 
-> This makes no sense at all. If it is IS_ERR, i.e. some negative value,
-> you don't want to pass it to fput. 'if (file)' was perfectly correct.
-	if(file) is true for file != 0 , ie even if file is a -ve error
-	value.
-	so while fput dereference file ,this can cause a bug to be
-	triggered.
-	I actually had one.
-
-Thanks & regards
-vibi sreenivasan
+> This message has been generated automatically as a part of a report
+> of regressions introduced between 2.6.28 and 2.6.29.
 > 
+> The following bug entry is on the current list of known regressions
+> introduced between 2.6.28 and 2.6.29.  Please verify if it still should
+> be listed and let me know (either way).
+> 
+> 
+> Bug-Entry    : http://bugzilla.kernel.org/show_bug.cgi?id=13178
+> Subject        : Booting very slow
+> Submitter    : Martin Knoblauch 
+> Date        : 2009-04-24 12:45 (37 days old)
+> References    : http://marc.info/?l=linux-kernel&m=124057716231773&w=4
 
+ We (HP and myself) are trying to track it down.
+
+Cheers
+Martin
 
