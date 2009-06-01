@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759453AbZFAV5f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759606AbZFAV6W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759453AbZFAV5f (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 17:57:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756900AbZFAVwi
+	id S1759606AbZFAV6W (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 17:58:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756857AbZFAVwl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 17:52:38 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:43476 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755402AbZFAVvC (ORCPT
+	Mon, 1 Jun 2009 17:52:41 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:35889 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754629AbZFAVvA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 17:51:02 -0400
+	Mon, 1 Jun 2009 17:51:00 -0400
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: Al Viro <viro@ZenIV.linux.org.uk>
 Cc: <linux-kernel@vger.kernel.org>, <linux-pci@vger.kernel.org>,
@@ -21,18 +21,18 @@ Cc: <linux-kernel@vger.kernel.org>, <linux-pci@vger.kernel.org>,
        Greg Kroah-Hartman <gregkh@suse.de>, Nick Piggin <npiggin@suse.de>,
        Andrew Morton <akpm@linux-foundation.org>,
        Christoph Hellwig <hch@infradead.org>,
-       "Eric W. Biederman" <ebiederm@maxwell.aristanetworks.com>,
-       "Eric W. Biederman" <ebiederm@aristanetworks.com>
-Date: Mon,  1 Jun 2009 14:50:48 -0700
-Message-Id: <1243893048-17031-23-git-send-email-ebiederm@xmission.com>
+       "Eric W. Biederman" <ebiederm@maxwell.arastra.com>,
+       "Eric W. Biederman" <ebiederm@aristanetworks.om>
+Date: Mon,  1 Jun 2009 14:50:40 -0700
+Message-Id: <1243893048-17031-15-git-send-email-ebiederm@xmission.com>
 X-Mailer: git-send-email 1.6.3.1.54.g99dd.dirty
 In-Reply-To: <m1oct739xu.fsf@fess.ebiederm.org>
 References: <m1oct739xu.fsf@fess.ebiederm.org>
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
 X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Rcpt-To: viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-mm@kvack.org, linux-fsdevel@vger.kernel.org, hugh@veritas.com, tj@kernel.org, adobriyan@gmail.com, torvalds@linux-foundation.org, alan@lxorguk.ukuu.org.uk, gregkh@suse.de, npiggin@suse.de, akpm@linux-foundation.org, hch@infradead.org, ebiederm@maxwell.aristanetworks.com, ebiederm@aristanetworks.com
+X-SA-Exim-Rcpt-To: viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-mm@kvack.org, linux-fsdevel@vger.kernel.org, hugh@veritas.com, tj@kernel.org, adobriyan@gmail.com, torvalds@linux-foundation.org, alan@lxorguk.ukuu.org.uk, gregkh@suse.de, npiggin@suse.de, akpm@linux-foundation.org, hch@infradead.org, ebiederm@maxwell.arastra.com, ebiederm@aristanetworks.om
 X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
 X-Spam-Combo: ;Al Viro <viro@ZenIV.linux.org.uk>
 X-Spam-Relay-Country: 
 X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
@@ -41,61 +41,104 @@ X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
 	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
 	*      [score: 0.0000]
 	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
+	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
 	*  0.0 T_TooManySym_01 4+ unique symbols in subject
 	*  0.0 XM_SPF_Neutral SPF-Neutral
+	*  0.0 T_TooManySym_02 5+ unique symbols in subject
 	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
-Subject: [PATCH 23/23] vfs: Teach readahead to use the file_hotplug_lock
+Subject: [PATCH 15/23] vfs: Teach fallocate, and filp_close to use file_hotplug_lock
 X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
+X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Eric W. Biederman <ebiederm@maxwell.aristanetworks.com>
+From: Eric W. Biederman <ebiederm@maxwell.arastra.com>
 
-Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
+Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.om>
 ---
- mm/filemap.c |   25 ++++++++++++++++---------
- 1 files changed, 16 insertions(+), 9 deletions(-)
+ fs/open.c |   22 +++++++++++++++++-----
+ 1 files changed, 17 insertions(+), 5 deletions(-)
 
-diff --git a/mm/filemap.c b/mm/filemap.c
-index 379ff0b..5016aa5 100644
---- a/mm/filemap.c
-+++ b/mm/filemap.c
-@@ -1402,16 +1402,23 @@ SYSCALL_DEFINE(readahead)(int fd, loff_t offset, size_t count)
+diff --git a/fs/open.c b/fs/open.c
+index d0b2433..83d6369 100644
+--- a/fs/open.c
++++ b/fs/open.c
+@@ -398,19 +398,22 @@ SYSCALL_DEFINE(fallocate)(int fd, int mode, loff_t offset, loff_t len)
+ 		goto out;
+ 	if (!(file->f_mode & FMODE_WRITE))
+ 		goto out_fput;
++	ret = -EIO;
++	if (!file_hotplug_read_trylock(file))
++		goto out_fput;
+ 	/*
+ 	 * Revalidate the write permissions, in case security policy has
+ 	 * changed since the files were opened.
+ 	 */
+ 	ret = security_file_permission(file, MAY_WRITE);
+ 	if (ret)
+-		goto out_fput;
++		goto out_unlock;
  
- 	ret = -EBADF;
- 	file = fget(fd);
--	if (file) {
--		if (file->f_mode & FMODE_READ) {
--			struct address_space *mapping = file->f_mapping;
--			pgoff_t start = offset >> PAGE_CACHE_SHIFT;
--			pgoff_t end = (offset + count - 1) >> PAGE_CACHE_SHIFT;
--			unsigned long len = end - start + 1;
--			ret = do_readahead(mapping, file, start, len);
--		}
--		fput(file);
-+	if (!file)
-+		goto out;
-+
-+	if (!(file->f_mode & FMODE_READ))
+ 	inode = file->f_path.dentry->d_inode;
+ 
+ 	ret = -ESPIPE;
+ 	if (S_ISFIFO(inode->i_mode))
+-		goto out_fput;
++		goto out_unlock;
+ 
+ 	ret = -ENODEV;
+ 	/*
+@@ -418,18 +421,20 @@ SYSCALL_DEFINE(fallocate)(int fd, int mode, loff_t offset, loff_t len)
+ 	 * for directories or not.
+ 	 */
+ 	if (!S_ISREG(inode->i_mode) && !S_ISDIR(inode->i_mode))
+-		goto out_fput;
++		goto out_unlock;
+ 
+ 	ret = -EFBIG;
+ 	/* Check for wrap through zero too */
+ 	if (((offset + len) > inode->i_sb->s_maxbytes) || ((offset + len) < 0))
+-		goto out_fput;
++		goto out_unlock;
+ 
+ 	if (inode->i_op->fallocate)
+ 		ret = inode->i_op->fallocate(inode, mode, offset, len);
+ 	else
+ 		ret = -EOPNOTSUPP;
+ 
++out_unlock:
++	file_hotplug_read_unlock(file);
+ out_fput:
+ 	fput(file);
+ out:
+@@ -1101,18 +1106,25 @@ SYSCALL_DEFINE2(creat, const char __user *, pathname, int, mode)
+  */
+ int filp_close(struct file *filp, fl_owner_t id)
+ {
+-	int retval = 0;
++	int retval;
+ 
+ 	if (!file_count(filp)) {
+ 		printk(KERN_ERR "VFS: Close: file count is 0\n");
+ 		return 0;
+ 	}
+ 
++	retval = -EIO;
++	if (!file_hotplug_read_trylock(filp))
 +		goto out_fput;
 +
-+	if (file_hotplug_read_trylock(file)) {
-+		struct address_space *mapping = file->f_mapping;
-+		pgoff_t start = offset >> PAGE_CACHE_SHIFT;
-+		pgoff_t end = (offset + count - 1) >> PAGE_CACHE_SHIFT;
-+		unsigned long len = end - start + 1;
-+		ret = do_readahead(mapping, file, start, len);
-+		file_hotplug_read_unlock(file);
- 	}
++	retval = 0;
+ 	if (filp->f_op && filp->f_op->flush)
+ 		retval = filp->f_op->flush(filp, id);
+ 
+ 	dnotify_flush(filp, id);
+ 	locks_remove_posix(filp, id);
++	file_hotplug_read_unlock(filp);
 +out_fput:
-+	fput(file);
-+out:
- 	return ret;
+ 	fput(filp);
+ 	return retval;
  }
- #ifdef CONFIG_HAVE_SYSCALL_WRAPPERS
 -- 
 1.6.3.1.54.g99dd.dirty
 
