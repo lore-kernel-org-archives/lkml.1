@@ -1,65 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756004AbZFAOqQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754122AbZFAOql@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756004AbZFAOqQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 10:46:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752472AbZFAOqE
+	id S1754122AbZFAOql (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 10:46:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752216AbZFAOqc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 10:46:04 -0400
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:41303 "EHLO e7.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752442AbZFAOqD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 10:46:03 -0400
-In-Reply-To: <4A23A72E.3020506@gmail.com>
-References: <1243849610.2234.3.camel@system> <4A23A690.6070504@gmail.com> <4A23A72E.3020506@gmail.com>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Eric Paris <eparis@redhat.com>, Kylene J Hall <kylene@us.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Reiner Sailer <sailer@watson.ibm.com>, serue@linux.vnet.ibm.com,
-       vibi_sreenivasan@cms.com, safford@watson.ibm.com
+	Mon, 1 Jun 2009 10:46:32 -0400
+Received: from fmmailgate03.web.de ([217.72.192.234]:53862 "EHLO
+	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751077AbZFAOqb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 10:46:31 -0400
+From: Goswin von Brederlow <goswin-v-b@web.de>
+To: Jan Kara <jack@suse.cz>
+Cc: Goswin von Brederlow <goswin-v-b@web.de>, Pavel Machek <pavel@ucw.cz>,
+       LKML <linux-kernel@vger.kernel.org>, npiggin@suse.de,
+       linux-ext4@vger.kernel.org
+Subject: Re: [PATCH 03/11] vfs: Add better VFS support for page_mkwrite when blocksize < pagesize
+References: <1243429268-3028-1-git-send-email-jack@suse.cz>
+	<1243429268-3028-4-git-send-email-jack@suse.cz>
+	<20090530112324.GD1395@ucw.cz> <20090601094402.GA14373@duck.suse.cz>
+	<87y6scqjd7.fsf@frosties.localdomain>
+	<20090601140030.GF14373@duck.suse.cz>
+Date: Mon, 01 Jun 2009 16:46:28 +0200
+In-Reply-To: <20090601140030.GF14373@duck.suse.cz> (Jan Kara's message of
+	"Mon, 1 Jun 2009 16:00:30 +0200")
+Message-ID: <87zlcsxb97.fsf@frosties.localdomain>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) XEmacs/21.4.22 (linux)
 MIME-Version: 1.0
-Subject: Re: [Fwd: Re: [PATCH]:RESEND : Return proper error value on failure of
- dentry_open]
-X-KeepSent: 4496A6A3:97A7AC73-852575C8:004E887B;
- type=4; name=$KeepSent
-X-Mailer: Lotus Notes Release 8.5 December 05, 2008
-Message-ID: <OF4496A6A3.97A7AC73-ON852575C8.004E887B-852575C8.0051176D@us.ibm.com>
-From: Mimi Zohar <zohar@us.ibm.com>
-Date: Mon, 1 Jun 2009 10:45:43 -0400
-X-MIMETrack: Serialize by Router on D01ML604/01/M/IBM(Release 8.5|December 05, 2008) at
- 06/01/2009 10:45:53,
-	Serialize complete at 06/01/2009 10:45:53
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain; charset=us-ascii
+X-Provags-ID: V01U2FsdGVkX1+opzgkPhGMFK422QQ6I/qpmBGvPijX6oxuk4Ba
+	6MjoRVWT6Ipq/h0LS4aCkUIitemHi+XX9hcxR+SzNr9ENlfR7O
+	LnlKWfDLA=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Slaby <jirislaby@gmail.com> wrote on 06/01/2009 06:02:22 AM:
+Jan Kara <jack@suse.cz> writes:
 
-> Re: [Fwd: Re: [PATCH]:RESEND : Return proper error value on failure of 
-dentry_open]
-> 
-> On 06/01/2009 11:59 AM, Jiri Slaby wrote:
-> > On 06/01/2009 11:46 AM, vibi sreenivasan wrote:
-> >>>>>     mutex_unlock(&iint->mutex);
-> >>>>> -   if (file)
-> >>>>> +   if (!IS_ERR(file))
-> >>>>>        fput(file);
-> >>>>
-> >>>> No, IS_ERR won't catch NULL and there is 'file = NULL' on the
-> >>>> dentry_open fail path.
-> >> Can you please point out that line number in fs/open.c
-> > 
-> > Aha, you use linus's git. This has been fixed by
-> > f06dd16a03f6f7f72fab4db03be36e28c28c6fd6
-> > (IMA: Handle dentry_open failures)
-> > in -next.
-> 
-> [But the fix in -next still misses 'return 0' -> 'return rc' which I
-> though you had tried to change.]
+> On Mon 01-06-09 13:33:08, Goswin von Brederlow wrote:
+>> Jan Kara <jack@suse.cz> writes:
+>> 
+>> > On Sat 30-05-09 13:23:24, Pavel Machek wrote:
+>> >> Hi!
+>> >> 
+>> >> > On filesystems where blocksize < pagesize the situation is more complicated.
+>> >> > Think for example that blocksize = 1024, pagesize = 4096 and a process does:
+>> >> >   ftruncate(fd, 0);
+>> >> >   pwrite(fd, buf, 1024, 0);
+>> >> >   map = mmap(NULL, 4096, PROT_WRITE, MAP_SHARED, fd, 0);
+>> >> >   map[0] = 'a';  ----> page_mkwrite() for index 0 is called
+>> >> >   ftruncate(fd, 10000); /* or even pwrite(fd, buf, 1, 10000) */
+>> >> >   fsync(fd); ----> writepage() for index 0 is called
+>> >> > 
+>> >> > At the moment page_mkwrite() is called, filesystem can allocate only one block
+>> >> > for the page because i_size == 1024. Otherwise it would create blocks beyond
+>> >> > i_size which is generally undesirable. But later at writepage() time, we would
+>> >> > like to have blocks allocated for the whole page (and in principle we have to
+>> >> > allocate them because user could have filled the page with data after the
+>> >> > second ftruncate()). This patch introduces a framework which allows filesystems
+>> >> > to handle this with a reasonable effort.
+>> >> 
+>> >> What happens when you do above sequence on today's kernels? Oops? 3000
+>> >> bytes of random junk in file? ...?
+>> >   Depends on the filesystem. For example on ext4, you'll see a WARN_ON and the data
+>> > won't be written. Some filesystems may just try to map blocks and possibly
+>> > hit deadlock or something like that. Filesystems like ext2 / ext3 /
+>> > reiserfs generally don't care because so far they allocate blocks on writepage
+>> > time (which has the problem that you can write data via mmap and kernel
+>> > will later discard them because it hits ENOSPC or quota limit). That's
+>> > actually what I was trying to fix originally.
+>> >
+>> > 										Honza
+>> 
+>> man mmap:
+>>        A file is mapped in multiples of the page size.  For a file that is not
+>>        a  multiple  of  the  page  size,  the  remaining memory is zeroed when
+>>        mapped, and writes to that region are not written out to the file.  The
+>>        effect  of changing the size of the underlying file of a mapping on the
+>>        pages that correspond to added  or  removed  regions  of  the  file  is
+>>        unspecified.
+>> 
+>> Whatever happens happens. The above code is just wrong, as in
+>> unspecified behaviour.
+>> What happens if you ftruncate() before mmap()?
+>   OK, I admit I didn't realize mmap() has so weak requirements. Doing mmap
+> after ftruncate() should work fine because before you write via that new
+> mmap page_mkwrite() will be called anyway.
 
-At this point, we're just collecting measurements, not appraising 
-them. The return code will be the result of appraise_measurement(). 
-For now, the dentry_open shouldn't fail, but if it does, we probably
-should audit it.
+But the ftruncate would only allocate a block at position 10000. The
+file still has a big hole from 1024-4095.
 
-Mimi Zohar
+>   So what we could alternatively do is that we just discard dirty bits from
+> buffers that don't have underlying blocks allocated. That would satisfy the
+> specification as well. But I have to say I'm a bit afraid of discarding
+> dirty bits like that. Also we'd have to handle the case where someone does
+> mremap() after ftruncate().
+>   What other memory management people think?
+
+As said above the file still has a big hole after ftruncate. So not
+having underlying blocks allocated can't be the deciding factor.
+
+If possible I would make ftruncate() after mmap() work just like
+ftruncate() before mmap(). That is write any dirty page completly up
+to the current filesize. Allocate disk blocks for the file as needed
+(you need to do that anyway). Wouldn't it be more work to remember the
+filesize at the time of the mmap() to limit updates to that than using
+the current file size?
+
+MfG
+        Goswin
