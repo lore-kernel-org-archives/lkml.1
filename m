@@ -1,115 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753312AbZFATNR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755401AbZFATNa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753312AbZFATNR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 15:13:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751330AbZFATM7
+	id S1755401AbZFATNa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 15:13:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753692AbZFATNU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 15:12:59 -0400
-Received: from 41-052.adsl.zetnet.co.uk ([194.247.41.52]:56000 "EHLO
-	mail.esperi.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751263AbZFATM7 (ORCPT
+	Mon, 1 Jun 2009 15:13:20 -0400
+Received: from arroyo.ext.ti.com ([192.94.94.40]:45478 "EHLO arroyo.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754324AbZFATNR convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 15:12:59 -0400
-To: David Miller <davem@davemloft.net>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       e1000-devel@lists.sourceforge.net, netdev@vger.kernel.org
-Subject: Re: 2.6.30rc7: ksoftirqd CPU saturation (x86-64 and x86-32 both) (in-tree e1000e at fault)
-References: <87prdozxns.fsf@hades.wkstn.nix>
-	<20090531170350.1355b3f1.akpm@linux-foundation.org>
-	<87ljoczu3p.fsf@hades.wkstn.nix>
-	<20090531.215855.142666346.davem@davemloft.net>
-From: Nix <nix@esperi.org.uk>
-Emacs: a compelling argument for pencil and paper.
-Date: Mon, 01 Jun 2009 20:12:13 +0100
-In-Reply-To: <20090531.215855.142666346.davem@davemloft.net> (David Miller's message of "Sun, 31 May 2009 21:58:55 -0700 (PDT)")
-Message-ID: <87hbyzzs36.fsf_-_@hades.wkstn.nix>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.5-b28 (linux)
+	Mon, 1 Jun 2009 15:13:17 -0400
+From: "Aguirre Rodriguez, Sergio Alberto" <saaguirre@ti.com>
+To: "Karicheri, Muralidharan" <m-karicheri2@ti.com>,
+       "Paulraj, Sandeep" <s-paulraj@ti.com>,
+       "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Grosen, Mark" <mgrosen@ti.com>
+Date: Mon, 1 Jun 2009 14:13:13 -0500
+Subject: RE: New Driver for DaVinci DM355/DM365/DM6446
+Thread-Topic: New Driver for DaVinci DM355/DM365/DM6446
+Thread-Index: AcniyStmw6uMN6wQR1S5so7ZtS4AbAAHeNT8AACfcmAAAIjE/A==
+Message-ID: <A24693684029E5489D1D202277BE8944405CFFE7@dlee02.ent.ti.com>
+References: <C9D59C82B94F474B872F2092A87F261481797D4B@dlee07.ent.ti.com>
+ <A24693684029E5489D1D202277BE8944405CFFE6@dlee02.ent.ti.com>,<A69FA2915331DC488A831521EAE36FE401354ED000@dlee06.ent.ti.com>
+In-Reply-To: <A69FA2915331DC488A831521EAE36FE401354ED000@dlee06.ent.ti.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-DCC-sonic.net-Metrics: hades 1156; Body=5 Fuz1=5 Fuz2=5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1 Jun 2009, David Miller uttered the following:
+> From: Karicheri, Muralidharan
+> Sent: Monday, June 01, 2009 9:58 PM
+> To: Aguirre Rodriguez, Sergio Alberto; Paulraj, Sandeep; linux-media@vger.kernel.org
+> Cc: linux-kernel@vger.kernel.org; Grosen, Mark
+> Subject: RE: New Driver for DaVinci DM355/DM365/DM6446
+> 
+> Sergio,
+> 
+> Is it part of the patches Vaibhav & others from TI are submitting to open source ?
 
-> From: Nix <nix@esperi.org.uk>
-> Date: Mon, 01 Jun 2009 01:16:26 +0100
+Yes, currently I have been sharing this codebase with Vaibhav, which he is taking for the 3530 EVM, which uses the camera ISP to receive images from a video decoder using a parallel BT656 output.
+
+
+> I know that there is an
+> ongoing effort at TI India to submit the resizer driver to open source for OMAP3?
+
+I guess this is still on hold, as the current internal approach is not acceptable in the V4L2 standards.
+
+> As per the email
+> exchanges I had with Vaibhav (TI India) on this, it is part of the ISP module.
+
+That's correct.
+
+> We plan to submit the
+> patches to open source for H3A and was trying to see which is the right way to do it.
+
+The ISP driver core that we are sharing, it already has the H3A driver on it, which is accessed through Private IOCTLs declared inside the driver.
+
+> We will
+> investigate the tree you mentioned below and let you know if we have additional questions.
+
+Vaibhav should be already familiar with this codebase, so maybe it could be easier for you to talk with him about this.
+
+> The plan is to align with OMAP3 for the implementation.
+
+Although the current code maintenance is on hold because i've been busy with some other custormer requirements, i havent been able to continue working on the pending TODOs so far. But as this strategy on a better collaboration with the community is attempted, i'm trying ot find my way to get back wit hthe maintenance of this driver to meet at least the required changes for acceptance of the driver.
+
+It'll be definitively good to align on this, so we can avoid rewriting the same thing over again.
+
+Regards,
+Sergio
+> 
+> regards,
+> 
+> Murali Karicheri
+> email: m-karicheri2@ti.com
+> 
+>-----Original Message-----
+>From: linux-media-owner@vger.kernel.org [mailto:linux-media-
+>owner@vger.kernel.org] On Behalf Of Aguirre Rodriguez, Sergio Alberto
+>Sent: Monday, June 01, 2009 2:39 PM
+>To: Paulraj, Sandeep; linux-media@vger.kernel.org
+>Cc: linux-kernel@vger.kernel.org; Grosen, Mark
+>Subject: RE: New Driver for DaVinci DM355/DM365/DM6446
 >
->> I plan to try out 2.6.29 (and back to 2.6.25 or thereabouts) tomorrow
->> and see if it ever worked: if it did I'll bisect for it (rendered tricky
->> by the out-of-tree e1000e driver, but doable: it would be easier if I
->> had a clue where the e1000-devel git tree is, if anywhere, but I still
->> have no idea despite considerable searching).
+>> From: linux-media-owner@vger.kernel.org [linux-media-
+>owner@vger.kernel.org] On Behalf Of Paulraj, Sandeep
+>> Sent: Monday, June 01, 2009 5:56 PM
+>> To: linux-media@vger.kernel.org
+>> Cc: linux-kernel@vger.kernel.org; Grosen, Mark
+>> Subject: New Driver for DaVinci DM355/DM365/DM6446
+>>
+>> Hello,
+>>
+>> WE have a module(H3A) on Davinci DM6446,DM355 and DM365.
+>>
+>> Customers require a way to collect the data required to perform the Auto
+>Exposure (AE), Auto Focus(AF), and Auto White balance (AWB) in hardware as
+>opposed to software. > This is primarily for performance reasons as there
+>is not enough software processing MIPS (to do 3A statistics) available in
+>> an imaging/video system.
+>>
+>> Including this block in hardware reduces the load on the processor and
+>bandwidth to the memory as the data is collected on the fly from the imager.
+>>
+>> This modules collects statistics and we currently implement it as a
+>character driver.
 >
-> Why are you using the out-of-tree e1000e driver?  What's wrong
-> with the one in the tree? :-)
+>This also exists in OMAP3 chips, and is part of the ISP module.
+>
+>I maintain, along with Sakari Ailus, a V4L2 camera driver, which is
+>currently just shared through a gitorious repository:
+>
+>http://gitorious.org/omap3camera
+>
+>The way we offer an interface for the user to be able to request this
+>statistics is with the usage of private IOCTLs declared inside the same
+>V4L2 capturing device driver.
+>
+>So, that way we have a V4L2 driver which has a private call, instead of
+>having it separately from the capture driver.
+>
+>Regards,
+>Sergio
+>>
+>> Which mailing list would be the most appropriate mailing list to submit
+>patches for review?
+>>
+>> Thanks,
+>> Sandeep
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-media" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>
+>--
+>To unsubscribe from this list: send the line "unsubscribe linux-media" in
+>the body of a message to majordomo@vger.kernel.org
+>More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-My original speculations were wrong: it goes wrong with 32-bit as well
-as 64-bit kernels. The key is that it only ever goes wrong with the
-in-tree driver. When I compiled the faulty kernels (32- and 64-bit), I
-forgot to copy the out-of-tree driver into place. Use the out-of-tree
-driver, and the CPU hogging goes away. So this is an in-tree e1000e
-driver bug, definitely. The card is an 82574L.
-
-I could bisect for it, but I have no real evidence that the in-tree
-driver *ever* worked with this card. When the machine came from the
-vendor it was running 2.6.25... and the out-of-tree driver.
-
-I'll hunt backwards a bit and see if it works in 2.6.28 or something
-like that. Maybe I'll be lucky.
-
-
---- out-of-tree driver with this patch needed to compile, previously
-posted to e1000-devel without comment from anyone: probably the upstream
-git tree, wherever that is, already has it:
-
-diff -u e1000e-0.5.18.3/src/kcompat.h drivers/net/e1000e/kcompat.h
---- e1000e-0.5.18.3/src/kcompat.h	2009-03-05 18:43:14.000000000 +0000
-+++ drivers/net/e1000e/kcompat.h	2009-05-21 23:46:04.000000000 +0100
-@@ -141,12 +141,6 @@
- #endif
- #endif
- 
--#ifndef IRQ_HANDLED
--#define irqreturn_t void
--#define IRQ_HANDLED
--#define IRQ_NONE
--#endif
--
- #ifndef SET_NETDEV_DEV
- #define SET_NETDEV_DEV(net, pdev)
- #endif
-@@ -1650,4 +1644,12 @@
- #define pci_request_selected_regions_exclusive(pdev, bars, name) \
- 		pci_request_selected_regions(pdev, bars, name)
- #endif /* < 2.6.29 */
-+/*****************************************************************************/
-+#if ( LINUX_VERSION_CODE < KERNEL_VERSION(2,6,30) )
-+#ifndef IRQ_HANDLED
-+#define irqreturn_t void
-+#define IRQ_HANDLED
-+#define IRQ_NONE
-+#endif
-+#endif /* < 2.6.30 */
- #endif /* _KCOMPAT_H_ */
-diff -u e1000e-0.5.18.3/src/kcompat_ethtool.c drivers/net/e1000e/kcompat_ethtool.c
---- e1000e-0.5.18.3/src/kcompat_ethtool.c	2009-03-05 18:43:14.000000000 +0000
-+++ drivers/net/e1000e/kcompat_ethtool.c	2009-05-20 21:28:02.000000000 +0100
-@@ -54,6 +54,7 @@
- #include <linux/ethtool.h>
- #include <linux/netdevice.h>
- #include <asm/uaccess.h>
-+#include <net/net_namespace.h>
- 
- #include "kcompat.h"
- 
-@@ -782,7 +783,7 @@
- #define ETHTOOL_OPS_COMPAT
- int ethtool_ioctl(struct ifreq *ifr)
- {
--	struct net_device *dev = __dev_get_by_name(ifr->ifr_name);
-+	struct net_device *dev = __dev_get_by_name(&init_net, ifr->ifr_name);
- 	void *useraddr = (void *) ifr->ifr_data;
- 	u32 ethcmd;
- 
