@@ -1,223 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752614AbZFAR6w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753275AbZFASMV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752614AbZFAR6w (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 13:58:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751183AbZFAR6o
+	id S1753275AbZFASMV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 14:12:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751088AbZFASMN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 13:58:44 -0400
-Received: from hera.kernel.org ([140.211.167.34]:56189 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750952AbZFAR6n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 13:58:43 -0400
-Date: Mon, 1 Jun 2009 17:57:51 GMT
-From: tip-bot for Ingo Molnar <mingo@elte.hu>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
-       hpa@zytor.com, mingo@redhat.com, jkacur@redhat.com,
-       a.p.zijlstra@chello.nl, efault@gmx.de, mtosatti@redhat.com,
-       tglx@linutronix.de, cjashfor@linux.vnet.ibm.com, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, jkacur@redhat.com, a.p.zijlstra@chello.nl,
-       efault@gmx.de, mtosatti@redhat.com, tglx@linutronix.de,
-       cjashfor@linux.vnet.ibm.com, mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-Subject: [tip:perfcounters/core] perf_counter: Tidy up style details
-Message-ID: <tip-22a4f650d686eeaac3629dae1c4294381485efdf@git.kernel.org>
-Git-Commit-ID: 22a4f650d686eeaac3629dae1c4294381485efdf
-X-Mailer: tip-git-log-daemon
+	Mon, 1 Jun 2009 14:12:13 -0400
+Received: from mail-fx0-f168.google.com ([209.85.220.168]:49945 "EHLO
+	mail-fx0-f168.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750988AbZFASMM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 14:12:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :user-agent;
+        b=WFKfcN6ilJ/cU2YzYAY8XVEXzDiLC5DDdgvcoBRRRMa/u2jaI9TtT9DMaK12R4RbZx
+         JYPTqmfL14t9rxj84HfuStuWssptzoJfmahXI9jVVwCYBsUTNzsaZjd9HqcAyYooX/Q5
+         wJZkoO8xTtKqjIJ/USRws3lzG91h1O0itZVJE=
+Date: Mon, 1 Jun 2009 20:12:08 +0200
+From: Borislav Petkov <petkovbb@googlemail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Borislav Petkov <borislav.petkov@amd.com>, greg@kroah.com,
+       mingo@elte.hu, norsk5@yahoo.com, tglx@linutronix.de, mchehab@redhat.com,
+       aris@redhat.com, edt@aei.ca, linux-kernel@vger.kernel.org,
+       randy.dunlap@oracle.com, Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH 0/4] amd64_edac: misc fixes
+Message-ID: <20090601181208.GA30565@liondog.tnic>
+Mail-Followup-To: Borislav Petkov <petkovbb@gmail.com>,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Borislav Petkov <borislav.petkov@amd.com>, greg@kroah.com,
+	mingo@elte.hu, norsk5@yahoo.com, tglx@linutronix.de,
+	mchehab@redhat.com, aris@redhat.com, edt@aei.ca,
+	linux-kernel@vger.kernel.org, randy.dunlap@oracle.com,
+	Sam Ravnborg <sam@ravnborg.org>
+References: <1242845037-1029-1-git-send-email-borislav.petkov@amd.com> <20090528164720.0af5752b.akpm@linux-foundation.org> <20090529103329.GB23530@aftab> <20090529130115.a44efaee.akpm@linux-foundation.org> <20090530081954.GA21954@liondog.tnic> <20090530014007.3c1e22d5.akpm@linux-foundation.org> <4A218761.5080607@zytor.com> <20090601145326.GA28260@liondog.tnic> <4A2407D1.5050706@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 01 Jun 2009 17:57:52 +0000 (UTC)
+In-Reply-To: <4A2407D1.5050706@zytor.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  22a4f650d686eeaac3629dae1c4294381485efdf
-Gitweb:     http://git.kernel.org/tip/22a4f650d686eeaac3629dae1c4294381485efdf
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Mon, 1 Jun 2009 10:13:37 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 1 Jun 2009 19:55:32 +0200
+On Mon, Jun 01, 2009 at 09:54:41AM -0700, H. Peter Anvin wrote:
+> Borislav Petkov wrote:
+> > 
+> > How about we pin the src/dst into a register:
+> > 
+> > #define popcnt_spelled(x)                                       \
+> > ({                                                              \
+> >         typeof(x) __ret;                                        \
+> >         __asm__(".byte 0xf3\n\t.byte 0x48\n\t.byte 0x0f\n\t"    \
+> >                 ".byte 0xb8\n\t.byte 0xc0\n\t"                  \
+> >                 : "=a" (__ret)                                  \
+> >                 : "0" (x));                                     \
+> >         __ret;                                                  \
+> > })
+> > 
+> > which generates
+> > 
+> >   40055e:       48 8b 45 e8             mov    -0x18(%rbp),%rax
+> >   400562:       f3 48 0f b8 c0          popcnt %rax,%rax
+> >   400567:       48 89 45 f8             mov    %rax,-0x8(%rbp)
+> > 
+> > here.
+> > 
+> 
+> Yes, we would have to do something like that.
+> 
+> However, if you're doing that you shouldn't use typeof() there...
+> instead this should be turned into an inline function with explicit
+> 64-bit types.
 
-perf_counter: Tidy up style details
+right.
 
- - whitespace fixlets
- - make local variable definitions more consistent
+> It would be good if we could get Kbuild to export some kind of macro
+> that we can use to test binutils version, so we can do something like:
+> 
+> #if BINUTILS_VERSION >= KERNEL_VERSION(2,18,50)
+> /* Do the right thing */
+> #else
+> /* Do the wrong thing */
+> #endif
 
-[ Impact: cleanup ]
+Actually, popcnt got added to gas in July 2006 so checking the gas
+version should suffice, IMHO.
 
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-Cc: Marcelo Tosatti <mtosatti@redhat.com>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: John Kacur <jkacur@redhat.com>
-LKML-Reference: <new-submission>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Anyway, I proposed something similar before but Andrew suggested that we
+should simply slap in the opcode so we don't need the Kbuild changes.
+The advantage of the approach is that it works unconditionally on all
+toolchains and introduces less code changes. Hmm...
 
-
----
- include/linux/perf_counter.h |    2 +-
- kernel/perf_counter.c        |   39 +++++++++++++++++++++------------------
- 2 files changed, 22 insertions(+), 19 deletions(-)
-
-diff --git a/include/linux/perf_counter.h b/include/linux/perf_counter.h
-index 81ec79c..0e57d8c 100644
---- a/include/linux/perf_counter.h
-+++ b/include/linux/perf_counter.h
-@@ -562,7 +562,7 @@ struct perf_cpu_context {
- 	 *
- 	 * task, softirq, irq, nmi context
- 	 */
--	int			recursion[4];
-+	int				recursion[4];
- };
- 
- #ifdef CONFIG_PERF_COUNTERS
-diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
-index ff8b463..df319c4 100644
---- a/kernel/perf_counter.c
-+++ b/kernel/perf_counter.c
-@@ -16,8 +16,9 @@
- #include <linux/file.h>
- #include <linux/poll.h>
- #include <linux/sysfs.h>
--#include <linux/ptrace.h>
-+#include <linux/dcache.h>
- #include <linux/percpu.h>
-+#include <linux/ptrace.h>
- #include <linux/vmstat.h>
- #include <linux/hardirq.h>
- #include <linux/rculist.h>
-@@ -26,7 +27,6 @@
- #include <linux/anon_inodes.h>
- #include <linux/kernel_stat.h>
- #include <linux/perf_counter.h>
--#include <linux/dcache.h>
- 
- #include <asm/irq_regs.h>
- 
-@@ -65,7 +65,9 @@ void __weak hw_perf_disable(void)		{ barrier(); }
- void __weak hw_perf_enable(void)		{ barrier(); }
- 
- void __weak hw_perf_counter_setup(int cpu)	{ barrier(); }
--int __weak hw_perf_group_sched_in(struct perf_counter *group_leader,
-+
-+int __weak
-+hw_perf_group_sched_in(struct perf_counter *group_leader,
- 	       struct perf_cpu_context *cpuctx,
- 	       struct perf_counter_context *ctx, int cpu)
- {
-@@ -127,8 +129,8 @@ static void put_ctx(struct perf_counter_context *ctx)
-  * This has to cope with with the fact that until it is locked,
-  * the context could get moved to another task.
-  */
--static struct perf_counter_context *perf_lock_task_context(
--				struct task_struct *task, unsigned long *flags)
-+static struct perf_counter_context *
-+perf_lock_task_context(struct task_struct *task, unsigned long *flags)
- {
- 	struct perf_counter_context *ctx;
- 
-@@ -1330,9 +1332,9 @@ __perf_counter_init_context(struct perf_counter_context *ctx,
- 
- static struct perf_counter_context *find_get_context(pid_t pid, int cpu)
- {
--	struct perf_cpu_context *cpuctx;
--	struct perf_counter_context *ctx;
- 	struct perf_counter_context *parent_ctx;
-+	struct perf_counter_context *ctx;
-+	struct perf_cpu_context *cpuctx;
- 	struct task_struct *task;
- 	unsigned long flags;
- 	int err;
-@@ -1664,8 +1666,8 @@ int perf_counter_task_disable(void)
-  */
- void perf_counter_update_userpage(struct perf_counter *counter)
- {
--	struct perf_mmap_data *data;
- 	struct perf_counter_mmap_page *userpg;
-+	struct perf_mmap_data *data;
- 
- 	rcu_read_lock();
- 	data = rcu_dereference(counter->data);
-@@ -1769,10 +1771,11 @@ fail:
- 
- static void __perf_mmap_data_free(struct rcu_head *rcu_head)
- {
--	struct perf_mmap_data *data = container_of(rcu_head,
--			struct perf_mmap_data, rcu_head);
-+	struct perf_mmap_data *data;
- 	int i;
- 
-+	data = container_of(rcu_head, struct perf_mmap_data, rcu_head);
-+
- 	free_page((unsigned long)data->user_page);
- 	for (i = 0; i < data->nr_pages; i++)
- 		free_page((unsigned long)data->data_pages[i]);
-@@ -1801,8 +1804,7 @@ static void perf_mmap_close(struct vm_area_struct *vma)
- 	struct perf_counter *counter = vma->vm_file->private_data;
- 
- 	WARN_ON_ONCE(counter->ctx->parent_ctx);
--	if (atomic_dec_and_mutex_lock(&counter->mmap_count,
--				      &counter->mmap_mutex)) {
-+	if (atomic_dec_and_mutex_lock(&counter->mmap_count, &counter->mmap_mutex)) {
- 		struct user_struct *user = current_user();
- 
- 		atomic_long_sub(counter->data->nr_pages + 1, &user->locked_vm);
-@@ -1821,11 +1823,11 @@ static struct vm_operations_struct perf_mmap_vmops = {
- static int perf_mmap(struct file *file, struct vm_area_struct *vma)
- {
- 	struct perf_counter *counter = file->private_data;
-+	unsigned long user_locked, user_lock_limit;
- 	struct user_struct *user = current_user();
-+	unsigned long locked, lock_limit;
- 	unsigned long vma_size;
- 	unsigned long nr_pages;
--	unsigned long user_locked, user_lock_limit;
--	unsigned long locked, lock_limit;
- 	long user_extra, extra;
- 	int ret = 0;
- 
-@@ -1900,8 +1902,8 @@ unlock:
- 
- static int perf_fasync(int fd, struct file *filp, int on)
- {
--	struct perf_counter *counter = filp->private_data;
- 	struct inode *inode = filp->f_path.dentry->d_inode;
-+	struct perf_counter *counter = filp->private_data;
- 	int retval;
- 
- 	mutex_lock(&inode->i_mutex);
-@@ -2412,8 +2414,8 @@ static void perf_counter_output(struct perf_counter *counter,
-  */
- 
- struct perf_comm_event {
--	struct task_struct 	*task;
--	char 			*comm;
-+	struct task_struct	*task;
-+	char			*comm;
- 	int			comm_size;
- 
- 	struct {
-@@ -2932,6 +2934,7 @@ static void perf_swcounter_add(struct perf_counter *counter, u64 nr,
- 			       int nmi, struct pt_regs *regs, u64 addr)
- {
- 	int neg = atomic64_add_negative(nr, &counter->hw.count);
-+
- 	if (counter->hw.irq_period && !neg)
- 		perf_swcounter_overflow(counter, nmi, regs, addr);
- }
-@@ -3526,7 +3529,7 @@ inherit_counter(struct perf_counter *parent_counter,
- 	/*
- 	 * Make the child state follow the state of the parent counter,
- 	 * not its hw_event.disabled bit.  We hold the parent's mutex,
--	 * so we won't race with perf_counter_{en,dis}able_family.
-+	 * so we won't race with perf_counter_{en, dis}able_family.
- 	 */
- 	if (parent_counter->state >= PERF_COUNTER_STATE_INACTIVE)
- 		child_counter->state = PERF_COUNTER_STATE_INACTIVE;
+-- 
+Regards/Gruss,
+    Boris.
