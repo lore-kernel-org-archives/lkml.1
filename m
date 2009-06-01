@@ -1,26 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752560AbZFAPdj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757987AbZFAPdv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752560AbZFAPdj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 11:33:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753425AbZFAPdJ
+	id S1757987AbZFAPdv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 11:33:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753790AbZFAPdK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 11:33:09 -0400
-Received: from smtp02.citrix.com ([66.165.176.63]:45854 "EHLO
-	SMTP02.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752363AbZFAPdH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 11:33:10 -0400
+Received: from smtp.citrix.com ([66.165.176.89]:54264 "EHLO SMTP.CITRIX.COM"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752531AbZFAPdH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 1 Jun 2009 11:33:07 -0400
 X-IronPort-AV: E=Sophos;i="4.41,284,1241409600"; 
-   d="scan'208";a="53320382"
+   d="scan'208";a="4484691"
 From: Ian Campbell <ian.campbell@citrix.com>
 To: <linux-kernel@vger.kernel.org>
 CC: Ian Campbell <ian.campbell@citrix.com>,
        FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Ingo Molnar <mingo@elte.hu>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Tony Luck <tony.luck@intel.com>, <linux-ia64@vger.kernel.org>
-Subject: [PATCH 01/11] ia64: introduce arch-specific dma-mapping interfaces
-Date: Mon, 1 Jun 2009 16:32:53 +0100
-Message-ID: <1243870383-12954-2-git-send-email-ian.campbell@citrix.com>
+       Jeremy Fitzhardinge <jeremy@goop.org>, Olaf Kirch <okir@suse.de>,
+       Greg KH <gregkh@suse.de>, <x86@kernel.org>
+Subject: [PATCH 02/11] x86: introduce arch-specific dma-mapping interface
+Date: Mon, 1 Jun 2009 16:32:54 +0100
+Message-ID: <1243870383-12954-3-git-send-email-ian.campbell@citrix.com>
 X-Mailer: git-send-email 1.5.6.5
 In-Reply-To: <1243870383-12954-1-git-send-email-ian.campbell@citrix.com>
 References: <1243870383-12954-1-git-send-email-ian.campbell@citrix.com>
@@ -43,35 +42,61 @@ function which relates to ISA device DMA.
 
 Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
 Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: Ingo Molnar <mingo@elte.hu>
 Cc: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Tony Luck <tony.luck@intel.com>
-Cc: linux-ia64@vger.kernel.org
+Cc: Olaf Kirch <okir@suse.de>
+Cc: Greg KH <gregkh@suse.de>
+Cc: x86@kernel.org
 ---
- arch/ia64/include/asm/dma-mapping.h |   23 +++++++++++++++++++++++
- 1 files changed, 23 insertions(+), 0 deletions(-)
+ arch/x86/include/asm/dma-mapping.h |    7 +++++++
+ arch/x86/kernel/pci-dma.c          |   26 ++++++++++++++++++++++++++
+ 2 files changed, 33 insertions(+), 0 deletions(-)
 
-diff --git a/arch/ia64/include/asm/dma-mapping.h b/arch/ia64/include/asm/dma-mapping.h
-index 36c0009..47d4107 100644
---- a/arch/ia64/include/asm/dma-mapping.h
-+++ b/arch/ia64/include/asm/dma-mapping.h
-@@ -174,4 +174,27 @@ dma_cache_sync (struct device *dev, void *vaddr, size_t size,
+diff --git a/arch/x86/include/asm/dma-mapping.h b/arch/x86/include/asm/dma-mapping.h
+index 916cbb6..be8cb22 100644
+--- a/arch/x86/include/asm/dma-mapping.h
++++ b/arch/x86/include/asm/dma-mapping.h
+@@ -47,6 +47,9 @@ static inline int dma_mapping_error(struct device *dev, dma_addr_t dma_addr)
+ #define dma_free_noncoherent(d, s, v, h) dma_free_coherent(d, s, v, h)
+ #define dma_is_consistent(d, h)	(1)
  
- #define dma_is_consistent(d, h)	(1)	/* all we do is coherent memory... */
++extern dma_addr_t phys_to_dma(struct device *hwdev, phys_addr_t paddr);
++extern phys_addr_t dma_to_phys(struct device *hwdev, dma_addr_t daddr);
++
+ extern int dma_supported(struct device *hwdev, u64 mask);
+ extern int dma_set_mask(struct device *dev, u64 mask);
  
-+static inline dma_addr_t phys_to_dma(struct device *hwdev, phys_addr_t paddr)
+@@ -309,4 +312,8 @@ static inline void dma_free_coherent(struct device *dev, size_t size,
+ 		ops->free_coherent(dev, size, vaddr, bus);
+ }
+ 
++extern bool dma_map_range(struct device *dev, u64 mask,
++			  phys_addr_t addr, size_t size,
++			  dma_addr_t *dma_addr_p);
++
+ #endif
+diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
+index 745579b..f4c1b03 100644
+--- a/arch/x86/kernel/pci-dma.c
++++ b/arch/x86/kernel/pci-dma.c
+@@ -59,6 +59,32 @@ int dma_set_mask(struct device *dev, u64 mask)
+ }
+ EXPORT_SYMBOL(dma_set_mask);
+ 
++dma_addr_t phys_to_dma(struct device *hwdev, phys_addr_t paddr)
 +{
 +	return paddr;
 +}
++EXPORT_SYMBOL_GPL(phys_to_dma);
 +
-+static inline phys_addr_t dma_to_phys(struct device *hwdev, dma_addr_t daddr)
++phys_addr_t dma_to_phys(struct device *hwdev, dma_addr_t daddr)
 +{
 +	return daddr;
 +}
++EXPORT_SYMBOL_GPL(dma_to_phys);
 +
-+static inline bool dma_map_range(struct device *dev, u64 mask,
-+				       phys_addr_t addr, size_t size,
-+				       dma_addr_t *dma_addr_p)
++bool dma_map_range(struct device *dev, u64 mask,
++		   phys_addr_t addr, size_t size,
++		   dma_addr_t *dma_addr_p)
 +{
 +	dma_addr_t dma_addr = phys_to_dma(dev, addr);
 +
@@ -81,8 +106,11 @@ index 36c0009..47d4107 100644
 +	*dma_addr_p = dma_addr;
 +	return true;
 +}
++EXPORT_SYMBOL_GPL(dma_map_range);
 +
- #endif /* _ASM_IA64_DMA_MAPPING_H */
+ #ifdef CONFIG_X86_64
+ static __initdata void *dma32_bootmem_ptr;
+ static unsigned long dma32_bootmem_size __initdata = (128ULL<<20);
 -- 
 1.5.6.5
 
