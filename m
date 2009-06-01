@@ -1,58 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755392AbZFAQj3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755932AbZFAQkv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755392AbZFAQj3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 12:39:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751279AbZFAQjW
+	id S1755932AbZFAQkv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 12:40:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751346AbZFAQkn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 12:39:22 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:38353 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751148AbZFAQjV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 12:39:21 -0400
-Date: Mon, 1 Jun 2009 12:39:14 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Dave Jones <davej@redhat.com>, Christoph Hellwig <hch@infradead.org>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: fishy code in arch/x86/kernel/tsc.c:time_cpufreq_notifier()
-Message-ID: <20090601163914.GA6098@infradead.org>
-References: <20090601142104.GA15907@infradead.org> <20090601162955.GA15237@redhat.com>
+	Mon, 1 Jun 2009 12:40:43 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:50560 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751148AbZFAQkn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 12:40:43 -0400
+Message-ID: <4A240479.9040907@redhat.com>
+Date: Mon, 01 Jun 2009 12:40:25 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090601162955.GA15237@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+To: J Louis <handstogether8@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Linux scheduler capabilities for batch jobs.
+References: <6f41bd4b0906010641n1b360dffs6eaed72eb24f60f5@mail.gmail.com>
+In-Reply-To: <6f41bd4b0906010641n1b360dffs6eaed72eb24f60f5@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 01, 2009 at 12:29:55PM -0400, Dave Jones wrote:
-> diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
-> index d57de05..78c54ea 100644
-> --- a/arch/x86/kernel/tsc.c
-> +++ b/arch/x86/kernel/tsc.c
-> @@ -631,17 +631,15 @@ static int time_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
->  				void *data)
->  {
->  	struct cpufreq_freqs *freq = data;
-> -	unsigned long *lpj, dummy;
-> +	unsigned long *lpj;
->  
->  	if (cpu_has(&cpu_data(freq->cpu), X86_FEATURE_CONSTANT_TSC))
->  		return 0;
->  
-> -	lpj = &dummy;
-> -	if (!(freq->flags & CPUFREQ_CONST_LOOPS))
-> +	lpj = &boot_cpu_data.loops_per_jiffy;
->  #ifdef CONFIG_SMP
-> +	if (!(freq->flags & CPUFREQ_CONST_LOOPS))
->  		lpj = &cpu_data(freq->cpu).loops_per_jiffy;
-> -#else
-> -	lpj = &boot_cpu_data.loops_per_jiffy;
->  #endif
+J Louis wrote:
 
-This makes the code look a lot more sane and should fix the potential
-issue.
+> If it was possible to tell
+> the scheduler that it was OK not to be fair when scheduling these
+> processes, I think the total runtime could be reduced if it put some
+> of the processes to sleep while others completed.  Is there a way to
+> tell the scheduler it is allowed to do this?  Should there be?
 
+There is no way to do this currently, but I suspect that it
+would not be too difficult to add.
+
+Of course, if you have two tasks that are each a little larger
+than memory, your idea could lead to one of the processes being
+starved forever.  This is probably not acceptable :)
+
+In fact, one single batch process that is swapping could trigger
+the algorithm you described, halting itself.  Your idea would
+need very carefuly implementation to avoid these kinds of issues,
+but I believe it could definately be done.
+
+-- 
+All rights reversed.
