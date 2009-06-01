@@ -1,67 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755536AbZFAQes@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756691AbZFAQgS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755536AbZFAQes (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 12:34:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753874AbZFAQek
+	id S1756691AbZFAQgS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 12:36:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754850AbZFAQgJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 12:34:40 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:38204 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753713AbZFAQej (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 12:34:39 -0400
-Date: Mon, 1 Jun 2009 13:34:36 -0300
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: "Paulraj, Sandeep" <s-paulraj@ti.com>
-Cc: "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Grosen, Mark" <mgrosen@ti.com>
-Subject: Re: New Driver for DaVinci DM355/DM365/DM6446
-Message-ID: <20090601133436.06a4a4a0@pedra.chehab.org>
-In-Reply-To: <C9D59C82B94F474B872F2092A87F261481797D4B@dlee07.ent.ti.com>
-References: <C9D59C82B94F474B872F2092A87F261481797D4B@dlee07.ent.ti.com>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 1 Jun 2009 12:36:09 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:54978 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754758AbZFAQgJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 12:36:09 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jan Scholz <scholz@fias.uni-frankfurt.de>
+Subject: Re: [regression, bisected] adb trackpad disappears after suspend to ram
+Date: Mon, 1 Jun 2009 18:36:14 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc6-rjw; KDE/4.2.3; x86_64; ; )
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Adrian Bunk <bunk@kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <878wkl6vce.fsf@scholz.fias.uni-frankfurt.de> <200905292010.10615.rjw@sisk.pl> <87fxekxe3w.fsf@scholz.fias.uni-frankfurt.de>
+In-Reply-To: <87fxekxe3w.fsf@scholz.fias.uni-frankfurt.de>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+Message-Id: <200906011836.15507.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Mon, 1 Jun 2009 09:56:40 -0500
-"Paulraj, Sandeep" <s-paulraj@ti.com> escreveu:
-
+On Monday 01 June 2009, Jan Scholz wrote:
+> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
 > 
-> Hello,
+> > On Friday 29 May 2009, Jan Scholz wrote:
+> >> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+> >> 
+> >> >> We are too late in the cycle to revert this commit and it really is needed to
+> >> >> fix a more serious issue.  Nevertheless knowing that it caused the problem to
+> >> >> appear on your system is also important.
+> >> >> 
+> >> >> Ben, do you have an idea what may be going on here?  Does __disable_irq() mask
+> >> >> the interrupt on this platform?
+> >> >
+> >> > I suppose so :-) I'll have to check what's going on, it's not
+> >> > immediately clear to me.
+> >> >
+> >> > Cheers,
+> >> > Ben.
+> >> >
+> >> >> 
+> >> >> I'd like to see a boot log, preferably containing a suspend-resume in which
+> >> >> the problem was reproduced.
+> >> 
+> >> Here is a log from booting, through several suspend cycles, until the
+> >> trackpad disappeared. The first few suspends were done while X was
+> >> running but from the console. As you can tell from lines like
+> >>    May 28 23:51:26 [kernel] adb devices: [2]: 2 c4 [3]: 3 1 [7]: 7 1f
+> >> the trackpad was still present. The last suspend was done from within X,
+> >> here the trackpad did not make it.
+> >>    May 28 23:58:09 [kernel] adb devices: [2]: 2 c4 [7]: 7 1f
+> >> However, there have been cases, although not in this log, were the
+> >> trackpad has been alive even when suspending from within X.
+> >
+> > This means the problem is probably timing-related.
+> >
+> > Can you please try to comment out suspend_device_irqs() and
+> > resume_device_irqs()  in drivers/base/power/main.c and see if that changes
+> > anything?  It's not entirely safe (well, that's why the calls are there after
+> > all), but hopefully the box won't hang during this test.
+> >
 > 
-> WE have a module(H3A) on Davinci DM6446,DM355 and DM365.
-> 
-> Customers require a way to collect the data required to perform the Auto Exposure (AE), Auto Focus(AF), and Auto White balance (AWB) in hardware as opposed to software. This is primarily for performance reasons as there is not enough software processing MIPS (to do 3A statistics) available in
-> an imaging/video system.
-> 
-> Including this block in hardware reduces the load on the processor and bandwidth to the memory as the data is collected on the fly from the imager.
-> 
-> This modules collects statistics and we currently implement it as a character driver.
-> 
-> Which mailing list would be the most appropriate mailing list to submit patches for review?
+> Tried that against v2.6.30-rc7 and it seems to fix the issue. I did ~10
+> suspend-resume cycles from the console (which worked just like before)
+> and ~20 cycles from within X and the trackpad is still alive.
 
-You should send they to:
-	LMML <linux-media@vger.kernel.org>
+So, it seems we lose and interrupt during resume and that confuses the
+ADB controller driver or something like this.  Do you use the keyboard or
+the trackpad as a wake-up device?
 
-If you are proposing API changes, please submit they first.
+Please additionally try to go back to the original code, put
+'sleepy_trackpad = 1' at the beginning of do_adb_reset_bus() in
+drivers/macintosh/adb.c and see if the problem is reproducible with that.
 
-> 
-> Thanks,
-> Sandeep
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-media" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
-
-
-
-Cheers,
-Mauro
+Best,
+Rafael
